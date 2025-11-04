@@ -799,6 +799,15 @@ img2sixel_print_option_help(FILE *stream)
 }
 
 static void
+img2sixel_print_clipboard_hint(void)
+{
+    fprintf(stderr,
+            "The pseudo file \"clipboard:\" mirrors the desktop clipboard.\n"
+            "Use \"clipboard:\" for SIXEL text, or prefix with \"png:\" or\n"
+            "\"tiff:\" to request image snapshots.\n");
+}
+
+static void
 img2sixel_report_invalid_argument(int short_opt,
                                   char const *value,
                                   char const *detail)
@@ -1859,6 +1868,40 @@ img2sixel_palette_payload_view(char const *spec)
 }
 
 static int
+img2sixel_spec_is_clipboard(char const *argument)
+{
+    char const *marker;
+
+    /*
+     * Detect the "clipboard:" pseudo path accepted by the encoder.  The
+     * encoder understands plain "clipboard:" as well as "format:clipboard:".
+     * We mirror that grammar here so validation does not reject otherwise
+     * valid pseudo paths before they reach the backend.
+     */
+    marker = NULL;
+
+    if (argument == NULL) {
+        return 0;
+    }
+
+    marker = strstr(argument, "clipboard:");
+    if (marker == NULL) {
+        return 0;
+    }
+    if (marker[10] != '\0') {
+        return 0;
+    }
+    if (marker == argument) {
+        return 1;
+    }
+    if (marker > argument && marker[-1] == ':') {
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
 img2sixel_path_looks_remote(char const *path)
 {
     char const *separator;
@@ -1923,6 +1966,9 @@ img2sixel_validate_mapfile_argument(char const *argument)
     if (strcmp(payload, "-") == 0) {
         return 0;
     }
+    if (img2sixel_spec_is_clipboard(payload)) {
+        return 0;
+    }
     if (img2sixel_path_looks_remote(payload)) {
         return 0;
     }
@@ -1971,6 +2017,9 @@ img2sixel_validate_input_argument(char const *argument)
         return -1;
     }
     if (strcmp(argument, "-") == 0) {
+        return 0;
+    }
+    if (img2sixel_spec_is_clipboard(argument)) {
         return 0;
     }
     if (img2sixel_path_looks_remote(argument)) {
@@ -2138,6 +2187,11 @@ void show_help(void)
             "Options:\n");
     img2sixel_print_option_help(stdout);
     fprintf(stdout,
+            "\n"
+            "Special targets:\n"
+            "  clipboard:             exchange data with the desktop clipboard.\n"
+            "                         Prefix with png: or tiff: when writing to\n"
+            "                         request image snapshots.\n"
             "\n"
             "Environment variables:\n"
             "SIXEL_BGCOLOR              specify background color.\n"
@@ -2382,7 +2436,7 @@ main(int argc, char *argv[])
                             ? detail_buffer
                             : NULL);
                 }
-                goto end;
+                goto error;
             }
             break;
         default:
@@ -2428,7 +2482,7 @@ main(int argc, char *argv[])
 #else
     (void) signal_handler;
 #endif
-    if (optind == argc) {
+    if (optind >= argc) {
         status = sixel_encoder_encode(encoder, NULL);
         if (SIXEL_FAILED(status)) {
             goto error;
@@ -2464,6 +2518,10 @@ error:
     fprintf(stderr, "\n%s\n%s\n\n",
             sixel_helper_format_error(status),
             sixel_helper_get_additional_message());
+    if (status == SIXEL_BAD_CLIPBOARD) {
+        img2sixel_print_clipboard_hint();
+        fprintf(stderr, "\n");
+    }
     status = (-1);
     goto end;
 

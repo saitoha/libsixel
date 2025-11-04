@@ -113,6 +113,22 @@
 #include "frame.h"
 #include "rgblookup.h"
 #include "compat_stub.h"
+#include "clipboard.h"
+
+static void clipboard_select_format(char *dest,
+                                    size_t dest_size,
+                                    char const *format,
+                                    char const *fallback);
+static SIXELSTATUS clipboard_create_spool(sixel_allocator_t *allocator,
+                                          char const *prefix,
+                                          char **path_out,
+                                          int *fd_out);
+static SIXELSTATUS clipboard_write_file(char const *path,
+                                        unsigned char const *data,
+                                        size_t size);
+static SIXELSTATUS clipboard_read_file(char const *path,
+                                       unsigned char **data,
+                                       size_t *size);
 
 #if defined(HAVE_MKSTEMP)
 int mkstemp(char *);
@@ -4193,6 +4209,9 @@ sixel_encoder_new(
     (*ppencoder)->output_png_to_stdout  = 0;
     (*ppencoder)->png_output_path       = NULL;
     (*ppencoder)->sixel_output_path     = NULL;
+    (*ppencoder)->clipboard_output_active = 0;
+    (*ppencoder)->clipboard_output_format[0] = '\0';
+    (*ppencoder)->clipboard_output_path = NULL;
     (*ppencoder)->allocator             = allocator;
 
     /* evaluate environment variable ${SIXEL_BGCOLOR} */
@@ -4295,6 +4314,12 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
         if (encoder->capture_source_frame != NULL) {
             sixel_frame_unref(encoder->capture_source_frame);
         }
+        if (encoder->clipboard_output_path != NULL) {
+            (void)sixel_compat_unlink(encoder->clipboard_output_path);
+            encoder->clipboard_output_path = NULL;
+        }
+        encoder->clipboard_output_active = 0;
+        encoder->clipboard_output_format[0] = '\0';
         sixel_allocator_free(allocator, encoder->capture_pixels);
         sixel_allocator_free(allocator, encoder->capture_palette);
         sixel_allocator_free(allocator, encoder->png_output_path);
@@ -4746,6 +4771,63 @@ sixel_encoder_setopt(
             encoder->png_output_path = NULL;
             sixel_allocator_free(encoder->allocator, encoder->sixel_output_path);
             encoder->sixel_output_path = NULL;
+            if (encoder->clipboard_output_path != NULL) {
+                (void)sixel_compat_unlink(encoder->clipboard_output_path);
+                sixel_allocator_free(encoder->allocator,
+                                     encoder->clipboard_output_path);
+                encoder->clipboard_output_path = NULL;
+            }
+            encoder->clipboard_output_active = 0;
+            encoder->clipboard_output_format[0] = '\0';
+            {
+                sixel_clipboard_spec_t clipboard_spec;
+                SIXELSTATUS clip_status;
+                char *spool_path;
+                int spool_fd;
+
+                clipboard_spec.is_clipboard = 0;
+                clipboard_spec.format[0] = '\0';
+                clip_status = SIXEL_OK;
+                spool_path = NULL;
+                spool_fd = (-1);
+
+                if (sixel_clipboard_parse_spec(value, &clipboard_spec)
+                        && clipboard_spec.is_clipboard) {
+                    clip_status = clipboard_create_spool(
+                        encoder->allocator,
+                        "clipboard-out",
+                        &spool_path,
+                        &spool_fd);
+                    if (SIXEL_FAILED(clip_status)) {
+                        status = clip_status;
+                        goto end;
+                    }
+                    clipboard_select_format(
+                        encoder->clipboard_output_format,
+                        sizeof(encoder->clipboard_output_format),
+                        clipboard_spec.format,
+                        "sixel");
+                    if (encoder->outfd
+                            && encoder->outfd != STDOUT_FILENO
+                            && encoder->outfd != STDERR_FILENO) {
+                        (void)sixel_compat_close(encoder->outfd);
+                    }
+                    encoder->outfd = spool_fd;
+                    spool_fd = (-1);
+                    encoder->sixel_output_path = spool_path;
+                    encoder->clipboard_output_path = spool_path;
+                    spool_path = NULL;
+                    encoder->clipboard_output_active = 1;
+                    break;
+                }
+
+                if (spool_fd >= 0) {
+                    (void)sixel_compat_close(spool_fd);
+                }
+                if (spool_path != NULL) {
+                    sixel_allocator_free(encoder->allocator, spool_path);
+                }
+            }
             if (strcmp(value, "-") != 0) {
                 encoder->sixel_output_path = (char *)sixel_allocator_malloc(
                     encoder->allocator, strlen(value) + 1);
@@ -4761,7 +4843,7 @@ sixel_encoder_setopt(
             }
         }
 
-        if (strcmp(value, "-") != 0) {
+        if (!encoder->clipboard_output_active && strcmp(value, "-") != 0) {
             if (encoder->outfd && encoder->outfd != STDOUT_FILENO) {
                 (void)sixel_compat_close(encoder->outfd);
             }
@@ -5810,10 +5892,12 @@ assessment_json_callback(char const *chunk,
 }
 
 static char *
-create_temp_template(sixel_allocator_t *allocator)
+create_temp_template_with_prefix(sixel_allocator_t *allocator,
+                                 char const *prefix)
 {
     char const *tmpdir;
     size_t tmpdir_len;
+    size_t prefix_len;
     size_t suffix_len;
     size_t template_len;
     char *template_path;
@@ -5838,7 +5922,14 @@ create_temp_template(sixel_allocator_t *allocator)
     }
 
     tmpdir_len = strlen(tmpdir);
-    suffix_len = strlen("img2sixel-XXXXXX");
+    prefix_len = 0u;
+    suffix_len = 0u;
+    if (prefix == NULL) {
+        return NULL;
+    }
+
+    prefix_len = strlen(prefix);
+    suffix_len = prefix_len + strlen("-XXXXXX");
     maximum_tmpdir_len = (size_t)INT_MAX;
 
     if (maximum_tmpdir_len <= suffix_len + 2) {
@@ -5863,17 +5954,296 @@ create_temp_template(sixel_allocator_t *allocator)
     if (needs_separator) {
 #if defined(_WIN32)
         (void) snprintf(template_path, template_len,
-                        "%s\\%s", tmpdir, "img2sixel-XXXXXX");
+                        "%s\\%s-XXXXXX", tmpdir, prefix);
 #else
         (void) snprintf(template_path, template_len,
-                        "%s/%s", tmpdir, "img2sixel-XXXXXX");
+                        "%s/%s-XXXXXX", tmpdir, prefix);
 #endif
     } else {
         (void) snprintf(template_path, template_len,
-                        "%s%s", tmpdir, "img2sixel-XXXXXX");
+                        "%s%s-XXXXXX", tmpdir, prefix);
     }
 
     return template_path;
+}
+
+
+static char *
+create_temp_template(sixel_allocator_t *allocator)
+{
+    return create_temp_template_with_prefix(allocator, "img2sixel");
+}
+
+
+static void
+clipboard_select_format(char *dest,
+                        size_t dest_size,
+                        char const *format,
+                        char const *fallback)
+{
+    char const *source;
+    size_t limit;
+
+    if (dest == NULL || dest_size == 0u) {
+        return;
+    }
+
+    source = fallback;
+    if (format != NULL && format[0] != '\0') {
+        source = format;
+    }
+
+    limit = dest_size - 1u;
+    if (limit == 0u) {
+        dest[0] = '\0';
+        return;
+    }
+
+    (void)snprintf(dest, dest_size, "%.*s", (int)limit, source);
+}
+
+
+static SIXELSTATUS
+clipboard_create_spool(sixel_allocator_t *allocator,
+                       char const *prefix,
+                       char **path_out,
+                       int *fd_out)
+{
+    SIXELSTATUS status;
+    char *template_path;
+    int fd;
+
+    status = SIXEL_FALSE;
+    template_path = NULL;
+    fd = (-1);
+
+    template_path = create_temp_template_with_prefix(allocator, prefix);
+    if (template_path == NULL) {
+        sixel_helper_set_additional_message(
+            "clipboard: failed to allocate spool template.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+#if defined(HAVE_MKSTEMP)
+    fd = mkstemp(template_path);
+    if (fd < 0) {
+        sixel_helper_set_additional_message(
+            "clipboard: mkstemp() failed for spool file.");
+        status = SIXEL_LIBC_ERROR;
+        goto end;
+    }
+#elif defined(HAVE__MKTEMP)
+    if (_mktemp(template_path) == NULL) {
+        sixel_helper_set_additional_message(
+            "clipboard: _mktemp() failed for spool file.");
+        status = SIXEL_LIBC_ERROR;
+        goto end;
+    }
+    fd = sixel_compat_open(template_path,
+                           O_RDWR | O_CREAT | O_TRUNC,
+                           S_IRUSR | S_IWUSR);
+    if (fd < 0) {
+        sixel_helper_set_additional_message(
+            "clipboard: failed to open spool file.");
+        status = SIXEL_LIBC_ERROR;
+        goto end;
+    }
+#elif defined(HAVE_MKTEMP)
+    if (mktemp(template_path) == NULL) {
+        sixel_helper_set_additional_message(
+            "clipboard: mktemp() failed for spool file.");
+        status = SIXEL_LIBC_ERROR;
+        goto end;
+    }
+    fd = sixel_compat_open(template_path,
+                           O_RDWR | O_CREAT | O_TRUNC,
+                           S_IRUSR | S_IWUSR);
+    if (fd < 0) {
+        sixel_helper_set_additional_message(
+            "clipboard: failed to open spool file.");
+        status = SIXEL_LIBC_ERROR;
+        goto end;
+    }
+#else
+    if (tmpnam(template_path) == NULL) {
+        sixel_helper_set_additional_message(
+            "clipboard: tmpnam() failed for spool file.");
+        status = SIXEL_LIBC_ERROR;
+        goto end;
+    }
+    fd = sixel_compat_open(template_path,
+                           O_RDWR | O_CREAT | O_TRUNC,
+                           S_IRUSR | S_IWUSR);
+    if (fd < 0) {
+        sixel_helper_set_additional_message(
+            "clipboard: failed to open spool file.");
+        status = SIXEL_LIBC_ERROR;
+        goto end;
+    }
+#endif
+
+    if (fd_out == NULL) {
+        if (fd >= 0) {
+            (void)sixel_compat_close(fd);
+            fd = (-1);
+        }
+    }
+
+    *path_out = template_path;
+    if (fd_out != NULL) {
+        *fd_out = fd;
+    }
+
+    template_path = NULL;
+    fd = (-1);
+    status = SIXEL_OK;
+
+end:
+    if (fd >= 0) {
+        (void)sixel_compat_close(fd);
+    }
+    if (template_path != NULL) {
+        sixel_allocator_free(allocator, template_path);
+    }
+
+    return status;
+}
+
+
+static SIXELSTATUS
+clipboard_write_file(char const *path,
+                     unsigned char const *data,
+                     size_t size)
+{
+    FILE *stream;
+    size_t written;
+
+    if (path == NULL) {
+        sixel_helper_set_additional_message(
+            "clipboard: spool path is null.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    stream = sixel_compat_fopen(path, "wb");
+    if (stream == NULL) {
+        sixel_helper_set_additional_message(
+            "clipboard: failed to open spool file for write.");
+        return SIXEL_LIBC_ERROR;
+    }
+
+    written = 0u;
+    if (size > 0u && data != NULL) {
+        written = fwrite(data, 1u, size, stream);
+        if (written != size) {
+            (void)fclose(stream);
+            sixel_helper_set_additional_message(
+                "clipboard: failed to write spool payload.");
+            return SIXEL_LIBC_ERROR;
+        }
+    }
+
+    if (fclose(stream) != 0) {
+        sixel_helper_set_additional_message(
+            "clipboard: failed to close spool file after write.");
+        return SIXEL_LIBC_ERROR;
+    }
+
+    return SIXEL_OK;
+}
+
+
+static SIXELSTATUS
+clipboard_read_file(char const *path,
+                    unsigned char **data,
+                    size_t *size)
+{
+    FILE *stream;
+    long seek_result;
+    long file_size;
+    unsigned char *buffer;
+    size_t read_size;
+
+    if (data == NULL || size == NULL) {
+        sixel_helper_set_additional_message(
+            "clipboard: read buffer pointers are null.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *data = NULL;
+    *size = 0u;
+
+    if (path == NULL) {
+        sixel_helper_set_additional_message(
+            "clipboard: spool path is null.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    stream = sixel_compat_fopen(path, "rb");
+    if (stream == NULL) {
+        sixel_helper_set_additional_message(
+            "clipboard: failed to open spool file for read.");
+        return SIXEL_LIBC_ERROR;
+    }
+
+    seek_result = fseek(stream, 0L, SEEK_END);
+    if (seek_result != 0) {
+        (void)fclose(stream);
+        sixel_helper_set_additional_message(
+            "clipboard: failed to seek spool file.");
+        return SIXEL_LIBC_ERROR;
+    }
+
+    file_size = ftell(stream);
+    if (file_size < 0) {
+        (void)fclose(stream);
+        sixel_helper_set_additional_message(
+            "clipboard: failed to determine spool size.");
+        return SIXEL_LIBC_ERROR;
+    }
+
+    seek_result = fseek(stream, 0L, SEEK_SET);
+    if (seek_result != 0) {
+        (void)fclose(stream);
+        sixel_helper_set_additional_message(
+            "clipboard: failed to rewind spool file.");
+        return SIXEL_LIBC_ERROR;
+    }
+
+    if (file_size == 0) {
+        buffer = NULL;
+        read_size = 0u;
+    } else {
+        buffer = (unsigned char *)malloc((size_t)file_size);
+        if (buffer == NULL) {
+            (void)fclose(stream);
+            sixel_helper_set_additional_message(
+                "clipboard: malloc() failed for spool payload.");
+            return SIXEL_BAD_ALLOCATION;
+        }
+        read_size = fread(buffer, 1u, (size_t)file_size, stream);
+        if (read_size != (size_t)file_size) {
+            free(buffer);
+            (void)fclose(stream);
+            sixel_helper_set_additional_message(
+                "clipboard: failed to read spool payload.");
+            return SIXEL_LIBC_ERROR;
+        }
+    }
+
+    if (fclose(stream) != 0) {
+        if (buffer != NULL) {
+            free(buffer);
+        }
+        sixel_helper_set_additional_message(
+            "clipboard: failed to close spool file after read.");
+        return SIXEL_LIBC_ERROR;
+    }
+
+    *data = buffer;
+    *size = read_size;
+
+    return SIXEL_OK;
 }
 
 
@@ -5953,6 +6323,63 @@ sixel_encoder_encode(
     char *generated = NULL;
 #endif
     int spool_required;
+    sixel_clipboard_spec_t clipboard_spec;
+    char clipboard_input_format[32];
+    char *clipboard_input_path;
+    unsigned char *clipboard_blob;
+    size_t clipboard_blob_size;
+    SIXELSTATUS clipboard_status;
+    char const *effective_filename;
+
+    clipboard_input_format[0] = '\0';
+    clipboard_input_path = NULL;
+    clipboard_blob = NULL;
+    clipboard_blob_size = 0u;
+    clipboard_status = SIXEL_OK;
+    effective_filename = filename;
+
+    clipboard_spec.is_clipboard = 0;
+    clipboard_spec.format[0] = '\0';
+    if (effective_filename != NULL
+            && sixel_clipboard_parse_spec(effective_filename,
+                                          &clipboard_spec)
+            && clipboard_spec.is_clipboard) {
+        clipboard_select_format(clipboard_input_format,
+                                sizeof(clipboard_input_format),
+                                clipboard_spec.format,
+                                "sixel");
+        clipboard_status = sixel_clipboard_read(
+            clipboard_input_format,
+            &clipboard_blob,
+            &clipboard_blob_size,
+            encoder->allocator);
+        if (SIXEL_FAILED(clipboard_status)) {
+            status = clipboard_status;
+            goto end;
+        }
+        clipboard_status = clipboard_create_spool(
+            encoder->allocator,
+            "clipboard-in",
+            &clipboard_input_path,
+            NULL);
+        if (SIXEL_FAILED(clipboard_status)) {
+            status = clipboard_status;
+            goto end;
+        }
+        clipboard_status = clipboard_write_file(
+            clipboard_input_path,
+            clipboard_blob,
+            clipboard_blob_size);
+        if (SIXEL_FAILED(clipboard_status)) {
+            status = clipboard_status;
+            goto end;
+        }
+        if (clipboard_blob != NULL) {
+            free(clipboard_blob);
+            clipboard_blob = NULL;
+        }
+        effective_filename = clipboard_input_path;
+    }
 
     if (assessment_section_mask != SIXEL_ASSESSMENT_SECTION_NONE) {
         status = sixel_allocator_new(&assessment_allocator,
@@ -6307,7 +6734,7 @@ reload:
     }
 
     status = sixel_loader_load_file(loader,
-                                    filename,
+                                    effective_filename,
                                     load_image_callback);
     if (status != SIXEL_OK) {
         goto load_end;
@@ -6592,6 +7019,47 @@ load_end:
         }
     }
 
+    if (encoder->clipboard_output_active
+            && encoder->clipboard_output_path != NULL) {
+        unsigned char *clipboard_output_data;
+        size_t clipboard_output_size;
+
+        clipboard_output_data = NULL;
+        clipboard_output_size = 0u;
+
+        if (encoder->outfd
+                && encoder->outfd != STDOUT_FILENO
+                && encoder->outfd != STDERR_FILENO) {
+            (void)sixel_compat_close(encoder->outfd);
+            encoder->outfd = STDOUT_FILENO;
+        }
+
+        clipboard_status = clipboard_read_file(
+            encoder->clipboard_output_path,
+            &clipboard_output_data,
+            &clipboard_output_size);
+        if (SIXEL_SUCCEEDED(clipboard_status)) {
+            clipboard_status = sixel_clipboard_write(
+                encoder->clipboard_output_format,
+                clipboard_output_data,
+                clipboard_output_size);
+        }
+        if (clipboard_output_data != NULL) {
+            free(clipboard_output_data);
+        }
+        if (SIXEL_FAILED(clipboard_status)) {
+            status = clipboard_status;
+            goto end;
+        }
+        (void)sixel_compat_unlink(encoder->clipboard_output_path);
+        sixel_allocator_free(encoder->allocator,
+                             encoder->clipboard_output_path);
+        encoder->clipboard_output_path = NULL;
+        encoder->sixel_output_path = NULL;
+        encoder->clipboard_output_active = 0;
+        encoder->clipboard_output_format[0] = '\0';
+    }
+
     /* the status may not be SIXEL_OK */
 
 end:
@@ -6599,6 +7067,22 @@ end:
         (void)sixel_compat_unlink(png_temp_path);
     }
     sixel_allocator_free(encoder->allocator, png_temp_path);
+    if (clipboard_input_path != NULL) {
+        (void)sixel_compat_unlink(clipboard_input_path);
+        sixel_allocator_free(encoder->allocator, clipboard_input_path);
+    }
+    if (clipboard_blob != NULL) {
+        free(clipboard_blob);
+    }
+    if (encoder->clipboard_output_path != NULL) {
+        (void)sixel_compat_unlink(encoder->clipboard_output_path);
+        sixel_allocator_free(encoder->allocator,
+                             encoder->clipboard_output_path);
+        encoder->clipboard_output_path = NULL;
+        encoder->sixel_output_path = NULL;
+        encoder->clipboard_output_active = 0;
+        encoder->clipboard_output_format[0] = '\0';
+    }
     sixel_allocator_free(encoder->allocator, encoder->png_output_path);
     encoder->png_output_path = NULL;
     if (assessment_forward_stream != NULL) {

@@ -35,6 +35,10 @@ struct sixel_decoder {
     int dequantize_refine;
     int thumbnail_size;
     sixel_allocator_t *allocator;
+    int clipboard_input_active;
+    int clipboard_output_active;
+    char clipboard_input_format[32];
+    char clipboard_output_format[32];
 };
 
 #if HAVE_TESTS

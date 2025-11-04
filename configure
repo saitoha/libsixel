@@ -719,6 +719,10 @@ HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE
 APPLE_QUICKLOOK_OBJCFLAGS
 APPLE_QUICKLOOK_REGISTER_LIBS
 APPLE_QUICKLOOK_EXTENSION_LIBS
+HAVE_CLIPBOARD_MACOS_FALSE
+HAVE_CLIPBOARD_MACOS_TRUE
+CLIPBOARD_LIBS
+CLIPBOARD_CFLAGS
 HAVE_QUICKLOOK_THUMBNAILING_FALSE
 HAVE_QUICKLOOK_THUMBNAILING_TRUE
 QUICKLOOK_LIBS
@@ -19159,6 +19163,69 @@ else
 fi
 
 
+CLIPBOARD_LIBS=""
+CLIPBOARD_CFLAGS=""
+have_clipboard_macos=no
+case $host_os in
+  darwin*)
+    ac_ext=m
+ac_cpp='$OBJCPP $CPPFLAGS'
+ac_compile='$OBJC -c $OBJCFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$OBJC -o conftest$ac_exeext $OBJCFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_objc_compiler_gnu
+
+    saved_LIBS="$LIBS"
+    LIBS="$LIBS -framework AppKit -framework Foundation"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#import <AppKit/AppKit.h>
+int
+main (void)
+{
+@autoreleasepool {
+    NSPasteboard *pb = [NSPasteboard generalPasteboard];
+    return pb == nil;
+}
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_objc_try_link "$LINENO"
+then :
+  have_clipboard_macos=yes
+else case e in #(
+  e) have_clipboard_macos=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+    LIBS="$saved_LIBS"
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+    if test x$have_clipboard_macos = xyes; then
+
+printf "%s\n" "#define HAVE_CLIPBOARD_MACOS 1" >>confdefs.h
+
+        CLIPBOARD_LIBS="-framework AppKit -framework Foundation"
+    fi
+    ;;
+esac
+
+
+
+ if test x$have_clipboard_macos = xyes; then
+  HAVE_CLIPBOARD_MACOS_TRUE=
+  HAVE_CLIPBOARD_MACOS_FALSE='#'
+else
+  HAVE_CLIPBOARD_MACOS_TRUE='#'
+  HAVE_CLIPBOARD_MACOS_FALSE=
+fi
+
+
 APPLE_QUICKLOOK_EXTENSION_LIBS=""
 APPLE_QUICKLOOK_REGISTER_LIBS=""
 APPLE_QUICKLOOK_OBJCFLAGS="-fobjc-arc -fmodules"
@@ -22779,6 +22846,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_QUICKLOOK_THUMBNAILING_TRUE}" && test -z "${HAVE_QUICKLOOK_THUMBNAILING_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_QUICKLOOK_THUMBNAILING\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_CLIPBOARD_MACOS_TRUE}" && test -z "${HAVE_CLIPBOARD_MACOS_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_CLIPBOARD_MACOS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE}" && test -z "${HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE}"; then

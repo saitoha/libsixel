@@ -23,6 +23,14 @@ sixel2png \- convert DEC SIXEL images into PNG format images
 .SH DESCRIPTION
 .I sixel2png
 convert DEC SIXEL images into PNG format images.
+.PP
+The converter accepts \(dqclipboard:\(dq as a pseudo file path for both input
+and output.  Reading from \(dqclipboard:\(dq consumes the most recent SIXEL
+image or UTF-8 string captured by the desktop clipboard.  Writing to
+\(dqclipboard:\(dq publishes the decoded PNG bytes to the clipboard.  Combine
+the pseudo target with format prefixes such as \(dqpng:clipboard:\(dq to select
+a specific clipboard encoding.  Clipboard reads probe for PNG data first,
+fall back to TIFF payloads, and finally attempt to decode UTF-8 strings.
 
 
 .SH "COMMAND-LINE OPTIONS"

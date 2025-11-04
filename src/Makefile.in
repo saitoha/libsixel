@@ -93,6 +93,9 @@ host_triplet = @host@
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__append_1 = \
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@                $(srcdir)/quicklook_thumbnailing.m
 
+@HAVE_CLIPBOARD_MACOS_TRUE@am__append_2 = \
+@HAVE_CLIPBOARD_MACOS_TRUE@                $(srcdir)/clipboard_macos.m
+
 @COND_TESTS_TRUE@noinst_PROGRAMS = tests$(EXEEXT)
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -144,7 +147,8 @@ libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/assessment.c $(srcdir)/assessment.h \
 	$(srcdir)/fromsixel.c $(srcdir)/tosixel.c $(srcdir)/quant.c \
@@ -154,7 +158,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/pixelformat.h $(srcdir)/scale.c $(srcdir)/chunk.c \
 	$(srcdir)/chunk.h $(srcdir)/loader.c $(srcdir)/loader.h \
 	$(srcdir)/frompnm.c $(srcdir)/frompnm.h $(srcdir)/fromgif.c \
-	$(srcdir)/fromgif.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
+	$(srcdir)/fromgif.h $(srcdir)/clipboard.c \
+	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
 	$(srcdir)/decoder.c $(srcdir)/decoder.h $(srcdir)/stb_image.h \
 	$(srcdir)/writer.c $(srcdir)/writer.h \
 	$(srcdir)/stb_image_write.c $(srcdir)/stb_image_write.h \
@@ -163,8 +168,11 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
 	$(srcdir)/allocator.c $(srcdir)/allocator.h $(srcdir)/tty.c \
 	$(srcdir)/tty.h $(srcdir)/rgblookup.h $(srcdir)/lso2.h \
-	$(srcdir)/lso3.h $(srcdir)/quicklook_thumbnailing.m
+	$(srcdir)/lso3.h $(srcdir)/quicklook_thumbnailing.m \
+	$(srcdir)/clipboard_macos.m
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__objects_1 = libsixel_la-quicklook_thumbnailing.lo
+@HAVE_CLIPBOARD_MACOS_TRUE@am__objects_2 =  \
+@HAVE_CLIPBOARD_MACOS_TRUE@	libsixel_la-clipboard_macos.lo
 am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-assessment.lo libsixel_la-fromsixel.lo \
 	libsixel_la-tosixel.lo libsixel_la-quant.lo \
@@ -172,11 +180,12 @@ am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-frame.lo libsixel_la-pixelformat.lo \
 	libsixel_la-scale.lo libsixel_la-chunk.lo \
 	libsixel_la-loader.lo libsixel_la-frompnm.lo \
-	libsixel_la-fromgif.lo libsixel_la-encoder.lo \
-	libsixel_la-decoder.lo libsixel_la-writer.lo \
-	libsixel_la-stb_image_write.lo libsixel_la-status.lo \
-	libsixel_la-compat_stub.lo libsixel_la-malloc_stub.lo \
-	libsixel_la-allocator.lo libsixel_la-tty.lo $(am__objects_1)
+	libsixel_la-fromgif.lo libsixel_la-clipboard.lo \
+	libsixel_la-encoder.lo libsixel_la-decoder.lo \
+	libsixel_la-writer.lo libsixel_la-stb_image_write.lo \
+	libsixel_la-status.lo libsixel_la-compat_stub.lo \
+	libsixel_la-malloc_stub.lo libsixel_la-allocator.lo \
+	libsixel_la-tty.lo $(am__objects_1) $(am__objects_2)
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -210,6 +219,8 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
 	./$(DEPDIR)/libsixel_la-assessment.Plo \
 	./$(DEPDIR)/libsixel_la-chunk.Plo \
+	./$(DEPDIR)/libsixel_la-clipboard.Plo \
+	./$(DEPDIR)/libsixel_la-clipboard_macos.Plo \
 	./$(DEPDIR)/libsixel_la-colorspace.Plo \
 	./$(DEPDIR)/libsixel_la-compat_stub.Plo \
 	./$(DEPDIR)/libsixel_la-decoder.Plo \
@@ -317,6 +328,8 @@ BASH = @BASH@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+CLIPBOARD_CFLAGS = @CLIPBOARD_CFLAGS@
+CLIPBOARD_LIBS = @CLIPBOARD_LIBS@
 COREGRAPHICS_CFLAGS = @COREGRAPHICS_CFLAGS@
 COREGRAPHICS_LIBS = @COREGRAPHICS_LIBS@
 CPP = @CPP@
@@ -499,7 +512,8 @@ libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/pixelformat.h $(srcdir)/scale.c $(srcdir)/chunk.c \
 	$(srcdir)/chunk.h $(srcdir)/loader.c $(srcdir)/loader.h \
 	$(srcdir)/frompnm.c $(srcdir)/frompnm.h $(srcdir)/fromgif.c \
-	$(srcdir)/fromgif.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
+	$(srcdir)/fromgif.h $(srcdir)/clipboard.c \
+	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
 	$(srcdir)/decoder.c $(srcdir)/decoder.h $(srcdir)/stb_image.h \
 	$(srcdir)/writer.c $(srcdir)/writer.h \
 	$(srcdir)/stb_image_write.c $(srcdir)/stb_image_write.h \
@@ -508,18 +522,19 @@ libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
 	$(srcdir)/allocator.c $(srcdir)/allocator.h $(srcdir)/tty.c \
 	$(srcdir)/tty.h $(srcdir)/rgblookup.h $(srcdir)/lso2.h \
-	$(srcdir)/lso3.h $(am__append_1)
+	$(srcdir)/lso3.h $(am__append_1) $(am__append_2)
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
-		$(LIBCURL_CFLAGS) \
-		$(WINHTTP_CFLAGS) \
-		$(LIBPNG_CFLAGS) \
-		$(LIBJPEG_CFLAGS) \
-		$(GDK_PIXBUF_CFLAGS) \
-		$(GD_CFLAGS) \
-		$(WIC_CFLAGS) \
-		$(COREGRAPHICS_CFLAGS) \
-		$(QUICKLOOK_CFLAGS) \
+                $(LIBCURL_CFLAGS) \
+                $(WINHTTP_CFLAGS) \
+                $(LIBPNG_CFLAGS) \
+                $(LIBJPEG_CFLAGS) \
+                $(GDK_PIXBUF_CFLAGS) \
+                $(GD_CFLAGS) \
+                $(WIC_CFLAGS) \
+                $(COREGRAPHICS_CFLAGS) \
+                $(QUICKLOOK_CFLAGS) \
+                $(CLIPBOARD_CFLAGS) \
                 $(ONNXRUNTIME_CFLAGS)
 
 @BUILDING_ON_WINDOWS_FALSE@libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE)
@@ -529,11 +544,12 @@ libsixel_la_LIBADD = -lm \
 		$(WINHTTP_LIBS) \
 		$(LIBPNG_LIBS) \
 		$(LIBJPEG_LIBS) \
-		$(GDK_PIXBUF_LIBS) \
-		$(GD_LIBS) \
-		$(WIC_LIBS) \
-		$(COREGRAPHICS_LIBS) \
-		$(QUICKLOOK_LIBS) \
+                $(GDK_PIXBUF_LIBS) \
+                $(GD_LIBS) \
+                $(WIC_LIBS) \
+                $(COREGRAPHICS_LIBS) \
+                $(QUICKLOOK_LIBS) \
+                $(CLIPBOARD_LIBS) \
                 $(ONNXRUNTIME_LIBS)
 
 @COND_TESTS_TRUE@tests_SOURCES = $(srcdir)/tests.c
@@ -633,6 +649,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-allocator.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-assessment.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-chunk.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-clipboard.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-clipboard_macos.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-colorspace.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-compat_stub.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-decoder.Plo@am__quote@ # am--include-marker
@@ -784,6 +802,13 @@ libsixel_la-fromgif.lo: fromgif.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-fromgif.lo `test -f 'fromgif.c' || echo '$(srcdir)/'`fromgif.c
 
+libsixel_la-clipboard.lo: clipboard.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-clipboard.lo -MD -MP -MF $(DEPDIR)/libsixel_la-clipboard.Tpo -c -o libsixel_la-clipboard.lo `test -f 'clipboard.c' || echo '$(srcdir)/'`clipboard.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-clipboard.Tpo $(DEPDIR)/libsixel_la-clipboard.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='clipboard.c' object='libsixel_la-clipboard.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-clipboard.lo `test -f 'clipboard.c' || echo '$(srcdir)/'`clipboard.c
+
 libsixel_la-encoder.lo: encoder.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-encoder.lo -MD -MP -MF $(DEPDIR)/libsixel_la-encoder.Tpo -c -o libsixel_la-encoder.lo `test -f 'encoder.c' || echo '$(srcdir)/'`encoder.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-encoder.Tpo $(DEPDIR)/libsixel_la-encoder.Plo
@@ -891,6 +916,13 @@ libsixel_la-quicklook_thumbnailing.lo: quicklook_thumbnailing.m
 @AMDEP_TRUE@@am__fastdepOBJC_FALSE@	$(AM_V_OBJC)source='quicklook_thumbnailing.m' object='libsixel_la-quicklook_thumbnailing.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libsixel_la-quicklook_thumbnailing.lo `test -f 'quicklook_thumbnailing.m' || echo '$(srcdir)/'`quicklook_thumbnailing.m
+
+libsixel_la-clipboard_macos.lo: clipboard_macos.m
+@am__fastdepOBJC_TRUE@	$(AM_V_OBJC)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -MT libsixel_la-clipboard_macos.lo -MD -MP -MF $(DEPDIR)/libsixel_la-clipboard_macos.Tpo -c -o libsixel_la-clipboard_macos.lo `test -f 'clipboard_macos.m' || echo '$(srcdir)/'`clipboard_macos.m
+@am__fastdepOBJC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-clipboard_macos.Tpo $(DEPDIR)/libsixel_la-clipboard_macos.Plo
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	$(AM_V_OBJC)source='clipboard_macos.m' object='libsixel_la-clipboard_macos.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepOBJC_FALSE@	DEPDIR=$(DEPDIR) $(OBJCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepOBJC_FALSE@	$(AM_V_OBJC@am__nodep@)$(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(OBJC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(AM_OBJCFLAGS) $(OBJCFLAGS) -c -o libsixel_la-clipboard_macos.lo `test -f 'clipboard_macos.m' || echo '$(srcdir)/'`clipboard_macos.m
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -1073,6 +1105,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-allocator.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-assessment.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-chunk.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-clipboard.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-clipboard_macos.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-colorspace.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-compat_stub.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder.Plo
@@ -1143,6 +1177,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-allocator.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-assessment.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-chunk.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-clipboard.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-clipboard_macos.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-colorspace.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-compat_stub.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder.Plo

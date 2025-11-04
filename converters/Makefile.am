@@ -40,11 +40,12 @@ if WANT_SIXEL2PNG
 CONVERTER_TEST_LIST += $(top_srcdir)/tests/converters/test_0011_basic.bash
 endif
 CONVERTER_TEST_LIST += \
-	$(top_srcdir)/tests/converters/test_0012_regressions.bash \
-	$(top_srcdir)/tests/converters/test_0013_documentation.bash \
-	$(top_srcdir)/tests/converters/test_0014_option_matching.bash \
-	$(top_srcdir)/tests/converters/test_0015_argument_shift.bash \
-	$(top_srcdir)/tests/converters/test_0016_assessment_spool.bash
+        $(top_srcdir)/tests/converters/test_0012_regressions.bash \
+        $(top_srcdir)/tests/converters/test_0013_documentation.bash \
+        $(top_srcdir)/tests/converters/test_0014_option_matching.bash \
+        $(top_srcdir)/tests/converters/test_0015_argument_shift.bash \
+        $(top_srcdir)/tests/converters/test_0016_assessment_spool.bash \
+        $(top_srcdir)/tests/converters/test_0017_clipboard.bash
 endif
 endif
 

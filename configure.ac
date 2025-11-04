@@ -857,6 +857,37 @@ AC_SUBST(QUICKLOOK_LIBS)
 AM_CONDITIONAL([HAVE_QUICKLOOK_THUMBNAILING],
                [test x$have_quicklook_thumbnailing = xyes])
 
+CLIPBOARD_LIBS=""
+CLIPBOARD_CFLAGS=""
+have_clipboard_macos=no
+case $host_os in
+  darwin*)
+    AC_LANG_PUSH([Objective C])
+    saved_LIBS="$LIBS"
+    LIBS="$LIBS -framework AppKit -framework Foundation"
+    AC_LINK_IFELSE(
+        [AC_LANG_PROGRAM([[#import <AppKit/AppKit.h>]],
+                         [[@autoreleasepool {
+    NSPasteboard *pb = [NSPasteboard generalPasteboard];
+    return pb == nil;
+}]])],
+        [have_clipboard_macos=yes],
+        [have_clipboard_macos=no])
+    LIBS="$saved_LIBS"
+    AC_LANG_POP([Objective C])
+    if test x$have_clipboard_macos = xyes; then
+        AC_DEFINE(HAVE_CLIPBOARD_MACOS, 1,
+                  [whether macOS clipboard backend is available])
+        CLIPBOARD_LIBS="-framework AppKit -framework Foundation"
+    fi
+    ;;
+esac
+
+AC_SUBST(CLIPBOARD_CFLAGS)
+AC_SUBST(CLIPBOARD_LIBS)
+AM_CONDITIONAL([HAVE_CLIPBOARD_MACOS],
+               [test x$have_clipboard_macos = xyes])
+
 APPLE_QUICKLOOK_EXTENSION_LIBS=""
 APPLE_QUICKLOOK_REGISTER_LIBS=""
 APPLE_QUICKLOOK_OBJCFLAGS="-fobjc-arc -fmodules"

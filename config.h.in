@@ -18,6 +18,9 @@
 /* Define to 1 if you have the 'clearerr' function. */
 #undef HAVE_CLEARERR
 
+/* whether macOS clipboard backend is available */
+#undef HAVE_CLIPBOARD_MACOS
+
 /* Define if clock exists */
 #undef HAVE_CLOCK
 

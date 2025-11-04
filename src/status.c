@@ -59,6 +59,8 @@
 #define SIXEL_MESSAGE_BAD_ARGUMENT          ("runtime error: bad argument detected")
 #define SIXEL_MESSAGE_BAD_INPUT             ("runtime error: bad input detected")
 #define SIXEL_MESSAGE_BAD_INTEGER_OVERFLOW  ("runtime error: integer overflow")
+#define SIXEL_MESSAGE_BAD_CLIPBOARD         \
+    ("runtime error: clipboard payload unavailable")
 #define SIXEL_MESSAGE_RUNTIME_ERROR         ("runtime error")
 #define SIXEL_MESSAGE_LOGIC_ERROR           ("logic error")
 #define SIXEL_MESSAGE_NOT_IMPLEMENTED       ("feature error: not implemented")
@@ -130,6 +132,9 @@ sixel_helper_format_error(
                 break;
             case SIXEL_BAD_INPUT:
                 error_string = SIXEL_MESSAGE_BAD_INPUT;
+                break;
+            case SIXEL_BAD_CLIPBOARD:
+                error_string = SIXEL_MESSAGE_BAD_CLIPBOARD;
                 break;
             case SIXEL_BAD_INTEGER_OVERFLOW:
                 error_string = SIXEL_MESSAGE_BAD_INTEGER_OVERFLOW;
