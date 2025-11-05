@@ -388,9 +388,9 @@ Options:
 -p COLORS, --colors=COLORS specify number of colors to reduce
                            the image to (default=256)
 -Q MODEL, --quantize-model=MODEL
-                          choose the palette solver. MODEL accepts
-                          auto, heckbert, or kmeans. auto preserves the
-                          historical Heckbert median-cut behaviour.
+                           choose the palette solver. MODEL accepts
+                           auto, heckbert, or kmeans. auto preserves the
+                           historical Heckbert median-cut behaviour.
 -m FILE, --mapfile=FILE    transform image colors to match this
                            set of colors. Accepts image files and
                            palette files in Adobe Color Table (*.act),
@@ -451,14 +451,9 @@ Options:
                                          arithmetic dither
                              x_dither -> positionally stable
                                          arithmetic xor based dither
-                             lso1     -> libsixel's original method
                              lso2     -> libsixel method based on
                                          variable error diffusion
                                          tables, optimized for size
-                             lso3     -> libsixel method based on
-                                         variable error diffusion
-                                         tables + jitter, optimized
-                                         for image quality
 -y SCANTYPE, --diffusion-scan=SCANTYPE
                            choose scan order for error diffusion
                            SCANTYPE is one of them:
