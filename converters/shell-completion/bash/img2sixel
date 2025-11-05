@@ -129,9 +129,7 @@ _img2sixel()
                                    sierra3 \
                                    a_dither \
                                    x_dither \
-                                   lso1 \
-                                   lso2 \
-                                   lso3' -- "$cur" ) )
+                                   lso2' -- "$cur" ) )
         return 0
         ;;
     -y|--diffusion-scan)

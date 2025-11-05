@@ -379,9 +379,7 @@ static sixel_option_choice_t const g_option_choices_diffusion[] = {
     { "sierra3", SIXEL_DIFFUSE_SIERRA3 },
     { "a_dither", SIXEL_DIFFUSE_A_DITHER },
     { "x_dither", SIXEL_DIFFUSE_X_DITHER },
-    { "lso1", SIXEL_DIFFUSE_LSO1 },
     { "lso2", SIXEL_DIFFUSE_LSO2 },
-    { "lso3", SIXEL_DIFFUSE_LSO3 }
 };
 
 static sixel_option_choice_t const g_option_choices_diffusion_scan[] = {

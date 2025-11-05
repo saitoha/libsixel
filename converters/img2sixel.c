@@ -277,14 +277,9 @@ static img2sixel_option_help_t const g_option_help_table[] = {
         "                                         arithmetic dither\n"
         "                             x_dither -> positionally stable\n"
         "                                         arithmetic xor based dither\n"
-        "                             lso1     -> libsixel's original method\n"
         "                             lso2     -> libsixel method based on\n"
         "                                         variable error diffusion\n"
         "                                         tables, optimized for size\n"
-        "                             lso3     -> libsixel method based on\n"
-        "                                         variable error diffusion\n"
-        "                                         tables + jitter, optimized\n"
-        "                                         for image quality\n"
     },
     {
         'y',

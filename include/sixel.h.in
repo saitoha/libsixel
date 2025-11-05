@@ -104,11 +104,8 @@ typedef int SIXELSTATUS;
 #define SIXEL_DIFFUSE_BURKES      0x6  /* diffuse with Burkes' method */
 #define SIXEL_DIFFUSE_A_DITHER    0x7  /* positionally stable arithmetic dither */
 #define SIXEL_DIFFUSE_X_DITHER    0x8  /* positionally stable arithmetic xor based dither */
-#define SIXEL_DIFFUSE_LSO1        0x9  /* diffuse with libsixel's original method */
 #define SIXEL_DIFFUSE_LSO2        0xa  /* libsixel method based on
                                           variable error diffusion */
-#define SIXEL_DIFFUSE_LSO3        0xb  /* libsixel method based on
-                                          variable error diffusion + jitter */
 #define SIXEL_DIFFUSE_SIERRA1     0xc  /* diffuse with Sierra Lite method */
 #define SIXEL_DIFFUSE_SIERRA2     0xd  /* diffuse with Sierra Two-row method */
 #define SIXEL_DIFFUSE_SIERRA3     0xe  /* diffuse with Sierra-3 method */
@@ -282,15 +279,9 @@ typedef int SIXELSTATUS;
                                                                     arithmetic dither
                                                     x_dither     -> positionally stable
                                                                     arithmetic xor based dither
-                                                    lso1         -> libsixel original diffusion
-                                                                    method
                                                     lso2         -> libsixel method based on
                                                                     variable error diffusion
                                                                     tables, optimized for size
-                                                    lso3         -> libsixel method based on
-                                                                    variable error diffusion
-                                                                    tables + jitter, optimized
-                                                                    for image quality
                                                 */
 #define SIXEL_OPTFLAG_DIFFUSION_SCAN    ('y')  /* -y SCANTYPE, --diffusion-scan=SCANTYPE:
                                                   choose scan order for error diffusion.
@@ -557,11 +548,11 @@ enum methodForDiffuse {
     DIFFUSE_BURKES   = 6,  /* diffuse with Burkes' method */
     DIFFUSE_A_DITHER = 7,  /* positionally stable arithmetic dither */
     DIFFUSE_X_DITHER = 8,  /* positionally stable arithmetic xor */
-    DIFFUSE_LSO1     = 9,  /* libsixel original diffusion method */
     DIFFUSE_LSO2     = 10, /* libsixel method based on variable
                               error diffusion */
-    DIFFUSE_LSO3     = 11, /* libsixel method based on variable
-                              error diffusion + jitter */
+    DIFFUSE_SIERRA1  = 12, /* diffuse with Sierra Lite method */
+    DIFFUSE_SIERRA2  = 13, /* diffuse with Sierra Two-row method */
+    DIFFUSE_SIERRA3  = 14  /* diffuse with Sierra-3 method */
 };
 
 /* scan order for diffusing */

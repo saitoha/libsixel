@@ -63,8 +63,7 @@ libsixel_la_SOURCES = \
 		$(srcdir)/tty.c \
 		$(srcdir)/tty.h \
 		$(srcdir)/rgblookup.h \
-		$(srcdir)/lso2.h \
-		$(srcdir)/lso3.h
+		$(srcdir)/lso2.h
 if HAVE_QUICKLOOK_THUMBNAILING
 libsixel_la_SOURCES += \
                 $(srcdir)/quicklook_thumbnailing.m
