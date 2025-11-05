@@ -80,6 +80,7 @@ cpu = host_machine.cpu_family()
 clipboard_dep = []
 have_clipboard_macos = false
 have_clipboard_windows = false
+have_clipboard_linux = false
 
 has_func_attr_deprecated = false
 has_var_attr_deprecated = false
@@ -586,6 +587,9 @@ elif host_system == 'windows'
     conf.set('HAVE_CLIPBOARD_WINDOWS', 1)
     deps += clipboard_dep
   endif
+elif host_system == 'linux'
+  have_clipboard_linux = true
+  conf.set('HAVE_CLIPBOARD_LINUX', 1)
 endif
 
 simd_opt = get_option('simd')
