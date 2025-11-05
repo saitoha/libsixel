@@ -18,8 +18,13 @@
 /* Define to 1 if you have the 'clearerr' function. */
 #undef HAVE_CLEARERR
 
+/* whether Linux clipboard backend is available */
+#undef HAVE_CLIPBOARD_LINUX
+
 /* whether macOS clipboard backend is available */
 #undef HAVE_CLIPBOARD_MACOS
+
+/* whether Windows clipboard backend is available */
 #undef HAVE_CLIPBOARD_WINDOWS
 
 /* Define if clock exists */
