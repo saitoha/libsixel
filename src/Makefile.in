@@ -168,8 +168,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
 	$(srcdir)/allocator.c $(srcdir)/allocator.h $(srcdir)/tty.c \
 	$(srcdir)/tty.h $(srcdir)/rgblookup.h $(srcdir)/lso2.h \
-	$(srcdir)/lso3.h $(srcdir)/quicklook_thumbnailing.m \
-	$(srcdir)/clipboard_macos.m
+	$(srcdir)/quicklook_thumbnailing.m $(srcdir)/clipboard_macos.m
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__objects_1 = libsixel_la-quicklook_thumbnailing.lo
 @HAVE_CLIPBOARD_MACOS_TRUE@am__objects_2 =  \
 @HAVE_CLIPBOARD_MACOS_TRUE@	libsixel_la-clipboard_macos.lo
@@ -522,7 +521,7 @@ libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
 	$(srcdir)/allocator.c $(srcdir)/allocator.h $(srcdir)/tty.c \
 	$(srcdir)/tty.h $(srcdir)/rgblookup.h $(srcdir)/lso2.h \
-	$(srcdir)/lso3.h $(am__append_1) $(am__append_2)
+	$(am__append_1) $(am__append_2)
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(LIBCURL_CFLAGS) \
