@@ -1117,6 +1117,8 @@ sixel_decode_raw(
     image_buffer_t image;
     int n;
 
+    image.pixels.p = NULL;
+
     if (allocator) {
         sixel_allocator_ref(allocator);
     } else {
@@ -1198,6 +1200,8 @@ sixel_decode_wide(
     parser_context_t context;
     image_buffer_t image;
     int n;
+
+    image.pixels.p = NULL;
 
     if (allocator) {
         sixel_allocator_ref(allocator);
