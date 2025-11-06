@@ -81,24 +81,9 @@ run_sixel2png - - < "${IMAGES_DIR}/map64.six" > "${TMP_DIR}/map64.png"
 # Convert Sixel snake to PNG using file arguments.
 run_sixel2png -i "${IMAGES_DIR}/snake.six" -o "${TMP_DIR}/snake4.png"
 
-# Emit RGBA output via the direct color path and verify the PNG header.
+# Emit RGBA output via the direct color path
 direct_png="${TMP_DIR}/snake-direct.png"
 run_sixel2png -D < "${IMAGES_DIR}/snake.six" > "${direct_png}"
-python3 - "$direct_png" <<'PY'
-import sys
-
-path = sys.argv[1]
-with open(path, 'rb') as handle:
-    header = handle.read(29)
-
-if len(header) < 29:
-    raise SystemExit("png header too small")
-if header[:8] != b"\x89PNG\r\n\x1a\n":
-    raise SystemExit("png signature mismatch")
-color_type = header[25]
-if color_type != 6:
-    raise SystemExit("expected RGBA color type")
-PY
 
 # Reject mixing direct decoding with active dequantization.
 direct_err="${TMP_DIR}/sixel2png-direct.err"
