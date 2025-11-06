@@ -56,6 +56,18 @@ module Libsixel
     #     +-> mapping revision (0..2, defaults to 2)
     SIXEL_OPTFLAG_DRCS = '@' unless const_defined?(:SIXEL_OPTFLAG_DRCS)
     SIXEL_OPTFLAG_ORMODE = 'O' unless const_defined?(:SIXEL_OPTFLAG_ORMODE)
+    # Decoder toggles re-use several single-letter switches that already
+    # exist on the encoder side.  The table keeps the double booking
+    # obvious for callers mapping CLI flags into binding constants:
+    #
+    #   +-------+----------------------+---------------------------+
+    #   | flag  | decoder meaning      | encoder meaning           |
+    #   +-------+----------------------+---------------------------+
+    #   |  -d   | palette dequantizer  | diffusion selector        |
+    #   |  -D   | RGBA direct output   | pipe-mode (deprecated)    |
+    #   +-------+----------------------+---------------------------+
+    SIXEL_OPTFLAG_DEQUANTIZE = 'd' unless const_defined?(:SIXEL_OPTFLAG_DEQUANTIZE)
+    SIXEL_OPTFLAG_DIRECT = 'D' unless const_defined?(:SIXEL_OPTFLAG_DIRECT)
     # The LUT flag mirrors img2sixel's -L switch.  ASCII flow:
     #
     #       auto
@@ -136,6 +148,7 @@ module Libsixel
     extern "int sixel_encode(char *, int, int, int, void *, void *)"
     extern "int sixel_decode_raw(char *, int, char *, int, int, char *, int, void *)"
     extern "int sixel_decode(char *, int, char *, int, int, char *, int, void *)"
+    extern "int sixel_decode_direct(char *, int, void *, void *, void *, void *)"
 
     extern "void sixel_helper_set_additional_message(char *)"
     extern "char * sixel_helper_get_additional_message(void)"

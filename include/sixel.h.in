@@ -238,6 +238,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_ASSESSMENT_FILE   ('J')  /* -J, --assessment-file: specify the output path
                                                                          of assessment report. */
 #define SIXEL_OPTFLAG_DEQUANTIZE        ('d')  /* -d, --dequantize: apply palette dequantization. */
+#define SIXEL_OPTFLAG_DIRECT            ('D')  /* -D, --direct: RGBA output. */
 #define SIXEL_OPTFLAG_SIMILARITY        ('S')  /* -S, --similarity: specify similarity bias (1-1000, default: 30). */
 #define SIXEL_OPTFLAG_SIZE              ('s')  /* -s, --size: limit longer edge to SIZE pixels. */
 #define SIXEL_OPTFLAG_EDGE              ('e')  /* -e, --edge: specify  bias (1-1000, default: 30). */
@@ -995,6 +996,16 @@ sixel_decode_raw(
     unsigned char       /* out */ **palette,    /* ARGB palette */
     int                 /* out */ *ncolors,     /* palette size (<= 256) */
     sixel_allocator_t   /* in */  *allocator);  /* allocator object or null */
+
+/* convert sixel data into direct-color pixels */
+SIXELAPI SIXELSTATUS
+sixel_decode_direct(
+    unsigned char       /* in */  *p,          /* sixel bytes */
+    int                 /* in */  len,         /* size of sixel bytes */
+    unsigned char       /* out */ **pixels,    /* decoded RGBA pixels */
+    int                 /* out */ *pwidth,     /* image width */
+    int                 /* out */ *pheight,    /* image height */
+    sixel_allocator_t   /* in */  *allocator); /* allocator object or null */
 
 SIXELAPI @attr_func_deprecated@ SIXELSTATUS
 sixel_decode(

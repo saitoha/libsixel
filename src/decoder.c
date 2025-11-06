@@ -869,6 +869,7 @@ sixel_decoder_new(
     (*ppdecoder)->dequantize_edge_strength = 0;
     (*ppdecoder)->dequantize_refine = 1;
     (*ppdecoder)->thumbnail_size = 0;
+    (*ppdecoder)->direct_color = 0;
     (*ppdecoder)->clipboard_input_active = 0;
     (*ppdecoder)->clipboard_output_active = 0;
     (*ppdecoder)->clipboard_input_format[0] = '\0';
@@ -1719,6 +1720,10 @@ sixel_decoder_setopt(
         }
         break;
 
+    case SIXEL_OPTFLAG_DIRECT:  /* D */
+        decoder->direct_color = 1;
+        break;
+
     case '?':
     default:
         status = SIXEL_BAD_ARGUMENT;
@@ -1752,6 +1757,7 @@ sixel_decoder_decode(
     unsigned char *indexed_pixels = NULL;
     unsigned char *palette = NULL;
     unsigned char *rgb_pixels = NULL;
+    unsigned char *direct_pixels = NULL;
     unsigned char *output_pixels;
     unsigned char *output_palette;
     int output_pixelformat;
@@ -1886,15 +1892,36 @@ sixel_decoder_decode(
         }
     }
 
-    status = sixel_decode_raw(
-        raw_data,
-        raw_len,
-        &indexed_pixels,
-        &sx,
-        &sy,
-        &palette,
-        &ncolors,
-        decoder->allocator);
+    if (decoder->direct_color != 0 &&
+            decoder->dequantize_method != SIXEL_DEQUANTIZE_NONE) {
+        sixel_helper_set_additional_message(
+            "sixel_decoder_decode: direct option "
+            "cannot be combined with dequantize option.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    ncolors = 0;
+
+    if (decoder->direct_color != 0) {
+        status = sixel_decode_direct(
+            raw_data,
+            raw_len,
+            &direct_pixels,
+            &sx,
+            &sy,
+            decoder->allocator);
+    } else {
+        status = sixel_decode_raw(
+            raw_data,
+            raw_len,
+            &indexed_pixels,
+            &sx,
+            &sy,
+            &palette,
+            &ncolors,
+            decoder->allocator);
+    }
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1904,11 +1931,147 @@ sixel_decoder_decode(
         goto end;
     }
 
-    status = sixel_helper_write_image_file(indexed_pixels, sx, sy, palette,
-                                           SIXEL_PIXELFORMAT_PAL8,
-                                           decoder->output,
-                                           SIXEL_FORMAT_PNG,
-                                           decoder->allocator);
+    if (decoder->direct_color != 0) {
+        output_pixels = direct_pixels;
+        output_palette = NULL;
+        output_pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+        frame_ncolors = 0;
+    } else {
+        output_pixels = indexed_pixels;
+        output_palette = palette;
+        output_pixelformat = SIXEL_PIXELFORMAT_PAL8;
+
+        if (decoder->dequantize_method == SIXEL_DEQUANTIZE_K_UNDITHER ||
+            decoder->dequantize_method == SIXEL_DEQUANTIZE_K_UNDITHER_PLUS) {
+            status = sixel_dequantize_k_undither(
+                indexed_pixels,
+                sx,
+                sy,
+                palette,
+                ncolors,
+                decoder->dequantize_similarity_bias,
+                decoder->dequantize_edge_strength,
+                decoder->dequantize_refine,
+                decoder->allocator,
+                &rgb_pixels);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            output_pixels = rgb_pixels;
+            output_palette = NULL;
+            output_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        }
+
+        if (output_pixelformat == SIXEL_PIXELFORMAT_PAL8) {
+            frame_ncolors = ncolors;
+        } else {
+            frame_ncolors = 0;
+        }
+    }
+
+    if (thumbnail_size > 0) {
+        /*
+         * When the caller requests a thumbnail, compute the new geometry
+         * while preserving the original aspect ratio. We only allocate a
+         * frame when the dimensions actually change, so the fast path for
+         * matching sizes still avoids any additional allocations.
+         */
+        max_dimension = sx;
+        if (sy > max_dimension) {
+            max_dimension = sy;
+        }
+        if (max_dimension > 0) {
+            if (sx >= sy) {
+                new_width = thumbnail_size;
+                scaled_height = (double)sy * (double)thumbnail_size /
+                    (double)sx;
+                new_height = (int)(scaled_height + 0.5);
+            } else {
+                new_height = thumbnail_size;
+                scaled_width = (double)sx * (double)thumbnail_size /
+                    (double)sy;
+                new_width = (int)(scaled_width + 0.5);
+            }
+            if (new_width < 1) {
+                new_width = 1;
+            }
+            if (new_height < 1) {
+                new_height = 1;
+            }
+            if (new_width != sx || new_height != sy) {
+                /*
+                 * Wrap the decoded pixels in a frame so we can reuse the
+                 * central scaling helper. Ownership transfers to the frame,
+                 * which keeps the lifetime rules identical on both paths.
+                 */
+                status = sixel_frame_new(&frame, decoder->allocator);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+                status = sixel_frame_init(
+                    frame,
+                    output_pixels,
+                    sx,
+                    sy,
+                    output_pixelformat,
+                    output_palette,
+                    frame_ncolors);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+                if (output_pixels == indexed_pixels) {
+                    indexed_pixels = NULL;
+                }
+                if (output_pixels == rgb_pixels) {
+                    rgb_pixels = NULL;
+                }
+                if (output_palette == palette) {
+                    palette = NULL;
+                }
+                status = sixel_frame_resize(
+                    frame,
+                    new_width,
+                    new_height,
+                    SIXEL_RES_BILINEAR);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+                /*
+                 * The resized frame already exposes a tightly packed RGB
+                 * buffer, so write the updated dimensions and references
+                 * back to the main encoder path.
+                 */
+                sx = sixel_frame_get_width(frame);
+                sy = sixel_frame_get_height(frame);
+                output_pixels = sixel_frame_get_pixels(frame);
+                output_palette = NULL;
+                output_pixelformat = sixel_frame_get_pixelformat(frame);
+            }
+        }
+    }
+
+    if (decoder->clipboard_output_active) {
+        clipboard_output_status = decoder_clipboard_create_spool(
+            decoder->allocator,
+            "clipboard-out",
+            &clipboard_output_path);
+        if (SIXEL_FAILED(clipboard_output_status)) {
+            status = clipboard_output_status;
+            goto end;
+        }
+    }
+
+    status = sixel_helper_write_image_file(
+        output_pixels,
+        sx,
+        sy,
+        output_palette,
+        output_pixelformat,
+        decoder->clipboard_output_active
+            ? clipboard_output_path
+            : decoder->output,
+        SIXEL_FORMAT_PNG,
+        decoder->allocator);
 
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -1940,6 +2103,7 @@ end:
     sixel_allocator_free(decoder->allocator, raw_data);
     sixel_allocator_free(decoder->allocator, indexed_pixels);
     sixel_allocator_free(decoder->allocator, palette);
+    sixel_allocator_free(decoder->allocator, direct_pixels);
     sixel_allocator_free(decoder->allocator, rgb_pixels);
     if (clipboard_blob != NULL) {
         free(clipboard_blob);

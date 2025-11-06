@@ -198,13 +198,13 @@ static sixel2png_option_help_t const g_option_help_table[] = {
     {
         'i',
         "input",
-        "-i FILE, --input=FILE       specify input file\n"
+        "-i FILE, --input=FILE      specify input file\n"
         "                           use '-' to read from stdin.\n"
     },
     {
         'o',
         "output",
-        "-o FILE, --output=FILE      specify output file\n"
+        "-o FILE, --output=FILE     specify output file\n"
         "                           use '-' to write to stdout or\n"
         "                           prefix the target with \"png:\"\n"
         "                           so \"png:-\" maps to stdout and\n"
@@ -228,37 +228,43 @@ static sixel2png_option_help_t const g_option_help_table[] = {
     {
         'S',
         "similarity",
-        "-S BIAS, --similarity=BIAS  specify similarity bias\n"
+        "-S BIAS, --similarity=BIAS specify similarity bias\n"
         "                           range: 0-1000 (default: 100).\n"
     },
     {
         's',
         "size",
-        "-s SIZE, --size=SIZE        scale longer edge to SIZE pixels\n"
+        "-s SIZE, --size=SIZE       scale longer edge to SIZE pixels\n"
         "                           while preserving aspect ratio.\n"
     },
     {
         'e',
         "edge",
-        "-e BIAS, --edge=BIAS        specify edge protection bias\n"
+        "-e BIAS, --edge=BIAS       specify edge protection bias\n"
         "                           range: 0-1000 (default: 0).\n"
+    },
+    {
+        'D',
+        "direct",
+        "-D, --direct               emit RGBA PNG output with\n"
+        "                           direct rendering staragegy.\n"
     },
     {
         'V',
         "version",
-        "-V, --version               show version and license info.\n"
+        "-V, --version              show version and license info.\n"
     },
     {
         'H',
         "help",
-        "-H, --help                  show this help.\n"
+        "-H, --help                 show this help.\n"
     }
 };
 
 static char const g_option_help_fallback[] =
     "    Refer to \"sixel2png -H\" for more details.\n";
 
-static char const g_sixel2png_optstring[] = "i:o:d:S:e:s:VH";
+static char const g_sixel2png_optstring[] = "i:o:d:S:e:s:DVH";
 
 static sixel2png_option_help_t const *
 sixel2png_find_option_help(int short_opt)
@@ -1698,6 +1704,7 @@ main(int argc, char *argv[])
         {"similarity",       required_argument,  &long_opt, 'S'},
         {"size",             required_argument,  &long_opt, 's'},
         {"edge",             required_argument,  &long_opt, 'e'},
+        {"direct",           no_argument,        &long_opt, 'D'},
         {"version",          no_argument,        &long_opt, 'V'},
         {"help",             no_argument,        &long_opt, 'H'},
         {0, 0, 0, 0}
