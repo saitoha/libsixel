@@ -34,6 +34,7 @@ struct sixel_decoder {
     int dequantize_edge_strength;
     int dequantize_refine;
     int thumbnail_size;
+    int direct_color;
     sixel_allocator_t *allocator;
     int clipboard_input_active;
     int clipboard_output_active;
