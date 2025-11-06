@@ -1241,6 +1241,8 @@ sixel_decode_direct(
     parser_context_t context;
     image_buffer_t image;
 
+    image.pixels.p = NULL;
+
     if (allocator) {
         sixel_allocator_ref(allocator);
     } else {
