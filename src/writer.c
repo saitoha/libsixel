@@ -182,6 +182,65 @@ png_write_chunk(FILE *output_fp, char const *tag,
 #endif  /* !HAVE_LIBPNG */
 
 static SIXELSTATUS
+sixel_writer_convert_to_rgba(
+    unsigned char       *dst,
+    unsigned char const *src,
+    int                  src_pixelformat,
+    int                  width,
+    int                  height)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    size_t count = 0u;
+    size_t index = 0u;
+    unsigned char const *cursor = NULL;
+    unsigned char *output = NULL;
+
+    count = (size_t)width * (size_t)height;
+    cursor = src;
+    output = dst;
+
+    for (index = 0u; index < count; ++index) {
+        switch (src_pixelformat) {
+        case SIXEL_PIXELFORMAT_RGBA8888:
+            output[0] = cursor[0];
+            output[1] = cursor[1];
+            output[2] = cursor[2];
+            output[3] = cursor[3];
+            break;
+        case SIXEL_PIXELFORMAT_ARGB8888:
+            output[0] = cursor[1];
+            output[1] = cursor[2];
+            output[2] = cursor[3];
+            output[3] = cursor[0];
+            break;
+        case SIXEL_PIXELFORMAT_BGRA8888:
+            output[0] = cursor[2];
+            output[1] = cursor[1];
+            output[2] = cursor[0];
+            output[3] = cursor[3];
+            break;
+        case SIXEL_PIXELFORMAT_ABGR8888:
+            output[0] = cursor[3];
+            output[1] = cursor[2];
+            output[2] = cursor[1];
+            output[3] = cursor[0];
+            break;
+        default:
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        cursor += 4;
+        output += 4;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
+
+
+static SIXELSTATUS
 write_png_to_file(
     unsigned char       /* in */ *data,         /* source pixel data */
     int                 /* in */ width,         /* source data width */
@@ -202,6 +261,7 @@ write_png_to_file(
     int i = 0;
     unsigned char *src = NULL;
     unsigned char *dst = NULL;
+    int bytes_per_pixel = 3;
 #if HAVE_LIBPNG
     int y = 0;
     png_structp png_ptr = NULL;
@@ -293,10 +353,6 @@ write_png_to_file(
     case SIXEL_PIXELFORMAT_GA88:
     case SIXEL_PIXELFORMAT_AG88:
     case SIXEL_PIXELFORMAT_BGR888:
-    case SIXEL_PIXELFORMAT_RGBA8888:
-    case SIXEL_PIXELFORMAT_ARGB8888:
-    case SIXEL_PIXELFORMAT_BGRA8888:
-    case SIXEL_PIXELFORMAT_ABGR8888:
         pixels = new_pixels = sixel_allocator_malloc(allocator,
                                                     (size_t)(width
                                                              * height
@@ -315,6 +371,36 @@ write_png_to_file(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        break;
+    case SIXEL_PIXELFORMAT_RGBA8888:
+        pixels = data;
+        pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+        bytes_per_pixel = 4;
+        break;
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+        new_pixels = sixel_allocator_malloc(allocator,
+                                            (size_t)width
+                                            * (size_t)height
+                                            * 4u);
+        if (new_pixels == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            sixel_helper_set_additional_message(
+                "write_png_to_file: sixel_allocator_malloc() failed");
+            goto end;
+        }
+        status = sixel_writer_convert_to_rgba(new_pixels,
+                                              data,
+                                              pixelformat,
+                                              width,
+                                              height);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        pixels = new_pixels;
+        pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+        bytes_per_pixel = 4;
         break;
     default:
         status = SIXEL_BAD_ARGUMENT;
@@ -394,7 +480,8 @@ write_png_to_file(
             goto end;
         }
         for (y = 0; y < height; ++y) {
-            rows[y] = pixels + width * 3 * y;
+            rows[y] = pixels
+                + (size_t)width * (size_t)bytes_per_pixel * (size_t)y;
         }
     }
 
@@ -444,12 +531,18 @@ write_png_to_file(
         }
         png_set_PLTE(png_ptr, info_ptr, png_palette, palette_entries);
     } else {
+        int color_type;
+
+        color_type = PNG_COLOR_TYPE_RGB;
+        if (pixelformat == SIXEL_PIXELFORMAT_RGBA8888) {
+            color_type = PNG_COLOR_TYPE_RGBA;
+        }
         png_set_IHDR(png_ptr,
                      info_ptr,
                      (png_uint_32)width,
                      (png_uint_32)height,
                      8,
-                     PNG_COLOR_TYPE_RGB,
+                     color_type,
                      PNG_INTERLACE_NONE,
                      PNG_COMPRESSION_TYPE_BASE,
                      PNG_FILTER_TYPE_BASE);
@@ -553,10 +646,10 @@ write_png_to_file(
         }
     } else {
         png_data = stbi_write_png_to_mem(pixels,
-                                         width * 3,
+                                         width * bytes_per_pixel,
                                          width,
                                          height,
-                                         3,
+                                         bytes_per_pixel,
                                          &png_len);
         if (png_data == NULL) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));

@@ -275,6 +275,20 @@ SIXEL_OPTFLAG_COMPLEXION_SCORE = 'C'  # -C COMPLEXIONSCORE, --complexion-score=C
                                       #        score of complexion correction.
 SIXEL_OPTFLAG_IGNORE_DELAY     = 'g'  # -g, --ignore-delay: render GIF animation without delay
 SIXEL_OPTFLAG_STATIC           = 'S'  # -S, --static: render animated GIF as a static image
+#
+#   +------------+-------------------------------+
+#   | short opt  | semantic scope                |
+#   +------------+-------------------------------+
+#   | -d         | decoder: dequantize palette   |
+#   |            | encoder: diffusion selector   |
+#   | -D         | decoder: emit RGBA (direct)   |
+#   |            | encoder: legacy pipe-mode     |
+#   +------------+-------------------------------+
+#
+# Python callers use these constants with ``Decoder.setopt``.  The table
+# keeps the intent obvious when the same letter spans historic features.
+SIXEL_OPTFLAG_DEQUANTIZE       = 'd'  # -d, --dequantize: repair palette.
+SIXEL_OPTFLAG_DIRECT           = 'D'  # -D, --direct: decode to RGBA pixels.
 SIXEL_OPTFLAG_DIFFUSION        = 'd'  # -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE:
                                       #          choose diffusion method which used with -p option.
                                       #          DIFFUSIONTYPE is one of them:
