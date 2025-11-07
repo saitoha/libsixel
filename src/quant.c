@@ -78,19 +78,29 @@
 #include "quant.h"
 #include "compat_stub.h"
 
-static unsigned char const sixel_reversible_tones[101] = {
-     0,  3,  5,  8, 10, 13, 15, 18, 20, 23,
-    26, 28, 31, 33, 36, 38, 41, 43, 46, 48,
-    51, 54, 56, 59, 61, 64, 66, 69, 71, 74,
-    77, 79, 82, 84, 87, 89, 92, 94, 97, 99,
-   102, 105, 107, 110, 112, 115, 117, 120, 122, 125,
-   128, 130, 133, 135, 138, 140, 143, 145, 148, 150,
-   153, 156, 158, 161, 163, 166, 168, 171, 173, 176,
-   179, 181, 184, 186, 189, 191, 194, 196, 199, 201,
-   204, 207, 209, 212, 214, 217, 219, 222, 224, 227,
-   230, 232, 235, 237, 240, 242, 245, 247, 250, 252,
-   255
+static float env_final_merge_target_factor = 1.81;
+
+static unsigned char const sixel_safe_tones[256] = {
+    0,   0,   3,   3,   5,   5,   5,   8,   8,   10,  10,  10,  13,  13,  13,
+    15,  15,  18,  18,  18,  20,  20,  23,  23,  23,  26,  26,  28,  28,  28,
+    31,  31,  33,  33,  33,  36,  36,  38,  38,  38,  41,  41,  41,  43,  43,
+    46,  46,  46,  48,  48,  51,  51,  51,  54,  54,  56,  56,  56,  59,  59,
+    61,  61,  61,  64,  64,  64,  66,  66,  69,  69,  69,  71,  71,  74,  74,
+    74,  77,  77,  79,  79,  79,  82,  82,  84,  84,  84,  87,  87,  89,  89,
+    89,  92,  92,  92,  94,  94,  97,  97,  97,  99,  99,  102, 102, 102, 105,
+    105, 107, 107, 107, 110, 110, 112, 112, 112, 115, 115, 115, 117, 117, 120,
+    120, 120, 122, 122, 125, 125, 125, 128, 128, 130, 130, 130, 133, 133, 135,
+    135, 135, 138, 138, 140, 140, 140, 143, 143, 143, 145, 145, 148, 148, 148,
+    150, 150, 153, 153, 153, 156, 156, 158, 158, 158, 161, 161, 163, 163, 163,
+    166, 166, 166, 168, 168, 171, 171, 171, 173, 173, 176, 176, 176, 179, 179,
+    181, 181, 181, 184, 184, 186, 186, 186, 189, 189, 191, 191, 191, 194, 194,
+    194, 196, 196, 199, 199, 199, 201, 201, 204, 204, 204, 207, 207, 209, 209,
+    209, 212, 212, 214, 214, 214, 217, 217, 217, 219, 219, 222, 222, 222, 224,
+    224, 227, 227, 227, 230, 230, 232, 232, 232, 235, 235, 237, 237, 237, 240,
+    240, 242, 242, 242, 245, 245, 245, 247, 247, 250, 250, 250, 252, 252, 255,
+    255
 };
+
 
 static float mask_a(int x, int y, int c);
 static float mask_x(int x, int y, int c);
@@ -191,30 +201,14 @@ struct box {
 typedef unsigned long sample;
 typedef sample * tuple;
 
-static unsigned int
-sixel_quant_reversible_index(unsigned int sample)
-{
-    unsigned int index;
-
-    if (sample > 255U) {
-        sample = 255U;
-    }
-    index = (sample * 100U + 127U) / 255U;
-    if (index > 100U) {
-        index = 100U;
-    }
-
-    return index;
-}
-
 static unsigned char
 sixel_quant_reversible_value(unsigned int sample)
 {
-    unsigned int index;
+    if (sample > 255U) {
+        sample = 255U;
+    }
 
-    index = sixel_quant_reversible_index(sample);
-
-    return sixel_reversible_tones[index];
+    return sixel_safe_tones[sample];
 }
 
 static void
@@ -924,6 +918,21 @@ end:
 
 
 
+static unsigned int sixel_final_merge_target(unsigned int reqcolors,
+                                             int final_merge_mode);
+static void sixel_merge_clusters_ward(unsigned long *weights,
+                                      unsigned long *sums,
+                                      unsigned int depth,
+                                      int *cluster_count,
+                                      int target);
+static SIXELSTATUS sixel_quant_clusters_to_colormap(unsigned long *weights,
+                                                    unsigned long *sums,
+                                                    unsigned int depth,
+                                                    unsigned int cluster_count,
+                                                    int use_reversible,
+                                                    tupletable2 *colormapP,
+                                                    sixel_allocator_t *allocator);
+
 static SIXELSTATUS
 mediancut(tupletable2 const colorfreqtable,
           unsigned int const depth,
@@ -931,6 +940,7 @@ mediancut(tupletable2 const colorfreqtable,
           int const methodForLargest,
           int const methodForRep,
           int const use_reversible,
+          int const final_merge_mode,
           tupletable2 *const colormapP,
           sixel_allocator_t *allocator)
 {
@@ -949,17 +959,54 @@ mediancut(tupletable2 const colorfreqtable,
     int multicolorBoxesExist;
     unsigned int i;
     unsigned int sum;
+    unsigned int working_colors;
+    int apply_merge;
+    unsigned long *cluster_weight;
+    unsigned long *cluster_sums;
+    int cluster_total;
+    unsigned int plane;
+    unsigned int offset;
+    unsigned int size;
+    unsigned long value;
+    struct tupleint *entry;
+    SIXELSTATUS merge_status;
     SIXELSTATUS status = SIXEL_FALSE;
 
     sum = 0;
+    working_colors = newcolors;
+    apply_merge = (final_merge_mode == SIXEL_FINAL_MERGE_AUTO
+                   || final_merge_mode == SIXEL_FINAL_MERGE_WARD);
+    bv = NULL;
+    cluster_weight = NULL;
+    cluster_sums = NULL;
+    cluster_total = 0;
+    plane = 0U;
+    offset = 0U;
+    size = 0U;
+    value = 0UL;
+    entry = NULL;
+    merge_status = SIXEL_OK;
 
     for (i = 0; i < colorfreqtable.size; ++i) {
         sum += colorfreqtable.table[i]->value;
     }
 
+    if (apply_merge) {
+        /* Choose an oversplit target so that the merge stage has slack. */
+        working_colors = sixel_final_merge_target(newcolors,
+                                                  final_merge_mode);
+        if (working_colors > colorfreqtable.size) {
+            working_colors = colorfreqtable.size;
+        }
+        quant_trace(stderr, "overshoot: %d\n", working_colors);
+    }
+    if (working_colors == 0U) {
+        working_colors = 1U;
+    }
+
     /* There is at least one box that contains at least 2 colors; ergo,
        there is more splitting we can do.  */
-    bv = newBoxVector(colorfreqtable.size, sum, newcolors, allocator);
+    bv = newBoxVector(colorfreqtable.size, sum, working_colors, allocator);
     if (bv == NULL) {
         goto end;
     }
@@ -967,7 +1014,7 @@ mediancut(tupletable2 const colorfreqtable,
     multicolorBoxesExist = (colorfreqtable.size > 1);
 
     /* Main loop: split boxes until we have enough. */
-    while (boxes < newcolors && multicolorBoxesExist) {
+    while (boxes < working_colors && multicolorBoxesExist) {
         /* Find the first splittable box. */
         for (bi = 0; bi < boxes && bv[bi].colors < 2; ++bi)
             ;
@@ -982,16 +1029,249 @@ mediancut(tupletable2 const colorfreqtable,
             }
         }
     }
-    *colormapP = colormapFromBv(newcolors, bv, boxes,
-                                colorfreqtable, depth,
-                                methodForRep, use_reversible,
-                                allocator);
-
-    sixel_allocator_free(allocator, bv);
+    if (apply_merge && boxes > newcolors) {
+        /* Capture weight and component sums for each temporary box. */
+        cluster_weight = (unsigned long *)sixel_allocator_malloc(
+            allocator, (size_t)boxes * sizeof(unsigned long));
+        cluster_sums = (unsigned long *)sixel_allocator_malloc(
+            allocator, (size_t)boxes * (size_t)depth * sizeof(unsigned long));
+        if (cluster_weight == NULL || cluster_sums == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        for (bi = 0U; bi < boxes; ++bi) {
+            offset = bv[bi].ind;
+            size = bv[bi].colors;
+            cluster_weight[bi] = 0UL;
+            for (plane = 0U; plane < depth; ++plane) {
+                cluster_sums[(size_t)bi * (size_t)depth + plane] = 0UL;
+            }
+            for (i = 0U; i < size; ++i) {
+                entry = colorfreqtable.table[offset + i];
+                value = (unsigned long)entry->value;
+                cluster_weight[bi] += value;
+                for (plane = 0U; plane < depth; ++plane) {
+                    cluster_sums[(size_t)bi * (size_t)depth + plane] +=
+                        (unsigned long)entry->tuple[plane] * value;
+                }
+            }
+        }
+        cluster_total = (int)boxes;
+        /* Merge clusters greedily using Ward's minimum variance rule. */
+        sixel_merge_clusters_ward(cluster_weight, cluster_sums, depth,
+                                  &cluster_total, (int)newcolors);
+        if (cluster_total < 1) {
+            cluster_total = 1;
+        }
+        if ((unsigned int)cluster_total > newcolors) {
+            cluster_total = (int)newcolors;
+        }
+        /* Rebuild the palette using the merged cluster statistics. */
+        merge_status = sixel_quant_clusters_to_colormap(cluster_weight,
+                                                        cluster_sums,
+                                                        depth,
+                                                        (unsigned int)cluster_total,
+                                                        use_reversible,
+                                                        colormapP,
+                                                        allocator);
+        if (SIXEL_FAILED(merge_status)) {
+            status = merge_status;
+            goto end;
+        }
+    } else {
+        *colormapP = colormapFromBv(newcolors, bv, boxes,
+                                    colorfreqtable, depth,
+                                    methodForRep, use_reversible,
+                                    allocator);
+    }
 
     status = SIXEL_OK;
 
 end:
+    if (bv != NULL) {
+        sixel_allocator_free(allocator, bv);
+    }
+    if (cluster_sums != NULL) {
+        sixel_allocator_free(allocator, cluster_sums);
+    }
+    if (cluster_weight != NULL) {
+        sixel_allocator_free(allocator, cluster_weight);
+    }
+    return status;
+}
+
+
+/* Determine how many clusters to create before the final merge step. */
+static unsigned int
+sixel_final_merge_target(unsigned int reqcolors,
+                         int final_merge_mode)
+{
+    double factor;
+    unsigned int scaled;
+
+    if (final_merge_mode != SIXEL_FINAL_MERGE_AUTO
+        && final_merge_mode != SIXEL_FINAL_MERGE_WARD) {
+        return reqcolors;
+    }
+    factor = env_final_merge_target_factor;
+    scaled = (unsigned int)((double)reqcolors * factor);
+    if (scaled <= reqcolors) {
+        scaled = reqcolors;
+    }
+    if (scaled < 1U) {
+        scaled = 1U;
+    }
+
+    return scaled;
+}
+
+
+/* Merge clusters to the requested size using Ward linkage. */
+static void
+sixel_merge_clusters_ward(unsigned long *weights,
+                          unsigned long *sums,
+                          unsigned int depth,
+                          int *cluster_count,
+                          int target)
+{
+    int n;
+    int desired;
+    int best_i;
+    int best_j;
+    int i;
+    int j;
+    int k;
+    int channel;
+    double best_cost;
+    double wi;
+    double wj;
+    double distance_sq;
+    double delta;
+    double mean_i;
+    double mean_j;
+    double diff;
+    size_t offset_i;
+    size_t offset_j;
+    size_t dst;
+    size_t src;
+
+    if (cluster_count == NULL) {
+        return;
+    }
+    n = *cluster_count;
+    desired = target;
+    if (desired < 1) {
+        desired = 1;
+    }
+    while (n > desired) {
+        best_i = -1;
+        best_j = -1;
+        best_cost = 1.0e300;
+        for (i = 0; i < n; ++i) {
+            if (weights[i] == 0UL) {
+                continue;
+            }
+            wi = (double)weights[i];
+            offset_i = (size_t)i * (size_t)depth;
+            for (j = i + 1; j < n; ++j) {
+                if (weights[j] == 0UL) {
+                    continue;
+                }
+                wj = (double)weights[j];
+                offset_j = (size_t)j * (size_t)depth;
+                distance_sq = 0.0;
+                for (channel = 0; channel < (int)depth; ++channel) {
+                    mean_i = (double)sums[offset_i + (size_t)channel] / wi;
+                    mean_j = (double)sums[offset_j + (size_t)channel] / wj;
+                    diff = mean_i - mean_j;
+                    distance_sq += diff * diff;
+                }
+                delta = (wi * wj) / (wi + wj) * distance_sq;
+                if (delta < best_cost) {
+                    best_cost = delta;
+                    best_i = i;
+                    best_j = j;
+                }
+            }
+        }
+        if (best_i < 0 || best_j < 0) {
+            break;
+        }
+        weights[best_i] += weights[best_j];
+        offset_i = (size_t)best_i * (size_t)depth;
+        offset_j = (size_t)best_j * (size_t)depth;
+        for (channel = 0; channel < (int)depth; ++channel) {
+            sums[offset_i + (size_t)channel] +=
+                sums[offset_j + (size_t)channel];
+        }
+        for (k = best_j; k < n - 1; ++k) {
+            weights[k] = weights[k + 1];
+            dst = (size_t)k * (size_t)depth;
+            src = (size_t)(k + 1) * (size_t)depth;
+            for (channel = 0; channel < (int)depth; ++channel) {
+                sums[dst + (size_t)channel] = sums[src + (size_t)channel];
+            }
+        }
+        --n;
+    }
+    *cluster_count = n;
+}
+
+
+/* Translate merged cluster statistics into a tupletable palette. */
+static SIXELSTATUS
+sixel_quant_clusters_to_colormap(unsigned long *weights,
+                               unsigned long *sums,
+                               unsigned int depth,
+                               unsigned int cluster_count,
+                               int use_reversible,
+                               tupletable2 *colormapP,
+                               sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    tupletable2 colormap;
+    unsigned int index;
+    unsigned int plane;
+    double component;
+    unsigned long weight;
+
+    status = SIXEL_BAD_ARGUMENT;
+    if (colormapP == NULL) {
+        return status;
+    }
+    colormap = newColorMap(cluster_count, depth, allocator);
+    if (colormap.size == 0U) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    for (index = 0U; index < cluster_count; ++index) {
+        weight = weights[index];
+        if (weight == 0UL) {
+            weight = 1UL;
+        }
+        colormap.table[index]->value =
+            (unsigned int)((weight > (unsigned long)UINT_MAX)
+                ? UINT_MAX
+                : weight);
+        for (plane = 0U; plane < depth; ++plane) {
+            component = (double)sums[(size_t)index * (size_t)depth + plane];
+            component /= (double)weight;
+            if (component < 0.0) {
+                component = 0.0;
+            }
+            if (component > 255.0) {
+                component = 255.0;
+            }
+            colormap.table[index]->tuple[plane] =
+                (sample)(component + 0.5);
+        }
+        if (use_reversible) {
+            sixel_quant_reversible_tuple(colormap.table[index]->tuple,
+                                         depth);
+        }
+    }
+    *colormapP = colormap;
+    status = SIXEL_OK;
+
     return status;
 }
 
@@ -1120,7 +1400,7 @@ histogram_quantize(unsigned int sample8,
 
     /*
      * In reversible mode we already rounded once when snapping to
-     * sixel_reversible_tones[].  If we rounded to the nearest midpoint
+     * sixel_safe_tones[].  If we rounded to the nearest midpoint
      * again, the second pass would fall back to the lower bucket and break
      * the round-trip.  Biasing towards the upper edge keeps the bucket
      * stable after decoding and encoding again.  Non-reversible runs keep
@@ -2914,6 +3194,7 @@ computeColorMapFromInput(unsigned char const *data,
                          int const qualityMode,
                          int const force_palette,
                          int const use_reversible,
+                         int const final_merge_mode,
                          tupletable2 * const colormapP,
                          unsigned int *origcolors,
                          sixel_allocator_t *allocator)
@@ -2976,7 +3257,8 @@ computeColorMapFromInput(unsigned char const *data,
         quant_trace(stderr, "choosing %d colors...\n", reqColors);
         status = mediancut(colorfreqtable, depth, reqColors,
                            methodForLargest, methodForRep,
-                           use_reversible, colormapP, allocator);
+                           use_reversible, final_merge_mode,
+                           colormapP, allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -5316,6 +5598,7 @@ build_palette_kmeans(unsigned char **result,
                      unsigned int *origcolors,
                      int quality_mode,
                      int force_palette,
+                     int final_merge_mode,
                      sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
@@ -5360,6 +5643,10 @@ build_palette_kmeans(unsigned char **result,
     unsigned long *channel_sum;
     unsigned long rand_value;
     int changed;
+    int apply_merge;
+    unsigned int overshoot;
+    unsigned int refine_iterations;
+    int cluster_total;
 
     status = SIXEL_BAD_ARGUMENT;
     channels = depth;
@@ -5403,6 +5690,10 @@ build_palette_kmeans(unsigned char **result,
     update = 0.0;
     farthest_distance = 0.0;
     changed = 0;
+    apply_merge = 0;
+    overshoot = 0U;
+    refine_iterations = 0U;
+    cluster_total = 0;
 
     if (result != NULL) {
         *result = NULL;
@@ -5478,10 +5769,20 @@ build_palette_kmeans(unsigned char **result,
     if (reqcolors == 0U) {
         reqcolors = 1U;
     }
-    k = reqcolors;
-    if (k > sample_count) {
-        k = sample_count;
+    apply_merge = (final_merge_mode == SIXEL_FINAL_MERGE_AUTO
+                   || final_merge_mode == SIXEL_FINAL_MERGE_WARD);
+    refine_iterations = 2U;
+    overshoot = reqcolors;
+    /* Oversplit so the subsequent Ward merge has room to consolidate. */
+    if (apply_merge) {
+        overshoot = sixel_final_merge_target(reqcolors,
+                                             final_merge_mode);
+        quant_trace(stderr, "overshoot: %d\n", overshoot);
     }
+    if (overshoot > sample_count) {
+        overshoot = sample_count;
+    }
+    k = overshoot;
     if (k == 0U) {
         goto end;
     }
@@ -5692,6 +5993,133 @@ build_palette_kmeans(unsigned char **result,
         }
     }
 
+    if (apply_merge && k > reqcolors) {
+        /* Merge the provisional clusters and polish with a few Lloyd steps. */
+        cluster_total = (int)k;
+        sixel_merge_clusters_ward(counts, accum, 3U,
+                                  &cluster_total, (int)reqcolors);
+        if (cluster_total < 1) {
+            cluster_total = 1;
+        }
+        if ((unsigned int)cluster_total > reqcolors) {
+            cluster_total = (int)reqcolors;
+        }
+        k = (unsigned int)cluster_total;
+        if (k == 0U) {
+            k = 1U;
+        }
+        for (center_index = 0U; center_index < k; ++center_index) {
+            if (counts[center_index] == 0UL) {
+                counts[center_index] = 1UL;
+            }
+            channel_sum = accum + (size_t)center_index * 3U;
+            for (channel = 0U; channel < 3U; ++channel) {
+                centers[center_index * 3U + channel] =
+                    (double)channel_sum[channel]
+                    / (double)counts[center_index];
+            }
+        }
+        for (iteration = 0U; iteration < refine_iterations; ++iteration) {
+            for (index = 0U; index < k; ++index) {
+                counts[index] = 0UL;
+            }
+            for (index = 0U; index < k * 3U; ++index) {
+                accum[index] = 0UL;
+            }
+            for (sample_index = 0U; sample_index < sample_count;
+                    ++sample_index) {
+                best_index = 0U;
+                best_distance = 0.0;
+                for (channel = 0U; channel < 3U; ++channel) {
+                    diff = (double)samples[sample_index * 3U + channel]
+                        - centers[channel];
+                    best_distance += diff * diff;
+                }
+                for (center_index = 1U; center_index < k;
+                        ++center_index) {
+                    distance = 0.0;
+                    for (channel = 0U; channel < 3U; ++channel) {
+                        diff = (double)samples[sample_index * 3U + channel]
+                            - centers[center_index * 3U + channel];
+                        distance += diff * diff;
+                    }
+                    if (distance < best_distance) {
+                        best_distance = distance;
+                        best_index = center_index;
+                    }
+                }
+                membership[sample_index] = best_index;
+                distance_cache[sample_index] = best_distance;
+                counts[best_index] += 1UL;
+                channel_sum = accum + (size_t)best_index * 3U;
+                for (channel = 0U; channel < 3U; ++channel) {
+                    channel_sum[channel] +=
+                        (unsigned long)samples[sample_index * 3U + channel];
+                }
+            }
+            for (center_index = 0U; center_index < k; ++center_index) {
+                if (counts[center_index] != 0UL) {
+                    continue;
+                }
+                farthest_distance = -1.0;
+                farthest_index = 0U;
+                for (sample_index = 0U; sample_index < sample_count;
+                        ++sample_index) {
+                    if (distance_cache[sample_index] > farthest_distance) {
+                        farthest_distance = distance_cache[sample_index];
+                        farthest_index = sample_index;
+                    }
+                }
+                old_cluster = membership[farthest_index];
+                if (counts[old_cluster] > 0UL) {
+                    counts[old_cluster] -= 1UL;
+                    channel_sum = accum + (size_t)old_cluster * 3U;
+                    for (channel = 0U; channel < 3U; ++channel) {
+                        extra_component =
+                            (unsigned int)samples[farthest_index * 3U + channel];
+                        if (channel_sum[channel] >=
+                                (unsigned long)extra_component) {
+                            channel_sum[channel] -=
+                                (unsigned long)extra_component;
+                        } else {
+                            channel_sum[channel] = 0UL;
+                        }
+                    }
+                }
+                membership[farthest_index] = center_index;
+                counts[center_index] = 1UL;
+                channel_sum = accum + (size_t)center_index * 3U;
+                for (channel = 0U; channel < 3U; ++channel) {
+                    channel_sum[channel] =
+                        (unsigned long)samples[farthest_index * 3U + channel];
+                }
+                distance_cache[farthest_index] = 0.0;
+            }
+            changed = 0;
+            for (center_index = 0U; center_index < k; ++center_index) {
+                if (counts[center_index] == 0UL) {
+                    continue;
+                }
+                channel_sum = accum + (size_t)center_index * 3U;
+                for (channel = 0U; channel < 3U; ++channel) {
+                    update = (double)channel_sum[channel]
+                        / (double)counts[center_index];
+                    diff = centers[center_index * 3U + channel] - update;
+                    if (diff < 0.0) {
+                        diff = -diff;
+                    }
+                    if (diff > 0.5) {
+                        changed = 1;
+                    }
+                    centers[center_index * 3U + channel] = update;
+                }
+            }
+            if (!changed) {
+                break;
+            }
+        }
+    }
+
     /*
      * Convert the floating point centers back into the byte palette that
      * callers expect.
@@ -5828,6 +6256,7 @@ sixel_quant_make_palette(
     int                    /* in */  force_palette,
     int                    /* in */  use_reversible,
     int                    /* in */  quantize_model,
+    int                    /* in */  final_merge_mode,
     sixel_allocator_t      /* in */  *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -5856,6 +6285,7 @@ sixel_quant_make_palette(
                                       origcolors,
                                       qualityMode,
                                       force_palette,
+                                      final_merge_mode,
                                       allocator);
         if (SIXEL_SUCCEEDED(status)) {
             if (use_reversible) {
@@ -5871,6 +6301,7 @@ sixel_quant_make_palette(
                                    reqcolors, methodForLargest,
                                    methodForRep, qualityMode,
                                    force_palette, use_reversible,
+                                   final_merge_mode,
                                    &colormap, origcolors, allocator);
     if (ret != 0) {
         *result = NULL;

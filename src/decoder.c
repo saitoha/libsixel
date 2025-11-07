@@ -55,7 +55,6 @@
 #include "frame.h"
 #include "compat_stub.h"
 
-
 static void
 decoder_clipboard_select_format(char *dest,
                                 size_t dest_size,
@@ -1438,9 +1437,6 @@ sixel_dequantize_k_undither(unsigned char *indexed_pixels,
     rgb = NULL;
     if (enable_refine) {
         /*
-         *  +--------------+
-         *  | refine pass  |
-         *  +--------------+
          *  Only run when the caller requested k_undither+.
          */
         sixel_post_undither_refine(*output, width, height, NULL);
