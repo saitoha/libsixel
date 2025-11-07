@@ -152,6 +152,9 @@ SIXEL_QUALITY_HIGHCOLOR = 0x4  # high color
 SIXEL_QUANTIZE_MODEL_AUTO      = 0x0  # choose palette solver automatically
 SIXEL_QUANTIZE_MODEL_MEDIANCUT = 0x1  # Heckbert median-cut solver
 SIXEL_QUANTIZE_MODEL_KMEANS    = 0x2  # k-means palette solver
+SIXEL_FINAL_MERGE_AUTO         = 0x0  # select final merge automatically
+SIXEL_FINAL_MERGE_NONE         = 0x1  # disable final merge stage
+SIXEL_FINAL_MERGE_WARD         = 0x2  # Ward hierarchical clustering merge
 
 # built-in dither
 SIXEL_BUILTIN_MONO_DARK   = 0x0  # monochrome terminal with dark background
@@ -371,6 +374,7 @@ SIXEL_OPTFLAG_QUANTIZE_MODEL   = 'Q'  # -Q MODEL, --quantize-model=MODEL:
                                       #          heckbert -> Heckbert median-cut
                                       #          kmeans   -> k-means palette
                                       #                      clustering
+SIXEL_OPTFLAG_FINAL_MERGE     = 'F'  # -F MODE, --final-merge=MODE: final merge policy
 
 SIXEL_OPTFLAG_CROP             = 'c'  # -c REGION, --crop=REGION:
                                       #        crop source image to fit the

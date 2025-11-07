@@ -167,6 +167,11 @@ typedef int SIXELSTATUS;
 #define SIXEL_QUANTIZE_MODEL_MEDIANCUT   0x1
 #define SIXEL_QUANTIZE_MODEL_KMEANS      0x2
 
+/* final merge policy */
+#define SIXEL_FINAL_MERGE_AUTO        0x0  /* auto final merge */
+#define SIXEL_FINAL_MERGE_NONE        0x1  /* disable final merge */
+#define SIXEL_FINAL_MERGE_WARD        0x2  /* Ward merge */
+
 /* pixelformat type of input image
    NOTE: for compatibility, the value of PIXELFORAMT_COLOR_RGB888 must be 3 */
 #define SIXEL_PIXELFORMAT_RGB555   (SIXEL_FORMATTYPE_COLOR     | 0x01) /* 15bpp */
@@ -356,6 +361,16 @@ typedef int SIXELSTATUS;
                                                                 (default, Heckbert)
                                                     heckbert -> median-cut solver
                                                     kmeans   -> k-means solver
+                                                */
+#define SIXEL_OPTFLAG_FINAL_MERGE       ('F')  /* -F MODE, --final-merge=MODE:
+                                                  final merge policy.
+                                                  MODE is one of them:
+                                                    auto -> enable automatic
+                                                            final merging
+                                                    none -> disable final
+                                                            merging
+                                                    ward -> Ward hierarchical
+                                                            merging
                                                 */
 #define SIXEL_OPTFLAG_CROP              ('c')  /* -c REGION, --crop=REGION:
                                                   crop source image to fit the
@@ -956,6 +971,12 @@ SIXELAPI void
 sixel_dither_set_sixel_reversible(
     sixel_dither_t /* in */ *dither,
     int            /* in */ enable);
+
+/* set final merge policy */
+SIXELAPI void
+sixel_dither_set_final_merge(
+    sixel_dither_t /* in */ *dither,
+    int            /* in */ final_merge);
 
 /* set transparent */
 SIXELAPI void

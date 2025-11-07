@@ -337,6 +337,7 @@ sixel_dither_new(
     (*ppdither)->lut_policy = SIXEL_LUT_POLICY_AUTO;
     (*ppdither)->sixel_reversible = 0;
     (*ppdither)->quantize_model = SIXEL_QUANTIZE_MODEL_AUTO;
+    (*ppdither)->final_merge_mode = SIXEL_FINAL_MERGE_AUTO;
 
     status = SIXEL_OK;
 
@@ -603,6 +604,7 @@ sixel_dither_initialize(
                                       dither->force_palette,
                                       dither->sixel_reversible,
                                       dither->quantize_model,
+                                      dither->final_merge_mode,
                                       dither->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -844,6 +846,26 @@ sixel_dither_set_sixel_reversible(
     dither->sixel_reversible = enable ? 1 : 0;
 }
 
+/* select final merge policy */
+SIXELAPI void
+sixel_dither_set_final_merge(
+    sixel_dither_t /* in */ *dither,
+    int            /* in */ final_merge)
+{
+    int mode;
+
+    if (dither == NULL) {
+        return;
+    }
+    mode = SIXEL_FINAL_MERGE_AUTO;
+    if (final_merge == SIXEL_FINAL_MERGE_NONE
+        || final_merge == SIXEL_FINAL_MERGE_WARD) {
+        mode = final_merge;
+    } else if (final_merge == SIXEL_FINAL_MERGE_AUTO) {
+        mode = SIXEL_FINAL_MERGE_AUTO;
+    }
+    dither->final_merge_mode = mode;
+}
 
 /* set transparent */
 SIXELAPI void

@@ -414,6 +414,12 @@ static sixel_option_choice_t const g_option_choices_quantize_model[] = {
     { "kmeans", SIXEL_QUANTIZE_MODEL_KMEANS }
 };
 
+static sixel_option_choice_t const g_option_choices_final_merge[] = {
+    { "auto", SIXEL_FINAL_MERGE_AUTO },
+    { "none", SIXEL_FINAL_MERGE_NONE },
+    { "ward", SIXEL_FINAL_MERGE_WARD }
+};
+
 static sixel_option_choice_t const g_option_choices_resampling[] = {
     { "nearest", SIXEL_RES_NEAREST },
     { "gaussian", SIXEL_RES_GAUSSIAN },
@@ -2874,6 +2880,7 @@ sixel_encoder_prepare_palette(
     sixel_dither_set_lut_policy(*dither, encoder->lut_policy);
     sixel_dither_set_sixel_reversible(*dither,
                                       encoder->sixel_reversible);
+    sixel_dither_set_final_merge(*dither, encoder->final_merge_mode);
     (*dither)->quantize_model = encoder->quantize_model;
 
     status = sixel_dither_initialize(*dither,
@@ -4130,6 +4137,7 @@ sixel_encoder_new(
     (*ppencoder)->method_for_rep        = SIXEL_REP_AUTO;
     (*ppencoder)->quality_mode          = SIXEL_QUALITY_AUTO;
     (*ppencoder)->quantize_model        = SIXEL_QUANTIZE_MODEL_AUTO;
+    (*ppencoder)->final_merge_mode      = SIXEL_FINAL_MERGE_AUTO;
     (*ppencoder)->lut_policy            = SIXEL_LUT_POLICY_AUTO;
     (*ppencoder)->sixel_reversible      = 0;
     (*ppencoder)->method_for_resampling = SIXEL_RES_BILINEAR;
@@ -5133,6 +5141,32 @@ sixel_encoder_setopt(
             } else {
                 sixel_helper_set_additional_message(
                     "sixel_encoder_setopt: unsupported quantize model.");
+            }
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        break;
+    case SIXEL_OPTFLAG_FINAL_MERGE:  /* F */
+        match_result = sixel_match_option_choice(
+            value,
+            g_option_choices_final_merge,
+            sizeof(g_option_choices_final_merge) /
+            sizeof(g_option_choices_final_merge[0]),
+            &match_value,
+            match_detail,
+            sizeof(match_detail));
+        if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+            encoder->final_merge_mode = match_value;
+        } else {
+            if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+                sixel_report_ambiguous_prefix("--final-merge",
+                                              value,
+                                              match_detail,
+                                              match_message,
+                                              sizeof(match_message));
+            } else {
+                sixel_helper_set_additional_message(
+                    "specified final merge policy is not supported.");
             }
             status = SIXEL_BAD_ARGUMENT;
             goto end;

@@ -171,6 +171,14 @@ _quantizemodel() {
     'kmeans[k-means palette solver]'
 }
 
+_finalmerge() {
+  _values \
+    'MODE' \
+    'auto[enable Ward merging automatically]' \
+    'none[disable post-merge reduction]' \
+    'ward[merge clusters using Ward criterion]'
+}
+
 _completiontarget() {
   _values \
     'TARGET' \
@@ -201,6 +209,7 @@ _arguments -S -s -A "-*" -S \
   {-6,--6reversible}'[snap the palette to SIXEL-reversible tones]' \
   {-p,--colors=}'[specify number of colors to reduce the image to]' \
   {-Q,--quantize-model=}'[choose palette solver]':quantizemodel:_quantizemodel \
+  {-F,--final-merge=}'[control final merge policy]':finalmerge:_finalmerge \
   {-m,--mapfile=}'[transform image colors using a map image or ACT/PAL/GPL palette; TYPE:PATH prefixes (TYPE:- for stdin) allowed]':files:_files \
   {-M,--mapfile-output=}'[export the computed palette; TYPE:PATH (TYPE:- for stdout) or .act/.pal/.gpl extensions choose the format]':files:_files \
   {-e,--monochrome}'[output monochrome sixel image]' \

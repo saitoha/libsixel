@@ -161,10 +161,26 @@ static img2sixel_option_help_t const g_option_help_table[] = {
         'Q',
         "quantize-model",
         "-Q MODEL, --quantize-model=MODEL\n"
-        "                           choose the palette solver. MODEL is\n"
-        "                           one of auto, heckbert, or kmeans.\n"
-        "                           auto maps to the legacy Heckbert\n"
-        "                           median-cut implementation.\n"
+        "                           choose the palette solver.\n"
+        "                             auto     -> choose quantize model\n"
+        "                                         automatically (default)\n"
+        "                                         auto maps to the heckbert\n"
+        "                             heckbert -> traditional Heckbert\n"
+        "                                         median-cut implementation.\n"
+        "                             kmeans   -> k-means++ clustering.\n"
+    },
+    {
+        'F',
+        "final-merge",
+        "-F MODE, --final-merge=MODE\n"
+        "                           control the post-merge stage.\n"
+        "                             auto -> choose post-merge strategy\n"
+        "                                     automatically (default)\n"
+        "                                     auto selects Word merging\n"
+        "                             none -> do not over-splitting.\n"
+        "                             ward -> over-split the cluster\n"
+        "                                     and do final-merging with"
+        "                                     Ward's method.\n"
     },
     {
         'm',
@@ -287,9 +303,9 @@ static img2sixel_option_help_t const g_option_help_table[] = {
         "-y SCANTYPE, --diffusion-scan=SCANTYPE\n"
         "                           choose scan order for diffusion\n"
         "                           SCANTYPE is one of them:\n"
-        "                             auto -> choose scan order\n"
-        "                                     automatically\n"
-        "                             raster -> left-to-right scan\n"
+        "                             auto       -> choose scan order\n"
+        "                                           automatically (default)\n"
+        "                             raster     -> left-to-right scan\n"
         "                             serpentine -> alternate direction\n"
         "                                           on each line\n"
     },
@@ -591,7 +607,7 @@ static char const g_option_help_fallback[] =
     "    Refer to \"img2sixel -H\" for more details.\n";
 
 static char const g_img2sixel_optstring[] =
-    "o:a:J:j:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:L:kil:t:ugvSn:PE:U:B:C:D@:"
+    "o:a:J:j:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:L:kil:t:ugvSn:PE:U:B:C:D@:"
     "OVW:HY:y:";
 
 static img2sixel_option_help_t const *
@@ -2250,6 +2266,7 @@ main(int argc, char *argv[])
         {"6reversible",        no_argument,        &long_opt, '6'},
         {"colors",             required_argument,  &long_opt, 'p'},
         {"quantize-model",     required_argument,  &long_opt, 'Q'},
+        {"final-merge",        required_argument,  &long_opt, 'F'},
         {"mapfile",            required_argument,  &long_opt, 'm'},
         {"mapfile-output",     required_argument,  &long_opt, 'M'},
         {"monochrome",         no_argument,        &long_opt, 'e'},
@@ -2534,7 +2551,7 @@ unknown_option_error:
     fprintf(stderr,
             "\n"
             "usage: img2sixel [-78eIkiugvSPDOVH] [-p colors] [-m file] [-d diffusiontype]\n"
-            "                 [-Q model]\n"
+            "                 [-Q model] [-F mode]\n"
             "                 [-y scantype] [-a assessmentlist] [-J assessmentfile]\n"
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
             "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
