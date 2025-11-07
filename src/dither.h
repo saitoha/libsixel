@@ -52,6 +52,7 @@ struct sixel_dither {
     int lut_policy;                 /* histogram LUT policy */
     int sixel_reversible;           /* restrict palette to reversible tones */
     int quantize_model;             /* palette solver selector */
+    int final_merge_mode;           /* final merge policy */
 };
 
 #ifdef __cplusplus
