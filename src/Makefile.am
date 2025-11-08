@@ -32,6 +32,7 @@ libsixel_la_SOURCES = \
 		$(srcdir)/pixelformat.c \
 		$(srcdir)/pixelformat.h \
 		$(srcdir)/scale.c \
+		$(srcdir)/scale.h \
 		$(srcdir)/chunk.c \
 		$(srcdir)/chunk.h \
                 $(srcdir)/loader.c \
