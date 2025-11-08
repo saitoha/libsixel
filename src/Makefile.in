@@ -155,10 +155,10 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/quant.h $(srcdir)/dither.c $(srcdir)/dither.h \
 	$(srcdir)/colorspace.c $(srcdir)/colorspace.h \
 	$(srcdir)/frame.c $(srcdir)/frame.h $(srcdir)/pixelformat.c \
-	$(srcdir)/pixelformat.h $(srcdir)/scale.c $(srcdir)/chunk.c \
-	$(srcdir)/chunk.h $(srcdir)/loader.c $(srcdir)/loader.h \
-	$(srcdir)/frompnm.c $(srcdir)/frompnm.h $(srcdir)/fromgif.c \
-	$(srcdir)/fromgif.h $(srcdir)/clipboard.c \
+	$(srcdir)/pixelformat.h $(srcdir)/scale.c $(srcdir)/scale.h \
+	$(srcdir)/chunk.c $(srcdir)/chunk.h $(srcdir)/loader.c \
+	$(srcdir)/loader.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
+	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/clipboard.c \
 	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
 	$(srcdir)/decoder.c $(srcdir)/decoder.h $(srcdir)/stb_image.h \
 	$(srcdir)/writer.c $(srcdir)/writer.h \
@@ -508,10 +508,10 @@ libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/quant.h $(srcdir)/dither.c $(srcdir)/dither.h \
 	$(srcdir)/colorspace.c $(srcdir)/colorspace.h \
 	$(srcdir)/frame.c $(srcdir)/frame.h $(srcdir)/pixelformat.c \
-	$(srcdir)/pixelformat.h $(srcdir)/scale.c $(srcdir)/chunk.c \
-	$(srcdir)/chunk.h $(srcdir)/loader.c $(srcdir)/loader.h \
-	$(srcdir)/frompnm.c $(srcdir)/frompnm.h $(srcdir)/fromgif.c \
-	$(srcdir)/fromgif.h $(srcdir)/clipboard.c \
+	$(srcdir)/pixelformat.h $(srcdir)/scale.c $(srcdir)/scale.h \
+	$(srcdir)/chunk.c $(srcdir)/chunk.h $(srcdir)/loader.c \
+	$(srcdir)/loader.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
+	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/clipboard.c \
 	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
 	$(srcdir)/decoder.c $(srcdir)/decoder.h $(srcdir)/stb_image.h \
 	$(srcdir)/writer.c $(srcdir)/writer.h \

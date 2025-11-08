@@ -30,6 +30,7 @@ srcs = [
   'frame.c',
   'pixelformat.c',
   'scale.c',
+  'scale.h',
   'chunk.c',
   'loader.c',
   'frompnm.c',
