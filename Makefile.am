@@ -32,7 +32,35 @@ EXTRA_DIST += tests/converters/common.bash \
 	tests/converters/test_0012_regressions.bash \
 	tests/converters/test_0013_documentation.bash \
 	tests/converters/test_0014_option_matching.bash \
-	tests/converters/test_0015_argument_shift.bash
+	tests/converters/test_0015_argument_shift.bash \
+	images/map8.png \
+	images/autumn.png \
+	images/egret.jpg \
+	images/images \
+	images/map16-palette.png \
+	images/map16.png \
+	images/map64.six \
+	images/map8-palette.png \
+	images/map8.png \
+	images/map8.six \
+	images/seq2gif.gif \
+	images/snake-ascii.pbm \
+	images/snake-ascii.pgm \
+	images/snake-ascii.ppm \
+	images/snake-grayscale.jpg \
+	images/snake-grayscale.png \
+	images/snake-palette.png \
+	images/snake-progressive.jpg \
+	images/snake.bmp \
+	images/snake.gif \
+	images/snake.jpg \
+	images/snake.pbm \
+	images/snake.pgm \
+	images/snake.png \
+	images/snake.ppm \
+	images/snake.six \
+	images/snake.tga \
+	images/snake.tiff
 
 .PHONY: install-quicklook-extension uninstall-quicklook-extension
 
