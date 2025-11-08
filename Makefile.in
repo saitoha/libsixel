@@ -468,7 +468,9 @@ EXTRA_DIST = LICENSE depcomp tests/converters/common.bash \
 	tests/converters/test_0012_regressions.bash \
 	tests/converters/test_0013_documentation.bash \
 	tests/converters/test_0014_option_matching.bash \
-	tests/converters/test_0015_argument_shift.bash
+	tests/converters/test_0015_argument_shift.bash \
+	images/snake.jpg images/egret.jpg images/snake.png \
+	images/snake.six images/map8.png
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = $(builddir)/libsixel.pc
 CLEANFILES = $(builddir)/valgrind.log $(builddir)/test.log $(builddir)/unittest.log
