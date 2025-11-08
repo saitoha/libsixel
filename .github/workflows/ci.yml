@@ -392,6 +392,113 @@ jobs:
           parallel-finished: true
 
 
+  ci-dist-autotools:
+    name: Autotools dist tarball • ${{ matrix.label }}
+    runs-on: ${{ matrix.runner || matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Linux thumbnailer command
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            configure_flags: >-
+              --without-png --without-jpeg --without-libcurl
+              --without-bashcompletiondir --without-zshcompletiondir
+              --disable-python --enable-debug --enable-tests
+              --disable-dependency-tracking --enable-thumbnailer-command
+          - label: macOS Quick Look extension
+            os: macos-latest
+            runner: macos-latest
+            configure_flags: >-
+              --without-png --without-jpeg --without-libcurl
+              --without-bashcompletiondir --without-zshcompletiondir
+              --disable-python --enable-debug --enable-tests
+              --disable-dependency-tracking --enable-quicklook-extension
+              --enable-quicklook-preview
+          - label: Windows WIC codec (MinGW)
+            os: windows-latest
+            runner: windows-latest
+            msystem: MINGW64
+            configure_flags: >-
+              --without-png --without-jpeg --without-libcurl
+              --without-bashcompletiondir --without-zshcompletiondir
+              --disable-python --enable-debug --enable-tests
+              --disable-dependency-tracking --enable-wiccodec
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Prepare Homebrew cache
+      if: runner.os == 'macOS'
+      run: |
+        brew update-reset
+        rm -f ~/Library/Caches/Homebrew/downloads/* || true
+        brew update -f
+
+    - name: Setup MSYS2 (Windows)
+      if: runner.os == 'Windows'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.msystem }}
+        update: true
+        install: >-
+          make
+        pacboy: >-
+          cc:p
+
+    - name: Create Autotools dist archive (non-Windows)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        set -euxo pipefail
+        ./configure ${{ matrix.configure_flags }}
+        make -j$(sysctl -n hw.ncpu 2>/dev/null || nproc)
+        make dist
+        ls -l libsixel-*.tar.*
+
+    - name: Create Autotools dist archive (Windows)
+      if: runner.os == 'Windows'
+      shell: msys2 {0}
+      run: |
+        set -euxo pipefail
+        ./configure ${{ matrix.configure_flags }}
+        make -j$(nproc)
+        make dist
+        ls -l libsixel-*.tar.*
+
+    - name: Build from Autotools dist archive (non-Windows)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        set -euxo pipefail
+        tarball=$(ls libsixel-*.tar.* | head -n1)
+        mkdir dist-build
+        tar -xf "$tarball" -C dist-build
+        distdir=$(find dist-build -maxdepth 1 -type d -name 'libsixel-*' | head -n1)
+        cd "$distdir"
+        ./configure ${{ matrix.configure_flags }}
+        make -j$(sysctl -n hw.ncpu 2>/dev/null || nproc)
+        make check
+
+    - name: Build from Autotools dist archive (Windows)
+      if: runner.os == 'Windows'
+      shell: msys2 {0}
+      run: |
+        set -euxo pipefail
+        tarball=$(ls libsixel-*.tar.* | head -n1)
+        mkdir dist-build
+        tar -xf "$tarball" -C dist-build
+        distdir=$(find dist-build -maxdepth 1 -type d -name 'libsixel-*' | head -n1)
+        cd "$distdir"
+        ./configure ${{ matrix.configure_flags }}
+        make -j$(nproc)
+        make check
+
+
+
   ci-autotools-asan:
     name: Autotools ASan • ${{ matrix.os }} clang${{ matrix.variant_suffix }}
     runs-on: ${{ matrix.runner || matrix.os }}
@@ -555,6 +662,116 @@ jobs:
             ${extra:+$extra}
         cat config.log
         make V=1
+
+  ci-dist-meson:
+    name: Meson dist tarball • ${{ matrix.label }}
+    runs-on: ${{ matrix.runner || matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Linux thumbnailer command
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            setup_flags: >-
+              -Dpng=disabled -Djpeg=disabled -Dcurl=disabled
+              -Dbashcompletiondir= -Dzshcompletiondir=
+              -Dpython=disabled -Druby=disabled -Dtests=true
+              -Dthumbnailer_command=enabled
+          - label: macOS Quick Look extension
+            os: macos-latest
+            runner: macos-latest
+            setup_flags: >-
+              -Dpng=disabled -Djpeg=disabled -Dcurl=disabled
+              -Dbashcompletiondir= -Dzshcompletiondir=
+              -Dpython=disabled -Druby=disabled -Dtests=true
+              -Dquicklook_extension=enabled -Dquicklook_preview=enabled
+          - label: Windows WIC codec (MinGW)
+            os: windows-latest
+            runner: windows-latest
+            msystem: MINGW64
+            setup_flags: >-
+              --default-library static --wrap-mode=nodownload
+              -Dpng=disabled -Djpeg=disabled -Dcurl=disabled
+              -Dbashcompletiondir= -Dzshcompletiondir=
+              -Dpython=disabled -Druby=disabled -Dtests=true
+              -Dwic=enabled -Dwiccodec=enabled
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Install Meson toolchain (non-Windows)
+      if: runner.os != 'Windows'
+      run: |
+        python3 -m venv .meson-venv
+        . .meson-venv/bin/activate
+        pip install --upgrade pip
+        pip install meson ninja
+        echo "$PWD/.meson-venv/bin" >> "$GITHUB_PATH"
+
+    - name: Setup MSYS2 with Meson (Windows)
+      if: runner.os == 'Windows'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.msystem }}
+        update: true
+        install: >-
+          python
+          ninja
+        pacboy: >-
+          cc:p
+          meson:p
+          ninja:p
+
+    - name: Create Meson dist archive (Linux/macOS)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        set -euxo pipefail
+        meson setup builddir --wrap-mode=nodownload ${{ matrix.setup_flags }}
+        meson compile -C builddir
+        meson dist -C builddir
+        ls -l builddir/meson-dist
+
+    - name: Create Meson dist archive (Windows)
+      if: runner.os == 'Windows'
+      shell: msys2 {0}
+      run: |
+        set -euxo pipefail
+        meson setup builddir ${{ matrix.setup_flags }}
+        meson compile -C builddir
+        meson dist -C builddir
+        ls -l builddir/meson-dist
+
+    - name: Build from Meson dist archive (Linux/macOS)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        set -euxo pipefail
+        tarball=$(ls builddir/meson-dist/libsixel-*.tar.* | head -n1)
+        mkdir dist-build
+        tar -xf "$tarball" -C dist-build
+        distdir=$(find dist-build -maxdepth 1 -type d -name 'libsixel-*' | head -n1)
+        cd "$distdir"
+        meson setup build --wrap-mode=nodownload ${{ matrix.setup_flags }}
+        meson compile -C build
+        meson test -C build
+
+    - name: Build from Meson dist archive (Windows)
+      if: runner.os == 'Windows'
+      shell: msys2 {0}
+      run: |
+        set -euxo pipefail
+        tarball=$(ls builddir/meson-dist/libsixel-*.tar.* | head -n1)
+        mkdir dist-build
+        tar -xf "$tarball" -C dist-build
+        distdir=$(find dist-build -maxdepth 1 -type d -name 'libsixel-*' | head -n1)
+        cd "$distdir"
+        meson setup build ${{ matrix.setup_flags }}
+        meson compile -C build
+        meson test -C build
 
   ci-meson:
     name: Meson • ${{ matrix.os }} ${{ matrix.sys || 'native' }}
