@@ -6,6 +6,7 @@ _img2sixel()
     local cur prev words cword
     local opt_show opt_install opt_uninstall
     local opt_short_show opt_short_install opt_short_uninstall
+    local opt_threads opt_short_threads
 
     COMPREPLY=()
 
@@ -40,6 +41,8 @@ _img2sixel()
     opt_short_show="-1"
     opt_short_install="-2"
     opt_short_uninstall="-3"
+    opt_threads="--threads"
+    opt_short_threads="-="
 
     if declare -F _init_completion >/dev/null 2>&1; then
         _init_completion -n '=' || return
@@ -79,11 +82,21 @@ _img2sixel()
     elif [[ $cur == ${opt_short_uninstall}=* ]]; then
         prev=${opt_short_uninstall}
         cur=${cur#*=}
+    elif [[ $cur == ${opt_threads}=* ]]; then
+        prev=${opt_threads}
+        cur=${cur#*=}
+    elif [[ $cur == ${opt_short_threads}=* ]]; then
+        prev=${opt_short_threads}
+        cur=${cur#*=}
     fi
 
     case "$prev" in
     -1|--show-completion|-2|--install-completion|-3|--uninstall-completion)
         COMPREPLY=( $( compgen -W 'all bash zsh' -- "$cur" ) )
+        return 0
+        ;;
+    -=|--threads)
+        COMPREPLY=( $( compgen -W 'auto' -- "$cur" ) )
         return 0
         ;;
     -p|--colors)
@@ -265,6 +278,7 @@ _img2sixel()
                                    -o --outfile \
                                    -a --assessment \
                                    -J --assessment-file \
+                                   -= --threads \
                                    -7 --7bit-mode \
                                    -8 --8bit-mode \
                                    -R --gri-limit \

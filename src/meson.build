@@ -47,6 +47,13 @@ srcs = [
   'tty.c',
 ]
 
+if conf.get('SIXEL_ENABLE_THREADS', 0) == 1
+  srcs += [
+    'sixel_threading.c',
+    'threadpool.c',
+  ]
+endif
+
 if have_quicklook_thumbnailing
   srcs += ['quicklook_thumbnailing.m']
 endif
