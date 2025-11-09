@@ -948,6 +948,7 @@ jobs:
         install: >-
           python
           ninja
+          git
         pacboy: >-
           cc:p
           meson:p
