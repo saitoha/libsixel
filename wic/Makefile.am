@@ -12,6 +12,7 @@ CLEANFILES = *.o *.obj
 pkglib_LTLIBRARIES = libwicsixel.la
 libwicsixel_la_SOURCES = $(srcdir)/wic.c \
                          $(srcdir)/wic_stub.c \
+                         $(srcdir)/wic_stub.h \
                          $(top_builddir)/src/fromsixel.c \
                          $(top_builddir)/src/allocator.c \
                          $(top_builddir)/src/status.c \

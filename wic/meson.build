@@ -3,6 +3,7 @@
 wic_sources = files(
   'wic.c',
   'wic_stub.c',
+  'wic_stub.h',
   '../src/fromsixel.c',
   '../src/allocator.c',
   '../src/status.c',
