@@ -131,6 +131,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_LUT_POLICY_6BIT      0x2  /* use 6 bits per channel */
 #define SIXEL_LUT_POLICY_ROBINHOOD 0x3  /* preserve 8-bit channels */
 #define SIXEL_LUT_POLICY_HOPSCOTCH 0x4  /* preserve 8-bit channels */
+#define SIXEL_LUT_POLICY_CERTLUT   0x5  /* certified hierarchical LUT */
 
 /* built-in dither */
 #define SIXEL_BUILTIN_MONO_DARK   0x0  /* monochrome terminal with dark background */
@@ -483,6 +484,11 @@ typedef int SIXELSTATUS;
                                                                  channels via
                                                                  Hopscotch
                                                                  hashing
+                                                    certlut   -> certified
+                                                                 hierarchical
+                                                                 lookup tree
+                                                                 with zero
+                                                                 error
                                                 */
 #define SIXEL_OPTFLAG_WORKING_COLORSPACE ('W') /* -W WORKINGCOLORSPACE, --working-colorspace=WORKINGCOLORSPACE
                                                   select internal working color space

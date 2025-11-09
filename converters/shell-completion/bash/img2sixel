@@ -189,7 +189,8 @@ _img2sixel()
                                    5bit \
                                    6bit \
                                    robinhood \
-                                   hopscotch' -- "$cur" ) )
+                                   hopscotch \
+                                   certlut' -- "$cur" ) )
         return 0
         ;;
     -l|--loop-control)

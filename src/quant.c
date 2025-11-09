@@ -78,6 +78,12 @@
 #include "quant.h"
 #include "compat_stub.h"
 
+typedef struct {
+    uint8_t r;
+    uint8_t g;
+    uint8_t b;
+} sixel_color_t;
+
 static float env_final_merge_target_factor = 1.81;
 
 static unsigned char const sixel_safe_tones[256] = {
@@ -166,6 +172,103 @@ static void diffuse_sierra3_carry(int32_t *carry_curr, int32_t *carry_next,
                                   int32_t *carry_far, int width, int height,
                                   int depth, int x, int y, int32_t error,
                                   int direction, int channel);
+
+typedef struct {
+    int index;
+    int left;
+    int right;
+    unsigned char axis;
+} sixel_certlut_node_t;
+
+typedef struct {
+    uint32_t *level0;
+    uint8_t *pool;
+    uint32_t pool_size;
+    uint32_t pool_capacity;
+    int wR;
+    int wG;
+    int wB;
+    uint64_t wR2;
+    uint64_t wG2;
+    uint64_t wB2;
+    int32_t wr_scale[256];
+    int32_t wg_scale[256];
+    int32_t wb_scale[256];
+    int32_t *wr_palette;
+    int32_t *wg_palette;
+    int32_t *wb_palette;
+    sixel_color_t const *palette;
+    int ncolors;
+    sixel_certlut_node_t *kdnodes;
+    int kdnodes_count;
+    int kdtree_root;
+} sixel_certlut_t;
+
+#define SIXEL_CERTLUT_BRANCH_FLAG 0x40000000U
+/* #define DEBUG_CERTLUT_TRACE 1 */
+
+static void sixel_quant_cell_center(int rmin, int gmin, int bmin, int size,
+                                    int *cr, int *cg, int *cb);
+static void sixel_quant_weight_init(sixel_certlut_t *lut, int wR, int wG,
+                                    int wB);
+static uint64_t sixel_certlut_distance_precomputed(
+    sixel_certlut_t const *lut,
+    int index,
+    int32_t wr_r,
+    int32_t wg_g,
+    int32_t wb_b);
+static int sixel_certlut_palette_component(sixel_certlut_t const *lut,
+                                           int index, int axis);
+static void sixel_certlut_sort_indices(sixel_certlut_t const *lut,
+                                       int *indices, int count, int axis);
+static SIXELSTATUS sixel_certlut_kdtree_build(sixel_certlut_t *lut);
+static int sixel_certlut_kdtree_build_recursive(sixel_certlut_t *lut,
+                                                int *indices,
+                                                int count,
+                                                int depth);
+static uint64_t sixel_certlut_axis_distance(sixel_certlut_t const *lut,
+                                            int diff, int axis);
+static void sixel_certlut_consider_candidate(sixel_certlut_t const *lut,
+                                             int candidate,
+                                             int32_t wr_r,
+                                             int32_t wg_g,
+                                             int32_t wb_b,
+                                             int *best_idx,
+                                             uint64_t *best_dist,
+                                             int *second_idx,
+                                             uint64_t *second_dist);
+static void sixel_certlut_kdtree_search(sixel_certlut_t const *lut,
+                                        int node_index,
+                                        int r,
+                                        int g,
+                                        int b,
+                                        int32_t wr_r,
+                                        int32_t wg_g,
+                                        int32_t wb_b,
+                                        int *best_idx,
+                                        uint64_t *best_dist,
+                                        int *second_idx,
+                                        uint64_t *second_dist);
+static void sixel_quant_distance_pair(sixel_certlut_t const *lut, int r,
+                                      int g, int b, int *best_idx,
+                                      int *second_idx, uint64_t *best_dist,
+                                      uint64_t *second_dist);
+static int sixel_quant_is_cell_safe(sixel_certlut_t const *lut, int best_idx,
+                                    int second_idx, int size,
+                                    uint64_t best_dist,
+                                    uint64_t second_dist);
+static uint32_t sixel_quant_pool_alloc(sixel_certlut_t *lut, int *status);
+static void sixel_quant_assign_leaf(uint32_t *cell, int palette_index);
+static void sixel_quant_assign_branch(uint32_t *cell, uint32_t offset);
+static uint8_t sixel_certlut_fallback(sixel_certlut_t const *lut,
+                                      int r, int g, int b);
+static int sixel_certlut_build_cell(sixel_certlut_t *lut, uint32_t *cell,
+                                    int rmin, int gmin, int bmin, int size);
+static int sixel_certlut_init(sixel_certlut_t *lut);
+static void sixel_certlut_release(sixel_certlut_t *lut);
+static int sixel_certlut_prepare_palette_terms(sixel_certlut_t *lut);
+
+static sixel_certlut_t *certlut_context = NULL;
 
 static const int (*
 lso2_table(void))[7]
@@ -1277,6 +1380,7 @@ sixel_quant_clusters_to_colormap(unsigned long *weights,
 
 
 static int histogram_lut_policy = SIXEL_LUT_POLICY_AUTO;
+static int quant_method_for_largest = SIXEL_LARGE_NORM;
 
 void
 sixel_quant_set_lut_policy(int lut_policy)
@@ -1287,11 +1391,27 @@ sixel_quant_set_lut_policy(int lut_policy)
     if (lut_policy == SIXEL_LUT_POLICY_5BIT
         || lut_policy == SIXEL_LUT_POLICY_6BIT
         || lut_policy == SIXEL_LUT_POLICY_ROBINHOOD
-        || lut_policy == SIXEL_LUT_POLICY_HOPSCOTCH) {
+        || lut_policy == SIXEL_LUT_POLICY_HOPSCOTCH
+        || lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
         normalized = lut_policy;
     }
 
     histogram_lut_policy = normalized;
+}
+
+void
+sixel_quant_set_method_for_largest(int method)
+{
+    int normalized;
+
+    normalized = SIXEL_LARGE_NORM;
+    if (method == SIXEL_LARGE_NORM || method == SIXEL_LARGE_LUM) {
+        normalized = method;
+    } else if (method == SIXEL_LARGE_AUTO) {
+        normalized = SIXEL_LARGE_NORM;
+    }
+
+    quant_method_for_largest = normalized;
 }
 
 struct histogram_control {
@@ -1361,6 +1481,8 @@ histogram_control_make_for_policy(unsigned int depth, int lut_policy)
     } else if (lut_policy == SIXEL_LUT_POLICY_ROBINHOOD
                || lut_policy == SIXEL_LUT_POLICY_HOPSCOTCH) {
         control.channel_shift = 0U;
+    } else if (lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
+        control.channel_shift = 2U;
     }
     control.channel_bits = 8U - control.channel_shift;
     control.channel_mask = (1U << control.channel_bits) - 1U;
@@ -1624,6 +1746,924 @@ histogram_control_make(unsigned int depth)
                                                 histogram_lut_policy);
 
     return control;
+}
+
+static int
+sixel_certlut_init(sixel_certlut_t *lut)
+{
+    int status;
+
+    status = SIXEL_FALSE;
+    if (lut == NULL) {
+        goto end;
+    }
+
+    lut->level0 = NULL;
+    lut->pool = NULL;
+    lut->pool_size = 0U;
+    lut->pool_capacity = 0U;
+    lut->wR = 1;
+    lut->wG = 1;
+    lut->wB = 1;
+    lut->wR2 = 1U;
+    lut->wG2 = 1U;
+    lut->wB2 = 1U;
+    memset(lut->wr_scale, 0, sizeof(lut->wr_scale));
+    memset(lut->wg_scale, 0, sizeof(lut->wg_scale));
+    memset(lut->wb_scale, 0, sizeof(lut->wb_scale));
+    lut->wr_palette = NULL;
+    lut->wg_palette = NULL;
+    lut->wb_palette = NULL;
+    lut->palette = NULL;
+    lut->ncolors = 0;
+    lut->kdnodes = NULL;
+    lut->kdnodes_count = 0;
+    lut->kdtree_root = -1;
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
+
+static void
+sixel_certlut_release(sixel_certlut_t *lut)
+{
+    if (lut == NULL) {
+        return;
+    }
+    free(lut->level0);
+    free(lut->pool);
+    free(lut->wr_palette);
+    free(lut->wg_palette);
+    free(lut->wb_palette);
+    free(lut->kdnodes);
+    lut->level0 = NULL;
+    lut->pool = NULL;
+    lut->pool_size = 0U;
+    lut->pool_capacity = 0U;
+    lut->wr_palette = NULL;
+    lut->wg_palette = NULL;
+    lut->wb_palette = NULL;
+    lut->kdnodes = NULL;
+    lut->kdnodes_count = 0;
+    lut->kdtree_root = -1;
+}
+
+static int
+sixel_certlut_prepare_palette_terms(sixel_certlut_t *lut)
+{
+    int status;
+    size_t count;
+    int index;
+    int32_t *wr_terms;
+    int32_t *wg_terms;
+    int32_t *wb_terms;
+
+    status = SIXEL_FALSE;
+    wr_terms = NULL;
+    wg_terms = NULL;
+    wb_terms = NULL;
+    if (lut == NULL) {
+        goto end;
+    }
+    if (lut->ncolors <= 0) {
+        status = SIXEL_OK;
+        goto end;
+    }
+    count = (size_t)lut->ncolors;
+    wr_terms = (int32_t *)malloc(count * sizeof(int32_t));
+    if (wr_terms == NULL) {
+        goto end;
+    }
+    wg_terms = (int32_t *)malloc(count * sizeof(int32_t));
+    if (wg_terms == NULL) {
+        goto end;
+    }
+    wb_terms = (int32_t *)malloc(count * sizeof(int32_t));
+    if (wb_terms == NULL) {
+        goto end;
+    }
+    for (index = 0; index < lut->ncolors; ++index) {
+        wr_terms[index] = lut->wR * (int)lut->palette[index].r;
+        wg_terms[index] = lut->wG * (int)lut->palette[index].g;
+        wb_terms[index] = lut->wB * (int)lut->palette[index].b;
+    }
+    free(lut->wr_palette);
+    free(lut->wg_palette);
+    free(lut->wb_palette);
+    lut->wr_palette = wr_terms;
+    lut->wg_palette = wg_terms;
+    lut->wb_palette = wb_terms;
+    wr_terms = NULL;
+    wg_terms = NULL;
+    wb_terms = NULL;
+    status = SIXEL_OK;
+
+end:
+    free(wr_terms);
+    free(wg_terms);
+    free(wb_terms);
+    return status;
+}
+
+static void
+sixel_quant_cell_center(int rmin, int gmin, int bmin, int size,
+                        int *cr, int *cg, int *cb)
+{
+    int half;
+
+    half = size / 2;
+    *cr = rmin + half;
+    *cg = gmin + half;
+    *cb = bmin + half;
+    if (size == 1) {
+        *cr = rmin;
+        *cg = gmin;
+        *cb = bmin;
+    }
+}
+
+static void
+sixel_quant_weight_init(sixel_certlut_t *lut, int wR, int wG, int wB)
+{
+    int i;
+
+    lut->wR = wR;
+    lut->wG = wG;
+    lut->wB = wB;
+    lut->wR2 = (uint64_t)wR * (uint64_t)wR;
+    lut->wG2 = (uint64_t)wG * (uint64_t)wG;
+    lut->wB2 = (uint64_t)wB * (uint64_t)wB;
+    for (i = 0; i < 256; ++i) {
+        lut->wr_scale[i] = wR * i;
+        lut->wg_scale[i] = wG * i;
+        lut->wb_scale[i] = wB * i;
+    }
+}
+
+static uint64_t
+sixel_certlut_distance_precomputed(sixel_certlut_t const *lut,
+                                   int index,
+                                   int32_t wr_r,
+                                   int32_t wg_g,
+                                   int32_t wb_b)
+{
+    uint64_t distance;
+    int64_t diff;
+
+    diff = (int64_t)wr_r - (int64_t)lut->wr_palette[index];
+    distance = (uint64_t)(diff * diff);
+    diff = (int64_t)wg_g - (int64_t)lut->wg_palette[index];
+    distance += (uint64_t)(diff * diff);
+    diff = (int64_t)wb_b - (int64_t)lut->wb_palette[index];
+    distance += (uint64_t)(diff * diff);
+
+    return distance;
+}
+
+static void
+sixel_quant_distance_pair(sixel_certlut_t const *lut, int r, int g, int b,
+                          int *best_idx, int *second_idx,
+                          uint64_t *best_dist, uint64_t *second_dist)
+{
+    int i;
+    int best_candidate;
+    int second_candidate;
+    uint64_t best_value;
+    uint64_t second_value;
+    uint64_t distance;
+    int rr;
+    int gg;
+    int bb;
+    int32_t wr_r;
+    int32_t wg_g;
+    int32_t wb_b;
+
+    best_candidate = (-1);
+    second_candidate = (-1);
+    best_value = UINT64_MAX;
+    second_value = UINT64_MAX;
+    rr = r;
+    gg = g;
+    bb = b;
+    if (rr < 0) {
+        rr = 0;
+    } else if (rr > 255) {
+        rr = 255;
+    }
+    if (gg < 0) {
+        gg = 0;
+    } else if (gg > 255) {
+        gg = 255;
+    }
+    if (bb < 0) {
+        bb = 0;
+    } else if (bb > 255) {
+        bb = 255;
+    }
+    wr_r = lut->wr_scale[rr];
+    wg_g = lut->wg_scale[gg];
+    wb_b = lut->wb_scale[bb];
+    if (lut->kdnodes != NULL && lut->kdtree_root >= 0) {
+        sixel_certlut_kdtree_search(lut,
+                                    lut->kdtree_root,
+                                    r,
+                                    g,
+                                    b,
+                                    wr_r,
+                                    wg_g,
+                                    wb_b,
+                                    &best_candidate,
+                                    &best_value,
+                                    &second_candidate,
+                                    &second_value);
+    } else {
+        for (i = 0; i < lut->ncolors; ++i) {
+            distance = sixel_certlut_distance_precomputed(lut,
+                                                          i,
+                                                          wr_r,
+                                                          wg_g,
+                                                          wb_b);
+            if (distance < best_value) {
+                second_value = best_value;
+                second_candidate = best_candidate;
+                best_value = distance;
+                best_candidate = i;
+            } else if (distance < second_value) {
+                second_value = distance;
+                second_candidate = i;
+            }
+        }
+    }
+    if (second_candidate < 0) {
+        second_candidate = best_candidate;
+        second_value = best_value;
+    }
+    *best_idx = best_candidate;
+    *second_idx = second_candidate;
+    *best_dist = best_value;
+    *second_dist = second_value;
+}
+
+static int
+sixel_quant_is_cell_safe(sixel_certlut_t const *lut, int best_idx,
+                         int second_idx, int size, uint64_t best_dist,
+                         uint64_t second_dist)
+{
+    uint64_t delta_sq;
+    uint64_t rhs;
+    uint64_t weight_term;
+    int64_t wr_delta;
+    int64_t wg_delta;
+    int64_t wb_delta;
+
+    if (best_idx < 0 || second_idx < 0) {
+        return 1;
+    }
+
+    /*
+     * The certification bound compares the squared distance gap against the
+     * palette separation scaled by the cube diameter.  If the gap wins the
+     * entire cube maps to the current best palette entry.
+     */
+    delta_sq = second_dist - best_dist;
+    wr_delta = (int64_t)lut->wr_palette[second_idx]
+        - (int64_t)lut->wr_palette[best_idx];
+    wg_delta = (int64_t)lut->wg_palette[second_idx]
+        - (int64_t)lut->wg_palette[best_idx];
+    wb_delta = (int64_t)lut->wb_palette[second_idx]
+        - (int64_t)lut->wb_palette[best_idx];
+    weight_term = (uint64_t)(wr_delta * wr_delta);
+    weight_term += (uint64_t)(wg_delta * wg_delta);
+    weight_term += (uint64_t)(wb_delta * wb_delta);
+    rhs = (uint64_t)3 * (uint64_t)size * (uint64_t)size * weight_term;
+
+    return delta_sq * delta_sq > rhs;
+}
+
+static uint32_t
+sixel_quant_pool_alloc(sixel_certlut_t *lut, int *status)
+{
+    uint32_t required;
+    uint32_t next_capacity;
+    uint32_t offset;
+    uint8_t *resized;
+
+    offset = 0U;
+    if (status != NULL) {
+        *status = SIXEL_FALSE;
+    }
+    required = lut->pool_size + (uint32_t)(8 * sizeof(uint32_t));
+    if (required > lut->pool_capacity) {
+        next_capacity = lut->pool_capacity;
+        if (next_capacity == 0U) {
+            next_capacity = (uint32_t)(8 * sizeof(uint32_t));
+        }
+        while (next_capacity < required) {
+            if (next_capacity > UINT32_MAX / 2U) {
+                return 0U;
+            }
+            next_capacity *= 2U;
+        }
+        resized = (uint8_t *)realloc(lut->pool, next_capacity);
+        if (resized == NULL) {
+            return 0U;
+        }
+        lut->pool = resized;
+        lut->pool_capacity = next_capacity;
+    }
+    offset = lut->pool_size;
+    memset(lut->pool + offset, 0, 8 * sizeof(uint32_t));
+    lut->pool_size = required;
+    if (status != NULL) {
+        *status = SIXEL_OK;
+    }
+
+    return offset;
+}
+
+static void
+sixel_quant_assign_leaf(uint32_t *cell, int palette_index)
+{
+    *cell = 0x80000000U | (uint32_t)(palette_index & 0xff);
+}
+
+static void
+sixel_quant_assign_branch(uint32_t *cell, uint32_t offset)
+{
+    *cell = SIXEL_CERTLUT_BRANCH_FLAG | (offset & 0x3fffffffU);
+}
+
+static int
+sixel_certlut_palette_component(sixel_certlut_t const *lut,
+                                int index, int axis)
+{
+    sixel_color_t const *color;
+
+    color = &lut->palette[index];
+    if (axis == 0) {
+        return (int)color->r;
+    }
+    if (axis == 1) {
+        return (int)color->g;
+    }
+    return (int)color->b;
+}
+
+static void
+sixel_certlut_sort_indices(sixel_certlut_t const *lut,
+                           int *indices, int count, int axis)
+{
+    int i;
+    int j;
+    int key;
+    int key_value;
+    int current_value;
+
+    for (i = 1; i < count; ++i) {
+        key = indices[i];
+        key_value = sixel_certlut_palette_component(lut, key, axis);
+        j = i - 1;
+        while (j >= 0) {
+            current_value = sixel_certlut_palette_component(lut,
+                                                            indices[j],
+                                                            axis);
+            if (current_value <= key_value) {
+                break;
+            }
+            indices[j + 1] = indices[j];
+            --j;
+        }
+        indices[j + 1] = key;
+    }
+}
+
+static int
+sixel_certlut_kdtree_build_recursive(sixel_certlut_t *lut,
+                                     int *indices,
+                                     int count,
+                                     int depth)
+{
+    int axis;
+    int median;
+    int node_index;
+
+    if (count <= 0) {
+        return -1;
+    }
+
+    axis = depth % 3;
+    sixel_certlut_sort_indices(lut, indices, count, axis);
+    median = count / 2;
+    node_index = lut->kdnodes_count;
+    if (node_index >= lut->ncolors) {
+        return -1;
+    }
+    lut->kdnodes_count++;
+    lut->kdnodes[node_index].index = indices[median];
+    lut->kdnodes[node_index].axis = (unsigned char)axis;
+    lut->kdnodes[node_index].left =
+        sixel_certlut_kdtree_build_recursive(lut,
+                                             indices,
+                                             median,
+                                             depth + 1);
+    lut->kdnodes[node_index].right =
+        sixel_certlut_kdtree_build_recursive(lut,
+                                             indices + median + 1,
+                                             count - median - 1,
+                                             depth + 1);
+
+    return node_index;
+}
+
+static SIXELSTATUS
+sixel_certlut_kdtree_build(sixel_certlut_t *lut)
+{
+    SIXELSTATUS status;
+    int *indices;
+    int i;
+
+    status = SIXEL_FALSE;
+    indices = NULL;
+    lut->kdnodes = NULL;
+    lut->kdnodes_count = 0;
+    lut->kdtree_root = -1;
+    if (lut->ncolors <= 0) {
+        status = SIXEL_OK;
+        goto end;
+    }
+    lut->kdnodes = (sixel_certlut_node_t *)
+        calloc((size_t)lut->ncolors, sizeof(sixel_certlut_node_t));
+    if (lut->kdnodes == NULL) {
+        goto end;
+    }
+    indices = (int *)malloc((size_t)lut->ncolors * sizeof(int));
+    if (indices == NULL) {
+        goto end;
+    }
+    for (i = 0; i < lut->ncolors; ++i) {
+        indices[i] = i;
+    }
+    lut->kdnodes_count = 0;
+    lut->kdtree_root = sixel_certlut_kdtree_build_recursive(lut,
+                                                            indices,
+                                                            lut->ncolors,
+                                                            0);
+    if (lut->kdtree_root < 0) {
+        goto end;
+    }
+    status = SIXEL_OK;
+
+end:
+    free(indices);
+    if (SIXEL_FAILED(status)) {
+        free(lut->kdnodes);
+        lut->kdnodes = NULL;
+        lut->kdnodes_count = 0;
+        lut->kdtree_root = -1;
+    }
+
+    return status;
+}
+
+static uint64_t
+sixel_certlut_axis_distance(sixel_certlut_t const *lut, int diff, int axis)
+{
+    uint64_t weight;
+    uint64_t abs_diff;
+
+    abs_diff = (uint64_t)(diff < 0 ? -diff : diff);
+    if (axis == 0) {
+        weight = lut->wR2;
+    } else if (axis == 1) {
+        weight = lut->wG2;
+    } else {
+        weight = lut->wB2;
+    }
+
+    return weight * abs_diff * abs_diff;
+}
+
+static void
+sixel_certlut_consider_candidate(sixel_certlut_t const *lut,
+                                 int candidate,
+                                 int32_t wr_r,
+                                 int32_t wg_g,
+                                 int32_t wb_b,
+                                 int *best_idx,
+                                 uint64_t *best_dist,
+                                 int *second_idx,
+                                 uint64_t *second_dist)
+{
+    uint64_t distance;
+
+    distance = sixel_certlut_distance_precomputed(lut,
+                                                  candidate,
+                                                  wr_r,
+                                                  wg_g,
+                                                  wb_b);
+    if (distance < *best_dist) {
+        *second_dist = *best_dist;
+        *second_idx = *best_idx;
+        *best_dist = distance;
+        *best_idx = candidate;
+    } else if (distance < *second_dist) {
+        *second_dist = distance;
+        *second_idx = candidate;
+    }
+}
+
+static void
+sixel_certlut_kdtree_search(sixel_certlut_t const *lut,
+                            int node_index,
+                            int r,
+                            int g,
+                            int b,
+                            int32_t wr_r,
+                            int32_t wg_g,
+                            int32_t wb_b,
+                            int *best_idx,
+                            uint64_t *best_dist,
+                            int *second_idx,
+                            uint64_t *second_dist)
+{
+    sixel_certlut_node_t const *node;
+    int axis;
+    int value;
+    int diff;
+    int near_child;
+    int far_child;
+    uint64_t axis_bound;
+    int component;
+
+    if (node_index < 0) {
+        return;
+    }
+    node = &lut->kdnodes[node_index];
+    sixel_certlut_consider_candidate(lut,
+                                     node->index,
+                                     wr_r,
+                                     wg_g,
+                                     wb_b,
+                                     best_idx,
+                                     best_dist,
+                                     second_idx,
+                                     second_dist);
+
+    axis = (int)node->axis;
+    value = sixel_certlut_palette_component(lut, node->index, axis);
+    if (axis == 0) {
+        component = r;
+    } else if (axis == 1) {
+        component = g;
+    } else {
+        component = b;
+    }
+    diff = component - value;
+    if (diff <= 0) {
+        near_child = node->left;
+        far_child = node->right;
+    } else {
+        near_child = node->right;
+        far_child = node->left;
+    }
+    if (near_child >= 0) {
+        sixel_certlut_kdtree_search(lut,
+                                    near_child,
+                                    r,
+                                    g,
+                                    b,
+                                    wr_r,
+                                    wg_g,
+                                    wb_b,
+                                    best_idx,
+                                    best_dist,
+                                    second_idx,
+                                    second_dist);
+    }
+    axis_bound = sixel_certlut_axis_distance(lut, diff, axis);
+    if (far_child >= 0 && axis_bound <= *second_dist) {
+        sixel_certlut_kdtree_search(lut,
+                                    far_child,
+                                    r,
+                                    g,
+                                    b,
+                                    wr_r,
+                                    wg_g,
+                                    wb_b,
+                                    best_idx,
+                                    best_dist,
+                                    second_idx,
+                                    second_dist);
+    }
+}
+
+static uint8_t
+sixel_certlut_fallback(sixel_certlut_t const *lut, int r, int g, int b)
+{
+    int best_idx;
+    int second_idx;
+    uint64_t best_dist;
+    uint64_t second_dist;
+
+    best_idx = -1;
+    second_idx = -1;
+    best_dist = 0U;
+    second_dist = 0U;
+    if (lut == NULL) {
+        return 0U;
+    }
+    /*
+     * The lazy builder may fail when allocations run out.  Fall back to a
+     * direct brute-force palette search so lookups still succeed even in low
+     * memory conditions.
+     */
+    sixel_quant_distance_pair(lut,
+                              r,
+                              g,
+                              b,
+                              &best_idx,
+                              &second_idx,
+                              &best_dist,
+                              &second_dist);
+    if (best_idx < 0) {
+        return 0U;
+    }
+
+    return (uint8_t)best_idx;
+}
+
+static int
+sixel_certlut_build_cell(sixel_certlut_t *lut, uint32_t *cell,
+                         int rmin, int gmin, int bmin, int size)
+{
+    SIXELSTATUS status;
+    int cr;
+    int cg;
+    int cb;
+    int best_idx;
+    int second_idx;
+    uint64_t best_dist;
+    uint64_t second_dist;
+    uint32_t offset;
+    int branch_status;
+    uint8_t *pool_before;
+    size_t pool_size_before;
+    uint32_t cell_offset;
+    int cell_in_pool;
+
+    if (cell == NULL || lut == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+    if (*cell == 0U) {
+#ifdef DEBUG_CERTLUT_TRACE
+        fprintf(stderr,
+                "build_cell rmin=%d gmin=%d bmin=%d size=%d\n",
+                rmin,
+                gmin,
+                bmin,
+                size);
+#endif
+    }
+    if (*cell != 0U) {
+        status = SIXEL_OK;
+        goto end;
+    }
+
+    /*
+     * Each node represents an axis-aligned cube in RGB space.  The builder
+     * certifies the dominant palette index by checking the distance gap at
+     * the cell center.  When certification fails the cube is split into eight
+     * octants backed by a pool block.  Children remain unbuilt until lookups
+     * descend into them, keeping the workload proportional to actual queries.
+     */
+    status = SIXEL_FALSE;
+    sixel_quant_cell_center(rmin, gmin, bmin, size, &cr, &cg, &cb);
+    sixel_quant_distance_pair(lut, cr, cg, cb, &best_idx, &second_idx,
+                              &best_dist, &second_dist);
+    if (best_idx < 0) {
+        best_idx = 0;
+    }
+    if (size == 1) {
+        sixel_quant_assign_leaf(cell, best_idx);
+#ifdef DEBUG_CERTLUT_TRACE
+        fprintf(stderr,
+                "  leaf idx=%d\n",
+                best_idx);
+#endif
+        status = SIXEL_OK;
+        goto end;
+    }
+    if (sixel_quant_is_cell_safe(lut, best_idx, second_idx, size,
+                                 best_dist, second_dist)) {
+        sixel_quant_assign_leaf(cell, best_idx);
+#ifdef DEBUG_CERTLUT_TRACE
+        fprintf(stderr,
+                "  safe leaf idx=%d\n",
+                best_idx);
+#endif
+        status = SIXEL_OK;
+        goto end;
+    }
+    pool_before = lut->pool;
+    pool_size_before = lut->pool_size;
+    cell_in_pool = 0;
+    cell_offset = 0U;
+    /*
+     * The pool may grow while building descendants.  Remember the caller's
+     * offset so the cell pointer can be refreshed after realloc moves the
+     * backing storage.
+     */
+    if (pool_before != NULL) {
+        if ((uint8_t *)(void *)cell >= pool_before
+                && (size_t)((uint8_t *)(void *)cell - pool_before)
+                        < pool_size_before) {
+            cell_in_pool = 1;
+            cell_offset = (uint32_t)((uint8_t *)(void *)cell - pool_before);
+        }
+    }
+    offset = sixel_quant_pool_alloc(lut, &branch_status);
+    if (branch_status != SIXEL_OK) {
+        goto end;
+    }
+    if (cell_in_pool != 0) {
+        cell = (uint32_t *)(void *)(lut->pool + cell_offset);
+    }
+    sixel_quant_assign_branch(cell, offset);
+#ifdef DEBUG_CERTLUT_TRACE
+    fprintf(stderr,
+            "  branch offset=%u\n",
+            offset);
+#endif
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
+
+static int
+sixel_certlut_build(sixel_certlut_t *lut, sixel_color_t const *palette,
+                    int ncolors, int wR, int wG, int wB)
+{
+    SIXELSTATUS status;
+    int initialized;
+    size_t level0_count;
+    status = SIXEL_FALSE;
+    initialized = sixel_certlut_init(lut);
+    if (SIXEL_FAILED(initialized)) {
+        goto end;
+    }
+    lut->palette = palette;
+    lut->ncolors = ncolors;
+    sixel_quant_weight_init(lut, wR, wG, wB);
+    status = sixel_certlut_prepare_palette_terms(lut);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    status = sixel_certlut_kdtree_build(lut);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    level0_count = (size_t)64 * (size_t)64 * (size_t)64;
+    lut->level0 = (uint32_t *)calloc(level0_count, sizeof(uint32_t));
+    if (lut->level0 == NULL) {
+        goto end;
+    }
+    /*
+     * Level 0 cells start uninitialized.  The lookup routine materializes
+     * individual subtrees on demand so we avoid evaluating the entire
+     * 64x64x64 grid upfront.
+     */
+    status = SIXEL_OK;
+
+end:
+    if (SIXEL_FAILED(status)) {
+        sixel_certlut_release(lut);
+    }
+    return status;
+}
+
+static uint8_t
+sixel_certlut_lookup(sixel_certlut_t *lut, uint8_t r, uint8_t g, uint8_t b)
+{
+    uint32_t entry;
+    uint32_t offset;
+    uint32_t index;
+    uint32_t *children;
+    uint32_t *cell;
+    int shift;
+    int child;
+    int status;
+    int size;
+    int rmin;
+    int gmin;
+    int bmin;
+    int step;
+    if (lut == NULL || lut->level0 == NULL) {
+        return 0U;
+    }
+    /*
+     * Cells are created lazily.  A zero entry indicates an uninitialized
+     * subtree, so the builder is invoked with the cube bounds of the current
+     * traversal.  Should allocation fail we fall back to a direct brute-force
+     * palette search for the queried pixel.
+     */
+    index = ((uint32_t)(r >> 2) << 12)
+          | ((uint32_t)(g >> 2) << 6)
+          | (uint32_t)(b >> 2);
+    cell = lut->level0 + index;
+    size = 4;
+    rmin = (int)(r & 0xfc);
+    gmin = (int)(g & 0xfc);
+    bmin = (int)(b & 0xfc);
+    entry = *cell;
+    if (entry == 0U) {
+#ifdef DEBUG_CERTLUT_TRACE
+        fprintf(stderr,
+                "lookup build level0 r=%u g=%u b=%u\n",
+                (unsigned int)r,
+                (unsigned int)g,
+                (unsigned int)b);
+#endif
+        status = sixel_certlut_build_cell(lut, cell, rmin, gmin, bmin, size);
+        if (SIXEL_FAILED(status)) {
+            return sixel_certlut_fallback(lut,
+                                          (int)r,
+                                          (int)g,
+                                          (int)b);
+        }
+        entry = *cell;
+    }
+    shift = 1;
+    while ((entry & 0x80000000U) == 0U) {
+        offset = entry & 0x3fffffffU;
+        children = (uint32_t *)(void *)(lut->pool + offset);
+        child = (((int)(r >> shift) & 1) << 2)
+              | (((int)(g >> shift) & 1) << 1)
+              | ((int)(b >> shift) & 1);
+#ifdef DEBUG_CERTLUT_TRACE
+        fprintf(stderr,
+                "descend child=%d size=%d offset=%u\n",
+                child,
+                size,
+                offset);
+#endif
+        step = size / 2;
+        if (step <= 0) {
+            step = 1;
+        }
+        rmin += step * ((child >> 2) & 1);
+        gmin += step * ((child >> 1) & 1);
+        bmin += step * (child & 1);
+        size = step;
+        cell = children + (size_t)child;
+        entry = *cell;
+        if (entry == 0U) {
+#ifdef DEBUG_CERTLUT_TRACE
+            fprintf(stderr,
+                    "lookup build child size=%d rmin=%d gmin=%d bmin=%d\n",
+                    size,
+                    rmin,
+                    gmin,
+                    bmin);
+#endif
+            status = sixel_certlut_build_cell(lut,
+                                              cell,
+                                              rmin,
+                                              gmin,
+                                              bmin,
+                                              size);
+            if (SIXEL_FAILED(status)) {
+                return sixel_certlut_fallback(lut,
+                                              (int)r,
+                                              (int)g,
+                                              (int)b);
+            }
+            children = (uint32_t *)(void *)(lut->pool + offset);
+            cell = children + (size_t)child;
+            entry = *cell;
+        }
+        if (size == 1) {
+            break;
+        }
+        if (shift == 0) {
+            break;
+        }
+        --shift;
+    }
+
+    return (uint8_t)(entry & 0xffU);
+}
+
+static void
+sixel_certlut_free(sixel_certlut_t *lut)
+{
+    sixel_certlut_release(lut);
+    if (lut != NULL) {
+        lut->palette = NULL;
+        lut->ncolors = 0;
+    }
 }
 
 static size_t
@@ -5541,6 +6581,30 @@ lookup_fast_hopscotch(unsigned char const * const pixel,
                               control);
 }
 
+static int
+lookup_fast_certlut(unsigned char const * const pixel,
+                    int const depth,
+                    unsigned char const * const palette,
+                    int const reqcolor,
+                    unsigned short * const cachetable,
+                    int const complexion)
+{
+    (void)depth;
+    (void)palette;
+    (void)reqcolor;
+    (void)cachetable;
+    (void)complexion;
+
+    if (certlut_context == NULL) {
+        return 0;
+    }
+
+    return (int)sixel_certlut_lookup(certlut_context,
+                                     pixel[0],
+                                     pixel[1],
+                                     pixel[2]);
+}
+
 
 static int
 lookup_mono_darkbg(unsigned char const * const pixel,
@@ -6374,6 +7438,14 @@ sixel_quant_apply_palette(
     int use_varerr;
     int use_positional;
     int carry_mode;
+    sixel_certlut_t certlut;
+    int certlut_ready;
+    int wR;
+    int wG;
+    int wB;
+
+    certlut_ready = 0;
+    memset(&certlut, 0, sizeof(certlut));
 
     /* check bad reqcolor */
     if (reqcolor < 1) {
@@ -6428,6 +7500,8 @@ sixel_quant_apply_palette(
             f_lookup = lookup_fast_robinhood;
         } else if (histogram_lut_policy == SIXEL_LUT_POLICY_HOPSCOTCH) {
             f_lookup = lookup_fast_hopscotch;
+        } else if (histogram_lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
+            f_lookup = lookup_fast_certlut;
         }
     }
 
@@ -6466,6 +7540,36 @@ sixel_quant_apply_palette(
         }
     }
 
+    if (f_lookup == lookup_fast_certlut) {
+        if (depth != 3) {
+            status = SIXEL_BAD_ARGUMENT;
+            sixel_helper_set_additional_message(
+                "sixel_quant_apply_palette: "
+                "certlut requires RGB pixels.");
+            goto end;
+        }
+        if (quant_method_for_largest == SIXEL_LARGE_LUM) {
+            wR = complexion * 299;
+            wG = 587;
+            wB = 114;
+        } else {
+            wR = complexion;
+            wG = 1;
+            wB = 1;
+        }
+        status = sixel_certlut_build(&certlut,
+                                     (sixel_color_t const *)palette,
+                                     reqcolor,
+                                     wR,
+                                     wG,
+                                     wB);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        certlut_context = &certlut;
+        certlut_ready = 1;
+    }
+
     if (use_positional) {
         status = apply_palette_positional(result, data, width, height,
                                           depth, palette, reqcolor,
@@ -6496,6 +7600,12 @@ sixel_quant_apply_palette(
         goto end;
     }
 
+    if (certlut_ready) {
+        certlut_context = NULL;
+        sixel_certlut_free(&certlut);
+        certlut_ready = 0;
+    }
+
     if (allocated_cache) {
         sixel_quant_cache_release(indextable,
                                   cache_policy,
@@ -6505,6 +7615,10 @@ sixel_quant_apply_palette(
     status = SIXEL_OK;
 
 end:
+    if (certlut_ready) {
+        certlut_context = NULL;
+        sixel_certlut_free(&certlut);
+    }
     return status;
 }
 

@@ -95,7 +95,8 @@ _lutpolicy() {
     '5bit[force 5-bit buckets]' \
     '6bit[force 6-bit buckets for RGB inputs]' \
     'robinhood[keep 8-bit channels via Robin Hood hashing]' \
-    'hopscotch[keep 8-bit channels via Hopscotch hashing]'
+    'hopscotch[keep 8-bit channels via Hopscotch hashing]' \
+    'certlut[certified hierarchical LUT with zero error]'
 }
 
 _looptype() {
