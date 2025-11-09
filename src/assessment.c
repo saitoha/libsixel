@@ -162,7 +162,36 @@ static assessment_stage_descriptor_t const g_stage_descriptors[] = {
     {SIXEL_ASSESSMENT_STAGE_PALETTE_SOLVE, "PaletteSolve"},
     {SIXEL_ASSESSMENT_STAGE_PALETTE_APPLY, "PaletteApply"},
     {SIXEL_ASSESSMENT_STAGE_ENCODE, "Encode"},
+    {SIXEL_ASSESSMENT_STAGE_ENCODE_PREPARE, "EncodePrepare"},
+    {SIXEL_ASSESSMENT_STAGE_ENCODE_CLASSIFY, "EncodeClassify"},
+    {SIXEL_ASSESSMENT_STAGE_ENCODE_COMPOSE, "EncodeCompose"},
+    {SIXEL_ASSESSMENT_STAGE_ENCODE_COMPOSE_SCAN, "EncodeComposeScan"},
+    {SIXEL_ASSESSMENT_STAGE_ENCODE_COMPOSE_QUEUE, "EncodeComposeQueue"},
+    {SIXEL_ASSESSMENT_STAGE_ENCODE_EMIT, "EncodeEmit"},
     {SIXEL_ASSESSMENT_STAGE_OUTPUT, "Output"}
+};
+
+/*
+ * Only top-level stages contribute to the total so nested probes do not
+ * inflate the reported wall time by double counting their parents.
+ */
+static unsigned char const g_stage_counts_toward_total[] = {
+    1, /* ImageRead */
+    1, /* ImageDecode */
+    1, /* Scale */
+    1, /* Crop */
+    1, /* ColorConvert */
+    1, /* PaletteHistogram */
+    1, /* PaletteSolve */
+    1, /* PaletteApply */
+    1, /* Encode */
+    0, /* EncodePrepare */
+    0, /* EncodeClassify */
+    0, /* EncodeCompose */
+    0, /* EncodeComposeScan */
+    0, /* EncodeComposeQueue */
+    0, /* EncodeEmit */
+    1  /* Output */
 };
 
 SIXELAPI double
@@ -726,6 +755,70 @@ sixel_assessment_record_palette_apply_span(double duration)
     assessment->stage_durations[SIXEL_ASSESSMENT_STAGE_PALETTE_APPLY] +=
         duration;
     assessment->encode_palette_time_pending += duration;
+}
+
+SIXELAPI int
+sixel_assessment_encode_probe_enabled(void)
+{
+    sixel_assessment_t *assessment;
+
+    assessment = g_active_encode_assessment;
+    if (assessment == NULL) {
+        return 0;
+    }
+    if ((assessment->sections_mask &
+            SIXEL_ASSESSMENT_SECTION_PERFORMANCE) == 0u) {
+        return 0;
+    }
+    return 1;
+}
+
+SIXELAPI void
+sixel_assessment_record_encode_span(sixel_assessment_stage_t stage,
+                                    double duration)
+{
+    sixel_assessment_t *assessment;
+
+    if (duration <= 0.0) {
+        return;
+    }
+    if (stage <= SIXEL_ASSESSMENT_STAGE_NONE ||
+            stage >= SIXEL_ASSESSMENT_STAGE_COUNT) {
+        return;
+    }
+    assessment = g_active_encode_assessment;
+    if (assessment == NULL) {
+        return;
+    }
+    if ((assessment->sections_mask &
+            SIXEL_ASSESSMENT_SECTION_PERFORMANCE) == 0u) {
+        return;
+    }
+    assessment->stage_durations[stage] += duration;
+}
+
+SIXELAPI void
+sixel_assessment_record_encode_work(sixel_assessment_stage_t stage,
+                                    double amount)
+{
+    sixel_assessment_t *assessment;
+
+    if (amount <= 0.0) {
+        return;
+    }
+    if (stage <= SIXEL_ASSESSMENT_STAGE_NONE ||
+            stage >= SIXEL_ASSESSMENT_STAGE_COUNT) {
+        return;
+    }
+    assessment = g_active_encode_assessment;
+    if (assessment == NULL) {
+        return;
+    }
+    if ((assessment->sections_mask &
+            SIXEL_ASSESSMENT_SECTION_PERFORMANCE) == 0u) {
+        return;
+    }
+    assessment->stage_bytes[stage] += amount;
 }
 
 SIXELAPI void
@@ -4439,7 +4532,9 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
             stage = g_stage_descriptors[stage_index].id;
             seconds = assessment->stage_durations[stage];
             bytes = (size_t)assessment->stage_bytes[stage];
-            total_duration += seconds;
+            if (g_stage_counts_toward_total[stage_index] != 0) {
+                total_duration += seconds;
+            }
             duration_ms = seconds * 1000.0;
             if (seconds > 0.0) {
                 throughput = (double)bytes / seconds;
