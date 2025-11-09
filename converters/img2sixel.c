@@ -451,6 +451,9 @@ static img2sixel_option_help_t const g_option_help_table[] = {
         "                             hopscotch -> retain 8-bit\n"
         "                                          precision via\n"
         "                                          Hopscotch hashing\n"
+        "                             certlut   -> certified hierarchical\n"
+        "                                          lookup tree with\n"
+        "                                          zero error\n"
     },
     {
         'l',
