@@ -28,6 +28,12 @@ typedef enum sixel_assessment_stage {
     SIXEL_ASSESSMENT_STAGE_PALETTE_SOLVE,
     SIXEL_ASSESSMENT_STAGE_PALETTE_APPLY,
     SIXEL_ASSESSMENT_STAGE_ENCODE,
+    SIXEL_ASSESSMENT_STAGE_ENCODE_PREPARE,
+    SIXEL_ASSESSMENT_STAGE_ENCODE_CLASSIFY,
+    SIXEL_ASSESSMENT_STAGE_ENCODE_COMPOSE,
+    SIXEL_ASSESSMENT_STAGE_ENCODE_COMPOSE_SCAN,
+    SIXEL_ASSESSMENT_STAGE_ENCODE_COMPOSE_QUEUE,
+    SIXEL_ASSESSMENT_STAGE_ENCODE_EMIT,
     SIXEL_ASSESSMENT_STAGE_OUTPUT,
     SIXEL_ASSESSMENT_STAGE_COUNT
 } sixel_assessment_stage_t;
@@ -143,6 +149,17 @@ sixel_assessment_palette_probe_enabled(void);
 
 SIXELAPI void
 sixel_assessment_record_palette_apply_span(double duration);
+
+SIXELAPI int
+sixel_assessment_encode_probe_enabled(void);
+
+SIXELAPI void
+sixel_assessment_record_encode_span(sixel_assessment_stage_t stage,
+                                    double duration);
+
+SIXELAPI void
+sixel_assessment_record_encode_work(sixel_assessment_stage_t stage,
+                                    double amount);
 
 SIXELAPI SIXELSTATUS
 sixel_assessment_get_json(sixel_assessment_t *assessment,
