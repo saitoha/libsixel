@@ -386,6 +386,23 @@ elif wic_opt.enabled()
   error('WIC support is only available on Windows')
 endif
 
+threads_opt = get_option('threads')
+threads_message = 'no'
+have_threads = false
+if not threads_opt.disabled()
+  conf.set('SIXEL_ENABLE_THREADS', 1)
+  threads_message = 'yes'
+  have_threads = true
+  if host_system != 'windows'
+    threads_dep = dependency('threads', required: true)
+    deps += threads_dep
+    reqs += threads_dep
+    link_libs += threads_dep
+  endif
+else
+  conf.set('SIXEL_ENABLE_THREADS', 0)
+endif
+
 wiccodec_opt = get_option('wiccodec')
 wiccodec_message = 'no'
 have_wiccodec = false
@@ -974,6 +991,10 @@ libsixel_posix_defs = cc.get_supported_arguments([
   '-D_POSIX_C_SOURCE=200809L',
 ])
 
+if have_threads
+  libsixel_posix_defs += cc.get_supported_arguments(['-DSIXEL_ENABLE_THREADS=1'])
+endif
+
 subdir('src')
 subdir('converters')
 if have_wiccodec
@@ -1047,6 +1068,7 @@ message('')
 message('       Loader component    : ' + loaders_summary)
 message('       Network access      : ' + net_summary)
 message('       libwinpthread       : ' + (have_winpthread ? 'yes' : 'no'))
+message('       internal threads    : ' + threads_message)
 message('       pkg-config dir      : ' + pkgconfig_dir)
 message('       Bash completion dir : ' + bash_completion_message)
 message('       Zsh completion dir  : ' + zsh_completion_message)

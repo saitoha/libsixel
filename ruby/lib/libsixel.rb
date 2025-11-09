@@ -17,6 +17,44 @@ require_relative "libsixel/helper"
 require_relative "libsixel/frame"
 
 module Libsixel
+  def self.set_threads(value)
+    auto_requested = false
+    text = nil
+    count = 0
+
+    if value.is_a?(String)
+      text = value.strip
+      if text.casecmp('auto').zero?
+        auto_requested = true
+        count = 0
+      else
+        begin
+          count = Integer(text, 10)
+        rescue ArgumentError
+          raise ArgumentError,
+                "threads must be a positive integer or 'auto'"
+        end
+      end
+    elsif value == :auto
+      auto_requested = true
+      count = 0
+    else
+      begin
+        count = Integer(value)
+      rescue ArgumentError, TypeError
+        raise ArgumentError,
+              "threads must be a positive integer or 'auto'"
+      end
+    end
+
+    if auto_requested == false && count < 1
+      raise ArgumentError,
+            "threads must be a positive integer or 'auto'"
+    end
+
+    API.sixel_set_threads(count)
+    nil
+  end
 end
 
 # emacs Local Variables:

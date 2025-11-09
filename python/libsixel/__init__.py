@@ -938,6 +938,51 @@ def sixel_dither_set_transparent(dither, transparent):
     _sixel.sixel_dither_set_transparent(dither, transparent)
 
 
+# configure the encoder thread count for band parallelism
+def sixel_set_threads(threads):
+    auto_requested = False
+    value = 0
+    text = None
+
+    if isinstance(threads, bytes):
+        try:
+            text = threads.decode('utf-8').strip()
+        except UnicodeDecodeError as exc:
+            raise ValueError(
+                "threads must be a positive integer or 'auto'"
+            ) from exc
+    elif isinstance(threads, str):
+        text = threads.strip()
+    else:
+        text = None
+
+    if text is not None:
+        if text.lower() == 'auto':
+            auto_requested = True
+            value = 0
+        else:
+            try:
+                value = int(text, 10)
+            except ValueError as exc:
+                raise ValueError(
+                    "threads must be a positive integer or 'auto'"
+                ) from exc
+    else:
+        try:
+            value = int(threads)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                "threads must be a positive integer or 'auto'"
+            ) from exc
+
+    if auto_requested is False and value < 1:
+        raise ValueError("threads must be a positive integer or 'auto'")
+
+    _sixel.sixel_set_threads.restype = None
+    _sixel.sixel_set_threads.argtypes = [c_int]
+    _sixel.sixel_set_threads(value)
+
+
 # convert pixels into sixel format and write it to output context
 def sixel_encode(pixels, width, height, depth, dither, output):
     _sixel.sixel_encode.restype = c_int

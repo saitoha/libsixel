@@ -139,6 +139,71 @@ AC_ARG_ENABLE([sixel2png],
               [enable_sixel2png=yes])
 AM_CONDITIONAL(WANT_SIXEL2PNG, test x$enable_sixel2png != xno)
 
+AC_ARG_ENABLE([threads],
+              [AS_HELP_STRING([--disable-threads],
+                              [disable internal threadpool support (default: no)])],
+              [],
+              [enable_threads=yes])
+AM_CONDITIONAL([SIXEL_ENABLE_THREADS],
+               [test "x$enable_threads" != "xno"])
+
+THREAD_CPPFLAGS=""
+THREAD_CFLAGS=""
+THREAD_LIBS=""
+have_threads="no"
+
+if test "x$enable_threads" != "xno"; then
+  AC_DEFINE([SIXEL_ENABLE_THREADS],
+            [1],
+            [Define to 1 if internal threadpool support is enabled])
+  THREAD_CPPFLAGS="-DSIXEL_ENABLE_THREADS=1"
+  if test "x$build_windows" = "xyes"; then
+    have_threads="yes"
+  else
+    AC_MSG_CHECKING([for pthreads])
+    save_CFLAGS="$CFLAGS"
+    save_LIBS="$LIBS"
+    CFLAGS="$CFLAGS -pthread"
+    LIBS="$LIBS -pthread"
+    AC_LINK_IFELSE(
+      [AC_LANG_PROGRAM([[#include <pthread.h>
+static void *dummy(void *arg)
+{
+    (void)arg;
+    return NULL;
+}]],
+                      [[pthread_t thread;
+int rc;
+rc = pthread_create(&thread, NULL, dummy, NULL);
+if (rc == 0) {
+    pthread_join(thread, NULL);
+}
+return rc;]])],
+      [have_threads="yes"
+       THREAD_CFLAGS="-pthread"
+       THREAD_LIBS="-pthread"],
+      [have_threads="no"])
+    CFLAGS="$save_CFLAGS"
+    LIBS="$save_LIBS"
+    AC_MSG_RESULT([$have_threads])
+    if test "x$have_threads" != "xyes"; then
+      AC_CHECK_LIB([pthread], [pthread_create],
+                   [have_threads="yes"
+                    THREAD_LIBS="-lpthread"],
+                   [])
+    fi
+    if test "x$have_threads" != "xyes"; then
+      AC_MSG_FAILURE([pthread support is required when threads are enabled])
+    fi
+  fi
+else
+  enable_threads=no
+fi
+
+AC_SUBST([THREAD_CPPFLAGS])
+AC_SUBST([THREAD_CFLAGS])
+AC_SUBST([THREAD_LIBS])
+
 AC_ARG_WITH([modeldir],
             [AS_HELP_STRING([--with-modeldir=DIR],
                             [install assessment models under DIR
@@ -450,9 +515,10 @@ AC_ARG_ENABLE([tests],
 AM_CONDITIONAL([COND_TESTS], [test x$enable_tests != xno])
 
 AS_IF([test x$cross_compile != xyes],
-      [PKG_PROG_PKG_CONFIG([],
-                           [AC_MSG_WARN([pkg-config not found, continuing without it])
-                            PKG_CONFIG=false])],
+      [PKG_PROG_PKG_CONFIG()
+       AS_IF([test -z "$PKG_CONFIG"],
+             [AC_MSG_WARN([pkg-config not found, continuing without it])
+              PKG_CONFIG=false])],
       [])
 
 AC_DEFUN([LS_CHECK_CFLAG],
@@ -722,6 +788,10 @@ have_neon=no
 
 REQUIRES_PRIVATE=""
 LIBS_PRIVATE="$LIBS"
+
+if test "x$THREAD_LIBS" != x; then
+    LIBS_PRIVATE="$LIBS_PRIVATE $THREAD_LIBS"
+fi
 
 if test x$with_gdk_pixbuf2 != xno; then
     AC_MSG_NOTICE([checking for gdk-pixbuf2])
@@ -1810,6 +1880,7 @@ AS_IF([test -n "$zshcompletiondir"],
 AS_IF([test "x$have_onnxruntime" = "xyes"],
       [message_onnxruntime=yes],
       [message_onnxruntime=no])
+message_threads=$have_threads
 
 echo ""
 echo ""
@@ -1818,6 +1889,7 @@ echo ""
 echo "       Loader component    : $loaders"
 echo "       Network access      : $net"
 echo "       libwinpthread       : $have_winpthread"
+echo "       internal threads    : $message_threads"
 echo "       pkg-config dir      : $pkgconfigdir"
 echo "       Bash completion dir : $message_bashcompletiondir"
 echo "       Zsh completion dir  : $message_zshcompletiondir"

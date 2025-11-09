@@ -68,6 +68,7 @@
 #endif
 
 #include <sixel.h>
+#include "../src/sixel_threads_config.h"
 #include "malloc_stub.h"
 #include "getopt_stub.h"
 #include "completion_utils.h"
@@ -125,6 +126,16 @@ static img2sixel_option_help_t const g_option_help_table[] = {
         "-J PATH, --assessment-file=PATH\n"
         "                           write assessment JSON to PATH.\n"
         "                           use '-' to write to stdout.\n"
+    },
+    {
+        '=',
+        "threads",
+        "-= COUNT, --threads=COUNT|auto\n"
+        "                           choose the encoder thread count.\n"
+        "                           COUNT>=1 keeps deterministic order\n"
+        "                           while values above one enable band\n"
+        "                           parallelism. Use 'auto' to match\n"
+        "                           the hardware thread count.\n"
     },
     {
         '7',
@@ -610,8 +621,11 @@ static char const g_option_help_fallback[] =
     "    Refer to \"img2sixel -H\" for more details.\n";
 
 static char const g_img2sixel_optstring[] =
-    "o:a:J:j:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:L:kil:t:ugvSn:PE:U:B:C:D@:"
+    "o:a:J:=:j:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:L:kil:t:ugvSn:PE:U:B:C:D@:"
     "OVW:HY:y:";
+
+static int img2sixel_threads_token_is_auto(char const *text);
+static int img2sixel_parse_threads_argument(char const *text, int *value);
 
 static img2sixel_option_help_t const *
 img2sixel_find_option_help(int short_opt)
@@ -749,6 +763,56 @@ img2sixel_token_is_known_option(char const *token, int *out_short_opt)
         *out_short_opt = entry->short_opt;
     }
 
+    return 1;
+}
+
+static int
+img2sixel_threads_token_is_auto(char const *text)
+{
+    if (text == NULL) {
+        return 0;
+    }
+
+    if ((text[0] == 'a' || text[0] == 'A') &&
+        (text[1] == 'u' || text[1] == 'U') &&
+        (text[2] == 't' || text[2] == 'T') &&
+        (text[3] == 'o' || text[3] == 'O') &&
+        text[4] == '\0') {
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+img2sixel_parse_threads_argument(char const *text, int *value)
+{
+    long parsed;
+    char *endptr;
+
+    parsed = 0L;
+    endptr = NULL;
+
+    if (text == NULL || value == NULL) {
+        return 0;
+    }
+
+    if (img2sixel_threads_token_is_auto(text) != 0) {
+        *value = 0;
+        return 1;
+    }
+
+    errno = 0;
+    parsed = strtol(text, &endptr, 10);
+    if (endptr == text || *endptr != '\0' || errno == ERANGE) {
+        return 0;
+    }
+
+    if (parsed < 1L || parsed > (long)INT_MAX) {
+        return 0;
+    }
+
+    *value = (int)parsed;
     return 1;
 }
 
@@ -2229,6 +2293,10 @@ void show_help(void)
             "                             rgb:rr/gg/bb\n"
             "                             rgb:rrr/ggg/bbb\n"
             "                             rgb:rrrr/gggg/bbbb\n"
+            "SIXEL_THREADS             override encoder thread count.\n"
+            "                           Accepts positive integers or\n"
+            "                           the word 'auto' to match the\n"
+            "                           hardware thread count.\n"
             );
 }
 
@@ -2258,11 +2326,14 @@ main(int argc, char *argv[])
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
     char const *optstring;
+    int threads_option;
+    int threads_parse_ok;
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"outfile",            required_argument,  &long_opt, 'o'},
         {"assessment",         required_argument,  &long_opt, 'a'},
         {"assessment-file",    required_argument,  &long_opt, 'J'},
+        {"threads",            required_argument,  &long_opt, '='},
         {"7bit-mode",          no_argument,        &long_opt, '7'},
         {"8bit-mode",          no_argument,        &long_opt, '8'},
         {"gri-limit",          no_argument,        &long_opt, 'R'},
@@ -2374,6 +2445,19 @@ main(int argc, char *argv[])
                     : NULL);
             status = SIXEL_BAD_ARGUMENT;
             goto unknown_option_error;
+        case '=':
+            threads_parse_ok = img2sixel_parse_threads_argument(optarg,
+                                                                &threads_option);
+            if (threads_parse_ok == 0) {
+                img2sixel_report_invalid_argument(
+                    '=',
+                    optarg,
+                    "threads accepts positive integers or 'auto'.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto error;
+            }
+            sixel_set_threads(threads_option);
+            break;
         case 'a':
             status = sixel_encoder_setopt(encoder,
                                           SIXEL_OPTFLAG_ASSESSMENT,
@@ -2553,8 +2637,8 @@ error:
 unknown_option_error:
     fprintf(stderr,
             "\n"
-            "usage: img2sixel [-78eIkiugvSPDOVH] [-p colors] [-m file] [-d diffusiontype]\n"
-            "                 [-Q model] [-F mode]\n"
+            "usage: img2sixel [-78eIkiugvSPDOVH] [-= threads] [-p colors] [-m file]\n"
+            "                 [-d diffusiontype] [-Q model] [-F mode]\n"
             "                 [-y scantype] [-a assessmentlist] [-J assessmentfile]\n"
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
             "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"

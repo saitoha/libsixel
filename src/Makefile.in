@@ -90,10 +90,16 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__append_1 = \
+@SIXEL_ENABLE_THREADS_TRUE@am__append_1 = \
+@SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/sixel_threading.c \
+@SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/sixel_threading.h \
+@SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/threadpool.c \
+@SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/threadpool.h
+
+@HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__append_2 = \
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@                $(srcdir)/quicklook_thumbnailing.m
 
-@HAVE_CLIPBOARD_MACOS_TRUE@am__append_2 = \
+@HAVE_CLIPBOARD_MACOS_TRUE@am__append_3 = \
 @HAVE_CLIPBOARD_MACOS_TRUE@                $(srcdir)/clipboard_macos.m
 
 @COND_TESTS_TRUE@noinst_PROGRAMS = tests$(EXEEXT)
@@ -167,10 +173,16 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/compat_stub.c $(srcdir)/compat_stub.h \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
 	$(srcdir)/allocator.c $(srcdir)/allocator.h $(srcdir)/tty.c \
-	$(srcdir)/tty.h $(srcdir)/rgblookup.h $(srcdir)/lso2.h \
+	$(srcdir)/tty.h $(srcdir)/sixel_threads_config.h \
+	$(srcdir)/rgblookup.h $(srcdir)/lso2.h \
+	$(srcdir)/sixel_threading.c $(srcdir)/sixel_threading.h \
+	$(srcdir)/threadpool.c $(srcdir)/threadpool.h \
 	$(srcdir)/quicklook_thumbnailing.m $(srcdir)/clipboard_macos.m
-@HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__objects_1 = libsixel_la-quicklook_thumbnailing.lo
-@HAVE_CLIPBOARD_MACOS_TRUE@am__objects_2 =  \
+@SIXEL_ENABLE_THREADS_TRUE@am__objects_1 =  \
+@SIXEL_ENABLE_THREADS_TRUE@	libsixel_la-sixel_threading.lo \
+@SIXEL_ENABLE_THREADS_TRUE@	libsixel_la-threadpool.lo
+@HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__objects_2 = libsixel_la-quicklook_thumbnailing.lo
+@HAVE_CLIPBOARD_MACOS_TRUE@am__objects_3 =  \
 @HAVE_CLIPBOARD_MACOS_TRUE@	libsixel_la-clipboard_macos.lo
 am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-assessment.lo libsixel_la-fromsixel.lo \
@@ -184,7 +196,8 @@ am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-writer.lo libsixel_la-stb_image_write.lo \
 	libsixel_la-status.lo libsixel_la-compat_stub.lo \
 	libsixel_la-malloc_stub.lo libsixel_la-allocator.lo \
-	libsixel_la-tty.lo $(am__objects_1) $(am__objects_2)
+	libsixel_la-tty.lo $(am__objects_1) $(am__objects_2) \
+	$(am__objects_3)
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -236,8 +249,10 @@ am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
 	./$(DEPDIR)/libsixel_la-quant.Plo \
 	./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo \
 	./$(DEPDIR)/libsixel_la-scale.Plo \
+	./$(DEPDIR)/libsixel_la-sixel_threading.Plo \
 	./$(DEPDIR)/libsixel_la-status.Plo \
 	./$(DEPDIR)/libsixel_la-stb_image_write.Plo \
+	./$(DEPDIR)/libsixel_la-threadpool.Plo \
 	./$(DEPDIR)/libsixel_la-tosixel.Plo \
 	./$(DEPDIR)/libsixel_la-tty.Plo \
 	./$(DEPDIR)/libsixel_la-writer.Plo ./$(DEPDIR)/tests-tests.Po
@@ -425,6 +440,9 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+THREAD_CFLAGS = @THREAD_CFLAGS@
+THREAD_CPPFLAGS = @THREAD_CPPFLAGS@
+THREAD_LIBS = @THREAD_LIBS@
 UPDATE_MIME_DATABASE = @UPDATE_MIME_DATABASE@
 VERSION = @VERSION@
 WICCODEC_CFLAGS = @WICCODEC_CFLAGS@
@@ -520,9 +538,12 @@ libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/compat_stub.c $(srcdir)/compat_stub.h \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
 	$(srcdir)/allocator.c $(srcdir)/allocator.h $(srcdir)/tty.c \
-	$(srcdir)/tty.h $(srcdir)/rgblookup.h $(srcdir)/lso2.h \
-	$(am__append_1) $(am__append_2)
-libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
+	$(srcdir)/tty.h $(srcdir)/sixel_threads_config.h \
+	$(srcdir)/rgblookup.h $(srcdir)/lso2.h $(am__append_1) \
+	$(am__append_2) $(am__append_3)
+libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS) \
+                @THREAD_CPPFLAGS@
+
 libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(LIBCURL_CFLAGS) \
                 $(WINHTTP_CFLAGS) \
@@ -534,7 +555,8 @@ libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(COREGRAPHICS_CFLAGS) \
                 $(QUICKLOOK_CFLAGS) \
                 $(CLIPBOARD_CFLAGS) \
-                $(ONNXRUNTIME_CFLAGS)
+                $(ONNXRUNTIME_CFLAGS) \
+                @THREAD_CFLAGS@
 
 @BUILDING_ON_WINDOWS_FALSE@libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE)
 @BUILDING_ON_WINDOWS_TRUE@libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE)
@@ -549,7 +571,8 @@ libsixel_la_LIBADD = -lm \
                 $(COREGRAPHICS_LIBS) \
                 $(QUICKLOOK_LIBS) \
                 $(CLIPBOARD_LIBS) \
-                $(ONNXRUNTIME_LIBS)
+                $(ONNXRUNTIME_LIBS) \
+                @THREAD_LIBS@
 
 @COND_TESTS_TRUE@tests_SOURCES = $(srcdir)/tests.c
 @COND_TESTS_TRUE@tests_CPPFLAGS = -I$(top_builddir)/include/ \
@@ -666,8 +689,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-quant.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-scale.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sixel_threading.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-status.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-stb_image_write.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-threadpool.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-tosixel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-tty.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-writer.Plo@am__quote@ # am--include-marker
@@ -870,6 +895,20 @@ libsixel_la-tty.lo: tty.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tty.c' object='libsixel_la-tty.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-tty.lo `test -f 'tty.c' || echo '$(srcdir)/'`tty.c
+
+libsixel_la-sixel_threading.lo: sixel_threading.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-sixel_threading.lo -MD -MP -MF $(DEPDIR)/libsixel_la-sixel_threading.Tpo -c -o libsixel_la-sixel_threading.lo `test -f 'sixel_threading.c' || echo '$(srcdir)/'`sixel_threading.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-sixel_threading.Tpo $(DEPDIR)/libsixel_la-sixel_threading.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='sixel_threading.c' object='libsixel_la-sixel_threading.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-sixel_threading.lo `test -f 'sixel_threading.c' || echo '$(srcdir)/'`sixel_threading.c
+
+libsixel_la-threadpool.lo: threadpool.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-threadpool.lo -MD -MP -MF $(DEPDIR)/libsixel_la-threadpool.Tpo -c -o libsixel_la-threadpool.lo `test -f 'threadpool.c' || echo '$(srcdir)/'`threadpool.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-threadpool.Tpo $(DEPDIR)/libsixel_la-threadpool.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='threadpool.c' object='libsixel_la-threadpool.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-threadpool.lo `test -f 'threadpool.c' || echo '$(srcdir)/'`threadpool.c
 
 tests-tests.o: tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-tests.o -MD -MP -MF $(DEPDIR)/tests-tests.Tpo -c -o tests-tests.o `test -f 'tests.c' || echo '$(srcdir)/'`tests.c
@@ -1122,8 +1161,10 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-quant.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-sixel_threading.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-status.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-stb_image_write.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-threadpool.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-tosixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-tty.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-writer.Plo
@@ -1194,8 +1235,10 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-quant.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-sixel_threading.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-status.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-stb_image_write.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-threadpool.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-tosixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-tty.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-writer.Plo

@@ -22,6 +22,7 @@
 /* STDC_HEADERS */
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #if HAVE_STRING_H
 # include <string.h>
@@ -37,6 +38,11 @@
 #include "output.h"
 #include "dither.h"
 #include "assessment.h"
+#include "sixel_threads_config.h"
+#if SIXEL_ENABLE_THREADS
+# include "sixel_threading.h"
+# include "threadpool.h"
+#endif
 
 #define DCS_START_7BIT       "\033P"
 #define DCS_START_7BIT_SIZE  (sizeof(DCS_START_7BIT) - 1)
@@ -54,6 +60,801 @@ enum {
     PALETTE_HIT    = 1,
     PALETTE_CHANGE = 2
 };
+
+/*
+ * Thread configuration keeps the precedence rules centralized:
+ *   1. Library callers may override via `sixel_set_threads`.
+ *   2. Otherwise, `SIXEL_THREADS` from the environment is honored.
+ *   3. Fallback defaults to single threaded execution.
+ */
+typedef struct sixel_thread_config_state {
+    int requested_threads;
+    int override_active;
+    int env_threads;
+    int env_valid;
+    int env_checked;
+} sixel_thread_config_state_t;
+
+static sixel_thread_config_state_t g_thread_config = {
+    1,
+    0,
+    1,
+    0,
+    0
+};
+
+typedef struct sixel_encode_work {
+    char *map;
+    size_t map_size;
+    sixel_node_t **columns;
+    size_t columns_size;
+    unsigned char *active_colors;
+    size_t active_colors_size;
+    int *active_color_index;
+    size_t active_color_index_size;
+    int requested_threads;
+} sixel_encode_work_t;
+
+typedef struct sixel_band_state {
+    int row_in_band;
+    int fillable;
+    int active_color_count;
+} sixel_band_state_t;
+
+typedef struct sixel_encode_metrics {
+    int encode_probe_active;
+    double compose_span_started_at;
+    double compose_queue_started_at;
+    double compose_span_duration;
+    double compose_scan_duration;
+    double compose_queue_duration;
+    double compose_scan_probes;
+    double compose_queue_nodes;
+    double emit_cells;
+    double *emit_cells_ptr;
+} sixel_encode_metrics_t;
+
+#if SIXEL_ENABLE_THREADS
+/*
+ * Parallel execution relies on dedicated buffers per band and reusable
+ * per-worker scratch spaces.  The main thread prepares the context and
+ * pushes one job for each six-line band:
+ *
+ *   +------------------------+      enqueue jobs      +------------------+
+ *   | main thread (producer) | ---------------------> | threadpool queue |
+ *   +------------------------+                        +------------------+
+ *            |                                                       |
+ *            | allocate band buffers                                 |
+ *            v                                                       v
+ *   +------------------------+      execute callbacks      +-----------------+
+ *   | per-worker workspace   | <-------------------------- | worker threads  |
+ *   +------------------------+                             +-----------------+
+ *            |
+ *            | build SIXEL fragments
+ *            v
+ *   +------------------------+  ordered combination after join  +-----------+
+ *   | band buffer array      | -------------------------------> | final I/O |
+ *   +------------------------+                                  +-----------+
+ */
+typedef struct sixel_parallel_band_buffer {
+    unsigned char *data;
+    size_t size;
+    size_t used;
+} sixel_parallel_band_buffer_t;
+
+struct sixel_parallel_context;
+typedef struct sixel_parallel_worker_state
+    sixel_parallel_worker_state_t;
+
+typedef struct sixel_parallel_context {
+    sixel_index_t *pixels;
+    int width;
+    int height;
+    int ncolors;
+    int keycolor;
+    unsigned char *palstate;
+    int encode_policy;
+    sixel_allocator_t *allocator;
+    sixel_output_t *output;
+    int encode_probe_active;
+    int thread_count;
+    int band_count;
+    sixel_parallel_band_buffer_t *bands;
+    sixel_parallel_worker_state_t **workers;
+    int worker_capacity;
+    int worker_registered;
+    threadpool_t *pool;
+    sixel_mutex_t mutex;
+    int mutex_ready;
+} sixel_parallel_context_t;
+#endif
+
+#if SIXEL_ENABLE_THREADS
+struct sixel_parallel_worker_state {
+    int initialized;
+    int index;
+    SIXELSTATUS writer_error;
+    sixel_parallel_band_buffer_t *band_buffer;
+    sixel_parallel_context_t *context;
+    sixel_output_t *output;
+    sixel_encode_work_t work;
+    sixel_band_state_t band;
+    sixel_encode_metrics_t metrics;
+};
+#endif
+
+static void sixel_encode_work_init(sixel_encode_work_t *work);
+static SIXELSTATUS sixel_encode_work_allocate(sixel_encode_work_t *work,
+                                              int width,
+                                              int ncolors,
+                                              sixel_allocator_t *allocator);
+static void sixel_encode_work_cleanup(sixel_encode_work_t *work,
+                                      sixel_allocator_t *allocator);
+static void sixel_band_state_reset(sixel_band_state_t *state);
+static void sixel_band_finish(sixel_encode_work_t *work,
+                              sixel_band_state_t *state);
+static void sixel_band_clear_map(sixel_encode_work_t *work);
+static void sixel_encode_metrics_init(sixel_encode_metrics_t *metrics);
+static SIXELSTATUS sixel_band_classify_row(sixel_encode_work_t *work,
+                                           sixel_band_state_t *state,
+                                           sixel_index_t *pixels,
+                                           int width,
+                                           int absolute_row,
+                                           int ncolors,
+                                           int keycolor,
+                                           unsigned char *palstate,
+                                           int encode_policy);
+static SIXELSTATUS sixel_band_compose(sixel_encode_work_t *work,
+                                      sixel_band_state_t *state,
+                                      sixel_output_t *output,
+                                      int width,
+                                      int ncolors,
+                                      int keycolor,
+                                      sixel_allocator_t *allocator,
+                                      sixel_encode_metrics_t *metrics);
+static SIXELSTATUS sixel_band_emit(sixel_encode_work_t *work,
+                                   sixel_band_state_t *state,
+                                   sixel_output_t *output,
+                                   int ncolors,
+                                   int keycolor,
+                                   int last_row_index,
+                                   sixel_encode_metrics_t *metrics);
+static SIXELSTATUS sixel_put_flash(sixel_output_t *const output);
+static void sixel_advance(sixel_output_t *output, int nwrite);
+
+static int
+sixel_threads_token_is_auto(char const *text)
+{
+    if (text == NULL) {
+        return 0;
+    }
+
+    if ((text[0] == 'a' || text[0] == 'A') &&
+        (text[1] == 'u' || text[1] == 'U') &&
+        (text[2] == 't' || text[2] == 'T') &&
+        (text[3] == 'o' || text[3] == 'O') &&
+        text[4] == '\0') {
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+sixel_threads_normalize(int requested)
+{
+    int normalized;
+
+#if SIXEL_ENABLE_THREADS
+    int hw_threads;
+
+    if (requested <= 0) {
+        hw_threads = sixel_get_hw_threads();
+        if (hw_threads < 1) {
+            hw_threads = 1;
+        }
+        normalized = hw_threads;
+    } else {
+        normalized = requested;
+    }
+
+    if (normalized < 1) {
+        normalized = 1;
+    }
+#else
+    (void)requested;
+    normalized = 1;
+#endif
+
+    return normalized;
+}
+
+static int
+sixel_threads_parse_env_value(char const *text, int *value)
+{
+    long parsed;
+    char *endptr;
+    int normalized;
+
+    if (text == NULL || value == NULL) {
+        return 0;
+    }
+
+    if (sixel_threads_token_is_auto(text)) {
+        normalized = sixel_threads_normalize(0);
+        *value = normalized;
+        return 1;
+    }
+
+    errno = 0;
+    parsed = strtol(text, &endptr, 10);
+    if (endptr == text || *endptr != '\0' || errno == ERANGE) {
+        return 0;
+    }
+
+    if (parsed < 1) {
+        normalized = sixel_threads_normalize(1);
+    } else if (parsed > INT_MAX) {
+        normalized = sixel_threads_normalize(INT_MAX);
+    } else {
+        normalized = sixel_threads_normalize((int)parsed);
+    }
+
+    *value = normalized;
+    return 1;
+}
+
+static void
+sixel_threads_load_env(void)
+{
+    char const *text;
+    int parsed;
+
+    if (g_thread_config.env_checked) {
+        return;
+    }
+
+    g_thread_config.env_checked = 1;
+    g_thread_config.env_valid = 0;
+
+    text = getenv("SIXEL_THREADS");
+    if (text == NULL || text[0] == '\0') {
+        return;
+    }
+
+    if (sixel_threads_parse_env_value(text, &parsed)) {
+        g_thread_config.env_threads = parsed;
+        g_thread_config.env_valid = 1;
+    }
+}
+
+static int
+sixel_threads_resolve(void)
+{
+    int resolved;
+
+#if SIXEL_ENABLE_THREADS
+    if (g_thread_config.override_active) {
+        return g_thread_config.requested_threads;
+    }
+#endif
+
+    sixel_threads_load_env();
+
+#if SIXEL_ENABLE_THREADS
+    if (g_thread_config.env_valid) {
+        resolved = g_thread_config.env_threads;
+    } else {
+        resolved = 1;
+    }
+#else
+    resolved = 1;
+#endif
+
+    return resolved;
+}
+
+/*
+ * Public setter so CLI/bindings may override the runtime thread preference.
+ */
+SIXELAPI void
+sixel_set_threads(int threads)
+{
+#if SIXEL_ENABLE_THREADS
+    g_thread_config.requested_threads = sixel_threads_normalize(threads);
+#else
+    (void)threads;
+    g_thread_config.requested_threads = 1;
+#endif
+    g_thread_config.override_active = 1;
+}
+
+#if SIXEL_ENABLE_THREADS
+static int sixel_parallel_band_writer(char *data, int size, void *priv);
+
+static void
+sixel_parallel_context_init(sixel_parallel_context_t *ctx)
+{
+    ctx->pixels = NULL;
+    ctx->width = 0;
+    ctx->height = 0;
+    ctx->ncolors = 0;
+    ctx->keycolor = (-1);
+    ctx->palstate = NULL;
+    ctx->encode_policy = SIXEL_ENCODEPOLICY_AUTO;
+    ctx->allocator = NULL;
+    ctx->output = NULL;
+    ctx->encode_probe_active = 0;
+    ctx->thread_count = 0;
+    ctx->band_count = 0;
+    ctx->bands = NULL;
+    ctx->workers = NULL;
+    ctx->worker_capacity = 0;
+    ctx->worker_registered = 0;
+    ctx->pool = NULL;
+    ctx->mutex_ready = 0;
+}
+
+static void
+sixel_parallel_worker_release_nodes(sixel_parallel_worker_state_t *state,
+                                    sixel_allocator_t *allocator)
+{
+    sixel_node_t *np;
+
+    if (state == NULL || state->output == NULL) {
+        return;
+    }
+
+    while ((np = state->output->node_free) != NULL) {
+        state->output->node_free = np->next;
+        sixel_allocator_free(allocator, np);
+    }
+    state->output->node_top = NULL;
+}
+
+static void
+sixel_parallel_worker_cleanup(sixel_parallel_worker_state_t *state,
+                              sixel_allocator_t *allocator)
+{
+    if (state == NULL) {
+        return;
+    }
+    sixel_parallel_worker_release_nodes(state, allocator);
+    if (state->output != NULL) {
+        sixel_output_unref(state->output);
+        state->output = NULL;
+    }
+    sixel_encode_work_cleanup(&state->work, allocator);
+    sixel_band_state_reset(&state->band);
+    sixel_encode_metrics_init(&state->metrics);
+    state->initialized = 0;
+    state->index = 0;
+    state->writer_error = SIXEL_OK;
+    state->band_buffer = NULL;
+    state->context = NULL;
+}
+
+static void
+sixel_parallel_context_cleanup(sixel_parallel_context_t *ctx)
+{
+    int i;
+
+    if (ctx->workers != NULL) {
+        for (i = 0; i < ctx->worker_capacity; i++) {
+            sixel_parallel_worker_cleanup(ctx->workers[i], ctx->allocator);
+        }
+        free(ctx->workers);
+        ctx->workers = NULL;
+    }
+    if (ctx->bands != NULL) {
+        for (i = 0; i < ctx->band_count; i++) {
+            free(ctx->bands[i].data);
+        }
+        free(ctx->bands);
+        ctx->bands = NULL;
+    }
+    if (ctx->pool != NULL) {
+        threadpool_destroy(ctx->pool);
+        ctx->pool = NULL;
+    }
+    if (ctx->mutex_ready) {
+        sixel_mutex_destroy(&ctx->mutex);
+        ctx->mutex_ready = 0;
+    }
+}
+
+static void
+sixel_parallel_worker_reset(sixel_parallel_worker_state_t *state)
+{
+    if (state == NULL || state->output == NULL) {
+        return;
+    }
+
+    sixel_band_state_reset(&state->band);
+    sixel_band_clear_map(&state->work);
+    sixel_encode_metrics_init(&state->metrics);
+    /* Parallel workers avoid touching the global assessment recorder. */
+    state->metrics.encode_probe_active = 0;
+    state->metrics.emit_cells_ptr = NULL;
+    state->writer_error = SIXEL_OK;
+    state->output->pos = 0;
+    state->output->save_count = 0;
+    state->output->save_pixel = 0;
+    state->output->active_palette = (-1);
+    state->output->node_top = NULL;
+    state->output->node_free = NULL;
+}
+
+static SIXELSTATUS
+sixel_parallel_worker_prepare(sixel_parallel_worker_state_t *state,
+                              sixel_parallel_context_t *ctx)
+{
+    SIXELSTATUS status;
+
+    if (state->initialized) {
+        return SIXEL_OK;
+    }
+
+    sixel_encode_work_init(&state->work);
+    sixel_band_state_reset(&state->band);
+    sixel_encode_metrics_init(&state->metrics);
+    state->metrics.encode_probe_active = 0;
+    state->metrics.emit_cells_ptr = NULL;
+    state->writer_error = SIXEL_OK;
+    state->band_buffer = NULL;
+    state->context = ctx;
+
+    status = sixel_encode_work_allocate(&state->work,
+                                        ctx->width,
+                                        ctx->ncolors,
+                                        ctx->allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    status = sixel_output_new(&state->output,
+                              sixel_parallel_band_writer,
+                              state,
+                              ctx->allocator);
+    if (SIXEL_FAILED(status)) {
+        sixel_encode_work_cleanup(&state->work, ctx->allocator);
+        return status;
+    }
+
+    state->output->has_8bit_control = ctx->output->has_8bit_control;
+    state->output->has_sixel_scrolling = ctx->output->has_sixel_scrolling;
+    state->output->has_sdm_glitch = ctx->output->has_sdm_glitch;
+    state->output->has_gri_arg_limit = ctx->output->has_gri_arg_limit;
+    state->output->skip_dcs_envelope = 1;
+    state->output->skip_header = 1;
+    state->output->palette_type = ctx->output->palette_type;
+    state->output->colorspace = ctx->output->colorspace;
+    state->output->source_colorspace = ctx->output->source_colorspace;
+    state->output->pixelformat = ctx->output->pixelformat;
+    state->output->penetrate_multiplexer =
+        ctx->output->penetrate_multiplexer;
+    state->output->encode_policy = ctx->output->encode_policy;
+    state->output->ormode = ctx->output->ormode;
+
+    state->initialized = 1;
+    state->index = (-1);
+
+    if (ctx->mutex_ready) {
+        sixel_mutex_lock(&ctx->mutex);
+    }
+    if (ctx->worker_registered < ctx->worker_capacity) {
+        state->index = ctx->worker_registered;
+        ctx->workers[state->index] = state;
+        ctx->worker_registered += 1;
+    }
+    if (ctx->mutex_ready) {
+        sixel_mutex_unlock(&ctx->mutex);
+    }
+
+    if (state->index < 0) {
+        sixel_parallel_worker_cleanup(state, ctx->allocator);
+        return SIXEL_RUNTIME_ERROR;
+    }
+
+    return SIXEL_OK;
+}
+
+static int
+sixel_parallel_band_writer(char *data, int size, void *priv)
+{
+    sixel_parallel_worker_state_t *state;
+    sixel_parallel_band_buffer_t *band;
+    size_t required;
+    size_t capacity;
+    size_t new_capacity;
+    unsigned char *tmp;
+
+    state = (sixel_parallel_worker_state_t *)priv;
+    if (state == NULL || data == NULL || size <= 0) {
+        return size;
+    }
+    band = state->band_buffer;
+    if (band == NULL) {
+        state->writer_error = SIXEL_RUNTIME_ERROR;
+        return size;
+    }
+    if (state->writer_error != SIXEL_OK) {
+        return size;
+    }
+
+    required = band->used + (size_t)size;
+    if (required < band->used) {
+        state->writer_error = SIXEL_BAD_INTEGER_OVERFLOW;
+        return size;
+    }
+    capacity = band->size;
+    if (required > capacity) {
+        if (capacity == 0) {
+            new_capacity = (size_t)SIXEL_OUTPUT_PACKET_SIZE;
+        } else {
+            new_capacity = capacity;
+        }
+        while (new_capacity < required) {
+            if (new_capacity > SIZE_MAX / 2) {
+                new_capacity = required;
+                break;
+            }
+            new_capacity *= 2;
+        }
+        tmp = (unsigned char *)realloc(band->data, new_capacity);
+        if (tmp == NULL) {
+            state->writer_error = SIXEL_BAD_ALLOCATION;
+            return size;
+        }
+        band->data = tmp;
+        band->size = new_capacity;
+    }
+
+    memcpy(band->data + band->used, data, (size_t)size);
+    band->used += (size_t)size;
+
+    return size;
+}
+
+static SIXELSTATUS
+sixel_parallel_flush_band(sixel_parallel_context_t *ctx, int band_index)
+{
+    sixel_parallel_band_buffer_t *band;
+    size_t offset;
+    size_t chunk;
+
+    band = &ctx->bands[band_index];
+    offset = 0;
+    while (offset < band->used) {
+        chunk = band->used - offset;
+        if (chunk > (size_t)(SIXEL_OUTPUT_PACKET_SIZE - ctx->output->pos)) {
+            chunk = (size_t)(SIXEL_OUTPUT_PACKET_SIZE - ctx->output->pos);
+        }
+        memcpy(ctx->output->buffer + ctx->output->pos,
+               band->data + offset,
+               chunk);
+        sixel_advance(ctx->output, (int)chunk);
+        offset += chunk;
+    }
+    return SIXEL_OK;
+}
+
+static int
+sixel_parallel_worker_main(tp_job_t job, void *userdata, void *workspace)
+{
+    sixel_parallel_context_t *ctx;
+    sixel_parallel_worker_state_t *state;
+    SIXELSTATUS status;
+    int band_index;
+    int band_start;
+    int band_height;
+    int row_index;
+    int absolute_row;
+    int last_row_index;
+
+    ctx = (sixel_parallel_context_t *)userdata;
+    state = (sixel_parallel_worker_state_t *)workspace;
+
+    if (ctx == NULL || state == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_parallel_worker_prepare(state, ctx);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    band_index = job.band_index;
+    if (band_index < 0 || band_index >= ctx->band_count) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    state->band_buffer = &ctx->bands[band_index];
+    state->band_buffer->used = 0;
+    sixel_parallel_worker_reset(state);
+
+    band_start = band_index * 6;
+    band_height = ctx->height - band_start;
+    if (band_height > 6) {
+        band_height = 6;
+    }
+    if (band_height <= 0) {
+        return SIXEL_OK;
+    }
+
+    for (row_index = 0; row_index < band_height; row_index++) {
+        absolute_row = band_start + row_index;
+        status = sixel_band_classify_row(&state->work,
+                                         &state->band,
+                                         ctx->pixels,
+                                         ctx->width,
+                                         absolute_row,
+                                         ctx->ncolors,
+                                         ctx->keycolor,
+                                         ctx->palstate,
+                                         ctx->encode_policy);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
+        }
+    }
+
+    status = sixel_band_compose(&state->work,
+                                &state->band,
+                                state->output,
+                                ctx->width,
+                                ctx->ncolors,
+                                ctx->keycolor,
+                                ctx->allocator,
+                                &state->metrics);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    last_row_index = band_start + band_height - 1;
+    status = sixel_band_emit(&state->work,
+                             &state->band,
+                             state->output,
+                             ctx->ncolors,
+                             ctx->keycolor,
+                             last_row_index,
+                             &state->metrics);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    status = sixel_put_flash(state->output);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    if (state->output->pos > 0) {
+        state->output->fn_write((char *)state->output->buffer,
+                                state->output->pos,
+                                state);
+        state->output->pos = 0;
+    }
+
+    if (state->writer_error != SIXEL_OK) {
+        status = state->writer_error;
+        goto cleanup;
+    }
+
+    sixel_band_finish(&state->work, &state->band);
+    status = SIXEL_OK;
+
+cleanup:
+    sixel_parallel_worker_release_nodes(state, ctx->allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encode_body_parallel(sixel_index_t *pixels,
+                           int width,
+                           int height,
+                           int ncolors,
+                           int keycolor,
+                           sixel_output_t *output,
+                           unsigned char *palstate,
+                           sixel_allocator_t *allocator,
+                           int requested_threads)
+{
+    sixel_parallel_context_t ctx;
+    SIXELSTATUS status;
+    int nbands;
+    int threads;
+    int i;
+    tp_job_t job;
+    int pool_error;
+
+    sixel_parallel_context_init(&ctx);
+    ctx.pixels = pixels;
+    ctx.width = width;
+    ctx.height = height;
+    ctx.ncolors = ncolors;
+    ctx.keycolor = keycolor;
+    ctx.palstate = palstate;
+    ctx.encode_policy = output->encode_policy;
+    ctx.allocator = allocator;
+    ctx.output = output;
+    /* Encode probes are suppressed in the worker threads for safety. */
+    ctx.encode_probe_active = 0;
+
+    nbands = (height + 5) / 6;
+    ctx.band_count = nbands;
+    if (nbands <= 0) {
+        return SIXEL_OK;
+    }
+
+    threads = requested_threads;
+    if (threads > nbands) {
+        threads = nbands;
+    }
+    if (threads < 1) {
+        threads = 1;
+    }
+    sixel_assessment_set_encode_parallelism(threads);
+    ctx.thread_count = threads;
+    ctx.worker_capacity = threads;
+
+    ctx.bands = (sixel_parallel_band_buffer_t *)calloc((size_t)nbands,
+                                                       sizeof(*ctx.bands));
+    if (ctx.bands == NULL) {
+        sixel_parallel_context_cleanup(&ctx);
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    ctx.workers = (sixel_parallel_worker_state_t **)
+        calloc((size_t)threads, sizeof(*ctx.workers));
+    if (ctx.workers == NULL) {
+        sixel_parallel_context_cleanup(&ctx);
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    status = sixel_mutex_init(&ctx.mutex);
+    if (status != SIXEL_OK) {
+        sixel_parallel_context_cleanup(&ctx);
+        return status;
+    }
+    ctx.mutex_ready = 1;
+
+    ctx.pool = threadpool_create(threads,
+                                 nbands,
+                                 sizeof(sixel_parallel_worker_state_t),
+                                 sixel_parallel_worker_main,
+                                 &ctx);
+    if (ctx.pool == NULL) {
+        sixel_parallel_context_cleanup(&ctx);
+        return SIXEL_RUNTIME_ERROR;
+    }
+
+    for (i = 0; i < nbands; i++) {
+        job.band_index = i;
+        threadpool_push(ctx.pool, job);
+    }
+
+    threadpool_finish(ctx.pool);
+    pool_error = threadpool_get_error(ctx.pool);
+
+    if (pool_error != SIXEL_OK) {
+        sixel_parallel_context_cleanup(&ctx);
+        return pool_error;
+    }
+
+    for (i = 0; i < nbands; i++) {
+        status = sixel_parallel_flush_band(&ctx, i);
+        if (SIXEL_FAILED(status)) {
+            sixel_parallel_context_cleanup(&ctx);
+            return status;
+        }
+    }
+
+    sixel_parallel_context_cleanup(&ctx);
+    return SIXEL_OK;
+}
+#endif
 
 /* implementation */
 
@@ -775,6 +1576,665 @@ output_hls_palette_definition(
 }
 
 
+static void
+sixel_encode_work_init(sixel_encode_work_t *work)
+{
+    work->map = NULL;
+    work->map_size = 0;
+    work->columns = NULL;
+    work->columns_size = 0;
+    work->active_colors = NULL;
+    work->active_colors_size = 0;
+    work->active_color_index = NULL;
+    work->active_color_index_size = 0;
+    work->requested_threads = 1;
+}
+
+static SIXELSTATUS
+sixel_encode_work_allocate(sixel_encode_work_t *work,
+                           int width,
+                           int ncolors,
+                           sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    int len;
+    size_t columns_size;
+    size_t active_colors_size;
+    size_t active_color_index_size;
+
+    len = ncolors * width;
+    work->map = (char *)sixel_allocator_calloc(allocator,
+                                               (size_t)len,
+                                               sizeof(char));
+    if (work->map == NULL && len > 0) {
+        sixel_helper_set_additional_message(
+            "sixel_encode_body: sixel_allocator_calloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    work->map_size = (size_t)len;
+
+    columns_size = sizeof(sixel_node_t *) * (size_t)width;
+    if (width > 0) {
+        work->columns = (sixel_node_t **)sixel_allocator_malloc(
+            allocator,
+            columns_size);
+        if (work->columns == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encode_body: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        memset(work->columns, 0, columns_size);
+        work->columns_size = columns_size;
+    } else {
+        work->columns = NULL;
+        work->columns_size = 0;
+    }
+
+    active_colors_size = (size_t)ncolors;
+    if (active_colors_size > 0) {
+        work->active_colors =
+            (unsigned char *)sixel_allocator_malloc(allocator,
+                                                    active_colors_size);
+        if (work->active_colors == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encode_body: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        memset(work->active_colors, 0, active_colors_size);
+        work->active_colors_size = active_colors_size;
+    } else {
+        work->active_colors = NULL;
+        work->active_colors_size = 0;
+    }
+
+    active_color_index_size = sizeof(int) * (size_t)ncolors;
+    if (active_color_index_size > 0) {
+        work->active_color_index = (int *)sixel_allocator_malloc(
+            allocator,
+            active_color_index_size);
+        if (work->active_color_index == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encode_body: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        memset(work->active_color_index, 0, active_color_index_size);
+        work->active_color_index_size = active_color_index_size;
+    } else {
+        work->active_color_index = NULL;
+        work->active_color_index_size = 0;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    if (SIXEL_FAILED(status)) {
+        if (work->active_color_index != NULL) {
+            sixel_allocator_free(allocator, work->active_color_index);
+            work->active_color_index = NULL;
+        }
+        work->active_color_index_size = 0;
+        if (work->active_colors != NULL) {
+            sixel_allocator_free(allocator, work->active_colors);
+            work->active_colors = NULL;
+        }
+        work->active_colors_size = 0;
+        if (work->columns != NULL) {
+            sixel_allocator_free(allocator, work->columns);
+            work->columns = NULL;
+        }
+        work->columns_size = 0;
+        if (work->map != NULL) {
+            sixel_allocator_free(allocator, work->map);
+            work->map = NULL;
+        }
+        work->map_size = 0;
+    }
+
+    return status;
+}
+
+static void
+sixel_encode_work_cleanup(sixel_encode_work_t *work,
+                          sixel_allocator_t *allocator)
+{
+    if (work->active_color_index != NULL) {
+        sixel_allocator_free(allocator, work->active_color_index);
+        work->active_color_index = NULL;
+    }
+    work->active_color_index_size = 0;
+    if (work->active_colors != NULL) {
+        sixel_allocator_free(allocator, work->active_colors);
+        work->active_colors = NULL;
+    }
+    work->active_colors_size = 0;
+    if (work->columns != NULL) {
+        sixel_allocator_free(allocator, work->columns);
+        work->columns = NULL;
+    }
+    work->columns_size = 0;
+    if (work->map != NULL) {
+        sixel_allocator_free(allocator, work->map);
+        work->map = NULL;
+    }
+    work->map_size = 0;
+}
+
+static void
+sixel_band_state_reset(sixel_band_state_t *state)
+{
+    state->row_in_band = 0;
+    state->fillable = 0;
+    state->active_color_count = 0;
+}
+
+static void
+sixel_band_finish(sixel_encode_work_t *work, sixel_band_state_t *state)
+{
+    int color_index;
+    int c;
+
+    if (work->active_colors == NULL
+        || work->active_color_index == NULL) {
+        state->active_color_count = 0;
+        return;
+    }
+
+    for (color_index = 0;
+         color_index < state->active_color_count;
+         color_index++) {
+        c = work->active_color_index[color_index];
+        if (c >= 0
+            && (size_t)c < work->active_colors_size) {
+            work->active_colors[c] = 0;
+        }
+    }
+    state->active_color_count = 0;
+}
+
+static void
+sixel_band_clear_map(sixel_encode_work_t *work)
+{
+    if (work->map != NULL && work->map_size > 0) {
+        memset(work->map, 0, work->map_size);
+    }
+}
+
+static void
+sixel_encode_metrics_init(sixel_encode_metrics_t *metrics)
+{
+    metrics->encode_probe_active = 0;
+    metrics->compose_span_started_at = 0.0;
+    metrics->compose_queue_started_at = 0.0;
+    metrics->compose_span_duration = 0.0;
+    metrics->compose_scan_duration = 0.0;
+    metrics->compose_queue_duration = 0.0;
+    metrics->compose_scan_probes = 0.0;
+    metrics->compose_queue_nodes = 0.0;
+    metrics->emit_cells = 0.0;
+    metrics->emit_cells_ptr = NULL;
+}
+
+static SIXELSTATUS
+sixel_encode_emit_palette(int bodyonly,
+                          int ncolors,
+                          int keycolor,
+                          unsigned char *palette,
+                          sixel_output_t *output,
+                          int encode_probe_active)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    double span_started_at;
+    int n;
+
+    if (bodyonly || (ncolors == 2 && keycolor != (-1))) {
+        return SIXEL_OK;
+    }
+
+    span_started_at = sixel_encode_span_start(encode_probe_active);
+    if (output->palette_type == SIXEL_PALETTETYPE_HLS) {
+        for (n = 0; n < ncolors; n++) {
+            status = output_hls_palette_definition(output,
+                                                   palette,
+                                                   n,
+                                                   keycolor);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
+    } else {
+        for (n = 0; n < ncolors; n++) {
+            status = output_rgb_palette_definition(output,
+                                                   palette,
+                                                   n,
+                                                   keycolor);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
+    }
+
+    sixel_encode_span_commit(encode_probe_active,
+                             SIXEL_ASSESSMENT_STAGE_ENCODE_PREPARE,
+                             span_started_at);
+
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
+
+static SIXELSTATUS
+sixel_band_classify_row(sixel_encode_work_t *work,
+                        sixel_band_state_t *state,
+                        sixel_index_t *pixels,
+                        int width,
+                        int absolute_row,
+                        int ncolors,
+                        int keycolor,
+                        unsigned char *palstate,
+                        int encode_policy)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    int row_bit;
+    int band_start;
+    int pix;
+    int x;
+    int check_integer_overflow;
+    char *map;
+    unsigned char *active_colors;
+    int *active_color_index;
+
+    map = work->map;
+    active_colors = work->active_colors;
+    active_color_index = work->active_color_index;
+    row_bit = state->row_in_band;
+    band_start = absolute_row - row_bit;
+
+    if (row_bit == 0) {
+        if (encode_policy != SIXEL_ENCODEPOLICY_SIZE) {
+            state->fillable = 0;
+        } else if (palstate) {
+            if (width > 0) {
+                pix = pixels[band_start * width];
+                if (pix >= ncolors) {
+                    state->fillable = 0;
+                } else {
+                    state->fillable = 1;
+                }
+            } else {
+                state->fillable = 0;
+            }
+        } else {
+            state->fillable = 1;
+        }
+        state->active_color_count = 0;
+    }
+
+    for (x = 0; x < width; x++) {
+        if (absolute_row > INT_MAX / width) {
+            sixel_helper_set_additional_message(
+                "sixel_encode_body: integer overflow detected."
+                " (y > INT_MAX)");
+            status = SIXEL_BAD_INTEGER_OVERFLOW;
+            goto end;
+        }
+        check_integer_overflow = absolute_row * width;
+        if (check_integer_overflow > INT_MAX - x) {
+            sixel_helper_set_additional_message(
+                "sixel_encode_body: integer overflow detected."
+                " (y * width > INT_MAX - x)");
+            status = SIXEL_BAD_INTEGER_OVERFLOW;
+            goto end;
+        }
+        pix = pixels[check_integer_overflow + x];
+        if (pix >= 0 && pix < ncolors && pix != keycolor) {
+            if (pix > INT_MAX / width) {
+                sixel_helper_set_additional_message(
+                    "sixel_encode_body: integer overflow detected."
+                    " (pix > INT_MAX / width)");
+                status = SIXEL_BAD_INTEGER_OVERFLOW;
+                goto end;
+            }
+            check_integer_overflow = pix * width;
+            if (check_integer_overflow > INT_MAX - x) {
+                sixel_helper_set_additional_message(
+                    "sixel_encode_body: integer overflow detected."
+                    " (pix * width > INT_MAX - x)");
+                status = SIXEL_BAD_INTEGER_OVERFLOW;
+                goto end;
+            }
+            map[pix * width + x] |= (1 << row_bit);
+            if (active_colors != NULL && active_colors[pix] == 0) {
+                active_colors[pix] = 1;
+                if (state->active_color_count < ncolors
+                    && active_color_index != NULL) {
+                    active_color_index[state->active_color_count] = pix;
+                    state->active_color_count += 1;
+                }
+            }
+        } else if (!palstate) {
+            state->fillable = 0;
+        }
+    }
+
+    state->row_in_band += 1;
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
+
+static SIXELSTATUS
+sixel_band_compose(sixel_encode_work_t *work,
+                   sixel_band_state_t *state,
+                   sixel_output_t *output,
+                   int width,
+                   int ncolors,
+                   int keycolor,
+                   sixel_allocator_t *allocator,
+                   sixel_encode_metrics_t *metrics)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    int color_index;
+    int c;
+    unsigned char *row;
+    int sx;
+    int mx;
+    int gap;
+    int gap_reached_end;
+    double now;
+    sixel_node_t *np;
+    sixel_node_t *column_head;
+    sixel_node_t *column_tail;
+    sixel_node_t top;
+
+    (void)ncolors;
+    (void)keycolor;
+    row = NULL;
+    gap_reached_end = 0;
+    now = 0.0;
+    np = NULL;
+    column_head = NULL;
+    column_tail = NULL;
+    top.next = NULL;
+
+    if (work->columns != NULL) {
+        memset(work->columns, 0, work->columns_size);
+    }
+    output->node_top = NULL;
+
+    metrics->compose_span_started_at =
+        sixel_encode_span_start(metrics->encode_probe_active);
+    metrics->compose_queue_started_at = 0.0;
+    metrics->compose_span_duration = 0.0;
+    metrics->compose_queue_duration = 0.0;
+    metrics->compose_scan_duration = 0.0;
+    metrics->compose_scan_probes = 0.0;
+    metrics->compose_queue_nodes = 0.0;
+
+    for (color_index = 0;
+         color_index < state->active_color_count;
+         color_index++) {
+        c = work->active_color_index[color_index];
+        row = (unsigned char *)(work->map + c * width);
+        sx = 0;
+        while (sx < width) {
+            sx = sixel_compose_find_run_start(
+                row,
+                width,
+                sx,
+                metrics->encode_probe_active,
+                &metrics->compose_scan_probes);
+            if (sx >= width) {
+                break;
+            }
+
+            if (metrics->encode_probe_active) {
+                now = sixel_assessment_timer_now();
+                metrics->compose_queue_started_at = now;
+                metrics->compose_queue_nodes += 1.0;
+            }
+
+            mx = sx + 1;
+            while (mx < width) {
+                if (metrics->encode_probe_active) {
+                    metrics->compose_scan_probes += 1.0;
+                }
+                if (row[mx] != 0) {
+                    mx += 1;
+                    continue;
+                }
+
+                gap = sixel_compose_measure_gap(
+                    row,
+                    width,
+                    mx + 1,
+                    metrics->encode_probe_active,
+                    &metrics->compose_scan_probes,
+                    &gap_reached_end);
+                if (gap >= 9 || gap_reached_end) {
+                    break;
+                }
+                mx += gap + 1;
+            }
+
+            if ((np = output->node_free) != NULL) {
+                output->node_free = np->next;
+            } else {
+                status = sixel_node_new(&np, allocator);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+            }
+
+            np->pal = c;
+            np->sx = sx;
+            np->mx = mx;
+            np->map = (char *)row;
+            np->next = NULL;
+
+            if (work->columns != NULL) {
+                column_head = work->columns[sx];
+                if (column_head == NULL
+                    || column_head->mx <= np->mx) {
+                    np->next = column_head;
+                    work->columns[sx] = np;
+                } else {
+                    column_tail = column_head;
+                    while (column_tail->next != NULL
+                           && column_tail->next->mx > np->mx) {
+                        column_tail = column_tail->next;
+                    }
+                    np->next = column_tail->next;
+                    column_tail->next = np;
+                }
+            } else {
+                top.next = output->node_top;
+                column_tail = &top;
+
+                while (column_tail->next != NULL) {
+                    if (np->sx < column_tail->next->sx) {
+                        break;
+                    } else if (np->sx == column_tail->next->sx
+                               && np->mx > column_tail->next->mx) {
+                        break;
+                    }
+                    column_tail = column_tail->next;
+                }
+
+                np->next = column_tail->next;
+                column_tail->next = np;
+                output->node_top = top.next;
+            }
+
+            if (metrics->encode_probe_active) {
+                now = sixel_assessment_timer_now();
+                metrics->compose_queue_duration +=
+                    now - metrics->compose_queue_started_at;
+            }
+
+            sx = mx;
+        }
+    }
+
+    if (work->columns != NULL) {
+        if (metrics->encode_probe_active) {
+            metrics->compose_queue_started_at =
+                sixel_assessment_timer_now();
+        }
+        top.next = NULL;
+        column_tail = &top;
+        for (sx = 0; sx < width; sx++) {
+            column_head = work->columns[sx];
+            if (column_head == NULL) {
+                continue;
+            }
+            column_tail->next = column_head;
+            while (column_tail->next != NULL) {
+                column_tail = column_tail->next;
+            }
+            work->columns[sx] = NULL;
+        }
+        output->node_top = top.next;
+        if (metrics->encode_probe_active) {
+            now = sixel_assessment_timer_now();
+            metrics->compose_queue_duration +=
+                now - metrics->compose_queue_started_at;
+        }
+    }
+
+    if (metrics->encode_probe_active) {
+        now = sixel_assessment_timer_now();
+        metrics->compose_span_duration =
+            now - metrics->compose_span_started_at;
+        metrics->compose_scan_duration =
+            metrics->compose_span_duration
+            - metrics->compose_queue_duration;
+        if (metrics->compose_scan_duration < 0.0) {
+            metrics->compose_scan_duration = 0.0;
+        }
+        if (metrics->compose_queue_duration < 0.0) {
+            metrics->compose_queue_duration = 0.0;
+        }
+        if (metrics->compose_span_duration < 0.0) {
+            metrics->compose_span_duration = 0.0;
+        }
+        sixel_assessment_record_encode_span(
+            SIXEL_ASSESSMENT_STAGE_ENCODE_COMPOSE_SCAN,
+            metrics->compose_scan_duration);
+        sixel_assessment_record_encode_span(
+            SIXEL_ASSESSMENT_STAGE_ENCODE_COMPOSE_QUEUE,
+            metrics->compose_queue_duration);
+        sixel_assessment_record_encode_span(
+            SIXEL_ASSESSMENT_STAGE_ENCODE_COMPOSE,
+            metrics->compose_span_duration);
+        sixel_assessment_record_encode_work(
+            SIXEL_ASSESSMENT_STAGE_ENCODE_COMPOSE_SCAN,
+            metrics->compose_scan_probes);
+        sixel_assessment_record_encode_work(
+            SIXEL_ASSESSMENT_STAGE_ENCODE_COMPOSE_QUEUE,
+            metrics->compose_queue_nodes);
+        sixel_assessment_record_encode_work(
+            SIXEL_ASSESSMENT_STAGE_ENCODE_COMPOSE,
+            metrics->compose_queue_nodes);
+    }
+
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
+
+static SIXELSTATUS
+sixel_band_emit(sixel_encode_work_t *work,
+                sixel_band_state_t *state,
+                sixel_output_t *output,
+                int ncolors,
+                int keycolor,
+                int last_row_index,
+                sixel_encode_metrics_t *metrics)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    double span_started_at;
+    sixel_node_t *np;
+    sixel_node_t *next;
+    int x;
+
+    span_started_at = sixel_encode_span_start(metrics->encode_probe_active);
+    if (last_row_index != 5) {
+        output->buffer[output->pos] = '-';
+        sixel_advance(output, 1);
+    }
+
+    for (x = 0; (np = output->node_top) != NULL;) {
+        if (x > np->sx) {
+            output->buffer[output->pos] = '$';
+            sixel_advance(output, 1);
+            x = 0;
+        }
+
+        if (state->fillable) {
+            memset(np->map + np->sx,
+                   (1 << state->row_in_band) - 1,
+                   (size_t)(np->mx - np->sx));
+        }
+        status = sixel_put_node(output,
+                                &x,
+                                np,
+                                ncolors,
+                                keycolor,
+                                metrics->emit_cells_ptr);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        next = np->next;
+        sixel_node_del(output, np);
+        np = next;
+
+        while (np != NULL) {
+            if (np->sx < x) {
+                np = np->next;
+                continue;
+            }
+
+            if (state->fillable) {
+                memset(np->map + np->sx,
+                       (1 << state->row_in_band) - 1,
+                       (size_t)(np->mx - np->sx));
+            }
+            status = sixel_put_node(output,
+                                    &x,
+                                    np,
+                                    ncolors,
+                                    keycolor,
+                                    metrics->emit_cells_ptr);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            next = np->next;
+            sixel_node_del(output, np);
+            np = next;
+        }
+
+        state->fillable = 0;
+    }
+
+    sixel_encode_span_commit(metrics->encode_probe_active,
+                             SIXEL_ASSESSMENT_STAGE_ENCODE_EMIT,
+                             span_started_at);
+
+    status = SIXEL_OK;
+
+end:
+    (void)work;
+    return status;
+}
+
+
 static SIXELSTATUS
 sixel_encode_body(
     sixel_index_t       /* in */ *pixels,
@@ -789,513 +2249,159 @@ sixel_encode_body(
     sixel_allocator_t   /* in */ *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    int x;
-    int y;
-    int i;
-    int n;
-    int c;
-    int sx;
-    int mx;
-    int len;
-    unsigned char *row;
-    char *map = NULL;
-    sixel_node_t **columns = NULL;
-    sixel_node_t *column_head = NULL;
-    sixel_node_t *column_tail = NULL;
-    size_t columns_size = 0;
-    unsigned char *active_colors = NULL;
-    int *active_color_index = NULL;
-    size_t active_colors_size = 0;
-    size_t active_color_index_size = 0;
-    int active_color_count;
-    int color_index;
-    int check_integer_overflow;
-    sixel_node_t *np;
-    sixel_node_t top;
-    int fillable;
     int encode_probe_active;
     double span_started_at;
-    double compose_span_started_at;
-    double compose_queue_started_at;
-    double compose_span_duration;
-    double compose_scan_duration;
-    double compose_queue_duration;
-    double compose_scan_probes;
-    double compose_queue_nodes;
-    double emit_cells;
-    double *emit_cells_ptr;
-    int gap;
-    int gap_reached_end;
-    double now;
+    int band_start;
+    int band_height;
+    int row_index;
+    int absolute_row;
+    int last_row_index;
+    sixel_node_t *np;
+    sixel_encode_work_t work;
+    sixel_band_state_t band;
+    sixel_encode_metrics_t metrics;
+
+    sixel_encode_work_init(&work);
+    sixel_band_state_reset(&band);
+    sixel_encode_metrics_init(&metrics);
+
+    /* Record the caller/environment preference even before we fan out. */
+    work.requested_threads = sixel_threads_resolve();
 
     if (ncolors < 1) {
         status = SIXEL_BAD_ARGUMENT;
-        goto end;
+        goto cleanup;
     }
-    len = ncolors * width;
     output->active_palette = (-1);
 
-    map = (char *)sixel_allocator_calloc(allocator,
-                                         (size_t)len,
-                                         sizeof(char));
-    if (map == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_encode_body: sixel_allocator_calloc() failed.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
-    }
-
-    /*
-     * The column buckets mirror the image width so the encoder can
-     * accumulate runs without paying an O(n^2) insertion cost.
-     */
-    if (width > 0) {
-        columns_size = sizeof(sixel_node_t *) * (size_t)width;
-        columns = (sixel_node_t **)sixel_allocator_malloc(allocator,
-                                                          columns_size);
-        if (columns == NULL) {
-            sixel_helper_set_additional_message(
-                "sixel_encode_body: sixel_allocator_malloc() failed.");
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
-        memset(columns, 0, columns_size);
-    }
-
-    active_color_count = 0;
-    active_colors_size = (size_t)ncolors;
-    if (active_colors_size > 0) {
-        active_colors =
-            (unsigned char *)sixel_allocator_malloc(allocator,
-                                                    active_colors_size);
-        if (active_colors == NULL) {
-            sixel_helper_set_additional_message(
-                "sixel_encode_body: sixel_allocator_malloc() failed.");
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
-        memset(active_colors, 0, active_colors_size);
-    }
-
-    active_color_index_size = sizeof(int) * (size_t)ncolors;
-    if (active_color_index_size > 0) {
-        active_color_index =
-            (int *)sixel_allocator_malloc(allocator,
-                                          active_color_index_size);
-        if (active_color_index == NULL) {
-            sixel_helper_set_additional_message(
-                "sixel_encode_body: sixel_allocator_malloc() failed.");
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
-    }
-
     encode_probe_active = sixel_assessment_encode_probe_enabled();
-    span_started_at = 0.0;
-    compose_span_started_at = 0.0;
-    compose_queue_started_at = 0.0;
-    compose_span_duration = 0.0;
-    compose_scan_duration = 0.0;
-    compose_queue_duration = 0.0;
-    compose_scan_probes = 0.0;
-    compose_queue_nodes = 0.0;
-    emit_cells = 0.0;
-
-    emit_cells_ptr = encode_probe_active != 0 ? &emit_cells : NULL;
-
-    if (!bodyonly && (ncolors != 2 || keycolor == (-1))) {
-        span_started_at = sixel_encode_span_start(encode_probe_active);
-        if (output->palette_type == SIXEL_PALETTETYPE_HLS) {
-            for (n = 0; n < ncolors; n++) {
-                status = output_hls_palette_definition(output, palette, n, keycolor);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
-            }
-        } else {
-            for (n = 0; n < ncolors; n++) {
-                status = output_rgb_palette_definition(output, palette, n, keycolor);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
-            }
-        }
-        sixel_encode_span_commit(encode_probe_active,
-                                 SIXEL_ASSESSMENT_STAGE_ENCODE_PREPARE,
-                                 span_started_at);
+    metrics.encode_probe_active = encode_probe_active;
+    if (encode_probe_active != 0) {
+        metrics.emit_cells_ptr = &metrics.emit_cells;
+    } else {
+        metrics.emit_cells_ptr = NULL;
     }
 
-    for (y = i = 0; y < height; y++) {
-        int pix;
+    sixel_assessment_set_encode_parallelism(1);
 
-        if (output->encode_policy != SIXEL_ENCODEPOLICY_SIZE) {
-            fillable = 0;
-        } else if (palstate) {
-            /* high color sixel */
-            pix = pixels[(y - i) * width];
-            if (pix >= ncolors) {
-                fillable = 0;
-            } else {
-                fillable = 1;
-            }
-        } else {
-            /* normal sixel */
-            fillable = 1;
-        }
-        if (i == 0) {
-            /*
-             * Reset the roster of colors touched in this six-line span so the
-             * compose sweep only iterates palettes seen during classification.
-             */
-            active_color_count = 0;
-        }
-        span_started_at = sixel_encode_span_start(encode_probe_active);
-        for (x = 0; x < width; x++) {
-            if (y > INT_MAX / width) {
-                /* integer overflow */
-                sixel_helper_set_additional_message(
-                    "sixel_encode_body: integer overflow detected."
-                    " (y > INT_MAX)");
-                status = SIXEL_BAD_INTEGER_OVERFLOW;
-                goto end;
-            }
-            check_integer_overflow = y * width;
-            if (check_integer_overflow > INT_MAX - x) {
-                /* integer overflow */
-                sixel_helper_set_additional_message(
-                    "sixel_encode_body: integer overflow detected."
-                    " (y * width > INT_MAX - x)");
-                status = SIXEL_BAD_INTEGER_OVERFLOW;
-                goto end;
-            }
-            pix = pixels[check_integer_overflow + x];  /* color index */
-            if (pix >= 0 && pix < ncolors && pix != keycolor) {
-                if (pix > INT_MAX / width) {
-                    /* integer overflow */
-                    sixel_helper_set_additional_message(
-                        "sixel_encode_body: integer overflow detected."
-                        " (pix > INT_MAX / width)");
-                    status = SIXEL_BAD_INTEGER_OVERFLOW;
-                    goto end;
-                }
-                check_integer_overflow = pix * width;
-                if (check_integer_overflow > INT_MAX - x) {
-                    /* integer overflow */
-                    sixel_helper_set_additional_message(
-                        "sixel_encode_body: integer overflow detected."
-                        " (pix * width > INT_MAX - x)");
-                    status = SIXEL_BAD_INTEGER_OVERFLOW;
-                    goto end;
-                }
-                map[pix * width + x] |= (1 << i);
-                if (active_colors != NULL && active_colors[pix] == 0) {
-                    /*
-                     * Track each palette exactly once so compose does not pay
-                     * to scan rows that remained empty in this chunk.
-                     */
-                    active_colors[pix] = 1;
-                    if (active_color_count < ncolors) {
-                        active_color_index[active_color_count] = pix;
-                        active_color_count += 1;
-                    }
-                }
-            }
-            else if (!palstate) {
-                fillable = 0;
-            }
-        }
-        sixel_encode_span_commit(encode_probe_active,
-                                 SIXEL_ASSESSMENT_STAGE_ENCODE_CLASSIFY,
-                                 span_started_at);
+    status = sixel_encode_emit_palette(bodyonly,
+                                       ncolors,
+                                       keycolor,
+                                       palette,
+                                       output,
+                                       encode_probe_active);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
 
-        if (++i < 6 && (y + 1) < height) {
-            continue;
+#if SIXEL_ENABLE_THREADS
+    {
+        int nbands;
+        int threads;
+
+        nbands = (height + 5) / 6;
+        threads = work.requested_threads;
+        if (nbands > 1 && threads > 1) {
+            status = sixel_encode_body_parallel(pixels,
+                                                width,
+                                                height,
+                                                ncolors,
+                                                keycolor,
+                                                output,
+                                                palstate,
+                                                allocator,
+                                                threads);
+            if (SIXEL_FAILED(status)) {
+                goto cleanup;
+            }
+            goto finalize;
+        }
+    }
+#endif
+
+    status = sixel_encode_work_allocate(&work,
+                                        width,
+                                        ncolors,
+                                        allocator);
+    if (SIXEL_FAILED(status)) {
+        goto cleanup;
+    }
+
+    band_start = 0;
+    while (band_start < height) {
+        band_height = height - band_start;
+        if (band_height > 6) {
+            band_height = 6;
         }
 
-        /*
-         * Compose spans perform two distinct tasks:
-         *
-         *   1. sweep every palette row to find active columns;
-         *   2. allocate list nodes for each contiguous run.
-         *
-         * Sampling these subtasks separately clarifies whether the
-         * encoder spends most cycles scanning the bitmap or linking
-         * nodes.  The probe also tracks how many probes and nodes were
-         * executed so that the JSON performance report conveys the
-         * iteration volume alongside wall-clock time.
-         */
-        if (columns != NULL) {
-            memset(columns, 0, columns_size);
-        }
-        output->node_top = NULL;
+        band.row_in_band = 0;
+        band.fillable = 0;
+        band.active_color_count = 0;
 
-        compose_span_started_at =
-            sixel_encode_span_start(encode_probe_active);
-        /*
-         * Track queue time directly and derive the scan span from the
-         * compose total so we do not bounce the clock for every probe.
-         */
-        compose_queue_started_at = 0.0;
-        compose_span_duration = 0.0;
-        compose_queue_duration = 0.0;
-        compose_scan_duration = 0.0;
-        compose_scan_probes = 0.0;
-        compose_queue_nodes = 0.0;
-        for (color_index = 0; color_index < active_color_count; color_index++) {
-            c = active_color_index[color_index];
-            row = (unsigned char *)(map + c * width);
-            sx = 0;
-            while (sx < width) {
-                sx = sixel_compose_find_run_start(row,
-                                                  width,
-                                                  sx,
-                                                  encode_probe_active,
-                                                  &compose_scan_probes);
-                if (sx >= width) {
-                    break;
-                }
-
-                if (encode_probe_active) {
-                    now = sixel_assessment_timer_now();
-                    compose_queue_started_at = now;
-                    compose_queue_nodes += 1.0;
-                }
-
-                mx = sx + 1;
-                while (mx < width) {
-                    if (encode_probe_active) {
-                        compose_scan_probes += 1.0;
-                    }
-                    if (row[mx] != 0) {
-                        mx += 1;
-                        continue;
-                    }
-
-                    gap = sixel_compose_measure_gap(
-                        row,
-                        width,
-                        mx + 1,
-                        encode_probe_active,
-                        &compose_scan_probes,
-                        &gap_reached_end);
-                    if (gap >= 9 || gap_reached_end) {
-                        break;
-                    }
-                    mx += gap + 1;
-                }
-
-                if ((np = output->node_free) != NULL) {
-                    output->node_free = np->next;
-                } else {
-                    status = sixel_node_new(&np, allocator);
-                    if (SIXEL_FAILED(status)) {
-                        goto end;
-                    }
-                }
-
-                np->pal = c;
-                np->sx = sx;
-                np->mx = mx;
-                np->map = (char *)row;
-                np->next = NULL;
-
-                if (columns != NULL) {
-                    /*
-                     * Bucket runs by their starting column so we can
-                     * stitch a sorted queue in linear time after the
-                     * palette scan completes.
-                     */
-                    column_head = columns[sx];
-                    if (column_head == NULL
-                        || column_head->mx <= np->mx) {
-                        np->next = column_head;
-                        columns[sx] = np;
-                    } else {
-                        column_tail = column_head;
-                        while (column_tail->next != NULL
-                               && column_tail->next->mx > np->mx) {
-                            column_tail = column_tail->next;
-                        }
-                        np->next = column_tail->next;
-                        column_tail->next = np;
-                    }
-                } else {
-                    top.next = output->node_top;
-                    column_tail = &top;
-
-                    while (column_tail->next != NULL) {
-                        if (np->sx < column_tail->next->sx) {
-                            break;
-                        } else if (np->sx == column_tail->next->sx
-                                   && np->mx > column_tail->next->mx) {
-                            break;
-                        }
-                        column_tail = column_tail->next;
-                    }
-
-                    np->next = column_tail->next;
-                    column_tail->next = np;
-                    output->node_top = top.next;
-                }
-
-                if (encode_probe_active) {
-                    now = sixel_assessment_timer_now();
-                    compose_queue_duration +=
-                        now - compose_queue_started_at;
-                }
-
-                sx = mx;
+        for (row_index = 0; row_index < band_height; row_index++) {
+            absolute_row = band_start + row_index;
+            span_started_at =
+                sixel_encode_span_start(encode_probe_active);
+            status = sixel_band_classify_row(&work,
+                                             &band,
+                                             pixels,
+                                             width,
+                                             absolute_row,
+                                             ncolors,
+                                             keycolor,
+                                             palstate,
+                                             output->encode_policy);
+            if (SIXEL_FAILED(status)) {
+                goto cleanup;
             }
+            sixel_encode_span_commit(
+                encode_probe_active,
+                SIXEL_ASSESSMENT_STAGE_ENCODE_CLASSIFY,
+                span_started_at);
         }
 
-        if (columns != NULL) {
-            /*
-             * Collapse the per-column buckets into the global queue.
-             * The gather walks each run exactly once, avoiding the
-             * repeated insertion scans performed by the legacy list
-             * builder.
-             */
-            if (encode_probe_active) {
-                compose_queue_started_at = sixel_assessment_timer_now();
-            }
-            top.next = NULL;
-            column_tail = &top;
-            for (sx = 0; sx < width; sx++) {
-                column_head = columns[sx];
-                if (column_head == NULL) {
-                    continue;
-                }
-                column_tail->next = column_head;
-                while (column_tail->next != NULL) {
-                    column_tail = column_tail->next;
-                }
-                /*
-                 * Reset the bucket so spans generated after a resize or
-                 * partial flush reuse a clean list head.
-                 */
-                columns[sx] = NULL;
-            }
-            output->node_top = top.next;
-            if (encode_probe_active) {
-                now = sixel_assessment_timer_now();
-                compose_queue_duration +=
-                    now - compose_queue_started_at;
-            }
-        }
-
-        if (encode_probe_active) {
-            now = sixel_assessment_timer_now();
-            compose_span_duration = now - compose_span_started_at;
-            compose_scan_duration =
-                compose_span_duration - compose_queue_duration;
-            if (compose_scan_duration < 0.0) {
-                compose_scan_duration = 0.0;
-            }
-            if (compose_queue_duration < 0.0) {
-                compose_queue_duration = 0.0;
-            }
-            if (compose_span_duration < 0.0) {
-                compose_span_duration = 0.0;
-            }
-            sixel_assessment_record_encode_span(
-                SIXEL_ASSESSMENT_STAGE_ENCODE_COMPOSE_SCAN,
-                compose_scan_duration);
-            sixel_assessment_record_encode_span(
-                SIXEL_ASSESSMENT_STAGE_ENCODE_COMPOSE_QUEUE,
-                compose_queue_duration);
-            sixel_assessment_record_encode_span(
-                SIXEL_ASSESSMENT_STAGE_ENCODE_COMPOSE,
-                compose_span_duration);
-            sixel_assessment_record_encode_work(
-                SIXEL_ASSESSMENT_STAGE_ENCODE_COMPOSE_SCAN,
-                compose_scan_probes);
-            sixel_assessment_record_encode_work(
-                SIXEL_ASSESSMENT_STAGE_ENCODE_COMPOSE_QUEUE,
-                compose_queue_nodes);
-            sixel_assessment_record_encode_work(
-                SIXEL_ASSESSMENT_STAGE_ENCODE_COMPOSE,
-                compose_queue_nodes);
-        }
-
-        span_started_at = sixel_encode_span_start(encode_probe_active);
-        if (y != 5) {
-            /* DECGNL Graphics Next Line */
-            output->buffer[output->pos] = '-';
-            sixel_advance(output, 1);
-        }
-
-        for (x = 0; (np = output->node_top) != NULL;) {
-            sixel_node_t *next;
-            if (x > np->sx) {
-                /* DECGCR Graphics Carriage Return */
-                output->buffer[output->pos] = '$';
-                sixel_advance(output, 1);
-                x = 0;
-            }
-
-            if (fillable) {
-                memset(np->map + np->sx, (1 << i) - 1, (size_t)(np->mx - np->sx));
-            }
-            status = sixel_put_node(output,
-                                    &x,
-                                    np,
+        status = sixel_band_compose(&work,
+                                    &band,
+                                    output,
+                                    width,
                                     ncolors,
                                     keycolor,
-                                    emit_cells_ptr);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-            next = np->next;
-            sixel_node_del(output, np);
-            np = next;
-
-            while (np != NULL) {
-                if (np->sx < x) {
-                    np = np->next;
-                    continue;
-                }
-
-                if (fillable) {
-                    memset(np->map + np->sx, (1 << i) - 1, (size_t)(np->mx - np->sx));
-                }
-                status = sixel_put_node(output,
-                                        &x,
-                                        np,
-                                        ncolors,
-                                        keycolor,
-                                        emit_cells_ptr);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
-                next = np->next;
-                sixel_node_del(output, np);
-                np = next;
-            }
-
-            fillable = 0;
+                                    allocator,
+                                    &metrics);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
         }
 
-        sixel_encode_span_commit(encode_probe_active,
-                                 SIXEL_ASSESSMENT_STAGE_ENCODE_EMIT,
-                                 span_started_at);
-
-        if (active_colors != NULL) {
-            for (color_index = 0;
-                 color_index < active_color_count;
-                 color_index++) {
-                c = active_color_index[color_index];
-                active_colors[c] = 0;
-            }
+        last_row_index = band_start + band_height - 1;
+        status = sixel_band_emit(&work,
+                                 &band,
+                                 output,
+                                 ncolors,
+                                 keycolor,
+                                 last_row_index,
+                                 &metrics);
+        if (SIXEL_FAILED(status)) {
+            goto cleanup;
         }
-        active_color_count = 0;
-        span_started_at = sixel_encode_span_start(encode_probe_active);
-        i = 0;
-        memset(map, 0, (size_t)len);
-        sixel_encode_span_commit(encode_probe_active,
-                                 SIXEL_ASSESSMENT_STAGE_ENCODE_PREPARE,
-                                 span_started_at);
+
+        sixel_band_finish(&work, &band);
+
+        span_started_at =
+            sixel_encode_span_start(encode_probe_active);
+        sixel_band_clear_map(&work);
+        sixel_encode_span_commit(
+            encode_probe_active,
+            SIXEL_ASSESSMENT_STAGE_ENCODE_PREPARE,
+            span_started_at);
+
+        band_start += band_height;
+        sixel_band_state_reset(&band);
     }
 
+    status = SIXEL_OK;
+    goto finalize;
+
+finalize:
     if (palstate) {
         span_started_at = sixel_encode_span_start(encode_probe_active);
         output->buffer[output->pos] = '$';
@@ -1308,34 +2414,20 @@ sixel_encode_body(
     if (encode_probe_active) {
         sixel_assessment_record_encode_work(
             SIXEL_ASSESSMENT_STAGE_ENCODE_EMIT,
-            emit_cells);
+            metrics.emit_cells);
     }
 
-    status = SIXEL_OK;
-
-end:
-    /* free nodes */
+cleanup:
     while ((np = output->node_free) != NULL) {
         output->node_free = np->next;
         sixel_allocator_free(allocator, np);
     }
     output->node_top = NULL;
 
-    if (columns != NULL) {
-        sixel_allocator_free(allocator, columns);
-    }
-    if (active_color_index != NULL) {
-        sixel_allocator_free(allocator, active_color_index);
-    }
-    if (active_colors != NULL) {
-        sixel_allocator_free(allocator, active_colors);
-    }
-    sixel_allocator_free(allocator, map);
+    sixel_encode_work_cleanup(&work, allocator);
 
     return status;
 }
-
-
 static SIXELSTATUS
 sixel_encode_footer(sixel_output_t *output)
 {
@@ -1353,19 +2445,22 @@ sixel_encode_footer(sixel_output_t *output)
         }
     }
 
-    /* flush buffer */
     if (output->pos > 0) {
         if (output->penetrate_multiplexer) {
-            sixel_penetrate(output, output->pos,
+            sixel_penetrate(output,
+                            output->pos,
                             DCS_START_7BIT,
                             DCS_END_7BIT,
                             DCS_START_7BIT_SIZE,
                             DCS_END_7BIT_SIZE);
             output->fn_write((char *)DCS_7BIT("\033") DCS_7BIT("\\"),
-                             (DCS_START_7BIT_SIZE + 1 + DCS_END_7BIT_SIZE) * 2,
+                             (DCS_START_7BIT_SIZE + 1 +
+                              DCS_END_7BIT_SIZE) * 2,
                              output->priv);
         } else {
-            output->fn_write((char *)output->buffer, output->pos, output->priv);
+            output->fn_write((char *)output->buffer,
+                             output->pos,
+                             output->priv);
         }
     }
 
@@ -1373,7 +2468,6 @@ sixel_encode_footer(sixel_output_t *output)
 
     return status;
 }
-
 
 static SIXELSTATUS
 sixel_encode_body_ormode(
