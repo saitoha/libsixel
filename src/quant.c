@@ -76,6 +76,8 @@
 #endif
 
 #include "quant.h"
+#include "palette.h"
+#include "quant-internal.h"
 #include "compat_stub.h"
 
 typedef struct {
@@ -282,27 +284,11 @@ lso2_table(void))[7]
 #define VARERR_ROUND       (1 << (VARERR_SCALE_SHIFT - 1))
 #define VARERR_MAX_VALUE   (255 * VARERR_SCALE)
 
-#if HAVE_DEBUG
-#define quant_trace fprintf
-#else
-static inline void quant_trace(FILE *f, ...) { (void) f; }
-#endif
-
 /*****************************************************************************
  *
  * quantization
  *
  *****************************************************************************/
-
-typedef struct box* boxVector;
-struct box {
-    unsigned int ind;
-    unsigned int colors;
-    unsigned int sum;
-};
-
-typedef unsigned long sample;
-typedef sample * tuple;
 
 static unsigned char
 sixel_quant_reversible_value(unsigned int sample)
@@ -340,7 +326,7 @@ sixel_quant_reversible_tuple(sample *tuple,
     }
 }
 
-static void
+void
 sixel_quant_reversible_palette(unsigned char *palette,
                                unsigned int colors,
                                unsigned int depth)
@@ -360,24 +346,12 @@ sixel_quant_reversible_palette(unsigned char *palette,
     }
 }
 
-struct tupleint {
-    /* An ordered pair of a tuple value and an integer, such as you
-       would find in a tuple table or tuple hash.
-       Note that this is a variable length structure.
-    */
-    unsigned int value;
-    sample tuple[1];
-    /* This is actually a variable size array -- its size is the
-       depth of the tuple in question.  Some compilers do not let us
-       declare a variable length array.
-    */
+typedef struct box* boxVector;
+struct box {
+    unsigned int ind;
+    unsigned int colors;
+    unsigned int sum;
 };
-typedef struct tupleint ** tupletable;
-
-typedef struct {
-    unsigned int size;
-    tupletable table;
-} tupletable2;
 
 static unsigned int compareplanePlane;
 static tupletable2 const *force_palette_source;
@@ -1414,25 +1388,7 @@ sixel_quant_set_method_for_largest(int method)
     quant_method_for_largest = normalized;
 }
 
-struct histogram_control {
-    unsigned int channel_shift;
-    unsigned int channel_bits;
-    unsigned int channel_mask;
-    int reversible_rounding;         /* nonzero biases quantization upward */
-};
-
-static struct histogram_control
-histogram_control_make(unsigned int depth);
-static struct histogram_control
-histogram_control_make_for_policy(unsigned int depth, int lut_policy);
-static size_t histogram_dense_size(unsigned int depth,
-                                   struct histogram_control const
-                                       *control);
-static unsigned int histogram_reconstruct(unsigned int quantized,
-                                          struct histogram_control const
-                                              *control);
-
-static size_t
+size_t
 histogram_dense_size(unsigned int depth,
                      struct histogram_control const *control)
 {
@@ -1453,7 +1409,7 @@ histogram_dense_size(unsigned int depth,
     return size;
 }
 
-static struct histogram_control
+struct histogram_control
 histogram_control_make_for_policy(unsigned int depth, int lut_policy)
 {
     struct histogram_control control;
@@ -1490,7 +1446,7 @@ histogram_control_make_for_policy(unsigned int depth, int lut_policy)
     return control;
 }
 
-static unsigned int
+unsigned int
 histogram_reconstruct(unsigned int quantized,
                       struct histogram_control const *control)
 {
@@ -1554,7 +1510,7 @@ histogram_quantize(unsigned int sample8,
     return quantized;
 }
 
-static uint32_t
+uint32_t
 histogram_pack_color(unsigned char const *data,
                      unsigned int const depth,
                      struct histogram_control const *control)
@@ -1592,7 +1548,7 @@ histogram_pack_color(unsigned char const *data,
     return packed;
 }
 
-static uint32_t
+uint32_t
 histogram_hash_mix(uint32_t key)
 {
     uint32_t hash;
@@ -1737,7 +1693,7 @@ static SIXELSTATUS hopscotch_table32_insert(struct hopscotch_table32 *table,
                                             uint32_t value);
 static SIXELSTATUS hopscotch_table32_grow(struct hopscotch_table32 *table);
 
-static struct histogram_control
+struct histogram_control
 histogram_control_make(unsigned int depth)
 {
     struct histogram_control control;
@@ -4224,7 +4180,7 @@ sixel_quant_cache_release(unsigned short *cachetable,
 }
 
 
-static int
+int
 computeColorMapFromInput(unsigned char const *data,
                          unsigned int const length,
                          unsigned int const depth,
@@ -6652,7 +6608,7 @@ lookup_mono_lightbg(unsigned char const * const pixel,
 }
 
 
-static SIXELSTATUS
+SIXELSTATUS
 build_palette_kmeans(unsigned char **result,
                      unsigned char const *data,
                      unsigned int length,
@@ -7324,71 +7280,76 @@ sixel_quant_make_palette(
     sixel_allocator_t      /* in */  *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    unsigned int i;
-    unsigned int n;
-    int ret;
-    tupletable2 colormap;
+    sixel_palette_t *palette = NULL;
+    sixel_allocator_t *work_allocator;
+    size_t payload_size;
     unsigned int depth;
-    int result_depth;
 
-    result_depth = sixel_helper_compute_depth(pixelformat);
-    if (result_depth <= 0) {
-        *result = NULL;
+    if (result == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    *result = NULL;
+
+    status = sixel_palette_new(&palette, allocator);
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
 
-    depth = (unsigned int)result_depth;
+    palette->requested_colors = reqcolors;
+    palette->method_for_largest = methodForLargest;
+    palette->method_for_rep = methodForRep;
+    palette->quality_mode = qualityMode;
+    palette->force_palette = force_palette;
+    palette->use_reversible = use_reversible;
+    palette->quantize_model = quantize_model;
+    palette->final_merge_mode = final_merge_mode;
+    palette->lut_policy = histogram_lut_policy;
 
-    if (quantize_model == SIXEL_QUANTIZE_MODEL_KMEANS) {
-        status = build_palette_kmeans(result,
-                                      data,
-                                      length,
-                                      depth,
-                                      reqcolors,
-                                      ncolors,
-                                      origcolors,
-                                      qualityMode,
-                                      force_palette,
-                                      final_merge_mode,
-                                      allocator);
-        if (SIXEL_SUCCEEDED(status)) {
-            if (use_reversible) {
-                sixel_quant_reversible_palette(*result,
-                                               *ncolors,
-                                               depth);
-            }
-            return status;
-        }
-    }
-
-    ret = computeColorMapFromInput(data, length, depth,
-                                   reqcolors, methodForLargest,
-                                   methodForRep, qualityMode,
-                                   force_palette, use_reversible,
-                                   final_merge_mode,
-                                   &colormap, origcolors, allocator);
-    if (ret != 0) {
-        *result = NULL;
+    status = sixel_palette_generate(palette,
+                                    data,
+                                    length,
+                                    pixelformat,
+                                    allocator);
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
-    *ncolors = colormap.size;
-    quant_trace(stderr, "tupletable size: %d\n", *ncolors);
-    *result = (unsigned char *)sixel_allocator_malloc(allocator, *ncolors * depth);
-    for (i = 0; i < *ncolors; i++) {
-        for (n = 0; n < depth; ++n) {
-            (*result)[i * depth + n] = colormap.table[i]->tuple[n];
-        }
+
+    if (ncolors != NULL) {
+        *ncolors = palette->entry_count;
+    }
+    if (origcolors != NULL) {
+        *origcolors = palette->original_colors;
     }
 
-    if (use_reversible) {
-        sixel_quant_reversible_palette(*result, *ncolors, depth);
+    if (palette->depth <= 0 || palette->entry_count == 0U) {
+        status = SIXEL_OK;
+        goto end;
     }
 
-    sixel_allocator_free(allocator, colormap.table);
+    depth = (unsigned int)palette->depth;
+    payload_size = (size_t)palette->entry_count * (size_t)depth;
+    work_allocator = (allocator != NULL) ? allocator : palette->allocator;
+    if (work_allocator == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    *result = (unsigned char *)sixel_allocator_malloc(work_allocator,
+                                                      payload_size);
+    if (*result == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_quant_make_palette: allocation failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    memcpy(*result, palette->entries, payload_size);
 
     status = SIXEL_OK;
 
 end:
+    if (palette != NULL) {
+        sixel_palette_unref(palette);
+    }
     return status;
 }
 

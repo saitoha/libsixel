@@ -24,12 +24,12 @@
 
 #include <sixel.h>
 
+#include "palette.h"
+
 /* dither context object */
 struct sixel_dither {
     unsigned int ref;               /* reference counter */
-    unsigned char *palette;         /* palette definition */
-    unsigned short *cachetable;     /* cache table */
-    size_t cachetable_size;         /* cached table length */
+    sixel_palette_t *palette;       /* palette definition */
     int reqcolors;                  /* requested colors */
     int force_palette;              /* keep palette size when non-zero */
     int ncolors;                    /* active colors */
