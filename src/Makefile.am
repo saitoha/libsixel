@@ -21,20 +21,23 @@ libsixel_la_SOURCES = \
                 $(srcdir)/assessment.h \
                 $(srcdir)/fromsixel.c \
                 $(srcdir)/tosixel.c \
-		$(srcdir)/quant.c \
-		$(srcdir)/quant.h \
-		$(srcdir)/dither.c \
-		$(srcdir)/dither.h \
-		$(srcdir)/colorspace.c \
-		$(srcdir)/colorspace.h \
-		$(srcdir)/frame.c \
-		$(srcdir)/frame.h \
-		$(srcdir)/pixelformat.c \
-		$(srcdir)/pixelformat.h \
-		$(srcdir)/scale.c \
-		$(srcdir)/scale.h \
-		$(srcdir)/chunk.c \
-		$(srcdir)/chunk.h \
+                $(srcdir)/quant.c \
+                $(srcdir)/quant.h \
+                $(srcdir)/quant-internal.h \
+                $(srcdir)/palette.c \
+                $(srcdir)/palette.h \
+                $(srcdir)/dither.c \
+                $(srcdir)/dither.h \
+                $(srcdir)/colorspace.c \
+                $(srcdir)/colorspace.h \
+                $(srcdir)/frame.c \
+                $(srcdir)/frame.h \
+                $(srcdir)/pixelformat.c \
+                $(srcdir)/pixelformat.h \
+                $(srcdir)/scale.c \
+                $(srcdir)/scale.h \
+                $(srcdir)/chunk.c \
+                $(srcdir)/chunk.h \
                 $(srcdir)/loader.c \
                 $(srcdir)/loader.h \
                 $(srcdir)/frompnm.c \
@@ -45,13 +48,13 @@ libsixel_la_SOURCES = \
                 $(srcdir)/clipboard.h \
                 $(srcdir)/encoder.c \
                 $(srcdir)/encoder.h \
-		$(srcdir)/decoder.c \
-		$(srcdir)/decoder.h \
-		$(srcdir)/stb_image.h \
-		$(srcdir)/writer.c \
-		$(srcdir)/writer.h \
-		$(srcdir)/stb_image_write.c \
-		$(srcdir)/stb_image_write.h \
+                $(srcdir)/decoder.c \
+                $(srcdir)/decoder.h \
+                $(srcdir)/stb_image.h \
+                $(srcdir)/writer.c \
+                $(srcdir)/writer.h \
+                $(srcdir)/stb_image_write.c \
+                $(srcdir)/stb_image_write.h \
                 $(srcdir)/status.c \
                 $(srcdir)/status.h \
                 $(srcdir)/stdio_stub.h \
@@ -102,10 +105,10 @@ else
 libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE)
 endif
 libsixel_la_LIBADD = -lm \
-		$(LIBCURL_LIBS) \
-		$(WINHTTP_LIBS) \
-		$(LIBPNG_LIBS) \
-		$(LIBJPEG_LIBS) \
+                $(LIBCURL_LIBS) \
+                $(WINHTTP_LIBS) \
+                $(LIBPNG_LIBS) \
+                $(LIBJPEG_LIBS) \
                 $(GDK_PIXBUF_LIBS) \
                 $(GD_LIBS) \
                 $(WIC_LIBS) \
@@ -119,7 +122,7 @@ if COND_TESTS
 noinst_PROGRAMS = tests
 tests_SOURCES = $(srcdir)/tests.c
 tests_CPPFLAGS = -I$(top_builddir)/include/ \
-		 -I$(top_builddir)/src/ $(AM_CPPFLAGS)
+                 -I$(top_builddir)/src/ $(AM_CPPFLAGS)
 tests_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 tests_LDFLAGS = $(MAYBE_COVERAGE)
 tests_LDADD = $(srcdir)/libsixel.la

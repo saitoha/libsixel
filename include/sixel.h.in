@@ -846,6 +846,79 @@ sixel_output_convert_colorspace(
 
 /* color quantization API */
 
+/* handle type of palette object */
+struct sixel_palette;
+typedef struct sixel_palette sixel_palette_t;
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* create palette object */
+SIXELAPI SIXELSTATUS
+sixel_palette_new(
+    sixel_palette_t   /* out */ **pppalette,  /* palette object to be created */
+    sixel_allocator_t /* in */  *allocator);  /* allocator, null if you use
+                                                 default allocator */
+
+/* retain palette object */
+SIXELAPI sixel_palette_t *
+sixel_palette_ref(
+    sixel_palette_t /* in */ *palette);  /* palette object */
+
+/* release palette object */
+SIXELAPI void
+sixel_palette_unref(
+    sixel_palette_t /* in */ *palette);  /* palette object */
+
+/* generate palette entries from raw image bytes */
+SIXELAPI SIXELSTATUS
+sixel_palette_generate(
+    sixel_palette_t       /* in */ *palette,    /* palette object */
+    unsigned char const   /* in */ *data,       /* sample image */
+    unsigned int          /* in */ length,      /* buffer length */
+    int                   /* in */ pixelformat, /* one of enum pixelFormat */
+    sixel_allocator_t     /* in */ *allocator); /* allocator, null if you use
+                                                   default allocator */
+
+/* ensure palette buffer has room for the requested number of colors */
+SIXELAPI SIXELSTATUS
+sixel_palette_resize(
+    sixel_palette_t   /* in */ *palette,    /* palette object */
+    unsigned int      /* in */ colors,      /* palette size */
+    int               /* in */ depth,       /* color depth */
+    sixel_allocator_t /* in */ *allocator); /* allocator, null if you use
+                                               default allocator */
+
+/* copy entries into palette buffer */
+SIXELAPI SIXELSTATUS
+sixel_palette_set_entries(
+    sixel_palette_t         /* in */ *palette,    /* palette object */
+    unsigned char const     /* in */ *entries,    /* RGB triplets */
+    unsigned int            /* in */ colors,      /* palette size */
+    int                     /* in */ depth,       /* color depth */
+    sixel_allocator_t       /* in */ *allocator); /* allocator, null if you use
+                                                     default allocator */
+
+/* obtain mutable palette buffer */
+SIXELAPI unsigned char *
+sixel_palette_get_entries(
+    sixel_palette_t /* in */ *palette);   /* palette object */
+
+/* query number of palette entries */
+SIXELAPI unsigned int
+sixel_palette_get_entry_count(
+    sixel_palette_t const /* in */ *palette);   /* palette object */
+
+/* query palette depth */
+SIXELAPI int
+sixel_palette_get_depth(
+    sixel_palette_t const /* in */ *palette);   /* palette object */
+
+#ifdef __cplusplus
+}
+#endif
+
 /* handle type of dither context object */
 struct sixel_dither;
 typedef struct sixel_dither sixel_dither_t;
