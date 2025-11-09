@@ -36,7 +36,6 @@ EXTRA_DIST += tests/converters/common.bash \
 	images/map8.png \
 	images/autumn.png \
 	images/egret.jpg \
-	images/images \
 	images/map16-palette.png \
 	images/map16.png \
 	images/map64.six \
