@@ -154,6 +154,9 @@ SIXELAPI int
 sixel_assessment_encode_probe_enabled(void);
 
 SIXELAPI void
+sixel_assessment_set_encode_parallelism(int threads);
+
+SIXELAPI void
 sixel_assessment_record_encode_span(sixel_assessment_stage_t stage,
                                     double duration);
 

@@ -62,6 +62,13 @@ generated SIXEL output via the built-in loader.
 write the assessment JSON report to \fIPATH\fP.
 Use "-" to write to standard output.
 .TP 5
+.B \-= \fICOUNT\fP, \-\-threads=\fICOUNT\fP
+select the encoder thread count used for band parallelism.
+The special value \fBauto\fP matches the hardware thread count.
+Positive integers keep deterministic ordering with \fICOUNT\fP greater
+than one enabling multi-threaded encoding while \fICOUNT\fP of one
+preserves the sequential fallback path.
+.TP 5
 .B \-7, \-\-7bit-mode
 generate a sixel image for 7bit terminals or printers (default).
 .TP 5
@@ -516,6 +523,13 @@ rgb:rrr/ggg/bbb
 .br
 rgb:rrrr/gggg/bbbb
 .br
+.TP 5
+.B SIXEL_THREADS
+.br
+override the encoder thread count used for band processing.
+.br
+Accept positive integers or the string \(dqauto\(dq to match the
+hardware thread count.
 .TP 5
 .B IMG2SIXEL_COMPLETION_BASH
 .br

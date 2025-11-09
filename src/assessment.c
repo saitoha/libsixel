@@ -194,6 +194,39 @@ static unsigned char const g_stage_counts_toward_total[] = {
     1  /* Output */
 };
 
+static int g_encode_parallel_threads = 1;
+static int g_encode_substages_visible = 1;
+
+static int
+sixel_assessment_stage_is_encode_detail(sixel_assessment_stage_t stage)
+{
+    switch (stage) {
+    case SIXEL_ASSESSMENT_STAGE_ENCODE_PREPARE:
+    case SIXEL_ASSESSMENT_STAGE_ENCODE_CLASSIFY:
+    case SIXEL_ASSESSMENT_STAGE_ENCODE_COMPOSE:
+    case SIXEL_ASSESSMENT_STAGE_ENCODE_COMPOSE_SCAN:
+    case SIXEL_ASSESSMENT_STAGE_ENCODE_COMPOSE_QUEUE:
+    case SIXEL_ASSESSMENT_STAGE_ENCODE_EMIT:
+        return 1;
+    default:
+        break;
+    }
+    return 0;
+}
+
+static int
+sixel_assessment_stage_should_emit(int stage_index)
+{
+    sixel_assessment_stage_t stage;
+
+    stage = g_stage_descriptors[stage_index].id;
+    if (!g_encode_substages_visible &&
+            sixel_assessment_stage_is_encode_detail(stage)) {
+        return 0;
+    }
+    return 1;
+}
+
 SIXELAPI double
 sixel_assessment_timer_now(void)
 {
@@ -771,6 +804,20 @@ sixel_assessment_encode_probe_enabled(void)
         return 0;
     }
     return 1;
+}
+
+SIXELAPI void
+sixel_assessment_set_encode_parallelism(int threads)
+{
+    if (threads < 1) {
+        threads = 1;
+    }
+    g_encode_parallel_threads = threads;
+    if (threads > 1) {
+        g_encode_substages_visible = 0;
+    } else {
+        g_encode_substages_visible = 1;
+    }
 }
 
 SIXELAPI void
@@ -4356,6 +4403,7 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
     int is_last_stage;
     int written;
     int has_more;
+    int next_index;
     SIXELSTATUS status;
 
     if (assessment == NULL || callback == NULL) {
@@ -4525,10 +4573,14 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
                  user_data);
 
         total_duration = 0.0;
-        for (stage_index = 0;
-             stage_index < sizeof(g_stage_descriptors) /
-                 sizeof(g_stage_descriptors[0]);
-             ++stage_index) {
+        stage_index = 0;
+        while (stage_index <
+                (int)(sizeof(g_stage_descriptors) /
+                    sizeof(g_stage_descriptors[0]))) {
+            if (!sixel_assessment_stage_should_emit(stage_index)) {
+                ++stage_index;
+                continue;
+            }
             stage = g_stage_descriptors[stage_index].id;
             seconds = assessment->stage_durations[stage];
             bytes = (size_t)assessment->stage_bytes[stage];
@@ -4541,20 +4593,48 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
             } else {
                 throughput = 0.0;
             }
-            is_last_stage =
-                (stage_index + 1 == sizeof(g_stage_descriptors) /
-                    sizeof(g_stage_descriptors[0]));
+
+            next_index = stage_index + 1;
+            while (next_index <
+                    (int)(sizeof(g_stage_descriptors) /
+                        sizeof(g_stage_descriptors[0])) &&
+                    !sixel_assessment_stage_should_emit(next_index)) {
+                ++next_index;
+            }
+            is_last_stage = (next_index >=
+                    (int)(sizeof(g_stage_descriptors) /
+                        sizeof(g_stage_descriptors[0])));
+
+            written = snprintf(line,
+                               sizeof(line),
+                               "      {\n"
+                               "        \"name\": \"%s\",\n"
+                               "        \"duration_ms\": %.6f,\n",
+                               g_stage_descriptors[stage_index].label,
+                               duration_ms);
+            if (written < 0 || (size_t)written >= sizeof(line)) {
+                return SIXEL_RUNTIME_ERROR;
+            }
+            callback(line, (size_t)written, user_data);
+
+            if (stage == SIXEL_ASSESSMENT_STAGE_ENCODE &&
+                    g_encode_parallel_threads > 1) {
+                written = snprintf(line,
+                                   sizeof(line),
+                                   "        \"parallel_threads\": %d,\n",
+                                   g_encode_parallel_threads);
+                if (written < 0 || (size_t)written >= sizeof(line)) {
+                    return SIXEL_RUNTIME_ERROR;
+                }
+                callback(line, (size_t)written, user_data);
+            }
+
             written = snprintf(
                 line,
                 sizeof(line),
-                "      {\n"
-                "        \"name\": \"%s\",\n"
-                "        \"duration_ms\": %.6f,\n"
                 "        \"bytes_processed\": %zu,\n"
                 "        \"throughput_bytes_per_second\": %.6f\n"
                 "      }%s\n",
-                g_stage_descriptors[stage_index].label,
-                duration_ms,
                 bytes,
                 throughput,
                 is_last_stage ? "" : ",");
@@ -4562,6 +4642,8 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
                 return SIXEL_RUNTIME_ERROR;
             }
             callback(line, (size_t)written, user_data);
+
+            stage_index = next_index;
         }
 
         callback("    ],\n", sizeof("    ],\n") - 1, user_data);
