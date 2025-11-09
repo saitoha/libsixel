@@ -33,6 +33,9 @@ EXTRA_DIST += tests/converters/common.bash \
 	tests/converters/test_0013_documentation.bash \
 	tests/converters/test_0014_option_matching.bash \
 	tests/converters/test_0015_argument_shift.bash \
+	tests/issue/167/poc \
+	tests/issue/166/poc \
+	tests/issue/200/POC_img2sixel_heap_buffer_overflow \
 	images/map8.png \
 	images/autumn.png \
 	images/egret.jpg \

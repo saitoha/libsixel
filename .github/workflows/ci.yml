@@ -743,7 +743,7 @@ jobs:
         set -euxo pipefail
         meson setup builddir ${{ matrix.setup_flags }}
         meson compile -C builddir
-        meson dist -C builddir
+        meson dist -C builddir --allow-dirty
         ls -l builddir/meson-dist
 
     - name: Build from Meson dist archive (Linux/macOS)
