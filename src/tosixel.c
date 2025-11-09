@@ -1494,6 +1494,15 @@ sixel_encode_dither(
     sixel_index_t *paletted_pixels = NULL;
     sixel_index_t *input_pixels;
     size_t bufsize;
+    unsigned char *palette_entries;
+
+    palette_entries = sixel_palette_get_entries(dither->palette);
+    if (palette_entries == NULL) {
+        status = SIXEL_RUNTIME_ERROR;
+        sixel_helper_set_additional_message(
+            "sixel_encode_dither: palette entries are missing.");
+        goto end;
+    }
 
     switch (dither->pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
@@ -1547,7 +1556,7 @@ sixel_encode_dither(
         status = sixel_encode_body_ormode(input_pixels,
                                           width,
                                           height,
-                                          dither->palette,
+                                          palette_entries,
                                           dither->ncolors,
                                           dither->keycolor,
                                           output);
@@ -1555,7 +1564,7 @@ sixel_encode_dither(
         status = sixel_encode_body(input_pixels,
                                    width,
                                    height,
-                                   dither->palette,
+                                   palette_entries,
                                    dither->ncolors,
                                    dither->keycolor,
                                    dither->bodyonly,
@@ -2261,6 +2270,7 @@ sixel_encode_highcolor(
     int pix;
     int orig_height;
     unsigned char *pal;
+    unsigned char *palette_entries;
 
     if (dither->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         /* normalize pixelfromat */
@@ -2279,6 +2289,12 @@ sixel_encode_highcolor(
         }
         pixels = normalized_pixels;
     }
+
+    palette_entries = sixel_palette_get_entries(dither->palette);
+    if (palette_entries == NULL) {
+        goto error;
+    }
+
     paletted_pixels = (sixel_index_t *)sixel_allocator_malloc(dither->allocator,
                                                               (size_t)whole_size);
     if (paletted_pixels == NULL) {
@@ -2332,7 +2348,7 @@ next:
                         dirty = 1;
                         *dst = 255;
                     } else {
-                        pal = dither->palette + (nextpal * 3);
+                        pal = palette_entries + (nextpal * 3);
 
                         rgbhit[pix] = 1;
                         if (output_count > 0) {
@@ -2381,7 +2397,7 @@ next:
             status = sixel_encode_body(paletted_pixels,
                                        width,
                                        height,
-                                       dither->palette,
+                                       palette_entries,
                                        255,
                                        255,
                                        dither->bodyonly,
@@ -2417,7 +2433,7 @@ end:
     status = sixel_encode_body(paletted_pixels,
                                width,
                                height,
-                               dither->palette,
+                               palette_entries,
                                255,
                                255,
                                dither->bodyonly,

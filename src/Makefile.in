@@ -152,13 +152,15 @@ libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/assessment.c $(srcdir)/assessment.h \
 	$(srcdir)/fromsixel.c $(srcdir)/tosixel.c $(srcdir)/quant.c \
-	$(srcdir)/quant.h $(srcdir)/dither.c $(srcdir)/dither.h \
-	$(srcdir)/colorspace.c $(srcdir)/colorspace.h \
-	$(srcdir)/frame.c $(srcdir)/frame.h $(srcdir)/pixelformat.c \
-	$(srcdir)/pixelformat.h $(srcdir)/scale.c $(srcdir)/scale.h \
-	$(srcdir)/chunk.c $(srcdir)/chunk.h $(srcdir)/loader.c \
-	$(srcdir)/loader.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
-	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/clipboard.c \
+	$(srcdir)/quant.h $(srcdir)/quant-internal.h \
+	$(srcdir)/palette.c $(srcdir)/palette.h $(srcdir)/dither.c \
+	$(srcdir)/dither.h $(srcdir)/colorspace.c \
+	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
+	$(srcdir)/pixelformat.c $(srcdir)/pixelformat.h \
+	$(srcdir)/scale.c $(srcdir)/scale.h $(srcdir)/chunk.c \
+	$(srcdir)/chunk.h $(srcdir)/loader.c $(srcdir)/loader.h \
+	$(srcdir)/frompnm.c $(srcdir)/frompnm.h $(srcdir)/fromgif.c \
+	$(srcdir)/fromgif.h $(srcdir)/clipboard.c \
 	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
 	$(srcdir)/decoder.c $(srcdir)/decoder.h $(srcdir)/stb_image.h \
 	$(srcdir)/writer.c $(srcdir)/writer.h \
@@ -175,16 +177,17 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-assessment.lo libsixel_la-fromsixel.lo \
 	libsixel_la-tosixel.lo libsixel_la-quant.lo \
-	libsixel_la-dither.lo libsixel_la-colorspace.lo \
-	libsixel_la-frame.lo libsixel_la-pixelformat.lo \
-	libsixel_la-scale.lo libsixel_la-chunk.lo \
-	libsixel_la-loader.lo libsixel_la-frompnm.lo \
-	libsixel_la-fromgif.lo libsixel_la-clipboard.lo \
-	libsixel_la-encoder.lo libsixel_la-decoder.lo \
-	libsixel_la-writer.lo libsixel_la-stb_image_write.lo \
-	libsixel_la-status.lo libsixel_la-compat_stub.lo \
-	libsixel_la-malloc_stub.lo libsixel_la-allocator.lo \
-	libsixel_la-tty.lo $(am__objects_1) $(am__objects_2)
+	libsixel_la-palette.lo libsixel_la-dither.lo \
+	libsixel_la-colorspace.lo libsixel_la-frame.lo \
+	libsixel_la-pixelformat.lo libsixel_la-scale.lo \
+	libsixel_la-chunk.lo libsixel_la-loader.lo \
+	libsixel_la-frompnm.lo libsixel_la-fromgif.lo \
+	libsixel_la-clipboard.lo libsixel_la-encoder.lo \
+	libsixel_la-decoder.lo libsixel_la-writer.lo \
+	libsixel_la-stb_image_write.lo libsixel_la-status.lo \
+	libsixel_la-compat_stub.lo libsixel_la-malloc_stub.lo \
+	libsixel_la-allocator.lo libsixel_la-tty.lo $(am__objects_1) \
+	$(am__objects_2)
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -232,6 +235,7 @@ am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
 	./$(DEPDIR)/libsixel_la-loader.Plo \
 	./$(DEPDIR)/libsixel_la-malloc_stub.Plo \
 	./$(DEPDIR)/libsixel_la-output.Plo \
+	./$(DEPDIR)/libsixel_la-palette.Plo \
 	./$(DEPDIR)/libsixel_la-pixelformat.Plo \
 	./$(DEPDIR)/libsixel_la-quant.Plo \
 	./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo \
@@ -505,13 +509,15 @@ lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/assessment.c $(srcdir)/assessment.h \
 	$(srcdir)/fromsixel.c $(srcdir)/tosixel.c $(srcdir)/quant.c \
-	$(srcdir)/quant.h $(srcdir)/dither.c $(srcdir)/dither.h \
-	$(srcdir)/colorspace.c $(srcdir)/colorspace.h \
-	$(srcdir)/frame.c $(srcdir)/frame.h $(srcdir)/pixelformat.c \
-	$(srcdir)/pixelformat.h $(srcdir)/scale.c $(srcdir)/scale.h \
-	$(srcdir)/chunk.c $(srcdir)/chunk.h $(srcdir)/loader.c \
-	$(srcdir)/loader.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
-	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/clipboard.c \
+	$(srcdir)/quant.h $(srcdir)/quant-internal.h \
+	$(srcdir)/palette.c $(srcdir)/palette.h $(srcdir)/dither.c \
+	$(srcdir)/dither.h $(srcdir)/colorspace.c \
+	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
+	$(srcdir)/pixelformat.c $(srcdir)/pixelformat.h \
+	$(srcdir)/scale.c $(srcdir)/scale.h $(srcdir)/chunk.c \
+	$(srcdir)/chunk.h $(srcdir)/loader.c $(srcdir)/loader.h \
+	$(srcdir)/frompnm.c $(srcdir)/frompnm.h $(srcdir)/fromgif.c \
+	$(srcdir)/fromgif.h $(srcdir)/clipboard.c \
 	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
 	$(srcdir)/decoder.c $(srcdir)/decoder.h $(srcdir)/stb_image.h \
 	$(srcdir)/writer.c $(srcdir)/writer.h \
@@ -539,10 +545,10 @@ libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 @BUILDING_ON_WINDOWS_FALSE@libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE)
 @BUILDING_ON_WINDOWS_TRUE@libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE)
 libsixel_la_LIBADD = -lm \
-		$(LIBCURL_LIBS) \
-		$(WINHTTP_LIBS) \
-		$(LIBPNG_LIBS) \
-		$(LIBJPEG_LIBS) \
+                $(LIBCURL_LIBS) \
+                $(WINHTTP_LIBS) \
+                $(LIBPNG_LIBS) \
+                $(LIBJPEG_LIBS) \
                 $(GDK_PIXBUF_LIBS) \
                 $(GD_LIBS) \
                 $(WIC_LIBS) \
@@ -553,7 +559,7 @@ libsixel_la_LIBADD = -lm \
 
 @COND_TESTS_TRUE@tests_SOURCES = $(srcdir)/tests.c
 @COND_TESTS_TRUE@tests_CPPFLAGS = -I$(top_builddir)/include/ \
-@COND_TESTS_TRUE@		 -I$(top_builddir)/src/ $(AM_CPPFLAGS)
+@COND_TESTS_TRUE@                 -I$(top_builddir)/src/ $(AM_CPPFLAGS)
 
 @COND_TESTS_TRUE@tests_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 @COND_TESTS_TRUE@tests_LDFLAGS = $(MAYBE_COVERAGE)
@@ -662,6 +668,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-malloc_stub.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-output.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-pixelformat.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-quant.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo@am__quote@ # am--include-marker
@@ -737,6 +744,13 @@ libsixel_la-quant.lo: quant.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='quant.c' object='libsixel_la-quant.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-quant.lo `test -f 'quant.c' || echo '$(srcdir)/'`quant.c
+
+libsixel_la-palette.lo: palette.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette.Tpo -c -o libsixel_la-palette.lo `test -f 'palette.c' || echo '$(srcdir)/'`palette.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette.Tpo $(DEPDIR)/libsixel_la-palette.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette.c' object='libsixel_la-palette.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette.lo `test -f 'palette.c' || echo '$(srcdir)/'`palette.c
 
 libsixel_la-dither.lo: dither.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither.Tpo -c -o libsixel_la-dither.lo `test -f 'dither.c' || echo '$(srcdir)/'`dither.c
@@ -1118,6 +1132,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-loader.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-malloc_stub.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-pixelformat.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quant.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
@@ -1190,6 +1205,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-loader.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-malloc_stub.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-pixelformat.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quant.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo

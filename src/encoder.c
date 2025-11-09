@@ -890,24 +890,19 @@ sixel_encoder_convert_palette(sixel_encoder_t *encoder,
     output->pixelformat = SIXEL_PIXELFORMAT_RGB888;
     output->source_colorspace = frame_colorspace;
 
-    if (palette != (unsigned char *)(dither + 1)) {
-        ctx->copy = (unsigned char *)sixel_allocator_malloc(
-            encoder->allocator, ctx->size);
-        if (ctx->copy == NULL) {
-            sixel_helper_set_additional_message(
-                "sixel_encoder_convert_palette: "
-                "sixel_allocator_malloc() failed.");
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
-        memcpy(ctx->copy, palette, ctx->size);
-        dither->palette = ctx->copy;
-    } else {
-        ctx->convert_inplace = 1;
+    ctx->copy = (unsigned char *)sixel_allocator_malloc(encoder->allocator,
+                                                        ctx->size);
+    if (ctx->copy == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_convert_palette: "
+            "sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
     }
+    memcpy(ctx->copy, palette, ctx->size);
 
     status = sixel_output_convert_colorspace(output,
-                                             dither->palette,
+                                             palette,
                                              ctx->size);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -926,8 +921,13 @@ sixel_encoder_restore_palette(sixel_encoder_t *encoder,
                               sixel_dither_t *dither,
                               palette_conversion_t *ctx)
 {
-    if (ctx->copy) {
-        dither->palette = ctx->original;
+    if (ctx->copy != NULL && ctx->size > 0) {
+        unsigned char *palette;
+
+        palette = sixel_dither_get_palette(dither);
+        if (palette != NULL) {
+            memcpy(palette, ctx->copy, ctx->size);
+        }
         sixel_allocator_free(encoder->allocator, ctx->copy);
         ctx->copy = NULL;
     } else if (ctx->convert_inplace && ctx->converted &&

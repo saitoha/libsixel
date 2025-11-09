@@ -24,6 +24,7 @@ srcs = [
   'fromsixel.c',
   'tosixel.c',
   'assessment.c',
+  'palette.c',
   'quant.c',
   'dither.c',
   'colorspace.c',
