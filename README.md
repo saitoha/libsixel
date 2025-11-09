@@ -562,6 +562,17 @@ Options:
                                           Robin Hood hashing
                              hopscotch -> retain 8-bit precision via
                                           Hopscotch hashing
+                             certlut   -> certified hierarchical LUT
+                                          with zero approximation
+
+The *certlut* policy divides the RGB cube into 64×64×64 top level
+cells (6 bits per channel).  Each top level cell spans a 4×4×4 region;
+when certification fails it is split into eight 2×2×2 children, and if
+necessary into unit 1×1×1 voxels, until a single palette entry can be
+certified as the nearest neighbour for the entire volume.  To avoid scanning the
+entire palette for every cell, certlut builds a single kd-tree over the
+palette at initialization time and reuses it for all certification
+steps.
 -l LOOPMODE, --loop-control=LOOPMODE
                            select loop control mode for GIF
                            animation.

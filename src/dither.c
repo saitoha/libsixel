@@ -647,7 +647,8 @@ sixel_dither_set_lut_policy(
     if (lut_policy == SIXEL_LUT_POLICY_5BIT
         || lut_policy == SIXEL_LUT_POLICY_6BIT
         || lut_policy == SIXEL_LUT_POLICY_ROBINHOOD
-        || lut_policy == SIXEL_LUT_POLICY_HOPSCOTCH) {
+        || lut_policy == SIXEL_LUT_POLICY_HOPSCOTCH
+        || lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
         normalized = lut_policy;
     }
     previous_policy = dither->lut_policy;
@@ -907,6 +908,7 @@ sixel_dither_apply_palette(
     }
 
     sixel_quant_set_lut_policy(dither->lut_policy);
+    sixel_quant_set_method_for_largest(dither->method_for_largest);
 
     sixel_dither_ref(dither);
 

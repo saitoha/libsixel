@@ -72,10 +72,11 @@ module Libsixel
     #
     #       auto
     #        |
-    #   +----+----+
-    #   |         |
-    # classic  hashing
-    # (5/6bit) (robinhood/hopscotch)
+    #   +----+----+---------+
+    #   |         |         |
+    # classic  hashing  certified
+    # (5/6bit) (robinhood/ (certlut)
+    #            hopscotch)
     #
     SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT = 'R' unless const_defined?(:SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT)
     SIXEL_OPTFLAG_6REVERSIBLE = '6' unless const_defined?(:SIXEL_OPTFLAG_6REVERSIBLE)
