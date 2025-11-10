@@ -36,7 +36,7 @@ option('wiccodec', type: 'feature', value: 'auto', description: 'Build WIC codec
 option('register_dll', type: 'boolean', value: false, description: 'Register WIC codec DLL during installation')
 option('winhttp', type: 'feature', value: 'auto', description: 'Use WinHTTP library')
 option('winpthread', type: 'feature', value: 'disabled', description: 'Link with winpthread')
-option('threads', type: 'feature', value: 'enabled', description: 'Enable internal threadpool support')
+option('threads', type: 'feature', value: 'auto', description: 'Enable internal threadpool support')
 option('bashcompletiondir', type: 'string', value: 'disabled', description: 'Directory for bash completion files (set to auto for default path)')
 option('zshcompletiondir', type: 'string', value: 'disabled', description: 'Directory for zsh completion files (set to auto for default path)')
 option('simd', type: 'feature', value: 'enabled', description: 'Use SIMD')
