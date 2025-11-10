@@ -22,17 +22,24 @@
 
 #include "config.h"
 
-#include <errno.h>
-#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#ifndef _WIN32
-#include <unistd.h>
-#if defined(__APPLE__)
-#include <sys/types.h>
-#include <sys/sysctl.h>
+
+#if HAVE_ERRNO_H
+# include <errno.h>
 #endif
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#if HAVE_SYS_SYSCTL_H
+# include <sys/sysctl.h>
 #endif
 
 #include "sixel_threading.h"
