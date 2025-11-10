@@ -25,7 +25,7 @@ srcs = [
   'tosixel.c',
   'assessment.c',
   'palette.c',
-  'quant.c',
+  'lut.c',
   'dither.c',
   'colorspace.c',
   'frame.c',
@@ -46,6 +46,7 @@ srcs = [
   'malloc_stub.c',
   'allocator.c',
   'tty.c',
+  'lut.h',
 ]
 
 if have_quicklook_thumbnailing

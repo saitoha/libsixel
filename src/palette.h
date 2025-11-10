@@ -29,6 +29,8 @@
 extern "C" {
 #endif
 
+struct sixel_lut;
+
 /*
  * sixel_palette_t centralizes palette state shared between quantization and
  * dithering phases.  The structure now stores both configuration knobs and
@@ -55,48 +57,40 @@ struct sixel_palette {
     int lut_policy;                 /* histogram LUT selection */
     int sixel_reversible;           /* reversible tone flag proxy */
     int final_merge;                /* final merge flag proxy */
-    unsigned short *cachetable;     /* quantization cache table */
-    size_t cachetable_size;         /* quantization cache length */
+    struct sixel_lut *lut;          /* reusable lookup table */
 };
 
-SIXELAPI SIXELSTATUS
-sixel_palette_new(sixel_palette_t **palette,
-                  sixel_allocator_t *allocator);
+void
+sixel_palette_set_lut_policy(int lut_policy);
 
-SIXELAPI sixel_palette_t *
-sixel_palette_ref(sixel_palette_t *palette);
+void
+sixel_palette_set_method_for_largest(int method);
 
-SIXELAPI void
-sixel_palette_unref(sixel_palette_t *palette);
+SIXELSTATUS
+sixel_palette_make_palette(unsigned char **result,
+                           unsigned char const *data,
+                           unsigned int length,
+                           int pixelformat,
+                           unsigned int reqcolors,
+                           unsigned int *ncolors,
+                           unsigned int *origcolors,
+                           int methodForLargest,
+                           int methodForRep,
+                           int qualityMode,
+                           int force_palette,
+                           int use_reversible,
+                           int quantize_model,
+                           int final_merge_mode,
+                           sixel_allocator_t *allocator);
 
-SIXELAPI SIXELSTATUS
-sixel_palette_generate(sixel_palette_t *palette,
-                       unsigned char const *data,
-                       unsigned int length,
-                       int pixelformat,
-                       sixel_allocator_t *allocator);
+void
+sixel_palette_free_palette(unsigned char *data,
+                           sixel_allocator_t *allocator);
 
-SIXELAPI SIXELSTATUS
-sixel_palette_resize(sixel_palette_t *palette,
-                     unsigned int colors,
-                     int depth,
-                     sixel_allocator_t *allocator);
-
-SIXELAPI SIXELSTATUS
-sixel_palette_set_entries(sixel_palette_t *palette,
-                          unsigned char const *entries,
-                          unsigned int colors,
-                          int depth,
-                          sixel_allocator_t *allocator);
-
-SIXELAPI unsigned char *
-sixel_palette_get_entries(sixel_palette_t *palette);
-
-SIXELAPI unsigned int
-sixel_palette_get_entry_count(sixel_palette_t const *palette);
-
+#if HAVE_TESTS
 SIXELAPI int
-sixel_palette_get_depth(sixel_palette_t const *palette);
+sixel_palette_tests_main(void);
+#endif
 
 #ifdef __cplusplus
 }

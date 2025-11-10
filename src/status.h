@@ -26,6 +26,9 @@
 extern "C" {
 #endif
 
+void
+sixel_debugf(char const *fmt, ...);
+
 #if HAVE_TESTS
 SIXELAPI int
 sixel_status_tests_main(void);
