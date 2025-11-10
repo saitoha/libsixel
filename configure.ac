@@ -141,17 +141,56 @@ AM_CONDITIONAL(WANT_SIXEL2PNG, test x$enable_sixel2png != xno)
 
 AC_ARG_ENABLE([threads],
               [AS_HELP_STRING([--disable-threads],
-                              [disable internal threadpool support (default: no)])],
+                              [disable internal threadpool support (default: auto)])],
               [],
-              [enable_threads=yes])
+              [enable_threads=auto])
 AM_CONDITIONAL([SIXEL_ENABLE_THREADS],
                [test "x$enable_threads" != "xno"])
+
+AC_ARG_WITH([modeldir],
+            [AS_HELP_STRING([--with-modeldir=DIR],
+                            [install assessment models under DIR
+                             @<:@default=${pkgdatadir}/models@:>@])],
+            [],
+            [with_modeldir=no])
+if test "x$with_modeldir" = xno || test "x$with_modeldir" = xyes; then
+  pkgdatadir="${datadir}/${PACKAGE_TARNAME}"
+  model_root='${pkgdatadir}/models'
+else
+  model_root=$with_modeldir
+fi
+modeldir="${model_root}"
+AC_SUBST(modeldir)
+if test "x${prefix}" = xNONE; then
+    prefix="${ac_default_prefix}"
+    modeldir=`eval echo "${modeldir}"`
+    modeldir=`eval echo "${modeldir}"`
+    modeldir=`eval echo "${modeldir}"`
+    prefix=NONE
+else
+    modeldir=`eval echo "${modeldir}"`
+    modeldir=`eval echo "${modeldir}"`
+    modeldir=`eval echo "${modeldir}"`
+fi
+AC_DEFINE_UNQUOTED([SIXEL_MODEL_DIR],
+                   ["${modeldir}"],
+                   [Base directory that holds libsixel assessment models])
+
+AC_ARG_ENABLE([thumbnailer-command],
+              [AS_HELP_STRING([--enable-thumbnailer-command],
+                              [install the sixel thumbnailer command (default: auto)])],
+              [enable_thumbnailer_command=$enableval],
+              [enable_thumbnailer_command=auto])
+
+AS_CASE([$enable_thumbnailer_command],
+        [yes|no|auto],
+        [],
+        [AC_MSG_ERROR([invalid value for --enable-thumbnailer-command: $enable_thumbnailer_command])])
 
 THREAD_CPPFLAGS=""
 THREAD_CFLAGS=""
 THREAD_LIBS=""
 have_threads="no"
-
 if test "x$enable_threads" != "xno"; then
   AC_DEFINE([SIXEL_ENABLE_THREADS],
             [1],
@@ -193,7 +232,9 @@ return rc;]])],
                    [])
     fi
     if test "x$have_threads" != "xyes"; then
-      AC_MSG_FAILURE([pthread support is required when threads are enabled])
+      if test "x$enable_threads" = "xyes"; then
+        AC_MSG_FAILURE([pthread support is required when threads are enabled])
+      fi
     fi
   fi
 else
@@ -203,46 +244,6 @@ fi
 AC_SUBST([THREAD_CPPFLAGS])
 AC_SUBST([THREAD_CFLAGS])
 AC_SUBST([THREAD_LIBS])
-
-AC_ARG_WITH([modeldir],
-            [AS_HELP_STRING([--with-modeldir=DIR],
-                            [install assessment models under DIR
-                             @<:@default=${pkgdatadir}/models@:>@])],
-            [],
-            [with_modeldir=no])
-if test "x$with_modeldir" = xno || test "x$with_modeldir" = xyes; then
-  pkgdatadir="${datadir}/${PACKAGE_TARNAME}"
-  model_root='${pkgdatadir}/models'
-else
-  model_root=$with_modeldir
-fi
-modeldir="${model_root}"
-AC_SUBST(modeldir)
-if test "x${prefix}" = xNONE; then
-    prefix="${ac_default_prefix}"
-    modeldir=`eval echo "${modeldir}"`
-    modeldir=`eval echo "${modeldir}"`
-    modeldir=`eval echo "${modeldir}"`
-    prefix=NONE
-else
-    modeldir=`eval echo "${modeldir}"`
-    modeldir=`eval echo "${modeldir}"`
-    modeldir=`eval echo "${modeldir}"`
-fi
-AC_DEFINE_UNQUOTED([SIXEL_MODEL_DIR],
-                   ["${modeldir}"],
-                   [Base directory that holds libsixel assessment models])
-
-AC_ARG_ENABLE([thumbnailer-command],
-              [AS_HELP_STRING([--enable-thumbnailer-command],
-                              [install the sixel thumbnailer command (default: auto)])],
-              [enable_thumbnailer_command=$enableval],
-              [enable_thumbnailer_command=auto])
-
-AS_CASE([$enable_thumbnailer_command],
-        [yes|no|auto],
-        [],
-        [AC_MSG_ERROR([invalid value for --enable-thumbnailer-command: $enable_thumbnailer_command])])
 
 thumbnailer_command_mode=$enable_thumbnailer_command
 thumbnailer_auto_installed=no
