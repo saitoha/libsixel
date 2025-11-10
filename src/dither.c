@@ -38,7 +38,8 @@
 #endif  /* HAVE_INTTYPES_H */
 
 #include "dither.h"
-#include "quant.h"
+#include "palette.h"
+#include "lut.h"
 #include "assessment.h"
 #include <sixel.h>
 
@@ -206,6 +207,2475 @@ static const unsigned char pal_xterm256[] = {
 };
 
 
+static float mask_a(int x, int y, int c);
+static float mask_x(int x, int y, int c);
+static void diffuse_none(unsigned char *data, int width, int height,
+                         int x, int y, int depth, int error, int direction);
+static void diffuse_fs(unsigned char *data, int width, int height,
+                       int x, int y, int depth, int error, int direction);
+static void diffuse_atkinson(unsigned char *data, int width, int height,
+                             int x, int y, int depth, int error,
+                             int direction);
+static void diffuse_jajuni(unsigned char *data, int width, int height,
+                           int x, int y, int depth, int error,
+                           int direction);
+static void diffuse_stucki(unsigned char *data, int width, int height,
+                           int x, int y, int depth, int error,
+                           int direction);
+static void diffuse_burkes(unsigned char *data, int width, int height,
+                           int x, int y, int depth, int error,
+                           int direction);
+static void diffuse_sierra1(unsigned char *data, int width, int height,
+                            int x, int y, int depth, int error,
+                            int direction);
+static void diffuse_sierra2(unsigned char *data, int width, int height,
+                            int x, int y, int depth, int error,
+                            int direction);
+static void diffuse_sierra3(unsigned char *data, int width, int height,
+                            int x, int y, int depth, int error,
+                            int direction);
+static void diffuse_none_carry(int32_t *carry_curr, int32_t *carry_next,
+                               int32_t *carry_far, int width, int height,
+                               int depth, int x, int y, int32_t error,
+                               int direction, int channel);
+static void diffuse_fs_carry(int32_t *carry_curr, int32_t *carry_next,
+                             int32_t *carry_far, int width, int height,
+                             int depth, int x, int y, int32_t error,
+                             int direction, int channel);
+static void diffuse_atkinson_carry(int32_t *carry_curr, int32_t *carry_next,
+                                   int32_t *carry_far, int width,
+                                   int height, int depth, int x, int y,
+                                   int32_t error, int direction,
+                                   int channel);
+static void diffuse_jajuni_carry(int32_t *carry_curr, int32_t *carry_next,
+                                 int32_t *carry_far, int width, int height,
+                                 int depth, int x, int y, int32_t error,
+                                 int direction, int channel);
+static void diffuse_stucki_carry(int32_t *carry_curr, int32_t *carry_next,
+                                 int32_t *carry_far, int width, int height,
+                                 int depth, int x, int y, int32_t error,
+                                 int direction, int channel);
+static void diffuse_burkes_carry(int32_t *carry_curr, int32_t *carry_next,
+                                 int32_t *carry_far, int width, int height,
+                                 int depth, int x, int y, int32_t error,
+                                 int direction, int channel);
+static void diffuse_sierra1_carry(int32_t *carry_curr, int32_t *carry_next,
+                                  int32_t *carry_far, int width, int height,
+                                  int depth, int x, int y, int32_t error,
+                                  int direction, int channel);
+static void diffuse_sierra2_carry(int32_t *carry_curr, int32_t *carry_next,
+                                  int32_t *carry_far, int width, int height,
+                                  int depth, int x, int y, int32_t error,
+                                  int direction, int channel);
+static void diffuse_sierra3_carry(int32_t *carry_curr, int32_t *carry_next,
+                                  int32_t *carry_far, int width, int height,
+                                  int depth, int x, int y, int32_t error,
+                                  int direction, int channel);
+
+static sixel_lut_t *dither_lut_context = NULL;
+
+static const int (*
+lso2_table(void))[7]
+{
+#include "lso2.h"
+    return var_coefs;
+}
+
+#define VARERR_SCALE_SHIFT 12
+#define VARERR_SCALE       (1 << VARERR_SCALE_SHIFT)
+#define VARERR_ROUND       (1 << (VARERR_SCALE_SHIFT - 1))
+#define VARERR_MAX_VALUE   (255 * VARERR_SCALE)
+
+/*****************************************************************************
+ *
+ * dithering primitives
+ *
+ *****************************************************************************/
+
+
+/* diffuse error energy to surround pixels (normal strategy) */
+static void
+error_diffuse_normal(
+    unsigned char /* in */    *data,      /* base address of pixel buffer */
+    int           /* in */    pos,        /* address of the destination pixel */
+    int           /* in */    depth,      /* color depth in bytes */
+    int           /* in */    error,      /* error energy */
+    int           /* in */    numerator,  /* numerator of diffusion coefficient */
+    int           /* in */    denominator /* denominator of diffusion coefficient */)
+{
+    int c;
+
+    data += pos * depth;
+
+    c = *data + (error * numerator * 2 / denominator + 1) / 2;
+    if (c < 0) {
+        c = 0;
+    }
+    if (c >= 1 << 8) {
+        c = (1 << 8) - 1;
+    }
+    *data = (unsigned char)c;
+}
+
+/* error diffusion with fast strategy */
+static void
+error_diffuse_fast(
+    unsigned char /* in */    *data,      /* base address of pixel buffer */
+    int           /* in */    pos,        /* address of the destination pixel */
+    int           /* in */    depth,      /* color depth in bytes */
+    int           /* in */    error,      /* error energy */
+    int           /* in */    numerator,  /* numerator of diffusion coefficient */
+    int           /* in */    denominator /* denominator of diffusion coefficient */)
+{
+    int c;
+
+    data += pos * depth;
+
+    c = *data + error * numerator / denominator;
+    if (c < 0) {
+        c = 0;
+    }
+    if (c >= 1 << 8) {
+        c = (1 << 8) - 1;
+    }
+    *data = (unsigned char)c;
+}
+
+
+/* error diffusion with precise strategy */
+static void
+error_diffuse_precise(
+    unsigned char /* in */    *data,      /* base address of pixel buffer */
+    int           /* in */    pos,        /* address of the destination pixel */
+    int           /* in */    depth,      /* color depth in bytes */
+    int           /* in */    error,      /* error energy */
+    int           /* in */    numerator,  /* numerator of diffusion coefficient */
+    int           /* in */    denominator /* denominator of diffusion coefficient */)
+{
+    int c;
+
+    data += pos * depth;
+
+    c = (int)(*data + error * numerator / (double)denominator + 0.5);
+    if (c < 0) {
+        c = 0;
+    }
+    if (c >= 1 << 8) {
+        c = (1 << 8) - 1;
+    }
+    *data = (unsigned char)c;
+}
+
+
+typedef void (*diffuse_fixed_carry_mode)(int32_t *carry_curr,
+                                         int32_t *carry_next,
+                                         int32_t *carry_far,
+                                         int width,
+                                         int height,
+                                         int depth,
+                                         int x,
+                                         int y,
+                                         int32_t error,
+                                         int direction,
+                                         int channel);
+
+
+typedef void (*diffuse_varerr_mode)(unsigned char *data,
+                                    int width,
+                                    int height,
+                                    int x,
+                                    int y,
+                                    int depth,
+                                    int32_t error,
+                                    int index,
+                                    int direction);
+
+typedef void (*diffuse_varerr_carry_mode)(int32_t *carry_curr,
+                                          int32_t *carry_next,
+                                          int32_t *carry_far,
+                                          int width,
+                                          int height,
+                                          int depth,
+                                          int x,
+                                          int y,
+                                          int32_t error,
+                                          int index,
+                                          int direction,
+                                          int channel);
+
+
+static int32_t
+diffuse_varerr_term(int32_t error, int weight, int denom)
+{
+    int64_t delta;
+
+    delta = (int64_t)error * (int64_t)weight;
+    if (delta >= 0) {
+        delta = (delta + denom / 2) / denom;
+    } else {
+        delta = (delta - denom / 2) / denom;
+    }
+
+    return (int32_t)delta;
+}
+
+
+static int32_t
+diffuse_fixed_term(int32_t error, int numerator, int denominator)
+{
+    int64_t delta;
+
+    delta = (int64_t)error * (int64_t)numerator;
+    if (delta >= 0) {
+        delta = (delta + denominator / 2) / denominator;
+    } else {
+        delta = (delta - denominator / 2) / denominator;
+    }
+
+    return (int32_t)delta;
+}
+
+
+static void
+diffuse_varerr_apply_direct(unsigned char *target, int depth, size_t offset,
+                            int32_t delta)
+{
+    int64_t value;
+    int result;
+
+    value = (int64_t)target[offset * depth] << VARERR_SCALE_SHIFT;
+    value += delta;
+    if (value < 0) {
+        value = 0;
+    } else {
+        int64_t max_value;
+
+        max_value = VARERR_MAX_VALUE;
+        if (value > max_value) {
+            value = max_value;
+        }
+    }
+
+    result = (int)((value + VARERR_ROUND) >> VARERR_SCALE_SHIFT);
+    if (result < 0) {
+        result = 0;
+    }
+    if (result > 255) {
+        result = 255;
+    }
+    target[offset * depth] = (unsigned char)result;
+}
+
+
+static void
+diffuse_lso2(unsigned char *data, int width, int height,
+             int x, int y, int depth, int32_t error,
+             int index, int direction)
+{
+    const int (*table)[7];
+    const int *entry;
+    int denom;
+    int32_t term_r = 0;
+    int32_t term_r2 = 0;
+    int32_t term_dl = 0;
+    int32_t term_d = 0;
+    int32_t term_dr = 0;
+    int32_t term_d2 = 0;
+    size_t offset;
+
+    if (error == 0) {
+        return;
+    }
+    if (index < 0) {
+        index = 0;
+    }
+    if (index > 255) {
+        index = 255;
+    }
+
+    table = lso2_table();
+    entry = table[index];
+    denom = entry[6];
+    if (denom == 0) {
+        return;
+    }
+
+    term_r = diffuse_varerr_term(error, entry[0], denom);
+    term_r2 = diffuse_varerr_term(error, entry[1], denom);
+    term_dl = diffuse_varerr_term(error, entry[2], denom);
+    term_d = diffuse_varerr_term(error, entry[3], denom);
+    term_dr = diffuse_varerr_term(error, entry[4], denom);
+    term_d2 = diffuse_varerr_term(error, entry[5], denom);
+
+
+    if (direction >= 0) {
+        if (x + 1 < width) {
+            offset = (size_t)y * (size_t)width + (size_t)(x + 1);
+            diffuse_varerr_apply_direct(data, depth, offset, term_r);
+        }
+        if (x + 2 < width) {
+            offset = (size_t)y * (size_t)width + (size_t)(x + 2);
+            diffuse_varerr_apply_direct(data, depth, offset, term_r2);
+        }
+        if (y + 1 < height && x - 1 >= 0) {
+            offset = (size_t)(y + 1) * (size_t)width;
+            offset += (size_t)(x - 1);
+            diffuse_varerr_apply_direct(data, depth, offset, term_dl);
+        }
+        if (y + 1 < height) {
+            offset = (size_t)(y + 1) * (size_t)width + (size_t)x;
+            diffuse_varerr_apply_direct(data, depth, offset, term_d);
+        }
+        if (y + 1 < height && x + 1 < width) {
+            offset = (size_t)(y + 1) * (size_t)width;
+            offset += (size_t)(x + 1);
+            diffuse_varerr_apply_direct(data, depth, offset, term_dr);
+        }
+        if (y + 2 < height) {
+            offset = (size_t)(y + 2) * (size_t)width + (size_t)x;
+            diffuse_varerr_apply_direct(data, depth, offset, term_d2);
+        }
+    } else {
+        if (x - 1 >= 0) {
+            offset = (size_t)y * (size_t)width + (size_t)(x - 1);
+            diffuse_varerr_apply_direct(data, depth, offset, term_r);
+        }
+        if (x - 2 >= 0) {
+            offset = (size_t)y * (size_t)width + (size_t)(x - 2);
+            diffuse_varerr_apply_direct(data, depth, offset, term_r2);
+        }
+        if (y + 1 < height && x + 1 < width) {
+            offset = (size_t)(y + 1) * (size_t)width;
+            offset += (size_t)(x + 1);
+            diffuse_varerr_apply_direct(data, depth, offset, term_dl);
+        }
+        if (y + 1 < height) {
+            offset = (size_t)(y + 1) * (size_t)width + (size_t)x;
+            diffuse_varerr_apply_direct(data, depth, offset, term_d);
+        }
+        if (y + 1 < height && x - 1 >= 0) {
+            offset = (size_t)(y + 1) * (size_t)width;
+            offset += (size_t)(x - 1);
+            diffuse_varerr_apply_direct(data, depth, offset, term_dr);
+        }
+        if (y + 2 < height) {
+            offset = (size_t)(y + 2) * (size_t)width + (size_t)x;
+            diffuse_varerr_apply_direct(data, depth, offset, term_d2);
+        }
+    }
+}
+
+
+static void
+diffuse_lso2_carry(int32_t *carry_curr, int32_t *carry_next, int32_t *carry_far,
+                   int width, int height, int depth,
+                   int x, int y, int32_t error,
+                   int index, int direction, int channel)
+{
+    const int (*table)[7];
+    const int *entry;
+    int denom;
+    int32_t term_r = 0;
+    int32_t term_r2 = 0;
+    int32_t term_dl = 0;
+    int32_t term_d = 0;
+    int32_t term_dr = 0;
+    int32_t term_d2 = 0;
+    size_t base;
+
+    if (error == 0) {
+        return;
+    }
+    if (index < 0) {
+        index = 0;
+    }
+    if (index > 255) {
+        index = 255;
+    }
+
+    table = lso2_table();
+    entry = table[index];
+    denom = entry[6];
+    if (denom == 0) {
+        return;
+    }
+
+    term_r = diffuse_varerr_term(error, entry[0], denom);
+    term_r2 = diffuse_varerr_term(error, entry[1], denom);
+    term_dl = diffuse_varerr_term(error, entry[2], denom);
+    term_d = diffuse_varerr_term(error, entry[3], denom);
+    term_dr = diffuse_varerr_term(error, entry[4], denom);
+    term_d2 = error - term_r - term_r2 - term_dl - term_d - term_dr;
+
+    if (direction >= 0) {
+        if (x + 1 < width) {
+            base = ((size_t)(x + 1) * (size_t)depth) + (size_t)channel;
+            carry_curr[base] += term_r;
+        }
+        if (x + 2 < width) {
+            base = ((size_t)(x + 2) * (size_t)depth) + (size_t)channel;
+            carry_curr[base] += term_r2;
+        }
+        if (y + 1 < height && x - 1 >= 0) {
+            base = ((size_t)(x - 1) * (size_t)depth) + (size_t)channel;
+            carry_next[base] += term_dl;
+        }
+        if (y + 1 < height) {
+            base = ((size_t)x * (size_t)depth) + (size_t)channel;
+            carry_next[base] += term_d;
+        }
+        if (y + 1 < height && x + 1 < width) {
+            base = ((size_t)(x + 1) * (size_t)depth) + (size_t)channel;
+            carry_next[base] += term_dr;
+        }
+        if (y + 2 < height) {
+            base = ((size_t)x * (size_t)depth) + (size_t)channel;
+            carry_far[base] += term_d2;
+        }
+    } else {
+        if (x - 1 >= 0) {
+            base = ((size_t)(x - 1) * (size_t)depth) + (size_t)channel;
+            carry_curr[base] += term_r;
+        }
+        if (x - 2 >= 0) {
+            base = ((size_t)(x - 2) * (size_t)depth) + (size_t)channel;
+            carry_curr[base] += term_r;
+        }
+        if (y + 1 < height && x + 1 < width) {
+            base = ((size_t)(x + 1) * (size_t)depth) + (size_t)channel;
+            carry_next[base] += term_dl;
+        }
+        if (y + 1 < height) {
+            base = ((size_t)x * (size_t)depth) + (size_t)channel;
+            carry_next[base] += term_d;
+        }
+        if (y + 1 < height && x - 1 >= 0) {
+            base = ((size_t)(x - 1) * (size_t)depth) + (size_t)channel;
+            carry_next[base] += term_dr;
+        }
+        if (y + 2 < height) {
+            base = ((size_t)x * (size_t)depth) + (size_t)channel;
+            carry_far[base] += term_d2;
+        }
+    }
+}
+
+
+static void
+scanline_params(int serpentine, int index, int limit,
+                int *start, int *end, int *step, int *direction)
+{
+    if (serpentine && (index & 1)) {
+        *start = limit - 1;
+        *end = -1;
+        *step = -1;
+        *direction = -1;
+    } else {
+        *start = 0;
+        *end = limit;
+        *step = 1;
+        *direction = 1;
+    }
+}
+
+
+static SIXELSTATUS
+sixel_dither_apply_positional(
+    sixel_index_t *result,
+    unsigned char *data,
+    int width,
+    int height,
+    int depth,
+    unsigned char *palette,
+    int reqcolor,
+    int methodForDiffuse,
+    int methodForScan,
+    int foptimize_palette,
+    int (*f_lookup)(const unsigned char *pixel,
+                    int depth,
+                    const unsigned char *palette,
+                    int reqcolor,
+                    unsigned short *cachetable,
+                    int complexion),
+    unsigned short *indextable,
+    int complexion,
+    unsigned char copy[],
+    unsigned char new_palette[],
+    unsigned short migration_map[],
+    int *ncolors)
+{
+    int serpentine;
+    int y;
+    float (*f_mask)(int x, int y, int c);
+
+    switch (methodForDiffuse) {
+    case SIXEL_DIFFUSE_A_DITHER:
+        f_mask = mask_a;
+        break;
+    case SIXEL_DIFFUSE_X_DITHER:
+    default:
+        f_mask = mask_x;
+        break;
+    }
+
+    serpentine = (methodForScan == SIXEL_SCAN_SERPENTINE);
+
+    if (foptimize_palette) {
+        int x;
+
+        *ncolors = 0;
+        memset(new_palette, 0x00,
+               (size_t)SIXEL_PALETTE_MAX * (size_t)depth);
+        memset(migration_map, 0x00,
+               sizeof(unsigned short) * (size_t)SIXEL_PALETTE_MAX);
+        for (y = 0; y < height; ++y) {
+            int start;
+            int end;
+            int step;
+            int direction;
+
+            scanline_params(serpentine, y, width,
+                            &start, &end, &step, &direction);
+            (void)direction;
+            for (x = start; x != end; x += step) {
+                int pos;
+                int d;
+                int color_index;
+
+                pos = y * width + x;
+                for (d = 0; d < depth; ++d) {
+                    int val;
+
+                    val = data[pos * depth + d]
+                        + f_mask(x, y, d) * 32;
+                    copy[d] = val < 0 ? 0
+                               : val > 255 ? 255 : val;
+                }
+                color_index = f_lookup(copy, depth, palette,
+                                       reqcolor, indextable,
+                                       complexion);
+                if (migration_map[color_index] == 0) {
+                    result[pos] = *ncolors;
+                    for (d = 0; d < depth; ++d) {
+                        new_palette[*ncolors * depth + d]
+                            = palette[color_index * depth + d];
+                    }
+                    ++*ncolors;
+                    migration_map[color_index] = *ncolors;
+                } else {
+                    result[pos] = migration_map[color_index] - 1;
+                }
+            }
+        }
+        memcpy(palette, new_palette, (size_t)(*ncolors * depth));
+    } else {
+        int x;
+
+        for (y = 0; y < height; ++y) {
+            int start;
+            int end;
+            int step;
+            int direction;
+
+            scanline_params(serpentine, y, width,
+                            &start, &end, &step, &direction);
+            (void)direction;
+            for (x = start; x != end; x += step) {
+                int pos;
+                int d;
+
+                pos = y * width + x;
+                for (d = 0; d < depth; ++d) {
+                    int val;
+
+                    val = data[pos * depth + d]
+                        + f_mask(x, y, d) * 32;
+                    copy[d] = val < 0 ? 0
+                               : val > 255 ? 255 : val;
+                }
+                result[pos] = f_lookup(copy, depth, palette,
+                                       reqcolor, indextable,
+                                       complexion);
+            }
+        }
+        *ncolors = reqcolor;
+    }
+
+    return SIXEL_OK;
+}
+
+
+static SIXELSTATUS
+sixel_dither_apply_variable(
+    sixel_index_t *result,
+    unsigned char *data,
+    int width,
+    int height,
+    int depth,
+    unsigned char *palette,
+    int reqcolor,
+    int methodForScan,
+    int foptimize_palette,
+    int (*f_lookup)(const unsigned char *pixel,
+                    int depth,
+                    const unsigned char *palette,
+                    int reqcolor,
+                    unsigned short *cachetable,
+                    int complexion),
+    unsigned short *indextable,
+    int complexion,
+    unsigned char new_palette[],
+    unsigned short migration_map[],
+    int *ncolors,
+    int methodForDiffuse,
+    int methodForCarry)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+#if _MSC_VER
+    enum { max_channels = 4 };
+#else
+    const int max_channels = 4;
+#endif
+    int serpentine;
+    int y;
+    diffuse_varerr_mode varerr_diffuse;
+    diffuse_varerr_carry_mode varerr_diffuse_carry;
+    int use_carry;
+    size_t carry_len;
+    int32_t *carry_curr = NULL;
+    int32_t *carry_next = NULL;
+    int32_t *carry_far = NULL;
+    unsigned char corrected[max_channels];
+    int32_t sample_scaled[max_channels];
+    int32_t accum_scaled[max_channels];
+    int start;
+    int end;
+    int step;
+    int direction;
+    int x;
+    int pos;
+    size_t base;
+    size_t carry_base;
+    const unsigned char *source_pixel;
+    int color_index;
+    int output_index;
+    int n;
+    int palette_value;
+    int diff;
+    int table_index;
+    int64_t accum;
+    int64_t clamped;
+    int32_t target_scaled;
+    int32_t error_scaled;
+    int32_t *tmp;
+
+    if (depth > max_channels) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    use_carry = (methodForCarry == SIXEL_CARRY_ENABLE);
+    carry_len = 0;
+
+    switch (methodForDiffuse) {
+    case SIXEL_DIFFUSE_LSO2:
+        varerr_diffuse = diffuse_lso2;
+        varerr_diffuse_carry = diffuse_lso2_carry;
+        break;
+    default:
+        varerr_diffuse = diffuse_lso2;
+        varerr_diffuse_carry = diffuse_lso2_carry;
+        break;
+    }
+
+    if (use_carry) {
+        carry_len = (size_t)width * (size_t)depth;
+        carry_curr = (int32_t *)calloc(carry_len, sizeof(int32_t));
+        if (carry_curr == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        carry_next = (int32_t *)calloc(carry_len, sizeof(int32_t));
+        if (carry_next == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        carry_far = (int32_t *)calloc(carry_len, sizeof(int32_t));
+        if (carry_far == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+    }
+
+    serpentine = (methodForScan == SIXEL_SCAN_SERPENTINE);
+
+    if (foptimize_palette) {
+        *ncolors = 0;
+        memset(new_palette, 0x00,
+               (size_t)SIXEL_PALETTE_MAX * (size_t)depth);
+        memset(migration_map, 0x00,
+               sizeof(unsigned short) * (size_t)SIXEL_PALETTE_MAX);
+    }
+
+    for (y = 0; y < height; ++y) {
+        scanline_params(serpentine, y, width,
+                        &start, &end, &step, &direction);
+        for (x = start; x != end; x += step) {
+            pos = y * width + x;
+            base = (size_t)pos * (size_t)depth;
+            carry_base = (size_t)x * (size_t)depth;
+            if (use_carry) {
+                for (n = 0; n < depth; ++n) {
+                    accum = ((int64_t)data[base + n]
+                             << VARERR_SCALE_SHIFT)
+                          + carry_curr[carry_base + (size_t)n];
+                    if (accum < INT32_MIN) {
+                        accum = INT32_MIN;
+                    } else if (accum > INT32_MAX) {
+                        accum = INT32_MAX;
+                    }
+                    carry_curr[carry_base + (size_t)n] = 0;
+                    clamped = accum;
+                    if (clamped < 0) {
+                        clamped = 0;
+                    } else if (clamped > VARERR_MAX_VALUE) {
+                        clamped = VARERR_MAX_VALUE;
+                    }
+                    accum_scaled[n] = (int32_t)clamped;
+                    corrected[n]
+                        = (unsigned char)((clamped + VARERR_ROUND)
+                                          >> VARERR_SCALE_SHIFT);
+                }
+                source_pixel = corrected;
+            } else {
+                for (n = 0; n < depth; ++n) {
+                    sample_scaled[n]
+                        = (int32_t)data[base + n]
+                        << VARERR_SCALE_SHIFT;
+                    corrected[n] = data[base + n];
+                }
+                source_pixel = data + base;
+            }
+
+            color_index = f_lookup(source_pixel, depth, palette,
+                                   reqcolor, indextable,
+                                   complexion);
+
+            if (foptimize_palette) {
+                if (migration_map[color_index] == 0) {
+                    output_index = *ncolors;
+                    for (n = 0; n < depth; ++n) {
+                        new_palette[output_index * depth + n]
+                            = palette[color_index * depth + n];
+                    }
+                    ++*ncolors;
+                    migration_map[color_index] = *ncolors;
+                } else {
+                    output_index = migration_map[color_index] - 1;
+                }
+                result[pos] = output_index;
+            } else {
+                output_index = color_index;
+                result[pos] = output_index;
+            }
+
+            for (n = 0; n < depth; ++n) {
+                if (foptimize_palette) {
+                    palette_value = new_palette[output_index * depth + n];
+                } else {
+                    palette_value = palette[color_index * depth + n];
+                }
+                diff = (int)source_pixel[n] - palette_value;
+                if (diff < 0) {
+                    diff = -diff;
+                }
+                if (diff > 255) {
+                    diff = 255;
+                }
+                table_index = diff;
+                if (use_carry) {
+                    target_scaled = (int32_t)palette_value
+                                  << VARERR_SCALE_SHIFT;
+                    error_scaled = accum_scaled[n] - target_scaled;
+                    varerr_diffuse_carry(carry_curr, carry_next, carry_far,
+                                         width, height, depth,
+                                         x, y, error_scaled,
+                                         table_index,
+                                         direction, n);
+                } else {
+                    target_scaled = (int32_t)palette_value
+                                  << VARERR_SCALE_SHIFT;
+                    error_scaled = sample_scaled[n] - target_scaled;
+                    varerr_diffuse(data + n, width, height,
+                                   x, y, depth, error_scaled,
+                                   table_index,
+                                   direction);
+                }
+            }
+        }
+        if (use_carry) {
+            tmp = carry_curr;
+            carry_curr = carry_next;
+            carry_next = carry_far;
+            carry_far = tmp;
+            if (carry_len > 0) {
+                memset(carry_far, 0x00, carry_len * sizeof(int32_t));
+            }
+        }
+    }
+
+    if (foptimize_palette) {
+        memcpy(palette, new_palette, (size_t)(*ncolors * depth));
+    } else {
+        *ncolors = reqcolor;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    free(carry_next);
+    free(carry_curr);
+    free(carry_far);
+    return status;
+}
+
+
+static SIXELSTATUS
+sixel_dither_apply_fixed(
+    sixel_index_t *result,
+    unsigned char *data,
+    int width,
+    int height,
+    int depth,
+    unsigned char *palette,
+    int reqcolor,
+    int methodForScan,
+    int foptimize_palette,
+    int (*f_lookup)(const unsigned char *pixel,
+                    int depth,
+                    const unsigned char *palette,
+                    int reqcolor,
+                    unsigned short *cachetable,
+                    int complexion),
+    unsigned short *indextable,
+    int complexion,
+    unsigned char new_palette[],
+    unsigned short migration_map[],
+    int *ncolors,
+    int methodForDiffuse,
+    int methodForCarry)
+{
+#if _MSC_VER
+    enum { max_channels = 4 };
+#else
+    const int max_channels = 4;
+#endif
+    SIXELSTATUS status = SIXEL_FALSE;
+    int serpentine;
+    int y;
+    void (*f_diffuse)(unsigned char *data,
+                      int width,
+                      int height,
+                      int x,
+                      int y,
+                      int depth,
+                      int offset,
+                      int direction);
+    diffuse_fixed_carry_mode f_diffuse_carry;
+    int use_carry;
+    size_t carry_len;
+    int32_t *carry_curr = NULL;
+    int32_t *carry_next = NULL;
+    int32_t *carry_far = NULL;
+    unsigned char corrected[max_channels];
+    int32_t accum_scaled[max_channels];
+    int start;
+    int end;
+    int step;
+    int direction;
+    int x;
+    int pos;
+    size_t base;
+    size_t carry_base;
+    const unsigned char *source_pixel;
+    int color_index;
+    int output_index;
+    int n;
+    int palette_value;
+    int64_t accum;
+    int64_t clamped;
+    int32_t target_scaled;
+    int32_t error_scaled;
+    int offset;
+    int32_t *tmp;
+
+    if (depth > max_channels) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    use_carry = (methodForCarry == SIXEL_CARRY_ENABLE);
+    carry_len = 0;
+
+    if (depth != 3) {
+        f_diffuse = diffuse_none;
+        f_diffuse_carry = diffuse_none_carry;
+        use_carry = 0;
+    } else {
+        switch (methodForDiffuse) {
+        case SIXEL_DIFFUSE_NONE:
+            f_diffuse = diffuse_none;
+            f_diffuse_carry = diffuse_none_carry;
+            break;
+        case SIXEL_DIFFUSE_ATKINSON:
+            f_diffuse = diffuse_atkinson;
+            f_diffuse_carry = diffuse_atkinson_carry;
+            break;
+        case SIXEL_DIFFUSE_FS:
+            f_diffuse = diffuse_fs;
+            f_diffuse_carry = diffuse_fs_carry;
+            break;
+        case SIXEL_DIFFUSE_JAJUNI:
+            f_diffuse = diffuse_jajuni;
+            f_diffuse_carry = diffuse_jajuni_carry;
+            break;
+        case SIXEL_DIFFUSE_STUCKI:
+            f_diffuse = diffuse_stucki;
+            f_diffuse_carry = diffuse_stucki_carry;
+            break;
+        case SIXEL_DIFFUSE_BURKES:
+            f_diffuse = diffuse_burkes;
+            f_diffuse_carry = diffuse_burkes_carry;
+            break;
+        case SIXEL_DIFFUSE_SIERRA1:
+            f_diffuse = diffuse_sierra1;
+            f_diffuse_carry = diffuse_sierra1_carry;
+            break;
+        case SIXEL_DIFFUSE_SIERRA2:
+            f_diffuse = diffuse_sierra2;
+            f_diffuse_carry = diffuse_sierra2_carry;
+            break;
+        case SIXEL_DIFFUSE_SIERRA3:
+            f_diffuse = diffuse_sierra3;
+            f_diffuse_carry = diffuse_sierra3_carry;
+            break;
+        default:
+            f_diffuse = diffuse_none;
+            f_diffuse_carry = diffuse_none_carry;
+            break;
+        }
+    }
+
+    if (use_carry) {
+        carry_len = (size_t)width * (size_t)depth;
+        if (carry_len > 0) {
+            carry_curr = (int32_t *)calloc(carry_len, sizeof(int32_t));
+            if (carry_curr == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+            carry_next = (int32_t *)calloc(carry_len, sizeof(int32_t));
+            if (carry_next == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+            carry_far = (int32_t *)calloc(carry_len, sizeof(int32_t));
+            if (carry_far == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+        } else {
+            use_carry = 0;
+        }
+    }
+
+    serpentine = (methodForScan == SIXEL_SCAN_SERPENTINE);
+
+    if (foptimize_palette) {
+        *ncolors = 0;
+        memset(new_palette, 0x00,
+               (size_t)SIXEL_PALETTE_MAX * (size_t)depth);
+        memset(migration_map, 0x00,
+               sizeof(unsigned short) * (size_t)SIXEL_PALETTE_MAX);
+    } else {
+        *ncolors = reqcolor;
+    }
+
+    for (y = 0; y < height; ++y) {
+        scanline_params(serpentine, y, width,
+                        &start, &end, &step, &direction);
+        for (x = start; x != end; x += step) {
+            pos = y * width + x;
+            base = (size_t)pos * (size_t)depth;
+            carry_base = (size_t)x * (size_t)depth;
+            if (use_carry) {
+                for (n = 0; n < depth; ++n) {
+                    accum = ((int64_t)data[base + n]
+                             << VARERR_SCALE_SHIFT)
+                           + carry_curr[carry_base + (size_t)n];
+                    if (accum < INT32_MIN) {
+                        accum = INT32_MIN;
+                    } else if (accum > INT32_MAX) {
+                        accum = INT32_MAX;
+                    }
+                    clamped = accum;
+                    if (clamped < 0) {
+                        clamped = 0;
+                    } else if (clamped > VARERR_MAX_VALUE) {
+                        clamped = VARERR_MAX_VALUE;
+                    }
+                    accum_scaled[n] = (int32_t)clamped;
+                    corrected[n]
+                        = (unsigned char)((clamped + VARERR_ROUND)
+                                          >> VARERR_SCALE_SHIFT);
+                    data[base + n] = corrected[n];
+                    carry_curr[carry_base + (size_t)n] = 0;
+                }
+                source_pixel = corrected;
+            } else {
+                source_pixel = data + base;
+            }
+
+            color_index = f_lookup(source_pixel, depth, palette,
+                                   reqcolor, indextable,
+                                   complexion);
+
+            if (foptimize_palette) {
+                if (migration_map[color_index] == 0) {
+                    output_index = *ncolors;
+                    for (n = 0; n < depth; ++n) {
+                        new_palette[output_index * depth + n]
+                            = palette[color_index * depth + n];
+                    }
+                    ++*ncolors;
+                    migration_map[color_index] = *ncolors;
+                } else {
+                    output_index = migration_map[color_index] - 1;
+                }
+                result[pos] = output_index;
+            } else {
+                output_index = color_index;
+                result[pos] = output_index;
+            }
+
+            for (n = 0; n < depth; ++n) {
+                if (foptimize_palette) {
+                    palette_value = new_palette[output_index * depth + n];
+                } else {
+                    palette_value = palette[color_index * depth + n];
+                }
+                if (use_carry) {
+                    target_scaled = (int32_t)palette_value
+                                  << VARERR_SCALE_SHIFT;
+                    error_scaled = accum_scaled[n] - target_scaled;
+                    f_diffuse_carry(carry_curr, carry_next, carry_far,
+                                    width, height, depth,
+                                    x, y, error_scaled, direction, n);
+                } else {
+                    offset = (int)source_pixel[n] - palette_value;
+                    f_diffuse(data + n, width, height, x, y,
+                              depth, offset, direction);
+                }
+            }
+        }
+        if (use_carry) {
+            tmp = carry_curr;
+            carry_curr = carry_next;
+            carry_next = carry_far;
+            carry_far = tmp;
+            if (carry_len > 0) {
+                memset(carry_far, 0x00, carry_len * sizeof(int32_t));
+            }
+        }
+    }
+
+    if (foptimize_palette) {
+        memcpy(palette, new_palette, (size_t)(*ncolors * depth));
+    }
+
+    status = SIXEL_OK;
+
+end:
+    free(carry_far);
+    free(carry_next);
+    free(carry_curr);
+    return status;
+}
+
+
+static void
+diffuse_none(unsigned char *data, int width, int height,
+             int x, int y, int depth, int error, int direction)
+{
+    /* unused */ (void) data;
+    /* unused */ (void) width;
+    /* unused */ (void) height;
+    /* unused */ (void) x;
+    /* unused */ (void) y;
+    /* unused */ (void) depth;
+    /* unused */ (void) error;
+    /* unused */ (void) direction;
+}
+
+
+static void
+diffuse_none_carry(int32_t *carry_curr, int32_t *carry_next,
+                   int32_t *carry_far, int width, int height,
+                   int depth, int x, int y, int32_t error,
+                   int direction, int channel)
+{
+    /* unused */ (void) carry_curr;
+    /* unused */ (void) carry_next;
+    /* unused */ (void) carry_far;
+    /* unused */ (void) width;
+    /* unused */ (void) height;
+    /* unused */ (void) depth;
+    /* unused */ (void) x;
+    /* unused */ (void) y;
+    /* unused */ (void) error;
+    /* unused */ (void) direction;
+    /* unused */ (void) channel;
+}
+
+
+static void
+diffuse_fs(unsigned char *data, int width, int height,
+           int x, int y, int depth, int error, int direction)
+{
+    /* Floyd Steinberg Method
+     *          curr    7/16
+     *  3/16    5/16    1/16
+     */
+    int pos;
+    int forward;
+
+    pos = y * width + x;
+    forward = direction >= 0;
+
+    if (forward) {
+        if (x < width - 1) {
+            error_diffuse_normal(data, pos + 1, depth, error, 7, 16);
+        }
+        if (y < height - 1) {
+            if (x > 0) {
+                error_diffuse_normal(data,
+                                     pos + width - 1,
+                                     depth, error, 3, 16);
+            }
+            error_diffuse_normal(data,
+                                 pos + width,
+                                 depth, error, 5, 16);
+            if (x < width - 1) {
+                error_diffuse_normal(data,
+                                     pos + width + 1,
+                                     depth, error, 1, 16);
+            }
+        }
+    } else {
+        if (x > 0) {
+            error_diffuse_normal(data, pos - 1, depth, error, 7, 16);
+        }
+        if (y < height - 1) {
+            if (x < width - 1) {
+                error_diffuse_normal(data,
+                                     pos + width + 1,
+                                     depth, error, 3, 16);
+            }
+            error_diffuse_normal(data,
+                                 pos + width,
+                                 depth, error, 5, 16);
+            if (x > 0) {
+                error_diffuse_normal(data,
+                                     pos + width - 1,
+                                     depth, error, 1, 16);
+            }
+        }
+    }
+}
+
+
+static void
+diffuse_fs_carry(int32_t *carry_curr, int32_t *carry_next,
+                 int32_t *carry_far, int width, int height,
+                 int depth, int x, int y, int32_t error,
+                 int direction, int channel)
+{
+    /* Floyd Steinberg Method
+     *          curr    7/16
+     *  3/16    5/48    1/16
+     */
+    int forward;
+
+    /* unused */ (void) carry_far;
+    if (error == 0) {
+        return;
+    }
+
+    forward = direction >= 0;
+    if (forward) {
+        if (x + 1 < width) {
+            size_t base;
+            int32_t term;
+
+            base = ((size_t)(x + 1) * (size_t)depth)
+                 + (size_t)channel;
+            term = diffuse_fixed_term(error, 7, 16);
+            carry_curr[base] += term;
+        }
+        if (y + 1 < height) {
+            if (x > 0) {
+                size_t base;
+                int32_t term;
+
+                base = ((size_t)(x - 1) * (size_t)depth)
+                     + (size_t)channel;
+                term = diffuse_fixed_term(error, 3, 16);
+                carry_next[base] += term;
+            }
+            {
+                size_t base;
+                int32_t term;
+
+                base = ((size_t)x * (size_t)depth) + (size_t)channel;
+                term = diffuse_fixed_term(error, 5, 16);
+                carry_next[base] += term;
+            }
+            if (x + 1 < width) {
+                size_t base;
+                int32_t term;
+
+                base = ((size_t)(x + 1) * (size_t)depth)
+                     + (size_t)channel;
+                term = diffuse_fixed_term(error, 1, 16);
+                carry_next[base] += term;
+            }
+        }
+    } else {
+        if (x - 1 >= 0) {
+            size_t base;
+            int32_t term;
+
+            base = ((size_t)(x - 1) * (size_t)depth)
+                 + (size_t)channel;
+            term = diffuse_fixed_term(error, 7, 16);
+            carry_curr[base] += term;
+        }
+        if (y + 1 < height) {
+            if (x + 1 < width) {
+                size_t base;
+                int32_t term;
+
+                base = ((size_t)(x + 1) * (size_t)depth)
+                     + (size_t)channel;
+                term = diffuse_fixed_term(error, 3, 16);
+                carry_next[base] += term;
+            }
+            {
+                size_t base;
+                int32_t term;
+
+                base = ((size_t)x * (size_t)depth) + (size_t)channel;
+                term = diffuse_fixed_term(error, 5, 16);
+                carry_next[base] += term;
+            }
+            if (x - 1 >= 0) {
+                size_t base;
+                int32_t term;
+
+                base = ((size_t)(x - 1) * (size_t)depth)
+                     + (size_t)channel;
+                term = diffuse_fixed_term(error, 1, 16);
+                carry_next[base] += term;
+            }
+        }
+    }
+}
+
+
+static void
+diffuse_atkinson(unsigned char *data, int width, int height,
+                 int x, int y, int depth, int error, int direction)
+{
+    /* Atkinson's Method
+     *          curr    1/8    1/8
+     *   1/8     1/8    1/8
+     *           1/8
+     */
+    int pos;
+    int sign;
+
+    pos = y * width + x;
+    sign = direction >= 0 ? 1 : -1;
+
+    if (x + sign >= 0 && x + sign < width) {
+        error_diffuse_fast(data, pos + sign, depth, error, 1, 8);
+    }
+    if (x + sign * 2 >= 0 && x + sign * 2 < width) {
+        error_diffuse_fast(data, pos + sign * 2, depth, error, 1, 8);
+    }
+    if (y < height - 1) {
+        int row;
+
+        row = pos + width;
+        if (x - sign >= 0 && x - sign < width) {
+            error_diffuse_fast(data,
+                               row + (-sign),
+                               depth, error, 1, 8);
+        }
+        error_diffuse_fast(data, row, depth, error, 1, 8);
+        if (x + sign >= 0 && x + sign < width) {
+            error_diffuse_fast(data,
+                               row + sign,
+                               depth, error, 1, 8);
+        }
+    }
+    if (y < height - 2) {
+        error_diffuse_fast(data, pos + width * 2, depth, error, 1, 8);
+    }
+}
+
+
+static void
+diffuse_atkinson_carry(int32_t *carry_curr, int32_t *carry_next,
+                       int32_t *carry_far, int width, int height,
+                       int depth, int x, int y, int32_t error,
+                       int direction, int channel)
+{
+    /* Atkinson's Method
+     *          curr    1/8    1/8
+     *   1/8     1/8    1/8
+     *           1/8
+     */
+    int sign;
+    int32_t term;
+
+    if (error == 0) {
+        return;
+    }
+
+    term = diffuse_fixed_term(error, 1, 8);
+    sign = direction >= 0 ? 1 : -1;
+    if (x + sign >= 0 && x + sign < width) {
+        size_t base;
+
+        base = ((size_t)(x + sign) * (size_t)depth)
+             + (size_t)channel;
+        carry_curr[base] += term;
+    }
+    if (x + sign * 2 >= 0 && x + sign * 2 < width) {
+        size_t base;
+
+        base = ((size_t)(x + sign * 2) * (size_t)depth)
+             + (size_t)channel;
+        carry_curr[base] += term;
+    }
+    if (y + 1 < height) {
+        if (x - sign >= 0 && x - sign < width) {
+            size_t base;
+
+            base = ((size_t)(x - sign) * (size_t)depth)
+                 + (size_t)channel;
+            carry_next[base] += term;
+        }
+        {
+            size_t base;
+
+            base = ((size_t)x * (size_t)depth) + (size_t)channel;
+            carry_next[base] += term;
+        }
+        if (x + sign >= 0 && x + sign < width) {
+            size_t base;
+
+            base = ((size_t)(x + sign) * (size_t)depth)
+                 + (size_t)channel;
+            carry_next[base] += term;
+        }
+    }
+    if (y + 2 < height) {
+        size_t base;
+
+        base = ((size_t)x * (size_t)depth) + (size_t)channel;
+        carry_far[base] += term;
+    }
+}
+
+
+static void
+diffuse_jajuni(unsigned char *data, int width, int height,
+               int x, int y, int depth, int error, int direction)
+{
+    /* Jarvis, Judice & Ninke Method
+     *                  curr    7/48    5/48
+     *  3/48    5/48    7/48    5/48    3/48
+     *  1/48    3/48    5/48    3/48    1/48
+     */
+    int pos;
+    int sign;
+    static const int row0_offsets[] = { 1, 2 };
+    static const int row0_weights[] = { 7, 5 };
+    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row1_weights[] = { 3, 5, 7, 5, 3 };
+    static const int row2_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row2_weights[] = { 1, 3, 5, 3, 1 };
+    int i;
+
+    pos = y * width + x;
+    sign = direction >= 0 ? 1 : -1;
+
+    for (i = 0; i < 2; ++i) {
+        int neighbor;
+
+        neighbor = x + sign * row0_offsets[i];
+        if (neighbor < 0 || neighbor >= width) {
+            continue;
+        }
+        error_diffuse_precise(data,
+                              pos + (neighbor - x),
+                              depth, error,
+                              row0_weights[i], 48);
+    }
+    if (y < height - 1) {
+        int row;
+
+        row = pos + width;
+        for (i = 0; i < 5; ++i) {
+            int neighbor;
+
+            neighbor = x + sign * row1_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            error_diffuse_precise(data,
+                                  row + (neighbor - x),
+                                  depth, error,
+                                  row1_weights[i], 48);
+        }
+    }
+    if (y < height - 2) {
+        int row;
+
+        row = pos + width * 2;
+        for (i = 0; i < 5; ++i) {
+            int neighbor;
+
+            neighbor = x + sign * row2_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            error_diffuse_precise(data,
+                                  row + (neighbor - x),
+                                  depth, error,
+                                  row2_weights[i], 48);
+        }
+    }
+}
+
+
+static void
+diffuse_jajuni_carry(int32_t *carry_curr, int32_t *carry_next,
+                     int32_t *carry_far, int width, int height,
+                     int depth, int x, int y, int32_t error,
+                     int direction, int channel)
+{
+    /* Jarvis, Judice & Ninke Method
+     *                  curr    7/48    5/48
+     *  3/48    5/48    7/48    5/48    3/48
+     *  1/48    3/48    5/48    3/48    1/48
+     */
+    static const int row0_offsets[] = { 1, 2 };
+    static const int row0_weights[] = { 7, 5 };
+    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row1_weights[] = { 3, 5, 7, 5, 3 };
+    static const int row2_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row2_weights[] = { 1, 3, 5, 3, 1 };
+    int sign;
+    int i;
+
+    if (error == 0) {
+        return;
+    }
+
+    sign = direction >= 0 ? 1 : -1;
+    for (i = 0; i < 2; ++i) {
+        int neighbor;
+        int32_t term;
+
+        neighbor = x + sign * row0_offsets[i];
+        if (neighbor < 0 || neighbor >= width) {
+            continue;
+        }
+        term = diffuse_fixed_term(error, row0_weights[i], 48);
+        carry_curr[((size_t)neighbor * (size_t)depth)
+                   + (size_t)channel] += term;
+    }
+    if (y + 1 < height) {
+        for (i = 0; i < 5; ++i) {
+            int neighbor;
+            int32_t term;
+
+            neighbor = x + sign * row1_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            term = diffuse_fixed_term(error, row1_weights[i], 48);
+            carry_next[((size_t)neighbor * (size_t)depth)
+                       + (size_t)channel] += term;
+        }
+    }
+    if (y + 2 < height) {
+        for (i = 0; i < 5; ++i) {
+            int neighbor;
+            int32_t term;
+
+            neighbor = x + sign * row2_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            term = diffuse_fixed_term(error, row2_weights[i], 48);
+            carry_far[((size_t)neighbor * (size_t)depth)
+                      + (size_t)channel] += term;
+        }
+    }
+}
+
+
+static void
+diffuse_stucki(unsigned char *data, int width, int height,
+               int x, int y, int depth, int error, int direction)
+{
+    /* Stucki's Method
+     *                  curr    8/48    4/48
+     *  2/48    4/48    8/48    4/48    2/48
+     *  1/48    2/48    4/48    2/48    1/48
+     */
+    int pos;
+    int sign;
+    static const int row0_offsets[] = { 1, 2 };
+    static const int row0_num[] = { 1, 1 };
+    static const int row0_den[] = { 6, 12 };
+    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row1_num[] = { 1, 1, 1, 1, 1 };
+    static const int row1_den[] = { 24, 12, 6, 12, 24 };
+    static const int row2_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row2_num[] = { 1, 1, 1, 1, 1 };
+    static const int row2_den[] = { 48, 24, 12, 24, 48 };
+    int i;
+
+    pos = y * width + x;
+    sign = direction >= 0 ? 1 : -1;
+
+    for (i = 0; i < 2; ++i) {
+        int neighbor;
+
+        neighbor = x + sign * row0_offsets[i];
+        if (neighbor < 0 || neighbor >= width) {
+            continue;
+        }
+        error_diffuse_precise(data,
+                              pos + (neighbor - x),
+                              depth, error,
+                              row0_num[i], row0_den[i]);
+    }
+    if (y < height - 1) {
+        int row;
+
+        row = pos + width;
+        for (i = 0; i < 5; ++i) {
+            int neighbor;
+
+            neighbor = x + sign * row1_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            error_diffuse_precise(data,
+                                  row + (neighbor - x),
+                                  depth, error,
+                                  row1_num[i], row1_den[i]);
+        }
+    }
+    if (y < height - 2) {
+        int row;
+
+        row = pos + width * 2;
+        for (i = 0; i < 5; ++i) {
+            int neighbor;
+
+            neighbor = x + sign * row2_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            error_diffuse_precise(data,
+                                  row + (neighbor - x),
+                                  depth, error,
+                                  row2_num[i], row2_den[i]);
+        }
+    }
+}
+
+
+static void
+diffuse_stucki_carry(int32_t *carry_curr, int32_t *carry_next,
+                     int32_t *carry_far, int width, int height,
+                     int depth, int x, int y, int32_t error,
+                     int direction, int channel)
+{
+    /* Stucki's Method
+     *                  curr    8/48    4/48
+     *  2/48    4/48    8/48    4/48    2/48
+     *  1/48    2/48    4/48    2/48    1/48
+     */
+    static const int row0_offsets[] = { 1, 2 };
+    static const int row0_num[] = { 1, 1 };
+    static const int row0_den[] = { 6, 12 };
+    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row1_num[] = { 1, 1, 1, 1, 1 };
+    static const int row1_den[] = { 24, 12, 6, 12, 24 };
+    static const int row2_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row2_num[] = { 1, 1, 1, 1, 1 };
+    static const int row2_den[] = { 48, 24, 12, 24, 48 };
+    int sign;
+    int i;
+
+    if (error == 0) {
+        return;
+    }
+
+    sign = direction >= 0 ? 1 : -1;
+    for (i = 0; i < 2; ++i) {
+        int neighbor;
+        int32_t term;
+
+        neighbor = x + sign * row0_offsets[i];
+        if (neighbor < 0 || neighbor >= width) {
+            continue;
+        }
+        term = diffuse_fixed_term(error, row0_num[i], row0_den[i]);
+        carry_curr[((size_t)neighbor * (size_t)depth)
+                   + (size_t)channel] += term;
+    }
+    if (y + 1 < height) {
+        for (i = 0; i < 5; ++i) {
+            int neighbor;
+            int32_t term;
+
+            neighbor = x + sign * row1_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            term = diffuse_fixed_term(error, row1_num[i], row1_den[i]);
+            carry_next[((size_t)neighbor * (size_t)depth)
+                       + (size_t)channel] += term;
+        }
+    }
+    if (y + 2 < height) {
+        for (i = 0; i < 5; ++i) {
+            int neighbor;
+            int32_t term;
+
+            neighbor = x + sign * row2_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            term = diffuse_fixed_term(error, row2_num[i], row2_den[i]);
+            carry_far[((size_t)neighbor * (size_t)depth)
+                      + (size_t)channel] += term;
+        }
+    }
+}
+
+
+static void
+diffuse_burkes(unsigned char *data, int width, int height,
+               int x, int y, int depth, int error, int direction)
+{
+    /* Burkes' Method
+     *                  curr    4/16    2/16
+     *  1/16    2/16    4/16    2/16    1/16
+     */
+    int pos;
+    int sign;
+    static const int row0_offsets[] = { 1, 2 };
+    static const int row0_num[] = { 1, 1 };
+    static const int row0_den[] = { 4, 8 };
+    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row1_num[] = { 1, 1, 1, 1, 1 };
+    static const int row1_den[] = { 16, 8, 4, 8, 16 };
+    int i;
+
+    pos = y * width + x;
+    sign = direction >= 0 ? 1 : -1;
+
+    for (i = 0; i < 2; ++i) {
+        int neighbor;
+
+        neighbor = x + sign * row0_offsets[i];
+        if (neighbor < 0 || neighbor >= width) {
+            continue;
+        }
+        error_diffuse_normal(data,
+                             pos + (neighbor - x),
+                             depth, error,
+                             row0_num[i], row0_den[i]);
+    }
+    if (y < height - 1) {
+        int row;
+
+        row = pos + width;
+        for (i = 0; i < 5; ++i) {
+            int neighbor;
+
+            neighbor = x + sign * row1_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            error_diffuse_normal(data,
+                                 row + (neighbor - x),
+                                 depth, error,
+                                 row1_num[i], row1_den[i]);
+        }
+    }
+}
+
+static void
+diffuse_burkes_carry(int32_t *carry_curr, int32_t *carry_next,
+                     int32_t *carry_far, int width, int height,
+                     int depth, int x, int y, int32_t error,
+                     int direction, int channel)
+{
+    /* Burkes' Method
+     *                  curr    4/16    2/16
+     *  1/16    2/16    4/16    2/16    1/16
+     */
+    static const int row0_offsets[] = { 1, 2 };
+    static const int row0_num[] = { 1, 1 };
+    static const int row0_den[] = { 4, 8 };
+    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row1_num[] = { 1, 1, 1, 1, 1 };
+    static const int row1_den[] = { 16, 8, 4, 8, 16 };
+    int sign;
+    int i;
+
+    /* unused */ (void) carry_far;
+
+    if (error == 0) {
+        return;
+    }
+
+    sign = direction >= 0 ? 1 : -1;
+    for (i = 0; i < 2; ++i) {
+        int neighbor;
+        int32_t term;
+
+        neighbor = x + sign * row0_offsets[i];
+        if (neighbor < 0 || neighbor >= width) {
+            continue;
+        }
+        term = diffuse_fixed_term(error, row0_num[i], row0_den[i]);
+        carry_curr[((size_t)neighbor * (size_t)depth)
+                   + (size_t)channel] += term;
+    }
+    if (y + 1 < height) {
+        for (i = 0; i < 5; ++i) {
+            int neighbor;
+            int32_t term;
+
+            neighbor = x + sign * row1_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            term = diffuse_fixed_term(error, row1_num[i], row1_den[i]);
+            carry_next[((size_t)neighbor * (size_t)depth)
+                       + (size_t)channel] += term;
+        }
+    }
+}
+
+static void
+diffuse_sierra1(unsigned char *data, int width, int height,
+                int x, int y, int depth, int error, int direction)
+{
+    /* Sierra Lite Method
+     *          curr    2/4
+     *  1/4     1/4
+     */
+    static const int row0_offsets[] = { 1 };
+    static const int row0_num[] = { 1 };
+    static const int row0_den[] = { 2 };
+    static const int row1_offsets[] = { -1, 0 };
+    static const int row1_num[] = { 1, 1 };
+    static const int row1_den[] = { 4, 4 };
+    int pos;
+    int sign;
+    int i;
+    int neighbor;
+    int row;
+
+    pos = y * width + x;
+    sign = direction >= 0 ? 1 : -1;
+
+    for (i = 0; i < 1; ++i) {
+        neighbor = x + sign * row0_offsets[i];
+        if (neighbor < 0 || neighbor >= width) {
+            continue;
+        }
+        error_diffuse_normal(data,
+                             pos + (neighbor - x),
+                             depth, error,
+                             row0_num[i], row0_den[i]);
+    }
+    if (y < height - 1) {
+        row = pos + width;
+        for (i = 0; i < 2; ++i) {
+            neighbor = x + sign * row1_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            error_diffuse_normal(data,
+                                 row + (neighbor - x),
+                                 depth, error,
+                                 row1_num[i], row1_den[i]);
+        }
+    }
+}
+
+
+static void
+diffuse_sierra1_carry(int32_t *carry_curr, int32_t *carry_next,
+                      int32_t *carry_far, int width, int height,
+                      int depth, int x, int y, int32_t error,
+                      int direction, int channel)
+{
+    /* Sierra Lite Method
+     *          curr    2/4
+     *  1/4     1/4
+     */
+    static const int row0_offsets[] = { 1 };
+    static const int row0_num[] = { 1 };
+    static const int row0_den[] = { 2 };
+    static const int row1_offsets[] = { -1, 0 };
+    static const int row1_num[] = { 1, 1 };
+    static const int row1_den[] = { 4, 4 };
+    int sign;
+    int i;
+    int neighbor;
+    int32_t term;
+
+    /* unused */ (void) carry_far;
+
+    if (error == 0) {
+        return;
+    }
+
+    sign = direction >= 0 ? 1 : -1;
+    for (i = 0; i < 1; ++i) {
+        neighbor = x + sign * row0_offsets[i];
+        if (neighbor < 0 || neighbor >= width) {
+            continue;
+        }
+        term = diffuse_fixed_term(error, row0_num[i], row0_den[i]);
+        carry_curr[((size_t)neighbor * (size_t)depth)
+                   + (size_t)channel] += term;
+    }
+    if (y + 1 < height) {
+        for (i = 0; i < 2; ++i) {
+            neighbor = x + sign * row1_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            term = diffuse_fixed_term(error, row1_num[i], row1_den[i]);
+            carry_next[((size_t)neighbor * (size_t)depth)
+                       + (size_t)channel] += term;
+        }
+    }
+}
+
+
+static void
+diffuse_sierra2(unsigned char *data, int width, int height,
+                int x, int y, int depth, int error, int direction)
+{
+    /* Sierra Two-row Method
+     *                  curr    4/32    3/32
+     *  1/32    2/32    3/32    2/32    1/32
+     *                  2/32    3/32    2/32
+     */
+    static const int row0_offsets[] = { 1, 2 };
+    static const int row0_num[] = { 4, 3 };
+    static const int row0_den[] = { 32, 32 };
+    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row1_num[] = { 1, 2, 3, 2, 1 };
+    static const int row1_den[] = { 32, 32, 32, 32, 32 };
+    static const int row2_offsets[] = { -1, 0, 1 };
+    static const int row2_num[] = { 2, 3, 2 };
+    static const int row2_den[] = { 32, 32, 32 };
+    int pos;
+    int sign;
+    int i;
+    int neighbor;
+    int row;
+
+    pos = y * width + x;
+    sign = direction >= 0 ? 1 : -1;
+
+    for (i = 0; i < 2; ++i) {
+        neighbor = x + sign * row0_offsets[i];
+        if (neighbor < 0 || neighbor >= width) {
+            continue;
+        }
+        error_diffuse_precise(data,
+                              pos + (neighbor - x),
+                              depth, error,
+                              row0_num[i], row0_den[i]);
+    }
+    if (y < height - 1) {
+        row = pos + width;
+        for (i = 0; i < 5; ++i) {
+            neighbor = x + sign * row1_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            error_diffuse_precise(data,
+                                  row + (neighbor - x),
+                                  depth, error,
+                                  row1_num[i], row1_den[i]);
+        }
+    }
+    if (y < height - 2) {
+        row = pos + width * 2;
+        for (i = 0; i < 3; ++i) {
+            neighbor = x + sign * row2_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            error_diffuse_precise(data,
+                                  row + (neighbor - x),
+                                  depth, error,
+                                  row2_num[i], row2_den[i]);
+        }
+    }
+}
+
+
+static void
+diffuse_sierra2_carry(int32_t *carry_curr, int32_t *carry_next,
+                      int32_t *carry_far, int width, int height,
+                      int depth, int x, int y, int32_t error,
+                      int direction, int channel)
+{
+    /* Sierra Two-row Method
+     *                  curr    4/32    3/32
+     *  1/32    2/32    3/32    2/32    1/32
+     *                  2/32    3/32    2/32
+     */
+    static const int row0_offsets[] = { 1, 2 };
+    static const int row0_num[] = { 4, 3 };
+    static const int row0_den[] = { 32, 32 };
+    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row1_num[] = { 1, 2, 3, 2, 1 };
+    static const int row1_den[] = { 32, 32, 32, 32, 32 };
+    static const int row2_offsets[] = { -1, 0, 1 };
+    static const int row2_num[] = { 2, 3, 2 };
+    static const int row2_den[] = { 32, 32, 32 };
+    int sign;
+    int i;
+    int neighbor;
+    int32_t term;
+
+    if (error == 0) {
+        return;
+    }
+
+    sign = direction >= 0 ? 1 : -1;
+    for (i = 0; i < 2; ++i) {
+        neighbor = x + sign * row0_offsets[i];
+        if (neighbor < 0 || neighbor >= width) {
+            continue;
+        }
+        term = diffuse_fixed_term(error, row0_num[i], row0_den[i]);
+        carry_curr[((size_t)neighbor * (size_t)depth)
+                   + (size_t)channel] += term;
+    }
+    if (y + 1 < height) {
+        for (i = 0; i < 5; ++i) {
+            neighbor = x + sign * row1_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            term = diffuse_fixed_term(error, row1_num[i], row1_den[i]);
+            carry_next[((size_t)neighbor * (size_t)depth)
+                       + (size_t)channel] += term;
+        }
+    }
+    if (y + 2 < height) {
+        for (i = 0; i < 3; ++i) {
+            neighbor = x + sign * row2_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            term = diffuse_fixed_term(error, row2_num[i], row2_den[i]);
+            carry_far[((size_t)neighbor * (size_t)depth)
+                      + (size_t)channel] += term;
+        }
+    }
+}
+
+
+static void
+diffuse_sierra3(unsigned char *data, int width, int height,
+                int x, int y, int depth, int error, int direction)
+{
+    /* Sierra-3 Method
+     *                  curr    5/32    3/32
+     *  2/32    4/32    5/32    4/32    2/32
+     *                  2/32    3/32    2/32
+     */
+    static const int row0_offsets[] = { 1, 2 };
+    static const int row0_num[] = { 5, 3 };
+    static const int row0_den[] = { 32, 32 };
+    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row1_num[] = { 2, 4, 5, 4, 2 };
+    static const int row1_den[] = { 32, 32, 32, 32, 32 };
+    static const int row2_offsets[] = { -1, 0, 1 };
+    static const int row2_num[] = { 2, 3, 2 };
+    static const int row2_den[] = { 32, 32, 32 };
+    int pos;
+    int sign;
+    int i;
+    int neighbor;
+    int row;
+
+    pos = y * width + x;
+    sign = direction >= 0 ? 1 : -1;
+
+    for (i = 0; i < 2; ++i) {
+        neighbor = x + sign * row0_offsets[i];
+        if (neighbor < 0 || neighbor >= width) {
+            continue;
+        }
+        error_diffuse_precise(data,
+                              pos + (neighbor - x),
+                              depth, error,
+                              row0_num[i], row0_den[i]);
+    }
+    if (y < height - 1) {
+        row = pos + width;
+        for (i = 0; i < 5; ++i) {
+            neighbor = x + sign * row1_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            error_diffuse_precise(data,
+                                  row + (neighbor - x),
+                                  depth, error,
+                                  row1_num[i], row1_den[i]);
+        }
+    }
+    if (y < height - 2) {
+        row = pos + width * 2;
+        for (i = 0; i < 3; ++i) {
+            neighbor = x + sign * row2_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            error_diffuse_precise(data,
+                                  row + (neighbor - x),
+                                  depth, error,
+                                  row2_num[i], row2_den[i]);
+        }
+    }
+}
+
+
+static void
+diffuse_sierra3_carry(int32_t *carry_curr, int32_t *carry_next,
+                      int32_t *carry_far, int width, int height,
+                      int depth, int x, int y, int32_t error,
+                      int direction, int channel)
+{
+    /* Sierra-3 Method
+     *                  curr    5/32    3/32
+     *  2/32    4/32    5/32    4/32    2/32
+     *                  2/32    3/32    2/32
+     */
+    static const int row0_offsets[] = { 1, 2 };
+    static const int row0_num[] = { 5, 3 };
+    static const int row0_den[] = { 32, 32 };
+    static const int row1_offsets[] = { -2, -1, 0, 1, 2 };
+    static const int row1_num[] = { 2, 4, 5, 4, 2 };
+    static const int row1_den[] = { 32, 32, 32, 32, 32 };
+    static const int row2_offsets[] = { -1, 0, 1 };
+    static const int row2_num[] = { 2, 3, 2 };
+    static const int row2_den[] = { 32, 32, 32 };
+    int sign;
+    int i;
+    int neighbor;
+    int32_t term;
+
+    if (error == 0) {
+        return;
+    }
+
+    sign = direction >= 0 ? 1 : -1;
+    for (i = 0; i < 2; ++i) {
+        neighbor = x + sign * row0_offsets[i];
+        if (neighbor < 0 || neighbor >= width) {
+            continue;
+        }
+        term = diffuse_fixed_term(error, row0_num[i], row0_den[i]);
+        carry_curr[((size_t)neighbor * (size_t)depth)
+                   + (size_t)channel] += term;
+    }
+    if (y + 1 < height) {
+        for (i = 0; i < 5; ++i) {
+            neighbor = x + sign * row1_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            term = diffuse_fixed_term(error, row1_num[i], row1_den[i]);
+            carry_next[((size_t)neighbor * (size_t)depth)
+                       + (size_t)channel] += term;
+        }
+    }
+    if (y + 2 < height) {
+        for (i = 0; i < 3; ++i) {
+            neighbor = x + sign * row2_offsets[i];
+            if (neighbor < 0 || neighbor >= width) {
+                continue;
+            }
+            term = diffuse_fixed_term(error, row2_num[i], row2_den[i]);
+            carry_far[((size_t)neighbor * (size_t)depth)
+                      + (size_t)channel] += term;
+        }
+    }
+}
+
+
+static float
+mask_a (int x, int y, int c)
+{
+    return ((((x + c * 67) + y * 236) * 119) & 255 ) / 128.0 - 1.0;
+}
+
+static float
+mask_x (int x, int y, int c)
+{
+    return ((((x + c * 29) ^ y* 149) * 1234) & 511 ) / 256.0 - 1.0;
+}
+
+/* lookup closest color from palette with "normal" strategy */
+static int
+lookup_normal(unsigned char const * const pixel,
+              int const depth,
+              unsigned char const * const palette,
+              int const reqcolor,
+              unsigned short * const cachetable,
+              int const complexion)
+{
+    int result;
+    int diff;
+    int r;
+    int i;
+    int n;
+    int distant;
+
+    result = (-1);
+    diff = INT_MAX;
+
+    /* don't use cachetable in 'normal' strategy */
+    (void) cachetable;
+
+    for (i = 0; i < reqcolor; i++) {
+        distant = 0;
+        r = pixel[0] - palette[i * depth + 0];
+        distant += r * r * complexion;
+        for (n = 1; n < depth; ++n) {
+            r = pixel[n] - palette[i * depth + n];
+            distant += r * r;
+        }
+        if (distant < diff) {
+            diff = distant;
+            result = i;
+        }
+    }
+
+    return result;
+}
+
+
+/*
+ * Shared fast lookup flow handled by the lut module.  The palette lookup now
+ * delegates to sixel_lut_map_pixel() so policy-specific caches and the
+ * certification tree stay encapsulated inside src/lut.c.
+ */
+
+static int
+lookup_fast_lut(unsigned char const * const pixel,
+                int const depth,
+                unsigned char const * const palette,
+                int const reqcolor,
+                unsigned short * const cachetable,
+                int const complexion)
+{
+    (void)depth;
+    (void)palette;
+    (void)reqcolor;
+    (void)cachetable;
+    (void)complexion;
+
+    if (dither_lut_context == NULL) {
+        return 0;
+    }
+
+    return sixel_lut_map_pixel(dither_lut_context, pixel);
+}
+
+
+static int
+lookup_mono_darkbg(unsigned char const * const pixel,
+                   int const depth,
+                   unsigned char const * const palette,
+                   int const reqcolor,
+                   unsigned short * const cachetable,
+                   int const complexion)
+{
+    int n;
+    int distant;
+
+    /* unused */ (void) palette;
+    /* unused */ (void) cachetable;
+    /* unused */ (void) complexion;
+
+    distant = 0;
+    for (n = 0; n < depth; ++n) {
+        distant += pixel[n];
+    }
+    return distant >= 128 * reqcolor ? 1: 0;
+}
+
+
+static int
+lookup_mono_lightbg(unsigned char const * const pixel,
+                    int const depth,
+                    unsigned char const * const palette,
+                    int const reqcolor,
+                    unsigned short * const cachetable,
+                    int const complexion)
+{
+    int n;
+    int distant;
+
+    /* unused */ (void) palette;
+    /* unused */ (void) cachetable;
+    /* unused */ (void) complexion;
+
+    distant = 0;
+    for (n = 0; n < depth; ++n) {
+        distant += pixel[n];
+    }
+    return distant < 128 * reqcolor ? 1: 0;
+}
+
+
+
+/*
+ * Apply the palette into the supplied pixel buffer while coordinating the
+ * dithering strategy.  The routine performs the following steps:
+ *   - Select an index lookup helper, enabling the fast LUT path when the
+ *     caller requested palette optimization and the input pixels are RGB.
+ *   - Ensure the LUT object is prepared for the active policy, including
+ *     weight selection for CERTLUT so complexion aware lookups remain
+ *     accurate.
+ *   - Dispatch to the positional, variable, or fixed error diffusion
+ *     routines, each of which expects the LUT context to be initialized
+ *     beforehand.
+ *   - Release any temporary LUT references that were acquired for the fast
+ *     lookup path.
+ */
+static SIXELSTATUS
+sixel_dither_map_pixels(
+    sixel_index_t     /* out */ *result,
+    unsigned char     /* in */  *data,
+    int               /* in */  width,
+    int               /* in */  height,
+    int               /* in */  depth,
+    unsigned char     /* in */  *palette,
+    int               /* in */  reqcolor,
+    int               /* in */  methodForDiffuse,
+    int               /* in */  methodForScan,
+    int               /* in */  methodForCarry,
+    int               /* in */  foptimize,
+    int               /* in */  foptimize_palette,
+    int               /* in */  complexion,
+    int               /* in */  lut_policy,
+    int               /* in */  method_for_largest,
+    sixel_lut_t       /* in */  *lut,
+    int               /* in */  *ncolors,
+    sixel_allocator_t /* in */  *allocator)
+{
+#if _MSC_VER
+    enum { max_depth = 4 };
+#else
+    const size_t max_depth = 4;
+#endif
+    unsigned char copy[max_depth];
+    SIXELSTATUS status = SIXEL_FALSE;
+    int sum1;
+    int sum2;
+    int n;
+    unsigned char new_palette[SIXEL_PALETTE_MAX * 4];
+    unsigned short migration_map[SIXEL_PALETTE_MAX];
+    int (*f_lookup)(unsigned char const * const pixel,
+                    int const depth,
+                    unsigned char const * const palette,
+                    int const reqcolor,
+                    unsigned short * const cachetable,
+                    int const complexion) = lookup_normal;
+    int use_varerr;
+    int use_positional;
+    int carry_mode;
+    sixel_lut_t *active_lut;
+    int manage_lut;
+    int policy;
+    int wR;
+    int wG;
+    int wB;
+
+    active_lut = NULL;
+    manage_lut = 0;
+
+    if (reqcolor < 1) {
+        status = SIXEL_BAD_ARGUMENT;
+        sixel_helper_set_additional_message(
+            "sixel_dither_map_pixels: "
+            "a bad argument is detected, reqcolor < 0.");
+        goto end;
+    }
+
+    use_varerr = (depth == 3
+                  && methodForDiffuse == SIXEL_DIFFUSE_LSO2);
+    use_positional = (methodForDiffuse == SIXEL_DIFFUSE_A_DITHER
+                      || methodForDiffuse == SIXEL_DIFFUSE_X_DITHER);
+    carry_mode = (methodForCarry == SIXEL_CARRY_ENABLE)
+               ? SIXEL_CARRY_ENABLE
+               : SIXEL_CARRY_DISABLE;
+
+    if (reqcolor == 2) {
+        sum1 = 0;
+        sum2 = 0;
+        for (n = 0; n < depth; ++n) {
+            sum1 += palette[n];
+        }
+        for (n = depth; n < depth + depth; ++n) {
+            sum2 += palette[n];
+        }
+        if (sum1 == 0 && sum2 == 255 * 3) {
+            f_lookup = lookup_mono_darkbg;
+        } else if (sum1 == 255 * 3 && sum2 == 0) {
+            f_lookup = lookup_mono_lightbg;
+        }
+    }
+    if (foptimize && depth == 3 && f_lookup == lookup_normal) {
+        f_lookup = lookup_fast_lut;
+    }
+
+    if (f_lookup == lookup_fast_lut) {
+        if (depth != 3) {
+            status = SIXEL_BAD_ARGUMENT;
+            sixel_helper_set_additional_message(
+                "sixel_dither_map_pixels: fast lookup requires RGB pixels.");
+            goto end;
+        }
+        policy = lut_policy;
+        if (policy != SIXEL_LUT_POLICY_ROBINHOOD
+            && policy != SIXEL_LUT_POLICY_HOPSCOTCH
+            && policy != SIXEL_LUT_POLICY_CERTLUT
+            && policy != SIXEL_LUT_POLICY_5BIT
+            && policy != SIXEL_LUT_POLICY_6BIT) {
+            policy = SIXEL_LUT_POLICY_6BIT;
+        }
+        if (lut == NULL) {
+            status = sixel_lut_new(&active_lut, policy, allocator);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            manage_lut = 1;
+        } else {
+            active_lut = lut;
+            manage_lut = 0;
+        }
+        if (policy == SIXEL_LUT_POLICY_CERTLUT) {
+            if (method_for_largest == SIXEL_LARGE_LUM) {
+                wR = complexion * 299;
+                wG = 587;
+                wB = 114;
+            } else {
+                wR = complexion;
+                wG = 1;
+                wB = 1;
+            }
+        } else {
+            wR = complexion;
+            wG = 1;
+            wB = 1;
+        }
+        status = sixel_lut_configure(active_lut,
+                                     palette,
+                                     depth,
+                                     reqcolor,
+                                     complexion,
+                                     wR,
+                                     wG,
+                                     wB,
+                                     policy);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        dither_lut_context = active_lut;
+    }
+
+    if (use_positional) {
+        status = sixel_dither_apply_positional(result, data, width, height,
+                                          depth, palette, reqcolor,
+                                          methodForDiffuse, methodForScan,
+                                          foptimize_palette, f_lookup,
+                                          NULL, complexion, copy,
+                                          new_palette, migration_map,
+                                          ncolors);
+    } else if (use_varerr) {
+        status = sixel_dither_apply_variable(result, data, width, height,
+                                        depth, palette, reqcolor,
+                                        methodForScan, foptimize_palette,
+                                        f_lookup, NULL, complexion,
+                                        new_palette, migration_map,
+                                        ncolors,
+                                        methodForDiffuse,
+                                        carry_mode);
+    } else {
+        status = sixel_dither_apply_fixed(result, data, width, height,
+                                     depth, palette, reqcolor,
+                                     methodForScan, foptimize_palette,
+                                     f_lookup, NULL, complexion,
+                                     new_palette, migration_map,
+                                     ncolors, methodForDiffuse,
+                                     carry_mode);
+    }
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    if (dither_lut_context != NULL && f_lookup == lookup_fast_lut) {
+        dither_lut_context = NULL;
+    }
+    if (manage_lut && active_lut != NULL) {
+        sixel_lut_unref(active_lut);
+    }
+    return status;
+}
+
+
 /*
  * Helper that detects whether the palette currently matches either of the
  * builtin monochrome definitions.  These tables skip cache initialization
@@ -239,9 +2709,15 @@ sixel_palette_is_builtin_mono(sixel_palette_t const *palette)
 }
 
 /*
- * Route palette application through the shared quantization helper.  The
+ * Route palette application through the local dithering helper.  The
  * function keeps all state in the palette object so we can share cache
- * buffers between invocations and later stages.
+ * buffers between invocations and later stages.  The flow is:
+ *   1. Synchronize the quantizer configuration with the dither object so the
+ *      LUT builder honors the requested policy.
+ *   2. Invoke sixel_dither_map_pixels() to populate the index buffer and
+ *      record the resulting palette size.
+ *   3. Return the status to the caller so palette application errors can be
+ *      reported at a single site.
  */
 static SIXELSTATUS
 sixel_dither_resolve_indexes(sixel_index_t *result,
@@ -268,10 +2744,10 @@ sixel_dither_resolve_indexes(sixel_index_t *result,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    sixel_quant_set_lut_policy(lut_policy);
-    sixel_quant_set_method_for_largest(method_for_largest);
+    sixel_palette_set_lut_policy(lut_policy);
+    sixel_palette_set_method_for_largest(method_for_largest);
 
-    status = sixel_quant_apply_palette(result,
+    status = sixel_dither_map_pixels(result,
                                        data,
                                        width,
                                        height,
@@ -284,7 +2760,9 @@ sixel_dither_resolve_indexes(sixel_index_t *result,
                                        foptimize,
                                        foptimize_palette,
                                        complexion,
-                                       palette->cachetable,
+                                       lut_policy,
+                                       method_for_largest,
+                                       palette->lut,
                                        ncolors,
                                        allocator);
 
@@ -677,7 +3155,7 @@ sixel_dither_initialize(
     sixel_dither_set_pixelformat(dither, pixelformat);
 
     /* keep quantizer policy in sync with the dither object */
-    sixel_quant_set_lut_policy(dither->lut_policy);
+    sixel_palette_set_lut_policy(dither->lut_policy);
 
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_RGB888:
@@ -686,7 +3164,8 @@ sixel_dither_initialize(
     default:
         /* normalize pixelformat */
         normalized_pixels
-            = (unsigned char *)sixel_allocator_malloc(dither->allocator, (size_t)(width * height * 3));
+            = (unsigned char *)sixel_allocator_malloc(
+                dither->allocator, (size_t)(width * height * 3));
         if (normalized_pixels == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_dither_initialize: sixel_allocator_malloc() failed.");
@@ -712,21 +3191,21 @@ sixel_dither_initialize(
     sixel_dither_set_method_for_rep(dither, method_for_rep);
     sixel_dither_set_quality_mode(dither, quality_mode);
 
-    status = sixel_quant_make_palette(&buf,
-                                      input_pixels,
-                                      (unsigned int)(width * height * 3),
-                                      SIXEL_PIXELFORMAT_RGB888,
-                                      (unsigned int)dither->reqcolors,
-                                      (unsigned int *)&dither->ncolors,
-                                      (unsigned int *)&dither->origcolors,
-                                      dither->method_for_largest,
-                                      dither->method_for_rep,
-                                      dither->quality_mode,
-                                      dither->force_palette,
-                                      dither->sixel_reversible,
-                                      dither->quantize_model,
-                                      dither->final_merge_mode,
-                                      dither->allocator);
+    status = sixel_palette_make_palette(&buf,
+                                        input_pixels,
+                                        (unsigned int)(width * height * 3),
+                                        SIXEL_PIXELFORMAT_RGB888,
+                                        (unsigned int)dither->reqcolors,
+                                        (unsigned int *)&dither->ncolors,
+                                        (unsigned int *)&dither->origcolors,
+                                        dither->method_for_largest,
+                                        dither->method_for_rep,
+                                        dither->quality_mode,
+                                        dither->force_palette,
+                                        dither->sixel_reversible,
+                                        dither->quantize_model,
+                                        dither->final_merge_mode,
+                                        dither->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -748,7 +3227,7 @@ sixel_dither_initialize(
         dither->method_for_diffuse = SIXEL_DIFFUSE_NONE;
     }
 
-    sixel_quant_free_palette(buf, dither->allocator);
+    sixel_palette_free_palette(buf, dither->allocator);
     status = SIXEL_OK;
 
 end:
@@ -771,7 +3250,6 @@ sixel_dither_set_lut_policy(
 {
     int normalized;
     int previous_policy;
-    sixel_allocator_t *allocator;
 
     if (dither == NULL) {
         return;
@@ -791,21 +3269,17 @@ sixel_dither_set_lut_policy(
     }
 
     /*
-     * Policy transitions are illustrated as an ASCII timeline below:
+     * Policy transitions for the shared LUT mirror the previous cache flow:
      *
-     *   [cache] --policy change--> (flush) --rebuild--> [cache]
+     *   [lut] --policy change--> (drop) --rebuild--> [lut]
      */
     dither->lut_policy = normalized;
     if (dither->palette != NULL) {
         dither->palette->lut_policy = normalized;
     }
-    if (dither->palette != NULL && dither->palette->cachetable != NULL) {
-        allocator = dither->allocator;
-        sixel_quant_cache_release(dither->palette->cachetable,
-                                  previous_policy,
-                                  allocator);
-        dither->palette->cachetable = NULL;
-        dither->palette->cachetable_size = 0U;
+    if (dither->palette != NULL && dither->palette->lut != NULL) {
+        sixel_lut_unref(dither->palette->lut);
+        dither->palette->lut = NULL;
     }
 }
 
@@ -1093,14 +3567,56 @@ sixel_dither_apply_palette(
 
     if (dither->optimized) {
         if (!sixel_palette_is_builtin_mono(palette)) {
-            status = sixel_quant_cache_prepare(&palette->cachetable,
-                                               &palette->cachetable_size,
-                                               dither->lut_policy,
-                                               dither->ncolors,
-                                               dither->allocator);
+            int policy;
+            int wR;
+            int wG;
+            int wB;
+
+            policy = dither->lut_policy;
+            if (policy != SIXEL_LUT_POLICY_ROBINHOOD
+                && policy != SIXEL_LUT_POLICY_HOPSCOTCH
+                && policy != SIXEL_LUT_POLICY_CERTLUT
+                && policy != SIXEL_LUT_POLICY_5BIT
+                && policy != SIXEL_LUT_POLICY_6BIT) {
+                policy = SIXEL_LUT_POLICY_6BIT;
+            }
+            if (palette->lut == NULL) {
+                status = sixel_lut_new(&palette->lut,
+                                       policy,
+                                       palette->allocator);
+                if (SIXEL_FAILED(status)) {
+                    sixel_helper_set_additional_message(
+                        "sixel_dither_apply_palette: lut allocation failed.");
+                    goto end;
+                }
+            }
+            if (policy == SIXEL_LUT_POLICY_CERTLUT) {
+                if (dither->method_for_largest == SIXEL_LARGE_LUM) {
+                    wR = dither->complexion * 299;
+                    wG = 587;
+                    wB = 114;
+                } else {
+                    wR = dither->complexion;
+                    wG = 1;
+                    wB = 1;
+                }
+            } else {
+                wR = dither->complexion;
+                wG = 1;
+                wB = 1;
+            }
+            status = sixel_lut_configure(palette->lut,
+                                         palette->entries,
+                                         palette->depth,
+                                         (int)palette->entry_count,
+                                         dither->complexion,
+                                         wR,
+                                         wG,
+                                         wB,
+                                         policy);
             if (SIXEL_FAILED(status)) {
                 sixel_helper_set_additional_message(
-                    "sixel_dither_apply_palette: cache preparation failed.");
+                    "sixel_dither_apply_palette: lut configuration failed.");
                 goto end;
             }
         }

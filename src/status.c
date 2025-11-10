@@ -72,6 +72,45 @@
 #define SIXEL_MESSAGE_GDK_ERROR             ("GDK error")
 #define SIXEL_MESSAGE_GD_ERROR              ("GD error")
 
+void
+sixel_debugf(char const *fmt, ...)
+{
+#if HAVE_DEBUG
+    enum { message_length = 256 };
+    char message[message_length];
+    va_list args;
+    int nwrite;
+
+    if (fmt == NULL) {
+        return;
+    }
+
+    va_start(args, fmt);
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
+    nwrite = sixel_compat_vsnprintf(message,
+                                    sizeof(message),
+                                    fmt,
+                                    args);
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+    va_end(args);
+
+    if (nwrite > 0) {
+        sixel_helper_set_additional_message(message);
+    }
+#else
+    (void)fmt;
+#endif
+}
 
 static char g_buffer[1024] = { 0x0 };
 

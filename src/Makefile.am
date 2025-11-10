@@ -21,9 +21,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/assessment.h \
                 $(srcdir)/fromsixel.c \
                 $(srcdir)/tosixel.c \
-                $(srcdir)/quant.c \
-                $(srcdir)/quant.h \
-                $(srcdir)/quant-internal.h \
+                $(srcdir)/lut.c \
+                $(srcdir)/lut.h \
                 $(srcdir)/palette.c \
                 $(srcdir)/palette.h \
                 $(srcdir)/dither.c \
