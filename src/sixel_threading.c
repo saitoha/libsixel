@@ -22,6 +22,16 @@
 
 #include "config.h"
 
+#if defined(__APPLE__) && !defined(_DARWIN_C_SOURCE)
+/*
+ * Expose BSD-flavoured typedefs such as u_int from the macOS SDK when the
+ * build defines _POSIX_C_SOURCE. The platform headers hide these legacy names
+ * otherwise, and sys/sysctl.h requires them for data structures like
+ * struct kinfo_proc.
+ */
+# define _DARWIN_C_SOURCE
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
