@@ -40,7 +40,7 @@
 
 #include <sixel.h>
 #include "dither.h"
-#include "quant.h"
+#include "palette.h"
 #include "frame.h"
 #include "pixelformat.h"
 #include "writer.h"
@@ -112,7 +112,7 @@ main(int argc, char *argv[])
         puts("writer ok.");
     }
 
-    nret = sixel_quant_tests_main();
+    nret = sixel_palette_tests_main();
     if (nret != EXIT_SUCCESS) {
         puts("quant ng.");
         dirty = 1;
