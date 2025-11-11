@@ -180,6 +180,7 @@ std_headers = [
     'stdlib.h',
     'string.h',
     'dirent.h',
+    'intrin.h',
 ]
 foreach h : std_headers
   if cc.has_header(h)

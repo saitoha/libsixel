@@ -612,6 +612,7 @@ AC_CHECK_HEADERS([assert.h \
                   sys/wait.h \
                   spawn.h \
                   inttypes.h \
+                  intrin.h \
                   emmintrin.h \
                   arm_neon.h \
                   dirent.h \

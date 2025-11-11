@@ -18139,6 +18139,12 @@ then :
   printf "%s\n" "#define HAVE_INTTYPES_H 1" >>confdefs.h
 
 fi
+ac_fn_c_check_header_compile "$LINENO" "intrin.h" "ac_cv_header_intrin_h" "$ac_includes_default"
+if test "x$ac_cv_header_intrin_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_INTRIN_H 1" >>confdefs.h
+
+fi
 ac_fn_c_check_header_compile "$LINENO" "emmintrin.h" "ac_cv_header_emmintrin_h" "$ac_includes_default"
 if test "x$ac_cv_header_emmintrin_h" = xyes
 then :
