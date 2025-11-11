@@ -32,6 +32,29 @@ extern "C" {
 struct sixel_lut;
 
 /*
+ * Internal statistics accumulator used while clustering provisional
+ * palette entries.  The tuple stores RGB centroids along with the
+ * aggregate weight gathered during histogram analysis.
+ */
+typedef struct quant_cluster {
+    double r;
+    double g;
+    double b;
+    double count;
+} quant_cluster_t;
+
+/*
+ * Control how the final merge phase consolidates provisional clusters
+ * into the target palette.  The hkmeans mode performs weighted
+ * refinement after the hierarchical ward pass.
+ */
+typedef enum quant_final_merge_mode {
+    QUANT_FINAL_MERGE_NONE = 0,
+    QUANT_FINAL_MERGE_WARD,
+    QUANT_FINAL_MERGE_HKMEANS,
+} quant_final_merge_mode_t;
+
+/*
  * sixel_palette_t centralizes palette state shared between quantization and
  * dithering phases.  The structure now stores both configuration knobs and
  * generated results so callers can keep a single object throughout the image

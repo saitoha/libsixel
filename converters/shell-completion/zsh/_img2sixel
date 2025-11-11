@@ -175,9 +175,10 @@ _quantizemodel() {
 _finalmerge() {
   _values \
     'MODE' \
-    'auto[enable Ward merging automatically]' \
+    'auto[skip merging unless heuristics enable it]' \
     'none[disable post-merge reduction]' \
-    'ward[merge clusters using Ward criterion]'
+    'ward[merge clusters using Ward criterion]' \
+    'hkmeans[refine clusters with hierarchical weighted k-means]'
 }
 
 _completiontarget() {

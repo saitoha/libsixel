@@ -49,6 +49,7 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <stdint.h>
+#include <float.h>
 
 #include "lut.h"
 #include "palette.h"
@@ -68,11 +69,465 @@ static int palette_method_for_largest = SIXEL_LARGE_NORM;
 static float env_final_merge_target_factor = 1.81f;
 
 /*
- * Median-cut and k-means helpers live here so palette.c can
- * coordinate palette generation end-to-end without jumping through
- * quant.c.  These routines are still based on the original Netpbm
- * sources, but comments were kept intact to aid maintenance.
+ * Resolve auto merge requests. The ladder clarifies the mapping:
+ *
+ *   AUTO    -> NONE
+ *   NONE    -> NONE
+ *   WARD    -> WARD
+ *   HKMEANS -> HKMEANS
+ *
+ * The default behaviour therefore leaves post-merge reduction disabled
+ * unless the caller explicitly opts in.
  */
+static int
+sixel_resolve_final_merge_mode(int final_merge_mode)
+{
+    int resolved;
+
+    resolved = final_merge_mode;
+    if (resolved == SIXEL_FINAL_MERGE_AUTO) {
+        resolved = SIXEL_FINAL_MERGE_NONE;
+    }
+
+    return resolved;
+}
+
+/*
+ * Median-cut and k-means helpers now live within palette.c so palette
+ * generation remains self-contained.  The routines are still based on
+ * the original Netpbm sources, and additional commentary clarifies the
+ * extended merge behaviour.
+ */
+
+#ifndef LOG_DEBUG
+#define LOG_DEBUG 7
+#endif
+
+#ifndef sixel_log_printf
+#define sixel_log_printf(level, ...) \
+    do { \
+        (void)(level); \
+        sixel_debugf(__VA_ARGS__); \
+    } while (0)
+#endif
+
+static double quant_distance_sq(quant_cluster_t const *lhs,
+                                quant_cluster_t const *rhs);
+static double quant_snap_reversible(double value);
+static void quant_merge_clusters(quant_cluster_t *clusters,
+                                 int nclusters,
+                                 int target_k,
+                                 int merge_mode);
+static void quant_merge_ward(quant_cluster_t *clusters,
+                             int nclusters,
+                             int target_k);
+static void quant_merge_hkmeans(quant_cluster_t *clusters,
+                                int nclusters,
+                                int target_k);
+
+static double
+quant_distance_sq(quant_cluster_t const *lhs,
+                  quant_cluster_t const *rhs)
+{
+    double dr;
+    double dg;
+    double db;
+    double distance;
+
+    dr = 0.0;
+    dg = 0.0;
+    db = 0.0;
+    distance = 0.0;
+    if (lhs == NULL || rhs == NULL) {
+        return 0.0;
+    }
+    dr = lhs->r - rhs->r;
+    dg = lhs->g - rhs->g;
+    db = lhs->b - rhs->b;
+    distance = dr * dr + dg * dg + db * db;
+
+    return distance;
+}
+
+static double
+quant_snap_reversible(double value)
+{
+    double clamped;
+    double snapped;
+    int sample;
+
+    clamped = value;
+    snapped = value;
+    sample = 0;
+    if (clamped < 0.0) {
+        clamped = 0.0;
+    }
+    if (clamped > 255.0) {
+        clamped = 255.0;
+    }
+    sample = (int)(clamped + 0.5);
+    if (sample < 0) {
+        sample = 0;
+    }
+    if (sample > 255) {
+        sample = 255;
+    }
+    snapped
+        = (double)sixel_palette_reversible_value((unsigned int)sample);
+
+    return snapped;
+}
+
+static void
+quant_merge_clusters(quant_cluster_t *clusters,
+                     int nclusters,
+                     int target_k,
+                     int merge_mode)
+{
+    /* Dispatch final merge processing according to the requested mode. */
+    if (clusters == NULL || nclusters <= 0) {
+        return;
+    }
+    switch (merge_mode) {
+    case QUANT_FINAL_MERGE_WARD:
+        quant_merge_ward(clusters, nclusters, target_k);
+        break;
+    case QUANT_FINAL_MERGE_HKMEANS:
+        quant_merge_hkmeans(clusters, nclusters, target_k);
+        break;
+    case QUANT_FINAL_MERGE_NONE:
+    default:
+        break;
+    }
+}
+
+static void
+quant_merge_ward(quant_cluster_t *clusters,
+                 int nclusters,
+                 int target_k)
+{
+    int desired;
+    int i;
+    int j;
+    int k;
+    int best_i;
+    int best_j;
+    int active;
+    double wi;
+    double wj;
+    double merged_weight;
+    double cost;
+    double distance_sq;
+    quant_cluster_t merged;
+
+    desired = target_k;
+    i = 0;
+    j = 0;
+    k = 0;
+    best_i = -1;
+    best_j = -1;
+    active = 0;
+    wi = 0.0;
+    wj = 0.0;
+    merged_weight = 0.0;
+    cost = 0.0;
+    distance_sq = 0.0;
+    merged.r = 0.0;
+    merged.g = 0.0;
+    merged.b = 0.0;
+    merged.count = 0.0;
+    if (clusters == NULL || nclusters <= 0) {
+        return;
+    }
+    if (desired < 1) {
+        desired = 1;
+    }
+    for (i = 0; i < nclusters; ++i) {
+        if (clusters[i].count > 0.0) {
+            ++active;
+        }
+    }
+    if (active <= desired) {
+        for (i = active; i < nclusters; ++i) {
+            clusters[i].r = 0.0;
+            clusters[i].g = 0.0;
+            clusters[i].b = 0.0;
+            clusters[i].count = 0.0;
+        }
+        return;
+    }
+    while (active > desired) {
+        best_i = -1;
+        best_j = -1;
+        cost = DBL_MAX;
+        for (i = 0; i < nclusters; ++i) {
+            wi = clusters[i].count;
+            if (wi <= 0.0) {
+                continue;
+            }
+            for (j = i + 1; j < nclusters; ++j) {
+                wj = clusters[j].count;
+                if (wj <= 0.0) {
+                    continue;
+                }
+                distance_sq
+                    = quant_distance_sq(&clusters[i], &clusters[j]);
+                merged_weight = wi + wj;
+                if (merged_weight <= 0.0) {
+                    continue;
+                }
+                distance_sq *= wi * wj / merged_weight;
+                if (distance_sq < cost) {
+                    cost = distance_sq;
+                    best_i = i;
+                    best_j = j;
+                }
+            }
+        }
+        if (best_i < 0 || best_j < 0) {
+            break;
+        }
+        wi = clusters[best_i].count;
+        wj = clusters[best_j].count;
+        merged_weight = wi + wj;
+        if (merged_weight <= 0.0) {
+            merged_weight = 1.0;
+        }
+        merged.count = merged_weight;
+        merged.r = (clusters[best_i].r * wi + clusters[best_j].r * wj)
+            / merged_weight;
+        merged.g = (clusters[best_i].g * wi + clusters[best_j].g * wj)
+            / merged_weight;
+        merged.b = (clusters[best_i].b * wi + clusters[best_j].b * wj)
+            / merged_weight;
+        clusters[best_i] = merged;
+        clusters[best_j].count = 0.0;
+        clusters[best_j].r = 0.0;
+        clusters[best_j].g = 0.0;
+        clusters[best_j].b = 0.0;
+        --active;
+        for (k = best_j; k < nclusters - 1; ++k) {
+            clusters[k] = clusters[k + 1];
+        }
+        clusters[nclusters - 1].r = 0.0;
+        clusters[nclusters - 1].g = 0.0;
+        clusters[nclusters - 1].b = 0.0;
+        clusters[nclusters - 1].count = 0.0;
+    }
+    for (i = 0; i < nclusters; ++i) {
+        if (i >= desired && clusters[i].count > 0.0) {
+            clusters[i].r = 0.0;
+            clusters[i].g = 0.0;
+            clusters[i].b = 0.0;
+            clusters[i].count = 0.0;
+        }
+    }
+}
+
+static void
+quant_merge_hkmeans(quant_cluster_t *clusters,
+                    int nclusters,
+                    int target_k)
+{
+    /*
+     * Perform weighted k-means refinement for final palette merging.
+     * Steps:
+     *   1. Identify active clusters and seed k centers by even sampling.
+     *   2. Assign each cluster to the nearest center using RGB distance.
+     *   3. Recompute centers as weighted means of their assignments.
+     *   4. Snap the updated centers to the reversible SIXEL tone set.
+     *   5. Repeat until convergence or the iteration limit is reached.
+     */
+    int active_count;
+    int i;
+    int j;
+    int k;
+    int max_iter;
+    int iter;
+    int best_index;
+    int reseed_index;
+    int *active_indices;
+    int *assignment;
+    double *weights;
+    double *sums;
+    double diff_r;
+    double diff_g;
+    double diff_b;
+    double shift;
+    double delta;
+    double threshold;
+    double weight;
+    double total;
+    double fraction;
+    quant_cluster_t *centers;
+
+    active_count = 0;
+    i = 0;
+    j = 0;
+    k = 0;
+    max_iter = 0;
+    iter = 0;
+    best_index = 0;
+    reseed_index = 0;
+    active_indices = NULL;
+    assignment = NULL;
+    weights = NULL;
+    sums = NULL;
+    diff_r = 0.0;
+    diff_g = 0.0;
+    diff_b = 0.0;
+    shift = 0.0;
+    delta = 0.0;
+    threshold = 0.0;
+    weight = 0.0;
+    total = 0.0;
+    fraction = 0.0;
+    centers = NULL;
+    if (clusters == NULL || nclusters <= 0) {
+        return;
+    }
+    for (i = 0; i < nclusters; ++i) {
+        if (clusters[i].count > 0.0) {
+            ++active_count;
+        }
+    }
+    if (active_count == 0) {
+        clusters[0].r = 0.0;
+        clusters[0].g = 0.0;
+        clusters[0].b = 0.0;
+        clusters[0].count = 1.0;
+        for (i = 1; i < nclusters; ++i) {
+            clusters[i].r = 0.0;
+            clusters[i].g = 0.0;
+            clusters[i].b = 0.0;
+            clusters[i].count = 0.0;
+        }
+        return;
+    }
+    k = target_k;
+    if (k > active_count) {
+        k = active_count;
+    }
+    if (k < 1) {
+        k = 1;
+    }
+    active_indices
+        = (int *)malloc((size_t)active_count * sizeof(int));
+    assignment = (int *)malloc((size_t)nclusters * sizeof(int));
+    centers = (quant_cluster_t *)malloc((size_t)k
+                                        * sizeof(quant_cluster_t));
+    weights = (double *)malloc((size_t)k * sizeof(double));
+    sums = (double *)malloc((size_t)k * 3U * sizeof(double));
+    if (active_indices == NULL || assignment == NULL || centers == NULL
+        || weights == NULL || sums == NULL) {
+        free(active_indices);
+        free(assignment);
+        free(centers);
+        free(weights);
+        free(sums);
+        quant_merge_ward(clusters, nclusters, target_k);
+        return;
+    }
+    j = 0;
+    for (i = 0; i < nclusters; ++i) {
+        if (clusters[i].count > 0.0) {
+            active_indices[j] = i;
+            ++j;
+        }
+    }
+    for (i = 0; i < k; ++i) {
+        fraction = ((double)i + 0.5) / (double)k;
+        if (fraction > 1.0) {
+            fraction = 1.0;
+        }
+        j = (int)(fraction * (double)active_count);
+        if (j >= active_count) {
+            j = active_count - 1;
+        }
+        centers[i] = clusters[active_indices[j]];
+        centers[i].count = clusters[active_indices[j]].count;
+    }
+    for (i = 0; i < nclusters; ++i) {
+        assignment[i] = 0;
+    }
+    max_iter = 20;
+    threshold = 0.125;
+    for (iter = 0; iter < max_iter; ++iter) {
+        memset(weights, 0, (size_t)k * sizeof(double));
+        memset(sums, 0, (size_t)k * 3U * sizeof(double));
+        for (i = 0; i < nclusters; ++i) {
+            if (clusters[i].count <= 0.0) {
+                continue;
+            }
+            best_index = 0;
+            shift = quant_distance_sq(&clusters[i], &centers[0]);
+            for (j = 1; j < k; ++j) {
+                delta = quant_distance_sq(&clusters[i], &centers[j]);
+                if (delta < shift) {
+                    shift = delta;
+                    best_index = j;
+                }
+            }
+            assignment[i] = best_index;
+            weight = clusters[i].count;
+            weights[best_index] += weight;
+            sums[(size_t)best_index * 3U + 0U]
+                += clusters[i].r * weight;
+            sums[(size_t)best_index * 3U + 1U]
+                += clusters[i].g * weight;
+            sums[(size_t)best_index * 3U + 2U]
+                += clusters[i].b * weight;
+        }
+        delta = 0.0;
+        for (i = 0; i < k; ++i) {
+            if (weights[i] <= 0.0) {
+                reseed_index = active_indices[i % active_count];
+                centers[i] = clusters[reseed_index];
+                weights[i] = clusters[reseed_index].count;
+                delta += 1.0;
+                continue;
+            }
+            total = weights[i];
+            diff_r = sums[(size_t)i * 3U + 0U] / total;
+            diff_g = sums[(size_t)i * 3U + 1U] / total;
+            diff_b = sums[(size_t)i * 3U + 2U] / total;
+            shift = quant_distance_sq(
+                &centers[i],
+                &(quant_cluster_t){diff_r, diff_g, diff_b, total});
+            delta += shift;
+            centers[i].r = quant_snap_reversible(diff_r);
+            centers[i].g = quant_snap_reversible(diff_g);
+            centers[i].b = quant_snap_reversible(diff_b);
+        }
+        sixel_log_printf(LOG_DEBUG,
+                          "hkmeans iter=%d delta=%f\n",
+                          iter,
+                          delta);
+        if (delta < threshold) {
+            break;
+        }
+    }
+    for (i = 0; i < k; ++i) {
+        clusters[i].r = centers[i].r;
+        clusters[i].g = centers[i].g;
+        clusters[i].b = centers[i].b;
+        clusters[i].count = weights[i];
+        if (clusters[i].count <= 0.0) {
+            clusters[i].count = 0.0;
+        }
+    }
+    for (i = k; i < nclusters; ++i) {
+        clusters[i].r = 0.0;
+        clusters[i].g = 0.0;
+        clusters[i].b = 0.0;
+        clusters[i].count = 0.0;
+    }
+    free(active_indices);
+    free(assignment);
+    free(centers);
+    free(weights);
+    free(sums);
+}
 
 void
 sixel_palette_reversible_tuple(sample *tuple,
@@ -704,11 +1159,13 @@ end:
 
 static unsigned int sixel_final_merge_target(unsigned int reqcolors,
                                              int final_merge_mode);
-static void sixel_merge_clusters_ward(unsigned long *weights,
-                                      unsigned long *sums,
-                                      unsigned int depth,
-                                      int *cluster_count,
-                                      int target);
+static int sixel_palette_apply_merge(unsigned long *weights,
+                                     unsigned long *sums,
+                                     unsigned int depth,
+                                     int cluster_count,
+                                     int target,
+                                     int final_merge_mode,
+                                     sixel_allocator_t *allocator);
 static SIXELSTATUS sixel_palette_clusters_to_colormap(unsigned long *weights,
                                                       unsigned long *sums,
                                                       unsigned int depth,
@@ -862,6 +1319,7 @@ mediancut(tupletable2 const colorfreqtable,
     unsigned int sum;
     unsigned int working_colors;
     int apply_merge;
+    int resolved_merge;
     unsigned long *cluster_weight;
     unsigned long *cluster_sums;
     int cluster_total;
@@ -875,8 +1333,9 @@ mediancut(tupletable2 const colorfreqtable,
 
     sum = 0;
     working_colors = newcolors;
-    apply_merge = (final_merge_mode == SIXEL_FINAL_MERGE_AUTO
-                   || final_merge_mode == SIXEL_FINAL_MERGE_WARD);
+    resolved_merge = sixel_resolve_final_merge_mode(final_merge_mode);
+    apply_merge = (resolved_merge == SIXEL_FINAL_MERGE_WARD
+                   || resolved_merge == SIXEL_FINAL_MERGE_HKMEANS);
     bv = NULL;
     cluster_weight = NULL;
     cluster_sums = NULL;
@@ -957,10 +1416,13 @@ mediancut(tupletable2 const colorfreqtable,
                 }
             }
         }
-        cluster_total = (int)boxes;
-        /* Merge clusters greedily using Ward's minimum variance rule. */
-        sixel_merge_clusters_ward(cluster_weight, cluster_sums, depth,
-                                  &cluster_total, (int)newcolors);
+        cluster_total = sixel_palette_apply_merge(cluster_weight,
+                                                  cluster_sums,
+                                                  depth,
+                                                  (int)boxes,
+                                                  (int)newcolors,
+                                                  resolved_merge,
+                                                  allocator);
         if (cluster_total < 1) {
             cluster_total = 1;
         }
@@ -1009,9 +1471,11 @@ sixel_final_merge_target(unsigned int reqcolors,
 {
     double factor;
     unsigned int scaled;
+    int resolved;
 
-    if (final_merge_mode != SIXEL_FINAL_MERGE_AUTO
-        && final_merge_mode != SIXEL_FINAL_MERGE_WARD) {
+    resolved = sixel_resolve_final_merge_mode(final_merge_mode);
+    if (resolved != SIXEL_FINAL_MERGE_WARD
+        && resolved != SIXEL_FINAL_MERGE_HKMEANS) {
         return reqcolors;
     }
     factor = env_final_merge_target_factor;
@@ -1027,110 +1491,178 @@ sixel_final_merge_target(unsigned int reqcolors,
 }
 
 
-/* Merge clusters to the requested size using Ward linkage. */
-static void
-sixel_merge_clusters_ward(unsigned long *weights,
+/* Merge clusters using either Ward linkage or hierarchical k-means. */
+static int
+sixel_palette_apply_merge(unsigned long *weights,
                           unsigned long *sums,
                           unsigned int depth,
-                          int *cluster_count,
-                          int target)
+                          int cluster_count,
+                          int target,
+                          int final_merge_mode,
+                          sixel_allocator_t *allocator)
 {
-    int n;
-    int desired;
-    int best_i;
-    int best_j;
-    int i;
-    int j;
-    int k;
-    int channel;
-    int active;
-    double best_cost;
-    double wi;
-    double wj;
-    double distance_sq;
-    double delta;
-    double mean_i;
-    double mean_j;
-    double diff;
-    unsigned long removed_weight;
-    size_t offset_i;
-    size_t offset_j;
-    size_t dst;
-    size_t src;
+    quant_cluster_t *clusters;
+    double component;
+    double component_b;
+    double component_g;
+    double component_r;
+    double scaled;
+    double used_weight;
+    double weight;
+    int index;
+    int limit;
+    int plane;
+    int resolved_mode;
+    int quant_mode;
+    int result;
+    unsigned long sum_value;
 
-    if (cluster_count == NULL) {
-        return;
+    if (weights == NULL || sums == NULL) {
+        return cluster_count;
     }
-    n = *cluster_count;
-    desired = target;
-    if (desired < 1) {
-        desired = 1;
+    if (cluster_count <= 0) {
+        return 0;
     }
-    active = 0;
-    for (i = 0; i < n; ++i) {
-        if (weights[i] != 0UL) {
-            ++active;
+    clusters = (quant_cluster_t *)sixel_allocator_malloc(
+        allocator, (size_t)cluster_count * sizeof(quant_cluster_t));
+    if (clusters == NULL) {
+        return cluster_count;
+    }
+    for (index = 0; index < cluster_count; ++index) {
+        weight = (double)weights[index];
+        clusters[index].count = weight;
+        if (weight <= 0.0) {
+            clusters[index].r = 0.0;
+            clusters[index].g = 0.0;
+            clusters[index].b = 0.0;
+            continue;
         }
-    }
-    while (n > desired) {
-        if (active <= desired) {
-            break;
+        component_r = 0.0;
+        component_g = 0.0;
+        component_b = 0.0;
+        if (depth > 0U) {
+            component_r = (double)sums[(size_t)index * (size_t)depth]
+                / weight;
         }
-        best_i = -1;
-        best_j = -1;
-        best_cost = 1.0e300;
-        for (i = 0; i < n; ++i) {
-            if (weights[i] == 0UL) {
-                continue;
+        if (depth > 1U) {
+            component_g = (double)sums[(size_t)index * (size_t)depth + 1U]
+                / weight;
+        } else {
+            component_g = component_r;
+        }
+        if (depth > 2U) {
+            component_b =
+                (double)sums[(size_t)index * (size_t)depth + 2U] / weight;
+        } else if (depth > 1U) {
+            component_b = component_g;
+        } else {
+            component_b = component_r;
+        }
+        clusters[index].r = component_r;
+        clusters[index].g = component_g;
+        clusters[index].b = component_b;
+    }
+    resolved_mode = sixel_resolve_final_merge_mode(final_merge_mode);
+    quant_mode = QUANT_FINAL_MERGE_NONE;
+    if (resolved_mode == SIXEL_FINAL_MERGE_HKMEANS) {
+        quant_mode = QUANT_FINAL_MERGE_HKMEANS;
+    } else if (resolved_mode == SIXEL_FINAL_MERGE_WARD) {
+        quant_mode = QUANT_FINAL_MERGE_WARD;
+    }
+    quant_merge_clusters(clusters, cluster_count, target, quant_mode);
+    result = 0;
+    limit = target;
+    if (limit > cluster_count) {
+        limit = cluster_count;
+    }
+    for (index = 0; index < cluster_count && result < limit; ++index) {
+        if (clusters[index].count <= 0.0) {
+            continue;
+        }
+        weight = clusters[index].count;
+        if (weight < 1.0) {
+            weight = 1.0;
+        }
+        weights[result] = (unsigned long)(weight + 0.5);
+        if (weights[result] == 0UL) {
+            weights[result] = 1UL;
+        }
+        used_weight = (double)weights[result];
+        component_r = clusters[index].r;
+        component_g = clusters[index].g;
+        component_b = clusters[index].b;
+        for (plane = 0; plane < (int)depth; ++plane) {
+            component = component_b;
+            if (plane == 0) {
+                component = component_r;
+            } else if (plane == 1) {
+                component = component_g;
             }
-            wi = (double)weights[i];
-            offset_i = (size_t)i * (size_t)depth;
-            for (j = i + 1; j < n; ++j) {
-                if (weights[j] == 0UL) {
-                    continue;
-                }
-                wj = (double)weights[j];
-                offset_j = (size_t)j * (size_t)depth;
-                distance_sq = 0.0;
-                for (channel = 0; channel < (int)depth; ++channel) {
-                    mean_i = (double)sums[offset_i + (size_t)channel] / wi;
-                    mean_j = (double)sums[offset_j + (size_t)channel] / wj;
-                    diff = mean_i - mean_j;
-                    distance_sq += diff * diff;
-                }
-                delta = (wi * wj) / (wi + wj) * distance_sq;
-                if (delta < best_cost) {
-                    best_cost = delta;
-                    best_i = i;
-                    best_j = j;
-                }
+            if (component < 0.0) {
+                component = 0.0;
             }
-        }
-        if (best_i < 0 || best_j < 0) {
-            break;
-        }
-        removed_weight = weights[best_j];
-        weights[best_i] += weights[best_j];
-        offset_i = (size_t)best_i * (size_t)depth;
-        offset_j = (size_t)best_j * (size_t)depth;
-        for (channel = 0; channel < (int)depth; ++channel) {
-            sums[offset_i + (size_t)channel] +=
-                sums[offset_j + (size_t)channel];
-        }
-        if (removed_weight != 0UL && active > 0) {
-            --active;
-        }
-        for (k = best_j; k < n - 1; ++k) {
-            weights[k] = weights[k + 1];
-            dst = (size_t)k * (size_t)depth;
-            src = (size_t)(k + 1) * (size_t)depth;
-            for (channel = 0; channel < (int)depth; ++channel) {
-                sums[dst + (size_t)channel] = sums[src + (size_t)channel];
+            if (component > 255.0) {
+                component = 255.0;
             }
+            scaled = component * used_weight;
+            if (scaled < 0.0) {
+                scaled = 0.0;
+            }
+            if (scaled > (double)ULONG_MAX) {
+                scaled = (double)ULONG_MAX;
+            }
+            sum_value = (unsigned long)(scaled + 0.5);
+            sums[(size_t)result * (size_t)depth + (size_t)plane] = sum_value;
         }
-        --n;
+        ++result;
     }
-    *cluster_count = n;
+    if (result == 0 && cluster_count > 0) {
+        weight = clusters[0].count;
+        if (weight < 1.0) {
+            weight = 1.0;
+        }
+        weights[0] = (unsigned long)(weight + 0.5);
+        if (weights[0] == 0UL) {
+            weights[0] = 1UL;
+        }
+        used_weight = (double)weights[0];
+        component_r = clusters[0].r;
+        component_g = clusters[0].g;
+        component_b = clusters[0].b;
+        for (plane = 0; plane < (int)depth; ++plane) {
+            component = component_b;
+            if (plane == 0) {
+                component = component_r;
+            } else if (plane == 1) {
+                component = component_g;
+            }
+            if (component < 0.0) {
+                component = 0.0;
+            }
+            if (component > 255.0) {
+                component = 255.0;
+            }
+            scaled = component * used_weight;
+            if (scaled < 0.0) {
+                scaled = 0.0;
+            }
+            if (scaled > (double)ULONG_MAX) {
+                scaled = (double)ULONG_MAX;
+            }
+            sum_value = (unsigned long)(scaled + 0.5);
+            sums[(size_t)0 * (size_t)depth + (size_t)plane] = sum_value;
+        }
+        result = 1;
+    }
+    for (index = result; index < cluster_count; ++index) {
+        weights[index] = 0UL;
+        for (plane = 0; plane < (int)depth; ++plane) {
+            sums[(size_t)index * (size_t)depth + (size_t)plane] = 0UL;
+        }
+    }
+    sixel_allocator_free(allocator, clusters);
+
+    return result;
 }
 
 
@@ -1361,6 +1893,7 @@ build_palette_kmeans(unsigned char **result,
     unsigned long rand_value;
     int changed;
     int apply_merge;
+    int resolved_merge;
     unsigned int overshoot;
     unsigned int refine_iterations;
     int cluster_total;
@@ -1411,6 +1944,7 @@ build_palette_kmeans(unsigned char **result,
     farthest_distance = 0.0;
     changed = 0;
     apply_merge = 0;
+    resolved_merge = SIXEL_FINAL_MERGE_NONE;
     overshoot = 0U;
     refine_iterations = 0U;
     cluster_total = 0;
@@ -1491,8 +2025,9 @@ build_palette_kmeans(unsigned char **result,
     if (reqcolors == 0U) {
         reqcolors = 1U;
     }
-    apply_merge = (final_merge_mode == SIXEL_FINAL_MERGE_AUTO
-                   || final_merge_mode == SIXEL_FINAL_MERGE_WARD);
+    resolved_merge = sixel_resolve_final_merge_mode(final_merge_mode);
+    apply_merge = (resolved_merge == SIXEL_FINAL_MERGE_WARD
+                   || resolved_merge == SIXEL_FINAL_MERGE_HKMEANS);
     if (apply_merge) {
         /*
          * Skip Ward merging when the source already uses fewer colors
@@ -1509,8 +2044,7 @@ build_palette_kmeans(unsigned char **result,
     overshoot = reqcolors;
     /* Oversplit so the subsequent Ward merge has room to consolidate. */
     if (apply_merge) {
-        overshoot = sixel_final_merge_target(reqcolors,
-                                             final_merge_mode);
+        overshoot = sixel_final_merge_target(reqcolors, resolved_merge);
         sixel_debugf("overshoot: %u", overshoot);
     }
     if (overshoot > sample_count) {
@@ -1729,9 +2263,13 @@ build_palette_kmeans(unsigned char **result,
 
     if (apply_merge && k > reqcolors) {
         /* Merge the provisional clusters and polish with a few Lloyd steps. */
-        cluster_total = (int)k;
-        sixel_merge_clusters_ward(counts, accum, 3U,
-                                  &cluster_total, (int)reqcolors);
+        cluster_total = sixel_palette_apply_merge(counts,
+                                                 accum,
+                                                 3U,
+                                                 (int)k,
+                                                 (int)reqcolors,
+                                                 resolved_merge,
+                                                 allocator);
         if (cluster_total < 1) {
             cluster_total = 1;
         }

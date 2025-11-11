@@ -93,8 +93,11 @@ the historical Heckbert median\-cut behaviour.
 .TP 5
 .B \-F \fIMODE\fP, \-\-final\-merge=\fIMODE\fP
 control the post\-merge stage after palette construction. \fIMODE\fP accepts
-\fBauto\fP, \fBnone\fP, or \fBward\fP. The default \fBauto\fP enables Ward
-merging with an over\-split palette to rescue small but important colors.
+\fBauto\fP, \fBnone\fP, \fBward\fP, or \fBhkmeans\fP. The default \fBauto\fP
+keeps post\-merge reduction disabled so the behaviour matches \fBnone\fP unless
+future heuristics request merging. Select \fBhkmeans\fP to apply a hierarchical
+weighted k\-means merge
+that snaps every palette entry onto the SIXEL reversible tone ladder.
 .TP 5
 .B \-m \fIFILE\fP, \-\-mapfile=\fIFILE\fP
 transform image colors to match this set of colors. Accepts image files

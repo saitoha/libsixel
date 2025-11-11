@@ -158,8 +158,9 @@ libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/assessment.c $(srcdir)/assessment.h \
 	$(srcdir)/fromsixel.c $(srcdir)/tosixel.c $(srcdir)/lut.c \
-	$(srcdir)/lut.h $(srcdir)/palette.c $(srcdir)/palette.h \
-	$(srcdir)/dither.c $(srcdir)/dither.h $(srcdir)/colorspace.c \
+        $(srcdir)/lut.h $(srcdir)/palette.c $(srcdir)/palette.h \
+        $(srcdir)/dither.c $(srcdir)/dither.h \
+        $(srcdir)/colorspace.c \
 	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
 	$(srcdir)/pixelformat.c $(srcdir)/pixelformat.h \
 	$(srcdir)/scale.c $(srcdir)/scale.h $(srcdir)/chunk.c \
@@ -186,9 +187,10 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @HAVE_CLIPBOARD_MACOS_TRUE@am__objects_3 =  \
 @HAVE_CLIPBOARD_MACOS_TRUE@	libsixel_la-clipboard_macos.lo
 am_libsixel_la_OBJECTS = libsixel_la-output.lo \
-	libsixel_la-assessment.lo libsixel_la-fromsixel.lo \
-	libsixel_la-tosixel.lo libsixel_la-lut.lo \
-	libsixel_la-palette.lo libsixel_la-dither.lo \
+        libsixel_la-assessment.lo libsixel_la-fromsixel.lo \
+        libsixel_la-tosixel.lo libsixel_la-lut.lo \
+        libsixel_la-palette.lo \
+        libsixel_la-dither.lo \
 	libsixel_la-colorspace.lo libsixel_la-frame.lo \
 	libsixel_la-pixelformat.lo libsixel_la-scale.lo \
 	libsixel_la-chunk.lo libsixel_la-loader.lo \

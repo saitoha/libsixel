@@ -3489,7 +3489,8 @@ sixel_dither_set_final_merge(
     }
     mode = SIXEL_FINAL_MERGE_AUTO;
     if (final_merge == SIXEL_FINAL_MERGE_NONE
-        || final_merge == SIXEL_FINAL_MERGE_WARD) {
+        || final_merge == SIXEL_FINAL_MERGE_WARD
+        || final_merge == SIXEL_FINAL_MERGE_HKMEANS) {
         mode = final_merge;
     } else if (final_merge == SIXEL_FINAL_MERGE_AUTO) {
         mode = SIXEL_FINAL_MERGE_AUTO;

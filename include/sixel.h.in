@@ -169,9 +169,11 @@ typedef int SIXELSTATUS;
 #define SIXEL_QUANTIZE_MODEL_KMEANS      0x2
 
 /* final merge policy */
-#define SIXEL_FINAL_MERGE_AUTO        0x0  /* auto final merge */
+#define SIXEL_FINAL_MERGE_AUTO        0x0  /* auto final merge (defaults to */
+                                          /* none) */
 #define SIXEL_FINAL_MERGE_NONE        0x1  /* disable final merge */
 #define SIXEL_FINAL_MERGE_WARD        0x2  /* Ward merge */
+#define SIXEL_FINAL_MERGE_HKMEANS     0x3  /* Hierarchical k-means merge */
 
 /* pixelformat type of input image
    NOTE: for compatibility, the value of PIXELFORAMT_COLOR_RGB888 must be 3 */
