@@ -48,6 +48,7 @@
 
 #include <stdlib.h>
 #include <limits.h>
+#include <stdint.h>
 
 #include "lut.h"
 #include "palette.h"
@@ -716,6 +717,123 @@ static SIXELSTATUS sixel_palette_clusters_to_colormap(unsigned long *weights,
                                                       tupletable2 *colormapP,
                                                       sixel_allocator_t *allocator);
 
+/*
+ * Count unique RGB triples until the limit is exceeded.  This allows the
+ * caller to detect low-color images without building a full histogram.
+ */
+static SIXELSTATUS
+sixel_palette_count_unique_within_limit(unsigned char const *data,
+                                        unsigned int length,
+                                        unsigned int channels,
+                                        unsigned int limit,
+                                        unsigned int *unique_count,
+                                        int *within_limit,
+                                        sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    uint32_t *table;
+    unsigned int table_size;
+    unsigned int mask;
+    unsigned int pixel_count;
+    unsigned int index;
+    unsigned int base;
+    unsigned int slot;
+    unsigned int unique;
+    uint32_t color;
+    int limited;
+
+    status = SIXEL_BAD_ARGUMENT;
+    table = NULL;
+    table_size = 0U;
+    mask = 0U;
+    pixel_count = 0U;
+    index = 0U;
+    base = 0U;
+    slot = 0U;
+    unique = 0U;
+    color = 0U;
+    limited = 0;
+
+    if (unique_count != NULL) {
+        *unique_count = 0U;
+    }
+    if (within_limit != NULL) {
+        *within_limit = 0;
+    }
+    if (data == NULL || allocator == NULL) {
+        return status;
+    }
+    if (channels != 3U && channels != 4U) {
+        return status;
+    }
+    if (limit == 0U) {
+        return status;
+    }
+
+    pixel_count = length / channels;
+    if (pixel_count == 0U) {
+        status = SIXEL_OK;
+        if (within_limit != NULL) {
+            *within_limit = 1;
+        }
+        return status;
+    }
+
+    table_size = 1U;
+    while (table_size < limit * 2U) {
+        table_size <<= 1U;
+    }
+    if (table_size < 8U) {
+        table_size = 8U;
+    }
+    mask = table_size - 1U;
+
+    table = (uint32_t *)sixel_allocator_malloc(
+        allocator, (size_t)table_size * sizeof(uint32_t));
+    if (table == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    for (index = 0U; index < table_size; ++index) {
+        table[index] = 0xffffffffU;
+    }
+
+    limited = 1;
+    for (index = 0U; index < pixel_count; ++index) {
+        base = index * channels;
+        if (channels == 4U && data[base + 3U] == 0U) {
+            continue;
+        }
+        color = ((uint32_t)data[base] << 16)
+              | ((uint32_t)data[base + 1U] << 8)
+              | (uint32_t)data[base + 2U];
+        slot = (unsigned int)(((uint32_t)0x9e3779b9U * color) & mask);
+        while (table[slot] != 0xffffffffU && table[slot] != color) {
+            slot = (slot + 1U) & mask;
+        }
+        if (table[slot] == color) {
+            continue;
+        }
+        table[slot] = color;
+        ++unique;
+        if (unique > limit) {
+            limited = 0;
+            unique = limit + 1U;
+            break;
+        }
+    }
+
+    status = SIXEL_OK;
+    if (unique_count != NULL) {
+        *unique_count = unique;
+    }
+    if (within_limit != NULL) {
+        *within_limit = limited;
+    }
+
+    sixel_allocator_free(allocator, table);
+    return status;
+}
+
 static SIXELSTATUS
 mediancut(tupletable2 const colorfreqtable,
           unsigned int const depth,
@@ -925,6 +1043,7 @@ sixel_merge_clusters_ward(unsigned long *weights,
     int j;
     int k;
     int channel;
+    int active;
     double best_cost;
     double wi;
     double wj;
@@ -933,6 +1052,7 @@ sixel_merge_clusters_ward(unsigned long *weights,
     double mean_i;
     double mean_j;
     double diff;
+    unsigned long removed_weight;
     size_t offset_i;
     size_t offset_j;
     size_t dst;
@@ -946,7 +1066,16 @@ sixel_merge_clusters_ward(unsigned long *weights,
     if (desired < 1) {
         desired = 1;
     }
+    active = 0;
+    for (i = 0; i < n; ++i) {
+        if (weights[i] != 0UL) {
+            ++active;
+        }
+    }
     while (n > desired) {
+        if (active <= desired) {
+            break;
+        }
         best_i = -1;
         best_j = -1;
         best_cost = 1.0e300;
@@ -980,12 +1109,16 @@ sixel_merge_clusters_ward(unsigned long *weights,
         if (best_i < 0 || best_j < 0) {
             break;
         }
+        removed_weight = weights[best_j];
         weights[best_i] += weights[best_j];
         offset_i = (size_t)best_i * (size_t)depth;
         offset_j = (size_t)best_j * (size_t)depth;
         for (channel = 0; channel < (int)depth; ++channel) {
             sums[offset_i + (size_t)channel] +=
                 sums[offset_j + (size_t)channel];
+        }
+        if (removed_weight != 0UL && active > 0) {
+            --active;
         }
         for (k = best_j; k < n - 1; ++k) {
             weights[k] = weights[k + 1];
@@ -1207,6 +1340,7 @@ build_palette_kmeans(unsigned char **result,
     unsigned int swap_temp;
     unsigned int base;
     unsigned int extra_component;
+    unsigned int unique_colors;
     unsigned int *membership;
     unsigned int *order;
     unsigned char *samples;
@@ -1230,6 +1364,8 @@ build_palette_kmeans(unsigned char **result,
     unsigned int overshoot;
     unsigned int refine_iterations;
     int cluster_total;
+    int unique_within;
+    SIXELSTATUS unique_status;
 
     status = SIXEL_BAD_ARGUMENT;
     channels = depth;
@@ -1254,6 +1390,7 @@ build_palette_kmeans(unsigned char **result,
     swap_temp = 0U;
     base = 0U;
     extra_component = 0U;
+    unique_colors = 0U;
     membership = NULL;
     order = NULL;
     samples = NULL;
@@ -1277,6 +1414,8 @@ build_palette_kmeans(unsigned char **result,
     overshoot = 0U;
     refine_iterations = 0U;
     cluster_total = 0;
+    unique_within = 0;
+    unique_status = SIXEL_OK;
 
     if (result != NULL) {
         *result = NULL;
@@ -1354,6 +1493,18 @@ build_palette_kmeans(unsigned char **result,
     }
     apply_merge = (final_merge_mode == SIXEL_FINAL_MERGE_AUTO
                    || final_merge_mode == SIXEL_FINAL_MERGE_WARD);
+    if (apply_merge) {
+        /*
+         * Skip Ward merging when the source already uses fewer colors
+         * than requested.  The helper only inspects opaque pixels.
+         */
+        unique_status = sixel_palette_count_unique_within_limit(
+            data, length, channels, reqcolors, &unique_colors,
+            &unique_within, allocator);
+        if (unique_status == SIXEL_OK && unique_within != 0) {
+            apply_merge = 0;
+        }
+    }
     refine_iterations = 2U;
     overshoot = reqcolors;
     /* Oversplit so the subsequent Ward merge has room to consolidate. */
