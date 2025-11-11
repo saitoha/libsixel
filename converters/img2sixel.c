@@ -187,11 +187,16 @@ static img2sixel_option_help_t const g_option_help_table[] = {
         "                           control the post-merge stage.\n"
         "                             auto -> choose post-merge strategy\n"
         "                                     automatically (default)\n"
-        "                                     auto selects Word merging\n"
-        "                             none -> do not over-splitting.\n"
-        "                             ward -> over-split the cluster\n"
-        "                                     and do final-merging with"
-        "                                     Ward's method.\n"
+        "                                     auto skips post-merge\n"
+        "                                     reduction unless future\n"
+        "                                     heuristics enable it.\n"
+        "                             none -> skip post-merge reduction.\n"
+        "                             ward -> merge clusters using\n"
+        "                                     Ward's minimum variance\n"
+        "                                     criterion.\n"
+        "                             hkmeans -> merge clusters via\n"
+        "                                        hierarchical weighted\n"
+        "                                        k-means.\n"
     },
     {
         'm',

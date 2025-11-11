@@ -119,7 +119,8 @@ _img2sixel()
     -F|--final-merge)
         COMPREPLY=( $( compgen -W 'auto \
                                    none \
-                                   ward' -- "$cur" ) )
+                                   ward \
+                                   hkmeans' -- "$cur" ) )
         return 0
         ;;
     -m|--mapfile|-M|--mapfile-output)
