@@ -195,6 +195,9 @@
 /* whether getopt_long is avilable */
 #undef HAVE_GETOPT_LONG
 
+/* Define to 1 if you have the <intrin.h> header file. */
+#undef HAVE_INTRIN_H
+
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 

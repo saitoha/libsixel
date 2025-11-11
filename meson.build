@@ -181,6 +181,7 @@ std_headers = [
     'string.h',
     'dirent.h',
     'sys/sysctl.h',
+    'intrin.h',
 ]
 foreach h : std_headers
   if cc.has_header(h)
