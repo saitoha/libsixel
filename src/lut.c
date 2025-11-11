@@ -37,7 +37,7 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+  FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
@@ -50,12 +50,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if defined(_MSC_VER) && defined(HAVE_INTRIN_H)
+#include <intrin.h>
+#endif
+
 #include <sixel.h>
 
 #include "status.h"
 #include "compat_stub.h"
 #include "allocator.h"
 #include "lut.h"
+
 
 #define SIXEL_LUT_BRANCH_FLAG 0x40000000U
 /* #define DEBUG_LUT_TRACE 1 */
@@ -369,27 +374,6 @@ struct robinhood_table32 {
     sixel_allocator_t *allocator;
 };
 
-static size_t robinhood_round_capacity(size_t hint);
-static SIXELSTATUS
-robinhood_table32_init(struct robinhood_table32 *table,
-                       size_t expected,
-                       sixel_allocator_t *allocator);
-static void
-robinhood_table32_fini(struct robinhood_table32 *table);
-static struct robinhood_slot32 *
-robinhood_table32_lookup(struct robinhood_table32 *table,
-                         uint32_t key,
-                         uint32_t color);
-static SIXELSTATUS
-robinhood_table32_insert(struct robinhood_table32 *table,
-                         uint32_t key,
-                         uint32_t color,
-                         uint32_t value);
-static SIXELSTATUS
-robinhood_table32_grow(struct robinhood_table32 *table);
-static struct robinhood_slot32 *
-robinhood_table32_place(struct robinhood_table32 *table,
-                        struct robinhood_slot32 entry);
 
 #define HOPSCOTCH_EMPTY_KEY 0xffffffffU
 #define HOPSCOTCH_DEFAULT_NEIGHBORHOOD 32U
@@ -410,18 +394,6 @@ struct hopscotch_table32 {
     sixel_allocator_t *allocator;
 };
 
-static SIXELSTATUS
-hopscotch_table32_init(struct hopscotch_table32 *table,
-                       size_t expected,
-                       sixel_allocator_t *allocator);
-static void
-hopscotch_table32_fini(struct hopscotch_table32 *table);
-
-static SIXELSTATUS
-hopscotch_table32_insert(struct hopscotch_table32 *table,
-                         uint32_t key,
-                         uint32_t color,
-                         uint32_t value);
 static SIXELSTATUS
 hopscotch_table32_grow(struct hopscotch_table32 *table);
 
@@ -734,6 +706,39 @@ hopscotch_table32_fini(struct hopscotch_table32 *table)
     table->neighborhood = HOPSCOTCH_DEFAULT_NEIGHBORHOOD;
 }
 
+
+/*
+ * Provide a portable wrapper for counting trailing zeros on 32-bit values.
+ * GCC/Clang expose __builtin_ctz, while MSVC requires _BitScanForward.
+ */
+static size_t
+hopscotch_ctz32(uint32_t value)
+{
+    size_t index;
+
+#if defined(_MSC_VER)
+    unsigned long bit_index;
+    unsigned char found;
+
+    if (value == 0U) {
+        return sizeof(value) * CHAR_BIT;
+    }
+    found = _BitScanForward(&bit_index, value);
+    if (found == 0U) {
+        return sizeof(value) * CHAR_BIT;
+    }
+    index = (size_t)bit_index;
+#else
+    if (value == 0U) {
+        return sizeof(value) * CHAR_BIT;
+    }
+    index = (size_t)__builtin_ctz(value);
+#endif
+
+    return index;
+}
+
+
 static struct hopscotch_slot32 *
 hopscotch_table32_lookup(struct hopscotch_table32 *table,
                          uint32_t key,
@@ -755,7 +760,7 @@ hopscotch_table32_lookup(struct hopscotch_table32 *table,
     hop = table->hopinfo[index];
     neighborhood = table->neighborhood;
     while (hop != 0U) {
-        bit = (size_t)__builtin_ctz(hop);
+        bit = (size_t)hopscotch_ctz32(hop);
         if (bit >= neighborhood) {
             break;
         }
@@ -768,54 +773,6 @@ hopscotch_table32_lookup(struct hopscotch_table32 *table,
     }
 
     return NULL;
-}
-
-static SIXELSTATUS
-hopscotch_table32_grow(struct hopscotch_table32 *table)
-{
-    struct hopscotch_slot32 *old_slots;
-    uint32_t *old_hopinfo;
-    size_t old_capacity;
-    size_t i;
-
-    if (table == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    old_slots = table->slots;
-    old_hopinfo = table->hopinfo;
-    old_capacity = table->capacity;
-    if (hopscotch_table32_init(table, old_capacity * 2U,
-                               table->allocator) != SIXEL_OK) {
-        table->slots = old_slots;
-        table->hopinfo = old_hopinfo;
-        table->capacity = old_capacity;
-        return SIXEL_BAD_ALLOCATION;
-    }
-
-    for (i = 0U; i < old_capacity; ++i) {
-        struct hopscotch_slot32 entry;
-
-        entry = old_slots[i];
-        if (entry.key != HOPSCOTCH_EMPTY_KEY && entry.value != 0U) {
-            if (hopscotch_table32_insert(table,
-                                         entry.key,
-                                         entry.color,
-                                         entry.value) != SIXEL_OK) {
-                hopscotch_table32_fini(table);
-                table->slots = old_slots;
-                table->hopinfo = old_hopinfo;
-                table->capacity = old_capacity;
-                table->count = 0U;
-                return SIXEL_BAD_ALLOCATION;
-            }
-        }
-    }
-
-    sixel_allocator_free(table->allocator, old_slots);
-    sixel_allocator_free(table->allocator, old_hopinfo);
-
-    return SIXEL_OK;
 }
 
 static SIXELSTATUS
@@ -893,6 +850,55 @@ hopscotch_table32_insert(struct hopscotch_table32 *table,
     table->slots[free_index].value = value;
     table->hopinfo[index] |= 1U << distance;
     table->count++;
+
+    return SIXEL_OK;
+}
+
+
+static SIXELSTATUS
+hopscotch_table32_grow(struct hopscotch_table32 *table)
+{
+    struct hopscotch_slot32 *old_slots;
+    uint32_t *old_hopinfo;
+    size_t old_capacity;
+    size_t i;
+
+    if (table == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    old_slots = table->slots;
+    old_hopinfo = table->hopinfo;
+    old_capacity = table->capacity;
+    if (hopscotch_table32_init(table, old_capacity * 2U,
+                               table->allocator) != SIXEL_OK) {
+        table->slots = old_slots;
+        table->hopinfo = old_hopinfo;
+        table->capacity = old_capacity;
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    for (i = 0U; i < old_capacity; ++i) {
+        struct hopscotch_slot32 entry;
+
+        entry = old_slots[i];
+        if (entry.key != HOPSCOTCH_EMPTY_KEY && entry.value != 0U) {
+            if (hopscotch_table32_insert(table,
+                                         entry.key,
+                                         entry.color,
+                                         entry.value) != SIXEL_OK) {
+                hopscotch_table32_fini(table);
+                table->slots = old_slots;
+                table->hopinfo = old_hopinfo;
+                table->capacity = old_capacity;
+                table->count = 0U;
+                return SIXEL_BAD_ALLOCATION;
+            }
+        }
+    }
+
+    sixel_allocator_free(table->allocator, old_slots);
+    sixel_allocator_free(table->allocator, old_hopinfo);
 
     return SIXEL_OK;
 }
@@ -1331,9 +1337,9 @@ cleanup:
 }
 
 static unsigned int
-computeHash(unsigned char const *data,
-            unsigned int depth,
-            struct histogram_control const *control)
+sixel_lut_hash(unsigned char const *data,
+               unsigned int depth,
+               struct histogram_control const *control)
 {
     uint32_t packed;
 
@@ -1794,7 +1800,7 @@ sixel_lut_lookup_fast(sixel_lut_t *lut, unsigned char const *pixel)
 
     result = (-1);
     diff = INT_MAX;
-    hash = computeHash(pixel, (unsigned int)lut->depth, &lut->control);
+    hash = sixel_lut_hash(pixel, (unsigned int)lut->depth, &lut->control);
 
     table = lut->cache;
     if (table != NULL) {
