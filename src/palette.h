@@ -36,23 +36,23 @@ struct sixel_lut;
  * palette entries.  The tuple stores RGB centroids along with the
  * aggregate weight gathered during histogram analysis.
  */
-typedef struct quant_cluster {
+typedef struct sixel_final_merge_cluster {
     double r;
     double g;
     double b;
     double count;
-} quant_cluster_t;
+} sixel_final_merge_cluster_t;
 
 /*
  * Control how the final merge phase consolidates provisional clusters
  * into the target palette.  The hkmeans mode performs weighted
  * refinement after the hierarchical ward pass.
  */
-typedef enum quant_final_merge_mode {
-    QUANT_FINAL_MERGE_NONE = 0,
-    QUANT_FINAL_MERGE_WARD,
-    QUANT_FINAL_MERGE_HKMEANS,
-} quant_final_merge_mode_t;
+typedef enum sixel_final_merge_dispatch {
+    SIXEL_FINAL_MERGE_DISPATCH_NONE = 0,
+    SIXEL_FINAL_MERGE_DISPATCH_WARD,
+    SIXEL_FINAL_MERGE_DISPATCH_HKMEANS,
+} sixel_final_merge_dispatch_t;
 
 /*
  * sixel_palette_t centralizes palette state shared between quantization and
