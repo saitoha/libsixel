@@ -461,6 +461,8 @@ static img2sixel_option_help_t const g_option_help_table[] = {
         "                                          buckets\n"
         "                             6bit      -> favor 6-bit RGB\n"
         "                                          buckets\n"
+        "                             none      -> disable LUT caching\n"
+        "                                          and scan directly\n"
         "                             certlut   -> certified hierarchical\n"
         "                                          lookup tree with\n"
         "                                          zero error\n"

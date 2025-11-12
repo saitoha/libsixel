@@ -94,6 +94,7 @@ _lutpolicy() {
     'auto[follow pixel depth to pick histogram width]' \
     '5bit[force 5-bit buckets]' \
     '6bit[force 6-bit buckets for RGB inputs]' \
+    'none[disable LUT caching and scan directly]' \
     'certlut[certified hierarchical LUT with zero error]'
 }
 
