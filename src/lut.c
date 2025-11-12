@@ -241,6 +241,8 @@ histogram_control_make_for_policy(unsigned int depth, int lut_policy)
         if (depth > 3U) {
             control.channel_shift = 3U;
         }
+    } else if (lut_policy == SIXEL_LUT_POLICY_NONE) {
+        control.channel_shift = 0U;
     } else if (lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
         control.channel_shift = 2U;
     }
@@ -495,6 +497,11 @@ sixel_lut_policy_normalize(int policy)
     normalized = policy;
     if (normalized == SIXEL_LUT_POLICY_AUTO) {
         normalized = SIXEL_LUT_POLICY_6BIT;
+    } else if (normalized != SIXEL_LUT_POLICY_5BIT
+               && normalized != SIXEL_LUT_POLICY_6BIT
+               && normalized != SIXEL_LUT_POLICY_CERTLUT
+               && normalized != SIXEL_LUT_POLICY_NONE) {
+        normalized = SIXEL_LUT_POLICY_6BIT;
     }
 
     return normalized;
@@ -503,7 +510,8 @@ sixel_lut_policy_normalize(int policy)
 static int
 sixel_lut_policy_uses_cache(int policy)
 {
-    if (policy == SIXEL_LUT_POLICY_CERTLUT) {
+    if (policy == SIXEL_LUT_POLICY_CERTLUT
+        || policy == SIXEL_LUT_POLICY_NONE) {
         return 0;
     }
 

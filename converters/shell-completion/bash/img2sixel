@@ -202,6 +202,7 @@ _img2sixel()
         COMPREPLY=( $( compgen -W 'auto \
                                    5bit \
                                    6bit \
+                                   none \
                                    certlut' -- "$cur" ) )
         return 0
         ;;
