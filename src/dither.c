@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2021-2025 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2018 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -639,7 +640,7 @@ diffuse_lso2_carry(int32_t *carry_curr, int32_t *carry_next, int32_t *carry_far,
         }
         if (x - 2 >= 0) {
             base = ((size_t)(x - 2) * (size_t)depth) + (size_t)channel;
-            carry_curr[base] += term_r;
+            carry_curr[base] += term_r2;
         }
         if (y + 1 < height && x + 1 < width) {
             base = ((size_t)(x + 1) * (size_t)depth) + (size_t)channel;
