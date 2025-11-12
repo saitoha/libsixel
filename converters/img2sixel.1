@@ -561,6 +561,41 @@ specify number of colors to reduce the image to (default=256).
 .br
 overrided by -p(--colors) option.
 .br
+.TP 5
+.B SIXEL_PALETTE_OVERSPLIT_FACTOR
+.br
+scale the provisional palette before the final merge (1.0-3.0,
+default 1.81).
+.TP 5
+.B SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT
+.br
+run Lloyd refinement after the final merge stage. Accepts 0-30.
+Defaults to 3 iterations for Ward and 0 for hkmeans.
+.TP 5
+.B SIXEL_PALETTE_FINAL_MERGE_HKMEANS_ITER_COUNT_MAX
+.br
+upper bound on hkmeans merge iterations (1-30, default 20).
+.TP 5
+.B SIXEL_PALETTE_FINAL_MERGE_HKMEANS_THRESHOLD
+.br
+convergence delta for hkmeans refinement (0.0-0.5, default 0.125).
+.TP 5
+.B SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX
+.br
+cap the primary k-means Lloyd refinement (1-30, default 20).
+.TP 5
+.B SIXEL_PALETTE_KMEANS_THRESHOLD
+.br
+delta threshold for k-means refinement (0.0-0.5, default 0.125).
+.TP 5
+.B SIXEL_PALETTE_LUMIN_FACTOR_R
+.br
+override the luminosity coefficient for red (0.0-1.0).
+.TP 5
+.B SIXEL_PALETTE_LUMIN_FACTOR_G
+.br
+override the luminosity coefficient for green (0.0-1.0). The blue
+coefficient becomes 1 - R - G; negative results ignore both overrides.
 
 
 .SH Image loaders
