@@ -13,7 +13,7 @@ magick "${in}" \
     six:- > imagemagick.six
 
 converters/img2sixel "${in}" \
-    -dlso2 -yserpentine -qfull -shistogram -Lhopscotch \
+    -dlso2 -yserpentine -qfull -shistogram -Lcertlut \
     ${colors:+-p"${colors}"} \
     > libsixel.six
 

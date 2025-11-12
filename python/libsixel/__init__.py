@@ -215,16 +215,13 @@ SIXEL_ENCODEPOLICY_SIZE    = 2   # encode to as small sixel sequence as possible
 #   auto ----> channel depth based decision
 #                |
 #         +------+------+---------+
-#         |             |         |
-#      classic       hashing  certified
-#      (5/6bit)   (robinhood/  (certlut)
-#                   hopscotch)
+#         |              |
+#      classic      certified
+#      (5/6bit)     (certlut)
 #
 SIXEL_LUT_POLICY_AUTO      = 0x0  # choose LUT width automatically
 SIXEL_LUT_POLICY_5BIT      = 0x1  # use legacy 5-bit buckets
 SIXEL_LUT_POLICY_6BIT      = 0x2  # use 6-bit RGB buckets
-SIXEL_LUT_POLICY_ROBINHOOD = 0x3  # keep 8-bit data via Robin Hood hashing
-SIXEL_LUT_POLICY_HOPSCOTCH = 0x4  # keep 8-bit data via Hopscotch hashing
 SIXEL_LUT_POLICY_CERTLUT   = 0x5  # certified hierarchical LUT
 
 # method for re-sampling
@@ -474,21 +471,14 @@ SIXEL_OPTFLAG_ENCODE_POLICY    = 'E'  # -E ENCODEPOLICY, --encode-policy=ENCODEP
                                       #          size -> encode to as small sixel
                                       #                  sequence as possible
 SIXEL_OPTFLAG_LUT_POLICY        = 'L'  # -L LUTPOLICY, --lut-policy=LUTPOLICY:
-                                      #        choose histogram lookup width and
-                                      #        collision strategy.
-                                      #          auto      -> follow pixel depth
-                                      #          5bit      -> force 5-bit buckets
-                                      #          6bit      -> force 6-bit buckets
-                                      #                       (RGB inputs)
-                                      #          robinhood -> keep 8-bit channels
-                                      #                       via Robin Hood
-                                      #                       hashing
-                                      #          hopscotch -> keep 8-bit channels
-                                      #                       via Hopscotch
-                                      #                       hashing
-                                      #          certlut   -> certified
-                                      #                       hierarchical LUT
-                                      #                       with zero error
+                                      #        choose histogram lookup width.
+                                      #          auto    -> follow pixel depth
+                                      #          5bit    -> force 5-bit buckets
+                                      #          6bit    -> force 6-bit buckets
+                                      #                     (RGB inputs)
+                                      #          certlut -> certified
+                                      #                     hierarchical LUT
+                                      #                     with zero error
 SIXEL_OPTFLAG_WORKING_COLORSPACE = 'W'  # -W WORKING_COLORSPACE, --working-colorspace=WORKING_COLORSPACE:
                                       #        select internal working space.
                                       #          gamma  -> keep gamma encoded pixels
