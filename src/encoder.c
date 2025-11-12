@@ -463,8 +463,6 @@ static sixel_option_choice_t const g_option_choices_lut_policy[] = {
     { "auto", SIXEL_LUT_POLICY_AUTO },
     { "5bit", SIXEL_LUT_POLICY_5BIT },
     { "6bit", SIXEL_LUT_POLICY_6BIT },
-    { "robinhood", SIXEL_LUT_POLICY_ROBINHOOD },
-    { "hopscotch", SIXEL_LUT_POLICY_HOPSCOTCH },
     { "certlut", SIXEL_LUT_POLICY_CERTLUT }
 };
 

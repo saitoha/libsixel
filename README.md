@@ -558,10 +558,6 @@ Options:
                              auto      -> follow pixel depth
                              5bit      -> force classic 5-bit buckets
                              6bit      -> favor 6-bit RGB buckets
-                             robinhood -> retain 8-bit precision via
-                                          Robin Hood hashing
-                             hopscotch -> retain 8-bit precision via
-                                          Hopscotch hashing
                              certlut   -> certified hierarchical LUT
                                           with zero approximation
 
