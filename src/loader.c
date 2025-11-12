@@ -114,6 +114,7 @@ sixel_quicklook_thumbnail_create(CFURLRef url, CGSize max_size);
 
 #include <sixel.h>
 #include "loader.h"
+#include "compat_stub.h"
 #include "frame.h"
 #include "chunk.h"
 #include "frompnm.h"
@@ -297,6 +298,7 @@ typedef struct sixel_loader_entry {
     char const              *name;
     sixel_loader_backend     backend;
     sixel_loader_predicate   predicate;
+    int                      default_enabled;
 } sixel_loader_entry_t;
 
 static int
@@ -462,6 +464,9 @@ loader_build_plan(char const *order,
 
     for (index = 0; index < entry_count && plan_length < limit; ++index) {
         entry = &entries[index];
+        if (!entry->default_enabled) {
+            continue;
+        }
         if (!loader_plan_contains(plan, plan_length, entry)) {
             plan[plan_length] = entry;
             ++plan_length;
@@ -469,6 +474,134 @@ loader_build_plan(char const *order,
     }
 
     return plan_length;
+}
+
+static void
+loader_append_chunk(char *dest,
+                    size_t capacity,
+                    size_t *offset,
+                    char const *chunk)
+{
+    size_t available;
+    size_t length;
+
+    if (dest == NULL || offset == NULL || chunk == NULL) {
+        return;
+    }
+
+    if (*offset >= capacity) {
+        return;
+    }
+
+    available = capacity - *offset;
+    if (available == 0) {
+        return;
+    }
+
+    length = strlen(chunk);
+    if (length >= available) {
+        if (available == 0) {
+            return;
+        }
+        length = available - 1u;
+    }
+
+    if (length > 0) {
+        memcpy(dest + *offset, chunk, length);
+        *offset += length;
+    }
+
+    if (*offset < capacity) {
+        dest[*offset] = '\0';
+    } else {
+        dest[capacity - 1u] = '\0';
+    }
+}
+
+static void
+loader_append_key_value(char *dest,
+                        size_t capacity,
+                        size_t *offset,
+                        char const *label,
+                        char const *value)
+{
+    char line[128];
+    int written;
+
+    if (value == NULL || value[0] == '\0') {
+        return;
+    }
+
+    written = sixel_compat_snprintf(line,
+                                    sizeof(line),
+                                    "  %-10s: %s\n",
+                                    label,
+                                    value);
+    if (written < 0) {
+        return;
+    }
+
+    if ((size_t)written >= sizeof(line)) {
+        line[sizeof(line) - 1u] = '\0';
+    }
+
+    loader_append_chunk(dest, capacity, offset, line);
+}
+
+static void
+loader_extract_extension(char const *path, char *buffer, size_t capacity)
+{
+    char const *dot;
+    size_t index;
+
+    if (buffer == NULL || capacity == 0) {
+        return;
+    }
+
+    buffer[0] = '\0';
+
+    if (path == NULL) {
+        return;
+    }
+
+    dot = strrchr(path, '.');
+    if (dot == NULL || dot[1] == '\0') {
+        return;
+    }
+
+#if defined(_WIN32)
+    {
+        char const *slash;
+        char const *backslash;
+
+        slash = strrchr(path, '/');
+        backslash = strrchr(path, '\\');
+        if ((slash != NULL && dot < slash) ||
+                (backslash != NULL && dot < backslash)) {
+            return;
+        }
+    }
+#else
+    {
+        char const *slash;
+
+        slash = strrchr(path, '/');
+        if (slash != NULL && dot < slash) {
+            return;
+        }
+    }
+#endif
+
+    if (dot[1] == '\0') {
+        return;
+    }
+
+    dot += 1;
+
+    for (index = 0; index + 1 < capacity && dot[index] != '\0'; ++index) {
+        buffer[index] = (char)tolower((unsigned char)dot[index]);
+    }
+    buffer[index] = '\0';
 }
 
 sixel_allocator_t *stbi_allocator;
@@ -2378,232 +2511,27 @@ char * realpath(const char *restrict path, char *restrict resolved_path);
 int mkstemp(char *);
 # endif
 
-static int
-thumbnailer_format_append_char(char *buffer,
-                               size_t capacity,
-                               size_t *position,
-                               char ch,
-                               int *truncated)
+/*
+ * thumbnailer_message_finalize
+ *
+ * Clamp formatted messages so callers do not have to repeat truncation
+ * checks after calling sixel_compat_snprintf().
+ */
+static void
+thumbnailer_message_finalize(char *buffer, size_t capacity, int written)
 {
-    if (buffer == NULL || position == NULL) {
-        return 0;
+    if (buffer == NULL || capacity == 0) {
+        return;
     }
 
-    if (*position + 1 < capacity) {
-        buffer[*position] = ch;
-        *position += 1;
-        buffer[*position] = '\0';
-    } else {
-        if (capacity > 0) {
-            buffer[capacity - 1] = '\0';
-        }
-        if (truncated != NULL) {
-            *truncated = 1;
-        }
+    if (written < 0) {
+        buffer[0] = '\0';
+        return;
     }
 
-    return 1;
-}
-
-static int
-thumbnailer_format_append_text(char *buffer,
-                               size_t capacity,
-                               size_t *position,
-                               char const *text,
-                               int *truncated)
-{
-    size_t length;
-    size_t copy_length;
-
-    if (buffer == NULL || position == NULL) {
-        return 0;
+    if ((size_t)written >= capacity) {
+        buffer[capacity - 1u] = '\0';
     }
-
-    if (text == NULL) {
-        text = "(null)";
-    }
-
-    length = strlen(text);
-    copy_length = length;
-
-    if (*position + copy_length >= capacity) {
-        if (capacity <= *position) {
-            copy_length = 0;
-        } else {
-            copy_length = capacity - 1 - *position;
-        }
-        if (truncated != NULL) {
-            *truncated = 1;
-        }
-    }
-
-    if (copy_length > 0) {
-        memcpy(buffer + *position, text, copy_length);
-        *position += copy_length;
-        buffer[*position] = '\0';
-    } else if (*position < capacity) {
-        buffer[*position] = '\0';
-    } else if (capacity > 0) {
-        buffer[capacity - 1] = '\0';
-    }
-
-    return 1;
-}
-
-static int
-thumbnailer_format_append_decimal(char *buffer,
-                                  size_t capacity,
-                                  size_t *position,
-                                  int value,
-                                  int *truncated)
-{
-    char digits[16];
-    size_t index;
-    size_t length;
-    unsigned int magnitude;
-    int negative;
-
-    if (buffer == NULL || position == NULL) {
-        return 0;
-    }
-
-    index = 0;
-    magnitude = 0;
-    negative = 0;
-
-    if (value < 0) {
-        negative = 1;
-        magnitude = (unsigned int)(-value);
-    } else {
-        magnitude = (unsigned int)value;
-    }
-
-    do {
-        digits[index] = (char)('0' + (magnitude % 10));
-        index += 1;
-        magnitude /= 10;
-    } while (magnitude != 0);
-
-    if (negative) {
-        digits[index] = '-';
-        index += 1;
-    }
-
-    length = index;
-
-    while (index > 0) {
-        index -= 1;
-        if (!thumbnailer_format_append_char(buffer,
-                                            capacity,
-                                            position,
-                                            digits[index],
-                                            truncated)) {
-            return 0;
-        }
-    }
-
-    if (length == 0) {
-        if (!thumbnailer_format_append_char(buffer,
-                                            capacity,
-                                            position,
-                                            '0',
-                                            truncated)) {
-            return 0;
-        }
-    }
-
-    return 1;
-}
-
-static int
-thumbnailer_safe_format(char *buffer,
-                        size_t capacity,
-                        char const *format,
-                        ...)
-{
-    va_list args;
-    size_t position;
-    char const *ptr;
-    int truncated;
-    char const *text;
-    int value;
-
-    if (buffer == NULL || capacity == 0 || format == NULL) {
-        return 0;
-    }
-
-    position = 0;
-    truncated = 0;
-    buffer[0] = '\0';
-
-    va_start(args, format);
-    ptr = format;
-    while (ptr != NULL && ptr[0] != '\0') {
-        if (ptr[0] != '%') {
-            if (!thumbnailer_format_append_char(buffer,
-                                                capacity,
-                                                &position,
-                                                ptr[0],
-                                                &truncated)) {
-                va_end(args);
-                return 0;
-            }
-            ptr += 1;
-            continue;
-        }
-
-        ptr += 1;
-        if (ptr[0] == '%') {
-            if (!thumbnailer_format_append_char(buffer,
-                                                capacity,
-                                                &position,
-                                                '%',
-                                                &truncated)) {
-                va_end(args);
-                return 0;
-            }
-            ptr += 1;
-            continue;
-        }
-
-        if (ptr[0] == 's') {
-            text = va_arg(args, char const *);
-            if (!thumbnailer_format_append_text(buffer,
-                                                capacity,
-                                                &position,
-                                                text,
-                                                &truncated)) {
-                va_end(args);
-                return 0;
-            }
-            ptr += 1;
-            continue;
-        }
-
-        if (ptr[0] == 'd') {
-            value = va_arg(args, int);
-            if (!thumbnailer_format_append_decimal(buffer,
-                                                   capacity,
-                                                   &position,
-                                                   value,
-                                                   &truncated)) {
-                va_end(args);
-                return 0;
-            }
-            ptr += 1;
-            continue;
-        }
-
-        va_end(args);
-        return 0;
-    }
-    va_end(args);
-
-    if (truncated != 0 && capacity > 0) {
-        buffer[capacity - 1] = '\0';
-    }
-
-    return 1;
 }
 
 /*
@@ -3756,6 +3684,7 @@ thumbnailer_build_command(char const *template_command,
     int escape_next;
     char const *replacement;
     size_t index;
+    int written;
 
     builder.buffer = NULL;
     builder.length = 0;
@@ -3780,11 +3709,15 @@ thumbnailer_build_command(char const *template_command,
     }
 
     if (size > 0) {
-        if (!thumbnailer_safe_format(size_text,
-                                     sizeof(size_text),
-                                     "%d",
-                                     size)) {
+        written = sixel_compat_snprintf(size_text,
+                                        sizeof(size_text),
+                                        "%d",
+                                        size);
+        if (written < 0) {
             goto error;
+        }
+        if ((size_t)written >= sizeof(size_text)) {
+            size_text[sizeof(size_text) - 1u] = '\0';
         }
     }
 
@@ -4002,6 +3935,7 @@ thumbnailer_build_evince_command(char const *input_path,
     struct thumbnailer_command *command;
     char size_text[16];
     size_t index;
+    int written;
 
     command = NULL;
     index = 0;
@@ -4026,11 +3960,14 @@ thumbnailer_build_evince_command(char const *input_path,
         command->argv[index] = NULL;
     }
 
-    if (!thumbnailer_safe_format(size_text,
-                                 sizeof(size_text),
-                                 "%d",
-                                 size)) {
+    written = sixel_compat_snprintf(size_text,
+                                    sizeof(size_text),
+                                    "%d",
+                                    size);
+    if (written < 0) {
         size_text[0] = '\0';
+    } else if ((size_t)written >= sizeof(size_text)) {
+        size_text[sizeof(size_text) - 1u] = '\0';
     }
 
     command->argv[0] = thumbnailer_strdup("evince-thumbnailer");
@@ -4139,17 +4076,21 @@ thumbnailer_build_file_uri(char const *path)
 }
 
 /*
- * thumbnailer_guess_content_type
+ * thumbnailer_run_file
  *
- * Invoke the file(1) utility to obtain a MIME type for the input path.
+ * Invoke the file(1) utility to collect metadata about the input path.
  *
  * Arguments:
- *     path - filesystem path passed to file --mime-type.
+ *     path   - filesystem path forwarded to file(1).
+ *     option - optional argument appended after "-b".  Pass NULL to obtain
+ *              the human readable description and "--mime-type" for the
+ *              MIME identifier.
  * Returns:
- *     Newly allocated MIME type string or NULL on failure.
+ *     Newly allocated string trimmed of trailing whitespace or NULL on
+ *     failure.
  */
 static char *
-thumbnailer_guess_content_type(char const *path)
+thumbnailer_run_file(char const *path, char const *option)
 {
     int pipefd[2];
     pid_t pid;
@@ -4185,18 +4126,22 @@ thumbnailer_guess_content_type(char const *path)
     }
 
     if (pid == 0) {
-        char const *argv[5];
+        char const *argv[6];
+        size_t arg_index;
 
         close(pipefd[0]);
         if (dup2(pipefd[1], STDOUT_FILENO) < 0) {
             _exit(127);
         }
         close(pipefd[1]);
-        argv[0] = "file";
-        argv[1] = "-b";
-        argv[2] = "--mime-type";
-        argv[3] = path;
-        argv[4] = NULL;
+        arg_index = 0u;
+        argv[arg_index++] = "file";
+        argv[arg_index++] = "-b";
+        if (option != NULL) {
+            argv[arg_index++] = option;
+        }
+        argv[arg_index++] = path;
+        argv[arg_index] = NULL;
         execvp("file", (char * const *)argv);
         _exit(127);
     }
@@ -4232,6 +4177,17 @@ thumbnailer_guess_content_type(char const *path)
     result = thumbnailer_strdup(trimmed);
 
     return result;
+}
+
+/*
+ * thumbnailer_guess_content_type
+ *
+ * Obtain the MIME identifier for the supplied path using file(1).
+ */
+static char *
+thumbnailer_guess_content_type(char const *path)
+{
+    return thumbnailer_run_file(path, "--mime-type");
 }
 
 /*
@@ -4299,6 +4255,7 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
     ssize_t write_result;
     size_t to_write;
     char const *display_command;
+    int written;
 # if HAVE_POSIX_SPAWNP
     posix_spawn_file_actions_t actions;
     int spawn_result;
@@ -4349,14 +4306,15 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
                          O_WRONLY | O_CREAT | O_TRUNC,
                          0600);
         if (output_fd < 0) {
-            if (!thumbnailer_safe_format(message,
+            written = sixel_compat_snprintf(message,
+                                            sizeof(message),
+                                            "%s: open(%s) failed (%s).",
+                                            log_prefix,
+                                            stdout_path,
+                                            strerror(errno));
+            thumbnailer_message_finalize(message,
                                          sizeof(message),
-                                         "%s: open(%s) failed (%s).",
-                                         log_prefix,
-                                         stdout_path,
-                                         strerror(errno))) {
-                message[0] = '\0';
-            }
+                                         written);
             sixel_helper_set_additional_message(message);
             goto cleanup;
         }
@@ -4373,13 +4331,15 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
 
     if (capture_stdout) {
         if (pipe(stdout_pipe) != 0) {
-            if (!thumbnailer_safe_format(message,
+            written = sixel_compat_snprintf(
+                message,
+                sizeof(message),
+                "%s: pipe() for stdout failed (%s).",
+                log_prefix,
+                strerror(errno));
+            thumbnailer_message_finalize(message,
                                          sizeof(message),
-                                         "%s: pipe() for stdout failed (%s).",
-                                         log_prefix,
-                                         strerror(errno))) {
-                message[0] = '\0';
-            }
+                                         written);
             sixel_helper_set_additional_message(message);
             goto cleanup;
         }
@@ -4395,13 +4355,14 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
 
 # if HAVE_POSIX_SPAWNP
     if (posix_spawn_file_actions_init(&actions) != 0) {
-        if (!thumbnailer_safe_format(message,
+        written = sixel_compat_snprintf(
+            message,
+            sizeof(message),
+            "%s: posix_spawn_file_actions_init() failed.",
+            log_prefix);
+        thumbnailer_message_finalize(message,
                                      sizeof(message),
-                                     "%s: posix_spawn_file_actions_init() "
-                                     "failed.",
-                                     log_prefix)) {
-            message[0] = '\0';
-        }
+                                     written);
         sixel_helper_set_additional_message(message);
         goto cleanup;
     }
@@ -4435,26 +4396,28 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
                                 environ);
     posix_spawn_file_actions_destroy(&actions);
     if (spawn_result != 0) {
-        if (!thumbnailer_safe_format(message,
+        written = sixel_compat_snprintf(message,
+                                        sizeof(message),
+                                        "%s: posix_spawnp() failed (%s).",
+                                        log_prefix,
+                                        strerror(spawn_result));
+        thumbnailer_message_finalize(message,
                                      sizeof(message),
-                                     "%s: posix_spawnp() failed (%s).",
-                                     log_prefix,
-                                     strerror(spawn_result))) {
-            message[0] = '\0';
-        }
+                                     written);
         sixel_helper_set_additional_message(message);
         goto cleanup;
     }
 # else
     pid = fork();
     if (pid < 0) {
-        if (!thumbnailer_safe_format(message,
+        written = sixel_compat_snprintf(message,
+                                        sizeof(message),
+                                        "%s: fork() failed (%s).",
+                                        log_prefix,
+                                        strerror(errno));
+        thumbnailer_message_finalize(message,
                                      sizeof(message),
-                                     "%s: fork() failed (%s).",
-                                     log_prefix,
-                                     strerror(errno))) {
-            message[0] = '\0';
-        }
+                                     written);
         sixel_helper_set_additional_message(message);
         goto cleanup;
     }
@@ -4554,12 +4517,13 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
                             stderr_pipe[0] = -1;
                         }
                         stderr_pipe_created = 0;
-                        if (!thumbnailer_safe_format(message,
+                        written = sixel_compat_snprintf(message,
+                                                        sizeof(message),
+                                                        "%s: realloc() failed.",
+                                                        log_prefix);
+                        thumbnailer_message_finalize(message,
                                                      sizeof(message),
-                                                     "%s: realloc() failed.",
-                                                     log_prefix)) {
-                            message[0] = '\0';
-                        }
+                                                     written);
                         sixel_helper_set_additional_message(message);
                         status = SIXEL_BAD_ALLOCATION;
                         fatal_error = 1;
@@ -4585,13 +4549,14 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
             } else if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 /* no data */
             } else {
-                if (!thumbnailer_safe_format(message,
+                written = sixel_compat_snprintf(message,
+                                                sizeof(message),
+                                                "%s: read() failed (%s).",
+                                                log_prefix,
+                                                strerror(errno));
+                thumbnailer_message_finalize(message,
                                              sizeof(message),
-                                             "%s: read() failed (%s).",
-                                             log_prefix,
-                                             strerror(errno))) {
-                    message[0] = '\0';
-                }
+                                             written);
                 sixel_helper_set_additional_message(message);
                 stderr_open = 0;
                 if (stderr_pipe[0] >= 0) {
@@ -4617,18 +4582,19 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
                         if (errno == EINTR) {
                             continue;
                         }
-                        if (!thumbnailer_safe_format(message,
-                                                     sizeof(message),
-                                                     "%s: write() failed (%s).",
-                                                     log_prefix,
-                                                     strerror(errno))) {
-                            message[0] = '\0';
-                        }
-                        sixel_helper_set_additional_message(message);
-                        stdout_open = 0;
-                        fatal_error = 1;
-                        break;
-                    }
+                    written = sixel_compat_snprintf(message,
+                                                    sizeof(message),
+                                                    "%s: write() failed (%s).",
+                                                    log_prefix,
+                                                    strerror(errno));
+                    thumbnailer_message_finalize(message,
+                                                 sizeof(message),
+                                                 written);
+                    sixel_helper_set_additional_message(message);
+                    stdout_open = 0;
+                    fatal_error = 1;
+                    break;
+                }
                     write_offset += (size_t)write_result;
                 }
             } else if (stdout_read_result == 0) {
@@ -4643,13 +4609,14 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
             } else if (errno == EAGAIN || errno == EWOULDBLOCK) {
                 /* no data */
             } else {
-                if (!thumbnailer_safe_format(message,
+                written = sixel_compat_snprintf(message,
+                                                sizeof(message),
+                                                "%s: read() failed (%s).",
+                                                log_prefix,
+                                                strerror(errno));
+                thumbnailer_message_finalize(message,
                                              sizeof(message),
-                                             "%s: read() failed (%s).",
-                                             log_prefix,
-                                             strerror(errno))) {
-                    message[0] = '\0';
-                }
+                                             written);
                 sixel_helper_set_additional_message(message);
                 stdout_open = 0;
                 if (stdout_pipe[0] >= 0) {
@@ -4668,18 +4635,19 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
             } else if (wait_result == 0) {
                 /* child running */
             } else if (errno != EINTR) {
-                if (!thumbnailer_safe_format(message,
-                                             sizeof(message),
-                                             "%s: waitpid() failed (%s).",
-                                             log_prefix,
-                                             strerror(errno))) {
-                    message[0] = '\0';
-                }
-                sixel_helper_set_additional_message(message);
-                status = SIXEL_RUNTIME_ERROR;
-                fatal_error = 1;
-                break;
-            }
+            written = sixel_compat_snprintf(message,
+                                            sizeof(message),
+                                            "%s: waitpid() failed (%s).",
+                                            log_prefix,
+                                            strerror(errno));
+            thumbnailer_message_finalize(message,
+                                         sizeof(message),
+                                         written);
+            sixel_helper_set_additional_message(message);
+            status = SIXEL_RUNTIME_ERROR;
+            fatal_error = 1;
+            break;
+        }
         }
 
         if (!child_exited || stderr_open || stdout_open) {
@@ -4692,27 +4660,29 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
             wait_result = waitpid(pid, &status_code, 0);
         } while (wait_result < 0 && errno == EINTR);
         if (wait_result < 0) {
-            if (!thumbnailer_safe_format(message,
-                                         sizeof(message),
-                                         "%s: waitpid() failed (%s).",
-                                         log_prefix,
-                                         strerror(errno))) {
-                message[0] = '\0';
-            }
-            sixel_helper_set_additional_message(message);
-            status = SIXEL_RUNTIME_ERROR;
-            goto cleanup;
-        }
+        written = sixel_compat_snprintf(message,
+                                        sizeof(message),
+                                        "%s: waitpid() failed (%s).",
+                                        log_prefix,
+                                        strerror(errno));
+        thumbnailer_message_finalize(message,
+                                     sizeof(message),
+                                     written);
+        sixel_helper_set_additional_message(message);
+        status = SIXEL_RUNTIME_ERROR;
+        goto cleanup;
+    }
         have_status = 1;
     }
 
     if (!have_status) {
-        if (!thumbnailer_safe_format(message,
+        written = sixel_compat_snprintf(message,
+                                        sizeof(message),
+                                        "%s: waitpid() failed (no status).",
+                                        log_prefix);
+        thumbnailer_message_finalize(message,
                                      sizeof(message),
-                                     "%s: waitpid() failed (no status).",
-                                     log_prefix)) {
-            message[0] = '\0';
-        }
+                                     written);
         sixel_helper_set_additional_message(message);
         status = SIXEL_RUNTIME_ERROR;
         goto cleanup;
@@ -4725,41 +4695,44 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
                                  log_prefix,
                                  (long)pid);
         } else if (WIFEXITED(status_code)) {
-            if (!thumbnailer_safe_format(message,
+            written = sixel_compat_snprintf(message,
+                                            sizeof(message),
+                                            "%s: %s exited with status %d.",
+                                            log_prefix,
+                                            (thumbnailer_name != NULL) ?
+                                            thumbnailer_name :
+                                            "thumbnailer",
+                                            WEXITSTATUS(status_code));
+            thumbnailer_message_finalize(message,
                                          sizeof(message),
-                                         "%s: %s exited with status %d.",
-                                         log_prefix,
-                                         (thumbnailer_name != NULL) ?
-                                         thumbnailer_name :
-                                         "thumbnailer",
-                                         WEXITSTATUS(status_code))) {
-                message[0] = '\0';
-            }
+                                         written);
             sixel_helper_set_additional_message(message);
             status = SIXEL_RUNTIME_ERROR;
         } else if (WIFSIGNALED(status_code)) {
-            if (!thumbnailer_safe_format(message,
+            written = sixel_compat_snprintf(message,
+                                            sizeof(message),
+                                            "%s: %s terminated by signal %d.",
+                                            log_prefix,
+                                            (thumbnailer_name != NULL) ?
+                                            thumbnailer_name :
+                                            "thumbnailer",
+                                            WTERMSIG(status_code));
+            thumbnailer_message_finalize(message,
                                          sizeof(message),
-                                         "%s: %s terminated by signal %d.",
-                                         log_prefix,
-                                         (thumbnailer_name != NULL) ?
-                                         thumbnailer_name :
-                                         "thumbnailer",
-                                         WTERMSIG(status_code))) {
-                message[0] = '\0';
-            }
+                                         written);
             sixel_helper_set_additional_message(message);
             status = SIXEL_RUNTIME_ERROR;
         } else {
-            if (!thumbnailer_safe_format(message,
+            written = sixel_compat_snprintf(message,
+                                            sizeof(message),
+                                            "%s: %s exited abnormally.",
+                                            log_prefix,
+                                            (thumbnailer_name != NULL) ?
+                                            thumbnailer_name :
+                                            "thumbnailer");
+            thumbnailer_message_finalize(message,
                                          sizeof(message),
-                                         "%s: %s exited abnormally.",
-                                         log_prefix,
-                                         (thumbnailer_name != NULL) ?
-                                         thumbnailer_name :
-                                         "thumbnailer")) {
-                message[0] = '\0';
-            }
+                                         written);
             sixel_helper_set_additional_message(message);
             status = SIXEL_RUNTIME_ERROR;
         }
@@ -4866,12 +4839,13 @@ load_with_gnome_thumbnailer(
     int command_success;
     int requested_size;
     char const *log_prefix;
+    int fd;
+    int written;
 
     status = SIXEL_FALSE;
     thumb_chunk = NULL;
     png_path = NULL;
     path_length = 0;
-    int fd;
     fd = -1;
     directories = NULL;
     dir_index = 0;
@@ -4928,14 +4902,13 @@ load_with_gnome_thumbnailer(
         unlink(template_path);
         goto end;
     }
-    if (!thumbnailer_safe_format(png_path,
+    written = sixel_compat_snprintf(png_path,
+                                    path_length,
+                                    "%s.png",
+                                    template_path);
+    thumbnailer_message_finalize(png_path,
                                  path_length,
-                                 "%s.png",
-                                 template_path)) {
-        if (path_length > 0) {
-            png_path[path_length - 1] = '\0';
-        }
-    }
+                                 written);
     if (rename(template_path, png_path) != 0) {
         sixel_helper_set_additional_message(
             "load_with_gnome_thumbnailer: rename() failed.");
@@ -5912,31 +5885,573 @@ loader_can_try_wic(sixel_chunk_t const *chunk)
 
 static sixel_loader_entry_t const sixel_loader_entries[] = {
 #if HAVE_WIC
-    { "wic", load_with_wic, loader_can_try_wic },
+    { "wic", load_with_wic, loader_can_try_wic, 1 },
 #endif
 #if HAVE_COREGRAPHICS
-    { "coregraphics", load_with_coregraphics, NULL },
+    { "coregraphics", load_with_coregraphics, NULL, 1 },
 #endif
 #if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
-    { "quicklook", load_with_quicklook, NULL },
+    { "quicklook", load_with_quicklook, NULL, 0 },
 #endif
 #ifdef HAVE_GDK_PIXBUF2
-    { "gdk-pixbuf2", load_with_gdkpixbuf, NULL },
+    { "gdk-pixbuf2", load_with_gdkpixbuf, NULL, 1 },
 #endif
 #if HAVE_GD
-    { "gd", load_with_gd, NULL },
+    { "gd", load_with_gd, NULL, 1 },
 #endif
 #if HAVE_JPEG
-    { "libjpeg", load_with_libjpeg, loader_can_try_libjpeg },
+    { "libjpeg", load_with_libjpeg, loader_can_try_libjpeg, 1 },
 #endif
 #if HAVE_LIBPNG
-    { "libpng", load_with_libpng, loader_can_try_libpng },
+    { "libpng", load_with_libpng, loader_can_try_libpng, 1 },
 #endif
-    { "builtin", load_with_builtin, NULL },
+    { "builtin", load_with_builtin, NULL, 1 },
 #if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
-    { "gnome-thumbnailer", load_with_gnome_thumbnailer, NULL },
+    { "gnome-thumbnailer", load_with_gnome_thumbnailer, NULL, 0 },
 #endif
 };
+
+static int
+loader_entry_available(char const *name)
+{
+    size_t index;
+    size_t entry_count;
+
+    if (name == NULL) {
+        return 0;
+    }
+
+    entry_count = sizeof(sixel_loader_entries) /
+                  sizeof(sixel_loader_entries[0]);
+
+    for (index = 0; index < entry_count; ++index) {
+        if (sixel_loader_entries[index].name != NULL &&
+                strcmp(sixel_loader_entries[index].name, name) == 0) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+#if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
+static void
+loader_copy_cfstring(CFStringRef source, char *buffer, size_t capacity)
+{
+    if (buffer == NULL || capacity == 0) {
+        return;
+    }
+
+    buffer[0] = '\0';
+    if (source == NULL) {
+        return;
+    }
+
+    if (!CFStringGetCString(source,
+                             buffer,
+                             (CFIndex)capacity,
+                             kCFStringEncodingUTF8)) {
+        buffer[0] = '\0';
+    }
+}
+
+static int
+loader_quicklook_can_decode(sixel_chunk_t const *pchunk,
+                            char const *filename)
+{
+    char const *path;
+    CFStringRef path_ref;
+    CFURLRef url;
+    CGFloat max_dimension;
+    CGSize max_size;
+    CGImageRef image;
+    int result;
+
+    path = NULL;
+    path_ref = NULL;
+    url = NULL;
+    image = NULL;
+    result = 0;
+
+    if (pchunk != NULL && pchunk->source_path != NULL) {
+        path = pchunk->source_path;
+    } else if (filename != NULL) {
+        path = filename;
+    }
+
+    if (path == NULL || strcmp(path, "-") == 0 ||
+            strstr(path, "://") != NULL) {
+        return 0;
+    }
+
+    path_ref = CFStringCreateWithCString(kCFAllocatorDefault,
+                                         path,
+                                         kCFStringEncodingUTF8);
+    if (path_ref == NULL) {
+        return 0;
+    }
+
+    url = CFURLCreateWithFileSystemPath(kCFAllocatorDefault,
+                                        path_ref,
+                                        kCFURLPOSIXPathStyle,
+                                        false);
+    CFRelease(path_ref);
+    path_ref = NULL;
+    if (url == NULL) {
+        return 0;
+    }
+
+    if (thumbnailer_size_hint > 0) {
+        max_dimension = (CGFloat)thumbnailer_size_hint;
+    } else {
+        max_dimension = (CGFloat)SIXEL_THUMBNAILER_DEFAULT_SIZE;
+    }
+    max_size.width = max_dimension;
+    max_size.height = max_dimension;
+
+#if HAVE_QUICKLOOK_THUMBNAILING
+    image = sixel_quicklook_thumbnail_create(url, max_size);
+    if (image == NULL) {
+# if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wdeprecated-declarations"
+# endif
+        image = QLThumbnailImageCreate(kCFAllocatorDefault,
+                                       url,
+                                       max_size,
+                                       NULL);
+# if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma clang diagnostic pop
+# endif
+    }
+#else
+# if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wdeprecated-declarations"
+# endif
+    image = QLThumbnailImageCreate(kCFAllocatorDefault,
+                                   url,
+                                   max_size,
+                                   NULL);
+# if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+#  pragma clang diagnostic pop
+# endif
+#endif
+
+    if (image != NULL) {
+        result = 1;
+        CGImageRelease(image);
+        image = NULL;
+    }
+
+    CFRelease(url);
+    url = NULL;
+
+    return result;
+}
+#else
+static int
+loader_quicklook_can_decode(sixel_chunk_t const *pchunk,
+                            char const *filename)
+{
+    (void)pchunk;
+    (void)filename;
+    return 0;
+}
+#endif
+
+#if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
+static void
+loader_probe_gnome_thumbnailers(char const *mime_type,
+                                int *has_directories,
+                                int *has_match)
+{
+    struct thumbnailer_string_list *directories;
+    struct thumbnailer_entry info;
+    size_t dir_index;
+    DIR *dir;
+    struct dirent *entry;
+    char *thumbnailer_path;
+    int match;
+    int directories_present;
+    size_t name_length;
+
+    directories = NULL;
+    dir_index = 0;
+    dir = NULL;
+    entry = NULL;
+    thumbnailer_path = NULL;
+    match = 0;
+    directories_present = 0;
+    name_length = 0;
+
+    if (has_directories != NULL) {
+        *has_directories = 0;
+    }
+    if (has_match != NULL) {
+        *has_match = 0;
+    }
+
+    directories = thumbnailer_collect_directories();
+    if (directories == NULL) {
+        return;
+    }
+
+    if (directories->length > 0) {
+        directories_present = 1;
+        if (has_directories != NULL) {
+            *has_directories = 1;
+        }
+    }
+
+    thumbnailer_entry_init(&info);
+
+    if (mime_type != NULL && mime_type[0] != '\0') {
+        for (dir_index = 0; dir_index < directories->length && match == 0;
+                ++dir_index) {
+            dir = opendir(directories->items[dir_index]);
+            if (dir == NULL) {
+                continue;
+            }
+            while (match == 0 && (entry = readdir(dir)) != NULL) {
+                thumbnailer_entry_clear(&info);
+                thumbnailer_entry_init(&info);
+                name_length = strlen(entry->d_name);
+                if (name_length < 12 ||
+                        strcmp(entry->d_name + name_length - 12,
+                               ".thumbnailer") != 0) {
+                    continue;
+                }
+                thumbnailer_path = thumbnailer_join_paths(
+                    directories->items[dir_index],
+                    entry->d_name);
+                if (thumbnailer_path == NULL) {
+                    continue;
+                }
+                if (!thumbnailer_parse_file(thumbnailer_path, &info)) {
+                    free(thumbnailer_path);
+                    thumbnailer_path = NULL;
+                    continue;
+                }
+                free(thumbnailer_path);
+                thumbnailer_path = NULL;
+                if (!thumbnailer_has_tryexec(info.tryexec)) {
+                    continue;
+                }
+                if (thumbnailer_supports_mime(&info, mime_type)) {
+                    match = 1;
+                }
+            }
+            closedir(dir);
+            dir = NULL;
+        }
+    }
+
+    thumbnailer_entry_clear(&info);
+    thumbnailer_string_list_free(directories);
+
+    if (directories_present && has_match != NULL) {
+        *has_match = match;
+    }
+}
+#endif
+
+static void
+loader_publish_diagnostic(sixel_chunk_t const *pchunk,
+                          char const *filename)
+{
+    enum { description_length = 128 };
+    enum { uttype_length = 128 };
+    enum { extension_length = 32 };
+    enum { message_length = 768 };
+    char message[message_length];
+    char type_value[description_length];
+    char extension_text[extension_length + 2];
+    char uttype[uttype_length];
+    char desc_buffer[description_length];
+    char extension[extension_length];
+    char const *path;
+    char const *display_path;
+    char const *metadata_path;
+    char const *description_text;
+    char *mime_string;
+    char *description_string;
+    size_t offset;
+    int quicklook_available;
+    int quicklook_supported;
+    int gnome_available;
+    int gnome_has_dirs;
+    int gnome_has_match;
+    int suggestions;
+
+    message[0] = '\0';
+    type_value[0] = '\0';
+    extension_text[0] = '\0';
+    uttype[0] = '\0';
+    desc_buffer[0] = '\0';
+    extension[0] = '\0';
+    path = NULL;
+    display_path = "(stdin)";
+    metadata_path = NULL;
+    description_text = NULL;
+    mime_string = NULL;
+    description_string = NULL;
+    offset = 0u;
+    quicklook_available = 0;
+    quicklook_supported = 0;
+    gnome_available = 0;
+    gnome_has_dirs = 0;
+    gnome_has_match = 0;
+    suggestions = 0;
+
+    if (pchunk != NULL && pchunk->source_path != NULL) {
+        path = pchunk->source_path;
+    } else if (filename != NULL) {
+        path = filename;
+    }
+
+    if (path != NULL && strcmp(path, "-") != 0) {
+        display_path = path;
+    }
+
+    if (path != NULL && strcmp(path, "-") != 0 &&
+            strstr(path, "://") == NULL) {
+        metadata_path = path;
+    }
+
+    loader_extract_extension(path, extension, sizeof(extension));
+
+    if (metadata_path != NULL) {
+        mime_string = thumbnailer_guess_content_type(metadata_path);
+        description_string = thumbnailer_run_file(metadata_path, NULL);
+    }
+
+#if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
+#if defined(__clang__)
+    /*
+     * Allow use of legacy UTType C APIs when compiling with the
+     * macOS 12 SDK.  The replacement interfaces are Objective-C only,
+     * so we must intentionally silence the deprecation warnings here.
+     */
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
+    {
+        CFStringRef uti_ref;
+        CFStringRef mime_ref;
+        CFStringRef ext_ref;
+        CFStringRef desc_ref;
+        CFStringRef preferred_mime;
+        char uti_local[uttype_length];
+        char desc_local[description_length];
+        char mime_local[64];
+
+        uti_ref = NULL;
+        mime_ref = NULL;
+        ext_ref = NULL;
+        desc_ref = NULL;
+        preferred_mime = NULL;
+        uti_local[0] = '\0';
+        desc_local[0] = '\0';
+        mime_local[0] = '\0';
+
+        if (mime_string != NULL) {
+            mime_ref = CFStringCreateWithCString(kCFAllocatorDefault,
+                                                 mime_string,
+                                                 kCFStringEncodingUTF8);
+        }
+        if (mime_ref != NULL) {
+            uti_ref = UTTypeCreatePreferredIdentifierForTag(
+                kUTTagClassMIMEType,
+                mime_ref,
+                NULL);
+        }
+        if (uti_ref == NULL && extension[0] != '\0') {
+            ext_ref = CFStringCreateWithCString(kCFAllocatorDefault,
+                                                extension,
+                                                kCFStringEncodingUTF8);
+            if (ext_ref != NULL) {
+                uti_ref = UTTypeCreatePreferredIdentifierForTag(
+                    kUTTagClassFilenameExtension,
+                    ext_ref,
+                    NULL);
+            }
+        }
+        if (uti_ref != NULL) {
+            loader_copy_cfstring(uti_ref, uti_local, sizeof(uti_local));
+            desc_ref = UTTypeCopyDescription(uti_ref);
+            if (desc_ref != NULL) {
+                loader_copy_cfstring(desc_ref,
+                                     desc_local,
+                                     sizeof(desc_local));
+                CFRelease(desc_ref);
+                desc_ref = NULL;
+            }
+            if (mime_string == NULL) {
+                preferred_mime = UTTypeCopyPreferredTagWithClass(
+                    uti_ref,
+                    kUTTagClassMIMEType);
+                if (preferred_mime != NULL) {
+                    loader_copy_cfstring(preferred_mime,
+                                         mime_local,
+                                         sizeof(mime_local));
+                    CFRelease(preferred_mime);
+                    preferred_mime = NULL;
+                }
+                if (mime_local[0] != '\0') {
+                    mime_string = thumbnailer_strdup(mime_local);
+                }
+            }
+        }
+        if (mime_ref != NULL) {
+            CFRelease(mime_ref);
+        }
+        if (ext_ref != NULL) {
+            CFRelease(ext_ref);
+        }
+        if (uti_ref != NULL) {
+            CFRelease(uti_ref);
+        }
+        if (uti_local[0] != '\0') {
+            sixel_compat_snprintf(uttype,
+                                  sizeof(uttype),
+                                  "%s",
+                                  uti_local);
+        }
+        if (desc_local[0] != '\0') {
+            sixel_compat_snprintf(desc_buffer,
+                                  sizeof(desc_buffer),
+                                  "%s",
+                                  desc_local);
+        }
+    }
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
+#endif
+
+    if (description_string != NULL && description_string[0] != '\0') {
+        description_text = description_string;
+    } else if (desc_buffer[0] != '\0') {
+        description_text = desc_buffer;
+    } else {
+        description_text = "unknown content";
+    }
+
+    sixel_compat_snprintf(type_value,
+                          sizeof(type_value),
+                          "%s",
+                          description_text);
+
+    loader_append_chunk(message,
+                        sizeof(message),
+                        &offset,
+                        "diagnostic:\n");
+    loader_append_key_value(message,
+                            sizeof(message),
+                            &offset,
+                            "file",
+                            display_path);
+    loader_append_key_value(message,
+                            sizeof(message),
+                            &offset,
+                            "type",
+                            type_value);
+
+    if (mime_string != NULL && mime_string[0] != '\0') {
+        loader_append_key_value(message,
+                                sizeof(message),
+                                &offset,
+                                "mime",
+                                mime_string);
+    }
+
+    if (uttype[0] != '\0') {
+        loader_append_key_value(message,
+                                sizeof(message),
+                                &offset,
+                                "uti",
+                                uttype);
+    }
+
+    if (extension[0] != '\0') {
+        sixel_compat_snprintf(extension_text,
+                              sizeof(extension_text),
+                              ".%s",
+                              extension);
+        loader_append_key_value(message,
+                                sizeof(message),
+                                &offset,
+                                "extension",
+                                extension_text);
+    }
+
+    loader_append_chunk(message,
+                        sizeof(message),
+                        &offset,
+                        "  suggestions:\n");
+
+    quicklook_available = loader_entry_available("quicklook");
+    if (quicklook_available) {
+        quicklook_supported = loader_quicklook_can_decode(pchunk, filename);
+    }
+    if (quicklook_supported) {
+        loader_append_chunk(message,
+                            sizeof(message),
+                            &offset,
+                            "    - QuickLook rendered a preview during "
+                            "the probe; try -j quicklook.\n");
+        suggestions += 1;
+    }
+
+#if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
+    gnome_available = loader_entry_available("gnome-thumbnailer");
+    if (gnome_available) {
+        loader_probe_gnome_thumbnailers(mime_string,
+                                        &gnome_has_dirs,
+                                        &gnome_has_match);
+        if (gnome_has_dirs && gnome_has_match) {
+            loader_append_chunk(message,
+                                sizeof(message),
+                                &offset,
+                                "    - GNOME thumbnailer definitions match "
+                                "this MIME type; try -j gnome-thumbnailer.\n"
+                                );
+            suggestions += 1;
+        }
+    }
+#else
+    (void)gnome_available;
+    (void)gnome_has_dirs;
+    (void)gnome_has_match;
+#endif
+
+    if (suggestions == 0) {
+        loader_append_chunk(message,
+                            sizeof(message),
+                            &offset,
+                            "    (no thumbnail helper hints)\n");
+    }
+
+    if (suggestions > 0) {
+        loader_append_chunk(message,
+                            sizeof(message),
+                            &offset,
+                            "  hint       : Enable one of the suggested "
+                            "loaders with -j.\n");
+    } else {
+        loader_append_chunk(message,
+                            sizeof(message),
+                            &offset,
+                            "  hint       : Convert the file to PNG or "
+                            "enable optional loaders.\n");
+    }
+
+    sixel_helper_set_additional_message(message);
+
+    free(mime_string);
+    free(description_string);
+}
 
 SIXELAPI SIXELSTATUS
 sixel_loader_new(
@@ -6290,6 +6805,7 @@ sixel_loader_load_file(
     }
 
     if (SIXEL_FAILED(status)) {
+        loader_publish_diagnostic(pchunk, filename);
         goto end;
     }
 
