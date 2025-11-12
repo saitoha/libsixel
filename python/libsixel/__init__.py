@@ -215,13 +215,14 @@ SIXEL_ENCODEPOLICY_SIZE    = 2   # encode to as small sixel sequence as possible
 #   auto ----> channel depth based decision
 #                |
 #         +------+------+---------+
-#         |              |
-#      classic      certified
-#      (5/6bit)     (certlut)
+#         |      |       |
+#      classic  none  certified
+#      (5/6bit)        (certlut)
 #
 SIXEL_LUT_POLICY_AUTO      = 0x0  # choose LUT width automatically
 SIXEL_LUT_POLICY_5BIT      = 0x1  # use legacy 5-bit buckets
 SIXEL_LUT_POLICY_6BIT      = 0x2  # use 6-bit RGB buckets
+SIXEL_LUT_POLICY_NONE      = 0x4  # disable LUT acceleration
 SIXEL_LUT_POLICY_CERTLUT   = 0x5  # certified hierarchical LUT
 
 # method for re-sampling
@@ -476,6 +477,8 @@ SIXEL_OPTFLAG_LUT_POLICY        = 'L'  # -L LUTPOLICY, --lut-policy=LUTPOLICY:
                                       #          5bit    -> force 5-bit buckets
                                       #          6bit    -> force 6-bit buckets
                                       #                     (RGB inputs)
+                                      #          none    -> disable LUT caching
+                                      #                     and scan directly
                                       #          certlut -> certified
                                       #                     hierarchical LUT
                                       #                     with zero error

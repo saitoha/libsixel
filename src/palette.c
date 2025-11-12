@@ -805,7 +805,8 @@ sixel_palette_set_lut_policy(int lut_policy)
     normalized = SIXEL_LUT_POLICY_AUTO;
     if (lut_policy == SIXEL_LUT_POLICY_5BIT
         || lut_policy == SIXEL_LUT_POLICY_6BIT
-        || lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
+        || lut_policy == SIXEL_LUT_POLICY_CERTLUT
+        || lut_policy == SIXEL_LUT_POLICY_NONE) {
         normalized = lut_policy;
     }
 

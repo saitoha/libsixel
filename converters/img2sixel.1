@@ -308,12 +308,18 @@ auto      -> follow pixel depth to pick bucket size
 .br
 6bit      -> force 6-bit RGB buckets (RGB inputs only)
 .br
+none      -> disable LUT caching and scan the palette directly
+.br
 certlut -> certified hierarchical LUT with zero approximation
 .br
           The RGB cube is divided into 64x64x64 cells and refined only
           where necessary.  certlut reuses a single kd-tree built from
           the palette to certify the nearest and second nearest colours
           for every cell without scanning the full palette each time.
+.PP
+The \fInone\fP policy skips the lookup caches entirely so each pixel
+comparison scans the palette directly.  This mirrors the behaviour that
+`-q full` previously forced implicitly.
 .TP 5
 .B \-l \fILOOPMODE\fP, \-\-loop\-control=\fILOOPMODE\fP
 select loop control mode for GIF animation.

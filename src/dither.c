@@ -2578,6 +2578,9 @@ sixel_dither_map_pixels(
     if (foptimize && depth == 3 && f_lookup == lookup_normal) {
         f_lookup = lookup_fast_lut;
     }
+    if (lut_policy == SIXEL_LUT_POLICY_NONE) {
+        f_lookup = lookup_normal;
+    }
 
     if (f_lookup == lookup_fast_lut) {
         if (depth != 3) {
@@ -3257,7 +3260,8 @@ sixel_dither_set_lut_policy(
     normalized = SIXEL_LUT_POLICY_AUTO;
     if (lut_policy == SIXEL_LUT_POLICY_5BIT
         || lut_policy == SIXEL_LUT_POLICY_6BIT
-        || lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
+        || lut_policy == SIXEL_LUT_POLICY_CERTLUT
+        || lut_policy == SIXEL_LUT_POLICY_NONE) {
         normalized = lut_policy;
     }
     previous_policy = dither->lut_policy;
@@ -3558,8 +3562,12 @@ sixel_dither_apply_palette(
         goto end;
     }
 
-    /* if quality_mode is full, do not use palette caching */
-    if (dither->quality_mode == SIXEL_QUALITY_FULL) {
+    /*
+     * Disable palette caching when the caller selected the NONE policy so
+     * every pixel lookup performs a direct palette scan.  Other quality
+     * modes continue to honor the requested LUT policy, including "full".
+     */
+    if (dither->lut_policy == SIXEL_LUT_POLICY_NONE) {
         dither->optimized = 0;
     }
 

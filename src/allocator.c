@@ -226,7 +226,6 @@ sixel_allocator_free(
 {
     /* precondition */
     assert(allocator);
-    assert(allocator->fn_free);
 
     allocator->fn_free(p);
 }

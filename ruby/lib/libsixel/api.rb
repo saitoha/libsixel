@@ -74,8 +74,8 @@ module Libsixel
     #        |
     #   +----+----+---------+
     #   |         |
-    # classic  certified
-    # (5/6bit) (certlut)
+    # classic  none        certified
+    # (5/6bit) (no cache)  (certlut)
     #
     SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT = 'R' unless const_defined?(:SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT)
     SIXEL_OPTFLAG_6REVERSIBLE = '6' unless const_defined?(:SIXEL_OPTFLAG_6REVERSIBLE)

@@ -557,9 +557,15 @@ Options:
                            LUTPOLICY is one of them:
                              auto      -> follow pixel depth
                              5bit      -> force classic 5-bit buckets
-                             6bit      -> favor 6-bit RGB buckets
-                             certlut   -> certified hierarchical LUT
-                                          with zero approximation
+                            6bit      -> favor 6-bit RGB buckets
+                            none      -> disable LUT caching and scan the
+                                         palette directly
+                            certlut   -> certified hierarchical LUT
+                                         with zero approximation
+
+The *none* policy skips every lookup acceleration structure so each
+pixel comparison scans the palette directly.  This matches the legacy
+behaviour that was previously enabled implicitly by `-q full`.
 
 The *certlut* policy divides the RGB cube into 64×64×64 top level
 cells (6 bits per channel).  Each top level cell spans a 4×4×4 region;
