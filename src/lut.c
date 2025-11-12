@@ -47,6 +47,7 @@
 #include "config.h"
 
 #include <limits.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -110,9 +111,9 @@ struct sixel_lut {
     unsigned char const *palette;
     sixel_allocator_t *allocator;
     struct histogram_control control;
-    struct cuckoo_table32 *cache;
-    size_t cache_slots;
-    int cache_ready;
+    int32_t *dense;
+    size_t dense_size;
+    int dense_ready;
     sixel_certlut_t cert;
     int cert_ready;
 };
@@ -336,24 +337,6 @@ histogram_pack_color(unsigned char const *data,
     return packed;
 }
 
-uint32_t
-histogram_hash_mix(uint32_t key)
-{
-    uint32_t hash;
-
-    hash = key * 0x9e3779b9U;
-    hash ^= hash >> 16;
-    hash *= 0x7feb352dU;
-    hash ^= hash >> 15;
-    hash *= 0x846ca68bU;
-    hash ^= hash >> 16;
-    if (hash == 0xffffffffU) {
-        hash ^= 0x632be59bU;
-    }
-
-    return hash;
-}
-
 SIXELSTATUS
 sixel_lut_build_histogram(unsigned char const *data,
                           unsigned int length,
@@ -501,335 +484,8 @@ cleanup:
     return status;
 }
 
-static unsigned int
-sixel_lut_hash(unsigned char const *data,
-               unsigned int depth,
-               struct histogram_control const *control)
-{
-    uint32_t packed;
-
-    packed = histogram_pack_color(data, depth, control);
-
-    return histogram_hash_mix(packed);
-}
-
-#define CUCKOO_BUCKET_SIZE 4U
-#define CUCKOO_MAX_KICKS 128U
-#define CUCKOO_STASH_SIZE 32U
-#define CUCKOO_EMPTY_KEY 0xffffffffU
-
-struct cuckoo_bucket32 {
-    uint32_t key[CUCKOO_BUCKET_SIZE];
-    uint32_t value[CUCKOO_BUCKET_SIZE];
-};
-
-struct cuckoo_table32 {
-    struct cuckoo_bucket32 *buckets;
-    uint32_t stash_key[CUCKOO_STASH_SIZE];
-    uint32_t stash_value[CUCKOO_STASH_SIZE];
-    size_t bucket_count;
-    size_t bucket_mask;
-    size_t stash_count;
-    sixel_allocator_t *allocator;
-};
-
-static size_t
-cuckoo_round_buckets(size_t hint)
-{
-    size_t count;
-
-    count = 1U;
-    if (hint == 0U) {
-        return count;
-    }
-    count = hint - 1U;
-    count |= count >> 1;
-    count |= count >> 2;
-    count |= count >> 4;
-    count |= count >> 8;
-    count |= count >> 16;
-#if SIZE_MAX > UINT32_MAX
-    count |= count >> 32;
-#endif
-    if (count == SIZE_MAX) {
-        return SIZE_MAX;
-    }
-    count++;
-    if (count < 1U) {
-        count = 1U;
-    }
-
-    return count;
-}
-
-static SIXELSTATUS
-cuckoo_table32_init(struct cuckoo_table32 *table,
-                    size_t expected,
-                    sixel_allocator_t *allocator)
-{
-    size_t buckets;
-    size_t i;
-
-    if (table == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    table->buckets = NULL;
-    table->bucket_count = 0U;
-    table->bucket_mask = 0U;
-    table->stash_count = 0U;
-    table->allocator = allocator;
-
-    buckets = cuckoo_round_buckets(expected / CUCKOO_BUCKET_SIZE);
-    if (buckets == SIZE_MAX && expected != SIZE_MAX) {
-        return SIXEL_BAD_ALLOCATION;
-    }
-    table->buckets = (struct cuckoo_bucket32 *)
-        sixel_allocator_calloc(allocator,
-                               buckets,
-                               sizeof(struct cuckoo_bucket32));
-    if (table->buckets == NULL) {
-        return SIXEL_BAD_ALLOCATION;
-    }
-    table->bucket_count = buckets;
-    table->bucket_mask = buckets - 1U;
-
-    for (i = 0U; i < buckets; ++i) {
-        size_t j;
-
-        for (j = 0U; j < CUCKOO_BUCKET_SIZE; ++j) {
-            table->buckets[i].key[j] = CUCKOO_EMPTY_KEY;
-            table->buckets[i].value[j] = 0U;
-        }
-    }
-
-    for (i = 0U; i < CUCKOO_STASH_SIZE; ++i) {
-        table->stash_key[i] = CUCKOO_EMPTY_KEY;
-        table->stash_value[i] = 0U;
-    }
-
-    table->stash_count = 0U;
-
-    return SIXEL_OK;
-}
-
-static void
-cuckoo_table32_clear(struct cuckoo_table32 *table)
-{
-    size_t i;
-
-    if (table == NULL) {
-        return;
-    }
-
-    for (i = 0U; i < table->bucket_count; ++i) {
-        size_t j;
-
-        for (j = 0U; j < CUCKOO_BUCKET_SIZE; ++j) {
-            table->buckets[i].key[j] = CUCKOO_EMPTY_KEY;
-            table->buckets[i].value[j] = 0U;
-        }
-    }
-
-    for (i = 0U; i < CUCKOO_STASH_SIZE; ++i) {
-        table->stash_key[i] = CUCKOO_EMPTY_KEY;
-        table->stash_value[i] = 0U;
-    }
-    table->stash_count = 0U;
-}
-
-static void
-cuckoo_table32_fini(struct cuckoo_table32 *table)
-{
-    if (table == NULL) {
-        return;
-    }
-
-    sixel_allocator_free(table->allocator, table->buckets);
-    table->buckets = NULL;
-    table->bucket_count = 0U;
-    table->bucket_mask = 0U;
-    table->stash_count = 0U;
-}
-
-static uint32_t *
-cuckoo_table32_lookup(struct cuckoo_table32 *table, uint32_t key)
-{
-    size_t first_index;
-    size_t second_index;
-    size_t i;
-
-    if (table == NULL || key == CUCKOO_EMPTY_KEY) {
-        return NULL;
-    }
-    if (table->bucket_count == 0U) {
-        return NULL;
-    }
-
-    first_index = key & table->bucket_mask;
-    second_index = histogram_hash_mix(key ^ 0x9e3779b9U)
-                 & table->bucket_mask;
-
-    for (i = 0U; i < CUCKOO_BUCKET_SIZE; ++i) {
-        if (table->buckets[first_index].key[i] == key) {
-            return &table->buckets[first_index].value[i];
-        }
-    }
-    for (i = 0U; i < CUCKOO_BUCKET_SIZE; ++i) {
-        if (table->buckets[second_index].key[i] == key) {
-            return &table->buckets[second_index].value[i];
-        }
-    }
-    for (i = 0U; i < table->stash_count; ++i) {
-        if (table->stash_key[i] == key) {
-            return &table->stash_value[i];
-        }
-    }
-
-    return NULL;
-}
-
-static SIXELSTATUS
-cuckoo_table32_grow(struct cuckoo_table32 *table)
-{
-    struct cuckoo_table32 tmp;
-    size_t new_buckets;
-    size_t i;
-    SIXELSTATUS status;
-
-    if (table == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    new_buckets = table->bucket_count * 2U;
-    if (new_buckets < table->bucket_count) {
-        return SIXEL_BAD_ALLOCATION;
-    }
-    memset(&tmp, 0, sizeof(tmp));
-    status = cuckoo_table32_init(&tmp,
-                                 new_buckets * CUCKOO_BUCKET_SIZE,
-                                 table->allocator);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    for (i = 0U; i < table->bucket_count; ++i) {
-        size_t j;
-
-        for (j = 0U; j < CUCKOO_BUCKET_SIZE; ++j) {
-            uint32_t key;
-            uint32_t value;
-            size_t index;
-
-            key = table->buckets[i].key[j];
-            value = table->buckets[i].value[j];
-            if (key == CUCKOO_EMPTY_KEY || value == 0U) {
-                continue;
-            }
-            index = key & tmp.bucket_mask;
-            tmp.buckets[index].key[0] = key;
-            tmp.buckets[index].value[0] = value;
-        }
-    }
-
-    for (i = 0U; i < table->stash_count; ++i) {
-        size_t index;
-
-        index = table->stash_key[i] & tmp.bucket_mask;
-        tmp.buckets[index].key[0] = table->stash_key[i];
-        tmp.buckets[index].value[0] = table->stash_value[i];
-    }
-
-    cuckoo_table32_fini(table);
-    *table = tmp;
-
-    return SIXEL_OK;
-}
-
-static SIXELSTATUS
-cuckoo_table32_insert(struct cuckoo_table32 *table,
-                      uint32_t key,
-                      uint32_t value)
-{
-    size_t index;
-    size_t i;
-    uint32_t cur_key;
-    uint32_t cur_value;
-    unsigned int kick;
-    SIXELSTATUS status;
-
-    if (table == NULL || key == CUCKOO_EMPTY_KEY) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (value == 0U) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (table->bucket_count == 0U) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    index = key & table->bucket_mask;
-    for (i = 0U; i < CUCKOO_BUCKET_SIZE; ++i) {
-        if (table->buckets[index].value[i] == 0U) {
-            table->buckets[index].key[i] = key;
-            table->buckets[index].value[i] = value;
-            return SIXEL_OK;
-        }
-    }
-
-    index = histogram_hash_mix(key ^ 0x9e3779b9U) & table->bucket_mask;
-    for (i = 0U; i < CUCKOO_BUCKET_SIZE; ++i) {
-        if (table->buckets[index].value[i] == 0U) {
-            table->buckets[index].key[i] = key;
-            table->buckets[index].value[i] = value;
-            return SIXEL_OK;
-        }
-    }
-
-    cur_key = key;
-    cur_value = value;
-    for (kick = 0U; kick < CUCKOO_MAX_KICKS; ++kick) {
-        size_t slot;
-
-        index = cur_key & table->bucket_mask;
-        slot = kick & (CUCKOO_BUCKET_SIZE - 1U);
-        key = table->buckets[index].key[slot];
-        table->buckets[index].key[slot] = cur_key;
-        cur_key = key;
-        key = table->buckets[index].value[slot];
-        table->buckets[index].value[slot] = cur_value;
-        cur_value = key;
-        if (cur_value == 0U) {
-            return SIXEL_OK;
-        }
-
-        index = histogram_hash_mix(cur_key ^ 0x9e3779b9U)
-              & table->bucket_mask;
-        slot = (kick + 1U) & (CUCKOO_BUCKET_SIZE - 1U);
-        key = table->buckets[index].key[slot];
-        table->buckets[index].key[slot] = cur_key;
-        cur_key = key;
-        key = table->buckets[index].value[slot];
-        table->buckets[index].value[slot] = cur_value;
-        cur_value = key;
-        if (cur_value == 0U) {
-            return SIXEL_OK;
-        }
-    }
-
-    if (table->stash_count >= CUCKOO_STASH_SIZE) {
-        status = cuckoo_table32_grow(table);
-        if (SIXEL_FAILED(status)) {
-            return status;
-        }
-        return cuckoo_table32_insert(table, cur_key, cur_value);
-    }
-
-    table->stash_key[table->stash_count] = cur_key;
-    table->stash_value[table->stash_count] = cur_value;
-    table->stash_count++;
-
-    return SIXEL_OK;
-}
+/* Sentinel value used to detect empty dense LUT slots. */
+#define SIXEL_LUT_DENSE_EMPTY (-1)
 
 static int
 sixel_lut_policy_normalize(int policy)
@@ -857,24 +513,22 @@ sixel_lut_policy_uses_cache(int policy)
 static void
 sixel_lut_release_cache(sixel_lut_t *lut)
 {
-    if (lut == NULL || lut->cache == NULL) {
+    if (lut == NULL || lut->dense == NULL) {
         return;
     }
 
-    cuckoo_table32_fini(lut->cache);
-    sixel_allocator_free(lut->allocator, lut->cache);
-    lut->cache = NULL;
-    lut->cache_slots = 0U;
-    lut->cache_ready = 0;
+    sixel_allocator_free(lut->allocator, lut->dense);
+    lut->dense = NULL;
+    lut->dense_size = 0U;
+    lut->dense_ready = 0;
 }
 
 static SIXELSTATUS
 sixel_lut_prepare_cache(sixel_lut_t *lut)
 {
-    SIXELSTATUS status;
-    struct cuckoo_table32 *table;
     size_t expected;
-    size_t cap_limit;
+    size_t bytes;
+    size_t index;
 
     if (lut == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -886,54 +540,42 @@ sixel_lut_prepare_cache(sixel_lut_t *lut)
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (lut->control.channel_shift == 0U) {
-        expected = (size_t)lut->ncolors * 64U;
-        cap_limit = (size_t)1U << 20;
-        if (expected < 512U) {
-            expected = 512U;
-        }
-        if (expected > cap_limit) {
-            expected = cap_limit;
-        }
-    } else {
-        expected = histogram_dense_size((unsigned int)lut->depth,
-                                        &lut->control);
-        if (expected == 0U) {
-            expected = CUCKOO_BUCKET_SIZE;
-        }
+    /* Allocate a dense RGB quantization table for 5/6bit policies.
+     * The packed index matches histogram_pack_color() so each slot
+     * can store the resolved palette entry or remain empty.
+     */
+    expected = histogram_dense_size((unsigned int)lut->depth,
+                                    &lut->control);
+    if (expected == 0U) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (expected > SIZE_MAX / sizeof(int32_t)) {
+        sixel_helper_set_additional_message(
+            "sixel_lut_prepare_cache: dense table too large.");
+        return SIXEL_BAD_ALLOCATION;
     }
 
-    table = lut->cache;
-    if (table != NULL) {
-        if (table->bucket_count * CUCKOO_BUCKET_SIZE < expected) {
-            sixel_lut_release_cache(lut);
-            table = NULL;
-        } else {
-            cuckoo_table32_clear(table);
-        }
+    if (lut->dense != NULL && lut->dense_size != expected) {
+        sixel_lut_release_cache(lut);
     }
-    if (table == NULL) {
-        table = (struct cuckoo_table32 *)
-            sixel_allocator_malloc(lut->allocator,
-                                   sizeof(struct cuckoo_table32));
-        if (table == NULL) {
+
+    if (lut->dense == NULL) {
+        bytes = expected * sizeof(int32_t);
+        lut->dense = (int32_t *)sixel_allocator_malloc(lut->allocator,
+                                                       bytes);
+        if (lut->dense == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_lut_prepare_cache: allocation failed.");
             return SIXEL_BAD_ALLOCATION;
         }
-        memset(table, 0, sizeof(struct cuckoo_table32));
-        status = cuckoo_table32_init(table, expected, lut->allocator);
-        if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(lut->allocator, table);
-            sixel_helper_set_additional_message(
-                "sixel_lut_prepare_cache: unable to init cache table.");
-            return status;
-        }
-        lut->cache = table;
     }
 
-    lut->cache_slots = expected;
-    lut->cache_ready = 1;
+    for (index = 0U; index < expected; ++index) {
+        lut->dense[index] = SIXEL_LUT_DENSE_EMPTY;
+    }
+
+    lut->dense_size = expected;
+    lut->dense_ready = 1;
 
     return SIXEL_OK;
 }
@@ -942,19 +584,17 @@ static int
 sixel_lut_lookup_fast(sixel_lut_t *lut, unsigned char const *pixel)
 {
     int result;
-    unsigned int hash;
     int diff;
     int i;
     int distant;
-    struct cuckoo_table32 *table;
-    uint32_t *slot;
-    SIXELSTATUS status;
     unsigned char const *entry;
     unsigned char const *end;
     int pixel0;
     int pixel1;
     int pixel2;
     int delta;
+    unsigned int bucket;
+    int32_t cached;
 
     if (lut == NULL || pixel == NULL) {
         return 0;
@@ -963,18 +603,25 @@ sixel_lut_lookup_fast(sixel_lut_t *lut, unsigned char const *pixel)
         return 0;
     }
 
-    result = (-1);
-    diff = INT_MAX;
-    hash = sixel_lut_hash(pixel, (unsigned int)lut->depth, &lut->control);
-
-    table = lut->cache;
-    if (table != NULL) {
-        slot = cuckoo_table32_lookup(table, hash);
-        if (slot != NULL && *slot != 0U) {
-            return (int)(*slot - 1U);
+    bucket = 0U;
+    cached = SIXEL_LUT_DENSE_EMPTY;
+    if (lut->dense_ready && lut->dense != NULL) {
+        bucket = histogram_pack_color(pixel,
+                                      (unsigned int)lut->depth,
+                                      &lut->control);
+        if ((size_t)bucket < lut->dense_size) {
+            cached = lut->dense[bucket];
+            if (cached >= 0) {
+                return cached;
+            }
         }
     }
 
+    result = (-1);
+    diff = INT_MAX;
+    /* Linear palette scan remains as a safety net when the dense
+     * lookup does not have an answer yet.
+     */
     entry = lut->palette;
     end = lut->palette + (size_t)lut->ncolors * (size_t)lut->depth;
     pixel0 = (int)pixel[0];
@@ -993,11 +640,9 @@ sixel_lut_lookup_fast(sixel_lut_t *lut, unsigned char const *pixel)
         }
     }
 
-    if (table != NULL && result >= 0) {
-        status = cuckoo_table32_insert(table,
-                                       hash,
-                                       (uint32_t)(result + 1));
-        if (SIXEL_FAILED(status)) {
+    if (lut->dense_ready && lut->dense != NULL && result >= 0) {
+        if ((size_t)bucket < lut->dense_size) {
+            lut->dense[bucket] = result;
         }
     }
 
@@ -2027,9 +1672,9 @@ sixel_lut_new(sixel_lut_t **out,
     lut->ncolors = 0;
     lut->complexion = 1;
     lut->palette = NULL;
-    lut->cache = NULL;
-    lut->cache_slots = 0U;
-    lut->cache_ready = 0;
+    lut->dense = NULL;
+    lut->dense_size = 0U;
+    lut->dense_ready = 0;
     lut->cert_ready = 0;
     status = sixel_certlut_init(&lut->cert);
     if (SIXEL_FAILED(status)) {
@@ -2076,7 +1721,7 @@ sixel_lut_configure(sixel_lut_t *lut,
     lut->policy = normalized;
     lut->control = histogram_control_make_for_policy((unsigned int)depth,
                                                      normalized);
-    lut->cache_ready = 0;
+    lut->dense_ready = 0;
     lut->cert_ready = 0;
 
     if (sixel_lut_policy_uses_cache(normalized)) {
