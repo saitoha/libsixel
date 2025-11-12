@@ -126,12 +126,10 @@ typedef int SIXELSTATUS;
 #define SIXEL_QUALITY_HIGHCOLOR   0x4  /* high color */
 
 /* histogram bucket policy */
-#define SIXEL_LUT_POLICY_AUTO      0x0  /* choose LUT width automatically */
-#define SIXEL_LUT_POLICY_5BIT      0x1  /* use 5 bits per channel */
-#define SIXEL_LUT_POLICY_6BIT      0x2  /* use 6 bits per channel */
-#define SIXEL_LUT_POLICY_ROBINHOOD 0x3  /* preserve 8-bit channels */
-#define SIXEL_LUT_POLICY_HOPSCOTCH 0x4  /* preserve 8-bit channels */
-#define SIXEL_LUT_POLICY_CERTLUT   0x5  /* certified hierarchical LUT */
+#define SIXEL_LUT_POLICY_AUTO    0x0  /* choose LUT width automatically */
+#define SIXEL_LUT_POLICY_5BIT    0x1  /* use 5 bits per channel */
+#define SIXEL_LUT_POLICY_6BIT    0x2  /* use 6 bits per channel */
+#define SIXEL_LUT_POLICY_CERTLUT 0x5  /* certified hierarchical LUT */
 
 /* built-in dither */
 #define SIXEL_BUILTIN_MONO_DARK   0x0  /* monochrome terminal with dark background */
@@ -471,26 +469,18 @@ typedef int SIXELSTATUS;
                                                 */
 #define SIXEL_OPTFLAG_LUT_POLICY        ('L')  /* -L LUTPOLICY, --lut-policy=LUTPOLICY:
                                                   choose histogram LUT width
-                                                    auto      -> select by pixel
-                                                                 depth
-                                                    5bit      -> use 5-bit
-                                                                 buckets
-                                                    6bit      -> use 6-bit
-                                                                 buckets
-                                                                 (RGB only)
-                                                    robinhood -> keep 8-bit
-                                                                 channels via
-                                                                 Robin Hood
-                                                                 hashing
-                                                    hopscotch -> keep 8-bit
-                                                                 channels via
-                                                                 Hopscotch
-                                                                 hashing
-                                                    certlut   -> certified
-                                                                 hierarchical
-                                                                 lookup tree
-                                                                 with zero
-                                                                 error
+                                                    auto    -> select by pixel
+                                                                depth
+                                                    5bit    -> use 5-bit
+                                                                buckets
+                                                    6bit    -> use 6-bit
+                                                                buckets
+                                                                (RGB only)
+                                                    certlut -> certified
+                                                                hierarchical
+                                                                lookup tree
+                                                                with zero
+                                                                error
                                                 */
 #define SIXEL_OPTFLAG_WORKING_COLORSPACE ('W') /* -W WORKINGCOLORSPACE, --working-colorspace=WORKINGCOLORSPACE
                                                   select internal working color space
