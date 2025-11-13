@@ -6313,6 +6313,7 @@ sixel_encoder_encode(
     int fuse_palette = 1;
     sixel_loader_t *loader = NULL;
     sixel_allocator_t *assessment_allocator = NULL;
+    sixel_allocator_t *encode_allocator = NULL;
     sixel_frame_t *assessment_source_frame = NULL;
     sixel_frame_t *assessment_target_frame = NULL;
     sixel_frame_t *assessment_expanded_frame = NULL;
@@ -6358,6 +6359,18 @@ sixel_encoder_encode(
     clipboard_blob_size = 0u;
     clipboard_status = SIXEL_OK;
     effective_filename = filename;
+
+    if (encoder != NULL) {
+        encode_allocator = encoder->allocator;
+        if (encode_allocator != NULL) {
+            /*
+             * Hold a reference until cleanup so worker side-effects or loader
+             * destruction cannot release the allocator before sequential
+             * teardown finishes using it.
+             */
+            sixel_allocator_ref(encode_allocator);
+        }
+    }
 
     clipboard_spec.is_clipboard = 0;
     clipboard_spec.format[0] = '\0';
@@ -6576,6 +6589,14 @@ sixel_encoder_encode(
         }
     } else {
         sixel_encoder_ref(encoder);
+    }
+
+    if (encode_allocator == NULL && encoder != NULL) {
+        encode_allocator = encoder->allocator;
+        if (encode_allocator != NULL) {
+            /* Ensure the allocator stays valid after lazy encoder creation. */
+            sixel_allocator_ref(encode_allocator);
+        }
     }
 
     if (encoder->assessment_observer != NULL) {
@@ -7091,6 +7112,17 @@ end:
     }
 
     sixel_encoder_unref(encoder);
+
+    if (encode_allocator != NULL) {
+        /*
+         * Release the retained allocator reference *after* dropping the
+         * encoder reference so that a lazily created encoder can run its
+         * destructor while the allocator is still alive.  This ensures that
+         * cleanup routines never dereference a freed allocator instance.
+         */
+        sixel_allocator_unref(encode_allocator);
+        encode_allocator = NULL;
+    }
 
     return status;
 }

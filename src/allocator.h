@@ -23,9 +23,10 @@
 #define LIBSIXEL_ALLOCATOR_H
 
 #include <sixel.h>
+#include "sixel_atomic.h"
 
 struct sixel_allocator {
-    unsigned int ref;           /* reference counter */
+    sixel_atomic_u32_t ref;     /* reference counter */
     sixel_malloc_t fn_malloc;
     sixel_calloc_t fn_calloc;
     sixel_realloc_t fn_realloc;

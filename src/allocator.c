@@ -40,6 +40,7 @@
 
 #include "allocator.h"
 #include "malloc_stub.h"
+#include "sixel_atomic.h"
 
 /* create allocator object */
 SIXELSTATUS
@@ -110,30 +111,43 @@ sixel_allocator_destroy(
 }
 
 
-/* increase reference count of allocatort object (thread-unsafe) */
+/* increase reference count of allocator object (thread-safe) */
 SIXELAPI void
 sixel_allocator_ref(
     sixel_allocator_t /* in */ *allocator)  /* allocator object to be
                                                increment reference counter */
 {
+    unsigned int previous;
+
     /* precondition */
     assert(allocator);
 
-    /* TODO: be thread safe */
-    ++allocator->ref;
+    /*
+     * Increment the reference counter atomically so concurrent users can
+     * retain the allocator without racing against a release in another
+     * thread.
+     */
+    previous = sixel_atomic_fetch_add_u32(&allocator->ref, 1U);
+    (void)previous;
 }
 
 
-/* decrease reference count of output context object (thread-unsafe) */
+/* decrease reference count of output context object (thread-safe) */
 SIXELAPI void
 sixel_allocator_unref(
     sixel_allocator_t /* in */ *allocator)  /* allocator object to be unreference */
 {
-    /* TODO: be thread safe */
+    unsigned int previous;
+
     if (allocator) {
-        assert(allocator->ref > 0);
-        --allocator->ref;
-        if (allocator->ref == 0) {
+        /*
+         * Acquire the previous value atomically. The old count informs us
+         * whether this thread dropped the last reference, which drives the
+         * destruction path below.
+         */
+        previous = sixel_atomic_fetch_sub_u32(&allocator->ref, 1U);
+        assert(previous > 0U);
+        if (previous == 1U) {
             sixel_allocator_destroy(allocator);
         }
     }
