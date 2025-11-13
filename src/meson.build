@@ -47,6 +47,7 @@ srcs = [
   'allocator.c',
   'tty.c',
   'lut.h',
+  'sixel_atomic.h',
 ]
 
 if conf.get('SIXEL_ENABLE_THREADS', 0) == 1

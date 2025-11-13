@@ -26,6 +26,8 @@
 
 #include "palette.h"
 
+typedef void (*sixel_dither_pipeline_row_fn)(void *priv, int row_index);
+
 /* dither context object */
 struct sixel_dither {
     unsigned int ref;               /* reference counter */
@@ -53,6 +55,11 @@ struct sixel_dither {
     int sixel_reversible;           /* restrict palette to reversible tones */
     int quantize_model;             /* palette solver selector */
     int final_merge_mode;           /* final merge policy */
+    sixel_dither_pipeline_row_fn pipeline_row_callback; /* producer hook */
+    void *pipeline_row_priv;        /* callback private data */
+    sixel_index_t *pipeline_index_buffer; /* externally supplied index buf */
+    size_t pipeline_index_size;     /* size of external index buffer */
+    int pipeline_index_owned;       /* buffer ownership flag */
 };
 
 #ifdef __cplusplus

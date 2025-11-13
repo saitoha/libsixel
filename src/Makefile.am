@@ -66,6 +66,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/tty.c \
                 $(srcdir)/tty.h \
                 $(srcdir)/sixel_threads_config.h \
+                $(srcdir)/sixel_atomic.h \
                 $(srcdir)/rgblookup.h \
                 $(srcdir)/lso2.h
 if SIXEL_ENABLE_THREADS
