@@ -44,6 +44,8 @@ class Encoder
   end
 
   # setopt: flag は 1 文字。opt は文字列 or 数値
+  # Width/height accept auto, numeric, percent, pixel (<number>px), and
+  # terminal cell (<number>c) units to stay aligned with the CLI parser.
   def setopt(flag, opt)
     int_flag = flag.is_a?(Integer) ? flag : flag.to_s.getbyte(0)
     cstr = Libsixel::API::Util.to_cstr(opt)

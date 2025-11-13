@@ -4677,6 +4677,8 @@ sixel_encoder_setopt(
     int png_argument_has_prefix = 0;
     char const *png_path_view = NULL;
     size_t png_path_length;
+    char cell_message[256];
+    char const *cell_detail;
 
     sixel_encoder_ref(encoder);
     opt_copy = NULL;
@@ -5206,6 +5208,31 @@ sixel_encoder_setopt(
         if (parsed == 2 && strcmp(unit, "%") == 0) {
             encoder->pixelwidth = (-1);
             encoder->percentwidth = number;
+        } else if (parsed == 2 && strcmp(unit, "c") == 0) {
+            status = sixel_encoder_ensure_cell_size(encoder);
+            if (SIXEL_FAILED(status)) {
+                cell_detail = sixel_helper_get_additional_message();
+                if (cell_detail != NULL && cell_detail[0] != '\0') {
+                    (void) snprintf(cell_message,
+                                    sizeof(cell_message),
+                                    "cannot determine terminal cell size for "
+                                    "-w/--width option: %s",
+                                    cell_detail);
+                    sixel_helper_set_additional_message(cell_message);
+                } else {
+                    sixel_helper_set_additional_message(
+                        "cannot determine terminal cell size for "
+                        "-w/--width option.");
+                }
+                goto end;
+            }
+            /*
+             * Terminal cell units map the requested column count to pixels.
+             * The cell size probe caches the tty geometry so repeated calls
+             * reuse the same measurement.
+             */
+            encoder->pixelwidth = number * encoder->cell_width;
+            encoder->percentwidth = (-1);
         } else if (parsed == 1 || (parsed == 2 && strcmp(unit, "px") == 0)) {
             encoder->pixelwidth = number;
             encoder->percentwidth = (-1);
@@ -5231,6 +5258,30 @@ sixel_encoder_setopt(
         if (parsed == 2 && strcmp(unit, "%") == 0) {
             encoder->pixelheight = (-1);
             encoder->percentheight = number;
+        } else if (parsed == 2 && strcmp(unit, "c") == 0) {
+            status = sixel_encoder_ensure_cell_size(encoder);
+            if (SIXEL_FAILED(status)) {
+                cell_detail = sixel_helper_get_additional_message();
+                if (cell_detail != NULL && cell_detail[0] != '\0') {
+                    (void) snprintf(cell_message,
+                                    sizeof(cell_message),
+                                    "cannot determine terminal cell size for "
+                                    "-h/--height option: %s",
+                                    cell_detail);
+                    sixel_helper_set_additional_message(cell_message);
+                } else {
+                    sixel_helper_set_additional_message(
+                        "cannot determine terminal cell size for "
+                        "-h/--height option.");
+                }
+                goto end;
+            }
+            /*
+             * Rows specified in terminal cells use the current tty metrics to
+             * translate into pixel counts before scaling.
+             */
+            encoder->pixelheight = number * encoder->cell_height;
+            encoder->percentheight = (-1);
         } else if (parsed == 1 || (parsed == 2 && strcmp(unit, "px") == 0)) {
             encoder->pixelheight = number;
             encoder->percentheight = (-1);

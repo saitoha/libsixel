@@ -393,6 +393,8 @@ SIXEL_OPTFLAG_WIDTH            = 'w'  # -w WIDTH, --width=WIDTH:
                                       #                        given percentage
                                       #          <number>   -> scale width with
                                       #                        pixel counts
+                                      #          <number>c  -> scale width with
+                                      #                        terminal cell count
                                       #          <number>px -> scale width with
                                       #                        pixel counts
 
@@ -406,6 +408,8 @@ SIXEL_OPTFLAG_HEIGHT           = 'h'  # -h HEIGHT, --height=HEIGHT:
                                       #                         given percentage
                                       #           <number>   -> scale height with
                                       #                         pixel counts
+                                      #           <number>c  -> scale height with
+                                      #                         terminal cell count
                                       #           <number>px -> scale height with
                                       #                         pixel counts
 

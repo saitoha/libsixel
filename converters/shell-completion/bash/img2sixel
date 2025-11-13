@@ -257,6 +257,14 @@ _img2sixel()
                                    smpte-c' -- "$cur" ) )
         return 0
         ;;
+    -w|--width|-h|--height)
+        # Accepts auto, numeric values, percentages, pixel counts, and
+        # terminal cell counts (<number>c). We only complete the literal
+        # token "auto" so that users can still type suffixes freely.
+        COMPREPLY=( $( compgen -W 'auto' -- "$cur" ) )
+        compopt -o nospace 2>/dev/null
+        return 0
+        ;;
     -o|--outfile)
         _img2sixel_filedir
         return 0

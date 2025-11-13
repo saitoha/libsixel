@@ -235,8 +235,8 @@ _arguments -S -s -A "-*" -S \
   {-f,--find-largest=}'[method for finding the largest dimension in median-cut]':findtype:_findtype \
   {-s,--select-color=}'[method for selecting color from median-cut boxes]':selecttype:_selecttype \
   {-c,--crop=}'[crop image to specified geometory(%dx%d+%d+%d)]' \
-  {-w,--width=}'[resize image to specified width]' \
-  {-h,--height=}'[resize image to specified height]' \
+  {-w,--width=}'[resize image width (auto, numeric, percent, pixel, terminal cell)]' \
+  {-h,--height=}'[resize image height (auto, numeric, percent, pixel, terminal cell)]' \
   {-r,--resampling=}'[choose resampling filter used with -w or -h option]':resamplingtype:_resamplingtype \
   {-q,--quality=}'[select quality of color quanlization]':qualitytype:_qualitytype \
   {-L,--lut-policy=}'[choose histogram lookup width and backend]':lutpolicy:_lutpolicy \

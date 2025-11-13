@@ -512,6 +512,8 @@ Options:
                                            given percentage
                              <number>   -> scale width with
                                            pixel counts
+                             <number>c  -> scale width with
+                                           terminal cell count
                              <number>px -> scale width with
                                            pixel counts
 -h HEIGHT, --height=HEIGHT resize image to specified height
@@ -523,6 +525,8 @@ Options:
                                            given percentage
                              <number>   -> scale height with
                                            pixel counts
+                             <number>c  -> scale height with
+                                           terminal cell count
                              <number>px -> scale height with
                                            pixel counts
 -r RESAMPLINGTYPE, --resampling=RESAMPLINGTYPE
