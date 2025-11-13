@@ -240,7 +240,13 @@ threadpool_create(int nthreads,
         pool->workers[i].workspace = NULL;
         pool->workers[i].started = 0;
         if (workspace_size > 0) {
-            pool->workers[i].workspace = malloc(workspace_size);
+            /*
+             * Zero-initialize the per-thread workspace so that structures like
+             * `sixel_parallel_worker_state_t` start with predictable values.
+             * The worker initialization logic assumes fields such as
+             * `initialized` are cleared before the first job.
+             */
+            pool->workers[i].workspace = calloc(1, workspace_size);
             if (pool->workers[i].workspace == NULL) {
                 pool->shutting_down = 1;
                 sixel_cond_broadcast(&pool->cond_not_empty);

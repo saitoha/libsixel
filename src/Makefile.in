@@ -158,9 +158,8 @@ libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/assessment.c $(srcdir)/assessment.h \
 	$(srcdir)/fromsixel.c $(srcdir)/tosixel.c $(srcdir)/lut.c \
-        $(srcdir)/lut.h $(srcdir)/palette.c $(srcdir)/palette.h \
-        $(srcdir)/dither.c $(srcdir)/dither.h \
-        $(srcdir)/colorspace.c \
+	$(srcdir)/lut.h $(srcdir)/palette.c $(srcdir)/palette.h \
+	$(srcdir)/dither.c $(srcdir)/dither.h $(srcdir)/colorspace.c \
 	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
 	$(srcdir)/pixelformat.c $(srcdir)/pixelformat.h \
 	$(srcdir)/scale.c $(srcdir)/scale.h $(srcdir)/chunk.c \
@@ -176,10 +175,11 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
 	$(srcdir)/allocator.c $(srcdir)/allocator.h $(srcdir)/tty.c \
 	$(srcdir)/tty.h $(srcdir)/sixel_threads_config.h \
-	$(srcdir)/rgblookup.h $(srcdir)/lso2.h \
-	$(srcdir)/sixel_threading.c $(srcdir)/sixel_threading.h \
-	$(srcdir)/threadpool.c $(srcdir)/threadpool.h \
-	$(srcdir)/quicklook_thumbnailing.m $(srcdir)/clipboard_macos.m
+	$(srcdir)/sixel_atomic.h $(srcdir)/rgblookup.h \
+	$(srcdir)/lso2.h $(srcdir)/sixel_threading.c \
+	$(srcdir)/sixel_threading.h $(srcdir)/threadpool.c \
+	$(srcdir)/threadpool.h $(srcdir)/quicklook_thumbnailing.m \
+	$(srcdir)/clipboard_macos.m
 @SIXEL_ENABLE_THREADS_TRUE@am__objects_1 =  \
 @SIXEL_ENABLE_THREADS_TRUE@	libsixel_la-sixel_threading.lo \
 @SIXEL_ENABLE_THREADS_TRUE@	libsixel_la-threadpool.lo
@@ -187,10 +187,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @HAVE_CLIPBOARD_MACOS_TRUE@am__objects_3 =  \
 @HAVE_CLIPBOARD_MACOS_TRUE@	libsixel_la-clipboard_macos.lo
 am_libsixel_la_OBJECTS = libsixel_la-output.lo \
-        libsixel_la-assessment.lo libsixel_la-fromsixel.lo \
-        libsixel_la-tosixel.lo libsixel_la-lut.lo \
-        libsixel_la-palette.lo \
-        libsixel_la-dither.lo \
+	libsixel_la-assessment.lo libsixel_la-fromsixel.lo \
+	libsixel_la-tosixel.lo libsixel_la-lut.lo \
+	libsixel_la-palette.lo libsixel_la-dither.lo \
 	libsixel_la-colorspace.lo libsixel_la-frame.lo \
 	libsixel_la-pixelformat.lo libsixel_la-scale.lo \
 	libsixel_la-chunk.lo libsixel_la-loader.lo \
@@ -544,8 +543,9 @@ libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
 	$(srcdir)/allocator.c $(srcdir)/allocator.h $(srcdir)/tty.c \
 	$(srcdir)/tty.h $(srcdir)/sixel_threads_config.h \
-	$(srcdir)/rgblookup.h $(srcdir)/lso2.h $(am__append_1) \
-	$(am__append_2) $(am__append_3)
+	$(srcdir)/sixel_atomic.h $(srcdir)/rgblookup.h \
+	$(srcdir)/lso2.h $(am__append_1) $(am__append_2) \
+	$(am__append_3)
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS) \
                 @THREAD_CPPFLAGS@
 
