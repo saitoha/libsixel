@@ -6221,10 +6221,19 @@ loader_publish_diagnostic(sixel_chunk_t const *pchunk,
 
     loader_extract_extension(path, extension, sizeof(extension));
 
+#if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
     if (metadata_path != NULL) {
+        /*
+         * Collect MIME metadata via file(1) when fork() and friends are
+         * available.  Windows builds compiled with clang64 lack these
+         * interfaces, so the thumbnail helpers remain disabled there.
+         */
         mime_string = thumbnailer_guess_content_type(metadata_path);
         description_string = thumbnailer_run_file(metadata_path, NULL);
     }
+#else
+    (void)metadata_path;
+#endif
 
 #if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
 #if defined(__clang__)
