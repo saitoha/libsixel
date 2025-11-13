@@ -126,7 +126,10 @@ sixel_quicklook_thumbnail_create(CFURLRef url, CGSize max_size);
 #define SIXEL_THUMBNAILER_DEFAULT_SIZE 512
 
 static int loader_trace_enabled;
+static int thumbnailer_default_size_hint =
+    SIXEL_THUMBNAILER_DEFAULT_SIZE;
 static int thumbnailer_size_hint = SIXEL_THUMBNAILER_DEFAULT_SIZE;
+static int thumbnailer_size_hint_initialized;
 
 #if HAVE_POSIX_SPAWNP
 extern char **environ;
@@ -191,6 +194,54 @@ loader_strdup(char const *text, sixel_allocator_t *allocator)
  * Arguments:
  *     enable - non-zero enables tracing, zero disables it.
  */
+/*
+ * loader_thumbnailer_initialize_size_hint
+ *
+ * Establish the runtime default thumbnail size hint.  The helper inspects
+ * $SIXEL_THUMBNAILER_HINT_SIZE once so administrators can override
+ * SIXEL_THUMBNAILER_DEFAULT_SIZE without recompiling.  Subsequent calls
+ * become no-ops to avoid clobbering adjustments made through
+ * sixel_helper_set_thumbnail_size_hint().
+ */
+static void
+loader_thumbnailer_initialize_size_hint(void)
+{
+    char const *env_value;
+    char *endptr;
+    long parsed;
+
+    if (thumbnailer_size_hint_initialized) {
+        return;
+    }
+
+    thumbnailer_size_hint_initialized = 1;
+    thumbnailer_default_size_hint = SIXEL_THUMBNAILER_DEFAULT_SIZE;
+    thumbnailer_size_hint = thumbnailer_default_size_hint;
+
+    env_value = getenv("SIXEL_THUMBNAILER_HINT_SIZE");
+    if (env_value == NULL || env_value[0] == '\0') {
+        return;
+    }
+
+    errno = 0;
+    parsed = strtol(env_value, &endptr, 10);
+    if (errno != 0) {
+        return;
+    }
+    if (endptr == env_value || *endptr != '\0') {
+        return;
+    }
+    if (parsed <= 0) {
+        return;
+    }
+    if (parsed > (long)INT_MAX) {
+        parsed = (long)INT_MAX;
+    }
+
+    thumbnailer_default_size_hint = (int)parsed;
+    thumbnailer_size_hint = thumbnailer_default_size_hint;
+}
+
 void
 sixel_helper_set_loader_trace(int enable)
 {
@@ -208,10 +259,12 @@ sixel_helper_set_loader_trace(int enable)
 void
 sixel_helper_set_thumbnail_size_hint(int size)
 {
+    loader_thumbnailer_initialize_size_hint();
+
     if (size > 0) {
         thumbnailer_size_hint = size;
     } else {
-        thumbnailer_size_hint = SIXEL_THUMBNAILER_DEFAULT_SIZE;
+        thumbnailer_size_hint = thumbnailer_default_size_hint;
     }
 }
 
@@ -2293,6 +2346,8 @@ load_with_quicklook(
     if (pchunk == NULL || pchunk->source_path == NULL) {
         goto end;
     }
+
+    loader_thumbnailer_initialize_size_hint();
 
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
@@ -4842,6 +4897,8 @@ load_with_gnome_thumbnailer(
     int fd;
     int written;
 
+    loader_thumbnailer_initialize_size_hint();
+
     status = SIXEL_FALSE;
     thumb_chunk = NULL;
     png_path = NULL;
@@ -5972,6 +6029,8 @@ loader_quicklook_can_decode(sixel_chunk_t const *pchunk,
     url = NULL;
     image = NULL;
     result = 0;
+
+    loader_thumbnailer_initialize_size_hint();
 
     if (pchunk != NULL && pchunk->source_path != NULL) {
         path = pchunk->source_path;
