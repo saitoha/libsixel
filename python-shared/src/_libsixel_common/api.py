@@ -29,6 +29,7 @@ from ctypes import (
     c_int,
     c_void_p,
     string_at,
+    cast,
 )
 
 from . import LibraryLoadError, ensure_library, get_library_path
@@ -44,6 +45,36 @@ SIXEL_HEIGHT_LIMIT           = 1000000
 
 # loader settings
 SIXEL_DEFALUT_GIF_DELAY      = 1
+
+# loader option identifiers for sixel_loader_setopt().  The numeric values need
+# to stay in sync with include/sixel.h.in so that Python callers can configure
+# the loader object precisely.  Keeping the mapping here prevents mysterious
+# breakage when new options are introduced in the C API.
+#
+#        +-------------------------------+
+#        |  Python option -> C option    |
+#        +-------------------------------+
+#        | REQUIRE_STATIC  -> (1)        |
+#        | USE_PALETTE     -> (2)        |
+#        | REQCOLORS       -> (3)        |
+#        | BGCOLOR         -> (4)        |
+#        | LOOP_CONTROL    -> (5)        |
+#        | INSECURE        -> (6)        |
+#        | CANCEL_FLAG     -> (7)        |
+#        | LOADER_ORDER    -> (8)        |
+#        | CONTEXT         -> (9)        |
+#        | ASSESSMENT      -> (10)       |
+#        +-------------------------------+
+SIXEL_LOADER_OPTION_REQUIRE_STATIC = 1
+SIXEL_LOADER_OPTION_USE_PALETTE = 2
+SIXEL_LOADER_OPTION_REQCOLORS = 3
+SIXEL_LOADER_OPTION_BGCOLOR = 4
+SIXEL_LOADER_OPTION_LOOP_CONTROL = 5
+SIXEL_LOADER_OPTION_INSECURE = 6
+SIXEL_LOADER_OPTION_CANCEL_FLAG = 7
+SIXEL_LOADER_OPTION_LOADER_ORDER = 8
+SIXEL_LOADER_OPTION_CONTEXT = 9
+SIXEL_LOADER_OPTION_ASSESSMENT = 10
 
 # return value
 SIXEL_OK              = 0x0000
@@ -99,11 +130,11 @@ SIXEL_DIFFUSE_STUCKI       = 0x5  # diffuse with Stucki's method
 SIXEL_DIFFUSE_BURKES       = 0x6  # diffuse with Burkes' method
 SIXEL_DIFFUSE_A_DITHER     = 0x7  # positionally stable arithmetic dither
 SIXEL_DIFFUSE_X_DITHER     = 0x8  # positionally stable arithmetic xor based dither
-SIXEL_DIFFUSE_LSO1         = 0x9  # diffuse with libsixel original method
 SIXEL_DIFFUSE_LSO2         = 0xa  # libsixel method based on variable error
                                   # diffusion
-SIXEL_DIFFUSE_LSO3         = 0xb  # libsixel method based on variable error 
-                                  # diffusion + jitter
+SIXEL_DIFFUSE_SIERRA1      = 0xc  # diffuse with Sierra Lite method
+SIXEL_DIFFUSE_SIERRA2      = 0xd  # diffuse with Sierra Two-row method
+SIXEL_DIFFUSE_SIERRA3      = 0xe  # diffuse with Sierra-3 method
 # scan order for diffusing
 SIXEL_SCAN_AUTO       = 0x0  # choose scan order automatically
 SIXEL_SCAN_RASTER     = 0x1  # scan from left to right on each line
@@ -118,6 +149,14 @@ SIXEL_QUALITY_HIGH      = 0x1  # high quality palette construction
 SIXEL_QUALITY_LOW       = 0x2  # low quality palette construction
 SIXEL_QUALITY_FULL      = 0x3  # full quality palette construction
 SIXEL_QUALITY_HIGHCOLOR = 0x4  # high color
+SIXEL_QUANTIZE_MODEL_AUTO      = 0x0  # choose palette solver automatically
+SIXEL_QUANTIZE_MODEL_MEDIANCUT = 0x1  # Heckbert median-cut solver
+SIXEL_QUANTIZE_MODEL_KMEANS    = 0x2  # k-means palette solver
+SIXEL_FINAL_MERGE_AUTO         = 0x0  # select final merge automatically
+                                      # (defaults to none)
+SIXEL_FINAL_MERGE_NONE         = 0x1  # disable final merge stage
+SIXEL_FINAL_MERGE_WARD         = 0x2  # Ward hierarchical clustering merge
+SIXEL_FINAL_MERGE_HKMEANS      = 0x3  # Hierarchical k-means merge
 
 # built-in dither
 SIXEL_BUILTIN_MONO_DARK   = 0x0  # monochrome terminal with dark background
@@ -169,6 +208,23 @@ SIXEL_ENCODEPOLICY_AUTO    = 0   # choose encoding policy automatically
 SIXEL_ENCODEPOLICY_FAST    = 1   # encode as fast as possible
 SIXEL_ENCODEPOLICY_SIZE    = 2   # encode to as small sixel sequence as possible
 
+# LUT policy constants mirror the C header so that Python callers can request
+# the exact histogram backend they need.  Keeping the numeric values in sync is
+# critical because the encoder forwards them directly to libsixel.
+#
+#   auto ----> channel depth based decision
+#                |
+#         +------+------+---------+
+#         |      |       |
+#      classic  none  certified
+#      (5/6bit)        (certlut)
+#
+SIXEL_LUT_POLICY_AUTO      = 0x0  # choose LUT width automatically
+SIXEL_LUT_POLICY_5BIT      = 0x1  # use legacy 5-bit buckets
+SIXEL_LUT_POLICY_6BIT      = 0x2  # use 6-bit RGB buckets
+SIXEL_LUT_POLICY_NONE      = 0x4  # disable LUT acceleration
+SIXEL_LUT_POLICY_CERTLUT   = 0x5  # certified hierarchical LUT
+
 # method for re-sampling
 SIXEL_RES_NEAREST          = 0   # Use nearest neighbor method
 SIXEL_RES_GAUSSIAN         = 1   # Use guaussian filter
@@ -204,10 +260,14 @@ SIXEL_LOOP_DISABLE         = 2   # always disable loop
 SIXEL_OPTFLAG_INPUT            = 'i'  # -i, --input: specify input file name.
 SIXEL_OPTFLAG_OUTPUT           = 'o'  # -o, --output: specify output file name.
 SIXEL_OPTFLAG_OUTFILE          = 'o'  # -o, --outfile: specify output file name.
+SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT = 'R'  # -R, --gri-limit: clamp DECGRI arguments to 255.
+SIXEL_OPTFLAG_LOADERS          = 'j'  # -j LIST, --loaders=LIST: override loader order.
 SIXEL_OPTFLAG_7BIT_MODE        = '7'  # -7, --7bit-mode: for 7bit terminals or printers (default)
 SIXEL_OPTFLAG_8BIT_MODE        = '8'  # -8, --8bit-mode: for 8bit terminals or printers
+SIXEL_OPTFLAG_6REVERSIBLE      = '6'  # -6, --6reversible: snap palette to reversible tones
 SIXEL_OPTFLAG_COLORS           = 'p'  # -p COLORS, --colors=COLORS: specify number of colors
 SIXEL_OPTFLAG_MAPFILE          = 'm'  # -m FILE, --mapfile=FILE: specify set of colors
+SIXEL_OPTFLAG_MAPFILE_OUTPUT   = 'M'  # -M FILE, --mapfile-output=FILE: export palette file
 SIXEL_OPTFLAG_MONOCHROME       = 'e'  # -e, --monochrome: output monochrome sixel image
 SIXEL_OPTFLAG_INSECURE         = 'k'  # -k, --insecure: allow to connect to SSL sites without certs
 SIXEL_OPTFLAG_INVERT           = 'i'  # -i, --invert: assume the terminal background color
@@ -220,6 +280,20 @@ SIXEL_OPTFLAG_COMPLEXION_SCORE = 'C'  # -C COMPLEXIONSCORE, --complexion-score=C
                                       #        score of complexion correction.
 SIXEL_OPTFLAG_IGNORE_DELAY     = 'g'  # -g, --ignore-delay: render GIF animation without delay
 SIXEL_OPTFLAG_STATIC           = 'S'  # -S, --static: render animated GIF as a static image
+#
+#   +------------+-------------------------------+
+#   | short opt  | semantic scope                |
+#   +------------+-------------------------------+
+#   | -d         | decoder: dequantize palette   |
+#   |            | encoder: diffusion selector   |
+#   | -D         | decoder: emit RGBA (direct)   |
+#   |            | encoder: legacy pipe-mode     |
+#   +------------+-------------------------------+
+#
+# Python callers use these constants with ``Decoder.setopt``.  The table
+# keeps the intent obvious when the same letter spans historic features.
+SIXEL_OPTFLAG_DEQUANTIZE       = 'd'  # -d, --dequantize: repair palette.
+SIXEL_OPTFLAG_DIRECT           = 'D'  # -D, --direct: decode to RGBA pixels.
 SIXEL_OPTFLAG_DIFFUSION        = 'd'  # -d DIFFUSIONTYPE, --diffusion=DIFFUSIONTYPE:
                                       #          choose diffusion method which used with -p option.
                                       #          DIFFUSIONTYPE is one of them:
@@ -231,14 +305,14 @@ SIXEL_OPTFLAG_DIFFUSION        = 'd'  # -d DIFFUSIONTYPE, --diffusion=DIFFUSIONT
                                       #            jajuni   -> Jarvis, Judice & Ninke
                                       #            stucki   -> Stucki's method
                                       #            burkes   -> Burkes' method
+                                      #            sierra1  -> Sierra Lite method
+                                      #            sierra2  -> Sierra Two-row method
+                                      #            sierra3  -> Sierra-3 method
                                       #            a_dither -> positionally stable
                                       #                        arithmetic dither
                                       #            x_dither -> positionally stable
                                       #                        arithmetic xor based dither
-                                      #            lso1     -> libsixel's original method
                                       #            lso2     -> libsixel method based on
-                                      #                        variable error diffusion
-                                      #            lso3     -> libsixel method based on
                                       #                        variable error diffusion
                                       #                        + jitter
 SIXEL_OPTFLAG_DIFFUSION_SCAN   = 'y'  # -y SCANTYPE, --diffusion-scan=SCANTYPE:
@@ -254,6 +328,12 @@ SIXEL_OPTFLAG_DIFFUSION_SCAN   = 'y'  # -y SCANTYPE, --diffusion-scan=SCANTYPE:
                                       #                          scan
                                       #            serpentine -> alternate direction
                                       #                          on each line
+
+SIXEL_OPTFLAG_DIFFUSION_CARRY  = 'Y'  # -Y CARRYTYPE, --diffusion-carry=CARRYTYPE:
+                                      #        control diffusion carry buffers.
+                                      #          auto   -> choose automatically
+                                      #          direct -> write error back immediately
+                                      #          carry  -> accumulate in workspace lines
 
 SIXEL_OPTFLAG_FIND_LARGEST     = 'f'  # -f FINDTYPE, --find-largest=FINDTYPE:
                                       #         choose method for finding the largest
@@ -287,6 +367,16 @@ SIXEL_OPTFLAG_SELECT_COLOR     = 's'  # -s SELECTTYPE, --select-color=SELECTTYPE
                                       #          histogram -> similar with average
                                       #                       but considers color
                                       #                       histogram
+SIXEL_OPTFLAG_QUANTIZE_MODEL   = 'Q'  # -Q MODEL, --quantize-model=MODEL:
+                                      #        choose the palette solver.
+                                      #        MODEL is one of them:
+                                      #          auto     -> select solver
+                                      #                      automatically
+                                      #                      (Heckbert)
+                                      #          heckbert -> Heckbert median-cut
+                                      #          kmeans   -> k-means palette
+                                      #                      clustering
+SIXEL_OPTFLAG_FINAL_MERGE     = 'F'  # -F MODE, --final-merge=MODE: final merge policy
 
 SIXEL_OPTFLAG_CROP             = 'c'  # -c REGION, --crop=REGION:
                                       #        crop source image to fit the
@@ -381,6 +471,27 @@ SIXEL_OPTFLAG_ENCODE_POLICY    = 'E'  # -E ENCODEPOLICY, --encode-policy=ENCODEP
                                       #          fast -> encode as fast as possible
                                       #          size -> encode to as small sixel
                                       #                  sequence as possible
+SIXEL_OPTFLAG_LUT_POLICY        = 'L'  # -L LUTPOLICY, --lut-policy=LUTPOLICY:
+                                      #        choose histogram lookup width.
+                                      #          auto    -> follow pixel depth
+                                      #          5bit    -> force 5-bit buckets
+                                      #          6bit    -> force 6-bit buckets
+                                      #                     (RGB inputs)
+                                      #          none    -> disable LUT caching
+                                      #                     and scan directly
+                                      #          certlut -> certified
+                                      #                     hierarchical LUT
+                                      #                     with zero error
+SIXEL_OPTFLAG_WORKING_COLORSPACE = 'W'  # -W WORKING_COLORSPACE, --working-colorspace=WORKING_COLORSPACE:
+                                      #        select internal working space.
+                                      #          gamma  -> keep gamma encoded pixels
+                                      #          linear -> convert to linear RGB
+                                      #          oklab  -> operate in OKLab
+SIXEL_OPTFLAG_OUTPUT_COLORSPACE = 'U'  # -U OUTPUT_COLORSPACE, --output-colorspace=OUTPUT_COLORSPACE:
+                                      #        select output buffer color space.
+                                      #          gamma   -> sRGB gamma encoded output
+                                      #          linear  -> linear RGB output
+                                      #          smpte-c -> SMPTE-C gamma encoded output
 SIXEL_OPTFLAG_ORMODE           = 'O'  # -O, --ormode: output ormode sixel image
 
 SIXEL_OPTFLAG_BGCOLOR          = 'B'  # -B BGCOLOR, --bgcolor=BGCOLOR:
@@ -399,8 +510,11 @@ SIXEL_OPTFLAG_BGCOLOR          = 'B'  # -B BGCOLOR, --bgcolor=BGCOLOR:
 SIXEL_OPTFLAG_PENETRATE        = 'P'  # -P, --penetrate: (deprecated)
                                       #        penetrate GNU Screen using DCS
                                       #        pass-through sequence
-SIXEL_OPTFLAG_DRCS             = '@'  # -@, --drcs: emit DRCSMMv1 tiles instead of
-                                      #        regular SIXEL image
+SIXEL_OPTFLAG_DRCS             = '@'  # -@ MMV:CHARSET:PATH, --drcs=MMV:CHARSET:PATH:
+                                      #        emit extended DRCS tiles, optionally
+                                      #        overriding mapping revision, charset,
+                                      #        and tile sink (defaults to 2:1:;
+                                      #        experimental)
 SIXEL_OPTFLAG_PIPE_MODE        = 'D'  # -D, --pipe-mode: (deprecated)
                                       #         read source images from stdin continuously
 SIXEL_OPTFLAG_VERBOSE          = 'v'  # -v, --verbose: show debugging info
@@ -428,6 +542,160 @@ def sixel_helper_compute_depth(pixelformat):
     _sixel.sixel_helper_compute_depth.restype = c_int
     _sixel.sixel_encoder_encode.argtypes = [c_int]
     return _sixel.sixel_helper_compute_depth(pixelformat)
+
+
+# generic loader -----------------------------------------------------------
+
+_sixel_loader_callback_type = CFUNCTYPE(c_int, c_void_p, c_void_p)
+
+
+def sixel_loader_new(allocator=c_void_p(None)):
+    """Create a loader object that mirrors sixel_loader_new()."""
+
+    _sixel.sixel_loader_new.restype = c_int
+    _sixel.sixel_loader_new.argtypes = [POINTER(c_void_p), c_void_p]
+
+    loader = c_void_p(None)
+    status = _sixel.sixel_loader_new(byref(loader), allocator)
+    if SIXEL_FAILED(status):
+        message = sixel_helper_format_error(status)
+        raise RuntimeError(message)
+    return loader
+
+
+def sixel_loader_ref(loader):
+    """Increase the reference count of a loader object."""
+
+    _sixel.sixel_loader_ref.restype = None
+    _sixel.sixel_loader_ref.argtypes = [c_void_p]
+    _sixel.sixel_loader_ref(loader)
+
+
+def sixel_loader_unref(loader):
+    """Decrease the reference count of a loader object."""
+
+    _sixel.sixel_loader_unref.restype = None
+    _sixel.sixel_loader_unref.argtypes = [c_void_p]
+    _sixel.sixel_loader_unref(loader)
+
+
+def sixel_loader_setopt(loader, option, value=None):
+    """Configure loader behavior via sixel_loader_setopt().
+
+    The helper routes Python values into the pointer-based C API while keeping
+    the conversion rules in plain sight:
+
+        +-----------+---------------------------+---------------------+
+        | Option    | Expected Python value     | Example             |
+        +-----------+---------------------------+---------------------+
+        | STATIC    | bool/int or None          | True                |
+        | PALETTE   | bool/int or None          | 0                   |
+        | REQCOLORS | int or None               | 256                 |
+        | BGCOLOR   | iterable[3] or None       | (0, 0, 0)           |
+        | LOOP      | int or None               | SIXEL_LOOP_FORCE    |
+        | INSECURE  | bool/int or None          | False               |
+        | CANCEL    | ctypes pointer / address  | byref(c_int(0))     |
+        | ORDER     | str/bytes or None         | "stb,png"           |
+        | CONTEXT   | ctypes pointer / address  | c_void_p(id(obj))   |
+        | ASSESSMENT| ctypes pointer / address  | c_void_p(id(obj))   |
+        +-----------+---------------------------+---------------------+
+
+    Values left as ``None`` map to NULL so that the C side may install its
+    default behavior.
+    """
+
+    _sixel.sixel_loader_setopt.restype = c_int
+    _sixel.sixel_loader_setopt.argtypes = [c_void_p, c_int, c_void_p]
+
+    option = int(option)
+    pointer_value = c_void_p(None)
+    keepalive = None
+
+    int_options = {
+        SIXEL_LOADER_OPTION_REQUIRE_STATIC,
+        SIXEL_LOADER_OPTION_USE_PALETTE,
+        SIXEL_LOADER_OPTION_REQCOLORS,
+        SIXEL_LOADER_OPTION_LOOP_CONTROL,
+        SIXEL_LOADER_OPTION_INSECURE,
+    }
+
+    if option in int_options:
+        if value is not None:
+            keepalive = c_int(int(value))
+            pointer_value = cast(byref(keepalive), c_void_p)
+    elif option == SIXEL_LOADER_OPTION_BGCOLOR:
+        if value is not None:
+            if len(value) != 3:
+                raise ValueError("bgcolor expects three components")
+            keepalive = (c_byte * 3)(value[0], value[1], value[2])
+            pointer_value = cast(keepalive, c_void_p)
+    elif option == SIXEL_LOADER_OPTION_LOADER_ORDER:
+        if value is not None:
+            if isinstance(value, bytes):
+                encoded = value
+            else:
+                encoded = str(value).encode('utf-8')
+            keepalive = c_char_p(encoded)
+            pointer_value = cast(keepalive, c_void_p)
+    elif option in (
+        SIXEL_LOADER_OPTION_CANCEL_FLAG,
+        SIXEL_LOADER_OPTION_CONTEXT,
+        SIXEL_LOADER_OPTION_ASSESSMENT,
+    ):
+        if value is None:
+            pointer_value = c_void_p(None)
+        elif isinstance(value, c_void_p):
+            pointer_value = value
+        elif isinstance(value, int):
+            pointer_value = c_void_p(value)
+        else:
+            pointer_value = cast(value, c_void_p)
+    else:
+        raise ValueError("unknown loader option: %r" % option)
+
+    status = _sixel.sixel_loader_setopt(loader, option, pointer_value)
+    if SIXEL_FAILED(status):
+        message = sixel_helper_format_error(status)
+        raise RuntimeError(message)
+
+
+def sixel_loader_load_file(loader, filename, fn_load):
+    """Load ``filename`` and feed each frame to ``fn_load``.
+
+    ``fn_load`` receives ``(frame_ptr, context_ptr)`` mirroring the C
+    signature.  The loader's context pointer may be set via
+    ``sixel_loader_setopt``.
+    """
+
+    import locale
+
+    if fn_load is None:
+        raise ValueError("fn_load callback is required")
+
+    _sixel.sixel_loader_load_file.restype = c_int
+    _sixel.sixel_loader_load_file.argtypes = [
+        c_void_p,
+        c_char_p,
+        _sixel_loader_callback_type,
+    ]
+
+    _language, encoding = locale.getdefaultlocale()
+    if not encoding:
+        encoding = 'utf-8'
+
+    if filename is None:
+        c_filename = None
+    else:
+        c_filename = filename.encode(encoding)
+
+    def _fn_load_local(frame, context):
+        return fn_load(frame, context)
+
+    callback = _sixel_loader_callback_type(_fn_load_local)
+    status = _sixel.sixel_loader_load_file(loader, c_filename, callback)
+    if SIXEL_FAILED(status):
+        message = sixel_helper_format_error(status)
+        raise RuntimeError(message)
 
 
 # create new output context object
@@ -660,6 +928,51 @@ def sixel_dither_set_transparent(dither, transparent):
     _sixel.sixel_dither_set_transparent.restype = None
     _sixel.sixel_dither_set_transparent.argtypes = [c_void_p, c_int]
     _sixel.sixel_dither_set_transparent(dither, transparent)
+
+
+# configure the encoder thread count for band parallelism
+def sixel_set_threads(threads):
+    auto_requested = False
+    value = 0
+    text = None
+
+    if isinstance(threads, bytes):
+        try:
+            text = threads.decode('utf-8').strip()
+        except UnicodeDecodeError as exc:
+            raise ValueError(
+                "threads must be a positive integer or 'auto'"
+            ) from exc
+    elif isinstance(threads, str):
+        text = threads.strip()
+    else:
+        text = None
+
+    if text is not None:
+        if text.lower() == 'auto':
+            auto_requested = True
+            value = 0
+        else:
+            try:
+                value = int(text, 10)
+            except ValueError as exc:
+                raise ValueError(
+                    "threads must be a positive integer or 'auto'"
+                ) from exc
+    else:
+        try:
+            value = int(threads)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(
+                "threads must be a positive integer or 'auto'"
+            ) from exc
+
+    if auto_requested is False and value < 1:
+        raise ValueError("threads must be a positive integer or 'auto'")
+
+    _sixel.sixel_set_threads.restype = None
+    _sixel.sixel_set_threads.argtypes = [c_int]
+    _sixel.sixel_set_threads(value)
 
 
 # convert pixels into sixel format and write it to output context
