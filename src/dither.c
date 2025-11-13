@@ -44,6 +44,23 @@
 #include "assessment.h"
 #include <sixel.h>
 
+/*
+ * Notify the pipeline controller when a scanline completes PaletteApply.
+ * The encoder installs a callback so the producer can release each band as
+ * soon as all six rows have been finalized.
+ */
+static void
+sixel_dither_pipeline_row_notify(sixel_dither_t *dither, int row_index)
+{
+    if (dither == NULL) {
+        return;
+    }
+    if (dither->pipeline_row_callback == NULL) {
+        return;
+    }
+    dither->pipeline_row_callback(dither->pipeline_row_priv, row_index);
+}
+
 
 static const unsigned char pal_mono_dark[] = {
     0x00, 0x00, 0x00, 0xff, 0xff, 0xff
@@ -703,7 +720,8 @@ sixel_dither_apply_positional(
     unsigned char copy[],
     unsigned char new_palette[],
     unsigned short migration_map[],
-    int *ncolors)
+    int *ncolors,
+    sixel_dither_t *dither)
 {
     int serpentine;
     int y;
@@ -767,6 +785,7 @@ sixel_dither_apply_positional(
                     result[pos] = migration_map[color_index] - 1;
                 }
             }
+            sixel_dither_pipeline_row_notify(dither, y);
         }
         memcpy(palette, new_palette, (size_t)(*ncolors * depth));
     } else {
@@ -798,6 +817,7 @@ sixel_dither_apply_positional(
                                        reqcolor, indextable,
                                        complexion);
             }
+            sixel_dither_pipeline_row_notify(dither, y);
         }
         *ncolors = reqcolor;
     }
@@ -829,7 +849,8 @@ sixel_dither_apply_variable(
     unsigned short migration_map[],
     int *ncolors,
     int methodForDiffuse,
-    int methodForCarry)
+    int methodForCarry,
+    sixel_dither_t *dither)
 {
     SIXELSTATUS status = SIXEL_FALSE;
 #if _MSC_VER
@@ -1023,6 +1044,7 @@ sixel_dither_apply_variable(
                 memset(carry_far, 0x00, carry_len * sizeof(int32_t));
             }
         }
+        sixel_dither_pipeline_row_notify(dither, y);
     }
 
     if (foptimize_palette) {
@@ -1064,7 +1086,8 @@ sixel_dither_apply_fixed(
     unsigned short migration_map[],
     int *ncolors,
     int methodForDiffuse,
-    int methodForCarry)
+    int methodForCarry,
+    sixel_dither_t *dither)
 {
 #if _MSC_VER
     enum { max_channels = 4 };
@@ -1288,6 +1311,7 @@ sixel_dither_apply_fixed(
                 memset(carry_far, 0x00, carry_len * sizeof(int32_t));
             }
         }
+        sixel_dither_pipeline_row_notify(dither, y);
     }
 
     if (foptimize_palette) {
@@ -2511,7 +2535,8 @@ sixel_dither_map_pixels(
     int               /* in */  method_for_largest,
     sixel_lut_t       /* in */  *lut,
     int               /* in */  *ncolors,
-    sixel_allocator_t /* in */  *allocator)
+    sixel_allocator_t /* in */  *allocator,
+    sixel_dither_t    /* in */  *dither)
 {
 #if _MSC_VER
     enum { max_depth = 4 };
@@ -2642,7 +2667,7 @@ sixel_dither_map_pixels(
                                           foptimize_palette, f_lookup,
                                           NULL, complexion, copy,
                                           new_palette, migration_map,
-                                          ncolors);
+                                          ncolors, dither);
     } else if (use_varerr) {
         status = sixel_dither_apply_variable(result, data, width, height,
                                         depth, palette, reqcolor,
@@ -2651,7 +2676,8 @@ sixel_dither_map_pixels(
                                         new_palette, migration_map,
                                         ncolors,
                                         methodForDiffuse,
-                                        carry_mode);
+                                        carry_mode,
+                                        dither);
     } else {
         status = sixel_dither_apply_fixed(result, data, width, height,
                                      depth, palette, reqcolor,
@@ -2659,7 +2685,8 @@ sixel_dither_map_pixels(
                                      f_lookup, NULL, complexion,
                                      new_palette, migration_map,
                                      ncolors, methodForDiffuse,
-                                     carry_mode);
+                                     carry_mode,
+                                     dither);
     }
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -2738,7 +2765,8 @@ sixel_dither_resolve_indexes(sixel_index_t *result,
                              int lut_policy,
                              int method_for_largest,
                              int *ncolors,
-                             sixel_allocator_t *allocator)
+                             sixel_allocator_t *allocator,
+                             sixel_dither_t *dither)
 {
     SIXELSTATUS status = SIXEL_FALSE;
 
@@ -2750,23 +2778,24 @@ sixel_dither_resolve_indexes(sixel_index_t *result,
     sixel_palette_set_method_for_largest(method_for_largest);
 
     status = sixel_dither_map_pixels(result,
-                                       data,
-                                       width,
-                                       height,
-                                       depth,
-                                       palette->entries,
-                                       reqcolor,
-                                       method_for_diffuse,
-                                       method_for_scan,
-                                       method_for_carry,
-                                       foptimize,
-                                       foptimize_palette,
-                                       complexion,
-                                       lut_policy,
-                                       method_for_largest,
-                                       palette->lut,
-                                       ncolors,
-                                       allocator);
+                                     data,
+                                     width,
+                                     height,
+                                     depth,
+                                     palette->entries,
+                                     reqcolor,
+                                     method_for_diffuse,
+                                     method_for_scan,
+                                     method_for_carry,
+                                     foptimize,
+                                     foptimize_palette,
+                                     complexion,
+                                     lut_policy,
+                                     method_for_largest,
+                                     palette->lut,
+                                     ncolors,
+                                     allocator,
+                                     dither);
 
     return status;
 }
@@ -2900,6 +2929,11 @@ sixel_dither_new(
     (*ppdither)->sixel_reversible = 0;
     (*ppdither)->quantize_model = SIXEL_QUANTIZE_MODEL_AUTO;
     (*ppdither)->final_merge_mode = SIXEL_FINAL_MERGE_AUTO;
+    (*ppdither)->pipeline_row_callback = NULL;
+    (*ppdither)->pipeline_row_priv = NULL;
+    (*ppdither)->pipeline_index_buffer = NULL;
+    (*ppdither)->pipeline_index_size = 0;
+    (*ppdither)->pipeline_index_owned = 0;
 
     status = sixel_palette_new(&(*ppdither)->palette, allocator);
     if (SIXEL_FAILED(status)) {
@@ -3534,6 +3568,7 @@ sixel_dither_apply_palette(
     double palette_finished_at;
     double palette_duration;
     sixel_palette_t *palette;
+    int dest_owned;
 
     /* ensure dither object is not null */
     if (dither == NULL) {
@@ -3554,13 +3589,26 @@ sixel_dither_apply_palette(
     }
 
     bufsize = (size_t)(width * height) * sizeof(sixel_index_t);
-    dest = (sixel_index_t *)sixel_allocator_malloc(dither->allocator, bufsize);
-    if (dest == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_dither_new: sixel_allocator_malloc() failed.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
+    /*
+     * Reuse the externally allocated index buffer when the pipeline has
+     * already provisioned storage for the producer/worker hand-off.
+     */
+    if (dither->pipeline_index_buffer != NULL &&
+            dither->pipeline_index_size >= bufsize) {
+        dest = dither->pipeline_index_buffer;
+        dest_owned = 0;
+    } else {
+        dest = (sixel_index_t *)sixel_allocator_malloc(dither->allocator,
+                                                       bufsize);
+        if (dest == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_dither_new: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        dest_owned = 1;
     }
+    dither->pipeline_index_owned = dest_owned;
 
     /*
      * Disable palette caching when the caller selected the NONE policy so
@@ -3690,7 +3738,8 @@ sixel_dither_apply_palette(
                                           dither->lut_policy,
                                           dither->method_for_largest,
                                           &ncolors,
-                                          dither->allocator);
+                                          dither->allocator,
+                                          dither);
     if (palette_probe_active) {
         palette_finished_at = sixel_assessment_timer_now();
         palette_duration = palette_finished_at - palette_started_at;
@@ -3700,7 +3749,9 @@ sixel_dither_apply_palette(
         sixel_assessment_record_palette_apply_span(palette_duration);
     }
     if (SIXEL_FAILED(status)) {
-        sixel_allocator_free(dither->allocator, dest);
+        if (dest != NULL && dest_owned) {
+            sixel_allocator_free(dither->allocator, dest);
+        }
         dest = NULL;
         goto end;
     }
@@ -3713,6 +3764,9 @@ end:
         sixel_allocator_free(dither->allocator, normalized_pixels);
     }
     sixel_dither_unref(dither);
+    dither->pipeline_index_buffer = NULL;
+    dither->pipeline_index_owned = 0;
+    dither->pipeline_index_size = 0;
     return dest;
 }
 
