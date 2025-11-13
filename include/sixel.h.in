@@ -389,6 +389,8 @@ typedef int SIXELSTATUS;
                                                                   given percentage
                                                     <number>   -> scale width with
                                                                   pixel counts
+                                                    <number>c  -> scale width with
+                                                                  terminal cell count
                                                     <number>px -> scale width with
                                                                   pixel counts
                                                 */
@@ -402,6 +404,8 @@ typedef int SIXELSTATUS;
                                                                    given percentage
                                                      <number>   -> scale height with
                                                                    pixel counts
+                                                     <number>c  -> scale height with
+                                                                   terminal cell count
                                                      <number>px -> scale height with
                                                                    pixel counts
                                                 */
