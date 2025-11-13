@@ -397,6 +397,8 @@ static img2sixel_option_help_t const g_option_help_table[] = {
         "                                           given percentage\n"
         "                             <number>   -> scale width with\n"
         "                                           pixel counts\n"
+        "                             <number>c  -> scale width with\n"
+        "                                           terminal cell count\n"
         "                             <number>px -> scale width with\n"
         "                                           pixel counts\n"
     },
@@ -412,6 +414,8 @@ static img2sixel_option_help_t const g_option_help_table[] = {
         "                                           given percentage\n"
         "                             <number>   -> scale height with\n"
         "                                           pixel counts\n"
+        "                             <number>c  -> scale height with\n"
+        "                                           terminal cell count\n"
         "                             <number>px -> scale height with\n"
         "                                           pixel counts\n"
     },
