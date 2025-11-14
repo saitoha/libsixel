@@ -52,7 +52,8 @@ static unsigned char const sixel_safe_tones[256] = {
     255
 };
 
-#define sixel_palette_reversible_value(sample) sixel_safe_tones[sample >= 255 ? 255: sample];
+#define sixel_palette_reversible_value(sample) \
+    sixel_safe_tones[sample >= 255 ? 255: sample];
 
 struct histogram_control {
     unsigned int channel_shift;
@@ -89,6 +90,9 @@ sixel_lut_new(sixel_lut_t **out,
               int policy,
               sixel_allocator_t *allocator);
 
+void
+sixel_lut_unref(sixel_lut_t *lut);
+
 SIXELSTATUS
 sixel_lut_configure(sixel_lut_t *lut,
                     unsigned char const *palette,
@@ -100,9 +104,11 @@ sixel_lut_configure(sixel_lut_t *lut,
                     int wB,
                     int policy);
 
+/* lookup */
 int
 sixel_lut_map_pixel(sixel_lut_t *lut, unsigned char const *pixel);
 
+/* build */
 SIXELSTATUS
 sixel_lut_build_histogram(unsigned char const *data,
                           unsigned int length,
@@ -113,11 +119,6 @@ sixel_lut_build_histogram(unsigned char const *data,
                           tupletable2 *colorfreqtable,
                           sixel_allocator_t *allocator);
 
-void
-sixel_lut_clear(sixel_lut_t *lut);
-
-void
-sixel_lut_unref(sixel_lut_t *lut);
 
 #ifdef __cplusplus
 }
