@@ -106,6 +106,20 @@ sixel_palette_make_palette(unsigned char **result,
                            int final_merge_mode,
                            sixel_allocator_t *allocator);
 
+SIXELSTATUS
+sixel_palette_build_heckbert(sixel_palette_t *palette,
+                             unsigned char const *data,
+                             unsigned int length,
+                             int pixelformat,
+                             sixel_allocator_t *allocator);
+
+SIXELSTATUS
+sixel_palette_build_kmeans(sixel_palette_t *palette,
+                           unsigned char const *data,
+                           unsigned int length,
+                           int pixelformat,
+                           sixel_allocator_t *allocator);
+
 void
 sixel_palette_free_palette(unsigned char *data,
                            sixel_allocator_t *allocator);

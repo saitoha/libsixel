@@ -24,6 +24,8 @@ srcs = [
   'fromsixel.c',
   'tosixel.c',
   'assessment.c',
+  'palette-heckbert.c',
+  'palette-kmeans.c',
   'palette.c',
   'lut.c',
   'dither.c',
