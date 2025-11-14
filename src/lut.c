@@ -62,7 +62,6 @@
 #include "allocator.h"
 #include "lut.h"
 
-
 #define SIXEL_LUT_BRANCH_FLAG 0x40000000U
 /* #define DEBUG_LUT_TRACE 1 */
 
@@ -248,17 +247,6 @@ histogram_control_make_for_policy(unsigned int depth, int lut_policy)
     }
     control.channel_bits = 8U - control.channel_shift;
     control.channel_mask = (1U << control.channel_bits) - 1U;
-
-    return control;
-}
-
-struct histogram_control
-histogram_control_make(unsigned int depth)
-{
-    struct histogram_control control;
-
-    control = histogram_control_make_for_policy(depth,
-                                                SIXEL_LUT_POLICY_AUTO);
 
     return control;
 }
@@ -661,81 +649,6 @@ sixel_lut_lookup_fast(sixel_lut_t *lut, unsigned char const *pixel)
     return result;
 }
 
-static void sixel_certlut_cell_center(int rmin, int gmin, int bmin, int size,
-                                      int *cr, int *cg, int *cb);
-static void sixel_certlut_weight_init(sixel_certlut_t *lut,
-                                      int wR,
-                                      int wG,
-                                      int wB);
-static uint64_t sixel_certlut_distance_precomputed(
-    sixel_certlut_t const *lut,
-    int index,
-    int32_t wr_r,
-    int32_t wg_g,
-    int32_t wb_b);
-static int sixel_certlut_palette_component(sixel_certlut_t const *lut,
-                                           int index,
-                                           int axis);
-static void sixel_certlut_sort_indices(sixel_certlut_t const *lut,
-                                       int *indices,
-                                   int count,
-                                   int axis);
-static SIXELSTATUS sixel_certlut_kdtree_build(sixel_certlut_t *lut);
-static int sixel_certlut_kdtree_build_recursive(sixel_certlut_t *lut,
-                                            int *indices,
-                                            int count,
-                                            int depth);
-static uint64_t sixel_certlut_axis_distance(sixel_certlut_t const *lut,
-                                        int diff,
-                                        int axis);
-static void sixel_certlut_consider_candidate(sixel_certlut_t const *lut,
-                                         int candidate,
-                                         int32_t wr_r,
-                                         int32_t wg_g,
-                                         int32_t wb_b,
-                                         int *best_idx,
-                                         uint64_t *best_dist,
-                                         int *second_idx,
-                                         uint64_t *second_dist);
-static void sixel_certlut_kdtree_search(sixel_certlut_t const *lut,
-                                    int node_index,
-                                    int r,
-                                    int g,
-                                    int b,
-                                    int32_t wr_r,
-                                    int32_t wg_g,
-                                    int32_t wb_b,
-                                    int *best_idx,
-                                    uint64_t *best_dist,
-                                    int *second_idx,
-                                    uint64_t *second_dist);
-static void sixel_certlut_distance_pair(sixel_certlut_t const *lut,
-                                    int r,
-                                    int g,
-                                    int b,
-                                    int *best_idx,
-                                    int *second_idx,
-                                    uint64_t *best_dist,
-                                    uint64_t *second_dist);
-static int sixel_certlut_is_cell_safe(sixel_certlut_t const *lut,
-                                  int best_idx,
-                                  int second_idx,
-                                  int size,
-                                  uint64_t best_dist,
-                                  uint64_t second_dist);
-static uint32_t sixel_certlut_pool_alloc(sixel_certlut_t *lut, int *status);
-static void sixel_certlut_assign_leaf(uint32_t *cell, int palette_index);
-static void sixel_certlut_assign_branch(uint32_t *cell, uint32_t offset);
-static uint8_t sixel_certlut_fallback(sixel_certlut_t const *lut,
-                                  int r,
-                                  int g,
-                                  int b);
-static int sixel_certlut_build_cell(sixel_certlut_t *lut,
-                                uint32_t *cell,
-                                int rmin,
-                                int gmin,
-                                int bmin,
-                                int size);
 static int
 sixel_certlut_init(sixel_certlut_t *lut)
 {
@@ -907,90 +820,6 @@ sixel_certlut_distance_precomputed(sixel_certlut_t const *lut,
     distance += (uint64_t)(diff * diff);
 
     return distance;
-}
-
-static void
-sixel_certlut_distance_pair(sixel_certlut_t const *lut, int r, int g, int b,
-                          int *best_idx, int *second_idx,
-                          uint64_t *best_dist, uint64_t *second_dist)
-{
-    int i;
-    int best_candidate;
-    int second_candidate;
-    uint64_t best_value;
-    uint64_t second_value;
-    uint64_t distance;
-    int rr;
-    int gg;
-    int bb;
-    int32_t wr_r;
-    int32_t wg_g;
-    int32_t wb_b;
-
-    best_candidate = (-1);
-    second_candidate = (-1);
-    best_value = UINT64_MAX;
-    second_value = UINT64_MAX;
-    rr = r;
-    gg = g;
-    bb = b;
-    if (rr < 0) {
-        rr = 0;
-    } else if (rr > 255) {
-        rr = 255;
-    }
-    if (gg < 0) {
-        gg = 0;
-    } else if (gg > 255) {
-        gg = 255;
-    }
-    if (bb < 0) {
-        bb = 0;
-    } else if (bb > 255) {
-        bb = 255;
-    }
-    wr_r = lut->wr_scale[rr];
-    wg_g = lut->wg_scale[gg];
-    wb_b = lut->wb_scale[bb];
-    if (lut->kdnodes != NULL && lut->kdtree_root >= 0) {
-        sixel_certlut_kdtree_search(lut,
-                                    lut->kdtree_root,
-                                    r,
-                                    g,
-                                    b,
-                                    wr_r,
-                                    wg_g,
-                                    wb_b,
-                                    &best_candidate,
-                                    &best_value,
-                                    &second_candidate,
-                                    &second_value);
-    } else {
-        for (i = 0; i < lut->ncolors; ++i) {
-            distance = sixel_certlut_distance_precomputed(lut,
-                                                          i,
-                                                          wr_r,
-                                                          wg_g,
-                                                          wb_b);
-            if (distance < best_value) {
-                second_value = best_value;
-                second_candidate = best_candidate;
-                best_value = distance;
-                best_candidate = i;
-            } else if (distance < second_value) {
-                second_value = distance;
-                second_candidate = i;
-            }
-        }
-    }
-    if (second_candidate < 0) {
-        second_candidate = best_candidate;
-        second_value = best_value;
-    }
-    *best_idx = best_candidate;
-    *second_idx = second_candidate;
-    *best_dist = best_value;
-    *second_dist = second_value;
 }
 
 static int
@@ -1344,6 +1173,90 @@ sixel_certlut_kdtree_search(sixel_certlut_t const *lut,
                                     second_idx,
                                     second_dist);
     }
+}
+
+static void
+sixel_certlut_distance_pair(sixel_certlut_t const *lut, int r, int g, int b,
+                          int *best_idx, int *second_idx,
+                          uint64_t *best_dist, uint64_t *second_dist)
+{
+    int i;
+    int best_candidate;
+    int second_candidate;
+    uint64_t best_value;
+    uint64_t second_value;
+    uint64_t distance;
+    int rr;
+    int gg;
+    int bb;
+    int32_t wr_r;
+    int32_t wg_g;
+    int32_t wb_b;
+
+    best_candidate = (-1);
+    second_candidate = (-1);
+    best_value = UINT64_MAX;
+    second_value = UINT64_MAX;
+    rr = r;
+    gg = g;
+    bb = b;
+    if (rr < 0) {
+        rr = 0;
+    } else if (rr > 255) {
+        rr = 255;
+    }
+    if (gg < 0) {
+        gg = 0;
+    } else if (gg > 255) {
+        gg = 255;
+    }
+    if (bb < 0) {
+        bb = 0;
+    } else if (bb > 255) {
+        bb = 255;
+    }
+    wr_r = lut->wr_scale[rr];
+    wg_g = lut->wg_scale[gg];
+    wb_b = lut->wb_scale[bb];
+    if (lut->kdnodes != NULL && lut->kdtree_root >= 0) {
+        sixel_certlut_kdtree_search(lut,
+                                    lut->kdtree_root,
+                                    r,
+                                    g,
+                                    b,
+                                    wr_r,
+                                    wg_g,
+                                    wb_b,
+                                    &best_candidate,
+                                    &best_value,
+                                    &second_candidate,
+                                    &second_value);
+    } else {
+        for (i = 0; i < lut->ncolors; ++i) {
+            distance = sixel_certlut_distance_precomputed(lut,
+                                                          i,
+                                                          wr_r,
+                                                          wg_g,
+                                                          wb_b);
+            if (distance < best_value) {
+                second_value = best_value;
+                second_candidate = best_candidate;
+                best_value = distance;
+                best_candidate = i;
+            } else if (distance < second_value) {
+                second_value = distance;
+                second_candidate = i;
+            }
+        }
+    }
+    if (second_candidate < 0) {
+        second_candidate = best_candidate;
+        second_value = best_value;
+    }
+    *best_idx = best_candidate;
+    *second_idx = second_candidate;
+    *best_dist = best_value;
+    *second_dist = second_value;
 }
 
 static uint8_t
@@ -1780,20 +1693,6 @@ sixel_lut_map_pixel(sixel_lut_t *lut, unsigned char const *pixel)
     }
 
     return sixel_lut_lookup_fast(lut, pixel);
-}
-
-uint8_t
-sixel_lut_map_rgb(sixel_lut_t *lut, uint8_t r, uint8_t g, uint8_t b)
-{
-    unsigned char pixel[3];
-
-    if (lut == NULL) {
-        return 0U;
-    }
-    pixel[0] = r;
-    pixel[1] = g;
-    pixel[2] = b;
-    return (uint8_t)sixel_lut_map_pixel(lut, pixel);
 }
 
 void
