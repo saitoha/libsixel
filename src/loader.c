@@ -187,14 +187,6 @@ loader_strdup(char const *text, sixel_allocator_t *allocator)
 }
 
 /*
- * sixel_helper_set_loader_trace
- *
- * Toggle verbose loader tracing so debugging output can be collected.
- *
- * Arguments:
- *     enable - non-zero enables tracing, zero disables it.
- */
-/*
  * loader_thumbnailer_initialize_size_hint
  *
  * Establish the runtime default thumbnail size hint.  The helper inspects
@@ -242,6 +234,14 @@ loader_thumbnailer_initialize_size_hint(void)
     thumbnailer_size_hint = thumbnailer_default_size_hint;
 }
 
+/*
+ * sixel_helper_set_loader_trace
+ *
+ * Toggle verbose loader tracing so debugging output can be collected.
+ *
+ * Arguments:
+ *     enable - non-zero enables tracing, zero disables it.
+ */
 void
 sixel_helper_set_loader_trace(int enable)
 {
@@ -5941,14 +5941,23 @@ loader_can_try_wic(sixel_chunk_t const *chunk)
 #endif
 
 static sixel_loader_entry_t const sixel_loader_entries[] = {
+    /*
+     * Fast loaders take precedence so probing prefers native decoders.
+     *
+     * 1. libpng   2. libjpeg   3. builtin   4+. remaining generic loaders
+     */
+#if HAVE_LIBPNG
+    { "libpng", load_with_libpng, loader_can_try_libpng, 1 },
+#endif
+#if HAVE_JPEG
+    { "libjpeg", load_with_libjpeg, loader_can_try_libjpeg, 1 },
+#endif
+    { "builtin", load_with_builtin, NULL, 1 },
 #if HAVE_WIC
     { "wic", load_with_wic, loader_can_try_wic, 1 },
 #endif
 #if HAVE_COREGRAPHICS
     { "coregraphics", load_with_coregraphics, NULL, 1 },
-#endif
-#if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
-    { "quicklook", load_with_quicklook, NULL, 0 },
 #endif
 #ifdef HAVE_GDK_PIXBUF2
     { "gdk-pixbuf2", load_with_gdkpixbuf, NULL, 1 },
@@ -5956,13 +5965,9 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
 #if HAVE_GD
     { "gd", load_with_gd, NULL, 1 },
 #endif
-#if HAVE_JPEG
-    { "libjpeg", load_with_libjpeg, loader_can_try_libjpeg, 1 },
+#if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
+    { "quicklook", load_with_quicklook, NULL, 0 },
 #endif
-#if HAVE_LIBPNG
-    { "libpng", load_with_libpng, loader_can_try_libpng, 1 },
-#endif
-    { "builtin", load_with_builtin, NULL, 1 },
 #if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
     { "gnome-thumbnailer", load_with_gnome_thumbnailer, NULL, 0 },
 #endif
@@ -6774,6 +6779,8 @@ sixel_loader_load_file(
     unsigned char *bgcolor;
     int reqcolors;
     sixel_assessment_t *assessment;
+    char const *order_override;
+    char const *env_order;
 
     pchunk = NULL;
     entry_count = 0;
@@ -6782,6 +6789,8 @@ sixel_loader_load_file(
     bgcolor = NULL;
     reqcolors = 0;
     assessment = NULL;
+    order_override = NULL;
+    env_order = NULL;
 
     if (loader == NULL) {
         sixel_helper_set_additional_message(
@@ -6843,7 +6852,19 @@ sixel_loader_load_file(
             assessment,
             SIXEL_ASSESSMENT_STAGE_IMAGE_DECODE);
     }
-    plan_length = loader_build_plan(loader->loader_order,
+    order_override = loader->loader_order;
+    /*
+     * Honour SIXEL_LOADER_PRIORITY_LIST when callers do not supply
+     * a loader order via -j/--loaders or sixel_loader_setopt().
+     */
+    if (order_override == NULL) {
+        env_order = getenv("SIXEL_LOADER_PRIORITY_LIST");
+        if (env_order != NULL && env_order[0] != '\0') {
+            order_override = env_order;
+        }
+    }
+
+    plan_length = loader_build_plan(order_override,
                                     sixel_loader_entries,
                                     entry_count,
                                     plan,

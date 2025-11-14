@@ -540,6 +540,12 @@ override the encoder thread count used for band processing.
 Accept positive integers or the string \(dqauto\(dq to match the
 hardware thread count.
 .TP 5
+.B SIXEL_LOADER_PRIORITY_LIST
+.br
+override the default loader priority. Accepts the same comma separated
+names recognised by \fB-j\fP/\fB--loaders\fP. The environment setting
+is ignored when the command-line option is present.
+.TP 5
 .B IMG2SIXEL_COMPLETION_BASH
 .br
 override the bash completion source path. When set, the completion commands
