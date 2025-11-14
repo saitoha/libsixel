@@ -666,6 +666,10 @@ SIXEL_BGCOLOR              specify background color.
                              rgb:rr/gg/bb
                              rgb:rrr/ggg/bbb
                              rgb:rrrr/gggg/bbbb
+SIXEL_LOADER_PRIORITY_LIST override default loader search order.
+                           Accepts the same comma separated
+                           names as the -j/--loaders option and
+                           is ignored when that option is set.
 
 ```
 
