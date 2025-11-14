@@ -26,6 +26,8 @@
 #include <sixel.h>
 
 #include <stdint.h>
+#include "palette-internal.h"
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,34 +57,6 @@ static unsigned char const sixel_safe_tones[256] = {
 #define sixel_palette_reversible_value(sample) \
     sixel_safe_tones[sample >= 255 ? 255: sample];
 
-struct histogram_control {
-    unsigned int channel_shift;
-    unsigned int channel_bits;
-    unsigned int channel_mask;
-    int reversible_rounding;
-};
-
-typedef unsigned long sample;
-typedef sample *tuple;
-
-struct tupleint {
-    unsigned int value;
-    sample tuple[1];
-};
-
-typedef struct tupleint **tupletable;
-
-typedef struct {
-    unsigned int size;
-    tupletable table;
-} tupletable2;
-
-SIXELSTATUS
-alloctupletable(tupletable *result,
-                unsigned int depth,
-                unsigned int size,
-                sixel_allocator_t *allocator);
-
 typedef struct sixel_lut sixel_lut_t;
 
 SIXELSTATUS
@@ -107,18 +81,6 @@ sixel_lut_configure(sixel_lut_t *lut,
 /* lookup */
 int
 sixel_lut_map_pixel(sixel_lut_t *lut, unsigned char const *pixel);
-
-/* build */
-SIXELSTATUS
-sixel_lut_build_histogram(unsigned char const *data,
-                          unsigned int length,
-                          unsigned long depth,
-                          int quality_mode,
-                          int use_reversible,
-                          int policy,
-                          tupletable2 *colorfreqtable,
-                          sixel_allocator_t *allocator);
-
 
 #ifdef __cplusplus
 }

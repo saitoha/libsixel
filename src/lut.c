@@ -37,11 +37,15 @@
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
-  FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
  * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
+ */
+
+/* The lookup table implementation manages colour quantization caches and the
+ * CERT LUT accelerator.  Median-cut specific histogram routines now reside in
+ * palette-heckbert.c so this file can concentrate on lookup responsibilities.
  */
 
 #include "config.h"
@@ -60,6 +64,7 @@
 #include "status.h"
 #include "compat_stub.h"
 #include "allocator.h"
+#include "palette-internal.h"
 #include "lut.h"
 
 #define SIXEL_LUT_BRANCH_FLAG 0x40000000U
@@ -116,363 +121,6 @@ struct sixel_lut {
     sixel_certlut_t cert;
     int cert_ready;
 };
-
-SIXELSTATUS
-alloctupletable(tupletable *result,
-                unsigned int depth,
-                unsigned int size,
-                sixel_allocator_t *allocator)
-{
-    SIXELSTATUS status = SIXEL_FALSE;
-    enum { message_buffer_size = 256 };
-    char message[message_buffer_size];
-    int nwrite;
-    unsigned int mainTableSize;
-    unsigned int tupleIntSize;
-    unsigned int allocSize;
-    void *pool;
-    tupletable tbl;
-    unsigned int i;
-
-    if (UINT_MAX / sizeof(struct tupleint) < size) {
-        nwrite = sixel_compat_snprintf(message,
-                                       sizeof(message),
-                                       "size %u is too big for arithmetic",
-                                       size);
-        if (nwrite > 0) {
-            sixel_helper_set_additional_message(message);
-        }
-        status = SIXEL_RUNTIME_ERROR;
-        goto end;
-    }
-
-    mainTableSize = size * sizeof(struct tupleint *);
-    if ((UINT_MAX - mainTableSize) / sizeof(struct tupleint) < size) {
-        nwrite = sixel_compat_snprintf(message,
-                                       sizeof(message),
-                                       "size %u is too big for arithmetic",
-                                       size);
-        if (nwrite > 0) {
-            sixel_helper_set_additional_message(message);
-        }
-        status = SIXEL_RUNTIME_ERROR;
-        goto end;
-    }
-
-    tupleIntSize = sizeof(struct tupleint) + (depth - 1U) * sizeof(sample);
-    if ((UINT_MAX - mainTableSize) / tupleIntSize < size) {
-        nwrite = sixel_compat_snprintf(message,
-                                       sizeof(message),
-                                       "size %u is too big for arithmetic",
-                                       size);
-        if (nwrite > 0) {
-            sixel_helper_set_additional_message(message);
-        }
-        status = SIXEL_RUNTIME_ERROR;
-        goto end;
-    }
-
-    allocSize = mainTableSize + size * tupleIntSize;
-
-    pool = sixel_allocator_malloc(allocator, allocSize);
-    if (pool == NULL) {
-        sixel_compat_snprintf(message,
-                              sizeof(message),
-                              "unable to allocate %u bytes for a %u-entry "
-                              "tuple table",
-                              allocSize,
-                              size);
-        sixel_helper_set_additional_message(message);
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
-    }
-    tbl = (tupletable)pool;
-
-    for (i = 0U; i < size; ++i) {
-        tbl[i] = (struct tupleint *)((char *)pool
-            + mainTableSize + i * tupleIntSize);
-    }
-
-    *result = tbl;
-
-    status = SIXEL_OK;
-
-end:
-    return status;
-}
-
-
-size_t
-histogram_dense_size(unsigned int depth,
-                     struct histogram_control const *control)
-{
-    size_t size;
-    unsigned int exponent;
-    unsigned int i;
-
-    size = 1U;
-    exponent = depth * control->channel_bits;
-    for (i = 0U; i < exponent; ++i) {
-        if (size > SIZE_MAX / 2U) {
-            size = SIZE_MAX;
-            break;
-        }
-        size <<= 1U;
-    }
-
-    return size;
-}
-
-struct histogram_control
-histogram_control_make_for_policy(unsigned int depth, int lut_policy)
-{
-    struct histogram_control control;
-
-    control.reversible_rounding = 0;
-    control.channel_shift = 2U;
-    if (depth > 3U) {
-        control.channel_shift = 3U;
-    }
-    if (lut_policy == SIXEL_LUT_POLICY_5BIT) {
-        control.channel_shift = 3U;
-    } else if (lut_policy == SIXEL_LUT_POLICY_6BIT) {
-        control.channel_shift = 2U;
-        if (depth > 3U) {
-            control.channel_shift = 3U;
-        }
-    } else if (lut_policy == SIXEL_LUT_POLICY_NONE) {
-        control.channel_shift = 0U;
-    } else if (lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
-        control.channel_shift = 2U;
-    }
-    control.channel_bits = 8U - control.channel_shift;
-    control.channel_mask = (1U << control.channel_bits) - 1U;
-
-    return control;
-}
-
-unsigned int
-histogram_reconstruct(unsigned int quantized,
-                      struct histogram_control const *control)
-{
-    unsigned int value;
-
-    value = quantized << control->channel_shift;
-    if (quantized == control->channel_mask) {
-        value = 255U;
-    } else {
-        if (control->channel_shift > 0U) {
-            value |= (1U << (control->channel_shift - 1U));
-        }
-    }
-    if (value > 255U) {
-        value = 255U;
-    }
-
-    return value;
-}
-
-static unsigned int
-histogram_quantize(unsigned int sample8,
-                   struct histogram_control const *control)
-{
-    unsigned int quantized;
-    unsigned int shift;
-    unsigned int mask;
-    unsigned int rounding;
-
-    shift = control->channel_shift;
-    mask = control->channel_mask;
-    if (shift == 0U) {
-        quantized = sample8;
-    } else {
-        if (control->reversible_rounding) {
-            rounding = 1U << shift;
-        } else {
-            rounding = 1U << (shift - 1U);
-        }
-        quantized = (sample8 + rounding) >> shift;
-        if (quantized > mask) {
-            quantized = mask;
-        }
-    }
-
-    return quantized;
-}
-
-unsigned int
-histogram_pack_color(unsigned char const *data,
-                     unsigned int depth,
-                     struct histogram_control const *control)
-{
-    uint32_t packed;
-    unsigned int n;
-    unsigned int sample8;
-    unsigned int bits;
-
-    packed = 0U;
-    bits = control->channel_bits;
-    if (control->channel_shift == 0U) {
-        for (n = 0U; n < depth; ++n) {
-            packed |= (uint32_t)data[depth - 1U - n] << (n * bits);
-        }
-        return packed;
-    }
-
-    for (n = 0U; n < depth; ++n) {
-        sample8 = (unsigned int)data[depth - 1U - n];
-        packed |= histogram_quantize(sample8, control) << (n * bits);
-    }
-
-    return packed;
-}
-
-SIXELSTATUS
-sixel_lut_build_histogram(unsigned char const *data,
-                          unsigned int length,
-                          unsigned long depth,
-                          int quality_mode,
-                          int use_reversible,
-                          int policy,
-                          tupletable2 *colorfreqtable,
-                          sixel_allocator_t *allocator)
-{
-    SIXELSTATUS status;
-    typedef uint32_t unit_t;
-    unit_t *histogram;
-    unit_t *refmap;
-    unit_t *ref;
-    unsigned int bucket_index;
-    unsigned int step;
-    unsigned int max_sample;
-    size_t hist_size;
-    unit_t bucket_value;
-    unsigned int component;
-    unsigned int reconstructed;
-    struct histogram_control control;
-    unsigned int depth_u;
-    unsigned char reversible_pixel[4];
-    unsigned int i;
-    unsigned int n;
-    unsigned int plane;
-
-    status = SIXEL_FALSE;
-    histogram = NULL;
-    refmap = NULL;
-    if (colorfreqtable == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    colorfreqtable->size = 0U;
-    colorfreqtable->table = NULL;
-
-    switch (quality_mode) {
-    case SIXEL_QUALITY_LOW:
-        max_sample = 18383U;
-        break;
-    case SIXEL_QUALITY_HIGH:
-        max_sample = 1118383U;
-        break;
-    case SIXEL_QUALITY_FULL:
-    default:
-        max_sample = 4003079U;
-        break;
-    }
-
-    if (depth == 0U) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    step = (unsigned int)(length / depth / max_sample * depth);
-    if (step == 0U) {
-        step = (unsigned int)depth;
-    }
-
-    sixel_debugf("making histogram...");
-
-    depth_u = (unsigned int)depth;
-    control = histogram_control_make_for_policy(depth_u, policy);
-    if (use_reversible) {
-        control.reversible_rounding = 1;
-    }
-    hist_size = histogram_dense_size(depth_u, &control);
-    histogram = (unit_t *)sixel_allocator_calloc(allocator,
-                                                 hist_size,
-                                                 sizeof(unit_t));
-    if (histogram == NULL) {
-        sixel_helper_set_additional_message(
-            "unable to allocate memory for histogram.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto cleanup;
-    }
-    ref = refmap = (unit_t *)sixel_allocator_malloc(allocator,
-                                                    hist_size
-                                                    * sizeof(unit_t));
-    if (refmap == NULL) {
-        sixel_helper_set_additional_message(
-            "unable to allocate memory for lookup table.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto cleanup;
-    }
-
-    for (i = 0U; i < length; i += step) {
-        if (use_reversible) {
-            for (plane = 0U; plane < depth_u; ++plane) {
-                reversible_pixel[plane]
-                    = sixel_palette_reversible_value(data[i + plane]);
-            }
-            bucket_index = histogram_pack_color(reversible_pixel,
-                                                depth_u,
-                                                &control);
-        } else {
-            bucket_index = histogram_pack_color(data + i,
-                                                depth_u,
-                                                &control);
-        }
-        if (histogram[bucket_index] == 0U) {
-            *ref++ = bucket_index;
-        }
-        if (histogram[bucket_index] < UINT32_MAX) {
-            histogram[bucket_index]++;
-        }
-    }
-
-    colorfreqtable->size = (unsigned int)(ref - refmap);
-    status = alloctupletable(&colorfreqtable->table,
-                             depth,
-                             (unsigned int)(ref - refmap),
-                             allocator);
-    if (SIXEL_FAILED(status)) {
-        goto cleanup;
-    }
-    for (i = 0U; i < colorfreqtable->size; ++i) {
-        bucket_value = refmap[i];
-        if (histogram[bucket_value] > 0U) {
-            colorfreqtable->table[i]->value = histogram[bucket_value];
-            for (n = 0U; n < depth; ++n) {
-                component = (unsigned int)
-                    ((bucket_value >> (n * control.channel_bits))
-                     & control.channel_mask);
-                reconstructed = histogram_reconstruct(component,
-                                                      &control);
-                if (use_reversible) {
-                    reconstructed =
-                        (unsigned int)sixel_palette_reversible_value(
-                            reconstructed);
-                }
-                colorfreqtable->table[i]->tuple[depth - 1U - n]
-                    = (sample)reconstructed;
-            }
-        }
-    }
-
-    sixel_debugf("%u colors found", colorfreqtable->size);
-    status = SIXEL_OK;
-
-cleanup:
-    sixel_allocator_free(allocator, refmap);
-    sixel_allocator_free(allocator, histogram);
-
-    return status;
-}
 
 /* Sentinel value used to detect empty dense LUT slots. */
 #define SIXEL_LUT_DENSE_EMPTY (-1)
@@ -1177,8 +825,8 @@ sixel_certlut_kdtree_search(sixel_certlut_t const *lut,
 
 static void
 sixel_certlut_distance_pair(sixel_certlut_t const *lut, int r, int g, int b,
-                          int *best_idx, int *second_idx,
-                          uint64_t *best_dist, uint64_t *second_dist)
+                            int *best_idx, int *second_idx,
+                            uint64_t *best_dist, uint64_t *second_dist)
 {
     int i;
     int best_candidate;
@@ -1280,13 +928,13 @@ sixel_certlut_fallback(sixel_certlut_t const *lut, int r, int g, int b)
      * memory conditions.
      */
     sixel_certlut_distance_pair(lut,
-                              r,
-                              g,
-                              b,
-                              &best_idx,
-                              &second_idx,
-                              &best_dist,
-                              &second_dist);
+                                r,
+                                g,
+                                b,
+                                &best_idx,
+                                &second_idx,
+                                &best_dist,
+                                &second_dist);
     if (best_idx < 0) {
         return 0U;
     }
@@ -1723,3 +1371,12 @@ sixel_lut_unref(sixel_lut_t *lut)
     sixel_lut_clear(lut);
     free(lut);
 }
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
+/* EOF */

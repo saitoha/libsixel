@@ -158,7 +158,9 @@ libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/assessment.c $(srcdir)/assessment.h \
 	$(srcdir)/fromsixel.c $(srcdir)/tosixel.c $(srcdir)/lut.c \
-	$(srcdir)/lut.h $(srcdir)/palette.c $(srcdir)/palette.h \
+	$(srcdir)/lut.h $(srcdir)/palette-heckbert.c \
+	$(srcdir)/palette-kmeans.c $(srcdir)/palette.c \
+	$(srcdir)/palette.h $(srcdir)/palette-internal.h \
 	$(srcdir)/dither.c $(srcdir)/dither.h $(srcdir)/colorspace.c \
 	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
 	$(srcdir)/pixelformat.c $(srcdir)/pixelformat.h \
@@ -189,6 +191,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-assessment.lo libsixel_la-fromsixel.lo \
 	libsixel_la-tosixel.lo libsixel_la-lut.lo \
+	libsixel_la-palette-heckbert.lo libsixel_la-palette-kmeans.lo \
 	libsixel_la-palette.lo libsixel_la-dither.lo \
 	libsixel_la-colorspace.lo libsixel_la-frame.lo \
 	libsixel_la-pixelformat.lo libsixel_la-scale.lo \
@@ -248,6 +251,8 @@ am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
 	./$(DEPDIR)/libsixel_la-lut.Plo \
 	./$(DEPDIR)/libsixel_la-malloc_stub.Plo \
 	./$(DEPDIR)/libsixel_la-output.Plo \
+	./$(DEPDIR)/libsixel_la-palette-heckbert.Plo \
+	./$(DEPDIR)/libsixel_la-palette-kmeans.Plo \
 	./$(DEPDIR)/libsixel_la-palette.Plo \
 	./$(DEPDIR)/libsixel_la-pixelformat.Plo \
 	./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo \
@@ -526,7 +531,9 @@ lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/assessment.c $(srcdir)/assessment.h \
 	$(srcdir)/fromsixel.c $(srcdir)/tosixel.c $(srcdir)/lut.c \
-	$(srcdir)/lut.h $(srcdir)/palette.c $(srcdir)/palette.h \
+	$(srcdir)/lut.h $(srcdir)/palette-heckbert.c \
+	$(srcdir)/palette-kmeans.c $(srcdir)/palette.c \
+	$(srcdir)/palette.h $(srcdir)/palette-internal.h \
 	$(srcdir)/dither.c $(srcdir)/dither.h $(srcdir)/colorspace.c \
 	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
 	$(srcdir)/pixelformat.c $(srcdir)/pixelformat.h \
@@ -691,6 +698,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lut.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-malloc_stub.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-output.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-heckbert.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kmeans.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-pixelformat.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo@am__quote@ # am--include-marker
@@ -768,6 +777,20 @@ libsixel_la-lut.lo: lut.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lut.c' object='libsixel_la-lut.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lut.lo `test -f 'lut.c' || echo '$(srcdir)/'`lut.c
+
+libsixel_la-palette-heckbert.lo: palette-heckbert.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-heckbert.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-heckbert.Tpo -c -o libsixel_la-palette-heckbert.lo `test -f 'palette-heckbert.c' || echo '$(srcdir)/'`palette-heckbert.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-heckbert.Tpo $(DEPDIR)/libsixel_la-palette-heckbert.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette-heckbert.c' object='libsixel_la-palette-heckbert.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-heckbert.lo `test -f 'palette-heckbert.c' || echo '$(srcdir)/'`palette-heckbert.c
+
+libsixel_la-palette-kmeans.lo: palette-kmeans.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-kmeans.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-kmeans.Tpo -c -o libsixel_la-palette-kmeans.lo `test -f 'palette-kmeans.c' || echo '$(srcdir)/'`palette-kmeans.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-kmeans.Tpo $(DEPDIR)/libsixel_la-palette-kmeans.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette-kmeans.c' object='libsixel_la-palette-kmeans.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-kmeans.lo `test -f 'palette-kmeans.c' || echo '$(srcdir)/'`palette-kmeans.c
 
 libsixel_la-palette.lo: palette.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette.Tpo -c -o libsixel_la-palette.lo `test -f 'palette.c' || echo '$(srcdir)/'`palette.c
@@ -1171,6 +1194,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lut.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-malloc_stub.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-pixelformat.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
@@ -1246,6 +1271,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lut.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-malloc_stub.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-pixelformat.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo

@@ -23,8 +23,11 @@ libsixel_la_SOURCES = \
                 $(srcdir)/tosixel.c \
                 $(srcdir)/lut.c \
                 $(srcdir)/lut.h \
+                $(srcdir)/palette-heckbert.c \
+                $(srcdir)/palette-kmeans.c \
                 $(srcdir)/palette.c \
                 $(srcdir)/palette.h \
+                $(srcdir)/palette-internal.h \
                 $(srcdir)/dither.c \
                 $(srcdir)/dither.h \
                 $(srcdir)/colorspace.c \
