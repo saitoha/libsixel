@@ -57,6 +57,20 @@
 # include <sys/select.h>
 #endif  /* HAVE_SYS_SELECT_H */
 
+#if HAVE_WINHTTP && HAVE_WINDOWS_H
+# if !defined(UNICODE)
+#  define UNICODE
+# endif
+# if !defined(_UNICODE)
+#  define _UNICODE
+# endif
+# if !defined(WIN32_LEAN_AND_MEAN)
+#  define WIN32_LEAN_AND_MEAN
+# endif
+# include <windows.h>
+# include <winhttp.h>
+#endif
+
 #if !defined(HAVE_MEMCPY)
 # define memcpy(d, s, n) (bcopy ((s), (d), (n)))
 #endif
@@ -220,7 +234,7 @@ wait_file(int fd, int usec)
 static int
 sixel_fd_is_console(int fd)
 {
-#if defined(_WIN32)
+#if HAVE_WINHTTP
     intptr_t handle;
     DWORD mode;
 
@@ -402,23 +416,6 @@ end:
 }
 
 #if HAVE_WINHTTP
-# if !defined(UNICODE)
-#  define UNICODE
-# endif
-# if !defined(_UNICODE)
-#  define _UNICODE
-# endif
-#endif
-
-#if defined(_WIN32)
-# if !defined(WIN32_LEAN_AND_MEAN)
-#  define WIN32_LEAN_AND_MEAN
-# endif
-# include <windows.h>
-#endif
-
-#if HAVE_WINHTTP
-#include <winhttp.h>
 
 static wchar_t *
 utf8_to_wide(char const *s) {
