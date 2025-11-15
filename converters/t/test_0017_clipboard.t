@@ -6,7 +6,7 @@
 set -euo pipefail
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-. "${SCRIPT_DIR}/common.bash"
+. "${SCRIPT_DIR}/common.t"
 
 SIXEL_SRC="${IMAGES_DIR}/autumn.png"
 SIXEL_TMP="${TMP_DIR}/clipboard-input.six"
