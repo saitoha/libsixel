@@ -109,6 +109,7 @@
 #include "tty.h"
 #include "encoder.h"
 #include "output.h"
+#include "options.h"
 #include "dither.h"
 #include "frame.h"
 #include "rgblookup.h"
@@ -211,149 +212,6 @@ clock_win(void)
 
 #endif /* _WIN32 */
 
-
-/*
- * Prefix matcher roadmap:
- *
- *   +---------+-------------------+
- *   | input   | decision           |
- *   +---------+-------------------+
- *   | "ave"   | average            |
- *   | "a"     | ambiguous (auto?)  |
- *   +---------+-------------------+
- *
- * The helper walks the choice table once, collecting prefixes and
- * checking whether a unique destination emerges.  Ambiguous prefixes
- * bubble up so the caller can craft a friendly diagnostic.
- */
-typedef struct sixel_option_choice {
-    char const *name;
-    int value;
-} sixel_option_choice_t;
-
-typedef enum sixel_option_choice_result {
-    SIXEL_OPTION_CHOICE_MATCH = 0,
-    SIXEL_OPTION_CHOICE_AMBIGUOUS = 1,
-    SIXEL_OPTION_CHOICE_NONE = 2
-} sixel_option_choice_result_t;
-
-static sixel_option_choice_result_t
-sixel_match_option_choice(
-    char const *value,
-    sixel_option_choice_t const *choices,
-    size_t choice_count,
-    int *matched_value,
-    char *diagnostic,
-    size_t diagnostic_size)
-{
-    size_t index;
-    size_t value_length;
-    int candidate_index;
-    size_t match_count;
-    int base_value;
-    int base_value_set;
-    int ambiguous_values;
-    size_t diag_length;
-    size_t copy_length;
-
-    if (diagnostic != NULL && diagnostic_size > 0u) {
-        diagnostic[0] = '\0';
-    }
-    if (value == NULL) {
-        return SIXEL_OPTION_CHOICE_NONE;
-    }
-
-    value_length = strlen(value);
-    if (value_length == 0u) {
-        return SIXEL_OPTION_CHOICE_NONE;
-    }
-
-    index = 0u;
-    candidate_index = (-1);
-    match_count = 0u;
-    base_value = 0;
-    base_value_set = 0;
-    ambiguous_values = 0;
-    diag_length = 0u;
-
-    while (index < choice_count) {
-        if (strncmp(choices[index].name, value, value_length) == 0) {
-            if (choices[index].name[value_length] == '\0') {
-                *matched_value = choices[index].value;
-                return SIXEL_OPTION_CHOICE_MATCH;
-            }
-            if (!base_value_set) {
-                base_value = choices[index].value;
-                base_value_set = 1;
-            } else if (choices[index].value != base_value) {
-                ambiguous_values = 1;
-            }
-            if (candidate_index == (-1)) {
-                candidate_index = (int)index;
-            }
-            ++match_count;
-            if (diagnostic != NULL && diagnostic_size > 0u) {
-                if (diag_length > 0u && diag_length + 2u < diagnostic_size) {
-                    diagnostic[diag_length] = ',';
-                    diagnostic[diag_length + 1u] = ' ';
-                    diag_length += 2u;
-                    diagnostic[diag_length] = '\0';
-                }
-                copy_length = strlen(choices[index].name);
-                if (copy_length > diagnostic_size - diag_length - 1u) {
-                    copy_length = diagnostic_size - diag_length - 1u;
-                }
-                memcpy(diagnostic + diag_length,
-                       choices[index].name,
-                       copy_length);
-                diag_length += copy_length;
-                diagnostic[diag_length] = '\0';
-            }
-        }
-        ++index;
-    }
-
-    if (match_count == 0u) {
-        return SIXEL_OPTION_CHOICE_NONE;
-    }
-    if (!ambiguous_values) {
-        *matched_value = choices[candidate_index].value;
-        return SIXEL_OPTION_CHOICE_MATCH;
-    }
-
-    return SIXEL_OPTION_CHOICE_AMBIGUOUS;
-}
-
-static void
-sixel_report_ambiguous_prefix(
-    char const *option,
-    char const *value,
-    char const *candidates,
-    char *buffer,
-    size_t buffer_size)
-{
-    int written;
-
-    if (buffer == NULL || buffer_size == 0u) {
-        return;
-    }
-    if (candidates != NULL && candidates[0] != '\0') {
-        written = snprintf(buffer,
-                           buffer_size,
-                           "ambiguous prefix \"%s\" for %s (matches: %s).",
-                           value,
-                           option,
-                           candidates);
-    } else {
-        written = snprintf(buffer,
-                           buffer_size,
-                           "ambiguous prefix \"%s\" for %s.",
-                           value,
-                           option);
-    }
-    (void) written;
-    sixel_helper_set_additional_message(buffer);
-}
 
 static sixel_option_choice_t const g_option_choices_builtin_palette[] = {
     { "xterm16", SIXEL_BUILTIN_XTERM16 },
@@ -4679,9 +4537,15 @@ sixel_encoder_setopt(
     size_t png_path_length;
     char cell_message[256];
     char const *cell_detail;
+    unsigned int path_flags;
+    char const *mapfile_view;
+    int path_check;
 
     sixel_encoder_ref(encoder);
     opt_copy = NULL;
+    path_flags = 0u;
+    mapfile_view = NULL;
+    path_check = 0;
 
     switch(arg) {
     case SIXEL_OPTFLAG_OUTFILE:  /* o */
@@ -4923,6 +4787,22 @@ sixel_encoder_setopt(
         encoder->force_palette = forced_palette;
         break;
     case SIXEL_OPTFLAG_MAPFILE:  /* m */
+        mapfile_view = sixel_palette_strip_prefix(value, NULL);
+        if (mapfile_view == NULL) {
+            mapfile_view = value;
+        }
+        path_flags = SIXEL_OPTION_PATH_ALLOW_STDIN |
+            SIXEL_OPTION_PATH_ALLOW_CLIPBOARD |
+            SIXEL_OPTION_PATH_ALLOW_REMOTE |
+            SIXEL_OPTION_PATH_ALLOW_EMPTY;
+        path_check = sixel_option_validate_filesystem_path(
+            value,
+            mapfile_view,
+            path_flags);
+        if (path_check != 0) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
         if (encoder->mapfile) {
             sixel_allocator_free(encoder->allocator, encoder->mapfile);
         }
@@ -4965,7 +4845,7 @@ sixel_encoder_setopt(
         encoder->color_option = SIXEL_COLOR_OPTION_HIGHCOLOR;
         break;
     case SIXEL_OPTFLAG_BUILTIN_PALETTE:  /* b */
-        match_result = sixel_match_option_choice(
+        match_result = sixel_option_match_choice(
             value,
             g_option_choices_builtin_palette,
             sizeof(g_option_choices_builtin_palette) /
@@ -4977,8 +4857,7 @@ sixel_encoder_setopt(
             encoder->builtin_palette = match_value;
         } else {
             if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
-                sixel_report_ambiguous_prefix("--builtin-palette",
-                                              value,
+                sixel_option_report_ambiguous_prefix(value,
                                               match_detail,
                                               match_message,
                                               sizeof(match_message));
@@ -4992,7 +4871,7 @@ sixel_encoder_setopt(
         encoder->color_option = SIXEL_COLOR_OPTION_BUILTIN;
         break;
     case SIXEL_OPTFLAG_DIFFUSION:  /* d */
-        match_result = sixel_match_option_choice(
+        match_result = sixel_option_match_choice(
             value,
             g_option_choices_diffusion,
             sizeof(g_option_choices_diffusion) /
@@ -5004,8 +4883,7 @@ sixel_encoder_setopt(
             encoder->method_for_diffuse = match_value;
         } else {
             if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
-                sixel_report_ambiguous_prefix("--diffusion",
-                                              value,
+                sixel_option_report_ambiguous_prefix(value,
                                               match_detail,
                                               match_message,
                                               sizeof(match_message));
@@ -5018,7 +4896,7 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_DIFFUSION_SCAN:  /* y */
-        match_result = sixel_match_option_choice(
+        match_result = sixel_option_match_choice(
             value,
             g_option_choices_diffusion_scan,
             sizeof(g_option_choices_diffusion_scan) /
@@ -5030,8 +4908,7 @@ sixel_encoder_setopt(
             encoder->method_for_scan = match_value;
         } else {
             if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
-                sixel_report_ambiguous_prefix("--diffusion-scan",
-                                              value,
+                sixel_option_report_ambiguous_prefix(value,
                                               match_detail,
                                               match_message,
                                               sizeof(match_message));
@@ -5044,7 +4921,7 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_DIFFUSION_CARRY:  /* Y */
-        match_result = sixel_match_option_choice(
+        match_result = sixel_option_match_choice(
             value,
             g_option_choices_diffusion_carry,
             sizeof(g_option_choices_diffusion_carry) /
@@ -5056,8 +4933,7 @@ sixel_encoder_setopt(
             encoder->method_for_carry = match_value;
         } else {
             if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
-                sixel_report_ambiguous_prefix("--diffusion-carry",
-                                              value,
+                sixel_option_report_ambiguous_prefix(value,
                                               match_detail,
                                               match_message,
                                               sizeof(match_message));
@@ -5071,7 +4947,7 @@ sixel_encoder_setopt(
         break;
     case SIXEL_OPTFLAG_FIND_LARGEST:  /* f */
         if (value != NULL) {
-            match_result = sixel_match_option_choice(
+            match_result = sixel_option_match_choice(
                 value,
                 g_option_choices_find_largest,
                 sizeof(g_option_choices_find_largest) /
@@ -5083,8 +4959,7 @@ sixel_encoder_setopt(
                 encoder->method_for_largest = match_value;
             } else {
                 if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
-                    sixel_report_ambiguous_prefix("--find-largest",
-                                                  value,
+                    sixel_option_report_ambiguous_prefix(value,
                                                   match_detail,
                                                   match_message,
                                                   sizeof(match_message));
@@ -5098,7 +4973,7 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_SELECT_COLOR:  /* s */
-        match_result = sixel_match_option_choice(
+        match_result = sixel_option_match_choice(
             value,
             g_option_choices_select_color,
             sizeof(g_option_choices_select_color) /
@@ -5110,8 +4985,7 @@ sixel_encoder_setopt(
             encoder->method_for_rep = match_value;
         } else {
             if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
-                sixel_report_ambiguous_prefix("--select-color",
-                                              value,
+                sixel_option_report_ambiguous_prefix(value,
                                               match_detail,
                                               match_message,
                                               sizeof(match_message));
@@ -5124,7 +4998,7 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_QUANTIZE_MODEL:  /* Q */
-        match_result = sixel_match_option_choice(
+        match_result = sixel_option_match_choice(
             value,
             g_option_choices_quantize_model,
             sizeof(g_option_choices_quantize_model) /
@@ -5136,8 +5010,7 @@ sixel_encoder_setopt(
             encoder->quantize_model = match_value;
         } else {
             if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
-                sixel_report_ambiguous_prefix("--quantize-model",
-                                              value,
+                sixel_option_report_ambiguous_prefix(value,
                                               match_detail,
                                               match_message,
                                               sizeof(match_message));
@@ -5150,7 +5023,7 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_FINAL_MERGE:  /* F */
-        match_result = sixel_match_option_choice(
+        match_result = sixel_option_match_choice(
             value,
             g_option_choices_final_merge,
             sizeof(g_option_choices_final_merge) /
@@ -5162,8 +5035,7 @@ sixel_encoder_setopt(
             encoder->final_merge_mode = match_value;
         } else {
             if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
-                sixel_report_ambiguous_prefix("--final-merge",
-                                              value,
+                sixel_option_report_ambiguous_prefix(value,
                                               match_detail,
                                               match_message,
                                               sizeof(match_message));
@@ -5299,7 +5171,7 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_RESAMPLING:  /* r */
-        match_result = sixel_match_option_choice(
+        match_result = sixel_option_match_choice(
             value,
             g_option_choices_resampling,
             sizeof(g_option_choices_resampling) /
@@ -5311,8 +5183,7 @@ sixel_encoder_setopt(
             encoder->method_for_resampling = match_value;
         } else {
             if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
-                sixel_report_ambiguous_prefix("--resampling",
-                                              value,
+                sixel_option_report_ambiguous_prefix(value,
                                               match_detail,
                                               match_message,
                                               sizeof(match_message));
@@ -5325,7 +5196,7 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_QUALITY:  /* q */
-        match_result = sixel_match_option_choice(
+        match_result = sixel_option_match_choice(
             value,
             g_option_choices_quality,
             sizeof(g_option_choices_quality) /
@@ -5337,8 +5208,7 @@ sixel_encoder_setopt(
             encoder->quality_mode = match_value;
         } else {
             if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
-                sixel_report_ambiguous_prefix("--quality",
-                                              value,
+                sixel_option_report_ambiguous_prefix(value,
                                               match_detail,
                                               match_message,
                                               sizeof(match_message));
@@ -5351,7 +5221,7 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_LOOPMODE:  /* l */
-        match_result = sixel_match_option_choice(
+        match_result = sixel_option_match_choice(
             value,
             g_option_choices_loopmode,
             sizeof(g_option_choices_loopmode) /
@@ -5363,8 +5233,7 @@ sixel_encoder_setopt(
             encoder->loop_mode = match_value;
         } else {
             if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
-                sixel_report_ambiguous_prefix("--loop-control",
-                                              value,
+                sixel_option_report_ambiguous_prefix(value,
                                               match_detail,
                                               match_message,
                                               sizeof(match_message));
@@ -5377,7 +5246,7 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_PALETTE_TYPE:  /* t */
-        match_result = sixel_match_option_choice(
+        match_result = sixel_option_match_choice(
             value,
             g_option_choices_palette_type,
             sizeof(g_option_choices_palette_type) /
@@ -5389,8 +5258,7 @@ sixel_encoder_setopt(
             encoder->palette_type = match_value;
         } else {
             if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
-                sixel_report_ambiguous_prefix("--palette-type",
-                                              value,
+                sixel_option_report_ambiguous_prefix(value,
                                               match_detail,
                                               match_message,
                                               sizeof(match_message));
@@ -5649,7 +5517,7 @@ sixel_encoder_setopt(
         encoder->penetrate_multiplexer = 1;
         break;
     case SIXEL_OPTFLAG_ENCODE_POLICY:  /* E */
-        match_result = sixel_match_option_choice(
+        match_result = sixel_option_match_choice(
             value,
             g_option_choices_encode_policy,
             sizeof(g_option_choices_encode_policy) /
@@ -5661,8 +5529,7 @@ sixel_encoder_setopt(
             encoder->encode_policy = match_value;
         } else {
             if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
-                sixel_report_ambiguous_prefix("--encode-policy",
-                                              value,
+                sixel_option_report_ambiguous_prefix(value,
                                               match_detail,
                                               match_message,
                                               sizeof(match_message));
@@ -5675,7 +5542,7 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_LUT_POLICY:  /* L */
-        match_result = sixel_match_option_choice(
+        match_result = sixel_option_match_choice(
             value,
             g_option_choices_lut_policy,
             sizeof(g_option_choices_lut_policy) /
@@ -5687,8 +5554,7 @@ sixel_encoder_setopt(
             encoder->lut_policy = match_value;
         } else {
             if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
-                sixel_report_ambiguous_prefix("--lut-policy",
-                                              value,
+                sixel_option_report_ambiguous_prefix(value,
                                               match_detail,
                                               match_message,
                                               sizeof(match_message));
@@ -5724,7 +5590,7 @@ sixel_encoder_setopt(
             }
             lowered[len] = '\0';
 
-            match_result = sixel_match_option_choice(
+            match_result = sixel_option_match_choice(
                 lowered,
                 g_option_choices_working_colorspace,
                 sizeof(g_option_choices_working_colorspace) /
@@ -5736,9 +5602,7 @@ sixel_encoder_setopt(
                 encoder->working_colorspace = match_value;
             } else {
                 if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
-                    sixel_report_ambiguous_prefix(
-                        "--working-colorspace",
-                        value,
+                    sixel_option_report_ambiguous_prefix(value,
                         match_detail,
                         match_message,
                         sizeof(match_message));
@@ -5771,7 +5635,7 @@ sixel_encoder_setopt(
             }
             lowered[len] = '\0';
 
-            match_result = sixel_match_option_choice(
+            match_result = sixel_option_match_choice(
                 lowered,
                 g_option_choices_output_colorspace,
                 sizeof(g_option_choices_output_colorspace) /
@@ -5783,9 +5647,7 @@ sixel_encoder_setopt(
                 encoder->output_colorspace = match_value;
             } else {
                 if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
-                    sixel_report_ambiguous_prefix(
-                        "--output-colorspace",
-                        value,
+                    sixel_option_report_ambiguous_prefix(value,
                         match_detail,
                         match_message,
                         sizeof(match_message));
@@ -6403,6 +6265,8 @@ sixel_encoder_encode(
     size_t clipboard_blob_size;
     SIXELSTATUS clipboard_status;
     char const *effective_filename;
+    unsigned int path_flags;
+    int path_check;
 
     clipboard_input_format[0] = '\0';
     clipboard_input_path = NULL;
@@ -6410,6 +6274,21 @@ sixel_encoder_encode(
     clipboard_blob_size = 0u;
     clipboard_status = SIXEL_OK;
     effective_filename = filename;
+    path_flags = SIXEL_OPTION_PATH_ALLOW_STDIN |
+        SIXEL_OPTION_PATH_ALLOW_CLIPBOARD |
+        SIXEL_OPTION_PATH_ALLOW_REMOTE;
+    path_check = 0;
+
+    if (filename != NULL) {
+        path_check = sixel_option_validate_filesystem_path(
+            filename,
+            filename,
+            path_flags);
+        if (path_check != 0) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+    }
 
     if (encoder != NULL) {
         encode_allocator = encoder->allocator;

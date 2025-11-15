@@ -52,6 +52,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/encoder.h \
                 $(srcdir)/decoder.c \
                 $(srcdir)/decoder.h \
+                $(srcdir)/options.c \
+                $(srcdir)/options.h \
                 $(srcdir)/stb_image.h \
                 $(srcdir)/writer.c \
                 $(srcdir)/writer.h \
