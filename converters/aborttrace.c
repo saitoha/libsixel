@@ -1,8 +1,26 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * The CLI tools install a SIGABRT handler when the signal keeps the default
- * disposition.  The handler prints a short stack trace to stderr before
+ * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE. The CLI tools install a SIGABRT handler when the signal keeps the
+ * default disposition.  The handler prints a short stack trace to stderr before
  * handing the signal back to the default action so sanitizers retain control.
  */
 
@@ -16,11 +34,11 @@
 
 #if defined(SIXEL_ENABLE_ABORT_TRACE)
 
-#include <stdlib.h>
+#include <limits.h>
 #include <signal.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <limits.h>
+#include <stdlib.h>
 
 #if defined(HAVE_STRING_H)
 #include <string.h>
@@ -36,8 +54,8 @@
 #endif
 
 #if defined(_WIN32)
-#include <windows.h>
 #include <io.h>
+#include <windows.h>
 #if defined(HAVE_DBGHELP)
 #include <dbghelp.h>
 #endif
@@ -82,9 +100,7 @@ sixel_aborttrace_write_count(char const *text, size_t length)
             chunk = (unsigned int)(length - written);
         }
 
-        rc = _write(SIXEL_ABORTTRACE_STDERR_FD,
-                    text + written,
-                    chunk);
+        rc = _write(SIXEL_ABORTTRACE_STDERR_FD, text + written, chunk);
         if (rc <= 0) {
             break;
         }
@@ -102,9 +118,8 @@ sixel_aborttrace_write_count(char const *text, size_t length)
     while (written < length) {
         ssize_t rc;
 
-        rc = write(SIXEL_ABORTTRACE_STDERR_FD,
-                   text + written,
-                   length - written);
+        rc =
+            write(SIXEL_ABORTTRACE_STDERR_FD, text + written, length - written);
         if (rc <= 0) {
             break;
         }
@@ -152,9 +167,8 @@ sixel_aborttrace_write_pointer(void *pointer)
 
         shift = (digits - 1U - index) * 4U;
         nibble = (unsigned int)((value >> shift) & 0xFU);
-        buffer[length] = (char)(nibble < 10U
-                                ? ('0' + (char)nibble)
-                                : ('a' + (char)(nibble - 10U)));
+        buffer[length] = (char)(nibble < 10U ? ('0' + (char)nibble)
+                                             : ('a' + (char)(nibble - 10U)));
         length += 1U;
     }
 
@@ -274,7 +288,7 @@ sixel_aborttrace_log_footer(void)
 static int
 sixel_aborttrace_sigabrt_is_default(void)
 {
-    void (__cdecl *previous)(int);
+    void(__cdecl * previous)(int);
 
     previous = signal(SIGABRT, SIG_IGN);
     if (previous == SIG_ERR) {
@@ -291,21 +305,18 @@ sixel_aborttrace_dump_frames(void)
     void *frames[SIXEL_ABORTTRACE_MAX_FRAMES];
     USHORT depth;
     unsigned int index;
+#if defined(HAVE_DBGHELP)
     HANDLE process;
     int have_symbols;
-#if defined(HAVE_DBGHELP)
     DWORD64 displacement;
     char symbol_buffer[sizeof(SYMBOL_INFO) + MAX_SYM_NAME];
     SYMBOL_INFO *symbol;
 #endif
 
-    depth = CaptureStackBackTrace(0,
-                                  SIXEL_ABORTTRACE_MAX_FRAMES,
-                                  frames,
-                                  NULL);
+    depth = CaptureStackBackTrace(0, SIXEL_ABORTTRACE_MAX_FRAMES, frames, NULL);
+#if defined(HAVE_DBGHELP)
     process = GetCurrentProcess();
     have_symbols = 0;
-#if defined(HAVE_DBGHELP)
     memset(symbol_buffer, 0, sizeof(symbol_buffer));
     symbol = (SYMBOL_INFO *)symbol_buffer;
     if (SymInitialize(process, NULL, TRUE)) {
@@ -397,11 +408,9 @@ sixel_aborttrace_dump_frames(void)
     void *frames[SIXEL_ABORTTRACE_MAX_FRAMES];
     int depth;
 
-    depth = backtrace(frames,
-                      (int)(sizeof(frames) / sizeof(frames[0])));
+    depth = backtrace(frames, (int)(sizeof(frames) / sizeof(frames[0])));
     if (depth <= 0) {
-        sixel_aborttrace_write_string(
-            "  backtrace() returned no frames\n");
+        sixel_aborttrace_write_string("  backtrace() returned no frames\n");
         return;
     }
 
@@ -438,7 +447,8 @@ sixel_aborttrace_restore_default(void)
 }
 
 static void
-sixel_aborttrace_signal_handler(int signum, siginfo_t *info, void *context)
+sixel_aborttrace_signal_handler(int signum, siginfo_t *info,
+                                            void *context)
 {
     (void)signum;
     (void)info;
@@ -497,3 +507,12 @@ sixel_aborttrace_install_if_unhandled(void)
     /* Abort tracing disabled at configure time. */
 }
 #endif
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
+/* EOF */
