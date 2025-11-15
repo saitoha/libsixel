@@ -2,8 +2,8 @@
 # Verify handling of shifted option arguments.
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-# shellcheck source=tests/converters/common.bash
-source "${SCRIPT_DIR}/common.bash"
+# shellcheck source=converters/t/common.t
+source "${SCRIPT_DIR}/common.t"
 
 shift_err="${TMP_DIR}/argument-shift.err"
 shift_out="${TMP_DIR}/argument-shift.out"

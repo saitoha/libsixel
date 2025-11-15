@@ -92,25 +92,25 @@ build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_1 = \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0001_invalid_option.bash \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0002_stdin.bash \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0003_information.bash \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0004_conversion_options.bash \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0005_dcs_arguments.bash \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0006_dcs_variations.bash \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0007_animation.bash \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@	$(top_srcdir)/tests/converters/test_0008_progressive_jpeg.bash
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0001_invalid_option.t \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0002_stdin.t \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0003_information.t \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0004_conversion_options.t \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0005_dcs_arguments.t \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0006_dcs_variations.t \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0007_animation.t \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0008_progressive_jpeg.t
 
-@HAVE_BASH_TRUE@@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_2 = $(top_srcdir)/tests/converters/test_0009_pngsuite.bash
-@HAVE_BASH_TRUE@@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_3 = $(top_srcdir)/tests/converters/test_0010_curl.bash
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_4 = $(top_srcdir)/tests/converters/test_0011_basic.bash
+@HAVE_BASH_TRUE@@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_2 = $(top_srcdir)/converters/t/test_0009_pngsuite.t
+@HAVE_BASH_TRUE@@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_3 = $(top_srcdir)/converters/t/test_0010_curl.t
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_4 = $(top_srcdir)/converters/t/test_0011_basic.t
 @HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_5 = \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/tests/converters/test_0012_regressions.bash \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/tests/converters/test_0013_documentation.bash \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/tests/converters/test_0014_option_matching.bash \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/tests/converters/test_0015_argument_shift.bash \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/tests/converters/test_0016_assessment_spool.bash \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/tests/converters/test_0017_clipboard.bash
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0012_regressions.t \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0013_documentation.t \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0014_option_matching.t \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0015_argument_shift.t \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0016_assessment_spool.t \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0017_clipboard.t
 
 @WANT_IMG2SIXEL_TRUE@am__append_6 = img2sixel
 @HAVE_ABORT_TRACE_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_7 = $(ABORTTRACE_LIBS)

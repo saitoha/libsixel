@@ -99,39 +99,39 @@ if img2sixel_opt.enabled()
     endif
 
     test_scripts = [
-      'test_0001_invalid_option.bash',
-      'test_0002_stdin.bash',
-      'test_0003_information.bash',
-      'test_0004_conversion_options.bash',
-      'test_0005_dcs_arguments.bash',
-      'test_0006_dcs_variations.bash',
-      'test_0007_animation.bash',
-      'test_0008_progressive_jpeg.bash',
+      'test_0001_invalid_option.t',
+      'test_0002_stdin.t',
+      'test_0003_information.t',
+      'test_0004_conversion_options.t',
+      'test_0005_dcs_arguments.t',
+      'test_0006_dcs_variations.t',
+      'test_0007_animation.t',
+      'test_0008_progressive_jpeg.t',
     ]
     if png_dep.found()
-      test_scripts += ['test_0009_pngsuite.bash']
+      test_scripts += ['test_0009_pngsuite.t']
     endif
     if curl_dep.found()
-      test_scripts += ['test_0010_curl.bash']
+      test_scripts += ['test_0010_curl.t']
     endif
     if sixel2png_opt.enabled()
-      test_scripts += ['test_0011_basic.bash']
+      test_scripts += ['test_0011_basic.t']
     endif
     test_scripts += [
-      'test_0012_regressions.bash',
-      'test_0013_documentation.bash',
-      'test_0014_option_matching.bash',
-      'test_0015_argument_shift.bash',
-      'test_0016_assessment_spool.bash',
-      'test_0017_clipboard.bash',
+      'test_0012_regressions.t',
+      'test_0013_documentation.t',
+      'test_0014_option_matching.t',
+      'test_0015_argument_shift.t',
+      'test_0016_assessment_spool.t',
+      'test_0017_clipboard.t',
     ]
 
-    tests_dir = join_paths(meson.source_root(), 'tests', 'converters')
+    tests_dir = join_paths(meson.source_root(), 'converters', 't')
     order = 0
     foreach script : test_scripts
       deps = []
       deps += img2sixel_deps
-      if script == 'test_0011_basic.bash'
+      if script == 'test_0011_basic.t'
         deps += sixel2png_deps
       endif
       test(script, bash,

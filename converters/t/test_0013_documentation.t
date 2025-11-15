@@ -2,8 +2,8 @@
 # Keep documentation and help output in sync.
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-# shellcheck source=tests/converters/common.bash
-source "${SCRIPT_DIR}/common.bash"
+# shellcheck source=converters/t/common.t
+source "${SCRIPT_DIR}/common.t"
 
 echo '[test14] documentation'
 
