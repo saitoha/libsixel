@@ -138,7 +138,9 @@ sixel_aborttrace_write_string(char const *text)
     sixel_aborttrace_write_count(text, length);
 }
 
-#if defined(_WIN32) || !defined(HAVE_BACKTRACE_SYMBOLS_FD)
+/* Provide manual formatting helpers only when the trace printer needs them. */
+#if defined(_WIN32) || (defined(HAVE_BACKTRACE) \
+    && !defined(HAVE_BACKTRACE_SYMBOLS_FD))
 static void
 sixel_aborttrace_write_newline(void)
 {
