@@ -684,6 +684,7 @@ AC_CHECK_HEADERS([assert.h \
                   arm_neon.h \
                   dirent.h \
                   sys/sysctl.h \
+                  float.h \
                  ])
 
 # Checks for typedefs, structures, and compiler characteristics.

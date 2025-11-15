@@ -6815,14 +6815,13 @@ sixel_loader_load_file(
      *  Assessment pipeline sketch:
      *
      *      +-------------+        +--------------+
-     *      | chunk read | ----->  | image decode |
+     *      | chunk read  | -----> | image decode |
      *      +-------------+        +--------------+
      *
      *  The loader owns the hand-off.  Chunk I/O ends before any decoder runs,
      *  so we time the read span in the encoder and pivot to decode once the
      *  chunk is populated.
      */
-
     status = sixel_chunk_new(&pchunk,
                              filename,
                              loader->finsecure,
