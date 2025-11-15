@@ -21,6 +21,11 @@
 #
 
 sources_common = ['malloc_stub.c']
+aborttrace_sources = ['aborttrace.c']
+aborttrace_deps_local = []
+if abort_trace_enabled
+  aborttrace_deps_local = abort_trace_deps
+endif
 
 # +--------------------------------------------------------------+
 # | Embedded completion header generation pipeline (ASCII view). |
@@ -48,8 +53,9 @@ sixel2png_opt = get_option('sixel2png')
 img2sixel_deps = []
 if img2sixel_opt.enabled()
   img2sixel_exe = executable('img2sixel',
-    ['img2sixel.c', 'completion_utils.c', completion_embed] + sources_common,
-    dependencies: libsixel_dep,
+    ['img2sixel.c', 'completion_utils.c', completion_embed]
+      + sources_common + aborttrace_sources,
+    dependencies: [libsixel_dep] + aborttrace_deps_local,
     include_directories: [project_inc, local_inc],
     install: true)
   img2sixel_deps = [img2sixel_exe]
@@ -64,8 +70,9 @@ endif
 
 sixel2png_deps = []
 if sixel2png_opt.enabled()
-  sixel2png_exe = executable('sixel2png', ['sixel2png.c'] + sources_common,
-    dependencies: libsixel_dep,
+  sixel2png_exe = executable('sixel2png',
+    ['sixel2png.c'] + sources_common + aborttrace_sources,
+    dependencies: [libsixel_dep] + aborttrace_deps_local,
     include_directories: project_inc,
     install: true)
   install_man('sixel2png.1')

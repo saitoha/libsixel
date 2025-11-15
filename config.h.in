@@ -9,6 +9,12 @@
 /* Define to 1 if you have the <assert.h> header file. */
 #undef HAVE_ASSERT_H
 
+/* Define to 1 if you have the 'backtrace' function. */
+#undef HAVE_BACKTRACE
+
+/* Define to 1 if you have the 'backtrace_symbols_fd' function. */
+#undef HAVE_BACKTRACE_SYMBOLS_FD
+
 /* define 1 if GCC supports -Bsymbolic */
 #undef HAVE_BSYMBOLIC
 
@@ -35,6 +41,9 @@
 
 /* Define to 1 if you have the <ctype.h> header file. */
 #undef HAVE_CTYPE_H
+
+/* Define to 1 if dbghelp is available */
+#undef HAVE_DBGHELP
 
 /* enable debugging support */
 #undef HAVE_DEBUG
@@ -152,6 +161,9 @@
 
 /* Define to 1 if you have the <errno.h> header file. */
 #undef HAVE_ERRNO_H
+
+/* Define to 1 if you have the <execinfo.h> header file. */
+#undef HAVE_EXECINFO_H
 
 /* Define to 1 if you have the 'fchmod' function. */
 #undef HAVE_FCHMOD
@@ -291,6 +303,9 @@
 
 /* Define to 1 if you have the 'pow' function. */
 #undef HAVE_POW
+
+/* Define to 1 if you have the <process.h> header file. */
+#undef HAVE_PROCESS_H
 
 /* whether macOS Quick Look is available */
 #undef HAVE_QUICKLOOK
@@ -506,6 +521,9 @@
 
 /* Define to the version of this package. */
 #undef PACKAGE_VERSION
+
+/* Define to 1 if CLI abort tracing is enabled */
+#undef SIXEL_ENABLE_ABORT_TRACE
 
 /* Define to 1 if internal threadpool support is enabled */
 #undef SIXEL_ENABLE_THREADS

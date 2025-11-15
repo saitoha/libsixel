@@ -175,6 +175,8 @@ std_headers = [
     'sys/ioctl.h',
     'sys/wait.h',
     'spawn.h',
+    'execinfo.h',
+    'process.h',
     'inttypes.h',
     'stdio.h',
     'stdlib.h',
@@ -288,6 +290,43 @@ foreach s : ['SIGINT', 'SIGTERM', 'SIGHUP']
     conf.set('HAVE_DECL_' + s, 1)
   endif
 endforeach
+
+abort_trace_opt = get_option('abort_trace')
+abort_trace_enabled = not abort_trace_opt.disabled()
+abort_trace_deps = []
+if abort_trace_enabled
+  conf.set('SIXEL_ENABLE_ABORT_TRACE', 1)
+  execinfo_dep = cc.find_library('execinfo', required: false)
+  if execinfo_dep.found()
+    abort_trace_deps += execinfo_dep
+  endif
+  execinfo_deps = []
+  if execinfo_dep.found()
+    execinfo_deps = [execinfo_dep]
+  endif
+  if cc.has_header('execinfo.h')
+    if cc.has_function('backtrace',
+        prefix: '#include <execinfo.h>',
+        dependencies: execinfo_deps)
+      conf.set('HAVE_BACKTRACE', 1)
+    endif
+    if cc.has_function('backtrace_symbols_fd',
+        prefix: '#include <execinfo.h>',
+        dependencies: execinfo_deps)
+      conf.set('HAVE_BACKTRACE_SYMBOLS_FD', 1)
+    endif
+  endif
+  if host_system == 'windows'
+    dbghelp_dep = cc.find_library('dbghelp',
+      required: abort_trace_opt.enabled())
+    if dbghelp_dep.found()
+      abort_trace_deps += dbghelp_dep
+      conf.set('HAVE_DBGHELP', 1)
+    elif abort_trace_opt.enabled()
+      error('abort_trace=enabled requires dbghelp on Windows')
+    endif
+  endif
+endif
 
 deps = []
 reqs = []
