@@ -64,7 +64,6 @@
 #include "status.h"
 #include "compat_stub.h"
 #include "allocator.h"
-#include "palette-internal.h"
 #include "lut.h"
 
 #define SIXEL_LUT_BRANCH_FLAG 0x40000000U
@@ -107,6 +106,12 @@ typedef struct sixel_certlut {
     int kdtree_root;
 } sixel_certlut_t;
 
+typedef struct sixel_lut_quantization {
+    unsigned int channel_shift;
+    unsigned int channel_bits;
+    unsigned int channel_mask;
+} sixel_lut_quantization_t;
+
 struct sixel_lut {
     int policy;
     int depth;
@@ -114,7 +119,7 @@ struct sixel_lut {
     int complexion;
     unsigned char const *palette;
     sixel_allocator_t *allocator;
-    struct histogram_control control;
+    sixel_lut_quantization_t quant;
     int32_t *dense;
     size_t dense_size;
     int dense_ready;
@@ -124,6 +129,104 @@ struct sixel_lut {
 
 /* Sentinel value used to detect empty dense LUT slots. */
 #define SIXEL_LUT_DENSE_EMPTY (-1)
+
+/*
+ * Compute quantization parameters for the dense cache.  The selection mirrors
+ * the historic histogram helper so existing 5bit/6bit behaviour stays intact
+ * while still allowing "none" and "certlut" to bypass the cache entirely.
+ */
+static sixel_lut_quantization_t
+sixel_lut_quant_make(unsigned int depth, int policy)
+{
+    sixel_lut_quantization_t quant;
+    unsigned int shift;
+
+    shift = 2U;
+    if (depth > 3U) {
+        shift = 3U;
+    }
+    if (policy == SIXEL_LUT_POLICY_5BIT) {
+        shift = 3U;
+    } else if (policy == SIXEL_LUT_POLICY_6BIT) {
+        shift = 2U;
+        if (depth > 3U) {
+            shift = 3U;
+        }
+    } else if (policy == SIXEL_LUT_POLICY_NONE
+               || policy == SIXEL_LUT_POLICY_CERTLUT) {
+        shift = 0U;
+    }
+
+    quant.channel_shift = shift;
+    quant.channel_bits = 8U - shift;
+    quant.channel_mask = (1U << quant.channel_bits) - 1U;
+
+    return quant;
+}
+
+/*
+ * Return the dense table size for the active quantization.  The loop saturates
+ * at SIZE_MAX so the later allocation guard can emit a friendly error message
+ * instead of overflowing.
+ */
+static size_t
+sixel_lut_dense_size(unsigned int depth,
+                     sixel_lut_quantization_t const *quant)
+{
+    size_t size;
+    unsigned int exponent;
+    unsigned int i;
+
+    size = 1U;
+    exponent = depth * quant->channel_bits;
+    for (i = 0U; i < exponent; ++i) {
+        if (size > SIZE_MAX / 2U) {
+            size = SIZE_MAX;
+            break;
+        }
+        size <<= 1U;
+    }
+
+    return size;
+}
+
+/*
+ * Pack a pixel into the dense cache index.  The rounding matches the old
+ * histogram_pack_color() implementation to keep cached answers stable.
+ */
+static unsigned int
+sixel_lut_pack_color(unsigned char const *pixel,
+                     unsigned int depth,
+                     sixel_lut_quantization_t const *quant)
+{
+    unsigned int packed;
+    unsigned int bits;
+    unsigned int shift;
+    unsigned int plane;
+    unsigned int component;
+    unsigned int rounded;
+    unsigned int mask;
+
+    packed = 0U;
+    bits = quant->channel_bits;
+    shift = quant->channel_shift;
+    mask = quant->channel_mask;
+
+    for (plane = 0U; plane < depth; ++plane) {
+        component = (unsigned int)pixel[depth - 1U - plane];
+        if (shift > 0U) {
+            rounded = (component + (1U << (shift - 1U))) >> shift;
+            if (rounded > mask) {
+                rounded = mask;
+            }
+        } else {
+            rounded = component & mask;
+        }
+        packed |= rounded << (plane * bits);
+    }
+
+    return packed;
+}
 
 static int
 sixel_lut_policy_normalize(int policy)
@@ -185,11 +288,11 @@ sixel_lut_prepare_cache(sixel_lut_t *lut)
     }
 
     /* Allocate a dense RGB quantization table for 5/6bit policies.
-     * The packed index matches histogram_pack_color() so each slot
+     * The packed index matches sixel_lut_pack_color() so each slot
      * can store the resolved palette entry or remain empty.
      */
-    expected = histogram_dense_size((unsigned int)lut->depth,
-                                    &lut->control);
+    expected = sixel_lut_dense_size((unsigned int)lut->depth,
+                                    &lut->quant);
     if (expected == 0U) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -250,9 +353,9 @@ sixel_lut_lookup_fast(sixel_lut_t *lut, unsigned char const *pixel)
     bucket = 0U;
     cached = SIXEL_LUT_DENSE_EMPTY;
     if (lut->dense_ready && lut->dense != NULL) {
-        bucket = histogram_pack_color(pixel,
+        bucket = sixel_lut_pack_color(pixel,
                                       (unsigned int)lut->depth,
-                                      &lut->control);
+                                      &lut->quant);
         if ((size_t)bucket < lut->dense_size) {
             cached = lut->dense[bucket];
             if (cached >= 0) {
@@ -1241,6 +1344,9 @@ sixel_lut_new(sixel_lut_t **out,
     lut->ncolors = 0;
     lut->complexion = 1;
     lut->palette = NULL;
+    lut->quant.channel_shift = 0U;
+    lut->quant.channel_bits = 8U;
+    lut->quant.channel_mask = 0xffU;
     lut->dense = NULL;
     lut->dense_size = 0U;
     lut->dense_ready = 0;
@@ -1288,8 +1394,7 @@ sixel_lut_configure(sixel_lut_t *lut,
     lut->complexion = complexion;
     normalized = sixel_lut_policy_normalize(policy);
     lut->policy = normalized;
-    lut->control = histogram_control_make_for_policy((unsigned int)depth,
-                                                     normalized);
+    lut->quant = sixel_lut_quant_make((unsigned int)depth, normalized);
     lut->dense_ready = 0;
     lut->cert_ready = 0;
 

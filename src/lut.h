@@ -26,7 +26,6 @@
 #include <sixel.h>
 
 #include <stdint.h>
-#include "palette-internal.h"
 
 
 #ifdef __cplusplus
