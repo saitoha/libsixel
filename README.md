@@ -350,6 +350,20 @@ You can install libsixel via the following package systems.
 
 See [build.md](https://github.com/saitoha/libsixel/blob/master/build.md).
 
+#### Bundled `pkg.m4`
+
+We ship a local copy of `m4/pkg.m4` so that `autoreconf` keeps working on
+minimal or cross compilation environments where pkg-config's Autoconf macros
+are not preinstalled. This improves the out-of-the-box experience for
+contributors on MSYS2 or bespoke SDK images, at the cost of tracking upstream
+macro updates ourselves. If your distribution prefers the system-wide
+`pkg.m4`, it can safely drop our copy by adjusting `ACLOCAL_PATH` before
+running `autoreconf`.
+
+The bundled file is licensed under GPL-2.0-or-later with the "Autoconf Macro
+Special Exception", allowing the generated `configure` script (and projects
+using it) to remain under their original licenses.
+
 ## Usage of command line tools
 
 ### img2sixel
@@ -736,6 +750,19 @@ Convert a sixel file into a png image file
 ```
 $ sixel2png < egret.sixel > egret.png
 ```
+
+### CLI abort trace diagnostics
+
+`img2sixel` and `sixel2png` emit a compact stack trace to stderr when they
+terminate via `abort(3)` while no other handler claimed `SIGABRT`.  The feature
+helps debugging regression reports without interfering with sanitizers or
+fuzzers that already replace the handler.
+
+The logic is enabled by default.  Set `SIXEL_ABORT_TRACE=0` or the legacy
+`SIXEL_NO_ABORT_TRACE=1` to disable it.  `SIXEL_ABORT_TRACE=1` forces the
+handler to install when the signal is otherwise unhandled, while
+`SIXEL_ABORT_TRACE=auto` defers to the build configuration.  Both variables are
+checked at process startup so per-invocation overrides are straightforward.
 
 ## The high-level conversion API
 

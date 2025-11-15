@@ -208,9 +208,17 @@ The repository vendors useful Autoconf macros:
    Copyright (c) 2011 Stanislav Sedov
    Licensed under the BSD-2-Clause terms included in the file header.
 
+ - pkg.m4 (PKG_PROG_PKG_CONFIG and friends)
+   Copyright (c) 2004 Scott James Remnant
+   Copyright (c) 2012-2015 Dan Nicholson
+   Licensed under the GNU General Public License version 2 or later with
+   the "Autoconf Macro Special Exception" that permits distributing the
+   generated `configure` script and dependent code under your chosen terms.
+
 Note: Some Autoconf Archive macros are under GPL-3.0-or-later with the
-"Autoconf Macro Special Exception". The macros included here are under the
-permissive notices above. The special exception means that using these macros,
+"Autoconf Macro Special Exception". The vendored `pkg.m4` follows that
+GPL-with-exception licensing, while the other macros above are under the
+stated permissive terms. The special exception means that using these macros,
 or the generated `configure` script, does not by itself impose GPL
 requirements on your project.
 

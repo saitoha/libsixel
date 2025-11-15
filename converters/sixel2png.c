@@ -28,6 +28,7 @@
 #include "config.h"
 #include "malloc_stub.h"
 #include "getopt_stub.h"
+#include "aborttrace.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -719,6 +720,8 @@ main(int argc, char *argv[])
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
     char const *optstring;
+
+    sixel_aborttrace_install_if_unhandled();
 
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {

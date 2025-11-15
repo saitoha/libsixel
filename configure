@@ -750,12 +750,15 @@ bashcompletiondir
 pkgconfigdir
 WANT_THUMBNAILER_FALSE
 WANT_THUMBNAILER_TRUE
+ABORTTRACE_LIBS
 THREAD_LIBS
 THREAD_CFLAGS
 THREAD_CPPFLAGS
 modeldir
 SIXEL_ENABLE_THREADS_FALSE
 SIXEL_ENABLE_THREADS_TRUE
+HAVE_ABORT_TRACE_FALSE
+HAVE_ABORT_TRACE_TRUE
 WANT_SIXEL2PNG_FALSE
 WANT_SIXEL2PNG_TRUE
 WANT_IMG2SIXEL_FALSE
@@ -914,6 +917,7 @@ with_sysroot
 enable_libtool_lock
 enable_img2sixel
 enable_sixel2png
+enable_abort_trace
 enable_threads
 with_modeldir
 enable_thumbnailer_command
@@ -1626,6 +1630,8 @@ Optional Features:
   --disable-libtool-lock  avoid locking (might break parallel builds)
   --disable-img2sixel     disable building the img2sixel utility (default: no)
   --disable-sixel2png     disable building the sixel2png utility (default: no)
+  --enable-abort-trace    enable abort stack trace support for CLI tools
+                          (default: auto)
   --disable-threads       disable internal threadpool support (default: auto)
   --enable-thumbnailer-command
                           install the sixel thumbnailer command (default:
@@ -16396,6 +16402,30 @@ else
 fi
 
 
+# Check whether --enable-abort-trace was given.
+if test ${enable_abort_trace+y}
+then :
+  enableval=$enable_abort_trace; enable_abort_trace="$enableval"
+else case e in #(
+  e) enable_abort_trace="auto" ;;
+esac
+fi
+
+case $enable_abort_trace in #(
+  yes|no|auto) :
+     ;; #(
+  *) :
+    as_fn_error $? "invalid value for --enable-abort-trace: $enable_abort_trace" "$LINENO" 5 ;;
+esac
+ if test "x$enable_abort_trace" != "xno"; then
+  HAVE_ABORT_TRACE_TRUE=
+  HAVE_ABORT_TRACE_FALSE='#'
+else
+  HAVE_ABORT_TRACE_TRUE='#'
+  HAVE_ABORT_TRACE_FALSE=
+fi
+
+
 # Check whether --enable-threads was given.
 if test ${enable_threads+y}
 then :
@@ -16467,6 +16497,7 @@ esac
 THREAD_CPPFLAGS=""
 THREAD_CFLAGS=""
 THREAD_LIBS=""
+ABORTTRACE_LIBS=""
 have_threads="no"
 if test "x$enable_threads" != "xno"; then
 
@@ -16636,6 +16667,130 @@ if test x$enable_thumbnailer_command = xauto; then
     enable_thumbnailer_command=no
   fi
 fi
+if test "x$enable_abort_trace" != "xno"
+then :
+
+
+printf "%s\n" "#define SIXEL_ENABLE_ABORT_TRACE 1" >>confdefs.h
+
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for backtrace in -lexecinfo" >&5
+printf %s "checking for backtrace in -lexecinfo... " >&6; }
+if test ${ac_cv_lib_execinfo_backtrace+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-lexecinfo  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.
+   The 'extern "C"' is for builds by C++ compilers;
+   although this is not generally supported in C code supporting it here
+   has little cost and some practical benefit (sr 110532).  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char backtrace (void);
+int
+main (void)
+{
+return backtrace ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_execinfo_backtrace=yes
+else case e in #(
+  e) ac_cv_lib_execinfo_backtrace=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_execinfo_backtrace" >&5
+printf "%s\n" "$ac_cv_lib_execinfo_backtrace" >&6; }
+if test "x$ac_cv_lib_execinfo_backtrace" = xyes
+then :
+  ABORTTRACE_LIBS="$ABORTTRACE_LIBS -lexecinfo"
+fi
+
+  ac_save_LIBS="$LIBS"
+  LIBS="$LIBS $ABORTTRACE_LIBS"
+  ac_fn_c_check_func "$LINENO" "backtrace" "ac_cv_func_backtrace"
+if test "x$ac_cv_func_backtrace" = xyes
+then :
+  printf "%s\n" "#define HAVE_BACKTRACE 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "backtrace_symbols_fd" "ac_cv_func_backtrace_symbols_fd"
+if test "x$ac_cv_func_backtrace_symbols_fd" = xyes
+then :
+  printf "%s\n" "#define HAVE_BACKTRACE_SYMBOLS_FD 1" >>confdefs.h
+
+fi
+
+  LIBS="$ac_save_LIBS"
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for SymInitialize in -ldbghelp" >&5
+printf %s "checking for SymInitialize in -ldbghelp... " >&6; }
+if test ${ac_cv_lib_dbghelp_SymInitialize+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-ldbghelp  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.
+   The 'extern "C"' is for builds by C++ compilers;
+   although this is not generally supported in C code supporting it here
+   has little cost and some practical benefit (sr 110532).  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char SymInitialize (void);
+int
+main (void)
+{
+return SymInitialize ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_dbghelp_SymInitialize=yes
+else case e in #(
+  e) ac_cv_lib_dbghelp_SymInitialize=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_dbghelp_SymInitialize" >&5
+printf "%s\n" "$ac_cv_lib_dbghelp_SymInitialize" >&6; }
+if test "x$ac_cv_lib_dbghelp_SymInitialize" = xyes
+then :
+  ABORTTRACE_LIBS="$ABORTTRACE_LIBS -ldbghelp"
+
+printf "%s\n" "#define HAVE_DBGHELP 1" >>confdefs.h
+
+fi
+
+
+fi
+
 
 if test x$message_thumbnailer = xno; then
   if test x$enable_thumbnailer_command = xyes; then
@@ -18329,6 +18484,18 @@ then :
   printf "%s\n" "#define HAVE_FLOAT_H 1" >>confdefs.h
 
 fi
+ac_fn_c_check_header_compile "$LINENO" "process.h" "ac_cv_header_process_h" "$ac_includes_default"
+if test "x$ac_cv_header_process_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_PROCESS_H 1" >>confdefs.h
+
+fi
+ac_fn_c_check_header_compile "$LINENO" "execinfo.h" "ac_cv_header_execinfo_h" "$ac_includes_default"
+if test "x$ac_cv_header_execinfo_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_EXECINFO_H 1" >>confdefs.h
+
+fi
 
 
 # Checks for typedefs, structures, and compiler characteristics.
@@ -19128,24 +19295,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        GDK_PIXBUF_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gdk-pixbuf-2.0" 2>&1`
+                GDK_PIXBUF_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gdk-pixbuf-2.0" 2>&1`
         else
-	        GDK_PIXBUF_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gdk-pixbuf-2.0" 2>&1`
+                GDK_PIXBUF_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gdk-pixbuf-2.0" 2>&1`
         fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$GDK_PIXBUF_PKG_ERRORS" >&5
+        # Put the nasty error message in config.log where it belongs
+        echo "$GDK_PIXBUF_PKG_ERRORS" >&5
 
-	have_gdk_pixbuf2=no
+        have_gdk_pixbuf2=no
 elif test $pkg_failed = untried; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-	have_gdk_pixbuf2=no
+        have_gdk_pixbuf2=no
 else
-	GDK_PIXBUF_CFLAGS=$pkg_cv_GDK_PIXBUF_CFLAGS
-	GDK_PIXBUF_LIBS=$pkg_cv_GDK_PIXBUF_LIBS
+        GDK_PIXBUF_CFLAGS=$pkg_cv_GDK_PIXBUF_CFLAGS
+        GDK_PIXBUF_LIBS=$pkg_cv_GDK_PIXBUF_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-	have_gdk_pixbuf2=yes
+        have_gdk_pixbuf2=yes
 fi
         if test x$have_gdk_pixbuf2 != xno; then
 
@@ -19737,24 +19904,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        GD_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gdlib" 2>&1`
+                GD_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gdlib" 2>&1`
         else
-	        GD_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gdlib" 2>&1`
+                GD_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gdlib" 2>&1`
         fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$GD_PKG_ERRORS" >&5
+        # Put the nasty error message in config.log where it belongs
+        echo "$GD_PKG_ERRORS" >&5
 
-	have_gd=no
+        have_gd=no
 elif test $pkg_failed = untried; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-	have_gd=no
+        have_gd=no
 else
-	GD_CFLAGS=$pkg_cv_GD_CFLAGS
-	GD_LIBS=$pkg_cv_GD_LIBS
+        GD_CFLAGS=$pkg_cv_GD_CFLAGS
+        GD_LIBS=$pkg_cv_GD_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-	have_gd=yes
+        have_gd=yes
 fi
         fi
     fi
@@ -20677,24 +20844,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBCURL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libcurl" 2>&1`
+                LIBCURL_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libcurl" 2>&1`
         else
-	        LIBCURL_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libcurl" 2>&1`
+                LIBCURL_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libcurl" 2>&1`
         fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$LIBCURL_PKG_ERRORS" >&5
+        # Put the nasty error message in config.log where it belongs
+        echo "$LIBCURL_PKG_ERRORS" >&5
 
-	have_curl=no
+        have_curl=no
 elif test $pkg_failed = untried; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-	have_curl=no
+        have_curl=no
 else
-	LIBCURL_CFLAGS=$pkg_cv_LIBCURL_CFLAGS
-	LIBCURL_LIBS=$pkg_cv_LIBCURL_LIBS
+        LIBCURL_CFLAGS=$pkg_cv_LIBCURL_CFLAGS
+        LIBCURL_LIBS=$pkg_cv_LIBCURL_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-	have_curl=yes
+        have_curl=yes
 fi
             fi
         fi
@@ -21012,24 +21179,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBJPEG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libjpeg" 2>&1`
+                LIBJPEG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libjpeg" 2>&1`
         else
-	        LIBJPEG_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libjpeg" 2>&1`
+                LIBJPEG_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libjpeg" 2>&1`
         fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$LIBJPEG_PKG_ERRORS" >&5
+        # Put the nasty error message in config.log where it belongs
+        echo "$LIBJPEG_PKG_ERRORS" >&5
 
-	have_jpeg=no
+        have_jpeg=no
 elif test $pkg_failed = untried; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-	have_jpeg=no
+        have_jpeg=no
 else
-	LIBJPEG_CFLAGS=$pkg_cv_LIBJPEG_CFLAGS
-	LIBJPEG_LIBS=$pkg_cv_LIBJPEG_LIBS
+        LIBJPEG_CFLAGS=$pkg_cv_LIBJPEG_CFLAGS
+        LIBJPEG_LIBS=$pkg_cv_LIBJPEG_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-	have_jpeg=yes
+        have_jpeg=yes
 fi
             fi
         fi
@@ -21193,24 +21360,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        LIBPNG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libpng" 2>&1`
+                LIBPNG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libpng" 2>&1`
         else
-	        LIBPNG_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libpng" 2>&1`
+                LIBPNG_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libpng" 2>&1`
         fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$LIBPNG_PKG_ERRORS" >&5
+        # Put the nasty error message in config.log where it belongs
+        echo "$LIBPNG_PKG_ERRORS" >&5
 
-	have_png=no
+        have_png=no
 elif test $pkg_failed = untried; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-	have_png=no
+        have_png=no
 else
-	LIBPNG_CFLAGS=$pkg_cv_LIBPNG_CFLAGS
-	LIBPNG_LIBS=$pkg_cv_LIBPNG_LIBS
+        LIBPNG_CFLAGS=$pkg_cv_LIBPNG_CFLAGS
+        LIBPNG_LIBS=$pkg_cv_LIBPNG_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-	have_png=yes
+        have_png=yes
 fi
             fi
         fi
@@ -21335,24 +21502,24 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-	        ONNXRUNTIME_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libonnxruntime" 2>&1`
+                ONNXRUNTIME_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libonnxruntime" 2>&1`
         else
-	        ONNXRUNTIME_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libonnxruntime" 2>&1`
+                ONNXRUNTIME_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libonnxruntime" 2>&1`
         fi
-	# Put the nasty error message in config.log where it belongs
-	echo "$ONNXRUNTIME_PKG_ERRORS" >&5
+        # Put the nasty error message in config.log where it belongs
+        echo "$ONNXRUNTIME_PKG_ERRORS" >&5
 
-	have_onnxruntime=no
+        have_onnxruntime=no
 elif test $pkg_failed = untried; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-	have_onnxruntime=no
+        have_onnxruntime=no
 else
-	ONNXRUNTIME_CFLAGS=$pkg_cv_ONNXRUNTIME_CFLAGS
-	ONNXRUNTIME_LIBS=$pkg_cv_ONNXRUNTIME_LIBS
+        ONNXRUNTIME_CFLAGS=$pkg_cv_ONNXRUNTIME_CFLAGS
+        ONNXRUNTIME_LIBS=$pkg_cv_ONNXRUNTIME_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-	have_onnxruntime=yes
+        have_onnxruntime=yes
 fi
         fi
         if test "x$have_onnxruntime" != "xyes"; then
@@ -23073,6 +23240,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WANT_SIXEL2PNG_TRUE}" && test -z "${WANT_SIXEL2PNG_FALSE}"; then
   as_fn_error $? "conditional \"WANT_SIXEL2PNG\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_ABORT_TRACE_TRUE}" && test -z "${HAVE_ABORT_TRACE_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_ABORT_TRACE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${SIXEL_ENABLE_THREADS_TRUE}" && test -z "${SIXEL_ENABLE_THREADS_FALSE}"; then

@@ -113,11 +113,13 @@ bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/tests/converters/test_0017_clipboard.bash
 
 @WANT_IMG2SIXEL_TRUE@am__append_6 = img2sixel
-@WANT_IMG2SIXEL_TRUE@am__append_7 = $(srcdir)/img2sixel.1
-@WANT_IMG2SIXEL_TRUE@am__append_8 = $(srcdir)/shell-completion/bash/img2sixel
-@WANT_IMG2SIXEL_TRUE@am__append_9 = $(srcdir)/shell-completion/zsh/_img2sixel
-@WANT_SIXEL2PNG_TRUE@am__append_10 = sixel2png
-@WANT_SIXEL2PNG_TRUE@am__append_11 = $(srcdir)/sixel2png.1
+@HAVE_ABORT_TRACE_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_7 = $(ABORTTRACE_LIBS)
+@WANT_IMG2SIXEL_TRUE@am__append_8 = $(srcdir)/img2sixel.1
+@WANT_IMG2SIXEL_TRUE@am__append_9 = $(srcdir)/shell-completion/bash/img2sixel
+@WANT_IMG2SIXEL_TRUE@am__append_10 = $(srcdir)/shell-completion/zsh/_img2sixel
+@WANT_SIXEL2PNG_TRUE@am__append_11 = sixel2png
+@HAVE_ABORT_TRACE_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_12 = $(ABORTTRACE_LIBS)
+@WANT_SIXEL2PNG_TRUE@am__append_13 = $(srcdir)/sixel2png.1
 subdir = converters
 SUBDIRS =
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -127,7 +129,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
 	$(top_srcdir)/m4/ax_ruby_ext.m4 $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
 	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am \
@@ -146,16 +148,21 @@ PROGRAMS = $(bin_PROGRAMS)
 am__img2sixel_SOURCES_DIST = $(srcdir)/img2sixel.c \
 	$(srcdir)/completion_utils.c $(srcdir)/completion_utils.h \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
-	$(srcdir)/getopt_stub.h
+	$(srcdir)/getopt_stub.h $(srcdir)/aborttrace.c \
+	$(srcdir)/aborttrace.h
 @WANT_IMG2SIXEL_TRUE@am_img2sixel_OBJECTS =  \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-img2sixel.$(OBJEXT) \
 @WANT_IMG2SIXEL_TRUE@	img2sixel-completion_utils.$(OBJEXT) \
-@WANT_IMG2SIXEL_TRUE@	img2sixel-malloc_stub.$(OBJEXT)
+@WANT_IMG2SIXEL_TRUE@	img2sixel-malloc_stub.$(OBJEXT) \
+@WANT_IMG2SIXEL_TRUE@	img2sixel-aborttrace.$(OBJEXT)
 nodist_img2sixel_OBJECTS =
 img2sixel_OBJECTS = $(am_img2sixel_OBJECTS) \
 	$(nodist_img2sixel_OBJECTS)
+am__DEPENDENCIES_1 =
+@HAVE_ABORT_TRACE_TRUE@@WANT_IMG2SIXEL_TRUE@am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
 @WANT_IMG2SIXEL_TRUE@img2sixel_DEPENDENCIES =  \
-@WANT_IMG2SIXEL_TRUE@	$(top_builddir)/src/libsixel.la
+@WANT_IMG2SIXEL_TRUE@	$(top_builddir)/src/libsixel.la \
+@WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_2)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -165,13 +172,17 @@ img2sixel_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(CFLAGS) $(img2sixel_LDFLAGS) $(LDFLAGS) -o $@
 am__sixel2png_SOURCES_DIST = $(srcdir)/sixel2png.c \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
-	$(srcdir)/getopt_stub.h
+	$(srcdir)/getopt_stub.h $(srcdir)/aborttrace.c \
+	$(srcdir)/aborttrace.h
 @WANT_SIXEL2PNG_TRUE@am_sixel2png_OBJECTS =  \
 @WANT_SIXEL2PNG_TRUE@	sixel2png-sixel2png.$(OBJEXT) \
-@WANT_SIXEL2PNG_TRUE@	sixel2png-malloc_stub.$(OBJEXT)
+@WANT_SIXEL2PNG_TRUE@	sixel2png-malloc_stub.$(OBJEXT) \
+@WANT_SIXEL2PNG_TRUE@	sixel2png-aborttrace.$(OBJEXT)
 sixel2png_OBJECTS = $(am_sixel2png_OBJECTS)
+@HAVE_ABORT_TRACE_TRUE@@WANT_SIXEL2PNG_TRUE@am__DEPENDENCIES_3 = $(am__DEPENDENCIES_1)
 @WANT_SIXEL2PNG_TRUE@sixel2png_DEPENDENCIES =  \
-@WANT_SIXEL2PNG_TRUE@	$(top_builddir)/src/libsixel.la
+@WANT_SIXEL2PNG_TRUE@	$(top_builddir)/src/libsixel.la \
+@WANT_SIXEL2PNG_TRUE@	$(am__DEPENDENCIES_3)
 sixel2png_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(sixel2png_CFLAGS) \
 	$(CFLAGS) $(sixel2png_LDFLAGS) $(LDFLAGS) -o $@
@@ -190,9 +201,11 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/img2sixel-completion_utils.Po \
+am__depfiles_remade = ./$(DEPDIR)/img2sixel-aborttrace.Po \
+	./$(DEPDIR)/img2sixel-completion_utils.Po \
 	./$(DEPDIR)/img2sixel-img2sixel.Po \
 	./$(DEPDIR)/img2sixel-malloc_stub.Po \
+	./$(DEPDIR)/sixel2png-aborttrace.Po \
 	./$(DEPDIR)/sixel2png-malloc_stub.Po \
 	./$(DEPDIR)/sixel2png-sixel2png.Po
 am__mv = mv -f
@@ -319,6 +332,7 @@ am__relativize = \
   done; \
   reldir="$$dir2"
 VPATH = @srcdir@
+ABORTTRACE_LIBS = @ABORTTRACE_LIBS@
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_CFLAGS = @AM_CFLAGS@
@@ -513,9 +527,10 @@ top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
 DIST_SUBDIRS = $(SUBDIRS)
 BUILT_SOURCES = completion_embed.h
-dist_man_MANS = $(am__append_7) $(am__append_11)
-dist_bashcompletion_DATA = $(am__append_8)
-dist_zshcompletion_DATA = $(am__append_9)
+EXTRA_DIST = $(srcdir)/aborttrace.c $(srcdir)/aborttrace.h
+dist_man_MANS = $(am__append_8) $(am__append_13)
+dist_bashcompletion_DATA = $(am__append_9)
+dist_zshcompletion_DATA = $(am__append_10)
 CONVERTER_TEST_LIST = $(am__append_1) $(am__append_2) $(am__append_3) \
 	$(am__append_4) $(am__append_5)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
@@ -535,7 +550,9 @@ CLEANFILES = *.gcno *.gcda *.gcov \
 @WANT_IMG2SIXEL_TRUE@                    $(srcdir)/completion_utils.h \
 @WANT_IMG2SIXEL_TRUE@                    $(srcdir)/malloc_stub.c \
 @WANT_IMG2SIXEL_TRUE@                    $(srcdir)/malloc_stub.h \
-@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/getopt_stub.h
+@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/getopt_stub.h \
+@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/aborttrace.c \
+@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/aborttrace.h
 
 # Track the generated header so dependency ordering stays stable.
 @WANT_IMG2SIXEL_TRUE@nodist_img2sixel_SOURCES = completion_embed.h
@@ -546,16 +563,22 @@ CLEANFILES = *.gcno *.gcda *.gcov \
 
 @WANT_IMG2SIXEL_TRUE@img2sixel_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
 @WANT_IMG2SIXEL_TRUE@img2sixel_LDFLAGS = $(MAYBE_COVERAGE)
-@WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(top_builddir)/src/libsixel.la
+@WANT_IMG2SIXEL_TRUE@img2sixel_LDADD =  \
+@WANT_IMG2SIXEL_TRUE@	$(top_builddir)/src/libsixel.la \
+@WANT_IMG2SIXEL_TRUE@	$(am__append_7)
 @WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = $(srcdir)/sixel2png.c \
 @WANT_SIXEL2PNG_TRUE@                    $(srcdir)/malloc_stub.c \
 @WANT_SIXEL2PNG_TRUE@                    $(srcdir)/malloc_stub.h \
-@WANT_SIXEL2PNG_TRUE@                    $(srcdir)/getopt_stub.h
+@WANT_SIXEL2PNG_TRUE@                    $(srcdir)/getopt_stub.h \
+@WANT_SIXEL2PNG_TRUE@                    $(srcdir)/aborttrace.c \
+@WANT_SIXEL2PNG_TRUE@                    $(srcdir)/aborttrace.h
 
 @WANT_SIXEL2PNG_TRUE@sixel2png_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS)
 @WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
 @WANT_SIXEL2PNG_TRUE@sixel2png_LDFLAGS = $(MAYBE_COVERAGE)
-@WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/libsixel.la
+@WANT_SIXEL2PNG_TRUE@sixel2png_LDADD =  \
+@WANT_SIXEL2PNG_TRUE@	$(top_builddir)/src/libsixel.la \
+@WANT_SIXEL2PNG_TRUE@	$(am__append_12)
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -649,9 +672,11 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-completion_utils.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-img2sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-malloc_stub.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png-aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png-malloc_stub.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png-sixel2png.Po@am__quote@ # am--include-marker
 
@@ -727,6 +752,20 @@ img2sixel-malloc_stub.obj: malloc_stub.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o img2sixel-malloc_stub.obj `if test -f 'malloc_stub.c'; then $(CYGPATH_W) 'malloc_stub.c'; else $(CYGPATH_W) '$(srcdir)/malloc_stub.c'; fi`
 
+img2sixel-aborttrace.o: aborttrace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT img2sixel-aborttrace.o -MD -MP -MF $(DEPDIR)/img2sixel-aborttrace.Tpo -c -o img2sixel-aborttrace.o `test -f 'aborttrace.c' || echo '$(srcdir)/'`aborttrace.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel-aborttrace.Tpo $(DEPDIR)/img2sixel-aborttrace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='aborttrace.c' object='img2sixel-aborttrace.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o img2sixel-aborttrace.o `test -f 'aborttrace.c' || echo '$(srcdir)/'`aborttrace.c
+
+img2sixel-aborttrace.obj: aborttrace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -MT img2sixel-aborttrace.obj -MD -MP -MF $(DEPDIR)/img2sixel-aborttrace.Tpo -c -o img2sixel-aborttrace.obj `if test -f 'aborttrace.c'; then $(CYGPATH_W) 'aborttrace.c'; else $(CYGPATH_W) '$(srcdir)/aborttrace.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel-aborttrace.Tpo $(DEPDIR)/img2sixel-aborttrace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='aborttrace.c' object='img2sixel-aborttrace.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o img2sixel-aborttrace.obj `if test -f 'aborttrace.c'; then $(CYGPATH_W) 'aborttrace.c'; else $(CYGPATH_W) '$(srcdir)/aborttrace.c'; fi`
+
 sixel2png-sixel2png.o: sixel2png.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT sixel2png-sixel2png.o -MD -MP -MF $(DEPDIR)/sixel2png-sixel2png.Tpo -c -o sixel2png-sixel2png.o `test -f 'sixel2png.c' || echo '$(srcdir)/'`sixel2png.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sixel2png-sixel2png.Tpo $(DEPDIR)/sixel2png-sixel2png.Po
@@ -754,6 +793,20 @@ sixel2png-malloc_stub.obj: malloc_stub.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='malloc_stub.c' object='sixel2png-malloc_stub.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o sixel2png-malloc_stub.obj `if test -f 'malloc_stub.c'; then $(CYGPATH_W) 'malloc_stub.c'; else $(CYGPATH_W) '$(srcdir)/malloc_stub.c'; fi`
+
+sixel2png-aborttrace.o: aborttrace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT sixel2png-aborttrace.o -MD -MP -MF $(DEPDIR)/sixel2png-aborttrace.Tpo -c -o sixel2png-aborttrace.o `test -f 'aborttrace.c' || echo '$(srcdir)/'`aborttrace.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sixel2png-aborttrace.Tpo $(DEPDIR)/sixel2png-aborttrace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='aborttrace.c' object='sixel2png-aborttrace.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o sixel2png-aborttrace.o `test -f 'aborttrace.c' || echo '$(srcdir)/'`aborttrace.c
+
+sixel2png-aborttrace.obj: aborttrace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT sixel2png-aborttrace.obj -MD -MP -MF $(DEPDIR)/sixel2png-aborttrace.Tpo -c -o sixel2png-aborttrace.obj `if test -f 'aborttrace.c'; then $(CYGPATH_W) 'aborttrace.c'; else $(CYGPATH_W) '$(srcdir)/aborttrace.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/sixel2png-aborttrace.Tpo $(DEPDIR)/sixel2png-aborttrace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='aborttrace.c' object='sixel2png-aborttrace.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -c -o sixel2png-aborttrace.obj `if test -f 'aborttrace.c'; then $(CYGPATH_W) 'aborttrace.c'; else $(CYGPATH_W) '$(srcdir)/aborttrace.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -1051,9 +1104,11 @@ clean: clean-recursive
 clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-recursive
+	-rm -f ./$(DEPDIR)/img2sixel-aborttrace.Po
 	-rm -f ./$(DEPDIR)/img2sixel-completion_utils.Po
 	-rm -f ./$(DEPDIR)/img2sixel-img2sixel.Po
 	-rm -f ./$(DEPDIR)/img2sixel-malloc_stub.Po
+	-rm -f ./$(DEPDIR)/sixel2png-aborttrace.Po
 	-rm -f ./$(DEPDIR)/sixel2png-malloc_stub.Po
 	-rm -f ./$(DEPDIR)/sixel2png-sixel2png.Po
 	-rm -f Makefile
@@ -1102,9 +1157,11 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-recursive
+	-rm -f ./$(DEPDIR)/img2sixel-aborttrace.Po
 	-rm -f ./$(DEPDIR)/img2sixel-completion_utils.Po
 	-rm -f ./$(DEPDIR)/img2sixel-img2sixel.Po
 	-rm -f ./$(DEPDIR)/img2sixel-malloc_stub.Po
+	-rm -f ./$(DEPDIR)/sixel2png-aborttrace.Po
 	-rm -f ./$(DEPDIR)/sixel2png-malloc_stub.Po
 	-rm -f ./$(DEPDIR)/sixel2png-sixel2png.Po
 	-rm -f Makefile

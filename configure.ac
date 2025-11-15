@@ -139,6 +139,19 @@ AC_ARG_ENABLE([sixel2png],
               [enable_sixel2png=yes])
 AM_CONDITIONAL(WANT_SIXEL2PNG, test x$enable_sixel2png != xno)
 
+AC_ARG_ENABLE([abort-trace],
+              [AS_HELP_STRING([--enable-abort-trace],
+                              [enable abort stack trace support for CLI tools
+                               (default: auto)])],
+              [enable_abort_trace="$enableval"],
+              [enable_abort_trace="auto"])
+AS_CASE([$enable_abort_trace],
+        [yes|no|auto],
+        [],
+        [AC_MSG_ERROR([invalid value for --enable-abort-trace: $enable_abort_trace])])
+AM_CONDITIONAL([HAVE_ABORT_TRACE],
+               [test "x$enable_abort_trace" != "xno"])
+
 AC_ARG_ENABLE([threads],
               [AS_HELP_STRING([--disable-threads],
                               [disable internal threadpool support (default: auto)])],
@@ -190,6 +203,7 @@ AS_CASE([$enable_thumbnailer_command],
 THREAD_CPPFLAGS=""
 THREAD_CFLAGS=""
 THREAD_LIBS=""
+ABORTTRACE_LIBS=""
 have_threads="no"
 if test "x$enable_threads" != "xno"; then
   AC_DEFINE([SIXEL_ENABLE_THREADS],
@@ -294,6 +308,32 @@ if test x$enable_thumbnailer_command = xauto; then
     enable_thumbnailer_command=no
   fi
 fi
+AS_IF([test "x$enable_abort_trace" != "xno"], [
+  AC_DEFINE([SIXEL_ENABLE_ABORT_TRACE],
+            [1],
+            [Define to 1 if CLI abort tracing is enabled])
+  AC_CHECK_LIB([execinfo],
+               [backtrace],
+               [ABORTTRACE_LIBS="$ABORTTRACE_LIBS -lexecinfo"],
+               [],
+               [])
+  ac_save_LIBS="$LIBS"
+  LIBS="$LIBS $ABORTTRACE_LIBS"
+  AC_CHECK_FUNCS([backtrace backtrace_symbols_fd],
+                 [],
+                 [],
+                 [[#include <execinfo.h>]])
+  LIBS="$ac_save_LIBS"
+  AC_CHECK_LIB([dbghelp],
+               [SymInitialize],
+               [ABORTTRACE_LIBS="$ABORTTRACE_LIBS -ldbghelp"
+                AC_DEFINE([HAVE_DBGHELP],
+                          [1],
+                          [Define to 1 if dbghelp is available])],
+               [],
+               [])
+])
+AC_SUBST([ABORTTRACE_LIBS])
 
 if test x$message_thumbnailer = xno; then
   if test x$enable_thumbnailer_command = xyes; then
@@ -685,6 +725,8 @@ AC_CHECK_HEADERS([assert.h \
                   dirent.h \
                   sys/sysctl.h \
                   float.h \
+                  process.h \
+                  execinfo.h \
                  ])
 
 # Checks for typedefs, structures, and compiler characteristics.
