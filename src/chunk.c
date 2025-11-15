@@ -32,6 +32,9 @@
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif  /* HAVE_SYS_TYPES_H */
+#if HAVE_STDINT_H
+# include <stdint.h>
+#endif  /* HAVE_STDINT_H */
 #if HAVE_SYS_STAT_H
 # include <sys/stat.h>
 #endif  /* HAVE_SYS_STAT_H */
@@ -214,6 +217,52 @@ wait_file(int fd, int usec)
 # pragma GCC diagnostic pop
 #endif
 
+static int
+sixel_fd_is_console(int fd)
+{
+#if defined(_WIN32)
+    intptr_t handle;
+    DWORD mode;
+
+    /*
+     * Windows reports the NUL device as a TTY.  Guard the wait loop with a
+     * console-specific probe so redirected stdin does not hang on _isatty().
+     */
+    if (fd < 0) {
+        return 0;
+    }
+# if HAVE__ISATTY
+    if (!_isatty(fd)) {
+        return 0;
+    }
+# elif HAVE_ISATTY
+    if (!isatty(fd)) {
+        return 0;
+    }
+# else
+    return 0;
+# endif
+    handle = _get_osfhandle(fd);
+    if (handle == (intptr_t)(-1)) {
+        return 0;
+    }
+    if (GetConsoleMode((HANDLE)handle, &mode)) {
+        return 1;
+    }
+    return 0;
+#else
+# if HAVE_ISATTY
+    if (fd < 0) {
+        return 0;
+    }
+    return isatty(fd);
+# else
+    (void) fd;
+    return 0;
+# endif
+#endif
+}
+
 
 static SIXELSTATUS
 open_binary_file(
@@ -291,6 +340,7 @@ sixel_chunk_from_file(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int ret;
+    int fd;
     FILE *f = NULL;
     size_t n;
     size_t const bucket_size = 4096;
@@ -299,6 +349,8 @@ sixel_chunk_from_file(
     if (SIXEL_FAILED(status) || f == NULL) {
         goto end;
     }
+
+    fd = sixel_fileno(f);
 
     for (;;) {
         if (pchunk->max_size - pchunk->size < bucket_size) {
@@ -314,21 +366,13 @@ sixel_chunk_from_file(
             }
         }
 
-        if (
-#if HAVE__ISATTY
-            _isatty(sixel_fileno(f))
-#else
-            isatty(sixel_fileno(f))
-#endif  /* HAVE__ISATTY */
-        ) {
+        if (sixel_fd_is_console(fd)) {
             for (;;) {
                 if (*cancel_flag) {
                     status = SIXEL_INTERRUPTED;
                     goto end;
                 }
-                ret = wait_file(
-                    sixel_fileno(f),
-                    10000);
+                ret = wait_file(fd, 10000);
                 if (ret < 0) {
                     sixel_helper_set_additional_message(
                         "sixel_chunk_from_file: wait_file() failed.");
@@ -358,9 +402,22 @@ end:
 }
 
 #if HAVE_WINHTTP
-#define UNICODE
-#define _UNICODE
-#include <windows.h>
+# if !defined(UNICODE)
+#  define UNICODE
+# endif
+# if !defined(_UNICODE)
+#  define _UNICODE
+# endif
+#endif
+
+#if defined(_WIN32)
+# if !defined(WIN32_LEAN_AND_MEAN)
+#  define WIN32_LEAN_AND_MEAN
+# endif
+# include <windows.h>
+#endif
+
+#if HAVE_WINHTTP
 #include <winhttp.h>
 
 static wchar_t *
