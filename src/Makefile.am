@@ -35,6 +35,14 @@ libsixel_la_SOURCES = \
                 $(srcdir)/palette.h \
                 $(srcdir)/dither.c \
                 $(srcdir)/dither.h \
+                $(srcdir)/dither-common-pipeline.c \
+                $(srcdir)/dither-common-pipeline.h \
+                $(srcdir)/dither-pattern.c \
+                $(srcdir)/dither-pattern.h \
+                $(srcdir)/dither-diffusion-fixed.c \
+                $(srcdir)/dither-diffusion-fixed.h \
+                $(srcdir)/dither-diffusion-adaptive.c \
+                $(srcdir)/dither-diffusion-adaptive.h \
                 $(srcdir)/colorspace.c \
                 $(srcdir)/colorspace.h \
                 $(srcdir)/frame.c \
