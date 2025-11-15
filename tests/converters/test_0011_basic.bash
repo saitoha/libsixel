@@ -35,11 +35,32 @@ if run_sixel2png -i "${TMP_DIR}/unknown.six" \
     rm -f "${missing_err}" "${TMP_DIR}/capture.$$"
     exit 1
 fi
-if ! grep -F 'sixel2png: input file' "${missing_err}" >/dev/null; then
-    echo 'missing input diagnostic' >&2
-    cat "${missing_err}" >&2 || :
-    rm -f "${missing_err}" "${TMP_DIR}/capture.$$"
-    exit 1
+missing_posix_path="${TMP_DIR}/unknown.six"
+missing_native_path="${missing_posix_path}"
+#
+# Windows/MSVC builds normalize command-line arguments into drive-based
+# absolute paths (for example "D:/work/..."), so the diagnostic emitted by
+# the library may differ from the POSIX-style path that the shell used to
+# invoke the converter.  Accept either form so that the regression test
+# exercises the user-visible error regardless of the underlying runtime.
+#
+if [[ ${missing_native_path} =~ ^/([A-Za-z])/(.*)$ ]]; then
+    missing_drive=${BASH_REMATCH[1]}
+    missing_rest=${BASH_REMATCH[2]}
+    missing_native_path="${missing_drive^^}:/${missing_rest}"
+fi
+if ! grep -F "path \"${missing_posix_path}\" not found." \
+        "${missing_err}" >/dev/null; then
+    if [[ "${missing_native_path}" != "${missing_posix_path}" ]] &&
+            grep -F "path \"${missing_native_path}\" not found." \
+                "${missing_err}" >/dev/null; then
+        :
+    else
+        echo 'missing input diagnostic' >&2
+        cat "${missing_err}" >&2 || :
+        rm -f "${missing_err}" "${TMP_DIR}/capture.$$"
+        exit 1
+    fi
 fi
 rm -f "${missing_err}" "${TMP_DIR}/capture.$$"
 
@@ -142,7 +163,8 @@ if run_sixel2png -dk_ < "${IMAGES_DIR}/snake.six" \
     rm -f "${ambiguous_err}" "${TMP_DIR}/capture.$$"
     exit 1
 fi
-if ! grep -F 'ambiguous prefix "k_" for --dequantize' "${ambiguous_err}" \
+if ! grep -F 'ambiguous prefix "k_" (matches: k_undither, k_undither+).' \
+        "${ambiguous_err}" \
         >/dev/null; then
     echo 'missing ambiguous prefix diagnostic' >&2
     cat "${ambiguous_err}" >&2 || :
