@@ -162,6 +162,9 @@
 /* Define to 1 if you have the 'fileno' function. */
 #undef HAVE_FILENO
 
+/* Define to 1 if you have the <float.h> header file. */
+#undef HAVE_FLOAT_H
+
 /* Define to 1 if you have the 'floor' function. */
 #undef HAVE_FLOOR
 

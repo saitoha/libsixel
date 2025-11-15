@@ -157,26 +157,26 @@ libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/assessment.c $(srcdir)/assessment.h \
-        $(srcdir)/fromsixel.c $(srcdir)/tosixel.c $(srcdir)/lut.c \
-        $(srcdir)/lut.h $(srcdir)/palette-heckbert.c \
-        $(srcdir)/palette-heckbert.h $(srcdir)/palette-common-merge.c \
-        $(srcdir)/palette-common-merge.h \
-        $(srcdir)/palette-common-snap.c $(srcdir)/palette-common-snap.h \
-        $(srcdir)/palette-kmeans.c $(srcdir)/palette-kmeans.h \
-        $(srcdir)/palette.c $(srcdir)/palette.h \
-	$(srcdir)/dither.c $(srcdir)/dither.h $(srcdir)/colorspace.c \
-	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
-	$(srcdir)/pixelformat.c $(srcdir)/pixelformat.h \
-	$(srcdir)/scale.c $(srcdir)/scale.h $(srcdir)/chunk.c \
-	$(srcdir)/chunk.h $(srcdir)/loader.c $(srcdir)/loader.h \
-	$(srcdir)/frompnm.c $(srcdir)/frompnm.h $(srcdir)/fromgif.c \
-	$(srcdir)/fromgif.h $(srcdir)/clipboard.c \
+	$(srcdir)/fromsixel.c $(srcdir)/tosixel.c $(srcdir)/lut.c \
+	$(srcdir)/lut.h $(srcdir)/palette-heckbert.c \
+	$(srcdir)/palette-heckbert.h $(srcdir)/palette-common-merge.c \
+	$(srcdir)/palette-common-merge.h \
+	$(srcdir)/palette-common-snap.c \
+	$(srcdir)/palette-common-snap.h $(srcdir)/palette-kmeans.c \
+	$(srcdir)/palette-kmeans.h $(srcdir)/palette.c \
+	$(srcdir)/palette.h $(srcdir)/dither.c $(srcdir)/dither.h \
+	$(srcdir)/colorspace.c $(srcdir)/colorspace.h \
+	$(srcdir)/frame.c $(srcdir)/frame.h $(srcdir)/pixelformat.c \
+	$(srcdir)/pixelformat.h $(srcdir)/scale.c $(srcdir)/scale.h \
+	$(srcdir)/chunk.c $(srcdir)/chunk.h $(srcdir)/loader.c \
+	$(srcdir)/loader.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
+	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/clipboard.c \
 	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
-        $(srcdir)/decoder.c $(srcdir)/decoder.h $(srcdir)/options.c \
-        $(srcdir)/options.h $(srcdir)/stb_image.h \
-	$(srcdir)/writer.c $(srcdir)/writer.h \
-	$(srcdir)/stb_image_write.c $(srcdir)/stb_image_write.h \
-	$(srcdir)/status.c $(srcdir)/status.h $(srcdir)/stdio_stub.h \
+	$(srcdir)/decoder.c $(srcdir)/decoder.h $(srcdir)/options.c \
+	$(srcdir)/options.h $(srcdir)/stb_image.h $(srcdir)/writer.c \
+	$(srcdir)/writer.h $(srcdir)/stb_image_write.c \
+	$(srcdir)/stb_image_write.h $(srcdir)/status.c \
+	$(srcdir)/status.h $(srcdir)/stdio_stub.h \
 	$(srcdir)/compat_stub.c $(srcdir)/compat_stub.h \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
 	$(srcdir)/allocator.c $(srcdir)/allocator.h $(srcdir)/tty.c \
@@ -193,20 +193,19 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @HAVE_CLIPBOARD_MACOS_TRUE@am__objects_3 =  \
 @HAVE_CLIPBOARD_MACOS_TRUE@	libsixel_la-clipboard_macos.lo
 am_libsixel_la_OBJECTS = libsixel_la-output.lo \
-        libsixel_la-assessment.lo libsixel_la-fromsixel.lo \
-        libsixel_la-tosixel.lo libsixel_la-lut.lo \
-        libsixel_la-palette-heckbert.lo \
-        libsixel_la-palette-common-merge.lo \
-        libsixel_la-palette-common-snap.lo \
-        libsixel_la-palette-kmeans.lo \
-        libsixel_la-palette.lo libsixel_la-dither.lo \
-	libsixel_la-colorspace.lo libsixel_la-frame.lo \
-	libsixel_la-pixelformat.lo libsixel_la-scale.lo \
-	libsixel_la-chunk.lo libsixel_la-loader.lo \
-	libsixel_la-frompnm.lo libsixel_la-fromgif.lo \
-        libsixel_la-clipboard.lo libsixel_la-encoder.lo \
-        libsixel_la-decoder.lo libsixel_la-options.lo \
-        libsixel_la-writer.lo \
+	libsixel_la-assessment.lo libsixel_la-fromsixel.lo \
+	libsixel_la-tosixel.lo libsixel_la-lut.lo \
+	libsixel_la-palette-heckbert.lo \
+	libsixel_la-palette-common-merge.lo \
+	libsixel_la-palette-common-snap.lo \
+	libsixel_la-palette-kmeans.lo libsixel_la-palette.lo \
+	libsixel_la-dither.lo libsixel_la-colorspace.lo \
+	libsixel_la-frame.lo libsixel_la-pixelformat.lo \
+	libsixel_la-scale.lo libsixel_la-chunk.lo \
+	libsixel_la-loader.lo libsixel_la-frompnm.lo \
+	libsixel_la-fromgif.lo libsixel_la-clipboard.lo \
+	libsixel_la-encoder.lo libsixel_la-decoder.lo \
+	libsixel_la-options.lo libsixel_la-writer.lo \
 	libsixel_la-stb_image_write.lo libsixel_la-status.lo \
 	libsixel_la-compat_stub.lo libsixel_la-malloc_stub.lo \
 	libsixel_la-allocator.lo libsixel_la-tty.lo $(am__objects_1) \
@@ -258,7 +257,10 @@ am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
 	./$(DEPDIR)/libsixel_la-loader.Plo \
 	./$(DEPDIR)/libsixel_la-lut.Plo \
 	./$(DEPDIR)/libsixel_la-malloc_stub.Plo \
+	./$(DEPDIR)/libsixel_la-options.Plo \
 	./$(DEPDIR)/libsixel_la-output.Plo \
+	./$(DEPDIR)/libsixel_la-palette-common-merge.Plo \
+	./$(DEPDIR)/libsixel_la-palette-common-snap.Plo \
 	./$(DEPDIR)/libsixel_la-palette-heckbert.Plo \
 	./$(DEPDIR)/libsixel_la-palette-kmeans.Plo \
 	./$(DEPDIR)/libsixel_la-palette.Plo \
@@ -538,25 +540,26 @@ CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests
 lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/assessment.c $(srcdir)/assessment.h \
-        $(srcdir)/fromsixel.c $(srcdir)/tosixel.c $(srcdir)/lut.c \
-        $(srcdir)/lut.h $(srcdir)/palette-heckbert.c \
-        $(srcdir)/palette-heckbert.h $(srcdir)/palette-common-merge.c \
-        $(srcdir)/palette-common-merge.h \
-        $(srcdir)/palette-common-snap.c $(srcdir)/palette-common-snap.h \
-        $(srcdir)/palette-kmeans.c $(srcdir)/palette-kmeans.h \
-        $(srcdir)/palette.c $(srcdir)/palette.h \
-	$(srcdir)/dither.c $(srcdir)/dither.h $(srcdir)/colorspace.c \
-	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
-	$(srcdir)/pixelformat.c $(srcdir)/pixelformat.h \
-	$(srcdir)/scale.c $(srcdir)/scale.h $(srcdir)/chunk.c \
-	$(srcdir)/chunk.h $(srcdir)/loader.c $(srcdir)/loader.h \
-	$(srcdir)/frompnm.c $(srcdir)/frompnm.h $(srcdir)/fromgif.c \
-	$(srcdir)/fromgif.h $(srcdir)/clipboard.c \
+	$(srcdir)/fromsixel.c $(srcdir)/tosixel.c $(srcdir)/lut.c \
+	$(srcdir)/lut.h $(srcdir)/palette-heckbert.c \
+	$(srcdir)/palette-heckbert.h $(srcdir)/palette-common-merge.c \
+	$(srcdir)/palette-common-merge.h \
+	$(srcdir)/palette-common-snap.c \
+	$(srcdir)/palette-common-snap.h $(srcdir)/palette-kmeans.c \
+	$(srcdir)/palette-kmeans.h $(srcdir)/palette.c \
+	$(srcdir)/palette.h $(srcdir)/dither.c $(srcdir)/dither.h \
+	$(srcdir)/colorspace.c $(srcdir)/colorspace.h \
+	$(srcdir)/frame.c $(srcdir)/frame.h $(srcdir)/pixelformat.c \
+	$(srcdir)/pixelformat.h $(srcdir)/scale.c $(srcdir)/scale.h \
+	$(srcdir)/chunk.c $(srcdir)/chunk.h $(srcdir)/loader.c \
+	$(srcdir)/loader.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
+	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/clipboard.c \
 	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
-	$(srcdir)/decoder.c $(srcdir)/decoder.h $(srcdir)/stb_image.h \
-	$(srcdir)/writer.c $(srcdir)/writer.h \
-	$(srcdir)/stb_image_write.c $(srcdir)/stb_image_write.h \
-	$(srcdir)/status.c $(srcdir)/status.h $(srcdir)/stdio_stub.h \
+	$(srcdir)/decoder.c $(srcdir)/decoder.h $(srcdir)/options.c \
+	$(srcdir)/options.h $(srcdir)/stb_image.h $(srcdir)/writer.c \
+	$(srcdir)/writer.h $(srcdir)/stb_image_write.c \
+	$(srcdir)/stb_image_write.h $(srcdir)/status.c \
+	$(srcdir)/status.h $(srcdir)/stdio_stub.h \
 	$(srcdir)/compat_stub.c $(srcdir)/compat_stub.h \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
 	$(srcdir)/allocator.c $(srcdir)/allocator.h $(srcdir)/tty.c \
@@ -708,7 +711,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lut.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-malloc_stub.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-options.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-output.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-common-merge.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-common-snap.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-heckbert.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kmeans.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette.Plo@am__quote@ # am--include-marker
@@ -1225,7 +1231,10 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-loader.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lut.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-malloc_stub.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-options.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-merge.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-snap.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette.Plo
@@ -1302,7 +1311,10 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-loader.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lut.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-malloc_stub.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-options.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-merge.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-snap.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette.Plo
