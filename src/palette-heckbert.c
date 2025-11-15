@@ -58,9 +58,61 @@
 #include "allocator.h"
 #include "compat_stub.h"
 #include "lut.h"
-#include "palette-internal.h"
+#include "palette-common-merge.h"
+#include "palette-common-snap.h"
+#include "palette-heckbert.h"
 #include "palette.h"
 #include "status.h"
+
+/*
+ * Tuple table primitives live exclusively inside the Heckbert implementation.
+ * Exposing them here avoids leaking histogram internals into palette.c.
+ */
+typedef unsigned long sample;
+typedef sample *tuple;
+
+struct tupleint {
+    unsigned int value;
+    sample tuple[1];
+};
+
+typedef struct tupleint **tupletable;
+
+typedef struct {
+    unsigned int size;
+    tupletable table;
+} tupletable2;
+
+/*
+ * Median-cut histogram configuration is private to this module.  Keeping the
+ * structure here prevents unrelated lookup code from depending on Heckbert
+ * internals.
+ */
+struct histogram_control {
+    unsigned int channel_shift;
+    unsigned int channel_bits;
+    unsigned int channel_mask;
+    int reversible_rounding;
+};
+
+/*
+ * Convert each histogram tuple component onto the reversible SIXEL tone grid.
+ * The conversion mirrors sixel_palette_reversible_palette but operates on the
+ * temporary tuple tables used during Heckbert processing.
+ */
+static void
+sixel_palette_reversible_tuple(sample *tuple_values,
+                               unsigned int depth)
+{
+    unsigned int plane;
+    unsigned int sample_value;
+
+    for (plane = 0U; plane < depth; ++plane) {
+        sample_value = (unsigned int)tuple_values[plane];
+        tuple_values[plane]
+            = (sample)sixel_palette_reversible_value(sample_value);
+    }
+}
 
 /*
  * Allocate a tuple table with enough space to store "size" tuples of the
@@ -169,7 +221,7 @@ end:
  * The guard against SIZE_MAX keeps the allocator from wrapping on 32-bit
  * hosts where the histogram would grow beyond addressable memory.
  */
-size_t
+static size_t
 histogram_dense_size(unsigned int depth,
                      struct histogram_control const *control)
 {
@@ -195,7 +247,7 @@ histogram_dense_size(unsigned int depth,
  * inherits the original pnmcolormap heuristics: 5bit keeps wider buckets while
  * 6bit retains finer resolution for shallow depths.
  */
-struct histogram_control
+static struct histogram_control
 histogram_control_make_for_policy(unsigned int depth, int lut_policy)
 {
     struct histogram_control control;
@@ -281,7 +333,7 @@ histogram_quantize(unsigned int sample8,
  * Pack a pixel into a dense histogram index.  Colour channels are processed in
  * reverse order so the least significant bits store the first component.
  */
-unsigned int
+static unsigned int
 histogram_pack_color(unsigned char const *data,
                      unsigned int depth,
                      struct histogram_control const *control)
@@ -316,7 +368,7 @@ histogram_pack_color(unsigned char const *data,
  *   2. Quantize each pixel into the dense histogram space.
  *   3. Build a sparse reference map and reconstruct representative tuples.
  */
-SIXELSTATUS
+static SIXELSTATUS
 sixel_lut_build_histogram(unsigned char const *data,
                           unsigned int length,
                           unsigned long depth,
@@ -909,6 +961,161 @@ end:
 }
 
 /* Translate merged cluster statistics into a tupletable palette. */
+/*
+ * Reassign histogram entries to the merged palette so the final centroids stay
+ * aligned with their nearest tuples.  The loop iterates through assignment,
+ * accumulation, and centroid update until convergence or the iteration limit.
+ */
+static void
+sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
+                                  unsigned int depth,
+                                  unsigned int cluster_count,
+                                  unsigned long *cluster_weight,
+                                  unsigned long *cluster_sums,
+                                  unsigned int iterations)
+{
+    double *centers;
+    double distance;
+    double best_distance;
+    double diff;
+    double channel;
+    unsigned int iteration;
+    unsigned int cluster_index;
+    unsigned int component;
+    unsigned int entry_index;
+    unsigned int best_cluster;
+    unsigned long weight;
+    unsigned long value;
+    size_t offset;
+    size_t total;
+    struct tupleint *entry;
+
+    centers = NULL;
+    distance = 0.0;
+    best_distance = 0.0;
+    diff = 0.0;
+    channel = 0.0;
+    iteration = 0U;
+    cluster_index = 0U;
+    component = 0U;
+    entry_index = 0U;
+    best_cluster = 0U;
+    weight = 0UL;
+    value = 0UL;
+    offset = 0U;
+    total = 0U;
+    entry = NULL;
+    if (iterations == 0U || cluster_count == 0U || depth == 0U
+        || cluster_weight == NULL || cluster_sums == NULL
+        || colorfreqtable.table == NULL || colorfreqtable.size == 0U) {
+        return;
+    }
+    total = (size_t)cluster_count * (size_t)depth;
+    centers = (double *)malloc(total * sizeof(double));
+    if (centers == NULL) {
+        return;
+    }
+    for (cluster_index = 0U; cluster_index < cluster_count;
+            ++cluster_index) {
+        offset = (size_t)cluster_index * (size_t)depth;
+        weight = cluster_weight[cluster_index];
+        for (component = 0U; component < depth; ++component) {
+            if (weight > 0UL) {
+                centers[offset + (size_t)component]
+                    = (double)cluster_sums[offset + (size_t)component]
+                    / (double)weight;
+            } else {
+                centers[offset + (size_t)component] = 0.0;
+            }
+        }
+    }
+    for (iteration = 0U; iteration < iterations; ++iteration) {
+        for (cluster_index = 0U; cluster_index < cluster_count;
+                ++cluster_index) {
+            cluster_weight[cluster_index] = 0UL;
+        }
+        for (cluster_index = 0U; cluster_index < cluster_count;
+                ++cluster_index) {
+            offset = (size_t)cluster_index * (size_t)depth;
+            for (component = 0U; component < depth; ++component) {
+                cluster_sums[offset + (size_t)component] = 0UL;
+            }
+        }
+        for (entry_index = 0U; entry_index < colorfreqtable.size;
+                ++entry_index) {
+            entry = colorfreqtable.table[entry_index];
+            if (entry == NULL) {
+                continue;
+            }
+            value = (unsigned long)entry->value;
+            if (value == 0UL) {
+                continue;
+            }
+            best_cluster = 0U;
+            best_distance = 0.0;
+            offset = 0U;
+            for (component = 0U; component < depth; ++component) {
+                diff = (double)entry->tuple[component]
+                    - centers[offset + (size_t)component];
+                best_distance += diff * diff;
+            }
+            for (cluster_index = 1U; cluster_index < cluster_count;
+                    ++cluster_index) {
+                distance = 0.0;
+                offset = (size_t)cluster_index * (size_t)depth;
+                for (component = 0U; component < depth; ++component) {
+                    diff = (double)entry->tuple[component]
+                        - centers[offset + (size_t)component];
+                    distance += diff * diff;
+                }
+                if (distance < best_distance) {
+                    best_distance = distance;
+                    best_cluster = cluster_index;
+                }
+            }
+            offset = (size_t)best_cluster * (size_t)depth;
+            cluster_weight[best_cluster] += value;
+            for (component = 0U; component < depth; ++component) {
+                cluster_sums[offset + (size_t)component]
+                    += (unsigned long)entry->tuple[component] * value;
+            }
+        }
+        for (cluster_index = 0U; cluster_index < cluster_count;
+                ++cluster_index) {
+            weight = cluster_weight[cluster_index];
+            if (weight == 0UL) {
+                continue;
+            }
+            offset = (size_t)cluster_index * (size_t)depth;
+            for (component = 0U; component < depth; ++component) {
+                centers[offset + (size_t)component]
+                    = (double)cluster_sums[offset + (size_t)component]
+                    / (double)weight;
+            }
+        }
+    }
+    for (cluster_index = 0U; cluster_index < cluster_count;
+            ++cluster_index) {
+        weight = cluster_weight[cluster_index];
+        offset = (size_t)cluster_index * (size_t)depth;
+        if (weight == 0UL) {
+            for (component = 0U; component < depth; ++component) {
+                channel = centers[offset + (size_t)component];
+                if (channel < 0.0) {
+                    channel = 0.0;
+                }
+                if (channel > 255.0) {
+                    channel = 255.0;
+                }
+                cluster_sums[offset + (size_t)component]
+                    = (unsigned long)(channel + 0.5);
+            }
+            cluster_weight[cluster_index] = 1UL;
+        }
+    }
+    free(centers);
+}
+
 static SIXELSTATUS
 sixel_palette_clusters_to_colormap(unsigned long *weights,
                                    unsigned long *sums,

@@ -22,7 +22,9 @@
 
 #include "allocator.h"
 #include "compat_stub.h"
-#include "palette-internal.h"
+#include "palette-common-merge.h"
+#include "palette-common-snap.h"
+#include "palette-kmeans.h"
 #include "palette.h"
 #include "status.h"
 

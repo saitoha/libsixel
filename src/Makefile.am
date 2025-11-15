@@ -24,10 +24,15 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lut.c \
                 $(srcdir)/lut.h \
                 $(srcdir)/palette-heckbert.c \
+                $(srcdir)/palette-heckbert.h \
+                $(srcdir)/palette-common-merge.c \
+                $(srcdir)/palette-common-merge.h \
+                $(srcdir)/palette-common-snap.c \
+                $(srcdir)/palette-common-snap.h \
                 $(srcdir)/palette-kmeans.c \
+                $(srcdir)/palette-kmeans.h \
                 $(srcdir)/palette.c \
                 $(srcdir)/palette.h \
-                $(srcdir)/palette-internal.h \
                 $(srcdir)/dither.c \
                 $(srcdir)/dither.h \
                 $(srcdir)/colorspace.c \

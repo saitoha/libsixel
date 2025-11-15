@@ -157,10 +157,13 @@ libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/assessment.c $(srcdir)/assessment.h \
-	$(srcdir)/fromsixel.c $(srcdir)/tosixel.c $(srcdir)/lut.c \
-	$(srcdir)/lut.h $(srcdir)/palette-heckbert.c \
-	$(srcdir)/palette-kmeans.c $(srcdir)/palette.c \
-	$(srcdir)/palette.h $(srcdir)/palette-internal.h \
+        $(srcdir)/fromsixel.c $(srcdir)/tosixel.c $(srcdir)/lut.c \
+        $(srcdir)/lut.h $(srcdir)/palette-heckbert.c \
+        $(srcdir)/palette-heckbert.h $(srcdir)/palette-common-merge.c \
+        $(srcdir)/palette-common-merge.h \
+        $(srcdir)/palette-common-snap.c $(srcdir)/palette-common-snap.h \
+        $(srcdir)/palette-kmeans.c $(srcdir)/palette-kmeans.h \
+        $(srcdir)/palette.c $(srcdir)/palette.h \
 	$(srcdir)/dither.c $(srcdir)/dither.h $(srcdir)/colorspace.c \
 	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
 	$(srcdir)/pixelformat.c $(srcdir)/pixelformat.h \
@@ -190,10 +193,13 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @HAVE_CLIPBOARD_MACOS_TRUE@am__objects_3 =  \
 @HAVE_CLIPBOARD_MACOS_TRUE@	libsixel_la-clipboard_macos.lo
 am_libsixel_la_OBJECTS = libsixel_la-output.lo \
-	libsixel_la-assessment.lo libsixel_la-fromsixel.lo \
-	libsixel_la-tosixel.lo libsixel_la-lut.lo \
-	libsixel_la-palette-heckbert.lo libsixel_la-palette-kmeans.lo \
-	libsixel_la-palette.lo libsixel_la-dither.lo \
+        libsixel_la-assessment.lo libsixel_la-fromsixel.lo \
+        libsixel_la-tosixel.lo libsixel_la-lut.lo \
+        libsixel_la-palette-heckbert.lo \
+        libsixel_la-palette-common-merge.lo \
+        libsixel_la-palette-common-snap.lo \
+        libsixel_la-palette-kmeans.lo \
+        libsixel_la-palette.lo libsixel_la-dither.lo \
 	libsixel_la-colorspace.lo libsixel_la-frame.lo \
 	libsixel_la-pixelformat.lo libsixel_la-scale.lo \
 	libsixel_la-chunk.lo libsixel_la-loader.lo \
@@ -532,10 +538,13 @@ CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests
 lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/assessment.c $(srcdir)/assessment.h \
-	$(srcdir)/fromsixel.c $(srcdir)/tosixel.c $(srcdir)/lut.c \
-	$(srcdir)/lut.h $(srcdir)/palette-heckbert.c \
-	$(srcdir)/palette-kmeans.c $(srcdir)/palette.c \
-	$(srcdir)/palette.h $(srcdir)/palette-internal.h \
+        $(srcdir)/fromsixel.c $(srcdir)/tosixel.c $(srcdir)/lut.c \
+        $(srcdir)/lut.h $(srcdir)/palette-heckbert.c \
+        $(srcdir)/palette-heckbert.h $(srcdir)/palette-common-merge.c \
+        $(srcdir)/palette-common-merge.h \
+        $(srcdir)/palette-common-snap.c $(srcdir)/palette-common-snap.h \
+        $(srcdir)/palette-kmeans.c $(srcdir)/palette-kmeans.h \
+        $(srcdir)/palette.c $(srcdir)/palette.h \
 	$(srcdir)/dither.c $(srcdir)/dither.h $(srcdir)/colorspace.c \
 	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
 	$(srcdir)/pixelformat.c $(srcdir)/pixelformat.h \
@@ -786,6 +795,20 @@ libsixel_la-palette-heckbert.lo: palette-heckbert.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette-heckbert.c' object='libsixel_la-palette-heckbert.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-heckbert.lo `test -f 'palette-heckbert.c' || echo '$(srcdir)/'`palette-heckbert.c
+
+libsixel_la-palette-common-merge.lo: palette-common-merge.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-common-merge.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-common-merge.Tpo -c -o libsixel_la-palette-common-merge.lo `test -f 'palette-common-merge.c' || echo '$(srcdir)/'`palette-common-merge.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-common-merge.Tpo $(DEPDIR)/libsixel_la-palette-common-merge.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette-common-merge.c' object='libsixel_la-palette-common-merge.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-common-merge.lo `test -f 'palette-common-merge.c' || echo '$(srcdir)/'`palette-common-merge.c
+
+libsixel_la-palette-common-snap.lo: palette-common-snap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-common-snap.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-common-snap.Tpo -c -o libsixel_la-palette-common-snap.lo `test -f 'palette-common-snap.c' || echo '$(srcdir)/'`palette-common-snap.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-palette-common-snap.Tpo $(DEPDIR)/libsixel_la-palette-common-snap.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette-common-snap.c' object='libsixel_la-palette-common-snap.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-palette-common-snap.lo `test -f 'palette-common-snap.c' || echo '$(srcdir)/'`palette-common-snap.c
 
 libsixel_la-palette-kmeans.lo: palette-kmeans.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-kmeans.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-kmeans.Tpo -c -o libsixel_la-palette-kmeans.lo `test -f 'palette-kmeans.c' || echo '$(srcdir)/'`palette-kmeans.c
