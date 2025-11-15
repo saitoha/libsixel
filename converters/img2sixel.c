@@ -66,6 +66,7 @@
 #include "malloc_stub.h"
 #include "getopt_stub.h"
 #include "completion_utils.h"
+#include "aborttrace.h"
 
 /*
  * Option-specific help snippets drive both the --help output and
@@ -1370,6 +1371,8 @@ main(int argc, char *argv[])
     char const *detail_source = NULL;
     int input_count = 0;
     int assessment_enabled = 0;
+
+    sixel_aborttrace_install_if_unhandled();
 
     optstring = g_img2sixel_optstring;
 
