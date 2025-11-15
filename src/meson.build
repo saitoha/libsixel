@@ -41,6 +41,7 @@ srcs = [
   'clipboard.c',
   'encoder.c',
   'decoder.c',
+  'options.c',
   'writer.c',
   'stb_image_write.c',
   'status.c',
@@ -49,6 +50,7 @@ srcs = [
   'allocator.c',
   'tty.c',
   'lut.h',
+  'options.h',
   'sixel_atomic.h',
 ]
 
