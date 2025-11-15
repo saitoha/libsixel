@@ -1,6 +1,28 @@
 /*
  * SPDX-License-Identifier: MIT
  *
+ * Copyright (c) 2021-2025 libsixel developers. See `AUTHORS`.
+ * Copyright (c) 2014-2019 Hayaki Saito
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy of
+ * this software and associated documentation files (the "Software"), to deal in
+ * the Software without restriction, including without limitation the rights to
+ * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+ * the Software, and to permit persons to whom the Software is furnished to do so,
+ * subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+ * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+ * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+ * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ */
+
+/*
  * Palette orchestration layer shared by every quantizer.  The code below keeps
  * the environment readers, reversible palette helpers, and final merge logic in
  * one place so the algorithm-specific sources only need to request services.
@@ -8,7 +30,7 @@
  *
  *   load env -> dispatch -> build clusters -> final merge -> publish entries
  *        ^                 (median-cut / k-means)                 |
- *        '-------------------------------------------------------'
+ *        '--------------------------------------------------------'
  *
  * The shared helpers are grouped by phase to make the interactions discoverable
  * when adjusting palette-heckbert.c or palette-kmeans.c.
@@ -17,10 +39,23 @@
 #include "config.h"
 
 #include <stdlib.h>
-#include <limits.h>
-#include <stdint.h>
-#include <float.h>
-#include <errno.h>
+#include <string.h>
+
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif
+#if HAVE_STDINT_H
+# include <stdint.h>
+#endif
+#if HAVE_FLOAT_H
+# include <float.h>
+#endif
+#if HAVE_FLOAT_H
+# include <errno.h>
+#endif
+#if HAVE_STDARG_H
+# include <stdarg.h>
+#endif
 
 #include "lut.h"
 #include "palette-common-merge.h"
@@ -31,12 +66,6 @@
 #include "allocator.h"
 #include "status.h"
 #include "compat_stub.h"
-
-#include <stdarg.h>
-
-#if HAVE_STRING_H
-# include <string.h>
-#endif
 
 static int palette_default_lut_policy = SIXEL_LUT_POLICY_AUTO;
 static int palette_method_for_largest = SIXEL_LARGE_NORM;
@@ -73,10 +102,6 @@ sixel_palette_set_method_for_largest(int method)
 
     palette_method_for_largest = normalized;
 }
-
-/* Count unique RGB triples until the limit is exceeded. */
-static void
-sixel_palette_dispose(sixel_palette_t *palette);
 
 /*
  * Resize the palette entry buffer.
@@ -163,6 +188,7 @@ sixel_palette_ref(sixel_palette_t *palette)
     return palette;
 }
 
+/* Count unique RGB triples until the limit is exceeded. */
 static void
 sixel_palette_dispose(sixel_palette_t *palette)
 {
