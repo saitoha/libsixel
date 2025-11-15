@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-# shellcheck source=tests/converters/common.bash
-source "${SCRIPT_DIR}/common.bash"
+# shellcheck source=converters/t/common.t
+source "${SCRIPT_DIR}/common.t"
 
 quality_err="${TMP_DIR}/assessment-quality.err"
 quality_out="${TMP_DIR}/assessment-quality.out"

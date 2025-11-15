@@ -457,24 +457,23 @@ SUBDIRS = include src converters assessment tools python \
 DIST_SUBDIRS = include src converters assessment tools python ruby wic \
         quicklook-extension
 
-EXTRA_DIST = LICENSE depcomp tests/converters/common.bash \
-	tests/converters/test_0001_invalid_option.bash \
-	tests/converters/test_0002_stdin.bash \
-	tests/converters/test_0003_information.bash \
-	tests/converters/test_0004_conversion_options.bash \
-	tests/converters/test_0005_dcs_arguments.bash \
-	tests/converters/test_0006_dcs_variations.bash \
-	tests/converters/test_0007_animation.bash \
-	tests/converters/test_0008_progressive_jpeg.bash \
-	tests/converters/test_0009_pngsuite.bash \
-	tests/converters/test_0010_curl.bash \
-	tests/converters/test_0011_basic.bash \
-	tests/converters/test_0012_regressions.bash \
-	tests/converters/test_0013_documentation.bash \
-	tests/converters/test_0014_option_matching.bash \
-	tests/converters/test_0015_argument_shift.bash \
-	tests/converters/test_0016_assessment_spool.bash \
-	tests/converters/test_0017_clipboard.bash tests/issue/167/poc \
+EXTRA_DIST = LICENSE depcomp converters/t/common.t \
+	converters/t/test_0001_invalid_option.t \
+	converters/t/test_0002_stdin.t \
+	converters/t/test_0003_information.t \
+	converters/t/test_0004_conversion_options.t \
+	converters/t/test_0005_dcs_arguments.t \
+	converters/t/test_0006_dcs_variations.t \
+	converters/t/test_0007_animation.t \
+	converters/t/test_0008_progressive_jpeg.t \
+	converters/t/test_0009_pngsuite.t \
+	converters/t/test_0010_curl.t converters/t/test_0011_basic.t \
+	converters/t/test_0012_regressions.t \
+	converters/t/test_0013_documentation.t \
+	converters/t/test_0014_option_matching.t \
+	converters/t/test_0015_argument_shift.t \
+	converters/t/test_0016_assessment_spool.t \
+	converters/t/test_0017_clipboard.t tests/issue/167/poc \
 	tests/issue/166/poc \
 	tests/issue/200/POC_img2sixel_heap_buffer_overflow \
 	images/map8.png images/autumn.png images/egret.jpg \
