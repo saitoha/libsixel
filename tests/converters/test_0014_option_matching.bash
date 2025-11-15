@@ -106,11 +106,119 @@ fi
 expect_failure "distance1_multi" \
     'specified desampling method is not supported.' \
     -r hamning "${image}"
+if ! grep -F 'Did you mean:' "${TMP_DIR}/distance1_multi.err" \
+        >/dev/null 2>&1; then
+    echo 'missing suggestion banner for distance1_multi' >&2
+    cat "${TMP_DIR}/distance1_multi.err" >&2
+    exit 1
+fi
+if ! grep -F 'hanning' "${TMP_DIR}/distance1_multi.err" >/dev/null 2>&1; then
+    echo 'missing hanning suggestion for distance1_multi' >&2
+    cat "${TMP_DIR}/distance1_multi.err" >&2
+    exit 1
+fi
+if ! grep -F 'hamming' "${TMP_DIR}/distance1_multi.err" >/dev/null 2>&1; then
+    echo 'missing hamming suggestion for distance1_multi' >&2
+    cat "${TMP_DIR}/distance1_multi.err" >&2
+    exit 1
+fi
+
+expect_failure "prefix_projection" \
+    'specified diffusion method is not supported.' \
+    -d ato "${image}"
+if ! grep -F 'Did you mean:' "${TMP_DIR}/prefix_projection.err" \
+        >/dev/null 2>&1; then
+    echo 'missing suggestion banner for prefix_projection' >&2
+    cat "${TMP_DIR}/prefix_projection.err" >&2
+    exit 1
+fi
+if ! grep -F 'auto' "${TMP_DIR}/prefix_projection.err" >/dev/null 2>&1; then
+    echo 'missing auto suggestion for prefix_projection' >&2
+    cat "${TMP_DIR}/prefix_projection.err" >&2
+    exit 1
+fi
+if ! grep -F 'atkinson' "${TMP_DIR}/prefix_projection.err" >/dev/null 2>&1; then
+    echo 'missing atkinson suggestion for prefix_projection' >&2
+    cat "${TMP_DIR}/prefix_projection.err" >&2
+    exit 1
+fi
 
 expect_failure "distance2" \
     'specified desampling method is not supported.' \
     -r hamnimg "${image}"
+if ! grep -F 'Did you mean:' "${TMP_DIR}/distance2.err" \
+        >/dev/null 2>&1; then
+    echo 'missing suggestion banner for distance2' >&2
+    cat "${TMP_DIR}/distance2.err" >&2
+    exit 1
+fi
 
 expect_failure "distance3" \
     'specified desampling method is not supported.' \
     -r zzzzz "${image}"
+if grep -F 'Did you mean:' "${TMP_DIR}/distance3.err" >/dev/null 2>&1; then
+    echo 'unexpected suggestion for distance3' >&2
+    cat "${TMP_DIR}/distance3.err" >&2
+    exit 1
+fi
+
+env_distance2_err="${TMP_DIR}/env_distance2.err"
+env_distance2_out="${TMP_DIR}/env_distance2.sixel"
+rm -f "${env_distance2_err}" "${env_distance2_out}"
+if SIXEL_OPTION_FUZZY_SUGGESTIONS=0 \
+        run_img2sixel -r hamnimg "${image}" \
+            >"${env_distance2_out}" 2>"${env_distance2_err}"; then
+    echo 'expected env_distance2 failure' >&2
+    exit 1
+fi
+if grep -F 'Did you mean:' "${env_distance2_err}" >/dev/null 2>&1; then
+    echo 'unexpected fuzzy suggestion when disabled' >&2
+    cat "${env_distance2_err}" >&2
+    exit 1
+fi
+if ! grep -F 'specified desampling method is not supported.' \
+        "${env_distance2_err}" >/dev/null 2>&1; then
+    echo 'missing base error for env_distance2' >&2
+    cat "${env_distance2_err}" >&2
+    exit 1
+fi
+
+env_prefix_err="${TMP_DIR}/env_prefix.err"
+env_prefix_out="${TMP_DIR}/env_prefix.sixel"
+rm -f "${env_prefix_err}" "${env_prefix_out}"
+if SIXEL_OPTION_PREFIX_SUGGESTIONS=0 \
+        run_img2sixel -d sie "${image}" \
+            >"${env_prefix_out}" 2>"${env_prefix_err}"; then
+    echo 'expected env_prefix failure' >&2
+    exit 1
+fi
+if grep -F '(matches:' "${env_prefix_err}" >/dev/null 2>&1; then
+    echo 'unexpected prefix suggestion when disabled' >&2
+    cat "${env_prefix_err}" >&2
+    exit 1
+fi
+if ! grep -F 'ambiguous prefix "sie"' "${env_prefix_err}" >/dev/null 2>&1; then
+    echo 'missing base prefix error for env_prefix' >&2
+    cat "${env_prefix_err}" >&2
+    exit 1
+fi
+
+env_path_err="${TMP_DIR}/env_path.err"
+env_path_out="${TMP_DIR}/env_path.sixel"
+rm -f "${env_path_err}" "${env_path_out}"
+if SIXEL_OPTION_PATH_SUGGESTIONS=0 \
+        run_img2sixel "${TMP_DIR}/does-not-exist.png" \
+            >"${env_path_out}" 2>"${env_path_err}"; then
+    echo 'expected env_path failure' >&2
+    exit 1
+fi
+if grep -F 'Suggestions:' "${env_path_err}" >/dev/null 2>&1; then
+    echo 'unexpected path suggestion when disabled' >&2
+    cat "${env_path_err}" >&2
+    exit 1
+fi
+if ! grep -F 'path "' "${env_path_err}" >/dev/null 2>&1; then
+    echo 'missing base path error for env_path' >&2
+    cat "${env_path_err}" >&2
+    exit 1
+fi

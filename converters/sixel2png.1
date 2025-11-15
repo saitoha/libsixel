@@ -89,6 +89,30 @@ Show version and license information, then exit.
 Show usage information, then exit.
 
 
+.SH "ENVIRONMENT VARIABLES"
+\fIsixel2png\fP honours the following environment variables:
+.TP 5
+.B SIXEL_OPTION_PREFIX_SUGGESTIONS
+.br
+toggle the prefix disambiguation hints emitted when a value matches more
+than one option. Set to "1" (the default when unset) to print the
+candidate list, or "0" to silence the diagnostic. Library embedders
+must opt in explicitly.
+.TP 5
+.B SIXEL_OPTION_FUZZY_SUGGESTIONS
+.br
+toggle the normalized Levenshtein suggestions that recommend the closest
+option names after a typo. Set to "1" (the default when unset) to print
+the hint list, or "0" to disable it. Library embedders must opt in
+explicitly.
+.TP 5
+.B SIXEL_OPTION_PATH_SUGGESTIONS
+.br
+toggle the filesystem diagnostics that explain why a path could not be
+resolved. Set to "1" (the default when unset) to show the guidance, or
+"0" to suppress it. Library embedders must opt in explicitly.
+
+
 .SH "SEE ALSO"
 sixel(5) img2sixel(1)
 

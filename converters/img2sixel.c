@@ -63,6 +63,7 @@
 
 #include <sixel.h>
 #include "../src/sixel_threads_config.h"
+#include "../src/options.h"
 #include "malloc_stub.h"
 #include "getopt_stub.h"
 #include "completion_utils.h"
@@ -1370,6 +1371,8 @@ main(int argc, char *argv[])
     char const *detail_source = NULL;
     int input_count = 0;
     int assessment_enabled = 0;
+
+    sixel_option_apply_cli_suggestion_defaults();
 
     optstring = g_img2sixel_optstring;
 

@@ -28,6 +28,7 @@
 #include "config.h"
 #include "malloc_stub.h"
 #include "getopt_stub.h"
+#include "../src/options.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -734,6 +735,8 @@ main(int argc, char *argv[])
         {0, 0, 0, 0}
     };
 #endif  /* HAVE_GETOPT_LONG */
+
+    sixel_option_apply_cli_suggestion_defaults();
 
     optstring = g_sixel2png_optstring;
 
