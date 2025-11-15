@@ -14,7 +14,7 @@ touch "${invalid_file}"
 chmod a-r "${invalid_file}"
 # Expect img2sixel to fail cleanly when the source is unreadable.
 output_file="${TMP_DIR}/capture.$$"
-if run_img2sixel "${invalid_file}" >"${output_file}" 2>/dev/null; then
+if run_img2sixel "${invalid_file}" </dev/null >"${output_file}" 2>/dev/null; then
     :
 fi
 if [[ -s ${output_file} ]]; then
@@ -31,7 +31,10 @@ expect_failure() {
     local output_file
 
     output_file="${TMP_DIR}/capture.$$"
-    if run_img2sixel "$@" >"${output_file}" 2>/dev/null; then
+    # Windows builds may fall back to stdin when the input path is rejected.
+    # Redirect /dev/null so native executables cannot block on console input
+    # if they attempt to read from stdin after the path validation fails.
+    if run_img2sixel "$@" </dev/null >"${output_file}" 2>/dev/null; then
         :
     fi
     if [[ -s ${output_file} ]]; then
