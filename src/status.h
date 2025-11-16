@@ -22,12 +22,19 @@
 #ifndef LIBSIXEL_STATUS_H
 #define LIBSIXEL_STATUS_H
 
+#include <stddef.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 void
 sixel_debugf(char const *fmt, ...);
+
+void
+sixel_status_render_markup_text(char const *source,
+                                char *destination,
+                                size_t destination_size);
 
 #if HAVE_TESTS
 SIXELAPI int
