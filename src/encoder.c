@@ -1480,11 +1480,20 @@ cleanup:
 static SIXELSTATUS
 sixel_palette_open_read(char const *path, FILE **pstream, int *pclose)
 {
+    int error_value;
+    char error_message[256];
+#if HAVE_SYS_STAT_H
+    struct stat path_stat;
+#endif
+
     if (pstream == NULL || pclose == NULL || path == NULL) {
         sixel_helper_set_additional_message(
             "sixel_palette_open_read: invalid argument.");
         return SIXEL_BAD_ARGUMENT;
     }
+
+    error_value = 0;
+    error_message[0] = '\0';
 
     if (strcmp(path, "-") == 0) {
         *pstream = stdin;
@@ -1492,10 +1501,29 @@ sixel_palette_open_read(char const *path, FILE **pstream, int *pclose)
         return SIXEL_OK;
     }
 
+#if HAVE_SYS_STAT_H
+    if (stat(path, &path_stat) == 0 && S_ISDIR(path_stat.st_mode)) {
+        sixel_compat_snprintf(error_message,
+                              sizeof(error_message),
+                              "sixel_palette_open_read: mapfile \"%s\" "
+                              "is a directory.",
+                              path);
+        sixel_helper_set_additional_message(error_message);
+        return SIXEL_BAD_INPUT;
+    }
+#endif
+
+    errno = 0;
     *pstream = fopen(path, "rb");
     if (*pstream == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_palette_open_read: failed to open file.");
+        error_value = errno;
+        sixel_compat_snprintf(error_message,
+                              sizeof(error_message),
+                              "sixel_palette_open_read: failed to open "
+                              "\"%s\": %s.",
+                              path,
+                              strerror(error_value));
+        sixel_helper_set_additional_message(error_message);
         return SIXEL_LIBC_ERROR;
     }
 
@@ -2358,6 +2386,7 @@ sixel_prepare_specified_palette(
     int need_detection;
     int treat_as_image;
     int path_has_extension;
+    char mapfile_message[256];
 
     status = SIXEL_FALSE;
     loader = NULL;
@@ -2378,6 +2407,7 @@ sixel_prepare_specified_palette(
     need_detection = 0;
     treat_as_image = 0;
     path_has_extension = 0;
+    mapfile_message[0] = '\0';
 
     if (dither == NULL || encoder == NULL || encoder->mapfile == NULL) {
         sixel_helper_set_additional_message(
@@ -2426,8 +2456,12 @@ sixel_prepare_specified_palette(
             goto palette_cleanup;
         }
         if (buffer_size == 0u) {
-            sixel_helper_set_additional_message(
-                "sixel_prepare_specified_palette: mapfile is empty.");
+            sixel_compat_snprintf(mapfile_message,
+                                  sizeof(mapfile_message),
+                                  "sixel_prepare_specified_palette: "
+                                  "mapfile \"%s\" is empty.",
+                                  path != NULL ? path : "");
+            sixel_helper_set_additional_message(mapfile_message);
             status = SIXEL_BAD_INPUT;
             goto palette_cleanup;
         }
@@ -2611,9 +2645,14 @@ end_loader:
     }
 
     if (! callback_context.dither) {
-        sixel_helper_set_additional_message(
-            "sixel_prepare_specified_palette() failed.\n"
-            "reason: mapfile is empty.");
+        sixel_compat_snprintf(mapfile_message,
+                              sizeof(mapfile_message),
+                              "sixel_prepare_specified_palette() failed.\n"
+                              "reason: mapfile \"%s\" is empty.",
+                              encoder->mapfile != NULL
+                                ? encoder->mapfile
+                                : "");
+        sixel_helper_set_additional_message(mapfile_message);
         return SIXEL_BAD_INPUT;
     }
 

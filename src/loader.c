@@ -159,6 +159,7 @@ struct sixel_loader {
     char last_loader_name[64];
     char last_source_path[PATH_MAX];
     size_t last_input_bytes;
+    int callback_failed;
 };
 
 static char *
@@ -353,6 +354,31 @@ typedef struct sixel_loader_entry {
     sixel_loader_predicate   predicate;
     int                      default_enabled;
 } sixel_loader_entry_t;
+
+typedef struct sixel_loader_callback_state {
+    sixel_loader_t *loader;
+    sixel_load_image_function fn;
+    void *context;
+} sixel_loader_callback_state_t;
+
+static SIXELSTATUS
+loader_callback_trampoline(sixel_frame_t *frame, void *data)
+{
+    sixel_loader_callback_state_t *state;
+    SIXELSTATUS status;
+
+    state = (sixel_loader_callback_state_t *)data;
+    if (state == NULL || state->fn == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = state->fn(frame, state->context);
+    if (SIXEL_FAILED(status) && state->loader != NULL) {
+        state->loader->callback_failed = 1;
+    }
+
+    return status;
+}
 
 static int
 loader_plan_contains(sixel_loader_entry_t const **plan,
@@ -6586,6 +6612,7 @@ sixel_loader_new(
     loader->last_loader_name[0] = '\0';
     loader->last_source_path[0] = '\0';
     loader->last_input_bytes = 0u;
+    loader->callback_failed = 0;
 
     *pploader = loader;
     status = SIXEL_OK;
@@ -6781,6 +6808,7 @@ sixel_loader_load_file(
     sixel_assessment_t *assessment;
     char const *order_override;
     char const *env_order;
+    sixel_loader_callback_state_t callback_state;
 
     pchunk = NULL;
     entry_count = 0;
@@ -6800,6 +6828,12 @@ sixel_loader_load_file(
     }
 
     sixel_loader_ref(loader);
+
+    memset(&callback_state, 0, sizeof(callback_state));
+    callback_state.loader = loader;
+    callback_state.fn = fn_load;
+    callback_state.context = loader->context;
+    loader->callback_failed = 0;
 
     entry_count = sizeof(sixel_loader_entries) /
                   sizeof(sixel_loader_entries[0]);
@@ -6884,8 +6918,8 @@ sixel_loader_load_file(
                                            reqcolors,
                                            bgcolor,
                                            loader->loop_control,
-                                           fn_load,
-                                           loader->context);
+                                           loader_callback_trampoline,
+                                           &callback_state);
         loader_trace_result(plan[plan_index]->name, status);
         if (SIXEL_SUCCEEDED(status)) {
             break;
@@ -6893,7 +6927,13 @@ sixel_loader_load_file(
     }
 
     if (SIXEL_FAILED(status)) {
-        loader_publish_diagnostic(pchunk, filename);
+        if (!loader->callback_failed &&
+                plan_length > 0u &&
+                plan_index >= plan_length &&
+                pchunk != NULL) {
+            status = SIXEL_LOADER_FAILED;
+            loader_publish_diagnostic(pchunk, filename);
+        }
         goto end;
     }
 

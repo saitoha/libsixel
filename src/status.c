@@ -74,6 +74,8 @@
 #define SIXEL_MESSAGE_BAD_INTEGER_OVERFLOW  ("runtime error: integer overflow")
 #define SIXEL_MESSAGE_BAD_CLIPBOARD         \
     ("runtime error: clipboard payload unavailable")
+#define SIXEL_MESSAGE_LOADER_FAILED         \
+    ("runtime error: unable to decode input with available loaders")
 #define SIXEL_MESSAGE_RUNTIME_ERROR         ("runtime error")
 #define SIXEL_MESSAGE_LOGIC_ERROR           ("logic error")
 #define SIXEL_MESSAGE_NOT_IMPLEMENTED       ("feature error: not implemented")
@@ -574,6 +576,9 @@ sixel_helper_format_error(
             case SIXEL_BAD_INPUT:
                 error_string = SIXEL_MESSAGE_BAD_INPUT;
                 break;
+            case SIXEL_LOADER_FAILED:
+                error_string = SIXEL_MESSAGE_LOADER_FAILED;
+                break;
             case SIXEL_BAD_CLIPBOARD:
                 error_string = SIXEL_MESSAGE_BAD_CLIPBOARD;
                 break;
@@ -694,6 +699,11 @@ test2(void)
 
     message = sixel_helper_format_error(SIXEL_BAD_INPUT);
     if (strcmp(message, SIXEL_MESSAGE_BAD_INPUT) != 0) {
+        goto error;
+    }
+
+    message = sixel_helper_format_error(SIXEL_LOADER_FAILED);
+    if (strcmp(message, SIXEL_MESSAGE_LOADER_FAILED) != 0) {
         goto error;
     }
 

@@ -73,6 +73,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_BAD_INTEGER_OVERFLOW (SIXEL_RUNTIME_ERROR | 0x0004)  /* integer overflow */
 #define SIXEL_BAD_FILE_PATH     (SIXEL_RUNTIME_ERROR | 0x0005)  /* bad input filename */
 #define SIXEL_BAD_CLIPBOARD     (SIXEL_RUNTIME_ERROR | 0x0006)  /* clipboard unavailable */
+#define SIXEL_LOADER_FAILED     (SIXEL_RUNTIME_ERROR | 0x0007)  /* no loader decoded input */
 
 #define SIXEL_NOT_IMPLEMENTED   (SIXEL_FEATURE_ERROR | 0x0001)  /* feature not implemented */
 
