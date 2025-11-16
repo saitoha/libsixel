@@ -42,6 +42,7 @@
 #endif
 
 #include <sixel.h>
+#include "compat_stub.h"
 #include "options.h"
 #include "output.h"
 
@@ -51,6 +52,105 @@
  * implementations stay here so the CLI remains thin while the library
  * can share the matching logic.
  */
+
+#define SIXEL_OPTION_CHOICE_SUGGESTION_LIMIT 5u
+#define SIXEL_OPTION_CHOICE_SUGGESTION_THRESHOLD 0.6
+#define SIXEL_OPTION_CHOICE_SHORT_NAME_LENGTH 3u
+
+static void
+sixel_option_apply_env_default(char const *variable);
+
+static int
+sixel_option_environment_is_enabled(char const *variable);
+
+typedef struct sixel_option_choice_suggestion {
+    char const *name;
+    double score;
+    size_t distance;
+} sixel_option_choice_suggestion_t;
+
+static double
+sixel_option_normalized_levenshtein(
+    char const *lhs,
+    char const *rhs,
+    size_t *distance_out);
+
+void
+sixel_option_apply_cli_suggestion_defaults(void)
+{
+    sixel_option_apply_env_default(
+        SIXEL_OPTION_ENV_PREFIX_SUGGESTIONS);
+    sixel_option_apply_env_default(
+        SIXEL_OPTION_ENV_FUZZY_SUGGESTIONS);
+    sixel_option_apply_env_default(
+        SIXEL_OPTION_ENV_PATH_SUGGESTIONS);
+}
+
+static void
+sixel_option_apply_env_default(char const *variable)
+{
+    char const *existing;
+    int status;
+
+    existing = NULL;
+    status = 0;
+
+    if (variable == NULL) {
+        return;
+    }
+
+    existing = sixel_compat_getenv(variable);
+    if (existing != NULL) {
+        return;
+    }
+
+    status = sixel_compat_setenv(variable, "1");
+    (void)status;
+}
+
+static int
+sixel_option_environment_is_enabled(char const *variable)
+{
+    char const *value;
+
+    value = NULL;
+
+    if (variable == NULL) {
+        return 0;
+    }
+
+    value = sixel_compat_getenv(variable);
+    if (value == NULL) {
+        return 0;
+    }
+    if (value[0] == '1' && value[1] == '\0') {
+        return 1;
+    }
+
+    return 0;
+}
+
+/*
+ * Build a ranked suggestion list for choice arguments.  The helper evaluates
+ * every prefix that would be accepted by the prefix-matching logic, compares
+ * the user input against those prefixes, and then projects the highest scoring
+ * matches back to their canonical option names.  The diagnostic string reuses
+ * the comma-separated format consumed by the CLI frontends.
+ */
+static size_t
+sixel_option_collect_choice_suggestions(
+    char const *value,
+    sixel_option_choice_t const *choices,
+    size_t choice_count,
+    char *diagnostic,
+    size_t diagnostic_size);
+
+static int
+sixel_option_choice_prefix_accepts(
+    sixel_option_choice_t const *choices,
+    size_t choice_count,
+    char const *name,
+    size_t prefix_length);
 
 sixel_option_choice_result_t
 sixel_option_match_choice(
@@ -129,6 +229,12 @@ sixel_option_match_choice(
     }
 
     if (match_count == 0u || candidate_index == (-1)) {
+        (void)sixel_option_collect_choice_suggestions(
+            value,
+            choices,
+            choice_count,
+            diagnostic,
+            diagnostic_size);
         return SIXEL_OPTION_CHOICE_NONE;
     }
     if (!ambiguous_values) {
@@ -147,16 +253,21 @@ sixel_option_report_ambiguous_prefix(
     size_t buffer_size)
 {
     int written;
+    int suggestions_enabled;
+    char const *active_candidates;
 
     if (buffer == NULL || buffer_size == 0u) {
         return;
     }
-    if (candidates != NULL && candidates[0] != '\0') {
+    suggestions_enabled = sixel_option_environment_is_enabled(
+        SIXEL_OPTION_ENV_PREFIX_SUGGESTIONS);
+    active_candidates = suggestions_enabled ? candidates : NULL;
+    if (active_candidates != NULL && active_candidates[0] != '\0') {
         written = snprintf(buffer,
                            buffer_size,
                            "ambiguous prefix \"%s\" (matches: %s).",
                            value,
-                           candidates);
+                           active_candidates);
     } else {
         written = snprintf(buffer,
                            buffer_size,
@@ -165,6 +276,273 @@ sixel_option_report_ambiguous_prefix(
     }
     (void) written;
     sixel_helper_set_additional_message(buffer);
+}
+
+void
+sixel_option_report_invalid_choice(
+    char const *base_message,
+    char const *suggestions,
+    char *buffer,
+    size_t buffer_size)
+{
+    int written;
+
+    if (base_message == NULL) {
+        return;
+    }
+
+    if (suggestions != NULL && suggestions[0] != '\0' && buffer != NULL &&
+        buffer_size > 0u) {
+        buffer[0] = '\0';
+        written = snprintf(buffer,
+                           buffer_size,
+                           "%s Did you mean: %s?",
+                           base_message,
+                           suggestions);
+        if (written < 0) {
+            sixel_helper_set_additional_message(base_message);
+            return;
+        }
+        sixel_helper_set_additional_message(buffer);
+        return;
+    }
+
+    sixel_helper_set_additional_message(base_message);
+}
+
+static int
+sixel_option_choice_suggestion_compare(
+    void const *lhs,
+    void const *rhs)
+{
+    sixel_option_choice_suggestion_t const *left;
+    sixel_option_choice_suggestion_t const *right;
+    size_t left_length;
+    size_t right_length;
+
+    left = (sixel_option_choice_suggestion_t const *)lhs;
+    right = (sixel_option_choice_suggestion_t const *)rhs;
+    left_length = strlen(left->name);
+    right_length = strlen(right->name);
+
+    if (left->score < right->score) {
+        return 1;
+    }
+    if (left->score > right->score) {
+        return -1;
+    }
+    if (left->distance > right->distance) {
+        return 1;
+    }
+    if (left->distance < right->distance) {
+        return -1;
+    }
+    if (left_length > right_length) {
+        return 1;
+    }
+    if (left_length < right_length) {
+        return -1;
+    }
+
+    return strcmp(left->name, right->name);
+}
+
+static size_t
+sixel_option_collect_choice_suggestions(
+    char const *value,
+    sixel_option_choice_t const *choices,
+    size_t choice_count,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    sixel_option_choice_suggestion_t *candidates;
+    size_t candidate_count;
+    size_t index;
+    size_t diag_length;
+    size_t copy_length;
+    size_t distance;
+    size_t name_length;
+    size_t prefix_length;
+    size_t existing_index;
+    double score;
+    char *prefix;
+    char const *name;
+    int has_existing;
+    int suggestions_enabled;
+
+    candidates = NULL;
+    candidate_count = 0u;
+    index = 0u;
+    diag_length = 0u;
+    copy_length = 0u;
+    distance = 0u;
+    name_length = 0u;
+    prefix_length = 0u;
+    existing_index = 0u;
+    score = 0.0;
+    prefix = NULL;
+    name = NULL;
+    has_existing = 0;
+    suggestions_enabled = 0;
+
+    if (diagnostic != NULL && diagnostic_size > 0u) {
+        diagnostic[0] = '\0';
+    }
+    if (value == NULL || choices == NULL || choice_count == 0u) {
+        return 0u;
+    }
+
+    suggestions_enabled = sixel_option_environment_is_enabled(
+        SIXEL_OPTION_ENV_FUZZY_SUGGESTIONS);
+    if (!suggestions_enabled) {
+        return 0u;
+    }
+
+    candidates = (sixel_option_choice_suggestion_t *)malloc(
+        choice_count * sizeof(sixel_option_choice_suggestion_t));
+    if (candidates == NULL) {
+        return 0u;
+    }
+
+    for (index = 0u; index < choice_count; ++index) {
+        name = choices[index].name;
+        name_length = strlen(name);
+        for (prefix_length = 1u;
+             prefix_length <= name_length;
+             ++prefix_length) {
+            if (!sixel_option_choice_prefix_accepts(
+                    choices,
+                    choice_count,
+                    name,
+                    prefix_length)) {
+                continue;
+            }
+            prefix = (char *)malloc(prefix_length + 1u);
+            if (prefix == NULL) {
+                free(candidates);
+                return 0u;
+            }
+            memcpy(prefix, name, prefix_length);
+            prefix[prefix_length] = '\0';
+            score = sixel_option_normalized_levenshtein(
+                value,
+                prefix,
+                &distance);
+            free(prefix);
+            prefix = NULL;
+            if (distance == 0u) {
+                continue;
+            }
+            if (distance > 2u) {
+                continue;
+            }
+            if (score < SIXEL_OPTION_CHOICE_SUGGESTION_THRESHOLD) {
+                continue;
+            }
+            if (prefix_length <= SIXEL_OPTION_CHOICE_SHORT_NAME_LENGTH &&
+                distance > 1u) {
+                continue;
+            }
+            has_existing = 0;
+            for (existing_index = 0u;
+                 existing_index < candidate_count;
+                 ++existing_index) {
+                if (strcmp(candidates[existing_index].name, name) == 0) {
+                    has_existing = 1;
+                    break;
+                }
+            }
+            if (has_existing) {
+                if (score > candidates[existing_index].score ||
+                    (score == candidates[existing_index].score &&
+                     distance < candidates[existing_index].distance)) {
+                    candidates[existing_index].score = score;
+                    candidates[existing_index].distance = distance;
+                }
+                continue;
+            }
+            candidates[candidate_count].name = name;
+            candidates[candidate_count].score = score;
+            candidates[candidate_count].distance = distance;
+            ++candidate_count;
+        }
+    }
+
+    if (candidate_count == 0u) {
+        free(candidates);
+        return 0u;
+    }
+
+    if (candidate_count > 1u) {
+        qsort(candidates,
+              candidate_count,
+              sizeof(sixel_option_choice_suggestion_t),
+              sixel_option_choice_suggestion_compare);
+    }
+
+    if (candidate_count > SIXEL_OPTION_CHOICE_SUGGESTION_LIMIT) {
+        candidate_count = SIXEL_OPTION_CHOICE_SUGGESTION_LIMIT;
+    }
+
+    if (diagnostic != NULL && diagnostic_size > 0u) {
+        for (index = 0u; index < candidate_count; ++index) {
+            if (diag_length > 0u && diag_length + 2u < diagnostic_size) {
+                diagnostic[diag_length] = ',';
+                diagnostic[diag_length + 1u] = ' ';
+                diag_length += 2u;
+                diagnostic[diag_length] = '\0';
+            }
+            copy_length = strlen(candidates[index].name);
+            if (copy_length > diagnostic_size - diag_length - 1u) {
+                copy_length = diagnostic_size - diag_length - 1u;
+            }
+            memcpy(diagnostic + diag_length,
+                   candidates[index].name,
+                   copy_length);
+            diag_length += copy_length;
+            diagnostic[diag_length] = '\0';
+            if (diag_length >= diagnostic_size - 1u) {
+                break;
+            }
+        }
+    }
+
+    free(candidates);
+    return candidate_count;
+}
+
+static int
+sixel_option_choice_prefix_accepts(
+    sixel_option_choice_t const *choices,
+    size_t choice_count,
+    char const *name,
+    size_t prefix_length)
+{
+    size_t index;
+    int base_value;
+    int base_set;
+
+    if (choices == NULL || name == NULL || prefix_length == 0u) {
+        return 0;
+    }
+
+    base_value = 0;
+    base_set = 0;
+    for (index = 0u; index < choice_count; ++index) {
+        if (strncmp(choices[index].name, name, prefix_length) != 0) {
+            continue;
+        }
+        if (!base_set) {
+            base_value = choices[index].value;
+            base_set = 1;
+            continue;
+        }
+        if (choices[index].value != base_value) {
+            return 0;
+        }
+    }
+
+    return base_set;
 }
 
 #define SIXEL_OPTION_SUGGESTION_LIMIT 5u
@@ -271,7 +649,8 @@ sixel_option_extension_view(char const *name)
 static double
 sixel_option_normalized_levenshtein(
     char const *lhs,
-    char const *rhs)
+    char const *rhs,
+    size_t *distance_out)
 {
     size_t lhs_length;
     size_t rhs_length;
@@ -283,7 +662,9 @@ sixel_option_normalized_levenshtein(
     size_t deletion;
     size_t insertion;
     size_t substitution;
-    double distance_double;
+    size_t distance_value;
+    unsigned char left_char;
+    unsigned char right_char;
     double normalized;
 
     lhs_length = 0u;
@@ -296,8 +677,14 @@ sixel_option_normalized_levenshtein(
     deletion = 0u;
     insertion = 0u;
     substitution = 0u;
-    distance_double = 0.0;
+    distance_value = 0u;
+    left_char = 0u;
+    right_char = 0u;
     normalized = 0.0;
+
+    if (distance_out != NULL) {
+        *distance_out = 0u;
+    }
 
     if (lhs == NULL || rhs == NULL) {
         return 0.0;
@@ -331,7 +718,9 @@ sixel_option_normalized_levenshtein(
         current[0] = row;
         column = 1u;
         while (column <= rhs_length) {
-            cost = (lhs[row - 1u] == rhs[column - 1u]) ? 0u : 1u;
+            left_char = (unsigned char)lhs[row - 1u];
+            right_char = (unsigned char)rhs[column - 1u];
+            cost = (tolower(left_char) == tolower(right_char)) ? 0u : 1u;
             deletion = previous[column] + 1u;
             insertion = current[column - 1u] + 1u;
             substitution = previous[column - 1u] + cost;
@@ -348,11 +737,15 @@ sixel_option_normalized_levenshtein(
         ++row;
     }
 
-    distance_double = (double)previous[rhs_length];
+    distance_value = previous[rhs_length];
     free(current);
     free(previous);
 
-    normalized = 1.0 - distance_double /
+    if (distance_out != NULL) {
+        *distance_out = distance_value;
+    }
+
+    normalized = 1.0 - (double)distance_value /
         (double)((lhs_length > rhs_length) ? lhs_length : rhs_length);
     if (normalized < 0.0) {
         normalized = 0.0;
@@ -733,6 +1126,7 @@ sixel_option_build_missing_path_message(
     size_t offset;
     int written;
     int result;
+    int suggestions_enabled;
 #if HAVE_DIRENT_H && HAVE_SYS_STAT_H
     DIR *directory_stream;
     struct dirent *entry;
@@ -766,6 +1160,7 @@ sixel_option_build_missing_path_message(
     offset = 0u;
     written = 0;
     result = 0;
+    suggestions_enabled = 0;
 
     if (buffer == NULL || buffer_size == 0u) {
         free(directory_copy);
@@ -786,7 +1181,9 @@ sixel_option_build_missing_path_message(
     }
 
 #if !(HAVE_DIRENT_H && HAVE_SYS_STAT_H)
-    if (offset < buffer_size - 1u) {
+    suggestions_enabled = sixel_option_environment_is_enabled(
+        SIXEL_OPTION_ENV_PATH_SUGGESTIONS);
+    if (suggestions_enabled && offset < buffer_size - 1u) {
         written = snprintf(buffer + offset,
                            buffer_size - offset,
                            "Suggestion lookup unavailable on this build.\n");
@@ -797,6 +1194,12 @@ sixel_option_build_missing_path_message(
     free(directory_copy);
     return 0;
 #else
+    suggestions_enabled = sixel_option_environment_is_enabled(
+        SIXEL_OPTION_ENV_PATH_SUGGESTIONS);
+    if (!suggestions_enabled) {
+        free(directory_copy);
+        return 0;
+    }
     directory_stream = NULL;
     entry = NULL;
     candidates = NULL;
@@ -938,7 +1341,8 @@ sixel_option_build_missing_path_message(
     for (index = 0u; index < candidate_count; ++index) {
         candidates[index].name_score =
             sixel_option_normalized_levenshtein(target_name,
-                                                 candidates[index].name);
+                                                 candidates[index].name,
+                                                 NULL);
         candidates[index].extension_score =
             sixel_option_extension_similarity(target_name,
                                               candidates[index].name);

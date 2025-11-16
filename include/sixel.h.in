@@ -1182,6 +1182,13 @@ sixel_helper_convert_colorspace(
     int                 /* in */      colorspace_src,
     int                 /* in */      colorspace_dst);
 
+/*
+ * CLI frontends call this helper so they default to the friendlier
+ * suggestions while keeping library usage opt-in.
+ */
+SIXELAPI void
+sixel_option_apply_cli_suggestion_defaults(void);
+
 #ifdef __cplusplus
 }
 #endif
