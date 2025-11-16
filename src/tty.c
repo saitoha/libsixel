@@ -26,6 +26,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <stdint.h>
+
 #if HAVE_TIME_H
 # include <time.h>
 #elif HAVE_SYS_TIME_H
@@ -53,7 +55,224 @@
 #endif  /* HAVE_SYS_IOCTL_H */
 
 #include <sixel.h>
+#include "tty.h"
 #include "compat_stub.h"
+
+#if defined(_WIN32)
+# include <io.h>
+# include <windows.h>
+# if !defined(ENABLE_VIRTUAL_TERMINAL_PROCESSING)
+#  define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
+# endif
+#endif
+
+/*
+ * Cache describing the capabilities of the active output device.
+ * The struct lives in static storage because the helper routines are
+ * frequently used from the CLI tools without an explicit lifecycle.
+ */
+static struct sixel_tty_output_state tty_output_state = {0, 0, 0, 0};
+
+static int
+sixel_tty_term_supports_ansi(const char *term);
+
+static int
+sixel_tty_term_supports_color(const char *term, const char *colorterm);
+
+static int
+sixel_tty_term_supports_ansi(const char *term)
+{
+    size_t i;
+    size_t count;
+    const char *const *entry;
+    static const char *const denylist[] = {
+        "dumb",
+        "emacs",
+        "unknown",
+        "cons25",
+        "vt100-nam"
+    };
+    static const char *const allowlist[] = {
+        "ansi",
+        "color",
+        "xterm",
+        "rxvt",
+        "tmux",
+        "screen",
+        "linux",
+        "foot",
+        "wezterm",
+        "alacritty",
+        "konsole",
+        "kitty",
+        "gnome",
+        "eterm",
+        "cygwin",
+        "putty",
+        "vt100",
+        "vt102",
+        "vt220",
+        "st-",
+        "st"
+    };
+
+    if (term == NULL) {
+        return 0;
+    }
+
+    count = sizeof(denylist) / sizeof(denylist[0]);
+    for (i = 0; i < count; ++i) {
+        entry = &denylist[i];
+        if (strcmp(term, *entry) == 0) {
+            return 0;
+        }
+    }
+
+    count = sizeof(allowlist) / sizeof(allowlist[0]);
+    for (i = 0; i < count; ++i) {
+        entry = &allowlist[i];
+        if (strstr(term, *entry) != NULL) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+static int
+sixel_tty_term_supports_color(const char *term, const char *colorterm)
+{
+    size_t i;
+    size_t count;
+    const char *const *entry;
+    static const char *const allowlist[] = {
+        "256color",
+        "color",
+        "xterm",
+        "rxvt",
+        "tmux",
+        "screen",
+        "linux",
+        "foot",
+        "wezterm",
+        "alacritty",
+        "konsole",
+        "kitty",
+        "gnome",
+        "eterm",
+        "cygwin",
+        "putty",
+        "vt220",
+        "vt340",
+        "ansi"
+    };
+
+    if (colorterm != NULL && colorterm[0] != '\0') {
+        return 1;
+    }
+
+    if (term == NULL) {
+        return 0;
+    }
+
+    if (strstr(term, "mono") != NULL || strstr(term, "bw") != NULL) {
+        return 0;
+    }
+
+    count = sizeof(allowlist) / sizeof(allowlist[0]);
+    for (i = 0; i < count; ++i) {
+        entry = &allowlist[i];
+        if (strstr(term, *entry) != NULL) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+SIXELAPI void
+sixel_tty_init_output_device(int fd)
+{
+    int istty;
+    const char *term;
+    const char *colorterm;
+    struct sixel_tty_output_state *state;
+#if defined(_WIN32)
+    intptr_t handle_value;
+    HANDLE handle;
+    DWORD mode;
+    DWORD desired;
+#endif
+
+    state = &tty_output_state;
+    state->is_tty = 0;
+    state->use_ansi_sequences = 0;
+    state->supports_bold = 0;
+    state->supports_color = 0;
+    istty = 0;
+
+#if HAVE_ISATTY
+    if (isatty(fd)) {
+        istty = 1;
+    }
+#endif
+
+    if (istty == 0) {
+        return;
+    }
+
+    state->is_tty = 1;
+
+#if defined(_WIN32)
+    handle_value = _get_osfhandle(fd);
+    if (handle_value != (intptr_t)-1) {
+        handle = (HANDLE)handle_value;
+        if (GetConsoleMode(handle, &mode) != 0) {
+            desired = mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+            if (SetConsoleMode(handle, desired) != 0) {
+                mode = desired;
+            }
+            if ((mode & ENABLE_VIRTUAL_TERMINAL_PROCESSING) != 0) {
+                state->use_ansi_sequences = 1;
+                state->supports_bold = 1;
+                state->supports_color = 1;
+                return;
+            }
+        }
+    }
+#endif
+
+    term = getenv("TERM");
+    colorterm = getenv("COLORTERM");
+
+    if (term == NULL || term[0] == '\0') {
+        return;
+    }
+
+    if (sixel_tty_term_supports_ansi(term) != 0) {
+        state->use_ansi_sequences = 1;
+        state->supports_bold = 1;
+    }
+
+    if (state->use_ansi_sequences == 0 &&
+            colorterm != NULL && colorterm[0] != '\0') {
+        state->use_ansi_sequences = 1;
+        state->supports_bold = 1;
+    }
+
+    if (state->use_ansi_sequences != 0) {
+        if (sixel_tty_term_supports_color(term, colorterm) != 0) {
+            state->supports_color = 1;
+        }
+    }
+
+}
+
+SIXELAPI struct sixel_tty_output_state const *
+sixel_tty_get_output_state(void)
+{
+    return &tty_output_state;
+}
 
 #if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
 SIXELSTATUS

@@ -70,6 +70,17 @@
 #include "completion_utils.h"
 #include "aborttrace.h"
 
+/* for msvc */
+#ifndef STDIN_FILENO
+# define STDIN_FILENO 0
+#endif
+#ifndef STDOUT_FILENO
+# define STDOUT_FILENO 1
+#endif
+#ifndef STDERR_FILENO
+# define STDERR_FILENO 2
+#endif
+
 /*
  * Option-specific help snippets drive both the --help output and
  * contextual error reporting.  The layout below mirrors a table:
@@ -923,7 +934,8 @@ img2sixel_report_invalid_argument(int short_opt,
 
     written = snprintf(buffer,
                        sizeof(buffer),
-                       "'%s' is invalid argument for -%c,--%s option:\n\n",
+                       "\\fW'%s'\\fP is invalid argument for "
+                       "\\fB-%c\\fP,\\fB--%s\\fP option:\n\n",
                        argument,
                        (char)short_opt,
                        long_opt);
@@ -943,7 +955,7 @@ img2sixel_report_invalid_argument(int short_opt,
                         detail);
         written = snprintf(buffer + offset,
                            sizeof(buffer) - offset,
-                           "%s",
+                           "%s\n",
                            detail_copy);
         if (written < 0) {
             written = 0;
@@ -1353,6 +1365,7 @@ main(int argc, char *argv[])
     int input_count = 0;
     int assessment_enabled = 0;
 
+    sixel_tty_init_output_device(STDERR_FILENO);
     sixel_aborttrace_install_if_unhandled();
 
     optstring = g_img2sixel_optstring;
@@ -1423,7 +1436,7 @@ main(int argc, char *argv[])
                 img2sixel_report_invalid_argument(
                     '=',
                     optarg,
-                    "threads accepts positive integers or 'auto'.");
+                    "threads accepts positive integers or \\fB'auto'\\fP.");
                 status = SIXEL_BAD_ARGUMENT;
                 goto error;
             }
@@ -1437,7 +1450,7 @@ main(int argc, char *argv[])
                 img2sixel_report_invalid_argument(
                     'a',
                     optarg,
-                    "img2sixel: invalid assessment section list.");
+                    "invalid assessment section list.");
                 goto error;
             }
             assessment_enabled = 1;

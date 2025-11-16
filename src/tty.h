@@ -22,6 +22,16 @@
 #ifndef LIBSIXEL_TTY_H
 #define LIBSIXEL_TTY_H
 
+struct sixel_tty_output_state {
+    int is_tty;
+    int use_ansi_sequences;
+    int supports_bold;
+    int supports_color;
+};
+
+SIXELAPI struct sixel_tty_output_state const *
+sixel_tty_get_output_state(void);
+
 SIXELSTATUS
 sixel_tty_wait_stdin(int usec);
 

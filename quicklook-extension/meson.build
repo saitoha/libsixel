@@ -32,7 +32,9 @@ common_includes = [
   include_directories('../src'),
 ]
 
-common_c_args = ['-DSIXEL_DISABLE_EXT_LIBS=1', '-DHAVE_CONFIG_H']
+common_c_args = ['-DSIXEL_DISABLE_EXT_LIBS=1',
+                 '-DSIXEL_STATUS_HAVE_TTY_HELPERS=0',
+                 '-DHAVE_CONFIG_H']
 common_objc_args = ['-fobjc-arc', '-fmodules']
 extension_objc_args = common_objc_args + ['-fapplication-extension']
 
