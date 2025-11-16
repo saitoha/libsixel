@@ -51,7 +51,8 @@ libsixelquicklookcore_a_SOURCES = \
     $(top_srcdir)/src/allocator.c \
     $(top_srcdir)/src/fromsixel.c \
     $(top_srcdir)/src/compat_stub.c
-libsixelquicklookcore_a_CPPFLAGS = $(AM_CPPFLAGS)
+libsixelquicklookcore_a_CPPFLAGS = $(AM_CPPFLAGS) \
+    -DSIXEL_STATUS_HAVE_TTY_HELPERS=0
 
 if HAVE_APPLE_QUICKLOOK_EXTENSION
 

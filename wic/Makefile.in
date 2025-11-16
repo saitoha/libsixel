@@ -422,7 +422,10 @@ libwicsixel_la_SOURCES = $(srcdir)/wic.c \
                          $(top_builddir)/src/status.c \
                          $(top_builddir)/src/compat_stub.c
 
-libwicsixel_la_CPPFLAGS = -I$(top_builddir)/include/
+libwicsixel_la_CPPFLAGS = $(AM_CPPFLAGS) \
+                          -I$(top_builddir)/include/ \
+                          -DSIXEL_STATUS_HAVE_TTY_HELPERS=0
+
 libwicsixel_la_CFLAGS = $(CFLAGS) \
                         $(AM_CFLAGS) \
                         $(WICCODEC_CFLAGS)

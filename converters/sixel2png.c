@@ -72,7 +72,16 @@
 
 #include <sixel.h>
 
-
+/* for msvc */
+#ifndef STDIN_FILENO
+# define STDIN_FILENO 0
+#endif
+#ifndef STDOUT_FILENO
+# define STDOUT_FILENO 1
+#endif
+#ifndef STDERR_FILENO
+# define STDERR_FILENO 2
+#endif
 
 /*
  * Option-specific help snippets power both the --help output and contextual
@@ -354,7 +363,8 @@ sixel2png_report_invalid_argument(int short_opt,
 
     written = snprintf(buffer,
                        sizeof(buffer),
-                       "'%s' is invalid argument for -%c,--%s option:\n\n",
+                       "\\fW'%s'\\fP is invalid argument for "
+                       "\\fB-%c\\fP,\\fB--%s\\fP option:\n\n",
                        argument,
                        (char)short_opt,
                        long_opt);
@@ -692,6 +702,7 @@ main(int argc, char *argv[])
 #endif  /* HAVE_GETOPT_LONG */
     char const *optstring;
 
+    sixel_tty_init_output_device(STDERR_FILENO);
     sixel_aborttrace_install_if_unhandled();
 
 #if HAVE_GETOPT_LONG

@@ -1130,6 +1130,9 @@ extern "C" {
 #endif
 
 SIXELAPI void
+sixel_tty_init_output_device(int fd);
+
+SIXELAPI void
 sixel_helper_set_additional_message(
     const char      /* in */  *message         /* error message */
 );

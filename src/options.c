@@ -265,7 +265,7 @@ sixel_option_report_ambiguous_prefix(
     if (active_candidates != NULL && active_candidates[0] != '\0') {
         written = snprintf(buffer,
                            buffer_size,
-                           "ambiguous prefix \"%s\" (matches: %s).",
+                           "ambiguous prefix \"%s\" (matches: \\fB%s\\fP).",
                            value,
                            active_candidates);
     } else {
