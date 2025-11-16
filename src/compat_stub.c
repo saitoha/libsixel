@@ -377,6 +377,40 @@ sixel_compat_getenv(const char *name)
 }
 
 
+SIXEL_COMPAT_API int
+sixel_compat_setenv(const char *name, const char *value)
+{
+#if defined(_WIN32)
+    errno_t status;
+
+    status = 0;
+    if (name == NULL || value == NULL) {
+        errno = EINVAL;
+        return (-1);
+    }
+
+    status = _putenv_s(name, value);
+    if (status != 0) {
+        errno = status;
+        return (-1);
+    }
+
+    return 0;
+#else
+    if (name == NULL || value == NULL) {
+        errno = EINVAL;
+        return (-1);
+    }
+
+    if (setenv(name, value, 1) != 0) {
+        return (-1);
+    }
+
+    return 0;
+#endif
+}
+
+
 SIXEL_COMPAT_API char *
 sixel_compat_strtok(char *string,
                     const char *delimiters,

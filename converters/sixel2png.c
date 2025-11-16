@@ -716,6 +716,8 @@ main(int argc, char *argv[])
         goto error;
     }
 
+    sixel_option_apply_cli_suggestion_defaults();
+
     for (;;) {
 
 #if HAVE_GETOPT_LONG

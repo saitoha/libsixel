@@ -162,6 +162,9 @@ SIXEL_COMPAT_API FILE *sixel_compat_fopen(const char *filename,
 
 SIXEL_COMPAT_API const char *sixel_compat_getenv(const char *name);
 
+SIXEL_COMPAT_API int sixel_compat_setenv(const char *name,
+                                         const char *value);
+
 SIXEL_COMPAT_API char *sixel_compat_strtok(char *string,
                                            const char *delimiters,
                                            char **context);

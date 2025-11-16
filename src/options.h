@@ -27,6 +27,15 @@
 #include <stddef.h>
 
 /*
+ * The CLI suggestion features can be driven by environment variables so
+ * library embedders retain control.  Each variable accepts "1" to enable
+ * the associated hint generator and "0" (or absence) to keep it quiet.
+ */
+#define SIXEL_OPTION_ENV_PREFIX_SUGGESTIONS "SIXEL_OPTION_PREFIX_SUGGESTIONS"
+#define SIXEL_OPTION_ENV_FUZZY_SUGGESTIONS  "SIXEL_OPTION_FUZZY_SUGGESTIONS"
+#define SIXEL_OPTION_ENV_PATH_SUGGESTIONS   "SIXEL_OPTION_PATH_SUGGESTIONS"
+
+/*
  * The choice descriptor couples the textual prefix with the integral
  * payload stored by the caller.  The helper functions only inspect the
  * `name` field when matching, returning the associated `value` on
@@ -72,6 +81,13 @@ void
 sixel_option_report_ambiguous_prefix(
     char const *value,
     char const *candidates,
+    char *buffer,
+    size_t buffer_size);
+
+void
+sixel_option_report_invalid_choice(
+    char const *base_message,
+    char const *suggestions,
     char *buffer,
     size_t buffer_size);
 
