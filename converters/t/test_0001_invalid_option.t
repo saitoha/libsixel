@@ -5,6 +5,94 @@ SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 # shellcheck source=converters/t/common.t
 source "${SCRIPT_DIR}/common.t"
 
+TRACE_INVALID_OPTION=${TRACE_INVALID_OPTION:-}
+# Optional tracing hook that records how long each img2sixel invocation takes
+# when TRACE_INVALID_OPTION is non-empty.  Windows runners pay a heavy process
+# startup cost, so tracking the number of sequential executions helps explain
+# why this test frequently exceeds the default 30-second Meson timeout.
+TRACE_CLOCK_IMPL=""
+INVALID_OPTION_INVOCATIONS=0
+INVALID_OPTION_TOTAL_MS=0
+
+timestamp_ms() {
+    case ${TRACE_CLOCK_IMPL} in
+        python3)
+            python3 - <<'EOF'
+import time
+print(int(time.time() * 1000))
+EOF
+            ;;
+        python)
+            python - <<'EOF'
+import time
+print(int(time.time() * 1000))
+EOF
+            ;;
+        perl)
+            perl -MTime::HiRes=time -e 'printf("%d\n", (int)(time() * 1000))'
+            ;;
+        *)
+            date +%s000
+            ;;
+    esac
+}
+
+format_milliseconds() {
+    local millis
+    local seconds
+    local fraction
+
+    millis=$1
+    seconds=$((millis / 1000))
+    fraction=$((millis % 1000))
+
+    printf '%d.%03d' "${seconds}" "${fraction}"
+}
+
+trace_invalid_option() {
+    local elapsed
+    local label
+
+    if [[ -z ${TRACE_INVALID_OPTION} ]]; then
+        return
+    fi
+
+    elapsed=$(format_milliseconds "$1")
+    label=$2
+
+    printf '[trace][invalid-option] %s (elapsed %ss)\n' \
+        "${label}" "${elapsed}" >&2
+}
+
+trace_summary() {
+    local total
+
+    if [[ -z ${TRACE_INVALID_OPTION} ]]; then
+        return
+    fi
+
+    total=$(format_milliseconds "${INVALID_OPTION_TOTAL_MS}")
+    printf '[trace][invalid-option] %u img2sixel invocations, %ss total\n' \
+        "${INVALID_OPTION_INVOCATIONS}" "${total}" >&2
+}
+
+if [[ -n ${TRACE_INVALID_OPTION} ]]; then
+    if command -v python3 >/dev/null 2>&1; then
+        TRACE_CLOCK_IMPL="python3"
+    elif command -v python >/dev/null 2>&1; then
+        TRACE_CLOCK_IMPL="python"
+    elif command -v perl >/dev/null 2>&1; then
+        TRACE_CLOCK_IMPL="perl"
+    else
+        echo "TRACE_INVALID_OPTION requires python or perl" >&2
+        TRACE_INVALID_OPTION=""
+    fi
+
+    if [[ -n ${TRACE_INVALID_OPTION} ]]; then
+        trap trace_summary EXIT
+    fi
+fi
+
 echo '[test1] invalid option handling'
 
 # Ensure an unreadable input file does not leave stray output.
@@ -29,8 +117,16 @@ rm -f "${TMP_DIR}/invalid_filename"
 
 expect_failure() {
     local output_file
+    local start_ms
+    local end_ms
+    local elapsed_ms
+    local label
 
     output_file="${TMP_DIR}/capture.$$"
+    label="img2sixel $*"
+    if [[ -n ${TRACE_INVALID_OPTION} ]]; then
+        start_ms=$(timestamp_ms)
+    fi
     # Windows builds may fall back to stdin when the input path is rejected.
     # Redirect /dev/null so native executables cannot block on console input
     # if they attempt to read from stdin after the path validation fails.
@@ -43,6 +139,14 @@ expect_failure() {
         exit 1
     fi
     rm -f "${output_file}"
+
+    if [[ -n ${TRACE_INVALID_OPTION} ]]; then
+        end_ms=$(timestamp_ms)
+        elapsed_ms=$((end_ms - start_ms))
+        INVALID_OPTION_INVOCATIONS=$((INVALID_OPTION_INVOCATIONS + 1))
+        INVALID_OPTION_TOTAL_MS=$((INVALID_OPTION_TOTAL_MS + elapsed_ms))
+        trace_invalid_option "${elapsed_ms}" "${label}"
+    fi
 }
 
 # Reject a missing input path.
