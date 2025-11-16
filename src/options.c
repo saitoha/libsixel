@@ -296,7 +296,7 @@ sixel_option_report_invalid_choice(
         buffer[0] = '\0';
         written = snprintf(buffer,
                            buffer_size,
-                           "%s Did you mean: %s?",
+                           "%s Did you mean: \\fW%s\\fP?",
                            base_message,
                            suggestions);
         if (written < 0) {
