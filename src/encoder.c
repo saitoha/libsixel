@@ -82,6 +82,9 @@
 #if HAVE_SYS_STAT_H
 # include <sys/stat.h>
 #endif  /* HAVE_SYS_STAT_H */
+#if !defined(S_ISDIR) && defined(S_IFMT) && defined(S_IFDIR)
+# define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+#endif  /* !S_ISDIR */
 #if HAVE_SYS_TIME_H
 # include <sys/time.h>
 #elif HAVE_TIME_H
