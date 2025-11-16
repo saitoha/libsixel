@@ -13,129 +13,70 @@ TRACE_INVALID_OPTION=${TRACE_INVALID_OPTION:-}
 TRACE_CLOCK_IMPL=""
 INVALID_OPTION_INVOCATIONS=0
 INVALID_OPTION_TOTAL_MS=0
-# The invalid option checks used to run strictly serially which amplified the
-# process start cost on Windows.  Allow a modest amount of concurrency so the
-# wall clock impact stays bounded even when each invocation spends over a
-# second in dynamic loader and antivirus overhead.
-INVALID_OPTION_MAX_PARALLEL=${INVALID_OPTION_MAX_PARALLEL:-6}
-INVALID_OPTION_JOB_PIDS=()
-INVALID_OPTION_JOB_LABELS=()
-INVALID_OPTION_JOB_OUTPUTS=()
-INVALID_OPTION_JOB_STARTS=()
+# Random hangs were reported on MSYS2 runners.  Guard each invocation with a
+# watchdog so the test suite can terminate promptly and report the exact
+# command that stalled instead of idling until the Meson timeout expires.
+INVALID_OPTION_TIMEOUT_SECS=${INVALID_OPTION_TIMEOUT_SECS:-20}
+# Windows CI occasionally stalls while bash waits for a native child PID
+# that already terminated.  Allow the watchdog to delegate process control to
+# python or perl so we can rely on their timeout primitives instead of bash's
+# background job tracking on MSYS2.  Fall back to the shell watchdog when
+# those interpreters are unavailable.
+INVALID_OPTION_WATCHDOG_IMPL=""
+IMG2SIXEL_CMD=()
 
-clamp_parallelism() {
-    # Keep the knob deterministic even if the environment supplies an
-    # unreasonable value.
-    if [[ -z ${INVALID_OPTION_MAX_PARALLEL} ]]; then
-        INVALID_OPTION_MAX_PARALLEL=1
+clamp_watchdog_timeout() {
+    if [[ -z ${INVALID_OPTION_TIMEOUT_SECS} ]]; then
+        INVALID_OPTION_TIMEOUT_SECS=20
         return
     fi
-    if [[ ! ${INVALID_OPTION_MAX_PARALLEL} =~ ^[0-9]+$ ]]; then
-        INVALID_OPTION_MAX_PARALLEL=1
+    if [[ ! ${INVALID_OPTION_TIMEOUT_SECS} =~ ^[0-9]+$ ]]; then
+        INVALID_OPTION_TIMEOUT_SECS=20
         return
     fi
-    if (( INVALID_OPTION_MAX_PARALLEL < 1 )); then
-        INVALID_OPTION_MAX_PARALLEL=1
+    if (( INVALID_OPTION_TIMEOUT_SECS < 1 )); then
+        INVALID_OPTION_TIMEOUT_SECS=1
     fi
 }
 
-drain_invalid_option_job() {
-    local pid
-    local label
-    local output_file
-    local start_ms
-    local end_ms
-    local elapsed_ms
-    local label_args
-
-    if (( ${#INVALID_OPTION_JOB_PIDS[@]} == 0 )); then
-        return
-    fi
-
-    pid=${INVALID_OPTION_JOB_PIDS[0]}
-    label=${INVALID_OPTION_JOB_LABELS[0]}
-    output_file=${INVALID_OPTION_JOB_OUTPUTS[0]}
-    start_ms=${INVALID_OPTION_JOB_STARTS[0]}
-
-    if (( ${#INVALID_OPTION_JOB_PIDS[@]} > 1 )); then
-        INVALID_OPTION_JOB_PIDS=("${INVALID_OPTION_JOB_PIDS[@]:1}")
-        INVALID_OPTION_JOB_LABELS=("${INVALID_OPTION_JOB_LABELS[@]:1}")
-        INVALID_OPTION_JOB_OUTPUTS=("${INVALID_OPTION_JOB_OUTPUTS[@]:1}")
-        INVALID_OPTION_JOB_STARTS=("${INVALID_OPTION_JOB_STARTS[@]:1}")
-    else
-        INVALID_OPTION_JOB_PIDS=()
-        INVALID_OPTION_JOB_LABELS=()
-        INVALID_OPTION_JOB_OUTPUTS=()
-        INVALID_OPTION_JOB_STARTS=()
-    fi
-
-    wait "${pid}" || true
-    if [[ -s ${output_file} ]]; then
-        label_args=${label#img2sixel }
-        printf 'img2sixel unexpectedly produced output: %s\n' \
-            "${label_args}" >&2
-        rm -f "${output_file}"
-        exit 1
-    fi
-    rm -f "${output_file}"
-
-    if [[ -n ${TRACE_INVALID_OPTION} && ${start_ms} -ne 0 ]]; then
-        end_ms=$(timestamp_ms)
-        elapsed_ms=$((end_ms - start_ms))
-        INVALID_OPTION_INVOCATIONS=$((INVALID_OPTION_INVOCATIONS + 1))
-        INVALID_OPTION_TOTAL_MS=$((INVALID_OPTION_TOTAL_MS + elapsed_ms))
-        trace_invalid_option "${elapsed_ms}" "${label}"
-    fi
-}
-
-maybe_wait_for_invalid_option_slot() {
-    while (( ${#INVALID_OPTION_JOB_PIDS[@]} >= INVALID_OPTION_MAX_PARALLEL )); do
-        drain_invalid_option_job
-    done
-}
-
-wait_for_invalid_option_jobs() {
-    while (( ${#INVALID_OPTION_JOB_PIDS[@]} > 0 )); do
-        drain_invalid_option_job
-    done
-}
-
-cleanup_invalid_option_jobs() {
-    local idx
-    local pid
-    local output_file
-
-    for idx in "${!INVALID_OPTION_JOB_PIDS[@]}"; do
-        pid=${INVALID_OPTION_JOB_PIDS[${idx}]}
-        output_file=${INVALID_OPTION_JOB_OUTPUTS[${idx}]}
-        if [[ -n ${pid} ]] && kill -0 "${pid}" 2>/dev/null; then
-            kill "${pid}" 2>/dev/null || true
-        fi
-        if [[ -n ${output_file} ]]; then
-            rm -f "${output_file}"
-        fi
-    done
-    INVALID_OPTION_JOB_PIDS=()
-    INVALID_OPTION_JOB_LABELS=()
-    INVALID_OPTION_JOB_OUTPUTS=()
-    INVALID_OPTION_JOB_STARTS=()
-}
-
-invalid_option_exit_trap() {
+invalid_option_trace_exit() {
     local exit_status
 
     exit_status=$?
     trap - EXIT
-    wait_for_invalid_option_jobs
     if [[ -n ${TRACE_INVALID_OPTION} ]]; then
         trace_summary
     fi
-    cleanup_invalid_option_jobs
     exit "${exit_status}"
 }
 
-clamp_parallelism
-trap invalid_option_exit_trap EXIT
+clamp_watchdog_timeout
+if [[ -n ${TRACE_INVALID_OPTION} ]]; then
+    trap invalid_option_trace_exit EXIT
+fi
+
+build_img2sixel_cmd() {
+    IMG2SIXEL_CMD=()
+    if [[ -n ${WINE} ]]; then
+        IMG2SIXEL_CMD+=("${WINE}")
+    fi
+    IMG2SIXEL_CMD+=("${IMG2SIXEL_PATH}")
+    IMG2SIXEL_CMD+=("$@")
+}
+
+log_watchdog_command() {
+    local arg
+
+    if [[ ${#IMG2SIXEL_CMD[@]} -eq 0 ]]; then
+        return
+    fi
+
+    printf '%s' "${IMG2SIXEL_CMD[0]}" >&2
+    for arg in "${IMG2SIXEL_CMD[@]:1}"; do
+        printf ' %s' "${arg}" >&2
+    done
+    printf '\n' >&2
+}
 
 timestamp_ms() {
     case ${TRACE_CLOCK_IMPL} in
@@ -199,6 +140,164 @@ trace_summary() {
         "${INVALID_OPTION_INVOCATIONS}" "${total}" >&2
 }
 
+select_watchdog_impl() {
+    if [[ -n ${INVALID_OPTION_WATCHDOG_IMPL} ]]; then
+        return
+    fi
+    if command -v python3 >/dev/null 2>&1; then
+        INVALID_OPTION_WATCHDOG_IMPL="python3"
+        return
+    fi
+    if command -v python >/dev/null 2>&1; then
+        INVALID_OPTION_WATCHDOG_IMPL="python"
+        return
+    fi
+    if command -v perl >/dev/null 2>&1; then
+        INVALID_OPTION_WATCHDOG_IMPL="perl"
+        return
+    fi
+    INVALID_OPTION_WATCHDOG_IMPL="shell"
+}
+
+run_with_watchdog() {
+    local timeout_secs
+    local label
+    local status
+    local impl
+    local pid
+    local watchdog_pid
+    local watchdog_status
+
+    timeout_secs=$1
+    label=$2
+    shift 2
+
+    select_watchdog_impl
+    impl=${INVALID_OPTION_WATCHDOG_IMPL}
+    status=0
+
+    case ${impl} in
+        python3|python)
+            "${impl}" - "$timeout_secs" "$label" "$@" <<'PYCODE'
+import subprocess
+import sys
+
+timeout = int(sys.argv[1])
+label = sys.argv[2]
+cmd = sys.argv[3:]
+
+if not cmd:
+    sys.stderr.write('[watchdog][invalid-option] missing command\n')
+    sys.exit(1)
+
+try:
+    proc = subprocess.Popen(cmd)
+except OSError as exc:
+    sys.stderr.write('[watchdog][invalid-option] failed to launch %s: %s\n'
+                     % (label, exc))
+    sys.exit(127)
+
+try:
+    proc.wait(timeout=timeout)
+except subprocess.TimeoutExpired:
+    sys.stderr.write('[watchdog][invalid-option] %s stalled for %us; '
+                     'terminating\n' % (label, timeout))
+    proc.kill()
+    try:
+        proc.wait(timeout=5)
+    except subprocess.TimeoutExpired:
+        pass
+    sys.exit(124)
+
+sys.exit(proc.returncode)
+PYCODE
+            status=$?
+            ;;
+        perl)
+            perl - "$timeout_secs" "$label" "$@" <<'PLCODE'
+use strict;
+use warnings;
+use POSIX qw(:sys_wait_h EINTR);
+
+my $timeout = shift @ARGV;
+my $label = shift @ARGV;
+if (!@ARGV) {
+    print STDERR "[watchdog][invalid-option] missing command\n";
+    exit 1;
+}
+
+my $pid = fork();
+if (!defined $pid) {
+    print STDERR "[watchdog][invalid-option] failed to fork $label\n";
+    exit 127;
+}
+
+if ($pid == 0) {
+    exec @ARGV or do {
+        print STDERR "[watchdog][invalid-option] exec failed $label: $!\n";
+        exit 127;
+    };
+}
+
+local $SIG{ALRM} = sub {
+    print STDERR "[watchdog][invalid-option] $label stalled for ${timeout}s; terminating\n";
+    kill 'TERM', $pid;
+    exit 124;
+};
+
+while (1) {
+    alarm $timeout;
+    my $wait = waitpid($pid, 0);
+    my $status = $?;
+    alarm 0;
+    if ($wait == -1) {
+        next if $! == EINTR;
+        print STDERR "[watchdog][invalid-option] waitpid failed for $label: $!\n";
+        exit 1;
+    }
+    if ($wait == $pid) {
+        exit($status >> 8);
+    }
+}
+PLCODE
+            status=$?
+            ;;
+        *)
+            "$@" &
+            pid=$!
+            (
+                sleep "${timeout_secs}"
+                if kill -0 "${pid}" 2>/dev/null; then
+                    printf '[watchdog][invalid-option] %s stalled for %us; terminating\n' \
+                        "${label}" "${timeout_secs}" >&2
+                    kill "${pid}" 2>/dev/null || true
+                    exit 124
+                fi
+                exit 0
+            ) &
+            watchdog_pid=$!
+
+            if ! wait "${pid}"; then
+                status=$?
+            fi
+
+            watchdog_status=0
+            if kill -0 "${watchdog_pid}" 2>/dev/null; then
+                kill "${watchdog_pid}" 2>/dev/null || true
+            fi
+            if ! wait "${watchdog_pid}"; then
+                watchdog_status=$?
+            fi
+
+            if (( watchdog_status == 124 )); then
+                status=124
+            fi
+            ;;
+    esac
+
+    return "${status}"
+}
+
 if [[ -n ${TRACE_INVALID_OPTION} ]]; then
     if command -v python3 >/dev/null 2>&1; then
         TRACE_CLOCK_IMPL="python3"
@@ -221,7 +320,9 @@ touch "${invalid_file}"
 chmod a-r "${invalid_file}"
 # Expect img2sixel to fail cleanly when the source is unreadable.
 output_file="${TMP_DIR}/capture.$$"
-if run_img2sixel "${invalid_file}" </dev/null >"${output_file}" 2>/dev/null; then
+build_img2sixel_cmd "${invalid_file}"
+log_watchdog_command
+if "${IMG2SIXEL_CMD[@]}" </dev/null >"${output_file}" 2>/dev/null; then
     :
 fi
 if [[ -s ${output_file} ]]; then
@@ -237,26 +338,54 @@ rm -f "${TMP_DIR}/invalid_filename"
 expect_failure() {
     local output_file
     local start_ms
+    local end_ms
+    local elapsed_ms
     local label
-    local pid
+    local status
+    local label_args
 
     output_file=$(mktemp "${TMP_DIR}/capture.invalid.XXXXXX")
     label="img2sixel $*"
+    build_img2sixel_cmd "$@"
+    log_watchdog_command
     if [[ -n ${TRACE_INVALID_OPTION} ]]; then
         start_ms=$(timestamp_ms)
     else
         start_ms=0
     fi
+    status=0
     # Windows builds may fall back to stdin when the input path is rejected.
     # Redirect /dev/null so native executables cannot block on console input
     # if they attempt to read from stdin after the path validation fails.
-    run_img2sixel "$@" </dev/null >"${output_file}" 2>/dev/null &
-    pid=$!
-    INVALID_OPTION_JOB_PIDS+=("${pid}")
-    INVALID_OPTION_JOB_LABELS+=("${label}")
-    INVALID_OPTION_JOB_OUTPUTS+=("${output_file}")
-    INVALID_OPTION_JOB_STARTS+=("${start_ms}")
-    maybe_wait_for_invalid_option_slot
+    if ! run_with_watchdog \
+        "${INVALID_OPTION_TIMEOUT_SECS}" \
+        "${label}" \
+        "${IMG2SIXEL_CMD[@]}" </dev/null >"${output_file}" 2>/dev/null; then
+        status=$?
+    fi
+    if (( status == 124 )); then
+        label_args=${label#img2sixel }
+        printf 'img2sixel watchdog aborted after %us: %s\n' \
+            "${INVALID_OPTION_TIMEOUT_SECS}" "${label_args}" >&2
+        rm -f "${output_file}"
+        exit 1
+    fi
+    if [[ -s ${output_file} ]]; then
+        label_args=${label#img2sixel }
+        printf 'img2sixel unexpectedly produced output: %s\n' \
+            "${label_args}" >&2
+        rm -f "${output_file}"
+        exit 1
+    fi
+    rm -f "${output_file}"
+
+    if [[ -n ${TRACE_INVALID_OPTION} && ${start_ms} -ne 0 ]]; then
+        end_ms=$(timestamp_ms)
+        elapsed_ms=$((end_ms - start_ms))
+        INVALID_OPTION_INVOCATIONS=$((INVALID_OPTION_INVOCATIONS + 1))
+        INVALID_OPTION_TOTAL_MS=$((INVALID_OPTION_TOTAL_MS + elapsed_ms))
+        trace_invalid_option "${elapsed_ms}" "${label}"
+    fi
 }
 
 # Reject a missing input path.
@@ -311,5 +440,3 @@ expect_failure -I -p8 "${TOP_SRCDIR}/images/snake.png"
 expect_failure -p64 -bxterm256 "${TOP_SRCDIR}/images/snake.png"
 # Reject 8-bit output when palette dump is requested.
 expect_failure -8 -P "${TOP_SRCDIR}/images/snake.png"
-
-wait_for_invalid_option_jobs

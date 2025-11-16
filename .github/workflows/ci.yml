@@ -758,7 +758,7 @@ jobs:
         cd "$distdir"
         meson setup build --wrap-mode=nodownload ${{ matrix.setup_flags }}
         meson compile -C build
-        meson test -C build
+        meson test -C build || { cat build/meson-logs/testlog.txt || true; exit 1; }
 
     - name: Build from Meson dist archive (Windows)
       if: runner.os == 'Windows'
@@ -772,7 +772,7 @@ jobs:
         cd "$distdir"
         meson setup build ${{ matrix.setup_flags }}
         meson compile -C build
-        meson test -C build
+        meson test -C build || { cat build/meson-logs/testlog.txt || true; exit 1; }
 
   ci-meson:
     name: Meson • ${{ matrix.os }} ${{ matrix.sys || 'native' }}
@@ -925,7 +925,7 @@ jobs:
             -Dpython=disabled \
             -Dtests=true
         meson compile -C builddir
-        meson test -C builddir
+        meson test -C builddir || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
 
     - name: Configure, build, and test (Meson, Windows, not MSVC/Cygwin)
       if: ${{ runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' }}
@@ -942,7 +942,7 @@ jobs:
             -Dpython=disabled \
             -Dtests=true
         meson compile -C builddir
-        meson test -C builddir
+        meson test -C builddir || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
 
     - name: Configure, build, and test (Meson, Windows, Cygwin)
       if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
@@ -958,7 +958,7 @@ jobs:
           "cd `"$workspace`"",
           'meson setup builddir --wrap-mode=nodownload --default-library static -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir= -Dzshcompletiondir= -Dpython=disabled -Dtests=true',
           'meson compile -C builddir',
-          'meson test -C builddir -v'
+          'meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }'
         )
         $script = [string]::Join("`n", $scriptLines)
         &"$cygwinRoot\bin\bash.exe" --login -c $script
@@ -985,7 +985,10 @@ jobs:
         python -m mesonbuild.mesonmain compile -C builddir
         if errorlevel 1 exit /b !errorlevel!
         python -m mesonbuild.mesonmain test -C builddir -v
-        if errorlevel 1 exit /b !errorlevel!
+        if errorlevel 1 (
+            if exist builddir\meson-logs\testlog.txt type builddir\meson-logs\testlog.txt
+            exit /b !errorlevel!
+        )
         endlocal
 
 # emacs Local Variables:
