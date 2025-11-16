@@ -29,6 +29,23 @@ But nowdays, with high-speed CPU and broadband network, we got the chance broade
   ![Animation](https://raw.githubusercontent.com/saitoha/libsixel/data/data/sixel.gif)
 
 
+## Environment variables
+
+The encoder and decoder honour a few environment toggles that control the
+diagnostics printed for mistyped arguments and missing files.  Library
+embedders start with all suggestion streams disabled, while the standalone
+converters enable them unless the caller already defined an explicit
+preference.
+
+* `SIXEL_OPTION_PREFIX_SUGGESTIONS` — enable or suppress the list of
+  acceptable prefixes when the user enters a value that matches multiple
+  options.
+* `SIXEL_OPTION_FUZZY_SUGGESTIONS` — enable or suppress the normalized
+  Levenshtein based hints that recommend the closest option names.
+* `SIXEL_OPTION_PATH_SUGGESTIONS` — enable or suppress the filesystem
+  suggestions that explain why a path could not be resolved.
+
+
 ## Related projects
 
 ### Video streaming

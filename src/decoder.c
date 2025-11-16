@@ -1598,8 +1598,11 @@ sixel_decoder_setopt(
                         match_message,
                         sizeof(match_message));
                 } else {
-                    sixel_helper_set_additional_message(
-                        "unsupported dequantize method.");
+                    sixel_option_report_invalid_choice(
+                        "unsupported dequantize method.",
+                        match_detail,
+                        match_message,
+                        sizeof(match_message));
                 }
                 status = SIXEL_BAD_ARGUMENT;
                 goto end;

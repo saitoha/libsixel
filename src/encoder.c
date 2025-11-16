@@ -4921,8 +4921,11 @@ sixel_encoder_setopt(
                                               match_message,
                                               sizeof(match_message));
             } else {
-                sixel_helper_set_additional_message(
-                    "cannot parse builtin palette option.");
+                sixel_option_report_invalid_choice(
+                    "cannot parse builtin palette option.",
+                    match_detail,
+                    match_message,
+                    sizeof(match_message));
             }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
@@ -4947,8 +4950,11 @@ sixel_encoder_setopt(
                                               match_message,
                                               sizeof(match_message));
             } else {
-                sixel_helper_set_additional_message(
-                    "specified diffusion method is not supported.");
+                sixel_option_report_invalid_choice(
+                    "specified diffusion method is not supported.",
+                    match_detail,
+                    match_message,
+                    sizeof(match_message));
             }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
@@ -4972,8 +4978,11 @@ sixel_encoder_setopt(
                                               match_message,
                                               sizeof(match_message));
             } else {
-                sixel_helper_set_additional_message(
-                    "specified diffusion scan is not supported.");
+                sixel_option_report_invalid_choice(
+                    "specified diffusion scan is not supported.",
+                    match_detail,
+                    match_message,
+                    sizeof(match_message));
             }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
@@ -4997,8 +5006,11 @@ sixel_encoder_setopt(
                                               match_message,
                                               sizeof(match_message));
             } else {
-                sixel_helper_set_additional_message(
-                    "specified diffusion carry mode is not supported.");
+                sixel_option_report_invalid_choice(
+                    "specified diffusion carry mode is not supported.",
+                    match_detail,
+                    match_message,
+                    sizeof(match_message));
             }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
@@ -5023,8 +5035,11 @@ sixel_encoder_setopt(
                                                   match_message,
                                                   sizeof(match_message));
                 } else {
-                    sixel_helper_set_additional_message(
-                        "specified finding method is not supported.");
+                    sixel_option_report_invalid_choice(
+                        "specified finding method is not supported.",
+                        match_detail,
+                        match_message,
+                        sizeof(match_message));
                 }
                 status = SIXEL_BAD_ARGUMENT;
                 goto end;
@@ -5049,8 +5064,11 @@ sixel_encoder_setopt(
                                               match_message,
                                               sizeof(match_message));
             } else {
-                sixel_helper_set_additional_message(
-                    "specified finding method is not supported.");
+                sixel_option_report_invalid_choice(
+                    "specified finding method is not supported.",
+                    match_detail,
+                    match_message,
+                    sizeof(match_message));
             }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
@@ -5074,8 +5092,11 @@ sixel_encoder_setopt(
                                               match_message,
                                               sizeof(match_message));
             } else {
-                sixel_helper_set_additional_message(
-                    "sixel_encoder_setopt: unsupported quantize model.");
+                sixel_option_report_invalid_choice(
+                    "sixel_encoder_setopt: unsupported quantize model.",
+                    match_detail,
+                    match_message,
+                    sizeof(match_message));
             }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
@@ -5099,8 +5120,11 @@ sixel_encoder_setopt(
                                               match_message,
                                               sizeof(match_message));
             } else {
-                sixel_helper_set_additional_message(
-                    "specified final merge policy is not supported.");
+                sixel_option_report_invalid_choice(
+                    "specified final merge policy is not supported.",
+                    match_detail,
+                    match_message,
+                    sizeof(match_message));
             }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
@@ -5247,8 +5271,11 @@ sixel_encoder_setopt(
                                               match_message,
                                               sizeof(match_message));
             } else {
-                sixel_helper_set_additional_message(
-                    "specified desampling method is not supported.");
+                sixel_option_report_invalid_choice(
+                    "specified desampling method is not supported.",
+                    match_detail,
+                    match_message,
+                    sizeof(match_message));
             }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
@@ -5272,8 +5299,11 @@ sixel_encoder_setopt(
                                               match_message,
                                               sizeof(match_message));
             } else {
-                sixel_helper_set_additional_message(
-                    "cannot parse quality option.");
+                sixel_option_report_invalid_choice(
+                    "cannot parse quality option.",
+                    match_detail,
+                    match_message,
+                    sizeof(match_message));
             }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
@@ -5297,8 +5327,11 @@ sixel_encoder_setopt(
                                               match_message,
                                               sizeof(match_message));
             } else {
-                sixel_helper_set_additional_message(
-                    "cannot parse loop-control option.");
+                sixel_option_report_invalid_choice(
+                    "cannot parse loop-control option.",
+                    match_detail,
+                    match_message,
+                    sizeof(match_message));
             }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
@@ -5322,8 +5355,11 @@ sixel_encoder_setopt(
                                               match_message,
                                               sizeof(match_message));
             } else {
-                sixel_helper_set_additional_message(
-                    "cannot parse palette type option.");
+                sixel_option_report_invalid_choice(
+                    "cannot parse palette type option.",
+                    match_detail,
+                    match_message,
+                    sizeof(match_message));
             }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
@@ -5593,8 +5629,11 @@ sixel_encoder_setopt(
                                               match_message,
                                               sizeof(match_message));
             } else {
-                sixel_helper_set_additional_message(
-                    "cannot parse encode policy option.");
+                sixel_option_report_invalid_choice(
+                    "cannot parse encode policy option.",
+                    match_detail,
+                    match_message,
+                    sizeof(match_message));
             }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
@@ -5618,8 +5657,11 @@ sixel_encoder_setopt(
                                               match_message,
                                               sizeof(match_message));
             } else {
-                sixel_helper_set_additional_message(
-                    "cannot parse lut policy option.");
+                sixel_option_report_invalid_choice(
+                    "cannot parse lut policy option.",
+                    match_detail,
+                    match_message,
+                    sizeof(match_message));
             }
             status = SIXEL_BAD_ARGUMENT;
             goto end;
@@ -5666,8 +5708,11 @@ sixel_encoder_setopt(
                         match_message,
                         sizeof(match_message));
                 } else {
-                    sixel_helper_set_additional_message(
-                        "unsupported working colorspace specified.");
+                    sixel_option_report_invalid_choice(
+                        "unsupported working colorspace specified.",
+                        match_detail,
+                        match_message,
+                        sizeof(match_message));
                 }
                 status = SIXEL_BAD_ARGUMENT;
                 goto end;
@@ -5711,8 +5756,11 @@ sixel_encoder_setopt(
                         match_message,
                         sizeof(match_message));
                 } else {
-                    sixel_helper_set_additional_message(
-                        "unsupported output colorspace specified.");
+                    sixel_option_report_invalid_choice(
+                        "unsupported output colorspace specified.",
+                        match_detail,
+                        match_message,
+                        sizeof(match_message));
                 }
                 status = SIXEL_BAD_ARGUMENT;
                 goto end;
