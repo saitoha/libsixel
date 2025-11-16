@@ -127,6 +127,14 @@ if img2sixel_opt.enabled()
     ]
 
     tests_dir = join_paths(meson.source_root(), 'converters', 't')
+    # The invalid option suite spawns img2sixel dozens of times to probe
+    # argument validation corner cases.  MSYS2 UCRT64 CI jobs frequently
+    # exceed Meson's default 30 second timeout, so grant the script a
+    # larger budget while keeping the remaining tests at the standard
+    # limit.
+    slow_test_timeouts = {
+      'test_0001_invalid_option.t': 120,
+    }
     order = 0
     foreach script : test_scripts
       deps = []
@@ -134,12 +142,14 @@ if img2sixel_opt.enabled()
       if script == 'test_0011_basic.t'
         deps += sixel2png_deps
       endif
+      timeout_value = slow_test_timeouts.get(script, 30)
       test(script, bash,
         args: ['-xv', join_paths(tests_dir, script)],
         env: env,
         depends: deps,
         is_parallel: false,
-        priority: -order)
+        priority: -order,
+        timeout: timeout_value)
       order += 1
     endforeach
   endif
