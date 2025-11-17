@@ -65,10 +65,13 @@ struct sixel_palette {
     sixel_allocator_t *allocator;   /* allocator associated with palette */
     unsigned char *entries;         /* palette entries, RGB triplets */
     size_t entries_size;            /* allocated length for entries */
+    float *entries_float32;         /* optional RGBFLOAT32 entries */
+    size_t entries_float32_size;    /* allocated length for float entries */
     unsigned int entry_count;       /* number of active palette entries */
     unsigned int requested_colors;  /* requested palette size */
     unsigned int original_colors;   /* original color count before quant */
     int depth;                      /* sample depth for generated palette */
+    int float_depth;                /* bytes per float entry, when present */
     int method_for_largest;         /* histogram split heuristic */
     int method_for_rep;             /* representative color selector */
     int quality_mode;               /* histogram sampling quality */
@@ -104,6 +107,7 @@ sixel_palette_make_palette(unsigned char **result,
                            int use_reversible,
                            int quantize_model,
                            int final_merge_mode,
+                           int prefer_rgbfloat32,
                            sixel_allocator_t *allocator);
 
 void
@@ -113,6 +117,12 @@ sixel_palette_free_palette(unsigned char *data,
 #if HAVE_TESTS
 SIXELAPI int
 sixel_palette_tests_main(void);
+void
+sixel_palette_tests_reset_last_engine(void);
+int
+sixel_palette_tests_last_engine_requires_float32(void);
+int
+sixel_palette_tests_last_engine_model(void);
 #endif
 
 #ifdef __cplusplus

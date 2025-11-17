@@ -52,7 +52,6 @@
 
 #include "decoder.h"
 #include "clipboard.h"
-#include "frame.h"
 #include "compat_stub.h"
 #include "options.h"
 

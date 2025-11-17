@@ -205,7 +205,7 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/quicklook-extension/Resources/Thumbnail-Info.plist.in \
 	$(top_srcdir)/ruby/lib/libsixel/version_runtime.rb.in AUTHORS \
 	ChangeLog NEWS README.md ar-lib compile config.guess \
-	config.sub depcomp install-sh ltmain.sh missing py-compile
+	config.sub install-sh ltmain.sh missing py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)

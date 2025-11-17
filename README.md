@@ -393,6 +393,23 @@ Options:
 -  Choice-valued arguments accept unique prefixes.  For example,
    `-s ave` resolves to `average`, but `-s a` is rejected because it
    matches both `auto` and `average`.
+-= COUNT, --threads=COUNT|auto
+                          choose the encoder thread count. `auto`
+                          matches the hardware thread count while
+                          integers >=1 keep deterministic output
+                          ordering.
+-., --precision=MODE
+                          control quantization precision.
+                            auto    -> honor the
+                                        `SIXEL_FLOAT32_DITHER`
+                                        environment (default).
+                            8bit    -> force the historical integer
+                                        pipeline regardless of the
+                                        environment.
+                            float32 -> request the experimental
+                                        high-precision path even when
+                                        the environment keeps the
+                                        legacy setting.
 -o, --outfile              specify output file name.
                            (default:stdout)
                            Use a name ending in ".png", the literal
@@ -701,6 +718,36 @@ SIXEL_LOADER_PRIORITY_LIST override default loader search order.
                            Accepts the same comma separated
                            names as the -j/--loaders option and
                            is ignored when that option is set.
+SIXEL_FLOAT32_DITHER       opt into the experimental RGBFLOAT32
+                           quantizer backend.  Set to `0`,
+                           `off`, `false`, or `no` to keep the
+                           legacy 8bit pipeline.  Leaving the
+                           variable empty (for example running
+                           `SIXEL_FLOAT32_DITHER=`) also keeps the
+                           legacy implementation.  Any other
+                           non-empty value (for example `1`,
+                           `on`, `yes`, `auto`, or `kmeans`)
+                           requests the float32 path when it is
+                           available.  The float32 route currently
+                           enables dedicated k-means and Heckbert
+                           solvers, forces the LUT policy to `none`,
+                           and keeps the generated palette in a
+                           float32 buffer so callers can fetch
+                           normalized entries via the new copy
+                           helpers.
+                           The variable is ignored unless
+                           float32 support is compiled in.
+                           When the flag is enabled libsixel
+                           promotes the RGB888 buffers gathered
+                           after `sixel_dither_new()` to
+                           RGBFLOAT32 before palette generation.
+                           Allocation failures automatically fall
+                           back to the legacy route so existing
+                           workflows continue to succeed.
+                           The img2sixel options `-. float32` and
+                           `--precision=float32` set the variable for
+                           the current process so callers do not need
+                           to export it manually.
 
 ```
 
@@ -968,10 +1015,16 @@ SIXELAPI int
 sixel_dither_get_num_of_histogram_colors(
     sixel_dither_t /* in */ *dither);  /* dither context object */
 
-/* get palette */
-SIXELAPI unsigned char *
+/* get palette (deprecated, use sixel_dither_get_quantized_palette) */
+SIXELAPI @attr_func_deprecated@ unsigned char *
 sixel_dither_get_palette(
     sixel_dither_t /* in */ *dither);  /* dither context object */
+
+/* obtain palette object with an incremented refcount */
+SIXELAPI SIXELSTATUS
+sixel_dither_get_quantized_palette(
+    sixel_dither_t  /* in */ *dither,
+    sixel_palette_t /* out */ **pppalette);
 
 /* set palette */
 SIXELAPI void
@@ -1005,6 +1058,44 @@ SIXELAPI void
 sixel_dither_set_transparent(
     sixel_dither_t /* in */ *dither,      /* dither context object */
     int            /* in */ transparent); /* transparent color index */
+```
+
+#### Palette duplication helpers
+
+The palette API intentionally keeps its internal buffers private so that
+applications cannot accidentally write into the quantized colors owned by the
+`sixel_dither_t`.  Callers should:
+
+1. Fetch the `sixel_palette_t` handle via `sixel_dither_get_quantized_palette`.
+2. Duplicate the palette with `sixel_palette_copy_entries_8bit` (RGB888) or
+   `sixel_palette_copy_entries_float32` (RGBFLOAT32).
+3. Free the returned buffer through the allocator they passed into the copy
+   helper (usually the dither's allocator).
+
+When the float32 copy exists, the encoder now keeps it alongside the legacy
+RGB888 buffer and passes the float data straight into the SIXEL palette
+definitions.  This skips an extra byte quantization step at the very end of the
+pipeline so `SIXEL_FLOAT32_DITHER=1` callers can preserve the k-means/Heckbert
+precision all the way to the DECGCI commands.
+
+```C
+/* duplicate palette entries as RGB888 */
+SIXELAPI SIXELSTATUS
+sixel_palette_copy_entries_8bit(
+    sixel_palette_t         /* in */ *palette,    /* palette object */
+    unsigned char          /* out */ **ppentries, /* destination buffer */
+    size_t                 /* out */ *count,      /* number of entries */
+    int                    /* in */ pixelformat,  /* requested format */
+    sixel_allocator_t      /* in */ *allocator);  /* allocator for copy */
+
+/* duplicate palette entries as RGBFLOAT32 */
+SIXELAPI SIXELSTATUS
+sixel_palette_copy_entries_float32(
+    sixel_palette_t         /* in */ *palette,    /* palette object */
+    float                  /* out */ **ppentries, /* destination buffer */
+    size_t                 /* out */ *count,      /* number of entries */
+    int                    /* in */ pixelformat,  /* requested format */
+    sixel_allocator_t      /* in */ *allocator);  /* allocator for copy */
 ```
 
 #### Output context

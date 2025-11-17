@@ -7,6 +7,7 @@ _img2sixel()
     local opt_show opt_install opt_uninstall
     local opt_short_show opt_short_install opt_short_uninstall
     local opt_threads opt_short_threads
+    local opt_precision opt_short_precision
 
     COMPREPLY=()
 
@@ -43,6 +44,8 @@ _img2sixel()
     opt_short_uninstall="-3"
     opt_threads="--threads"
     opt_short_threads="-="
+    opt_precision="--precision"
+    opt_short_precision="-."
 
     if declare -F _init_completion >/dev/null 2>&1; then
         _init_completion -n '=' || return
@@ -88,6 +91,12 @@ _img2sixel()
     elif [[ $cur == ${opt_short_threads}=* ]]; then
         prev=${opt_short_threads}
         cur=${cur#*=}
+    elif [[ $cur == ${opt_precision}=* ]]; then
+        prev=${opt_precision}
+        cur=${cur#*=}
+    elif [[ $cur == ${opt_short_precision}=* ]]; then
+        prev=${opt_short_precision}
+        cur=${cur#*=}
     fi
 
     case "$prev" in
@@ -97,6 +106,10 @@ _img2sixel()
         ;;
     -=|--threads)
         COMPREPLY=( $( compgen -W 'auto' -- "$cur" ) )
+        return 0
+        ;;
+    -.|--precision)
+        COMPREPLY=( $( compgen -W 'auto 8bit float32' -- "$cur" ) )
         return 0
         ;;
     -p|--colors)
@@ -287,6 +300,7 @@ _img2sixel()
                                    -a --assessment \
                                    -J --assessment-file \
                                    -= --threads \
+                                   -. --precision \
                                    -7 --7bit-mode \
                                    -8 --8bit-mode \
                                    -R --gri-limit \

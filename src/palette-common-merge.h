@@ -32,7 +32,7 @@ sixel_resolve_final_merge_mode(int final_merge_mode);
 
 int
 sixel_palette_apply_merge(unsigned long *weights,
-                          unsigned long *sums,
+                          double *sums,
                           unsigned int depth,
                           int cluster_count,
                           int target,

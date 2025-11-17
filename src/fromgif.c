@@ -48,7 +48,6 @@
 # include <stdint.h>
 #endif  /* HAVE_STDINT_H */
 
-#include "frame.h"
 #include "fromgif.h"
 #include "compat_stub.h"
 
@@ -199,82 +198,108 @@ gif_init_frame(
     SIXELSTATUS status = SIXEL_OK;
     int i;
     int ncolors;
+    int frame_ncolors;
+    int frame_width;
+    int frame_height;
     size_t palette_size, frame_size;
+    sixel_allocator_t *allocator;
+    unsigned char *palette;
+    unsigned char *pixels;
 
-    frame->delay = pg->delay;
+    allocator = sixel_frame_get_allocator(frame);
+    palette = sixel_frame_get_palette(frame);
+    pixels = sixel_frame_get_pixels(frame);
+    frame_width = sixel_frame_get_width(frame);
+    frame_height = sixel_frame_get_height(frame);
+    frame_ncolors = sixel_frame_get_ncolors(frame);
+
+    sixel_frame_set_delay(frame, pg->delay);
     ncolors = 2 << (((pg->lflags & 0x80) ? pg->lflags : pg->flags) & 7);
     palette_size = (size_t)ncolors * 3;
-    if (frame->palette == NULL) {
-        frame->palette = (unsigned char *)sixel_allocator_malloc(frame->allocator, palette_size);
-    } else if (frame->ncolors < ncolors) {
-        sixel_allocator_free(frame->allocator, frame->palette);
-        frame->palette = (unsigned char *)sixel_allocator_malloc(frame->allocator, palette_size);
+    if (palette == NULL) {
+        palette = (unsigned char *)sixel_allocator_malloc(
+            allocator,
+            palette_size);
+        sixel_frame_set_palette(frame, palette);
+    } else if (frame_ncolors < ncolors) {
+        sixel_allocator_free(allocator, palette);
+        palette = (unsigned char *)sixel_allocator_malloc(
+            allocator,
+            palette_size);
+        sixel_frame_set_palette(frame, palette);
     }
-    if (frame->palette == NULL) {
+    if (palette == NULL) {
         sixel_helper_set_additional_message(
             "gif_init_frame: sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-    frame->ncolors = ncolors;
-    if (frame->ncolors <= reqcolors && fuse_palette) {
-        frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
-        sixel_allocator_free(frame->allocator, frame->pixels);
-        frame_size = (size_t)frame->width * (size_t)frame->height;
-        frame->pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, frame_size);
-        if (frame->pixels == NULL) {
+    sixel_frame_set_ncolors(frame, ncolors);
+    frame_ncolors = ncolors;
+    if (frame_ncolors <= reqcolors && fuse_palette) {
+        sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_PAL8);
+        sixel_allocator_free(allocator, pixels);
+        frame_size = (size_t)frame_width * (size_t)frame_height;
+        pixels = (unsigned char *)sixel_allocator_malloc(
+            allocator,
+            frame_size);
+        sixel_frame_set_pixels(frame, pixels);
+        if (pixels == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_allocator_malloc() failed in gif_init_frame().");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-        memcpy(frame->pixels, pg->out, frame_size);
+        memcpy(pixels, pg->out, frame_size);
 
-        for (i = 0; i < frame->ncolors; ++i) {
-            frame->palette[i * 3 + 0] = pg->color_table[i * 3 + 2];
-            frame->palette[i * 3 + 1] = pg->color_table[i * 3 + 1];
-            frame->palette[i * 3 + 2] = pg->color_table[i * 3 + 0];
+        for (i = 0; i < frame_ncolors; ++i) {
+            palette[i * 3 + 0] = pg->color_table[i * 3 + 2];
+            palette[i * 3 + 1] = pg->color_table[i * 3 + 1];
+            palette[i * 3 + 2] = pg->color_table[i * 3 + 0];
         }
         if (pg->lflags & 0x80) {
             if (pg->eflags & 0x01) {
                 if (bgcolor) {
-                    frame->palette[pg->transparent * 3 + 0] = bgcolor[0];
-                    frame->palette[pg->transparent * 3 + 1] = bgcolor[1];
-                    frame->palette[pg->transparent * 3 + 2] = bgcolor[2];
+                    palette[pg->transparent * 3 + 0] = bgcolor[0];
+                    palette[pg->transparent * 3 + 1] = bgcolor[1];
+                    palette[pg->transparent * 3 + 2] = bgcolor[2];
                 } else {
-                    frame->transparent = pg->transparent;
+                    sixel_frame_set_transparent(frame, pg->transparent);
                 }
             }
         } else if (pg->flags & 0x80) {
             if (pg->eflags & 0x01) {
                 if (bgcolor) {
-                    frame->palette[pg->transparent * 3 + 0] = bgcolor[0];
-                    frame->palette[pg->transparent * 3 + 1] = bgcolor[1];
-                    frame->palette[pg->transparent * 3 + 2] = bgcolor[2];
+                    palette[pg->transparent * 3 + 0] = bgcolor[0];
+                    palette[pg->transparent * 3 + 1] = bgcolor[1];
+                    palette[pg->transparent * 3 + 2] = bgcolor[2];
                 } else {
-                    frame->transparent = pg->transparent;
+                    sixel_frame_set_transparent(frame, pg->transparent);
                 }
             }
         }
     } else {
-        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_RGB888);
         /* TODO: Allocated memory should be reused */
-        sixel_allocator_free(frame->allocator, frame->pixels);
+        sixel_allocator_free(allocator, pixels);
         frame_size = (size_t)pg->w * (size_t)pg->h * 3;
-        frame->pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, frame_size);
-        if (frame->pixels == NULL) {
+        pixels = (unsigned char *)sixel_allocator_malloc(
+            allocator,
+            frame_size);
+        sixel_frame_set_pixels(frame, pixels);
+        if (pixels == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_allocator_malloc() failed in gif_init_frame().");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
         for (i = 0; i < pg->w * pg->h; ++i) {
-            frame->pixels[i * 3 + 0] = pg->color_table[pg->out[i] * 3 + 2];
-            frame->pixels[i * 3 + 1] = pg->color_table[pg->out[i] * 3 + 1];
-            frame->pixels[i * 3 + 2] = pg->color_table[pg->out[i] * 3 + 0];
+            pixels[i * 3 + 0] = pg->color_table[pg->out[i] * 3 + 2];
+            pixels[i * 3 + 1] = pg->color_table[pg->out[i] * 3 + 1];
+            pixels[i * 3 + 2] = pg->color_table[pg->out[i] * 3 + 0];
         }
     }
-    frame->multiframe = (pg->loop_count != (-1));
+    sixel_frame_set_multiframe(frame, (pg->loop_count != (-1)));
 
     status = SIXEL_OK;
 
@@ -775,11 +800,11 @@ load_gif(
     memset(g.prev_out, g.bgindex, pcount);
     memset(g.history, 0, pcount);
 
-    frame->loop_count = 0;
+    sixel_frame_set_loop_count(frame, 0);
 
     for (;;) { /* per loop */
 
-        frame->frame_no = 0;
+        sixel_frame_set_frame_no(frame, 0);
 
         s.img_buffer = s.img_buffer_original;
         status = gif_load_header(&s, &g);
@@ -824,8 +849,8 @@ load_gif(
                 break;
             }
 
-            frame->width = g.actual_width;
-            frame->height = g.actual_height;
+            sixel_frame_set_width(frame, g.actual_width);
+            sixel_frame_set_height(frame, g.actual_height);
             status = gif_init_frame(frame, &g, bgcolor, reqcolors, fuse_palette);
             if (status != SIXEL_OK) {
                 goto end;
@@ -839,28 +864,29 @@ load_gif(
             if (fstatic) {
                 goto end;
             }
-            ++frame->frame_no;
+            sixel_frame_increment_frame_no(frame);
         }
 
-        ++frame->loop_count;
+        sixel_frame_increment_loop_count(frame);
 
         if (g.loop_count < 0) {
             break;
         }
-        if (loop_control == SIXEL_LOOP_DISABLE || frame->frame_no == 1) {
+        if (loop_control == SIXEL_LOOP_DISABLE ||
+            sixel_frame_get_frame_no(frame) == 1) {
             break;
         }
         if (loop_control == SIXEL_LOOP_AUTO) {
-            if (frame->loop_count == g.loop_count) {
+            if (sixel_frame_get_loop_no(frame) == g.loop_count) {
                 break;
             }
         }
     }
 
 end:
-    sixel_allocator_free(frame->allocator, g.out);
-    sixel_allocator_free(frame->allocator, g.prev_out);
-    sixel_allocator_free(frame->allocator, g.history);
+    sixel_allocator_free(allocator, g.out);
+    sixel_allocator_free(allocator, g.prev_out);
+    sixel_allocator_free(allocator, g.history);
     sixel_frame_unref(frame);
 
     return status;

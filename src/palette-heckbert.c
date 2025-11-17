@@ -51,6 +51,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if HAVE_MATH_H
+# include <math.h>
+#endif
+
 #if HAVE_ASSERT
 # include <assert.h>
 #endif
@@ -60,6 +64,7 @@
 #include "lut.h"
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
+#include "palette-kmeans.h"
 #include "palette-heckbert.h"
 #include "palette.h"
 #include "status.h"
@@ -70,6 +75,10 @@
  */
 typedef unsigned long sample;
 typedef sample *tuple;
+
+enum {
+    sixel_palette_heckbert_max_channels = 4
+};
 
 struct tupleint {
     unsigned int value;
@@ -94,6 +103,50 @@ struct histogram_control {
     unsigned int channel_mask;
     int reversible_rounding;
 };
+
+/*
+ * Clamp a float32 channel in the 0.0-1.0 range and convert it into an 8-bit
+ * sample suitable for the existing histogram quantizer.  NaNs are treated as
+ * black so downstream processing never receives garbage values.
+ */
+static unsigned char
+sixel_palette_heckbert_float32_to_u8(float value)
+{
+#if HAVE_MATH_H
+    if (!isfinite(value)) {
+        value = 0.0f;
+    }
+#endif
+
+    if (value <= 0.0f) {
+        return 0U;
+    }
+    if (value >= 1.0f) {
+        return 255U;
+    }
+
+    return (unsigned char)(value * 255.0f + 0.5f);
+}
+
+/*
+ * Convert tuple samples into normalized float entries so the palette builder
+ * can preserve float32 precision when RGBFLOAT32 inputs reach the median-cut
+ * implementation.
+ */
+static float
+sixel_palette_heckbert_sample_to_float(sample value)
+{
+    sample clamped;
+    float normalized;
+
+    clamped = value;
+    if (clamped > 255UL) {
+        clamped = 255UL;
+    }
+    normalized = (float)clamped / 255.0f;
+
+    return normalized;
+}
 
 /*
  * Convert each histogram tuple component onto the reversible SIXEL tone grid.
@@ -371,7 +424,9 @@ histogram_pack_color(unsigned char const *data,
 static SIXELSTATUS
 sixel_lut_build_histogram(unsigned char const *data,
                           unsigned int length,
-                          unsigned long depth,
+                          unsigned int depth,
+                          unsigned int pixel_stride,
+                          int pixelformat,
                           int quality_mode,
                           int use_reversible,
                           int policy,
@@ -392,10 +447,14 @@ sixel_lut_build_histogram(unsigned char const *data,
     unsigned int reconstructed;
     struct histogram_control control;
     unsigned int depth_u;
-    unsigned char reversible_pixel[4];
+    unsigned char reversible_pixel[sixel_palette_heckbert_max_channels];
+    unsigned char quantized_pixel[sixel_palette_heckbert_max_channels];
     unsigned int i;
     unsigned int n;
     unsigned int plane;
+    unsigned int channel_stride;
+    int input_is_float32;
+    size_t pixels;
 
     status = SIXEL_FALSE;
     histogram = NULL;
@@ -405,6 +464,35 @@ sixel_lut_build_histogram(unsigned char const *data,
     }
     colorfreqtable->size = 0U;
     colorfreqtable->table = NULL;
+
+    if (depth == 0U || data == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (pixel_stride == 0U || pixel_stride % depth != 0U) {
+        sixel_helper_set_additional_message(
+            "sixel_lut_build_histogram: invalid pixel stride.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (depth > sixel_palette_heckbert_max_channels) {
+        sixel_helper_set_additional_message(
+            "sixel_lut_build_histogram: unsupported channel count.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    channel_stride = pixel_stride / depth;
+    input_is_float32 = (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32);
+    if (input_is_float32) {
+        if (channel_stride != sizeof(float)) {
+            sixel_helper_set_additional_message(
+                "sixel_lut_build_histogram: unexpected float stride.");
+            return SIXEL_BAD_ARGUMENT;
+        }
+    } else if (channel_stride != 1U) {
+        sixel_helper_set_additional_message(
+            "sixel_lut_build_histogram: only 8bit or "
+            "RGBFLOAT32 inputs are supported.");
+        return SIXEL_BAD_ARGUMENT;
+    }
 
     switch (quality_mode) {
     case SIXEL_QUALITY_LOW:
@@ -419,17 +507,21 @@ sixel_lut_build_histogram(unsigned char const *data,
         break;
     }
 
-    if (depth == 0U) {
-        return SIXEL_BAD_ARGUMENT;
+    pixels = 0U;
+    if (pixel_stride > 0U) {
+        pixels = length / pixel_stride;
     }
-    step = (unsigned int)(length / depth / max_sample * depth);
+    step = 0U;
+    if (pixels > 0U) {
+        step = (unsigned int)((pixels / max_sample) * pixel_stride);
+    }
     if (step == 0U) {
-        step = (unsigned int)depth;
+        step = pixel_stride;
     }
 
     sixel_debugf("making histogram...");
 
-    depth_u = (unsigned int)depth;
+    depth_u = depth;
     control = histogram_control_make_for_policy(depth_u, policy);
     if (use_reversible) {
         control.reversible_rounding = 1;
@@ -454,20 +546,33 @@ sixel_lut_build_histogram(unsigned char const *data,
         goto cleanup;
     }
 
-    for (i = 0U; i < length; i += step) {
+    for (i = 0U; i + pixel_stride <= length; i += step) {
+        unsigned char const *bucket_input;
+
+        bucket_input = NULL;
+        if (input_is_float32) {
+            float const *float_pixel;
+
+            float_pixel = (float const *)(void const *)(data + i);
+            for (plane = 0U; plane < depth_u; ++plane) {
+                quantized_pixel[plane]
+                    = sixel_palette_heckbert_float32_to_u8(
+                        float_pixel[plane]);
+            }
+            bucket_input = quantized_pixel;
+        } else {
+            bucket_input = data + i;
+        }
         if (use_reversible) {
             for (plane = 0U; plane < depth_u; ++plane) {
                 reversible_pixel[plane]
-                    = sixel_palette_reversible_value(data[i + plane]);
+                    = sixel_palette_reversible_value(bucket_input[plane]);
             }
-            bucket_index = histogram_pack_color(reversible_pixel,
-                                                depth_u,
-                                                &control);
-        } else {
-            bucket_index = histogram_pack_color(data + i,
-                                                depth_u,
-                                                &control);
+            bucket_input = reversible_pixel;
         }
+        bucket_index = histogram_pack_color(bucket_input,
+                                            depth_u,
+                                            &control);
         if (histogram[bucket_index] == 0U) {
             *ref++ = bucket_index;
         }
@@ -971,7 +1076,7 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                                   unsigned int depth,
                                   unsigned int cluster_count,
                                   unsigned long *cluster_weight,
-                                  unsigned long *cluster_sums,
+                                  double *cluster_sums,
                                   unsigned int iterations)
 {
     double *centers;
@@ -1022,7 +1127,7 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
         for (component = 0U; component < depth; ++component) {
             if (weight > 0UL) {
                 centers[offset + (size_t)component]
-                    = (double)cluster_sums[offset + (size_t)component]
+                    = cluster_sums[offset + (size_t)component]
                     / (double)weight;
             } else {
                 centers[offset + (size_t)component] = 0.0;
@@ -1038,7 +1143,7 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                 ++cluster_index) {
             offset = (size_t)cluster_index * (size_t)depth;
             for (component = 0U; component < depth; ++component) {
-                cluster_sums[offset + (size_t)component] = 0UL;
+            cluster_sums[offset + (size_t)component] = 0.0;
             }
         }
         for (entry_index = 0U; entry_index < colorfreqtable.size;
@@ -1077,7 +1182,7 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
             cluster_weight[best_cluster] += value;
             for (component = 0U; component < depth; ++component) {
                 cluster_sums[offset + (size_t)component]
-                    += (unsigned long)entry->tuple[component] * value;
+                    += (double)entry->tuple[component] * (double)value;
             }
         }
         for (cluster_index = 0U; cluster_index < cluster_count;
@@ -1089,7 +1194,7 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
             offset = (size_t)cluster_index * (size_t)depth;
             for (component = 0U; component < depth; ++component) {
                 centers[offset + (size_t)component]
-                    = (double)cluster_sums[offset + (size_t)component]
+                    = cluster_sums[offset + (size_t)component]
                     / (double)weight;
             }
         }
@@ -1107,8 +1212,7 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
                 if (channel > 255.0) {
                     channel = 255.0;
                 }
-                cluster_sums[offset + (size_t)component]
-                    = (unsigned long)(channel + 0.5);
+                cluster_sums[offset + (size_t)component] = channel;
             }
             cluster_weight[cluster_index] = 1UL;
         }
@@ -1118,7 +1222,7 @@ sixel_final_merge_lloyd_histogram(tupletable2 const colorfreqtable,
 
 static SIXELSTATUS
 sixel_palette_clusters_to_colormap(unsigned long *weights,
-                                   unsigned long *sums,
+                                   double *sums,
                                    unsigned int depth,
                                    unsigned int cluster_count,
                                    int use_reversible,
@@ -1150,7 +1254,7 @@ sixel_palette_clusters_to_colormap(unsigned long *weights,
                                  ? UINT_MAX
                                  : weight);
         for (plane = 0U; plane < depth; ++plane) {
-            component = (double)sums[(size_t)index * (size_t)depth + plane];
+            component = sums[(size_t)index * (size_t)depth + plane];
             component /= (double)weight;
             if (component < 0.0) {
                 component = 0.0;
@@ -1263,7 +1367,7 @@ mediancut(tupletable2 const colorfreqtable,
     int apply_merge;
     int resolved_merge;
     unsigned long *cluster_weight;
-    unsigned long *cluster_sums;
+    double *cluster_sums;
     int cluster_total;
     unsigned int plane;
     unsigned int offset;
@@ -1328,9 +1432,14 @@ mediancut(tupletable2 const colorfreqtable,
         cluster_weight = (unsigned long *)sixel_allocator_malloc(
             allocator,
             (size_t)boxes * sizeof(unsigned long));
-        cluster_sums = (unsigned long *)sixel_allocator_malloc(
+        /*
+         * Track the accumulated channel totals in double precision so the
+         * Ward stage can preserve sub-8bit accuracy before the palette is
+         * snapped back onto the SIXEL tone grid.
+         */
+        cluster_sums = (double *)sixel_allocator_malloc(
             allocator,
-            (size_t)boxes * (size_t)depth * sizeof(unsigned long));
+            (size_t)boxes * (size_t)depth * sizeof(double));
         if (cluster_weight == NULL || cluster_sums == NULL) {
             status = SIXEL_BAD_ALLOCATION;
             goto end;
@@ -1340,7 +1449,7 @@ mediancut(tupletable2 const colorfreqtable,
             size = bv[bi].colors;
             cluster_weight[bi] = 0UL;
             for (plane = 0U; plane < depth; ++plane) {
-                cluster_sums[(size_t)bi * (size_t)depth + plane] = 0UL;
+            cluster_sums[(size_t)bi * (size_t)depth + plane] = 0.0;
             }
             for (i = 0U; i < size; ++i) {
                 entry = colorfreqtable.table[offset + i];
@@ -1348,7 +1457,7 @@ mediancut(tupletable2 const colorfreqtable,
                 cluster_weight[bi] += value;
                 for (plane = 0U; plane < depth; ++plane) {
                     cluster_sums[(size_t)bi * (size_t)depth + plane]
-                        += (unsigned long)entry->tuple[plane] * value;
+                        += (double)entry->tuple[plane] * (double)value;
                 }
             }
         }
@@ -1432,6 +1541,8 @@ sixel_palette_heckbert_colormap(unsigned char const *data,
                                 int lut_policy,
                                 tupletable2 *colormapP,
                                 unsigned int *origcolors,
+                                unsigned int pixel_stride,
+                                int pixelformat,
                                 sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
@@ -1451,6 +1562,8 @@ sixel_palette_heckbert_colormap(unsigned char const *data,
     status = sixel_lut_build_histogram(data,
                                        length,
                                        depth,
+                                       pixel_stride,
+                                       pixelformat,
                                        qualityMode,
                                        use_reversible,
                                        lut_policy,
@@ -1532,14 +1645,20 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
                              sixel_allocator_t *allocator)
 {
     SIXELSTATUS status;
+    SIXELSTATUS drop_status;
     sixel_allocator_t *work_allocator;
     tupletable2 colormap;
     unsigned int origcolors;
     int depth_result;
     unsigned int depth;
+    unsigned int pixel_stride;
+    unsigned int bytes_per_channel;
     size_t payload_size;
     unsigned int index;
     unsigned int plane;
+    int input_is_float32;
+    float *float_entries;
+    int float_stride;
 
     if (palette == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1559,11 +1678,31 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
             "sixel_palette_build_heckbert: invalid pixel format depth.");
         return SIXEL_BAD_ARGUMENT;
     }
-    depth = (unsigned int)depth_result;
+    pixel_stride = (unsigned int)depth_result;
+    bytes_per_channel = 1U;
+    if (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
+        bytes_per_channel = (unsigned int)sizeof(float);
+    }
+    if (pixel_stride == 0U || bytes_per_channel == 0U
+        || pixel_stride % bytes_per_channel != 0U) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_build_heckbert: unsupported pixel stride.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+    depth = pixel_stride / bytes_per_channel;
+    if (depth == 0U
+        || depth > (unsigned int)sixel_palette_heckbert_max_channels) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_build_heckbert: invalid channel count.");
+        return SIXEL_BAD_ARGUMENT;
+    }
 
     colormap.size = 0U;
     colormap.table = NULL;
     origcolors = 0U;
+    input_is_float32 = (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32);
+    float_entries = NULL;
+    float_stride = 0;
     status = sixel_palette_heckbert_colormap(data,
                                              length,
                                              depth,
@@ -1577,6 +1716,8 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
                                              palette->lut_policy,
                                              &colormap,
                                              &origcolors,
+                                             pixel_stride,
+                                             pixelformat,
                                              work_allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -1590,6 +1731,33 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
         goto end;
     }
 
+    if (input_is_float32 && colormap.size > 0U && depth > 0U) {
+        size_t float_entries_size;
+
+        float_stride = (int)((size_t)depth * (size_t)sizeof(float));
+        float_entries_size = (size_t)colormap.size
+                              * (size_t)depth
+                              * (size_t)sizeof(float);
+        if (float_stride <= 0) {
+            sixel_helper_set_additional_message(
+                "sixel_palette_build_heckbert: invalid float stride.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        if (float_entries_size > 0U) {
+            float_entries = (float *)sixel_allocator_malloc(
+                work_allocator,
+                float_entries_size);
+            if (float_entries == NULL) {
+                sixel_helper_set_additional_message(
+                    "sixel_palette_build_heckbert: float palette alloc"
+                    " failed.");
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+        }
+    }
+
     payload_size = (size_t)colormap.size * (size_t)depth;
     if (payload_size > 0U && palette->entries != NULL
         && colormap.table != NULL) {
@@ -1597,19 +1765,65 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
             for (plane = 0U; plane < depth; ++plane) {
                 palette->entries[index * depth + plane]
                     = (unsigned char)colormap.table[index]->tuple[plane];
+                if (float_entries != NULL) {
+                    float_entries[index * depth + plane]
+                        = sixel_palette_heckbert_sample_to_float(
+                            colormap.table[index]->tuple[plane]);
+                }
             }
         }
     }
 
     palette->original_colors = origcolors;
+    if (float_entries != NULL && float_stride > 0) {
+        drop_status = sixel_palette_set_entries_float32(palette,
+                                                        float_entries,
+                                                        colormap.size,
+                                                        float_stride,
+                                                        work_allocator);
+    } else {
+        drop_status = sixel_palette_set_entries_float32(palette,
+                                                        NULL,
+                                                        0U,
+                                                        0,
+                                                        work_allocator);
+    }
+    if (SIXEL_FAILED(drop_status)) {
+        status = drop_status;
+        goto end;
+    }
     status = SIXEL_OK;
 
 end:
+    if (float_entries != NULL) {
+        sixel_allocator_free(work_allocator, float_entries);
+    }
     if (colormap.table != NULL) {
         sixel_allocator_free(work_allocator, colormap.table);
     }
 
     return status;
+}
+
+SIXELSTATUS
+sixel_palette_build_heckbert_float32(sixel_palette_t *palette,
+                                     unsigned char const *data,
+                                     unsigned int length,
+                                     int pixelformat,
+                                     sixel_allocator_t *allocator)
+{
+    if (pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32) {
+        sixel_helper_set_additional_message(
+            "sixel_palette_build_heckbert_float32: "
+            "requires RGBFLOAT32 input.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    return sixel_palette_build_heckbert(palette,
+                                        data,
+                                        length,
+                                        pixelformat,
+                                        allocator);
 }
 
 #if HAVE_TESTS
@@ -1631,6 +1845,494 @@ error:
     return nret;
 }
 
+/*
+ * Ensure that the palette duplication helpers clone both 8bit and float32
+ * buffers and report empty palettes without leaking the shared storage.
+ */
+static int
+palette_test_copy_entries_roundtrip(void)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    sixel_allocator_t *allocator = NULL;
+    sixel_palette_t *palette = NULL;
+    unsigned char base_entries[6] = { 0U, 64U, 128U, 255U, 128U, 32U };
+    unsigned char *copy_entries = NULL;
+    float float_entries[6] = {
+        0.0f, 0.25f, 0.5f,
+        1.0f, 0.5f, 0.0f,
+    };
+    float *copy_float = NULL;
+    size_t count = 0U;
+    size_t plane = 0U;
+    size_t index = 0U;
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    status = sixel_palette_new(&palette, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_palette_set_entries(palette,
+                                       base_entries,
+                                       2U,
+                                       3,
+                                       allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    status = sixel_palette_copy_entries_8bit(
+        palette,
+        &copy_entries,
+        &count,
+        SIXEL_PIXELFORMAT_RGB888,
+        allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    if (count != 2U || copy_entries == NULL) {
+        goto error;
+    }
+    for (index = 0U; index < count; ++index) {
+        for (plane = 0U; plane < 3U; ++plane) {
+            if (copy_entries[index * 3U + plane]
+                    != base_entries[index * 3U + plane]) {
+                goto error;
+            }
+        }
+    }
+    sixel_allocator_free(allocator, copy_entries);
+    copy_entries = NULL;
+
+    status = sixel_palette_set_entries_float32(
+        palette,
+        float_entries,
+        2U,
+        (int)(3U * (unsigned int)sizeof(float)),
+        allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    status = sixel_palette_copy_entries_float32(
+        palette,
+        &copy_float,
+        &count,
+        SIXEL_PIXELFORMAT_RGBFLOAT32,
+        allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    if (count != 2U || copy_float == NULL) {
+        goto error;
+    }
+    for (index = 0U; index < count; ++index) {
+        for (plane = 0U; plane < 3U; ++plane) {
+            if (copy_float[index * 3U + plane]
+                    != float_entries[index * 3U + plane]) {
+                goto error;
+            }
+        }
+    }
+    sixel_allocator_free(allocator, copy_float);
+    copy_float = NULL;
+
+    status = sixel_palette_resize(palette, 0U, 3, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    status = sixel_palette_copy_entries_8bit(
+        palette,
+        &copy_entries,
+        &count,
+        SIXEL_PIXELFORMAT_RGB888,
+        allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    if (count != 0U || copy_entries != NULL) {
+        goto error;
+    }
+    status = sixel_palette_set_entries_float32(palette,
+                                               NULL,
+                                               0U,
+                                               0,
+                                               allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    status = sixel_palette_copy_entries_float32(
+        palette,
+        &copy_float,
+        &count,
+        SIXEL_PIXELFORMAT_RGBFLOAT32,
+        allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    if (count != 0U || copy_float != NULL) {
+        goto error;
+    }
+
+    status = SIXEL_OK;
+
+error:
+    if (copy_entries != NULL) {
+        sixel_allocator_free(allocator, copy_entries);
+    }
+    if (copy_float != NULL) {
+        sixel_allocator_free(allocator, copy_float);
+    }
+    if (palette != NULL) {
+        sixel_palette_unref(palette);
+    }
+    if (allocator != NULL) {
+        sixel_allocator_unref(allocator);
+    }
+    return SIXEL_SUCCEEDED(status) ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+/*
+ * Verify that unsupported pixel formats are rejected so callers do not attempt
+ * to treat BGR or other layouts as the native RGB order expected by SIXEL.
+ */
+static int
+palette_test_copy_entries_invalid_pixelformat(void)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    sixel_allocator_t *allocator = NULL;
+    sixel_palette_t *palette = NULL;
+    unsigned char base_entries[3] = { 10U, 20U, 30U };
+    float float_entries[3] = { 0.1f, 0.2f, 0.3f };
+    unsigned char *copy_entries = NULL;
+    float *copy_float = NULL;
+    size_t count = 0U;
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    status = sixel_palette_new(&palette, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_palette_set_entries(palette,
+                                       base_entries,
+                                       1U,
+                                       3,
+                                       allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    status = sixel_palette_copy_entries_8bit(
+        palette,
+        &copy_entries,
+        &count,
+        SIXEL_PIXELFORMAT_BGR888,
+        allocator);
+    if (status != SIXEL_FEATURE_ERROR) {
+        goto error;
+    }
+
+    status = sixel_palette_set_entries_float32(
+        palette,
+        float_entries,
+        1U,
+        (int)(3U * (unsigned int)sizeof(float)),
+        allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    status = sixel_palette_copy_entries_float32(
+        palette,
+        &copy_float,
+        &count,
+        SIXEL_PIXELFORMAT_RGB888,
+        allocator);
+    if (status != SIXEL_FEATURE_ERROR) {
+        goto error;
+    }
+
+    status = SIXEL_OK;
+
+error:
+    if (copy_entries != NULL) {
+        sixel_allocator_free(allocator, copy_entries);
+    }
+    if (copy_float != NULL) {
+        sixel_allocator_free(allocator, copy_float);
+    }
+    if (palette != NULL) {
+        sixel_palette_unref(palette);
+    }
+    if (allocator != NULL) {
+        sixel_allocator_unref(allocator);
+    }
+    return SIXEL_SUCCEEDED(status) ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+static int
+palette_test_kmeans_float32_two_colors(void)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    sixel_allocator_t *allocator = NULL;
+    sixel_palette_t *palette = NULL;
+    float pixels[6] = { 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f };
+    unsigned char const *data;
+    unsigned char const *entry;
+    int found_red;
+    int found_green;
+    size_t index;
+
+    data = (unsigned char const *)(void const *)pixels;
+    found_red = 0;
+    found_green = 0;
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    status = sixel_palette_new(&palette, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    palette->requested_colors = 2U;
+    palette->quality_mode = SIXEL_QUALITY_HIGH;
+    palette->force_palette = 1;
+    palette->use_reversible = 0;
+    palette->final_merge_mode = SIXEL_FINAL_MERGE_NONE;
+
+    status = sixel_palette_build_kmeans_float32(palette,
+                                                data,
+                                                (unsigned int)sizeof(pixels),
+                                                SIXEL_PIXELFORMAT_RGBFLOAT32,
+                                                allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    if (palette->entry_count != 2U || palette->entries == NULL) {
+        goto error;
+    }
+    for (index = 0U; index < 2U; ++index) {
+        entry = palette->entries + index * 3U;
+        if (entry[0] > 240U && entry[1] < 16U && entry[2] < 16U) {
+            found_red = 1;
+        }
+        if (entry[1] > 240U && entry[0] < 16U && entry[2] < 16U) {
+            found_green = 1;
+        }
+    }
+    if (!found_red || !found_green) {
+        goto error;
+    }
+
+    status = SIXEL_OK;
+
+error:
+    if (palette != NULL) {
+        sixel_palette_unref(palette);
+    }
+    if (allocator != NULL) {
+        sixel_allocator_unref(allocator);
+    }
+    return SIXEL_SUCCEEDED(status) ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+static int
+palette_test_kmeans_float32_merge_scaling(void)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    sixel_allocator_t *allocator = NULL;
+    sixel_palette_t *palette = NULL;
+    float pixels[12] = {
+        1.0f, 1.0f, 1.0f,
+        0.8f, 0.8f, 0.8f,
+        0.1f, 0.0f, 0.0f,
+        0.0f, 0.0f, 0.0f,
+    };
+    unsigned char const *data;
+    unsigned char const *entry;
+    size_t index;
+    int found_highlight;
+
+    data = (unsigned char const *)(void const *)pixels;
+    found_highlight = 0;
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    status = sixel_palette_new(&palette, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    palette->requested_colors = 2U;
+    palette->quality_mode = SIXEL_QUALITY_HIGH;
+    palette->force_palette = 1;
+    palette->use_reversible = 0;
+    palette->final_merge_mode = SIXEL_FINAL_MERGE_WARD;
+
+    status = sixel_palette_build_kmeans_float32(palette,
+                                                data,
+                                                (unsigned int)sizeof(pixels),
+                                                SIXEL_PIXELFORMAT_RGBFLOAT32,
+                                                allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    if (palette->entry_count != 2U || palette->entries == NULL) {
+        goto error;
+    }
+    for (index = 0U; index < 2U; ++index) {
+        entry = palette->entries + index * 3U;
+        if (entry[0] > 200U && entry[1] > 200U && entry[2] > 200U) {
+            found_highlight = 1;
+        }
+    }
+    if (!found_highlight) {
+        goto error;
+    }
+
+    status = SIXEL_OK;
+
+error:
+    if (palette != NULL) {
+        sixel_palette_unref(palette);
+    }
+    if (allocator != NULL) {
+        sixel_allocator_unref(allocator);
+    }
+    return SIXEL_SUCCEEDED(status) ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
+/*
+ * Ensure that the Heckbert pipeline ingests RGBFLOAT32 sources and produces
+ * the expected extreme palette entries.  The input contains a black/white
+ * pair so the histogram must keep both clusters alive throughout the split
+ * and merge phases.
+ */
+static int
+palette_test_heckbert_float32_histogram(void)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    sixel_allocator_t *allocator = NULL;
+    sixel_palette_t *palette = NULL;
+    float pixels[6] = {
+        0.0f, 0.0f, 0.0f,
+        1.0f, 1.0f, 1.0f,
+    };
+    unsigned char const *data;
+    unsigned char const *entry;
+    float *float_entries;
+    size_t float_count;
+    size_t index;
+    size_t plane;
+    int found_black;
+    int found_white;
+    int found_black_float;
+    int found_white_float;
+
+    data = (unsigned char const *)(void const *)pixels;
+    found_black = 0;
+    found_white = 0;
+    float_entries = NULL;
+    float_count = 0U;
+    plane = 0U;
+    found_black_float = 0;
+    found_white_float = 0;
+
+    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    status = sixel_palette_new(&palette, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    palette->requested_colors = 2U;
+    palette->quality_mode = SIXEL_QUALITY_HIGH;
+    palette->force_palette = 1;
+    palette->use_reversible = 0;
+    palette->final_merge_mode = SIXEL_FINAL_MERGE_WARD;
+
+    status = sixel_palette_build_heckbert(palette,
+                                          data,
+                                          (unsigned int)sizeof(pixels),
+                                          SIXEL_PIXELFORMAT_RGBFLOAT32,
+                                          allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    if (palette->entry_count != 2U || palette->entries == NULL) {
+        goto error;
+    }
+    for (index = 0U; index < palette->entry_count; ++index) {
+        entry = palette->entries + index * 3U;
+        if (entry[0] < 8U && entry[1] < 8U && entry[2] < 8U) {
+            found_black = 1;
+        }
+        if (entry[0] > 247U && entry[1] > 247U && entry[2] > 247U) {
+            found_white = 1;
+        }
+    }
+    if (!found_black || !found_white) {
+        goto error;
+    }
+
+    status = sixel_palette_copy_entries_float32(
+        palette,
+        &float_entries,
+        &float_count,
+        SIXEL_PIXELFORMAT_RGBFLOAT32,
+        allocator);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    if (float_count != palette->entry_count || float_entries == NULL) {
+        goto error;
+    }
+    for (index = 0U; index < float_count; ++index) {
+        float *float_entry;
+
+        float_entry = float_entries + index * 3U;
+        for (plane = 0U; plane < 3U; ++plane) {
+            if (float_entry[plane] < 0.0f) {
+                goto error;
+            }
+            if (float_entry[plane] > 1.0f) {
+                goto error;
+            }
+        }
+        if (float_entry[0] < 0.05f && float_entry[1] < 0.05f
+                && float_entry[2] < 0.05f) {
+            found_black_float = 1;
+        }
+        if (float_entry[0] > 0.95f && float_entry[1] > 0.95f
+                && float_entry[2] > 0.95f) {
+            found_white_float = 1;
+        }
+    }
+    if (!found_black_float || !found_white_float) {
+        goto error;
+    }
+
+    status = SIXEL_OK;
+
+error:
+    if (float_entries != NULL) {
+        sixel_allocator_free(allocator, float_entries);
+    }
+    if (palette != NULL) {
+        sixel_palette_unref(palette);
+    }
+    if (allocator != NULL) {
+        sixel_allocator_unref(allocator);
+    }
+    return SIXEL_SUCCEEDED(status) ? EXIT_SUCCESS : EXIT_FAILURE;
+}
+
 SIXELAPI int
 sixel_palette_tests_main(void)
 {
@@ -1639,7 +2341,12 @@ sixel_palette_tests_main(void)
     typedef int (*palette_testcase)(void);
 
     static palette_testcase const testcases[] = {
+        palette_test_copy_entries_roundtrip,
+        palette_test_copy_entries_invalid_pixelformat,
         palette_test_luminosity,
+        palette_test_kmeans_float32_two_colors,
+        palette_test_kmeans_float32_merge_scaling,
+        palette_test_heckbert_float32_histogram,
     };
 
     for (i = 0U; i < sizeof(testcases) / sizeof(palette_testcase); ++i) {

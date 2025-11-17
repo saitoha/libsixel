@@ -52,7 +52,6 @@
 
 #include "assessment.h"
 #include "encoder.h"
-#include "frame.h"
 #include "compat_stub.h"
 
 #if defined(_WIN32)

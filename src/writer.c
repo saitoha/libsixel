@@ -353,6 +353,7 @@ write_png_to_file(
     case SIXEL_PIXELFORMAT_GA88:
     case SIXEL_PIXELFORMAT_AG88:
     case SIXEL_PIXELFORMAT_BGR888:
+    case SIXEL_PIXELFORMAT_RGBFLOAT32:
         pixels = new_pixels = sixel_allocator_malloc(allocator,
                                                     (size_t)(width
                                                              * height
@@ -838,6 +839,38 @@ error:
 }
 
 
+static unsigned char *
+writer_tests_duplicate_palette(sixel_dither_t *dither)
+{
+    sixel_palette_t *palette_obj;
+    unsigned char *copy;
+    size_t count;
+
+    if (dither == NULL) {
+        return NULL;
+    }
+
+    palette_obj = NULL;
+    copy = NULL;
+    count = 0U;
+    if (SIXEL_FAILED(
+            sixel_dither_get_quantized_palette(dither, &palette_obj))
+            || palette_obj == NULL) {
+        return NULL;
+    }
+    if (SIXEL_FAILED(sixel_palette_copy_entries_8bit(
+            palette_obj,
+            &copy,
+            &count,
+            SIXEL_PIXELFORMAT_RGB888,
+            dither->allocator))) {
+        sixel_palette_unref(palette_obj);
+        return NULL;
+    }
+    sixel_palette_unref(palette_obj);
+    return copy;
+}
+
 static int
 test3(void)
 {
@@ -845,6 +878,7 @@ test3(void)
     SIXELSTATUS status;
     unsigned char pixels[] = {0x00, 0x7f, 0xff};
     sixel_dither_t *dither = sixel_dither_get(SIXEL_BUILTIN_G8);
+    unsigned char *palette_copy = NULL;
 
     status = sixel_helper_write_image_file(
         pixels,
@@ -860,11 +894,12 @@ test3(void)
         goto error;
     }
 
+    palette_copy = writer_tests_duplicate_palette(dither);
     status = sixel_helper_write_image_file(
         pixels,
         1,
         1,
-        sixel_dither_get_palette(dither),
+        palette_copy,
         SIXEL_PIXELFORMAT_G8,
         "test-output.png",
         SIXEL_FORMAT_PNG,
@@ -876,6 +911,9 @@ test3(void)
     nret = EXIT_SUCCESS;
 
 error:
+    if (palette_copy != NULL && dither != NULL) {
+        sixel_allocator_free(dither->allocator, palette_copy);
+    }
     return nret;
 }
 
@@ -887,12 +925,14 @@ test4(void)
     SIXELSTATUS status;
     unsigned char pixels[] = {0xa0};
     sixel_dither_t *dither = sixel_dither_get(SIXEL_BUILTIN_XTERM256);
+    unsigned char *palette_copy = NULL;
 
+    palette_copy = writer_tests_duplicate_palette(dither);
     status = sixel_helper_write_image_file(
         pixels,
         1,
         1,
-        sixel_dither_get_palette(dither),
+        palette_copy,
         SIXEL_PIXELFORMAT_PAL1,
         "test-output.png",
         SIXEL_FORMAT_PNG,
@@ -917,6 +957,9 @@ test4(void)
     nret = EXIT_SUCCESS;
 
 error:
+    if (palette_copy != NULL && dither != NULL) {
+        sixel_allocator_free(dither->allocator, palette_copy);
+    }
     return nret;
 }
 
@@ -928,12 +971,14 @@ test5(void)
     SIXELSTATUS status;
     unsigned char pixels[] = {0x00};
     sixel_dither_t *dither = sixel_dither_get(SIXEL_BUILTIN_XTERM256);
+    unsigned char *palette_copy = NULL;
 
+    palette_copy = writer_tests_duplicate_palette(dither);
     status = sixel_helper_write_image_file(
         pixels,
         1,
         1,
-        sixel_dither_get_palette(dither),
+        palette_copy,
         SIXEL_PIXELFORMAT_PAL8,
         "test-output.png",
         SIXEL_FORMAT_PNG,
@@ -958,6 +1003,9 @@ test5(void)
     nret = EXIT_SUCCESS;
 
 error:
+    if (palette_copy != NULL && dither != NULL) {
+        sixel_allocator_free(dither->allocator, palette_copy);
+    }
     return nret;
 }
 
@@ -989,6 +1037,33 @@ error:
 }
 
 
+static int
+test7(void)
+{
+    int nret = EXIT_FAILURE;
+    SIXELSTATUS status;
+    float pixels[] = { 0.0f, 0.5f, 1.0f };
+
+    status = sixel_helper_write_image_file(
+        (unsigned char *)pixels,
+        1,
+        1,
+        NULL,
+        SIXEL_PIXELFORMAT_RGBFLOAT32,
+        "test-output.png",
+        SIXEL_FORMAT_PNG,
+        NULL);
+
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    nret = EXIT_SUCCESS;
+
+error:
+    return nret;
+}
+
+
 SIXELAPI int
 sixel_writer_tests_main(void)
 {
@@ -1003,6 +1078,7 @@ sixel_writer_tests_main(void)
         test4,
         test5,
         test6,
+        test7,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {

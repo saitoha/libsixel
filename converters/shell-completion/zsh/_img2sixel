@@ -205,12 +205,21 @@ _threadcount() {
     'auto[match the hardware thread count]'
 }
 
+_precisionmode() {
+  _values \
+    'PRECISIONMODE' \
+    'auto[defer to SIXEL_FLOAT32_DITHER or the 8-bit default]' \
+    '8bit[force the legacy integer pipeline]' \
+    'float32[opt into the experimental high-precision pipeline]'
+}
+
 # Keep the following option order synchronized with `img2sixel -H`.
 _arguments -S -s -A "-*" -S \
   {-o,--outfile}'[specify output file (default: stdout)]':files:_files \
   {-a,--assessment=}'[emit assessment report as JSON]':assessmentsections:_assessmentsections \
   {-J,--assessment-file=}'[write assessment JSON to a file]':files:_files \
   {-=,--threads=}'[override encoder thread count (integer or auto)]':threadcount:_threadcount \
+  {-.,--precision=}'[control quantization precision]':precisionmode:_precisionmode \
   {-7,--7bit-mode}'[generate a sixel image for 7bit terminals (default)]' \
   {-8,--8bit-mode}'[generate a sixel image for 8bit terminals]' \
   {-R,--gri-limit}'[limit arguments of DECGRI(!) to 255]' \
