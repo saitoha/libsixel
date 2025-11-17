@@ -26,8 +26,11 @@
 #include <string.h>
 #include <stdint.h>
 #include <limits.h>
+#if HAVE_MATH_H
+# include <math.h>
+#endif  /* HAVE_MATH_H */
 
-#include "dither-diffusion-fixed.h"
+#include "dither-fixed-8bit.h"
 #include "dither-common-pipeline.h"
 
 /*
@@ -347,8 +350,8 @@ static void diffuse_sierra3_carry(int32_t *carry_curr,
                                   int direction,
                                   int channel);
 
-SIXELSTATUS
-sixel_dither_apply_fixed(
+static SIXELSTATUS
+sixel_dither_apply_fixed_impl(
     sixel_index_t *result,
     unsigned char *data,
     int width,
@@ -371,6 +374,9 @@ sixel_dither_apply_fixed(
     int *ncolors,
     int method_for_diffuse,
     int method_for_carry,
+    float *palette_float,
+    float *new_palette_float,
+    int float_depth,
     sixel_dither_t *dither)
 {
 #if _MSC_VER
@@ -415,6 +421,7 @@ sixel_dither_apply_fixed(
     int32_t target_scaled;
     int32_t error_scaled;
     int offset;
+    int float_index;
     int32_t *tmp;
 
     if (depth > max_channels) {
@@ -503,6 +510,11 @@ sixel_dither_apply_fixed(
         *ncolors = 0;
         memset(new_palette, 0x00,
                (size_t)SIXEL_PALETTE_MAX * (size_t)depth);
+        if (new_palette_float != NULL && float_depth > 0) {
+            memset(new_palette_float, 0x00,
+                   (size_t)SIXEL_PALETTE_MAX
+                       * (size_t)float_depth * sizeof(float));
+        }
         memset(migration_map, 0x00,
                sizeof(unsigned short) * (size_t)SIXEL_PALETTE_MAX);
     } else {
@@ -555,6 +567,18 @@ sixel_dither_apply_fixed(
                         new_palette[output_index * depth + n]
                             = palette[color_index * depth + n];
                     }
+                    if (palette_float != NULL
+                            && new_palette_float != NULL
+                            && float_depth > 0) {
+                        for (float_index = 0;
+                                float_index < float_depth;
+                                ++float_index) {
+                            new_palette_float[output_index * float_depth
+                                              + float_index]
+                                = palette_float[color_index * float_depth
+                                                + float_index];
+                        }
+                    }
                     ++*ncolors;
                     migration_map[color_index] = *ncolors;
                 } else {
@@ -600,6 +624,13 @@ sixel_dither_apply_fixed(
 
     if (optimize_palette) {
         memcpy(palette, new_palette, (size_t)(*ncolors * depth));
+        if (palette_float != NULL
+                && new_palette_float != NULL
+                && float_depth > 0) {
+            memcpy(palette_float,
+                   new_palette_float,
+                   (size_t)(*ncolors * float_depth) * sizeof(float));
+        }
     }
 
     status = SIXEL_OK;
@@ -609,6 +640,49 @@ end:
     free(carry_next);
     free(carry_curr);
     return status;
+}
+
+SIXELSTATUS
+sixel_dither_apply_fixed_8bit(sixel_dither_t *dither,
+                              sixel_dither_context_t *context)
+{
+    if (dither == NULL || context == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (context->pixels == NULL || context->palette == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (context->result == NULL || context->new_palette == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (context->migration_map == NULL || context->ncolors == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (context->lookup == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    return sixel_dither_apply_fixed_impl(context->result,
+                                         context->pixels,
+                                         context->width,
+                                         context->height,
+                                         context->depth,
+                                         context->palette,
+                                         context->reqcolor,
+                                         context->method_for_scan,
+                                         context->optimize_palette,
+                                         context->lookup,
+                                         context->indextable,
+                                         context->complexion,
+                                         context->new_palette,
+                                         context->migration_map,
+                                         context->ncolors,
+                                         context->method_for_diffuse,
+                                         context->method_for_carry,
+                                         context->palette_float,
+                                         context->new_palette_float,
+                                         context->float_depth,
+                                         dither);
 }
 
 static void

@@ -50,6 +50,7 @@ struct sixel_dither {
     int requested_quality_mode;     /* original quality mode request */
     int keycolor;                   /* background color */
     int pixelformat;                /* pixelformat for internal processing */
+    int prefer_rgbfloat32;          /* opt-in flag for float32 internals */
     sixel_allocator_t *allocator;   /* allocator */
     int lut_policy;                 /* histogram LUT policy */
     int sixel_reversible;           /* restrict palette to reversible tones */

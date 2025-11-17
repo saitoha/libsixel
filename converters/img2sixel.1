@@ -69,6 +69,24 @@ Positive integers keep deterministic ordering with \fICOUNT\fP greater
 than one enabling multi-threaded encoding while \fICOUNT\fP of one
 preserves the sequential fallback path.
 .TP 5
+.B \-., \-\-precision=\fIMODE\fP
+control the arithmetic precision used by the quantizers and dithering
+pipelines.
+.RS
+.TP 5
+.B auto
+-> honor the \fBSIXEL_FLOAT32_DITHER\fP environment. This is the default
+   and currently maps to the legacy 8bit backend when the variable is
+   unset.
+.TP 5
+.B 8bit
+-> force the historical integer pipeline regardless of the environment.
+.TP 5
+.B float32
+-> request the experimental high-precision solvers without exporting the
+   environment variable manually.
+.RE
+.TP 5
 .B \-7, \-\-7bit-mode
 generate a sixel image for 7bit terminals or printers (default).
 .TP 5

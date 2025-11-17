@@ -65,6 +65,7 @@
 
 #include <sixel.h>
 #include "../src/sixel_threads_config.h"
+#include "../src/compat_stub.h"
 #include "malloc_stub.h"
 #include "getopt_stub.h"
 #include "completion_utils.h"
@@ -144,6 +145,20 @@ static img2sixel_option_help_t const g_option_help_table[] = {
         "                           while values above one enable band\n"
         "                           parallelism. Use 'auto' to match\n"
         "                           the hardware thread count.\n"
+    },
+    {
+        '.',
+        "precision",
+        "-., --precision=MODE\n"
+        "                           control quantization precision.\n"
+        "                             auto    -> honor the\n"
+        "                                         SIXEL_FLOAT32_DITHER\n"
+        "                                         environment (default).\n"
+        "                             8bit    -> force the historical\n"
+        "                                         integer pipeline.\n"
+        "                             float32 -> request the\n"
+        "                                         experimental\n"
+        "                                         high-precision path.\n"
     },
     {
         '7',
@@ -634,7 +649,10 @@ static char const g_option_help_fallback[] =
     "    Refer to \"img2sixel -H\" for more details.\n";
 
 static char const g_img2sixel_optstring[] =
-    "o:a:J:=:j:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:L:kil:t:ugvSn:PE:U:B:C:D@:"
+    "o:a:J:"
+    "=:"
+    ".:"
+    "j:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:L:kil:t:ugvSn:PE:U:B:C:D@:"
     "OVW:HY:y:";
 
 static int img2sixel_threads_token_is_auto(char const *text);
@@ -1313,6 +1331,7 @@ main(int argc, char *argv[])
         {"assessment",         required_argument,  &long_opt, 'a'},
         {"assessment-file",    required_argument,  &long_opt, 'J'},
         {"threads",            required_argument,  &long_opt, '='},
+        {"precision",          required_argument,  &long_opt, '.'},
         {"7bit-mode",          no_argument,        &long_opt, '7'},
         {"8bit-mode",          no_argument,        &long_opt, '8'},
         {"gri-limit",          no_argument,        &long_opt, 'R'},
@@ -1369,7 +1388,6 @@ main(int argc, char *argv[])
     sixel_aborttrace_install_if_unhandled();
 
     optstring = g_img2sixel_optstring;
-
     completion_exit_status = 0;
     completion_cli_result = img2sixel_handle_completion_cli(
         argc, argv, &completion_exit_status);
@@ -1613,7 +1631,7 @@ error:
 unknown_option_error:
     fprintf(stderr,
             "\n"
-            "usage: img2sixel [-78eIkiugvSPDOVH] [-= threads] [-p colors] [-m file]\n"
+            "usage: img2sixel [-78eIkiugvSPDOVH] [-= threads] [-. precision] [-p colors] [-m file]\n"
             "                 [-d diffusiontype] [-Q model] [-F mode]\n"
             "                 [-y scantype] [-a assessmentlist] [-J assessmentfile]\n"
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
