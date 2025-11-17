@@ -187,6 +187,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_PIXELFORMAT_RGBA8888 (SIXEL_FORMATTYPE_COLOR     | 0x11) /* 32bpp */
 #define SIXEL_PIXELFORMAT_ABGR8888 (SIXEL_FORMATTYPE_COLOR     | 0x12) /* 32bpp */
 #define SIXEL_PIXELFORMAT_BGRA8888 (SIXEL_FORMATTYPE_COLOR     | 0x13) /* 32bpp */
+#define SIXEL_PIXELFORMAT_RGBFLOAT32 (SIXEL_FORMATTYPE_COLOR   | 0x20) /* 96bpp float */
 #define SIXEL_PIXELFORMAT_G1       (SIXEL_FORMATTYPE_GRAYSCALE | 0x00) /* 1bpp grayscale */
 #define SIXEL_PIXELFORMAT_G2       (SIXEL_FORMATTYPE_GRAYSCALE | 0x01) /* 2bpp grayscale */
 #define SIXEL_PIXELFORMAT_G4       (SIXEL_FORMATTYPE_GRAYSCALE | 0x02) /* 4bpp grayscale */
@@ -255,6 +256,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_8BIT_MODE         ('8')  /* -8, --8bit-mode: for 8bit terminals or printers */
 #define SIXEL_OPTFLAG_6REVERSIBLE       ('6')  /* -6, --6reversible: snap palette to reversible tones */
 #define SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT ('R')  /* -R, --gri-limit: limit arguments of DECGRI('!') to 255 */
+#define SIXEL_OPTFLAG_PRECISION         ('.')  /* -., --precision: control quantization precision. */
 #define SIXEL_OPTFLAG_COLORS            ('p')  /* -p COLORS, --colors=COLORS: specify number of colors */
 #define SIXEL_OPTFLAG_MAPFILE           ('m')  /* -m FILE, --mapfile=FILE: specify set of colors */
 #define SIXEL_OPTFLAG_MAPFILE_OUTPUT    ('M')  /* -M FILE, --mapfile-output=FILE: export palette file */
@@ -623,6 +625,7 @@ enum pixelFormat {
     PIXELFORMAT_BGR888   = FORMATTYPE_COLOR     | 0x06, /* 24bpp */
     PIXELFORMAT_ARGB8888 = FORMATTYPE_COLOR     | 0x10, /* 32bpp */
     PIXELFORMAT_RGBA8888 = FORMATTYPE_COLOR     | 0x11, /* 32bpp */
+    PIXELFORMAT_RGBFLOAT32 = FORMATTYPE_COLOR   | 0x20, /* 96bpp float */
     PIXELFORMAT_G1       = FORMATTYPE_GRAYSCALE | 0x00, /* 1bpp grayscale */
     PIXELFORMAT_G2       = FORMATTYPE_GRAYSCALE | 0x01, /* 2bpp grayscale */
     PIXELFORMAT_G4       = FORMATTYPE_GRAYSCALE | 0x02, /* 4bpp grayscale */
@@ -880,6 +883,7 @@ sixel_palette_generate(
     unsigned char const   /* in */ *data,       /* sample image */
     unsigned int          /* in */ length,      /* buffer length */
     int                   /* in */ pixelformat, /* one of enum pixelFormat */
+    int                   /* in */ prefer_rgbfloat32,
     sixel_allocator_t     /* in */ *allocator); /* allocator, null if you use
                                                    default allocator */
 
@@ -902,20 +906,33 @@ sixel_palette_set_entries(
     sixel_allocator_t       /* in */ *allocator); /* allocator, null if you use
                                                      default allocator */
 
-/* obtain mutable palette buffer */
-SIXELAPI unsigned char *
-sixel_palette_get_entries(
-    sixel_palette_t /* in */ *palette);   /* palette object */
+/* copy float32 entries into palette buffer */
+SIXELAPI SIXELSTATUS
+sixel_palette_set_entries_float32(
+    sixel_palette_t         /* in */ *palette,    /* palette object */
+    float const             /* in */ *entries,    /* RGB triplets */
+    unsigned int            /* in */ colors,      /* palette size */
+    int                     /* in */ depth,       /* color depth in bytes */
+    sixel_allocator_t       /* in */ *allocator); /* allocator, null if you use
+                                                     default allocator */
 
-/* query number of palette entries */
-SIXELAPI unsigned int
-sixel_palette_get_entry_count(
-    sixel_palette_t const /* in */ *palette);   /* palette object */
+/* duplicate palette entries as RGB888 */
+SIXELAPI SIXELSTATUS
+sixel_palette_copy_entries_8bit(
+    sixel_palette_t         /* in */ *palette,    /* palette object */
+    unsigned char          /* out */ **ppentries, /* destination buffer */
+    size_t                 /* out */ *count,      /* number of entries */
+    int                    /* in */ pixelformat,  /* requested format */
+    sixel_allocator_t      /* in */ *allocator);  /* allocator for copy */
 
-/* query palette depth */
-SIXELAPI int
-sixel_palette_get_depth(
-    sixel_palette_t const /* in */ *palette);   /* palette object */
+/* duplicate palette entries as RGBFLOAT32 */
+SIXELAPI SIXELSTATUS
+sixel_palette_copy_entries_float32(
+    sixel_palette_t         /* in */ *palette,    /* palette object */
+    float                  /* out */ **ppentries, /* destination buffer */
+    size_t                 /* out */ *count,      /* number of entries */
+    int                    /* in */ pixelformat,  /* requested format */
+    sixel_allocator_t      /* in */ *allocator);  /* allocator for copy */
 
 #ifdef __cplusplus
 }
@@ -1013,9 +1030,15 @@ sixel_dither_get_num_of_histgram_colors(
     sixel_dither_t /* in */ *dither);  /* dither context object */
 
 /* get palette */
-SIXELAPI unsigned char *
+SIXELAPI @attr_func_deprecated@ unsigned char *
 sixel_dither_get_palette(
     sixel_dither_t /* in */ *dither);  /* dither context object */
+
+/* obtain palette object with an incremented refcount */
+SIXELAPI SIXELSTATUS
+sixel_dither_get_quantized_palette(
+    sixel_dither_t  /* in */ *dither,
+    sixel_palette_t /* out */ **pppalette);
 
 /* set palette */
 SIXELAPI void
@@ -1266,49 +1289,135 @@ sixel_frame_init(
 SIXELAPI unsigned char *
 sixel_frame_get_pixels(sixel_frame_t /* in */ *frame);  /* frame object */
 
+/* set pixels */
+SIXELAPI void
+sixel_frame_set_pixels(
+    sixel_frame_t /* in */ *frame,
+    unsigned char /* in */ *pixels);
+
 /* get palette */
 SIXELAPI unsigned char *
 sixel_frame_get_palette(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* set palette */
+SIXELAPI void
+sixel_frame_set_palette(
+    sixel_frame_t /* in */ *frame,
+    unsigned char /* in */ *palette);
 
 /* get width */
 SIXELAPI int
 sixel_frame_get_width(sixel_frame_t /* in */ *frame);  /* frame object */
 
+/* set width */
+SIXELAPI void
+sixel_frame_set_width(sixel_frame_t /* in */ *frame, int /* in */ width);
+
 /* get height */
 SIXELAPI int
 sixel_frame_get_height(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* set height */
+SIXELAPI void
+sixel_frame_set_height(sixel_frame_t /* in */ *frame, int /* in */ height);
 
 /* get ncolors */
 SIXELAPI int
 sixel_frame_get_ncolors(sixel_frame_t /* in */ *frame);  /* frame object */
 
+/* set ncolors */
+SIXELAPI void
+sixel_frame_set_ncolors(
+    sixel_frame_t /* in */ *frame,
+    int            /* in */ ncolors);
+
 /* get pixelformat */
 SIXELAPI int
 sixel_frame_get_pixelformat(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* set pixelformat */
+SIXELAPI void
+sixel_frame_set_pixelformat(
+    sixel_frame_t /* in */ *frame,
+    int            /* in */ pixelformat);
 
 /* get colorspace */
 SIXELAPI int
 sixel_frame_get_colorspace(sixel_frame_t /* in */ *frame);  /* frame object */
 
+/* set colorspace */
+SIXELAPI void
+sixel_frame_set_colorspace(
+    sixel_frame_t /* in */ *frame,
+    int            /* in */ colorspace);
+
 /* get transparent */
 SIXELAPI int
 sixel_frame_get_transparent(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* set transparent */
+SIXELAPI void
+sixel_frame_set_transparent(
+    sixel_frame_t /* in */ *frame,
+    int            /* in */ transparent);
 
 /* get transparent */
 SIXELAPI int
 sixel_frame_get_multiframe(sixel_frame_t /* in */ *frame);  /* frame object */
 
+/* set multiframe */
+SIXELAPI void
+sixel_frame_set_multiframe(
+    sixel_frame_t /* in */ *frame,
+    int            /* in */ multiframe);
+
 /* get delay */
 SIXELAPI int
 sixel_frame_get_delay(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* set delay */
+SIXELAPI void
+sixel_frame_set_delay(sixel_frame_t /* in */ *frame, int /* in */ delay);
 
 /* get frame no */
 SIXELAPI int
 sixel_frame_get_frame_no(sixel_frame_t /* in */ *frame);  /* frame object */
 
+/* set frame no */
+SIXELAPI void
+sixel_frame_set_frame_no(sixel_frame_t /* in */ *frame, int /* in */ frame_no);
+
+/* increment frame no */
+SIXELAPI void
+sixel_frame_increment_frame_no(sixel_frame_t /* in */ *frame);
+
+/* reset frame no */
+SIXELAPI void
+sixel_frame_reset_frame_no(sixel_frame_t /* in */ *frame);
+
 /* get loop no */
 SIXELAPI int
 sixel_frame_get_loop_no(sixel_frame_t /* in */ *frame);  /* frame object */
+
+/* set loop count */
+SIXELAPI void
+sixel_frame_set_loop_count(
+    sixel_frame_t /* in */ *frame,
+    int            /* in */ loop_count);
+
+/* increment loop count */
+SIXELAPI void
+sixel_frame_increment_loop_count(sixel_frame_t /* in */ *frame);
+
+/* get allocator */
+SIXELAPI sixel_allocator_t *
+sixel_frame_get_allocator(sixel_frame_t /* in */ *frame);
+
+/* convert frame to the requested colorspace in-place */
+SIXELAPI SIXELSTATUS
+sixel_frame_ensure_colorspace(
+    sixel_frame_t  /* in */ *frame,
+    int            /* in */ colorspace);
 
 /* strip alpha from RGBA/ARGB formatted pixbuf */
 SIXELAPI int

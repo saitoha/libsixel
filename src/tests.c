@@ -55,6 +55,12 @@
 
 #if HAVE_TESTS
 
+int sixel_tosixel_tests_main(void);
+
+#endif
+
+#if HAVE_TESTS
+
 int
 main(int argc, char *argv[])
 {
@@ -118,6 +124,14 @@ main(int argc, char *argv[])
         dirty = 1;
     } else {
         puts("quant ok.");
+    }
+
+    nret = sixel_tosixel_tests_main();
+    if (nret != EXIT_SUCCESS) {
+        puts("tosixel ng.");
+        dirty = 1;
+    } else {
+        puts("tosixel ok.");
     }
 
     nret = sixel_encoder_tests_main();

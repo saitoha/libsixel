@@ -26,11 +26,39 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#if HAVE_MATH_H
+# include <math.h>
+#endif  /* HAVE_MATH_H */
+
 #if HAVE_MEMORY_H
 # include <memory.h>
 #endif  /* HAVE_MEMORY_H */
 
 #include <sixel.h>
+
+/*
+ * Normalize a float32 channel stored in the 0.0-1.0 range and convert
+ * the value to an 8-bit sample. Out-of-range or NaN inputs are clamped
+ * to sane defaults so downstream conversions always receive valid bytes.
+ */
+static unsigned char
+sixel_pixelformat_float_to_byte(float value)
+{
+#if HAVE_MATH_H
+    if (!isfinite(value)) {
+        value = 0.0f;
+    }
+#endif  /* HAVE_MATH_H */
+
+    if (value <= 0.0f) {
+        return 0;
+    }
+    if (value >= 1.0f) {
+        return 255;
+    }
+
+    return (unsigned char)(value * 255.0f + 0.5f);
+}
 
 static void
 get_rgb(unsigned char const *data,
@@ -46,6 +74,15 @@ get_rgb(unsigned char const *data,
     unsigned int high;
 #endif
     int count = 0;
+
+    if (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
+        float const *fpixels = (float const *)(void const *)data;
+
+        *r = sixel_pixelformat_float_to_byte(fpixels[0]);
+        *g = sixel_pixelformat_float_to_byte(fpixels[1]);
+        *b = sixel_pixelformat_float_to_byte(fpixels[2]);
+        return;
+    }
 
     while (count < depth) {
         pixels = *(data + count) | (pixels << 8);
@@ -160,6 +197,9 @@ sixel_helper_compute_depth(int pixelformat)
     case SIXEL_PIXELFORMAT_PAL8:
         depth = 1;
         break;
+    case SIXEL_PIXELFORMAT_RGBFLOAT32:
+        depth = (int)(sizeof(float) * 3);
+        break;
     default:
         break;
     }
@@ -268,6 +308,7 @@ sixel_helper_normalize_pixelformat(
     int                 /* in */  height)           /* height of source image */
 {
     SIXELSTATUS status = SIXEL_FALSE;
+    int depth;
 
     switch (src_pixelformat) {
     case SIXEL_PIXELFORMAT_G8:
@@ -286,6 +327,15 @@ sixel_helper_normalize_pixelformat(
     case SIXEL_PIXELFORMAT_RGB888:
     case SIXEL_PIXELFORMAT_BGR888:
         expand_rgb(dst, src, width, height, src_pixelformat, 3);
+        *dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        break;
+    case SIXEL_PIXELFORMAT_RGBFLOAT32:
+        depth = sixel_helper_compute_depth(src_pixelformat);
+        if (depth <= 0) {
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        expand_rgb(dst, src, width, height, src_pixelformat, depth);
         *dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
     case SIXEL_PIXELFORMAT_RGBA8888:
@@ -682,6 +732,46 @@ error:
 }
 
 
+static int
+test11(void)
+{
+    unsigned char dst[3];
+    int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    int src_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+    float srcf[] = { 0.0f, 0.5f, 1.0f };
+    unsigned char const *src = (unsigned char const *)srcf;
+    int ret = 0;
+    int depth;
+
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_helper_normalize_pixelformat(dst,
+                                             &dst_pixelformat,
+                                             src,
+                                             src_pixelformat,
+                                             1,
+                                             1);
+    if (ret != 0) {
+        goto error;
+    }
+    if (dst_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        goto error;
+    }
+    if (dst[0] != 0 || dst[1] != 128 || dst[2] != 255) {
+        goto error;
+    }
+    depth = sixel_helper_compute_depth(src_pixelformat);
+    if (depth != (int)(sizeof(float) * 3)) {
+        goto error;
+    }
+    return EXIT_SUCCESS;
+
+error:
+    perror("test11");
+    return nret;
+}
+
+
 SIXELAPI int
 sixel_pixelformat_tests_main(void)
 {
@@ -700,6 +790,7 @@ sixel_pixelformat_tests_main(void)
         test8,
         test9,
         test10,
+        test11,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {

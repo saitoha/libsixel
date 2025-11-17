@@ -413,11 +413,12 @@ static SIXELSTATUS sixel_parallel_context_wait(sixel_parallel_context_t *ctx,
                                                int force_abort);
 static void sixel_parallel_palette_row_ready(void *priv, int row_index);
 static SIXELSTATUS sixel_encode_emit_palette(int bodyonly,
-                                             int ncolors,
-                                             int keycolor,
-                                             unsigned char *palette,
-                                             sixel_output_t *output,
-                                             int encode_probe_active);
+                          int ncolors,
+                          int keycolor,
+                          unsigned char const *palette,
+                          float const *palette_float,
+                          sixel_output_t *output,
+                          int encode_probe_active);
 
 static void
 sixel_parallel_context_init(sixel_parallel_context_t *ctx)
@@ -1260,7 +1261,8 @@ static SIXELSTATUS
 sixel_encode_body_pipeline(unsigned char *pixels,
                            int width,
                            int height,
-                           unsigned char *palette,
+                           unsigned char const *palette,
+                           float const *palette_float,
                            sixel_dither_t *dither,
                            sixel_output_t *output)
 {
@@ -1279,7 +1281,10 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     int waited;
     int saved_optimize_palette;
 
-    if (pixels == NULL || palette == NULL || dither == NULL || output == NULL) {
+    if (pixels == NULL
+            || (palette == NULL && palette_float == NULL)
+            || dither == NULL
+            || output == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -1309,6 +1314,7 @@ sixel_encode_body_pipeline(unsigned char *pixels,
                                        dither->ncolors,
                                        dither->keycolor,
                                        palette,
+                                       palette_float,
                                        output,
                                        encode_probe_active);
     if (SIXEL_FAILED(status)) {
@@ -1393,7 +1399,8 @@ static SIXELSTATUS
 sixel_encode_body_pipeline(unsigned char *pixels,
                            int width,
                            int height,
-                           unsigned char *palette,
+                           unsigned char const *palette,
+                           float const *palette_float,
                            sixel_dither_t *dither,
                            sixel_output_t *output)
 {
@@ -1401,6 +1408,7 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     (void)width;
     (void)height;
     (void)palette;
+    (void)palette_float;
     (void)dither;
     (void)output;
     return SIXEL_RUNTIME_ERROR;
@@ -2019,10 +2027,134 @@ laster_attr:
 }
 
 
+static unsigned char
+sixel_palette_float32_component_to_u8(float value)
+{
+    int scaled;
+
+    if (value < 0.0f) {
+        value = 0.0f;
+    } else if (value > 1.0f) {
+        value = 1.0f;
+    }
+    scaled = (int)(value * 255.0f + 0.5f);
+    if (scaled < 0) {
+        scaled = 0;
+    } else if (scaled > 255) {
+        scaled = 255;
+    }
+    return (unsigned char)scaled;
+}
+
+static int
+sixel_palette_float32_matches_u8(unsigned char const *palette,
+                                 float const *palette_float,
+                                 size_t count)
+{
+    size_t index;
+    size_t limit;
+
+    if (palette == NULL || palette_float == NULL || count == 0U) {
+        return 1;
+    }
+    if (count > SIZE_MAX / 3U) {
+        return 0;
+    }
+    limit = count * 3U;
+    for (index = 0U; index < limit; ++index) {
+        if (palette[index]
+                != sixel_palette_float32_component_to_u8(
+                    palette_float[index])) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static void
+sixel_palette_sync_float32_from_u8(unsigned char const *palette,
+                                   float *palette_float,
+                                   size_t count)
+{
+    size_t index;
+    size_t limit;
+
+    if (palette == NULL || palette_float == NULL || count == 0U) {
+        return;
+    }
+    if (count > SIZE_MAX / 3U) {
+        return;
+    }
+    limit = count * 3U;
+    for (index = 0U; index < limit; ++index) {
+        palette_float[index] = (float)palette[index] / 255.0f;
+    }
+}
+
+static int
+sixel_output_palette_channel_to_pct(unsigned char const *palette,
+                                    float const *palette_float,
+                                    int n,
+                                    int channel)
+{
+    size_t index;
+    float value;
+    int percent;
+
+    index = (size_t)n * 3U + (size_t)channel;
+    if (palette_float != NULL) {
+        value = palette_float[index];
+        if (value < 0.0f) {
+            value = 0.0f;
+        } else if (value > 1.0f) {
+            value = 1.0f;
+        }
+        percent = (int)(value * 100.0f + 0.5f);
+        if (percent < 0) {
+            percent = 0;
+        } else if (percent > 100) {
+            percent = 100;
+        }
+        return percent;
+    }
+
+    if (palette != NULL) {
+        return (palette[index] * 100 + 127) / 255;
+    }
+
+    return 0;
+}
+
+static double
+sixel_output_palette_channel_to_float(unsigned char const *palette,
+                                      float const *palette_float,
+                                      int n,
+                                      int channel)
+{
+    size_t index;
+    double value;
+
+    index = (size_t)n * 3U + (size_t)channel;
+    value = 0.0;
+    if (palette_float != NULL) {
+        value = palette_float[index];
+    } else if (palette != NULL) {
+        value = (double)palette[index] / 255.0;
+    }
+    if (value < 0.0) {
+        value = 0.0;
+    } else if (value > 1.0) {
+        value = 1.0;
+    }
+
+    return value;
+}
+
 static SIXELSTATUS
 output_rgb_palette_definition(
     sixel_output_t /* in */ *output,
-    unsigned char  /* in */ *palette,
+    unsigned char const /* in */ *palette,
+    float const /* in */ *palette_float,
     int            /* in */ n,
     int            /* in */ keycolor
 )
@@ -2038,18 +2170,30 @@ output_rgb_palette_definition(
         sixel_advance(output, nwrite);
         sixel_puts(output->buffer + output->pos, ";2;", 3);
         sixel_advance(output, 3);
-        nwrite = sixel_putnum((char *)output->buffer + output->pos,
-                              (palette[n * 3 + 0] * 100 + 127) / 255);
+        nwrite = sixel_putnum(
+            (char *)output->buffer + output->pos,
+            sixel_output_palette_channel_to_pct(palette,
+                                                palette_float,
+                                                n,
+                                                0));
         sixel_advance(output, nwrite);
         sixel_putc(output->buffer + output->pos, ';');
         sixel_advance(output, 1);
-        nwrite = sixel_putnum((char *)output->buffer + output->pos,
-                              (palette[n * 3 + 1] * 100 + 127) / 255);
+        nwrite = sixel_putnum(
+            (char *)output->buffer + output->pos,
+            sixel_output_palette_channel_to_pct(palette,
+                                                palette_float,
+                                                n,
+                                                1));
         sixel_advance(output, nwrite);
         sixel_putc(output->buffer + output->pos, ';');
         sixel_advance(output, 1);
-        nwrite = sixel_putnum((char *)output->buffer + output->pos,
-                              (palette[n * 3 + 2] * 100 + 127) / 255);
+        nwrite = sixel_putnum(
+            (char *)output->buffer + output->pos,
+            sixel_output_palette_channel_to_pct(palette,
+                                                palette_float,
+                                                n,
+                                                2));
         sixel_advance(output, nwrite);
     }
 
@@ -2062,46 +2206,100 @@ output_rgb_palette_definition(
 static SIXELSTATUS
 output_hls_palette_definition(
     sixel_output_t /* in */ *output,
-    unsigned char  /* in */ *palette,
+    unsigned char const /* in */ *palette,
+    float const /* in */ *palette_float,
     int            /* in */ n,
     int            /* in */ keycolor
 )
 {
     SIXELSTATUS status = SIXEL_FALSE;
+    double r;
+    double g;
+    double b;
+    double maxc;
+    double minc;
+    double lightness;
+    double saturation;
+    double hue;
+    double diff;
     int h;
     int l;
     int s;
-    int r;
-    int g;
-    int b;
-    int max;
-    int min;
     int nwrite;
 
     if (n != keycolor) {
-        r = palette[n * 3 + 0];
-        g = palette[n * 3 + 1];
-        b = palette[n * 3 + 2];
-        max = r > g ? (r > b ? r: b): (g > b ? g: b);
-        min = r < g ? (r < b ? r: b): (g < b ? g: b);
-        l = ((max + min) * 100 + 255) / 510;
-        if (max == min) {
-            h = s = 0;
+        r = sixel_output_palette_channel_to_float(palette,
+                                                  palette_float,
+                                                  n,
+                                                  0);
+        g = sixel_output_palette_channel_to_float(palette,
+                                                  palette_float,
+                                                  n,
+                                                  1);
+        b = sixel_output_palette_channel_to_float(palette,
+                                                  palette_float,
+                                                  n,
+                                                  2);
+        maxc = r > g ? (r > b ? r : b) : (g > b ? g : b);
+        minc = r < g ? (r < b ? r : b) : (g < b ? g : b);
+        lightness = (maxc + minc) * 0.5;
+        saturation = 0.0;
+        hue = 0.0;
+        diff = maxc - minc;
+        if (diff <= 0.0) {
+            h = 0;
+            s = 0;
         } else {
-            if (l < 50) {
-                s = ((max - min) * 100) / (max + min);
+            if (lightness < 0.5) {
+                saturation = diff / (maxc + minc);
             } else {
-                s = ((max - min) * 100) / ((255 - max) + (255 - min));
+                saturation = diff / (2.0 - maxc - minc);
             }
-            if (r == max) {
-                h = 120 + (g - b) * 60 / (max - min);
-            } else if (g == max) {
-                h = 240 + (b - r) * 60 / (max - min);
-            } else if (r < g) /* if (b == max) */ {
-                h = 360 + (r - g) * 60 / (max - min);
+            if (maxc == r) {
+                hue = (g - b) / diff;
+            } else if (maxc == g) {
+                hue = 2.0 + (b - r) / diff;
             } else {
-                h = 0 + (r - g) * 60 / (max - min);
+                hue = 4.0 + (r - g) / diff;
             }
+            hue *= 60.0;
+            if (hue < 0.0) {
+                hue += 360.0;
+            }
+            if (hue >= 360.0) {
+                hue -= 360.0;
+            }
+            /*
+             * The DEC HLS color wheel used by DECGCI considers
+             * hue==0 to be blue instead of red.  Rotate the hue by
+             * +120 degrees so that RGB primaries continue to match
+             * the historical img2sixel output and VT340 behavior.
+             */
+            hue += 120.0;
+            while (hue >= 360.0) {
+                hue -= 360.0;
+            }
+            while (hue < 0.0) {
+                hue += 360.0;
+            }
+            s = (int)(saturation * 100.0 + 0.5);
+            if (s < 0) {
+                s = 0;
+            } else if (s > 100) {
+                s = 100;
+            }
+            h = (int)(hue + 0.5);
+            if (h >= 360) {
+                h -= 360;
+            } else if (h < 0) {
+                h = 0;
+            }
+        }
+        l = (int)(lightness * 100.0 + 0.5);
+        if (l < 0) {
+            l = 0;
+        } else if (l > 100) {
+            l = 100;
         }
         /* DECGCI Graphics Color Introducer  # Pc ; Pu; Px; Py; Pz */
         sixel_putc(output->buffer + output->pos, '#');
@@ -2333,7 +2531,8 @@ static SIXELSTATUS
 sixel_encode_emit_palette(int bodyonly,
                           int ncolors,
                           int keycolor,
-                          unsigned char *palette,
+                          unsigned char const *palette,
+                          float const *palette_float,
                           sixel_output_t *output,
                           int encode_probe_active)
 {
@@ -2345,11 +2544,18 @@ sixel_encode_emit_palette(int bodyonly,
         return SIXEL_OK;
     }
 
+    if (palette == NULL && palette_float == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encode_emit_palette: missing palette data.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
     span_started_at = sixel_encode_span_start(encode_probe_active);
     if (output->palette_type == SIXEL_PALETTETYPE_HLS) {
         for (n = 0; n < ncolors; n++) {
             status = output_hls_palette_definition(output,
                                                    palette,
+                                                   palette_float,
                                                    n,
                                                    keycolor);
             if (SIXEL_FAILED(status)) {
@@ -2360,6 +2566,7 @@ sixel_encode_emit_palette(int bodyonly,
         for (n = 0; n < ncolors; n++) {
             status = output_rgb_palette_definition(output,
                                                    palette,
+                                                   palette_float,
                                                    n,
                                                    keycolor);
             if (SIXEL_FAILED(status)) {
@@ -2792,6 +2999,7 @@ sixel_encode_body(
     int                 /* in */ width,
     int                 /* in */ height,
     unsigned char       /* in */ *palette,
+    float const         /* in */ *palette_float,
     int                 /* in */ ncolors,
     int                 /* in */ keycolor,
     int                 /* in */ bodyonly,
@@ -2839,6 +3047,7 @@ sixel_encode_body(
                                        ncolors,
                                        keycolor,
                                        palette,
+                                       palette_float,
                                        output,
                                        encode_probe_active);
     if (SIXEL_FAILED(status)) {
@@ -3041,7 +3250,7 @@ sixel_encode_body_ormode(
     int plane;
 
     for (n = 0; n < ncolors; n++) {
-        status = output_rgb_palette_definition(output, palette, n, keycolor);
+        status = output_rgb_palette_definition(output, palette, NULL, n, keycolor);
         if (SIXEL_FAILED(status)) {
             return status;
         }
@@ -3139,16 +3348,24 @@ sixel_encode_dither(
     sixel_index_t *paletted_pixels = NULL;
     sixel_index_t *input_pixels;
     size_t bufsize;
-    unsigned char *palette_entries;
+    unsigned char *palette_entries = NULL;
+    float *palette_entries_float32 = NULL;
+    sixel_palette_t *palette_obj = NULL;
+    size_t palette_count = 0U;
+    size_t palette_float_count = 0U;
     int pipeline_active;
     int pipeline_threads;
     int pipeline_nbands;
 
-    palette_entries = sixel_palette_get_entries(dither->palette);
-    if (palette_entries == NULL) {
-        status = SIXEL_RUNTIME_ERROR;
+    palette_entries = NULL;
+    palette_entries_float32 = NULL;
+    palette_obj = NULL;
+    palette_count = 0U;
+    palette_float_count = 0U;
+    status = sixel_dither_get_quantized_palette(dither, &palette_obj);
+    if (SIXEL_FAILED(status)) {
         sixel_helper_set_additional_message(
-            "sixel_encode_dither: palette entries are missing.");
+            "sixel_encode_dither: palette acquisition failed.");
         goto end;
     }
 
@@ -3203,6 +3420,43 @@ sixel_encode_dither(
         break;
     }
 
+    status = sixel_palette_copy_entries_8bit(
+        palette_obj,
+        &palette_entries,
+        &palette_count,
+        SIXEL_PIXELFORMAT_RGB888,
+        dither->allocator);
+
+    if (SIXEL_SUCCEEDED(status)) {
+        status = sixel_palette_copy_entries_float32(
+            palette_obj,
+            &palette_entries_float32,
+            &palette_float_count,
+            SIXEL_PIXELFORMAT_RGBFLOAT32,
+            dither->allocator);
+    }
+
+    (void)palette_float_count;
+
+    sixel_palette_unref(palette_obj);
+    palette_obj = NULL;
+    if (palette_entries != NULL && palette_entries_float32 != NULL
+            && palette_count == palette_float_count
+            && palette_count > 0U
+            && !sixel_palette_float32_matches_u8(
+                    palette_entries,
+                    palette_entries_float32,
+                    palette_count)) {
+        sixel_palette_sync_float32_from_u8(palette_entries,
+                                           palette_entries_float32,
+                                           palette_count);
+    }
+    if (SIXEL_FAILED(status) || palette_entries == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encode_dither: palette copy failed.");
+        goto end;
+    }
+
     status = sixel_encode_header(width, height, output);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -3221,6 +3475,7 @@ sixel_encode_dither(
                                             width,
                                             height,
                                             palette_entries,
+                                            palette_entries_float32,
                                             dither,
                                             output);
     } else {
@@ -3228,6 +3483,7 @@ sixel_encode_dither(
                                    width,
                                    height,
                                    palette_entries,
+                                   palette_entries_float32,
                                    dither->ncolors,
                                    dither->keycolor,
                                    dither->bodyonly,
@@ -3246,6 +3502,15 @@ sixel_encode_dither(
     }
 
 end:
+    if (palette_obj != NULL) {
+        sixel_palette_unref(palette_obj);
+    }
+    if (palette_entries != NULL) {
+        sixel_allocator_free(dither->allocator, palette_entries);
+    }
+    if (palette_entries_float32 != NULL) {
+        sixel_allocator_free(dither->allocator, palette_entries_float32);
+    }
     sixel_allocator_free(dither->allocator, paletted_pixels);
 
     return status;
@@ -3933,7 +4198,9 @@ sixel_encode_highcolor(
     int pix;
     int orig_height;
     unsigned char *pal;
-    unsigned char *palette_entries;
+    unsigned char *palette_entries = NULL;
+    sixel_palette_t *palette_obj = NULL;
+    size_t palette_count = 0U;
 
     if (dither->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         /* normalize pixelfromat */
@@ -3953,8 +4220,22 @@ sixel_encode_highcolor(
         pixels = normalized_pixels;
     }
 
-    palette_entries = sixel_palette_get_entries(dither->palette);
-    if (palette_entries == NULL) {
+    palette_entries = NULL;
+    palette_obj = NULL;
+    palette_count = 0U;
+    status = sixel_dither_get_quantized_palette(dither, &palette_obj);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+    status = sixel_palette_copy_entries_8bit(
+        palette_obj,
+        &palette_entries,
+        &palette_count,
+        SIXEL_PIXELFORMAT_RGB888,
+        dither->allocator);
+    sixel_palette_unref(palette_obj);
+    palette_obj = NULL;
+    if (SIXEL_FAILED(status) || palette_entries == NULL) {
         goto error;
     }
 
@@ -4061,6 +4342,7 @@ next:
                                        width,
                                        height,
                                        palette_entries,
+                                       NULL,
                                        255,
                                        255,
                                        dither->bodyonly,
@@ -4097,6 +4379,7 @@ end:
                                width,
                                height,
                                palette_entries,
+                               NULL,
                                255,
                                255,
                                dither->bodyonly,
@@ -4113,6 +4396,9 @@ end:
     }
 
 error:
+    if (palette_entries != NULL) {
+        sixel_allocator_free(dither->allocator, palette_entries);
+    }
     sixel_allocator_free(dither->allocator, paletted_pixels);
     sixel_allocator_free(dither->allocator, normalized_pixels);
 
@@ -4167,6 +4453,189 @@ end:
 
     return status;
 }
+
+#if HAVE_TESTS
+
+typedef struct sixel_tosixel_capture {
+    char buffer[256];
+} sixel_tosixel_capture_t;
+
+static int
+sixel_tosixel_capture_write(char *data, int size, void *priv)
+{
+    sixel_tosixel_capture_t *capture;
+
+    (void)data;
+    (void)size;
+    capture = (sixel_tosixel_capture_t *)priv;
+    if (capture != NULL && size >= 0) {
+        capture->buffer[0] = '\0';
+    }
+
+    return size;
+}
+
+static int
+test_emit_palette_prefers_float32(void)
+{
+    sixel_output_t *output;
+    sixel_tosixel_capture_t capture;
+    SIXELSTATUS status;
+    unsigned char palette_bytes[3] = { 0, 0, 0 };
+    float palette_float[3] = { 0.123f, 0.456f, 0.789f };
+
+    output = NULL;
+    memset(&capture, 0, sizeof(capture));
+
+    status = sixel_output_new(&output,
+                              sixel_tosixel_capture_write,
+                              &capture,
+                              NULL);
+    if (SIXEL_FAILED(status) || output == NULL) {
+        goto error;
+    }
+
+    output->palette_type = SIXEL_PALETTETYPE_RGB;
+    output->pos = 0;
+    status = sixel_encode_emit_palette(0,
+                                       1,
+                                       (-1),
+                                       palette_bytes,
+                                       palette_float,
+                                       output,
+                                       0);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    output->buffer[output->pos] = '\0';
+    if (strstr((char *)output->buffer, "#0;2;12;46;79") == NULL) {
+        goto error;
+    }
+
+    sixel_output_unref(output);
+    return EXIT_SUCCESS;
+
+error:
+    sixel_output_unref(output);
+    return EXIT_FAILURE;
+}
+
+static int
+test_emit_palette_hls_from_float32(void)
+{
+    sixel_output_t *output;
+    sixel_tosixel_capture_t capture;
+    SIXELSTATUS status;
+    unsigned char palette_bytes[3] = { 0, 0, 0 };
+    float palette_float[3] = { 1.0f, 0.0f, 0.0f };
+
+    output = NULL;
+    memset(&capture, 0, sizeof(capture));
+
+    status = sixel_output_new(&output,
+                              sixel_tosixel_capture_write,
+                              &capture,
+                              NULL);
+    if (SIXEL_FAILED(status) || output == NULL) {
+        goto error;
+    }
+
+    output->palette_type = SIXEL_PALETTETYPE_HLS;
+    output->pos = 0;
+    status = sixel_encode_emit_palette(0,
+                                       1,
+                                       (-1),
+                                       palette_bytes,
+                                       palette_float,
+                                       output,
+                                       0);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    output->buffer[output->pos] = '\0';
+    if (strstr((char *)output->buffer, "#0;1;120;50;100") == NULL) {
+        goto error;
+    }
+
+    sixel_output_unref(output);
+    return EXIT_SUCCESS;
+
+error:
+    sixel_output_unref(output);
+    return EXIT_FAILURE;
+}
+
+static int
+test_emit_palette_hls_from_bytes(void)
+{
+    sixel_output_t *output;
+    sixel_tosixel_capture_t capture;
+    SIXELSTATUS status;
+    unsigned char palette_bytes[3] = { 255, 0, 0 };
+
+    output = NULL;
+    memset(&capture, 0, sizeof(capture));
+
+    status = sixel_output_new(&output,
+                              sixel_tosixel_capture_write,
+                              &capture,
+                              NULL);
+    if (SIXEL_FAILED(status) || output == NULL) {
+        goto error;
+    }
+
+    output->palette_type = SIXEL_PALETTETYPE_HLS;
+    output->pos = 0;
+    status = sixel_encode_emit_palette(0,
+                                       1,
+                                       (-1),
+                                       palette_bytes,
+                                       NULL,
+                                       output,
+                                       0);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    output->buffer[output->pos] = '\0';
+    if (strstr((char *)output->buffer, "#0;1;120;50;100") == NULL) {
+        goto error;
+    }
+
+    sixel_output_unref(output);
+    return EXIT_SUCCESS;
+
+error:
+    sixel_output_unref(output);
+    return EXIT_FAILURE;
+}
+
+SIXELAPI int
+sixel_tosixel_tests_main(void)
+{
+    int nret;
+
+    nret = test_emit_palette_prefers_float32();
+    if (nret != EXIT_SUCCESS) {
+        return nret;
+    }
+
+    nret = test_emit_palette_hls_from_float32();
+    if (nret != EXIT_SUCCESS) {
+        return nret;
+    }
+
+    nret = test_emit_palette_hls_from_bytes();
+    if (nret != EXIT_SUCCESS) {
+        return nret;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+#endif  /* HAVE_TESTS */
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

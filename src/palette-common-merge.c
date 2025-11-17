@@ -699,7 +699,7 @@ sixel_final_merge_target(unsigned int reqcolors, int final_merge_mode)
 /* Merge clusters using either Ward linkage or hierarchical k-means. */
 int
 sixel_palette_apply_merge(unsigned long *weights,
-                          unsigned long *sums,
+                          double *sums,
                           unsigned int depth,
                           int cluster_count,
                           int target,
@@ -721,8 +721,12 @@ sixel_palette_apply_merge(unsigned long *weights,
     int resolved_mode;
     sixel_final_merge_dispatch_t dispatch_mode;
     int result;
-    unsigned long sum_value;
-
+    /*
+     * The caller supplies population counts alongside channel sums expressed
+     * in the standard 0-255 domain (but kept in double precision).  Retaining
+     * the fractional parts lets the float32 pipeline keep its extra accuracy
+     * until the very last step that snaps to the SIXEL tone grid.
+     */
     if (weights == NULL || sums == NULL) {
         return cluster_count;
     }
@@ -748,18 +752,15 @@ sixel_palette_apply_merge(unsigned long *weights,
         component_g = 0.0;
         component_b = 0.0;
         if (depth > 0U) {
-            component_r = (double)sums[(size_t)index * (size_t)depth]
-                / weight;
+            component_r = sums[(size_t)index * (size_t)depth] / weight;
         }
         if (depth > 1U) {
-            component_g = (double)sums[(size_t)index * (size_t)depth + 1U]
-                / weight;
+            component_g = sums[(size_t)index * (size_t)depth + 1U] / weight;
         } else {
             component_g = component_r;
         }
         if (depth > 2U) {
-            component_b =
-                (double)sums[(size_t)index * (size_t)depth + 2U] / weight;
+            component_b = sums[(size_t)index * (size_t)depth + 2U] / weight;
         } else if (depth > 1U) {
             component_b = component_g;
         } else {
@@ -816,11 +817,7 @@ sixel_palette_apply_merge(unsigned long *weights,
             if (scaled < 0.0) {
                 scaled = 0.0;
             }
-            if (scaled > (double)ULONG_MAX) {
-                scaled = (double)ULONG_MAX;
-            }
-            sum_value = (unsigned long)(scaled + 0.5);
-            sums[(size_t)result * (size_t)depth + (size_t)plane] = sum_value;
+            sums[(size_t)result * (size_t)depth + (size_t)plane] = scaled;
         }
         ++result;
     }
@@ -854,18 +851,14 @@ sixel_palette_apply_merge(unsigned long *weights,
             if (scaled < 0.0) {
                 scaled = 0.0;
             }
-            if (scaled > (double)ULONG_MAX) {
-                scaled = (double)ULONG_MAX;
-            }
-            sum_value = (unsigned long)(scaled + 0.5);
-            sums[(size_t)0 * (size_t)depth + (size_t)plane] = sum_value;
+            sums[(size_t)0 * (size_t)depth + (size_t)plane] = scaled;
         }
         result = 1;
     }
     for (index = result; index < cluster_count; ++index) {
         weights[index] = 0UL;
         for (plane = 0; plane < (int)depth; ++plane) {
-            sums[(size_t)index * (size_t)depth + (size_t)plane] = 0UL;
+            sums[(size_t)index * (size_t)depth + (size_t)plane] = 0.0;
         }
     }
     sixel_allocator_free(allocator, clusters);

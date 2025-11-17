@@ -37,12 +37,19 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither.h \
                 $(srcdir)/dither-common-pipeline.c \
                 $(srcdir)/dither-common-pipeline.h \
-                $(srcdir)/dither-pattern.c \
-                $(srcdir)/dither-pattern.h \
-                $(srcdir)/dither-diffusion-fixed.c \
-                $(srcdir)/dither-diffusion-fixed.h \
-                $(srcdir)/dither-diffusion-adaptive.c \
-                $(srcdir)/dither-diffusion-adaptive.h \
+                $(srcdir)/dither-positional-8bit.c \
+                $(srcdir)/dither-positional-8bit.h \
+                $(srcdir)/dither-positional-float32.c \
+                $(srcdir)/dither-positional-float32.h \
+                $(srcdir)/dither-fixed-8bit.c \
+                $(srcdir)/dither-fixed-8bit.h \
+                $(srcdir)/dither-fixed-float32.c \
+                $(srcdir)/dither-fixed-float32.h \
+                $(srcdir)/dither-internal.h \
+                $(srcdir)/dither-varcoeff-8bit.c \
+                $(srcdir)/dither-varcoeff-8bit.h \
+                $(srcdir)/dither-varcoeff-float32.c \
+                $(srcdir)/dither-varcoeff-float32.h \
                 $(srcdir)/colorspace.c \
                 $(srcdir)/colorspace.h \
                 $(srcdir)/frame.c \

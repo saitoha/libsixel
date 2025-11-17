@@ -1,0 +1,632 @@
+/*
+ * Adaptive diffusion backend operating on RGBFLOAT32 buffers.  The worker
+ * mirrors the 8bit implementation but keeps intermediate values in float so
+ * rounding happens only at palette lookups.
+ */
+
+#include "config.h"
+
+#include <stdlib.h>
+#include <string.h>
+
+#if HAVE_MATH_H
+# include <math.h>
+#endif  /* HAVE_MATH_H */
+
+#include "dither-varcoeff-float32.h"
+#include "dither-common-pipeline.h"
+
+static unsigned char
+sixel_dither_float_channel_to_byte(float value)
+{
+#if HAVE_MATH_H
+    if (!isfinite(value)) {
+        value = 0.0f;
+    }
+#endif  /* HAVE_MATH_H */
+
+    if (value <= 0.0f) {
+        return 0;
+    }
+    if (value >= 1.0f) {
+        return 255;
+    }
+
+    return (unsigned char)(value * 255.0f + 0.5f);
+}
+
+static float
+sixel_dither_byte_to_float(unsigned char value)
+{
+    return (float)value / 255.0f;
+}
+
+static void
+sixel_dither_scanline_params(int serpentine,
+                             int index,
+                             int limit,
+                             int *start,
+                             int *end,
+                             int *step,
+                             int *direction)
+{
+    if (serpentine && (index & 1)) {
+        *start = limit - 1;
+        *end = -1;
+        *step = -1;
+        *direction = -1;
+    } else {
+        *start = 0;
+        *end = limit;
+        *step = 1;
+        *direction = 1;
+    }
+}
+
+static const int (*
+lso2_table(void))[7]
+{
+#include "lso2.h"
+    return var_coefs;
+}
+
+typedef void (*diffuse_varerr_mode_float)(float *data,
+                                           int width,
+                                           int height,
+                                           int x,
+                                           int y,
+                                           int depth,
+                                           float error,
+                                           int index,
+                                           int direction);
+
+typedef void (*diffuse_varerr_carry_mode_float)(float *carry_curr,
+                                                 float *carry_next,
+                                                 float *carry_far,
+                                                 int width,
+                                                 int height,
+                                                 int depth,
+                                                 int x,
+                                                 int y,
+                                                 float error,
+                                                 int index,
+                                                 int direction,
+                                                 int channel);
+
+static int
+sixel_varcoeff_safe_denom(int value)
+{
+    if (value == 0) {
+        return 1;
+    }
+    return value;
+}
+
+static float
+diffuse_varerr_term_float(float error, int weight, int denom)
+{
+    float factor;
+
+    factor = (float)weight / (float)denom;
+    return error * factor;
+}
+
+static void
+diffuse_varerr_apply_direct_float(float *target,
+                                   int depth,
+                                   size_t offset,
+                                   float delta)
+{
+    size_t index;
+
+    index = offset * (size_t)depth;
+    target[index] += delta;
+    if (target[index] < 0.0f) {
+        target[index] = 0.0f;
+    } else if (target[index] > 1.0f) {
+        target[index] = 1.0f;
+    }
+}
+
+static void
+diffuse_lso2_float(float *data,
+                    int width,
+                    int height,
+                    int x,
+                    int y,
+                    int depth,
+                    float error,
+                    int index,
+                    int direction)
+{
+    const int (*table)[7];
+    const int *entry;
+    int denom;
+    float term_r;
+    float term_r2;
+    float term_dl;
+    float term_d;
+    float term_dr;
+    float term_d2;
+    size_t offset;
+
+    if (error == 0.0f) {
+        return;
+    }
+    if (index < 0) {
+        index = 0;
+    }
+    if (index > 255) {
+        index = 255;
+    }
+
+    table = lso2_table();
+    entry = table[index];
+    denom = sixel_varcoeff_safe_denom(entry[6]);
+
+    term_r = diffuse_varerr_term_float(error, entry[0], denom);
+    term_r2 = diffuse_varerr_term_float(error, entry[1], denom);
+    term_dl = diffuse_varerr_term_float(error, entry[2], denom);
+    term_d = diffuse_varerr_term_float(error, entry[3], denom);
+    term_dr = diffuse_varerr_term_float(error, entry[4], denom);
+    term_d2 = diffuse_varerr_term_float(error, entry[5], denom);
+
+    if (direction >= 0) {
+        if (x + 1 < width) {
+            offset = (size_t)y * (size_t)width + (size_t)(x + 1);
+            diffuse_varerr_apply_direct_float(data, depth, offset, term_r);
+        }
+        if (x + 2 < width) {
+            offset = (size_t)y * (size_t)width + (size_t)(x + 2);
+            diffuse_varerr_apply_direct_float(data, depth, offset, term_r2);
+        }
+        if (y + 1 < height && x - 1 >= 0) {
+            offset = (size_t)(y + 1) * (size_t)width;
+            offset += (size_t)(x - 1);
+            diffuse_varerr_apply_direct_float(data, depth, offset, term_dl);
+        }
+        if (y + 1 < height) {
+            offset = (size_t)(y + 1) * (size_t)width + (size_t)x;
+            diffuse_varerr_apply_direct_float(data, depth, offset, term_d);
+        }
+        if (y + 1 < height && x + 1 < width) {
+            offset = (size_t)(y + 1) * (size_t)width;
+            offset += (size_t)(x + 1);
+            diffuse_varerr_apply_direct_float(data, depth, offset, term_dr);
+        }
+        if (y + 2 < height) {
+            offset = (size_t)(y + 2) * (size_t)width + (size_t)x;
+            diffuse_varerr_apply_direct_float(data, depth, offset, term_d2);
+        }
+    } else {
+        if (x - 1 >= 0) {
+            offset = (size_t)y * (size_t)width + (size_t)(x - 1);
+            diffuse_varerr_apply_direct_float(data, depth, offset, term_r);
+        }
+        if (x - 2 >= 0) {
+            offset = (size_t)y * (size_t)width + (size_t)(x - 2);
+            diffuse_varerr_apply_direct_float(data, depth, offset, term_r2);
+        }
+        if (y + 1 < height && x + 1 < width) {
+            offset = (size_t)(y + 1) * (size_t)width;
+            offset += (size_t)(x + 1);
+            diffuse_varerr_apply_direct_float(data, depth, offset, term_dl);
+        }
+        if (y + 1 < height) {
+            offset = (size_t)(y + 1) * (size_t)width + (size_t)x;
+            diffuse_varerr_apply_direct_float(data, depth, offset, term_d);
+        }
+        if (y + 1 < height && x - 1 >= 0) {
+            offset = (size_t)(y + 1) * (size_t)width;
+            offset += (size_t)(x - 1);
+            diffuse_varerr_apply_direct_float(data, depth, offset, term_dr);
+        }
+        if (y + 2 < height) {
+            offset = (size_t)(y + 2) * (size_t)width + (size_t)x;
+            diffuse_varerr_apply_direct_float(data, depth, offset, term_d2);
+        }
+    }
+}
+
+static void
+diffuse_lso2_carry_float(float *carry_curr,
+                          float *carry_next,
+                          float *carry_far,
+                          int width,
+                          int height,
+                          int depth,
+                          int x,
+                          int y,
+                          float error,
+                          int index,
+                          int direction,
+                          int channel)
+{
+    const int (*table)[7];
+    const int *entry;
+    int denom;
+    float term_r;
+    float term_r2;
+    float term_dl;
+    float term_d;
+    float term_dr;
+    float term_d2;
+    size_t base;
+
+    if (error == 0.0f) {
+        return;
+    }
+    if (index < 0) {
+        index = 0;
+    }
+    if (index > 255) {
+        index = 255;
+    }
+
+    table = lso2_table();
+    entry = table[index];
+    denom = sixel_varcoeff_safe_denom(entry[6]);
+
+    term_r = diffuse_varerr_term_float(error, entry[0], denom);
+    term_r2 = diffuse_varerr_term_float(error, entry[1], denom);
+    term_dl = diffuse_varerr_term_float(error, entry[2], denom);
+    term_d = diffuse_varerr_term_float(error, entry[3], denom);
+    term_dr = diffuse_varerr_term_float(error, entry[4], denom);
+    term_d2 = error - term_r - term_r2 - term_dl - term_d - term_dr;
+
+    if (direction >= 0) {
+        if (x + 1 < width) {
+            base = ((size_t)(x + 1) * (size_t)depth)
+                 + (size_t)channel;
+            carry_curr[base] += term_r;
+        }
+        if (x + 2 < width) {
+            base = ((size_t)(x + 2) * (size_t)depth)
+                 + (size_t)channel;
+            carry_curr[base] += term_r2;
+        }
+        if (y + 1 < height && x - 1 >= 0) {
+            base = ((size_t)(x - 1) * (size_t)depth)
+                 + (size_t)channel;
+            carry_next[base] += term_dl;
+        }
+        if (y + 1 < height) {
+            base = ((size_t)x * (size_t)depth) + (size_t)channel;
+            carry_next[base] += term_d;
+        }
+        if (y + 1 < height && x + 1 < width) {
+            base = ((size_t)(x + 1) * (size_t)depth)
+                 + (size_t)channel;
+            carry_next[base] += term_dr;
+        }
+        if (y + 2 < height) {
+            base = ((size_t)x * (size_t)depth) + (size_t)channel;
+            carry_far[base] += term_d2;
+        }
+    } else {
+        if (x - 1 >= 0) {
+            base = ((size_t)(x - 1) * (size_t)depth)
+                 + (size_t)channel;
+            carry_curr[base] += term_r;
+        }
+        if (x - 2 >= 0) {
+            base = ((size_t)(x - 2) * (size_t)depth)
+                 + (size_t)channel;
+            carry_curr[base] += term_r2;
+        }
+        if (y + 1 < height && x + 1 < width) {
+            base = ((size_t)(x + 1) * (size_t)depth)
+                 + (size_t)channel;
+            carry_next[base] += term_dl;
+        }
+        if (y + 1 < height) {
+            base = ((size_t)x * (size_t)depth) + (size_t)channel;
+            carry_next[base] += term_d;
+        }
+        if (y + 1 < height && x - 1 >= 0) {
+            base = ((size_t)(x - 1) * (size_t)depth)
+                 + (size_t)channel;
+            carry_next[base] += term_dr;
+        }
+        if (y + 2 < height) {
+            base = ((size_t)x * (size_t)depth) + (size_t)channel;
+            carry_far[base] += term_d2;
+        }
+    }
+}
+
+SIXELSTATUS
+sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
+                                    sixel_dither_context_t *context)
+{
+#if _MSC_VER
+    enum { max_channels = 4 };
+#else
+    const int max_channels = 4;
+#endif
+    SIXELSTATUS status;
+    float *data;
+    unsigned char *palette;
+    unsigned char *new_palette;
+    float *source_pixel;
+    float corrected[max_channels];
+    float quantized_float;
+    unsigned char quantized[max_channels];
+    float *carry_curr;
+    float *carry_next;
+    float *carry_far;
+    float palette_value_float;
+    unsigned char palette_value;
+    float error;
+    int serpentine;
+    int use_carry;
+    size_t carry_len;
+    int method_for_diffuse;
+    int method_for_carry;
+    int method_for_scan;
+    diffuse_varerr_mode_float varerr_diffuse;
+    diffuse_varerr_carry_mode_float varerr_diffuse_carry;
+    int optimize_palette;
+    int y;
+    int start;
+    int end;
+    int step;
+    int direction;
+    int x;
+    int pos;
+    size_t base;
+    size_t carry_base;
+    int depth;
+    int reqcolor;
+    int n;
+    int color_index;
+    int output_index;
+    int diff;
+    int table_index;
+    unsigned short *indextable;
+    unsigned short *migration_map;
+    int *ncolors;
+    int (*lookup)(const unsigned char *,
+                  int,
+                  const unsigned char *,
+                  int,
+                  unsigned short *,
+                  int);
+    float *palette_float;
+    float *new_palette_float;
+    int float_depth;
+    int float_index;
+
+    if (dither == NULL || context == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = SIXEL_BAD_ARGUMENT;
+    data = context->pixels_float;
+    palette = context->palette;
+    new_palette = context->new_palette;
+    indextable = context->indextable;
+    migration_map = context->migration_map;
+    ncolors = context->ncolors;
+    depth = context->depth;
+    reqcolor = context->reqcolor;
+    lookup = context->lookup;
+    optimize_palette = context->optimize_palette;
+    method_for_diffuse = context->method_for_diffuse;
+    method_for_carry = context->method_for_carry;
+    method_for_scan = context->method_for_scan;
+    palette_float = context->palette_float;
+    new_palette_float = context->new_palette_float;
+    float_depth = context->float_depth;
+
+    if (data == NULL || palette == NULL || context->result == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (lookup == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (optimize_palette) {
+        if (new_palette == NULL || migration_map == NULL || ncolors == NULL) {
+            return SIXEL_BAD_ARGUMENT;
+        }
+    } else if (ncolors == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (depth <= 0 || depth > max_channels) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    switch (method_for_diffuse) {
+    case SIXEL_DIFFUSE_LSO2:
+    default:
+        varerr_diffuse = diffuse_lso2_float;
+        varerr_diffuse_carry = diffuse_lso2_carry_float;
+        break;
+    }
+
+    use_carry = (method_for_carry == SIXEL_CARRY_ENABLE);
+    carry_curr = NULL;
+    carry_next = NULL;
+    carry_far = NULL;
+    carry_len = 0;
+
+    if (use_carry) {
+        carry_len = (size_t)context->width * (size_t)depth;
+        carry_curr = (float *)calloc(carry_len, sizeof(float));
+        carry_next = (float *)calloc(carry_len, sizeof(float));
+        carry_far = (float *)calloc(carry_len, sizeof(float));
+        if (carry_curr == NULL || carry_next == NULL || carry_far == NULL) {
+            goto end;
+        }
+    }
+
+    serpentine = (method_for_scan == SIXEL_SCAN_SERPENTINE);
+    if (optimize_palette) {
+        *ncolors = 0;
+        memset(new_palette, 0x00,
+               (size_t)SIXEL_PALETTE_MAX * (size_t)depth);
+        if (new_palette_float != NULL && float_depth > 0) {
+            memset(new_palette_float, 0x00,
+                   (size_t)SIXEL_PALETTE_MAX
+                       * (size_t)float_depth * sizeof(float));
+        }
+        memset(migration_map, 0x00,
+               sizeof(unsigned short) * (size_t)SIXEL_PALETTE_MAX);
+    }
+
+    for (y = 0; y < context->height; ++y) {
+        sixel_dither_scanline_params(serpentine,
+                                     y,
+                                     context->width,
+                                     &start,
+                                     &end,
+                                     &step,
+                                     &direction);
+        for (x = start; x != end; x += step) {
+            pos = y * context->width + x;
+            base = (size_t)pos * (size_t)depth;
+            carry_base = (size_t)x * (size_t)depth;
+            if (use_carry) {
+                for (n = 0; n < depth; ++n) {
+                    float accum;
+
+                    accum = data[base + (size_t)n]
+                           + carry_curr[carry_base + (size_t)n];
+                    carry_curr[carry_base + (size_t)n] = 0.0f;
+                    if (accum < 0.0f) {
+                        accum = 0.0f;
+                    } else if (accum > 1.0f) {
+                        accum = 1.0f;
+                    }
+                    corrected[n] = accum;
+                }
+                source_pixel = corrected;
+            } else {
+                source_pixel = data + base;
+            }
+
+            for (n = 0; n < depth; ++n) {
+                quantized_float = source_pixel[n];
+                quantized[n] = sixel_dither_float_channel_to_byte(
+                    quantized_float);
+            }
+
+            color_index = lookup(quantized,
+                                  depth,
+                                  palette,
+                                  reqcolor,
+                                  indextable,
+                                  context->complexion);
+
+            if (optimize_palette) {
+                if (migration_map[color_index] == 0) {
+                    output_index = *ncolors;
+                    for (n = 0; n < depth; ++n) {
+                        new_palette[output_index * depth + n]
+                            = palette[color_index * depth + n];
+                    }
+                    if (palette_float != NULL
+                            && new_palette_float != NULL
+                            && float_depth > 0) {
+                        for (float_index = 0;
+                                float_index < float_depth;
+                                ++float_index) {
+                            new_palette_float[output_index * float_depth
+                                              + float_index]
+                                = palette_float[color_index * float_depth
+                                                + float_index];
+                        }
+                    }
+                    ++*ncolors;
+                    migration_map[color_index] = *ncolors;
+                } else {
+                    output_index = migration_map[color_index] - 1;
+                }
+                context->result[pos] = output_index;
+            } else {
+                output_index = color_index;
+                context->result[pos] = output_index;
+            }
+
+            for (n = 0; n < depth; ++n) {
+                if (optimize_palette) {
+                    palette_value = new_palette[output_index * depth + n];
+                } else {
+                    palette_value = palette[color_index * depth + n];
+                }
+                palette_value_float = sixel_dither_byte_to_float(
+                    palette_value);
+                error = source_pixel[n] - palette_value_float;
+                if (error < 0.0f) {
+                    diff = (int)(-error * 255.0f + 0.5f);
+                } else {
+                    diff = (int)(error * 255.0f + 0.5f);
+                }
+                if (diff > 255) {
+                    diff = 255;
+                }
+                table_index = diff;
+                if (use_carry) {
+                    varerr_diffuse_carry(carry_curr,
+                                         carry_next,
+                                         carry_far,
+                                         context->width,
+                                         context->height,
+                                         depth,
+                                         x,
+                                         y,
+                                         error,
+                                         table_index,
+                                         direction,
+                                         n);
+                } else {
+                    varerr_diffuse(data + n,
+                                   context->width,
+                                   context->height,
+                                   x,
+                                   y,
+                                   depth,
+                                   error,
+                                   table_index,
+                                   direction);
+                }
+            }
+        }
+
+        if (use_carry) {
+            float *tmp;
+
+            tmp = carry_curr;
+            carry_curr = carry_next;
+            carry_next = carry_far;
+            carry_far = tmp;
+            if (carry_len > 0) {
+                memset(carry_far, 0x00, carry_len * sizeof(float));
+            }
+        }
+        sixel_dither_pipeline_row_notify(dither, y);
+    }
+
+    if (optimize_palette) {
+        memcpy(palette, new_palette, (size_t)(*ncolors * depth));
+        if (palette_float != NULL
+                && new_palette_float != NULL
+                && float_depth > 0) {
+            memcpy(palette_float,
+                   new_palette_float,
+                   (size_t)(*ncolors * float_depth)
+                       * sizeof(float));
+        }
+    } else {
+        *ncolors = reqcolor;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    free(carry_curr);
+    free(carry_next);
+    free(carry_far);
+    return status;
+}

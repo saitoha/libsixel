@@ -22,6 +22,13 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
                              int pixelformat,
                              sixel_allocator_t *allocator);
 
+SIXELSTATUS
+sixel_palette_build_heckbert_float32(sixel_palette_t *palette,
+                                     unsigned char const *data,
+                                     unsigned int length,
+                                     int pixelformat,
+                                     sixel_allocator_t *allocator);
+
 #ifdef __cplusplus
 }
 #endif

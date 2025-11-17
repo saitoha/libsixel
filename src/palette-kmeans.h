@@ -23,6 +23,13 @@ sixel_palette_build_kmeans(sixel_palette_t *palette,
                            int pixelformat,
                            sixel_allocator_t *allocator);
 
+SIXELSTATUS
+sixel_palette_build_kmeans_float32(sixel_palette_t *palette,
+                                   unsigned char const *data,
+                                   unsigned int length,
+                                   int pixelformat,
+                                   sixel_allocator_t *allocator);
+
 unsigned int
 sixel_palette_kmeans_iter_max(void);
 

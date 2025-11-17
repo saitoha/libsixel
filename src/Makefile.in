@@ -166,11 +166,18 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/palette-kmeans.h $(srcdir)/palette.c \
 	$(srcdir)/palette.h $(srcdir)/dither.c $(srcdir)/dither.h \
 	$(srcdir)/dither-common-pipeline.c \
-	$(srcdir)/dither-common-pipeline.h $(srcdir)/dither-pattern.c \
-	$(srcdir)/dither-pattern.h $(srcdir)/dither-diffusion-fixed.c \
-	$(srcdir)/dither-diffusion-fixed.h \
-	$(srcdir)/dither-diffusion-adaptive.c \
-	$(srcdir)/dither-diffusion-adaptive.h $(srcdir)/colorspace.c \
+	$(srcdir)/dither-common-pipeline.h \
+	$(srcdir)/dither-positional-8bit.c \
+	$(srcdir)/dither-positional-8bit.h \
+	$(srcdir)/dither-positional-float32.c \
+	$(srcdir)/dither-positional-float32.h \
+	$(srcdir)/dither-fixed-8bit.c $(srcdir)/dither-fixed-8bit.h \
+        $(srcdir)/dither-fixed-float32.c \
+        $(srcdir)/dither-fixed-float32.h $(srcdir)/dither-internal.h \
+        $(srcdir)/dither-varcoeff-8bit.c \
+        $(srcdir)/dither-varcoeff-8bit.h \
+        $(srcdir)/dither-varcoeff-float32.c \
+        $(srcdir)/dither-varcoeff-float32.h $(srcdir)/colorspace.c \
 	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
 	$(srcdir)/pixelformat.c $(srcdir)/pixelformat.h \
 	$(srcdir)/scale.c $(srcdir)/scale.h $(srcdir)/chunk.c \
@@ -206,9 +213,12 @@ am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-palette-common-snap.lo \
 	libsixel_la-palette-kmeans.lo libsixel_la-palette.lo \
 	libsixel_la-dither.lo libsixel_la-dither-common-pipeline.lo \
-	libsixel_la-dither-pattern.lo \
-	libsixel_la-dither-diffusion-fixed.lo \
-	libsixel_la-dither-diffusion-adaptive.lo \
+	libsixel_la-dither-positional-8bit.lo \
+	libsixel_la-dither-positional-float32.lo \
+        libsixel_la-dither-fixed-8bit.lo \
+        libsixel_la-dither-fixed-float32.lo \
+        libsixel_la-dither-varcoeff-8bit.lo \
+        libsixel_la-dither-varcoeff-float32.lo \
 	libsixel_la-colorspace.lo libsixel_la-frame.lo \
 	libsixel_la-pixelformat.lo libsixel_la-scale.lo \
 	libsixel_la-chunk.lo libsixel_la-loader.lo \
@@ -258,10 +268,13 @@ am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
 	./$(DEPDIR)/libsixel_la-colorspace.Plo \
 	./$(DEPDIR)/libsixel_la-compat_stub.Plo \
 	./$(DEPDIR)/libsixel_la-decoder.Plo \
-	./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo \
-	./$(DEPDIR)/libsixel_la-dither-diffusion-adaptive.Plo \
-	./$(DEPDIR)/libsixel_la-dither-diffusion-fixed.Plo \
-	./$(DEPDIR)/libsixel_la-dither-pattern.Plo \
+        ./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo \
+        ./$(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Plo \
+        ./$(DEPDIR)/libsixel_la-dither-varcoeff-float32.Plo \
+	./$(DEPDIR)/libsixel_la-dither-fixed-8bit.Plo \
+	./$(DEPDIR)/libsixel_la-dither-fixed-float32.Plo \
+	./$(DEPDIR)/libsixel_la-dither-positional-8bit.Plo \
+	./$(DEPDIR)/libsixel_la-dither-positional-float32.Plo \
 	./$(DEPDIR)/libsixel_la-dither.Plo \
 	./$(DEPDIR)/libsixel_la-encoder.Plo \
 	./$(DEPDIR)/libsixel_la-frame.Plo \
@@ -564,11 +577,18 @@ libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/palette-kmeans.h $(srcdir)/palette.c \
 	$(srcdir)/palette.h $(srcdir)/dither.c $(srcdir)/dither.h \
 	$(srcdir)/dither-common-pipeline.c \
-	$(srcdir)/dither-common-pipeline.h $(srcdir)/dither-pattern.c \
-	$(srcdir)/dither-pattern.h $(srcdir)/dither-diffusion-fixed.c \
-	$(srcdir)/dither-diffusion-fixed.h \
-	$(srcdir)/dither-diffusion-adaptive.c \
-	$(srcdir)/dither-diffusion-adaptive.h $(srcdir)/colorspace.c \
+	$(srcdir)/dither-common-pipeline.h \
+	$(srcdir)/dither-positional-8bit.c \
+	$(srcdir)/dither-positional-8bit.h \
+	$(srcdir)/dither-positional-float32.c \
+	$(srcdir)/dither-positional-float32.h \
+        $(srcdir)/dither-fixed-8bit.c $(srcdir)/dither-fixed-8bit.h \
+        $(srcdir)/dither-fixed-float32.c \
+        $(srcdir)/dither-fixed-float32.h $(srcdir)/dither-internal.h \
+        $(srcdir)/dither-varcoeff-8bit.c \
+        $(srcdir)/dither-varcoeff-8bit.h \
+        $(srcdir)/dither-varcoeff-float32.c \
+        $(srcdir)/dither-varcoeff-float32.h $(srcdir)/colorspace.c \
 	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
 	$(srcdir)/pixelformat.c $(srcdir)/pixelformat.h \
 	$(srcdir)/scale.c $(srcdir)/scale.h $(srcdir)/chunk.c \
@@ -724,9 +744,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-compat_stub.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-decoder.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-diffusion-adaptive.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-diffusion-fixed.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-pattern.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-varcoeff-float32.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-fixed-8bit.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-fixed-float32.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-positional-8bit.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-positional-float32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encoder.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frame.Plo@am__quote@ # am--include-marker
@@ -869,26 +892,47 @@ libsixel_la-dither-common-pipeline.lo: dither-common-pipeline.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-common-pipeline.lo `test -f 'dither-common-pipeline.c' || echo '$(srcdir)/'`dither-common-pipeline.c
 
-libsixel_la-dither-pattern.lo: dither-pattern.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-pattern.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-pattern.Tpo -c -o libsixel_la-dither-pattern.lo `test -f 'dither-pattern.c' || echo '$(srcdir)/'`dither-pattern.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-pattern.Tpo $(DEPDIR)/libsixel_la-dither-pattern.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-pattern.c' object='libsixel_la-dither-pattern.lo' libtool=yes @AMDEPBACKSLASH@
+libsixel_la-dither-positional-8bit.lo: dither-positional-8bit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-positional-8bit.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-positional-8bit.Tpo -c -o libsixel_la-dither-positional-8bit.lo `test -f 'dither-positional-8bit.c' || echo '$(srcdir)/'`dither-positional-8bit.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-positional-8bit.Tpo $(DEPDIR)/libsixel_la-dither-positional-8bit.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-positional-8bit.c' object='libsixel_la-dither-positional-8bit.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-pattern.lo `test -f 'dither-pattern.c' || echo '$(srcdir)/'`dither-pattern.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-positional-8bit.lo `test -f 'dither-positional-8bit.c' || echo '$(srcdir)/'`dither-positional-8bit.c
 
-libsixel_la-dither-diffusion-fixed.lo: dither-diffusion-fixed.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-diffusion-fixed.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-diffusion-fixed.Tpo -c -o libsixel_la-dither-diffusion-fixed.lo `test -f 'dither-diffusion-fixed.c' || echo '$(srcdir)/'`dither-diffusion-fixed.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-diffusion-fixed.Tpo $(DEPDIR)/libsixel_la-dither-diffusion-fixed.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-diffusion-fixed.c' object='libsixel_la-dither-diffusion-fixed.lo' libtool=yes @AMDEPBACKSLASH@
+libsixel_la-dither-positional-float32.lo: dither-positional-float32.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-positional-float32.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-positional-float32.Tpo -c -o libsixel_la-dither-positional-float32.lo `test -f 'dither-positional-float32.c' || echo '$(srcdir)/'`dither-positional-float32.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-positional-float32.Tpo $(DEPDIR)/libsixel_la-dither-positional-float32.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-positional-float32.c' object='libsixel_la-dither-positional-float32.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-diffusion-fixed.lo `test -f 'dither-diffusion-fixed.c' || echo '$(srcdir)/'`dither-diffusion-fixed.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-positional-float32.lo `test -f 'dither-positional-float32.c' || echo '$(srcdir)/'`dither-positional-float32.c
 
-libsixel_la-dither-diffusion-adaptive.lo: dither-diffusion-adaptive.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-diffusion-adaptive.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-diffusion-adaptive.Tpo -c -o libsixel_la-dither-diffusion-adaptive.lo `test -f 'dither-diffusion-adaptive.c' || echo '$(srcdir)/'`dither-diffusion-adaptive.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-diffusion-adaptive.Tpo $(DEPDIR)/libsixel_la-dither-diffusion-adaptive.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-diffusion-adaptive.c' object='libsixel_la-dither-diffusion-adaptive.lo' libtool=yes @AMDEPBACKSLASH@
+libsixel_la-dither-fixed-8bit.lo: dither-fixed-8bit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-fixed-8bit.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-fixed-8bit.Tpo -c -o libsixel_la-dither-fixed-8bit.lo `test -f 'dither-fixed-8bit.c' || echo '$(srcdir)/'`dither-fixed-8bit.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-fixed-8bit.Tpo $(DEPDIR)/libsixel_la-dither-fixed-8bit.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-fixed-8bit.c' object='libsixel_la-dither-fixed-8bit.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-diffusion-adaptive.lo `test -f 'dither-diffusion-adaptive.c' || echo '$(srcdir)/'`dither-diffusion-adaptive.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-fixed-8bit.lo `test -f 'dither-fixed-8bit.c' || echo '$(srcdir)/'`dither-fixed-8bit.c
+
+libsixel_la-dither-fixed-float32.lo: dither-fixed-float32.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-fixed-float32.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-fixed-float32.Tpo -c -o libsixel_la-dither-fixed-float32.lo `test -f 'dither-fixed-float32.c' || echo '$(srcdir)/'`dither-fixed-float32.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-fixed-float32.Tpo $(DEPDIR)/libsixel_la-dither-fixed-float32.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-fixed-float32.c' object='libsixel_la-dither-fixed-float32.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-fixed-float32.lo `test -f 'dither-fixed-float32.c' || echo '$(srcdir)/'`dither-fixed-float32.c
+
+libsixel_la-dither-varcoeff-8bit.lo: dither-varcoeff-8bit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-varcoeff-8bit.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Tpo -c -o libsixel_la-dither-varcoeff-8bit.lo `test -f 'dither-varcoeff-8bit.c' || echo '$(srcdir)/'`dither-varcoeff-8bit.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Tpo $(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-varcoeff-8bit.c' object='libsixel_la-dither-varcoeff-8bit.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-varcoeff-8bit.lo `test -f 'dither-varcoeff-8bit.c' || echo '$(srcdir)/'`dither-varcoeff-8bit.c
+
+libsixel_la-dither-varcoeff-float32.lo: dither-varcoeff-float32.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-dither-varcoeff-float32.lo -MD -MP -MF $(DEPDIR)/libsixel_la-dither-varcoeff-float32.Tpo -c -o libsixel_la-dither-varcoeff-float32.lo `test -f 'dither-varcoeff-float32.c' || echo '$(srcdir)/'`dither-varcoeff-float32.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-dither-varcoeff-float32.Tpo $(DEPDIR)/libsixel_la-dither-varcoeff-float32.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-varcoeff-float32.c' object='libsixel_la-dither-varcoeff-float32.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-varcoeff-float32.lo `test -f 'dither-varcoeff-float32.c' || echo '$(srcdir)/'`dither-varcoeff-float32.c
 
 libsixel_la-colorspace.lo: colorspace.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-colorspace.lo -MD -MP -MF $(DEPDIR)/libsixel_la-colorspace.Tpo -c -o libsixel_la-colorspace.lo `test -f 'colorspace.c' || echo '$(srcdir)/'`colorspace.c
@@ -1276,9 +1320,12 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-compat_stub.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-dither-diffusion-adaptive.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-dither-diffusion-fixed.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-dither-pattern.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-varcoeff-float32.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-fixed-8bit.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-fixed-float32.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-positional-8bit.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-positional-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frame.Plo
@@ -1360,9 +1407,12 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-compat_stub.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-dither-diffusion-adaptive.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-dither-diffusion-fixed.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-dither-pattern.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-varcoeff-8bit.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-varcoeff-float32.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-fixed-8bit.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-fixed-float32.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-positional-8bit.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-dither-positional-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frame.Plo

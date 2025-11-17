@@ -212,11 +212,31 @@ sixel_frame_get_pixels(sixel_frame_t /* in */ *frame)  /* frame object */
 }
 
 
+/* set pixels */
+SIXELAPI void
+sixel_frame_set_pixels(
+    sixel_frame_t  /* in */ *frame,
+    unsigned char  /* in */ *pixels)
+{
+    frame->pixels = pixels;
+}
+
+
 /* get palette */
 SIXELAPI unsigned char *
 sixel_frame_get_palette(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->palette;
+}
+
+
+/* set palette */
+SIXELAPI void
+sixel_frame_set_palette(
+    sixel_frame_t  /* in */ *frame,
+    unsigned char  /* in */ *palette)
+{
+    frame->palette = palette;
 }
 
 
@@ -228,11 +248,27 @@ sixel_frame_get_width(sixel_frame_t /* in */ *frame)  /* frame object */
 }
 
 
+/* set width */
+SIXELAPI void
+sixel_frame_set_width(sixel_frame_t /* in */ *frame, int /* in */ width)
+{
+    frame->width = width;
+}
+
+
 /* get height */
 SIXELAPI int
 sixel_frame_get_height(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->height;
+}
+
+
+/* set height */
+SIXELAPI void
+sixel_frame_set_height(sixel_frame_t /* in */ *frame, int /* in */ height)
+{
+    frame->height = height;
 }
 
 
@@ -244,6 +280,16 @@ sixel_frame_get_ncolors(sixel_frame_t /* in */ *frame)  /* frame object */
 }
 
 
+/* set ncolors */
+SIXELAPI void
+sixel_frame_set_ncolors(
+    sixel_frame_t  /* in */ *frame,
+    int            /* in */ ncolors)
+{
+    frame->ncolors = ncolors;
+}
+
+
 /* get pixelformat */
 SIXELAPI int
 sixel_frame_get_pixelformat(sixel_frame_t /* in */ *frame)  /* frame object */
@@ -252,10 +298,30 @@ sixel_frame_get_pixelformat(sixel_frame_t /* in */ *frame)  /* frame object */
 }
 
 
+/* set pixelformat */
+SIXELAPI void
+sixel_frame_set_pixelformat(
+    sixel_frame_t  /* in */ *frame,
+    int            /* in */ pixelformat)
+{
+    frame->pixelformat = pixelformat;
+}
+
+
 SIXELAPI int
 sixel_frame_get_colorspace(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->colorspace;
+}
+
+
+/* set colorspace */
+SIXELAPI void
+sixel_frame_set_colorspace(
+    sixel_frame_t  /* in */ *frame,
+    int            /* in */ colorspace)
+{
+    frame->colorspace = colorspace;
 }
 
 
@@ -267,11 +333,31 @@ sixel_frame_get_transparent(sixel_frame_t /* in */ *frame)  /* frame object */
 }
 
 
+/* set transparent */
+SIXELAPI void
+sixel_frame_set_transparent(
+    sixel_frame_t  /* in */ *frame,
+    int            /* in */ transparent)
+{
+    frame->transparent = transparent;
+}
+
+
 /* get transparent */
 SIXELAPI int
 sixel_frame_get_multiframe(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->multiframe;
+}
+
+
+/* set multiframe */
+SIXELAPI void
+sixel_frame_set_multiframe(
+    sixel_frame_t  /* in */ *frame,
+    int            /* in */ multiframe)
+{
+    frame->multiframe = multiframe;
 }
 
 
@@ -283,11 +369,45 @@ sixel_frame_get_delay(sixel_frame_t /* in */ *frame)  /* frame object */
 }
 
 
+/* set delay */
+SIXELAPI void
+sixel_frame_set_delay(sixel_frame_t /* in */ *frame, int /* in */ delay)
+{
+    frame->delay = delay;
+}
+
+
 /* get frame no */
 SIXELAPI int
 sixel_frame_get_frame_no(sixel_frame_t /* in */ *frame)  /* frame object */
 {
     return frame->frame_no;
+}
+
+
+/* set frame index */
+SIXELAPI void
+sixel_frame_set_frame_no(
+    sixel_frame_t  /* in */ *frame,
+    int            /* in */ frame_no)
+{
+    frame->frame_no = frame_no;
+}
+
+
+/* increment frame index */
+SIXELAPI void
+sixel_frame_increment_frame_no(sixel_frame_t /* in */ *frame)
+{
+    ++frame->frame_no;
+}
+
+
+/* reset frame index */
+SIXELAPI void
+sixel_frame_reset_frame_no(sixel_frame_t /* in */ *frame)
+{
+    frame->frame_no = 0;
 }
 
 
@@ -298,7 +418,33 @@ sixel_frame_get_loop_no(sixel_frame_t /* in */ *frame)  /* frame object */
     return frame->loop_count;
 }
 
-SIXELSTATUS
+
+/* set loop count */
+SIXELAPI void
+sixel_frame_set_loop_count(
+    sixel_frame_t  /* in */ *frame,
+    int            /* in */ loop_count)
+{
+    frame->loop_count = loop_count;
+}
+
+
+/* increment loop count */
+SIXELAPI void
+sixel_frame_increment_loop_count(sixel_frame_t /* in */ *frame)
+{
+    ++frame->loop_count;
+}
+
+
+/* get allocator */
+SIXELAPI sixel_allocator_t *
+sixel_frame_get_allocator(sixel_frame_t /* in */ *frame)
+{
+    return frame->allocator;
+}
+
+SIXELAPI SIXELSTATUS
 sixel_frame_ensure_colorspace(sixel_frame_t *frame, int colorspace)
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -571,6 +717,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     case SIXEL_PIXELFORMAT_BGR565:
     case SIXEL_PIXELFORMAT_RGBA8888:
     case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_RGBFLOAT32:
         /* normalize pixelformat */
         size = (size_t)(frame->width * frame->height * 3);
         normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
@@ -722,6 +869,7 @@ clip(unsigned char *pixels,
     case SIXEL_PIXELFORMAT_PAL8:
     case SIXEL_PIXELFORMAT_G8:
     case SIXEL_PIXELFORMAT_RGB888:
+    case SIXEL_PIXELFORMAT_RGBFLOAT32:
         depth = sixel_helper_compute_depth(pixelformat);
         if (depth < 0) {
             status = SIXEL_LOGIC_ERROR;
