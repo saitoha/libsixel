@@ -1475,7 +1475,7 @@ static sixel_option_choice_t const g_decoder_dequant_choices[] = {
 };
 
 static void
-sixel2png_normalise_windows_drive_path(char *path)
+normalise_windows_drive_path(char *path)
 {
 #if defined(_WIN32)
     size_t length;
@@ -1513,6 +1513,13 @@ sixel_decoder_setopt(
     int path_check;
     char const *payload = NULL;
     size_t length;
+    sixel_clipboard_spec_t clipboard_spec;
+    int match_index;
+    sixel_option_choice_result_t match_result;
+    char match_detail[128];
+    char match_message[256];
+    char const *filename = NULL;
+    char *p = NULL;
 
     sixel_decoder_ref(decoder);
     path_flags = 0u;
@@ -1536,8 +1543,6 @@ sixel_decoder_setopt(
         decoder->clipboard_input_active = 0;
         decoder->clipboard_input_format[0] = '\0';
         if (value != NULL) {
-            sixel_clipboard_spec_t clipboard_spec;
-
             clipboard_spec.is_clipboard = 0;
             clipboard_spec.format[0] = '\0';
             if (sixel_clipboard_parse_spec(value, &clipboard_spec)
@@ -1568,20 +1573,26 @@ sixel_decoder_setopt(
             payload = value + 4;
             if (payload[0] == '\0') {
                 sixel_helper_set_additional_message(
-                    "sixel2png: missing target after the \"png:\" prefix.");
+                    "missing target after the \"png:\" prefix.");
                 return SIXEL_BAD_ARGUMENT;
             }
             length = strlen(payload);
-            memcpy(value, payload, length + 1U);
-            sixel2png_normalise_windows_drive_path(value);
+            filename = p = malloc(length + 1U);
+            if (p == NULL) {
+                sixel_helper_set_additional_message(
+                    "sixel_decoder_setopt: malloc() failed for png path filename.");
+                return SIXEL_BAD_ALLOCATION;
+            }
+            memcpy(p, payload, length + 1U);
+            normalise_windows_drive_path(p);
+        } else {
+            filename = value;
         }
 
-        if (value != NULL) {
-            sixel_clipboard_spec_t clipboard_spec;
-
+        if (filename != NULL) {
             clipboard_spec.is_clipboard = 0;
             clipboard_spec.format[0] = '\0';
-            if (sixel_clipboard_parse_spec(value, &clipboard_spec)
+            if (sixel_clipboard_parse_spec(filename, &clipboard_spec)
                     && clipboard_spec.is_clipboard) {
                 decoder_clipboard_select_format(
                     decoder->clipboard_output_format,
@@ -1592,7 +1603,8 @@ sixel_decoder_setopt(
             }
         }
         free(decoder->output);
-        decoder->output = strdup_with_allocator(value, decoder->allocator);
+        decoder->output = strdup_with_allocator(filename, decoder->allocator);
+        free(p);
         if (decoder->output == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_decoder_setopt: strdup_with_allocator() failed.");
@@ -1608,46 +1620,39 @@ sixel_decoder_setopt(
             goto end;
         }
 
-        {
-            int match_index;
-            sixel_option_choice_result_t match_result;
-            char match_detail[128];
-            char match_message[256];
+        match_index = 0;
+        memset(match_detail, 0, sizeof(match_detail));
+        memset(match_message, 0, sizeof(match_message));
 
-            match_index = 0;
-            memset(match_detail, 0, sizeof(match_detail));
-            memset(match_message, 0, sizeof(match_message));
-
-            match_result = sixel_option_match_choice(
-                value,
-                g_decoder_dequant_choices,
-                sizeof(g_decoder_dequant_choices) /
-                sizeof(g_decoder_dequant_choices[0]),
-                &match_index,
-                match_detail,
-                sizeof(match_detail));
-            if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
-                decoder->dequantize_method =
-                    g_decoder_dequant_mappings[match_index].method;
-                decoder->dequantize_refine =
-                    g_decoder_dequant_mappings[match_index].refine;
+        match_result = sixel_option_match_choice(
+            value,
+            g_decoder_dequant_choices,
+            sizeof(g_decoder_dequant_choices) /
+            sizeof(g_decoder_dequant_choices[0]),
+            &match_index,
+            match_detail,
+            sizeof(match_detail));
+        if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+            decoder->dequantize_method =
+                g_decoder_dequant_mappings[match_index].method;
+            decoder->dequantize_refine =
+                g_decoder_dequant_mappings[match_index].refine;
+        } else {
+            if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+                sixel_option_report_ambiguous_prefix(
+                    value,
+                    match_detail,
+                    match_message,
+                    sizeof(match_message));
             } else {
-                if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
-                    sixel_option_report_ambiguous_prefix(
-                        value,
-                        match_detail,
-                        match_message,
-                        sizeof(match_message));
-                } else {
-                    sixel_option_report_invalid_choice(
-                        "unsupported dequantize method.",
-                        match_detail,
-                        match_message,
-                        sizeof(match_message));
-                }
-                status = SIXEL_BAD_ARGUMENT;
-                goto end;
+                sixel_option_report_invalid_choice(
+                    "unsupported dequantize method.",
+                    match_detail,
+                    match_message,
+                    sizeof(match_message));
             }
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
         }
         break;
 
