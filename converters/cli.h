@@ -60,6 +60,8 @@ cli_token_is_known_option(cli_option_help_t const *table,
 int
 cli_guard_missing_argument(int short_opt,
                            char *const *argv,
+                           char *argument,
+                           int *optind_ptr,
                            char const *optstring,
                            cli_option_help_t const *table,
                            size_t table_count,
