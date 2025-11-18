@@ -19,6 +19,10 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#if !defined(_POSIX_C_SOURCE)
+# define _POSIX_C_SOURCE 200809L
+#endif
+
 #include "config.h"
 #include "completion_utils.h"
 
@@ -45,8 +49,6 @@
 # include <unistd.h>
 #endif  /* HAVE_UNISTD_H */
 
-#include "../src/compat_stub.h"
-
 /* _WIN32 */
 #if HAVE_DIRECT_H
 # include <direct.h>
@@ -54,6 +56,9 @@
 #if HAVE_IO_H
 # include <io.h>
 #endif  /* HAVE_IO_H */
+#if defined(_MSC_VER)
+# include <share.h>
+#endif  /* _MSC_VER */
 
 /* Provide ssize_t so MSVC matches POSIX I/O signatures. */
 #if defined(_MSC_VER) && !defined(_SSIZE_T_DEFINED)
@@ -134,6 +139,262 @@ int fchmod(int, mode_t);
 
 #define IMG2SIXEL_COMPLETION_SHELL_BASH  1
 #define IMG2SIXEL_COMPLETION_SHELL_ZSH   2
+
+/* ------------------------------------------------------------------------ */
+/* private copies of the compat helpers we consume                          */
+/* ------------------------------------------------------------------------ */
+
+static char *sixel_compat_strerror(int error_number,
+                                   char *buffer,
+                                   size_t buffer_size);
+static FILE *sixel_compat_fopen(const char *filename, const char *mode);
+static const char *sixel_compat_getenv(const char *name);
+#if !defined(HAVE_MKSTEMP)
+static int sixel_compat_mktemp(char *templ, size_t buffer_size);
+static int sixel_compat_open(const char *path, int flags, ...);
+#endif
+static int sixel_compat_close(int fd);
+static int sixel_compat_unlink(const char *path);
+static int sixel_compat_access(const char *path, int mode);
+static ssize_t sixel_compat_write(int fd, const void *buffer, size_t count);
+
+static char *
+sixel_compat_strerror(int error_number, char *buffer, size_t buffer_size)
+{
+#if defined(_MSC_VER)
+    errno_t status;
+#elif defined(_WIN32)
+# if defined(__STDC_LIB_EXT1__)
+    errno_t status;
+# else
+    char *message;
+    size_t copy_length;
+# endif
+#else
+# if defined(_GNU_SOURCE)
+    char *message;
+    size_t copy_length;
+# endif
+#endif
+
+    if (buffer == NULL || buffer_size == 0) {
+        return NULL;
+    }
+
+#if defined(_MSC_VER)
+    status = strerror_s(buffer, buffer_size, error_number);
+    if (status != 0) {
+        buffer[0] = '\0';
+        return NULL;
+    }
+    return buffer;
+#elif defined(_WIN32)
+# if defined(__STDC_LIB_EXT1__)
+    status = strerror_s(buffer, buffer_size, error_number);
+    if (status != 0) {
+        buffer[0] = '\0';
+        return NULL;
+    }
+    return buffer;
+# else
+    message = strerror(error_number);
+    if (message == NULL) {
+        buffer[0] = '\0';
+        return NULL;
+    }
+    copy_length = strlen(message);
+    if (copy_length >= buffer_size) {
+        copy_length = buffer_size - 1;
+    }
+    memcpy(buffer, message, copy_length);
+    buffer[copy_length] = '\0';
+    return buffer;
+# endif
+#else
+# if defined(_GNU_SOURCE)
+    message = strerror_r(error_number, buffer, buffer_size);
+    if (message == NULL) {
+        buffer[0] = '\0';
+        return NULL;
+    }
+    copy_length = strlen(message);
+    if (copy_length >= buffer_size) {
+        copy_length = buffer_size - 1;
+    }
+    memcpy(buffer, message, copy_length);
+    buffer[copy_length] = '\0';
+    return buffer;
+# else
+    if (strerror_r(error_number, buffer, buffer_size) != 0) {
+        buffer[0] = '\0';
+        return NULL;
+    }
+    return buffer;
+# endif
+#endif
+}
+
+static FILE *
+sixel_compat_fopen(const char *filename, const char *mode)
+{
+    FILE *handle;
+
+    handle = NULL;
+    if (filename == NULL || mode == NULL) {
+        errno = EINVAL;
+        return NULL;
+    }
+
+#if defined(_MSC_VER)
+    handle = _fsopen(filename, mode, _SH_DENYNO);
+#else
+    handle = fopen(filename, mode);
+#endif
+
+    return handle;
+}
+
+static const char *
+sixel_compat_getenv(const char *name)
+{
+#if defined(_MSC_VER)
+    static char buffer[32768];
+    char *value;
+    size_t length;
+
+    value = NULL;
+    length = 0;
+    if (_dupenv_s(&value, &length, name) != 0) {
+        if (value != NULL) {
+            free(value);
+        }
+        return NULL;
+    }
+    if (value == NULL) {
+        return NULL;
+    }
+    if (length >= sizeof(buffer)) {
+        length = sizeof(buffer) - 1;
+    }
+    memcpy(buffer, value, length);
+    buffer[length] = '\0';
+    free(value);
+    return buffer;
+#else
+    return getenv(name);
+#endif
+}
+
+#if !defined(HAVE_MKSTEMP)
+static int
+sixel_compat_mktemp(char *templ, size_t buffer_size)
+{
+#if defined(_MSC_VER)
+    errno_t error;
+
+    if (templ == NULL || buffer_size == 0) {
+        errno = EINVAL;
+        return (-1);
+    }
+    error = _mktemp_s(templ, buffer_size);
+    if (error != 0) {
+        errno = error;
+        return (-1);
+    }
+    return 0;
+#elif HAVE_MKTEMP
+    (void)buffer_size;
+
+    if (templ == NULL) {
+        errno = EINVAL;
+        return (-1);
+    }
+    if (mktemp(templ) == NULL) {
+        return (-1);
+    }
+    return 0;
+#else
+    (void)templ;
+    (void)buffer_size;
+    errno = ENOSYS;
+    return (-1);
+#endif
+}
+
+static int
+sixel_compat_open(const char *path, int flags, ...)
+{
+    int fd;
+    va_list args;
+    int mode;
+
+    fd = (-1);
+    mode = 0;
+
+    if (path == NULL) {
+        errno = EINVAL;
+        return (-1);
+    }
+
+    va_start(args, flags);
+    if (flags & O_CREAT) {
+        mode = va_arg(args, int);
+    }
+    va_end(args);
+
+#if defined(_MSC_VER)
+    fd = _open(path, flags, mode);
+#else
+    if (flags & O_CREAT) {
+        fd = open(path, flags, (mode_t)mode);
+    } else {
+        fd = open(path, flags);
+    }
+#endif
+
+    return fd;
+}
+#endif  /* !HAVE_MKSTEMP */
+
+static int
+sixel_compat_close(int fd)
+{
+#if defined(_MSC_VER)
+    return _close(fd);
+#else
+    return close(fd);
+#endif
+}
+
+static int
+sixel_compat_unlink(const char *path)
+{
+#if defined(_MSC_VER)
+    return _unlink(path);
+#else
+    return unlink(path);
+#endif
+}
+
+static int
+sixel_compat_access(const char *path, int mode)
+{
+#if defined(_MSC_VER)
+    return _access(path, mode);
+#else
+    return access(path, mode);
+#endif
+}
+
+static ssize_t
+sixel_compat_write(int fd, const void *buffer, size_t count)
+{
+#if defined(_MSC_VER)
+    return (ssize_t)_write(fd, buffer, (unsigned int)count);
+#else
+    return write(fd, buffer, count);
+#endif
+}
 
 /* ------------------------------------------------------------------------ */
 /* helpers for platform abstractions */

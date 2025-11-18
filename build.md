@@ -158,6 +158,24 @@ meson test -C builddir
 meson install -C builddir  # may require sudo on Unix-like systems
 ```
 
+## Git hooks
+
+Developers can opt into the repository-provided Git hooks to catch common
+mistakes before they land in a commit.  The pre-commit hook currently rejects
+any staged file that tries to include private headers located under `src/`
+because public tools such as the CLI converters must restrict themselves to
+the installed headers in `include/`.
+
+Enable the hooks once per clone by pointing Git at the bundled hook directory:
+
+```sh
+git config core.hooksPath .githooks
+```
+
+The check is also available as a standalone script, so continuous-integration
+jobs can run `tools/check_private_includes.py` directly without installing the
+hook.
+
 ### macOS Quick Look (Meson)
 
 Quick Look support is controlled by the feature option `-Dquicklook_extension`.
