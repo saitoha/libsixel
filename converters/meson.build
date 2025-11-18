@@ -20,7 +20,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-sources_common = ['malloc_stub.c']
+sources_common = ['malloc_stub.c', 'cli.c']
 aborttrace_sources = ['aborttrace.c']
 aborttrace_deps_local = []
 if abort_trace_enabled

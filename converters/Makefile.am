@@ -87,6 +87,8 @@ bin_PROGRAMS += img2sixel
 img2sixel_SOURCES = $(srcdir)/img2sixel.c \
                     $(srcdir)/completion_utils.c \
                     $(srcdir)/completion_utils.h \
+                    $(srcdir)/cli.c \
+                    $(srcdir)/cli.h \
                     $(srcdir)/malloc_stub.c \
                     $(srcdir)/malloc_stub.h \
                     $(srcdir)/getopt_stub.h \
@@ -112,6 +114,8 @@ endif
 if WANT_SIXEL2PNG
 bin_PROGRAMS += sixel2png
 sixel2png_SOURCES = $(srcdir)/sixel2png.c \
+                    $(srcdir)/cli.c \
+                    $(srcdir)/cli.h \
                     $(srcdir)/malloc_stub.c \
                     $(srcdir)/malloc_stub.h \
                     $(srcdir)/getopt_stub.h \
