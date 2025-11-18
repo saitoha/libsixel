@@ -60,6 +60,90 @@ sixel_clamp_unit(double value)
     return value;
 }
 
+static inline double
+sixel_srgb_unit_to_linear(double value)
+{
+    double x;
+
+    x = sixel_clamp_unit(value);
+    if (x <= 0.04045) {
+        return x / 12.92;
+    }
+
+    return pow((x + 0.055) / 1.055, 2.4);
+}
+
+static inline double
+sixel_linear_to_srgb_unit(double value)
+{
+    double y;
+
+    if (value <= 0.0) {
+        return 0.0;
+    }
+    if (value >= 1.0) {
+        return 1.0;
+    }
+
+    if (value <= 0.0031308) {
+        y = value * 12.92;
+    } else {
+        y = 1.055 * pow(value, 1.0 / 2.4) - 0.055;
+    }
+
+    return sixel_clamp_unit(y);
+}
+
+static inline double
+sixel_smptec_unit_to_linear(double value)
+{
+    double x;
+
+    x = sixel_clamp_unit(value);
+    if (x <= 0.0) {
+        return 0.0;
+    }
+    if (x >= 1.0) {
+        return 1.0;
+    }
+
+    return pow(x, 2.2);
+}
+
+static inline double
+sixel_linear_to_smptec_unit(double value)
+{
+    double y;
+
+    if (value <= 0.0) {
+        return 0.0;
+    }
+    if (value >= 1.0) {
+        return 1.0;
+    }
+
+    y = pow(value, 1.0 / 2.2);
+    return sixel_clamp_unit(y);
+}
+
+static inline double
+sixel_oklab_clamp_ab(double value)
+{
+    double lower;
+    double upper;
+
+    lower = -SIXEL_OKLAB_AB_OFFSET;
+    upper = SIXEL_OKLAB_AB_OFFSET;
+    if (value < lower) {
+        return lower;
+    }
+    if (value > upper) {
+        return upper;
+    }
+
+    return value;
+}
+
 static unsigned char
 sixel_colorspace_clamp(int value)
 {
@@ -77,11 +161,7 @@ sixel_srgb_to_linear_double(unsigned char v)
 {
     double x = (double)v / 255.0;
 
-    if (x <= 0.04045) {
-        return x / 12.92;
-    }
-
-    return pow((x + 0.055) / 1.055, 2.4);
+    return sixel_srgb_unit_to_linear(x);
 }
 
 static inline unsigned char
@@ -89,19 +169,7 @@ sixel_linear_double_to_srgb(double v)
 {
     double y;
 
-    if (v <= 0.0) {
-        return 0;
-    }
-    if (v >= 1.0) {
-        return 255;
-    }
-
-    if (v <= 0.0031308) {
-        y = v * 12.92;
-    } else {
-        y = 1.055 * pow(v, 1.0 / 2.4) - 0.055;
-    }
-
+    y = sixel_linear_to_srgb_unit(v);
     return sixel_colorspace_clamp((int)(y * 255.0 + 0.5));
 }
 
@@ -123,14 +191,7 @@ sixel_smptec_to_linear_double(unsigned char v)
 {
     double x = (double)v / 255.0;
 
-    if (x <= 0.0) {
-        return 0.0;
-    }
-    if (x >= 1.0) {
-        return 1.0;
-    }
-
-    return pow(x, 2.2);
+    return sixel_smptec_unit_to_linear(x);
 }
 
 static inline unsigned char
@@ -138,14 +199,7 @@ sixel_linear_double_to_smptec(double v)
 {
     double y;
 
-    if (v <= 0.0) {
-        return 0;
-    }
-    if (v >= 1.0) {
-        return 255;
-    }
-
-    y = pow(v, 1.0 / 2.2);
+    y = sixel_linear_to_smptec_unit(v);
     return sixel_colorspace_clamp((int)(y * 255.0 + 0.5));
 }
 
@@ -367,6 +421,66 @@ sixel_decode_linear_from_colorspace(int colorspace,
     }
 }
 
+/*
+ * Float variant of the colorspace decoder so RGBFLOAT32 buffers can skip the
+ * byte quantisation that the legacy helper performs.
+ */
+static void
+sixel_decode_linear_from_colorspace_float(int colorspace,
+                                          float r_value,
+                                          float g_value,
+                                          float b_value,
+                                          double *r_lin,
+                                          double *g_lin,
+                                          double *b_lin)
+{
+    double r;
+    double g;
+    double b;
+
+    r = (double)r_value;
+    g = (double)g_value;
+    b = (double)b_value;
+
+    switch (colorspace) {
+    case SIXEL_COLORSPACE_GAMMA:
+        *r_lin = sixel_srgb_unit_to_linear(r);
+        *g_lin = sixel_srgb_unit_to_linear(g);
+        *b_lin = sixel_srgb_unit_to_linear(b);
+        break;
+    case SIXEL_COLORSPACE_LINEAR:
+        *r_lin = sixel_clamp_unit(r);
+        *g_lin = sixel_clamp_unit(g);
+        *b_lin = sixel_clamp_unit(b);
+        break;
+    case SIXEL_COLORSPACE_OKLAB:
+        sixel_oklab_to_linear(r, g, b, r_lin, g_lin, b_lin);
+        break;
+    case SIXEL_COLORSPACE_SMPTEC:
+    {
+        double r_smptec;
+        double g_smptec;
+        double b_smptec;
+
+        r_smptec = sixel_smptec_unit_to_linear(r);
+        g_smptec = sixel_smptec_unit_to_linear(g);
+        b_smptec = sixel_smptec_unit_to_linear(b);
+        sixel_linear_smptec_to_srgb(r_smptec,
+                                    g_smptec,
+                                    b_smptec,
+                                    r_lin,
+                                    g_lin,
+                                    b_lin);
+        break;
+    }
+    default:
+        *r_lin = sixel_clamp_unit(r);
+        *g_lin = sixel_clamp_unit(g);
+        *b_lin = sixel_clamp_unit(b);
+        break;
+    }
+}
+
 static void
 sixel_encode_linear_to_colorspace(int colorspace,
                                   double r_lin,
@@ -417,6 +531,65 @@ sixel_encode_linear_to_colorspace(int colorspace,
         *b8 = sixel_linear_double_to_byte(b_lin);
         break;
     }
+}
+
+static void
+sixel_encode_linear_to_colorspace_float(int colorspace,
+                                        double r_lin,
+                                        double g_lin,
+                                        double b_lin,
+                                        float *r_value,
+                                        float *g_value,
+                                        float *b_value)
+{
+    double r;
+    double g;
+    double b;
+
+    switch (colorspace) {
+    case SIXEL_COLORSPACE_GAMMA:
+        r = sixel_linear_to_srgb_unit(r_lin);
+        g = sixel_linear_to_srgb_unit(g_lin);
+        b = sixel_linear_to_srgb_unit(b_lin);
+        break;
+    case SIXEL_COLORSPACE_LINEAR:
+        r = sixel_clamp_unit(r_lin);
+        g = sixel_clamp_unit(g_lin);
+        b = sixel_clamp_unit(b_lin);
+        break;
+    case SIXEL_COLORSPACE_OKLAB:
+        sixel_linear_to_oklab(r_lin, g_lin, b_lin, &r, &g, &b);
+        r = sixel_clamp_unit(r);
+        g = sixel_oklab_clamp_ab(g);
+        b = sixel_oklab_clamp_ab(b);
+        break;
+    case SIXEL_COLORSPACE_SMPTEC:
+    {
+        double r_smptec;
+        double g_smptec;
+        double b_smptec;
+
+        sixel_linear_srgb_to_smptec(r_lin,
+                                     g_lin,
+                                     b_lin,
+                                     &r_smptec,
+                                     &g_smptec,
+                                     &b_smptec);
+        r = sixel_linear_to_smptec_unit(r_smptec);
+        g = sixel_linear_to_smptec_unit(g_smptec);
+        b = sixel_linear_to_smptec_unit(b_smptec);
+        break;
+    }
+    default:
+        r = sixel_clamp_unit(r_lin);
+        g = sixel_clamp_unit(g_lin);
+        b = sixel_clamp_unit(b_lin);
+        break;
+    }
+
+    *r_value = (float)r;
+    *g_value = (float)g;
+    *b_value = (float)b;
 }
 
 static SIXELSTATUS
@@ -527,6 +700,62 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
     return SIXEL_OK;
 }
 
+/*
+ * Convert RGBFLOAT32 buffers in-place by round-tripping through linear space
+ * with double intermediates.  This keeps OKLab/linear conversions precise
+ * while sharing the same matrices as the byte implementation.
+ */
+static SIXELSTATUS
+sixel_convert_pixels_via_linear_float(float *pixels,
+                                      size_t size,
+                                      int colorspace_src,
+                                      int colorspace_dst)
+{
+    size_t pixel_total;
+    size_t index;
+    size_t base;
+    double r_lin;
+    double g_lin;
+    double b_lin;
+    float *pr;
+    float *pg;
+    float *pb;
+
+    if (colorspace_src == colorspace_dst) {
+        return SIXEL_OK;
+    }
+
+    if (size % (3U * sizeof(float)) != 0U) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    pixel_total = size / (3U * sizeof(float));
+    for (index = 0U; index < pixel_total; ++index) {
+        base = index * 3U;
+        pr = pixels + base + 0U;
+        pg = pixels + base + 1U;
+        pb = pixels + base + 2U;
+
+        sixel_decode_linear_from_colorspace_float(colorspace_src,
+                                                  *pr,
+                                                  *pg,
+                                                  *pb,
+                                                  &r_lin,
+                                                  &g_lin,
+                                                  &b_lin);
+
+        sixel_encode_linear_to_colorspace_float(colorspace_dst,
+                                                r_lin,
+                                                g_lin,
+                                                b_lin,
+                                                pr,
+                                                pg,
+                                                pb);
+    }
+
+    return SIXEL_OK;
+}
+
 static unsigned char
 sixel_colorspace_convert_component(unsigned char value,
                                    int colorspace_src,
@@ -562,6 +791,9 @@ sixel_colorspace_supports_pixelformat(int pixelformat)
     case SIXEL_PIXELFORMAT_G8:
     case SIXEL_PIXELFORMAT_GA88:
     case SIXEL_PIXELFORMAT_AG88:
+    case SIXEL_PIXELFORMAT_RGBFLOAT32:
+    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
+    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
         return 1;
     default:
         break;
@@ -596,6 +828,13 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
     }
 
     sixel_colorspace_init_tables();
+
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        return sixel_convert_pixels_via_linear_float((float *)pixels,
+                                                     size,
+                                                     colorspace_src,
+                                                     colorspace_dst);
+    }
 
     if (colorspace_src == SIXEL_COLORSPACE_OKLAB ||
             colorspace_dst == SIXEL_COLORSPACE_OKLAB ||

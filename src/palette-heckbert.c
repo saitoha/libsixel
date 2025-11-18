@@ -67,6 +67,7 @@
 #include "palette-kmeans.h"
 #include "palette-heckbert.h"
 #include "palette.h"
+#include "pixelformat.h"
 #include "status.h"
 
 /*
@@ -105,27 +106,19 @@ struct histogram_control {
 };
 
 /*
- * Clamp a float32 channel in the 0.0-1.0 range and convert it into an 8-bit
- * sample suitable for the existing histogram quantizer.  NaNs are treated as
- * black so downstream processing never receives garbage values.
+ * Normalize a float32 channel according to the current pixelformat and convert
+ * it into an 8-bit bucket sample for the histogram quantizer.  This keeps
+ * signed OKLab components from collapsing to zero when float32 inputs drive
+ * the palette solver.
  */
 static unsigned char
-sixel_palette_heckbert_float32_to_u8(float value)
+sixel_palette_heckbert_float32_to_u8(float value,
+                                     int pixelformat,
+                                     int channel)
 {
-#if HAVE_MATH_H
-    if (!isfinite(value)) {
-        value = 0.0f;
-    }
-#endif
-
-    if (value <= 0.0f) {
-        return 0U;
-    }
-    if (value >= 1.0f) {
-        return 255U;
-    }
-
-    return (unsigned char)(value * 255.0f + 0.5f);
+    return sixel_pixelformat_float_channel_to_byte(pixelformat,
+                                                   channel,
+                                                   value);
 }
 
 /*
@@ -480,7 +473,7 @@ sixel_lut_build_histogram(unsigned char const *data,
     }
 
     channel_stride = pixel_stride / depth;
-    input_is_float32 = (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32);
+    input_is_float32 = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat);
     if (input_is_float32) {
         if (channel_stride != sizeof(float)) {
             sixel_helper_set_additional_message(
@@ -557,7 +550,9 @@ sixel_lut_build_histogram(unsigned char const *data,
             for (plane = 0U; plane < depth_u; ++plane) {
                 quantized_pixel[plane]
                     = sixel_palette_heckbert_float32_to_u8(
-                        float_pixel[plane]);
+                        float_pixel[plane],
+                        pixelformat,
+                        (int)plane);
             }
             bucket_input = quantized_pixel;
         } else {
@@ -1680,7 +1675,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     }
     pixel_stride = (unsigned int)depth_result;
     bytes_per_channel = 1U;
-    if (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         bytes_per_channel = (unsigned int)sizeof(float);
     }
     if (pixel_stride == 0U || bytes_per_channel == 0U
@@ -1700,7 +1695,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     colormap.size = 0U;
     colormap.table = NULL;
     origcolors = 0U;
-    input_is_float32 = (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32);
+    input_is_float32 = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat);
     float_entries = NULL;
     float_stride = 0;
     status = sixel_palette_heckbert_colormap(data,
@@ -1812,7 +1807,7 @@ sixel_palette_build_heckbert_float32(sixel_palette_t *palette,
                                      int pixelformat,
                                      sixel_allocator_t *allocator)
 {
-    if (pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32) {
+    if (!SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         sixel_helper_set_additional_message(
             "sixel_palette_build_heckbert_float32: "
             "requires RGBFLOAT32 input.");

@@ -37,6 +37,7 @@
 #include <sixel.h>
 #include "output.h"
 #include "dither.h"
+#include "pixelformat.h"
 #include "assessment.h"
 #include "sixel_threads_config.h"
 #if SIXEL_ENABLE_THREADS
@@ -2027,32 +2028,29 @@ laster_attr:
 }
 
 
-static unsigned char
-sixel_palette_float32_component_to_u8(float value)
+static int
+sixel_palette_float_pixelformat_for_colorspace(int colorspace)
 {
-    int scaled;
-
-    if (value < 0.0f) {
-        value = 0.0f;
-    } else if (value > 1.0f) {
-        value = 1.0f;
+    switch (colorspace) {
+    case SIXEL_COLORSPACE_LINEAR:
+        return SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+    case SIXEL_COLORSPACE_OKLAB:
+        return SIXEL_PIXELFORMAT_OKLABFLOAT32;
+    default:
+        return SIXEL_PIXELFORMAT_RGBFLOAT32;
     }
-    scaled = (int)(value * 255.0f + 0.5f);
-    if (scaled < 0) {
-        scaled = 0;
-    } else if (scaled > 255) {
-        scaled = 255;
-    }
-    return (unsigned char)scaled;
 }
 
 static int
 sixel_palette_float32_matches_u8(unsigned char const *palette,
                                  float const *palette_float,
-                                 size_t count)
+                                 size_t count,
+                                 int float_pixelformat)
 {
     size_t index;
     size_t limit;
+    unsigned char expected;
+    int channel;
 
     if (palette == NULL || palette_float == NULL || count == 0U) {
         return 1;
@@ -2062,9 +2060,12 @@ sixel_palette_float32_matches_u8(unsigned char const *palette,
     }
     limit = count * 3U;
     for (index = 0U; index < limit; ++index) {
-        if (palette[index]
-                != sixel_palette_float32_component_to_u8(
-                    palette_float[index])) {
+        channel = (int)(index % 3U);
+        expected = sixel_pixelformat_float_channel_to_byte(
+            float_pixelformat,
+            channel,
+            palette_float[index]);
+        if (palette[index] != expected) {
             return 0;
         }
     }
@@ -2074,10 +2075,12 @@ sixel_palette_float32_matches_u8(unsigned char const *palette,
 static void
 sixel_palette_sync_float32_from_u8(unsigned char const *palette,
                                    float *palette_float,
-                                   size_t count)
+                                   size_t count,
+                                   int float_pixelformat)
 {
     size_t index;
     size_t limit;
+    int channel;
 
     if (palette == NULL || palette_float == NULL || count == 0U) {
         return;
@@ -2087,7 +2090,11 @@ sixel_palette_sync_float32_from_u8(unsigned char const *palette,
     }
     limit = count * 3U;
     for (index = 0U; index < limit; ++index) {
-        palette_float[index] = (float)palette[index] / 255.0f;
+        channel = (int)(index % 3U);
+        palette_float[index] = sixel_pixelformat_byte_to_float(
+            float_pixelformat,
+            channel,
+            palette[index]);
     }
 }
 
@@ -3353,6 +3360,13 @@ sixel_encode_dither(
     sixel_palette_t *palette_obj = NULL;
     size_t palette_count = 0U;
     size_t palette_float_count = 0U;
+    size_t palette_bytes = 0U;
+    size_t palette_float_bytes = 0U;
+    size_t palette_channels = 0U;
+    size_t palette_index = 0U;
+    int palette_source_colorspace;
+    int palette_float_pixelformat;
+    int output_float_pixelformat;
     int pipeline_active;
     int pipeline_threads;
     int pipeline_nbands;
@@ -3362,6 +3376,15 @@ sixel_encode_dither(
     palette_obj = NULL;
     palette_count = 0U;
     palette_float_count = 0U;
+    palette_bytes = 0U;
+    palette_float_bytes = 0U;
+    palette_channels = 0U;
+    palette_index = 0U;
+    palette_source_colorspace = SIXEL_COLORSPACE_GAMMA;
+    palette_float_pixelformat =
+        sixel_palette_float_pixelformat_for_colorspace(
+            palette_source_colorspace);
+    output_float_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
     status = sixel_dither_get_quantized_palette(dither, &palette_obj);
     if (SIXEL_FAILED(status)) {
         sixel_helper_set_additional_message(
@@ -3420,6 +3443,13 @@ sixel_encode_dither(
         break;
     }
 
+    if (output != NULL) {
+        palette_source_colorspace = output->source_colorspace;
+        palette_float_pixelformat =
+            sixel_palette_float_pixelformat_for_colorspace(
+                palette_source_colorspace);
+    }
+
     status = sixel_palette_copy_entries_8bit(
         palette_obj,
         &palette_entries,
@@ -3446,10 +3476,65 @@ sixel_encode_dither(
             && !sixel_palette_float32_matches_u8(
                     palette_entries,
                     palette_entries_float32,
-                    palette_count)) {
+                    palette_count,
+                    palette_float_pixelformat)) {
         sixel_palette_sync_float32_from_u8(palette_entries,
                                            palette_entries_float32,
-                                           palette_count);
+                                           palette_count,
+                                           palette_float_pixelformat);
+    }
+    if (palette_entries != NULL && palette_count > 0U
+            && output != NULL
+            && output->source_colorspace != output->colorspace) {
+        palette_bytes = palette_count * 3U;
+        if (palette_entries_float32 != NULL
+                && palette_float_count == palette_count) {
+            /*
+             * Use the higher-precision palette to change color spaces once and
+             * then quantize those float channels down to bytes.  The previous
+             * implementation converted the 8bit entries before overwriting
+             * them from float again, doubling the amount of work and rounding
+             * the palette twice.
+             */
+            palette_float_bytes = palette_bytes * sizeof(float);
+            status = sixel_helper_convert_colorspace(
+                (unsigned char *)palette_entries_float32,
+                palette_float_bytes,
+                palette_float_pixelformat,
+                output->source_colorspace,
+                output->colorspace);
+            if (SIXEL_FAILED(status)) {
+                sixel_helper_set_additional_message(
+                    "sixel_encode_dither: float palette colorspace conversion failed.");
+                goto end;
+            }
+            output_float_pixelformat =
+                sixel_palette_float_pixelformat_for_colorspace(
+                    output->colorspace);
+            palette_channels = palette_count * 3U;
+            for (palette_index = 0U; palette_index < palette_channels;
+                    ++palette_index) {
+                int channel;
+
+                channel = (int)(palette_index % 3U);
+                palette_entries[palette_index] =
+                    sixel_pixelformat_float_channel_to_byte(
+                        output_float_pixelformat,
+                        channel,
+                        palette_entries_float32[palette_index]);
+            }
+        } else {
+            status = sixel_helper_convert_colorspace(palette_entries,
+                                                     palette_bytes,
+                                                     SIXEL_PIXELFORMAT_RGB888,
+                                                     output->source_colorspace,
+                                                     output->colorspace);
+            if (SIXEL_FAILED(status)) {
+                sixel_helper_set_additional_message(
+                    "sixel_encode_dither: palette colorspace conversion failed.");
+                goto end;
+            }
+        }
     }
     if (SIXEL_FAILED(status) || palette_entries == NULL) {
         sixel_helper_set_additional_message(

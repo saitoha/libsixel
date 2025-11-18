@@ -47,6 +47,7 @@ srcs = [
   'pixelformat.c',
   'scale.c',
   'scale.h',
+  'precision.h',
   'chunk.c',
   'loader.c',
   'frompnm.c',

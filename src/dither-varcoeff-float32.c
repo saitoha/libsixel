@@ -15,31 +15,7 @@
 
 #include "dither-varcoeff-float32.h"
 #include "dither-common-pipeline.h"
-
-static unsigned char
-sixel_dither_float_channel_to_byte(float value)
-{
-#if HAVE_MATH_H
-    if (!isfinite(value)) {
-        value = 0.0f;
-    }
-#endif  /* HAVE_MATH_H */
-
-    if (value <= 0.0f) {
-        return 0;
-    }
-    if (value >= 1.0f) {
-        return 255;
-    }
-
-    return (unsigned char)(value * 255.0f + 0.5f);
-}
-
-static float
-sixel_dither_byte_to_float(unsigned char value)
-{
-    return (float)value / 255.0f;
-}
+#include "pixelformat.h"
 
 static void
 sixel_dither_scanline_params(int serpentine,
@@ -71,14 +47,16 @@ lso2_table(void))[7]
 }
 
 typedef void (*diffuse_varerr_mode_float)(float *data,
-                                           int width,
-                                           int height,
-                                           int x,
-                                           int y,
-                                           int depth,
-                                           float error,
-                                           int index,
-                                           int direction);
+                                          int width,
+                                          int height,
+                                          int x,
+                                          int y,
+                                          int depth,
+                                          float error,
+                                          int index,
+                                          int direction,
+                                          int pixelformat,
+                                          int channel);
 
 typedef void (*diffuse_varerr_carry_mode_float)(float *carry_curr,
                                                  float *carry_next,
@@ -113,19 +91,19 @@ diffuse_varerr_term_float(float error, int weight, int denom)
 
 static void
 diffuse_varerr_apply_direct_float(float *target,
-                                   int depth,
-                                   size_t offset,
-                                   float delta)
+                                  int depth,
+                                  size_t offset,
+                                  float delta,
+                                  int pixelformat,
+                                  int channel)
 {
     size_t index;
 
     index = offset * (size_t)depth;
     target[index] += delta;
-    if (target[index] < 0.0f) {
-        target[index] = 0.0f;
-    } else if (target[index] > 1.0f) {
-        target[index] = 1.0f;
-    }
+    target[index] = sixel_pixelformat_float_channel_clamp(pixelformat,
+                                                          channel,
+                                                          target[index]);
 }
 
 static void
@@ -137,7 +115,9 @@ diffuse_lso2_float(float *data,
                     int depth,
                     float error,
                     int index,
-                    int direction)
+                    int direction,
+                    int pixelformat,
+                    int channel)
 {
     const int (*table)[7];
     const int *entry;
@@ -174,56 +154,116 @@ diffuse_lso2_float(float *data,
     if (direction >= 0) {
         if (x + 1 < width) {
             offset = (size_t)y * (size_t)width + (size_t)(x + 1);
-            diffuse_varerr_apply_direct_float(data, depth, offset, term_r);
+            diffuse_varerr_apply_direct_float(data,
+                                              depth,
+                                              offset,
+                                              term_r,
+                                              pixelformat,
+                                              channel);
         }
         if (x + 2 < width) {
             offset = (size_t)y * (size_t)width + (size_t)(x + 2);
-            diffuse_varerr_apply_direct_float(data, depth, offset, term_r2);
+            diffuse_varerr_apply_direct_float(data,
+                                              depth,
+                                              offset,
+                                              term_r2,
+                                              pixelformat,
+                                              channel);
         }
         if (y + 1 < height && x - 1 >= 0) {
             offset = (size_t)(y + 1) * (size_t)width;
             offset += (size_t)(x - 1);
-            diffuse_varerr_apply_direct_float(data, depth, offset, term_dl);
+            diffuse_varerr_apply_direct_float(data,
+                                              depth,
+                                              offset,
+                                              term_dl,
+                                              pixelformat,
+                                              channel);
         }
         if (y + 1 < height) {
             offset = (size_t)(y + 1) * (size_t)width + (size_t)x;
-            diffuse_varerr_apply_direct_float(data, depth, offset, term_d);
+            diffuse_varerr_apply_direct_float(data,
+                                              depth,
+                                              offset,
+                                              term_d,
+                                              pixelformat,
+                                              channel);
         }
         if (y + 1 < height && x + 1 < width) {
             offset = (size_t)(y + 1) * (size_t)width;
             offset += (size_t)(x + 1);
-            diffuse_varerr_apply_direct_float(data, depth, offset, term_dr);
+            diffuse_varerr_apply_direct_float(data,
+                                              depth,
+                                              offset,
+                                              term_dr,
+                                              pixelformat,
+                                              channel);
         }
         if (y + 2 < height) {
             offset = (size_t)(y + 2) * (size_t)width + (size_t)x;
-            diffuse_varerr_apply_direct_float(data, depth, offset, term_d2);
+            diffuse_varerr_apply_direct_float(data,
+                                              depth,
+                                              offset,
+                                              term_d2,
+                                              pixelformat,
+                                              channel);
         }
     } else {
         if (x - 1 >= 0) {
             offset = (size_t)y * (size_t)width + (size_t)(x - 1);
-            diffuse_varerr_apply_direct_float(data, depth, offset, term_r);
+            diffuse_varerr_apply_direct_float(data,
+                                              depth,
+                                              offset,
+                                              term_r,
+                                              pixelformat,
+                                              channel);
         }
         if (x - 2 >= 0) {
             offset = (size_t)y * (size_t)width + (size_t)(x - 2);
-            diffuse_varerr_apply_direct_float(data, depth, offset, term_r2);
+            diffuse_varerr_apply_direct_float(data,
+                                              depth,
+                                              offset,
+                                              term_r2,
+                                              pixelformat,
+                                              channel);
         }
         if (y + 1 < height && x + 1 < width) {
             offset = (size_t)(y + 1) * (size_t)width;
             offset += (size_t)(x + 1);
-            diffuse_varerr_apply_direct_float(data, depth, offset, term_dl);
+            diffuse_varerr_apply_direct_float(data,
+                                              depth,
+                                              offset,
+                                              term_dl,
+                                              pixelformat,
+                                              channel);
         }
         if (y + 1 < height) {
             offset = (size_t)(y + 1) * (size_t)width + (size_t)x;
-            diffuse_varerr_apply_direct_float(data, depth, offset, term_d);
+            diffuse_varerr_apply_direct_float(data,
+                                              depth,
+                                              offset,
+                                              term_d,
+                                              pixelformat,
+                                              channel);
         }
         if (y + 1 < height && x - 1 >= 0) {
             offset = (size_t)(y + 1) * (size_t)width;
             offset += (size_t)(x - 1);
-            diffuse_varerr_apply_direct_float(data, depth, offset, term_dr);
+            diffuse_varerr_apply_direct_float(data,
+                                              depth,
+                                              offset,
+                                              term_dr,
+                                              pixelformat,
+                                              channel);
         }
         if (y + 2 < height) {
             offset = (size_t)(y + 2) * (size_t)width + (size_t)x;
-            diffuse_varerr_apply_direct_float(data, depth, offset, term_d2);
+            diffuse_varerr_apply_direct_float(data,
+                                              depth,
+                                              offset,
+                                              term_d2,
+                                              pixelformat,
+                                              channel);
         }
     }
 }
@@ -396,6 +436,13 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     float *new_palette_float;
     int float_depth;
     int float_index;
+    float lookup_pixel_float[max_channels];
+    unsigned char const *lookup_pixel;
+    int lookup_wants_float;
+    int use_palette_float_lookup;
+    int need_float_pixel;
+    int have_palette_float;
+    int have_new_palette_float;
 
     if (dither == NULL || context == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -418,6 +465,21 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     palette_float = context->palette_float;
     new_palette_float = context->new_palette_float;
     float_depth = context->float_depth;
+    /*
+     * Track float palette availability separately for the original palette
+     * and the palette-optimization buffer so later loops can skip
+     * byte-to-float round-trips when computing the quantization error.
+     */
+    if (palette_float != NULL && float_depth >= depth) {
+        have_palette_float = 1;
+    } else {
+        have_palette_float = 0;
+    }
+    if (new_palette_float != NULL && float_depth >= depth) {
+        have_new_palette_float = 1;
+    } else {
+        have_new_palette_float = 0;
+    }
 
     if (data == NULL || palette == NULL || context->result == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -462,6 +524,14 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     }
 
     serpentine = (method_for_scan == SIXEL_SCAN_SERPENTINE);
+    lookup_wants_float = (context->lookup_source_is_float != 0);
+    use_palette_float_lookup = 0;
+    if (context->prefer_palette_float_lookup != 0
+            && palette_float != NULL
+            && float_depth >= depth) {
+        use_palette_float_lookup = 1;
+    }
+    need_float_pixel = lookup_wants_float || use_palette_float_lookup;
     if (optimize_palette) {
         *ncolors = 0;
         memset(new_palette, 0x00,
@@ -494,11 +564,10 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
                     accum = data[base + (size_t)n]
                            + carry_curr[carry_base + (size_t)n];
                     carry_curr[carry_base + (size_t)n] = 0.0f;
-                    if (accum < 0.0f) {
-                        accum = 0.0f;
-                    } else if (accum > 1.0f) {
-                        accum = 1.0f;
-                    }
+                    accum = sixel_pixelformat_float_channel_clamp(
+                        context->pixelformat,
+                        n,
+                        accum);
                     corrected[n] = accum;
                 }
                 source_pixel = corrected;
@@ -508,16 +577,48 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
 
             for (n = 0; n < depth; ++n) {
                 quantized_float = source_pixel[n];
-                quantized[n] = sixel_dither_float_channel_to_byte(
+                quantized_float = sixel_pixelformat_float_channel_clamp(
+                    context->pixelformat,
+                    n,
                     quantized_float);
+                if (source_pixel == data + base) {
+                    source_pixel[n] = quantized_float;
+                }
+                if (need_float_pixel) {
+                    lookup_pixel_float[n] = quantized_float;
+                }
+                if (!lookup_wants_float && !use_palette_float_lookup) {
+                    quantized[n] = sixel_pixelformat_float_channel_to_byte(
+                        context->pixelformat,
+                        n,
+                        quantized_float);
+                }
             }
-
-            color_index = lookup(quantized,
-                                  depth,
-                                  palette,
-                                  reqcolor,
-                                  indextable,
-                                  context->complexion);
+            if (lookup_wants_float) {
+                lookup_pixel = (unsigned char const *)(void const *)
+                    lookup_pixel_float;
+                color_index = lookup(lookup_pixel,
+                                     depth,
+                                     palette,
+                                     reqcolor,
+                                     indextable,
+                                     context->complexion);
+            } else if (use_palette_float_lookup) {
+                color_index = sixel_dither_lookup_palette_float32(
+                    lookup_pixel_float,
+                    depth,
+                    palette_float,
+                    reqcolor,
+                    context->complexion);
+            } else {
+                lookup_pixel = quantized;
+                color_index = lookup(lookup_pixel,
+                                     depth,
+                                     palette,
+                                     reqcolor,
+                                     indextable,
+                                     context->complexion);
+            }
 
             if (optimize_palette) {
                 if (migration_map[color_index] == 0) {
@@ -551,12 +652,33 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
 
             for (n = 0; n < depth; ++n) {
                 if (optimize_palette) {
-                    palette_value = new_palette[output_index * depth + n];
+                    if (have_new_palette_float) {
+                        palette_value_float =
+                            new_palette_float[output_index * float_depth
+                                              + n];
+                    } else {
+                        palette_value =
+                            new_palette[output_index * depth + n];
+                        palette_value_float
+                            = sixel_pixelformat_byte_to_float(
+                                  context->pixelformat,
+                                  n,
+                                  palette_value);
+                    }
                 } else {
-                    palette_value = palette[color_index * depth + n];
+                    if (have_palette_float) {
+                        palette_value_float =
+                            palette_float[color_index * float_depth + n];
+                    } else {
+                        palette_value =
+                            palette[color_index * depth + n];
+                        palette_value_float
+                            = sixel_pixelformat_byte_to_float(
+                                  context->pixelformat,
+                                  n,
+                                  palette_value);
+                    }
                 }
-                palette_value_float = sixel_dither_byte_to_float(
-                    palette_value);
                 error = source_pixel[n] - palette_value_float;
                 if (error < 0.0f) {
                     diff = (int)(-error * 255.0f + 0.5f);
@@ -589,7 +711,9 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
                                    depth,
                                    error,
                                    table_index,
-                                   direction);
+                                   direction,
+                                   context->pixelformat,
+                                   n);
                 }
             }
         }
