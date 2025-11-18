@@ -75,7 +75,8 @@ sixel_lut_configure(sixel_lut_t *lut,
                     int wR,
                     int wG,
                     int wB,
-                    int policy);
+                    int policy,
+                    int pixelformat);
 
 /* lookup */
 int

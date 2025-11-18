@@ -29,6 +29,7 @@
 
 #include "dither-positional-float32.h"
 #include "dither-common-pipeline.h"
+#include "pixelformat.h"
 
 static void
 sixel_dither_scanline_params(int serpentine,
@@ -64,29 +65,15 @@ mask_x(int x, int y, int c)
     return ((((x + c * 29) ^ (y * 149)) * 1234) & 511) / 256.0f - 1.0f;
 }
 
-static unsigned char
-sixel_dither_float_channel_to_byte(float value)
-{
-#if HAVE_MATH_H
-    if (!isfinite(value)) {
-        value = 0.0f;
-    }
-#endif  /* HAVE_MATH_H */
-
-    if (value <= 0.0f) {
-        return 0;
-    }
-    if (value >= 1.0f) {
-        return 255;
-    }
-
-    return (unsigned char)(value * 255.0f + 0.5f);
-}
-
 SIXELSTATUS
 sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                                       sixel_dither_context_t *context)
 {
+#if _MSC_VER
+    enum { max_channels = 4 };
+#else
+    const int max_channels = 4;
+#endif
     int serpentine;
     int y;
     float (*f_mask)(int x, int y, int c);
@@ -95,10 +82,18 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
     float *new_palette_float;
     int float_depth;
     int float_index;
+    unsigned char *quantized;
+    float lookup_pixel_float[max_channels];
+    unsigned char const *lookup_pixel;
+    int lookup_wants_float;
+    int use_palette_float_lookup;
+    int need_float_pixel;
 
     palette_float = NULL;
     new_palette_float = NULL;
     float_depth = 0;
+    quantized = NULL;
+    lookup_wants_float = 0;
 
     if (dither == NULL || context == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -125,6 +120,15 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
     palette_float = context->palette_float;
     new_palette_float = context->new_palette_float;
     float_depth = context->float_depth;
+    quantized = context->scratch;
+    lookup_wants_float = (context->lookup_source_is_float != 0);
+    use_palette_float_lookup = 0;
+    if (context->prefer_palette_float_lookup != 0
+            && palette_float != NULL
+            && float_depth >= context->depth) {
+        use_palette_float_lookup = 1;
+    }
+    need_float_pixel = lookup_wants_float || use_palette_float_lookup;
 
     if (context->optimize_palette) {
         int x;
@@ -159,15 +163,46 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
 
                     val = context->pixels_float[pos * context->depth + d]
                         + f_mask(x, y, d) * jitter_scale;
-                    context->scratch[d] =
-                        sixel_dither_float_channel_to_byte(val);
+                    val = sixel_pixelformat_float_channel_clamp(
+                        context->pixelformat,
+                        d,
+                        val);
+                    if (need_float_pixel) {
+                        lookup_pixel_float[d] = val;
+                    }
+                    if (!lookup_wants_float && !use_palette_float_lookup) {
+                        quantized[d]
+                            = sixel_pixelformat_float_channel_to_byte(
+                                  context->pixelformat,
+                                  d,
+                                  val);
+                    }
                 }
-                color_index = context->lookup(context->scratch,
-                                              context->depth,
-                                              context->palette,
-                                              context->reqcolor,
-                                              context->indextable,
-                                              context->complexion);
+                if (lookup_wants_float) {
+                    lookup_pixel = (unsigned char const *)(void const *)
+                        lookup_pixel_float;
+                    color_index = context->lookup(lookup_pixel,
+                                                  context->depth,
+                                                  context->palette,
+                                                  context->reqcolor,
+                                                  context->indextable,
+                                                  context->complexion);
+                } else if (use_palette_float_lookup) {
+                    color_index = sixel_dither_lookup_palette_float32(
+                        lookup_pixel_float,
+                        context->depth,
+                        palette_float,
+                        context->reqcolor,
+                        context->complexion);
+                } else {
+                    lookup_pixel = quantized;
+                    color_index = context->lookup(lookup_pixel,
+                                                  context->depth,
+                                                  context->palette,
+                                                  context->reqcolor,
+                                                  context->indextable,
+                                                  context->complexion);
+                }
                 if (context->migration_map[color_index] == 0) {
                     context->result[pos] = *context->ncolors;
                     for (d = 0; d < context->depth; ++d) {
@@ -230,15 +265,49 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
 
                     val = context->pixels_float[pos * context->depth + d]
                         + f_mask(x, y, d) * jitter_scale;
-                    context->scratch[d] =
-                        sixel_dither_float_channel_to_byte(val);
+                    val = sixel_pixelformat_float_channel_clamp(
+                        context->pixelformat,
+                        d,
+                        val);
+                    if (need_float_pixel) {
+                        lookup_pixel_float[d] = val;
+                    }
+                    if (!lookup_wants_float && !use_palette_float_lookup) {
+                        quantized[d]
+                            = sixel_pixelformat_float_channel_to_byte(
+                                  context->pixelformat,
+                                  d,
+                                  val);
+                    }
                 }
-                context->result[pos] = context->lookup(context->scratch,
-                                                       context->depth,
-                                                       context->palette,
-                                                       context->reqcolor,
-                                                       context->indextable,
-                                                       context->complexion);
+                if (lookup_wants_float) {
+                    lookup_pixel = (unsigned char const *)(void const *)
+                        lookup_pixel_float;
+                    context->result[pos] = context->lookup(
+                        lookup_pixel,
+                        context->depth,
+                        context->palette,
+                        context->reqcolor,
+                        context->indextable,
+                        context->complexion);
+                } else if (use_palette_float_lookup) {
+                    context->result[pos] =
+                        sixel_dither_lookup_palette_float32(
+                            lookup_pixel_float,
+                            context->depth,
+                            palette_float,
+                            context->reqcolor,
+                            context->complexion);
+                } else {
+                    lookup_pixel = quantized;
+                    context->result[pos] = context->lookup(
+                        lookup_pixel,
+                        context->depth,
+                        context->palette,
+                        context->reqcolor,
+                        context->indextable,
+                        context->complexion);
+                }
             }
             sixel_dither_pipeline_row_notify(dither, y);
         }

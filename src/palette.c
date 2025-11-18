@@ -268,7 +268,7 @@ sixel_palette_apply_mediancut_engine(sixel_palette_t *palette,
     SIXELSTATUS status;
 
     status = SIXEL_LOGIC_ERROR;
-    if (prefer_rgbfloat32 && pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
+    if (prefer_rgbfloat32 && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         engine = sixel_palette_quant_engine_lookup(
             SIXEL_QUANTIZE_MODEL_MEDIANCUT,
             1);
@@ -794,9 +794,9 @@ sixel_palette_copy_entries_float32(sixel_palette_t *palette,
             "sixel_palette_copy_entries_float32: invalid pixelformat.");
         return SIXEL_BAD_ARGUMENT;
     }
-    if (pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32) {
+    if (!SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         sixel_helper_set_additional_message(
-            "sixel_palette_copy_entries_float32: only RGBFLOAT32 is supported.");
+            "sixel_palette_copy_entries_float32: only float32 layouts are supported.");
         return SIXEL_FEATURE_ERROR;
     }
 

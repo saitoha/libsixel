@@ -32,6 +32,13 @@ extern "C" {
 void
 sixel_dither_pipeline_row_notify(sixel_dither_t *dither, int row_index);
 
+int
+sixel_dither_lookup_palette_float32(float const *pixel,
+                                    int depth,
+                                    float const *palette,
+                                    int reqcolor,
+                                    int complexion);
+
 #ifdef __cplusplus
 }
 #endif

@@ -741,6 +741,11 @@ SIXEL_FLOAT32_DITHER       opt into the experimental RGBFLOAT32
                            promotes the RGB888 buffers gathered
                            after `sixel_dither_new()` to
                            RGBFLOAT32 before palette generation.
+                           Frames converted via `-W linear` or
+                           `-W oklab` keep their values in
+                           LINEARRGBFLOAT32 or OKLABFLOAT32 so
+                           the working colorspace changes no
+                           longer quantize back to 8bit.
                            Allocation failures automatically fall
                            back to the legacy route so existing
                            workflows continue to succeed.

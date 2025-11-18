@@ -25,6 +25,9 @@
 #if HAVE_MATH_H
 # include <math.h>
 #endif
+#if HAVE_FLOAT_H
+# include <float.h>
+#endif
 
 #include "allocator.h"
 #include "compat_stub.h"
@@ -32,32 +35,8 @@
 #include "palette-common-snap.h"
 #include "palette-kmeans.h"
 #include "palette.h"
+#include "pixelformat.h"
 #include "status.h"
-
-/*
- * Clamp a float32 channel stored in the 0.0-1.0 range and convert it to the
- * 0-255 domain used throughout the palette builder.  The helper intentionally
- * returns a double so downstream arithmetic keeps fractional precision until
- * the very last quantization step.
- */
-static double
-sixel_palette_float32_channel_to_u8(double value)
-{
-#if HAVE_MATH_H
-    if (!isfinite(value)) {
-        value = 0.0;
-    }
-#endif
-
-    if (value <= 0.0) {
-        return 0.0;
-    }
-    if (value >= 1.0) {
-        return 255.0;
-    }
-
-    return value * 255.0;
-}
 
 static int
 sixel_palette_float32_alpha_visible(double alpha)
@@ -190,6 +169,48 @@ sixel_palette_count_unique_within_limit(unsigned char const *data,
     return status;
 }
 
+static double
+sixel_palette_kmeans_sum_float_to_byte(double component,
+                                       unsigned long sample_total,
+                                       unsigned int channel,
+                                       double const *scale,
+                                       double const *offset)
+{
+    double scaled;
+
+    if (scale == NULL || offset == NULL) {
+        return component;
+    }
+    if (scale[channel] <= 0.0) {
+        return 0.0;
+    }
+
+    scaled = component * scale[channel];
+    scaled += (double)sample_total * offset[channel];
+    return scaled;
+}
+
+static double
+sixel_palette_kmeans_sum_byte_to_float(double component,
+                                       unsigned long sample_total,
+                                       unsigned int channel,
+                                       double const *scale,
+                                       double const *offset)
+{
+    double restored;
+
+    if (scale == NULL || offset == NULL) {
+        return component;
+    }
+    if (scale[channel] <= 0.0) {
+        return 0.0;
+    }
+
+    restored = component - (double)sample_total * offset[channel];
+    restored /= scale[channel];
+    return restored;
+}
+
 /*
  * Execute the full k-means clustering routine and return the generated palette
  * as a freshly allocated RGB array.  The implementation mirrors the previous
@@ -261,7 +282,9 @@ build_palette_kmeans(unsigned char **result,
     double farthest_distance;
     double delta;
     double lloyd_threshold;
-    double float32_scale;
+    double float32_channel_scale[3];
+    double float32_channel_offset[3];
+    double float32_lloyd_scale;
     float *float_palette;
     float *float_palette_new;
     unsigned long *counts;
@@ -338,7 +361,13 @@ build_palette_kmeans(unsigned char **result,
     unique_within = 0;
     input_is_rgbfloat32 = 0;
     unique_status = SIXEL_OK;
-    float32_scale = 255.0;
+    float32_channel_scale[0U] = 0.0;
+    float32_channel_scale[1U] = 0.0;
+    float32_channel_scale[2U] = 0.0;
+    float32_channel_offset[0U] = 0.0;
+    float32_channel_offset[1U] = 0.0;
+    float32_channel_offset[2U] = 0.0;
+    float32_lloyd_scale = 0.0;
     float_palette = NULL;
     float_palette_new = NULL;
 
@@ -361,8 +390,40 @@ build_palette_kmeans(unsigned char **result,
     channels = depth;
     pixel_stride = depth;
     input_is_rgbfloat32 = (treat_input_as_float32
-                           && pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32);
+                           && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat));
     if (input_is_rgbfloat32) {
+        for (channel = 0U; channel < 3U; ++channel) {
+            float float_minimum;
+            float float_maximum;
+            double range;
+
+#if HAVE_FLOAT_H
+# define SIXEL_KMEANS_FLOAT_BOUND FLT_MAX
+#else
+# define SIXEL_KMEANS_FLOAT_BOUND 1.0e9f
+#endif
+            float_minimum = sixel_pixelformat_float_channel_clamp(
+                pixelformat,
+                (int)channel,
+                -SIXEL_KMEANS_FLOAT_BOUND);
+            float_maximum = sixel_pixelformat_float_channel_clamp(
+                pixelformat,
+                (int)channel,
+                SIXEL_KMEANS_FLOAT_BOUND);
+#undef SIXEL_KMEANS_FLOAT_BOUND
+            range = (double)float_maximum - (double)float_minimum;
+            if (range <= 0.0) {
+                float32_channel_scale[channel] = 0.0;
+                float32_channel_offset[channel] = 0.0;
+                continue;
+            }
+            float32_channel_scale[channel] = 255.0 / range;
+            float32_channel_offset[channel] =
+                -((double)float_minimum) * float32_channel_scale[channel];
+            if (float32_channel_scale[channel] > float32_lloyd_scale) {
+                float32_lloyd_scale = float32_channel_scale[channel];
+            }
+        }
         if (depth == 0U || depth % (unsigned int)sizeof(float) != 0U) {
             return status;
         }
@@ -480,10 +541,10 @@ build_palette_kmeans(unsigned char **result,
                 }
                 for (channel = 0U; channel < 3U; ++channel) {
                     unique_buffer[unique_pixels * 3U + channel] =
-                        (unsigned char)(
-                            sixel_palette_float32_channel_to_u8(
-                                (double)fpixels[channel])
-                            + 0.5);
+                        sixel_pixelformat_float_channel_to_byte(
+                            pixelformat,
+                            (int)channel,
+                            fpixels[channel]);
                 }
                 ++unique_pixels;
             }
@@ -624,13 +685,11 @@ build_palette_kmeans(unsigned char **result,
             max_iterations = 1U;
         }
         lloyd_threshold = sixel_palette_kmeans_threshold();
-        if (input_is_rgbfloat32) {
+        if (input_is_rgbfloat32 && float32_lloyd_scale > 0.0) {
             double threshold_scale;
 
-            threshold_scale = float32_scale * float32_scale;
-            if (threshold_scale > 0.0) {
-                lloyd_threshold /= threshold_scale;
-            }
+            threshold_scale = float32_lloyd_scale * float32_lloyd_scale;
+            lloyd_threshold /= threshold_scale;
         }
     }
     for (iteration = 0U; iteration < max_iterations; ++iteration) {
@@ -742,10 +801,19 @@ build_palette_kmeans(unsigned char **result,
         }
         for (index = 0U; index < k * 3U; ++index) {
             double component;
+            unsigned int merge_channel;
+            unsigned int merge_cluster;
 
             component = accum[index];
+            merge_channel = index % 3U;
+            merge_cluster = index / 3U;
             if (input_is_rgbfloat32) {
-                component *= float32_scale;
+                component = sixel_palette_kmeans_sum_float_to_byte(
+                    component,
+                    counts[merge_cluster],
+                    merge_channel,
+                    float32_channel_scale,
+                    float32_channel_offset);
             }
             if (component < 0.0) {
                 component = 0.0;
@@ -772,11 +840,20 @@ build_palette_kmeans(unsigned char **result,
         }
         for (index = 0U; index < k * 3U; ++index) {
             double restored;
+            unsigned int merge_channel;
+            unsigned int merge_cluster;
 
             /* Translate merged 0-255 sums back to the original sample scale */
             restored = merge_sums[index];
-            if (input_is_rgbfloat32 && float32_scale > 0.0) {
-                restored /= float32_scale;
+            merge_channel = index % 3U;
+            merge_cluster = index / 3U;
+            if (input_is_rgbfloat32) {
+                restored = sixel_palette_kmeans_sum_byte_to_float(
+                    restored,
+                    counts[merge_cluster],
+                    merge_channel,
+                    float32_channel_scale,
+                    float32_channel_offset);
             }
             accum[index] = restored;
         }
@@ -906,20 +983,19 @@ build_palette_kmeans(unsigned char **result,
         for (channel = 0U; channel < 3U; ++channel) {
             update = centers[center_index * 3U + channel];
             if (float_palette != NULL) {
-                double normalized;
+                float clamped;
 
-                normalized = update;
-                if (normalized < 0.0) {
-                    normalized = 0.0;
-                }
-                if (normalized > 1.0) {
-                    normalized = 1.0;
-                }
-                float_palette[center_index * 3U + channel] =
-                    (float)normalized;
+                clamped = sixel_pixelformat_float_channel_clamp(
+                    pixelformat,
+                    (int)channel,
+                    (float)update);
+                float_palette[center_index * 3U + channel] = clamped;
             }
             if (input_is_rgbfloat32) {
-                update = sixel_palette_float32_channel_to_u8(update);
+                update = (double)sixel_pixelformat_float_channel_to_byte(
+                    pixelformat,
+                    (int)channel,
+                    (float)update);
             }
             if (update < 0.0) {
                 update = 0.0;

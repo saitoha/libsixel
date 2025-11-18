@@ -55,6 +55,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if HAVE_MATH_H
+# include <math.h>
+#endif  /* HAVE_MATH_H */
 #if defined(_MSC_VER) && defined(HAVE_INTRIN_H)
 #include <intrin.h>
 #endif
@@ -65,14 +68,15 @@
 #include "compat_stub.h"
 #include "allocator.h"
 #include "lut.h"
+#include "pixelformat.h"
 
 #define SIXEL_LUT_BRANCH_FLAG 0x40000000U
 /* #define DEBUG_LUT_TRACE 1 */
 
+enum { SIXEL_CERTLUT_COMPONENTS = 3 };
+
 typedef struct sixel_certlut_color {
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
+    uint8_t comp[SIXEL_CERTLUT_COMPONENTS];
 } sixel_certlut_color_t;
 
 typedef struct sixel_certlut_node {
@@ -87,18 +91,10 @@ typedef struct sixel_certlut {
     uint8_t *pool;
     uint32_t pool_size;
     uint32_t pool_capacity;
-    int wR;
-    int wG;
-    int wB;
-    uint64_t wR2;
-    uint64_t wG2;
-    uint64_t wB2;
-    int32_t wr_scale[256];
-    int32_t wg_scale[256];
-    int32_t wb_scale[256];
-    int32_t *wr_palette;
-    int32_t *wg_palette;
-    int32_t *wb_palette;
+    int weights[SIXEL_CERTLUT_COMPONENTS];
+    uint64_t weights_sq[SIXEL_CERTLUT_COMPONENTS];
+    int32_t scales[SIXEL_CERTLUT_COMPONENTS][256];
+    int32_t *weight_palette[SIXEL_CERTLUT_COMPONENTS];
     sixel_certlut_color_t const *palette;
     int ncolors;
     sixel_certlut_node_t *kdnodes;
@@ -114,6 +110,8 @@ typedef struct sixel_lut_quantization {
 
 struct sixel_lut {
     int policy;
+    int pixelformat;
+    int input_is_float;
     int depth;
     int ncolors;
     int complexion;
@@ -126,6 +124,24 @@ struct sixel_lut {
     sixel_certlut_t cert;
     int cert_ready;
 };
+
+#define SIXEL_LUT_MAX_COMPONENTS 4
+
+/* Convert a float32 RGB pixel into byte components for LUT lookups. */
+static void
+sixel_lut_quantize_float_pixel(float const *source,
+                               unsigned char *target,
+                               int depth,
+                               int pixelformat)
+{
+    int plane;
+
+    for (plane = 0; plane < depth; ++plane) {
+        target[plane] = sixel_pixelformat_float_channel_to_byte(pixelformat,
+                                                                plane,
+                                                                source[plane]);
+    }
+}
 
 /* Sentinel value used to detect empty dense LUT slots. */
 #define SIXEL_LUT_DENSE_EMPTY (-1)
@@ -404,6 +420,7 @@ static int
 sixel_certlut_init(sixel_certlut_t *lut)
 {
     int status;
+    int component;
 
     status = SIXEL_FALSE;
     if (lut == NULL) {
@@ -414,18 +431,13 @@ sixel_certlut_init(sixel_certlut_t *lut)
     lut->pool = NULL;
     lut->pool_size = 0U;
     lut->pool_capacity = 0U;
-    lut->wR = 1;
-    lut->wG = 1;
-    lut->wB = 1;
-    lut->wR2 = 1U;
-    lut->wG2 = 1U;
-    lut->wB2 = 1U;
-    memset(lut->wr_scale, 0, sizeof(lut->wr_scale));
-    memset(lut->wg_scale, 0, sizeof(lut->wg_scale));
-    memset(lut->wb_scale, 0, sizeof(lut->wb_scale));
-    lut->wr_palette = NULL;
-    lut->wg_palette = NULL;
-    lut->wb_palette = NULL;
+    for (component = 0; component < SIXEL_CERTLUT_COMPONENTS; ++component) {
+        lut->weights[component] = 1;
+        lut->weights_sq[component] = 1U;
+        memset(lut->scales[component], 0,
+               sizeof(lut->scales[component]));
+        lut->weight_palette[component] = NULL;
+    }
     lut->palette = NULL;
     lut->ncolors = 0;
     lut->kdnodes = NULL;
@@ -440,22 +452,22 @@ end:
 static void
 sixel_certlut_release(sixel_certlut_t *lut)
 {
+    int component;
+
     if (lut == NULL) {
         return;
     }
     free(lut->level0);
     free(lut->pool);
-    free(lut->wr_palette);
-    free(lut->wg_palette);
-    free(lut->wb_palette);
+    for (component = 0; component < SIXEL_CERTLUT_COMPONENTS; ++component) {
+        free(lut->weight_palette[component]);
+        lut->weight_palette[component] = NULL;
+    }
     free(lut->kdnodes);
     lut->level0 = NULL;
     lut->pool = NULL;
     lut->pool_size = 0U;
     lut->pool_capacity = 0U;
-    lut->wr_palette = NULL;
-    lut->wg_palette = NULL;
-    lut->wb_palette = NULL;
     lut->kdnodes = NULL;
     lut->kdnodes_count = 0;
     lut->kdtree_root = -1;
@@ -467,14 +479,13 @@ sixel_certlut_prepare_palette_terms(sixel_certlut_t *lut)
     int status;
     size_t count;
     int index;
-    int32_t *wr_terms;
-    int32_t *wg_terms;
-    int32_t *wb_terms;
+    int component;
+    int32_t *terms[SIXEL_CERTLUT_COMPONENTS];
 
     status = SIXEL_FALSE;
-    wr_terms = NULL;
-    wg_terms = NULL;
-    wb_terms = NULL;
+    for (component = 0; component < SIXEL_CERTLUT_COMPONENTS; ++component) {
+        terms[component] = NULL;
+    }
     if (lut == NULL) {
         goto end;
     }
@@ -483,92 +494,94 @@ sixel_certlut_prepare_palette_terms(sixel_certlut_t *lut)
         goto end;
     }
     count = (size_t)lut->ncolors;
-    wr_terms = (int32_t *)malloc(count * sizeof(int32_t));
-    if (wr_terms == NULL) {
-        goto end;
-    }
-    wg_terms = (int32_t *)malloc(count * sizeof(int32_t));
-    if (wg_terms == NULL) {
-        goto end;
-    }
-    wb_terms = (int32_t *)malloc(count * sizeof(int32_t));
-    if (wb_terms == NULL) {
-        goto end;
+    for (component = 0; component < SIXEL_CERTLUT_COMPONENTS; ++component) {
+        terms[component] = (int32_t *)malloc(count * sizeof(int32_t));
+        if (terms[component] == NULL) {
+            goto end;
+        }
     }
     for (index = 0; index < lut->ncolors; ++index) {
-        wr_terms[index] = lut->wR * (int)lut->palette[index].r;
-        wg_terms[index] = lut->wG * (int)lut->palette[index].g;
-        wb_terms[index] = lut->wB * (int)lut->palette[index].b;
+        for (component = 0; component < SIXEL_CERTLUT_COMPONENTS;
+                ++component) {
+            terms[component][index]
+                = lut->weights[component]
+                * (int)lut->palette[index].comp[component];
+        }
     }
-    free(lut->wr_palette);
-    free(lut->wg_palette);
-    free(lut->wb_palette);
-    lut->wr_palette = wr_terms;
-    lut->wg_palette = wg_terms;
-    lut->wb_palette = wb_terms;
-    wr_terms = NULL;
-    wg_terms = NULL;
-    wb_terms = NULL;
+    for (component = 0; component < SIXEL_CERTLUT_COMPONENTS; ++component) {
+        free(lut->weight_palette[component]);
+        lut->weight_palette[component] = terms[component];
+        terms[component] = NULL;
+    }
     status = SIXEL_OK;
 
 end:
-    free(wr_terms);
-    free(wg_terms);
-    free(wb_terms);
+    for (component = 0; component < SIXEL_CERTLUT_COMPONENTS; ++component) {
+        free(terms[component]);
+    }
     return status;
 }
 
 static void
-sixel_certlut_cell_center(int rmin, int gmin, int bmin, int size,
-                        int *cr, int *cg, int *cb)
+sixel_certlut_cell_center(int comp1_min,
+                          int comp2_min,
+                          int comp3_min,
+                          int size,
+                          int *comp1_center,
+                          int *comp2_center,
+                          int *comp3_center)
 {
     int half;
 
     half = size / 2;
-    *cr = rmin + half;
-    *cg = gmin + half;
-    *cb = bmin + half;
+    *comp1_center = comp1_min + half;
+    *comp2_center = comp2_min + half;
+    *comp3_center = comp3_min + half;
     if (size == 1) {
-        *cr = rmin;
-        *cg = gmin;
-        *cb = bmin;
+        *comp1_center = comp1_min;
+        *comp2_center = comp2_min;
+        *comp3_center = comp3_min;
     }
 }
 
 static void
-sixel_certlut_weight_init(sixel_certlut_t *lut, int wR, int wG, int wB)
+sixel_certlut_weight_init(sixel_certlut_t *lut,
+                          int comp1_weight,
+                          int comp2_weight,
+                          int comp3_weight)
 {
+    int component;
     int i;
+    int input[SIXEL_CERTLUT_COMPONENTS];
 
-    lut->wR = wR;
-    lut->wG = wG;
-    lut->wB = wB;
-    lut->wR2 = (uint64_t)wR * (uint64_t)wR;
-    lut->wG2 = (uint64_t)wG * (uint64_t)wG;
-    lut->wB2 = (uint64_t)wB * (uint64_t)wB;
-    for (i = 0; i < 256; ++i) {
-        lut->wr_scale[i] = wR * i;
-        lut->wg_scale[i] = wG * i;
-        lut->wb_scale[i] = wB * i;
+    input[0] = comp1_weight;
+    input[1] = comp2_weight;
+    input[2] = comp3_weight;
+    for (component = 0; component < SIXEL_CERTLUT_COMPONENTS; ++component) {
+        lut->weights[component] = input[component];
+        lut->weights_sq[component]
+            = (uint64_t)input[component] * (uint64_t)input[component];
+        for (i = 0; i < 256; ++i) {
+            lut->scales[component][i] = input[component] * i;
+        }
     }
 }
 
 static uint64_t
 sixel_certlut_distance_precomputed(sixel_certlut_t const *lut,
                                    int index,
-                                   int32_t wr_r,
-                                   int32_t wg_g,
-                                   int32_t wb_b)
+                                   int32_t const scaled_components[])
 {
     uint64_t distance;
     int64_t diff;
+    int component;
 
-    diff = (int64_t)wr_r - (int64_t)lut->wr_palette[index];
-    distance = (uint64_t)(diff * diff);
-    diff = (int64_t)wg_g - (int64_t)lut->wg_palette[index];
-    distance += (uint64_t)(diff * diff);
-    diff = (int64_t)wb_b - (int64_t)lut->wb_palette[index];
-    distance += (uint64_t)(diff * diff);
+    distance = 0U;
+    for (component = 0; component < SIXEL_CERTLUT_COMPONENTS; ++component) {
+        diff = (int64_t)scaled_components[component]
+             - (int64_t)lut->weight_palette[component][index];
+        distance += (uint64_t)(diff * diff);
+    }
 
     return distance;
 }
@@ -581,9 +594,8 @@ sixel_certlut_is_cell_safe(sixel_certlut_t const *lut, int best_idx,
     uint64_t delta_sq;
     uint64_t rhs;
     uint64_t weight_term;
-    int64_t wr_delta;
-    int64_t wg_delta;
-    int64_t wb_delta;
+    int64_t delta;
+    int component;
 
     if (best_idx < 0 || second_idx < 0) {
         return 1;
@@ -595,16 +607,14 @@ sixel_certlut_is_cell_safe(sixel_certlut_t const *lut, int best_idx,
      * entire cube maps to the current best palette entry.
      */
     delta_sq = second_dist - best_dist;
-    wr_delta = (int64_t)lut->wr_palette[second_idx]
-        - (int64_t)lut->wr_palette[best_idx];
-    wg_delta = (int64_t)lut->wg_palette[second_idx]
-        - (int64_t)lut->wg_palette[best_idx];
-    wb_delta = (int64_t)lut->wb_palette[second_idx]
-        - (int64_t)lut->wb_palette[best_idx];
-    weight_term = (uint64_t)(wr_delta * wr_delta);
-    weight_term += (uint64_t)(wg_delta * wg_delta);
-    weight_term += (uint64_t)(wb_delta * wb_delta);
-    rhs = (uint64_t)3 * (uint64_t)size * (uint64_t)size * weight_term;
+    weight_term = 0U;
+    for (component = 0; component < SIXEL_CERTLUT_COMPONENTS; ++component) {
+        delta = (int64_t)lut->weight_palette[component][second_idx]
+              - (int64_t)lut->weight_palette[component][best_idx];
+        weight_term += (uint64_t)(delta * delta);
+    }
+    rhs = (uint64_t)SIXEL_CERTLUT_COMPONENTS
+        * (uint64_t)size * (uint64_t)size * weight_term;
 
     return delta_sq * delta_sq > rhs;
 }
@@ -669,13 +679,13 @@ sixel_certlut_palette_component(sixel_certlut_t const *lut,
     sixel_certlut_color_t const *color;
 
     color = &lut->palette[index];
-    if (axis == 0) {
-        return (int)color->r;
+    if (axis < 0) {
+        axis = 0;
+    } else if (axis >= SIXEL_CERTLUT_COMPONENTS) {
+        axis = SIXEL_CERTLUT_COMPONENTS - 1;
     }
-    if (axis == 1) {
-        return (int)color->g;
-    }
-    return (int)color->b;
+
+    return (int)color->comp[axis];
 }
 
 static void
@@ -720,7 +730,7 @@ sixel_certlut_kdtree_build_recursive(sixel_certlut_t *lut,
         return -1;
     }
 
-    axis = depth % 3;
+    axis = depth % SIXEL_CERTLUT_COMPONENTS;
     sixel_certlut_sort_indices(lut, indices, count, axis);
     median = count / 2;
     node_index = lut->kdnodes_count;
@@ -801,13 +811,12 @@ sixel_certlut_axis_distance(sixel_certlut_t const *lut, int diff, int axis)
     uint64_t abs_diff;
 
     abs_diff = (uint64_t)(diff < 0 ? -diff : diff);
-    if (axis == 0) {
-        weight = lut->wR2;
-    } else if (axis == 1) {
-        weight = lut->wG2;
-    } else {
-        weight = lut->wB2;
+    if (axis < 0) {
+        axis = 0;
+    } else if (axis >= SIXEL_CERTLUT_COMPONENTS) {
+        axis = SIXEL_CERTLUT_COMPONENTS - 1;
     }
+    weight = lut->weights_sq[axis];
 
     return weight * abs_diff * abs_diff;
 }
@@ -815,9 +824,7 @@ sixel_certlut_axis_distance(sixel_certlut_t const *lut, int diff, int axis)
 static void
 sixel_certlut_consider_candidate(sixel_certlut_t const *lut,
                                  int candidate,
-                                 int32_t wr_r,
-                                 int32_t wg_g,
-                                 int32_t wb_b,
+                                 int32_t const scaled_components[],
                                  int *best_idx,
                                  uint64_t *best_dist,
                                  int *second_idx,
@@ -827,9 +834,7 @@ sixel_certlut_consider_candidate(sixel_certlut_t const *lut,
 
     distance = sixel_certlut_distance_precomputed(lut,
                                                   candidate,
-                                                  wr_r,
-                                                  wg_g,
-                                                  wb_b);
+                                                  scaled_components);
     if (distance < *best_dist) {
         *second_dist = *best_dist;
         *second_idx = *best_idx;
@@ -844,12 +849,8 @@ sixel_certlut_consider_candidate(sixel_certlut_t const *lut,
 static void
 sixel_certlut_kdtree_search(sixel_certlut_t const *lut,
                             int node_index,
-                            int r,
-                            int g,
-                            int b,
-                            int32_t wr_r,
-                            int32_t wg_g,
-                            int32_t wb_b,
+                            int const components[],
+                            int32_t const scaled_components[],
                             int *best_idx,
                             uint64_t *best_dist,
                             int *second_idx,
@@ -862,7 +863,7 @@ sixel_certlut_kdtree_search(sixel_certlut_t const *lut,
     int near_child;
     int far_child;
     uint64_t axis_bound;
-    int component;
+    int component_value;
 
     if (node_index < 0) {
         return;
@@ -870,9 +871,7 @@ sixel_certlut_kdtree_search(sixel_certlut_t const *lut,
     node = &lut->kdnodes[node_index];
     sixel_certlut_consider_candidate(lut,
                                      node->index,
-                                     wr_r,
-                                     wg_g,
-                                     wb_b,
+                                     scaled_components,
                                      best_idx,
                                      best_dist,
                                      second_idx,
@@ -880,14 +879,8 @@ sixel_certlut_kdtree_search(sixel_certlut_t const *lut,
 
     axis = (int)node->axis;
     value = sixel_certlut_palette_component(lut, node->index, axis);
-    if (axis == 0) {
-        component = r;
-    } else if (axis == 1) {
-        component = g;
-    } else {
-        component = b;
-    }
-    diff = component - value;
+    component_value = components[axis];
+    diff = component_value - value;
     if (diff <= 0) {
         near_child = node->left;
         far_child = node->right;
@@ -898,12 +891,8 @@ sixel_certlut_kdtree_search(sixel_certlut_t const *lut,
     if (near_child >= 0) {
         sixel_certlut_kdtree_search(lut,
                                     near_child,
-                                    r,
-                                    g,
-                                    b,
-                                    wr_r,
-                                    wg_g,
-                                    wb_b,
+                                    components,
+                                    scaled_components,
                                     best_idx,
                                     best_dist,
                                     second_idx,
@@ -913,12 +902,8 @@ sixel_certlut_kdtree_search(sixel_certlut_t const *lut,
     if (far_child >= 0 && axis_bound <= *second_dist) {
         sixel_certlut_kdtree_search(lut,
                                     far_child,
-                                    r,
-                                    g,
-                                    b,
-                                    wr_r,
-                                    wg_g,
-                                    wb_b,
+                                    components,
+                                    scaled_components,
                                     best_idx,
                                     best_dist,
                                     second_idx,
@@ -927,9 +912,14 @@ sixel_certlut_kdtree_search(sixel_certlut_t const *lut,
 }
 
 static void
-sixel_certlut_distance_pair(sixel_certlut_t const *lut, int r, int g, int b,
-                            int *best_idx, int *second_idx,
-                            uint64_t *best_dist, uint64_t *second_dist)
+sixel_certlut_distance_pair(sixel_certlut_t const *lut,
+                            int comp1,
+                            int comp2,
+                            int comp3,
+                            int *best_idx,
+                            int *second_idx,
+                            uint64_t *best_dist,
+                            uint64_t *second_dist)
 {
     int i;
     int best_candidate;
@@ -937,47 +927,33 @@ sixel_certlut_distance_pair(sixel_certlut_t const *lut, int r, int g, int b,
     uint64_t best_value;
     uint64_t second_value;
     uint64_t distance;
-    int rr;
-    int gg;
-    int bb;
-    int32_t wr_r;
-    int32_t wg_g;
-    int32_t wb_b;
+    int components[SIXEL_CERTLUT_COMPONENTS];
+    int clamped[SIXEL_CERTLUT_COMPONENTS];
+    int component;
+    int32_t scaled[SIXEL_CERTLUT_COMPONENTS];
 
     best_candidate = (-1);
     second_candidate = (-1);
     best_value = UINT64_MAX;
     second_value = UINT64_MAX;
-    rr = r;
-    gg = g;
-    bb = b;
-    if (rr < 0) {
-        rr = 0;
-    } else if (rr > 255) {
-        rr = 255;
+    components[0] = comp1;
+    components[1] = comp2;
+    components[2] = comp3;
+    for (component = 0; component < SIXEL_CERTLUT_COMPONENTS; ++component) {
+        clamped[component] = components[component];
+        if (clamped[component] < 0) {
+            clamped[component] = 0;
+        } else if (clamped[component] > 255) {
+            clamped[component] = 255;
+        }
+        scaled[component]
+            = lut->scales[component][clamped[component]];
     }
-    if (gg < 0) {
-        gg = 0;
-    } else if (gg > 255) {
-        gg = 255;
-    }
-    if (bb < 0) {
-        bb = 0;
-    } else if (bb > 255) {
-        bb = 255;
-    }
-    wr_r = lut->wr_scale[rr];
-    wg_g = lut->wg_scale[gg];
-    wb_b = lut->wb_scale[bb];
     if (lut->kdnodes != NULL && lut->kdtree_root >= 0) {
         sixel_certlut_kdtree_search(lut,
                                     lut->kdtree_root,
-                                    r,
-                                    g,
-                                    b,
-                                    wr_r,
-                                    wg_g,
-                                    wb_b,
+                                    components,
+                                    scaled,
                                     &best_candidate,
                                     &best_value,
                                     &second_candidate,
@@ -986,9 +962,7 @@ sixel_certlut_distance_pair(sixel_certlut_t const *lut, int r, int g, int b,
         for (i = 0; i < lut->ncolors; ++i) {
             distance = sixel_certlut_distance_precomputed(lut,
                                                           i,
-                                                          wr_r,
-                                                          wg_g,
-                                                          wb_b);
+                                                          scaled);
             if (distance < best_value) {
                 second_value = best_value;
                 second_candidate = best_candidate;
@@ -1011,7 +985,10 @@ sixel_certlut_distance_pair(sixel_certlut_t const *lut, int r, int g, int b,
 }
 
 static uint8_t
-sixel_certlut_fallback(sixel_certlut_t const *lut, int r, int g, int b)
+sixel_certlut_fallback(sixel_certlut_t const *lut,
+                       int comp1,
+                       int comp2,
+                       int comp3)
 {
     int best_idx;
     int second_idx;
@@ -1031,9 +1008,9 @@ sixel_certlut_fallback(sixel_certlut_t const *lut, int r, int g, int b)
      * memory conditions.
      */
     sixel_certlut_distance_pair(lut,
-                                r,
-                                g,
-                                b,
+                                comp1,
+                                comp2,
+                                comp3,
                                 &best_idx,
                                 &second_idx,
                                 &best_dist,
@@ -1047,12 +1024,15 @@ sixel_certlut_fallback(sixel_certlut_t const *lut, int r, int g, int b)
 
 SIXELSTATUS
 sixel_certlut_build_cell(sixel_certlut_t *lut, uint32_t *cell,
-                         int rmin, int gmin, int bmin, int size)
+                         int comp1_min,
+                         int comp2_min,
+                         int comp3_min,
+                         int size)
 {
     SIXELSTATUS status;
-    int cr;
-    int cg;
-    int cb;
+    int center1;
+    int center2;
+    int center3;
     int best_idx;
     int second_idx;
     uint64_t best_dist;
@@ -1071,10 +1051,10 @@ sixel_certlut_build_cell(sixel_certlut_t *lut, uint32_t *cell,
     if (*cell == 0U) {
 #ifdef DEBUG_LUT_TRACE
         fprintf(stderr,
-                "build_cell rmin=%d gmin=%d bmin=%d size=%d\n",
-                rmin,
-                gmin,
-                bmin,
+                "build_cell comp1=%d comp2=%d comp3=%d size=%d\n",
+                comp1_min,
+                comp2_min,
+                comp3_min,
                 size);
 #endif
     }
@@ -1084,16 +1064,29 @@ sixel_certlut_build_cell(sixel_certlut_t *lut, uint32_t *cell,
     }
 
     /*
-     * Each node represents an axis-aligned cube in RGB space.  The builder
-     * certifies the dominant palette index by checking the distance gap at
-     * the cell center.  When certification fails the cube is split into eight
-     * octants backed by a pool block.  Children remain unbuilt until lookups
-     * descend into them, keeping the workload proportional to actual queries.
+     * Each node represents an axis-aligned cube in component space.  The
+     * builder certifies the dominant palette index by checking the distance
+     * gap at the cell center.  When certification fails the cube is split into
+     * eight octants backed by a pool block.  Children remain unbuilt until
+     * lookups descend into them, keeping the workload proportional to actual
+     * queries.
      */
     status = SIXEL_FALSE;
-    sixel_certlut_cell_center(rmin, gmin, bmin, size, &cr, &cg, &cb);
-    sixel_certlut_distance_pair(lut, cr, cg, cb, &best_idx, &second_idx,
-                              &best_dist, &second_dist);
+    sixel_certlut_cell_center(comp1_min,
+                              comp2_min,
+                              comp3_min,
+                              size,
+                              &center1,
+                              &center2,
+                              &center3);
+    sixel_certlut_distance_pair(lut,
+                                center1,
+                                center2,
+                                center3,
+                                &best_idx,
+                                &second_idx,
+                                &best_dist,
+                                &second_dist);
     if (best_idx < 0) {
         best_idx = 0;
     }
@@ -1107,8 +1100,12 @@ sixel_certlut_build_cell(sixel_certlut_t *lut, uint32_t *cell,
         status = SIXEL_OK;
         goto end;
     }
-    if (sixel_certlut_is_cell_safe(lut, best_idx, second_idx, size,
-                                 best_dist, second_dist)) {
+    if (sixel_certlut_is_cell_safe(lut,
+                                   best_idx,
+                                   second_idx,
+                                   size,
+                                   best_dist,
+                                   second_dist)) {
         sixel_certlut_assign_leaf(cell, best_idx);
 #ifdef DEBUG_LUT_TRACE
         fprintf(stderr,
@@ -1144,9 +1141,7 @@ sixel_certlut_build_cell(sixel_certlut_t *lut, uint32_t *cell,
     }
     sixel_certlut_assign_branch(cell, offset);
 #ifdef DEBUG_LUT_TRACE
-    fprintf(stderr,
-            "  branch offset=%u\n",
-            offset);
+        fprintf(stderr, "  branch offset=%u\n", offset);
 #endif
     status = SIXEL_OK;
 
@@ -1197,7 +1192,10 @@ end:
 }
 
 uint8_t
-sixel_certlut_lookup(sixel_certlut_t *lut, uint8_t r, uint8_t g, uint8_t b)
+sixel_certlut_lookup(sixel_certlut_t *lut,
+                     uint8_t comp1,
+                     uint8_t comp2,
+                     uint8_t comp3)
 {
     uint32_t entry;
     uint32_t offset;
@@ -1208,9 +1206,9 @@ sixel_certlut_lookup(sixel_certlut_t *lut, uint8_t r, uint8_t g, uint8_t b)
     int child;
     int status;
     int size;
-    int rmin;
-    int gmin;
-    int bmin;
+    int comp1_min;
+    int comp2_min;
+    int comp3_min;
     int step;
     if (lut == NULL || lut->level0 == NULL) {
         return 0U;
@@ -1221,29 +1219,34 @@ sixel_certlut_lookup(sixel_certlut_t *lut, uint8_t r, uint8_t g, uint8_t b)
      * traversal.  Should allocation fail we fall back to a direct brute-force
      * palette search for the queried pixel.
      */
-    index = ((uint32_t)(r >> 2) << 12)
-          | ((uint32_t)(g >> 2) << 6)
-          | (uint32_t)(b >> 2);
+    index = ((uint32_t)(comp1 >> 2) << 12)
+          | ((uint32_t)(comp2 >> 2) << 6)
+          | (uint32_t)(comp3 >> 2);
     cell = lut->level0 + index;
     size = 4;
-    rmin = (int)(r & 0xfc);
-    gmin = (int)(g & 0xfc);
-    bmin = (int)(b & 0xfc);
+    comp1_min = (int)(comp1 & 0xfc);
+    comp2_min = (int)(comp2 & 0xfc);
+    comp3_min = (int)(comp3 & 0xfc);
     entry = *cell;
     if (entry == 0U) {
 #ifdef DEBUG_LUT_TRACE
         fprintf(stderr,
-                "lookup build level0 r=%u g=%u b=%u\n",
-                (unsigned int)r,
-                (unsigned int)g,
-                (unsigned int)b);
+                "lookup build level0 comp1=%u comp2=%u comp3=%u\n",
+                (unsigned int)comp1,
+                (unsigned int)comp2,
+                (unsigned int)comp3);
 #endif
-        status = sixel_certlut_build_cell(lut, cell, rmin, gmin, bmin, size);
+        status = sixel_certlut_build_cell(lut,
+                                          cell,
+                                          comp1_min,
+                                          comp2_min,
+                                          comp3_min,
+                                          size);
         if (SIXEL_FAILED(status)) {
             return sixel_certlut_fallback(lut,
-                                          (int)r,
-                                          (int)g,
-                                          (int)b);
+                                          (int)comp1,
+                                          (int)comp2,
+                                          (int)comp3);
         }
         entry = *cell;
     }
@@ -1251,9 +1254,9 @@ sixel_certlut_lookup(sixel_certlut_t *lut, uint8_t r, uint8_t g, uint8_t b)
     while ((entry & 0x80000000U) == 0U) {
         offset = entry & 0x3fffffffU;
         children = (uint32_t *)(void *)(lut->pool + offset);
-        child = (((int)(r >> shift) & 1) << 2)
-              | (((int)(g >> shift) & 1) << 1)
-              | ((int)(b >> shift) & 1);
+        child = (((int)(comp1 >> shift) & 1) << 2)
+              | (((int)(comp2 >> shift) & 1) << 1)
+              | ((int)(comp3 >> shift) & 1);
 #ifdef DEBUG_LUT_TRACE
         fprintf(stderr,
                 "descend child=%d size=%d offset=%u\n",
@@ -1265,32 +1268,32 @@ sixel_certlut_lookup(sixel_certlut_t *lut, uint8_t r, uint8_t g, uint8_t b)
         if (step <= 0) {
             step = 1;
         }
-        rmin += step * ((child >> 2) & 1);
-        gmin += step * ((child >> 1) & 1);
-        bmin += step * (child & 1);
+        comp1_min += step * ((child >> 2) & 1);
+        comp2_min += step * ((child >> 1) & 1);
+        comp3_min += step * (child & 1);
         size = step;
         cell = children + (size_t)child;
         entry = *cell;
         if (entry == 0U) {
 #ifdef DEBUG_LUT_TRACE
             fprintf(stderr,
-                    "lookup build child size=%d rmin=%d gmin=%d bmin=%d\n",
+                    "lookup build child size=%d comp1=%d comp2=%d comp3=%d\n",
                     size,
-                    rmin,
-                    gmin,
-                    bmin);
+                    comp1_min,
+                    comp2_min,
+                    comp3_min);
 #endif
             status = sixel_certlut_build_cell(lut,
                                               cell,
-                                              rmin,
-                                              gmin,
-                                              bmin,
+                                              comp1_min,
+                                              comp2_min,
+                                              comp3_min,
                                               size);
             if (SIXEL_FAILED(status)) {
                 return sixel_certlut_fallback(lut,
-                                              (int)r,
-                                              (int)g,
-                                              (int)b);
+                                              (int)comp1,
+                                              (int)comp2,
+                                              (int)comp3);
             }
             children = (uint32_t *)(void *)(lut->pool + offset);
             cell = children + (size_t)child;
@@ -1340,6 +1343,8 @@ sixel_lut_new(sixel_lut_t **out,
     memset(lut, 0, sizeof(sixel_lut_t));
     lut->allocator = allocator;
     lut->policy = sixel_lut_policy_normalize(policy);
+    lut->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    lut->input_is_float = 0;
     lut->depth = 0;
     lut->ncolors = 0;
     lut->complexion = 1;
@@ -1373,7 +1378,8 @@ sixel_lut_configure(sixel_lut_t *lut,
                     int wR,
                     int wG,
                     int wB,
-                    int policy)
+                    int policy,
+                    int pixelformat)
 {
     SIXELSTATUS status;
     int normalized;
@@ -1395,6 +1401,8 @@ sixel_lut_configure(sixel_lut_t *lut,
     normalized = sixel_lut_policy_normalize(policy);
     lut->policy = normalized;
     lut->quant = sixel_lut_quant_make((unsigned int)depth, normalized);
+    lut->pixelformat = pixelformat;
+    lut->input_is_float = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat);
     lut->dense_ready = 0;
     lut->cert_ready = 0;
 
@@ -1432,20 +1440,41 @@ sixel_lut_configure(sixel_lut_t *lut,
 int
 sixel_lut_map_pixel(sixel_lut_t *lut, unsigned char const *pixel)
 {
+    unsigned char quantized[SIXEL_LUT_MAX_COMPONENTS];
+    unsigned char const *source_pixel;
+    float const *float_pixel;
+    int depth;
+
     if (lut == NULL || pixel == NULL) {
         return 0;
+    }
+
+    depth = lut->depth;
+    source_pixel = pixel;
+    if (lut->input_is_float) {
+        if (depth > SIXEL_LUT_MAX_COMPONENTS) {
+            sixel_helper_set_additional_message(
+                "sixel_lut_map_pixel: depth exceeds float scratch buffer.");
+            return 0;
+        }
+        float_pixel = (float const *)(void const *)pixel;
+        sixel_lut_quantize_float_pixel(float_pixel,
+                                       quantized,
+                                       depth,
+                                       lut->pixelformat);
+        source_pixel = quantized;
     }
     if (lut->policy == SIXEL_LUT_POLICY_CERTLUT) {
         if (!lut->cert_ready) {
             return 0;
         }
         return (int)sixel_certlut_lookup(&lut->cert,
-                                         pixel[0],
-                                         pixel[1],
-                                         pixel[2]);
+                                         source_pixel[0],
+                                         source_pixel[1],
+                                         source_pixel[2]);
     }
 
-    return sixel_lut_lookup_fast(lut, pixel);
+    return sixel_lut_lookup_fast(lut, source_pixel);
 }
 
 void
@@ -1461,6 +1490,8 @@ sixel_lut_clear(sixel_lut_t *lut)
         lut->cert_ready = 0;
     }
     lut->palette = NULL;
+    lut->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    lut->input_is_float = 0;
     lut->depth = 0;
     lut->ncolors = 0;
     lut->complexion = 1;
