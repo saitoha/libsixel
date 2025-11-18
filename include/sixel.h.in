@@ -257,6 +257,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_6REVERSIBLE       ('6')  /* -6, --6reversible: snap palette to reversible tones */
 #define SIXEL_OPTFLAG_HAS_GRI_ARG_LIMIT ('R')  /* -R, --gri-limit: limit arguments of DECGRI('!') to 255 */
 #define SIXEL_OPTFLAG_PRECISION         ('.')  /* -., --precision: control quantization precision. */
+#define SIXEL_OPTFLAG_THREADS           ('=')  /* -=, --threads: override encoder thread count. */
 #define SIXEL_OPTFLAG_COLORS            ('p')  /* -p COLORS, --colors=COLORS: specify number of colors */
 #define SIXEL_OPTFLAG_MAPFILE           ('m')  /* -m FILE, --mapfile=FILE: specify set of colors */
 #define SIXEL_OPTFLAG_MAPFILE_OUTPUT    ('M')  /* -M FILE, --mapfile-output=FILE: export palette file */

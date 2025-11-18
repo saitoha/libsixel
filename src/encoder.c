@@ -117,6 +117,7 @@
 #include "rgblookup.h"
 #include "clipboard.h"
 #include "compat_stub.h"
+#include "sixel_threads_config.h"
 
 #define SIXEL_ENCODER_PRECISION_ENVVAR "SIXEL_FLOAT32_DITHER"
 
@@ -140,6 +141,9 @@ static SIXELSTATUS clipboard_write_file(char const *path,
 static SIXELSTATUS clipboard_read_file(char const *path,
                                        unsigned char **data,
                                        size_t *size);
+static int sixel_encoder_threads_token_is_auto(char const *text);
+static int sixel_encoder_parse_threads_argument(char const *text,
+                                                int *value);
 
 #if defined(_WIN32)
 
@@ -4832,6 +4836,56 @@ is_dev_null_path(char const *path)
 }
 
 
+static int
+sixel_encoder_threads_token_is_auto(char const *text)
+{
+    if (text == NULL) {
+        return 0;
+    }
+
+    if ((text[0] == 'a' || text[0] == 'A') &&
+        (text[1] == 'u' || text[1] == 'U') &&
+        (text[2] == 't' || text[2] == 'T') &&
+        (text[3] == 'o' || text[3] == 'O') &&
+        text[4] == '\0') {
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+sixel_encoder_parse_threads_argument(char const *text, int *value)
+{
+    long parsed;
+    char *endptr;
+
+    parsed = 0L;
+    endptr = NULL;
+
+    if (text == NULL || value == NULL) {
+        return 0;
+    }
+
+    if (sixel_encoder_threads_token_is_auto(text) != 0) {
+        *value = 0;
+        return 1;
+    }
+
+    errno = 0;
+    parsed = strtol(text, &endptr, 10);
+    if (endptr == text || *endptr != '\0' || errno == ERANGE) {
+        return 0;
+    }
+
+    if (parsed < 1L || parsed > (long)INT_MAX) {
+        return 0;
+    }
+
+    *value = (int)parsed;
+    return 1;
+}
+
 /* set an option flag to encoder object */
 SIXELAPI SIXELSTATUS
 sixel_encoder_setopt(
@@ -5100,6 +5154,15 @@ sixel_encoder_setopt(
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
+        break;
+    case SIXEL_OPTFLAG_THREADS:  /* = */
+        if (sixel_encoder_parse_threads_argument(value, &number) == 0) {
+            sixel_helper_set_additional_message(
+                "threads accepts positive integers or 'auto'.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        sixel_set_threads(number);
         break;
     case SIXEL_OPTFLAG_COLORS:  /* p */
         forced_palette = 0;

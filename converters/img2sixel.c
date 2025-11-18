@@ -64,8 +64,6 @@
 #endif
 
 #include <sixel.h>
-#include "../src/sixel_threads_config.h"
-#include "../src/compat_stub.h"
 #include "malloc_stub.h"
 #include "getopt_stub.h"
 #include "completion_utils.h"
@@ -655,9 +653,6 @@ static char const g_img2sixel_optstring[] =
     "j:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:L:kil:t:ugvSn:PE:U:B:C:D@:"
     "OVW:HY:y:";
 
-static int img2sixel_threads_token_is_auto(char const *text);
-static int img2sixel_parse_threads_argument(char const *text, int *value);
-
 static img2sixel_option_help_t const *
 img2sixel_find_option_help(int short_opt)
 {
@@ -794,56 +789,6 @@ img2sixel_token_is_known_option(char const *token, int *out_short_opt)
         *out_short_opt = entry->short_opt;
     }
 
-    return 1;
-}
-
-static int
-img2sixel_threads_token_is_auto(char const *text)
-{
-    if (text == NULL) {
-        return 0;
-    }
-
-    if ((text[0] == 'a' || text[0] == 'A') &&
-        (text[1] == 'u' || text[1] == 'U') &&
-        (text[2] == 't' || text[2] == 'T') &&
-        (text[3] == 'o' || text[3] == 'O') &&
-        text[4] == '\0') {
-        return 1;
-    }
-
-    return 0;
-}
-
-static int
-img2sixel_parse_threads_argument(char const *text, int *value)
-{
-    long parsed;
-    char *endptr;
-
-    parsed = 0L;
-    endptr = NULL;
-
-    if (text == NULL || value == NULL) {
-        return 0;
-    }
-
-    if (img2sixel_threads_token_is_auto(text) != 0) {
-        *value = 0;
-        return 1;
-    }
-
-    errno = 0;
-    parsed = strtol(text, &endptr, 10);
-    if (endptr == text || *endptr != '\0' || errno == ERANGE) {
-        return 0;
-    }
-
-    if (parsed < 1L || parsed > (long)INT_MAX) {
-        return 0;
-    }
-
-    *value = (int)parsed;
     return 1;
 }
 
@@ -1323,8 +1268,6 @@ main(int argc, char *argv[])
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
     char const *optstring;
-    int threads_option;
-    int threads_parse_ok;
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"outfile",            required_argument,  &long_opt, 'o'},
@@ -1448,17 +1391,28 @@ main(int argc, char *argv[])
             status = SIXEL_BAD_ARGUMENT;
             goto unknown_option_error;
         case '=':
-            threads_parse_ok = img2sixel_parse_threads_argument(optarg,
-                                                                &threads_option);
-            if (threads_parse_ok == 0) {
-                img2sixel_report_invalid_argument(
-                    '=',
-                    optarg,
-                    "threads accepts positive integers or \\fB'auto'\\fP.");
-                status = SIXEL_BAD_ARGUMENT;
+            status = sixel_encoder_setopt(encoder,
+                                          SIXEL_OPTFLAG_THREADS,
+                                          optarg);
+            if (SIXEL_FAILED(status)) {
+                detail_buffer[0] = '\0';
+                detail_source = sixel_helper_get_additional_message();
+                if (detail_source != NULL && detail_source[0] != '\0') {
+                    (void) snprintf(detail_buffer,
+                                    sizeof(detail_buffer),
+                                    "%s",
+                                    detail_source);
+                }
+                if (status == SIXEL_BAD_ARGUMENT) {
+                    img2sixel_report_invalid_argument(
+                        '=',
+                        optarg,
+                        detail_buffer[0] != '\0'
+                            ? detail_buffer
+                            : NULL);
+                }
                 goto error;
             }
-            sixel_set_threads(threads_option);
             break;
         case 'a':
             status = sixel_encoder_setopt(encoder,
