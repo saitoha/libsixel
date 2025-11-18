@@ -354,6 +354,8 @@ write_png_to_file(
     case SIXEL_PIXELFORMAT_AG88:
     case SIXEL_PIXELFORMAT_BGR888:
     case SIXEL_PIXELFORMAT_RGBFLOAT32:
+    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
+    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
         pixels = new_pixels = sixel_allocator_malloc(allocator,
                                                     (size_t)(width
                                                              * height

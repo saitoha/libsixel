@@ -36,6 +36,11 @@
 
 #include <sixel.h>
 
+#include "pixelformat.h"
+
+#define SIXEL_OKLAB_AB_FLOAT_MIN (-0.5f)
+#define SIXEL_OKLAB_AB_FLOAT_MAX (0.5f)
+
 /*
  * Normalize a float32 channel stored in the 0.0-1.0 range and convert
  * the value to an 8-bit sample. Out-of-range or NaN inputs are clamped
@@ -60,6 +65,143 @@ sixel_pixelformat_float_to_byte(float value)
     return (unsigned char)(value * 255.0f + 0.5f);
 }
 
+static unsigned char
+sixel_pixelformat_oklab_L_to_byte(float value)
+{
+#if HAVE_MATH_H
+    if (!isfinite(value)) {
+        value = 0.0f;
+    }
+#endif  /* HAVE_MATH_H */
+
+    if (value <= 0.0f) {
+        return 0;
+    }
+    if (value >= 1.0f) {
+        return 255;
+    }
+
+    return (unsigned char)(value * 255.0f + 0.5f);
+}
+
+static unsigned char
+sixel_pixelformat_oklab_ab_to_byte(float value)
+{
+    float encoded;
+
+#if HAVE_MATH_H
+    if (!isfinite(value)) {
+        value = 0.0f;
+    }
+#endif  /* HAVE_MATH_H */
+
+    encoded = value + 0.5f;
+    if (encoded <= 0.0f) {
+        return 0;
+    }
+    if (encoded >= 1.0f) {
+        return 255;
+    }
+
+    return (unsigned char)(encoded * 255.0f + 0.5f);
+}
+
+static float
+sixel_pixelformat_float_channel_min_internal(int pixelformat,
+                                             int channel)
+{
+    (void)channel;
+    if (pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32) {
+        if (channel == 0) {
+            return 0.0f;
+        }
+        return SIXEL_OKLAB_AB_FLOAT_MIN;
+    }
+    return 0.0f;
+}
+
+static float
+sixel_pixelformat_float_channel_max_internal(int pixelformat,
+                                             int channel)
+{
+    (void)channel;
+    if (pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32) {
+        if (channel == 0) {
+            return 1.0f;
+        }
+        return SIXEL_OKLAB_AB_FLOAT_MAX;
+    }
+    return 1.0f;
+}
+
+float
+sixel_pixelformat_float_channel_clamp(int pixelformat,
+                                      int channel,
+                                      float value)
+{
+    float minimum;
+    float maximum;
+
+#if HAVE_MATH_H
+    if (!isfinite(value)) {
+        value = 0.0f;
+    }
+#endif  /* HAVE_MATH_H */
+
+    minimum = sixel_pixelformat_float_channel_min_internal(pixelformat,
+                                                           channel);
+    maximum = sixel_pixelformat_float_channel_max_internal(pixelformat,
+                                                           channel);
+    if (value < minimum) {
+        return minimum;
+    }
+    if (value > maximum) {
+        return maximum;
+    }
+
+    return value;
+}
+
+unsigned char
+sixel_pixelformat_float_channel_to_byte(int pixelformat,
+                                        int channel,
+                                        float value)
+{
+    float clamped;
+
+    clamped = sixel_pixelformat_float_channel_clamp(pixelformat,
+                                                    channel,
+                                                    value);
+    if (pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32) {
+        if (channel == 0) {
+            return sixel_pixelformat_oklab_L_to_byte(clamped);
+        }
+        return sixel_pixelformat_oklab_ab_to_byte(clamped);
+    }
+
+    (void)channel;
+    return sixel_pixelformat_float_to_byte(clamped);
+}
+
+float
+sixel_pixelformat_byte_to_float(int pixelformat,
+                                int channel,
+                                unsigned char value)
+{
+    float decoded;
+
+    if (pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32) {
+        if (channel == 0) {
+            return (float)value / 255.0f;
+        }
+        decoded = (float)value / 255.0f;
+        return decoded - 0.5f;
+    }
+
+    (void)channel;
+    return (float)value / 255.0f;
+}
+
 static void
 get_rgb(unsigned char const *data,
         int const pixelformat,
@@ -75,12 +217,21 @@ get_rgb(unsigned char const *data,
 #endif
     int count = 0;
 
-    if (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32) {
+    if (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32
+            || pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
         float const *fpixels = (float const *)(void const *)data;
 
         *r = sixel_pixelformat_float_to_byte(fpixels[0]);
         *g = sixel_pixelformat_float_to_byte(fpixels[1]);
         *b = sixel_pixelformat_float_to_byte(fpixels[2]);
+        return;
+    }
+    if (pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32) {
+        float const *fpixels = (float const *)(void const *)data;
+
+        *r = sixel_pixelformat_oklab_L_to_byte(fpixels[0]);
+        *g = sixel_pixelformat_oklab_ab_to_byte(fpixels[1]);
+        *b = sixel_pixelformat_oklab_ab_to_byte(fpixels[2]);
         return;
     }
 
@@ -198,6 +349,8 @@ sixel_helper_compute_depth(int pixelformat)
         depth = 1;
         break;
     case SIXEL_PIXELFORMAT_RGBFLOAT32:
+    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
+    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
         depth = (int)(sizeof(float) * 3);
         break;
     default:
@@ -330,6 +483,8 @@ sixel_helper_normalize_pixelformat(
         *dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
         break;
     case SIXEL_PIXELFORMAT_RGBFLOAT32:
+    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
+    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
         depth = sixel_helper_compute_depth(src_pixelformat);
         if (depth <= 0) {
             status = SIXEL_BAD_ARGUMENT;

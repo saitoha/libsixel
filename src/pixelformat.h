@@ -31,6 +31,21 @@ SIXELAPI int
 sixel_pixelformat_tests_main(void);
 #endif
 
+float
+sixel_pixelformat_float_channel_clamp(int pixelformat,
+                                      int channel,
+                                      float value);
+
+unsigned char
+sixel_pixelformat_float_channel_to_byte(int pixelformat,
+                                        int channel,
+                                        float value);
+
+float
+sixel_pixelformat_byte_to_float(int pixelformat,
+                                int channel,
+                                unsigned char value);
+
 #ifdef __cplusplus
 }
 #endif

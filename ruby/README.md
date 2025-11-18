@@ -56,6 +56,46 @@ decoder.decode              # honors options set with setopt
 decoder.setopt 'd', 'k_undither'
 ```
 
+## Float32 precision pipeline
+
+The Ruby bindings can participate in the same float32 workflow that the
+CLI exposes.  This is useful when you want to keep HDR or wide-gamut
+sources in a float format until the final palette is emitted.
+
+1. Ensure libsixel itself was built with the Ruby bindings enabled so
+   the gem can load the new dithering entry points.
+2. Opt into the float pipeline by setting ``ENV["SIXEL_FLOAT32_DITHER"]
+   = "1"`` before instantiating an ``Encoder``.  This mirrors
+   ``img2sixel -.float32``.
+3. Request the float precision flag through ``encoder.setopt('.',
+   'float32')`` so that automatic image loading uses the expanded path.
+4. Select a working colorspace via ``encoder.setopt('W', 'linear')`` or
+   ``'oklab'`` if you want libsixel to convert the source prior to
+   quantization without dropping back to 8-bit.
+5. When passing custom buffers to ``encode_bytes`` choose one of the
+   float pixel format constants exposed via ``Libsixel::API``:
+
+   | Constant name                                      | Use case              |
+   | -------------------------------------------------- | --------------------- |
+   | ``SIXEL_PIXELFORMAT_RGBFLOAT32``                   | Gamma-encoded RGB     |
+   | ``SIXEL_PIXELFORMAT_LINEARRGBFLOAT32``             | Linear-light RGB data |
+   | ``SIXEL_PIXELFORMAT_OKLABFLOAT32``                 | OKLab intermediates   |
+
+   Supplying these constants prevents the implicit byte conversion
+   performed by legacy releases.
+
+```ruby
+require 'libsixel'
+
+ENV['SIXEL_FLOAT32_DITHER'] = '1'
+
+encoder = Encoder.new
+encoder.setopt '.', 'float32'
+encoder.setopt 'W', 'oklab'
+encoder.setopt 'p', '256'
+encoder.encode 'images/snake.exr'
+```
+
 Low-level C API (ctypes-style) via `Libsixel::API`:
 
 ```ruby

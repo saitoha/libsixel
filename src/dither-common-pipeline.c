@@ -22,6 +22,8 @@
 
 #include "config.h"
 
+#include <float.h>
+
 #include "dither-common-pipeline.h"
 
 /*
@@ -39,6 +41,54 @@ sixel_dither_pipeline_row_notify(sixel_dither_t *dither, int row_index)
         return;
     }
     dither->pipeline_row_callback(dither->pipeline_row_priv, row_index);
+}
+
+/*
+ * Compute the nearest palette entry using float32 samples.  The function
+ * mirrors lookup_normal() but operates on float buffers so positional and
+ * variable-coefficient dithers can benefit from palettes published with
+ * RGBFLOAT32 precision.
+ */
+int
+sixel_dither_lookup_palette_float32(float const *pixel,
+                                    int depth,
+                                    float const *palette,
+                                    int reqcolor,
+                                    int complexion)
+{
+    double best_error;
+    double error;
+    double delta;
+    int best_index;
+    int color;
+    int channel;
+    int palette_offset;
+
+    if (pixel == NULL || palette == NULL) {
+        return 0;
+    }
+    if (depth <= 0 || reqcolor <= 0) {
+        return 0;
+    }
+
+    best_index = 0;
+    best_error = DBL_MAX;
+    for (color = 0; color < reqcolor; ++color) {
+        palette_offset = color * depth;
+        delta = (double)pixel[0] - (double)palette[palette_offset + 0];
+        error = delta * delta * (double)complexion;
+        for (channel = 1; channel < depth; ++channel) {
+            delta = (double)pixel[channel]
+                  - (double)palette[palette_offset + channel];
+            error += delta * delta;
+        }
+        if (error < best_error) {
+            best_error = error;
+            best_index = color;
+        }
+    }
+
+    return best_index;
 }
 
 /* emacs Local Variables:      */
