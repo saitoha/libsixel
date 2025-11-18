@@ -694,6 +694,8 @@ img2sixel_guard_missing_argument(int short_opt, char *const *argv)
 {
     return cli_guard_missing_argument(short_opt,
                                       argv,
+                                      optarg,
+                                      &optind,
                                       g_img2sixel_optstring,
                                       g_option_help_table,
                                       img2sixel_option_help_count(),

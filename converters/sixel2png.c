@@ -316,6 +316,8 @@ sixel2png_guard_missing_argument(int short_opt, char *const *argv)
 {
     return cli_guard_missing_argument(short_opt,
                                       argv,
+                                      optarg,
+                                      &optind,
                                       g_sixel2png_optstring,
                                       g_option_help_table,
                                       sixel2png_option_help_count(),
