@@ -1474,6 +1474,32 @@ static sixel_option_choice_t const g_decoder_dequant_choices[] = {
     { "k_undither+", 2 }
 };
 
+static void
+sixel2png_normalise_windows_drive_path(char *path)
+{
+#if defined(_WIN32)
+    size_t length;
+
+    length = 0u;
+
+    if (path == NULL) {
+        return;
+    }
+
+    length = strlen(path);
+    if (length >= 3u
+            && path[0] == '/'
+            && ((path[1] >= 'A' && path[1] <= 'Z')
+                || (path[1] >= 'a' && path[1] <= 'z'))
+            && path[2] == '/') {
+        path[0] = path[1];
+        path[1] = ':';
+    }
+#else
+    (void)path;
+#endif
+}
+
 /* set an option flag to decoder object */
 SIXELAPI SIXELSTATUS
 sixel_decoder_setopt(
@@ -1485,6 +1511,8 @@ sixel_decoder_setopt(
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned int path_flags;
     int path_check;
+    char const *payload = NULL;
+    size_t length;
 
     sixel_decoder_ref(decoder);
     path_flags = 0u;
@@ -1534,6 +1562,20 @@ sixel_decoder_setopt(
     case SIXEL_OPTFLAG_OUTPUT:  /* o */
         decoder->clipboard_output_active = 0;
         decoder->clipboard_output_format[0] = '\0';
+
+        payload = value;
+        if (strncmp(value, "png:", 4) == 0) {
+            payload = value + 4;
+            if (payload[0] == '\0') {
+                sixel_helper_set_additional_message(
+                    "sixel2png: missing target after the \"png:\" prefix.");
+                return SIXEL_BAD_ARGUMENT;
+            }
+            length = strlen(payload);
+            memcpy(value, payload, length + 1U);
+            sixel2png_normalise_windows_drive_path(value);
+        }
+
         if (value != NULL) {
             sixel_clipboard_spec_t clipboard_spec;
 

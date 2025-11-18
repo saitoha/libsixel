@@ -564,102 +564,6 @@ sixel2png_handle_getopt_error(int short_opt, char const *token)
     sixel2png_report_unrecognized_option(short_opt, token);
 }
 
-static void
-sixel2png_normalise_windows_drive_path(char *path)
-{
-#if defined(_WIN32)
-    size_t length;
-
-    length = 0u;
-
-    if (path == NULL) {
-        return;
-    }
-
-    length = strlen(path);
-    if (length >= 3u
-            && path[0] == '/'
-            && ((path[1] >= 'A' && path[1] <= 'Z')
-                || (path[1] >= 'a' && path[1] <= 'z'))
-            && path[2] == '/') {
-        path[0] = path[1];
-        path[1] = ':';
-    }
-#else
-    (void)path;
-#endif
-}
-
-static SIXELSTATUS
-sixel2png_decoder_setopt(sixel_decoder_t *decoder,
-                         int option,
-                         char const *argument)
-{
-    SIXELSTATUS status;
-    char detail_buffer[1024];
-    char const *detail_source;
-    char const *effective_argument;
-    char *allocated_argument;
-
-    detail_source = NULL;
-    effective_argument = argument;
-    allocated_argument = NULL;
-
-    if (option == 'o' && argument != NULL) {
-        char const *payload;
-        size_t length;
-
-        payload = argument;
-        if (strncmp(argument, "png:", 4) == 0) {
-            payload = argument + 4;
-            if (payload[0] == '\0') {
-                sixel_helper_set_additional_message(
-                    "sixel2png: missing target after the \"png:\" prefix.");
-                return SIXEL_BAD_ARGUMENT;
-            }
-        }
-        if (payload != argument) {
-            length = strlen(payload);
-            allocated_argument = (char *)malloc(length + 1u);
-            if (allocated_argument == NULL) {
-                sixel_helper_set_additional_message(
-                    "sixel2png: malloc() failed for output path.");
-                return SIXEL_BAD_ALLOCATION;
-            }
-            memcpy(allocated_argument, payload, length + 1u);
-            sixel2png_normalise_windows_drive_path(allocated_argument);
-            effective_argument = allocated_argument;
-        } else {
-            effective_argument = argument;
-        }
-    }
-
-    status = sixel_decoder_setopt(decoder, option, effective_argument);
-    if (SIXEL_FAILED(status)) {
-        detail_buffer[0] = '\0';
-        detail_source = sixel_helper_get_additional_message();
-        if (detail_source != NULL && detail_source[0] != '\0') {
-            (void) snprintf(detail_buffer,
-                            sizeof(detail_buffer),
-                            "%s",
-                            detail_source);
-        }
-        if (status == SIXEL_BAD_ARGUMENT) {
-            sixel2png_report_invalid_argument(
-                option,
-                effective_argument,
-                detail_buffer[0] != '\0' ? detail_buffer : NULL);
-        }
-    }
-
-    if (allocated_argument != NULL) {
-        free(allocated_argument);
-        allocated_argument = NULL;
-    }
-
-    return status;
-}
-
 /* output version info to STDOUT */
 static
 void show_version(void)
@@ -701,6 +605,8 @@ main(int argc, char *argv[])
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
     char const *optstring;
+    char detail_buffer[1024];
+    char const *detail_source = NULL;
 
     sixel_tty_init_output_device(STDERR_FILENO);
     sixel_aborttrace_install_if_unhandled();
@@ -773,8 +679,22 @@ main(int argc, char *argv[])
             status = SIXEL_BAD_ARGUMENT;
             goto error;
         default:
-            status = sixel2png_decoder_setopt(decoder, n, optarg);
+            status = sixel_decoder_setopt(decoder, n, optarg);
             if (SIXEL_FAILED(status)) {
+                detail_buffer[0] = '\0';
+                detail_source = sixel_helper_get_additional_message();
+                if (detail_source != NULL && detail_source[0] != '\0') {
+                    (void) snprintf(detail_buffer,
+                                    sizeof(detail_buffer),
+                                    "%s",
+                                    detail_source);
+                }
+                if (status == SIXEL_BAD_ARGUMENT) {
+                    sixel2png_report_invalid_argument(
+                        n,
+                        optarg,
+                        detail_buffer[0] != '\0' ? detail_buffer : NULL);
+                }
                 goto error;
             }
         }
@@ -789,7 +709,7 @@ main(int argc, char *argv[])
         char const *argument;
 
         argument = argv[optind];
-        status = sixel2png_decoder_setopt(decoder, 'i', argument);
+        status = sixel_decoder_setopt(decoder, 'i', argument);
         ++optind;
         if (SIXEL_FAILED(status)) {
             goto error;
@@ -800,7 +720,7 @@ main(int argc, char *argv[])
         char const *argument;
 
         argument = argv[optind];
-        status = sixel2png_decoder_setopt(decoder, 'o', argument);
+        status = sixel_decoder_setopt(decoder, 'o', argument);
         ++optind;
         if (SIXEL_FAILED(status)) {
             goto error;

@@ -1390,116 +1390,7 @@ main(int argc, char *argv[])
                     : NULL);
             status = SIXEL_BAD_ARGUMENT;
             goto unknown_option_error;
-        case '=':
-            status = sixel_encoder_setopt(encoder,
-                                          SIXEL_OPTFLAG_THREADS,
-                                          optarg);
-            if (SIXEL_FAILED(status)) {
-                detail_buffer[0] = '\0';
-                detail_source = sixel_helper_get_additional_message();
-                if (detail_source != NULL && detail_source[0] != '\0') {
-                    (void) snprintf(detail_buffer,
-                                    sizeof(detail_buffer),
-                                    "%s",
-                                    detail_source);
-                }
-                if (status == SIXEL_BAD_ARGUMENT) {
-                    img2sixel_report_invalid_argument(
-                        '=',
-                        optarg,
-                        detail_buffer[0] != '\0'
-                            ? detail_buffer
-                            : NULL);
-                }
-                goto error;
-            }
-            break;
-        case 'a':
-            status = sixel_encoder_setopt(encoder,
-                                          SIXEL_OPTFLAG_ASSESSMENT,
-                                          optarg);
-            if (status == SIXEL_BAD_ARGUMENT) {
-                img2sixel_report_invalid_argument(
-                    'a',
-                    optarg,
-                    "invalid assessment section list.");
-                goto error;
-            }
-            assessment_enabled = 1;
-            break;
-        case 'J':
-            status = sixel_encoder_setopt(encoder,
-                                          SIXEL_OPTFLAG_ASSESSMENT_FILE,
-                                          optarg);
-            break;
-        case 'j':
-            status = sixel_encoder_setopt(encoder,
-                                          SIXEL_OPTFLAG_LOADERS,
-                                          optarg);
-            if (SIXEL_FAILED(status)) {
-                detail_buffer[0] = '\0';
-                detail_source = sixel_helper_get_additional_message();
-                if (detail_source != NULL && detail_source[0] != '\0') {
-                    (void) snprintf(detail_buffer,
-                                    sizeof(detail_buffer),
-                                    "%s",
-                                    detail_source);
-                }
-                if (status == SIXEL_BAD_ARGUMENT) {
-                    img2sixel_report_invalid_argument(
-                        'j',
-                        optarg,
-                        detail_buffer[0] != '\0'
-                            ? detail_buffer
-                            : NULL);
-                }
-                goto error;
-            }
-            break;
-        case 'm':
-            status = sixel_encoder_setopt(encoder, n, optarg);
-            if (SIXEL_FAILED(status)) {
-                detail_buffer[0] = '\0';
-                detail_source = sixel_helper_get_additional_message();
-                if (detail_source != NULL && detail_source[0] != '\0') {
-                    (void) snprintf(detail_buffer,
-                                    sizeof(detail_buffer),
-                                    "%s",
-                                    detail_source);
-                }
-                if (status == SIXEL_BAD_ARGUMENT) {
-                    img2sixel_report_invalid_argument(
-                        n,
-                        optarg,
-                        detail_buffer[0] != '\0'
-                            ? detail_buffer
-                            : NULL);
-                }
-                goto error;
-            }
-            break;
-        case 'o':
-            status = sixel_encoder_setopt(encoder, n, optarg);
-            if (SIXEL_FAILED(status)) {
-                detail_buffer[0] = '\0';
-                detail_source = sixel_helper_get_additional_message();
-                if (detail_source != NULL && detail_source[0] != '\0') {
-                    (void) snprintf(detail_buffer,
-                                    sizeof(detail_buffer),
-                                    "%s",
-                                    detail_source);
-                }
-                if (status == SIXEL_BAD_ARGUMENT) {
-                    img2sixel_report_invalid_argument(
-                        n,
-                        optarg,
-                        detail_buffer[0] != '\0'
-                            ? detail_buffer
-                            : NULL);
-                }
-                goto error;
-            }
-            break;
+
         default:
             status = sixel_encoder_setopt(encoder, n, optarg);
             if (SIXEL_FAILED(status)) {
@@ -1520,6 +1411,9 @@ main(int argc, char *argv[])
                             : NULL);
                 }
                 goto error;
+            }
+            if (n == 'a') {
+                assessment_enabled = 1;
             }
             break;
         }
