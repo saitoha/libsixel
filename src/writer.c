@@ -840,19 +840,34 @@ error:
 
 
 static unsigned char *
-writer_tests_duplicate_palette(sixel_dither_t *dither)
+writer_tests_duplicate_palette(
+    sixel_dither_t *dither,
+    sixel_allocator_t **ppallocator)
 {
     sixel_palette_t *palette_obj;
     unsigned char *copy;
     size_t count;
+    sixel_allocator_t *allocator;
 
-    if (dither == NULL) {
+    if (dither == NULL || ppallocator == NULL) {
         return NULL;
     }
 
     palette_obj = NULL;
     copy = NULL;
     count = 0U;
+    allocator = *ppallocator;
+    if (allocator == NULL) {
+        if (SIXEL_FAILED(sixel_allocator_new(
+                &allocator,
+                NULL,
+                NULL,
+                NULL,
+                NULL))) {
+            return NULL;
+        }
+        *ppallocator = allocator;
+    }
     if (SIXEL_FAILED(
             sixel_dither_get_quantized_palette(dither, &palette_obj))
             || palette_obj == NULL) {
@@ -863,7 +878,7 @@ writer_tests_duplicate_palette(sixel_dither_t *dither)
             &copy,
             &count,
             SIXEL_PIXELFORMAT_RGB888,
-            dither->allocator))) {
+            allocator))) {
         sixel_palette_unref(palette_obj);
         return NULL;
     }
@@ -879,6 +894,7 @@ test3(void)
     unsigned char pixels[] = {0x00, 0x7f, 0xff};
     sixel_dither_t *dither = sixel_dither_get(SIXEL_BUILTIN_G8);
     unsigned char *palette_copy = NULL;
+    sixel_allocator_t *allocator = NULL;
 
     status = sixel_helper_write_image_file(
         pixels,
@@ -894,7 +910,7 @@ test3(void)
         goto error;
     }
 
-    palette_copy = writer_tests_duplicate_palette(dither);
+    palette_copy = writer_tests_duplicate_palette(dither, &allocator);
     status = sixel_helper_write_image_file(
         pixels,
         1,
@@ -911,8 +927,11 @@ test3(void)
     nret = EXIT_SUCCESS;
 
 error:
-    if (palette_copy != NULL && dither != NULL) {
-        sixel_allocator_free(dither->allocator, palette_copy);
+    if (palette_copy != NULL && allocator != NULL) {
+        sixel_allocator_free(allocator, palette_copy);
+    }
+    if (allocator != NULL) {
+        sixel_allocator_unref(allocator);
     }
     return nret;
 }
@@ -926,8 +945,9 @@ test4(void)
     unsigned char pixels[] = {0xa0};
     sixel_dither_t *dither = sixel_dither_get(SIXEL_BUILTIN_XTERM256);
     unsigned char *palette_copy = NULL;
+    sixel_allocator_t *allocator = NULL;
 
-    palette_copy = writer_tests_duplicate_palette(dither);
+    palette_copy = writer_tests_duplicate_palette(dither, &allocator);
     status = sixel_helper_write_image_file(
         pixels,
         1,
@@ -957,8 +977,11 @@ test4(void)
     nret = EXIT_SUCCESS;
 
 error:
-    if (palette_copy != NULL && dither != NULL) {
-        sixel_allocator_free(dither->allocator, palette_copy);
+    if (palette_copy != NULL && allocator != NULL) {
+        sixel_allocator_free(allocator, palette_copy);
+    }
+    if (allocator != NULL) {
+        sixel_allocator_unref(allocator);
     }
     return nret;
 }
@@ -972,8 +995,9 @@ test5(void)
     unsigned char pixels[] = {0x00};
     sixel_dither_t *dither = sixel_dither_get(SIXEL_BUILTIN_XTERM256);
     unsigned char *palette_copy = NULL;
+    sixel_allocator_t *allocator = NULL;
 
-    palette_copy = writer_tests_duplicate_palette(dither);
+    palette_copy = writer_tests_duplicate_palette(dither, &allocator);
     status = sixel_helper_write_image_file(
         pixels,
         1,
@@ -1003,8 +1027,11 @@ test5(void)
     nret = EXIT_SUCCESS;
 
 error:
-    if (palette_copy != NULL && dither != NULL) {
-        sixel_allocator_free(dither->allocator, palette_copy);
+    if (palette_copy != NULL && allocator != NULL) {
+        sixel_allocator_free(allocator, palette_copy);
+    }
+    if (allocator != NULL) {
+        sixel_allocator_unref(allocator);
     }
     return nret;
 }
