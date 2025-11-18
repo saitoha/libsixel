@@ -38,7 +38,6 @@
 
 #include <sixel.h>
 
-#include "getopt_stub.h"
 #include "cli.h"
 
 static size_t
@@ -187,6 +186,8 @@ cli_token_is_known_option(cli_option_help_t const *table,
 int
 cli_guard_missing_argument(int short_opt,
                            char *const *argv,
+                           char *argument,
+                           int *optind_ptr,
                            char const *optstring,
                            cli_option_help_t const *table,
                            size_t table_count,
@@ -198,12 +199,13 @@ cli_guard_missing_argument(int short_opt,
     int recognised;
     int candidate_short_opt;
     int allows_leading_dash;
+    int opt_index;
 
     if (cli_option_requires_argument(optstring, short_opt) == 0) {
         return 0;
     }
 
-    if (optarg == NULL) {
+    if (argument == NULL) {
         if (report_cb != NULL) {
             report_cb(short_opt, report_user_data);
         }
@@ -220,10 +222,14 @@ cli_guard_missing_argument(int short_opt,
 
     recognised = cli_token_is_known_option(table,
                                            table_count,
-                                           optarg,
+                                           argument,
                                            &candidate_short_opt);
     if (recognised != 0) {
-        if (optind > 0 && optarg == argv[optind - 1]) {
+        opt_index = 0;
+        if (optind_ptr != NULL) {
+            opt_index = *optind_ptr;
+        }
+        if (opt_index > 0 && argument == argv[opt_index - 1]) {
             /*
              * getopt() stores a pointer to the original argv entry when it
              * treats a standalone token as the argument.  Rewinding optind
@@ -231,7 +237,9 @@ cli_guard_missing_argument(int short_opt,
              * interpret it as an option instead of an argument, mirroring the
              * ASCII timeline described in the converter sources.
              */
-            optind -= 1;
+            if (optind_ptr != NULL) {
+                *optind_ptr -= 1;
+            }
             if (report_cb != NULL) {
                 report_cb(short_opt, report_user_data);
             }
