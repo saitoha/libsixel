@@ -2066,15 +2066,6 @@ test_float_env_empty_string_disables(void)
     nret = EXIT_SUCCESS;
 
 error:
-    if (palette_obj != NULL) {
-        sixel_palette_unref(palette_obj);
-    }
-    if (palette_float_copy != NULL && dither != NULL) {
-        sixel_allocator_free(dither->allocator, palette_float_copy);
-    }
-    if (palette_u8_copy != NULL && dither != NULL) {
-        sixel_allocator_free(dither->allocator, palette_u8_copy);
-    }
     sixel_dither_unref(dither);
     sixel_palette_tests_reset_last_engine();
     sixel_compat_setenv(SIXEL_FLOAT32_ENVVAR, "0");
@@ -2448,8 +2439,6 @@ test_float_palette_accessor_returns_data(void)
     };
     sixel_dither_t *dither;
     SIXELSTATUS status;
-    float *palette_float;
-    unsigned char *palette_u8;
     int nret;
     int colors;
     int red_float;
@@ -2575,12 +2564,20 @@ test_float_palette_accessor_legacy_null(void)
     };
     sixel_dither_t *dither;
     SIXELSTATUS status;
-    float *palette_float;
+    sixel_palette_t *palette_obj;
+    float *palette_float_copy;
+    unsigned char *palette_u8_copy;
+    size_t palette_float_count;
+    size_t palette_u8_count;
     int nret;
 
     dither = NULL;
     status = SIXEL_FALSE;
-    palette_float = NULL;
+    palette_obj = NULL;
+    palette_float_copy = NULL;
+    palette_u8_copy = NULL;
+    palette_float_count = 0U;
+    palette_u8_count = 0U;
     nret = EXIT_FAILURE;
     sixel_dither_tests_reset_float32_flag_cache();
     sixel_palette_tests_reset_last_engine();
@@ -2637,10 +2634,10 @@ error:
     if (palette_obj != NULL) {
         sixel_palette_unref(palette_obj);
     }
-    if (palette_float_copy != NULL) {
+    if (palette_float_copy != NULL && dither != NULL) {
         sixel_allocator_free(dither->allocator, palette_float_copy);
     }
-    if (palette_u8_copy != NULL) {
+    if (palette_u8_copy != NULL && dither != NULL) {
         sixel_allocator_free(dither->allocator, palette_u8_copy);
     }
     sixel_dither_unref(dither);
