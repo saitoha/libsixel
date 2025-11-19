@@ -94,7 +94,11 @@ host_triplet = @host@
 @SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/sixel_threading.c \
 @SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/sixel_threading.h \
 @SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/threadpool.c \
-@SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/threadpool.h
+@SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/threadpool.h \
+@SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/decoder-prescan.c \
+@SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/decoder-prescan.h \
+@SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/decoder-parallel.c \
+@SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/decoder-parallel.h
 
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__append_2 = \
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@                $(srcdir)/quicklook_thumbnailing.m
@@ -185,7 +189,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/loader.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
 	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/clipboard.c \
 	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
-	$(srcdir)/decoder.c $(srcdir)/decoder.h $(srcdir)/options.c \
+	$(srcdir)/decoder.c $(srcdir)/decoder.h \
+	$(srcdir)/decoder-image.h $(srcdir)/options.c \
 	$(srcdir)/options.h $(srcdir)/stb_image.h $(srcdir)/writer.c \
 	$(srcdir)/writer.h $(srcdir)/stb_image_write.c \
 	$(srcdir)/stb_image_write.h $(srcdir)/status.c \
@@ -197,11 +202,15 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/sixel_atomic.h $(srcdir)/rgblookup.h \
 	$(srcdir)/lso2.h $(srcdir)/sixel_threading.c \
 	$(srcdir)/sixel_threading.h $(srcdir)/threadpool.c \
-	$(srcdir)/threadpool.h $(srcdir)/quicklook_thumbnailing.m \
-	$(srcdir)/clipboard_macos.m
+	$(srcdir)/threadpool.h $(srcdir)/decoder-prescan.c \
+	$(srcdir)/decoder-prescan.h $(srcdir)/decoder-parallel.c \
+	$(srcdir)/decoder-parallel.h \
+	$(srcdir)/quicklook_thumbnailing.m $(srcdir)/clipboard_macos.m
 @SIXEL_ENABLE_THREADS_TRUE@am__objects_1 =  \
 @SIXEL_ENABLE_THREADS_TRUE@	libsixel_la-sixel_threading.lo \
-@SIXEL_ENABLE_THREADS_TRUE@	libsixel_la-threadpool.lo
+@SIXEL_ENABLE_THREADS_TRUE@	libsixel_la-threadpool.lo \
+@SIXEL_ENABLE_THREADS_TRUE@	libsixel_la-decoder-prescan.lo \
+@SIXEL_ENABLE_THREADS_TRUE@	libsixel_la-decoder-parallel.lo
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__objects_2 = libsixel_la-quicklook_thumbnailing.lo
 @HAVE_CLIPBOARD_MACOS_TRUE@am__objects_3 =  \
 @HAVE_CLIPBOARD_MACOS_TRUE@	libsixel_la-clipboard_macos.lo
@@ -267,6 +276,8 @@ am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
 	./$(DEPDIR)/libsixel_la-clipboard_macos.Plo \
 	./$(DEPDIR)/libsixel_la-colorspace.Plo \
 	./$(DEPDIR)/libsixel_la-compat_stub.Plo \
+	./$(DEPDIR)/libsixel_la-decoder-parallel.Plo \
+	./$(DEPDIR)/libsixel_la-decoder-prescan.Plo \
 	./$(DEPDIR)/libsixel_la-decoder.Plo \
 	./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo \
 	./$(DEPDIR)/libsixel_la-dither-fixed-8bit.Plo \
@@ -596,7 +607,8 @@ libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/loader.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
 	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/clipboard.c \
 	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
-	$(srcdir)/decoder.c $(srcdir)/decoder.h $(srcdir)/options.c \
+	$(srcdir)/decoder.c $(srcdir)/decoder.h \
+	$(srcdir)/decoder-image.h $(srcdir)/options.c \
 	$(srcdir)/options.h $(srcdir)/stb_image.h $(srcdir)/writer.c \
 	$(srcdir)/writer.h $(srcdir)/stb_image_write.c \
 	$(srcdir)/stb_image_write.h $(srcdir)/status.c \
@@ -742,6 +754,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-clipboard_macos.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-colorspace.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-compat_stub.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-decoder-parallel.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-decoder-prescan.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-decoder.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-fixed-8bit.Plo@am__quote@ # am--include-marker
@@ -1081,6 +1095,20 @@ libsixel_la-threadpool.lo: threadpool.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-threadpool.lo `test -f 'threadpool.c' || echo '$(srcdir)/'`threadpool.c
 
+libsixel_la-decoder-prescan.lo: decoder-prescan.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-decoder-prescan.lo -MD -MP -MF $(DEPDIR)/libsixel_la-decoder-prescan.Tpo -c -o libsixel_la-decoder-prescan.lo `test -f 'decoder-prescan.c' || echo '$(srcdir)/'`decoder-prescan.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-decoder-prescan.Tpo $(DEPDIR)/libsixel_la-decoder-prescan.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder-prescan.c' object='libsixel_la-decoder-prescan.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-decoder-prescan.lo `test -f 'decoder-prescan.c' || echo '$(srcdir)/'`decoder-prescan.c
+
+libsixel_la-decoder-parallel.lo: decoder-parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-decoder-parallel.lo -MD -MP -MF $(DEPDIR)/libsixel_la-decoder-parallel.Tpo -c -o libsixel_la-decoder-parallel.lo `test -f 'decoder-parallel.c' || echo '$(srcdir)/'`decoder-parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-decoder-parallel.Tpo $(DEPDIR)/libsixel_la-decoder-parallel.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder-parallel.c' object='libsixel_la-decoder-parallel.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-decoder-parallel.lo `test -f 'decoder-parallel.c' || echo '$(srcdir)/'`decoder-parallel.c
+
 tests-tests.o: tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-tests.o -MD -MP -MF $(DEPDIR)/tests-tests.Tpo -c -o tests-tests.o `test -f 'tests.c' || echo '$(srcdir)/'`tests.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-tests.Tpo $(DEPDIR)/tests-tests.Po
@@ -1318,6 +1346,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-clipboard_macos.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-colorspace.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-compat_stub.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-decoder-parallel.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-decoder-prescan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-fixed-8bit.Plo
@@ -1405,6 +1435,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-clipboard_macos.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-colorspace.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-compat_stub.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-decoder-parallel.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-decoder-prescan.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-decoder.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-common-pipeline.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-fixed-8bit.Plo

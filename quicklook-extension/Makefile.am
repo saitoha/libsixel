@@ -51,6 +51,17 @@ libsixelquicklookcore_a_SOURCES = \
     $(top_srcdir)/src/allocator.c \
     $(top_srcdir)/src/fromsixel.c \
     $(top_srcdir)/src/compat_stub.c
+
+if SIXEL_ENABLE_THREADS
+libsixelquicklookcore_a_SOURCES += \
+    $(top_srcdir)/src/decoder-prescan.c \
+    $(top_srcdir)/src/decoder-parallel.c \
+    $(top_srcdir)/src/sixel_threading.c \
+    $(top_srcdir)/src/sixel_threading.h \
+    $(top_srcdir)/src/threadpool.c \
+    $(top_srcdir)/src/threadpool.h
+endif
+
 libsixelquicklookcore_a_CPPFLAGS = $(AM_CPPFLAGS) \
     -DSIXEL_STATUS_HAVE_TTY_HELPERS=0
 

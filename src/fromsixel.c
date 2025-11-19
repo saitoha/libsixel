@@ -37,6 +37,8 @@
 
 #include <sixel.h>
 #include "output.h"
+#include "decoder-image.h"
+#include "decoder-parallel.h"
 
 #define SIXEL_RGB(r, g, b) (((r) << 16) + ((g) << 8) +  (b))
 
@@ -67,19 +69,6 @@ static int const sixel_default_color_table[] = {
     SIXEL_XRGB(80, 80, 80),  /* 15 Gray 75% */
 };
 
-
-typedef struct image_buffer {
-    union {
-        void *p;
-        unsigned char *in_bytes;
-        unsigned short *in_shorts;
-    } pixels;
-    int width;
-    int height;
-    int depth;
-    int ncolors;
-    int palette[SIXEL_PALETTE_MAX_DECODER];
-} image_buffer_t;
 
 /*
  * Store a single pixel in the image buffer. When the decoder is in direct
@@ -236,7 +225,7 @@ hls_to_rgb(int hue, int lum, int sat)
 }
 
 
-static SIXELSTATUS
+SIXELSTATUS
 image_buffer_init(
     image_buffer_t        *image,
     int                    width,
@@ -343,7 +332,7 @@ end:
 }
 
 
-static SIXELSTATUS
+SIXELSTATUS
 image_buffer_resize(
     image_buffer_t        *image,
     int                    width,
@@ -1028,8 +1017,35 @@ sixel_decode_image(
     sixel_allocator_t *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
+#if SIXEL_ENABLE_THREADS
+    int used_parallel;
+#endif
 
     image->pixels.p = NULL;
+
+#if SIXEL_ENABLE_THREADS
+    used_parallel = 0;
+    if (depth == 1U) {
+        status = sixel_decode_raw_parallel(p,
+                                           len,
+                                           image,
+                                           allocator,
+                                           &used_parallel);
+    } else if (depth == 4U) {
+        status = sixel_decode_direct_parallel(p,
+                                              len,
+                                              image,
+                                              allocator,
+                                              &used_parallel);
+    }
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    if (used_parallel) {
+        status = SIXEL_OK;
+        goto end;
+    }
+#endif
 
     status = parser_context_init(context);
     if (SIXEL_FAILED(status)) {

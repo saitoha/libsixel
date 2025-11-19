@@ -51,6 +51,7 @@
 #endif  /* HAVE_IO_H */
 
 #include "decoder.h"
+#include "decoder-parallel.h"
 #include "clipboard.h"
 #include "compat_stub.h"
 #include "options.h"
@@ -1690,6 +1691,13 @@ sixel_decoder_setopt(
 
     case SIXEL_OPTFLAG_DIRECT:  /* D */
         decoder->direct_color = 1;
+        break;
+
+    case SIXEL_OPTFLAG_THREADS:  /* = */
+        status = sixel_decoder_parallel_override_threads(value);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
         break;
 
     case '?':

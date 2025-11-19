@@ -18,6 +18,16 @@ libwicsixel_la_SOURCES = $(srcdir)/wic.c \
                          $(top_builddir)/src/status.c \
                          $(top_builddir)/src/compat_stub.c
 
+if SIXEL_ENABLE_THREADS
+libwicsixel_la_SOURCES += \
+    $(top_srcdir)/src/decoder-prescan.c \
+    $(top_srcdir)/src/decoder-parallel.c \
+    $(top_srcdir)/src/sixel_threading.c \
+    $(top_srcdir)/src/sixel_threading.h \
+    $(top_srcdir)/src/threadpool.c \
+    $(top_srcdir)/src/threadpool.h
+endif
+
 libwicsixel_la_CPPFLAGS = $(AM_CPPFLAGS) \
                           -I$(top_builddir)/include/ \
                           -DSIXEL_STATUS_HAVE_TTY_HELPERS=0
