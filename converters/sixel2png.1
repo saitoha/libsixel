@@ -82,6 +82,11 @@ The default value is 0.
 Decode the SIXEL stream into an RGBA surface.
 The alpha channel starts at zero so untouched pixels remain transparent.
 .TP 5
+.B \-= COUNT, \-\-threads=COUNT|auto
+Override the decoder worker count.  Provide a positive integer COUNT to
+keep deterministic band ordering while enabling multi-band parallelism.
+Use "auto" to match the detected hardware thread count.
+.TP 5
 .B \-V
 Show version and license information, then exit.
 .TP 5
@@ -111,6 +116,12 @@ explicitly.
 toggle the filesystem diagnostics that explain why a path could not be
 resolved. Set to "1" (the default when unset) to show the guidance, or
 "0" to suppress it. Library embedders must opt in explicitly.
+.TP 5
+.B SIXEL_THREADS
+.br
+Override the decoder worker count using the same syntax as the
+\-=/\-\-threads option.  Accepts positive integers or "auto" to match the
+hardware thread count.
 
 
 .SH "SEE ALSO"

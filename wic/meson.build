@@ -30,6 +30,15 @@ wic_sources = files(
   '../src/compat_stub.c',
 )
 
+if conf.get('SIXEL_ENABLE_THREADS', 0) == 1
+  wic_sources += [
+    '../src/sixel_threading.c',
+    '../src/threadpool.c',
+    '../src/decoder-prescan.c',
+    '../src/decoder-parallel.c',
+  ]
+endif
+
 shared_module(
   'wicsixel',
   wic_sources,

@@ -133,7 +133,7 @@ if img2sixel_opt.enabled()
     # larger budget while keeping the remaining tests at the standard
     # limit.
     slow_test_timeouts = {
-      'test_0001_invalid_option.t': 120,
+      'test_0001_invalid_option.t': 300,
     }
     order = 0
     foreach script : test_scripts

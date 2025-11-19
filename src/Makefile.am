@@ -73,6 +73,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/encoder.h \
                 $(srcdir)/decoder.c \
                 $(srcdir)/decoder.h \
+                $(srcdir)/decoder-image.h \
                 $(srcdir)/options.c \
                 $(srcdir)/options.h \
                 $(srcdir)/stb_image.h \
@@ -100,7 +101,11 @@ libsixel_la_SOURCES += \
                 $(srcdir)/sixel_threading.c \
                 $(srcdir)/sixel_threading.h \
                 $(srcdir)/threadpool.c \
-                $(srcdir)/threadpool.h
+                $(srcdir)/threadpool.h \
+                $(srcdir)/decoder-prescan.c \
+                $(srcdir)/decoder-prescan.h \
+                $(srcdir)/decoder-parallel.c \
+                $(srcdir)/decoder-parallel.h
 endif
 if HAVE_QUICKLOOK_THUMBNAILING
 libsixel_la_SOURCES += \
