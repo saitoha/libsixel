@@ -763,6 +763,16 @@ loader_helper_sources = files(
   'src/status.c',
   'src/tty.c',
 )
+
+if have_threads
+  loader_helper_sources += [
+    'src/sixel_threading.c',
+    'src/threadpool.c',
+    'src/decoder-prescan.c',
+    'src/decoder-parallel.c',
+  ]
+endif
+
 if have_quicklook_thumbnailing
   loader_helper_sources += files('src/quicklook_thumbnailing.m')
 endif

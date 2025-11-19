@@ -46,21 +46,37 @@ extension_objc_args = common_objc_args + ['-fapplication-extension']
 # Bundling compat_stub.c here mirrors the layout
 # used by the Autotools build and prevents linker
 # gaps when the static archive is reused.
+
+srcs = files(
+  '../src/status.c',
+  '../src/allocator.c',
+  '../src/fromsixel.c',
+  '../src/compat_stub.c',
+)
+
+if conf.get('SIXEL_ENABLE_THREADS', 0) == 1
+  srcs += [
+    '../src/sixel_threading.c',
+    '../src/threadpool.c',
+    '../src/decoder-prescan.c',
+    '../src/decoder-parallel.c',
+  ]
+endif
+
 quicklook_core = static_library(
   'sixelquicklookcore',
-  [
-    '../src/status.c',
-    '../src/allocator.c',
-    '../src/fromsixel.c',
-    '../src/compat_stub.c',
-  ],
+  srcs,
   include_directories: [project_inc, include_directories('../src')],
   c_args: common_c_args,
   install: false)
 
 preview = executable(
   'SixelPreview',
-  ['Sources/SixelPreviewMain.m', 'Sources/SixelPreviewProvider.m', 'Sources/SixelQuickLookShared.m'],
+  [
+    'Sources/SixelPreviewMain.m',
+    'Sources/SixelPreviewProvider.m',
+    'Sources/SixelQuickLookShared.m'
+  ],
   include_directories: common_includes,
   objc_args: extension_objc_args,
   c_args: common_c_args,
@@ -70,7 +86,11 @@ preview = executable(
 
 thumbnail = executable(
   'SixelThumbnail',
-  ['Sources/SixelThumbnailMain.m', 'Sources/SixelThumbnailProvider.m', 'Sources/SixelQuickLookShared.m'],
+  [
+    'Sources/SixelThumbnailMain.m',
+    'Sources/SixelThumbnailProvider.m',
+    'Sources/SixelQuickLookShared.m'
+  ],
   include_directories: common_includes,
   objc_args: extension_objc_args,
   c_args: common_c_args,
@@ -88,7 +108,10 @@ host = executable(
 
 bridge = executable(
   'SixelPreviewBridge',
-  ['Sources/SixelPreviewBridge.m', 'Sources/SixelQuickLookShared.m'],
+  [
+    'Sources/SixelPreviewBridge.m',
+    'Sources/SixelQuickLookShared.m'
+  ],
   include_directories: common_includes,
   objc_args: common_objc_args,
   c_args: common_c_args,

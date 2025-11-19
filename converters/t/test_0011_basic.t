@@ -11,6 +11,16 @@ for name in snake.six map8.six map64.six; do
     require_file "${IMAGES_DIR}/${name}"
 done
 
+COMPARATOR_CMD=()
+PARALLEL_COMPARE_SUPPORTED=1
+if command -v cmp >/dev/null 2>&1; then
+    COMPARATOR_CMD=(cmp -s)
+elif command -v diff >/dev/null 2>&1; then
+    COMPARATOR_CMD=(diff -q)
+else
+    PARALLEL_COMPARE_SUPPORTED=0
+fi
+
 expect_failure() {
     local output_file
 
@@ -172,3 +182,107 @@ if ! grep -F 'ambiguous prefix "k_" (matches: k_undither, k_undither+).' \
     exit 1
 fi
 rm -f "${ambiguous_err}" "${TMP_DIR}/capture.$$"
+
+if [[ ${PARALLEL_COMPARE_SUPPORTED} -eq 0 ]]; then
+    echo 'skipping parallel decode comparisons: cmp/diff unavailable' >&2
+else
+    # Confirm that the decoder produces identical PNG output regardless of the
+    # worker count so the regression covers the threadpool path in both indexed
+    # and direct colour modes.
+    parallel_indexed_1="${TMP_DIR}/parallel-indexed-1.png"
+    parallel_indexed_4="${TMP_DIR}/parallel-indexed-4.png"
+    SIXEL_THREADS=1 run_sixel2png \
+        < "${IMAGES_DIR}/map64.six" \
+        >"${parallel_indexed_1}"
+    SIXEL_THREADS=4 run_sixel2png \
+        < "${IMAGES_DIR}/map64.six" \
+        >"${parallel_indexed_4}"
+    if ! "${COMPARATOR_CMD[@]}" \
+            "${parallel_indexed_1}" \
+            "${parallel_indexed_4}"; then
+        echo 'parallel indexed decode diverged from serial output' >&2
+        exit 1
+    fi
+    parallel_direct_1="${TMP_DIR}/parallel-direct-1.png"
+    parallel_direct_4="${TMP_DIR}/parallel-direct-4.png"
+    SIXEL_THREADS=1 run_sixel2png -D \
+        < "${IMAGES_DIR}/map64.six" \
+        >"${parallel_direct_1}"
+    SIXEL_THREADS=4 run_sixel2png -D \
+        < "${IMAGES_DIR}/map64.six" \
+        >"${parallel_direct_4}"
+    if ! "${COMPARATOR_CMD[@]}" \
+            "${parallel_direct_1}" \
+            "${parallel_direct_4}"; then
+        echo 'parallel direct decode diverged from serial output' >&2
+        exit 1
+    fi
+
+    # Stress a high resolution input to ensure background handling and palette
+    # convergence match the serial decoder in both indexed and direct colour
+    # modes.
+    snake_parallel_indexed_1="${TMP_DIR}/snake-parallel-indexed-1.png"
+    snake_parallel_indexed_4="${TMP_DIR}/snake-parallel-indexed-4.png"
+    SIXEL_THREADS=1 run_sixel2png \
+        < "${IMAGES_DIR}/snake.six" \
+        >"${snake_parallel_indexed_1}"
+    SIXEL_THREADS=4 run_sixel2png \
+        < "${IMAGES_DIR}/snake.six" \
+        >"${snake_parallel_indexed_4}"
+    if ! "${COMPARATOR_CMD[@]}" \
+            "${snake_parallel_indexed_1}" \
+            "${snake_parallel_indexed_4}"; then
+        echo 'snake indexed parallel decode diverged from serial output' >&2
+        exit 1
+    fi
+    snake_parallel_direct_1="${TMP_DIR}/snake-parallel-direct-1.png"
+    snake_parallel_direct_4="${TMP_DIR}/snake-parallel-direct-4.png"
+    SIXEL_THREADS=1 run_sixel2png -D \
+        < "${IMAGES_DIR}/snake.six" \
+        >"${snake_parallel_direct_1}"
+    SIXEL_THREADS=4 run_sixel2png -D \
+        < "${IMAGES_DIR}/snake.six" \
+        >"${snake_parallel_direct_4}"
+    if ! "${COMPARATOR_CMD[@]}" \
+            "${snake_parallel_direct_1}" \
+            "${snake_parallel_direct_4}"; then
+        echo 'snake direct parallel decode diverged from serial output' >&2
+        exit 1
+    fi
+    # Confirm that the CLI flag mirrors the environment variable override.
+    parallel_indexed_cli="${TMP_DIR}/parallel-indexed-cli.png"
+    run_sixel2png -= 4 \
+        < "${IMAGES_DIR}/map64.six" \
+        >"${parallel_indexed_cli}"
+    if ! cmp -s "${parallel_indexed_cli}" "${parallel_indexed_4}"; then
+        echo 'CLI thread override diverged from env override (indexed)' >&2
+        exit 1
+    fi
+    parallel_direct_cli="${TMP_DIR}/parallel-direct-cli.png"
+    run_sixel2png -= 4 -D \
+        < "${IMAGES_DIR}/map64.six" \
+        >"${parallel_direct_cli}"
+    if ! cmp -s "${parallel_direct_cli}" "${parallel_direct_4}"; then
+        echo 'CLI thread override diverged from env override (direct)' >&2
+        exit 1
+    fi
+fi
+
+# Invalid thread tokens should be rejected.
+threads_err="${TMP_DIR}/sixel2png-threads.err"
+if run_sixel2png -= bogus \
+        < "${IMAGES_DIR}/map64.six" \
+        >"${TMP_DIR}/capture.$$" \
+        2>"${threads_err}"; then
+    echo 'sixel2png accepted invalid --threads token' >&2
+    rm -f "${threads_err}" "${TMP_DIR}/capture.$$"
+    exit 1
+fi
+if ! grep -F "threads must be a positive integer or 'auto'" \
+        "${threads_err}" >/dev/null; then
+    echo 'missing invalid threads diagnostic' >&2
+    cat "${threads_err}" >&2 || :
+    rm -f "${threads_err}" "${TMP_DIR}/capture.$$"
+    exit 1
+fi
+rm -f "${threads_err}" "${TMP_DIR}/capture.$$"
