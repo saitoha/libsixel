@@ -1109,8 +1109,12 @@ end:
 }
 
 SIXELSTATUS
-sixel_certlut_build(sixel_certlut_t *lut, sixel_certlut_color_t const *palette,
-                    int ncolors, int wR, int wG, int wB)
+sixel_certlut_build(sixel_certlut_t *lut,
+                    sixel_certlut_color_t const *palette,
+                    int ncolors,
+                    int wcomp1,
+                    int wcomp2,
+                    int wcomp3)
 {
     SIXELSTATUS status;
     int initialized;
@@ -1122,7 +1126,7 @@ sixel_certlut_build(sixel_certlut_t *lut, sixel_certlut_color_t const *palette,
     }
     lut->palette = palette;
     lut->ncolors = ncolors;
-    sixel_certlut_weight_init(lut, wR, wG, wB);
+    sixel_certlut_weight_init(lut, wcomp1, wcomp2, wcomp3);
     status = sixel_certlut_prepare_palette_terms(lut);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -1313,9 +1317,9 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
                             int depth,
                             int ncolors,
                             int complexion,
-                            int wR,
-                            int wG,
-                            int wB,
+                            int wcomp1,
+                            int wcomp2,
+                            int wcomp3,
                             int policy,
                             int pixelformat)
 {
@@ -1368,9 +1372,9 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
         status = sixel_certlut_build(lut->cert,
                                      (sixel_certlut_color_t const *)palette,
                                      ncolors,
-                                     wR,
-                                     wG,
-                                     wB);
+                                     wcomp1,
+                                     wcomp2,
+                                     wcomp3);
         if (SIXEL_FAILED(status)) {
             return status;
         }

@@ -662,9 +662,15 @@ sixel_dither_map_pixels(
     sixel_lut_t *active_lut;
     int manage_lut;
     int policy;
-    int wR;
-    int wG;
-    int wB;
+    int wcomp1;
+    int wcomp2;
+    int wcomp3;
+
+    /*
+     * Per-component weights used by the lookup backends.  These remain generic
+     * to support RGB as well as alternate color spaces when evaluating palette
+     * distance.
+     */
 
     active_lut = NULL;
     manage_lut = 0;
@@ -780,27 +786,27 @@ sixel_dither_map_pixels(
         }
         if (policy == SIXEL_LUT_POLICY_CERTLUT) {
             if (method_for_largest == SIXEL_LARGE_LUM) {
-                wR = complexion * 299;
-                wG = 587;
-                wB = 114;
+                wcomp1 = complexion * 299;
+                wcomp2 = 587;
+                wcomp3 = 114;
             } else {
-                wR = complexion;
-                wG = 1;
-                wB = 1;
+                wcomp1 = complexion;
+                wcomp2 = 1;
+                wcomp3 = 1;
             }
         } else {
-            wR = complexion;
-            wG = 1;
-            wB = 1;
+            wcomp1 = complexion;
+            wcomp2 = 1;
+            wcomp3 = 1;
         }
         status = sixel_lut_configure(active_lut,
                                      palette,
                                      depth,
                                      reqcolor,
                                      complexion,
-                                     wR,
-                                     wG,
-                                     wB,
+                                     wcomp1,
+                                     wcomp2,
+                                     wcomp3,
                                      policy,
                                      pixelformat);
         if (SIXEL_FAILED(status)) {
@@ -2147,9 +2153,9 @@ sixel_dither_apply_palette(
     if (dither->optimized) {
         if (!sixel_palette_is_builtin_mono(palette)) {
             int policy;
-            int wR;
-            int wG;
-            int wB;
+            int wcomp1;
+            int wcomp2;
+            int wcomp3;
 
             policy = dither->lut_policy;
             if (policy != SIXEL_LUT_POLICY_CERTLUT
@@ -2169,27 +2175,27 @@ sixel_dither_apply_palette(
             }
             if (policy == SIXEL_LUT_POLICY_CERTLUT) {
                 if (dither->method_for_largest == SIXEL_LARGE_LUM) {
-                    wR = dither->complexion * 299;
-                    wG = 587;
-                    wB = 114;
+                    wcomp1 = dither->complexion * 299;
+                    wcomp2 = 587;
+                    wcomp3 = 114;
                 } else {
-                    wR = dither->complexion;
-                    wG = 1;
-                    wB = 1;
+                    wcomp1 = dither->complexion;
+                    wcomp2 = 1;
+                    wcomp3 = 1;
                 }
             } else {
-                wR = dither->complexion;
-                wG = 1;
-                wB = 1;
+                wcomp1 = dither->complexion;
+                wcomp2 = 1;
+                wcomp3 = 1;
             }
             status = sixel_lut_configure(palette->lut,
                                          palette->entries,
                                          palette->depth,
                                          (int)palette->entry_count,
                                          dither->complexion,
-                                         wR,
-                                         wG,
-                                         wB,
+                                         wcomp1,
+                                         wcomp2,
+                                         wcomp3,
                                          policy,
                                          dither->pixelformat);
             if (SIXEL_FAILED(status)) {

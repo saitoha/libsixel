@@ -51,9 +51,9 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
                             int depth,
                             int ncolors,
                             int complexion,
-                            int wR,
-                            int wG,
-                            int wB,
+                            int wcomp1,
+                            int wcomp2,
+                            int wcomp3,
                             int policy,
                             int pixelformat);
 
