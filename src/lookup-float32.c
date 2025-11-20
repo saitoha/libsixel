@@ -392,9 +392,9 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
                                int depth,
                                int ncolors,
                                int complexion,
-                               int wR,
-                               int wG,
-                               int wB,
+                               int wcomp1,
+                               int wcomp2,
+                               int wcomp3,
                                int policy,
                                int pixelformat)
 {
@@ -414,9 +414,14 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
     lut->depth = depth;
     lut->ncolors = ncolors;
     lut->complexion = complexion;
-    lut->weights[0] = wR * complexion;
-    lut->weights[1] = wG;
-    lut->weights[2] = wB;
+    /*
+     * Apply per-component weighting.  The first component inherits the
+     * complexion factor to preserve existing luminance-driven defaults while
+     * keeping the parameter names agnostic to the color space.
+     */
+    lut->weights[0] = wcomp1 * complexion;
+    lut->weights[1] = wcomp2;
+    lut->weights[2] = wcomp3;
 
     status = sixel_lookup_float32_prepare_palette(lut, palette, pixelformat);
     if (SIXEL_FAILED(status)) {
