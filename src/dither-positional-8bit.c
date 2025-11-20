@@ -28,7 +28,7 @@
 
 #include "dither-positional-8bit.h"
 #include "dither-common-pipeline.h"
-#include "lut.h"
+#include "lookup-common.h"
 
 static void
 sixel_dither_scanline_params(int serpentine,

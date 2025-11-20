@@ -32,7 +32,7 @@
 #include "dither-positional-float32.h"
 #include "dither-common-pipeline.h"
 #include "pixelformat.h"
-#include "lut.h"
+#include "lookup-common.h"
 
 static void
 sixel_dither_scanline_params(int serpentine,

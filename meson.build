@@ -758,7 +758,6 @@ loader_helper_sources = files(
   'src/palette-common-snap.c',
   'src/palette-heckbert.c',
   'src/palette-kmeans.c',
-  'src/lut.c',
   'src/parallel-log.h',
   'src/lookup-common.c',
   'src/lookup-8bit.c',
