@@ -21,8 +21,12 @@ libsixel_la_SOURCES = \
                 $(srcdir)/assessment.h \
                 $(srcdir)/fromsixel.c \
                 $(srcdir)/tosixel.c \
-                $(srcdir)/lut.c \
-                $(srcdir)/lut.h \
+                $(srcdir)/lookup-common.c \
+                $(srcdir)/lookup-8bit.c \
+                $(srcdir)/lookup-8bit.h \
+                $(srcdir)/lookup-float32.c \
+                $(srcdir)/lookup-float32.h \
+                $(srcdir)/lookup-common.h \
                 $(srcdir)/palette-heckbert.c \
                 $(srcdir)/palette-heckbert.h \
                 $(srcdir)/palette-common-merge.c \

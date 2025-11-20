@@ -39,8 +39,9 @@
 
 #include "allocator.h"
 #include "compat_stub.h"
-#include "lut.h"
+#include "lookup-common.h"
 #include "palette-common-merge.h"
+#include "palette-common-snap.h"
 #include "palette-kmeans.h"
 
 static float env_final_merge_target_factor = 1.81f;

@@ -161,9 +161,12 @@ libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/assessment.c $(srcdir)/assessment.h \
-	$(srcdir)/fromsixel.c $(srcdir)/tosixel.c $(srcdir)/lut.c \
-	$(srcdir)/lut.h $(srcdir)/palette-heckbert.c \
-	$(srcdir)/palette-heckbert.h $(srcdir)/palette-common-merge.c \
+	$(srcdir)/fromsixel.c $(srcdir)/tosixel.c \
+	$(srcdir)/lookup-common.c $(srcdir)/lookup-8bit.c \
+	$(srcdir)/lookup-8bit.h $(srcdir)/lookup-float32.c \
+	$(srcdir)/lookup-float32.h $(srcdir)/lookup-common.h \
+	$(srcdir)/palette-heckbert.c $(srcdir)/palette-heckbert.h \
+	$(srcdir)/palette-common-merge.c \
 	$(srcdir)/palette-common-merge.h \
 	$(srcdir)/palette-common-snap.c \
 	$(srcdir)/palette-common-snap.h $(srcdir)/palette-kmeans.c \
@@ -177,13 +180,13 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/dither-positional-float32.h \
 	$(srcdir)/dither-fixed-8bit.c $(srcdir)/dither-fixed-8bit.h \
 	$(srcdir)/dither-fixed-float32.c \
-        $(srcdir)/dither-fixed-float32.h $(srcdir)/dither-internal.h \
-        $(srcdir)/dither-varcoeff-8bit.c \
-        $(srcdir)/dither-varcoeff-8bit.h \
-        $(srcdir)/dither-varcoeff-float32.c \
-        $(srcdir)/dither-varcoeff-float32.h $(srcdir)/parallel-log.c \
-        $(srcdir)/parallel-log.h $(srcdir)/colorspace.c \
-        $(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
+	$(srcdir)/dither-fixed-float32.h $(srcdir)/dither-internal.h \
+	$(srcdir)/dither-varcoeff-8bit.c \
+	$(srcdir)/dither-varcoeff-8bit.h \
+	$(srcdir)/dither-varcoeff-float32.c \
+	$(srcdir)/dither-varcoeff-float32.h $(srcdir)/parallel-log.c \
+	$(srcdir)/parallel-log.h $(srcdir)/colorspace.c \
+	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
 	$(srcdir)/pixelformat.c $(srcdir)/pixelformat.h \
 	$(srcdir)/precision.h $(srcdir)/scale.c $(srcdir)/scale.h \
 	$(srcdir)/chunk.c $(srcdir)/chunk.h $(srcdir)/loader.c \
@@ -217,7 +220,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @HAVE_CLIPBOARD_MACOS_TRUE@	libsixel_la-clipboard_macos.lo
 am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-assessment.lo libsixel_la-fromsixel.lo \
-	libsixel_la-tosixel.lo libsixel_la-lut.lo \
+	libsixel_la-tosixel.lo libsixel_la-lookup-common.lo \
+	libsixel_la-lookup-8bit.lo libsixel_la-lookup-float32.lo \
 	libsixel_la-palette-heckbert.lo \
 	libsixel_la-palette-common-merge.lo \
 	libsixel_la-palette-common-snap.lo \
@@ -225,22 +229,21 @@ am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-dither.lo libsixel_la-dither-common-pipeline.lo \
 	libsixel_la-dither-positional-8bit.lo \
 	libsixel_la-dither-positional-float32.lo \
-        libsixel_la-dither-fixed-8bit.lo \
-        libsixel_la-dither-fixed-float32.lo \
-        libsixel_la-dither-varcoeff-8bit.lo \
-        libsixel_la-dither-varcoeff-float32.lo \
-        libsixel_la-parallel-log.lo \
-        libsixel_la-colorspace.lo libsixel_la-frame.lo \
-	libsixel_la-pixelformat.lo libsixel_la-scale.lo \
-	libsixel_la-chunk.lo libsixel_la-loader.lo \
-	libsixel_la-frompnm.lo libsixel_la-fromgif.lo \
-	libsixel_la-clipboard.lo libsixel_la-encoder.lo \
-	libsixel_la-decoder.lo libsixel_la-options.lo \
-	libsixel_la-writer.lo libsixel_la-stb_image_write.lo \
-	libsixel_la-status.lo libsixel_la-compat_stub.lo \
-	libsixel_la-malloc_stub.lo libsixel_la-allocator.lo \
-	libsixel_la-tty.lo $(am__objects_1) $(am__objects_2) \
-	$(am__objects_3)
+	libsixel_la-dither-fixed-8bit.lo \
+	libsixel_la-dither-fixed-float32.lo \
+	libsixel_la-dither-varcoeff-8bit.lo \
+	libsixel_la-dither-varcoeff-float32.lo \
+	libsixel_la-parallel-log.lo libsixel_la-colorspace.lo \
+	libsixel_la-frame.lo libsixel_la-pixelformat.lo \
+	libsixel_la-scale.lo libsixel_la-chunk.lo \
+	libsixel_la-loader.lo libsixel_la-frompnm.lo \
+	libsixel_la-fromgif.lo libsixel_la-clipboard.lo \
+	libsixel_la-encoder.lo libsixel_la-decoder.lo \
+	libsixel_la-options.lo libsixel_la-writer.lo \
+	libsixel_la-stb_image_write.lo libsixel_la-status.lo \
+	libsixel_la-compat_stub.lo libsixel_la-malloc_stub.lo \
+	libsixel_la-allocator.lo libsixel_la-tty.lo $(am__objects_1) \
+	$(am__objects_2) $(am__objects_3)
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -292,19 +295,21 @@ am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
 	./$(DEPDIR)/libsixel_la-encoder.Plo \
 	./$(DEPDIR)/libsixel_la-frame.Plo \
 	./$(DEPDIR)/libsixel_la-fromgif.Plo \
-        ./$(DEPDIR)/libsixel_la-frompnm.Plo \
-        ./$(DEPDIR)/libsixel_la-fromsixel.Plo \
-        ./$(DEPDIR)/libsixel_la-loader.Plo \
-        ./$(DEPDIR)/libsixel_la-lut.Plo \
-        ./$(DEPDIR)/libsixel_la-malloc_stub.Plo \
-        ./$(DEPDIR)/libsixel_la-parallel-log.Plo \
-        ./$(DEPDIR)/libsixel_la-options.Plo \
-        ./$(DEPDIR)/libsixel_la-output.Plo \
+	./$(DEPDIR)/libsixel_la-frompnm.Plo \
+	./$(DEPDIR)/libsixel_la-fromsixel.Plo \
+	./$(DEPDIR)/libsixel_la-loader.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-8bit.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-common.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-float32.Plo \
+	./$(DEPDIR)/libsixel_la-malloc_stub.Plo \
+	./$(DEPDIR)/libsixel_la-options.Plo \
+	./$(DEPDIR)/libsixel_la-output.Plo \
 	./$(DEPDIR)/libsixel_la-palette-common-merge.Plo \
 	./$(DEPDIR)/libsixel_la-palette-common-snap.Plo \
 	./$(DEPDIR)/libsixel_la-palette-heckbert.Plo \
 	./$(DEPDIR)/libsixel_la-palette-kmeans.Plo \
 	./$(DEPDIR)/libsixel_la-palette.Plo \
+	./$(DEPDIR)/libsixel_la-parallel-log.Plo \
 	./$(DEPDIR)/libsixel_la-pixelformat.Plo \
 	./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo \
 	./$(DEPDIR)/libsixel_la-scale.Plo \
@@ -582,9 +587,12 @@ CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests
 lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/assessment.c $(srcdir)/assessment.h \
-	$(srcdir)/fromsixel.c $(srcdir)/tosixel.c $(srcdir)/lut.c \
-	$(srcdir)/lut.h $(srcdir)/palette-heckbert.c \
-	$(srcdir)/palette-heckbert.h $(srcdir)/palette-common-merge.c \
+	$(srcdir)/fromsixel.c $(srcdir)/tosixel.c \
+	$(srcdir)/lookup-common.c $(srcdir)/lookup-8bit.c \
+	$(srcdir)/lookup-8bit.h $(srcdir)/lookup-float32.c \
+	$(srcdir)/lookup-float32.h $(srcdir)/lookup-common.h \
+	$(srcdir)/palette-heckbert.c $(srcdir)/palette-heckbert.h \
+	$(srcdir)/palette-common-merge.c \
 	$(srcdir)/palette-common-merge.h \
 	$(srcdir)/palette-common-snap.c \
 	$(srcdir)/palette-common-snap.h $(srcdir)/palette-kmeans.c \
@@ -597,14 +605,14 @@ libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/dither-positional-float32.c \
 	$(srcdir)/dither-positional-float32.h \
 	$(srcdir)/dither-fixed-8bit.c $(srcdir)/dither-fixed-8bit.h \
-        $(srcdir)/dither-fixed-float32.c \
-        $(srcdir)/dither-fixed-float32.h $(srcdir)/dither-internal.h \
-        $(srcdir)/dither-varcoeff-8bit.c \
-        $(srcdir)/dither-varcoeff-8bit.h \
-        $(srcdir)/dither-varcoeff-float32.c \
-        $(srcdir)/dither-varcoeff-float32.h $(srcdir)/parallel-log.c \
-        $(srcdir)/parallel-log.h $(srcdir)/colorspace.c \
-        $(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
+	$(srcdir)/dither-fixed-float32.c \
+	$(srcdir)/dither-fixed-float32.h $(srcdir)/dither-internal.h \
+	$(srcdir)/dither-varcoeff-8bit.c \
+	$(srcdir)/dither-varcoeff-8bit.h \
+	$(srcdir)/dither-varcoeff-float32.c \
+	$(srcdir)/dither-varcoeff-float32.h $(srcdir)/parallel-log.c \
+	$(srcdir)/parallel-log.h $(srcdir)/colorspace.c \
+	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
 	$(srcdir)/pixelformat.c $(srcdir)/pixelformat.h \
 	$(srcdir)/precision.h $(srcdir)/scale.c $(srcdir)/scale.h \
 	$(srcdir)/chunk.c $(srcdir)/chunk.h $(srcdir)/loader.c \
@@ -775,7 +783,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompnm.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromsixel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lut.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-8bit.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-common.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-float32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-malloc_stub.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-options.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-output.Plo@am__quote@ # am--include-marker
@@ -855,12 +865,26 @@ libsixel_la-tosixel.lo: tosixel.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-tosixel.lo `test -f 'tosixel.c' || echo '$(srcdir)/'`tosixel.c
 
-libsixel_la-lut.lo: lut.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lut.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lut.Tpo -c -o libsixel_la-lut.lo `test -f 'lut.c' || echo '$(srcdir)/'`lut.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lut.Tpo $(DEPDIR)/libsixel_la-lut.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lut.c' object='libsixel_la-lut.lo' libtool=yes @AMDEPBACKSLASH@
+libsixel_la-lookup-common.lo: lookup-common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-common.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-common.Tpo -c -o libsixel_la-lookup-common.lo `test -f 'lookup-common.c' || echo '$(srcdir)/'`lookup-common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-common.Tpo $(DEPDIR)/libsixel_la-lookup-common.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-common.c' object='libsixel_la-lookup-common.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lut.lo `test -f 'lut.c' || echo '$(srcdir)/'`lut.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-common.lo `test -f 'lookup-common.c' || echo '$(srcdir)/'`lookup-common.c
+
+libsixel_la-lookup-8bit.lo: lookup-8bit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-8bit.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-8bit.Tpo -c -o libsixel_la-lookup-8bit.lo `test -f 'lookup-8bit.c' || echo '$(srcdir)/'`lookup-8bit.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-8bit.Tpo $(DEPDIR)/libsixel_la-lookup-8bit.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-8bit.c' object='libsixel_la-lookup-8bit.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-8bit.lo `test -f 'lookup-8bit.c' || echo '$(srcdir)/'`lookup-8bit.c
+
+libsixel_la-lookup-float32.lo: lookup-float32.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-float32.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-float32.Tpo -c -o libsixel_la-lookup-float32.lo `test -f 'lookup-float32.c' || echo '$(srcdir)/'`lookup-float32.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-float32.Tpo $(DEPDIR)/libsixel_la-lookup-float32.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-float32.c' object='libsixel_la-lookup-float32.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-float32.lo `test -f 'lookup-float32.c' || echo '$(srcdir)/'`lookup-float32.c
 
 libsixel_la-palette-heckbert.lo: palette-heckbert.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-heckbert.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-heckbert.Tpo -c -o libsixel_la-palette-heckbert.lo `test -f 'palette-heckbert.c' || echo '$(srcdir)/'`palette-heckbert.c
@@ -952,7 +976,6 @@ libsixel_la-dither-varcoeff-float32.lo: dither-varcoeff-float32.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='dither-varcoeff-float32.c' object='libsixel_la-dither-varcoeff-float32.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-dither-varcoeff-float32.lo `test -f 'dither-varcoeff-float32.c' || echo '$(srcdir)/'`dither-varcoeff-float32.c
-
 
 libsixel_la-parallel-log.lo: parallel-log.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-parallel-log.lo -MD -MP -MF $(DEPDIR)/libsixel_la-parallel-log.Tpo -c -o libsixel_la-parallel-log.lo `test -f 'parallel-log.c' || echo '$(srcdir)/'`parallel-log.c
@@ -1376,9 +1399,10 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-frompnm.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromsixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-lut.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-8bit.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-common.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-malloc_stub.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-parallel-log.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-options.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-common-merge.Plo
@@ -1386,6 +1410,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-parallel-log.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-pixelformat.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo
@@ -1466,7 +1491,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-frompnm.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromsixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-lut.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-8bit.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-common.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-malloc_stub.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-options.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
@@ -1475,6 +1502,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-heckbert.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-parallel-log.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-pixelformat.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo
@@ -1545,4 +1573,3 @@ gen-rgblookup: $(srcdir)/rgblookup.gperf
 %:: RCS/%
 %:: s.%
 %:: SCCS/s.%
-
