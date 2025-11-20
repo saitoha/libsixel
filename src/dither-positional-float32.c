@@ -78,6 +78,7 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
 #endif
     int serpentine;
     int y;
+    int absolute_y;
     float (*f_mask)(int x, int y, int c);
     float jitter_scale;
     float *palette_float;
@@ -146,12 +147,14 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
         memset(context->migration_map, 0x00,
                sizeof(unsigned short) * (size_t)SIXEL_PALETTE_MAX);
         for (y = 0; y < context->height; ++y) {
+            absolute_y = context->band_origin + y;
             int start;
             int end;
             int step;
             int direction;
 
-            sixel_dither_scanline_params(serpentine, y, context->width,
+            sixel_dither_scanline_params(serpentine, absolute_y,
+                                         context->width,
                                          &start, &end, &step, &direction);
             (void)direction;
             for (x = start; x != end; x += step) {
@@ -206,7 +209,9 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                                                   context->complexion);
                 }
                 if (context->migration_map[color_index] == 0) {
-                    context->result[pos] = *context->ncolors;
+                    if (absolute_y >= context->output_start) {
+                        context->result[pos] = *context->ncolors;
+                    }
                     for (d = 0; d < context->depth; ++d) {
                         context->new_palette[*context->ncolors
                                              * context->depth + d]
@@ -229,11 +234,15 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                     ++*context->ncolors;
                     context->migration_map[color_index] = *context->ncolors;
                 } else {
-                    context->result[pos] =
-                        context->migration_map[color_index] - 1;
+                    if (absolute_y >= context->output_start) {
+                        context->result[pos] =
+                            context->migration_map[color_index] - 1;
+                    }
                 }
             }
-            sixel_dither_pipeline_row_notify(dither, y);
+            if (absolute_y >= context->output_start) {
+                sixel_dither_pipeline_row_notify(dither, absolute_y);
+            }
         }
         memcpy(context->palette, context->new_palette,
                (size_t)(*context->ncolors * context->depth));
@@ -249,12 +258,14 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
         int x;
 
         for (y = 0; y < context->height; ++y) {
+            absolute_y = context->band_origin + y;
             int start;
             int end;
             int step;
             int direction;
 
-            sixel_dither_scanline_params(serpentine, y, context->width,
+            sixel_dither_scanline_params(serpentine, absolute_y,
+                                         context->width,
                                          &start, &end, &step, &direction);
             (void)direction;
             for (x = start; x != end; x += step) {
@@ -282,36 +293,40 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                                   val);
                     }
                 }
-                if (lookup_wants_float) {
-                    lookup_pixel = (unsigned char const *)(void const *)
-                        lookup_pixel_float;
-                    context->result[pos] = context->lookup(
-                        lookup_pixel,
-                        context->depth,
-                        context->palette,
-                        context->reqcolor,
-                        context->indextable,
-                        context->complexion);
-                } else if (use_palette_float_lookup) {
-                    context->result[pos] =
-                        sixel_dither_lookup_palette_float32(
-                            lookup_pixel_float,
+                if (absolute_y >= context->output_start) {
+                    if (lookup_wants_float) {
+                        lookup_pixel = (unsigned char const *)(void const *)
+                            lookup_pixel_float;
+                        context->result[pos] = context->lookup(
+                            lookup_pixel,
                             context->depth,
-                            palette_float,
+                            context->palette,
                             context->reqcolor,
+                            context->indextable,
                             context->complexion);
-                } else {
-                    lookup_pixel = quantized;
-                    context->result[pos] = context->lookup(
-                        lookup_pixel,
-                        context->depth,
-                        context->palette,
-                        context->reqcolor,
-                        context->indextable,
-                        context->complexion);
+                    } else if (use_palette_float_lookup) {
+                        context->result[pos] =
+                            sixel_dither_lookup_palette_float32(
+                                lookup_pixel_float,
+                                context->depth,
+                                palette_float,
+                                context->reqcolor,
+                                context->complexion);
+                    } else {
+                        lookup_pixel = quantized;
+                        context->result[pos] = context->lookup(
+                            lookup_pixel,
+                            context->depth,
+                            context->palette,
+                            context->reqcolor,
+                            context->indextable,
+                            context->complexion);
+                    }
                 }
             }
-            sixel_dither_pipeline_row_notify(dither, y);
+            if (absolute_y >= context->output_start) {
+                sixel_dither_pipeline_row_notify(dither, absolute_y);
+            }
         }
         *context->ncolors = context->reqcolor;
     }

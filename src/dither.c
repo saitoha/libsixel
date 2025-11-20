@@ -56,7 +56,12 @@
 #include "dither-varcoeff-8bit.h"
 #include "dither-varcoeff-float32.h"
 #include "dither-internal.h"
+#include "parallel-log.h"
 #include "precision.h"
+#include "pixelformat.h"
+#if SIXEL_ENABLE_THREADS
+# include "threadpool.h"
+#endif
 #include <sixel.h>
 
 static int g_sixel_precision_float32_env_cached = (-1);
@@ -594,6 +599,8 @@ sixel_dither_map_pixels(
     unsigned char     /* in */  *data,
     int               /* in */  width,
     int               /* in */  height,
+    int               /* in */  band_origin,
+    int               /* in */  output_start,
     int               /* in */  depth,
     unsigned char     /* in */  *palette,
     int               /* in */  reqcolor,
@@ -648,6 +655,8 @@ sixel_dither_map_pixels(
     context.result = result;
     context.width = width;
     context.height = height;
+    context.band_origin = band_origin;
+    context.output_start = output_start;
     context.depth = depth;
     context.palette = palette;
     context.reqcolor = reqcolor;
@@ -854,6 +863,235 @@ end:
     return status;
 }
 
+#if SIXEL_ENABLE_THREADS
+typedef struct sixel_parallel_dither_plan {
+    sixel_index_t *dest;
+    unsigned char *pixels;
+    sixel_palette_t *palette;
+    sixel_allocator_t *allocator;
+    sixel_dither_t *dither;
+    size_t row_bytes;
+    int width;
+    int height;
+    int band_height;
+    int overlap;
+    int method_for_diffuse;
+    int method_for_scan;
+    int method_for_carry;
+    int optimize_palette;
+    int optimize_palette_entries;
+    int complexion;
+    int lut_policy;
+    int method_for_largest;
+    int reqcolor;
+    int pixelformat;
+    sixel_parallel_logger_t *logger;
+} sixel_parallel_dither_plan_t;
+
+static int
+sixel_dither_parallel_worker(tp_job_t job,
+                             void *userdata,
+                             void *workspace)
+{
+    sixel_parallel_dither_plan_t *plan;
+    unsigned char *copy;
+    size_t required;
+    size_t offset;
+    int band_index;
+    int y0;
+    int y1;
+    int in0;
+    int in1;
+    int rows;
+    int local_ncolors;
+    SIXELSTATUS status;
+
+    (void)workspace;
+
+    plan = (sixel_parallel_dither_plan_t *)userdata;
+    if (plan == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    band_index = job.band_index;
+    if (band_index < 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    y0 = band_index * plan->band_height;
+    if (y0 >= plan->height) {
+        return SIXEL_OK;
+    }
+
+    y1 = y0 + plan->band_height;
+    if (y1 > plan->height) {
+        y1 = plan->height;
+    }
+
+    in0 = y0 - plan->overlap;
+    if (in0 < 0) {
+        in0 = 0;
+    }
+    in1 = y1;
+    rows = in1 - in0;
+    if (rows <= 0) {
+        return SIXEL_OK;
+    }
+
+    required = (size_t)rows * plan->row_bytes;
+    copy = (unsigned char *)malloc(required);
+    if (copy == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    offset = (size_t)in0 * plan->row_bytes;
+    memcpy(copy, plan->pixels + offset, required);
+
+    if (plan->logger != NULL) {
+        sixel_parallel_logger_logf(plan->logger,
+                                   "worker",
+                                   "dither",
+                                   "start",
+                                   band_index,
+                                   in0,
+                                   y0,
+                                   y1,
+                                   in0,
+                                   in1,
+                                   "prepare rows=%d",
+                                   rows);
+    }
+
+    local_ncolors = plan->reqcolor;
+    /*
+     * Map directly into the shared destination but suppress writes
+     * before output_start.  The overlap rows are computed only to warm
+     * up the error diffusion and are discarded by the output_start
+     * check in the renderer, so neighboring bands never clobber each
+     * other's body.
+     */
+    status = sixel_dither_map_pixels(plan->dest + (size_t)in0 * plan->width,
+                                     copy,
+                                     plan->width,
+                                     rows,
+                                     in0,
+                                     y0,
+                                     3,
+                                     plan->palette->entries,
+                                     plan->reqcolor,
+                                     plan->method_for_diffuse,
+                                     plan->method_for_scan,
+                                     plan->method_for_carry,
+                                     plan->optimize_palette,
+                                     plan->optimize_palette_entries,
+                                     plan->complexion,
+                                     plan->lut_policy,
+                                     plan->method_for_largest,
+                                     NULL,
+                                     &local_ncolors,
+                                     plan->allocator,
+                                     plan->dither,
+                                     plan->pixelformat);
+    if (plan->logger != NULL) {
+        sixel_parallel_logger_logf(plan->logger,
+                                   "worker",
+                                   "dither",
+                                   "finish",
+                                   band_index,
+                                   in1 - 1,
+                                   y0,
+                                   y1,
+                                   in0,
+                                   in1,
+                                   "status=%d rows=%d",
+                                   status,
+                                   rows);
+    }
+    free(copy);
+    return status;
+}
+
+static SIXELSTATUS
+sixel_dither_apply_palette_parallel(sixel_parallel_dither_plan_t *plan,
+                                    int threads)
+{
+    SIXELSTATUS status;
+    threadpool_t *pool;
+    size_t depth_bytes;
+    int nbands;
+    int queue_depth;
+    int band_index;
+    int stride;
+    int offset;
+
+    if (plan == NULL || plan->palette == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    depth_bytes = (size_t)sixel_helper_compute_depth(plan->pixelformat);
+    if (depth_bytes == 0U) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    plan->row_bytes = (size_t)plan->width * depth_bytes;
+
+    nbands = (plan->height + plan->band_height - 1) / plan->band_height;
+    if (nbands < 1) {
+        return SIXEL_OK;
+    }
+
+    if (threads > nbands) {
+        threads = nbands;
+    }
+    if (threads < 1) {
+        threads = 1;
+    }
+
+    queue_depth = threads * 3;
+    if (queue_depth > nbands) {
+        queue_depth = nbands;
+    }
+    if (queue_depth < 1) {
+        queue_depth = 1;
+    }
+
+    pool = threadpool_create(threads,
+                             queue_depth,
+                             0,
+                             sixel_dither_parallel_worker,
+                             plan);
+    if (pool == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    /*
+     * Distribute the initial jobs so each worker starts far apart, then feed
+     * follow-up work that walks downward from those seeds.  This staggered
+     * order reduces contention around the top of the image and keeps later
+     * assignments close to the last band a worker processed, improving cache
+     * locality.
+     */
+    stride = (nbands + threads - 1) / threads;
+    for (offset = 0; offset < stride; ++offset) {
+        for (band_index = 0; band_index < threads; ++band_index) {
+            tp_job_t job;
+            int seeded;
+
+            seeded = band_index * stride + offset;
+            if (seeded >= nbands) {
+                continue;
+            }
+            job.band_index = seeded;
+            threadpool_push(pool, job);
+        }
+    }
+
+    threadpool_finish(pool);
+    status = threadpool_get_error(pool);
+    threadpool_destroy(pool);
+
+    return status;
+}
+#endif
+
 
 /*
  * Helper that detects whether the palette currently matches either of the
@@ -932,6 +1170,8 @@ sixel_dither_resolve_indexes(sixel_index_t *result,
                                      data,
                                      width,
                                      height,
+                                     0,
+                                     0,
                                      depth,
                                      palette->entries,
                                      reqcolor,
@@ -1087,6 +1327,12 @@ sixel_dither_new(
     (*ppdither)->pipeline_index_buffer = NULL;
     (*ppdither)->pipeline_index_size = 0;
     (*ppdither)->pipeline_index_owned = 0;
+    (*ppdither)->pipeline_parallel_active = 0;
+    (*ppdither)->pipeline_band_height = 0;
+    (*ppdither)->pipeline_band_overlap = 0;
+    (*ppdither)->pipeline_dither_threads = 0;
+    (*ppdither)->pipeline_image_height = 0;
+    (*ppdither)->pipeline_logger = NULL;
 
     status = sixel_palette_new(&(*ppdither)->palette, allocator);
     if (SIXEL_FAILED(status)) {
@@ -1797,6 +2043,11 @@ sixel_dither_apply_palette(
     double palette_duration;
     sixel_palette_t *palette;
     int dest_owned;
+    int parallel_active;
+    int parallel_band_height;
+    int parallel_overlap;
+    int parallel_threads;
+    sixel_parallel_logger_t *parallel_logger;
 
     /* ensure dither object is not null */
     if (dither == NULL) {
@@ -1814,6 +2065,21 @@ sixel_dither_apply_palette(
             "sixel_dither_apply_palette: palette is null.");
         status = SIXEL_BAD_ARGUMENT;
         goto end;
+    }
+
+    parallel_active = dither->pipeline_parallel_active;
+    parallel_band_height = dither->pipeline_band_height;
+    parallel_overlap = dither->pipeline_band_overlap;
+    parallel_threads = dither->pipeline_dither_threads;
+    parallel_logger = dither->pipeline_logger;
+
+    if (parallel_active && dither->optimize_palette != 0) {
+        /*
+         * Palette minimization rewrites the palette entries in place.
+         * Parallel bands would race on the shared table, so fall back to
+         * the serial path when the feature is active.
+         */
+        parallel_active = 0;
     }
 
     bufsize = (size_t)(width * height) * sizeof(sixel_index_t);
@@ -1981,25 +2247,76 @@ sixel_dither_apply_palette(
     }
     palette->lut_policy = dither->lut_policy;
     palette->method_for_largest = dither->method_for_largest;
-    status = sixel_dither_resolve_indexes(dest,
-                                          input_pixels,
-                                          width,
-                                          height,
-                                          3,
-                                          palette,
-                                          dither->ncolors,
-                                          dither->method_for_diffuse,
-                                          method_for_scan,
-                                          method_for_carry,
-                                          dither->optimized,
-                                          dither->optimize_palette,
-                                          dither->complexion,
-                                          dither->lut_policy,
-                                          dither->method_for_largest,
-                                          &ncolors,
-                                          dither->allocator,
-                                          dither,
-                                          pipeline_pixelformat);
+#if SIXEL_ENABLE_THREADS
+    if (parallel_active && parallel_threads > 1
+            && parallel_band_height > 0) {
+        sixel_parallel_dither_plan_t plan;
+        int adjusted_overlap;
+        int adjusted_height;
+
+        adjusted_overlap = parallel_overlap;
+        if (adjusted_overlap < 0) {
+            adjusted_overlap = 0;
+        }
+        adjusted_height = parallel_band_height;
+        if (adjusted_height < 6) {
+            adjusted_height = 6;
+        }
+        if ((adjusted_height % 6) != 0) {
+            adjusted_height = ((adjusted_height + 5) / 6) * 6;
+        }
+        if (adjusted_overlap > adjusted_height / 2) {
+            adjusted_overlap = adjusted_height / 2;
+        }
+
+        memset(&plan, 0, sizeof(plan));
+        plan.dest = dest;
+        plan.pixels = input_pixels;
+        plan.palette = palette;
+        plan.allocator = dither->allocator;
+        plan.dither = dither;
+        plan.width = width;
+        plan.height = height;
+        plan.band_height = adjusted_height;
+        plan.overlap = adjusted_overlap;
+        plan.method_for_diffuse = dither->method_for_diffuse;
+        plan.method_for_scan = method_for_scan;
+        plan.method_for_carry = method_for_carry;
+        plan.optimize_palette = dither->optimized;
+        plan.optimize_palette_entries = dither->optimize_palette;
+        plan.complexion = dither->complexion;
+        plan.lut_policy = dither->lut_policy;
+        plan.method_for_largest = dither->method_for_largest;
+        plan.reqcolor = dither->ncolors;
+        plan.pixelformat = pipeline_pixelformat;
+        plan.logger = parallel_logger;
+
+        status = sixel_dither_apply_palette_parallel(&plan,
+                                                     parallel_threads);
+        ncolors = dither->ncolors;
+    } else
+#endif
+    {
+        status = sixel_dither_resolve_indexes(dest,
+                                              input_pixels,
+                                              width,
+                                              height,
+                                              3,
+                                              palette,
+                                              dither->ncolors,
+                                              dither->method_for_diffuse,
+                                              method_for_scan,
+                                              method_for_carry,
+                                              dither->optimized,
+                                              dither->optimize_palette,
+                                              dither->complexion,
+                                              dither->lut_policy,
+                                              dither->method_for_largest,
+                                              &ncolors,
+                                              dither->allocator,
+                                              dither,
+                                              pipeline_pixelformat);
+    }
     if (palette_probe_active) {
         palette_finished_at = sixel_assessment_timer_now();
         palette_duration = palette_finished_at - palette_started_at;
@@ -2030,6 +2347,12 @@ end:
     dither->pipeline_index_buffer = NULL;
     dither->pipeline_index_owned = 0;
     dither->pipeline_index_size = 0;
+    dither->pipeline_parallel_active = 0;
+    dither->pipeline_band_height = 0;
+    dither->pipeline_band_overlap = 0;
+    dither->pipeline_dither_threads = 0;
+    dither->pipeline_image_height = 0;
+    dither->pipeline_logger = NULL;
     return dest;
 }
 
