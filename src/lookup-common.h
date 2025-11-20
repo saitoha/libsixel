@@ -44,15 +44,20 @@ sixel_lut_new(sixel_lut_t **out,
 void
 sixel_lut_unref(sixel_lut_t *lut);
 
+/*
+ * Configure a lookup object with component weights that remain agnostic to
+ * the underlying color space.  Each weight scales the corresponding channel
+ * when evaluating palette distance.
+ */
 SIXELSTATUS
 sixel_lut_configure(sixel_lut_t *lut,
                     unsigned char const *palette,
                     int depth,
                     int ncolors,
                     int complexion,
-                    int wR,
-                    int wG,
-                    int wB,
+                    int wcomp1,
+                    int wcomp2,
+                    int wcomp3,
                     int policy,
                     int pixelformat);
 
