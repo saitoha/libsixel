@@ -63,6 +63,7 @@
 #include "dither.h"
 #include "pixelformat.h"
 #include "assessment.h"
+#include "parallel-log.h"
 #include "sixel_threads_config.h"
 #if SIXEL_ENABLE_THREADS
 # include "sixel_atomic.h"
@@ -108,6 +109,15 @@ static sixel_thread_config_state_t g_thread_config = {
     0,
     0
 };
+
+typedef struct sixel_parallel_dither_config {
+    int enabled;
+    int band_height;
+    int overlap;
+    int dither_threads;
+    int encode_threads;
+    int dither_env_override;
+} sixel_parallel_dither_config_t;
 
 typedef struct sixel_encode_work {
     char *map;
@@ -193,6 +203,7 @@ typedef struct sixel_parallel_context {
     int worker_capacity;
     int worker_registered;
     threadpool_t *pool;
+    sixel_parallel_logger_t *logger;
     sixel_mutex_t mutex;
     int mutex_ready;
     sixel_cond_t cond_band_ready;
@@ -204,6 +215,13 @@ typedef struct sixel_parallel_context {
     SIXELSTATUS writer_error;
     int queue_capacity;
 } sixel_parallel_context_t;
+
+typedef struct sixel_parallel_row_notifier {
+    sixel_parallel_context_t *context;
+    sixel_parallel_logger_t *logger;
+    int band_height;
+    int image_height;
+} sixel_parallel_row_notifier_t;
 
 static void sixel_parallel_writer_stop(sixel_parallel_context_t *ctx,
                                        int force_abort);
@@ -417,21 +435,167 @@ sixel_set_threads(int threads)
 }
 
 #if SIXEL_ENABLE_THREADS
+static void
+sixel_parallel_logger_prepare(sixel_parallel_logger_t *logger)
+{
+    char const *path;
+    SIXELSTATUS status;
+
+    if (logger == NULL) {
+        return;
+    }
+
+    sixel_parallel_logger_init(logger);
+    path = getenv("SIXEL_PARALLEL_LOG_PATH");
+    if (path == NULL || path[0] == '\0') {
+        return;
+    }
+
+    status = sixel_parallel_logger_open(logger, path);
+    if (SIXEL_FAILED(status)) {
+        sixel_parallel_logger_close(logger);
+    }
+}
+#endif
+
+static void
+sixel_parallel_dither_configure(int height,
+                                int pipeline_threads,
+                                sixel_parallel_dither_config_t *config)
+{
+    char const *text;
+    long parsed;
+    char *endptr;
+    int band_height;
+    int overlap;
+    int dither_threads;
+    int encode_threads;
+    int dither_env_override;
+
+    if (config == NULL) {
+        return;
+    }
+
+    config->enabled = 0;
+    config->band_height = 0;
+    config->overlap = 0;
+    config->dither_threads = 0;
+    config->encode_threads = pipeline_threads;
+
+    text = getenv("SIXEL_DITHER_PARALLEL_BAND_WIDTH");
+    if (text == NULL || text[0] == '\0') {
+        return;
+    }
+
+    errno = 0;
+    parsed = strtol(text, &endptr, 10);
+    if (endptr == text || errno == ERANGE || parsed <= 0) {
+        band_height = 72;
+    } else {
+        band_height = (int)parsed;
+    }
+    if (band_height < 6) {
+        band_height = 6;
+    }
+    if ((band_height % 6) != 0) {
+        band_height = ((band_height + 5) / 6) * 6;
+    }
+
+    text = getenv("SIXEL_DITHER_PARALLEL_BAND_OVERWRAP");
+    if (text == NULL || text[0] == '\0') {
+        overlap = 12;
+    } else {
+        errno = 0;
+        parsed = strtol(text, &endptr, 10);
+        if (endptr == text || errno == ERANGE || parsed < 0) {
+            overlap = 12;
+        } else {
+            overlap = (int)parsed;
+        }
+    }
+    if (overlap < 0) {
+        overlap = 0;
+    }
+    if (overlap > band_height / 2) {
+        overlap = band_height / 2;
+    }
+
+    if (pipeline_threads <= 1 || height <= 0) {
+        return;
+    }
+
+    dither_env_override = 0;
+    dither_threads = (pipeline_threads * 7 + 9) / 10;
+    text = getenv("SIXEL_DITHER_PARALLEL_THREADS_MAX");
+    if (text != NULL && text[0] != '\0') {
+        errno = 0;
+        parsed = strtol(text, &endptr, 10);
+        if (endptr != text && errno != ERANGE && parsed > 0) {
+            if (parsed > INT_MAX) {
+                parsed = INT_MAX;
+            }
+            dither_threads = (int)parsed;
+            dither_env_override = 1;
+        }
+    }
+    if (dither_threads < 1) {
+        dither_threads = 1;
+    }
+    if (dither_threads > pipeline_threads) {
+        dither_threads = pipeline_threads;
+    }
+
+    if (!dither_env_override && pipeline_threads >= 4 && dither_threads < 2) {
+        /*
+         * When the total budget is ample, keep at least two dither workers so
+         * the banded producer can feed the encoder fast enough to pipeline.
+         */
+        dither_threads = pipeline_threads - 2;
+    }
+
+    encode_threads = pipeline_threads - dither_threads;
+    if (encode_threads < 2 && pipeline_threads > 2) {
+        /*
+         * Preserve a minimal pair of encoder workers to keep the pipeline
+         * alive while leaving the rest to dithering. Small budgets fall back
+         * to the serial encoder path later in the caller.
+         */
+        encode_threads = 2;
+        dither_threads = pipeline_threads - encode_threads;
+    }
+    if (encode_threads < 1) {
+        encode_threads = 1;
+        dither_threads = pipeline_threads - encode_threads;
+    }
+    if (dither_threads < 1) {
+        return;
+    }
+
+    config->enabled = 1;
+    config->band_height = band_height;
+    config->overlap = overlap;
+    config->dither_threads = dither_threads;
+    config->encode_threads = encode_threads;
+}
+
+#if SIXEL_ENABLE_THREADS
 static int sixel_parallel_band_writer(char *data, int size, void *priv);
 static int sixel_parallel_worker_main(tp_job_t job,
                                       void *userdata,
                                       void *workspace);
-static SIXELSTATUS sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
-                                                sixel_index_t *pixels,
-                                                int width,
-                                                int height,
-                                                int ncolors,
-                                                int keycolor,
-                                                unsigned char *palstate,
-                                                sixel_output_t *output,
-                                                sixel_allocator_t *allocator,
-                                                int requested_threads,
-                                                int queue_capacity);
+static SIXELSTATUS
+sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
+                             sixel_index_t *pixels,
+                             int width,
+                             int height,
+                             int ncolors,
+                             int keycolor,
+                             unsigned char *palstate,
+                             sixel_output_t *output,
+                             sixel_allocator_t *allocator,
+                             int requested_threads,
+                             int queue_capacity,
+                             sixel_parallel_logger_t *logger);
 static void sixel_parallel_submit_band(sixel_parallel_context_t *ctx,
                                        int band_index);
 static SIXELSTATUS sixel_parallel_context_wait(sixel_parallel_context_t *ctx,
@@ -465,6 +629,7 @@ sixel_parallel_context_init(sixel_parallel_context_t *ctx)
     ctx->worker_capacity = 0;
     ctx->worker_registered = 0;
     ctx->pool = NULL;
+    ctx->logger = NULL;
     ctx->mutex_ready = 0;
     ctx->cond_ready = 0;
     ctx->writer_started = 0;
@@ -767,7 +932,8 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
                              sixel_output_t *output,
                              sixel_allocator_t *allocator,
                              int requested_threads,
-                             int queue_capacity)
+                             int queue_capacity,
+                             sixel_parallel_logger_t *logger)
 {
     SIXELSTATUS status;
     int nbands;
@@ -788,6 +954,7 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
     ctx->allocator = allocator;
     ctx->output = output;
     ctx->encode_probe_active = 0;
+    ctx->logger = logger;
 
     nbands = (height + 5) / 6;
     if (nbands <= 0) {
@@ -805,6 +972,23 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
     ctx->thread_count = threads;
     ctx->worker_capacity = threads;
     sixel_assessment_set_encode_parallelism(threads);
+
+    if (logger != NULL) {
+        sixel_parallel_logger_logf(logger,
+                                   "controller",
+                                   "encode",
+                                   "context_begin",
+                                   -1,
+                                   -1,
+                                   0,
+                                   height,
+                                   0,
+                                   height,
+                                   "threads=%d queue=%d bands=%d",
+                                   threads,
+                                   queue_capacity,
+                                   nbands);
+    }
 
     ctx->bands = (sixel_parallel_band_buffer_t *)calloc((size_t)nbands,
                                                         sizeof(*ctx->bands));
@@ -872,6 +1056,7 @@ static void
 sixel_parallel_submit_band(sixel_parallel_context_t *ctx, int band_index)
 {
     tp_job_t job;
+    int dispatch;
 
     if (ctx == NULL || ctx->pool == NULL) {
         return;
@@ -879,15 +1064,56 @@ sixel_parallel_submit_band(sixel_parallel_context_t *ctx, int band_index)
     if (band_index < 0 || band_index >= ctx->band_count) {
         return;
     }
-    if (ctx->bands[band_index].dispatched) {
-        return;
+
+    dispatch = 0;
+    /*
+     * Multiple producers may notify the same band when PaletteApply runs in
+     * parallel.  Guard the dispatched flag so only the first notifier pushes
+     * work into the encoder queue.
+     */
+    if (ctx->mutex_ready) {
+        sixel_mutex_lock(&ctx->mutex);
+        if (!ctx->bands[band_index].dispatched
+                && !ctx->writer_should_stop
+                && ctx->writer_error == SIXEL_OK) {
+            ctx->bands[band_index].dispatched = 1;
+            dispatch = 1;
+        }
+        sixel_mutex_unlock(&ctx->mutex);
+    } else {
+        if (!ctx->bands[band_index].dispatched
+                && sixel_parallel_jobs_allowed(ctx)) {
+            ctx->bands[band_index].dispatched = 1;
+            dispatch = 1;
+        }
     }
-    if (!sixel_parallel_jobs_allowed(ctx)) {
+
+    if (!dispatch) {
         return;
     }
 
-    ctx->bands[band_index].dispatched = 1;
     sixel_fence_release();
+    if (ctx->logger != NULL) {
+        int y0;
+        int y1;
+
+        y0 = band_index * 6;
+        y1 = y0 + 6;
+        if (ctx->height > 0 && y1 > ctx->height) {
+            y1 = ctx->height;
+        }
+        sixel_parallel_logger_logf(ctx->logger,
+                                   "controller",
+                                   "encode",
+                                   "dispatch",
+                                   band_index,
+                                   y1 - 1,
+                                   y0,
+                                   y1,
+                                   y0,
+                                   y1,
+                                   "enqueue band");
+    }
     job.band_index = band_index;
     threadpool_push(ctx->pool, job);
 }
@@ -923,26 +1149,60 @@ sixel_parallel_context_wait(sixel_parallel_context_t *ctx, int force_abort)
 static void
 sixel_parallel_palette_row_ready(void *priv, int row_index)
 {
+    sixel_parallel_row_notifier_t *notifier;
     sixel_parallel_context_t *ctx;
+    sixel_parallel_logger_t *logger;
+    int band_height;
     int band_index;
+    int y0;
+    int y1;
 
-    ctx = (sixel_parallel_context_t *)priv;
+    notifier = (sixel_parallel_row_notifier_t *)priv;
+    if (notifier == NULL) {
+        return;
+    }
+    ctx = notifier->context;
+    logger = notifier->logger;
     if (ctx == NULL || ctx->band_count <= 0 || ctx->height <= 0) {
         return;
     }
     if (row_index < 0) {
         return;
     }
-    if ((row_index % 6) != 5 && row_index != ctx->height - 1) {
+    band_height = notifier->band_height;
+    if (band_height < 1) {
+        band_height = 6;
+    }
+    if ((row_index % band_height) != band_height - 1
+            && row_index != ctx->height - 1) {
         return;
     }
 
-    band_index = row_index / 6;
+    band_index = row_index / band_height;
     if (band_index >= ctx->band_count) {
         band_index = ctx->band_count - 1;
     }
     if (band_index < 0) {
         return;
+    }
+
+    y0 = band_index * band_height;
+    y1 = y0 + band_height;
+    if (notifier->image_height > 0 && y1 > notifier->image_height) {
+        y1 = notifier->image_height;
+    }
+    if (logger != NULL) {
+        sixel_parallel_logger_logf(logger,
+                                   "controller",
+                                   "encode",
+                                   "row_gate",
+                                   band_index,
+                                   row_index,
+                                   y0,
+                                   y1,
+                                   y0,
+                                   y1,
+                                   "trigger band enqueue");
     }
 
     sixel_parallel_submit_band(ctx, band_index);
@@ -956,6 +1216,28 @@ sixel_parallel_flush_band(sixel_parallel_context_t *ctx, int band_index)
     size_t chunk;
 
     band = &ctx->bands[band_index];
+    if (ctx->logger != NULL) {
+        int y0;
+        int y1;
+
+        y0 = band_index * 6;
+        y1 = y0 + 6;
+        if (ctx->height > 0 && y1 > ctx->height) {
+            y1 = ctx->height;
+        }
+        sixel_parallel_logger_logf(ctx->logger,
+                                   "worker",
+                                   "encode",
+                                   "writer_flush",
+                                   band_index,
+                                   y1 - 1,
+                                   y0,
+                                   y1,
+                                   y0,
+                                   y1,
+                                   "bytes=%zu",
+                                   band->used);
+    }
     offset = 0;
     while (offset < band->used) {
         chunk = band->used - offset;
@@ -984,6 +1266,7 @@ sixel_parallel_worker_main(tp_job_t job, void *userdata, void *workspace)
     int row_index;
     int absolute_row;
     int last_row_index;
+    size_t emitted_bytes;
 
     ctx = (sixel_parallel_context_t *)userdata;
     state = (sixel_parallel_worker_state_t *)workspace;
@@ -995,6 +1278,10 @@ sixel_parallel_worker_main(tp_job_t job, void *userdata, void *workspace)
     band = NULL;
     status = SIXEL_OK;
     band_index = job.band_index;
+    band_start = 0;
+    band_height = 0;
+    last_row_index = -1;
+    emitted_bytes = 0U;
     if (band_index < 0 || band_index >= ctx->band_count) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
@@ -1039,6 +1326,21 @@ sixel_parallel_worker_main(tp_job_t job, void *userdata, void *workspace)
     }
     if (band_height <= 0) {
         goto cleanup;
+    }
+
+    if (ctx->logger != NULL) {
+        sixel_parallel_logger_logf(ctx->logger,
+                                   "worker",
+                                   "encode",
+                                   "worker_start",
+                                   band_index,
+                                   band_start,
+                                   band_start,
+                                   band_start + band_height,
+                                   band_start,
+                                   band_start + band_height,
+                                   "worker=%d",
+                                   state->index);
     }
 
     for (row_index = 0; row_index < band_height; row_index++) {
@@ -1092,6 +1394,7 @@ sixel_parallel_worker_main(tp_job_t job, void *userdata, void *workspace)
                                 state);
         state->output->pos = 0;
     }
+    emitted_bytes = band->used;
 
     if (state->writer_error != SIXEL_OK) {
         status = state->writer_error;
@@ -1110,6 +1413,21 @@ cleanup:
         band->ready = 1;
         sixel_cond_broadcast(&ctx->cond_band_ready);
         sixel_mutex_unlock(&ctx->mutex);
+    }
+    if (ctx->logger != NULL) {
+        sixel_parallel_logger_logf(ctx->logger,
+                                   "worker",
+                                   "encode",
+                                   "worker_done",
+                                   band_index,
+                                   last_row_index,
+                                   band_start,
+                                   band_start + band_height,
+                                   band_start,
+                                   band_start + band_height,
+                                   "status=%d bytes=%zu",
+                                   status,
+                                   emitted_bytes);
     }
     if (SIXEL_FAILED(status)) {
         return status;
@@ -1141,6 +1459,20 @@ sixel_parallel_writer_stop(sixel_parallel_context_t *ctx, int force_abort)
     sixel_thread_join(&ctx->writer_thread);
     ctx->writer_started = 0;
     ctx->writer_should_stop = 0;
+    if (ctx->logger != NULL) {
+        sixel_parallel_logger_logf(ctx->logger,
+                                   "writer",
+                                   "encode",
+                                   "writer_stop",
+                                   -1,
+                                   -1,
+                                   0,
+                                   ctx->height,
+                                   0,
+                                   ctx->height,
+                                   "force=%d",
+                                   force_abort);
+    }
 }
 
 static int
@@ -1156,15 +1488,30 @@ sixel_parallel_writer_main(void *arg)
         return SIXEL_BAD_ARGUMENT;
     }
 
+    if (ctx->logger != NULL) {
+        sixel_parallel_logger_logf(ctx->logger,
+                                   "writer",
+                                   "encode",
+                                   "writer_start",
+                                   -1,
+                                   -1,
+                                   0,
+                                   ctx->height,
+                                   0,
+                                   ctx->height,
+                                   "bands=%d",
+                                   ctx->band_count);
+    }
+
     for (;;) {
         sixel_mutex_lock(&ctx->mutex);
         while (!ctx->writer_should_stop &&
                ctx->next_band_to_flush < ctx->band_count) {
-            band_index = ctx->next_band_to_flush;
-            band = &ctx->bands[band_index];
-            if (band->ready) {
-                break;
-            }
+    band_index = ctx->next_band_to_flush;
+    band = &ctx->bands[band_index];
+    if (band->ready) {
+        break;
+    }
             sixel_cond_wait(&ctx->cond_band_ready, &ctx->mutex);
         }
 
@@ -1190,6 +1537,28 @@ sixel_parallel_writer_main(void *arg)
 
         sixel_fence_acquire();
         status = band->status;
+        if (ctx->logger != NULL) {
+            int y0;
+            int y1;
+
+            y0 = band_index * 6;
+            y1 = y0 + 6;
+            if (ctx->height > 0 && y1 > ctx->height) {
+                y1 = ctx->height;
+            }
+            sixel_parallel_logger_logf(ctx->logger,
+                                       "writer",
+                                       "encode",
+                                       "writer_dequeue",
+                                       band_index,
+                                       y1 - 1,
+                                       y0,
+                                       y1,
+                                       y0,
+                                       y1,
+                                       "bytes=%zu",
+                                       band->used);
+        }
         if (SIXEL_SUCCEEDED(status)) {
             status = sixel_parallel_flush_band(ctx, band_index);
         }
@@ -1219,11 +1588,14 @@ sixel_encode_body_parallel(sixel_index_t *pixels,
     int threads;
     int i;
     int queue_depth;
+    sixel_parallel_logger_t logger;
 
     sixel_parallel_context_init(&ctx);
+    sixel_parallel_logger_prepare(&logger);
     nbands = (height + 5) / 6;
     ctx.band_count = nbands;
     if (nbands <= 0) {
+        sixel_parallel_logger_close(&logger);
         return SIXEL_OK;
     }
 
@@ -1254,9 +1626,11 @@ sixel_encode_body_parallel(sixel_index_t *pixels,
                                           output,
                                           allocator,
                                           threads,
-                                          queue_depth);
+                                          queue_depth,
+                                          &logger);
     if (SIXEL_FAILED(status)) {
         sixel_parallel_context_cleanup(&ctx);
+        sixel_parallel_logger_close(&logger);
         return status;
     }
 
@@ -1267,10 +1641,12 @@ sixel_encode_body_parallel(sixel_index_t *pixels,
     status = sixel_parallel_context_wait(&ctx, 0);
     if (SIXEL_FAILED(status)) {
         sixel_parallel_context_cleanup(&ctx);
+        sixel_parallel_logger_close(&logger);
         return status;
     }
 
     sixel_parallel_context_cleanup(&ctx);
+    sixel_parallel_logger_close(&logger);
     return SIXEL_OK;
 }
 #endif
@@ -1289,7 +1665,8 @@ sixel_encode_body_pipeline(unsigned char *pixels,
                            unsigned char const *palette,
                            float const *palette_float,
                            sixel_dither_t *dither,
-                           sixel_output_t *output)
+                           sixel_output_t *output,
+                           int encode_threads)
 {
     SIXELSTATUS status;
     SIXELSTATUS wait_status;
@@ -1305,6 +1682,8 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     int encode_probe_active;
     int waited;
     int saved_optimize_palette;
+    sixel_parallel_logger_t logger;
+    sixel_parallel_row_notifier_t notifier;
 
     if (pixels == NULL
             || (palette == NULL && palette_float == NULL)
@@ -1313,7 +1692,7 @@ sixel_encode_body_pipeline(unsigned char *pixels,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    threads = sixel_threads_resolve();
+    threads = encode_threads;
     nbands = (height + 5) / 6;
     if (threads <= 1 || nbands <= 1) {
         return SIXEL_RUNTIME_ERROR;
@@ -1331,6 +1710,11 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     }
 
     sixel_parallel_context_init(&ctx);
+    sixel_parallel_logger_prepare(&logger);
+    notifier.context = &ctx;
+    notifier.logger = &logger;
+    notifier.band_height = 6;
+    notifier.image_height = height;
     waited = 0;
     status = SIXEL_OK;
 
@@ -1357,7 +1741,34 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     dither->pipeline_index_buffer = indexes;
     dither->pipeline_index_size = buffer_size;
     dither->pipeline_row_callback = sixel_parallel_palette_row_ready;
-    dither->pipeline_row_priv = &ctx;
+    dither->pipeline_row_priv = &notifier;
+    dither->pipeline_logger = &logger;
+    dither->pipeline_image_height = height;
+
+    if (logger.active) {
+        /*
+         * Record the thread split and band geometry before spawning workers.
+         * This clarifies why only a subset of hardware threads might appear
+         * in the log when the encoder side is clamped to keep the pipeline
+         * draining.
+         */
+        sixel_parallel_logger_logf(&logger,
+                                   "controller",
+                                   "pipeline",
+                                   "configure",
+                                   -1,
+                                   -1,
+                                   0,
+                                   height,
+                                   0,
+                                   height,
+                                   "encode_threads=%d dither_threads=%d "
+                                   "band=%d overlap=%d",
+                                   threads,
+                                   dither->pipeline_dither_threads,
+                                   dither->pipeline_band_height,
+                                   dither->pipeline_band_overlap);
+    }
 
     status = sixel_parallel_context_begin(&ctx,
                                           indexes,
@@ -1369,7 +1780,8 @@ sixel_encode_body_pipeline(unsigned char *pixels,
                                           output,
                                           allocator,
                                           threads,
-                                          queue_depth);
+                                          queue_depth,
+                                          &logger);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
@@ -1414,6 +1826,7 @@ cleanup:
         }
     }
     sixel_parallel_context_cleanup(&ctx);
+    sixel_parallel_logger_close(&logger);
     if (indexes != NULL) {
         sixel_allocator_free(allocator, indexes);
     }
@@ -1427,7 +1840,8 @@ sixel_encode_body_pipeline(unsigned char *pixels,
                            unsigned char const *palette,
                            float const *palette_float,
                            sixel_dither_t *dither,
-                           sixel_output_t *output)
+                           sixel_output_t *output,
+                           int encode_threads)
 {
     (void)pixels;
     (void)width;
@@ -1436,6 +1850,7 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     (void)palette_float;
     (void)dither;
     (void)output;
+    (void)encode_threads;
     return SIXEL_RUNTIME_ERROR;
 }
 #endif
@@ -3394,6 +3809,8 @@ sixel_encode_dither(
     int pipeline_active;
     int pipeline_threads;
     int pipeline_nbands;
+    sixel_parallel_dither_config_t dither_parallel;
+    char const *band_env_text;
 
     palette_entries = NULL;
     palette_entries_float32 = NULL;
@@ -3417,6 +3834,11 @@ sixel_encode_dither(
     }
 
     pipeline_active = 0;
+    dither_parallel.enabled = 0;
+    dither_parallel.band_height = 0;
+    dither_parallel.overlap = 0;
+    dither_parallel.dither_threads = 0;
+    dither_parallel.encode_threads = 0;
     switch (dither->pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
@@ -3451,6 +3873,17 @@ sixel_encode_dither(
     default:
         /* apply palette */
         pipeline_threads = sixel_threads_resolve();
+        band_env_text = getenv("SIXEL_DITHER_PARALLEL_BAND_WIDTH");
+        if (pipeline_threads <= 1 && band_env_text != NULL
+                && band_env_text[0] != '\0') {
+            /*
+             * Parallel band dithering was explicitly requested via the
+             * environment.  When SIXEL_THREADS is absent, prefer hardware
+             * concurrency instead of silently running a single worker so
+             * that multiple dither jobs appear in the log.
+             */
+            pipeline_threads = sixel_threads_normalize(0);
+        }
         pipeline_nbands = (height + 5) / 6;
         if (pipeline_threads > 1 && pipeline_nbands > 1) {
             pipeline_active = 1;
@@ -3465,6 +3898,39 @@ sixel_encode_dither(
             input_pixels = paletted_pixels;
         }
         break;
+    }
+
+    if (pipeline_active) {
+        sixel_parallel_dither_configure(height,
+                                        pipeline_threads,
+                                        &dither_parallel);
+        if (dither_parallel.enabled) {
+            dither->pipeline_parallel_active = 1;
+            dither->pipeline_band_height = dither_parallel.band_height;
+            dither->pipeline_band_overlap = dither_parallel.overlap;
+            dither->pipeline_dither_threads =
+                dither_parallel.dither_threads;
+            pipeline_threads = dither_parallel.encode_threads;
+        }
+        if (pipeline_threads <= 1) {
+            /*
+             * Disable the pipeline when the encode side cannot spawn at
+             * least two workers.  A single encode thread cannot consume the
+             * six-line jobs that PaletteApply produces, so fall back to the
+             * serialized encoder path.
+             */
+            pipeline_active = 0;
+            dither->pipeline_parallel_active = 0;
+            if (paletted_pixels == NULL) {
+                paletted_pixels = sixel_dither_apply_palette(dither, pixels,
+                                                             width, height);
+                if (paletted_pixels == NULL) {
+                    status = SIXEL_RUNTIME_ERROR;
+                    goto end;
+                }
+            }
+            input_pixels = paletted_pixels;
+        }
     }
 
     if (output != NULL) {
@@ -3586,7 +4052,8 @@ sixel_encode_dither(
                                             palette_entries,
                                             palette_entries_float32,
                                             dither,
-                                            output);
+                                            output,
+                                            pipeline_threads);
     } else {
         status = sixel_encode_body(input_pixels,
                                    width,

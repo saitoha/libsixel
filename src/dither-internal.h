@@ -39,6 +39,8 @@ typedef struct sixel_dither_context {
     float *pixels_float;
     int width;
     int height;
+    int band_origin;
+    int output_start;
     int depth;
     unsigned char *palette;
     float *palette_float;

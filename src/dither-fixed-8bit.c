@@ -358,6 +358,8 @@ sixel_dither_apply_fixed_impl(
     unsigned char *data,
     int width,
     int height,
+    int band_origin,
+    int output_start,
     int depth,
     unsigned char *palette,
     int reqcolor,
@@ -410,6 +412,7 @@ sixel_dither_apply_fixed_impl(
     int step;
     int direction;
     int x;
+    int absolute_y;
     int pos;
     size_t base;
     size_t carry_base;
@@ -524,7 +527,8 @@ sixel_dither_apply_fixed_impl(
     }
 
     for (y = 0; y < height; ++y) {
-        sixel_dither_scanline_params(serpentine, y, width,
+        absolute_y = band_origin + y;
+        sixel_dither_scanline_params(serpentine, absolute_y, width,
                         &start, &end, &step, &direction);
         for (x = start; x != end; x += step) {
             pos = y * width + x;
@@ -586,10 +590,14 @@ sixel_dither_apply_fixed_impl(
                 } else {
                     output_index = migration_map[color_index] - 1;
                 }
-                result[pos] = output_index;
+                if (absolute_y >= output_start) {
+                    result[pos] = output_index;
+                }
             } else {
                 output_index = color_index;
-                result[pos] = output_index;
+                if (absolute_y >= output_start) {
+                    result[pos] = output_index;
+                }
             }
 
             for (n = 0; n < depth; ++n) {
@@ -621,7 +629,9 @@ sixel_dither_apply_fixed_impl(
                 memset(carry_far, 0x00, carry_len * sizeof(int32_t));
             }
         }
-        sixel_dither_pipeline_row_notify(dither, y);
+        if (absolute_y >= output_start) {
+            sixel_dither_pipeline_row_notify(dither, absolute_y);
+        }
     }
 
     if (optimize_palette) {
@@ -668,6 +678,8 @@ sixel_dither_apply_fixed_8bit(sixel_dither_t *dither,
                                          context->pixels,
                                          context->width,
                                          context->height,
+                                         context->band_origin,
+                                         context->output_start,
                                          context->depth,
                                          context->palette,
                                          context->reqcolor,

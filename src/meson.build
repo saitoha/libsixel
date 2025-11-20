@@ -42,6 +42,7 @@ srcs = [
   'dither-fixed-float32.c',
   'dither-varcoeff-8bit.c',
   'dither-varcoeff-float32.c',
+  'parallel-log.c',
   'colorspace.c',
   'frame.c',
   'pixelformat.c',
@@ -76,6 +77,7 @@ srcs = [
   'dither-internal.h',
   'dither-varcoeff-8bit.h',
   'dither-varcoeff-float32.h',
+  'parallel-log.h',
   'options.h',
   'sixel_atomic.h',
 ]
