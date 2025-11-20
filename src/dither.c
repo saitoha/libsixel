@@ -914,6 +914,7 @@ sixel_dither_parallel_worker(tp_job_t job,
                              void *workspace)
 {
     sixel_parallel_dither_plan_t *plan;
+    unsigned char const *source;
     unsigned char *copy;
     size_t required;
     size_t offset;
@@ -959,12 +960,17 @@ sixel_dither_parallel_worker(tp_job_t job,
     }
 
     required = (size_t)rows * plan->row_bytes;
-    copy = (unsigned char *)malloc(required);
-    if (copy == NULL) {
-        return SIXEL_BAD_ALLOCATION;
-    }
     offset = (size_t)in0 * plan->row_bytes;
-    memcpy(copy, plan->pixels + offset, required);
+    copy = NULL;
+    source = plan->pixels + offset;
+    if (plan->overlap > 0) {
+        copy = (unsigned char *)malloc(required);
+        if (copy == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+        memcpy(copy, source, required);
+        source = copy;
+    }
 
     if (plan->logger != NULL) {
         sixel_parallel_logger_logf(plan->logger,
@@ -990,7 +996,7 @@ sixel_dither_parallel_worker(tp_job_t job,
      * other's body.
      */
     status = sixel_dither_map_pixels(plan->dest + (size_t)in0 * plan->width,
-                                     copy,
+                                     (unsigned char *)source,
                                      plan->width,
                                      rows,
                                      in0,
@@ -1026,7 +1032,9 @@ sixel_dither_parallel_worker(tp_job_t job,
                                    status,
                                    rows);
     }
-    free(copy);
+    if (copy != NULL) {
+        free(copy);
+    }
     return status;
 }
 

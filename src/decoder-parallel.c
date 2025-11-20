@@ -936,7 +936,7 @@ sixel_decoder_parallel_resolve_threads(void)
     if (g_decoder_threads.env_valid) {
         return g_decoder_threads.env_threads;
     }
-    return 1;
+    return sixel_decoder_threads_normalize(0);
 }
 
 static SIXELSTATUS sixel_parallel_decode_internal(
