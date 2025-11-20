@@ -33,6 +33,8 @@
 
 #include "dither.h"
 
+struct sixel_lut;
+
 typedef struct sixel_dither_context {
     sixel_index_t *result;
     unsigned char *pixels;
@@ -56,6 +58,7 @@ typedef struct sixel_dither_context {
                   int reqcolor,
                   unsigned short *cachetable,
                   int complexion);
+    struct sixel_lut *lut;
     unsigned short *indextable;
     unsigned char *scratch;
     unsigned char *new_palette;

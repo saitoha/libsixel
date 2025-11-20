@@ -462,7 +462,25 @@ static const unsigned char pal_xterm256[] = {
 };
 
 
-static sixel_lut_t *dither_lut_context = NULL;
+#if defined(_MSC_VER)
+# define SIXEL_TLS __declspec(thread)
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
+    && !defined(__STDC_NO_THREADS__)
+# define SIXEL_TLS _Thread_local
+#elif defined(__GNUC__)
+# define SIXEL_TLS __thread
+#else
+# define SIXEL_TLS
+#endif
+
+/*
+ * Fast LUT lookups rely on per-thread scratch state.  A TLS indirection keeps
+ * parallel dithering workers from stomping on each other's lookup context when
+ * several bands run concurrently.
+ */
+static SIXEL_TLS sixel_lut_t *dither_lut_context = NULL;
+
+#undef SIXEL_TLS
 
 /* lookup closest color from palette with "normal" strategy */
 static int
@@ -673,6 +691,7 @@ sixel_dither_map_pixels(
     context.float_depth = 0;
     context.lookup_source_is_float = 0;
     context.prefer_palette_float_lookup = 0;
+    context.lut = NULL;
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         context.pixels_float = (float *)(void *)data;
     }
@@ -787,6 +806,7 @@ sixel_dither_map_pixels(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        context.lut = active_lut;
         dither_lut_context = active_lut;
     }
 
