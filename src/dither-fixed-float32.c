@@ -806,6 +806,7 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
     int float_depth;
     int serpentine;
     int y;
+    int absolute_y;
     int start;
     int end;
     int step;
@@ -941,7 +942,9 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
     }
 
     for (y = 0; y < context->height; ++y) {
-        sixel_dither_scanline_params(serpentine, y, context->width,
+        absolute_y = context->band_origin + y;
+        sixel_dither_scanline_params(serpentine, absolute_y,
+                                     context->width,
                                      &start, &end, &step, &direction);
         for (x = start; x != end; x += step) {
             pos = y * context->width + x;
@@ -1011,10 +1014,14 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
                 } else {
                     output_index = context->migration_map[color_index] - 1;
                 }
-                context->result[pos] = output_index;
+                if (absolute_y >= context->output_start) {
+                    context->result[pos] = output_index;
+                }
             } else {
                 output_index = color_index;
-                context->result[pos] = output_index;
+                if (absolute_y >= context->output_start) {
+                    context->result[pos] = output_index;
+                }
             }
 
             for (n = 0; n < context->depth; ++n) {
@@ -1061,7 +1068,9 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
                           n);
             }
         }
-        sixel_dither_pipeline_row_notify(dither, y);
+        if (absolute_y >= context->output_start) {
+            sixel_dither_pipeline_row_notify(dither, absolute_y);
+        }
     }
 
     if (context->optimize_palette) {
