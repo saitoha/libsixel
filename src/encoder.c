@@ -1,4 +1,5 @@
-/* SPDX-License-Identifier: MIT AND BSD-3-Clause
+/*
+ * SPDX-License-Identifier: MIT AND BSD-3-Clause
  *
  * Copyright (c) 2021-2025 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2019 Hayaki Saito

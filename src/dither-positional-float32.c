@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -316,3 +318,12 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
 
     return SIXEL_OK;
 }
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
+/* EOF */
