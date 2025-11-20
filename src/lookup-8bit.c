@@ -68,8 +68,7 @@
 #include "status.h"
 #include "compat_stub.h"
 #include "allocator.h"
-#include "lut.h"
-#include "pixelformat.h"
+#include "lookup-8bit.h"
 
 #define SIXEL_LUT_BRANCH_FLAG 0x40000000U
 /* #define DEBUG_LUT_TRACE 1 */
@@ -87,7 +86,7 @@ typedef struct sixel_certlut_node {
     unsigned char axis;
 } sixel_certlut_node_t;
 
-typedef struct sixel_certlut {
+struct sixel_certlut {
     uint32_t *level0;
     uint8_t *pool;
     uint32_t pool_size;
@@ -101,48 +100,7 @@ typedef struct sixel_certlut {
     sixel_certlut_node_t *kdnodes;
     int kdnodes_count;
     int kdtree_root;
-} sixel_certlut_t;
-
-typedef struct sixel_lut_quantization {
-    unsigned int channel_shift;
-    unsigned int channel_bits;
-    unsigned int channel_mask;
-} sixel_lut_quantization_t;
-
-struct sixel_lut {
-    int policy;
-    int pixelformat;
-    int input_is_float;
-    int depth;
-    int ncolors;
-    int complexion;
-    unsigned char const *palette;
-    sixel_allocator_t *allocator;
-    sixel_lut_quantization_t quant;
-    int32_t *dense;
-    size_t dense_size;
-    int dense_ready;
-    sixel_certlut_t cert;
-    int cert_ready;
 };
-
-#define SIXEL_LUT_MAX_COMPONENTS 4
-
-/* Convert a float32 RGB pixel into byte components for LUT lookups. */
-static void
-sixel_lut_quantize_float_pixel(float const *source,
-                               unsigned char *target,
-                               int depth,
-                               int pixelformat)
-{
-    int plane;
-
-    for (plane = 0; plane < depth; ++plane) {
-        target[plane] = sixel_pixelformat_float_channel_to_byte(pixelformat,
-                                                                plane,
-                                                                source[plane]);
-    }
-}
 
 /* Sentinel value used to detect empty dense LUT slots. */
 #define SIXEL_LUT_DENSE_EMPTY (-1)
@@ -152,10 +110,10 @@ sixel_lut_quantize_float_pixel(float const *source,
  * the historic histogram helper so existing 5bit/6bit behaviour stays intact
  * while still allowing "none" and "certlut" to bypass the cache entirely.
  */
-static sixel_lut_quantization_t
-sixel_lut_quant_make(unsigned int depth, int policy)
+static sixel_lookup_8bit_quantization_t
+sixel_lookup_8bit_quant_make(unsigned int depth, int policy)
 {
-    sixel_lut_quantization_t quant;
+    sixel_lookup_8bit_quantization_t quant;
     unsigned int shift;
 
     shift = 2U;
@@ -187,8 +145,8 @@ sixel_lut_quant_make(unsigned int depth, int policy)
  * instead of overflowing.
  */
 static size_t
-sixel_lut_dense_size(unsigned int depth,
-                     sixel_lut_quantization_t const *quant)
+sixel_lookup_8bit_dense_size(unsigned int depth,
+                     sixel_lookup_8bit_quantization_t const *quant)
 {
     size_t size;
     unsigned int exponent;
@@ -212,9 +170,9 @@ sixel_lut_dense_size(unsigned int depth,
  * histogram_pack_color() implementation to keep cached answers stable.
  */
 static unsigned int
-sixel_lut_pack_color(unsigned char const *pixel,
+sixel_lookup_8bit_pack_color(unsigned char const *pixel,
                      unsigned int depth,
-                     sixel_lut_quantization_t const *quant)
+                     sixel_lookup_8bit_quantization_t const *quant)
 {
     unsigned int packed;
     unsigned int bits;
@@ -246,7 +204,7 @@ sixel_lut_pack_color(unsigned char const *pixel,
 }
 
 static int
-sixel_lut_policy_normalize(int policy)
+sixel_lookup_8bit_policy_normalize(int policy)
 {
     int normalized;
 
@@ -264,7 +222,7 @@ sixel_lut_policy_normalize(int policy)
 }
 
 static int
-sixel_lut_policy_uses_cache(int policy)
+sixel_lookup_8bit_policy_uses_cache(int policy)
 {
     if (policy == SIXEL_LUT_POLICY_CERTLUT
         || policy == SIXEL_LUT_POLICY_NONE) {
@@ -275,7 +233,7 @@ sixel_lut_policy_uses_cache(int policy)
 }
 
 static void
-sixel_lut_release_cache(sixel_lut_t *lut)
+sixel_lookup_8bit_release_cache(sixel_lookup_8bit_t *lut)
 {
     if (lut == NULL || lut->dense == NULL) {
         return;
@@ -288,7 +246,7 @@ sixel_lut_release_cache(sixel_lut_t *lut)
 }
 
 static SIXELSTATUS
-sixel_lut_prepare_cache(sixel_lut_t *lut)
+sixel_lookup_8bit_prepare_cache(sixel_lookup_8bit_t *lut)
 {
     size_t expected;
     size_t bytes;
@@ -297,7 +255,7 @@ sixel_lut_prepare_cache(sixel_lut_t *lut)
     if (lut == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (!sixel_lut_policy_uses_cache(lut->policy)) {
+    if (!sixel_lookup_8bit_policy_uses_cache(lut->policy)) {
         return SIXEL_OK;
     }
     if (lut->allocator == NULL) {
@@ -305,22 +263,22 @@ sixel_lut_prepare_cache(sixel_lut_t *lut)
     }
 
     /* Allocate a dense RGB quantization table for 5/6bit policies.
-     * The packed index matches sixel_lut_pack_color() so each slot
+     * The packed index matches sixel_lookup_8bit_pack_color() so each slot
      * can store the resolved palette entry or remain empty.
      */
-    expected = sixel_lut_dense_size((unsigned int)lut->depth,
+    expected = sixel_lookup_8bit_dense_size((unsigned int)lut->depth,
                                     &lut->quant);
     if (expected == 0U) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (expected > SIZE_MAX / sizeof(int32_t)) {
         sixel_helper_set_additional_message(
-            "sixel_lut_prepare_cache: dense table too large.");
+            "sixel_lookup_8bit_prepare_cache: dense table too large.");
         return SIXEL_BAD_ALLOCATION;
     }
 
     if (lut->dense != NULL && lut->dense_size != expected) {
-        sixel_lut_release_cache(lut);
+        sixel_lookup_8bit_release_cache(lut);
     }
 
     if (lut->dense == NULL) {
@@ -329,7 +287,7 @@ sixel_lut_prepare_cache(sixel_lut_t *lut)
                                                        bytes);
         if (lut->dense == NULL) {
             sixel_helper_set_additional_message(
-                "sixel_lut_prepare_cache: allocation failed.");
+                "sixel_lookup_8bit_prepare_cache: allocation failed.");
             return SIXEL_BAD_ALLOCATION;
         }
     }
@@ -345,7 +303,7 @@ sixel_lut_prepare_cache(sixel_lut_t *lut)
 }
 
 static int
-sixel_lut_lookup_fast(sixel_lut_t *lut, unsigned char const *pixel)
+sixel_lookup_8bit_lookup_fast(sixel_lookup_8bit_t *lut, unsigned char const *pixel)
 {
     int result;
     int diff;
@@ -370,7 +328,7 @@ sixel_lut_lookup_fast(sixel_lut_t *lut, unsigned char const *pixel)
     bucket = 0U;
     cached = SIXEL_LUT_DENSE_EMPTY;
     if (lut->dense_ready && lut->dense != NULL) {
-        bucket = sixel_lut_pack_color(pixel,
+        bucket = sixel_lookup_8bit_pack_color(pixel,
                                       (unsigned int)lut->depth,
                                       &lut->quant);
         if ((size_t)bucket < lut->dense_size) {
@@ -1322,30 +1280,16 @@ sixel_certlut_free(sixel_certlut_t *lut)
     }
 }
 
-SIXELSTATUS
-sixel_lut_new(sixel_lut_t **out,
-              int policy,
-              sixel_allocator_t *allocator)
+void
+sixel_lookup_8bit_init(sixel_lookup_8bit_t *lut, sixel_allocator_t *allocator)
 {
-    sixel_lut_t *lut;
-    SIXELSTATUS status;
-
-    if (out == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    if (allocator == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    lut = (sixel_lut_t *)malloc(sizeof(sixel_lut_t));
     if (lut == NULL) {
-        return SIXEL_BAD_ALLOCATION;
+        return;
     }
-    memset(lut, 0, sizeof(sixel_lut_t));
+
+    memset(lut, 0, sizeof(sixel_lookup_8bit_t));
     lut->allocator = allocator;
-    lut->policy = sixel_lut_policy_normalize(policy);
-    lut->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    lut->input_is_float = 0;
+    lut->policy = sixel_lookup_8bit_policy_normalize(SIXEL_LUT_POLICY_6BIT);
     lut->depth = 0;
     lut->ncolors = 0;
     lut->complexion = 1;
@@ -1357,33 +1301,28 @@ sixel_lut_new(sixel_lut_t **out,
     lut->dense_size = 0U;
     lut->dense_ready = 0;
     lut->cert_ready = 0;
-    status = sixel_certlut_init(&lut->cert);
-    if (SIXEL_FAILED(status)) {
-        free(lut);
-        sixel_helper_set_additional_message(
-            "sixel_lut_new: unable to initialize certlut state.");
-        return status;
+    lut->cert = (sixel_certlut_t *)malloc(sizeof(sixel_certlut_t));
+    if (lut->cert != NULL) {
+        sixel_certlut_init(lut->cert);
     }
-
-    *out = lut;
-
-    return SIXEL_OK;
 }
 
 SIXELSTATUS
-sixel_lut_configure(sixel_lut_t *lut,
-                    unsigned char const *palette,
-                    int depth,
-                    int ncolors,
-                    int complexion,
-                    int wR,
-                    int wG,
-                    int wB,
-                    int policy,
-                    int pixelformat)
+sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
+                            unsigned char const *palette,
+                            int depth,
+                            int ncolors,
+                            int complexion,
+                            int wR,
+                            int wG,
+                            int wB,
+                            int policy,
+                            int pixelformat)
 {
     SIXELSTATUS status;
     int normalized;
+
+    (void)pixelformat;
 
     if (lut == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1399,31 +1338,34 @@ sixel_lut_configure(sixel_lut_t *lut,
     lut->depth = depth;
     lut->ncolors = ncolors;
     lut->complexion = complexion;
-    normalized = sixel_lut_policy_normalize(policy);
+    normalized = sixel_lookup_8bit_policy_normalize(policy);
     lut->policy = normalized;
-    lut->quant = sixel_lut_quant_make((unsigned int)depth, normalized);
-    lut->pixelformat = pixelformat;
-    lut->input_is_float = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat);
+    lut->quant = sixel_lookup_8bit_quant_make((unsigned int)depth, normalized);
     lut->dense_ready = 0;
     lut->cert_ready = 0;
 
-    if (sixel_lut_policy_uses_cache(normalized)) {
+    if (sixel_lookup_8bit_policy_uses_cache(normalized)) {
         if (depth != 3) {
             sixel_helper_set_additional_message(
-                "sixel_lut_configure: fast LUT requires RGB pixels.");
+                "sixel_lookup_8bit_configure: fast LUT requires RGB pixels.");
             return SIXEL_BAD_ARGUMENT;
         }
-        status = sixel_lut_prepare_cache(lut);
+        status = sixel_lookup_8bit_prepare_cache(lut);
         if (SIXEL_FAILED(status)) {
             return status;
         }
     } else {
-        sixel_lut_release_cache(lut);
+        sixel_lookup_8bit_release_cache(lut);
         status = SIXEL_OK;
     }
 
     if (normalized == SIXEL_LUT_POLICY_CERTLUT) {
-        status = sixel_certlut_build(&lut->cert,
+        if (lut->cert == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_lookup_8bit_configure: cert buffer missing.");
+            return SIXEL_BAD_ALLOCATION;
+        }
+        status = sixel_certlut_build(lut->cert,
                                      (sixel_certlut_color_t const *)palette,
                                      ncolors,
                                      wR,
@@ -1439,74 +1381,56 @@ sixel_lut_configure(sixel_lut_t *lut,
 }
 
 int
-sixel_lut_map_pixel(sixel_lut_t *lut, unsigned char const *pixel)
+sixel_lookup_8bit_map_pixel(sixel_lookup_8bit_t *lut, unsigned char const *pixel)
 {
-    unsigned char quantized[SIXEL_LUT_MAX_COMPONENTS];
-    unsigned char const *source_pixel;
-    float const *float_pixel;
-    int depth;
-
     if (lut == NULL || pixel == NULL) {
         return 0;
-    }
-
-    depth = lut->depth;
-    source_pixel = pixel;
-    if (lut->input_is_float) {
-        if (depth > SIXEL_LUT_MAX_COMPONENTS) {
-            sixel_helper_set_additional_message(
-                "sixel_lut_map_pixel: depth exceeds float scratch buffer.");
-            return 0;
-        }
-        float_pixel = (float const *)(void const *)pixel;
-        sixel_lut_quantize_float_pixel(float_pixel,
-                                       quantized,
-                                       depth,
-                                       lut->pixelformat);
-        source_pixel = quantized;
     }
     if (lut->policy == SIXEL_LUT_POLICY_CERTLUT) {
         if (!lut->cert_ready) {
             return 0;
         }
-        return (int)sixel_certlut_lookup(&lut->cert,
-                                         source_pixel[0],
-                                         source_pixel[1],
-                                         source_pixel[2]);
+        return (int)sixel_certlut_lookup(lut->cert,
+                                         pixel[0],
+                                         pixel[1],
+                                         pixel[2]);
     }
 
-    return sixel_lut_lookup_fast(lut, source_pixel);
+    return sixel_lookup_8bit_lookup_fast(lut, pixel);
 }
 
 void
-sixel_lut_clear(sixel_lut_t *lut)
+sixel_lookup_8bit_clear(sixel_lookup_8bit_t *lut)
 {
     if (lut == NULL) {
         return;
     }
 
-    sixel_lut_release_cache(lut);
-    if (lut->cert_ready) {
-        sixel_certlut_free(&lut->cert);
+    sixel_lookup_8bit_release_cache(lut);
+    if (lut->cert_ready && lut->cert != NULL) {
+        sixel_certlut_free(lut->cert);
         lut->cert_ready = 0;
     }
     lut->palette = NULL;
-    lut->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    lut->input_is_float = 0;
     lut->depth = 0;
     lut->ncolors = 0;
     lut->complexion = 1;
 }
 
 void
-sixel_lut_unref(sixel_lut_t *lut)
+sixel_lookup_8bit_finalize(sixel_lookup_8bit_t *lut)
 {
     if (lut == NULL) {
         return;
     }
 
-    sixel_lut_clear(lut);
-    free(lut);
+    sixel_lookup_8bit_clear(lut);
+    if (lut->cert != NULL) {
+        sixel_certlut_free(lut->cert);
+        free(lut->cert);
+        lut->cert = NULL;
+    }
+    lut->allocator = NULL;
 }
 
 /* emacs Local Variables:      */
