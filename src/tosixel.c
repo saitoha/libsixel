@@ -612,8 +612,11 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
                              sixel_output_t *output,
                              sixel_allocator_t *allocator,
                              int requested_threads,
+                             int worker_capacity,
                              int queue_capacity,
                              sixel_parallel_logger_t *logger);
+static SIXELSTATUS sixel_parallel_context_grow(sixel_parallel_context_t *ctx,
+                                              int target_threads);
 static void sixel_parallel_submit_band(sixel_parallel_context_t *ctx,
                                        int band_index);
 static SIXELSTATUS sixel_parallel_context_wait(sixel_parallel_context_t *ctx,
@@ -882,6 +885,55 @@ sixel_parallel_worker_prepare(sixel_parallel_worker_state_t *state,
     return SIXEL_OK;
 }
 
+static SIXELSTATUS
+sixel_parallel_context_grow(sixel_parallel_context_t *ctx, int target_threads)
+{
+    int capped_target;
+    int delta;
+    int status;
+
+    if (ctx == NULL || ctx->pool == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    capped_target = target_threads;
+    if (capped_target > ctx->worker_capacity) {
+        capped_target = ctx->worker_capacity;
+    }
+    if (ctx->band_count > 0 && capped_target > ctx->band_count) {
+        capped_target = ctx->band_count;
+    }
+    if (capped_target <= ctx->thread_count) {
+        return SIXEL_OK;
+    }
+
+    delta = capped_target - ctx->thread_count;
+    status = threadpool_grow(ctx->pool, delta);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    ctx->thread_count += delta;
+
+    if (ctx->logger != NULL) {
+        sixel_parallel_logger_logf(ctx->logger,
+                                   "controller",
+                                   "encode",
+                                   "grow_workers",
+                                   -1,
+                                   -1,
+                                   0,
+                                   ctx->height,
+                                   0,
+                                   ctx->height,
+                                   "threads=%d target=%d delta=%d",
+                                   ctx->thread_count,
+                                   capped_target,
+                                   delta);
+    }
+
+    return SIXEL_OK;
+}
+
 static int
 sixel_parallel_band_writer(char *data, int size, void *priv)
 {
@@ -950,6 +1002,7 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
                              sixel_output_t *output,
                              sixel_allocator_t *allocator,
                              int requested_threads,
+                             int worker_capacity,
                              int queue_capacity,
                              sixel_parallel_logger_t *logger)
 {
@@ -988,7 +1041,13 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
         threads = 1;
     }
     ctx->thread_count = threads;
-    ctx->worker_capacity = threads;
+    if (worker_capacity < threads) {
+        worker_capacity = threads;
+    }
+    if (worker_capacity > nbands) {
+        worker_capacity = nbands;
+    }
+    ctx->worker_capacity = worker_capacity;
     sixel_assessment_set_encode_parallelism(threads);
 
     if (logger != NULL) {
@@ -1015,7 +1074,7 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
     }
 
     ctx->workers = (sixel_parallel_worker_state_t **)
-        calloc((size_t)threads, sizeof(*ctx->workers));
+        calloc((size_t)ctx->worker_capacity, sizeof(*ctx->workers));
     if (ctx->workers == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
@@ -1644,6 +1703,7 @@ sixel_encode_body_parallel(sixel_index_t *pixels,
                                           output,
                                           allocator,
                                           threads,
+                                          threads,
                                           queue_depth,
                                           &logger);
     if (SIXEL_FAILED(status)) {
@@ -1700,6 +1760,9 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     int encode_probe_active;
     int waited;
     int saved_optimize_palette;
+    int dither_threads_budget;
+    int worker_capacity;
+    int boost_target;
     sixel_parallel_logger_t logger;
     sixel_parallel_row_notifier_t notifier;
 
@@ -1756,6 +1819,15 @@ sixel_encode_body_pipeline(unsigned char *pixels,
         queue_depth = 1;
     }
 
+    dither_threads_budget = dither->pipeline_dither_threads;
+    worker_capacity = threads + dither_threads_budget;
+    if (worker_capacity < threads) {
+        worker_capacity = threads;
+    }
+    if (worker_capacity > nbands) {
+        worker_capacity = nbands;
+    }
+
     dither->pipeline_index_buffer = indexes;
     dither->pipeline_index_size = buffer_size;
     dither->pipeline_row_callback = sixel_parallel_palette_row_ready;
@@ -1798,6 +1870,7 @@ sixel_encode_body_pipeline(unsigned char *pixels,
                                           output,
                                           allocator,
                                           threads,
+                                          worker_capacity,
                                           queue_depth,
                                           &logger);
     if (SIXEL_FAILED(status)) {
@@ -1823,6 +1896,17 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     }
     if (result != indexes) {
         status = SIXEL_RUNTIME_ERROR;
+        goto cleanup;
+    }
+
+    /*
+     * All dithering work has finished at this point.  Reclaim the idle dither
+     * workers for encoding so the tail of the pipeline drains with additional
+     * parallelism instead of leaving those CPU resources unused.
+     */
+    boost_target = threads + dither_threads_budget;
+    status = sixel_parallel_context_grow(&ctx, boost_target);
+    if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
 
