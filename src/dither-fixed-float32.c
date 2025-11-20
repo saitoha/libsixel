@@ -32,7 +32,7 @@
 #include "dither-fixed-float32.h"
 #include "dither-common-pipeline.h"
 #include "pixelformat.h"
-#include "lut.h"
+#include "lookup-common.h"
 
 typedef void (*diffuse_fixed_float_fn)(float *data,
                                        int width,

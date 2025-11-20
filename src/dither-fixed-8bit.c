@@ -34,7 +34,7 @@
 
 #include "dither-fixed-8bit.h"
 #include "dither-common-pipeline.h"
-#include "lut.h"
+#include "lookup-common.h"
 
 /*
  * Local serpentine traversal helper.  The function mirrors the behaviour used
