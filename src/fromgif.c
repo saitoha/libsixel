@@ -1,4 +1,6 @@
 /*
+ * SPDX-License-Identifier: MIT
+ *
  * This file is derived from "stb_image.h" that is in public domain.
  * https://github.com/nothings/stb
  *
