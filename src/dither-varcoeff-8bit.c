@@ -38,6 +38,7 @@
 
 #include "dither-varcoeff-8bit.h"
 #include "dither-common-pipeline.h"
+#include "lut.h"
 
 static void
 sixel_dither_scanline_params(int serpentine,
@@ -422,6 +423,8 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
                   int,
                   unsigned short *,
                   int);
+    sixel_lut_t *fast_lut;
+    int use_fast_lut;
     float *palette_float;
     float *new_palette_float;
     int float_depth;
@@ -441,6 +444,8 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
     depth = context->depth;
     reqcolor = context->reqcolor;
     lookup = context->lookup;
+    fast_lut = context->lut;
+    use_fast_lut = (fast_lut != NULL);
     palette_float = context->palette_float;
     new_palette_float = context->new_palette_float;
     float_depth = context->float_depth;
@@ -549,12 +554,16 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
                 source_pixel = data + base;
             }
 
-            color_index = lookup(source_pixel,
-                                  depth,
-                                  palette,
-                                  reqcolor,
-                                  indextable,
-                                  context->complexion);
+            if (use_fast_lut) {
+                color_index = sixel_lut_map_pixel(fast_lut, source_pixel);
+            } else {
+                color_index = lookup(source_pixel,
+                                      depth,
+                                      palette,
+                                      reqcolor,
+                                      indextable,
+                                      context->complexion);
+            }
 
             if (optimize_palette) {
                 if (migration_map[color_index] == 0) {
