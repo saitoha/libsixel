@@ -38,8 +38,8 @@
 #endif  /* HAVE_MATH_H */
 
 #include "dither-varcoeff-float32.h"
-#include "lut.h"
 #include "dither-common-pipeline.h"
+#include "lookup-common.h"
 #include "pixelformat.h"
 
 static void
