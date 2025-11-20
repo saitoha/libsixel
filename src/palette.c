@@ -57,7 +57,7 @@
 # include <stdarg.h>
 #endif
 
-#include "lut.h"
+#include "lookup-common.h"
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
 #include "palette-heckbert.h"

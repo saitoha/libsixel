@@ -46,7 +46,7 @@
 #include "dither.h"
 #include "palette.h"
 #include "compat_stub.h"
-#include "lut.h"
+#include "lookup-common.h"
 #include "assessment.h"
 #include "dither-common-pipeline.h"
 #include "dither-positional-8bit.h"
@@ -525,7 +525,7 @@ lookup_normal(unsigned char const * const pixel,
 /*
  * Shared fast lookup flow handled by the lut module.  The palette lookup now
  * delegates to sixel_lut_map_pixel() so policy-specific caches and the
- * certification tree stay encapsulated inside src/lut.c.
+ * certification tree stay encapsulated inside src/lookup-common.c.
  */
 
 static int

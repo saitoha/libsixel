@@ -33,7 +33,7 @@
 
 #include <stddef.h>
 
-#include "lut.h"
+#include "lookup-common.h"
 #include "palette-common-snap.h"
 
 void
