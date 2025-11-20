@@ -410,7 +410,7 @@ sixel_threads_resolve(void)
     if (g_thread_config.env_valid) {
         resolved = g_thread_config.env_threads;
     } else {
-        resolved = 1;
+        resolved = sixel_threads_normalize(0);
     }
 #else
     resolved = 1;
@@ -460,6 +460,7 @@ sixel_parallel_logger_prepare(sixel_parallel_logger_t *logger)
 
 static void
 sixel_parallel_dither_configure(int height,
+                                int ncolors,
                                 int pipeline_threads,
                                 sixel_parallel_dither_config_t *config)
 {
@@ -481,44 +482,6 @@ sixel_parallel_dither_configure(int height,
     config->overlap = 0;
     config->dither_threads = 0;
     config->encode_threads = pipeline_threads;
-
-    text = getenv("SIXEL_DITHER_PARALLEL_BAND_WIDTH");
-    if (text == NULL || text[0] == '\0') {
-        return;
-    }
-
-    errno = 0;
-    parsed = strtol(text, &endptr, 10);
-    if (endptr == text || errno == ERANGE || parsed <= 0) {
-        band_height = 72;
-    } else {
-        band_height = (int)parsed;
-    }
-    if (band_height < 6) {
-        band_height = 6;
-    }
-    if ((band_height % 6) != 0) {
-        band_height = ((band_height + 5) / 6) * 6;
-    }
-
-    text = getenv("SIXEL_DITHER_PARALLEL_BAND_OVERWRAP");
-    if (text == NULL || text[0] == '\0') {
-        overlap = 12;
-    } else {
-        errno = 0;
-        parsed = strtol(text, &endptr, 10);
-        if (endptr == text || errno == ERANGE || parsed < 0) {
-            overlap = 12;
-        } else {
-            overlap = (int)parsed;
-        }
-    }
-    if (overlap < 0) {
-        overlap = 0;
-    }
-    if (overlap > band_height / 2) {
-        overlap = band_height / 2;
-    }
 
     if (pipeline_threads <= 1 || height <= 0) {
         return;
@@ -569,6 +532,61 @@ sixel_parallel_dither_configure(int height,
     }
     if (dither_threads < 1) {
         return;
+    }
+
+    /*
+     * Choose the band height from the environment when present. Otherwise
+     * split the image across the initial dither workers so each thread starts
+     * with a single band. The result is rounded to a six-line multiple to
+     * stay aligned with the encoder's natural cadence.
+     */
+    band_height = 0;
+    text = getenv("SIXEL_DITHER_PARALLEL_BAND_WIDTH");
+    if (text != NULL && text[0] != '\0') {
+        errno = 0;
+        parsed = strtol(text, &endptr, 10);
+        if (endptr != text && errno != ERANGE && parsed > 0) {
+            if (parsed > INT_MAX) {
+                parsed = INT_MAX;
+            }
+            band_height = (int)parsed;
+        }
+    }
+    if (band_height <= 0) {
+        band_height = (height + dither_threads - 1) / dither_threads;
+    }
+    if (band_height < 6) {
+        band_height = 6;
+    }
+    if ((band_height % 6) != 0) {
+        band_height = ((band_height + 5) / 6) * 6;
+    }
+
+    text = getenv("SIXEL_DITHER_PARALLEL_BAND_OVERWRAP");
+    /*
+     * Default overlap favors quality for small palettes and speed when
+     * colors are plentiful. The environment can override this policy.
+     */
+    if (ncolors <= 32) {
+        overlap = 6;
+    } else {
+        overlap = 0;
+    }
+    if (text != NULL && text[0] != '\0') {
+        errno = 0;
+        parsed = strtol(text, &endptr, 10);
+        if (endptr != text && errno != ERANGE && parsed >= 0) {
+            if (parsed > INT_MAX) {
+                parsed = INT_MAX;
+            }
+            overlap = (int)parsed;
+        }
+    }
+    if (overlap < 0) {
+        overlap = 0;
+    }
+    if (overlap > band_height / 2) {
+        overlap = band_height / 2;
     }
 
     config->enabled = 1;
@@ -3902,6 +3920,7 @@ sixel_encode_dither(
 
     if (pipeline_active) {
         sixel_parallel_dither_configure(height,
+                                        dither->ncolors,
                                         pipeline_threads,
                                         &dither_parallel);
         if (dither_parallel.enabled) {

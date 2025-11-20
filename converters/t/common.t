@@ -70,6 +70,11 @@ IMAGES_DIR="${TOP_SRCDIR}/images"
 
 mkdir -p "${TMP_DIR}"
 
+# Keep converter fixtures deterministic even though the runtime default now
+# follows hardware concurrency. Tests may override SIXEL_THREADS when they
+# explicitly exercise parallelism.
+export SIXEL_THREADS=${SIXEL_THREADS:-1}
+
 wine_exec() {
     echo "$@" >&2
     if [[ -n "${WINE}" ]]; then
