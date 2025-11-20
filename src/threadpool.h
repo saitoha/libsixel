@@ -49,6 +49,7 @@ SIXELAPI void threadpool_destroy(threadpool_t *pool);
 SIXELAPI void threadpool_push(threadpool_t *pool, tp_job_t job);
 SIXELAPI void threadpool_finish(threadpool_t *pool);
 SIXELAPI int threadpool_get_error(threadpool_t *pool);
+SIXELAPI int threadpool_grow(threadpool_t *pool, int additional_threads);
 
 #endif /* LIBSIXEL_THREADPOOL_H */
 
