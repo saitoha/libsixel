@@ -34,6 +34,7 @@
 
 #include "dither-fixed-8bit.h"
 #include "dither-common-pipeline.h"
+#include "lut.h"
 
 /*
  * Local serpentine traversal helper.  The function mirrors the behaviour used
@@ -371,6 +372,8 @@ sixel_dither_apply_fixed_impl(
                     int reqcolor,
                     unsigned short *cachetable,
                     int complexion),
+    sixel_lut_t *fast_lut,
+    int use_fast_lut,
     unsigned short *indextable,
     int complexion,
     unsigned char new_palette[],
@@ -562,9 +565,13 @@ sixel_dither_apply_fixed_impl(
                 source_pixel = data + base;
             }
 
-            color_index = f_lookup(source_pixel, depth, palette,
-                                   reqcolor, indextable,
-                                   complexion);
+            if (use_fast_lut && fast_lut != NULL) {
+                color_index = sixel_lut_map_pixel(fast_lut, source_pixel);
+            } else {
+                color_index = f_lookup(source_pixel, depth, palette,
+                                       reqcolor, indextable,
+                                       complexion);
+            }
 
             if (optimize_palette) {
                 if (migration_map[color_index] == 0) {
@@ -686,6 +693,8 @@ sixel_dither_apply_fixed_8bit(sixel_dither_t *dither,
                                          context->method_for_scan,
                                          context->optimize_palette,
                                          context->lookup,
+                                         context->lut,
+                                         context->lut != NULL,
                                          context->indextable,
                                          context->complexion,
                                          context->new_palette,

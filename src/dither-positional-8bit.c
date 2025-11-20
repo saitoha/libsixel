@@ -28,6 +28,7 @@
 
 #include "dither-positional-8bit.h"
 #include "dither-common-pipeline.h"
+#include "lut.h"
 
 static void
 sixel_dither_scanline_params(int serpentine,
@@ -77,6 +78,8 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
     float *new_palette_float;
     int float_depth;
     int float_index;
+    sixel_lut_t *fast_lut;
+    int use_fast_lut;
     float (*f_mask)(int x, int y, int c);
 
     palette_float = NULL;
@@ -107,6 +110,8 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
     palette_float = context->palette_float;
     new_palette_float = context->new_palette_float;
     float_depth = context->float_depth;
+    fast_lut = context->lut;
+    use_fast_lut = (fast_lut != NULL);
 
     if (context->optimize_palette) {
         int x;
@@ -146,12 +151,17 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
                     context->scratch[d] = val < 0 ? 0
                                        : val > 255 ? 255 : val;
                 }
-                color_index = context->lookup(context->scratch,
-                                              context->depth,
-                                              context->palette,
-                                              context->reqcolor,
-                                              context->indextable,
-                                              context->complexion);
+                if (use_fast_lut) {
+                    color_index = sixel_lut_map_pixel(fast_lut,
+                                                     context->scratch);
+                } else {
+                    color_index = context->lookup(context->scratch,
+                                                  context->depth,
+                                                  context->palette,
+                                                  context->reqcolor,
+                                                  context->indextable,
+                                                  context->complexion);
+                }
                 if (context->migration_map[color_index] == 0) {
                     if (absolute_y >= context->output_start) {
                         context->result[pos] = *context->ncolors;

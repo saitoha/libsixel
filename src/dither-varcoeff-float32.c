@@ -38,6 +38,7 @@
 #endif  /* HAVE_MATH_H */
 
 #include "dither-varcoeff-float32.h"
+#include "lut.h"
 #include "dither-common-pipeline.h"
 #include "pixelformat.h"
 
@@ -428,6 +429,8 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     int method_for_diffuse;
     int method_for_carry;
     int method_for_scan;
+    sixel_lut_t *fast_lut;
+    int use_fast_lut;
     diffuse_varerr_mode_float varerr_diffuse;
     diffuse_varerr_carry_mode_float varerr_diffuse_carry;
     int optimize_palette;
@@ -483,6 +486,8 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     depth = context->depth;
     reqcolor = context->reqcolor;
     lookup = context->lookup;
+    fast_lut = context->lut;
+    use_fast_lut = (fast_lut != NULL);
     optimize_palette = context->optimize_palette;
     method_for_diffuse = context->method_for_diffuse;
     method_for_carry = context->method_for_carry;
@@ -623,12 +628,17 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
             if (lookup_wants_float) {
                 lookup_pixel = (unsigned char const *)(void const *)
                     lookup_pixel_float;
-                color_index = lookup(lookup_pixel,
-                                     depth,
-                                     palette,
-                                     reqcolor,
-                                     indextable,
-                                     context->complexion);
+                if (use_fast_lut) {
+                    color_index = sixel_lut_map_pixel(fast_lut,
+                                                     lookup_pixel);
+                } else {
+                    color_index = lookup(lookup_pixel,
+                                         depth,
+                                         palette,
+                                         reqcolor,
+                                         indextable,
+                                         context->complexion);
+                }
             } else if (use_palette_float_lookup) {
                 color_index = sixel_dither_lookup_palette_float32(
                     lookup_pixel_float,
@@ -638,12 +648,17 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
                     context->complexion);
             } else {
                 lookup_pixel = quantized;
-                color_index = lookup(lookup_pixel,
-                                     depth,
-                                     palette,
-                                     reqcolor,
-                                     indextable,
-                                     context->complexion);
+                if (use_fast_lut) {
+                    color_index = sixel_lut_map_pixel(fast_lut,
+                                                     lookup_pixel);
+                } else {
+                    color_index = lookup(lookup_pixel,
+                                         depth,
+                                         palette,
+                                         reqcolor,
+                                         indextable,
+                                         context->complexion);
+                }
             }
 
             if (optimize_palette) {

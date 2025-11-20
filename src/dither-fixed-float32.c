@@ -32,6 +32,7 @@
 #include "dither-fixed-float32.h"
 #include "dither-common-pipeline.h"
 #include "pixelformat.h"
+#include "lut.h"
 
 typedef void (*diffuse_fixed_float_fn)(float *data,
                                        int width,
@@ -831,6 +832,8 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
     int use_palette_float_lookup;
     int need_float_pixel;
     unsigned char const *lookup_pixel;
+    sixel_lut_t *fast_lut;
+    int use_fast_lut;
     int have_palette_float;
     int have_new_palette_float;
     diffuse_fixed_float_fn f_diffuse;
@@ -867,6 +870,9 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
     if (context->reqcolor < 1) {
         return SIXEL_BAD_ARGUMENT;
     }
+
+    fast_lut = context->lut;
+    use_fast_lut = (fast_lut != NULL);
 
     serpentine = (context->method_for_scan == SIXEL_SCAN_SERPENTINE);
     lookup_wants_float = (context->lookup_source_is_float != 0);
@@ -967,12 +973,17 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
 
             if (lookup_wants_float) {
                 lookup_pixel = (unsigned char const *)(void const *)source_pixel;
-                color_index = context->lookup(lookup_pixel,
-                                              context->depth,
-                                              palette,
-                                              context->reqcolor,
-                                              context->indextable,
-                                              context->complexion);
+                if (use_fast_lut) {
+                    color_index = sixel_lut_map_pixel(fast_lut,
+                                                     lookup_pixel);
+                } else {
+                    color_index = context->lookup(lookup_pixel,
+                                                  context->depth,
+                                                  palette,
+                                                  context->reqcolor,
+                                                  context->indextable,
+                                                  context->complexion);
+                }
             } else if (use_palette_float_lookup) {
                 color_index = sixel_dither_lookup_palette_float32(
                     lookup_pixel_float,
@@ -982,12 +993,17 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
                     context->complexion);
             } else {
                 lookup_pixel = quantized;
-                color_index = context->lookup(lookup_pixel,
-                                              context->depth,
-                                              palette,
-                                              context->reqcolor,
-                                              context->indextable,
-                                              context->complexion);
+                if (use_fast_lut) {
+                    color_index = sixel_lut_map_pixel(fast_lut,
+                                                     lookup_pixel);
+                } else {
+                    color_index = context->lookup(lookup_pixel,
+                                                  context->depth,
+                                                  palette,
+                                                  context->reqcolor,
+                                                  context->indextable,
+                                                  context->complexion);
+                }
             }
 
             if (context->optimize_palette) {
