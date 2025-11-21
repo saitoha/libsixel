@@ -84,8 +84,7 @@ sixel_option_apply_cli_suggestion_defaults(void)
         SIXEL_OPTION_ENV_PREFIX_SUGGESTIONS);
     sixel_option_apply_env_default(
         SIXEL_OPTION_ENV_FUZZY_SUGGESTIONS);
-    sixel_option_apply_env_default(
-        SIXEL_OPTION_ENV_PATH_SUGGESTIONS);
+    /* Path suggestions stay opt-in for the CLI frontends. */
 }
 
 static void

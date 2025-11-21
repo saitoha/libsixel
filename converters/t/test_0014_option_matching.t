@@ -114,3 +114,55 @@ expect_failure "distance2" \
 expect_failure "distance3" \
     'specified desampling method is not supported.' \
     -r zzzzz "${image}"
+
+unset SIXEL_OPTION_PATH_SUGGESTIONS
+missing_path="${IMAGES_DIR}/snake.png.missing"
+missing_native_path="${missing_path}"
+if [[ ${missing_native_path} =~ ^/([A-Za-z])/(.*)$ ]]; then
+    missing_drive=${BASH_REMATCH[1]}
+    missing_rest=${BASH_REMATCH[2]}
+    missing_native_path="${missing_drive^^}:/${missing_rest}"
+fi
+default_err="${TMP_DIR}/missing-path-default.err"
+default_out="${TMP_DIR}/missing-path-default.sixel"
+rm -f "${default_err}" "${default_out}"
+if run_img2sixel "${missing_path}" \
+        >"${default_out}" 2>"${default_err}"; then
+    echo 'expected missing path rejection with default suggestions disabled' >&2
+    rm -f "${default_err}" "${default_out}"
+    exit 1
+fi
+if ! grep -F "path \"${missing_path}\" not found." \
+        "${default_err}" >/dev/null 2>&1; then
+    if [[ "${missing_native_path}" != "${missing_path}" ]] && \
+            grep -F "path \"${missing_native_path}\" not found." \
+                "${default_err}" >/dev/null 2>&1; then
+        :
+    else
+        echo 'missing default diagnostic for invalid path' >&2
+        cat "${default_err}" >&2 || :
+        rm -f "${default_err}" "${default_out}"
+        exit 1
+    fi
+fi
+if grep -F 'Suggestions:' "${default_err}" >/dev/null 2>&1; then
+    echo 'path suggestions should be disabled by default' >&2
+    cat "${default_err}" >&2 || :
+    rm -f "${default_err}" "${default_out}"
+    exit 1
+fi
+rm -f "${default_out}" "${default_err}"
+
+suggest_err="${TMP_DIR}/missing-path-suggest.err"
+suggest_out="${TMP_DIR}/missing-path-suggest.sixel"
+rm -f "${suggest_err}" "${suggest_out}"
+SIXEL_OPTION_PATH_SUGGESTIONS=1 run_img2sixel "${missing_path}" \
+    >"${suggest_out}" 2>"${suggest_err}" || :
+unset SIXEL_OPTION_PATH_SUGGESTIONS
+if ! grep -F 'Suggestions:' "${suggest_err}" >/dev/null 2>&1; then
+    echo 'path suggestions should activate when explicitly requested' >&2
+    cat "${suggest_err}" >&2 || :
+    rm -f "${suggest_err}" "${suggest_out}"
+    exit 1
+fi
+rm -f "${suggest_out}" "${suggest_err}"
