@@ -807,11 +807,8 @@ Options:
 -H, --help      show this help
 
 The dequantizer toggle accepts explicit presets so that callers can
-control the expensive post-refine pass:
-
-`k_undither` now skips the refine stage entirely, which is helpful on
-very large SIXEL inputs. `k_undither+` keeps the historical behaviour
-and runs the extra smoothing pass for the highest quality output.
+select Kornel's undither implementation via `k_undither` when converting
+heavily dithered sources.
 ```
 
 Convert a sixel file into a png image file

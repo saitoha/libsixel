@@ -158,10 +158,7 @@ typedef int SIXELSTATUS;
 
 /* method for dequantization */
 #define SIXEL_DEQUANTIZE_NONE            0x0  /* don't dequantize */
-#define SIXEL_DEQUANTIZE_K_UNDITHER      0x1  /* Kornel's undither without
-                                                 post-refine smoothing */
-#define SIXEL_DEQUANTIZE_K_UNDITHER_PLUS 0x2  /* Kornel's undither with
-                                                 post-refine smoothing */
+#define SIXEL_DEQUANTIZE_K_UNDITHER      0x1  /* Kornel's undither */
 
 /* quantize model */
 #define SIXEL_QUANTIZE_MODEL_AUTO        0x0

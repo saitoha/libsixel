@@ -1,6 +1,4 @@
 /*
- * SPDX-License-Identifier: MIT
- *
  * Copyright (c) 2014-2025 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -349,475 +347,6 @@ decoder_clipboard_read_file(char const *path,
 }
 
 
-static float sixel_srgb_to_linear_lut[256];
-static unsigned char sixel_linear_to_srgb_lut[256];
-static int sixel_color_lut_initialized = 0;
-
-static const float sixel_gaussian3x3_kernel[9] = {
-    0.0625f, 0.1250f, 0.0625f,
-    0.1250f, 0.2500f, 0.1250f,
-    0.0625f, 0.1250f, 0.0625f
-};
-
-static const float sixel_weak_sharpen3x3_kernel[9] = {
-    -0.0625f, -0.0625f, -0.0625f,
-    -0.0625f,  1.5000f, -0.0625f,
-    -0.0625f, -0.0625f, -0.0625f
-};
-
-static const float sixel_sobel_gx_kernel[9] = {
-    -1.0f, 0.0f, 1.0f,
-    -2.0f, 0.0f, 2.0f,
-    -1.0f, 0.0f, 1.0f
-};
-
-static const float sixel_sobel_gy_kernel[9] = {
-    -1.0f, -2.0f, -1.0f,
-     0.0f,  0.0f,  0.0f,
-     1.0f,  2.0f,  1.0f
-};
-
-static void
-sixel_color_lut_init(void)
-{
-    int i;
-    float srgb;
-    float linear;
-
-    if (sixel_color_lut_initialized) {
-        return;
-    }
-
-    for (i = 0; i < 256; ++i) {
-        srgb = (float)i / 255.0f;
-        if (srgb <= 0.04045f) {
-            linear = srgb / 12.92f;
-        } else {
-            linear = powf((srgb + 0.055f) / 1.055f, 2.4f);
-        }
-        sixel_srgb_to_linear_lut[i] = linear * 255.0f;
-    }
-
-    for (i = 0; i < 256; ++i) {
-        linear = (float)i / 255.0f;
-        if (linear <= 0.0031308f) {
-            srgb = linear * 12.92f;
-        } else {
-            srgb = 1.055f * powf(linear, 1.0f / 2.4f) - 0.055f;
-        }
-        srgb *= 255.0f;
-        if (srgb < 0.0f) {
-            srgb = 0.0f;
-        } else if (srgb > 255.0f) {
-            srgb = 255.0f;
-        }
-        sixel_linear_to_srgb_lut[i] = (unsigned char)(srgb + 0.5f);
-    }
-
-    sixel_color_lut_initialized = 1;
-}
-
-static void
-sixel_convolve3x3(const float *kernel,
-                  float *dst,
-                  const float *src,
-                  int width,
-                  int height)
-{
-    int x;
-    int y;
-    int kx;
-    int ky;
-    int sx;
-    int sy;
-    int idx;
-    int src_index;
-    int kernel_index;
-    float sum;
-    float weight;
-
-    if (kernel == NULL || dst == NULL || src == NULL) {
-        return;
-    }
-
-    for (y = 0; y < height; ++y) {
-        for (x = 0; x < width; ++x) {
-            sum = 0.0f;
-            for (ky = -1; ky <= 1; ++ky) {
-                sy = y + ky;
-                if (sy < 0) {
-                    sy = 0;
-                } else if (sy >= height) {
-                    sy = height - 1;
-                }
-                for (kx = -1; kx <= 1; ++kx) {
-                    sx = x + kx;
-                    if (sx < 0) {
-                        sx = 0;
-                    } else if (sx >= width) {
-                        sx = width - 1;
-                    }
-                    kernel_index = (ky + 1) * 3 + (kx + 1);
-                    weight = kernel[kernel_index];
-                    src_index = sy * width + sx;
-                    sum += src[src_index] * weight;
-                }
-            }
-            idx = y * width + x;
-            dst[idx] = sum;
-        }
-    }
-}
-
-static void
-sixel_apply_relu(float *buffer, size_t count)
-{
-    size_t i;
-
-    if (buffer == NULL) {
-        return;
-    }
-
-    for (i = 0; i < count; ++i) {
-        if (buffer[i] < 0.0f) {
-            buffer[i] = 0.0f;
-        }
-    }
-}
-
-static unsigned char
-sixel_linear_to_srgb_value(float value)
-{
-    int index;
-
-    if (value < 0.0f) {
-        value = 0.0f;
-    } else if (value > 255.0f) {
-        value = 255.0f;
-    }
-
-    index = (int)(value + 0.5f);
-    if (index < 0) {
-        index = 0;
-    } else if (index > 255) {
-        index = 255;
-    }
-
-    return sixel_linear_to_srgb_lut[index];
-}
-
-static void
-sixel_post_undither_refine(unsigned char *rgb,
-                           int width,
-                           int height,
-                           const float *mask)
-{
-    size_t num_pixels;
-    float *Y;
-    float *Cb;
-    float *Cr;
-    float *work0;
-    float *work1;
-    float *gate;
-    float *gradient;
-    int x;
-    int y;
-    int kx;
-    int ky;
-    int sx;
-    int sy;
-    int idx;
-    int src_index;
-    int kernel_index;
-    size_t i;
-    size_t base;
-    float sigma_r;
-    float beta;
-    float alpha1;
-    float alpha2;
-    float smooth_gate_scale;
-    float inv_sigma_r2;
-    float center;
-    float neighbor;
-    float sum;
-    float weight;
-    float weight_sum;
-    float diff;
-    float range_weight;
-    float gate_value;
-    float gaussian_weight;
-    float max_grad;
-    float scale;
-    float gx;
-    float gy;
-    float value;
-    float y_value;
-    float cb_value;
-    float cr_value;
-    float r_lin;
-    float g_lin;
-    float b_lin;
-    float magnitude;
-
-    if (rgb == NULL) {
-        return;
-    }
-
-    if (width <= 0 || height <= 0) {
-        return;
-    }
-
-    sixel_color_lut_init();
-
-    num_pixels = (size_t)width * (size_t)height;
-    if (num_pixels == 0) {
-        return;
-    }
-
-    Y = NULL;
-    Cb = NULL;
-    Cr = NULL;
-    work0 = NULL;
-    work1 = NULL;
-    gate = NULL;
-    gradient = NULL;
-
-    sigma_r = 10.0f;
-    beta = 0.25f;
-    alpha1 = 0.60f;
-    alpha2 = 0.40f;
-    inv_sigma_r2 = 1.0f / (2.0f * sigma_r * sigma_r);
-    smooth_gate_scale = 0.96f;
-
-    Y = (float *)malloc(num_pixels * sizeof(float));
-    Cb = (float *)malloc(num_pixels * sizeof(float));
-    Cr = (float *)malloc(num_pixels * sizeof(float));
-    work0 = (float *)malloc(num_pixels * sizeof(float));
-    work1 = (float *)malloc(num_pixels * sizeof(float));
-    gate = (float *)malloc(num_pixels * sizeof(float));
-
-    if (Y == NULL || Cb == NULL || Cr == NULL ||
-        work0 == NULL || work1 == NULL || gate == NULL) {
-        goto cleanup;
-    }
-
-    for (i = 0; i < num_pixels; ++i) {
-        base = i * 3;
-        r_lin = sixel_srgb_to_linear_lut[rgb[base + 0]];
-        g_lin = sixel_srgb_to_linear_lut[rgb[base + 1]];
-        b_lin = sixel_srgb_to_linear_lut[rgb[base + 2]];
-
-        y_value = 0.2990f * r_lin + 0.5870f * g_lin + 0.1140f * b_lin;
-        cb_value = (b_lin - y_value) * 0.564383f;
-        cr_value = (r_lin - y_value) * 0.713272f;
-
-        Y[i] = y_value;
-        Cb[i] = cb_value;
-        Cr[i] = cr_value;
-    }
-
-    if (mask != NULL) {
-        for (i = 0; i < num_pixels; ++i) {
-            value = mask[i];
-            if (value < 0.0f) {
-                value = 0.0f;
-            } else if (value > 1.0f) {
-                value = 1.0f;
-            }
-            gate[i] = 1.0f - value;
-            if (gate[i] < 0.0f) {
-                gate[i] = 0.0f;
-            }
-        }
-    } else {
-        gradient = (float *)malloc(num_pixels * sizeof(float));
-        if (gradient == NULL) {
-            goto cleanup;
-        }
-
-        max_grad = 0.0f;
-        for (y = 0; y < height; ++y) {
-            for (x = 0; x < width; ++x) {
-                gx = 0.0f;
-                gy = 0.0f;
-                for (ky = -1; ky <= 1; ++ky) {
-                    sy = y + ky;
-                    if (sy < 0) {
-                        sy = 0;
-                    } else if (sy >= height) {
-                        sy = height - 1;
-                    }
-                    for (kx = -1; kx <= 1; ++kx) {
-                        sx = x + kx;
-                        if (sx < 0) {
-                            sx = 0;
-                        } else if (sx >= width) {
-                            sx = width - 1;
-                        }
-                        kernel_index = (ky + 1) * 3 + (kx + 1);
-                        src_index = sy * width + sx;
-                        neighbor = Y[src_index];
-                        gx += neighbor *
-                              sixel_sobel_gx_kernel[kernel_index];
-                        gy += neighbor *
-                              sixel_sobel_gy_kernel[kernel_index];
-                    }
-                }
-                idx = y * width + x;
-                magnitude = sqrtf(gx * gx + gy * gy);
-                gradient[idx] = magnitude;
-                if (magnitude > max_grad) {
-                    max_grad = magnitude;
-                }
-            }
-        }
-
-        if (max_grad <= 0.0f) {
-            max_grad = 1.0f;
-        }
-        scale = 1.0f / max_grad;
-
-        for (i = 0; i < num_pixels; ++i) {
-            value = gradient[i] * scale;
-            if (value < 0.0f) {
-                value = 0.0f;
-            } else if (value > 1.0f) {
-                value = 1.0f;
-            }
-            gate[i] = 1.0f - value;
-            if (gate[i] < 0.0f) {
-                gate[i] = 0.0f;
-            }
-        }
-    }
-
-    for (y = 0; y < height; ++y) {
-        for (x = 0; x < width; ++x) {
-            idx = y * width + x;
-            center = Y[idx];
-            gate_value = gate[idx];
-            sum = 0.0f;
-            weight_sum = 0.0f;
-            for (ky = -1; ky <= 1; ++ky) {
-                sy = y + ky;
-                if (sy < 0) {
-                    sy = 0;
-                } else if (sy >= height) {
-                    sy = height - 1;
-                }
-                for (kx = -1; kx <= 1; ++kx) {
-                    sx = x + kx;
-                    if (sx < 0) {
-                        sx = 0;
-                    } else if (sx >= width) {
-                        sx = width - 1;
-                    }
-                    kernel_index = (ky + 1) * 3 + (kx + 1);
-                    gaussian_weight =
-                        sixel_gaussian3x3_kernel[kernel_index];
-                    src_index = sy * width + sx;
-                    neighbor = Y[src_index];
-                    if (kx == 0 && ky == 0) {
-                        weight = gaussian_weight;
-                    } else {
-                        diff = neighbor - center;
-                        range_weight = expf(-(diff * diff) * inv_sigma_r2);
-                        weight = gaussian_weight * gate_value * range_weight;
-                    }
-                    sum += neighbor * weight;
-                    weight_sum += weight;
-                }
-            }
-            if (weight_sum <= 0.0f) {
-                work0[idx] = center;
-            } else {
-                work0[idx] = sum / weight_sum;
-            }
-        }
-    }
-
-    for (i = 0; i < num_pixels; ++i) {
-        center = Y[i];
-        value = work0[i];
-        Y[i] = (1.0f - beta) * center + beta * value;
-    }
-
-    sixel_convolve3x3(sixel_gaussian3x3_kernel,
-                      work0,
-                      Y,
-                      width,
-                      height);
-    for (i = 0; i < num_pixels; ++i) {
-        gate_value = gate[i] * smooth_gate_scale;
-        center = Y[i];
-        value = work0[i];
-        work0[i] = gate_value * value
-                 + (1.0f - gate_value) * center;
-    }
-    sixel_apply_relu(work0, num_pixels);
-    sixel_convolve3x3(sixel_weak_sharpen3x3_kernel,
-                      work1,
-                      work0,
-                      width,
-                      height);
-
-    for (i = 0; i < num_pixels; ++i) {
-        center = Y[i];
-        value = work1[i];
-        Y[i] = center + alpha1 * (value - center);
-    }
-
-    sixel_convolve3x3(sixel_gaussian3x3_kernel,
-                      work0,
-                      Y,
-                      width,
-                      height);
-    for (i = 0; i < num_pixels; ++i) {
-        gate_value = gate[i] * smooth_gate_scale;
-        center = Y[i];
-        value = work0[i];
-        work0[i] = gate_value * value
-                 + (1.0f - gate_value) * center;
-    }
-    sixel_apply_relu(work0, num_pixels);
-    sixel_convolve3x3(sixel_weak_sharpen3x3_kernel,
-                      work1,
-                      work0,
-                      width,
-                      height);
-
-    for (i = 0; i < num_pixels; ++i) {
-        center = Y[i];
-        value = work1[i];
-        Y[i] = center + alpha2 * (value - center);
-    }
-
-    for (i = 0; i < num_pixels; ++i) {
-        base = i * 3;
-        y_value = Y[i];
-        cb_value = Cb[i];
-        cr_value = Cr[i];
-
-        r_lin = y_value + 1.402000f * cr_value;
-        b_lin = y_value + 1.772000f * cb_value;
-        g_lin = y_value - 0.344136f * cb_value - 0.714136f * cr_value;
-
-        rgb[base + 0] = sixel_linear_to_srgb_value(r_lin);
-        rgb[base + 1] = sixel_linear_to_srgb_value(g_lin);
-        rgb[base + 2] = sixel_linear_to_srgb_value(b_lin);
-    }
-
-cleanup:
-    free(Y);
-    free(Cb);
-    free(Cr);
-    free(work0);
-    free(work1);
-    free(gate);
-    free(gradient);
-}
-
-
 /* original version of strdup(3) with allocator object */
 static char *
 strdup_with_allocator(
@@ -869,7 +398,6 @@ sixel_decoder_new(
     (*ppdecoder)->dequantize_method = SIXEL_DEQUANTIZE_NONE;
     (*ppdecoder)->dequantize_similarity_bias = 100;
     (*ppdecoder)->dequantize_edge_strength = 0;
-    (*ppdecoder)->dequantize_refine = 1;
     (*ppdecoder)->thumbnail_size = 0;
     (*ppdecoder)->direct_color = 0;
     (*ppdecoder)->clipboard_input_active = 0;
@@ -1238,7 +766,6 @@ sixel_dequantize_k_undither(unsigned char *indexed_pixels,
                             int ncolors,
                             int similarity_bias,
                             int edge_strength,
-                            int enable_refine,
                             sixel_allocator_t *allocator,
                             unsigned char **output)
 {
@@ -1438,12 +965,6 @@ sixel_dequantize_k_undither(unsigned char *indexed_pixels,
 
     *output = rgb;
     rgb = NULL;
-    if (enable_refine) {
-        /*
-         *  Only run when the caller requested k_undither+.
-         */
-        sixel_post_undither_refine(*output, width, height, NULL);
-    }
     status = SIXEL_OK;
 
 end:
@@ -1454,27 +975,18 @@ end:
     return status;
 }
 /*
- * The dequantizer accepts both a method and an optional refine flag.
- * The shared option helper returns an integer payload, so the decoder
- * keeps a parallel lookup table that translates the matched index into
- * the tuple expected by the execution path.
+ * The dequantizer accepts a method supplied by the shared option helper. The
+ * decoder keeps a parallel lookup table that translates the matched index
+ * into the execution constant.
  */
-typedef struct sixel_decoder_dequant_mapping {
-    int method;
-    int refine;
-} sixel_decoder_dequant_mapping_t;
-
-static sixel_decoder_dequant_mapping_t const
-g_decoder_dequant_mappings[] = {
-    { SIXEL_DEQUANTIZE_NONE, 0 },
-    { SIXEL_DEQUANTIZE_K_UNDITHER, 0 },
-    { SIXEL_DEQUANTIZE_K_UNDITHER_PLUS, 1 }
+static int const g_decoder_dequant_methods[] = {
+    SIXEL_DEQUANTIZE_NONE,
+    SIXEL_DEQUANTIZE_K_UNDITHER
 };
 
 static sixel_option_choice_t const g_decoder_dequant_choices[] = {
     { "none", 0 },
-    { "k_undither", 1 },
-    { "k_undither+", 2 }
+    { "k_undither", 1 }
 };
 
 static void
@@ -1637,9 +1149,7 @@ sixel_decoder_setopt(
             sizeof(match_detail));
         if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
             decoder->dequantize_method =
-                g_decoder_dequant_mappings[match_index].method;
-            decoder->dequantize_refine =
-                g_decoder_dequant_mappings[match_index].refine;
+                g_decoder_dequant_methods[match_index];
         } else {
             if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
                 sixel_option_report_ambiguous_prefix(
@@ -1919,8 +1429,7 @@ sixel_decoder_decode(
         output_palette = palette;
         output_pixelformat = SIXEL_PIXELFORMAT_PAL8;
 
-        if (decoder->dequantize_method == SIXEL_DEQUANTIZE_K_UNDITHER ||
-            decoder->dequantize_method == SIXEL_DEQUANTIZE_K_UNDITHER_PLUS) {
+        if (decoder->dequantize_method == SIXEL_DEQUANTIZE_K_UNDITHER) {
             status = sixel_dequantize_k_undither(
                 indexed_pixels,
                 sx,
@@ -1929,7 +1438,6 @@ sixel_decoder_decode(
                 ncolors,
                 decoder->dequantize_similarity_bias,
                 decoder->dequantize_edge_strength,
-                decoder->dequantize_refine,
                 decoder->allocator,
                 &rgb_pixels);
             if (SIXEL_FAILED(status)) {

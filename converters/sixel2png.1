@@ -50,18 +50,14 @@ saving to disk.
 .B \-d
 Apply palette dequantization to the decoded image.
 The argument specifies the method to use.
-Unique prefixes are accepted, so "k_u" expands to "k_undither" while
-"k_" requests additional clarification.
+Unique prefixes are accepted, so "k_u" expands to "k_undither".
 .RS
 .TP 5
 .B none
 Disable dequantization (default).
 .TP 5
 .B k_undither
-Use kornelski's undithering algorithm without the post-refinement pass.
-.TP 5
-.B k_undither+
-Use kornelski's undithering algorithm with the post-refinement pass enabled.
+Use kornelski's undithering algorithm.
 .RE
 .TP 5
 .B \-S
