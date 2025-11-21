@@ -165,6 +165,11 @@ diffuse_lso2_float(float *data,
         index = 255;
     }
 
+    if (pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32) {
+        if (channel > 0) {  /* ab */
+            error *= 0.10;
+        }
+    }
     table = lso2_table();
     entry = table[index];
     denom = sixel_varcoeff_safe_denom(entry[6]);
