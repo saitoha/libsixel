@@ -122,10 +122,6 @@ static cli_option_help_t const g_option_help_table[] = {
         "                             none        -> disable\n"
         "                             k_undither  -> Kornelski's\n"
         "                                            undither\n"
-        "                                            (refine off)\n"
-        "                             k_undither+ -> Kornelski's\n"
-        "                                            undither\n"
-        "                                            (refine on)\n"
     },
     {
         'S',
