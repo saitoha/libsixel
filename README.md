@@ -33,9 +33,9 @@ But nowdays, with high-speed CPU and broadband network, we got the chance broade
 
 The encoder and decoder honour a few environment toggles that control the
 diagnostics printed for mistyped arguments and missing files.  Library
-embedders start with all suggestion streams disabled, while the standalone
-converters enable them unless the caller already defined an explicit
-preference.
+embedders start with all suggestion streams disabled.  The standalone
+converters enable the option hint streams unless the caller already defined an
+explicit preference, while filesystem suggestions remain opt-in.
 
 * `SIXEL_OPTION_PREFIX_SUGGESTIONS` — enable or suppress the list of
   acceptable prefixes when the user enters a value that matches multiple
@@ -43,7 +43,8 @@ preference.
 * `SIXEL_OPTION_FUZZY_SUGGESTIONS` — enable or suppress the normalized
   Levenshtein based hints that recommend the closest option names.
 * `SIXEL_OPTION_PATH_SUGGESTIONS` — enable or suppress the filesystem
-  suggestions that explain why a path could not be resolved.
+  suggestions that explain why a path could not be resolved. Disabled by
+  default for the converter frontends and for library embedders.
 
 
 ## Related projects
