@@ -110,8 +110,9 @@ explicitly.
 .B SIXEL_OPTION_PATH_SUGGESTIONS
 .br
 toggle the filesystem diagnostics that explain why a path could not be
-resolved. Set to "1" (the default when unset) to show the guidance, or
-"0" to suppress it. Library embedders must opt in explicitly.
+resolved. Set to "1" to show the guidance, or "0" (the default) to suppress
+it. The converter frontends keep the default disabled; library embedders must
+opt in explicitly.
 .TP 5
 .B SIXEL_THREADS
 .br
