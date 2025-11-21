@@ -167,21 +167,23 @@ rm -f "${png_err}" "${TMP_DIR}/capture.$$"
 # Validate unique prefix handling for the dequantizer toggle.
 run_sixel2png -dn < "${IMAGES_DIR}/snake.six" >/dev/null
 ambiguous_err="${TMP_DIR}/sixel2png-ambiguous.err"
-if run_sixel2png -dk_ < "${IMAGES_DIR}/snake.six" \
+if ! run_sixel2png -dk_ < "${IMAGES_DIR}/snake.six" \
         >"${TMP_DIR}/capture.$$" 2>"${ambiguous_err}"; then
-    echo 'sixel2png accepted ambiguous -dk_' >&2
-    rm -f "${ambiguous_err}" "${TMP_DIR}/capture.$$"
-    exit 1
-fi
-if ! grep -F 'ambiguous prefix "k_" (matches: k_undither, k_undither+).' \
-        "${ambiguous_err}" \
-        >/dev/null; then
-    echo 'missing ambiguous prefix diagnostic' >&2
+    echo 'sixel2png rejected unique -dk_ prefix' >&2
     cat "${ambiguous_err}" >&2 || :
     rm -f "${ambiguous_err}" "${TMP_DIR}/capture.$$"
     exit 1
 fi
-rm -f "${ambiguous_err}" "${TMP_DIR}/capture.$$"
+filtered_err="${TMP_DIR}/sixel2png-ambiguous.filtered"
+grep -Ev "^(${SIXEL2PNG_PATH}|\+)" "${ambiguous_err}" \
+    >"${filtered_err}" || :
+if [[ -s "${filtered_err}" ]]; then
+    echo 'unexpected diagnostic for -dk_' >&2
+    cat "${filtered_err}" >&2 || :
+    rm -f "${ambiguous_err}" "${filtered_err}" "${TMP_DIR}/capture.$$"
+    exit 1
+fi
+rm -f "${ambiguous_err}" "${filtered_err}" "${TMP_DIR}/capture.$$"
 
 if [[ ${PARALLEL_COMPARE_SUPPORTED} -eq 0 ]]; then
     echo 'skipping parallel decode comparisons: cmp/diff unavailable' >&2

@@ -44,10 +44,10 @@ for n in 256 128 64 32 16 8 4; do
                    -draw "text ${textmargin},${textmargin} 'ImageMagick\n-selective-blur 3x1+20%'" \
                    /tmp/selectiveblur-20.png
     ) |
-    converters/sixel2png -dk_undither+ |
+    converters/sixel2png -dk_undither |
     magick - -crop "${crop}" -sample "${sample}" ${textoptions} \
-             -draw "text ${textmargin},${textmargin} 'sixel2png -dk_undither+'" \
-             /tmp/dequantized.png || break
+            -draw "text ${textmargin},${textmargin} 'sixel2png -dk_undither'" \
+            /tmp/dequantized.png || break
 
     magick /tmp/{original,sixelized,selectiveblur-20,undither,dequantized}.png \
            +append /tmp/n-"${n}".png || break

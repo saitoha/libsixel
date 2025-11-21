@@ -34,16 +34,15 @@ class Decoder(object):
     def setopt(self, flag, arg=None):
         """Set decoder options mirroring the sixel2png CLI flags.
 
-        The dequantizer switch understands the Kornel presets shown
-        below so callers can flip the expensive refine pass explicitly:
+        The dequantizer switch understands the Kornel preset shown
+        below so callers can enable palette reconstruction explicitly:
 
-            +-------------+----------------------------------------+
-            | k_undither  | Kornel's undither without refinement   |
-            | k_undither+ | Kornel's undither with post-refine run |
-            +-------------+----------------------------------------+
+            +-------------+---------------------------+
+            | k_undither  | Kornel's undither filter  |
+            +-------------+---------------------------+
 
         Pass the string as ``arg`` alongside the ``'d'`` flag to
-        choose between the fast and the legacy quality behaviour.
+        activate the smoothing step during decode.
         """
         sixel_decoder_setopt(self._decoder, flag, arg)
 

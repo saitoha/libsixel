@@ -43,11 +43,10 @@ class Decoder
 
   def setopt(flag, opt)
     # The dequantizer flag mirrors the CLI table below so callers can
-    # request Kornel's undither either with or without the refine pass.
+    # request Kornel's undither preset.
     #
     #   +-------------+----------------------------------------+
-    #   | k_undither  | Kornel's undither without refinement   |
-    #   | k_undither+ | Kornel's undither with post-refine run |
+    #   | k_undither  | Kornel's undither filter               |
     #   +-------------+----------------------------------------+
     #
     # Provide the string via +opt+ together with the 'd' flag.

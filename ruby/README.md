@@ -45,12 +45,10 @@ encoder.encode 'images/egret.jpg'
 decoder = Decoder.new
 decoder.decode              # honors options set with setopt
 
-# Kornel's undither presets mirror the CLI table so you can toggle the
-# refine pass:
+# Kornel's undither preset mirrors the CLI table:
 #
 #   +-------------+----------------------------------------+
-#   | k_undither  | Kornel's undither without refinement   |
-#   | k_undither+ | Kornel's undither with post-refine run |
+#   | k_undither  | Kornel's undither filter               |
 #   +-------------+----------------------------------------+
 #
 decoder.setopt 'd', 'k_undither'
