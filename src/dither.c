@@ -1953,6 +1953,12 @@ sixel_dither_apply_palette(
     int parallel_threads;
     sixel_parallel_logger_t *parallel_logger;
 
+    parallel_active = 0;
+    parallel_band_height = 0;
+    parallel_overlap = 0;
+    parallel_threads = 1;
+    parallel_logger = NULL;
+
     /* ensure dither object is not null */
     if (dither == NULL) {
         sixel_helper_set_additional_message(
@@ -1976,6 +1982,21 @@ sixel_dither_apply_palette(
     parallel_overlap = dither->pipeline_band_overlap;
     parallel_threads = dither->pipeline_dither_threads;
     parallel_logger = dither->pipeline_logger;
+
+    if (!parallel_active && parallel_logger != NULL) {
+        sixel_parallel_logger_logf(parallel_logger,
+                                   "worker",
+                                   "dither",
+                                   "start",
+                                   0,
+                                   0,
+                                   0,
+                                   height,
+                                   0,
+                                   height,
+                                   "serial dither begin height=%d",
+                                   height);
+    }
 
     if (parallel_active && dither->optimize_palette != 0) {
         /*
@@ -2241,6 +2262,23 @@ sixel_dither_apply_palette(
     palette->entry_count = (unsigned int)ncolors;
 
 end:
+    if (!parallel_active && parallel_logger != NULL) {
+        int last_row;
+
+        last_row = height > 0 ? height - 1 : 0;
+        sixel_parallel_logger_logf(parallel_logger,
+                                   "worker",
+                                   "dither",
+                                   "finish",
+                                   0,
+                                   last_row,
+                                   0,
+                                   height,
+                                   0,
+                                   height,
+                                   "serial status=%d",
+                                   status);
+    }
     if (normalized_pixels != NULL) {
         sixel_allocator_free(dither->allocator, normalized_pixels);
     }
