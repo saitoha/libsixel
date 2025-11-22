@@ -438,23 +438,12 @@ sixel_set_threads(int threads)
 static void
 sixel_parallel_logger_prepare(sixel_parallel_logger_t *logger)
 {
-    char const *path;
-    SIXELSTATUS status;
-
     if (logger == NULL) {
         return;
     }
 
     sixel_parallel_logger_init(logger);
-    path = getenv("SIXEL_PARALLEL_LOG_PATH");
-    if (path == NULL || path[0] == '\0') {
-        return;
-    }
-
-    status = sixel_parallel_logger_open(logger, path);
-    if (SIXEL_FAILED(status)) {
-        sixel_parallel_logger_close(logger);
-    }
+    (void)sixel_parallel_logger_prepare_env(logger);
 }
 #endif
 
@@ -1763,7 +1752,9 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     int dither_threads_budget;
     int worker_capacity;
     int boost_target;
-    sixel_parallel_logger_t logger;
+    sixel_parallel_logger_t logger_storage;
+    sixel_parallel_logger_t *logger;
+    int owns_logger;
     sixel_parallel_row_notifier_t notifier;
 
     if (pixels == NULL
@@ -1791,9 +1782,17 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     }
 
     sixel_parallel_context_init(&ctx);
-    sixel_parallel_logger_prepare(&logger);
+    logger = dither->pipeline_logger;
+    owns_logger = 0;
+    if (logger == NULL || !logger->active) {
+        sixel_parallel_logger_prepare(&logger_storage);
+        if (logger_storage.active) {
+            logger = &logger_storage;
+            owns_logger = 1;
+        }
+    }
     notifier.context = &ctx;
-    notifier.logger = &logger;
+    notifier.logger = logger;
     notifier.band_height = 6;
     notifier.image_height = height;
     waited = 0;
@@ -1832,17 +1831,17 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     dither->pipeline_index_size = buffer_size;
     dither->pipeline_row_callback = sixel_parallel_palette_row_ready;
     dither->pipeline_row_priv = &notifier;
-    dither->pipeline_logger = &logger;
+    dither->pipeline_logger = logger;
     dither->pipeline_image_height = height;
 
-    if (logger.active) {
+    if (logger != NULL && logger->active) {
         /*
          * Record the thread split and band geometry before spawning workers.
          * This clarifies why only a subset of hardware threads might appear
          * in the log when the encoder side is clamped to keep the pipeline
          * draining.
          */
-        sixel_parallel_logger_logf(&logger,
+        sixel_parallel_logger_logf(logger,
                                    "controller",
                                    "pipeline",
                                    "configure",
@@ -1872,7 +1871,7 @@ sixel_encode_body_pipeline(unsigned char *pixels,
                                           threads,
                                           worker_capacity,
                                           queue_depth,
-                                          &logger);
+                                          logger);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
@@ -1928,7 +1927,9 @@ cleanup:
         }
     }
     sixel_parallel_context_cleanup(&ctx);
-    sixel_parallel_logger_close(&logger);
+    if (owns_logger) {
+        sixel_parallel_logger_close(&logger_storage);
+    }
     if (indexes != NULL) {
         sixel_allocator_free(allocator, indexes);
     }
@@ -3553,7 +3554,8 @@ sixel_encode_body(
     int                 /* in */ bodyonly,
     sixel_output_t      /* in */ *output,
     unsigned char       /* in */ *palstate,
-    sixel_allocator_t   /* in */ *allocator)
+    sixel_allocator_t   /* in */ *allocator,
+    sixel_parallel_logger_t /* in */ *logger)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int encode_probe_active;
@@ -3567,6 +3569,8 @@ sixel_encode_body(
     sixel_encode_work_t work;
     sixel_band_state_t band;
     sixel_encode_metrics_t metrics;
+    int logging_active;
+    int job_index;
 
     sixel_encode_work_init(&work);
     sixel_band_state_reset(&band);
@@ -3582,6 +3586,8 @@ sixel_encode_body(
     output->active_palette = (-1);
 
     encode_probe_active = sixel_assessment_encode_probe_enabled();
+    logging_active = logger != NULL && logger->active;
+    job_index = 0;
     metrics.encode_probe_active = encode_probe_active;
     if (encode_probe_active != 0) {
         metrics.emit_cells_ptr = &metrics.emit_cells;
@@ -3627,6 +3633,21 @@ sixel_encode_body(
     }
 #endif
 
+    if (logging_active) {
+        sixel_parallel_logger_logf(logger,
+                                   "controller",
+                                   "encode",
+                                   "configure",
+                                   -1,
+                                   -1,
+                                   0,
+                                   height,
+                                   0,
+                                   height,
+                                   "serial encoder bands=%d",
+                                   (height + 5) / 6);
+    }
+
     status = sixel_encode_work_allocate(&work,
                                         width,
                                         ncolors,
@@ -3645,6 +3666,20 @@ sixel_encode_body(
         band.row_in_band = 0;
         band.fillable = 0;
         band.active_color_count = 0;
+
+        if (logging_active) {
+            sixel_parallel_logger_logf(logger,
+                                       "worker",
+                                       "encode",
+                                       "start",
+                                       job_index,
+                                       band_start,
+                                       band_start,
+                                       band_start + band_height,
+                                       band_start,
+                                       band_start + band_height,
+                                       "serial band start");
+        }
 
         for (row_index = 0; row_index < band_height; row_index++) {
             absolute_row = band_start + row_index;
@@ -3702,8 +3737,23 @@ sixel_encode_body(
             SIXEL_ASSESSMENT_STAGE_ENCODE_PREPARE,
             span_started_at);
 
+        if (logging_active) {
+            sixel_parallel_logger_logf(logger,
+                                       "worker",
+                                       "encode",
+                                       "finish",
+                                       job_index,
+                                       band_start + band_height - 1,
+                                       band_start,
+                                       band_start + band_height,
+                                       band_start,
+                                       band_start + band_height,
+                                       "serial band done");
+        }
+
         band_start += band_height;
         sixel_band_state_reset(&band);
+        job_index += 1;
     }
 
     status = SIXEL_OK;
@@ -3913,6 +3963,9 @@ sixel_encode_dither(
     int pipeline_nbands;
     sixel_parallel_dither_config_t dither_parallel;
     char const *band_env_text;
+    sixel_parallel_logger_t serial_logger;
+    sixel_parallel_logger_t *logger;
+    int logger_owned;
 
     palette_entries = NULL;
     palette_entries_float32 = NULL;
@@ -3923,6 +3976,8 @@ sixel_encode_dither(
     palette_float_bytes = 0U;
     palette_channels = 0U;
     palette_index = 0U;
+    logger = NULL;
+    logger_owned = 0;
     palette_source_colorspace = SIXEL_COLORSPACE_GAMMA;
     palette_float_pixelformat =
         sixel_palette_float_pixelformat_for_colorspace(
@@ -3936,6 +3991,9 @@ sixel_encode_dither(
     }
 
     pipeline_active = 0;
+#if SIXEL_ENABLE_THREADS
+    sixel_parallel_logger_init(&serial_logger);
+#endif
     dither_parallel.enabled = 0;
     dither_parallel.band_height = 0;
     dither_parallel.overlap = 0;
@@ -4035,6 +4093,32 @@ sixel_encode_dither(
             input_pixels = paletted_pixels;
         }
     }
+#if SIXEL_ENABLE_THREADS
+    if (!pipeline_active) {
+        logger = dither->pipeline_logger;
+        if (logger == NULL || !logger->active) {
+            sixel_parallel_logger_prepare(&serial_logger);
+            if (serial_logger.active) {
+                logger_owned = 1;
+                dither->pipeline_logger = &serial_logger;
+                logger = &serial_logger;
+            }
+        }
+        if (logger != NULL && logger->active) {
+            sixel_parallel_logger_logf(logger,
+                                       "controller",
+                                       "pipeline",
+                                       "configure",
+                                       -1,
+                                       -1,
+                                       0,
+                                       height,
+                                       0,
+                                       height,
+                                       "serial path threads=1");
+        }
+    }
+#endif
 
     if (output != NULL) {
         palette_source_colorspace = output->source_colorspace;
@@ -4168,7 +4252,10 @@ sixel_encode_dither(
                                    dither->bodyonly,
                                    output,
                                    NULL,
-                                   dither->allocator);
+                                   dither->allocator,
+                                   logger != NULL && logger->active ?
+                                       logger :
+                                       NULL);
     }
 
     if (SIXEL_FAILED(status)) {
@@ -4181,6 +4268,12 @@ sixel_encode_dither(
     }
 
 end:
+#if SIXEL_ENABLE_THREADS
+    if (logger_owned) {
+        dither->pipeline_logger = NULL;
+        sixel_parallel_logger_close(&serial_logger);
+    }
+#endif
     if (palette_obj != NULL) {
         sixel_palette_unref(palette_obj);
     }
@@ -5027,7 +5120,8 @@ next:
                                        dither->bodyonly,
                                        output,
                                        palstate,
-                                       dither->allocator);
+                                       dither->allocator,
+                                       NULL);
             if (SIXEL_FAILED(status)) {
                 goto error;
             }
@@ -5064,7 +5158,8 @@ end:
                                dither->bodyonly,
                                output,
                                palstate,
-                               dither->allocator);
+                               dither->allocator,
+                               NULL);
     if (SIXEL_FAILED(status)) {
         goto error;
     }

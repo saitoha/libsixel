@@ -16,6 +16,14 @@ from collections import defaultdict
 from typing import Dict, List, Tuple
 
 
+def _lighten(color: Tuple[float, float, float], factor: float) -> Tuple[float,
+                                                                        float,
+                                                                        float]:
+    """Lighten a color towards white by the given factor."""
+
+    return tuple(channel + (1.0 - channel) * factor for channel in color)
+
+
 class ParallelEvent:
     def __init__(self, record: Dict[str, object]):
         self.ts = float(record.get("ts", 0.0))
@@ -57,7 +65,39 @@ def summarize(events: List[ParallelEvent]) -> str:
     return "\n".join(lines)
 
 
-def render(events: List[ParallelEvent], output: str) -> None:
+def _flow_sort_key(worker: str, role: str, thread: int) -> Tuple[int, str, int]:
+    """Return a stable sort key that follows the pipeline flow.
+
+    Dither comes first, followed by encode/writer roles, then everything
+    else.  Within the same worker bucket we fall back to role and thread
+    number to keep ordering deterministic without hiding any rows.
+    """
+
+    priority: Dict[str, int] = {
+        "loader": 0,
+        "scale": 1,
+        "crop": 2,
+        "colorspace": 3,
+        "palette": 4,
+        "dither": 5,
+        "encode": 6,
+        "pipeline": 7,
+    }
+
+    rank = priority.get(worker, 10)
+    return (rank, role, thread)
+
+
+def _start_sort_key(
+    row: Tuple[str, str, int],
+    first_ts: Dict[Tuple[str, str, int], float],
+) -> Tuple[float, str, str, int]:
+    """Sort rows by the first timestamp seen, then by identifiers."""
+
+    return (first_ts.get(row, 0.0), row[0], row[1], row[2])
+
+
+def render(events: List[ParallelEvent], output: str, sort_order: str) -> None:
     try:
         import matplotlib.pyplot as plt
     except ImportError:
@@ -87,21 +127,51 @@ def render(events: List[ParallelEvent], output: str) -> None:
     for key in threads:
         threads[key].sort(key=lambda item: item[0])
 
-    role_order = []
-    for _, role, _ in threads:
-        if role not in role_order:
-            role_order.append(role)
-    role_color = {role: f"C{index % 10}"
-                  for index, role in enumerate(role_order)}
+    # Base hues per flow so encode/dither/pipeline stay visually grouped.
+    flow_palette = {
+        "loader": (0.737, 0.494, 0.247),
+        "scale": (0.556, 0.352, 0.690),
+        "crop": (0.741, 0.333, 0.447),
+        "colorspace": (0.243, 0.580, 0.580),
+        "palette": (0.580, 0.517, 0.278),
+        "dither": (0.231, 0.627, 0.231),
+        "encode": (0.129, 0.4, 0.674),
+        "pipeline": (0.4, 0.4, 0.4),
+    }
 
-    rows = sorted(list(threads.keys()))
+    # Shade roles within a flow to keep related rows distinguishable.
+    role_shades = {
+        "controller": 0.15,
+        "scheduler": 0.3,
+        "producer": 0.45,
+        "worker": 0.6,
+        "writer": 0.75,
+    }
+
+    role_color = {}
+    for worker, role, _ in threads:
+        base = flow_palette.get(worker, (0.2, 0.2, 0.2))
+        shade = role_shades.get(role, 0.6)
+        role_color[(worker, role)] = _lighten(base, shade)
+
+    rows = list(threads.keys())
+    first_ts: Dict[Tuple[str, str, int], float] = {}
+    for event in events:
+        key = (event.worker, event.role, event.thread)
+        if key not in first_ts:
+            first_ts[key] = event.ts
+
+    if sort_order == "start":
+        rows.sort(key=lambda row: _start_sort_key(row, first_ts))
+    else:
+        rows.sort(key=lambda row: _flow_sort_key(row[0], row[1], row[2]))
     fig_height = max(1.0, 0.6 * len(rows))
     fig, ax = plt.subplots(figsize=(12, fig_height))
 
     for idx, row in enumerate(rows):
         worker, role, thread = row
         spans_for_thread = threads[row]
-        color = role_color.get(role, "C0")
+        color = role_color.get((worker, role), (0.2, 0.2, 0.2))
         segments = []
         for start, duration, _ in spans_for_thread:
             segments.append((start, duration if duration > 0 else 1e-6))
@@ -136,15 +206,23 @@ def render(events: List[ParallelEvent], output: str) -> None:
     ax.set_title("Parallel pipeline timeline (grouped by thread)")
     ax.grid(True, axis="x", linestyle=":", linewidth=0.5)
     ax.set_ylim(-0.5, len(rows) - 0.5)
+    ax.invert_yaxis()
 
     handles = []
     labels = []
-    for role in role_order:
-        label = role if role else "(unspecified)"
-        handles.append(plt.Line2D([], [], color=role_color[role],
+    seen_keys = set()
+    for worker, role, _ in threads:
+        key = (worker, role)
+        if key in seen_keys:
+            continue
+        seen_keys.add(key)
+        label_worker = worker if worker else "(unknown)"
+        label_role = role if role else "(unspecified)"
+        handles.append(plt.Line2D([], [], color=role_color[key],
                                   marker="s", linestyle=""))
-        labels.append(label)
-    ax.legend(handles, labels, title="Role", loc="upper right")
+        labels.append(f"{label_worker}/{label_role}")
+    if handles:
+        ax.legend(handles, labels, title="Role", loc="upper right")
 
     fig.tight_layout()
     fig.savefig(output)
@@ -162,13 +240,22 @@ def main() -> None:
         default="timeline.png",
         help="Output image path (default: timeline.png)",
     )
+    parser.add_argument(
+        "--sort-order",
+        choices=["flow", "start"],
+        default="flow",
+        help=(
+            "Row ordering: 'flow' keeps the conceptual pipeline order with "
+            "dither above encode, while 'start' sorts by first activity"
+        ),
+    )
     args = parser.parse_args()
 
     events = load_events(args.logfile)
     if not events:
         print("No events found in log")
         return
-    render(events, args.output)
+    render(events, args.output, args.sort_order)
 
 
 if __name__ == "__main__":
