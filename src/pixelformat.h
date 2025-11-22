@@ -49,6 +49,9 @@ sixel_pixelformat_byte_to_float(int pixelformat,
                                 int channel,
                                 unsigned char value);
 
+int
+sixel_helper_compute_depth(int pixelformat);
+
 #ifdef __cplusplus
 }
 #endif
