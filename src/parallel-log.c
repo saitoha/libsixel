@@ -92,27 +92,37 @@ sixel_parallel_logger_init(sixel_parallel_logger_t *logger)
 void
 sixel_parallel_logger_close(sixel_parallel_logger_t *logger)
 {
+    int owning_close;
+
     if (logger == NULL) {
         return;
     }
+
+    owning_close = 0;
     if (logger->delegate != NULL) {
         if (logger->delegate == g_parallel_logger_active &&
                 g_parallel_logger_refcount > 0) {
             --g_parallel_logger_refcount;
-            if (g_parallel_logger_refcount != 0) {
-                logger->delegate = NULL;
-                logger->active = 0;
-                return;
+            if (g_parallel_logger_refcount == 0) {
+                owning_close = 1;
+                logger = logger->delegate;
             }
-            logger = logger->delegate;
-            logger->delegate = NULL;
-        } else {
-            logger->delegate = NULL;
-            logger->active = 0;
+        }
+        logger->delegate = NULL;
+        logger->active = 0;
+        if (!owning_close) {
             return;
         }
+    } else if (logger == g_parallel_logger_active &&
+            g_parallel_logger_refcount > 0) {
+         --g_parallel_logger_refcount;
+        if (g_parallel_logger_refcount == 0) {
+            owning_close = 1;
+        }
     }
-    if (logger == g_parallel_logger_active && g_parallel_logger_refcount > 1) {
+
+    if (!owning_close && logger != g_parallel_logger_active) {
+        logger->active = 0;
         --g_parallel_logger_refcount;
         return;
     }
@@ -124,8 +134,7 @@ sixel_parallel_logger_close(sixel_parallel_logger_t *logger)
         fclose(logger->file);
         logger->file = NULL;
     }
-    if (logger == g_parallel_logger_active && g_parallel_logger_refcount > 0) {
-        g_parallel_logger_refcount = 0;
+    if (logger == g_parallel_logger_active) {
         g_parallel_logger_active = NULL;
     }
     logger->active = 0;
@@ -153,8 +162,6 @@ sixel_parallel_logger_open(sixel_parallel_logger_t *logger, char const *path)
     logger->active = 1;
     logger->started_at = sixel_assessment_timer_now();
     setvbuf(logger->file, NULL, _IOLBF, 0);
-    g_parallel_logger_active = logger;
-    g_parallel_logger_refcount = 1;
     return SIXEL_OK;
 }
 
@@ -192,7 +199,10 @@ sixel_parallel_logger_prepare_env(sixel_parallel_logger_t *logger)
         return SIXEL_OK;
     }
     status = sixel_parallel_logger_open(logger, path);
-    if (SIXEL_FAILED(status)) {
+    if (SIXEL_SUCCEEDED(status)) {
+        g_parallel_logger_active = logger;
+        g_parallel_logger_refcount = 1;
+    } else {
         sixel_parallel_logger_close(logger);
     }
 

@@ -72,6 +72,7 @@ struct sixel_dither {
     int pipeline_dither_threads;    /* thread budget for dither */
     int pipeline_image_height;      /* total image rows for logging */
     struct sixel_parallel_logger *pipeline_logger; /* parallel log sink */
+    int pipeline_job_id;            /* frame/job id for timeline */
 };
 
 #ifdef __cplusplus

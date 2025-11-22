@@ -31,6 +31,8 @@
 extern "C" {
 #endif
 
+struct sixel_parallel_logger;
+
 void sixel_helper_set_loader_trace(int enable);
 void sixel_helper_set_thumbnail_size_hint(int size);
 
@@ -42,6 +44,11 @@ sixel_loader_get_last_source_path(sixel_loader_t const *loader);
 
 SIXELAPI size_t
 sixel_loader_get_last_input_bytes(sixel_loader_t const *loader);
+
+void
+sixel_loader_set_parallel_logger(sixel_loader_t *loader,
+                                 struct sixel_parallel_logger *logger,
+                                 int job_id);
 
 #if HAVE_TESTS
 SIXELAPI int

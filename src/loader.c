@@ -125,6 +125,7 @@ sixel_quicklook_thumbnail_create(CFURLRef url, CGSize max_size);
 #include "allocator.h"
 #include "assessment.h"
 #include "encoder.h"
+#include "parallel-log.h"
 
 #define SIXEL_THUMBNAILER_DEFAULT_SIZE 512
 
@@ -163,7 +164,142 @@ struct sixel_loader {
     char last_source_path[PATH_MAX];
     size_t last_input_bytes;
     int callback_failed;
+    sixel_parallel_logger_t *parallel_logger;
+    int parallel_job_id;
 };
+
+typedef struct loader_logger_binding {
+    sixel_parallel_logger_t *logger;
+    int job_id;
+} loader_logger_binding_t;
+
+static loader_logger_binding_t loader_logger_binding;
+
+static sixel_parallel_logger_t *
+loader_logger_from_context(sixel_loader_t *loader, int *job_id)
+{
+    sixel_parallel_logger_t *logger;
+
+    logger = NULL;
+    if (job_id != NULL) {
+        *job_id = -1;
+    }
+    if (loader == NULL) {
+        return NULL;
+    }
+
+    logger = loader->parallel_logger;
+    if (logger != NULL && logger->delegate != NULL) {
+        logger = logger->delegate;
+    }
+    if (logger != NULL && job_id != NULL) {
+        *job_id = loader->parallel_job_id;
+    }
+    if (logger != NULL && logger->active && logger->file != NULL) {
+        return logger;
+    }
+
+    return NULL;
+}
+
+static void
+loader_logger_bind(sixel_parallel_logger_t *logger, int job_id)
+{
+    loader_logger_binding.logger = logger;
+    loader_logger_binding.job_id = job_id;
+}
+
+static void
+loader_logger_unbind(void)
+{
+    loader_logger_binding.logger = NULL;
+    loader_logger_binding.job_id = -1;
+}
+
+static sixel_parallel_logger_t *
+loader_logger_active(void)
+{
+    sixel_parallel_logger_t *logger;
+
+    logger = loader_logger_binding.logger;
+    if (logger == NULL) {
+        return NULL;
+    }
+    if (logger->delegate != NULL) {
+        logger = logger->delegate;
+    }
+    if (!logger->active || !logger->mutex_ready || logger->file == NULL) {
+        return NULL;
+    }
+
+    return logger;
+}
+
+static void
+loader_log_decode_start(char const *backend, size_t bytes)
+{
+    sixel_parallel_logger_t *logger;
+
+    logger = loader_logger_active();
+    if (logger == NULL || backend == NULL) {
+        return;
+    }
+
+    sixel_parallel_logger_logf(logger,
+                               "worker",
+                               "loader",
+                               "decode-start",
+                               loader_logger_binding.job_id,
+                               -1,
+                               0,
+                               0,
+                               0,
+                               0,
+                               "backend=%s bytes=%zu",
+                               backend,
+                               bytes);
+}
+
+static void
+loader_log_decode_finish(char const *backend, int width, int height,
+                         SIXELSTATUS status)
+{
+    sixel_parallel_logger_t *logger;
+
+    logger = loader_logger_active();
+    if (logger == NULL || backend == NULL) {
+        return;
+    }
+
+    sixel_parallel_logger_logf(logger,
+                               "worker",
+                               "loader",
+                               "decode-finish",
+                               loader_logger_binding.job_id,
+                               -1,
+                               0,
+                               height,
+                               0,
+                               height,
+                               "backend=%s status=%d frame=%dx%d",
+                               backend,
+                               status,
+                               width,
+                               height);
+}
+
+void
+sixel_loader_set_parallel_logger(sixel_loader_t *loader,
+                                 sixel_parallel_logger_t *logger,
+                                 int job_id)
+{
+    if (loader == NULL) {
+        return;
+    }
+
+    loader->parallel_logger = logger;
+    loader->parallel_job_id = job_id;
+}
 
 static char *
 loader_strdup(char const *text, sixel_allocator_t *allocator)
@@ -362,6 +498,8 @@ typedef struct sixel_loader_callback_state {
     sixel_loader_t *loader;
     sixel_load_image_function fn;
     void *context;
+    sixel_parallel_logger_t *logger;
+    int logger_job_id;
 } sixel_loader_callback_state_t;
 
 static SIXELSTATUS
@@ -369,10 +507,59 @@ loader_callback_trampoline(sixel_frame_t *frame, void *data)
 {
     sixel_loader_callback_state_t *state;
     SIXELSTATUS status;
+    sixel_parallel_logger_t *logger;
+    int job_id;
+    int height;
+    int width;
+
+    logger = NULL;
+    job_id = -1;
+    height = 0;
+    width = 0;
 
     state = (sixel_loader_callback_state_t *)data;
     if (state == NULL || state->fn == NULL) {
         return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (frame != NULL) {
+        height = sixel_frame_get_height(frame);
+        width = sixel_frame_get_width(frame);
+    }
+
+    logger = state->logger;
+    job_id = state->logger_job_id;
+    if (logger != NULL && logger->delegate != NULL) {
+        logger = logger->delegate;
+    }
+
+    if (logger != NULL && logger->active && logger->file != NULL
+            && logger->mutex_ready) {
+        sixel_parallel_logger_logf(logger,
+                                   "producer",
+                                   "loader",
+                                   "frame-start",
+                                   job_id,
+                                   -1,
+                                   0,
+                                   height,
+                                   0,
+                                   height,
+                                   "frame=%dx%d",
+                                   width,
+                                   height);
+        sixel_parallel_logger_logf(logger,
+                                   "producer",
+                                   "loader",
+                                   "frame-finish",
+                                   job_id,
+                                   -1,
+                                   0,
+                                   height,
+                                   0,
+                                   height,
+                                   "status=%d",
+                                   SIXEL_OK);
     }
 
     status = state->fn(frame, state->context);
@@ -1483,6 +1670,7 @@ load_with_builtin(
     char message[256];
     int nwrite;
 
+    loader_log_decode_start("builtin", pchunk->size);
     if (chunk_is_sixel(pchunk)) {
         status = sixel_frame_new(&frame, pchunk->allocator);
         if (SIXEL_FAILED(status)) {
@@ -1502,6 +1690,10 @@ load_with_builtin(
                             reqcolors,
                             &frame->pixelformat,
                             pchunk->allocator);
+        loader_log_decode_finish("builtin-sixel",
+                                 frame->width,
+                                 frame->height,
+                                 status);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -1524,6 +1716,10 @@ load_with_builtin(
                           fuse_palette ? &frame->palette: NULL,
                           &frame->ncolors,
                           &frame->pixelformat);
+        loader_log_decode_finish("builtin-pnm",
+                                 frame->width,
+                                 frame->height,
+                                 status);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -1543,6 +1739,7 @@ load_with_builtin(
                           fnp.p,
                           context,
                           pchunk->allocator);
+        loader_log_decode_finish("builtin-gif", 0, 0, status);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -1602,6 +1799,10 @@ load_with_builtin(
             status = SIXEL_STBI_ERROR;
             goto end;
         }
+        loader_log_decode_finish("builtin-stbi",
+                                 frame->width,
+                                 frame->height,
+                                 SIXEL_OK);
     }
 
     status = sixel_frame_strip_alpha(frame, bgcolor);
@@ -1650,6 +1851,7 @@ load_with_libjpeg(
     (void)reqcolors;
     (void)loop_control;
 
+    loader_log_decode_start("libjpeg", pchunk->size);
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -1662,6 +1864,10 @@ load_with_libjpeg(
                        &frame->height,
                        &frame->pixelformat,
                        pchunk->allocator);
+    loader_log_decode_finish("libjpeg",
+                             frame->width,
+                             frame->height,
+                             status);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1720,6 +1926,7 @@ load_with_libpng(
     (void)fstatic;
     (void)loop_control;
 
+    loader_log_decode_start("libpng", pchunk->size);
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -1737,6 +1944,10 @@ load_with_libpng(
                       bgcolor,
                       &frame->transparent,
                       pchunk->allocator);
+    loader_log_decode_finish("libpng",
+                             frame->width,
+                             frame->height,
+                             status);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1812,11 +2023,14 @@ load_with_gdkpixbuf(
     int anim_loop_count = (-1);  /* (-1): infinite, >=0: finite loop count */
     int delay_ms;
     gboolean use_animation = FALSE;
+    int decode_logged;
 
     (void) fuse_palette;
     (void) reqcolors;
     (void) bgcolor;
 
+    decode_logged = 0;
+    loader_log_decode_start("gdk-pixbuf2", pchunk->size);
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -1924,6 +2138,13 @@ load_with_gdkpixbuf(
         frame->width = gdk_pixbuf_get_width(pixbuf);
         frame->height = gdk_pixbuf_get_height(pixbuf);
         stride = gdk_pixbuf_get_rowstride(pixbuf);
+        if (!decode_logged) {
+            loader_log_decode_finish("gdk-pixbuf2",
+                                     frame->width,
+                                     frame->height,
+                                     SIXEL_OK);
+            decode_logged = 1;
+        }
         frame->pixels = sixel_allocator_malloc(
             pchunk->allocator,
             (size_t)(frame->height * stride));
@@ -1989,6 +2210,13 @@ load_with_gdkpixbuf(
                 frame->width = gdk_pixbuf_get_width(pixbuf);
                 frame->height = gdk_pixbuf_get_height(pixbuf);
                 stride = gdk_pixbuf_get_rowstride(pixbuf);
+                if (!decode_logged) {
+                    loader_log_decode_finish("gdk-pixbuf2",
+                                             frame->width,
+                                             frame->height,
+                                             SIXEL_OK);
+                    decode_logged = 1;
+                }
                 frame->pixels = sixel_allocator_malloc(
                     pchunk->allocator,
                     (size_t)(frame->height * stride));
@@ -2134,11 +2362,14 @@ load_with_coregraphics(
     CFNumberRef delay_num;
     double delay_sec;
     size_t i;
+    int decode_logged;
 
     (void) fuse_palette;
     (void) reqcolors;
     (void) bgcolor;
 
+    decode_logged = 0;
+    loader_log_decode_start("coregraphics", pchunk->size);
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -2284,6 +2515,14 @@ load_with_coregraphics(
                                image);
             CGContextRelease(ctx);
             ctx = NULL;
+
+            if (!decode_logged) {
+                loader_log_decode_finish("coregraphics",
+                                         frame->width,
+                                         frame->height,
+                                         SIXEL_OK);
+                decode_logged = 1;
+            }
 
             frame->multiframe = (frame_count > 1);
             status = fn_load(frame, context);
@@ -6616,6 +6855,8 @@ sixel_loader_new(
     loader->last_source_path[0] = '\0';
     loader->last_input_bytes = 0u;
     loader->callback_failed = 0;
+    loader->parallel_logger = NULL;
+    loader->parallel_job_id = -1;
 
     *pploader = loader;
     status = SIXEL_OK;
@@ -6812,6 +7053,8 @@ sixel_loader_load_file(
     char const *order_override;
     char const *env_order;
     sixel_loader_callback_state_t callback_state;
+    sixel_parallel_logger_t *logger;
+    int job_id;
 
     pchunk = NULL;
     entry_count = 0;
@@ -6822,6 +7065,8 @@ sixel_loader_load_file(
     assessment = NULL;
     order_override = NULL;
     env_order = NULL;
+    logger = NULL;
+    job_id = -1;
 
     if (loader == NULL) {
         sixel_helper_set_additional_message(
@@ -6832,10 +7077,29 @@ sixel_loader_load_file(
 
     sixel_loader_ref(loader);
 
+    logger = loader_logger_from_context(loader, &job_id);
+    loader_logger_bind(logger, job_id);
+    if (logger != NULL) {
+        sixel_parallel_logger_logf(logger,
+                                   "reader",
+                                   "loader",
+                                   "chunk-start",
+                                   job_id,
+                                   -1,
+                                   0,
+                                   0,
+                                   0,
+                                   0,
+                                   "path=%s",
+                                   filename != NULL ? filename : "");
+    }
+
     memset(&callback_state, 0, sizeof(callback_state));
     callback_state.loader = loader;
     callback_state.fn = fn_load;
     callback_state.context = loader->context;
+    callback_state.logger = logger;
+    callback_state.logger_job_id = job_id;
     loader->callback_failed = 0;
 
     entry_count = sizeof(sixel_loader_entries) /
@@ -6871,6 +7135,21 @@ sixel_loader_load_file(
     if (pchunk->size == 0 || (pchunk->size == 1 && *pchunk->buffer == '\n')) {
         status = SIXEL_OK;
         goto end;
+    }
+
+    if (logger != NULL) {
+        sixel_parallel_logger_logf(logger,
+                                   "reader",
+                                   "loader",
+                                   "chunk-finish",
+                                   job_id,
+                                   -1,
+                                   0,
+                                   (int)pchunk->size,
+                                   0,
+                                   0,
+                                   "bytes=%zu",
+                                   pchunk->size);
     }
 
     if (pchunk->buffer == NULL || pchunk->max_size == 0) {
@@ -6966,6 +7245,7 @@ sixel_loader_load_file(
 
 end:
     sixel_chunk_destroy(pchunk);
+    loader_logger_unbind();
     sixel_loader_unref(loader);
 
 end0:

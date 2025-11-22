@@ -2862,11 +2862,20 @@ sixel_encoder_prepare_palette(
     int histogram_colors;
     sixel_assessment_t *assessment;
     int promoted_stage;
+    sixel_parallel_logger_t *logger;
+    int logger_job_id;
 
     assessment = NULL;
     promoted_stage = 0;
+    logger = NULL;
+    logger_job_id = -1;
     if (encoder != NULL) {
         assessment = encoder->assessment_observer;
+        logger = encoder->parallel_logger;
+        if (logger != NULL && logger->delegate != NULL) {
+            logger = logger->delegate;
+        }
+        logger_job_id = encoder->parallel_job_id;
     }
 
     switch (encoder->color_option) {
@@ -2964,12 +2973,40 @@ sixel_encoder_prepare_palette(
         goto end;
     }
 
+    if (encoder->parallel_logger != NULL) {
+        (*dither)->pipeline_logger = encoder->parallel_logger;
+    } else {
+        (*dither)->pipeline_logger = NULL;
+    }
+
     sixel_dither_set_lut_policy(*dither, encoder->lut_policy);
+    (*dither)->pipeline_job_id = sixel_frame_get_frame_no(frame);
     sixel_dither_set_sixel_reversible(*dither,
                                       encoder->sixel_reversible);
     sixel_dither_set_final_merge(*dither, encoder->final_merge_mode);
     (*dither)->quantize_model = encoder->quantize_model;
 
+    if (logger != NULL && logger->active && logger->mutex_ready) {
+        /*
+         * Make the palette solve visible on the timeline.  Dither interns
+         * also log quantizer spans, but bracketing the entire initialize
+         * call here shows the total palette preparation cost even when the
+         * quantizer finishes quickly.
+         */
+        sixel_parallel_logger_logf(logger,
+                                   "worker",
+                                   "palette",
+                                   "prepare-start",
+                                   logger_job_id,
+                                   -1,
+                                   0,
+                                   sixel_frame_get_height(frame),
+                                   0,
+                                   sixel_frame_get_height(frame),
+                                   "width=%d height=%d", 
+                                   sixel_frame_get_width(frame),
+                                   sixel_frame_get_height(frame));
+    }
     status = sixel_dither_initialize(*dither,
                                      sixel_frame_get_pixels(frame),
                                      sixel_frame_get_width(frame),
@@ -2978,6 +3015,21 @@ sixel_encoder_prepare_palette(
                                      encoder->method_for_largest,
                                      encoder->method_for_rep,
                                      encoder->quality_mode);
+    if (logger != NULL && logger->active && logger->mutex_ready) {
+        sixel_parallel_logger_logf(logger,
+                                   "worker",
+                                   "palette",
+                                   "prepare-finish",
+                                   logger_job_id,
+                                   -1,
+                                   0,
+                                   sixel_frame_get_height(frame),
+                                   0,
+                                   sixel_frame_get_height(frame),
+                                   "status=%d colors=%d", 
+                                   status,
+                                   encoder->reqcolors);
+    }
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(*dither);
         goto end;
@@ -7198,6 +7250,14 @@ reload:
     if (SIXEL_FAILED(status)) {
         goto load_end;
     }
+
+    sixel_loader_set_parallel_logger(
+        loader,
+        encoder->parallel_logger != NULL
+            && encoder->parallel_logger->delegate != NULL
+                ? encoder->parallel_logger->delegate
+                : encoder->parallel_logger,
+        encoder->parallel_job_id);
 
     sixel_encoder_log_stage(encoder,
                             NULL,

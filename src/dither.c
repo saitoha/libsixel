@@ -1229,6 +1229,7 @@ sixel_dither_new(
     (*ppdither)->pipeline_dither_threads = 0;
     (*ppdither)->pipeline_image_height = 0;
     (*ppdither)->pipeline_logger = NULL;
+    (*ppdither)->pipeline_job_id = -1;
 
     status = sixel_palette_new(&(*ppdither)->palette, allocator);
     if (SIXEL_FAILED(status)) {
@@ -1476,6 +1477,8 @@ sixel_dither_initialize(
     unsigned int payload_length;
     int palette_pixelformat;
     int prefer_rgbfloat32;
+    sixel_parallel_logger_t *logger = NULL;
+    int job_id = -1;
 
     /* ensure dither object is not null */
     if (dither == NULL) {
@@ -1498,6 +1501,27 @@ sixel_dither_initialize(
     payload_length = 0U;
     palette_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     prefer_rgbfloat32 = dither->prefer_rgbfloat32;
+
+    if (dither->pipeline_logger != NULL && dither->pipeline_logger->active) {
+        logger = dither->pipeline_logger;
+        if (logger->delegate != NULL) {
+            logger = logger->delegate;
+        }
+        job_id = dither->pipeline_job_id;
+        sixel_parallel_logger_logf(logger,
+                                   "worker",
+                                   "palette",
+                                   "solve-start",
+                                   job_id,
+                                   -1,
+                                   0,
+                                   height,
+                                   0,
+                                   height,
+                                   "model=%d colors=%d",
+                                   dither->quantize_model,
+                                   dither->ncolors);
+    }
 
     /* Float32 input requires the pipeline to honour higher precision. */
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
@@ -1574,6 +1598,22 @@ sixel_dither_initialize(
     sixel_dither_set_method_for_rep(dither, method_for_rep);
     sixel_dither_set_quality_mode(dither, quality_mode);
 
+    if (logger != NULL) {
+        sixel_parallel_logger_logf(logger,
+                                   "worker",
+                                   "palette",
+                                   "quantize-start",
+                                   job_id,
+                                   -1,
+                                   0,
+                                   height,
+                                   0,
+                                   height,
+                                   "pixels=%zu colors=%d",
+                                   total_pixels,
+                                   dither->reqcolors);
+    }
+
     status = sixel_palette_make_palette(&buf,
                                         input_pixels,
                                         payload_length,
@@ -1590,6 +1630,21 @@ sixel_dither_initialize(
                                         dither->final_merge_mode,
                                         dither->prefer_rgbfloat32,
                                         dither->allocator);
+    if (logger != NULL) {
+        sixel_parallel_logger_logf(logger,
+                                   "worker",
+                                   "palette",
+                                   "quantize-finish",
+                                   job_id,
+                                   -1,
+                                   0,
+                                   height,
+                                   0,
+                                   height,
+                                   "status=%d colors=%d",
+                                   status,
+                                   dither->ncolors);
+    }
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -1615,6 +1670,21 @@ sixel_dither_initialize(
     status = SIXEL_OK;
 
 end:
+    if (logger != NULL) {
+        sixel_parallel_logger_logf(logger,
+                                   "worker",
+                                   "palette",
+                                   "solve-finish",
+                                   job_id,
+                                   -1,
+                                   0,
+                                   height,
+                                   0,
+                                   height,
+                                   "status=%d colors=%d",
+                                   status,
+                                   dither->ncolors);
+    }
     if (normalized_pixels != NULL) {
         sixel_allocator_free(dither->allocator, normalized_pixels);
     }
@@ -2295,6 +2365,7 @@ end:
     dither->pipeline_dither_threads = 0;
     dither->pipeline_image_height = 0;
     dither->pipeline_logger = NULL;
+    dither->pipeline_job_id = -1;
     return dest;
 }
 
