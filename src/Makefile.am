@@ -62,7 +62,6 @@ libsixel_la_SOURCES = \
                 $(srcdir)/frame.h \
                 $(srcdir)/pixelformat.c \
                 $(srcdir)/pixelformat.h \
-                $(srcdir)/precision.h \
                 $(srcdir)/scale.c \
                 $(srcdir)/scale.h \
                 $(srcdir)/chunk.c \

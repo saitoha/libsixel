@@ -239,7 +239,12 @@ gif_init_frame(
     sixel_frame_set_ncolors(frame, ncolors);
     frame_ncolors = ncolors;
     if (frame_ncolors <= reqcolors && fuse_palette) {
-        sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_PAL8);
+        status = sixel_frame_set_pixelformat(
+            frame,
+            SIXEL_PIXELFORMAT_PAL8);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
         sixel_allocator_free(allocator, pixels);
         frame_size = (size_t)frame_width * (size_t)frame_height;
         pixels = (unsigned char *)sixel_allocator_malloc(
@@ -281,7 +286,12 @@ gif_init_frame(
             }
         }
     } else {
-        sixel_frame_set_pixelformat(frame, SIXEL_PIXELFORMAT_RGB888);
+        status = sixel_frame_set_pixelformat(
+            frame,
+            SIXEL_PIXELFORMAT_RGB888);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
         /* TODO: Allocated memory should be reused */
         sixel_allocator_free(allocator, pixels);
         frame_size = (size_t)pg->w * (size_t)pg->h * 3;

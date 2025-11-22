@@ -49,10 +49,6 @@ struct sixel_frame {
 extern "C" {
 #endif
 
-SIXELSTATUS
-sixel_frame_ensure_colorspace(
-    sixel_frame_t  /* in */ *frame,
-    int            /* in */  colorspace);
 #if HAVE_TESTS
 SIXELAPI int
 sixel_dither_tests_main(void);

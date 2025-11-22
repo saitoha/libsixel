@@ -353,6 +353,19 @@ static sixel_option_choice_t const g_option_choices_output_colorspace[] = {
     { "smptec", SIXEL_COLORSPACE_SMPTEC }
 };
 
+static int
+sixel_encoder_pixelformat_for_colorspace(int colorspace)
+{
+    switch (colorspace) {
+    case SIXEL_COLORSPACE_LINEAR:
+        return SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+    case SIXEL_COLORSPACE_OKLAB:
+        return SIXEL_PIXELFORMAT_OKLABFLOAT32;
+    default:
+        return SIXEL_PIXELFORMAT_RGB888;
+    }
+}
+
 static sixel_option_choice_t const g_option_choices_precision[] = {
     { "auto", SIXEL_ENCODER_PRECISION_MODE_AUTO },
     { "8bit", SIXEL_ENCODER_PRECISION_MODE_8BIT },
@@ -1045,8 +1058,10 @@ load_image_callback_for_palette(
     /* get callback context object from the private data */
     callback_context = (sixel_callback_context_for_mapfile_t *)data;
 
-    status = sixel_frame_ensure_colorspace(frame,
-                                           callback_context->working_colorspace);
+    status = sixel_frame_set_pixelformat(
+        frame,
+        sixel_encoder_pixelformat_for_colorspace(
+            callback_context->working_colorspace));
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -3816,8 +3831,10 @@ sixel_encoder_encode_frame(
             SIXEL_ASSESSMENT_STAGE_COLORSPACE);
     }
 
-    status = sixel_frame_ensure_colorspace(frame,
-                                           encoder->working_colorspace);
+    status = sixel_frame_set_pixelformat(
+        frame,
+        sixel_encoder_pixelformat_for_colorspace(
+            encoder->working_colorspace));
     if (SIXEL_FAILED(status)) {
         goto end;
     }

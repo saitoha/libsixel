@@ -1341,7 +1341,7 @@ SIXELAPI int
 sixel_frame_get_pixelformat(sixel_frame_t /* in */ *frame);  /* frame object */
 
 /* set pixelformat */
-SIXELAPI void
+SIXELAPI SIXELSTATUS
 sixel_frame_set_pixelformat(
     sixel_frame_t /* in */ *frame,
     int            /* in */ pixelformat);
@@ -1417,12 +1417,6 @@ sixel_frame_increment_loop_count(sixel_frame_t /* in */ *frame);
 /* get allocator */
 SIXELAPI sixel_allocator_t *
 sixel_frame_get_allocator(sixel_frame_t /* in */ *frame);
-
-/* convert frame to the requested colorspace in-place */
-SIXELAPI SIXELSTATUS
-sixel_frame_ensure_colorspace(
-    sixel_frame_t  /* in */ *frame,
-    int            /* in */ colorspace);
 
 /* strip alpha from RGBA/ARGB formatted pixbuf */
 SIXELAPI int

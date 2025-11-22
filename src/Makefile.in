@@ -188,7 +188,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/parallel-log.h $(srcdir)/colorspace.c \
 	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
 	$(srcdir)/pixelformat.c $(srcdir)/pixelformat.h \
-	$(srcdir)/precision.h $(srcdir)/scale.c $(srcdir)/scale.h \
+    $(srcdir)/scale.c $(srcdir)/scale.h \
 	$(srcdir)/chunk.c $(srcdir)/chunk.h $(srcdir)/loader.c \
 	$(srcdir)/loader.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
 	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/clipboard.c \
@@ -614,7 +614,7 @@ libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/parallel-log.h $(srcdir)/colorspace.c \
 	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
 	$(srcdir)/pixelformat.c $(srcdir)/pixelformat.h \
-	$(srcdir)/precision.h $(srcdir)/scale.c $(srcdir)/scale.h \
+    $(srcdir)/scale.c $(srcdir)/scale.h \
 	$(srcdir)/chunk.c $(srcdir)/chunk.h $(srcdir)/loader.c \
 	$(srcdir)/loader.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
 	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/clipboard.c \
