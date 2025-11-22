@@ -113,6 +113,7 @@
 #include "tty.h"
 #include "encoder.h"
 #include "output.h"
+#include "parallel-log.h"
 #include "options.h"
 #include "dither.h"
 #include "rgblookup.h"
@@ -689,6 +690,81 @@ sixel_encoder_probe_fd_write(sixel_encoder_t *encoder,
     written = sixel_write_with_probe(data, size, &probe);
 
     return written;
+}
+
+static void
+sixel_encoder_log_stage(sixel_encoder_t *encoder,
+                        sixel_frame_t *frame,
+                        char const *worker,
+                        char const *role,
+                        char const *event,
+                        char const *fmt,
+                        ...)
+{
+    sixel_parallel_logger_t *logger;
+    int job_id;
+    int height;
+    char message[256];
+    va_list args;
+
+    logger = NULL;
+    if (encoder != NULL) {
+        logger = encoder->parallel_logger;
+    }
+    if (logger == NULL || logger->file == NULL || !logger->active) {
+        return;
+    }
+
+    job_id = -1;
+    height = 0;
+    if (frame != NULL) {
+        job_id = sixel_frame_get_frame_no(frame);
+        height = sixel_frame_get_height(frame);
+    }
+
+    message[0] = '\0';
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
+    va_start(args, fmt);
+    if (fmt != NULL) {
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
+        (void)vsnprintf(message, sizeof(message), fmt, args);
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+    }
+    va_end(args);
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+
+    sixel_parallel_logger_logf(logger,
+                               role,
+                               worker,
+                               event,
+                               job_id,
+                               -1,
+                               0,
+                               height,
+                               0,
+                               height,
+                               "%s",
+                               message);
 }
 
 static SIXELSTATUS
@@ -2511,6 +2587,14 @@ sixel_prepare_specified_palette(
         return SIXEL_BAD_ARGUMENT;
     }
 
+    sixel_encoder_log_stage(encoder,
+                            NULL,
+                            "palette",
+                            "worker",
+                            "start",
+                            "mapfile=%s",
+                            encoder->mapfile);
+
     path = sixel_palette_strip_prefix(encoder->mapfile, &format_hint);
     if (path == NULL || *path == '\0') {
         sixel_helper_set_additional_message(
@@ -2754,6 +2838,15 @@ end_loader:
 
     *dither = callback_context.dither;
 
+    sixel_encoder_log_stage(encoder,
+                            NULL,
+                            "palette",
+                            "worker",
+                            "finish",
+                            "mapfile=%s format=%d",
+                            encoder->mapfile,
+                            format_final);
+
     return status;
 }
 
@@ -2973,6 +3066,18 @@ sixel_encoder_do_resize(
         dst_width = src_width * dst_height / src_height;
     }
 
+    sixel_encoder_log_stage(encoder,
+                            frame,
+                            "scale",
+                            "worker",
+                            "start",
+                            "src=%dx%d dst=%dx%d resample=%d",
+                            src_width,
+                            src_height,
+                            dst_width,
+                            dst_height,
+                            encoder->method_for_resampling);
+
     /* do resize */
     if (dst_width > 0 && dst_height > 0) {
         status = sixel_frame_resize(frame, dst_width, dst_height,
@@ -2981,6 +3086,15 @@ sixel_encoder_do_resize(
             goto end;
         }
     }
+
+    sixel_encoder_log_stage(encoder,
+                            frame,
+                            "scale",
+                            "worker",
+                            "finish",
+                            "result=%dx%d",
+                            sixel_frame_get_width(frame),
+                            sixel_frame_get_height(frame));
 
     /* success */
     status = SIXEL_OK;
@@ -3032,6 +3146,19 @@ sixel_encoder_do_clip(
         }
     }
 
+    sixel_encoder_log_stage(encoder,
+                            frame,
+                            "crop",
+                            "worker",
+                            "start",
+                            "src=%dx%d region=%dx%d@%d,%d",
+                            src_width,
+                            src_height,
+                            clip_w,
+                            clip_h,
+                            clip_x,
+                            clip_y);
+
     /* do clipping */
     if (clip_w > 0 && clip_h > 0) {
         status = sixel_frame_clip(frame, clip_x, clip_y, clip_w, clip_h);
@@ -3039,6 +3166,15 @@ sixel_encoder_do_clip(
             goto end;
         }
     }
+
+    sixel_encoder_log_stage(encoder,
+                            frame,
+                            "crop",
+                            "worker",
+                            "finish",
+                            "result=%dx%d",
+                            sixel_frame_get_width(frame),
+                            sixel_frame_get_height(frame));
 
     /* success */
     status = SIXEL_OK;
@@ -3168,6 +3304,18 @@ sixel_encoder_output_without_macro(
     width = sixel_frame_get_width(frame);
     height = sixel_frame_get_height(frame);
     size = (size_t)(width * height * depth);
+
+    sixel_encoder_log_stage(encoder,
+                            frame,
+                            "encode",
+                            "worker",
+                            "start",
+                            "size=%dx%d fmt=%08x dst_cs=%d",
+                            width,
+                            height,
+                            pixelformat,
+                            output->colorspace);
+
     p = (unsigned char *)sixel_allocator_malloc(encoder->allocator, size);
     if (p == NULL) {
         sixel_helper_set_additional_message(
@@ -3256,6 +3404,16 @@ sixel_encoder_output_without_macro(
     }
 
 end:
+    if (SIXEL_SUCCEEDED(status)) {
+        sixel_encoder_log_stage(encoder,
+                                frame,
+                                "encode",
+                                "worker",
+                                "finish",
+                                "size=%dx%d",
+                                width,
+                                height);
+    }
     output->pixelformat = pixelformat;
     output->source_colorspace = frame_colorspace;
     sixel_allocator_free(encoder->allocator, p);
@@ -3756,6 +3914,10 @@ sixel_encoder_encode_frame(
     sixel_encoder_output_probe_t probe;
     sixel_encoder_output_probe_t scroll_probe;
     sixel_assessment_t *assessment;
+    int width_before;
+    int height_before;
+    int width_after;
+    int height_after;
 
     fn_write = sixel_write_callback;
     write_callback = sixel_write_callback;
@@ -3796,33 +3958,113 @@ sixel_encoder_encode_frame(
      */
 
     if (encoder->clipfirst) {
+        width_before = sixel_frame_get_width(frame);
+        height_before = sixel_frame_get_height(frame);
+        sixel_encoder_log_stage(encoder,
+                                frame,
+                                "crop",
+                                "worker",
+                                "start",
+                                "size=%dx%d",
+                                width_before,
+                                height_before);
         status = sixel_encoder_do_clip(encoder, frame);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        width_after = sixel_frame_get_width(frame);
+        height_after = sixel_frame_get_height(frame);
+        sixel_encoder_log_stage(encoder,
+                                frame,
+                                "crop",
+                                "worker",
+                                "finish",
+                                "result=%dx%d",
+                                width_after,
+                                height_after);
         if (assessment != NULL) {
             sixel_assessment_stage_transition(
                 assessment,
                 SIXEL_ASSESSMENT_STAGE_SCALE);
         }
+        width_before = sixel_frame_get_width(frame);
+        height_before = sixel_frame_get_height(frame);
+        sixel_encoder_log_stage(encoder,
+                                frame,
+                                "scale",
+                                "worker",
+                                "start",
+                                "size=%dx%d",
+                                width_before,
+                                height_before);
         status = sixel_encoder_do_resize(encoder, frame);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        width_after = sixel_frame_get_width(frame);
+        height_after = sixel_frame_get_height(frame);
+        sixel_encoder_log_stage(encoder,
+                                frame,
+                                "scale",
+                                "worker",
+                                "finish",
+                                "result=%dx%d",
+                                width_after,
+                                height_after);
     } else {
+        width_before = sixel_frame_get_width(frame);
+        height_before = sixel_frame_get_height(frame);
+        sixel_encoder_log_stage(encoder,
+                                frame,
+                                "scale",
+                                "worker",
+                                "start",
+                                "size=%dx%d",
+                                width_before,
+                                height_before);
         status = sixel_encoder_do_resize(encoder, frame);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        width_after = sixel_frame_get_width(frame);
+        height_after = sixel_frame_get_height(frame);
+        sixel_encoder_log_stage(encoder,
+                                frame,
+                                "scale",
+                                "worker",
+                                "finish",
+                                "result=%dx%d",
+                                width_after,
+                                height_after);
         if (assessment != NULL) {
             sixel_assessment_stage_transition(
                 assessment,
                 SIXEL_ASSESSMENT_STAGE_CROP);
         }
+        width_before = sixel_frame_get_width(frame);
+        height_before = sixel_frame_get_height(frame);
+        sixel_encoder_log_stage(encoder,
+                                frame,
+                                "crop",
+                                "worker",
+                                "start",
+                                "size=%dx%d",
+                                width_before,
+                                height_before);
         status = sixel_encoder_do_clip(encoder, frame);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        width_after = sixel_frame_get_width(frame);
+        height_after = sixel_frame_get_height(frame);
+        sixel_encoder_log_stage(encoder,
+                                frame,
+                                "crop",
+                                "worker",
+                                "finish",
+                                "result=%dx%d",
+                                width_after,
+                                height_after);
     }
 
     if (assessment != NULL) {
@@ -3830,6 +4072,15 @@ sixel_encoder_encode_frame(
             assessment,
             SIXEL_ASSESSMENT_STAGE_COLORSPACE);
     }
+ 
+    sixel_encoder_log_stage(encoder,
+                            frame,
+                            "colorspace",
+                            "worker",
+                            "start",
+                            "current=%d target=%d",
+                            sixel_frame_get_colorspace(frame),
+                            encoder->working_colorspace);
 
     status = sixel_frame_set_pixelformat(
         frame,
@@ -3844,6 +4095,14 @@ sixel_encoder_encode_frame(
             assessment,
             SIXEL_ASSESSMENT_STAGE_PALETTE_HISTOGRAM);
     }
+
+    sixel_encoder_log_stage(encoder,
+                            frame,
+                            "colorspace",
+                            "worker",
+                            "finish",
+                            "result=%d",
+                            sixel_frame_get_colorspace(frame));
 
     /* prepare dither context */
     status = sixel_encoder_prepare_palette(encoder, frame, &dither);
@@ -4192,6 +4451,8 @@ sixel_encoder_new(
     (*ppencoder)->clipboard_output_active = 0;
     (*ppencoder)->clipboard_output_format[0] = '\0';
     (*ppencoder)->clipboard_output_path = NULL;
+    (*ppencoder)->parallel_logger       = NULL;
+    (*ppencoder)->parallel_job_id       = -1;
     (*ppencoder)->allocator             = allocator;
 
     /* evaluate environment variable ${SIXEL_BGCOLOR} */
@@ -6535,6 +6796,8 @@ sixel_encoder_encode(
     char const *effective_filename;
     unsigned int path_flags;
     int path_check;
+    sixel_parallel_logger_t parallel_logger;
+    int logger_prepared;
 
     clipboard_input_format[0] = '\0';
     clipboard_input_path = NULL;
@@ -6546,6 +6809,14 @@ sixel_encoder_encode(
         SIXEL_OPTION_PATH_ALLOW_CLIPBOARD |
         SIXEL_OPTION_PATH_ALLOW_REMOTE;
     path_check = 0;
+    logger_prepared = 0;
+    sixel_parallel_logger_init(&parallel_logger);
+    sixel_parallel_logger_prepare_env(&parallel_logger);
+    logger_prepared = parallel_logger.active;
+    if (encoder != NULL) {
+        encoder->parallel_logger = &parallel_logger;
+        encoder->parallel_job_id = -1;
+    }
 
     if (filename != NULL) {
         path_check = sixel_option_validate_filesystem_path(
@@ -6928,6 +7199,16 @@ reload:
         goto load_end;
     }
 
+    sixel_encoder_log_stage(encoder,
+                            NULL,
+                            "loader",
+                            "worker",
+                            "start",
+                            "path=%s",
+                            effective_filename != NULL
+                                ? effective_filename
+                                : "");
+
     status = sixel_loader_load_file(loader,
                                     effective_filename,
                                     load_image_callback);
@@ -6951,6 +7232,17 @@ reload:
     } else {
         encoder->last_source_path[0] = '\0';
     }
+    sixel_encoder_log_stage(encoder,
+                            NULL,
+                            "loader",
+                            "worker",
+                            "finish",
+                            "path=%s loader=%s bytes=%zu",
+                            effective_filename != NULL
+                                ? effective_filename
+                                : "",
+                            encoder->last_loader_name,
+                            encoder->last_input_bytes);
     if (encoder->assessment_observer != NULL) {
         sixel_assessment_record_loader(encoder->assessment_observer,
                                        encoder->last_source_path,
@@ -7307,6 +7599,14 @@ end:
     }
     if (assessment_allocator != NULL) {
         sixel_allocator_unref(assessment_allocator);
+    }
+
+    if (encoder != NULL) {
+        encoder->parallel_logger = NULL;
+        encoder->parallel_job_id = -1;
+    }
+    if (logger_prepared) {
+        sixel_parallel_logger_close(&parallel_logger);
     }
 
     sixel_encoder_unref(encoder);

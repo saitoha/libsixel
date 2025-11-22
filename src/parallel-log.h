@@ -18,6 +18,11 @@ extern "C" {
 #endif
 
 typedef struct sixel_parallel_logger {
+    /*
+     * Delegated sink used when reusing an already opened logger instead of
+     * reopening the file. This keeps mutex ownership with the first opener.
+     */
+    struct sixel_parallel_logger *delegate;
     FILE *file;
     sixel_mutex_t mutex;
     int mutex_ready;
@@ -29,6 +34,8 @@ void sixel_parallel_logger_init(sixel_parallel_logger_t *logger);
 void sixel_parallel_logger_close(sixel_parallel_logger_t *logger);
 SIXELSTATUS
 sixel_parallel_logger_open(sixel_parallel_logger_t *logger, char const *path);
+SIXELSTATUS
+sixel_parallel_logger_prepare_env(sixel_parallel_logger_t *logger);
 void sixel_parallel_logger_logf(sixel_parallel_logger_t *logger,
                                 char const *role,
                                 char const *worker,

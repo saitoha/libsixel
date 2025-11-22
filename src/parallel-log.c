@@ -27,6 +27,7 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #ifndef _WIN32
@@ -35,6 +36,9 @@
 
 #include "assessment.h"
 #include "parallel-log.h"
+
+static sixel_parallel_logger_t *g_parallel_logger_active;
+static int g_parallel_logger_refcount;
 
 static unsigned long long
 sixel_parallel_logger_thread_id(void)
@@ -78,6 +82,7 @@ sixel_parallel_logger_init(sixel_parallel_logger_t *logger)
     if (logger == NULL) {
         return;
     }
+    logger->delegate = NULL;
     logger->file = NULL;
     logger->mutex_ready = 0;
     logger->active = 0;
@@ -90,6 +95,27 @@ sixel_parallel_logger_close(sixel_parallel_logger_t *logger)
     if (logger == NULL) {
         return;
     }
+    if (logger->delegate != NULL) {
+        if (logger->delegate == g_parallel_logger_active &&
+                g_parallel_logger_refcount > 0) {
+            --g_parallel_logger_refcount;
+            if (g_parallel_logger_refcount != 0) {
+                logger->delegate = NULL;
+                logger->active = 0;
+                return;
+            }
+            logger = logger->delegate;
+            logger->delegate = NULL;
+        } else {
+            logger->delegate = NULL;
+            logger->active = 0;
+            return;
+        }
+    }
+    if (logger == g_parallel_logger_active && g_parallel_logger_refcount > 1) {
+        --g_parallel_logger_refcount;
+        return;
+    }
     if (logger->mutex_ready) {
         sixel_mutex_destroy(&logger->mutex);
         logger->mutex_ready = 0;
@@ -97,6 +123,10 @@ sixel_parallel_logger_close(sixel_parallel_logger_t *logger)
     if (logger->file != NULL) {
         fclose(logger->file);
         logger->file = NULL;
+    }
+    if (logger == g_parallel_logger_active && g_parallel_logger_refcount > 0) {
+        g_parallel_logger_refcount = 0;
+        g_parallel_logger_active = NULL;
     }
     logger->active = 0;
 }
@@ -123,7 +153,50 @@ sixel_parallel_logger_open(sixel_parallel_logger_t *logger, char const *path)
     logger->active = 1;
     logger->started_at = sixel_assessment_timer_now();
     setvbuf(logger->file, NULL, _IOLBF, 0);
+    g_parallel_logger_active = logger;
+    g_parallel_logger_refcount = 1;
     return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_parallel_logger_prepare_env(sixel_parallel_logger_t *logger)
+{
+    char const *path;
+    SIXELSTATUS status;
+
+    if (logger == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    /*
+     * Reuse an already opened logger so the timeline is continuous.  Some
+     * call sites share a logger instance across serial and pipeline phases;
+     * reopening would truncate the file and reset timestamps, hiding early
+     * stages from the timeline. Share the sink via a lightweight delegate
+     * pointer instead of copying mutex state.
+     */
+    if (g_parallel_logger_active != NULL &&
+            g_parallel_logger_active->active &&
+            g_parallel_logger_active->mutex_ready) {
+        sixel_parallel_logger_init(logger);
+        logger->delegate = g_parallel_logger_active;
+        logger->active = g_parallel_logger_active->active;
+        logger->started_at = g_parallel_logger_active->started_at;
+        ++g_parallel_logger_refcount;
+        return SIXEL_OK;
+    }
+
+    sixel_parallel_logger_init(logger);
+    path = getenv("SIXEL_PARALLEL_LOG_PATH");
+    if (path == NULL || path[0] == '\0') {
+        return SIXEL_OK;
+    }
+    status = sixel_parallel_logger_open(logger, path);
+    if (SIXEL_FAILED(status)) {
+        sixel_parallel_logger_close(logger);
+    }
+
+    return status;
 }
 
 void
@@ -140,13 +213,18 @@ sixel_parallel_logger_logf(sixel_parallel_logger_t *logger,
                            char const *fmt,
                            ...)
 {
+    sixel_parallel_logger_t *target;
     char message[256];
     char escaped[512];
     va_list args;
     double timestamp;
 
-    if (logger == NULL || !logger->active || logger->file == NULL
-            || !logger->mutex_ready) {
+    target = logger;
+    if (logger != NULL && logger->delegate != NULL) {
+        target = logger->delegate;
+    }
+    if (target == NULL || !target->active || target->file == NULL
+            || !target->mutex_ready) {
         return;
     }
 
@@ -176,12 +254,12 @@ sixel_parallel_logger_logf(sixel_parallel_logger_t *logger,
 
     sixel_parallel_logger_escape(message, escaped, sizeof(escaped));
 
-    sixel_mutex_lock(&logger->mutex);
-    timestamp = sixel_assessment_timer_now() - logger->started_at;
+    sixel_mutex_lock(&target->mutex);
+    timestamp = sixel_assessment_timer_now() - target->started_at;
     if (timestamp < 0.0) {
         timestamp = 0.0;
     }
-    fprintf(logger->file,
+    fprintf(target->file,
             "{\"ts\":%.6f,\"thread\":%llu,\"worker\":\"%s\","\
             "\"role\":\"%s\",\"event\":\"%s\",\"job\":%d,"\
             "\"row\":%d,\"y0\":%d,\"y1\":%d,\"in0\":%d,\"in1\":%d,"\
@@ -198,8 +276,8 @@ sixel_parallel_logger_logf(sixel_parallel_logger_t *logger,
             in0,
             in1,
             escaped);
-    fflush(logger->file);
-    sixel_mutex_unlock(&logger->mutex);
+    fflush(target->file);
+    sixel_mutex_unlock(&target->mutex);
 }
 
 /* emacs Local Variables:      */
