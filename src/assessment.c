@@ -3837,6 +3837,19 @@ sixel_assessment_capture_first_frame(sixel_frame_t *frame,
     return SIXEL_OK;
 }
 
+static int
+sixel_assessment_pixelformat_for_colorspace(int colorspace)
+{
+    switch (colorspace) {
+    case SIXEL_COLORSPACE_LINEAR:
+        return SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+    case SIXEL_COLORSPACE_OKLAB:
+        return SIXEL_PIXELFORMAT_OKLABFLOAT32;
+    default:
+        return SIXEL_PIXELFORMAT_RGB888;
+    }
+}
+
 SIXELAPI SIXELSTATUS
 sixel_assessment_expand_quantized_frame(sixel_frame_t *source,
                                         sixel_allocator_t *allocator,
@@ -3972,7 +3985,9 @@ sixel_assessment_expand_quantized_frame(sixel_frame_t *source,
     }
 
     rgb_pixels = NULL;
-    status = sixel_frame_ensure_colorspace(frame, colorspace);
+    status = sixel_frame_set_pixelformat(
+        frame,
+        sixel_assessment_pixelformat_for_colorspace(colorspace));
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }

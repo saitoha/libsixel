@@ -57,155 +57,17 @@
 #include "dither-varcoeff-float32.h"
 #include "dither-internal.h"
 #include "parallel-log.h"
-#include "precision.h"
 #include "pixelformat.h"
 #if SIXEL_ENABLE_THREADS
 # include "threadpool.h"
 #endif
 #include <sixel.h>
 
-static int g_sixel_precision_float32_env_cached = (-1);
-
-static unsigned char
-sixel_precision_ascii_tolower(unsigned char ch)
-{
-#if HAVE_CTYPE_H
-    return (unsigned char)tolower((int)ch);
-#else
-    if (ch >= 'A' && ch <= 'Z') {
-        ch = (unsigned char)(ch - 'A' + 'a');
-    }
-    return ch;
-#endif
-}
-
-static int
-sixel_precision_is_space(unsigned char ch)
-{
-#if HAVE_CTYPE_H
-    return isspace((int)ch);
-#else
-    switch (ch) {
-    case ' ':  /* fallthrough */
-    case '\t': /* fallthrough */
-    case '\r': /* fallthrough */
-    case '\n': /* fallthrough */
-    case '\f':
-        return 1;
-    default:
-        return 0;
-    }
-#endif
-}
-
-static int
-sixel_precision_strcaseeq(const char *lhs, const char *rhs)
-{
-    unsigned char lc;
-    unsigned char rc;
-
-    if (lhs == NULL || rhs == NULL) {
-        return 0;
-    }
-
-    while (*lhs != '\0' && *rhs != '\0') {
-        lc = sixel_precision_ascii_tolower((unsigned char)*lhs);
-        rc = sixel_precision_ascii_tolower((unsigned char)*rhs);
-        if (lc != rc) {
-            return 0;
-        }
-        ++lhs;
-        ++rhs;
-    }
-
-    return *lhs == '\0' && *rhs == '\0';
-}
-
-static int
-sixel_precision_parse_float32_flag(const char *value, int fallback)
-{
-    const char *cursor;
-
-    if (value == NULL) {
-        return fallback;
-    }
-
-    cursor = value;
-    while (*cursor != '\0'
-           && sixel_precision_is_space((unsigned char)*cursor)) {
-        ++cursor;
-    }
-    if (*cursor == '\0') {
-        return 0;
-    }
-
-    if (cursor[0] == '0' && cursor[1] == '\0') {
-        return 0;
-    }
-    if (cursor[0] == '1' && cursor[1] == '\0') {
-        return 1;
-    }
-    if (sixel_precision_strcaseeq(cursor, "false") ||
-            sixel_precision_strcaseeq(cursor, "off") ||
-            sixel_precision_strcaseeq(cursor, "no")) {
-        return 0;
-    }
-    if (sixel_precision_strcaseeq(cursor, "true") ||
-            sixel_precision_strcaseeq(cursor, "on") ||
-            sixel_precision_strcaseeq(cursor, "yes") ||
-            sixel_precision_strcaseeq(cursor, "auto") ||
-            sixel_precision_strcaseeq(cursor, "kmeans")) {
-        return 1;
-    }
-
-    return fallback;
-}
-
-int
-sixel_precision_env_wants_float32(void)
-{
-    const char *value;
-
-    if (g_sixel_precision_float32_env_cached != (-1)) {
-        return g_sixel_precision_float32_env_cached;
-    }
-
-    value = sixel_compat_getenv(SIXEL_FLOAT32_ENVVAR);
-    if (value == NULL) {
-        g_sixel_precision_float32_env_cached = 0;
-        return g_sixel_precision_float32_env_cached;
-    }
-
-    g_sixel_precision_float32_env_cached =
-        sixel_precision_parse_float32_flag(value, 1);
-    return g_sixel_precision_float32_env_cached;
-}
-
-void
-sixel_precision_reset_float32_cache(void)
-{
-    g_sixel_precision_float32_env_cached = (-1);
-}
-
-/* Cache the parsed environment decision to avoid repeated getenv() calls. */
-static int
-sixel_dither_env_wants_float32(void)
-{
-    return sixel_precision_env_wants_float32();
-}
-
-#if HAVE_TESTS
-void
-sixel_dither_tests_reset_float32_flag_cache(void)
-{
-    sixel_precision_reset_float32_cache();
-}
-#endif
 
 /*
  * Promote an RGB888 buffer to RGBFLOAT32 by normalising each channel to the
- * 0.0-1.0 range.  The helper is used when the environment requests float32
- * precision but the incoming frame still relies on 8bit pixels.
+ * 0.0-1.0 range.  The helper is used when a float32 pipeline is requested via
+ * the pixelformat but the incoming frame still relies on 8bit pixels.
  */
 static SIXELSTATUS
 sixel_dither_promote_rgb888_to_float32(float **out_pixels,
@@ -1350,7 +1212,7 @@ sixel_dither_new(
     (*ppdither)->quality_mode = quality_mode;
     (*ppdither)->requested_quality_mode = quality_mode;
     (*ppdither)->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    (*ppdither)->prefer_rgbfloat32 = sixel_dither_env_wants_float32();
+    (*ppdither)->prefer_rgbfloat32 = 0;
     (*ppdither)->allocator = allocator;
     (*ppdither)->lut_policy = SIXEL_LUT_POLICY_AUTO;
     (*ppdither)->sixel_reversible = 0;
@@ -1636,6 +1498,11 @@ sixel_dither_initialize(
     payload_length = 0U;
     palette_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     prefer_rgbfloat32 = dither->prefer_rgbfloat32;
+
+    /* Float32 input requires the pipeline to honour higher precision. */
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        prefer_rgbfloat32 = 1;
+    }
 
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_RGB888:
@@ -1984,7 +1851,10 @@ sixel_dither_set_pixelformat(
     sixel_dither_t /* in */ *dither,     /* dither context object */
     int            /* in */ pixelformat) /* one of enum pixelFormat */
 {
+    /* Keep the float32 preference aligned with the requested pixelformat. */
     dither->pixelformat = pixelformat;
+    dither->prefer_rgbfloat32 =
+        SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) ? 1 : 0;
 }
 
 
@@ -2431,17 +2301,15 @@ error:
     return nret;
 }
 
-/* ensure the float32 flag honours the environment defaults */
+/* ensure the default pixelformat keeps the legacy 8bit path */
 static int
-test_float_env_disabled(void)
+test_float_pixelformat_defaults_to_8bit(void)
 {
     sixel_dither_t *dither = NULL;
     int nret = EXIT_FAILURE;
     SIXELSTATUS status;
 
-    sixel_dither_tests_reset_float32_flag_cache();
     sixel_palette_tests_reset_last_engine();
-    sixel_compat_setenv(SIXEL_FLOAT32_ENVVAR, "0");
 
     status = sixel_dither_new(&dither, 4, NULL);
     if (SIXEL_FAILED(status) || dither == NULL) {
@@ -2455,12 +2323,13 @@ test_float_env_disabled(void)
 
 error:
     sixel_dither_unref(dither);
+    sixel_palette_tests_reset_last_engine();
     return nret;
 }
 
-/* ensure empty environment assignments keep the legacy pipeline */
+/* ensure pixelformat setters toggle the float32 preference */
 static int
-test_float_env_empty_string_disables(void)
+test_float_pixelformat_sets_flag(void)
 {
     sixel_dither_t *dither;
     SIXELSTATUS status;
@@ -2469,14 +2338,17 @@ test_float_env_empty_string_disables(void)
     dither = NULL;
     status = SIXEL_FALSE;
     nret = EXIT_FAILURE;
-    sixel_dither_tests_reset_float32_flag_cache();
     sixel_palette_tests_reset_last_engine();
-    sixel_compat_setenv(SIXEL_FLOAT32_ENVVAR, "");
 
     status = sixel_dither_new(&dither, 4, NULL);
     if (SIXEL_FAILED(status) || dither == NULL) {
         goto error;
     }
+    sixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_RGBFLOAT32);
+    if (dither->prefer_rgbfloat32 == 0) {
+        goto error;
+    }
+    sixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_RGB888);
     if (dither->prefer_rgbfloat32 != 0) {
         goto error;
     }
@@ -2486,14 +2358,12 @@ test_float_env_empty_string_disables(void)
 error:
     sixel_dither_unref(dither);
     sixel_palette_tests_reset_last_engine();
-    sixel_compat_setenv(SIXEL_FLOAT32_ENVVAR, "0");
-    sixel_dither_tests_reset_float32_flag_cache();
     return nret;
 }
 
 /* ensure the float32 route dispatches the RGBFLOAT32 quantizer */
 static int
-test_float_env_enables_quantizer(void)
+test_float_pixelformat_enables_quantizer(void)
 {
     static unsigned char const pixels[] = {
         0x00, 0x00, 0x00,
@@ -2504,23 +2374,20 @@ test_float_env_enables_quantizer(void)
     int nret;
 
     nret = EXIT_FAILURE;
-    sixel_dither_tests_reset_float32_flag_cache();
     sixel_palette_tests_reset_last_engine();
-    sixel_compat_setenv(SIXEL_FLOAT32_ENVVAR, "1");
 
     status = sixel_dither_new(&dither, 2, NULL);
     if (SIXEL_FAILED(status) || dither == NULL) {
         goto error;
     }
-    if (dither->prefer_rgbfloat32 == 0) {
-        goto error;
-    }
+    sixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_RGBFLOAT32);
+    dither->quantize_model = SIXEL_QUANTIZE_MODEL_MEDIANCUT;
 
     status = sixel_dither_initialize(dither,
                                      (unsigned char *)pixels,
                                      2,
                                      1,
-                                     SIXEL_PIXELFORMAT_RGB888,
+                                     SIXEL_PIXELFORMAT_RGBFLOAT32,
                                      SIXEL_LARGE_AUTO,
                                      SIXEL_REP_AUTO,
                                      SIXEL_QUALITY_AUTO);
@@ -2540,14 +2407,12 @@ test_float_env_enables_quantizer(void)
 error:
     sixel_dither_unref(dither);
     sixel_palette_tests_reset_last_engine();
-    sixel_compat_setenv(SIXEL_FLOAT32_ENVVAR, "0");
-    sixel_dither_tests_reset_float32_flag_cache();
     return nret;
 }
 
 /* ensure explicit Heckbert requests also take the float32 route */
 static int
-test_float_env_explicit_mediancut_dispatch(void)
+test_float_pixelformat_explicit_mediancut_dispatch(void)
 {
     static unsigned char const pixels[] = {
         0x80, 0x20, 0x20,
@@ -2558,24 +2423,20 @@ test_float_env_explicit_mediancut_dispatch(void)
     int nret;
 
     nret = EXIT_FAILURE;
-    sixel_dither_tests_reset_float32_flag_cache();
     sixel_palette_tests_reset_last_engine();
-    sixel_compat_setenv(SIXEL_FLOAT32_ENVVAR, "1");
 
     status = sixel_dither_new(&dither, 2, NULL);
     if (SIXEL_FAILED(status) || dither == NULL) {
         goto error;
     }
-    if (dither->prefer_rgbfloat32 == 0) {
-        goto error;
-    }
+    sixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_RGBFLOAT32);
     dither->quantize_model = SIXEL_QUANTIZE_MODEL_MEDIANCUT;
 
     status = sixel_dither_initialize(dither,
                                      (unsigned char *)pixels,
                                      2,
                                      1,
-                                     SIXEL_PIXELFORMAT_RGB888,
+                                     SIXEL_PIXELFORMAT_RGBFLOAT32,
                                      SIXEL_LARGE_AUTO,
                                      SIXEL_REP_AUTO,
                                      SIXEL_QUALITY_AUTO);
@@ -2595,8 +2456,6 @@ test_float_env_explicit_mediancut_dispatch(void)
 error:
     sixel_dither_unref(dither);
     sixel_palette_tests_reset_last_engine();
-    sixel_compat_setenv(SIXEL_FLOAT32_ENVVAR, "0");
-    sixel_dither_tests_reset_float32_flag_cache();
     return nret;
 }
 
@@ -2616,10 +2475,8 @@ test_float_fs_diffusion_dispatch(void)
     dither = NULL;
     indexes = NULL;
     nret = EXIT_FAILURE;
-    sixel_dither_tests_reset_float32_flag_cache();
     sixel_palette_tests_reset_last_engine();
     sixel_dither_diffusion_tests_reset_float32_hits();
-    sixel_compat_setenv(SIXEL_FLOAT32_ENVVAR, "1");
 
     status = sixel_dither_new(&dither, 2, NULL);
     if (SIXEL_FAILED(status) || dither == NULL) {
@@ -2660,8 +2517,6 @@ error:
     }
     sixel_dither_unref(dither);
     sixel_palette_tests_reset_last_engine();
-    sixel_compat_setenv(SIXEL_FLOAT32_ENVVAR, "0");
-    sixel_dither_tests_reset_float32_flag_cache();
     sixel_dither_diffusion_tests_reset_float32_hits();
     return nret;
 }
@@ -2757,9 +2612,7 @@ test_float_optimize_palette_sync(void)
     palette_u8_count = 0U;
     nret = EXIT_FAILURE;
 
-    sixel_dither_tests_reset_float32_flag_cache();
     sixel_palette_tests_reset_last_engine();
-    sixel_compat_setenv(SIXEL_FLOAT32_ENVVAR, "1");
 
     status = sixel_dither_new(&dither, 4, NULL);
     if (SIXEL_FAILED(status) || dither == NULL) {
@@ -2842,8 +2695,6 @@ error:
     }
     sixel_dither_unref(dither);
     sixel_palette_tests_reset_last_engine();
-    sixel_compat_setenv(SIXEL_FLOAT32_ENVVAR, "0");
-    sixel_dither_tests_reset_float32_flag_cache();
     return nret;
 }
 
@@ -2889,9 +2740,7 @@ test_float_palette_accessor_returns_data(void)
     entry_float = NULL;
     entry_u8 = NULL;
 
-    sixel_dither_tests_reset_float32_flag_cache();
     sixel_palette_tests_reset_last_engine();
-    sixel_compat_setenv(SIXEL_FLOAT32_ENVVAR, "1");
 
     status = sixel_dither_new(&dither, 2, NULL);
     if (SIXEL_FAILED(status) || dither == NULL) {
@@ -2967,8 +2816,6 @@ test_float_palette_accessor_returns_data(void)
 error:
     sixel_dither_unref(dither);
     sixel_palette_tests_reset_last_engine();
-    sixel_compat_setenv(SIXEL_FLOAT32_ENVVAR, "0");
-    sixel_dither_tests_reset_float32_flag_cache();
     return nret;
 }
 
@@ -2997,9 +2844,7 @@ test_float_palette_accessor_legacy_null(void)
     palette_float_count = 0U;
     palette_u8_count = 0U;
     nret = EXIT_FAILURE;
-    sixel_dither_tests_reset_float32_flag_cache();
     sixel_palette_tests_reset_last_engine();
-    sixel_compat_setenv(SIXEL_FLOAT32_ENVVAR, "0");
 
     status = sixel_dither_new(&dither, 2, NULL);
     if (SIXEL_FAILED(status) || dither == NULL) {
@@ -3060,7 +2905,6 @@ error:
     }
     sixel_dither_unref(dither);
     sixel_palette_tests_reset_last_engine();
-    sixel_dither_tests_reset_float32_flag_cache();
     return nret;
 }
 
@@ -3075,10 +2919,10 @@ sixel_dither_tests_main(void)
     static testcase const testcases[] = {
         test1,
         test2,
-        test_float_env_disabled,
-        test_float_env_empty_string_disables,
-        test_float_env_enables_quantizer,
-        test_float_env_explicit_mediancut_dispatch,
+        test_float_pixelformat_defaults_to_8bit,
+        test_float_pixelformat_sets_flag,
+        test_float_pixelformat_enables_quantizer,
+        test_float_pixelformat_explicit_mediancut_dispatch,
         test_float_fs_diffusion_dispatch,
         test_float_optimize_palette_sync,
         test_float_palette_accessor_returns_data,
