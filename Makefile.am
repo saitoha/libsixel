@@ -18,7 +18,9 @@ DIST_SUBDIRS = include src converters assessment tools python ruby wic \
 EXTRA_DIST = LICENSE depcomp
 
 EXTRA_DIST += converters/t/common.t \
-    converters/t/test_0001_invalid_option.t \
+    converters/t/test_0001_01_invalid_positional.t \
+    converters/t/test_0001_02_invalid_option_arguments.t \
+    converters/t/test_0001_03_invalid_option_combinations.t \
     converters/t/test_0002_stdin.t \
     converters/t/test_0003_information.t \
     converters/t/test_0004_conversion_options.t \
