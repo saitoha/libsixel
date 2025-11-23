@@ -61,6 +61,13 @@ typedef struct sixel_prescan_context {
     int max_x;
     int max_y;
     int saw_draw;
+    int band_repeat_sum; /* running repeat count for current band */
+    int band_token_count; /* running token count for current band */
+    sixel_prescan_callbacks_t const *callbacks;
+    sixel_prescan_band_state_t band_state_at_start;
+    size_t band_start_offset;
+    int band_event_start;
+    int discard_bands;
 } sixel_prescan_context_t;
 
 static const uint32_t sixel_prescan_default_palette[16] = {
@@ -198,6 +205,8 @@ sixel_prescan_context_init(sixel_prescan_context_t *context)
     SIXELSTATUS status = SIXEL_FALSE;
 
     memset(context, 0, sizeof(*context));
+    context->band_repeat_sum = 0;
+    context->band_token_count = 0;
     context->state.state = SIXEL_PRESCAN_PS_GROUND;
     context->state.pos_x = 0;
     context->state.pos_y = 0;
@@ -216,6 +225,10 @@ sixel_prescan_context_init(sixel_prescan_context_t *context)
     context->max_x = 0;
     context->max_y = 0;
     context->saw_draw = 0;
+    context->band_state_at_start = context->state;
+    context->band_start_offset = 0;
+    context->band_event_start = 0;
+    context->discard_bands = 0;
     sixel_prescan_palette_init(context->state.palette);
 
     status = SIXEL_OK;
@@ -251,6 +264,119 @@ sixel_prescan_disable_parallel(sixel_prescan_t *prescan, unsigned int flag)
     prescan->flags |= flag;
 }
 
+static SIXELSTATUS
+sixel_prescan_events_ensure_capacity(sixel_prescan_t *prescan,
+                                     int extra,
+                                     sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    size_t needed;
+    size_t capacity;
+    size_t new_capacity;
+    sixel_band_event_t *grown;
+
+    status = SIXEL_OK;
+    if (prescan == NULL || extra < 0 || allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    needed = (size_t)prescan->event_count + (size_t)extra;
+    capacity = (size_t)prescan->event_capacity;
+    if (needed <= capacity) {
+        return SIXEL_OK;
+    }
+    if (capacity == 0) {
+        new_capacity = (size_t)32;
+    } else {
+        new_capacity = capacity * 2u;
+    }
+    while (new_capacity < needed) {
+        new_capacity *= 2u;
+    }
+    grown = (sixel_band_event_t *)sixel_allocator_realloc(
+        allocator,
+        prescan->events,
+        new_capacity * sizeof(*prescan->events));
+    if (grown == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_prescan: realloc for event log failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    prescan->events = grown;
+    prescan->event_capacity = (int)new_capacity;
+end:
+    return status;
+}
+
+static SIXELSTATUS
+sixel_prescan_append_event(sixel_prescan_t *prescan,
+                           sixel_prescan_context_t *context,
+                           sixel_band_event_type_t type,
+                           int color_index,
+                           uint32_t color,
+                           int pad,
+                           int pan,
+                           int ph,
+                           int pv,
+                           sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    sixel_prescan_callbacks_t const *callbacks;
+    sixel_band_event_t *event;
+    int event_index;
+
+    callbacks = NULL;
+    if (context != NULL) {
+        callbacks = context->callbacks;
+    }
+    event_index = prescan->event_count;
+    if (callbacks != NULL && callbacks->discard_events) {
+        sixel_band_event_t mirrored;
+
+        mirrored.type = type;
+        mirrored.color_index = color_index;
+        mirrored.color = color;
+        mirrored.pad = pad;
+        mirrored.pan = pan;
+        mirrored.ph = ph;
+        mirrored.pv = pv;
+        prescan->event_count += 1;
+        if (callbacks->on_event != NULL) {
+            status = callbacks->on_event(prescan,
+                                         event_index,
+                                         &mirrored,
+                                         callbacks->user_data);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+        }
+        return SIXEL_OK;
+    }
+    status = sixel_prescan_events_ensure_capacity(prescan, 1, allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    event = &prescan->events[event_index];
+    event->type = type;
+    event->color_index = color_index;
+    event->color = color;
+    event->pad = pad;
+    event->pan = pan;
+    event->ph = ph;
+    event->pv = pv;
+    prescan->event_count += 1;
+    if (callbacks != NULL && callbacks->on_event != NULL) {
+        status = callbacks->on_event(prescan,
+                                     event_index,
+                                     event,
+                                     callbacks->user_data);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+    return SIXEL_OK;
+}
+
 /*
  * Grow the arrays that store band metadata. The prescan makes a single pass,
  * so doubling the capacity keeps reallocations infrequent even for long
@@ -266,6 +392,9 @@ sixel_prescan_ensure_capacity(sixel_prescan_t *prescan,
     size_t bytes;
     size_t *offsets;
     sixel_prescan_band_state_t *states;
+    int *repeat_sums;
+    int *token_counts;
+    int *event_starts;
 
     if (required <= prescan->band_capacity) {
         return SIXEL_OK;
@@ -276,8 +405,12 @@ sixel_prescan_ensure_capacity(sixel_prescan_t *prescan,
     } else {
         new_capacity = prescan->band_capacity;
     }
-    while (new_capacity < required) {
-        new_capacity *= 2;
+    if (prescan->discard_bands) {
+        new_capacity = required;
+    } else {
+        while (new_capacity < required) {
+            new_capacity *= 2;
+        }
     }
 
     bytes = (size_t)new_capacity * sizeof(size_t);
@@ -315,6 +448,40 @@ sixel_prescan_ensure_capacity(sixel_prescan_t *prescan,
         goto end;
     }
     prescan->band_states = states;
+
+    bytes = (size_t)new_capacity * sizeof(int);
+    repeat_sums = (int *)sixel_allocator_realloc(allocator,
+                                                 prescan->band_repeat_sums,
+                                                 bytes);
+    if (repeat_sums == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_prescan: realloc for repeat sums failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    prescan->band_repeat_sums = repeat_sums;
+
+    token_counts = (int *)sixel_allocator_realloc(allocator,
+                                                 prescan->band_token_counts,
+                                                 bytes);
+    if (token_counts == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_prescan: realloc for token counts failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    prescan->band_token_counts = token_counts;
+
+    event_starts = (int *)sixel_allocator_realloc(allocator,
+                                                 prescan->band_event_starts,
+                                                 bytes);
+    if (event_starts == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_prescan: realloc for event starts failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    prescan->band_event_starts = event_starts;
     prescan->band_capacity = new_capacity;
     status = SIXEL_OK;
 
@@ -330,9 +497,18 @@ sixel_prescan_store_snapshot(sixel_prescan_t *prescan,
     int index;
 
     index = prescan->band_count;
+    context->band_state_at_start = context->state;
+    context->band_start_offset = start_offset;
+    context->band_event_start = prescan->event_count;
+    if (prescan->discard_bands && index > 0) {
+        return;
+    }
     prescan->band_start_offsets[index] = start_offset;
     prescan->band_end_offsets[index] = start_offset;
     prescan->band_states[index] = context->state;
+    prescan->band_repeat_sums[index] = context->band_repeat_sum;
+    prescan->band_token_counts[index] = context->band_token_count;
+    prescan->band_event_starts[index] = prescan->event_count;
 }
 
 static SIXELSTATUS
@@ -343,11 +519,18 @@ sixel_prescan_append_band(sixel_prescan_t *prescan,
 {
     SIXELSTATUS status = SIXEL_FALSE;
 
-    status = sixel_prescan_ensure_capacity(prescan,
-                                           prescan->band_count + 1,
-                                           allocator);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    /*
+     * Skip resizing when the caller mirrors band metadata via callbacks and
+     * requests that the prescan drop per-band tables. The first band still
+     * uses the shared storage so band 0 metadata remains available.
+     */
+    if (!context->discard_bands || prescan->band_count == 0) {
+        status = sixel_prescan_ensure_capacity(prescan,
+                                               prescan->band_count + 1,
+                                               allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
 
     sixel_prescan_store_snapshot(prescan, context, start_offset);
@@ -356,6 +539,31 @@ sixel_prescan_append_band(sixel_prescan_t *prescan,
 
 end:
     return status;
+}
+
+static SIXELSTATUS sixel_prescan_notify_band(
+    sixel_prescan_callbacks_t const *callbacks,
+    sixel_prescan_t *prescan,
+    int band_index,
+    sixel_prescan_band_state_t const *band_state,
+    size_t start_offset,
+    size_t end_offset,
+    int event_start,
+    int weight_tokens,
+    int weight_repeats)
+{
+    if (callbacks == NULL || callbacks->on_band == NULL) {
+        return SIXEL_OK;
+    }
+    return callbacks->on_band(prescan,
+                              band_index,
+                              band_state,
+                              start_offset,
+                              end_offset,
+                              event_start,
+                              weight_tokens,
+                              weight_repeats,
+                              callbacks->user_data);
 }
 
 /*
@@ -367,14 +575,55 @@ static SIXELSTATUS
 sixel_prescan_start_new_band(sixel_prescan_t *prescan,
                              sixel_prescan_context_t *context,
                              size_t newline_offset,
+                             sixel_prescan_callbacks_t const *callbacks,
                              sixel_allocator_t *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     size_t start_offset;
-
+    size_t band_start_offset;
+    
     if (prescan->band_count > 0) {
-        prescan->band_end_offsets[prescan->band_count - 1] = newline_offset;
+        int band_index;
+        int event_start;
+        sixel_prescan_band_state_t const *band_state;
+
+        /* Capture repeat workload for the band we are closing. */
+        band_index = prescan->band_count - 1;
+        band_state = &context->band_state_at_start;
+        band_start_offset = context->band_start_offset;
+        event_start = context->band_event_start;
+        /*
+         * When band snapshots are retained, forward the stored tables.
+         * Otherwise rely on the mirrored snapshot kept in the context.
+         */
+        if (!prescan->discard_bands || band_index == 0) {
+            prescan->band_end_offsets[band_index] = newline_offset;
+            prescan->band_repeat_sums[band_index] =
+                context->band_repeat_sum;
+            prescan->band_token_counts[band_index] =
+                context->band_token_count;
+            prescan->band_event_starts[band_index] =
+                context->band_event_start;
+            band_state = &prescan->band_states[band_index];
+            band_start_offset = prescan->band_start_offsets[band_index];
+            event_start = prescan->band_event_starts[band_index];
+        }
+        status = sixel_prescan_notify_band(callbacks,
+                                           prescan,
+                                           band_index,
+                                           band_state,
+                                           band_start_offset,
+                                           newline_offset,
+                                           event_start,
+                                           context->band_token_count,
+                                           context->band_repeat_sum);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
+
+    context->band_repeat_sum = 0;
+    context->band_token_count = 0;
 
     context->state.pos_x = 0;
     context->state.pos_y += 6;
@@ -385,6 +634,7 @@ sixel_prescan_start_new_band(sixel_prescan_t *prescan,
                                        start_offset,
                                        allocator);
 
+end:
     return status;
 }
 
@@ -429,10 +679,12 @@ sixel_prescan_finalize_dimensions(sixel_prescan_context_t *context,
     prescan->height = height;
 }
 
-static void
+static SIXELSTATUS
 sixel_prescan_handle_ra(sixel_prescan_t *prescan,
-                        sixel_prescan_context_t *context)
+                        sixel_prescan_context_t *context,
+                        sixel_allocator_t *allocator)
 {
+    SIXELSTATUS status;
     sixel_prescan_band_state_t *state;
     int previous_ph;
     int previous_pv;
@@ -468,17 +720,48 @@ sixel_prescan_handle_ra(sixel_prescan_t *prescan,
                                        SIXEL_PRESCAN_FLAG_UNSAFE_GEOMETRY);
     }
 
+    status = sixel_prescan_append_event(prescan,
+                                       context,
+                                       SIXEL_BAND_EVENT_RASTER_ATTR,
+                                       0,
+                                       0u,
+                                       state->attributed_pad,
+                                       state->attributed_pan,
+                                       state->attributed_ph,
+                                       state->attributed_pv,
+                                       allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    status = sixel_prescan_append_event(prescan,
+                                        context,
+                                        SIXEL_BAND_EVENT_BACKGROUND,
+                                        state->bgindex,
+                                        0u,
+                                        state->p2_background,
+                                        0,
+                                        0,
+                                        0,
+                                        allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
     state->par_num = state->attributed_pan;
     state->par_den = state->attributed_pad;
     state->nparams = 0;
     state->param = 0;
+    return SIXEL_OK;
 }
 
-static void
+static SIXELSTATUS
 sixel_prescan_store_color(sixel_prescan_t *prescan,
                           sixel_prescan_context_t *context,
-                          uint32_t color)
+                          uint32_t color,
+                          sixel_allocator_t *allocator)
 {
+    SIXELSTATUS status;
     sixel_prescan_band_state_t *state;
 
     state = &context->state;
@@ -488,15 +771,51 @@ sixel_prescan_store_color(sixel_prescan_t *prescan,
     if (state->color_index >= SIXEL_PRESCAN_PALETTE_MAX) {
         sixel_prescan_disable_parallel(prescan,
                                        SIXEL_PRESCAN_FLAG_UNSUPPORTED_COLOR);
-        return;
+        return SIXEL_OK;
     }
     state->palette[state->color_index] = color;
+    status = sixel_prescan_append_event(prescan,
+                                        context,
+                                        SIXEL_BAND_EVENT_PALETTE,
+                                        state->color_index,
+                                        color,
+                                        0,
+                                        0,
+                                        0,
+                                        0,
+                                        allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    return SIXEL_OK;
 }
 
 static void
 sixel_prescan_mark_draw(sixel_prescan_context_t *context)
 {
     context->saw_draw = 1;
+}
+
+static void
+sixel_prescan_count_token(sixel_prescan_context_t *context)
+{
+    if (context->band_token_count < INT_MAX) {
+        context->band_token_count += 1;
+    }
+}
+
+static int
+sixel_prescan_callbacks_only(
+    sixel_prescan_callbacks_t const *callbacks,
+    sixel_prescan_t **out_prescan)
+{
+    if (out_prescan != NULL) {
+        return 0;
+    }
+    if (callbacks == NULL) {
+        return 0;
+    }
+    return 1;
 }
 
 /*
@@ -508,7 +827,8 @@ SIXELSTATUS
 sixel_prescan_run(unsigned char *p,
                   int len,
                   sixel_prescan_t **out_prescan,
-                  sixel_allocator_t *allocator)
+                  sixel_allocator_t *allocator,
+                  sixel_prescan_callbacks_t const *callbacks)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_prescan_t *prescan = NULL;
@@ -525,7 +845,7 @@ sixel_prescan_run(unsigned char *p,
     int j;
     int span;
 
-    if (out_prescan == NULL || allocator == NULL) {
+    if (allocator == NULL) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
@@ -540,7 +860,33 @@ sixel_prescan_run(unsigned char *p,
         goto end;
     }
 
-    *out_prescan = NULL;
+    if (out_prescan != NULL) {
+        *out_prescan = NULL;
+    }
+
+    if (out_prescan == NULL && (callbacks == NULL ||
+            callbacks->on_finish == NULL)) {
+        sixel_helper_set_additional_message(
+            "sixel_prescan_run: callbacks are required when dropping the "
+            "prescan tables.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    if (callbacks != NULL) {
+        if (callbacks->discard_events && callbacks->on_event == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_prescan_run: discard_events requires on_event.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        if (callbacks->discard_bands && callbacks->on_band == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_prescan_run: discard_bands requires on_band.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+    }
 
     prescan = (sixel_prescan_t *)sixel_allocator_calloc(allocator,
                                                         1,
@@ -556,6 +902,10 @@ sixel_prescan_run(unsigned char *p,
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+    context.callbacks = callbacks;
+    context.discard_bands = (callbacks != NULL && callbacks->discard_bands);
+
+    prescan->discard_bands = context.discard_bands;
 
     status = sixel_prescan_append_band(prescan, &context, 0, allocator);
     if (SIXEL_FAILED(status)) {
@@ -727,6 +1077,7 @@ sixel_prescan_run(unsigned char *p,
                 status = sixel_prescan_start_new_band(prescan,
                                                       &context,
                                                       offset,
+                                                      callbacks,
                                                       allocator);
                 if (SIXEL_FAILED(status)) {
                     goto end;
@@ -739,6 +1090,21 @@ sixel_prescan_run(unsigned char *p,
                     if (state->pos_x < 0 || state->pos_y < 0) {
                         status = SIXEL_BAD_INPUT;
                         goto end;
+                    }
+                    sixel_prescan_count_token(&context);
+                    if (bits != 0) {
+                        if (state->repeat_count < 0) {
+                            status = SIXEL_BAD_INPUT;
+                            sixel_helper_set_additional_message(
+                                "sixel_prescan: invalid repeat count.");
+                            goto end;
+                        }
+                        if (context.band_repeat_sum >
+                                INT_MAX - state->repeat_count) {
+                            context.band_repeat_sum = INT_MAX;
+                        } else {
+                            context.band_repeat_sum += state->repeat_count;
+                        }
                     }
                     if (bits == 0) {
                         state->pos_x += state->repeat_count;
@@ -820,7 +1186,13 @@ sixel_prescan_run(unsigned char *p,
                     state->params[state->nparams++] = state->param;
                 }
                 state->param = 0;
-                sixel_prescan_handle_ra(prescan, &context);
+                status = sixel_prescan_handle_ra(prescan,
+                                                 &context,
+                                                 allocator);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+                sixel_prescan_count_token(&context);
                 state->state = SIXEL_PRESCAN_PS_DECSIXEL;
                 continue;
                 break;
@@ -857,6 +1229,7 @@ sixel_prescan_run(unsigned char *p,
                         "sixel_prescan: repeat parameter too large.");
                     goto end;
                 }
+                sixel_prescan_count_token(&context);
                 state->state = SIXEL_PRESCAN_PS_DECSIXEL;
                 state->param = 0;
                 state->nparams = 0;
@@ -904,6 +1277,16 @@ sixel_prescan_run(unsigned char *p,
                         state->color_index = SIXEL_PALETTE_MAX_DECODER - 1;
                     }
                 }
+                (void)sixel_prescan_append_event(prescan,
+                                                 &context,
+                                                 SIXEL_BAND_EVENT_PEN,
+                                                 state->color_index,
+                                                 0u,
+                                                 0,
+                                                 0,
+                                                 0,
+                                                 0,
+                                                 allocator);
                 if (state->nparams > 4) {
                     if (state->params[1] == 1) {
                         if (state->params[2] > 360) {
@@ -915,12 +1298,16 @@ sixel_prescan_run(unsigned char *p,
                         if (state->params[4] > 100) {
                             state->params[4] = 100;
                         }
-                        sixel_prescan_store_color(
+                        status = sixel_prescan_store_color(
                             prescan,
                             &context,
                             sixel_prescan_hls_to_rgba(state->params[2],
                                                       state->params[3],
-                                                      state->params[4]));
+                                                      state->params[4]),
+                            allocator);
+                        if (SIXEL_FAILED(status)) {
+                            goto end;
+                        }
                     } else if (state->params[1] == 2) {
                         if (state->params[2] > 100) {
                             state->params[2] = 100;
@@ -931,14 +1318,19 @@ sixel_prescan_run(unsigned char *p,
                         if (state->params[4] > 100) {
                             state->params[4] = 100;
                         }
-                        sixel_prescan_store_color(
+                        status = sixel_prescan_store_color(
                             prescan,
                             &context,
                             SIXEL_PRESCAN_XRGB(state->params[2],
-                                               state->params[3],
-                                               state->params[4]));
+                                                state->params[3],
+                                                state->params[4]),
+                            allocator);
+                        if (SIXEL_FAILED(status)) {
+                            goto end;
+                        }
                     }
                 }
+                sixel_prescan_count_token(&context);
                 state->state = SIXEL_PRESCAN_PS_DECSIXEL;
                 continue;
                 break;
@@ -955,11 +1347,64 @@ sixel_prescan_run(unsigned char *p,
     }
 
     if (prescan->band_count > 0) {
-        prescan->band_end_offsets[prescan->band_count - 1] = consumed_len;
+        int band_index;
+        int event_start;
+        sixel_prescan_band_state_t const *band_state;
+        size_t band_start_offset;
+
+        band_index = prescan->band_count - 1;
+        band_state = &context.band_state_at_start;
+        band_start_offset = context.band_start_offset;
+        event_start = context.band_event_start;
+        if (!prescan->discard_bands || band_index == 0) {
+            prescan->band_end_offsets[band_index] = consumed_len;
+            prescan->band_repeat_sums[band_index] = context.band_repeat_sum;
+            prescan->band_token_counts[band_index] = context.band_token_count;
+            prescan->band_event_starts[band_index] = context.band_event_start;
+            band_state = &prescan->band_states[band_index];
+            band_start_offset = prescan->band_start_offsets[band_index];
+            event_start = prescan->band_event_starts[band_index];
+        }
+        status = sixel_prescan_notify_band(callbacks,
+                                           prescan,
+                                           band_index,
+                                           band_state,
+                                           band_start_offset,
+                                           consumed_len,
+                                           event_start,
+                                           context.band_token_count,
+                                           context.band_repeat_sum);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
 
     sixel_prescan_finalize_dimensions(&context, prescan);
     prescan->final_state = context.state;
+
+    if (callbacks != NULL && callbacks->on_finish != NULL) {
+        status = callbacks->on_finish(prescan,
+                                      &prescan->final_state,
+                                      prescan->width,
+                                      prescan->height,
+                                      prescan->band_states[0].bgindex,
+                                      prescan->band_count,
+                                      prescan->flags,
+                                      callbacks->user_data);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+
+    if (sixel_prescan_callbacks_only(callbacks, out_prescan)) {
+        status = SIXEL_OK;
+        goto end;
+    }
+
+    if (out_prescan == NULL) {
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
 
     *out_prescan = prescan;
     status = SIXEL_OK;
@@ -983,6 +1428,10 @@ sixel_prescan_destroy(sixel_prescan_t *prescan,
 
     sixel_allocator_free(allocator, prescan->band_start_offsets);
     sixel_allocator_free(allocator, prescan->band_end_offsets);
+    sixel_allocator_free(allocator, prescan->band_repeat_sums);
+    sixel_allocator_free(allocator, prescan->band_token_counts);
+    sixel_allocator_free(allocator, prescan->band_event_starts);
+    sixel_allocator_free(allocator, prescan->events);
     sixel_allocator_free(allocator, prescan->band_states);
     sixel_allocator_free(allocator, prescan);
 }

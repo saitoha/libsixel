@@ -50,7 +50,9 @@ libsixelquicklookcore_a_SOURCES = \
     $(top_srcdir)/src/status.c \
     $(top_srcdir)/src/allocator.c \
     $(top_srcdir)/src/fromsixel.c \
-    $(top_srcdir)/src/compat_stub.c
+    $(top_srcdir)/src/compat_stub.c \
+    $(top_srcdir)/src/assessment.c \
+    $(top_srcdir)/src/fillrun.c
 
 if SIXEL_ENABLE_THREADS
 libsixelquicklookcore_a_SOURCES += \

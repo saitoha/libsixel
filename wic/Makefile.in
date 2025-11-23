@@ -147,6 +147,8 @@ am__libwicsixel_la_SOURCES_DIST = $(srcdir)/wic.c $(srcdir)/wic_stub.c \
 	$(srcdir)/wic_stub.h $(top_builddir)/src/fromsixel.c \
 	$(top_builddir)/src/allocator.c $(top_builddir)/src/status.c \
 	$(top_builddir)/src/compat_stub.c \
+	$(top_srcdir)/src/assessment.c \
+	$(top_srcdir)/src/fillrun.c \
 	$(top_srcdir)/src/decoder-prescan.c \
 	$(top_srcdir)/src/decoder-parallel.c \
 	$(top_srcdir)/src/sixel_threading.c \
@@ -163,6 +165,8 @@ am_libwicsixel_la_OBJECTS = libwicsixel_la-wic.lo \
 	$(top_builddir)/src/libwicsixel_la-allocator.lo \
 	$(top_builddir)/src/libwicsixel_la-status.lo \
 	$(top_builddir)/src/libwicsixel_la-compat_stub.lo \
+	$(top_builddir)/src/libwicsixel_la-assessment.lo \
+	$(top_builddir)/src/libwicsixel_la-fillrun.lo \
 	$(am__objects_1)
 libwicsixel_la_OBJECTS = $(am_libwicsixel_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -441,9 +445,10 @@ zshcompletiondir = @zshcompletiondir@
 CLEANFILES = *.o *.obj
 pkglib_LTLIBRARIES = libwicsixel.la
 libwicsixel_la_SOURCES = $(srcdir)/wic.c $(srcdir)/wic_stub.c \
-	$(srcdir)/wic_stub.h $(top_builddir)/src/fromsixel.c \
-	$(top_builddir)/src/allocator.c $(top_builddir)/src/status.c \
-	$(top_builddir)/src/compat_stub.c $(am__append_1)
+        $(srcdir)/wic_stub.h $(top_builddir)/src/fromsixel.c \
+        $(top_builddir)/src/allocator.c $(top_builddir)/src/status.c \
+        $(top_builddir)/src/compat_stub.c $(top_srcdir)/src/assessment.c \
+        $(top_srcdir)/src/fillrun.c $(am__append_1)
 libwicsixel_la_CPPFLAGS = $(AM_CPPFLAGS) \
                           -I$(top_builddir)/include/ \
                           -DSIXEL_STATUS_HAVE_TTY_HELPERS=0

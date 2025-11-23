@@ -124,6 +124,7 @@ if img2sixel_opt.enabled()
       'test_0015_argument_shift.t',
       'test_0016_assessment_spool.t',
       'test_0017_clipboard.t',
+      'test_0018_parallel_prescan.t',
     ]
 
     tests_dir = join_paths(meson.source_root(), 'converters', 't')

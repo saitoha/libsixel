@@ -110,7 +110,9 @@ libsixel_la_SOURCES += \
                 $(srcdir)/decoder-prescan.c \
                 $(srcdir)/decoder-prescan.h \
                 $(srcdir)/decoder-parallel.c \
-                $(srcdir)/decoder-parallel.h
+                $(srcdir)/decoder-parallel.h \
+                $(srcdir)/fillrun.c \
+                $(srcdir)/fillrun.h
 endif
 if HAVE_QUICKLOOK_THUMBNAILING
 libsixel_la_SOURCES += \

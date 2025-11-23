@@ -41,6 +41,7 @@ CONVERTER_TEST_LIST += $(top_srcdir)/converters/t/test_0010_curl.t
 endif
 if WANT_SIXEL2PNG
 CONVERTER_TEST_LIST += $(top_srcdir)/converters/t/test_0011_basic.t
+CONVERTER_TEST_LIST += $(top_srcdir)/converters/t/test_0018_parallel_prescan.t
 endif
 CONVERTER_TEST_LIST += \
         $(top_srcdir)/converters/t/test_0012_regressions.t \

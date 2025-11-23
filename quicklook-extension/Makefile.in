@@ -134,6 +134,8 @@ libsixelquicklookcore_a_LIBADD =
 am__libsixelquicklookcore_a_SOURCES_DIST = $(top_srcdir)/src/status.c \
 	$(top_srcdir)/src/allocator.c $(top_srcdir)/src/fromsixel.c \
 	$(top_srcdir)/src/compat_stub.c \
+	$(top_srcdir)/src/assessment.c \
+	$(top_srcdir)/src/fillrun.c \
 	$(top_srcdir)/src/decoder-prescan.c \
 	$(top_srcdir)/src/decoder-parallel.c \
 	$(top_srcdir)/src/sixel_threading.c \
@@ -149,6 +151,8 @@ am_libsixelquicklookcore_a_OBJECTS =  \
 	$(top_builddir)/src/libsixelquicklookcore_a-allocator.$(OBJEXT) \
 	$(top_builddir)/src/libsixelquicklookcore_a-fromsixel.$(OBJEXT) \
 	$(top_builddir)/src/libsixelquicklookcore_a-compat_stub.$(OBJEXT) \
+	$(top_builddir)/src/libsixelquicklookcore_a-assessment.$(OBJEXT) \
+	$(top_builddir)/src/libsixelquicklookcore_a-fillrun.$(OBJEXT) \
 	$(am__objects_1)
 libsixelquicklookcore_a_OBJECTS =  \
 	$(am_libsixelquicklookcore_a_OBJECTS)
@@ -556,8 +560,10 @@ noinst_LIBRARIES = libsixelquicklookcore.a
 # references when the Objective-C targets link it.
 #
 libsixelquicklookcore_a_SOURCES = $(top_srcdir)/src/status.c \
-	$(top_srcdir)/src/allocator.c $(top_srcdir)/src/fromsixel.c \
-	$(top_srcdir)/src/compat_stub.c $(am__append_1)
+        $(top_srcdir)/src/allocator.c $(top_srcdir)/src/fromsixel.c \
+        $(top_srcdir)/src/compat_stub.c \
+        $(top_srcdir)/src/assessment.c $(top_srcdir)/src/fillrun.c \
+        $(am__append_1)
 libsixelquicklookcore_a_CPPFLAGS = $(AM_CPPFLAGS) \
     -DSIXEL_STATUS_HAVE_TTY_HELPERS=0
 

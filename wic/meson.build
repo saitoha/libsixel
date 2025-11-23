@@ -28,6 +28,8 @@ wic_sources = files(
   '../src/allocator.c',
   '../src/status.c',
   '../src/compat_stub.c',
+  '../src/assessment.c',
+  '../src/fillrun.c',
 )
 
 if conf.get('SIXEL_ENABLE_THREADS', 0) == 1

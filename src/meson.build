@@ -61,6 +61,8 @@ srcs = [
   'decoder-prescan.h',
   'decoder-parallel.c',
   'decoder-parallel.h',
+  'fillrun.c',
+  'fillrun.h',
   'decoder-image.h',
   'options.c',
   'writer.c',

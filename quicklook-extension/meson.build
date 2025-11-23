@@ -52,6 +52,8 @@ srcs = files(
   '../src/allocator.c',
   '../src/fromsixel.c',
   '../src/compat_stub.c',
+  '../src/assessment.c',
+  '../src/fillrun.c',
 )
 
 if conf.get('SIXEL_ENABLE_THREADS', 0) == 1

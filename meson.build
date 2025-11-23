@@ -766,6 +766,7 @@ loader_helper_sources = files(
   'src/scale.c',
   'src/status.c',
   'src/tty.c',
+  'src/fillrun.c',
 )
 
 if have_threads
@@ -775,6 +776,7 @@ if have_threads
     'src/decoder-prescan.c',
     'src/decoder-parallel.c',
   ]
+  loader_helper_sources += files('src/fillrun.c')
 endif
 
 if have_quicklook_thumbnailing

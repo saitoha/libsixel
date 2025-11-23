@@ -103,7 +103,8 @@ bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 
 @HAVE_BASH_TRUE@@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_2 = $(top_srcdir)/converters/t/test_0009_pngsuite.t
 @HAVE_BASH_TRUE@@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_3 = $(top_srcdir)/converters/t/test_0010_curl.t
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_4 = $(top_srcdir)/converters/t/test_0011_basic.t
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_4 = $(top_srcdir)/converters/t/test_0011_basic.t \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@	$(top_srcdir)/converters/t/test_0018_parallel_prescan.t
 @HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_5 = \
 @HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0012_regressions.t \
 @HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0013_documentation.t \
