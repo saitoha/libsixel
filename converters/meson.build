@@ -102,6 +102,8 @@ if img2sixel_opt.enabled()
       'test_0001_01_invalid_positional.t',
       'test_0001_02_invalid_option_arguments.t',
       'test_0001_03_invalid_option_combinations.t',
+      'test_0001_02_invalid_option_arguments.t',
+      'test_0001_03_invalid_option_combinations.t',
       'test_0002_stdin.t',
       'test_0003_information.t',
       'test_0004_conversion_options.t',
