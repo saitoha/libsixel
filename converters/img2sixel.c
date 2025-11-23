@@ -1059,6 +1059,7 @@ main(int argc, char *argv[])
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
     char const *optstring;
+    char const *error_detail;
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"outfile",            required_argument,  &long_opt, 'o'},
@@ -1257,9 +1258,17 @@ main(int argc, char *argv[])
     goto end;
 
 error:
+    error_detail = sixel_helper_get_additional_message();
+    if (error_detail == NULL) {
+        /*
+         * Windows CRT aborts when "%s" receives NULL.  Use an empty string so
+         * the primary diagnostic always reaches stderr.
+         */
+        error_detail = "";
+    }
     fprintf(stderr, "\n%s\n%s\n\n",
             sixel_helper_format_error(status),
-            sixel_helper_get_additional_message());
+            error_detail);
     if (status == SIXEL_BAD_CLIPBOARD) {
         img2sixel_print_clipboard_hint();
         fprintf(stderr, "\n");
