@@ -99,7 +99,9 @@ if img2sixel_opt.enabled()
     endif
 
     test_scripts = [
-      'test_0001_invalid_option.t',
+      'test_0001_01_invalid_positional.t',
+      'test_0001_02_invalid_option_arguments.t',
+      'test_0001_03_invalid_option_combinations.t',
       'test_0002_stdin.t',
       'test_0003_information.t',
       'test_0004_conversion_options.t',
@@ -133,7 +135,9 @@ if img2sixel_opt.enabled()
     # larger budget while keeping the remaining tests at the standard
     # limit.
     slow_test_timeouts = {
-      'test_0001_invalid_option.t': 300,
+      'test_0001_01_invalid_positional.t': 300,
+      'test_0001_02_invalid_option_arguments.t': 300,
+      'test_0001_03_invalid_option_combinations.t': 300,
     }
     order = 0
     foreach script : test_scripts

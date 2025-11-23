@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-# Verify error handling for invalid img2sixel options.
+# Verify error handling for img2sixel options with invalid arguments.
 set -euo pipefail
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
 # shellcheck source=converters/t/common.t
 source "${SCRIPT_DIR}/common.t"
 
-echo '[test1] invalid option handling'
+echo '[test2] invalid option argument handling'
 
 # Ensure reference inputs exist for option validation checks that need them.
 for name in map8.png snake.jpg snake.png; do
@@ -33,19 +33,6 @@ expect_failure() {
     rm -f "${output_file}"
 }
 
-# Ensure an unreadable input file does not leave stray output.
-invalid_file="${TMP_DIR}/invalid-input"
-rm -f "${invalid_file}"
-touch "${invalid_file}"
-chmod a-r "${invalid_file}"
-expect_failure "${invalid_file}"
-rm -f "${invalid_file}"
-rm -f "${TMP_DIR}/invalid_filename"
-
-# Reject a missing input path.
-expect_failure "${TMP_DIR}/invalid_filename"
-# Reject a directory as input.
-expect_failure "."
 # Report an unknown dither option.
 expect_failure -d invalid_option
 # Report an unknown resize filter.
@@ -84,13 +71,5 @@ expect_failure -B 'rgb:11/11'
 expect_failure '-%'
 # Reject a palette file that does not exist.
 expect_failure -m "${TMP_DIR}/invalid_filename" "${IMAGES_DIR}/snake.jpg"
-# Reject mutually exclusive palette and encode flags.
-expect_failure -p16 -e "${IMAGES_DIR}/snake.jpg"
 # Reject an invalid colour space index.
 expect_failure -I -C0 "${IMAGES_DIR}/snake.png"
-# Reject incompatible inspect and palette options.
-expect_failure -I -p8 "${IMAGES_DIR}/snake.png"
-# Reject conflicting palette size and terminal preset.
-expect_failure -p64 -bxterm256 "${IMAGES_DIR}/snake.png"
-# Reject 8-bit output when palette dump is requested.
-expect_failure -8 -P "${IMAGES_DIR}/snake.png"
