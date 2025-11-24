@@ -27,6 +27,8 @@ wic_sources = files(
   '../src/fromsixel.c',
   '../src/allocator.c',
   '../src/status.c',
+  '../src/assessment-timer.c',
+  '../src/parallel-log.c',
   '../src/compat_stub.c',
 )
 
@@ -34,7 +36,6 @@ if conf.get('SIXEL_ENABLE_THREADS', 0) == 1
   wic_sources += [
     '../src/sixel_threading.c',
     '../src/threadpool.c',
-    '../src/decoder-prescan.c',
     '../src/decoder-parallel.c',
   ]
 endif

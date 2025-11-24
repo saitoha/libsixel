@@ -17,6 +17,7 @@ lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = \
                 $(srcdir)/output.c \
                 $(srcdir)/output.h \
+                $(srcdir)/assessment-timer.c \
                 $(srcdir)/assessment.c \
                 $(srcdir)/assessment.h \
                 $(srcdir)/fromsixel.c \
@@ -107,8 +108,6 @@ libsixel_la_SOURCES += \
                 $(srcdir)/sixel_threading.h \
                 $(srcdir)/threadpool.c \
                 $(srcdir)/threadpool.h \
-                $(srcdir)/decoder-prescan.c \
-                $(srcdir)/decoder-prescan.h \
                 $(srcdir)/decoder-parallel.c \
                 $(srcdir)/decoder-parallel.h
 endif
