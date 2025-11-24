@@ -2,64 +2,29 @@
  * SPDX-License-Identifier: MIT
  *
  * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in
- * all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
  */
 
 #include "config.h"
 
 #include <errno.h>
 #include <limits.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <sixel.h>
 
-#include "allocator.h"
-#include "decoder-image.h"
 #include "decoder-parallel.h"
-#include "decoder-prescan.h"
-#include "output.h"
 #if SIXEL_ENABLE_THREADS
+# include "parallel-log.h"
 # include "sixel_threading.h"
-# include "threadpool.h"
 #endif
 
-#define SIXEL_PARALLEL_MIN_BYTES   2048
-#define SIXEL_PARALLEL_MIN_PIXELS  (64 * 64)
-#define SIXEL_PARALLEL_MIN_BANDS   2
-#define SIXEL_PARALLEL_MIN_BAND_BYTES 512
-#define SIXEL_PARALLEL_MIN_PIXELS_PER_THREAD (128 * 128)
-#define SIXEL_PARALLEL_MIN_JOBS_PER_THREAD 4
-#define SIXEL_PARALLEL_MAX_REPEAT  0xffff
-#define SIXEL_PARALLEL_PALVAL(n, a, m) \
-    (((n) * (a) + ((m) / 2)) / (m))
-#define SIXEL_PARALLEL_RGBA(r, g, b, a) \
-    (((uint32_t)(r) << 24) | ((uint32_t)(g) << 16) | \
-     ((uint32_t)(b) << 8) | ((uint32_t)(a)))
-#define SIXEL_PARALLEL_XRGB(r, g, b) \
-    SIXEL_PARALLEL_RGBA(SIXEL_PARALLEL_PALVAL((r), 255, 100), \
-                        SIXEL_PARALLEL_PALVAL((g), 255, 100), \
-                        SIXEL_PARALLEL_PALVAL((b), 255, 100), \
-                        255)
+/*
+ * The previous prescan-based parallel decoder has been removed.
+ * The current implementation keeps the public entry points so that
+ * callers can fall back to the single threaded decoder while we
+ * prepare the new chunked worker pipeline.
+ */
 
 typedef struct sixel_decoder_thread_config {
     int env_checked;
@@ -69,6 +34,58 @@ typedef struct sixel_decoder_thread_config {
     int override_threads;
 } sixel_decoder_thread_config_t;
 
+#if SIXEL_ENABLE_THREADS
+typedef struct sixel_decoder_worker_context {
+    struct sixel_decoder_worker_chain *chain;
+    unsigned char *input;
+    unsigned char *anchor;
+    int length;
+    int payload_len;
+    int start_offset;
+    int end_offset;
+    int index;
+    int direct_mode;
+    int const *palette;
+    int palette_limit;
+    int width;
+    int height;
+    int pixel_size;
+    int depth;
+    sixel_parallel_logger_t *logger;
+    unsigned char *local_buffer;
+    int local_capacity;
+    int local_written;
+    int result;
+} sixel_decoder_worker_context_t;
+
+typedef struct sixel_decoder_local_chunk {
+    unsigned char *data;
+    int start_row;
+    int rows;
+    struct sixel_decoder_local_chunk *next;
+} sixel_decoder_local_chunk_t;
+
+typedef struct sixel_local_buffer {
+    sixel_decoder_local_chunk_t *head;
+    sixel_decoder_local_chunk_t *tail;
+    sixel_decoder_local_chunk_t *cursor;
+    int width;
+    int pixel_size;
+} sixel_local_buffer_t;
+
+typedef struct sixel_decoder_worker_chain {
+    sixel_mutex_t mutex;
+    sixel_cond_t cond;
+    int *copy_offsets;
+    int *copy_ready;
+    int thread_count;
+    unsigned char *global_buffer;
+    int global_capacity;
+    int pixel_size;
+    int abort_requested;
+} sixel_decoder_worker_chain_t;
+#endif
+
 static sixel_decoder_thread_config_t g_decoder_threads = {
     0,
     0,
@@ -76,6 +93,851 @@ static sixel_decoder_thread_config_t g_decoder_threads = {
     0,
     1
 };
+
+#if SIXEL_ENABLE_THREADS
+static void
+sixel_decoder_parallel_log_stub(sixel_parallel_logger_t *logger,
+                                char const *mode)
+{
+    /*
+     * Emit a minimal timeline so SIXEL_PARALLEL_LOG_PATH mirrors the
+     * encoder behaviour even while the decoder still falls back to the
+     * serial path.
+     */
+    if (logger == NULL) {
+        return;
+    }
+
+    sixel_parallel_logger_logf(logger,
+                               "decoder",
+                               mode,
+                               "start",
+                               0,
+                               0,
+                               0,
+                               0,
+                               0,
+                               0,
+                               "parallel decoder stub active");
+    sixel_parallel_logger_logf(logger,
+                               "decoder",
+                               mode,
+                               "fallback",
+                               0,
+                               0,
+                               0,
+                               0,
+                               0,
+                               0,
+                               "falling back to serial implementation");
+}
+
+static void
+sixel_decoder_parallel_fill_spans(int payload_len,
+                                  int threads,
+                                  int *spans);
+
+static int
+sixel_decoder_parallel_skew_percent(void)
+{
+    char const *text;
+    char *endptr;
+    long value;
+
+    /*
+     * SIXEL_PARALLEL_SKEW lets operators bias span lengths by +/-20% so the
+     * trailing workers take slightly more work.  The default keeps spans
+     * balanced.
+     */
+    text = getenv("SIXEL_PARALLEL_SKEW");
+    if (text == NULL || text[0] == '\0') {
+        return 0;
+    }
+
+    errno = 0;
+    value = strtol(text, &endptr, 10);
+    if (errno != 0 || endptr == text || *endptr != '\0') {
+        return 0;
+    }
+
+    if (value < -20) {
+        value = -20;
+    } else if (value > 20) {
+        value = 20;
+    }
+
+    return (int)value;
+}
+
+static void
+sixel_decoder_parallel_fill_spans(int payload_len,
+                                  int threads,
+                                  int *spans)
+{
+    int base_share;
+    int skew_percent;
+    double skew;
+    int i;
+    double center;
+    int total;
+    int remainder;
+
+    base_share = payload_len / threads;
+    skew_percent = sixel_decoder_parallel_skew_percent();
+    skew = ((double)base_share * (double)skew_percent) / 100.0;
+    total = 0;
+    for (i = 0; i < threads; ++i) {
+        center = (double)i - (double)(threads - 1) / 2.0;
+        spans[i] = base_share + (int)(skew * center);
+        if (spans[i] < 1) {
+            spans[i] = 1;
+        }
+        total += spans[i];
+    }
+
+    remainder = payload_len - total;
+    while (remainder > 0) {
+        for (i = threads - 1; i >= 0 && remainder > 0; --i) {
+            spans[i] += 1;
+            --remainder;
+        }
+    }
+    while (remainder < 0) {
+        for (i = threads - 1; i >= 0 && remainder < 0; --i) {
+            if (spans[i] > 1) {
+                spans[i] -= 1;
+                ++remainder;
+            }
+        }
+        if (remainder < 0) {
+            break;
+        }
+    }
+}
+
+static int
+sixel_decoder_parallel_pixel_size(int depth)
+{
+    int pixel_size;
+
+    pixel_size = 4;
+    if (depth == 1) {
+        pixel_size = 1;
+    } else if (depth == 2) {
+        pixel_size = 2;
+    }
+
+    return pixel_size;
+}
+
+static void
+sixel_decoder_parallel_store_pixel(unsigned char *dst,
+                                   int depth,
+                                   int color_index,
+                                   int const *palette)
+{
+    int color;
+
+    if (depth == 1) {
+        dst[0] = (unsigned char)color_index;
+        return;
+    }
+
+    if (depth == 2) {
+        unsigned short packed;
+
+        packed = (unsigned short)color_index;
+        memcpy(dst, &packed, sizeof(packed));
+        return;
+    }
+
+    color = 0;
+    if (palette != NULL &&
+            color_index >= 0 &&
+            color_index < SIXEL_PALETTE_MAX_DECODER) {
+        color = palette[color_index];
+    }
+    dst[0] = (unsigned char)((color >> 16) & 0xff);
+    dst[1] = (unsigned char)((color >> 8) & 0xff);
+    dst[2] = (unsigned char)(color & 0xff);
+    dst[3] = 255u;
+}
+
+static void
+sixel_local_buffer_init(sixel_local_buffer_t *buffer,
+                        int width,
+                        int pixel_size)
+{
+    buffer->head = NULL;
+    buffer->tail = NULL;
+    buffer->cursor = NULL;
+    buffer->width = width;
+    buffer->pixel_size = pixel_size;
+}
+
+static void
+sixel_local_buffer_dispose(sixel_local_buffer_t *buffer)
+{
+    sixel_decoder_local_chunk_t *cursor;
+
+    cursor = buffer->head;
+    while (cursor != NULL) {
+        sixel_decoder_local_chunk_t *tmp;
+
+        free(cursor->data);
+        tmp = cursor->next;
+        free(cursor);
+        cursor = tmp;
+    }
+
+    buffer->head = NULL;
+    buffer->tail = NULL;
+    buffer->cursor = NULL;
+}
+
+static sixel_decoder_local_chunk_t *
+sixel_local_buffer_append(sixel_local_buffer_t *buffer,
+                          int rows,
+                          int start_row)
+{
+    sixel_decoder_local_chunk_t *chunk;
+    size_t bytes;
+
+    if (rows % 6 != 0) {
+        rows += 6 - (rows % 6);
+    }
+
+    chunk = (sixel_decoder_local_chunk_t *)calloc(
+        1, sizeof(sixel_decoder_local_chunk_t));
+    if (chunk == NULL) {
+        return NULL;
+    }
+
+    bytes = (size_t)(rows * buffer->width) * (size_t)buffer->pixel_size;
+    chunk->data = (unsigned char *)calloc(bytes, 1);
+    if (chunk->data == NULL) {
+        free(chunk);
+        return NULL;
+    }
+
+    chunk->start_row = start_row;
+    chunk->rows = rows;
+    chunk->next = NULL;
+
+    if (buffer->head == NULL) {
+        buffer->head = chunk;
+    } else {
+        buffer->tail->next = chunk;
+    }
+    buffer->tail = chunk;
+    buffer->cursor = chunk;
+
+    return chunk;
+}
+
+static sixel_decoder_local_chunk_t *
+sixel_local_buffer_reserve_row(sixel_local_buffer_t *buffer,
+                               int row)
+{
+    sixel_decoder_local_chunk_t *cursor;
+
+    cursor = buffer->cursor;
+    while (cursor != NULL && row >= cursor->start_row + cursor->rows) {
+        cursor = cursor->next;
+    }
+    if (cursor != NULL && row >= cursor->start_row) {
+        buffer->cursor = cursor;
+        return cursor;
+    }
+
+    cursor = buffer->tail;
+    if (cursor == NULL) {
+        return NULL;
+    }
+
+    while (row >= cursor->start_row + cursor->rows) {
+        sixel_decoder_local_chunk_t *next;
+        int start_row;
+
+        start_row = cursor->start_row + cursor->rows;
+        next = sixel_local_buffer_append(buffer, cursor->rows, start_row);
+        if (next == NULL) {
+            return NULL;
+        }
+        cursor = next;
+    }
+
+    buffer->cursor = cursor;
+    return cursor;
+}
+
+/*
+ * Worker entry for the fast sixel parser.  Each thread jumps to the next
+ * '-' marker from its assigned offset, then walks tokens until the first
+ * '-' after its scheduled end offset.
+ *
+ * Supported tokens: palette switches ('#n'), carriage return ('$'), next
+ * line ('-'), and raster data ('?' - '~').  Any raster attribute reset '"',
+ * palette redefinition '#n;type;...', or CAN/SUB control code marks the
+ * chunk as invalid and returns a failure status so the caller can fall back.
+ */
+static int
+sixel_decoder_parallel_worker(void *arg)
+{
+    sixel_decoder_worker_context_t *context;
+    sixel_decoder_worker_chain_t *chain;
+    sixel_local_buffer_t local_buffer;
+    sixel_decoder_local_chunk_t *chunk_cursor;
+    unsigned char *anchor;
+    unsigned char *scan;
+    unsigned char *cursor;
+    unsigned char *stop;
+    unsigned char *limit;
+    unsigned char *start;
+    int capacity;
+    int written;
+    int assigned;
+    int bits;
+    int repeat;
+    int color_index;
+    int effective_index;
+    int max_relative;
+    int min_relative;
+    int pos_x;
+    int pos_y;
+    int need;
+    int relative;
+    int row_base;
+    int r;
+    int payload_len;
+    int row_offset;
+    int line_count;
+    int copy_offset;
+    int copy_span;
+    int next_offset;
+    int guarded;
+    int i;
+    int fallback;
+    int status;
+    sixel_parallel_logger_t *logger;
+    int width;
+    int pixel_size;
+    int depth;
+    int height;
+    int chain_offset;
+
+    chunk_cursor = NULL;
+    anchor = NULL;
+    scan = NULL;
+    cursor = NULL;
+    stop = NULL;
+    limit = NULL;
+    start = NULL;
+    capacity = 0;
+    written = 0;
+    assigned = 0;
+    bits = 0;
+    repeat = 1;
+    color_index = 0;
+    effective_index = 0;
+    max_relative = -1;
+    min_relative = -1;
+    pos_x = 0;
+    pos_y = 0;
+    need = 0;
+    relative = 0;
+    row_base = 0;
+    r = 0;
+    payload_len = 0;
+    row_offset = 0;
+    line_count = 0;
+    copy_offset = 0;
+    copy_span = 0;
+    next_offset = 0;
+    guarded = 0;
+    i = 0;
+    fallback = 0;
+    status = -1;
+    logger = NULL;
+    width = 0;
+    pixel_size = 1;
+    depth = 0;
+    height = 0;
+    chain_offset = 0;
+
+    context = (sixel_decoder_worker_context_t *)arg;
+    if (context == NULL) {
+        return -1;
+    }
+
+    context->result = status;
+
+    chain = context->chain;
+    if (chain == NULL) {
+        context->result = status;
+        return status;
+    }
+
+    logger = context->logger;
+    anchor = context->anchor;
+    if (context->input == NULL || context->length <= 0) {
+        context->result = status;
+        return status;
+    }
+
+    width = context->width;
+    if (width <= 0) {
+        context->result = status;
+        return status;
+    }
+
+    pixel_size = context->pixel_size;
+    depth = context->depth;
+    height = context->height;
+    if (height <= 0) {
+        context->result = status;
+        return status;
+    }
+    sixel_local_buffer_init(&local_buffer, width, pixel_size);
+    payload_len = context->payload_len;
+    if (payload_len <= 0) {
+        context->result = status;
+        return status;
+    }
+
+    start = context->input + context->start_offset;
+    if (start < context->input ||
+            start >= context->input + context->length) {
+        context->result = status;
+        return status;
+    }
+
+    assigned = context->end_offset - context->start_offset + 1;
+    if (assigned <= 0) {
+        context->result = status;
+        return status;
+    }
+
+    status = 0;
+
+    if (logger != NULL) {
+        /*
+         * Decode window for this worker. The key keeps decode spans grouped
+         * per-thread in the timeline output.
+         */
+        sixel_parallel_logger_logf(logger,
+                                   "decode",
+                                   "decoder",
+                                   "start",
+                                   context->index,
+                                   context->index,
+                                   0,
+                                   0,
+                                   context->start_offset,
+                                   context->end_offset,
+                                   "worker %d decode span [%d,%d]",
+                                   context->index,
+                                   context->start_offset,
+                                   context->end_offset);
+    }
+
+    cursor = start;
+    if (context->index > 0) {
+        cursor = (unsigned char *)memchr(start,
+                                         '-',
+                                         (size_t)(context->length -
+                                         context->start_offset));
+        if (cursor != NULL &&
+                cursor + 1 < context->input + context->length) {
+            cursor += 1;
+        } else {
+            cursor = start;
+        }
+    }
+    if (context->index > 0 && cursor == start) {
+        status = -1;
+        context->result = status;
+        return status;
+    }
+
+    if (anchor != NULL && anchor < cursor) {
+        scan = anchor;
+        while (scan < cursor) {
+            if (*scan == '-') {
+                line_count += 1;
+                scan += 1;
+                continue;
+            }
+
+            if (*scan == '#') {
+                int value;
+                unsigned char *p;
+
+                value = 0;
+                p = scan + 1;
+                while (p < cursor && *p >= '0' && *p <= '9') {
+                    value = value * 10 + (*p - '0');
+                    p += 1;
+                }
+                color_index = value;
+                if (color_index < 0) {
+                    color_index = 0;
+                }
+                if (color_index >= SIXEL_PALETTE_MAX_DECODER) {
+                    color_index = SIXEL_PALETTE_MAX_DECODER - 1;
+                }
+                if (p < cursor && *p == ';') {
+                    scan = p;
+                    continue;
+                }
+                scan = p;
+                continue;
+            }
+
+            scan += 1;
+        }
+    }
+    row_offset = line_count * 6;
+
+    capacity = (int)((double)chain->global_capacity *
+        ((double)assigned / (double)payload_len));
+    capacity = (int)((double)capacity * 1.10);
+    if (capacity < 1) {
+        capacity = 1;
+    }
+    if (capacity < width * 6) {
+        capacity = width * 6;
+    }
+    if (capacity % (width * 6) != 0) {
+        capacity += (width * 6) - (capacity % (width * 6));
+    }
+
+    chunk_cursor = sixel_local_buffer_append(&local_buffer,
+                                             capacity / width,
+                                             0);
+    if (chunk_cursor == NULL) {
+        status = -1;
+        context->result = status;
+        return status;
+    }
+    capacity = chunk_cursor->rows * width;
+
+    stop = context->input + context->end_offset;
+    limit = context->input + context->length;
+    while (cursor < limit) {
+        unsigned char ch;
+
+        ch = *cursor;
+
+        if (ch < 0x20) {
+            if (ch == 0x18 || ch == 0x1a) {
+                fallback = 1;
+                status = -1;
+                break;
+            }
+            cursor += 1;
+            continue;
+        }
+
+        if (ch == '"') {
+            fallback = 1;
+            status = -1;
+            break;
+        }
+
+        if (ch == '!') {
+            int value;
+            unsigned char *p;
+
+            value = 0;
+            p = cursor + 1;
+            while (p < limit && *p >= '0' && *p <= '9') {
+                value = value * 10 + (*p - '0');
+                p += 1;
+            }
+            if (value <= 0) {
+                value = 1;
+            }
+            repeat = value;
+            cursor = p;
+            continue;
+        }
+
+        if (ch == '#') {
+            int value;
+            unsigned char *p;
+
+            value = 0;
+            p = cursor + 1;
+            while (p < limit && *p >= '0' && *p <= '9') {
+                value = value * 10 + (*p - '0');
+                p += 1;
+            }
+            if (p < limit && *p == ';') {
+                fallback = 1;
+                status = -1;
+                break;
+            }
+            color_index = value;
+            if (color_index < 0) {
+                color_index = 0;
+            }
+            if (color_index >= SIXEL_PALETTE_MAX_DECODER) {
+                color_index = SIXEL_PALETTE_MAX_DECODER - 1;
+            }
+            cursor = p;
+            continue;
+        }
+
+        if (ch == '$') {
+            cursor += 1;
+            pos_x = 0;
+            continue;
+        }
+
+        if (ch == '-') {
+            if (cursor >= stop) {
+                break;
+            }
+            cursor += 1;
+            pos_x = 0;
+            pos_y += 6;
+            chunk_cursor = sixel_local_buffer_reserve_row(&local_buffer,
+                                                          pos_y);
+            if (chunk_cursor == NULL) {
+                fallback = 1;
+                status = -1;
+                break;
+            }
+            continue;
+        }
+
+        if (ch < '?' || ch > '~') {
+            cursor += 1;
+            continue;
+        }
+
+        bits = ch - '?';
+        effective_index = color_index;
+        if (context->palette != NULL && context->palette_limit > 0) {
+            int palette_slot;
+
+            palette_slot = color_index;
+            if (palette_slot >= context->palette_limit) {
+                palette_slot = context->palette_limit - 1;
+            }
+            if (palette_slot < 0) {
+                palette_slot = 0;
+            }
+            effective_index = palette_slot;
+        }
+
+        for (i = 0; i < 6; ++i) {
+            if ((bits & (1 << i)) != 0) {
+                need = repeat;
+                if (pos_x + need > width ||
+                        row_offset + pos_y + i >= height) {
+                    fallback = 1;
+                    status = -1;
+                    break;
+                }
+                chunk_cursor = sixel_local_buffer_reserve_row(
+                    &local_buffer, pos_y + i);
+                if (chunk_cursor == NULL) {
+                    fallback = 1;
+                    status = -1;
+                    break;
+                }
+
+                row_base = (pos_y + i - chunk_cursor->start_row) * width +
+                    pos_x;
+                relative = (pos_y + i) * width + pos_x;
+
+                for (r = 0; r < need; ++r) {
+                    int slot;
+
+                    slot = row_base + r;
+                    sixel_decoder_parallel_store_pixel(
+                        chunk_cursor->data +
+                        (size_t)slot * (size_t)pixel_size,
+                        depth,
+                        effective_index,
+                        context->palette);
+                }
+                written += need;
+                if (min_relative < 0 || relative < min_relative) {
+                    min_relative = relative;
+                }
+                if (max_relative < relative + need - 1) {
+                    max_relative = relative + need - 1;
+                }
+            }
+        }
+
+        if (fallback) {
+            break;
+        }
+
+        cursor += 1;
+        pos_x += repeat;
+        repeat = 1;
+
+    }
+
+    copy_span = max_relative + 1;
+    if (copy_span < 0) {
+        copy_span = 0;
+    }
+
+    if (logger != NULL) {
+        sixel_parallel_logger_logf(logger,
+                                   "decode",
+                                   "decoder",
+                                   fallback ? "abort" : "finish",
+                                   context->index,
+                                   context->index,
+                                   0,
+                                   0,
+                                   context->start_offset,
+                                   context->end_offset,
+                                   "worker %d decode wrote=%d status=%d",
+                                   context->index,
+                                   written,
+                                   status);
+    }
+
+    if (status != 0) {
+        sixel_mutex_lock(&chain->mutex);
+        chain->abort_requested = 1;
+        sixel_cond_broadcast(&chain->cond);
+        sixel_mutex_unlock(&chain->mutex);
+        sixel_local_buffer_dispose(&local_buffer);
+        context->result = status;
+        return status;
+    }
+
+    context->local_buffer = local_buffer.head != NULL ?
+        local_buffer.head->data : NULL;
+    context->local_capacity = capacity;
+    context->local_written = copy_span;
+
+    guarded = 1;
+    sixel_mutex_lock(&chain->mutex);
+    while (!chain->copy_ready[context->index] && !chain->abort_requested) {
+        sixel_cond_wait(&chain->cond, &chain->mutex);
+    }
+    if (chain->abort_requested) {
+        sixel_mutex_unlock(&chain->mutex);
+        guarded = 0;
+        sixel_local_buffer_dispose(&local_buffer);
+        context->local_buffer = NULL;
+        context->local_capacity = 0;
+        context->local_written = 0;
+        status = -1;
+        context->result = status;
+        return status;
+    }
+    chain_offset = chain->copy_offsets[context->index];
+    copy_offset = chain_offset;
+    next_offset = copy_offset + copy_span;
+    context->local_written = copy_span;
+    if (context->index + 1 < chain->thread_count) {
+        chain->copy_offsets[context->index + 1] = next_offset;
+        chain->copy_ready[context->index + 1] = 1;
+    }
+    sixel_cond_broadcast(&chain->cond);
+    sixel_mutex_unlock(&chain->mutex);
+    guarded = 0;
+
+    if (copy_offset < 0 || chain->global_buffer == NULL) {
+        if (!guarded) {
+            sixel_mutex_lock(&chain->mutex);
+            guarded = 1;
+        }
+        chain->abort_requested = 1;
+        sixel_cond_broadcast(&chain->cond);
+        sixel_mutex_unlock(&chain->mutex);
+        guarded = 0;
+        sixel_local_buffer_dispose(&local_buffer);
+        context->local_buffer = NULL;
+        context->local_capacity = 0;
+        context->local_written = 0;
+        status = -1;
+        context->result = status;
+        return status;
+    }
+
+    if (logger != NULL) {
+        /* Chain memcpy execution so the timeline shows the serialized copy */
+        sixel_parallel_logger_logf(logger,
+                                   "copy",
+                                   "decoder",
+                                   "start",
+                                   context->index,
+                                   context->index,
+                                   0,
+                                   0,
+                                   copy_offset,
+                                   next_offset,
+                                   "worker %d memcpy count=%d",
+                                   context->index,
+                                   copy_span);
+    }
+
+    if (max_relative >= 0) {
+        chunk_cursor = local_buffer.head;
+        while (chunk_cursor != NULL) {
+            int rows;
+            size_t chunk_bytes;
+            size_t chunk_offset;
+
+            rows = chunk_cursor->rows;
+            if (chunk_cursor->start_row + rows >
+                    (max_relative / width) + 1) {
+                rows = (max_relative / width) + 1 -
+                    chunk_cursor->start_row;
+            }
+            if (rows < 0) {
+                rows = 0;
+            }
+            if (rows > 0) {
+                chunk_bytes = (size_t)(rows * width) *
+                    (size_t)chain->pixel_size;
+                chunk_offset = (size_t)((row_offset +
+                    chunk_cursor->start_row) * width) *
+                    (size_t)chain->pixel_size;
+                memcpy(chain->global_buffer + chunk_offset,
+                       chunk_cursor->data,
+                       chunk_bytes);
+            }
+            chunk_cursor = chunk_cursor->next;
+        }
+    }
+
+    if (logger != NULL) {
+        sixel_parallel_logger_logf(logger,
+                                   "copy",
+                                   "decoder",
+                                   "finish",
+                                   context->index,
+                                   context->index,
+                                   0,
+                                   0,
+                                   copy_offset,
+                                   next_offset,
+                                   "worker %d memcpy done", 
+                                   context->index);
+    }
+
+    sixel_local_buffer_dispose(&local_buffer);
+    context->local_buffer = NULL;
+    context->local_capacity = 0;
+    context->local_written = 0;
+
+    context->result = status;
+    return status;
+}
+#endif
 
 static int
 sixel_decoder_threads_token_is_auto(char const *text)
@@ -196,919 +1058,307 @@ end:
     return status;
 }
 
-#if SIXEL_ENABLE_THREADS
-
-typedef struct sixel_parallel_decode_plan {
-    unsigned char *data;
-    int len;
-    image_buffer_t *image;
-    sixel_allocator_t *allocator;
-    sixel_prescan_t *prescan;
-    int depth;
-    int threads;
-    int direct_mode;
-    int width;
-    int height;
-    int *band_color_max;
-    int band_count;
-} sixel_parallel_decode_plan_t;
-
-static SIXELSTATUS sixel_parallel_safe_addition(
-    sixel_prescan_band_state_t *state,
-    unsigned char value)
-{
-    SIXELSTATUS status;
-    int digit;
-
-    status = SIXEL_FALSE;
-    digit = (int)value - '0';
-    if ((state->param > INT_MAX / 10) ||
-            (digit > INT_MAX - state->param * 10)) {
-        status = SIXEL_BAD_INTEGER_OVERFLOW;
-        sixel_helper_set_additional_message(
-            "decoder-parallel: integer overflow in parameter.");
-        goto end;
-    }
-    state->param = state->param * 10 + digit;
-    status = SIXEL_OK;
-end:
-    return status;
-}
-
-static uint32_t sixel_parallel_hls_to_rgba(int hue, int lum, int sat)
-{
-    double min;
-    double max;
-    int r;
-    int g;
-    int b;
-
-    if (sat == 0) {
-        r = g = b = lum;
-    }
-    max = lum + sat *
-        (1.0 - (lum > 50 ? (2 * (lum / 100.0) - 1.0) :
-                - (2 * (lum / 100.0) - 1.0))) / 2.0;
-    min = lum - sat *
-        (1.0 - (lum > 50 ? (2 * (lum / 100.0) - 1.0) :
-                - (2 * (lum / 100.0) - 1.0))) / 2.0;
-    hue = (hue + 240) % 360;
-    switch (hue / 60) {
-    case 0:
-        r = max;
-        g = (min + (max - min) * (hue / 60.0));
-        b = min;
-        break;
-    case 1:
-        r = min + (max - min) * ((120 - hue) / 60.0);
-        g = max;
-        b = min;
-        break;
-    case 2:
-        r = min;
-        g = max;
-        b = (min + (max - min) * ((hue - 120) / 60.0));
-        break;
-    case 3:
-        r = min;
-        g = (min + (max - min) * ((240 - hue) / 60.0));
-        b = max;
-        break;
-    case 4:
-        r = (min + (max - min) * ((hue - 240) / 60.0));
-        g = min;
-        b = max;
-        break;
-    case 5:
-        r = max;
-        g = min;
-        b = (min + (max - min) * ((360 - hue) / 60.0));
-        break;
-    default:
-#if HAVE___BUILTIN_UNREACHABLE
-        __builtin_unreachable();
-#endif
-        r = g = b = 0;
-        break;
-    }
-    return SIXEL_PARALLEL_RGBA(r, g, b, 255);
-}
-
-static void sixel_parallel_store_indexed(image_buffer_t *image,
-                                         int x,
-                                         int y,
-                                         int repeat,
-                                         int color_index)
-{
-    size_t offset;
-
-    if (repeat <= 0 || image == NULL) {
-        return;
-    }
-    offset = (size_t)image->width * (size_t)y + (size_t)x;
-    memset(image->pixels.in_bytes + offset,
-           color_index,
-           (size_t)repeat);
-}
-
-static void sixel_parallel_store_rgba(image_buffer_t *image,
-                                      int x,
-                                      int y,
-                                      int repeat,
-                                      uint32_t rgba)
-{
-    unsigned char r;
-    unsigned char g;
-    unsigned char b;
-    unsigned char a;
-    unsigned char *dst;
-    size_t offset;
-    int i;
-
-    if (repeat <= 0 || image == NULL) {
-        return;
-    }
-    r = (unsigned char)(rgba >> 24);
-    g = (unsigned char)((rgba >> 16) & 0xff);
-    b = (unsigned char)((rgba >> 8) & 0xff);
-    a = (unsigned char)(rgba & 0xff);
-    offset = ((size_t)image->width * (size_t)y + (size_t)x) * 4u;
-    dst = image->pixels.in_bytes + offset;
-    for (i = 0; i < repeat; ++i) {
-        dst[0] = r;
-        dst[1] = g;
-        dst[2] = b;
-        dst[3] = a;
-        dst += 4;
-    }
-}
-
-static void sixel_parallel_fill_span(sixel_parallel_decode_plan_t *plan,
-                                     int y,
-                                     int x,
-                                     int repeat,
-                                     int color_index,
-                                     uint32_t *palette)
-{
-    if (y < 0 || y >= plan->height) {
-        return;
-    }
-    if (color_index < 0) {
-        color_index = 0;
-    }
-    if (color_index >= SIXEL_PRESCAN_PALETTE_MAX) {
-        color_index = SIXEL_PRESCAN_PALETTE_MAX - 1;
-    }
-    if (plan->direct_mode) {
-        sixel_parallel_store_rgba(plan->image,
-                                  x,
-                                  y,
-                                  repeat,
-                                  palette[color_index]);
-    } else {
-        sixel_parallel_store_indexed(plan->image,
-                                     x,
-                                     y,
-                                     repeat,
-                                     color_index);
-    }
-}
-
-static void sixel_parallel_track_color(int color_index,
-                                       int *local_max_color)
-{
-    if (color_index > *local_max_color) {
-        *local_max_color = color_index;
-    }
-}
-
-static SIXELSTATUS sixel_parallel_decode_band(
-    sixel_parallel_decode_plan_t *plan,
-    int band_index)
-{
-    SIXELSTATUS status;
-    sixel_prescan_band_state_t state;
-    unsigned char *cursor;
-    unsigned char *end;
-    int bits;
-    int mask;
-    int i;
-    int local_max_color;
-
-    status = SIXEL_FALSE;
-    state = plan->prescan->band_states[band_index];
-    if ((size_t)plan->len < plan->prescan->band_start_offsets[band_index] ||
-            (size_t)plan->len < plan->prescan->band_end_offsets[band_index] ||
-            plan->prescan->band_end_offsets[band_index] <
-                plan->prescan->band_start_offsets[band_index]) {
-        sixel_helper_set_additional_message(
-            "decoder-parallel: invalid band boundaries detected.");
-        status = SIXEL_BAD_INPUT;
-        goto end;
-    }
-    cursor = plan->data + plan->prescan->band_start_offsets[band_index];
-    end = plan->data + plan->prescan->band_end_offsets[band_index];
-    local_max_color = -1;
-
-    while (cursor < end) {
-        switch (state.state) {
-        case SIXEL_PRESCAN_PS_GROUND:
-            switch (*cursor) {
-            case 0x1b:
-                state.state = SIXEL_PRESCAN_PS_ESC;
-                break;
-            case 0x90:
-                state.state = SIXEL_PRESCAN_PS_DCS;
-                break;
-            case 0x9c:
-                cursor = end;
-                continue;
-            default:
-                break;
-            }
-            break;
-        case SIXEL_PRESCAN_PS_ESC:
-            switch (*cursor) {
-            case '\\':
-            case 0x9c:
-                cursor = end;
-                continue;
-            case 'P':
-                state.param = -1;
-                state.state = SIXEL_PRESCAN_PS_DCS;
-                break;
-            default:
-                break;
-            }
-            break;
-        case SIXEL_PRESCAN_PS_DCS:
-            switch (*cursor) {
-            case 0x1b:
-                state.state = SIXEL_PRESCAN_PS_ESC;
-                break;
-            case '0':
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-            case '8':
-            case '9':
-                if (state.param < 0) {
-                    state.param = 0;
-                }
-                status = sixel_parallel_safe_addition(&state, *cursor);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
-                break;
-            case ';':
-                if (state.param < 0) {
-                    state.param = 0;
-                }
-                if (state.nparams < DECSIXEL_PARAMS_MAX) {
-                    state.params[state.nparams++] = state.param;
-                }
-                state.param = 0;
-                break;
-            case 'q':
-                if (state.param >= 0 &&
-                        state.nparams < DECSIXEL_PARAMS_MAX) {
-                    state.params[state.nparams++] = state.param;
-                }
-                state.param = 0;
-                state.state = SIXEL_PRESCAN_PS_DECSIXEL;
-                break;
-            default:
-                break;
-            }
-            break;
-        case SIXEL_PRESCAN_PS_DECSIXEL:
-            switch (*cursor) {
-            case 0x1b:
-                state.state = SIXEL_PRESCAN_PS_ESC;
-                break;
-            case '"':
-                state.param = 0;
-                state.nparams = 0;
-                state.state = SIXEL_PRESCAN_PS_DECGRA;
-                break;
-            case '!':
-                state.param = 0;
-                state.nparams = 0;
-                state.state = SIXEL_PRESCAN_PS_DECGRI;
-                break;
-            case '#':
-                state.param = 0;
-                state.nparams = 0;
-                state.state = SIXEL_PRESCAN_PS_DECGCI;
-                break;
-            case '$':
-                state.pos_x = 0;
-                break;
-            case '-':
-                state.pos_x = 0;
-                state.pos_y += 6;
-                break;
-            default:
-                if (*cursor >= '?' && *cursor <= '~') {
-                    bits = *cursor - '?';
-                    if (state.pos_x < 0 || state.pos_y < 0) {
-                        status = SIXEL_BAD_INPUT;
-                        sixel_helper_set_additional_message(
-                            "decoder-parallel: negative draw position.");
-                        goto end;
-                    }
-                    if (bits == 0) {
-                        state.pos_x += state.repeat_count;
-                    } else {
-                        mask = 0x01;
-                        if (state.repeat_count <= 1) {
-                            for (i = 0; i < 6; ++i) {
-                                if ((bits & mask) != 0) {
-                                    sixel_parallel_fill_span(plan,
-                                                            state.pos_y + i,
-                                                            state.pos_x,
-                                                            1,
-                                                            state.color_index,
-                                                            state.palette);
-                                    sixel_parallel_track_color(
-                                        state.color_index,
-                                        &local_max_color);
-                                }
-                                mask <<= 1;
-                            }
-                            state.pos_x += 1;
-                        } else {
-                            for (i = 0; i < 6; ++i) {
-                                if ((bits & mask) != 0) {
-                                    int c;
-                                    int run_span;
-                                    int row;
-
-                                    c = mask << 1;
-                                    run_span = 1;
-                                    while ((i + run_span) < 6 &&
-                                            (bits & c) != 0) {
-                                        c <<= 1;
-                                        run_span += 1;
-                                    }
-                                    for (row = 0; row < run_span; ++row) {
-                                        sixel_parallel_fill_span(
-                                            plan,
-                                            state.pos_y + i + row,
-                                            state.pos_x,
-                                            state.repeat_count,
-                                            state.color_index,
-                                            state.palette);
-                                    }
-                                    sixel_parallel_track_color(
-                                        state.color_index,
-                                        &local_max_color);
-                                    i += run_span - 1;
-                                    mask <<= run_span - 1;
-                                }
-                                mask <<= 1;
-                            }
-                            state.pos_x += state.repeat_count;
-                        }
-                    }
-                    state.repeat_count = 1;
-                }
-                break;
-            }
-            break;
-        case SIXEL_PRESCAN_PS_DECGRA:
-            switch (*cursor) {
-            case 0x1b:
-                state.state = SIXEL_PRESCAN_PS_ESC;
-                break;
-            case '0':
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-            case '8':
-            case '9':
-                status = sixel_parallel_safe_addition(&state, *cursor);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
-                break;
-            case ';':
-                if (state.nparams < DECSIXEL_PARAMS_MAX) {
-                    state.params[state.nparams++] = state.param;
-                }
-                state.param = 0;
-                break;
-            default:
-                if (state.nparams < DECSIXEL_PARAMS_MAX) {
-                    state.params[state.nparams++] = state.param;
-                }
-                if (state.nparams > 0) {
-                    state.attributed_pad = state.params[0];
-                }
-                if (state.nparams > 1) {
-                    state.attributed_pan = state.params[1];
-                }
-                if (state.nparams > 2 && state.params[2] > 0) {
-                    state.attributed_ph = state.params[2];
-                }
-                if (state.nparams > 3 && state.params[3] > 0) {
-                    state.attributed_pv = state.params[3];
-                }
-                if (state.attributed_pan <= 0) {
-                    state.attributed_pan = 1;
-                }
-                if (state.attributed_pad <= 0) {
-                    state.attributed_pad = 1;
-                }
-                state.param = 0;
-                state.nparams = 0;
-                state.state = SIXEL_PRESCAN_PS_DECSIXEL;
-                continue;
-            }
-            break;
-        case SIXEL_PRESCAN_PS_DECGRI:
-            switch (*cursor) {
-            case 0x1b:
-                state.state = SIXEL_PRESCAN_PS_ESC;
-                break;
-            case '0':
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-            case '8':
-            case '9':
-                status = sixel_parallel_safe_addition(&state, *cursor);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
-                break;
-            case ';':
-                break;
-            default:
-                state.repeat_count = state.param;
-                if (state.repeat_count == 0) {
-                    state.repeat_count = 1;
-                }
-                if (state.repeat_count > SIXEL_PARALLEL_MAX_REPEAT) {
-                    status = SIXEL_BAD_INPUT;
-                    sixel_helper_set_additional_message(
-                        "decoder-parallel: repeat parameter too large.");
-                    goto end;
-                }
-                state.param = 0;
-                state.nparams = 0;
-                state.state = SIXEL_PRESCAN_PS_DECSIXEL;
-                continue;
-            }
-            break;
-        case SIXEL_PRESCAN_PS_DECGCI:
-            switch (*cursor) {
-            case 0x1b:
-                state.state = SIXEL_PRESCAN_PS_ESC;
-                break;
-            case '0':
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-            case '8':
-            case '9':
-                status = sixel_parallel_safe_addition(&state, *cursor);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
-                break;
-            case ';':
-                if (state.nparams < DECSIXEL_PARAMS_MAX) {
-                    state.params[state.nparams++] = state.param;
-                }
-                state.param = 0;
-                break;
-            default:
-                if (state.nparams < DECSIXEL_PARAMS_MAX) {
-                    state.params[state.nparams++] = state.param;
-                }
-                state.param = 0;
-                if (state.nparams > 0) {
-                    state.color_index = state.params[0];
-                    if (state.color_index < 0) {
-                        state.color_index = 0;
-                    } else if (state.color_index >=
-                            SIXEL_PRESCAN_PALETTE_MAX) {
-                        state.color_index = SIXEL_PRESCAN_PALETTE_MAX - 1;
-                    }
-                }
-                if (state.nparams > 4) {
-                    if (state.params[1] == 1) {
-                        if (state.params[2] > 360) {
-                            state.params[2] = 360;
-                        }
-                        if (state.params[3] > 100) {
-                            state.params[3] = 100;
-                        }
-                        if (state.params[4] > 100) {
-                            state.params[4] = 100;
-                        }
-                        state.palette[state.color_index] =
-                            sixel_parallel_hls_to_rgba(state.params[2],
-                                                       state.params[3],
-                                                       state.params[4]);
-                    } else if (state.params[1] == 2) {
-                        if (state.params[2] > 100) {
-                            state.params[2] = 100;
-                        }
-                        if (state.params[3] > 100) {
-                            state.params[3] = 100;
-                        }
-                        if (state.params[4] > 100) {
-                            state.params[4] = 100;
-                        }
-                        state.palette[state.color_index] =
-                            SIXEL_PARALLEL_XRGB(state.params[2],
-                                                state.params[3],
-                                                state.params[4]);
-                    }
-                }
-                state.nparams = 0;
-                state.state = SIXEL_PRESCAN_PS_DECSIXEL;
-                continue;
-            }
-            break;
-        default:
-            break;
-        }
-        cursor++;
-    }
-    plan->band_color_max[band_index] = local_max_color;
-    status = SIXEL_OK;
-end:
-    return status;
-}
-
-static int sixel_parallel_worker(tp_job_t job,
-                                 void *userdata,
-                                 void *workspace)
-{
-    sixel_parallel_decode_plan_t *plan;
-    SIXELSTATUS status;
-
-    (void)workspace;
-    plan = (sixel_parallel_decode_plan_t *)userdata;
-    status = sixel_parallel_decode_band(plan, job.band_index);
-    if (SIXEL_FAILED(status)) {
-        return -1;
-    }
-    return 0;
-}
-
-static SIXELSTATUS sixel_parallel_run_workers(
-    sixel_parallel_decode_plan_t *plan)
-{
-    SIXELSTATUS status;
-    threadpool_t *pool;
-    int worker_threads;
-    int job_index;
-
-    status = SIXEL_FALSE;
-    pool = NULL;
-    worker_threads = plan->threads;
-    if (worker_threads > plan->band_count) {
-        worker_threads = plan->band_count;
-    }
-    if (worker_threads < 1) {
-        worker_threads = 1;
-    }
-    if (worker_threads == 1) {
-        for (job_index = 0; job_index < plan->band_count;
-                ++job_index) {
-            status = sixel_parallel_decode_band(plan, job_index);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-        }
-        status = SIXEL_OK;
-        goto end;
-    }
-    pool = threadpool_create(worker_threads,
-                             plan->band_count,
-                             0,
-                             sixel_parallel_worker,
-                             plan);
-    if (pool == NULL) {
-        sixel_helper_set_additional_message(
-            "decoder-parallel: failed to create threadpool.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
-    }
-    for (job_index = 0; job_index < plan->band_count;
-            ++job_index) {
-        threadpool_push(pool, (tp_job_t){ job_index });
-    }
-    threadpool_finish(pool);
-    if (threadpool_get_error(pool) != 0) {
-        sixel_helper_set_additional_message(
-            "decoder-parallel: worker reported an error.");
-        status = SIXEL_BAD_INPUT;
-        goto end;
-    }
-    status = SIXEL_OK;
-end:
-    if (pool != NULL) {
-        threadpool_destroy(pool);
-    }
-    return status;
-}
-
-static int sixel_parallel_should_attempt(sixel_prescan_t *prescan,
-                                         int len,
-                                         int threads)
-{
-    int pixels;
-    int pixels_per_thread;
-    int avg_band_bytes;
-    int jobs_per_thread;
-
-    if (prescan == NULL) {
-        return 0;
-    }
-    if (threads < 2) {
-        return 0;
-    }
-    if (len < SIXEL_PARALLEL_MIN_BYTES) {
-        return 0;
-    }
-    if (prescan->band_count < SIXEL_PARALLEL_MIN_BANDS) {
-        return 0;
-    }
-    if (prescan->flags != 0u) {
-        return 0;
-    }
-    pixels = prescan->width * prescan->height;
-    if (pixels < SIXEL_PARALLEL_MIN_PIXELS) {
-        return 0;
-    }
-    pixels_per_thread = pixels / threads;
-    if (pixels_per_thread < SIXEL_PARALLEL_MIN_PIXELS_PER_THREAD) {
-        return 0;
-    }
-    jobs_per_thread = prescan->band_count / threads;
-    if (jobs_per_thread < SIXEL_PARALLEL_MIN_JOBS_PER_THREAD) {
-        return 0;
-    }
-    avg_band_bytes = len / prescan->band_count;
-    if (avg_band_bytes < SIXEL_PARALLEL_MIN_BAND_BYTES) {
-        return 0;
-    }
-    return 1;
-}
-
-static SIXELSTATUS sixel_parallel_finalize_palette(image_buffer_t *image,
-                                                   int *band_color_max,
-                                                   int band_count)
-{
-    int max_color;
-    int i;
-
-    if (image == NULL || band_color_max == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    max_color = 0;
-    for (i = 0; i < band_count; ++i) {
-        if (band_color_max[i] > max_color) {
-            max_color = band_color_max[i];
-        }
-    }
-    if (max_color < 0) {
-        max_color = 0;
-    }
-    image->ncolors = max_color;
-    return SIXEL_OK;
-}
-
-static void sixel_parallel_apply_final_palette(image_buffer_t *image,
-                                               sixel_prescan_t *prescan)
-{
-    uint32_t rgba;
-    int entries;
-    int r;
-    int g;
-    int b;
-    int i;
-
-    if (image == NULL || prescan == NULL) {
-        return;
-    }
-    entries = SIXEL_PRESCAN_PALETTE_MAX;
-    if (entries > SIXEL_PALETTE_MAX_DECODER) {
-        entries = SIXEL_PALETTE_MAX_DECODER;
-    }
-    for (i = 0; i < entries; ++i) {
-        rgba = prescan->final_state.palette[i];
-        r = (int)((rgba >> 24) & 0xff);
-        g = (int)((rgba >> 16) & 0xff);
-        b = (int)((rgba >> 8) & 0xff);
-        image->palette[i] = (r << 16) | (g << 8) | b;
-    }
-}
-
 int
 sixel_decoder_parallel_resolve_threads(void)
 {
-    sixel_decoder_threads_load_env();
-    if (g_decoder_threads.override_active) {
-        return g_decoder_threads.override_threads;
-    }
-    if (g_decoder_threads.env_valid) {
-        return g_decoder_threads.env_threads;
-    }
-    return sixel_decoder_threads_normalize(0);
-}
-
-static SIXELSTATUS sixel_parallel_decode_internal(
-    unsigned char *p,
-    int len,
-    image_buffer_t *image,
-    sixel_allocator_t *allocator,
-    int depth,
-    int *used_parallel)
-{
-    SIXELSTATUS status;
-    sixel_prescan_t *prescan;
-    sixel_parallel_decode_plan_t plan;
-    int bgindex;
-    int width;
-    int height;
-    int band_count;
     int threads;
 
-    status = SIXEL_FALSE;
-    prescan = NULL;
-    memset(&plan, 0, sizeof(plan));
+    threads = 1;
+    sixel_decoder_threads_load_env();
+    if (g_decoder_threads.override_active) {
+        threads = sixel_decoder_threads_normalize(
+            g_decoder_threads.override_threads);
+    } else if (g_decoder_threads.env_valid) {
+        threads = sixel_decoder_threads_normalize(
+            g_decoder_threads.env_threads);
+    }
+    if (threads < 1) {
+        threads = 1;
+    }
+    return threads;
+}
+
+SIXELSTATUS
+sixel_decoder_parallel_request_start(int direct_mode,
+                                     unsigned char *input,
+                                     int length,
+                                     unsigned char *anchor,
+                                     image_buffer_t *image,
+                                     int const *palette,
+                                     sixel_parallel_logger_t *logger)
+{
+#if SIXEL_ENABLE_THREADS
+    SIXELSTATUS status;
+    int threads;
+    int payload_start;
+    int payload_len;
+    sixel_thread_t *workers;
+    sixel_decoder_worker_context_t *contexts;
+    sixel_decoder_worker_chain_t chain;
+    int *copy_offsets;
+    int *copy_ready;
+    int global_capacity;
+    int *spans;
+    int i;
+    int offset;
+    int created;
+    int parallel_failed;
+    int runtime_error;
+    int sync_ready;
+    int pixel_size;
+    int palette_limit;
+
+    status = SIXEL_RUNTIME_ERROR;
+    workers = NULL;
+    contexts = NULL;
+    copy_offsets = NULL;
+    copy_ready = NULL;
+    spans = NULL;
+    threads = 0;
+    payload_start = 0;
+    payload_len = 0;
+    global_capacity = 0;
+    offset = 0;
+    created = 0;
+    parallel_failed = 0;
+    runtime_error = 0;
+    sync_ready = 0;
+    pixel_size = 4;
+    palette_limit = SIXEL_PALETTE_MAX_DECODER;
+    memset(&chain, 0, sizeof(chain));
+
+    if (input == NULL || anchor == NULL || length <= 0 || image == NULL) {
+        runtime_error = 1;
+        goto cleanup;
+    }
+
+    pixel_size = sixel_decoder_parallel_pixel_size(image->depth);
+
+    payload_start = (int)(anchor - input);
+    if (payload_start < 0 || payload_start >= length) {
+        runtime_error = 1;
+        goto cleanup;
+    }
+
+    payload_len = length - payload_start;
+    if (payload_len <= 0) {
+        runtime_error = 1;
+        goto cleanup;
+    }
+
+    palette_limit = image->ncolors;
+    if (palette_limit <= 0 || palette_limit > SIXEL_PALETTE_MAX_DECODER) {
+        palette_limit = SIXEL_PALETTE_MAX_DECODER;
+    }
+
+    threads = sixel_decoder_parallel_resolve_threads();
+    if (threads < 1) {
+        threads = 1;
+    }
+    if (threads > payload_len) {
+        threads = payload_len;
+    }
+
+    workers = (sixel_thread_t *)calloc((size_t)threads,
+                                       sizeof(sixel_thread_t));
+    contexts = (sixel_decoder_worker_context_t *)calloc(
+        (size_t)threads, sizeof(sixel_decoder_worker_context_t));
+    spans = (int *)calloc((size_t)threads, sizeof(int));
+    copy_offsets = (int *)calloc((size_t)threads, sizeof(int));
+    copy_ready = (int *)calloc((size_t)threads, sizeof(int));
+    if (workers == NULL || contexts == NULL || spans == NULL ||
+            copy_offsets == NULL || copy_ready == NULL) {
+        runtime_error = 1;
+        goto cleanup;
+    }
+
+    global_capacity = image->width * image->height;
+    if (global_capacity <= 0) {
+        runtime_error = 1;
+        goto cleanup;
+    }
+    chain.global_buffer = (unsigned char *)image->pixels.p;
+    chain.pixel_size = pixel_size;
+    chain.copy_offsets = copy_offsets;
+    chain.copy_ready = copy_ready;
+    chain.thread_count = threads;
+    chain.global_capacity = global_capacity;
+    sixel_mutex_init(&chain.mutex);
+    sixel_cond_init(&chain.cond);
+    chain.copy_ready[0] = 1;
+    chain.copy_offsets[0] = 0;
+    sync_ready = 1;
+
+    sixel_decoder_parallel_fill_spans(payload_len, threads, spans);
+
+    if (logger != NULL) {
+        /*
+         * Record when the controller hands control to worker threads so the
+         * timeline can show the gap between parser startup and worker
+         * creation.
+         */
+        sixel_parallel_logger_logf(logger,
+                                   "decoder",
+                                   "controller",
+                                   "launch",
+                                   0,
+                                   0,
+                                   0,
+                                   length,
+                                   payload_start,
+                                   length,
+                                   "spawn %d workers payload=%d",
+                                   threads,
+                                   payload_len);
+    }
+
+    offset = payload_start;
+    created = 0;
+    for (i = 0; i < threads; ++i) {
+        contexts[i].chain = &chain;
+        contexts[i].input = input;
+        contexts[i].anchor = anchor;
+        contexts[i].length = length;
+        contexts[i].payload_len = payload_len;
+        contexts[i].start_offset = offset;
+        offset += spans[i];
+        if (offset > length) {
+            offset = length;
+        }
+        if (i == threads - 1) {
+            contexts[i].end_offset = length - 1;
+        } else {
+            contexts[i].end_offset = offset - 1;
+            if (contexts[i].end_offset < contexts[i].start_offset) {
+                contexts[i].end_offset = contexts[i].start_offset;
+            }
+        }
+        contexts[i].index = i;
+        contexts[i].direct_mode = direct_mode;
+        contexts[i].palette = palette;
+        contexts[i].palette_limit = palette_limit;
+        contexts[i].width = image->width;
+        contexts[i].height = image->height;
+        contexts[i].pixel_size = pixel_size;
+        contexts[i].depth = image->depth;
+        contexts[i].logger = logger;
+        contexts[i].result = -1;
+        status = sixel_thread_create(&workers[i],
+                                     sixel_decoder_parallel_worker,
+                                     &contexts[i]);
+        if (SIXEL_FAILED(status)) {
+            runtime_error = 1;
+            break;
+        }
+        created += 1;
+    }
+
+    for (i = 0; i < created; ++i) {
+        sixel_thread_join(&workers[i]);
+        if (contexts[i].result != 0) {
+            parallel_failed = 1;
+        }
+    }
+
+    if (chain.abort_requested) {
+        parallel_failed = 1;
+    }
+
+    if (runtime_error || created < threads) {
+        status = SIXEL_RUNTIME_ERROR;
+    } else if (parallel_failed) {
+        status = SIXEL_FALSE;
+    } else {
+        status = SIXEL_OK;
+    }
+
+cleanup:
+    if (sync_ready) {
+        sixel_mutex_destroy(&chain.mutex);
+        sixel_cond_destroy(&chain.cond);
+    }
+
+    free(workers);
+    free(contexts);
+    free(spans);
+    free(copy_offsets);
+    free(copy_ready);
+
+    return status;
+#else
+    (void)direct_mode;
+    (void)input;
+    (void)length;
+    (void)anchor;
+    (void)palette;
+    (void)logger;
+
+    return SIXEL_RUNTIME_ERROR;
+#endif
+}
+
+SIXELSTATUS
+sixel_decode_raw_parallel(unsigned char *p,
+                          int len,
+                          image_buffer_t *image,
+                          sixel_allocator_t *allocator,
+                          int *used_parallel)
+{
+    SIXELSTATUS status;
+#if SIXEL_ENABLE_THREADS
+    sixel_parallel_logger_t logger;
+#endif
+
+    (void)p;
+    (void)len;
+    (void)image;
+    (void)allocator;
+
+    status = SIXEL_OK;
+#if SIXEL_ENABLE_THREADS
+    sixel_parallel_logger_init(&logger);
+    (void)sixel_parallel_logger_prepare_env(&logger);
+    sixel_decoder_parallel_log_stub(&logger, "raw");
+#endif
     if (used_parallel != NULL) {
         *used_parallel = 0;
     }
-    if (image == NULL || allocator == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    threads = sixel_decoder_parallel_resolve_threads();
-    if (threads < 2 || len < SIXEL_PARALLEL_MIN_BYTES) {
-        status = SIXEL_OK;
-        goto end;
-    }
-    status = sixel_prescan_run(p, len, &prescan, allocator);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-    if (!sixel_parallel_should_attempt(prescan,
-                                       len,
-                                       threads)) {
-        status = SIXEL_OK;
-        goto end;
-    }
-    width = prescan->width;
-    height = prescan->height;
-    if (width < 1) {
-        width = 1;
-    }
-    if (height < 1) {
-        height = 1;
-    }
-    bgindex = prescan->band_states[0].bgindex;
-    status = image_buffer_init(image,
-                               width,
-                               height,
-                               bgindex,
-                               depth,
-                               allocator);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-    plan.data = p;
-    plan.len = len;
-    plan.image = image;
-    plan.allocator = allocator;
-    plan.prescan = prescan;
-    plan.depth = depth;
-    plan.direct_mode = (depth == 4);
-    plan.width = width;
-    plan.height = height;
-    plan.threads = threads;
-    band_count = prescan->band_count;
-    if (band_count < 1) {
-        status = SIXEL_OK;
-        goto end;
-    }
-    plan.band_count = band_count;
-    plan.band_color_max = (int *)sixel_allocator_calloc(allocator,
-                                                        (size_t)band_count,
-                                                        sizeof(int));
-    if (plan.band_color_max == NULL) {
-        sixel_helper_set_additional_message(
-            "decoder-parallel: failed to allocate band metadata.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
-    }
-    status = sixel_parallel_run_workers(&plan);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-    if (!plan.direct_mode) {
-        status = sixel_parallel_finalize_palette(image,
-                                                 plan.band_color_max,
-                                                 band_count);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        sixel_parallel_apply_final_palette(image, prescan);
-    } else {
-        image->ncolors = 0;
-    }
-    if (used_parallel != NULL) {
-        *used_parallel = 1;
-    }
-    status = SIXEL_OK;
-end:
-    if (prescan != NULL) {
-        sixel_prescan_destroy(prescan, allocator);
-    }
-    if (plan.band_color_max != NULL) {
-        sixel_allocator_free(allocator, plan.band_color_max);
-    }
+#if SIXEL_ENABLE_THREADS
+    sixel_parallel_logger_close(&logger);
+#endif
     return status;
 }
 
-#else /* !SIXEL_ENABLE_THREADS */
-
-int sixel_decoder_parallel_resolve_threads(void)
+SIXELSTATUS
+sixel_decode_direct_parallel(unsigned char *p,
+                             int len,
+                             image_buffer_t *image,
+                             sixel_allocator_t *allocator,
+                             int *used_parallel)
 {
-    return 1;
-}
-
-#endif /* SIXEL_ENABLE_THREADS */
-
-SIXELSTATUS sixel_decode_raw_parallel(unsigned char *p,
-                                      int len,
-                                      image_buffer_t *image,
-                                      sixel_allocator_t *allocator,
-                                      int *used_parallel)
-{
+    SIXELSTATUS status;
 #if SIXEL_ENABLE_THREADS
-    return sixel_parallel_decode_internal(p,
-                                          len,
-                                          image,
-                                          allocator,
-                                          1,
-                                          used_parallel);
-#else
-    if (used_parallel != NULL) {
-        *used_parallel = 0;
-    }
+    sixel_parallel_logger_t logger;
+#endif
+
     (void)p;
     (void)len;
     (void)image;
     (void)allocator;
-    return SIXEL_OK;
-#endif
-}
 
-SIXELSTATUS sixel_decode_direct_parallel(unsigned char *p,
-                                         int len,
-                                         image_buffer_t *image,
-                                         sixel_allocator_t *allocator,
-                                         int *used_parallel)
-{
+    status = SIXEL_OK;
 #if SIXEL_ENABLE_THREADS
-    return sixel_parallel_decode_internal(p,
-                                          len,
-                                          image,
-                                          allocator,
-                                          4,
-                                          used_parallel);
-#else
+    sixel_parallel_logger_init(&logger);
+    (void)sixel_parallel_logger_prepare_env(&logger);
+    sixel_decoder_parallel_log_stub(&logger, "direct");
+#endif
     if (used_parallel != NULL) {
         *used_parallel = 0;
     }
-    (void)p;
-    (void)len;
-    (void)image;
-    (void)allocator;
-    return SIXEL_OK;
+#if SIXEL_ENABLE_THREADS
+    sixel_parallel_logger_close(&logger);
 #endif
+    return status;
 }
 
 /* emacs Local Variables:      */
