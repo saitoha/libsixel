@@ -733,6 +733,7 @@ project_inc = include_directories('.', 'include', 'src')
 
 loader_helper_sources = files(
   'src/allocator.c',
+  'src/assessment-timer.c',
   'src/assessment.c',
   'src/chunk.c',
   'src/colorspace.c',
@@ -772,7 +773,6 @@ if have_threads
   loader_helper_sources += [
     'src/sixel_threading.c',
     'src/threadpool.c',
-    'src/decoder-prescan.c',
     'src/decoder-parallel.c',
   ]
 endif

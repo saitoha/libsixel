@@ -51,6 +51,8 @@ srcs = files(
   '../src/status.c',
   '../src/allocator.c',
   '../src/fromsixel.c',
+  '../src/assessment-timer.c',
+  '../src/parallel-log.c',
   '../src/compat_stub.c',
 )
 
@@ -58,7 +60,6 @@ if conf.get('SIXEL_ENABLE_THREADS', 0) == 1
   srcs += [
     '../src/sixel_threading.c',
     '../src/threadpool.c',
-    '../src/decoder-prescan.c',
     '../src/decoder-parallel.c',
   ]
 endif

@@ -90,7 +90,6 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 @SIXEL_ENABLE_THREADS_TRUE@am__append_1 = \
-@SIXEL_ENABLE_THREADS_TRUE@    $(top_srcdir)/src/decoder-prescan.c \
 @SIXEL_ENABLE_THREADS_TRUE@    $(top_srcdir)/src/decoder-parallel.c \
 @SIXEL_ENABLE_THREADS_TRUE@    $(top_srcdir)/src/sixel_threading.c \
 @SIXEL_ENABLE_THREADS_TRUE@    $(top_srcdir)/src/sixel_threading.h \
@@ -145,22 +144,24 @@ am__DEPENDENCIES_1 =
 libwicsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am__libwicsixel_la_SOURCES_DIST = $(srcdir)/wic.c $(srcdir)/wic_stub.c \
 	$(srcdir)/wic_stub.h $(top_builddir)/src/fromsixel.c \
-	$(top_builddir)/src/allocator.c $(top_builddir)/src/status.c \
-	$(top_builddir)/src/compat_stub.c \
-	$(top_srcdir)/src/decoder-prescan.c \
+	$(top_builddir)/src/allocator.c \
+	$(top_builddir)/src/assessment-timer.c \
+	$(top_builddir)/src/parallel-log.c \
+	$(top_builddir)/src/status.c $(top_builddir)/src/compat_stub.c \
 	$(top_srcdir)/src/decoder-parallel.c \
 	$(top_srcdir)/src/sixel_threading.c \
 	$(top_srcdir)/src/sixel_threading.h \
 	$(top_srcdir)/src/threadpool.c $(top_srcdir)/src/threadpool.h
 am__dirstamp = $(am__leading_dot)dirstamp
-@SIXEL_ENABLE_THREADS_TRUE@am__objects_1 = $(top_builddir)/src/libwicsixel_la-decoder-prescan.lo \
-@SIXEL_ENABLE_THREADS_TRUE@	$(top_builddir)/src/libwicsixel_la-decoder-parallel.lo \
+@SIXEL_ENABLE_THREADS_TRUE@am__objects_1 = $(top_builddir)/src/libwicsixel_la-decoder-parallel.lo \
 @SIXEL_ENABLE_THREADS_TRUE@	$(top_builddir)/src/libwicsixel_la-sixel_threading.lo \
 @SIXEL_ENABLE_THREADS_TRUE@	$(top_builddir)/src/libwicsixel_la-threadpool.lo
 am_libwicsixel_la_OBJECTS = libwicsixel_la-wic.lo \
 	libwicsixel_la-wic_stub.lo \
 	$(top_builddir)/src/libwicsixel_la-fromsixel.lo \
 	$(top_builddir)/src/libwicsixel_la-allocator.lo \
+	$(top_builddir)/src/libwicsixel_la-assessment-timer.lo \
+	$(top_builddir)/src/libwicsixel_la-parallel-log.lo \
 	$(top_builddir)/src/libwicsixel_la-status.lo \
 	$(top_builddir)/src/libwicsixel_la-compat_stub.lo \
 	$(am__objects_1)
@@ -190,10 +191,11 @@ depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade =  \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-allocator.Plo \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-assessment-timer.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Plo \
-	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-prescan.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-parallel-log.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-sixel_threading.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-threadpool.Plo \
@@ -442,8 +444,11 @@ CLEANFILES = *.o *.obj
 pkglib_LTLIBRARIES = libwicsixel.la
 libwicsixel_la_SOURCES = $(srcdir)/wic.c $(srcdir)/wic_stub.c \
 	$(srcdir)/wic_stub.h $(top_builddir)/src/fromsixel.c \
-	$(top_builddir)/src/allocator.c $(top_builddir)/src/status.c \
-	$(top_builddir)/src/compat_stub.c $(am__append_1)
+	$(top_builddir)/src/allocator.c \
+	$(top_builddir)/src/assessment-timer.c \
+	$(top_builddir)/src/parallel-log.c \
+	$(top_builddir)/src/status.c $(top_builddir)/src/compat_stub.c \
+	$(am__append_1)
 libwicsixel_la_CPPFLAGS = $(AM_CPPFLAGS) \
                           -I$(top_builddir)/include/ \
                           -DSIXEL_STATUS_HAVE_TTY_HELPERS=0
@@ -533,13 +538,16 @@ $(top_builddir)/src/libwicsixel_la-fromsixel.lo:  \
 $(top_builddir)/src/libwicsixel_la-allocator.lo:  \
 	$(top_builddir)/src/$(am__dirstamp) \
 	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/libwicsixel_la-assessment-timer.lo:  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/libwicsixel_la-parallel-log.lo:  \
+	$(top_builddir)/src/$(am__dirstamp) \
+	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/src/libwicsixel_la-status.lo:  \
 	$(top_builddir)/src/$(am__dirstamp) \
 	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/src/libwicsixel_la-compat_stub.lo:  \
-	$(top_builddir)/src/$(am__dirstamp) \
-	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
-$(top_builddir)/src/libwicsixel_la-decoder-prescan.lo:  \
 	$(top_builddir)/src/$(am__dirstamp) \
 	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/src/libwicsixel_la-decoder-parallel.lo:  \
@@ -564,10 +572,11 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-allocator.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-assessment-timer.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-prescan.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-parallel-log.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-sixel_threading.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-threadpool.Plo@am__quote@ # am--include-marker
@@ -632,6 +641,20 @@ $(top_builddir)/src/libwicsixel_la-allocator.lo: $(top_builddir)/src/allocator.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libwicsixel_la-allocator.lo `test -f '$(top_builddir)/src/allocator.c' || echo '$(srcdir)/'`$(top_builddir)/src/allocator.c
 
+$(top_builddir)/src/libwicsixel_la-assessment-timer.lo: $(top_builddir)/src/assessment-timer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libwicsixel_la-assessment-timer.lo -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-assessment-timer.Tpo -c -o $(top_builddir)/src/libwicsixel_la-assessment-timer.lo `test -f '$(top_builddir)/src/assessment-timer.c' || echo '$(srcdir)/'`$(top_builddir)/src/assessment-timer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-assessment-timer.Tpo $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-assessment-timer.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/assessment-timer.c' object='$(top_builddir)/src/libwicsixel_la-assessment-timer.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libwicsixel_la-assessment-timer.lo `test -f '$(top_builddir)/src/assessment-timer.c' || echo '$(srcdir)/'`$(top_builddir)/src/assessment-timer.c
+
+$(top_builddir)/src/libwicsixel_la-parallel-log.lo: $(top_builddir)/src/parallel-log.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libwicsixel_la-parallel-log.lo -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-parallel-log.Tpo -c -o $(top_builddir)/src/libwicsixel_la-parallel-log.lo `test -f '$(top_builddir)/src/parallel-log.c' || echo '$(srcdir)/'`$(top_builddir)/src/parallel-log.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-parallel-log.Tpo $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-parallel-log.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/parallel-log.c' object='$(top_builddir)/src/libwicsixel_la-parallel-log.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libwicsixel_la-parallel-log.lo `test -f '$(top_builddir)/src/parallel-log.c' || echo '$(srcdir)/'`$(top_builddir)/src/parallel-log.c
+
 $(top_builddir)/src/libwicsixel_la-status.lo: $(top_builddir)/src/status.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libwicsixel_la-status.lo -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Tpo -c -o $(top_builddir)/src/libwicsixel_la-status.lo `test -f '$(top_builddir)/src/status.c' || echo '$(srcdir)/'`$(top_builddir)/src/status.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Tpo $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo
@@ -645,13 +668,6 @@ $(top_builddir)/src/libwicsixel_la-compat_stub.lo: $(top_builddir)/src/compat_st
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/compat_stub.c' object='$(top_builddir)/src/libwicsixel_la-compat_stub.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libwicsixel_la-compat_stub.lo `test -f '$(top_builddir)/src/compat_stub.c' || echo '$(srcdir)/'`$(top_builddir)/src/compat_stub.c
-
-$(top_builddir)/src/libwicsixel_la-decoder-prescan.lo: $(top_builddir)/src/decoder-prescan.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libwicsixel_la-decoder-prescan.lo -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-prescan.Tpo -c -o $(top_builddir)/src/libwicsixel_la-decoder-prescan.lo `test -f '$(top_builddir)/src/decoder-prescan.c' || echo '$(srcdir)/'`$(top_builddir)/src/decoder-prescan.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-prescan.Tpo $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-prescan.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/decoder-prescan.c' object='$(top_builddir)/src/libwicsixel_la-decoder-prescan.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libwicsixel_la-decoder-prescan.lo `test -f '$(top_builddir)/src/decoder-prescan.c' || echo '$(srcdir)/'`$(top_builddir)/src/decoder-prescan.c
 
 $(top_builddir)/src/libwicsixel_la-decoder-parallel.lo: $(top_builddir)/src/decoder-parallel.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libwicsixel_la_CPPFLAGS) $(CPPFLAGS) $(libwicsixel_la_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libwicsixel_la-decoder-parallel.lo -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Tpo -c -o $(top_builddir)/src/libwicsixel_la-decoder-parallel.lo `test -f '$(top_builddir)/src/decoder-parallel.c' || echo '$(srcdir)/'`$(top_builddir)/src/decoder-parallel.c
@@ -813,10 +829,11 @@ clean-am: clean-generic clean-libtool clean-pkglibLTLIBRARIES \
 
 distclean: distclean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-allocator.Plo
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-assessment-timer.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Plo
-	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-prescan.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-parallel-log.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-sixel_threading.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-threadpool.Plo
@@ -869,10 +886,11 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-allocator.Plo
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-assessment-timer.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Plo
-	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-prescan.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-parallel-log.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-sixel_threading.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-threadpool.Plo

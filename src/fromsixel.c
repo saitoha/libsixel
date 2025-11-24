@@ -64,6 +64,7 @@
 #include "output.h"
 #include "decoder-image.h"
 #include "decoder-parallel.h"
+#include "parallel-log.h"
 
 #define SIXEL_RGB(r, g, b) (((r) << 16) + ((g) << 8) +  (b))
 
@@ -346,9 +347,9 @@ image_buffer_init(
         assert(n == 256);
 #endif  /* HAVE_ASSERT */
 
-        for (n = 256; n < SIXEL_PALETTE_MAX_DECODER; n++) {
-            image->palette[n] = SIXEL_RGB(255, 255, 255);
-        }
+    for (n = 256; n < SIXEL_PALETTE_MAX_DECODER; n++) {
+        image->palette[n] = SIXEL_RGB(255, 255, 255);
+    }
     }
     status = SIXEL_OK;
 
@@ -549,7 +550,9 @@ sixel_decode_raw_impl(
     int                len,       /* size of sixel bytes */
     image_buffer_t    *image,
     parser_context_t  *context,
-    sixel_allocator_t *allocator) /* allocator object */
+    sixel_allocator_t *allocator, /* allocator object */
+    sixel_parallel_logger_t *parallel_logger,
+    int logger_prepared)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int n;
@@ -562,6 +565,20 @@ sixel_decode_raw_impl(
     int c;
     size_t pos;
     unsigned char *p0 = p;
+    int parallel_started;
+    int raster_ready;
+    int palette_ready;
+    int direct_mode;
+    unsigned char *parallel_anchor;
+
+    parallel_started = 0;
+    raster_ready = 0;
+    palette_ready = 0;
+    direct_mode = 0;
+    parallel_anchor = p0;
+    if (image->depth == 4U) {
+        direct_mode = 1;
+    }
 
     while (p < p0 + len) {
         switch (context->state) {
@@ -736,22 +753,86 @@ sixel_decode_raw_impl(
             case '#':
                 context->param = 0;
                 context->nparams = 0;
+                if (!palette_ready) {
+                    palette_ready = 1;
+                }
                 context->state = PS_DECGCI;
                 p++;
                 break;
             case '$':
                 /* DECGCR Graphics Carriage Return */
                 context->pos_x = 0;
+                if (!palette_ready) {
+                    palette_ready = 1;
+                }
+                if (!parallel_started && raster_ready &&
+                        (!direct_mode || palette_ready)) {
+                    status = sixel_decoder_parallel_request_start(
+                        direct_mode,
+                        p0,
+                        len,
+                        parallel_anchor,
+                        image,
+                        image->palette,
+                        logger_prepared ? parallel_logger : NULL);
+                    parallel_started = 1;
+                    if (status == SIXEL_FALSE) {
+                        /* Parallel decode aborted; continue serially. */
+                    } else {
+                        goto end;
+                    }
+                }
                 p++;
                 break;
             case '-':
                 /* DECGNL Graphics Next Line */
                 context->pos_x = 0;
                 context->pos_y += 6;
+                if (!palette_ready) {
+                    palette_ready = 1;
+                }
+                if (!parallel_started && raster_ready &&
+                        (!direct_mode || palette_ready)) {
+                    status = sixel_decoder_parallel_request_start(
+                        direct_mode,
+                        p0,
+                        len,
+                        parallel_anchor,
+                        image,
+                        image->palette,
+                        logger_prepared ? parallel_logger : NULL);
+                    parallel_started = 1;
+                    if (status == SIXEL_FALSE) {
+                        /* Parallel decode aborted; continue serially. */
+                    } else {
+                        goto end;
+                    }
+                }
                 p++;
                 break;
             default:
                 if (*p >= '?' && *p <= '~') {  /* sixel characters */
+
+                    if (!palette_ready) {
+                        palette_ready = 1;
+                    }
+                    if (!parallel_started && raster_ready &&
+                            (!direct_mode || palette_ready)) {
+                        status = sixel_decoder_parallel_request_start(
+                            direct_mode,
+                            p0,
+                            len,
+                            parallel_anchor,
+                            image,
+                            image->palette,
+                            logger_prepared ? parallel_logger : NULL);
+                        parallel_started = 1;
+                        if (status == SIXEL_FALSE) {
+                            /* Parallel decode aborted; continue serially. */
+                        } else {
+                            goto end;
+                        }
+                    }
 
                     sx = image->width;
                     while (sx < context->pos_x + context->repeat_count) {
@@ -917,6 +998,11 @@ sixel_decode_raw_impl(
                         goto end;
                     }
                 }
+                if (!raster_ready && context->attributed_ph > 0 &&
+                        context->attributed_pv > 0) {
+                    raster_ready = 1;
+                }
+                parallel_anchor = p;
                 context->state = PS_DECSIXEL;
                 context->param = 0;
                 context->nparams = 0;
@@ -1010,6 +1096,13 @@ sixel_decode_raw_impl(
                     }
                 }
 
+                if (context->color_index + 1 > image->ncolors) {
+                    image->ncolors = context->color_index + 1;
+                    if (image->ncolors > SIXEL_PALETTE_MAX_DECODER) {
+                        image->ncolors = SIXEL_PALETTE_MAX_DECODER;
+                    }
+                }
+
                 if (context->nparams > 4) {
                     if (context->params[1] == 1) {
                         /* HLS */
@@ -1039,6 +1132,7 @@ sixel_decode_raw_impl(
                             = SIXEL_XRGB(context->params[2], context->params[3], context->params[4]);
                     }
                 }
+                parallel_anchor = p;
                 break;
             }
             break;
@@ -1083,12 +1177,36 @@ sixel_decode_image(
 {
     SIXELSTATUS status = SIXEL_FALSE;
 #if SIXEL_ENABLE_THREADS
+    sixel_parallel_logger_t parallel_logger;
+    int logger_prepared;
     int used_parallel;
 #endif
 
     image->pixels.p = NULL;
 
 #if SIXEL_ENABLE_THREADS
+    sixel_parallel_logger_init(&parallel_logger);
+    logger_prepared = 0;
+    (void)sixel_parallel_logger_prepare_env(&parallel_logger);
+    logger_prepared = parallel_logger.active;
+    if (logger_prepared) {
+        /*
+         * File I/O window for timeline visualization. The buffer is already
+         * populated, but logging the bounds keeps decode timing aligned with
+         * encoder logs.
+         */
+        sixel_parallel_logger_logf(&parallel_logger,
+                                   "decoder",
+                                   "io",
+                                   "start",
+                                   0,
+                                   0,
+                                   0,
+                                   len,
+                                   0,
+                                   len,
+                                   "reading sixel payload");
+    }
     used_parallel = 0;
     if (depth == 1U) {
         status = sixel_decode_raw_parallel(p,
@@ -1117,6 +1235,22 @@ sixel_decode_image(
         goto end;
     }
 
+    if (logger_prepared) {
+        /* Mark when the serial parser begins scanning tokens. */
+        sixel_parallel_logger_logf(&parallel_logger,
+                                   "decoder",
+                                   "controller",
+                                   "start",
+                                   0,
+                                   0,
+                                   0,
+                                   len,
+                                   0,
+                                   len,
+                                   "serial parser begin depth=%u",
+                                   depth);
+    }
+
     status = image_buffer_init(image,
                                initial_width,
                                initial_height,
@@ -1127,7 +1261,13 @@ sixel_decode_image(
         goto end;
     }
 
-    status = sixel_decode_raw_impl(p, len, image, context, allocator);
+    status = sixel_decode_raw_impl(p,
+                                   len,
+                                   image,
+                                   context,
+                                   allocator,
+                                   &parallel_logger,
+                                   logger_prepared);
     if (SIXEL_FAILED(status)) {
         sixel_allocator_free(allocator, image->pixels.p);
         image->pixels.p = NULL;
@@ -1137,6 +1277,35 @@ sixel_decode_image(
     status = SIXEL_OK;
 
 end:
+#if SIXEL_ENABLE_THREADS
+    if (logger_prepared) {
+        sixel_parallel_logger_logf(&parallel_logger,
+                                   "decoder",
+                                   "parser",
+                                   "finish",
+                                   0,
+                                   0,
+                                   0,
+                                   len,
+                                   0,
+                                   len,
+                                   "parser status=%d",
+                                   status);
+        sixel_parallel_logger_logf(&parallel_logger,
+                                   "decoder",
+                                   "io",
+                                   "finish",
+                                   0,
+                                   0,
+                                   0,
+                                   len,
+                                   0,
+                                   len,
+                                   "input processed status=%d",
+                                   status);
+        sixel_parallel_logger_close(&parallel_logger);
+    }
+#endif
     return status;
 }
 

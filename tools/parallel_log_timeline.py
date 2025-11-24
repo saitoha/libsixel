@@ -80,8 +80,10 @@ def _flow_sort_key(worker: str, role: str, thread: int) -> Tuple[int, str, int]:
         "colorspace": 3,
         "palette": 4,
         "dither": 5,
-        "encode": 6,
-        "pipeline": 7,
+        "decoder": 6,
+        "encode": 7,
+        "io": 8,
+        "pipeline": 9,
     }
 
     rank = priority.get(worker, 10)
@@ -89,12 +91,26 @@ def _flow_sort_key(worker: str, role: str, thread: int) -> Tuple[int, str, int]:
 
 
 def _start_sort_key(
-    row: Tuple[str, str, int],
-    first_ts: Dict[Tuple[str, str, int], float],
+    row: Tuple[str, int],
+    first_ts: Dict[Tuple[str, int], float],
+    primary_role: Dict[Tuple[str, int], str],
 ) -> Tuple[float, str, str, int]:
     """Sort rows by the first timestamp seen, then by identifiers."""
 
-    return (first_ts.get(row, 0.0), row[0], row[1], row[2])
+    return (
+        first_ts.get(row, 0.0),
+        row[0],
+        primary_role.get(row, ""),
+        row[1],
+    )
+
+
+def _row_key(worker: str, thread: int, job: int) -> Tuple[str, int]:
+    """Choose a row key so decoder workers use the job index ordering."""
+
+    if worker == "decoder" and job >= 0:
+        return (worker, job)
+    return (worker, thread)
 
 
 def render(events: List[ParallelEvent], output: str, sort_order: str) -> None:
@@ -108,6 +124,7 @@ def render(events: List[ParallelEvent], output: str, sort_order: str) -> None:
     events = sorted(events, key=lambda item: item.ts)
 
     spans: Dict[Tuple[str, str, int, int], Tuple[float, float]] = {}
+    job_hint: Dict[Tuple[str, int], int] = {}
     for event in events:
         key = (event.worker, event.role, event.thread, event.job)
         if key not in spans:
@@ -115,19 +132,24 @@ def render(events: List[ParallelEvent], output: str, sort_order: str) -> None:
         else:
             start, _ = spans[key]
             spans[key] = (start, max(spans[key][1], event.ts))
+        row_key = _row_key(event.worker, event.thread, event.job)
+        if row_key not in job_hint and event.worker == "decoder" and \
+                event.job >= 0:
+            job_hint[row_key] = event.job
 
-    threads: Dict[Tuple[str, str, int], List[Tuple[float, float, int]]] = {}
+    # Collapse decode/copy phases per thread so one row shows the full worker
+    # activity while keeping per-role colors.
+    threads: Dict[Tuple[str, int], List[Tuple[float, float, str, int]]] = {}
     for (worker, role, thread, job), (start, end) in spans.items():
+        row_key = _row_key(worker, thread, job)
         duration = max(0.0, end - start)
-        key = (worker, role, thread)
-        if key not in threads:
-            threads[key] = []
-        threads[key].append((start, duration, job))
+        if row_key not in threads:
+            threads[row_key] = []
+        threads[row_key].append((start, duration, role, job))
 
     for key in threads:
         threads[key].sort(key=lambda item: item[0])
 
-    # Base hues per flow so encode/dither/pipeline stay visually grouped.
     flow_palette = {
         "loader": (0.737, 0.494, 0.247),
         "scale": (0.556, 0.352, 0.690),
@@ -137,69 +159,70 @@ def render(events: List[ParallelEvent], output: str, sort_order: str) -> None:
         "dither": (0.231, 0.627, 0.231),
         "encode": (0.129, 0.4, 0.674),
         "pipeline": (0.4, 0.4, 0.4),
+        "decoder": (0.278, 0.525, 0.847),
+        "io": (0.725, 0.278, 0.525),
+        "undither": (0.325, 0.533, 0.376),
+        "png": (0.584, 0.376, 0.6),
     }
 
-    # Shade roles within a flow to keep related rows distinguishable.
-    role_shades = {
+    role_palette = {
         "controller": 0.15,
-        "scheduler": 0.3,
-        "producer": 0.45,
-        "worker": 0.6,
-        "writer": 0.75,
+        "decode": 0.35,
+        "copy": 0.55,
+        "writer": 0.7,
+        "io": 0.25,
+        "undither": 0.45,
+        "png": 0.65,
     }
 
-    role_color = {}
-    for worker, role, _ in threads:
-        base = flow_palette.get(worker, (0.2, 0.2, 0.2))
-        shade = role_shades.get(role, 0.6)
-        role_color[(worker, role)] = _lighten(base, shade)
+    role_color: Dict[Tuple[str, str], Tuple[float, float, float]] = {}
+    for worker, thread in threads:
+        seen_roles = set(role for _, _, role, _ in threads[(worker, thread)])
+        for role in seen_roles:
+            base = flow_palette.get(worker, (0.2, 0.2, 0.2))
+            shade = role_palette.get(role, 0.6)
+            role_color[(worker, role)] = _lighten(base, shade)
 
     rows = list(threads.keys())
-    first_ts: Dict[Tuple[str, str, int], float] = {}
+    first_ts: Dict[Tuple[str, int], float] = {}
+    primary_role: Dict[Tuple[str, int], str] = {}
     for event in events:
-        key = (event.worker, event.role, event.thread)
+        key = _row_key(event.worker, event.thread, event.job)
         if key not in first_ts:
             first_ts[key] = event.ts
+            primary_role[key] = event.role
 
     if sort_order == "start":
-        rows.sort(key=lambda row: _start_sort_key(row, first_ts))
+        rows.sort(key=lambda row: _start_sort_key(
+            row, first_ts, primary_role))
     else:
-        rows.sort(key=lambda row: _flow_sort_key(row[0], row[1], row[2]))
+        rows.sort(key=lambda row: _flow_sort_key(
+            row[0], primary_role.get(row, ""), row[1]))
     fig_height = max(1.0, 0.6 * len(rows))
     fig, ax = plt.subplots(figsize=(12, fig_height))
 
     for idx, row in enumerate(rows):
-        worker, role, thread = row
+        worker, thread = row
         spans_for_thread = threads[row]
-        color = role_color.get((worker, role), (0.2, 0.2, 0.2))
         segments = []
-        for start, duration, _ in spans_for_thread:
-            segments.append((start, duration if duration > 0 else 1e-6))
+        colors = []
+        for start, duration, role, _ in spans_for_thread:
+            span = (start, duration if duration > 0 else 1e-6)
+            segments.append(span)
+            colors.append(role_color.get((worker, role), (0.2, 0.2, 0.2)))
         ax.broken_barh(segments,
                        (idx - 0.4, 0.8),
-                       facecolors=color,
+                       facecolors=colors,
                        edgecolors="black",
                        linewidth=0.5)
 
-        for start, duration, job in spans_for_thread:
-            if worker != "dither":
-                continue
-            xpos = start + (duration if duration > 0 else 1e-6) / 2.0
-            ax.text(xpos,
-                    idx,
-                    f"#{job}",
-                    ha="center",
-                    va="center",
-                    fontsize=6,
-                    color="black")
-
     yticks = [pos for pos in range(len(rows))]
     ylabels = []
-    for worker, role, thread in rows:
-        if role:
-            ylabels.append(f"{worker}/{role}[{thread}]")
-        else:
-            ylabels.append(f"{worker}[{thread}]")
+    for worker, thread in rows:
+        label = worker
+        if worker == "decoder":
+            label = f"{worker} #{thread}"
+        ylabels.append(label)
     ax.set_yticks(yticks)
     ax.set_yticklabels(ylabels)
     ax.set_xlabel("seconds")
@@ -210,17 +233,16 @@ def render(events: List[ParallelEvent], output: str, sort_order: str) -> None:
 
     handles = []
     labels = []
-    seen_keys = set()
-    for worker, role, _ in threads:
-        key = (worker, role)
-        if key in seen_keys:
+    seen_roles = set()
+    for (worker, role), color in sorted(role_color.items(),
+                                        key=lambda item: (item[0][1],
+                                                          item[0][0])):
+        if role in seen_roles:
             continue
-        seen_keys.add(key)
-        label_worker = worker if worker else "(unknown)"
-        label_role = role if role else "(unspecified)"
-        handles.append(plt.Line2D([], [], color=role_color[key],
-                                  marker="s", linestyle=""))
-        labels.append(f"{label_worker}/{label_role}")
+        seen_roles.add(role)
+        handles.append(plt.Line2D([], [], color=color, marker="s",
+                                  linestyle=""))
+        labels.append(role if role else "(unspecified)")
     if handles:
         ax.legend(handles, labels, title="Role", loc="upper right")
 

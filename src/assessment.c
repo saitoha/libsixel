@@ -64,13 +64,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#if HAVE_TIME_H
-#include <time.h>
-#endif
-#if HAVE_SYS_TIME_H
-#include <sys/time.h>
-#endif
-
 #include <sixel.h>
 
 #include "assessment.h"
@@ -247,41 +240,6 @@ sixel_assessment_stage_should_emit(int stage_index)
         return 0;
     }
     return 1;
-}
-
-SIXELAPI double
-sixel_assessment_timer_now(void)
-{
-#if defined(_WIN32)
-    static LARGE_INTEGER frequency;
-    LARGE_INTEGER counter;
-    BOOL ok;
-
-    if (frequency.QuadPart == 0) {
-        ok = QueryPerformanceFrequency(&frequency);
-        if (!ok || frequency.QuadPart == 0) {
-            return (double)GetTickCount64() / 1000.0;
-        }
-    }
-    QueryPerformanceCounter(&counter);
-    return (double)counter.QuadPart / (double)frequency.QuadPart;
-#elif defined(HAVE_CLOCK_GETTIME)
-    struct timespec ts;
-
-    if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
-        return 0.0;
-    }
-    return (double)ts.tv_sec + (double)ts.tv_nsec / 1000000000.0;
-#elif defined(HAVE_GETTIMEOFDAY)
-    struct timeval tv;
-
-    if (gettimeofday(&tv, NULL) != 0) {
-        return 0.0;
-    }
-    return (double)tv.tv_sec + (double)tv.tv_usec / 1000000.0;
-#else
-    return (double)clock() / (double)CLOCKS_PER_SEC;
-#endif
 }
 
 static void
