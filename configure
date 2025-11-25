@@ -19055,6 +19055,12 @@ then :
   printf "%s\n" "#define HAVE_TMPNAM 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "gettimeofday" "ac_cv_func_gettimeofday"
+if test "x$ac_cv_func_gettimeofday" = xyes
+then :
+  printf "%s\n" "#define HAVE_GETTIMEOFDAY 1" >>confdefs.h
+
+fi
 
 
 case "${host_os}" in
