@@ -210,6 +210,9 @@
 /* whether getopt_long is avilable */
 #undef HAVE_GETOPT_LONG
 
+/* Define to 1 if you have the 'gettimeofday' function. */
+#undef HAVE_GETTIMEOFDAY
+
 /* Define to 1 if you have the <intrin.h> header file. */
 #undef HAVE_INTRIN_H
 

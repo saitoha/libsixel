@@ -803,7 +803,8 @@ AC_CHECK_FUNCS([assert \
                 strstr \
                 fchmod \
                 strtol \
-                tmpnam])
+                tmpnam \
+                gettimeofday])
 
 case "${host_os}" in
   mingw*)

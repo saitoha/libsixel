@@ -250,7 +250,8 @@ extra_funcs = [
   'fork',
   'posix_spawnp',
   'fchmod',
-  'tmpnam'
+  'tmpnam',
+  'gettimeofday'
 ]
 
 func_prefixes = {
