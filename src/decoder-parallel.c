@@ -387,87 +387,45 @@ sixel_decoder_parallel_worker(void *arg)
     sixel_decoder_worker_context_t *context;
     sixel_decoder_worker_chain_t *chain;
     sixel_local_buffer_t local_buffer;
-    sixel_decoder_local_chunk_t *chunk_cursor;
-    unsigned char *anchor;
-    unsigned char *scan;
-    unsigned char *cursor;
-    unsigned char *stop;
-    unsigned char *limit;
-    unsigned char *start;
-    int capacity;
-    int written;
-    int assigned;
-    int bits;
-    int repeat;
-    int color_index;
-    int effective_index;
-    int max_relative;
-    int min_relative;
-    int pos_x;
-    int pos_y;
-    int need;
-    int relative;
-    int row_base;
-    int r;
-    int payload_len;
-    int row_offset;
-    int line_count;
-    int copy_offset;
-    int copy_span;
-    int next_offset;
-    int guarded;
+    sixel_decoder_local_chunk_t *chunk_cursor = NULL;
+    unsigned char *anchor = NULL;
+    unsigned char *scan = NULL;
+    unsigned char *cursor = NULL;
+    unsigned char *stop = NULL;
+    unsigned char *limit = NULL;
+    unsigned char *start = NULL;
+    int capacity = 0;
+    int written = 0;
+    int assigned = 0;
+    int bits = 0;
+    int repeat = 1;
+    int color_index = 0;
+    int max_relative = (-1);
+    int min_relative = (-1);
+    int pos_x = 0;
+    int pos_y = 0;
+    int relative = 0;
+    int row_base = 0;
+    int r = 0;
+    int row_offset = 0;
+    int line_count = 0;
+    int copy_offset = 0;
+    int copy_span = 0;
+    int next_offset = 0;
     int i;
-    int fallback;
-    int status;
-    sixel_parallel_logger_t *logger;
-    int width;
-    int pixel_size;
-    int depth;
-    int height;
-    int chain_offset;
-
-    chunk_cursor = NULL;
-    anchor = NULL;
-    scan = NULL;
-    cursor = NULL;
-    stop = NULL;
-    limit = NULL;
-    start = NULL;
-    capacity = 0;
-    written = 0;
-    assigned = 0;
-    bits = 0;
-    repeat = 1;
-    color_index = 0;
-    effective_index = 0;
-    max_relative = -1;
-    min_relative = -1;
-    pos_x = 0;
-    pos_y = 0;
-    need = 0;
-    relative = 0;
-    row_base = 0;
-    r = 0;
-    payload_len = 0;
-    row_offset = 0;
-    line_count = 0;
-    copy_offset = 0;
-    copy_span = 0;
-    next_offset = 0;
-    guarded = 0;
-    i = 0;
-    fallback = 0;
-    status = -1;
-    logger = NULL;
-    width = 0;
-    pixel_size = 1;
-    depth = 0;
-    height = 0;
-    chain_offset = 0;
+    int fallback = 0;
+    int status = (-1);
+    sixel_parallel_logger_t *logger = NULL;
+    int width = 0;
+    int pixel_size = 0;
+    int depth = 0;
+    int height = 0;
+    int chain_offset = 0;
+    unsigned char ch;
 
     context = (sixel_decoder_worker_context_t *)arg;
     if (context == NULL) {
-        return -1;
+        return (-1);
     }
 
     context->result = status;
@@ -499,8 +457,7 @@ sixel_decoder_parallel_worker(void *arg)
         return status;
     }
     sixel_local_buffer_init(&local_buffer, width, pixel_size);
-    payload_len = context->payload_len;
-    if (payload_len <= 0) {
+    if (context->payload_len <= 0) {
         context->result = status;
         return status;
     }
@@ -555,7 +512,7 @@ sixel_decoder_parallel_worker(void *arg)
         }
     }
     if (context->index > 0 && cursor == start) {
-        status = -1;
+        status = (-1);
         context->result = status;
         return status;
     }
@@ -600,7 +557,7 @@ sixel_decoder_parallel_worker(void *arg)
     row_offset = line_count * 6;
 
     capacity = (int)((double)chain->global_capacity *
-        ((double)assigned / (double)payload_len));
+        ((double)assigned / (double)context->payload_len));
     capacity = (int)((double)capacity * 1.10);
     if (capacity < 1) {
         capacity = 1;
@@ -616,7 +573,7 @@ sixel_decoder_parallel_worker(void *arg)
                                              capacity / width,
                                              0);
     if (chunk_cursor == NULL) {
-        status = -1;
+        status = (-1);
         context->result = status;
         return status;
     }
@@ -625,14 +582,12 @@ sixel_decoder_parallel_worker(void *arg)
     stop = context->input + context->end_offset;
     limit = context->input + context->length;
     while (cursor < limit) {
-        unsigned char ch;
-
         ch = *cursor;
 
         if (ch < 0x20) {
             if (ch == 0x18 || ch == 0x1a) {
                 fallback = 1;
-                status = -1;
+                status = (-1);
                 break;
             }
             cursor += 1;
@@ -641,7 +596,7 @@ sixel_decoder_parallel_worker(void *arg)
 
         if (ch == '"') {
             fallback = 1;
-            status = -1;
+            status = (-1);
             break;
         }
 
@@ -675,7 +630,7 @@ sixel_decoder_parallel_worker(void *arg)
             }
             if (p < limit && *p == ';') {
                 fallback = 1;
-                status = -1;
+                status = (-1);
                 break;
             }
             color_index = value;
@@ -706,7 +661,7 @@ sixel_decoder_parallel_worker(void *arg)
                                                           pos_y);
             if (chunk_cursor == NULL) {
                 fallback = 1;
-                status = -1;
+                status = (-1);
                 break;
             }
             continue;
@@ -718,34 +673,19 @@ sixel_decoder_parallel_worker(void *arg)
         }
 
         bits = ch - '?';
-        effective_index = color_index;
-        if (context->palette != NULL && context->palette_limit > 0) {
-            int palette_slot;
-
-            palette_slot = color_index;
-            if (palette_slot >= context->palette_limit) {
-                palette_slot = context->palette_limit - 1;
-            }
-            if (palette_slot < 0) {
-                palette_slot = 0;
-            }
-            effective_index = palette_slot;
-        }
-
         for (i = 0; i < 6; ++i) {
             if ((bits & (1 << i)) != 0) {
-                need = repeat;
-                if (pos_x + need > width ||
+                if (pos_x + repeat > width ||
                         row_offset + pos_y + i >= height) {
                     fallback = 1;
-                    status = -1;
+                    status = (-1);
                     break;
                 }
                 chunk_cursor = sixel_local_buffer_reserve_row(
                     &local_buffer, pos_y + i);
                 if (chunk_cursor == NULL) {
                     fallback = 1;
-                    status = -1;
+                    status = (-1);
                     break;
                 }
 
@@ -753,23 +693,26 @@ sixel_decoder_parallel_worker(void *arg)
                     pos_x;
                 relative = (pos_y + i) * width + pos_x;
 
-                for (r = 0; r < need; ++r) {
-                    int slot;
-
-                    slot = row_base + r;
-                    sixel_decoder_parallel_store_pixel(
-                        chunk_cursor->data +
-                        (size_t)slot * (size_t)pixel_size,
-                        depth,
-                        effective_index,
-                        context->palette);
+                if (pixel_size == 1 && repeat > 3) {
+                    memset(chunk_cursor->data + (size_t)row_base,
+                           color_index,
+                           repeat);
+                } else {
+                    for (r = 0; r < repeat; ++r) {
+                        sixel_decoder_parallel_store_pixel(
+                            chunk_cursor->data +
+                            (size_t)(row_base + r) * (size_t)pixel_size,
+                            depth,
+                            color_index,
+                            context->palette);
+                    }
                 }
-                written += need;
+                written += repeat;
                 if (min_relative < 0 || relative < min_relative) {
                     min_relative = relative;
                 }
-                if (max_relative < relative + need - 1) {
-                    max_relative = relative + need - 1;
+                if (max_relative < relative + repeat - 1) {
+                    max_relative = relative + repeat - 1;
                 }
             }
         }
@@ -821,19 +764,17 @@ sixel_decoder_parallel_worker(void *arg)
     context->local_capacity = capacity;
     context->local_written = copy_span;
 
-    guarded = 1;
     sixel_mutex_lock(&chain->mutex);
     while (!chain->copy_ready[context->index] && !chain->abort_requested) {
         sixel_cond_wait(&chain->cond, &chain->mutex);
     }
     if (chain->abort_requested) {
         sixel_mutex_unlock(&chain->mutex);
-        guarded = 0;
         sixel_local_buffer_dispose(&local_buffer);
         context->local_buffer = NULL;
         context->local_capacity = 0;
         context->local_written = 0;
-        status = -1;
+        status = (-1);
         context->result = status;
         return status;
     }
@@ -847,22 +788,17 @@ sixel_decoder_parallel_worker(void *arg)
     }
     sixel_cond_broadcast(&chain->cond);
     sixel_mutex_unlock(&chain->mutex);
-    guarded = 0;
 
     if (copy_offset < 0 || chain->global_buffer == NULL) {
-        if (!guarded) {
-            sixel_mutex_lock(&chain->mutex);
-            guarded = 1;
-        }
+        sixel_mutex_lock(&chain->mutex);
         chain->abort_requested = 1;
         sixel_cond_broadcast(&chain->cond);
         sixel_mutex_unlock(&chain->mutex);
-        guarded = 0;
         sixel_local_buffer_dispose(&local_buffer);
         context->local_buffer = NULL;
         context->local_capacity = 0;
         context->local_written = 0;
-        status = -1;
+        status = (-1);
         context->result = status;
         return status;
     }
@@ -1242,7 +1178,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
         contexts[i].pixel_size = pixel_size;
         contexts[i].depth = image->depth;
         contexts[i].logger = logger;
-        contexts[i].result = -1;
+        contexts[i].result = (-1);
         status = sixel_thread_create(&workers[i],
                                      sixel_decoder_parallel_worker,
                                      &contexts[i]);
