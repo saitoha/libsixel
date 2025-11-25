@@ -4184,12 +4184,14 @@ sixel_encoder_encode_frame(
                             sixel_frame_get_colorspace(frame),
                             encoder->working_colorspace);
 
-    status = sixel_frame_set_pixelformat(
-        frame,
-        sixel_encoder_pixelformat_for_colorspace(
-            encoder->working_colorspace));
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    if (encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA) {
+        status = sixel_frame_set_pixelformat(
+            frame,
+            sixel_encoder_pixelformat_for_colorspace(
+                encoder->working_colorspace));
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
 
     if (assessment != NULL) {
