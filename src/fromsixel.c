@@ -1326,6 +1326,7 @@ sixel_decode_raw(
     parser_context_t context;
     image_buffer_t image;
     int n;
+    int alloc_size;
 
     image.pixels.p = NULL;
 
@@ -1351,8 +1352,7 @@ sixel_decode_raw(
         goto error;
     }
 
-    *ncolors = image.ncolors + 1;
-    int alloc_size = *ncolors;
+    *ncolors = alloc_size = image.ncolors;
     if (alloc_size < SIXEL_PALETTE_MAX_DECODER) {
         /* memory access range should be 0 <= 255 */
         alloc_size = SIXEL_PALETTE_MAX_DECODER;
@@ -1410,6 +1410,7 @@ sixel_decode_wide(
     parser_context_t context;
     image_buffer_t image;
     int n;
+    int alloc_size;
 
     image.pixels.p = NULL;
 
@@ -1435,8 +1436,7 @@ sixel_decode_wide(
         goto error;
     }
 
-    *ncolors = image.ncolors + 1;
-    int alloc_size = *ncolors;
+    *ncolors = alloc_size = image.ncolors + 1;
     if (alloc_size < SIXEL_PALETTE_MAX_DECODER) {
         /* memory access range should be 0 <= 255 */
         alloc_size = SIXEL_PALETTE_MAX_DECODER;
