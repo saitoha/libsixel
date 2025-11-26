@@ -92,7 +92,9 @@ build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_1 = \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0001_invalid_option.t \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0001_01_invalid_positional.t \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0001_02_invalid_option_arguments.t \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0001_03_invalid_option_combinations.t \
 @HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0002_stdin.t \
 @HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0003_information.t \
 @HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0004_conversion_options.t \

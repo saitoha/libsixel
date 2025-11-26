@@ -24,7 +24,9 @@ CONVERTER_TEST_LIST =
 if WANT_IMG2SIXEL
 if HAVE_BASH
 CONVERTER_TEST_LIST += \
-        $(top_srcdir)/converters/t/test_0001_invalid_option.t \
+        $(top_srcdir)/converters/t/test_0001_01_invalid_positional.t \
+        $(top_srcdir)/converters/t/test_0001_02_invalid_option_arguments.t \
+        $(top_srcdir)/converters/t/test_0001_03_invalid_option_combinations.t \
         $(top_srcdir)/converters/t/test_0002_stdin.t \
         $(top_srcdir)/converters/t/test_0003_information.t \
         $(top_srcdir)/converters/t/test_0004_conversion_options.t \
