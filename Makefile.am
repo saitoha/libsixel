@@ -23,7 +23,10 @@ EXTRA_DIST += converters/t/common.t \
     converters/t/test_0001_03_invalid_option_combinations.t \
     converters/t/test_0002_stdin.t \
     converters/t/test_0003_information.t \
-    converters/t/test_0004_conversion_options.t \
+    converters/t/test_0004_conversion_options_01.t \
+    converters/t/test_0004_conversion_options_02.t \
+    converters/t/test_0004_conversion_options_03.t \
+    converters/t/test_0004_conversion_options_04.t \
     converters/t/test_0005_dcs_arguments.t \
     converters/t/test_0006_dcs_variations.t \
     converters/t/test_0007_animation.t \
