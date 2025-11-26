@@ -67,8 +67,11 @@
 #elif defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__)
 # define SIXEL_USE_PTHREADS 0
 # define SIXEL_USE_WIN32_THREADS 1
-#else
+#elif SIXEL_ENABLE_THREADS
 # define SIXEL_USE_PTHREADS 1
+# define SIXEL_USE_WIN32_THREADS 0
+#else
+# define SIXEL_USE_PTHREADS 0
 # define SIXEL_USE_WIN32_THREADS 0
 #endif
 
