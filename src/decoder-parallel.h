@@ -28,7 +28,7 @@
 #include <sixel.h>
 
 #include "decoder-image.h"
-#include "parallel-log.h"
+#include "logger.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -54,7 +54,7 @@ SIXELSTATUS sixel_decoder_parallel_request_start(int direct_mode,
                                                  unsigned char *anchor,
                                                  image_buffer_t *image,
                                                  int const *palette,
-                                                 sixel_parallel_logger_t *logger);
+                                                 sixel_logger_t *logger);
 
 #ifdef __cplusplus
 }

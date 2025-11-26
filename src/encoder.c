@@ -116,7 +116,7 @@
 #include "tty.h"
 #include "encoder.h"
 #include "output.h"
-#include "parallel-log.h"
+#include "logger.h"
 #include "options.h"
 #include "dither.h"
 #include "rgblookup.h"
@@ -704,7 +704,7 @@ sixel_encoder_log_stage(sixel_encoder_t *encoder,
                         char const *fmt,
                         ...)
 {
-    sixel_parallel_logger_t *logger;
+    sixel_logger_t *logger;
     int job_id;
     int height;
     char message[256];
@@ -712,7 +712,7 @@ sixel_encoder_log_stage(sixel_encoder_t *encoder,
 
     logger = NULL;
     if (encoder != NULL) {
-        logger = encoder->parallel_logger;
+        logger = encoder->logger;
     }
     if (logger == NULL || logger->file == NULL || !logger->active) {
         return;
@@ -756,18 +756,18 @@ sixel_encoder_log_stage(sixel_encoder_t *encoder,
 #pragma GCC diagnostic pop
 #endif
 
-    sixel_parallel_logger_logf(logger,
-                               role,
-                               worker,
-                               event,
-                               job_id,
-                               -1,
-                               0,
-                               height,
-                               0,
-                               height,
-                               "%s",
-                               message);
+    sixel_logger_logf(logger,
+                      role,
+                      worker,
+                      event,
+                      job_id,
+                      -1,
+                      0,
+                      height,
+                      0,
+                      height,
+                      "%s",
+                      message);
 }
 
 static SIXELSTATUS
@@ -4512,7 +4512,7 @@ sixel_encoder_new(
     (*ppencoder)->clipboard_output_active = 0;
     (*ppencoder)->clipboard_output_format[0] = '\0';
     (*ppencoder)->clipboard_output_path = NULL;
-    (*ppencoder)->parallel_logger       = NULL;
+    (*ppencoder)->logger                = NULL;
     (*ppencoder)->parallel_job_id       = -1;
     (*ppencoder)->allocator             = allocator;
 
@@ -6857,7 +6857,7 @@ sixel_encoder_encode(
     char const *effective_filename;
     unsigned int path_flags;
     int path_check;
-    sixel_parallel_logger_t parallel_logger;
+    sixel_logger_t logger;
     int logger_prepared;
 
     clipboard_input_format[0] = '\0';
@@ -6871,11 +6871,11 @@ sixel_encoder_encode(
         SIXEL_OPTION_PATH_ALLOW_REMOTE;
     path_check = 0;
     logger_prepared = 0;
-    sixel_parallel_logger_init(&parallel_logger);
-    sixel_parallel_logger_prepare_env(&parallel_logger);
-    logger_prepared = parallel_logger.active;
+    sixel_logger_init(&logger);
+    sixel_logger_prepare_env(&logger);
+    logger_prepared = logger.active;
     if (encoder != NULL) {
-        encoder->parallel_logger = &parallel_logger;
+        encoder->logger = &logger;
         encoder->parallel_job_id = -1;
     }
 
@@ -7663,11 +7663,11 @@ end:
     }
 
     if (encoder != NULL) {
-        encoder->parallel_logger = NULL;
+        encoder->logger = NULL;
         encoder->parallel_job_id = -1;
     }
     if (logger_prepared) {
-        sixel_parallel_logger_close(&parallel_logger);
+        sixel_logger_close(&logger);
     }
 
     sixel_encoder_unref(encoder);

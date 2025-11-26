@@ -63,7 +63,7 @@
 #include "dither.h"
 #include "pixelformat.h"
 #include "assessment.h"
-#include "parallel-log.h"
+#include "logger.h"
 #include "sixel_threads_config.h"
 #if SIXEL_ENABLE_THREADS
 # include "sixel_atomic.h"
@@ -203,7 +203,7 @@ typedef struct sixel_parallel_context {
     int worker_capacity;
     int worker_registered;
     threadpool_t *pool;
-    sixel_parallel_logger_t *logger;
+    sixel_logger_t *logger;
     sixel_mutex_t mutex;
     int mutex_ready;
     sixel_cond_t cond_band_ready;
@@ -218,7 +218,7 @@ typedef struct sixel_parallel_context {
 
 typedef struct sixel_parallel_row_notifier {
     sixel_parallel_context_t *context;
-    sixel_parallel_logger_t *logger;
+    sixel_logger_t *logger;
     int band_height;
     int image_height;
 } sixel_parallel_row_notifier_t;
@@ -436,14 +436,14 @@ sixel_set_threads(int threads)
 
 #if SIXEL_ENABLE_THREADS
 static void
-sixel_parallel_logger_prepare(sixel_parallel_logger_t *logger)
+sixel_logger_prepare(sixel_logger_t *logger)
 {
     if (logger == NULL) {
         return;
     }
 
-    sixel_parallel_logger_init(logger);
-    (void)sixel_parallel_logger_prepare_env(logger);
+    sixel_logger_init(logger);
+    (void)sixel_logger_prepare_env(logger);
 }
 #endif
 
@@ -603,7 +603,7 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
                              int requested_threads,
                              int worker_capacity,
                              int queue_capacity,
-                             sixel_parallel_logger_t *logger);
+                             sixel_logger_t *logger);
 static SIXELSTATUS sixel_parallel_context_grow(sixel_parallel_context_t *ctx,
                                               int target_threads);
 static void sixel_parallel_submit_band(sixel_parallel_context_t *ctx,
@@ -904,20 +904,20 @@ sixel_parallel_context_grow(sixel_parallel_context_t *ctx, int target_threads)
     ctx->thread_count += delta;
 
     if (ctx->logger != NULL) {
-        sixel_parallel_logger_logf(ctx->logger,
-                                   "controller",
-                                   "encode",
-                                   "grow_workers",
-                                   -1,
-                                   -1,
-                                   0,
-                                   ctx->height,
-                                   0,
-                                   ctx->height,
-                                   "threads=%d target=%d delta=%d",
-                                   ctx->thread_count,
-                                   capped_target,
-                                   delta);
+        sixel_logger_logf(ctx->logger,
+                          "controller",
+                          "encode",
+                          "grow_workers",
+                          -1,
+                          -1,
+                          0,
+                          ctx->height,
+                          0,
+                          ctx->height,
+                          "threads=%d target=%d delta=%d",
+                          ctx->thread_count,
+                          capped_target,
+                          delta);
     }
 
     return SIXEL_OK;
@@ -993,7 +993,7 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
                              int requested_threads,
                              int worker_capacity,
                              int queue_capacity,
-                             sixel_parallel_logger_t *logger)
+                             sixel_logger_t *logger)
 {
     SIXELSTATUS status;
     int nbands;
@@ -1040,20 +1040,20 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
     sixel_assessment_set_encode_parallelism(threads);
 
     if (logger != NULL) {
-        sixel_parallel_logger_logf(logger,
-                                   "controller",
-                                   "encode",
-                                   "context_begin",
-                                   -1,
-                                   -1,
-                                   0,
-                                   height,
-                                   0,
-                                   height,
-                                   "threads=%d queue=%d bands=%d",
-                                   threads,
-                                   queue_capacity,
-                                   nbands);
+        sixel_logger_logf(logger,
+                          "controller",
+                          "encode",
+                          "context_begin",
+                          -1,
+                          -1,
+                          0,
+                          height,
+                          0,
+                          height,
+                          "threads=%d queue=%d bands=%d",
+                          threads,
+                          queue_capacity,
+                          nbands);
     }
 
     ctx->bands = (sixel_parallel_band_buffer_t *)calloc((size_t)nbands,
@@ -1168,17 +1168,17 @@ sixel_parallel_submit_band(sixel_parallel_context_t *ctx, int band_index)
         if (ctx->height > 0 && y1 > ctx->height) {
             y1 = ctx->height;
         }
-        sixel_parallel_logger_logf(ctx->logger,
-                                   "controller",
-                                   "encode",
-                                   "dispatch",
-                                   band_index,
-                                   y1 - 1,
-                                   y0,
-                                   y1,
-                                   y0,
-                                   y1,
-                                   "enqueue band");
+        sixel_logger_logf(ctx->logger,
+                          "controller",
+                          "encode",
+                          "dispatch",
+                          band_index,
+                          y1 - 1,
+                          y0,
+                          y1,
+                          y0,
+                          y1,
+                          "enqueue band");
     }
     job.band_index = band_index;
     threadpool_push(ctx->pool, job);
@@ -1217,7 +1217,7 @@ sixel_parallel_palette_row_ready(void *priv, int row_index)
 {
     sixel_parallel_row_notifier_t *notifier;
     sixel_parallel_context_t *ctx;
-    sixel_parallel_logger_t *logger;
+    sixel_logger_t *logger;
     int band_height;
     int band_index;
     int y0;
@@ -1258,17 +1258,17 @@ sixel_parallel_palette_row_ready(void *priv, int row_index)
         y1 = notifier->image_height;
     }
     if (logger != NULL) {
-        sixel_parallel_logger_logf(logger,
-                                   "controller",
-                                   "encode",
-                                   "row_gate",
-                                   band_index,
-                                   row_index,
-                                   y0,
-                                   y1,
-                                   y0,
-                                   y1,
-                                   "trigger band enqueue");
+        sixel_logger_logf(logger,
+                          "controller",
+                          "encode",
+                          "row_gate",
+                          band_index,
+                          row_index,
+                          y0,
+                          y1,
+                          y0,
+                          y1,
+                          "trigger band enqueue");
     }
 
     sixel_parallel_submit_band(ctx, band_index);
@@ -1291,18 +1291,18 @@ sixel_parallel_flush_band(sixel_parallel_context_t *ctx, int band_index)
         if (ctx->height > 0 && y1 > ctx->height) {
             y1 = ctx->height;
         }
-        sixel_parallel_logger_logf(ctx->logger,
-                                   "worker",
-                                   "encode",
-                                   "writer_flush",
-                                   band_index,
-                                   y1 - 1,
-                                   y0,
-                                   y1,
-                                   y0,
-                                   y1,
-                                   "bytes=%zu",
-                                   band->used);
+        sixel_logger_logf(ctx->logger,
+                          "worker",
+                          "encode",
+                          "writer_flush",
+                          band_index,
+                          y1 - 1,
+                          y0,
+                          y1,
+                          y0,
+                          y1,
+                          "bytes=%zu",
+                          band->used);
     }
     offset = 0;
     while (offset < band->used) {
@@ -1395,18 +1395,18 @@ sixel_parallel_worker_main(tp_job_t job, void *userdata, void *workspace)
     }
 
     if (ctx->logger != NULL) {
-        sixel_parallel_logger_logf(ctx->logger,
-                                   "worker",
-                                   "encode",
-                                   "worker_start",
-                                   band_index,
-                                   band_start,
-                                   band_start,
-                                   band_start + band_height,
-                                   band_start,
-                                   band_start + band_height,
-                                   "worker=%d",
-                                   state->index);
+        sixel_logger_logf(ctx->logger,
+                          "worker",
+                          "encode",
+                          "worker_start",
+                          band_index,
+                          band_start,
+                          band_start,
+                          band_start + band_height,
+                          band_start,
+                          band_start + band_height,
+                          "worker=%d",
+                          state->index);
     }
 
     for (row_index = 0; row_index < band_height; row_index++) {
@@ -1481,19 +1481,19 @@ cleanup:
         sixel_mutex_unlock(&ctx->mutex);
     }
     if (ctx->logger != NULL) {
-        sixel_parallel_logger_logf(ctx->logger,
-                                   "worker",
-                                   "encode",
-                                   "worker_done",
-                                   band_index,
-                                   last_row_index,
-                                   band_start,
-                                   band_start + band_height,
-                                   band_start,
-                                   band_start + band_height,
-                                   "status=%d bytes=%zu",
-                                   status,
-                                   emitted_bytes);
+        sixel_logger_logf(ctx->logger,
+                          "worker",
+                          "encode",
+                          "worker_done",
+                          band_index,
+                          last_row_index,
+                          band_start,
+                          band_start + band_height,
+                          band_start,
+                          band_start + band_height,
+                          "status=%d bytes=%zu",
+                          status,
+                          emitted_bytes);
     }
     if (SIXEL_FAILED(status)) {
         return status;
@@ -1526,18 +1526,18 @@ sixel_parallel_writer_stop(sixel_parallel_context_t *ctx, int force_abort)
     ctx->writer_started = 0;
     ctx->writer_should_stop = 0;
     if (ctx->logger != NULL) {
-        sixel_parallel_logger_logf(ctx->logger,
-                                   "writer",
-                                   "encode",
-                                   "writer_stop",
-                                   -1,
-                                   -1,
-                                   0,
-                                   ctx->height,
-                                   0,
-                                   ctx->height,
-                                   "force=%d",
-                                   force_abort);
+        sixel_logger_logf(ctx->logger,
+                          "writer",
+                          "encode",
+                          "writer_stop",
+                          -1,
+                          -1,
+                          0,
+                          ctx->height,
+                          0,
+                          ctx->height,
+                          "force=%d",
+                          force_abort);
     }
 }
 
@@ -1555,7 +1555,7 @@ sixel_parallel_writer_main(void *arg)
     }
 
     if (ctx->logger != NULL) {
-        sixel_parallel_logger_logf(ctx->logger,
+        sixel_logger_logf(ctx->logger,
                                    "writer",
                                    "encode",
                                    "writer_start",
@@ -1612,18 +1612,18 @@ sixel_parallel_writer_main(void *arg)
             if (ctx->height > 0 && y1 > ctx->height) {
                 y1 = ctx->height;
             }
-            sixel_parallel_logger_logf(ctx->logger,
-                                       "writer",
-                                       "encode",
-                                       "writer_dequeue",
-                                       band_index,
-                                       y1 - 1,
-                                       y0,
-                                       y1,
-                                       y0,
-                                       y1,
-                                       "bytes=%zu",
-                                       band->used);
+            sixel_logger_logf(ctx->logger,
+                              "writer",
+                              "encode",
+                              "writer_dequeue",
+                              band_index,
+                              y1 - 1,
+                              y0,
+                              y1,
+                              y0,
+                              y1,
+                              "bytes=%zu",
+                              band->used);
         }
         if (SIXEL_SUCCEEDED(status)) {
             status = sixel_parallel_flush_band(ctx, band_index);
@@ -1654,14 +1654,14 @@ sixel_encode_body_parallel(sixel_index_t *pixels,
     int threads;
     int i;
     int queue_depth;
-    sixel_parallel_logger_t logger;
+    sixel_logger_t logger;
 
     sixel_parallel_context_init(&ctx);
-    sixel_parallel_logger_prepare(&logger);
+    sixel_logger_prepare(&logger);
     nbands = (height + 5) / 6;
     ctx.band_count = nbands;
     if (nbands <= 0) {
-        sixel_parallel_logger_close(&logger);
+        sixel_logger_close(&logger);
         return SIXEL_OK;
     }
 
@@ -1697,7 +1697,7 @@ sixel_encode_body_parallel(sixel_index_t *pixels,
                                           &logger);
     if (SIXEL_FAILED(status)) {
         sixel_parallel_context_cleanup(&ctx);
-        sixel_parallel_logger_close(&logger);
+        sixel_logger_close(&logger);
         return status;
     }
 
@@ -1708,12 +1708,12 @@ sixel_encode_body_parallel(sixel_index_t *pixels,
     status = sixel_parallel_context_wait(&ctx, 0);
     if (SIXEL_FAILED(status)) {
         sixel_parallel_context_cleanup(&ctx);
-        sixel_parallel_logger_close(&logger);
+        sixel_logger_close(&logger);
         return status;
     }
 
     sixel_parallel_context_cleanup(&ctx);
-    sixel_parallel_logger_close(&logger);
+    sixel_logger_close(&logger);
     return SIXEL_OK;
 }
 #endif
@@ -1752,8 +1752,8 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     int dither_threads_budget;
     int worker_capacity;
     int boost_target;
-    sixel_parallel_logger_t logger_storage;
-    sixel_parallel_logger_t *logger;
+    sixel_logger_t logger_storage;
+    sixel_logger_t *logger;
     int owns_logger;
     sixel_parallel_row_notifier_t notifier;
 
@@ -1785,7 +1785,7 @@ sixel_encode_body_pipeline(unsigned char *pixels,
     logger = dither->pipeline_logger;
     owns_logger = 0;
     if (logger == NULL || !logger->active) {
-        sixel_parallel_logger_prepare(&logger_storage);
+        sixel_logger_prepare(&logger_storage);
         if (logger_storage.active) {
             logger = &logger_storage;
             owns_logger = 1;
@@ -1841,22 +1841,22 @@ sixel_encode_body_pipeline(unsigned char *pixels,
          * in the log when the encoder side is clamped to keep the pipeline
          * draining.
          */
-        sixel_parallel_logger_logf(logger,
-                                   "controller",
-                                   "pipeline",
-                                   "configure",
-                                   -1,
-                                   -1,
-                                   0,
-                                   height,
-                                   0,
-                                   height,
-                                   "encode_threads=%d dither_threads=%d "
-                                   "band=%d overlap=%d",
-                                   threads,
-                                   dither->pipeline_dither_threads,
-                                   dither->pipeline_band_height,
-                                   dither->pipeline_band_overlap);
+        sixel_logger_logf(logger,
+                          "controller",
+                          "pipeline",
+                          "configure",
+                          -1,
+                          -1,
+                          0,
+                          height,
+                          0,
+                          height,
+                          "encode_threads=%d dither_threads=%d "
+                          "band=%d overlap=%d",
+                          threads,
+                          dither->pipeline_dither_threads,
+                          dither->pipeline_band_height,
+                          dither->pipeline_band_overlap);
     }
 
     status = sixel_parallel_context_begin(&ctx,
@@ -1928,7 +1928,7 @@ cleanup:
     }
     sixel_parallel_context_cleanup(&ctx);
     if (owns_logger) {
-        sixel_parallel_logger_close(&logger_storage);
+        sixel_logger_close(&logger_storage);
     }
     if (indexes != NULL) {
         sixel_allocator_free(allocator, indexes);
@@ -3555,7 +3555,7 @@ sixel_encode_body(
     sixel_output_t      /* in */ *output,
     unsigned char       /* in */ *palstate,
     sixel_allocator_t   /* in */ *allocator,
-    sixel_parallel_logger_t /* in */ *logger)
+    sixel_logger_t      /* in */ *logger)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int encode_probe_active;
@@ -3634,18 +3634,18 @@ sixel_encode_body(
 #endif
 
     if (logging_active) {
-        sixel_parallel_logger_logf(logger,
-                                   "controller",
-                                   "encode",
-                                   "configure",
-                                   -1,
-                                   -1,
-                                   0,
-                                   height,
-                                   0,
-                                   height,
-                                   "serial encoder bands=%d",
-                                   (height + 5) / 6);
+        sixel_logger_logf(logger,
+                          "controller",
+                          "encode",
+                          "configure",
+                          -1,
+                          -1,
+                          0,
+                          height,
+                          0,
+                          height,
+                          "serial encoder bands=%d",
+                          (height + 5) / 6);
     }
 
     status = sixel_encode_work_allocate(&work,
@@ -3668,17 +3668,17 @@ sixel_encode_body(
         band.active_color_count = 0;
 
         if (logging_active) {
-            sixel_parallel_logger_logf(logger,
-                                       "worker",
-                                       "encode",
-                                       "start",
-                                       job_index,
-                                       band_start,
-                                       band_start,
-                                       band_start + band_height,
-                                       band_start,
-                                       band_start + band_height,
-                                       "serial band start");
+            sixel_logger_logf(logger,
+                              "worker",
+                              "encode",
+                              "start",
+                              job_index,
+                              band_start,
+                              band_start,
+                              band_start + band_height,
+                              band_start,
+                              band_start + band_height,
+                              "serial band start");
         }
 
         for (row_index = 0; row_index < band_height; row_index++) {
@@ -3738,17 +3738,17 @@ sixel_encode_body(
             span_started_at);
 
         if (logging_active) {
-            sixel_parallel_logger_logf(logger,
-                                       "worker",
-                                       "encode",
-                                       "finish",
-                                       job_index,
-                                       band_start + band_height - 1,
-                                       band_start,
-                                       band_start + band_height,
-                                       band_start,
-                                       band_start + band_height,
-                                       "serial band done");
+            sixel_logger_logf(logger,
+                              "worker",
+                              "encode",
+                              "finish",
+                              job_index,
+                              band_start + band_height - 1,
+                              band_start,
+                              band_start + band_height,
+                              band_start,
+                              band_start + band_height,
+                              "serial band done");
         }
 
         band_start += band_height;
@@ -3963,21 +3963,12 @@ sixel_encode_dither(
     int pipeline_nbands;
     sixel_parallel_dither_config_t dither_parallel;
     char const *band_env_text;
-    sixel_parallel_logger_t serial_logger;
-    sixel_parallel_logger_t *logger;
-    int logger_owned;
+#if SIXEL_ENABLE_THREADS
+    sixel_logger_t serial_logger;
+    int logger_owned = 0;
+#endif  /* SIXEL_ENABLE_THREADS */
+    sixel_logger_t *logger = NULL;
 
-    palette_entries = NULL;
-    palette_entries_float32 = NULL;
-    palette_obj = NULL;
-    palette_count = 0U;
-    palette_float_count = 0U;
-    palette_bytes = 0U;
-    palette_float_bytes = 0U;
-    palette_channels = 0U;
-    palette_index = 0U;
-    logger = NULL;
-    logger_owned = 0;
     palette_source_colorspace = SIXEL_COLORSPACE_GAMMA;
     palette_float_pixelformat =
         sixel_palette_float_pixelformat_for_colorspace(
@@ -3992,7 +3983,7 @@ sixel_encode_dither(
 
     pipeline_active = 0;
 #if SIXEL_ENABLE_THREADS
-    sixel_parallel_logger_init(&serial_logger);
+    sixel_logger_init(&serial_logger);
 #endif
     dither_parallel.enabled = 0;
     dither_parallel.band_height = 0;
@@ -4097,7 +4088,7 @@ sixel_encode_dither(
     if (!pipeline_active) {
         logger = dither->pipeline_logger;
         if (logger == NULL || !logger->active) {
-            sixel_parallel_logger_prepare(&serial_logger);
+            sixel_logger_prepare(&serial_logger);
             if (serial_logger.active) {
                 logger_owned = 1;
                 dither->pipeline_logger = &serial_logger;
@@ -4105,17 +4096,17 @@ sixel_encode_dither(
             }
         }
         if (logger != NULL && logger->active) {
-            sixel_parallel_logger_logf(logger,
-                                       "controller",
-                                       "pipeline",
-                                       "configure",
-                                       -1,
-                                       -1,
-                                       0,
-                                       height,
-                                       0,
-                                       height,
-                                       "serial path threads=1");
+            sixel_logger_logf(logger,
+                              "controller",
+                              "pipeline",
+                              "configure",
+                              -1,
+                              -1,
+                              0,
+                              height,
+                              0,
+                              height,
+                              "serial path threads=1");
         }
     }
 #endif
@@ -4271,7 +4262,7 @@ end:
 #if SIXEL_ENABLE_THREADS
     if (logger_owned) {
         dither->pipeline_logger = NULL;
-        sixel_parallel_logger_close(&serial_logger);
+        sixel_logger_close(&serial_logger);
     }
 #endif
     if (palette_obj != NULL) {

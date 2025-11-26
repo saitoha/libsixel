@@ -1265,10 +1265,8 @@ sixel_decoder_decode(
     unsigned char *clipboard_output_data;
     size_t clipboard_output_size;
     SIXELSTATUS clipboard_output_status;
-#if SIXEL_ENABLE_THREADS
-    sixel_parallel_logger_t parallel_logger;
+    sixel_logger_t logger;
     int logger_prepared;
-#endif
 
     sixel_decoder_ref(decoder);
 
@@ -1288,12 +1286,9 @@ sixel_decoder_decode(
     clipboard_output_size = 0u;
     clipboard_output_status = SIXEL_OK;
     input_fp = NULL;
-#if SIXEL_ENABLE_THREADS
-    sixel_parallel_logger_init(&parallel_logger);
-    logger_prepared = 0;
-    (void)sixel_parallel_logger_prepare_env(&parallel_logger);
-    logger_prepared = parallel_logger.active;
-#endif
+    sixel_logger_init(&logger);
+    (void)sixel_logger_prepare_env(&logger);
+    logger_prepared = logger.active;
 
     raw_len = 0;
     max = 0;
@@ -1440,24 +1435,22 @@ sixel_decoder_decode(
         output_pixelformat = SIXEL_PIXELFORMAT_PAL8;
 
         if (decoder->dequantize_method == SIXEL_DEQUANTIZE_K_UNDITHER) {
-#if SIXEL_ENABLE_THREADS
             if (logger_prepared) {
-                sixel_parallel_logger_logf(&parallel_logger,
-                                           "decoder",
-                                           "undither",
-                                           "start",
-                                           0,
-                                           0,
-                                           0,
-                                           sy,
-                                           0,
-                                           sx,
-                                           "k_undither begin %dx%d palette=%d",
-                                           sx,
-                                           sy,
-                                           ncolors);
+                sixel_logger_logf(&logger,
+                                  "decoder",
+                                  "undither",
+                                  "start",
+                                  0,
+                                  0,
+                                  0,
+                                  sy,
+                                  0,
+                                  sx,
+                                  "k_undither begin %dx%d palette=%d",
+                                  sx,
+                                  sy,
+                                  ncolors);
             }
-#endif
             status = sixel_dequantize_k_undither(
                 indexed_pixels,
                 sx,
@@ -1469,10 +1462,9 @@ sixel_decoder_decode(
                 decoder->allocator,
                 &rgb_pixels);
             if (SIXEL_FAILED(status)) {
-#if SIXEL_ENABLE_THREADS
                 if (logger_prepared) {
-                    sixel_parallel_logger_logf(
-                        &parallel_logger,
+                    sixel_logger_logf(
+                        &logger,
                         "decoder",
                         "undither",
                         "abort",
@@ -1485,26 +1477,23 @@ sixel_decoder_decode(
                         "k_undither failed status=%d",
                         status);
                 }
-#endif
                 goto end;
             }
-#if SIXEL_ENABLE_THREADS
             if (logger_prepared) {
-                sixel_parallel_logger_logf(&parallel_logger,
-                                           "decoder",
-                                           "undither",
-                                           "finish",
-                                           0,
-                                           0,
-                                           0,
-                                           sy,
-                                           0,
-                                           sx,
-                                           "k_undither complete %dx%d",
-                                           sx,
-                                           sy);
+                sixel_logger_logf(&logger,
+                                  "decoder",
+                                  "undither",
+                                  "finish",
+                                  0,
+                                  0,
+                                  0,
+                                  sy,
+                                  0,
+                                  sx,
+                                  "k_undither complete %dx%d",
+                                  sx,
+                                  sy);
             }
-#endif
             output_pixels = rgb_pixels;
             output_palette = NULL;
             output_pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -1609,24 +1598,22 @@ sixel_decoder_decode(
         }
     }
 
-#if SIXEL_ENABLE_THREADS
     if (logger_prepared) {
-        sixel_parallel_logger_logf(&parallel_logger,
-                                   "io",
-                                   "png",
-                                   "start",
-                                   0,
-                                   0,
-                                   0,
-                                   sy,
-                                   0,
-                                   sx,
-                                   "png output begin %dx%d format=%d",
-                                   sx,
-                                   sy,
-                                   output_pixelformat);
+        sixel_logger_logf(&logger,
+                          "io",
+                          "png",
+                          "start",
+                          0,
+                          0,
+                          0,
+                          sy,
+                          0,
+                          sx,
+                          "png output begin %dx%d format=%d",
+                          sx,
+                          sy,
+                          output_pixelformat);
     }
-#endif
     status = sixel_helper_write_image_file(
         output_pixels,
         sx,
@@ -1639,41 +1626,37 @@ sixel_decoder_decode(
         SIXEL_FORMAT_PNG,
         decoder->allocator);
     if (SIXEL_FAILED(status)) {
-#if SIXEL_ENABLE_THREADS
         if (logger_prepared) {
-            sixel_parallel_logger_logf(&parallel_logger,
-                                       "io",
-                                       "png",
-                                       "abort",
-                                       0,
-                                       0,
-                                       0,
-                                       sy,
-                                       0,
-                                       sx,
-                                       "png output failed status=%d",
-                                       status);
+            sixel_logger_logf(&logger,
+                              "io",
+                              "png",
+                              "abort",
+                              0,
+                              0,
+                              0,
+                              sy,
+                              0,
+                              sx,
+                              "png output failed status=%d",
+                              status);
         }
-#endif
         goto end;
     }
-#if SIXEL_ENABLE_THREADS
     if (logger_prepared) {
-        sixel_parallel_logger_logf(&parallel_logger,
-                                   "io",
-                                   "png",
-                                   "finish",
-                                   0,
-                                   0,
-                                   0,
-                                   sy,
-                                   0,
-                                   sx,
-                                   "png output complete %dx%d",
-                                   sx,
-                                   sy);
+        sixel_logger_logf(&logger,
+                          "io",
+                          "png",
+                          "finish",
+                          0,
+                          0,
+                          0,
+                          sy,
+                          0,
+                          sx,
+                          "png output complete %dx%d",
+                          sx,
+                          sy);
     }
-#endif
 
     if (decoder->clipboard_output_active) {
         clipboard_output_status = decoder_clipboard_read_file(
@@ -1712,11 +1695,9 @@ end:
     }
 
     sixel_decoder_unref(decoder);
-#if SIXEL_ENABLE_THREADS
     if (logger_prepared) {
-        sixel_parallel_logger_close(&parallel_logger);
+        sixel_logger_close(&logger);
     }
-#endif
 
     return status;
 }

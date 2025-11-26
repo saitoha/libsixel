@@ -52,7 +52,7 @@ srcs = files(
   '../src/allocator.c',
   '../src/fromsixel.c',
   '../src/assessment-timer.c',
-  '../src/parallel-log.c',
+  '../src/logger.c',
   '../src/compat_stub.c',
 )
 

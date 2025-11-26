@@ -34,7 +34,7 @@
 
 struct sixel_frame;
 struct sixel_assessment;
-struct sixel_parallel_logger;
+struct sixel_logger;
 
 /* palette type */
 #define SIXEL_COLOR_OPTION_DEFAULT          0   /* use default settings */
@@ -130,7 +130,7 @@ struct sixel_encoder {
     int clipboard_output_active;
     char clipboard_output_format[32];
     char *clipboard_output_path;
-    struct sixel_parallel_logger *parallel_logger;
+    struct sixel_logger *logger;
     int parallel_job_id;
 };
 
