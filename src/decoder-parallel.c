@@ -15,7 +15,7 @@
 
 #include "decoder-parallel.h"
 #if SIXEL_ENABLE_THREADS
-# include "parallel-log.h"
+# include "logger.h"
 # include "sixel_threading.h"
 #endif
 
@@ -51,7 +51,7 @@ typedef struct sixel_decoder_worker_context {
     int height;
     int pixel_size;
     int depth;
-    sixel_parallel_logger_t *logger;
+    sixel_logger_t *logger;
     unsigned char *local_buffer;
     int local_capacity;
     int local_written;
@@ -96,7 +96,7 @@ static sixel_decoder_thread_config_t g_decoder_threads = {
 
 #if SIXEL_ENABLE_THREADS
 static void
-sixel_decoder_parallel_log_stub(sixel_parallel_logger_t *logger,
+sixel_decoder_parallel_log_stub(sixel_logger_t *logger,
                                 char const *mode)
 {
     /*
@@ -108,28 +108,28 @@ sixel_decoder_parallel_log_stub(sixel_parallel_logger_t *logger,
         return;
     }
 
-    sixel_parallel_logger_logf(logger,
-                               "decoder",
-                               mode,
-                               "start",
-                               0,
-                               0,
-                               0,
-                               0,
-                               0,
-                               0,
-                               "parallel decoder stub active");
-    sixel_parallel_logger_logf(logger,
-                               "decoder",
-                               mode,
-                               "fallback",
-                               0,
-                               0,
-                               0,
-                               0,
-                               0,
-                               0,
-                               "falling back to serial implementation");
+    sixel_logger_logf(logger,
+                      "decoder",
+                      mode,
+                      "start",
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      "parallel decoder stub active");
+    sixel_logger_logf(logger,
+                      "decoder",
+                      mode,
+                      "fallback",
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      0,
+                      "falling back to serial implementation");
 }
 
 static void
@@ -415,7 +415,7 @@ sixel_decoder_parallel_worker(void *arg)
     int i;
     int fallback = 0;
     int status = (-1);
-    sixel_parallel_logger_t *logger = NULL;
+    sixel_logger_t *logger = NULL;
     int width = 0;
     int pixel_size = 0;
     int depth = 0;
@@ -482,20 +482,20 @@ sixel_decoder_parallel_worker(void *arg)
          * Decode window for this worker. The key keeps decode spans grouped
          * per-thread in the timeline output.
          */
-        sixel_parallel_logger_logf(logger,
-                                   "decode",
-                                   "decoder",
-                                   "start",
-                                   context->index,
-                                   context->index,
-                                   0,
-                                   0,
-                                   context->start_offset,
-                                   context->end_offset,
-                                   "worker %d decode span [%d,%d]",
-                                   context->index,
-                                   context->start_offset,
-                                   context->end_offset);
+        sixel_logger_logf(logger,
+                          "decode",
+                          "decoder",
+                          "start",
+                          context->index,
+                          context->index,
+                          0,
+                          0,
+                          context->start_offset,
+                          context->end_offset,
+                          "worker %d decode span [%d,%d]",
+                          context->index,
+                          context->start_offset,
+                          context->end_offset);
     }
 
     cursor = start;
@@ -737,20 +737,20 @@ sixel_decoder_parallel_worker(void *arg)
     }
 
     if (logger != NULL) {
-        sixel_parallel_logger_logf(logger,
-                                   "decode",
-                                   "decoder",
-                                   fallback ? "abort" : "finish",
-                                   context->index,
-                                   context->index,
-                                   0,
-                                   0,
-                                   context->start_offset,
-                                   context->end_offset,
-                                   "worker %d decode wrote=%d status=%d",
-                                   context->index,
-                                   written,
-                                   status);
+        sixel_logger_logf(logger,
+                          "decode",
+                          "decoder",
+                          fallback ? "abort" : "finish",
+                          context->index,
+                          context->index,
+                          0,
+                          0,
+                          context->start_offset,
+                          context->end_offset,
+                          "worker %d decode wrote=%d status=%d",
+                          context->index,
+                          written,
+                          status);
     }
 
     if (status != 0) {
@@ -809,19 +809,19 @@ sixel_decoder_parallel_worker(void *arg)
 
     if (logger != NULL) {
         /* Chain memcpy execution so the timeline shows the serialized copy */
-        sixel_parallel_logger_logf(logger,
-                                   "copy",
-                                   "decoder",
-                                   "start",
-                                   context->index,
-                                   context->index,
-                                   0,
-                                   0,
-                                   copy_offset,
-                                   next_offset,
-                                   "worker %d memcpy count=%d",
-                                   context->index,
-                                   copy_span);
+        sixel_logger_logf(logger,
+                          "copy",
+                          "decoder",
+                          "start",
+                          context->index,
+                          context->index,
+                          0,
+                          0,
+                          copy_offset,
+                          next_offset,
+                          "worker %d memcpy count=%d",
+                          context->index,
+                          copy_span);
     }
 
     if (max_relative >= 0) {
@@ -855,18 +855,18 @@ sixel_decoder_parallel_worker(void *arg)
     }
 
     if (logger != NULL) {
-        sixel_parallel_logger_logf(logger,
-                                   "copy",
-                                   "decoder",
-                                   "finish",
-                                   context->index,
-                                   context->index,
-                                   0,
-                                   0,
-                                   copy_offset,
-                                   next_offset,
-                                   "worker %d memcpy done", 
-                                   context->index);
+        sixel_logger_logf(logger,
+                          "copy",
+                          "decoder",
+                          "finish",
+                          context->index,
+                          context->index,
+                          0,
+                          0,
+                          copy_offset,
+                          next_offset,
+                          "worker %d memcpy done", 
+                          context->index);
     }
 
     sixel_local_buffer_dispose(&local_buffer);
@@ -1025,7 +1025,7 @@ sixel_decoder_parallel_request_start(int direct_mode,
                                      unsigned char *anchor,
                                      image_buffer_t *image,
                                      int const *palette,
-                                     sixel_parallel_logger_t *logger)
+                                     sixel_logger_t *logger)
 {
 #if SIXEL_ENABLE_THREADS
     SIXELSTATUS status;
@@ -1141,19 +1141,19 @@ sixel_decoder_parallel_request_start(int direct_mode,
          * timeline can show the gap between parser startup and worker
          * creation.
          */
-        sixel_parallel_logger_logf(logger,
-                                   "decoder",
-                                   "controller",
-                                   "launch",
-                                   0,
-                                   0,
-                                   0,
-                                   length,
-                                   payload_start,
-                                   length,
-                                   "spawn %d workers payload=%d",
-                                   threads,
-                                   payload_len);
+        sixel_logger_logf(logger,
+                          "decoder",
+                          "controller",
+                          "launch",
+                          0,
+                          0,
+                          0,
+                          length,
+                          payload_start,
+                          length,
+                          "spawn %d workers payload=%d",
+                          threads,
+                          payload_len);
     }
 
     offset = payload_start;
@@ -1250,7 +1250,7 @@ sixel_decode_raw_parallel(unsigned char *p,
 {
     SIXELSTATUS status;
 #if SIXEL_ENABLE_THREADS
-    sixel_parallel_logger_t logger;
+    sixel_logger_t logger;
 #endif
 
     (void)p;
@@ -1260,15 +1260,15 @@ sixel_decode_raw_parallel(unsigned char *p,
 
     status = SIXEL_OK;
 #if SIXEL_ENABLE_THREADS
-    sixel_parallel_logger_init(&logger);
-    (void)sixel_parallel_logger_prepare_env(&logger);
+    sixel_logger_init(&logger);
+    (void)sixel_logger_prepare_env(&logger);
     sixel_decoder_parallel_log_stub(&logger, "raw");
 #endif
     if (used_parallel != NULL) {
         *used_parallel = 0;
     }
 #if SIXEL_ENABLE_THREADS
-    sixel_parallel_logger_close(&logger);
+    sixel_logger_close(&logger);
 #endif
     return status;
 }
@@ -1282,7 +1282,7 @@ sixel_decode_direct_parallel(unsigned char *p,
 {
     SIXELSTATUS status;
 #if SIXEL_ENABLE_THREADS
-    sixel_parallel_logger_t logger;
+    sixel_logger_t logger;
 #endif
 
     (void)p;
@@ -1292,15 +1292,15 @@ sixel_decode_direct_parallel(unsigned char *p,
 
     status = SIXEL_OK;
 #if SIXEL_ENABLE_THREADS
-    sixel_parallel_logger_init(&logger);
-    (void)sixel_parallel_logger_prepare_env(&logger);
+    sixel_logger_init(&logger);
+    (void)sixel_logger_prepare_env(&logger);
     sixel_decoder_parallel_log_stub(&logger, "direct");
 #endif
     if (used_parallel != NULL) {
         *used_parallel = 0;
     }
 #if SIXEL_ENABLE_THREADS
-    sixel_parallel_logger_close(&logger);
+    sixel_logger_close(&logger);
 #endif
     return status;
 }

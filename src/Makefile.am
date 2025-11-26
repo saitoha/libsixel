@@ -55,8 +55,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither-varcoeff-8bit.h \
                 $(srcdir)/dither-varcoeff-float32.c \
                 $(srcdir)/dither-varcoeff-float32.h \
-                $(srcdir)/parallel-log.c \
-                $(srcdir)/parallel-log.h \
+                $(srcdir)/logger.c \
+                $(srcdir)/logger.h \
                 $(srcdir)/colorspace.c \
                 $(srcdir)/colorspace.h \
                 $(srcdir)/frame.c \

@@ -16,7 +16,7 @@ libwicsixel_la_SOURCES = $(srcdir)/wic.c \
                          $(top_builddir)/src/fromsixel.c \
                          $(top_builddir)/src/allocator.c \
                          $(top_builddir)/src/assessment-timer.c \
-                         $(top_builddir)/src/parallel-log.c \
+                         $(top_builddir)/src/logger.c \
                          $(top_builddir)/src/status.c \
                          $(top_builddir)/src/compat_stub.c
 

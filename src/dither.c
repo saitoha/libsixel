@@ -56,7 +56,7 @@
 #include "dither-varcoeff-8bit.h"
 #include "dither-varcoeff-float32.h"
 #include "dither-internal.h"
-#include "parallel-log.h"
+#include "logger.h"
 #include "pixelformat.h"
 #if SIXEL_ENABLE_THREADS
 # include "threadpool.h"
@@ -773,7 +773,7 @@ typedef struct sixel_parallel_dither_plan {
     int method_for_largest;
     int reqcolor;
     int pixelformat;
-    sixel_parallel_logger_t *logger;
+    sixel_logger_t *logger;
 } sixel_parallel_dither_plan_t;
 
 static int
@@ -841,18 +841,18 @@ sixel_dither_parallel_worker(tp_job_t job,
     }
 
     if (plan->logger != NULL) {
-        sixel_parallel_logger_logf(plan->logger,
-                                   "worker",
-                                   "dither",
-                                   "start",
-                                   band_index,
-                                   in0,
-                                   y0,
-                                   y1,
-                                   in0,
-                                   in1,
-                                   "prepare rows=%d",
-                                   rows);
+        sixel_logger_logf(plan->logger,
+                          "worker",
+                          "dither",
+                          "start",
+                          band_index,
+                          in0,
+                          y0,
+                          y1,
+                          in0,
+                          in1,
+                          "prepare rows=%d",
+                          rows);
     }
 
     local_ncolors = plan->reqcolor;
@@ -886,19 +886,19 @@ sixel_dither_parallel_worker(tp_job_t job,
                                      plan->dither,
                                      plan->pixelformat);
     if (plan->logger != NULL) {
-        sixel_parallel_logger_logf(plan->logger,
-                                   "worker",
-                                   "dither",
-                                   "finish",
-                                   band_index,
-                                   in1 - 1,
-                                   y0,
-                                   y1,
-                                   in0,
-                                   in1,
-                                   "status=%d rows=%d",
-                                   status,
-                                   rows);
+        sixel_logger_logf(plan->logger,
+                          "worker",
+                          "dither",
+                          "finish",
+                          band_index,
+                          in1 - 1,
+                          y0,
+                          y1,
+                          in0,
+                          in1,
+                          "status=%d rows=%d",
+                          status,
+                          rows);
     }
     if (copy != NULL) {
         free(copy);
@@ -1948,16 +1948,14 @@ sixel_dither_apply_palette(
     sixel_palette_t *palette;
     int dest_owned;
     int parallel_active;
-    int parallel_band_height;
-    int parallel_overlap;
-    int parallel_threads;
-    sixel_parallel_logger_t *parallel_logger;
+#if SIXEL_ENABLE_THREADS
+    int parallel_band_height = 0;
+    int parallel_overlap = 0;
+    int parallel_threads = 1;
+#endif  /* SIXEL_ENABLE_THREADS */
+    sixel_logger_t *logger = NULL;
 
     parallel_active = 0;
-    parallel_band_height = 0;
-    parallel_overlap = 0;
-    parallel_threads = 1;
-    parallel_logger = NULL;
 
     /* ensure dither object is not null */
     if (dither == NULL) {
@@ -1978,24 +1976,26 @@ sixel_dither_apply_palette(
     }
 
     parallel_active = dither->pipeline_parallel_active;
+#if SIXEL_ENABLE_THREADS
     parallel_band_height = dither->pipeline_band_height;
     parallel_overlap = dither->pipeline_band_overlap;
     parallel_threads = dither->pipeline_dither_threads;
-    parallel_logger = dither->pipeline_logger;
+#endif  /* SIXEL_ENABLE_THREADS */
+    logger = dither->pipeline_logger;
 
-    if (!parallel_active && parallel_logger != NULL) {
-        sixel_parallel_logger_logf(parallel_logger,
-                                   "worker",
-                                   "dither",
-                                   "start",
-                                   0,
-                                   0,
-                                   0,
-                                   height,
-                                   0,
-                                   height,
-                                   "serial dither begin height=%d",
-                                   height);
+    if (!parallel_active && logger != NULL) {
+        sixel_logger_logf(logger,
+                          "worker",
+                          "dither",
+                          "start",
+                          0,
+                          0,
+                          0,
+                          height,
+                          0,
+                          height,
+                          "serial dither begin height=%d",
+                          height);
     }
 
     if (parallel_active && dither->optimize_palette != 0) {
@@ -2214,7 +2214,7 @@ sixel_dither_apply_palette(
         plan.method_for_largest = dither->method_for_largest;
         plan.reqcolor = dither->ncolors;
         plan.pixelformat = pipeline_pixelformat;
-        plan.logger = parallel_logger;
+        plan.logger = logger;
 
         status = sixel_dither_apply_palette_parallel(&plan,
                                                      parallel_threads);
@@ -2262,22 +2262,22 @@ sixel_dither_apply_palette(
     palette->entry_count = (unsigned int)ncolors;
 
 end:
-    if (!parallel_active && parallel_logger != NULL) {
+    if (!parallel_active && logger != NULL) {
         int last_row;
 
         last_row = height > 0 ? height - 1 : 0;
-        sixel_parallel_logger_logf(parallel_logger,
-                                   "worker",
-                                   "dither",
-                                   "finish",
-                                   0,
-                                   last_row,
-                                   0,
-                                   height,
-                                   0,
-                                   height,
-                                   "serial status=%d",
-                                   status);
+        sixel_logger_logf(logger,
+                          "worker",
+                          "dither",
+                          "finish",
+                          0,
+                          last_row,
+                          0,
+                          height,
+                          0,
+                          height,
+                          "serial status=%d",
+                          status);
     }
     if (normalized_pixels != NULL) {
         sixel_allocator_free(dither->allocator, normalized_pixels);

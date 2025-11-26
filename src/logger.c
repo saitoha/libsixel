@@ -35,13 +35,13 @@
 #endif
 
 #include "assessment.h"
-#include "parallel-log.h"
+#include "logger.h"
 
-static sixel_parallel_logger_t *g_parallel_logger_active;
-static int g_parallel_logger_refcount;
+static sixel_logger_t *sixel_logger_active;
+static int sixel_logger_refcount;
 
 static unsigned long long
-sixel_parallel_logger_thread_id(void)
+sixel_logger_thread_id(void)
 {
 #ifndef _WIN32
     return (unsigned long long)(uintptr_t)pthread_self();
@@ -51,7 +51,7 @@ sixel_parallel_logger_thread_id(void)
 }
 
 static void
-sixel_parallel_logger_escape(char const *message, char *buffer, size_t size)
+sixel_logger_escape(char const *message, char *buffer, size_t size)
 {
     size_t i;
     size_t written;
@@ -77,7 +77,7 @@ sixel_parallel_logger_escape(char const *message, char *buffer, size_t size)
 }
 
 void
-sixel_parallel_logger_init(sixel_parallel_logger_t *logger)
+sixel_logger_init(sixel_logger_t *logger)
 {
     if (logger == NULL) {
         return;
@@ -90,16 +90,16 @@ sixel_parallel_logger_init(sixel_parallel_logger_t *logger)
 }
 
 void
-sixel_parallel_logger_close(sixel_parallel_logger_t *logger)
+sixel_logger_close(sixel_logger_t *logger)
 {
     if (logger == NULL) {
         return;
     }
     if (logger->delegate != NULL) {
-        if (logger->delegate == g_parallel_logger_active &&
-                g_parallel_logger_refcount > 0) {
-            --g_parallel_logger_refcount;
-            if (g_parallel_logger_refcount != 0) {
+        if (logger->delegate == sixel_logger_active &&
+                sixel_logger_refcount > 0) {
+            --sixel_logger_refcount;
+            if (sixel_logger_refcount != 0) {
                 logger->delegate = NULL;
                 logger->active = 0;
                 return;
@@ -112,8 +112,8 @@ sixel_parallel_logger_close(sixel_parallel_logger_t *logger)
             return;
         }
     }
-    if (logger == g_parallel_logger_active && g_parallel_logger_refcount > 1) {
-        --g_parallel_logger_refcount;
+    if (logger == sixel_logger_active && sixel_logger_refcount > 1) {
+        --sixel_logger_refcount;
         return;
     }
     if (logger->mutex_ready) {
@@ -126,15 +126,15 @@ sixel_parallel_logger_close(sixel_parallel_logger_t *logger)
         fclose(logger->file);
         logger->file = NULL;
     }
-    if (logger == g_parallel_logger_active && g_parallel_logger_refcount > 0) {
-        g_parallel_logger_refcount = 0;
-        g_parallel_logger_active = NULL;
+    if (logger == sixel_logger_active && sixel_logger_refcount > 0) {
+        sixel_logger_refcount = 0;
+        sixel_logger_active = NULL;
     }
     logger->active = 0;
 }
 
 SIXELSTATUS
-sixel_parallel_logger_open(sixel_parallel_logger_t *logger, char const *path)
+sixel_logger_open(sixel_logger_t *logger, char const *path)
 {
     if (logger == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -157,13 +157,13 @@ sixel_parallel_logger_open(sixel_parallel_logger_t *logger, char const *path)
     logger->active = 1;
     logger->started_at = sixel_assessment_timer_now();
     setvbuf(logger->file, NULL, _IOLBF, 0);
-    g_parallel_logger_active = logger;
-    g_parallel_logger_refcount = 1;
+    sixel_logger_active = logger;
+    sixel_logger_refcount = 1;
     return SIXEL_OK;
 }
 
 SIXELSTATUS
-sixel_parallel_logger_prepare_env(sixel_parallel_logger_t *logger)
+sixel_logger_prepare_env(sixel_logger_t *logger)
 {
     char const *path;
     SIXELSTATUS status;
@@ -179,32 +179,32 @@ sixel_parallel_logger_prepare_env(sixel_parallel_logger_t *logger)
      * stages from the timeline. Share the sink via a lightweight delegate
      * pointer instead of copying mutex state.
      */
-    if (g_parallel_logger_active != NULL &&
-            g_parallel_logger_active->active &&
-            g_parallel_logger_active->mutex_ready) {
-        sixel_parallel_logger_init(logger);
-        logger->delegate = g_parallel_logger_active;
-        logger->active = g_parallel_logger_active->active;
-        logger->started_at = g_parallel_logger_active->started_at;
-        ++g_parallel_logger_refcount;
+    if (sixel_logger_active != NULL &&
+            sixel_logger_active->active &&
+            sixel_logger_active->mutex_ready) {
+        sixel_logger_init(logger);
+        logger->delegate = sixel_logger_active;
+        logger->active = sixel_logger_active->active;
+        logger->started_at = sixel_logger_active->started_at;
+        ++sixel_logger_refcount;
         return SIXEL_OK;
     }
 
-    sixel_parallel_logger_init(logger);
+    sixel_logger_init(logger);
     path = getenv("SIXEL_PARALLEL_LOG_PATH");
     if (path == NULL || path[0] == '\0') {
         return SIXEL_OK;
     }
-    status = sixel_parallel_logger_open(logger, path);
+    status = sixel_logger_open(logger, path);
     if (SIXEL_FAILED(status)) {
-        sixel_parallel_logger_close(logger);
+        sixel_logger_close(logger);
     }
 
     return status;
 }
 
 void
-sixel_parallel_logger_logf(sixel_parallel_logger_t *logger,
+sixel_logger_logf(sixel_logger_t *logger,
                            char const *role,
                            char const *worker,
                            char const *event,
@@ -217,7 +217,7 @@ sixel_parallel_logger_logf(sixel_parallel_logger_t *logger,
                            char const *fmt,
                            ...)
 {
-    sixel_parallel_logger_t *target;
+    sixel_logger_t *target;
     char message[256];
     char escaped[512];
     va_list args;
@@ -256,7 +256,7 @@ sixel_parallel_logger_logf(sixel_parallel_logger_t *logger,
     }
     va_end(args);
 
-    sixel_parallel_logger_escape(message, escaped, sizeof(escaped));
+    sixel_logger_escape(message, escaped, sizeof(escaped));
 
 #if SIXEL_ENABLE_THREADS
     sixel_mutex_lock(&target->mutex);
@@ -271,7 +271,7 @@ sixel_parallel_logger_logf(sixel_parallel_logger_t *logger,
             "\"row\":%d,\"y0\":%d,\"y1\":%d,\"in0\":%d,\"in1\":%d,"\
             "\"message\":\"%s\"}\n",
             timestamp,
-            sixel_parallel_logger_thread_id(),
+            sixel_logger_thread_id(),
             worker != NULL ? worker : "",
             role != NULL ? role : "",
             event != NULL ? event : "",
