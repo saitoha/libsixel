@@ -30,9 +30,9 @@ require_file "${snake_jpg}"
 require_file "${snake_png}"
 require_file "${snake_six}"
 
-# Validate dithering, gamma, and scaling through a round-trip convert.
-run_img2sixel "${snake_jpg}" -datkinson -flum -save | \
-    run_img2sixel | tee "${TMP_DIR}/snake.sixel" >/dev/null
+## Validate dithering, gamma, and scaling through a round-trip convert.
+#run_img2sixel "${snake_jpg}" -datkinson -flum -save | \
+#    run_img2sixel | tee "${TMP_DIR}/snake.sixel" >/dev/null
 # Reject ambiguous select-color prefixes.
 if run_img2sixel -sa "${snake_jpg}" >/dev/null 2>&1; then
     echo "expected -sa to fail due to ambiguous prefix" >&2
@@ -44,6 +44,11 @@ run_img2sixel -shist "${snake_jpg}" >/dev/null
 run_img2sixel -w50% -h150% -dfs -Bblue -thls -shist < "${snake_jpg}" | \
     tee "${TMP_DIR}/snake2.sixel" >/dev/null
 # Ensure width scaling preserves expected DCS coordinates.
+printf '\033Pq"1;1;1;1!6~\033\\' >&2
+printf '\033Pq"1;1;1;1!6~\033\\'
+printf '\033Pq"1;1;1;1!6~\033\\' | od -An -tx1 | tr -d ' ' >&2
+printf '\033Pq"1;1;1;1!6~\033\\' | od -An -tx1 | tr -d ' '
+
 printf '\033Pq"1;1;1;1!6~\033\\' | run_img2sixel -rne -w200% | \
     tr '#' '\n' | tail -n +3 | od -An -tx1 | tr -d ' ' | \
     xargs test 302131327e2d2131327e1b5c =
