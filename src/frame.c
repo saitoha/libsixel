@@ -50,7 +50,7 @@
 static SIXELSTATUS
 sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame);
 static SIXELSTATUS
-sixel_frame_promote_to_rgbfloat32(sixel_frame_t *frame);
+sixel_frame_promote_to_float32(sixel_frame_t *frame);
 static int
 sixel_frame_colorspace_from_pixelformat(int pixelformat);
 static void
@@ -350,7 +350,7 @@ sixel_frame_set_pixelformat(
         }
         if (SIXEL_SUCCEEDED(status)
                 && !SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)) {
-            status = sixel_frame_promote_to_rgbfloat32(frame);
+            status = sixel_frame_promote_to_float32(frame);
         }
     } else if (pixelformat == SIXEL_PIXELFORMAT_RGB888
             && working_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
@@ -849,7 +849,7 @@ sixel_frame_float_pixelformat_for_colorspace(int colorspace)
 }
 
 static SIXELSTATUS
-sixel_frame_promote_to_rgbfloat32(sixel_frame_t *frame)
+sixel_frame_promote_to_float32(sixel_frame_t *frame)
 {
     float *float_pixels;
     unsigned char *byte_pixels;
@@ -932,27 +932,27 @@ sixel_frame_promote_to_rgbfloat32(sixel_frame_t *frame)
         break;
     default:
         sixel_helper_set_additional_message(
-            "sixel_frame_promote_to_rgbfloat32: unsupported pixelformat.");
+            "sixel_frame_promote_to_float32: unsupported pixelformat.");
         return SIXEL_BAD_INPUT;
     }
 
     if ((size_t)frame->width > SIZE_MAX / (size_t)frame->height) {
         sixel_helper_set_additional_message(
-            "sixel_frame_promote_to_rgbfloat32: overflow.");
+            "sixel_frame_promote_to_float32: overflow.");
         return SIXEL_BAD_INPUT;
     }
 
     pixel_total = (size_t)frame->width * (size_t)frame->height;
     if (pixel_total > SIZE_MAX / (3U * sizeof(float))) {
         sixel_helper_set_additional_message(
-            "sixel_frame_promote_to_rgbfloat32: buffer too large.");
+            "sixel_frame_promote_to_float32: buffer too large.");
         return SIXEL_BAD_INPUT;
     }
     bytes = pixel_total * 3U * sizeof(float);
     float_pixels = (float *)sixel_allocator_malloc(frame->allocator, bytes);
     if (float_pixels == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_frame_promote_to_rgbfloat32: "
+            "sixel_frame_promote_to_float32: "
             "sixel_allocator_malloc() failed.");
         return SIXEL_BAD_ALLOCATION;
     }
