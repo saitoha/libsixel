@@ -1436,7 +1436,7 @@ sixel_decode_wide(
         goto error;
     }
 
-    *ncolors = alloc_size = image.ncolors + 1;
+    *ncolors = alloc_size = image.ncolors;
     if (alloc_size < SIXEL_PALETTE_MAX_DECODER) {
         /* memory access range should be 0 <= 255 */
         alloc_size = SIXEL_PALETTE_MAX_DECODER;
@@ -1573,7 +1573,7 @@ sixel_decode(unsigned char              /* in */   *p,        /* sixel bytes */
         goto end;
     }
 
-    *ncolors = image.ncolors + 1;
+    *ncolors = image.ncolors;
     *palette = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(*ncolors * 3));
     if (palette == NULL) {
         sixel_allocator_free(allocator, image.pixels.p);
