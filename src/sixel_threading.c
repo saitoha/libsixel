@@ -57,100 +57,33 @@
 #include "sixel_threading.h"
 
 /*
- * Provide a thin portability layer for synchronization primitives. The
- * Windows implementation is left as a stub for now while the POSIX path is
- * fully functional for macOS and Linux builds.
+ * Backend selection is performed here so the header remains lightweight.
+ * WITH_WINPTHREAD forces the pthread path even on Windows to honor
+ * user-provided configuration switches.
+ */
+#if defined(WITH_WINPTHREAD) && WITH_WINPTHREAD
+# define SIXEL_USE_PTHREADS 1
+# define SIXEL_USE_WIN32_THREADS 0
+#elif defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__)
+# define SIXEL_USE_PTHREADS 0
+# define SIXEL_USE_WIN32_THREADS 1
+#else
+# define SIXEL_USE_PTHREADS 1
+# define SIXEL_USE_WIN32_THREADS 0
+#endif
+
+#if SIXEL_USE_WIN32_THREADS
+# include <windows.h>
+# include <process.h>
+#endif
+
+/*
+ * Provide a thin portability layer for synchronization primitives so the
+ * encoder can run on POSIX and Windows platforms without altering the public
+ * API surface.
  */
 
-#ifdef _WIN32
-
-SIXELAPI int
-sixel_mutex_init(sixel_mutex_t *mutex)
-{
-    if (mutex == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    memset(mutex, 0, sizeof(*mutex));
-    return SIXEL_NOT_IMPLEMENTED;
-}
-
-SIXELAPI void
-sixel_mutex_destroy(sixel_mutex_t *mutex)
-{
-    (void)mutex;
-}
-
-SIXELAPI void
-sixel_mutex_lock(sixel_mutex_t *mutex)
-{
-    (void)mutex;
-}
-
-SIXELAPI void
-sixel_mutex_unlock(sixel_mutex_t *mutex)
-{
-    (void)mutex;
-}
-
-SIXELAPI int
-sixel_cond_init(sixel_cond_t *cond)
-{
-    if (cond == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    memset(cond, 0, sizeof(*cond));
-    return SIXEL_NOT_IMPLEMENTED;
-}
-
-SIXELAPI void
-sixel_cond_destroy(sixel_cond_t *cond)
-{
-    (void)cond;
-}
-
-SIXELAPI void
-sixel_cond_wait(sixel_cond_t *cond, sixel_mutex_t *mutex)
-{
-    (void)cond;
-    (void)mutex;
-}
-
-SIXELAPI void
-sixel_cond_signal(sixel_cond_t *cond)
-{
-    (void)cond;
-}
-
-SIXELAPI void
-sixel_cond_broadcast(sixel_cond_t *cond)
-{
-    (void)cond;
-}
-
-SIXELAPI int
-sixel_thread_create(sixel_thread_t *thread, sixel_thread_fn fn, void *arg)
-{
-    if (thread == NULL || fn == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-    thread->fn = fn;
-    thread->arg = arg;
-    return SIXEL_NOT_IMPLEMENTED;
-}
-
-SIXELAPI void
-sixel_thread_join(sixel_thread_t *thread)
-{
-    (void)thread;
-}
-
-SIXELAPI int
-sixel_get_hw_threads(void)
-{
-    return 1;
-}
-
-#else
+#if SIXEL_USE_PTHREADS
 
 /*
  * Abort the process when a pthread call fails in a context where recovery is
@@ -332,7 +265,8 @@ sixel_thread_create(sixel_thread_t *thread, sixel_thread_fn fn, void *arg)
     thread->arg = arg;
     thread->result = SIXEL_OK;
     thread->started = 0;
-    rc = pthread_create(&thread->handle, NULL, sixel_thread_trampoline, thread);
+    rc = pthread_create(&thread->handle, NULL, sixel_thread_trampoline,
+                        thread);
     if (rc != 0) {
         errno = rc;
         return SIXEL_RUNTIME_ERROR;
@@ -388,7 +322,184 @@ sixel_get_hw_threads(void)
     return 1;
 }
 
-#endif /* _WIN32 */
+#elif SIXEL_USE_WIN32_THREADS
+
+/*
+ * Abort execution on unrecoverable Win32 API failures to mirror pthread path
+ * semantics. Printing the failing call and error code helps debugging in
+ * environments where stderr is available.
+ */
+static void
+sixel_win32_abort(const char *what, DWORD error)
+{
+    fprintf(stderr, "libsixel: %s failed: %lu\n", what,
+            (unsigned long)error);
+    abort();
+}
+
+/*
+ * Trampoline for _beginthreadex. It records the callback result back into the
+ * owning sixel_thread_t structure so the caller can retrieve it after join.
+ */
+static unsigned __stdcall
+sixel_win32_thread_start(void *arg)
+{
+    sixel_thread_t *thread;
+
+    thread = (sixel_thread_t *)arg;
+    thread->result = thread->fn(thread->arg);
+    return 0;
+}
+
+SIXELAPI int
+sixel_mutex_init(sixel_mutex_t *mutex)
+{
+    if (mutex == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    InitializeCriticalSection(&mutex->native);
+    return SIXEL_OK;
+}
+
+SIXELAPI void
+sixel_mutex_destroy(sixel_mutex_t *mutex)
+{
+    if (mutex == NULL) {
+        return;
+    }
+    DeleteCriticalSection(&mutex->native);
+}
+
+SIXELAPI void
+sixel_mutex_lock(sixel_mutex_t *mutex)
+{
+    if (mutex == NULL) {
+        return;
+    }
+    EnterCriticalSection(&mutex->native);
+}
+
+SIXELAPI void
+sixel_mutex_unlock(sixel_mutex_t *mutex)
+{
+    if (mutex == NULL) {
+        return;
+    }
+    LeaveCriticalSection(&mutex->native);
+}
+
+SIXELAPI int
+sixel_cond_init(sixel_cond_t *cond)
+{
+    if (cond == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    InitializeConditionVariable(&cond->native);
+    return SIXEL_OK;
+}
+
+SIXELAPI void
+sixel_cond_destroy(sixel_cond_t *cond)
+{
+    /* CONDITION_VARIABLE does not need explicit teardown. */
+    (void)cond;
+}
+
+SIXELAPI void
+sixel_cond_wait(sixel_cond_t *cond, sixel_mutex_t *mutex)
+{
+    BOOL rc;
+    DWORD error;
+
+    if (cond == NULL || mutex == NULL) {
+        return;
+    }
+    rc = SleepConditionVariableCS(&cond->native, &mutex->native, INFINITE);
+    if (rc == 0) {
+        error = GetLastError();
+        sixel_win32_abort("SleepConditionVariableCS", error);
+    }
+}
+
+SIXELAPI void
+sixel_cond_signal(sixel_cond_t *cond)
+{
+    if (cond == NULL) {
+        return;
+    }
+    WakeConditionVariable(&cond->native);
+}
+
+SIXELAPI void
+sixel_cond_broadcast(sixel_cond_t *cond)
+{
+    if (cond == NULL) {
+        return;
+    }
+    WakeAllConditionVariable(&cond->native);
+}
+
+SIXELAPI int
+sixel_thread_create(sixel_thread_t *thread, sixel_thread_fn fn, void *arg)
+{
+    uintptr_t handle;
+
+    if (thread == NULL || fn == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    thread->fn = fn;
+    thread->arg = arg;
+    thread->result = SIXEL_OK;
+    thread->started = 0;
+    handle = _beginthreadex(NULL, 0, sixel_win32_thread_start, thread, 0,
+                            NULL);
+    if (handle == 0) {
+        return SIXEL_RUNTIME_ERROR;
+    }
+    thread->handle = (HANDLE)handle;
+    thread->started = 1;
+    return SIXEL_OK;
+}
+
+SIXELAPI void
+sixel_thread_join(sixel_thread_t *thread)
+{
+    DWORD rc;
+    DWORD error;
+
+    if (thread == NULL || !thread->started) {
+        return;
+    }
+    rc = WaitForSingleObject(thread->handle, INFINITE);
+    if (rc != WAIT_OBJECT_0) {
+        error = (rc == WAIT_FAILED) ? GetLastError() : rc;
+        sixel_win32_abort("WaitForSingleObject", error);
+    }
+    CloseHandle(thread->handle);
+    thread->handle = NULL;
+    thread->started = 0;
+}
+
+SIXELAPI int
+sixel_get_hw_threads(void)
+{
+    DWORD count;
+    SYSTEM_INFO info;
+
+    count = GetActiveProcessorCount(ALL_PROCESSOR_GROUPS);
+    if (count == 0) {
+        GetSystemInfo(&info);
+        count = info.dwNumberOfProcessors;
+    }
+    if (count == 0) {
+        count = 1;
+    }
+    return (int)count;
+}
+
+#else
+# error "Thread backend selection failed"
+#endif /* SIXEL_USE_PTHREADS */
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */
