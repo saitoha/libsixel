@@ -28,7 +28,7 @@ wic_sources = files(
   '../src/allocator.c',
   '../src/status.c',
   '../src/assessment-timer.c',
-  '../src/parallel-log.c',
+  '../src/logger.c',
   '../src/compat_stub.c',
 )
 

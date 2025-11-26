@@ -31,7 +31,7 @@
 
 typedef void (*sixel_dither_pipeline_row_fn)(void *priv, int row_index);
 
-struct sixel_parallel_logger;
+struct sixel_logger;
 
 /* dither context object */
 struct sixel_dither {
@@ -71,7 +71,7 @@ struct sixel_dither {
     int pipeline_band_overlap;      /* overlap rows for burn-in */
     int pipeline_dither_threads;    /* thread budget for dither */
     int pipeline_image_height;      /* total image rows for logging */
-    struct sixel_parallel_logger *pipeline_logger; /* parallel log sink */
+    struct sixel_logger *pipeline_logger; /* parallel log sink */
 };
 
 #ifdef __cplusplus

@@ -64,7 +64,7 @@
 #include "output.h"
 #include "decoder-image.h"
 #include "decoder-parallel.h"
-#include "parallel-log.h"
+#include "logger.h"
 
 #define SIXEL_RGB(r, g, b) (((r) << 16) + ((g) << 8) +  (b))
 
@@ -531,7 +531,7 @@ sixel_decode_raw_impl(
     image_buffer_t    *image,
     parser_context_t  *context,
     sixel_allocator_t *allocator, /* allocator object */
-    sixel_parallel_logger_t *parallel_logger,
+    sixel_logger_t    *logger,
     int logger_prepared)
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -550,12 +550,10 @@ sixel_decode_raw_impl(
     int raster_ready = 0;
     int palette_ready = 0;
     unsigned char *parallel_anchor = p;
+#else
+    (void) logger;
+    (void) logger_prepared;
 #endif  /* SIXEL_ENABLE_THREADS */
-    int direct_mode = 0;
-
-    if (image->depth == 4U) {
-        direct_mode = 1;
-    }
 
     while (p < p0 + len) {
         switch (context->state) {
@@ -725,16 +723,15 @@ sixel_decode_raw_impl(
                 if (!palette_ready) {
                     palette_ready = 1;
                 }
-                if (!parallel_started && raster_ready &&
-                        (!direct_mode || palette_ready)) {
+                if (!parallel_started && raster_ready && palette_ready) {
                     status = sixel_decoder_parallel_request_start(
-                        direct_mode,
+                        image->depth == 4U ? 1: 0,
                         p0,
                         len,
                         parallel_anchor,
                         image,
                         image->palette,
-                        logger_prepared ? parallel_logger : NULL);
+                        logger_prepared ? logger : NULL);
                     parallel_started = 1;
                     if (status == SIXEL_FALSE) {
                         /* Parallel decode aborted; continue serially. */
@@ -753,16 +750,15 @@ sixel_decode_raw_impl(
                 if (!palette_ready) {
                     palette_ready = 1;
                 }
-                if (!parallel_started && raster_ready &&
-                        (!direct_mode || palette_ready)) {
+                if (!parallel_started && raster_ready && palette_ready) {
                     status = sixel_decoder_parallel_request_start(
-                        direct_mode,
+                        image->depth == 4U ? 1: 0,
                         p0,
                         len,
                         parallel_anchor,
                         image,
                         image->palette,
-                        logger_prepared ? parallel_logger : NULL);
+                        logger_prepared ? logger : NULL);
                     parallel_started = 1;
                     if (status == SIXEL_FALSE) {
                         /* Parallel decode aborted; continue serially. */
@@ -779,16 +775,15 @@ sixel_decode_raw_impl(
                     if (!palette_ready) {
                         palette_ready = 1;
                     }
-                    if (!parallel_started && raster_ready &&
-                            (!direct_mode || palette_ready)) {
+                    if (!parallel_started && raster_ready && palette_ready) {
                         status = sixel_decoder_parallel_request_start(
-                            direct_mode,
+                            image->depth == 4U ? 1: 0,
                             p0,
                             len,
                             parallel_anchor,
                             image,
                             image->palette,
-                            logger_prepared ? parallel_logger : NULL);
+                            logger_prepared ? logger : NULL);
                         parallel_started = 1;
                         if (status == SIXEL_FALSE) {
                             /* Parallel decode aborted; continue serially. */
@@ -1144,33 +1139,35 @@ sixel_decode_image(
     sixel_allocator_t *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    sixel_parallel_logger_t parallel_logger;
+    sixel_logger_t logger;
     int logger_prepared;
+#if SIXEL_ENABLE_THREADS
     int used_parallel;
+#endif  /* SIXEL_ENABLE_THREADS */
 
     image->pixels.p = NULL;
 
-    sixel_parallel_logger_init(&parallel_logger);
+    sixel_logger_init(&logger);
     logger_prepared = 0;
-    (void)sixel_parallel_logger_prepare_env(&parallel_logger);
-    logger_prepared = parallel_logger.active;
+    (void)sixel_logger_prepare_env(&logger);
+    logger_prepared = logger.active;
     if (logger_prepared) {
         /*
          * File I/O window for timeline visualization. The buffer is already
          * populated, but logging the bounds keeps decode timing aligned with
          * encoder logs.
          */
-        sixel_parallel_logger_logf(&parallel_logger,
-                                   "decoder",
-                                   "io",
-                                   "start",
-                                   0,
-                                   0,
-                                   0,
-                                   len,
-                                   0,
-                                   len,
-                                   "reading sixel payload");
+        sixel_logger_logf(&logger,
+                          "decoder",
+                          "io",
+                          "start",
+                          0,
+                          0,
+                          0,
+                          len,
+                          0,
+                          len,
+                          "reading sixel payload");
     }
 #if SIXEL_ENABLE_THREADS
     used_parallel = 0;
@@ -1203,18 +1200,18 @@ sixel_decode_image(
 
     if (logger_prepared) {
         /* Mark when the serial parser begins scanning tokens. */
-        sixel_parallel_logger_logf(&parallel_logger,
-                                   "decoder",
-                                   "controller",
-                                   "start",
-                                   0,
-                                   0,
-                                   0,
-                                   len,
-                                   0,
-                                   len,
-                                   "serial parser begin depth=%u",
-                                   depth);
+        sixel_logger_logf(&logger,
+                          "decoder",
+                          "controller",
+                          "start",
+                          0,
+                          0,
+                          0,
+                          len,
+                          0,
+                          len,
+                          "serial parser begin depth=%u",
+                          depth);
     }
 
     status = image_buffer_init(image,
@@ -1232,7 +1229,7 @@ sixel_decode_image(
                                    image,
                                    context,
                                    allocator,
-                                   &parallel_logger,
+                                   &logger,
                                    logger_prepared);
     if (SIXEL_FAILED(status)) {
         sixel_allocator_free(allocator, image->pixels.p);
@@ -1244,31 +1241,31 @@ sixel_decode_image(
 
 end:
     if (logger_prepared) {
-        sixel_parallel_logger_logf(&parallel_logger,
-                                   "decoder",
-                                   "parser",
-                                   "finish",
-                                   0,
-                                   0,
-                                   0,
-                                   len,
-                                   0,
-                                   len,
-                                   "parser status=%d",
-                                   status);
-        sixel_parallel_logger_logf(&parallel_logger,
-                                   "decoder",
-                                   "io",
-                                   "finish",
-                                   0,
-                                   0,
-                                   0,
-                                   len,
-                                   0,
-                                   len,
-                                   "input processed status=%d",
-                                   status);
-        sixel_parallel_logger_close(&parallel_logger);
+        sixel_logger_logf(&logger,
+                          "decoder",
+                          "parser",
+                          "finish",
+                          0,
+                          0,
+                          0,
+                          len,
+                          0,
+                          len,
+                          "parser status=%d",
+                          status);
+        sixel_logger_logf(&logger,
+                          "decoder",
+                          "io",
+                          "finish",
+                          0,
+                          0,
+                          0,
+                          len,
+                          0,
+                          len,
+                          "input processed status=%d",
+                          status);
+        sixel_logger_close(&logger);
     }
     return status;
 }

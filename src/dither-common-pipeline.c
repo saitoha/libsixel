@@ -27,7 +27,7 @@
 #include <float.h>
 
 #include "dither-common-pipeline.h"
-#include "parallel-log.h"
+#include "logger.h"
 
 /*
  * Notify the pipeline controller when a scanline completes PaletteApply.
@@ -68,17 +68,17 @@ sixel_dither_pipeline_row_notify(sixel_dither_t *dither, int row_index)
             }
             in1 = y1;
         }
-        sixel_parallel_logger_logf(dither->pipeline_logger,
-                                   "producer",
-                                   "dither",
-                                   "row_ready",
-                                   band_index,
-                                   row_index,
-                                   y0,
-                                   y1,
-                                   in0,
-                                   in1,
-                                   "notify encoder");
+        sixel_logger_logf(dither->pipeline_logger,
+                          "producer",
+                          "dither",
+                          "row_ready",
+                          band_index,
+                          row_index,
+                          y0,
+                          y1,
+                          in0,
+                          in1,
+                          "notify encoder");
     }
     if (dither->pipeline_row_callback == NULL) {
         return;
