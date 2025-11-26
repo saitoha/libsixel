@@ -66,28 +66,29 @@
 #include "allocator.h"
 #include "status.h"
 #include "compat_stub.h"
+#include "logger.h"
 
 #if HAVE_TESTS
-static int g_palette_tests_last_engine_requires_float32 = 0;
-static int g_palette_tests_last_engine_model = 0;
+static int sixel_palette_last_engine_requires_float32 = 0;
+static int sixel_palette_last_engine_model = 0;
 
 void
 sixel_palette_tests_reset_last_engine(void)
 {
-    g_palette_tests_last_engine_requires_float32 = 0;
-    g_palette_tests_last_engine_model = 0;
+    sixel_palette_last_engine_requires_float32 = 0;
+    sixel_palette_last_engine_model = 0;
 }
 
 int
 sixel_palette_tests_last_engine_requires_float32(void)
 {
-    return g_palette_tests_last_engine_requires_float32;
+    return sixel_palette_last_engine_requires_float32;
 }
 
 int
 sixel_palette_tests_last_engine_model(void)
 {
-    return g_palette_tests_last_engine_model;
+    return sixel_palette_last_engine_model;
 }
 #endif
 
@@ -110,13 +111,13 @@ typedef SIXELSTATUS (*sixel_palette_quant_dispatch_fn)(
 typedef struct sixel_palette_quant_engine {
     char const *name;
     int quantize_model;
-    int requires_rgbfloat32;
+    int requires_float32;
     sixel_palette_quant_dispatch_fn build_fn;
 } sixel_palette_quant_engine_t;
 
-static sixel_palette_quant_engine_t const g_palette_quant_engines[] = {
+static sixel_palette_quant_engine_t const sixel_palette_quant_engines[] = {
     {
-        "kmeans-rgbfloat32",
+        "kmeans-float32",
         SIXEL_QUANTIZE_MODEL_KMEANS,
         1,
         sixel_palette_build_kmeans_float32,
@@ -128,7 +129,7 @@ static sixel_palette_quant_engine_t const g_palette_quant_engines[] = {
         sixel_palette_build_kmeans,
     },
     {
-        "heckbert-rgbfloat32",
+        "heckbert-float32",
         SIXEL_QUANTIZE_MODEL_MEDIANCUT,
         1,
         sixel_palette_build_heckbert_float32,
@@ -146,15 +147,15 @@ sixel_palette_quant_engine_total(void)
 {
     size_t total;
 
-    total = sizeof(g_palette_quant_engines)
-          / sizeof(g_palette_quant_engines[0]);
+    total = sizeof(sixel_palette_quant_engines)
+          / sizeof(sixel_palette_quant_engines[0]);
     return total;
 }
 
 /* Locate a quantizer engine that satisfies the model/format requirements. */
 static sixel_palette_quant_engine_t const *
 sixel_palette_quant_engine_lookup(int quantize_model,
-                                  int needs_rgbfloat32)
+                                  int needs_float32)
 {
     sixel_palette_quant_engine_t const *engine;
     size_t index;
@@ -163,14 +164,14 @@ sixel_palette_quant_engine_lookup(int quantize_model,
     engine = NULL;
     total = sixel_palette_quant_engine_total();
     for (index = 0U; index < total; ++index) {
-        engine = &g_palette_quant_engines[index];
+        engine = &sixel_palette_quant_engines[index];
         if (engine->quantize_model != quantize_model) {
             continue;
         }
-        if (needs_rgbfloat32 && !engine->requires_rgbfloat32) {
+        if (needs_float32 && !engine->requires_float32) {
             continue;
         }
-        if (!needs_rgbfloat32 && engine->requires_rgbfloat32) {
+        if (!needs_float32 && engine->requires_float32) {
             continue;
         }
         return engine;
@@ -187,21 +188,54 @@ sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
                                int pixelformat,
                                sixel_allocator_t *allocator)
 {
+    SIXELSTATUS status;
+    sixel_logger_t logger;
+    sixel_logger_init(&logger);
+    (void)sixel_logger_prepare_env(&logger);
+
     if (engine == NULL || engine->build_fn == NULL) {
         return SIXEL_LOGIC_ERROR;
     }
 
 #if HAVE_TESTS
-    g_palette_tests_last_engine_requires_float32 =
-        engine->requires_rgbfloat32;
-    g_palette_tests_last_engine_model = engine->quantize_model;
+    sixel_palette_last_engine_requires_float32 =
+        engine->requires_float32;
+    sixel_palette_last_engine_model = engine->quantize_model;
 #endif
 
-    return engine->build_fn(palette,
-                            data,
-                            length,
-                            pixelformat,
-                            allocator);
+    sixel_logger_logf(&logger,
+                      "palette",
+                      "palette/build",
+                      "start",
+                      -1,
+                      -1,
+                      0,
+                      0,
+                      0,
+                      0,
+                      "engine=%s",
+                      engine->name);
+
+    status = engine->build_fn(palette,
+                              data,
+                              length,
+                              pixelformat,
+                              allocator);
+
+    sixel_logger_logf(&logger,
+                      "palette",
+                      "palette/build",
+                      "finish",
+                      -1,
+                      -1,
+                      0,
+                      0,
+                      0,
+                      0,
+                      "engine=%s",
+                      engine->name);
+
+    return status;
 }
 
 /* Try the preferred float32 K-means engine before falling back to legacy. */
@@ -211,7 +245,7 @@ sixel_palette_apply_kmeans_engines(sixel_palette_t *palette,
                                    unsigned int length,
                                    int pixelformat,
                                    sixel_allocator_t *allocator,
-                                   int prefer_rgbfloat32)
+                                   int prefer_float32)
 {
     sixel_palette_quant_engine_t const *engine;
     SIXELSTATUS status;
@@ -221,7 +255,7 @@ sixel_palette_apply_kmeans_engines(sixel_palette_t *palette,
     status = SIXEL_LOGIC_ERROR;
     saved_lut_policy = palette->lut_policy;
 
-    if (prefer_rgbfloat32) {
+    if (prefer_float32) {
         engine = sixel_palette_quant_engine_lookup(
             SIXEL_QUANTIZE_MODEL_KMEANS,
             1);
@@ -262,13 +296,13 @@ sixel_palette_apply_mediancut_engine(sixel_palette_t *palette,
                                      unsigned int length,
                                      int pixelformat,
                                      sixel_allocator_t *allocator,
-                                     int prefer_rgbfloat32)
+                                     int prefer_float32)
 {
     sixel_palette_quant_engine_t const *engine;
     SIXELSTATUS status;
 
     status = SIXEL_LOGIC_ERROR;
-    if (prefer_rgbfloat32 && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+    if (prefer_float32 && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         engine = sixel_palette_quant_engine_lookup(
             SIXEL_QUANTIZE_MODEL_MEDIANCUT,
             1);
@@ -861,7 +895,7 @@ sixel_palette_generate(sixel_palette_t *palette,
                        unsigned char const *data,
                        unsigned int length,
                        int pixelformat,
-                       int prefer_rgbfloat32,
+                       int prefer_float32,
                        sixel_allocator_t *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -898,7 +932,7 @@ sixel_palette_generate(sixel_palette_t *palette,
                                                     length,
                                                     pixelformat,
                                                     work_allocator,
-                                                    prefer_rgbfloat32);
+                                                    prefer_float32);
         if (SIXEL_SUCCEEDED(status)) {
             ncolors = palette->entry_count;
             origcolors = palette->original_colors;
@@ -911,7 +945,7 @@ sixel_palette_generate(sixel_palette_t *palette,
                                                       length,
                                                       pixelformat,
                                                       work_allocator,
-                                                      prefer_rgbfloat32);
+                                                      prefer_float32);
         goto after_quantizer;
     }
 
@@ -920,7 +954,7 @@ sixel_palette_generate(sixel_palette_t *palette,
                                                   length,
                                                   pixelformat,
                                                   work_allocator,
-                                                  prefer_rgbfloat32);
+                                                  prefer_float32);
 
 after_quantizer:
     if (SIXEL_FAILED(status)) {
@@ -963,7 +997,7 @@ sixel_palette_make_palette(unsigned char **result,
                            int use_reversible,
                            int quantize_model,
                            int final_merge_mode,
-                           int prefer_rgbfloat32,
+                           int prefer_float32,
                            sixel_allocator_t *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -1000,7 +1034,7 @@ sixel_palette_make_palette(unsigned char **result,
                                     data,
                                     length,
                                     pixelformat,
-                                    prefer_rgbfloat32,
+                                    prefer_float32,
                                     allocator);
     if (SIXEL_FAILED(status)) {
         goto end;

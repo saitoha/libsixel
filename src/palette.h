@@ -109,7 +109,7 @@ sixel_palette_make_palette(unsigned char **result,
                            int use_reversible,
                            int quantize_model,
                            int final_merge_mode,
-                           int prefer_rgbfloat32,
+                           int prefer_float32,
                            sixel_allocator_t *allocator);
 
 void

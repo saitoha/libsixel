@@ -37,6 +37,12 @@
 extern "C" {
 #endif
 
+typedef enum sixel_kmeans_init_type {
+    SIXEL_PALETTE_KMEANS_INIT_AUTO = 0,
+    SIXEL_PALETTE_KMEANS_INIT_NONE,
+    SIXEL_PALETTE_KMEANS_INIT_PCA,
+} sixel_kmeans_init_type;
+
 SIXELSTATUS
 sixel_palette_build_kmeans(sixel_palette_t *palette,
                            unsigned char const *data,
@@ -56,6 +62,20 @@ sixel_palette_kmeans_iter_max(void);
 
 double
 sixel_palette_kmeans_threshold(void);
+
+sixel_kmeans_init_type
+sixel_get_kmeans_init_type(void);
+
+SIXELSTATUS
+sixel_kmeans_choose_initial_centroids(double *centers,
+                                      unsigned int k,
+                                      double const *samples,
+                                      double const *weights,
+                                      unsigned int sample_count,
+                                      int use_reversible,
+                                      double *distance_cache,
+                                      sixel_allocator_t *allocator,
+                                      sixel_kmeans_init_type init_type);
 
 #ifdef __cplusplus
 }
