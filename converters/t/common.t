@@ -40,15 +40,19 @@ normalize_path() {
 
 if [[ -z "${TOP_SRCDIR:-}" ]]; then
     echo "TOP_SRCDIR is not set" >&2
-    exit 1
+    TOP_SRCDIR=$(dirname ${0})
+    TOP_SRCDIR=$(dirname ${TOP_SRCDIR})
+    TOP_SRCDIR=$(dirname ${TOP_SRCDIR})
 fi
 if [[ -z "${SRC_DIR:-}" ]]; then
     echo "SRC_DIR is not set" >&2
-    exit 1
+    SRC_DIR=$(dirname ${0})
+    SRC_DIR=$(dirname ${SRC_DIR})
 fi
 if [[ -z "${BUILD_DIR:-}" ]]; then
     echo "BUILD_DIR is not set" >&2
-    exit 1
+    BUILD_DIR=$(dirname ${0})
+    BUILD_DIR=$(dirname ${BUILD_DIR})
 fi
 
 TOP_SRCDIR=$(normalize_path "${TOP_SRCDIR}")
