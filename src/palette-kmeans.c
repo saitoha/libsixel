@@ -41,6 +41,14 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#if HAVE_STRINGS_H
+# include <strings.h>
+#elif defined(_WIN32)
+# include <string.h>
+# define strcasecmp _stricmp
+#else
+int strcasecmp(char const *lhs, char const *rhs);
+#endif
 #if HAVE_LIMITS_H
 # include <limits.h>
 #endif
@@ -59,6 +67,540 @@
 #include "palette.h"
 #include "pixelformat.h"
 #include "status.h"
+
+typedef struct sixel_kmeans_projection_entry {
+    double projection;
+    double weight;
+    unsigned int index;
+} sixel_kmeans_projection_entry_t;
+
+static const char *
+sixel_kmeans_init_type_to_string(sixel_kmeans_init_type init_type)
+{
+    switch (init_type) {
+    case SIXEL_PALETTE_KMEANS_INIT_NONE:
+        return "none";
+    case SIXEL_PALETTE_KMEANS_INIT_PCA:
+        return "pca";
+    case SIXEL_PALETTE_KMEANS_INIT_AUTO:
+    default:
+        return "auto";
+    }
+}
+
+static sixel_kmeans_init_type
+sixel_kmeans_resolve_init_type(sixel_kmeans_init_type init_type)
+{
+    if (init_type == SIXEL_PALETTE_KMEANS_INIT_PCA) {
+        return init_type;
+    }
+
+    return SIXEL_PALETTE_KMEANS_INIT_NONE;
+}
+
+sixel_kmeans_init_type
+sixel_get_kmeans_init_type(void)
+{
+    sixel_kmeans_init_type parsed;
+    sixel_kmeans_init_type resolved;
+    char const *env_value;
+    static int init_loaded = 0;
+    static sixel_kmeans_init_type cached_value
+        = SIXEL_PALETTE_KMEANS_INIT_PCA;
+
+    parsed = SIXEL_PALETTE_KMEANS_INIT_AUTO;
+    resolved = SIXEL_PALETTE_KMEANS_INIT_PCA;
+    env_value = NULL;
+    if (init_loaded) {
+        return cached_value;
+    }
+    init_loaded = 1;
+
+    env_value = sixel_compat_getenv("SIXEL_PALETTE_KMEANS_INITTYPE");
+    if (env_value != NULL && env_value[0] != '\0') {
+        if (strcasecmp(env_value, "none") == 0) {
+            parsed = SIXEL_PALETTE_KMEANS_INIT_NONE;
+        } else if (strcasecmp(env_value, "pca") == 0) {
+            parsed = SIXEL_PALETTE_KMEANS_INIT_PCA;
+        } else if (strcasecmp(env_value, "auto") == 0) {
+            parsed = SIXEL_PALETTE_KMEANS_INIT_AUTO;
+        }
+    }
+
+    resolved = sixel_kmeans_resolve_init_type(parsed);
+    cached_value = resolved;
+    sixel_debugf("k-means init type: %s",
+                 sixel_kmeans_init_type_to_string(resolved));
+
+    return resolved;
+}
+
+static double
+sixel_kmeans_snap_component(double value, int use_reversible)
+{
+    double clamped;
+    int sample;
+
+    clamped = value;
+    sample = 0;
+    if (clamped < 0.0) {
+        clamped = 0.0;
+    }
+    if (clamped > 255.0) {
+        clamped = 255.0;
+    }
+    if (!use_reversible) {
+        return clamped;
+    }
+    sample = (int)(clamped + 0.5);
+    if (sample < 0) {
+        sample = 0;
+    }
+    if (sample > 255) {
+        sample = 255;
+    }
+
+    return (double)sixel_palette_reversible_value((unsigned int)sample);
+}
+
+static int
+sixel_kmeans_projection_compare(void const *lhs, void const *rhs)
+{
+    sixel_kmeans_projection_entry_t const *left;
+    sixel_kmeans_projection_entry_t const *right;
+
+    left = (sixel_kmeans_projection_entry_t const *)lhs;
+    right = (sixel_kmeans_projection_entry_t const *)rhs;
+    if (left->projection < right->projection) {
+        return -1;
+    }
+    if (left->projection > right->projection) {
+        return 1;
+    }
+
+    return 0;
+}
+
+static int
+sixel_kmeans_compute_mean(double const *samples,
+                          double const *weights,
+                          unsigned int sample_count,
+                          double mean[3],
+                          double *total_weight)
+{
+    unsigned int index;
+    double weight;
+    double weight_sum;
+    double accum[3];
+
+    index = 0U;
+    weight = 1.0;
+    weight_sum = 0.0;
+    accum[0] = 0.0;
+    accum[1] = 0.0;
+    accum[2] = 0.0;
+    if (samples == NULL || mean == NULL || total_weight == NULL) {
+        return 1;
+    }
+    for (index = 0U; index < sample_count; ++index) {
+        if (weights != NULL) {
+            weight = weights[index];
+        }
+        if (weight <= 0.0) {
+            continue;
+        }
+        weight_sum += weight;
+        accum[0] += samples[index * 3U + 0U] * weight;
+        accum[1] += samples[index * 3U + 1U] * weight;
+        accum[2] += samples[index * 3U + 2U] * weight;
+    }
+    if (weight_sum <= 0.0) {
+        return 1;
+    }
+
+    mean[0] = accum[0] / weight_sum;
+    mean[1] = accum[1] / weight_sum;
+    mean[2] = accum[2] / weight_sum;
+    *total_weight = weight_sum;
+
+    return 0;
+}
+
+static int
+sixel_kmeans_compute_covariance(double const *samples,
+                                double const *weights,
+                                unsigned int sample_count,
+                                double const mean[3],
+                                double covariance[3][3])
+{
+    unsigned int index;
+    unsigned int row;
+    unsigned int col;
+    double weight;
+    double weight_sum;
+    double centered[3];
+
+    index = 0U;
+    row = 0U;
+    col = 0U;
+    weight = 1.0;
+    weight_sum = 0.0;
+    centered[0] = 0.0;
+    centered[1] = 0.0;
+    centered[2] = 0.0;
+    if (samples == NULL || covariance == NULL || mean == NULL) {
+        return 1;
+    }
+    for (row = 0U; row < 3U; ++row) {
+        for (col = 0U; col < 3U; ++col) {
+            covariance[row][col] = 0.0;
+        }
+    }
+
+    for (index = 0U; index < sample_count; ++index) {
+        if (weights != NULL) {
+            weight = weights[index];
+        }
+        if (weight <= 0.0) {
+            continue;
+        }
+        centered[0] = samples[index * 3U + 0U] - mean[0];
+        centered[1] = samples[index * 3U + 1U] - mean[1];
+        centered[2] = samples[index * 3U + 2U] - mean[2];
+        for (row = 0U; row < 3U; ++row) {
+            for (col = row; col < 3U; ++col) {
+                covariance[row][col]
+                    += centered[row] * centered[col] * weight;
+            }
+        }
+        weight_sum += weight;
+    }
+    if (weight_sum <= 0.0) {
+        return 1;
+    }
+    for (row = 0U; row < 3U; ++row) {
+        for (col = row; col < 3U; ++col) {
+            covariance[row][col] /= weight_sum;
+            if (row != col) {
+                covariance[col][row] = covariance[row][col];
+            }
+        }
+    }
+
+    return 0;
+}
+
+static int
+sixel_kmeans_power_iteration(double covariance[3][3],
+                             double axis[3],
+                             unsigned int iterations)
+{
+    double vector[3];
+    double next[3];
+    double norm;
+    unsigned int iter;
+
+    vector[0] = 1.0;
+    vector[1] = 1.0;
+    vector[2] = 1.0;
+    next[0] = 0.0;
+    next[1] = 0.0;
+    next[2] = 0.0;
+    norm = 0.0;
+    for (iter = 0U; iter < iterations; ++iter) {
+        next[0] = covariance[0][0] * vector[0]
+            + covariance[0][1] * vector[1]
+            + covariance[0][2] * vector[2];
+        next[1] = covariance[1][0] * vector[0]
+            + covariance[1][1] * vector[1]
+            + covariance[1][2] * vector[2];
+        next[2] = covariance[2][0] * vector[0]
+            + covariance[2][1] * vector[1]
+            + covariance[2][2] * vector[2];
+        norm = next[0] * next[0]
+            + next[1] * next[1]
+            + next[2] * next[2];
+        if (norm <= 0.0) {
+            return 1;
+        }
+        norm = sqrt(norm);
+        vector[0] = next[0] / norm;
+        vector[1] = next[1] / norm;
+        vector[2] = next[2] / norm;
+    }
+
+    axis[0] = vector[0];
+    axis[1] = vector[1];
+    axis[2] = vector[2];
+
+    return 0;
+}
+
+static int
+sixel_kmeans_seed_pca(double *centers,
+                      unsigned int k,
+                      double const *samples,
+                      double const *weights,
+                      unsigned int sample_count,
+                      int use_reversible,
+                      sixel_allocator_t *allocator)
+{
+    sixel_kmeans_projection_entry_t *projections = NULL;
+    double covariance[3][3];
+    double mean[3];
+    double axis[3];
+    double total_weight = 0.0;
+    double bucket_start = 0.0;
+    double bucket_end = 0.0;
+    double bucket_weight = 0.0;
+    double cumulative = 0.0;
+    double sum[3] = { 0.0, 0.0, 0.0 };
+    unsigned int bucket = 0U;
+    unsigned int cursor = 0U;
+    unsigned int channel = 0U;
+    int status;
+
+    status = sixel_kmeans_compute_mean(samples,
+                                       weights,
+                                       sample_count,
+                                       mean,
+                                       &total_weight);
+    if (status != 0) {
+        return 1;
+    }
+    status = sixel_kmeans_compute_covariance(samples,
+                                             weights,
+                                             sample_count,
+                                             mean,
+                                             covariance);
+    if (status != 0) {
+        return 1;
+    }
+    status = sixel_kmeans_power_iteration(covariance, axis, 16U);
+    if (status != 0) {
+        return 1;
+    }
+
+    projections = (sixel_kmeans_projection_entry_t *)sixel_allocator_malloc(
+        allocator,
+        (size_t)sample_count * sizeof(sixel_kmeans_projection_entry_t));
+    if (projections == NULL) {
+        return 1;
+    }
+    for (cursor = 0U; cursor < sample_count; ++cursor) {
+        double weight;
+
+        weight = 1.0;
+        if (weights != NULL) {
+            weight = weights[cursor];
+        }
+        projections[cursor].projection
+            = samples[cursor * 3U + 0U] * axis[0]
+            + samples[cursor * 3U + 1U] * axis[1]
+            + samples[cursor * 3U + 2U] * axis[2];
+        projections[cursor].weight = weight;
+        projections[cursor].index = cursor;
+    }
+    qsort(projections,
+          (size_t)sample_count,
+          sizeof(sixel_kmeans_projection_entry_t),
+          sixel_kmeans_projection_compare);
+
+    cumulative = 0.0;
+    cursor = 0U;
+    for (bucket = 0U; bucket < k; ++bucket) {
+        bucket_start = total_weight * (double)bucket / (double)k;
+        bucket_end = total_weight * (double)(bucket + 1U)
+            / (double)k;
+        bucket_weight = 0.0;
+        sum[0] = 0.0;
+        sum[1] = 0.0;
+        sum[2] = 0.0;
+        while (cursor < sample_count && cumulative < bucket_end) {
+            double weight;
+            unsigned int sample_index;
+
+            weight = projections[cursor].weight;
+            if (weight <= 0.0) {
+                ++cursor;
+                continue;
+            }
+            sample_index = projections[cursor].index;
+            if (cumulative + weight < bucket_start) {
+                cumulative += weight;
+                ++cursor;
+                continue;
+            }
+            bucket_weight += weight;
+            sum[0] += samples[sample_index * 3U + 0U] * weight;
+            sum[1] += samples[sample_index * 3U + 1U] * weight;
+            sum[2] += samples[sample_index * 3U + 2U] * weight;
+            cumulative += weight;
+            ++cursor;
+        }
+        if (bucket_weight <= 0.0) {
+            unsigned int fallback;
+
+            fallback = 0U;
+            if (cursor > 0U) {
+                fallback = projections[cursor - 1U].index;
+            }
+            bucket_weight = 1.0;
+            sum[0] = samples[fallback * 3U + 0U];
+            sum[1] = samples[fallback * 3U + 1U];
+            sum[2] = samples[fallback * 3U + 2U];
+        }
+        for (channel = 0U; channel < 3U; ++channel) {
+            double averaged;
+
+            averaged = sum[channel] / bucket_weight;
+            centers[bucket * 3U + channel] = sixel_kmeans_snap_component(
+                averaged, use_reversible);
+        }
+    }
+
+    sixel_allocator_free(allocator, projections);
+
+    return 0;
+}
+
+static SIXELSTATUS
+sixel_kmeans_seed_legacy(double *centers,
+                         unsigned int k,
+                         double const *samples,
+                         unsigned int sample_count,
+                         double *distance_cache)
+{
+    unsigned int channel;
+    unsigned int index;
+    unsigned int sample_index;
+    unsigned int center_index;
+    unsigned int replace;
+    double total_weight;
+    double random_point;
+    double distance;
+    double diff;
+    unsigned long rand_value;
+
+    channel = 0U;
+    index = 0U;
+    sample_index = 0U;
+    center_index = 0U;
+    replace = 0U;
+    total_weight = 0.0;
+    random_point = 0.0;
+    distance = 0.0;
+    diff = 0.0;
+    rand_value = (unsigned long)rand();
+    replace = (unsigned int)(rand_value % sample_count);
+    for (channel = 0U; channel < 3U; ++channel) {
+        centers[channel] = (double)samples[replace * 3U + channel];
+    }
+    for (sample_index = 0U; sample_index < sample_count; ++sample_index) {
+        distance = 0.0;
+        for (channel = 0U; channel < 3U; ++channel) {
+            diff = (double)samples[sample_index * 3U + channel]
+                - centers[channel];
+            distance += diff * diff;
+        }
+        distance_cache[sample_index] = distance;
+    }
+    for (center_index = 1U; center_index < k; ++center_index) {
+        total_weight = 0.0;
+        for (sample_index = 0U; sample_index < sample_count;
+                ++sample_index) {
+            total_weight += distance_cache[sample_index];
+        }
+        random_point = 0.0;
+        if (total_weight > 0.0) {
+            random_point = ((double)rand() / ((double)RAND_MAX + 1.0))
+                * total_weight;
+        }
+        sample_index = 0U;
+        while (sample_index + 1U < sample_count &&
+               random_point > distance_cache[sample_index]) {
+            random_point -= distance_cache[sample_index];
+            ++sample_index;
+        }
+        for (channel = 0U; channel < 3U; ++channel) {
+            centers[center_index * 3U + channel]
+                = (double)samples[sample_index * 3U + channel];
+        }
+        for (index = 0U; index < sample_count; ++index) {
+            distance = 0.0;
+            for (channel = 0U; channel < 3U; ++channel) {
+                diff = (double)samples[index * 3U + channel]
+                    - centers[center_index * 3U + channel];
+                distance += diff * diff;
+            }
+            if (distance < distance_cache[index]) {
+                distance_cache[index] = distance;
+            }
+        }
+    }
+
+    return SIXEL_OK;
+}
+
+SIXELSTATUS
+sixel_kmeans_choose_initial_centroids(double *centers,
+                                      unsigned int k,
+                                      double const *samples,
+                                      double const *weights,
+                                      unsigned int sample_count,
+                                      int use_reversible,
+                                      double *distance_cache,
+                                      sixel_allocator_t *allocator,
+                                      sixel_kmeans_init_type init_type)
+{
+    sixel_kmeans_init_type resolved;
+    SIXELSTATUS status;
+    double *scratch_distances;
+
+    resolved = sixel_kmeans_resolve_init_type(init_type);
+    status = SIXEL_BAD_ARGUMENT;
+    scratch_distances = distance_cache;
+    if (centers == NULL || samples == NULL || allocator == NULL) {
+        return status;
+    }
+    if (k == 0U || sample_count == 0U) {
+        return status;
+    }
+    if (resolved == SIXEL_PALETTE_KMEANS_INIT_PCA) {
+        int seed_status;
+
+        seed_status = sixel_kmeans_seed_pca(centers,
+                                            k,
+                                            samples,
+                                            weights,
+                                            sample_count,
+                                            use_reversible,
+                                            allocator);
+        if (seed_status == 0) {
+            return SIXEL_OK;
+        }
+        sixel_debugf("PCA seeding failed, falling back to legacy mode");
+        resolved = SIXEL_PALETTE_KMEANS_INIT_NONE;
+    }
+
+    if (scratch_distances == NULL) {
+        scratch_distances = (double *)sixel_allocator_malloc(
+            allocator, (size_t)sample_count * sizeof(double));
+        if (scratch_distances == NULL) {
+            return SIXEL_BAD_ALLOCATION;
+        }
+    }
+    status = sixel_kmeans_seed_legacy(centers,
+                                      k,
+                                      samples,
+                                      sample_count,
+                                      scratch_distances);
+    if (scratch_distances != distance_cache) {
+        sixel_allocator_free(allocator, scratch_distances);
+    }
+
+    return status;
+}
 
 static int
 sixel_palette_float32_alpha_visible(double alpha)
@@ -295,8 +837,6 @@ build_palette_kmeans(unsigned char **result,
     unsigned char *new_palette;
     double *centers;
     double *distance_cache;
-    double total_weight;
-    double random_point;
     double best_distance;
     double distance;
     double diff;
@@ -309,6 +849,7 @@ build_palette_kmeans(unsigned char **result,
     double float32_lloyd_scale;
     float *float_palette;
     float *float_palette_new;
+    sixel_kmeans_init_type init_type;
     unsigned long *counts;
     double *accum;
     double *channel_sum;
@@ -323,7 +864,7 @@ build_palette_kmeans(unsigned char **result,
     unsigned int refine_iterations;
     int cluster_total;
     int unique_within;
-    int input_is_rgbfloat32;
+    int input_is_;
     SIXELSTATUS unique_status;
 
     status = SIXEL_BAD_ARGUMENT;
@@ -363,8 +904,6 @@ build_palette_kmeans(unsigned char **result,
     channel_sum = NULL;
     merge_sums = NULL;
     rand_value = 0UL;
-    total_weight = 0.0;
-    random_point = 0.0;
     best_distance = 0.0;
     distance = 0.0;
     diff = 0.0;
@@ -381,7 +920,7 @@ build_palette_kmeans(unsigned char **result,
     refine_iterations = 0U;
     cluster_total = 0;
     unique_within = 0;
-    input_is_rgbfloat32 = 0;
+    input_is_ = 0;
     unique_status = SIXEL_OK;
     float32_channel_scale[0U] = 0.0;
     float32_channel_scale[1U] = 0.0;
@@ -392,6 +931,7 @@ build_palette_kmeans(unsigned char **result,
     float32_lloyd_scale = 0.0;
     float_palette = NULL;
     float_palette_new = NULL;
+    init_type = SIXEL_PALETTE_KMEANS_INIT_AUTO;
 
     if (result != NULL) {
         *result = NULL;
@@ -411,9 +951,9 @@ build_palette_kmeans(unsigned char **result,
 
     channels = depth;
     pixel_stride = depth;
-    input_is_rgbfloat32 = (treat_input_as_float32
+    input_is_ = (treat_input_as_float32
                            && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat));
-    if (input_is_rgbfloat32) {
+    if (input_is_) {
         for (channel = 0U; channel < 3U; ++channel) {
             float float_minimum;
             float float_maximum;
@@ -479,7 +1019,7 @@ build_palette_kmeans(unsigned char **result,
     sample_count = 0U;
     for (index = 0U; index < pixel_count; ++index) {
         base = index * pixel_stride;
-        if (input_is_rgbfloat32) {
+        if (input_is_) {
             float const *fpixels;
 
             fpixels = (float const *)(void const *)(data + base);
@@ -543,7 +1083,7 @@ build_palette_kmeans(unsigned char **result,
     apply_merge = (resolved_merge == SIXEL_FINAL_MERGE_WARD
                    || resolved_merge == SIXEL_FINAL_MERGE_HKMEANS);
     if (apply_merge) {
-        if (input_is_rgbfloat32) {
+        if (input_is_) {
             unique_buffer = (unsigned char *)sixel_allocator_malloc(
                 allocator, (size_t)pixel_count * 3U);
             if (unique_buffer == NULL) {
@@ -624,55 +1164,18 @@ build_palette_kmeans(unsigned char **result,
         goto end;
     }
 
-    rand_value = (unsigned long)rand();
-    replace = (unsigned int)(rand_value % sample_count);
-    for (channel = 0U; channel < 3U; ++channel) {
-        centers[channel] =
-            (double)samples[replace * 3U + channel];
-    }
-    for (sample_index = 0U; sample_index < sample_count; ++sample_index) {
-        distance = 0.0;
-        for (channel = 0U; channel < 3U; ++channel) {
-            diff = (double)samples[sample_index * 3U + channel]
-                - centers[channel];
-            distance += diff * diff;
-        }
-        distance_cache[sample_index] = distance;
-    }
-
-    for (center_index = 1U; center_index < k; ++center_index) {
-        total_weight = 0.0;
-        for (sample_index = 0U; sample_index < sample_count;
-                ++sample_index) {
-            total_weight += distance_cache[sample_index];
-        }
-        random_point = 0.0;
-        if (total_weight > 0.0) {
-            random_point =
-                ((double)rand() / ((double)RAND_MAX + 1.0)) *
-                total_weight;
-        }
-        sample_index = 0U;
-        while (sample_index + 1U < sample_count &&
-               random_point > distance_cache[sample_index]) {
-            random_point -= distance_cache[sample_index];
-            ++sample_index;
-        }
-        for (channel = 0U; channel < 3U; ++channel) {
-            centers[center_index * 3U + channel] =
-                (double)samples[sample_index * 3U + channel];
-        }
-        for (index = 0U; index < sample_count; ++index) {
-            distance = 0.0;
-            for (channel = 0U; channel < 3U; ++channel) {
-                diff = (double)samples[index * 3U + channel]
-                    - centers[center_index * 3U + channel];
-                distance += diff * diff;
-            }
-            if (distance < distance_cache[index]) {
-                distance_cache[index] = distance;
-            }
-        }
+    init_type = sixel_get_kmeans_init_type();
+    status = sixel_kmeans_choose_initial_centroids(centers,
+                                                   k,
+                                                   samples,
+                                                   NULL,
+                                                   sample_count,
+                                                   use_reversible,
+                                                   distance_cache,
+                                                   allocator,
+                                                   init_type);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 
     switch (quality_mode) {
@@ -707,7 +1210,7 @@ build_palette_kmeans(unsigned char **result,
             max_iterations = 1U;
         }
         lloyd_threshold = sixel_palette_kmeans_threshold();
-        if (input_is_rgbfloat32 && float32_lloyd_scale > 0.0) {
+        if (input_is_ && float32_lloyd_scale > 0.0) {
             double threshold_scale;
 
             threshold_scale = float32_lloyd_scale * float32_lloyd_scale;
@@ -829,7 +1332,7 @@ build_palette_kmeans(unsigned char **result,
             component = accum[index];
             merge_channel = index % 3U;
             merge_cluster = index / 3U;
-            if (input_is_rgbfloat32) {
+            if (input_is_) {
                 component = sixel_palette_kmeans_sum_float_to_byte(
                     component,
                     counts[merge_cluster],
@@ -869,7 +1372,7 @@ build_palette_kmeans(unsigned char **result,
             restored = merge_sums[index];
             merge_channel = index % 3U;
             merge_cluster = index / 3U;
-            if (input_is_rgbfloat32) {
+            if (input_is_) {
                 restored = sixel_palette_kmeans_sum_byte_to_float(
                     restored,
                     counts[merge_cluster],
@@ -992,7 +1495,7 @@ build_palette_kmeans(unsigned char **result,
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
-    if (result_float32 != NULL && input_is_rgbfloat32 && k > 0U) {
+    if (result_float32 != NULL && input_is_ && k > 0U) {
         float_palette = (float *)sixel_allocator_malloc(
             allocator, (size_t)k * 3U * sizeof(float));
         if (float_palette == NULL) {
@@ -1013,7 +1516,7 @@ build_palette_kmeans(unsigned char **result,
                     (float)update);
                 float_palette[center_index * 3U + channel] = clamped;
             }
-            if (input_is_rgbfloat32) {
+            if (input_is_) {
                 update = (double)sixel_pixelformat_float_channel_to_byte(
                     pixelformat,
                     (int)channel,

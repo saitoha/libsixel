@@ -132,7 +132,7 @@ sixel_dither_method_supports_float_pipeline(sixel_dither_t const *dither)
     if (dither == NULL) {
         return 0;
     }
-    if (dither->prefer_rgbfloat32 == 0) {
+    if (dither->prefer_float32 == 0) {
         return 0;
     }
     if (dither->method_for_carry == SIXEL_CARRY_ENABLE) {
@@ -695,7 +695,7 @@ sixel_dither_map_pixels(
     if (use_positional) {
         if (context.pixels_float != NULL
             && dither != NULL
-            && dither->prefer_rgbfloat32 != 0) {
+            && dither->prefer_float32 != 0) {
             status = sixel_dither_apply_positional_float32(dither, &context);
             if (status == SIXEL_BAD_ARGUMENT) {
                 status = sixel_dither_apply_positional_8bit(dither, &context);
@@ -706,7 +706,7 @@ sixel_dither_map_pixels(
     } else if (use_varerr) {
         if (context.pixels_float != NULL
             && dither != NULL
-            && dither->prefer_rgbfloat32 != 0) {
+            && dither->prefer_float32 != 0) {
             status = sixel_dither_apply_varcoeff_float32(dither, &context);
             if (status == SIXEL_BAD_ARGUMENT) {
                 status = sixel_dither_apply_varcoeff_8bit(dither, &context);
@@ -720,7 +720,7 @@ sixel_dither_map_pixels(
             && methodForCarry != SIXEL_CARRY_ENABLE
             && depth == 3
             && dither != NULL
-            && dither->prefer_rgbfloat32 != 0) {
+            && dither->prefer_float32 != 0) {
             /*
              * Float inputs can reuse the float32 renderer for every
              * fixed-weight kernel (FS, Sierra, Stucki, etc.) as long as
@@ -1212,7 +1212,7 @@ sixel_dither_new(
     (*ppdither)->quality_mode = quality_mode;
     (*ppdither)->requested_quality_mode = quality_mode;
     (*ppdither)->pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    (*ppdither)->prefer_rgbfloat32 = 0;
+    (*ppdither)->prefer_float32 = 0;
     (*ppdither)->allocator = allocator;
     (*ppdither)->lut_policy = SIXEL_LUT_POLICY_AUTO;
     (*ppdither)->sixel_reversible = 0;
@@ -1475,7 +1475,7 @@ sixel_dither_initialize(
     size_t total_pixels;
     unsigned int payload_length;
     int palette_pixelformat;
-    int prefer_rgbfloat32;
+    int prefer_float32;
 
     /* ensure dither object is not null */
     if (dither == NULL) {
@@ -1497,11 +1497,11 @@ sixel_dither_initialize(
     total_pixels = (size_t)width * (size_t)height;
     payload_length = 0U;
     palette_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    prefer_rgbfloat32 = dither->prefer_rgbfloat32;
+    prefer_float32 = dither->prefer_float32;
 
     /* Float32 input requires the pipeline to honour higher precision. */
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        prefer_rgbfloat32 = 1;
+        prefer_float32 = 1;
     }
 
     switch (pixelformat) {
@@ -1511,7 +1511,7 @@ sixel_dither_initialize(
     case SIXEL_PIXELFORMAT_RGBFLOAT32:
     case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
     case SIXEL_PIXELFORMAT_OKLABFLOAT32:
-        if (prefer_rgbfloat32) {
+        if (prefer_float32) {
             input_pixels = data;
             palette_pixelformat = pixelformat;
             payload_length = (unsigned int)(total_pixels * 3U
@@ -1549,7 +1549,7 @@ sixel_dither_initialize(
         payload_length = (unsigned int)(total_pixels * 3U);
     }
 
-    if (prefer_rgbfloat32
+    if (prefer_float32
         && !SIXEL_PIXELFORMAT_IS_FLOAT32(palette_pixelformat)
         && total_pixels > 0U) {
         status = sixel_dither_promote_rgb888_to_float32(
@@ -1563,12 +1563,12 @@ sixel_dither_initialize(
             palette_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
             input_pixels = (unsigned char *)float_pixels;
         } else {
-            prefer_rgbfloat32 = 0;
+            prefer_float32 = 0;
             status = SIXEL_OK;
         }
     }
 
-    dither->prefer_rgbfloat32 = prefer_rgbfloat32;
+    dither->prefer_float32 = prefer_float32;
 
     sixel_dither_set_method_for_largest(dither, method_for_largest);
     sixel_dither_set_method_for_rep(dither, method_for_rep);
@@ -1588,7 +1588,7 @@ sixel_dither_initialize(
                                         dither->sixel_reversible,
                                         dither->quantize_model,
                                         dither->final_merge_mode,
-                                        dither->prefer_rgbfloat32,
+                                        dither->prefer_float32,
                                         dither->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -1853,7 +1853,7 @@ sixel_dither_set_pixelformat(
 {
     /* Keep the float32 preference aligned with the requested pixelformat. */
     dither->pixelformat = pixelformat;
-    dither->prefer_rgbfloat32 =
+    dither->prefer_float32 =
         SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat) ? 1 : 0;
 }
 
@@ -2353,7 +2353,7 @@ test_float_pixelformat_defaults_to_8bit(void)
     if (SIXEL_FAILED(status) || dither == NULL) {
         goto error;
     }
-    if (dither->prefer_rgbfloat32 != 0) {
+    if (dither->prefer_float32 != 0) {
         goto error;
     }
 
@@ -2383,11 +2383,11 @@ test_float_pixelformat_sets_flag(void)
         goto error;
     }
     sixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_RGBFLOAT32);
-    if (dither->prefer_rgbfloat32 == 0) {
+    if (dither->prefer_float32 == 0) {
         goto error;
     }
     sixel_dither_set_pixelformat(dither, SIXEL_PIXELFORMAT_RGB888);
-    if (dither->prefer_rgbfloat32 != 0) {
+    if (dither->prefer_float32 != 0) {
         goto error;
     }
 
