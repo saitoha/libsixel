@@ -1094,6 +1094,10 @@ sixel_decoder_parallel_request_start(int direct_mode,
     if (threads > payload_len) {
         threads = payload_len;
     }
+    if (threads < 2) {
+        status = SIXEL_FALSE;
+        goto cleanup;
+    }
 
     workers = (sixel_thread_t *)calloc((size_t)threads,
                                        sizeof(sixel_thread_t));
