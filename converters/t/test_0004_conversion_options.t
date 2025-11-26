@@ -173,4 +173,4 @@ run_img2sixel -e -h140 -rlanczos4 -P "${snake_jpg}"
 # Encode with interlace enabled while dumping palette.
 run_img2sixel -e -i -P "${snake_jpg}" >/dev/null
 # Re-encode scaled PNG output through a second conversion pass.
-run_img2sixel -w204 -h204 "${snake_png}" | run_img2sixel >/dev/null
+#run_img2sixel -w204 -h204 "${snake_png}" | run_img2sixel >/dev/null
