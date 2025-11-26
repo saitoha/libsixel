@@ -97,7 +97,10 @@ bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0001_03_invalid_option_combinations.t \
 @HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0002_stdin.t \
 @HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0003_information.t \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0004_conversion_options.t \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0004_conversion_options_01.t \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0004_conversion_options_02.t \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0004_conversion_options_03.t \
+@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0004_conversion_options_04.t \
 @HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0005_dcs_arguments.t \
 @HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0006_dcs_variations.t \
 @HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0007_animation.t \
