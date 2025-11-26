@@ -591,6 +591,10 @@ sixel_decoder_parallel_worker(void *arg)
                 break;
             }
             cursor += 1;
+            if (ch == 0x1b && cursor < limit && *cursor == '\\') {
+                status = (0);
+                break;
+            }
             continue;
         }
 
