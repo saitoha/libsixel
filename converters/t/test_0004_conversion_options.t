@@ -30,9 +30,9 @@ require_file "${snake_jpg}"
 require_file "${snake_png}"
 require_file "${snake_six}"
 
-## Validate dithering, gamma, and scaling through a round-trip convert.
-#run_img2sixel "${snake_jpg}" -datkinson -flum -save | \
-#    run_img2sixel | tee "${TMP_DIR}/snake.sixel" >/dev/null
+# Validate dithering, gamma, and scaling through a round-trip convert.
+run_img2sixel "${snake_jpg}" -datkinson -flum -save | \
+    run_img2sixel | tee "${TMP_DIR}/snake.sixel" >/dev/null
 # Reject ambiguous select-color prefixes.
 if run_img2sixel -sa "${snake_jpg}" >/dev/null 2>&1; then
     echo "expected -sa to fail due to ambiguous prefix" >&2
