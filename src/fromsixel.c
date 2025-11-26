@@ -1131,8 +1131,8 @@ sixel_decode_raw_impl(
                         image->palette[context->color_index]
                             = SIXEL_XRGB(context->params[2], context->params[3], context->params[4]);
                     }
+                    parallel_anchor = p;
                 }
-                parallel_anchor = p;
                 break;
             }
             break;
