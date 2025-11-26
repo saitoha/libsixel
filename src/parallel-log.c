@@ -117,7 +117,9 @@ sixel_parallel_logger_close(sixel_parallel_logger_t *logger)
         return;
     }
     if (logger->mutex_ready) {
+#if SIXEL_ENABLE_THREADS
         sixel_mutex_destroy(&logger->mutex);
+#endif  /* SIXEL_ENABLE_THREADS */
         logger->mutex_ready = 0;
     }
     if (logger->file != NULL) {
@@ -144,11 +146,13 @@ sixel_parallel_logger_open(sixel_parallel_logger_t *logger, char const *path)
     if (logger->file == NULL) {
         return SIXEL_RUNTIME_ERROR;
     }
+#if SIXEL_ENABLE_THREADS
     if (sixel_mutex_init(&logger->mutex) != 0) {
         fclose(logger->file);
         logger->file = NULL;
         return SIXEL_RUNTIME_ERROR;
     }
+#endif  /* SIXEL_ENABLE_THREADS */
     logger->mutex_ready = 1;
     logger->active = 1;
     logger->started_at = sixel_assessment_timer_now();
@@ -254,7 +258,9 @@ sixel_parallel_logger_logf(sixel_parallel_logger_t *logger,
 
     sixel_parallel_logger_escape(message, escaped, sizeof(escaped));
 
+#if SIXEL_ENABLE_THREADS
     sixel_mutex_lock(&target->mutex);
+#endif  /* SIXEL_ENABLE_THREADS */
     timestamp = sixel_assessment_timer_now() - target->started_at;
     if (timestamp < 0.0) {
         timestamp = 0.0;
@@ -277,7 +283,9 @@ sixel_parallel_logger_logf(sixel_parallel_logger_t *logger,
             in1,
             escaped);
     fflush(target->file);
+#if SIXEL_ENABLE_THREADS
     sixel_mutex_unlock(&target->mutex);
+#endif  /* SIXEL_ENABLE_THREADS */
 }
 
 /* emacs Local Variables:      */
