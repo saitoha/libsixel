@@ -29,7 +29,10 @@ CONVERTER_TEST_LIST += \
         $(top_srcdir)/converters/t/test_0001_03_invalid_option_combinations.t \
         $(top_srcdir)/converters/t/test_0002_stdin.t \
         $(top_srcdir)/converters/t/test_0003_information.t \
-        $(top_srcdir)/converters/t/test_0004_conversion_options.t \
+        $(top_srcdir)/converters/t/test_0004_conversion_options_01.t \
+        $(top_srcdir)/converters/t/test_0004_conversion_options_02.t \
+        $(top_srcdir)/converters/t/test_0004_conversion_options_03.t \
+        $(top_srcdir)/converters/t/test_0004_conversion_options_04.t \
         $(top_srcdir)/converters/t/test_0005_dcs_arguments.t \
         $(top_srcdir)/converters/t/test_0006_dcs_variations.t \
         $(top_srcdir)/converters/t/test_0007_animation.t \
