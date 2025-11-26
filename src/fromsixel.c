@@ -545,17 +545,14 @@ sixel_decode_raw_impl(
     int c;
     size_t pos;
     unsigned char *p0 = p;
-    int parallel_started;
-    int raster_ready;
-    int palette_ready;
-    int direct_mode;
-    unsigned char *parallel_anchor;
+#if SIXEL_ENABLE_THREADS
+    int parallel_started = 0;
+    int raster_ready = 0;
+    int palette_ready = 0;
+    unsigned char *parallel_anchor = p;
+#endif  /* SIXEL_ENABLE_THREADS */
+    int direct_mode = 0;
 
-    parallel_started = 0;
-    raster_ready = 0;
-    palette_ready = 0;
-    direct_mode = 0;
-    parallel_anchor = p0;
     if (image->depth == 4U) {
         direct_mode = 1;
     }
@@ -713,15 +710,18 @@ sixel_decode_raw_impl(
             case '#':
                 context->param = 0;
                 context->nparams = 0;
+#if SIXEL_ENABLE_THREADS
                 if (!palette_ready) {
                     palette_ready = 1;
                 }
+#endif  /* SIXEL_ENABLE_THREADS */
                 context->state = PS_DECGCI;
                 p++;
                 break;
             case '$':
                 /* DECGCR Graphics Carriage Return */
                 context->pos_x = 0;
+#if SIXEL_ENABLE_THREADS
                 if (!palette_ready) {
                     palette_ready = 1;
                 }
@@ -742,12 +742,14 @@ sixel_decode_raw_impl(
                         goto end;
                     }
                 }
+#endif  /* SIXEL_ENABLE_THREADS */
                 p++;
                 break;
             case '-':
                 /* DECGNL Graphics Next Line */
                 context->pos_x = 0;
                 context->pos_y += 6;
+#if SIXEL_ENABLE_THREADS
                 if (!palette_ready) {
                     palette_ready = 1;
                 }
@@ -768,11 +770,12 @@ sixel_decode_raw_impl(
                         goto end;
                     }
                 }
+#endif  /* SIXEL_ENABLE_THREADS */
                 p++;
                 break;
             default:
                 if (*p >= '?' && *p <= '~') {  /* sixel characters */
-
+#if SIXEL_ENABLE_THREADS
                     if (!palette_ready) {
                         palette_ready = 1;
                     }
@@ -793,6 +796,7 @@ sixel_decode_raw_impl(
                             goto end;
                         }
                     }
+#endif  /* SIXEL_ENABLE_THREADS */
 
                     sx = image->width;
                     while (sx < context->pos_x + context->repeat_count) {
@@ -958,11 +962,13 @@ sixel_decode_raw_impl(
                         goto end;
                     }
                 }
+#if SIXEL_ENABLE_THREADS
                 if (!raster_ready && context->attributed_ph > 0 &&
                         context->attributed_pv > 0) {
                     raster_ready = 1;
                 }
                 parallel_anchor = p;
+#endif  /* SIXEL_ENABLE_THREADS */
                 context->state = PS_DECSIXEL;
                 context->param = 0;
                 context->nparams = 0;
@@ -1091,7 +1097,9 @@ sixel_decode_raw_impl(
                         image->palette[context->color_index]
                             = SIXEL_XRGB(context->params[2], context->params[3], context->params[4]);
                     }
+#if SIXEL_ENABLE_THREADS
                     parallel_anchor = p;
+#endif  /* SIXEL_ENABLE_THREADS */
                 }
                 break;
             }
@@ -1136,15 +1144,12 @@ sixel_decode_image(
     sixel_allocator_t *allocator)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-#if SIXEL_ENABLE_THREADS
     sixel_parallel_logger_t parallel_logger;
     int logger_prepared;
     int used_parallel;
-#endif
 
     image->pixels.p = NULL;
 
-#if SIXEL_ENABLE_THREADS
     sixel_parallel_logger_init(&parallel_logger);
     logger_prepared = 0;
     (void)sixel_parallel_logger_prepare_env(&parallel_logger);
@@ -1167,6 +1172,7 @@ sixel_decode_image(
                                    len,
                                    "reading sixel payload");
     }
+#if SIXEL_ENABLE_THREADS
     used_parallel = 0;
     if (depth == 1U) {
         status = sixel_decode_raw_parallel(p,
@@ -1188,7 +1194,7 @@ sixel_decode_image(
         status = SIXEL_OK;
         goto end;
     }
-#endif
+#endif  /* SIXEL_ENABLE_THREADS */
 
     status = parser_context_init(context);
     if (SIXEL_FAILED(status)) {
@@ -1237,7 +1243,6 @@ sixel_decode_image(
     status = SIXEL_OK;
 
 end:
-#if SIXEL_ENABLE_THREADS
     if (logger_prepared) {
         sixel_parallel_logger_logf(&parallel_logger,
                                    "decoder",
@@ -1265,7 +1270,6 @@ end:
                                    status);
         sixel_parallel_logger_close(&parallel_logger);
     }
-#endif
     return status;
 }
 
