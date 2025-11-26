@@ -33,18 +33,24 @@ extern "C" {
 
 typedef int (*sixel_thread_fn)(void *arg);
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) \
+    && !defined(WITH_WINPTHREAD)
+#include <windows.h>
+
 struct sixel_mutex {
-    int unused;
+    CRITICAL_SECTION native;
 };
 
 struct sixel_cond {
-    int unused;
+    CONDITION_VARIABLE native;
 };
 
 struct sixel_thread {
-    sixel_thread_fn fn;
-    void *arg;
+    HANDLE handle;         /* OS thread handle */
+    sixel_thread_fn fn;    /* user callback */
+    void *arg;             /* user data */
+    int result;            /* callback result */
+    int started;           /* thread start flag */
 };
 #else
 #include <pthread.h>
