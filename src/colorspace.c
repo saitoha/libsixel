@@ -36,6 +36,8 @@
 #define SIXEL_CIELAB_AB_SCALE 128.0
 #define SIXEL_CIELAB_L_SCALE  100.0
 #define SIXEL_CIELAB_AB_LIMIT 1.5
+#define SIXEL_DIN99D_L_SCALE  100.0
+#define SIXEL_DIN99D_AB_RANGE 50.0
 
 static const double sixel_linear_srgb_to_smptec_matrix[3][3] = {
     { 1.0651944799343782, -0.05539144537002962, -0.009975616485882548 },
@@ -161,6 +163,34 @@ sixel_cielab_clamp_ab(double value)
 
     return value;
 }
+
+static inline double
+sixel_din99d_clamp_ab_norm(double value)
+{
+    if (value < -1.0) {
+        return -1.0;
+    }
+    if (value > 1.0) {
+        return 1.0;
+    }
+
+    return value;
+}
+
+#if 0
+static inline double
+sixel_din99d_clamp_ab(double value)
+{
+    if (value < -SIXEL_DIN99D_AB_RANGE) {
+        return -SIXEL_DIN99D_AB_RANGE;
+    }
+    if (value > SIXEL_DIN99D_AB_RANGE) {
+        return SIXEL_DIN99D_AB_RANGE;
+    }
+
+    return value;
+}
+#endif
 
 static unsigned char
 sixel_colorspace_clamp(int value)
@@ -308,6 +338,33 @@ sixel_cielab_decode_ab(unsigned char v)
     return (encoded - 0.5) * (2.0 * SIXEL_CIELAB_AB_LIMIT);
 }
 
+static inline unsigned char
+sixel_din99d_encode_L(double L)
+{
+    double clamped;
+
+    clamped = sixel_clamp_unit(L);
+    return sixel_colorspace_clamp((int)(clamped * 255.0 + 0.5));
+}
+
+static inline unsigned char
+sixel_din99d_encode_ab(double value)
+{
+    double normalized;
+
+    normalized = (sixel_din99d_clamp_ab_norm(value) / 2.0) + 0.5;
+    return sixel_colorspace_clamp((int)(normalized * 255.0 + 0.5));
+}
+
+static inline double
+sixel_din99d_decode_ab(unsigned char v)
+{
+    double encoded;
+
+    encoded = (double)v / 255.0;
+    return sixel_din99d_clamp_ab_norm((encoded - 0.5) * 2.0);
+}
+
 static void
 sixel_linear_to_cielab(double r, double g, double b,
                        double *L, double *A, double *B)
@@ -378,6 +435,149 @@ sixel_cielab_to_linear(double L, double A, double B,
     *r = sixel_clamp_unit(*r);
     *g = sixel_clamp_unit(*g);
     *b = sixel_clamp_unit(*b);
+}
+
+static void
+sixel_cielab_to_din99d(double L,
+                       double a,
+                       double b,
+                       double *L99d,
+                       double *A99d,
+                       double *B99d)
+{
+    /* Convert from CIELAB to DIN99d using Cui et al. (2002) parameters. */
+    const double c1 = 325.22;
+    const double c2 = 0.0036;
+    const double c3 = 50.0;
+    const double c4 = 1.14;
+    const double c5 = 22.5;
+    const double c6 = 0.06;
+    const double c7 = 50.0;
+    const double c8 = 1.0;
+    const double rad_per_degree = 3.14159265358979323846 / 180.0;
+    double radians_c3;
+    double radians_c7;
+    double e;
+    double f;
+    double G;
+    double h_ef;
+    double C99;
+
+    radians_c3 = c3 * rad_per_degree;
+    radians_c7 = c7 * rad_per_degree;
+
+    e = cos(radians_c3) * a + sin(radians_c3) * b;
+    f = c4 * (-sin(radians_c3) * a + cos(radians_c3) * b);
+    G = sqrt(e * e + f * f);
+    h_ef = atan2(f, e) + radians_c7;
+
+    C99 = c5 * (log1p(c6 * G)) / (c8);
+
+    *A99d = C99 * cos(h_ef);
+    *B99d = C99 * sin(h_ef);
+    *L99d = c1 * log1p(c2 * L);
+}
+
+static void
+sixel_din99d_to_cielab(double L99d,
+                       double A99d,
+                       double B99d,
+                       double *L,
+                       double *a,
+                       double *b)
+{
+    /* Convert from DIN99d back to absolute CIELAB coordinates. */
+    const double c1 = 325.22;
+    const double c2 = 0.0036;
+    const double c3 = 50.0;
+    const double c4 = 1.14;
+    const double c5 = 22.5;
+    const double c6 = 0.06;
+    const double c7 = 50.0;
+    const double c8 = 1.0;
+    const double rad_per_degree = 3.14159265358979323846 / 180.0;
+    double radians_c3;
+    double radians_c7;
+    double h99;
+    double C99;
+    double G;
+    double e;
+    double f;
+
+    radians_c3 = c3 * rad_per_degree;
+    radians_c7 = c7 * rad_per_degree;
+
+    h99 = atan2(B99d, A99d) - radians_c7;
+    C99 = hypot(A99d, B99d);
+    G = expm1((c8 / c5) * C99) / c6;
+
+    e = G * cos(h99);
+    f = G * sin(h99);
+
+    *a = e * cos(radians_c3) - (f / c4) * sin(radians_c3);
+    *b = e * sin(radians_c3) + (f / c4) * cos(radians_c3);
+    *L = expm1(L99d / c1) / c2;
+}
+
+static void
+sixel_linear_to_din99d(double r,
+                       double g,
+                       double b,
+                       double *L99d_norm,
+                       double *A99d_norm,
+                       double *B99d_norm)
+{
+    double L;
+    double A;
+    double B;
+    double L_star;
+    double a_star;
+    double b_star;
+    double L99d;
+    double A99d;
+    double B99d;
+
+    sixel_linear_to_cielab(r, g, b, &L, &A, &B);
+
+    L_star = L * SIXEL_CIELAB_L_SCALE;
+    a_star = A * SIXEL_CIELAB_AB_SCALE;
+    b_star = B * SIXEL_CIELAB_AB_SCALE;
+
+    sixel_cielab_to_din99d(L_star, a_star, b_star, &L99d, &A99d, &B99d);
+
+    *L99d_norm = sixel_clamp_unit(L99d / SIXEL_DIN99D_L_SCALE);
+    *A99d_norm = sixel_din99d_clamp_ab_norm(
+        A99d / SIXEL_DIN99D_AB_RANGE);
+    *B99d_norm = sixel_din99d_clamp_ab_norm(
+        B99d / SIXEL_DIN99D_AB_RANGE);
+}
+
+static void
+sixel_din99d_to_linear(double L99d_norm,
+                       double A99d_norm,
+                       double B99d_norm,
+                       double *r,
+                       double *g,
+                       double *b)
+{
+    double L_star;
+    double a_star;
+    double b_star;
+    double L;
+    double A;
+    double B;
+
+    L = sixel_clamp_unit(L99d_norm) * SIXEL_DIN99D_L_SCALE;
+    A = sixel_din99d_clamp_ab_norm(A99d_norm) * SIXEL_DIN99D_AB_RANGE;
+    B = sixel_din99d_clamp_ab_norm(B99d_norm) * SIXEL_DIN99D_AB_RANGE;
+
+    sixel_din99d_to_cielab(L, A, B, &L_star, &a_star, &b_star);
+
+    L_star = sixel_clamp_unit(L_star / SIXEL_CIELAB_L_SCALE);
+    a_star = sixel_cielab_clamp_ab(a_star / SIXEL_CIELAB_AB_SCALE);
+    b_star = sixel_cielab_clamp_ab(b_star / SIXEL_CIELAB_AB_SCALE);
+
+    sixel_cielab_to_linear(L_star, a_star, b_star, r, g, b);
 }
 
 static void
@@ -561,6 +761,18 @@ sixel_decode_linear_from_colorspace(int colorspace,
         sixel_cielab_to_linear(L, A, B, r_lin, g_lin, b_lin);
         break;
     }
+    case SIXEL_COLORSPACE_DIN99D:
+    {
+        double L;
+        double A;
+        double B;
+
+        L = (double)r8 / 255.0;
+        A = sixel_din99d_decode_ab(g8);
+        B = sixel_din99d_decode_ab(b8);
+        sixel_din99d_to_linear(L, A, B, r_lin, g_lin, b_lin);
+        break;
+    }
     case SIXEL_COLORSPACE_SMPTEC:
     {
         double r_smptec = sixel_smptec_to_linear_double(r8);
@@ -615,6 +827,9 @@ sixel_decode_linear_from_colorspace_float(int colorspace,
         break;
     case SIXEL_COLORSPACE_CIELAB:
         sixel_cielab_to_linear(r, g, b, r_lin, g_lin, b_lin);
+        break;
+    case SIXEL_COLORSPACE_DIN99D:
+        sixel_din99d_to_linear(r, g, b, r_lin, g_lin, b_lin);
         break;
     case SIXEL_COLORSPACE_SMPTEC:
     {
@@ -677,6 +892,12 @@ sixel_encode_linear_to_colorspace(int colorspace,
         *g8 = sixel_cielab_encode_ab(A);
         *b8 = sixel_cielab_encode_ab(B);
         break;
+    case SIXEL_COLORSPACE_DIN99D:
+        sixel_linear_to_din99d(r_lin, g_lin, b_lin, &L, &A, &B);
+        *r8 = sixel_din99d_encode_L(L);
+        *g8 = sixel_din99d_encode_ab(A);
+        *b8 = sixel_din99d_encode_ab(B);
+        break;
     case SIXEL_COLORSPACE_SMPTEC:
     {
         double r_smptec;
@@ -734,6 +955,12 @@ sixel_encode_linear_to_colorspace_float(int colorspace,
         r = sixel_clamp_unit(r);
         g = sixel_cielab_clamp_ab(g);
         b = sixel_cielab_clamp_ab(b);
+        break;
+    case SIXEL_COLORSPACE_DIN99D:
+        sixel_linear_to_din99d(r_lin, g_lin, b_lin, &r, &g, &b);
+        r = sixel_clamp_unit(r);
+        g = sixel_din99d_clamp_ab_norm(g);
+        b = sixel_din99d_clamp_ab_norm(b);
         break;
     case SIXEL_COLORSPACE_SMPTEC:
     {
@@ -967,6 +1194,7 @@ sixel_colorspace_supports_pixelformat(int pixelformat)
     case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
     case SIXEL_PIXELFORMAT_OKLABFLOAT32:
     case SIXEL_PIXELFORMAT_CIELABFLOAT32:
+    case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
         return 1;
     default:
         break;
@@ -1013,6 +1241,8 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
             colorspace_dst == SIXEL_COLORSPACE_OKLAB ||
             colorspace_src == SIXEL_COLORSPACE_CIELAB ||
             colorspace_dst == SIXEL_COLORSPACE_CIELAB ||
+            colorspace_src == SIXEL_COLORSPACE_DIN99D ||
+            colorspace_dst == SIXEL_COLORSPACE_DIN99D ||
             colorspace_src == SIXEL_COLORSPACE_SMPTEC ||
             colorspace_dst == SIXEL_COLORSPACE_SMPTEC) {
         SIXELSTATUS status = sixel_convert_pixels_via_linear(pixels,

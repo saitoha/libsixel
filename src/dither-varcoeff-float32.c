@@ -166,7 +166,8 @@ diffuse_lso2_float(float *data,
     }
 
     if (pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32 ||
-            pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32) {
+            pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32 ||
+            pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32) {
         if (channel > 0) {  /* ab */
             error *= 0.10;
         }
