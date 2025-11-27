@@ -372,6 +372,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "                             lum  -> transforming into\n"
         "                                     luminosities before the\n"
         "                                     comparison\n"
+        "                             pca  -> split along the first\n"
+        "                                     principal component and\n"
+        "                                     cut at weighted median\n"
     },
     {
         's',

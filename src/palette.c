@@ -360,7 +360,8 @@ sixel_palette_set_method_for_largest(int method)
     int normalized;
 
     normalized = SIXEL_LARGE_NORM;
-    if (method == SIXEL_LARGE_NORM || method == SIXEL_LARGE_LUM) {
+    if (method == SIXEL_LARGE_NORM || method == SIXEL_LARGE_LUM
+        || method == SIXEL_LARGE_PCA) {
         normalized = method;
     } else if (method == SIXEL_LARGE_AUTO) {
         normalized = SIXEL_LARGE_NORM;

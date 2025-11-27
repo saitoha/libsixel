@@ -113,6 +113,7 @@ def SIXEL_FAILED(status):
 SIXEL_LARGE_AUTO = 0x0   # choose automatically the method for finding the largest dimension
 SIXEL_LARGE_NORM = 0x1   # simply comparing the range in RGB space
 SIXEL_LARGE_LUM  = 0x2   # transforming into luminosities before the comparison
+SIXEL_LARGE_PCA  = 0x3   # cut along the first principal component
 
 # method for choosing a color from the box
 SIXEL_REP_AUTO           = 0x0  # choose automatically the method for selecting representative color from each box
@@ -354,6 +355,9 @@ SIXEL_OPTFLAG_FIND_LARGEST     = 'f'  # -f FINDTYPE, --find-largest=FINDTYPE:
                                       #           lum  -> transforming into
                                       #                   luminosities before the
                                       #                   comparison
+                                      #           pca  -> split along the first
+                                      #                   principal component and
+                                      #                   cut at weighted median
 
 SIXEL_OPTFLAG_SELECT_COLOR     = 's'  # -s SELECTTYPE, --select-color=SELECTTYPE
                                       #        choose the method for selecting
