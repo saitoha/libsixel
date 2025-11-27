@@ -180,7 +180,8 @@ _img2sixel()
     -f|--find-largest)
         COMPREPLY=( $( compgen -W 'auto \
                                    norm \
-                                   lum' -- "$cur" ) )
+                                   lum \
+                                   pca' -- "$cur" ) )
         return 0
         ;;
     -s|--select-color)
