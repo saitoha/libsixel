@@ -697,6 +697,7 @@ steps.
                              linear -> linear RGB color space
                              oklab  -> OKLab color space
                              cielab -> CIELAB color space
+                             din99d -> DIN99d color space
 -U OUTPUT_COLORSPACE, --output-colorspace=OUTPUT_COLORSPACE
                            choose output color space
                              gamma   -> sRGB gamma(default)

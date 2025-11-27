@@ -263,7 +263,8 @@ _img2sixel()
         COMPREPLY=( $( compgen -W 'gamma \
                                    linear \
                                    oklab \
-                                   cielab' -- "$cur" ) )
+                                   cielab \
+                                   din99d' -- "$cur" ) )
         return 0
         ;;
     -U|--output-colorspace)
