@@ -52,7 +52,8 @@ _findtype() {
     'FINDTYPE' \
     'auto[choose finding method automatically (default)]' \
     'norm[simply comparing the range in RGB space]' \
-    'lum[transforming into luminosities before the comparison]'
+    'lum[transforming into luminosities before the comparison]' \
+    'pca[split along the first principal component and cut at weighted median]'
 }
 
 _selecttype() {

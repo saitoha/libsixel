@@ -86,6 +86,7 @@ typedef int SIXELSTATUS;
                                     dimension */
 #define SIXEL_LARGE_NORM   0x1   /* simply comparing the range in RGB space */
 #define SIXEL_LARGE_LUM    0x2   /* transforming into luminosities before the comparison */
+#define SIXEL_LARGE_PCA    0x3   /* cut along the first principal component */
 
 /* method for choosing a color from the box */
 #define SIXEL_REP_AUTO            0x0  /* choose automatically the method for selecting
@@ -344,6 +345,9 @@ typedef int SIXELSTATUS;
                                                     lum  -> transforming into
                                                             luminosities before the
                                                             comparison
+                                                    pca  -> split along the first
+                                                            principal component and
+                                                            cut at weighted median
                                                 */
 #define SIXEL_OPTFLAG_SELECT_COLOR      ('s')  /* -s SELECTTYPE, --select-color=SELECTTYPE
                                                   choose the method for selecting
@@ -555,7 +559,8 @@ enum methodForLargest {
     LARGE_AUTO = 0,  /* choose automatically the method for finding the largest
                         dimension */
     LARGE_NORM = 1,  /* simply comparing the range in RGB space */
-    LARGE_LUM  = 2   /* transforming into luminosities before the comparison */
+    LARGE_LUM  = 2,  /* transforming into luminosities before the comparison */
+    LARGE_PCA  = 3   /* cut along the first principal component */
 };
 
 /* method for choosing a color from the box */

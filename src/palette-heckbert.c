@@ -625,6 +625,8 @@ struct box {
 
 static unsigned int compareplanePlane;
 static tupletable2 const *force_palette_source;
+static double compareplanePcaAxis[3];
+static unsigned int compareplanePcaDimensions;
 
 /*
  * qsort callback used to order tuples by the component selected for the
@@ -644,6 +646,40 @@ compareplane(const void *arg1, const void *arg2)
     rhs = (int)(*comparatorPP)->tuple[compareplanePlane];
 
     return lhs - rhs;
+}
+
+/*
+ * qsort callback used when the split axis is determined by PCA.  The projection
+ * is evaluated on demand to avoid storing an additional array alongside the
+ * histogram entries.
+ */
+static int
+compareplanePca(const void *arg1, const void *arg2)
+{
+    double lhs;
+    double rhs;
+    unsigned int plane;
+    typedef const struct tupleint *const *const sortarg;
+    sortarg comparandPP = (sortarg)arg1;
+    sortarg comparatorPP = (sortarg)arg2;
+
+    lhs = 0.0;
+    rhs = 0.0;
+    for (plane = 0U; plane < compareplanePcaDimensions; ++plane) {
+        lhs += (double)(*comparandPP)->tuple[plane]
+               * compareplanePcaAxis[plane];
+        rhs += (double)(*comparatorPP)->tuple[plane]
+               * compareplanePcaAxis[plane];
+    }
+
+    if (lhs < rhs) {
+        return -1;
+    }
+    if (lhs > rhs) {
+        return 1;
+    }
+
+    return 0;
 }
 
 static int
@@ -784,6 +820,136 @@ largestByLuminosity(sample minval[], sample maxval[], unsigned int depth)
     }
 
     return largestDimension;
+}
+
+/*
+ * Estimate the first principal component of the colors inside the target box
+ * using a lightweight power iteration over the weighted covariance matrix.
+ * The routine uses up to three channels and skips PCA entirely if the variance
+ * collapses to zero so the caller can fall back to legacy strategies.
+ */
+static int
+computePcaAxis(tupletable2 const colorfreqtable,
+               unsigned int depth,
+               unsigned int boxStart,
+               unsigned int boxSize,
+               double axis[3],
+               double *explained)
+{
+    unsigned int dims;
+    unsigned int i;
+    unsigned int plane;
+    unsigned int other;
+    unsigned int iter;
+    double weight_sum;
+    double mean[3];
+    double cov[3][3];
+    double vec[3];
+    double next[3];
+    double norm;
+    double variance_total;
+    double lambda;
+    struct tupleint *entry;
+    double weight;
+    double diff;
+
+    dims = depth < 3U ? depth : 3U;
+    weight_sum = 0.0;
+    variance_total = 0.0;
+    lambda = 0.0;
+    for (plane = 0U; plane < 3U; ++plane) {
+        mean[plane] = 0.0;
+        vec[plane] = 1.0;
+        axis[plane] = 0.0;
+        for (other = 0U; other < 3U; ++other) {
+            cov[plane][other] = 0.0;
+        }
+    }
+    if (dims == 0U || boxSize < 2U) {
+        return 0;
+    }
+
+    for (i = 0U; i < boxSize; ++i) {
+        entry = colorfreqtable.table[boxStart + i];
+        weight = (double)entry->value;
+        if (weight == 0.0) {
+            weight = 1.0;
+        }
+        weight_sum += weight;
+        for (plane = 0U; plane < dims; ++plane) {
+            mean[plane] += weight * (double)entry->tuple[plane];
+        }
+    }
+    if (weight_sum <= 0.0) {
+        return 0;
+    }
+    for (plane = 0U; plane < dims; ++plane) {
+        mean[plane] /= weight_sum;
+    }
+
+    for (i = 0U; i < boxSize; ++i) {
+        entry = colorfreqtable.table[boxStart + i];
+        weight = (double)entry->value;
+        if (weight == 0.0) {
+            weight = 1.0;
+        }
+        for (plane = 0U; plane < dims; ++plane) {
+            diff = (double)entry->tuple[plane] - mean[plane];
+            cov[plane][plane] += weight * diff * diff;
+            for (other = plane + 1U; other < dims; ++other) {
+                cov[plane][other]
+                    += weight * diff
+                       * ((double)entry->tuple[other] - mean[other]);
+            }
+        }
+    }
+    for (plane = 0U; plane < dims; ++plane) {
+        for (other = plane; other < dims; ++other) {
+            cov[plane][other] /= weight_sum;
+            cov[other][plane] = cov[plane][other];
+        }
+        variance_total += cov[plane][plane];
+    }
+    if (variance_total <= 0.0) {
+        return 0;
+    }
+
+    for (iter = 0U; iter < 12U; ++iter) {
+        for (plane = 0U; plane < dims; ++plane) {
+            next[plane] = cov[plane][0] * vec[0]
+                          + cov[plane][1] * vec[1]
+                          + cov[plane][2] * vec[2];
+        }
+        norm = sqrt(next[0] * next[0] + next[1] * next[1]
+                    + next[2] * next[2]);
+        if (norm <= 0.0) {
+            return 0;
+        }
+        for (plane = 0U; plane < 3U; ++plane) {
+            vec[plane] = (plane < dims) ? next[plane] / norm : 0.0;
+        }
+    }
+    lambda = (vec[0] * (cov[0][0] * vec[0] + cov[0][1] * vec[1]
+                        + cov[0][2] * vec[2]))
+             + (vec[1] * (cov[1][0] * vec[0] + cov[1][1] * vec[1]
+                          + cov[1][2] * vec[2]))
+             + (vec[2] * (cov[2][0] * vec[0] + cov[2][1] * vec[1]
+                          + cov[2][2] * vec[2]));
+    if (!(lambda > 0.0)) {
+        return 0;
+    }
+    norm = sqrt(vec[0] * vec[0] + vec[1] * vec[1] + vec[2] * vec[2]);
+    if (norm <= 0.0) {
+        return 0;
+    }
+    for (plane = 0U; plane < 3U; ++plane) {
+        axis[plane] = vec[plane] / norm;
+    }
+    if (explained != NULL && variance_total > 0.0) {
+        *explained = lambda / variance_total;
+    }
+
+    return 1;
 }
 
 static void
@@ -1291,42 +1457,119 @@ splitBox(boxVector bv,
     unsigned int medianIndex;
     unsigned int lowersum;
     unsigned int i;
+    unsigned int dimensions;
+    unsigned long total_weight;
+    unsigned long weight_value;
+    unsigned int weight_clamped;
+    double pca_axis[3];
+    double pca_ratio;
+    int use_pca;
+    int effective_method;
 
     status = SIXEL_FALSE;
     boxStart = bv[bi].ind;
     boxSize = bv[bi].colors;
     sm = bv[bi].sum;
+    dimensions = (depth < 3U) ? depth : 3U;
+    total_weight = 0UL;
+    pca_ratio = 0.0;
+    use_pca = (methodForLargest == SIXEL_LARGE_PCA);
+    effective_method = methodForLargest;
     findBoxBoundaries(colorfreqtable,
                       depth,
                       boxStart,
                       boxSize,
                       minval,
                       maxval);
-    switch (methodForLargest) {
-    case SIXEL_LARGE_NORM:
-        largestDimension = largestByNorm(minval, maxval, depth);
-        break;
-    case SIXEL_LARGE_LUM:
-        largestDimension = largestByLuminosity(minval, maxval, depth);
-        break;
-    default:
+    if (use_pca != 0) {
+        if (!computePcaAxis(colorfreqtable,
+                            dimensions,
+                            boxStart,
+                            boxSize,
+                            pca_axis,
+                            &pca_ratio)) {
+            sixel_debugf("PCA fallback to range axis on box %u", bi);
+            use_pca = 0;
+            effective_method = SIXEL_LARGE_NORM;
+        } else {
+            sixel_debugf("box %u: PCA split (PC1 ratio %.3f)",
+                         bi,
+                         pca_ratio);
+        }
+    }
+    if (use_pca == 0) {
+        switch (effective_method) {
+        case SIXEL_LARGE_NORM:
+            largestDimension = largestByNorm(minval, maxval, depth);
+            break;
+        case SIXEL_LARGE_LUM:
+            largestDimension = largestByLuminosity(minval, maxval, depth);
+            break;
+        default:
+            sixel_helper_set_additional_message(
+                "Internal error: invalid value of methodForLargest.");
+            status = SIXEL_LOGIC_ERROR;
+            goto end;
+        }
+
+        compareplanePlane = largestDimension;
+        qsort((char *)&colorfreqtable.table[boxStart],
+              boxSize,
+              sizeof(colorfreqtable.table[boxStart]),
+              compareplane);
+    } else {
+        compareplanePcaDimensions = dimensions;
+        for (i = 0U; i < 3U; ++i) {
+            compareplanePcaAxis[i] = pca_axis[i];
+        }
+        qsort((char *)&colorfreqtable.table[boxStart],
+              boxSize,
+              sizeof(colorfreqtable.table[boxStart]),
+              compareplanePca);
+    }
+
+    for (i = 0U; i < boxSize; ++i) {
+        weight_value = colorfreqtable.table[boxStart + i]->value;
+        if (weight_value == 0UL) {
+            weight_value = 1UL;
+        }
+        total_weight += weight_value;
+    }
+    if (total_weight == 0UL) {
         sixel_helper_set_additional_message(
-            "Internal error: invalid value of methodForLargest.");
-        status = SIXEL_LOGIC_ERROR;
+            "Internal error: empty histogram in splitBox.");
+        status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
+    sm = (total_weight > (unsigned long)UINT_MAX)
+             ? UINT_MAX
+             : (unsigned int)total_weight;
 
-    compareplanePlane = largestDimension;
-    qsort((char *)&colorfreqtable.table[boxStart],
-          boxSize,
-          sizeof(colorfreqtable.table[boxStart]),
-          compareplane);
-
-    lowersum = colorfreqtable.table[boxStart]->value;
+    weight_value = colorfreqtable.table[boxStart]->value;
+    if (weight_value == 0UL) {
+        weight_value = 1UL;
+    }
+    weight_clamped = (weight_value > (unsigned long)UINT_MAX)
+                         ? UINT_MAX
+                         : (unsigned int)weight_value;
+    lowersum = weight_clamped;
     for (i = 1U; i < boxSize - 1U && lowersum < sm / 2U; ++i) {
-        lowersum += colorfreqtable.table[boxStart + i]->value;
+        weight_value = colorfreqtable.table[boxStart + i]->value;
+        if (weight_value == 0UL) {
+            weight_value = 1UL;
+        }
+        weight_clamped = (weight_value > (unsigned long)UINT_MAX)
+                             ? UINT_MAX
+                             : (unsigned int)weight_value;
+        lowersum += weight_clamped;
     }
     medianIndex = i;
+    if (medianIndex == 0U) {
+        medianIndex = 1U;
+    }
+    if (medianIndex >= boxSize) {
+        medianIndex = boxSize - 1U;
+    }
 
     bv[bi].colors = medianIndex;
     bv[bi].sum = lowersum;

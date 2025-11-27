@@ -274,7 +274,8 @@ static sixel_option_choice_t const g_option_choices_diffusion_carry[] = {
 static sixel_option_choice_t const g_option_choices_find_largest[] = {
     { "auto", SIXEL_LARGE_AUTO },
     { "norm", SIXEL_LARGE_NORM },
-    { "lum", SIXEL_LARGE_LUM }
+    { "lum", SIXEL_LARGE_LUM },
+    { "pca", SIXEL_LARGE_PCA }
 };
 
 static sixel_option_choice_t const g_option_choices_select_color[] = {

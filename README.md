@@ -532,6 +532,9 @@ Options:
                              lum  -> transforming into
                                      luminosities before the
                                      comparison
+                             pca  -> split along the first
+                                     principal component and
+                                     cut at weighted median
 -s SELECTTYPE, --select-color=SELECTTYPE
                            choose the method for selecting
                            representative color from each
