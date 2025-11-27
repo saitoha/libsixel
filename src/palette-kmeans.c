@@ -1822,7 +1822,7 @@ sixel_palette_build_kmeans(sixel_palette_t *palette,
                            sixel_allocator_t *allocator)
 {
     return sixel_palette_build_kmeans_internal(palette,
-                                               data,
+                                               (unsigned char const *)data,
                                                length,
                                                pixelformat,
                                                allocator,
@@ -1831,13 +1831,13 @@ sixel_palette_build_kmeans(sixel_palette_t *palette,
 
 SIXELSTATUS
 sixel_palette_build_kmeans_float32(sixel_palette_t *palette,
-                                   unsigned char const *data,
+                                   float const *data,
                                    unsigned int length,
                                    int pixelformat,
                                    sixel_allocator_t *allocator)
 {
     return sixel_palette_build_kmeans_internal(palette,
-                                               data,
+                                               (unsigned char const *)data,
                                                length,
                                                pixelformat,
                                                allocator,

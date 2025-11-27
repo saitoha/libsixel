@@ -103,7 +103,7 @@ static int palette_method_for_largest = SIXEL_LARGE_NORM;
  */
 typedef SIXELSTATUS (*sixel_palette_quant_dispatch_fn)(
     sixel_palette_t *palette,
-    unsigned char const *data,
+    void const *data,
     unsigned int length,
     int pixelformat,
     sixel_allocator_t *allocator);
@@ -120,25 +120,27 @@ static sixel_palette_quant_engine_t const sixel_palette_quant_engines[] = {
         "kmeans-float32",
         SIXEL_QUANTIZE_MODEL_KMEANS,
         1,
-        sixel_palette_build_kmeans_float32,
+        (sixel_palette_quant_dispatch_fn)
+            sixel_palette_build_kmeans_float32,
     },
     {
         "kmeans-legacy",
         SIXEL_QUANTIZE_MODEL_KMEANS,
         0,
-        sixel_palette_build_kmeans,
+        (sixel_palette_quant_dispatch_fn)sixel_palette_build_kmeans,
     },
     {
         "heckbert-float32",
         SIXEL_QUANTIZE_MODEL_MEDIANCUT,
         1,
-        sixel_palette_build_heckbert_float32,
+        (sixel_palette_quant_dispatch_fn)
+            sixel_palette_build_heckbert_float32,
     },
     {
         "heckbert-legacy",
         SIXEL_QUANTIZE_MODEL_MEDIANCUT,
         0,
-        sixel_palette_build_heckbert,
+        (sixel_palette_quant_dispatch_fn)sixel_palette_build_heckbert,
     },
 };
 
@@ -183,7 +185,7 @@ sixel_palette_quant_engine_lookup(int quantize_model,
 static SIXELSTATUS
 sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
                                sixel_palette_t *palette,
-                               unsigned char const *data,
+                               void const *data,
                                unsigned int length,
                                int pixelformat,
                                sixel_allocator_t *allocator)
@@ -241,7 +243,7 @@ sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
 /* Try the preferred float32 K-means engine before falling back to legacy. */
 static SIXELSTATUS
 sixel_palette_apply_kmeans_engines(sixel_palette_t *palette,
-                                   unsigned char const *data,
+                                   void const *data,
                                    unsigned int length,
                                    int pixelformat,
                                    sixel_allocator_t *allocator,
@@ -292,7 +294,7 @@ sixel_palette_apply_kmeans_engines(sixel_palette_t *palette,
 /* Thin wrapper that executes the median-cut/Heckbert engine. */
 static SIXELSTATUS
 sixel_palette_apply_mediancut_engine(sixel_palette_t *palette,
-                                     unsigned char const *data,
+                                     void const *data,
                                      unsigned int length,
                                      int pixelformat,
                                      sixel_allocator_t *allocator,
@@ -892,7 +894,7 @@ sixel_palette_copy_entries_float32(sixel_palette_t *palette,
  */
 SIXELSTATUS
 sixel_palette_generate(sixel_palette_t *palette,
-                       unsigned char const *data,
+                       void const *data,
                        unsigned int length,
                        int pixelformat,
                        int prefer_float32,
@@ -984,7 +986,7 @@ end:
 
 SIXELSTATUS
 sixel_palette_make_palette(unsigned char **result,
-                           unsigned char const *data,
+                           void const *data,
                            unsigned int length,
                            int pixelformat,
                            unsigned int reqcolors,

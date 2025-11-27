@@ -30,7 +30,10 @@
 /* frame object */
 struct sixel_frame {
     unsigned int ref;               /* reference counter */
-    unsigned char *pixels;          /* loaded pixel data */
+    union {
+        unsigned char *u8ptr;       /* loaded pixel data (byte) */
+        float *f32ptr;              /* loaded pixel data (float32) */
+    } pixels;
     unsigned char *palette;         /* loaded palette data */
     int width;                      /* frame width */
     int height;                     /* frame height */

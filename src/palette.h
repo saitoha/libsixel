@@ -96,7 +96,7 @@ sixel_palette_set_method_for_largest(int method);
 
 SIXELSTATUS
 sixel_palette_make_palette(unsigned char **result,
-                           unsigned char const *data,
+                           void const *data,
                            unsigned int length,
                            int pixelformat,
                            unsigned int reqcolors,
