@@ -66,13 +66,19 @@
 
 #include "compat_stub.h"
 
-#if HAVE__DUPENV_S || defined(_MSC_VER)
+#if defined(_WIN32) && (HAVE__DUPENV_S || defined(_MSC_VER))
 /*
  * Some Windows SDKs require feature macros to expose `_dupenv_s()`.  The
  * declaration below acts as a safety net when headers remain silent even
- * after we request the secure CRT extensions.
+ * after we request the secure CRT extensions.  Match the platform
+ * attributes so that MinGW's dllimport decoration stays consistent.
  */
-errno_t _dupenv_s(char **buffer, size_t *length, const char *name);
+# if !defined(_CRTIMP)
+#  define _CRTIMP
+# endif
+_CRTIMP errno_t __cdecl _dupenv_s(char **buffer,
+                                  size_t *length,
+                                  const char *name);
 #endif
 
 #if defined(__APPLE__) && defined(__clang__)
