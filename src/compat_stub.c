@@ -26,6 +26,14 @@
 # define _POSIX_C_SOURCE 200809L
 #endif
 
+#if defined(_WIN32) && !defined(__STDC_WANT_SECURE_LIB__)
+# define __STDC_WANT_SECURE_LIB__ 1
+#endif
+
+#if defined(_WIN32) && !defined(_CRT_DECLARE_NONSTDC_NAMES)
+# define _CRT_DECLARE_NONSTDC_NAMES 1
+#endif
+
 #include "config.h"
 
 /* STDC_HEADERS */
@@ -57,6 +65,15 @@
 #endif
 
 #include "compat_stub.h"
+
+#if HAVE__DUPENV_S || defined(_MSC_VER)
+/*
+ * Some Windows SDKs require feature macros to expose `_dupenv_s()`.  The
+ * declaration below acts as a safety net when headers remain silent even
+ * after we request the secure CRT extensions.
+ */
+errno_t _dupenv_s(char **buffer, size_t *length, const char *name);
+#endif
 
 #if defined(__APPLE__) && defined(__clang__)
 /*
@@ -350,14 +367,27 @@ sixel_compat_fopen(const char *filename, const char *mode)
 SIXEL_COMPAT_API const char *
 sixel_compat_getenv(const char *name)
 {
-#if defined(_MSC_VER)
+#if HAVE__DUPENV_S || defined(_MSC_VER)
     static char buffer[32768];
     char *value;
     size_t length;
+    errno_t status;
 
     value = NULL;
-    length = 0;
-    if (_dupenv_s(&value, &length, name) != 0) {
+    length = 0u;
+    status = 0;
+
+    if (name == NULL) {
+        return NULL;
+    }
+
+    /*
+     * `_dupenv_s()` allocates the buffer for us and reports the byte count
+     * in `length`.  Guard against values longer than our static buffer to
+     * avoid truncation.
+     */
+    status = _dupenv_s(&value, &length, name);
+    if (status != 0) {
         if (value != NULL) {
             free(value);
         }
@@ -367,11 +397,14 @@ sixel_compat_getenv(const char *name)
         return NULL;
     }
     if (length >= sizeof(buffer)) {
-        length = sizeof(buffer) - 1;
+        free(value);
+        return NULL;
     }
+
     memcpy(buffer, value, length);
     buffer[length] = '\0';
     free(value);
+
     return buffer;
 #else
     return getenv(name);

@@ -91,6 +91,7 @@ struct sixel_encoder {
     int encode_policy;
     int working_colorspace;
     int output_colorspace;
+    int prefer_float32;
     int ormode;
     int pipe_mode;
     int verbose;

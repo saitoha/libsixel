@@ -355,7 +355,8 @@ static sixel_option_choice_t const g_option_choices_output_colorspace[] = {
 };
 
 static int
-sixel_encoder_pixelformat_for_colorspace(int colorspace)
+sixel_encoder_pixelformat_for_colorspace(int colorspace,
+                                         int prefer_float32)
 {
     switch (colorspace) {
     case SIXEL_COLORSPACE_LINEAR:
@@ -363,6 +364,9 @@ sixel_encoder_pixelformat_for_colorspace(int colorspace)
     case SIXEL_COLORSPACE_OKLAB:
         return SIXEL_PIXELFORMAT_OKLABFLOAT32;
     default:
+        if (prefer_float32) {
+            return SIXEL_PIXELFORMAT_RGBFLOAT32;
+        }
         return SIXEL_PIXELFORMAT_RGB888;
     }
 }
@@ -392,33 +396,55 @@ arg_strdup(
     return p;
 }
 
+static int
+sixel_encoder_env_prefers_float32(char const *text)
+{
+    char lowered[8];
+    size_t i;
+
+    if (text == NULL || *text == '\0') {
+        return 0;
+    }
+
+    for (i = 0; i < sizeof(lowered) - 1 && text[i] != '\0'; ++i) {
+        lowered[i] = (char)tolower((unsigned char)text[i]);
+    }
+    lowered[i] = '\0';
+
+    if (strcmp(lowered, "0") == 0
+        || strcmp(lowered, "off") == 0
+        || strcmp(lowered, "false") == 0
+        || strcmp(lowered, "no") == 0) {
+        return 0;
+    }
+
+    return 1;
+}
+
 static SIXELSTATUS
 sixel_encoder_apply_precision_override(
+    sixel_encoder_t *encoder,
     sixel_encoder_precision_mode_t mode)
 {
-    char const *value;
+    int prefer_float32;
 
-    value = NULL;
+    prefer_float32 = encoder->prefer_float32;
 
     if (mode == SIXEL_ENCODER_PRECISION_MODE_AUTO) {
         return SIXEL_OK;
     }
 
     if (mode == SIXEL_ENCODER_PRECISION_MODE_FLOAT32) {
-        value = "1";
+        prefer_float32 = 1;
     } else if (mode == SIXEL_ENCODER_PRECISION_MODE_8BIT) {
-        value = "0";
+        prefer_float32 = 0;
     } else {
         sixel_helper_set_additional_message(
             "sixel_encoder_setopt: invalid precision override.");
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (sixel_compat_setenv(SIXEL_ENCODER_PRECISION_ENVVAR, value) != 0) {
-        sixel_helper_set_additional_message(
-            "sixel_encoder_setopt: failed to set SIXEL_FLOAT32_DITHER.");
-        return SIXEL_LIBC_ERROR;
-    }
+    encoder->prefer_float32 = prefer_float32;
 
     return SIXEL_OK;
 }
@@ -1119,6 +1145,7 @@ typedef struct sixel_callback_context_for_mapfile {
     sixel_allocator_t *allocator;
     int working_colorspace;
     int lut_policy;
+    int prefer_float32;
 } sixel_callback_context_for_mapfile_t;
 
 
@@ -1137,7 +1164,8 @@ load_image_callback_for_palette(
     status = sixel_frame_set_pixelformat(
         frame,
         sixel_encoder_pixelformat_for_colorspace(
-            callback_context->working_colorspace));
+            callback_context->working_colorspace,
+            callback_context->prefer_float32));
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -2738,6 +2766,7 @@ palette_cleanup:
     callback_context.allocator = encoder->allocator;
     callback_context.working_colorspace = encoder->working_colorspace;
     callback_context.lut_policy = encoder->lut_policy;
+    callback_context.prefer_float32 = encoder->prefer_float32;
 
     sixel_helper_set_loader_trace(encoder->verbose);
     sixel_helper_set_thumbnail_size_hint(
@@ -3918,6 +3947,8 @@ sixel_encoder_encode_frame(
     int height_before;
     int width_after;
     int height_after;
+    int target_pixelformat;
+    int frame_colorspace;
 
     fn_write = sixel_write_callback;
     write_callback = sixel_write_callback;
@@ -4072,21 +4103,31 @@ sixel_encoder_encode_frame(
             assessment,
             SIXEL_ASSESSMENT_STAGE_COLORSPACE);
     }
- 
+
+    frame_colorspace = sixel_frame_get_colorspace(frame);
+    target_pixelformat = sixel_encoder_pixelformat_for_colorspace(
+        encoder->working_colorspace,
+        encoder->prefer_float32);
+
+    /*
+     * Promote to float formats when the user opts in via the environment or
+     * the precision CLI flag. The selection mirrors the requested working
+     * colorspace to avoid losing detail before palette generation.
+     */
     sixel_encoder_log_stage(encoder,
                             frame,
                             "colorspace",
                             "worker",
                             "start",
                             "current=%d target=%d",
-                            sixel_frame_get_colorspace(frame),
+                            frame_colorspace,
                             encoder->working_colorspace);
 
-    if (encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA) {
+    if (encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA
+        || encoder->prefer_float32 != 0) {
         status = sixel_frame_set_pixelformat(
             frame,
-            sixel_encoder_pixelformat_for_colorspace(
-                encoder->working_colorspace));
+            target_pixelformat);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -4344,11 +4385,9 @@ sixel_encoder_new(
     SIXELSTATUS status = SIXEL_FALSE;
     char const *env_default_bgcolor = NULL;
     char const *env_default_ncolors = NULL;
+    char const *env_prefer_float32 = NULL;
     int ncolors;
-#if HAVE__DUPENV_S
-    errno_t e;
-    size_t len;
-#endif  /* HAVE__DUPENV_S */
+    int prefer_float32;
 
     if (allocator == NULL) {
         status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
@@ -4416,6 +4455,7 @@ sixel_encoder_new(
     (*ppencoder)->encode_policy         = SIXEL_ENCODEPOLICY_AUTO;
     (*ppencoder)->working_colorspace    = SIXEL_COLORSPACE_GAMMA;
     (*ppencoder)->output_colorspace     = SIXEL_COLORSPACE_GAMMA;
+    (*ppencoder)->prefer_float32        = 0;
     (*ppencoder)->ormode                = 0;
     (*ppencoder)->pipe_mode             = 0;
     (*ppencoder)->bgcolor               = NULL;
@@ -4457,17 +4497,18 @@ sixel_encoder_new(
     (*ppencoder)->parallel_job_id       = -1;
     (*ppencoder)->allocator             = allocator;
 
+    prefer_float32 = 0;
+    env_prefer_float32 = sixel_compat_getenv(
+        SIXEL_ENCODER_PRECISION_ENVVAR);
+    /*
+     * $SIXEL_FLOAT32_DITHER seeds the precision preference and is later
+     * overridden by the precision CLI flag when provided.
+     */
+    prefer_float32 = sixel_encoder_env_prefers_float32(env_prefer_float32);
+    (*ppencoder)->prefer_float32 = prefer_float32;
+
     /* evaluate environment variable ${SIXEL_BGCOLOR} */
-#if HAVE__DUPENV_S
-    e = _dupenv_s(&env_default_bgcolor, &len, "SIXEL_BGCOLOR");
-    if (e != (0)) {
-        sixel_helper_set_additional_message(
-            "failed to get environment variable $SIXEL_BGCOLOR.");
-        return (SIXEL_LIBC_ERROR | (e & 0xff));
-    }
-#else
     env_default_bgcolor = sixel_compat_getenv("SIXEL_BGCOLOR");
-#endif  /* HAVE__DUPENV_S */
     if (env_default_bgcolor != NULL) {
         status = sixel_parse_x_colorspec(&(*ppencoder)->bgcolor,
                                          env_default_bgcolor,
@@ -4478,16 +4519,7 @@ sixel_encoder_new(
     }
 
     /* evaluate environment variable ${SIXEL_COLORS} */
-#if HAVE__DUPENV_S
-    e = _dupenv_s(&env_default_bgcolor, &len, "SIXEL_COLORS");
-    if (e != (0)) {
-        sixel_helper_set_additional_message(
-            "failed to get environment variable $SIXEL_COLORS.");
-        return (SIXEL_LIBC_ERROR | (e & 0xff));
-    }
-#else
     env_default_ncolors = sixel_compat_getenv("SIXEL_COLORS");
-#endif  /* HAVE__DUPENV_S */
     if (env_default_ncolors) {
         ncolors = atoi(env_default_ncolors); /* may overflow */
         if (ncolors > 1 && ncolors <= SIXEL_PALETTE_MAX) {
@@ -4506,10 +4538,6 @@ error:
     *ppencoder = NULL;
 
 end:
-#if HAVE__DUPENV_S
-    free(env_default_bgcolor);
-    free(env_default_ncolors);
-#endif  /* HAVE__DUPENV_S */
     return status;
 }
 
@@ -5188,6 +5216,7 @@ sixel_encoder_setopt(
             sizeof(match_detail));
         if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
             status = sixel_encoder_apply_precision_override(
+                encoder,
                 (sixel_encoder_precision_mode_t)match_value);
             if (SIXEL_FAILED(status)) {
                 goto end;

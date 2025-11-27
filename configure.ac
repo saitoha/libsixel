@@ -796,6 +796,7 @@ AC_CHECK_FUNCS([assert \
                 select \
                 _fullpath \
                 _realpath \
+                _dupenv_s \
                 realpath \
                 sqrt \
                 strchr \
