@@ -50,6 +50,8 @@ srcs = [
   'colorspace.c',
   'frame.c',
   'pixelformat.c',
+  'cpu.c',
+  'cpu.h',
   'scale.c',
   'scale.h',
   'chunk.c',

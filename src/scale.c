@@ -41,6 +41,12 @@
 
 #include <sixel.h>
 
+#include "cpu.h"
+
+#if defined(HAVE_IMMINTRIN_H)
+# include <immintrin.h>
+#endif
+
 #if defined(HAVE_SSE2)
 # if defined(__SSE2__)
 #  if defined(HAVE_EMMINTRIN_H)
@@ -48,7 +54,44 @@
 #   define SIXEL_USE_SSE2 1
 #  endif
 # endif
-#elif defined(HAVE_NEON)
+#endif
+
+#if defined(HAVE_IMMINTRIN_H)
+# if defined(__GNUC__)
+#  define SIXEL_TARGET_AVX __attribute__((target("avx")))
+#  define SIXEL_TARGET_AVX2 __attribute__((target("avx2")))
+#  define SIXEL_TARGET_AVX512 __attribute__((target("avx512f")))
+#  define SIXEL_USE_AVX 1
+#  define SIXEL_USE_AVX2 1
+#  define SIXEL_USE_AVX512 1
+# else
+#  define SIXEL_TARGET_AVX
+#  define SIXEL_TARGET_AVX2
+#  define SIXEL_TARGET_AVX512
+#  if defined(__AVX__)
+#   define SIXEL_USE_AVX 1
+#  endif
+#  if defined(__AVX2__)
+#   define SIXEL_USE_AVX2 1
+#  endif
+#  if defined(__AVX512F__)
+#   define SIXEL_USE_AVX512 1
+#  endif
+# endif
+#endif
+
+/*
+ * GCC emits -Wpsabi when vector returns use a wider ABI than the
+ * translation unit target.  Suppress it locally around the AVX helpers
+ * so non-AVX callers can still link while runtime dispatch guards
+ * execution.
+ */
+#if defined(__GNUC__) && !defined(__clang__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wpsabi"
+#endif
+
+#if defined(HAVE_NEON)
 # if (defined(__ARM_NEON) || defined(__ARM_NEON__))
 #  if defined(HAVE_ARM_NEON_H)
 #   include <arm_neon.h>
@@ -194,7 +237,6 @@ hamming(const double d)
     return 0.54 + 0.46 * cos(d * M_PI);
 }
 
-
 static unsigned char
 normalize(double x, double total)
 {
@@ -210,11 +252,342 @@ normalize(double x, double total)
     return (unsigned char)result;
 }
 
+static int
+sixel_scale_simd_level(void)
+{
+    static int simd_level = -2;
+
+    if (simd_level == -2) {
+        simd_level = sixel_cpu_simd_level();
+    }
+
+    return simd_level;
+}
+
+static float
+sixel_clamp_unit_f32(float value)
+{
+    /*
+     * Resampling kernels with negative lobes can push linear RGB values
+     * below zero or slightly above one.  Clamp to the unit interval so
+     * downstream colorspace conversions do not collapse to black.
+     */
+    if (value < 0.0f) {
+        return 0.0f;
+    }
+    if (value > 1.0f) {
+        return 1.0f;
+    }
+
+    return value;
+}
+
+#if defined(HAVE_IMMINTRIN_H)
+
+/*
+ * Helper routines for AVX-family code paths. They expand RGB triplets into
+ * vector registers and clamp/pack results back into byte or float outputs.
+ * Each function is compiled with a specific target attribute so that the
+ * translation unit can stay on a conservative baseline ISA.
+ */
+
+static SIXEL_TARGET_AVX __m256
+sixel_avx_load_rgb_ps(unsigned char const *psrc)
+{
+    __m128i pixi128;
+    __m128 pixf128;
+    __m256 pixf256;
+
+    /*
+     * _mm_cvtsi32_si128() leaves the upper 96 bits undefined.  Build the
+     * byte vector explicitly so the AVX path never accumulates garbage data
+     * when widening to 32-bit lanes.
+     */
+    pixi128 = _mm_setr_epi8((char)psrc[0],
+                            (char)psrc[1],
+                            (char)psrc[2],
+                            0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0);
+    pixf128 = _mm_cvtepi32_ps(pixi128);
+    pixf256 = _mm256_castps128_ps256(pixf128);
+    pixf256 = _mm256_insertf128_ps(pixf256, _mm_setzero_ps(), 1);
+    return pixf256;
+}
+
+static SIXEL_TARGET_AVX void
+sixel_avx_store_rgb_u8(__m256 acc, double total, unsigned char *dst)
+{
+    __m256 scalev;
+    __m256 minv;
+    __m256 maxv;
+    __m256i acci;
+    int out[8];
+
+    scalev = _mm256_set1_ps((float)(1.0 / total));
+    acc = _mm256_mul_ps(acc, scalev);
+    minv = _mm256_set1_ps(0.0f);
+    maxv = _mm256_set1_ps(255.0f);
+    acc = _mm256_max_ps(minv, _mm256_min_ps(acc, maxv));
+    acci = _mm256_cvtps_epi32(acc);
+    _mm256_storeu_si256((__m256i *)out, acci);
+    dst[0] = (unsigned char)out[0];
+    dst[1] = (unsigned char)out[1];
+    dst[2] = (unsigned char)out[2];
+}
+
+static SIXEL_TARGET_AVX __m256
+sixel_avx_zero_ps(void)
+{
+    return _mm256_setzero_ps();
+}
+
+static SIXEL_TARGET_AVX __m256
+sixel_avx_muladd_ps(__m256 acc, __m256 pix, float weight)
+{
+    __m256 wv;
+
+    wv = _mm256_set1_ps(weight);
+    return _mm256_add_ps(acc, _mm256_mul_ps(pix, wv));
+}
+
+static SIXEL_TARGET_AVX __m256
+sixel_avx_load_rgb_f32(float const *psrc)
+{
+    __m256 pixf;
+
+    pixf = _mm256_set_ps(0.0f, 0.0f, 0.0f, 0.0f,
+                         psrc[2], psrc[1], psrc[0], 0.0f);
+    return pixf;
+}
+
+static SIXEL_TARGET_AVX void
+sixel_avx_store_rgb_f32(__m256 acc, double total, float *dst)
+{
+    __m256 scalev;
+    __m256 minv;
+    __m256 maxv;
+    float out[8];
+
+    scalev = _mm256_set1_ps((float)(1.0 / total));
+    acc = _mm256_mul_ps(acc, scalev);
+    minv = _mm256_set1_ps(0.0f);
+    maxv = _mm256_set1_ps(1.0f);
+    acc = _mm256_max_ps(minv, _mm256_min_ps(acc, maxv));
+    _mm256_storeu_ps(out, acc);
+    dst[0] = out[0];
+    dst[1] = out[1];
+    dst[2] = out[2];
+}
+
+static SIXEL_TARGET_AVX2 __m256
+sixel_avx2_load_rgb_ps(unsigned char const *psrc)
+{
+    __m128i pixi128;
+    __m256i pixi256;
+
+    /*
+     * Keep the unused bytes zeroed so widening to epi32 does not pull in
+     * stack junk and bias every output channel toward white.
+     */
+    pixi128 = _mm_setr_epi8((char)psrc[0],
+                            (char)psrc[1],
+                            (char)psrc[2],
+                            0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0);
+    pixi256 = _mm256_cvtepu8_epi32(pixi128);
+    return _mm256_cvtepi32_ps(pixi256);
+}
+
+static SIXEL_TARGET_AVX2 void
+sixel_avx2_store_rgb_u8(__m256 acc, double total, unsigned char *dst)
+{
+    __m256 scalev;
+    __m256 minv;
+    __m256 maxv;
+    __m256i acci;
+    int out[8];
+
+    scalev = _mm256_set1_ps((float)(1.0 / total));
+    acc = _mm256_mul_ps(acc, scalev);
+    minv = _mm256_set1_ps(0.0f);
+    maxv = _mm256_set1_ps(255.0f);
+    acc = _mm256_max_ps(minv, _mm256_min_ps(acc, maxv));
+    acci = _mm256_cvtps_epi32(acc);
+    _mm256_storeu_si256((__m256i *)out, acci);
+    dst[0] = (unsigned char)out[0];
+    dst[1] = (unsigned char)out[1];
+    dst[2] = (unsigned char)out[2];
+}
+
+static SIXEL_TARGET_AVX2 __m256
+sixel_avx2_zero_ps(void)
+{
+    return _mm256_setzero_ps();
+}
+
+static SIXEL_TARGET_AVX2 __m256
+sixel_avx2_muladd_ps(__m256 acc, __m256 pix, float weight)
+{
+    __m256 wv;
+
+    wv = _mm256_set1_ps(weight);
+    return _mm256_add_ps(acc, _mm256_mul_ps(pix, wv));
+}
+
+static SIXEL_TARGET_AVX2 __m256
+sixel_avx2_load_rgb_f32(float const *psrc)
+{
+    __m256 pixf;
+
+    pixf = _mm256_set_ps(0.0f, 0.0f, 0.0f, 0.0f,
+                         psrc[2], psrc[1], psrc[0], 0.0f);
+    return pixf;
+}
+
+static SIXEL_TARGET_AVX2 void
+sixel_avx2_store_rgb_f32(__m256 acc, double total, float *dst)
+{
+    __m256 scalev;
+    __m256 minv;
+    __m256 maxv;
+    float out[8];
+
+    scalev = _mm256_set1_ps((float)(1.0 / total));
+    acc = _mm256_mul_ps(acc, scalev);
+    minv = _mm256_set1_ps(0.0f);
+    maxv = _mm256_set1_ps(1.0f);
+    acc = _mm256_max_ps(minv, _mm256_min_ps(acc, maxv));
+    _mm256_storeu_ps(out, acc);
+    dst[0] = out[0];
+    dst[1] = out[1];
+    dst[2] = out[2];
+}
+
+static SIXEL_TARGET_AVX512 __m512
+sixel_avx512_load_rgb_ps(unsigned char const *psrc)
+{
+    __m128i pixi128;
+    __m512i pixi512;
+
+    pixi128 = _mm_setr_epi8((char)psrc[0],
+                            (char)psrc[1],
+                            (char)psrc[2],
+                            0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0,
+                            0, 0, 0, 0);
+    pixi512 = _mm512_cvtepu8_epi32(pixi128);
+    return _mm512_cvtepi32_ps(pixi512);
+}
+
+static SIXEL_TARGET_AVX512 void
+sixel_avx512_store_rgb_u8(__m512 acc, double total, unsigned char *dst)
+{
+    __m512 scalev;
+    __m512 minv;
+    __m512 maxv;
+    __m512i acci;
+    int out[16];
+
+    scalev = _mm512_set1_ps((float)(1.0 / total));
+    acc = _mm512_mul_ps(acc, scalev);
+    minv = _mm512_set1_ps(0.0f);
+    maxv = _mm512_set1_ps(255.0f);
+    acc = _mm512_max_ps(minv, _mm512_min_ps(acc, maxv));
+    acci = _mm512_cvtps_epi32(acc);
+    _mm512_storeu_si512((void *)out, acci);
+    dst[0] = (unsigned char)out[0];
+    dst[1] = (unsigned char)out[1];
+    dst[2] = (unsigned char)out[2];
+}
+
+static SIXEL_TARGET_AVX512 __m512
+sixel_avx512_zero_ps(void)
+{
+    return _mm512_setzero_ps();
+}
+
+static SIXEL_TARGET_AVX512 __m512
+sixel_avx512_muladd_ps(__m512 acc, __m512 pix, float weight)
+{
+    __m512 wv;
+
+    wv = _mm512_set1_ps(weight);
+    return _mm512_add_ps(acc, _mm512_mul_ps(pix, wv));
+}
+
+static SIXEL_TARGET_AVX512 __m512
+sixel_avx512_load_rgb_f32(float const *psrc)
+{
+    __m512 pixf;
+
+    pixf = _mm512_set_ps(0.0f, 0.0f, 0.0f, 0.0f,
+                         0.0f, 0.0f, 0.0f, 0.0f,
+                         0.0f, 0.0f, 0.0f, 0.0f,
+                         psrc[2], psrc[1], psrc[0], 0.0f);
+    return pixf;
+}
+
+static SIXEL_TARGET_AVX512 void
+sixel_avx512_store_rgb_f32(__m512 acc, double total, float *dst)
+{
+    __m512 scalev;
+    __m512 minv;
+    __m512 maxv;
+    float out[16];
+
+    scalev = _mm512_set1_ps((float)(1.0 / total));
+    acc = _mm512_mul_ps(acc, scalev);
+    minv = _mm512_set1_ps(0.0f);
+    maxv = _mm512_set1_ps(1.0f);
+    acc = _mm512_max_ps(minv, _mm512_min_ps(acc, maxv));
+    _mm512_storeu_ps(out, acc);
+    dst[0] = out[0];
+    dst[1] = out[1];
+    dst[2] = out[2];
+}
+
+#endif /* HAVE_IMMINTRIN_H */
+
 
 static void
 scale_without_resampling(
     unsigned char *dst,
     unsigned char const *src,
+    int const srcw,
+    int const srch,
+    int const dstw,
+    int const dsth,
+    int const depth)
+{
+    int w;
+    int h;
+    int x;
+    int y;
+    int i;
+    int pos;
+
+    for (h = 0; h < dsth; h++) {
+        for (w = 0; w < dstw; w++) {
+            x = (long)w * srcw / dstw;
+            y = (long)h * srch / dsth;
+            for (i = 0; i < depth; i++) {
+                pos = (y * srcw + x) * depth + i;
+                dst[(h * dstw + w) * depth + i] = src[pos];
+            }
+        }
+    }
+}
+
+
+static void
+scale_without_resampling_float32(
+    float *dst,
+    float const *src,
     int const srcw,
     int const srch,
     int const dstw,
@@ -278,6 +651,7 @@ scale_with_resampling(
     double total;
     double offsets[8];
     unsigned char *tmp;
+    int simd_level;
 
     /* allocate intermediate buffer for horizontally filtered rows */
     tmp = (unsigned char *)sixel_allocator_malloc(
@@ -285,6 +659,8 @@ scale_with_resampling(
     if (tmp == NULL) {
         return;                 /* give up if memory allocation fails */
     }
+
+    simd_level = sixel_scale_simd_level();
 
     /*
      * Horizontal pass
@@ -311,8 +687,91 @@ scale_with_resampling(
             }
 
             /* accumulate weighted source samples */
+#if defined(SIXEL_USE_AVX512)
+            if (depth == 3 &&
+                simd_level >= SIXEL_SIMD_LEVEL_AVX512) {
+                __m512 acc;
+
+                acc = sixel_avx512_zero_ps();
+
+                for (x = x_first; x <= x_last; x++) {
+                    diff_x = (dstw >= srcw)
+                                ? (x + 0.5) - center_x
+                                : (x + 0.5) * dstw / srcw - center_x;
+                    weight = f_resample(fabs(diff_x));
+                    pos = (y * srcw + x) * depth;
+                    acc = sixel_avx512_muladd_ps(
+                        acc,
+                        sixel_avx512_load_rgb_ps(src + pos),
+                        (float)weight);
+                    total += weight;
+                }
+                if (total > 0.0) {
+                    pos = (y * dstw + w) * depth;
+                    sixel_avx512_store_rgb_u8(acc, total, tmp + pos);
+                }
+                continue;
+            }
+#endif
+#if defined(SIXEL_USE_AVX2)
+            if (depth == 3 && simd_level >= SIXEL_SIMD_LEVEL_AVX2) {
+                __m256 acc;
+
+                acc = sixel_avx2_zero_ps();
+
+                for (x = x_first; x <= x_last; x++) {
+                    diff_x = (dstw >= srcw)
+                                ? (x + 0.5) - center_x
+                                : (x + 0.5) * dstw / srcw - center_x;
+                    weight = f_resample(fabs(diff_x));
+                    pos = (y * srcw + x) * depth;
+                    acc = sixel_avx2_muladd_ps(
+                        acc,
+                        sixel_avx2_load_rgb_ps(src + pos),
+                        (float)weight);
+                    total += weight;
+                }
+                if (total > 0.0) {
+                    pos = (y * dstw + w) * depth;
+                    sixel_avx2_store_rgb_u8(acc, total, tmp + pos);
+                }
+                continue;
+            }
+#endif
+#if defined(SIXEL_USE_AVX)
+            if (depth == 3 && simd_level >= SIXEL_SIMD_LEVEL_AVX) {
+                __m256 acc;
+
+                acc = sixel_avx_zero_ps();
+
+                for (x = x_first; x <= x_last; x++) {
+                    diff_x = (dstw >= srcw)
+                                ? (x + 0.5) - center_x
+                                : (x + 0.5) * dstw / srcw - center_x;
+                    weight = f_resample(fabs(diff_x));
+                    pos = (y * srcw + x) * depth;
+                    acc = sixel_avx_muladd_ps(
+                        acc,
+                        sixel_avx_load_rgb_ps(src + pos),
+                        (float)weight);
+                    total += weight;
+                }
+                if (total > 0.0) {
+                    pos = (y * dstw + w) * depth;
+                    sixel_avx_store_rgb_u8(acc, total, tmp + pos);
+                }
+                continue;
+            }
+#endif
 #if defined(SIXEL_USE_SSE2) || defined(SIXEL_USE_NEON)
-            if (depth == 3) {
+            /* SIMD fast path for RGB triplets */
+            if (depth == 3
+# if defined(SIXEL_USE_SSE2)
+                && simd_level >= SIXEL_SIMD_LEVEL_SSE2
+# elif defined(SIXEL_USE_NEON)
+                && simd_level >= SIXEL_SIMD_LEVEL_NEON
+# endif
+                ) {
 #if defined(SIXEL_USE_SSE2)
                 __m128 acc = _mm_setzero_ps();
 #elif defined(SIXEL_USE_NEON)
@@ -326,7 +785,9 @@ scale_with_resampling(
                     pos = (y * srcw + x) * depth;
                     const unsigned char *psrc = src + pos;
 #if defined(SIXEL_USE_SSE2)
-                    unsigned int pixel = psrc[0] | (psrc[1] << 8) | (psrc[2] << 16);
+                    unsigned int pixel;
+
+                    pixel = psrc[0] | (psrc[1] << 8) | (psrc[2] << 16);
                     __m128i pixi = _mm_cvtsi32_si128((int)pixel);
                     pixi = _mm_unpacklo_epi8(pixi, _mm_setzero_si128());
                     pixi = _mm_unpacklo_epi16(pixi, _mm_setzero_si128());
@@ -349,10 +810,12 @@ scale_with_resampling(
                     __m128 maxv = _mm_set1_ps(255.0f);
                     acc = _mm_max_ps(minv, _mm_min_ps(acc, maxv));
                     __m128i acci = _mm_cvtps_epi32(acc);
-                    __m128i acc16 = _mm_packs_epi32(acci, _mm_setzero_si128());
+                    __m128i acc16 = _mm_packs_epi32(acci,
+                                                    _mm_setzero_si128());
                     acc16 = _mm_packus_epi16(acc16, _mm_setzero_si128());
                     pos = (y * dstw + w) * depth;
-                    unsigned int out = (unsigned int)_mm_cvtsi128_si32(acc16);
+                    unsigned int out =
+                        (unsigned int)_mm_cvtsi128_si32(acc16);
                     tmp[pos + 0] = (unsigned char)out;
                     tmp[pos + 1] = (unsigned char)(out >> 8);
                     tmp[pos + 2] = (unsigned char)(out >> 16);
@@ -421,7 +884,14 @@ scale_with_resampling(
 
             /* accumulate weighted rows */
 #if defined(SIXEL_USE_SSE2) || defined(SIXEL_USE_NEON)
-            if (depth == 3) {
+            /* SIMD fast path for RGB triplets */
+            if (depth == 3
+# if defined(SIXEL_USE_SSE2)
+                && simd_level >= SIXEL_SIMD_LEVEL_SSE2
+# elif defined(SIXEL_USE_NEON)
+                && simd_level >= SIXEL_SIMD_LEVEL_NEON
+# endif
+                ) {
 #if defined(SIXEL_USE_SSE2)
                 __m128 acc = _mm_setzero_ps();
 #elif defined(SIXEL_USE_NEON)
@@ -435,7 +905,9 @@ scale_with_resampling(
                     pos = (y * dstw + w) * depth;
                     const unsigned char *psrc = tmp + pos;
 #if defined(SIXEL_USE_SSE2)
-                    unsigned int pixel = psrc[0] | (psrc[1] << 8) | (psrc[2] << 16);
+                    unsigned int pixel;
+
+                    pixel = psrc[0] | (psrc[1] << 8) | (psrc[2] << 16);
                     __m128i pixi = _mm_cvtsi32_si128((int)pixel);
                     pixi = _mm_unpacklo_epi8(pixi, _mm_setzero_si128());
                     pixi = _mm_unpacklo_epi16(pixi, _mm_setzero_si128());
@@ -507,6 +979,395 @@ scale_with_resampling(
     }
 
     /* clean up temporary storage */
+    sixel_allocator_free(allocator, tmp);
+}
+
+
+static void
+scale_with_resampling_float32(
+    float *dst,
+    float const *src,
+    int const srcw,
+    int const srch,
+    int const dstw,
+    int const dsth,
+    int const depth,
+    resample_fn_t const f_resample,
+    double n,
+    sixel_allocator_t *allocator)
+{
+    /*
+     * Floating point variant of scale_with_resampling().  The algorithm is
+     * identical but keeps samples in float to preserve the precision of
+     * linearized pipelines.
+     */
+    int w;
+    int h;
+    int x;
+    int y;
+    int i;
+    int pos;
+    int x_first, x_last, y_first, y_last;
+    double center_x, center_y;
+    double diff_x, diff_y;
+    double weight;
+    double total;
+    double offsets[8];
+    float *tmp;
+    float vecbuf[4];
+    int simd_level;
+
+    tmp = (float *)sixel_allocator_malloc(
+        allocator,
+        (size_t)(dstw * srch * depth * (int)sizeof(float)));
+    if (tmp == NULL) {
+        return;
+    }
+
+    simd_level = sixel_scale_simd_level();
+
+    for (y = 0; y < srch; y++) {
+        for (w = 0; w < dstw; w++) {
+            total = 0.0;
+            for (i = 0; i < depth; i++) {
+                offsets[i] = 0.0;
+            }
+
+            if (dstw >= srcw) {
+                center_x = (w + 0.5) * srcw / dstw;
+                x_first = MAX(center_x - n, 0);
+                x_last = MIN(center_x + n, srcw - 1);
+            } else {
+                center_x = w + 0.5;
+                x_first = MAX(floor((center_x - n) * srcw / dstw), 0);
+                x_last = MIN(floor((center_x + n) * srcw / dstw), srcw - 1);
+            }
+
+#if defined(SIXEL_USE_AVX512)
+            if (depth == 3 &&
+                simd_level >= SIXEL_SIMD_LEVEL_AVX512) {
+                __m512 acc;
+
+                acc = sixel_avx512_zero_ps();
+
+                for (x = x_first; x <= x_last; x++) {
+                    diff_x = (dstw >= srcw)
+                                 ? (x + 0.5) - center_x
+                                 : (x + 0.5) * srcw / dstw - center_x;
+                    weight = f_resample(fabs(diff_x));
+                    pos = (y * srcw + x) * depth;
+                    acc = sixel_avx512_muladd_ps(
+                        acc,
+                        sixel_avx512_load_rgb_f32(src + pos),
+                        (float)weight);
+                    total += weight;
+                }
+                if (total > 0.0) {
+                    pos = (y * dstw + w) * depth;
+                    sixel_avx512_store_rgb_f32(acc, total, tmp + pos);
+                }
+            } else
+#endif
+#if defined(SIXEL_USE_AVX2)
+            if (depth == 3 && simd_level >= SIXEL_SIMD_LEVEL_AVX2) {
+                __m256 acc;
+
+                acc = sixel_avx2_zero_ps();
+
+                for (x = x_first; x <= x_last; x++) {
+                    diff_x = (dstw >= srcw)
+                                 ? (x + 0.5) - center_x
+                                 : (x + 0.5) * srcw / dstw - center_x;
+                    weight = f_resample(fabs(diff_x));
+                    pos = (y * srcw + x) * depth;
+                    acc = sixel_avx2_muladd_ps(
+                        acc,
+                        sixel_avx2_load_rgb_f32(src + pos),
+                        (float)weight);
+                    total += weight;
+                }
+                if (total > 0.0) {
+                    pos = (y * dstw + w) * depth;
+                    sixel_avx2_store_rgb_f32(acc, total, tmp + pos);
+                }
+            } else
+#endif
+#if defined(SIXEL_USE_AVX)
+            if (depth == 3 && simd_level >= SIXEL_SIMD_LEVEL_AVX) {
+                __m256 acc;
+
+                acc = sixel_avx_zero_ps();
+
+                for (x = x_first; x <= x_last; x++) {
+                    diff_x = (dstw >= srcw)
+                                 ? (x + 0.5) - center_x
+                                 : (x + 0.5) * srcw / dstw - center_x;
+                    weight = f_resample(fabs(diff_x));
+                    pos = (y * srcw + x) * depth;
+                    acc = sixel_avx_muladd_ps(
+                        acc,
+                        sixel_avx_load_rgb_f32(src + pos),
+                        (float)weight);
+                    total += weight;
+                }
+                if (total > 0.0) {
+                    pos = (y * dstw + w) * depth;
+                    sixel_avx_store_rgb_f32(acc, total, tmp + pos);
+                }
+            } else
+#endif
+#if defined(SIXEL_USE_SSE2) || defined(SIXEL_USE_NEON)
+            if (depth == 3
+# if defined(SIXEL_USE_SSE2)
+                && simd_level >= SIXEL_SIMD_LEVEL_SSE2
+# elif defined(SIXEL_USE_NEON)
+                && simd_level >= SIXEL_SIMD_LEVEL_NEON
+# endif
+                ) {
+#if defined(SIXEL_USE_SSE2)
+                __m128 acc = _mm_setzero_ps();
+                __m128 minv = _mm_set1_ps(0.0f);
+                __m128 maxv = _mm_set1_ps(1.0f);
+#elif defined(SIXEL_USE_NEON)
+                float32x4_t acc = vdupq_n_f32(0.0f);
+                float32x4_t minv = vdupq_n_f32(0.0f);
+                float32x4_t maxv = vdupq_n_f32(1.0f);
+#endif
+                for (x = x_first; x <= x_last; x++) {
+                    diff_x = (dstw >= srcw)
+                                 ? (x + 0.5) - center_x
+                                 : (x + 0.5) * srcw / dstw - center_x;
+                    weight = f_resample(fabs(diff_x));
+                    pos = (y * srcw + x) * depth;
+                    const float *psrc = src + pos;
+#if defined(SIXEL_USE_SSE2)
+                    __m128 pixf = _mm_set_ps(
+                        0.0f, psrc[2], psrc[1], psrc[0]);
+                    __m128 wv = _mm_set1_ps((float)weight);
+                    acc = _mm_add_ps(acc, _mm_mul_ps(pixf, wv));
+#else /* NEON */
+                    float32x4_t pixf = {
+                        psrc[0], psrc[1], psrc[2], 0.0f};
+                    float32x4_t wv = vdupq_n_f32((float)weight);
+                    acc = vmlaq_f32(acc, pixf, wv);
+#endif
+                    total += weight;
+                }
+                if (total > 0.0) {
+#if defined(SIXEL_USE_SSE2)
+                    __m128 scalev = _mm_set1_ps((float)(1.0 / total));
+                    acc = _mm_mul_ps(acc, scalev);
+                    acc = _mm_max_ps(minv, _mm_min_ps(acc, maxv));
+                    _mm_storeu_ps(vecbuf, acc);
+#else /* NEON */
+                    float32x4_t scalev = vdupq_n_f32(
+                        (float)(1.0 / total));
+                    acc = vmulq_f32(acc, scalev);
+                    acc = vmaxq_f32(minv, vminq_f32(acc, maxv));
+                    vst1q_f32(vecbuf, acc);
+#endif
+                    pos = (y * dstw + w) * depth;
+                    tmp[pos + 0] = vecbuf[0];
+                    tmp[pos + 1] = vecbuf[1];
+                    tmp[pos + 2] = vecbuf[2];
+                }
+            } else
+#endif /* SIMD paths */
+            {
+                for (x = x_first; x <= x_last; x++) {
+                    diff_x = (dstw >= srcw)
+                                 ? (x + 0.5) - center_x
+                                 : (x + 0.5) * srcw / dstw - center_x;
+                    weight = f_resample(fabs(diff_x));
+                    for (i = 0; i < depth; i++) {
+                        pos = (y * srcw + x) * depth + i;
+                        offsets[i] += src[pos] * weight;
+                    }
+                    total += weight;
+                }
+
+                if (total > 0.0) {
+                    for (i = 0; i < depth; i++) {
+                        pos = (y * dstw + w) * depth + i;
+                        tmp[pos] = sixel_clamp_unit_f32(
+                            (float)(offsets[i] / total));
+                    }
+                }
+            }
+        }
+    }
+
+    for (h = 0; h < dsth; h++) {
+        for (w = 0; w < dstw; w++) {
+            total = 0.0;
+            for (i = 0; i < depth; i++) {
+                offsets[i] = 0.0;
+            }
+
+            if (dsth >= srch) {
+                center_y = (h + 0.5) * srch / dsth;
+                y_first = MAX(center_y - n, 0);
+                y_last = MIN(center_y + n, srch - 1);
+            } else {
+                center_y = h + 0.5;
+                y_first = MAX(floor((center_y - n) * srch / dsth), 0);
+                y_last = MIN(floor((center_y + n) * srch / dsth), srch - 1);
+            }
+
+#if defined(SIXEL_USE_AVX512)
+            if (depth == 3 &&
+                simd_level >= SIXEL_SIMD_LEVEL_AVX512) {
+                __m512 acc;
+
+                acc = sixel_avx512_zero_ps();
+
+                for (y = y_first; y <= y_last; y++) {
+                    diff_y = (dsth >= srch)
+                                 ? (y + 0.5) - center_y
+                                 : (y + 0.5) * dsth / srch - center_y;
+                    weight = f_resample(fabs(diff_y));
+                    pos = (y * dstw + w) * depth;
+                    acc = sixel_avx512_muladd_ps(
+                        acc,
+                        sixel_avx512_load_rgb_f32(tmp + pos),
+                        (float)weight);
+                    total += weight;
+                }
+                if (total > 0.0) {
+                    pos = (h * dstw + w) * depth;
+                    sixel_avx512_store_rgb_f32(acc, total, dst + pos);
+                }
+            } else
+#endif
+#if defined(SIXEL_USE_AVX2)
+            if (depth == 3 && simd_level >= SIXEL_SIMD_LEVEL_AVX2) {
+                __m256 acc;
+
+                acc = sixel_avx2_zero_ps();
+
+                for (y = y_first; y <= y_last; y++) {
+                    diff_y = (dsth >= srch)
+                                 ? (y + 0.5) - center_y
+                                 : (y + 0.5) * dsth / srch - center_y;
+                    weight = f_resample(fabs(diff_y));
+                    pos = (y * dstw + w) * depth;
+                    acc = sixel_avx2_muladd_ps(
+                        acc,
+                        sixel_avx2_load_rgb_f32(tmp + pos),
+                        (float)weight);
+                    total += weight;
+                }
+                if (total > 0.0) {
+                    pos = (h * dstw + w) * depth;
+                    sixel_avx2_store_rgb_f32(acc, total, dst + pos);
+                }
+            } else
+#endif
+#if defined(SIXEL_USE_AVX)
+            if (depth == 3 && simd_level >= SIXEL_SIMD_LEVEL_AVX) {
+                __m256 acc;
+
+                acc = sixel_avx_zero_ps();
+
+                for (y = y_first; y <= y_last; y++) {
+                    diff_y = (dsth >= srch)
+                                 ? (y + 0.5) - center_y
+                                 : (y + 0.5) * dsth / srch - center_y;
+                    weight = f_resample(fabs(diff_y));
+                    pos = (y * dstw + w) * depth;
+                    acc = sixel_avx_muladd_ps(
+                        acc,
+                        sixel_avx_load_rgb_f32(tmp + pos),
+                        (float)weight);
+                    total += weight;
+                }
+                if (total > 0.0) {
+                    pos = (h * dstw + w) * depth;
+                    sixel_avx_store_rgb_f32(acc, total, dst + pos);
+                }
+            } else
+#endif
+#if defined(SIXEL_USE_SSE2) || defined(SIXEL_USE_NEON)
+            if (depth == 3
+# if defined(SIXEL_USE_SSE2)
+                && simd_level >= SIXEL_SIMD_LEVEL_SSE2
+# elif defined(SIXEL_USE_NEON)
+                && simd_level >= SIXEL_SIMD_LEVEL_NEON
+# endif
+                ) {
+#if defined(SIXEL_USE_SSE2)
+                __m128 acc = _mm_setzero_ps();
+                __m128 minv = _mm_set1_ps(0.0f);
+                __m128 maxv = _mm_set1_ps(1.0f);
+#elif defined(SIXEL_USE_NEON)
+                float32x4_t acc = vdupq_n_f32(0.0f);
+                float32x4_t minv = vdupq_n_f32(0.0f);
+                float32x4_t maxv = vdupq_n_f32(1.0f);
+#endif
+                for (y = y_first; y <= y_last; y++) {
+                    diff_y = (dsth >= srch)
+                                 ? (y + 0.5) - center_y
+                                 : (y + 0.5) * dsth / srch - center_y;
+                    weight = f_resample(fabs(diff_y));
+                    pos = (y * dstw + w) * depth;
+                    const float *psrc = tmp + pos;
+#if defined(SIXEL_USE_SSE2)
+                    __m128 pixf = _mm_set_ps(
+                        0.0f, psrc[2], psrc[1], psrc[0]);
+                    __m128 wv = _mm_set1_ps((float)weight);
+                    acc = _mm_add_ps(acc, _mm_mul_ps(pixf, wv));
+#else /* NEON */
+                    float32x4_t pixf = {
+                        psrc[0], psrc[1], psrc[2], 0.0f};
+                    float32x4_t wv = vdupq_n_f32((float)weight);
+                    acc = vmlaq_f32(acc, pixf, wv);
+#endif
+                    total += weight;
+                }
+                if (total > 0.0) {
+#if defined(SIXEL_USE_SSE2)
+                    __m128 scalev = _mm_set1_ps((float)(1.0 / total));
+                    acc = _mm_mul_ps(acc, scalev);
+                    acc = _mm_max_ps(minv, _mm_min_ps(acc, maxv));
+                    _mm_storeu_ps(vecbuf, acc);
+#else /* NEON */
+                    float32x4_t scalev = vdupq_n_f32(
+                        (float)(1.0 / total));
+                    acc = vmulq_f32(acc, scalev);
+                    acc = vmaxq_f32(minv, vminq_f32(acc, maxv));
+                    vst1q_f32(vecbuf, acc);
+#endif
+                    pos = (h * dstw + w) * depth;
+                    dst[pos + 0] = vecbuf[0];
+                    dst[pos + 1] = vecbuf[1];
+                    dst[pos + 2] = vecbuf[2];
+                }
+            } else
+#endif /* SIMD paths */
+            {
+                for (y = y_first; y <= y_last; y++) {
+                    diff_y = (dsth >= srch)
+                                 ? (y + 0.5) - center_y
+                                 : (y + 0.5) * dsth / srch - center_y;
+                    weight = f_resample(fabs(diff_y));
+                    for (i = 0; i < depth; i++) {
+                        pos = (y * dstw + w) * depth + i;
+                        offsets[i] += tmp[pos] * weight;
+                    }
+                    total += weight;
+                }
+
+                if (total > 0.0) {
+                    for (i = 0; i < depth; i++) {
+                        pos = (h * dstw + w) * depth + i;
+                        dst[pos] = sixel_clamp_unit_f32(
+                            (float)(offsets[i] / total));
+                    }
+                }
+            }
+        }
+    }
+
     sixel_allocator_free(allocator, tmp);
 }
 
@@ -600,6 +1461,98 @@ sixel_helper_scale_image(
 
     /* release temporary copy created for pixel-format normalization */
     sixel_allocator_free(allocator, new_src);
+    return 0;
+}
+
+
+SIXELAPI int
+sixel_helper_scale_image_float32(
+    float             /* out */ *dst,
+    float const       /* in */  *src,
+    int               /* in */  srcw,
+    int               /* in */  srch,
+    int               /* in */  pixelformat,
+    int               /* in */  dstw,
+    int               /* in */  dsth,
+    int               /* in */  method_for_resampling,
+    sixel_allocator_t /* in */  *allocator)
+{
+    /*
+     * Scale float RGB images without quantizing the output.  The caller is
+     * expected to supply buffers that already match the requested pixel
+     * format so we can avoid lossy conversions before filtering.
+     */
+    int depth;
+    int depth_bytes;
+
+    depth_bytes = sixel_helper_compute_depth(pixelformat);
+    if (depth_bytes <= 0) {
+        return (-1);
+    }
+
+    /*
+     * sixel_helper_compute_depth() reports bytes per pixel.  Convert to
+     * channel count for the float paths to avoid overrunning the buffer on
+     * 12-byte RGB tuples.
+     */
+    depth = depth_bytes / (int)sizeof(float);
+    if (depth * (int)sizeof(float) != depth_bytes) {
+        return (-1);
+    }
+
+    switch (method_for_resampling) {
+    case SIXEL_RES_NEAREST:
+        scale_without_resampling_float32(
+            dst, src, srcw, srch, dstw, dsth, depth);
+        break;
+    case SIXEL_RES_GAUSSIAN:
+        scale_with_resampling_float32(
+            dst, src, srcw, srch, dstw, dsth, depth,
+            gaussian, 1.0, allocator);
+        break;
+    case SIXEL_RES_HANNING:
+        scale_with_resampling_float32(
+            dst, src, srcw, srch, dstw, dsth, depth,
+            hanning, 1.0, allocator);
+        break;
+    case SIXEL_RES_HAMMING:
+        scale_with_resampling_float32(
+            dst, src, srcw, srch, dstw, dsth, depth,
+            hamming, 1.0, allocator);
+        break;
+    case SIXEL_RES_WELSH:
+        scale_with_resampling_float32(
+            dst, src, srcw, srch, dstw, dsth, depth,
+            welsh, 1.0, allocator);
+        break;
+    case SIXEL_RES_BICUBIC:
+        scale_with_resampling_float32(
+            dst, src, srcw, srch, dstw, dsth, depth,
+            bicubic, 2.0, allocator);
+        break;
+    case SIXEL_RES_LANCZOS2:
+        scale_with_resampling_float32(
+            dst, src, srcw, srch, dstw, dsth, depth,
+            lanczos2, 2.0, allocator);
+        break;
+    case SIXEL_RES_LANCZOS3:
+        scale_with_resampling_float32(
+            dst, src, srcw, srch, dstw, dsth, depth,
+            lanczos3, 3.0, allocator);
+        break;
+    case SIXEL_RES_LANCZOS4:
+        scale_with_resampling_float32(
+            dst, src, srcw, srch, dstw, dsth, depth,
+            lanczos4, 4.0, allocator);
+        break;
+    case SIXEL_RES_BILINEAR:
+    default:
+        scale_with_resampling_float32(
+            dst, src, srcw, srch, dstw, dsth, depth,
+            bilinear, 1.0, allocator);
+        break;
+    }
+
     return 0;
 }
 
@@ -711,6 +1664,10 @@ end:
 }
 
 #endif /* HAVE_TESTS */
+
+#if defined(__GNUC__) && !defined(__clang__)
+# pragma GCC diagnostic pop
+#endif
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

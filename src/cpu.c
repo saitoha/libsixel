@@ -1,0 +1,181 @@
+/*
+ * SPDX-License-Identifier: MIT
+ *
+ * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
+ */
+
+#include "config.h"
+
+/* STDC_HEADERS */
+#include <stdlib.h>
+#include <string.h>
+
+#if HAVE_STRINGS_H
+# include <strings.h>
+#endif
+
+#if HAVE_CPUID_H
+# include <cpuid.h>
+#endif
+#if HAVE_INTRIN_H
+# include <intrin.h>
+#endif
+#if HAVE_IMMINTRIN_H
+# include <immintrin.h>
+#endif
+
+#include "cpu.h"
+
+static int simd_cached = -1;
+
+static enum sixel_simd_level
+sixel_cpu_env_cap(void)
+{
+    char const *env;
+
+    env = getenv("SIXEL_SIMD_LEVEL");
+    if (env == NULL || env[0] == '\0') {
+        return SIXEL_SIMD_LEVEL_NEON;
+    }
+    if (strcasecmp(env, "auto") == 0) {
+        return SIXEL_SIMD_LEVEL_NEON;
+    }
+    if (strcasecmp(env, "none") == 0 ||
+        strcasecmp(env, "scalar") == 0) {
+        return SIXEL_SIMD_LEVEL_SCALAR;
+    }
+    if (strcasecmp(env, "sse2") == 0) {
+        return SIXEL_SIMD_LEVEL_SSE2;
+    }
+    if (strcasecmp(env, "avx") == 0) {
+        return SIXEL_SIMD_LEVEL_AVX;
+    }
+    if (strcasecmp(env, "avx2") == 0) {
+        return SIXEL_SIMD_LEVEL_AVX2;
+    }
+    if (strcasecmp(env, "avx512") == 0) {
+        return SIXEL_SIMD_LEVEL_AVX512;
+    }
+    if (strcasecmp(env, "neon") == 0) {
+        return SIXEL_SIMD_LEVEL_NEON;
+    }
+    return SIXEL_SIMD_LEVEL_NEON;
+}
+
+static enum sixel_simd_level
+sixel_cpu_detect_native(void)
+{
+    enum sixel_simd_level level;
+
+    level = SIXEL_SIMD_LEVEL_SCALAR;
+#if defined(__x86_64__) || defined(_M_X64) || \
+    defined(__i386) || defined(_M_IX86)
+# if HAVE_BUILTIN_CPU_INIT
+    __builtin_cpu_init();
+# endif
+# if HAVE_BUILTIN_CPU_SUPPORTS
+    if (__builtin_cpu_supports("avx512f")) {
+        level = SIXEL_SIMD_LEVEL_AVX512;
+    } else if (__builtin_cpu_supports("avx2")) {
+        level = SIXEL_SIMD_LEVEL_AVX2;
+    } else if (__builtin_cpu_supports("avx")) {
+        level = SIXEL_SIMD_LEVEL_AVX;
+    } else if (__builtin_cpu_supports("sse2")) {
+        level = SIXEL_SIMD_LEVEL_SSE2;
+    }
+# elif defined(_MSC_VER) && HAVE_INTRIN_H
+    int cpu_info[4];
+    int osxsave;
+    int avx_capable;
+
+    __cpuid(cpu_info, 1);
+    osxsave = (cpu_info[2] & (1 << 27));
+    avx_capable = (cpu_info[2] & (1 << 28));
+    if (osxsave && avx_capable) {
+        unsigned long long xcr0;
+
+        xcr0 = _xgetbv(0);
+        if ((xcr0 & 0x6) == 0x6) {
+            int extended[4];
+
+            __cpuidex(extended, 7, 0);
+            if ((extended[1] & (1 << 16)) != 0) {
+                level = SIXEL_SIMD_LEVEL_AVX512;
+            } else if ((extended[1] & (1 << 5)) != 0) {
+                level = SIXEL_SIMD_LEVEL_AVX2;
+            } else {
+                level = SIXEL_SIMD_LEVEL_AVX;
+            }
+        }
+    }
+    if (level == SIXEL_SIMD_LEVEL_SCALAR &&
+        (cpu_info[3] & (1 << 26))) {
+        level = SIXEL_SIMD_LEVEL_SSE2;
+    }
+# elif HAVE_CPUID_H
+    unsigned int eax;
+    unsigned int ebx;
+    unsigned int ecx;
+    unsigned int edx;
+
+    if (__get_cpuid(1, &eax, &ebx, &ecx, &edx) != 0) {
+        if ((ecx & (1U << 28)) != 0) {
+            if (__get_cpuid_max(0, NULL) >= 7 &&
+                __get_cpuid_count(7, 0, &eax, &ebx, &ecx, &edx) != 0) {
+                if ((ebx & (1U << 16)) != 0) {
+                    level = SIXEL_SIMD_LEVEL_AVX512;
+                } else if ((ebx & (1U << 5)) != 0) {
+                    level = SIXEL_SIMD_LEVEL_AVX2;
+                } else {
+                    level = SIXEL_SIMD_LEVEL_AVX;
+                }
+            } else {
+                level = SIXEL_SIMD_LEVEL_AVX;
+            }
+        } else if ((edx & (1U << 26)) != 0) {
+            level = SIXEL_SIMD_LEVEL_SSE2;
+        }
+    }
+# endif
+#elif defined(__aarch64__) || defined(__ARM_NEON) || defined(__ARM_NEON__)
+    level = SIXEL_SIMD_LEVEL_NEON;
+#endif
+    return level;
+}
+
+static enum sixel_simd_level
+sixel_cpu_min(enum sixel_simd_level lhs, enum sixel_simd_level rhs)
+{
+    return lhs < rhs ? lhs : rhs;
+}
+
+int
+sixel_cpu_simd_level(void)
+{
+    enum sixel_simd_level env_cap;
+    enum sixel_simd_level native;
+
+    if (simd_cached >= 0) {
+        return simd_cached;
+    }
+
+    env_cap = sixel_cpu_env_cap();
+    native = sixel_cpu_detect_native();
+    simd_cached = (int)sixel_cpu_min(env_cap, native);
+    return simd_cached;
+}
+
+void
+sixel_cpu_reset_simd_cache(void)
+{
+    simd_cached = -1;
+}
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
+/* EOF */

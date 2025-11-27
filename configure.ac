@@ -719,8 +719,11 @@ AC_CHECK_HEADERS([assert.h \
                   sys/wait.h \
                   spawn.h \
                   inttypes.h \
+                  strings.h \
                   intrin.h \
                   emmintrin.h \
+                  immintrin.h \
+                  cpuid.h \
                   arm_neon.h \
                   dirent.h \
                   sys/sysctl.h \
@@ -728,6 +731,32 @@ AC_CHECK_HEADERS([assert.h \
                   process.h \
                   execinfo.h \
                  ])
+
+AC_MSG_CHECKING([for __builtin_cpu_supports])
+AC_COMPILE_IFELSE([
+    AC_LANG_PROGRAM([], [[
+        #if !defined(__GNUC__) && !defined(__clang__)
+        # error
+        #endif
+        __builtin_cpu_supports("sse2");
+    ]])],
+    [AC_DEFINE([HAVE_BUILTIN_CPU_SUPPORTS], [1],
+               [Define if __builtin_cpu_supports is available])
+     AC_MSG_RESULT([yes])],
+    [AC_MSG_RESULT([no])])
+
+AC_MSG_CHECKING([for __builtin_cpu_init])
+AC_COMPILE_IFELSE([
+    AC_LANG_PROGRAM([], [[
+        #if !defined(__GNUC__) && !defined(__clang__)
+        # error
+        #endif
+        __builtin_cpu_init();
+    ]])],
+    [AC_DEFINE([HAVE_BUILTIN_CPU_INIT], [1],
+               [Define if __builtin_cpu_init is available])
+     AC_MSG_RESULT([yes])],
+    [AC_MSG_RESULT([no])])
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
