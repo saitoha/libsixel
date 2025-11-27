@@ -602,6 +602,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "                             linear -> linear RGB color space\n"
         "                             oklab  -> OKLab color space\n"
         "                             cielab -> CIELAB color space\n"
+        "                             din99d -> DIN99d color space\n"
     },
     {
         'U',
