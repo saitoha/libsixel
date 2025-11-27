@@ -239,6 +239,7 @@ extra_funcs = [
   'select',
   '_fullpath',
   '_realpath',
+  '_dupenv_s',
   'realpath',
   'sqrt',
   'strchr',
