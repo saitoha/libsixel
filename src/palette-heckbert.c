@@ -1803,7 +1803,7 @@ end:
 
 SIXELSTATUS
 sixel_palette_build_heckbert_float32(sixel_palette_t *palette,
-                                     unsigned char const *data,
+                                     float const *data,
                                      unsigned int length,
                                      int pixelformat,
                                      sixel_allocator_t *allocator)
@@ -1816,7 +1816,7 @@ sixel_palette_build_heckbert_float32(sixel_palette_t *palette,
     }
 
     return sixel_palette_build_heckbert(palette,
-                                        data,
+                                        (unsigned char const *)data,
                                         length,
                                         pixelformat,
                                         allocator);
@@ -2076,13 +2076,13 @@ palette_test_kmeans_float32_two_colors(void)
     sixel_allocator_t *allocator = NULL;
     sixel_palette_t *palette = NULL;
     float pixels[6] = { 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f };
-    unsigned char const *data;
+    float const *data;
     unsigned char const *entry;
     int found_red;
     int found_green;
     size_t index;
 
-    data = (unsigned char const *)(void const *)pixels;
+    data = pixels;
     found_red = 0;
     found_green = 0;
 
@@ -2148,12 +2148,12 @@ palette_test_kmeans_float32_merge_scaling(void)
         0.1f, 0.0f, 0.0f,
         0.0f, 0.0f, 0.0f,
     };
-    unsigned char const *data;
+    float const *data;
     unsigned char const *entry;
     size_t index;
     int found_highlight;
 
-    data = (unsigned char const *)(void const *)pixels;
+    data = pixels;
     found_highlight = 0;
 
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);

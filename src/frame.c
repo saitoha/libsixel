@@ -72,7 +72,9 @@ sixel_frame_new(
         }
     }
 
-    *ppframe = (sixel_frame_t *)sixel_allocator_malloc(allocator, sizeof(sixel_frame_t));
+    *ppframe = (sixel_frame_t *)sixel_allocator_malloc(
+        allocator,
+        sizeof(sixel_frame_t));
     if (*ppframe == NULL) {
         sixel_helper_set_additional_message(
             "sixel_frame_resize: sixel_allocator_malloc() failed.");
@@ -81,7 +83,7 @@ sixel_frame_new(
     }
 
     (*ppframe)->ref = 1;
-    (*ppframe)->pixels = NULL;
+    (*ppframe)->pixels.u8ptr = NULL;
     (*ppframe)->palette = NULL;
     (*ppframe)->width = 0;
     (*ppframe)->height = 0;
@@ -127,7 +129,7 @@ sixel_frame_destroy(sixel_frame_t /* in */ *frame)
 
     if (frame) {
         allocator = frame->allocator;
-        sixel_allocator_free(allocator, frame->pixels);
+        sixel_allocator_free(allocator, frame->pixels.u8ptr);
         sixel_allocator_free(allocator, frame->palette);
         sixel_allocator_free(allocator, frame);
         sixel_allocator_unref(allocator);
@@ -155,17 +157,22 @@ sixel_frame_unref(sixel_frame_t *frame)
 }
 
 
-/* initialize frame object with a pixel buffer */
-SIXELAPI SIXELSTATUS
-sixel_frame_init(
-    sixel_frame_t   /* in */ *frame,        /* frame object to be initialize */
-    unsigned char   /* in */ *pixels,       /* pixel buffer */
-    int             /* in */ width,         /* pixel width of buffer */
-    int             /* in */ height,        /* pixel height of buffer */
-    int             /* in */ pixelformat,   /* pixelformat of buffer */
-    unsigned char   /* in */ *palette,      /* palette for buffer or NULL */
-    int             /* in */ ncolors        /* number of palette colors or (-1) */
-)
+/*
+ * Shared initializer for both byte and float32 buffers.  Keeping the
+ * validation and field updates in one place avoids diverging logic
+ * between the two entry points while making the stored pointer type
+ * explicit.
+ */
+static SIXELSTATUS
+sixel_frame_init_common(
+    sixel_frame_t   *frame,
+    void            *pixels,
+    int              width,
+    int              height,
+    int              pixelformat,
+    unsigned char   *palette,
+    int              ncolors,
+    int              is_float)
 {
     SIXELSTATUS status = SIXEL_FALSE;
 
@@ -196,8 +203,19 @@ sixel_frame_init(
         status = SIXEL_BAD_INPUT;
         goto end;
     }
+    if (is_float != 0 && !SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_init: pixelformat must be float32 when "
+            "supplying float pixels.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
 
-    frame->pixels = pixels;
+    if (is_float != 0) {
+        frame->pixels.f32ptr = (float *)pixels;
+    } else {
+        frame->pixels.u8ptr = (unsigned char *)pixels;
+    }
     frame->width = width;
     frame->height = height;
     sixel_frame_apply_pixelformat(frame, pixelformat);
@@ -211,12 +229,61 @@ end:
     return status;
 }
 
+/* initialize frame object with a pixel buffer */
+SIXELAPI SIXELSTATUS
+sixel_frame_init(
+    sixel_frame_t   /* in */ *frame,
+    unsigned char   /* in */ *pixels,
+    int             /* in */ width,
+    int             /* in */ height,
+    int             /* in */ pixelformat,
+    unsigned char   /* in */ *palette,
+    int             /* in */ ncolors)
+{
+    return sixel_frame_init_common(frame,
+                                   pixels,
+                                   width,
+                                   height,
+                                   pixelformat,
+                                   palette,
+                                   ncolors,
+                                   0);
+}
+
+/* initialize frame object with a float32 pixel buffer */
+SIXELAPI SIXELSTATUS
+sixel_frame_init_float32(
+    sixel_frame_t   /* in */ *frame,
+    float           /* in */ *pixels,
+    int             /* in */ width,
+    int             /* in */ height,
+    int             /* in */ pixelformat,
+    unsigned char   /* in */ *palette,
+    int             /* in */ ncolors)
+{
+    return sixel_frame_init_common(frame,
+                                   pixels,
+                                   width,
+                                   height,
+                                   pixelformat,
+                                   palette,
+                                   ncolors,
+                                   1);
+}
+
 
 /* get pixels */
 SIXELAPI unsigned char *
 sixel_frame_get_pixels(sixel_frame_t /* in */ *frame)  /* frame object */
 {
-    return frame->pixels;
+    return frame->pixels.u8ptr;
+}
+
+
+SIXELAPI float *
+sixel_frame_get_pixels_float32(sixel_frame_t /* in */ *frame)
+{
+    return frame->pixels.f32ptr;
 }
 
 
@@ -226,7 +293,16 @@ sixel_frame_set_pixels(
     sixel_frame_t  /* in */ *frame,
     unsigned char  /* in */ *pixels)
 {
-    frame->pixels = pixels;
+    frame->pixels.u8ptr = pixels;
+}
+
+
+SIXELAPI void
+sixel_frame_set_pixels_float32(
+    sixel_frame_t  /* in */ *frame,
+    float          /* in */ *pixels)
+{
+    frame->pixels.f32ptr = pixels;
 }
 
 
@@ -319,6 +395,7 @@ sixel_frame_set_pixelformat(
     int depth;
     size_t pixel_total;
     size_t pixel_size;
+    unsigned char *pixels;
 
     if (frame == NULL) {
         sixel_helper_set_additional_message(
@@ -328,7 +405,7 @@ sixel_frame_set_pixelformat(
     if (pixelformat == frame->pixelformat) {
         return SIXEL_OK;
     }
-    if (frame->pixels == NULL) {
+    if (frame->pixels.u8ptr == NULL) {
         sixel_frame_apply_pixelformat(frame, pixelformat);
         return SIXEL_OK;
     }
@@ -400,7 +477,12 @@ sixel_frame_set_pixelformat(
         }
         pixel_size = pixel_total * (size_t)depth;
 
-        status = sixel_helper_convert_colorspace(frame->pixels,
+        pixels = frame->pixels.u8ptr;
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(working_pixelformat)) {
+            pixels = (unsigned char *)frame->pixels.f32ptr;
+        }
+
+        status = sixel_helper_convert_colorspace(pixels,
                                                  pixel_size,
                                                  working_pixelformat,
                                                  source_colorspace,
@@ -566,7 +648,7 @@ sixel_frame_strip_alpha(
 
     sixel_frame_ref(frame);
 
-    src = dst = frame->pixels;
+    src = dst = frame->pixels.u8ptr;
 
     if (bgcolor) {
         switch (frame->pixelformat) {
@@ -689,18 +771,27 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     unsigned char *dst;
     unsigned char *src;
     unsigned char *p;
+    unsigned char *raw_pixels;
+    unsigned char const *source_pixels;
+    float *float_pixels;
 
     sixel_frame_ref(frame);
+
+    raw_pixels = frame->pixels.u8ptr;
+    float_pixels = frame->pixels.f32ptr;
+    source_pixels = raw_pixels;
 
     switch (frame->pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_PAL4:
         size = (size_t)(frame->width * frame->height * 4);
-        normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
+        normalized_pixels = (unsigned char *)
+            sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
             sixel_helper_set_additional_message(
-                "sixel_frame_convert_to_rgb888: sixel_allocator_malloc() failed.");
+                "sixel_frame_convert_to_rgb888: "
+                "sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
@@ -708,7 +799,7 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
         dst = normalized_pixels;
         status = sixel_helper_normalize_pixelformat(src,
                                                     &frame->pixelformat,
-                                                    frame->pixels,
+                                                    source_pixels,
                                                     frame->pixelformat,
                                                     frame->width,
                                                     frame->height);
@@ -721,30 +812,32 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
             *dst++ = *(frame->palette + *p * 3 + 1);
             *dst++ = *(frame->palette + *p * 3 + 2);
         }
-        sixel_allocator_free(frame->allocator, frame->pixels);
-        frame->pixels = normalized_pixels;
+        sixel_allocator_free(frame->allocator, raw_pixels);
+        frame->pixels.u8ptr = normalized_pixels;
         sixel_frame_apply_pixelformat(
             frame,
             SIXEL_PIXELFORMAT_RGB888);
         break;
     case SIXEL_PIXELFORMAT_PAL8:
         size = (size_t)(frame->width * frame->height * 3);
-        normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
+        normalized_pixels = (unsigned char *)
+            sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
             sixel_helper_set_additional_message(
-                "sixel_frame_convert_to_rgb888: sixel_allocator_malloc() failed.");
+                "sixel_frame_convert_to_rgb888: "
+                "sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
-        src = frame->pixels;
+        src = raw_pixels;
         dst = normalized_pixels;
         for (; dst != normalized_pixels + size; ++src) {
             *dst++ = frame->palette[*src * 3 + 0];
             *dst++ = frame->palette[*src * 3 + 1];
             *dst++ = frame->palette[*src * 3 + 2];
         }
-        sixel_allocator_free(frame->allocator, frame->pixels);
-        frame->pixels = normalized_pixels;
+        sixel_allocator_free(frame->allocator, raw_pixels);
+        frame->pixels.u8ptr = normalized_pixels;
         sixel_frame_apply_pixelformat(
             frame,
             SIXEL_PIXELFORMAT_RGB888);
@@ -765,16 +858,21 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
     case SIXEL_PIXELFORMAT_OKLABFLOAT32:
         /* normalize pixelformat */
         size = (size_t)(frame->width * frame->height * 3);
-        normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
+        normalized_pixels = (unsigned char *)
+            sixel_allocator_malloc(frame->allocator, size);
         if (normalized_pixels == NULL) {
             sixel_helper_set_additional_message(
-                "sixel_frame_convert_to_rgb888: sixel_allocator_malloc() failed.");
+                "sixel_frame_convert_to_rgb888: "
+                "sixel_allocator_malloc() failed.");
             status = SIXEL_BAD_ALLOCATION;
             goto end;
         }
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(frame->pixelformat)) {
+            source_pixels = (unsigned char const *)float_pixels;
+        }
         status = sixel_helper_normalize_pixelformat(normalized_pixels,
                                                     &frame->pixelformat,
-                                                    frame->pixels,
+                                                    source_pixels,
                                                     frame->pixelformat,
                                                     frame->width,
                                                     frame->height);
@@ -782,8 +880,8 @@ sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame)
             sixel_allocator_free(frame->allocator, normalized_pixels);
             goto end;
         }
-        sixel_allocator_free(frame->allocator, frame->pixels);
-        frame->pixels = normalized_pixels;
+        sixel_allocator_free(frame->allocator, raw_pixels);
+        frame->pixels.u8ptr = normalized_pixels;
         break;
     default:
         status = SIXEL_LOGIC_ERROR;
@@ -957,7 +1055,7 @@ sixel_frame_promote_to_float32(sixel_frame_t *frame)
         return SIXEL_BAD_ALLOCATION;
     }
 
-    byte_pixels = frame->pixels;
+    byte_pixels = frame->pixels.u8ptr;
     float_pixelformat =
         sixel_frame_float_pixelformat_for_colorspace(frame->colorspace);
 
@@ -980,8 +1078,8 @@ sixel_frame_promote_to_float32(sixel_frame_t *frame)
             sixel_pixelformat_byte_to_float(float_pixelformat, 2, b8);
     }
 
-    sixel_allocator_free(frame->allocator, frame->pixels);
-    frame->pixels = (unsigned char *)float_pixels;
+    sixel_allocator_free(frame->allocator, byte_pixels);
+    sixel_frame_set_pixels_float32(frame, float_pixels);
     sixel_frame_apply_pixelformat(frame, float_pixelformat);
     return SIXEL_OK;
 }
@@ -1042,7 +1140,8 @@ sixel_frame_resize(
     }
 
     size = (size_t)width * (size_t)height * 3UL;
-    scaled_frame = (unsigned char *)sixel_allocator_malloc(frame->allocator, size);
+    scaled_frame = (unsigned char *)
+        sixel_allocator_malloc(frame->allocator, size);
     if (scaled_frame == NULL) {
         sixel_helper_set_additional_message(
             "sixel_frame_resize: sixel_allocator_malloc() failed.");
@@ -1052,7 +1151,7 @@ sixel_frame_resize(
 
     status = sixel_helper_scale_image(
         scaled_frame,
-        frame->pixels,
+        frame->pixels.u8ptr,
         frame->width,
         frame->height,
         3,
@@ -1063,8 +1162,8 @@ sixel_frame_resize(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    sixel_allocator_free(frame->allocator, frame->pixels);
-    frame->pixels = scaled_frame;
+    sixel_allocator_free(frame->allocator, frame->pixels.u8ptr);
+    frame->pixels.u8ptr = scaled_frame;
     frame->width = width;
     frame->height = height;
 
@@ -1164,8 +1263,11 @@ sixel_frame_clip(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     unsigned char *normalized_pixels;
+    unsigned char *raw_pixels;
 
     sixel_frame_ref(frame);
+
+    raw_pixels = frame->pixels.u8ptr;
 
     /* check parameters */
     if (width <= 0) {
@@ -1200,11 +1302,12 @@ sixel_frame_clip(
     case SIXEL_PIXELFORMAT_G1:
     case SIXEL_PIXELFORMAT_G2:
     case SIXEL_PIXELFORMAT_G4:
-        normalized_pixels = (unsigned char *)sixel_allocator_malloc(frame->allocator,
-                                                                    (size_t)(frame->width * frame->height));
+        normalized_pixels = (unsigned char *)
+            sixel_allocator_malloc(frame->allocator,
+                                   (size_t)(frame->width * frame->height));
         status = sixel_helper_normalize_pixelformat(normalized_pixels,
                                                     &frame->pixelformat,
-                                                    frame->pixels,
+                                                    raw_pixels,
                                                     frame->pixelformat,
                                                     frame->width,
                                                     frame->height);
@@ -1212,14 +1315,15 @@ sixel_frame_clip(
             sixel_allocator_free(frame->allocator, normalized_pixels);
             goto end;
         }
-        sixel_allocator_free(frame->allocator, frame->pixels);
-        frame->pixels = normalized_pixels;
+        sixel_allocator_free(frame->allocator, raw_pixels);
+        frame->pixels.u8ptr = normalized_pixels;
+        raw_pixels = normalized_pixels;
         break;
     default:
         break;
     }
 
-    status = clip(frame->pixels,
+    status = clip(raw_pixels,
                   frame->width,
                   frame->height,
                   frame->pixelformat,
@@ -1277,6 +1381,7 @@ test2(void)
     int nret = EXIT_FAILURE;
     unsigned char *pixels = malloc(4);
     unsigned char *bgcolor = malloc(3);
+    unsigned char *u8pixels;
     SIXELSTATUS status;
 
     pixels[0] = 0x43;
@@ -1319,15 +1424,17 @@ test2(void)
         goto error;
     }
 
-    if (frame->pixels[0] != (0x43 * 0x32 + 0x10 * (0xff - 0x32)) >> 8) {
+    u8pixels = frame->pixels.u8ptr;
+
+    if (u8pixels[0] != (0x43 * 0x32 + 0x10 * (0xff - 0x32)) >> 8) {
         goto error;
     }
 
-    if (frame->pixels[1] != (0x89 * 0x32 + 0x10 * (0xff - 0x32)) >> 8) {
+    if (u8pixels[1] != (0x89 * 0x32 + 0x10 * (0xff - 0x32)) >> 8) {
         goto error;
     }
 
-    if (frame->pixels[2] != (0x97 * 0x32 + 0x10 * (0xff - 0x32)) >> 8) {
+    if (u8pixels[2] != (0x97 * 0x32 + 0x10 * (0xff - 0x32)) >> 8) {
         goto error;
     }
 
@@ -1345,6 +1452,7 @@ test3(void)
     sixel_frame_t *frame = NULL;
     int nret = EXIT_FAILURE;
     unsigned char *pixels = malloc(4);
+    unsigned char *u8pixels;
     SIXELSTATUS status;
 
     pixels[0] = 0x43;
@@ -1384,15 +1492,17 @@ test3(void)
         goto error;
     }
 
-    if (frame->pixels[0] != 0x43) {
+    u8pixels = frame->pixels.u8ptr;
+
+    if (u8pixels[0] != 0x43) {
         goto error;
     }
 
-    if (frame->pixels[1] != 0x89) {
+    if (u8pixels[1] != 0x89) {
         goto error;
     }
 
-    if (frame->pixels[2] != 0x97) {
+    if (u8pixels[2] != 0x97) {
         goto error;
     }
 
@@ -1410,6 +1520,7 @@ test4(void)
     sixel_frame_t *frame = NULL;
     int nret = EXIT_FAILURE;
     unsigned char *pixels = malloc(4);
+    unsigned char *u8pixels;
     SIXELSTATUS status;
 
     pixels[0] = 0x43;
@@ -1449,15 +1560,17 @@ test4(void)
         goto error;
     }
 
-    if (frame->pixels[0] != 0x89) {
+    u8pixels = frame->pixels.u8ptr;
+
+    if (u8pixels[0] != 0x89) {
         goto error;
     }
 
-    if (frame->pixels[1] != 0x97) {
+    if (u8pixels[1] != 0x97) {
         goto error;
     }
 
-    if (frame->pixels[2] != 0x32) {
+    if (u8pixels[2] != 0x32) {
         goto error;
     }
 
@@ -1476,6 +1589,7 @@ test5(void)
     int nret = EXIT_FAILURE;
     unsigned char *pixels = malloc(1);
     unsigned char *palette = malloc(3);
+    unsigned char *u8pixels;
     SIXELSTATUS status;
 
     palette[0] = 0x43;
@@ -1516,15 +1630,17 @@ test5(void)
         goto error;
     }
 
-    if (frame->pixels[0] != 0x43) {
+    u8pixels = frame->pixels.u8ptr;
+
+    if (u8pixels[0] != 0x43) {
         goto error;
     }
 
-    if (frame->pixels[1] != 0x89) {
+    if (u8pixels[1] != 0x89) {
         goto error;
     }
 
-    if (frame->pixels[2] != 0x97) {
+    if (u8pixels[2] != 0x97) {
         goto error;
     }
 
@@ -1543,6 +1659,7 @@ test6(void)
     int nret = EXIT_FAILURE;
     unsigned char *pixels = malloc(6);
     unsigned char *palette = malloc(3);
+    unsigned char *u8pixels;
     SIXELSTATUS status;
 
     palette[0] = 0x43;
@@ -1583,15 +1700,17 @@ test6(void)
         goto error;
     }
 
-    if (frame->pixels[0] != 0x43) {
+    u8pixels = frame->pixels.u8ptr;
+
+    if (u8pixels[0] != 0x43) {
         goto error;
     }
 
-    if (frame->pixels[1] != 0x89) {
+    if (u8pixels[1] != 0x89) {
         goto error;
     }
 
-    if (frame->pixels[2] != 0x97) {
+    if (u8pixels[2] != 0x97) {
         goto error;
     }
 
