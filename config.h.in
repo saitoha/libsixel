@@ -18,6 +18,12 @@
 /* define 1 if GCC supports -Bsymbolic */
 #undef HAVE_BSYMBOLIC
 
+/* Define if __builtin_cpu_init is available */
+#undef HAVE_BUILTIN_CPU_INIT
+
+/* Define if __builtin_cpu_supports is available */
+#undef HAVE_BUILTIN_CPU_SUPPORTS
+
 /* Define to 1 if you have the 'calloc' function. */
 #undef HAVE_CALLOC
 
@@ -38,6 +44,9 @@
 
 /* whether CoreGraphics is available */
 #undef HAVE_COREGRAPHICS
+
+/* Define to 1 if you have the <cpuid.h> header file. */
+#undef HAVE_CPUID_H
 
 /* Define to 1 if you have the <ctype.h> header file. */
 #undef HAVE_CTYPE_H
@@ -212,6 +221,9 @@
 
 /* Define to 1 if you have the 'gettimeofday' function. */
 #undef HAVE_GETTIMEOFDAY
+
+/* Define to 1 if you have the <immintrin.h> header file. */
+#undef HAVE_IMMINTRIN_H
 
 /* Define to 1 if you have the <intrin.h> header file. */
 #undef HAVE_INTRIN_H

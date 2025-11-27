@@ -24,9 +24,23 @@
 #ifndef LIBSIXEL_SCALE_H
 #define LIBSIXEL_SCALE_H
 
+#include <sixel.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+SIXELAPI int
+sixel_helper_scale_image_float32(
+    float             /* out */ *dst,
+    float const       /* in */  *src,
+    int               /* in */  srcw,
+    int               /* in */  srch,
+    int               /* in */  pixelformat,
+    int               /* in */  dstw,
+    int               /* in */  dsth,
+    int               /* in */  method_for_resampling,
+    sixel_allocator_t /* in */  *allocator);
 
 #if HAVE_TESTS
 SIXELAPI int

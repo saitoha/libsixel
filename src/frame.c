@@ -42,6 +42,7 @@
 #include "frame.h"
 #include "pixelformat.h"
 #include "compat_stub.h"
+#include "scale.h"
 
 #if !defined(HAVE_MEMMOVE)
 # define memmove(d, s, n) (bcopy ((s), (d), (n)))
@@ -1183,6 +1184,162 @@ out:
     status = SIXEL_OK;
 
 end:
+    sixel_frame_unref(frame);
+
+    return status;
+}
+
+
+/*
+ * Resize a frame using float buffers.  Non-nearest filters run in linear
+ * RGB so interpolation blends radiometrically instead of on gamma encoded
+ * values.  Callers can still request nearest-neighbor sampling, in which
+ * case the routine preserves the frame's current colorspace while scaling.
+ */
+SIXELAPI SIXELSTATUS
+sixel_frame_resize_float32(
+    sixel_frame_t *frame,
+    int width,
+    int height,
+    int method_for_resampling
+)
+{
+    SIXELSTATUS status = SIXEL_FALSE;
+    size_t pixel_total;
+    size_t size;
+    float *scaled_frame;
+    int depth;
+    int depth_bytes;
+    int target_pixelformat;
+
+    scaled_frame = NULL;
+    pixel_total = 0u;
+    size = 0u;
+    depth = 0;
+    target_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+
+    sixel_frame_ref(frame);
+
+    if (width <= 0) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_resize_float32: "
+            "an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height <= 0) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_resize_float32: "
+            "an invalid width parameter detected.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (width > SIXEL_WIDTH_LIMIT) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_resize_float32: "
+            "given width parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (height > SIXEL_HEIGHT_LIMIT) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_resize_float32: "
+            "given height parameter is too huge.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    if (width == frame->width && height == frame->height) {
+        goto out;
+    }
+
+    if (method_for_resampling == SIXEL_RES_NEAREST) {
+        target_pixelformat =
+            sixel_frame_float_pixelformat_for_colorspace(
+                frame->colorspace);
+    } else {
+        target_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+    }
+
+    status = sixel_frame_set_pixelformat(frame, target_pixelformat);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    depth_bytes = sixel_helper_compute_depth(frame->pixelformat);
+    if (depth_bytes <= 0) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_resize_float32: "
+            "invalid pixelformat depth.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    /*
+     * sixel_helper_compute_depth() returns bytes per pixel.  Convert the
+     * value to channels for validation and reuse the byte count for buffer
+     * sizing to avoid overflow on float formats.
+     */
+    if (depth_bytes % (int)sizeof(float) != 0) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_resize_float32: "
+            "pixelformat depth is not float-aligned.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+    depth = depth_bytes / (int)sizeof(float);
+
+    if (depth != 3) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_resize_float32: "
+            "unsupported channel count.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    pixel_total = (size_t)width * (size_t)height;
+    if (pixel_total > SIZE_MAX / (size_t)depth_bytes) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_resize_float32: buffer size overflow.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    size = pixel_total * (size_t)depth_bytes;
+
+    scaled_frame = (float *)sixel_allocator_malloc(frame->allocator, size);
+    if (scaled_frame == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_resize_float32: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    status = sixel_helper_scale_image_float32(
+        scaled_frame,
+        frame->pixels.f32ptr,
+        frame->width,
+        frame->height,
+        frame->pixelformat,
+        width,
+        height,
+        method_for_resampling,
+        frame->allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    sixel_allocator_free(frame->allocator, frame->pixels.f32ptr);
+    frame->pixels.f32ptr = scaled_frame;
+    frame->width = width;
+    frame->height = height;
+
+out:
+    status = SIXEL_OK;
+
+end:
+    if (SIXEL_FAILED(status) && scaled_frame != NULL) {
+        sixel_allocator_free(frame->allocator, scaled_frame);
+    }
     sixel_frame_unref(frame);
 
     return status;

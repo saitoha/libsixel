@@ -18448,6 +18448,12 @@ then :
   printf "%s\n" "#define HAVE_INTTYPES_H 1" >>confdefs.h
 
 fi
+ac_fn_c_check_header_compile "$LINENO" "strings.h" "ac_cv_header_strings_h" "$ac_includes_default"
+if test "x$ac_cv_header_strings_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_STRINGS_H 1" >>confdefs.h
+
+fi
 ac_fn_c_check_header_compile "$LINENO" "intrin.h" "ac_cv_header_intrin_h" "$ac_includes_default"
 if test "x$ac_cv_header_intrin_h" = xyes
 then :
@@ -18458,6 +18464,18 @@ ac_fn_c_check_header_compile "$LINENO" "emmintrin.h" "ac_cv_header_emmintrin_h" 
 if test "x$ac_cv_header_emmintrin_h" = xyes
 then :
   printf "%s\n" "#define HAVE_EMMINTRIN_H 1" >>confdefs.h
+
+fi
+ac_fn_c_check_header_compile "$LINENO" "immintrin.h" "ac_cv_header_immintrin_h" "$ac_includes_default"
+if test "x$ac_cv_header_immintrin_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_IMMINTRIN_H 1" >>confdefs.h
+
+fi
+ac_fn_c_check_header_compile "$LINENO" "cpuid.h" "ac_cv_header_cpuid_h" "$ac_includes_default"
+if test "x$ac_cv_header_cpuid_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_CPUID_H 1" >>confdefs.h
 
 fi
 ac_fn_c_check_header_compile "$LINENO" "arm_neon.h" "ac_cv_header_arm_neon_h" "$ac_includes_default"
@@ -18497,6 +18515,72 @@ then :
 
 fi
 
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for __builtin_cpu_supports" >&5
+printf %s "checking for __builtin_cpu_supports... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main (void)
+{
+
+        #if !defined(__GNUC__) && !defined(__clang__)
+        # error
+        #endif
+        __builtin_cpu_supports("sse2");
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+
+printf "%s\n" "#define HAVE_BUILTIN_CPU_SUPPORTS 1" >>confdefs.h
+
+     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; } ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for __builtin_cpu_init" >&5
+printf %s "checking for __builtin_cpu_init... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main (void)
+{
+
+        #if !defined(__GNUC__) && !defined(__clang__)
+        # error
+        #endif
+        __builtin_cpu_init();
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+
+printf "%s\n" "#define HAVE_BUILTIN_CPU_INIT 1" >>confdefs.h
+
+     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; } ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
 
 # Checks for typedefs, structures, and compiler characteristics.
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for inline" >&5
