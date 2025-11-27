@@ -2578,6 +2578,8 @@ sixel_palette_float_pixelformat_for_colorspace(int colorspace)
         return SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
     case SIXEL_COLORSPACE_OKLAB:
         return SIXEL_PIXELFORMAT_OKLABFLOAT32;
+    case SIXEL_COLORSPACE_CIELAB:
+        return SIXEL_PIXELFORMAT_CIELABFLOAT32;
     default:
         return SIXEL_PIXELFORMAT_RGBFLOAT32;
     }

@@ -348,7 +348,8 @@ static sixel_option_choice_t const g_option_choices_lut_policy[] = {
 static sixel_option_choice_t const g_option_choices_working_colorspace[] = {
     { "gamma", SIXEL_COLORSPACE_GAMMA },
     { "linear", SIXEL_COLORSPACE_LINEAR },
-    { "oklab", SIXEL_COLORSPACE_OKLAB }
+    { "oklab", SIXEL_COLORSPACE_OKLAB },
+    { "cielab", SIXEL_COLORSPACE_CIELAB }
 };
 
 static sixel_option_choice_t const g_option_choices_output_colorspace[] = {
@@ -367,6 +368,8 @@ sixel_encoder_pixelformat_for_colorspace(int colorspace,
         return SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
     case SIXEL_COLORSPACE_OKLAB:
         return SIXEL_PIXELFORMAT_OKLABFLOAT32;
+    case SIXEL_COLORSPACE_CIELAB:
+        return SIXEL_PIXELFORMAT_CIELABFLOAT32;
     default:
         if (prefer_float32) {
             return SIXEL_PIXELFORMAT_RGBFLOAT32;

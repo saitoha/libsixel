@@ -1511,6 +1511,7 @@ sixel_dither_initialize(
     case SIXEL_PIXELFORMAT_RGBFLOAT32:
     case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
     case SIXEL_PIXELFORMAT_OKLABFLOAT32:
+    case SIXEL_PIXELFORMAT_CIELABFLOAT32:
         if (prefer_float32) {
             input_pixels = data;
             palette_pixelformat = pixelformat;

@@ -696,6 +696,7 @@ steps.
                              gamma  -> sRGB gamma(default)
                              linear -> linear RGB color space
                              oklab  -> OKLab color space
+                             cielab -> CIELAB color space
 -U OUTPUT_COLORSPACE, --output-colorspace=OUTPUT_COLORSPACE
                            choose output color space
                              gamma   -> sRGB gamma(default)
@@ -747,7 +748,8 @@ SIXEL_FLOAT32_DITHER       opt into the experimental RGBFLOAT32
                            RGBFLOAT32 before palette generation.
                            Frames converted via `-W linear` or
                            `-W oklab` keep their values in
-                           LINEARRGBFLOAT32 or OKLABFLOAT32 so
+                           LINEARRGBFLOAT32, OKLABFLOAT32, or
+                           CIELABFLOAT32 so
                            the working colorspace changes no
                            longer quantize back to 8bit.
                            Allocation failures automatically fall
