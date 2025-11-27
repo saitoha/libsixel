@@ -500,6 +500,7 @@ SIXEL_OPTFLAG_WORKING_COLORSPACE = 'W'  # -W WORKING_COLORSPACE, --working-color
                                       #          gamma  -> keep gamma encoded pixels
                                       #          linear -> convert to linear RGB
                                       #          oklab  -> operate in OKLab
+                                      #          cielab -> operate in CIELAB
 SIXEL_OPTFLAG_OUTPUT_COLORSPACE = 'U'  # -U OUTPUT_COLORSPACE, --output-colorspace=OUTPUT_COLORSPACE:
                                       #        select output buffer color space.
                                       #          gamma   -> sRGB gamma encoded output

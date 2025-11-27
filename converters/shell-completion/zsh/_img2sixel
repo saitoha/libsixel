@@ -153,7 +153,8 @@ _workingcolorspace() {
     'WORKINGCOLORSPACE' \
     'gamma[keep gamma encoded pixels (default)]' \
     'linear[use linear RGB as working space]' \
-    'oklab[operate in OKLab uniform color space]'
+    'oklab[operate in OKLab uniform color space]' \
+    'cielab[operate in CIELAB uniform color space]'
 }
 
 _outputcolorspace() {

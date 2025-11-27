@@ -68,8 +68,8 @@ sources in a float format until the final palette is emitted.
 3. Request the float precision flag through ``encoder.setopt('.',
    'float32')`` so that automatic image loading uses the expanded path.
 4. Select a working colorspace via ``encoder.setopt('W', 'linear')`` or
-   ``'oklab'`` if you want libsixel to convert the source prior to
-   quantization without dropping back to 8-bit.
+   ``'oklab'``/``'cielab'`` if you want libsixel to convert the source prior
+   to quantization without dropping back to 8-bit.
 5. When passing custom buffers to ``encode_bytes`` choose one of the
    float pixel format constants exposed via ``Libsixel::API``:
 

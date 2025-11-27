@@ -98,7 +98,8 @@ preserve float data end-to-end:
 
 5. Combine the precision flag with the working colorspace option
    (``-W`` in the CLI, ``SIXEL_OPTFLAG_WORKING_COLORSPACE`` in Python)
-   to convert into ``linear`` or ``oklab`` before quantization while the
+   to convert into ``linear``, ``oklab``, or ``cielab`` before quantization
+   while the
    float buffers stay intact.
 
 
