@@ -467,6 +467,9 @@
 /* Define to 1 if you have the '_commit' function. */
 #undef HAVE__COMMIT
 
+/* Define to 1 if you have the '_dupenv_s' function. */
+#undef HAVE__DUPENV_S
+
 /* Define to 1 if you have the '_fileno' function. */
 #undef HAVE__FILENO
 

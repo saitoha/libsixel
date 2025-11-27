@@ -19007,6 +19007,12 @@ then :
   printf "%s\n" "#define HAVE__REALPATH 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "_dupenv_s" "ac_cv_func__dupenv_s"
+if test "x$ac_cv_func__dupenv_s" = xyes
+then :
+  printf "%s\n" "#define HAVE__DUPENV_S 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "realpath" "ac_cv_func_realpath"
 if test "x$ac_cv_func_realpath" = xyes
 then :
