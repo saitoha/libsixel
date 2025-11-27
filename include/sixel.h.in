@@ -1455,6 +1455,14 @@ sixel_frame_resize(
     int            /* in */ height,
     int            /* in */ method_for_resampling);
 
+/* resize a frame in float precision with specified resampling filter */
+SIXELAPI SIXELSTATUS
+sixel_frame_resize_float32(
+    sixel_frame_t  /* in */ *frame,
+    int            /* in */ width,
+    int            /* in */ height,
+    int            /* in */ method_for_resampling);
+
 /* clip frame */
 SIXELAPI SIXELSTATUS
 sixel_frame_clip(
