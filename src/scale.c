@@ -1433,7 +1433,9 @@ scale_with_resampling_float32(
     double total;
     double offsets[8];
     float *tmp;
+#if defined(SIXEL_USE_SSE2) || defined(SIXEL_USE_NEON)
     float vecbuf[4];
+#endif
     int simd_level;
 #if defined(SIXEL_USE_AVX512)
     __m512 acc512;
