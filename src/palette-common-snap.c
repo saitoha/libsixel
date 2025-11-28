@@ -204,10 +204,12 @@ sixel_palette_snap_float_triplet(float *components,
     float working_palette[3];
     unsigned char snapped_bytes[3];
     int colorspace;
+    int original_pixelformat;
     int channel;
 
     status = SIXEL_OK;
     colorspace = sixel_palette_determine_colorspace(pixelformat);
+    original_pixelformat = pixelformat;
     if (components == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -224,7 +226,8 @@ sixel_palette_snap_float_triplet(float *components,
     }
 
     memcpy(working_palette, components, sizeof(working_palette));
-    sixel_palette_clamp_float_triplet(working_palette, pixelformat);
+    sixel_palette_clamp_float_triplet(working_palette,
+                                      original_pixelformat);
     if (colorspace != SIXEL_COLORSPACE_GAMMA) {
         status = sixel_helper_convert_colorspace(
             (unsigned char *)working_palette,
@@ -263,7 +266,8 @@ sixel_palette_snap_float_triplet(float *components,
         }
     }
 
-    sixel_palette_clamp_float_triplet(working_palette, pixelformat);
+    sixel_palette_clamp_float_triplet(working_palette,
+                                      original_pixelformat);
     memcpy(components, working_palette, sizeof(working_palette));
 
     return SIXEL_OK;
