@@ -17,13 +17,11 @@
 #if HAVE_CPUID_H
 # include <cpuid.h>
 #endif
-#if defined(_MSC_VER)
-# if HAVE_INTRIN_H
-#  include <intrin.h>
-# endif
-# if HAVE_IMMINTRIN_H
-#  include <immintrin.h>
-# endif
+#if HAVE_INTRIN_H
+# include <intrin.h>
+#endif
+#if HAVE_IMMINTRIN_H
+# include <immintrin.h>
 #endif
 
 #include "cpu.h"
@@ -42,8 +40,7 @@ sixel_cpu_env_cap(void)
     if (strcasecmp(env, "auto") == 0) {
         return SIXEL_SIMD_LEVEL_NEON;
     }
-    if (strcasecmp(env, "none") == 0 ||
-        strcasecmp(env, "scalar") == 0) {
+    if (strcasecmp(env, "none") == 0 || strcasecmp(env, "scalar") == 0) {
         return SIXEL_SIMD_LEVEL_SCALAR;
     }
     if (strcasecmp(env, "sse2") == 0) {
@@ -70,8 +67,8 @@ sixel_cpu_detect_native(void)
     enum sixel_simd_level level;
 
     level = SIXEL_SIMD_LEVEL_SCALAR;
-#if defined(__x86_64__) || defined(_M_X64) || \
-    defined(__i386) || defined(_M_IX86)
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
+    defined(_M_IX86)
 # if HAVE_BUILTIN_CPU_INIT
     __builtin_cpu_init();
 # endif
@@ -110,8 +107,7 @@ sixel_cpu_detect_native(void)
             }
         }
     }
-    if (level == SIXEL_SIMD_LEVEL_SCALAR &&
-        (cpu_info[3] & (1 << 26))) {
+    if (level == SIXEL_SIMD_LEVEL_SCALAR && (cpu_info[3] & (1 << 26))) {
         level = SIXEL_SIMD_LEVEL_SSE2;
     }
 # elif HAVE_CPUID_H
@@ -148,7 +144,10 @@ sixel_cpu_detect_native(void)
 static enum sixel_simd_level
 sixel_cpu_min(enum sixel_simd_level lhs, enum sixel_simd_level rhs)
 {
-    return lhs < rhs ? lhs : rhs;
+    if (lhs < rhs) {
+        return lhs;
+    }
+    return rhs;
 }
 
 int

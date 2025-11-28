@@ -3179,15 +3179,6 @@ sixel_encoder_do_resize(
         dst_width = src_width * dst_height / src_height;
     }
 
-    if (encoder->method_for_resampling != SIXEL_RES_NEAREST) {
-        if (SIXEL_PIXELFORMAT_IS_FLOAT32(encoder->working_colorspace)) {
-            use_float_resize = 1;
-        }
-        if (encoder->prefer_float32) {
-            use_float_resize = 1;
-        }
-    }
-
     sixel_encoder_log_stage(encoder,
                             frame,
                             "scale",
@@ -3202,6 +3193,16 @@ sixel_encoder_do_resize(
 
     /* do resize */
     if (dst_width > 0 && dst_height > 0) {
+        if (encoder->method_for_resampling != SIXEL_RES_NEAREST) {
+            if (SIXEL_PIXELFORMAT_IS_FLOAT32(
+                    encoder->working_colorspace) != 0) {
+                use_float_resize = 1;
+            }
+            if (encoder->prefer_float32 != 0) {
+                use_float_resize = 1;
+            }
+        }
+
         if (use_float_resize != 0) {
             status = sixel_frame_resize_float32(
                 frame,

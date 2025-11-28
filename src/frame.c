@@ -1189,22 +1189,20 @@ end:
     return status;
 }
 
-
 /*
- * Resize a frame using float buffers.  Non-nearest filters run in linear
- * RGB so interpolation blends radiometrically instead of on gamma encoded
- * values.  Callers can still request nearest-neighbor sampling, in which
- * case the routine preserves the frame's current colorspace while scaling.
+ * Resize a frame using float buffers. Non-nearest filters run in linear RGB
+ * so interpolation blends radiometrically instead of on gamma encoded values.
+ * Callers can still request nearest-neighbor sampling, in which case the
+ * routine preserves the frame's current colorspace while scaling.
  */
 SIXELAPI SIXELSTATUS
 sixel_frame_resize_float32(
     sixel_frame_t *frame,
     int width,
     int height,
-    int method_for_resampling
-)
+    int method_for_resampling)
 {
-    SIXELSTATUS status = SIXEL_FALSE;
+    SIXELSTATUS status;
     size_t pixel_total;
     size_t size;
     float *scaled_frame;
@@ -1212,10 +1210,12 @@ sixel_frame_resize_float32(
     int depth_bytes;
     int target_pixelformat;
 
+    status = SIXEL_FALSE;
     scaled_frame = NULL;
     pixel_total = 0u;
     size = 0u;
     depth = 0;
+    depth_bytes = 0;
     target_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
 
     sixel_frame_ref(frame);
@@ -1276,7 +1276,7 @@ sixel_frame_resize_float32(
     }
 
     /*
-     * sixel_helper_compute_depth() returns bytes per pixel.  Convert the
+     * sixel_helper_compute_depth() returns bytes per pixel. Convert the
      * value to channels for validation and reuse the byte count for buffer
      * sizing to avoid overflow on float formats.
      */
@@ -1309,7 +1309,8 @@ sixel_frame_resize_float32(
     scaled_frame = (float *)sixel_allocator_malloc(frame->allocator, size);
     if (scaled_frame == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_frame_resize_float32: sixel_allocator_malloc() failed.");
+            "sixel_frame_resize_float32: "
+            "sixel_allocator_malloc() failed.");
         status = SIXEL_BAD_ALLOCATION;
         goto end;
     }
