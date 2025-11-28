@@ -17,11 +17,13 @@
 #if HAVE_CPUID_H
 # include <cpuid.h>
 #endif
-#if HAVE_INTRIN_H
-# include <intrin.h>
-#endif
-#if HAVE_IMMINTRIN_H
-# include <immintrin.h>
+#if defined(_MSC_VER)
+# if HAVE_INTRIN_H
+#  include <intrin.h>
+# endif
+# if HAVE_IMMINTRIN_H
+#  include <immintrin.h>
+# endif
 #endif
 
 #include "cpu.h"
