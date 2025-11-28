@@ -117,6 +117,7 @@ def render(
     events: List[ParallelEvent],
     output: str,
     sort_order: str,
+    lifetime_only: bool = False,
     start_time: float = None,
     end_time: float = None,
 ) -> None:
@@ -155,24 +156,48 @@ def render(
                 event.job >= 0:
             job_hint[row_key] = event.job
 
-    # Collapse decode/copy phases per thread so one row shows the full worker
-    # activity while keeping per-role colors.
     threads: Dict[Tuple[str, int], List[Tuple[float, float, str, int]]] = {}
-    for (worker, role, thread, job), (start, end) in spans.items():
-        row_key = _row_key(worker, thread, job)
-        duration = max(0.0, end - start)
-        if start_time is not None and end < start_time:
-            continue
-        if end_time is not None and start > end_time:
-            continue
-        if start_time is not None:
-            start = max(start, start_time)
-        if end_time is not None:
-            end = min(end, end_time)
-        duration = max(0.0, end - start)
-        if row_key not in threads:
-            threads[row_key] = []
-        threads[row_key].append((start, duration, role, job))
+    if lifetime_only:
+        row_spans: Dict[Tuple[str, int], Tuple[float, float]] = {}
+        for (worker, _role, thread, job), (start, end) in spans.items():
+            row_key = _row_key(worker, thread, job)
+            if row_key not in row_spans:
+                row_spans[row_key] = (start, end)
+            else:
+                row_start, row_end = row_spans[row_key]
+                row_spans[row_key] = (row_start, max(row_end, end))
+        for row_key, (start, end) in row_spans.items():
+            if start_time is not None and end < start_time:
+                continue
+            if end_time is not None and start > end_time:
+                continue
+            if start_time is not None:
+                start = max(start, start_time)
+            if end_time is not None:
+                end = min(end, end_time)
+            duration = max(0.0, end - start)
+            role = primary_role.get(row_key, "")
+            if row_key not in threads:
+                threads[row_key] = []
+            threads[row_key].append((start, duration, role, -1))
+    else:
+        # Collapse decode/copy phases per thread so one row shows the full
+        # worker activity while keeping per-role colors.
+        for (worker, role, thread, job), (start, end) in spans.items():
+            row_key = _row_key(worker, thread, job)
+            duration = max(0.0, end - start)
+            if start_time is not None and end < start_time:
+                continue
+            if end_time is not None and start > end_time:
+                continue
+            if start_time is not None:
+                start = max(start, start_time)
+            if end_time is not None:
+                end = min(end, end_time)
+            duration = max(0.0, end - start)
+            if row_key not in threads:
+                threads[row_key] = []
+            threads[row_key].append((start, duration, role, job))
 
     for key in threads:
         threads[key].sort(key=lambda item: item[0])
@@ -320,6 +345,15 @@ def main() -> None:
             "to zoom into a portion of the log"
         ),
     )
+    parser.add_argument(
+        "--lifetime-only",
+        action="store_true",
+        help=(
+            "Render each worker/thread row using only the first and last "
+            "timestamps seen so you can view the active window without "
+            "showing every job"
+        ),
+    )
     args = parser.parse_args()
 
     events = load_events(args.logfile)
@@ -329,6 +363,7 @@ def main() -> None:
     render(events,
            args.output,
            args.sort_order,
+           lifetime_only=args.lifetime_only,
            start_time=args.start_time,
            end_time=args.end_time)
 
