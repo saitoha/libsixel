@@ -3,22 +3,23 @@
  *
  * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 #include "config.h"
@@ -29,6 +30,16 @@
 #include <sixel.h>
 
 #include "colorspace.h"
+#include "cpu.h"
+
+#if defined(HAVE_NEON)
+# if (defined(__ARM_NEON) || defined(__ARM_NEON__))
+#  if defined(HAVE_ARM_NEON_H)
+#   include <arm_neon.h>
+#   define SIXEL_USE_NEON 1
+#  endif
+# endif
+#endif
 
 #define SIXEL_COLORSPACE_LUT_SIZE 256
 #define SIXEL_OKLAB_AB_OFFSET 0.5
@@ -50,6 +61,12 @@ static const double sixel_linear_smptec_to_srgb_matrix[3][3] = {
     { 0.01777536262173348, 0.9657705626655305,  0.01643197976410589 },
     { -0.0016219271954016755, -0.00436969856687614,  1.0057514450874723 }
 };
+
+#if defined(SIXEL_USE_NEON)
+static uint8x16x4_t sixel_neon_gamma_to_linear[4];
+static uint8x16x4_t sixel_neon_linear_to_gamma[4];
+static int sixel_neon_tables_initialized = 0;
+#endif
 
 static unsigned char gamma_to_linear_lut[SIXEL_COLORSPACE_LUT_SIZE];
 static unsigned char linear_to_gamma_lut[SIXEL_COLORSPACE_LUT_SIZE];
@@ -189,6 +206,268 @@ sixel_din99d_clamp_ab(double value)
     }
 
     return value;
+}
+#endif
+
+#if defined(SIXEL_USE_NEON)
+/*
+ * SIMD lookup helpers accelerate the gamma/linear LUT path on NEON.
+ * A four-way 64-entry table maps the 256 entry LUT without branches.
+ */
+static void
+sixel_colorspace_fill_neon_table(uint8x16x4_t *table,
+                                 const unsigned char *source)
+{
+    int index;
+
+    for (index = 0; index < 4; ++index) {
+        const unsigned char *chunk = source + (index * 16);
+
+        table->val[index] = vld1q_u8(chunk);
+    }
+}
+
+static void
+sixel_colorspace_prepare_neon_tables(void)
+{
+    int block;
+
+    if (sixel_neon_tables_initialized) {
+        return;
+    }
+
+    for (block = 0; block < 4; ++block) {
+        const unsigned char *gamma_src;
+        const unsigned char *linear_src;
+
+        gamma_src = gamma_to_linear_lut + (block * 64);
+        linear_src = linear_to_gamma_lut + (block * 64);
+
+        sixel_colorspace_fill_neon_table(
+            &sixel_neon_gamma_to_linear[block],
+            gamma_src);
+        sixel_colorspace_fill_neon_table(
+            &sixel_neon_linear_to_gamma[block],
+            linear_src);
+    }
+
+    sixel_neon_tables_initialized = 1;
+}
+
+static inline uint8x16_t
+sixel_colorspace_lookup_neon(uint8x16x4_t *table, uint8x16_t index)
+{
+    uint8x16_t block;
+    uint8x16_t block_mask;
+    uint8x16_t local_index;
+    uint8x16_t result;
+    uint8x16_t selection;
+
+    block = vshrq_n_u8(index, 6);
+    local_index = vandq_u8(index, vdupq_n_u8(0x3f));
+
+    result = vdupq_n_u8(0);
+    selection = vqtbl4q_u8(table[0], local_index);
+    block_mask = vceqq_u8(block, vdupq_n_u8(0));
+    result = vbslq_u8(block_mask, selection, result);
+
+    selection = vqtbl4q_u8(table[1], local_index);
+    block_mask = vceqq_u8(block, vdupq_n_u8(1));
+    result = vbslq_u8(block_mask, selection, result);
+
+    selection = vqtbl4q_u8(table[2], local_index);
+    block_mask = vceqq_u8(block, vdupq_n_u8(2));
+    result = vbslq_u8(block_mask, selection, result);
+
+    selection = vqtbl4q_u8(table[3], local_index);
+    block_mask = vceqq_u8(block, vdupq_n_u8(3));
+    result = vbslq_u8(block_mask, selection, result);
+
+    return result;
+}
+
+static inline uint8x16_t
+sixel_colorspace_alpha_mask_neon(int pixelformat)
+{
+    static const uint8_t mask_rgba[16] = {
+        0, 0, 0, 255, 0, 0, 0, 255,
+        0, 0, 0, 255, 0, 0, 0, 255
+    };
+    static const uint8_t mask_bgra[16] = {
+        0, 0, 0, 255, 0, 0, 0, 255,
+        0, 0, 0, 255, 0, 0, 0, 255
+    };
+    static const uint8_t mask_argb[16] = {
+        255, 0, 0, 0, 255, 0, 0, 0,
+        255, 0, 0, 0, 255, 0, 0, 0
+    };
+    static const uint8_t mask_abgr[16] = {
+        255, 0, 0, 0, 255, 0, 0, 0,
+        255, 0, 0, 0, 255, 0, 0, 0
+    };
+    static const uint8_t mask_ga[16] = {
+        0, 255, 0, 255, 0, 255, 0, 255,
+        0, 255, 0, 255, 0, 255, 0, 255
+    };
+    static const uint8_t mask_ag[16] = {
+        255, 0, 255, 0, 255, 0, 255, 0,
+        255, 0, 255, 0, 255, 0, 255, 0
+    };
+
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGBA8888:
+        return vld1q_u8(mask_rgba);
+    case SIXEL_PIXELFORMAT_BGRA8888:
+        return vld1q_u8(mask_bgra);
+    case SIXEL_PIXELFORMAT_ARGB8888:
+        return vld1q_u8(mask_argb);
+    case SIXEL_PIXELFORMAT_ABGR8888:
+        return vld1q_u8(mask_abgr);
+    case SIXEL_PIXELFORMAT_GA88:
+        return vld1q_u8(mask_ga);
+    case SIXEL_PIXELFORMAT_AG88:
+        return vld1q_u8(mask_ag);
+    default:
+        return vdupq_n_u8(0);
+    }
+}
+
+static void
+sixel_colorspace_apply_neon(unsigned char *pixels,
+                            size_t size,
+                            int pixelformat,
+                            const unsigned char *lut)
+{
+    uint8x16x4_t *table;
+    uint8x16_t mask;
+    size_t offset;
+    size_t remaining;
+    uint8_t mask_buffer[16];
+
+    sixel_colorspace_prepare_neon_tables();
+
+    if (lut == gamma_to_linear_lut) {
+        table = sixel_neon_gamma_to_linear;
+    } else {
+        table = sixel_neon_linear_to_gamma;
+    }
+
+    mask = sixel_colorspace_alpha_mask_neon(pixelformat);
+    vst1q_u8(mask_buffer, mask);
+
+    offset = 0;
+    remaining = size;
+    while (remaining >= 16U) {
+        uint8x16_t input = vld1q_u8(pixels + offset);
+        uint8x16_t converted;
+        uint8x16_t preserved;
+
+        converted = sixel_colorspace_lookup_neon(table, input);
+        preserved = vbslq_u8(mask, input, converted);
+        vst1q_u8(pixels + offset, preserved);
+
+        offset += 16U;
+        remaining -= 16U;
+    }
+
+    while (remaining > 0U) {
+        unsigned char original;
+        unsigned char mapped;
+        size_t mask_index;
+
+        mask_index = offset % 16U;
+        original = pixels[offset];
+        mapped = lut[original];
+        if (mask_buffer[mask_index] == 0U) {
+            pixels[offset] = mapped;
+        }
+
+        ++offset;
+        --remaining;
+    }
+}
+
+static const unsigned char *
+sixel_colorspace_select_lut(int colorspace_src, int colorspace_dst)
+{
+    if (colorspace_src == SIXEL_COLORSPACE_GAMMA &&
+            colorspace_dst == SIXEL_COLORSPACE_LINEAR) {
+        return gamma_to_linear_lut;
+    }
+
+    if (colorspace_src == SIXEL_COLORSPACE_LINEAR &&
+            colorspace_dst == SIXEL_COLORSPACE_GAMMA) {
+        return linear_to_gamma_lut;
+    }
+
+    return NULL;
+}
+
+static int
+sixel_colorspace_neon_supported_format(int pixelformat)
+{
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGB888:
+    case SIXEL_PIXELFORMAT_BGR888:
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_G8:
+    case SIXEL_PIXELFORMAT_GA88:
+    case SIXEL_PIXELFORMAT_AG88:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+static SIXELSTATUS
+sixel_colorspace_convert_neon(unsigned char *pixels,
+                              size_t size,
+                              int pixelformat,
+                              int colorspace_src,
+                              int colorspace_dst)
+{
+    const unsigned char *lut;
+
+    lut = sixel_colorspace_select_lut(colorspace_src, colorspace_dst);
+    if (lut == NULL) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGB888:
+    case SIXEL_PIXELFORMAT_BGR888:
+        if (size % 3U != 0U) {
+            return SIXEL_BAD_INPUT;
+        }
+        sixel_colorspace_apply_neon(pixels, size, pixelformat, lut);
+        return SIXEL_OK;
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+        if (size % 4U != 0U) {
+            return SIXEL_BAD_INPUT;
+        }
+        sixel_colorspace_apply_neon(pixels, size, pixelformat, lut);
+        return SIXEL_OK;
+    case SIXEL_PIXELFORMAT_G8:
+        sixel_colorspace_apply_neon(pixels, size, pixelformat, lut);
+        return SIXEL_OK;
+    case SIXEL_PIXELFORMAT_GA88:
+    case SIXEL_PIXELFORMAT_AG88:
+        if (size % 2U != 0U) {
+            return SIXEL_BAD_INPUT;
+        }
+        sixel_colorspace_apply_neon(pixels, size, pixelformat, lut);
+        return SIXEL_OK;
+    default:
+        break;
+    }
+
+    return SIXEL_BAD_INPUT;
 }
 #endif
 
@@ -1237,6 +1516,22 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
                                                      colorspace_dst);
     }
 
+#if defined(SIXEL_USE_NEON)
+    if (sixel_cpu_simd_level() == SIXEL_SIMD_LEVEL_NEON &&
+            sixel_colorspace_neon_supported_format(pixelformat)) {
+        SIXELSTATUS neon_status;
+
+        neon_status = sixel_colorspace_convert_neon(pixels,
+                                                    size,
+                                                    pixelformat,
+                                                    colorspace_src,
+                                                    colorspace_dst);
+        if (neon_status == SIXEL_OK) {
+            return SIXEL_OK;
+        }
+    }
+#endif
+
     if (colorspace_src == SIXEL_COLORSPACE_OKLAB ||
             colorspace_dst == SIXEL_COLORSPACE_OKLAB ||
             colorspace_src == SIXEL_COLORSPACE_CIELAB ||
@@ -1252,7 +1547,8 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
                                                              colorspace_dst);
         if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
-                "sixel_helper_convert_colorspace: unsupported pixelformat for conversion.");
+                "sixel_helper_convert_colorspace: unsupported "
+                "pixelformat for conversion.");
         }
         return status;
     }
