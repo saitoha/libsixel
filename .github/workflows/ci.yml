@@ -240,10 +240,14 @@ jobs:
         $cygwinRoot = 'C:\cygwin'
         if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\cygwin64' }
         $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
+        $disableThreadsFlag = ''
+        if ('${{ matrix.disable_threads }}' -eq 'true') {
+          $disableThreadsFlag = '--disable-threads'
+        }
         $scriptLines = @(
           'set -eu',
           'set -o pipefail 2>/dev/null || true',
-          'disable_threads_flag="${{ matrix.disable_threads && "--disable-threads" || "" }}"',
+          "disable_threads_flag=\"$disableThreadsFlag\"",
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
           './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-debug --enable-tests --enable-gcov --disable-dependency-tracking ${disable_threads_flag}',
@@ -994,10 +998,14 @@ jobs:
         $cygwinRoot = 'C:\cygwin'
         if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\cygwin64' }
         $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
+        $disableThreadsFlag = ''
+        if ('${{ matrix.disable_threads }}' -eq 'true') {
+          $disableThreadsFlag = '-Dthreads=disabled'
+        }
         $scriptLines = @(
           'set -eu',
           'set -o pipefail 2>/dev/null || true',
-          'disable_threads_flag="${{ matrix.disable_threads && "-Dthreads=disabled" || "" }}"',
+          "disable_threads_flag=\"$disableThreadsFlag\"",
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
           'meson setup builddir --wrap-mode=nodownload --default-library static -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir= -Dzshcompletiondir= -Dpython=disabled -Dtests=true ${disable_threads_flag}',
