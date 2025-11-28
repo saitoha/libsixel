@@ -59,6 +59,7 @@ sixel_palette_apply_merge(unsigned long *weights,
                           int target,
                           int final_merge_mode,
                           int use_reversible,
+                          int pixelformat,
                           sixel_allocator_t *allocator);
 
 #ifdef __cplusplus
