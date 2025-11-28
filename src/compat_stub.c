@@ -45,6 +45,9 @@
 #if HAVE_STRING_H
 # include <string.h>
 #endif
+#if HAVE_STRINGS_H
+# include <strings.h>
+#endif
 #if HAVE_FCNTL_H
 # include <fcntl.h>
 #endif
@@ -188,6 +191,36 @@ sixel_compat_vsnprintf(char *buffer,
 #endif
 
     return written;
+}
+
+
+
+/*
+ * Case-insensitive string comparison used by runtime configuration parsing.
+ * The helper mirrors strcmp() semantics and tolerates NULL pairs so callers
+ * can reuse it in defensive paths without extra guards.
+ */
+SIXEL_COMPAT_API int
+sixel_compat_strcasecmp(char const *lhs, char const *rhs)
+{
+    int result;
+
+    result = 0;
+
+    if (lhs == NULL || rhs == NULL) {
+        if (lhs == rhs) {
+            return 0;
+        }
+        return (lhs == NULL) ? -1 : 1;
+    }
+
+#if defined(_WIN32)
+    result = _stricmp(lhs, rhs);
+#else
+    result = strcasecmp(lhs, rhs);
+#endif
+
+    return result;
 }
 
 
