@@ -72,12 +72,33 @@
 
 #if defined(HAVE_IMMINTRIN_H)
 # if defined(__GNUC__)
-#  define SIXEL_TARGET_AVX __attribute__((target("avx")))
-#  define SIXEL_TARGET_AVX2 __attribute__((target("avx2")))
-#  define SIXEL_TARGET_AVX512 __attribute__((target("avx512f")))
-#  define SIXEL_USE_AVX 1
-#  define SIXEL_USE_AVX2 1
-#  define SIXEL_USE_AVX512 1
+#  if !defined(__clang__)
+#   define SIXEL_TARGET_AVX __attribute__((target("avx")))
+#   define SIXEL_TARGET_AVX2 __attribute__((target("avx2")))
+#   define SIXEL_TARGET_AVX512 __attribute__((target("avx512f")))
+#   define SIXEL_USE_AVX 1
+#   define SIXEL_USE_AVX2 1
+#   define SIXEL_USE_AVX512 1
+#  else
+/*
+ * clang rejects returning AVX vectors when the translation unit target
+ * does not already include the corresponding ISA.  Guard runtime AVX
+ * helpers with compile-time ISA availability to keep non-AVX builds
+ * warning-free while still using AVX when the compiler enables it.
+ */
+#   define SIXEL_TARGET_AVX
+#   define SIXEL_TARGET_AVX2
+#   define SIXEL_TARGET_AVX512
+#   if defined(__AVX__)
+#    define SIXEL_USE_AVX 1
+#   endif
+#   if defined(__AVX2__)
+#    define SIXEL_USE_AVX2 1
+#   endif
+#   if defined(__AVX512F__)
+#    define SIXEL_USE_AVX512 1
+#   endif
+#  endif
 # else
 #  define SIXEL_TARGET_AVX
 #  define SIXEL_TARGET_AVX2
