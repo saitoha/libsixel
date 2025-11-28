@@ -503,6 +503,13 @@ sixel_colorspace_apply_neon(unsigned char *pixels,
 
 #endif
 
+/*
+ * SIMD kernels share this LUT selector.  MinGW builds without SIMD support
+ * do not reference it, so we hide the definition unless a SIMD path is
+ * compiled in to avoid -Werror=unused-function.
+ */
+#if defined(SIXEL_USE_NEON) || defined(SIXEL_USE_SSE2) || \
+        defined(SIXEL_USE_AVX2) || defined(SIXEL_USE_AVX512)
 static const unsigned char *
 sixel_colorspace_select_lut(int colorspace_src, int colorspace_dst)
 {
@@ -518,6 +525,7 @@ sixel_colorspace_select_lut(int colorspace_src, int colorspace_dst)
 
     return NULL;
 }
+#endif
 
 #if (defined(SIXEL_USE_AVX2) && defined(__AVX2__)) || \
         (defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
