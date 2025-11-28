@@ -94,9 +94,7 @@ host_triplet = @host@
 @SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/sixel_threading.c \
 @SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/sixel_threading.h \
 @SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/threadpool.c \
-@SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/threadpool.h \
-@SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/decoder-parallel.c \
-@SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/decoder-parallel.h
+@SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/threadpool.h
 
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__append_2 = \
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@                $(srcdir)/quicklook_thumbnailing.m
@@ -192,6 +190,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/clipboard.c \
 	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
 	$(srcdir)/decoder.c $(srcdir)/decoder.h \
+	$(srcdir)/decoder-parallel.c $(srcdir)/decoder-parallel.h \
 	$(srcdir)/decoder-image.h $(srcdir)/options.c \
 	$(srcdir)/options.h $(srcdir)/stb_image.h $(srcdir)/writer.c \
 	$(srcdir)/writer.h $(srcdir)/stb_image_write.c \
@@ -205,12 +204,10 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/rgblookup.h $(srcdir)/lso2.h \
 	$(srcdir)/sixel_threading.c $(srcdir)/sixel_threading.h \
 	$(srcdir)/threadpool.c $(srcdir)/threadpool.h \
-	$(srcdir)/decoder-parallel.c $(srcdir)/decoder-parallel.h \
 	$(srcdir)/quicklook_thumbnailing.m $(srcdir)/clipboard_macos.m
 @SIXEL_ENABLE_THREADS_TRUE@am__objects_1 =  \
 @SIXEL_ENABLE_THREADS_TRUE@	libsixel_la-sixel_threading.lo \
-@SIXEL_ENABLE_THREADS_TRUE@	libsixel_la-threadpool.lo \
-@SIXEL_ENABLE_THREADS_TRUE@	libsixel_la-decoder-parallel.lo
+@SIXEL_ENABLE_THREADS_TRUE@	libsixel_la-threadpool.lo
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__objects_2 = libsixel_la-quicklook_thumbnailing.lo
 @HAVE_CLIPBOARD_MACOS_TRUE@am__objects_3 =  \
 @HAVE_CLIPBOARD_MACOS_TRUE@	libsixel_la-clipboard_macos.lo
@@ -235,12 +232,12 @@ am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-loader.lo libsixel_la-frompnm.lo \
 	libsixel_la-fromgif.lo libsixel_la-clipboard.lo \
 	libsixel_la-encoder.lo libsixel_la-decoder.lo \
-	libsixel_la-options.lo libsixel_la-writer.lo \
-	libsixel_la-stb_image_write.lo libsixel_la-status.lo \
-	libsixel_la-compat_stub.lo libsixel_la-malloc_stub.lo \
-	libsixel_la-allocator.lo libsixel_la-tty.lo \
-	libsixel_la-sixel_threads_config.lo $(am__objects_1) \
-	$(am__objects_2) $(am__objects_3)
+	libsixel_la-decoder-parallel.lo libsixel_la-options.lo \
+	libsixel_la-writer.lo libsixel_la-stb_image_write.lo \
+	libsixel_la-status.lo libsixel_la-compat_stub.lo \
+	libsixel_la-malloc_stub.lo libsixel_la-allocator.lo \
+	libsixel_la-tty.lo libsixel_la-sixel_threads_config.lo \
+	$(am__objects_1) $(am__objects_2) $(am__objects_3)
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -619,6 +616,7 @@ libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/clipboard.c \
 	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
 	$(srcdir)/decoder.c $(srcdir)/decoder.h \
+	$(srcdir)/decoder-parallel.c $(srcdir)/decoder-parallel.h \
 	$(srcdir)/decoder-image.h $(srcdir)/options.c \
 	$(srcdir)/options.h $(srcdir)/stb_image.h $(srcdir)/writer.c \
 	$(srcdir)/writer.h $(srcdir)/stb_image_write.c \
@@ -1076,6 +1074,13 @@ libsixel_la-decoder.lo: decoder.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-decoder.lo `test -f 'decoder.c' || echo '$(srcdir)/'`decoder.c
 
+libsixel_la-decoder-parallel.lo: decoder-parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-decoder-parallel.lo -MD -MP -MF $(DEPDIR)/libsixel_la-decoder-parallel.Tpo -c -o libsixel_la-decoder-parallel.lo `test -f 'decoder-parallel.c' || echo '$(srcdir)/'`decoder-parallel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-decoder-parallel.Tpo $(DEPDIR)/libsixel_la-decoder-parallel.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder-parallel.c' object='libsixel_la-decoder-parallel.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-decoder-parallel.lo `test -f 'decoder-parallel.c' || echo '$(srcdir)/'`decoder-parallel.c
+
 libsixel_la-options.lo: options.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-options.lo -MD -MP -MF $(DEPDIR)/libsixel_la-options.Tpo -c -o libsixel_la-options.lo `test -f 'options.c' || echo '$(srcdir)/'`options.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-options.Tpo $(DEPDIR)/libsixel_la-options.Plo
@@ -1152,13 +1157,6 @@ libsixel_la-threadpool.lo: threadpool.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='threadpool.c' object='libsixel_la-threadpool.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-threadpool.lo `test -f 'threadpool.c' || echo '$(srcdir)/'`threadpool.c
-
-libsixel_la-decoder-parallel.lo: decoder-parallel.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-decoder-parallel.lo -MD -MP -MF $(DEPDIR)/libsixel_la-decoder-parallel.Tpo -c -o libsixel_la-decoder-parallel.lo `test -f 'decoder-parallel.c' || echo '$(srcdir)/'`decoder-parallel.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-decoder-parallel.Tpo $(DEPDIR)/libsixel_la-decoder-parallel.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='decoder-parallel.c' object='libsixel_la-decoder-parallel.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-decoder-parallel.lo `test -f 'decoder-parallel.c' || echo '$(srcdir)/'`decoder-parallel.c
 
 tests-tests.o: tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-tests.o -MD -MP -MF $(DEPDIR)/tests-tests.Tpo -c -o tests-tests.o `test -f 'tests.c' || echo '$(srcdir)/'`tests.c
