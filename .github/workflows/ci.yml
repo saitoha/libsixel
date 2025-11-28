@@ -26,6 +26,10 @@ jobs:
             sys: x86_64
           - os: ubuntu-latest
             runner: ubuntu-latest
+            sys: x86_64
+            disable_threads: true
+          - os: ubuntu-latest
+            runner: ubuntu-latest
             sys: i686
           - os: macos-latest
             runner: macos-latest
@@ -37,6 +41,11 @@ jobs:
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
+          - os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: MINGW64
+            disable_threads: true
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -182,6 +191,10 @@ jobs:
         if [ "${{ runner.os }}" = "Linux" ]; then
           export CC=gcc-14
         fi
+        disable_threads_flag=""
+        if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
+          disable_threads_flag="--disable-threads"
+        fi
         ./configure \
             --without-png \
             --without-jpeg \
@@ -192,7 +205,8 @@ jobs:
             --enable-debug \
             --enable-tests \
             --enable-gcov \
-            --disable-dependency-tracking
+            --disable-dependency-tracking \
+            ${disable_threads_flag}
         cat config.log
         make V=1
 
@@ -200,6 +214,10 @@ jobs:
       if: ${{ runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' }}
       shell: msys2 {0}
       run: |
+        disable_threads_flag=""
+        if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
+          disable_threads_flag="--disable-threads"
+        fi
         ./configure CC=${{ matrix.compiler }} \
             --without-png \
             --without-jpeg \
@@ -210,7 +228,8 @@ jobs:
             --enable-debug \
             --enable-tests \
             --enable-gcov \
-            --disable-dependency-tracking
+            --disable-dependency-tracking \
+            ${disable_threads_flag}
         cat config.log
         make V=1
 
@@ -224,9 +243,10 @@ jobs:
         $scriptLines = @(
           'set -eu',
           'set -o pipefail 2>/dev/null || true',
+          'disable_threads_flag="${{ matrix.disable_threads && "--disable-threads" || "" }}"',
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-debug --enable-tests --enable-gcov --disable-dependency-tracking',
+          './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-debug --enable-tests --enable-gcov --disable-dependency-tracking ${disable_threads_flag}',
           'cat config.log',
           'make V=1'
         )
@@ -239,6 +259,10 @@ jobs:
       run: |
         VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
         cmd //c call "${VCVARS}" x64 \>nul \&\& set
+        disable_threads_flag=""
+        if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
+          disable_threads_flag="--disable-threads"
+        fi
         eval $(
             cmd //c call "${VCVARS}" x64 \>nul \&\& set |
             grep -i '^\(PATH\|INCLUDE\|LIB\|LIBPATH\)'  |
@@ -263,7 +287,8 @@ jobs:
             --disable-python \
             --enable-debug \
             --enable-tests \
-            --disable-dependency-tracking
+            --disable-dependency-tracking \
+            ${disable_threads_flag}
         cat config.log
         make V=1
 
@@ -784,6 +809,9 @@ jobs:
             runner: ubuntu-latest
           - os: ubuntu-latest
             runner: ubuntu-latest
+            disable_threads: true
+          - os: ubuntu-latest
+            runner: ubuntu-latest
             sys: i686
           - os: macos-latest
             runner: macos-latest
@@ -793,6 +821,11 @@ jobs:
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
+          - os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: MINGW64
+            disable_threads: true
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -915,6 +948,10 @@ jobs:
           export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
           export PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
         fi
+        disable_threads_flag=""
+        if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
+          disable_threads_flag="-Dthreads=disabled"
+        fi
         meson setup builddir \
             --wrap-mode=nodownload \
             -Dpng=disabled \
@@ -923,7 +960,8 @@ jobs:
             -Dbashcompletiondir= \
             -Dzshcompletiondir= \
             -Dpython=disabled \
-            -Dtests=true
+            -Dtests=true \
+            ${disable_threads_flag}
         meson compile -C builddir
         meson test -C builddir || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
 
@@ -931,6 +969,10 @@ jobs:
       if: ${{ runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' }}
       shell: msys2 {0}
       run: |
+        disable_threads_flag=""
+        if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
+          disable_threads_flag="-Dthreads=disabled"
+        fi
         meson setup builddir \
             --wrap-mode=nodownload \
             --default-library static \
@@ -940,7 +982,8 @@ jobs:
             -Dbashcompletiondir= \
             -Dzshcompletiondir= \
             -Dpython=disabled \
-            -Dtests=true
+            -Dtests=true \
+            ${disable_threads_flag}
         meson compile -C builddir
         meson test -C builddir || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
 
@@ -954,9 +997,10 @@ jobs:
         $scriptLines = @(
           'set -eu',
           'set -o pipefail 2>/dev/null || true',
+          'disable_threads_flag="${{ matrix.disable_threads && "-Dthreads=disabled" || "" }}"',
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          'meson setup builddir --wrap-mode=nodownload --default-library static -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir= -Dzshcompletiondir= -Dpython=disabled -Dtests=true',
+          'meson setup builddir --wrap-mode=nodownload --default-library static -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir= -Dzshcompletiondir= -Dpython=disabled -Dtests=true ${disable_threads_flag}',
           'meson compile -C builddir',
           'meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }'
         )
@@ -971,6 +1015,8 @@ jobs:
         call "%VSINSTALLDIR%\VC\Auxiliary\Build\vcvarsall.bat" x64
         python -m pip install --upgrade pip
         python -m pip install meson ninja
+        set "DISABLE_THREADS_FLAG="
+        if "${{ matrix.disable_threads || '' }}"=="true" set "DISABLE_THREADS_FLAG=-Dthreads=disabled"
         python -m mesonbuild.mesonmain setup builddir ^
             --wrap-mode=nodownload ^
             --default-library static ^
@@ -980,7 +1026,8 @@ jobs:
             -Dbashcompletiondir= ^
             -Dzshcompletiondir= ^
             -Dpython=disabled ^
-            -Dtests=true
+            -Dtests=true ^
+            %DISABLE_THREADS_FLAG%
         if errorlevel 1 exit /b !errorlevel!
         python -m mesonbuild.mesonmain compile -C builddir
         if errorlevel 1 exit /b !errorlevel!
