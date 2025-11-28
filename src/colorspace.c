@@ -103,6 +103,16 @@
 #define SIXEL_DIN99D_L_SCALE  100.0
 #define SIXEL_DIN99D_AB_RANGE 50.0
 
+#if defined(__FMA__)
+# define SIXEL_FMADD_PS256(a, b, c) _mm256_fmadd_ps((a), (b), (c))
+# define SIXEL_FMADD_PS512(a, b, c) _mm512_fmadd_ps((a), (b), (c))
+#else
+# define SIXEL_FMADD_PS256(a, b, c) \
+    _mm256_add_ps(_mm256_mul_ps((a), (b)), (c))
+# define SIXEL_FMADD_PS512(a, b, c) \
+    _mm512_add_ps(_mm512_mul_ps((a), (b)), (c))
+#endif
+
 static const double sixel_linear_srgb_to_smptec_matrix[3][3] = {
     { 1.0651944799343782, -0.05539144537002962, -0.009975616485882548 },
     { -0.019633066659433226,  1.0363870284433383, -0.016731961783904975 },
@@ -1717,17 +1727,14 @@ sixel_smptec_to_linear_avx512(float *pixels, size_t pixel_total)
         g = _mm512_i32gather_ps(idx_g, base, 1);
         b = _mm512_i32gather_ps(idx_b, base, 1);
 
-        r_lin = _mm512_add_ps(_mm512_mul_ps(r, m00),
-                               _mm512_mul_ps(g, m01));
-        r_lin = _mm512_add_ps(r_lin, _mm512_mul_ps(b, m02));
+        r_lin = SIXEL_FMADD_PS512(g, m01, _mm512_mul_ps(r, m00));
+        r_lin = SIXEL_FMADD_PS512(b, m02, r_lin);
 
-        g_lin = _mm512_add_ps(_mm512_mul_ps(r, m10),
-                               _mm512_mul_ps(g, m11));
-        g_lin = _mm512_add_ps(g_lin, _mm512_mul_ps(b, m12));
+        g_lin = SIXEL_FMADD_PS512(g, m11, _mm512_mul_ps(r, m10));
+        g_lin = SIXEL_FMADD_PS512(b, m12, g_lin);
 
-        b_lin = _mm512_add_ps(_mm512_mul_ps(r, m20),
-                               _mm512_mul_ps(g, m21));
-        b_lin = _mm512_add_ps(b_lin, _mm512_mul_ps(b, m22));
+        b_lin = SIXEL_FMADD_PS512(g, m21, _mm512_mul_ps(r, m20));
+        b_lin = SIXEL_FMADD_PS512(b, m22, b_lin);
 
         r_lin = _mm512_min_ps(one, _mm512_max_ps(zero, r_lin));
         g_lin = _mm512_min_ps(one, _mm512_max_ps(zero, g_lin));
@@ -1794,17 +1801,14 @@ sixel_linear_to_smptec_avx512(float *pixels, size_t pixel_total)
         g = _mm512_i32gather_ps(idx_g, base, 1);
         b = _mm512_i32gather_ps(idx_b, base, 1);
 
-        sr = _mm512_add_ps(_mm512_mul_ps(r, m00),
-                           _mm512_mul_ps(g, m01));
-        sr = _mm512_add_ps(sr, _mm512_mul_ps(b, m02));
+        sr = SIXEL_FMADD_PS512(g, m01, _mm512_mul_ps(r, m00));
+        sr = SIXEL_FMADD_PS512(b, m02, sr);
 
-        sg = _mm512_add_ps(_mm512_mul_ps(r, m10),
-                           _mm512_mul_ps(g, m11));
-        sg = _mm512_add_ps(sg, _mm512_mul_ps(b, m12));
+        sg = SIXEL_FMADD_PS512(g, m11, _mm512_mul_ps(r, m10));
+        sg = SIXEL_FMADD_PS512(b, m12, sg);
 
-        sb = _mm512_add_ps(_mm512_mul_ps(r, m20),
-                           _mm512_mul_ps(g, m21));
-        sb = _mm512_add_ps(sb, _mm512_mul_ps(b, m22));
+        sb = SIXEL_FMADD_PS512(g, m21, _mm512_mul_ps(r, m20));
+        sb = SIXEL_FMADD_PS512(b, m22, sb);
 
         sr = _mm512_min_ps(one, _mm512_max_ps(zero, sr));
         sg = _mm512_min_ps(one, _mm512_max_ps(zero, sg));
@@ -1851,40 +1855,40 @@ sixel_smptec_to_linear_avx2(float *pixels, size_t pixel_total)
         4, 16, 28, 40, 52, 64, 76, 88);
     const __m256i idx_b = _mm256_setr_epi32(
         8, 20, 32, 44, 56, 68, 80, 92);
+    const char *base_char;
+    const float *base;
+    float *store;
+    __m256 r;
+    __m256 g;
+    __m256 b;
+    __m256 r_lin;
+    __m256 g_lin;
+    __m256 b_lin;
+    __m256 vec0;
+    __m256 vec1;
+    __m256 vec2;
+    float r_out[8];
+    float g_out[8];
+    float b_out[8];
 
     processed = pixel_total - (pixel_total % 8U);
     for (index = 0U; index < processed; index += 8U) {
-        const char *base_char;
-        const float *base;
-        __m256 r;
-        __m256 g;
-        __m256 b;
-        __m256 r_lin;
-        __m256 g_lin;
-        __m256 b_lin;
-        float r_out[8];
-        float g_out[8];
-        float b_out[8];
-        size_t lane;
-
         base_char = (const char *)(pixels + index * 3U);
         base = (const float *)base_char;
+        store = (float *)base_char;
 
         r = _mm256_i32gather_ps(base, idx_r, 1);
         g = _mm256_i32gather_ps(base, idx_g, 1);
         b = _mm256_i32gather_ps(base, idx_b, 1);
 
-        r_lin = _mm256_add_ps(_mm256_mul_ps(r, m00),
-                               _mm256_mul_ps(g, m01));
-        r_lin = _mm256_add_ps(r_lin, _mm256_mul_ps(b, m02));
+        r_lin = SIXEL_FMADD_PS256(g, m01, _mm256_mul_ps(r, m00));
+        r_lin = SIXEL_FMADD_PS256(b, m02, r_lin);
 
-        g_lin = _mm256_add_ps(_mm256_mul_ps(r, m10),
-                               _mm256_mul_ps(g, m11));
-        g_lin = _mm256_add_ps(g_lin, _mm256_mul_ps(b, m12));
+        g_lin = SIXEL_FMADD_PS256(g, m11, _mm256_mul_ps(r, m10));
+        g_lin = SIXEL_FMADD_PS256(b, m12, g_lin);
 
-        b_lin = _mm256_add_ps(_mm256_mul_ps(r, m20),
-                               _mm256_mul_ps(g, m21));
-        b_lin = _mm256_add_ps(b_lin, _mm256_mul_ps(b, m22));
+        b_lin = SIXEL_FMADD_PS256(g, m21, _mm256_mul_ps(r, m20));
+        b_lin = SIXEL_FMADD_PS256(b, m22, b_lin);
 
         r_lin = _mm256_min_ps(one, _mm256_max_ps(zero, r_lin));
         g_lin = _mm256_min_ps(one, _mm256_max_ps(zero, g_lin));
@@ -1894,14 +1898,23 @@ sixel_smptec_to_linear_avx2(float *pixels, size_t pixel_total)
         _mm256_storeu_ps(g_out, g_lin);
         _mm256_storeu_ps(b_out, b_lin);
 
-        for (lane = 0U; lane < 8U; ++lane) {
-            float *pixel;
+        /*
+         * Re-interleave SIMD lanes into the original AoS RGB layout.
+         * Three vector stores replace the per-lane scalar scatter to
+         * keep writeback bandwidth aligned with 256-bit stores.
+         */
+        vec0 = _mm256_setr_ps(r_out[0], g_out[0], b_out[0],
+                              r_out[1], g_out[1], b_out[1],
+                              r_out[2], g_out[2]);
+        vec1 = _mm256_setr_ps(b_out[2], r_out[3], g_out[3], b_out[3],
+                              r_out[4], g_out[4], b_out[4],
+                              r_out[5]);
+        vec2 = _mm256_setr_ps(g_out[5], b_out[5], r_out[6], g_out[6],
+                              b_out[6], r_out[7], g_out[7], b_out[7]);
 
-            pixel = pixels + (index + lane) * 3U;
-            pixel[0] = r_out[lane];
-            pixel[1] = g_out[lane];
-            pixel[2] = b_out[lane];
-        }
+        _mm256_storeu_ps(store, vec0);
+        _mm256_storeu_ps(store + 8U, vec1);
+        _mm256_storeu_ps(store + 16U, vec2);
     }
 
     return processed;
@@ -1938,40 +1951,40 @@ sixel_linear_to_smptec_avx2(float *pixels, size_t pixel_total)
         4, 16, 28, 40, 52, 64, 76, 88);
     const __m256i idx_b = _mm256_setr_epi32(
         8, 20, 32, 44, 56, 68, 80, 92);
+    const char *base_char;
+    const float *base;
+    float *store;
+    __m256 r;
+    __m256 g;
+    __m256 b;
+    __m256 sr;
+    __m256 sg;
+    __m256 sb;
+    __m256 vec0;
+    __m256 vec1;
+    __m256 vec2;
+    float r_out[8];
+    float g_out[8];
+    float b_out[8];
 
     processed = pixel_total - (pixel_total % 8U);
     for (index = 0U; index < processed; index += 8U) {
-        const char *base_char;
-        const float *base;
-        __m256 r;
-        __m256 g;
-        __m256 b;
-        __m256 sr;
-        __m256 sg;
-        __m256 sb;
-        float r_out[8];
-        float g_out[8];
-        float b_out[8];
-        size_t lane;
-
         base_char = (const char *)(pixels + index * 3U);
         base = (const float *)base_char;
+        store = (float *)base_char;
 
         r = _mm256_i32gather_ps(base, idx_r, 1);
         g = _mm256_i32gather_ps(base, idx_g, 1);
         b = _mm256_i32gather_ps(base, idx_b, 1);
 
-        sr = _mm256_add_ps(_mm256_mul_ps(r, m00),
-                           _mm256_mul_ps(g, m01));
-        sr = _mm256_add_ps(sr, _mm256_mul_ps(b, m02));
+        sr = SIXEL_FMADD_PS256(g, m01, _mm256_mul_ps(r, m00));
+        sr = SIXEL_FMADD_PS256(b, m02, sr);
 
-        sg = _mm256_add_ps(_mm256_mul_ps(r, m10),
-                           _mm256_mul_ps(g, m11));
-        sg = _mm256_add_ps(sg, _mm256_mul_ps(b, m12));
+        sg = SIXEL_FMADD_PS256(g, m11, _mm256_mul_ps(r, m10));
+        sg = SIXEL_FMADD_PS256(b, m12, sg);
 
-        sb = _mm256_add_ps(_mm256_mul_ps(r, m20),
-                           _mm256_mul_ps(g, m21));
-        sb = _mm256_add_ps(sb, _mm256_mul_ps(b, m22));
+        sb = SIXEL_FMADD_PS256(g, m21, _mm256_mul_ps(r, m20));
+        sb = SIXEL_FMADD_PS256(b, m22, sb);
 
         sr = _mm256_min_ps(one, _mm256_max_ps(zero, sr));
         sg = _mm256_min_ps(one, _mm256_max_ps(zero, sg));
@@ -1981,14 +1994,23 @@ sixel_linear_to_smptec_avx2(float *pixels, size_t pixel_total)
         _mm256_storeu_ps(g_out, sg);
         _mm256_storeu_ps(b_out, sb);
 
-        for (lane = 0U; lane < 8U; ++lane) {
-            float *pixel;
+        /*
+         * Re-interleave SIMD lanes into the original AoS RGB layout.
+         * The three 256-bit stores keep throughput balanced with the
+         * gather-heavy load side while avoiding scalar scatter.
+         */
+        vec0 = _mm256_setr_ps(r_out[0], g_out[0], b_out[0],
+                              r_out[1], g_out[1], b_out[1],
+                              r_out[2], g_out[2]);
+        vec1 = _mm256_setr_ps(b_out[2], r_out[3], g_out[3], b_out[3],
+                              r_out[4], g_out[4], b_out[4],
+                              r_out[5]);
+        vec2 = _mm256_setr_ps(g_out[5], b_out[5], r_out[6], g_out[6],
+                              b_out[6], r_out[7], g_out[7], b_out[7]);
 
-            pixel = pixels + (index + lane) * 3U;
-            pixel[0] = r_out[lane];
-            pixel[1] = g_out[lane];
-            pixel[2] = b_out[lane];
-        }
+        _mm256_storeu_ps(store, vec0);
+        _mm256_storeu_ps(store + 8U, vec1);
+        _mm256_storeu_ps(store + 16U, vec2);
     }
 
     return processed;
