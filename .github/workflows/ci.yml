@@ -24,6 +24,7 @@ jobs:
           - os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
+            static_only: true
           - os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
@@ -45,6 +46,7 @@ jobs:
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
+            static_only: true
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -208,6 +210,10 @@ jobs:
         if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
           disable_simd_flag="--disable-simd"
         fi
+        static_only_flags=""
+        if [ "${{ matrix.static_only || '' }}" = "true" ]; then
+          static_only_flags="--disable-shared --enable-static"
+        fi
         ./configure \
             --without-png \
             --without-jpeg \
@@ -220,7 +226,8 @@ jobs:
             --enable-gcov \
             --disable-dependency-tracking \
             ${disable_threads_flag} \
-            ${disable_simd_flag}
+            ${disable_simd_flag} \
+            ${static_only_flags}
         cat config.log
         make V=1
 
@@ -236,6 +243,10 @@ jobs:
         if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
           disable_simd_flag="--disable-simd"
         fi
+        static_only_flags=""
+        if [ "${{ matrix.static_only || '' }}" = "true" ]; then
+          static_only_flags="--disable-shared --enable-static"
+        fi
         ./configure CC=${{ matrix.compiler }} \
             --without-png \
             --without-jpeg \
@@ -248,7 +259,8 @@ jobs:
             --enable-gcov \
             --disable-dependency-tracking \
             ${disable_threads_flag} \
-            ${disable_simd_flag}
+            ${disable_simd_flag} \
+            ${static_only_flags}
         cat config.log
         make V=1
 
@@ -267,14 +279,19 @@ jobs:
         if ('${{ matrix.disable_simd }}' -eq 'true') {
           $disableSimdFlag = '--disable-simd'
         }
+        $staticOnlyFlags = ''
+        if ('${{ matrix.static_only }}' -eq 'true') {
+          $staticOnlyFlags = '--disable-shared --enable-static'
+        }
         $scriptLines = @(
           'set -eu',
           'set -o pipefail 2>/dev/null || true',
           "disable_threads_flag=`"$disableThreadsFlag`"",
           "disable_simd_flag=`"$disableSimdFlag`"",
+          "static_only_flags=`"$staticOnlyFlags`"",
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-debug --enable-tests --enable-gcov --disable-dependency-tracking ${disable_threads_flag} ${disable_simd_flag}',
+          './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-debug --enable-tests --enable-gcov --disable-dependency-tracking ${disable_threads_flag} ${disable_simd_flag} ${static_only_flags}',
           'cat config.log',
           'make V=1'
         )
@@ -840,6 +857,7 @@ jobs:
         include:
           - os: ubuntu-latest
             runner: ubuntu-latest
+            static_only: true
           - os: ubuntu-latest
             runner: ubuntu-latest
             disable_simd: true
@@ -857,6 +875,7 @@ jobs:
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
+            static_only: true
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -997,11 +1016,16 @@ jobs:
         if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
           disable_simd_flag="-Dsimd=disabled"
         fi
+        default_library_flag=""
+        if [ "${{ matrix.static_only || '' }}" = "true" ]; then
+          default_library_flag="--default-library static"
+        fi
         meson setup builddir \
             --wrap-mode=nodownload \
             -Dpng=disabled \
             -Djpeg=disabled \
             -Dcurl=disabled \
+            ${default_library_flag} \
             -Dbashcompletiondir= \
             -Dzshcompletiondir= \
             -Dpython=disabled \
@@ -1023,9 +1047,13 @@ jobs:
         if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
           disable_simd_flag="-Dsimd=disabled"
         fi
+        default_library_flag=""
+        if [ "${{ matrix.static_only || '' }}" = "true" ]; then
+          default_library_flag="--default-library static"
+        fi
         meson setup builddir \
             --wrap-mode=nodownload \
-            --default-library static \
+            ${default_library_flag} \
             -Dpng=disabled \
             -Djpeg=disabled \
             -Dcurl=disabled \
@@ -1053,14 +1081,19 @@ jobs:
         if ('${{ matrix.disable_simd }}' -eq 'true') {
           $disableSimdFlag = '-Dsimd=disabled'
         }
+        $defaultLibraryFlag = ''
+        if ('${{ matrix.static_only }}' -eq 'true') {
+          $defaultLibraryFlag = '--default-library static'
+        }
         $scriptLines = @(
           'set -eu',
           'set -o pipefail 2>/dev/null || true',
           "disable_threads_flag=`"$disableThreadsFlag`"",
           "disable_simd_flag=`"$disableSimdFlag`"",
+          "default_library_flag=`"$defaultLibraryFlag`"",
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          'meson setup builddir --wrap-mode=nodownload --default-library static -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir= -Dzshcompletiondir= -Dpython=disabled -Dtests=true ${disable_threads_flag} ${disable_simd_flag}',
+          'meson setup builddir --wrap-mode=nodownload ${default_library_flag} -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir= -Dzshcompletiondir= -Dpython=disabled -Dtests=true ${disable_threads_flag} ${disable_simd_flag}',
           'meson compile -C builddir',
           'meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }'
         )
