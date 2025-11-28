@@ -51,6 +51,7 @@
 #include <sixel.h>
 
 #include "cpu.h"
+#include "logger.h"
 
 #if SIXEL_ENABLE_THREADS
 # include "sixel_threads_config.h"
@@ -1180,7 +1181,41 @@ typedef struct scale_parallel_context {
     double n;
     scale_parallel_pass_t pass;
     int simd_level;
+    sixel_logger_t *logger;
 } scale_parallel_context_t;
+
+/*
+ * Emit worker-level timeline entries only for the first and last rows so the
+ * visualization remains readable even when there are many jobs.
+ */
+static int
+scale_parallel_should_log(scale_parallel_context_t const *ctx, int index)
+{
+    int last;
+
+    if (ctx == NULL || ctx->logger == NULL || !ctx->logger->active) {
+        return 0;
+    }
+
+    if (index < 0) {
+        return 0;
+    }
+
+    last = 0;
+    if (ctx->pass == SCALE_PASS_HORIZONTAL) {
+        if (ctx->srch <= 0) {
+            return 0;
+        }
+        last = ctx->srch - 1;
+    } else {
+        if (ctx->dsth <= 0) {
+            return 0;
+        }
+        last = ctx->dsth - 1;
+    }
+
+    return index == 0 || index == last;
+}
 
 /*
  * Allow callers to raise the floor for parallel execution using
@@ -1227,6 +1262,11 @@ scale_parallel_worker(tp_job_t job, void *userdata, void *workspace)
 {
     scale_parallel_context_t *ctx;
     int index;
+    char const *role;
+    int y0;
+    int y1;
+    int in0;
+    int in1;
 
     (void)workspace;
     ctx = (scale_parallel_context_t *)userdata;
@@ -1234,10 +1274,31 @@ scale_parallel_worker(tp_job_t job, void *userdata, void *workspace)
         return SIXEL_BAD_ARGUMENT;
     }
 
+    role = "horizontal";
+    y0 = 0;
+    y1 = 0;
+    in0 = 0;
+    in1 = 0;
     index = job.band_index;
     if (ctx->pass == SCALE_PASS_HORIZONTAL) {
         if (index < 0 || index >= ctx->srch) {
             return SIXEL_BAD_ARGUMENT;
+        }
+        y0 = index;
+        y1 = index + 1;
+        in1 = ctx->dstw;
+        if (scale_parallel_should_log(ctx, index)) {
+            sixel_logger_logf(ctx->logger,
+                              role,
+                              "scale",
+                              "start",
+                              index,
+                              index,
+                              y0,
+                              y1,
+                              in0,
+                              in1,
+                              "horizontal pass");
         }
         scale_horizontal_row(ctx->tmp,
                              ctx->src,
@@ -1252,6 +1313,23 @@ scale_parallel_worker(tp_job_t job, void *userdata, void *workspace)
         if (index < 0 || index >= ctx->dsth) {
             return SIXEL_BAD_ARGUMENT;
         }
+        role = "vertical";
+        y0 = index;
+        y1 = index + 1;
+        in1 = ctx->srch;
+        if (scale_parallel_should_log(ctx, index)) {
+            sixel_logger_logf(ctx->logger,
+                              role,
+                              "scale",
+                              "start",
+                              index,
+                              index,
+                              y0,
+                              y1,
+                              in0,
+                              in1,
+                              "vertical pass");
+        }
         scale_vertical_row(ctx->dst,
                            ctx->tmp,
                            ctx->dstw,
@@ -1262,6 +1340,20 @@ scale_parallel_worker(tp_job_t job, void *userdata, void *workspace)
                            ctx->f_resample,
                            ctx->n,
                            ctx->simd_level);
+    }
+
+    if (scale_parallel_should_log(ctx, index)) {
+        sixel_logger_logf(ctx->logger,
+                          role,
+                          "scale",
+                          "finish",
+                          index,
+                          index,
+                          y0,
+                          y1,
+                          in0,
+                          in1,
+                          "pass complete");
     }
 
     return SIXEL_OK;
@@ -1283,7 +1375,8 @@ scale_with_resampling_parallel(
     int const depth,
     resample_fn_t const f_resample,
     double const n,
-    unsigned char *tmp)
+    unsigned char *tmp,
+    sixel_logger_t *logger)
 {
     scale_parallel_context_t ctx;
     threadpool_t *pool;
@@ -1293,15 +1386,63 @@ scale_with_resampling_parallel(
     int queue_depth;
     int y;
     int rc;
+    int logger_ready;
 
     image_bytes = (size_t)srcw * (size_t)srch * (size_t)depth;
     if (image_bytes < scale_parallel_min_bytes()) {
+        if (logger != NULL) {
+            sixel_logger_logf(logger,
+                              "controller",
+                              "scale",
+                              "skip",
+                              -1,
+                              -1,
+                              0,
+                              0,
+                              0,
+                              0,
+                              "below threshold bytes=%zu",
+                              image_bytes);
+        }
         return SIXEL_BAD_ARGUMENT;
     }
 
     threads = sixel_threads_resolve();
     if (threads < 2) {
+        if (logger != NULL) {
+            sixel_logger_logf(logger,
+                              "controller",
+                              "scale",
+                              "skip",
+                              -1,
+                              -1,
+                              0,
+                              0,
+                              0,
+                              0,
+                              "threads=%d",
+                              threads);
+        }
         return SIXEL_BAD_ARGUMENT;
+    }
+
+    logger_ready = logger != NULL && logger->active;
+    if (logger_ready) {
+        sixel_logger_logf(logger,
+                          "controller",
+                          "scale",
+                          "start",
+                          -1,
+                          -1,
+                          0,
+                          srch,
+                          0,
+                          dsth,
+                          "parallel scale src=%dx%d dst=%dx%d",
+                          srcw,
+                          srch,
+                          dstw,
+                          dsth);
     }
 
     ctx.dst = dst;
@@ -1315,6 +1456,7 @@ scale_with_resampling_parallel(
     ctx.f_resample = f_resample;
     ctx.n = n;
     ctx.simd_level = sixel_scale_simd_level();
+    ctx.logger = logger_ready ? logger : NULL;
 
     queue_depth = threads * 3;
     if (queue_depth > srch) {
@@ -1325,6 +1467,21 @@ scale_with_resampling_parallel(
     }
 
     ctx.pass = SCALE_PASS_HORIZONTAL;
+    if (logger_ready) {
+        sixel_logger_logf(logger,
+                          "controller",
+                          "scale",
+                          "pass_start",
+                          -1,
+                          0,
+                          0,
+                          srch,
+                          0,
+                          ctx.dstw,
+                          "horizontal queue=%d threads=%d",
+                          queue_depth,
+                          threads);
+    }
     pool = threadpool_create(threads,
                              queue_depth,
                              0,
@@ -1345,6 +1502,20 @@ scale_with_resampling_parallel(
         return rc;
     }
 
+    if (logger_ready) {
+        sixel_logger_logf(logger,
+                          "controller",
+                          "scale",
+                          "pass_finish",
+                          -1,
+                          srch - 1,
+                          0,
+                          srch,
+                          0,
+                          ctx.dstw,
+                          "horizontal complete");
+    }
+
     queue_depth = threads * 3;
     if (queue_depth > dsth) {
         queue_depth = dsth;
@@ -1354,6 +1525,21 @@ scale_with_resampling_parallel(
     }
 
     ctx.pass = SCALE_PASS_VERTICAL;
+    if (logger_ready) {
+        sixel_logger_logf(logger,
+                          "controller",
+                          "scale",
+                          "pass_start",
+                          -1,
+                          0,
+                          0,
+                          dsth,
+                          0,
+                          ctx.srch,
+                          "vertical queue=%d threads=%d",
+                          queue_depth,
+                          threads);
+    }
     pool = threadpool_create(threads,
                              queue_depth,
                              0,
@@ -1370,6 +1556,33 @@ scale_with_resampling_parallel(
     threadpool_finish(pool);
     rc = threadpool_get_error(pool);
     threadpool_destroy(pool);
+
+    if (logger_ready) {
+        sixel_logger_logf(logger,
+                          "controller",
+                          "scale",
+                          "pass_finish",
+                          -1,
+                          dsth - 1,
+                          0,
+                          dsth,
+                          0,
+                          ctx.srch,
+                          "vertical complete rc=%d",
+                          rc);
+        sixel_logger_logf(logger,
+                          "controller",
+                          "scale",
+                          "finish",
+                          -1,
+                          dsth - 1,
+                          0,
+                          dsth,
+                          0,
+                          ctx.srch,
+                          "parallel scale status=%d",
+                          rc);
+    }
 
     return rc;
 }
@@ -1397,11 +1610,25 @@ scale_with_resampling(
     size_t tmp_size;
 #if SIXEL_ENABLE_THREADS
     int rc;
+    sixel_logger_t logger;
+    int logger_prepared;
+#endif
+
+#if SIXEL_ENABLE_THREADS
+    sixel_logger_init(&logger);
+    logger_prepared = 0;
+    (void)sixel_logger_prepare_env(&logger);
+    logger_prepared = logger.active;
 #endif
 
     tmp_size = (size_t)dstw * (size_t)srch * (size_t)depth;
     tmp = (unsigned char *)sixel_allocator_malloc(allocator, tmp_size);
     if (tmp == NULL) {
+#if SIXEL_ENABLE_THREADS
+        if (logger_prepared) {
+            sixel_logger_close(&logger);
+        }
+#endif
         return;
     }
 
@@ -1415,10 +1642,31 @@ scale_with_resampling(
                                         depth,
                                         f_resample,
                                         n,
-                                        tmp);
+                                        tmp,
+                                        logger_prepared
+                                            ? &logger
+                                            : NULL);
     if (rc == SIXEL_OK) {
         sixel_allocator_free(allocator, tmp);
+        if (logger_prepared) {
+            sixel_logger_close(&logger);
+        }
         return;
+    }
+
+    if (logger_prepared) {
+        sixel_logger_logf(&logger,
+                          "controller",
+                          "scale",
+                          "fallback",
+                          -1,
+                          -1,
+                          0,
+                          dsth,
+                          0,
+                          srch,
+                          "parallel rc=%d",
+                          rc);
     }
 #endif
 
@@ -1434,6 +1682,11 @@ scale_with_resampling(
                                  tmp);
 
     sixel_allocator_free(allocator, tmp);
+#if SIXEL_ENABLE_THREADS
+    if (logger_prepared) {
+        sixel_logger_close(&logger);
+    }
+#endif
 }
 
 static void
