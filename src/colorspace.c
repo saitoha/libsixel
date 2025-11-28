@@ -213,59 +213,6 @@ static unsigned char gamma_to_linear_lut[SIXEL_COLORSPACE_LUT_SIZE];
 static unsigned char linear_to_gamma_lut[SIXEL_COLORSPACE_LUT_SIZE];
 static int tables_initialized = 0;
 
-/*
- * Chebyshev coefficients that approximate x^2.4 over [0, 1].
- * The series was generated offline to remove pow() calls from
- * the LUT warm-up path and to make the loop amenable to SIMD
- * vectorization by the compiler.
- */
-static const double sixel_pow_24_cheb[] = {
-    3.45825305362519708208e-01,
-    4.88220554789159322251e-01,
-    1.55345007986276179013e-01,
-    1.15043382158344746624e-02,
-    -1.07739478298291111065e-03,
-    2.30383887773702146712e-04,
-    -7.06651336887300913873e-05,
-    2.41685345543935168060e-05,
-    -1.03641435169172505990e-05
-};
-
-/*
- * Chebyshev coefficients that approximate x^(1/2.4) over
- * [0.0031308, 1]. The lower bound matches the sRGB linear
- * segment transition so we only invoke the polynomial on the
- * non-linear branch. The maximum absolute error is below
- * half an LSB after scaling to 0-255.
- */
-static const double sixel_pow_024_cheb[] = {
-    6.76317349010005397503e-01,
-    3.87330309528491345539e-01,
-    -8.93556811472366596671e-02,
-    3.91310262045860279834e-02,
-    -2.14695940787993054533e-02,
-    1.32353746531289270805e-02,
-    -8.77792354520967946230e-03,
-    6.10108206763244637766e-03,
-    -4.40144947139087076848e-03,
-    3.24782010326797251909e-03,
-    -2.45645820863245973806e-03,
-    1.87527458252173778556e-03,
-    -1.46170477277899929676e-03,
-    1.13766838834727435949e-03,
-    -9.05352944821776264850e-04,
-    7.10635238276063094069e-04,
-    -5.74102595060798975499e-04,
-    4.49396646835604248859e-04,
-    -3.67200314857986940056e-04,
-    2.81992079202397251392e-04,
-    -2.32450012013270544730e-04,
-    1.69234465306561821657e-04,
-    -1.40475446487578719927e-04,
-    8.64775120355654289446e-05,
-    -7.21833283828414098851e-05
-};
-
 static inline double
 sixel_clamp_unit(double value)
 {
@@ -276,27 +223,6 @@ sixel_clamp_unit(double value)
         return 1.0;
     }
     return value;
-}
-
-static double
-sixel_eval_chebyshev(double t, const double *coeff, size_t size)
-{
-    double b0;
-    double b1;
-    double b2;
-    size_t i;
-
-    b0 = 0.0;
-    b1 = 0.0;
-    b2 = 0.0;
-
-    for (i = size; i-- > 0;) {
-        b2 = b1;
-        b1 = b0;
-        b0 = coeff[i] + 2.0 * t * b1 - b2;
-    }
-
-    return (b0 - b2) * 0.5;
 }
 
 static inline double
@@ -2415,33 +2341,23 @@ sixel_colorspace_init_tables(void)
     double gamma_value;
     double linear_value;
     double converted;
-    double t;
-    double pow24_span_inv;
-    double pow024_span_inv;
-    double pow024_mid;
 
     if (tables_initialized) {
         return;
     }
 
     /*
-     * Precompute normalization factors so the mapper to [-1, 1] stays
-     * branch-free inside the loops and encourages autovectorization.
+     * Use the canonical sRGB transfer functions for the LUT to avoid
+     * compounding approximation error.  The pow() calls are confined to
+     * this one-time initialisation so the runtime conversion paths stay
+     * unaffected while keeping the mapping faithful.
      */
-    pow24_span_inv = 2.0;
-    pow024_span_inv = 2.0 / (1.0 - 0.0031308);
-    pow024_mid = (1.0 + 0.0031308) * 0.5;
-
     for (i = 0; i < SIXEL_COLORSPACE_LUT_SIZE; ++i) {
         gamma_value = (double)i / 255.0;
         if (gamma_value <= 0.04045) {
             converted = gamma_value / 12.92;
         } else {
-            t = pow24_span_inv * gamma_value - 1.0;
-            converted = sixel_eval_chebyshev(
-                t, sixel_pow_24_cheb,
-                sizeof(sixel_pow_24_cheb) /
-                    sizeof(sixel_pow_24_cheb[0]));
+            converted = pow((gamma_value + 0.055) / 1.055, 2.4);
         }
         gamma_to_linear_lut[i] =
             sixel_colorspace_clamp((int)(converted * 255.0 + 0.5));
@@ -2452,11 +2368,7 @@ sixel_colorspace_init_tables(void)
         if (linear_value <= 0.0031308) {
             converted = linear_value * 12.92;
         } else {
-            t = (linear_value - pow024_mid) * pow024_span_inv;
-            converted = 1.055 * sixel_eval_chebyshev(
-                t, sixel_pow_024_cheb,
-                sizeof(sixel_pow_024_cheb) /
-                    sizeof(sixel_pow_024_cheb[0])) - 0.055;
+            converted = 1.055 * pow(linear_value, 1.0 / 2.4) - 0.055;
         }
         linear_to_gamma_lut[i] =
             sixel_colorspace_clamp((int)(converted * 255.0 + 0.5));
