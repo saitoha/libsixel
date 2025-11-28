@@ -653,6 +653,27 @@ elif host_system == 'linux'
   conf.set('HAVE_CLIPBOARD_LINUX', 1)
 endif
 
+if cc.has_header('immintrin.h')
+  conf.set('HAVE_IMMINTRIN_H', 1)
+endif
+if cc.has_header('cpuid.h')
+  conf.set('HAVE_CPUID_H', 1)
+endif
+if cc.has_header('intrin.h')
+  conf.set('HAVE_INTRIN_H', 1)
+endif
+if cc.has_header('strings.h')
+  conf.set('HAVE_STRINGS_H', 1)
+endif
+if cc.has_function('__builtin_cpu_supports',
+    prefix: '#include <immintrin.h>')
+  conf.set('HAVE_BUILTIN_CPU_SUPPORTS', 1)
+endif
+if cc.has_function('__builtin_cpu_init',
+    prefix: '#include <immintrin.h>')
+  conf.set('HAVE_BUILTIN_CPU_INIT', 1)
+endif
+
 simd_opt = get_option('simd')
 if simd_opt.disabled()
   simd_message = 'no'
@@ -756,6 +777,8 @@ loader_helper_sources = files(
   'src/loader.c',
   'src/compat_stub.c',
   'src/malloc_stub.c',
+  'src/cpu.c',
+  'src/cpu.h',
   'src/pixelformat.c',
   'src/palette.c',
   'src/palette-common-merge.c',

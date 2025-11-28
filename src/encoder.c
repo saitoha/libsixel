@@ -3061,6 +3061,7 @@ sixel_encoder_do_resize(
     int src_height;
     int dst_width;
     int dst_height;
+    int use_float_resize;
 
     /* get frame width and height */
     src_width = sixel_frame_get_width(frame);
@@ -3083,6 +3084,8 @@ sixel_encoder_do_resize(
     /* settings around scaling */
     dst_width = encoder->pixelwidth;    /* may be -1 (default) */
     dst_height = encoder->pixelheight;  /* may be -1 (default) */
+
+    use_float_resize = 0;
 
     /* if the encoder has percentwidth or percentheight property,
        convert them to pixelwidth / pixelheight */
@@ -3116,8 +3119,29 @@ sixel_encoder_do_resize(
 
     /* do resize */
     if (dst_width > 0 && dst_height > 0) {
-        status = sixel_frame_resize(frame, dst_width, dst_height,
-                                    encoder->method_for_resampling);
+        if (encoder->method_for_resampling != SIXEL_RES_NEAREST) {
+            if (SIXEL_PIXELFORMAT_IS_FLOAT32(
+                    encoder->working_colorspace) != 0) {
+                use_float_resize = 1;
+            }
+            if (encoder->prefer_float32 != 0) {
+                use_float_resize = 1;
+            }
+        }
+
+        if (use_float_resize != 0) {
+            status = sixel_frame_resize_float32(
+                frame,
+                dst_width,
+                dst_height,
+                encoder->method_for_resampling);
+        } else {
+            status = sixel_frame_resize(
+                frame,
+                dst_width,
+                dst_height,
+                encoder->method_for_resampling);
+        }
         if (SIXEL_FAILED(status)) {
             goto end;
         }

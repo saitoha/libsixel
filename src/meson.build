@@ -49,6 +49,8 @@ srcs = [
   'logger.h',
   'colorspace.c',
   'frame.c',
+  'cpu.c',
+  'cpu.h',
   'pixelformat.c',
   'scale.c',
   'scale.h',
