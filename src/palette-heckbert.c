@@ -152,17 +152,37 @@ sixel_palette_reversible_tuple(sample *tuple_values,
                                unsigned int depth,
                                int pixelformat)
 {
+    double components[3];
     unsigned int plane;
-    unsigned int sample_value;
 
-    for (plane = 0U; plane < depth; ++plane) {
-        sample_value = (unsigned int)tuple_values[plane];
-        tuple_values[plane]
-            = (sample)sixel_palette_snap_double(
-                  (double)sample_value,
-                  1,
-                  pixelformat,
-                  (int)plane);
+    if (tuple_values == NULL || depth == 0U) {
+        return;
+    }
+    for (plane = 0U; plane < 3U; ++plane) {
+        components[plane] = 0.0;
+    }
+    for (plane = 0U; plane < depth && plane < 3U; ++plane) {
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+            components[plane]
+                = (double)sixel_pixelformat_byte_to_float(
+                      pixelformat,
+                      (int)plane,
+                      (unsigned char)tuple_values[plane]);
+            continue;
+        }
+        components[plane] = (double)tuple_values[plane];
+    }
+    sixel_palette_snap_triple(components, 1, pixelformat);
+    for (plane = 0U; plane < depth && plane < 3U; ++plane) {
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+            tuple_values[plane]
+                = (sample)sixel_pixelformat_float_channel_to_byte(
+                      pixelformat,
+                      (int)plane,
+                      (float)components[plane]);
+            continue;
+        }
+        tuple_values[plane] = (sample)components[plane];
     }
 }
 
@@ -1960,9 +1980,6 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     float_entries = NULL;
     float_stride = 0;
     reversible_for_quantizer = palette->use_reversible;
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        reversible_for_quantizer = 0;
-    }
     status = sixel_palette_heckbert_colormap(data,
                                              length,
                                              depth,
