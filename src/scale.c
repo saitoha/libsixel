@@ -313,6 +313,7 @@ sixel_clamp_unit_f32(float value)
 }
 
 #if defined(HAVE_IMMINTRIN_H)
+#if defined(SIXEL_USE_AVX)
 static SIXEL_TARGET_AVX __m256
 sixel_avx_load_rgb_ps(unsigned char const *psrc)
 {
@@ -401,13 +402,19 @@ sixel_avx_store_rgb_f32(__m256 acc, double total, float *dst)
     dst[1] = out[1];
     dst[2] = out[2];
 }
+#endif  /* SIXEL_USE_AVX */
 
+#if defined(SIXEL_USE_AVX2)
 static SIXEL_TARGET_AVX2 __m256
 sixel_avx2_load_rgb_ps(unsigned char const *psrc)
 {
     __m128i pixi128;
     __m256i pixi256;
 
+    /*
+     * Keep the unused bytes zeroed so widening to epi32 does not pull in
+     * stack junk and bias every output channel toward white.
+     */
     pixi128 = _mm_setr_epi8((char)psrc[0],
                             (char)psrc[1],
                             (char)psrc[2],
@@ -483,7 +490,9 @@ sixel_avx2_store_rgb_f32(__m256 acc, double total, float *dst)
     dst[1] = out[1];
     dst[2] = out[2];
 }
+#endif  /* SIXEL_USE_AVX2 */
 
+#if defined(SIXEL_USE_AVX512)
 static SIXEL_TARGET_AVX512 __m512
 sixel_avx512_load_rgb_ps(unsigned char const *psrc)
 {
@@ -567,6 +576,7 @@ sixel_avx512_store_rgb_f32(__m512 acc, double total, float *dst)
     dst[1] = out[1];
     dst[2] = out[2];
 }
+#endif  /* SIXEL_USE_AVX512 */
 #endif /* HAVE_IMMINTRIN_H */
 
 
