@@ -972,7 +972,7 @@ after_quantizer:
     if (palette->use_reversible && palette->entries != NULL) {
         sixel_palette_reversible_palette(palette->entries,
                                          ncolors,
-                                         depth);
+                                         pixelformat);
     }
     status = SIXEL_OK;
 

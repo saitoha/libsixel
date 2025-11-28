@@ -136,31 +136,13 @@ sixel_get_kmeans_init_type(void)
 }
 
 static double
-sixel_kmeans_snap_component(double value, int use_reversible)
+sixel_kmeans_snap_component(double value,
+                            int use_reversible,
+                            int pixelformat,
+                            int channel)
 {
-    double clamped;
-    int sample;
-
-    clamped = value;
-    sample = 0;
-    if (clamped < 0.0) {
-        clamped = 0.0;
-    }
-    if (clamped > 255.0) {
-        clamped = 255.0;
-    }
-    if (!use_reversible) {
-        return clamped;
-    }
-    sample = (int)(clamped + 0.5);
-    if (sample < 0) {
-        sample = 0;
-    }
-    if (sample > 255) {
-        sample = 255;
-    }
-
-    return (double)sixel_palette_reversible_value((unsigned int)sample);
+    return sixel_palette_snap_double(
+        value, use_reversible, pixelformat, channel);
 }
 
 static int
@@ -343,6 +325,7 @@ sixel_kmeans_seed_pca(double *centers,
                       double const *weights,
                       unsigned int sample_count,
                       int use_reversible,
+                      int pixelformat,
                       sixel_allocator_t *allocator)
 {
     sixel_kmeans_projection_entry_t *projections = NULL;
@@ -455,7 +438,7 @@ sixel_kmeans_seed_pca(double *centers,
 
             averaged = sum[channel] / bucket_weight;
             centers[bucket * 3U + channel] = sixel_kmeans_snap_component(
-                averaged, use_reversible);
+                averaged, use_reversible, pixelformat, (int)channel);
         }
     }
 
@@ -549,6 +532,7 @@ sixel_kmeans_choose_initial_centroids(double *centers,
                                       double const *weights,
                                       unsigned int sample_count,
                                       int use_reversible,
+                                      int pixelformat,
                                       double *distance_cache,
                                       sixel_allocator_t *allocator,
                                       sixel_kmeans_init_type init_type)
@@ -575,6 +559,7 @@ sixel_kmeans_choose_initial_centroids(double *centers,
                                             weights,
                                             sample_count,
                                             use_reversible,
+                                            pixelformat,
                                             allocator);
         if (seed_status == 0) {
             return SIXEL_OK;
@@ -1171,6 +1156,7 @@ build_palette_kmeans(unsigned char **result,
                                                    NULL,
                                                    sample_count,
                                                    use_reversible,
+                                                   pixelformat,
                                                    distance_cache,
                                                    allocator,
                                                    init_type);
@@ -1352,6 +1338,7 @@ build_palette_kmeans(unsigned char **result,
                                                   (int)reqcolors,
                                                   resolved_merge,
                                                   use_reversible,
+                                                  pixelformat,
                                                   allocator);
         if (cluster_total < 1) {
             cluster_total = 1;
@@ -1763,7 +1750,7 @@ sixel_palette_build_kmeans_internal(sixel_palette_t *palette,
     if (palette->use_reversible) {
         sixel_palette_reversible_palette(entries,
                                          ncolors,
-                                         entry_depth);
+                                         pixelformat);
     }
 
     payload_size = (size_t)ncolors * (size_t)entry_depth;
