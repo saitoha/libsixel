@@ -5260,12 +5260,10 @@ error:
 static int
 test_reversible_snap_srgb_idempotent(void)
 {
-    SIXELSTATUS status;
     unsigned char palette[6];
     unsigned char expected[6];
     size_t index;
 
-    status = SIXEL_OK;
     palette[0] = 13;
     palette[1] = 42;
     palette[2] = 254;
