@@ -135,16 +135,6 @@ sixel_get_kmeans_init_type(void)
     return resolved;
 }
 
-static double
-sixel_kmeans_snap_component(double value,
-                            int use_reversible,
-                            int pixelformat,
-                            int channel)
-{
-    return sixel_palette_snap_double(
-        value, use_reversible, pixelformat, channel);
-}
-
 static int
 sixel_kmeans_projection_compare(void const *lhs, void const *rhs)
 {
@@ -434,12 +424,11 @@ sixel_kmeans_seed_pca(double *centers,
             sum[2] = samples[fallback * 3U + 2U];
         }
         for (channel = 0U; channel < 3U; ++channel) {
-            double averaged;
-
-            averaged = sum[channel] / bucket_weight;
-            centers[bucket * 3U + channel] = sixel_kmeans_snap_component(
-                averaged, use_reversible, pixelformat, (int)channel);
+            centers[bucket * 3U + channel] = sum[channel] / bucket_weight;
         }
+        sixel_palette_snap_triple(&centers[bucket * 3U],
+                                  use_reversible,
+                                  pixelformat);
     }
 
     sixel_allocator_free(allocator, projections);
@@ -1729,9 +1718,6 @@ sixel_palette_build_kmeans_internal(sixel_palette_t *palette,
     entry_depth = (unsigned int)depth_result;
 
     reversible_for_quantizer = palette->use_reversible;
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        reversible_for_quantizer = 0;
-    }
     build_status = build_palette_kmeans(&entries,
                                         &entries_float32,
                                         data,
