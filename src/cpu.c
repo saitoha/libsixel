@@ -16,7 +16,9 @@
 #if HAVE_CPUID_H && !defined(_WIN32)
 # include <cpuid.h>
 #endif
-#if HAVE_IMMINTRIN_H
+#if defined(HAVE_IMMINTRIN_H) && \
+    (defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
+     defined(_M_IX86))
 # include <immintrin.h>
 #endif
 
