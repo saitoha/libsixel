@@ -61,10 +61,10 @@ libsixel_la_SOURCES = \
                 $(srcdir)/colorspace.h \
                 $(srcdir)/frame.c \
                 $(srcdir)/frame.h \
-                $(srcdir)/pixelformat.c \
-                $(srcdir)/pixelformat.h \
                 $(srcdir)/cpu.c \
                 $(srcdir)/cpu.h \
+                $(srcdir)/pixelformat.c \
+                $(srcdir)/pixelformat.h \
                 $(srcdir)/scale.c \
                 $(srcdir)/scale.h \
                 $(srcdir)/chunk.c \
@@ -100,6 +100,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/allocator.h \
                 $(srcdir)/tty.c \
                 $(srcdir)/tty.h \
+                $(srcdir)/sixel_threads_config.c \
                 $(srcdir)/sixel_threads_config.h \
                 $(srcdir)/sixel_atomic.h \
                 $(srcdir)/rgblookup.h \

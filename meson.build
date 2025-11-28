@@ -777,9 +777,9 @@ loader_helper_sources = files(
   'src/loader.c',
   'src/compat_stub.c',
   'src/malloc_stub.c',
-  'src/pixelformat.c',
   'src/cpu.c',
   'src/cpu.h',
+  'src/pixelformat.c',
   'src/palette.c',
   'src/palette-common-merge.c',
   'src/palette-common-snap.c',
@@ -792,6 +792,7 @@ loader_helper_sources = files(
   'src/scale.c',
   'src/status.c',
   'src/tty.c',
+  'src/sixel_threads_config.c',
 )
 
 if have_threads

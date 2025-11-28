@@ -31,7 +31,9 @@
 extern "C" {
 #endif
 
+SIXELAPI int sixel_threads_normalize(int requested);
 SIXELAPI void sixel_set_threads(int threads);
+SIXELAPI int sixel_threads_resolve(void);
 
 #ifdef __cplusplus
 }
