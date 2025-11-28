@@ -1185,13 +1185,16 @@ typedef struct scale_parallel_context {
 } scale_parallel_context_t;
 
 /*
- * Emit worker-level timeline entries only for the first and last rows so the
- * visualization remains readable even when there are many jobs.
+ * Emit worker-level timeline entries for boundaries plus a coarse sampling so
+ * the visualization stays readable while still showing parallel overlap.
  */
 static int
 scale_parallel_should_log(scale_parallel_context_t const *ctx, int index)
 {
     int last;
+    int span;
+    int slots;
+    int stride;
 
     if (ctx == NULL || ctx->logger == NULL || !ctx->logger->active) {
         return 0;
@@ -1201,20 +1204,34 @@ scale_parallel_should_log(scale_parallel_context_t const *ctx, int index)
         return 0;
     }
 
-    last = 0;
     if (ctx->pass == SCALE_PASS_HORIZONTAL) {
-        if (ctx->srch <= 0) {
-            return 0;
-        }
-        last = ctx->srch - 1;
+        span = ctx->srch;
     } else {
-        if (ctx->dsth <= 0) {
-            return 0;
-        }
-        last = ctx->dsth - 1;
+        span = ctx->dsth;
     }
 
-    return index == 0 || index == last;
+    if (span <= 0) {
+        return 0;
+    }
+
+    last = span - 1;
+    if (index == 0 || index == last) {
+        return 1;
+    }
+
+    /*
+     * Sample rows at regular intervals so timeline rows reflect active
+     * threads without drawing every band. Use enough slots to keep the
+     * timeline filled with visible work while avoiding the wall of ink
+     * produced when every row is logged.
+     */
+    slots = 64;
+    stride = span / slots;
+    if (stride < 1) {
+        stride = 1;
+    }
+
+    return (index % stride) == 0;
 }
 
 /*
