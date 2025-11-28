@@ -1972,7 +1972,9 @@ sixel_smptec_to_linear_sse2(float *pixels, size_t pixel_total)
     float r_out[4];
     float g_out[4];
     float b_out[4];
-    size_t lane;
+    __m128 vec0;
+    __m128 vec1;
+    __m128 vec2;
 
     processed = pixel_total - (pixel_total % 4U);
     for (index = 0U; index < processed; index += 4U) {
@@ -2012,14 +2014,20 @@ sixel_smptec_to_linear_sse2(float *pixels, size_t pixel_total)
         _mm_storeu_ps(g_out, g_lin);
         _mm_storeu_ps(b_out, b_lin);
 
-        for (lane = 0U; lane < 4U; ++lane) {
-            float *pixel;
+        /*
+         * Re-interleave SIMD lanes back into AoS layout with vector
+         * stores to avoid the scalar scatter loop. Layout per store:
+         *   vec0 -> [r0 g0 b0 r1]
+         *   vec1 -> [g1 b1 r2 g2]
+         *   vec2 -> [b2 r3 g3 b3]
+         */
+        vec0 = _mm_setr_ps(r_out[0], g_out[0], b_out[0], r_out[1]);
+        vec1 = _mm_setr_ps(g_out[1], b_out[1], r_out[2], g_out[2]);
+        vec2 = _mm_setr_ps(b_out[2], r_out[3], g_out[3], b_out[3]);
 
-            pixel = base + lane * 3U;
-            pixel[0] = r_out[lane];
-            pixel[1] = g_out[lane];
-            pixel[2] = b_out[lane];
-        }
+        _mm_storeu_ps(base, vec0);
+        _mm_storeu_ps(base + 4U, vec1);
+        _mm_storeu_ps(base + 8U, vec2);
     }
 
     return processed;
@@ -2053,7 +2061,9 @@ sixel_linear_to_smptec_sse2(float *pixels, size_t pixel_total)
     float sr_out[4];
     float sg_out[4];
     float sb_out[4];
-    size_t lane;
+    __m128 vec0;
+    __m128 vec1;
+    __m128 vec2;
 
     processed = pixel_total - (pixel_total % 4U);
     for (index = 0U; index < processed; index += 4U) {
@@ -2092,14 +2102,18 @@ sixel_linear_to_smptec_sse2(float *pixels, size_t pixel_total)
         _mm_storeu_ps(sg_out, sg);
         _mm_storeu_ps(sb_out, sb);
 
-        for (lane = 0U; lane < 4U; ++lane) {
-            float *pixel;
+        /*
+         * Use three vector stores to re-pack SoA lanes into the AoS
+         * buffer. This mirrors the SMPTEC→linear SSE2 path to keep
+         * scatter symmetric and branch-free.
+         */
+        vec0 = _mm_setr_ps(sr_out[0], sg_out[0], sb_out[0], sr_out[1]);
+        vec1 = _mm_setr_ps(sg_out[1], sb_out[1], sr_out[2], sg_out[2]);
+        vec2 = _mm_setr_ps(sb_out[2], sr_out[3], sg_out[3], sb_out[3]);
 
-            pixel = base + lane * 3U;
-            pixel[0] = sr_out[lane];
-            pixel[1] = sg_out[lane];
-            pixel[2] = sb_out[lane];
-        }
+        _mm_storeu_ps(base, vec0);
+        _mm_storeu_ps(base + 4U, vec1);
+        _mm_storeu_ps(base + 8U, vec2);
     }
 
     return processed;
