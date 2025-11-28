@@ -144,6 +144,8 @@ def render(
 
     spans: Dict[Tuple[str, str, int, int], Tuple[float, float]] = {}
     job_hint: Dict[Tuple[str, int], int] = {}
+    first_ts: Dict[Tuple[str, int], float] = {}
+    primary_role: Dict[Tuple[str, int], str] = {}
     for event in events:
         key = (event.worker, event.role, event.thread, event.job)
         if key not in spans:
@@ -155,6 +157,9 @@ def render(
         if row_key not in job_hint and event.worker == "decoder" and \
                 event.job >= 0:
             job_hint[row_key] = event.job
+        if row_key not in first_ts:
+            first_ts[row_key] = event.ts
+            primary_role[row_key] = event.role
 
     threads: Dict[Tuple[str, int], List[Tuple[float, float, str, int]]] = {}
     if lifetime_only:
@@ -236,14 +241,6 @@ def render(
             role_color[(worker, role)] = _lighten(base, shade)
 
     rows = list(threads.keys())
-    first_ts: Dict[Tuple[str, int], float] = {}
-    primary_role: Dict[Tuple[str, int], str] = {}
-    for event in events:
-        key = _row_key(event.worker, event.thread, event.job)
-        if key not in first_ts:
-            first_ts[key] = event.ts
-            primary_role[key] = event.role
-
     if sort_order == "start":
         rows.sort(key=lambda row: _start_sort_key(
             row, first_ts, primary_role))
