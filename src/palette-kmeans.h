@@ -73,6 +73,7 @@ sixel_kmeans_choose_initial_centroids(double *centers,
                                       double const *weights,
                                       unsigned int sample_count,
                                       int use_reversible,
+                                      int pixelformat,
                                       double *distance_cache,
                                       sixel_allocator_t *allocator,
                                       sixel_kmeans_init_type init_type);

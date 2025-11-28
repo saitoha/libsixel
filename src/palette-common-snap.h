@@ -37,7 +37,18 @@ extern "C" {
 void
 sixel_palette_reversible_palette(unsigned char *palette,
                                  unsigned int colors,
-                                 unsigned int depth);
+                                 int pixelformat);
+
+double
+sixel_palette_snap_double(double value,
+                          int use_reversible,
+                          int pixelformat,
+                          int channel);
+
+void
+sixel_palette_snap_triple(double *components,
+                          int use_reversible,
+                          int pixelformat);
 
 /*
  * Safe-tone lookup table used when constructing reversible palettes.  Values
