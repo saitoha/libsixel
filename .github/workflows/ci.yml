@@ -27,6 +27,10 @@ jobs:
           - os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
+            disable_simd: true
+          - os: ubuntu-latest
+            runner: ubuntu-latest
+            sys: x86_64
             disable_threads: true
           - os: ubuntu-latest
             runner: ubuntu-latest
@@ -41,6 +45,11 @@ jobs:
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
+          - os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: MINGW64
+            disable_simd: true
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -195,6 +204,10 @@ jobs:
         if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
           disable_threads_flag="--disable-threads"
         fi
+        disable_simd_flag=""
+        if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
+          disable_simd_flag="--disable-simd"
+        fi
         ./configure \
             --without-png \
             --without-jpeg \
@@ -206,7 +219,8 @@ jobs:
             --enable-tests \
             --enable-gcov \
             --disable-dependency-tracking \
-            ${disable_threads_flag}
+            ${disable_threads_flag} \
+            ${disable_simd_flag}
         cat config.log
         make V=1
 
@@ -217,6 +231,10 @@ jobs:
         disable_threads_flag=""
         if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
           disable_threads_flag="--disable-threads"
+        fi
+        disable_simd_flag=""
+        if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
+          disable_simd_flag="--disable-simd"
         fi
         ./configure CC=${{ matrix.compiler }} \
             --without-png \
@@ -229,7 +247,8 @@ jobs:
             --enable-tests \
             --enable-gcov \
             --disable-dependency-tracking \
-            ${disable_threads_flag}
+            ${disable_threads_flag} \
+            ${disable_simd_flag}
         cat config.log
         make V=1
 
@@ -244,13 +263,18 @@ jobs:
         if ('${{ matrix.disable_threads }}' -eq 'true') {
           $disableThreadsFlag = '--disable-threads'
         }
+        $disableSimdFlag = ''
+        if ('${{ matrix.disable_simd }}' -eq 'true') {
+          $disableSimdFlag = '--disable-simd'
+        }
         $scriptLines = @(
           'set -eu',
           'set -o pipefail 2>/dev/null || true',
           "disable_threads_flag=`"$disableThreadsFlag`"",
+          "disable_simd_flag=`"$disableSimdFlag`"",
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-debug --enable-tests --enable-gcov --disable-dependency-tracking ${disable_threads_flag}',
+          './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-debug --enable-tests --enable-gcov --disable-dependency-tracking ${disable_threads_flag} ${disable_simd_flag}',
           'cat config.log',
           'make V=1'
         )
@@ -266,6 +290,10 @@ jobs:
         disable_threads_flag=""
         if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
           disable_threads_flag="--disable-threads"
+        fi
+        disable_simd_flag=""
+        if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
+          disable_simd_flag="--disable-simd"
         fi
         eval $(
             cmd //c call "${VCVARS}" x64 \>nul \&\& set |
@@ -292,7 +320,8 @@ jobs:
             --enable-debug \
             --enable-tests \
             --disable-dependency-tracking \
-            ${disable_threads_flag}
+            ${disable_threads_flag} \
+            ${disable_simd_flag}
         cat config.log
         make V=1
 
@@ -813,6 +842,9 @@ jobs:
             runner: ubuntu-latest
           - os: ubuntu-latest
             runner: ubuntu-latest
+            disable_simd: true
+          - os: ubuntu-latest
+            runner: ubuntu-latest
             disable_threads: true
           - os: ubuntu-latest
             runner: ubuntu-latest
@@ -825,6 +857,11 @@ jobs:
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
+          - os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: MINGW64
+            disable_simd: true
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -956,6 +993,10 @@ jobs:
         if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
           disable_threads_flag="-Dthreads=disabled"
         fi
+        disable_simd_flag=""
+        if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
+          disable_simd_flag="-Dsimd=disabled"
+        fi
         meson setup builddir \
             --wrap-mode=nodownload \
             -Dpng=disabled \
@@ -965,7 +1006,8 @@ jobs:
             -Dzshcompletiondir= \
             -Dpython=disabled \
             -Dtests=true \
-            ${disable_threads_flag}
+            ${disable_threads_flag} \
+            ${disable_simd_flag}
         meson compile -C builddir
         meson test -C builddir || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
 
@@ -977,6 +1019,10 @@ jobs:
         if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
           disable_threads_flag="-Dthreads=disabled"
         fi
+        disable_simd_flag=""
+        if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
+          disable_simd_flag="-Dsimd=disabled"
+        fi
         meson setup builddir \
             --wrap-mode=nodownload \
             --default-library static \
@@ -987,7 +1033,8 @@ jobs:
             -Dzshcompletiondir= \
             -Dpython=disabled \
             -Dtests=true \
-            ${disable_threads_flag}
+            ${disable_threads_flag} \
+            ${disable_simd_flag}
         meson compile -C builddir
         meson test -C builddir || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
 
@@ -1002,13 +1049,18 @@ jobs:
         if ('${{ matrix.disable_threads }}' -eq 'true') {
           $disableThreadsFlag = '-Dthreads=disabled'
         }
+        $disableSimdFlag = ''
+        if ('${{ matrix.disable_simd }}' -eq 'true') {
+          $disableSimdFlag = '-Dsimd=disabled'
+        }
         $scriptLines = @(
           'set -eu',
           'set -o pipefail 2>/dev/null || true',
           "disable_threads_flag=`"$disableThreadsFlag`"",
+          "disable_simd_flag=`"$disableSimdFlag`"",
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          'meson setup builddir --wrap-mode=nodownload --default-library static -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir= -Dzshcompletiondir= -Dpython=disabled -Dtests=true ${disable_threads_flag}',
+          'meson setup builddir --wrap-mode=nodownload --default-library static -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir= -Dzshcompletiondir= -Dpython=disabled -Dtests=true ${disable_threads_flag} ${disable_simd_flag}',
           'meson compile -C builddir',
           'meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }'
         )
@@ -1025,6 +1077,8 @@ jobs:
         python -m pip install meson ninja
         set "DISABLE_THREADS_FLAG="
         if "${{ matrix.disable_threads || '' }}"=="true" set "DISABLE_THREADS_FLAG=-Dthreads=disabled"
+        set "DISABLE_SIMD_FLAG="
+        if "${{ matrix.disable_simd || '' }}"=="true" set "DISABLE_SIMD_FLAG=-Dsimd=disabled"
         python -m mesonbuild.mesonmain setup builddir ^
             --wrap-mode=nodownload ^
             --default-library static ^
@@ -1035,7 +1089,8 @@ jobs:
             -Dzshcompletiondir= ^
             -Dpython=disabled ^
             -Dtests=true ^
-            %DISABLE_THREADS_FLAG%
+            %DISABLE_THREADS_FLAG% ^
+            %DISABLE_SIMD_FLAG%
         if errorlevel 1 exit /b !errorlevel!
         python -m mesonbuild.mesonmain compile -C builddir
         if errorlevel 1 exit /b !errorlevel!
