@@ -57,7 +57,10 @@
 # include "threadpool.h"
 #endif
 
-#if defined(HAVE_IMMINTRIN_H)
+#if defined(HAVE_IMMINTRIN_H) && \
+    (defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
+     defined(_M_IX86))
+# define SIXEL_HAS_X86_INTRIN 1
 # include <immintrin.h>
 #endif
 
@@ -70,7 +73,7 @@
 # endif
 #endif
 
-#if defined(HAVE_IMMINTRIN_H)
+#if defined(SIXEL_HAS_X86_INTRIN)
 # if defined(__GNUC__)
 #  if !defined(__clang__)
 #   define SIXEL_TARGET_AVX __attribute__((target("avx")))
