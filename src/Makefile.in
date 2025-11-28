@@ -199,8 +199,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/status.h $(srcdir)/stdio_stub.h \
 	$(srcdir)/compat_stub.c $(srcdir)/compat_stub.h \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
-	$(srcdir)/allocator.c $(srcdir)/allocator.h $(srcdir)/tty.c \
-	$(srcdir)/tty.h $(srcdir)/sixel_threads_config.h \
+$(srcdir)/allocator.c $(srcdir)/allocator.h $(srcdir)/tty.c \
+$(srcdir)/tty.h $(srcdir)/sixel_threads_config.c \
+$(srcdir)/sixel_threads_config.h \
 	$(srcdir)/sixel_atomic.h $(srcdir)/rgblookup.h \
 	$(srcdir)/lso2.h $(srcdir)/sixel_threading.c \
 	$(srcdir)/sixel_threading.h $(srcdir)/threadpool.c \
@@ -236,10 +237,10 @@ am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-clipboard.lo libsixel_la-encoder.lo \
 	libsixel_la-decoder.lo libsixel_la-options.lo \
 	libsixel_la-writer.lo libsixel_la-stb_image_write.lo \
-	libsixel_la-status.lo libsixel_la-compat_stub.lo \
-	libsixel_la-malloc_stub.lo libsixel_la-allocator.lo \
-	libsixel_la-tty.lo $(am__objects_1) $(am__objects_2) \
-	$(am__objects_3)
+        libsixel_la-status.lo libsixel_la-compat_stub.lo \
+        libsixel_la-malloc_stub.lo libsixel_la-allocator.lo \
+        libsixel_la-tty.lo libsixel_la-sixel_threads_config.lo \
+        $(am__objects_1) $(am__objects_2) $(am__objects_3)
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -1119,6 +1120,13 @@ libsixel_la-tty.lo: tty.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='tty.c' object='libsixel_la-tty.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-tty.lo `test -f 'tty.c' || echo '$(srcdir)/'`tty.c
+
+libsixel_la-sixel_threads_config.lo: sixel_threads_config.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-sixel_threads_config.lo -MD -MP -MF $(DEPDIR)/libsixel_la-sixel_threads_config.Tpo -c -o libsixel_la-sixel_threads_config.lo `test -f 'sixel_threads_config.c' || echo '$(srcdir)/'`sixel_threads_config.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-sixel_threads_config.Tpo $(DEPDIR)/libsixel_la-sixel_threads_config.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='sixel_threads_config.c' object='libsixel_la-sixel_threads_config.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-sixel_threads_config.lo `test -f 'sixel_threads_config.c' || echo '$(srcdir)/'`sixel_threads_config.c
 
 libsixel_la-sixel_threading.lo: sixel_threading.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-sixel_threading.lo -MD -MP -MF $(DEPDIR)/libsixel_la-sixel_threading.Tpo -c -o libsixel_la-sixel_threading.lo `test -f 'sixel_threading.c' || echo '$(srcdir)/'`sixel_threading.c

@@ -98,6 +98,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/allocator.h \
                 $(srcdir)/tty.c \
                 $(srcdir)/tty.h \
+                $(srcdir)/sixel_threads_config.c \
                 $(srcdir)/sixel_threads_config.h \
                 $(srcdir)/sixel_atomic.h \
                 $(srcdir)/rgblookup.h \

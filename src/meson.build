@@ -70,6 +70,8 @@ srcs = [
   'malloc_stub.c',
   'allocator.c',
   'tty.c',
+  'sixel_threads_config.c',
+  'sixel_threads_config.h',
   'lookup-common.h',
   'lookup-8bit.h',
   'lookup-float32.h',

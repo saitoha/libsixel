@@ -769,6 +769,7 @@ loader_helper_sources = files(
   'src/scale.c',
   'src/status.c',
   'src/tty.c',
+  'src/sixel_threads_config.c',
 )
 
 if have_threads
