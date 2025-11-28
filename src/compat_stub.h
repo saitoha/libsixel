@@ -151,6 +151,9 @@ SIXEL_COMPAT_API int sixel_compat_vsnprintf(char *buffer,
                                             va_list args)
     SIXEL_ATTRIBUTE_FORMAT(SIXEL_PRINTF_ARCHETYPE, 3, 0);
 
+SIXEL_COMPAT_API int sixel_compat_strcasecmp(const char *lhs,
+                                             const char *rhs);
+
 SIXEL_COMPAT_API int sixel_compat_strcpy(char *destination,
                                          size_t destination_size,
                                          const char *source);
