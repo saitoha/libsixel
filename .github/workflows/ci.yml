@@ -32,6 +32,10 @@ jobs:
           - os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
+            disable_tools: true
+          - os: ubuntu-latest
+            runner: ubuntu-latest
+            sys: x86_64
             disable_threads: true
           - os: ubuntu-latest
             runner: ubuntu-latest
@@ -52,6 +56,11 @@ jobs:
             compiler: gcc
             sys: MINGW64
             disable_simd: true
+          - os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: MINGW64
+            disable_tools: true
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -206,6 +215,10 @@ jobs:
         if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
           disable_threads_flag="--disable-threads"
         fi
+        disable_tools_flags=""
+        if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
+          disable_tools_flags="--disable-img2sixel --disable-sixel2png"
+        fi
         disable_simd_flag=""
         if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
           disable_simd_flag="--disable-simd"
@@ -225,6 +238,7 @@ jobs:
             --enable-tests \
             --enable-gcov \
             --disable-dependency-tracking \
+            ${disable_tools_flags} \
             ${disable_threads_flag} \
             ${disable_simd_flag} \
             ${static_only_flags}
@@ -238,6 +252,10 @@ jobs:
         disable_threads_flag=""
         if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
           disable_threads_flag="--disable-threads"
+        fi
+        disable_tools_flags=""
+        if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
+          disable_tools_flags="--disable-img2sixel --disable-sixel2png"
         fi
         disable_simd_flag=""
         if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
@@ -258,6 +276,7 @@ jobs:
             --enable-tests \
             --enable-gcov \
             --disable-dependency-tracking \
+            ${disable_tools_flags} \
             ${disable_threads_flag} \
             ${disable_simd_flag} \
             ${static_only_flags}
@@ -275,6 +294,10 @@ jobs:
         if ('${{ matrix.disable_threads }}' -eq 'true') {
           $disableThreadsFlag = '--disable-threads'
         }
+        $disableToolsFlags = ''
+        if ('${{ matrix.disable_tools }}' -eq 'true') {
+          $disableToolsFlags = '--disable-img2sixel --disable-sixel2png'
+        }
         $disableSimdFlag = ''
         if ('${{ matrix.disable_simd }}' -eq 'true') {
           $disableSimdFlag = '--disable-simd'
@@ -287,11 +310,12 @@ jobs:
           'set -eu',
           'set -o pipefail 2>/dev/null || true',
           "disable_threads_flag=`"$disableThreadsFlag`"",
+          "disable_tools_flags=`"$disableToolsFlags`"",
           "disable_simd_flag=`"$disableSimdFlag`"",
           "static_only_flags=`"$staticOnlyFlags`"",
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-debug --enable-tests --enable-gcov --disable-dependency-tracking ${disable_threads_flag} ${disable_simd_flag} ${static_only_flags}',
+          './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-debug --enable-tests --enable-gcov --disable-dependency-tracking ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${static_only_flags}',
           'cat config.log',
           'make V=1'
         )
@@ -307,6 +331,10 @@ jobs:
         disable_threads_flag=""
         if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
           disable_threads_flag="--disable-threads"
+        fi
+        disable_tools_flags=""
+        if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
+          disable_tools_flags="--disable-img2sixel --disable-sixel2png"
         fi
         disable_simd_flag=""
         if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
@@ -337,6 +365,7 @@ jobs:
             --enable-debug \
             --enable-tests \
             --disable-dependency-tracking \
+            ${disable_tools_flags} \
             ${disable_threads_flag} \
             ${disable_simd_flag}
         cat config.log
@@ -1091,6 +1120,9 @@ jobs:
             disable_simd: true
           - os: ubuntu-latest
             runner: ubuntu-latest
+            disable_tools: true
+          - os: ubuntu-latest
+            runner: ubuntu-latest
             disable_threads: true
           - os: ubuntu-latest
             runner: ubuntu-latest
@@ -1109,6 +1141,11 @@ jobs:
             compiler: gcc
             sys: MINGW64
             disable_simd: true
+          - os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: MINGW64
+            disable_tools: true
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -1240,6 +1277,10 @@ jobs:
         if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
           disable_threads_flag="-Dthreads=disabled"
         fi
+        disable_tools_flags=""
+        if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
+          disable_tools_flags="-Dimg2sixel=disabled -Dsixel2png=disabled"
+        fi
         disable_simd_flag=""
         if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
           disable_simd_flag="-Dsimd=disabled"
@@ -1258,6 +1299,7 @@ jobs:
             -Dzshcompletiondir= \
             -Dpython=disabled \
             -Dtests=true \
+            ${disable_tools_flags} \
             ${disable_threads_flag} \
             ${disable_simd_flag}
         meson compile -C builddir
@@ -1271,6 +1313,10 @@ jobs:
         if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
           disable_threads_flag="-Dthreads=disabled"
         fi
+        disable_tools_flags=""
+        if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
+          disable_tools_flags="-Dimg2sixel=disabled -Dsixel2png=disabled"
+        fi
         disable_simd_flag=""
         if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
           disable_simd_flag="-Dsimd=disabled"
@@ -1289,6 +1335,7 @@ jobs:
             -Dzshcompletiondir= \
             -Dpython=disabled \
             -Dtests=true \
+            ${disable_tools_flags} \
             ${disable_threads_flag} \
             ${disable_simd_flag}
         meson compile -C builddir
@@ -1305,6 +1352,10 @@ jobs:
         if ('${{ matrix.disable_threads }}' -eq 'true') {
           $disableThreadsFlag = '-Dthreads=disabled'
         }
+        $disableToolsFlags = ''
+        if ('${{ matrix.disable_tools }}' -eq 'true') {
+          $disableToolsFlags = '-Dimg2sixel=disabled -Dsixel2png=disabled'
+        }
         $disableSimdFlag = ''
         if ('${{ matrix.disable_simd }}' -eq 'true') {
           $disableSimdFlag = '-Dsimd=disabled'
@@ -1317,11 +1368,12 @@ jobs:
           'set -eu',
           'set -o pipefail 2>/dev/null || true',
           "disable_threads_flag=`"$disableThreadsFlag`"",
+          "disable_tools_flags=`"$disableToolsFlags`"",
           "disable_simd_flag=`"$disableSimdFlag`"",
           "default_library_flag=`"$defaultLibraryFlag`"",
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          'meson setup builddir --wrap-mode=nodownload ${default_library_flag} -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir= -Dzshcompletiondir= -Dpython=disabled -Dtests=true ${disable_threads_flag} ${disable_simd_flag}',
+          'meson setup builddir --wrap-mode=nodownload ${default_library_flag} -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir= -Dzshcompletiondir= -Dpython=disabled -Dtests=true ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag}',
           'meson compile -C builddir',
           'meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }'
         )
@@ -1338,6 +1390,8 @@ jobs:
         python -m pip install meson ninja
         set "DISABLE_THREADS_FLAG="
         if "${{ matrix.disable_threads || '' }}"=="true" set "DISABLE_THREADS_FLAG=-Dthreads=disabled"
+        set "DISABLE_TOOLS_FLAGS="
+        if "${{ matrix.disable_tools || '' }}"=="true" set "DISABLE_TOOLS_FLAGS=-Dimg2sixel=disabled -Dsixel2png=disabled"
         set "DISABLE_SIMD_FLAG="
         if "${{ matrix.disable_simd || '' }}"=="true" set "DISABLE_SIMD_FLAG=-Dsimd=disabled"
         python -m mesonbuild.mesonmain setup builddir ^
@@ -1350,6 +1404,7 @@ jobs:
             -Dzshcompletiondir= ^
             -Dpython=disabled ^
             -Dtests=true ^
+            %DISABLE_TOOLS_FLAGS% ^
             %DISABLE_THREADS_FLAG% ^
             %DISABLE_SIMD_FLAG%
         if errorlevel 1 exit /b !errorlevel!
