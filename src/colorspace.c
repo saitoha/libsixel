@@ -25,12 +25,64 @@
 #include "config.h"
 
 #include <math.h>
+#include <stdint.h>
 #include <stddef.h>
 
 #include <sixel.h>
 
 #include "colorspace.h"
 #include "cpu.h"
+
+#if defined(HAVE_IMMINTRIN_H) && \
+    (defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
+     defined(_M_IX86))
+# define SIXEL_HAS_X86_INTRIN 1
+# include <immintrin.h>
+#endif
+
+#if defined(HAVE_SSE2)
+# if defined(__SSE2__)
+#  if defined(HAVE_EMMINTRIN_H)
+#   include <emmintrin.h>
+#   define SIXEL_USE_SSE2 1
+#  endif
+# endif
+#endif
+
+#if defined(SIXEL_HAS_X86_INTRIN)
+# if defined(__GNUC__)
+#  if !defined(__clang__)
+#   define SIXEL_TARGET_AVX2 __attribute__((target("avx2")))
+#   define SIXEL_TARGET_AVX512 __attribute__((target("avx512f")))
+#   define SIXEL_USE_AVX2 1
+#   define SIXEL_USE_AVX512 1
+#  else
+/*
+ * clang rejects returning AVX vectors when the translation unit target
+ * does not already include the corresponding ISA. Guard runtime AVX
+ * helpers with compile-time ISA availability to keep non-AVX builds
+ * warning-free while still using AVX when the compiler enables it.
+ */
+#   define SIXEL_TARGET_AVX2
+#   define SIXEL_TARGET_AVX512
+#   if defined(__AVX2__)
+#    define SIXEL_USE_AVX2 1
+#   endif
+#   if defined(__AVX512F__)
+#    define SIXEL_USE_AVX512 1
+#   endif
+#  endif
+# else
+#  define SIXEL_TARGET_AVX2
+#  define SIXEL_TARGET_AVX512
+#  if defined(__AVX2__)
+#   define SIXEL_USE_AVX2 1
+#  endif
+#  if defined(__AVX512F__)
+#   define SIXEL_USE_AVX512 1
+#  endif
+# endif
+#endif
 
 #if defined(HAVE_NEON)
 # if (defined(__ARM_NEON) || defined(__ARM_NEON__))
@@ -66,6 +118,33 @@ static const double sixel_linear_smptec_to_srgb_matrix[3][3] = {
 static uint8x16x4_t sixel_neon_gamma_to_linear[4];
 static uint8x16x4_t sixel_neon_linear_to_gamma[4];
 static int sixel_neon_tables_initialized = 0;
+#endif
+
+#if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
+static uint32_t sixel_avx_gamma_to_linear_lut32[SIXEL_COLORSPACE_LUT_SIZE];
+static uint32_t sixel_avx_linear_to_gamma_lut32[SIXEL_COLORSPACE_LUT_SIZE];
+static int sixel_avx_tables_initialized = 0;
+static SIXELSTATUS sixel_colorspace_convert_avx2(unsigned char *pixels,
+                                                 size_t size,
+                                                 int pixelformat,
+                                                 int colorspace_src,
+                                                 int colorspace_dst);
+#elif defined(SIXEL_USE_AVX2)
+static __attribute__((unused)) SIXELSTATUS
+sixel_colorspace_convert_avx2(unsigned char *pixels,
+                              size_t size,
+                              int pixelformat,
+                              int colorspace_src,
+                              int colorspace_dst)
+{
+    (void)pixels;
+    (void)size;
+    (void)pixelformat;
+    (void)colorspace_src;
+    (void)colorspace_dst;
+
+    return SIXEL_BAD_INPUT;
+}
 #endif
 
 static unsigned char gamma_to_linear_lut[SIXEL_COLORSPACE_LUT_SIZE];
@@ -402,6 +481,196 @@ sixel_colorspace_select_lut(int colorspace_src, int colorspace_dst)
 
     return NULL;
 }
+
+#if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
+static inline const uint32_t *
+sixel_colorspace_select_lut32(int colorspace_src, int colorspace_dst)
+{
+    if (colorspace_src == SIXEL_COLORSPACE_GAMMA &&
+            colorspace_dst == SIXEL_COLORSPACE_LINEAR) {
+        return sixel_avx_gamma_to_linear_lut32;
+    }
+
+    if (colorspace_src == SIXEL_COLORSPACE_LINEAR &&
+            colorspace_dst == SIXEL_COLORSPACE_GAMMA) {
+        return sixel_avx_linear_to_gamma_lut32;
+    }
+
+    return NULL;
+}
+
+static inline __m128i
+sixel_colorspace_alpha_mask_sse2(int pixelformat)
+{
+    static const uint8_t mask_rgba[16] = {
+        0, 0, 0, 255, 0, 0, 0, 255,
+        0, 0, 0, 255, 0, 0, 0, 255
+    };
+    static const uint8_t mask_bgra[16] = {
+        0, 0, 0, 255, 0, 0, 0, 255,
+        0, 0, 0, 255, 0, 0, 0, 255
+    };
+    static const uint8_t mask_argb[16] = {
+        255, 0, 0, 0, 255, 0, 0, 0,
+        255, 0, 0, 0, 255, 0, 0, 0
+    };
+    static const uint8_t mask_abgr[16] = {
+        255, 0, 0, 0, 255, 0, 0, 0,
+        255, 0, 0, 0, 255, 0, 0, 0
+    };
+    static const uint8_t mask_ga[16] = {
+        0, 255, 0, 255, 0, 255, 0, 255,
+        0, 255, 0, 255, 0, 255, 0, 255
+    };
+    static const uint8_t mask_ag[16] = {
+        255, 0, 255, 0, 255, 0, 255, 0,
+        255, 0, 255, 0, 255, 0, 255, 0
+    };
+
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGBA8888:
+        return _mm_loadu_si128((const __m128i *)mask_rgba);
+    case SIXEL_PIXELFORMAT_BGRA8888:
+        return _mm_loadu_si128((const __m128i *)mask_bgra);
+    case SIXEL_PIXELFORMAT_ARGB8888:
+        return _mm_loadu_si128((const __m128i *)mask_argb);
+    case SIXEL_PIXELFORMAT_ABGR8888:
+        return _mm_loadu_si128((const __m128i *)mask_abgr);
+    case SIXEL_PIXELFORMAT_GA88:
+        return _mm_loadu_si128((const __m128i *)mask_ga);
+    case SIXEL_PIXELFORMAT_AG88:
+        return _mm_loadu_si128((const __m128i *)mask_ag);
+    default:
+        return _mm_setzero_si128();
+    }
+}
+
+/*
+ * The AVX2 path uses byte -> u32 expansion and gathers from a 256-entry
+ * table. Alpha lanes are preserved via an 0xFF mask to keep existing
+ * premultiplied or straight alpha values intact.
+ */
+static SIXEL_TARGET_AVX2 void
+sixel_colorspace_apply_avx2(unsigned char *pixels,
+                            size_t size,
+                            int pixelformat,
+                            const unsigned char *lut,
+                            const uint32_t *lut32)
+{
+    __m128i mask128;
+    size_t offset;
+    size_t remaining;
+    uint8_t mask_buffer[16];
+
+    mask128 = sixel_colorspace_alpha_mask_sse2(pixelformat);
+    _mm_storeu_si128((__m128i *)mask_buffer, mask128);
+
+    offset = 0U;
+    remaining = size;
+    while (remaining >= 16U) {
+        __m128i input;
+        __m128i input_hi;
+        __m256i index0;
+        __m256i index1;
+        __m256i mapped0;
+        __m256i mapped1;
+        __m256i packed16;
+        __m256i packed8;
+        __m128i converted;
+        __m128i preserved;
+
+        input = _mm_loadu_si128((const __m128i *)(pixels + offset));
+        input_hi = _mm_srli_si128(input, 8);
+
+        index0 = _mm256_cvtepu8_epi32(input);
+        index1 = _mm256_cvtepu8_epi32(input_hi);
+
+        mapped0 = _mm256_i32gather_epi32((const int *)lut32,
+                                          index0, 4);
+        mapped1 = _mm256_i32gather_epi32((const int *)lut32,
+                                          index1, 4);
+
+        packed16 = _mm256_packs_epi32(mapped0, mapped1);
+        packed8 = _mm256_packus_epi16(packed16, packed16);
+
+        converted = _mm256_castsi256_si128(packed8);
+
+        preserved = _mm_or_si128(_mm_and_si128(mask128, input),
+                                 _mm_andnot_si128(mask128, converted));
+
+        _mm_storeu_si128((__m128i *)(pixels + offset), preserved);
+
+        offset += 16U;
+        remaining -= 16U;
+    }
+
+    while (remaining > 0U) {
+        unsigned char original;
+        unsigned char mapped;
+        size_t mask_index;
+
+        mask_index = offset % 16U;
+        original = pixels[offset];
+        mapped = lut[original];
+        if (mask_buffer[mask_index] == 0U) {
+            pixels[offset] = mapped;
+        }
+
+        ++offset;
+        --remaining;
+    }
+}
+
+static SIXEL_TARGET_AVX2 SIXELSTATUS
+sixel_colorspace_convert_avx2(unsigned char *pixels,
+                              size_t size,
+                              int pixelformat,
+                              int colorspace_src,
+                              int colorspace_dst)
+{
+    const unsigned char *lut;
+    const uint32_t *lut32;
+
+    lut = sixel_colorspace_select_lut(colorspace_src, colorspace_dst);
+    lut32 = sixel_colorspace_select_lut32(colorspace_src, colorspace_dst);
+    if (lut == NULL || lut32 == NULL) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGB888:
+    case SIXEL_PIXELFORMAT_BGR888:
+        if (size % 3U != 0U) {
+            return SIXEL_BAD_INPUT;
+        }
+        sixel_colorspace_apply_avx2(pixels, size, pixelformat, lut, lut32);
+        return SIXEL_OK;
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+        if (size % 4U != 0U) {
+            return SIXEL_BAD_INPUT;
+        }
+        sixel_colorspace_apply_avx2(pixels, size, pixelformat, lut, lut32);
+        return SIXEL_OK;
+    case SIXEL_PIXELFORMAT_G8:
+        sixel_colorspace_apply_avx2(pixels, size, pixelformat, lut, lut32);
+        return SIXEL_OK;
+    case SIXEL_PIXELFORMAT_GA88:
+    case SIXEL_PIXELFORMAT_AG88:
+        if (size % 2U != 0U) {
+            return SIXEL_BAD_INPUT;
+        }
+        sixel_colorspace_apply_avx2(pixels, size, pixelformat, lut, lut32);
+        return SIXEL_OK;
+    default:
+        break;
+    }
+
+    return SIXEL_BAD_INPUT;
+}
+#endif
 
 static int
 sixel_colorspace_neon_supported_format(int pixelformat)
@@ -997,6 +1266,19 @@ sixel_colorspace_init_tables(void)
             sixel_colorspace_clamp((int)(converted * 255.0 + 0.5));
     }
 
+#if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
+    if (!sixel_avx_tables_initialized) {
+        for (i = 0; i < SIXEL_COLORSPACE_LUT_SIZE; ++i) {
+            sixel_avx_gamma_to_linear_lut32[i] =
+                (uint32_t)gamma_to_linear_lut[i];
+            sixel_avx_linear_to_gamma_lut32[i] =
+                (uint32_t)linear_to_gamma_lut[i];
+        }
+
+        sixel_avx_tables_initialized = 1;
+    }
+#endif
+
     tables_initialized = 1;
 }
 
@@ -1490,6 +1772,7 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
                                 int colorspace_dst)
 {
     size_t i;
+    int simd_level;
 
     if (pixels == NULL) {
         sixel_helper_set_additional_message(
@@ -1509,6 +1792,18 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
 
     sixel_colorspace_init_tables();
 
+#if (defined(SIXEL_USE_AVX2) && defined(__AVX2__)) || \
+        defined(SIXEL_USE_NEON)
+    simd_level = sixel_cpu_simd_level();
+#else
+    simd_level = SIXEL_SIMD_LEVEL_SCALAR;
+#endif
+
+#if (!defined(SIXEL_USE_AVX2) || !defined(__AVX2__)) && \
+        !defined(SIXEL_USE_NEON)
+    (void)simd_level;
+#endif
+
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         return sixel_convert_pixels_via_linear_float((float *)pixels,
                                                      size,
@@ -1516,8 +1811,23 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
                                                      colorspace_dst);
     }
 
+#if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
+    if (simd_level >= SIXEL_SIMD_LEVEL_AVX2) {
+        SIXELSTATUS avx_status;
+
+        avx_status = sixel_colorspace_convert_avx2(pixels,
+                                                   size,
+                                                   pixelformat,
+                                                   colorspace_src,
+                                                   colorspace_dst);
+        if (avx_status == SIXEL_OK) {
+            return SIXEL_OK;
+        }
+    }
+#endif
+
 #if defined(SIXEL_USE_NEON)
-    if (sixel_cpu_simd_level() == SIXEL_SIMD_LEVEL_NEON &&
+    if (simd_level == SIXEL_SIMD_LEVEL_NEON &&
             sixel_colorspace_neon_supported_format(pixelformat)) {
         SIXELSTATUS neon_status;
 
