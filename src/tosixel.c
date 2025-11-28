@@ -3794,7 +3794,6 @@ sixel_encode_dither(
     int palette_source_colorspace;
     int palette_float_pixelformat;
     int output_float_pixelformat;
-    int channel;
     int pipeline_active;
     int pipeline_threads;
     int pipeline_nbands;
@@ -4049,36 +4048,45 @@ sixel_encode_dither(
     }
 
     if (dither->sixel_reversible && palette_count > 0U) {
-        if (output != NULL && output->colorspace == SIXEL_COLORSPACE_OKLAB
-                && palette_entries_float32 != NULL) {
-            sixel_palette_reversible_palette(
-                (unsigned char *)palette_entries_float32,
+        float *reversible_float = palette_entries_float32;
+
+        if (reversible_float == NULL && palette_entries != NULL) {
+            palette_float_bytes = palette_count * 3U * sizeof(float);
+            reversible_float = (float *)sixel_allocator_malloc(
+                dither->allocator, palette_float_bytes);
+            if (reversible_float != NULL) {
+                palette_entries_float32 = reversible_float;
+                palette_float_count = palette_count;
+                for (palette_index = 0U; palette_index < palette_count * 3U;
+                        ++palette_index) {
+                    reversible_float[palette_index]
+                        = sixel_pixelformat_byte_to_float(
+                            output_float_pixelformat,
+                            (int)(palette_index % 3U),
+                            palette_entries[palette_index]);
+                }
+            }
+        }
+        if (reversible_float != NULL) {
+            sixel_palette_reversible_palette_float(
+                reversible_float,
                 palette_count,
                 output_float_pixelformat);
             if (palette_entries != NULL) {
                 palette_channels = palette_count * 3U;
                 for (palette_index = 0U; palette_index < palette_channels;
                         ++palette_index) {
-                    channel = (int)(palette_index % 3U);
                     palette_entries[palette_index]
                         = sixel_pixelformat_float_channel_to_byte(
                             output_float_pixelformat,
-                            channel,
-                            palette_entries_float32[palette_index]);
+                            (int)(palette_index % 3U),
+                            reversible_float[palette_index]);
                 }
             }
         } else if (palette_entries != NULL) {
             sixel_palette_reversible_palette(palette_entries,
                                              palette_count,
                                              SIXEL_PIXELFORMAT_RGB888);
-            if (palette_entries_float32 != NULL
-                    && palette_float_count == palette_count) {
-                sixel_palette_sync_float32_from_u8(
-                    palette_entries,
-                    palette_entries_float32,
-                    palette_count,
-                    palette_float_pixelformat);
-            }
         }
     }
 
@@ -5323,9 +5331,9 @@ test_reversible_snap_oklab_roundtrip(void)
             oklab_palette[index]);
     }
 
-    sixel_palette_reversible_palette((unsigned char *)oklab_palette,
-                                     1U,
-                                     SIXEL_PIXELFORMAT_OKLABFLOAT32);
+    sixel_palette_reversible_palette_float(oklab_palette,
+                                           1U,
+                                           SIXEL_PIXELFORMAT_OKLABFLOAT32);
     for (index = 0U; index < 3U; ++index) {
         channel = (int)index;
         palette_bytes[index] = sixel_pixelformat_float_channel_to_byte(
@@ -5353,9 +5361,9 @@ test_reversible_snap_oklab_roundtrip(void)
     }
 
     memcpy(expected_bytes, palette_bytes, sizeof(expected_bytes));
-    sixel_palette_reversible_palette((unsigned char *)oklab_palette,
-                                     1U,
-                                     SIXEL_PIXELFORMAT_OKLABFLOAT32);
+    sixel_palette_reversible_palette_float(oklab_palette,
+                                           1U,
+                                           SIXEL_PIXELFORMAT_OKLABFLOAT32);
     for (index = 0U; index < 3U; ++index) {
         channel = (int)index;
         palette_bytes[index] = sixel_pixelformat_float_channel_to_byte(

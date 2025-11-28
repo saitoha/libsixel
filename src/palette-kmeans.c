@@ -1681,6 +1681,7 @@ sixel_palette_build_kmeans_internal(sixel_palette_t *palette,
     unsigned int entry_depth;
     int depth_result;
     size_t payload_size;
+    int reversible_for_quantizer;
 
     status = SIXEL_BAD_ARGUMENT;
     build_status = SIXEL_FALSE;
@@ -1727,6 +1728,10 @@ sixel_palette_build_kmeans_internal(sixel_palette_t *palette,
     }
     entry_depth = (unsigned int)depth_result;
 
+    reversible_for_quantizer = palette->use_reversible;
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        reversible_for_quantizer = 0;
+    }
     build_status = build_palette_kmeans(&entries,
                                         &entries_float32,
                                         data,
@@ -1737,7 +1742,7 @@ sixel_palette_build_kmeans_internal(sixel_palette_t *palette,
                                         &origcolors,
                                         palette->quality_mode,
                                         palette->force_palette,
-                                        palette->use_reversible,
+                                        reversible_for_quantizer,
                                         palette->final_merge_mode,
                                         work_allocator,
                                         pixelformat,
@@ -1747,10 +1752,10 @@ sixel_palette_build_kmeans_internal(sixel_palette_t *palette,
         goto end;
     }
 
-    if (palette->use_reversible) {
+    if (reversible_for_quantizer) {
         sixel_palette_reversible_palette(entries,
                                          ncolors,
-                                         pixelformat);
+                                         SIXEL_PIXELFORMAT_RGB888);
     }
 
     payload_size = (size_t)ncolors * (size_t)entry_depth;

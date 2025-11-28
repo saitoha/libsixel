@@ -1914,6 +1914,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     int input_is_float32;
     float *float_entries;
     int float_stride;
+    int reversible_for_quantizer;
 
     if (palette == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1958,6 +1959,10 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     input_is_float32 = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat);
     float_entries = NULL;
     float_stride = 0;
+    reversible_for_quantizer = palette->use_reversible;
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        reversible_for_quantizer = 0;
+    }
     status = sixel_palette_heckbert_colormap(data,
                                              length,
                                              depth,
@@ -1966,7 +1971,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
                                              palette->method_for_rep,
                                              palette->quality_mode,
                                              palette->force_palette,
-                                             palette->use_reversible,
+                                             reversible_for_quantizer,
                                              palette->final_merge_mode,
                                              palette->lut_policy,
                                              &colormap,
