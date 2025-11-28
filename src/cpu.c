@@ -8,11 +8,6 @@
 
 /* STDC_HEADERS */
 #include <stdlib.h>
-#include <string.h>
-
-#if HAVE_STRINGS_H
-# include <strings.h>
-#endif
 
 #if HAVE_INTRIN_H
 /* avoid cpuid.h macro clashes on Windows toolchains */
@@ -26,20 +21,7 @@
 #endif
 
 #include "cpu.h"
-
-/*
- * Provide a portable strcasecmp replacement so Windows toolchains without
- * POSIX extensions can still parse the SIMD override environment variable.
- */
-static int
-sixel_cpu_strcasecmp(char const *lhs, char const *rhs)
-{
-#if defined(_WIN32)
-    return _stricmp(lhs, rhs);
-#else
-    return strcasecmp(lhs, rhs);
-#endif
-}
+#include "compat_stub.h"
 
 static int simd_cached = -1;
 
@@ -52,26 +34,26 @@ sixel_cpu_env_cap(void)
     if (env == NULL || env[0] == '\0') {
         return SIXEL_SIMD_LEVEL_NEON;
     }
-    if (sixel_cpu_strcasecmp(env, "auto") == 0) {
+    if (sixel_compat_strcasecmp(env, "auto") == 0) {
         return SIXEL_SIMD_LEVEL_NEON;
     }
-    if (sixel_cpu_strcasecmp(env, "none") == 0 ||
-        sixel_cpu_strcasecmp(env, "scalar") == 0) {
+    if (sixel_compat_strcasecmp(env, "none") == 0 ||
+        sixel_compat_strcasecmp(env, "scalar") == 0) {
         return SIXEL_SIMD_LEVEL_SCALAR;
     }
-    if (sixel_cpu_strcasecmp(env, "sse2") == 0) {
+    if (sixel_compat_strcasecmp(env, "sse2") == 0) {
         return SIXEL_SIMD_LEVEL_SSE2;
     }
-    if (sixel_cpu_strcasecmp(env, "avx") == 0) {
+    if (sixel_compat_strcasecmp(env, "avx") == 0) {
         return SIXEL_SIMD_LEVEL_AVX;
     }
-    if (sixel_cpu_strcasecmp(env, "avx2") == 0) {
+    if (sixel_compat_strcasecmp(env, "avx2") == 0) {
         return SIXEL_SIMD_LEVEL_AVX2;
     }
-    if (sixel_cpu_strcasecmp(env, "avx512") == 0) {
+    if (sixel_compat_strcasecmp(env, "avx512") == 0) {
         return SIXEL_SIMD_LEVEL_AVX512;
     }
-    if (sixel_cpu_strcasecmp(env, "neon") == 0) {
+    if (sixel_compat_strcasecmp(env, "neon") == 0) {
         return SIXEL_SIMD_LEVEL_NEON;
     }
     return SIXEL_SIMD_LEVEL_NEON;
