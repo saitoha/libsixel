@@ -118,7 +118,7 @@ static const double sixel_linear_smptec_to_srgb_matrix[3][3] = {
 #if (defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
         defined(__AVX512BW__)) || \
         (defined(SIXEL_USE_AVX2) && defined(__AVX2__)) || \
-        defined(SIXEL_USE_NEON)
+        defined(SIXEL_USE_SSE2) || defined(SIXEL_USE_NEON)
 static const float sixel_linear_srgb_to_smptec_matrix_f32[3][3] = {
     { 1.0651945f, -0.05539145f, -0.009975616f },
     { -0.019633066f, 1.0363870f, -0.016731962f },
@@ -1993,6 +1993,169 @@ sixel_linear_to_smptec_avx2(float *pixels, size_t pixel_total)
 }
 #endif
 
+#if defined(SIXEL_USE_SSE2)
+static size_t
+sixel_smptec_to_linear_sse2(float *pixels, size_t pixel_total)
+{
+    size_t index;
+    size_t processed;
+    const __m128 zero = _mm_set1_ps(0.0f);
+    const __m128 one = _mm_set1_ps(1.0f);
+    const __m128 m00 = _mm_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[0][0]);
+    const __m128 m01 = _mm_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[0][1]);
+    const __m128 m02 = _mm_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[0][2]);
+    const __m128 m10 = _mm_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[1][0]);
+    const __m128 m11 = _mm_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[1][1]);
+    const __m128 m12 = _mm_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[1][2]);
+    const __m128 m20 = _mm_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[2][0]);
+    const __m128 m21 = _mm_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[2][1]);
+    const __m128 m22 = _mm_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[2][2]);
+    float r_out[4];
+    float g_out[4];
+    float b_out[4];
+    size_t lane;
+
+    processed = pixel_total - (pixel_total % 4U);
+    for (index = 0U; index < processed; index += 4U) {
+        float *base;
+        __m128 r;
+        __m128 g;
+        __m128 b;
+        __m128 r_lin;
+        __m128 g_lin;
+        __m128 b_lin;
+
+        base = pixels + index * 3U;
+
+        /*
+         * SSE2 lacks gathers, so load interleaved RGB triplets with
+         * scalar addressing and pack them lane-wise. Lane order is
+         * preserved (pixel0..pixel3) to reuse the scatter below.
+         */
+        r = _mm_set_ps(base[9], base[6], base[3], base[0]);
+        g = _mm_set_ps(base[10], base[7], base[4], base[1]);
+        b = _mm_set_ps(base[11], base[8], base[5], base[2]);
+
+        r_lin = _mm_add_ps(_mm_mul_ps(r, m00), _mm_mul_ps(g, m01));
+        r_lin = _mm_add_ps(r_lin, _mm_mul_ps(b, m02));
+
+        g_lin = _mm_add_ps(_mm_mul_ps(r, m10), _mm_mul_ps(g, m11));
+        g_lin = _mm_add_ps(g_lin, _mm_mul_ps(b, m12));
+
+        b_lin = _mm_add_ps(_mm_mul_ps(r, m20), _mm_mul_ps(g, m21));
+        b_lin = _mm_add_ps(b_lin, _mm_mul_ps(b, m22));
+
+        r_lin = _mm_min_ps(one, _mm_max_ps(zero, r_lin));
+        g_lin = _mm_min_ps(one, _mm_max_ps(zero, g_lin));
+        b_lin = _mm_min_ps(one, _mm_max_ps(zero, b_lin));
+
+        _mm_storeu_ps(r_out, r_lin);
+        _mm_storeu_ps(g_out, g_lin);
+        _mm_storeu_ps(b_out, b_lin);
+
+        for (lane = 0U; lane < 4U; ++lane) {
+            float *pixel;
+
+            pixel = base + lane * 3U;
+            pixel[0] = r_out[lane];
+            pixel[1] = g_out[lane];
+            pixel[2] = b_out[lane];
+        }
+    }
+
+    return processed;
+}
+
+static size_t
+sixel_linear_to_smptec_sse2(float *pixels, size_t pixel_total)
+{
+    size_t index;
+    size_t processed;
+    const __m128 zero = _mm_set1_ps(0.0f);
+    const __m128 one = _mm_set1_ps(1.0f);
+    const __m128 m00 = _mm_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[0][0]);
+    const __m128 m01 = _mm_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[0][1]);
+    const __m128 m02 = _mm_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[0][2]);
+    const __m128 m10 = _mm_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[1][0]);
+    const __m128 m11 = _mm_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[1][1]);
+    const __m128 m12 = _mm_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[1][2]);
+    const __m128 m20 = _mm_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[2][0]);
+    const __m128 m21 = _mm_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[2][1]);
+    const __m128 m22 = _mm_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[2][2]);
+    float sr_out[4];
+    float sg_out[4];
+    float sb_out[4];
+    size_t lane;
+
+    processed = pixel_total - (pixel_total % 4U);
+    for (index = 0U; index < processed; index += 4U) {
+        float *base;
+        __m128 r;
+        __m128 g;
+        __m128 b;
+        __m128 sr;
+        __m128 sg;
+        __m128 sb;
+
+        base = pixels + index * 3U;
+
+        /*
+         * Expand interleaved linear RGB into lane-aligned vectors to
+         * reuse the same scatter order as the SMPTEC→linear path.
+         */
+        r = _mm_set_ps(base[9], base[6], base[3], base[0]);
+        g = _mm_set_ps(base[10], base[7], base[4], base[1]);
+        b = _mm_set_ps(base[11], base[8], base[5], base[2]);
+
+        sr = _mm_add_ps(_mm_mul_ps(r, m00), _mm_mul_ps(g, m01));
+        sr = _mm_add_ps(sr, _mm_mul_ps(b, m02));
+
+        sg = _mm_add_ps(_mm_mul_ps(r, m10), _mm_mul_ps(g, m11));
+        sg = _mm_add_ps(sg, _mm_mul_ps(b, m12));
+
+        sb = _mm_add_ps(_mm_mul_ps(r, m20), _mm_mul_ps(g, m21));
+        sb = _mm_add_ps(sb, _mm_mul_ps(b, m22));
+
+        sr = _mm_min_ps(one, _mm_max_ps(zero, sr));
+        sg = _mm_min_ps(one, _mm_max_ps(zero, sg));
+        sb = _mm_min_ps(one, _mm_max_ps(zero, sb));
+
+        _mm_storeu_ps(sr_out, sr);
+        _mm_storeu_ps(sg_out, sg);
+        _mm_storeu_ps(sb_out, sb);
+
+        for (lane = 0U; lane < 4U; ++lane) {
+            float *pixel;
+
+            pixel = base + lane * 3U;
+            pixel[0] = sr_out[lane];
+            pixel[1] = sg_out[lane];
+            pixel[2] = sb_out[lane];
+        }
+    }
+
+    return processed;
+}
+#endif
+
 #if defined(SIXEL_USE_NEON)
 static size_t
 sixel_smptec_to_linear_neon(float *pixels, size_t pixel_total)
@@ -2146,6 +2309,14 @@ sixel_smptec_to_linear_float_simd(float *pixels,
     }
 #endif
 
+#if defined(SIXEL_USE_SSE2)
+    if (processed < pixel_total &&
+            simd_level >= SIXEL_SIMD_LEVEL_SSE2) {
+        processed += sixel_smptec_to_linear_sse2(
+            pixels + processed * 3U, pixel_total - processed);
+    }
+#endif
+
 #if defined(SIXEL_USE_NEON)
     if (processed < pixel_total &&
             simd_level == SIXEL_SIMD_LEVEL_NEON) {
@@ -2185,6 +2356,14 @@ sixel_linear_to_smptec_float_simd(float *pixels,
     if (processed < pixel_total &&
             simd_level >= SIXEL_SIMD_LEVEL_AVX2) {
         processed += sixel_linear_to_smptec_avx2(
+            pixels + processed * 3U, pixel_total - processed);
+    }
+#endif
+
+#if defined(SIXEL_USE_SSE2)
+    if (processed < pixel_total &&
+            simd_level >= SIXEL_SIMD_LEVEL_SSE2) {
+        processed += sixel_linear_to_smptec_sse2(
             pixels + processed * 3U, pixel_total - processed);
     }
 #endif
