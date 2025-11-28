@@ -14,11 +14,12 @@
 # include <strings.h>
 #endif
 
-#if HAVE_CPUID_H
-# include <cpuid.h>
-#endif
 #if HAVE_INTRIN_H
+/* avoid cpuid.h macro clashes on Windows toolchains */
 # include <intrin.h>
+#endif
+#if HAVE_CPUID_H && !defined(_WIN32)
+# include <cpuid.h>
 #endif
 #if HAVE_IMMINTRIN_H
 # include <immintrin.h>
