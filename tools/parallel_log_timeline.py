@@ -113,15 +113,33 @@ def _row_key(worker: str, thread: int, job: int) -> Tuple[str, int]:
     return (worker, thread)
 
 
-def render(events: List[ParallelEvent], output: str, sort_order: str) -> None:
+def render(
+    events: List[ParallelEvent],
+    output: str,
+    sort_order: str,
+    start_time: float = None,
+    end_time: float = None,
+) -> None:
+    events = sorted(events, key=lambda item: item.ts)
+    visible_events = []
+    for event in events:
+        if start_time is not None and event.ts < start_time:
+            continue
+        if end_time is not None and event.ts > end_time:
+            continue
+        visible_events.append(event)
+    summary_events = visible_events if (start_time is not None or
+                                        end_time is not None) else events
+    if not summary_events:
+        print("No events found in the selected time window")
+        return
+
     try:
         import matplotlib.pyplot as plt
     except ImportError:
         print("matplotlib is not available; printing summary instead")
-        print(summarize(events))
+        print(summarize(summary_events))
         return
-
-    events = sorted(events, key=lambda item: item.ts)
 
     spans: Dict[Tuple[str, str, int, int], Tuple[float, float]] = {}
     job_hint: Dict[Tuple[str, int], int] = {}
@@ -142,6 +160,15 @@ def render(events: List[ParallelEvent], output: str, sort_order: str) -> None:
     threads: Dict[Tuple[str, int], List[Tuple[float, float, str, int]]] = {}
     for (worker, role, thread, job), (start, end) in spans.items():
         row_key = _row_key(worker, thread, job)
+        duration = max(0.0, end - start)
+        if start_time is not None and end < start_time:
+            continue
+        if end_time is not None and start > end_time:
+            continue
+        if start_time is not None:
+            start = max(start, start_time)
+        if end_time is not None:
+            end = min(end, end_time)
         duration = max(0.0, end - start)
         if row_key not in threads:
             threads[row_key] = []
@@ -226,6 +253,10 @@ def render(events: List[ParallelEvent], output: str, sort_order: str) -> None:
     ax.set_yticks(yticks)
     ax.set_yticklabels(ylabels)
     ax.set_xlabel("seconds")
+    if start_time is not None or end_time is not None:
+        left = start_time if start_time is not None else events[0].ts
+        right = end_time if end_time is not None else events[-1].ts
+        ax.set_xlim(left, right)
     ax.set_title("Parallel pipeline timeline (grouped by thread)")
     ax.grid(True, axis="x", linestyle=":", linewidth=0.5)
     ax.set_ylim(-0.5, len(rows) - 0.5)
@@ -271,13 +302,35 @@ def main() -> None:
             "dither above encode, while 'start' sorts by first activity"
         ),
     )
+    parser.add_argument(
+        "--start-time",
+        type=float,
+        default=None,
+        help=(
+            "Only show events occurring at or after this timestamp (seconds) "
+            "to zoom into a portion of the log"
+        ),
+    )
+    parser.add_argument(
+        "--end-time",
+        type=float,
+        default=None,
+        help=(
+            "Only show events occurring at or before this timestamp (seconds) "
+            "to zoom into a portion of the log"
+        ),
+    )
     args = parser.parse_args()
 
     events = load_events(args.logfile)
     if not events:
         print("No events found in log")
         return
-    render(events, args.output, args.sort_order)
+    render(events,
+           args.output,
+           args.sort_order,
+           start_time=args.start_time,
+           end_time=args.end_time)
 
 
 if __name__ == "__main__":
