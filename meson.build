@@ -653,25 +653,30 @@ elif host_system == 'linux'
   conf.set('HAVE_CLIPBOARD_LINUX', 1)
 endif
 
-if cc.has_header('immintrin.h')
-  conf.set('HAVE_IMMINTRIN_H', 1)
-endif
-if cc.has_header('cpuid.h')
-  conf.set('HAVE_CPUID_H', 1)
-endif
-if cc.has_header('intrin.h')
-  conf.set('HAVE_INTRIN_H', 1)
+# Limit x86-specific headers to x86 targets so ARM builds skip them cleanly.
+if cpu == 'x86' or cpu == 'x86_64'
+  if cc.has_header('immintrin.h')
+    conf.set('HAVE_IMMINTRIN_H', 1)
+  endif
+  if cc.has_header('cpuid.h')
+    conf.set('HAVE_CPUID_H', 1)
+  endif
+  if cc.has_header('intrin.h')
+    conf.set('HAVE_INTRIN_H', 1)
+  endif
 endif
 if cc.has_header('strings.h')
   conf.set('HAVE_STRINGS_H', 1)
 endif
-if cc.has_function('__builtin_cpu_supports',
-    prefix: '#include <immintrin.h>')
-  conf.set('HAVE_BUILTIN_CPU_SUPPORTS', 1)
-endif
-if cc.has_function('__builtin_cpu_init',
-    prefix: '#include <immintrin.h>')
-  conf.set('HAVE_BUILTIN_CPU_INIT', 1)
+if cpu == 'x86' or cpu == 'x86_64'
+  if cc.has_function('__builtin_cpu_supports',
+      prefix: '#include <immintrin.h>')
+    conf.set('HAVE_BUILTIN_CPU_SUPPORTS', 1)
+  endif
+  if cc.has_function('__builtin_cpu_init',
+      prefix: '#include <immintrin.h>')
+    conf.set('HAVE_BUILTIN_CPU_INIT', 1)
+  endif
 endif
 
 simd_opt = get_option('simd')

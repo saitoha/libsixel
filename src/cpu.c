@@ -9,11 +9,14 @@
 /* STDC_HEADERS */
 #include <stdlib.h>
 
-#if HAVE_INTRIN_H
+#if HAVE_INTRIN_H && \
+    (defined(_WIN32) || defined(__x86_64__) || defined(_M_X64) || \
+     defined(__i386) || defined(_M_IX86))
 /* avoid cpuid.h macro clashes on Windows toolchains */
 # include <intrin.h>
 #endif
-#if HAVE_CPUID_H && !defined(_WIN32)
+#if HAVE_CPUID_H && !defined(_WIN32) && \
+    (defined(__x86_64__) || defined(__i386))
 # include <cpuid.h>
 #endif
 #if defined(HAVE_IMMINTRIN_H) && \
