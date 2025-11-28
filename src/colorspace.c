@@ -115,6 +115,23 @@ static const double sixel_linear_smptec_to_srgb_matrix[3][3] = {
     { -0.0016219271954016755, -0.00436969856687614,  1.0057514450874723 }
 };
 
+#if (defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
+        defined(__AVX512BW__)) || \
+        (defined(SIXEL_USE_AVX2) && defined(__AVX2__)) || \
+        defined(SIXEL_USE_NEON)
+static const float sixel_linear_srgb_to_smptec_matrix_f32[3][3] = {
+    { 1.0651945f, -0.05539145f, -0.009975616f },
+    { -0.019633066f, 1.0363870f, -0.016731962f },
+    { 0.0016324889f, 0.0044134663f, 0.99419266f }
+};
+
+static const float sixel_linear_smptec_to_srgb_matrix_f32[3][3] = {
+    { 0.93970484f, 0.050180361f, 0.010273410f },
+    { 0.017775363f, 0.96577054f, 0.016431980f },
+    { -0.0016219272f, -0.0043696986f, 1.0057515f }
+};
+#endif
+
 #if defined(SIXEL_USE_NEON)
 static uint8x16x4_t sixel_neon_gamma_to_linear[4];
 static uint8x16x4_t sixel_neon_linear_to_gamma[4];
@@ -1580,6 +1597,615 @@ sixel_linear_smptec_to_srgb(double rs, double gs, double bs,
 }
 
 static void
+sixel_smptec_to_linear_scalar(float *r, float *g, float *b)
+{
+    double rs;
+    double gs;
+    double bs;
+    double r_lin;
+    double g_lin;
+    double b_lin;
+
+    rs = sixel_clamp_unit((double)*r);
+    gs = sixel_clamp_unit((double)*g);
+    bs = sixel_clamp_unit((double)*b);
+
+    r_lin = sixel_linear_smptec_to_srgb_matrix[0][0] * rs
+          + sixel_linear_smptec_to_srgb_matrix[0][1] * gs
+          + sixel_linear_smptec_to_srgb_matrix[0][2] * bs;
+    g_lin = sixel_linear_smptec_to_srgb_matrix[1][0] * rs
+          + sixel_linear_smptec_to_srgb_matrix[1][1] * gs
+          + sixel_linear_smptec_to_srgb_matrix[1][2] * bs;
+    b_lin = sixel_linear_smptec_to_srgb_matrix[2][0] * rs
+          + sixel_linear_smptec_to_srgb_matrix[2][1] * gs
+          + sixel_linear_smptec_to_srgb_matrix[2][2] * bs;
+
+    *r = (float)sixel_clamp_unit(r_lin);
+    *g = (float)sixel_clamp_unit(g_lin);
+    *b = (float)sixel_clamp_unit(b_lin);
+}
+
+static void
+sixel_linear_to_smptec_scalar(float *r, float *g, float *b)
+{
+    double r_lin;
+    double g_lin;
+    double b_lin;
+    double sr;
+    double sg;
+    double sb;
+
+    r_lin = sixel_clamp_unit((double)*r);
+    g_lin = sixel_clamp_unit((double)*g);
+    b_lin = sixel_clamp_unit((double)*b);
+
+    sr = sixel_linear_srgb_to_smptec_matrix[0][0] * r_lin
+       + sixel_linear_srgb_to_smptec_matrix[0][1] * g_lin
+       + sixel_linear_srgb_to_smptec_matrix[0][2] * b_lin;
+    sg = sixel_linear_srgb_to_smptec_matrix[1][0] * r_lin
+       + sixel_linear_srgb_to_smptec_matrix[1][1] * g_lin
+       + sixel_linear_srgb_to_smptec_matrix[1][2] * b_lin;
+    sb = sixel_linear_srgb_to_smptec_matrix[2][0] * r_lin
+       + sixel_linear_srgb_to_smptec_matrix[2][1] * g_lin
+       + sixel_linear_srgb_to_smptec_matrix[2][2] * b_lin;
+
+    *r = (float)sixel_clamp_unit(sr);
+    *g = (float)sixel_clamp_unit(sg);
+    *b = (float)sixel_clamp_unit(sb);
+}
+
+/*
+ * SIMD helpers below operate on interleaved RGB float triplets.
+ * Channels are gathered with byte offsets, multiplied by the 3x3
+ * SMPTEC↔sRGB matrices, and scattered back into the same AoS layout
+ * after clamping to [0, 1].
+ */
+#if defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
+        defined(__AVX512BW__)
+static SIXEL_TARGET_AVX512 size_t
+sixel_smptec_to_linear_avx512(float *pixels, size_t pixel_total)
+{
+    size_t index;
+    size_t processed;
+    const __m512 zero = _mm512_set1_ps(0.0f);
+    const __m512 one = _mm512_set1_ps(1.0f);
+    const __m512 m00 = _mm512_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[0][0]);
+    const __m512 m01 = _mm512_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[0][1]);
+    const __m512 m02 = _mm512_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[0][2]);
+    const __m512 m10 = _mm512_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[1][0]);
+    const __m512 m11 = _mm512_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[1][1]);
+    const __m512 m12 = _mm512_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[1][2]);
+    const __m512 m20 = _mm512_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[2][0]);
+    const __m512 m21 = _mm512_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[2][1]);
+    const __m512 m22 = _mm512_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[2][2]);
+    const __m512i idx_r = _mm512_setr_epi32(
+        0, 12, 24, 36, 48, 60, 72, 84,
+        96, 108, 120, 132, 144, 156, 168, 180);
+    const __m512i idx_g = _mm512_setr_epi32(
+        4, 16, 28, 40, 52, 64, 76, 88,
+        100, 112, 124, 136, 148, 160, 172, 184);
+    const __m512i idx_b = _mm512_setr_epi32(
+        8, 20, 32, 44, 56, 68, 80, 92,
+        104, 116, 128, 140, 152, 164, 176, 188);
+
+    processed = pixel_total - (pixel_total % 16U);
+    for (index = 0U; index < processed; index += 16U) {
+        const char *base_char;
+        const float *base;
+        __m512 r;
+        __m512 g;
+        __m512 b;
+        __m512 r_lin;
+        __m512 g_lin;
+        __m512 b_lin;
+
+        base_char = (const char *)(pixels + index * 3U);
+        base = (const float *)base_char;
+
+        r = _mm512_i32gather_ps(idx_r, base, 1);
+        g = _mm512_i32gather_ps(idx_g, base, 1);
+        b = _mm512_i32gather_ps(idx_b, base, 1);
+
+        r_lin = _mm512_add_ps(_mm512_mul_ps(r, m00),
+                               _mm512_mul_ps(g, m01));
+        r_lin = _mm512_add_ps(r_lin, _mm512_mul_ps(b, m02));
+
+        g_lin = _mm512_add_ps(_mm512_mul_ps(r, m10),
+                               _mm512_mul_ps(g, m11));
+        g_lin = _mm512_add_ps(g_lin, _mm512_mul_ps(b, m12));
+
+        b_lin = _mm512_add_ps(_mm512_mul_ps(r, m20),
+                               _mm512_mul_ps(g, m21));
+        b_lin = _mm512_add_ps(b_lin, _mm512_mul_ps(b, m22));
+
+        r_lin = _mm512_min_ps(one, _mm512_max_ps(zero, r_lin));
+        g_lin = _mm512_min_ps(one, _mm512_max_ps(zero, g_lin));
+        b_lin = _mm512_min_ps(one, _mm512_max_ps(zero, b_lin));
+
+        _mm512_i32scatter_ps((float *)base, idx_r, r_lin, 1);
+        _mm512_i32scatter_ps((float *)base, idx_g, g_lin, 1);
+        _mm512_i32scatter_ps((float *)base, idx_b, b_lin, 1);
+    }
+
+    return processed;
+}
+
+static SIXEL_TARGET_AVX512 size_t
+sixel_linear_to_smptec_avx512(float *pixels, size_t pixel_total)
+{
+    size_t index;
+    size_t processed;
+    const __m512 zero = _mm512_set1_ps(0.0f);
+    const __m512 one = _mm512_set1_ps(1.0f);
+    const __m512 m00 = _mm512_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[0][0]);
+    const __m512 m01 = _mm512_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[0][1]);
+    const __m512 m02 = _mm512_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[0][2]);
+    const __m512 m10 = _mm512_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[1][0]);
+    const __m512 m11 = _mm512_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[1][1]);
+    const __m512 m12 = _mm512_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[1][2]);
+    const __m512 m20 = _mm512_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[2][0]);
+    const __m512 m21 = _mm512_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[2][1]);
+    const __m512 m22 = _mm512_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[2][2]);
+    const __m512i idx_r = _mm512_setr_epi32(
+        0, 12, 24, 36, 48, 60, 72, 84,
+        96, 108, 120, 132, 144, 156, 168, 180);
+    const __m512i idx_g = _mm512_setr_epi32(
+        4, 16, 28, 40, 52, 64, 76, 88,
+        100, 112, 124, 136, 148, 160, 172, 184);
+    const __m512i idx_b = _mm512_setr_epi32(
+        8, 20, 32, 44, 56, 68, 80, 92,
+        104, 116, 128, 140, 152, 164, 176, 188);
+
+    processed = pixel_total - (pixel_total % 16U);
+    for (index = 0U; index < processed; index += 16U) {
+        const char *base_char;
+        const float *base;
+        __m512 r;
+        __m512 g;
+        __m512 b;
+        __m512 sr;
+        __m512 sg;
+        __m512 sb;
+
+        base_char = (const char *)(pixels + index * 3U);
+        base = (const float *)base_char;
+
+        r = _mm512_i32gather_ps(idx_r, base, 1);
+        g = _mm512_i32gather_ps(idx_g, base, 1);
+        b = _mm512_i32gather_ps(idx_b, base, 1);
+
+        sr = _mm512_add_ps(_mm512_mul_ps(r, m00),
+                           _mm512_mul_ps(g, m01));
+        sr = _mm512_add_ps(sr, _mm512_mul_ps(b, m02));
+
+        sg = _mm512_add_ps(_mm512_mul_ps(r, m10),
+                           _mm512_mul_ps(g, m11));
+        sg = _mm512_add_ps(sg, _mm512_mul_ps(b, m12));
+
+        sb = _mm512_add_ps(_mm512_mul_ps(r, m20),
+                           _mm512_mul_ps(g, m21));
+        sb = _mm512_add_ps(sb, _mm512_mul_ps(b, m22));
+
+        sr = _mm512_min_ps(one, _mm512_max_ps(zero, sr));
+        sg = _mm512_min_ps(one, _mm512_max_ps(zero, sg));
+        sb = _mm512_min_ps(one, _mm512_max_ps(zero, sb));
+
+        _mm512_i32scatter_ps((float *)base, idx_r, sr, 1);
+        _mm512_i32scatter_ps((float *)base, idx_g, sg, 1);
+        _mm512_i32scatter_ps((float *)base, idx_b, sb, 1);
+    }
+
+    return processed;
+}
+#endif
+
+#if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
+static SIXEL_TARGET_AVX2 size_t
+sixel_smptec_to_linear_avx2(float *pixels, size_t pixel_total)
+{
+    size_t index;
+    size_t processed;
+    const __m256 zero = _mm256_set1_ps(0.0f);
+    const __m256 one = _mm256_set1_ps(1.0f);
+    const __m256 m00 = _mm256_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[0][0]);
+    const __m256 m01 = _mm256_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[0][1]);
+    const __m256 m02 = _mm256_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[0][2]);
+    const __m256 m10 = _mm256_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[1][0]);
+    const __m256 m11 = _mm256_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[1][1]);
+    const __m256 m12 = _mm256_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[1][2]);
+    const __m256 m20 = _mm256_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[2][0]);
+    const __m256 m21 = _mm256_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[2][1]);
+    const __m256 m22 = _mm256_set1_ps(
+        sixel_linear_smptec_to_srgb_matrix_f32[2][2]);
+    const __m256i idx_r = _mm256_setr_epi32(
+        0, 12, 24, 36, 48, 60, 72, 84);
+    const __m256i idx_g = _mm256_setr_epi32(
+        4, 16, 28, 40, 52, 64, 76, 88);
+    const __m256i idx_b = _mm256_setr_epi32(
+        8, 20, 32, 44, 56, 68, 80, 92);
+
+    processed = pixel_total - (pixel_total % 8U);
+    for (index = 0U; index < processed; index += 8U) {
+        const char *base_char;
+        const float *base;
+        __m256 r;
+        __m256 g;
+        __m256 b;
+        __m256 r_lin;
+        __m256 g_lin;
+        __m256 b_lin;
+        float r_out[8];
+        float g_out[8];
+        float b_out[8];
+        size_t lane;
+
+        base_char = (const char *)(pixels + index * 3U);
+        base = (const float *)base_char;
+
+        r = _mm256_i32gather_ps(base, idx_r, 1);
+        g = _mm256_i32gather_ps(base, idx_g, 1);
+        b = _mm256_i32gather_ps(base, idx_b, 1);
+
+        r_lin = _mm256_add_ps(_mm256_mul_ps(r, m00),
+                               _mm256_mul_ps(g, m01));
+        r_lin = _mm256_add_ps(r_lin, _mm256_mul_ps(b, m02));
+
+        g_lin = _mm256_add_ps(_mm256_mul_ps(r, m10),
+                               _mm256_mul_ps(g, m11));
+        g_lin = _mm256_add_ps(g_lin, _mm256_mul_ps(b, m12));
+
+        b_lin = _mm256_add_ps(_mm256_mul_ps(r, m20),
+                               _mm256_mul_ps(g, m21));
+        b_lin = _mm256_add_ps(b_lin, _mm256_mul_ps(b, m22));
+
+        r_lin = _mm256_min_ps(one, _mm256_max_ps(zero, r_lin));
+        g_lin = _mm256_min_ps(one, _mm256_max_ps(zero, g_lin));
+        b_lin = _mm256_min_ps(one, _mm256_max_ps(zero, b_lin));
+
+        _mm256_storeu_ps(r_out, r_lin);
+        _mm256_storeu_ps(g_out, g_lin);
+        _mm256_storeu_ps(b_out, b_lin);
+
+        for (lane = 0U; lane < 8U; ++lane) {
+            float *pixel;
+
+            pixel = pixels + (index + lane) * 3U;
+            pixel[0] = r_out[lane];
+            pixel[1] = g_out[lane];
+            pixel[2] = b_out[lane];
+        }
+    }
+
+    return processed;
+}
+
+static SIXEL_TARGET_AVX2 size_t
+sixel_linear_to_smptec_avx2(float *pixels, size_t pixel_total)
+{
+    size_t index;
+    size_t processed;
+    const __m256 zero = _mm256_set1_ps(0.0f);
+    const __m256 one = _mm256_set1_ps(1.0f);
+    const __m256 m00 = _mm256_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[0][0]);
+    const __m256 m01 = _mm256_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[0][1]);
+    const __m256 m02 = _mm256_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[0][2]);
+    const __m256 m10 = _mm256_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[1][0]);
+    const __m256 m11 = _mm256_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[1][1]);
+    const __m256 m12 = _mm256_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[1][2]);
+    const __m256 m20 = _mm256_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[2][0]);
+    const __m256 m21 = _mm256_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[2][1]);
+    const __m256 m22 = _mm256_set1_ps(
+        sixel_linear_srgb_to_smptec_matrix_f32[2][2]);
+    const __m256i idx_r = _mm256_setr_epi32(
+        0, 12, 24, 36, 48, 60, 72, 84);
+    const __m256i idx_g = _mm256_setr_epi32(
+        4, 16, 28, 40, 52, 64, 76, 88);
+    const __m256i idx_b = _mm256_setr_epi32(
+        8, 20, 32, 44, 56, 68, 80, 92);
+
+    processed = pixel_total - (pixel_total % 8U);
+    for (index = 0U; index < processed; index += 8U) {
+        const char *base_char;
+        const float *base;
+        __m256 r;
+        __m256 g;
+        __m256 b;
+        __m256 sr;
+        __m256 sg;
+        __m256 sb;
+        float r_out[8];
+        float g_out[8];
+        float b_out[8];
+        size_t lane;
+
+        base_char = (const char *)(pixels + index * 3U);
+        base = (const float *)base_char;
+
+        r = _mm256_i32gather_ps(base, idx_r, 1);
+        g = _mm256_i32gather_ps(base, idx_g, 1);
+        b = _mm256_i32gather_ps(base, idx_b, 1);
+
+        sr = _mm256_add_ps(_mm256_mul_ps(r, m00),
+                           _mm256_mul_ps(g, m01));
+        sr = _mm256_add_ps(sr, _mm256_mul_ps(b, m02));
+
+        sg = _mm256_add_ps(_mm256_mul_ps(r, m10),
+                           _mm256_mul_ps(g, m11));
+        sg = _mm256_add_ps(sg, _mm256_mul_ps(b, m12));
+
+        sb = _mm256_add_ps(_mm256_mul_ps(r, m20),
+                           _mm256_mul_ps(g, m21));
+        sb = _mm256_add_ps(sb, _mm256_mul_ps(b, m22));
+
+        sr = _mm256_min_ps(one, _mm256_max_ps(zero, sr));
+        sg = _mm256_min_ps(one, _mm256_max_ps(zero, sg));
+        sb = _mm256_min_ps(one, _mm256_max_ps(zero, sb));
+
+        _mm256_storeu_ps(r_out, sr);
+        _mm256_storeu_ps(g_out, sg);
+        _mm256_storeu_ps(b_out, sb);
+
+        for (lane = 0U; lane < 8U; ++lane) {
+            float *pixel;
+
+            pixel = pixels + (index + lane) * 3U;
+            pixel[0] = r_out[lane];
+            pixel[1] = g_out[lane];
+            pixel[2] = b_out[lane];
+        }
+    }
+
+    return processed;
+}
+#endif
+
+#if defined(SIXEL_USE_NEON)
+static size_t
+sixel_smptec_to_linear_neon(float *pixels, size_t pixel_total)
+{
+    size_t index;
+    size_t processed;
+    const float32x4_t zero = vdupq_n_f32(0.0f);
+    const float32x4_t one = vdupq_n_f32(1.0f);
+    const float32x4_t m00 = vdupq_n_f32(
+        sixel_linear_smptec_to_srgb_matrix_f32[0][0]);
+    const float32x4_t m01 = vdupq_n_f32(
+        sixel_linear_smptec_to_srgb_matrix_f32[0][1]);
+    const float32x4_t m02 = vdupq_n_f32(
+        sixel_linear_smptec_to_srgb_matrix_f32[0][2]);
+    const float32x4_t m10 = vdupq_n_f32(
+        sixel_linear_smptec_to_srgb_matrix_f32[1][0]);
+    const float32x4_t m11 = vdupq_n_f32(
+        sixel_linear_smptec_to_srgb_matrix_f32[1][1]);
+    const float32x4_t m12 = vdupq_n_f32(
+        sixel_linear_smptec_to_srgb_matrix_f32[1][2]);
+    const float32x4_t m20 = vdupq_n_f32(
+        sixel_linear_smptec_to_srgb_matrix_f32[2][0]);
+    const float32x4_t m21 = vdupq_n_f32(
+        sixel_linear_smptec_to_srgb_matrix_f32[2][1]);
+    const float32x4_t m22 = vdupq_n_f32(
+        sixel_linear_smptec_to_srgb_matrix_f32[2][2]);
+
+    processed = pixel_total - (pixel_total % 4U);
+    for (index = 0U; index < processed; index += 4U) {
+        float32x4x3_t rgb;
+        float32x4_t r_lin;
+        float32x4_t g_lin;
+        float32x4_t b_lin;
+        float32x4x3_t out;
+
+        rgb = vld3q_f32(pixels + index * 3U);
+
+        r_lin = vmlaq_f32(vmulq_f32(rgb.val[0], m00),
+                          rgb.val[1], m01);
+        r_lin = vmlaq_f32(r_lin, rgb.val[2], m02);
+
+        g_lin = vmlaq_f32(vmulq_f32(rgb.val[0], m10),
+                          rgb.val[1], m11);
+        g_lin = vmlaq_f32(g_lin, rgb.val[2], m12);
+
+        b_lin = vmlaq_f32(vmulq_f32(rgb.val[0], m20),
+                          rgb.val[1], m21);
+        b_lin = vmlaq_f32(b_lin, rgb.val[2], m22);
+
+        r_lin = vminq_f32(one, vmaxq_f32(zero, r_lin));
+        g_lin = vminq_f32(one, vmaxq_f32(zero, g_lin));
+        b_lin = vminq_f32(one, vmaxq_f32(zero, b_lin));
+
+        out.val[0] = r_lin;
+        out.val[1] = g_lin;
+        out.val[2] = b_lin;
+
+        vst3q_f32(pixels + index * 3U, out);
+    }
+
+    return processed;
+}
+
+static size_t
+sixel_linear_to_smptec_neon(float *pixels, size_t pixel_total)
+{
+    size_t index;
+    size_t processed;
+    const float32x4_t zero = vdupq_n_f32(0.0f);
+    const float32x4_t one = vdupq_n_f32(1.0f);
+    const float32x4_t m00 = vdupq_n_f32(
+        sixel_linear_srgb_to_smptec_matrix_f32[0][0]);
+    const float32x4_t m01 = vdupq_n_f32(
+        sixel_linear_srgb_to_smptec_matrix_f32[0][1]);
+    const float32x4_t m02 = vdupq_n_f32(
+        sixel_linear_srgb_to_smptec_matrix_f32[0][2]);
+    const float32x4_t m10 = vdupq_n_f32(
+        sixel_linear_srgb_to_smptec_matrix_f32[1][0]);
+    const float32x4_t m11 = vdupq_n_f32(
+        sixel_linear_srgb_to_smptec_matrix_f32[1][1]);
+    const float32x4_t m12 = vdupq_n_f32(
+        sixel_linear_srgb_to_smptec_matrix_f32[1][2]);
+    const float32x4_t m20 = vdupq_n_f32(
+        sixel_linear_srgb_to_smptec_matrix_f32[2][0]);
+    const float32x4_t m21 = vdupq_n_f32(
+        sixel_linear_srgb_to_smptec_matrix_f32[2][1]);
+    const float32x4_t m22 = vdupq_n_f32(
+        sixel_linear_srgb_to_smptec_matrix_f32[2][2]);
+
+    processed = pixel_total - (pixel_total % 4U);
+    for (index = 0U; index < processed; index += 4U) {
+        float32x4x3_t rgb;
+        float32x4_t sr;
+        float32x4_t sg;
+        float32x4_t sb;
+        float32x4x3_t out;
+
+        rgb = vld3q_f32(pixels + index * 3U);
+
+        sr = vmlaq_f32(vmulq_f32(rgb.val[0], m00),
+                       rgb.val[1], m01);
+        sr = vmlaq_f32(sr, rgb.val[2], m02);
+
+        sg = vmlaq_f32(vmulq_f32(rgb.val[0], m10),
+                       rgb.val[1], m11);
+        sg = vmlaq_f32(sg, rgb.val[2], m12);
+
+        sb = vmlaq_f32(vmulq_f32(rgb.val[0], m20),
+                       rgb.val[1], m21);
+        sb = vmlaq_f32(sb, rgb.val[2], m22);
+
+        sr = vminq_f32(one, vmaxq_f32(zero, sr));
+        sg = vminq_f32(one, vmaxq_f32(zero, sg));
+        sb = vminq_f32(one, vmaxq_f32(zero, sb));
+
+        out.val[0] = sr;
+        out.val[1] = sg;
+        out.val[2] = sb;
+
+        vst3q_f32(pixels + index * 3U, out);
+    }
+
+    return processed;
+}
+#endif
+
+static void
+sixel_smptec_to_linear_float_simd(float *pixels,
+                                  size_t pixel_total,
+                                  int simd_level)
+{
+    size_t processed;
+    size_t index;
+
+    processed = 0U;
+
+    (void)simd_level;
+
+#if defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
+        defined(__AVX512BW__)
+    if (simd_level >= SIXEL_SIMD_LEVEL_AVX512) {
+        processed = sixel_smptec_to_linear_avx512(pixels, pixel_total);
+    }
+#endif
+
+#if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
+    if (processed < pixel_total &&
+            simd_level >= SIXEL_SIMD_LEVEL_AVX2) {
+        processed += sixel_smptec_to_linear_avx2(
+            pixels + processed * 3U, pixel_total - processed);
+    }
+#endif
+
+#if defined(SIXEL_USE_NEON)
+    if (processed < pixel_total &&
+            simd_level == SIXEL_SIMD_LEVEL_NEON) {
+        processed += sixel_smptec_to_linear_neon(
+            pixels + processed * 3U, pixel_total - processed);
+    }
+#endif
+
+    for (index = processed; index < pixel_total; ++index) {
+        float *pixel;
+
+        pixel = pixels + index * 3U;
+        sixel_smptec_to_linear_scalar(pixel + 0, pixel + 1, pixel + 2);
+    }
+}
+
+static void
+sixel_linear_to_smptec_float_simd(float *pixels,
+                                  size_t pixel_total,
+                                  int simd_level)
+{
+    size_t processed;
+    size_t index;
+
+    processed = 0U;
+
+    (void)simd_level;
+
+#if defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
+        defined(__AVX512BW__)
+    if (simd_level >= SIXEL_SIMD_LEVEL_AVX512) {
+        processed = sixel_linear_to_smptec_avx512(pixels, pixel_total);
+    }
+#endif
+
+#if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
+    if (processed < pixel_total &&
+            simd_level >= SIXEL_SIMD_LEVEL_AVX2) {
+        processed += sixel_linear_to_smptec_avx2(
+            pixels + processed * 3U, pixel_total - processed);
+    }
+#endif
+
+#if defined(SIXEL_USE_NEON)
+    if (processed < pixel_total &&
+            simd_level == SIXEL_SIMD_LEVEL_NEON) {
+        processed += sixel_linear_to_smptec_neon(
+            pixels + processed * 3U, pixel_total - processed);
+    }
+#endif
+
+    for (index = processed; index < pixel_total; ++index) {
+        float *pixel;
+
+        pixel = pixels + index * 3U;
+        sixel_linear_to_smptec_scalar(pixel + 0, pixel + 1, pixel + 2);
+    }
+}
+
+static void
 sixel_colorspace_init_tables(void)
 {
     int i;
@@ -2030,9 +2656,10 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
 }
 
 /*
- * Convert RGBFLOAT32 buffers in-place by round-tripping through linear space
- * with double intermediates.  This keeps OKLab/linear conversions precise
- * while sharing the same matrices as the byte implementation.
+ * Convert RGBFLOAT32 buffers in-place by round-tripping through linear space.
+ * The general path keeps double intermediates for OKLab/CIELAB precision, and
+ * the SMPTEC↔linear pair is specialized with SIMD float math to accelerate the
+ * matrix multiply without changing the storage layout.
  */
 static SIXELSTATUS
 sixel_convert_pixels_via_linear_float(float *pixels,
@@ -2049,6 +2676,7 @@ sixel_convert_pixels_via_linear_float(float *pixels,
     float *pr;
     float *pg;
     float *pb;
+    int simd_level;
 
     if (colorspace_src == colorspace_dst) {
         return SIXEL_OK;
@@ -2059,6 +2687,20 @@ sixel_convert_pixels_via_linear_float(float *pixels,
     }
 
     pixel_total = size / (3U * sizeof(float));
+    simd_level = sixel_cpu_simd_level();
+
+    if (colorspace_src == SIXEL_COLORSPACE_SMPTEC &&
+            colorspace_dst == SIXEL_COLORSPACE_LINEAR) {
+        sixel_smptec_to_linear_float_simd(pixels, pixel_total, simd_level);
+        return SIXEL_OK;
+    }
+
+    if (colorspace_src == SIXEL_COLORSPACE_LINEAR &&
+            colorspace_dst == SIXEL_COLORSPACE_SMPTEC) {
+        sixel_linear_to_smptec_float_simd(pixels, pixel_total, simd_level);
+        return SIXEL_OK;
+    }
+
     for (index = 0U; index < pixel_total; ++index) {
         base = index * 3U;
         pr = pixels + base + 0U;
