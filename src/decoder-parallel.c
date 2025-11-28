@@ -1234,6 +1234,7 @@ cleanup:
     (void)input;
     (void)length;
     (void)anchor;
+    (void)image;
     (void)palette;
     (void)logger;
 
