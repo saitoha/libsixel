@@ -60,9 +60,6 @@ static int env_final_merge_env_loaded = 0;
 static double
 sixel_final_merge_distance_sq(sixel_final_merge_cluster_t const *lhs,
                               sixel_final_merge_cluster_t const *rhs);
-static void sixel_final_merge_snap_components(double components[3],
-                                              int use_reversible,
-                                              int pixelformat);
 static void sixel_final_merge_clusters(sixel_final_merge_cluster_t *clusters,
                                        int nclusters,
                                        int target_k,
@@ -345,18 +342,6 @@ sixel_final_merge_distance_sq(sixel_final_merge_cluster_t const *lhs,
     distance = dr * dr + dg * dg + db * db;
 
     return distance;
-}
-
-/*
- * Clamp a channel to the 0-255 range and optionally snap to the reversible
- * SIXEL tone grid when the caller enabled -6/--6reversible.
- */
-static void
-sixel_final_merge_snap_components(double components[3],
-                                  int use_reversible,
-                                  int pixelformat)
-{
-    sixel_palette_snap_triple(components, use_reversible, pixelformat);
 }
 
 static void
@@ -674,8 +659,9 @@ sixel_final_merge_hkmeans(sixel_final_merge_cluster_t *clusters,
             components[0] = clusters[i].r;
             components[1] = clusters[i].g;
             components[2] = clusters[i].b;
-            sixel_final_merge_snap_components(
-                components, use_reversible, pixelformat);
+            sixel_palette_snap_triple(components,
+                                     use_reversible,
+                                     pixelformat);
             clusters[i].r = components[0];
             clusters[i].g = components[1];
             clusters[i].b = components[2];
@@ -687,8 +673,9 @@ sixel_final_merge_hkmeans(sixel_final_merge_cluster_t *clusters,
         components[0] = centroids[k].r;
         components[1] = centroids[k].g;
         components[2] = centroids[k].b;
-        sixel_final_merge_snap_components(
-            components, use_reversible, pixelformat);
+        sixel_palette_snap_triple(components,
+                                 use_reversible,
+                                 pixelformat);
         centroids[k].r = components[0];
         centroids[k].g = components[1];
         centroids[k].b = components[2];
@@ -748,8 +735,9 @@ sixel_final_merge_hkmeans(sixel_final_merge_cluster_t *clusters,
             components[0] = centroids[k].r;
             components[1] = centroids[k].g;
             components[2] = centroids[k].b;
-            sixel_final_merge_snap_components(
-                components, use_reversible, pixelformat);
+            sixel_palette_snap_triple(components,
+                                     use_reversible,
+                                     pixelformat);
             centroids[k].r = components[0];
             centroids[k].g = components[1];
             centroids[k].b = components[2];
