@@ -39,6 +39,11 @@ sixel_palette_reversible_palette(unsigned char *palette,
                                  unsigned int colors,
                                  int pixelformat);
 
+void
+sixel_palette_reversible_palette_float(float *palette,
+                                       unsigned int colors,
+                                       int pixelformat);
+
 double
 sixel_palette_snap_double(double value,
                           int use_reversible,

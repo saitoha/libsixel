@@ -71,16 +71,45 @@ sixel_palette_reversible_palette(unsigned char *palette,
                                  unsigned int colors,
                                  int pixelformat)
 {
+    size_t index;
+    size_t color_index;
+    int depth;
+    int channel;
+
+    index = 0U;
+    color_index = 0U;
+    depth = sixel_helper_compute_depth(pixelformat);
+    channel = 0;
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        sixel_palette_reversible_palette_float((float *)palette,
+                                               colors,
+                                               pixelformat);
+        return;
+    }
+    if (palette == NULL || colors == 0U || depth <= 0) {
+        return;
+    }
+    for (color_index = 0U; color_index < (size_t)colors; ++color_index) {
+        for (channel = 0; channel < depth; ++channel) {
+            index = color_index * (size_t)depth + (size_t)channel;
+            palette[index]
+                = sixel_palette_reversible_value(palette[index]);
+        }
+    }
+}
+
+void
+sixel_palette_reversible_palette_float(float *palette,
+                                       unsigned int colors,
+                                       int pixelformat)
+{
     SIXELSTATUS status;
     float *working_palette;
     unsigned char *snapped_bytes;
-    unsigned char *palette_bytes;
-    float *palette_float;
     size_t palette_channels;
     size_t palette_bytes_len;
     size_t index;
     size_t color_index;
-    int depth;
     int colorspace;
     int channel_count;
     int channel;
@@ -88,28 +117,23 @@ sixel_palette_reversible_palette(unsigned char *palette,
     status = SIXEL_OK;
     working_palette = NULL;
     snapped_bytes = NULL;
-    palette_bytes = palette;
-    palette_float = (float *)palette;
     palette_channels = 0U;
     palette_bytes_len = 0U;
     index = 0U;
     color_index = 0U;
-    depth = sixel_helper_compute_depth(pixelformat);
     colorspace = sixel_palette_determine_colorspace(pixelformat);
     channel_count = 0;
     channel = 0;
 
-    if (palette == NULL || colors == 0U || depth <= 0) {
+    if (palette == NULL || colors == 0U) {
         return;
     }
 
     /*
      * Preserve reversible snapping for OKLab palettes by round-tripping
-     * through sRGB gamma.  The conversion is isolated here so callers can
-     * keep invoking this helper at their existing integration points.
+     * through sRGB gamma before re-encoding onto the 101-tone grid.
      */
-    if (colorspace == SIXEL_COLORSPACE_OKLAB
-            && SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+    if (colorspace == SIXEL_COLORSPACE_OKLAB) {
         palette_channels = (size_t)colors * 3U;
         if (palette_channels > SIZE_MAX / sizeof(float)) {
             return;
@@ -125,7 +149,7 @@ sixel_palette_reversible_palette(unsigned char *palette,
             return;
         }
 
-        memcpy(working_palette, palette_float, palette_bytes_len);
+        memcpy(working_palette, palette, palette_bytes_len);
         sixel_palette_clamp_float_triplet(working_palette, pixelformat);
         status = sixel_helper_convert_colorspace(
             (unsigned char *)working_palette,
@@ -164,7 +188,7 @@ sixel_palette_reversible_palette(unsigned char *palette,
         }
 
         sixel_palette_clamp_float_triplet(working_palette, pixelformat);
-        memcpy(palette_float, working_palette, palette_bytes_len);
+        memcpy(palette, working_palette, palette_bytes_len);
 
 cleanup:
         free(snapped_bytes);
@@ -172,25 +196,18 @@ cleanup:
         return;
     }
 
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        channel_count = depth / (int)sizeof(float);
-        for (color_index = 0U; color_index < (size_t)colors; ++color_index) {
-            index = color_index * (size_t)channel_count;
-            status = sixel_palette_snap_float_triplet(&palette_float[index],
-                                                      1,
-                                                      pixelformat);
-            if (SIXEL_FAILED(status)) {
-                return;
-            }
-        }
+    channel_count = sixel_helper_compute_depth(pixelformat)
+        / (int)sizeof(float);
+    if (channel_count <= 0) {
         return;
     }
-
     for (color_index = 0U; color_index < (size_t)colors; ++color_index) {
-        for (channel = 0; channel < depth; ++channel) {
-            index = color_index * (size_t)depth + (size_t)channel;
-            palette_bytes[index]
-                = sixel_palette_reversible_value(palette_bytes[index]);
+        index = color_index * (size_t)channel_count;
+        status = sixel_palette_snap_float_triplet(&palette[index],
+                                                  1,
+                                                  pixelformat);
+        if (SIXEL_FAILED(status)) {
+            return;
         }
     }
 }
