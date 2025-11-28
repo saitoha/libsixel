@@ -71,15 +71,21 @@ sixel_palette_reversible_palette(unsigned char *palette,
                                  unsigned int colors,
                                  int pixelformat)
 {
-    size_t index;
+    SIXELSTATUS status;
+    unsigned char *working;
+    size_t palette_bytes;
     size_t color_index;
     int depth;
     int channel;
+    int colorspace;
 
-    index = 0U;
+    status = SIXEL_OK;
+    working = NULL;
+    palette_bytes = 0U;
     color_index = 0U;
     depth = sixel_helper_compute_depth(pixelformat);
     channel = 0;
+    colorspace = sixel_palette_determine_colorspace(pixelformat);
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         sixel_palette_reversible_palette_float((float *)palette,
                                                colors,
@@ -89,12 +95,54 @@ sixel_palette_reversible_palette(unsigned char *palette,
     if (palette == NULL || colors == 0U || depth <= 0) {
         return;
     }
+
+    /*
+     * Snap in gamma-corrected sRGB space.  Byte palettes that already live in
+     * gamma space are processed in-place; others are converted to sRGB, snapped
+     * on the safe-tone grid, then converted back to the original colorspace.
+     */
+    palette_bytes = (size_t)colors * (size_t)depth;
+    if (colorspace != SIXEL_COLORSPACE_GAMMA) {
+        working = (unsigned char *)malloc(palette_bytes);
+        if (working == NULL) {
+            return;
+        }
+        memcpy(working, palette, palette_bytes);
+        status = sixel_helper_convert_colorspace(working,
+                                                 palette_bytes,
+                                                 pixelformat,
+                                                 colorspace,
+                                                 SIXEL_COLORSPACE_GAMMA);
+        if (SIXEL_FAILED(status)) {
+            free(working);
+            return;
+        }
+    } else {
+        working = palette;
+    }
+
     for (color_index = 0U; color_index < (size_t)colors; ++color_index) {
         for (channel = 0; channel < depth; ++channel) {
+            size_t index;
+
             index = color_index * (size_t)depth + (size_t)channel;
-            palette[index]
-                = sixel_palette_reversible_value(palette[index]);
+            working[index]
+                = sixel_palette_reversible_value(working[index]);
         }
+    }
+
+    if (colorspace != SIXEL_COLORSPACE_GAMMA) {
+        status = sixel_helper_convert_colorspace(working,
+                                                 palette_bytes,
+                                                 pixelformat,
+                                                 SIXEL_COLORSPACE_GAMMA,
+                                                 colorspace);
+        if (SIXEL_FAILED(status)) {
+            free(working);
+            return;
+        }
+        memcpy(palette, working, palette_bytes);
+        free(working);
     }
 }
 
@@ -353,22 +401,50 @@ sixel_palette_snap_triple(double *components,
 {
     SIXELSTATUS status;
     float working[3];
+    unsigned char bytes[3];
     int channel;
 
     status = SIXEL_OK;
     if (components == NULL) {
         return;
     }
-    for (channel = 0; channel < 3; ++channel) {
-        working[channel] = (float)components[channel];
-    }
-    status = sixel_palette_snap_float_triplet(
-        working, use_reversible, pixelformat);
-    if (SIXEL_FAILED(status)) {
+
+    /*
+     * Float palettes are round-tripped through sRGB bytes so the reversible
+     * grid logic always works on the canonical 0-255 space.
+     */
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        for (channel = 0; channel < 3; ++channel) {
+            working[channel] = (float)components[channel];
+        }
+        status = sixel_palette_snap_float_triplet(
+            working, use_reversible, pixelformat);
+        if (SIXEL_FAILED(status)) {
+            return;
+        }
+        for (channel = 0; channel < 3; ++channel) {
+            components[channel] = (double)working[channel];
+        }
+
         return;
     }
+
+    /*
+     * Byte palettes stay in-place; clamp to 0-255 and snap directly on the
+     * reversible tone grid without passing through float conversions.
+     */
     for (channel = 0; channel < 3; ++channel) {
-        components[channel] = (double)working[channel];
+        if (components[channel] < 0.0) {
+            components[channel] = 0.0;
+        }
+        if (components[channel] > 255.0) {
+            components[channel] = 255.0;
+        }
+        bytes[channel] = (unsigned char)(components[channel] + 0.5);
+        if (use_reversible) {
+            bytes[channel] = sixel_palette_reversible_value(bytes[channel]);
+        }
+        components[channel] = (double)bytes[channel];
     }
 }
 
