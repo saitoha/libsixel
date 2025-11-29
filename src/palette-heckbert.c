@@ -172,7 +172,10 @@ sixel_palette_reversible_tuple(sample *tuple_values,
         }
         components[plane] = (double)tuple_values[plane];
     }
-    sixel_palette_snap_triple(components, 1, pixelformat);
+    sixel_palette_snap_triple(components,
+                              1,
+                              pixelformat,
+                              SIXEL_PALETTE_SNAP_STAGE_QUANTIZER_ITER);
     for (plane = 0U; plane < depth && plane < 3U; ++plane) {
         if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
             tuple_values[plane]

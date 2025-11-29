@@ -47,20 +47,46 @@ enum sixel_palette_snap_policy {
     SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE
 };
 
+enum sixel_palette_snap_timing_policy {
+    SIXEL_PALETTE_SNAP_TIMING_ONCE = 0,
+    SIXEL_PALETTE_SNAP_TIMING_POLISH,
+    SIXEL_PALETTE_SNAP_TIMING_MERGE,
+    SIXEL_PALETTE_SNAP_TIMING_RESOLVE,
+    SIXEL_PALETTE_SNAP_TIMING_ALL
+};
+
 static enum sixel_palette_snap_policy
 sixel_palette_get_snap_policy(void);
+static enum sixel_palette_snap_timing_policy
+sixel_palette_get_snap_timing(void);
+static double
+sixel_palette_get_snap_approach_rate(void);
 static int
 sixel_palette_determine_colorspace(int pixelformat);
 static void
 sixel_palette_clamp_float_triplet(float *components, int pixelformat);
+static unsigned char
+sixel_palette_blend_byte(unsigned char base,
+                         unsigned char target,
+                         double approach);
+static void
+sixel_palette_pick_bracket(unsigned char byte_value,
+                           unsigned char *low,
+                           unsigned char *high);
 static SIXELSTATUS
 sixel_palette_snap_float_triplet(float *components,
                                  int use_reversible,
-                                int pixelformat);
+                                 int pixelformat,
+                                 enum sixel_palette_snap_stage stage);
 
 static enum sixel_palette_snap_policy snap_policy_cache
     = SIXEL_PALETTE_SNAP_POLICY_NEAREST;
 static int snap_policy_initialized = 0;
+static enum sixel_palette_snap_timing_policy snap_timing_cache
+    = SIXEL_PALETTE_SNAP_TIMING_ONCE;
+static int snap_timing_initialized = 0;
+static double snap_approach_cache = 1.0;
+static int snap_approach_initialized = 0;
 
 static enum sixel_palette_snap_policy
 sixel_palette_get_snap_policy(void)
@@ -93,6 +119,107 @@ sixel_palette_get_snap_policy(void)
     return snap_policy_cache;
 }
 
+static enum sixel_palette_snap_timing_policy
+sixel_palette_get_snap_timing(void)
+{
+    char const *policy;
+
+    if (snap_timing_initialized) {
+        return snap_timing_cache;
+    }
+
+    snap_timing_initialized = 1;
+    policy = sixel_compat_getenv("SIXEL_PALETTE_SNAP_TIMING_POLICY");
+    if (policy == NULL || *policy == '\0') {
+        snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_ONCE;
+
+        return snap_timing_cache;
+    }
+    if (strcasecmp(policy, "polish") == 0) {
+        snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_POLISH;
+
+        return snap_timing_cache;
+    }
+    if (strcasecmp(policy, "merge") == 0) {
+        snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_MERGE;
+
+        return snap_timing_cache;
+    }
+    if (strcasecmp(policy, "resolve") == 0) {
+        snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_RESOLVE;
+
+        return snap_timing_cache;
+    }
+    if (strcasecmp(policy, "all") == 0) {
+        snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_ALL;
+
+        return snap_timing_cache;
+    }
+
+    snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_ONCE;
+
+    return snap_timing_cache;
+}
+
+static double
+sixel_palette_get_snap_approach_rate(void)
+{
+    char const *value;
+    long parsed;
+
+    if (snap_approach_initialized) {
+        return snap_approach_cache;
+    }
+
+    snap_approach_initialized = 1;
+    value = sixel_compat_getenv("SIXEL_PALETTE_SNAP_APPROACH_RATE");
+    if (value == NULL || *value == '\0') {
+        snap_approach_cache = 1.0;
+
+        return snap_approach_cache;
+    }
+
+    parsed = strtol(value, NULL, 10);
+    if (parsed < 1L) {
+        parsed = 1L;
+    }
+    if (parsed > 100L) {
+        parsed = 100L;
+    }
+    snap_approach_cache = (double)parsed / 100.0;
+
+    return snap_approach_cache;
+}
+
+int
+sixel_palette_should_snap(enum sixel_palette_snap_stage stage)
+{
+    enum sixel_palette_snap_timing_policy timing;
+
+    timing = sixel_palette_get_snap_timing();
+    if (stage == SIXEL_PALETTE_SNAP_STAGE_FINAL_OUTPUT) {
+        return 1;
+    }
+    if (stage == SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_PRE
+        && timing >= SIXEL_PALETTE_SNAP_TIMING_POLISH) {
+        return 1;
+    }
+    if (stage == SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_ITER
+        && timing >= SIXEL_PALETTE_SNAP_TIMING_MERGE) {
+        return 1;
+    }
+    if (stage == SIXEL_PALETTE_SNAP_STAGE_QUANTIZER_ITER
+        && timing >= SIXEL_PALETTE_SNAP_TIMING_RESOLVE) {
+        return 1;
+    }
+    if (stage == SIXEL_PALETTE_SNAP_STAGE_INITIAL_SEED
+        && timing >= SIXEL_PALETTE_SNAP_TIMING_ALL) {
+        return 1;
+    }
+
+    return 0;
+}
+
 static int
 sixel_palette_determine_colorspace(int pixelformat)
 {
@@ -110,6 +237,51 @@ sixel_palette_determine_colorspace(int pixelformat)
     }
 }
 
+static unsigned char
+sixel_palette_blend_byte(unsigned char base,
+                         unsigned char target,
+                         double approach)
+{
+    double blended;
+
+    blended = (double)base;
+    blended += ((double)target - (double)base) * approach;
+    if (blended < 0.0) {
+        blended = 0.0;
+    }
+    if (blended > 255.0) {
+        blended = 255.0;
+    }
+
+    return (unsigned char)(blended + 0.5);
+}
+
+static void
+sixel_palette_pick_bracket(unsigned char byte_value,
+                           unsigned char *low,
+                           unsigned char *high)
+{
+    int index;
+
+    if (low == NULL || high == NULL) {
+        return;
+    }
+    *low = sixel_safe_tones[0];
+    *high = sixel_safe_tones[255];
+    for (index = 0; index < 256; ++index) {
+        unsigned char tone;
+
+        tone = sixel_safe_tones[index];
+        if (tone <= byte_value) {
+            *low = tone;
+        }
+        if (tone >= byte_value) {
+            *high = tone;
+            break;
+        }
+    }
+}
+
 void
 sixel_palette_reversible_palette(unsigned char *palette,
                                  unsigned int colors,
@@ -122,6 +294,7 @@ sixel_palette_reversible_palette(unsigned char *palette,
     int depth;
     int channel;
     int colorspace;
+    double approach;
 
     status = SIXEL_OK;
     working = NULL;
@@ -130,6 +303,10 @@ sixel_palette_reversible_palette(unsigned char *palette,
     depth = sixel_helper_compute_depth(pixelformat);
     channel = 0;
     colorspace = sixel_palette_determine_colorspace(pixelformat);
+    approach = sixel_palette_get_snap_approach_rate();
+    if (!sixel_palette_should_snap(SIXEL_PALETTE_SNAP_STAGE_FINAL_OUTPUT)) {
+        return;
+    }
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         sixel_palette_reversible_palette_float((float *)palette,
                                                colors,
@@ -170,8 +347,12 @@ sixel_palette_reversible_palette(unsigned char *palette,
             size_t index;
 
             index = color_index * (size_t)depth + (size_t)channel;
-            working[index]
-                = sixel_palette_reversible_value(working[index]);
+            unsigned char snapped;
+
+            snapped = sixel_palette_reversible_value(working[index]);
+            working[index] = sixel_palette_blend_byte(working[index],
+                                                      snapped,
+                                                      approach);
         }
     }
 
@@ -201,6 +382,7 @@ sixel_palette_reversible_palette_float(float *palette,
     int colorspace;
     int channel_count;
     int channel;
+    double approach;
 
     status = SIXEL_OK;
     index = 0U;
@@ -208,8 +390,12 @@ sixel_palette_reversible_palette_float(float *palette,
     colorspace = sixel_palette_determine_colorspace(pixelformat);
     channel_count = 0;
     channel = 0;
+    approach = sixel_palette_get_snap_approach_rate();
 
     if (palette == NULL || colors == 0U) {
+        return;
+    }
+    if (!sixel_palette_should_snap(SIXEL_PALETTE_SNAP_STAGE_FINAL_OUTPUT)) {
         return;
     }
 
@@ -225,20 +411,29 @@ sixel_palette_reversible_palette_float(float *palette,
             return;
         }
         for (color_index = 0U; color_index < (size_t)colors; ++color_index) {
+            float original[3];
+
             index = color_index * (size_t)channel_count;
             for (channel = 0; channel < 3 && channel < channel_count;
                  ++channel) {
                 unsigned char snapped;
+                float target;
 
+                original[channel] = palette[index + (size_t)channel];
                 snapped = sixel_pixelformat_float_channel_to_byte(
                     pixelformat,
                     channel,
-                    palette[index + (size_t)channel]);
+                    original[channel]);
                 snapped = sixel_palette_reversible_value(snapped);
+                target = sixel_pixelformat_byte_to_float(pixelformat,
+                                                         channel,
+                                                         snapped);
+                target = original[channel]
+                         + (target - original[channel]) * (float)approach;
                 palette[index + (size_t)channel]
-                    = sixel_pixelformat_byte_to_float(pixelformat,
-                                                      channel,
-                                                      snapped);
+                    = sixel_pixelformat_float_channel_clamp(pixelformat,
+                                                           channel,
+                                                           target);
             }
         }
 
@@ -252,9 +447,11 @@ sixel_palette_reversible_palette_float(float *palette,
     }
     for (color_index = 0U; color_index < (size_t)colors; ++color_index) {
         index = color_index * (size_t)channel_count;
-        status = sixel_palette_snap_float_triplet(&palette[index],
-                                                  1,
-                                                  pixelformat);
+        status = sixel_palette_snap_float_triplet(
+            &palette[index],
+            1,
+            pixelformat,
+            SIXEL_PALETTE_SNAP_STAGE_FINAL_OUTPUT);
         if (SIXEL_FAILED(status)) {
             return;
         }
@@ -264,7 +461,8 @@ sixel_palette_reversible_palette_float(float *palette,
 static SIXELSTATUS
 sixel_palette_snap_float_triplet(float *components,
                                  int use_reversible,
-                                 int pixelformat)
+                                 int pixelformat,
+                                 enum sixel_palette_snap_stage stage)
 {
     SIXELSTATUS status;
     float working_palette[3];
@@ -272,22 +470,24 @@ sixel_palette_snap_float_triplet(float *components,
     float candidate_gamma[3];
     float candidate_target[3];
     unsigned char snapped_bytes[3];
-    unsigned char candidate_values[3][3];
+    unsigned char candidate_values[3][2];
     int candidate_counts[3];
     int colorspace;
     int original_pixelformat;
     int snap_policy;
     int channel;
+    double approach;
 
     status = SIXEL_OK;
     colorspace = sixel_palette_determine_colorspace(pixelformat);
     original_pixelformat = pixelformat;
     snap_policy = sixel_palette_get_snap_policy();
+    approach = sixel_palette_get_snap_approach_rate();
     if (components == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (!use_reversible) {
+    if (!use_reversible || !sixel_palette_should_snap(stage)) {
         for (channel = 0; channel < 3; ++channel) {
             components[channel]
                 = sixel_pixelformat_float_channel_clamp(pixelformat,
@@ -300,17 +500,25 @@ sixel_palette_snap_float_triplet(float *components,
 
     if (colorspace == SIXEL_COLORSPACE_GAMMA) {
         for (channel = 0; channel < 3; ++channel) {
+            float target;
             unsigned char snapped;
 
+            target_original[channel] = components[channel];
             snapped = sixel_pixelformat_float_channel_to_byte(
                 pixelformat,
                 channel,
-                components[channel]);
+                target_original[channel]);
             snapped = sixel_palette_reversible_value(snapped);
+            target = sixel_pixelformat_byte_to_float(pixelformat,
+                                                     channel,
+                                                     snapped);
+            target = target_original[channel]
+                     + (target - target_original[channel])
+                           * (float)approach;
             components[channel]
-                = sixel_pixelformat_byte_to_float(pixelformat,
-                                                  channel,
-                                                  snapped);
+                = sixel_pixelformat_float_channel_clamp(pixelformat,
+                                                        channel,
+                                                        target);
         }
 
         return SIXEL_OK;
@@ -334,24 +542,24 @@ sixel_palette_snap_float_triplet(float *components,
     }
 
     for (channel = 0; channel < 3; ++channel) {
+        unsigned char lower;
+        unsigned char upper;
+
         snapped_bytes[channel]
             = sixel_pixelformat_float_channel_to_byte(pixelformat,
                                                       channel,
                                                       working_palette[channel]);
-        candidate_counts[channel] = 0;
-        candidate_values[channel][candidate_counts[channel]++]
-            = sixel_palette_reversible_value(snapped_bytes[channel]);
-        candidate_values[channel][candidate_counts[channel]++]
-            = sixel_palette_reversible_value(snapped_bytes[channel]
-                                             > 0U
-                                             ? snapped_bytes[channel] - 1U
-                                             : 0U);
-        candidate_values[channel][candidate_counts[channel]++]
-            = sixel_palette_reversible_value(snapped_bytes[channel]
-                                             < 255U
-                                             ? snapped_bytes[channel] + 1U
-                                             : 255U);
-        snapped_bytes[channel] = candidate_values[channel][0];
+        sixel_palette_pick_bracket(snapped_bytes[channel],
+                                   &lower,
+                                   &upper);
+        candidate_counts[channel] = 1;
+        candidate_values[channel][0] = lower;
+        if (upper != lower) {
+            candidate_values[channel][1] = upper;
+            candidate_counts[channel] = 2;
+        }
+        snapped_bytes[channel] = sixel_palette_reversible_value(
+            snapped_bytes[channel]);
     }
 
     if (snap_policy == SIXEL_PALETTE_SNAP_POLICY_NEAREST) {
@@ -361,9 +569,9 @@ sixel_palette_snap_float_triplet(float *components,
         int c2;
 
         /*
-         * Enumerate a 3x3x3 neighborhood in sRGB gamma space and choose the
-         * candidate whose projection back into the target colorspace is nearest
-         * to the original float components.
+         * Enumerate the 2x2x2 bracket around the current location in sRGB
+         * gamma space and choose the candidate whose projection back into the
+         * target colorspace is nearest to the original float components.
          */
         best_distance = 1.0e30;
         for (c0 = 0; c0 < candidate_counts[0]; ++c0) {
@@ -445,6 +653,12 @@ sixel_palette_snap_float_triplet(float *components,
         }
     }
 
+    for (channel = 0; channel < 3; ++channel) {
+        working_palette[channel]
+            = target_original[channel]
+              + (working_palette[channel] - target_original[channel])
+                    * (float)approach;
+    }
     sixel_palette_clamp_float_triplet(working_palette,
                                       original_pixelformat);
     memcpy(components, working_palette, sizeof(working_palette));
@@ -467,31 +681,38 @@ double
 sixel_palette_snap_double(double value,
                           int use_reversible,
                           int pixelformat,
-                          int channel)
+                          int channel,
+                          enum sixel_palette_snap_stage stage)
 {
     double clamped;
     double snapped;
+    double approach;
     unsigned char sample;
 
     clamped = value;
     snapped = value;
+    approach = sixel_palette_get_snap_approach_rate();
     sample = 0U;
+    if (!use_reversible || !sixel_palette_should_snap(stage)) {
+        return (double)sixel_pixelformat_float_channel_clamp(pixelformat,
+                                                             channel,
+                                                             (float)value);
+    }
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        if (!use_reversible) {
-            return (double)sixel_pixelformat_float_channel_clamp(
-                pixelformat, channel, (float)value);
-        }
+        float target;
+
         sample = sixel_pixelformat_float_channel_to_byte(pixelformat,
                                                          channel,
                                                          (float)value);
-        if (use_reversible) {
-            sample = sixel_palette_reversible_value(sample);
-        }
-        snapped = (double)sixel_pixelformat_byte_to_float(pixelformat,
-                                                          channel,
-                                                          sample);
+        sample = sixel_palette_reversible_value(sample);
+        target = sixel_pixelformat_byte_to_float(pixelformat,
+                                                 channel,
+                                                 sample);
+        target = (float)(value + (target - value) * approach);
 
-        return snapped;
+        return (double)sixel_pixelformat_float_channel_clamp(pixelformat,
+                                                             channel,
+                                                             target);
     }
     if (clamped < 0.0) {
         clamped = 0.0;
@@ -499,11 +720,15 @@ sixel_palette_snap_double(double value,
     if (clamped > 255.0) {
         clamped = 255.0;
     }
-    if (!use_reversible) {
-        return clamped;
-    }
     sample = (unsigned char)(clamped + 0.5);
     snapped = (double)sixel_palette_reversible_value((unsigned int)sample);
+    snapped = clamped + (snapped - clamped) * approach;
+    if (snapped < 0.0) {
+        snapped = 0.0;
+    }
+    if (snapped > 255.0) {
+        snapped = 255.0;
+    }
 
     return snapped;
 }
@@ -511,7 +736,8 @@ sixel_palette_snap_double(double value,
 void
 sixel_palette_snap_triple(double *components,
                           int use_reversible,
-                          int pixelformat)
+                          int pixelformat,
+                          enum sixel_palette_snap_stage stage)
 {
     SIXELSTATUS status;
     float working[3];
@@ -524,40 +750,29 @@ sixel_palette_snap_triple(double *components,
     }
 
     /*
-     * Float palettes are round-tripped through sRGB bytes so the reversible
-     * grid logic always works on the canonical 0-255 space.
-     */
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        for (channel = 0; channel < 3; ++channel) {
-            working[channel] = (float)components[channel];
-        }
-        status = sixel_palette_snap_float_triplet(
-            working, use_reversible, pixelformat);
-        if (SIXEL_FAILED(status)) {
-            return;
-        }
-        for (channel = 0; channel < 3; ++channel) {
-            components[channel] = (double)working[channel];
-        }
-
-        return;
-    }
-
-    /*
-     * Byte palettes stay in-place; clamp to 0-255 and snap directly on the
-     * reversible tone grid without passing through float conversions.
+     * Always snap via sRGB bytes so the reversible grid matches the DEC tone
+     * table regardless of source colorspace or storage depth.
      */
     for (channel = 0; channel < 3; ++channel) {
-        if (components[channel] < 0.0) {
-            components[channel] = 0.0;
-        }
-        if (components[channel] > 255.0) {
-            components[channel] = 255.0;
-        }
         bytes[channel] = (unsigned char)(components[channel] + 0.5);
-        if (use_reversible) {
-            bytes[channel] = sixel_palette_reversible_value(bytes[channel]);
-        }
+        working[channel]
+            = sixel_pixelformat_byte_to_float(pixelformat,
+                                              channel,
+                                              bytes[channel]);
+    }
+
+    status = sixel_palette_snap_float_triplet(working,
+                                              use_reversible,
+                                              pixelformat,
+                                              stage);
+    if (SIXEL_FAILED(status)) {
+        return;
+    }
+    for (channel = 0; channel < 3; ++channel) {
+        bytes[channel]
+            = sixel_pixelformat_float_channel_to_byte(pixelformat,
+                                                     channel,
+                                                     working[channel]);
         components[channel] = (double)bytes[channel];
     }
 }

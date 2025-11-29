@@ -1035,6 +1035,19 @@ void show_help(void)
             "                           The blue factor becomes\n"
             "                           1 - R - G; negative results ignore\n"
             "                           both overrides.\n"
+            "SIXEL_PALETTE_SNAP_TARGET_POLICY\n"
+            "                           Control palette snap target search.\n"
+            "                           Accepts 'reversible' for legacy fixed\n"
+            "                           points or 'nearest'/'auto' for nearby\n"
+            "                           fixed points in the working colorspace.\n"
+            "SIXEL_PALETTE_SNAP_TIMING_POLICY\n"
+            "                           Decide when snaps run: 'once',\n"
+            "                           'polish', 'merge', 'resolve', or 'all'.\n"
+            "                           Defaults to 'once'.\n"
+            "SIXEL_PALETTE_SNAP_APPROACH_RATE\n"
+            "                           Blend factor (1-100) toward the snap\n"
+            "                           target; 100 snaps fully, lower values\n"
+            "                           ease toward the target.\n"
             );
 }
 

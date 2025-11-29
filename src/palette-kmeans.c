@@ -428,7 +428,8 @@ sixel_kmeans_seed_pca(double *centers,
         }
         sixel_palette_snap_triple(&centers[bucket * 3U],
                                   use_reversible,
-                                  pixelformat);
+                                  pixelformat,
+                                  SIXEL_PALETTE_SNAP_STAGE_QUANTIZER_ITER);
     }
 
     sixel_allocator_free(allocator, projections);
