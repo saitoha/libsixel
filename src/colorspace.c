@@ -1790,12 +1790,23 @@ sixel_smptec_to_linear_avx2(float *pixels, size_t pixel_total)
     __m256 r_lin;
     __m256 g_lin;
     __m256 b_lin;
-    __m256 vec0;
-    __m256 vec1;
-    __m256 vec2;
-    float r_out[8];
-    float g_out[8];
-    float b_out[8];
+    __m128 sr_lo;
+    __m128 sg_lo;
+    __m128 sb_lo;
+    __m128 sr_hi;
+    __m128 sg_hi;
+    __m128 sb_hi;
+    __m128 rg_lo;
+    __m128 rg_hi;
+    __m128 gb_lo;
+    __m128 gb_hi;
+    __m128 br_hi;
+    __m128 store0;
+    __m128 store1;
+    __m128 store2;
+    __m128 store3;
+    __m128 store4;
+    __m128 store5;
 
     processed = pixel_total - (pixel_total % 8U);
     for (index = 0U; index < processed; index += 8U) {
@@ -1820,27 +1831,53 @@ sixel_smptec_to_linear_avx2(float *pixels, size_t pixel_total)
         g_lin = _mm256_min_ps(one, _mm256_max_ps(zero, g_lin));
         b_lin = _mm256_min_ps(one, _mm256_max_ps(zero, b_lin));
 
-        _mm256_storeu_ps(r_out, r_lin);
-        _mm256_storeu_ps(g_out, g_lin);
-        _mm256_storeu_ps(b_out, b_lin);
+        sr_lo = _mm256_castps256_ps128(r_lin);
+        sr_hi = _mm256_extractf128_ps(r_lin, 1);
+        sg_lo = _mm256_castps256_ps128(g_lin);
+        sg_hi = _mm256_extractf128_ps(g_lin, 1);
+        sb_lo = _mm256_castps256_ps128(b_lin);
+        sb_hi = _mm256_extractf128_ps(b_lin, 1);
 
         /*
-         * Re-interleave SIMD lanes into the original AoS RGB layout.
-         * Three vector stores replace the per-lane scalar scatter to
-         * keep writeback bandwidth aligned with 256-bit stores.
+         * Re-interleave SoA vectors back into AoS layout using shuffle
+         * and blend only. This avoids the temporary scalar arrays and
+         * keeps the writeback path entirely vectorized.
          */
-        vec0 = _mm256_setr_ps(r_out[0], g_out[0], b_out[0],
-                              r_out[1], g_out[1], b_out[1],
-                              r_out[2], g_out[2]);
-        vec1 = _mm256_setr_ps(b_out[2], r_out[3], g_out[3], b_out[3],
-                              r_out[4], g_out[4], b_out[4],
-                              r_out[5]);
-        vec2 = _mm256_setr_ps(g_out[5], b_out[5], r_out[6], g_out[6],
-                              b_out[6], r_out[7], g_out[7], b_out[7]);
+        rg_lo = _mm_unpacklo_ps(sr_lo, sg_lo);
+        rg_hi = _mm_unpackhi_ps(sr_lo, sg_lo);
+        gb_lo = _mm_unpacklo_ps(sg_lo, sb_lo);
+        gb_hi = _mm_unpackhi_ps(sg_lo, sb_lo);
+        br_hi = _mm_unpackhi_ps(sb_lo, sr_lo);
 
-        _mm256_storeu_ps(store, vec0);
-        _mm256_storeu_ps(store + 8U, vec1);
-        _mm256_storeu_ps(store + 16U, vec2);
+        store0 = _mm_movelh_ps(rg_lo, sb_lo);
+        store0 = _mm_blend_ps(store0,
+                              _mm_shuffle_ps(sr_lo, sr_lo,
+                                             _MM_SHUFFLE(1, 1, 1, 1)),
+                              0x8);
+        store1 = _mm_shuffle_ps(gb_lo, rg_hi, 0x4E);
+        store2 = _mm_shuffle_ps(br_hi, gb_hi, 0xEC);
+
+        _mm_storeu_ps(store, store0);
+        _mm_storeu_ps(store + 4U, store1);
+        _mm_storeu_ps(store + 8U, store2);
+
+        rg_lo = _mm_unpacklo_ps(sr_hi, sg_hi);
+        rg_hi = _mm_unpackhi_ps(sr_hi, sg_hi);
+        gb_lo = _mm_unpacklo_ps(sg_hi, sb_hi);
+        gb_hi = _mm_unpackhi_ps(sg_hi, sb_hi);
+        br_hi = _mm_unpackhi_ps(sb_hi, sr_hi);
+
+        store3 = _mm_movelh_ps(rg_lo, sb_hi);
+        store3 = _mm_blend_ps(store3,
+                              _mm_shuffle_ps(sr_hi, sr_hi,
+                                             _MM_SHUFFLE(1, 1, 1, 1)),
+                              0x8);
+        store4 = _mm_shuffle_ps(gb_lo, rg_hi, 0x4E);
+        store5 = _mm_shuffle_ps(br_hi, gb_hi, 0xEC);
+
+        _mm_storeu_ps(store + 12U, store3);
+        _mm_storeu_ps(store + 16U, store4);
+        _mm_storeu_ps(store + 20U, store5);
     }
 
     return processed;
@@ -1886,12 +1923,23 @@ sixel_linear_to_smptec_avx2(float *pixels, size_t pixel_total)
     __m256 sr;
     __m256 sg;
     __m256 sb;
-    __m256 vec0;
-    __m256 vec1;
-    __m256 vec2;
-    float r_out[8];
-    float g_out[8];
-    float b_out[8];
+    __m128 sr_lo;
+    __m128 sg_lo;
+    __m128 sb_lo;
+    __m128 sr_hi;
+    __m128 sg_hi;
+    __m128 sb_hi;
+    __m128 rg_lo;
+    __m128 rg_hi;
+    __m128 gb_lo;
+    __m128 gb_hi;
+    __m128 br_hi;
+    __m128 store0;
+    __m128 store1;
+    __m128 store2;
+    __m128 store3;
+    __m128 store4;
+    __m128 store5;
 
     processed = pixel_total - (pixel_total % 8U);
     for (index = 0U; index < processed; index += 8U) {
@@ -1916,27 +1964,53 @@ sixel_linear_to_smptec_avx2(float *pixels, size_t pixel_total)
         sg = _mm256_min_ps(one, _mm256_max_ps(zero, sg));
         sb = _mm256_min_ps(one, _mm256_max_ps(zero, sb));
 
-        _mm256_storeu_ps(r_out, sr);
-        _mm256_storeu_ps(g_out, sg);
-        _mm256_storeu_ps(b_out, sb);
+        sr_lo = _mm256_castps256_ps128(sr);
+        sr_hi = _mm256_extractf128_ps(sr, 1);
+        sg_lo = _mm256_castps256_ps128(sg);
+        sg_hi = _mm256_extractf128_ps(sg, 1);
+        sb_lo = _mm256_castps256_ps128(sb);
+        sb_hi = _mm256_extractf128_ps(sb, 1);
 
         /*
-         * Re-interleave SIMD lanes into the original AoS RGB layout.
-         * The three 256-bit stores keep throughput balanced with the
-         * gather-heavy load side while avoiding scalar scatter.
+         * Re-pack SoA lanes into AoS using shuffle and blend to keep
+         * the entire writeback path vectorized without temporary
+         * scalar buffers.
          */
-        vec0 = _mm256_setr_ps(r_out[0], g_out[0], b_out[0],
-                              r_out[1], g_out[1], b_out[1],
-                              r_out[2], g_out[2]);
-        vec1 = _mm256_setr_ps(b_out[2], r_out[3], g_out[3], b_out[3],
-                              r_out[4], g_out[4], b_out[4],
-                              r_out[5]);
-        vec2 = _mm256_setr_ps(g_out[5], b_out[5], r_out[6], g_out[6],
-                              b_out[6], r_out[7], g_out[7], b_out[7]);
+        rg_lo = _mm_unpacklo_ps(sr_lo, sg_lo);
+        rg_hi = _mm_unpackhi_ps(sr_lo, sg_lo);
+        gb_lo = _mm_unpacklo_ps(sg_lo, sb_lo);
+        gb_hi = _mm_unpackhi_ps(sg_lo, sb_lo);
+        br_hi = _mm_unpackhi_ps(sb_lo, sr_lo);
 
-        _mm256_storeu_ps(store, vec0);
-        _mm256_storeu_ps(store + 8U, vec1);
-        _mm256_storeu_ps(store + 16U, vec2);
+        store0 = _mm_movelh_ps(rg_lo, sb_lo);
+        store0 = _mm_blend_ps(store0,
+                              _mm_shuffle_ps(sr_lo, sr_lo,
+                                             _MM_SHUFFLE(1, 1, 1, 1)),
+                              0x8);
+        store1 = _mm_shuffle_ps(gb_lo, rg_hi, 0x4E);
+        store2 = _mm_shuffle_ps(br_hi, gb_hi, 0xEC);
+
+        _mm_storeu_ps(store, store0);
+        _mm_storeu_ps(store + 4U, store1);
+        _mm_storeu_ps(store + 8U, store2);
+
+        rg_lo = _mm_unpacklo_ps(sr_hi, sg_hi);
+        rg_hi = _mm_unpackhi_ps(sr_hi, sg_hi);
+        gb_lo = _mm_unpacklo_ps(sg_hi, sb_hi);
+        gb_hi = _mm_unpackhi_ps(sg_hi, sb_hi);
+        br_hi = _mm_unpackhi_ps(sb_hi, sr_hi);
+
+        store3 = _mm_movelh_ps(rg_lo, sb_hi);
+        store3 = _mm_blend_ps(store3,
+                              _mm_shuffle_ps(sr_hi, sr_hi,
+                                             _MM_SHUFFLE(1, 1, 1, 1)),
+                              0x8);
+        store4 = _mm_shuffle_ps(gb_lo, rg_hi, 0x4E);
+        store5 = _mm_shuffle_ps(br_hi, gb_hi, 0xEC);
+
+        _mm_storeu_ps(store + 12U, store3);
+        _mm_storeu_ps(store + 16U, store4);
+        _mm_storeu_ps(store + 20U, store5);
     }
 
     return processed;
