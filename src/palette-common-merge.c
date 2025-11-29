@@ -60,21 +60,23 @@ static int env_final_merge_env_loaded = 0;
 static double
 sixel_final_merge_distance_sq(sixel_final_merge_cluster_t const *lhs,
                               sixel_final_merge_cluster_t const *rhs);
-static double sixel_final_merge_snap(double value, int use_reversible);
 static void sixel_final_merge_clusters(sixel_final_merge_cluster_t *clusters,
                                        int nclusters,
                                        int target_k,
                                        int merge_mode,
-                                       int use_reversible);
+                                       int use_reversible,
+                                       int pixelformat);
 static void sixel_final_merge_ward(sixel_final_merge_cluster_t *clusters,
                                    int nclusters,
                                    int target_k,
-                                   int use_reversible);
+                                   int use_reversible,
+                                   int pixelformat);
 static void sixel_final_merge_hkmeans(
     sixel_final_merge_cluster_t *clusters,
     int nclusters,
     int target_k,
-    int use_reversible);
+    int use_reversible,
+    int pixelformat);
 
 /*
  * Resolve auto merge requests.  The ladder clarifies the mapping:
@@ -342,59 +344,25 @@ sixel_final_merge_distance_sq(sixel_final_merge_cluster_t const *lhs,
     return distance;
 }
 
-/*
- * Clamp a channel to the 0-255 range and optionally snap to the reversible
- * SIXEL tone grid when the caller enabled -6/--6reversible.
- */
-static double
-sixel_final_merge_snap(double value, int use_reversible)
-{
-    double clamped;
-    double snapped;
-    int sample;
-
-    clamped = value;
-    snapped = value;
-    sample = 0;
-    if (clamped < 0.0) {
-        clamped = 0.0;
-    }
-    if (clamped > 255.0) {
-        clamped = 255.0;
-    }
-    if (!use_reversible) {
-        return clamped;
-    }
-    sample = (int)(clamped + 0.5);
-    if (sample < 0) {
-        sample = 0;
-    }
-    if (sample > 255) {
-        sample = 255;
-    }
-    snapped
-        = (double)sixel_palette_reversible_value((unsigned int)sample);
-
-    return snapped;
-}
-
 static void
 sixel_final_merge_clusters(sixel_final_merge_cluster_t *clusters,
                            int nclusters,
                            int target_k,
                            int merge_mode,
-                           int use_reversible)
+                           int use_reversible,
+                           int pixelformat)
 {
     if (clusters == NULL || nclusters <= 0) {
         return;
     }
     switch (merge_mode) {
     case SIXEL_FINAL_MERGE_DISPATCH_WARD:
-        sixel_final_merge_ward(clusters, nclusters, target_k, use_reversible);
+        sixel_final_merge_ward(
+            clusters, nclusters, target_k, use_reversible, pixelformat);
         break;
     case SIXEL_FINAL_MERGE_DISPATCH_HKMEANS:
         sixel_final_merge_hkmeans(
-            clusters, nclusters, target_k, use_reversible);
+            clusters, nclusters, target_k, use_reversible, pixelformat);
         break;
     case SIXEL_FINAL_MERGE_DISPATCH_NONE:
     default:
@@ -406,7 +374,8 @@ static void
 sixel_final_merge_ward(sixel_final_merge_cluster_t *clusters,
                        int nclusters,
                        int target_k,
-                       int use_reversible)
+                       int use_reversible,
+                       int pixelformat)
 {
     int desired;
     int i;
@@ -517,13 +486,17 @@ sixel_final_merge_ward(sixel_final_merge_cluster_t *clusters,
             clusters[k].b = 0.0;
         }
     }
+
+    (void)use_reversible;
+    (void)pixelformat;
 }
 
 static void
 sixel_final_merge_hkmeans(sixel_final_merge_cluster_t *clusters,
                           int nclusters,
                           int target_k,
-                          int use_reversible)
+                          int use_reversible,
+                          int pixelformat)
 {
     sixel_final_merge_cluster_t *centroids;
     double best_distance;
@@ -633,6 +606,7 @@ sixel_final_merge_hkmeans(sixel_final_merge_cluster_t *clusters,
             seed_weights,
             seed_count,
             1,
+            pixelformat,
             NULL,
             allocator,
             init_type);
@@ -680,21 +654,33 @@ sixel_final_merge_hkmeans(sixel_final_merge_cluster_t *clusters,
     }
     for (i = 0; i < nclusters; ++i) {
         if (clusters[i].count > 0.0) {
-            clusters[i].r = sixel_final_merge_snap(
-                clusters[i].r, use_reversible);
-            clusters[i].g = sixel_final_merge_snap(
-                clusters[i].g, use_reversible);
-            clusters[i].b = sixel_final_merge_snap(
-                clusters[i].b, use_reversible);
+            double components[3];
+
+            components[0] = clusters[i].r;
+            components[1] = clusters[i].g;
+            components[2] = clusters[i].b;
+            sixel_palette_snap_triple(components,
+                                     use_reversible,
+                                     pixelformat,
+                                     SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_PRE);
+            clusters[i].r = components[0];
+            clusters[i].g = components[1];
+            clusters[i].b = components[2];
         }
     }
     for (k = 0; k < centroid_count; ++k) {
-        centroids[k].r = sixel_final_merge_snap(
-            centroids[k].r, use_reversible);
-        centroids[k].g = sixel_final_merge_snap(
-            centroids[k].g, use_reversible);
-        centroids[k].b = sixel_final_merge_snap(
-            centroids[k].b, use_reversible);
+        double components[3];
+
+        components[0] = centroids[k].r;
+        components[1] = centroids[k].g;
+        components[2] = centroids[k].b;
+        sixel_palette_snap_triple(components,
+                                 use_reversible,
+                                 pixelformat,
+                                 SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_PRE);
+        centroids[k].r = components[0];
+        centroids[k].g = components[1];
+        centroids[k].b = components[2];
     }
 
     max_iter = env_final_merge_hkmeans_iter_max;
@@ -746,12 +732,18 @@ sixel_final_merge_hkmeans(sixel_final_merge_cluster_t *clusters,
             break;
         }
         for (k = 0; k < centroid_count; ++k) {
-            centroids[k].r
-                = sixel_final_merge_snap(centroids[k].r, use_reversible);
-            centroids[k].g
-                = sixel_final_merge_snap(centroids[k].g, use_reversible);
-            centroids[k].b
-                = sixel_final_merge_snap(centroids[k].b, use_reversible);
+            double components[3];
+
+            components[0] = centroids[k].r;
+            components[1] = centroids[k].g;
+            components[2] = centroids[k].b;
+            sixel_palette_snap_triple(components,
+                                     use_reversible,
+                                     pixelformat,
+                                     SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_ITER);
+            centroids[k].r = components[0];
+            centroids[k].g = components[1];
+            centroids[k].b = components[2];
         }
     }
 
@@ -824,6 +816,7 @@ sixel_palette_apply_merge(unsigned long *weights,
                           int target,
                           int final_merge_mode,
                           int use_reversible,
+                          int pixelformat,
                           sixel_allocator_t *allocator)
 {
     sixel_final_merge_cluster_t *clusters;
@@ -896,8 +889,12 @@ sixel_palette_apply_merge(unsigned long *weights,
     } else if (resolved_mode == SIXEL_FINAL_MERGE_WARD) {
         dispatch_mode = SIXEL_FINAL_MERGE_DISPATCH_WARD;
     }
-    sixel_final_merge_clusters(
-        clusters, cluster_count, target, dispatch_mode, use_reversible);
+    sixel_final_merge_clusters(clusters,
+                               cluster_count,
+                               target,
+                               dispatch_mode,
+                               use_reversible,
+                               pixelformat);
     result = 0;
     limit = target;
     if (limit > cluster_count) {

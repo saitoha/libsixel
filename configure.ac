@@ -718,6 +718,7 @@ AC_CHECK_HEADERS([assert.h \
                   sys/ioctl.h \
                   sys/wait.h \
                   spawn.h \
+                  strings.h \
                   inttypes.h \
                   strings.h \
                   intrin.h \

@@ -149,15 +149,43 @@ sixel_palette_heckbert_sample_to_float(sample value)
  */
 static void
 sixel_palette_reversible_tuple(sample *tuple_values,
-                               unsigned int depth)
+                               unsigned int depth,
+                               int pixelformat)
 {
+    double components[3];
     unsigned int plane;
-    unsigned int sample_value;
 
-    for (plane = 0U; plane < depth; ++plane) {
-        sample_value = (unsigned int)tuple_values[plane];
-        tuple_values[plane]
-            = (sample)sixel_palette_reversible_value(sample_value);
+    if (tuple_values == NULL || depth == 0U) {
+        return;
+    }
+    for (plane = 0U; plane < 3U; ++plane) {
+        components[plane] = 0.0;
+    }
+    for (plane = 0U; plane < depth && plane < 3U; ++plane) {
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+            components[plane]
+                = (double)sixel_pixelformat_byte_to_float(
+                      pixelformat,
+                      (int)plane,
+                      (unsigned char)tuple_values[plane]);
+            continue;
+        }
+        components[plane] = (double)tuple_values[plane];
+    }
+    sixel_palette_snap_triple(components,
+                              1,
+                              pixelformat,
+                              SIXEL_PALETTE_SNAP_STAGE_QUANTIZER_ITER);
+    for (plane = 0U; plane < depth && plane < 3U; ++plane) {
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+            tuple_values[plane]
+                = (sample)sixel_pixelformat_float_channel_to_byte(
+                      pixelformat,
+                      (int)plane,
+                      (float)components[plane]);
+            continue;
+        }
+        tuple_values[plane] = (sample)components[plane];
     }
 }
 
@@ -1042,7 +1070,8 @@ colormapFromBv(unsigned int newcolors,
                unsigned int depth,
                int methodForRep,
                int use_reversible,
-               sixel_allocator_t *allocator)
+                int pixelformat,
+                sixel_allocator_t *allocator)
 {
     tupletable2 colormap;
     unsigned int bi;
@@ -1082,7 +1111,9 @@ colormapFromBv(unsigned int newcolors,
             break;
         }
         if (use_reversible) {
-            sixel_palette_reversible_tuple(colormap.table[bi]->tuple, depth);
+            sixel_palette_reversible_tuple(colormap.table[bi]->tuple,
+                                          depth,
+                                          pixelformat);
         }
     }
 
@@ -1388,6 +1419,7 @@ sixel_palette_clusters_to_colormap(unsigned long *weights,
                                    unsigned int depth,
                                    unsigned int cluster_count,
                                    int use_reversible,
+                                   int pixelformat,
                                    tupletable2 *colormapP,
                                    sixel_allocator_t *allocator)
 {
@@ -1429,7 +1461,8 @@ sixel_palette_clusters_to_colormap(unsigned long *weights,
         }
         if (use_reversible) {
             sixel_palette_reversible_tuple(colormap.table[index]->tuple,
-                                          depth);
+                                          depth,
+                                          pixelformat);
         }
     }
     *colormapP = colormap;
@@ -1592,6 +1625,7 @@ mediancut(tupletable2 const colorfreqtable,
           int methodForRep,
           int use_reversible,
           int final_merge_mode,
+          int pixelformat,
           tupletable2 *colormapP,
           sixel_allocator_t *allocator)
 {
@@ -1707,6 +1741,7 @@ mediancut(tupletable2 const colorfreqtable,
                                                   (int)newcolors,
                                                   resolved_merge,
                                                   use_reversible,
+                                                  pixelformat,
                                                   allocator);
         if (cluster_total < 1) {
             cluster_total = 1;
@@ -1733,6 +1768,7 @@ mediancut(tupletable2 const colorfreqtable,
                                                           (unsigned int)
                                                               cluster_total,
                                                           use_reversible,
+                                                          pixelformat,
                                                           colormapP,
                                                           allocator);
         if (SIXEL_FAILED(merge_status)) {
@@ -1747,6 +1783,7 @@ mediancut(tupletable2 const colorfreqtable,
                                     depth,
                                     methodForRep,
                                     use_reversible,
+                                    pixelformat,
                                     allocator);
     }
 
@@ -1836,7 +1873,8 @@ sixel_palette_heckbert_colormap(unsigned char const *data,
             if (use_reversible) {
                 sixel_palette_reversible_tuple(
                     colormapP->table[i]->tuple,
-                    depth);
+                    depth,
+                    pixelformat);
             }
         }
     } else {
@@ -1848,6 +1886,7 @@ sixel_palette_heckbert_colormap(unsigned char const *data,
                            methodForRep,
                            use_reversible,
                            final_merge_mode,
+                           pixelformat,
                            colormapP,
                            allocator);
         if (SIXEL_FAILED(status)) {
@@ -1898,6 +1937,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     int input_is_float32;
     float *float_entries;
     int float_stride;
+    int reversible_for_quantizer;
 
     if (palette == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1942,6 +1982,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     input_is_float32 = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat);
     float_entries = NULL;
     float_stride = 0;
+    reversible_for_quantizer = palette->use_reversible;
     status = sixel_palette_heckbert_colormap(data,
                                              length,
                                              depth,
@@ -1950,7 +1991,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
                                              palette->method_for_rep,
                                              palette->quality_mode,
                                              palette->force_palette,
-                                             palette->use_reversible,
+                                             reversible_for_quantizer,
                                              palette->final_merge_mode,
                                              palette->lut_policy,
                                              &colormap,
