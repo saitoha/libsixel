@@ -476,7 +476,22 @@ jobs:
 #        &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Upload to Coveralls (per-flag, parallel)
+      id: coveralls_upload
       if: ${{ runner.os != 'Windows' && matrix.os != 'macos-15' }}
+      continue-on-error: true
+      uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: coverage.info
+        flag-name: ${{ matrix.cfg }}
+        parallel: true
+
+    - name: Wait before Coveralls retry (per-flag)
+      if: ${{ runner.os != 'Windows' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' }}
+      run: sleep 5
+
+    - name: Upload to Coveralls (per-flag, retry)
+      if: ${{ runner.os != 'Windows' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' }}
       uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -490,6 +505,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Finalize Coveralls
+        id: coveralls_finalize
+        continue-on-error: true
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          parallel-finished: true
+
+      - name: Wait before Coveralls retry (finalize)
+        if: ${{ steps.coveralls_finalize.outcome == 'failure' }}
+        run: sleep 5
+
+      - name: Finalize Coveralls (retry)
+        if: ${{ steps.coveralls_finalize.outcome == 'failure' }}
         uses: coverallsapp/github-action@v2
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
