@@ -150,7 +150,7 @@ struct sixel_loader {
     int finsecure;
     int const *cancel_flag;
     void *context;
-    sixel_logger_t *logger;
+    sixel_logger_t logger;
     /*
      * Pointer to the active assessment observer.
      *
@@ -365,7 +365,7 @@ loader_log_stage(sixel_loader_t *loader,
 
     logger = NULL;
     if (loader != NULL) {
-        logger = loader->logger;
+        logger = &loader->logger;
     }
     if (logger == NULL || logger->file == NULL || !logger->active) {
         return;
@@ -6804,7 +6804,13 @@ sixel_loader_new(
     loader->finsecure = 0;
     loader->cancel_flag = NULL;
     loader->context = NULL;
-    loader->logger = NULL;
+    /*
+     * Initialize a private logger. The helper reuses an existing global
+     * logger sink when present so loader markers share the timeline with
+     * upstream stages without requiring sixel_loader_setopt().
+     */
+    sixel_logger_init(&loader->logger);
+    (void)sixel_logger_prepare_env(&loader->logger);
     loader->assessment = NULL;
     loader->loader_order = NULL;
     loader->allocator = local_allocator;
@@ -6847,6 +6853,7 @@ sixel_loader_unref(
 
     if (--loader->ref == 0) {
         allocator = loader->allocator;
+        sixel_logger_close(&loader->logger);
         sixel_allocator_free(allocator, loader->loader_order);
         sixel_allocator_free(allocator, loader);
         sixel_allocator_unref(allocator);
@@ -6946,10 +6953,6 @@ sixel_loader_setopt(
     case SIXEL_LOADER_OPTION_CONTEXT:
         loader->context = (void *)value;
         loader->assessment = NULL;
-        status = SIXEL_OK;
-        break;
-    case SIXEL_LOADER_OPTION_LOGGER:
-        loader->logger = (sixel_logger_t *)value;
         status = SIXEL_OK;
         break;
     case SIXEL_LOADER_OPTION_ASSESSMENT:
