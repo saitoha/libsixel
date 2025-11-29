@@ -1053,6 +1053,10 @@ void show_help(void)
             "                           Blend factor (1-100) toward the snap\n"
             "                           target; 100 snaps fully, lower values\n"
             "                           ease toward the target.\n"
+            "SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L\n"
+            "                           Weight L* relative to a/b* when\n"
+            "                           snapping in Lab-family colorspaces.\n"
+            "                           Accepts 0.0-1.0, default 0.85.\n"
             );
 }
 
