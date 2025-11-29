@@ -34,7 +34,13 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include <strings.h>
+#if HAVE_STRINGS_H
+# include <strings.h>
+#elif defined(_WIN32)
+# define strcasecmp _stricmp
+#else
+int strcasecmp(char const *lhs, char const *rhs);
+#endif
 
 #include "colorspace.h"
 #include "compat_stub.h"
