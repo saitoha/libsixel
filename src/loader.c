@@ -125,6 +125,7 @@ sixel_quicklook_thumbnail_create(CFURLRef url, CGSize max_size);
 #include "allocator.h"
 #include "assessment.h"
 #include "encoder.h"
+#include "logger.h"
 
 #define SIXEL_THUMBNAILER_DEFAULT_SIZE 512
 
@@ -149,6 +150,7 @@ struct sixel_loader {
     int finsecure;
     int const *cancel_flag;
     void *context;
+    sixel_logger_t *logger;
     /*
      * Pointer to the active assessment observer.
      *
@@ -163,6 +165,10 @@ struct sixel_loader {
     char last_source_path[PATH_MAX];
     size_t last_input_bytes;
     int callback_failed;
+    int log_loader_finished;
+    char log_path[PATH_MAX];
+    char log_loader_name[64];
+    size_t log_input_bytes;
 };
 
 static char *
@@ -339,6 +345,77 @@ loader_trace_result(char const *name, SIXELSTATUS status)
     }
 }
 
+/*
+ * Emit loader stage markers.
+ *
+ * Loader callbacks run the downstream pipeline synchronously, so the finish
+ * marker must be issued before invoking fn_load() to avoid inflating the
+ * loader span. The helper keeps the formatting consistent with
+ * sixel_encoder_log_stage() without depending on encoder internals.
+ */
+static void
+loader_log_stage(sixel_loader_t *loader,
+                 char const *event,
+                 char const *fmt,
+                 ...)
+{
+    sixel_logger_t *logger;
+    char message[256];
+    va_list args;
+
+    logger = NULL;
+    if (loader != NULL) {
+        logger = loader->logger;
+    }
+    if (logger == NULL || logger->file == NULL || !logger->active) {
+        return;
+    }
+
+    message[0] = '\0';
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
+    va_start(args, fmt);
+    if (fmt != NULL) {
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
+        (void)vsnprintf(message, sizeof(message), fmt, args);
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+    }
+    va_end(args);
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+
+    sixel_logger_logf(logger,
+                      "worker",
+                      "loader",
+                      event,
+                      -1,
+                      -1,
+                      0,
+                      0,
+                      0,
+                      0,
+                      "%s",
+                      message);
+}
+
 typedef SIXELSTATUS (*sixel_loader_backend)(
     sixel_chunk_t const       *pchunk,
     int                        fstatic,
@@ -369,10 +446,23 @@ loader_callback_trampoline(sixel_frame_t *frame, void *data)
 {
     sixel_loader_callback_state_t *state;
     SIXELSTATUS status;
+    sixel_loader_t *loader;
 
     state = (sixel_loader_callback_state_t *)data;
+    loader = NULL;
     if (state == NULL || state->fn == NULL) {
         return SIXEL_BAD_ARGUMENT;
+    }
+
+    loader = state->loader;
+    if (loader != NULL && loader->log_loader_finished == 0) {
+        loader_log_stage(loader,
+                         "finish",
+                         "path=%s loader=%s bytes=%zu",
+                         loader->log_path,
+                         loader->log_loader_name,
+                         loader->log_input_bytes);
+        loader->log_loader_finished = 1;
     }
 
     status = state->fn(frame, state->context);
@@ -6718,6 +6808,7 @@ sixel_loader_new(
     loader->finsecure = 0;
     loader->cancel_flag = NULL;
     loader->context = NULL;
+    loader->logger = NULL;
     loader->assessment = NULL;
     loader->loader_order = NULL;
     loader->allocator = local_allocator;
@@ -6725,6 +6816,10 @@ sixel_loader_new(
     loader->last_source_path[0] = '\0';
     loader->last_input_bytes = 0u;
     loader->callback_failed = 0;
+    loader->log_loader_finished = 0;
+    loader->log_path[0] = '\0';
+    loader->log_loader_name[0] = '\0';
+    loader->log_input_bytes = 0u;
 
     *pploader = loader;
     status = SIXEL_OK;
@@ -6857,6 +6952,10 @@ sixel_loader_setopt(
         loader->assessment = NULL;
         status = SIXEL_OK;
         break;
+    case SIXEL_LOADER_OPTION_LOGGER:
+        loader->logger = (sixel_logger_t *)value;
+        status = SIXEL_OK;
+        break;
     case SIXEL_LOADER_OPTION_ASSESSMENT:
         loader->assessment = (sixel_assessment_t *)value;
         status = SIXEL_OK;
@@ -6941,6 +7040,18 @@ sixel_loader_load_file(
 
     sixel_loader_ref(loader);
 
+    loader->log_loader_finished = 0;
+    loader->log_loader_name[0] = '\0';
+    loader->log_input_bytes = 0u;
+    loader->log_path[0] = '\0';
+    if (filename != NULL) {
+        (void)snprintf(loader->log_path,
+                       sizeof(loader->log_path),
+                       "%s",
+                       filename);
+    }
+    loader_log_stage(loader, "start", "path=%s", loader->log_path);
+
     memset(&callback_state, 0, sizeof(callback_state));
     callback_state.loader = loader;
     callback_state.fn = fn_load;
@@ -6980,6 +7091,13 @@ sixel_loader_load_file(
     if (pchunk->size == 0 || (pchunk->size == 1 && *pchunk->buffer == '\n')) {
         status = SIXEL_OK;
         goto end;
+    }
+
+    if (pchunk->source_path != NULL && pchunk->source_path[0] != '\0') {
+        (void)snprintf(loader->log_path,
+                       sizeof(loader->log_path),
+                       "%s",
+                       pchunk->source_path);
     }
 
     if (pchunk->buffer == NULL || pchunk->max_size == 0) {
@@ -7022,6 +7140,15 @@ sixel_loader_load_file(
         if (plan[plan_index]->predicate != NULL &&
             plan[plan_index]->predicate(pchunk) == 0) {
             continue;
+        }
+        loader->log_input_bytes = pchunk != NULL ? pchunk->size : 0u;
+        if (plan[plan_index]->name != NULL) {
+            (void)snprintf(loader->log_loader_name,
+                           sizeof(loader->log_loader_name),
+                           "%s",
+                           plan[plan_index]->name);
+        } else {
+            loader->log_loader_name[0] = '\0';
         }
         loader_trace_try(plan[plan_index]->name);
         status = plan[plan_index]->backend(pchunk,
