@@ -2894,6 +2894,13 @@ palette_cleanup:
         goto end_loader;
     }
 
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_LOGGER,
+                                 encoder->logger);
+    if (SIXEL_FAILED(status)) {
+        goto end_loader;
+    }
+
     status = sixel_loader_load_file(loader,
                                     encoder->mapfile,
                                     load_image_callback_for_palette);
@@ -7365,6 +7372,13 @@ reload:
         goto load_end;
     }
 
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_LOGGER,
+                                 encoder->logger);
+    if (SIXEL_FAILED(status)) {
+        goto load_end;
+    }
+
     /*
      * Wire the optional assessment observer into the loader.
      *
@@ -7377,16 +7391,6 @@ reload:
     if (SIXEL_FAILED(status)) {
         goto load_end;
     }
-
-    sixel_encoder_log_stage(encoder,
-                            NULL,
-                            "loader",
-                            "worker",
-                            "start",
-                            "path=%s",
-                            effective_filename != NULL
-                                ? effective_filename
-                                : "");
 
     status = sixel_loader_load_file(loader,
                                     effective_filename,
@@ -7411,17 +7415,6 @@ reload:
     } else {
         encoder->last_source_path[0] = '\0';
     }
-    sixel_encoder_log_stage(encoder,
-                            NULL,
-                            "loader",
-                            "worker",
-                            "finish",
-                            "path=%s loader=%s bytes=%zu",
-                            effective_filename != NULL
-                                ? effective_filename
-                                : "",
-                            encoder->last_loader_name,
-                            encoder->last_input_bytes);
     if (encoder->assessment_observer != NULL) {
         sixel_assessment_record_loader(encoder->assessment_observer,
                                        encoder->last_source_path,

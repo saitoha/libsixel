@@ -64,6 +64,7 @@ SIXEL_DEFALUT_GIF_DELAY      = 1
 #        | LOADER_ORDER    -> (8)        |
 #        | CONTEXT         -> (9)        |
 #        | ASSESSMENT      -> (10)       |
+#        | LOGGER         -> (11)       |
 #        +-------------------------------+
 SIXEL_LOADER_OPTION_REQUIRE_STATIC = 1
 SIXEL_LOADER_OPTION_USE_PALETTE = 2
@@ -75,6 +76,7 @@ SIXEL_LOADER_OPTION_CANCEL_FLAG = 7
 SIXEL_LOADER_OPTION_LOADER_ORDER = 8
 SIXEL_LOADER_OPTION_CONTEXT = 9
 SIXEL_LOADER_OPTION_ASSESSMENT = 10
+SIXEL_LOADER_OPTION_LOGGER = 11
 
 # return value
 SIXEL_OK              = 0x0000
@@ -659,6 +661,7 @@ def sixel_loader_setopt(loader, option, value=None):
         SIXEL_LOADER_OPTION_CANCEL_FLAG,
         SIXEL_LOADER_OPTION_CONTEXT,
         SIXEL_LOADER_OPTION_ASSESSMENT,
+        SIXEL_LOADER_OPTION_LOGGER,
     ):
         if value is None:
             pointer_value = c_void_p(None)
