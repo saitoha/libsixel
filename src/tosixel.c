@@ -64,7 +64,6 @@
 #include "pixelformat.h"
 #include "assessment.h"
 #include "logger.h"
-#include "palette-common-snap.h"
 #include "sixel_threads_config.h"
 #if SIXEL_ENABLE_THREADS
 # include "sixel_atomic.h"
@@ -4047,49 +4046,6 @@ sixel_encode_dither(
         goto end;
     }
 
-    if (dither->sixel_reversible && palette_count > 0U) {
-        float *reversible_float = palette_entries_float32;
-
-        if (reversible_float == NULL && palette_entries != NULL) {
-            palette_float_bytes = palette_count * 3U * sizeof(float);
-            reversible_float = (float *)sixel_allocator_malloc(
-                dither->allocator, palette_float_bytes);
-            if (reversible_float != NULL) {
-                palette_entries_float32 = reversible_float;
-                palette_float_count = palette_count;
-                for (palette_index = 0U; palette_index < palette_count * 3U;
-                        ++palette_index) {
-                    reversible_float[palette_index]
-                        = sixel_pixelformat_byte_to_float(
-                            output_float_pixelformat,
-                            (int)(palette_index % 3U),
-                            palette_entries[palette_index]);
-                }
-            }
-        }
-        if (reversible_float != NULL) {
-            sixel_palette_reversible_palette_float(
-                reversible_float,
-                palette_count,
-                output_float_pixelformat);
-            if (palette_entries != NULL) {
-                palette_channels = palette_count * 3U;
-                for (palette_index = 0U; palette_index < palette_channels;
-                        ++palette_index) {
-                    palette_entries[palette_index]
-                        = sixel_pixelformat_float_channel_to_byte(
-                            output_float_pixelformat,
-                            (int)(palette_index % 3U),
-                            reversible_float[palette_index]);
-                }
-            }
-        } else if (palette_entries != NULL) {
-            sixel_palette_reversible_palette(palette_entries,
-                                             palette_count,
-                                             SIXEL_PIXELFORMAT_RGB888);
-        }
-    }
-
     status = sixel_encode_header(width, height, output);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -5257,125 +5213,6 @@ error:
     return EXIT_FAILURE;
 }
 
-static int
-test_reversible_snap_srgb_idempotent(void)
-{
-    unsigned char palette[6];
-    unsigned char expected[6];
-    size_t index;
-
-    palette[0] = 13;
-    palette[1] = 42;
-    palette[2] = 254;
-    palette[3] = 200;
-    palette[4] = 100;
-    palette[5] = 1;
-    for (index = 0U; index < sizeof(palette); ++index) {
-        expected[index] = sixel_palette_reversible_value(palette[index]);
-    }
-
-    sixel_palette_reversible_palette(palette, 2U, SIXEL_PIXELFORMAT_RGB888);
-    if (memcmp(palette, expected, sizeof(palette)) != 0) {
-        return EXIT_FAILURE;
-    }
-    sixel_palette_reversible_palette(palette, 2U, SIXEL_PIXELFORMAT_RGB888);
-    if (memcmp(palette, expected, sizeof(palette)) != 0) {
-        return EXIT_FAILURE;
-    }
-
-    return EXIT_SUCCESS;
-}
-
-static int
-test_reversible_snap_oklab_roundtrip(void)
-{
-    SIXELSTATUS status;
-    unsigned char palette_bytes[3];
-    unsigned char expected_bytes[3];
-    float oklab_palette[3];
-    float gamma_palette[3];
-    size_t index;
-    int channel;
-
-    status = SIXEL_OK;
-    palette_bytes[0] = 25;
-    palette_bytes[1] = 180;
-    palette_bytes[2] = 90;
-    for (index = 0U; index < 3U; ++index) {
-        expected_bytes[index] = sixel_palette_reversible_value(
-            palette_bytes[index]);
-    }
-
-    for (index = 0U; index < 3U; ++index) {
-        gamma_palette[index] = sixel_pixelformat_byte_to_float(
-            SIXEL_PIXELFORMAT_RGBFLOAT32,
-            (int)index,
-            palette_bytes[index]);
-    }
-    memcpy(oklab_palette, gamma_palette, sizeof(oklab_palette));
-    status = sixel_helper_convert_colorspace((unsigned char *)oklab_palette,
-                                             sizeof(oklab_palette),
-                                             SIXEL_PIXELFORMAT_RGBFLOAT32,
-                                             SIXEL_COLORSPACE_GAMMA,
-                                             SIXEL_COLORSPACE_OKLAB);
-    if (SIXEL_FAILED(status)) {
-        return EXIT_FAILURE;
-    }
-    for (index = 0U; index < 3U; ++index) {
-        channel = (int)index;
-        palette_bytes[index] = sixel_pixelformat_float_channel_to_byte(
-            SIXEL_PIXELFORMAT_OKLABFLOAT32,
-            channel,
-            oklab_palette[index]);
-    }
-
-    sixel_palette_reversible_palette_float(oklab_palette,
-                                           1U,
-                                           SIXEL_PIXELFORMAT_OKLABFLOAT32);
-    for (index = 0U; index < 3U; ++index) {
-        channel = (int)index;
-        palette_bytes[index] = sixel_pixelformat_float_channel_to_byte(
-            SIXEL_PIXELFORMAT_OKLABFLOAT32,
-            channel,
-            oklab_palette[index]);
-    }
-    memcpy(gamma_palette, oklab_palette, sizeof(gamma_palette));
-    status = sixel_helper_convert_colorspace((unsigned char *)gamma_palette,
-                                             sizeof(gamma_palette),
-                                             SIXEL_PIXELFORMAT_RGBFLOAT32,
-                                             SIXEL_COLORSPACE_OKLAB,
-                                             SIXEL_COLORSPACE_GAMMA);
-    if (SIXEL_FAILED(status)) {
-        return EXIT_FAILURE;
-    }
-    for (index = 0U; index < 3U; ++index) {
-        channel = (int)index;
-        if (sixel_pixelformat_float_channel_to_byte(
-                SIXEL_PIXELFORMAT_RGBFLOAT32,
-                channel,
-                gamma_palette[index]) != expected_bytes[index]) {
-            return EXIT_FAILURE;
-        }
-    }
-
-    memcpy(expected_bytes, palette_bytes, sizeof(expected_bytes));
-    sixel_palette_reversible_palette_float(oklab_palette,
-                                           1U,
-                                           SIXEL_PIXELFORMAT_OKLABFLOAT32);
-    for (index = 0U; index < 3U; ++index) {
-        channel = (int)index;
-        palette_bytes[index] = sixel_pixelformat_float_channel_to_byte(
-            SIXEL_PIXELFORMAT_OKLABFLOAT32,
-            channel,
-            oklab_palette[index]);
-    }
-    if (memcmp(palette_bytes, expected_bytes, sizeof(palette_bytes)) != 0) {
-        return EXIT_FAILURE;
-    }
-
-    return EXIT_SUCCESS;
-}
-
 SIXELAPI int
 sixel_tosixel_tests_main(void)
 {
@@ -5392,16 +5229,6 @@ sixel_tosixel_tests_main(void)
     }
 
     nret = test_emit_palette_hls_from_bytes();
-    if (nret != EXIT_SUCCESS) {
-        return nret;
-    }
-
-    nret = test_reversible_snap_srgb_idempotent();
-    if (nret != EXIT_SUCCESS) {
-        return nret;
-    }
-
-    nret = test_reversible_snap_oklab_roundtrip();
     if (nret != EXIT_SUCCESS) {
         return nret;
     }
