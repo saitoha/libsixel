@@ -429,7 +429,7 @@ sixel_kmeans_seed_pca(double *centers,
         sixel_palette_snap_triple(&centers[bucket * 3U],
                                   use_reversible,
                                   pixelformat,
-                                  SIXEL_PALETTE_SNAP_STAGE_QUANTIZER_ITER);
+                                  SIXEL_PALETTE_SNAP_STAGE_INITIAL_SEED);
     }
 
     sixel_allocator_free(allocator, projections);
@@ -530,6 +530,9 @@ sixel_kmeans_choose_initial_centroids(double *centers,
     sixel_kmeans_init_type resolved;
     SIXELSTATUS status;
     double *scratch_distances;
+    double snapped[3];
+    unsigned int center_index;
+    unsigned int channel;
 
     resolved = sixel_kmeans_resolve_init_type(init_type);
     status = SIXEL_BAD_ARGUMENT;
@@ -572,6 +575,28 @@ sixel_kmeans_choose_initial_centroids(double *centers,
                                       scratch_distances);
     if (scratch_distances != distance_cache) {
         sixel_allocator_free(allocator, scratch_distances);
+    }
+
+    /*
+     * Snap initial centroids when the timing policy requests it.  This keeps
+     * seed positions aligned with the reversible grid before Lloyd
+     * refinement begins.
+     */
+    if (SIXEL_SUCCEEDED(status)) {
+        for (center_index = 0U; center_index < k; ++center_index) {
+            for (channel = 0U; channel < 3U; ++channel) {
+                snapped[channel]
+                    = centers[center_index * 3U + channel];
+            }
+            sixel_palette_snap_triple(
+                snapped,
+                use_reversible,
+                pixelformat,
+                SIXEL_PALETTE_SNAP_STAGE_INITIAL_SEED);
+            for (channel = 0U; channel < 3U; ++channel) {
+                centers[center_index * 3U + channel] = snapped[channel];
+            }
+        }
     }
 
     return status;
@@ -822,6 +847,8 @@ build_palette_kmeans(unsigned char **result,
     double float32_channel_scale[3];
     double float32_channel_offset[3];
     double float32_lloyd_scale;
+    double snapped_center[3];
+    double previous_center[3];
     float *float_palette;
     float *float_palette_new;
     sixel_kmeans_init_type init_type;
@@ -1273,13 +1300,27 @@ build_palette_kmeans(unsigned char **result,
             if (counts[center_index] == 0UL) {
                 continue;
             }
+            /*
+             * Record the previous centre so the Lloyd delta measures the
+             * snapped position rather than the unclamped average.
+             */
+            for (channel = 0U; channel < 3U; ++channel) {
+                previous_center[channel]
+                    = centers[center_index * 3U + channel];
+            }
             channel_sum = accum + (size_t)center_index * 3U;
             for (channel = 0U; channel < 3U; ++channel) {
-                update = channel_sum[channel]
+                snapped_center[channel] = channel_sum[channel]
                     / (double)counts[center_index];
-                diff = centers[center_index * 3U + channel] - update;
+            }
+            sixel_palette_snap_triple(snapped_center,
+                                      use_reversible,
+                                      pixelformat,
+                                      SIXEL_PALETTE_SNAP_STAGE_QUANTIZER_ITER);
+            for (channel = 0U; channel < 3U; ++channel) {
+                diff = previous_center[channel] - snapped_center[channel];
                 delta += diff * diff;
-                centers[center_index * 3U + channel] = update;
+                centers[center_index * 3U + channel] = snapped_center[channel];
             }
         }
         if (delta <= lloyd_threshold) {
