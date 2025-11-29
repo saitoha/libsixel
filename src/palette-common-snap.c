@@ -61,6 +61,8 @@ static enum sixel_palette_snap_timing_policy
 sixel_palette_get_snap_timing(void);
 static double
 sixel_palette_get_snap_approach_rate(void);
+static double
+sixel_palette_get_snap_channel_factor(void);
 static int
 sixel_palette_determine_colorspace(int pixelformat);
 static void
@@ -79,6 +81,8 @@ static enum sixel_palette_snap_timing_policy snap_timing_cache
 static int snap_timing_initialized = 0;
 static double snap_approach_cache = 1.0;
 static int snap_approach_initialized = 0;
+static double snap_channel_factor_cache = 0.85;
+static int snap_channel_factor_initialized = 0;
 
 static enum sixel_palette_snap_policy
 sixel_palette_get_snap_policy(void)
@@ -181,6 +185,37 @@ sixel_palette_get_snap_approach_rate(void)
     snap_approach_cache = (double)parsed / 100.0;
 
     return snap_approach_cache;
+}
+
+static double
+sixel_palette_get_snap_channel_factor(void)
+{
+    char const *value;
+    double parsed;
+
+    if (snap_channel_factor_initialized) {
+        return snap_channel_factor_cache;
+    }
+
+    snap_channel_factor_initialized = 1;
+    value = sixel_compat_getenv("SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L");
+    if (value == NULL || *value == '\0') {
+        snap_channel_factor_cache = 0.85;
+
+        return snap_channel_factor_cache;
+    }
+
+    parsed = strtod(value, NULL);
+    if (parsed < 0.0) {
+        parsed = 0.0;
+    }
+    if (parsed > 1.0) {
+        parsed = 1.0;
+    }
+
+    snap_channel_factor_cache = parsed;
+
+    return snap_channel_factor_cache;
 }
 
 int
@@ -457,12 +492,19 @@ sixel_palette_snap_float_triplet(float *components,
     int snap_policy;
     int channel;
     double approach;
+    double channel_factor;
 
     status = SIXEL_OK;
     colorspace = sixel_palette_determine_colorspace(pixelformat);
     original_pixelformat = pixelformat;
     snap_policy = sixel_palette_get_snap_policy();
     approach = sixel_palette_get_snap_approach_rate();
+    channel_factor = 1.0;
+    if (colorspace == SIXEL_COLORSPACE_OKLAB
+        || colorspace == SIXEL_COLORSPACE_CIELAB
+        || colorspace == SIXEL_COLORSPACE_DIN99D) {
+        channel_factor = sixel_palette_get_snap_channel_factor();
+    }
     if (components == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -561,13 +603,38 @@ sixel_palette_snap_float_triplet(float *components,
                         }
                     }
 
-                    distance = 0.0;
-                    for (channel = 0; channel < 3; ++channel) {
-                        double diff;
+                    /*
+                     * Lab-family spaces use a weighted distance so L* can be
+                     * emphasized relative to chroma.  The factor is tunable
+                     * via SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L.
+                     */
+                    if (colorspace == SIXEL_COLORSPACE_OKLAB
+                        || colorspace == SIXEL_COLORSPACE_CIELAB
+                        || colorspace == SIXEL_COLORSPACE_DIN99D) {
+                        double ldiff;
+                        double adiff;
+                        double bdiff;
+                        double chroma_weight;
 
-                        diff = (double)candidate_target[channel]
-                               - (double)target_original[channel];
-                        distance += diff * diff;
+                        ldiff = (double)candidate_target[0]
+                                - (double)target_original[0];
+                        adiff = (double)candidate_target[1]
+                                - (double)target_original[1];
+                        bdiff = (double)candidate_target[2]
+                                - (double)target_original[2];
+                        chroma_weight = 1.0 - channel_factor;
+                        distance = channel_factor * ldiff * ldiff
+                                   + chroma_weight * 0.5 * adiff * adiff
+                                   + chroma_weight * 0.5 * bdiff * bdiff;
+                    } else {
+                        distance = 0.0;
+                        for (channel = 0; channel < 3; ++channel) {
+                            double diff;
+
+                            diff = (double)candidate_target[channel]
+                                   - (double)target_original[channel];
+                            distance += diff * diff;
+                        }
                     }
                     if (distance < best_distance) {
                         best_distance = distance;
