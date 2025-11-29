@@ -34,12 +34,20 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 #include "colorspace.h"
 #include "lookup-common.h"
 #include "palette-common-snap.h"
 #include "pixelformat.h"
 
+enum sixel_palette_snap_policy {
+    SIXEL_PALETTE_SNAP_POLICY_NEAREST = 0,
+    SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE
+};
+
+static enum sixel_palette_snap_policy
+sixel_palette_get_snap_policy(void);
 static int
 sixel_palette_determine_colorspace(int pixelformat);
 static void
@@ -47,7 +55,42 @@ sixel_palette_clamp_float_triplet(float *components, int pixelformat);
 static SIXELSTATUS
 sixel_palette_snap_float_triplet(float *components,
                                  int use_reversible,
-                                 int pixelformat);
+                                int pixelformat);
+
+static enum sixel_palette_snap_policy snap_policy_cache
+    = SIXEL_PALETTE_SNAP_POLICY_NEAREST;
+static int snap_policy_initialized = 0;
+
+static enum sixel_palette_snap_policy
+sixel_palette_get_snap_policy(void)
+{
+    char const *policy;
+
+    /*
+     * SIXEL_PALETTE_SNAP_TARGET_POLICY controls whether we snap to the
+     * reversible fixed points or choose the nearest fixed point in the current
+     * colorspace.  The default "auto" is treated as "nearest".
+     */
+    if (snap_policy_initialized) {
+        return snap_policy_cache;
+    }
+
+    snap_policy_initialized = 1;
+    policy = getenv("SIXEL_PALETTE_SNAP_TARGET_POLICY");
+    if (policy == NULL || *policy == '\0') {
+        snap_policy_cache = SIXEL_PALETTE_SNAP_POLICY_NEAREST;
+        return snap_policy_cache;
+    }
+
+    if (strcasecmp(policy, "reversible") == 0) {
+        snap_policy_cache = SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE;
+        return snap_policy_cache;
+    }
+
+    snap_policy_cache = SIXEL_PALETTE_SNAP_POLICY_NEAREST;
+
+    return snap_policy_cache;
+}
 
 static int
 sixel_palette_determine_colorspace(int pixelformat)
@@ -267,14 +310,21 @@ sixel_palette_snap_float_triplet(float *components,
 {
     SIXELSTATUS status;
     float working_palette[3];
+    float target_original[3];
+    float candidate_gamma[3];
+    float candidate_target[3];
     unsigned char snapped_bytes[3];
+    unsigned char candidate_values[3][3];
+    int candidate_counts[3];
     int colorspace;
     int original_pixelformat;
+    int snap_policy;
     int channel;
 
     status = SIXEL_OK;
     colorspace = sixel_palette_determine_colorspace(pixelformat);
     original_pixelformat = pixelformat;
+    snap_policy = sixel_palette_get_snap_policy();
     if (components == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -293,6 +343,7 @@ sixel_palette_snap_float_triplet(float *components,
     memcpy(working_palette, components, sizeof(working_palette));
     sixel_palette_clamp_float_triplet(working_palette,
                                       original_pixelformat);
+    memcpy(target_original, working_palette, sizeof(target_original));
     if (colorspace != SIXEL_COLORSPACE_GAMMA) {
         status = sixel_helper_convert_colorspace(
             (unsigned char *)working_palette,
@@ -311,8 +362,95 @@ sixel_palette_snap_float_triplet(float *components,
             = sixel_pixelformat_float_channel_to_byte(pixelformat,
                                                       channel,
                                                       working_palette[channel]);
-        snapped_bytes[channel]
+        candidate_counts[channel] = 0;
+        candidate_values[channel][candidate_counts[channel]++]
             = sixel_palette_reversible_value(snapped_bytes[channel]);
+        candidate_values[channel][candidate_counts[channel]++]
+            = sixel_palette_reversible_value(snapped_bytes[channel]
+                                             > 0U
+                                             ? snapped_bytes[channel] - 1U
+                                             : 0U);
+        candidate_values[channel][candidate_counts[channel]++]
+            = sixel_palette_reversible_value(snapped_bytes[channel]
+                                             < 255U
+                                             ? snapped_bytes[channel] + 1U
+                                             : 255U);
+        snapped_bytes[channel] = candidate_values[channel][0];
+    }
+
+    if (snap_policy == SIXEL_PALETTE_SNAP_POLICY_NEAREST) {
+        double best_distance;
+        int c0;
+        int c1;
+        int c2;
+
+        /*
+         * Enumerate a 3x3x3 neighborhood in sRGB gamma space and choose the
+         * candidate whose projection back into the target colorspace is nearest
+         * to the original float components.
+         */
+        best_distance = 1.0e30;
+        for (c0 = 0; c0 < candidate_counts[0]; ++c0) {
+            for (c1 = 0; c1 < candidate_counts[1]; ++c1) {
+                for (c2 = 0; c2 < candidate_counts[2]; ++c2) {
+                    double distance;
+
+                    candidate_gamma[0]
+                        = sixel_pixelformat_byte_to_float(
+                            SIXEL_PIXELFORMAT_RGBFLOAT32,
+                            0,
+                            candidate_values[0][c0]);
+                    candidate_gamma[1]
+                        = sixel_pixelformat_byte_to_float(
+                            SIXEL_PIXELFORMAT_RGBFLOAT32,
+                            1,
+                            candidate_values[1][c1]);
+                    candidate_gamma[2]
+                        = sixel_pixelformat_byte_to_float(
+                            SIXEL_PIXELFORMAT_RGBFLOAT32,
+                            2,
+                            candidate_values[2][c2]);
+
+                    memcpy(candidate_target,
+                           candidate_gamma,
+                           sizeof(candidate_target));
+                    if (colorspace != SIXEL_COLORSPACE_GAMMA) {
+                        status = sixel_helper_convert_colorspace(
+                            (unsigned char *)candidate_target,
+                            sizeof(candidate_target),
+                            SIXEL_PIXELFORMAT_RGBFLOAT32,
+                            SIXEL_COLORSPACE_GAMMA,
+                            colorspace);
+                        if (SIXEL_FAILED(status)) {
+                            continue;
+                        }
+                    }
+
+                    distance = 0.0;
+                    for (channel = 0; channel < 3; ++channel) {
+                        double diff;
+
+                        diff = (double)candidate_target[channel]
+                               - (double)target_original[channel];
+                        distance += diff * diff;
+                    }
+                    if (distance < best_distance) {
+                        best_distance = distance;
+                        snapped_bytes[0] = candidate_values[0][c0];
+                        snapped_bytes[1] = candidate_values[1][c1];
+                        snapped_bytes[2] = candidate_values[2][c2];
+                    }
+                }
+            }
+        }
+    } else {
+        for (channel = 0; channel < 3; ++channel) {
+            snapped_bytes[channel]
+                = sixel_palette_reversible_value(snapped_bytes[channel]);
+        }
+    }
+
+    for (channel = 0; channel < 3; ++channel) {
         working_palette[channel]
             = sixel_pixelformat_byte_to_float(pixelformat,
                                               channel,
