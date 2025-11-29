@@ -65,10 +65,6 @@ static int
 sixel_palette_determine_colorspace(int pixelformat);
 static void
 sixel_palette_clamp_float_triplet(float *components, int pixelformat);
-static void
-sixel_palette_pick_bracket(unsigned char byte_value,
-                           unsigned char *low,
-                           unsigned char *high);
 static SIXELSTATUS
 sixel_palette_snap_float_triplet(float *components,
                                  int use_reversible,
@@ -230,32 +226,6 @@ sixel_palette_determine_colorspace(int pixelformat)
         return SIXEL_COLORSPACE_DIN99D;
     default:
         return SIXEL_COLORSPACE_GAMMA;
-    }
-}
-
-static void
-sixel_palette_pick_bracket(unsigned char byte_value,
-                           unsigned char *low,
-                           unsigned char *high)
-{
-    int index;
-
-    if (low == NULL || high == NULL) {
-        return;
-    }
-    *low = sixel_safe_tones[0];
-    *high = sixel_safe_tones[255];
-    for (index = 0; index < 256; ++index) {
-        unsigned char tone;
-
-        tone = sixel_safe_tones[index];
-        if (tone <= byte_value) {
-            *low = tone;
-        }
-        if (tone >= byte_value) {
-            *high = tone;
-            break;
-        }
     }
 }
 
@@ -466,9 +436,22 @@ sixel_palette_snap_float_triplet(float *components,
     float target_original[3];
     float candidate_gamma[3];
     float candidate_target[3];
+    float candidate_gamma_values[3][2];
+    float best_target[3];
     unsigned char snapped_bytes[3];
-    unsigned char candidate_values[3][2];
     int candidate_counts[3];
+    int candidate_valid;
+    unsigned char lower;
+    unsigned char upper;
+    unsigned char tone;
+    float lower_f;
+    float upper_f;
+    float tone_f;
+    double best_distance;
+    int c0;
+    int c1;
+    int c2;
+    int index;
     int colorspace;
     int original_pixelformat;
     int snap_policy;
@@ -495,32 +478,6 @@ sixel_palette_snap_float_triplet(float *components,
         return SIXEL_OK;
     }
 
-    if (colorspace == SIXEL_COLORSPACE_GAMMA) {
-        for (channel = 0; channel < 3; ++channel) {
-            float target;
-            unsigned char snapped;
-
-            target_original[channel] = components[channel];
-            snapped = sixel_pixelformat_float_channel_to_byte(
-                pixelformat,
-                channel,
-                target_original[channel]);
-            snapped = sixel_palette_reversible_value(snapped);
-            target = sixel_pixelformat_byte_to_float(pixelformat,
-                                                     channel,
-                                                     snapped);
-            target = target_original[channel]
-                     + (target - target_original[channel])
-                           * (float)approach;
-            components[channel]
-                = sixel_pixelformat_float_channel_clamp(pixelformat,
-                                                        channel,
-                                                        target);
-        }
-
-        return SIXEL_OK;
-    }
-
     memcpy(working_palette, components, sizeof(working_palette));
     sixel_palette_clamp_float_triplet(working_palette,
                                       original_pixelformat);
@@ -538,59 +495,56 @@ sixel_palette_snap_float_triplet(float *components,
         pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
     }
 
+    /*
+     * Float snapping enumerates safe-tone corners in sRGB float space instead
+     * of collapsing to 8bit beforehand.  This keeps nearest snapping from
+     * losing precision when the palette is stored as float.
+     */
+    candidate_valid = 0;
     for (channel = 0; channel < 3; ++channel) {
-        unsigned char lower;
-        unsigned char upper;
+        lower = sixel_safe_tones[0];
+        upper = sixel_safe_tones[255];
+        lower_f = sixel_pixelformat_byte_to_float(
+            SIXEL_PIXELFORMAT_RGBFLOAT32, channel, lower);
+        upper_f = sixel_pixelformat_byte_to_float(
+            SIXEL_PIXELFORMAT_RGBFLOAT32, channel, upper);
+        for (index = 0; index < 256; ++index) {
+            tone = sixel_safe_tones[index];
+            tone_f = sixel_pixelformat_byte_to_float(
+                SIXEL_PIXELFORMAT_RGBFLOAT32, channel, tone);
+            if (tone_f <= working_palette[channel]) {
+                lower = tone;
+                lower_f = tone_f;
+            }
+            if (tone_f >= working_palette[channel]) {
+                upper = tone;
+                upper_f = tone_f;
+                break;
+            }
+        }
 
-        snapped_bytes[channel]
-            = sixel_pixelformat_float_channel_to_byte(pixelformat,
-                                                      channel,
-                                                      working_palette[channel]);
-        sixel_palette_pick_bracket(snapped_bytes[channel],
-                                   &lower,
-                                   &upper);
         candidate_counts[channel] = 1;
-        candidate_values[channel][0] = lower;
+        candidate_gamma_values[channel][0] = lower_f;
         if (upper != lower) {
-            candidate_values[channel][1] = upper;
+            candidate_gamma_values[channel][1] = upper_f;
             candidate_counts[channel] = 2;
         }
         snapped_bytes[channel] = sixel_palette_reversible_value(
-            snapped_bytes[channel]);
+            sixel_pixelformat_float_channel_to_byte(pixelformat,
+                                                    channel,
+                                                    working_palette[channel]));
     }
 
     if (snap_policy == SIXEL_PALETTE_SNAP_POLICY_NEAREST) {
-        double best_distance;
-        int c0;
-        int c1;
-        int c2;
-
-        /*
-         * Enumerate the 2x2x2 bracket around the current location in sRGB
-         * gamma space and choose the candidate whose projection back into the
-         * target colorspace is nearest to the original float components.
-         */
         best_distance = 1.0e30;
         for (c0 = 0; c0 < candidate_counts[0]; ++c0) {
             for (c1 = 0; c1 < candidate_counts[1]; ++c1) {
                 for (c2 = 0; c2 < candidate_counts[2]; ++c2) {
                     double distance;
 
-                    candidate_gamma[0]
-                        = sixel_pixelformat_byte_to_float(
-                            SIXEL_PIXELFORMAT_RGBFLOAT32,
-                            0,
-                            candidate_values[0][c0]);
-                    candidate_gamma[1]
-                        = sixel_pixelformat_byte_to_float(
-                            SIXEL_PIXELFORMAT_RGBFLOAT32,
-                            1,
-                            candidate_values[1][c1]);
-                    candidate_gamma[2]
-                        = sixel_pixelformat_byte_to_float(
-                            SIXEL_PIXELFORMAT_RGBFLOAT32,
-                            2,
-                            candidate_values[2][c2]);
+                    candidate_gamma[0] = candidate_gamma_values[0][c0];
+                    candidate_gamma[1] = candidate_gamma_values[1][c1];
+                    candidate_gamma[2] = candidate_gamma_values[2][c2];
 
                     memcpy(candidate_target,
                            candidate_gamma,
@@ -617,36 +571,41 @@ sixel_palette_snap_float_triplet(float *components,
                     }
                     if (distance < best_distance) {
                         best_distance = distance;
-                        snapped_bytes[0] = candidate_values[0][c0];
-                        snapped_bytes[1] = candidate_values[1][c1];
-                        snapped_bytes[2] = candidate_values[2][c2];
+                        memcpy(best_target,
+                               candidate_target,
+                               sizeof(best_target));
+                        candidate_valid = 1;
                     }
                 }
             }
+        }
+        if (candidate_valid) {
+            memcpy(working_palette, best_target, sizeof(working_palette));
+        } else {
+            memcpy(working_palette,
+                   target_original,
+                   sizeof(working_palette));
         }
     } else {
         for (channel = 0; channel < 3; ++channel) {
             snapped_bytes[channel]
                 = sixel_palette_reversible_value(snapped_bytes[channel]);
+            working_palette[channel]
+                = sixel_pixelformat_byte_to_float(pixelformat,
+                                                  channel,
+                                                  snapped_bytes[channel]);
         }
-    }
 
-    for (channel = 0; channel < 3; ++channel) {
-        working_palette[channel]
-            = sixel_pixelformat_byte_to_float(pixelformat,
-                                              channel,
-                                              snapped_bytes[channel]);
-    }
-
-    if (colorspace != SIXEL_COLORSPACE_GAMMA) {
-        status = sixel_helper_convert_colorspace(
-            (unsigned char *)working_palette,
-            sizeof(working_palette),
-            SIXEL_PIXELFORMAT_RGBFLOAT32,
-            SIXEL_COLORSPACE_GAMMA,
-            colorspace);
-        if (SIXEL_FAILED(status)) {
-            return status;
+        if (colorspace != SIXEL_COLORSPACE_GAMMA) {
+            status = sixel_helper_convert_colorspace(
+                (unsigned char *)working_palette,
+                sizeof(working_palette),
+                SIXEL_PIXELFORMAT_RGBFLOAT32,
+                SIXEL_COLORSPACE_GAMMA,
+                colorspace);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
         }
     }
 
