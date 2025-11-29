@@ -65,10 +65,6 @@ static int
 sixel_palette_determine_colorspace(int pixelformat);
 static void
 sixel_palette_clamp_float_triplet(float *components, int pixelformat);
-static unsigned char
-sixel_palette_blend_byte(unsigned char base,
-                         unsigned char target,
-                         double approach);
 static void
 sixel_palette_pick_bracket(unsigned char byte_value,
                            unsigned char *low,
@@ -237,25 +233,6 @@ sixel_palette_determine_colorspace(int pixelformat)
     }
 }
 
-static unsigned char
-sixel_palette_blend_byte(unsigned char base,
-                         unsigned char target,
-                         double approach)
-{
-    double blended;
-
-    blended = (double)base;
-    blended += ((double)target - (double)base) * approach;
-    if (blended < 0.0) {
-        blended = 0.0;
-    }
-    if (blended > 255.0) {
-        blended = 255.0;
-    }
-
-    return (unsigned char)(blended + 0.5);
-}
-
 static void
 sixel_palette_pick_bracket(unsigned char byte_value,
                            unsigned char *low,
@@ -342,17 +319,37 @@ sixel_palette_reversible_palette(unsigned char *palette,
         working = palette;
     }
 
+    /*
+     * Blend toward the reversible grid in float space so the approach rate is
+     * effective even when the palette storage is 8bit.
+     */
     for (color_index = 0U; color_index < (size_t)colors; ++color_index) {
+        float original[4];
+        float target[4];
+
         for (channel = 0; channel < depth; ++channel) {
             size_t index;
+            unsigned char snapped_byte;
+            float snapped_float;
 
             index = color_index * (size_t)depth + (size_t)channel;
-            unsigned char snapped;
+            original[channel] = sixel_pixelformat_byte_to_float(
+                pixelformat, channel, working[index]);
+            snapped_byte = sixel_palette_reversible_value(working[index]);
+            snapped_float = sixel_pixelformat_byte_to_float(
+                pixelformat, channel, snapped_byte);
+            target[channel] = original[channel]
+                              + (snapped_float - original[channel])
+                                    * (float)approach;
+        }
+        for (channel = 0; channel < depth; ++channel) {
+            size_t index;
+            unsigned char blended_byte;
 
-            snapped = sixel_palette_reversible_value(working[index]);
-            working[index] = sixel_palette_blend_byte(working[index],
-                                                      snapped,
-                                                      approach);
+            index = color_index * (size_t)depth + (size_t)channel;
+            blended_byte = sixel_pixelformat_float_channel_to_byte(
+                pixelformat, channel, target[channel]);
+            working[index] = blended_byte;
         }
     }
 
