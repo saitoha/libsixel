@@ -4034,7 +4034,8 @@ sixel_encode_dither(
                                                      output->colorspace);
             if (SIXEL_FAILED(status)) {
                 sixel_helper_set_additional_message(
-                    "sixel_encode_dither: palette colorspace conversion failed.");
+                    "sixel_encode_dither: palette colorspace "
+                    "conversion failed.");
                 goto end;
             }
         }

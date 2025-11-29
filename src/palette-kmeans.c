@@ -135,34 +135,6 @@ sixel_get_kmeans_init_type(void)
     return resolved;
 }
 
-static double
-sixel_kmeans_snap_component(double value, int use_reversible)
-{
-    double clamped;
-    int sample;
-
-    clamped = value;
-    sample = 0;
-    if (clamped < 0.0) {
-        clamped = 0.0;
-    }
-    if (clamped > 255.0) {
-        clamped = 255.0;
-    }
-    if (!use_reversible) {
-        return clamped;
-    }
-    sample = (int)(clamped + 0.5);
-    if (sample < 0) {
-        sample = 0;
-    }
-    if (sample > 255) {
-        sample = 255;
-    }
-
-    return (double)sixel_palette_reversible_value((unsigned int)sample);
-}
-
 static int
 sixel_kmeans_projection_compare(void const *lhs, void const *rhs)
 {
@@ -343,6 +315,7 @@ sixel_kmeans_seed_pca(double *centers,
                       double const *weights,
                       unsigned int sample_count,
                       int use_reversible,
+                      int pixelformat,
                       sixel_allocator_t *allocator)
 {
     sixel_kmeans_projection_entry_t *projections = NULL;
@@ -451,12 +424,12 @@ sixel_kmeans_seed_pca(double *centers,
             sum[2] = samples[fallback * 3U + 2U];
         }
         for (channel = 0U; channel < 3U; ++channel) {
-            double averaged;
-
-            averaged = sum[channel] / bucket_weight;
-            centers[bucket * 3U + channel] = sixel_kmeans_snap_component(
-                averaged, use_reversible);
+            centers[bucket * 3U + channel] = sum[channel] / bucket_weight;
         }
+        sixel_palette_snap_triple(&centers[bucket * 3U],
+                                  use_reversible,
+                                  pixelformat,
+                                  SIXEL_PALETTE_SNAP_STAGE_INITIAL_SEED);
     }
 
     sixel_allocator_free(allocator, projections);
@@ -549,6 +522,7 @@ sixel_kmeans_choose_initial_centroids(double *centers,
                                       double const *weights,
                                       unsigned int sample_count,
                                       int use_reversible,
+                                      int pixelformat,
                                       double *distance_cache,
                                       sixel_allocator_t *allocator,
                                       sixel_kmeans_init_type init_type)
@@ -556,6 +530,9 @@ sixel_kmeans_choose_initial_centroids(double *centers,
     sixel_kmeans_init_type resolved;
     SIXELSTATUS status;
     double *scratch_distances;
+    double snapped[3];
+    unsigned int center_index;
+    unsigned int channel;
 
     resolved = sixel_kmeans_resolve_init_type(init_type);
     status = SIXEL_BAD_ARGUMENT;
@@ -575,6 +552,7 @@ sixel_kmeans_choose_initial_centroids(double *centers,
                                             weights,
                                             sample_count,
                                             use_reversible,
+                                            pixelformat,
                                             allocator);
         if (seed_status == 0) {
             return SIXEL_OK;
@@ -597,6 +575,28 @@ sixel_kmeans_choose_initial_centroids(double *centers,
                                       scratch_distances);
     if (scratch_distances != distance_cache) {
         sixel_allocator_free(allocator, scratch_distances);
+    }
+
+    /*
+     * Snap initial centroids when the timing policy requests it.  This keeps
+     * seed positions aligned with the reversible grid before Lloyd
+     * refinement begins.
+     */
+    if (SIXEL_SUCCEEDED(status)) {
+        for (center_index = 0U; center_index < k; ++center_index) {
+            for (channel = 0U; channel < 3U; ++channel) {
+                snapped[channel]
+                    = centers[center_index * 3U + channel];
+            }
+            sixel_palette_snap_triple(
+                snapped,
+                use_reversible,
+                pixelformat,
+                SIXEL_PALETTE_SNAP_STAGE_INITIAL_SEED);
+            for (channel = 0U; channel < 3U; ++channel) {
+                centers[center_index * 3U + channel] = snapped[channel];
+            }
+        }
     }
 
     return status;
@@ -847,6 +847,8 @@ build_palette_kmeans(unsigned char **result,
     double float32_channel_scale[3];
     double float32_channel_offset[3];
     double float32_lloyd_scale;
+    double snapped_center[3];
+    double previous_center[3];
     float *float_palette;
     float *float_palette_new;
     sixel_kmeans_init_type init_type;
@@ -1171,6 +1173,7 @@ build_palette_kmeans(unsigned char **result,
                                                    NULL,
                                                    sample_count,
                                                    use_reversible,
+                                                   pixelformat,
                                                    distance_cache,
                                                    allocator,
                                                    init_type);
@@ -1297,13 +1300,27 @@ build_palette_kmeans(unsigned char **result,
             if (counts[center_index] == 0UL) {
                 continue;
             }
+            /*
+             * Record the previous centre so the Lloyd delta measures the
+             * snapped position rather than the unclamped average.
+             */
+            for (channel = 0U; channel < 3U; ++channel) {
+                previous_center[channel]
+                    = centers[center_index * 3U + channel];
+            }
             channel_sum = accum + (size_t)center_index * 3U;
             for (channel = 0U; channel < 3U; ++channel) {
-                update = channel_sum[channel]
+                snapped_center[channel] = channel_sum[channel]
                     / (double)counts[center_index];
-                diff = centers[center_index * 3U + channel] - update;
+            }
+            sixel_palette_snap_triple(snapped_center,
+                                      use_reversible,
+                                      pixelformat,
+                                      SIXEL_PALETTE_SNAP_STAGE_QUANTIZER_ITER);
+            for (channel = 0U; channel < 3U; ++channel) {
+                diff = previous_center[channel] - snapped_center[channel];
                 delta += diff * diff;
-                centers[center_index * 3U + channel] = update;
+                centers[center_index * 3U + channel] = snapped_center[channel];
             }
         }
         if (delta <= lloyd_threshold) {
@@ -1352,6 +1369,7 @@ build_palette_kmeans(unsigned char **result,
                                                   (int)reqcolors,
                                                   resolved_merge,
                                                   use_reversible,
+                                                  pixelformat,
                                                   allocator);
         if (cluster_total < 1) {
             cluster_total = 1;
@@ -1694,6 +1712,7 @@ sixel_palette_build_kmeans_internal(sixel_palette_t *palette,
     unsigned int entry_depth;
     int depth_result;
     size_t payload_size;
+    int reversible_for_quantizer;
 
     status = SIXEL_BAD_ARGUMENT;
     build_status = SIXEL_FALSE;
@@ -1740,6 +1759,7 @@ sixel_palette_build_kmeans_internal(sixel_palette_t *palette,
     }
     entry_depth = (unsigned int)depth_result;
 
+    reversible_for_quantizer = palette->use_reversible;
     build_status = build_palette_kmeans(&entries,
                                         &entries_float32,
                                         data,
@@ -1750,7 +1770,7 @@ sixel_palette_build_kmeans_internal(sixel_palette_t *palette,
                                         &origcolors,
                                         palette->quality_mode,
                                         palette->force_palette,
-                                        palette->use_reversible,
+                                        reversible_for_quantizer,
                                         palette->final_merge_mode,
                                         work_allocator,
                                         pixelformat,
@@ -1760,10 +1780,10 @@ sixel_palette_build_kmeans_internal(sixel_palette_t *palette,
         goto end;
     }
 
-    if (palette->use_reversible) {
+    if (reversible_for_quantizer) {
         sixel_palette_reversible_palette(entries,
                                          ncolors,
-                                         entry_depth);
+                                         SIXEL_PIXELFORMAT_RGB888);
     }
 
     payload_size = (size_t)ncolors * (size_t)entry_depth;

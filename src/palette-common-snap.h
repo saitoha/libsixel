@@ -37,7 +37,36 @@ extern "C" {
 void
 sixel_palette_reversible_palette(unsigned char *palette,
                                  unsigned int colors,
-                                 unsigned int depth);
+                                 int pixelformat);
+
+void
+sixel_palette_reversible_palette_float(float *palette,
+                                       unsigned int colors,
+                                       int pixelformat);
+
+enum sixel_palette_snap_stage {
+    SIXEL_PALETTE_SNAP_STAGE_FINAL_OUTPUT = 0,
+    SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_PRE,
+    SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_ITER,
+    SIXEL_PALETTE_SNAP_STAGE_QUANTIZER_ITER,
+    SIXEL_PALETTE_SNAP_STAGE_INITIAL_SEED
+};
+
+int
+sixel_palette_should_snap(enum sixel_palette_snap_stage stage);
+
+double
+sixel_palette_snap_double(double value,
+                          int use_reversible,
+                          int pixelformat,
+                          int channel,
+                          enum sixel_palette_snap_stage stage);
+
+void
+sixel_palette_snap_triple(double *components,
+                          int use_reversible,
+                          int pixelformat,
+                          enum sixel_palette_snap_stage stage);
 
 /*
  * Safe-tone lookup table used when constructing reversible palettes.  Values

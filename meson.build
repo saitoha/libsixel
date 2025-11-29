@@ -181,6 +181,7 @@ std_headers = [
     'stdio.h',
     'stdlib.h',
     'string.h',
+    'strings.h',
     'dirent.h',
     'sys/sysctl.h',
     'intrin.h',

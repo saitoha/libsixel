@@ -658,6 +658,26 @@ override the luminosity coefficient for red (0.0-1.0).
 .br
 override the luminosity coefficient for green (0.0-1.0). The blue
 coefficient becomes 1 - R - G; negative results ignore both overrides.
+.TP 5
+.B SIXEL_PALETTE_SNAP_TARGET_POLICY
+.br
+control palette snap target search. Accepts "reversible" for legacy fixed
+points or "nearest"/"auto" for nearby fixed points in the working colorspace.
+.TP 5
+.B SIXEL_PALETTE_SNAP_TIMING_POLICY
+.br
+decide when snaps run: "once", "polish", "merge", "resolve", or "all".
+Defaults to "once".
+.TP 5
+.B SIXEL_PALETTE_SNAP_APPROACH_RATE
+.br
+blend factor (0.0-1.0) toward the snap target; 1.0 snaps fully, lower values
+ease toward the target.
+.TP 5
+.B SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L
+.br
+weight L* relative to a/b* when snapping in Lab-family colorspaces.
+Accepts 0.0-1.0, default 0.85.
 
 
 .SH Image loaders
