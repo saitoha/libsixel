@@ -27,11 +27,17 @@
 #include <math.h>
 #include <stdint.h>
 #include <stddef.h>
+#include <stdlib.h>
+#include <errno.h>
 
 #include <sixel.h>
 
 #include "colorspace.h"
 #include "cpu.h"
+#if SIXEL_ENABLE_THREADS
+# include "sixel_threads_config.h"
+# include "threadpool.h"
+#endif
 
 #if defined(HAVE_IMMINTRIN_H) && \
     (defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
@@ -2865,12 +2871,12 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
  * matrix multiply without changing the storage layout.
  */
 static SIXELSTATUS
-sixel_convert_pixels_via_linear_float(float *pixels,
-                                      size_t size,
-                                      int colorspace_src,
-                                      int colorspace_dst)
+sixel_convert_pixels_via_linear_float_chunk(float *pixels,
+                                            size_t pixel_total,
+                                            int colorspace_src,
+                                            int colorspace_dst,
+                                            int simd_level)
 {
-    size_t pixel_total;
     size_t index;
     size_t base;
     double r_lin;
@@ -2879,18 +2885,10 @@ sixel_convert_pixels_via_linear_float(float *pixels,
     float *pr;
     float *pg;
     float *pb;
-    int simd_level;
 
     if (colorspace_src == colorspace_dst) {
         return SIXEL_OK;
     }
-
-    if (size % (3U * sizeof(float)) != 0U) {
-        return SIXEL_BAD_INPUT;
-    }
-
-    pixel_total = size / (3U * sizeof(float));
-    simd_level = sixel_cpu_simd_level();
 
     if (colorspace_src == SIXEL_COLORSPACE_SMPTEC &&
             colorspace_dst == SIXEL_COLORSPACE_LINEAR) {
@@ -2928,6 +2926,186 @@ sixel_convert_pixels_via_linear_float(float *pixels,
     }
 
     return SIXEL_OK;
+}
+
+#if SIXEL_ENABLE_THREADS
+typedef struct sixel_colorspace_parallel_context {
+    float *pixels;
+    size_t pixel_total;
+    size_t chunk_pixels;
+    int colorspace_src;
+    int colorspace_dst;
+    int simd_level;
+} sixel_colorspace_parallel_context_t;
+
+/*
+ * Allow deployments to defer thread fan-out on tiny buffers via
+ * SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS. Defaults to zero to preserve the
+ * eager behavior on earlier builds.
+ */
+static size_t
+sixel_colorspace_parallel_min_pixels(void)
+{
+    static int initialized = 0;
+    static size_t threshold = 0;
+    char const *text;
+    char *endptr;
+    unsigned long long parsed;
+
+    if (initialized) {
+        return threshold;
+    }
+
+    initialized = 1;
+    text = getenv("SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS");
+    if (text == NULL || text[0] == '\0') {
+        return threshold;
+    }
+
+    errno = 0;
+    parsed = strtoull(text, &endptr, 10);
+    if (endptr == text || *endptr != '\0' || errno == ERANGE) {
+        return threshold;
+    }
+
+    if (parsed > (unsigned long long)SIZE_MAX) {
+        threshold = SIZE_MAX;
+    } else {
+        threshold = (size_t)parsed;
+    }
+
+    return threshold;
+}
+
+/*
+ * Worker slices the pixel array into fixed chunks to keep writeback ranges
+ * disjoint. Each job reuses the same SIMD level decision to avoid repeated
+ * CPU feature detection.
+ */
+static int
+sixel_colorspace_parallel_worker(tp_job_t job,
+                                 void *userdata,
+                                 void *workspace)
+{
+    sixel_colorspace_parallel_context_t *ctx;
+    size_t start;
+    size_t remaining;
+
+    (void)workspace;
+
+    ctx = (sixel_colorspace_parallel_context_t *)userdata;
+    if (ctx == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (job.band_index < 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    start = (size_t)job.band_index * ctx->chunk_pixels;
+    if (start >= ctx->pixel_total) {
+        return SIXEL_OK;
+    }
+
+    remaining = ctx->pixel_total - start;
+    if (remaining > ctx->chunk_pixels) {
+        remaining = ctx->chunk_pixels;
+    }
+
+    return sixel_convert_pixels_via_linear_float_chunk(
+        ctx->pixels + start * 3U,
+        remaining,
+        ctx->colorspace_src,
+        ctx->colorspace_dst,
+        ctx->simd_level);
+}
+#endif
+
+static SIXELSTATUS
+sixel_convert_pixels_via_linear_float(float *pixels,
+                                      size_t size,
+                                      int colorspace_src,
+                                      int colorspace_dst)
+{
+    size_t pixel_total;
+    int simd_level;
+#if SIXEL_ENABLE_THREADS
+    size_t job_count;
+    size_t chunk_pixels;
+    sixel_colorspace_parallel_context_t ctx;
+    threadpool_t *pool;
+    tp_job_t job;
+    int threads;
+    int queue_depth;
+    size_t job_index;
+    int rc;
+#endif
+
+    if (colorspace_src == colorspace_dst) {
+        return SIXEL_OK;
+    }
+
+    if (size % (3U * sizeof(float)) != 0U) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    pixel_total = size / (3U * sizeof(float));
+    simd_level = sixel_cpu_simd_level();
+
+#if SIXEL_ENABLE_THREADS
+    if (pixel_total >= sixel_colorspace_parallel_min_pixels()) {
+        threads = sixel_threads_resolve();
+        if (threads > 1) {
+            chunk_pixels = (pixel_total + (size_t)threads - 1U)
+                / (size_t)threads;
+            if (chunk_pixels == 0U) {
+                chunk_pixels = pixel_total;
+            }
+
+            ctx.pixels = pixels;
+            ctx.pixel_total = pixel_total;
+            ctx.chunk_pixels = chunk_pixels;
+            ctx.colorspace_src = colorspace_src;
+            ctx.colorspace_dst = colorspace_dst;
+            ctx.simd_level = simd_level;
+
+            queue_depth = threads * 3;
+            job_count = (pixel_total + chunk_pixels - 1U) / chunk_pixels;
+            if (queue_depth > (int)job_count) {
+                queue_depth = (int)job_count;
+            }
+            if (queue_depth < 1) {
+                queue_depth = 1;
+            }
+
+            pool = threadpool_create(threads,
+                                     queue_depth,
+                                     0,
+                                     sixel_colorspace_parallel_worker,
+                                     &ctx);
+            if (pool != NULL) {
+                for (job_index = 0U; job_index < job_count; ++job_index) {
+                    job.band_index = (int)job_index;
+                    threadpool_push(pool, job);
+                }
+
+                threadpool_finish(pool);
+                rc = threadpool_get_error(pool);
+                threadpool_destroy(pool);
+
+                if (rc == SIXEL_OK) {
+                    return SIXEL_OK;
+                }
+            }
+        }
+    }
+#endif
+
+    return sixel_convert_pixels_via_linear_float_chunk(pixels,
+                                                       pixel_total,
+                                                       colorspace_src,
+                                                       colorspace_dst,
+                                                       simd_level);
 }
 
 static unsigned char
