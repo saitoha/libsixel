@@ -54,12 +54,16 @@ static double env_kmeans_threshold = 0.125;
 static double env_lumin_factor_r = 0.2989;
 static double env_lumin_factor_g = 0.5866;
 static double env_lumin_factor_b = 0.1145;
+static double env_final_merge_channel_factor_l = 1.0 / 3.0;
 static int env_final_merge_additional_lloyd_overridden = 0;
 static int env_final_merge_env_loaded = 0;
 
 static double
 sixel_final_merge_distance_sq(sixel_final_merge_cluster_t const *lhs,
-                              sixel_final_merge_cluster_t const *rhs);
+                              sixel_final_merge_cluster_t const *rhs,
+                              int pixelformat,
+                              int use_lab_weight);
+static int sixel_final_merge_is_lab_colorspace(int pixelformat);
 static void sixel_final_merge_clusters(sixel_final_merge_cluster_t *clusters,
                                        int nclusters,
                                        int target_k,
@@ -114,6 +118,7 @@ sixel_final_merge_load_env(void)
     double parsed_factor;
     double parsed_threshold;
     double parsed_component;
+    double parsed_channel_factor;
     double candidate_r;
     double candidate_g;
     double candidate_b;
@@ -127,6 +132,7 @@ sixel_final_merge_load_env(void)
     parsed_factor = 0.0;
     parsed_threshold = 0.0;
     parsed_component = 0.0;
+    parsed_channel_factor = 1.0 / 3.0;
     candidate_r = env_lumin_factor_r;
     candidate_g = env_lumin_factor_g;
     candidate_b = env_lumin_factor_b;
@@ -214,8 +220,8 @@ sixel_final_merge_load_env(void)
             if (parsed_limit < 1L) {
                 parsed_limit = 1L;
             }
-            if (parsed_limit > 30L) {
-                parsed_limit = 30L;
+            if (parsed_limit > 100L) {
+                parsed_limit = 100L;
             }
             env_kmeans_iter_max = (unsigned int)parsed_limit;
         }
@@ -280,6 +286,36 @@ sixel_final_merge_load_env(void)
             env_lumin_factor_b = 0.1145;
         }
     }
+
+    /*
+     * Lab-family distances can emphasise lightness with
+     * SIXEL_PALETTE_CHANNEL_FACTOR_L.  Final-merge-specific overrides are
+     * taken from SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L so snap and merge can
+     * be tuned independently.
+     */
+    env_value = sixel_compat_getenv("SIXEL_PALETTE_CHANNEL_FACTOR_L");
+    if (env_value != NULL && env_value[0] != '\0') {
+        errno = 0;
+        parsed_channel_factor = strtod(env_value, &endptr);
+        if (endptr == env_value || errno != 0) {
+            parsed_channel_factor = 1.0 / 3.0;
+        }
+    }
+    env_value = sixel_compat_getenv("SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L");
+    if (env_value != NULL && env_value[0] != '\0') {
+        errno = 0;
+        parsed_channel_factor = strtod(env_value, &endptr);
+        if (endptr == env_value || errno != 0) {
+            parsed_channel_factor = 1.0 / 3.0;
+        }
+    }
+    if (parsed_channel_factor < 0.0) {
+        parsed_channel_factor = 0.0;
+    }
+    if (parsed_channel_factor > 1.0) {
+        parsed_channel_factor = 1.0;
+    }
+    env_final_merge_channel_factor_l = parsed_channel_factor;
 }
 
 /*
@@ -322,26 +358,59 @@ sixel_final_merge_lloyd_iterations(int merge_mode)
 
 static double
 sixel_final_merge_distance_sq(sixel_final_merge_cluster_t const *lhs,
-                              sixel_final_merge_cluster_t const *rhs)
+                              sixel_final_merge_cluster_t const *rhs,
+                              int pixelformat,
+                              int use_lab_weight)
 {
     double dr;
     double dg;
     double db;
+    double channel_factor;
+    double chroma_weight;
     double distance;
+    int lab_family;
 
     dr = 0.0;
     dg = 0.0;
     db = 0.0;
+    channel_factor = 0.0;
+    chroma_weight = 0.0;
     distance = 0.0;
+    lab_family = 0;
     if (lhs == NULL || rhs == NULL) {
         return 0.0;
     }
     dr = lhs->r - rhs->r;
     dg = lhs->g - rhs->g;
     db = lhs->b - rhs->b;
-    distance = dr * dr + dg * dg + db * db;
+    if (use_lab_weight) {
+        lab_family = sixel_final_merge_is_lab_colorspace(pixelformat);
+    }
+    if (use_lab_weight && lab_family) {
+        sixel_final_merge_load_env();
+        channel_factor = env_final_merge_channel_factor_l;
+        chroma_weight = 1.0 - channel_factor;
+        distance = channel_factor * dr * dr
+                   + chroma_weight * 0.5 * dg * dg
+                   + chroma_weight * 0.5 * db * db;
+    } else {
+        distance = dr * dr + dg * dg + db * db;
+    }
 
     return distance;
+}
+
+static int
+sixel_final_merge_is_lab_colorspace(int pixelformat)
+{
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
+    case SIXEL_PIXELFORMAT_CIELABFLOAT32:
+    case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
+        return 1;
+    default:
+        return 0;
+    }
 }
 
 static void
@@ -443,7 +512,7 @@ sixel_final_merge_ward(sixel_final_merge_cluster_t *clusters,
                     continue;
                 }
                 distance_sq = sixel_final_merge_distance_sq(
-                    &clusters[i], &clusters[j]);
+                    &clusters[i], &clusters[j], pixelformat, 1);
                 merged_weight = wi + wj;
                 if (merged_weight <= 0.0) {
                     continue;
@@ -699,7 +768,7 @@ sixel_final_merge_hkmeans(sixel_final_merge_cluster_t *clusters,
             for (j = 0; j < centroid_count; ++j) {
                 centroid = &centroids[j];
                 distance = sixel_final_merge_distance_sq(
-                    &clusters[i], centroid);
+                    &clusters[i], centroid, pixelformat, 0);
                 if (distance < best_distance) {
                     best_distance = distance;
                     best = j;
