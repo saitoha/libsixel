@@ -1185,13 +1185,13 @@ typedef struct scale_parallel_context {
 } scale_parallel_context_t;
 
 /*
- * Emit worker-level timeline entries only for the first and last rows so the
- * visualization remains readable even when there are many jobs.
+ * Emit timeline entries for every band so downstream aggregation can compute
+ * first/last activity windows per thread without losing information.
  */
 static int
 scale_parallel_should_log(scale_parallel_context_t const *ctx, int index)
 {
-    int last;
+    int span;
 
     if (ctx == NULL || ctx->logger == NULL || !ctx->logger->active) {
         return 0;
@@ -1201,20 +1201,17 @@ scale_parallel_should_log(scale_parallel_context_t const *ctx, int index)
         return 0;
     }
 
-    last = 0;
     if (ctx->pass == SCALE_PASS_HORIZONTAL) {
-        if (ctx->srch <= 0) {
-            return 0;
-        }
-        last = ctx->srch - 1;
+        span = ctx->srch;
     } else {
-        if (ctx->dsth <= 0) {
-            return 0;
-        }
-        last = ctx->dsth - 1;
+        span = ctx->dsth;
     }
 
-    return index == 0 || index == last;
+    if (span <= 0 || index >= span) {
+        return 0;
+    }
+
+    return 1;
 }
 
 /*
