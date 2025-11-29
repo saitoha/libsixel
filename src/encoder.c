@@ -2894,13 +2894,6 @@ palette_cleanup:
         goto end_loader;
     }
 
-    status = sixel_loader_setopt(loader,
-                                 SIXEL_LOADER_OPTION_LOGGER,
-                                 encoder->logger);
-    if (SIXEL_FAILED(status)) {
-        goto end_loader;
-    }
-
     status = sixel_loader_load_file(loader,
                                     encoder->mapfile,
                                     load_image_callback_for_palette);
@@ -7368,13 +7361,6 @@ reload:
     status = sixel_loader_setopt(loader,
                                  SIXEL_LOADER_OPTION_CONTEXT,
                                  encoder);
-    if (SIXEL_FAILED(status)) {
-        goto load_end;
-    }
-
-    status = sixel_loader_setopt(loader,
-                                 SIXEL_LOADER_OPTION_LOGGER,
-                                 encoder->logger);
     if (SIXEL_FAILED(status)) {
         goto load_end;
     }
