@@ -46,6 +46,19 @@ explicit preference, while filesystem suggestions remain opt-in.
   suggestions that explain why a path could not be resolved. Disabled by
   default for the converter frontends and for library embedders.
 
+Additional palette snap controls allow fine-tuning of the reversible grid
+handling used by `-6`:
+
+* `SIXEL_PALETTE_SNAP_TARGET_POLICY` — choose "reversible" to force legacy
+  fixed points or "nearest"/"auto" (default) to pick the nearest fixed point
+  in the working colorspace.
+* `SIXEL_PALETTE_SNAP_TIMING_POLICY` — decide when snaps run: "once", "polish",
+  "merge", "resolve", or "all" (default "once").
+* `SIXEL_PALETTE_SNAP_APPROACH_RATE` — blend factor (0.0-1.0) toward the snap
+  target; 1.0 snaps fully while lower values ease toward the target.
+* `SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L` — weight L* relative to a/b* when
+  snapping in Lab-family colorspaces. Accepts 0.0-1.0 and defaults to 0.85.
+
 
 ## Related projects
 
