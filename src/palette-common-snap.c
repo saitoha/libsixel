@@ -161,7 +161,7 @@ static double
 sixel_palette_get_snap_approach_rate(void)
 {
     char const *value;
-    long parsed;
+    double parsed;
 
     if (snap_approach_initialized) {
         return snap_approach_cache;
@@ -175,14 +175,14 @@ sixel_palette_get_snap_approach_rate(void)
         return snap_approach_cache;
     }
 
-    parsed = strtol(value, NULL, 10);
-    if (parsed < 1L) {
-        parsed = 1L;
+    parsed = strtod(value, NULL);
+    if (parsed < 0.0) {
+        parsed = 0.0;
     }
-    if (parsed > 100L) {
-        parsed = 100L;
+    if (parsed > 1.0) {
+        parsed = 1.0;
     }
-    snap_approach_cache = (double)parsed / 100.0;
+    snap_approach_cache = parsed;
 
     return snap_approach_cache;
 }
