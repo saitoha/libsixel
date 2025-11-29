@@ -661,7 +661,8 @@ sixel_final_merge_hkmeans(sixel_final_merge_cluster_t *clusters,
             components[2] = clusters[i].b;
             sixel_palette_snap_triple(components,
                                      use_reversible,
-                                     pixelformat);
+                                     pixelformat,
+                                     SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_PRE);
             clusters[i].r = components[0];
             clusters[i].g = components[1];
             clusters[i].b = components[2];
@@ -675,7 +676,8 @@ sixel_final_merge_hkmeans(sixel_final_merge_cluster_t *clusters,
         components[2] = centroids[k].b;
         sixel_palette_snap_triple(components,
                                  use_reversible,
-                                 pixelformat);
+                                 pixelformat,
+                                 SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_PRE);
         centroids[k].r = components[0];
         centroids[k].g = components[1];
         centroids[k].b = components[2];
@@ -737,7 +739,8 @@ sixel_final_merge_hkmeans(sixel_final_merge_cluster_t *clusters,
             components[2] = centroids[k].b;
             sixel_palette_snap_triple(components,
                                      use_reversible,
-                                     pixelformat);
+                                     pixelformat,
+                                     SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_ITER);
             centroids[k].r = components[0];
             centroids[k].g = components[1];
             centroids[k].b = components[2];
