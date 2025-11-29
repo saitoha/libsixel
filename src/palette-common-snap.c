@@ -741,7 +741,7 @@ sixel_palette_snap_triple(double *components,
 {
     SIXELSTATUS status;
     float working[3];
-    unsigned char bytes[3];
+    unsigned char byte_value;
     int channel;
 
     status = SIXEL_OK;
@@ -750,15 +750,28 @@ sixel_palette_snap_triple(double *components,
     }
 
     /*
-     * Always snap via sRGB bytes so the reversible grid matches the DEC tone
-     * table regardless of source colorspace or storage depth.
+     * Convert incoming components into the current colorspace as float values
+     * so the snapping routine can perform colorspace conversion as needed.
      */
     for (channel = 0; channel < 3; ++channel) {
-        bytes[channel] = (unsigned char)(components[channel] + 0.5);
-        working[channel]
-            = sixel_pixelformat_byte_to_float(pixelformat,
-                                              channel,
-                                              bytes[channel]);
+        working[channel] = 0.0f;
+    }
+    for (channel = 0; channel < 3; ++channel) {
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+            working[channel] = (float)components[channel];
+            continue;
+        }
+        byte_value = 0U;
+        if (components[channel] < 0.0) {
+            byte_value = 0U;
+        } else if (components[channel] > 255.0) {
+            byte_value = 255U;
+        } else {
+            byte_value = (unsigned char)(components[channel] + 0.5);
+        }
+        working[channel] = sixel_pixelformat_byte_to_float(pixelformat,
+                                                           channel,
+                                                           byte_value);
     }
 
     status = sixel_palette_snap_float_triplet(working,
@@ -769,11 +782,14 @@ sixel_palette_snap_triple(double *components,
         return;
     }
     for (channel = 0; channel < 3; ++channel) {
-        bytes[channel]
-            = sixel_pixelformat_float_channel_to_byte(pixelformat,
-                                                     channel,
-                                                     working[channel]);
-        components[channel] = (double)bytes[channel];
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+            components[channel] = (double)working[channel];
+            continue;
+        }
+        byte_value = sixel_pixelformat_float_channel_to_byte(pixelformat,
+                                                             channel,
+                                                             working[channel]);
+        components[channel] = (double)byte_value;
     }
 }
 
