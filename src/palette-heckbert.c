@@ -63,6 +63,7 @@
 #include "allocator.h"
 #include "assessment.h"
 #include "compat_stub.h"
+#include "logger.h"
 #include "lookup-common.h"
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
@@ -106,6 +107,71 @@ struct histogram_control {
     unsigned int channel_mask;
     int reversible_rounding;
 };
+
+static int
+sixel_palette_heckbert_log_start(sixel_logger_t *logger,
+                                 int *job_seq,
+                                 char const *engine_name,
+                                 char const *phase)
+{
+    int job_id;
+
+    job_id = -1;
+    if (logger == NULL) {
+        return job_id;
+    }
+    if (job_seq != NULL) {
+        job_id = *job_seq;
+        *job_seq += 1;
+    }
+    sixel_logger_logf(logger,
+                      "palette",
+                      "palette/build",
+                      "start",
+                      job_id,
+                      -1,
+                      0,
+                      0,
+                      0,
+                      0,
+                      "engine=%s phase=%s",
+                      engine_name != NULL ? engine_name : "(unknown)",
+                      phase);
+    return job_id;
+}
+
+static void
+sixel_palette_heckbert_log_finish(sixel_logger_t *logger,
+                                  int job_id,
+                                  char const *engine_name,
+                                  char const *phase,
+                                  char const *detail)
+{
+    char const *suffix;
+
+    if (logger == NULL || job_id < 0) {
+        return;
+    }
+    suffix = "";
+    if (detail != NULL && detail[0] != '\0') {
+        suffix = detail;
+    }
+    sixel_logger_logf(logger,
+                      "palette",
+                      "palette/build",
+                      "finish",
+                      job_id,
+                      -1,
+                      0,
+                      0,
+                      0,
+                      0,
+                      "engine=%s phase=%s%s%s",
+                      engine_name != NULL ? engine_name : "(unknown)",
+                      phase,
+                      suffix[0] != '\0' ? " " : "",
+                      suffix);
+}
 
 /*
  * Normalize a float32 channel according to the current pixelformat and convert
@@ -1922,6 +1988,9 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
                              unsigned int length,
                              int pixelformat,
                              sixel_allocator_t *allocator,
+                             sixel_logger_t *logger,
+                             int *job_seq,
+                             char const *engine_name,
                              sixel_palette_telemetry_t *telemetry)
 {
     SIXELSTATUS status;
@@ -1944,6 +2013,9 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     double init_stop;
     double export_start;
     double export_stop;
+    int job_init;
+    int job_export;
+    char log_detail[128];
 
     if (palette == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1961,6 +2033,14 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     init_stop = wall_start;
     export_start = wall_start;
     export_stop = wall_start;
+    job_init = -1;
+    job_export = -1;
+    log_detail[0] = '\0';
+
+    job_init = sixel_palette_heckbert_log_start(logger,
+                                                job_seq,
+                                                engine_name,
+                                                "init");
 
     depth_result = sixel_helper_compute_depth(pixelformat);
     if (depth_result <= 0) {
@@ -2015,6 +2095,21 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+
+    (void)snprintf(log_detail,
+                   sizeof(log_detail),
+                   "colors=%u source=%u",
+                   colormap.size,
+                   origcolors);
+    sixel_palette_heckbert_log_finish(logger,
+                                      job_init,
+                                      engine_name,
+                                      "init",
+                                      log_detail);
+    job_export = sixel_palette_heckbert_log_start(logger,
+                                                 job_seq,
+                                                 engine_name,
+                                                 "export");
 
     status = sixel_palette_resize(palette,
                                   colormap.size,
@@ -2086,6 +2181,16 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
         goto end;
     }
     export_stop = sixel_assessment_timer_now();
+    (void)snprintf(log_detail,
+                   sizeof(log_detail),
+                   "colors=%u depth=%u",
+                   palette->entry_count,
+                   depth);
+    sixel_palette_heckbert_log_finish(logger,
+                                      job_export,
+                                      engine_name,
+                                      "export",
+                                      log_detail);
     status = SIXEL_OK;
 
 end:
@@ -2136,6 +2241,9 @@ sixel_palette_build_heckbert_float32(sixel_palette_t *palette,
                                      unsigned int length,
                                      int pixelformat,
                                      sixel_allocator_t *allocator,
+                                     sixel_logger_t *logger,
+                                     int *job_seq,
+                                     char const *engine_name,
                                      sixel_palette_telemetry_t *telemetry)
 {
     if (!SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
@@ -2150,6 +2258,9 @@ sixel_palette_build_heckbert_float32(sixel_palette_t *palette,
                                         length,
                                         pixelformat,
                                         allocator,
+                                        logger,
+                                        job_seq,
+                                        engine_name,
                                         telemetry);
 }
 
