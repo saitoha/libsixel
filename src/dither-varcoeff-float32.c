@@ -165,13 +165,6 @@ diffuse_lso2_float(float *data,
         index = 255;
     }
 
-    if (pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32 ||
-            pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32 ||
-            pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32) {
-        if (channel > 0) {  /* ab */
-            error *= 0.10;
-        }
-    }
     table = lso2_table();
     entry = table[index];
     denom = sixel_varcoeff_safe_denom(entry[6]);
@@ -701,8 +694,13 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
                     context->result[pos] = output_index;
                 }
             }
-
             for (n = 0; n < depth; ++n) {
+                if (n > 0 && (
+                        context->pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32 ||
+                        context->pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32 ||
+                        context->pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32)) {
+                    break;  /* L only */
+                }
                 if (optimize_palette) {
                     if (have_new_palette_float) {
                         palette_value_float =
