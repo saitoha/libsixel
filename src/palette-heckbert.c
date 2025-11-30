@@ -61,6 +61,7 @@
 #endif
 
 #include "allocator.h"
+#include "assessment.h"
 #include "compat_stub.h"
 #include "lookup-common.h"
 #include "palette-common-merge.h"
@@ -1920,7 +1921,8 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
                              unsigned char const *data,
                              unsigned int length,
                              int pixelformat,
-                             sixel_allocator_t *allocator)
+                             sixel_allocator_t *allocator,
+                             sixel_palette_telemetry_t *telemetry)
 {
     SIXELSTATUS status;
     SIXELSTATUS drop_status;
@@ -1938,6 +1940,10 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     float *float_entries;
     int float_stride;
     int reversible_for_quantizer;
+    double wall_start;
+    double init_stop;
+    double export_start;
+    double export_stop;
 
     if (palette == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -1950,6 +1956,11 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     if (work_allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
+
+    wall_start = sixel_assessment_timer_now();
+    init_stop = wall_start;
+    export_start = wall_start;
+    export_stop = wall_start;
 
     depth_result = sixel_helper_compute_depth(pixelformat);
     if (depth_result <= 0) {
@@ -1999,6 +2010,8 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
                                              pixel_stride,
                                              pixelformat,
                                              work_allocator);
+    init_stop = sixel_assessment_timer_now();
+    export_start = init_stop;
     if (SIXEL_FAILED(status)) {
         goto end;
     }
@@ -2072,9 +2085,41 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
         status = drop_status;
         goto end;
     }
+    export_stop = sixel_assessment_timer_now();
     status = SIXEL_OK;
 
 end:
+    if (telemetry != NULL) {
+        double now;
+        double init_span;
+        double export_span;
+
+        now = sixel_assessment_timer_now();
+        if (init_stop < wall_start) {
+            init_stop = now;
+        }
+        if (export_stop < export_start) {
+            export_stop = now;
+        }
+
+        init_span = init_stop - wall_start;
+        if (init_span < 0.0) {
+            init_span = 0.0;
+        }
+        export_span = export_stop - export_start;
+        if (export_span < 0.0) {
+            export_span = 0.0;
+        }
+
+        telemetry->init_ms = init_span * 1000.0;
+        telemetry->iterate_ms = 0.0;
+        telemetry->merge_ms = 0.0;
+        telemetry->export_ms = export_span * 1000.0;
+        telemetry->iterate_count = 0U;
+        telemetry->merge_iterate_count = 0U;
+        telemetry->merge_mode = SIXEL_FINAL_MERGE_NONE;
+    }
+
     if (float_entries != NULL) {
         sixel_allocator_free(work_allocator, float_entries);
     }
@@ -2090,7 +2135,8 @@ sixel_palette_build_heckbert_float32(sixel_palette_t *palette,
                                      float const *data,
                                      unsigned int length,
                                      int pixelformat,
-                                     sixel_allocator_t *allocator)
+                                     sixel_allocator_t *allocator,
+                                     sixel_palette_telemetry_t *telemetry)
 {
     if (!SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         sixel_helper_set_additional_message(
@@ -2103,7 +2149,8 @@ sixel_palette_build_heckbert_float32(sixel_palette_t *palette,
                                         (unsigned char const *)data,
                                         length,
                                         pixelformat,
-                                        allocator);
+                                        allocator,
+                                        telemetry);
 }
 
 #if HAVE_TESTS
@@ -2388,7 +2435,8 @@ palette_test_kmeans_float32_two_colors(void)
                                                 data,
                                                 (unsigned int)sizeof(pixels),
                                                 SIXEL_PIXELFORMAT_RGBFLOAT32,
-                                                allocator);
+                                                allocator,
+                                                NULL);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -2458,7 +2506,8 @@ palette_test_kmeans_float32_merge_scaling(void)
                                                 data,
                                                 (unsigned int)sizeof(pixels),
                                                 SIXEL_PIXELFORMAT_RGBFLOAT32,
-                                                allocator);
+                                                allocator,
+                                                NULL);
     if (SIXEL_FAILED(status)) {
         goto error;
     }
@@ -2541,7 +2590,8 @@ palette_test_heckbert_float32_histogram(void)
                                           data,
                                           (unsigned int)sizeof(pixels),
                                           SIXEL_PIXELFORMAT_RGBFLOAT32,
-                                          allocator);
+                                          allocator,
+                                          NULL);
     if (SIXEL_FAILED(status)) {
         goto error;
     }

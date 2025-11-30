@@ -48,14 +48,16 @@ sixel_palette_build_kmeans(sixel_palette_t *palette,
                            unsigned char const *data,
                            unsigned int length,
                            int pixelformat,
-                           sixel_allocator_t *allocator);
+                           sixel_allocator_t *allocator,
+                           sixel_palette_telemetry_t *telemetry);
 
 SIXELSTATUS
 sixel_palette_build_kmeans_float32(sixel_palette_t *palette,
                                    float const *data,
                                    unsigned int length,
                                    int pixelformat,
-                                   sixel_allocator_t *allocator);
+                                   sixel_allocator_t *allocator,
+                                   sixel_palette_telemetry_t *telemetry);
 
 unsigned int
 sixel_palette_kmeans_iter_max(void);
