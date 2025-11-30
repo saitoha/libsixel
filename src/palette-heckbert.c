@@ -67,7 +67,6 @@
 #include "lookup-common.h"
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
-#include "palette-kmeans.h"
 #include "palette-heckbert.h"
 #include "palette.h"
 #include "pixelformat.h"
@@ -2654,142 +2653,6 @@ error:
     return SIXEL_SUCCEEDED(status) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
-static int
-palette_test_kmeans_float32_two_colors(void)
-{
-    SIXELSTATUS status = SIXEL_FALSE;
-    sixel_allocator_t *allocator = NULL;
-    sixel_palette_t *palette = NULL;
-    float pixels[6] = { 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f };
-    float const *data;
-    unsigned char const *entry;
-    int found_red;
-    int found_green;
-    size_t index;
-
-    data = pixels;
-    found_red = 0;
-    found_green = 0;
-
-    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
-    if (SIXEL_FAILED(status)) {
-        goto error;
-    }
-    status = sixel_palette_new(&palette, allocator);
-    if (SIXEL_FAILED(status)) {
-        goto error;
-    }
-    palette->requested_colors = 2U;
-    palette->quality_mode = SIXEL_QUALITY_HIGH;
-    palette->force_palette = 1;
-    palette->use_reversible = 0;
-    palette->final_merge_mode = SIXEL_FINAL_MERGE_NONE;
-
-    status = sixel_palette_build_kmeans_float32(palette,
-                                                data,
-                                                (unsigned int)sizeof(pixels),
-                                                SIXEL_PIXELFORMAT_RGBFLOAT32,
-                                                allocator,
-                                                NULL);
-    if (SIXEL_FAILED(status)) {
-        goto error;
-    }
-    if (palette->entry_count != 2U || palette->entries == NULL) {
-        goto error;
-    }
-    for (index = 0U; index < 2U; ++index) {
-        entry = palette->entries + index * 3U;
-        if (entry[0] > 240U && entry[1] < 16U && entry[2] < 16U) {
-            found_red = 1;
-        }
-        if (entry[1] > 240U && entry[0] < 16U && entry[2] < 16U) {
-            found_green = 1;
-        }
-    }
-    if (!found_red || !found_green) {
-        goto error;
-    }
-
-    status = SIXEL_OK;
-
-error:
-    if (palette != NULL) {
-        sixel_palette_unref(palette);
-    }
-    if (allocator != NULL) {
-        sixel_allocator_unref(allocator);
-    }
-    return SIXEL_SUCCEEDED(status) ? EXIT_SUCCESS : EXIT_FAILURE;
-}
-
-static int
-palette_test_kmeans_float32_merge_scaling(void)
-{
-    SIXELSTATUS status = SIXEL_FALSE;
-    sixel_allocator_t *allocator = NULL;
-    sixel_palette_t *palette = NULL;
-    float pixels[12] = {
-        1.0f, 1.0f, 1.0f,
-        0.8f, 0.8f, 0.8f,
-        0.1f, 0.0f, 0.0f,
-        0.0f, 0.0f, 0.0f,
-    };
-    float const *data;
-    unsigned char const *entry;
-    size_t index;
-    int found_highlight;
-
-    data = pixels;
-    found_highlight = 0;
-
-    status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
-    if (SIXEL_FAILED(status)) {
-        goto error;
-    }
-    status = sixel_palette_new(&palette, allocator);
-    if (SIXEL_FAILED(status)) {
-        goto error;
-    }
-    palette->requested_colors = 2U;
-    palette->quality_mode = SIXEL_QUALITY_HIGH;
-    palette->force_palette = 1;
-    palette->use_reversible = 0;
-    palette->final_merge_mode = SIXEL_FINAL_MERGE_WARD;
-
-    status = sixel_palette_build_kmeans_float32(palette,
-                                                data,
-                                                (unsigned int)sizeof(pixels),
-                                                SIXEL_PIXELFORMAT_RGBFLOAT32,
-                                                allocator,
-                                                NULL);
-    if (SIXEL_FAILED(status)) {
-        goto error;
-    }
-    if (palette->entry_count != 2U || palette->entries == NULL) {
-        goto error;
-    }
-    for (index = 0U; index < 2U; ++index) {
-        entry = palette->entries + index * 3U;
-        if (entry[0] > 200U && entry[1] > 200U && entry[2] > 200U) {
-            found_highlight = 1;
-        }
-    }
-    if (!found_highlight) {
-        goto error;
-    }
-
-    status = SIXEL_OK;
-
-error:
-    if (palette != NULL) {
-        sixel_palette_unref(palette);
-    }
-    if (allocator != NULL) {
-        sixel_allocator_unref(allocator);
-    }
-    return SIXEL_SUCCEEDED(status) ? EXIT_SUCCESS : EXIT_FAILURE;
-}
-
 /*
  * Ensure that the Heckbert pipeline ingests RGBFLOAT32 sources and produces
  * the expected extreme palette entries.  The input contains a black/white
@@ -2845,6 +2708,9 @@ palette_test_heckbert_float32_histogram(void)
                                           (unsigned int)sizeof(pixels),
                                           SIXEL_PIXELFORMAT_RGBFLOAT32,
                                           allocator,
+                                          NULL,
+                                          NULL,
+                                          "heckbert",
                                           NULL);
     if (SIXEL_FAILED(status)) {
         goto error;
@@ -2923,6 +2789,14 @@ sixel_palette_tests_main(void)
     int nret = EXIT_FAILURE;
     size_t i;
     typedef int (*palette_testcase)(void);
+
+    /*
+     * K-means testcases live in palette-kmeans.c; declare them here so the
+     * unified test driver can exercise both engines without importing the
+     * entire implementation header.
+     */
+    int palette_test_kmeans_float32_two_colors(void);
+    int palette_test_kmeans_float32_merge_scaling(void);
 
     static palette_testcase const testcases[] = {
         palette_test_copy_entries_roundtrip,
