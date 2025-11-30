@@ -60,6 +60,7 @@ int strcasecmp(char const *lhs, char const *rhs);
 #endif
 
 #include "allocator.h"
+#include "assessment.h"
 #include "compat_stub.h"
 #include "palette-common-merge.h"
 #include "palette-common-snap.h"
@@ -803,7 +804,8 @@ build_palette_kmeans(unsigned char **result,
                      int final_merge_mode,
                      sixel_allocator_t *allocator,
                      int pixelformat,
-                     int treat_input_as_float32)
+                     int treat_input_as_float32,
+                     sixel_palette_telemetry_t *telemetry)
 {
     SIXELSTATUS status;
     unsigned int channels;
@@ -868,6 +870,16 @@ build_palette_kmeans(unsigned char **result,
     int unique_within;
     int input_is_;
     SIXELSTATUS unique_status;
+    double wall_start;
+    double init_stop;
+    double iterate_start;
+    double iterate_stop;
+    double merge_start;
+    double merge_stop;
+    double export_start;
+    double export_stop;
+    unsigned int lloyd_iterations;
+    unsigned int merge_iterations;
 
     status = SIXEL_BAD_ARGUMENT;
     channels = depth;
@@ -924,6 +936,16 @@ build_palette_kmeans(unsigned char **result,
     unique_within = 0;
     input_is_ = 0;
     unique_status = SIXEL_OK;
+    wall_start = sixel_assessment_timer_now();
+    init_stop = wall_start;
+    iterate_start = wall_start;
+    iterate_stop = wall_start;
+    merge_start = wall_start;
+    merge_stop = wall_start;
+    export_start = wall_start;
+    export_stop = wall_start;
+    lloyd_iterations = 0U;
+    merge_iterations = 0U;
     float32_channel_scale[0U] = 0.0;
     float32_channel_scale[1U] = 0.0;
     float32_channel_scale[2U] = 0.0;
@@ -1220,7 +1242,10 @@ build_palette_kmeans(unsigned char **result,
             lloyd_threshold /= threshold_scale;
         }
     }
+    init_stop = sixel_assessment_timer_now();
+    iterate_start = init_stop;
     for (iteration = 0U; iteration < max_iterations; ++iteration) {
+        ++lloyd_iterations;
         for (index = 0U; index < k; ++index) {
             counts[index] = 0UL;
         }
@@ -1328,7 +1353,11 @@ build_palette_kmeans(unsigned char **result,
         }
     }
 
+    iterate_stop = sixel_assessment_timer_now();
+    merge_start = iterate_stop;
+    merge_stop = iterate_stop;
     if (apply_merge && k > reqcolors) {
+        merge_start = sixel_assessment_timer_now();
         /*
          * Preserve fractional channel contributions while still sharing the
          * final merge code path that expects 0-255 scaled sums.  We convert
@@ -1414,6 +1443,7 @@ build_palette_kmeans(unsigned char **result,
             }
         }
         for (iteration = 0U; iteration < refine_iterations; ++iteration) {
+            ++merge_iterations;
             for (index = 0U; index < k; ++index) {
                 counts[index] = 0UL;
             }
@@ -1506,6 +1536,9 @@ build_palette_kmeans(unsigned char **result,
             }
         }
     }
+
+    merge_stop = sixel_assessment_timer_now();
+    export_start = sixel_assessment_timer_now();
 
     palette = (unsigned char *)sixel_allocator_malloc(
         allocator, (size_t)k * 3U);
@@ -1643,7 +1676,57 @@ build_palette_kmeans(unsigned char **result,
         *ncolors = k;
     }
 
+    export_stop = sixel_assessment_timer_now();
+
 end:
+    if (telemetry != NULL) {
+        double now;
+        double init_span;
+        double iterate_span;
+        double merge_span;
+        double export_span;
+
+        now = sixel_assessment_timer_now();
+        if (init_stop < wall_start) {
+            init_stop = now;
+        }
+        if (iterate_stop < iterate_start) {
+            iterate_stop = init_stop;
+        }
+        if (merge_stop < merge_start) {
+            merge_stop = iterate_stop;
+        }
+        if (export_stop < export_start) {
+            export_stop = now;
+        }
+
+        init_span = init_stop - wall_start;
+        if (init_span < 0.0) {
+            init_span = 0.0;
+        }
+        iterate_span = iterate_stop - iterate_start;
+        if (iterate_span < 0.0) {
+            iterate_span = 0.0;
+        }
+        merge_span = merge_stop - merge_start;
+        if (merge_span < 0.0) {
+            merge_span = 0.0;
+        }
+        export_span = export_stop - export_start;
+        if (export_span < 0.0) {
+            export_span = 0.0;
+        }
+
+        telemetry->init_ms = init_span * 1000.0;
+        telemetry->iterate_ms = iterate_span * 1000.0;
+        telemetry->merge_ms = merge_span * 1000.0;
+        telemetry->export_ms = export_span * 1000.0;
+        telemetry->iterate_count = lloyd_iterations;
+        telemetry->merge_iterate_count = merge_iterations;
+        telemetry->merge_mode = apply_merge ? resolved_merge
+                                            : SIXEL_FINAL_MERGE_NONE;
+    }
+
     if (status != SIXEL_OK && palette != NULL) {
         sixel_allocator_free(allocator, palette);
     }
@@ -1699,7 +1782,8 @@ sixel_palette_build_kmeans_internal(sixel_palette_t *palette,
                                     unsigned int length,
                                     int pixelformat,
                                     sixel_allocator_t *allocator,
-                                    int treat_input_as_float32)
+                                    int treat_input_as_float32,
+                                    sixel_palette_telemetry_t *telemetry)
 {
     SIXELSTATUS status;
     SIXELSTATUS build_status;
@@ -1774,7 +1858,8 @@ sixel_palette_build_kmeans_internal(sixel_palette_t *palette,
                                         palette->final_merge_mode,
                                         work_allocator,
                                         pixelformat,
-                                        treat_input_as_float32);
+                                        treat_input_as_float32,
+                                        telemetry);
     if (SIXEL_FAILED(build_status)) {
         status = build_status;
         goto end;
@@ -1839,14 +1924,16 @@ sixel_palette_build_kmeans(sixel_palette_t *palette,
                            unsigned char const *data,
                            unsigned int length,
                            int pixelformat,
-                           sixel_allocator_t *allocator)
+                           sixel_allocator_t *allocator,
+                           sixel_palette_telemetry_t *telemetry)
 {
     return sixel_palette_build_kmeans_internal(palette,
                                                (unsigned char const *)data,
                                                length,
                                                pixelformat,
                                                allocator,
-                                               0);
+                                               0,
+                                               telemetry);
 }
 
 SIXELSTATUS
@@ -1854,14 +1941,16 @@ sixel_palette_build_kmeans_float32(sixel_palette_t *palette,
                                    float const *data,
                                    unsigned int length,
                                    int pixelformat,
-                                   sixel_allocator_t *allocator)
+                                   sixel_allocator_t *allocator,
+                                   sixel_palette_telemetry_t *telemetry)
 {
     return sixel_palette_build_kmeans_internal(palette,
                                                (unsigned char const *)data,
                                                length,
                                                pixelformat,
                                                allocator,
-                                               1);
+                                               1,
+                                               telemetry);
 }
 
 /* emacs Local Variables:      */
