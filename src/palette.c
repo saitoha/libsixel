@@ -110,6 +110,9 @@ typedef SIXELSTATUS (*sixel_palette_quant_dispatch_fn)(
     unsigned int length,
     int pixelformat,
     sixel_allocator_t *allocator,
+    sixel_logger_t *logger,
+    int *job_seq,
+    char const *engine_name,
     sixel_palette_telemetry_t *telemetry);
 
 typedef struct sixel_palette_quant_engine {
@@ -319,6 +322,9 @@ sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
                               length,
                               pixelformat,
                               allocator,
+                              &logger,
+                              &palette_build_job_seq,
+                              engine->name,
                               &telemetry);
 
     sixel_palette_format_quant_message(span_message,
