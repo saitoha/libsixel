@@ -230,6 +230,14 @@ def render(
         "io": 0.25,
         "undither": 0.45,
         "png": 0.65,
+        # Palette sub-phases stay in the same hue while darkening
+        # initialization and brightening merge/export.  This keeps all
+        # palette bars visually grouped but shows init/merge as distinct
+        # shades on the timeline.
+        "palette/init": 0.35,
+        "palette/iterate": 0.55,
+        "palette/merge": 0.75,
+        "palette/export": 0.65,
     }
 
     role_color: Dict[Tuple[str, str], Tuple[float, float, float]] = {}
