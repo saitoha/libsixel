@@ -112,6 +112,7 @@ static int
 sixel_palette_heckbert_log_start(sixel_logger_t *logger,
                                  int *job_seq,
                                  char const *engine_name,
+                                 char const *role,
                                  char const *phase)
 {
     int job_id;
@@ -125,7 +126,7 @@ sixel_palette_heckbert_log_start(sixel_logger_t *logger,
         *job_seq += 1;
     }
     sixel_logger_logf(logger,
-                      "palette",
+                      (role != NULL && role[0] != '\0') ? role : "palette",
                       "palette/build",
                       "start",
                       job_id,
@@ -144,6 +145,7 @@ static void
 sixel_palette_heckbert_log_finish(sixel_logger_t *logger,
                                   int job_id,
                                   char const *engine_name,
+                                  char const *role,
                                   char const *phase,
                                   char const *detail)
 {
@@ -157,7 +159,7 @@ sixel_palette_heckbert_log_finish(sixel_logger_t *logger,
         suffix = detail;
     }
     sixel_logger_logf(logger,
-                      "palette",
+                      (role != NULL && role[0] != '\0') ? role : "palette",
                       "palette/build",
                       "finish",
                       job_id,
@@ -1694,7 +1696,15 @@ mediancut(tupletable2 const colorfreqtable,
           int final_merge_mode,
           int pixelformat,
           tupletable2 *colormapP,
-          sixel_allocator_t *allocator)
+          sixel_allocator_t *allocator,
+          sixel_logger_t *logger,
+          int *job_seq,
+          char const *engine_name,
+          double *iterate_ms,
+          unsigned int *iterate_count,
+          double *merge_ms,
+          unsigned int *merge_iterate_count,
+          int *merge_mode)
 {
     SIXELSTATUS status;
     boxVector bv;
@@ -1716,6 +1726,15 @@ mediancut(tupletable2 const colorfreqtable,
     struct tupleint *entry;
     SIXELSTATUS merge_status;
     unsigned int iteration_limit;
+    unsigned int boxes_before;
+    unsigned int boxes_after;
+    double iteration_wall_start;
+    double iteration_wall_stop;
+    int job_iteration;
+    int job_merge;
+    double merge_wall_start;
+    double merge_wall_stop;
+    char log_detail[128];
 
     status = SIXEL_FALSE;
     bv = NULL;
@@ -1726,6 +1745,16 @@ mediancut(tupletable2 const colorfreqtable,
     resolved_merge = sixel_resolve_final_merge_mode(final_merge_mode);
     apply_merge = (resolved_merge == SIXEL_FINAL_MERGE_WARD
                    || resolved_merge == SIXEL_FINAL_MERGE_HKMEANS);
+    iteration_limit = 0U;
+    boxes_before = 0U;
+    boxes_after = 0U;
+    iteration_wall_start = 0.0;
+    iteration_wall_stop = 0.0;
+    job_iteration = -1;
+    job_merge = -1;
+    merge_wall_start = 0.0;
+    merge_wall_stop = 0.0;
+    log_detail[0] = '\0';
     sum = 0U;
     for (i = 0U; i < colorfreqtable.size; ++i) {
         sum += colorfreqtable.table[i]->value;
@@ -1750,6 +1779,13 @@ mediancut(tupletable2 const colorfreqtable,
     boxes = 1U;
     multicolorBoxesExist = (colorfreqtable.size > 1U);
     while (boxes < working_colors && multicolorBoxesExist) {
+        iteration_wall_start = sixel_assessment_timer_now();
+        boxes_before = boxes;
+        job_iteration = sixel_palette_heckbert_log_start(logger,
+                                                         job_seq,
+                                                         engine_name,
+                                                         "palette/iterate",
+                                                         "iterate");
         for (bi = 0U; bi < boxes && bv[bi].colors < 2U; ++bi) {
             ;
         }
@@ -1763,9 +1799,49 @@ mediancut(tupletable2 const colorfreqtable,
                               depth,
                               methodForLargest);
             if (SIXEL_FAILED(status)) {
+                iteration_wall_stop = sixel_assessment_timer_now();
+                if (iterate_ms != NULL) {
+                    *iterate_ms += (iteration_wall_stop - iteration_wall_start)
+                                   * 1000.0;
+                }
+                if (iterate_count != NULL) {
+                    *iterate_count += 1U;
+                }
+                (void)snprintf(log_detail,
+                               sizeof(log_detail),
+                               "boxes=%u->%u split=failed",
+                               boxes_before,
+                               boxes);
+                sixel_palette_heckbert_log_finish(logger,
+                                                  job_iteration,
+                                                  engine_name,
+                                                  "palette/iterate",
+                                                  "iterate",
+                                                  log_detail);
                 goto end;
             }
         }
+        iteration_wall_stop = sixel_assessment_timer_now();
+        boxes_after = boxes;
+        if (iterate_ms != NULL) {
+            *iterate_ms += (iteration_wall_stop - iteration_wall_start)
+                           * 1000.0;
+        }
+        if (iterate_count != NULL) {
+            *iterate_count += 1U;
+        }
+        (void)snprintf(log_detail,
+                       sizeof(log_detail),
+                       "boxes=%u->%u multicolor=%d",
+                       boxes_before,
+                       boxes_after,
+                       multicolorBoxesExist);
+        sixel_palette_heckbert_log_finish(logger,
+                                          job_iteration,
+                                          engine_name,
+                                          "palette/iterate",
+                                          "iterate",
+                                          log_detail);
     }
 
     if (apply_merge && boxes > newcolors) {
@@ -1777,7 +1853,7 @@ mediancut(tupletable2 const colorfreqtable,
          * Ward stage can preserve sub-8bit accuracy before the palette is
          * snapped back onto the SIXEL tone grid.
          */
-        cluster_sums = (double *)sixel_allocator_malloc(
+            cluster_sums = (double *)sixel_allocator_malloc(
             allocator,
             (size_t)boxes * (size_t)depth * sizeof(double));
         if (cluster_weight == NULL || cluster_sums == NULL) {
@@ -1801,6 +1877,12 @@ mediancut(tupletable2 const colorfreqtable,
                 }
             }
         }
+        merge_wall_start = sixel_assessment_timer_now();
+        job_merge = sixel_palette_heckbert_log_start(logger,
+                                                     job_seq,
+                                                     engine_name,
+                                                     "palette/merge",
+                                                     "merge");
         cluster_total = sixel_palette_apply_merge(cluster_weight,
                                                   cluster_sums,
                                                   depth,
@@ -1838,6 +1920,29 @@ mediancut(tupletable2 const colorfreqtable,
                                                           pixelformat,
                                                           colormapP,
                                                           allocator);
+        merge_wall_stop = sixel_assessment_timer_now();
+        if (merge_ms != NULL) {
+            *merge_ms += (merge_wall_stop - merge_wall_start) * 1000.0;
+        }
+        if (merge_iterate_count != NULL && iteration_limit > 0U) {
+            *merge_iterate_count += iteration_limit;
+        }
+        if (merge_mode != NULL) {
+            *merge_mode = resolved_merge;
+        }
+        (void)snprintf(log_detail,
+                       sizeof(log_detail),
+                       "boxes=%u->%d merge=%d refine=%u",
+                       boxes,
+                       cluster_total,
+                       resolved_merge,
+                       iteration_limit);
+        sixel_palette_heckbert_log_finish(logger,
+                                          job_merge,
+                                          engine_name,
+                                          "palette/merge",
+                                          "merge",
+                                          log_detail);
         if (SIXEL_FAILED(merge_status)) {
             status = merge_status;
             goto end;
@@ -1886,7 +1991,15 @@ sixel_palette_heckbert_colormap(unsigned char const *data,
                                 unsigned int *origcolors,
                                 unsigned int pixel_stride,
                                 int pixelformat,
-                                sixel_allocator_t *allocator)
+                                sixel_allocator_t *allocator,
+                                sixel_logger_t *logger,
+                                int *job_seq,
+                                char const *engine_name,
+                                double *iterate_ms,
+                                unsigned int *iterate_count,
+                                double *merge_ms,
+                                unsigned int *merge_iterate_count,
+                                int *merge_mode)
 {
     SIXELSTATUS status;
     tupletable2 colorfreqtable;
@@ -1955,7 +2068,15 @@ sixel_palette_heckbert_colormap(unsigned char const *data,
                            final_merge_mode,
                            pixelformat,
                            colormapP,
-                           allocator);
+                           allocator,
+                           logger,
+                           job_seq,
+                           engine_name,
+                           iterate_ms,
+                           iterate_count,
+                           merge_ms,
+                           merge_iterate_count,
+                           merge_mode);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -2013,6 +2134,11 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     double init_stop;
     double export_start;
     double export_stop;
+    double iterate_ms;
+    double merge_ms;
+    unsigned int iterate_count;
+    unsigned int merge_iterate_count;
+    int merge_mode;
     int job_init;
     int job_export;
     char log_detail[128];
@@ -2033,6 +2159,11 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     init_stop = wall_start;
     export_start = wall_start;
     export_stop = wall_start;
+    iterate_ms = 0.0;
+    merge_ms = 0.0;
+    iterate_count = 0U;
+    merge_iterate_count = 0U;
+    merge_mode = SIXEL_FINAL_MERGE_NONE;
     job_init = -1;
     job_export = -1;
     log_detail[0] = '\0';
@@ -2040,6 +2171,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     job_init = sixel_palette_heckbert_log_start(logger,
                                                 job_seq,
                                                 engine_name,
+                                                "palette/init",
                                                 "init");
 
     depth_result = sixel_helper_compute_depth(pixelformat);
@@ -2089,7 +2221,15 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
                                              &origcolors,
                                              pixel_stride,
                                              pixelformat,
-                                             work_allocator);
+                                             work_allocator,
+                                             logger,
+                                             job_seq,
+                                             engine_name,
+                                             &iterate_ms,
+                                             &iterate_count,
+                                             &merge_ms,
+                                             &merge_iterate_count,
+                                             &merge_mode);
     init_stop = sixel_assessment_timer_now();
     export_start = init_stop;
     if (SIXEL_FAILED(status)) {
@@ -2104,11 +2244,13 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     sixel_palette_heckbert_log_finish(logger,
                                       job_init,
                                       engine_name,
+                                      "palette/init",
                                       "init",
                                       log_detail);
     job_export = sixel_palette_heckbert_log_start(logger,
                                                  job_seq,
                                                  engine_name,
+                                                 "palette/export",
                                                  "export");
 
     status = sixel_palette_resize(palette,
@@ -2189,6 +2331,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     sixel_palette_heckbert_log_finish(logger,
                                       job_export,
                                       engine_name,
+                                      "palette/export",
                                       "export",
                                       log_detail);
     status = SIXEL_OK;
@@ -2217,12 +2360,12 @@ end:
         }
 
         telemetry->init_ms = init_span * 1000.0;
-        telemetry->iterate_ms = 0.0;
-        telemetry->merge_ms = 0.0;
+        telemetry->iterate_ms = iterate_ms;
+        telemetry->merge_ms = merge_ms;
         telemetry->export_ms = export_span * 1000.0;
-        telemetry->iterate_count = 0U;
-        telemetry->merge_iterate_count = 0U;
-        telemetry->merge_mode = SIXEL_FINAL_MERGE_NONE;
+        telemetry->iterate_count = iterate_count;
+        telemetry->merge_iterate_count = merge_iterate_count;
+        telemetry->merge_mode = merge_mode;
     }
 
     if (float_entries != NULL) {
