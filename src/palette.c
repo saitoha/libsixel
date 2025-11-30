@@ -56,6 +56,9 @@
 #if HAVE_STDARG_H
 # include <stdarg.h>
 #endif
+#if HAVE_STDIO_H
+# include <stdio.h>
+#endif
 
 #include "lookup-common.h"
 #include "palette-common-merge.h"
@@ -106,7 +109,8 @@ typedef SIXELSTATUS (*sixel_palette_quant_dispatch_fn)(
     void const *data,
     unsigned int length,
     int pixelformat,
-    sixel_allocator_t *allocator);
+    sixel_allocator_t *allocator,
+    sixel_palette_telemetry_t *telemetry);
 
 typedef struct sixel_palette_quant_engine {
     char const *name;
@@ -154,6 +158,85 @@ sixel_palette_quant_engine_total(void)
     return total;
 }
 
+static char const *
+sixel_palette_merge_mode_name(int merge_mode)
+{
+    switch (merge_mode) {
+    case SIXEL_FINAL_MERGE_WARD:
+        return "ward";
+    case SIXEL_FINAL_MERGE_HKMEANS:
+        return "hkmeans";
+    case SIXEL_FINAL_MERGE_AUTO:
+        return "auto";
+    case SIXEL_FINAL_MERGE_NONE:
+    default:
+        return "none";
+    }
+}
+
+static void
+sixel_palette_format_quant_message(
+    char *buffer,
+    size_t size,
+    sixel_palette_quant_engine_t const *engine,
+    sixel_palette_telemetry_t const *telemetry)
+{
+    char merge_desc[64];
+    double init_ms;
+    double iterate_ms;
+    double merge_ms;
+    double export_ms;
+    unsigned int iterate_count;
+    unsigned int merge_iterate_count;
+    char const *merge_name;
+    int merge_mode;
+
+    if (buffer == NULL) {
+        return;
+    }
+
+    init_ms = 0.0;
+    iterate_ms = 0.0;
+    merge_ms = 0.0;
+    export_ms = 0.0;
+    iterate_count = 0U;
+    merge_iterate_count = 0U;
+    merge_name = "none";
+    merge_mode = SIXEL_FINAL_MERGE_NONE;
+    if (telemetry != NULL) {
+        init_ms = telemetry->init_ms;
+        iterate_ms = telemetry->iterate_ms;
+        merge_ms = telemetry->merge_ms;
+        export_ms = telemetry->export_ms;
+        iterate_count = telemetry->iterate_count;
+        merge_iterate_count = telemetry->merge_iterate_count;
+        merge_mode = telemetry->merge_mode;
+    }
+    merge_name = sixel_palette_merge_mode_name(merge_mode);
+    if (merge_ms > 0.0 || merge_iterate_count > 0U
+        || merge_mode != SIXEL_FINAL_MERGE_NONE) {
+        (void)snprintf(merge_desc,
+                       sizeof(merge_desc),
+                       "%s:%u/%.3fms",
+                       merge_name,
+                       merge_iterate_count,
+                       merge_ms);
+    } else {
+        (void)snprintf(merge_desc, sizeof(merge_desc), "%s", merge_name);
+    }
+
+    (void)snprintf(buffer,
+                   size,
+                   "engine=%s init=%.3fms iter=%u/%.3fms merge=%s "
+                   "export=%.3fms",
+                   engine != NULL ? engine->name : "",
+                   init_ms,
+                   iterate_count,
+                   iterate_ms,
+                   merge_desc,
+                   export_ms);
+}
+
 /* Locate a quantizer engine that satisfies the model/format requirements. */
 static sixel_palette_quant_engine_t const *
 sixel_palette_quant_engine_lookup(int quantize_model,
@@ -192,11 +275,24 @@ sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
 {
     SIXELSTATUS status;
     sixel_logger_t logger;
+    sixel_palette_telemetry_t telemetry;
+    /*
+     * The job id increments per build attempt so timeline rows can split
+     * horizontally when multiple quantizers run sequentially.
+     */
+    static int palette_build_job_seq = 0;
+    int job_id;
+    char span_message[192];
+
+    status = SIXEL_LOGIC_ERROR;
     sixel_logger_init(&logger);
     (void)sixel_logger_prepare_env(&logger);
+    job_id = palette_build_job_seq++;
+    memset(&telemetry, 0, sizeof(telemetry));
+    span_message[0] = '\0';
 
     if (engine == NULL || engine->build_fn == NULL) {
-        return SIXEL_LOGIC_ERROR;
+        return status;
     }
 
 #if HAVE_TESTS
@@ -209,7 +305,7 @@ sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
                       "palette",
                       "palette/build",
                       "start",
-                      -1,
+                      job_id,
                       -1,
                       0,
                       0,
@@ -222,20 +318,26 @@ sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
                               data,
                               length,
                               pixelformat,
-                              allocator);
+                              allocator,
+                              &telemetry);
+
+    sixel_palette_format_quant_message(span_message,
+                                       sizeof(span_message),
+                                       engine,
+                                       &telemetry);
 
     sixel_logger_logf(&logger,
                       "palette",
                       "palette/build",
                       "finish",
+                      job_id,
                       -1,
-                      -1,
                       0,
                       0,
                       0,
                       0,
-                      "engine=%s",
-                      engine->name);
+                      "%s",
+                      span_message);
 
     return status;
 }

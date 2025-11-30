@@ -57,6 +57,22 @@ typedef enum sixel_final_merge_dispatch {
 } sixel_final_merge_dispatch_t;
 
 /*
+ * Telemetry describing how long each palette stage spent inside the
+ * quantizer.  The orchestrator uses the aggregate to emit a single-line
+ * timeline summary so operators can understand where palette/build time
+ * was consumed without expanding multiple rows in the visualiser.
+ */
+typedef struct sixel_palette_telemetry {
+    double init_ms;
+    double iterate_ms;
+    double merge_ms;
+    double export_ms;
+    unsigned int iterate_count;
+    unsigned int merge_iterate_count;
+    int merge_mode;
+} sixel_palette_telemetry_t;
+
+/*
  * sixel_palette_t centralizes palette state shared between quantization and
  * dithering phases.  The structure now stores both configuration knobs and
  * generated results so callers can keep a single object throughout the image
