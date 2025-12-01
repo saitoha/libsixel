@@ -24,9 +24,9 @@
 
 /*
  * Shared final merge utilities for palette quantizers.  The helpers centralise
- * environment handling and the Ward/HK-means refinement logic so
- * palette-heckbert.c, palette-kmeans.c, and palette.c can share a consistent
- * implementation without depending on each other's internals.
+ * environment handling and the Ward refinement logic so palette-heckbert.c,
+ * palette-kmeans.c, and palette.c can share a consistent implementation
+ * without depending on each other's internals.
  */
 
 #include "config.h"
@@ -47,8 +47,6 @@
 
 static float env_final_merge_target_factor = 1.81f;
 static unsigned int env_final_merge_additional_lloyd = 3U;
-static unsigned int env_final_merge_hkmeans_iter_max = 20U;
-static double env_final_merge_hkmeans_threshold = 0.125;
 static unsigned int env_kmeans_iter_max = 20U;
 static double env_kmeans_threshold = 0.125;
 static double env_lumin_factor_r = 0.2989;
@@ -75,20 +73,13 @@ static void sixel_final_merge_ward(sixel_final_merge_cluster_t *clusters,
                                    int target_k,
                                    int use_reversible,
                                    int pixelformat);
-static void sixel_final_merge_hkmeans(
-    sixel_final_merge_cluster_t *clusters,
-    int nclusters,
-    int target_k,
-    int use_reversible,
-    int pixelformat);
 
 /*
  * Resolve auto merge requests.  The ladder clarifies the mapping:
  *
- *   AUTO    -> NONE
- *   NONE    -> NONE
- *   WARD    -> WARD
- *   HKMEANS -> HKMEANS
+ *   AUTO -> NONE
+ *   NONE -> NONE
+ *   WARD -> WARD
  *
  * The default behaviour therefore leaves post-merge reduction disabled unless
  * the caller explicitly opts in.
@@ -175,39 +166,6 @@ sixel_final_merge_load_env(void)
             env_final_merge_additional_lloyd
                 = (unsigned int)parsed_iters;
             env_final_merge_additional_lloyd_overridden = 1;
-        }
-    }
-
-    env_value = sixel_compat_getenv(
-        "SIXEL_PALETTE_FINAL_MERGE_HKMEANS_ITER_COUNT_MAX");
-    if (env_value != NULL && env_value[0] != '\0') {
-        errno = 0;
-        parsed_limit = strtol(env_value, &endptr, 10);
-        if (endptr != env_value && errno == 0) {
-            if (parsed_limit < 1L) {
-                parsed_limit = 1L;
-            }
-            if (parsed_limit > 30L) {
-                parsed_limit = 30L;
-            }
-            env_final_merge_hkmeans_iter_max
-                = (unsigned int)parsed_limit;
-        }
-    }
-
-    env_value = sixel_compat_getenv(
-        "SIXEL_PALETTE_FINAL_MERGE_HKMEANS_THRESHOLD");
-    if (env_value != NULL && env_value[0] != '\0') {
-        errno = 0;
-        parsed_threshold = strtod(env_value, &endptr);
-        if (endptr != env_value && errno == 0) {
-            if (parsed_threshold < 0.0) {
-                parsed_threshold = 0.0;
-            }
-            if (parsed_threshold > 0.5) {
-                parsed_threshold = 0.5;
-            }
-            env_final_merge_hkmeans_threshold = parsed_threshold;
         }
     }
 
@@ -342,15 +300,11 @@ sixel_palette_kmeans_threshold(void)
 unsigned int
 sixel_final_merge_lloyd_iterations(int merge_mode)
 {
-    unsigned int resolved;
+    (void)merge_mode;
 
     sixel_final_merge_load_env();
     if (env_final_merge_additional_lloyd_overridden) {
         return env_final_merge_additional_lloyd;
-    }
-    resolved = (unsigned int)merge_mode;
-    if (resolved == (unsigned int)SIXEL_FINAL_MERGE_HKMEANS) {
-        return 0U;
     }
 
     return 3U;
@@ -427,10 +381,6 @@ sixel_final_merge_clusters(sixel_final_merge_cluster_t *clusters,
     switch (merge_mode) {
     case SIXEL_FINAL_MERGE_DISPATCH_WARD:
         sixel_final_merge_ward(
-            clusters, nclusters, target_k, use_reversible, pixelformat);
-        break;
-    case SIXEL_FINAL_MERGE_DISPATCH_HKMEANS:
-        sixel_final_merge_hkmeans(
             clusters, nclusters, target_k, use_reversible, pixelformat);
         break;
     case SIXEL_FINAL_MERGE_DISPATCH_NONE:
@@ -560,296 +510,6 @@ sixel_final_merge_ward(sixel_final_merge_cluster_t *clusters,
     (void)pixelformat;
 }
 
-static void
-sixel_final_merge_hkmeans(sixel_final_merge_cluster_t *clusters,
-                          int nclusters,
-                          int target_k,
-                          int use_reversible,
-                          int pixelformat)
-{
-    sixel_final_merge_cluster_t *centroids;
-    double best_distance;
-    double distance;
-    double scale;
-    double lumin;
-    unsigned int iter;
-    unsigned int max_iter;
-    unsigned int seed_count;
-    int best;
-    int i;
-    int j;
-    int k;
-    int active;
-    int target;
-    int centroid_count;
-    int resolved;
-    int limit;
-    sixel_kmeans_init_type init_type;
-    sixel_allocator_t *allocator;
-    double *seed_samples;
-    double *seed_weights;
-    double *seed_centers;
-    SIXELSTATUS seed_status;
-
-    seed_count = 0U;
-    centroids = NULL;
-    best_distance = 0.0;
-    distance = 0.0;
-    scale = 0.0;
-    lumin = 0.0;
-    iter = 0U;
-    max_iter = 0U;
-    init_type = SIXEL_PALETTE_KMEANS_INIT_AUTO;
-    allocator = NULL;
-    seed_samples = NULL;
-    seed_weights = NULL;
-    seed_centers = NULL;
-    seed_status = SIXEL_OK;
-    best = -1;
-    i = 0;
-    j = 0;
-    k = 0;
-    active = 0;
-    target = target_k;
-    centroid_count = 0;
-    resolved = 0;
-    limit = 0;
-
-    if (clusters == NULL || nclusters <= 0) {
-        return;
-    }
-    seed_status = sixel_allocator_new(&allocator,
-                                      NULL,
-                                      NULL,
-                                      NULL,
-                                      NULL);
-    if (SIXEL_FAILED(seed_status)) {
-        return;
-    }
-    resolved = target_k;
-    if (resolved < 1) {
-        resolved = 1;
-    }
-    centroids = (sixel_final_merge_cluster_t *)sixel_allocator_malloc(
-        allocator,
-        (size_t)resolved * sizeof(sixel_final_merge_cluster_t));
-    if (centroids == NULL) {
-        goto end;
-    }
-
-    for (i = 0; i < nclusters; ++i) {
-        if (clusters[i].count > 0.0) {
-            ++active;
-        }
-    }
-    if (active <= resolved) {
-        goto end;
-    }
-    init_type = sixel_get_kmeans_init_type();
-    if (init_type != SIXEL_PALETTE_KMEANS_INIT_NONE) {
-        seed_samples = (double *)sixel_allocator_malloc(
-            allocator, (size_t)active * 3U * sizeof(double));
-        seed_weights = (double *)sixel_allocator_malloc(
-            allocator, (size_t)active * sizeof(double));
-        seed_centers = (double *)sixel_allocator_malloc(
-            allocator, (size_t)resolved * 3U * sizeof(double));
-        if (seed_samples == NULL || seed_weights == NULL
-                || seed_centers == NULL) {
-            goto end;
-        }
-        seed_count = 0U;
-        for (i = 0; i < nclusters; ++i) {
-            if (clusters[i].count <= 0.0) {
-                continue;
-            }
-            seed_samples[seed_count * 3U + 0U] = clusters[i].r;
-            seed_samples[seed_count * 3U + 1U] = clusters[i].g;
-            seed_samples[seed_count * 3U + 2U] = clusters[i].b;
-            seed_weights[seed_count] = clusters[i].count;
-            ++seed_count;
-        }
-        seed_status = sixel_kmeans_choose_initial_centroids(
-            seed_centers,
-            (unsigned int)resolved,
-            seed_samples,
-            seed_weights,
-            seed_count,
-            1,
-            pixelformat,
-            NULL,
-            allocator,
-            init_type);
-        if (SIXEL_SUCCEEDED(seed_status)) {
-            unsigned int produced;
-
-            produced = (unsigned int)resolved;
-            if (seed_count < produced) {
-                produced = seed_count;
-            }
-            for (i = 0; i < (int)produced; ++i) {
-                centroids[i].r = seed_centers[i * 3U + 0U];
-                centroids[i].g = seed_centers[i * 3U + 1U];
-                centroids[i].b = seed_centers[i * 3U + 2U];
-                centroids[i].count = 0.0;
-            }
-            centroid_count = (int)produced;
-        }
-    }
-
-    /* initialise centroids by picking the brightest clusters */
-    if (centroid_count == 0) {
-        for (i = 0; i < resolved; ++i) {
-            best = -1;
-            lumin = -1.0;
-            for (j = 0; j < nclusters; ++j) {
-                if (clusters[j].count <= 0.0) {
-                    continue;
-                }
-                distance = clusters[j].r * env_lumin_factor_r
-                    + clusters[j].g * env_lumin_factor_g
-                    + clusters[j].b * env_lumin_factor_b;
-                if (distance > lumin) {
-                    lumin = distance;
-                    best = j;
-                }
-            }
-            if (best < 0) {
-                break;
-            }
-            centroids[i] = clusters[best];
-            clusters[best].count = 0.0;
-            ++centroid_count;
-        }
-    }
-    for (i = 0; i < nclusters; ++i) {
-        if (clusters[i].count > 0.0) {
-            double components[3];
-
-            components[0] = clusters[i].r;
-            components[1] = clusters[i].g;
-            components[2] = clusters[i].b;
-            sixel_palette_snap_triple(components,
-                                     use_reversible,
-                                     pixelformat,
-                                     SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_PRE);
-            clusters[i].r = components[0];
-            clusters[i].g = components[1];
-            clusters[i].b = components[2];
-        }
-    }
-    for (k = 0; k < centroid_count; ++k) {
-        double components[3];
-
-        components[0] = centroids[k].r;
-        components[1] = centroids[k].g;
-        components[2] = centroids[k].b;
-        sixel_palette_snap_triple(components,
-                                 use_reversible,
-                                 pixelformat,
-                                 SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_PRE);
-        centroids[k].r = components[0];
-        centroids[k].g = components[1];
-        centroids[k].b = components[2];
-    }
-
-    max_iter = env_final_merge_hkmeans_iter_max;
-    for (iter = 0U; iter < max_iter; ++iter) {
-        double moved;
-
-        moved = 0.0;
-        for (i = 0; i < nclusters; ++i) {
-            sixel_final_merge_cluster_t const *centroid;
-
-            if (clusters[i].count <= 0.0) {
-                continue;
-            }
-            best = -1;
-            best_distance = DBL_MAX;
-            for (j = 0; j < centroid_count; ++j) {
-                centroid = &centroids[j];
-                distance = sixel_final_merge_distance_sq(
-                    &clusters[i], centroid, pixelformat, 0);
-                if (distance < best_distance) {
-                    best_distance = distance;
-                    best = j;
-                }
-            }
-            if (best < 0) {
-                continue;
-            }
-            scale = centroids[best].count + clusters[i].count;
-            if (scale <= 0.0) {
-                scale = 1.0;
-            }
-            centroids[best].r
-                = (centroids[best].r * centroids[best].count
-                   + clusters[i].r * clusters[i].count)
-                / scale;
-            centroids[best].g
-                = (centroids[best].g * centroids[best].count
-                   + clusters[i].g * clusters[i].count)
-                / scale;
-            centroids[best].b
-                = (centroids[best].b * centroids[best].count
-                   + clusters[i].b * clusters[i].count)
-                / scale;
-            centroids[best].count += clusters[i].count;
-            moved += best_distance;
-        }
-        moved /= (double)nclusters;
-        if (moved <= env_final_merge_hkmeans_threshold) {
-            break;
-        }
-        for (k = 0; k < centroid_count; ++k) {
-            double components[3];
-
-            components[0] = centroids[k].r;
-            components[1] = centroids[k].g;
-            components[2] = centroids[k].b;
-            sixel_palette_snap_triple(components,
-                                     use_reversible,
-                                     pixelformat,
-                                     SIXEL_PALETTE_SNAP_STAGE_FINAL_MERGE_ITER);
-            centroids[k].r = components[0];
-            centroids[k].g = components[1];
-            centroids[k].b = components[2];
-        }
-    }
-
-    target = target_k;
-    if (target > centroid_count) {
-        target = centroid_count;
-    }
-    limit = target;
-    if (limit > nclusters) {
-        limit = nclusters;
-    }
-    for (i = 0; i < limit; ++i) {
-        clusters[i] = centroids[i];
-    }
-    for (i = limit; i < nclusters; ++i) {
-        clusters[i].r = 0.0;
-        clusters[i].g = 0.0;
-        clusters[i].b = 0.0;
-        clusters[i].count = 0.0;
-    }
-
-end:
-    if (seed_centers != NULL) {
-        sixel_allocator_free(allocator, seed_centers);
-    }
-    if (seed_weights != NULL) {
-        sixel_allocator_free(allocator, seed_weights);
-    }
-    if (seed_samples != NULL) {
-        sixel_allocator_free(allocator, seed_samples);
-    }
-    if (centroids != NULL) {
-        sixel_allocator_free(allocator, centroids);
-    }
-    sixel_allocator_unref(allocator);
-}
-
 /* Determine how many clusters to create before the final merge step. */
 unsigned int
 sixel_final_merge_target(unsigned int reqcolors, int final_merge_mode)
@@ -860,8 +520,7 @@ sixel_final_merge_target(unsigned int reqcolors, int final_merge_mode)
 
     sixel_final_merge_load_env();
     resolved = sixel_resolve_final_merge_mode(final_merge_mode);
-    if (resolved != SIXEL_FINAL_MERGE_WARD
-        && resolved != SIXEL_FINAL_MERGE_HKMEANS) {
+    if (resolved != SIXEL_FINAL_MERGE_WARD) {
         return reqcolors;
     }
     factor = env_final_merge_target_factor;
@@ -953,9 +612,7 @@ sixel_palette_apply_merge(unsigned long *weights,
     }
     resolved_mode = sixel_resolve_final_merge_mode(final_merge_mode);
     dispatch_mode = SIXEL_FINAL_MERGE_DISPATCH_NONE;
-    if (resolved_mode == SIXEL_FINAL_MERGE_HKMEANS) {
-        dispatch_mode = SIXEL_FINAL_MERGE_DISPATCH_HKMEANS;
-    } else if (resolved_mode == SIXEL_FINAL_MERGE_WARD) {
+    if (resolved_mode == SIXEL_FINAL_MERGE_WARD) {
         dispatch_mode = SIXEL_FINAL_MERGE_DISPATCH_WARD;
     }
     sixel_final_merge_clusters(clusters,

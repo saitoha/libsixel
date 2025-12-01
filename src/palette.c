@@ -167,8 +167,6 @@ sixel_palette_merge_mode_name(int merge_mode)
     switch (merge_mode) {
     case SIXEL_FINAL_MERGE_WARD:
         return "ward";
-    case SIXEL_FINAL_MERGE_HKMEANS:
-        return "hkmeans";
     case SIXEL_FINAL_MERGE_AUTO:
         return "auto";
     case SIXEL_FINAL_MERGE_NONE:

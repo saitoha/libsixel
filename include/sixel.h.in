@@ -173,7 +173,6 @@ typedef int SIXELSTATUS;
                                           /* none) */
 #define SIXEL_FINAL_MERGE_NONE        0x1  /* disable final merge */
 #define SIXEL_FINAL_MERGE_WARD        0x2  /* Ward merge */
-#define SIXEL_FINAL_MERGE_HKMEANS     0x3  /* Hierarchical k-means merge */
 
 /* pixelformat type of input image
    NOTE: for compatibility, the value of PIXELFORAMT_COLOR_RGB888 must be 3 */

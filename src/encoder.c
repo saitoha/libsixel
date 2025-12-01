@@ -295,8 +295,7 @@ static sixel_option_choice_t const g_option_choices_quantize_model[] = {
 static sixel_option_choice_t const g_option_choices_final_merge[] = {
     { "auto", SIXEL_FINAL_MERGE_AUTO },
     { "none", SIXEL_FINAL_MERGE_NONE },
-    { "ward", SIXEL_FINAL_MERGE_WARD },
-    { "hkmeans", SIXEL_FINAL_MERGE_HKMEANS }
+    { "ward", SIXEL_FINAL_MERGE_WARD }
 };
 
 static sixel_option_choice_t const g_option_choices_resampling[] = {
