@@ -333,7 +333,7 @@ sixel_clamp_unit_f32(float value)
 
 #if defined(HAVE_IMMINTRIN_H)
 #if defined(SIXEL_USE_AVX)
-static SIXEL_TARGET_AVX __m256
+static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX __m256
 sixel_avx_load_rgb_ps(unsigned char const *psrc)
 {
     __m128i pixi128;
@@ -357,7 +357,7 @@ sixel_avx_load_rgb_ps(unsigned char const *psrc)
     return pixf256;
 }
 
-static SIXEL_TARGET_AVX void
+static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX void
 sixel_avx_store_rgb_u8(__m256 acc, double total, unsigned char *dst)
 {
     __m256 scalev;
@@ -378,13 +378,13 @@ sixel_avx_store_rgb_u8(__m256 acc, double total, unsigned char *dst)
     dst[2] = (unsigned char)out[2];
 }
 
-static SIXEL_TARGET_AVX __m256
+static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX __m256
 sixel_avx_zero_ps(void)
 {
     return _mm256_setzero_ps();
 }
 
-static SIXEL_TARGET_AVX __m256
+static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX __m256
 sixel_avx_muladd_ps(__m256 acc, __m256 pix, float weight)
 {
     __m256 wv;
@@ -393,7 +393,7 @@ sixel_avx_muladd_ps(__m256 acc, __m256 pix, float weight)
     return _mm256_add_ps(acc, _mm256_mul_ps(pix, wv));
 }
 
-static SIXEL_TARGET_AVX __m256
+static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX __m256
 sixel_avx_load_rgb_f32(float const *psrc)
 {
     __m256 pixf;
@@ -403,7 +403,7 @@ sixel_avx_load_rgb_f32(float const *psrc)
     return pixf;
 }
 
-static SIXEL_TARGET_AVX void
+static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX void
 sixel_avx_store_rgb_f32(__m256 acc, double total, float *dst)
 {
     __m256 scalev;
@@ -424,7 +424,7 @@ sixel_avx_store_rgb_f32(__m256 acc, double total, float *dst)
 #endif  /* SIXEL_USE_AVX */
 
 #if defined(SIXEL_USE_AVX2)
-static SIXEL_TARGET_AVX2 __m256
+static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX2 __m256
 sixel_avx2_load_rgb_ps(unsigned char const *psrc)
 {
     __m128i pixi128;
@@ -445,7 +445,7 @@ sixel_avx2_load_rgb_ps(unsigned char const *psrc)
     return _mm256_cvtepi32_ps(pixi256);
 }
 
-static SIXEL_TARGET_AVX2 void
+static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX2 void
 sixel_avx2_store_rgb_u8(__m256 acc, double total, unsigned char *dst)
 {
     __m256 scalev;
@@ -466,13 +466,13 @@ sixel_avx2_store_rgb_u8(__m256 acc, double total, unsigned char *dst)
     dst[2] = (unsigned char)out[2];
 }
 
-static SIXEL_TARGET_AVX2 __m256
+static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX2 __m256
 sixel_avx2_zero_ps(void)
 {
     return _mm256_setzero_ps();
 }
 
-static SIXEL_TARGET_AVX2 __m256
+static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX2 __m256
 sixel_avx2_muladd_ps(__m256 acc, __m256 pix, float weight)
 {
     __m256 wv;
@@ -481,7 +481,7 @@ sixel_avx2_muladd_ps(__m256 acc, __m256 pix, float weight)
     return _mm256_add_ps(acc, _mm256_mul_ps(pix, wv));
 }
 
-static SIXEL_TARGET_AVX2 __m256
+static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX2 __m256
 sixel_avx2_load_rgb_f32(float const *psrc)
 {
     __m256 pixf;
@@ -491,7 +491,7 @@ sixel_avx2_load_rgb_f32(float const *psrc)
     return pixf;
 }
 
-static SIXEL_TARGET_AVX2 void
+static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX2 void
 sixel_avx2_store_rgb_f32(__m256 acc, double total, float *dst)
 {
     __m256 scalev;
@@ -512,7 +512,7 @@ sixel_avx2_store_rgb_f32(__m256 acc, double total, float *dst)
 #endif  /* SIXEL_USE_AVX2 */
 
 #if defined(SIXEL_USE_AVX512)
-static SIXEL_TARGET_AVX512 __m512
+static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX512 __m512
 sixel_avx512_load_rgb_ps(unsigned char const *psrc)
 {
     __m128i pixi128;
@@ -529,7 +529,7 @@ sixel_avx512_load_rgb_ps(unsigned char const *psrc)
     return _mm512_cvtepi32_ps(pixi512);
 }
 
-static SIXEL_TARGET_AVX512 void
+static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX512 void
 sixel_avx512_store_rgb_u8(__m512 acc, double total, unsigned char *dst)
 {
     __m512 scalev;
@@ -550,13 +550,13 @@ sixel_avx512_store_rgb_u8(__m512 acc, double total, unsigned char *dst)
     dst[2] = (unsigned char)out[2];
 }
 
-static SIXEL_TARGET_AVX512 __m512
+static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX512 __m512
 sixel_avx512_zero_ps(void)
 {
     return _mm512_setzero_ps();
 }
 
-static SIXEL_TARGET_AVX512 __m512
+static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX512 __m512
 sixel_avx512_muladd_ps(__m512 acc, __m512 pix, float weight)
 {
     __m512 wv;
@@ -565,7 +565,7 @@ sixel_avx512_muladd_ps(__m512 acc, __m512 pix, float weight)
     return _mm512_add_ps(acc, _mm512_mul_ps(pix, wv));
 }
 
-static SIXEL_TARGET_AVX512 __m512
+static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX512 __m512
 sixel_avx512_load_rgb_f32(float const *psrc)
 {
     __m512 pixf;
@@ -577,7 +577,7 @@ sixel_avx512_load_rgb_f32(float const *psrc)
     return pixf;
 }
 
-static SIXEL_TARGET_AVX512 void
+static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX512 void
 sixel_avx512_store_rgb_f32(__m512 acc, double total, float *dst)
 {
     __m512 scalev;
