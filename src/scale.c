@@ -58,6 +58,17 @@
 # include "threadpool.h"
 #endif
 
+#if defined(__GNUC__) && defined(__i386__)
+/*
+ * i386 callers may enter with only 4- or 8-byte stack alignment. Force
+ * realignment for SSE2-heavy routines to avoid movaps spills to unaligned
+ * stack slots when SIMD is enabled via SIXEL_SIMD_LEVEL.
+ */
+# define SIXEL_ALIGN_STACK __attribute__((force_align_arg_pointer))
+#else
+# define SIXEL_ALIGN_STACK
+#endif
+
 #if defined(HAVE_IMMINTRIN_H) && \
     (defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
      defined(_M_IX86))
@@ -649,7 +660,7 @@ typedef double (*resample_fn_t)(double const d);
  * Two-pass separable filter helpers. Each function processes a single row so
  * the caller may invoke them serially or from a threadpool worker.
  */
-static void
+static SIXEL_ALIGN_STACK void
 scale_horizontal_row(
     unsigned char *tmp,
     unsigned char const *src,
@@ -679,6 +690,12 @@ scale_horizontal_row(
     __m256 acc256;
 #endif
 #if defined(SIXEL_USE_SSE2)
+    /*
+     * __m128 locals remain on the stack. On i386 callers may arrive with
+     * only 4- or 8-byte alignment, so movaps spills can fault when SSE2 is
+     * forced. SIXEL_ALIGN_STACK realigns the frame on entry to keep the
+     * SSE2 path consistent with the 16-byte guarantee on x86_64.
+     */
     __m128 acc128;
     __m128 minv128;
     __m128 maxv128;
@@ -883,7 +900,7 @@ scale_horizontal_row(
     }
 }
 
-static void
+static SIXEL_ALIGN_STACK void
 scale_vertical_row(
     unsigned char *dst,
     unsigned char const *tmp,
@@ -1686,7 +1703,7 @@ scale_with_resampling(
 #endif
 }
 
-static void
+static SIXEL_ALIGN_STACK void
 scale_with_resampling_float32(
     float *dst,
     float const *src,
