@@ -179,8 +179,7 @@ _finalmerge() {
     'MODE' \
     'auto[skip merging unless heuristics enable it]' \
     'none[disable post-merge reduction]' \
-    'ward[merge clusters using Ward criterion]' \
-    'hkmeans[refine clusters with hierarchical weighted k-means]'
+    'ward[merge clusters using Ward criterion]'
 }
 
 _completiontarget() {

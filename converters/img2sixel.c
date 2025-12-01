@@ -210,9 +210,6 @@ static cli_option_help_t const g_option_help_table[] = {
         "                             ward -> merge clusters using\n"
         "                                     Ward's minimum variance\n"
         "                                     criterion.\n"
-        "                             hkmeans -> merge clusters via\n"
-        "                                        hierarchical weighted\n"
-        "                                        k-means.\n"
     },
     {
         'm',
@@ -1015,14 +1012,8 @@ void show_help(void)
             "                           1.0-3.0, default 1.81.\n"
             "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT\n"
             "                           Repeat Lloyd refinement after the\n"
-            "                           final merge. Accepts 0-30. Defaults\n"
-            "                           to 3 for Ward, 0 for hkmeans.\n"
-            "SIXEL_PALETTE_FINAL_MERGE_HKMEANS_ITER_COUNT_MAX\n"
-            "                           Limit hkmeans merge iterations.\n"
-            "                           Accepts 1-30, default 20.\n"
-            "SIXEL_PALETTE_FINAL_MERGE_HKMEANS_THRESHOLD\n"
-            "                           Convergence threshold for hkmeans\n"
-            "                           delta (0.0-0.5, default 0.125).\n"
+            "                           final merge. Accepts 0-30. Default\n"
+            "                           is 3.\n"
             "SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX\n"
             "                           Cap Lloyd passes in the primary\n"
             "                           k-means solver. Accepts 1-30,\n"

@@ -157,7 +157,6 @@ SIXEL_FINAL_MERGE_AUTO         = 0x0  # select final merge automatically
                                       # (defaults to none)
 SIXEL_FINAL_MERGE_NONE         = 0x1  # disable final merge stage
 SIXEL_FINAL_MERGE_WARD         = 0x2  # Ward hierarchical clustering merge
-SIXEL_FINAL_MERGE_HKMEANS      = 0x3  # Hierarchical k-means merge
 
 # built-in dither
 SIXEL_BUILTIN_MONO_DARK   = 0x0  # monochrome terminal with dark background

@@ -1195,8 +1195,7 @@ build_palette_kmeans(unsigned char **result,
         reqcolors = 1U;
     }
     resolved_merge = sixel_resolve_final_merge_mode(final_merge_mode);
-    apply_merge = (resolved_merge == SIXEL_FINAL_MERGE_WARD
-                   || resolved_merge == SIXEL_FINAL_MERGE_HKMEANS);
+    apply_merge = (resolved_merge == SIXEL_FINAL_MERGE_WARD);
     if (apply_merge) {
         if (input_is_) {
             unique_buffer = (unsigned char *)sixel_allocator_malloc(
