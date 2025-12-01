@@ -62,11 +62,15 @@
 /*
  * i386 callers may enter with only 4- or 8-byte stack alignment. Force
  * realignment for SSE2-heavy routines to avoid movaps spills to unaligned
- * stack slots when SIMD is enabled via SIXEL_SIMD_LEVEL.
+ * stack slots when SIMD is enabled via SIXEL_SIMD_LEVEL. Mark affected
+ * functions noinline so the prologue that performs realignment is not
+ * dropped by inlining.
  */
 # define SIXEL_ALIGN_STACK __attribute__((force_align_arg_pointer))
+# define SIXEL_NO_INLINE __attribute__((noinline))
 #else
 # define SIXEL_ALIGN_STACK
+# define SIXEL_NO_INLINE
 #endif
 
 #if defined(HAVE_IMMINTRIN_H) && \
@@ -658,9 +662,11 @@ typedef double (*resample_fn_t)(double const d);
 
 /*
  * Two-pass separable filter helpers. Each function processes a single row so
- * the caller may invoke them serially or from a threadpool worker.
+ * the caller may invoke them serially or from a threadpool worker. On i386 we
+ * also mark the functions noinline to ensure the stack-realigning prologue
+ * from SIXEL_ALIGN_STACK is preserved under optimization.
  */
-static SIXEL_ALIGN_STACK void
+static SIXEL_ALIGN_STACK SIXEL_NO_INLINE void
 scale_horizontal_row(
     unsigned char *tmp,
     unsigned char const *src,
@@ -900,7 +906,7 @@ scale_horizontal_row(
     }
 }
 
-static SIXEL_ALIGN_STACK void
+static SIXEL_ALIGN_STACK SIXEL_NO_INLINE void
 scale_vertical_row(
     unsigned char *dst,
     unsigned char const *tmp,
@@ -1703,7 +1709,12 @@ scale_with_resampling(
 #endif
 }
 
-static SIXEL_ALIGN_STACK void
+/*
+ * Floating-point scaler mirrors the byte-path SSE2 usage. Keep it noinline
+ * on i386 so the SIXEL_ALIGN_STACK prologue stays in place when SSE2 locals
+ * need to spill to the stack.
+ */
+static SIXEL_ALIGN_STACK SIXEL_NO_INLINE void
 scale_with_resampling_float32(
     float *dst,
     float const *src,
