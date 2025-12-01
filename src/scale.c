@@ -308,6 +308,17 @@ sixel_scale_simd_level(void)
 
     if (simd_level == -2) {
         simd_level = sixel_cpu_simd_level();
+#if defined(__i386__)
+        /*
+         * AVX and later widen the alignment requirement for stack spills to
+         * 32 bytes. i386 stack realignment from force_align_arg_pointer only
+         * guarantees 16-byte boundaries, so keep the runtime level capped at
+         * SSE2 to avoid vmovaps faults when YMM locals spill.
+         */
+        if (simd_level > SIXEL_SIMD_LEVEL_SSE2) {
+            simd_level = SIXEL_SIMD_LEVEL_SSE2;
+        }
+#endif
     }
 
     return simd_level;
