@@ -699,8 +699,8 @@ SixelDispatchDecoder_CreatePicture(
     memset(&desc, 0, sizeof(desc));
     desc.cbSizeofstruct = sizeof(desc);
     desc.picType = PICTYPE_BITMAP;
-    desc.u.bmp.hbitmap = hbitmap;
-    desc.u.bmp.hpal = NULL;
+    desc.bmp.hbitmap = hbitmap;
+    desc.bmp.hpal = NULL;
 
     hr = OleCreatePictureIndirect(&desc, &IID_IPictureDisp, TRUE,
                                   (void**)picture);
@@ -946,14 +946,11 @@ SixelDispatchDecoder_QueryInterface(
     REFIID riid,
     void **ppv)
 {
-    SixelDispatchDecoder *decoder;
-
     if (ppv == NULL) {
         return E_POINTER;
     }
 
     *ppv = NULL;
-    decoder = (SixelDispatchDecoder*)iface;
 
     if (IsEqualIID(riid, &IID_IUnknown)
         || IsEqualIID(riid, &IID_IDispatch)
@@ -1003,6 +1000,8 @@ SixelDispatchDecoder_GetTypeInfoCount(
     ISixelDecoder *iface,
     UINT *pctinfo)
 {
+    (void)iface;
+
     if (pctinfo == NULL) {
         return E_POINTER;
     }
@@ -4383,7 +4382,6 @@ RegisterBinaryValue(
 
 
 /* DLL exports */
-__declspec(dllexport)
 STDAPI
 DllRegisterServer(void)
 {
@@ -4753,7 +4751,6 @@ DllRegisterServer(void)
 }
 
 
-__declspec(dllexport)
 STDAPI
 DllUnregisterServer(void)
 {
