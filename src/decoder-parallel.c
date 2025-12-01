@@ -96,43 +96,6 @@ static sixel_decoder_thread_config_t g_decoder_threads = {
 
 #if SIXEL_ENABLE_THREADS
 static void
-sixel_decoder_parallel_log_stub(sixel_logger_t *logger,
-                                char const *mode)
-{
-    /*
-     * Emit a minimal timeline so SIXEL_PARALLEL_LOG_PATH mirrors the
-     * encoder behaviour even while the decoder still falls back to the
-     * serial path.
-     */
-    if (logger == NULL) {
-        return;
-    }
-
-    sixel_logger_logf(logger,
-                      "decoder",
-                      mode,
-                      "start",
-                      0,
-                      0,
-                      0,
-                      0,
-                      0,
-                      0,
-                      "parallel decoder stub active");
-    sixel_logger_logf(logger,
-                      "decoder",
-                      mode,
-                      "fallback",
-                      0,
-                      0,
-                      0,
-                      0,
-                      0,
-                      0,
-                      "falling back to serial implementation");
-}
-
-static void
 sixel_decoder_parallel_fill_spans(int payload_len,
                                   int threads,
                                   int *spans);
@@ -1240,70 +1203,6 @@ cleanup:
 
     return SIXEL_RUNTIME_ERROR;
 #endif
-}
-
-SIXELSTATUS
-sixel_decode_raw_parallel(unsigned char *p,
-                          int len,
-                          image_buffer_t *image,
-                          sixel_allocator_t *allocator,
-                          int *used_parallel)
-{
-    SIXELSTATUS status;
-#if SIXEL_ENABLE_THREADS
-    sixel_logger_t logger;
-#endif
-
-    (void)p;
-    (void)len;
-    (void)image;
-    (void)allocator;
-
-    status = SIXEL_OK;
-#if SIXEL_ENABLE_THREADS
-    sixel_logger_init(&logger);
-    (void)sixel_logger_prepare_env(&logger);
-    sixel_decoder_parallel_log_stub(&logger, "raw");
-#endif
-    if (used_parallel != NULL) {
-        *used_parallel = 0;
-    }
-#if SIXEL_ENABLE_THREADS
-    sixel_logger_close(&logger);
-#endif
-    return status;
-}
-
-SIXELSTATUS
-sixel_decode_direct_parallel(unsigned char *p,
-                             int len,
-                             image_buffer_t *image,
-                             sixel_allocator_t *allocator,
-                             int *used_parallel)
-{
-    SIXELSTATUS status;
-#if SIXEL_ENABLE_THREADS
-    sixel_logger_t logger;
-#endif
-
-    (void)p;
-    (void)len;
-    (void)image;
-    (void)allocator;
-
-    status = SIXEL_OK;
-#if SIXEL_ENABLE_THREADS
-    sixel_logger_init(&logger);
-    (void)sixel_logger_prepare_env(&logger);
-    sixel_decoder_parallel_log_stub(&logger, "direct");
-#endif
-    if (used_parallel != NULL) {
-        *used_parallel = 0;
-    }
-#if SIXEL_ENABLE_THREADS
-    sixel_logger_close(&logger);
-#endif
-    return status;
 }
 
 /* emacs Local Variables:      */
