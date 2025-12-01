@@ -47,13 +47,13 @@ typedef struct sixel_final_merge_cluster {
 
 /*
  * Control how the final merge phase consolidates provisional clusters
- * into the target palette.  The hkmeans mode performs weighted
- * refinement after the hierarchical ward pass.
+ * into the target palette.  The Ward path merges clusters using
+ * linkage costs while the remaining options keep the provisional
+ * palette untouched.
  */
 typedef enum sixel_final_merge_dispatch {
     SIXEL_FINAL_MERGE_DISPATCH_NONE = 0,
     SIXEL_FINAL_MERGE_DISPATCH_WARD,
-    SIXEL_FINAL_MERGE_DISPATCH_HKMEANS,
 } sixel_final_merge_dispatch_t;
 
 /*

@@ -24,11 +24,11 @@
 /*
  * Shared helpers for the palette final-merge pipeline.  The orchestrator and
  * both quantizer implementations rely on this module to decode runtime
- * configuration, execute Ward/HK-means refinement, and expose the oversplit
- * heuristics.  Keeping the declarations here prevents palette.h from growing
+ * configuration, execute Ward refinement, and expose the oversplit heuristics.
+ * Keeping the declarations here prevents palette.h from growing
  * k-means/Heckbert specific details while still making the services available
  * across the translation units.
- */
+*/
 
 #ifndef LIBSIXEL_PALETTE_COMMON_MERGE_H
 #define LIBSIXEL_PALETTE_COMMON_MERGE_H

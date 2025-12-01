@@ -111,11 +111,9 @@ the historical Heckbert median\-cut behaviour.
 .TP 5
 .B \-F \fIMODE\fP, \-\-final\-merge=\fIMODE\fP
 control the post\-merge stage after palette construction. \fIMODE\fP accepts
-\fBauto\fP, \fBnone\fP, \fBward\fP, or \fBhkmeans\fP. The default \fBauto\fP
-keeps post\-merge reduction disabled so the behaviour matches \fBnone\fP unless
-future heuristics request merging. Select \fBhkmeans\fP to apply a hierarchical
-weighted k\-means merge
-that snaps every palette entry onto the SIXEL reversible tone ladder.
+\fBauto\fP, \fBnone\fP, or \fBward\fP. The default \fBauto\fP keeps
+post\-merge reduction disabled so the behaviour matches \fBnone\fP unless
+future heuristics request merging.
 .TP 5
 .B \-m \fIFILE\fP, \-\-mapfile=\fIFILE\fP
 transform image colors to match this set of colors. Accepts image files
@@ -632,15 +630,7 @@ default 1.81).
 .B SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT
 .br
 run Lloyd refinement after the final merge stage. Accepts 0-30.
-Defaults to 3 iterations for Ward and 0 for hkmeans.
-.TP 5
-.B SIXEL_PALETTE_FINAL_MERGE_HKMEANS_ITER_COUNT_MAX
-.br
-upper bound on hkmeans merge iterations (1-30, default 20).
-.TP 5
-.B SIXEL_PALETTE_FINAL_MERGE_HKMEANS_THRESHOLD
-.br
-convergence delta for hkmeans refinement (0.0-0.5, default 0.125).
+Defaults to 3 iterations.
 .TP 5
 .B SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX
 .br

@@ -1742,8 +1742,7 @@ mediancut(tupletable2 const colorfreqtable,
     cluster_total = 0;
     working_colors = newcolors;
     resolved_merge = sixel_resolve_final_merge_mode(final_merge_mode);
-    apply_merge = (resolved_merge == SIXEL_FINAL_MERGE_WARD
-                   || resolved_merge == SIXEL_FINAL_MERGE_HKMEANS);
+    apply_merge = (resolved_merge == SIXEL_FINAL_MERGE_WARD);
     iteration_limit = 0U;
     boxes_before = 0U;
     boxes_after = 0U;
