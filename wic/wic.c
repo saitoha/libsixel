@@ -27,6 +27,7 @@
 #include <limits.h>
 #include <string.h>
 #include <oleauto.h>
+#include <olectl.h>
 
 #include <sixel.h>
 
@@ -49,6 +50,22 @@ static const CLSID CLSID_SixelDecoder = {
     0xb155,
     0x4977,
     { 0x85, 0x71, 0xcf, 0x00, 0x58, 0x84, 0xbc, 0xb9 }
+};
+
+static const CLSID CLSID_SixelDecoderDispatch = {
+    /* 1eaf6501-96e9-4a4e-92a2-2b15b90ddade */
+    0x1eaf6501,
+    0x96e9,
+    0x4a4e,
+    { 0x92, 0xa2, 0x2b, 0x15, 0xb9, 0x0d, 0xda, 0xde }
+};
+
+static const IID IID_ISixelDecoder = {
+    /* 7aeb0d77-ef5c-45ad-bb82-9c7bc51c0ad2 */
+    0x7aeb0d77,
+    0xef5c,
+    0x45ad,
+    { 0xbb, 0x82, 0x9c, 0x7b, 0xc5, 0x1c, 0x0a, 0xd2 }
 };
 
 /* ContainerFormat */
@@ -80,6 +97,9 @@ static const GUID GUID_ContainerFormatSIXEL = {
 /* Windows Photo Viewer */
 #define CLSIDSTR_WindowsPhotoViewer \
     L"{FFE2A43C-56B9-4bf5-9A79-CC6D4285608A}"
+
+#define CLSIDSTR_SixelDecoderDispatch \
+    L"{1EAF6501-96E9-4A4E-92A2-2B15B90DDADE}"
 
 /* Thumbnail Handler */
 #define IIDSTR_IThumbnailProvider \
@@ -204,6 +224,103 @@ SixelMetadata_IsOrientationName(LPCWSTR name)
     return lstrcmpW(name, sixel_metadata_orientation_exif_name) == 0
         || lstrcmpW(name, sixel_metadata_orientation_tag_name) == 0;
 }
+
+/* automation dispatcher object used for the dual decoder interface */
+typedef struct {
+    const struct ISixelDecoderVtbl *lpVtbl;
+    LONG ref;
+    IDispatch *dispatcher;
+    ITypeInfo *typeinfo;
+} SixelDispatchDecoder;
+
+typedef struct ISixelDecoder ISixelDecoder;
+
+typedef struct ISixelDecoderVtbl {
+    BEGIN_INTERFACE
+
+    /* IUnknown */
+    HRESULT (STDMETHODCALLTYPE *QueryInterface)(
+        ISixelDecoder *This,
+        REFIID riid,
+        void **ppvObject);
+    ULONG (STDMETHODCALLTYPE *AddRef)(ISixelDecoder *This);
+    ULONG (STDMETHODCALLTYPE *Release)(ISixelDecoder *This);
+
+    /* IDispatch */
+    HRESULT (STDMETHODCALLTYPE *GetTypeInfoCount)(
+        ISixelDecoder *This,
+        UINT *pctinfo);
+    HRESULT (STDMETHODCALLTYPE *GetTypeInfo)(
+        ISixelDecoder *This,
+        UINT iTInfo,
+        LCID lcid,
+        ITypeInfo **ppTInfo);
+    HRESULT (STDMETHODCALLTYPE *GetIDsOfNames)(
+        ISixelDecoder *This,
+        REFIID riid,
+        LPOLESTR *rgszNames,
+        UINT cNames,
+        LCID lcid,
+        DISPID *rgDispId);
+    HRESULT (STDMETHODCALLTYPE *Invoke)(
+        ISixelDecoder *This,
+        DISPID dispIdMember,
+        REFIID riid,
+        LCID lcid,
+        WORD wFlags,
+        DISPPARAMS *pDispParams,
+        VARIANT *pVarResult,
+        EXCEPINFO *pExcepInfo,
+        UINT *puArgErr);
+
+    /* ISixelDecoder */
+    HRESULT (STDMETHODCALLTYPE *LoadFromStream)(
+        ISixelDecoder *This,
+        IStream *stream,
+        IPictureDisp **picture);
+    HRESULT (STDMETHODCALLTYPE *LoadFromString)(
+        ISixelDecoder *This,
+        BSTR text,
+        IPictureDisp **picture);
+    HRESULT (STDMETHODCALLTYPE *LoadFromByteArray)(
+        ISixelDecoder *This,
+        SAFEARRAY *array,
+        IPictureDisp **picture);
+
+    END_INTERFACE
+} ISixelDecoderVtbl;
+
+struct ISixelDecoder {
+    const ISixelDecoderVtbl *lpVtbl;
+};
+
+static HRESULT SixelDispatchDecoder_LoadFromStream(
+    SixelDispatchDecoder *decoder,
+    IStream *stream,
+    IPictureDisp **picture);
+
+static ULONG STDMETHODCALLTYPE SixelDispatchDecoder_AddRef(
+    ISixelDecoder *iface);
+
+static HRESULT SixelDispatchDecoder_LoadFromString(
+    SixelDispatchDecoder *decoder,
+    BSTR text,
+    IPictureDisp **picture);
+
+static HRESULT SixelDispatchDecoder_LoadFromByteArray(
+    SixelDispatchDecoder *decoder,
+    SAFEARRAY *array,
+    IPictureDisp **picture);
+
+static HRESULT
+SixelDispatchDecoder_CreateStreamFromPath(
+    BSTR path,
+    IStream **stream);
+
+static HRESULT
+SixelDispatchDecoder_CreateStreamFromBytes(
+    SAFEARRAY *array,
+    IStream **stream);
 
 static HRESULT
 SixelMetadata_ReadUInt(const PROPVARIANT *value, UINT *result)
@@ -370,6 +487,76 @@ SixelMetadata_CopyString(LPCWSTR source, LPOLESTR *destination)
 }
 
 static HRESULT
+SixelDispatchDecoder_CreateTypeInfo(ITypeInfo **info)
+{
+    static const WCHAR name_stream[] = L"LoadFromStream";
+    static const WCHAR name_string[] = L"LoadFromString";
+    static const WCHAR name_bytes[] = L"LoadFromByteArray";
+    static const WCHAR param_stream[] = L"stream";
+    static const WCHAR param_text[] = L"text";
+    static const WCHAR param_array[] = L"array";
+    static const WCHAR param_result[] = L"result";
+    PARAMDATA params_stream[2];
+    PARAMDATA params_string[2];
+    PARAMDATA params_bytes[2];
+    METHODDATA methods[3];
+    INTERFACEDATA data;
+
+    if (info == NULL) {
+        return E_POINTER;
+    }
+
+    /* build TypeInfo dynamically to avoid shipping a separate TLB */
+
+    params_stream[0].szName = (OLECHAR*)param_stream;
+    params_stream[0].vt = VT_UNKNOWN;
+    params_stream[1].szName = (OLECHAR*)param_result;
+    params_stream[1].vt = VT_DISPATCH | VT_BYREF;
+
+    params_string[0].szName = (OLECHAR*)param_text;
+    params_string[0].vt = VT_BSTR;
+    params_string[1].szName = (OLECHAR*)param_result;
+    params_string[1].vt = VT_DISPATCH | VT_BYREF;
+
+    params_bytes[0].szName = (OLECHAR*)param_array;
+    params_bytes[0].vt = VT_ARRAY | VT_UI1;
+    params_bytes[1].szName = (OLECHAR*)param_result;
+    params_bytes[1].vt = VT_DISPATCH | VT_BYREF;
+
+    methods[0].szName = (OLECHAR*)name_stream;
+    methods[0].ppdata = params_stream;
+    methods[0].dispid = 1;
+    methods[0].iMeth = 7;
+    methods[0].cc = CC_STDCALL;
+    methods[0].cArgs = 2;
+    methods[0].wFlags = DISPATCH_METHOD;
+    methods[0].vtReturn = VT_HRESULT;
+
+    methods[1].szName = (OLECHAR*)name_string;
+    methods[1].ppdata = params_string;
+    methods[1].dispid = 2;
+    methods[1].iMeth = 8;
+    methods[1].cc = CC_STDCALL;
+    methods[1].cArgs = 2;
+    methods[1].wFlags = DISPATCH_METHOD;
+    methods[1].vtReturn = VT_HRESULT;
+
+    methods[2].szName = (OLECHAR*)name_bytes;
+    methods[2].ppdata = params_bytes;
+    methods[2].dispid = 3;
+    methods[2].iMeth = 9;
+    methods[2].cc = CC_STDCALL;
+    methods[2].cArgs = 2;
+    methods[2].wFlags = DISPATCH_METHOD;
+    methods[2].vtReturn = VT_HRESULT;
+
+    data.pmethdata = methods;
+    data.cMembers = 3;
+
+    return CreateDispTypeInfo(&data, LOCALE_USER_DEFAULT, info);
+}
+
+static HRESULT
 SixelMetadataEnumString_Create(
     UINT index,
     IEnumString **ppEnum
@@ -391,6 +578,588 @@ SixelMetadataEnumString_Create(
     enumerator->index = index;
 
     *ppEnum = (IEnumString*)enumerator;
+
+    return S_OK;
+}
+
+static HRESULT
+SixelDispatchDecoder_CreatePicture(
+    IStream *stream,
+    IPictureDisp **picture)
+{
+    IWICImagingFactory *factory;
+    IWICBitmapDecoder *decoder;
+    IWICBitmapFrameDecode *frame;
+    IWICFormatConverter *converter;
+    HBITMAP hbitmap;
+    BITMAPINFO info;
+    BITMAPINFOHEADER *header;
+    BYTE *bits;
+    UINT w;
+    UINT h;
+    UINT stride;
+    HRESULT hr;
+    PICTDESC desc;
+
+    factory = NULL;
+    decoder = NULL;
+    frame = NULL;
+    converter = NULL;
+    hbitmap = NULL;
+    bits = NULL;
+
+    if (stream == NULL || picture == NULL) {
+        return E_INVALIDARG;
+    }
+
+    *picture = NULL;
+
+    /*
+     * Decode SIXEL data via the existing WIC decoder and project it into
+     * a GDI bitmap that OleCreatePictureIndirect can wrap as IPictureDisp.
+     */
+
+    hr = CoCreateInstance(&CLSID_WICImagingFactory, NULL,
+                          CLSCTX_INPROC_SERVER,
+                          &IID_IWICImagingFactory,
+                          (void**)&factory);
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = CoCreateInstance(&CLSID_SixelDecoder, NULL,
+                          CLSCTX_INPROC_SERVER,
+                          &IID_IWICBitmapDecoder,
+                          (void**)&decoder);
+    if (FAILED(hr)) {
+        IWICImagingFactory_Release(factory);
+        return hr;
+    }
+
+    hr = IWICBitmapDecoder_Initialize(decoder, stream,
+                                      WICDecodeMetadataCacheOnDemand);
+    if (FAILED(hr)) {
+        goto end;
+    }
+
+    hr = IWICBitmapDecoder_GetFrame(decoder, 0, &frame);
+    if (FAILED(hr)) {
+        goto end;
+    }
+
+    hr = IWICImagingFactory_CreateFormatConverter(factory, &converter);
+    if (FAILED(hr)) {
+        goto end;
+    }
+
+    hr = IWICFormatConverter_Initialize(
+        converter,
+        (IWICBitmapSource*)frame,
+        &GUID_WICPixelFormat32bppBGRA,
+        WICBitmapDitherTypeNone,
+        NULL,
+        0.0,
+        WICBitmapPaletteTypeCustom);
+    if (FAILED(hr)) {
+        goto end;
+    }
+
+    hr = IWICBitmapSource_GetSize((IWICBitmapSource*)converter, &w, &h);
+    if (FAILED(hr)) {
+        goto end;
+    }
+
+    memset(&info, 0, sizeof(info));
+    header = &info.bmiHeader;
+    header->biSize = sizeof(BITMAPINFOHEADER);
+    header->biWidth = (LONG)w;
+    header->biHeight = -(LONG)h;
+    header->biPlanes = 1;
+    header->biBitCount = 32;
+    header->biCompression = BI_RGB;
+
+    stride = w * 4;
+    hbitmap = CreateDIBSection(NULL, &info, DIB_RGB_COLORS,
+                               (void**)&bits, NULL, 0);
+    if (hbitmap == NULL || bits == NULL) {
+        hr = E_FAIL;
+        goto end;
+    }
+
+    hr = IWICBitmapSource_CopyPixels(
+        (IWICBitmapSource*)converter,
+        NULL,
+        stride,
+        stride * h,
+        bits);
+    if (FAILED(hr)) {
+        goto end;
+    }
+
+    memset(&desc, 0, sizeof(desc));
+    desc.cbSizeofstruct = sizeof(desc);
+    desc.picType = PICTYPE_BITMAP;
+    desc.u.bmp.hbitmap = hbitmap;
+    desc.u.bmp.hpal = NULL;
+
+    hr = OleCreatePictureIndirect(&desc, &IID_IPictureDisp, TRUE,
+                                  (void**)picture);
+
+end:
+    if (FAILED(hr) && hbitmap) {
+        DeleteObject(hbitmap);
+    }
+    if (converter) {
+        IWICFormatConverter_Release(converter);
+    }
+    if (frame) {
+        IWICBitmapFrameDecode_Release(frame);
+    }
+    if (decoder) {
+        IWICBitmapDecoder_Release(decoder);
+    }
+    if (factory) {
+        IWICImagingFactory_Release(factory);
+    }
+
+    return hr;
+}
+
+static HRESULT
+SixelDispatchDecoder_CreateStreamFromPath(
+    BSTR path,
+    IStream **stream)
+{
+    HANDLE handle;
+    LARGE_INTEGER origin;
+    LARGE_INTEGER size;
+    DWORD read;
+    BYTE *buffer;
+    HRESULT hr;
+    HGLOBAL memory;
+    IStream *local;
+
+    if (path == NULL || stream == NULL) {
+        return E_INVALIDARG;
+    }
+
+    /* load the file contents into an in-memory IStream for reuse */
+
+    *stream = NULL;
+    handle = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ, NULL,
+                         OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (handle == INVALID_HANDLE_VALUE) {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    if (!GetFileSizeEx(handle, &size)) {
+        CloseHandle(handle);
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    if (size.HighPart != 0) {
+        CloseHandle(handle);
+        return E_OUTOFMEMORY;
+    }
+
+    memory = GlobalAlloc(GMEM_MOVEABLE, size.LowPart);
+    if (memory == NULL) {
+        CloseHandle(handle);
+        return E_OUTOFMEMORY;
+    }
+
+    buffer = (BYTE*)GlobalLock(memory);
+    if (buffer == NULL) {
+        GlobalFree(memory);
+        CloseHandle(handle);
+        return E_OUTOFMEMORY;
+    }
+
+    origin.QuadPart = 0;
+    if (!SetFilePointerEx(handle, origin, NULL, FILE_BEGIN)) {
+        hr = HRESULT_FROM_WIN32(GetLastError());
+        GlobalUnlock(memory);
+        GlobalFree(memory);
+        CloseHandle(handle);
+        return hr;
+    }
+
+    if (!ReadFile(handle, buffer, size.LowPart, &read, NULL)) {
+        hr = HRESULT_FROM_WIN32(GetLastError());
+        GlobalUnlock(memory);
+        GlobalFree(memory);
+        CloseHandle(handle);
+        return hr;
+    }
+
+    GlobalUnlock(memory);
+    CloseHandle(handle);
+
+    hr = CreateStreamOnHGlobal(memory, TRUE, &local);
+    if (FAILED(hr)) {
+        GlobalFree(memory);
+        return hr;
+    }
+
+    *stream = local;
+
+    return S_OK;
+}
+
+static HRESULT
+SixelDispatchDecoder_CreateStreamFromBytes(
+    SAFEARRAY *array,
+    IStream **stream)
+{
+    BYTE *data;
+    LONG lb;
+    LONG ub;
+    ULONG size;
+    HRESULT hr;
+    HGLOBAL memory;
+    BYTE *buffer;
+
+    if (array == NULL || stream == NULL) {
+        return E_INVALIDARG;
+    }
+
+    *stream = NULL;
+
+    /* marshal SAFEARRAY(VT_UI1) into an HGLOBAL-backed IStream */
+
+    if (SafeArrayGetDim(array) != 1) {
+        return E_INVALIDARG;
+    }
+
+    if (!(array->fFeatures & FADF_FIXEDSIZE)) {
+        return E_INVALIDARG;
+    }
+
+    hr = SafeArrayGetLBound(array, 1, &lb);
+    if (FAILED(hr)) {
+        return hr;
+    }
+    hr = SafeArrayGetUBound(array, 1, &ub);
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    if (ub < lb) {
+        return E_INVALIDARG;
+    }
+
+    size = (ULONG)(ub - lb + 1);
+    memory = GlobalAlloc(GMEM_MOVEABLE, size);
+    if (memory == NULL) {
+        return E_OUTOFMEMORY;
+    }
+
+    buffer = (BYTE*)GlobalLock(memory);
+    if (buffer == NULL) {
+        GlobalFree(memory);
+        return E_OUTOFMEMORY;
+    }
+
+    hr = SafeArrayAccessData(array, (void**)&data);
+    if (FAILED(hr)) {
+        GlobalUnlock(memory);
+        GlobalFree(memory);
+        return hr;
+    }
+
+    memcpy(buffer, data, size);
+    SafeArrayUnaccessData(array);
+    GlobalUnlock(memory);
+
+    hr = CreateStreamOnHGlobal(memory, TRUE, stream);
+    if (FAILED(hr)) {
+        GlobalFree(memory);
+    }
+
+    return hr;
+}
+
+static HRESULT
+SixelDispatchDecoder_LoadFromStream(
+    SixelDispatchDecoder *decoder,
+    IStream *stream,
+    IPictureDisp **picture)
+{
+    if (decoder == NULL || stream == NULL || picture == NULL) {
+        return E_INVALIDARG;
+    }
+
+    return SixelDispatchDecoder_CreatePicture(stream, picture);
+}
+
+static HRESULT
+SixelDispatchDecoder_LoadFromString(
+    SixelDispatchDecoder *decoder,
+    BSTR text,
+    IPictureDisp **picture)
+{
+    IStream *stream;
+    HRESULT hr;
+
+    if (decoder == NULL || picture == NULL) {
+        return E_INVALIDARG;
+    }
+
+    hr = SixelDispatchDecoder_CreateStreamFromPath(text, &stream);
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = SixelDispatchDecoder_CreatePicture(stream, picture);
+    IStream_Release(stream);
+
+    return hr;
+}
+
+static HRESULT
+SixelDispatchDecoder_LoadFromByteArray(
+    SixelDispatchDecoder *decoder,
+    SAFEARRAY *array,
+    IPictureDisp **picture)
+{
+    IStream *stream;
+    HRESULT hr;
+
+    if (decoder == NULL || picture == NULL) {
+        return E_INVALIDARG;
+    }
+
+    hr = SixelDispatchDecoder_CreateStreamFromBytes(array, &stream);
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = SixelDispatchDecoder_CreatePicture(stream, picture);
+    IStream_Release(stream);
+
+    return hr;
+}
+
+static HRESULT STDMETHODCALLTYPE
+SixelDispatchDecoder_QueryInterface(
+    ISixelDecoder *iface,
+    REFIID riid,
+    void **ppv)
+{
+    SixelDispatchDecoder *decoder;
+
+    if (ppv == NULL) {
+        return E_POINTER;
+    }
+
+    *ppv = NULL;
+    decoder = (SixelDispatchDecoder*)iface;
+
+    if (IsEqualIID(riid, &IID_IUnknown)
+        || IsEqualIID(riid, &IID_IDispatch)
+        || IsEqualIID(riid, &IID_ISixelDecoder)) {
+        *ppv = iface;
+        SixelDispatchDecoder_AddRef(iface);
+        return S_OK;
+    }
+
+    return E_NOINTERFACE;
+}
+
+static ULONG STDMETHODCALLTYPE
+SixelDispatchDecoder_AddRef(ISixelDecoder *iface)
+{
+    SixelDispatchDecoder *decoder;
+
+    decoder = (SixelDispatchDecoder*)iface;
+
+    return (ULONG)InterlockedIncrement(&decoder->ref);
+}
+
+static ULONG STDMETHODCALLTYPE
+SixelDispatchDecoder_Release(ISixelDecoder *iface)
+{
+    SixelDispatchDecoder *decoder;
+    ULONG count;
+
+    decoder = (SixelDispatchDecoder*)iface;
+    count = (ULONG)InterlockedDecrement(&decoder->ref);
+
+    if (count == 0) {
+        if (decoder->dispatcher) {
+            IDispatch_Release(decoder->dispatcher);
+        }
+        if (decoder->typeinfo) {
+            ITypeInfo_Release(decoder->typeinfo);
+        }
+        CoTaskMemFree(decoder);
+    }
+
+    return count;
+}
+
+static HRESULT STDMETHODCALLTYPE
+SixelDispatchDecoder_GetTypeInfoCount(
+    ISixelDecoder *iface,
+    UINT *pctinfo)
+{
+    if (pctinfo == NULL) {
+        return E_POINTER;
+    }
+
+    *pctinfo = 1;
+
+    return S_OK;
+}
+
+static HRESULT STDMETHODCALLTYPE
+SixelDispatchDecoder_GetTypeInfo(
+    ISixelDecoder *iface,
+    UINT iTInfo,
+    LCID lcid,
+    ITypeInfo **ppTInfo)
+{
+    SixelDispatchDecoder *decoder;
+
+    (void)lcid;
+
+    if (ppTInfo == NULL) {
+        return E_POINTER;
+    }
+
+    if (iTInfo != 0) {
+        return DISP_E_BADINDEX;
+    }
+
+    decoder = (SixelDispatchDecoder*)iface;
+    *ppTInfo = decoder->typeinfo;
+    if (*ppTInfo) {
+        ITypeInfo_AddRef(*ppTInfo);
+    }
+
+    return S_OK;
+}
+
+static HRESULT STDMETHODCALLTYPE
+SixelDispatchDecoder_GetIDsOfNames(
+    ISixelDecoder *iface,
+    REFIID riid,
+    LPOLESTR *rgszNames,
+    UINT cNames,
+    LCID lcid,
+    DISPID *rgDispId)
+{
+    SixelDispatchDecoder *decoder;
+
+    decoder = (SixelDispatchDecoder*)iface;
+
+    return IDispatch_GetIDsOfNames(decoder->dispatcher, riid, rgszNames,
+                                   cNames, lcid, rgDispId);
+}
+
+static HRESULT STDMETHODCALLTYPE
+SixelDispatchDecoder_Invoke(
+    ISixelDecoder *iface,
+    DISPID dispIdMember,
+    REFIID riid,
+    LCID lcid,
+    WORD wFlags,
+    DISPPARAMS *pDispParams,
+    VARIANT *pVarResult,
+    EXCEPINFO *pExcepInfo,
+    UINT *puArgErr)
+{
+    SixelDispatchDecoder *decoder;
+
+    decoder = (SixelDispatchDecoder*)iface;
+
+    return IDispatch_Invoke(decoder->dispatcher, dispIdMember, riid,
+                            lcid, wFlags, pDispParams, pVarResult,
+                            pExcepInfo, puArgErr);
+}
+
+static HRESULT STDMETHODCALLTYPE
+SixelDispatchDecoder_LoadFromStream_Com(
+    ISixelDecoder *iface,
+    IStream *stream,
+    IPictureDisp **picture)
+{
+    return SixelDispatchDecoder_LoadFromStream(
+        (SixelDispatchDecoder*)iface, stream, picture);
+}
+
+static HRESULT STDMETHODCALLTYPE
+SixelDispatchDecoder_LoadFromString_Com(
+    ISixelDecoder *iface,
+    BSTR text,
+    IPictureDisp **picture)
+{
+    return SixelDispatchDecoder_LoadFromString(
+        (SixelDispatchDecoder*)iface, text, picture);
+}
+
+static HRESULT STDMETHODCALLTYPE
+SixelDispatchDecoder_LoadFromByteArray_Com(
+    ISixelDecoder *iface,
+    SAFEARRAY *array,
+    IPictureDisp **picture)
+{
+    return SixelDispatchDecoder_LoadFromByteArray(
+        (SixelDispatchDecoder*)iface, array, picture);
+}
+
+static const ISixelDecoderVtbl SixelDispatchDecoder_Vtbl = {
+    SixelDispatchDecoder_QueryInterface,
+    SixelDispatchDecoder_AddRef,
+    SixelDispatchDecoder_Release,
+    SixelDispatchDecoder_GetTypeInfoCount,
+    SixelDispatchDecoder_GetTypeInfo,
+    SixelDispatchDecoder_GetIDsOfNames,
+    SixelDispatchDecoder_Invoke,
+    SixelDispatchDecoder_LoadFromStream_Com,
+    SixelDispatchDecoder_LoadFromString_Com,
+    SixelDispatchDecoder_LoadFromByteArray_Com
+};
+
+static HRESULT
+SixelDispatchDecoder_CreateInstance(ISixelDecoder **iface)
+{
+    SixelDispatchDecoder *decoder;
+    HRESULT hr;
+    IUnknown *dispatcher;
+
+    if (iface == NULL) {
+        return E_POINTER;
+    }
+
+    *iface = NULL;
+    decoder = (SixelDispatchDecoder*)CoTaskMemAlloc(
+        sizeof(SixelDispatchDecoder));
+    if (decoder == NULL) {
+        return E_OUTOFMEMORY;
+    }
+
+    decoder->lpVtbl = &SixelDispatchDecoder_Vtbl;
+    decoder->ref = 1;
+    decoder->dispatcher = NULL;
+    decoder->typeinfo = NULL;
+
+    hr = SixelDispatchDecoder_CreateTypeInfo(&decoder->typeinfo);
+    if (FAILED(hr)) {
+        CoTaskMemFree(decoder);
+        return hr;
+    }
+
+    hr = CreateStdDispatch(NULL, decoder,
+                           decoder->typeinfo, &dispatcher);
+    if (FAILED(hr)) {
+        ITypeInfo_Release(decoder->typeinfo);
+        CoTaskMemFree(decoder);
+        return hr;
+    }
+
+    decoder->dispatcher = (IDispatch*)dispatcher;
+    *iface = (ISixelDecoder*)decoder;
 
     return S_OK;
 }
@@ -3355,6 +4124,7 @@ static IWICBitmapDecoderVtbl SixelDecoder_Vtbl = {
 typedef struct {
     const IClassFactoryVtbl* lpVtbl;
     LONG ref;
+    BOOL automation;
 } SixelFactory;
 
 static LONG g_serverLocks = 0;
@@ -3424,6 +4194,7 @@ SixelFactory_CreateInstance(
 )
 {
     SixelDecoder *decoder;
+    ISixelDecoder *dispatch;
     HRESULT hr = E_FAIL;
 
     (void) iface;
@@ -3432,23 +4203,34 @@ SixelFactory_CreateInstance(
         return CLASS_E_NOAGGREGATION;
     }
 
-    decoder = (SixelDecoder*)CoTaskMemAlloc(sizeof(SixelDecoder));
-    if (decoder == NULL) {
-        return E_OUTOFMEMORY;
+    dispatch = NULL;
+
+    if (((SixelFactory*)iface)->automation) {
+        hr = SixelDispatchDecoder_CreateInstance(&dispatch);
+        if (FAILED(hr)) {
+            return hr;
+        }
+        hr = IUnknown_QueryInterface((IUnknown*)dispatch, riid, ppv);
+        SixelDispatchDecoder_Release((ISixelDecoder*)dispatch);
+    } else {
+        decoder = (SixelDecoder*)CoTaskMemAlloc(sizeof(SixelDecoder));
+        if (decoder == NULL) {
+            return E_OUTOFMEMORY;
+        }
+
+        decoder->lpVtbl = &SixelDecoder_Vtbl;
+        decoder->ref = 1;
+        decoder->initialized = FALSE;
+        decoder->w = 0;
+        decoder->h = 0;
+        decoder->indices = NULL;
+        decoder->palette = NULL;
+        decoder->ncolors = 0;
+        decoder->metadata = NULL;
+
+        hr = IUnknown_QueryInterface((IWICBitmapDecoder*)decoder, riid, ppv);
+        SixelDecoder_Release((IWICBitmapDecoder*)decoder);
     }
-
-    decoder->lpVtbl = &SixelDecoder_Vtbl;
-    decoder->ref = 1;
-    decoder->initialized = FALSE;
-    decoder->w = 0;
-    decoder->h = 0;
-    decoder->indices = NULL;
-    decoder->palette = NULL;
-    decoder->ncolors = 0;
-    decoder->metadata = NULL;
-
-    hr = IUnknown_QueryInterface((IWICBitmapDecoder*)decoder, riid, ppv);
-    SixelDecoder_Release((IWICBitmapDecoder*)decoder);
 
     return hr;
 }
@@ -3788,6 +4570,33 @@ DllRegisterServer(void)
     RegisterStringValue(HKEY_CLASSES_ROOT, key,
                         L"ThreadingModel", L"Both");
 
+    /* Automation CLSID */
+    key = L"CLSID\\" CLSIDSTR_SixelDecoderDispatch;
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        NULL, L"libsixel decoder automation");
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"ProgID", L"Libsixel.Decoder.1");
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"VersionIndependentProgID", L"Libsixel.Decoder");
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"InprocServer32", modulePath);
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"ThreadingModel", L"Both");
+
+    key = L"Libsixel.Decoder.1";
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        NULL, L"libsixel decoder automation");
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"CLSID", CLSIDSTR_SixelDecoderDispatch);
+
+    key = L"Libsixel.Decoder";
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        NULL, L"libsixel decoder automation");
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"CLSID", CLSIDSTR_SixelDecoderDispatch);
+    RegisterStringValue(HKEY_CLASSES_ROOT, key,
+                        L"CurVer", L"Libsixel.Decoder.1");
+
     /* Formats */
     key = L"CLSID\\" CLSIDSTR_SixelDecoder L"\\"
           L"Formats\\" GUIDSTR_WICPixelFormat8bppIndexed;
@@ -4066,6 +4875,24 @@ DllUnregisterServer(void)
         fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
     }
 
+    key = L"CLSID\\" CLSIDSTR_SixelDecoderDispatch;
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"Libsixel.Decoder.1";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
+    key = L"Libsixel.Decoder";
+    r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
+    if (r != ERROR_SUCCESS && r != ERROR_FILE_NOT_FOUND) {
+        fwprintf(stderr, L"RegDeleteKeyW: failed. key: %ls, code: %lu\n", key, r);
+    }
+
     /* progid */
     key = L"sixelfile\\shell\\printto\\command";
     r = RegDeleteKeyW(HKEY_CLASSES_ROOT, key);
@@ -4266,7 +5093,8 @@ DllGetClassObject(
     }
     *ppv = NULL;
 
-    if (IsEqualCLSID(rclsid, &CLSID_SixelDecoder)) {
+    if (IsEqualCLSID(rclsid, &CLSID_SixelDecoder)
+        || IsEqualCLSID(rclsid, &CLSID_SixelDecoderDispatch)) {
         factory = (SixelFactory*)CoTaskMemAlloc(sizeof(SixelFactory));
         if (factory == NULL) {
             return E_OUTOFMEMORY;
@@ -4274,6 +5102,8 @@ DllGetClassObject(
 
         factory->lpVtbl = &SixelFactory_Vtbl;
         factory->ref = 1;
+        factory->automation = IsEqualCLSID(rclsid,
+                                           &CLSID_SixelDecoderDispatch);
         hr = IUnknown_QueryInterface((IClassFactory*)factory, riid, ppv);
         SixelFactory_Release((IClassFactory*)factory);
 
