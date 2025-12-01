@@ -186,7 +186,7 @@ jobs:
         packages: gcc-core,make,pkg-config,python3,python3-pip,ninja
 
     - name: Install gcovr
-      if: runner.os != 'Windows'
+      if: runner.os != 'Windows' && (matrix.sys || '') != 'i686'
       run: |
         python3 -m venv .venv
         . .venv/bin/activate
@@ -207,8 +207,7 @@ jobs:
           export CC="gcc -m32"
           export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
           export PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
-        fi
-        if [ "${{ runner.os }}" = "Linux" ]; then
+        elif [ "${{ runner.os }}" = "Linux" ]; then
           export CC=gcc-14
         fi
         disable_threads_flag=""
@@ -227,6 +226,10 @@ jobs:
         if [ "${{ matrix.static_only || '' }}" = "true" ]; then
           static_only_flags="--disable-shared --enable-static"
         fi
+        enable_gcov_flag="--enable-gcov"
+        if [ "${{ matrix.sys || '' }}" = "i686" ]; then
+          enable_gcov_flag=""
+        fi
         ./configure \
             --without-png \
             --without-jpeg \
@@ -236,7 +239,7 @@ jobs:
             --disable-python \
             --enable-debug \
             --enable-tests \
-            --enable-gcov \
+            ${enable_gcov_flag} \
             --disable-dependency-tracking \
             ${disable_tools_flags} \
             ${disable_threads_flag} \
@@ -659,7 +662,7 @@ jobs:
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Capture coverage (Linux)
-      if: runner.os == 'Linux'
+      if: runner.os == 'Linux' && (matrix.sys || '') != 'i686'
       shell: bash
       run: |
         gcovr -r . --lcov -o coverage.info \
@@ -705,7 +708,7 @@ jobs:
 
     - name: Upload to Coveralls (per-flag, parallel)
       id: coveralls_upload
-      if: ${{ runner.os != 'Windows' && matrix.os != 'macos-15' }}
+      if: ${{ runner.os != 'Windows' && matrix.os != 'macos-15' && matrix.sys != 'i686' }}
       continue-on-error: true
       uses: coverallsapp/github-action@v2
       with:
