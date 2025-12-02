@@ -761,8 +761,9 @@ SIXEL_THREADS              override encoder thread count.
 SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS
                            defer RGBFLOAT32 colorspace fan-out
                            until the frame reaches this pixel
-                           count. Defaults to zero to preserve
-                           eager splitting on small images.
+                           count. Defaults to 65537 pixels to
+                           avoid splitting tiny images unless the
+                           threshold is overridden.
 SIXEL_LOADER_PRIORITY_LIST override default loader search order.
                            Accepts the same comma separated
                            names as the -j/--loaders option and
