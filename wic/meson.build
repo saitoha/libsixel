@@ -44,7 +44,7 @@ shared_module(
   'wicsixel',
   wic_sources,
   include_directories: project_inc,
-  dependencies: [ole32, windowscodecs],
+  dependencies: [ole32, oleaut32, gdi32, windowscodecs],
   c_args: ['-DSIXEL_STATUS_HAVE_TTY_HELPERS=0',
             '-DHAVE_CONFIG_H'],
   install: true,

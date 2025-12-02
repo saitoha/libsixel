@@ -17,6 +17,8 @@ DIST_SUBDIRS = include src converters assessment tools python ruby wic \
 
 EXTRA_DIST = LICENSE depcomp
 
+EXTRA_DIST += examples/windows/wsh_decoder_sample.vbs
+
 EXTRA_DIST += converters/t/common.t \
     converters/t/test_0001_01_invalid_positional.t \
     converters/t/test_0001_02_invalid_option_arguments.t \

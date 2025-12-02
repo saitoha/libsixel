@@ -59,6 +59,27 @@ handling used by `-6`:
 * `SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L` — weight L* relative to a/b* when
   snapping in Lab-family colorspaces. Accepts 0.0-1.0 and defaults to 0.85.
 
+## Windows Script Host automation sample
+
+Windows users can exercise the `Libsixel.Decoder` automation class from
+VBScript/WSH. A ready-to-run sample lives in
+`examples/windows/wsh_decoder_sample.vbs` and demonstrates four inputs:
+
+1. `LoadFromFile` with a standard path.
+2. `LoadFromStream` using an `ADODB.Stream` object (marshalled as `IStream`).
+3. `LoadFromByteArray` fed by a binary `SAFEARRAY(VT_UI1)`.
+4. `LoadFromString` with SIXEL escape text read from a `.six` file.
+
+To try it after registering the codec (`regsvr32 libwicsixel.dll`), run:
+
+```
+cscript //nologo examples\\windows\\wsh_decoder_sample.vbs \\
+    C:\\path\\to\\image.png C:\\path\\to\\image.six
+```
+
+When no arguments are provided, the script falls back to `images/snake.png`
+and `images/snake.six` so it can be exercised directly from the repository.
+
 
 ## Related projects
 
