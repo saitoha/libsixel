@@ -37,7 +37,7 @@ libwicsixel_la_CFLAGS = $(CFLAGS) \
                         $(WICCODEC_CFLAGS)
 
 libwicsixel_la_LDFLAGS = -no-undefined -module -avoid-version
-libwicsixel_la_LIBADD = $(WICCODEC_LIBS) -loleaut32 -lgdi32 -luser32
+libwicsixel_la_LIBADD = $(WICCODEC_LIBS)
 
 REGSVR32 = "$(shell cygpath $(SYSTEMROOT)/System32/regsvr32.exe)"
 

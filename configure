@@ -22135,10 +22135,11 @@ else
         if test x${have_wic} = xyes; then
             if test "x${using_cl}" = xyes; then
                 WICCODEC_CFLAGS="$WIC_CFLAGS"
-                WICCODEC_LIBS="$WIC_LIBS -ladvapi32 -luser32"
+                WICCODEC_LIBS="$WIC_LIBS -ladvapi32 -luser32 -loleaut32 \
+                    -lgdi32"
             else
                 WICCODEC_CFLAGS="$WIC_CFLAGS"
-                WICCODEC_LIBS="$WIC_LIBS"
+                WICCODEC_LIBS="$WIC_LIBS -loleaut32 -lgdi32"
             fi
             ac_fn_c_check_header_compile "$LINENO" "wincodecsdk.h" "ac_cv_header_wincodecsdk_h" "$ac_includes_default"
 if test "x$ac_cv_header_wincodecsdk_h" = xyes
@@ -22158,18 +22159,22 @@ printf "%s\n" "$as_me: checking for Windows Imaging Component (WIC)" >&6;}
             if test x${prefix} != x -a x${prefix} != xNONE; then
                 if test "x${using_cl}" = xyes; then
                     ADDED_CFLAGS=
-                    ADDED_LIBS="-lole32 -lwindowscodecs -ladvapi32 -luser32"
+                    ADDED_LIBS="-lole32 -lwindowscodecs -ladvapi32 -luser32 \
+                        -loleaut32 -lgdi32"
                 else
                     ADDED_CFLAGS="-I${prefix}/include"
-                    ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
+                    ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs \
+                        -loleaut32 -lgdi32"
                 fi
             else
                 if test "x${using_cl}" = xyes; then
                     ADDED_CFLAGS=
-                    ADDED_LIBS="-lole32 -lwindowscodecs -ladvapi32 -luser32"
+                    ADDED_LIBS="-lole32 -lwindowscodecs -ladvapi32 -luser32 \
+                        -loleaut32 -lgdi32"
                 else
                     ADDED_CFLAGS="-I/usr/local/include"
-                    ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
+                    ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs \
+                        -loleaut32 -lgdi32"
                 fi
             fi
             CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
