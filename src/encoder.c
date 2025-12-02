@@ -3858,7 +3858,7 @@ sixel_encoder_emit_drcsmmv2_chars(
 {
     char *buf_p, *buf;
     int col, row;
-    int charset;
+    char ibytes[3] = { 0x20, 0x00, 0x00 };
     int is_96cs;
     unsigned int charset_no;
     unsigned int code;
@@ -3868,6 +3868,7 @@ sixel_encoder_emit_drcsmmv2_chars(
     int nwrite;
     int target_fd;
     int chunk_size;
+    int fill;
 
     charset_no = encoder->drcs_charset_no;
     if (charset_no == 0u) {
@@ -3875,15 +3876,27 @@ sixel_encoder_emit_drcsmmv2_chars(
     }
     if (encoder->drcs_mmv == 0) {
         is_96cs = (charset_no > 63u) ? 1 : 0;
-        charset = (int)(((charset_no - 1u) % 63u) + 0x40u);
+        ibytes[1] = (int)(((charset_no - 1u) % 63u) + 0x40u);
+        fill = 0;
     } else if (encoder->drcs_mmv == 1) {
         is_96cs = 0;
-        charset = (int)(charset_no + 0x3fu);
-    } else {
+        ibytes[1] = (int)(charset_no + 0x3fu);
+        fill = 0;
+    } else if (encoder->drcs_mmv == 2) {
         is_96cs = (charset_no > 79u) ? 1 : 0;
-        charset = (int)(((charset_no - 1u) % 79u) + 0x30u);
+        ibytes[1] = (int)(((charset_no - 1u) % 79u) + 0x30u);
+        fill = 0;
+    } else {  /* v3 */
+        is_96cs = 0;
+        ibytes[1] = (int)(((charset_no - 1u) / 63u) + 0x20u);
+        ibytes[2] = (int)(((charset_no - 1u) % 63u) + 0x40u);
+        fill = 1;
     }
-    code = 0x100020 + (is_96cs ? 0x80 : 0) + charset * 0x100;
+    if (fill) {
+        code = 0x100000 + (charset_no - 1u) * 94;
+    } else {
+        code = 0x100020 + (is_96cs ? 0x80 : 0) + ibytes[1] * 0x100;
+    }
     num_cols = (sixel_frame_get_width(frame) + encoder->cell_width - 1)
              / encoder->cell_width;
     num_rows = (sixel_frame_get_height(frame) + encoder->cell_height - 1)
@@ -3899,32 +3912,28 @@ sixel_encoder_emit_drcsmmv2_chars(
         goto end;
     }
 
-    for(row = 0; row < num_rows; row++) {
-        for(col = 0; col < num_cols; col++) {
+    for (row = 0; row < num_rows; row++) {
+        for (col = 0; col < num_cols; col++) {
             *(buf_p++) = ((code >> 18) & 0x07) | 0xf0;
             *(buf_p++) = ((code >> 12) & 0x3f) | 0x80;
             *(buf_p++) = ((code >> 6) & 0x3f) | 0x80;
             *(buf_p++) = (code & 0x3f) | 0x80;
             code++;
-            if ((code & 0x7f) == 0x0) {
-                if (charset == 0x7e) {
-                    is_96cs = 1 - is_96cs;
-                    charset = '0';
-                } else {
-                    charset++;
+            if (! fill) {
+                if ((code & 0x7f) == 0x0) {
+                    if (ibytes[1] == 0x7e) {
+                        is_96cs = 1 - is_96cs;
+                        ibytes[1] = '0';
+                    } else {
+                        ibytes[1]++;
+                    }
+                    code = 0x100020 + (is_96cs ? 0x80 : 0) + ibytes[1] * 0x100;
                 }
-                code = 0x100020 + (is_96cs ? 0x80 : 0) + charset * 0x100;
             }
         }
         *(buf_p++) = '\n';
     }
 
-    if (charset == 0x7e) {
-        is_96cs = 1 - is_96cs;
-    } else {
-        charset = '0';
-        charset++;
-    }
     if (encoder->tile_outfd >= 0) {
         target_fd = encoder->tile_outfd;
     } else {
@@ -3963,7 +3972,7 @@ sixel_encoder_encode_frame(
     int is_animation = 0;
     int nwrite;
     int drcs_is_96cs_param;
-    int drcs_designate_char;
+    char drcs_designate_str[4] = { 0x20, 0x20, 0x40, 0x00 };
     char buf[256];
     sixel_write_function fn_write;
     sixel_write_function write_callback;
@@ -4298,28 +4307,41 @@ sixel_encoder_encode_frame(
         if (encoder->drcs_mmv == 0) {
             drcs_is_96cs_param =
                 (encoder->drcs_charset_no > 63u) ? 1 : 0;
-            drcs_designate_char =
+            drcs_designate_str[1] =
                 (int)(((encoder->drcs_charset_no - 1u) % 63u) + 0x40u);
+            drcs_designate_str[2] = 0x00;
         } else if (encoder->drcs_mmv == 1) {
             drcs_is_96cs_param = 0;
-            drcs_designate_char =
+            drcs_designate_str[1] =
                 (int)(encoder->drcs_charset_no + 0x3fu);
-        } else {
+            drcs_designate_str[2] = 0x00;
+        } else if (encoder->drcs_mmv == 2) {
             drcs_is_96cs_param =
                 (encoder->drcs_charset_no > 79u) ? 1 : 0;
-            drcs_designate_char =
+            drcs_designate_str[1] =
                 (int)(((encoder->drcs_charset_no - 1u) % 79u) + 0x30u);
+            drcs_designate_str[2] = 0x00;
+        } else {
+            drcs_is_96cs_param = 0;
+            drcs_designate_str[1] =
+                (int)(((encoder->drcs_charset_no - 1u) / 63u) + 0x20u);
+            drcs_designate_str[2] =
+                (int)(((encoder->drcs_charset_no - 1u) % 63u) + 0x40u);
+            drcs_designate_str[3] = 0x00;
         }
         nwrite = sprintf(buf,
-                         "%s%s1;0;0;%d;1;3;%d;%d{ %c",
+                         "%s%sh%s1;0;0;%d;1;3;%d;%d{%s",
                          (encoder->drcs_mmv > 0) ? (
-                             encoder->f8bit ? "\233?8800h": "\033[?8800h"
+                             encoder->f8bit ? "\233?8800": "\033[?8800"
+                         ): "",
+                         (encoder->drcs_mmv >= 3) ? (
+                             encoder->f8bit ? ";8801": ";8801"
                          ): "",
                          encoder->f8bit ? "\220": "\033P",
                          encoder->cell_width,
                          encoder->cell_height,
                          drcs_is_96cs_param,
-                         drcs_designate_char);
+                         drcs_designate_str);
         if (nwrite < 0) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
             sixel_helper_set_additional_message(
@@ -6035,7 +6057,7 @@ sixel_encoder_setopt(
          *          |        +-- charset number (defaults to 1 when omitted)
          *          +-- mapping revision (defaults to 2 when omitted)
          */
-        if (drcs_mmv_value < 0 || drcs_mmv_value > 2) {
+        if (drcs_mmv_value < 0 || drcs_mmv_value > 3) {
             sixel_helper_set_additional_message(
                 "unknown DRCS unicode mapping version.");
             status = SIXEL_BAD_ARGUMENT;
@@ -6045,8 +6067,10 @@ sixel_encoder_setopt(
             drcs_charset_limit = 126u;
         } else if (drcs_mmv_value == 1) {
             drcs_charset_limit = 63u;
-        } else {
+        } else if (drcs_mmv_value == 2) {
             drcs_charset_limit = 158u;
+        } else {
+            drcs_charset_limit = 697u;
         }
         if (drcs_charset_value < 1 ||
             (unsigned long)drcs_charset_value > drcs_charset_limit) {
