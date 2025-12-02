@@ -199,13 +199,22 @@ am__define_uniq_tagged_files = \
   done | $(am__uniquify_input)`
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(srcdir)/libsixel.pc.in $(srcdir)/package.json.in.in \
+	$(top_srcdir)/build-aux/ar-lib $(top_srcdir)/build-aux/compile \
+	$(top_srcdir)/build-aux/config.guess \
+	$(top_srcdir)/build-aux/config.sub \
+	$(top_srcdir)/build-aux/install-sh \
+	$(top_srcdir)/build-aux/ltmain.sh \
+	$(top_srcdir)/build-aux/missing \
+	$(top_srcdir)/build-aux/tap-driver.sh \
 	$(top_srcdir)/quicklook-extension/Resources/Bridge-Info.plist.in \
 	$(top_srcdir)/quicklook-extension/Resources/Host-Info.plist.in \
 	$(top_srcdir)/quicklook-extension/Resources/Preview-Info.plist.in \
 	$(top_srcdir)/quicklook-extension/Resources/Thumbnail-Info.plist.in \
 	$(top_srcdir)/ruby/lib/libsixel/version_runtime.rb.in AUTHORS \
-	ChangeLog NEWS README.md ar-lib compile config.guess \
-	config.sub install-sh ltmain.sh missing py-compile
+	ChangeLog NEWS README.md build-aux/ar-lib build-aux/compile \
+	build-aux/config.guess build-aux/config.sub build-aux/depcomp \
+	build-aux/install-sh build-aux/ltmain.sh build-aux/missing \
+	build-aux/py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -452,9 +461,9 @@ zshcompletiondir = @zshcompletiondir@
 #
 # @configure_input@
 #
-SUBDIRS = include src converters assessment tools python \
+SUBDIRS = include src converters assessment tools tests python \
 	$(am__append_1) $(am__append_2) $(am__append_3)
-DIST_SUBDIRS = include src converters assessment tools python ruby wic \
+DIST_SUBDIRS = include src converters assessment tools tests python ruby wic \
         quicklook-extension
 
 EXTRA_DIST = LICENSE depcomp examples/windows/wsh_decoder_sample.vbs \

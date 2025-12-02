@@ -1,0 +1,41 @@
+#!/bin/sh
+# TAP test confirming progressive JPEG decoding works end-to-end.
+
+set -eu
+
+test_name=$(basename "$0")
+artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
+artifact_dir="${artifact_root}/${test_name}"
+log_file="${artifact_dir}/progressive-jpeg.log"
+output_dir="${artifact_dir}/outputs"
+
+mkdir -p "${output_dir}"
+
+script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+. "${script_dir}/converters-common.t"
+
+status=0
+case_id=1
+
+pass() {
+    printf 'ok %s - %s\n' "$1" "$2"
+}
+
+fail() {
+    printf 'not ok %s - %s\n' "$1" "$2"
+    status=1
+}
+
+echo "1..1"
+
+progressive_jpeg="${images_dir}/snake-progressive.jpg"
+require_file "${progressive_jpeg}"
+
+if run_img2sixel "${progressive_jpeg}" \
+        >"${output_dir}/progressive.sixel" 2>>"${log_file}"; then
+    pass ${case_id} "progressive JPEG converts"
+else
+    fail ${case_id} "progressive JPEG conversion failed"
+fi
+
+exit "${status}"

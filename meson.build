@@ -22,6 +22,7 @@
 project('libsixel',
         'c',
         version: '1.8.7',
+        meson_version: '>=0.59.0',
         license: 'MIT',
         default_options: [
             'buildtype=release',
@@ -1127,6 +1128,7 @@ endif
 
 
 if get_option('tests')
+  subdir('tests')
   if have_ruby
     env = environment()
     bindir = meson.current_build_dir()

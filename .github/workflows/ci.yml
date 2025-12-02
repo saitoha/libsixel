@@ -688,6 +688,19 @@ jobs:
           --rc branch_coverage=1 \
           -o coverage.info
 
+    - name: Upload autotools artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: autotools-${{ matrix.os }}-${{ matrix.sys || 'native' }}-${{ matrix.compiler || 'default' }}
+        path: |
+          **/test-suite.log
+          **/*.log
+          **/*.trs
+          **/_artifacts/**
+          coverage.info
+        if-no-files-found: warn
+
 #    - name: Capture coverage (Windows Cygwin via gcovr)
 #      if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
 #      shell: pwsh
@@ -860,6 +873,19 @@ jobs:
         make -j$(nproc)
         make check
 
+    - name: Upload autotools dist artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: autotools-dist-${{ matrix.os }}-${{ matrix.sys || 'native' }}
+        path: |
+          libsixel-*.tar.*
+          dist-build/**/test-suite.log
+          dist-build/**/*.log
+          dist-build/**/*.trs
+          dist-build/**/_artifacts/**
+        if-no-files-found: warn
+
 
 
   ci-autotools-asan:
@@ -1026,6 +1052,19 @@ jobs:
         cat config.log
         make V=1
 
+    - name: Upload autotools ASan artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: autotools-asan-${{ matrix.os }}-${{ matrix.sys || 'native' }}
+        path: |
+          **/config.log
+          **/test-suite.log
+          **/*.log
+          **/*.trs
+          **/_artifacts/**
+        if-no-files-found: warn
+
   ci-dist-meson:
     name: Meson dist tarball • ${{ matrix.label }}
     runs-on: ${{ matrix.runner || matrix.os }}
@@ -1136,6 +1175,18 @@ jobs:
         meson setup build ${{ matrix.setup_flags }}
         meson compile -C build
         meson test -C build || { cat build/meson-logs/testlog.txt || true; exit 1; }
+
+    - name: Upload meson dist artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: meson-dist-${{ matrix.os }}-${{ matrix.msystem || 'native' }}
+        path: |
+          builddir/meson-dist/**
+          dist-build/**/meson-logs/**
+          dist-build/**/_artifacts/**
+          dist-build/**/testlog.txt
+        if-no-files-found: warn
 
   ci-meson:
     name: Meson • ${{ matrix.os }} ${{ matrix.sys || 'native' }}
@@ -1447,6 +1498,18 @@ jobs:
             exit /b !errorlevel!
         )
         endlocal
+
+    - name: Upload meson artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: meson-${{ matrix.os }}-${{ matrix.sys || 'native' }}-${{ matrix.compiler || 'default' }}
+        path: |
+          builddir/meson-logs/**
+          builddir/**/_artifacts/**
+          builddir/**/testlog.txt
+          builddir/**/*.log
+        if-no-files-found: warn
 
 # emacs Local Variables:
 # emacs mode: c

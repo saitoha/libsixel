@@ -1,7 +1,7 @@
 #
 # @configure_input@
 #
-SUBDIRS = include src converters assessment tools python
+SUBDIRS = include src converters assessment tools tests python
 if HAVE_RUBY
 SUBDIRS += ruby
 endif
@@ -12,7 +12,7 @@ if HAVE_WICCODEC
 SUBDIRS += wic
 endif
 
-DIST_SUBDIRS = include src converters assessment tools python ruby wic \
+DIST_SUBDIRS = include src converters assessment tools tests python ruby wic \
         quicklook-extension
 
 EXTRA_DIST = LICENSE depcomp

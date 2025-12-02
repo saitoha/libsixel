@@ -3060,10 +3060,10 @@ as_fn_append ac_header_c_list " sys/types.h sys_types_h HAVE_SYS_TYPES_H"
 as_fn_append ac_header_c_list " unistd.h unistd_h HAVE_UNISTD_H"
 
 # Auxiliary files required by this configure script.
-ac_aux_files="compile ltmain.sh ar-lib missing install-sh config.guess config.sub"
+ac_aux_files="compile ltmain.sh ar-lib missing install-sh config.guess config.sub tap-driver.sh"
 
 # Locations in which to look for auxiliary files.
-ac_aux_dir_candidates="${srcdir}${PATH_SEPARATOR}${srcdir}/..${PATH_SEPARATOR}${srcdir}/../.."
+ac_aux_dir_candidates="${srcdir}/build-aux"
 
 # Search for a directory containing all of the required auxiliary files,
 # $ac_aux_files, from the $PATH-style list $ac_aux_dir_candidates.
@@ -3226,6 +3226,10 @@ ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
+
+
+
+
 LS_LT_CURRENT=1
 LS_LT_REVISION=6
 LS_LT_AGE=0
@@ -3345,7 +3349,6 @@ esac
     CC=$ac_ct_CC
   fi
 fi
-
 
 
 
@@ -23093,7 +23096,7 @@ fi
                    converters/Makefile.in include/Makefile.in \
                    python/Makefile.in src/Makefile.in tools/Makefile.in \
                    assessment/Makefile.in wic/Makefile.in \
-                   quicklook-extension/Makefile.in
+                   tests/Makefile.in quicklook-extension/Makefile.in
 
 
  if test x$have_curl = xyes; then
@@ -23153,7 +23156,7 @@ else
 fi
 
 
-ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile assessment/Makefile tools/Makefile tools/libsixel-config python/Makefile ruby/Makefile ruby/lib/libsixel/version_runtime.rb quicklook-extension/Makefile wic/Makefile"
+ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile assessment/Makefile tools/Makefile tools/libsixel-config tests/Makefile python/Makefile ruby/Makefile ruby/lib/libsixel/version_runtime.rb quicklook-extension/Makefile wic/Makefile"
 
 
 # Generate Ruby constants file from include/sixel.h when Ruby is enabled
@@ -24325,6 +24328,7 @@ do
     "assessment/Makefile") CONFIG_FILES="$CONFIG_FILES assessment/Makefile" ;;
     "tools/Makefile") CONFIG_FILES="$CONFIG_FILES tools/Makefile" ;;
     "tools/libsixel-config") CONFIG_FILES="$CONFIG_FILES tools/libsixel-config" ;;
+    "tests/Makefile") CONFIG_FILES="$CONFIG_FILES tests/Makefile" ;;
     "python/Makefile") CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;
     "ruby/Makefile") CONFIG_FILES="$CONFIG_FILES ruby/Makefile" ;;
     "ruby/lib/libsixel/version_runtime.rb") CONFIG_FILES="$CONFIG_FILES ruby/lib/libsixel/version_runtime.rb" ;;
