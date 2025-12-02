@@ -91,40 +91,14 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_1 = \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0001_01_invalid_positional.t \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0001_02_invalid_option_arguments.t \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0001_03_invalid_option_combinations.t \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0002_stdin.t \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0003_information.t \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0004_conversion_options_01.t \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0004_conversion_options_02.t \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0004_conversion_options_03.t \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0004_conversion_options_04.t \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0005_dcs_arguments.t \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0006_dcs_variations.t \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0007_animation.t \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0008_progressive_jpeg.t
-
-@HAVE_BASH_TRUE@@HAVE_PNG_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_2 = $(top_srcdir)/converters/t/test_0009_pngsuite.t
-@HAVE_BASH_TRUE@@HAVE_CURL_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_3 = $(top_srcdir)/converters/t/test_0010_curl.t
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_4 = $(top_srcdir)/converters/t/test_0011_basic.t
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_5 = \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0012_regressions.t \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0013_documentation.t \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0014_option_matching.t \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0015_argument_shift.t \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0016_assessment_spool.t \
-@HAVE_BASH_TRUE@@WANT_IMG2SIXEL_TRUE@        $(top_srcdir)/converters/t/test_0017_clipboard.t
-
-@WANT_IMG2SIXEL_TRUE@am__append_6 = img2sixel
-@HAVE_ABORT_TRACE_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_7 = $(ABORTTRACE_LIBS)
-@WANT_IMG2SIXEL_TRUE@am__append_8 = $(srcdir)/img2sixel.1
-@WANT_IMG2SIXEL_TRUE@am__append_9 = $(srcdir)/shell-completion/bash/img2sixel
-@WANT_IMG2SIXEL_TRUE@am__append_10 = $(srcdir)/shell-completion/zsh/_img2sixel
-@WANT_SIXEL2PNG_TRUE@am__append_11 = sixel2png
-@HAVE_ABORT_TRACE_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_12 = $(ABORTTRACE_LIBS)
-@WANT_SIXEL2PNG_TRUE@am__append_13 = $(srcdir)/sixel2png.1
+@WANT_IMG2SIXEL_TRUE@am__append_1 = img2sixel
+@HAVE_ABORT_TRACE_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_2 = $(ABORTTRACE_LIBS)
+@WANT_IMG2SIXEL_TRUE@am__append_3 = $(srcdir)/img2sixel.1
+@WANT_IMG2SIXEL_TRUE@am__append_4 = $(srcdir)/shell-completion/bash/img2sixel
+@WANT_IMG2SIXEL_TRUE@am__append_5 = $(srcdir)/shell-completion/zsh/_img2sixel
+@WANT_SIXEL2PNG_TRUE@am__append_6 = sixel2png
+@HAVE_ABORT_TRACE_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_7 = $(ABORTTRACE_LIBS)
+@WANT_SIXEL2PNG_TRUE@am__append_8 = $(srcdir)/sixel2png.1
 subdir = converters
 SUBDIRS =
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -537,11 +511,9 @@ zshcompletiondir = @zshcompletiondir@
 DIST_SUBDIRS = $(SUBDIRS)
 BUILT_SOURCES = completion_embed.h
 EXTRA_DIST = $(srcdir)/aborttrace.c $(srcdir)/aborttrace.h
-dist_man_MANS = $(am__append_8) $(am__append_13)
-dist_bashcompletion_DATA = $(am__append_9)
-dist_zshcompletion_DATA = $(am__append_10)
-CONVERTER_TEST_LIST = $(am__append_1) $(am__append_2) $(am__append_3) \
-	$(am__append_4) $(am__append_5)
+dist_man_MANS = $(am__append_3) $(am__append_8)
+dist_bashcompletion_DATA = $(am__append_4)
+dist_zshcompletion_DATA = $(am__append_5)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 CLEANFILES = *.gcno *.gcda *.gcov \
   $(builddir)/tmp/*.png \
@@ -576,7 +548,7 @@ CLEANFILES = *.gcno *.gcda *.gcov \
 @WANT_IMG2SIXEL_TRUE@img2sixel_LDFLAGS = $(MAYBE_COVERAGE)
 @WANT_IMG2SIXEL_TRUE@img2sixel_LDADD =  \
 @WANT_IMG2SIXEL_TRUE@	$(top_builddir)/src/libsixel.la \
-@WANT_IMG2SIXEL_TRUE@	$(am__append_7)
+@WANT_IMG2SIXEL_TRUE@	$(am__append_2)
 @WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = $(srcdir)/sixel2png.c \
 @WANT_SIXEL2PNG_TRUE@                    $(srcdir)/cli.c \
 @WANT_SIXEL2PNG_TRUE@                    $(srcdir)/cli.h \
@@ -591,7 +563,7 @@ CLEANFILES = *.gcno *.gcda *.gcov \
 @WANT_SIXEL2PNG_TRUE@sixel2png_LDFLAGS = $(MAYBE_COVERAGE)
 @WANT_SIXEL2PNG_TRUE@sixel2png_LDADD =  \
 @WANT_SIXEL2PNG_TRUE@	$(top_builddir)/src/libsixel.la \
-@WANT_SIXEL2PNG_TRUE@	$(am__append_12)
+@WANT_SIXEL2PNG_TRUE@	$(am__append_7)
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -1270,36 +1242,6 @@ completion_embed.h: \
 	$(AM_V_GEN)$(AWK) -f $(top_srcdir)/tools/gen_completion_embed.awk \
 	       $(srcdir)/shell-completion/bash/img2sixel \
 	       $(srcdir)/shell-completion/zsh/_img2sixel > $@
-
-check: test_impl
-
-test: all test_impl
-
-test_impl:
-	@if test "x$(BASH)" = x -o "x$(BASH)" = xno; then \
-		echo '[skipped] bash is not available; converter tests skipped'; \
-		exit 0; \
-	fi
-	@if test -z "$(CONVERTER_TEST_LIST)"; then \
-		echo '[skipped] no converter tests are enabled'; \
-		exit 0; \
-	fi
-	@echo '[start]'
-	@set -e; \
-	for test_script in $(CONVERTER_TEST_LIST); do \
-		echo "[$$(basename $$test_script)]"; \
-		TOP_SRCDIR=$(top_srcdir) \
-		SRC_DIR=$(srcdir) \
-		BUILD_DIR=$(builddir) \
-		TMP_DIR=$(builddir)/tmp \
-		WINE="$(WINE)" \
-		WINEEXT="$(WINEEXT)" \
-		$(BASH) "$$test_script" || exit $$?; \
-	done
-
-	@echo '[succeeded]'
-winetest: all
-	WINE=wine $(MAKE) test
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

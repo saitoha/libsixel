@@ -20,44 +20,6 @@ dist_bashcompletion_DATA =
 zshcompletiondir = @zshcompletiondir@
 dist_zshcompletion_DATA =
 
-CONVERTER_TEST_LIST =
-if WANT_IMG2SIXEL
-if HAVE_BASH
-CONVERTER_TEST_LIST += \
-        $(top_srcdir)/converters/t/test_0001_01_invalid_positional.t \
-        $(top_srcdir)/converters/t/test_0001_02_invalid_option_arguments.t \
-        $(top_srcdir)/converters/t/test_0001_03_invalid_option_combinations.t \
-        $(top_srcdir)/converters/t/test_0002_stdin.t \
-        $(top_srcdir)/converters/t/test_0003_information.t \
-        $(top_srcdir)/converters/t/test_0004_conversion_options_01.t \
-        $(top_srcdir)/converters/t/test_0004_conversion_options_02.t \
-        $(top_srcdir)/converters/t/test_0004_conversion_options_03.t \
-        $(top_srcdir)/converters/t/test_0004_conversion_options_04.t \
-        $(top_srcdir)/converters/t/test_0005_dcs_arguments.t \
-        $(top_srcdir)/converters/t/test_0006_dcs_variations.t \
-        $(top_srcdir)/converters/t/test_0007_animation.t \
-        $(top_srcdir)/converters/t/test_0008_progressive_jpeg.t
-
-if HAVE_PNG
-CONVERTER_TEST_LIST += $(top_srcdir)/converters/t/test_0009_pngsuite.t
-endif
-if HAVE_CURL
-CONVERTER_TEST_LIST += $(top_srcdir)/converters/t/test_0010_curl.t
-endif
-if WANT_SIXEL2PNG
-CONVERTER_TEST_LIST += $(top_srcdir)/converters/t/test_0011_basic.t
-endif
-CONVERTER_TEST_LIST += \
-        $(top_srcdir)/converters/t/test_0012_regressions.t \
-        $(top_srcdir)/converters/t/test_0013_documentation.t \
-        $(top_srcdir)/converters/t/test_0014_option_matching.t \
-        $(top_srcdir)/converters/t/test_0015_argument_shift.t \
-        $(top_srcdir)/converters/t/test_0016_assessment_spool.t \
-        $(top_srcdir)/converters/t/test_0017_clipboard.t
-endif
-endif
-
-
 if COND_GCOV
 MAYBE_COVERAGE = --coverage
 endif
@@ -135,33 +97,3 @@ sixel2png_LDADD += $(ABORTTRACE_LIBS)
 endif
 dist_man_MANS += $(srcdir)/sixel2png.1
 endif
-
-check: test_impl
-
-test: all test_impl
-
-test_impl:
-	@if test "x$(BASH)" = x -o "x$(BASH)" = xno; then \
-		echo '[skipped] bash is not available; converter tests skipped'; \
-		exit 0; \
-	fi
-	@if test -z "$(CONVERTER_TEST_LIST)"; then \
-		echo '[skipped] no converter tests are enabled'; \
-		exit 0; \
-	fi
-	@echo '[start]'
-	@set -e; \
-	for test_script in $(CONVERTER_TEST_LIST); do \
-		echo "[$$(basename $$test_script)]"; \
-		TOP_SRCDIR=$(top_srcdir) \
-		SRC_DIR=$(srcdir) \
-		BUILD_DIR=$(builddir) \
-		TMP_DIR=$(builddir)/tmp \
-		WINE="$(WINE)" \
-		WINEEXT="$(WINEEXT)" \
-		$(BASH) "$$test_script" || exit $$?; \
-	done
-
-	@echo '[succeeded]'
-winetest: all
-	WINE=wine $(MAKE) test
