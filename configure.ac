@@ -4,6 +4,8 @@
 AC_PREREQ([2.60])
 LT_PREREQ([2.4])
 AC_INIT([libsixel], [1.8.7], [saitoha@me.com])
+AC_CONFIG_AUX_DIR([build-aux])
+AC_REQUIRE_AUX_FILE([tap-driver.sh])
 LS_LT_CURRENT=1
 LS_LT_REVISION=6
 LS_LT_AGE=0
@@ -1896,7 +1898,7 @@ AC_DEFUN([LS_UPDATE_TIMESTAMP], [
                    converters/Makefile.in include/Makefile.in \
                    python/Makefile.in src/Makefile.in tools/Makefile.in \
                    assessment/Makefile.in wic/Makefile.in \
-                   quicklook-extension/Makefile.in
+                   tests/Makefile.in quicklook-extension/Makefile.in
           ])
 LS_UPDATE_TIMESTAMP
 
@@ -1918,6 +1920,7 @@ AC_CONFIG_FILES([Makefile
                  assessment/Makefile
                  tools/Makefile
                  tools/libsixel-config
+                 tests/Makefile
                  python/Makefile
                  ruby/Makefile
                  ruby/lib/libsixel/version_runtime.rb
