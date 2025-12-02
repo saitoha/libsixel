@@ -2953,14 +2953,15 @@ sixel_colorspace_log_clamp(size_t value)
 
 /*
  * Allow deployments to defer thread fan-out on tiny buffers via
- * SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS. Defaults to zero to preserve the
- * eager behavior on earlier builds.
+ * SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS. Defaults to 65537 pixels so the
+ * colorspace conversion waits for moderately sized frames before fanning
+ * out, but callers can override the behavior through the environment.
  */
 static size_t
 sixel_colorspace_parallel_min_pixels(void)
 {
     static int initialized = 0;
-    static size_t threshold = 0;
+    static size_t threshold = 65537;
     char const *text;
     char *endptr;
     unsigned long long parsed;

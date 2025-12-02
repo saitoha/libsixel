@@ -565,7 +565,7 @@ hardware thread count.
 .B SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS
 .br
 defer RGBFLOAT32 colorspace fan-out until the frame reaches this pixel
-count. Defaults to zero to preserve eager splitting on small images.
+count. Defaults to 65537 pixels to avoid eager splitting on small images.
 .TP 5
 .B SIXEL_LOADER_PRIORITY_LIST
 .br
