@@ -1141,9 +1141,6 @@ sixel_decode_image(
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_logger_t logger;
     int logger_prepared;
-#if SIXEL_ENABLE_THREADS
-    int used_parallel;
-#endif  /* SIXEL_ENABLE_THREADS */
 
     image->pixels.p = NULL;
 
@@ -1169,34 +1166,18 @@ sixel_decode_image(
                           len,
                           "reading sixel payload");
     }
-#if SIXEL_ENABLE_THREADS
-    used_parallel = 0;
-    if (depth == 1U) {
-        status = sixel_decode_raw_parallel(p,
-                                           len,
-                                           image,
-                                           allocator,
-                                           &used_parallel);
-    } else if (depth == 4U) {
-        status = sixel_decode_direct_parallel(p,
-                                              len,
-                                              image,
-                                              allocator,
-                                              &used_parallel);
-    }
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-    if (used_parallel) {
-        status = SIXEL_OK;
-        goto end;
-    }
-#endif  /* SIXEL_ENABLE_THREADS */
 
     status = parser_context_init(context);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+
+    /*
+     * The serial parser always runs first. When palette and raster
+     * attributes become available, the parser may request a parallel worker
+     * via sixel_decoder_parallel_request_start(). This guarantees bounds
+     * checks and logging are consistent before any background decode starts.
+     */
 
     if (logger_prepared) {
         /* Mark when the serial parser begins scanning tokens. */
