@@ -467,29 +467,7 @@ DIST_SUBDIRS = include src converters assessment tools tests python ruby wic \
         quicklook-extension
 
 EXTRA_DIST = LICENSE depcomp examples/windows/wsh_decoder_sample.vbs \
-	converters/t/common.t \
-	converters/t/test_0001_01_invalid_positional.t \
-	converters/t/test_0001_02_invalid_option_arguments.t \
-	converters/t/test_0001_03_invalid_option_combinations.t \
-	converters/t/test_0002_stdin.t \
-	converters/t/test_0003_information.t \
-	converters/t/test_0004_conversion_options_01.t \
-	converters/t/test_0004_conversion_options_02.t \
-	converters/t/test_0004_conversion_options_03.t \
-	converters/t/test_0004_conversion_options_04.t \
-	converters/t/test_0005_dcs_arguments.t \
-	converters/t/test_0006_dcs_variations.t \
-	converters/t/test_0007_animation.t \
-	converters/t/test_0008_progressive_jpeg.t \
-	converters/t/test_0009_pngsuite.t \
-	converters/t/test_0010_curl.t converters/t/test_0011_basic.t \
-	converters/t/test_0012_regressions.t \
-	converters/t/test_0013_documentation.t \
-	converters/t/test_0014_option_matching.t \
-	converters/t/test_0015_argument_shift.t \
-	converters/t/test_0016_assessment_spool.t \
-	converters/t/test_0017_clipboard.t tests/issue/167/poc \
-	tests/issue/166/poc \
+	tests/issue/167/poc tests/issue/166/poc \
 	tests/issue/200/POC_img2sixel_heap_buffer_overflow \
 	images/map8.png images/autumn.png images/egret.jpg \
 	images/map16-palette.png images/map16.png images/map64.six \
