@@ -25,71 +25,88 @@ jobs:
             runner: ubuntu-latest
             sys: x86_64
             static_only: true
+            variant: static-only
           - os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
             disable_simd: true
+            variant: disable-simd
           - os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
             disable_tools: true
+            variant: disable-tools
           - os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
             disable_threads: true
+            variant: disable-threads
           - os: ubuntu-latest
             runner: ubuntu-latest
             sys: i686
+            variant: default
           - os: macos-latest
             runner: macos-latest
             sys: aarch64
+            variant: default
           - os: macos-15
             runner: macos-15
             sys: x86_64
+            variant: default
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
             static_only: true
+            variant: static-only
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
             disable_simd: true
+            variant: disable-simd
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
             disable_tools: true
+            variant: disable-tools
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
             disable_threads: true
+            variant: disable-threads
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: UCRT64
+            variant: default
           - os: windows-latest
             runner: windows-latest
             compiler: clang
             sys: CLANG64
+            variant: default
           - os: windows-latest
             runner: windows-latest
             compiler: cl
             sys: MSVC
+            variant: default
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW32
+            variant: default
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MSYS
+            variant: default
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: CYGWIN
+            variant: default
 
     steps:
     - name: Configure git EOL
@@ -231,9 +248,6 @@ jobs:
           enable_gcov_flag=""
         fi
         ./configure \
-            --without-png \
-            --without-jpeg \
-            --without-libcurl \
             --without-bashcompletiondir \
             --without-zshcompletiondir \
             --disable-python \
@@ -692,7 +706,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: autotools-${{ matrix.os }}-${{ matrix.sys || 'native' }}-${{ matrix.compiler || 'default' }}
+        name: autotools-${{ matrix.os }}-${{ matrix.sys || 'native' }}-${{ matrix.compiler || 'default' }}-${{ matrix.variant || 'default' }}
         path: |
           **/test-suite.log
           **/*.log
@@ -1198,62 +1212,78 @@ jobs:
           - os: ubuntu-latest
             runner: ubuntu-latest
             static_only: true
+            variant: static-only
           - os: ubuntu-latest
             runner: ubuntu-latest
             disable_simd: true
+            variant: disable-simd
           - os: ubuntu-latest
             runner: ubuntu-latest
             disable_tools: true
+            variant: disable-tools
           - os: ubuntu-latest
             runner: ubuntu-latest
             disable_threads: true
+            variant: disable-threads
           - os: ubuntu-latest
             runner: ubuntu-latest
             sys: i686
+            variant: default
           - os: macos-latest
             runner: macos-latest
+            variant: default
           - os: macos-15
             runner: macos-15
+            variant: default
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
             static_only: true
+            variant: static-only
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
             disable_simd: true
+            variant: disable-simd
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
             disable_tools: true
+            variant: disable-tools
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
             disable_threads: true
+            variant: disable-threads
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: UCRT64
+            variant: default
           - os: windows-latest
             runner: windows-latest
             compiler: clang
             sys: CLANG64
+            variant: default
           - os: windows-latest
             runner: windows-latest
             compiler: cl
             sys: MSVC
+            variant: default
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW32
+            variant: default
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MSYS
+            variant: default
 #          - os: windows-latest
 #            runner: windows-latest
 #            compiler: gcc
@@ -1374,9 +1404,6 @@ jobs:
         fi
         meson setup builddir \
             --wrap-mode=nodownload \
-            -Dpng=disabled \
-            -Djpeg=disabled \
-            -Dcurl=disabled \
             ${default_library_flag} \
             -Dbashcompletiondir= \
             -Dzshcompletiondir= \
@@ -1504,13 +1531,14 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: meson-${{ matrix.os }}-${{ matrix.sys || 'native' }}-${{ matrix.compiler || 'default' }}
+        name: meson-${{ matrix.os }}-${{ matrix.sys || 'native' }}-${{ matrix.compiler || 'default' }}-${{ matrix.variant || 'default' }}
         path: |
           builddir/meson-logs/**
           builddir/**/_artifacts/**
           builddir/**/testlog.txt
           builddir/**/*.log
         if-no-files-found: warn
+        overwrite: true
 
 # emacs Local Variables:
 # emacs mode: c
