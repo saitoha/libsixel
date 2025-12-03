@@ -700,6 +700,7 @@ jobs:
           **/_artifacts/**
           coverage.info
         if-no-files-found: warn
+        overwrite: true
 
 #    - name: Capture coverage (Windows Cygwin via gcovr)
 #      if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
