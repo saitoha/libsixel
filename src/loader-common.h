@@ -44,10 +44,7 @@ void sixel_helper_set_loader_trace(int enable);
 void loader_trace_try(char const *name);
 void loader_trace_result(char const *name, SIXELSTATUS status);
 int loader_trace_is_enabled(void);
-
-#if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
 void loader_trace_message(char const *format, ...);
-#endif
 
 int chunk_is_gif(sixel_chunk_t const *chunk);
 
