@@ -15,7 +15,8 @@ endif
 DIST_SUBDIRS = include src converters assessment tools tests python ruby wic \
         quicklook-extension
 
-EXTRA_DIST = LICENSE depcomp
+# Keep depcomp in the aux directory so "make dist" can stage it correctly.
+EXTRA_DIST = LICENSE build-aux/depcomp
 
 EXTRA_DIST += examples/windows/wsh_decoder_sample.vbs
 

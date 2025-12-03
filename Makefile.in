@@ -462,13 +462,15 @@ zshcompletiondir = @zshcompletiondir@
 # @configure_input@
 #
 SUBDIRS = include src converters assessment tools tests python \
-	$(am__append_1) $(am__append_2) $(am__append_3)
+        $(am__append_1) $(am__append_2) $(am__append_3)
 DIST_SUBDIRS = include src converters assessment tools tests python ruby wic \
         quicklook-extension
 
-EXTRA_DIST = LICENSE depcomp examples/windows/wsh_decoder_sample.vbs \
-	tests/issue/167/poc tests/issue/166/poc \
-	tests/issue/200/POC_img2sixel_heap_buffer_overflow \
+# Keep depcomp in the aux directory so "make dist" can stage it correctly.
+EXTRA_DIST = LICENSE build-aux/depcomp \
+examples/windows/wsh_decoder_sample.vbs \
+        tests/issue/167/poc tests/issue/166/poc \
+        tests/issue/200/POC_img2sixel_heap_buffer_overflow \
 	images/map8.png images/autumn.png images/egret.jpg \
 	images/map16-palette.png images/map16.png images/map64.six \
 	images/map8-palette.png images/map8.png images/map8.six \
