@@ -18,6 +18,8 @@ script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 status=0
 case_id=1
 
+ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
+
 pass() {
     printf 'ok %s - %s\n' "$1" "$2"
 }
