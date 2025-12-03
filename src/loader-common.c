@@ -191,6 +191,66 @@ loader_trace_is_enabled(void)
 }
 
 int
+chunk_is_png(sixel_chunk_t const *chunk)
+{
+    if (chunk == NULL || chunk->size < 8) {
+        return 0;
+    }
+
+    /*
+     * PNG streams begin with an 8-byte signature.  Checking the fixed magic
+     * sequence keeps the detection fast and avoids depending on libpng
+     * helpers when only the signature is needed.
+     */
+    if (chunk->buffer[0] == (unsigned char)0x89 &&
+        chunk->buffer[1] == 'P' &&
+        chunk->buffer[2] == 'N' &&
+        chunk->buffer[3] == 'G' &&
+        chunk->buffer[4] == (unsigned char)0x0d &&
+        chunk->buffer[5] == (unsigned char)0x0a &&
+        chunk->buffer[6] == (unsigned char)0x1a &&
+        chunk->buffer[7] == (unsigned char)0x0a) {
+        return 1;
+    }
+
+    return 0;
+}
+
+int
+chunk_is_jpeg(sixel_chunk_t const *chunk)
+{
+    if (chunk == NULL || chunk->size < 2) {
+        return 0;
+    }
+
+    /*
+     * JPEG files start with SOI (Start of Image) marker 0xFF 0xD8.  The GD
+     * loader uses this to decide whether libgd should attempt JPEG decoding.
+     */
+    if (chunk->buffer[0] == (unsigned char)0xff &&
+        chunk->buffer[1] == (unsigned char)0xd8) {
+        return 1;
+    }
+
+    return 0;
+}
+
+int
+chunk_is_bmp(sixel_chunk_t const *chunk)
+{
+    if (chunk == NULL || chunk->size < 2) {
+        return 0;
+    }
+
+    /* BMP headers begin with the literal characters 'B' 'M'. */
+    if (chunk->buffer[0] == 'B' && chunk->buffer[1] == 'M') {
+        return 1;
+    }
+
+    return 0;
+}
+
+int
 chunk_is_gif(sixel_chunk_t const *chunk)
 {
     if (chunk->size < 6) {

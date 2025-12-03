@@ -108,7 +108,11 @@ load_with_gd(
     }
 
     if (im == NULL) {
-        status = SIXEL_OTHER_ERROR;
+        /*
+         * GD could not decode the input. Signal a backend-specific error so
+         * the caller can report that GD rejected the buffer after sniffing.
+         */
+        status = SIXEL_GD_ERROR;
         goto end;
     }
 
