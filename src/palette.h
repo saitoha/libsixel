@@ -32,18 +32,8 @@ extern "C" {
 #endif
 
 struct sixel_lut;
-
-/*
- * Internal statistics accumulator used while clustering provisional
- * palette entries.  The tuple stores RGB centroids along with the
- * aggregate weight gathered during histogram analysis.
- */
-typedef struct sixel_final_merge_cluster {
-    double r;
-    double g;
-    double b;
-    double count;
-} sixel_final_merge_cluster_t;
+struct sixel_final_merge_cluster;
+typedef struct sixel_final_merge_cluster sixel_final_merge_cluster_t;
 
 /*
  * Control how the final merge phase consolidates provisional clusters

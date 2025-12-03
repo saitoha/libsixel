@@ -56,6 +56,18 @@ static double env_final_merge_channel_factor_l = 1.0 / 3.0;
 static int env_final_merge_additional_lloyd_overridden = 0;
 static int env_final_merge_env_loaded = 0;
 
+/*
+ * Internal statistics accumulator used while clustering provisional
+ * palette entries.  The tuple stores RGB centroids along with the
+ * aggregate weight gathered during histogram analysis.
+ */
+struct sixel_final_merge_cluster {
+    double r;
+    double g;
+    double b;
+    double count;
+};
+
 static double
 sixel_final_merge_distance_sq(sixel_final_merge_cluster_t const *lhs,
                               sixel_final_merge_cluster_t const *rhs,
