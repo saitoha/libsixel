@@ -186,7 +186,20 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/cpu.c $(srcdir)/cpu.h $(srcdir)/pixelformat.c \
 	$(srcdir)/pixelformat.h $(srcdir)/scale.c $(srcdir)/scale.h \
 	$(srcdir)/chunk.c $(srcdir)/chunk.h $(srcdir)/loader.c \
-	$(srcdir)/loader.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
+	$(srcdir)/loader-gdk-pixbuf2.c \
+	$(srcdir)/loader-gnome-thumbnailer.c \
+	$(srcdir)/loader-coregraphics.c $(srcdir)/loader-quicklook.c \
+	$(srcdir)/loader-wic.c $(srcdir)/loader-gd.c \
+	$(srcdir)/loader-libpng.c $(srcdir)/loader-libjpeg.c \
+	$(srcdir)/loader-builtin.c $(srcdir)/loader-common.c \
+	$(srcdir)/loader-registry.c $(srcdir)/loader.h \
+	$(srcdir)/loader-builtin.h $(srcdir)/loader-common.h \
+	$(srcdir)/loader-coregraphics.h $(srcdir)/loader-gd.h \
+	$(srcdir)/loader-gdk-pixbuf2.h \
+	$(srcdir)/loader-gnome-thumbnailer.h \
+	$(srcdir)/loader-libjpeg.h $(srcdir)/loader-libpng.h \
+	$(srcdir)/loader-quicklook.h $(srcdir)/loader-registry.h \
+	$(srcdir)/loader-wic.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
 	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/clipboard.c \
 	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
 	$(srcdir)/decoder.c $(srcdir)/decoder.h \
@@ -229,15 +242,22 @@ am_libsixel_la_OBJECTS = libsixel_la-output.lo \
 	libsixel_la-colorspace.lo libsixel_la-frame.lo \
 	libsixel_la-cpu.lo libsixel_la-pixelformat.lo \
 	libsixel_la-scale.lo libsixel_la-chunk.lo \
-	libsixel_la-loader.lo libsixel_la-frompnm.lo \
-	libsixel_la-fromgif.lo libsixel_la-clipboard.lo \
-	libsixel_la-encoder.lo libsixel_la-decoder.lo \
-	libsixel_la-decoder-parallel.lo libsixel_la-options.lo \
-	libsixel_la-writer.lo libsixel_la-stb_image_write.lo \
-	libsixel_la-status.lo libsixel_la-compat_stub.lo \
-	libsixel_la-malloc_stub.lo libsixel_la-allocator.lo \
-	libsixel_la-tty.lo libsixel_la-sixel_threads_config.lo \
-	$(am__objects_1) $(am__objects_2) $(am__objects_3)
+	libsixel_la-loader.lo libsixel_la-loader-gdk-pixbuf2.lo \
+	libsixel_la-loader-gnome-thumbnailer.lo \
+	libsixel_la-loader-coregraphics.lo \
+	libsixel_la-loader-quicklook.lo libsixel_la-loader-wic.lo \
+	libsixel_la-loader-gd.lo libsixel_la-loader-libpng.lo \
+	libsixel_la-loader-libjpeg.lo libsixel_la-loader-builtin.lo \
+	libsixel_la-loader-common.lo libsixel_la-loader-registry.lo \
+	libsixel_la-frompnm.lo libsixel_la-fromgif.lo \
+	libsixel_la-clipboard.lo libsixel_la-encoder.lo \
+	libsixel_la-decoder.lo libsixel_la-decoder-parallel.lo \
+	libsixel_la-options.lo libsixel_la-writer.lo \
+	libsixel_la-stb_image_write.lo libsixel_la-status.lo \
+	libsixel_la-compat_stub.lo libsixel_la-malloc_stub.lo \
+	libsixel_la-allocator.lo libsixel_la-tty.lo \
+	libsixel_la-sixel_threads_config.lo $(am__objects_1) \
+	$(am__objects_2) $(am__objects_3)
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -292,6 +312,17 @@ am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
 	./$(DEPDIR)/libsixel_la-fromgif.Plo \
 	./$(DEPDIR)/libsixel_la-frompnm.Plo \
 	./$(DEPDIR)/libsixel_la-fromsixel.Plo \
+	./$(DEPDIR)/libsixel_la-loader-builtin.Plo \
+	./$(DEPDIR)/libsixel_la-loader-common.Plo \
+	./$(DEPDIR)/libsixel_la-loader-coregraphics.Plo \
+	./$(DEPDIR)/libsixel_la-loader-gd.Plo \
+	./$(DEPDIR)/libsixel_la-loader-gdk-pixbuf2.Plo \
+	./$(DEPDIR)/libsixel_la-loader-gnome-thumbnailer.Plo \
+	./$(DEPDIR)/libsixel_la-loader-libjpeg.Plo \
+	./$(DEPDIR)/libsixel_la-loader-libpng.Plo \
+	./$(DEPDIR)/libsixel_la-loader-quicklook.Plo \
+	./$(DEPDIR)/libsixel_la-loader-registry.Plo \
+	./$(DEPDIR)/libsixel_la-loader-wic.Plo \
 	./$(DEPDIR)/libsixel_la-loader.Plo \
 	./$(DEPDIR)/libsixel_la-logger.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-8bit.Plo \
@@ -612,7 +643,20 @@ libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/cpu.c $(srcdir)/cpu.h $(srcdir)/pixelformat.c \
 	$(srcdir)/pixelformat.h $(srcdir)/scale.c $(srcdir)/scale.h \
 	$(srcdir)/chunk.c $(srcdir)/chunk.h $(srcdir)/loader.c \
-	$(srcdir)/loader.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
+	$(srcdir)/loader-gdk-pixbuf2.c \
+	$(srcdir)/loader-gnome-thumbnailer.c \
+	$(srcdir)/loader-coregraphics.c $(srcdir)/loader-quicklook.c \
+	$(srcdir)/loader-wic.c $(srcdir)/loader-gd.c \
+	$(srcdir)/loader-libpng.c $(srcdir)/loader-libjpeg.c \
+	$(srcdir)/loader-builtin.c $(srcdir)/loader-common.c \
+	$(srcdir)/loader-registry.c $(srcdir)/loader.h \
+	$(srcdir)/loader-builtin.h $(srcdir)/loader-common.h \
+	$(srcdir)/loader-coregraphics.h $(srcdir)/loader-gd.h \
+	$(srcdir)/loader-gdk-pixbuf2.h \
+	$(srcdir)/loader-gnome-thumbnailer.h \
+	$(srcdir)/loader-libjpeg.h $(srcdir)/loader-libpng.h \
+	$(srcdir)/loader-quicklook.h $(srcdir)/loader-registry.h \
+	$(srcdir)/loader-wic.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
 	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/clipboard.c \
 	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
 	$(srcdir)/decoder.c $(srcdir)/decoder.h \
@@ -780,6 +824,17 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromgif.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompnm.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromsixel.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-builtin.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-common.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-coregraphics.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-gd.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-gdk-pixbuf2.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-gnome-thumbnailer.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-libjpeg.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-libpng.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-quicklook.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-registry.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader-wic.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-loader.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-logger.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-8bit.Plo@am__quote@ # am--include-marker
@@ -1038,6 +1093,83 @@ libsixel_la-loader.lo: loader.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader.c' object='libsixel_la-loader.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-loader.lo `test -f 'loader.c' || echo '$(srcdir)/'`loader.c
+
+libsixel_la-loader-gdk-pixbuf2.lo: loader-gdk-pixbuf2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-loader-gdk-pixbuf2.lo -MD -MP -MF $(DEPDIR)/libsixel_la-loader-gdk-pixbuf2.Tpo -c -o libsixel_la-loader-gdk-pixbuf2.lo `test -f 'loader-gdk-pixbuf2.c' || echo '$(srcdir)/'`loader-gdk-pixbuf2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-loader-gdk-pixbuf2.Tpo $(DEPDIR)/libsixel_la-loader-gdk-pixbuf2.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader-gdk-pixbuf2.c' object='libsixel_la-loader-gdk-pixbuf2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-loader-gdk-pixbuf2.lo `test -f 'loader-gdk-pixbuf2.c' || echo '$(srcdir)/'`loader-gdk-pixbuf2.c
+
+libsixel_la-loader-gnome-thumbnailer.lo: loader-gnome-thumbnailer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-loader-gnome-thumbnailer.lo -MD -MP -MF $(DEPDIR)/libsixel_la-loader-gnome-thumbnailer.Tpo -c -o libsixel_la-loader-gnome-thumbnailer.lo `test -f 'loader-gnome-thumbnailer.c' || echo '$(srcdir)/'`loader-gnome-thumbnailer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-loader-gnome-thumbnailer.Tpo $(DEPDIR)/libsixel_la-loader-gnome-thumbnailer.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader-gnome-thumbnailer.c' object='libsixel_la-loader-gnome-thumbnailer.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-loader-gnome-thumbnailer.lo `test -f 'loader-gnome-thumbnailer.c' || echo '$(srcdir)/'`loader-gnome-thumbnailer.c
+
+libsixel_la-loader-coregraphics.lo: loader-coregraphics.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-loader-coregraphics.lo -MD -MP -MF $(DEPDIR)/libsixel_la-loader-coregraphics.Tpo -c -o libsixel_la-loader-coregraphics.lo `test -f 'loader-coregraphics.c' || echo '$(srcdir)/'`loader-coregraphics.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-loader-coregraphics.Tpo $(DEPDIR)/libsixel_la-loader-coregraphics.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader-coregraphics.c' object='libsixel_la-loader-coregraphics.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-loader-coregraphics.lo `test -f 'loader-coregraphics.c' || echo '$(srcdir)/'`loader-coregraphics.c
+
+libsixel_la-loader-quicklook.lo: loader-quicklook.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-loader-quicklook.lo -MD -MP -MF $(DEPDIR)/libsixel_la-loader-quicklook.Tpo -c -o libsixel_la-loader-quicklook.lo `test -f 'loader-quicklook.c' || echo '$(srcdir)/'`loader-quicklook.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-loader-quicklook.Tpo $(DEPDIR)/libsixel_la-loader-quicklook.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader-quicklook.c' object='libsixel_la-loader-quicklook.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-loader-quicklook.lo `test -f 'loader-quicklook.c' || echo '$(srcdir)/'`loader-quicklook.c
+
+libsixel_la-loader-wic.lo: loader-wic.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-loader-wic.lo -MD -MP -MF $(DEPDIR)/libsixel_la-loader-wic.Tpo -c -o libsixel_la-loader-wic.lo `test -f 'loader-wic.c' || echo '$(srcdir)/'`loader-wic.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-loader-wic.Tpo $(DEPDIR)/libsixel_la-loader-wic.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader-wic.c' object='libsixel_la-loader-wic.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-loader-wic.lo `test -f 'loader-wic.c' || echo '$(srcdir)/'`loader-wic.c
+
+libsixel_la-loader-gd.lo: loader-gd.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-loader-gd.lo -MD -MP -MF $(DEPDIR)/libsixel_la-loader-gd.Tpo -c -o libsixel_la-loader-gd.lo `test -f 'loader-gd.c' || echo '$(srcdir)/'`loader-gd.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-loader-gd.Tpo $(DEPDIR)/libsixel_la-loader-gd.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader-gd.c' object='libsixel_la-loader-gd.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-loader-gd.lo `test -f 'loader-gd.c' || echo '$(srcdir)/'`loader-gd.c
+
+libsixel_la-loader-libpng.lo: loader-libpng.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-loader-libpng.lo -MD -MP -MF $(DEPDIR)/libsixel_la-loader-libpng.Tpo -c -o libsixel_la-loader-libpng.lo `test -f 'loader-libpng.c' || echo '$(srcdir)/'`loader-libpng.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-loader-libpng.Tpo $(DEPDIR)/libsixel_la-loader-libpng.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader-libpng.c' object='libsixel_la-loader-libpng.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-loader-libpng.lo `test -f 'loader-libpng.c' || echo '$(srcdir)/'`loader-libpng.c
+
+libsixel_la-loader-libjpeg.lo: loader-libjpeg.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-loader-libjpeg.lo -MD -MP -MF $(DEPDIR)/libsixel_la-loader-libjpeg.Tpo -c -o libsixel_la-loader-libjpeg.lo `test -f 'loader-libjpeg.c' || echo '$(srcdir)/'`loader-libjpeg.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-loader-libjpeg.Tpo $(DEPDIR)/libsixel_la-loader-libjpeg.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader-libjpeg.c' object='libsixel_la-loader-libjpeg.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-loader-libjpeg.lo `test -f 'loader-libjpeg.c' || echo '$(srcdir)/'`loader-libjpeg.c
+
+libsixel_la-loader-builtin.lo: loader-builtin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-loader-builtin.lo -MD -MP -MF $(DEPDIR)/libsixel_la-loader-builtin.Tpo -c -o libsixel_la-loader-builtin.lo `test -f 'loader-builtin.c' || echo '$(srcdir)/'`loader-builtin.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-loader-builtin.Tpo $(DEPDIR)/libsixel_la-loader-builtin.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader-builtin.c' object='libsixel_la-loader-builtin.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-loader-builtin.lo `test -f 'loader-builtin.c' || echo '$(srcdir)/'`loader-builtin.c
+
+libsixel_la-loader-common.lo: loader-common.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-loader-common.lo -MD -MP -MF $(DEPDIR)/libsixel_la-loader-common.Tpo -c -o libsixel_la-loader-common.lo `test -f 'loader-common.c' || echo '$(srcdir)/'`loader-common.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-loader-common.Tpo $(DEPDIR)/libsixel_la-loader-common.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader-common.c' object='libsixel_la-loader-common.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-loader-common.lo `test -f 'loader-common.c' || echo '$(srcdir)/'`loader-common.c
+
+libsixel_la-loader-registry.lo: loader-registry.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-loader-registry.lo -MD -MP -MF $(DEPDIR)/libsixel_la-loader-registry.Tpo -c -o libsixel_la-loader-registry.lo `test -f 'loader-registry.c' || echo '$(srcdir)/'`loader-registry.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-loader-registry.Tpo $(DEPDIR)/libsixel_la-loader-registry.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader-registry.c' object='libsixel_la-loader-registry.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-loader-registry.lo `test -f 'loader-registry.c' || echo '$(srcdir)/'`loader-registry.c
 
 libsixel_la-frompnm.lo: frompnm.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-frompnm.lo -MD -MP -MF $(DEPDIR)/libsixel_la-frompnm.Tpo -c -o libsixel_la-frompnm.lo `test -f 'frompnm.c' || echo '$(srcdir)/'`frompnm.c
@@ -1412,6 +1544,17 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-fromgif.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompnm.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromsixel.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-builtin.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-common.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-coregraphics.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-gd.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-gdk-pixbuf2.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-gnome-thumbnailer.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-libjpeg.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-libpng.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-quicklook.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-registry.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-wic.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-logger.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-8bit.Plo
@@ -1506,6 +1649,17 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-fromgif.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompnm.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromsixel.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-builtin.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-common.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-coregraphics.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-gd.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-gdk-pixbuf2.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-gnome-thumbnailer.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-libjpeg.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-libpng.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-quicklook.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-registry.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-loader-wic.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-loader.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-logger.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-8bit.Plo
