@@ -67,30 +67,52 @@ libsixel_la_SOURCES = \
                 $(srcdir)/pixelformat.h \
                 $(srcdir)/scale.c \
                 $(srcdir)/scale.h \
-                $(srcdir)/chunk.c \
-                $(srcdir)/chunk.h \
-                $(srcdir)/loader.c \
-                $(srcdir)/loader.h \
-                $(srcdir)/frompnm.c \
-                $(srcdir)/frompnm.h \
-                $(srcdir)/fromgif.c \
-                $(srcdir)/fromgif.h \
-                $(srcdir)/clipboard.c \
-                $(srcdir)/clipboard.h \
-                $(srcdir)/encoder.c \
-                $(srcdir)/encoder.h \
-                $(srcdir)/decoder.c \
-                $(srcdir)/decoder.h \
-                $(srcdir)/decoder-parallel.c \
-                $(srcdir)/decoder-parallel.h \
-                $(srcdir)/decoder-image.h \
-                $(srcdir)/options.c \
-                $(srcdir)/options.h \
-                $(srcdir)/stb_image.h \
-                $(srcdir)/writer.c \
-                $(srcdir)/writer.h \
-                $(srcdir)/stb_image_write.c \
-                $(srcdir)/stb_image_write.h \
+$(srcdir)/chunk.c \
+$(srcdir)/chunk.h \
+$(srcdir)/loader.c \
+$(srcdir)/loader-gdk-pixbuf2.c \
+$(srcdir)/loader-gnome-thumbnailer.c \
+$(srcdir)/loader-coregraphics.c \
+$(srcdir)/loader-quicklook.c \
+$(srcdir)/loader-wic.c \
+$(srcdir)/loader-gd.c \
+$(srcdir)/loader-libpng.c \
+$(srcdir)/loader-libjpeg.c \
+$(srcdir)/loader-builtin.c \
+$(srcdir)/loader-common.c \
+$(srcdir)/loader-registry.c \
+$(srcdir)/loader.h \
+$(srcdir)/loader-builtin.h \
+$(srcdir)/loader-common.h \
+$(srcdir)/loader-coregraphics.h \
+$(srcdir)/loader-gd.h \
+$(srcdir)/loader-gdk-pixbuf2.h \
+$(srcdir)/loader-gnome-thumbnailer.h \
+$(srcdir)/loader-libjpeg.h \
+$(srcdir)/loader-libpng.h \
+$(srcdir)/loader-quicklook.h \
+$(srcdir)/loader-registry.h \
+$(srcdir)/loader-wic.h \
+$(srcdir)/frompnm.c \
+$(srcdir)/frompnm.h \
+$(srcdir)/fromgif.c \
+$(srcdir)/fromgif.h \
+$(srcdir)/clipboard.c \
+$(srcdir)/clipboard.h \
+$(srcdir)/encoder.c \
+$(srcdir)/encoder.h \
+$(srcdir)/decoder.c \
+$(srcdir)/decoder.h \
+$(srcdir)/decoder-parallel.c \
+$(srcdir)/decoder-parallel.h \
+$(srcdir)/decoder-image.h \
+$(srcdir)/options.c \
+$(srcdir)/options.h \
+$(srcdir)/stb_image.h \
+$(srcdir)/writer.c \
+$(srcdir)/writer.h \
+$(srcdir)/stb_image_write.c \
+$(srcdir)/stb_image_write.h \
                 $(srcdir)/status.c \
                 $(srcdir)/status.h \
                 $(srcdir)/stdio_stub.h \
