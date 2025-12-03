@@ -13,6 +13,8 @@ mkdir -p "${artifact_dir}"
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${script_dir}/converters-common.t"
 
+ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
+
 require_file "${images_dir}/snake.png"
 
 status=0
