@@ -128,7 +128,6 @@ sixel_helper_set_thumbnail_size_hint(int size)
     }
 }
 
-#if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
 void
 loader_trace_message(char const *format, ...)
 {
@@ -162,7 +161,6 @@ loader_trace_message(char const *format, ...)
 
     fprintf(stderr, "\n");
 }
-#endif  /* HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK */
 
 void
 loader_trace_try(char const *name)
