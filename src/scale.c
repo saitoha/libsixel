@@ -52,6 +52,7 @@
 
 #include "cpu.h"
 #include "logger.h"
+#include "compat_stub.h"
 
 #if SIXEL_ENABLE_THREADS
 # include "sixel_threads_config.h"
@@ -1215,6 +1216,7 @@ typedef struct scale_parallel_context {
     double n;
     scale_parallel_pass_t pass;
     int simd_level;
+    int band_span;
     sixel_logger_t *logger;
 } scale_parallel_context_t;
 
@@ -1268,7 +1270,7 @@ scale_parallel_min_bytes(void)
     }
 
     initialized = 1;
-    text = getenv("SIXEL_SCALE_PARALLEL_MIN_BYTES");
+    text = sixel_compat_getenv("SIXEL_SCALE_PARALLEL_MIN_BYTES");
     if (text == NULL || text[0] == '\0') {
         return threshold;
     }
@@ -1288,6 +1290,55 @@ scale_parallel_min_bytes(void)
     return threshold;
 }
 
+/*
+ * Choose the number of rows handled per threadpool job. We prefer an
+ * environment override via SIXEL_PARALLEL_FACTOR so deployments can tune
+ * queueing overhead. Otherwise derive a span from rows/threads and clamp to
+ * [1, rows]. The value is cached after the first lookup.
+ */
+static int
+scale_parallel_band_span(int rows, int threads)
+{
+    static int initialized = 0;
+    static int env_span = 0;
+    char const *text;
+    char *endptr;
+    long parsed;
+    int span;
+
+    if (rows <= 0) {
+        return 1;
+    }
+
+    if (!initialized) {
+        initialized = 1;
+        text = sixel_compat_getenv("SIXEL_PARALLEL_FACTOR");
+        if (text != NULL && text[0] != '\0') {
+            errno = 0;
+            parsed = strtol(text, &endptr, 10);
+            if (endptr != text && *endptr == '\0' && errno != ERANGE &&
+                parsed > 0 && parsed <= INT_MAX) {
+                env_span = (int)parsed;
+            }
+        }
+    }
+
+    if (env_span > 0) {
+        span = env_span;
+    } else {
+        span = rows / threads;
+    }
+
+    if (span < 1) {
+        span = 1;
+    }
+    if (span > rows) {
+        span = rows;
+    }
+
+    return span;
+}
+
 static int
 scale_parallel_worker(tp_job_t job, void *userdata, void *workspace)
 {
@@ -1298,6 +1349,8 @@ scale_parallel_worker(tp_job_t job, void *userdata, void *workspace)
     int y1;
     int in0;
     int in1;
+    int limit;
+    int y;
 
     (void)workspace;
     ctx = (scale_parallel_context_t *)userdata;
@@ -1311,12 +1364,24 @@ scale_parallel_worker(tp_job_t job, void *userdata, void *workspace)
     in0 = 0;
     in1 = 0;
     index = job.band_index;
+    limit = ctx->srch;
     if (ctx->pass == SCALE_PASS_HORIZONTAL) {
-        if (index < 0 || index >= ctx->srch) {
-            return SIXEL_BAD_ARGUMENT;
-        }
-        y0 = index;
-        y1 = index + 1;
+        limit = ctx->srch;
+    } else {
+        limit = ctx->dsth;
+    }
+
+    if (index < 0 || index >= limit) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    y0 = index;
+    y1 = index + ctx->band_span;
+    if (y1 > limit) {
+        y1 = limit;
+    }
+
+    if (ctx->pass == SCALE_PASS_HORIZONTAL) {
         in1 = ctx->dstw;
         if (scale_parallel_should_log(ctx, index)) {
             sixel_logger_logf(ctx->logger,
@@ -1324,29 +1389,26 @@ scale_parallel_worker(tp_job_t job, void *userdata, void *workspace)
                               "scale",
                               "start",
                               index,
-                              index,
+                              y1 - 1,
                               y0,
                               y1,
                               in0,
                               in1,
                               "horizontal pass");
         }
-        scale_horizontal_row(ctx->tmp,
-                             ctx->src,
-                             ctx->srcw,
-                             ctx->dstw,
-                             ctx->depth,
-                             index,
-                             ctx->f_resample,
-                             ctx->n,
-                             ctx->simd_level);
-    } else {
-        if (index < 0 || index >= ctx->dsth) {
-            return SIXEL_BAD_ARGUMENT;
+        for (y = y0; y < y1; y++) {
+            scale_horizontal_row(ctx->tmp,
+                                 ctx->src,
+                                 ctx->srcw,
+                                 ctx->dstw,
+                                 ctx->depth,
+                                 y,
+                                 ctx->f_resample,
+                                 ctx->n,
+                                 ctx->simd_level);
         }
+    } else {
         role = "vertical";
-        y0 = index;
-        y1 = index + 1;
         in1 = ctx->srch;
         if (scale_parallel_should_log(ctx, index)) {
             sixel_logger_logf(ctx->logger,
@@ -1354,23 +1416,25 @@ scale_parallel_worker(tp_job_t job, void *userdata, void *workspace)
                               "scale",
                               "start",
                               index,
-                              index,
+                              y1 - 1,
                               y0,
                               y1,
                               in0,
                               in1,
                               "vertical pass");
         }
-        scale_vertical_row(ctx->dst,
-                           ctx->tmp,
-                           ctx->dstw,
-                           ctx->dsth,
-                           ctx->depth,
-                           ctx->srch,
-                           index,
-                           ctx->f_resample,
-                           ctx->n,
-                           ctx->simd_level);
+        for (y = y0; y < y1; y++) {
+            scale_vertical_row(ctx->dst,
+                               ctx->tmp,
+                               ctx->dstw,
+                               ctx->dsth,
+                               ctx->depth,
+                               ctx->srch,
+                               y,
+                               ctx->f_resample,
+                               ctx->n,
+                               ctx->simd_level);
+        }
     }
 
     if (scale_parallel_should_log(ctx, index)) {
@@ -1379,7 +1443,7 @@ scale_parallel_worker(tp_job_t job, void *userdata, void *workspace)
                           "scale",
                           "finish",
                           index,
-                          index,
+                          y1 - 1,
                           y0,
                           y1,
                           in0,
@@ -1392,8 +1456,9 @@ scale_parallel_worker(tp_job_t job, void *userdata, void *workspace)
 
 /*
  * Parallel path mirrors the encoder and dither thread selection through
- * sixel_threads_resolve(). Rows become individual jobs for both passes so the
- * caller can saturate the threadpool without altering the filtering math.
+ * sixel_threads_resolve(). Rows are batched into jobs for both passes so the
+ * caller can saturate the threadpool without altering the filtering math while
+ * reducing queue overhead.
  */
 static int
 scale_with_resampling_parallel(
@@ -1418,6 +1483,8 @@ scale_with_resampling_parallel(
     int y;
     int rc;
     int logger_ready;
+    int horizontal_span;
+    int vertical_span;
 
     image_bytes = (size_t)srcw * (size_t)srch * (size_t)depth;
     if (image_bytes < scale_parallel_min_bytes()) {
@@ -1489,6 +1556,14 @@ scale_with_resampling_parallel(
     ctx.simd_level = sixel_scale_simd_level();
     ctx.logger = logger_ready ? logger : NULL;
 
+    /*
+     * Batch rows to reduce queue churn. Prefer the environment override so
+     * deployments can pin a consistent span; otherwise derive a default from
+     * rows per thread.
+     */
+    horizontal_span = scale_parallel_band_span(srch, threads);
+    vertical_span = scale_parallel_band_span(dsth, threads);
+
     queue_depth = threads * 3;
     if (queue_depth > srch) {
         queue_depth = srch;
@@ -1498,6 +1573,7 @@ scale_with_resampling_parallel(
     }
 
     ctx.pass = SCALE_PASS_HORIZONTAL;
+    ctx.band_span = horizontal_span;
     if (logger_ready) {
         sixel_logger_logf(logger,
                           "controller",
@@ -1522,7 +1598,7 @@ scale_with_resampling_parallel(
         return SIXEL_BAD_ALLOCATION;
     }
 
-    for (y = 0; y < srch; y++) {
+    for (y = 0; y < srch; y += horizontal_span) {
         job.band_index = y;
         threadpool_push(pool, job);
     }
@@ -1556,6 +1632,7 @@ scale_with_resampling_parallel(
     }
 
     ctx.pass = SCALE_PASS_VERTICAL;
+    ctx.band_span = vertical_span;
     if (logger_ready) {
         sixel_logger_logf(logger,
                           "controller",
@@ -1580,7 +1657,7 @@ scale_with_resampling_parallel(
         return SIXEL_BAD_ALLOCATION;
     }
 
-    for (y = 0; y < dsth; y++) {
+    for (y = 0; y < dsth; y += vertical_span) {
         job.band_index = y;
         threadpool_push(pool, job);
     }
