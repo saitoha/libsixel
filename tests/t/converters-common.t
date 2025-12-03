@@ -84,6 +84,25 @@ converter_enabled() {
     return 1
 }
 
+# Inspect autotools configuration header for a given feature macro. This is
+# used to verify optional dependencies, such as libcurl support, based on the
+# current build configuration instead of stale binaries.
+feature_defined_in_config() {
+    macro_name=$1
+
+    config_header="${top_builddir}/config.h"
+    if [ ! -f "${config_header}" ]; then
+        return 1
+    fi
+
+    if grep -Eq "^#define[[:space:]]+${macro_name}[[:space:]]+1" \
+            "${config_header}"; then
+        return 0
+    fi
+
+    return 1
+}
+
 skip_all() {
     echo "1..0 # SKIP $1"
     exit 0
@@ -117,6 +136,26 @@ ensure_converter_available() {
     fi
 
     ensure_executable "${target_path}" "${description}"
+}
+
+# Confirm that an optional library feature is enabled for the build. The
+# autotools path checks the generated config.h macro, and the Meson path
+# relies on the corresponding build option. Tests depending on the feature
+# use this guard to avoid running under incompatible configurations.
+ensure_feature_available() {
+    macro_name=$1
+    meson_option=$2
+    description=$3
+
+    if feature_defined_in_config "${macro_name}"; then
+        return 0
+    fi
+
+    if check_meson_option "${meson_option}"; then
+        return 0
+    fi
+
+    skip_all "${description} is disabled in this build"
 }
 
 wine_exec() {
