@@ -48,23 +48,10 @@
 
 #include "allocator.h"
 #include "chunk.h"
+#include "loader-common.h"
 #include "frame.h"
 #include "loader-libjpeg.h"
 #include "logger.h"
-
-static int
-chunk_is_jpeg(sixel_chunk_t const *chunk)
-{
-    if (chunk == NULL || chunk->size < 2) {
-        return 0;
-    }
-
-    if (memcmp("\xFF\xD8", chunk->buffer, 2) == 0) {
-        return 1;
-    }
-
-    return 0;
-}
 
 /*
  * import from @uobikiemukot's sdump loader.h

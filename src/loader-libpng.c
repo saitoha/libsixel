@@ -54,23 +54,10 @@
 
 #include "allocator.h"
 #include "chunk.h"
+#include "loader-common.h"
 #include "frame.h"
 #include "loader-libpng.h"
 #include "logger.h"
-
-static int
-chunk_is_png(sixel_chunk_t const *chunk)
-{
-    if (chunk == NULL || chunk->size < 8) {
-        return 0;
-    }
-
-    if (png_check_sig(chunk->buffer, 8)) {
-        return 1;
-    }
-
-    return 0;
-}
 
 static void
 read_png(png_structp png_ptr,

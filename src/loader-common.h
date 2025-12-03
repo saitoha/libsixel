@@ -46,6 +46,9 @@ void loader_trace_result(char const *name, SIXELSTATUS status);
 int loader_trace_is_enabled(void);
 void loader_trace_message(char const *format, ...);
 
+int chunk_is_png(sixel_chunk_t const *chunk);
+int chunk_is_jpeg(sixel_chunk_t const *chunk);
+int chunk_is_bmp(sixel_chunk_t const *chunk);
 int chunk_is_gif(sixel_chunk_t const *chunk);
 
 #endif /* LIBSIXEL_LOADER_COMMON_H */
