@@ -30,7 +30,10 @@ fail() {
 }
 
 skip() {
-    reason=${3:-"skipped"}
+    reason="skipped"
+    if [ "$#" -ge 3 ]; then
+        reason=$3
+    fi
 
     printf 'ok %s - %s # SKIP %s\n' "$1" "$2" "${reason}"
 }
