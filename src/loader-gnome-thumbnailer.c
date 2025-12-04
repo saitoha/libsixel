@@ -90,18 +90,18 @@ extern char **environ;
 #include "loader-gnome-thumbnailer.h"
 #include "loader.h"
 #include "logger.h"
+#include "sleep.h"
 
 #if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
 
-# if defined(HAVE_NANOSLEEP)
-int nanosleep(const struct timespec *rqtp, struct timespec *rmtp);
-# endif
 # if defined(HAVE_REALPATH)
 char * realpath(const char *restrict path, char *restrict resolved_path);
 # endif
 # if defined(HAVE_MKSTEMP)
 int mkstemp(char *);
 # endif
+
+enum { THUMBNAILER_POLL_SLEEP_USEC = 10000u }; /* 10 ms */
 
 /*
  * thumbnailer_message_finalize
@@ -124,31 +124,6 @@ thumbnailer_message_finalize(char *buffer, size_t capacity, int written)
     if ((size_t)written >= capacity) {
         buffer[capacity - 1u] = '\0';
     }
-}
-
-/*
- * thumbnailer_sleep_briefly
- *
- * Yield the CPU for a short duration so child polling loops avoid busy
- * waiting.
- *
- */
-static void
-thumbnailer_sleep_briefly(void)
-{
-# if HAVE_NANOSLEEP
-    struct timespec ts;
-# endif
-
-# if HAVE_NANOSLEEP
-    ts.tv_sec = 0;
-    ts.tv_nsec = 10000000L;
-    nanosleep(&ts, NULL);
-# elif defined(_WIN32)
-    Sleep(10);
-# else
-    (void)usleep(10000);
-# endif
 }
 
 # if !defined(_WIN32) && defined(HAVE__REALPATH) && !defined(HAVE_REALPATH)
@@ -2343,7 +2318,11 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
         }
 
         if (!child_exited || stderr_open || stdout_open) {
-            thumbnailer_sleep_briefly();
+            /*
+             * Brief sleep prevents busy waiting while periodically polling
+             * child processes and pipe handles.
+             */
+            sixel_sleep(THUMBNAILER_POLL_SLEEP_USEC);
         }
     }
 
