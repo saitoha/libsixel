@@ -1,7 +1,8 @@
 #!/bin/sh
 # TAP harness for lsqa_regression.sh so CI surfaces quality regressions.
 
-set -eu
+# Enable strict mode with verbose tracing for diagnostics.
+set -euxv
 
 test_name=$(basename "$0")
 artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}

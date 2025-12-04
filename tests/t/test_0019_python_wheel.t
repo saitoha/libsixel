@@ -6,7 +6,8 @@
 # freshly-built libsixel shared library from the build directory. This guards
 # against regressions in the packaging workflow used by distributors.
 
-set -eu
+# Enable strict mode with verbose tracing for diagnostics.
+set -euxv
 
 pass() {
     printf 'ok %s - %s\n' "$1" "$2"

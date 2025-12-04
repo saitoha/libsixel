@@ -1,7 +1,8 @@
 #!/bin/sh
 # TAP test to keep img2sixel help, manpage, and shell completions in sync.
 
-set -eu
+# Enable strict mode with verbose tracing for diagnostics.
+set -euxv
 
 test_name=$(basename "$0")
 artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}

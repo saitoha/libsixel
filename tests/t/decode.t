@@ -1,7 +1,8 @@
 #!/bin/sh
 # TAP test to validate decoding workflow with artifact logging.
 
-set -u
+# Enable strict mode with verbose tracing for diagnostics.
+set -uxv
 
 test_name=$(basename "$0")
 artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}

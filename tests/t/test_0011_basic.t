@@ -1,7 +1,8 @@
 #!/bin/sh
 # TAP test validating sixel2png CLI behaviours and regressions.
 
-set -eu
+# Enable strict mode with verbose tracing for diagnostics.
+set -euxv
 
 test_name=$(basename "$0")
 artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
@@ -167,14 +168,17 @@ rm -f "${png_err}" "${tmp_dir}/capture.$$"
 case_id=$((case_id + 1))
 
 ambiguous_err=$(make_temp_file "${tmp_dir}" "sixel2png-ambiguous")
+set +xv
 if run_sixel2png -dk_ <"${images_dir}/snake.six" \
         >"${output_dir}/dequantize-short.png" 2>"${ambiguous_err}"; then
+    set -xv
     if [ ! -s "${ambiguous_err}" ]; then
         pass ${case_id} "accepts unique dequantize prefix"
     else
         fail ${case_id} "unexpected diagnostics for -dk_"
     fi
 else
+    set -xv
     fail ${case_id} "unique dequantize prefix rejected"
 fi
 rm -f "${ambiguous_err}"
