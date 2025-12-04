@@ -483,7 +483,8 @@ SIXEL_OPTFLAG_ENCODE_POLICY    = 'E'  # -E ENCODEPOLICY, --encode-policy=ENCODEP
                                       #          fast -> encode as fast as possible
                                       #          size -> encode to as small sixel
                                       #                  sequence as possible
-SIXEL_OPTFLAG_LUT_POLICY        = 'L'  # -L LUTPOLICY, --lut-policy=LUTPOLICY:
+SIXEL_OPTFLAG_LUT_POLICY        = '~'  # -~ LOOKUPPOLICY,
+                                      #   --lookup-policy=LOOKUPPOLICY:
                                       #        choose histogram lookup width.
                                       #          auto    -> follow pixel depth
                                       #          5bit    -> force 5-bit buckets
