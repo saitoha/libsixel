@@ -548,7 +548,8 @@ TESTS = t/test_0001_01_invalid_positional.t \
         t/test_0014_option_matching.t \
         t/test_0015_argument_shift.t \
         t/test_0016_assessment_spool.t \
-        t/test_0017_clipboard.t
+        t/test_0017_clipboard.t \
+        t/test_0018_lsqa_regression.t
 
 TEST_EXTENSIONS = .t
 HELPER_FILES = t/converters-common.t
@@ -562,7 +563,11 @@ AM_TEST_LOG_DRIVER_FLAGS = --comments
 LOG_COMPILER = $(builddir)/tools/with-timeout.sh
 AM_LOG_FLAGS = --timeout=$(AM_TEST_TIMEOUT)
 AM_TEST_TIMEOUT = 300
-EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh
+EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
+             lsqa_regression.sh \
+             data/baseline/*.json data/inputs/formats/* \
+             data/resolutions/*.png data/corrupted/*
+
 CLEANFILES = $(LOG_COMPILER) $(TESTS) $(HELPER_FILES)
 all: all-am
 
