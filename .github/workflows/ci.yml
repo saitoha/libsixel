@@ -1533,7 +1533,6 @@ jobs:
           builddir/**/*.log
         if-no-files-found: warn
         overwrite: true
-        overwrite: true
 
 # emacs Local Variables:
 # emacs mode: c
