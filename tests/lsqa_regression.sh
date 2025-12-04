@@ -27,6 +27,22 @@ export ARTIFACT_ROOT="${ARTIFACT_ROOT:-$(pwd)/tests/_artifacts}"
 export CSV_REPORT="${ARTIFACT_ROOT}/lsqa_resolutions.csv"
 export SEED=${LSQA_SEED:-2024}
 
+script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+build_root=${TOP_BUILDDIR:-${script_dir}/..}
+lsqa_bin_default="${build_root}/assessment/lsqa"
+
+if [ ! -x "${lsqa_bin_default}" ] && [ -x "${build_root}/lsqa" ]; then
+    lsqa_bin_default="${build_root}/lsqa"
+fi
+
+if [ ! -x "${lsqa_bin_default}" ]; then
+    printf 'lsqa binary not found. looked for %s and %s\n' \
+        "${build_root}/assessment/lsqa" "${build_root}/lsqa" >&2
+    exit 1
+fi
+
+export LSQA_BIN=${LSQA_BIN:-${lsqa_bin_default}}
+
 mkdir -p "${ARTIFACT_ROOT}"
 
 python - <<PY
@@ -67,7 +83,7 @@ def run_lsqa(path):
     env = os.environ.copy()
     env["LSQA_RANDOM_SEED"] = str(seed)
     proc = subprocess.run([
-        os.path.join(os.getcwd(), "assessment", "lsqa"),
+        os.environ["LSQA_BIN"],
         path,
         path,
     ], check=False, capture_output=True, text=True, env=env)
