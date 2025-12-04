@@ -7,12 +7,25 @@ set -u
 # binaries. Stale executables from a previous configuration can linger
 # even when converters are disabled, so we rely on the current build
 # configuration files to decide whether each tool should be exercised.
+#
+# The source and build roots can differ between Autotools and Meson
+# (particularly during Meson dist checks), so prefer Meson-provided
+# locations when available to read the right config headers.
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 parent_dir=$(CDPATH=; cd "${script_dir}/.." && pwd)
 
-top_srcdir=${TOP_SRCDIR:-${parent_dir}}
-top_builddir=${TOP_BUILDDIR:-${parent_dir}}
+if [ -n "${MESON_SOURCE_ROOT:-}" ]; then
+    top_srcdir=${TOP_SRCDIR:-${MESON_SOURCE_ROOT}}
+else
+    top_srcdir=${TOP_SRCDIR:-${parent_dir}}
+fi
+
+if [ -n "${MESON_BUILD_ROOT:-}" ]; then
+    top_builddir=${TOP_BUILDDIR:-${MESON_BUILD_ROOT}}
+else
+    top_builddir=${TOP_BUILDDIR:-${parent_dir}}
+fi
 
 images_dir="${top_srcdir}/images"
 
