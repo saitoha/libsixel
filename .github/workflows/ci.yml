@@ -913,75 +913,89 @@ jobs:
             runner: ubuntu-latest
             variant_suffix: ''
             configure_extra: ''
+            artifact_suffix: default
             apt: ''
           - os: ubuntu-latest
             runner: ubuntu-latest
             variant_suffix: ' • with-gd'
             configure_extra: '--with-gd'
+            artifact_suffix: with-gd
             apt: 'libgd-dev'
           - os: ubuntu-latest
             runner: ubuntu-latest
             variant_suffix: ' • with-gdk-pixbuf2'
             configure_extra: '--with-gdk-pixbuf2'
+            artifact_suffix: with-gdk-pixbuf2
             apt: 'libgdk-pixbuf2.0-dev'
           - os: ubuntu-latest
             runner: ubuntu-latest
             variant_suffix: ' • with-png'
             configure_extra: '--with-png'
+            artifact_suffix: with-png
             apt: 'libpng-dev'
           - os: ubuntu-latest
             runner: ubuntu-latest
             variant_suffix: ' • with-jpeg'
             configure_extra: '--with-jpeg'
+            artifact_suffix: with-jpeg
             apt: 'libjpeg-turbo8-dev'
           - os: ubuntu-latest
             runner: ubuntu-latest
             variant_suffix: ' • with-libcurl'
             configure_extra: '--with-libcurl'
+            artifact_suffix: with-libcurl
             apt: 'libcurl4-openssl-dev'
           - os: macos-latest
             runner: macos-latest
             variant_suffix: ''
             configure_extra: ''
+            artifact_suffix: default
             apt: ''
           - os: macos-latest
             runner: macos-latest
             variant_suffix: ' • enable-quicklook-extension'
             configure_extra: '--enable-quicklook-extension'
+            artifact_suffix: enable-quicklook-extension
             apt: ''
           - os: macos-latest
             runner: macos-latest
             variant_suffix: ' • with-coregraphics'
             configure_extra: '--with-coregraphics'
+            artifact_suffix: with-coregraphics
             apt: ''
           - os: macos-15
             runner: macos-15
             variant_suffix: ''
             configure_extra: ''
+            artifact_suffix: default
             apt: ''
           - os: windows-latest
             runner: windows-latest
             sys: CLANG64
             variant_suffix: ''
             configure_extra: ''
+            artifact_suffix: default
             apt: ''
           - os: windows-latest
             runner: windows-latest
             sys: CLANG64
             variant_suffix: ' • with-wic'
             configure_extra: '--with-wic'
+            artifact_suffix: with-wic
             apt: ''
           - os: windows-latest
             runner: windows-latest
             sys: CLANG64
             variant_suffix: ' • enable-wiccodec'
             configure_extra: '--enable-wiccodec'
+            artifact_suffix: enable-wiccodec
             apt: ''
           - os: windows-latest
             runner: windows-latest
             sys: CLANG64
             variant_suffix: ' • with-winhttp'
             configure_extra: '--with-winhttp'
+            artifact_suffix: with-winhttp
             apt: ''
     env:
       ASAN_CFLAGS: "-fsanitize=address -O1 -g -fno-omit-frame-pointer"
@@ -1068,7 +1082,7 @@ jobs:
       if: always()
       uses: actions/upload-artifact@v4
       with:
-        name: autotools-asan-${{ matrix.os }}-${{ matrix.sys || 'native' }}
+        name: autotools-asan-${{ matrix.os }}-${{ matrix.sys || 'native' }}-${{ matrix.artifact_suffix }}
         path: |
           **/config.log
           **/test-suite.log
@@ -1076,6 +1090,7 @@ jobs:
           **/*.trs
           **/_artifacts/**
         if-no-files-found: warn
+        overwrite: true
 
   ci-dist-meson:
     name: Meson dist tarball • ${{ matrix.label }}
