@@ -1035,9 +1035,6 @@ jobs:
         CFLAGS="$ASAN_CFLAGS" \
         LDFLAGS="$ASAN_LDFLAGS" \
         ./configure \
-            --without-png \
-            --without-jpeg \
-            --without-libcurl \
             --without-bashcompletiondir \
             --without-zshcompletiondir \
             --disable-python \
@@ -1438,9 +1435,6 @@ jobs:
         meson setup builddir \
             --wrap-mode=nodownload \
             ${default_library_flag} \
-            -Dpng=disabled \
-            -Djpeg=disabled \
-            -Dcurl=disabled \
             -Dbashcompletiondir= \
             -Dzshcompletiondir= \
             -Dpython=disabled \
@@ -1538,6 +1532,7 @@ jobs:
           builddir/**/testlog.txt
           builddir/**/*.log
         if-no-files-found: warn
+        overwrite: true
         overwrite: true
 
 # emacs Local Variables:

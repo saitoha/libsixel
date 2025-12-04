@@ -19,7 +19,10 @@ script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 status=0
 case_id=1
 
+# Ensure the converter binary is present and libpng support is enabled;
+# PNGSuite coverage requires the PNG loader to be built for this config.
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
+ensure_feature_available "HAVE_LIBPNG" "png" "libpng support"
 
 pass() {
     printf 'ok %s - %s\n' "$1" "$2"
