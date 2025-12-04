@@ -20,7 +20,8 @@ TESTS = t/test_0001_01_invalid_positional.t \
         t/test_0015_argument_shift.t \
         t/test_0016_assessment_spool.t \
         t/test_0017_clipboard.t \
-        t/test_0018_lsqa_regression.t
+        t/test_0018_lsqa_regression.t \
+        t/test_0019_python_wheel.t
 TEST_EXTENSIONS = .t
 
 HELPER_FILES = t/converters-common.t
