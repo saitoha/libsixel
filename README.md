@@ -16,11 +16,11 @@ Digital Equipment Corp. (DEC).
 Its data scheme is represented as a terminal-friendly escape sequence.
 So if you want to view a SIXEL image file, all you have to do is "cat" it to your terminal.
 
-On 80's real hardware terminals, it tooks unbearable long waiting times to display images.
+On 80's real hardware terminals, it took unbearable long waiting times to display images.
 
 [![vt330sixel](https://raw.githubusercontent.com/saitoha/libsixel/data/data/vt330sixel.png)](https://youtu.be/0SasrQ7pnbA)
 
-But nowdays, with high-speed CPU and broadband network, we got the chance broaden the scope of SIXEL graphics.
+But nowadays, with high-speed CPU and broadband network, we got the chance broaden the scope of SIXEL graphics.
 
 ## SIXEL animation
 
