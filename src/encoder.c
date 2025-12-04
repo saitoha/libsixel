@@ -110,6 +110,7 @@
 #include <sixel.h>
 #include "loader.h"
 #include "assessment.h"
+#include "timer.h"
 #include "tty.h"
 #include "encoder.h"
 #include "output.h"

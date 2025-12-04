@@ -132,8 +132,8 @@ libsixelquicklookcore_a_RANLIB = $(RANLIB)
 libsixelquicklookcore_a_LIBADD =
 am__libsixelquicklookcore_a_SOURCES_DIST = $(top_srcdir)/src/status.c \
 	$(top_srcdir)/src/allocator.c $(top_srcdir)/src/fromsixel.c \
-	$(top_srcdir)/src/assessment-timer.c \
-	$(top_srcdir)/src/logger.c $(top_srcdir)/src/compat_stub.c \
+	$(top_srcdir)/src/timer.c $(top_srcdir)/src/logger.c \
+	$(top_srcdir)/src/compat_stub.c \
 	$(top_srcdir)/src/decoder-parallel.c \
 	$(top_srcdir)/src/sixel_threading.c \
 	$(top_srcdir)/src/sixel_threading.h \
@@ -146,7 +146,7 @@ am_libsixelquicklookcore_a_OBJECTS =  \
 	$(top_builddir)/src/libsixelquicklookcore_a-status.$(OBJEXT) \
 	$(top_builddir)/src/libsixelquicklookcore_a-allocator.$(OBJEXT) \
 	$(top_builddir)/src/libsixelquicklookcore_a-fromsixel.$(OBJEXT) \
-	$(top_builddir)/src/libsixelquicklookcore_a-assessment-timer.$(OBJEXT) \
+	$(top_builddir)/src/libsixelquicklookcore_a-timer.$(OBJEXT) \
 	$(top_builddir)/src/libsixelquicklookcore_a-logger.$(OBJEXT) \
 	$(top_builddir)/src/libsixelquicklookcore_a-compat_stub.$(OBJEXT) \
 	$(am__objects_1)
@@ -227,7 +227,6 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-allocator.Po \
-	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-assessment-timer.Po \
 	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-compat_stub.Po \
 	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-decoder-parallel.Po \
 	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-fromsixel.Po \
@@ -235,6 +234,7 @@ am__depfiles_remade = $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-allo
 	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-sixel_threading.Po \
 	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-status.Po \
 	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-threadpool.Po \
+	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-timer.Po \
 	$(top_builddir)/tools/$(DEPDIR)/register_sixel_preview-register_sixel_preview.Po \
 	Sources/$(DEPDIR)/SixelPreview-SixelPreviewMain.Po \
 	Sources/$(DEPDIR)/SixelPreview-SixelPreviewProvider.Po \
@@ -559,9 +559,8 @@ noinst_LIBRARIES = libsixelquicklookcore.a
 #
 libsixelquicklookcore_a_SOURCES = $(top_srcdir)/src/status.c \
 	$(top_srcdir)/src/allocator.c $(top_srcdir)/src/fromsixel.c \
-	$(top_srcdir)/src/assessment-timer.c \
-	$(top_srcdir)/src/logger.c $(top_srcdir)/src/compat_stub.c \
-	$(am__append_1)
+	$(top_srcdir)/src/timer.c $(top_srcdir)/src/logger.c \
+	$(top_srcdir)/src/compat_stub.c $(am__append_1)
 libsixelquicklookcore_a_CPPFLAGS = $(AM_CPPFLAGS) \
     -DSIXEL_STATUS_HAVE_TTY_HELPERS=0
 
@@ -664,7 +663,7 @@ $(top_builddir)/src/libsixelquicklookcore_a-allocator.$(OBJEXT):  \
 $(top_builddir)/src/libsixelquicklookcore_a-fromsixel.$(OBJEXT):  \
 	$(top_builddir)/src/$(am__dirstamp) \
 	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
-$(top_builddir)/src/libsixelquicklookcore_a-assessment-timer.$(OBJEXT):  \
+$(top_builddir)/src/libsixelquicklookcore_a-timer.$(OBJEXT):  \
 	$(top_builddir)/src/$(am__dirstamp) \
 	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/src/libsixelquicklookcore_a-logger.$(OBJEXT):  \
@@ -751,7 +750,6 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-allocator.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-assessment-timer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-compat_stub.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-decoder-parallel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-fromsixel.Po@am__quote@ # am--include-marker
@@ -759,6 +757,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-sixel_threading.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-status.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-threadpool.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-timer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/tools/$(DEPDIR)/register_sixel_preview-register_sixel_preview.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@Sources/$(DEPDIR)/SixelPreview-SixelPreviewMain.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@Sources/$(DEPDIR)/SixelPreview-SixelPreviewProvider.Po@am__quote@ # am--include-marker
@@ -842,19 +841,19 @@ $(top_builddir)/src/libsixelquicklookcore_a-fromsixel.obj: $(top_builddir)/src/f
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libsixelquicklookcore_a-fromsixel.obj `if test -f '$(top_builddir)/src/fromsixel.c'; then $(CYGPATH_W) '$(top_builddir)/src/fromsixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/fromsixel.c'; fi`
 
-$(top_builddir)/src/libsixelquicklookcore_a-assessment-timer.o: $(top_builddir)/src/assessment-timer.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libsixelquicklookcore_a-assessment-timer.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-assessment-timer.Tpo -c -o $(top_builddir)/src/libsixelquicklookcore_a-assessment-timer.o `test -f '$(top_builddir)/src/assessment-timer.c' || echo '$(srcdir)/'`$(top_builddir)/src/assessment-timer.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-assessment-timer.Tpo $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-assessment-timer.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/assessment-timer.c' object='$(top_builddir)/src/libsixelquicklookcore_a-assessment-timer.o' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/src/libsixelquicklookcore_a-timer.o: $(top_builddir)/src/timer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libsixelquicklookcore_a-timer.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-timer.Tpo -c -o $(top_builddir)/src/libsixelquicklookcore_a-timer.o `test -f '$(top_builddir)/src/timer.c' || echo '$(srcdir)/'`$(top_builddir)/src/timer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-timer.Tpo $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-timer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/timer.c' object='$(top_builddir)/src/libsixelquicklookcore_a-timer.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libsixelquicklookcore_a-assessment-timer.o `test -f '$(top_builddir)/src/assessment-timer.c' || echo '$(srcdir)/'`$(top_builddir)/src/assessment-timer.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libsixelquicklookcore_a-timer.o `test -f '$(top_builddir)/src/timer.c' || echo '$(srcdir)/'`$(top_builddir)/src/timer.c
 
-$(top_builddir)/src/libsixelquicklookcore_a-assessment-timer.obj: $(top_builddir)/src/assessment-timer.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libsixelquicklookcore_a-assessment-timer.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-assessment-timer.Tpo -c -o $(top_builddir)/src/libsixelquicklookcore_a-assessment-timer.obj `if test -f '$(top_builddir)/src/assessment-timer.c'; then $(CYGPATH_W) '$(top_builddir)/src/assessment-timer.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/assessment-timer.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-assessment-timer.Tpo $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-assessment-timer.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/assessment-timer.c' object='$(top_builddir)/src/libsixelquicklookcore_a-assessment-timer.obj' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/src/libsixelquicklookcore_a-timer.obj: $(top_builddir)/src/timer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libsixelquicklookcore_a-timer.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-timer.Tpo -c -o $(top_builddir)/src/libsixelquicklookcore_a-timer.obj `if test -f '$(top_builddir)/src/timer.c'; then $(CYGPATH_W) '$(top_builddir)/src/timer.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/timer.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-timer.Tpo $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-timer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/timer.c' object='$(top_builddir)/src/libsixelquicklookcore_a-timer.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libsixelquicklookcore_a-assessment-timer.obj `if test -f '$(top_builddir)/src/assessment-timer.c'; then $(CYGPATH_W) '$(top_builddir)/src/assessment-timer.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/assessment-timer.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libsixelquicklookcore_a-timer.obj `if test -f '$(top_builddir)/src/timer.c'; then $(CYGPATH_W) '$(top_builddir)/src/timer.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/timer.c'; fi`
 
 $(top_builddir)/src/libsixelquicklookcore_a-logger.o: $(top_builddir)/src/logger.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libsixelquicklookcore_a-logger.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-logger.Tpo -c -o $(top_builddir)/src/libsixelquicklookcore_a-logger.o `test -f '$(top_builddir)/src/logger.c' || echo '$(srcdir)/'`$(top_builddir)/src/logger.c
@@ -1229,7 +1228,6 @@ clean-am: clean-generic clean-libtool clean-local \
 
 distclean: distclean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-allocator.Po
-	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-assessment-timer.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-compat_stub.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-decoder-parallel.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-fromsixel.Po
@@ -1237,6 +1235,7 @@ distclean: distclean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-sixel_threading.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-status.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-threadpool.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-timer.Po
 	-rm -f $(top_builddir)/tools/$(DEPDIR)/register_sixel_preview-register_sixel_preview.Po
 	-rm -f Sources/$(DEPDIR)/SixelPreview-SixelPreviewMain.Po
 	-rm -f Sources/$(DEPDIR)/SixelPreview-SixelPreviewProvider.Po
@@ -1293,7 +1292,6 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-allocator.Po
-	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-assessment-timer.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-compat_stub.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-decoder-parallel.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-fromsixel.Po
@@ -1301,6 +1299,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-sixel_threading.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-status.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-threadpool.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-timer.Po
 	-rm -f $(top_builddir)/tools/$(DEPDIR)/register_sixel_preview-register_sixel_preview.Po
 	-rm -f Sources/$(DEPDIR)/SixelPreview-SixelPreviewMain.Po
 	-rm -f Sources/$(DEPDIR)/SixelPreview-SixelPreviewProvider.Po
