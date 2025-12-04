@@ -23,6 +23,10 @@ jobs:
         include:
           - os: ubuntu-latest
             runner: ubuntu-latest
+            python_wheel: true
+            variant: python-wheel
+          - os: ubuntu-latest
+            runner: ubuntu-latest
             sys: x86_64
             static_only: true
             variant: static-only
@@ -208,6 +212,9 @@ jobs:
         python3 -m venv .venv
         . .venv/bin/activate
         pip install -U pip gcovr
+        if [ "${{ matrix.python_wheel || '' }}" = "true" ]; then
+          pip install build wheel
+        fi
         echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
     - name: Install gcc-14 (Linux)
@@ -239,6 +246,10 @@ jobs:
         if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
           disable_simd_flag="--disable-simd"
         fi
+        python_flags="--disable-python"
+        if [ "${{ matrix.python_wheel || '' }}" = "true" ]; then
+          python_flags="--enable-python-wheel"
+        fi
         static_only_flags=""
         if [ "${{ matrix.static_only || '' }}" = "true" ]; then
           static_only_flags="--disable-shared --enable-static"
@@ -250,7 +261,7 @@ jobs:
         ./configure \
             --without-bashcompletiondir \
             --without-zshcompletiondir \
-            --disable-python \
+            ${python_flags} \
             --enable-debug \
             --enable-tests \
             ${enable_gcov_flag} \
@@ -278,6 +289,10 @@ jobs:
         if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
           disable_simd_flag="--disable-simd"
         fi
+        python_flags="--disable-python"
+        if [ "${{ matrix.python_wheel || '' }}" = "true" ]; then
+          python_flags="--enable-python-wheel"
+        fi
         static_only_flags=""
         if [ "${{ matrix.static_only || '' }}" = "true" ]; then
           static_only_flags="--disable-shared --enable-static"
@@ -288,7 +303,7 @@ jobs:
             --without-libcurl \
             --without-bashcompletiondir \
             --without-zshcompletiondir \
-            --disable-python \
+            ${python_flags} \
             --enable-debug \
             --enable-tests \
             --enable-gcov \
@@ -319,6 +334,10 @@ jobs:
         if ('${{ matrix.disable_simd }}' -eq 'true') {
           $disableSimdFlag = '--disable-simd'
         }
+        $pythonFlags = '--disable-python'
+        if ('${{ matrix.python_wheel }}' -eq 'true') {
+          $pythonFlags = '--enable-python-wheel'
+        }
         $staticOnlyFlags = ''
         if ('${{ matrix.static_only }}' -eq 'true') {
           $staticOnlyFlags = '--disable-shared --enable-static'
@@ -329,10 +348,11 @@ jobs:
           "disable_threads_flag=`"$disableThreadsFlag`"",
           "disable_tools_flags=`"$disableToolsFlags`"",
           "disable_simd_flag=`"$disableSimdFlag`"",
+          "python_flags=`"$pythonFlags`"",
           "static_only_flags=`"$staticOnlyFlags`"",
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-debug --enable-tests --enable-gcov --disable-dependency-tracking ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${static_only_flags}',
+          './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir ${python_flags} --enable-debug --enable-tests --enable-gcov --disable-dependency-tracking ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${static_only_flags}',
           'cat config.log',
           'make V=1'
         )
@@ -1002,6 +1022,10 @@ jobs:
         include:
           - os: ubuntu-latest
             runner: ubuntu-latest
+            python_wheel: true
+            variant: python-wheel
+          - os: ubuntu-latest
+            runner: ubuntu-latest
             static_only: true
             variant: static-only
           - os: ubuntu-latest
@@ -1189,6 +1213,12 @@ jobs:
         if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
           disable_simd_flag="-Dsimd=disabled"
         fi
+        python_flags="-Dpython=disabled"
+        wheel_flag=""
+        if [ "${{ matrix.python_wheel || '' }}" = "true" ]; then
+          python_flags="-Dpython=enabled"
+          wheel_flag="-Dpython_wheel=true"
+        fi
         default_library_flag=""
         if [ "${{ matrix.static_only || '' }}" = "true" ]; then
           default_library_flag="--default-library static"
@@ -1198,7 +1228,8 @@ jobs:
             ${default_library_flag} \
             -Dbashcompletiondir=disabled \
             -Dzshcompletiondir=disabled \
-            -Dpython=disabled \
+            ${python_flags} \
+            ${wheel_flag} \
             -Dtests=true \
             ${disable_tools_flags} \
             ${disable_threads_flag} \
@@ -1222,6 +1253,12 @@ jobs:
         if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
           disable_simd_flag="-Dsimd=disabled"
         fi
+        python_flags="-Dpython=disabled"
+        wheel_flag=""
+        if [ "${{ matrix.python_wheel || '' }}" = "true" ]; then
+          python_flags="-Dpython=enabled"
+          wheel_flag="-Dpython_wheel=true"
+        fi
         default_library_flag=""
         if [ "${{ matrix.static_only || '' }}" = "true" ]; then
           default_library_flag="--default-library static"
@@ -1231,7 +1268,8 @@ jobs:
             ${default_library_flag} \
             -Dbashcompletiondir=disabled \
             -Dzshcompletiondir=disabled \
-            -Dpython=disabled \
+            ${python_flags} \
+            ${wheel_flag} \
             -Dtests=true \
             ${disable_tools_flags} \
             ${disable_threads_flag} \
@@ -1258,6 +1296,12 @@ jobs:
         if ('${{ matrix.disable_simd }}' -eq 'true') {
           $disableSimdFlag = '-Dsimd=disabled'
         }
+        $pythonFlags = '-Dpython=disabled'
+        $wheelFlag = ''
+        if ('${{ matrix.python_wheel }}' -eq 'true') {
+          $pythonFlags = '-Dpython=enabled'
+          $wheelFlag = '-Dpython_wheel=true'
+        }
         $defaultLibraryFlag = ''
         if ('${{ matrix.static_only }}' -eq 'true') {
           $defaultLibraryFlag = '--default-library static'
@@ -1265,16 +1309,18 @@ jobs:
         $scriptLines = @(
           'set -eu',
           'set -o pipefail 2>/dev/null || true',
-          "disable_threads_flag=`"$disableThreadsFlag`"",
-          "disable_tools_flags=`"$disableToolsFlags`"",
-          "disable_simd_flag=`"$disableSimdFlag`"",
-          "default_library_flag=`"$defaultLibraryFlag`"",
-          "export GITHUB_WORKSPACE=`"$workspace`"",
-          "cd `"$workspace`"",
-          'meson setup builddir --wrap-mode=nodownload ${default_library_flag} -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled -Dpython=disabled -Dtests=true ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag}',
-          'meson compile -C builddir',
-          'meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }'
-        )
+            "disable_threads_flag=`"$disableThreadsFlag`"",
+            "disable_tools_flags=`"$disableToolsFlags`"",
+            "disable_simd_flag=`"$disableSimdFlag`"",
+            "python_flags=`"$pythonFlags`"",
+            "wheel_flag=`"$wheelFlag`"",
+            "default_library_flag=`"$defaultLibraryFlag`"",
+            "export GITHUB_WORKSPACE=`"$workspace`"",
+            "cd `"$workspace`"",
+            'meson setup builddir --wrap-mode=nodownload ${default_library_flag} ${python_flags} ${wheel_flag} -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled -Dtests=true ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag}',
+            'meson compile -C builddir',
+            'meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }'
+          )
         $script = [string]::Join("`n", $scriptLines)
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
@@ -1292,6 +1338,10 @@ jobs:
         if "${{ matrix.disable_tools || '' }}"=="true" set "DISABLE_TOOLS_FLAGS=-Dimg2sixel=disabled -Dsixel2png=disabled"
         set "DISABLE_SIMD_FLAG="
         if "${{ matrix.disable_simd || '' }}"=="true" set "DISABLE_SIMD_FLAG=-Dsimd=disabled"
+        set "PYTHON_FLAG=-Dpython=disabled"
+        set "WHEEL_FLAG="
+        if "${{ matrix.python_wheel || '' }}"=="true" set "PYTHON_FLAG=-Dpython=enabled"
+        if "${{ matrix.python_wheel || '' }}"=="true" set "WHEEL_FLAG=-Dpython_wheel=true"
         python -m mesonbuild.mesonmain setup builddir ^
             --wrap-mode=nodownload ^
             --default-library static ^
@@ -1300,7 +1350,8 @@ jobs:
             -Dcurl=disabled ^
             -Dbashcompletiondir=disabled ^
             -Dzshcompletiondir=disabled ^
-            -Dpython=disabled ^
+            %PYTHON_FLAG% ^
+            %WHEEL_FLAG% ^
             -Dtests=true ^
             %DISABLE_TOOLS_FLAGS% ^
             %DISABLE_THREADS_FLAG% ^

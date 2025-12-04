@@ -1094,51 +1094,55 @@ if get_option('python_wheel')
   python_wheel_message = 'yes'
   wheel_scripts_dir = join_paths(meson.project_source_root(), 'python-wheel', 'scripts')
   stage_dir = join_paths(meson.project_source_root(), 'python-wheel', '.stage')
-  if host_system == 'windows'
-    stage_command = 'if (Test-Path "{0}") {{ Remove-Item "{0}" -Recurse -Force }}; meson install --destdir "{0}"'.format(stage_dir)
-    stage_target = run_target(
-      'python-wheel-stage-install',
-      command: ['pwsh', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', stage_command]
-    )
-    wheel_target = run_target(
-      'python-wheel-wheel',
-      command: ['pwsh', '-NoProfile', '-ExecutionPolicy', 'Bypass',
-                join_paths(wheel_scripts_dir, 'meson_build_wheel_windows.ps1')],
-      depends: [stage_target]
-    )
-    upload_target = run_target(
-      'python-wheel-upload',
-      command: ['pwsh', '-NoProfile', '-ExecutionPolicy', 'Bypass',
-                join_paths(wheel_scripts_dir, 'meson_upload_wheel.ps1')],
-      depends: [wheel_target],
-      env: {
-        'PYPI_REPO': get_option('pypi_repo'),
-        'PYPI_USERNAME': get_option('pypi_username'),
-        'PYPI_PASSWORD_ENV': get_option('pypi_password_env'),
-      }
-    )
-  else
-    stage_command = 'rm -rf "{0}" && meson install --destdir "{0}"'.format(stage_dir)
-    stage_target = run_target(
-      'python-wheel-stage-install',
-      command: ['bash', '-c', stage_command]
-    )
-    wheel_target = run_target(
-      'python-wheel-wheel',
-      command: ['bash', join_paths(wheel_scripts_dir, 'meson_build_wheel_posix.sh')],
-      depends: [stage_target]
-    )
-    upload_target = run_target(
-      'python-wheel-upload',
-      command: ['bash', join_paths(wheel_scripts_dir, 'meson_upload_wheel.sh')],
-      depends: [wheel_target],
-      env: {
-        'PYPI_REPO': get_option('pypi_repo'),
-        'PYPI_USERNAME': get_option('pypi_username'),
-        'PYPI_PASSWORD_ENV': get_option('pypi_password_env'),
-      }
-    )
-  endif
+  # The three run targets mirror the steps used in CI:
+  #   1) stage-install: run "meson install" into an isolated destdir
+  #   2) wheel: build a wheel purely from the staged tree
+  #   3) upload: reuse the wheel command then push to the configured repository
+  # Each target reuses the previous command string to avoid fragile dependencies
+  # between Meson run targets while keeping the sequence readable.
+    if host_system == 'windows'
+      stage_command = 'if (Test-Path "{0}") {{ Remove-Item "{0}" -Recurse -Force }}; meson install --destdir "{0}"'.format(stage_dir)
+      stage_target = run_target(
+        'python-wheel-stage-install',
+        command: ['pwsh', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', stage_command]
+      )
+      build_command = stage_command + '; ' + join_paths(wheel_scripts_dir, 'meson_build_wheel_windows.ps1')
+      wheel_target = run_target(
+        'python-wheel-wheel',
+        command: ['pwsh', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', build_command]
+      )
+      upload_command = build_command + '; ' + join_paths(wheel_scripts_dir, 'meson_upload_wheel.ps1')
+      upload_target = run_target(
+        'python-wheel-upload',
+        command: ['pwsh', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', upload_command],
+        env: {
+          'PYPI_REPO': get_option('pypi_repo'),
+          'PYPI_USERNAME': get_option('pypi_username'),
+          'PYPI_PASSWORD_ENV': get_option('pypi_password_env'),
+        }
+      )
+    else
+      stage_command = 'rm -rf "{0}" && meson install --destdir "{0}"'.format(stage_dir)
+      stage_target = run_target(
+        'python-wheel-stage-install',
+        command: ['bash', '-c', stage_command]
+      )
+      build_command = stage_command + ' && ' + join_paths(wheel_scripts_dir, 'meson_build_wheel_posix.sh')
+      wheel_target = run_target(
+        'python-wheel-wheel',
+        command: ['bash', '-c', build_command]
+      )
+      upload_command = build_command + ' && ' + join_paths(wheel_scripts_dir, 'meson_upload_wheel.sh')
+      upload_target = run_target(
+        'python-wheel-upload',
+        command: ['bash', '-c', upload_command],
+        env: {
+          'PYPI_REPO': get_option('pypi_repo'),
+          'PYPI_USERNAME': get_option('pypi_username'),
+          'PYPI_PASSWORD_ENV': get_option('pypi_password_env'),
+        }
+      )
+    endif
   alias_target('stage-install', stage_target)
   alias_target('wheel', wheel_target)
   alias_target('upload', upload_target)
