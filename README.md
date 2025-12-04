@@ -642,16 +642,16 @@ Options:
                                      speed mode
                              full -> full quality and careful
                                      speed mode
--L LUTPOLICY, --lut-policy=LUTPOLICY
+-~ LOOKUPPOLICY, --lookup-policy=LOOKUPPOLICY
                            choose histogram lookup width
-                           LUTPOLICY is one of them:
+                           LOOKUPPOLICY is one of them:
                              auto      -> follow pixel depth
                              5bit      -> force classic 5-bit buckets
-                            6bit      -> favor 6-bit RGB buckets
-                            none      -> disable LUT caching and scan the
-                                         palette directly
-                            certlut   -> certified hierarchical LUT
-                                         with zero approximation
+                             6bit      -> favor 6-bit RGB buckets
+                             none      -> disable LUT caching and scan the
+                                          palette directly
+                             certlut   -> certified hierarchical LUT
+                                          with zero approximation
 
 The *none* policy skips every lookup acceleration structure so each
 pixel comparison scans the palette directly.  This matches the legacy

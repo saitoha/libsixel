@@ -489,25 +489,28 @@ typedef int SIXELSTATUS;
                                                     size -> encode to as small sixel
                                                             sequence as possible
                                                 */
-#define SIXEL_OPTFLAG_LUT_POLICY        ('L')  /* -L LUTPOLICY, --lut-policy=LUTPOLICY:
-                                                  choose histogram LUT width
-                                                    auto    -> select by pixel
-                                                                depth
-                                                    5bit    -> use 5-bit
-                                                                buckets
-                                                    6bit    -> use 6-bit
-                                                                buckets
-                                                                (RGB only)
-                                                    none    -> disable LUT
-                                                                caching and
-                                                                scan
-                                                                directly
-                                                    certlut -> certified
-                                                                hierarchical
-                                                                lookup tree
-                                                                with zero
-                                                                error
-                                                */
+#define SIXEL_OPTFLAG_LUT_POLICY        ('~') /* -~ LOOKUPPOLICY,
+                                                 --lookup-policy=
+                                                 LOOKUPPOLICY:
+                                                 choose histogram LUT
+                                                 width
+                                                   auto    -> select by
+                                                               pixel depth
+                                                   5bit    -> use 5-bit
+                                                               buckets
+                                                   6bit    -> use 6-bit
+                                                               buckets
+                                                               (RGB only)
+                                                   none    -> disable LUT
+                                                               caching and
+                                                               scan
+                                                               directly
+                                                   certlut -> certified
+                                                               hierarchical
+                                                               lookup tree
+                                                               with zero
+                                                               error
+                                               */
 #define SIXEL_OPTFLAG_WORKING_COLORSPACE ('W') /* -W WORKINGCOLORSPACE, --working-colorspace=WORKINGCOLORSPACE
                                                   select internal working color space
                                                     gamma  -> keep gamma encoded pixels (default)
