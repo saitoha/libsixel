@@ -46,7 +46,28 @@
 # if !defined(HAVE_MEMMOVE)
 #  define memmove(d, s, n) (bcopy ((s), (d), (n)))
 # endif
+/*
+ * Silence warnings from the bundled stb_image_write header. The file is a
+ * third-party dependency, so we prefer to guard the include site instead of
+ * modifying upstream code.
+ */
+# if defined(__clang__)
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wall"
+#  pragma clang diagnostic ignored "-Wextra"
+#  pragma clang diagnostic ignored "-Wpedantic"
+# elif defined(__GNUC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wall"
+#  pragma GCC diagnostic ignored "-Wextra"
+#  pragma GCC diagnostic ignored "-Wpedantic"
+# endif
 # include "stb_image_write.h"
+# if defined(__clang__)
+#  pragma clang diagnostic pop
+# elif defined(__GNUC__)
+#  pragma GCC diagnostic pop
+# endif
 #endif  /* HAVE_LIBPNG */
 
 #include <sixel.h>
