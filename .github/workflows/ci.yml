@@ -1104,7 +1104,7 @@ jobs:
             runner: ubuntu-latest
             setup_flags: >-
               -Dpng=disabled -Djpeg=disabled -Dcurl=disabled
-              -Dbashcompletiondir= -Dzshcompletiondir=
+              -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled
               -Dpython=disabled -Druby=disabled -Dtests=true
               -Dthumbnailer_command=enabled
           - label: macOS Quick Look extension
@@ -1112,7 +1112,7 @@ jobs:
             runner: macos-latest
             setup_flags: >-
               -Dpng=disabled -Djpeg=disabled -Dcurl=disabled
-              -Dbashcompletiondir= -Dzshcompletiondir=
+              -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled
               -Dpython=disabled -Druby=disabled -Dtests=true
               -Dquicklook_extension=enabled -Dquicklook_preview=enabled
           - label: Windows WIC codec (MinGW)
@@ -1122,7 +1122,7 @@ jobs:
             setup_flags: >-
               --default-library static --wrap-mode=nodownload
               -Dpng=disabled -Djpeg=disabled -Dcurl=disabled
-              -Dbashcompletiondir= -Dzshcompletiondir=
+              -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled
               -Dpython=disabled -Druby=disabled -Dtests=true
               -Dwic=enabled -Dwiccodec=enabled
 
@@ -1160,7 +1160,11 @@ jobs:
       shell: bash
       run: |
         set -euxo pipefail
-        meson setup builddir --wrap-mode=nodownload ${{ matrix.setup_flags }}
+        meson setup builddir \
+          --wrap-mode=nodownload \
+          -Dbashcompletiondir=disabled \
+          -Dzshcompletiondir=disabled \
+          ${{ matrix.setup_flags }}
         meson compile -C builddir
         meson dist -C builddir
         ls -l builddir/meson-dist
@@ -1170,7 +1174,10 @@ jobs:
       shell: msys2 {0}
       run: |
         set -euxo pipefail
-        meson setup builddir ${{ matrix.setup_flags }}
+        meson setup builddir \
+          -Dbashcompletiondir=disabled \
+          -Dzshcompletiondir=disabled \
+          ${{ matrix.setup_flags }}
         meson compile -C builddir
         meson dist -C builddir --allow-dirty
         ls -l builddir/meson-dist
@@ -1417,8 +1424,8 @@ jobs:
         meson setup builddir \
             --wrap-mode=nodownload \
             ${default_library_flag} \
-            -Dbashcompletiondir= \
-            -Dzshcompletiondir= \
+            -Dbashcompletiondir=disabled \
+            -Dzshcompletiondir=disabled \
             -Dpython=disabled \
             -Dtests=true \
             ${disable_tools_flags} \
@@ -1450,8 +1457,8 @@ jobs:
         meson setup builddir \
             --wrap-mode=nodownload \
             ${default_library_flag} \
-            -Dbashcompletiondir= \
-            -Dzshcompletiondir= \
+            -Dbashcompletiondir=disabled \
+            -Dzshcompletiondir=disabled \
             -Dpython=disabled \
             -Dtests=true \
             ${disable_tools_flags} \
@@ -1492,7 +1499,7 @@ jobs:
           "default_library_flag=`"$defaultLibraryFlag`"",
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          'meson setup builddir --wrap-mode=nodownload ${default_library_flag} -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir= -Dzshcompletiondir= -Dpython=disabled -Dtests=true ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag}',
+          'meson setup builddir --wrap-mode=nodownload ${default_library_flag} -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled -Dpython=disabled -Dtests=true ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag}',
           'meson compile -C builddir',
           'meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }'
         )
@@ -1519,8 +1526,8 @@ jobs:
             -Dpng=disabled ^
             -Djpeg=disabled ^
             -Dcurl=disabled ^
-            -Dbashcompletiondir= ^
-            -Dzshcompletiondir= ^
+            -Dbashcompletiondir=disabled ^
+            -Dzshcompletiondir=disabled ^
             -Dpython=disabled ^
             -Dtests=true ^
             %DISABLE_TOOLS_FLAGS% ^
