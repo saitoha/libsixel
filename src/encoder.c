@@ -123,6 +123,7 @@
 #include "rgblookup.h"
 #include "clipboard.h"
 #include "compat_stub.h"
+#include "sleep.h"
 #include "sixel_threads_config.h"
 
 #define SIXEL_ENCODER_PRECISION_ENVVAR "SIXEL_FLOAT32_DITHER"
@@ -165,52 +166,6 @@ static int sixel_encoder_parse_threads_argument(char const *text,
 #  undef CLOCKS_PER_SEC
 # endif
 # define CLOCKS_PER_SEC 1000
-
-# if !defined(HAVE_NANOSLEEP)
-# define HAVE_NANOSLEEP_WIN 1
-static int
-nanosleep_win(
-    struct timespec const *req,
-    struct timespec *rem)
-{
-    LONGLONG nanoseconds;
-    LARGE_INTEGER dueTime;
-    HANDLE timer;
-
-    if (req == NULL || req->tv_sec < 0 || req->tv_nsec < 0 ||
-        req->tv_nsec >= 1000000000L) {
-        errno = EINVAL;
-        return (-1);
-    }
-
-    /* Convert to 100-nanosecond intervals (Windows FILETIME units) */
-    nanoseconds = req->tv_sec * 1000000000LL + req->tv_nsec;
-    dueTime.QuadPart = -(nanoseconds / 100); /* Negative for relative time */
-
-    timer = CreateWaitableTimer(NULL, TRUE, NULL);
-    if (timer == NULL) {
-        errno = EFAULT;  /* Approximate error */
-        return (-1);
-    }
-
-    if (! SetWaitableTimer(timer, &dueTime, 0, NULL, NULL, FALSE)) {
-        (void) CloseHandle(timer);
-        errno = EFAULT;
-        return (-1);
-    }
-
-    (void) WaitForSingleObject(timer, INFINITE);
-    (void) CloseHandle(timer);
-
-    /* No interruption handling, so rem is unchanged */
-    if (rem != NULL) {
-        rem->tv_sec = 0;
-        rem->tv_nsec = 0;
-    }
-
-    return (0);
-}
-# endif  /* HAVE_NANOSLEEP */
 
 # if !defined(HAVE_CLOCK)
 # define HAVE_CLOCK_WIN 1
@@ -3420,11 +3375,9 @@ sixel_encoder_output_without_macro(
     enum { message_buffer_size = 2048 };
     char message[message_buffer_size];
     int nwrite;
-#if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
     int dulation;
     int delay;
-    struct timespec tv;
-#endif
+    unsigned int remaining_delay;
     unsigned char *pixbuf;
     int width;
     int height;
@@ -3509,7 +3462,6 @@ sixel_encoder_output_without_macro(
         output->last_clock = clock_win();
     }
 #endif
-#if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
     delay = sixel_frame_get_delay(frame);
     if (delay > 0 && !encoder->fignore_delay) {
 # if defined(HAVE_CLOCK)
@@ -3532,18 +3484,11 @@ sixel_encoder_output_without_macro(
         dulation = 0;
 # endif
         if (dulation < 1000 * 10 * delay) {
-# if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
-            tv.tv_sec = 0;
-            tv.tv_nsec = (long)((1000 * 10 * delay - dulation) * 1000);
-#  if defined(HAVE_NANOSLEEP)
-            nanosleep(&tv, NULL);
-#  else
-            nanosleep_win(&tv, NULL);
-#  endif
-# endif
+            remaining_delay =
+                (unsigned int)(1000 * 10 * delay - dulation);
+            sixel_sleep(remaining_delay);
         }
     }
-#endif
 
     pixbuf = sixel_frame_get_pixels(frame);
     memcpy(p, pixbuf, size);
@@ -3610,10 +3555,9 @@ sixel_encoder_output_with_macro(
     enum { message_buffer_size = 256 };
     char buffer[message_buffer_size];
     int nwrite;
-#if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
     int dulation;
-    struct timespec tv;
-#endif
+    int delay;
+    unsigned int remaining_delay;
     int width;
     int height;
     int pixelformat;
@@ -3621,9 +3565,6 @@ sixel_encoder_output_with_macro(
     size_t size = 0;
     int frame_colorspace = SIXEL_COLORSPACE_GAMMA;
     unsigned char *converted = NULL;
-#if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
-    int delay;
-#endif
 #if defined(HAVE_CLOCK) || defined(HAVE_CLOCK_WIN)
     sixel_clock_t last_clock;
 #endif
@@ -3813,9 +3754,8 @@ sixel_encoder_output_with_macro(
                 (size_t)nwrite,
                 write_duration);
         }
-#if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
-        delay = sixel_frame_get_delay(frame);
-        if (delay > 0 && !encoder->fignore_delay) {
+    delay = sixel_frame_get_delay(frame);
+    if (delay > 0 && !encoder->fignore_delay) {
 # if defined(HAVE_CLOCK)
             last_clock = clock();
 /* https://stackoverflow.com/questions/16697005/clock-and-clocks-per-sec-on-osx-10-7 */
@@ -3836,18 +3776,11 @@ sixel_encoder_output_with_macro(
             dulation = 0;
 # endif
             if (dulation < 1000 * 10 * delay) {
-# if defined(HAVE_NANOSLEEP) || defined(HAVE_NANOSLEEP_WIN)
-                tv.tv_sec = 0;
-                tv.tv_nsec = (long)((1000 * 10 * delay - dulation) * 1000);
-#  if defined(HAVE_NANOSLEEP)
-                nanosleep(&tv, NULL);
-#  else
-                nanosleep_win(&tv, NULL);
-#  endif
-# endif
+                remaining_delay =
+                    (unsigned int)(1000 * 10 * delay - dulation);
+                sixel_sleep(remaining_delay);
             }
         }
-#endif
     }
 
 end:

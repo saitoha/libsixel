@@ -157,10 +157,11 @@ libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
         $(srcdir)/timer.c $(srcdir)/assessment.c \
-        $(srcdir)/assessment.h $(srcdir)/timer.h $(srcdir)/fromsixel.c \
+        $(srcdir)/assessment.h $(srcdir)/timer.h $(srcdir)/sleep.c \
+        $(srcdir)/sleep.h $(srcdir)/fromsixel.c \
         $(srcdir)/tosixel.c $(srcdir)/lookup-common.c \
-	$(srcdir)/lookup-8bit.c $(srcdir)/lookup-8bit.h \
-	$(srcdir)/lookup-float32.c $(srcdir)/lookup-float32.h \
+        $(srcdir)/lookup-8bit.c $(srcdir)/lookup-8bit.h \
+        $(srcdir)/lookup-float32.c $(srcdir)/lookup-float32.h \
 	$(srcdir)/lookup-common.h $(srcdir)/palette-heckbert.c \
 	$(srcdir)/palette-heckbert.h $(srcdir)/palette-common-merge.c \
 	$(srcdir)/palette-common-merge.h \
@@ -225,8 +226,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @HAVE_CLIPBOARD_MACOS_TRUE@am__objects_3 =  \
 @HAVE_CLIPBOARD_MACOS_TRUE@	libsixel_la-clipboard_macos.lo
 am_libsixel_la_OBJECTS = libsixel_la-output.lo \
-	libsixel_la-timer.lo libsixel_la-assessment.lo \
-	libsixel_la-fromsixel.lo libsixel_la-tosixel.lo \
+        libsixel_la-timer.lo libsixel_la-sleep.lo \
+        libsixel_la-assessment.lo \
+        libsixel_la-fromsixel.lo libsixel_la-tosixel.lo \
 	libsixel_la-lookup-common.lo libsixel_la-lookup-8bit.lo \
 	libsixel_la-lookup-float32.lo libsixel_la-palette-heckbert.lo \
 	libsixel_la-palette-common-merge.lo \
@@ -289,8 +291,9 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
-	./$(DEPDIR)/libsixel_la-timer.Plo \
-	./$(DEPDIR)/libsixel_la-assessment.Plo \
+        ./$(DEPDIR)/libsixel_la-timer.Plo \
+        ./$(DEPDIR)/libsixel_la-sleep.Plo \
+        ./$(DEPDIR)/libsixel_la-assessment.Plo \
 	./$(DEPDIR)/libsixel_la-chunk.Plo \
 	./$(DEPDIR)/libsixel_la-clipboard.Plo \
 	./$(DEPDIR)/libsixel_la-clipboard_macos.Plo \
@@ -613,11 +616,12 @@ zshcompletiondir = @zshcompletiondir@
 CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests
 lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
-	$(srcdir)/timer.c $(srcdir)/assessment.c \
-	$(srcdir)/assessment.h $(srcdir)/fromsixel.c \
-	$(srcdir)/tosixel.c $(srcdir)/lookup-common.c \
-	$(srcdir)/lookup-8bit.c $(srcdir)/lookup-8bit.h \
-	$(srcdir)/lookup-float32.c $(srcdir)/lookup-float32.h \
+        $(srcdir)/timer.c $(srcdir)/assessment.c \
+        $(srcdir)/assessment.h $(srcdir)/sleep.c \
+        $(srcdir)/sleep.h $(srcdir)/fromsixel.c \
+        $(srcdir)/tosixel.c $(srcdir)/lookup-common.c \
+        $(srcdir)/lookup-8bit.c $(srcdir)/lookup-8bit.h \
+        $(srcdir)/lookup-float32.c $(srcdir)/lookup-float32.h \
 	$(srcdir)/lookup-common.h $(srcdir)/palette-heckbert.c \
 	$(srcdir)/palette-heckbert.h $(srcdir)/palette-common-merge.c \
 	$(srcdir)/palette-common-merge.h \
@@ -802,6 +806,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-allocator.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-timer.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sleep.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-assessment.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-chunk.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-clipboard.Plo@am__quote@ # am--include-marker
@@ -904,6 +909,13 @@ libsixel_la-timer.lo: timer.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='timer.c' object='libsixel_la-timer.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-timer.lo `test -f 'timer.c' || echo '$(srcdir)/'`timer.c
+
+libsixel_la-sleep.lo: sleep.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-sleep.lo -MD -MP -MF $(DEPDIR)/libsixel_la-sleep.Tpo -c -o libsixel_la-sleep.lo `test -f 'sleep.c' || echo '$(srcdir)/'`sleep.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-sleep.Tpo $(DEPDIR)/libsixel_la-sleep.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='sleep.c' object='libsixel_la-sleep.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-sleep.lo `test -f 'sleep.c' || echo '$(srcdir)/'`sleep.c
 
 libsixel_la-assessment.lo: assessment.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-assessment.lo -MD -MP -MF $(DEPDIR)/libsixel_la-assessment.Tpo -c -o libsixel_la-assessment.lo `test -f 'assessment.c' || echo '$(srcdir)/'`assessment.c

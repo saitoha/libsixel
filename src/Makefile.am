@@ -21,6 +21,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/assessment.c \
                 $(srcdir)/assessment.h \
                 $(srcdir)/timer.h \
+                $(srcdir)/sleep.c \
+                $(srcdir)/sleep.h \
                 $(srcdir)/fromsixel.c \
                 $(srcdir)/tosixel.c \
                 $(srcdir)/lookup-common.c \

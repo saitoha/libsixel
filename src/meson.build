@@ -26,6 +26,8 @@ srcs = [
   'timer.c',
   'assessment.c',
   'timer.h',
+  'sleep.c',
+  'sleep.h',
   'palette-heckbert.c',
   'palette-heckbert.h',
   'palette-common-merge.c',
