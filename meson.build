@@ -767,6 +767,8 @@ project_inc = include_directories('.', 'include', 'src')
 
 loader_helper_sources = files(
   'src/allocator.c',
+  'src/sleep.c',
+  'src/sleep.h',
   'src/timer.c',
   'src/assessment.c',
   'src/chunk.c',
