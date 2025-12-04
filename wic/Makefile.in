@@ -144,7 +144,8 @@ am__DEPENDENCIES_1 =
 libwicsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am__libwicsixel_la_SOURCES_DIST = $(srcdir)/wic.c $(srcdir)/wic_stub.c \
 	$(srcdir)/wic_stub.h $(top_builddir)/src/fromsixel.c \
-	$(top_builddir)/src/allocator.c $(top_builddir)/src/timer.c \
+	$(top_builddir)/src/allocator.c \
+	$(top_builddir)/src/timer.c \
 	$(top_builddir)/src/logger.c $(top_builddir)/src/status.c \
 	$(top_builddir)/src/compat_stub.c \
 	$(top_srcdir)/src/decoder-parallel.c \
@@ -190,6 +191,7 @@ depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade =  \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-allocator.Plo \
+	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timer.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo \
@@ -197,7 +199,6 @@ am__depfiles_remade =  \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-sixel_threading.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo \
 	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-threadpool.Plo \
-	$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timer.Plo \
 	./$(DEPDIR)/libwicsixel_la-wic.Plo \
 	./$(DEPDIR)/libwicsixel_la-wic_stub.Plo
 am__mv = mv -f
@@ -444,7 +445,8 @@ CLEANFILES = *.o *.obj
 pkglib_LTLIBRARIES = libwicsixel.la
 libwicsixel_la_SOURCES = $(srcdir)/wic.c $(srcdir)/wic_stub.c \
 	$(srcdir)/wic_stub.h $(top_builddir)/src/fromsixel.c \
-	$(top_builddir)/src/allocator.c $(top_builddir)/src/timer.c \
+	$(top_builddir)/src/allocator.c \
+	$(top_builddir)/src/timer.c \
 	$(top_builddir)/src/logger.c $(top_builddir)/src/status.c \
 	$(top_builddir)/src/compat_stub.c $(am__append_1)
 libwicsixel_la_CPPFLAGS = $(AM_CPPFLAGS) \
@@ -570,6 +572,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-allocator.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timer.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo@am__quote@ # am--include-marker
@@ -577,7 +580,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-sixel_threading.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-threadpool.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timer.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libwicsixel_la-wic.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libwicsixel_la-wic_stub.Plo@am__quote@ # am--include-marker
 
@@ -827,6 +829,7 @@ clean-am: clean-generic clean-libtool clean-pkglibLTLIBRARIES \
 
 distclean: distclean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-allocator.Plo
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timer.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo
@@ -834,7 +837,6 @@ distclean: distclean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-sixel_threading.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-threadpool.Plo
-	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timer.Plo
 	-rm -f ./$(DEPDIR)/libwicsixel_la-wic.Plo
 	-rm -f ./$(DEPDIR)/libwicsixel_la-wic_stub.Plo
 	-rm -f Makefile
@@ -884,6 +886,7 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-allocator.Plo
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timer.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-compat_stub.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-decoder-parallel.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-fromsixel.Plo
@@ -891,7 +894,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-sixel_threading.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-status.Plo
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-threadpool.Plo
-	-rm -f $(top_builddir)/src/$(DEPDIR)/libwicsixel_la-timer.Plo
 	-rm -f ./$(DEPDIR)/libwicsixel_la-wic.Plo
 	-rm -f ./$(DEPDIR)/libwicsixel_la-wic_stub.Plo
 	-rm -f Makefile
