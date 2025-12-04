@@ -38,7 +38,8 @@ foreach t : ['test_0001_01_invalid_positional.t',
              'test_0014_option_matching.t',
              'test_0015_argument_shift.t',
              'test_0016_assessment_spool.t',
-             'test_0017_clipboard.t']
+             'test_0017_clipboard.t',
+             'test_0018_lsqa_regression.t']
   test(t, sh,
     args: [meson.current_source_dir() / 't' / t],
     protocol: 'tap',
