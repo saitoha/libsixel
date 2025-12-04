@@ -34,8 +34,8 @@
 #include <pthread.h>
 #endif
 
-#include "assessment.h"
 #include "logger.h"
+#include "timer.h"
 
 static sixel_logger_t *sixel_logger_active;
 static int sixel_logger_refcount;

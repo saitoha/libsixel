@@ -69,6 +69,7 @@
 #include "assessment.h"
 #include "encoder.h"
 #include "compat_stub.h"
+#include "timer.h"
 
 #if defined(_WIN32)
 #include <io.h>

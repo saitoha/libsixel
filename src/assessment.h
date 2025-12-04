@@ -126,9 +126,6 @@ sixel_assessment_load_single_frame(char const *path,
                                    sixel_allocator_t *allocator,
                                    sixel_frame_t **ppframe);
 
-SIXELAPI double
-sixel_assessment_timer_now(void);
-
 SIXELAPI void
 sixel_assessment_stage_transition(sixel_assessment_t *assessment,
                                   sixel_assessment_stage_t stage);

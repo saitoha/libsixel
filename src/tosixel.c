@@ -63,6 +63,7 @@
 #include "dither.h"
 #include "pixelformat.h"
 #include "assessment.h"
+#include "timer.h"
 #include "logger.h"
 #include "sixel_threads_config.h"
 #if SIXEL_ENABLE_THREADS

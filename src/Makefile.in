@@ -156,8 +156,8 @@ libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1)
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
-	$(srcdir)/assessment-timer.c $(srcdir)/assessment.c \
-	$(srcdir)/assessment.h $(srcdir)/fromsixel.c \
+	$(srcdir)/timer.c $(srcdir)/assessment.c \
+	$(srcdir)/assessment.h $(srcdir)/timer.h $(srcdir)/fromsixel.c \
 	$(srcdir)/tosixel.c $(srcdir)/lookup-common.c \
 	$(srcdir)/lookup-8bit.c $(srcdir)/lookup-8bit.h \
 	$(srcdir)/lookup-float32.c $(srcdir)/lookup-float32.h \
@@ -224,11 +224,11 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__objects_2 = libsixel_la-quicklook_thumbnailing.lo
 @HAVE_CLIPBOARD_MACOS_TRUE@am__objects_3 =  \
 @HAVE_CLIPBOARD_MACOS_TRUE@	libsixel_la-clipboard_macos.lo
-am_libsixel_la_OBJECTS = libsixel_la-output.lo \
-	libsixel_la-assessment-timer.lo libsixel_la-assessment.lo \
-	libsixel_la-fromsixel.lo libsixel_la-tosixel.lo \
-	libsixel_la-lookup-common.lo libsixel_la-lookup-8bit.lo \
-	libsixel_la-lookup-float32.lo libsixel_la-palette-heckbert.lo \
+am_libsixel_la_OBJECTS = libsixel_la-output.lo libsixel_la-timer.lo \
+	libsixel_la-assessment.lo libsixel_la-fromsixel.lo \
+	libsixel_la-tosixel.lo libsixel_la-lookup-common.lo \
+	libsixel_la-lookup-8bit.lo libsixel_la-lookup-float32.lo \
+	libsixel_la-palette-heckbert.lo \
 	libsixel_la-palette-common-merge.lo \
 	libsixel_la-palette-common-snap.lo \
 	libsixel_la-palette-kmeans.lo libsixel_la-palette.lo \
@@ -289,7 +289,6 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
-	./$(DEPDIR)/libsixel_la-assessment-timer.Plo \
 	./$(DEPDIR)/libsixel_la-assessment.Plo \
 	./$(DEPDIR)/libsixel_la-chunk.Plo \
 	./$(DEPDIR)/libsixel_la-clipboard.Plo \
@@ -344,6 +343,7 @@ am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
 	./$(DEPDIR)/libsixel_la-status.Plo \
 	./$(DEPDIR)/libsixel_la-stb_image_write.Plo \
 	./$(DEPDIR)/libsixel_la-threadpool.Plo \
+	./$(DEPDIR)/libsixel_la-timer.Plo \
 	./$(DEPDIR)/libsixel_la-tosixel.Plo \
 	./$(DEPDIR)/libsixel_la-tty.Plo \
 	./$(DEPDIR)/libsixel_la-writer.Plo ./$(DEPDIR)/tests-tests.Po
@@ -613,8 +613,8 @@ zshcompletiondir = @zshcompletiondir@
 CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests
 lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
-	$(srcdir)/assessment-timer.c $(srcdir)/assessment.c \
-	$(srcdir)/assessment.h $(srcdir)/fromsixel.c \
+	$(srcdir)/timer.c $(srcdir)/assessment.c \
+	$(srcdir)/assessment.h $(srcdir)/timer.h $(srcdir)/fromsixel.c \
 	$(srcdir)/tosixel.c $(srcdir)/lookup-common.c \
 	$(srcdir)/lookup-8bit.c $(srcdir)/lookup-8bit.h \
 	$(srcdir)/lookup-float32.c $(srcdir)/lookup-float32.h \
@@ -801,7 +801,6 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-allocator.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-assessment-timer.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-assessment.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-chunk.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-clipboard.Plo@am__quote@ # am--include-marker
@@ -856,6 +855,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-status.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-stb_image_write.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-threadpool.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-timer.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-tosixel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-tty.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-writer.Plo@am__quote@ # am--include-marker
@@ -898,12 +898,12 @@ libsixel_la-output.lo: output.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-output.lo `test -f 'output.c' || echo '$(srcdir)/'`output.c
 
-libsixel_la-assessment-timer.lo: assessment-timer.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-assessment-timer.lo -MD -MP -MF $(DEPDIR)/libsixel_la-assessment-timer.Tpo -c -o libsixel_la-assessment-timer.lo `test -f 'assessment-timer.c' || echo '$(srcdir)/'`assessment-timer.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-assessment-timer.Tpo $(DEPDIR)/libsixel_la-assessment-timer.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='assessment-timer.c' object='libsixel_la-assessment-timer.lo' libtool=yes @AMDEPBACKSLASH@
+libsixel_la-timer.lo: timer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-timer.lo -MD -MP -MF $(DEPDIR)/libsixel_la-timer.Tpo -c -o libsixel_la-timer.lo `test -f 'timer.c' || echo '$(srcdir)/'`timer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-timer.Tpo $(DEPDIR)/libsixel_la-timer.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='timer.c' object='libsixel_la-timer.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-assessment-timer.lo `test -f 'assessment-timer.c' || echo '$(srcdir)/'`assessment-timer.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-timer.lo `test -f 'timer.c' || echo '$(srcdir)/'`timer.c
 
 libsixel_la-assessment.lo: assessment.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-assessment.lo -MD -MP -MF $(DEPDIR)/libsixel_la-assessment.Tpo -c -o libsixel_la-assessment.lo `test -f 'assessment.c' || echo '$(srcdir)/'`assessment.c
@@ -1521,7 +1521,6 @@ clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
 
 distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-allocator.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-assessment-timer.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-assessment.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-chunk.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-clipboard.Plo
@@ -1576,6 +1575,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-status.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-stb_image_write.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-threadpool.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-timer.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-tosixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-tty.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-writer.Plo
@@ -1626,7 +1626,6 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-allocator.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-assessment-timer.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-assessment.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-chunk.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-clipboard.Plo
@@ -1681,6 +1680,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-status.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-stb_image_write.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-threadpool.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-timer.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-tosixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-tty.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-writer.Plo

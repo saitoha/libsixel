@@ -51,7 +51,7 @@ srcs = files(
   '../src/status.c',
   '../src/allocator.c',
   '../src/fromsixel.c',
-  '../src/assessment-timer.c',
+  '../src/timer.c',
   '../src/logger.c',
   '../src/compat_stub.c',
 )
