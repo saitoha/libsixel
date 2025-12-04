@@ -767,14 +767,23 @@ static int stbi_write_hdr_core(stbi__write_context *s, int x, int y, int comp, f
       unsigned char *scratch = (unsigned char *) STBIW_MALLOC(x*4);
       int i, len;
       char buffer[128];
-      char header[] = "#?RADIANCE\n# Written by stb_image_write.h\nFORMAT=32-bit_rle_rgbe\n";
+      char header[] = "#?RADIANCE\n# Written by stb_image_write.h\n"
+                      "FORMAT=32-bit_rle_rgbe\n";
       s->func(s->context, header, sizeof(header)-1);
 
-#ifdef __STDC_LIB_EXT1__
-      len = sprintf_s(buffer, sizeof(buffer), "EXPOSURE=          1.0000000000000\n\n-Y %d +X %d\n", y, x);
-#else
-      len = sprintf(buffer, "EXPOSURE=          1.0000000000000\n\n-Y %d +X %d\n", y, x);
-#endif
+      /*
+       * Use snprintf to avoid deprecated sprintf warnings on macOS and to
+       * keep the formatted header bounded. Bail out if the formatted string
+       * would overflow the buffer because the scanline buffer depends on
+       * this header length.
+       */
+      len = snprintf(buffer, sizeof(buffer),
+                     "EXPOSURE=          1.0000000000000\n\n-Y %d +X %d\n",
+                     y, x);
+      if (len < 0 || len >= (int)sizeof(buffer)) {
+         STBIW_FREE(scratch);
+         return 0;
+      }
       s->func(s->context, buffer, len);
 
       for(i=0; i < y; i++)
