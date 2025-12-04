@@ -48,6 +48,7 @@
 #include "compat_stub.h"
 #include "lookup-common.h"
 #include "assessment.h"
+#include "timer.h"
 #include "dither-common-pipeline.h"
 #include "dither-positional-8bit.h"
 #include "dither-positional-float32.h"

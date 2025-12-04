@@ -60,7 +60,6 @@ int strcasecmp(char const *lhs, char const *rhs);
 #endif
 
 #include "allocator.h"
-#include "assessment.h"
 #include "compat_stub.h"
 #include "logger.h"
 #include "palette-common-merge.h"
@@ -69,6 +68,7 @@ int strcasecmp(char const *lhs, char const *rhs);
 #include "palette.h"
 #include "pixelformat.h"
 #include "status.h"
+#include "timer.h"
 
 typedef struct sixel_kmeans_projection_entry {
     double projection;

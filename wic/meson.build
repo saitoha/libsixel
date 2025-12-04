@@ -27,7 +27,7 @@ wic_sources = files(
   '../src/fromsixel.c',
   '../src/allocator.c',
   '../src/status.c',
-  '../src/assessment-timer.c',
+  '../src/timer.c',
   '../src/logger.c',
   '../src/compat_stub.c',
 )

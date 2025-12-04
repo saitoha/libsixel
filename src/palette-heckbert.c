@@ -61,7 +61,6 @@
 #endif
 
 #include "allocator.h"
-#include "assessment.h"
 #include "compat_stub.h"
 #include "logger.h"
 #include "lookup-common.h"
@@ -71,6 +70,7 @@
 #include "palette.h"
 #include "pixelformat.h"
 #include "status.h"
+#include "timer.h"
 
 /*
  * Tuple table primitives live exclusively inside the Heckbert implementation.

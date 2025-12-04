@@ -17,9 +17,10 @@ lib_LTLIBRARIES = libsixel.la
 libsixel_la_SOURCES = \
                 $(srcdir)/output.c \
                 $(srcdir)/output.h \
-                $(srcdir)/assessment-timer.c \
+                $(srcdir)/timer.c \
                 $(srcdir)/assessment.c \
                 $(srcdir)/assessment.h \
+                $(srcdir)/timer.h \
                 $(srcdir)/fromsixel.c \
                 $(srcdir)/tosixel.c \
                 $(srcdir)/lookup-common.c \
