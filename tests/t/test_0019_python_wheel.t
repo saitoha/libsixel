@@ -44,6 +44,30 @@ if [ ! -f "${TOP_BUILDDIR}/python/Makefile" ] && \
     skip_all "python bindings are disabled"
 fi
 
+# Require local venv/ensurepip and wheel modules so we can skip gracefully
+# on minimal Python installations rather than failing the entire suite.
+if "${python_bin}" - <<'PY' >>"${log_file}" 2>&1; then
+import importlib.util
+missing = [m for m in ("venv", "ensurepip")
+           if importlib.util.find_spec(m) is None]
+if missing:
+    raise SystemExit(f"missing modules: {', '.join(missing)}")
+PY
+    :
+else
+    skip_all "python3 lacks venv or ensurepip support"
+fi
+
+if "${python_bin}" - <<'PY' >>"${log_file}" 2>&1; then
+import importlib.util
+if importlib.util.find_spec("wheel") is None:
+    raise SystemExit("wheel module missing")
+PY
+    :
+else
+    skip_all "python3 lacks wheel module"
+fi
+
 lib_paths=""
 for candidate in "${TOP_BUILDDIR}/src/.libs" \
                  "${TOP_BUILDDIR}/src" \
