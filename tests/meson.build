@@ -5,11 +5,12 @@ env.set('ARTIFACT_ROOT', artifact_root)
 env.set('TOP_SRCDIR', meson.project_source_root())
 env.set('TOP_BUILDDIR', meson.project_build_root())
 
-if host_machine.system() == 'windows'
-  # Ensure Windows runners locate the freshly built DLLs when executing the
-  # converter TAP suite. Without these PATH entries the tests fail with
-  # "cannot open shared object file" errors because libsixel-1.dll is not
-  # discoverable beside the converter executables.
+if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
+  # Ensure Windows-style runners (including MSYS2) locate the freshly built
+  # DLLs when executing the converter TAP suite. Without these PATH entries
+  # the tests fail with "cannot open shared object file" errors because
+  # libsixel-1.dll or msys-sixel-1.dll is not discoverable beside the
+  # converter executables.
   dll_paths = [meson.project_build_root() / 'src',
                meson.project_build_root() / 'converters']
   foreach dll_path : dll_paths
