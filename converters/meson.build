@@ -61,10 +61,17 @@ if img2sixel_opt.enabled()
   img2sixel_deps = [img2sixel_exe]
   install_man('img2sixel.1')
   if bash_completion_dir != ''
-    install_data('shell-completion/bash/img2sixel', install_dir: bash_completion_dir)
+    # Explicitly tag the completion install so Meson does not try to
+    # guess an absolute path outside the prefix on Windows runners.
+    install_data('shell-completion/bash/img2sixel',
+                 install_dir: bash_completion_dir,
+                 install_tag: 'data')
   endif
   if zsh_completion_dir != ''
-    install_data('shell-completion/zsh/_img2sixel', install_dir: zsh_completion_dir)
+    # See the note above for the bash completion install.
+    install_data('shell-completion/zsh/_img2sixel',
+                 install_dir: zsh_completion_dir,
+                 install_tag: 'data')
   endif
 endif
 
