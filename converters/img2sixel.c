@@ -471,11 +471,11 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                     speed mode\n"
     },
     {
-        'L',
-        "lut-policy",
-        "-L LUTPOLICY, --lut-policy=LUTPOLICY\n"
+        '~',
+        "lookup-policy",
+        "-~ LOOKUPPOLICY, --lookup-policy=LOOKUPPOLICY\n"
         "                           choose histogram lookup width\n"
-        "                           LUTPOLICY is one of them:\n"
+        "                           LOOKUPPOLICY is one of them:\n"
         "                             auto      -> follow pixel depth\n"
         "                             5bit      -> force classic 5-bit\n"
         "                                          buckets\n"
@@ -654,7 +654,7 @@ static char const g_img2sixel_optstring[] =
     "o:a:J:"
     "=:"
     ".:"
-    "j:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:L:kil:t:ugvSn:PE:U:B:C:D@:"
+    "j:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:~:kil:t:ugvSn:PE:U:B:C:D@:"
     "OVW:HY:y:";
 
 static int
@@ -1107,7 +1107,7 @@ main(int argc, char *argv[])
         {"height",             required_argument,  &long_opt, 'h'},
         {"resampling",         required_argument,  &long_opt, 'r'},
         {"quality",            required_argument,  &long_opt, 'q'},
-        {"lut-policy",         required_argument,  &long_opt, 'L'},
+        {"lookup-policy",      required_argument,  &long_opt, '~'},
         {"palette-type",       required_argument,  &long_opt, 't'},
         {"insecure",           no_argument,        &long_opt, 'k'},
         {"invert",             no_argument,        &long_opt, 'i'},
@@ -1293,7 +1293,8 @@ unknown_option_error:
             "                 [-d diffusiontype] [-Q model] [-F mode]\n"
             "                 [-y scantype] [-a assessmentlist] [-J assessmentfile]\n"
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
-            "                 [-h height] [-r resamplingtype] [-q quality] [-l loopmode]\n"
+            "                 [-h height] [-r resamplingtype] [-q quality]\n"
+            "                 [-~ lookuppolicy] [-l loopmode]\n"
             "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
             "                 [-E encodepolicy] [-j loaderlist] [-J jsonfile]\n"
             "                 [-@ mmv:charset:path] [-1 shell] [-2 shell]\n"
