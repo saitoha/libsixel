@@ -36,6 +36,9 @@
 #include <string.h>
 #include <time.h>
 
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#endif
 #if HAVE_DIRENT_H
 # include <dirent.h>
 #endif
@@ -1456,7 +1459,6 @@ sixel_option_validate_filesystem_path(
     (void)flags;
     return 0;
 #else
-    struct stat path_stat;
     int stat_result;
     int error_value;
     int allow_stdin;
@@ -1466,7 +1468,6 @@ sixel_option_validate_filesystem_path(
     char const *remote_view;
     char message_buffer[1024];
 
-    memset(&path_stat, 0, sizeof(path_stat));
     stat_result = 0;
     error_value = 0;
     allow_stdin = (flags & SIXEL_OPTION_PATH_ALLOW_STDIN) != 0u;
@@ -1511,7 +1512,13 @@ sixel_option_validate_filesystem_path(
     }
 
     errno = 0;
-    stat_result = stat(resolved_path, &path_stat);
+    stat_result = sixel_compat_access(resolved_path, F_OK);
+    /*
+     * Prefer the compat layer over stat() here to avoid the Win32 path
+     * resolver's UNC probes, which can block for minutes on missing or
+     * non-local paths.  We only need an existence check, so access()
+     * provides the lightest available probe.
+     */
     if (stat_result == 0) {
         return 0;
     }
