@@ -30,7 +30,9 @@ fail() {
 }
 
 skip() {
-    printf 'ok %s - %s # SKIP %s\n' "$1" "$2" "$3"
+    reason=${3:-"skipped"}
+
+    printf 'ok %s - %s # SKIP %s\n' "$1" "$2" "${reason}"
 }
 
 echo "1..17"
