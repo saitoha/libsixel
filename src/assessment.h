@@ -100,6 +100,7 @@ struct sixel_assessment {
     int palette_colors;
     size_t output_bytes;
     size_t output_bytes_written;
+    unsigned int metrics_mask;
     unsigned int sections_mask;
     unsigned int view_mask;
 };
