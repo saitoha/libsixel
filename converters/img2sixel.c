@@ -85,6 +85,15 @@
 #endif
 
 /*
+ * Some Windows SDKs ship without POSIX-style S_ISDIR.  Map it to the
+ * equivalent bitmask check so img2sixel_validate_input can refuse directory
+ * paths on every platform.
+ */
+#if !defined(S_ISDIR) && defined(S_IFMT) && defined(S_IFDIR)
+# define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+#endif  /* !S_ISDIR */
+
+/*
  * Option-specific help snippets drive both the --help output and
  * contextual error reporting.  The layout below mirrors a table:
  *
