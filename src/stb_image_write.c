@@ -34,6 +34,22 @@
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 
+#if defined(__clang__)
+# pragma clang diagnostic push
+# pragma clang diagnostic ignored "-Wall"
+# pragma clang diagnostic ignored "-Wextra"
+# pragma clang diagnostic ignored "-Wpedantic"
+#elif defined(__GNUC__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wall"
+# pragma GCC diagnostic ignored "-Wextra"
+# pragma GCC diagnostic ignored "-Wpedantic"
+#endif
+/*
+ * Shield the third-party stb_image_write implementation from our warning
+ * policy. We keep the diagnostics local to this include to avoid patching
+ * upstream sources.
+ */
 #if HAVE_DIAGNOSTIC_SIGN_CONVERSION
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wsign-conversion"
@@ -54,13 +70,18 @@
 #if HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
 # pragma GCC diagnostic pop
 #endif
-#if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
+#if HAVE_DIAGNOSTIC_SWITCH_DEFAULT
 # pragma GCC diagnostic pop
 #endif
 #if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
 # pragma GCC diagnostic pop
 #endif
 #if HAVE_DIAGNOSTIC_SIGN_CONVERSION
+# pragma GCC diagnostic pop
+#endif
+#if defined(__clang__)
+# pragma clang diagnostic pop
+#elif defined(__GNUC__)
 # pragma GCC diagnostic pop
 #endif
 
