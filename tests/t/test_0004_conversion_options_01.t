@@ -44,7 +44,7 @@ check_dcs_crc() {
         return
     fi
 
-    if [ "${digest}" = "${expected_dcs_crc}" ]; then
+    if [ "x${digest}" = "x${expected_dcs_crc}" ]; then
         pass "${case_no}" "${description}"
     else
         fail "${case_no}" "${description}"

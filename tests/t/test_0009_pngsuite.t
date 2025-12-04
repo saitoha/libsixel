@@ -45,8 +45,25 @@ pngsuite_background="background/bgai4a08.png background/bgai4a16.png \
     background/bgan6a08.png background/bgan6a16.png background/bgbn4a08.png \
     background/bggn4a16.png background/bgwn6a08.png background/bgyn6a16.png"
 
-require_file "${images_dir}/pngsuite/basic/basn0g01.png"
-require_file "${images_dir}/pngsuite/background/bgai4a08.png"
+ensure_pngsuite_samples_present() {
+    required_files=${pngsuite_basic}
+    required_files="${required_files} ${pngsuite_background}"
+
+    missing_rel=""
+
+    for rel in ${required_files}; do
+        if [ ! -f "${images_dir}/pngsuite/${rel}" ]; then
+            missing_rel=${rel}
+            break
+        fi
+    done
+
+    if [ -n "${missing_rel}" ]; then
+        skip_all "pngsuite sample '${missing_rel}' is missing"
+    fi
+}
+
+ensure_pngsuite_samples_present
 
 run_group() {
     files=$1
