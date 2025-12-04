@@ -211,7 +211,7 @@ _img2sixel()
                                    full' -- "$cur" ) )
         return 0
         ;;
-    -L|--lut-policy)
+    -~|--lookup-policy)
         COMPREPLY=( $( compgen -W 'auto \
                                    5bit \
                                    6bit \
@@ -331,7 +331,7 @@ _img2sixel()
                                    -h --height \
                                    -r --resampling \
                                    -q --quality \
-                                   -L --lut-policy \
+                                   -~ --lookup-policy \
                                    -l --loop-control \
                                    -t --palette-type \
                                    -b --builtin-palette \

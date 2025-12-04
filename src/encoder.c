@@ -6154,7 +6154,7 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
-    case SIXEL_OPTFLAG_LUT_POLICY:  /* L */
+    case SIXEL_OPTFLAG_LUT_POLICY:  /* ~ */
         match_result = sixel_option_match_choice(
             value,
             g_option_choices_lut_policy,
