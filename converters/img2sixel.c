@@ -48,6 +48,9 @@
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+#if HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
 #if HAVE_GETOPT_H
 # include <getopt.h>
 #endif
@@ -1065,6 +1068,103 @@ signal_handler(int sig)
 
 #endif
 
+/*
+ * Lightweight trace channel to follow argument validation during CI
+ * failures.  Enable by setting IMG2SIXEL_TRACE to any non-empty value;
+ * messages are emitted on stderr and flushed immediately so hung runs
+ * can reveal the last observed path.
+ */
+static int g_trace_enabled = 0;
+
+static int
+img2sixel_is_url(const char *path)
+{
+    char const *scheme_sep;
+
+    scheme_sep = strstr(path, "://");
+    if (scheme_sep == NULL) {
+        return 0;
+    }
+
+    if (scheme_sep == path) {
+        return 0;
+    }
+
+    if (!isalpha((unsigned char)path[0])) {
+        return 0;
+    }
+
+    return 1;
+}
+
+static void
+img2sixel_trace(const char *fmt, ...)
+{
+    va_list ap;
+
+    if (!g_trace_enabled) {
+        return;
+    }
+
+    fprintf(stderr, "[img2sixel trace] ");
+    va_start(ap, fmt);
+    /*
+     * Allow tracing with caller-provided format strings while keeping
+     * compilers quiet about non-literal format usage in diagnostic logs.
+     */
+#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
+# if defined(__clang__)
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wformat-nonliteral"
+# elif defined(__GNUC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-nonliteral"
+# endif
+#endif
+    vfprintf(stderr, fmt, ap);
+#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
+# if defined(__clang__)
+#  pragma clang diagnostic pop
+# elif defined(__GNUC__)
+#  pragma GCC diagnostic pop
+# endif
+#endif
+    va_end(ap);
+    fprintf(stderr, "\n");
+    fflush(stderr);
+}
+
+static int
+img2sixel_validate_input(const char *path)
+{
+    struct stat path_stat;
+    int ret;
+
+    if (img2sixel_is_url(path)) {
+        img2sixel_trace("treating %s as URL", path);
+        return 0;
+    }
+
+    ret = stat(path, &path_stat);
+    if (ret != 0) {
+        sixel_helper_set_additional_message(
+            "img2sixel: input file does not exist.");
+        img2sixel_trace("stat failed for %s: errno=%d", path, errno);
+        return (-1);
+    }
+
+    if (S_ISDIR(path_stat.st_mode)) {
+        sixel_helper_set_additional_message(
+            "img2sixel: input path refers to a directory.");
+        img2sixel_trace("refusing directory input: %s", path);
+        return (-1);
+    }
+
+    img2sixel_trace("input is a regular file: %s", path);
+
+    return 0;
+}
+
 int
 main(int argc, char *argv[])
 {
@@ -1078,6 +1178,7 @@ main(int argc, char *argv[])
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
     char const *optstring;
+    char const *trace_env;
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"outfile",            required_argument,  &long_opt, 'o'},
@@ -1139,6 +1240,12 @@ main(int argc, char *argv[])
 
     sixel_tty_init_output_device(STDERR_FILENO);
     sixel_aborttrace_install_if_unhandled();
+
+    trace_env = getenv("IMG2SIXEL_TRACE");
+    if (trace_env != NULL && trace_env[0] != '\0') {
+        g_trace_enabled = 1;
+        img2sixel_trace("trace enabled via IMG2SIXEL_TRACE");
+    }
 
     optstring = g_img2sixel_optstring;
     completion_exit_status = 0;
@@ -1248,6 +1355,7 @@ main(int argc, char *argv[])
     (void) signal_handler;
 #endif
     if (optind >= argc) {
+        img2sixel_trace("encoding from stdin");
         status = sixel_encoder_encode(encoder, NULL);
         if (SIXEL_FAILED(status)) {
             goto error;
@@ -1264,10 +1372,16 @@ main(int argc, char *argv[])
             }
         }
         for (n = optind; n < argc; n++) {
+            if (img2sixel_validate_input(argv[n]) != 0) {
+                status = SIXEL_BAD_INPUT;
+                goto error;
+            }
+            img2sixel_trace("encoding %s", argv[n]);
             status = sixel_encoder_encode(encoder, argv[n]);
             if (SIXEL_FAILED(status)) {
                 goto error;
             }
+            img2sixel_trace("finished %s", argv[n]);
         }
     }
 
