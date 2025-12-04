@@ -61,6 +61,14 @@ typedef SSIZE_T ssize_t;
 # include <fcntl.h>
 # include <sys/stat.h>
 /*
+ * Map POSIX-style access mode constants to the values expected by
+ * _access().  MSVC does not always provide F_OK, so supply a fallback
+ * to keep callers portable.
+ */
+# if !defined(F_OK)
+#  define F_OK 0
+# endif
+/*
  * Map the common POSIX flag spellings onto the MSVC prefixed
  * constants so call sites can keep using the familiar names.
  */
