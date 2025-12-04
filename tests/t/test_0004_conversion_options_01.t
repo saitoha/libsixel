@@ -16,6 +16,41 @@ script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 
 status=0
 
+expected_dcs_crc="302131327e2d2131327e1b5c"
+
+# Generate a checksum from the DCS payload emitted by img2sixel. This avoids
+# invoking the test builtin with missing arguments when the pipeline yields no
+# bytes (for example, because of platform-specific filtering on MSYS).
+dcs_checksum() {
+    scale_args=$1
+
+    checksum=$(printf '\033Pq"1;1;1;1!6~\033\\' \
+        | run_img2sixel -rne ${scale_args} 2>>"${log_file}" \
+        | tr '#' '\n' | tail -n +3 \
+        | od -An -tx1 | tr -d ' \n') || checksum=""
+
+    printf '%s' "${checksum}"
+}
+
+check_dcs_crc() {
+    case_no=$1
+    scale_args=$2
+    description=$3
+
+    digest=$(dcs_checksum "${scale_args}")
+
+    if [ -z "${digest}" ]; then
+        fail "${case_no}" "${description} (no checksum produced)"
+        return
+    fi
+
+    if [ "${digest}" = "${expected_dcs_crc}" ]; then
+        pass "${case_no}" "${description}"
+    else
+        fail "${case_no}" "${description}"
+    fi
+}
+
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 pass() {
@@ -67,55 +102,18 @@ else
     fail 4 "scaling with histogram and background failed"
 fi
 
-echo "\\033Pq\"1;1;1;1!6~\\033\\" \
-    | run_img2sixel -rne -w200% 2>>"${log_file}" \
-    | tr '#' '\n' | tail -n +3 | od -An -tx1 | tr -d ' ' \
-    | xargs test 302131327e2d2131327e1b5c =
-if [ $? -eq 0 ]; then
-    pass 5 "width scaling preserves DCS coordinates"
-else
-    fail 5 "width scaling distorted coordinates"
-fi
+check_dcs_crc 5 "-w200%" "width scaling preserves DCS coordinates"
 
-echo "\\033Pq\"1;1;1;1!6~\\033\\" \
-    | run_img2sixel -rne -h200% 2>>"${log_file}" \
-    | tr '#' '\n' | tail -n +3 | od -An -tx1 | tr -d ' ' \
-    | xargs test 302131327e2d2131327e1b5c =
-if [ $? -eq 0 ]; then
-    pass 6 "height scaling preserves DCS coordinates"
-else
-    fail 6 "height scaling distorted coordinates"
-fi
+check_dcs_crc 6 "-h200%" "height scaling preserves DCS coordinates"
 
-echo "\\033Pq\"1;1;1;1!6~\\033\\" \
-    | run_img2sixel -rne -h200% -wauto 2>>"${log_file}" \
-    | tr '#' '\n' | tail -n +3 | od -An -tx1 | tr -d ' ' \
-    | xargs test 302131327e2d2131327e1b5c =
-if [ $? -eq 0 ]; then
-    pass 7 "automatic width with height scaling stays consistent"
-else
-    fail 7 "automatic width with height scaling changed coordinates"
-fi
+check_dcs_crc 7 "-h200% -wauto" \
+    "automatic width with height scaling stays consistent"
 
-echo "\\033Pq\"1;1;1;1!6~\\033\\" \
-    | run_img2sixel -rne -hauto -w12 2>>"${log_file}" \
-    | tr '#' '\n' | tail -n +3 | od -An -tx1 | tr -d ' ' \
-    | xargs test 302131327e2d2131327e1b5c =
-if [ $? -eq 0 ]; then
-    pass 8 "automatic height with width scaling stays consistent"
-else
-    fail 8 "automatic height with width scaling changed coordinates"
-fi
+check_dcs_crc 8 "-hauto -w12" \
+    "automatic height with width scaling stays consistent"
 
-echo "\\033Pq\"1;1;1;1!6~\\033\\" \
-    | run_img2sixel -rne -h12 -w200% 2>>"${log_file}" \
-    | tr '#' '\n' | tail -n +3 | od -An -tx1 | tr -d ' ' \
-    | xargs test 302131327e2d2131327e1b5c =
-if [ $? -eq 0 ]; then
-    pass 9 "combined absolute and percentage scaling consistent"
-else
-    fail 9 "combined absolute and percentage scaling changed coordinates"
-fi
+check_dcs_crc 9 "-h12 -w200%" \
+    "combined absolute and percentage scaling consistent"
 
 if run_img2sixel -w210 -h210 -djajuni -bxterm256 -o "${snake_dims}" \
     <"${snake_jpg}" 2>>"${log_file}"; then
