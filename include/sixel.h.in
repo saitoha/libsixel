@@ -1683,6 +1683,14 @@ typedef void (*sixel_assessment_json_callback_t)(
     (SIXEL_ASSESSMENT_KIND_RELATIVE | \
      SIXEL_ASSESSMENT_SCOPE_COMPOSITE | 0x0019)
 
+#define SIXEL_ASSESSMENT_METRIC_MASK(metric_id) \
+    (1u << SIXEL_ASSESSMENT_INDEX(metric_id))
+#define SIXEL_ASSESSMENT_METRIC_MASK_ALL \
+    (((SIXEL_ASSESSMENT_METRIC_COUNT) >= \
+      (int)(sizeof(unsigned int) * 8u)) ? \
+     0xffffffffu : \
+     ((1u << (SIXEL_ASSESSMENT_METRIC_COUNT)) - 1u))
+
 #define SIXEL_ASSESSMENT_OPT_ENABLE_LPIPS 1
 #define SIXEL_ASSESSMENT_OPT_MODEL_DIR    2
 #define SIXEL_ASSESSMENT_OPT_EXEC_PATH    3
@@ -1720,6 +1728,11 @@ SIXELAPI void
 sixel_assessment_select_sections(
     sixel_assessment_t  /* in */ *assessment,
     unsigned int        /* in */ sections);
+
+SIXELAPI void
+sixel_assessment_select_metrics(
+    sixel_assessment_t  /* in */ *assessment,
+    unsigned int        /* in */ metrics);
 
 SIXELAPI SIXELSTATUS
 sixel_assessment_get_json(
