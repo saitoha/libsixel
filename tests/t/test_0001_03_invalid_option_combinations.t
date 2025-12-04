@@ -2,7 +2,8 @@
 # TAP test verifying incompatible img2sixel option combinations are rejected
 # without emitting stray output.
 
-set -eu
+# Enable strict mode with verbose tracing for diagnostics.
+set -euxv
 
 test_name=$(basename "$0")
 artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}

@@ -1,7 +1,21 @@
 #!/bin/sh
 # Common helpers for converter TAP tests executed with POSIX sh.
 
-set -u
+# Enable strict mode with verbose tracing for diagnostics.
+set -uxv
+
+# Disable shell tracing temporarily while running a command. This keeps
+# stderr clean for assertions that expect no diagnostics while preserving
+# verbose logging before and after the call.
+run_quiet() {
+    status_quiet=0
+
+    set +xv
+    "$@" || status_quiet=$?
+    set -xv
+
+    return ${status_quiet}
+}
 
 # Detect converter enablement using build metadata rather than leftover
 # binaries. Stale executables from a previous configuration can linger

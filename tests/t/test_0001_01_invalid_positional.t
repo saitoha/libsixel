@@ -2,7 +2,8 @@
 # TAP test verifying img2sixel rejects invalid positional inputs without
 # emitting stray output.
 
-set -eu
+# Enable strict mode with verbose tracing for diagnostics.
+set -euxv
 
 test_name=$(basename "$0")
 artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
