@@ -61,7 +61,11 @@ check_meson_option() {
         return 1
     fi
 
-    python3 - "$option_name" "$options_path" <<'PY' || exit 1
+    # The Python helper returns 0 only when the option is explicitly
+    # enabled. A non-zero status (e.g., "disabled" or "auto") should be
+    # propagated to the caller so the test can skip gracefully instead of
+    # aborting the shell.
+    python3 - "$option_name" "$options_path" <<'PY'
 import json
 import sys
 
