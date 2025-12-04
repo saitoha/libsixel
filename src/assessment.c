@@ -163,6 +163,34 @@ typedef struct sixel_assessment_capture {
 static sixel_assessment_t *g_assessment_context = NULL;
 static sixel_assessment_t *g_active_encode_assessment = NULL;
 
+static unsigned int
+assessment_metric_mask_all(void)
+{
+    if (SIXEL_ASSESSMENT_METRIC_COUNT >=
+            (int)(sizeof(unsigned int) * 8u)) {
+        return 0xffffffffu;
+    }
+    return (1u << SIXEL_ASSESSMENT_METRIC_COUNT) - 1u;
+}
+
+static int
+assessment_metric_selected(sixel_assessment_t const *assessment,
+                           int metric_id)
+{
+    unsigned int mask;
+    unsigned int index;
+
+    if (assessment == NULL) {
+        return 0;
+    }
+    index = (unsigned int)SIXEL_ASSESSMENT_INDEX(metric_id);
+    if (index >= (unsigned int)SIXEL_ASSESSMENT_METRIC_COUNT) {
+        return 0;
+    }
+    mask = assessment->metrics_mask;
+    return (mask & (1u << index)) != 0u;
+}
+
 typedef struct assessment_stage_descriptor {
     sixel_assessment_stage_t id;
     char const *label;
@@ -878,6 +906,29 @@ sixel_assessment_select_sections(sixel_assessment_t *assessment,
 }
 
 SIXELAPI void
+sixel_assessment_select_metrics(sixel_assessment_t *assessment,
+                                unsigned int metrics)
+{
+    unsigned int mask;
+    unsigned int lpips_bit;
+
+    if (assessment == NULL) {
+        return;
+    }
+    mask = metrics & assessment_metric_mask_all();
+    if (mask == 0u) {
+        mask = assessment_metric_mask_all();
+    }
+    assessment->metrics_mask = mask;
+
+    lpips_bit = SIXEL_ASSESSMENT_METRIC_MASK(
+        SIXEL_ASSESSMENT_METRIC_LPIPS_VGG);
+    if ((mask & lpips_bit) == 0u) {
+        assessment->enable_lpips = 0;
+    }
+}
+
+SIXELAPI void
 sixel_assessment_attach_encoder(sixel_assessment_t *assessment,
                                 sixel_encoder_t *encoder)
 {
@@ -1366,7 +1417,10 @@ static int find_model(char const *binary_dir,
         /* checking ../../models/lpips */
         if (join_path(binary_dir, SIXEL_LOCAL_MODELS_SEG1,
                       binary_parent_path, sizeof(binary_parent_path)) == 0) {
-            if (build_local_model_path(binary_parent_path, name, buffer, size) == 0) {
+            if (build_local_model_path(binary_parent_path,
+                                       name,
+                                       buffer,
+                                       size) == 0) {
                 if (path_accessible(buffer)) {
                     return (0);
                 }
@@ -3465,8 +3519,21 @@ psnr_metric(const sixel_assessment_float_buffer_t *ref,
 /*
  * sixel_assessment_metrics_t aggregation
  */
+static void
+assessment_metrics_init(sixel_assessment_metrics_t *metrics)
+{
+    float *fields;
+    size_t index;
+
+    fields = (float *)(void *)metrics;
+    for (index = 0; index < sizeof(*metrics) / sizeof(float); ++index) {
+        fields[index] = NAN;
+    }
+}
+
 static sixel_assessment_metrics_t
-evaluate_metrics(const float *ref_pixels,
+evaluate_metrics(sixel_assessment_t *assessment,
+                 const float *ref_pixels,
                  const float *out_pixels,
                  int width,
                  int height)
@@ -3483,76 +3550,267 @@ evaluate_metrics(const float *ref_pixels,
     size_t iter;
     double sum_value;
 
-    memset(&metrics, 0, sizeof(metrics));
-    metrics.lpips_alex = NAN;
+    int want_ms_ssim;
+    int want_high_freq_out;
+    int want_high_freq_ref;
+    int want_high_freq_delta;
+    int want_stripe_out;
+    int want_stripe_ref;
+    int want_stripe_rel;
+    int want_banding_run_rel;
+    int want_banding_grad_rel;
+    int want_clip_out;
+    int want_clip_ref;
+    int want_clip_rel;
+    int want_delta_chroma_mean;
+    int want_delta_e00_mean;
+    int want_gmsd;
+    int want_psnr_y;
+    int need_luma;
+    int need_lab;
+    int need_clip;
+    float high_freq_out_value;
+    float high_freq_ref_value;
+    float stripe_ref_value;
+    float stripe_out_value;
+    float band_run_out;
+    float band_run_ref;
+    float band_grad_out;
+    float band_grad_ref;
 
-    ref_luma = pixels_to_luma709(ref_pixels, width, height);
-    out_luma = pixels_to_luma709(out_pixels, width, height);
+    assessment_metrics_init(&metrics);
 
-    metrics.ms_ssim = ms_ssim_luma(&ref_luma, &out_luma, width, height);
+    high_freq_out_value = NAN;
+    high_freq_ref_value = NAN;
+    stripe_ref_value = NAN;
+    stripe_out_value = NAN;
+    band_run_out = NAN;
+    band_run_ref = NAN;
+    band_grad_out = NAN;
+    band_grad_ref = NAN;
 
-    metrics.high_freq_out = high_frequency_ratio(&out_luma, width, height,
-                                                 0.25f);
-    metrics.high_freq_ref = high_frequency_ratio(&ref_luma, width, height,
-                                                 0.25f);
-    metrics.high_freq_delta = metrics.high_freq_out - metrics.high_freq_ref;
+    ref_luma.length = 0;
+    ref_luma.values = NULL;
+    out_luma = ref_luma;
+    ref_lab = ref_luma;
+    out_lab = ref_luma;
+    ref_chroma = ref_luma;
+    out_chroma = ref_luma;
+    de00 = ref_luma;
 
-    metrics.stripe_ref = stripe_score(&ref_luma, width, height, 180);
-    metrics.stripe_out = stripe_score(&out_luma, width, height, 180);
-    metrics.stripe_rel = metrics.stripe_out - metrics.stripe_ref;
+    want_ms_ssim = assessment_metric_selected(assessment,
+                   SIXEL_ASSESSMENT_METRIC_MS_SSIM);
+    want_high_freq_delta = assessment_metric_selected(assessment,
+                           SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_DELTA);
+    want_high_freq_out = assessment_metric_selected(assessment,
+                        SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_OUT) ||
+                        want_high_freq_delta;
+    want_high_freq_ref = assessment_metric_selected(assessment,
+                        SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_REF) ||
+                        want_high_freq_delta;
+    want_stripe_rel = assessment_metric_selected(assessment,
+                     SIXEL_ASSESSMENT_METRIC_STRIPE_REL);
+    want_stripe_out = assessment_metric_selected(assessment,
+                     SIXEL_ASSESSMENT_METRIC_STRIPE_OUT) ||
+                     want_stripe_rel;
+    want_stripe_ref = assessment_metric_selected(assessment,
+                     SIXEL_ASSESSMENT_METRIC_STRIPE_REF) ||
+                     want_stripe_rel;
+    want_banding_run_rel = assessment_metric_selected(assessment,
+                          SIXEL_ASSESSMENT_METRIC_BAND_RUN_REL);
+    want_banding_grad_rel = assessment_metric_selected(assessment,
+                           SIXEL_ASSESSMENT_METRIC_BAND_GRAD_REL);
+    want_clip_ref = assessment_metric_selected(assessment,
+                    SIXEL_ASSESSMENT_METRIC_CLIP_L_REF) ||
+                    assessment_metric_selected(assessment,
+                    SIXEL_ASSESSMENT_METRIC_CLIP_R_REF) ||
+                    assessment_metric_selected(assessment,
+                    SIXEL_ASSESSMENT_METRIC_CLIP_G_REF) ||
+                    assessment_metric_selected(assessment,
+                    SIXEL_ASSESSMENT_METRIC_CLIP_B_REF) ||
+                    assessment_metric_selected(assessment,
+                    SIXEL_ASSESSMENT_METRIC_CLIP_L_REL) ||
+                    assessment_metric_selected(assessment,
+                    SIXEL_ASSESSMENT_METRIC_CLIP_R_REL) ||
+                    assessment_metric_selected(assessment,
+                    SIXEL_ASSESSMENT_METRIC_CLIP_G_REL) ||
+                    assessment_metric_selected(assessment,
+                    SIXEL_ASSESSMENT_METRIC_CLIP_B_REL);
+    want_clip_out = assessment_metric_selected(assessment,
+                    SIXEL_ASSESSMENT_METRIC_CLIP_L_OUT) ||
+                    assessment_metric_selected(assessment,
+                    SIXEL_ASSESSMENT_METRIC_CLIP_R_OUT) ||
+                    assessment_metric_selected(assessment,
+                    SIXEL_ASSESSMENT_METRIC_CLIP_G_OUT) ||
+                    assessment_metric_selected(assessment,
+                    SIXEL_ASSESSMENT_METRIC_CLIP_B_OUT) ||
+                    assessment_metric_selected(assessment,
+                    SIXEL_ASSESSMENT_METRIC_CLIP_L_REL) ||
+                    assessment_metric_selected(assessment,
+                    SIXEL_ASSESSMENT_METRIC_CLIP_R_REL) ||
+                    assessment_metric_selected(assessment,
+                    SIXEL_ASSESSMENT_METRIC_CLIP_G_REL) ||
+                    assessment_metric_selected(assessment,
+                    SIXEL_ASSESSMENT_METRIC_CLIP_B_REL);
+    want_clip_rel = assessment_metric_selected(assessment,
+                    SIXEL_ASSESSMENT_METRIC_CLIP_L_REL) ||
+                    assessment_metric_selected(assessment,
+                    SIXEL_ASSESSMENT_METRIC_CLIP_R_REL) ||
+                    assessment_metric_selected(assessment,
+                    SIXEL_ASSESSMENT_METRIC_CLIP_G_REL) ||
+                    assessment_metric_selected(assessment,
+                    SIXEL_ASSESSMENT_METRIC_CLIP_B_REL);
+    want_delta_chroma_mean = assessment_metric_selected(assessment,
+                              SIXEL_ASSESSMENT_METRIC_DELTA_CHROMA);
+    want_delta_e00_mean = assessment_metric_selected(assessment,
+                           SIXEL_ASSESSMENT_METRIC_DELTA_E00);
+    want_gmsd = assessment_metric_selected(assessment,
+                 SIXEL_ASSESSMENT_METRIC_GMSD);
+    want_psnr_y = assessment_metric_selected(assessment,
+                   SIXEL_ASSESSMENT_METRIC_PSNR_Y);
+    need_luma = want_ms_ssim || want_high_freq_out || want_high_freq_ref ||
+                want_stripe_out || want_stripe_ref || want_banding_run_rel ||
+                want_banding_grad_rel || want_gmsd || want_psnr_y;
+    need_lab = want_delta_chroma_mean || want_delta_e00_mean;
+    need_clip = want_clip_ref || want_clip_out;
 
-    metrics.band_run_rel = banding_index_runlen(&out_luma, width, height, 32) -
-                           banding_index_runlen(&ref_luma, width, height, 32);
-
-    metrics.band_grad_rel = banding_index_gradient(&out_luma, width, height) -
-                            banding_index_gradient(&ref_luma, width, height);
-
-    clipping_rates(ref_pixels, width, height,
-                   &metrics.clip_l_ref,
-                   &metrics.clip_r_ref,
-                   &metrics.clip_g_ref,
-                   &metrics.clip_b_ref);
-    clipping_rates(out_pixels, width, height,
-                   &metrics.clip_l_out,
-                   &metrics.clip_r_out,
-                   &metrics.clip_g_out,
-                   &metrics.clip_b_out);
-
-    metrics.clip_l_rel = metrics.clip_l_out - metrics.clip_l_ref;
-    metrics.clip_r_rel = metrics.clip_r_out - metrics.clip_r_ref;
-    metrics.clip_g_rel = metrics.clip_g_out - metrics.clip_g_ref;
-    metrics.clip_b_rel = metrics.clip_b_out - metrics.clip_b_ref;
-
-    ref_lab = rgb_to_lab(ref_pixels, width, height);
-    out_lab = rgb_to_lab(out_pixels, width, height);
-    pixels = (size_t)width * (size_t)height;
-    ref_chroma = chroma_ab(&ref_lab, pixels);
-    out_chroma = chroma_ab(&out_lab, pixels);
-
-    sum_value = 0.0;
-    for (iter = 0; iter < pixels; ++iter) {
-        sum_value += fabs(out_chroma.values[iter] -
-                          ref_chroma.values[iter]);
+    if (need_luma != 0) {
+        ref_luma = pixels_to_luma709(ref_pixels, width, height);
+        out_luma = pixels_to_luma709(out_pixels, width, height);
     }
-    metrics.delta_chroma_mean = (float)(sum_value / (double)pixels);
-
-    de00 = deltaE00(&ref_lab, &out_lab, pixels);
-    sum_value = 0.0;
-    for (iter = 0; iter < pixels; ++iter) {
-        sum_value += de00.values[iter];
+    if (want_ms_ssim && need_luma) {
+        metrics.ms_ssim = ms_ssim_luma(&ref_luma, &out_luma,
+                                       width, height);
     }
-    metrics.delta_e00_mean = (float)(sum_value / (double)pixels);
+    if (need_luma && (want_high_freq_out || want_high_freq_delta)) {
+        high_freq_out_value = high_frequency_ratio(&out_luma,
+                                                   width,
+                                                   height,
+                                                   0.25f);
+    }
+    if (need_luma && (want_high_freq_ref || want_high_freq_delta)) {
+        high_freq_ref_value = high_frequency_ratio(&ref_luma,
+                                                   width,
+                                                   height,
+                                                   0.25f);
+    }
+    if (want_high_freq_out && need_luma &&
+            assessment_metric_selected(assessment,
+                SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_OUT)) {
+        metrics.high_freq_out = high_freq_out_value;
+    }
+    if (want_high_freq_ref && need_luma &&
+            assessment_metric_selected(assessment,
+                SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_REF)) {
+        metrics.high_freq_ref = high_freq_ref_value;
+    }
+    if (want_high_freq_delta && need_luma) {
+        metrics.high_freq_delta = high_freq_out_value - high_freq_ref_value;
+    }
+    if (need_luma && (want_stripe_ref || want_stripe_rel)) {
+        stripe_ref_value = stripe_score(&ref_luma, width, height, 180);
+    }
+    if (need_luma && (want_stripe_out || want_stripe_rel)) {
+        stripe_out_value = stripe_score(&out_luma, width, height, 180);
+    }
+    if (want_stripe_ref && need_luma &&
+            assessment_metric_selected(assessment,
+                SIXEL_ASSESSMENT_METRIC_STRIPE_REF)) {
+        metrics.stripe_ref = stripe_ref_value;
+    }
+    if (want_stripe_out && need_luma &&
+            assessment_metric_selected(assessment,
+                SIXEL_ASSESSMENT_METRIC_STRIPE_OUT)) {
+        metrics.stripe_out = stripe_out_value;
+    }
+    if (want_stripe_rel && need_luma) {
+        metrics.stripe_rel = stripe_out_value - stripe_ref_value;
+    }
+    if (want_banding_run_rel && need_luma) {
+        band_run_out = banding_index_runlen(&out_luma, width, height, 32);
+        band_run_ref = banding_index_runlen(&ref_luma, width, height, 32);
+        metrics.band_run_rel = band_run_out - band_run_ref;
+    }
+    if (want_banding_grad_rel && need_luma) {
+        band_grad_out = banding_index_gradient(&out_luma, width, height);
+        band_grad_ref = banding_index_gradient(&ref_luma, width, height);
+        metrics.band_grad_rel = band_grad_out - band_grad_ref;
+    }
+    if (need_clip != 0) {
+        if (want_clip_ref) {
+            clipping_rates(ref_pixels, width, height,
+                           &metrics.clip_l_ref,
+                           &metrics.clip_r_ref,
+                           &metrics.clip_g_ref,
+                           &metrics.clip_b_ref);
+        }
+        if (want_clip_out) {
+            clipping_rates(out_pixels, width, height,
+                           &metrics.clip_l_out,
+                           &metrics.clip_r_out,
+                           &metrics.clip_g_out,
+                           &metrics.clip_b_out);
+        }
+        if (want_clip_rel) {
+            metrics.clip_l_rel = metrics.clip_l_out - metrics.clip_l_ref;
+            metrics.clip_r_rel = metrics.clip_r_out - metrics.clip_r_ref;
+            metrics.clip_g_rel = metrics.clip_g_out - metrics.clip_g_ref;
+            metrics.clip_b_rel = metrics.clip_b_out - metrics.clip_b_ref;
+        }
+    }
+    if (need_lab != 0) {
+        ref_lab = rgb_to_lab(ref_pixels, width, height);
+        out_lab = rgb_to_lab(out_pixels, width, height);
+        pixels = (size_t)width * (size_t)height;
+        if (want_delta_chroma_mean) {
+            ref_chroma = chroma_ab(&ref_lab, pixels);
+            out_chroma = chroma_ab(&out_lab, pixels);
+            sum_value = 0.0;
+            for (iter = 0; iter < pixels; ++iter) {
+                sum_value += fabs(out_chroma.values[iter] -
+                                  ref_chroma.values[iter]);
+            }
+            metrics.delta_chroma_mean =
+                (float)(sum_value / (double)pixels);
+        }
+        if (want_delta_e00_mean) {
+            de00 = deltaE00(&ref_lab, &out_lab, pixels);
+            sum_value = 0.0;
+            for (iter = 0; iter < pixels; ++iter) {
+                sum_value += de00.values[iter];
+            }
+            metrics.delta_e00_mean = (float)(sum_value / (double)pixels);
+        }
+    }
+    if (want_gmsd && need_luma) {
+        metrics.gmsd_value = gmsd_metric(&ref_luma, &out_luma,
+                                         width, height);
+    }
+    if (want_psnr_y && need_luma) {
+        metrics.psnr_y = psnr_metric(&ref_luma, &out_luma, width, height);
+    }
 
-    metrics.gmsd_value = gmsd_metric(&ref_luma, &out_luma, width, height);
-    metrics.psnr_y = psnr_metric(&ref_luma, &out_luma, width, height);
-
-    float_buffer_free(&ref_luma);
-    float_buffer_free(&out_luma);
-    float_buffer_free(&ref_lab);
-    float_buffer_free(&out_lab);
-    float_buffer_free(&ref_chroma);
-    float_buffer_free(&out_chroma);
-    float_buffer_free(&de00);
+    if (ref_luma.values != NULL) {
+        float_buffer_free(&ref_luma);
+    }
+    if (out_luma.values != NULL) {
+        float_buffer_free(&out_luma);
+    }
+    if (ref_lab.values != NULL) {
+        float_buffer_free(&ref_lab);
+    }
+    if (out_lab.values != NULL) {
+        float_buffer_free(&out_lab);
+    }
+    if (ref_chroma.values != NULL) {
+        float_buffer_free(&ref_chroma);
+    }
+    if (out_chroma.values != NULL) {
+        float_buffer_free(&out_chroma);
+    }
+    if (de00.values != NULL) {
+        float_buffer_free(&de00);
+    }
 
     return metrics;
 }
@@ -4137,6 +4395,7 @@ sixel_assessment_new(sixel_assessment_t **ppassessment,
     assessment->palette_colors = 0;
     assessment->output_bytes = 0u;
     assessment->output_bytes_written = 0u;
+    assessment->metrics_mask = assessment_metric_mask_all();
     assessment->sections_mask = SIXEL_ASSESSMENT_SECTION_NONE;
     assessment->view_mask = SIXEL_ASSESSMENT_VIEW_ENCODED;
 
@@ -4257,6 +4516,7 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
     sixel_assessment_metrics_t metrics;
     SIXELSTATUS status;
     int bail;
+    int want_lpips;
     float *ref_pixels;
     float *out_pixels;
     int ref_width;
@@ -4307,12 +4567,20 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
                        &out_width,
                        &out_height);
 
-    metrics = evaluate_metrics(ref_pixels, out_pixels, ref_width, ref_height);
-    metrics.lpips_alex = compute_lpips_alex(assessment,
-                                            ref_pixels,
-                                            out_pixels,
-                                            ref_width,
-                                            ref_height);
+    metrics = evaluate_metrics(assessment,
+                               ref_pixels,
+                               out_pixels,
+                               ref_width,
+                               ref_height);
+    want_lpips = assessment_metric_selected(assessment,
+                 SIXEL_ASSESSMENT_METRIC_LPIPS_VGG);
+    if (want_lpips) {
+        metrics.lpips_alex = compute_lpips_alex(assessment,
+                                                ref_pixels,
+                                                out_pixels,
+                                                ref_width,
+                                                ref_height);
+    }
     store_metrics(assessment, &metrics);
     assessment->results_ready = 1;
     status = SIXEL_OK;

@@ -20,6 +20,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if HAVE_STRINGS_H
+# include <strings.h>
+#endif
 
 #if HAVE_MATH_H
 # include <stddef.h>
@@ -410,6 +413,66 @@ static const MetricBinding g_metric_bindings[] = {
     {"GMSD", offsetof(Metrics, gmsd_value)},
     {"PSNR_Y", offsetof(Metrics, psnr_y)},
     {"LPIPS", offsetof(Metrics, lpips)},
+    {"LPIPS(alex)", offsetof(Metrics, lpips)},
+};
+
+typedef struct MetricSpec {
+    const char *option;
+    const char *json_key;
+    int metric_id;
+} MetricSpec;
+
+static const MetricSpec sixel_metric_specs[] = {
+    {"MS-SSIM", "MS-SSIM", SIXEL_ASSESSMENT_METRIC_MS_SSIM},
+    {"MS_SSIM", "MS-SSIM", SIXEL_ASSESSMENT_METRIC_MS_SSIM},
+    {"SSIM", "MS-SSIM", SIXEL_ASSESSMENT_METRIC_MS_SSIM},
+    {"HIGHFREQ_OUT", "HighFreqRatio_out",
+     SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_OUT},
+    {"HIGHFREQ_REF", "HighFreqRatio_ref",
+     SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_REF},
+    {"HIGHFREQ_DELTA", "HighFreqRatio_delta",
+     SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_DELTA},
+    {"STRIPE_REF", "StripeScore_ref",
+     SIXEL_ASSESSMENT_METRIC_STRIPE_REF},
+    {"STRIPE_OUT", "StripeScore_out",
+     SIXEL_ASSESSMENT_METRIC_STRIPE_OUT},
+    {"STRIPE_REL", "StripeScore_rel",
+     SIXEL_ASSESSMENT_METRIC_STRIPE_REL},
+    {"BANDING_REL", "BandingIndex_rel",
+     SIXEL_ASSESSMENT_METRIC_BAND_RUN_REL},
+    {"BANDING_GRAD_REL", "BandingIndex_grad_rel",
+     SIXEL_ASSESSMENT_METRIC_BAND_GRAD_REL},
+    {"CLIP_L_REF", "ClipRate_L_ref",
+     SIXEL_ASSESSMENT_METRIC_CLIP_L_REF},
+    {"CLIP_R_REF", "ClipRate_R_ref",
+     SIXEL_ASSESSMENT_METRIC_CLIP_R_REF},
+    {"CLIP_G_REF", "ClipRate_G_ref",
+     SIXEL_ASSESSMENT_METRIC_CLIP_G_REF},
+    {"CLIP_B_REF", "ClipRate_B_ref",
+     SIXEL_ASSESSMENT_METRIC_CLIP_B_REF},
+    {"CLIP_L_OUT", "ClipRate_L_out",
+     SIXEL_ASSESSMENT_METRIC_CLIP_L_OUT},
+    {"CLIP_R_OUT", "ClipRate_R_out",
+     SIXEL_ASSESSMENT_METRIC_CLIP_R_OUT},
+    {"CLIP_G_OUT", "ClipRate_G_out",
+     SIXEL_ASSESSMENT_METRIC_CLIP_G_OUT},
+    {"CLIP_B_OUT", "ClipRate_B_out",
+     SIXEL_ASSESSMENT_METRIC_CLIP_B_OUT},
+    {"CLIP_L_REL", "ClipRate_L_rel",
+     SIXEL_ASSESSMENT_METRIC_CLIP_L_REL},
+    {"CLIP_R_REL", "ClipRate_R_rel",
+     SIXEL_ASSESSMENT_METRIC_CLIP_R_REL},
+    {"CLIP_G_REL", "ClipRate_G_rel",
+     SIXEL_ASSESSMENT_METRIC_CLIP_G_REL},
+    {"CLIP_B_REL", "ClipRate_B_rel",
+     SIXEL_ASSESSMENT_METRIC_CLIP_B_REL},
+    {"DELTA_CHROMA", "Δ Chroma_mean",
+     SIXEL_ASSESSMENT_METRIC_DELTA_CHROMA},
+    {"DELTA_E00", "Δ E00_mean", SIXEL_ASSESSMENT_METRIC_DELTA_E00},
+    {"GMSD", "GMSD", SIXEL_ASSESSMENT_METRIC_GMSD},
+    {"PSNR_Y", "PSNR_Y", SIXEL_ASSESSMENT_METRIC_PSNR_Y},
+    {"LPIPS", "LPIPS(alex)", SIXEL_ASSESSMENT_METRIC_LPIPS_VGG},
+    {"LPIPS(ALEX)", "LPIPS(alex)", SIXEL_ASSESSMENT_METRIC_LPIPS_VGG},
 };
 
 static void
@@ -419,7 +482,9 @@ metrics_init(Metrics *metrics)
     unsigned char *base;
 
     base = (unsigned char *)metrics;
-    for (i = 0; i < sizeof(g_metric_bindings) / sizeof(g_metric_bindings[0]); ++i) {
+    for (i = 0;
+            i < sizeof(g_metric_bindings) / sizeof(g_metric_bindings[0]);
+            ++i) {
         float *field;
 
         field = (float *)(void *)(base + g_metric_bindings[i].offset);
@@ -434,7 +499,9 @@ metrics_set_value(Metrics *metrics, const char *name, double value, int is_nan)
     unsigned char *base;
 
     base = (unsigned char *)metrics;
-    for (i = 0; i < sizeof(g_metric_bindings) / sizeof(g_metric_bindings[0]); ++i) {
+    for (i = 0;
+            i < sizeof(g_metric_bindings) / sizeof(g_metric_bindings[0]);
+            ++i) {
         if (strcmp(name, g_metric_bindings[i].name) == 0) {
             float *field;
 
@@ -447,6 +514,69 @@ metrics_set_value(Metrics *metrics, const char *name, double value, int is_nan)
             return;
         }
     }
+}
+
+static int
+metric_name_matches(const char *input, const char *target)
+{
+    if (input == NULL || target == NULL) {
+        return 0;
+    }
+#if HAVE_STRINGS_H
+    if (strcasecmp(input, target) == 0) {
+        return 1;
+    }
+#endif
+    if (strcmp(input, target) == 0) {
+        return 1;
+    }
+    return 0;
+}
+
+static const MetricSpec *
+metric_spec_from_name(const char *name)
+{
+    size_t i;
+
+    if (name == NULL) {
+        return NULL;
+    }
+    for (i = 0;
+            i < sizeof(sixel_metric_specs) / sizeof(sixel_metric_specs[0]);
+            ++i) {
+        if (metric_name_matches(name, sixel_metric_specs[i].option) ||
+                metric_name_matches(name,
+                sixel_metric_specs[i].json_key)) {
+            return &sixel_metric_specs[i];
+        }
+    }
+    return NULL;
+}
+
+static int
+metrics_get_value(const Metrics *metrics,
+                  const char *name,
+                  float *out_value)
+{
+    size_t i;
+    const unsigned char *base;
+
+    if (metrics == NULL || name == NULL || out_value == NULL) {
+        return -1;
+    }
+    base = (const unsigned char *)metrics;
+    for (i = 0; i < sizeof(g_metric_bindings) / sizeof(g_metric_bindings[0]);
+            ++i) {
+        if (strcmp(name, g_metric_bindings[i].name) == 0) {
+            const float *field;
+
+            field = (const float *)(const void *)(base +
+                    g_metric_bindings[i].offset);
+            *out_value = *field;
+            return 0;
+        }
+    }
+    return -1;
 }
 
 typedef struct MetricItem {
@@ -570,15 +700,29 @@ typedef struct Options {
     const char *out_path;
     const char *prefix;
     char prefix_buffer[PATH_MAX];
+    const MetricSpec *metric_spec;
+    const char *metric_key;
+    unsigned int metric_mask;
+    int metrics_filtered;
     int verbose;
 } Options;
 
 static void
 print_usage(const char *prog)
 {
-    fprintf(stderr, "Usage: %s <reference> [output]\n", prog);
-    fprintf(stderr, "       %s <reference> < output\n", prog);
-    fprintf(stderr, "       %s <reference> - < output\n", prog);
+    fprintf(stderr,
+            "Usage: %s [-m NAME] <reference> [output]\n",
+            prog);
+    fprintf(stderr,
+            "       %s [-m NAME] <reference> < output\n",
+            prog);
+    fprintf(stderr,
+            "       %s [-m NAME] <reference> - < output\n",
+            prog);
+    fprintf(stderr,
+            "  -m, --metrics NAME  limit computation to a single metric\n");
+    fprintf(stderr,
+            "                        and print only that value\n");
 }
 
 static int
@@ -594,25 +738,67 @@ parse_args(int argc, char **argv, Options *opts)
 #endif
     const char *verbose_env;
     const char *prefix_env;
+    const char *metrics_arg;
+    const MetricSpec *metric_spec;
     size_t prefix_len;
     int status;
+    int argi;
 
     opts->ref_path = NULL;
     opts->out_path = "-";
     opts->prefix = "report";
+    opts->metric_spec = NULL;
+    opts->metric_key = NULL;
+    opts->metric_mask = SIXEL_ASSESSMENT_METRIC_MASK_ALL;
+    opts->metrics_filtered = 0;
     opts->verbose = 0;
     opts->prefix_buffer[0] = '\0';
 
-    if (argc < 2 || argc > 3) {
+    argi = 1;
+    while (argi < argc && argv[argi][0] == '-' && argv[argi][1] != '\0') {
+        const char *arg;
+
+        arg = argv[argi];
+        if (strcmp(arg, "-m") == 0 || strcmp(arg, "--metrics") == 0) {
+            if (argi + 1 >= argc) {
+                fprintf(stderr, "-m requires a metric name\n");
+                return -1;
+            }
+            metrics_arg = argv[argi + 1];
+            metric_spec = metric_spec_from_name(metrics_arg);
+            if (metric_spec == NULL) {
+                fprintf(stderr, "Unknown metric: %s\n", metrics_arg);
+                return -1;
+            }
+            if (opts->metric_spec != NULL) {
+                fprintf(stderr, "Metric already specified\n");
+                return -1;
+            }
+            opts->metric_spec = metric_spec;
+            opts->metric_key = metric_spec->json_key;
+            opts->metric_mask = SIXEL_ASSESSMENT_METRIC_MASK(
+                metric_spec->metric_id);
+            opts->metrics_filtered = 1;
+            argi += 2;
+            continue;
+        }
+        if (strcmp(arg, "-h") == 0 || strcmp(arg, "--help") == 0) {
+            return -1;
+        }
+        break;
+    }
+
+    if (argc - argi < 1 || argc - argi > 2) {
         fprintf(stderr, "Invalid number of arguments\n");
         return -1;
     }
 
-    ref_arg = argv[1];
+    ref_arg = argv[argi];
     opts->ref_path = ref_arg;
+    argi += 1;
 
-    if (argc == 3) {
-        out_arg = argv[2];
+    if (argc - argi >= 1) {
+        out_arg = argv[argi];
         if (strcmp(out_arg, "-") == 0) {
             opts->out_path = "-";
         } else {
@@ -695,6 +881,10 @@ main(int argc, char **argv)
     FILE *fp;
     char build_models_dir[PATH_MAX];
     int have_build_models_dir;
+    unsigned int lpips_mask;
+    int exit_code;
+    int metric_status;
+    float metric_value;
 
     allocator = NULL;
     assessment = NULL;
@@ -704,6 +894,11 @@ main(int argc, char **argv)
     json_path = NULL;
     build_models_dir[0] = '\0';
     have_build_models_dir = 0;
+    lpips_mask = SIXEL_ASSESSMENT_METRIC_MASK(
+        SIXEL_ASSESSMENT_METRIC_LPIPS_VGG);
+    exit_code = EXIT_FAILURE;
+    metric_status = 0;
+    metric_value = NAN;
 
     if (parse_args(argc, argv, &opts) != 0) {
         print_usage(argv[0]);
@@ -765,7 +960,8 @@ main(int argc, char **argv)
                                         build_models_dir);
         if (SIXEL_FAILED(status)) {
             fprintf(stderr,
-                    "Warning: unable to configure local model directory (%s).\n",
+                    "Warning: unable to configure local model directory "
+                    "(%s).\n",
                     sixel_helper_format_error(status));
         }
     }
@@ -773,9 +969,17 @@ main(int argc, char **argv)
     sixel_assessment_select_sections(assessment,
                                      SIXEL_ASSESSMENT_SECTION_QUALITY);
 
-    status = sixel_assessment_setopt(assessment,
-                                    SIXEL_ASSESSMENT_OPT_ENABLE_LPIPS,
-                                    "yes");
+    sixel_assessment_select_metrics(assessment, opts.metric_mask);
+
+    if ((opts.metric_mask & lpips_mask) != 0u) {
+        status = sixel_assessment_setopt(assessment,
+                                        SIXEL_ASSESSMENT_OPT_ENABLE_LPIPS,
+                                        "yes");
+    } else {
+        status = sixel_assessment_setopt(assessment,
+                                        SIXEL_ASSESSMENT_OPT_ENABLE_LPIPS,
+                                        "no");
+    }
     if (SIXEL_FAILED(status)) {
         fprintf(stderr,
                 "Warning: unable to determine executable directory (%s).\n",
@@ -792,6 +996,53 @@ main(int argc, char **argv)
         sixel_frame_unref(out_frame);
         sixel_allocator_unref(allocator);
         return EXIT_FAILURE;
+    }
+
+    metrics_init(&metrics);
+    collector.metrics = &metrics;
+
+    if (opts.metrics_filtered) {
+        collector.stream = NULL;
+        status = sixel_assessment_get_json(assessment,
+                                           SIXEL_ASSESSMENT_SECTION_QUALITY,
+                                           json_collect_callback,
+                                           &collector);
+        if (SIXEL_FAILED(status)) {
+            fprintf(stderr,
+                    "Failed to emit JSON: %s\n",
+                    sixel_helper_format_error(status));
+            sixel_assessment_unref(assessment);
+            sixel_frame_unref(ref_frame);
+            sixel_frame_unref(out_frame);
+            sixel_allocator_unref(allocator);
+            return EXIT_FAILURE;
+        }
+        metric_status = metrics_get_value(&metrics,
+                                          opts.metric_key,
+                                          &metric_value);
+        if (metric_status != 0) {
+            fprintf(stderr,
+                    "Requested metric not found in output: %s\n",
+                    opts.metric_key);
+            sixel_assessment_unref(assessment);
+            sixel_frame_unref(ref_frame);
+            sixel_frame_unref(out_frame);
+            sixel_allocator_unref(allocator);
+            return EXIT_FAILURE;
+        }
+        if (isnan(metric_value)) {
+            fprintf(stdout, "nan\n");
+        } else {
+            fprintf(stdout, "%.6f\n", metric_value);
+        }
+        if (opts.verbose) {
+            verbose_print(&metrics);
+        }
+        sixel_assessment_unref(assessment);
+        sixel_frame_unref(ref_frame);
+        sixel_frame_unref(out_frame);
+        sixel_allocator_unref(allocator);
+        return EXIT_SUCCESS;
     }
 
     path_len = strlen(opts.prefix) + strlen("_metrics.json") + 1u;
@@ -820,9 +1071,7 @@ main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    metrics_init(&metrics);
     collector.stream = fp;
-    collector.metrics = &metrics;
     status = sixel_assessment_get_json(assessment,
                                        SIXEL_ASSESSMENT_SECTION_QUALITY,
                                        json_collect_callback,
@@ -868,5 +1117,6 @@ main(int argc, char **argv)
     sixel_frame_unref(ref_frame);
     sixel_frame_unref(out_frame);
     sixel_allocator_unref(allocator);
-    return EXIT_SUCCESS;
+    exit_code = EXIT_SUCCESS;
+    return exit_code;
 }
