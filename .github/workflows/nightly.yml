@@ -214,9 +214,9 @@ jobs:
 
         if test -f "${SHELL} $(pwd)/tools/ar-msvc.sh"; then
             export AR="$(pwd)/tools/ar-msvc.sh"
-            export ARFLAGS= 
+            export ARFLAGS=
         else
-            export AR="${SHELL} $(pwd)/ar-lib lib"
+            export AR="${SHELL} $(pwd)/build-aux/ar-lib lib"
             export ARFLAGS=cr
         fi
         ./configure CC=cl LD=link NM="dumpbin -symbols" STRIP=: RANLIB=: \
