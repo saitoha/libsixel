@@ -41,7 +41,7 @@ elif [ -s "${missing_output}" ]; then
 else
     pass 1 "missing input rejected without output"
 fi
-rm -f "${missing_output}" "${missing_path}"
+rm -f "${missing_output}"
 
 #invalid_output=$(make_temp_file "${tmp_dir}" "capture.invalid")
 #if run_img2sixel -v "." >"${invalid_output}" 2>>"${log_file}"; then
