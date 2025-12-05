@@ -96,6 +96,14 @@ typedef SSIZE_T ssize_t;
 # if !defined(S_IWUSR)
 #  define S_IWUSR _S_IWRITE
 # endif
+/*
+ * MSVC lacks the POSIX directory test macro even though it exposes the
+ * underlying mode bits.  Provide a lightweight definition so call sites can
+ * detect directory inputs without pulling in platform-specific conditionals.
+ */
+# if !defined(S_ISDIR) && defined(S_IFMT) && defined(S_IFDIR)
+#  define S_ISDIR(m) (((m) & S_IFMT) == S_IFDIR)
+# endif
 #endif
 
 /* for msvc */
