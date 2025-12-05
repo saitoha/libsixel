@@ -48,6 +48,7 @@
 
 #include <sixel.h>
 #include "compat_stub.h"
+#include "loader-common.h"
 #include "options.h"
 #include "output.h"
 
@@ -79,6 +80,21 @@ sixel_option_normalized_levenshtein(
     char const *lhs,
     char const *rhs,
     size_t *distance_out);
+
+static void
+sixel_option_trace_path_probe_begin(
+    char const *argument,
+    char const *resolved_path,
+    unsigned int flags);
+
+static void
+sixel_option_trace_path_probe_end(
+    char const *argument,
+    char const *resolved_path,
+    unsigned int flags,
+    int result,
+    int error_value,
+    double elapsed_seconds);
 
 void
 sixel_option_apply_cli_suggestion_defaults(void)
@@ -1447,6 +1463,60 @@ sixel_option_build_missing_path_message(
 #endif
 }
 
+static void
+sixel_option_trace_path_probe_begin(
+    char const *argument,
+    char const *resolved_path,
+    unsigned int flags)
+{
+    char const *argument_view;
+    char const *resolved_view;
+
+    if (!loader_trace_is_enabled()) {
+        return;
+    }
+
+    argument_view = argument != NULL ? argument : "(null)";
+    resolved_view = resolved_path != NULL ? resolved_path : "(null)";
+
+    loader_trace_message(
+        "path probe begin: arg=\"%s\" resolved=\"%s\" "
+        "flags=0x%04x",
+        argument_view,
+        resolved_view,
+        flags);
+}
+
+static void
+sixel_option_trace_path_probe_end(
+    char const *argument,
+    char const *resolved_path,
+    unsigned int flags,
+    int result,
+    int error_value,
+    double elapsed_seconds)
+{
+    char const *argument_view;
+    char const *resolved_view;
+
+    if (!loader_trace_is_enabled()) {
+        return;
+    }
+
+    argument_view = argument != NULL ? argument : "(null)";
+    resolved_view = resolved_path != NULL ? resolved_path : "(null)";
+
+    loader_trace_message(
+        "path probe end: arg=\"%s\" resolved=\"%s\" "
+        "flags=0x%04x result=%d errno=%d elapsed=%.3fs",
+        argument_view,
+        resolved_view,
+        flags,
+        result,
+        error_value,
+        elapsed_seconds);
+}
+
 int
 sixel_option_validate_filesystem_path(
     char const *argument,
@@ -1467,6 +1537,11 @@ sixel_option_validate_filesystem_path(
     int allow_empty;
     char const *remote_view;
     char message_buffer[1024];
+    struct stat stat_buffer;
+    int stat_check;
+    clock_t start_ticks;
+    clock_t end_ticks;
+    double elapsed_seconds;
 
     stat_result = 0;
     error_value = 0;
@@ -1476,6 +1551,11 @@ sixel_option_validate_filesystem_path(
     allow_empty = (flags & SIXEL_OPTION_PATH_ALLOW_EMPTY) != 0u;
     remote_view = resolved_path != NULL ? resolved_path : argument;
     memset(message_buffer, 0, sizeof(message_buffer));
+    start_ticks = 0;
+    end_ticks = 0;
+    memset(&stat_buffer, 0, sizeof(stat_buffer));
+    stat_check = 0;
+    elapsed_seconds = -1.0;
 
     /*
      * Reject empty path arguments unless the caller explicitly opts in.
@@ -1511,8 +1591,23 @@ sixel_option_validate_filesystem_path(
         return 0;
     }
 
+    /*
+     * Emit verbose timing around the access() probe so Windows-specific
+     * hangs become visible when the CLI is invoked with -v/--verbose.
+     */
+    if (loader_trace_is_enabled()) {
+        sixel_option_trace_path_probe_begin(argument, resolved_path, flags);
+    }
+
+    start_ticks = clock();
     errno = 0;
     stat_result = sixel_compat_access(resolved_path, F_OK);
+    error_value = errno;
+    end_ticks = clock();
+    if (start_ticks != (clock_t)(-1) && end_ticks != (clock_t)(-1)) {
+        elapsed_seconds = (double)(end_ticks - start_ticks) /
+            (double)CLOCKS_PER_SEC;
+    }
     /*
      * Prefer the compat layer over stat() here to avoid the Win32 path
      * resolver's UNC probes, which can block for minutes on missing or
@@ -1520,12 +1615,44 @@ sixel_option_validate_filesystem_path(
      * provides the lightest available probe.
      */
     if (stat_result == 0) {
+        /*
+         * Treat existing directories as invalid inputs because callers expect
+         * regular files.  Using stat() after a successful access() confines
+         * the potentially blocking probe to paths that already exist
+         * locally, keeping the earlier UNC avoidance intact.
+         */
+        errno = 0;
+        stat_check = stat(resolved_path, &stat_buffer);
+        error_value = errno;
+        if (stat_check == 0 && S_ISDIR(stat_buffer.st_mode)) {
+            sixel_helper_set_additional_message(
+                "path refers to a directory; expected a file input.");
+            return -1;
+        }
         return 0;
+    }
+
+    if (loader_trace_is_enabled()) {
+        sixel_option_trace_path_probe_end(argument,
+                                          resolved_path,
+                                          flags,
+                                          stat_result,
+                                          error_value,
+                                          elapsed_seconds);
     }
 
     error_value = errno;
     if (error_value != ENOENT && error_value != ENOTDIR) {
         return 0;
+    }
+
+    if (loader_trace_is_enabled()) {
+        sixel_option_trace_path_probe_end(argument,
+                                          resolved_path,
+                                          flags,
+                                          stat_result,
+                                          error_value,
+                                          elapsed_seconds);
     }
 
     if (sixel_option_build_missing_path_message(argument,

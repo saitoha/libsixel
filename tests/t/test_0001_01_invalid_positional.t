@@ -34,7 +34,7 @@ echo "1..2"
 missing_path="${tmp_dir}/invalid_filename"
 rm -f "${missing_path}"
 missing_output=$(make_temp_file "${tmp_dir}" "capture.invalid")
-if run_img2sixel "${missing_path}" >"${missing_output}" 2>>"${log_file}"; then
+if run_img2sixel -v "${missing_path}" >"${missing_output}" 2>>"${log_file}"; then
     fail 1 "img2sixel accepted missing input"
 elif [ -s "${missing_output}" ]; then
     fail 1 "img2sixel produced output for missing input"
@@ -44,7 +44,7 @@ fi
 rm -f "${missing_output}" "${missing_path}"
 
 invalid_output=$(make_temp_file "${tmp_dir}" "capture.invalid")
-if run_img2sixel "." </dev/null >"${invalid_output}" 2>>"${log_file}"; then
+if run_img2sixel -v "." >"${invalid_output}" 2>>"${log_file}"; then
     fail 2 "img2sixel accepted directory input"
 elif [ -s "${invalid_output}" ]; then
     fail 2 "img2sixel produced output for directory input"
