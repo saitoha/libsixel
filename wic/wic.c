@@ -582,6 +582,40 @@ SixelMetadataEnumString_Create(
 }
 
 static HRESULT
+SixelDispatchDecoder_CreateWicDecoder(IWICBitmapDecoder **decoder)
+{
+    IClassFactory *factory;
+    HRESULT hr;
+
+    if (decoder == NULL) {
+        return E_POINTER;
+    }
+
+    *decoder = NULL;
+
+    /*
+     * Instantiate the WIC decoder directly via this module's class factory.
+     * CoCreateInstance would require registry or manifest resolution for
+     * CLSID_SixelDecoder, but the automation entry point already lives in the
+     * same DLL. Reusing the in-module factory avoids registration and keeps
+     * side-by-side activation self contained.
+     */
+
+    hr = DllGetClassObject(&CLSID_SixelDecoder, &IID_IClassFactory,
+                           (void**)&factory);
+    if (FAILED(hr)) {
+        return hr;
+    }
+
+    hr = IClassFactory_CreateInstance(factory, NULL,
+                                      &IID_IWICBitmapDecoder,
+                                      (void**)decoder);
+    IClassFactory_Release(factory);
+
+    return hr;
+}
+
+static HRESULT
 SixelDispatchDecoder_CreatePicture(
     IStream *stream,
     IPictureDisp **picture)
@@ -626,10 +660,7 @@ SixelDispatchDecoder_CreatePicture(
         return hr;
     }
 
-    hr = CoCreateInstance(&CLSID_SixelDecoder, NULL,
-                          CLSCTX_INPROC_SERVER,
-                          &IID_IWICBitmapDecoder,
-                          (void**)&decoder);
+    hr = SixelDispatchDecoder_CreateWicDecoder(&decoder);
     if (FAILED(hr)) {
         IWICImagingFactory_Release(factory);
         return hr;
