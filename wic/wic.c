@@ -307,6 +307,10 @@ static HRESULT SixelDispatchDecoder_LoadFromString(
     BSTR text,
     IPictureDisp **picture);
 
+static HRESULT SixelDispatchDecoder_CreateStreamFromString(
+    BSTR text,
+    IStream **stream);
+
 static HRESULT SixelDispatchDecoder_LoadFromByteArray(
     SixelDispatchDecoder *decoder,
     SAFEARRAY *array,
@@ -905,7 +909,7 @@ SixelDispatchDecoder_LoadFromString(
         return E_INVALIDARG;
     }
 
-    hr = SixelDispatchDecoder_CreateStreamFromPath(text, &stream);
+    hr = SixelDispatchDecoder_CreateStreamFromString(text, &stream);
     if (FAILED(hr)) {
         return hr;
     }
@@ -936,6 +940,64 @@ SixelDispatchDecoder_LoadFromByteArray(
 
     hr = SixelDispatchDecoder_CreatePicture(stream, picture);
     IStream_Release(stream);
+
+    return hr;
+}
+
+static HRESULT
+SixelDispatchDecoder_CreateStreamFromString(
+    BSTR text,
+    IStream **stream)
+{
+    int utf8_length;
+    int converted;
+    HRESULT hr;
+    HGLOBAL memory;
+    BYTE *buffer;
+
+    if (text == NULL || stream == NULL) {
+        return E_INVALIDARG;
+    }
+
+    /*
+     * Marshal a BSTR containing SIXEL escape text into an IStream backed by
+     * UTF-8 bytes so the decoder can read it as if it were a file.
+     */
+
+    *stream = NULL;
+
+    utf8_length = WideCharToMultiByte(CP_UTF8, 0, text,
+                                      SysStringLen(text), NULL, 0, NULL,
+                                      NULL);
+    if (utf8_length == 0) {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    memory = GlobalAlloc(GMEM_MOVEABLE, (SIZE_T)utf8_length);
+    if (memory == NULL) {
+        return E_OUTOFMEMORY;
+    }
+
+    buffer = (BYTE*)GlobalLock(memory);
+    if (buffer == NULL) {
+        GlobalFree(memory);
+        return E_OUTOFMEMORY;
+    }
+
+    converted = WideCharToMultiByte(CP_UTF8, 0, text, SysStringLen(text),
+                                    (LPSTR)buffer, utf8_length, NULL, NULL);
+    if (converted == 0 || converted != utf8_length) {
+        GlobalUnlock(memory);
+        GlobalFree(memory);
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    GlobalUnlock(memory);
+
+    hr = CreateStreamOnHGlobal(memory, TRUE, stream);
+    if (FAILED(hr)) {
+        GlobalFree(memory);
+    }
 
     return hr;
 }
