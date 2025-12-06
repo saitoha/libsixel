@@ -103,6 +103,7 @@ EOF_MAN
 
 win_manifest=$(to_windows_path "${man_file}")
 win_sample=$(to_windows_path "${sample_sixel}")
+win_vbs=$(to_windows_path "${vbs_file}")
 
 cat >"${vbs_file}" <<EOF_VBS
 ' Instantiate Libsixel.Decoder via a manifest-backed activation context and
@@ -164,7 +165,10 @@ EOF_VBS
 
 echo "1..1"
 
-if cscript //nologo "${vbs_file}" >>"${log_file}" 2>&1; then
+"${SHELL:-sh}" -c "cd -- \"${scripts_dir}\" && cscript //nologo \"${win_vbs}\"" \
+    >>"${log_file}" 2>&1
+
+if [ $? -eq 0 ]; then
     pass 1 "WSH manifest activates Libsixel.Decoder"
 else
     fail 1 "WSH manifest failed; see ${log_file}"
