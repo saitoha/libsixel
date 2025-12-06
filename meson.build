@@ -816,12 +816,11 @@ loader_helper_sources = files(
   'src/scale.c',
   'src/status.c',
   'src/tty.c',
-  'src/sixel_threads_config.c',
+  'src/threading.c',
 )
 
 if have_threads
   loader_helper_sources += [
-    'src/sixel_threading.c',
     'src/threadpool.c',
     'src/decoder-parallel.c',
   ]

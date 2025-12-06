@@ -93,8 +93,8 @@ build_triplet = @build@
 host_triplet = @host@
 @SIXEL_ENABLE_THREADS_TRUE@am__append_1 = \
 @SIXEL_ENABLE_THREADS_TRUE@    $(top_srcdir)/src/decoder-parallel.c \
-@SIXEL_ENABLE_THREADS_TRUE@    $(top_srcdir)/src/sixel_threading.c \
-@SIXEL_ENABLE_THREADS_TRUE@    $(top_srcdir)/src/sixel_threading.h \
+@SIXEL_ENABLE_THREADS_TRUE@    $(top_srcdir)/src/threading.c \
+@SIXEL_ENABLE_THREADS_TRUE@    $(top_srcdir)/src/threading.h \
 @SIXEL_ENABLE_THREADS_TRUE@    $(top_srcdir)/src/threadpool.c \
 @SIXEL_ENABLE_THREADS_TRUE@    $(top_srcdir)/src/threadpool.h
 
@@ -135,12 +135,11 @@ am__libsixelquicklookcore_a_SOURCES_DIST = $(top_srcdir)/src/status.c \
 	$(top_srcdir)/src/timer.c $(top_srcdir)/src/logger.c \
 	$(top_srcdir)/src/compat_stub.c \
 	$(top_srcdir)/src/decoder-parallel.c \
-	$(top_srcdir)/src/sixel_threading.c \
-	$(top_srcdir)/src/sixel_threading.h \
+	$(top_srcdir)/src/threading.c $(top_srcdir)/src/threading.h \
 	$(top_srcdir)/src/threadpool.c $(top_srcdir)/src/threadpool.h
 am__dirstamp = $(am__leading_dot)dirstamp
 @SIXEL_ENABLE_THREADS_TRUE@am__objects_1 = $(top_builddir)/src/libsixelquicklookcore_a-decoder-parallel.$(OBJEXT) \
-@SIXEL_ENABLE_THREADS_TRUE@	$(top_builddir)/src/libsixelquicklookcore_a-sixel_threading.$(OBJEXT) \
+@SIXEL_ENABLE_THREADS_TRUE@	$(top_builddir)/src/libsixelquicklookcore_a-threading.$(OBJEXT) \
 @SIXEL_ENABLE_THREADS_TRUE@	$(top_builddir)/src/libsixelquicklookcore_a-threadpool.$(OBJEXT)
 am_libsixelquicklookcore_a_OBJECTS =  \
 	$(top_builddir)/src/libsixelquicklookcore_a-status.$(OBJEXT) \
@@ -231,8 +230,8 @@ am__depfiles_remade = $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-allo
 	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-decoder-parallel.Po \
 	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-fromsixel.Po \
 	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-logger.Po \
-	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-sixel_threading.Po \
 	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-status.Po \
+	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-threading.Po \
 	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-threadpool.Po \
 	$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-timer.Po \
 	$(top_builddir)/tools/$(DEPDIR)/register_sixel_preview-register_sixel_preview.Po \
@@ -675,7 +674,7 @@ $(top_builddir)/src/libsixelquicklookcore_a-compat_stub.$(OBJEXT):  \
 $(top_builddir)/src/libsixelquicklookcore_a-decoder-parallel.$(OBJEXT):  \
 	$(top_builddir)/src/$(am__dirstamp) \
 	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
-$(top_builddir)/src/libsixelquicklookcore_a-sixel_threading.$(OBJEXT):  \
+$(top_builddir)/src/libsixelquicklookcore_a-threading.$(OBJEXT):  \
 	$(top_builddir)/src/$(am__dirstamp) \
 	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/src/libsixelquicklookcore_a-threadpool.$(OBJEXT):  \
@@ -754,8 +753,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-decoder-parallel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-fromsixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-logger.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-sixel_threading.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-status.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-threading.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-threadpool.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-timer.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/tools/$(DEPDIR)/register_sixel_preview-register_sixel_preview.Po@am__quote@ # am--include-marker
@@ -897,19 +896,19 @@ $(top_builddir)/src/libsixelquicklookcore_a-decoder-parallel.obj: $(top_builddir
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libsixelquicklookcore_a-decoder-parallel.obj `if test -f '$(top_builddir)/src/decoder-parallel.c'; then $(CYGPATH_W) '$(top_builddir)/src/decoder-parallel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/decoder-parallel.c'; fi`
 
-$(top_builddir)/src/libsixelquicklookcore_a-sixel_threading.o: $(top_builddir)/src/sixel_threading.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libsixelquicklookcore_a-sixel_threading.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-sixel_threading.Tpo -c -o $(top_builddir)/src/libsixelquicklookcore_a-sixel_threading.o `test -f '$(top_builddir)/src/sixel_threading.c' || echo '$(srcdir)/'`$(top_builddir)/src/sixel_threading.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-sixel_threading.Tpo $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-sixel_threading.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/sixel_threading.c' object='$(top_builddir)/src/libsixelquicklookcore_a-sixel_threading.o' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/src/libsixelquicklookcore_a-threading.o: $(top_builddir)/src/threading.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libsixelquicklookcore_a-threading.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-threading.Tpo -c -o $(top_builddir)/src/libsixelquicklookcore_a-threading.o `test -f '$(top_builddir)/src/threading.c' || echo '$(srcdir)/'`$(top_builddir)/src/threading.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-threading.Tpo $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-threading.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/threading.c' object='$(top_builddir)/src/libsixelquicklookcore_a-threading.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libsixelquicklookcore_a-sixel_threading.o `test -f '$(top_builddir)/src/sixel_threading.c' || echo '$(srcdir)/'`$(top_builddir)/src/sixel_threading.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libsixelquicklookcore_a-threading.o `test -f '$(top_builddir)/src/threading.c' || echo '$(srcdir)/'`$(top_builddir)/src/threading.c
 
-$(top_builddir)/src/libsixelquicklookcore_a-sixel_threading.obj: $(top_builddir)/src/sixel_threading.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libsixelquicklookcore_a-sixel_threading.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-sixel_threading.Tpo -c -o $(top_builddir)/src/libsixelquicklookcore_a-sixel_threading.obj `if test -f '$(top_builddir)/src/sixel_threading.c'; then $(CYGPATH_W) '$(top_builddir)/src/sixel_threading.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/sixel_threading.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-sixel_threading.Tpo $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-sixel_threading.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/sixel_threading.c' object='$(top_builddir)/src/libsixelquicklookcore_a-sixel_threading.obj' libtool=no @AMDEPBACKSLASH@
+$(top_builddir)/src/libsixelquicklookcore_a-threading.obj: $(top_builddir)/src/threading.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libsixelquicklookcore_a-threading.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-threading.Tpo -c -o $(top_builddir)/src/libsixelquicklookcore_a-threading.obj `if test -f '$(top_builddir)/src/threading.c'; then $(CYGPATH_W) '$(top_builddir)/src/threading.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/threading.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-threading.Tpo $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-threading.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/threading.c' object='$(top_builddir)/src/libsixelquicklookcore_a-threading.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libsixelquicklookcore_a-sixel_threading.obj `if test -f '$(top_builddir)/src/sixel_threading.c'; then $(CYGPATH_W) '$(top_builddir)/src/sixel_threading.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/sixel_threading.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/libsixelquicklookcore_a-threading.obj `if test -f '$(top_builddir)/src/threading.c'; then $(CYGPATH_W) '$(top_builddir)/src/threading.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/threading.c'; fi`
 
 $(top_builddir)/src/libsixelquicklookcore_a-threadpool.o: $(top_builddir)/src/threadpool.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixelquicklookcore_a_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/libsixelquicklookcore_a-threadpool.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-threadpool.Tpo -c -o $(top_builddir)/src/libsixelquicklookcore_a-threadpool.o `test -f '$(top_builddir)/src/threadpool.c' || echo '$(srcdir)/'`$(top_builddir)/src/threadpool.c
@@ -1232,8 +1231,8 @@ distclean: distclean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-decoder-parallel.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-fromsixel.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-logger.Po
-	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-sixel_threading.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-status.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-threading.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-threadpool.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-timer.Po
 	-rm -f $(top_builddir)/tools/$(DEPDIR)/register_sixel_preview-register_sixel_preview.Po
@@ -1296,8 +1295,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-decoder-parallel.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-fromsixel.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-logger.Po
-	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-sixel_threading.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-status.Po
+	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-threading.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-threadpool.Po
 	-rm -f $(top_builddir)/src/$(DEPDIR)/libsixelquicklookcore_a-timer.Po
 	-rm -f $(top_builddir)/tools/$(DEPDIR)/register_sixel_preview-register_sixel_preview.Po

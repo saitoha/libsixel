@@ -58,7 +58,7 @@ srcs = files(
 
 if conf.get('SIXEL_ENABLE_THREADS', 0) == 1
   srcs += [
-    '../src/sixel_threading.c',
+    '../src/threading.c',
     '../src/threadpool.c',
     '../src/decoder-parallel.c',
   ]

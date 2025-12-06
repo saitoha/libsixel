@@ -34,7 +34,7 @@ wic_sources = files(
 
 if conf.get('SIXEL_ENABLE_THREADS', 0) == 1
   wic_sources += [
-    '../src/sixel_threading.c',
+    '../src/threading.c',
     '../src/threadpool.c',
     '../src/decoder-parallel.c',
   ]

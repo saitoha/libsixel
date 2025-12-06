@@ -36,8 +36,8 @@
 #include "colorspace.h"
 #include "cpu.h"
 #include "logger.h"
+#include "threading.h"
 #if SIXEL_ENABLE_THREADS
-# include "sixel_threads_config.h"
 # include "threadpool.h"
 #endif
 

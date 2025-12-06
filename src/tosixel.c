@@ -65,10 +65,9 @@
 #include "assessment.h"
 #include "timer.h"
 #include "logger.h"
-#include "sixel_threads_config.h"
+#include "threading.h"
 #if SIXEL_ENABLE_THREADS
 # include "sixel_atomic.h"
-# include "sixel_threading.h"
 # include "threadpool.h"
 #endif
 
