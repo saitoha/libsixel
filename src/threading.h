@@ -23,8 +23,8 @@
  * SOFTWARE.
  */
 
-#ifndef LIBSIXEL_THRADING_H
-#define LIBSIXEL_THRADING_H
+#ifndef LIBSIXEL_THREADING_H
+#define LIBSIXEL_THREADING_H
 
 #include <sixel.h>
 
@@ -102,7 +102,7 @@ SIXELAPI int sixel_threads_resolve(void);
 }
 #endif
 
-#endif /* LIBSIXEL_THRADING_H */
+#endif /* LIBSIXEL_THREADING_H */
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */
