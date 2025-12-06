@@ -317,11 +317,6 @@ static HRESULT SixelDispatchDecoder_LoadFromByteArray(
     IPictureDisp **picture);
 
 static HRESULT
-SixelDispatchDecoder_CreateStreamFromPath(
-    BSTR path,
-    IStream **stream);
-
-static HRESULT
 SixelDispatchDecoder_CreateStreamFromBytes(
     SAFEARRAY *array,
     IStream **stream);
@@ -727,87 +722,6 @@ end:
     }
 
     return hr;
-}
-
-static HRESULT
-SixelDispatchDecoder_CreateStreamFromPath(
-    BSTR path,
-    IStream **stream)
-{
-    HANDLE handle;
-    LARGE_INTEGER origin;
-    LARGE_INTEGER size;
-    DWORD read;
-    BYTE *buffer;
-    HRESULT hr;
-    HGLOBAL memory;
-    IStream *local;
-
-    if (path == NULL || stream == NULL) {
-        return E_INVALIDARG;
-    }
-
-    /* load the file contents into an in-memory IStream for reuse */
-
-    *stream = NULL;
-    handle = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ, NULL,
-                         OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
-    if (handle == INVALID_HANDLE_VALUE) {
-        return HRESULT_FROM_WIN32(GetLastError());
-    }
-
-    if (!GetFileSizeEx(handle, &size)) {
-        CloseHandle(handle);
-        return HRESULT_FROM_WIN32(GetLastError());
-    }
-
-    if (size.HighPart != 0) {
-        CloseHandle(handle);
-        return E_OUTOFMEMORY;
-    }
-
-    memory = GlobalAlloc(GMEM_MOVEABLE, size.LowPart);
-    if (memory == NULL) {
-        CloseHandle(handle);
-        return E_OUTOFMEMORY;
-    }
-
-    buffer = (BYTE*)GlobalLock(memory);
-    if (buffer == NULL) {
-        GlobalFree(memory);
-        CloseHandle(handle);
-        return E_OUTOFMEMORY;
-    }
-
-    origin.QuadPart = 0;
-    if (!SetFilePointerEx(handle, origin, NULL, FILE_BEGIN)) {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        GlobalUnlock(memory);
-        GlobalFree(memory);
-        CloseHandle(handle);
-        return hr;
-    }
-
-    if (!ReadFile(handle, buffer, size.LowPart, &read, NULL)) {
-        hr = HRESULT_FROM_WIN32(GetLastError());
-        GlobalUnlock(memory);
-        GlobalFree(memory);
-        CloseHandle(handle);
-        return hr;
-    }
-
-    GlobalUnlock(memory);
-    CloseHandle(handle);
-
-    hr = CreateStreamOnHGlobal(memory, TRUE, &local);
-    if (FAILED(hr)) {
-        GlobalFree(memory);
-        return hr;
-    }
-
-    *stream = local;
-
-    return S_OK;
 }
 
 static HRESULT
