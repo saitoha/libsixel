@@ -41,14 +41,17 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
              lsqa_regression.sh \
              data/baseline/*.json data/inputs/formats/* \
              data/resolutions/*.png data/corrupted/*
-CLEANFILES = $(LOG_COMPILER)
+# Avoid deleting the in-tree timeout wrapper when building in the source
+# directory. The wrapper is regenerated for out-of-tree builds, so remove it
+# only in that case to prevent accidental loss from "make clean".
+CLEANFILES =
 
 # Avoid deleting in-tree test scripts when "make clean" is invoked.
 # Only remove copied test files in an out-of-tree build so that the
 # distributed sources remain intact for developers and package builds.
 clean-local:
-	@if test "$(abs_builddir)" != "$(abs_srcdir)"; then \
-		rm -f $(TESTS) $(HELPER_FILES); \
+	@if test "$(abs_builddir)" != "$(abs_srcdir)"; then \\
+		rm -f $(LOG_COMPILER) $(TESTS) $(HELPER_FILES); \\
 	fi
 
 check-local: $(LOG_COMPILER) $(TESTS) $(HELPER_FILES)
