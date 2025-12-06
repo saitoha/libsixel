@@ -5960,7 +5960,7 @@ sixel_encoder_setopt(
         encoder->verbose = 1;
         sixel_helper_set_loader_trace(1);
         break;
-    case SIXEL_OPTFLAG_LOADERS:  /* J */
+    case SIXEL_OPTFLAG_LOADERS:  /* L */
         if (encoder->loader_order != NULL) {
             sixel_allocator_free(encoder->allocator,
                                  encoder->loader_order);

@@ -712,7 +712,7 @@ steps.
 -D, --pipe-mode            [[deprecated]] read source images from
                            stdin continuously
 -v, --verbose              show debugging info
--j LIST, --loaders=LIST    override loader priority order
+-L LIST, --loaders=LIST    override loader priority order
                            LIST is a comma separated sequence of
                            loader names such as 'gd,builtin'
                            Unknown names are ignored so the same
@@ -766,7 +766,7 @@ SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS
                            threshold is overridden.
 SIXEL_LOADER_PRIORITY_LIST override default loader search order.
                            Accepts the same comma separated
-                           names as the -j/--loaders option and
+                           names as the -L/--loaders option and
                            is ignored when that option is set.
 SIXEL_FLOAT32_DITHER       opt into the experimental RGBFLOAT32
                            quantizer backend.  Set to `0`,

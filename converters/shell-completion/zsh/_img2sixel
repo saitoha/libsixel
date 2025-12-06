@@ -259,7 +259,7 @@ _arguments -S -s -A "-*" -S \
   {-P,--penetrate}'[penetrate GNU Screen using DCS pass-through sequence]' \
   {-D,--pipe-mode}'[read source images from stdin continuously]' \
   {-v,--verbose}'[show debugging information]' \
-  {-j,--loaders=}'[override loader priority order]':loaders:_loaders \
+  {-L,--loaders=}'[override loader priority order]':loaders:_loaders \
   {-@,--drcs}'[emit DRCS tiles via MMV:CHARSET:PATH (defaults 2:1:, "-" keeps stdout)]' \
   {-O,--ormode}'[output ormode sixel image]' \
   {-W,--working-colorspace=}'[select internal working color space]':workingcolorspace:_workingcolorspace \
