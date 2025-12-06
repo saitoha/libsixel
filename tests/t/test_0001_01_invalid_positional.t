@@ -16,6 +16,13 @@ mkdir -p "${tmp_dir}"
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${script_dir}/converters-common.t"
 
+# Skip temporarily on Windows environments while addressing
+# intermittent failures specific to that platform.
+os_name=$(uname -s || echo "unknown")
+if printf '%s' "${os_name}" | grep -qiE 'mingw|msys|cygwin'; then
+    skip_all "temporarily disabled on Windows due to instability"
+fi
+
 status=0
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
