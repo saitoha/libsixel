@@ -4,7 +4,7 @@
 # by the build (when --enable-python-wheel is active) and exercises a
 # tiny encode/decode round-trip to confirm the bindings load correctly.
 
-set -eu
+set -euxv
 
 pass() {
     printf 'ok %s - %s\n' "$1" "$2"
