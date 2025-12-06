@@ -183,6 +183,8 @@ load_with_quicklook(
     CGRect bounds;
     size_t stride;
     unsigned char fill_color[3];
+    unsigned char default_bgcolor[3];
+    unsigned char const *fill_source;
     CGFloat fill_r;
     CGFloat fill_g;
     CGFloat fill_b;
@@ -272,15 +274,32 @@ load_with_quicklook(
                         (CGFloat)CGImageGetHeight(image));
     frame->width = (int)bounds.size.width;
     frame->height = (int)bounds.size.height;
-    frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+    /*
+     * QuickLook renders into a premultiplied RGBA buffer. Keep a four-byte
+     * stride so the pixel format matches the bitmap context layout.
+     */
     stride = (size_t)frame->width * 4;
-    fill_r = (CGFloat)bgcolor[0] / 255.0;
-    fill_g = (CGFloat)bgcolor[1] / 255.0;
-    fill_b = (CGFloat)bgcolor[2] / 255.0;
-    fill_color[0] = bgcolor[0];
-    fill_color[1] = bgcolor[1];
-    fill_color[2] = bgcolor[2];
-    /* QuickLook renders into RGB888 so no palette mapping is required. */
+
+    /*
+     * Background colors are optional for most loaders. QuickLook renders
+     * into a bitmap that needs an explicit clear color, so choose a safe
+     * default when callers did not supply one.
+     */
+    fill_source = bgcolor;
+    if (fill_source == NULL) {
+        default_bgcolor[0] = 0;
+        default_bgcolor[1] = 0;
+        default_bgcolor[2] = 0;
+        fill_source = default_bgcolor;
+    }
+    fill_color[0] = fill_source[0];
+    fill_color[1] = fill_source[1];
+    fill_color[2] = fill_source[2];
+    fill_r = (CGFloat)fill_color[0] / 255.0;
+    fill_g = (CGFloat)fill_color[1] / 255.0;
+    fill_b = (CGFloat)fill_color[2] / 255.0;
+    /* QuickLook renders into RGBA so no palette mapping is required. */
     sixel_frame_set_pixels(frame,
                            sixel_allocator_malloc(
                                pchunk->allocator,
