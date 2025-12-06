@@ -41,14 +41,6 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
-#if HAVE_STRINGS_H
-# include <strings.h>
-#elif defined(_WIN32)
-# include <string.h>
-# define strcasecmp _stricmp
-#else
-int strcasecmp(char const *lhs, char const *rhs);
-#endif
 #if HAVE_LIMITS_H
 # include <limits.h>
 #endif
@@ -187,11 +179,11 @@ sixel_get_kmeans_init_type(void)
 
     env_value = sixel_compat_getenv("SIXEL_PALETTE_KMEANS_INITTYPE");
     if (env_value != NULL && env_value[0] != '\0') {
-        if (strcasecmp(env_value, "none") == 0) {
+        if (sixel_compat_strcasecmp(env_value, "none") == 0) {
             parsed = SIXEL_PALETTE_KMEANS_INIT_NONE;
-        } else if (strcasecmp(env_value, "pca") == 0) {
+        } else if (sixel_compat_strcasecmp(env_value, "pca") == 0) {
             parsed = SIXEL_PALETTE_KMEANS_INIT_PCA;
-        } else if (strcasecmp(env_value, "auto") == 0) {
+        } else if (sixel_compat_strcasecmp(env_value, "auto") == 0) {
             parsed = SIXEL_PALETTE_KMEANS_INIT_AUTO;
         }
     }

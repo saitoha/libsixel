@@ -106,6 +106,7 @@
 #include "stdio_stub.h"
 #include "chunk.h"
 #include "allocator.h"
+#include "compat_stub.h"
 
 
 /* initialize chunk object with specified size */
@@ -289,9 +290,6 @@ open_binary_file(
 #if HAVE_STAT
     struct stat sb;
 #endif  /* HAVE_STAT */
-#if HAVE_FOPEN_S
-    errno_t e;
-#endif  /* HAVE_FOPEN_S */
     char message[2048];
 
     if (filename == NULL || strcmp(filename, "-") == 0) {
@@ -312,7 +310,10 @@ open_binary_file(
 #if HAVE_STAT
     if (stat(filename, &sb) != 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-        (void)snprintf(message, sizeof(message), "stat() for file '%s' failed.", filename);
+        (void)sixel_compat_snprintf(message,
+                                    sizeof(message),
+                                    "stat() for file '%s' failed.",
+                                    filename);
         sixel_helper_set_additional_message(message);
         goto end;
     }
@@ -323,21 +324,12 @@ open_binary_file(
     }
 #endif  /* HAVE_STAT */
 
-# if HAVE_FOPEN_S
-    e = fopen_s(f, filename, "rb");
-    if (e != (0)) {
-        status = (SIXEL_LIBC_ERROR | (e & 0xff));
-        sixel_helper_set_additional_message("fopen_s() failed.");
-        goto end;
-    }
-# else
-    *f = fopen(filename, "rb");
+    *f = sixel_compat_fopen(filename, "rb");
     if (! *f) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         sixel_helper_set_additional_message("fopen() failed.");
         goto end;
     }
-# endif  /* HAVE_FOPEN_S */
 
     status = SIXEL_OK;
 

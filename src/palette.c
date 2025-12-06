@@ -216,26 +216,29 @@ sixel_palette_format_quant_message(
     merge_name = sixel_palette_merge_mode_name(merge_mode);
     if (merge_ms > 0.0 || merge_iterate_count > 0U
         || merge_mode != SIXEL_FINAL_MERGE_NONE) {
-        (void)snprintf(merge_desc,
-                       sizeof(merge_desc),
-                       "%s:%u/%.3fms",
-                       merge_name,
-                       merge_iterate_count,
-                       merge_ms);
+        (void)sixel_compat_snprintf(merge_desc,
+                                    sizeof(merge_desc),
+                                    "%s:%u/%.3fms",
+                                    merge_name,
+                                    merge_iterate_count,
+                                    merge_ms);
     } else {
-        (void)snprintf(merge_desc, sizeof(merge_desc), "%s", merge_name);
+        (void)sixel_compat_snprintf(merge_desc,
+                                    sizeof(merge_desc),
+                                    "%s",
+                                    merge_name);
     }
 
-    (void)snprintf(buffer,
-                   size,
-                   "engine=%s init=%.3fms iter=%u/%.3fms merge=%s "
-                   "export=%.3fms",
-                   engine != NULL ? engine->name : "",
-                   init_ms,
-                   iterate_count,
-                   iterate_ms,
-                   merge_desc,
-                   export_ms);
+    (void)sixel_compat_snprintf(buffer,
+                                size,
+                                "engine=%s init=%.3fms iter=%u/%.3fms "
+                                "merge=%s export=%.3fms",
+                                engine != NULL ? engine->name : "",
+                                init_ms,
+                                iterate_count,
+                                iterate_ms,
+                                merge_desc,
+                                export_ms);
 }
 
 /* Locate a quantizer engine that satisfies the model/format requirements. */

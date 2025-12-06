@@ -47,6 +47,7 @@
 
 #include <sixel.h>
 
+#include "compat_stub.h"
 #include "loader-common.h"
 #include "logger.h"
 
@@ -70,7 +71,7 @@ loader_thumbnailer_initialize_size_hint(void)
     thumbnailer_default_size_hint = SIXEL_THUMBNAILER_DEFAULT_SIZE;
     thumbnailer_size_hint = thumbnailer_default_size_hint;
 
-    env_value = getenv("SIXEL_THUMBNAILER_HINT_SIZE");
+    env_value = sixel_compat_getenv("SIXEL_THUMBNAILER_HINT_SIZE");
     if (env_value == NULL || env_value[0] == '\0') {
         return;
     }

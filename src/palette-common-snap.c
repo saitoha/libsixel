@@ -34,13 +34,6 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#if HAVE_STRINGS_H
-# include <strings.h>
-#elif defined(_WIN32)
-# define strcasecmp _stricmp
-#else
-int strcasecmp(char const *lhs, char const *rhs);
-#endif
 
 #include "colorspace.h"
 #include "compat_stub.h"
@@ -111,7 +104,7 @@ sixel_palette_get_snap_policy(void)
         return snap_policy_cache;
     }
 
-    if (strcasecmp(policy, "reversible") == 0) {
+    if (sixel_compat_strcasecmp(policy, "reversible") == 0) {
         snap_policy_cache = SIXEL_PALETTE_SNAP_POLICY_REVERSIBLE;
         return snap_policy_cache;
     }
@@ -137,22 +130,22 @@ sixel_palette_get_snap_timing(void)
 
         return snap_timing_cache;
     }
-    if (strcasecmp(policy, "polish") == 0) {
+    if (sixel_compat_strcasecmp(policy, "polish") == 0) {
         snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_POLISH;
 
         return snap_timing_cache;
     }
-    if (strcasecmp(policy, "merge") == 0) {
+    if (sixel_compat_strcasecmp(policy, "merge") == 0) {
         snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_MERGE;
 
         return snap_timing_cache;
     }
-    if (strcasecmp(policy, "resolve") == 0) {
+    if (sixel_compat_strcasecmp(policy, "resolve") == 0) {
         snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_RESOLVE;
 
         return snap_timing_cache;
     }
-    if (strcasecmp(policy, "all") == 0) {
+    if (sixel_compat_strcasecmp(policy, "all") == 0) {
         snap_timing_cache = SIXEL_PALETTE_SNAP_TIMING_ALL;
 
         return snap_timing_cache;
