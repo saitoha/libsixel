@@ -572,7 +572,7 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
-CLEANFILES =
+CLEANFILES = 
 all: all-am
 
 .SUFFIXES:

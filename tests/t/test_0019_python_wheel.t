@@ -1,8 +1,8 @@
 #!/bin/sh
-# TAP test validating that the prebuilt Python wheel runs inside an
-# isolated virtual environment. The script installs the wheel produced
-# by the build (when --enable-python-wheel is active) and exercises a
-# tiny encode/decode round-trip to confirm the bindings load correctly.
+# TAP test verifying the wheel produced under python-wheel/dist installs
+# and runs correctly inside an isolated virtual environment. The test only
+# exercises the prebuilt wheel and must not rely on in-tree Python modules
+# or shared libraries from the standard build output.
 
 set -eu
 
@@ -36,20 +36,19 @@ if [ -z "${python_bin}" ]; then
     skip_all "python3 is not available"
 fi
 
-# Skip if the build skipped wheel generation. The autotools flag
-# --enable-python-wheel controls this in the CI matrix.
-wheel_dir="${TOP_BUILDDIR}/python/dist"
+wheel_dir="${TOP_BUILDDIR}/python-wheel/dist"
 if [ ! -d "${wheel_dir}" ]; then
-    skip_all "python wheel artifacts are unavailable (--enable-python-wheel is off)"
+    skip_all "python-wheel/dist artifacts are unavailable"
 fi
 
-wheel_path=$(find "${wheel_dir}" -maxdepth 1 -type f -name 'libsixel_python-*.whl' | head -n 1 || true)
+wheel_path=$(find "${wheel_dir}" -maxdepth 1 -type f \
+    -name 'libsixel-*.whl' | head -n 1 || true)
 if [ -z "${wheel_path}" ]; then
-    skip_all "python wheel artifacts are unavailable (--enable-python-wheel is off)"
+    skip_all "python wheel package is missing under python-wheel/dist"
 fi
 
-# Require local venv/ensurepip modules so we can skip gracefully on
-# minimal Python installations rather than failing the entire suite.
+# Require venv/ensurepip so we can build an isolated environment for the
+# wheel without depending on system site-packages.
 if "${python_bin}" - <<'PY' >>"${log_file}" 2>&1; then
 import importlib.util
 missing = [m for m in ("venv", "ensurepip")
@@ -62,43 +61,12 @@ else
     skip_all "python3 lacks venv or ensurepip support"
 fi
 
-lib_paths=""
-for candidate in "${TOP_BUILDDIR}/src/.libs" \
-                 "${TOP_BUILDDIR}/src" \
-                 "${TOP_BUILDDIR}/src/libsixel"; do
-    if [ -d "${candidate}" ]; then
-        if [ -z "${lib_paths}" ]; then
-            lib_paths="${candidate}"
-        else
-            lib_paths="${lib_paths}:${candidate}"
-        fi
-    fi
-done
-
-if [ -z "${lib_paths}" ]; then
-    first_match=$(find "${TOP_BUILDDIR}/src" -maxdepth 4 -type f \
-        \( -name 'libsixel*.so*' -o -name 'libsixel*.dylib' \
-           -o -name 'libsixel*.dll' \) | head -n 1 || true)
-    if [ -n "${first_match}" ]; then
-        lib_paths=$(dirname "${first_match}")
-    fi
-fi
-
-if [ -z "${lib_paths}" ]; then
-    skip_all "compiled libsixel library is unavailable"
-fi
-
-export LD_LIBRARY_PATH="${lib_paths}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
-export DYLD_LIBRARY_PATH="${lib_paths}${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}"
-
 cat >"${verify_script}" <<'PY'
 import pathlib
 from libsixel import SIXEL_PIXELFORMAT_RGB888
 from libsixel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
 from libsixel.decoder import Decoder, SIXEL_OPTFLAG_INPUT, SIXEL_OPTFLAG_OUTPUT
 
-# Generate a 2x2 test pattern (red, green, blue, white) so the
-# bindings exercise both encoding and decoding paths.
 root = pathlib.Path(__file__).parent
 encoded = root / "sample.six"
 decoded = root / "roundtrip.png"
@@ -137,16 +105,15 @@ case_id=1
 if "${python_bin}" -m venv "${run_venv}" >>"${log_file}" 2>&1 && \
    "${run_python}" -m pip install --no-deps "${wheel_path}" \
         >>"${log_file}" 2>&1; then
-    pass ${case_id} "installs prebuilt python wheel"
+    pass ${case_id} "installs wheel from python-wheel/dist"
 else
     fail ${case_id} "wheel installation failed"
 fi
 case_id=$((case_id + 1))
 
-if LD_LIBRARY_PATH="${LD_LIBRARY_PATH}" \
-   DYLD_LIBRARY_PATH="${DYLD_LIBRARY_PATH}" \
+if PYTHONPATH="" \
    "${run_python}" "${verify_script}" >>"${log_file}" 2>&1; then
-    pass ${case_id} "encodes and decodes via libsixel wheel"
+    pass ${case_id} "encodes and decodes via bundled wheel"
 else
     fail ${case_id} "python import or round-trip failed"
 fi
