@@ -32,6 +32,8 @@
 #include <ctype.h>
 #include <stdio.h>
 
+#include "compat_stub.h"
+
 #if defined(HAVE_CLIPBOARD_LINUX)
 #include <errno.h>
 #include <unistd.h>
@@ -783,7 +785,7 @@ clipboard_linux_find_program(char const *name)
         return 0;
     }
 
-    path_env = getenv("PATH");
+    path_env = sixel_compat_getenv("PATH");
     if (path_env == NULL) {
         return 0;
     }
@@ -815,14 +817,20 @@ clipboard_linux_find_program(char const *name)
         if (required_length <= sizeof(candidate)) {
             if (directory_length > 0u &&
                     directory[directory_length - 1u] == '/') {
-                written = snprintf(candidate, sizeof(candidate),
-                                    "%s%s", directory, name);
+                written = sixel_compat_snprintf(candidate,
+                                                sizeof(candidate),
+                                                "%s%s",
+                                                directory,
+                                                name);
             } else {
-                written = snprintf(candidate, sizeof(candidate),
-                                    "%s/%s", directory, name);
+                written = sixel_compat_snprintf(candidate,
+                                                sizeof(candidate),
+                                                "%s/%s",
+                                                directory,
+                                                name);
             }
             if (written > 0 && (size_t)written < sizeof(candidate)) {
-                if (access(candidate, X_OK) == 0) {
+                if (sixel_compat_access(candidate, X_OK) == 0) {
                     available = 1;
                 }
             }

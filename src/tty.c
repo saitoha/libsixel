@@ -245,8 +245,8 @@ sixel_tty_init_output_device(int fd)
     }
 #endif
 
-    term = getenv("TERM");
-    colorterm = getenv("COLORTERM");
+    term = sixel_compat_getenv("TERM");
+    colorterm = sixel_compat_getenv("COLORTERM");
 
     if (term == NULL || term[0] == '\0') {
         return;

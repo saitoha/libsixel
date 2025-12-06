@@ -40,6 +40,7 @@
 #if SIXEL_ENABLE_THREADS
 # include "threadpool.h"
 #endif
+#include "compat_stub.h"
 
 #if defined(HAVE_IMMINTRIN_H) && \
     (defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
@@ -2971,7 +2972,7 @@ sixel_colorspace_parallel_min_pixels(void)
     }
 
     initialized = 1;
-    text = getenv("SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS");
+    text = sixel_compat_getenv("SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS");
     if (text == NULL || text[0] == '\0') {
         return threshold;
     }
