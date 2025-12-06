@@ -124,7 +124,7 @@
 #include "clipboard.h"
 #include "compat_stub.h"
 #include "sleep.h"
-#include "sixel_threads_config.h"
+#include "threading.h"
 
 #define SIXEL_ENCODER_PRECISION_ENVVAR "SIXEL_FLOAT32_DITHER"
 

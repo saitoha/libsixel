@@ -11,7 +11,7 @@
 
 #include <sixel.h>
 
-#include "sixel_threading.h"
+#include "threading.h"
 
 #ifdef __cplusplus
 extern "C" {

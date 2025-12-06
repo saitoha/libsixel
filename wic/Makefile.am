@@ -23,8 +23,8 @@ libwicsixel_la_SOURCES = $(srcdir)/wic.c \
 if SIXEL_ENABLE_THREADS
 libwicsixel_la_SOURCES += \
     $(top_srcdir)/src/decoder-parallel.c \
-    $(top_srcdir)/src/sixel_threading.c \
-    $(top_srcdir)/src/sixel_threading.h \
+    $(top_srcdir)/src/threading.c \
+    $(top_srcdir)/src/threading.h \
     $(top_srcdir)/src/threadpool.c \
     $(top_srcdir)/src/threadpool.h
 endif
