@@ -82,10 +82,21 @@ cat >"${man_file}" <<EOF_MAN
                     name="libsixel.wic.dispatch"
                     type="win32" />
   <file name="$(basename "${dll_copy}")">
+    <!--
+     - Export both the automation-friendly IDispatch entry point and the
+     - IWICBitmapDecoder class. The automation layer internally calls
+     - CoCreateInstance on CLSID_SixelDecoder, so the activation context must
+     - describe that CLSID as well; advertising only the ProgID exposes the
+     - dispatch object but leaves the decoder class invisible, causing
+     - LoadFromString to fail with CLASS_E_CLASSNOTAVAILABLE.
+     -->
     <comClass clsid="{1EAF6501-96E9-4A4E-92A2-2B15B90DDADE}"
               threadingModel="Both"
               progid="Libsixel.Decoder"
               description="libsixel decoder automation" />
+    <comClass clsid="{15B9B4DA-B155-4977-8571-CF005884BCB9}"
+              threadingModel="Both"
+              description="WIC SIXEL decoder" />
   </file>
 </assembly>
 EOF_MAN
