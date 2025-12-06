@@ -29,7 +29,7 @@
 
 #include <sixel.h>
 
-#include "sixel_threading.h"
+#include "threading.h"
 
 typedef struct {
     int band_index;
