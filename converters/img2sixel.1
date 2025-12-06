@@ -420,7 +420,7 @@ rgb:rrrr/gggg/bbbb
 .B \-v, \-\-verbose
 show debugging info.
 .TP 5
-.B \-j \fILIST\fP, \-\-loaders=\fILIST\fP
+.B \-L \fILIST\fP, \-\-loaders=\fILIST\fP
 choose the loader priority order. \fILIST\fP is a comma separated
 sequence of loader names such as \fBgd\fP, \fBcoregraphics\fP, or
 \fBbuiltin\fP. Unknown names are ignored so you can reuse the same
@@ -570,7 +570,7 @@ count. Defaults to 65537 pixels to avoid eager splitting on small images.
 .B SIXEL_LOADER_PRIORITY_LIST
 .br
 override the default loader priority. Accepts the same comma separated
-names recognised by \fB-j\fP/\fB--loaders\fP. The environment setting
+names recognised by \fB-L\fP/\fB--loaders\fP. The environment setting
 is ignored when the command-line option is present.
 .TP 5
 .B SIXEL_OPTION_PREFIX_SUGGESTIONS
