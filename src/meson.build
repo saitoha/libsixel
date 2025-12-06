@@ -86,8 +86,8 @@ srcs = [
   'malloc_stub.c',
   'allocator.c',
   'tty.c',
-  'sixel_threads_config.c',
-  'sixel_threads_config.h',
+  'threading.c',
+  'threading.h',
   'lookup-common.h',
   'lookup-8bit.h',
   'lookup-float32.h',
@@ -104,7 +104,6 @@ srcs = [
 
 if conf.get('SIXEL_ENABLE_THREADS', 0) == 1
   srcs += [
-    'sixel_threading.c',
     'threadpool.c',
   ]
 endif

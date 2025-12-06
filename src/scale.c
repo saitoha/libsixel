@@ -53,9 +53,9 @@
 #include "cpu.h"
 #include "logger.h"
 #include "compat_stub.h"
+#include "threading.h"
 
 #if SIXEL_ENABLE_THREADS
-# include "sixel_threads_config.h"
 # include "threadpool.h"
 #endif
 

@@ -16,7 +16,7 @@
 #include "decoder-parallel.h"
 #if SIXEL_ENABLE_THREADS
 # include "logger.h"
-# include "sixel_threading.h"
+# include "threading.h"
 #endif
 
 /*

@@ -127,15 +127,13 @@ $(srcdir)/stb_image_write.h \
                 $(srcdir)/allocator.h \
                 $(srcdir)/tty.c \
                 $(srcdir)/tty.h \
-                $(srcdir)/sixel_threads_config.c \
-                $(srcdir)/sixel_threads_config.h \
+                $(srcdir)/threading.c \
+                $(srcdir)/threading.h \
                 $(srcdir)/sixel_atomic.h \
                 $(srcdir)/rgblookup.h \
                 $(srcdir)/lso2.h
 if SIXEL_ENABLE_THREADS
 libsixel_la_SOURCES += \
-                $(srcdir)/sixel_threading.c \
-                $(srcdir)/sixel_threading.h \
                 $(srcdir)/threadpool.c \
                 $(srcdir)/threadpool.h
 endif
