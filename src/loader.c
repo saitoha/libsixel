@@ -1290,7 +1290,7 @@ sixel_loader_load_file(
     order_override = loader->loader_order;
     /*
      * Honour SIXEL_LOADER_PRIORITY_LIST when callers do not supply
-     * a loader order via -j/--loaders or sixel_loader_setopt().
+     * a loader order via -L/--loaders or sixel_loader_setopt().
      */
     if (order_override == NULL) {
         env_order = getenv("SIXEL_LOADER_PRIORITY_LIST");

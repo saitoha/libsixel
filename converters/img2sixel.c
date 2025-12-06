@@ -567,9 +567,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "-v, --verbose              show debugging info\n"
     },
     {
-        'j',
+        'L',
         "loaders",
-        "-j LIST, --loaders=LIST    choose loader priority order\n"
+        "-L LIST, --loaders=LIST    choose loader priority order\n"
         "                           LIST is a comma separated set of\n"
         "                           loader names like 'gd,builtin'\n"
     },
@@ -654,7 +654,7 @@ static char const g_img2sixel_optstring[] =
     "o:a:J:"
     "=:"
     ".:"
-    "j:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:~:kil:t:ugvSn:PE:U:B:C:D@:"
+    "L:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:~:kil:t:ugvSn:PE:U:B:C:D@:"
     "OVW:HY:y:";
 
 static int
@@ -1005,8 +1005,8 @@ void show_help(void)
             "SIXEL_LOADER_PRIORITY_LIST\n"
             "                           Override default loader search\n"
             "                           order. Accepts the same comma\n"
-            "                           separated names as -j. Ignored\n"
-            "                           when -j/--loaders is provided.\n"
+            "                           separated names as -L. Ignored\n"
+            "                           when -L/--loaders is provided.\n"
             "SIXEL_PALETTE_OVERSPLIT_FACTOR\n"
             "                           Scale provisional palette size\n"
             "                           before the final merge. Accepts\n"
@@ -1115,7 +1115,7 @@ main(int argc, char *argv[])
         {"use-macro",          no_argument,        &long_opt, 'u'},
         {"ignore-delay",       no_argument,        &long_opt, 'g'},
         {"verbose",            no_argument,        &long_opt, 'v'},
-        {"loaders",            required_argument,  &long_opt, 'j'},
+        {"loaders",            required_argument,  &long_opt, 'L'},
         {"static",             no_argument,        &long_opt, 'S'},
         {"macro-number",       required_argument,  &long_opt, 'n'},
         {"penetrate",          no_argument,        &long_opt, 'P'}, /* deprecated */
@@ -1296,7 +1296,7 @@ unknown_option_error:
             "                 [-h height] [-r resamplingtype] [-q quality]\n"
             "                 [-~ lookuppolicy] [-l loopmode]\n"
             "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
-            "                 [-E encodepolicy] [-j loaderlist] [-J jsonfile]\n"
+            "                 [-E encodepolicy] [-L loaderlist] [-J jsonfile]\n"
             "                 [-@ mmv:charset:path] [-1 shell] [-2 shell]\n"
             "                 [-3 shell] [-W workingcolorspace] [-U outputcolorspace]\n"
             "                 [-B bgcolor] [-o outfile] [filename ...]\n\n"
