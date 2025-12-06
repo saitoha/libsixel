@@ -35,7 +35,7 @@ sixel_cpu_env_cap(void)
 {
     char const *env;
 
-    env = getenv("SIXEL_SIMD_LEVEL");
+    env = sixel_compat_getenv("SIXEL_SIMD_LEVEL");
     if (env == NULL || env[0] == '\0') {
         return SIXEL_SIMD_LEVEL_NEON;
     }

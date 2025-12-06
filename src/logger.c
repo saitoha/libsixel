@@ -36,6 +36,7 @@
 
 #include "logger.h"
 #include "timer.h"
+#include "compat_stub.h"
 
 static sixel_logger_t *sixel_logger_active;
 static int sixel_logger_refcount;
@@ -142,7 +143,7 @@ sixel_logger_open(sixel_logger_t *logger, char const *path)
     if (path == NULL || path[0] == '\0') {
         return SIXEL_OK;
     }
-    logger->file = fopen(path, "w");
+    logger->file = sixel_compat_fopen(path, "w");
     if (logger->file == NULL) {
         return SIXEL_RUNTIME_ERROR;
     }
@@ -191,7 +192,7 @@ sixel_logger_prepare_env(sixel_logger_t *logger)
     }
 
     sixel_logger_init(logger);
-    path = getenv("SIXEL_PARALLEL_LOG_PATH");
+    path = sixel_compat_getenv("SIXEL_PARALLEL_LOG_PATH");
     if (path == NULL || path[0] == '\0') {
         return SIXEL_OK;
     }
@@ -245,7 +246,7 @@ sixel_logger_logf(sixel_logger_t *logger,
          * The format strings are defined in our code paths.  Suppress the
          * nonliteral warning so we can forward variadic arguments safely.
          */
-        (void)vsnprintf(message, sizeof(message), fmt, args);
+        (void)sixel_compat_vsnprintf(message, sizeof(message), fmt, args);
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #elif defined(__GNUC__)

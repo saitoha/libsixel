@@ -6,10 +6,14 @@
 
 #include "config.h"
 
-#include <errno.h>
-#include <limits.h>
 #include <stdlib.h>
 #include <string.h>
+#if HAVE_ERRNO_H
+# include <errno.h>
+#endif  /* HAVE_ERRNO_H */
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif /* HAVE_LIMITS_H */
 
 #include <sixel.h>
 
@@ -18,6 +22,7 @@
 # include "logger.h"
 # include "threading.h"
 #endif
+#include "compat_stub.h"
 
 /*
  * The previous prescan-based parallel decoder has been removed.
@@ -112,7 +117,7 @@ sixel_decoder_parallel_skew_percent(void)
      * trailing workers take slightly more work.  The default keeps spans
      * balanced.
      */
-    text = getenv("SIXEL_PARALLEL_SKEW");
+    text = sixel_compat_getenv("SIXEL_PARALLEL_SKEW");
     if (text == NULL || text[0] == '\0') {
         return 0;
     }
@@ -927,7 +932,7 @@ sixel_decoder_threads_load_env(void)
     }
     g_decoder_threads.env_checked = 1;
     g_decoder_threads.env_valid = 0;
-    text = getenv("SIXEL_THREADS");
+    text = sixel_compat_getenv("SIXEL_THREADS");
     if (text == NULL || text[0] == '\0') {
         return;
     }

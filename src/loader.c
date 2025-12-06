@@ -216,7 +216,7 @@ loader_log_stage(sixel_loader_t *loader,
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
-        (void)vsnprintf(message, sizeof(message), fmt, args);
+        (void)sixel_compat_vsnprintf(message, sizeof(message), fmt, args);
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #elif defined(__GNUC__)
@@ -1218,10 +1218,10 @@ sixel_loader_load_file(
     loader->log_input_bytes = 0u;
     loader->log_path[0] = '\0';
     if (filename != NULL) {
-        (void)snprintf(loader->log_path,
-                       sizeof(loader->log_path),
-                       "%s",
-                       filename);
+        (void)sixel_compat_snprintf(loader->log_path,
+                                    sizeof(loader->log_path),
+                                    "%s",
+                                    filename);
     }
     loader_log_stage(loader, "start", "path=%s", loader->log_path);
 
@@ -1266,10 +1266,10 @@ sixel_loader_load_file(
     }
 
     if (pchunk->source_path != NULL && pchunk->source_path[0] != '\0') {
-        (void)snprintf(loader->log_path,
-                       sizeof(loader->log_path),
-                       "%s",
-                       pchunk->source_path);
+        (void)sixel_compat_snprintf(loader->log_path,
+                                    sizeof(loader->log_path),
+                                    "%s",
+                                    pchunk->source_path);
     }
 
     if (pchunk->buffer == NULL || pchunk->max_size == 0) {
@@ -1293,7 +1293,7 @@ sixel_loader_load_file(
      * a loader order via -L/--loaders or sixel_loader_setopt().
      */
     if (order_override == NULL) {
-        env_order = getenv("SIXEL_LOADER_PRIORITY_LIST");
+        env_order = sixel_compat_getenv("SIXEL_LOADER_PRIORITY_LIST");
         if (env_order != NULL && env_order[0] != '\0') {
             order_override = env_order;
         }
@@ -1322,10 +1322,10 @@ sixel_loader_load_file(
         }
         loader->log_input_bytes = pchunk != NULL ? pchunk->size : 0u;
         if (plan[plan_index]->name != NULL) {
-            (void)snprintf(loader->log_loader_name,
-                           sizeof(loader->log_loader_name),
-                           "%s",
-                           plan[plan_index]->name);
+            (void)sixel_compat_snprintf(loader->log_loader_name,
+                                        sizeof(loader->log_loader_name),
+                                        "%s",
+                                        plan[plan_index]->name);
         } else {
             loader->log_loader_name[0] = '\0';
         }
@@ -1358,10 +1358,10 @@ sixel_loader_load_file(
     if (plan_index < plan_length &&
             plan[plan_index] != NULL &&
             plan[plan_index]->name != NULL) {
-        (void)snprintf(loader->last_loader_name,
-                       sizeof(loader->last_loader_name),
-                       "%s",
-                       plan[plan_index]->name);
+        (void)sixel_compat_snprintf(loader->last_loader_name,
+                                    sizeof(loader->last_loader_name),
+                                    "%s",
+                                    plan[plan_index]->name);
     } else {
         loader->last_loader_name[0] = '\0';
     }
