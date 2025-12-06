@@ -7,6 +7,7 @@ TESTS = t/test_0001_01_invalid_positional.t \
         t/test_0004_conversion_options_02.t \
         t/test_0004_conversion_options_03.t \
         t/test_0004_conversion_options_04.t \
+        t/test_0004_conversion_options_05.t \
         t/test_0005_dcs_arguments.t \
         t/test_0006_dcs_variations.t \
         t/test_0007_animation.t \

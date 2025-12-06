@@ -2548,6 +2548,7 @@ sixel_prepare_specified_palette(
     int need_detection;
     int treat_as_image;
     int path_has_extension;
+    char const *detail_message;
     char mapfile_message[256];
 
     status = SIXEL_FALSE;
@@ -2714,6 +2715,24 @@ palette_cleanup:
         if (stream != NULL) {
             sixel_palette_close_stream(stream, close_stream);
             stream = NULL;
+        }
+        /*
+         * Guarantee a useful diagnostic when the palette load fails without
+         * populating the shared helper buffer. Some callers rely on this
+         * message to distinguish empty mapfiles from other input errors.
+         */
+        if (SIXEL_FAILED(status) && mapfile_message[0] == '\0') {
+            detail_message = sixel_helper_get_additional_message();
+            if (detail_message == NULL || detail_message[0] == '\0') {
+                sixel_compat_snprintf(mapfile_message,
+                                      sizeof(mapfile_message),
+                                      "sixel_prepare_specified_palette: "
+                                      "mapfile \"%s\" is empty.",
+                                      encoder->mapfile != NULL
+                                        ? encoder->mapfile
+                                        : "");
+                sixel_helper_set_additional_message(mapfile_message);
+            }
         }
         if (SIXEL_SUCCEEDED(status)) {
             return status;
