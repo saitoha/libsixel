@@ -452,9 +452,10 @@ jobs:
         if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
           disable_simd_flag="--disable-simd"
         fi
-        export PKG_CONFIG="${VCPKG_ROOT}/installed/x64-windows/tools/pkgconf/pkgconf.exe"
-        export PKG_CONFIG_PATH="${VCPKG_ROOT}/installed/x64-windows/lib/pkgconfig"
-        export PATH="${VCPKG_ROOT}/installed/x64-windows/bin:${PATH}"
+        vcpkg_pc_dir=$(cygpath -u "${VCPKG_ROOT}/installed/x64-windows/lib/pkgconfig")
+        export PKG_CONFIG="$(cygpath -u "${VCPKG_ROOT}/installed/x64-windows/tools/pkgconf/pkgconf.exe")"
+        export PKG_CONFIG_PATH="${vcpkg_pc_dir}"
+        export PATH="$(cygpath -u "${VCPKG_ROOT}/installed/x64-windows/bin"):${PATH}"
         ./configure CC=cl LD=link AR="${SHELL} $(pwd)/build-aux/ar-lib lib" ARFLAGS=cr NM="dumpbin -symbols" STRIP=: RANLIB=: \
             --host=x86_64-pc-windows-msvc \
             --with-gdk-pixbuf2=yes \
