@@ -343,7 +343,22 @@ if m_dep.found()
   conf.set('HAVE_LIBM', 1)
 endif
 
-png_dep = dependency('libpng', required: get_option('png'))
+png_opt = get_option('png')
+png_dep = disabler()
+
+if not png_opt.disabled()
+  png_dep = dependency('libpng', required: false, method: 'pkg-config')
+  if not png_dep.found()
+    png_dep = dependency('libpng16', required: false, method: 'pkg-config')
+  endif
+  if not png_dep.found()
+    png_dep = dependency('PNG', required: png_opt.enabled(), method: 'cmake')
+  endif
+  if not png_dep.found() and png_opt.enabled()
+    error('png=enabled requires libpng/libpng16 or CMake PNG package')
+  endif
+endif
+
 if png_dep.found()
   deps += png_dep
   reqs += png_dep
