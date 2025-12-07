@@ -1733,9 +1733,15 @@ else
 
     i*86)
         if x$ac_cv_header_emmintrin_h = xyes; then
-            AC_MSG_CHECKING([whether the compiler supports -msse2 and <emmintrin.h>])
+            AC_MSG_CHECKING([whether the compiler supports SSE2 flags and
+                             <emmintrin.h>])
             saved_CFLAGS="$CFLAGS"
-            CFLAGS="$CFLAGS -msse2"
+            if test "x$using_cl" = xyes; then
+                simd_flag="/arch:SSE2"
+            else
+                simd_flag="-msse2"
+            fi
+            CFLAGS="$CFLAGS $simd_flag"
             AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
                                 #include <emmintrin.h>
                               ]], [[
@@ -1748,7 +1754,7 @@ else
             CFLAGS="$saved_CFLAGS"
             AC_MSG_RESULT([$have_sse2])
             if test "x$have_sse2" = xyes; then
-                AM_CFLAGS="$AM_CFLAGS -msse2"
+                AM_CFLAGS="$AM_CFLAGS $simd_flag"
             fi
         fi
         ;;

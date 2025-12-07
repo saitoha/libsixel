@@ -22254,10 +22254,17 @@ else
 
     i*86)
         if x$ac_cv_header_emmintrin_h = xyes; then
-            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler supports -msse2 and <emmintrin.h>" >&5
-printf %s "checking whether the compiler supports -msse2 and <emmintrin.h>... " >&6; }
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler supports SSE2 flags and
+                             <emmintrin.h>" >&5
+printf %s "checking whether the compiler supports SSE2 flags and
+                             <emmintrin.h>... " >&6; }
             saved_CFLAGS="$CFLAGS"
-            CFLAGS="$CFLAGS -msse2"
+            if test "x$using_cl" = xyes; then
+                simd_flag="/arch:SSE2"
+            else
+                simd_flag="-msse2"
+            fi
+            CFLAGS="$CFLAGS $simd_flag"
             cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -22287,7 +22294,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_sse2" >&5
 printf "%s\n" "$have_sse2" >&6; }
             if test "x$have_sse2" = xyes; then
-                AM_CFLAGS="$AM_CFLAGS -msse2"
+                AM_CFLAGS="$AM_CFLAGS $simd_flag"
             fi
         fi
         ;;

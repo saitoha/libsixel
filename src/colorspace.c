@@ -50,7 +50,13 @@
 #endif
 
 #if defined(HAVE_SSE2)
-# if defined(__SSE2__)
+/*
+ * MSVC does not define __SSE2__ on x86/x64.  Instead, rely on the
+ * architecture macros it provides so SIMD paths stay enabled after the
+ * configure probe has validated SSE2 support.
+ */
+# if defined(__SSE2__) || defined(_M_X64) || defined(_M_AMD64) || \
+    (defined(_M_IX86_FP) && _M_IX86_FP >= 2)
 #  if defined(HAVE_EMMINTRIN_H)
 #   include <emmintrin.h>
 #   define SIXEL_USE_SSE2 1
