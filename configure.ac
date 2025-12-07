@@ -864,6 +864,7 @@ have_png="no"
 have_winpthread="no"
 have_wic="no"
 have_coregraphics="no"
+have_gdk_pixbuf2="no"
 have_sse2=no
 have_neon=no
 
@@ -881,21 +882,35 @@ if test x$with_gdk_pixbuf2 != xno; then
                           [gdk-pixbuf-2.0],
                           [have_gdk_pixbuf2=yes],
                           [have_gdk_pixbuf2=no])
-        if test x$have_gdk_pixbuf2 != xno; then
-            AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
-            loaders="${loaders} gdk-pixbuf2"
-            REQUIRES_PRIVATE="$REQUIRES_PRIVATE gdk-pixbuf-2.0"
-            LIBS_PRIVATE="$LIBS_PRIVATE $GDK_PIXBUF_LIBS"
+        if test x$have_gdk_pixbuf2 = xyes; then
+            AC_MSG_NOTICE([gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}])
+            AC_MSG_NOTICE([gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}])
+        elif test x$with_gdk_pixbuf2 = xyes; then
+            AC_MSG_ERROR([gdk-pixbuf-2.0 not found via pkg-config])
         else
-            AC_MSG_ERROR([pkg-config is not available.])
+            AC_MSG_NOTICE([gdk-pixbuf-2.0 not found; disabling gdk-pixbuf2])
         fi
     else
-        if test x${GDK_PIXBUF_CFLAGS} = x || test x${GDK_PIXBUF_LIBS} = x; then
+        AC_MSG_NOTICE([pkg-config is not available])
+        if test x${GDK_PIXBUF_CFLAGS} != x && \
+           test x${GDK_PIXBUF_LIBS} != x; then
+            have_gdk_pixbuf2=yes
+            AC_MSG_NOTICE([gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}])
+            AC_MSG_NOTICE([gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}])
+        elif test x$with_gdk_pixbuf2 = xyes; then
             AC_MSG_ERROR([please set GDK_PIXBUF_CFLAGS and GDK_PIXBUF_LIBS, or install pkg-config.])
+        else
+            AC_MSG_NOTICE([gdk-pixbuf-2.0 not found; disabling gdk-pixbuf2])
         fi
     fi
-    AC_MSG_NOTICE([gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}])
-    AC_MSG_NOTICE([gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}])
+    if test x$have_gdk_pixbuf2 = xyes; then
+        AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
+        loaders="${loaders} gdk-pixbuf2"
+        REQUIRES_PRIVATE="$REQUIRES_PRIVATE gdk-pixbuf-2.0"
+        LIBS_PRIVATE="$LIBS_PRIVATE $GDK_PIXBUF_LIBS"
+    elif test x$with_gdk_pixbuf2 = xyes; then
+        AC_MSG_ERROR([unable to find gdk-pixbuf-2.0])
+    fi
 fi
 
 AC_SUBST(GDK_PIXBUF_CFLAGS)
