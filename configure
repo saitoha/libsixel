@@ -19329,6 +19329,7 @@ have_png="no"
 have_winpthread="no"
 have_wic="no"
 have_coregraphics="no"
+have_gdk_pixbuf2="no"
 have_sse2=no
 have_neon=no
 
@@ -19414,25 +19415,44 @@ else
 printf "%s\n" "yes" >&6; }
         have_gdk_pixbuf2=yes
 fi
-        if test x$have_gdk_pixbuf2 != xno; then
+        if test x$have_gdk_pixbuf2 = xyes; then
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}" >&5
+printf "%s\n" "$as_me: gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}" >&6;}
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}" >&5
+printf "%s\n" "$as_me: gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}" >&6;}
+        elif test x$with_gdk_pixbuf2 = xyes; then
+            as_fn_error $? "gdk-pixbuf-2.0 not found via pkg-config" "$LINENO" 5
+        else
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: gdk-pixbuf-2.0 not found; disabling gdk-pixbuf2" >&5
+printf "%s\n" "$as_me: gdk-pixbuf-2.0 not found; disabling gdk-pixbuf2" >&6;}
+        fi
+    else
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: pkg-config is not available" >&5
+printf "%s\n" "$as_me: pkg-config is not available" >&6;}
+        if test x${GDK_PIXBUF_CFLAGS} != x && \
+           test x${GDK_PIXBUF_LIBS} != x; then
+            have_gdk_pixbuf2=yes
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}" >&5
+printf "%s\n" "$as_me: gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}" >&6;}
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}" >&5
+printf "%s\n" "$as_me: gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}" >&6;}
+        elif test x$with_gdk_pixbuf2 = xyes; then
+            as_fn_error $? "please set GDK_PIXBUF_CFLAGS and GDK_PIXBUF_LIBS, or install pkg-config." "$LINENO" 5
+        else
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: gdk-pixbuf-2.0 not found; disabling gdk-pixbuf2" >&5
+printf "%s\n" "$as_me: gdk-pixbuf-2.0 not found; disabling gdk-pixbuf2" >&6;}
+        fi
+    fi
+    if test x$have_gdk_pixbuf2 = xyes; then
 
 printf "%s\n" "#define HAVE_GDK_PIXBUF2 1" >>confdefs.h
 
-            loaders="${loaders} gdk-pixbuf2"
-            REQUIRES_PRIVATE="$REQUIRES_PRIVATE gdk-pixbuf-2.0"
-            LIBS_PRIVATE="$LIBS_PRIVATE $GDK_PIXBUF_LIBS"
-        else
-            as_fn_error $? "pkg-config is not available." "$LINENO" 5
-        fi
-    else
-        if test x${GDK_PIXBUF_CFLAGS} = x || test x${GDK_PIXBUF_LIBS} = x; then
-            as_fn_error $? "please set GDK_PIXBUF_CFLAGS and GDK_PIXBUF_LIBS, or install pkg-config." "$LINENO" 5
-        fi
+        loaders="${loaders} gdk-pixbuf2"
+        REQUIRES_PRIVATE="$REQUIRES_PRIVATE gdk-pixbuf-2.0"
+        LIBS_PRIVATE="$LIBS_PRIVATE $GDK_PIXBUF_LIBS"
+    elif test x$with_gdk_pixbuf2 = xyes; then
+        as_fn_error $? "unable to find gdk-pixbuf-2.0" "$LINENO" 5
     fi
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}" >&5
-printf "%s\n" "$as_me: gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}" >&6;}
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}" >&5
-printf "%s\n" "$as_me: gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}" >&6;}
 fi
 
 

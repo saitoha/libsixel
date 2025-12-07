@@ -414,12 +414,49 @@ if curl_dep.found()
   net += 'libcurl'
 endif
 
-gdk_dep = dependency('gdk-pixbuf-2.0', required: get_option('gdk_pixbuf2'))
+gdk_opt = get_option('gdk_pixbuf2')
+gdk_dep = dependency('gdk-pixbuf-2.0',
+                     required: false,
+                     method: 'pkg-config')
+
+if not gdk_dep.found() and not gdk_opt.disabled()
+  vcpkg_root = get_option('vcpkg_root', '')
+  if vcpkg_root == ''
+    vcpkg_root = get_env('VCPKG_ROOT', '')
+  endif
+  vcpkg_triplet = get_option('vcpkg_triplet', '')
+  if vcpkg_triplet == ''
+    vcpkg_triplet = get_env('VCPKG_DEFAULT_TRIPLET', '')
+  endif
+
+  gdk_incdirs = []
+  gdk_libdirs = []
+
+  if vcpkg_root != '' and vcpkg_triplet != ''
+    gdk_incdirs += include_directories(
+      join_paths(vcpkg_root, 'installed', vcpkg_triplet, 'include'))
+    gdk_libdirs += join_paths(vcpkg_root, 'installed', vcpkg_triplet, 'lib')
+  endif
+
+  gdk_lib = cc.find_library('gdk_pixbuf-2.0',
+                             dirs: gdk_libdirs,
+                             required: gdk_opt.enabled())
+
+  if gdk_lib.found()
+    gdk_dep = declare_dependency(link_with: gdk_lib,
+                                 include_directories: gdk_incdirs)
+  endif
+endif
+
 if gdk_dep.found()
   deps += gdk_dep
   reqs += gdk_dep
   conf.set('HAVE_GDK_PIXBUF2', 1)
   loaders += 'gdk-pixbuf2'
+elif gdk_opt.enabled()
+  error('gdk_pixbuf2=enabled requires gdk-pixbuf-2.0')
+else
+  message('gdk-pixbuf-2.0 not found; gdk-pixbuf2 loader disabled')
 endif
 
 gd_dep = dependency('gd', required: false)
