@@ -372,7 +372,33 @@ if png_dep.found()
                              dependencies: png_dep))
 endif
 
-jpeg_dep = dependency('libjpeg', required: get_option('jpeg'))
+jpeg_opt = get_option('jpeg')
+jpeg_dep = disabler()
+
+if not jpeg_opt.disabled()
+  jpeg_dep = dependency('libjpeg',
+                        required: false,
+                        method: 'pkg-config')
+  if not jpeg_dep.found()
+    jpeg_dep = dependency('libjpeg-turbo',
+                          required: false,
+                          method: 'pkg-config')
+  endif
+  if not jpeg_dep.found()
+    jpeg_dep = dependency('JPEG',
+                          required: jpeg_opt.enabled(),
+                          method: 'cmake')
+  endif
+  if not jpeg_dep.found()
+    jpeg_dep = cc.find_library('jpeg',
+                               required: jpeg_opt.enabled())
+  endif
+  if not jpeg_dep.found() and jpeg_opt.enabled()
+    error('jpeg=enabled requires libjpeg, libjpeg-turbo, ' +
+          'CMake JPEG package, or a jpeg library')
+  endif
+endif
+
 if jpeg_dep.found()
   deps += jpeg_dep
   reqs += jpeg_dep
@@ -810,7 +836,6 @@ loader_helper_sources = files(
   'src/loader-wic.c',
   'src/loader-gd.c',
   'src/loader-libpng.c',
-  'src/loader-libjpeg.c',
   'src/loader-builtin.c',
   'src/loader-common.c',
   'src/loader-registry.c',
@@ -833,6 +858,10 @@ loader_helper_sources = files(
   'src/tty.c',
   'src/threading.c',
 )
+
+if jpeg_dep.found()
+  loader_helper_sources += files('src/loader-libjpeg.c')
+endif
 
 if have_threads
   loader_helper_sources += [

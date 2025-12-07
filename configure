@@ -19324,6 +19324,7 @@ printf "%s\n" "#define HAVE_DECL_SIGHUP $ac_have_decl" >>confdefs.h
 loaders="stb_image"
 have_curl="no"
 have_jpeg="no"
+LIBJPEG_PKG_NAME=""
 have_png="no"
 have_winpthread="no"
 have_wic="no"
@@ -21141,7 +21142,7 @@ fi
 
 
 
-if test x$with_jpeg != xno && test "x$using_cl" != "xyes"; then
+if test x$with_jpeg != xno; then
     if test x$build = x$host; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for jpeg" >&5
 printf "%s\n" "$as_me: checking for jpeg" >&6;}
@@ -21220,6 +21221,9 @@ else case e in #(
 esac
 fi
 
+else case e in #(
+  e) have_jpeg=no ;;
+esac
 fi
 
         CFLAGS=$CFLAGS_BACKUP
@@ -21296,7 +21300,82 @@ else
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
         have_jpeg=yes
+                                   LIBJPEG_PKG_NAME=libjpeg
 fi
+                if test x$have_jpeg != xyes; then
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libjpeg-turbo" >&5
+printf %s "checking for libjpeg-turbo... " >&6; }
+
+if test -n "$LIBJPEG_CFLAGS"; then
+    pkg_cv_LIBJPEG_CFLAGS="$LIBJPEG_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libjpeg-turbo\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libjpeg-turbo") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBJPEG_CFLAGS=`$PKG_CONFIG --cflags "libjpeg-turbo" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$LIBJPEG_LIBS"; then
+    pkg_cv_LIBJPEG_LIBS="$LIBJPEG_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libjpeg-turbo\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libjpeg-turbo") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBJPEG_LIBS=`$PKG_CONFIG --libs "libjpeg-turbo" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+                LIBJPEG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libjpeg-turbo" 2>&1`
+        else
+                LIBJPEG_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libjpeg-turbo" 2>&1`
+        fi
+        # Put the nasty error message in config.log where it belongs
+        echo "$LIBJPEG_PKG_ERRORS" >&5
+
+        have_jpeg=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        have_jpeg=no
+else
+        LIBJPEG_CFLAGS=$pkg_cv_LIBJPEG_CFLAGS
+        LIBJPEG_LIBS=$pkg_cv_LIBJPEG_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        have_jpeg=yes
+                                       LIBJPEG_PKG_NAME=libjpeg-turbo
+fi
+                fi
             fi
         fi
     fi
@@ -21305,7 +21384,11 @@ fi
 printf "%s\n" "#define HAVE_JPEG 1" >>confdefs.h
 
         loaders="${loaders} jpeg"
-        REQUIRES_PRIVATE="$REQUIRES_PRIVATE libjpeg"
+        if test x$LIBJPEG_PKG_NAME != x; then
+            REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBJPEG_PKG_NAME"
+        else
+            REQUIRES_PRIVATE="$REQUIRES_PRIVATE libjpeg"
+        fi
         LIBS_PRIVATE="$LIBS_PRIVATE $LIBJPEG_LIBS"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: jpeg cflags is ${LIBJPEG_CFLAGS}" >&5
 printf "%s\n" "$as_me: jpeg cflags is ${LIBJPEG_CFLAGS}" >&6;}

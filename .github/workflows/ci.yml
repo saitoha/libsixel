@@ -100,6 +100,12 @@ jobs:
             vcpkg_libpng: true
           - os: windows-latest
             runner: windows-latest
+            compiler: cl
+            sys: MSVC
+            variant: vcpkg-libjpeg
+            vcpkg_libjpeg: true
+          - os: windows-latest
+            runner: windows-latest
             compiler: gcc
             sys: MINGW32
             variant: default
@@ -1342,8 +1348,8 @@ jobs:
       with:
         arch: x64
 
-    - name: Install vcpkg dependencies (MSVC, libpng)
-      if: ${{ runner.os == 'Windows' && matrix.vcpkg_libpng == true }}
+    - name: Install vcpkg dependencies (MSVC, libpng/libjpeg)
+      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_libpng == true || matrix.vcpkg_libjpeg == true) }}
       shell: pwsh
       run: |
         $vcpkgRoot = "$env:USERPROFILE\\vcpkg"
@@ -1352,7 +1358,14 @@ jobs:
         }
         cd $vcpkgRoot
         .\\bootstrap-vcpkg.bat
-        .\\vcpkg.exe install libpng pkgconf --triplet x64-windows
+        $packages = @('pkgconf')
+        if ('${{ matrix.vcpkg_libpng || false }}' -eq 'true') {
+          $packages += 'libpng'
+        }
+        if ('${{ matrix.vcpkg_libjpeg || false }}' -eq 'true') {
+          $packages += 'libjpeg-turbo'
+        }
+        .\\vcpkg.exe install $packages --triplet x64-windows
         "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang)
@@ -1526,7 +1539,7 @@ jobs:
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Configure, build, and test (Meson, Windows, MSVC)
-      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' && matrix.vcpkg_libpng != true }}
+      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' && matrix.vcpkg_libpng != true && matrix.vcpkg_libjpeg != true }}
       shell: cmd
       run: |
         setlocal ENABLEDELAYEDEXPANSION
@@ -1588,6 +1601,46 @@ jobs:
             -Dtests=true ^
             -Dcurl=disabled ^
             -Djpeg=disabled ^
+            %DISABLE_TOOLS_FLAGS% ^
+            %DISABLE_THREADS_FLAG% ^
+            %DISABLE_SIMD_FLAG%
+        if errorlevel 1 exit /b !errorlevel!
+        python -m mesonbuild.mesonmain compile -C builddir
+        if errorlevel 1 exit /b !errorlevel!
+        python -m mesonbuild.mesonmain test -C builddir -v
+        if errorlevel 1 (
+            if exist builddir\meson-logs\testlog.txt type builddir\meson-logs\testlog.txt
+            exit /b !errorlevel!
+        )
+        endlocal
+
+    - name: Configure, build, and test (Meson, Windows, MSVC, vcpkg libjpeg)
+      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' && matrix.vcpkg_libjpeg == true }}
+      shell: cmd
+      run: |
+        setlocal ENABLEDELAYEDEXPANSION
+        call "%VSINSTALLDIR%\VC\Auxiliary\Build\vcvarsall.bat" x64
+        python -m pip install --upgrade pip
+        python -m pip install meson ninja
+        set "PKG_CONFIG=%VCPKG_ROOT%\installed\x64-windows\tools\pkgconf\pkgconf.exe"
+        set "PKG_CONFIG_PATH=%VCPKG_ROOT%\installed\x64-windows\lib\pkgconfig"
+        set "PATH=%VCPKG_ROOT%\installed\x64-windows\bin;%PATH%"
+        set "DISABLE_THREADS_FLAG="
+        if "${{ matrix.disable_threads || '' }}"=="true" set "DISABLE_THREADS_FLAG=-Dthreads=disabled"
+        set "DISABLE_TOOLS_FLAGS="
+        if "${{ matrix.disable_tools || '' }}"=="true" set "DISABLE_TOOLS_FLAGS=-Dimg2sixel=disabled -Dsixel2png=disabled"
+        set "DISABLE_SIMD_FLAG="
+        if "${{ matrix.disable_simd || '' }}"=="true" set "DISABLE_SIMD_FLAG=-Dsimd=disabled"
+        python -m mesonbuild.mesonmain setup builddir ^
+            --wrap-mode=nodownload ^
+            --default-library shared ^
+            -Dbashcompletiondir=disabled ^
+            -Dzshcompletiondir=disabled ^
+            -Dpython=disabled ^
+            -Dtests=true ^
+            -Dcurl=disabled ^
+            -Dpng=disabled ^
+            -Djpeg=enabled ^
             %DISABLE_TOOLS_FLAGS% ^
             %DISABLE_THREADS_FLAG% ^
             %DISABLE_SIMD_FLAG%

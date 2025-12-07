@@ -859,6 +859,7 @@ AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
 loaders="stb_image"
 have_curl="no"
 have_jpeg="no"
+LIBJPEG_PKG_NAME=""
 have_png="no"
 have_winpthread="no"
 have_wic="no"
@@ -1395,7 +1396,7 @@ fi
 AC_SUBST(WINHTTP_CFLAGS)
 AC_SUBST(WINHTTP_LIBS)
 
-if test x$with_jpeg != xno && test "x$using_cl" != "xyes"; then
+if test x$with_jpeg != xno; then
     if test x$build = x$host; then
         AC_MSG_NOTICE([checking for jpeg])
         CFLAGS_BACKUP=$CFLAGS
@@ -1423,22 +1424,35 @@ if test x$with_jpeg != xno && test "x$using_cl" != "xyes"; then
                                       [have_jpeg=yes
                                        LIBJPEG_CFLAGS=$ADDED_CFLAGS
                                        LIBJPEG_LIBS=$ADDED_LIBS],
-                                      [have_jpeg=no])])
+                                      [have_jpeg=no])],
+                        [have_jpeg=no])
         CFLAGS=$CFLAGS_BACKUP
         LDFLAGS=$LDFLAGS_BACKUP
         if test x$have_jpeg != xyes -a ! -d "$with_jpeg"; then
             if test x${PKG_CONFIG} != x; then
                 PKG_CHECK_MODULES(LIBJPEG,
                                   [libjpeg],
-                                  [have_jpeg=yes],
+                                  [have_jpeg=yes
+                                   LIBJPEG_PKG_NAME=libjpeg],
                                   [have_jpeg=no])
+                if test x$have_jpeg != xyes; then
+                    PKG_CHECK_MODULES(LIBJPEG,
+                                      [libjpeg-turbo],
+                                      [have_jpeg=yes
+                                       LIBJPEG_PKG_NAME=libjpeg-turbo],
+                                      [have_jpeg=no])
+                fi
             fi
         fi
     fi
     if test x$have_jpeg = xyes; then
         AC_DEFINE(HAVE_JPEG, 1, [whether jpeg codec library is available])
         loaders="${loaders} jpeg"
-        REQUIRES_PRIVATE="$REQUIRES_PRIVATE libjpeg"
+        if test x$LIBJPEG_PKG_NAME != x; then
+            REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBJPEG_PKG_NAME"
+        else
+            REQUIRES_PRIVATE="$REQUIRES_PRIVATE libjpeg"
+        fi
         LIBS_PRIVATE="$LIBS_PRIVATE $LIBJPEG_LIBS"
         AC_MSG_NOTICE([jpeg cflags is ${LIBJPEG_CFLAGS}])
         AC_MSG_NOTICE([jpeg libs is ${LIBJPEG_LIBS}])
