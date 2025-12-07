@@ -1344,10 +1344,16 @@ jobs:
 
     - name: Install vcpkg dependencies (MSVC, libpng)
       if: ${{ runner.os == 'Windows' && matrix.vcpkg_libpng == true }}
-      uses: microsoft/vcpkg-action@v0
-      with:
-        pkgs: libpng pkgconf
-        triplet: x64-windows
+      shell: pwsh
+      run: |
+        $vcpkgRoot = "$env:USERPROFILE\\vcpkg"
+        if (-not (Test-Path $vcpkgRoot)) {
+          git clone https://github.com/microsoft/vcpkg $vcpkgRoot
+        }
+        cd $vcpkgRoot
+        .\\bootstrap-vcpkg.bat
+        .\\vcpkg.exe install libpng pkgconf --triplet x64-windows
+        "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang)
       if: runner.os == 'Windows' && matrix.compiler != 'cl' && matrix.sys != 'MSYS' && matrix.sys != 'CYGWIN'
