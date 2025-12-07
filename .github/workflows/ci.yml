@@ -94,6 +94,12 @@ jobs:
             variant: default
           - os: windows-latest
             runner: windows-latest
+            compiler: cl
+            sys: MSVC
+            variant: vcpkg-libpng
+            vcpkg_libpng: true
+          - os: windows-latest
+            runner: windows-latest
             compiler: gcc
             sys: MINGW32
             variant: default
@@ -1336,6 +1342,13 @@ jobs:
       with:
         arch: x64
 
+    - name: Install vcpkg dependencies (MSVC, libpng)
+      if: ${{ runner.os == 'Windows' && matrix.vcpkg_libpng == true }}
+      uses: microsoft/vcpkg-action@v0
+      with:
+        pkgs: libpng pkgconf
+        triplet: x64-windows
+
     - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang)
       if: runner.os == 'Windows' && matrix.compiler != 'cl' && matrix.sys != 'MSYS' && matrix.sys != 'CYGWIN'
       uses: msys2/setup-msys2@v2
@@ -1507,7 +1520,7 @@ jobs:
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Configure, build, and test (Meson, Windows, MSVC)
-      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' }}
+      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' && matrix.vcpkg_libpng != true }}
       shell: cmd
       run: |
         setlocal ENABLEDELAYEDEXPANSION
@@ -1530,6 +1543,45 @@ jobs:
             -Dzshcompletiondir=disabled ^
             -Dpython=disabled ^
             -Dtests=true ^
+            %DISABLE_TOOLS_FLAGS% ^
+            %DISABLE_THREADS_FLAG% ^
+            %DISABLE_SIMD_FLAG%
+        if errorlevel 1 exit /b !errorlevel!
+        python -m mesonbuild.mesonmain compile -C builddir
+        if errorlevel 1 exit /b !errorlevel!
+        python -m mesonbuild.mesonmain test -C builddir -v
+        if errorlevel 1 (
+            if exist builddir\meson-logs\testlog.txt type builddir\meson-logs\testlog.txt
+            exit /b !errorlevel!
+        )
+        endlocal
+
+    - name: Configure, build, and test (Meson, Windows, MSVC, vcpkg libpng)
+      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' && matrix.vcpkg_libpng == true }}
+      shell: cmd
+      run: |
+        setlocal ENABLEDELAYEDEXPANSION
+        call "%VSINSTALLDIR%\VC\Auxiliary\Build\vcvarsall.bat" x64
+        python -m pip install --upgrade pip
+        python -m pip install meson ninja
+        set "PKG_CONFIG=%VCPKG_ROOT%\installed\x64-windows\tools\pkgconf\pkgconf.exe"
+        set "PKG_CONFIG_PATH=%VCPKG_ROOT%\installed\x64-windows\lib\pkgconfig"
+        set "PATH=%VCPKG_ROOT%\installed\x64-windows\bin;%PATH%"
+        set "DISABLE_THREADS_FLAG="
+        if "${{ matrix.disable_threads || '' }}"=="true" set "DISABLE_THREADS_FLAG=-Dthreads=disabled"
+        set "DISABLE_TOOLS_FLAGS="
+        if "${{ matrix.disable_tools || '' }}"=="true" set "DISABLE_TOOLS_FLAGS=-Dimg2sixel=disabled -Dsixel2png=disabled"
+        set "DISABLE_SIMD_FLAG="
+        if "${{ matrix.disable_simd || '' }}"=="true" set "DISABLE_SIMD_FLAG=-Dsimd=disabled"
+        python -m mesonbuild.mesonmain setup builddir ^
+            --wrap-mode=nodownload ^
+            --default-library shared ^
+            -Dbashcompletiondir=disabled ^
+            -Dzshcompletiondir=disabled ^
+            -Dpython=disabled ^
+            -Dtests=true ^
+            -Dcurl=disabled ^
+            -Djpeg=disabled ^
             %DISABLE_TOOLS_FLAGS% ^
             %DISABLE_THREADS_FLAG% ^
             %DISABLE_SIMD_FLAG%

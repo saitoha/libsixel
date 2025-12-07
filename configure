@@ -21322,35 +21322,89 @@ fi
 
 
 
-if test x$with_png != xno && test "x$using_cl" != "xyes"; then
+if test x$with_png != xno; then
     if test x$build = x$host; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for png" >&5
 printf "%s\n" "$as_me: checking for png" >&6;}
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
+        PNG_LIBNAME=png
+        if test "x$using_cl" = "xyes"; then
+            PNG_LIBNAME=png16
+        fi
         if test x$with_png != xyes -a x$with_png != xauto; then
             if test ! -d "$with_png"; then
                 as_fn_error $? "\"${with_png}\" is not directory" "$LINENO" 5
             fi
             ADDED_CFLAGS="-I${with_png}/include"
-            ADDED_LIBS="-L${with_png}/lib -lpng"
+            ADDED_LDFLAGS="-L${with_png}/lib"
         else
             if test x${prefix} != x -a x${prefix} != xNONE; then
                 ADDED_CFLAGS="-I${prefix}/include"
-                ADDED_LIBS="-L${prefix}/lib -lpng"
+                ADDED_LDFLAGS="-L${prefix}/lib"
             else
                 ADDED_CFLAGS="-I/usr/local/include"
-                ADDED_LIBS="-L/usr/local/lib -lpng"
+                ADDED_LDFLAGS="-L/usr/local/lib"
             fi
         fi
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
-        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LDFLAGS}"
         ac_fn_c_check_header_compile "$LINENO" "png.h" "ac_cv_header_png_h" "$ac_includes_default"
 if test "x$ac_cv_header_png_h" = xyes
 then :
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for png_check_sig in -lpng" >&5
-printf %s "checking for png_check_sig in -lpng... " >&6; }
-if test ${ac_cv_lib_png_png_check_sig+y}
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for png_sig_cmp in -lpng16" >&5
+printf %s "checking for png_sig_cmp in -lpng16... " >&6; }
+if test ${ac_cv_lib_png16_png_sig_cmp+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-lpng16  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.
+   The 'extern "C"' is for builds by C++ compilers;
+   although this is not generally supported in C code supporting it here
+   has little cost and some practical benefit (sr 110532).  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char png_sig_cmp (void);
+int
+main (void)
+{
+return png_sig_cmp ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_png16_png_sig_cmp=yes
+else case e in #(
+  e) ac_cv_lib_png16_png_sig_cmp=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_png16_png_sig_cmp" >&5
+printf "%s\n" "$ac_cv_lib_png16_png_sig_cmp" >&6; }
+if test "x$ac_cv_lib_png16_png_sig_cmp" = xyes
+then :
+  have_png=yes
+                                       LIBPNG_CFLAGS=$ADDED_CFLAGS
+                                       LIBPNG_LIBS="${ADDED_LDFLAGS} -lpng16"
+                                       LIBPNG_PKG_NAME=libpng16
+else case e in #(
+  e) { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for png_sig_cmp in -lpng" >&5
+printf %s "checking for png_sig_cmp in -lpng... " >&6; }
+if test ${ac_cv_lib_png_png_sig_cmp+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
@@ -21368,20 +21422,20 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 #ifdef __cplusplus
 extern "C"
 #endif
-char png_check_sig (void);
+char png_sig_cmp (void);
 int
 main (void)
 {
-return png_check_sig ();
+return png_sig_cmp ();
   ;
   return 0;
 }
 _ACEOF
 if ac_fn_c_try_link "$LINENO"
 then :
-  ac_cv_lib_png_png_check_sig=yes
+  ac_cv_lib_png_png_sig_cmp=yes
 else case e in #(
-  e) ac_cv_lib_png_png_check_sig=no ;;
+  e) ac_cv_lib_png_png_sig_cmp=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
@@ -21389,15 +21443,19 @@ rm -f core conftest.err conftest.$ac_objext conftest.beam \
 LIBS=$ac_check_lib_save_LIBS ;;
 esac
 fi
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_png_png_check_sig" >&5
-printf "%s\n" "$ac_cv_lib_png_png_check_sig" >&6; }
-if test "x$ac_cv_lib_png_png_check_sig" = xyes
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_png_png_sig_cmp" >&5
+printf "%s\n" "$ac_cv_lib_png_png_sig_cmp" >&6; }
+if test "x$ac_cv_lib_png_png_sig_cmp" = xyes
 then :
   have_png=yes
-                                       LIBPNG_CFLAGS=$ADDED_CFLAGS
-                                       LIBPNG_LIBS=$ADDED_LIBS
+                                                     LIBPNG_CFLAGS=$ADDED_CFLAGS
+                                                     LIBPNG_LIBS="${ADDED_LDFLAGS} -lpng"
+                                                     LIBPNG_PKG_NAME=libpng
 else case e in #(
   e) have_png=no ;;
+esac
+fi
+ ;;
 esac
 fi
 
@@ -21477,11 +21535,89 @@ else
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
         have_png=yes
+                                   LIBPNG_PKG_NAME=libpng
 fi
+                if test x$have_png != xyes; then
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libpng16" >&5
+printf %s "checking for libpng16... " >&6; }
+
+if test -n "$LIBPNG_CFLAGS"; then
+    pkg_cv_LIBPNG_CFLAGS="$LIBPNG_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libpng16\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libpng16") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBPNG_CFLAGS=`$PKG_CONFIG --cflags "libpng16" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$LIBPNG_LIBS"; then
+    pkg_cv_LIBPNG_LIBS="$LIBPNG_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libpng16\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libpng16") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBPNG_LIBS=`$PKG_CONFIG --libs "libpng16" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+                LIBPNG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libpng16" 2>&1`
+        else
+                LIBPNG_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libpng16" 2>&1`
+        fi
+        # Put the nasty error message in config.log where it belongs
+        echo "$LIBPNG_PKG_ERRORS" >&5
+
+        have_png=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        have_png=no
+else
+        LIBPNG_CFLAGS=$pkg_cv_LIBPNG_CFLAGS
+        LIBPNG_LIBS=$pkg_cv_LIBPNG_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        have_png=yes
+                                       LIBPNG_PKG_NAME=libpng16
+fi
+                fi
             fi
         fi
     fi
     if test x$have_png = xyes; then
+        if test x$LIBPNG_PKG_NAME = x; then
+            LIBPNG_PKG_NAME=${PNG_LIBNAME}
+        fi
         CFLAGS="${CFLAGS} ${LIBPNG_CFLAGS}"
         LDFLAGS="${LDFLAGS} ${LIBPNG_LIBS}"
         ac_fn_check_decl "$LINENO" "png_set_gray_1_2_4_to_8" "ac_cv_have_decl_png_set_gray_1_2_4_to_8" " #include <png.h>
@@ -21511,7 +21647,7 @@ printf "%s\n" "#define HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8 $ac_have_decl" >
 printf "%s\n" "#define HAVE_LIBPNG 1" >>confdefs.h
 
         loaders="${loaders} png"
-        REQUIRES_PRIVATE="$REQUIRES_PRIVATE libpng"
+        REQUIRES_PRIVATE="$REQUIRES_PRIVATE ${LIBPNG_PKG_NAME}"
         LIBS_PRIVATE="$LIBS_PRIVATE $LIBPNG_LIBS"
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libpng cflags is ${LIBPNG_CFLAGS}" >&5
 printf "%s\n" "$as_me: libpng cflags is ${LIBPNG_CFLAGS}" >&6;}
