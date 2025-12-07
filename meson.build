@@ -777,30 +777,22 @@ elif cpu == 'x86_64'
 elif cpu == 'x86'
   if cc.has_header('emmintrin.h')
     conf.set('HAVE_EMMINTRIN_H', 1)
-    if cc.get_id() != 'msvc'
-      if cc.has_argument('-msse2') and cc.compiles('''
-          #include <emmintrin.h>
-          int main(void){
-            __m128i a = _mm_setzero_si128(); (void)a; return 0;
-          }''', args: ['-msse2'])
-        conf.set('HAVE_SSE2', 1)
-        simd_message = 'sse2'
-        add_project_arguments('-msse2', language: 'c')
-      else
-        simd_message = 'no'
-      endif
+    simd_args = []
+    if cc.get_argument_syntax() == 'msvc'
+      simd_args = ['/arch:SSE2']
     else
-      if cc.has_argument('/arch:SSE2') and cc.compiles('''
-          #include <emmintrin.h>
-          int main(void){
-            __m128i a = _mm_setzero_si128(); (void)a; return 0;
-          }''', args: ['/arch:SSE2'])
-        conf.set('HAVE_SSE2', 1)
-        simd_message = 'sse2'
-        add_project_arguments('/arch:SSE2', language: 'c')
-      else
-        simd_message = 'no'
-      endif
+      simd_args = ['-msse2']
+    endif
+    if cc.has_multi_arguments(simd_args) and cc.compiles('''
+        #include <emmintrin.h>
+        int main(void){
+          __m128i a = _mm_setzero_si128(); (void)a; return 0;
+        }''', args: simd_args)
+      conf.set('HAVE_SSE2', 1)
+      simd_message = 'sse2'
+      add_project_arguments(simd_args, language: 'c')
+    else
+      simd_message = 'no'
     endif
   else
     simd_message = 'no'
