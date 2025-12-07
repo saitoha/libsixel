@@ -420,14 +420,8 @@ gdk_dep = dependency('gdk-pixbuf-2.0',
                      method: 'pkg-config')
 
 if not gdk_dep.found() and not gdk_opt.disabled()
-  vcpkg_root = get_option('vcpkg_root', '')
-  if vcpkg_root == ''
-    vcpkg_root = get_env('VCPKG_ROOT', '')
-  endif
-  vcpkg_triplet = get_option('vcpkg_triplet', '')
-  if vcpkg_triplet == ''
-    vcpkg_triplet = get_env('VCPKG_DEFAULT_TRIPLET', '')
-  endif
+  vcpkg_root = get_env('VCPKG_ROOT', '')
+  vcpkg_triplet = get_env('VCPKG_DEFAULT_TRIPLET', '')
 
   gdk_incdirs = []
   gdk_libdirs = []
