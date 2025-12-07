@@ -169,8 +169,19 @@ jobs:
       with:
         arch: x64
 
-    - name: Install vcpkg dependencies (Autotools, MSVC gdk-pixbuf)
-      if: ${{ runner.os == 'Windows' && matrix.vcpkg_gdkpixbuf == true }}
+    - name: Cache vcpkg artifacts (MSVC, vcpkg deps)
+      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_libpng == true || matrix.vcpkg_libjpeg == true || matrix.vcpkg_gdkpixbuf == true) }}
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~\vcpkg\installed
+          ~\vcpkg\buildtrees
+          ~\vcpkg\packages
+          ~\vcpkg\downloads
+        key: vcpkg-${{ runner.os }}-msvc-${{ matrix.vcpkg_libpng || false }}-${{ matrix.vcpkg_libjpeg || false }}-${{ matrix.vcpkg_gdkpixbuf || false }}-${{ hashFiles('.github/workflows/ci.yml') }}
+
+    - name: Install vcpkg dependencies (MSVC, libpng/libjpeg/gdk-pixbuf)
+      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_libpng == true || matrix.vcpkg_libjpeg == true || matrix.vcpkg_gdkpixbuf == true) }}
       shell: pwsh
       run: |
         $vcpkgRoot = "$env:USERPROFILE\\vcpkg"
@@ -179,21 +190,33 @@ jobs:
         }
         cd $vcpkgRoot
         .\\bootstrap-vcpkg.bat
-        .\\vcpkg.exe install pkgconf gdk-pixbuf --triplet x64-windows
-        "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-        $loaderBase = Join-Path $vcpkgRoot 'installed/x64-windows/lib/gdk-pixbuf-2.0'
-        $cacheDir = Get-ChildItem -Path $loaderBase -Directory | Select-Object -First 1
-        if ($cacheDir) {
-          $cachePath = Join-Path $cacheDir.FullName 'loaders.cache'
-          "GDK_PIXBUF_MODULE_FILE=$cachePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          "GDK_PIXBUF_MODULEDIR=$($cacheDir.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        $packages = @('pkgconf')
+        if ('${{ matrix.vcpkg_libpng || false }}' -eq 'true') {
+          $packages += 'libpng'
         }
-        $vcpkgBin = Join-Path $vcpkgRoot 'installed/x64-windows/bin'
-        $vcpkgPkgconf = Join-Path $vcpkgRoot 'installed/x64-windows/tools/pkgconf'
-        $vcpkgPaths = @($vcpkgBin, $vcpkgPkgconf)
-        foreach ($p in $vcpkgPaths) {
-          if (Test-Path $p) {
-            $p | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        if ('${{ matrix.vcpkg_libjpeg || false }}' -eq 'true') {
+          $packages += 'libjpeg-turbo'
+        }
+        if ('${{ matrix.vcpkg_gdkpixbuf || false }}' -eq 'true') {
+          $packages += 'gdk-pixbuf'
+        }
+        .\\vcpkg.exe install $packages --triplet x64-windows
+        "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        if ('${{ matrix.vcpkg_gdkpixbuf || false }}' -eq 'true') {
+          $loaderBase = Join-Path $vcpkgRoot 'installed/x64-windows/lib/gdk-pixbuf-2.0'
+          $cacheDir = Get-ChildItem -Path $loaderBase -Directory | Select-Object -First 1
+          if ($cacheDir) {
+            $cachePath = Join-Path $cacheDir.FullName 'loaders.cache'
+            "GDK_PIXBUF_MODULE_FILE=$cachePath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            "GDK_PIXBUF_MODULEDIR=$($cacheDir.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          }
+          $vcpkgBin = Join-Path $vcpkgRoot 'installed/x64-windows/bin'
+          $vcpkgPkgconf = Join-Path $vcpkgRoot 'installed/x64-windows/tools/pkgconf'
+          $vcpkgPaths = @($vcpkgBin, $vcpkgPkgconf)
+          foreach ($p in $vcpkgPaths) {
+            if (Test-Path $p) {
+              $p | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+            }
           }
         }
 
@@ -417,54 +440,32 @@ jobs:
             done
         )
 
-        ./configure CC=cl LD=link AR="${SHELL} $(pwd)/build-aux/ar-lib lib" ARFLAGS=cr NM="dumpbin -symbols" STRIP=: RANLIB=: \
-            --host=x86_64-pc-windows-msvc \
-            --without-png \
-            --without-jpeg \
-            --without-libcurl \
-            --without-bashcompletiondir \
-            --without-zshcompletiondir \
-            --disable-python \
-            --enable-debug \
-            --enable-tests \
-            --disable-dependency-tracking \
-            ${disable_tools_flags} \
-            ${disable_threads_flag} \
-            ${disable_simd_flag}
-        cat config.log
-        make V=1
+        gdk_opts=""
+        opt_disable_deps="--without-png --without-jpeg --without-libcurl"
+        if [ "${{ matrix.vcpkg_gdkpixbuf || '' }}" = "true" ]; then
+          vcpkg_pc_dir=$(cygpath -u "${VCPKG_ROOT}/installed/x64-windows/lib/pkgconfig")
+          pkgconf_path="${VCPKG_ROOT}/installed/x64-windows/tools/pkgconf/pkgconf.exe"
+          if [ -e "${pkgconf_path}" ]; then
+            export PKG_CONFIG="$(cygpath -u "${pkgconf_path}")"
+          fi
+          if [ -d "${vcpkg_pc_dir}" ]; then
+            export PKG_CONFIG_PATH="${vcpkg_pc_dir}"
+          fi
+          export PATH="$(cygpath -u "${VCPKG_ROOT}/installed/x64-windows/bin"):${PATH}"
+          gdk_opts="--with-gdk-pixbuf2=yes"
+          opt_disable_deps=""
+        fi
 
-    - name: Configure and build (Windows, MSVC, vcpkg gdk-pixbuf)
-      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' && matrix.vcpkg_gdkpixbuf == true }}
-      shell: msys2 {0}
-      run: |
-        VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
-        cmd //c call "${VCVARS}" x64 \>nul \&\& set
-        disable_threads_flag=""
-        if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
-          disable_threads_flag="--disable-threads"
-        fi
-        disable_tools_flags=""
-        if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
-          disable_tools_flags="--disable-img2sixel --disable-sixel2png"
-        fi
-        disable_simd_flag=""
-        if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
-          disable_simd_flag="--disable-simd"
-        fi
-        vcpkg_pc_dir=$(cygpath -u "${VCPKG_ROOT}/installed/x64-windows/lib/pkgconfig")
-        export PKG_CONFIG="$(cygpath -u "${VCPKG_ROOT}/installed/x64-windows/tools/pkgconf/pkgconf.exe")"
-        export PKG_CONFIG_PATH="${vcpkg_pc_dir}"
-        export PATH="$(cygpath -u "${VCPKG_ROOT}/installed/x64-windows/bin"):${PATH}"
         ./configure CC=cl LD=link AR="${SHELL} $(pwd)/build-aux/ar-lib lib" ARFLAGS=cr NM="dumpbin -symbols" STRIP=: RANLIB=: \
             --host=x86_64-pc-windows-msvc \
-            --with-gdk-pixbuf2=yes \
             --without-bashcompletiondir \
             --without-zshcompletiondir \
             --disable-python \
             --enable-debug \
             --enable-tests \
             --disable-dependency-tracking \
+            ${opt_disable_deps} \
+            ${gdk_opts} \
             ${disable_tools_flags} \
             ${disable_threads_flag} \
             ${disable_simd_flag}
@@ -1424,6 +1425,17 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64
+
+    - name: Cache vcpkg artifacts (MSVC, vcpkg deps)
+      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_libpng == true || matrix.vcpkg_libjpeg == true || matrix.vcpkg_gdkpixbuf == true) }}
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~\vcpkg\installed
+          ~\vcpkg\buildtrees
+          ~\vcpkg\packages
+          ~\vcpkg\downloads
+        key: vcpkg-${{ runner.os }}-msvc-${{ matrix.vcpkg_libpng || false }}-${{ matrix.vcpkg_libjpeg || false }}-${{ matrix.vcpkg_gdkpixbuf || false }}-${{ hashFiles('.github/workflows/ci.yml') }}
 
     - name: Install vcpkg dependencies (MSVC, libpng/libjpeg/gdk-pixbuf)
       if: ${{ runner.os == 'Windows' && (matrix.vcpkg_libpng == true || matrix.vcpkg_libjpeg == true || matrix.vcpkg_gdkpixbuf == true) }}
