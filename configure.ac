@@ -1452,47 +1452,69 @@ fi
 AC_SUBST(LIBJPEG_CFLAGS)
 AC_SUBST(LIBJPEG_LIBS)
 
-if test x$with_png != xno && test "x$using_cl" != "xyes"; then
+if test x$with_png != xno; then
     if test x$build = x$host; then
         AC_MSG_NOTICE([checking for png])
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
+        PNG_LIBNAME=png
+        if test "x$using_cl" = "xyes"; then
+            PNG_LIBNAME=png16
+        fi
         if test x$with_png != xyes -a x$with_png != xauto; then
             if test ! -d "$with_png"; then
                 AC_MSG_ERROR(["${with_png}" is not directory])
             fi
             ADDED_CFLAGS="-I${with_png}/include"
-            ADDED_LIBS="-L${with_png}/lib -lpng"
+            ADDED_LDFLAGS="-L${with_png}/lib"
         else
             if test x${prefix} != x -a x${prefix} != xNONE; then
                 ADDED_CFLAGS="-I${prefix}/include"
-                ADDED_LIBS="-L${prefix}/lib -lpng"
+                ADDED_LDFLAGS="-L${prefix}/lib"
             else
                 ADDED_CFLAGS="-I/usr/local/include"
-                ADDED_LIBS="-L/usr/local/lib -lpng"
+                ADDED_LDFLAGS="-L/usr/local/lib"
             fi
         fi
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
-        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LDFLAGS}"
         AC_CHECK_HEADER([png.h],
-                        [AC_CHECK_LIB([png],
-                                      [png_check_sig],
+                        [AC_CHECK_LIB([png16],
+                                      [png_sig_cmp],
                                       [have_png=yes
                                        LIBPNG_CFLAGS=$ADDED_CFLAGS
-                                       LIBPNG_LIBS=$ADDED_LIBS],
-                                      [have_png=no])])
+                                       LIBPNG_LIBS="${ADDED_LDFLAGS} -lpng16"
+                                       LIBPNG_PKG_NAME=libpng16],
+                                      [AC_CHECK_LIB([png],
+                                                    [png_sig_cmp],
+                                                    [have_png=yes
+                                                     LIBPNG_CFLAGS=$ADDED_CFLAGS
+                                                     LIBPNG_LIBS="${ADDED_LDFLAGS} -lpng"
+                                                     LIBPNG_PKG_NAME=libpng],
+                                                    [have_png=no])])])
         CFLAGS=$CFLAGS_BACKUP
         LDFLAGS=$LDFLAGS_BACKUP
         if test x$have_png != xyes -a ! -d "$with_png"; then
             if test x${PKG_CONFIG} != x; then
                 PKG_CHECK_MODULES(LIBPNG,
                                   [libpng],
-                                  [have_png=yes],
+                                  [have_png=yes
+                                   LIBPNG_PKG_NAME=libpng],
                                   [have_png=no])
+                if test x$have_png != xyes; then
+                    PKG_CHECK_MODULES(LIBPNG,
+                                      [libpng16],
+                                      [have_png=yes
+                                       LIBPNG_PKG_NAME=libpng16],
+                                      [have_png=no])
+                fi
             fi
         fi
     fi
     if test x$have_png = xyes; then
+        if test x$LIBPNG_PKG_NAME = x; then
+            LIBPNG_PKG_NAME=${PNG_LIBNAME}
+        fi
         CFLAGS="${CFLAGS} ${LIBPNG_CFLAGS}"
         LDFLAGS="${LDFLAGS} ${LIBPNG_LIBS}"
         AC_CHECK_DECLS([png_set_gray_1_2_4_to_8, png_set_expand_gray_1_2_4_to_8],
@@ -1501,7 +1523,7 @@ if test x$with_png != xno && test "x$using_cl" != "xyes"; then
         LDFLAGS=$LDFLAGS_BACKUP
         AC_DEFINE(HAVE_LIBPNG, 1, [whether libpng is available])
         loaders="${loaders} png"
-        REQUIRES_PRIVATE="$REQUIRES_PRIVATE libpng"
+        REQUIRES_PRIVATE="$REQUIRES_PRIVATE ${LIBPNG_PKG_NAME}"
         LIBS_PRIVATE="$LIBS_PRIVATE $LIBPNG_LIBS"
         AC_MSG_NOTICE([libpng cflags is ${LIBPNG_CFLAGS}])
         AC_MSG_NOTICE([libpng libs is ${LIBPNG_LIBS}])
