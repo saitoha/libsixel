@@ -5,7 +5,7 @@ The logger writes JSON lines like:
 {"ts":0.001,"thread":1234,"worker":"dither","event":"start",...}
 
 Usage:
-  python tools/parallel_log_timeline.py /path/to/log --output timeline.png
+  python tools/timeline.py /path/to/log --output timeline.png
 
 If matplotlib is unavailable, the script prints a textual summary instead of
 writing an image. """
