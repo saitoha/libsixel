@@ -33,6 +33,27 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifndef SIXEL_VPTE_TLS
+# if defined(SIXEL_ENABLE_THREADS)
+#  if defined(_MSC_VER)
+#   define SIXEL_VPTE_TLS __declspec(thread)
+#   define SIXEL_VPTE_TLS_AVAILABLE 1
+#  elif !defined(__STDC_NO_THREADS__)
+#   define SIXEL_VPTE_TLS _Thread_local
+#   define SIXEL_VPTE_TLS_AVAILABLE 1
+#  elif defined(__GNUC__)
+#   define SIXEL_VPTE_TLS __thread
+#   define SIXEL_VPTE_TLS_AVAILABLE 1
+#  else
+#   define SIXEL_VPTE_TLS
+#   define SIXEL_VPTE_TLS_AVAILABLE 0
+#  endif
+# else
+#  define SIXEL_VPTE_TLS
+#  define SIXEL_VPTE_TLS_AVAILABLE 0
+# endif
+#endif
+
 #ifndef SIXEL_LOOKUP_VPTE_SHARED_T
 #define SIXEL_LOOKUP_VPTE_SHARED_T
 typedef struct sixel_lookup_vpte_shared sixel_lookup_vpte_shared_t;

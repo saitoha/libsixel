@@ -147,6 +147,10 @@ sixel_lookup_vpte_env_use_dist2(void)
 static int
 sixel_lookup_vpte_env_use_cache(void)
 {
+    if (SIXEL_VPTE_TLS_AVAILABLE == 0) {
+        return 0;
+    }
+
     return sixel_lookup_vpte_parse_flag(getenv("SIXEL_LOOKUP_VPTE_USE_CACHE"),
                                         1);
 }
