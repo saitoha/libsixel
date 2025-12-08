@@ -674,7 +674,8 @@ cell corners.  The following environment variables tune the grid:
   on the EDT distance field to skip unnecessary refinement (0 or 1; default
   1).
 * `SIXEL_LOOKUP_VPTE_USE_CACHE` enables a small per-thread VPTE lookup cache
-  keyed by voxel coordinates (0 or 1; default 1).
+  keyed by voxel coordinates (0 or 1; default 1 when thread-local storage is
+  available, otherwise forced to 0).
 * `SIXEL_LOOKUP_VPTE_SHARED` controls whether the prebuilt grid is shared
   across threads (0 or 1; default 1).
 
