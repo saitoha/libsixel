@@ -42,6 +42,12 @@ sixel_lut_new(sixel_lut_t **out,
               sixel_allocator_t *allocator);
 
 void
+sixel_lookup_set_parallel_dither_active(int active);
+
+int
+sixel_lookup_parallel_dither_active(void);
+
+void
 sixel_lut_unref(sixel_lut_t *lut);
 
 /*

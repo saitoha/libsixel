@@ -46,6 +46,20 @@ struct sixel_lut {
     sixel_lookup_float32_t *lookup_float32;
 };
 
+static int sixel_lookup_parallel_active = 0;
+
+void
+sixel_lookup_set_parallel_dither_active(int active)
+{
+    sixel_lookup_parallel_active = (active != 0) ? 1 : 0;
+}
+
+int
+sixel_lookup_parallel_dither_active(void)
+{
+    return sixel_lookup_parallel_active;
+}
+
 SIXELSTATUS
 sixel_lut_new(sixel_lut_t **out,
               int policy,

@@ -41,6 +41,7 @@
 
 #include "allocator.h"
 #include "compat_stub.h"
+#include "lookup-common.h"
 #include "lookup-vpte-8bit.h"
 #include "sixel_atomic.h"
 #include "status.h"
@@ -897,13 +898,15 @@ sixel_lookup_vpte_8bit_configure(sixel_lookup_vpte_8bit_t *vpte,
         sixel_lookup_vpte_shared_ref(vpte->shared);
     }
 
-#if SIXEL_VPTE_TLS_AVAILABLE == 0
-    /*
-     * Thread-local storage is not supported on this platform.  Disable the
-     * VPTE cache to avoid sharing a single cache instance across threads.
-     */
-    use_cache = 0;
-#endif
+    if (SIXEL_VPTE_TLS_AVAILABLE == 0
+            && sixel_lookup_parallel_dither_active() != 0) {
+        /*
+         * Thread-local storage is not supported and parallel dithering is
+         * active.  Disable the VPTE cache to avoid sharing a single cache
+         * instance across worker threads.
+         */
+        use_cache = 0;
+    }
 
     vpte->use_cache = use_cache;
 
@@ -1066,6 +1069,7 @@ sixel_lookup_vpte_8bit_map(sixel_lookup_vpte_8bit_t *vpte,
     int z;
     int cached_value;
     int should_refine;
+    int cache_active;
     int index;
     size_t offset;
     size_t plane;
@@ -1092,7 +1096,12 @@ sixel_lookup_vpte_8bit_map(sixel_lookup_vpte_8bit_t *vpte,
            + ((size_t)y * (size_t)vpte->shared->resolution)
            + (size_t)x;
 
-    if (vpte->use_cache != 0) {
+    cache_active = vpte->use_cache;
+    if (cache_active != 0 && SIXEL_VPTE_TLS_AVAILABLE == 0
+            && sixel_lookup_parallel_dither_active() != 0) {
+        cache_active = 0;
+    }
+    if (cache_active != 0) {
         sixel_lookup_vpte_cache_prepare(vpte->shared);
         if (sixel_lookup_vpte_cache_get(&sixel_lookup_vpte_thread_cache,
                                          offset,
@@ -1113,7 +1122,7 @@ sixel_lookup_vpte_8bit_map(sixel_lookup_vpte_8bit_t *vpte,
                                                         z);
         }
     }
-    if (vpte->use_cache != 0) {
+    if (cache_active != 0) {
         sixel_lookup_vpte_cache_put(&sixel_lookup_vpte_thread_cache,
                                     offset,
                                     index);
