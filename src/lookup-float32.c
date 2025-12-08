@@ -137,6 +137,20 @@ sixel_lookup_vpte_env_shared(void)
                                         1);
 }
 
+static int
+sixel_lookup_vpte_env_use_dist2(void)
+{
+    return sixel_lookup_vpte_parse_flag(getenv("SIXEL_LOOKUP_VPTE_USE_DIST2"),
+                                        1);
+}
+
+static int
+sixel_lookup_vpte_env_use_cache(void)
+{
+    return sixel_lookup_vpte_parse_flag(getenv("SIXEL_LOOKUP_VPTE_USE_CACHE"),
+                                        1);
+}
+
 static float
 sixel_lookup_float32_component(float const *palette,
                                int depth,
@@ -494,11 +508,15 @@ sixel_lookup_float32_configure_vpte(sixel_lookup_float32_t *lut,
     int resolution;
     int refine;
     int shared_flag;
+    int use_dist2;
+    int use_cache;
     uint32_t signature;
 
     resolution = sixel_lookup_vpte_env_resolution();
     refine = sixel_lookup_vpte_env_refine();
     shared_flag = sixel_lookup_vpte_env_shared();
+    use_dist2 = sixel_lookup_vpte_env_use_dist2();
+    use_cache = sixel_lookup_vpte_env_use_cache();
 
     if (lut->vpte == NULL) {
         status = sixel_lookup_vpte_float32_create(lut->allocator, &lut->vpte);
@@ -524,6 +542,8 @@ sixel_lookup_float32_configure_vpte(sixel_lookup_float32_t *lut,
                                                  lut->ncolors,
                                                  resolution,
                                                  refine,
+                                                 use_dist2,
+                                                 use_cache,
                                                  shared_flag,
                                                  wcomp1,
                                                  wcomp2,

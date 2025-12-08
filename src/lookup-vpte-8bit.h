@@ -41,6 +41,7 @@ typedef struct sixel_lookup_vpte_shared sixel_lookup_vpte_shared_t;
 typedef struct sixel_lookup_vpte_8bit {
     sixel_allocator_t *allocator;
     sixel_lookup_vpte_shared_t *shared;
+    int use_cache;
 } sixel_lookup_vpte_8bit_t;
 
 SIXELSTATUS
@@ -56,6 +57,8 @@ sixel_lookup_vpte_8bit_configure(sixel_lookup_vpte_8bit_t *vpte,
                                  int ncolors,
                                  int resolution,
                                  int refine,
+                                 int use_dist2,
+                                 int use_cache,
                                  int shared,
                                  int wcomp1,
                                  int wcomp2,

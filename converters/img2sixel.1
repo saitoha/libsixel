@@ -355,6 +355,13 @@ SIXEL_LOOKUP_VPTE_RESOLUTION (64, 128, or 256; default 128)
 SIXEL_LOOKUP_VPTE_REFINE (0 or 1; default 1) enables corner refinement
 for boundary cells.
 .br
+SIXEL_LOOKUP_VPTE_USE_DIST2 (0 or 1; default 1) keeps per-voxel EDT
+distances so boundary voxels can skip refinement when the center is
+already safely inside the Voronoi region.
+.br
+SIXEL_LOOKUP_VPTE_USE_CACHE (0 or 1; default 1) enables a small per-thread
+cache keyed by voxel coordinates to speed up repeated lookups.
+.br
 SIXEL_LOOKUP_VPTE_SHARED (0 or 1; default 1) builds the grid once
 before worker threads run and shares it read-only.
 .TP 5
