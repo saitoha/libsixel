@@ -1565,7 +1565,7 @@ We are greatly inspired by the quality of ImageMagick and added some resampling 
 
 - [ismail-yilmaz/upp-components/CtrlLib/Terminal/](https://github.com/ismail-yilmaz/upp-components/tree/master/CtrlLib/Terminal)
 
-- [schrmh/pdfgrepSIXEL](schrmh/pdfgrepSIXEL)
+- [schrmh/pdfgrepSIXEL](https://github.com/schrmh/pdfgrepSIXEL)
 
 - [ar90n/teimpy](https://github.com/ar90n/teimpy)
 
