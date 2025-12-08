@@ -43,12 +43,25 @@
 #include "sixel_atomic.h"
 #include "status.h"
 
-#if defined(SIXEL_ENABLE_THREADS) && !defined(__STDC_NO_THREADS__)
-# define SIXEL_VPTE_TLS _Thread_local
-#elif defined(__GNUC__)
-# define SIXEL_VPTE_TLS __thread
-#else
-# define SIXEL_VPTE_TLS
+#ifndef SIXEL_VPTE_TLS
+# if defined(SIXEL_ENABLE_THREADS)
+#  if defined(_MSC_VER)
+#   define SIXEL_VPTE_TLS __declspec(thread)
+#   define SIXEL_VPTE_TLS_AVAILABLE 1
+#  elif !defined(__STDC_NO_THREADS__)
+#   define SIXEL_VPTE_TLS _Thread_local
+#   define SIXEL_VPTE_TLS_AVAILABLE 1
+#  elif defined(__GNUC__)
+#   define SIXEL_VPTE_TLS __thread
+#   define SIXEL_VPTE_TLS_AVAILABLE 1
+#  else
+#   define SIXEL_VPTE_TLS
+#   define SIXEL_VPTE_TLS_AVAILABLE 0
+#  endif
+# else
+#  define SIXEL_VPTE_TLS
+#  define SIXEL_VPTE_TLS_AVAILABLE 0
+# endif
 #endif
 
 struct sixel_lookup_vpte_shared {
@@ -888,6 +901,14 @@ sixel_lookup_vpte_float32_configure(sixel_lookup_vpte_float32_t *vpte,
     if (shared_flag != 0) {
         sixel_lookup_vpte_shared_ref(vpte->shared);
     }
+
+#if SIXEL_VPTE_TLS_AVAILABLE == 0
+    /*
+     * Thread-local storage is not supported on this platform.  Disable the
+     * VPTE cache to avoid sharing a single cache instance across threads.
+     */
+    use_cache = 0;
+#endif
 
     vpte->use_cache = use_cache;
 
