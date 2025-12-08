@@ -227,6 +227,7 @@ SIXEL_LUT_POLICY_5BIT      = 0x1  # use legacy 5-bit buckets
 SIXEL_LUT_POLICY_6BIT      = 0x2  # use 6-bit RGB buckets
 SIXEL_LUT_POLICY_NONE      = 0x4  # disable LUT acceleration
 SIXEL_LUT_POLICY_CERTLUT   = 0x5  # certified hierarchical LUT
+SIXEL_LUT_POLICY_VPTE      = 0x6  # Voronoi LUT with 3D EDT refinement
 
 # method for re-sampling
 SIXEL_RES_NEAREST          = 0   # Use nearest neighbor method
@@ -495,6 +496,10 @@ SIXEL_OPTFLAG_LUT_POLICY        = '~'  # -~ LOOKUPPOLICY,
                                       #          certlut -> certified
                                       #                     hierarchical LUT
                                       #                     with zero error
+                                      #          vpte    -> Voronoi grid built
+                                      #                     via 3D EDT with
+                                      #                     optional
+                                      #                     refinement
 SIXEL_OPTFLAG_WORKING_COLORSPACE = 'W'  # -W WORKING_COLORSPACE, --working-colorspace=WORKING_COLORSPACE:
                                       #        select internal working space.
                                       #          gamma  -> keep gamma encoded pixels
