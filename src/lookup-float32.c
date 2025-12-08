@@ -40,6 +40,7 @@
 #include <sixel.h>
 
 #include "allocator.h"
+#include "lookup-common.h"
 #include "lookup-float32.h"
 #include "pixelformat.h"
 #include "status.h"
@@ -147,12 +148,16 @@ sixel_lookup_vpte_env_use_dist2(void)
 static int
 sixel_lookup_vpte_env_use_cache(void)
 {
-    if (SIXEL_VPTE_TLS_AVAILABLE == 0) {
-        return 0;
+    int default_value;
+
+    default_value = 1;
+    if (SIXEL_VPTE_TLS_AVAILABLE == 0
+            && sixel_lookup_parallel_dither_active() != 0) {
+        default_value = 0;
     }
 
     return sixel_lookup_vpte_parse_flag(getenv("SIXEL_LOOKUP_VPTE_USE_CACHE"),
-                                        1);
+                                        default_value);
 }
 
 static float

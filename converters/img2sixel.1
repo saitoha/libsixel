@@ -360,8 +360,8 @@ distances so boundary voxels can skip refinement when the center is
 already safely inside the Voronoi region.
 .br
 SIXEL_LOOKUP_VPTE_USE_CACHE (0 or 1; default 1 when thread-local storage is
-available, otherwise forced to 0) enables a small per-thread cache keyed by
-voxel coordinates to speed up repeated lookups.
+available or parallel dithering is disabled, otherwise forced to 0) enables a
+small per-thread cache keyed by voxel coordinates to speed up repeated lookups.
 .br
 SIXEL_LOOKUP_VPTE_SHARED (0 or 1; default 1) builds the grid once
 before worker threads run and shares it read-only.
