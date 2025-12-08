@@ -2010,6 +2010,14 @@ sixel_dither_apply_palette(
         parallel_active = 0;
     }
 
+    /*
+     * Inform lookup helpers whether concurrent palette application will run.
+     * VPTE caches rely on this hint when TLS is unavailable so they can
+     * disable shared caches during parallel dithering while remaining enabled
+     * for serial passes.
+     */
+    sixel_lookup_set_parallel_dither_active(parallel_active);
+
     bufsize = (size_t)(width * height) * sizeof(sixel_index_t);
     total_pixels = (size_t)width * (size_t)height;
     owns_float_pipeline = 0;
@@ -2290,6 +2298,7 @@ end:
         sixel_allocator_free(dither->allocator, float_pipeline_pixels);
     }
     sixel_dither_unref(dither);
+    sixel_lookup_set_parallel_dither_active(0);
     dither->pipeline_index_buffer = NULL;
     dither->pipeline_index_owned = 0;
     dither->pipeline_index_size = 0;
