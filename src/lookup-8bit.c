@@ -240,6 +240,8 @@ sixel_lookup_8bit_policy_uses_cache(int policy)
 static int sixel_lookup_vpte_env_resolution(void);
 static int sixel_lookup_vpte_env_refine(void);
 static int sixel_lookup_vpte_env_shared(void);
+static int sixel_lookup_vpte_env_use_dist2(void);
+static int sixel_lookup_vpte_env_use_cache(void);
 
 static SIXELSTATUS
 sixel_lookup_8bit_configure_vpte(sixel_lookup_8bit_t *lut,
@@ -255,6 +257,8 @@ sixel_lookup_8bit_configure_vpte(sixel_lookup_8bit_t *lut,
     int resolution;
     int refine;
     int shared_flag;
+    int use_dist2;
+    int use_cache;
     uint32_t signature;
 
     (void)complexion;
@@ -262,6 +266,8 @@ sixel_lookup_8bit_configure_vpte(sixel_lookup_8bit_t *lut,
     resolution = sixel_lookup_vpte_env_resolution();
     refine = sixel_lookup_vpte_env_refine();
     shared_flag = sixel_lookup_vpte_env_shared();
+    use_dist2 = sixel_lookup_vpte_env_use_dist2();
+    use_cache = sixel_lookup_vpte_env_use_cache();
 
     if (lut->vpte == NULL) {
         status = sixel_lookup_vpte_8bit_create(lut->allocator, &lut->vpte);
@@ -286,6 +292,8 @@ sixel_lookup_8bit_configure_vpte(sixel_lookup_8bit_t *lut,
                                               ncolors,
                                               resolution,
                                               refine,
+                                              use_dist2,
+                                              use_cache,
                                               shared_flag,
                                               wcomp1,
                                               wcomp2,
@@ -368,6 +376,20 @@ static int
 sixel_lookup_vpte_env_shared(void)
 {
     return sixel_lookup_vpte_parse_flag(getenv("SIXEL_LOOKUP_VPTE_SHARED"),
+                                        1);
+}
+
+static int
+sixel_lookup_vpte_env_use_dist2(void)
+{
+    return sixel_lookup_vpte_parse_flag(getenv("SIXEL_LOOKUP_VPTE_USE_DIST2"),
+                                        1);
+}
+
+static int
+sixel_lookup_vpte_env_use_cache(void)
+{
+    return sixel_lookup_vpte_parse_flag(getenv("SIXEL_LOOKUP_VPTE_USE_CACHE"),
                                         1);
 }
 

@@ -41,6 +41,7 @@ typedef struct sixel_lookup_vpte_shared sixel_lookup_vpte_shared_t;
 typedef struct sixel_lookup_vpte_float32 {
     sixel_allocator_t *allocator;
     sixel_lookup_vpte_shared_t *shared;
+    int use_cache;
 } sixel_lookup_vpte_float32_t;
 
 SIXELSTATUS
@@ -52,14 +53,16 @@ sixel_lookup_vpte_float32_unref(sixel_lookup_vpte_float32_t *vpte);
 
 SIXELSTATUS
 sixel_lookup_vpte_float32_configure(sixel_lookup_vpte_float32_t *vpte,
-                                    float const *palette,
-                                    int ncolors,
-                                    int resolution,
-                                    int refine,
-                                    int shared,
-                                    int wcomp1,
-                                    int wcomp2,
-                                    int wcomp3,
+                                 float const *palette,
+                                 int ncolors,
+                                 int resolution,
+                                 int refine,
+                                 int use_dist2,
+                                 int use_cache,
+                                 int shared,
+                                 int wcomp1,
+                                 int wcomp2,
+                                 int wcomp3,
                                     int pixelformat);
 
 int

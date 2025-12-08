@@ -670,6 +670,11 @@ cell corners.  The following environment variables tune the grid:
   default 128).
 * `SIXEL_LOOKUP_VPTE_REFINE` enables corner refinement on boundary voxels
   (0 or 1; default 1).
+* `SIXEL_LOOKUP_VPTE_USE_DIST2` controls whether boundary safety checks rely
+  on the EDT distance field to skip unnecessary refinement (0 or 1; default
+  1).
+* `SIXEL_LOOKUP_VPTE_USE_CACHE` enables a small per-thread VPTE lookup cache
+  keyed by voxel coordinates (0 or 1; default 1).
 * `SIXEL_LOOKUP_VPTE_SHARED` controls whether the prebuilt grid is shared
   across threads (0 or 1; default 1).
 
