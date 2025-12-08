@@ -106,6 +106,12 @@ jobs:
             vcpkg_libjpeg: true
           - os: windows-latest
             runner: windows-latest
+            compiler: cl
+            sys: MSVC
+            variant: vcpkg-gdk-pixbuf
+            vcpkg_gdk_pixbuf: true
+          - os: windows-latest
+            runner: windows-latest
             compiler: gcc
             sys: MINGW32
             variant: default
@@ -164,7 +170,7 @@ jobs:
         arch: x64
 
     - name: Cache vcpkg artifacts (MSVC, vcpkg deps)
-      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_libpng == true || matrix.vcpkg_libjpeg == true) }}
+      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_libpng == true || matrix.vcpkg_libjpeg == true || matrix.vcpkg_gdk_pixbuf == true) }}
       uses: actions/cache@v4
       with:
         path: |
@@ -172,10 +178,10 @@ jobs:
           ~\vcpkg\buildtrees
           ~\vcpkg\packages
           ~\vcpkg\downloads
-        key: vcpkg-${{ runner.os }}-msvc-${{ matrix.vcpkg_libpng || false }}-${{ matrix.vcpkg_libjpeg || false }}-${{ hashFiles('.github/workflows/ci.yml') }}
+        key: vcpkg-${{ runner.os }}-msvc-${{ matrix.vcpkg_libpng || false }}-${{ matrix.vcpkg_libjpeg || false }}-${{ matrix.vcpkg_gdk_pixbuf || false }}-${{ hashFiles('.github/workflows/ci.yml') }}
 
-    - name: Install vcpkg dependencies (MSVC, libpng/libjpeg)
-      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_libpng == true || matrix.vcpkg_libjpeg == true) }}
+    - name: Install vcpkg dependencies (MSVC, libpng/libjpeg/gdk-pixbuf)
+      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_libpng == true || matrix.vcpkg_libjpeg == true || matrix.vcpkg_gdk_pixbuf == true) }}
       shell: pwsh
       run: |
         $vcpkgRoot = "$env:USERPROFILE\\vcpkg"
@@ -190,6 +196,9 @@ jobs:
         }
         if ('${{ matrix.vcpkg_libjpeg || false }}' -eq 'true') {
           $packages += 'libjpeg-turbo'
+        }
+        if ('${{ matrix.vcpkg_gdk_pixbuf || false }}' -eq 'true') {
+          $packages += 'gdk-pixbuf'
         }
         .\\vcpkg.exe install $packages --triplet x64-windows
         "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
@@ -400,6 +409,17 @@ jobs:
         if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
           disable_simd_flag="--disable-simd"
         fi
+        gdk_pixbuf_flag=""
+        if [ "${{ matrix.vcpkg_gdk_pixbuf || '' }}" = "true" ]; then
+          VCPKG_ROOT_MSYS=$(cygpath "$VCPKG_ROOT")
+          export PKG_CONFIG="${VCPKG_ROOT_MSYS}/installed/x64-windows/tools/pkgconf/pkgconf"
+          export PKG_CONFIG_PATH="${VCPKG_ROOT_MSYS}/installed/x64-windows/lib/pkgconfig"
+          export PATH="${VCPKG_ROOT_MSYS}/installed/x64-windows/tools/pkgconf:${PATH}"
+          gdk_pixbuf_flag="--with-gdk-pixbuf2"
+          echo PKG_CONFIG: $PKG_CONFIG
+          echo PKG_CONFIG_PATH: $PKG_CONFIG_PATH
+          echo PATH: $PATH
+        fi
         eval $(
             cmd //c call "${VCVARS}" x64 \>nul \&\& set |
             grep -i '^\(PATH\|INCLUDE\|LIB\|LIBPATH\)'  |
@@ -424,6 +444,7 @@ jobs:
             --without-png \
             --without-jpeg \
             --without-libcurl \
+            ${gdk_pixbuf_flag} \
             ${disable_tools_flags} \
             ${disable_threads_flag} \
             ${disable_simd_flag}
@@ -1151,7 +1172,7 @@ jobs:
         arch: x64
 
     - name: Cache vcpkg artifacts (MSVC, vcpkg deps)
-      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_libpng == true || matrix.vcpkg_libjpeg == true) }}
+      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_libpng == true || matrix.vcpkg_libjpeg == true || matrix.vcpkg_gdk_pixbuf == true) }}
       uses: actions/cache@v4
       with:
         path: |
@@ -1159,10 +1180,10 @@ jobs:
           ~\vcpkg\buildtrees
           ~\vcpkg\packages
           ~\vcpkg\downloads
-        key: vcpkg-${{ runner.os }}-msvc-${{ matrix.vcpkg_libpng || false }}-${{ matrix.vcpkg_libjpeg || false }}-${{ hashFiles('.github/workflows/ci.yml') }}
+        key: vcpkg-${{ runner.os }}-msvc-${{ matrix.vcpkg_libpng || false }}-${{ matrix.vcpkg_libjpeg || false }}-${{ matrix.vcpkg_gdk_pixbuf || false }}-${{ hashFiles('.github/workflows/ci.yml') }}
 
-    - name: Install vcpkg dependencies (MSVC, libpng/libjpeg)
-      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_libpng == true || matrix.vcpkg_libjpeg == true) }}
+    - name: Install vcpkg dependencies (MSVC, libpng/libjpeg/gdk-pixbuf)
+      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_libpng == true || matrix.vcpkg_libjpeg == true || matrix.vcpkg_gdk_pixbuf == true) }}
       shell: pwsh
       run: |
         $vcpkgRoot = "$env:USERPROFILE\\vcpkg"
@@ -1177,6 +1198,9 @@ jobs:
         }
         if ('${{ matrix.vcpkg_libjpeg || false }}' -eq 'true') {
           $packages += 'libjpeg-turbo'
+        }
+        if ('${{ matrix.vcpkg_gdk_pixbuf || false }}' -eq 'true') {
+          $packages += 'gdk-pixbuf'
         }
         .\\vcpkg.exe install $packages --triplet x64-windows
         "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
