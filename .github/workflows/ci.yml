@@ -179,11 +179,21 @@ jobs:
       shell: pwsh
       run: |
         $vcpkgRoot = "$env:USERPROFILE\\vcpkg"
-        if (-not (Test-Path $vcpkgRoot)) {
-          git clone https://github.com/microsoft/vcpkg $vcpkgRoot
+        if (-not (Test-Path (Join-Path $vcpkgRoot '.git'))) {
+          git init $vcpkgRoot
         }
-        cd $vcpkgRoot
-        .\\bootstrap-vcpkg.bat
+        git -C $vcpkgRoot remote remove origin 2>$null
+        git -C $vcpkgRoot remote add origin https://github.com/microsoft/vcpkg
+
+        $head = (git -C $vcpkgRoot ls-remote --symref origin HEAD) -join "`n"
+        $defaultBranch = if ($head -match 'refs/heads/([^\s]+)') { $matches[1] } else { 'master' }
+
+        git -C $vcpkgRoot fetch --depth 1 origin $defaultBranch
+        git -C $vcpkgRoot reset --hard FETCH_HEAD
+
+        Set-Location $vcpkgRoot
+
+        cmd /c bootstrap-vcpkg.bat
         $packages = @('pkgconf')
         if ('${{ matrix.vcpkg_libpng || false }}' -eq 'true') {
           $packages += 'libpng'
