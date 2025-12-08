@@ -6,6 +6,7 @@
 #define LIBSIXEL_LOOKUP_8BIT_H
 
 #include "allocator.h"
+#include "lookup-vpte-8bit.h"
 
 #include <sixel.h>
 
@@ -33,6 +34,8 @@ typedef struct sixel_lookup_8bit {
     int dense_ready;
     sixel_certlut_t *cert;
     int cert_ready;
+    sixel_lookup_vpte_8bit_t *vpte;
+    int vpte_ready;
 } sixel_lookup_8bit_t;
 
 void

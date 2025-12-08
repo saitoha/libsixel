@@ -127,6 +127,7 @@
 #include "threading.h"
 
 #define SIXEL_ENCODER_PRECISION_ENVVAR "SIXEL_FLOAT32_DITHER"
+#define SIXEL_ENCODER_LUT_POLICY_ENVVAR "SIXEL_DITHER_LOOKUP_POLICY"
 
 typedef enum sixel_encoder_precision_mode {
     SIXEL_ENCODER_PRECISION_MODE_AUTO = 0,
@@ -297,7 +298,8 @@ static sixel_option_choice_t const g_option_choices_lut_policy[] = {
     { "5bit", SIXEL_LUT_POLICY_5BIT },
     { "6bit", SIXEL_LUT_POLICY_6BIT },
     { "none", SIXEL_LUT_POLICY_NONE },
-    { "certlut", SIXEL_LUT_POLICY_CERTLUT }
+    { "certlut", SIXEL_LUT_POLICY_CERTLUT },
+    { "vpte", SIXEL_LUT_POLICY_VPTE }
 };
 
 static sixel_option_choice_t const g_option_choices_working_colorspace[] = {
@@ -4489,8 +4491,12 @@ sixel_encoder_new(
     char const *env_default_bgcolor = NULL;
     char const *env_default_ncolors = NULL;
     char const *env_prefer_float32 = NULL;
+    char const *env_lookup_policy = NULL;
     int ncolors;
     int prefer_float32;
+    int env_match_value;
+    sixel_option_choice_result_t match_result;
+    char match_detail[128];
 
     if (allocator == NULL) {
         status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
@@ -4609,6 +4615,28 @@ sixel_encoder_new(
      */
     prefer_float32 = sixel_encoder_env_prefers_float32(env_prefer_float32);
     (*ppencoder)->prefer_float32 = prefer_float32;
+
+    /*
+     * $SIXEL_DITHER_LOOKUP_POLICY mirrors the -~ flag so automated wrappers
+     * can seed the LUT backend before CLI overrides run.  Invalid prefixes are
+     * ignored to avoid hard failures when the environment is user-provided.
+     */
+    match_detail[0] = '\0';
+    env_lookup_policy = sixel_compat_getenv(
+        SIXEL_ENCODER_LUT_POLICY_ENVVAR);
+    if (env_lookup_policy != NULL) {
+        match_result = sixel_option_match_choice(
+            env_lookup_policy,
+            g_option_choices_lut_policy,
+            sizeof(g_option_choices_lut_policy)
+            / sizeof(g_option_choices_lut_policy[0]),
+            &env_match_value,
+            match_detail,
+            sizeof(match_detail));
+        if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+            (*ppencoder)->lut_policy = env_match_value;
+        }
+    }
 
     /* evaluate environment variable ${SIXEL_BGCOLOR} */
     env_default_bgcolor = sixel_compat_getenv("SIXEL_BGCOLOR");

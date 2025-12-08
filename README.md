@@ -652,10 +652,26 @@ Options:
                                           palette directly
                              certlut   -> certified hierarchical LUT
                                           with zero approximation
+                             vpte      -> Voronoi grid built via a 3-pass
+                                           3D EDT with optional boundary
+                                           refinement
 
 The *none* policy skips every lookup acceleration structure so each
 pixel comparison scans the palette directly.  This matches the legacy
 behaviour that was previously enabled implicitly by `-q full`.
+
+The *vpte* policy builds a Voronoi grid using a 3D exact distance
+transform.  Boundary voxels optionally refine the result by checking the
+cell corners.  The following environment variables tune the grid:
+
+* `SIXEL_DITHER_LOOKUP_POLICY` sets the LUT policy (auto, 5bit, 6bit, none,
+  certlut, or vpte).
+* `SIXEL_LOOKUP_VPTE_RESOLUTION` sets the grid resolution (64, 128, 256;
+  default 128).
+* `SIXEL_LOOKUP_VPTE_REFINE` enables corner refinement on boundary voxels
+  (0 or 1; default 1).
+* `SIXEL_LOOKUP_VPTE_SHARED` controls whether the prebuilt grid is shared
+  across threads (0 or 1; default 1).
 
 The *certlut* policy divides the RGB cube into 64×64×64 top level
 cells (6 bits per channel).  Each top level cell spans a 4×4×4 region;

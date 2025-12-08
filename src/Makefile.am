@@ -30,6 +30,10 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-8bit.h \
                 $(srcdir)/lookup-float32.c \
                 $(srcdir)/lookup-float32.h \
+                $(srcdir)/lookup-vpte-8bit.c \
+                $(srcdir)/lookup-vpte-8bit.h \
+                $(srcdir)/lookup-vpte-float32.c \
+                $(srcdir)/lookup-vpte-float32.h \
                 $(srcdir)/lookup-common.h \
                 $(srcdir)/palette-heckbert.c \
                 $(srcdir)/palette-heckbert.h \

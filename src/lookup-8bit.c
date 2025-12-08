@@ -51,6 +51,7 @@
 
 #include "config.h"
 
+#include <errno.h>
 #include <limits.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -66,6 +67,8 @@
 #include <sixel.h>
 
 #include "status.h"
+#include "lookup-vpte-8bit.h"
+#include "sixel_atomic.h"
 #include "compat_stub.h"
 #include "allocator.h"
 #include "lookup-8bit.h"
@@ -214,7 +217,8 @@ sixel_lookup_8bit_policy_normalize(int policy)
     } else if (normalized != SIXEL_LUT_POLICY_5BIT
                && normalized != SIXEL_LUT_POLICY_6BIT
                && normalized != SIXEL_LUT_POLICY_CERTLUT
-               && normalized != SIXEL_LUT_POLICY_NONE) {
+               && normalized != SIXEL_LUT_POLICY_NONE
+               && normalized != SIXEL_LUT_POLICY_VPTE) {
         normalized = SIXEL_LUT_POLICY_6BIT;
     }
 
@@ -225,11 +229,146 @@ static int
 sixel_lookup_8bit_policy_uses_cache(int policy)
 {
     if (policy == SIXEL_LUT_POLICY_CERTLUT
-        || policy == SIXEL_LUT_POLICY_NONE) {
+        || policy == SIXEL_LUT_POLICY_NONE
+        || policy == SIXEL_LUT_POLICY_VPTE) {
         return 0;
     }
 
     return 1;
+}
+
+static int sixel_lookup_vpte_env_resolution(void);
+static int sixel_lookup_vpte_env_refine(void);
+static int sixel_lookup_vpte_env_shared(void);
+
+static SIXELSTATUS
+sixel_lookup_8bit_configure_vpte(sixel_lookup_8bit_t *lut,
+                                 unsigned char const *palette,
+                                 int ncolors,
+                                 int complexion,
+                                 int wcomp1,
+                                 int wcomp2,
+                                 int wcomp3,
+                                 int pixelformat)
+{
+    SIXELSTATUS status;
+    int resolution;
+    int refine;
+    int shared_flag;
+    uint32_t signature;
+
+    (void)complexion;
+
+    resolution = sixel_lookup_vpte_env_resolution();
+    refine = sixel_lookup_vpte_env_refine();
+    shared_flag = sixel_lookup_vpte_env_shared();
+
+    if (lut->vpte == NULL) {
+        status = sixel_lookup_vpte_8bit_create(lut->allocator, &lut->vpte);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "sixel_lookup_8bit_configure: VPTE handle allocation failed.");
+            return status;
+        }
+    }
+
+    signature = sixel_lookup_vpte_8bit_signature(palette,
+                                                 ncolors,
+                                                 resolution,
+                                                 refine,
+                                                 wcomp1,
+                                                 wcomp2,
+                                                 wcomp3,
+                                                 lut->depth);
+
+    status = sixel_lookup_vpte_8bit_configure(lut->vpte,
+                                              palette,
+                                              ncolors,
+                                              resolution,
+                                              refine,
+                                              shared_flag,
+                                              wcomp1,
+                                              wcomp2,
+                                              wcomp3,
+                                              pixelformat,
+                                              lut->depth);
+    if (SIXEL_FAILED(status)) {
+        lut->vpte_ready = 0;
+        return status;
+    }
+
+    sixel_lookup_vpte_8bit_shared_set_signature(lut->vpte->shared,
+                                                signature);
+    lut->vpte_ready = 1;
+
+    return SIXEL_OK;
+}
+
+static int
+sixel_lookup_vpte_parse_flag(char const *text, int default_value)
+{
+    long parsed;
+    char *endptr;
+
+    if (text == NULL || text[0] == '\0') {
+        return default_value;
+    }
+
+    errno = 0;
+    endptr = NULL;
+    parsed = strtol(text, &endptr, 10);
+    if (errno == ERANGE || endptr == text || *endptr != '\0') {
+        return default_value;
+    }
+
+    if (parsed == 0L) {
+        return 0;
+    }
+    if (parsed == 1L) {
+        return 1;
+    }
+
+    return default_value;
+}
+
+static int
+sixel_lookup_vpte_env_resolution(void)
+{
+    char const *env;
+    long parsed;
+    char *endptr;
+
+    env = getenv("SIXEL_LOOKUP_VPTE_RESOLUTION");
+    if (env == NULL || env[0] == '\0') {
+        return 128;
+    }
+
+    errno = 0;
+    endptr = NULL;
+    parsed = strtol(env, &endptr, 10);
+    if (errno == ERANGE || endptr == env || *endptr != '\0') {
+        return 128;
+    }
+
+    if (parsed == 64L || parsed == 128L || parsed == 256L) {
+        return (int)parsed;
+    }
+
+    return 128;
+}
+
+static int
+sixel_lookup_vpte_env_refine(void)
+{
+    return sixel_lookup_vpte_parse_flag(getenv("SIXEL_LOOKUP_VPTE_REFINE"),
+                                        1);
+}
+
+static int
+sixel_lookup_vpte_env_shared(void)
+{
+    return sixel_lookup_vpte_parse_flag(getenv("SIXEL_LOOKUP_VPTE_SHARED"),
+                                        1);
 }
 
 static void
@@ -303,7 +442,8 @@ sixel_lookup_8bit_prepare_cache(sixel_lookup_8bit_t *lut)
 }
 
 static int
-sixel_lookup_8bit_lookup_fast(sixel_lookup_8bit_t *lut, unsigned char const *pixel)
+sixel_lookup_8bit_lookup_fast(sixel_lookup_8bit_t *lut,
+                             unsigned char const *pixel)
 {
     int result;
     int diff;
@@ -1305,10 +1445,13 @@ sixel_lookup_8bit_init(sixel_lookup_8bit_t *lut, sixel_allocator_t *allocator)
     lut->dense_size = 0U;
     lut->dense_ready = 0;
     lut->cert_ready = 0;
+    lut->vpte = NULL;
+    lut->vpte_ready = 0;
     lut->cert = (sixel_certlut_t *)malloc(sizeof(sixel_certlut_t));
     if (lut->cert != NULL) {
         sixel_certlut_init(lut->cert);
     }
+    (void)sixel_lookup_vpte_8bit_create(allocator, &lut->vpte);
 }
 
 SIXELSTATUS
@@ -1348,6 +1491,29 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
     lut->dense_ready = 0;
     lut->cert_ready = 0;
 
+    if (normalized == SIXEL_LUT_POLICY_VPTE) {
+        status = sixel_lookup_8bit_configure_vpte(lut,
+                                                  palette,
+                                                  ncolors,
+                                                  complexion,
+                                                  wcomp1,
+                                                  wcomp2,
+                                                  wcomp3,
+                                                  pixelformat);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "sixel_lookup_8bit_configure: VPTE failed; "
+                "falling back to CERTLUT.");
+            normalized = SIXEL_LUT_POLICY_CERTLUT;
+        } else {
+            return SIXEL_OK;
+        }
+    } else {
+        lut->vpte_ready = 0;
+    }
+
+    lut->policy = normalized;
+
     if (sixel_lookup_8bit_policy_uses_cache(normalized)) {
         if (depth != 3) {
             sixel_helper_set_additional_message(
@@ -1385,9 +1551,16 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
 }
 
 int
-sixel_lookup_8bit_map_pixel(sixel_lookup_8bit_t *lut, unsigned char const *pixel)
+sixel_lookup_8bit_map_pixel(sixel_lookup_8bit_t *lut,
+                            unsigned char const *pixel)
 {
     if (lut == NULL || pixel == NULL) {
+        return 0;
+    }
+    if (lut->policy == SIXEL_LUT_POLICY_VPTE) {
+        if (lut->vpte_ready && lut->vpte != NULL) {
+            return sixel_lookup_vpte_8bit_map(lut->vpte, pixel);
+        }
         return 0;
     }
     if (lut->policy == SIXEL_LUT_POLICY_CERTLUT) {
@@ -1415,6 +1588,11 @@ sixel_lookup_8bit_clear(sixel_lookup_8bit_t *lut)
         sixel_certlut_free(lut->cert);
         lut->cert_ready = 0;
     }
+    if (lut->vpte != NULL) {
+        sixel_lookup_vpte_8bit_unref(lut->vpte);
+        lut->vpte = NULL;
+    }
+    lut->vpte_ready = 0;
     lut->palette = NULL;
     lut->depth = 0;
     lut->ncolors = 0;
