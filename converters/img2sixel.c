@@ -486,6 +486,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "                             certlut   -> certified hierarchical\n"
         "                                          lookup tree with\n"
         "                                          zero error\n"
+        "                             vpte      -> Voronoi grid built via\n"
+        "                                          3D EDT with optional\n"
+        "                                          boundary refinement\n"
     },
     {
         'l',

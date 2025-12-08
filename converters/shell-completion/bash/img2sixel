@@ -216,7 +216,8 @@ _img2sixel()
                                    5bit \
                                    6bit \
                                    none \
-                                   certlut' -- "$cur" ) )
+                                   certlut \
+                                   vpte' -- "$cur" ) )
         return 0
         ;;
     -l|--loop-control)

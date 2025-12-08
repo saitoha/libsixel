@@ -31,6 +31,7 @@
 
 #include "config.h"
 
+#include <errno.h>
 #include <float.h>
 #include <math.h>
 #include <stdlib.h>
@@ -61,11 +62,79 @@ sixel_lookup_float32_policy_normalize(int policy)
     } else if (normalized != SIXEL_LUT_POLICY_5BIT
                && normalized != SIXEL_LUT_POLICY_6BIT
                && normalized != SIXEL_LUT_POLICY_CERTLUT
-               && normalized != SIXEL_LUT_POLICY_NONE) {
+               && normalized != SIXEL_LUT_POLICY_NONE
+               && normalized != SIXEL_LUT_POLICY_VPTE) {
         normalized = SIXEL_LUT_POLICY_6BIT;
     }
 
     return normalized;
+}
+
+static int
+sixel_lookup_vpte_parse_flag(char const *text, int default_value)
+{
+    long parsed;
+    char *endptr;
+
+    if (text == NULL || text[0] == '\0') {
+        return default_value;
+    }
+
+    errno = 0;
+    endptr = NULL;
+    parsed = strtol(text, &endptr, 10);
+    if (errno == ERANGE || endptr == text || *endptr != '\0') {
+        return default_value;
+    }
+
+    if (parsed == 0L) {
+        return 0;
+    }
+    if (parsed == 1L) {
+        return 1;
+    }
+
+    return default_value;
+}
+
+static int
+sixel_lookup_vpte_env_resolution(void)
+{
+    char const *env;
+    long parsed;
+    char *endptr;
+
+    env = getenv("SIXEL_LOOKUP_VPTE_RESOLUTION");
+    if (env == NULL || env[0] == '\0') {
+        return 128;
+    }
+
+    errno = 0;
+    endptr = NULL;
+    parsed = strtol(env, &endptr, 10);
+    if (errno == ERANGE || endptr == env || *endptr != '\0') {
+        return 128;
+    }
+
+    if (parsed == 64L || parsed == 128L || parsed == 256L) {
+        return (int)parsed;
+    }
+
+    return 128;
+}
+
+static int
+sixel_lookup_vpte_env_refine(void)
+{
+    return sixel_lookup_vpte_parse_flag(getenv("SIXEL_LOOKUP_VPTE_REFINE"),
+                                        1);
+}
+
+static int
+sixel_lookup_vpte_env_shared(void)
+{
+    return sixel_lookup_vpte_parse_flag(getenv("SIXEL_LOOKUP_VPTE_SHARED"),
+                                        1);
 }
 
 static float
@@ -286,6 +355,9 @@ sixel_lookup_float32_init(sixel_lookup_float32_t *lut,
     lut->kdtree_root = -1;
     lut->kdnodes_count = 0;
     lut->allocator = allocator;
+    lut->vpte = NULL;
+    lut->vpte_ready = 0;
+    (void)sixel_lookup_vpte_float32_create(allocator, &lut->vpte);
 }
 
 static void
@@ -315,6 +387,11 @@ sixel_lookup_float32_clear(sixel_lookup_float32_t *lut)
 
     sixel_lookup_float32_release_palette(lut);
     sixel_lookup_float32_release_kdtree(lut);
+    if (lut->vpte != NULL) {
+        sixel_lookup_vpte_float32_unref(lut->vpte);
+        lut->vpte = NULL;
+    }
+    lut->vpte_ready = 0;
     lut->ncolors = 0;
     lut->depth = 0;
 }
@@ -406,6 +483,64 @@ sixel_lookup_float32_prepare_kdtree(sixel_lookup_float32_t *lut)
     return status;
 }
 
+static SIXELSTATUS
+sixel_lookup_float32_configure_vpte(sixel_lookup_float32_t *lut,
+                                    int wcomp1,
+                                    int wcomp2,
+                                    int wcomp3,
+                                    int pixelformat)
+{
+    SIXELSTATUS status;
+    int resolution;
+    int refine;
+    int shared_flag;
+    uint32_t signature;
+
+    resolution = sixel_lookup_vpte_env_resolution();
+    refine = sixel_lookup_vpte_env_refine();
+    shared_flag = sixel_lookup_vpte_env_shared();
+
+    if (lut->vpte == NULL) {
+        status = sixel_lookup_vpte_float32_create(lut->allocator, &lut->vpte);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "sixel_lookup_float32_configure: VPTE handle allocation "
+                "failed.");
+            return status;
+        }
+    }
+
+    signature = sixel_lookup_vpte_float32_signature(lut->palette,
+                                                    lut->ncolors,
+                                                    resolution,
+                                                    refine,
+                                                    wcomp1,
+                                                    wcomp2,
+                                                    wcomp3,
+                                                    lut->depth);
+
+    status = sixel_lookup_vpte_float32_configure(lut->vpte,
+                                                 lut->palette,
+                                                 lut->ncolors,
+                                                 resolution,
+                                                 refine,
+                                                 shared_flag,
+                                                 wcomp1,
+                                                 wcomp2,
+                                                 wcomp3,
+                                                 pixelformat);
+    if (SIXEL_FAILED(status)) {
+        lut->vpte_ready = 0;
+        return status;
+    }
+
+    sixel_lookup_vpte_float32_shared_set_signature(lut->vpte->shared,
+                                                   signature);
+    lut->vpte_ready = 1;
+
+    return SIXEL_OK;
+}
+
 SIXELSTATUS
 sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
                                unsigned char const *palette,
@@ -448,6 +583,24 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
         return status;
     }
 
+    if (lut->policy == SIXEL_LUT_POLICY_VPTE) {
+        status = sixel_lookup_float32_configure_vpte(lut,
+                                                     wcomp1,
+                                                     wcomp2,
+                                                     wcomp3,
+                                                     pixelformat);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "sixel_lookup_float32_configure: VPTE failed; "
+                "falling back to CERTLUT.");
+            lut->policy = SIXEL_LUT_POLICY_CERTLUT;
+        } else {
+            return SIXEL_OK;
+        }
+    } else {
+        lut->vpte_ready = 0;
+    }
+
     if (lut->policy == SIXEL_LUT_POLICY_CERTLUT) {
         status = sixel_lookup_float32_prepare_kdtree(lut);
         if (SIXEL_FAILED(status)) {
@@ -471,6 +624,12 @@ sixel_lookup_float32_map_pixel(sixel_lookup_float32_t *lut,
     }
 
     sample = (float const *)(void const *)pixel;
+    if (lut->policy == SIXEL_LUT_POLICY_VPTE) {
+        if (lut->vpte_ready && lut->vpte != NULL) {
+            return sixel_lookup_vpte_float32_map(lut->vpte, sample);
+        }
+        return 0;
+    }
     if (lut->policy == SIXEL_LUT_POLICY_CERTLUT) {
         best_index = 0;
         best_distance = FLT_MAX;
