@@ -157,12 +157,12 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/timer.c $(srcdir)/assessment.c \
 	$(srcdir)/assessment.h $(srcdir)/timer.h $(srcdir)/sleep.c \
 	$(srcdir)/sleep.h $(srcdir)/fromsixel.c $(srcdir)/tosixel.c \
-        $(srcdir)/lookup-common.c $(srcdir)/lookup-8bit.c \
-        $(srcdir)/lookup-8bit.h $(srcdir)/lookup-float32.c \
-        $(srcdir)/lookup-float32.h $(srcdir)/lookup-vpte-8bit.c \
-        $(srcdir)/lookup-vpte-8bit.h $(srcdir)/lookup-vpte-float32.c \
-        $(srcdir)/lookup-vpte-float32.h $(srcdir)/lookup-common.h \
-        $(srcdir)/palette-heckbert.c $(srcdir)/palette-heckbert.h \
+	$(srcdir)/lookup-common.c $(srcdir)/lookup-8bit.c \
+	$(srcdir)/lookup-8bit.h $(srcdir)/lookup-float32.c \
+	$(srcdir)/lookup-float32.h $(srcdir)/lookup-vpte-8bit.c \
+	$(srcdir)/lookup-vpte-8bit.h $(srcdir)/lookup-vpte-float32.c \
+	$(srcdir)/lookup-vpte-float32.h $(srcdir)/lookup-common.h \
+	$(srcdir)/palette-heckbert.c $(srcdir)/palette-heckbert.h \
 	$(srcdir)/palette-common-merge.c \
 	$(srcdir)/palette-common-merge.h \
 	$(srcdir)/palette-common-snap.c \
@@ -224,12 +224,11 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 am_libsixel_la_OBJECTS = libsixel_la-output.lo libsixel_la-timer.lo \
 	libsixel_la-assessment.lo libsixel_la-sleep.lo \
 	libsixel_la-fromsixel.lo libsixel_la-tosixel.lo \
-        libsixel_la-lookup-common.lo libsixel_la-lookup-8bit.lo \
-        libsixel_la-lookup-float32.lo \
-        libsixel_la-lookup-vpte-8bit.lo \
-        libsixel_la-lookup-vpte-float32.lo \
-        libsixel_la-palette-heckbert.lo \
-        libsixel_la-palette-common-merge.lo \
+	libsixel_la-lookup-common.lo libsixel_la-lookup-8bit.lo \
+	libsixel_la-lookup-float32.lo libsixel_la-lookup-vpte-8bit.lo \
+	libsixel_la-lookup-vpte-float32.lo \
+	libsixel_la-palette-heckbert.lo \
+	libsixel_la-palette-common-merge.lo \
 	libsixel_la-palette-common-snap.lo \
 	libsixel_la-palette-kmeans.lo libsixel_la-palette.lo \
 	libsixel_la-dither.lo libsixel_la-dither-common-pipeline.lo \
@@ -327,6 +326,8 @@ am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-8bit.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-common.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-float32.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-vpte-8bit.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-vpte-float32.Plo \
 	./$(DEPDIR)/libsixel_la-malloc_stub.Plo \
 	./$(DEPDIR)/libsixel_la-options.Plo \
 	./$(DEPDIR)/libsixel_la-output.Plo \
@@ -616,12 +617,12 @@ libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/timer.c $(srcdir)/assessment.c \
 	$(srcdir)/assessment.h $(srcdir)/timer.h $(srcdir)/sleep.c \
 	$(srcdir)/sleep.h $(srcdir)/fromsixel.c $(srcdir)/tosixel.c \
-        $(srcdir)/lookup-common.c $(srcdir)/lookup-8bit.c \
-        $(srcdir)/lookup-8bit.h $(srcdir)/lookup-float32.c \
-        $(srcdir)/lookup-float32.h $(srcdir)/lookup-vpte-8bit.c \
-        $(srcdir)/lookup-vpte-8bit.h $(srcdir)/lookup-vpte-float32.c \
-        $(srcdir)/lookup-vpte-float32.h $(srcdir)/lookup-common.h \
-        $(srcdir)/palette-heckbert.c $(srcdir)/palette-heckbert.h \
+	$(srcdir)/lookup-common.c $(srcdir)/lookup-8bit.c \
+	$(srcdir)/lookup-8bit.h $(srcdir)/lookup-float32.c \
+	$(srcdir)/lookup-float32.h $(srcdir)/lookup-vpte-8bit.c \
+	$(srcdir)/lookup-vpte-8bit.h $(srcdir)/lookup-vpte-float32.c \
+	$(srcdir)/lookup-vpte-float32.h $(srcdir)/lookup-common.h \
+	$(srcdir)/palette-heckbert.c $(srcdir)/palette-heckbert.h \
 	$(srcdir)/palette-common-merge.c \
 	$(srcdir)/palette-common-merge.h \
 	$(srcdir)/palette-common-snap.c \
@@ -842,6 +843,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-8bit.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-common.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-float32.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-vpte-8bit.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-vpte-float32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-malloc_stub.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-options.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-output.Plo@am__quote@ # am--include-marker
@@ -956,7 +959,6 @@ libsixel_la-lookup-float32.lo: lookup-float32.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-float32.c' object='libsixel_la-lookup-float32.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-float32.lo `test -f 'lookup-float32.c' || echo '$(srcdir)/'`lookup-float32.c
-
 
 libsixel_la-lookup-vpte-8bit.lo: lookup-vpte-8bit.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-vpte-8bit.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-vpte-8bit.Tpo -c -o libsixel_la-lookup-vpte-8bit.lo `test -f 'lookup-vpte-8bit.c' || echo '$(srcdir)/'`lookup-vpte-8bit.c
@@ -1577,6 +1579,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-common.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-float32.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vpte-8bit.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vpte-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-malloc_stub.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-options.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
@@ -1682,6 +1686,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-common.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-float32.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vpte-8bit.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vpte-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-malloc_stub.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-options.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
