@@ -678,6 +678,24 @@ cell corners.  The following environment variables tune the grid:
   negligible in recent tests; enable explicitly if you want to retry it).
 * `SIXEL_LOOKUP_VPTE_SHARED` controls whether the prebuilt grid is shared
   across threads (0 or 1; default 1).
+* `SIXEL_VPTE_TILE_XY` sets the tile width/height used by the parallel EDT
+  passes (default 8; values are clamped to the image size and fall back to
+  8 on invalid input).
+* `SIXEL_VPTE_TILE_DEPTH` sets the tile depth (z span) for the EDT passes
+  (default 8; clamped the same way as `SIXEL_VPTE_TILE_XY`).
+* `SIXEL_VPTE_FIRST_TOUCH` enables tile-wise zeroing of the VPTE grid
+  before the EDT so that NUMA systems can place pages on the thread that
+  will use them (0 or 1; default 0 so behaviour is unchanged unless opted
+  in).
+* `SIXEL_VPTE_PIN_THREADS` pins the VPTE worker threads once at startup to
+  reduce migration on NUMA systems (0 or 1; default 0; failures are ignored
+  so portability is preserved).
+* `SIXEL_PARALLEL_LOG_PATH` writes a JSON timeline log that can be consumed
+  by `tools/timeline.py`; the log is silent when unset.
+* `SIXEL_PARALLEL_LOG_LINES` controls per-line logging when
+  `SIXEL_PARALLEL_LOG_PATH` is set.  Use 0 to suppress line events, or a
+  positive integer to log every Nth line (unset logs every line and may be
+  heavy).
 
 The *certlut* policy divides the RGB cube into 64×64×64 top level
 cells (6 bits per channel).  Each top level cell spans a 4×4×4 region;
