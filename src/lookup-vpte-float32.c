@@ -39,6 +39,7 @@
 
 #include <sixel.h>
 
+#include "cpu.h"
 #include "allocator.h"
 #include "compat_stub.h"
 #include "lookup-common.h"
@@ -46,6 +47,42 @@
 #include "logger.h"
 #include "sixel_atomic.h"
 #include "status.h"
+
+#if defined(HAVE_IMMINTRIN_H) && \
+    (defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
+     defined(_M_IX86))
+# define SIXEL_VPTE_HAS_X86_INTRIN 1
+# include <immintrin.h>
+#endif
+
+#if defined(SIXEL_VPTE_HAS_X86_INTRIN)
+# if defined(__GNUC__)
+#  if !defined(__clang__)
+#   define SIXEL_VPTE_TARGET_AVX2 __attribute__((target("avx2")))
+#   define SIXEL_VPTE_TARGET_AVX512 __attribute__((target("avx512f")))
+#   define SIXEL_VPTE_USE_AVX2 1
+#   define SIXEL_VPTE_USE_AVX512 1
+#  else
+#   define SIXEL_VPTE_TARGET_AVX2
+#   define SIXEL_VPTE_TARGET_AVX512
+#   if defined(__AVX2__)
+#    define SIXEL_VPTE_USE_AVX2 1
+#   endif
+#   if defined(__AVX512F__)
+#    define SIXEL_VPTE_USE_AVX512 1
+#   endif
+#  endif
+# elif defined(_MSC_VER)
+#  define SIXEL_VPTE_TARGET_AVX2
+#  define SIXEL_VPTE_TARGET_AVX512
+#  if defined(__AVX2__) || defined(_M_AVX2)
+#   define SIXEL_VPTE_USE_AVX2 1
+#  endif
+#  if defined(__AVX512F__) || defined(_M_AVX512F)
+#   define SIXEL_VPTE_USE_AVX512 1
+#  endif
+# endif
+#endif
 
 #ifndef SIXEL_VPTE_TLS
 # if defined(SIXEL_ENABLE_THREADS)
@@ -146,6 +183,8 @@ typedef struct sixel_lookup_vpte_timeline {
     int line_stride;
     sixel_logger_t logger;
 } sixel_lookup_vpte_timeline_t;
+
+typedef void (*sixel_lookup_vpte_edt1d_fn)(double *, int *, int, double);
 
 static SIXEL_VPTE_TLS sixel_lookup_vpte_cache_t
     sixel_lookup_vpte_thread_cache;
@@ -571,10 +610,10 @@ sixel_lookup_vpte_seed_grid(int resolution,
 }
 
 static void
-sixel_lookup_vpte_edt1d(double *line_dist,
-                        int *line_src,
-                        int length,
-                        double weight)
+sixel_lookup_vpte_edt1d_scalar(double *line_dist,
+                               int *line_src,
+                               int length,
+                               double weight)
 {
     double zbuf[257];
     int vbuf[256];
@@ -632,6 +671,283 @@ sixel_lookup_vpte_edt1d(double *line_dist,
     }
 }
 
+#if defined(SIXEL_VPTE_USE_AVX2)
+/*
+ * AVX2-accelerated evaluation of the second FH pass.  The envelope remains
+ * scalar because of its control flow, while the quadratic evaluation benefits
+ * from processing multiple output points that share the same k.
+ */
+static SIXEL_VPTE_TARGET_AVX2 void
+sixel_lookup_vpte_edt1d_avx2(double *line_dist,
+                             int *line_src,
+                             int length,
+                             double weight)
+{
+    double zbuf[257];
+    int vbuf[256];
+    double scratch[256];
+    int k;
+    int q;
+    int i;
+    double s;
+    double candidate;
+    double denom;
+    int segment_end;
+    double limit;
+    int base_index;
+    double base_dist;
+    int base_src;
+    __m256d weight_vec;
+    __m256d base_dist_vec;
+    __m256d base_index_vec;
+    __m256d idx_vec;
+    __m256d diff_vec;
+    __m256d dist_vec;
+    __m256i src_vec;
+    int lane;
+
+    vbuf[0] = 0;
+    zbuf[0] = -DBL_MAX;
+    zbuf[1] = DBL_MAX;
+    k = 0;
+
+    for (q = 1; q < length; ++q) {
+        denom = 2.0 * weight * (double)(q - vbuf[k]);
+        if (denom == 0.0) {
+            denom = 1.0;
+        }
+        candidate = (line_dist[q] + weight * (double)(q * q))
+                  - (line_dist[vbuf[k]]
+                     + weight * (double)(vbuf[k] * vbuf[k]));
+        s = candidate / denom;
+        while (s <= zbuf[k]) {
+            --k;
+            denom = 2.0 * weight * (double)(q - vbuf[k]);
+            if (denom == 0.0) {
+                denom = 1.0;
+            }
+            candidate = (line_dist[q] + weight * (double)(q * q))
+                      - (line_dist[vbuf[k]]
+                         + weight * (double)(vbuf[k] * vbuf[k]));
+            s = candidate / denom;
+        }
+        ++k;
+        vbuf[k] = q;
+        zbuf[k] = s;
+        zbuf[k + 1] = DBL_MAX;
+    }
+
+    k = 0;
+    weight_vec = _mm256_set1_pd(weight);
+    for (i = 0; i < length;) {
+        while (zbuf[k + 1] < (double)i) {
+            ++k;
+        }
+        limit = zbuf[k + 1];
+        segment_end = length;
+        if (limit < (double)length) {
+            segment_end = (int)floor(limit + 1.0);
+            if (segment_end > length) {
+                segment_end = length;
+            }
+        }
+        if (segment_end <= i) {
+            segment_end = i + 1;
+        }
+
+        base_index = vbuf[k];
+        base_dist = line_dist[base_index];
+        base_src = line_src[base_index];
+        base_dist_vec = _mm256_set1_pd(base_dist);
+        base_index_vec = _mm256_set1_pd((double)base_index);
+        src_vec = _mm256_set1_epi32(base_src);
+
+        lane = i;
+        while (lane + 4 <= segment_end) {
+            idx_vec = _mm256_setr_pd((double)lane,
+                                     (double)(lane + 1),
+                                     (double)(lane + 2),
+                                     (double)(lane + 3));
+            diff_vec = _mm256_sub_pd(idx_vec, base_index_vec);
+            dist_vec = _mm256_mul_pd(diff_vec, diff_vec);
+            dist_vec = _mm256_mul_pd(dist_vec, weight_vec);
+            dist_vec = _mm256_add_pd(dist_vec, base_dist_vec);
+            _mm256_storeu_pd(scratch + lane, dist_vec);
+            _mm256_storeu_si256((__m256i *)(line_src + lane), src_vec);
+            lane += 4;
+        }
+        for (; lane < segment_end; ++lane) {
+            double diff;
+
+            diff = (double)(lane - base_index);
+            scratch[lane] = base_dist + weight * diff * diff;
+            line_src[lane] = base_src;
+        }
+        i = segment_end;
+    }
+
+    for (i = 0; i < length; ++i) {
+        line_dist[i] = scratch[i];
+    }
+}
+#endif  /* SIXEL_VPTE_USE_AVX2 */
+
+#if defined(SIXEL_VPTE_USE_AVX512)
+/*
+ * AVX-512 widens the batch to eight pixels so long segments reuse the same
+ * envelope state across more outputs before falling back to the scalar tail.
+ */
+static SIXEL_VPTE_TARGET_AVX512 void
+sixel_lookup_vpte_edt1d_avx512(double *line_dist,
+                               int *line_src,
+                               int length,
+                               double weight)
+{
+    double zbuf[257];
+    int vbuf[256];
+    double scratch[256];
+    int k;
+    int q;
+    int i;
+    double s;
+    double candidate;
+    double denom;
+    int segment_end;
+    double limit;
+    int base_index;
+    double base_dist;
+    int base_src;
+    __m512d weight_vec;
+    __m512d base_dist_vec;
+    __m512d base_index_vec;
+    __m512d idx_vec;
+    __m512d diff_vec;
+    __m512d dist_vec;
+    __m256i src_vec;
+    int lane;
+
+    vbuf[0] = 0;
+    zbuf[0] = -DBL_MAX;
+    zbuf[1] = DBL_MAX;
+    k = 0;
+
+    for (q = 1; q < length; ++q) {
+        denom = 2.0 * weight * (double)(q - vbuf[k]);
+        if (denom == 0.0) {
+            denom = 1.0;
+        }
+        candidate = (line_dist[q] + weight * (double)(q * q))
+                  - (line_dist[vbuf[k]]
+                     + weight * (double)(vbuf[k] * vbuf[k]));
+        s = candidate / denom;
+        while (s <= zbuf[k]) {
+            --k;
+            denom = 2.0 * weight * (double)(q - vbuf[k]);
+            if (denom == 0.0) {
+                denom = 1.0;
+            }
+            candidate = (line_dist[q] + weight * (double)(q * q))
+                      - (line_dist[vbuf[k]]
+                         + weight * (double)(vbuf[k] * vbuf[k]));
+            s = candidate / denom;
+        }
+        ++k;
+        vbuf[k] = q;
+        zbuf[k] = s;
+        zbuf[k + 1] = DBL_MAX;
+    }
+
+    k = 0;
+    weight_vec = _mm512_set1_pd(weight);
+    for (i = 0; i < length;) {
+        while (zbuf[k + 1] < (double)i) {
+            ++k;
+        }
+        limit = zbuf[k + 1];
+        segment_end = length;
+        if (limit < (double)length) {
+            segment_end = (int)floor(limit + 1.0);
+            if (segment_end > length) {
+                segment_end = length;
+            }
+        }
+        if (segment_end <= i) {
+            segment_end = i + 1;
+        }
+
+        base_index = vbuf[k];
+        base_dist = line_dist[base_index];
+        base_src = line_src[base_index];
+        base_dist_vec = _mm512_set1_pd(base_dist);
+        base_index_vec = _mm512_set1_pd((double)base_index);
+        src_vec = _mm256_set1_epi32(base_src);
+
+        lane = i;
+        while (lane + 8 <= segment_end) {
+            idx_vec = _mm512_setr_pd((double)lane,
+                                     (double)(lane + 1),
+                                     (double)(lane + 2),
+                                     (double)(lane + 3),
+                                     (double)(lane + 4),
+                                     (double)(lane + 5),
+                                     (double)(lane + 6),
+                                     (double)(lane + 7));
+            diff_vec = _mm512_sub_pd(idx_vec, base_index_vec);
+            dist_vec = _mm512_mul_pd(diff_vec, diff_vec);
+            dist_vec = _mm512_mul_pd(dist_vec, weight_vec);
+            dist_vec = _mm512_add_pd(dist_vec, base_dist_vec);
+            _mm512_storeu_pd(scratch + lane, dist_vec);
+            _mm256_storeu_si256((__m256i *)(line_src + lane), src_vec);
+            lane += 8;
+        }
+        for (; lane < segment_end; ++lane) {
+            double diff;
+
+            diff = (double)(lane - base_index);
+            scratch[lane] = base_dist + weight * diff * diff;
+            line_src[lane] = base_src;
+        }
+        i = segment_end;
+    }
+
+    for (i = 0; i < length; ++i) {
+        line_dist[i] = scratch[i];
+    }
+}
+#endif  /* SIXEL_VPTE_USE_AVX512 */
+
+static sixel_lookup_vpte_edt1d_fn
+sixel_lookup_vpte_edt1d_resolve(void)
+{
+    static sixel_lookup_vpte_edt1d_fn selected;
+
+    if (selected != NULL) {
+        return selected;
+    }
+#if defined(SIXEL_VPTE_HAS_X86_INTRIN)
+    if (selected == NULL) {
+        int simd_level;
+
+        simd_level = sixel_cpu_simd_level();
+# if defined(SIXEL_VPTE_USE_AVX512)
+        if (simd_level >= SIXEL_SIMD_LEVEL_AVX512) {
+            selected = sixel_lookup_vpte_edt1d_avx512;
+            return selected;
+        }
+# endif
+# if defined(SIXEL_VPTE_USE_AVX2)
+        if (simd_level >= SIXEL_SIMD_LEVEL_AVX2) {
+            selected = sixel_lookup_vpte_edt1d_avx2;
+            return selected;
+        }
+# endif
+    }
+#endif
+    selected = sixel_lookup_vpte_edt1d_scalar;
+
+    return selected;
+}
+
 static void
 sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
                             double *distances,
@@ -651,12 +967,14 @@ sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
     size_t stride_z;
     int log_lines;
     char message[32];
+    sixel_lookup_vpte_edt1d_fn edt1d;
 
     res = shared->resolution;
     plane = (size_t)res * (size_t)res;
     stride_y = (size_t)res;
     stride_z = plane;
     log_lines = sixel_lookup_vpte_timeline_lines_enabled(timeline);
+    edt1d = sixel_lookup_vpte_edt1d_resolve();
 
     weight = (double)shared->weights[0];
     sixel_lookup_vpte_timeline_log(timeline,
@@ -681,7 +999,7 @@ sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
                 line_dist[x] = distances[offset + (size_t)x];
                 line_src[x] = sources[offset + (size_t)x];
             }
-            sixel_lookup_vpte_edt1d(line_dist, line_src, res, weight);
+            edt1d(line_dist, line_src, res, weight);
             for (x = 0; x < res; ++x) {
                 distances[offset + (size_t)x] = line_dist[x];
                 sources[offset + (size_t)x] = line_src[x];
@@ -728,7 +1046,7 @@ sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
                 line_dist[y] = distances[offset];
                 line_src[y] = sources[offset];
             }
-            sixel_lookup_vpte_edt1d(line_dist, line_src, res, weight);
+            edt1d(line_dist, line_src, res, weight);
             for (y = 0; y < res; ++y) {
                 offset = ((size_t)z * stride_z)
                        + ((size_t)y * stride_y)
@@ -778,7 +1096,7 @@ sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
                 line_dist[z] = distances[offset];
                 line_src[z] = sources[offset];
             }
-            sixel_lookup_vpte_edt1d(line_dist, line_src, res, weight);
+            edt1d(line_dist, line_src, res, weight);
             for (z = 0; z < res; ++z) {
                 offset = ((size_t)z * stride_z)
                        + ((size_t)y * stride_y)
