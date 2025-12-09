@@ -29,8 +29,8 @@ am__make_running_with_option = \
   case $${target_option-} in \
       ?) ;; \
       *) echo "am__make_running_with_option: internal error: invalid" \
-              "target option '$${target_option-}' specified" >&2; \
-         exit 1;; \
+	      "target option '$${target_option-}' specified" >&2; \
+	 exit 1;; \
   esac; \
   has_opt=no; \
   sane_makeflags=$$MAKEFLAGS; \
@@ -39,9 +39,9 @@ am__make_running_with_option = \
   else \
     case $$MAKEFLAGS in \
       *\\[\ \	]*) \
-        bs=\\; \
-        sane_makeflags=`printf '%s\n' "$$MAKEFLAGS" \
-          | sed "s/$$bs$$bs[$$bs $$bs	]*//g"`;; \
+	bs=\\; \
+	sane_makeflags=`printf '%s\n' "$$MAKEFLAGS" \
+	  | sed "s/$$bs$$bs[$$bs $$bs	]*//g"`;; \
     esac; \
   fi; \
   skip_next=no; \
@@ -53,11 +53,11 @@ am__make_running_with_option = \
     test $$skip_next = yes && { skip_next=no; continue; }; \
     case $$flg in \
       *=*|--*) continue;; \
-        -*I) strip_trailopt 'I'; skip_next=yes;; \
+	-*I) strip_trailopt 'I'; skip_next=yes;; \
       -*I?*) strip_trailopt 'I';; \
-        -*O) strip_trailopt 'O'; skip_next=yes;; \
+	-*O) strip_trailopt 'O'; skip_next=yes;; \
       -*O?*) strip_trailopt 'O';; \
-        -*l) strip_trailopt 'l'; skip_next=yes;; \
+	-*l) strip_trailopt 'l'; skip_next=yes;; \
       -*l?*) strip_trailopt 'l';; \
       -[dEDm]) skip_next=yes;; \
       -[JT]) skip_next=yes;; \
@@ -184,20 +184,20 @@ am__list_recheck_tests = $(AWK) '{ \
   while ((rc = (getline line < ($$0 ".trs"))) != 0) \
     { \
       if (rc < 0) \
-        { \
-          if ((getline line2 < ($$0 ".log")) < 0) \
+	{ \
+	  if ((getline line2 < ($$0 ".log")) < 0) \
 	    recheck = 0; \
-          break; \
-        } \
+	  break; \
+	} \
       else if (line ~ /$(am__recheck_rx)[nN][Oo]/) \
-        { \
-          recheck = 0; \
-          break; \
-        } \
+	{ \
+	  recheck = 0; \
+	  break; \
+	} \
       else if (line ~ /$(am__recheck_rx)[yY][eE][sS]/) \
-        { \
-          break; \
-        } \
+	{ \
+	  break; \
+	} \
     }; \
   if (recheck) \
     print $$0; \
@@ -226,24 +226,24 @@ function rst_section(header) \
   while ((rc = (getline line < ($$0 ".trs"))) != 0) \
     { \
       if (rc < 0) \
-         fatal("failed to read from " $$0 ".trs"); \
+	 fatal("failed to read from " $$0 ".trs"); \
       if (line ~ /$(am__global_test_result_rx)/) \
-        { \
-          sub("$(am__global_test_result_rx)", "", line); \
-          sub("[ 	]*$$", "", line); \
-          global_test_result = line; \
-        } \
+	{ \
+	  sub("$(am__global_test_result_rx)", "", line); \
+	  sub("[ 	]*$$", "", line); \
+	  global_test_result = line; \
+	} \
       else if (line ~ /$(am__copy_in_global_log_rx)[nN][oO]/) \
-        copy_in_global_log = 0; \
+	copy_in_global_log = 0; \
     }; \
   if (copy_in_global_log) \
     { \
       rst_section(global_test_result ": " $$0); \
       while ((rc = (getline line < ($$0 ".log"))) != 0) \
       { \
-        if (rc < 0) \
-          fatal("failed to read from " $$0 ".log"); \
-        print line; \
+	if (rc < 0) \
+	  fatal("failed to read from " $$0 ".log"); \
+	print line; \
       }; \
       printf "\n"; \
     }; \
@@ -325,8 +325,8 @@ am__set_b = \
   case '$@' in \
     */*) \
       case '$*' in \
-        */*) b='$*';; \
-          *) b=`echo '$@' | sed 's/\.log$$//'`; \
+	*/*) b='$*';; \
+	  *) b=`echo '$@' | sed 's/\.log$$//'`; \
        esac;; \
     *) \
       b='$*';; \
@@ -527,34 +527,38 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
-TESTS = t/test_0001_01_invalid_positional.t \
-        t/test_0001_02_invalid_option_arguments.t \
-        t/test_0001_03_invalid_option_combinations.t \
-        t/test_0002_stdin.t \
-        t/test_0003_information.t \
-        t/test_0004_conversion_options_01.t \
-        t/test_0004_conversion_options_02.t \
-        t/test_0004_conversion_options_03.t \
-        t/test_0004_conversion_options_04.t \
-        t/test_0005_dcs_arguments.t \
-        t/test_0006_dcs_variations.t \
-        t/test_0007_animation.t \
-        t/test_0008_progressive_jpeg.t \
-        t/test_0009_pngsuite.t \
-        t/test_0010_curl.t \
-        t/test_0011_basic.t \
-        t/test_0012_regressions.t \
-        t/test_0013_documentation.t \
-        t/test_0014_option_matching.t \
-        t/test_0015_argument_shift.t \
-        t/test_0016_assessment_spool.t \
-        t/test_0017_clipboard.t \
-        t/test_0018_lsqa_regression.t \
-        t/test_0019_python_wheel.t \
-        t/test_0020_mapfile_io.t
+CLI_TESTS = cli/t/test_0001_01_invalid_positional.t \
+	cli/t/test_0001_02_invalid_option_arguments.t \
+	cli/t/test_0001_03_invalid_option_combinations.t \
+	cli/t/test_0002_stdin.t \
+	cli/t/test_0003_information.t \
+	cli/t/test_0004_conversion_options_01.t \
+	cli/t/test_0004_conversion_options_02.t \
+	cli/t/test_0004_conversion_options_03.t \
+	cli/t/test_0004_conversion_options_04.t \
+	cli/t/test_0005_dcs_arguments.t \
+	cli/t/test_0006_dcs_variations.t \
+	cli/t/test_0007_animation.t \
+	cli/t/test_0008_progressive_jpeg.t \
+	cli/t/test_0009_pngsuite.t \
+	cli/t/test_0010_curl.t \
+	cli/t/test_0011_basic.t \
+	cli/t/test_0012_regressions.t \
+	cli/t/test_0013_documentation.t \
+	cli/t/test_0014_option_matching.t \
+	cli/t/test_0015_argument_shift.t \
+	cli/t/test_0016_assessment_spool.t \
+	cli/t/test_0017_clipboard.t \
+	cli/t/test_0018_lsqa_regression.t \
+	cli/t/test_0019_python_wheel.t \
+	cli/t/test_0020_mapfile_io.t
+
+PYTHON_TESTS = python/t/test_python_bindings.t
+
+TESTS = $(CLI_TESTS) $(PYTHON_TESTS)
 
 TEST_EXTENSIONS = .t
-HELPER_FILES = t/converters-common.t
+HELPER_FILES = cli/t/converters-common.t
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	ARTIFACT_ROOT; TOP_SRCDIR='$(abs_top_srcdir)'; export \
@@ -566,9 +570,9 @@ LOG_COMPILER = $(builddir)/tools/with-timeout.sh
 AM_LOG_FLAGS = --timeout=$(AM_TEST_TIMEOUT)
 AM_TEST_TIMEOUT = 300
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
-             lsqa_regression.sh \
-             data/baseline/*.json data/inputs/formats/* \
-             data/resolutions/*.png data/corrupted/*
+	     lsqa_regression.sh \
+	     data/baseline/*.json data/inputs/formats/* \
+	     data/resolutions/*.png data/corrupted/*
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
@@ -710,13 +714,13 @@ $(TEST_SUITE_LOG): $(TEST_LOGS)
 	}; \
 	output_system_information () \
 	{ \
-          echo;                                     \
+	  echo;                                     \
 	  { uname -a | $(AWK) '{                    \
   printf "System information (uname -a):";          \
   for (i = 1; i < NF; ++i)                          \
     {                                               \
       if (i != 2)                                   \
-        printf " %s", $$i;                          \
+	printf " %s", $$i;                          \
     }                                               \
   printf "\n";                                      \
 }'; } 2>&1;                                         \
@@ -962,7 +966,7 @@ uninstall-am:
 # distributed sources remain intact for developers and package builds.
 clean-local:
 	@if test "$(abs_builddir)" != "$(abs_srcdir)"; then \\
-		rm -f $(LOG_COMPILER) $(TESTS) $(HELPER_FILES); \\
+	        rm -f $(LOG_COMPILER) $(TESTS) $(HELPER_FILES); \\
 	fi
 
 check-local: $(LOG_COMPILER) $(TESTS) $(HELPER_FILES)
@@ -971,12 +975,8 @@ $(LOG_COMPILER): $(srcdir)/tools/with-timeout.sh
 	$(MKDIR_P) $(builddir)/tools
 	$(AM_V_GEN)cp $(srcdir)/tools/with-timeout.sh $(LOG_COMPILER)
 
-$(TESTS):
-	$(MKDIR_P) $(builddir)/t
-	$(AM_V_GEN)cp $(srcdir)/$@ $(builddir)/$@
-
-$(HELPER_FILES):
-	$(MKDIR_P) $(builddir)/t
+$(TESTS) $(HELPER_FILES):
+	$(MKDIR_P) $(builddir)/$(dir $@)
 	$(AM_V_GEN)cp $(srcdir)/$@ $(builddir)/$@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

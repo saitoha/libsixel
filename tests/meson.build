@@ -18,7 +18,7 @@ if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
   endforeach
 endif
 
-foreach t : ['test_0001_01_invalid_positional.t',
+cli_tests = ['test_0001_01_invalid_positional.t',
              'test_0001_02_invalid_option_arguments.t',
              'test_0001_03_invalid_option_combinations.t',
              'test_0002_stdin.t', 'test_0003_information.t',
@@ -42,8 +42,19 @@ foreach t : ['test_0001_01_invalid_positional.t',
              'test_0018_lsqa_regression.t',
              'test_0019_python_wheel.t',
              'test_0020_mapfile_io.t']
+
+foreach t : cli_tests
   test(t, sh,
-    args: [meson.current_source_dir() / 't' / t],
+    args: [meson.current_source_dir() / 'cli' / 't' / t],
+    protocol: 'tap',
+    env: env,
+    timeout: 300,
+    suite: ['tap'])
+endforeach
+
+foreach t : ['test_python_bindings.t']
+  test(t, sh,
+    args: [meson.current_source_dir() / 'python' / 't' / t],
     protocol: 'tap',
     env: env,
     timeout: 300,
