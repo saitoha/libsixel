@@ -11,6 +11,10 @@ pass() {
 
 fail() {
     printf 'not ok %s - %s\n' "$1" "$2"
+    if [ -f "${log_file}" ]; then
+        printf '# python log follows\n'
+        sed 's/^/# /' "${log_file}"
+    fi
     status=1
 }
 
@@ -28,6 +32,7 @@ run_python=""
 use_wheel=0
 
 mkdir -p "${artifact_dir}" "${tmp_dir}"
+: >"${log_file}"
 
 resolve_libdir() {
     build_root=$1
