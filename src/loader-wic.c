@@ -40,13 +40,13 @@
 #endif
 #include <wincodec.h>
 
-#if defined(__MINGW32__) && !defined(_MSC_VER)
+#ifndef WICInProcPointer
 /*
- * Older MinGW headers omit this convenience typedef. Restrict the fallback
- * to MinGW GCC style toolchains so that Windows SDK (MSVC/clang-cl) headers
- * providing the typedef do not conflict.
+ * Some MSYS/MinGW header revisions omit WICInProcPointer. Provide a
+ * compatible declaration matching the Windows SDK definition so calls to
+ * InitializeFromMemory compile on toolchains lacking the typedef.
  */
-typedef void *WICInProcPointer;
+typedef BYTE *WICInProcPointer;
 #endif
 
 #if HAVE_STRING_H
