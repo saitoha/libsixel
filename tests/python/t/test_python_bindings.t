@@ -74,6 +74,107 @@ fi
 # Abort early if the Python interpreter and the built shared library have
 # different word sizes (for example, 64-bit Python vs. 32-bit libsixel),
 # because such a mismatch always fails at import time with a confusing
+# ELFCLASS error. The detection is implemented in Python to avoid depending
+# on external tools such as `file`.
+python_bits=$(${python_bin} - <<'PY' 2>/dev/null || true
+import struct
+print(struct.calcsize("P") * 8)
+PY
+)
+
+lib_bits=$(${python_bin} - <<PY 2>>"${log_file}" || true
+import pathlib
+import struct
+import sys
+
+
+def _detect_elf_class(data):
+    """Return '32' or '64' for ELF binaries, otherwise ''."""
+
+    if not data.startswith(b"\x7fELF"):
+        return ""
+
+    # EI_CLASS sits at byte 4 and discriminates 32/64-bit objects.
+    elf_class = data[4]
+    if elf_class == 1:
+        return "32"
+    if elf_class == 2:
+        return "64"
+    return ""
+
+
+def _detect_macho_class(data):
+    """Return '32' or '64' for Mach-O binaries, otherwise ''."""
+
+    magic = data[:4]
+    macho_32 = (0xfeedface, 0xcefaedfe)
+    macho_64 = (0xfeedfacf, 0xcffaedfe)
+
+    value = int.from_bytes(magic, byteorder="big", signed=False)
+    if value in macho_32:
+        return "32"
+    if value in macho_64:
+        return "64"
+    return ""
+
+
+def _detect_pe_class(path, data):
+    """Return '32' or '64' for PE/COFF binaries, otherwise ''."""
+
+    if not data.startswith(b"MZ") or len(data) < 0x40:
+        return ""
+
+    pe_offset = int.from_bytes(data[0x3C:0x40], byteorder="little")
+    try:
+        with path.open("rb") as handle:
+            handle.seek(pe_offset)
+            signature = handle.read(6)
+    except OSError:
+        return ""
+
+    if not signature.startswith(b"PE\0\0") or len(signature) < 6:
+        return ""
+
+    machine = struct.unpack("<H", signature[4:6])[0]
+    if machine in (0x014c,):
+        return "32"
+    if machine in (0x8664,):
+        return "64"
+    return ""
+
+
+def detect(path):
+    try:
+        with path.open("rb") as handle:
+            head = handle.read(512)
+    except OSError:
+        return ""
+
+    for detector in (_detect_elf_class, _detect_macho_class):
+        width = detector(head)
+        if width:
+            return width
+
+    return _detect_pe_class(path, head)
+
+
+if __name__ == "__main__":
+    lib_path = pathlib.Path(r"${shared_lib}")
+    print(detect(lib_path))
+PY
+)
+
+printf 'python_bits=%s\n' "${python_bits}" >>"${log_file}"
+printf 'lib_bits=%s\n' "${lib_bits}" >>"${log_file}"
+
+if [ -n "${python_bits}" ] && [ -n "${lib_bits}" ] \
+   && [ "${python_bits}" != "${lib_bits}" ]; then
+    skip_all "python is ${python_bits}-bit but libsixel is ${lib_bits}-bit"
+fi
+
+# Abort early if the Python interpreter and the built shared library have
+# different word sizes (for example, 64-bit Python vs. 32-bit libsixel),
+# because such a mismatch always fails at import time with a confusing
 # ELFCLASS error. We rely on the `file` utility when available to extract
 # the bitness of the shared library and compare it with Python's pointer
 # size.
@@ -167,6 +268,7 @@ case_id=$((case_id + 1))
 verify_script="${tmp_dir}/verify-bindings.py"
 cat >"${verify_script}" <<'PY'
 import ctypes.util
+import glob
 import os
 import pathlib
 
@@ -174,14 +276,24 @@ import pathlib
 def _prefer_build_library(name, original_find):
     libdir = os.environ.get("LIBSIXEL_LIBDIR")
     if libdir:
-        candidate = os.path.join(libdir, f"lib{name}.so")
-        if os.path.exists(candidate):
-            return candidate
+        prefixes = ["lib", ""]
+        suffixes = [".so", ".dylib", ".dll"]
+
+        for prefix in prefixes:
+            for suffix in suffixes:
+                pattern = os.path.join(libdir,
+                                       f"{prefix}{name}*{suffix}")
+                matches = sorted(glob.glob(pattern))
+                if matches:
+                    return matches[0]
 
     return original_find(name)
 
 
-ctypes.util.find_library = lambda name, _orig=ctypes.util.find_library: _prefer_build_library(name, _orig)
+ctypes.util.find_library = (
+    lambda name, _orig=ctypes.util.find_library:
+    _prefer_build_library(name, _orig)
+)
 
 from libsixel import SIXEL_PIXELFORMAT_RGB888
 from libsixel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
