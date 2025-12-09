@@ -365,6 +365,25 @@ keyed by voxel coordinates to speed up repeated lookups.
 .br
 SIXEL_LOOKUP_VPTE_SHARED (0 or 1; default 1) builds the grid once
 before worker threads run and shares it read-only.
+.br
+SIXEL_VPTE_TILE_XY (default 8; clamped to the image size and falling back to 8
+on invalid input) sets the tile width/height for the EDT passes.
+.br
+SIXEL_VPTE_TILE_DEPTH (default 8; same clamping as SIXEL_VPTE_TILE_XY) sets the
+tile depth for the EDT passes.
+.br
+SIXEL_VPTE_FIRST_TOUCH (0 or 1; default 0) zeroes VPTE tiles in parallel before
+the EDT to let NUMA systems place pages on the worker that will use them.
+.br
+SIXEL_VPTE_PIN_THREADS (0 or 1; default 0) pins VPTE worker threads once at
+startup to reduce migration; errors are ignored so portability is preserved.
+.br
+SIXEL_PARALLEL_LOG_PATH writes a JSON timeline log consumed by tools/timeline.py
+when set; unset leaves logging disabled.
+.br
+SIXEL_PARALLEL_LOG_LINES controls per-line logging when
+SIXEL_PARALLEL_LOG_PATH is set (0 disables line events, a positive integer logs
+every Nth line; unset logs every line and may be heavy).
 .TP 5
 .B \-l \fILOOPMODE\fP, \-\-loop\-control=\fILOOPMODE\fP
 select loop control mode for GIF animation.
