@@ -433,6 +433,10 @@ sixel_lookup_vpte_prefetch_line(double *distances,
                                 int tile,
                                 int line)
 {
+#if SIXEL_ENABLE_THREADS
+    int skip_line;
+    char message[64];
+#endif
 #if defined(__GNUC__)
     __builtin_prefetch(distances + offset, 0, 3);
     __builtin_prefetch(sources + offset, 0, 3);
@@ -443,7 +447,21 @@ sixel_lookup_vpte_prefetch_line(double *distances,
 #if SIXEL_ENABLE_THREADS
     if (timeline != NULL && timeline->initialized
             && timeline->logger.active) {
-        char message[64];
+        skip_line = 0;
+        /*
+         * Skip logging unless line-level events are explicitly enabled.
+         * This keeps the prefetch hook out of the hot loop when only
+         * coarse timeline markers are needed.
+         */
+        if (!timeline->log_lines) {
+            skip_line = 1;
+        } else if (timeline->line_stride > 1 && tile >= 0
+                   && (tile % timeline->line_stride) != 0) {
+            skip_line = 1;
+        }
+        if (skip_line) {
+            return;
+        }
 
         (void)snprintf(message, sizeof(message),
                        "prefetch@%zu", offset);
