@@ -20,6 +20,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+import glob
 import os
 from ctypes import (
     cdll,
@@ -559,12 +560,17 @@ def _prefer_env_library(lib_names):
     if libdir is None:
         return None
 
+    prefixes = ["lib", ""]
     suffixes = [".so", ".dylib", ".dll"]
+
     for name in lib_names:
-        for suffix in suffixes:
-            candidate = os.path.join(libdir, f"lib{name}{suffix}")
-            if os.path.exists(candidate):
-                return candidate
+        for prefix in prefixes:
+            for suffix in suffixes:
+                pattern = os.path.join(libdir,
+                                       f"{prefix}{name}*{suffix}")
+                matches = sorted(glob.glob(pattern))
+                if matches:
+                    return matches[0]
 
     return None
 
