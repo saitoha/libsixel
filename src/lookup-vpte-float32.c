@@ -144,9 +144,18 @@ static uint32_t
 sixel_lookup_vpte_cache_hash(size_t offset)
 {
     uint32_t state;
+    uint64_t offset64;
 
-    state = sixel_lookup_vpte_mix_u32(0x811c9dc5U, (uint32_t)offset);
-    state = sixel_lookup_vpte_mix_u32(state, (uint32_t)(offset >> 32));
+    /*
+     * Hash the full pointer-sized offset using a 64bit staging value so that
+     * the high-half mix stays well-defined on 32bit builds.
+     */
+    offset64 = (uint64_t)offset;
+
+    state = sixel_lookup_vpte_mix_u32(0x811c9dc5U,
+                                      (uint32_t)offset64);
+    state = sixel_lookup_vpte_mix_u32(state,
+                                      (uint32_t)(offset64 >> 32));
 
     return state;
 }
