@@ -638,43 +638,54 @@ sixel_dither_map_pixels(
             && policy != SIXEL_LUT_POLICY_VPTE) {
             policy = SIXEL_LUT_POLICY_6BIT;
         }
-        if (lut == NULL) {
-            status = sixel_lut_new(&active_lut, policy, allocator);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-            manage_lut = 1;
-        } else {
+        if (lut != NULL && sixel_lookup_parallel_dither_active() != 0) {
+            /*
+             * Parallel palette application reuses the preconfigured LUT to
+             * avoid rebuilding VPTE inside each worker.  The shared LUT is
+             * immutable after setup, so workers only need a read-only handle
+             * here.
+             */
             active_lut = lut;
             manage_lut = 0;
-        }
-        if (policy == SIXEL_LUT_POLICY_CERTLUT) {
-            if (method_for_largest == SIXEL_LARGE_LUM) {
-                wcomp1 = complexion * 299;
-                wcomp2 = 587;
-                wcomp3 = 114;
+        } else {
+            if (lut == NULL) {
+                status = sixel_lut_new(&active_lut, policy, allocator);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+                manage_lut = 1;
+            } else {
+                active_lut = lut;
+                manage_lut = 0;
+            }
+            if (policy == SIXEL_LUT_POLICY_CERTLUT) {
+                if (method_for_largest == SIXEL_LARGE_LUM) {
+                    wcomp1 = complexion * 299;
+                    wcomp2 = 587;
+                    wcomp3 = 114;
+                } else {
+                    wcomp1 = complexion;
+                    wcomp2 = 1;
+                    wcomp3 = 1;
+                }
             } else {
                 wcomp1 = complexion;
                 wcomp2 = 1;
                 wcomp3 = 1;
             }
-        } else {
-            wcomp1 = complexion;
-            wcomp2 = 1;
-            wcomp3 = 1;
-        }
-        status = sixel_lut_configure(active_lut,
-                                     palette,
-                                     depth,
-                                     reqcolor,
-                                     complexion,
-                                     wcomp1,
-                                     wcomp2,
-                                     wcomp3,
-                                     policy,
-                                     pixelformat);
-        if (SIXEL_FAILED(status)) {
-            goto end;
+            status = sixel_lut_configure(active_lut,
+                                         palette,
+                                         depth,
+                                         reqcolor,
+                                         complexion,
+                                         wcomp1,
+                                         wcomp2,
+                                         wcomp3,
+                                         policy,
+                                         pixelformat);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
         }
         context.lut = active_lut;
         dither_lut_context = active_lut;
@@ -758,6 +769,7 @@ typedef struct sixel_parallel_dither_plan {
     sixel_index_t *dest;
     unsigned char *pixels;
     sixel_palette_t *palette;
+    sixel_lut_t *lut;
     sixel_allocator_t *allocator;
     sixel_dither_t *dither;
     size_t row_bytes;
@@ -882,7 +894,7 @@ sixel_dither_parallel_worker(tp_job_t job,
                                      plan->complexion,
                                      plan->lut_policy,
                                      plan->method_for_largest,
-                                     NULL,
+                                     plan->lut,
                                      &local_ncolors,
                                      plan->allocator,
                                      plan->dither,
@@ -1957,6 +1969,9 @@ sixel_dither_apply_palette(
     int parallel_threads = 1;
 #endif  /* SIXEL_ENABLE_THREADS */
     sixel_logger_t *logger = NULL;
+    int wcomp1;
+    int wcomp2;
+    int wcomp3;
 
     parallel_active = 0;
 
@@ -2210,6 +2225,7 @@ sixel_dither_apply_palette(
         plan.dest = dest;
         plan.pixels = input_pixels;
         plan.palette = palette;
+        plan.lut = palette->lut;
         plan.allocator = dither->allocator;
         plan.dither = dither;
         plan.width = width;
@@ -2227,6 +2243,38 @@ sixel_dither_apply_palette(
         plan.reqcolor = dither->ncolors;
         plan.pixelformat = pipeline_pixelformat;
         plan.logger = logger;
+
+        if (plan.lut != NULL && dither->optimized != 0
+                && plan.lut_policy != SIXEL_LUT_POLICY_NONE) {
+            if (plan.lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
+                if (plan.method_for_largest == SIXEL_LARGE_LUM) {
+                    wcomp1 = dither->complexion * 299;
+                    wcomp2 = 587;
+                    wcomp3 = 114;
+                } else {
+                    wcomp1 = dither->complexion;
+                    wcomp2 = 1;
+                    wcomp3 = 1;
+                }
+            } else {
+                wcomp1 = dither->complexion;
+                wcomp2 = 1;
+                wcomp3 = 1;
+            }
+            status = sixel_lut_configure(plan.lut,
+                                         plan.palette->entries,
+                                         plan.palette->depth,
+                                         (int)plan.palette->entry_count,
+                                         dither->complexion,
+                                         wcomp1,
+                                         wcomp2,
+                                         wcomp3,
+                                         plan.lut_policy,
+                                         plan.pixelformat);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
 
         status = sixel_dither_apply_palette_parallel(&plan,
                                                      parallel_threads);
