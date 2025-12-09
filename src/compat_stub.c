@@ -270,7 +270,9 @@ sixel_compat_strcpy(char *destination,
                     size_t destination_size,
                     const char *source)
 {
+#if !defined(_MSC_VER)
     size_t length;
+#endif
 
     if (destination == NULL || source == NULL || destination_size == 0) {
         return (-1);
