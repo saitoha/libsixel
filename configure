@@ -936,6 +936,8 @@ with_pkgconfigdir
 with_bashcompletiondir
 with_zshcompletiondir
 enable_simd
+enable_avx2
+enable_avx512
 enable_wiccodec
 enable_register_dll
 enable_python
@@ -1642,6 +1644,8 @@ Optional Features:
                           use macOS Quick Look for preview extraction
                           (default: auto)
   --enable-simd           enable SS2 and NEON (default: auto)
+  --enable-avx2           enable AVX2 optimizations (default: no)
+  --enable-avx512         enable AVX-512 optimizations (default: no)
   --enable-wiccodec       build WIC codec DLL (default: auto)
   --enable-register-dll   register WIC codec DLL during install (default: no,
                           admin rights required)
@@ -17065,6 +17069,26 @@ then :
 fi
 
 
+# Check whether --enable-avx2 was given.
+if test ${enable_avx2+y}
+then :
+  enableval=$enable_avx2;
+else case e in #(
+  e) enable_avx2=no ;;
+esac
+fi
+
+
+# Check whether --enable-avx512 was given.
+if test ${enable_avx512+y}
+then :
+  enableval=$enable_avx512;
+else case e in #(
+  e) enable_avx512=no ;;
+esac
+fi
+
+
 # Check whether --enable-wiccodec was given.
 if test ${enable_wiccodec+y}
 then :
@@ -19331,6 +19355,8 @@ have_wic="no"
 have_coregraphics="no"
 have_gdk_pixbuf2="no"
 have_sse2=no
+have_avx2=no
+have_avx512=no
 have_neon=no
 
 REQUIRES_PRIVATE=""
@@ -22250,6 +22276,92 @@ else
     case "${host_cpu}" in
     x86_64|amd64)
         have_sse2=yes
+        if test "x$enable_avx2" != xno; then
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler supports AVX2 flags and
+                             <immintrin.h>" >&5
+printf %s "checking whether the compiler supports AVX2 flags and
+                             <immintrin.h>... " >&6; }
+            if test "x$using_cl" = xyes; then
+                avx2_flag="/arch:AVX2"
+            else
+                avx2_flag="-mavx2"
+            fi
+            saved_CFLAGS="$CFLAGS"
+            CFLAGS="$CFLAGS $avx2_flag"
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <immintrin.h>
+int
+main (void)
+{
+__m256i v;
+                                                v = _mm256_setzero_si256();
+                                                (void)v;
+                                                return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  have_avx2=yes
+else case e in #(
+  e) have_avx2=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+            CFLAGS="$saved_CFLAGS"
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_avx2" >&5
+printf "%s\n" "$have_avx2" >&6; }
+            if test "x$have_avx2" = xyes; then
+                AM_CFLAGS="$AM_CFLAGS $avx2_flag"
+            elif test "x$enable_avx2" = xyes; then
+                as_fn_error $? "AVX2 support requested but not available" "$LINENO" 5
+            fi
+        fi
+        if test "x$enable_avx512" != xno; then
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler supports AVX-512 flags and
+                             <immintrin.h>" >&5
+printf %s "checking whether the compiler supports AVX-512 flags and
+                             <immintrin.h>... " >&6; }
+            if test "x$using_cl" = xyes; then
+                avx512_flag="/arch:AVX512"
+            else
+                avx512_flag="-mavx512f -mavx512bw"
+            fi
+            saved_CFLAGS="$CFLAGS"
+            CFLAGS="$CFLAGS $avx512_flag"
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <immintrin.h>
+int
+main (void)
+{
+__m512i v;
+                                                v = _mm512_setzero_si512();
+                                                (void)v;
+                                                return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  have_avx512=yes
+else case e in #(
+  e) have_avx512=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+            CFLAGS="$saved_CFLAGS"
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_avx512" >&5
+printf "%s\n" "$have_avx512" >&6; }
+            if test "x$have_avx512" = xyes; then
+                AM_CFLAGS="$AM_CFLAGS $avx512_flag"
+            elif test "x$enable_avx512" = xyes; then
+                as_fn_error $? "AVX-512 support requested but not available" "$LINENO" 5
+            fi
+        fi
         ;;
 
     i*86)
@@ -22360,6 +22472,22 @@ if test "x$have_neon" = xyes; then
 printf "%s\n" "#define HAVE_NEON 1" >>confdefs.h
 
     message_simd=neon
+fi
+
+if test "x$enable_avx2" = xno; then
+    message_avx2=no
+elif test "x$have_avx2" = xyes; then
+    message_avx2=yes
+else
+    message_avx2=no
+fi
+
+if test "x$enable_avx512" = xno; then
+    message_avx512=no
+elif test "x$have_avx512" = xyes; then
+    message_avx512=yes
+else
+    message_avx512=no
 fi
 
 if test "x$enable_simd" = xyes; then
@@ -25918,6 +26046,8 @@ echo "       ONNX Runtime        : $message_onnxruntime"
 echo "       python bindings     : $message_python"
 echo "       ruby bindings       : $message_ruby"
 echo "       simd                : $message_simd"
+echo "       AVX2               : $message_avx2"
+echo "       AVX-512            : $message_avx512"
 echo "       gcov integration    : $enable_gcov"
 echo "       debugging           : $enable_debug"
 echo "       tests               : $enable_tests"
