@@ -47,6 +47,15 @@ sixel_lookup_set_parallel_dither_active(int active);
 int
 sixel_lookup_parallel_dither_active(void);
 
+int
+sixel_lookup_env_shared_certlut(void);
+
+int
+sixel_lookup_env_shared_5bit(void);
+
+int
+sixel_lookup_env_shared_6bit(void);
+
 void
 sixel_lut_unref(sixel_lut_t *lut);
 

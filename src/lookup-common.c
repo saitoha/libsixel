@@ -47,6 +47,63 @@ struct sixel_lut {
 };
 
 static int sixel_lookup_parallel_active = 0;
+static int sixel_lookup_certlut_shared = -1;
+static int sixel_lookup_5bit_shared = -1;
+static int sixel_lookup_6bit_shared = -1;
+
+static int
+sixel_lookup_parse_flag(char const *text, int default_value)
+{
+    int value;
+
+    value = default_value;
+    if (text != NULL) {
+        if (text[0] == '1' && text[1] == '\0') {
+            value = 1;
+        } else if (text[0] == '0' && text[1] == '\0') {
+            value = 0;
+        }
+    }
+
+    return value;
+}
+
+int
+sixel_lookup_env_shared_certlut(void)
+{
+    if (sixel_lookup_certlut_shared < 0) {
+        sixel_lookup_certlut_shared
+            = sixel_lookup_parse_flag(
+                getenv("SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE"),
+                0);
+    }
+
+    return sixel_lookup_certlut_shared;
+}
+
+int
+sixel_lookup_env_shared_5bit(void)
+{
+    if (sixel_lookup_5bit_shared < 0) {
+        sixel_lookup_5bit_shared = sixel_lookup_parse_flag(
+            getenv("SIXEL_LOOKUP_5BIT_SHARED_INSTANCE"),
+            1);
+    }
+
+    return sixel_lookup_5bit_shared;
+}
+
+int
+sixel_lookup_env_shared_6bit(void)
+{
+    if (sixel_lookup_6bit_shared < 0) {
+        sixel_lookup_6bit_shared = sixel_lookup_parse_flag(
+            getenv("SIXEL_LOOKUP_6BIT_SHARED_INSTANCE"),
+            1);
+    }
+
+    return sixel_lookup_6bit_shared;
+}
 
 void
 sixel_lookup_set_parallel_dither_active(int active)
