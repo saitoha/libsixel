@@ -40,8 +40,12 @@
 #endif
 #include <wincodec.h>
 
-#if !defined(WICInProcPointer)
-/* Older MinGW headers omit this convenience typedef. */
+#if defined(__MINGW32__) && !defined(_MSC_VER)
+/*
+ * Older MinGW headers omit this convenience typedef. Restrict the fallback
+ * to MinGW GCC style toolchains so that Windows SDK (MSVC/clang-cl) headers
+ * providing the typedef do not conflict.
+ */
 typedef void *WICInProcPointer;
 #endif
 
