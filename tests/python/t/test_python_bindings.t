@@ -29,6 +29,22 @@ use_wheel=0
 
 mkdir -p "${artifact_dir}" "${tmp_dir}"
 
+resolve_libdir() {
+    build_root=$1
+
+    if [ -d "${build_root}/src/.libs" ]; then
+        printf '%s' "${build_root}/src/.libs"
+        return 0
+    fi
+
+    if [ -d "${build_root}/src" ]; then
+        printf '%s' "${build_root}/src"
+        return 0
+    fi
+
+    return 1
+}
+
 python_bin=$(command -v python3 || command -v python || true)
 if [ -z "${python_bin}" ]; then
     skip_all "python is not available"
@@ -74,7 +90,12 @@ PY
 else
     run_python="${python_bin}"
     in_tree_pythonpath="${TOP_SRCDIR}/python"
-    lib_path="${TOP_BUILDDIR}/src/.libs"
+    lib_path=$(resolve_libdir "${TOP_BUILDDIR}") || true
+
+    if [ -z "${lib_path}" ]; then
+        fail ${case_id} "could not locate libsixel build output"
+        exit ${status}
+    fi
 
     pythonpath_env="${in_tree_pythonpath}"
     if [ -n "${PYTHONPATH-}" ]; then
@@ -88,6 +109,7 @@ else
 
     if PYTHONPATH="${pythonpath_env}" \
        LD_LIBRARY_PATH="${ld_library_path_env}" \
+       LIBSIXEL_LIBDIR="${lib_path}" \
        "${run_python}" - <<'PY' >>"${log_file}" 2>&1; then
 import libsixel
 from libsixel import encoder, decoder
@@ -104,7 +126,23 @@ fi
 case_id=$((case_id + 1))
 verify_script="${tmp_dir}/verify-bindings.py"
 cat >"${verify_script}" <<'PY'
+import ctypes.util
+import os
 import pathlib
+
+
+def _prefer_build_library(name, original_find):
+    libdir = os.environ.get("LIBSIXEL_LIBDIR")
+    if libdir:
+        candidate = os.path.join(libdir, f"lib{name}.so")
+        if os.path.exists(candidate):
+            return candidate
+
+    return original_find(name)
+
+
+ctypes.util.find_library = lambda name, _orig=ctypes.util.find_library: _prefer_build_library(name, _orig)
+
 from libsixel import SIXEL_PIXELFORMAT_RGB888
 from libsixel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
 
@@ -131,8 +169,17 @@ print("encode succeeded")
 PY
 
 python_env="${run_python}"
+libdir=$(resolve_libdir "${TOP_BUILDDIR}") || true
+
+if [ -z "${libdir}" ]; then
+    fail ${case_id} "could not locate libsixel build output"
+    exit ${status}
+fi
+
+export LIBSIXEL_LIBDIR="${libdir}"
+
 if [ "${use_wheel}" -eq 1 ]; then
-    ld_library_path_env="${TOP_BUILDDIR}/src/.libs"
+    ld_library_path_env="${libdir}"
     if [ -n "${LD_LIBRARY_PATH-}" ]; then
         ld_library_path_env="${ld_library_path_env}:${LD_LIBRARY_PATH}"
     fi
@@ -150,7 +197,7 @@ else
         pythonpath_env="${pythonpath_env}:${PYTHONPATH}"
     fi
 
-    ld_library_path_env="${TOP_BUILDDIR}/src/.libs"
+    ld_library_path_env="${libdir}"
     if [ -n "${LD_LIBRARY_PATH-}" ]; then
         ld_library_path_env="${ld_library_path_env}:${LD_LIBRARY_PATH}"
     fi
