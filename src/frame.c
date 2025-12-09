@@ -56,6 +56,93 @@ static int
 sixel_frame_colorspace_from_pixelformat(int pixelformat);
 static void
 sixel_frame_apply_pixelformat(sixel_frame_t *frame, int pixelformat);
+static SIXELSTATUS
+sixel_frame_validate_size(char const *context,
+                          int width,
+                          int height,
+                          int pixelformat,
+                          size_t *pixel_total,
+                          size_t *byte_total,
+                          int *depth_bytes);
+
+
+/*
+ * Validate that a frame of the requested size stays within allocation
+ * limits. Callers receive optional pixel and byte counts so they can reuse
+ * the calculation without recomputing the totals when allocating buffers.
+ */
+static SIXELSTATUS
+sixel_frame_validate_size(char const *context,
+                          int width,
+                          int height,
+                          int pixelformat,
+                          size_t *pixel_total,
+                          size_t *byte_total,
+                          int *depth_bytes)
+{
+    SIXELSTATUS status;
+    char message[128];
+    size_t pixels;
+    size_t bytes;
+    int depth;
+
+    status = SIXEL_FALSE;
+    pixels = 0u;
+    bytes = 0u;
+    depth = 0;
+    if (context == NULL) {
+        context = "sixel frame validation";
+    }
+
+    depth = sixel_helper_compute_depth(pixelformat);
+    if (depth <= 0) {
+        sixel_compat_snprintf(message,
+                              sizeof(message),
+                              "%s: pixelformat depth is invalid.",
+                              context);
+        sixel_helper_set_additional_message(message);
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    pixels = (size_t)width * (size_t)height;
+    if (pixels > SIZE_MAX / (size_t)depth) {
+        sixel_compat_snprintf(message,
+                              sizeof(message),
+                              "%s: buffer size overflow.",
+                              context);
+        sixel_helper_set_additional_message(message);
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    bytes = pixels * (size_t)depth;
+    if (bytes > SIXEL_ALLOCATE_BYTES_MAX) {
+        sixel_compat_snprintf(message,
+                              sizeof(message),
+                              "%s: frame exceeds "
+                              "SIXEL_ALLOCATE_BYTES_MAX.",
+                              context);
+        sixel_helper_set_additional_message(message);
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    if (pixel_total != NULL) {
+        *pixel_total = pixels;
+    }
+    if (byte_total != NULL) {
+        *byte_total = bytes;
+    }
+    if (depth_bytes != NULL) {
+        *depth_bytes = depth;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    return status;
+}
 
 /* constructor of frame object */
 SIXELAPI SIXELSTATUS
@@ -176,14 +263,31 @@ sixel_frame_init_common(
     int              is_float)
 {
     SIXELSTATUS status = SIXEL_FALSE;
+    size_t unused_pixel_total;
+    size_t unused_byte_total;
+    int unused_depth_bytes;
 
     sixel_frame_ref(frame);
+
+    unused_pixel_total = 0u;
+    unused_byte_total = 0u;
+    unused_depth_bytes = 0;
 
     /* check parameters */
     if (width <= 0) {
         sixel_helper_set_additional_message(
             "sixel_frame_init: an invalid width parameter detected.");
         status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    status = sixel_frame_validate_size("sixel_frame_init",
+                                       width,
+                                       height,
+                                       pixelformat,
+                                       &unused_pixel_total,
+                                       &unused_byte_total,
+                                       &unused_depth_bytes);
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
     if (height <= 0) {
@@ -1114,8 +1218,14 @@ sixel_frame_resize(
     SIXELSTATUS status = SIXEL_FALSE;
     size_t size;
     unsigned char *scaled_frame = NULL;
+    size_t unused_pixel_total;
+    int unused_depth_bytes;
 
     sixel_frame_ref(frame);
+
+    size = 0u;
+    unused_pixel_total = 0u;
+    unused_depth_bytes = 0;
 
     /* check parameters */
     if (width <= 0) {
@@ -1143,6 +1253,17 @@ sixel_frame_resize(
         goto end;
     }
 
+    status = sixel_frame_validate_size("sixel_frame_resize",
+                                       width,
+                                       height,
+                                       SIXEL_PIXELFORMAT_RGB888,
+                                       &unused_pixel_total,
+                                       &size,
+                                       &unused_depth_bytes);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
     if (width == frame->width && height == frame->height) {
         /* nothing to do */
         goto out;
@@ -1153,7 +1274,6 @@ sixel_frame_resize(
         goto end;
     }
 
-    size = (size_t)width * (size_t)height * 3UL;
     scaled_frame = (unsigned char *)
         sixel_allocator_malloc(frame->allocator, size);
     if (scaled_frame == NULL) {
@@ -1267,19 +1387,21 @@ sixel_frame_resize_float32(
         goto end;
     }
 
-    depth_bytes = sixel_helper_compute_depth(frame->pixelformat);
-    if (depth_bytes <= 0) {
-        sixel_helper_set_additional_message(
-            "sixel_frame_resize_float32: "
-            "invalid pixelformat depth.");
-        status = SIXEL_BAD_ARGUMENT;
+    status = sixel_frame_validate_size("sixel_frame_resize_float32",
+                                       width,
+                                       height,
+                                       frame->pixelformat,
+                                       &pixel_total,
+                                       &size,
+                                       &depth_bytes);
+    if (SIXEL_FAILED(status)) {
         goto end;
     }
 
     /*
-     * sixel_helper_compute_depth() returns bytes per pixel. Convert the
-     * value to channels for validation and reuse the byte count for buffer
-     * sizing to avoid overflow on float formats.
+     * sixel_frame_validate_size() returns bytes per pixel. Convert the value
+     * to channels for validation and reuse the byte count for buffer sizing
+     * to avoid overflow on float formats.
      */
     if (depth_bytes % (int)sizeof(float) != 0) {
         sixel_helper_set_additional_message(
@@ -1297,15 +1419,6 @@ sixel_frame_resize_float32(
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
-
-    pixel_total = (size_t)width * (size_t)height;
-    if (pixel_total > SIZE_MAX / (size_t)depth_bytes) {
-        sixel_helper_set_additional_message(
-            "sixel_frame_resize_float32: buffer size overflow.");
-        status = SIXEL_BAD_INPUT;
-        goto end;
-    }
-    size = pixel_total * (size_t)depth_bytes;
 
     scaled_frame = (float *)sixel_allocator_malloc(frame->allocator, size);
     if (scaled_frame == NULL) {

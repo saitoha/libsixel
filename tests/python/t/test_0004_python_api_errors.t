@@ -138,7 +138,7 @@ def exercise_unsupported_format(workdir: pathlib.Path) -> str:
     """Expect a plain text input to be rejected as unsupported."""
 
     workdir.mkdir(parents=True, exist_ok=True)
-    text_file = workdir / "note.txt"
+    text_file = workdir / "note.xxx"
     text_file.write_text("this is not an image")
     target = workdir / "note.six"
 
