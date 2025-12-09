@@ -20,6 +20,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
+import os
 from ctypes import (
     cdll,
     c_void_p,
@@ -541,14 +542,46 @@ SIXEL_OPTFLAG_VERBOSE          = 'v'  # -v, --verbose: show debugging info
 SIXEL_OPTFLAG_VERSION          = 'V'  # -V, --version: show version and license info
 SIXEL_OPTFLAG_HELP             = 'H'  # -H, --help: show this help
 
-_lib_path = [
-    find_library(lib_name)
-    for lib_name in ["sixel", "libsixel", "sixel-1", "libsixel-1", "msys-sixel", "cygsixel"]
-    if find_library(lib_name) is not None
-][0]
+_sixel_names = [
+    "sixel",
+    "libsixel",
+    "sixel-1",
+    "libsixel-1",
+    "msys-sixel",
+    "cygsixel",
+]
+
+
+def _prefer_env_library(lib_names):
+    """Locate libsixel under LIBSIXEL_LIBDIR when running from a build tree."""
+
+    libdir = os.environ.get("LIBSIXEL_LIBDIR")
+    if libdir is None:
+        return None
+
+    suffixes = [".so", ".dylib", ".dll"]
+    for name in lib_names:
+        for suffix in suffixes:
+            candidate = os.path.join(libdir, f"lib{name}{suffix}")
+            if os.path.exists(candidate):
+                return candidate
+
+    return None
+
+
+_lib_path = _prefer_env_library(_sixel_names)
 
 if _lib_path is None:
-    raise ImportError("libsixel not found.")
+    _lib_path = next(
+        (path for path in (find_library(name) for name in _sixel_names)
+         if path is not None),
+        None,
+    )
+
+if _lib_path is None:
+    raise ImportError(
+        "libsixel not found. Set LIBSIXEL_LIBDIR to the built shared library."
+    )
 
 # load shared library
 _sixel = cdll.LoadLibrary(_lib_path)

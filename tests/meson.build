@@ -45,11 +45,16 @@ cli_tests = ['test_0001_01_invalid_positional.t',
              'test_0019_python_wheel.t',
              'test_0020_mapfile_io.t']
 
+cli_depends = {
+  'test_0018_lsqa_regression.t': [lsqa_bin],
+}
+
 foreach t : cli_tests
   test(t, sh,
     args: [meson.current_source_dir() / 'cli' / 't' / t],
     protocol: 'tap',
     env: env,
+    depends: cli_depends.get(t, []),
     timeout: 300,
     suite: ['tap'])
 endforeach

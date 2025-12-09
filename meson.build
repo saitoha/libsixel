@@ -969,7 +969,7 @@ if not lpips_opt.disabled()
   endif
 endif
 
-executable('lsqa',
+lsqa_bin = executable('lsqa',
            'assessment/lsqa.c',
            include_directories: lsqa_inc,
            dependencies: lsqa_deps,
