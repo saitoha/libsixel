@@ -70,6 +70,7 @@
 #include "lookup-common.h"
 #include "lookup-vpte-8bit.h"
 #include "sixel_atomic.h"
+#include "threading.h"
 #include "compat_stub.h"
 #include "allocator.h"
 #include "lookup-8bit.h"
@@ -104,6 +105,8 @@ struct sixel_certlut {
     sixel_certlut_node_t *kdnodes;
     int kdnodes_count;
     int kdtree_root;
+    sixel_mutex_t lock;
+    int lock_ready;
 };
 
 /* Sentinel value used to detect empty dense LUT slots. */
@@ -557,6 +560,7 @@ sixel_certlut_init(sixel_certlut_t *lut)
         goto end;
     }
 
+    lut->lock_ready = 0;
     lut->level0 = NULL;
     lut->pool = NULL;
     lut->pool_size = 0U;
@@ -573,6 +577,11 @@ sixel_certlut_init(sixel_certlut_t *lut)
     lut->kdnodes = NULL;
     lut->kdnodes_count = 0;
     lut->kdtree_root = -1;
+    status = sixel_mutex_init(&lut->lock);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    lut->lock_ready = 1;
     status = SIXEL_OK;
 
 end:
@@ -601,6 +610,10 @@ sixel_certlut_release(sixel_certlut_t *lut)
     lut->kdnodes = NULL;
     lut->kdnodes_count = 0;
     lut->kdtree_root = -1;
+    if (lut->lock_ready != 0) {
+        sixel_mutex_destroy(&lut->lock);
+        lut->lock_ready = 0;
+    }
 }
 
 static int
@@ -747,6 +760,28 @@ sixel_certlut_is_cell_safe(sixel_certlut_t const *lut, int best_idx,
         * (uint64_t)size * (uint64_t)size * weight_term;
 
     return delta_sq * delta_sq > rhs;
+}
+
+static void
+sixel_certlut_lock(sixel_certlut_t *lut)
+{
+    if (lut == NULL) {
+        return;
+    }
+    if (lut->lock_ready != 0) {
+        sixel_mutex_lock(&lut->lock);
+    }
+}
+
+static void
+sixel_certlut_unlock(sixel_certlut_t *lut)
+{
+    if (lut == NULL) {
+        return;
+    }
+    if (lut->lock_ready != 0) {
+        sixel_mutex_unlock(&lut->lock);
+    }
 }
 
 static uint32_t
@@ -1331,6 +1366,7 @@ sixel_certlut_lookup(sixel_certlut_t *lut,
                      uint8_t comp2,
                      uint8_t comp3)
 {
+    uint8_t result;
     uint32_t entry;
     uint32_t offset;
     uint32_t index;
@@ -1344,9 +1380,20 @@ sixel_certlut_lookup(sixel_certlut_t *lut,
     int comp2_min;
     int comp3_min;
     int step;
+    int locked;
+
+    result = 0U;
+    locked = 0;
     if (lut == NULL || lut->level0 == NULL) {
         return 0U;
     }
+    /*
+     * Lazy cell materialization reallocates the shared pool.  Serialize the
+     * lookup so realloc cannot race with concurrent threads traversing or
+     * expanding neighbouring cells.
+     */
+    sixel_certlut_lock(lut);
+    locked = 1;
     /*
      * Cells are created lazily.  A zero entry indicates an uninitialized
      * subtree, so the builder is invoked with the cube bounds of the current
@@ -1377,10 +1424,11 @@ sixel_certlut_lookup(sixel_certlut_t *lut,
                                           comp3_min,
                                           size);
         if (SIXEL_FAILED(status)) {
-            return sixel_certlut_fallback(lut,
-                                          (int)comp1,
-                                          (int)comp2,
-                                          (int)comp3);
+            result = sixel_certlut_fallback(lut,
+                                            (int)comp1,
+                                            (int)comp2,
+                                            (int)comp3);
+            goto end;
         }
         entry = *cell;
     }
@@ -1424,10 +1472,11 @@ sixel_certlut_lookup(sixel_certlut_t *lut,
                                               comp3_min,
                                               size);
             if (SIXEL_FAILED(status)) {
-                return sixel_certlut_fallback(lut,
-                                              (int)comp1,
-                                              (int)comp2,
-                                              (int)comp3);
+                result = sixel_certlut_fallback(lut,
+                                                (int)comp1,
+                                                (int)comp2,
+                                                (int)comp3);
+                goto end;
             }
             children = (uint32_t *)(void *)(lut->pool + offset);
             cell = children + (size_t)child;
@@ -1442,7 +1491,14 @@ sixel_certlut_lookup(sixel_certlut_t *lut,
         --shift;
     }
 
-    return (uint8_t)(entry & 0xffU);
+    result = (uint8_t)(entry & 0xffU);
+
+end:
+    if (locked != 0) {
+        sixel_certlut_unlock(lut);
+    }
+
+    return result;
 }
 
 void
