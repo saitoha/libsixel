@@ -29,20 +29,63 @@
 
 #include "config.h"
 
+#include <errno.h>
 #include <float.h>
 #include <math.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <sixel.h>
 
+#include "cpu.h"
 #include "allocator.h"
 #include "compat_stub.h"
 #include "lookup-common.h"
 #include "lookup-vpte-float32.h"
+#include "logger.h"
+#include "threading.h"
+#include "threadpool.h"
 #include "sixel_atomic.h"
 #include "status.h"
+
+#if defined(HAVE_IMMINTRIN_H) && \
+    (defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
+     defined(_M_IX86))
+# define SIXEL_VPTE_HAS_X86_INTRIN 1
+# include <immintrin.h>
+#endif
+
+#if defined(SIXEL_VPTE_HAS_X86_INTRIN)
+# if defined(__GNUC__)
+#  if !defined(__clang__)
+#   define SIXEL_VPTE_TARGET_AVX2 __attribute__((target("avx2")))
+#   define SIXEL_VPTE_TARGET_AVX512 __attribute__((target("avx512f")))
+#   define SIXEL_VPTE_USE_AVX2 1
+#   define SIXEL_VPTE_USE_AVX512 1
+#  else
+#   define SIXEL_VPTE_TARGET_AVX2
+#   define SIXEL_VPTE_TARGET_AVX512
+#   if defined(__AVX2__)
+#    define SIXEL_VPTE_USE_AVX2 1
+#   endif
+#   if defined(__AVX512F__)
+#    define SIXEL_VPTE_USE_AVX512 1
+#   endif
+#  endif
+# elif defined(_MSC_VER)
+#  define SIXEL_VPTE_TARGET_AVX2
+#  define SIXEL_VPTE_TARGET_AVX512
+#  if defined(__AVX2__) || defined(_M_AVX2)
+#   define SIXEL_VPTE_USE_AVX2 1
+#  endif
+#  if defined(__AVX512F__) || defined(_M_AVX512F)
+#   define SIXEL_VPTE_USE_AVX512 1
+#  endif
+# endif
+#endif
 
 #ifndef SIXEL_VPTE_TLS
 # if defined(SIXEL_ENABLE_THREADS)
@@ -86,6 +129,8 @@ struct sixel_lookup_vpte_shared {
 
 static int const sixel_lookup_vpte_resolution_min = 64;
 static int const sixel_lookup_vpte_resolution_max = 256;
+static int const sixel_lookup_vpte_tile_xy_default = 8;
+static int const sixel_lookup_vpte_tile_depth_default = 8;
 
 static int
 sixel_lookup_vpte_pow2_log(int value)
@@ -117,6 +162,55 @@ sixel_lookup_vpte_validate_resolution(int resolution)
     return pow2 == resolution;
 }
 
+/*
+ * Accept tile dimensions from the environment so profiling runs can adjust
+ * cache locality without recompiling. Values outside [1, resolution] fall
+ * back to the default 8x8x8 layout.
+ */
+static int
+sixel_lookup_vpte_parse_positive(char const *env_name, int fallback)
+{
+    char const *env;
+    char *endptr;
+    long value;
+
+    env = getenv(env_name);
+    if (env == NULL || env[0] == '\0') {
+        return fallback;
+    }
+
+    errno = 0;
+    value = strtol(env, &endptr, 10);
+    if (errno != 0 || endptr == env || value < 1 || value > 1024) {
+        return fallback;
+    }
+
+    return (int)value;
+}
+
+static void
+sixel_lookup_vpte_resolve_tiles(int res, int *tile_xy, int *tile_depth)
+{
+    int resolved_xy;
+    int resolved_depth;
+
+    resolved_xy = sixel_lookup_vpte_parse_positive(
+        "SIXEL_VPTE_TILE_XY",
+        sixel_lookup_vpte_tile_xy_default);
+    resolved_depth = sixel_lookup_vpte_parse_positive(
+        "SIXEL_VPTE_TILE_DEPTH",
+        sixel_lookup_vpte_tile_depth_default);
+    if (resolved_xy > res) {
+        resolved_xy = res;
+    }
+    if (resolved_depth > res) {
+        resolved_depth = res;
+    }
+
+    *tile_xy = resolved_xy;
+    *tile_depth = resolved_depth;
+}
+
 static uint32_t
 sixel_lookup_vpte_mix_u32(uint32_t state, uint32_t value)
 {
@@ -136,6 +230,81 @@ typedef struct sixel_lookup_vpte_cache {
     uint32_t signature;
     sixel_lookup_vpte_shared_t const *shared;
 } sixel_lookup_vpte_cache_t;
+
+typedef struct sixel_lookup_vpte_timeline {
+    int initialized;
+    int log_lines;
+    int line_stride;
+    sixel_logger_t logger;
+} sixel_lookup_vpte_timeline_t;
+
+/*
+ * Resolve the number of worker threads available for VPTE construction.  The
+ * float path does not rely on TLS buffers, so parallel work is allowed whenever
+ * threading support is built.
+ */
+static int
+sixel_lookup_vpte_resolve_threads(void)
+{
+#if SIXEL_ENABLE_THREADS
+    int threads;
+
+    threads = sixel_threads_resolve();
+    if (threads < 1) {
+        threads = 1;
+    }
+
+    return threads;
+#else
+    return 1;
+#endif  /* SIXEL_ENABLE_THREADS */
+}
+
+static int
+sixel_lookup_vpte_pin_threads_enabled(void)
+{
+    char const *env;
+
+    env = getenv("SIXEL_VPTE_PIN_THREADS");
+    if (env == NULL || env[0] == '\0') {
+        return 0;
+    }
+
+    return env[0] != '0';
+}
+
+static int
+sixel_lookup_vpte_first_touch_enabled(void)
+{
+    char const *env;
+
+    env = getenv("SIXEL_VPTE_FIRST_TOUCH");
+    if (env == NULL || env[0] == '\0') {
+        return 0;
+    }
+
+    return env[0] != '0';
+}
+
+static void sixel_lookup_vpte_dispatch_tiles(int total_tiles,
+                                             int threads,
+                                             int pin_threads,
+                                             tp_worker_fn worker,
+                                             void *plan);
+
+typedef struct sixel_lookup_vpte_first_touch_plan {
+    double *distances;
+    int *sources;
+    size_t stride_y;
+    size_t stride_z;
+    int res;
+    int tile_y;
+    int tile_z;
+    int tiles_y;
+    int tiles_z;
+} sixel_lookup_vpte_first_touch_plan_t;
+
+typedef void (*sixel_lookup_vpte_edt1d_fn)(double *, int *, int, double);
 
 static SIXEL_VPTE_TLS sixel_lookup_vpte_cache_t
     sixel_lookup_vpte_thread_cache;
@@ -186,6 +355,175 @@ sixel_lookup_vpte_cache_prepare(sixel_lookup_vpte_shared_t const *shared)
         sixel_lookup_vpte_thread_cache.shared = shared;
         sixel_lookup_vpte_thread_cache.signature = shared->signature;
     }
+}
+
+static void
+sixel_lookup_vpte_timeline_open(sixel_lookup_vpte_timeline_t *timeline);
+
+static int
+sixel_lookup_vpte_timeline_lines_enabled(
+    sixel_lookup_vpte_timeline_t *timeline)
+{
+#if SIXEL_ENABLE_THREADS
+    if (timeline == NULL || !timeline->initialized) {
+        return 0;
+    }
+    if (!timeline->logger.active || !timeline->log_lines) {
+        return 0;
+    }
+    return 1;
+#else
+    (void)timeline;
+    return 0;
+#endif  /* SIXEL_ENABLE_THREADS */
+}
+
+static void
+sixel_lookup_vpte_timeline_open(sixel_lookup_vpte_timeline_t *timeline)
+{
+#if SIXEL_ENABLE_THREADS
+    char const *line_env;
+    long stride;
+
+    if (timeline == NULL || timeline->initialized) {
+        return;
+    }
+    sixel_logger_init(&timeline->logger);
+    (void)sixel_logger_prepare_env(&timeline->logger);
+    timeline->log_lines = 0;
+    timeline->line_stride = 1;
+    line_env = getenv("SIXEL_PARALLEL_LOG_LINES");
+    if (line_env != NULL && line_env[0] != '\0') {
+        stride = strtol(line_env, NULL, 10);
+        if (stride < 1L) {
+            stride = 1L;
+        }
+        timeline->log_lines = 1;
+        timeline->line_stride = (int)stride;
+    }
+    timeline->initialized = 1;
+#else
+    (void)timeline;
+#endif  /* SIXEL_ENABLE_THREADS */
+}
+
+static void
+sixel_lookup_vpte_timeline_close(sixel_lookup_vpte_timeline_t *timeline)
+{
+#if SIXEL_ENABLE_THREADS
+    if (timeline == NULL || !timeline->initialized) {
+        return;
+    }
+    sixel_logger_close(&timeline->logger);
+#else
+    (void)timeline;
+#endif  /* SIXEL_ENABLE_THREADS */
+}
+
+static void
+sixel_lookup_vpte_timeline_log(sixel_lookup_vpte_timeline_t *timeline,
+                               char const *worker,
+                               char const *event,
+                               int tile,
+                               int line,
+                               char const *message)
+{
+#if SIXEL_ENABLE_THREADS
+    int skip_line;
+
+    if (timeline == NULL || !timeline->initialized
+            || !timeline->logger.active) {
+        return;
+    }
+    skip_line = 0;
+    if (event != NULL && (strcmp(event, "line-start") == 0
+            || strcmp(event, "line-end") == 0)) {
+        if (!timeline->log_lines) {
+            skip_line = 1;
+        } else if (timeline->line_stride > 1 && tile >= 0
+                   && (tile % timeline->line_stride) != 0) {
+            skip_line = 1;
+        }
+    }
+    if (skip_line) {
+        return;
+    }
+    sixel_logger_logf(&timeline->logger,
+                      "vpte",
+                      worker,
+                      event,
+                      tile,
+                      line,
+                      0,
+                      0,
+                      0,
+                      0,
+                      "%s",
+                      message != NULL ? message : "");
+#else
+    (void)timeline;
+    (void)worker;
+    (void)event;
+    (void)tile;
+    (void)line;
+    (void)message;
+#endif  /* SIXEL_ENABLE_THREADS */
+}
+
+static void
+sixel_lookup_vpte_prefetch_line(double *distances,
+                                int *sources,
+                                size_t offset,
+                                sixel_lookup_vpte_timeline_t *timeline,
+                                char const *worker,
+                                int tile,
+                                int line)
+{
+#if SIXEL_ENABLE_THREADS
+    int skip_line;
+    char message[64];
+#endif
+#if defined(__GNUC__)
+    __builtin_prefetch(distances + offset, 0, 3);
+    __builtin_prefetch(sources + offset, 0, 3);
+#else
+    (void)distances;
+    (void)sources;
+#endif
+#if SIXEL_ENABLE_THREADS
+    if (timeline != NULL && timeline->initialized
+            && timeline->logger.active) {
+        skip_line = 0;
+        /*
+         * Skip logging unless line-level events are explicitly enabled.
+         * This keeps the prefetch hook out of the hot loop when only
+         * coarse timeline markers are needed.
+         */
+        if (!timeline->log_lines) {
+            skip_line = 1;
+        } else if (timeline->line_stride > 1 && tile >= 0
+                   && (tile % timeline->line_stride) != 0) {
+            skip_line = 1;
+        }
+        if (skip_line) {
+            return;
+        }
+
+        (void)snprintf(message, sizeof(message),
+                       "prefetch@%zu", offset);
+        sixel_lookup_vpte_timeline_log(timeline,
+                                       worker,
+                                       "prefetch",
+                                       tile,
+                                       line,
+                                       message);
+    }
+#else
+    (void)timeline;
+    (void)worker;
+    (void)tile;
+    (void)line;
+#endif
 }
 
 static int
@@ -413,6 +751,87 @@ sixel_lookup_vpte_quantize_palette(float const *palette,
     }
 }
 
+static int
+sixel_lookup_vpte_first_touch_worker(tp_job_t job,
+                                     void *userdata,
+                                     void *workspace)
+{
+    sixel_lookup_vpte_first_touch_plan_t *plan;
+    int tile_index;
+    int tile_z_index;
+    int tile_y_index;
+    int z_start;
+    int z_end;
+    int y_start;
+    int y_end;
+    int z;
+    int y;
+    int x;
+    size_t offset;
+
+    (void)workspace;
+
+    plan = (sixel_lookup_vpte_first_touch_plan_t *)userdata;
+    tile_index = job.band_index;
+    tile_z_index = tile_index / plan->tiles_y;
+    tile_y_index = tile_index - (tile_z_index * plan->tiles_y);
+    z_start = tile_z_index * plan->tile_z;
+    z_end = z_start + plan->tile_z;
+    if (z_end > plan->res) {
+        z_end = plan->res;
+    }
+    y_start = tile_y_index * plan->tile_y;
+    y_end = y_start + plan->tile_y;
+    if (y_end > plan->res) {
+        y_end = plan->res;
+    }
+
+    for (z = z_start; z < z_end; ++z) {
+        for (y = y_start; y < y_end; ++y) {
+            offset = ((size_t)z * plan->stride_z)
+                   + ((size_t)y * plan->stride_y);
+            for (x = 0; x < plan->res; ++x) {
+                plan->distances[offset + (size_t)x] = DBL_MAX / 4.0;
+                plan->sources[offset + (size_t)x] = -1;
+            }
+        }
+    }
+
+    return SIXEL_OK;
+}
+
+static void
+sixel_lookup_vpte_first_touch(double *distances,
+                              int *sources,
+                              int res,
+                              int threads,
+                              int pin_threads,
+                              int tile_xy,
+                              int tile_depth)
+{
+    sixel_lookup_vpte_first_touch_plan_t plan;
+    int tiles_y;
+    int tiles_z;
+
+    plan.distances = distances;
+    plan.sources = sources;
+    plan.res = res;
+    plan.stride_y = (size_t)res;
+    plan.stride_z = (size_t)res * (size_t)res;
+    plan.tile_y = tile_xy;
+    plan.tile_z = tile_depth;
+    tiles_y = (res + plan.tile_y - 1) / plan.tile_y;
+    tiles_z = (res + plan.tile_z - 1) / plan.tile_z;
+    plan.tiles_y = tiles_y;
+    plan.tiles_z = tiles_z;
+
+    sixel_lookup_vpte_dispatch_tiles(tiles_y * tiles_z,
+                                     threads,
+                                     pin_threads,
+                                     sixel_lookup_vpte_first_touch_worker,
+                                     &plan);
+}
+
 static void
 sixel_lookup_vpte_seed_grid(int resolution,
                             int depth,
@@ -448,10 +867,10 @@ sixel_lookup_vpte_seed_grid(int resolution,
 }
 
 static void
-sixel_lookup_vpte_edt1d(double *line_dist,
-                        int *line_src,
-                        int length,
-                        double weight)
+sixel_lookup_vpte_edt1d_scalar(double *line_dist,
+                               int *line_src,
+                               int length,
+                               double weight)
 {
     double zbuf[257];
     int vbuf[256];
@@ -509,85 +928,804 @@ sixel_lookup_vpte_edt1d(double *line_dist,
     }
 }
 
-static void
-sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
-                            double *distances,
-                            int *sources)
+#if defined(SIXEL_VPTE_USE_AVX2)
+/*
+ * AVX2-accelerated evaluation of the second FH pass.  The envelope remains
+ * scalar because of its control flow, while the quadratic evaluation benefits
+ * from processing multiple output points that share the same k.
+ */
+static SIXEL_VPTE_TARGET_AVX2 void
+sixel_lookup_vpte_edt1d_avx2(double *line_dist,
+                             int *line_src,
+                             int length,
+                             double weight)
 {
-    int res;
-    size_t plane;
+    double zbuf[257];
+    int vbuf[256];
+    double scratch[256];
+    int k;
+    int q;
+    int i;
+    double s;
+    double candidate;
+    double denom;
+    int segment_end;
+    double limit;
+    int base_index;
+    double base_dist;
+    int base_src;
+    __m256d weight_vec;
+    __m256d base_dist_vec;
+    __m256d base_index_vec;
+    __m256d idx_vec;
+    __m256d diff_vec;
+    __m256d dist_vec;
+    __m256i src_vec;
+    int lane;
+
+    vbuf[0] = 0;
+    zbuf[0] = -DBL_MAX;
+    zbuf[1] = DBL_MAX;
+    k = 0;
+
+    for (q = 1; q < length; ++q) {
+        denom = 2.0 * weight * (double)(q - vbuf[k]);
+        if (denom == 0.0) {
+            denom = 1.0;
+        }
+        candidate = (line_dist[q] + weight * (double)(q * q))
+                  - (line_dist[vbuf[k]]
+                     + weight * (double)(vbuf[k] * vbuf[k]));
+        s = candidate / denom;
+        while (s <= zbuf[k]) {
+            --k;
+            denom = 2.0 * weight * (double)(q - vbuf[k]);
+            if (denom == 0.0) {
+                denom = 1.0;
+            }
+            candidate = (line_dist[q] + weight * (double)(q * q))
+                      - (line_dist[vbuf[k]]
+                         + weight * (double)(vbuf[k] * vbuf[k]));
+            s = candidate / denom;
+        }
+        ++k;
+        vbuf[k] = q;
+        zbuf[k] = s;
+        zbuf[k + 1] = DBL_MAX;
+    }
+
+    k = 0;
+    weight_vec = _mm256_set1_pd(weight);
+    for (i = 0; i < length;) {
+        while (zbuf[k + 1] < (double)i) {
+            ++k;
+        }
+        limit = zbuf[k + 1];
+        segment_end = length;
+        if (limit < (double)length) {
+            segment_end = (int)floor(limit + 1.0);
+            if (segment_end > length) {
+                segment_end = length;
+            }
+        }
+        if (segment_end <= i) {
+            segment_end = i + 1;
+        }
+
+        base_index = vbuf[k];
+        base_dist = line_dist[base_index];
+        base_src = line_src[base_index];
+        base_dist_vec = _mm256_set1_pd(base_dist);
+        base_index_vec = _mm256_set1_pd((double)base_index);
+        src_vec = _mm256_set1_epi32(base_src);
+
+        lane = i;
+        while (lane + 4 <= segment_end) {
+            idx_vec = _mm256_setr_pd((double)lane,
+                                     (double)(lane + 1),
+                                     (double)(lane + 2),
+                                     (double)(lane + 3));
+            diff_vec = _mm256_sub_pd(idx_vec, base_index_vec);
+            dist_vec = _mm256_mul_pd(diff_vec, diff_vec);
+            dist_vec = _mm256_mul_pd(dist_vec, weight_vec);
+            dist_vec = _mm256_add_pd(dist_vec, base_dist_vec);
+            _mm256_storeu_pd(scratch + lane, dist_vec);
+            _mm256_storeu_si256((__m256i *)(line_src + lane), src_vec);
+            lane += 4;
+        }
+        for (; lane < segment_end; ++lane) {
+            double diff;
+
+            diff = (double)(lane - base_index);
+            scratch[lane] = base_dist + weight * diff * diff;
+            line_src[lane] = base_src;
+        }
+        i = segment_end;
+    }
+
+    for (i = 0; i < length; ++i) {
+        line_dist[i] = scratch[i];
+    }
+}
+#endif  /* SIXEL_VPTE_USE_AVX2 */
+
+#if defined(SIXEL_VPTE_USE_AVX512)
+/*
+ * AVX-512 widens the batch to eight pixels so long segments reuse the same
+ * envelope state across more outputs before falling back to the scalar tail.
+ */
+static SIXEL_VPTE_TARGET_AVX512 void
+sixel_lookup_vpte_edt1d_avx512(double *line_dist,
+                               int *line_src,
+                               int length,
+                               double weight)
+{
+    double zbuf[257];
+    int vbuf[256];
+    double scratch[256];
+    int k;
+    int q;
+    int i;
+    double s;
+    double candidate;
+    double denom;
+    int segment_end;
+    double limit;
+    int base_index;
+    double base_dist;
+    int base_src;
+    __m512d weight_vec;
+    __m512d base_dist_vec;
+    __m512d base_index_vec;
+    __m512d idx_vec;
+    __m512d diff_vec;
+    __m512d dist_vec;
+    __m256i src_vec;
+    int lane;
+
+    vbuf[0] = 0;
+    zbuf[0] = -DBL_MAX;
+    zbuf[1] = DBL_MAX;
+    k = 0;
+
+    for (q = 1; q < length; ++q) {
+        denom = 2.0 * weight * (double)(q - vbuf[k]);
+        if (denom == 0.0) {
+            denom = 1.0;
+        }
+        candidate = (line_dist[q] + weight * (double)(q * q))
+                  - (line_dist[vbuf[k]]
+                     + weight * (double)(vbuf[k] * vbuf[k]));
+        s = candidate / denom;
+        while (s <= zbuf[k]) {
+            --k;
+            denom = 2.0 * weight * (double)(q - vbuf[k]);
+            if (denom == 0.0) {
+                denom = 1.0;
+            }
+            candidate = (line_dist[q] + weight * (double)(q * q))
+                      - (line_dist[vbuf[k]]
+                         + weight * (double)(vbuf[k] * vbuf[k]));
+            s = candidate / denom;
+        }
+        ++k;
+        vbuf[k] = q;
+        zbuf[k] = s;
+        zbuf[k + 1] = DBL_MAX;
+    }
+
+    k = 0;
+    weight_vec = _mm512_set1_pd(weight);
+    for (i = 0; i < length;) {
+        while (zbuf[k + 1] < (double)i) {
+            ++k;
+        }
+        limit = zbuf[k + 1];
+        segment_end = length;
+        if (limit < (double)length) {
+            segment_end = (int)floor(limit + 1.0);
+            if (segment_end > length) {
+                segment_end = length;
+            }
+        }
+        if (segment_end <= i) {
+            segment_end = i + 1;
+        }
+
+        base_index = vbuf[k];
+        base_dist = line_dist[base_index];
+        base_src = line_src[base_index];
+        base_dist_vec = _mm512_set1_pd(base_dist);
+        base_index_vec = _mm512_set1_pd((double)base_index);
+        src_vec = _mm256_set1_epi32(base_src);
+
+        lane = i;
+        while (lane + 8 <= segment_end) {
+            idx_vec = _mm512_setr_pd((double)lane,
+                                     (double)(lane + 1),
+                                     (double)(lane + 2),
+                                     (double)(lane + 3),
+                                     (double)(lane + 4),
+                                     (double)(lane + 5),
+                                     (double)(lane + 6),
+                                     (double)(lane + 7));
+            diff_vec = _mm512_sub_pd(idx_vec, base_index_vec);
+            dist_vec = _mm512_mul_pd(diff_vec, diff_vec);
+            dist_vec = _mm512_mul_pd(dist_vec, weight_vec);
+            dist_vec = _mm512_add_pd(dist_vec, base_dist_vec);
+            _mm512_storeu_pd(scratch + lane, dist_vec);
+            _mm256_storeu_si256((__m256i *)(line_src + lane), src_vec);
+            lane += 8;
+        }
+        for (; lane < segment_end; ++lane) {
+            double diff;
+
+            diff = (double)(lane - base_index);
+            scratch[lane] = base_dist + weight * diff * diff;
+            line_src[lane] = base_src;
+        }
+        i = segment_end;
+    }
+
+    for (i = 0; i < length; ++i) {
+        line_dist[i] = scratch[i];
+    }
+}
+#endif  /* SIXEL_VPTE_USE_AVX512 */
+
+static sixel_lookup_vpte_edt1d_fn
+sixel_lookup_vpte_edt1d_resolve(void)
+{
+    static sixel_lookup_vpte_edt1d_fn selected;
+
+    if (selected != NULL) {
+        return selected;
+    }
+#if defined(SIXEL_VPTE_HAS_X86_INTRIN)
+    if (selected == NULL) {
+        /*
+         * Guard the CPU query so builds without AVX backends do not trigger
+         * unused-but-set warnings when AVX is disabled at configure time.
+         */
+# if defined(SIXEL_VPTE_USE_AVX512) || defined(SIXEL_VPTE_USE_AVX2)
+        int simd_level;
+
+        simd_level = sixel_cpu_simd_level();
+#  if defined(SIXEL_VPTE_USE_AVX512)
+        if (simd_level >= SIXEL_SIMD_LEVEL_AVX512) {
+            selected = sixel_lookup_vpte_edt1d_avx512;
+            return selected;
+        }
+#  endif
+#  if defined(SIXEL_VPTE_USE_AVX2)
+        if (simd_level >= SIXEL_SIMD_LEVEL_AVX2) {
+            selected = sixel_lookup_vpte_edt1d_avx2;
+            return selected;
+        }
+#  endif
+# endif
+    }
+#endif
+    selected = sixel_lookup_vpte_edt1d_scalar;
+
+    return selected;
+}
+
+typedef struct sixel_lookup_vpte_pass_x_plan {
+    sixel_lookup_vpte_shared_t *shared;
+    double *distances;
+    int *sources;
+    sixel_lookup_vpte_timeline_t *timeline;
+    sixel_lookup_vpte_edt1d_fn edt1d;
     double weight;
+    size_t stride_y;
+    size_t stride_z;
+    int res;
+    int tile_y;
+    int tile_z;
+    int tiles_y;
+    int tiles_z;
+    int log_lines;
+} sixel_lookup_vpte_pass_x_plan_t;
+
+typedef struct sixel_lookup_vpte_pass_y_plan {
+    sixel_lookup_vpte_shared_t *shared;
+    double *distances;
+    int *sources;
+    sixel_lookup_vpte_timeline_t *timeline;
+    sixel_lookup_vpte_edt1d_fn edt1d;
+    double weight;
+    size_t stride_y;
+    size_t stride_z;
+    int res;
+    int tile_x;
+    int tile_z;
+    int tiles_x;
+    int tiles_z;
+    int log_lines;
+} sixel_lookup_vpte_pass_y_plan_t;
+
+typedef struct sixel_lookup_vpte_pass_z_plan {
+    sixel_lookup_vpte_shared_t *shared;
+    double *distances;
+    int *sources;
+    sixel_lookup_vpte_timeline_t *timeline;
+    sixel_lookup_vpte_edt1d_fn edt1d;
+    double weight;
+    size_t stride_y;
+    size_t stride_z;
+    int res;
+    int tile_x;
+    int tile_y;
+    int tiles_x;
+    int tiles_y;
+    int log_lines;
+} sixel_lookup_vpte_pass_z_plan_t;
+
+static int
+sixel_lookup_vpte_pass_x_worker(tp_job_t job,
+                                void *userdata,
+                                void *workspace)
+{
+    sixel_lookup_vpte_pass_x_plan_t *plan;
     double line_dist[256];
     int line_src[256];
+    int tile_index;
+    int tile_z_index;
+    int tile_y_index;
+    int y_start;
+    int y_end;
+    int z_start;
+    int z_end;
+    int y;
+    int z;
+    int x;
+    size_t offset;
+    size_t next_offset;
+    char message[32];
+
+    (void)workspace;
+
+    plan = (sixel_lookup_vpte_pass_x_plan_t *)userdata;
+    tile_index = job.band_index;
+    tile_z_index = tile_index / plan->tiles_y;
+    tile_y_index = tile_index - (tile_z_index * plan->tiles_y);
+    z_start = tile_z_index * plan->tile_z;
+    z_end = z_start + plan->tile_z;
+    if (z_end > plan->res) {
+        z_end = plan->res;
+    }
+    y_start = tile_y_index * plan->tile_y;
+    y_end = y_start + plan->tile_y;
+    if (y_end > plan->res) {
+        y_end = plan->res;
+    }
+
+    for (z = z_start; z < z_end; ++z) {
+        for (y = y_start; y < y_end; ++y) {
+            offset = ((size_t)z * plan->stride_z)
+                   + ((size_t)y * plan->stride_y);
+            if (plan->log_lines != 0) {
+                snprintf(message, sizeof(message), "z=%d", z);
+                sixel_lookup_vpte_timeline_log(plan->timeline,
+                                               "vpte-x",
+                                               "line-start",
+                                               z,
+                                               y,
+                                               message);
+            }
+            if (y + 1 < plan->res) {
+                next_offset = offset + plan->stride_y;
+                sixel_lookup_vpte_prefetch_line(plan->distances,
+                                                plan->sources,
+                                                next_offset,
+                                                plan->timeline,
+                                                "vpte-x",
+                                                z,
+                                                y + 1);
+            }
+            for (x = 0; x < plan->res; ++x) {
+                line_dist[x] = plan->distances[offset + (size_t)x];
+                line_src[x] = plan->sources[offset + (size_t)x];
+            }
+            plan->edt1d(line_dist,
+                        line_src,
+                        plan->res,
+                        plan->weight);
+            for (x = 0; x < plan->res; ++x) {
+                plan->distances[offset + (size_t)x] = line_dist[x];
+                plan->sources[offset + (size_t)x] = line_src[x];
+            }
+            if (plan->log_lines != 0) {
+                sixel_lookup_vpte_timeline_log(plan->timeline,
+                                               "vpte-x",
+                                               "line-end",
+                                               z,
+                                               y,
+                                               message);
+            }
+        }
+    }
+
+    return SIXEL_OK;
+}
+
+static int
+sixel_lookup_vpte_pass_y_worker(tp_job_t job,
+                                void *userdata,
+                                void *workspace)
+{
+    sixel_lookup_vpte_pass_y_plan_t *plan;
+    double line_dist[256];
+    int line_src[256];
+    int tile_index;
+    int tile_z_index;
+    int tile_x_index;
+    int x_start;
+    int x_end;
+    int z_start;
+    int z_end;
     int x;
     int y;
     int z;
     size_t offset;
+    size_t next_offset;
+    char message[32];
+
+    (void)workspace;
+
+    plan = (sixel_lookup_vpte_pass_y_plan_t *)userdata;
+    tile_index = job.band_index;
+    tile_z_index = tile_index / plan->tiles_x;
+    tile_x_index = tile_index - (tile_z_index * plan->tiles_x);
+    z_start = tile_z_index * plan->tile_z;
+    z_end = z_start + plan->tile_z;
+    if (z_end > plan->res) {
+        z_end = plan->res;
+    }
+    x_start = tile_x_index * plan->tile_x;
+    x_end = x_start + plan->tile_x;
+    if (x_end > plan->res) {
+        x_end = plan->res;
+    }
+
+    for (z = z_start; z < z_end; ++z) {
+        for (x = x_start; x < x_end; ++x) {
+            if (plan->log_lines != 0) {
+                snprintf(message, sizeof(message), "z=%d", z);
+                sixel_lookup_vpte_timeline_log(plan->timeline,
+                                               "vpte-y",
+                                               "line-start",
+                                               z,
+                                               x,
+                                               message);
+            }
+            for (y = 0; y < plan->res; ++y) {
+                offset = ((size_t)z * plan->stride_z)
+                       + ((size_t)y * plan->stride_y)
+                       + (size_t)x;
+                if (y + 1 < plan->res) {
+                    next_offset = offset + plan->stride_y;
+                    sixel_lookup_vpte_prefetch_line(plan->distances,
+                                                    plan->sources,
+                                                    next_offset,
+                                                    plan->timeline,
+                                                    "vpte-y",
+                                                    z,
+                                                    x);
+                }
+                line_dist[y] = plan->distances[offset];
+                line_src[y] = plan->sources[offset];
+            }
+            plan->edt1d(line_dist,
+                        line_src,
+                        plan->res,
+                        plan->weight);
+            for (y = 0; y < plan->res; ++y) {
+                offset = ((size_t)z * plan->stride_z)
+                       + ((size_t)y * plan->stride_y)
+                       + (size_t)x;
+                plan->distances[offset] = line_dist[y];
+                plan->sources[offset] = line_src[y];
+            }
+            if (plan->log_lines != 0) {
+                sixel_lookup_vpte_timeline_log(plan->timeline,
+                                               "vpte-y",
+                                               "line-end",
+                                               z,
+                                               x,
+                                               message);
+            }
+        }
+    }
+
+    return SIXEL_OK;
+}
+
+static int
+sixel_lookup_vpte_pass_z_worker(tp_job_t job,
+                                void *userdata,
+                                void *workspace)
+{
+    sixel_lookup_vpte_pass_z_plan_t *plan;
+    double line_dist[256];
+    int line_src[256];
+    int tile_index;
+    int tile_y_index;
+    int tile_x_index;
+    int x_start;
+    int x_end;
+    int y_start;
+    int y_end;
+    int x;
+    int y;
+    int z;
+    size_t offset;
+    size_t next_offset;
+    char message[32];
+
+    (void)workspace;
+
+    plan = (sixel_lookup_vpte_pass_z_plan_t *)userdata;
+    tile_index = job.band_index;
+    tile_y_index = tile_index / plan->tiles_x;
+    tile_x_index = tile_index - (tile_y_index * plan->tiles_x);
+    y_start = tile_y_index * plan->tile_y;
+    y_end = y_start + plan->tile_y;
+    if (y_end > plan->res) {
+        y_end = plan->res;
+    }
+    x_start = tile_x_index * plan->tile_x;
+    x_end = x_start + plan->tile_x;
+    if (x_end > plan->res) {
+        x_end = plan->res;
+    }
+
+    for (y = y_start; y < y_end; ++y) {
+        for (x = x_start; x < x_end; ++x) {
+            if (plan->log_lines != 0) {
+                snprintf(message, sizeof(message), "y=%d", y);
+                sixel_lookup_vpte_timeline_log(plan->timeline,
+                                               "vpte-z",
+                                               "line-start",
+                                               y,
+                                               x,
+                                               message);
+            }
+            for (z = 0; z < plan->res; ++z) {
+                offset = ((size_t)z * plan->stride_z)
+                       + ((size_t)y * plan->stride_y)
+                       + (size_t)x;
+                if (z + 1 < plan->res) {
+                    next_offset = offset + plan->stride_z;
+                    sixel_lookup_vpte_prefetch_line(plan->distances,
+                                                    plan->sources,
+                                                    next_offset,
+                                                    plan->timeline,
+                                                    "vpte-z",
+                                                    y,
+                                                    x);
+                }
+                line_dist[z] = plan->distances[offset];
+                line_src[z] = plan->sources[offset];
+            }
+            plan->edt1d(line_dist,
+                        line_src,
+                        plan->res,
+                        plan->weight);
+            for (z = 0; z < plan->res; ++z) {
+                offset = ((size_t)z * plan->stride_z)
+                       + ((size_t)y * plan->stride_y)
+                       + (size_t)x;
+                plan->distances[offset] = line_dist[z];
+                plan->sources[offset] = line_src[z];
+            }
+            if (plan->log_lines != 0) {
+                sixel_lookup_vpte_timeline_log(plan->timeline,
+                                               "vpte-z",
+                                               "line-end",
+                                               y,
+                                               x,
+                                               message);
+            }
+        }
+    }
+
+    return SIXEL_OK;
+}
+
+static void
+sixel_lookup_vpte_dispatch_tiles(int total_tiles,
+                                 int threads,
+                                 int pin_threads,
+                                 tp_worker_fn worker,
+                                 void *plan)
+{
+#if SIXEL_ENABLE_THREADS
+    threadpool_t *pool;
+    int queue_depth;
+    int job_index;
+    tp_job_t job;
+
+    if (threads < 2 || total_tiles < 2) {
+        for (job_index = 0; job_index < total_tiles; ++job_index) {
+            job.band_index = job_index;
+            (void)worker(job, plan, NULL);
+        }
+
+        return;
+    }
+
+    if (threads > total_tiles) {
+        threads = total_tiles;
+    }
+    queue_depth = threads * 3;
+    if (queue_depth > total_tiles) {
+        queue_depth = total_tiles;
+    }
+    pool = threadpool_create(threads, queue_depth, 0, worker, plan);
+    if (pool == NULL) {
+        for (job_index = 0; job_index < total_tiles; ++job_index) {
+            job.band_index = job_index;
+            (void)worker(job, plan, NULL);
+        }
+
+        return;
+    }
+    threadpool_set_affinity(pool, pin_threads);
+    for (job_index = 0; job_index < total_tiles; ++job_index) {
+        job.band_index = job_index;
+        threadpool_push(pool, job);
+    }
+    threadpool_finish(pool);
+    (void)threadpool_get_error(pool);
+    threadpool_destroy(pool);
+#else
+    tp_job_t job;
+    int job_index;
+
+    (void)threads;
+    (void)pin_threads;
+    for (job_index = 0; job_index < total_tiles; ++job_index) {
+        job.band_index = job_index;
+        (void)worker(job, plan, NULL);
+    }
+#endif  /* SIXEL_ENABLE_THREADS */
+}
+
+static void
+sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
+                            double *distances,
+                            int *sources,
+                            sixel_lookup_vpte_timeline_t *timeline,
+                            int threads,
+                            int pin_threads,
+                            int tile_xy,
+                            int tile_depth)
+{
+    sixel_lookup_vpte_pass_x_plan_t plan_x;
+    sixel_lookup_vpte_pass_y_plan_t plan_y;
+    sixel_lookup_vpte_pass_z_plan_t plan_z;
+    int res;
+    size_t plane;
     size_t stride_y;
     size_t stride_z;
+    int tiles_y;
+    int tiles_z;
+    int tiles_x;
+    sixel_lookup_vpte_edt1d_fn edt1d;
+    int log_lines;
 
     res = shared->resolution;
     plane = (size_t)res * (size_t)res;
     stride_y = (size_t)res;
     stride_z = plane;
+    edt1d = sixel_lookup_vpte_edt1d_resolve();
+    log_lines = sixel_lookup_vpte_timeline_lines_enabled(timeline);
 
-    weight = (double)shared->weights[0];
-    for (z = 0; z < res; ++z) {
-        for (y = 0; y < res; ++y) {
-            offset = ((size_t)z * stride_z) + ((size_t)y * stride_y);
-            for (x = 0; x < res; ++x) {
-                line_dist[x] = distances[offset + (size_t)x];
-                line_src[x] = sources[offset + (size_t)x];
-            }
-            sixel_lookup_vpte_edt1d(line_dist, line_src, res, weight);
-            for (x = 0; x < res; ++x) {
-                distances[offset + (size_t)x] = line_dist[x];
-                sources[offset + (size_t)x] = line_src[x];
-            }
-        }
-    }
+    tiles_y = (res + tile_xy - 1) / tile_xy;
+    tiles_z = (res + tile_depth - 1) / tile_depth;
 
-    weight = (double)shared->weights[1];
-    for (z = 0; z < res; ++z) {
-        for (x = 0; x < res; ++x) {
-            for (y = 0; y < res; ++y) {
-                offset = ((size_t)z * stride_z)
-                       + ((size_t)y * stride_y)
-                       + (size_t)x;
-                line_dist[y] = distances[offset];
-                line_src[y] = sources[offset];
-            }
-            sixel_lookup_vpte_edt1d(line_dist, line_src, res, weight);
-            for (y = 0; y < res; ++y) {
-                offset = ((size_t)z * stride_z)
-                       + ((size_t)y * stride_y)
-                       + (size_t)x;
-                distances[offset] = line_dist[y];
-                sources[offset] = line_src[y];
-            }
-        }
-    }
+    plan_x.shared = shared;
+    plan_x.distances = distances;
+    plan_x.sources = sources;
+    plan_x.timeline = timeline;
+    plan_x.edt1d = edt1d;
+    plan_x.weight = (double)shared->weights[0];
+    plan_x.stride_y = stride_y;
+    plan_x.stride_z = stride_z;
+    plan_x.res = res;
+    plan_x.tile_y = tile_xy;
+    plan_x.tile_z = tile_depth;
+    plan_x.tiles_y = tiles_y;
+    plan_x.tiles_z = tiles_z;
+    plan_x.log_lines = log_lines;
 
-    weight = (double)shared->weights[2];
-    for (y = 0; y < res; ++y) {
-        for (x = 0; x < res; ++x) {
-            for (z = 0; z < res; ++z) {
-                offset = ((size_t)z * stride_z)
-                       + ((size_t)y * stride_y)
-                       + (size_t)x;
-                line_dist[z] = distances[offset];
-                line_src[z] = sources[offset];
-            }
-            sixel_lookup_vpte_edt1d(line_dist, line_src, res, weight);
-            for (z = 0; z < res; ++z) {
-                offset = ((size_t)z * stride_z)
-                       + ((size_t)y * stride_y)
-                       + (size_t)x;
-                distances[offset] = line_dist[z];
-                sources[offset] = line_src[z];
-            }
-        }
-    }
+    sixel_lookup_vpte_timeline_log(timeline,
+                                   "vpte-x",
+                                   "pass-start",
+                                   -1,
+                                   -1,
+                                   "x-pass");
+    sixel_lookup_vpte_dispatch_tiles(tiles_y * tiles_z,
+                                     threads,
+                                     pin_threads,
+                                     sixel_lookup_vpte_pass_x_worker,
+                                     &plan_x);
+    sixel_lookup_vpte_timeline_log(timeline,
+                                   "vpte-x",
+                                   "pass-end",
+                                   -1,
+                                   -1,
+                                   "x-pass");
+
+    tiles_x = tiles_y;
+
+    plan_y.shared = shared;
+    plan_y.distances = distances;
+    plan_y.sources = sources;
+    plan_y.timeline = timeline;
+    plan_y.edt1d = edt1d;
+    plan_y.weight = (double)shared->weights[1];
+    plan_y.stride_y = stride_y;
+    plan_y.stride_z = stride_z;
+    plan_y.res = res;
+    plan_y.tile_x = tile_xy;
+    plan_y.tile_z = tile_depth;
+    plan_y.tiles_x = tiles_x;
+    plan_y.tiles_z = tiles_z;
+    plan_y.log_lines = log_lines;
+
+    sixel_lookup_vpte_timeline_log(timeline,
+                                   "vpte-y",
+                                   "pass-start",
+                                   -1,
+                                   -1,
+                                   "y-pass");
+    sixel_lookup_vpte_dispatch_tiles(tiles_x * tiles_z,
+                                     threads,
+                                     pin_threads,
+                                     sixel_lookup_vpte_pass_y_worker,
+                                     &plan_y);
+    sixel_lookup_vpte_timeline_log(timeline,
+                                   "vpte-y",
+                                   "pass-end",
+                                   -1,
+                                   -1,
+                                   "y-pass");
+
+    plan_z.shared = shared;
+    plan_z.distances = distances;
+    plan_z.sources = sources;
+    plan_z.timeline = timeline;
+    plan_z.edt1d = edt1d;
+    plan_z.weight = (double)shared->weights[2];
+    plan_z.stride_y = stride_y;
+    plan_z.stride_z = stride_z;
+    plan_z.res = res;
+    plan_z.tile_x = tile_xy;
+    plan_z.tile_y = tile_xy;
+    plan_z.tiles_x = tiles_x;
+    plan_z.tiles_y = tiles_y;
+    plan_z.log_lines = log_lines;
+
+    sixel_lookup_vpte_timeline_log(timeline,
+                                   "vpte-z",
+                                   "pass-start",
+                                   -1,
+                                   -1,
+                                   "z-pass");
+    sixel_lookup_vpte_dispatch_tiles(tiles_x * tiles_y,
+                                     threads,
+                                     pin_threads,
+                                     sixel_lookup_vpte_pass_z_worker,
+                                     &plan_z);
+    sixel_lookup_vpte_timeline_log(timeline,
+                                   "vpte-z",
+                                   "pass-end",
+                                   -1,
+                                   -1,
+                                   "z-pass");
 }
 
 static void
@@ -709,11 +1847,20 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_float32_t *vpte,
     size_t total;
     size_t palette_size;
     size_t offset;
+    int threads;
+    int pin_threads;
+    int first_touch;
+    int tile_xy;
+    int tile_depth;
+    sixel_lookup_vpte_timeline_t timeline;
+    char timeline_message[128];
 
+    timeline.initialized = 0;
     shared = sixel_allocator_malloc(vpte->allocator, sizeof(*shared));
     if (shared == NULL) {
         sixel_helper_set_additional_message(
             "sixel_lookup_vpte_build: allocation failed (shared).");
+        sixel_lookup_vpte_timeline_close(&timeline);
         return SIXEL_BAD_ALLOCATION;
     }
 
@@ -746,9 +1893,15 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_float32_t *vpte,
         sixel_lookup_vpte_shared_destroy(vpte->allocator, shared);
         sixel_helper_set_additional_message(
             "sixel_lookup_vpte_build: palette allocation failed.");
+        sixel_lookup_vpte_timeline_close(&timeline);
         return SIXEL_BAD_ALLOCATION;
     }
     sixel_lookup_vpte_quantize_palette(palette, shared);
+
+    threads = sixel_lookup_vpte_resolve_threads();
+    pin_threads = sixel_lookup_vpte_pin_threads_enabled();
+    first_touch = sixel_lookup_vpte_first_touch_enabled();
+    sixel_lookup_vpte_resolve_tiles(resolution, &tile_xy, &tile_depth);
 
     total = (size_t)resolution * (size_t)resolution * (size_t)resolution;
     if (!shared->use_u16) {
@@ -774,6 +1927,7 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_float32_t *vpte,
         sixel_lookup_vpte_shared_destroy(vpte->allocator, shared);
         sixel_helper_set_additional_message(
             "sixel_lookup_vpte_build: LUT allocation failed.");
+        sixel_lookup_vpte_timeline_close(&timeline);
         return SIXEL_BAD_ALLOCATION;
     }
 
@@ -788,16 +1942,48 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_float32_t *vpte,
         sixel_lookup_vpte_shared_destroy(vpte->allocator, shared);
         sixel_helper_set_additional_message(
             "sixel_lookup_vpte_build: temporary buffer allocation failed.");
+        sixel_lookup_vpte_timeline_close(&timeline);
         return SIXEL_BAD_ALLOCATION;
     }
 
+    sixel_lookup_vpte_timeline_open(&timeline);
+    /* Tag the VPTE build so timeline.py surfaces backend selection. */
+    (void)snprintf(timeline_message,
+                   sizeof(timeline_message),
+                   "res=%d colors=%d refine=%d dist2=%d",
+                   resolution,
+                   ncolors,
+                   refine,
+                   use_dist2);
+    sixel_lookup_vpte_timeline_log(&timeline,
+                                   "vpte",
+                                   "builder-start",
+                                   resolution,
+                                   ncolors,
+                                   timeline_message);
+    if (first_touch != 0) {
+        sixel_lookup_vpte_first_touch(distances,
+                                      sources,
+                                      resolution,
+                                      threads,
+                                      pin_threads,
+                                      tile_xy,
+                                      tile_depth);
+    }
     sixel_lookup_vpte_seed_grid(resolution,
                                 shared->depth,
                                 shared->ncolors,
                                 shared->palette_quant,
                                 distances,
                                 sources);
-    sixel_lookup_vpte_apply_edt(shared, distances, sources);
+    sixel_lookup_vpte_apply_edt(shared,
+                                distances,
+                                sources,
+                                &timeline,
+                                threads,
+                                pin_threads,
+                                tile_xy,
+                                tile_depth);
     sixel_lookup_vpte_fill_indices(shared, sources);
     sixel_lookup_vpte_mark_boundaries(shared, sources);
     if (shared->dist2 != NULL) {
@@ -806,8 +1992,15 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_float32_t *vpte,
         }
     }
 
+    sixel_lookup_vpte_timeline_log(&timeline,
+                                   "vpte",
+                                   "builder-end",
+                                   resolution,
+                                   ncolors,
+                                   timeline_message);
     sixel_allocator_free(vpte->allocator, distances);
     sixel_allocator_free(vpte->allocator, sources);
+    sixel_lookup_vpte_timeline_close(&timeline);
 
     /*
      * Each voxel spans a unit cube in lattice space.
