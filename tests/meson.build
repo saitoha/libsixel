@@ -65,7 +65,7 @@ endforeach
 
 python_depends = [libsixel]
 
-foreach t : ['test_python_bindings.t']
+foreach t : ['test_python_bindings.t', 'test_python_api_formats.t']
   test(t, sh,
     args: [meson.current_source_dir() / 'python' / 't' / t],
     protocol: 'tap',
