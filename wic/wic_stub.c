@@ -19,9 +19,12 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-#define INITGUID
 #include "wic_stub.h"
-#include <initguid.h>
+
+/*
+ * GUID definitions are provided by the Windows SDK (windowscodecs.lib), so we
+ * avoid INITGUID here to prevent duplicate IID exports when linking wicsixel.
+ */
 
 /* custom malloc */
 void *
