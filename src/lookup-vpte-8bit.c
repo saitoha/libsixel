@@ -30,6 +30,7 @@
 
 #include "config.h"
 
+#include <errno.h>
 #include <float.h>
 #include <limits.h>
 #include <math.h>
@@ -136,8 +137,8 @@ struct sixel_lookup_vpte_shared {
 
 static int const sixel_lookup_vpte_resolution_min = 64;
 static int const sixel_lookup_vpte_resolution_max = 256;
-static int const sixel_lookup_vpte_tile_xy = 8;
-static int const sixel_lookup_vpte_tile_depth = 8;
+static int const sixel_lookup_vpte_tile_xy_default = 8;
+static int const sixel_lookup_vpte_tile_depth_default = 8;
 
 static int
 sixel_lookup_vpte_pow2_log(int value)
@@ -167,6 +168,55 @@ sixel_lookup_vpte_validate_resolution(int resolution)
     pow2 = 1 << shift;
 
     return pow2 == resolution;
+}
+
+/*
+ * Accept tile dimensions from the environment so profiling runs can adjust
+ * cache locality without recompiling. Values outside [1, resolution] fall
+ * back to the default 8x8x8 layout.
+ */
+static int
+sixel_lookup_vpte_parse_positive(char const *env_name, int fallback)
+{
+    char const *env;
+    char *endptr;
+    long value;
+
+    env = getenv(env_name);
+    if (env == NULL || env[0] == '\0') {
+        return fallback;
+    }
+
+    errno = 0;
+    value = strtol(env, &endptr, 10);
+    if (errno != 0 || endptr == env || value < 1 || value > 1024) {
+        return fallback;
+    }
+
+    return (int)value;
+}
+
+static void
+sixel_lookup_vpte_resolve_tiles(int res, int *tile_xy, int *tile_depth)
+{
+    int resolved_xy;
+    int resolved_depth;
+
+    resolved_xy = sixel_lookup_vpte_parse_positive(
+        "SIXEL_VPTE_TILE_XY",
+        sixel_lookup_vpte_tile_xy_default);
+    resolved_depth = sixel_lookup_vpte_parse_positive(
+        "SIXEL_VPTE_TILE_DEPTH",
+        sixel_lookup_vpte_tile_depth_default);
+    if (resolved_xy > res) {
+        resolved_xy = res;
+    }
+    if (resolved_depth > res) {
+        resolved_depth = res;
+    }
+
+    *tile_xy = resolved_xy;
+    *tile_depth = resolved_depth;
 }
 
 static uint32_t
@@ -776,7 +826,9 @@ sixel_lookup_vpte_first_touch(double *distances,
                               int *sources,
                               int res,
                               int threads,
-                              int pin_threads)
+                              int pin_threads,
+                              int tile_xy,
+                              int tile_depth)
 {
     sixel_lookup_vpte_first_touch_plan_t plan;
     int tiles_y;
@@ -787,8 +839,8 @@ sixel_lookup_vpte_first_touch(double *distances,
     plan.res = res;
     plan.stride_y = (size_t)res;
     plan.stride_z = (size_t)res * (size_t)res;
-    plan.tile_y = sixel_lookup_vpte_tile_xy;
-    plan.tile_z = sixel_lookup_vpte_tile_depth;
+    plan.tile_y = tile_xy;
+    plan.tile_z = tile_depth;
     tiles_y = (res + plan.tile_y - 1) / plan.tile_y;
     tiles_z = (res + plan.tile_z - 1) / plan.tile_z;
     plan.tiles_y = tiles_y;
@@ -1583,7 +1635,9 @@ sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
                             int *sources,
                             sixel_lookup_vpte_timeline_t *timeline,
                             int threads,
-                            int pin_threads)
+                            int pin_threads,
+                            int tile_xy,
+                            int tile_depth)
 {
     sixel_lookup_vpte_pass_x_plan_t plan_x;
     sixel_lookup_vpte_pass_y_plan_t plan_y;
@@ -1606,10 +1660,8 @@ sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
     log_lines = sixel_lookup_vpte_timeline_lines_enabled(timeline);
     edt1d = sixel_lookup_vpte_edt1d_resolve();
 
-    tiles_y = (res + sixel_lookup_vpte_tile_xy - 1)
-            / sixel_lookup_vpte_tile_xy;
-    tiles_z = (res + sixel_lookup_vpte_tile_depth - 1)
-            / sixel_lookup_vpte_tile_depth;
+    tiles_y = (res + tile_xy - 1) / tile_xy;
+    tiles_z = (res + tile_depth - 1) / tile_depth;
 
     plan_x.shared = shared;
     plan_x.distances = distances;
@@ -1620,8 +1672,8 @@ sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
     plan_x.stride_y = stride_y;
     plan_x.stride_z = stride_z;
     plan_x.res = res;
-    plan_x.tile_y = sixel_lookup_vpte_tile_xy;
-    plan_x.tile_z = sixel_lookup_vpte_tile_depth;
+    plan_x.tile_y = tile_xy;
+    plan_x.tile_z = tile_depth;
     plan_x.tiles_y = tiles_y;
     plan_x.tiles_z = tiles_z;
     plan_x.log_lines = log_lines;
@@ -1655,8 +1707,8 @@ sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
     plan_y.stride_y = stride_y;
     plan_y.stride_z = stride_z;
     plan_y.res = res;
-    plan_y.tile_x = sixel_lookup_vpte_tile_xy;
-    plan_y.tile_z = sixel_lookup_vpte_tile_depth;
+    plan_y.tile_x = tile_xy;
+    plan_y.tile_z = tile_depth;
     plan_y.tiles_x = tiles_x;
     plan_y.tiles_z = tiles_z;
     plan_y.log_lines = log_lines;
@@ -1688,8 +1740,8 @@ sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
     plan_z.stride_y = stride_y;
     plan_z.stride_z = stride_z;
     plan_z.res = res;
-    plan_z.tile_x = sixel_lookup_vpte_tile_xy;
-    plan_z.tile_y = sixel_lookup_vpte_tile_xy;
+    plan_z.tile_x = tile_xy;
+    plan_z.tile_y = tile_xy;
     plan_z.tiles_x = tiles_x;
     plan_z.tiles_y = tiles_y;
     plan_z.log_lines = log_lines;
@@ -1839,6 +1891,8 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_8bit_t *vpte,
     int threads;
     int pin_threads;
     int first_touch;
+    int tile_xy;
+    int tile_depth;
     sixel_lookup_vpte_timeline_t timeline;
     char timeline_message[128];
 
@@ -1884,6 +1938,7 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_8bit_t *vpte,
     threads = sixel_lookup_vpte_resolve_threads();
     pin_threads = sixel_lookup_vpte_pin_threads_enabled();
     first_touch = sixel_lookup_vpte_first_touch_enabled();
+    sixel_lookup_vpte_resolve_tiles(resolution, &tile_xy, &tile_depth);
 
     total = (size_t)resolution * (size_t)resolution * (size_t)resolution;
     if (!shared->use_u16) {
@@ -1948,7 +2003,9 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_8bit_t *vpte,
                                       sources,
                                       resolution,
                                       threads,
-                                      pin_threads);
+                                      pin_threads,
+                                      tile_xy,
+                                      tile_depth);
     }
     sixel_lookup_vpte_seed_grid(resolution,
                                 shared->depth,
@@ -1961,7 +2018,9 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_8bit_t *vpte,
                                 sources,
                                 &timeline,
                                 threads,
-                                pin_threads);
+                                pin_threads,
+                                tile_xy,
+                                tile_depth);
     sixel_lookup_vpte_fill_indices(shared, sources);
     sixel_lookup_vpte_mark_boundaries(shared, sources);
     if (shared->dist2 != NULL) {
