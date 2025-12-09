@@ -1086,7 +1086,18 @@ def sixel_encoder_setopt(encoder, flag, arg=None):
 # load source data from specified file and encode it to SIXEL format
 def sixel_encoder_encode(encoder, filename):
     import locale
+    import os
     language, encoding = locale.getdefaultlocale()
+
+    # Proactively validate the input path on the Python side so callers get a
+    # deterministic exception even if a platform-specific libc or loader fails
+    # to surface a failure.  This mirrors the C-side validation while keeping
+    # the behaviour consistent across wheel and in-tree builds.
+    if filename not in (None, "-"):
+        if not os.path.exists(filename):
+            raise RuntimeError(f"input path does not exist: {filename}")
+        if os.path.isdir(filename):
+            raise RuntimeError(f"input path is a directory: {filename}")
 
     _sixel.sixel_encoder_encode.restype = c_int
     _sixel.sixel_encoder_encode.argtypes = [c_void_p, c_char_p]
