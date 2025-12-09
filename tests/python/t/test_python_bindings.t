@@ -71,6 +71,31 @@ if [ -z "${shared_lib}" ]; then
     skip_all "libsixel shared library is unavailable (static-only build?)"
 fi
 
+# Abort early if the Python interpreter and the built shared library have
+# different word sizes (for example, 64-bit Python vs. 32-bit libsixel),
+# because such a mismatch always fails at import time with a confusing
+# ELFCLASS error. We rely on the `file` utility when available to extract
+# the bitness of the shared library and compare it with Python's pointer
+# size.
+python_bits=$(${python_bin} - <<'PY' 2>/dev/null || true
+import struct
+print(struct.calcsize("P") * 8)
+PY
+)
+lib_bits=""
+if command -v file >/dev/null 2>&1; then
+    lib_desc=$(file -b "${shared_lib}" 2>/dev/null || true)
+    case "${lib_desc}" in
+        *64-bit*) lib_bits="64" ;;
+        *32-bit*) lib_bits="32" ;;
+    esac
+fi
+
+if [ -n "${python_bits}" ] && [ -n "${lib_bits}" ] \
+   && [ "${python_bits}" != "${lib_bits}" ]; then
+    skip_all "python is ${python_bits}-bit but libsixel is ${lib_bits}-bit"
+fi
+
 wheel_dir="${TOP_BUILDDIR}/python-wheel/dist"
 if [ -d "${wheel_dir}" ]; then
     wheel_path=$(find "${wheel_dir}" -maxdepth 1 -type f -name 'libsixel-*.whl' \
