@@ -1667,6 +1667,7 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_float32_t *vpte,
     size_t palette_size;
     size_t offset;
     sixel_lookup_vpte_timeline_t timeline;
+    char timeline_message[128];
 
     timeline.initialized = 0;
     shared = sixel_allocator_malloc(vpte->allocator, sizeof(*shared));
@@ -1755,6 +1756,20 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_float32_t *vpte,
     }
 
     sixel_lookup_vpte_timeline_open(&timeline);
+    /* Tag the VPTE build so timeline.py surfaces backend selection. */
+    (void)snprintf(timeline_message,
+                   sizeof(timeline_message),
+                   "res=%d colors=%d refine=%d dist2=%d",
+                   resolution,
+                   ncolors,
+                   refine,
+                   use_dist2);
+    sixel_lookup_vpte_timeline_log(&timeline,
+                                   "vpte",
+                                   "builder-start",
+                                   resolution,
+                                   ncolors,
+                                   timeline_message);
     sixel_lookup_vpte_seed_grid(resolution,
                                 shared->depth,
                                 shared->ncolors,
@@ -1773,6 +1788,12 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_float32_t *vpte,
         }
     }
 
+    sixel_lookup_vpte_timeline_log(&timeline,
+                                   "vpte",
+                                   "builder-end",
+                                   resolution,
+                                   ncolors,
+                                   timeline_message);
     sixel_allocator_free(vpte->allocator, distances);
     sixel_allocator_free(vpte->allocator, sources);
     sixel_lookup_vpte_timeline_close(&timeline);
