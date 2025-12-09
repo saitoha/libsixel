@@ -2070,10 +2070,6 @@ sixel_dither_apply_palette(
     if (dither->optimized) {
         if (!sixel_palette_is_builtin_mono(palette)) {
             int policy;
-            int wcomp1;
-            int wcomp2;
-            int wcomp3;
-
             policy = dither->lut_policy;
             if (policy != SIXEL_LUT_POLICY_CERTLUT
                 && policy != SIXEL_LUT_POLICY_5BIT
