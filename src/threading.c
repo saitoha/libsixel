@@ -23,6 +23,10 @@
  * SOFTWARE.
  */
 
+#if defined(__linux__)
+#define _GNU_SOURCE
+#endif
+
 #include "config.h"
 
 #if defined(__APPLE__) && !defined(_DARWIN_C_SOURCE)
@@ -88,6 +92,7 @@
  */
 
 #if SIXEL_USE_PTHREADS
+# include <sched.h>
 
 /*
  * Abort the process when a pthread call fails in a context where recovery is
@@ -294,6 +299,36 @@ sixel_thread_join(sixel_thread_t *thread)
     thread->started = 0;
 }
 
+/*
+ * Best-effort CPU affinity setter for the calling thread. Platforms without
+ * pthread_setaffinity_np simply ignore the request so callers can use the
+ * helper unconditionally.
+ */
+SIXELAPI int
+sixel_thread_pin_self(int cpu_index)
+{
+#if defined(__linux__) && defined(CPU_SET)
+    cpu_set_t set;
+    int rc;
+
+    if (cpu_index < 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    CPU_ZERO(&set);
+    CPU_SET((unsigned int)cpu_index, &set);
+    rc = pthread_setaffinity_np(pthread_self(), sizeof(set), &set);
+    if (rc != 0) {
+        return SIXEL_RUNTIME_ERROR;
+    }
+
+    return SIXEL_OK;
+#else
+    (void)cpu_index;
+
+    return SIXEL_OK;
+#endif
+}
+
 SIXELAPI int
 sixel_get_hw_threads(void)
 {
@@ -485,6 +520,24 @@ sixel_thread_join(sixel_thread_t *thread)
 }
 
 SIXELAPI int
+sixel_thread_pin_self(int cpu_index)
+{
+    DWORD_PTR mask;
+    DWORD_PTR previous;
+
+    if (cpu_index < 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    mask = ((DWORD_PTR)1) << (DWORD_PTR)cpu_index;
+    previous = SetThreadAffinityMask(GetCurrentThread(), mask);
+    if (previous == 0) {
+        return SIXEL_RUNTIME_ERROR;
+    }
+
+    return SIXEL_OK;
+}
+
+SIXELAPI int
 sixel_get_hw_threads(void)
 {
     DWORD count;
@@ -578,6 +631,14 @@ SIXELAPI void
 sixel_thread_join(sixel_thread_t *thread)
 {
     (void)thread;
+}
+
+SIXELAPI int
+sixel_thread_pin_self(int cpu_index)
+{
+    (void)cpu_index;
+
+    return SIXEL_OK;
 }
 
 SIXELAPI int

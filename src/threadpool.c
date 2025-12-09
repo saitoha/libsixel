@@ -29,6 +29,7 @@
 #include <string.h>
 
 #include "threadpool.h"
+#include "threading.h"
 
 typedef struct threadpool_worker threadpool_worker_t;
 
@@ -37,6 +38,8 @@ struct threadpool_worker {
     sixel_thread_t thread;
     void *workspace;
     int started;
+    int index;
+    int pinned;
 };
 
 struct threadpool {
@@ -55,6 +58,8 @@ struct threadpool {
     int error;
     int threads_started;
     int worker_capacity;
+    int pin_threads;
+    int hw_threads;
     sixel_mutex_t mutex;
     sixel_cond_t cond_not_empty;
     sixel_cond_t cond_not_full;
@@ -146,6 +151,14 @@ threadpool_worker_main(void *arg)
         sixel_cond_signal(&pool->cond_not_full);
         sixel_mutex_unlock(&pool->mutex);
 
+        if (pool->pin_threads && !worker->pinned && pool->hw_threads > 0) {
+            int cpu_index;
+
+            cpu_index = worker->index % pool->hw_threads;
+            (void)sixel_thread_pin_self(cpu_index);
+            worker->pinned = 1;
+        }
+
         rc = pool->worker(job, pool->userdata, worker->workspace);
 
         sixel_mutex_lock(&pool->mutex);
@@ -197,6 +210,8 @@ threadpool_create(int nthreads,
     pool->cond_not_empty_ready = 0;
     pool->cond_not_full_ready = 0;
     pool->cond_drained_ready = 0;
+    pool->pin_threads = 0;
+    pool->hw_threads = 0;
     pool->workers = NULL;
 
     rc = sixel_mutex_init(&pool->mutex);
@@ -256,6 +271,8 @@ threadpool_create(int nthreads,
         pool->workers[i]->pool = pool;
         pool->workers[i]->workspace = NULL;
         pool->workers[i]->started = 0;
+        pool->workers[i]->index = i;
+        pool->workers[i]->pinned = 0;
         if (workspace_size > 0) {
             /*
              * Zero-initialize the per-thread workspace so that structures like
@@ -289,6 +306,26 @@ threadpool_create(int nthreads,
     }
 
     return pool;
+}
+
+SIXELAPI void
+threadpool_set_affinity(threadpool_t *pool, int pin_threads)
+{
+    if (pool == NULL) {
+        return;
+    }
+
+    sixel_mutex_lock(&pool->mutex);
+    pool->pin_threads = (pin_threads != 0) ? 1 : 0;
+    if (pool->pin_threads != 0) {
+        pool->hw_threads = sixel_get_hw_threads();
+        if (pool->hw_threads < 1) {
+            pool->pin_threads = 0;
+        }
+    } else {
+        pool->hw_threads = 0;
+    }
+    sixel_mutex_unlock(&pool->mutex);
 }
 
 static int
@@ -434,6 +471,8 @@ threadpool_grow(threadpool_t *pool, int additional_threads)
         pool->workers[i]->pool = pool;
         pool->workers[i]->workspace = NULL;
         pool->workers[i]->started = 0;
+        pool->workers[i]->index = i;
+        pool->workers[i]->pinned = 0;
         if (pool->workspace_size > 0) {
             pool->workers[i]->workspace =
                 calloc(1, pool->workspace_size);

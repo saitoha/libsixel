@@ -45,6 +45,7 @@ SIXELAPI threadpool_t *threadpool_create(int nthreads,
                                          size_t workspace_size,
                                          tp_worker_fn worker,
                                          void *userdata);
+SIXELAPI void threadpool_set_affinity(threadpool_t *pool, int pin_threads);
 SIXELAPI void threadpool_destroy(threadpool_t *pool);
 SIXELAPI void threadpool_push(threadpool_t *pool, tp_job_t job);
 SIXELAPI void threadpool_finish(threadpool_t *pool);
