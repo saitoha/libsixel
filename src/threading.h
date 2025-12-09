@@ -92,6 +92,7 @@ SIXELAPI int sixel_thread_create(sixel_thread_t *thread,
                                  sixel_thread_fn fn,
                                  void *arg);
 SIXELAPI void sixel_thread_join(sixel_thread_t *thread);
+SIXELAPI int sixel_thread_pin_self(int cpu_index);
 SIXELAPI int sixel_get_hw_threads(void);
 
 SIXELAPI int sixel_threads_normalize(int requested);

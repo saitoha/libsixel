@@ -672,10 +672,10 @@ cell corners.  The following environment variables tune the grid:
   (0 or 1; default 1).
 * `SIXEL_LOOKUP_VPTE_USE_DIST2` controls whether boundary safety checks rely
   on the EDT distance field to skip unnecessary refinement (0 or 1; default
-  1).
+  0 because recent measurements have not confirmed a win).
 * `SIXEL_LOOKUP_VPTE_USE_CACHE` enables a small per-thread VPTE lookup cache
-  keyed by voxel coordinates (0 or 1; default 1 when thread-local storage is
-  available or parallel dithering is disabled, otherwise forced to 0).
+  keyed by voxel coordinates (0 or 1; default 0 because the benefit was
+  negligible in recent tests; enable explicitly if you want to retry it).
 * `SIXEL_LOOKUP_VPTE_SHARED` controls whether the prebuilt grid is shared
   across threads (0 or 1; default 1).
 
