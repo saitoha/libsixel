@@ -625,35 +625,44 @@ sixel_dither_map_pixels(
         f_lookup = lookup_normal;
     }
 
-        if (f_lookup == lookup_fast_lut) {
-            if (depth != 3) {
-                status = SIXEL_BAD_ARGUMENT;
-                sixel_helper_set_additional_message(
-                    "sixel_dither_map_pixels: fast lookup requires RGB pixels.");
-                goto end;
-            }
-            policy = lut_policy;
-            if (policy != SIXEL_LUT_POLICY_CERTLUT
-                && policy != SIXEL_LUT_POLICY_5BIT
-                && policy != SIXEL_LUT_POLICY_6BIT
-                && policy != SIXEL_LUT_POLICY_VPTE) {
-                policy = SIXEL_LUT_POLICY_6BIT;
-            }
-            shared_lut = 1;
-            if (policy == SIXEL_LUT_POLICY_CERTLUT) {
-                shared_lut = sixel_lookup_env_shared_certlut();
-            } else if (policy == SIXEL_LUT_POLICY_5BIT) {
-                shared_lut = sixel_lookup_env_shared_5bit();
-            } else if (policy == SIXEL_LUT_POLICY_6BIT) {
-                shared_lut = sixel_lookup_env_shared_6bit();
-            }
-            if (lut != NULL && sixel_lookup_parallel_dither_active() != 0
-                    && shared_lut != 0) {
-                /*
-                 * Parallel palette application reuses the preconfigured LUT to
-                 * avoid rebuilding VPTE inside each worker.  The shared LUT is
-                 * immutable after setup, so workers only need a read-only handle
-                 * here.
+    if (f_lookup == lookup_fast_lut) {
+        if (depth != 3) {
+            status = SIXEL_BAD_ARGUMENT;
+            sixel_helper_set_additional_message(
+                "sixel_dither_map_pixels: fast lookup requires RGB pixels.");
+            goto end;
+        }
+        policy = lut_policy;
+        if (policy != SIXEL_LUT_POLICY_CERTLUT
+            && policy != SIXEL_LUT_POLICY_5BIT
+            && policy != SIXEL_LUT_POLICY_6BIT
+            && policy != SIXEL_LUT_POLICY_VPTE) {
+            policy = SIXEL_LUT_POLICY_6BIT;
+        }
+        shared_lut = 1;
+        if (policy == SIXEL_LUT_POLICY_CERTLUT) {
+            shared_lut = sixel_lookup_env_shared_certlut();
+        } else if (policy == SIXEL_LUT_POLICY_5BIT) {
+            shared_lut = sixel_lookup_env_shared_5bit();
+        } else if (policy == SIXEL_LUT_POLICY_6BIT) {
+            shared_lut = sixel_lookup_env_shared_6bit();
+        }
+        if (lut != NULL && sixel_lookup_parallel_dither_active() != 0
+                && shared_lut == 0) {
+            /*
+             * Caller requested thread-local CERTLUT/DENCELUT caches.
+             * Drop the shared handle so each worker builds an isolated
+             * instance instead of serializing on a mutex.
+             */
+            lut = NULL;
+        }
+        if (lut != NULL && sixel_lookup_parallel_dither_active() != 0
+                && shared_lut != 0) {
+            /*
+             * Parallel palette application reuses the preconfigured LUT to
+             * avoid rebuilding VPTE inside each worker.  The shared LUT is
+             * immutable after setup, so workers only need a read-only handle
+             * here.
              */
             active_lut = lut;
             manage_lut = 0;
