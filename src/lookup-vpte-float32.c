@@ -1008,20 +1008,26 @@ sixel_lookup_vpte_edt1d_resolve(void)
     }
 #if defined(SIXEL_VPTE_HAS_X86_INTRIN)
     if (selected == NULL) {
+        /*
+         * Guard the CPU query so builds without AVX backends do not trigger
+         * unused-but-set warnings when AVX is disabled at configure time.
+         */
+# if defined(SIXEL_VPTE_USE_AVX512) || defined(SIXEL_VPTE_USE_AVX2)
         int simd_level;
 
         simd_level = sixel_cpu_simd_level();
-# if defined(SIXEL_VPTE_USE_AVX512)
+#  if defined(SIXEL_VPTE_USE_AVX512)
         if (simd_level >= SIXEL_SIMD_LEVEL_AVX512) {
             selected = sixel_lookup_vpte_edt1d_avx512;
             return selected;
         }
-# endif
-# if defined(SIXEL_VPTE_USE_AVX2)
+#  endif
+#  if defined(SIXEL_VPTE_USE_AVX2)
         if (simd_level >= SIXEL_SIMD_LEVEL_AVX2) {
             selected = sixel_lookup_vpte_edt1d_avx2;
             return selected;
         }
+#  endif
 # endif
     }
 #endif
