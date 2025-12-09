@@ -84,6 +84,18 @@ _CRTIMP errno_t __cdecl _dupenv_s(char **buffer,
                                   const char *name);
 #endif
 
+#if HAVE__SETMODE
+/*
+ * Some MinGW headers hide `_setmode()` when POSIX feature macros are
+ * enabled.  Declare it ourselves to keep the prototype visible while
+ * still using the system implementation.  MSYS builds may not expose
+ * the `_WIN32` feature macro, so rely on the configure probe instead
+ * of the platform guard.  The signature matches the public CRT
+ * contract.
+ */
+_CRTIMP int __cdecl _setmode(int fd, int mode);
+#endif
+
 #if defined(__APPLE__) && defined(__clang__)
 /*
  * +------------------------------------------------------------+
