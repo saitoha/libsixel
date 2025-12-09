@@ -6,6 +6,10 @@ env.set('TOP_SRCDIR', meson.project_source_root())
 env.set('TOP_BUILDDIR', meson.project_build_root())
 env.set('MESON_SOURCE_ROOT', meson.project_source_root())
 env.set('MESON_BUILD_ROOT', meson.project_build_root())
+# Ensure Python TAP tests can locate the freshly built shared library when
+# Meson is invoked without a prior `meson compile`. The binding smoke test
+# relies on LIBSIXEL_LIBDIR to point at the build artifact directory.
+env.set('LIBSIXEL_LIBDIR', meson.project_build_root() / 'src')
 
 if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
   # Ensure Windows-style runners (including MSYS2) locate the freshly built
@@ -59,12 +63,15 @@ foreach t : cli_tests
     suite: ['tap'])
 endforeach
 
+python_depends = [libsixel]
+
 foreach t : ['test_python_bindings.t']
   test(t, sh,
     args: [meson.current_source_dir() / 'python' / 't' / t],
     protocol: 'tap',
     env: env,
     timeout: 300,
+    depends: python_depends,
     suite: ['tap'])
 endforeach
 
