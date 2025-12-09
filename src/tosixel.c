@@ -3919,6 +3919,7 @@ sixel_encode_dither(
             input_pixels = paletted_pixels;
         }
     }
+
 #if SIXEL_ENABLE_THREADS
     if (!pipeline_active) {
         logger = dither->pipeline_logger;
