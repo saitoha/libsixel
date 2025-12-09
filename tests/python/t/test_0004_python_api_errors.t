@@ -14,8 +14,14 @@ artifact_dir="${artifact_root}/${test_name}"
 log_file="${artifact_dir}/python.log"
 tmp_dir="${artifact_dir}/tmp"
 
+# Resolve the fixture relative to the repository root so the Python preflight
+# checks see an absolute path even when Automake does not populate TOP_SRCDIR.
+source_image=$(cd "$(dirname "$0")/../../.." && pwd)/images/autumn.png
+
 mkdir -p "${artifact_dir}" "${tmp_dir}"
 : >"${log_file}"
+
+printf 'source_image=%s\n' "${source_image}" >>"${log_file}"
 
 tap_log_file="${log_file}"
 
@@ -93,7 +99,15 @@ def exercise_missing_path(workdir: pathlib.Path) -> str:
     expectation = Expectation(
         "missing input",
         RuntimeError,
-        ("no such file", "cannot", "failed", "open", "not found", "bad argument"),
+        (
+            "no such file",
+            "cannot",
+            "failed",
+            "open",
+            "not found",
+            "bad argument",
+            "does not exist",
+        ),
     )
     return expect_exception(expectation, _invoke)
 
@@ -142,7 +156,7 @@ def exercise_unsupported_format(workdir: pathlib.Path) -> str:
     return expect_exception(expectation, _invoke)
 
 
-def exercise_oversized_dimensions(workdir: pathlib.Path) -> str:
+def exercise_oversized_dimensions(workdir: pathlib.Path, source: pathlib.Path) -> str:
     """Expect extremely large geometry requests to raise RuntimeError."""
 
     workdir.mkdir(parents=True, exist_ok=True)
@@ -151,11 +165,11 @@ def exercise_oversized_dimensions(workdir: pathlib.Path) -> str:
 
     def _invoke() -> None:
         encoder = Encoder()
-        encoder.setopt(SIXEL_OPTFLAG_INPUT, str(pathlib.Path("images/autumn.png")))
+        encoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
         encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(target))
         encoder.setopt(SIXEL_OPTFLAG_WIDTH, str(huge_dimension))
         encoder.setopt(SIXEL_OPTFLAG_HEIGHT, str(huge_dimension))
-        encoder.encode(str(pathlib.Path("images/autumn.png")))
+        encoder.encode(str(source))
 
     expectation = Expectation(
         "oversized dimensions",
@@ -198,7 +212,7 @@ def main() -> None:
         exercise_missing_path(workdir / "missing"),
         exercise_corrupted_image(workdir / "corrupt"),
         exercise_unsupported_format(workdir / "unsupported"),
-        exercise_oversized_dimensions(workdir / "oversized"),
+        exercise_oversized_dimensions(workdir / "oversized", source),
         exercise_invalid_option(workdir / "options", source),
     ]
 
@@ -237,7 +251,7 @@ run_case() {
            LD_LIBRARY_PATH="${ld_env}" \
            LIBSIXEL_LIBDIR="${lib_dir}" \
            "${run_python}" "${verify_script}" \
-           "${TOP_SRCDIR}/images/autumn.png" "${working_dir}/wheel" \
+           "${source_image}" "${working_dir}/wheel" \
            >>"${log_file}" 2>&1; then
             tap_pass ${case_id} "${description} via wheel"
         else
@@ -248,7 +262,7 @@ run_case() {
            LD_LIBRARY_PATH="${python_in_tree_ld_library_path}" \
            LIBSIXEL_LIBDIR="${lib_dir}" \
            "${run_python}" "${verify_script}" \
-           "${TOP_SRCDIR}/images/autumn.png" "${working_dir}/tree" \
+           "${source_image}" "${working_dir}/tree" \
            >>"${log_file}" 2>&1; then
             tap_pass ${case_id} "${description} via in-tree modules"
         else
