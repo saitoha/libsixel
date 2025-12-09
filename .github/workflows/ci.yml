@@ -89,6 +89,11 @@ jobs:
             variant: default
           - os: windows-latest
             runner: windows-latest
+            compiler: clang-cl
+            sys: MSVC
+            variant: clang-cl
+          - os: windows-latest
+            runner: windows-latest
             compiler: cl
             sys: MSVC
             variant: default
@@ -393,7 +398,7 @@ jobs:
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Configure and build (Windows, MSVC)
-      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' }}
+      if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' }}
       shell: msys2 {0}
       run: |
         VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
@@ -423,7 +428,7 @@ jobs:
                 esac;
             done
         )
-        ./configure CC=cl LD=link AR="${SHELL} $(pwd)/build-aux/ar-lib lib" ARFLAGS=cr NM="dumpbin -symbols" STRIP=: RANLIB=: \
+        ./configure CC=${{ matrix.compiler }} LD=link AR="${SHELL} $(pwd)/build-aux/ar-lib lib" ARFLAGS=cr NM="dumpbin -symbols" STRIP=: RANLIB=: \
             --host=x86_64-pc-windows-msvc \
             --without-bashcompletiondir \
             --without-zshcompletiondir \
@@ -690,7 +695,7 @@ jobs:
           -instr-profile=coverage/coverage.profdata > coverage.info || true
 
     - name: Run tests (Windows, MSVC)
-      if: runner.os == 'Windows' && matrix.compiler == 'cl'
+      if: runner.os == 'Windows' && matrix.sys == 'MSVC'
       shell: msys2 {0}
       run: |
         VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
@@ -1342,6 +1347,11 @@ jobs:
             variant: default
           - os: windows-latest
             runner: windows-latest
+            compiler: clang-cl
+            sys: MSVC
+            variant: clang-cl
+          - os: windows-latest
+            runner: windows-latest
             compiler: cl
             sys: MSVC
             variant: default
@@ -1383,7 +1393,7 @@ jobs:
         sudo apt-get install -y gcc-multilib
 
     - name: Setup MSVC developer env (vcvars)
-      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' }}
+      if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' }}
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64
@@ -1590,13 +1600,15 @@ jobs:
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Configure, build, and test (Meson, Windows, MSVC)
-      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' && matrix.vcpkg_libpng != true && matrix.vcpkg_libjpeg != true }}
+      if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' && matrix.vcpkg_libpng != true && matrix.vcpkg_libjpeg != true }}
       shell: cmd
       run: |
         setlocal ENABLEDELAYEDEXPANSION
         call "%VSINSTALLDIR%\VC\Auxiliary\Build\vcvarsall.bat" x64
         python -m pip install --upgrade pip
         python -m pip install meson ninja
+        set "CC=${{ matrix.compiler }}"
+        set "CXX=${{ matrix.compiler }}"
         set "DISABLE_THREADS_FLAG="
         if "${{ matrix.disable_threads || '' }}"=="true" set "DISABLE_THREADS_FLAG=-Dthreads=disabled"
         set "DISABLE_TOOLS_FLAGS="
