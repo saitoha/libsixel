@@ -42,7 +42,7 @@ option('zshcompletiondir', type: 'string', value: 'disabled', description: 'Dire
 option('simd', type: 'feature', value: 'enabled', description: 'Use SIMD')
 option('python', type: 'feature', value: 'disabled', description: 'Install Python bindings')
 option('ruby', type: 'feature', value: 'disabled', description: 'Install Ruby bindings')
-option('tests', type: 'boolean', value: false, description: 'Build tests')
+option('tests', type: 'boolean', value: true, description: 'Build tests')
 option('gcov', type: 'boolean', value: false, description: 'Enable gcov coverage flags')
 option('img2sixel', type: 'feature', value: 'enabled', description: 'Build img2sixel tool')
 option('sixel2png', type: 'feature', value: 'enabled', description: 'Build sixel2png tool')

@@ -22,7 +22,7 @@ fail() {
 echo "1..1"
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-root_dir=$(CDPATH=; cd "${script_dir}/.." && pwd)
+root_dir=$(CDPATH=; cd "${script_dir}/../.." && pwd)
 
 if "${root_dir}/lsqa_regression.sh" >"${log_file}" 2>&1; then
     pass 1 "lsqa quality baseline held"

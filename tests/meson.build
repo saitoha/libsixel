@@ -4,6 +4,8 @@ env = environment()
 env.set('ARTIFACT_ROOT', artifact_root)
 env.set('TOP_SRCDIR', meson.project_source_root())
 env.set('TOP_BUILDDIR', meson.project_build_root())
+env.set('MESON_SOURCE_ROOT', meson.project_source_root())
+env.set('MESON_BUILD_ROOT', meson.project_build_root())
 
 if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
   # Ensure Windows-style runners (including MSYS2) locate the freshly built
