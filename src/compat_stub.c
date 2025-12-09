@@ -610,6 +610,33 @@ sixel_compat_unlink(const char *path)
 }
 
 
+/*
+ * Force file descriptors into binary mode when the platform exposes the
+ * corresponding flag.  This keeps Windows stdio from translating newlines
+ * while leaving POSIX callers untouched.
+ */
+SIXEL_COMPAT_API int
+sixel_compat_set_binary(int fd)
+{
+    int result;
+
+    result = 0;
+#if defined(O_BINARY)
+# if HAVE__SETMODE
+    result = _setmode(fd, O_BINARY);
+# elif HAVE_SETMODE
+    result = setmode(fd, O_BINARY);
+# else
+    (void)fd;
+# endif
+#else
+    (void)fd;
+#endif
+
+    return result;
+}
+
+
 SIXEL_COMPAT_API int
 sixel_compat_access(const char *path, int mode)
 {

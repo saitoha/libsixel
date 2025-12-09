@@ -1326,11 +1326,7 @@ sixel_decoder_decode(
         if (strcmp(decoder->input, "-") == 0) {
             /* for windows */
 #if defined(O_BINARY)
-# if HAVE__SETMODE
-            _setmode(STDIN_FILENO, O_BINARY);
-# elif HAVE_SETMODE
-            setmode(STDIN_FILENO, O_BINARY);
-# endif  /* HAVE_SETMODE */
+            (void)sixel_compat_set_binary(STDIN_FILENO);
 #endif  /* defined(O_BINARY) */
             input_fp = stdin;
         } else {

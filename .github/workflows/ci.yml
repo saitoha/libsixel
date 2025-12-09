@@ -1430,7 +1430,7 @@ jobs:
         "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang)
-      if: runner.os == 'Windows' && matrix.compiler != 'cl' && matrix.sys != 'MSYS' && matrix.sys != 'CYGWIN'
+      if: runner.os == 'Windows' && matrix.compiler != 'cl' && matrix.sys != 'MSYS' && matrix.sys != 'CYGWIN' && matrix.sys != 'MSVC'
       uses: msys2/setup-msys2@v2
       with:
         msystem: ${{ matrix.sys }}

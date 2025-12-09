@@ -199,6 +199,8 @@ SIXEL_COMPAT_API int sixel_compat_close(int fd);
 
 SIXEL_COMPAT_API int sixel_compat_unlink(const char *path);
 
+SIXEL_COMPAT_API int sixel_compat_set_binary(int fd);
+
 SIXEL_COMPAT_API int sixel_compat_access(const char *path, int mode);
 
 SIXEL_COMPAT_API ssize_t sixel_compat_write(int fd,
