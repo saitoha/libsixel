@@ -155,6 +155,24 @@ typedef struct sixel_lookup_vpte_timeline {
     sixel_logger_t logger;
 } sixel_lookup_vpte_timeline_t;
 
+/*
+ * Thread-local gather/scatter buffer that keeps line data contiguous for
+ * upcoming SIMD work.  The buffer is shared across passes to avoid repeated
+ * allocation and to keep the hot paths short.
+ */
+typedef struct sixel_lookup_vpte_line_buffer {
+    double dist[256];
+    int src[256];
+} sixel_lookup_vpte_line_buffer_t;
+
+#if SIXEL_VPTE_TLS_AVAILABLE
+static SIXEL_VPTE_TLS sixel_lookup_vpte_line_buffer_t
+    sixel_lookup_vpte_tls_line_buffer;
+#else
+static sixel_lookup_vpte_line_buffer_t
+    sixel_lookup_vpte_tls_line_buffer;
+#endif
+
 static SIXEL_VPTE_TLS sixel_lookup_vpte_cache_t
     sixel_lookup_vpte_thread_cache;
 
@@ -322,6 +340,59 @@ sixel_lookup_vpte_timeline_log(sixel_lookup_vpte_timeline_t *timeline,
     (void)line;
     (void)message;
 #endif  /* SIXEL_ENABLE_THREADS */
+}
+
+static sixel_lookup_vpte_line_buffer_t *
+sixel_lookup_vpte_line_buffer_get(void)
+{
+    sixel_lookup_vpte_line_buffer_t *buffer;
+
+    buffer = &sixel_lookup_vpte_tls_line_buffer;
+
+    return buffer;
+}
+
+/*
+ * Prefetch the next line along the current axis so the gather phase hits a
+ * warm cache.  When timeline logging is active, emit an explicit marker so
+ * tools/timeline.py can visualize where prefetching happens.
+ */
+static void
+sixel_lookup_vpte_prefetch_line(double *distances,
+                                int *sources,
+                                size_t offset,
+                                sixel_lookup_vpte_timeline_t *timeline,
+                                char const *worker,
+                                int tile,
+                                int line)
+{
+#if defined(__GNUC__)
+    __builtin_prefetch(distances + offset, 0, 3);
+    __builtin_prefetch(sources + offset, 0, 3);
+#else
+    (void)distances;
+    (void)sources;
+#endif
+#if SIXEL_ENABLE_THREADS
+    if (timeline != NULL && timeline->initialized
+            && timeline->logger.active) {
+        char message[64];
+
+        (void)snprintf(message, sizeof(message),
+                       "prefetch@%zu", offset);
+        sixel_lookup_vpte_timeline_log(timeline,
+                                       worker,
+                                       "prefetch",
+                                       tile,
+                                       line,
+                                       message);
+    }
+#else
+    (void)timeline;
+    (void)worker;
+    (void)tile;
+    (void)line;
+#endif
 }
 
 static int
@@ -635,12 +706,12 @@ sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
     int res;
     size_t plane;
     double weight;
-    double line_dist[256];
-    int line_src[256];
+    sixel_lookup_vpte_line_buffer_t *line_buffer;
     int x;
     int y;
     int z;
     size_t offset;
+    size_t next_offset;
     size_t stride_y;
     size_t stride_z;
     int i;
@@ -651,6 +722,7 @@ sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
     plane = (size_t)res * (size_t)res;
     stride_y = (size_t)res;
     stride_z = plane;
+    line_buffer = sixel_lookup_vpte_line_buffer_get();
     log_lines = sixel_lookup_vpte_timeline_lines_enabled(timeline);
 
     /* X pass */
@@ -673,14 +745,27 @@ sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
                                                y,
                                                message);
             }
-            for (x = 0; x < res; ++x) {
-                line_dist[x] = distances[offset + (size_t)x];
-                line_src[x] = sources[offset + (size_t)x];
+            if (y + 1 < res) {
+                next_offset = offset + stride_y;
+                sixel_lookup_vpte_prefetch_line(distances,
+                                                sources,
+                                                next_offset,
+                                                timeline,
+                                                "vpte-x",
+                                                z,
+                                                y + 1);
             }
-            sixel_lookup_vpte_edt1d(line_dist, line_src, res, weight);
             for (x = 0; x < res; ++x) {
-                distances[offset + (size_t)x] = line_dist[x];
-                sources[offset + (size_t)x] = line_src[x];
+                line_buffer->dist[x] = distances[offset + (size_t)x];
+                line_buffer->src[x] = sources[offset + (size_t)x];
+            }
+            sixel_lookup_vpte_edt1d(line_buffer->dist,
+                                    line_buffer->src,
+                                    res,
+                                    weight);
+            for (x = 0; x < res; ++x) {
+                distances[offset + (size_t)x] = line_buffer->dist[x];
+                sources[offset + (size_t)x] = line_buffer->src[x];
             }
             if (log_lines) {
                 sixel_lookup_vpte_timeline_log(timeline,
@@ -722,16 +807,29 @@ sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
                 offset = ((size_t)z * stride_z)
                        + ((size_t)y * stride_y)
                        + (size_t)x;
-                line_dist[y] = distances[offset];
-                line_src[y] = sources[offset];
+                if (y + 1 < res) {
+                    next_offset = offset + stride_y;
+                    sixel_lookup_vpte_prefetch_line(distances,
+                                                    sources,
+                                                    next_offset,
+                                                    timeline,
+                                                    "vpte-y",
+                                                    z,
+                                                    x);
+                }
+                line_buffer->dist[y] = distances[offset];
+                line_buffer->src[y] = sources[offset];
             }
-            sixel_lookup_vpte_edt1d(line_dist, line_src, res, weight);
+            sixel_lookup_vpte_edt1d(line_buffer->dist,
+                                    line_buffer->src,
+                                    res,
+                                    weight);
             for (y = 0; y < res; ++y) {
                 offset = ((size_t)z * stride_z)
                        + ((size_t)y * stride_y)
                        + (size_t)x;
-                distances[offset] = line_dist[y];
-                sources[offset] = line_src[y];
+                distances[offset] = line_buffer->dist[y];
+                sources[offset] = line_buffer->src[y];
             }
             if (log_lines) {
                 sixel_lookup_vpte_timeline_log(timeline,
@@ -773,16 +871,29 @@ sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
                 offset = ((size_t)z * stride_z)
                        + ((size_t)y * stride_y)
                        + (size_t)x;
-                line_dist[z] = distances[offset];
-                line_src[z] = sources[offset];
+                if (z + 1 < res) {
+                    next_offset = offset + stride_z;
+                    sixel_lookup_vpte_prefetch_line(distances,
+                                                    sources,
+                                                    next_offset,
+                                                    timeline,
+                                                    "vpte-z",
+                                                    y,
+                                                    x);
+                }
+                line_buffer->dist[z] = distances[offset];
+                line_buffer->src[z] = sources[offset];
             }
-            sixel_lookup_vpte_edt1d(line_dist, line_src, res, weight);
+            sixel_lookup_vpte_edt1d(line_buffer->dist,
+                                    line_buffer->src,
+                                    res,
+                                    weight);
             for (z = 0; z < res; ++z) {
                 offset = ((size_t)z * stride_z)
                        + ((size_t)y * stride_y)
                        + (size_t)x;
-                distances[offset] = line_dist[z];
-                sources[offset] = line_src[z];
+                distances[offset] = line_buffer->dist[z];
+                sources[offset] = line_buffer->src[z];
             }
             if (log_lines) {
                 sixel_lookup_vpte_timeline_log(timeline,
