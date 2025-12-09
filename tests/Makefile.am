@@ -26,7 +26,8 @@ CLI_TESTS = cli/t/test_0001_01_invalid_positional.t \
 
 PYTHON_TESTS = python/t/test_0001_python_bindings.t \
        python/t/test_0002_python_api_formats.t \
-       python/t/test_0003_python_api_options.t
+       python/t/test_0003_python_api_options.t \
+       python/t/test_0004_python_api_errors.t
 
 TESTS = $(CLI_TESTS) $(PYTHON_TESTS)
 TEST_EXTENSIONS = .t
