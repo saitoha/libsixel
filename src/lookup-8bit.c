@@ -386,23 +386,25 @@ sixel_lookup_vpte_env_shared(void)
 static int
 sixel_lookup_vpte_env_use_dist2(void)
 {
+    /*
+     * Dist2 is disabled by default because measurements have not shown
+     * consistent wins.  Enable explicitly when experimenting with boundary
+     * refinement short-circuiting.
+     */
     return sixel_lookup_vpte_parse_flag(getenv("SIXEL_LOOKUP_VPTE_USE_DIST2"),
-                                        1);
+                                        0);
 }
 
 static int
 sixel_lookup_vpte_env_use_cache(void)
 {
-    int default_value;
-
-    default_value = 1;
-    if (SIXEL_VPTE_TLS_AVAILABLE == 0
-            && sixel_lookup_parallel_dither_active() != 0) {
-        default_value = 0;
-    }
-
+    /*
+     * The cache is disabled by default because its benefit has not been
+     * demonstrated.  Callers can opt in for experiments without impacting
+     * parallel TLS availability checks.
+     */
     return sixel_lookup_vpte_parse_flag(getenv("SIXEL_LOOKUP_VPTE_USE_CACHE"),
-                                        default_value);
+                                        0);
 }
 
 static void
