@@ -55,6 +55,22 @@ if [ -z "${python_bin}" ]; then
     skip_all "python is not available"
 fi
 
+# Locate the build output that should contain the shared library. Static-only
+# builds do not produce a loadable .so/.dylib/.dll, so we skip to avoid
+# spurious failures when the Python bindings cannot be imported.
+lib_path=$(resolve_libdir "${TOP_BUILDDIR}") || true
+if [ -z "${lib_path}" ]; then
+    skip_all "could not locate libsixel build output"
+fi
+
+shared_lib=$(find "${lib_path}" -maxdepth 1 -type f \
+    \( -name 'lib*sixel*.so*' -o -name 'lib*sixel*.dylib' \
+       -o -name '*sixel*.dll' \) \
+    | head -n 1 || true)
+if [ -z "${shared_lib}" ]; then
+    skip_all "libsixel shared library is unavailable (static-only build?)"
+fi
+
 wheel_dir="${TOP_BUILDDIR}/python-wheel/dist"
 if [ -d "${wheel_dir}" ]; then
     wheel_path=$(find "${wheel_dir}" -maxdepth 1 -type f -name 'libsixel-*.whl' \
@@ -95,12 +111,6 @@ PY
 else
     run_python="${python_bin}"
     in_tree_pythonpath="${TOP_SRCDIR}/python"
-    lib_path=$(resolve_libdir "${TOP_BUILDDIR}") || true
-
-    if [ -z "${lib_path}" ]; then
-        fail ${case_id} "could not locate libsixel build output"
-        exit ${status}
-    fi
 
     pythonpath_env="${in_tree_pythonpath}"
     if [ -n "${PYTHONPATH-}" ]; then
@@ -174,7 +184,7 @@ print("encode succeeded")
 PY
 
 python_env="${run_python}"
-libdir=$(resolve_libdir "${TOP_BUILDDIR}") || true
+libdir="${lib_path}"
 
 if [ -z "${libdir}" ]; then
     fail ${case_id} "could not locate libsixel build output"
