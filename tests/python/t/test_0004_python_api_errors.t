@@ -2,7 +2,7 @@
 # Validate Python encoder error handling for invalid inputs and option values.
 # The scenarios cover missing files, corrupted or unsupported formats, overly
 # large dimension requests, and invalid option parameters so that regression in
-# error reporting can be caught early.
+# error reporting can be caught early without generating temporary scripts.
 
 set -euxv
 
@@ -27,14 +27,36 @@ tap_log_file="${log_file}"
 
 python_prepare "${log_file}" "${tmp_dir}"
 
-verify_script="${tmp_dir}/verify-errors.py"
-cat >"${verify_script}" <<'PY'
-"""Exercise Python encoder error handling cases.
+# Install the wheel into a venv when available so the API is exercised through
+# the packaged module instead of the in-tree sources.
+if [ "${use_wheel}" -eq 1 ]; then
+    run_venv="${tmp_dir}/venv"
+    if ! python_install_wheel "${run_venv}" "${wheel_path}"; then
+        tap_skip_all "wheel installation failed"
+    fi
+fi
 
-Each helper raises SystemExit with a descriptive message when the observed
-exception does not match expectations, keeping the TAP harness concise while
-surfacing detailed failure reasons.
-"""
+tap_plan 5
+case_id=1
+
+run_case() {
+    scenario=$1
+    description=$2
+
+    working_dir="${tmp_dir}/${scenario}"
+
+    mkdir -p "${working_dir}" "${working_dir}/wheel" "${working_dir}/tree"
+
+    run_python_scenarios() {
+        PYTHONPATH=$1
+        shift
+        LD_LIBRARY_PATH=$1
+        shift
+        LIBSIXEL_LIBDIR=${lib_dir}
+        export PYTHONPATH LD_LIBRARY_PATH LIBSIXEL_LIBDIR
+
+        "${run_python}" - "$@" <<'PY'
+"""Exercise Python encoder error handling without temporary scripts."""
 import pathlib
 import sys
 from typing import Iterable
@@ -59,11 +81,11 @@ class Expectation:
 
 
 def expect_exception(expectation: Expectation, func) -> str:
-    """Run func and validate it raises the expected exception type/message."""
+    """Run func and validate it raises the expected exception."""
 
     try:
         func()
-    except Exception as exc:  # noqa: BLE001 - explicit type validation below
+    except Exception as exc:  # noqa: BLE001
         if not isinstance(exc, expectation.exc_type):
             raise SystemExit(
                 f"{expectation.label}: expected {expectation.exc_type.__name__}, "
@@ -75,7 +97,8 @@ def expect_exception(expectation: Expectation, func) -> str:
             key in message.lower() for key in expectation.keywords
         ):
             raise SystemExit(
-                f"{expectation.label}: message did not mention {expectation.keywords}: {message}"
+                f"{expectation.label}: message did not mention "
+                f"{expectation.keywords}: {message}"
             )
 
         return f"{expectation.label}: {expectation.exc_type.__name__} ({message})"
@@ -129,7 +152,15 @@ def exercise_corrupted_image(workdir: pathlib.Path) -> str:
     expectation = Expectation(
         "corrupted bmp",
         RuntimeError,
-        ("decode", "invalid", "corrupt", "format", "bmp", "unable", "bad argument"),
+        (
+            "decode",
+            "invalid",
+            "corrupt",
+            "format",
+            "bmp",
+            "unable",
+            "bad argument",
+        ),
     )
     return expect_exception(expectation, _invoke)
 
@@ -195,75 +226,68 @@ def exercise_invalid_option(workdir: pathlib.Path, valid_source: pathlib.Path) -
     expectation = Expectation(
         "invalid option value",
         RuntimeError,
-        ("invalid", "colors", "range", "parameter", "option", "bad argument"),
+        (
+            "invalid",
+            "colors",
+            "range",
+            "parameter",
+            "option",
+            "bad argument",
+        ),
     )
     return expect_exception(expectation, _invoke)
 
 
 def main() -> None:
-    if len(sys.argv) != 3:
-        raise SystemExit("usage: verify-errors.py <source-image> <workdir>")
+    if len(sys.argv) != 5:
+        raise SystemExit(
+            "usage: <scenario> <source-image> <workdir> <log-file>"
+        )
 
-    source = pathlib.Path(sys.argv[1])
-    workdir = pathlib.Path(sys.argv[2])
+    scenario = sys.argv[1]
+    source = pathlib.Path(sys.argv[2])
+    workdir = pathlib.Path(sys.argv[3])
+    log_path = pathlib.Path(sys.argv[4])
+
     workdir.mkdir(parents=True, exist_ok=True)
 
-    results = [
-        exercise_missing_path(workdir / "missing"),
-        exercise_corrupted_image(workdir / "corrupt"),
-        exercise_unsupported_format(workdir / "unsupported"),
-        exercise_oversized_dimensions(workdir / "oversized", source),
-        exercise_invalid_option(workdir / "options", source),
-    ]
+    dispatch = {
+        "missing": lambda: exercise_missing_path(workdir),
+        "corrupt": lambda: exercise_corrupted_image(workdir),
+        "unsupported": lambda: exercise_unsupported_format(workdir),
+        "oversized": lambda: exercise_oversized_dimensions(workdir, source),
+        "invalid_option": lambda: exercise_invalid_option(workdir, source),
+    }
 
-    for entry in results:
-        print(entry)
+    if scenario not in dispatch:
+        raise SystemExit(f"unknown scenario: {scenario}")
+
+    result = dispatch[scenario]()
+    log_path.parent.mkdir(parents=True, exist_ok=True)
+    with log_path.open("a", encoding="utf-8") as handle:
+        handle.write(f"{result}\n")
+    print(result)
 
 
 if __name__ == "__main__":
     main()
 PY
-
-# Install the wheel into a venv when available so the API is exercised through
-# the packaged module instead of the in-tree sources.
-if [ "${use_wheel}" -eq 1 ]; then
-    run_venv="${tmp_dir}/venv"
-    if ! python_install_wheel "${run_venv}" "${wheel_path}"; then
-        tap_skip_all "wheel installation failed"
-    fi
-fi
-
-tap_plan 5
-case_id=1
-
-run_case() {
-    scenario=$1
-    description=$2
-
-    working_dir="${tmp_dir}/${scenario}"
-
-    mkdir -p "${working_dir}" "${working_dir}/wheel" "${working_dir}/tree"
+    }
 
     if [ "${use_wheel}" -eq 1 ]; then
-        ld_env="${python_wheel_ld_library_path}"
-
-        if PYTHONPATH="${python_trace_pythonpath}" \
-           LD_LIBRARY_PATH="${ld_env}" \
-           LIBSIXEL_LIBDIR="${lib_dir}" \
-           "${run_python}" "${verify_script}" \
-           "${source_image}" "${working_dir}/wheel" \
-           >>"${log_file}" 2>&1; then
+        if run_python_scenarios "${python_trace_pythonpath}" \
+            "${python_wheel_ld_library_path}" \
+            "${scenario}" "${source_image}" \
+            "${working_dir}/wheel" "${log_file}" >>"${log_file}" 2>&1; then
             tap_pass ${case_id} "${description} via wheel"
         else
             tap_fail ${case_id} "${description} via wheel failed"
         fi
     else
-        if PYTHONPATH="${python_in_tree_trace_pythonpath}" \
-           LD_LIBRARY_PATH="${python_in_tree_ld_library_path}" \
-           LIBSIXEL_LIBDIR="${lib_dir}" \
-           "${run_python}" "${verify_script}" \
-           "${source_image}" "${working_dir}/tree" \
-           >>"${log_file}" 2>&1; then
+        if run_python_scenarios "${python_in_tree_trace_pythonpath}" \
+            "${python_in_tree_ld_library_path}" \
+            "${scenario}" "${source_image}" \
+            "${working_dir}/tree" "${log_file}" >>"${log_file}" 2>&1; then
             tap_pass ${case_id} "${description} via in-tree modules"
         else
             tap_fail ${case_id} "${description} via in-tree modules failed"
