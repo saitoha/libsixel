@@ -72,10 +72,16 @@ sixel_cpu_detect_native(void)
     level = SIXEL_SIMD_LEVEL_SCALAR;
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
     defined(_M_IX86)
-# if HAVE_BUILTIN_CPU_INIT
+# if HAVE_BUILTIN_CPU_INIT && !defined(_MSC_VER)
     __builtin_cpu_init();
 # endif
-# if HAVE_BUILTIN_CPU_SUPPORTS
+# if HAVE_BUILTIN_CPU_SUPPORTS && !defined(_MSC_VER)
+    /*
+     * clang-cl accepts __builtin_cpu_supports() but MSVC-style
+     * toolchains do not ship the runtime helpers (e.g.
+     * __cpu_indicator_init). Skip the builtin path there and use the
+     * intrinsics-based detection instead.
+     */
     if (__builtin_cpu_supports("avx512f")) {
         level = SIXEL_SIMD_LEVEL_AVX512;
     } else if (__builtin_cpu_supports("avx2")) {

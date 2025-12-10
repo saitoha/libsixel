@@ -69,6 +69,10 @@
 
 #include "compat_stub.h"
 
+#if !defined(_CRTIMP)
+# define _CRTIMP
+#endif
+
 #if defined(_WIN32) && (HAVE__DUPENV_S || defined(_MSC_VER))
 /*
  * Some Windows SDKs require feature macros to expose `_dupenv_s()`.  The
@@ -76,12 +80,21 @@
  * after we request the secure CRT extensions.  Match the platform
  * attributes so that MinGW's dllimport decoration stays consistent.
  */
-# if !defined(_CRTIMP)
-#  define _CRTIMP
-# endif
 _CRTIMP errno_t __cdecl _dupenv_s(char **buffer,
                                   size_t *length,
                                   const char *name);
+#endif
+
+#if HAVE__SETMODE
+/*
+ * Some MinGW headers hide `_setmode()` when POSIX feature macros are
+ * enabled.  Declare it ourselves to keep the prototype visible while
+ * still using the system implementation.  MSYS builds may not expose
+ * the `_WIN32` feature macro, so rely on the configure probe instead
+ * of the platform guard.  The signature matches the public CRT
+ * contract.
+ */
+_CRTIMP int __cdecl _setmode(int fd, int mode);
 #endif
 
 #if defined(__APPLE__) && defined(__clang__)
@@ -258,7 +271,9 @@ sixel_compat_strcpy(char *destination,
                     size_t destination_size,
                     const char *source)
 {
+#if !defined(_MSC_VER)
     size_t length;
+#endif
 
     if (destination == NULL || source == NULL || destination_size == 0) {
         return (-1);
@@ -607,6 +622,33 @@ sixel_compat_unlink(const char *path)
 #else
     return unlink(path);
 #endif
+}
+
+
+/*
+ * Force file descriptors into binary mode when the platform exposes the
+ * corresponding flag.  This keeps Windows stdio from translating newlines
+ * while leaving POSIX callers untouched.
+ */
+SIXEL_COMPAT_API int
+sixel_compat_set_binary(int fd)
+{
+    int result;
+
+    result = 0;
+#if defined(O_BINARY)
+# if HAVE__SETMODE
+    result = _setmode(fd, O_BINARY);
+# elif HAVE_SETMODE
+    result = setmode(fd, O_BINARY);
+# else
+    (void)fd;
+# endif
+#else
+    (void)fd;
+#endif
+
+    return result;
 }
 
 

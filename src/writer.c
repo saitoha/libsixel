@@ -458,11 +458,7 @@ write_png_to_file(
 
     if (strcmp(filename, "-") == 0) {
 #if defined(O_BINARY)
-# if HAVE__SETMODE
-        _setmode(STDOUT_FILENO, O_BINARY);
-# elif HAVE_SETMODE
-        setmode(STDOUT_FILENO, O_BINARY);
-# endif  /* HAVE_SETMODE */
+        (void)sixel_compat_set_binary(STDOUT_FILENO);
 #endif  /* defined(O_BINARY) */
         output_fp = stdout;
     } else {
