@@ -326,9 +326,22 @@ python_prepare() {
     python_trace_env="SIXEL_PY_TRACE_LOG=${tap_log_file}"
     export SIXEL_PY_TRACE_LOG="${tap_log_file}"
 
+    # Limit Python tracing to repository files so CI logs stay compact even on
+    # verbose MSYS/MinGW import paths. The prefixes are joined with the Python
+    # path separator to match sys.path semantics on each platform.
+    python_trace_prefixes="${TOP_SRCDIR}${python_pathsep}${tmp_dir}"
+    python_trace_env="${python_trace_env} SIXEL_PY_TRACE_PREFIXES=${python_trace_prefixes}"
+    export SIXEL_PY_TRACE_PREFIXES="${python_trace_prefixes}"
+
     mkdir -p "${python_trace_dir}"
     cat >"${python_trace_dir}/sitecustomize.py" <<'PY'
-"""Install a lightweight tracer for Python TAP tests."""
+"""Install a scoped tracer for Python TAP tests.
+
+The tracer is intentionally selective to avoid multi-megabyte logs on
+platforms with verbose import paths (e.g., MSYS/MinGW). Only frames whose
+filename starts with one of the prefixes listed in SIXEL_PY_TRACE_PREFIXES are
+recorded.
+"""
 import os
 import sys
 import threading
@@ -336,6 +349,7 @@ import threading
 
 def _build_logger():
     """Open the trace log defined via SIXEL_PY_TRACE_LOG."""
+
     log_path = os.environ.get("SIXEL_PY_TRACE_LOG")
     if not log_path:
         return None
@@ -346,11 +360,45 @@ def _build_logger():
         return None
 
 
+def _load_prefixes():
+    """Normalize allowed filename prefixes for tracing.
+
+    The prefixes mirror PYTHONPATH semantics so platform-specific separators
+    work on both POSIX and Windows runners.
+    """
+
+    raw = os.environ.get("SIXEL_PY_TRACE_PREFIXES", "")
+    if not raw:
+        return []
+
+    prefixes = []
+    for entry in raw.split(os.pathsep):
+        if entry:
+            prefixes.append(os.path.normcase(entry))
+    return prefixes
+
+
 _TRACE_HANDLE = _build_logger()
+_TRACE_PREFIXES = _load_prefixes()
+
+
+def _should_trace(filename):
+    """Return True when the file should be traced."""
+
+    if not _TRACE_PREFIXES:
+        return True
+
+    normalized = os.path.normcase(filename)
+    for prefix in _TRACE_PREFIXES:
+        if normalized.startswith(prefix):
+            return True
+
+    return False
 
 
 def _trace(frame, event, arg):
     """Write compact trace events to the shared log file."""
+
     if _TRACE_HANDLE is None:
         return None
 
@@ -358,6 +406,9 @@ def _trace(frame, event, arg):
         return _trace
 
     code = frame.f_code
+    if not _should_trace(code.co_filename):
+        return _trace
+
     prefix = f"{event}:{code.co_filename}:{frame.f_lineno}:{code.co_name}"
 
     if event == "exception":
