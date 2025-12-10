@@ -265,17 +265,17 @@ python_prepare() {
         tap_skip_all "python is not available"
     fi
 
-    # Use the interpreter-specific path separator so PYTHONPATH is honored
-    # on Windows (semicolon) and POSIX platforms (colon) alike.
-    python_pathsep=$(${python_bin} - <<'PY' 2>/dev/null || true
-import os
-print(os.pathsep)
-PY
-    )
-
-    if [ -z "${python_pathsep}" ]; then
-        python_pathsep=':'
-    fi
+    # Derive a stable path separator without invoking the interpreter, as
+    # Python's stdout line endings on MSYS environments can inject stray
+    # carriage returns. A simple uname check keeps PYTHONPATH predictable.
+    case "$(uname -s)" in
+        MINGW*|MSYS*|CYGWIN*)
+            python_pathsep=';'
+            ;;
+        *)
+            python_pathsep=':'
+            ;;
+    esac
 
     lib_dir=$(resolve_libdir "${TOP_BUILDDIR}") || true
     if [ -z "${lib_dir}" ]; then
