@@ -530,7 +530,6 @@ sixel_lut_build_histogram(unsigned char const *data,
     unit_t *ref;
     unsigned int bucket_index;
     unsigned int step;
-    unsigned int max_sample;
     size_t hist_size;
     unit_t bucket_value;
     unsigned int component;
@@ -544,7 +543,6 @@ sixel_lut_build_histogram(unsigned char const *data,
     unsigned int plane;
     unsigned int channel_stride;
     int input_is_float32;
-    size_t pixels;
 
     status = SIXEL_FALSE;
     histogram = NULL;
@@ -584,30 +582,14 @@ sixel_lut_build_histogram(unsigned char const *data,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    switch (quality_mode) {
-    case SIXEL_QUALITY_LOW:
-        max_sample = 18383U;
-        break;
-    case SIXEL_QUALITY_HIGH:
-        max_sample = 1118383U;
-        break;
-    case SIXEL_QUALITY_FULL:
-    default:
-        max_sample = 4003079U;
-        break;
-    }
+    (void)quality_mode;
 
-    pixels = 0U;
-    if (pixel_stride > 0U) {
-        pixels = length / pixel_stride;
-    }
-    step = 0U;
-    if (pixels > 0U) {
-        step = (unsigned int)((pixels / max_sample) * pixel_stride);
-    }
-    if (step == 0U) {
-        step = pixel_stride;
-    }
+    /*
+     * The encoder now owns sampling, so the histogram walks every supplied
+     * pixel.  The stride stays aligned to the caller's layout to avoid losing
+     * information after the upstream down-sampler trimmed the dataset.
+     */
+    step = pixel_stride;
 
     sixel_debugf("making histogram...");
 
