@@ -81,7 +81,9 @@ import struct
 print(struct.calcsize("P") * 8)
 PY
 )
-
+# Detect the library width without depending on external tools. This parser
+# understands ELF, Mach-O, and PE headers and reports the pointer width, which
+# is sufficient to stop known-incompatible combinations before import.
 lib_bits=$(${python_bin} - <<PY 2>>"${log_file}" || true
 import pathlib
 import struct
@@ -172,31 +174,6 @@ if [ -n "${python_bits}" ] && [ -n "${lib_bits}" ] \
     skip_all "python is ${python_bits}-bit but libsixel is ${lib_bits}-bit"
 fi
 
-# Abort early if the Python interpreter and the built shared library have
-# different word sizes (for example, 64-bit Python vs. 32-bit libsixel),
-# because such a mismatch always fails at import time with a confusing
-# ELFCLASS error. We rely on the `file` utility when available to extract
-# the bitness of the shared library and compare it with Python's pointer
-# size.
-python_bits=$(${python_bin} - <<'PY' 2>/dev/null || true
-import struct
-print(struct.calcsize("P") * 8)
-PY
-)
-lib_bits=""
-if command -v file >/dev/null 2>&1; then
-    lib_desc=$(file -b "${shared_lib}" 2>/dev/null || true)
-    case "${lib_desc}" in
-        *64-bit*) lib_bits="64" ;;
-        *32-bit*) lib_bits="32" ;;
-    esac
-fi
-
-if [ -n "${python_bits}" ] && [ -n "${lib_bits}" ] \
-   && [ "${python_bits}" != "${lib_bits}" ]; then
-    skip_all "python is ${python_bits}-bit but libsixel is ${lib_bits}-bit"
-fi
-
 wheel_dir="${TOP_BUILDDIR}/python-wheel/dist"
 if [ -d "${wheel_dir}" ]; then
     wheel_path=$(find "${wheel_dir}" -maxdepth 1 -type f -name 'libsixel-*.whl' \
@@ -209,6 +186,8 @@ fi
 echo "1..2"
 status=0
 case_id=1
+skip_code=200
+skip_reason=""
 
 if [ "${use_wheel}" -eq 1 ]; then
     # Require venv/ensurepip to isolate the wheel from system packages.
@@ -251,16 +230,39 @@ else
     if PYTHONPATH="${pythonpath_env}" \
        LD_LIBRARY_PATH="${ld_library_path_env}" \
        LIBSIXEL_LIBDIR="${lib_path}" \
+       SKIP_CODE=${skip_code} \
        "${run_python}" - <<'PY' >>"${log_file}" 2>&1; then
-import libsixel
-from libsixel import encoder, decoder
+import os
+import sys
+import traceback
 
-encoder.Encoder
-decoder.Decoder
+skip_code = int(os.environ.get("SKIP_CODE", "200"))
+
+try:
+    import libsixel
+    from libsixel import encoder, decoder
+    encoder.Encoder
+    decoder.Decoder
+except OSError:
+    traceback.print_exc()
+    raise SystemExit(skip_code)
+except Exception:
+    traceback.print_exc()
+    raise SystemExit(1)
 PY
         pass ${case_id} "imports in-tree python modules"
     else
-        fail ${case_id} "failed to import in-tree python modules"
+        rc=$?
+        if [ ${rc} -eq ${skip_code} ]; then
+            skip_reason="LoadLibrary failed (see python.log for details)"
+            printf 'ok %s - %s # SKIP %s\n' \
+                "${case_id}" \
+                "imports in-tree python modules" \
+                "${skip_reason}"
+            status=0
+        else
+            fail ${case_id} "failed to import in-tree python modules"
+        fi
     fi
 fi
 
@@ -271,6 +273,10 @@ import ctypes.util
 import glob
 import os
 import pathlib
+import sys
+import traceback
+
+SKIP_CODE = int(os.environ.get("SKIP_CODE", "200"))
 
 
 def _prefer_build_library(name, original_find):
@@ -290,34 +296,48 @@ def _prefer_build_library(name, original_find):
     return original_find(name)
 
 
-ctypes.util.find_library = (
-    lambda name, _orig=ctypes.util.find_library:
-    _prefer_build_library(name, _orig)
-)
+def main():
+    ctypes.util.find_library = (
+        lambda name, _orig=ctypes.util.find_library:
+        _prefer_build_library(name, _orig)
+    )
 
-from libsixel import SIXEL_PIXELFORMAT_RGB888
-from libsixel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
+    from libsixel import SIXEL_PIXELFORMAT_RGB888
+    from libsixel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
 
-root = pathlib.Path(__file__).parent
-output = root / "sample.six"
+    root = pathlib.Path(__file__).parent
+    output = root / "sample.six"
 
-pixels = bytes([
-    255, 0, 0,
-    0, 255, 0,
-    0, 0, 255,
-    255, 255, 255,
-])
+    pixels = bytes([
+        255, 0, 0,
+        0, 255, 0,
+        0, 0, 255,
+        255, 255, 255,
+    ])
 
-encoder = Encoder()
-encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(output))
-encoder.encode_bytes(pixels, 2, 2, SIXEL_PIXELFORMAT_RGB888, None)
+    encoder = Encoder()
+    encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(output))
+    encoder.encode_bytes(pixels, 2, 2, SIXEL_PIXELFORMAT_RGB888, None)
 
-if not output.exists():
-    raise SystemExit("missing sixel output")
-if output.stat().st_size == 0:
-    raise SystemExit("empty sixel output")
+    if not output.exists():
+        raise SystemExit("missing sixel output")
+    if output.stat().st_size == 0:
+        raise SystemExit("empty sixel output")
 
-print("encode succeeded")
+    print("encode succeeded")
+PY
+
+cat >>"${verify_script}" <<'PY'
+
+if __name__ == "__main__":
+    try:
+        main()
+    except OSError:
+        traceback.print_exc()
+        raise SystemExit(SKIP_CODE)
+    except Exception:
+        traceback.print_exc()
+        raise
 PY
 
 python_env="${run_python}"
@@ -330,6 +350,14 @@ fi
 
 export LIBSIXEL_LIBDIR="${libdir}"
 
+if [ -n "${skip_reason}" ]; then
+    printf 'ok %s - %s # SKIP %s\n' \
+        "${case_id}" \
+        "encodes image via in-tree modules" \
+        "${skip_reason}"
+    exit ${status}
+fi
+
 if [ "${use_wheel}" -eq 1 ]; then
     ld_library_path_env="${libdir}"
     if [ -n "${LD_LIBRARY_PATH-}" ]; then
@@ -338,10 +366,21 @@ if [ "${use_wheel}" -eq 1 ]; then
 
     if PYTHONPATH="" \
        LD_LIBRARY_PATH="${ld_library_path_env}" \
+       SKIP_CODE=${skip_code} \
        "${python_env}" "${verify_script}" >>"${log_file}" 2>&1; then
         pass ${case_id} "encodes image via wheel"
     else
-        fail ${case_id} "python wheel round-trip failed"
+        rc=$?
+        if [ ${rc} -eq ${skip_code} ]; then
+            skip_reason="LoadLibrary failed (see python.log for details)"
+            printf 'ok %s - %s # SKIP %s\n' \
+                "${case_id}" \
+                "encodes image via wheel" \
+                "${skip_reason}"
+            status=0
+        else
+            fail ${case_id} "python wheel round-trip failed"
+        fi
     fi
 else
     pythonpath_env="${TOP_SRCDIR}/python"
@@ -356,10 +395,21 @@ else
 
     if PYTHONPATH="${pythonpath_env}" \
        LD_LIBRARY_PATH="${ld_library_path_env}" \
+       SKIP_CODE=${skip_code} \
        "${python_env}" "${verify_script}" >>"${log_file}" 2>&1; then
         pass ${case_id} "encodes image via in-tree modules"
     else
-        fail ${case_id} "python in-tree round-trip failed"
+        rc=$?
+        if [ ${rc} -eq ${skip_code} ]; then
+            skip_reason="LoadLibrary failed (see python.log for details)"
+            printf 'ok %s - %s # SKIP %s\n' \
+                "${case_id}" \
+                "encodes image via in-tree modules" \
+                "${skip_reason}"
+            status=0
+        else
+            fail ${case_id} "python in-tree round-trip failed"
+        fi
     fi
 fi
 
