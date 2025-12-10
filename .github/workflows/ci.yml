@@ -1625,6 +1625,8 @@ jobs:
         $scriptLines = @(
           'set -eu',
           'set -o pipefail 2>/dev/null || true',
+          'export PATH=/usr/local/bin:/usr/bin',
+          'export CC=gcc',
           "disable_threads_flag=`"$disableThreadsFlag`"",
           "disable_tools_flags=`"$disableToolsFlags`"",
           "disable_simd_flag=`"$disableSimdFlag`"",
