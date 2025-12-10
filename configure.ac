@@ -1752,9 +1752,13 @@ ole32.lib shlwapi.lib uuid.lib"
         LIBS="${LIBS} ${ADDED_LIBS}"
         have_wic=yes
         if test "x${using_cl}" = xyes; then
+            dnl Ensure COBJMACROS is defined so COM methods resolve via the
+            dnl interface vtable instead of requiring external stubs when
+            dnl linking with MSVC.
             AC_LINK_IFELSE(
                 [AC_LANG_PROGRAM([[#include <windows.h>
- #include <wincodec.h>
+#define COBJMACROS
+#include <wincodec.h>
                 ]], [[
                   IWICImagingFactory *factory;
 

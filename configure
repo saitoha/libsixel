@@ -22200,10 +22200,11 @@ ole32.lib shlwapi.lib uuid.lib"
         LIBS="${LIBS} ${ADDED_LIBS}"
         have_wic=yes
         if test "x${using_cl}" = xyes; then
-            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+                                                cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <windows.h>
- #include <wincodec.h>
+#define COBJMACROS
+#include <wincodec.h>
 
 int
 main (void)
