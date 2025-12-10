@@ -455,6 +455,7 @@ sixel_aborttrace_restore_default(void)
     raise(SIGABRT);
 }
 
+#if SIXEL_ABORTTRACE_USE_SIGINFO != 0
 static void
 sixel_aborttrace_signal_handler_siginfo(int signum, siginfo_t *info,
                                         void *context)
@@ -472,8 +473,7 @@ sixel_aborttrace_signal_handler_siginfo(int signum, siginfo_t *info,
 
     sixel_aborttrace_restore_default();
 }
-
-#if SIXEL_ABORTTRACE_USE_SIGINFO == 0
+#else
 static void
 sixel_aborttrace_signal_handler_simple(int signum)
 {
