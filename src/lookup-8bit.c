@@ -786,6 +786,25 @@ sixel_certlut_unlock(sixel_certlut_t *lut)
     }
 }
 
+static void
+sixel_certlut_disable_locking(sixel_certlut_t *lut)
+{
+    if (lut == NULL) {
+        return;
+    }
+    if (lut->lock_ready == 0) {
+        return;
+    }
+
+    /*
+     * Thread-local CERTLUT instances never contend for the shared pool, so
+     * the mutex only adds overhead.  Tear it down to skip lock/unlock in the
+     * lookup hot path.
+     */
+    sixel_mutex_destroy(&lut->lock);
+    lut->lock_ready = 0;
+}
+
 static uint32_t
 sixel_certlut_pool_alloc(sixel_certlut_t *lut, int *status)
 {
@@ -1623,6 +1642,9 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
             sixel_helper_set_additional_message(
                 "sixel_lookup_8bit_configure: cert buffer missing.");
             return SIXEL_BAD_ALLOCATION;
+        }
+        if (sixel_lookup_env_shared_certlut() == 0) {
+            sixel_certlut_disable_locking(lut->cert);
         }
         status = sixel_certlut_build(lut->cert,
                                      (sixel_certlut_color_t const *)palette,
