@@ -29,14 +29,30 @@
 
 #include "config.h"
 
-#include <errno.h>
-#include <float.h>
-#include <math.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if HAVE_ERRNO_H
+# include <errno.h>
+#endif  /* HAVE_ERRNO_H */
+#if HAVE_FLOAT_H
+# include <float.h>
+#endif  /* HAVE_FLOAT_H */
+#if HAVE_MATH_H
+#include <math.h>
+#endif  /* HAVE_MATH_H */
+#if HAVE_STDDEF_H
+# include <stddef.h>
+#endif  /* HAVE_STDDEF_H */
+#if HAVE_STDINT_H
+# include <stdint.h>
+#endif  /* HAVE_STDINT_H */
+#if defined(HAVE_IMMINTRIN_H) && \
+    (defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
+     defined(_M_IX86))
+# define SIXEL_VPTE_HAS_X86_INTRIN 1
+# include <immintrin.h>
+#endif
 
 #include <sixel.h>
 
@@ -50,13 +66,6 @@
 #include "threadpool.h"
 #include "sixel_atomic.h"
 #include "status.h"
-
-#if defined(HAVE_IMMINTRIN_H) && \
-    (defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
-     defined(_M_IX86))
-# define SIXEL_VPTE_HAS_X86_INTRIN 1
-# include <immintrin.h>
-#endif
 
 #if defined(SIXEL_VPTE_HAS_X86_INTRIN)
 # if defined(__GNUC__)
