@@ -1402,10 +1402,12 @@ jobs:
             compiler: gcc
             sys: MSYS
             variant: default
-#          - os: windows-latest
-#            runner: windows-latest
-#            compiler: gcc
-#            sys: CYGWIN
+          - label: cygwin
+            os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: CYGWIN
+            variant: default
 
     steps:
     - name: Configure git EOL
