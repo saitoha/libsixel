@@ -1520,7 +1520,7 @@ jobs:
           'set -eu',
           'set -o pipefail 2>/dev/null || true',
           'python3 -m pip install --upgrade pip',
-          'python3 -m pip install meson ninja',
+          'python3 -m pip install meson',
           'gp_posix=$(cygpath -u "$GITHUB_PATH")',
           'echo "$HOME/.local/bin" >> "$gp_posix"'
         )
