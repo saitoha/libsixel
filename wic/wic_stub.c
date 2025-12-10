@@ -19,9 +19,17 @@
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
+#ifndef _MSC_VER
+/*
+ * MinGW builds need GUID emitters locally, so enable INITGUID and pull in the
+ * helper header. The Windows SDK already exports these when using clang-cl or
+ * MSVC, and leaving INITGUID disabled there avoids duplicate IID definitions.
+ */
 #define INITGUID
+# include <initguid.h>
+#endif
+
 #include "wic_stub.h"
-#include <initguid.h>
 
 /* custom malloc */
 void *

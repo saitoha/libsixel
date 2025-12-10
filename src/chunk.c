@@ -294,13 +294,7 @@ open_binary_file(
 
     if (filename == NULL || strcmp(filename, "-") == 0) {
         /* for windows */
-#if defined(O_BINARY)
-# if HAVE__SETMODE
-        _setmode(STDIN_FILENO, O_BINARY);
-# elif HAVE_SETMODE
-        setmode(STDIN_FILENO, O_BINARY);
-# endif  /* HAVE_SETMODE */
-#endif  /* defined(O_BINARY) */
+        (void)sixel_compat_set_binary(STDIN_FILENO);
         *f = stdin;
 
         status = SIXEL_OK;
