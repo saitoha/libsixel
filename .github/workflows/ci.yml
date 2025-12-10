@@ -47,6 +47,12 @@ jobs:
             label: ubuntu x86_64 no-threads
           - os: ubuntu-latest
             runner: ubuntu-latest
+            sys: x86_64
+            musl: true
+            variant: musl-cross
+            label: ubuntu x86_64 musl-cross
+          - os: ubuntu-latest
+            runner: ubuntu-latest
             sys: i686
             variant: default
             label: ubuntu i686
@@ -166,6 +172,12 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-multilib
+
+    - name: Install musl toolchain (Linux musl-cross)
+      if: ${{ runner.os == 'Linux' && (matrix.musl || false) }}
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y musl-tools
 
     - name: Fix Homebrew taps/cache
       if: runner.os == 'macOS'
@@ -298,10 +310,15 @@ jobs:
       if: runner.os != 'Windows'
       shell: bash
       run: |
-        if [ '${{ matrix.sys || '' }}' = 'i686' ]; then
+        enable_gcov_flag="--enable-gcov"
+        if [ "${{ matrix.musl || '' }}" = "true" ]; then
+          export CC=musl-gcc
+          enable_gcov_flag=""
+        elif [ '${{ matrix.sys || '' }}' = 'i686' ]; then
           export CC="gcc -m32"
           export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
           export PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
+          enable_gcov_flag=""
         elif [ "${{ runner.os }}" = "Linux" ]; then
           export CC=gcc-14
         fi
@@ -320,10 +337,6 @@ jobs:
         static_only_flags=""
         if [ "${{ matrix.static_only || '' }}" = "true" ]; then
           static_only_flags="--disable-shared --enable-static"
-        fi
-        enable_gcov_flag="--enable-gcov"
-        if [ "${{ matrix.sys || '' }}" = "i686" ]; then
-          enable_gcov_flag=""
         fi
         ./configure \
             --without-bashcompletiondir \
@@ -753,7 +766,7 @@ jobs:
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Capture coverage (Linux)
-      if: runner.os == 'Linux' && (matrix.sys || '') != 'i686'
+      if: runner.os == 'Linux' && (matrix.sys || '') != 'i686' && !(matrix.musl || false)
       shell: bash
       run: |
         gcovr -r . --lcov -o coverage.info \
@@ -813,7 +826,7 @@ jobs:
 
     - name: Upload to Coveralls (per-flag, parallel)
       id: coveralls_upload
-      if: ${{ runner.os != 'Windows' && matrix.os != 'macos-15' && matrix.sys != 'i686' }}
+      if: ${{ runner.os != 'Windows' && matrix.os != 'macos-15' && matrix.sys != 'i686' && !(matrix.musl || false) }}
       continue-on-error: true
       uses: coverallsapp/github-action@v2
       with:
@@ -823,11 +836,11 @@ jobs:
         parallel: true
 
     - name: Wait before Coveralls retry (per-flag)
-      if: ${{ runner.os != 'Windows' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' }}
+      if: ${{ runner.os != 'Windows' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) }}
       run: sleep 5
 
     - name: Upload to Coveralls (per-flag, retry)
-      if: ${{ runner.os != 'Windows' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' }}
+      if: ${{ runner.os != 'Windows' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) }}
       uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -1022,25 +1035,25 @@ jobs:
             configure_extra: '--with-libcurl'
             artifact_suffix: with-libcurl
             apt: 'libcurl4-openssl-dev'
-          - label: macos clang
+          - label: macos aarch64 clang
             os: macos-latest
             runner: macos-latest
             configure_extra: ''
             artifact_suffix: default
             apt: ''
-          - label: macos clang enable-quicklook-extension
+          - label: macos aarch64 clang enable-quicklook-extension
             os: macos-latest
             runner: macos-latest
             configure_extra: '--enable-quicklook-extension'
             artifact_suffix: enable-quicklook-extension
             apt: ''
-          - label: macos clang with-coregraphics
+          - label: macos aarch64 clang with-coregraphics
             os: macos-latest
             runner: macos-latest
             configure_extra: '--with-coregraphics'
             artifact_suffix: with-coregraphics
             apt: ''
-          - label: macos-15 clang
+          - label: macos x86_64 clang
             os: macos-15
             runner: macos-15
             configure_extra: ''
@@ -1325,6 +1338,11 @@ jobs:
             runner: ubuntu-latest
             disable_threads: true
             variant: disable-threads
+          - label: ubuntu musl-cross
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            musl: true
+            variant: musl-cross
           - label: ubuntu i686
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -1431,6 +1449,12 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y gcc-multilib
 
+    - name: Install musl toolchain (Linux musl-cross)
+      if: ${{ runner.os == 'Linux' && (matrix.musl || false) }}
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y musl-tools
+
     - name: Setup MSVC developer env (vcvars)
       if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' }}
       uses: ilammy/msvc-dev-cmd@v1
@@ -1530,7 +1554,9 @@ jobs:
     - name: Configure, build, and test (Meson, non-Windows)
       if: runner.os != 'Windows'
       run: |
-        if [ '${{ matrix.sys || '' }}' = 'i686' ]; then
+        if [ "${{ matrix.musl || '' }}" = "true" ]; then
+          export CC=musl-gcc
+        elif [ '${{ matrix.sys || '' }}' = 'i686' ]; then
           export CC=gcc
           export CFLAGS="-m32"
           export LDFLAGS="-m32"
