@@ -4,7 +4,7 @@
 # can be cleaned up on platforms like Windows where open handles block
 # deletion.
 
-set -eu
+set -euxv
 
 . "$(dirname "$0")/../lib/common.sh"
 
@@ -149,7 +149,7 @@ work_dir="${tmp_dir}/work"
 
 if [ "${use_wheel}" -eq 1 ]; then
     ld_env="${python_wheel_ld_library_path}"
-    if PYTHONPATH="" \
+    if PYTHONPATH="${python_trace_pythonpath}" \
        LD_LIBRARY_PATH="${ld_env}" \
        LIBSIXEL_LIBDIR="${lib_dir}" \
        "${run_python}" "${verify_script}" \
@@ -159,7 +159,7 @@ if [ "${use_wheel}" -eq 1 ]; then
         tap_fail ${case_id} "resource test via wheel failed"
     fi
 else
-    if PYTHONPATH="${python_in_tree_pythonpath}" \
+    if PYTHONPATH="${python_in_tree_trace_pythonpath}" \
        LD_LIBRARY_PATH="${python_in_tree_ld_library_path}" \
        LIBSIXEL_LIBDIR="${lib_dir}" \
        "${run_python}" "${verify_script}" \
