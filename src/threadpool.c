@@ -46,6 +46,7 @@ struct threadpool {
     int nthreads;
     int qsize;
     size_t workspace_size;
+    tp_workspace_cleanup_fn workspace_cleanup;
     tp_worker_fn worker;
     void *userdata;
     tp_job_t *jobs;
@@ -95,6 +96,9 @@ threadpool_free(threadpool_t *pool)
                 continue;
             }
             if (pool->workers[i]->workspace != NULL) {
+                if (pool->workspace_cleanup != NULL) {
+                    pool->workspace_cleanup(pool->workers[i]->workspace);
+                }
                 free(pool->workers[i]->workspace);
             }
             free(pool->workers[i]);
@@ -179,7 +183,8 @@ threadpool_create(int nthreads,
                   int qsize,
                   size_t workspace_size,
                   tp_worker_fn worker,
-                  void *userdata)
+                  void *userdata,
+                  tp_workspace_cleanup_fn workspace_cleanup)
 {
     threadpool_t *pool;
     int i;
@@ -213,6 +218,7 @@ threadpool_create(int nthreads,
     pool->pin_threads = 0;
     pool->hw_threads = 0;
     pool->workers = NULL;
+    pool->workspace_cleanup = workspace_cleanup;
 
     rc = sixel_mutex_init(&pool->mutex);
     if (rc != SIXEL_OK) {

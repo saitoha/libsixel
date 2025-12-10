@@ -923,7 +923,8 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
                                   ctx->queue_capacity,
                                   sizeof(sixel_parallel_worker_state_t),
                                   sixel_parallel_worker_main,
-                                  ctx);
+                                  ctx,
+                                  NULL);
     if (ctx->pool == NULL) {
         return SIXEL_RUNTIME_ERROR;
     }

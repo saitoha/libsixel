@@ -36,6 +36,7 @@ typedef struct {
 } tp_job_t;
 
 typedef int (*tp_worker_fn)(tp_job_t job, void *userdata, void *workspace);
+typedef void (*tp_workspace_cleanup_fn)(void *workspace);
 
 struct threadpool;
 typedef struct threadpool threadpool_t;
@@ -44,7 +45,9 @@ SIXELAPI threadpool_t *threadpool_create(int nthreads,
                                          int qsize,
                                          size_t workspace_size,
                                          tp_worker_fn worker,
-                                         void *userdata);
+                                         void *userdata,
+                                         tp_workspace_cleanup_fn
+                                            workspace_cleanup);
 SIXELAPI void threadpool_set_affinity(threadpool_t *pool, int pin_threads);
 SIXELAPI void threadpool_destroy(threadpool_t *pool);
 SIXELAPI void threadpool_push(threadpool_t *pool, tp_job_t job);

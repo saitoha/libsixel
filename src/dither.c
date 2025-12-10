@@ -809,6 +809,30 @@ typedef struct sixel_parallel_dither_plan {
     sixel_logger_t *logger;
 } sixel_parallel_dither_plan_t;
 
+typedef struct sixel_parallel_worker_state {
+    sixel_lut_t *lut;
+    int lut_initialized;
+} sixel_parallel_worker_state_t;
+
+static void
+sixel_parallel_worker_cleanup(void *workspace)
+{
+    sixel_parallel_worker_state_t *state;
+
+    state = (sixel_parallel_worker_state_t *)workspace;
+    if (state == NULL) {
+        return;
+    }
+    if (state->lut_initialized != 0 && state->lut != NULL) {
+        /*
+         * Each worker owns its private LUT instance when shared caches are
+         * disabled.  Release it here so threadpool teardown can free the
+         * workspace without leaking per-thread caches.
+         */
+        sixel_lut_unref(state->lut);
+    }
+}
+
 static int
 sixel_dither_parallel_worker(tp_job_t job,
                              void *userdata,
@@ -826,9 +850,12 @@ sixel_dither_parallel_worker(tp_job_t job,
     int in1;
     int rows;
     int local_ncolors;
+    int wcomp1;
+    int wcomp2;
+    int wcomp3;
     SIXELSTATUS status;
-
-    (void)workspace;
+    sixel_parallel_worker_state_t *state;
+    sixel_lut_t *local_lut;
 
     plan = (sixel_parallel_dither_plan_t *)userdata;
     if (plan == NULL) {
@@ -889,6 +916,56 @@ sixel_dither_parallel_worker(tp_job_t job,
     }
 
     local_ncolors = plan->reqcolor;
+    state = (sixel_parallel_worker_state_t *)workspace;
+    local_lut = plan->lut;
+    if (local_lut == NULL && state != NULL) {
+        if (state->lut_initialized == 0) {
+            status = sixel_lut_new(&state->lut,
+                                   plan->lut_policy,
+                                   plan->allocator);
+            if (SIXEL_FAILED(status)) {
+                if (copy != NULL) {
+                    free(copy);
+                }
+                return status;
+            }
+            if (plan->lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
+                if (plan->method_for_largest == SIXEL_LARGE_LUM) {
+                    wcomp1 = plan->complexion * 299;
+                    wcomp2 = 587;
+                    wcomp3 = 114;
+                } else {
+                    wcomp1 = plan->complexion;
+                    wcomp2 = 1;
+                    wcomp3 = 1;
+                }
+            } else {
+                wcomp1 = plan->complexion;
+                wcomp2 = 1;
+                wcomp3 = 1;
+            }
+            status = sixel_lut_configure(state->lut,
+                                         plan->palette->entries,
+                                         plan->palette->depth,
+                                         (int)plan->palette->entry_count,
+                                         plan->complexion,
+                                         wcomp1,
+                                         wcomp2,
+                                         wcomp3,
+                                         plan->lut_policy,
+                                         plan->pixelformat);
+            if (SIXEL_FAILED(status)) {
+                sixel_lut_unref(state->lut);
+                state->lut = NULL;
+                if (copy != NULL) {
+                    free(copy);
+                }
+                return status;
+            }
+            state->lut_initialized = 1;
+        }
+        local_lut = state->lut;
+    }
     /*
      * Map directly into the shared destination but suppress writes
      * before output_start.  The overlap rows are computed only to warm
@@ -913,7 +990,7 @@ sixel_dither_parallel_worker(tp_job_t job,
                                      plan->complexion,
                                      plan->lut_policy,
                                      plan->method_for_largest,
-                                     plan->lut,
+                                     local_lut,
                                      &local_ncolors,
                                      plan->allocator,
                                      plan->dither,
@@ -946,11 +1023,13 @@ sixel_dither_apply_palette_parallel(sixel_parallel_dither_plan_t *plan,
     SIXELSTATUS status;
     threadpool_t *pool;
     size_t depth_bytes;
+    size_t workspace_size;
     int nbands;
     int queue_depth;
     int band_index;
     int stride;
     int offset;
+    tp_workspace_cleanup_fn cleanup;
 
     if (plan == NULL || plan->palette == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -982,11 +1061,18 @@ sixel_dither_apply_palette_parallel(sixel_parallel_dither_plan_t *plan,
         queue_depth = 1;
     }
 
+    workspace_size = 0U;
+    cleanup = NULL;
+    if (plan->lut == NULL && plan->lut_policy != SIXEL_LUT_POLICY_NONE) {
+        workspace_size = sizeof(sixel_parallel_worker_state_t);
+        cleanup = sixel_parallel_worker_cleanup;
+    }
     pool = threadpool_create(threads,
                              queue_depth,
-                             0,
+                             workspace_size,
                              sixel_dither_parallel_worker,
-                             plan);
+                             plan,
+                             cleanup);
     if (pool == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }

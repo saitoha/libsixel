@@ -1610,7 +1610,12 @@ sixel_lookup_vpte_dispatch_tiles(int total_tiles,
     if (queue_depth > total_tiles) {
         queue_depth = total_tiles;
     }
-    pool = threadpool_create(threads, queue_depth, 0, worker, plan);
+    pool = threadpool_create(threads,
+                             queue_depth,
+                             0,
+                             worker,
+                             plan,
+                             NULL);
     if (pool == NULL) {
         for (job_index = 0; job_index < total_tiles; ++job_index) {
             job.band_index = job_index;
