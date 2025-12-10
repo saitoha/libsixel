@@ -16251,10 +16251,28 @@ else
 fi
 
 
-# Detect Microsoft Visual C compiler
+# Detect Microsoft Visual C compiler and clang-cl
 case "$CC" in
-  *cl|*cl.exe|*clang-cl*)
+  *clang-cl*)
     using_cl=yes
+    using_clangcl=yes
+    CFLAGS=`echo "$CFLAGS" | sed s/-g//g`
+    CFLAGS="$CFLAGS -O2"
+    LDFLAGS="$LDFLAGS -DEBUG"
+    PKG_CONFIG=
+    LD=link
+    if test -z "${AR}"; then
+        AR="${CONFIG_SHELL-$SHELL} $am_aux_dir/ar-lib lib"
+    fi
+    if test -z "${NM}"; then
+        NM="dumpbin -symbols"
+    fi
+    STRIP=:
+    RANLIB=:
+    ;;
+  *cl|*cl.exe)
+    using_cl=yes
+    using_clangcl=no
     CFLAGS=`echo "$CFLAGS" | sed s/-g//g`
     CFLAGS="$CFLAGS -O2"
     LDFLAGS="$LDFLAGS -DEBUG"
@@ -16271,6 +16289,7 @@ case "$CC" in
     ;;
   *)
     using_cl=no
+    using_clangcl=no
     ;;
 esac
  if test "x$using_cl" = "xyes"; then
@@ -21038,7 +21057,7 @@ fi
 
 if test x$with_winhttp != xno; then
     case "$host_os" in
-    mingw* | cygwin* | msys*)
+    mingw* | cygwin* | msys* | msvc*)
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for WinHTTP" >&5
 printf "%s\n" "$as_me: checking for WinHTTP" >&6;}
         CFLAGS_BACKUP="$CFLAGS"
@@ -21048,8 +21067,13 @@ printf "%s\n" "$as_me: checking for WinHTTP" >&6;}
                 as_fn_error $? "\"${with_winhttp}\" is not directory" "$LINENO" 5
             fi
             if test "x${using_cl}" = xyes; then
-                ADDED_CFLAGS="-I${with_winhttp}\include"
-                ADDED_LIBS="-lwinhttp"
+                if test "x${using_clangcl}" = xyes; then
+                    ADDED_CFLAGS="-I${with_winhttp}/include"
+                    ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
+                else
+                ADDED_CFLAGS="-I${with_winhttp}\\include"
+                ADDED_LIBS="/LIBPATH:${with_winhttp}/lib winhttp.lib"
+                fi
             else
                 ADDED_CFLAGS="-I${with_winhttp}/include"
                 ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
@@ -21057,16 +21081,26 @@ printf "%s\n" "$as_me: checking for WinHTTP" >&6;}
         else
             if test x${prefix} != x -a x${prefix} != xNONE; then
                 if test "x${using_cl}" = xyes; then
-                    ADDED_CFLAGS=
-                    ADDED_LIBS="-lwinhttp"
+                    if test "x${using_clangcl}" = xyes; then
+                        ADDED_CFLAGS="-I${prefix}/include"
+                        ADDED_LIBS="-L${prefix}/lib -lwinhttp"
+                    else
+                        ADDED_CFLAGS=
+                        ADDED_LIBS="winhttp.lib"
+                    fi
                 else
                     ADDED_CFLAGS="-I${prefix}/include"
                     ADDED_LIBS="-L${prefix}/lib -lwinhttp"
                 fi
             else
                 if test "x${using_cl}" = xyes; then
-                    ADDED_CFLAGS=
-                    ADDED_LIBS="-lwinhttp"
+                    if test "x${using_clangcl}" = xyes; then
+                        ADDED_CFLAGS="-I/usr/local/include"
+                        ADDED_LIBS="-L/usr/local/lib -lwinhttp"
+                    else
+                        ADDED_CFLAGS=
+                        ADDED_LIBS="winhttp.lib"
+                    fi
                 else
                     ADDED_CFLAGS="-I/usr/local/include"
                     ADDED_LIBS="-L/usr/local/lib -lwinhttp"
@@ -21076,11 +21110,48 @@ printf "%s\n" "$as_me: checking for WinHTTP" >&6;}
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
         LIBS="${LIBS} ${ADDED_LIBS}"
         have_winhttp=yes
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+        if test "x${using_cl}" = xyes -a "x${using_clangcl}" != xyes; then
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#include <windows.h>
+#include <winhttp.h>
 
-              #include <windows.h>
-              #include <winhttp.h>
+int
+main (void)
+{
+
+                  HINTERNET session;
+
+                  session = WinHttpOpen(L"libsixel",
+                                        WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY,
+                                        WINHTTP_NO_PROXY_NAME,
+                                        WINHTTP_NO_PROXY_BYPASS,
+                                        0);
+                  if (session != NULL) {
+                      WinHttpCloseHandle(session);
+                  }
+                  return 0;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+
+else case e in #(
+  e) have_winhttp=no
+                 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: winhttp is not available." >&5
+printf "%s\n" "$as_me: WARNING: winhttp is not available." >&2;} ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+        else
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <windows.h>
+#include <winhttp.h>
 
 int
 main (void)
@@ -21143,20 +21214,21 @@ then :
 
 else case e in #(
   e) have_winhttp=no
-                           { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: library winhttp is not avilable." >&5
+                               { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: library winhttp is not avilable." >&5
 printf "%s\n" "$as_me: WARNING: library winhttp is not avilable." >&2;}
-                           ;;
+                               ;;
 esac
 fi
 
 else case e in #(
   e) have_winhttp=no
-             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: windows.h or winhttp.h is not avilable." >&5
+                 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: windows.h or winhttp.h is not avilable." >&5
 printf "%s\n" "$as_me: WARNING: windows.h or winhttp.h is not avilable." >&2;}
-             ;;
+                 ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+        fi
         CFLAGS=$CFLAGS_BACKUP
         LIBS=$LIBS_BACKUP
 
@@ -22105,8 +22177,14 @@ printf "%s\n" "$as_me: checking for Windows Imaging Component (WIC)" >&6;}
                 as_fn_error $? "\"${with_wic}\" is not directory" "$LINENO" 5
             fi
             if test "x${using_cl}" = xyes; then
-                ADDED_CFLAGS="-I${with_wic}\include"
-                ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs -lshlwapi -luuid"
+                if test "x${using_clangcl}" = xyes; then
+                    ADDED_CFLAGS="-I${with_wic}/include"
+                    ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
+                else
+                    ADDED_CFLAGS="-I${with_wic}\\include"
+                    ADDED_LIBS="/LIBPATH:${with_wic}/lib windowscodecs.lib \
+ole32.lib shlwapi.lib uuid.lib"
+                fi
             else
                 ADDED_CFLAGS="-I${with_wic}/include"
                 ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
@@ -22114,16 +22192,28 @@ printf "%s\n" "$as_me: checking for Windows Imaging Component (WIC)" >&6;}
         else
             if test x${prefix} != x -a x${prefix} != xNONE; then
                 if test "x${using_cl}" = xyes; then
-                    ADDED_CFLAGS=
-                    ADDED_LIBS="-lole32 -lwindowscodecs -lshlwapi -luuid"
+                    if test "x${using_clangcl}" = xyes; then
+                        ADDED_CFLAGS="-I${prefix}/include"
+                        ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
+                    else
+                        ADDED_CFLAGS=
+                        ADDED_LIBS="windowscodecs.lib ole32.lib shlwapi.lib \
+uuid.lib"
+                    fi
                 else
                     ADDED_CFLAGS="-I${prefix}/include"
                     ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
                 fi
             else
                 if test "x${using_cl}" = xyes; then
-                    ADDED_CFLAGS=
-                    ADDED_LIBS="-lole32 -lwindowscodecs -lshlwapi -luuid"
+                    if test "x${using_clangcl}" = xyes; then
+                        ADDED_CFLAGS="-I/usr/local/include"
+                        ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
+                    else
+                        ADDED_CFLAGS=
+                        ADDED_LIBS="windowscodecs.lib ole32.lib shlwapi.lib \
+uuid.lib"
+                    fi
                 else
                     ADDED_CFLAGS="-I/usr/local/include"
                     ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
@@ -22133,7 +22223,51 @@ printf "%s\n" "$as_me: checking for Windows Imaging Component (WIC)" >&6;}
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
         LIBS="${LIBS} ${ADDED_LIBS}"
         have_wic=yes
-               for ac_header in windows.h wincodec.h
+        if test "x${using_cl}" = xyes -a "x${using_clangcl}" != xyes; then
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <windows.h>
+ #include <wincodec.h>
+
+int
+main (void)
+{
+
+                  IWICImagingFactory *factory;
+
+                  factory = NULL;
+                  if (FAILED(CoInitialize(NULL))) {
+                      return 1;
+                  }
+                  if (FAILED(CoCreateInstance(&CLSID_WICImagingFactory,
+                                              NULL,
+                                              CLSCTX_INPROC_SERVER,
+                                              &IID_IWICImagingFactory,
+                                              (LPVOID *)&factory))) {
+                      CoUninitialize();
+                      return 1;
+                  }
+                  if (factory != NULL) {
+                      IWICImagingFactory_Release(factory);
+                  }
+                  CoUninitialize();
+                  return 0;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+
+else case e in #(
+  e) have_wic=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+        else
+                   for ac_header in windows.h wincodec.h
 do :
   as_ac_Header=`printf "%s\n" "ac_cv_header_$ac_header" | sed "$as_sed_sh"`
 ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
@@ -22187,7 +22321,7 @@ else case e in #(
 esac
 fi
 
-                          { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for main in -lwindowscodecs" >&5
+                              { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for main in -lwindowscodecs" >&5
 printf %s "checking for main in -lwindowscodecs... " >&6; }
 if test ${ac_cv_lib_windowscodecs_main+y}
 then :
@@ -22238,6 +22372,7 @@ esac
 fi
 
 done
+        fi
         if test "x$have_wic" = "xyes"
 then :
 
@@ -23481,7 +23616,7 @@ else
   HAVE_CURL_FALSE=
 fi
 
- if test x$have_wic = xyes; then
+ if test x$have_winhttp = xyes; then
   HAVE_WINHTTP_TRUE=
   HAVE_WINHTTP_FALSE='#'
 else

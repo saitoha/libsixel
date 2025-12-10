@@ -48,10 +48,28 @@ esac
 AM_CONDITIONAL([BUILDING_ON_WINDOWS],
                [test "x$build_windows" = "xyes"])
 
-# Detect Microsoft Visual C compiler
+# Detect Microsoft Visual C compiler and clang-cl
 case "$CC" in
-  *cl|*cl.exe|*clang-cl*)
+  *clang-cl*)
     using_cl=yes
+    using_clangcl=yes
+    CFLAGS=`echo "$CFLAGS" | sed s/-g//g`
+    CFLAGS="$CFLAGS -O2"
+    LDFLAGS="$LDFLAGS -DEBUG"
+    PKG_CONFIG=
+    LD=link
+    if test -z "${AR}"; then
+        AR="${CONFIG_SHELL-$SHELL} $am_aux_dir/ar-lib lib"
+    fi
+    if test -z "${NM}"; then
+        NM="dumpbin -symbols"
+    fi
+    STRIP=:
+    RANLIB=:
+    ;;
+  *cl|*cl.exe)
+    using_cl=yes
+    using_clangcl=no
     CFLAGS=`echo "$CFLAGS" | sed s/-g//g`
     CFLAGS="$CFLAGS -O2"
     LDFLAGS="$LDFLAGS -DEBUG"
@@ -68,6 +86,7 @@ case "$CC" in
     ;;
   *)
     using_cl=no
+    using_clangcl=no
     ;;
 esac
 AM_CONDITIONAL([USING_CL], [test "x$using_cl" = "xyes"])
@@ -1346,7 +1365,7 @@ AC_SUBST(LIBCURL_LIBS)
 
 if test x$with_winhttp != xno; then
     case "$host_os" in
-    mingw* | cygwin* | msys*)
+    mingw* | cygwin* | msys* | msvc*)
         AC_MSG_NOTICE([checking for WinHTTP])
         CFLAGS_BACKUP="$CFLAGS"
         LIBS_BACKUP="$LIBS"
@@ -1355,8 +1374,13 @@ if test x$with_winhttp != xno; then
                 AC_MSG_ERROR(["${with_winhttp}" is not directory])
             fi
             if test "x${using_cl}" = xyes; then
-                ADDED_CFLAGS="-I${with_winhttp}\include"
-                ADDED_LIBS="-lwinhttp"
+                if test "x${using_clangcl}" = xyes; then
+                    ADDED_CFLAGS="-I${with_winhttp}/include"
+                    ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
+                else
+                ADDED_CFLAGS="-I${with_winhttp}\\include"
+                ADDED_LIBS="/LIBPATH:${with_winhttp}/lib winhttp.lib"
+                fi
             else
                 ADDED_CFLAGS="-I${with_winhttp}/include"
                 ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
@@ -1364,16 +1388,26 @@ if test x$with_winhttp != xno; then
         else
             if test x${prefix} != x -a x${prefix} != xNONE; then
                 if test "x${using_cl}" = xyes; then
-                    ADDED_CFLAGS=
-                    ADDED_LIBS="-lwinhttp"
+                    if test "x${using_clangcl}" = xyes; then
+                        ADDED_CFLAGS="-I${prefix}/include"
+                        ADDED_LIBS="-L${prefix}/lib -lwinhttp"
+                    else
+                        ADDED_CFLAGS=
+                        ADDED_LIBS="winhttp.lib"
+                    fi
                 else
                     ADDED_CFLAGS="-I${prefix}/include"
                     ADDED_LIBS="-L${prefix}/lib -lwinhttp"
                 fi
             else
                 if test "x${using_cl}" = xyes; then
-                    ADDED_CFLAGS=
-                    ADDED_LIBS="-lwinhttp"
+                    if test "x${using_clangcl}" = xyes; then
+                        ADDED_CFLAGS="-I/usr/local/include"
+                        ADDED_LIBS="-L/usr/local/lib -lwinhttp"
+                    else
+                        ADDED_CFLAGS=
+                        ADDED_LIBS="winhttp.lib"
+                    fi
                 else
                     ADDED_CFLAGS="-I/usr/local/include"
                     ADDED_LIBS="-L/usr/local/lib -lwinhttp"
@@ -1383,20 +1417,41 @@ if test x$with_winhttp != xno; then
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
         LIBS="${LIBS} ${ADDED_LIBS}"
         have_winhttp=yes
-        AC_COMPILE_IFELSE(
-            [AC_LANG_PROGRAM([[
-              #include <windows.h>
-              #include <winhttp.h>
-            ]], [[]])],
-            [AC_CHECK_LIB([winhttp],
-                          [WinHttpOpen],
-                          [],
-                          [have_winhttp=no
-                           AC_MSG_WARN([library winhttp is not avilable.])
-                          ])],
-            [have_winhttp=no
-             AC_MSG_WARN([windows.h or winhttp.h is not avilable.])
-            ])
+        if test "x${using_cl}" = xyes -a "x${using_clangcl}" != xyes; then
+            AC_LINK_IFELSE(
+                [AC_LANG_PROGRAM([[#include <windows.h>
+#include <winhttp.h>
+                ]], [[
+                  HINTERNET session;
+
+                  session = WinHttpOpen(L"libsixel",
+                                        WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY,
+                                        WINHTTP_NO_PROXY_NAME,
+                                        WINHTTP_NO_PROXY_BYPASS,
+                                        0);
+                  if (session != NULL) {
+                      WinHttpCloseHandle(session);
+                  }
+                  return 0;
+                ]])],
+                [],
+                [have_winhttp=no
+                 AC_MSG_WARN([winhttp is not available.])])
+        else
+            AC_COMPILE_IFELSE(
+                [AC_LANG_PROGRAM([[#include <windows.h>
+#include <winhttp.h>
+                ]], [[]])],
+                [AC_CHECK_LIB([winhttp],
+                              [WinHttpOpen],
+                              [],
+                              [have_winhttp=no
+                               AC_MSG_WARN([library winhttp is not avilable.])
+                              ])],
+                [have_winhttp=no
+                 AC_MSG_WARN([windows.h or winhttp.h is not avilable.])
+                ])
+        fi
         CFLAGS=$CFLAGS_BACKUP
         LIBS=$LIBS_BACKUP
 
@@ -1674,8 +1729,14 @@ if test x$with_wic != xno; then
                 AC_MSG_ERROR(["${with_wic}" is not directory])
             fi
             if test "x${using_cl}" = xyes; then
-                ADDED_CFLAGS="-I${with_wic}\include"
-                ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs -lshlwapi -luuid"
+                if test "x${using_clangcl}" = xyes; then
+                    ADDED_CFLAGS="-I${with_wic}/include"
+                    ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
+                else
+                    ADDED_CFLAGS="-I${with_wic}\\include"
+                    ADDED_LIBS="/LIBPATH:${with_wic}/lib windowscodecs.lib \
+ole32.lib shlwapi.lib uuid.lib"
+                fi
             else
                 ADDED_CFLAGS="-I${with_wic}/include"
                 ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
@@ -1683,16 +1744,28 @@ if test x$with_wic != xno; then
         else
             if test x${prefix} != x -a x${prefix} != xNONE; then
                 if test "x${using_cl}" = xyes; then
-                    ADDED_CFLAGS=
-                    ADDED_LIBS="-lole32 -lwindowscodecs -lshlwapi -luuid"
+                    if test "x${using_clangcl}" = xyes; then
+                        ADDED_CFLAGS="-I${prefix}/include"
+                        ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
+                    else
+                        ADDED_CFLAGS=
+                        ADDED_LIBS="windowscodecs.lib ole32.lib shlwapi.lib \
+uuid.lib"
+                    fi
                 else
                     ADDED_CFLAGS="-I${prefix}/include"
                     ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
                 fi
             else
                 if test "x${using_cl}" = xyes; then
-                    ADDED_CFLAGS=
-                    ADDED_LIBS="-lole32 -lwindowscodecs -lshlwapi -luuid"
+                    if test "x${using_clangcl}" = xyes; then
+                        ADDED_CFLAGS="-I/usr/local/include"
+                        ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
+                    else
+                        ADDED_CFLAGS=
+                        ADDED_LIBS="windowscodecs.lib ole32.lib shlwapi.lib \
+uuid.lib"
+                    fi
                 else
                     ADDED_CFLAGS="-I/usr/local/include"
                     ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
@@ -1702,16 +1775,45 @@ if test x$with_wic != xno; then
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
         LIBS="${LIBS} ${ADDED_LIBS}"
         have_wic=yes
-        AC_CHECK_HEADERS([windows.h wincodec.h],
-                         [AC_CHECK_LIB([ole32],
-                                       [main],
-                                       [],
-                                       [have_wic=no])
-                          AC_CHECK_LIB([windowscodecs],
-                                       [main],
-                                       [],
-                                       [have_wic=no])],
-                         [have_wic=no])
+        if test "x${using_cl}" = xyes -a "x${using_clangcl}" != xyes; then
+            AC_LINK_IFELSE(
+                [AC_LANG_PROGRAM([[#include <windows.h>
+ #include <wincodec.h>
+                ]], [[
+                  IWICImagingFactory *factory;
+
+                  factory = NULL;
+                  if (FAILED(CoInitialize(NULL))) {
+                      return 1;
+                  }
+                  if (FAILED(CoCreateInstance(&CLSID_WICImagingFactory,
+                                              NULL,
+                                              CLSCTX_INPROC_SERVER,
+                                              &IID_IWICImagingFactory,
+                                              (LPVOID *)&factory))) {
+                      CoUninitialize();
+                      return 1;
+                  }
+                  if (factory != NULL) {
+                      IWICImagingFactory_Release(factory);
+                  }
+                  CoUninitialize();
+                  return 0;
+                ]])],
+                [],
+                [have_wic=no])
+        else
+            AC_CHECK_HEADERS([windows.h wincodec.h],
+                             [AC_CHECK_LIB([ole32],
+                                           [main],
+                                           [],
+                                           [have_wic=no])
+                              AC_CHECK_LIB([windowscodecs],
+                                           [main],
+                                           [],
+                                           [have_wic=no])],
+                             [have_wic=no])
+        fi
         AS_IF([test "x$have_wic" = "xyes"],
               [AC_DEFINE([HAVE_WIC],
                          [1],
@@ -2040,7 +2142,7 @@ AC_DEFUN([LS_UPDATE_TIMESTAMP], [
 LS_UPDATE_TIMESTAMP
 
 AM_CONDITIONAL([HAVE_CURL], [test x$have_curl = xyes])
-AM_CONDITIONAL([HAVE_WINHTTP], [test x$have_wic = xyes])
+AM_CONDITIONAL([HAVE_WINHTTP], [test x$have_winhttp = xyes])
 AM_CONDITIONAL([HAVE_JPEG], [test x$have_jpeg = xyes])
 AM_CONDITIONAL([HAVE_PNG], [test x$have_png = xyes])
 AM_CONDITIONAL([HAVE_WIC], [test x$have_wic = xyes])
