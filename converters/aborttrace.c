@@ -449,8 +449,8 @@ sixel_aborttrace_restore_default(void)
 }
 
 static void
-sixel_aborttrace_signal_handler(int signum, siginfo_t *info,
-                                            void *context)
+sixel_aborttrace_signal_handler_siginfo(int signum, siginfo_t *info,
+                                        void *context)
 {
     (void)signum;
     (void)info;
@@ -467,16 +467,65 @@ sixel_aborttrace_signal_handler(int signum, siginfo_t *info,
 }
 
 static void
+sixel_aborttrace_signal_handler_simple(int signum)
+{
+    /* The reduced signature handler is used on platforms where struct
+     * sigaction lacks sa_sigaction.  We emit the same diagnostic stream
+     * but skip the siginfo/uc_mcontext details because they cannot be
+     * delivered through sa_handler.
+     */
+    (void)signum;
+
+    sixel_aborttrace_log_banner();
+    sixel_aborttrace_dump_frames();
+    sixel_aborttrace_log_footer();
+
+    sixel_aborttrace_restore_default();
+}
+
+static void
 sixel_aborttrace_install_platform(void)
 {
+    int result;
     struct sigaction handler;
 
     memset(&handler, 0, sizeof(handler));
-    handler.sa_sigaction = sixel_aborttrace_signal_handler;
     sigemptyset(&handler.sa_mask);
-    handler.sa_flags = SA_SIGINFO;
 
-    if (sigaction(SIGABRT, &handler, NULL) != 0) {
+#if defined(SA_SIGINFO) && defined(__GLIBC__)
+    /* Platforms exposing sa_sigaction with SA_SIGINFO let us use the
+     * richer siginfo_t context.  glibc advertises the member when
+     * _POSIX_C_SOURCE gates are enabled, so we can rely on it here.
+     */
+    handler.sa_sigaction = sixel_aborttrace_signal_handler_siginfo;
+    handler.sa_flags = SA_SIGINFO;
+    result = sigaction(SIGABRT, &handler, NULL);
+#elif defined(SA_SIGINFO) && (defined(__APPLE__) && defined(__MACH__))
+    /* Darwin exposes sa_sigaction under SA_SIGINFO as well. */
+    handler.sa_sigaction = sixel_aborttrace_signal_handler_siginfo;
+    handler.sa_flags = SA_SIGINFO;
+    result = sigaction(SIGABRT, &handler, NULL);
+#elif defined(SA_SIGINFO) && defined(__ANDROID__)
+    /* Android's Bionic implements sa_sigaction with SA_SIGINFO. */
+    handler.sa_sigaction = sixel_aborttrace_signal_handler_siginfo;
+    handler.sa_flags = SA_SIGINFO;
+    result = sigaction(SIGABRT, &handler, NULL);
+#elif defined(SA_SIGINFO) && defined(__FreeBSD__)
+    /* FreeBSD hides sa_sigaction behind feature-test macros when POSIX
+     * visibility is requested.  Build-time macros in libsixel keep us
+     * within POSIX surfaces, so we fall back to sa_handler instead.
+     */
+    handler.sa_handler = sixel_aborttrace_signal_handler_simple;
+    handler.sa_flags = 0;
+    result = sigaction(SIGABRT, &handler, NULL);
+#else
+    /* Unknown platform: rely on the portable sa_handler signature. */
+    handler.sa_handler = sixel_aborttrace_signal_handler_simple;
+    handler.sa_flags = 0;
+    result = sigaction(SIGABRT, &handler, NULL);
+#endif
+
+    if (result != 0) {
         return;
     }
 
