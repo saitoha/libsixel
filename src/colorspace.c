@@ -3198,7 +3198,8 @@ sixel_convert_pixels_via_linear_float(float *pixels,
                                      queue_depth,
                                      0,
                                      sixel_colorspace_parallel_worker,
-                                     &ctx);
+                                     &ctx,
+                                     NULL);
             if (pool != NULL) {
                 for (job_index = 0U; job_index < job_count; ++job_index) {
                     job.band_index = (int)job_index;
