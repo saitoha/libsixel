@@ -67,14 +67,38 @@ resolve_libdir() {
 find_shared_library() {
     search_root=$1
 
+    # Prefer real shared objects/dylibs/DLLs and avoid import libraries such as
+    # libsixel.dll.a that would crash when loaded via ctypes. Versioned sonames
+    # (e.g. libsixel.so.1) are matched explicitly per suffix.
     for suffix in '.so' '.dylib' '.dll'; do
         for prefix in 'lib' ''; do
-            match=$(find "${search_root}" -maxdepth 1 -type f \
-                -name "${prefix}sixel*${suffix}*" | head -n 1 || true)
-            if [ -n "${match}" ]; then
-                printf '%s' "${match}"
-                return 0
-            fi
+            case "${suffix}" in
+                '.so')
+                    patterns="${prefix}sixel*${suffix} ${prefix}sixel*${suffix}.*"
+                    ;;
+                '.dylib')
+                    patterns="${prefix}sixel*${suffix}"
+                    ;;
+                '.dll')
+                    patterns="${prefix}sixel*${suffix}"
+                    ;;
+            esac
+
+            for pattern in ${patterns}; do
+                candidate=$(find "${search_root}" -maxdepth 1 -type f \
+                    -name "${pattern}" | head -n 1 || true)
+
+                case "${candidate}" in
+                    *.dll.a|*.dll.def)
+                        candidate=""
+                        ;;
+                esac
+
+                if [ -n "${candidate}" ]; then
+                    printf '%s' "${candidate}"
+                    return 0
+                fi
+            done
         done
     done
 
@@ -247,6 +271,8 @@ python_prepare() {
     if [ -n "${tap_log_file}" ]; then
         printf 'python_bits=%s\n' "${python_bits}" >>"${tap_log_file}"
         printf 'lib_bits=%s\n' "${lib_bits}" >>"${tap_log_file}"
+        printf 'lib_dir=%s\n' "${lib_dir}" >>"${tap_log_file}"
+        printf 'shared_lib=%s\n' "${shared_lib}" >>"${tap_log_file}"
     fi
 
     if [ -n "${python_bits}" ] && [ -n "${lib_bits}" ] \
