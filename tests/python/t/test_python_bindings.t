@@ -71,6 +71,58 @@ if [ -z "${shared_lib}" ]; then
     skip_all "libsixel shared library is unavailable (static-only build?)"
 fi
 
+# Skip when the built shared library is linked against musl but the
+# interpreter runs on glibc. A musl-built .so cannot be loaded by a glibc
+# process and results in opaque 'invalid ELF header' errors during import.
+# Detect libc types in Python so we do not rely on external tools and log
+# the results for debugging.
+python_libc=$(${python_bin} - <<'PY' 2>>"${log_file}" || true
+import platform
+
+name, version = platform.libc_ver()
+print(name)
+PY
+)
+
+lib_libc=$(${python_bin} - <<PY 2>>"${log_file}" || true
+import pathlib
+
+
+def detect_libc(path: pathlib.Path) -> str:
+    """Return a best-effort libc name for the given shared object."""
+
+    try:
+        with path.open("rb") as handle:
+            head = handle.read(65536)
+    except OSError:
+        return ""
+
+    lowered = head.lower()
+    if b"musl" in lowered:
+        return "musl"
+    if b"glibc" in lowered or b"gnu" in lowered:
+        return "glibc"
+    return ""
+
+
+if __name__ == "__main__":
+    lib_path = pathlib.Path(r"${shared_lib}")
+    print(detect_libc(lib_path))
+PY
+)
+
+printf 'python_libc=%s\n' "${python_libc}" >>"${log_file}"
+printf 'lib_libc=%s\n' "${lib_libc}" >>"${log_file}"
+
+if [ "${lib_libc}" = "musl" ] && [ "${python_libc}" != "musl" ]; then
+    skip_all "libsixel is linked with ${lib_libc} but python uses ${python_libc}"
+fi
+
+if [ -n "${lib_libc}" ] && [ -n "${python_libc}" ] \
+   && [ "${lib_libc}" != "${python_libc}" ]; then
+    skip_all "libsixel is linked with ${lib_libc} but python uses ${python_libc}"
+fi
+
 # Abort early if the Python interpreter and the built shared library have
 # different word sizes (for example, 64-bit Python vs. 32-bit libsixel),
 # because such a mismatch always fails at import time with a confusing
