@@ -133,6 +133,7 @@ struct sixel_encoder {
     char *clipboard_output_path;
     struct sixel_logger *logger;
     int parallel_job_id;
+    int palette_job_enabled;
 };
 
 #if HAVE_TESTS
