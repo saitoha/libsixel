@@ -3,7 +3,7 @@
 # under python-wheel/dist when available and falls back to the in-tree Python
 # sources otherwise.
 
-set -eu
+set -euxv
 
 . "$(dirname "$0")/../lib/common.sh"
 
@@ -159,7 +159,7 @@ if [ "${use_wheel}" -eq 1 ]; then
         ld_library_path_env="${ld_library_path_env}:${LD_LIBRARY_PATH}"
     fi
 
-    if PYTHONPATH="" \
+    if PYTHONPATH="${python_trace_pythonpath}" \
        LD_LIBRARY_PATH="${ld_library_path_env}" \
        SKIP_CODE=${skip_code} \
        "${python_env}" "${verify_script}" >>"${log_file}" 2>&1; then
@@ -168,7 +168,7 @@ if [ "${use_wheel}" -eq 1 ]; then
         tap_fail ${case_id} "python wheel round-trip failed"
     fi
 else
-    if PYTHONPATH="${python_in_tree_pythonpath}" \
+    if PYTHONPATH="${python_in_tree_trace_pythonpath}" \
        LD_LIBRARY_PATH="${python_in_tree_ld_library_path}" \
        "${python_env}" "${verify_script}" >>"${log_file}" 2>&1; then
         tap_pass ${case_id} "encodes image via in-tree modules"

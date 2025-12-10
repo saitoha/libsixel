@@ -4,6 +4,12 @@
 # test scripts can focus on scenario-specific assertions while sharing the
 # same skip and setup logic.
 
+# Enable verbose shell tracing by default so CI artifacts show the exact
+# commands leading up to a failure. Set TRACE_SHELL=0 to opt out locally.
+if [ "${TRACE_SHELL:-1}" -eq 1 ]; then
+    set -xv
+fi
+
 # TAP bookkeeping and shared state. The variables are initialized to safe
 # defaults so callers running with `set -u` do not trip on unbound names.
 tap_status=0
@@ -19,6 +25,10 @@ use_wheel=0
 python_in_tree_pythonpath=""
 python_in_tree_ld_library_path=""
 python_wheel_ld_library_path=""
+python_trace_dir=""
+python_trace_pythonpath=""
+python_trace_env=""
+python_in_tree_trace_pythonpath=""
 
 # Emit a TAP plan line.
 tap_plan() {
@@ -268,6 +278,63 @@ python_prepare() {
     python_bits=$(detect_python_bits "${python_bin}")
     lib_bits=$(detect_library_bits "${python_bin}" "${shared_lib}")
 
+    python_trace_dir="${tmp_dir}/trace"
+    python_trace_pythonpath="${python_trace_dir}"
+    python_trace_env="SIXEL_PY_TRACE_LOG=${tap_log_file}"
+    export SIXEL_PY_TRACE_LOG="${tap_log_file}"
+
+    mkdir -p "${python_trace_dir}"
+    cat >"${python_trace_dir}/sitecustomize.py" <<'PY'
+"""Install a lightweight tracer for Python TAP tests."""
+import os
+import sys
+import threading
+
+
+def _build_logger():
+    """Open the trace log defined via SIXEL_PY_TRACE_LOG."""
+    log_path = os.environ.get("SIXEL_PY_TRACE_LOG")
+    if not log_path:
+        return None
+
+    try:
+        return open(log_path, "a", encoding="utf-8", buffering=1)
+    except OSError:
+        return None
+
+
+_TRACE_HANDLE = _build_logger()
+
+
+def _trace(frame, event, arg):
+    """Write compact trace events to the shared log file."""
+    if _TRACE_HANDLE is None:
+        return None
+
+    if event not in {"call", "line", "return", "exception"}:
+        return _trace
+
+    code = frame.f_code
+    prefix = f"{event}:{code.co_filename}:{frame.f_lineno}:{code.co_name}"
+
+    if event == "exception":
+        exc_type, exc, _ = arg
+        _TRACE_HANDLE.write(
+            f"{prefix}: {exc_type.__name__}: {exc}\n"
+        )
+    elif event == "return":
+        _TRACE_HANDLE.write(f"{prefix}: return\n")
+    else:
+        _TRACE_HANDLE.write(f"{prefix}\n")
+
+    return _trace
+
+
+if _TRACE_HANDLE is not None:
+    sys.settrace(_trace)
+    threading.settrace(_trace)
+PY
+
     if [ -n "${tap_log_file}" ]; then
         printf 'python_bits=%s\n' "${python_bits}" >>"${tap_log_file}"
         printf 'lib_bits=%s\n' "${lib_bits}" >>"${tap_log_file}"
@@ -290,6 +357,11 @@ python_prepare() {
     python_in_tree_pythonpath="${TOP_SRCDIR}/python"
     if [ -n "${PYTHONPATH-}" ]; then
         python_in_tree_pythonpath="${python_in_tree_pythonpath}:${PYTHONPATH}"
+    fi
+
+    python_in_tree_trace_pythonpath="${python_trace_pythonpath}"
+    if [ -n "${python_in_tree_pythonpath}" ]; then
+        python_in_tree_trace_pythonpath="${python_in_tree_trace_pythonpath}:${python_in_tree_pythonpath}"
     fi
 
     python_in_tree_ld_library_path="${lib_dir}"

@@ -4,7 +4,7 @@
 # large dimension requests, and invalid option parameters so that regression in
 # error reporting can be caught early.
 
-set -eu
+set -euxv
 
 . "$(dirname "$0")/../lib/common.sh"
 
@@ -247,7 +247,7 @@ run_case() {
     if [ "${use_wheel}" -eq 1 ]; then
         ld_env="${python_wheel_ld_library_path}"
 
-        if PYTHONPATH="" \
+        if PYTHONPATH="${python_trace_pythonpath}" \
            LD_LIBRARY_PATH="${ld_env}" \
            LIBSIXEL_LIBDIR="${lib_dir}" \
            "${run_python}" "${verify_script}" \
@@ -258,7 +258,7 @@ run_case() {
             tap_fail ${case_id} "${description} via wheel failed"
         fi
     else
-        if PYTHONPATH="${python_in_tree_pythonpath}" \
+        if PYTHONPATH="${python_in_tree_trace_pythonpath}" \
            LD_LIBRARY_PATH="${python_in_tree_ld_library_path}" \
            LIBSIXEL_LIBDIR="${lib_dir}" \
            "${run_python}" "${verify_script}" \
