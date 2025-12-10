@@ -1632,6 +1632,11 @@ sixel_dither_initialize(
         prefer_float32 = 1;
     }
 
+    /*
+     * Preserve float buffers in their native colorspace so palette entries
+     * reflect the frame's source space instead of being reinterpreted as
+     * gamma RGB during histogram collection.
+     */
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_RGB888:
         input_pixels = data;
@@ -1640,6 +1645,7 @@ sixel_dither_initialize(
     case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
     case SIXEL_PIXELFORMAT_OKLABFLOAT32:
     case SIXEL_PIXELFORMAT_CIELABFLOAT32:
+    case SIXEL_PIXELFORMAT_YUVFLOAT32:
         if (prefer_float32) {
             input_pixels = data;
             palette_pixelformat = pixelformat;
