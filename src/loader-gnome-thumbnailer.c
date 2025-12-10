@@ -77,7 +77,12 @@
 # include <dirent.h>
 #endif
 
-#if HAVE_SPAWN_H
+#if HAVE_SPAWN_H && HAVE_POSIX_SPAWNP && !defined(__FreeBSD__)
+/*
+ * FreeBSD's libc does not export `environ` from shared libraries when they
+ * are linked with --no-undefined.  Restrict the declaration to platforms
+ * that will actually route thumbnailer_spawn() through posix_spawnp().
+ */
 extern char **environ;
 #endif
 
@@ -2031,7 +2036,7 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
                          log_prefix,
                          display_command);
 
-# if HAVE_POSIX_SPAWNP
+# if HAVE_POSIX_SPAWNP && !defined(__FreeBSD__)
     if (posix_spawn_file_actions_init(&actions) != 0) {
         written = sixel_compat_snprintf(
             message,
@@ -2089,6 +2094,11 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
         goto cleanup;
     }
 # else
+    /*
+     * FreeBSD falls back to fork()/execvp() so that the shared library does
+     * not depend on an `environ` symbol that libc leaves undefined when
+     * linking with --no-undefined.
+     */
     pid = fork();
     if (pid < 0) {
         sixel_compat_strerror(errno,
