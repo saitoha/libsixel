@@ -1991,7 +1991,9 @@ sixel_dither_apply_palette(
     int wcomp1;
     int wcomp2;
     int wcomp3;
+#if SIXEL_ENABLE_THREADS
     int shared_lut;
+#endif  /* SIXEL_ENABLE_THREADS */
 
     parallel_active = 0;
 
