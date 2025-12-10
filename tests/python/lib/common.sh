@@ -107,6 +107,7 @@ sanitize_pythonpath() {
 # Find a shared library matching libsixel on Unix-like and Windows/MSYS names.
 find_shared_library() {
     search_root=$1
+    expected_bits=$2
 
     # Prefer real shared objects/dylibs/DLLs and avoid import libraries such as
     # libsixel.dll.a that would crash when loaded via ctypes. Versioned sonames
@@ -136,6 +137,21 @@ find_shared_library() {
                 esac
 
                 if [ -n "${candidate}" ]; then
+                    if [ -n "${expected_bits}" ] && \
+                       [ -n "${python_bin}" ]; then
+                        candidate_bits=$(detect_library_bits \
+                            "${python_bin}" "${candidate}" || true)
+                        if [ -n "${candidate_bits}" ] && \
+                           [ "${candidate_bits}" != "${expected_bits}" ]; then
+                            if [ -n "${tap_log_file:-}" ]; then
+                                printf 'skip %s: %s-bit lib does not match %s-bit python\n' \
+                                    "${candidate}" "${candidate_bits}" \
+                                    "${expected_bits}" >>"${tap_log_file}"
+                            fi
+                            continue
+                        fi
+                    fi
+
                     printf '%s' "${candidate}"
                     return 0
                 fi
@@ -296,6 +312,8 @@ python_prepare() {
         tap_skip_all "python is not available"
     fi
 
+    python_bits=$(detect_python_bits "${python_bin}")
+
     # Derive a stable path separator without invoking the interpreter, as
     # Python's stdout line endings on MSYS environments can inject stray
     # carriage returns. A simple uname check keeps PYTHONPATH predictable.
@@ -313,12 +331,11 @@ python_prepare() {
         tap_skip_all "could not locate libsixel build output"
     fi
 
-    shared_lib=$(find_shared_library "${lib_dir}" || true)
+    shared_lib=$(find_shared_library "${lib_dir}" "${python_bits}" || true)
     if [ -z "${shared_lib}" ]; then
-        tap_skip_all "libsixel shared library is unavailable (static-only build?)"
+        tap_skip_all "missing libsixel shared library for ${python_bits}-bit python"
     fi
 
-    python_bits=$(detect_python_bits "${python_bin}")
     lib_bits=$(detect_library_bits "${python_bin}" "${shared_lib}")
 
     python_trace_dir="${tmp_dir}/trace"
