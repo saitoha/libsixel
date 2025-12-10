@@ -74,8 +74,8 @@ fi
 # Skip when the built shared library is linked against musl but the
 # interpreter runs on glibc. A musl-built .so cannot be loaded by a glibc
 # process and results in opaque 'invalid ELF header' errors during import.
-# Detect libc types in Python so we do not rely on external tools and log
-# the results for debugging.
+# Detect libc types in Python using both the `file` utility (if available)
+# and a byte scan so we log the best possible guess for debugging.
 python_libc=$(${python_bin} - <<'PY' 2>>"${log_file}" || true
 import platform
 
@@ -86,22 +86,56 @@ PY
 
 lib_libc=$(${python_bin} - <<PY 2>>"${log_file}" || true
 import pathlib
+import shutil
+import subprocess
+
+
+def _probe_file(path: pathlib.Path) -> str:
+    """Detect libc by parsing `file -Lb` output when available."""
+
+    file_bin = shutil.which("file")
+    if file_bin is None:
+        return ""
+
+    try:
+        desc = subprocess.check_output(
+            [file_bin, "-Lb", str(path)], text=True, stderr=subprocess.DEVNULL
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return ""
+
+    lowered = desc.lower()
+    if "musl" in lowered:
+        return "musl"
+    if "glibc" in lowered or "gnu" in lowered:
+        return "glibc"
+    return ""
+
+
+def _probe_bytes(path: pathlib.Path) -> str:
+    """Fallback detector that scans the file header for libc markers."""
+
+    try:
+        with path.open("rb") as handle:
+            head = handle.read(131072)
+    except OSError:
+        return ""
+
+    lowered = head.lower()
+    if b"musl" in lowered or b"ld-musl" in lowered:
+        return "musl"
+    if b"glibc" in lowered or b"gnu" in lowered:
+        return "glibc"
+    return ""
 
 
 def detect_libc(path: pathlib.Path) -> str:
     """Return a best-effort libc name for the given shared object."""
 
-    try:
-        with path.open("rb") as handle:
-            head = handle.read(65536)
-    except OSError:
-        return ""
-
-    lowered = head.lower()
-    if b"musl" in lowered:
-        return "musl"
-    if b"glibc" in lowered or b"gnu" in lowered:
-        return "glibc"
+    for detector in (_probe_file, _probe_bytes):
+        name = detector(path)
+        if name:
+            return name
     return ""
 
 
