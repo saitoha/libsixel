@@ -841,7 +841,8 @@ sixel_palette_kmeans_sum_byte_to_float(double component,
  * as a freshly allocated RGB array.  The implementation mirrors the previous
  * palette.c logic but is reorganised around clearly labelled segments:
  *
- *   - Sample reservoir: collect up to 50k opaque pixels.
+ *   - Sample ingestion: consume every pixel provided by the encoder's sampler
+ *     so palette generation retains spatial coverage.
  *   - K-means++ seeding: initialise cluster centres in a distance-aware order.
  *   - Lloyd refinement: iterate until convergence or an iteration budget is
  *     reached.
@@ -874,7 +875,6 @@ build_palette_kmeans(unsigned char **result,
     unsigned int channels;
     unsigned int pixel_stride;
     unsigned int pixel_count;
-    unsigned int sample_limit;
     unsigned int sample_cap;
     unsigned int valid_seen;
     unsigned int sample_count;
@@ -883,7 +883,6 @@ build_palette_kmeans(unsigned char **result,
     unsigned int channel;
     unsigned int center_index;
     unsigned int sample_index;
-    unsigned int replace;
     unsigned int max_iterations;
     unsigned int iteration;
     unsigned int best_index;
@@ -921,7 +920,6 @@ build_palette_kmeans(unsigned char **result,
     double *accum;
     double *channel_sum;
     double *merge_sums;
-    unsigned long rand_value;
     size_t farthest_base;
     unsigned char *unique_buffer;
     size_t unique_pixels;
@@ -955,8 +953,7 @@ build_palette_kmeans(unsigned char **result,
     channels = depth;
     pixel_stride = depth;
     pixel_count = 0U;
-    sample_limit = 50000U;
-    sample_cap = sample_limit;
+    sample_cap = 0U;
     valid_seen = 0U;
     sample_count = 0U;
     k = 0U;
@@ -964,7 +961,6 @@ build_palette_kmeans(unsigned char **result,
     channel = 0U;
     center_index = 0U;
     sample_index = 0U;
-    replace = 0U;
     max_iterations = 0U;
     iteration = 0U;
     best_index = 0U;
@@ -987,7 +983,6 @@ build_palette_kmeans(unsigned char **result,
     accum = NULL;
     channel_sum = NULL;
     merge_sums = NULL;
-    rand_value = 0UL;
     best_distance = 0.0;
     distance = 0.0;
     diff = 0.0;
@@ -1111,10 +1106,13 @@ build_palette_kmeans(unsigned char **result,
         goto end;
     }
 
-    sample_cap = sample_limit;
-    if (sample_cap > pixel_count) {
-        sample_cap = pixel_count;
-    }
+    /*
+     * The encoder performs spatial sampling before invoking the palette
+     * builder.  Consume every surviving pixel so k-means operates on the
+     * caller's full reservoir instead of applying a second stage of
+     * reservoir sampling here.
+     */
+    sample_cap = pixel_count;
     samples = (double *)sixel_allocator_malloc(
         allocator, (size_t)sample_cap * 3U * sizeof(double));
     if (samples == NULL) {
@@ -1142,15 +1140,6 @@ build_palette_kmeans(unsigned char **result,
                         (double)fpixels[channel];
                 }
                 ++sample_count;
-            } else {
-                rand_value = (unsigned long)rand();
-                replace = (unsigned int)(rand_value % valid_seen);
-                if (replace < sample_cap) {
-                    for (channel = 0U; channel < 3U; ++channel) {
-                        samples[replace * 3U + channel] =
-                            (double)fpixels[channel];
-                    }
-                }
             }
         } else {
             if (channels == 4U && data[base + 3U] == 0U) {
@@ -1163,15 +1152,6 @@ build_palette_kmeans(unsigned char **result,
                         (double)data[base + channel];
                 }
                 ++sample_count;
-            } else {
-                rand_value = (unsigned long)rand();
-                replace = (unsigned int)(rand_value % valid_seen);
-                if (replace < sample_cap) {
-                    for (channel = 0U; channel < 3U; ++channel) {
-                        samples[replace * 3U + channel] =
-                            (double)data[base + channel];
-                    }
-                }
             }
         }
     }
