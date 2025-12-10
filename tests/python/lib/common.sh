@@ -265,6 +265,18 @@ python_prepare() {
         tap_skip_all "python is not available"
     fi
 
+    # Use the interpreter-specific path separator so PYTHONPATH is honored
+    # on Windows (semicolon) and POSIX platforms (colon) alike.
+    python_pathsep=$(${python_bin} - <<'PY' 2>/dev/null || true
+import os
+print(os.pathsep)
+PY
+    )
+
+    if [ -z "${python_pathsep}" ]; then
+        python_pathsep=':'
+    fi
+
     lib_dir=$(resolve_libdir "${TOP_BUILDDIR}") || true
     if [ -z "${lib_dir}" ]; then
         tap_skip_all "could not locate libsixel build output"
@@ -356,12 +368,12 @@ PY
 
     python_in_tree_pythonpath="${TOP_SRCDIR}/python"
     if [ -n "${PYTHONPATH-}" ]; then
-        python_in_tree_pythonpath="${python_in_tree_pythonpath}:${PYTHONPATH}"
+        python_in_tree_pythonpath="${python_in_tree_pythonpath}${python_pathsep}${PYTHONPATH}"
     fi
 
     python_in_tree_trace_pythonpath="${python_trace_pythonpath}"
     if [ -n "${python_in_tree_pythonpath}" ]; then
-        python_in_tree_trace_pythonpath="${python_in_tree_trace_pythonpath}:${python_in_tree_pythonpath}"
+        python_in_tree_trace_pythonpath="${python_in_tree_trace_pythonpath}${python_pathsep}${python_in_tree_pythonpath}"
     fi
 
     python_in_tree_ld_library_path="${lib_dir}"
