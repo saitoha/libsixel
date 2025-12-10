@@ -1977,9 +1977,11 @@ else
         have_wiccodec=yes
         if test x${have_wic} = xyes; then
             if test "x${using_cl}" = xyes; then
+                dnl Use .lib style to satisfy MSVC/clang-cl linkers while
+                dnl keeping the discovery path from WIC_LIBS intact.
                 WICCODEC_CFLAGS="$WIC_CFLAGS"
-                WICCODEC_LIBS="$WIC_LIBS -ladvapi32 -luser32 -loleaut32 \
-                    -lgdi32"
+                WICCODEC_LIBS="$WIC_LIBS advapi32.lib user32.lib \
+                    oleaut32.lib gdi32.lib"
             else
                 WICCODEC_CFLAGS="$WIC_CFLAGS"
                 WICCODEC_LIBS="$WIC_LIBS -loleaut32 -lgdi32"
@@ -2031,7 +2033,7 @@ else
             WICCODEC_CFLAGS="$ADDED_CFLAGS"
             WICCODEC_LIBS="$ADDED_LIBS"
             CFLAGS=$CFLAGS_BACKUP
-            LIBS=$CFLAGS_LIBS
+            LIBS=$LIBS_BACKUP
         fi
         if test "x${have_wiccodec}" = xyes; then
             AC_DEFINE([HAVE_WICCODEC], [1],  [define 1 if wic codec support is enabled])
