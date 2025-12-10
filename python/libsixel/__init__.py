@@ -1092,6 +1092,31 @@ def sixel_encoder_setopt(encoder, flag, arg=None):
     _sixel.sixel_encoder_setopt.restype = c_int
     _sixel.sixel_encoder_setopt.argtypes = [c_void_p, c_int, c_char_p]
     flag = ord(flag)
+
+    # Validate common numeric options on the Python side so that callers receive
+    # consistent errors without depending on platform-specific libc parsing
+    # quirks. This prevents invalid values from reaching the C layer where
+    # downstream loaders might crash on Windows builds.
+    if flag in (SIXEL_OPTFLAG_COLORS, SIXEL_OPTFLAG_WIDTH, SIXEL_OPTFLAG_HEIGHT):
+        try:
+            numeric_arg = int(str(arg))
+        except (TypeError, ValueError):
+            raise RuntimeError(
+                "invalid option value: expected an integer"
+            )
+
+        if flag == SIXEL_OPTFLAG_COLORS:
+            if numeric_arg < 1 or numeric_arg > SIXEL_PALETTE_MAX:
+                raise RuntimeError(
+                    "invalid colors option: value must be in the range 1-256"
+                )
+
+        if flag in (SIXEL_OPTFLAG_WIDTH, SIXEL_OPTFLAG_HEIGHT):
+            if numeric_arg < 1:
+                raise RuntimeError(
+                    "invalid geometry option: width/height must be positive"
+                )
+
     if arg:
         arg = str(arg).encode('utf-8')
     status = _sixel.sixel_encoder_setopt(encoder, flag, arg)
