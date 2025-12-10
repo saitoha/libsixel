@@ -45,7 +45,16 @@ export LSQA_BIN=${LSQA_BIN:-${lsqa_bin_default}}
 
 mkdir -p "${ARTIFACT_ROOT}"
 
-python - <<PY
+# Prefer the explicit python3 interpreter when the generic `python`
+# shim is unavailable (e.g., on FreeBSD images). Using a common helper
+# keeps the shebang POSIX-compliant while still locating a functional
+# Python runtime for the regression harness.
+python_bin="${PYTHON:-python}"
+if ! command -v "${python_bin}" >/dev/null 2>&1; then
+    python_bin="python3"
+fi
+
+"${python_bin}" - <<PY
 import json
 import math
 import os
