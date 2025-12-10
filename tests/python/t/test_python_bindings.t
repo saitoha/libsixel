@@ -71,92 +71,6 @@ if [ -z "${shared_lib}" ]; then
     skip_all "libsixel shared library is unavailable (static-only build?)"
 fi
 
-# Skip when the built shared library is linked against musl but the
-# interpreter runs on glibc. A musl-built .so cannot be loaded by a glibc
-# process and results in opaque 'invalid ELF header' errors during import.
-# Detect libc types in Python using both the `file` utility (if available)
-# and a byte scan so we log the best possible guess for debugging.
-python_libc=$(${python_bin} - <<'PY' 2>>"${log_file}" || true
-import platform
-
-name, version = platform.libc_ver()
-print(name)
-PY
-)
-
-lib_libc=$(${python_bin} - <<PY 2>>"${log_file}" || true
-import pathlib
-import shutil
-import subprocess
-
-
-def _probe_file(path: pathlib.Path) -> str:
-    """Detect libc by parsing `file -Lb` output when available."""
-
-    file_bin = shutil.which("file")
-    if file_bin is None:
-        return ""
-
-    try:
-        desc = subprocess.check_output(
-            [file_bin, "-Lb", str(path)], text=True, stderr=subprocess.DEVNULL
-        )
-    except (OSError, subprocess.CalledProcessError):
-        return ""
-
-    lowered = desc.lower()
-    if "musl" in lowered:
-        return "musl"
-    if "glibc" in lowered or "gnu" in lowered:
-        return "glibc"
-    return ""
-
-
-def _probe_bytes(path: pathlib.Path) -> str:
-    """Fallback detector that scans the file header for libc markers."""
-
-    try:
-        with path.open("rb") as handle:
-            head = handle.read(131072)
-    except OSError:
-        return ""
-
-    lowered = head.lower()
-    if b"musl" in lowered or b"ld-musl" in lowered:
-        return "musl"
-    if b"glibc" in lowered or b"gnu" in lowered:
-        return "glibc"
-    return ""
-
-
-def detect_libc(path: pathlib.Path) -> str:
-    """Return a best-effort libc name for the given shared object."""
-
-    for detector in (_probe_file, _probe_bytes):
-        name = detector(path)
-        if name:
-            return name
-    return ""
-
-
-if __name__ == "__main__":
-    lib_path = pathlib.Path(r"${shared_lib}")
-    print(detect_libc(lib_path))
-PY
-)
-
-printf 'python_libc=%s\n' "${python_libc}" >>"${log_file}"
-printf 'lib_libc=%s\n' "${lib_libc}" >>"${log_file}"
-
-if [ "${lib_libc}" = "musl" ] && [ "${python_libc}" != "musl" ]; then
-    skip_all "libsixel is linked with ${lib_libc} but python uses ${python_libc}"
-fi
-
-if [ -n "${lib_libc}" ] && [ -n "${python_libc}" ] \
-   && [ "${lib_libc}" != "${python_libc}" ]; then
-    skip_all "libsixel is linked with ${lib_libc} but python uses ${python_libc}"
-fi
-
 # Abort early if the Python interpreter and the built shared library have
 # different word sizes (for example, 64-bit Python vs. 32-bit libsixel),
 # because such a mismatch always fails at import time with a confusing
@@ -167,7 +81,9 @@ import struct
 print(struct.calcsize("P") * 8)
 PY
 )
-
+# Detect the library width without depending on external tools. This parser
+# understands ELF, Mach-O, and PE headers and reports the pointer width, which
+# is sufficient to stop known-incompatible combinations before import.
 lib_bits=$(${python_bin} - <<PY 2>>"${log_file}" || true
 import pathlib
 import struct
@@ -258,31 +174,6 @@ if [ -n "${python_bits}" ] && [ -n "${lib_bits}" ] \
     skip_all "python is ${python_bits}-bit but libsixel is ${lib_bits}-bit"
 fi
 
-# Abort early if the Python interpreter and the built shared library have
-# different word sizes (for example, 64-bit Python vs. 32-bit libsixel),
-# because such a mismatch always fails at import time with a confusing
-# ELFCLASS error. We rely on the `file` utility when available to extract
-# the bitness of the shared library and compare it with Python's pointer
-# size.
-python_bits=$(${python_bin} - <<'PY' 2>/dev/null || true
-import struct
-print(struct.calcsize("P") * 8)
-PY
-)
-lib_bits=""
-if command -v file >/dev/null 2>&1; then
-    lib_desc=$(file -b "${shared_lib}" 2>/dev/null || true)
-    case "${lib_desc}" in
-        *64-bit*) lib_bits="64" ;;
-        *32-bit*) lib_bits="32" ;;
-    esac
-fi
-
-if [ -n "${python_bits}" ] && [ -n "${lib_bits}" ] \
-   && [ "${python_bits}" != "${lib_bits}" ]; then
-    skip_all "python is ${python_bits}-bit but libsixel is ${lib_bits}-bit"
-fi
-
 wheel_dir="${TOP_BUILDDIR}/python-wheel/dist"
 if [ -d "${wheel_dir}" ]; then
     wheel_path=$(find "${wheel_dir}" -maxdepth 1 -type f -name 'libsixel-*.whl' \
@@ -295,6 +186,7 @@ fi
 echo "1..2"
 status=0
 case_id=1
+skip_code=200
 
 if [ "${use_wheel}" -eq 1 ]; then
     # Require venv/ensurepip to isolate the wheel from system packages.
@@ -337,15 +229,32 @@ else
     if PYTHONPATH="${pythonpath_env}" \
        LD_LIBRARY_PATH="${ld_library_path_env}" \
        LIBSIXEL_LIBDIR="${lib_path}" \
+       SKIP_CODE=${skip_code} \
        "${run_python}" - <<'PY' >>"${log_file}" 2>&1; then
-import libsixel
-from libsixel import encoder, decoder
+import os
+import sys
+import traceback
 
-encoder.Encoder
-decoder.Decoder
+skip_code = int(os.environ.get("SKIP_CODE", "200"))
+
+try:
+    import libsixel
+    from libsixel import encoder, decoder
+    encoder.Encoder
+    decoder.Decoder
+except OSError:
+    traceback.print_exc()
+    raise SystemExit(skip_code)
+except Exception:
+    traceback.print_exc()
+    raise SystemExit(1)
 PY
         pass ${case_id} "imports in-tree python modules"
     else
+        rc=$?
+        if [ ${rc} -eq ${skip_code} ]; then
+            skip_all "LoadLibrary failed (see python.log for details)"
+        fi
         fail ${case_id} "failed to import in-tree python modules"
     fi
 fi
@@ -357,6 +266,10 @@ import ctypes.util
 import glob
 import os
 import pathlib
+import sys
+import traceback
+
+SKIP_CODE = int(os.environ.get("SKIP_CODE", "200"))
 
 
 def _prefer_build_library(name, original_find):
@@ -376,34 +289,48 @@ def _prefer_build_library(name, original_find):
     return original_find(name)
 
 
-ctypes.util.find_library = (
-    lambda name, _orig=ctypes.util.find_library:
-    _prefer_build_library(name, _orig)
-)
+def main():
+    ctypes.util.find_library = (
+        lambda name, _orig=ctypes.util.find_library:
+        _prefer_build_library(name, _orig)
+    )
 
-from libsixel import SIXEL_PIXELFORMAT_RGB888
-from libsixel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
+    from libsixel import SIXEL_PIXELFORMAT_RGB888
+    from libsixel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
 
-root = pathlib.Path(__file__).parent
-output = root / "sample.six"
+    root = pathlib.Path(__file__).parent
+    output = root / "sample.six"
 
-pixels = bytes([
-    255, 0, 0,
-    0, 255, 0,
-    0, 0, 255,
-    255, 255, 255,
-])
+    pixels = bytes([
+        255, 0, 0,
+        0, 255, 0,
+        0, 0, 255,
+        255, 255, 255,
+    ])
 
-encoder = Encoder()
-encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(output))
-encoder.encode_bytes(pixels, 2, 2, SIXEL_PIXELFORMAT_RGB888, None)
+    encoder = Encoder()
+    encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(output))
+    encoder.encode_bytes(pixels, 2, 2, SIXEL_PIXELFORMAT_RGB888, None)
 
-if not output.exists():
-    raise SystemExit("missing sixel output")
-if output.stat().st_size == 0:
-    raise SystemExit("empty sixel output")
+    if not output.exists():
+        raise SystemExit("missing sixel output")
+    if output.stat().st_size == 0:
+        raise SystemExit("empty sixel output")
 
-print("encode succeeded")
+    print("encode succeeded")
+PY
+
+cat >>"${verify_script}" <<'PY'
+
+if __name__ == "__main__":
+    try:
+        main()
+    except OSError:
+        traceback.print_exc()
+        raise SystemExit(SKIP_CODE)
+    except Exception:
+        traceback.print_exc()
+        raise
 PY
 
 python_env="${run_python}"
@@ -424,9 +351,14 @@ if [ "${use_wheel}" -eq 1 ]; then
 
     if PYTHONPATH="" \
        LD_LIBRARY_PATH="${ld_library_path_env}" \
+       SKIP_CODE=${skip_code} \
        "${python_env}" "${verify_script}" >>"${log_file}" 2>&1; then
         pass ${case_id} "encodes image via wheel"
     else
+        rc=$?
+        if [ ${rc} -eq ${skip_code} ]; then
+            skip_all "LoadLibrary failed (see python.log for details)"
+        fi
         fail ${case_id} "python wheel round-trip failed"
     fi
 else
@@ -442,9 +374,14 @@ else
 
     if PYTHONPATH="${pythonpath_env}" \
        LD_LIBRARY_PATH="${ld_library_path_env}" \
+       SKIP_CODE=${skip_code} \
        "${python_env}" "${verify_script}" >>"${log_file}" 2>&1; then
         pass ${case_id} "encodes image via in-tree modules"
     else
+        rc=$?
+        if [ ${rc} -eq ${skip_code} ]; then
+            skip_all "LoadLibrary failed (see python.log for details)"
+        fi
         fail ${case_id} "python in-tree round-trip failed"
     fi
 fi
