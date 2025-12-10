@@ -2259,6 +2259,7 @@ sixel_dither_apply_palette(
         plan.pixelformat = pipeline_pixelformat;
         plan.logger = logger;
 
+#if SIXEL_ENABLE_THREADS
         shared_lut = 1;
         if (plan.lut_policy == SIXEL_LUT_POLICY_CERTLUT) {
             shared_lut = sixel_lookup_env_shared_certlut();
@@ -2272,6 +2273,9 @@ sixel_dither_apply_palette(
         } else {
             plan.lut = NULL;
         }
+#else
+        plan.lut = palette->lut;
+#endif  /* SIXEL_ENABLE_THREADS */
 
         if (plan.lut != NULL && dither->optimized != 0
                 && plan.lut_policy != SIXEL_LUT_POLICY_NONE) {
