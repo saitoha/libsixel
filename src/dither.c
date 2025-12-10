@@ -827,7 +827,10 @@ sixel_parallel_worker_cleanup(void *workspace)
         /*
          * Each worker owns its private LUT instance when shared caches are
          * disabled.  Release it here so threadpool teardown can free the
-         * workspace without leaking per-thread caches.
+         * workspace without leaking per-thread caches.  The mutex inside the
+         * LUT was already removed during configuration for the private mode,
+         * so this final drop is the only step needed to return allocator
+         * ownership.
          */
         sixel_lut_unref(state->lut);
     }
@@ -1066,6 +1069,12 @@ sixel_dither_apply_palette_parallel(sixel_parallel_dither_plan_t *plan,
     if (plan->lut == NULL && plan->lut_policy != SIXEL_LUT_POLICY_NONE) {
         workspace_size = sizeof(sixel_parallel_worker_state_t);
         cleanup = sixel_parallel_worker_cleanup;
+        /*
+         * Worker-local caches are constructed only when the shared LUT is
+         * disabled.  Allocating the workspace up front lets each thread keep
+         * the configured LUT for all assigned bands instead of rebuilding it
+         * every time the worker callback is invoked.
+         */
     }
     pool = threadpool_create(threads,
                              queue_depth,
