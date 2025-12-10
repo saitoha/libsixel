@@ -1933,7 +1933,7 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
     size_t to_write;
     char const *display_command;
     int written;
-# if HAVE_POSIX_SPAWNP
+# if HAVE_POSIX_SPAWNP && !defined(__FreeBSD__)
     posix_spawn_file_actions_t actions;
     int spawn_result;
 # endif
@@ -1965,7 +1965,7 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
     write_result = 0;
     to_write = 0;
     display_command = NULL;
-# if HAVE_POSIX_SPAWNP
+# if HAVE_POSIX_SPAWNP && !defined(__FreeBSD__)
     spawn_result = 0;
 # endif
 
