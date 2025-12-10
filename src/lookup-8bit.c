@@ -152,8 +152,10 @@ sixel_lookup_8bit_quant_make(unsigned int depth, int policy)
  * instead of overflowing.
  */
 static size_t
-sixel_lookup_8bit_dense_size(unsigned int depth,
-                     sixel_lookup_8bit_quantization_t const *quant)
+sixel_lookup_8bit_dense_size(
+    unsigned int depth,
+    sixel_lookup_8bit_quantization_t const *quant
+)
 {
     size_t size;
     unsigned int exponent;
@@ -177,9 +179,11 @@ sixel_lookup_8bit_dense_size(unsigned int depth,
  * histogram_pack_color() implementation to keep cached answers stable.
  */
 static unsigned int
-sixel_lookup_8bit_pack_color(unsigned char const *pixel,
-                     unsigned int depth,
-                     sixel_lookup_8bit_quantization_t const *quant)
+sixel_lookup_8bit_pack_color(
+    unsigned char const *pixel,
+    unsigned int depth,
+    sixel_lookup_8bit_quantization_t const *quant
+)
 {
     unsigned int packed;
     unsigned int bits;

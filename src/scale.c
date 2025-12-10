@@ -1599,7 +1599,8 @@ scale_with_resampling_parallel(
                              queue_depth,
                              0,
                              scale_parallel_worker,
-                             &ctx);
+                             &ctx,
+                             NULL);
     if (pool == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
@@ -1658,7 +1659,8 @@ scale_with_resampling_parallel(
                              queue_depth,
                              0,
                              scale_parallel_worker,
-                             &ctx);
+                             &ctx,
+                             NULL);
     if (pool == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
