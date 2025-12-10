@@ -70,6 +70,13 @@
 
 static volatile sig_atomic_t g_aborttrace_installed = 0;
 
+#if defined(SA_SIGINFO) && (defined(__GLIBC__) || \
+    (defined(__APPLE__) && defined(__MACH__)) || defined(__ANDROID__))
+#define SIXEL_ABORTTRACE_USE_SIGINFO 1
+#else
+#define SIXEL_ABORTTRACE_USE_SIGINFO 0
+#endif
+
 static size_t
 sixel_aborttrace_strlen(char const *text)
 {
@@ -466,6 +473,7 @@ sixel_aborttrace_signal_handler_siginfo(int signum, siginfo_t *info,
     sixel_aborttrace_restore_default();
 }
 
+#if SIXEL_ABORTTRACE_USE_SIGINFO == 0
 static void
 sixel_aborttrace_signal_handler_simple(int signum)
 {
@@ -482,6 +490,7 @@ sixel_aborttrace_signal_handler_simple(int signum)
 
     sixel_aborttrace_restore_default();
 }
+#endif
 
 static void
 sixel_aborttrace_install_platform(void)
@@ -492,34 +501,19 @@ sixel_aborttrace_install_platform(void)
     memset(&handler, 0, sizeof(handler));
     sigemptyset(&handler.sa_mask);
 
-#if defined(SA_SIGINFO) && defined(__GLIBC__)
-    /* Platforms exposing sa_sigaction with SA_SIGINFO let us use the
-     * richer siginfo_t context.  glibc advertises the member when
-     * _POSIX_C_SOURCE gates are enabled, so we can rely on it here.
+#if SIXEL_ABORTTRACE_USE_SIGINFO != 0
+    /* Platforms exposing sa_sigaction with SA_SIGINFO let us use the richer
+     * siginfo_t context.  glibc, Darwin, and Bionic advertise the member
+     * when the appropriate feature-test macros are enabled.
      */
     handler.sa_sigaction = sixel_aborttrace_signal_handler_siginfo;
     handler.sa_flags = SA_SIGINFO;
-    result = sigaction(SIGABRT, &handler, NULL);
-#elif defined(SA_SIGINFO) && (defined(__APPLE__) && defined(__MACH__))
-    /* Darwin exposes sa_sigaction under SA_SIGINFO as well. */
-    handler.sa_sigaction = sixel_aborttrace_signal_handler_siginfo;
-    handler.sa_flags = SA_SIGINFO;
-    result = sigaction(SIGABRT, &handler, NULL);
-#elif defined(SA_SIGINFO) && defined(__ANDROID__)
-    /* Android's Bionic implements sa_sigaction with SA_SIGINFO. */
-    handler.sa_sigaction = sixel_aborttrace_signal_handler_siginfo;
-    handler.sa_flags = SA_SIGINFO;
-    result = sigaction(SIGABRT, &handler, NULL);
-#elif defined(SA_SIGINFO) && defined(__FreeBSD__)
-    /* FreeBSD hides sa_sigaction behind feature-test macros when POSIX
-     * visibility is requested.  Build-time macros in libsixel keep us
-     * within POSIX surfaces, so we fall back to sa_handler instead.
-     */
-    handler.sa_handler = sixel_aborttrace_signal_handler_simple;
-    handler.sa_flags = 0;
     result = sigaction(SIGABRT, &handler, NULL);
 #else
-    /* Unknown platform: rely on the portable sa_handler signature. */
+    /* Some libcs (for example FreeBSD under strict POSIX visibility) hide
+     * sa_sigaction.  Rely on the portable sa_handler signature instead so we
+     * can still emit a backtrace before handing SIGABRT back to default.
+     */
     handler.sa_handler = sixel_aborttrace_signal_handler_simple;
     handler.sa_flags = 0;
     result = sigaction(SIGABRT, &handler, NULL);
