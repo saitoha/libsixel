@@ -678,6 +678,13 @@ cell corners.  The following environment variables tune the grid:
   negligible in recent tests; enable explicitly if you want to retry it).
 * `SIXEL_LOOKUP_VPTE_SHARED` controls whether the prebuilt grid is shared
   across threads (0 or 1; default 1).
+* `SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE` selects whether CERTLUT caches are
+  shared across worker threads or rebuilt per worker (0 or 1; default 0 so
+  each worker keeps its own lock-free copy).
+* `SIXEL_LOOKUP_5BIT_SHARED_INSTANCE` controls whether the 5bit dense LUT is
+  shared across workers (0 or 1; default 1 to reuse the cache without locks).
+* `SIXEL_LOOKUP_6BIT_SHARED_INSTANCE` controls whether the 6bit dense LUT is
+  shared across workers (0 or 1; default 1 to reuse the cache without locks).
 * `SIXEL_VPTE_TILE_XY` sets the tile width/height used by the parallel EDT
   passes (default 8; values are clamped to the image size and fall back to
   8 on invalid input).

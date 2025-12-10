@@ -366,6 +366,15 @@ keyed by voxel coordinates to speed up repeated lookups.
 SIXEL_LOOKUP_VPTE_SHARED (0 or 1; default 1) builds the grid once
 before worker threads run and shares it read-only.
 .br
+SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE (0 or 1; default 0) toggles whether
+CERTLUT caches are shared across worker threads or rebuilt per worker.
+.br
+SIXEL_LOOKUP_5BIT_SHARED_INSTANCE (0 or 1; default 1) controls whether the
+5bit dense LUT is shared across workers without locks.
+.br
+SIXEL_LOOKUP_6BIT_SHARED_INSTANCE (0 or 1; default 1) controls whether the
+6bit dense LUT is shared across workers without locks.
+.br
 SIXEL_VPTE_TILE_XY (default 8; clamped to the image size and falling back to 8
 on invalid input) sets the tile width/height for the EDT passes.
 .br
