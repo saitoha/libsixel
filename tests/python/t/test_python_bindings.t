@@ -187,6 +187,7 @@ echo "1..2"
 status=0
 case_id=1
 skip_code=200
+skip_reason=""
 
 if [ "${use_wheel}" -eq 1 ]; then
     # Require venv/ensurepip to isolate the wheel from system packages.
@@ -253,9 +254,15 @@ PY
     else
         rc=$?
         if [ ${rc} -eq ${skip_code} ]; then
-            skip_all "LoadLibrary failed (see python.log for details)"
+            skip_reason="LoadLibrary failed (see python.log for details)"
+            printf 'ok %s - %s # SKIP %s\n' \
+                "${case_id}" \
+                "imports in-tree python modules" \
+                "${skip_reason}"
+            status=0
+        else
+            fail ${case_id} "failed to import in-tree python modules"
         fi
-        fail ${case_id} "failed to import in-tree python modules"
     fi
 fi
 
@@ -343,6 +350,14 @@ fi
 
 export LIBSIXEL_LIBDIR="${libdir}"
 
+if [ -n "${skip_reason}" ]; then
+    printf 'ok %s - %s # SKIP %s\n' \
+        "${case_id}" \
+        "encodes image via in-tree modules" \
+        "${skip_reason}"
+    exit ${status}
+fi
+
 if [ "${use_wheel}" -eq 1 ]; then
     ld_library_path_env="${libdir}"
     if [ -n "${LD_LIBRARY_PATH-}" ]; then
@@ -357,9 +372,15 @@ if [ "${use_wheel}" -eq 1 ]; then
     else
         rc=$?
         if [ ${rc} -eq ${skip_code} ]; then
-            skip_all "LoadLibrary failed (see python.log for details)"
+            skip_reason="LoadLibrary failed (see python.log for details)"
+            printf 'ok %s - %s # SKIP %s\n' \
+                "${case_id}" \
+                "encodes image via wheel" \
+                "${skip_reason}"
+            status=0
+        else
+            fail ${case_id} "python wheel round-trip failed"
         fi
-        fail ${case_id} "python wheel round-trip failed"
     fi
 else
     pythonpath_env="${TOP_SRCDIR}/python"
@@ -380,9 +401,15 @@ else
     else
         rc=$?
         if [ ${rc} -eq ${skip_code} ]; then
-            skip_all "LoadLibrary failed (see python.log for details)"
+            skip_reason="LoadLibrary failed (see python.log for details)"
+            printf 'ok %s - %s # SKIP %s\n' \
+                "${case_id}" \
+                "encodes image via in-tree modules" \
+                "${skip_reason}"
+            status=0
+        else
+            fail ${case_id} "python in-tree round-trip failed"
         fi
-        fail ${case_id} "python in-tree round-trip failed"
     fi
 fi
 
