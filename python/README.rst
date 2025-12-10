@@ -76,6 +76,9 @@ preserve float data end-to-end:
    * ``SIXEL_PIXELFORMAT_RGBFLOAT32`` for gamma-encoded RGB data.
    * ``SIXEL_PIXELFORMAT_LINEARRGBFLOAT32`` for linear-light RGB.
    * ``SIXEL_PIXELFORMAT_OKLABFLOAT32`` for working in OKLab.
+   * ``SIXEL_PIXELFORMAT_CIELABFLOAT32`` for CIELAB staging buffers.
+   * ``SIXEL_PIXELFORMAT_DIN99DFLOAT32`` for DIN99d intermediates.
+   * ``SIXEL_PIXELFORMAT_YUVFLOAT32`` for YUV pipelines.
 
    Passing any of these constants to ``encode_bytes`` avoids the
    implicit 8-bit conversion that older releases performed.

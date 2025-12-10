@@ -50,6 +50,10 @@
 #define SIXEL_DIN99D_L_FLOAT_MAX  (1.0f)
 #define SIXEL_DIN99D_AB_FLOAT_MIN (-1.0f)
 #define SIXEL_DIN99D_AB_FLOAT_MAX (1.0f)
+#define SIXEL_YUV_LUMA_FLOAT_MIN  (0.0f)
+#define SIXEL_YUV_LUMA_FLOAT_MAX  (1.0f)
+#define SIXEL_YUV_CHROMA_FLOAT_MIN (-0.5f)
+#define SIXEL_YUV_CHROMA_FLOAT_MAX (0.5f)
 
 /*
  * Normalize a float32 channel stored in the 0.0-1.0 range and convert
@@ -396,6 +400,54 @@ get_rgb(unsigned char const *data,
         *b = sixel_pixelformat_din99d_ab_to_byte(fpixels[2]);
         return;
     }
+    if (pixelformat == SIXEL_PIXELFORMAT_YUVFLOAT32) {
+        float const *fpixels = (float const *)(void const *)data;
+        double y;
+        double u;
+        double v;
+        double r_value;
+        double g_value;
+        double b_value;
+
+        y = (double)fpixels[0];
+        u = (double)fpixels[1];
+        v = (double)fpixels[2];
+#if HAVE_MATH_H
+        if (!isfinite(y)) {
+            y = 0.0;
+        }
+        if (!isfinite(u)) {
+            u = 0.0;
+        }
+        if (!isfinite(v)) {
+            v = 0.0;
+        }
+#endif  /* HAVE_MATH_H */
+        if (y < SIXEL_YUV_LUMA_FLOAT_MIN) {
+            y = SIXEL_YUV_LUMA_FLOAT_MIN;
+        } else if (y > SIXEL_YUV_LUMA_FLOAT_MAX) {
+            y = SIXEL_YUV_LUMA_FLOAT_MAX;
+        }
+        if (u < SIXEL_YUV_CHROMA_FLOAT_MIN) {
+            u = SIXEL_YUV_CHROMA_FLOAT_MIN;
+        } else if (u > SIXEL_YUV_CHROMA_FLOAT_MAX) {
+            u = SIXEL_YUV_CHROMA_FLOAT_MAX;
+        }
+        if (v < SIXEL_YUV_CHROMA_FLOAT_MIN) {
+            v = SIXEL_YUV_CHROMA_FLOAT_MIN;
+        } else if (v > SIXEL_YUV_CHROMA_FLOAT_MAX) {
+            v = SIXEL_YUV_CHROMA_FLOAT_MAX;
+        }
+
+        r_value = y + 1.13983 * v;
+        g_value = y - 0.39465 * u - 0.58060 * v;
+        b_value = y + 2.03211 * u;
+
+        *r = sixel_pixelformat_float_to_byte((float)r_value);
+        *g = sixel_pixelformat_float_to_byte((float)g_value);
+        *b = sixel_pixelformat_float_to_byte((float)b_value);
+        return;
+    }
 
     while (count < depth) {
         pixels = *(data + count) | (pixels << 8);
@@ -515,6 +567,7 @@ sixel_helper_compute_depth(int pixelformat)
     case SIXEL_PIXELFORMAT_OKLABFLOAT32:
     case SIXEL_PIXELFORMAT_CIELABFLOAT32:
     case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
+    case SIXEL_PIXELFORMAT_YUVFLOAT32:
         depth = (int)(sizeof(float) * 3);
         break;
     default:
@@ -651,6 +704,7 @@ sixel_helper_normalize_pixelformat(
     case SIXEL_PIXELFORMAT_OKLABFLOAT32:
     case SIXEL_PIXELFORMAT_CIELABFLOAT32:
     case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
+    case SIXEL_PIXELFORMAT_YUVFLOAT32:
         depth = sixel_helper_compute_depth(src_pixelformat);
         if (depth <= 0) {
             status = SIXEL_BAD_ARGUMENT;

@@ -117,6 +117,7 @@
 #define SIXEL_CIELAB_AB_LIMIT 1.5
 #define SIXEL_DIN99D_L_SCALE  100.0
 #define SIXEL_DIN99D_AB_RANGE 50.0
+#define SIXEL_YUV_CHROMA_LIMIT 0.5
 
 #if defined(__FMA__)
 # define SIXEL_FMADD_PS256(a, b, c) _mm256_fmadd_ps((a), (b), (c))
@@ -241,6 +242,19 @@ sixel_clamp_unit(double value)
 }
 
 static inline double
+sixel_clamp_chroma(double value)
+{
+    if (value < -SIXEL_YUV_CHROMA_LIMIT) {
+        return -SIXEL_YUV_CHROMA_LIMIT;
+    }
+    if (value > SIXEL_YUV_CHROMA_LIMIT) {
+        return SIXEL_YUV_CHROMA_LIMIT;
+    }
+
+    return value;
+}
+
+static inline double
 sixel_srgb_unit_to_linear(double value)
 {
     double x;
@@ -304,6 +318,48 @@ sixel_linear_to_smptec_unit(double value)
 
     y = pow(value, 1.0 / 2.2);
     return sixel_clamp_unit(y);
+}
+
+static inline void
+sixel_linear_to_yuv(double r,
+                    double g,
+                    double b,
+                    double *y,
+                    double *u,
+                    double *v)
+{
+    double y_component;
+    double u_component;
+    double v_component;
+
+    y_component = 0.299 * r + 0.587 * g + 0.114 * b;
+    u_component = -0.14713 * r - 0.28886 * g + 0.436 * b;
+    v_component = 0.615 * r - 0.51499 * g - 0.10001 * b;
+
+    *y = sixel_clamp_unit(y_component);
+    *u = sixel_clamp_chroma(u_component);
+    *v = sixel_clamp_chroma(v_component);
+}
+
+static inline void
+sixel_yuv_to_linear(double y,
+                    double u,
+                    double v,
+                    double *r,
+                    double *g,
+                    double *b)
+{
+    double r_component;
+    double g_component;
+    double b_component;
+
+    r_component = y + 1.13983 * v;
+    g_component = y - 0.39465 * u - 0.58060 * v;
+    b_component = y + 2.03211 * u;
+
+    *r = sixel_clamp_unit(r_component);
+    *g = sixel_clamp_unit(g_component);
+    *b = sixel_clamp_unit(b_component);
 }
 
 static inline double
@@ -2556,6 +2612,18 @@ sixel_decode_linear_from_colorspace(int colorspace,
                                     r_lin, g_lin, b_lin);
         break;
     }
+    case SIXEL_COLORSPACE_YUV:
+    {
+        double y;
+        double u;
+        double v;
+
+        y = (double)r8 / 255.0;
+        u = (double)g8 / 255.0 - 0.5;
+        v = (double)b8 / 255.0 - 0.5;
+        sixel_yuv_to_linear(y, u, v, r_lin, g_lin, b_lin);
+        break;
+    }
     default:
         *r_lin = (double)r8 / 255.0;
         *g_lin = (double)g8 / 255.0;
@@ -2622,6 +2690,9 @@ sixel_decode_linear_from_colorspace_float(int colorspace,
                                     b_lin);
         break;
     }
+    case SIXEL_COLORSPACE_YUV:
+        sixel_yuv_to_linear(r, g, b, r_lin, g_lin, b_lin);
+        break;
     default:
         *r_lin = sixel_clamp_unit(r);
         *g_lin = sixel_clamp_unit(g);
@@ -2684,6 +2755,18 @@ sixel_encode_linear_to_colorspace(int colorspace,
         *r8 = sixel_linear_double_to_smptec(r_smptec);
         *g8 = sixel_linear_double_to_smptec(g_smptec);
         *b8 = sixel_linear_double_to_smptec(b_smptec);
+        break;
+    }
+    case SIXEL_COLORSPACE_YUV:
+    {
+        double y;
+        double u;
+        double v;
+
+        sixel_linear_to_yuv(r_lin, g_lin, b_lin, &y, &u, &v);
+        *r8 = sixel_colorspace_clamp((int)(y * 255.0 + 0.5));
+        *g8 = sixel_colorspace_clamp((int)((u + 0.5) * 255.0 + 0.5));
+        *b8 = sixel_colorspace_clamp((int)((v + 0.5) * 255.0 + 0.5));
         break;
     }
     default:
@@ -2753,6 +2836,9 @@ sixel_encode_linear_to_colorspace_float(int colorspace,
         b = sixel_linear_to_smptec_unit(b_smptec);
         break;
     }
+    case SIXEL_COLORSPACE_YUV:
+        sixel_linear_to_yuv(r_lin, g_lin, b_lin, &r, &g, &b);
+        break;
     default:
         r = sixel_clamp_unit(r_lin);
         g = sixel_clamp_unit(g_lin);
@@ -3484,7 +3570,9 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
             colorspace_src == SIXEL_COLORSPACE_DIN99D ||
             colorspace_dst == SIXEL_COLORSPACE_DIN99D ||
             colorspace_src == SIXEL_COLORSPACE_SMPTEC ||
-            colorspace_dst == SIXEL_COLORSPACE_SMPTEC) {
+            colorspace_dst == SIXEL_COLORSPACE_SMPTEC ||
+            colorspace_src == SIXEL_COLORSPACE_YUV ||
+            colorspace_dst == SIXEL_COLORSPACE_YUV) {
         SIXELSTATUS status = sixel_convert_pixels_via_linear(pixels,
                                                              size,
                                                              pixelformat,

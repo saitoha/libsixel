@@ -78,6 +78,9 @@ sources in a float format until the final palette is emitted.
    | ``SIXEL_PIXELFORMAT_RGBFLOAT32``                   | Gamma-encoded RGB     |
    | ``SIXEL_PIXELFORMAT_LINEARRGBFLOAT32``             | Linear-light RGB data |
    | ``SIXEL_PIXELFORMAT_OKLABFLOAT32``                 | OKLab intermediates   |
+   | ``SIXEL_PIXELFORMAT_CIELABFLOAT32``                | CIELAB intermediates  |
+   | ``SIXEL_PIXELFORMAT_DIN99DFLOAT32``                | DIN99d intermediates  |
+   | ``SIXEL_PIXELFORMAT_YUVFLOAT32``                   | YUV intermediates     |
 
    Supplying these constants prevents the implicit byte conversion
    performed by legacy releases.
