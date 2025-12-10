@@ -1365,7 +1365,7 @@ AC_SUBST(LIBCURL_LIBS)
 
 if test x$with_winhttp != xno; then
     case "$host_os" in
-    mingw* | cygwin* | msys* | msvc*)
+    mingw* | cygwin* | msys* | *msvc*)
         AC_MSG_NOTICE([checking for WinHTTP])
         CFLAGS_BACKUP="$CFLAGS"
         LIBS_BACKUP="$LIBS"
@@ -1374,13 +1374,9 @@ if test x$with_winhttp != xno; then
                 AC_MSG_ERROR(["${with_winhttp}" is not directory])
             fi
             if test "x${using_cl}" = xyes; then
-                if test "x${using_clangcl}" = xyes; then
-                    ADDED_CFLAGS="-I${with_winhttp}/include"
-                    ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
-                else
+                dnl Use -LIBPATH to avoid MSYS path rewriting of /LIBPATH.
                 ADDED_CFLAGS="-I${with_winhttp}\\include"
-                ADDED_LIBS="/LIBPATH:${with_winhttp}/lib winhttp.lib"
-                fi
+                ADDED_LIBS="-LIBPATH:${with_winhttp}/lib winhttp.lib"
             else
                 ADDED_CFLAGS="-I${with_winhttp}/include"
                 ADDED_LIBS="-L${with_winhttp}/lib -lwinhttp"
@@ -1388,26 +1384,18 @@ if test x$with_winhttp != xno; then
         else
             if test x${prefix} != x -a x${prefix} != xNONE; then
                 if test "x${using_cl}" = xyes; then
-                    if test "x${using_clangcl}" = xyes; then
-                        ADDED_CFLAGS="-I${prefix}/include"
-                        ADDED_LIBS="-L${prefix}/lib -lwinhttp"
-                    else
-                        ADDED_CFLAGS=
-                        ADDED_LIBS="winhttp.lib"
-                    fi
+                    dnl Use -LIBPATH to avoid MSYS path rewriting of /LIBPATH.
+                    ADDED_CFLAGS="-I${prefix}/include"
+                    ADDED_LIBS="-LIBPATH:${prefix}/lib winhttp.lib"
                 else
                     ADDED_CFLAGS="-I${prefix}/include"
                     ADDED_LIBS="-L${prefix}/lib -lwinhttp"
                 fi
             else
                 if test "x${using_cl}" = xyes; then
-                    if test "x${using_clangcl}" = xyes; then
-                        ADDED_CFLAGS="-I/usr/local/include"
-                        ADDED_LIBS="-L/usr/local/lib -lwinhttp"
-                    else
-                        ADDED_CFLAGS=
-                        ADDED_LIBS="winhttp.lib"
-                    fi
+                    dnl Use -LIBPATH to avoid MSYS path rewriting of /LIBPATH.
+                    ADDED_CFLAGS="-I/usr/local/include"
+                    ADDED_LIBS="-LIBPATH:/usr/local/lib winhttp.lib"
                 else
                     ADDED_CFLAGS="-I/usr/local/include"
                     ADDED_LIBS="-L/usr/local/lib -lwinhttp"
@@ -1417,7 +1405,7 @@ if test x$with_winhttp != xno; then
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
         LIBS="${LIBS} ${ADDED_LIBS}"
         have_winhttp=yes
-        if test "x${using_cl}" = xyes -a "x${using_clangcl}" != xyes; then
+        if test "x${using_cl}" = xyes; then
             AC_LINK_IFELSE(
                 [AC_LANG_PROGRAM([[#include <windows.h>
 #include <winhttp.h>
@@ -1720,7 +1708,7 @@ fi
 
 if test x$with_wic != xno; then
     case "$host_os" in
-    mingw* | cygwin* | msys* | msvc*)
+    mingw* | cygwin* | msys* | *msvc*)
         AC_MSG_NOTICE([checking for Windows Imaging Component (WIC)])
         CFLAGS_BACKUP="$CFLAGS"
         LIBS_BACKUP="$LIBS"
@@ -1729,14 +1717,10 @@ if test x$with_wic != xno; then
                 AC_MSG_ERROR(["${with_wic}" is not directory])
             fi
             if test "x${using_cl}" = xyes; then
-                if test "x${using_clangcl}" = xyes; then
-                    ADDED_CFLAGS="-I${with_wic}/include"
-                    ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
-                else
-                    ADDED_CFLAGS="-I${with_wic}\\include"
-                    ADDED_LIBS="/LIBPATH:${with_wic}/lib windowscodecs.lib \
+                dnl Use -LIBPATH to avoid MSYS path rewriting of /LIBPATH.
+                ADDED_CFLAGS="-I${with_wic}\\include"
+                ADDED_LIBS="-LIBPATH:${with_wic}/lib windowscodecs.lib \
 ole32.lib shlwapi.lib uuid.lib"
-                fi
             else
                 ADDED_CFLAGS="-I${with_wic}/include"
                 ADDED_LIBS="-L${with_wic}/lib -lole32 -lwindowscodecs"
@@ -1744,28 +1728,20 @@ ole32.lib shlwapi.lib uuid.lib"
         else
             if test x${prefix} != x -a x${prefix} != xNONE; then
                 if test "x${using_cl}" = xyes; then
-                    if test "x${using_clangcl}" = xyes; then
-                        ADDED_CFLAGS="-I${prefix}/include"
-                        ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
-                    else
-                        ADDED_CFLAGS=
-                        ADDED_LIBS="windowscodecs.lib ole32.lib shlwapi.lib \
-uuid.lib"
-                    fi
+                    dnl Use -LIBPATH to avoid MSYS path rewriting of /LIBPATH.
+                    ADDED_CFLAGS="-I${prefix}/include"
+                    ADDED_LIBS="-LIBPATH:${prefix}/lib windowscodecs.lib \
+ole32.lib shlwapi.lib uuid.lib"
                 else
                     ADDED_CFLAGS="-I${prefix}/include"
                     ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs"
                 fi
             else
                 if test "x${using_cl}" = xyes; then
-                    if test "x${using_clangcl}" = xyes; then
-                        ADDED_CFLAGS="-I/usr/local/include"
-                        ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
-                    else
-                        ADDED_CFLAGS=
-                        ADDED_LIBS="windowscodecs.lib ole32.lib shlwapi.lib \
-uuid.lib"
-                    fi
+                    dnl Use -LIBPATH to avoid MSYS path rewriting of /LIBPATH.
+                    ADDED_CFLAGS="-I/usr/local/include"
+                    ADDED_LIBS="-LIBPATH:/usr/local/lib windowscodecs.lib \
+ole32.lib shlwapi.lib uuid.lib"
                 else
                     ADDED_CFLAGS="-I/usr/local/include"
                     ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs"
@@ -1775,7 +1751,7 @@ uuid.lib"
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
         LIBS="${LIBS} ${ADDED_LIBS}"
         have_wic=yes
-        if test "x${using_cl}" = xyes -a "x${using_clangcl}" != xyes; then
+        if test "x${using_cl}" = xyes; then
             AC_LINK_IFELSE(
                 [AC_LANG_PROGRAM([[#include <windows.h>
  #include <wincodec.h>
@@ -1992,7 +1968,7 @@ if test "x${enable_wiccodec}" = xno; then
     message_wiccodec=no
 else
     case "${host_os}" in
-      mingw* | msvc*)
+      mingw* | *msvc*)
         message_wiccodec=yes
         have_wiccodec=yes
         if test x${have_wic} = xyes; then
