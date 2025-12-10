@@ -6432,6 +6432,12 @@ sixel_encoder_setopt(
         parsed = sscanf(value, "%d%2s", &number, unit);
 #endif  /* HAVE_SSCANF_S */
         if (parsed == 2 && strcmp(unit, "%") == 0) {
+            if (number <= 0) {
+                sixel_helper_set_additional_message(
+                    "-w/--width percent must be 1 or more.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
             encoder->pixelwidth = (-1);
             encoder->percentwidth = number;
         } else if (parsed == 2 && strcmp(unit, "c") == 0) {
@@ -6457,9 +6463,21 @@ sixel_encoder_setopt(
              * The cell size probe caches the tty geometry so repeated calls
              * reuse the same measurement.
              */
+            if (number <= 0) {
+                sixel_helper_set_additional_message(
+                    "-w/--width cells must be 1 or more.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
             encoder->pixelwidth = number * encoder->cell_width;
             encoder->percentwidth = (-1);
         } else if (parsed == 1 || (parsed == 2 && strcmp(unit, "px") == 0)) {
+            if (number <= 0) {
+                sixel_helper_set_additional_message(
+                    "-w/--width must be 1 or more.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
             encoder->pixelwidth = number;
             encoder->percentwidth = (-1);
         } else if (strcmp(value, "auto") == 0) {
@@ -6482,6 +6500,12 @@ sixel_encoder_setopt(
         parsed = sscanf(value, "%d%2s", &number, unit);
 #endif  /* HAVE_SSCANF_S */
         if (parsed == 2 && strcmp(unit, "%") == 0) {
+            if (number <= 0) {
+                sixel_helper_set_additional_message(
+                    "-h/--height percent must be 1 or more.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
             encoder->pixelheight = (-1);
             encoder->percentheight = number;
         } else if (parsed == 2 && strcmp(unit, "c") == 0) {
@@ -6506,9 +6530,21 @@ sixel_encoder_setopt(
              * Rows specified in terminal cells use the current tty metrics to
              * translate into pixel counts before scaling.
              */
+            if (number <= 0) {
+                sixel_helper_set_additional_message(
+                    "-h/--height cells must be 1 or more.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
             encoder->pixelheight = number * encoder->cell_height;
             encoder->percentheight = (-1);
         } else if (parsed == 1 || (parsed == 2 && strcmp(unit, "px") == 0)) {
+            if (number <= 0) {
+                sixel_helper_set_additional_message(
+                    "-h/--height must be 1 or more.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
             encoder->pixelheight = number;
             encoder->percentheight = (-1);
         } else if (strcmp(value, "auto") == 0) {
