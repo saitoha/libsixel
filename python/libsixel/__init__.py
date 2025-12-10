@@ -566,9 +566,26 @@ def _prefer_env_library(lib_names):
     for name in lib_names:
         for prefix in prefixes:
             for suffix in suffixes:
-                pattern = os.path.join(libdir,
-                                       f"{prefix}{name}*{suffix}")
-                matches = sorted(glob.glob(pattern))
+                patterns: list[str]
+                if suffix == ".so":
+                    patterns = [
+                        os.path.join(libdir, f"{prefix}{name}*{suffix}"),
+                        os.path.join(libdir, f"{prefix}{name}*{suffix}.*"),
+                    ]
+                else:
+                    patterns = [
+                        os.path.join(libdir, f"{prefix}{name}*{suffix}"),
+                    ]
+
+                matches: list[str] = []
+                for pattern in patterns:
+                    matches.extend(glob.glob(pattern))
+
+                matches = [
+                    candidate
+                    for candidate in sorted(set(matches))
+                    if not candidate.endswith((".dll.a", ".dll.def"))
+                ]
                 if matches:
                     return matches[0]
 
