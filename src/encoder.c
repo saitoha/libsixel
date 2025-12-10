@@ -6083,6 +6083,18 @@ sixel_encoder_setopt(
             parsed_reqcolors = SIXEL_PALETTE_MAX;
             forced_palette = 1;
         } else {
+            if (value[0] == '-') {
+                /*
+                 * Negative palette sizes are rejected explicitly here rather
+                 * than depending on strtol() overflow behavior. MSVCRT's
+                 * strtol() can accept "-1" and return a valid number, so we
+                 * enforce the positive range before attempting to parse.
+                 */
+                sixel_helper_set_additional_message(
+                    "-p/--colors parameter must be 1 or more.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
             parsed_reqcolors = strtol(value, &endptr, 10);
             if (endptr != NULL && *endptr == '!') {
                 forced_palette = 1;
