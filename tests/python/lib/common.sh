@@ -73,6 +73,37 @@ resolve_libdir() {
     return 1
 }
 
+# Filter PYTHONPATH-style strings so only existing directories remain. This
+# prevents accidental insertion of script files (e.g., verify-errors.py) into
+# sys.path, which would trigger zipimport errors on Windows runners.
+sanitize_pythonpath() {
+    raw_path=$1
+    sep=$2
+
+    cleaned=""
+
+    IFS="${sep}"
+    for entry in ${raw_path}; do
+        unset IFS
+        if [ -d "${entry}" ]; then
+            if [ -z "${cleaned}" ]; then
+                cleaned="${entry}"
+            else
+                cleaned="${cleaned}${sep}${entry}"
+            fi
+        else
+            if [ -n "${tap_log_file:-}" ]; then
+                printf 'skipping non-directory PYTHONPATH entry: %s\n' \
+                    "${entry}" >>"${tap_log_file}"
+            fi
+        fi
+        IFS="${sep}"
+    done
+    unset IFS
+
+    printf '%s' "${cleaned}"
+}
+
 # Find a shared library matching libsixel on Unix-like and Windows/MSYS names.
 find_shared_library() {
     search_root=$1
@@ -368,7 +399,11 @@ PY
 
     python_in_tree_pythonpath="${TOP_SRCDIR}/python"
     if [ -n "${PYTHONPATH-}" ]; then
-        python_in_tree_pythonpath="${python_in_tree_pythonpath}${python_pathsep}${PYTHONPATH}"
+        cleaned_pythonpath=$(sanitize_pythonpath "${PYTHONPATH}" \
+            "${python_pathsep}")
+        if [ -n "${cleaned_pythonpath}" ]; then
+            python_in_tree_pythonpath="${python_in_tree_pythonpath}${python_pathsep}${cleaned_pythonpath}"
+        fi
     fi
 
     python_in_tree_trace_pythonpath="${python_trace_pythonpath}"
