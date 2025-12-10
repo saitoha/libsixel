@@ -181,6 +181,10 @@ typedef struct sixel_palette_async_job {
 static SIXELSTATUS sixel_encoder_palette_job_init(
     sixel_palette_async_job_t *job,
     sixel_allocator_t *allocator);
+static void sixel_encoding_planner_init(sixel_encoding_planner_t *planner);
+static void sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
+                                        sixel_encoder_t *encoder,
+                                        sixel_frame_t *frame);
 static int sixel_encoder_parse_sample_target(char const *text,
                                              size_t *value_out);
 static void sixel_encoder_palette_job_dispose(sixel_palette_async_job_t *job);
@@ -2643,6 +2647,82 @@ sixel_encoder_parse_sample_target(char const *text, size_t *value_out)
 }
 
 
+static void
+sixel_encoding_planner_init(sixel_encoding_planner_t *planner)
+{
+    if (planner == NULL) {
+        return;
+    }
+
+    planner->total_threads = 1;
+    planner->main_threads = 1;
+    planner->palette_threads = 0;
+    planner->allow_palette_async = 0;
+    planner->clip_active = 0;
+    planner->scale_active = 0;
+    planner->colorspace_active = 0;
+    planner->heavy_ops = 0;
+}
+
+
+static void
+sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
+                            sixel_encoder_t *encoder,
+                            sixel_frame_t *frame)
+{
+    int total;
+    int budget;
+    int source_colorspace;
+
+    if (planner == NULL || encoder == NULL || frame == NULL) {
+        return;
+    }
+
+    /*
+     * Keep palette sampling from spawning extra threads when resize/clip or
+     * full-frame colorspace conversion already occupy the available workers.
+     * Heavy steps consume the budget; the palette worker runs only when at
+     * least one spare thread remains after accounting for them.
+     */
+    total = sixel_threads_resolve();
+    planner->total_threads = total;
+    planner->palette_threads = 0;
+    planner->allow_palette_async = 0;
+    planner->main_threads = (total > 0) ? total : 1;
+    planner->clip_active = (encoder->clipwidth > 0 && encoder->clipheight > 0)
+        ? 1
+        : 0;
+    planner->scale_active = (encoder->pixelwidth >= 0
+                            || encoder->pixelheight >= 0
+                            || encoder->percentwidth >= 0
+                            || encoder->percentheight >= 0)
+        ? 1
+        : 0;
+    source_colorspace = sixel_frame_get_colorspace(frame);
+    planner->colorspace_active = (encoder->working_colorspace
+                                  != source_colorspace)
+        ? 1
+        : 0;
+
+    planner->heavy_ops = planner->clip_active
+        + planner->scale_active
+        + planner->colorspace_active;
+
+    if (total <= 1) {
+        return;
+    }
+
+    budget = total - planner->heavy_ops;
+    if (budget > 1) {
+        planner->palette_threads = 1;
+        planner->allow_palette_async = 1;
+        planner->main_threads = total - planner->palette_threads;
+    } else {
+        planner->main_threads = total;
+    }
+}
+
+
 static size_t
 sixel_encoder_select_sample_stride(sixel_encoder_t *encoder,
                                    int width,
@@ -4548,6 +4628,7 @@ sixel_encoder_encode_frame(
     sixel_dither_t *async_dither;
     int palette_job_started;
     int palette_job_initialized;
+    sixel_encoding_planner_t *planner;
 
     fn_write = sixel_write_callback;
     write_callback = sixel_write_callback;
@@ -4564,8 +4645,13 @@ sixel_encoder_encode_frame(
     async_dither = NULL;
     palette_job_started = 0;
     palette_job_initialized = 0;
+    planner = NULL;
     if (encoder != NULL) {
         assessment = encoder->assessment_observer;
+        planner = &encoder->planner;
+    }
+    if (planner != NULL) {
+        sixel_encoding_planner_init(planner);
     }
     if (assessment != NULL) {
         if (encoder->clipfirst) {
@@ -4585,11 +4671,24 @@ sixel_encoder_encode_frame(
         encoder->prefer_float32);
 
     /*
+     * Build the thread allocation plan up front so palette sampling does not
+     * spawn extra workers when resize/clip/colorspace conversion already have
+     * work to do on the main path.
+     */
+    if (planner != NULL) {
+        sixel_encoding_planner_plan(planner,
+                                    encoder,
+                                    frame);
+    }
+
+    /*
      * Launch a palette worker as soon as the frame is loaded. The worker uses
      * a clipped, down-sampled copy so palette build overlaps
      * resize/clip/colorspace conversion on the main thread.
      */
     if (encoder->palette_job_enabled != 0
+        && planner != NULL
+        && planner->allow_palette_async != 0
         && encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT
         && encoder->dither_cache == NULL
         && (sixel_frame_get_pixelformat(frame)
@@ -5179,6 +5278,7 @@ sixel_encoder_new(
     (*ppencoder)->logger                = NULL;
     (*ppencoder)->parallel_job_id       = -1;
     (*ppencoder)->palette_job_enabled   = 1;
+    sixel_encoding_planner_init(&(*ppencoder)->planner);
     (*ppencoder)->allocator             = allocator;
 
     prefer_float32 = 0;

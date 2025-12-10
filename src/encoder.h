@@ -36,6 +36,17 @@ struct sixel_frame;
 struct sixel_assessment;
 struct sixel_logger;
 
+typedef struct sixel_encoding_planner {
+    int total_threads;
+    int main_threads;
+    int palette_threads;
+    int allow_palette_async;
+    int clip_active;
+    int scale_active;
+    int colorspace_active;
+    int heavy_ops;
+} sixel_encoding_planner_t;
+
 /* palette type */
 #define SIXEL_COLOR_OPTION_DEFAULT          0   /* use default settings */
 #define SIXEL_COLOR_OPTION_MONOCHROME       1   /* use monochrome palette */
@@ -136,6 +147,7 @@ struct sixel_encoder {
     struct sixel_logger *logger;
     int parallel_job_id;
     int palette_job_enabled;
+    sixel_encoding_planner_t planner;
 };
 
 #if HAVE_TESTS
