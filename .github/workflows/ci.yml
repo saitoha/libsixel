@@ -16,7 +16,7 @@ concurrency:
 
 jobs:
   ci-autotools:
-    name: Autotools • ${{ matrix.os }} ${{ matrix.sys || 'native' }}
+    name: Autotools ${{ matrix.label }}
     runs-on: ${{ matrix.runner || matrix.os }}
     strategy:
       matrix:
@@ -26,104 +26,124 @@ jobs:
             sys: x86_64
             static_only: true
             variant: static-only
+            label: ubuntu x86_64 static-only
           - os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
             disable_simd: true
             variant: disable-simd
+            label: ubuntu x86_64 no-simd
           - os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
             disable_tools: true
             variant: disable-tools
+            label: ubuntu x86_64 no-tools
           - os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
             disable_threads: true
             variant: disable-threads
+            label: ubuntu x86_64 no-threads
           - os: ubuntu-latest
             runner: ubuntu-latest
             sys: i686
             variant: default
+            label: ubuntu i686
           - os: macos-latest
             runner: macos-latest
             sys: aarch64
             variant: default
+            label: macos aarch64
           - os: macos-15
             runner: macos-15
             sys: x86_64
             variant: default
+            label: macos x86_64
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
             static_only: true
             variant: static-only
+            label: mingw64 static-only
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
             disable_simd: true
             variant: disable-simd
+            label: mingw64 no-simd
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
             disable_tools: true
             variant: disable-tools
+            label: mingw64 no-tools
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
             disable_threads: true
             variant: disable-threads
+            label: mingw64 no-threads
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: UCRT64
             variant: default
+            label: ucrt64
           - os: windows-latest
             runner: windows-latest
             compiler: clang
             sys: CLANG64
             variant: default
+            label: clang64
           - os: windows-latest
             runner: windows-latest
             compiler: clang-cl
             sys: MSVC
             variant: clang-cl
+            label: clang-cl
           - os: windows-latest
             runner: windows-latest
             compiler: cl
             sys: MSVC
             variant: default
+            label: msvc
           - os: windows-latest
             runner: windows-latest
             compiler: cl
             sys: MSVC
             variant: vcpkg-libpng
             vcpkg_libpng: true
+            label: msvc vcpkg-libpng
           - os: windows-latest
             runner: windows-latest
             compiler: cl
             sys: MSVC
             variant: vcpkg-libjpeg
             vcpkg_libjpeg: true
+            label: msvc vcpkg-libjpeg
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW32
             variant: default
+            label: mingw32
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MSYS
             variant: default
+            label: msys
           - os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: CYGWIN
             variant: default
+            label: cygwin
 
     steps:
     - name: Configure git EOL
@@ -841,7 +861,7 @@ jobs:
 
 
   ci-dist-autotools:
-    name: Autotools dist tarball • ${{ matrix.label }}
+    name: AT-tarball ${{ matrix.label }}
     runs-on: ${{ matrix.runner || matrix.os }}
     strategy:
       fail-fast: false
@@ -961,96 +981,96 @@ jobs:
 
 
   ci-autotools-asan:
-    name: Autotools ASan • ${{ matrix.os }} clang${{ matrix.variant_suffix }}
+    name: AT-ASan ${{ matrix.label }}
     runs-on: ${{ matrix.runner || matrix.os }}
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
+          - label: ubuntu clang
+            os: ubuntu-latest
             runner: ubuntu-latest
-            variant_suffix: ''
             configure_extra: ''
             artifact_suffix: default
             apt: ''
-          - os: ubuntu-latest
+          - label: ubuntu clang with-gd
+            os: ubuntu-latest
             runner: ubuntu-latest
-            variant_suffix: ' • with-gd'
             configure_extra: '--with-gd'
             artifact_suffix: with-gd
             apt: 'libgd-dev'
-          - os: ubuntu-latest
+          - label: ubuntu clang with-gdk-pixbuf2
+            os: ubuntu-latest
             runner: ubuntu-latest
-            variant_suffix: ' • with-gdk-pixbuf2'
             configure_extra: '--with-gdk-pixbuf2'
             artifact_suffix: with-gdk-pixbuf2
             apt: 'libgdk-pixbuf2.0-dev'
-          - os: ubuntu-latest
+          - label: ubuntu clang with-png
+            os: ubuntu-latest
             runner: ubuntu-latest
-            variant_suffix: ' • with-png'
             configure_extra: '--with-png'
             artifact_suffix: with-png
             apt: 'libpng-dev'
-          - os: ubuntu-latest
+          - label: ubuntu clang with-jpeg
+            os: ubuntu-latest
             runner: ubuntu-latest
-            variant_suffix: ' • with-jpeg'
             configure_extra: '--with-jpeg'
             artifact_suffix: with-jpeg
             apt: 'libjpeg-turbo8-dev'
-          - os: ubuntu-latest
+          - label: ubuntu clang with-libcurl
+            os: ubuntu-latest
             runner: ubuntu-latest
-            variant_suffix: ' • with-libcurl'
             configure_extra: '--with-libcurl'
             artifact_suffix: with-libcurl
             apt: 'libcurl4-openssl-dev'
-          - os: macos-latest
+          - label: macos clang
+            os: macos-latest
             runner: macos-latest
-            variant_suffix: ''
             configure_extra: ''
             artifact_suffix: default
             apt: ''
-          - os: macos-latest
+          - label: macos clang enable-quicklook-extension
+            os: macos-latest
             runner: macos-latest
-            variant_suffix: ' • enable-quicklook-extension'
             configure_extra: '--enable-quicklook-extension'
             artifact_suffix: enable-quicklook-extension
             apt: ''
-          - os: macos-latest
+          - label: macos clang with-coregraphics
+            os: macos-latest
             runner: macos-latest
-            variant_suffix: ' • with-coregraphics'
             configure_extra: '--with-coregraphics'
             artifact_suffix: with-coregraphics
             apt: ''
-          - os: macos-15
+          - label: macos-15 clang
+            os: macos-15
             runner: macos-15
-            variant_suffix: ''
             configure_extra: ''
             artifact_suffix: default
             apt: ''
-          - os: windows-latest
+          - label: clang64
+            os: windows-latest
             runner: windows-latest
             sys: CLANG64
-            variant_suffix: ''
             configure_extra: ''
             artifact_suffix: default
             apt: ''
-          - os: windows-latest
+          - label: clang64 with-wic
+            os: windows-latest
             runner: windows-latest
             sys: CLANG64
-            variant_suffix: ' • with-wic'
             configure_extra: '--with-wic'
             artifact_suffix: with-wic
             apt: ''
-          - os: windows-latest
+          - label: clang64 enable-wiccodec
+            os: windows-latest
             runner: windows-latest
             sys: CLANG64
-            variant_suffix: ' • enable-wiccodec'
             configure_extra: '--enable-wiccodec'
             artifact_suffix: enable-wiccodec
             apt: ''
-          - os: windows-latest
+          - label: clang64 with-winhttp
+            os: windows-latest
             runner: windows-latest
             sys: CLANG64
-            variant_suffix: ' • with-winhttp'
             configure_extra: '--with-winhttp'
             artifact_suffix: with-winhttp
             apt: ''
@@ -1150,7 +1170,7 @@ jobs:
         overwrite: true
 
   ci-dist-meson:
-    name: Meson dist tarball • ${{ matrix.label }}
+    name: Meson-tarball ${{ matrix.label }}
     runs-on: ${{ matrix.runner || matrix.os }}
     strategy:
       fail-fast: false
@@ -1172,7 +1192,7 @@ jobs:
               -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled
               -Dpython=disabled -Druby=disabled -Dtests=true
               -Dquicklook_extension=enabled -Dquicklook_preview=enabled
-          - label: Windows WIC codec (MinGW)
+          - label: mingw64 wiccodec
             os: windows-latest
             runner: windows-latest
             msystem: MINGW64
@@ -1280,87 +1300,104 @@ jobs:
         if-no-files-found: warn
 
   ci-meson:
-    name: Meson • ${{ matrix.os }} ${{ matrix.sys || 'native' }}
+    name: Meson ${{ matrix.label }}
     runs-on: ${{ matrix.runner || matrix.os }}
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
+          - label: ubuntu static-only
+            os: ubuntu-latest
             runner: ubuntu-latest
             static_only: true
             variant: static-only
-          - os: ubuntu-latest
+          - label: ubuntu disable-simd
+            os: ubuntu-latest
             runner: ubuntu-latest
             disable_simd: true
             variant: disable-simd
-          - os: ubuntu-latest
+          - label: ubuntu disable-tools
+            os: ubuntu-latest
             runner: ubuntu-latest
             disable_tools: true
             variant: disable-tools
-          - os: ubuntu-latest
+          - label: ubuntu disable-threads
+            os: ubuntu-latest
             runner: ubuntu-latest
             disable_threads: true
             variant: disable-threads
-          - os: ubuntu-latest
+          - label: ubuntu i686
+            os: ubuntu-latest
             runner: ubuntu-latest
             sys: i686
             variant: default
-          - os: macos-latest
+          - label: macos aarch64
+            os: macos-latest
             runner: macos-latest
             variant: default
-          - os: macos-15
+          - label: macos x86_64
+            os: macos-15
             runner: macos-15
             variant: default
-          - os: windows-latest
+          - label: mingw64 static-only
+            os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
             static_only: true
             variant: static-only
-          - os: windows-latest
+          - label: mingw64 disable-simd
+            os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
             disable_simd: true
             variant: disable-simd
-          - os: windows-latest
+          - label: mingw64 disable-tools
+            os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
             disable_tools: true
             variant: disable-tools
-          - os: windows-latest
+          - label: mingw64 disable-threads
+            os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
             disable_threads: true
             variant: disable-threads
-          - os: windows-latest
+          - label: ucrt64
+            os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: UCRT64
             variant: default
-          - os: windows-latest
+          - label: clang64
+            os: windows-latest
             runner: windows-latest
             compiler: clang
             sys: CLANG64
             variant: default
-          - os: windows-latest
+          - label: clang-cl
+            os: windows-latest
             runner: windows-latest
             compiler: clang-cl
             sys: MSVC
             variant: clang-cl
-          - os: windows-latest
+          - label: msvc
+            os: windows-latest
             runner: windows-latest
             compiler: cl
             sys: MSVC
             variant: default
-          - os: windows-latest
+          - label: mingw32
+            os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW32
             variant: default
-          - os: windows-latest
+          - label: msys
+            os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MSYS
