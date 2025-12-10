@@ -59,7 +59,7 @@
 # include <sys/select.h>
 #endif  /* HAVE_SYS_SELECT_H */
 
-#if HAVE_WINHTTP && HAVE_WINDOWS_H
+#if HAVE_WINHTTP
 # if !defined(UNICODE)
 #  define UNICODE
 # endif
