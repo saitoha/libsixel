@@ -6899,26 +6899,22 @@ sixel_encoder_setopt(
             && encoder->tile_outfd != encoder->outfd
             && encoder->tile_outfd != STDOUT_FILENO
             && encoder->tile_outfd != STDERR_FILENO) {
-#if HAVE__CLOSE
-            (void) _close(encoder->tile_outfd);
-#else
-            (void) close(encoder->tile_outfd);
-#endif  /* HAVE__CLOSE */
+            /*
+             * Drop any previously opened tile stream through the
+             * compatibility layer so that platform-specific details stay
+             * centralized in src/compat_stub.c.
+             */
+            (void)sixel_compat_close(encoder->tile_outfd);
         }
         encoder->tile_outfd = (-1);
         if (drcs_arg_path != NULL) {
             if (strcmp(drcs_arg_path, "-") == 0) {
                 encoder->tile_outfd = STDOUT_FILENO;
             } else {
-#if HAVE__OPEN
-                encoder->tile_outfd = _open(drcs_arg_path,
-                                            O_RDWR|O_CREAT|O_TRUNC,
-                                            S_IRUSR|S_IWUSR);
-#else
-                encoder->tile_outfd = open(drcs_arg_path,
-                                           O_RDWR|O_CREAT|O_TRUNC,
-                                           S_IRUSR|S_IWUSR);
-#endif  /* HAVE__OPEN */
+                encoder->tile_outfd = sixel_compat_open(drcs_arg_path,
+                                                       O_RDWR | O_CREAT |
+                                                       O_TRUNC,
+                                                       S_IRUSR | S_IWUSR);
                 if (encoder->tile_outfd < 0) {
                     sixel_helper_set_additional_message(
                         "sixel_encoder_setopt: failed to open tile"
