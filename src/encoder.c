@@ -129,6 +129,8 @@
 
 #define SIXEL_ENCODER_PRECISION_ENVVAR "SIXEL_FLOAT32_DITHER"
 #define SIXEL_ENCODER_LUT_POLICY_ENVVAR "SIXEL_DITHER_LOOKUP_POLICY"
+#define SIXEL_ENCODER_SAMPLE_TARGET_ENVVAR \
+    "SIXEL_PALETTE_SAMPLE_TARGET"
 
 typedef enum sixel_encoder_precision_mode {
     SIXEL_ENCODER_PRECISION_MODE_AUTO = 0,
@@ -179,6 +181,8 @@ typedef struct sixel_palette_async_job {
 static SIXELSTATUS sixel_encoder_palette_job_init(
     sixel_palette_async_job_t *job,
     sixel_allocator_t *allocator);
+static int sixel_encoder_parse_sample_target(char const *text,
+                                             size_t *value_out);
 static void sixel_encoder_palette_job_dispose(sixel_palette_async_job_t *job);
 static SIXELSTATUS sixel_encoder_palette_job_launch(
     sixel_palette_async_job_t *job,
@@ -2608,8 +2612,40 @@ sixel_palette_write_gpl(FILE *stream,
 }
 
 
+static int
+sixel_encoder_parse_sample_target(char const *text, size_t *value_out)
+{
+    char *endptr;
+    unsigned long long parsed;
+
+    endptr = NULL;
+    parsed = 0ull;
+
+    if (text == NULL || value_out == NULL) {
+        return 0;
+    }
+
+    errno = 0;
+    parsed = strtoull(text, &endptr, 10);
+    if (errno == ERANGE || parsed == 0ull) {
+        return 0;
+    }
+    if (endptr == text || *endptr != '\0') {
+        return 0;
+    }
+
+    *value_out = (size_t)parsed;
+    if ((unsigned long long)(*value_out) != parsed) {
+        return 0;
+    }
+
+    return 1;
+}
+
+
 static size_t
-sixel_encoder_select_sample_stride(int width,
+sixel_encoder_select_sample_stride(sixel_encoder_t *encoder,
+                                   int width,
                                    int height,
                                    int reqcolors,
                                    int quality_mode)
@@ -2626,41 +2662,51 @@ sixel_encoder_select_sample_stride(int width,
      *
      *   max(4096, reqcolors * 64) adjusted by quality mode
      *
-     * With reqcolors=256 and quality=high/full this yields ~28k-40k samples
-     * on large frames, which more closely matches the legacy heuristics.
+     * With reqcolors=256 and quality=high/full this yields ~28k-40k
+     * samples on large frames, which more closely matches the legacy
+     * heuristics.
+     *
+     * When $SIXEL_PALETTE_SAMPLE_TARGET is set, the environment-defined
+     * target bypasses this heuristic so callers can force a specific
+     * sample budget without recompiling.
      */
 
     stride = 1u;
     base_target = 4096u;
     color_budget = 0u;
     target = base_target;
+    total = 0u;
 
     if (width <= 0 || height <= 0) {
         return stride;
     }
 
-    if (reqcolors > 0) {
-        color_budget = (size_t)reqcolors * 64u;
-        if (color_budget / 64u != (size_t)reqcolors) {
-            color_budget = base_target;
+    if (encoder != NULL && encoder->palette_sample_override) {
+        target = encoder->palette_sample_target;
+    } else {
+        if (reqcolors > 0) {
+            color_budget = (size_t)reqcolors * 64u;
+            if (color_budget / 64u != (size_t)reqcolors) {
+                color_budget = base_target;
+            }
+            if (color_budget > target) {
+                target = color_budget;
+            }
         }
-        if (color_budget > target) {
-            target = color_budget;
-        }
-    }
 
-    if (quality_mode == SIXEL_QUALITY_HIGH
-            || quality_mode == SIXEL_QUALITY_HIGHCOLOR) {
-        if (target <= SIZE_MAX / 2u) {
-            target *= 2u;
-        } else {
-            target = SIZE_MAX;
-        }
-    } else if (quality_mode == SIXEL_QUALITY_FULL) {
-        if (target <= SIZE_MAX / 4u) {
-            target *= 4u;
-        } else {
-            target = SIZE_MAX;
+        if (quality_mode == SIXEL_QUALITY_HIGH
+                || quality_mode == SIXEL_QUALITY_HIGHCOLOR) {
+            if (target <= SIZE_MAX / 2u) {
+                target *= 2u;
+            } else {
+                target = SIZE_MAX;
+            }
+        } else if (quality_mode == SIXEL_QUALITY_FULL) {
+            if (target <= SIZE_MAX / 4u) {
+                target *= 4u;
+            } else {
+                target = SIZE_MAX;
+            }
         }
     }
 
@@ -2768,7 +2814,8 @@ sixel_encoder_copy_samples(sixel_encoder_t *encoder,
     width = clip_w;
     height = clip_h;
 
-    stride = sixel_encoder_select_sample_stride(width,
+    stride = sixel_encoder_select_sample_stride(encoder,
+                                                width,
                                                 height,
                                                 encoder->reqcolors,
                                                 encoder->quality_mode);
@@ -5011,11 +5058,17 @@ sixel_encoder_new(
     char const *env_default_ncolors = NULL;
     char const *env_prefer_float32 = NULL;
     char const *env_lookup_policy = NULL;
+    char const *env_sample_target = NULL;
     int ncolors;
     int prefer_float32;
     int env_match_value;
+    size_t parsed_sample_target;
+    int has_sample_target;
     sixel_option_choice_result_t match_result;
     char match_detail[128];
+
+    parsed_sample_target = 0u;
+    has_sample_target = 0;
 
     if (allocator == NULL) {
         status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
@@ -5039,6 +5092,8 @@ sixel_encoder_new(
 
     (*ppencoder)->ref                   = 1;
     (*ppencoder)->reqcolors             = (-1);
+    (*ppencoder)->palette_sample_target = 0u;
+    (*ppencoder)->palette_sample_override = 0;
     (*ppencoder)->force_palette         = 0;
     (*ppencoder)->mapfile               = NULL;
     (*ppencoder)->palette_output        = NULL;
@@ -5155,6 +5210,18 @@ sixel_encoder_new(
             sizeof(match_detail));
         if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
             (*ppencoder)->lut_policy = env_match_value;
+        }
+    }
+
+    env_sample_target = sixel_compat_getenv(
+        SIXEL_ENCODER_SAMPLE_TARGET_ENVVAR);
+    if (env_sample_target != NULL) {
+        has_sample_target = sixel_encoder_parse_sample_target(
+            env_sample_target,
+            &parsed_sample_target);
+        if (has_sample_target) {
+            (*ppencoder)->palette_sample_target = parsed_sample_target;
+            (*ppencoder)->palette_sample_override = 1;
         }
     }
 
