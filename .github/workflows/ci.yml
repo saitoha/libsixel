@@ -23,6 +23,14 @@ jobs:
         include:
           - os: ubuntu-latest
             runner: ubuntu-latest
+            platform: freebsd
+            cp_os: freebsd
+            cp_arch: x86-64
+            cp_version: '14.3'
+            variant: freebsd
+            label: freebsd 14.3
+          - os: ubuntu-latest
+            runner: ubuntu-latest
             sys: x86_64
             static_only: true
             variant: static-only
@@ -160,6 +168,50 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Build and test (FreeBSD)
+      if: ${{ matrix.platform == 'freebsd' }}
+      uses: cross-platform-actions/action@v0.30.0
+      with:
+        operating_system: ${{ matrix.cp_os }}
+        architecture: ${{ matrix.cp_arch }}
+        version: ${{ matrix.cp_version }}
+        environment_variables: CI
+        run: |
+          set -eux
+
+          pkg_prefix=""
+          if [ "$(id -u)" -ne 0 ]; then
+            if command -v sudo >/dev/null 2>&1; then
+              pkg_prefix="sudo"
+            elif command -v doas >/dev/null 2>&1; then
+              pkg_prefix="doas"
+            else
+              echo "No privilege escalation helper available" >&2
+              exit 1
+            fi
+          fi
+
+          ${pkg_prefix:+$pkg_prefix }pkg update -f
+          ${pkg_prefix:+$pkg_prefix }pkg install -y \
+            gmake \
+            pkgconf \
+            png \
+            jpeg-turbo \
+            curl \
+            python3 \
+            meson \
+            ninja
+
+          ./configure \
+              --without-bashcompletiondir \
+              --without-zshcompletiondir \
+              --disable-python \
+              --enable-debug \
+              --enable-tests \
+              --disable-dependency-tracking
+          gmake V=1
+          gmake check
+
     - name: Normalize line endings (Windows)
       if: runner.os == 'Windows'
       shell: bash
@@ -168,13 +220,13 @@ jobs:
         git reset --hard
 
     - name: Install multilib toolchain (Linux i686)
-      if: runner.os == 'Linux' && (matrix.sys || '') == 'i686'
+      if: matrix.platform != 'freebsd' && runner.os == 'Linux' && (matrix.sys || '') == 'i686'
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-multilib
 
     - name: Install musl toolchain (Linux musl-cross)
-      if: ${{ runner.os == 'Linux' && (matrix.musl || false) }}
+      if: ${{ matrix.platform != 'freebsd' && runner.os == 'Linux' && (matrix.musl || false) }}
       run: |
         sudo apt-get update
         sudo apt-get install -y musl-tools
@@ -293,7 +345,7 @@ jobs:
         packages: gcc-core,make,pkg-config,python3,python3-pip,ninja
 
     - name: Install gcovr
-      if: runner.os != 'Windows' && (matrix.sys || '') != 'i686'
+      if: matrix.platform != 'freebsd' && runner.os != 'Windows' && (matrix.sys || '') != 'i686'
       run: |
         python3 -m venv .venv
         . .venv/bin/activate
@@ -301,13 +353,13 @@ jobs:
         echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
     - name: Install gcc-14 (Linux)
-      if: runner.os == 'Linux'
+      if: matrix.platform != 'freebsd' && runner.os == 'Linux'
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-14
 
     - name: Configure and build (non-Windows)
-      if: runner.os != 'Windows'
+      if: matrix.platform != 'freebsd' && runner.os != 'Windows'
       shell: bash
       run: |
         enable_gcov_flag="--enable-gcov"
@@ -479,7 +531,7 @@ jobs:
         make V=1
 
     - name: Run tests (non-Windows)
-      if: runner.os != 'Windows'
+      if: matrix.platform != 'freebsd' && runner.os != 'Windows'
       shell: bash
       run: make check
 
@@ -766,7 +818,7 @@ jobs:
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Capture coverage (Linux)
-      if: runner.os == 'Linux' && (matrix.sys || '') != 'i686' && !(matrix.musl || false)
+      if: matrix.platform != 'freebsd' && runner.os == 'Linux' && (matrix.sys || '') != 'i686' && !(matrix.musl || false)
       shell: bash
       run: |
         gcovr -r . --lcov -o coverage.info \
@@ -793,7 +845,7 @@ jobs:
           -o coverage.info
 
     - name: Upload autotools artifacts
-      if: always()
+      if: matrix.platform != 'freebsd' && always()
       uses: actions/upload-artifact@v4
       with:
         name: autotools-${{ matrix.os }}-${{ matrix.sys || 'native' }}-${{ matrix.compiler || 'default' }}-${{ matrix.variant || 'default' }}
@@ -1099,6 +1151,52 @@ jobs:
       with:
         fetch-depth: 0
 
+    - name: Build and test (FreeBSD)
+      if: ${{ matrix.platform == 'freebsd' }}
+      uses: cross-platform-actions/action@v0.30.0
+      with:
+        operating_system: ${{ matrix.cp_os }}
+        architecture: ${{ matrix.cp_arch }}
+        version: ${{ matrix.cp_version }}
+        environment_variables: CI
+        run: |
+          set -eux
+
+          pkg_prefix=""
+          if [ "$(id -u)" -ne 0 ]; then
+            if command -v sudo >/dev/null 2>&1; then
+              pkg_prefix="sudo"
+            elif command -v doas >/dev/null 2>&1; then
+              pkg_prefix="doas"
+            else
+              echo "No privilege escalation helper available" >&2
+              exit 1
+            fi
+          fi
+
+          ${pkg_prefix:+$pkg_prefix }pkg update -f
+          ${pkg_prefix:+$pkg_prefix }pkg install -y \
+            gmake \
+            pkgconf \
+            png \
+            jpeg-turbo \
+            curl \
+            python3 \
+            meson \
+            ninja
+
+          meson setup builddir \
+              --wrap-mode=nodownload \
+              -Dbashcompletiondir=disabled \
+              -Dzshcompletiondir=disabled \
+              -Dpython=disabled \
+              -Dtests=true \
+              -Dpng=enabled \
+              -Djpeg=enabled \
+              -Dcurl=enabled
+          meson compile -C builddir
+          meson test -C builddir -v
+
     - name: Normalize line endings (Windows)
       if: runner.os == 'Windows'
       shell: bash
@@ -1318,6 +1416,14 @@ jobs:
     strategy:
       matrix:
         include:
+          - label: freebsd 14.3
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            platform: freebsd
+            cp_os: freebsd
+            cp_arch: x86-64
+            cp_version: '14.3'
+            variant: freebsd
           - label: ubuntu static-only
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -1444,13 +1550,13 @@ jobs:
         git reset --hard
 
     - name: Install multilib toolchain (Linux i686)
-      if: runner.os == 'Linux' && (matrix.sys || '') == 'i686'
+      if: matrix.platform != 'freebsd' && runner.os == 'Linux' && (matrix.sys || '') == 'i686'
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-multilib
 
     - name: Install musl toolchain (Linux musl-cross)
-      if: ${{ runner.os == 'Linux' && (matrix.musl || false) }}
+      if: ${{ matrix.platform != 'freebsd' && runner.os == 'Linux' && (matrix.musl || false) }}
       run: |
         sudo apt-get update
         sudo apt-get install -y musl-tools
@@ -1526,7 +1632,7 @@ jobs:
         packages: gcc-core,make,pkg-config,python3,python3-pip,ninja
 
     - name: Install Meson (non-Windows)
-      if: runner.os != 'Windows'
+      if: matrix.platform != 'freebsd' && runner.os != 'Windows'
       run: |
         python3 -m venv .meson-venv
         . .meson-venv/bin/activate
@@ -1552,7 +1658,7 @@ jobs:
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Configure, build, and test (Meson, non-Windows)
-      if: runner.os != 'Windows'
+      if: matrix.platform != 'freebsd' && runner.os != 'Windows'
       run: |
         if [ "${{ matrix.musl || '' }}" = "true" ]; then
           export CC=musl-gcc
@@ -1785,7 +1891,7 @@ jobs:
         endlocal
 
     - name: Upload meson artifacts
-      if: always()
+      if: matrix.platform != 'freebsd' && always()
       uses: actions/upload-artifact@v4
       with:
         name: meson-${{ matrix.os }}-${{ matrix.sys || 'native' }}-${{ matrix.compiler || 'default' }}-${{ matrix.variant || 'default' }}
