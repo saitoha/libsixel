@@ -41,8 +41,12 @@ void * wic_calloc(size_t count, size_t size);
 /* custom free */
 void wic_free(void* ptr);
 
-#ifndef IID_IWICBitmapSourceTransform
-/* {3B16811B-6A43-4EC9-A813-3D930C13B940} */
+#if !defined(_MSC_VER) && !defined(IID_IWICBitmapSourceTransform)
+/*
+ * MinGW headers may miss IWICBitmapSourceTransform when INITGUID is used.
+ * Keep the fallback GUID out of MSVC/clang-cl builds to avoid clashes with
+ * the Windows SDK's own definition.
+ */
 static const IID IID_IWICBitmapSourceTransform = {
     0x3b16811b,
     0x6a43,
