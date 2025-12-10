@@ -424,7 +424,8 @@ sixel_frame_set_pixelformat(
             || pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
             || pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32
             || pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32
-            || pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32) {
+            || pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32
+            || pixelformat == SIXEL_PIXELFORMAT_YUVFLOAT32) {
         if (working_pixelformat & SIXEL_FORMATTYPE_PALETTE) {
             status = sixel_frame_convert_to_rgb888(frame);
         }
