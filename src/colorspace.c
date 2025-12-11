@@ -226,8 +226,16 @@ static SIXELSTATUS sixel_colorspace_convert_sse2(unsigned char *pixels,
                                                  int colorspace_dst);
 #endif
 
+/*
+ * Lookup tables keep the per-pixel pow() calls out of the byte conversion
+ * hot paths.  The double variants carry normalised values for the general
+ * decoder while the byte versions serve the SIMD accelerators.
+ */
 static unsigned char gamma_to_linear_lut[SIXEL_COLORSPACE_LUT_SIZE];
 static unsigned char linear_to_gamma_lut[SIXEL_COLORSPACE_LUT_SIZE];
+static double gamma_to_linear_double_lut[SIXEL_COLORSPACE_LUT_SIZE];
+static double smptec_to_linear_double_lut[SIXEL_COLORSPACE_LUT_SIZE];
+static unsigned char linear_to_smptec_lut[SIXEL_COLORSPACE_LUT_SIZE];
 static int tables_initialized = 0;
 
 static inline double
@@ -1509,18 +1517,22 @@ sixel_colorspace_clamp(int value)
 static inline double
 sixel_srgb_to_linear_double(unsigned char v)
 {
-    double x = (double)v / 255.0;
-
-    return sixel_srgb_unit_to_linear(x);
+    return gamma_to_linear_double_lut[(int)v];
 }
 
 static inline unsigned char
 sixel_linear_double_to_srgb(double v)
 {
-    double y;
+    int index;
 
-    y = sixel_linear_to_srgb_unit(v);
-    return sixel_colorspace_clamp((int)(y * 255.0 + 0.5));
+    index = (int)(sixel_clamp_unit(v) * 255.0 + 0.5);
+    if (index < 0) {
+        index = 0;
+    } else if (index >= SIXEL_COLORSPACE_LUT_SIZE) {
+        index = SIXEL_COLORSPACE_LUT_SIZE - 1;
+    }
+
+    return linear_to_gamma_lut[index];
 }
 
 static inline unsigned char
@@ -1539,18 +1551,22 @@ sixel_linear_double_to_byte(double v)
 static inline double
 sixel_smptec_to_linear_double(unsigned char v)
 {
-    double x = (double)v / 255.0;
-
-    return sixel_smptec_unit_to_linear(x);
+    return smptec_to_linear_double_lut[(int)v];
 }
 
 static inline unsigned char
 sixel_linear_double_to_smptec(double v)
 {
-    double y;
+    int index;
 
-    y = sixel_linear_to_smptec_unit(v);
-    return sixel_colorspace_clamp((int)(y * 255.0 + 0.5));
+    index = (int)(sixel_clamp_unit(v) * 255.0 + 0.5);
+    if (index < 0) {
+        index = 0;
+    } else if (index >= SIXEL_COLORSPACE_LUT_SIZE) {
+        index = SIXEL_COLORSPACE_LUT_SIZE - 1;
+    }
+
+    return linear_to_smptec_lut[index];
 }
 
 static inline double
@@ -3735,6 +3751,8 @@ sixel_colorspace_init_tables(void)
     double gamma_value;
     double linear_value;
     double converted;
+    double smptec_value;
+    double smptec_linear;
 
     if (tables_initialized) {
         return;
@@ -3753,6 +3771,7 @@ sixel_colorspace_init_tables(void)
         } else {
             converted = pow((gamma_value + 0.055) / 1.055, 2.4);
         }
+        gamma_to_linear_double_lut[i] = converted;
         gamma_to_linear_lut[i] =
             sixel_colorspace_clamp((int)(converted * 255.0 + 0.5));
     }
@@ -3765,6 +3784,20 @@ sixel_colorspace_init_tables(void)
             converted = 1.055 * pow(linear_value, 1.0 / 2.4) - 0.055;
         }
         linear_to_gamma_lut[i] =
+            sixel_colorspace_clamp((int)(converted * 255.0 + 0.5));
+    }
+
+    /*
+     * SMPTE-C curves are baked here so the runtime encoder/decoder can skip
+     * repetitive pow() calls while keeping the mapping consistent with the
+     * scalar reference formulas.
+     */
+    for (i = 0; i < SIXEL_COLORSPACE_LUT_SIZE; ++i) {
+        smptec_value = (double)i / 255.0;
+        smptec_linear = pow(smptec_value, 2.2);
+        smptec_to_linear_double_lut[i] = sixel_clamp_unit(smptec_linear);
+        converted = pow((double)i / 255.0, 1.0 / 2.2);
+        linear_to_smptec_lut[i] =
             sixel_colorspace_clamp((int)(converted * 255.0 + 0.5));
     }
 
