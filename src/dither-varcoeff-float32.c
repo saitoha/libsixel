@@ -105,15 +105,6 @@ sixel_varcoeff_safe_denom(int value)
     return value;
 }
 
-static float
-diffuse_varerr_term_float(float error, int weight, int denom)
-{
-    float factor;
-
-    factor = (float)weight / (float)denom;
-    return error * factor;
-}
-
 static void
 diffuse_varerr_apply_direct_float(float *target,
                                   int depth,
@@ -147,12 +138,16 @@ diffuse_lso2_float(float *data,
     const int (*table)[7];
     const int *entry;
     int denom;
+    float factor;
     float term_r;
     float term_r2;
     float term_dl;
     float term_d;
     float term_dr;
     float term_d2;
+    size_t row_curr;
+    size_t row_next;
+    size_t row_far;
     size_t offset;
 
     if (error == 0.0f) {
@@ -168,17 +163,27 @@ diffuse_lso2_float(float *data,
     table = lso2_table();
     entry = table[index];
     denom = sixel_varcoeff_safe_denom(entry[6]);
+    /*
+     * Reduce the number of costly divisions by sharing a single factor for
+     * all weights in the diffusion kernel.  Multiplications are cheaper
+     * and keep the overall cost of distributing the error lower when
+     * processing wide images.
+     */
+    factor = error / (float)denom;
+    term_r = factor * (float)entry[0];
+    term_r2 = factor * (float)entry[1];
+    term_dl = factor * (float)entry[2];
+    term_d = factor * (float)entry[3];
+    term_dr = factor * (float)entry[4];
+    term_d2 = factor * (float)entry[5];
 
-    term_r = diffuse_varerr_term_float(error, entry[0], denom);
-    term_r2 = diffuse_varerr_term_float(error, entry[1], denom);
-    term_dl = diffuse_varerr_term_float(error, entry[2], denom);
-    term_d = diffuse_varerr_term_float(error, entry[3], denom);
-    term_dr = diffuse_varerr_term_float(error, entry[4], denom);
-    term_d2 = diffuse_varerr_term_float(error, entry[5], denom);
+    row_curr = (size_t)y * (size_t)width;
+    row_next = (size_t)(y + 1) * (size_t)width;
+    row_far = (size_t)(y + 2) * (size_t)width;
 
     if (direction >= 0) {
         if (x + 1 < width) {
-            offset = (size_t)y * (size_t)width + (size_t)(x + 1);
+            offset = row_curr + (size_t)(x + 1);
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -187,7 +192,7 @@ diffuse_lso2_float(float *data,
                                               channel);
         }
         if (x + 2 < width) {
-            offset = (size_t)y * (size_t)width + (size_t)(x + 2);
+            offset = row_curr + (size_t)(x + 2);
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -196,8 +201,7 @@ diffuse_lso2_float(float *data,
                                               channel);
         }
         if (y + 1 < height && x - 1 >= 0) {
-            offset = (size_t)(y + 1) * (size_t)width;
-            offset += (size_t)(x - 1);
+            offset = row_next + (size_t)(x - 1);
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -206,7 +210,7 @@ diffuse_lso2_float(float *data,
                                               channel);
         }
         if (y + 1 < height) {
-            offset = (size_t)(y + 1) * (size_t)width + (size_t)x;
+            offset = row_next + (size_t)x;
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -215,8 +219,7 @@ diffuse_lso2_float(float *data,
                                               channel);
         }
         if (y + 1 < height && x + 1 < width) {
-            offset = (size_t)(y + 1) * (size_t)width;
-            offset += (size_t)(x + 1);
+            offset = row_next + (size_t)(x + 1);
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -225,7 +228,7 @@ diffuse_lso2_float(float *data,
                                               channel);
         }
         if (y + 2 < height) {
-            offset = (size_t)(y + 2) * (size_t)width + (size_t)x;
+            offset = row_far + (size_t)x;
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -235,7 +238,7 @@ diffuse_lso2_float(float *data,
         }
     } else {
         if (x - 1 >= 0) {
-            offset = (size_t)y * (size_t)width + (size_t)(x - 1);
+            offset = row_curr + (size_t)(x - 1);
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -244,7 +247,7 @@ diffuse_lso2_float(float *data,
                                               channel);
         }
         if (x - 2 >= 0) {
-            offset = (size_t)y * (size_t)width + (size_t)(x - 2);
+            offset = row_curr + (size_t)(x - 2);
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -253,8 +256,7 @@ diffuse_lso2_float(float *data,
                                               channel);
         }
         if (y + 1 < height && x + 1 < width) {
-            offset = (size_t)(y + 1) * (size_t)width;
-            offset += (size_t)(x + 1);
+            offset = row_next + (size_t)(x + 1);
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -263,7 +265,7 @@ diffuse_lso2_float(float *data,
                                               channel);
         }
         if (y + 1 < height) {
-            offset = (size_t)(y + 1) * (size_t)width + (size_t)x;
+            offset = row_next + (size_t)x;
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -272,8 +274,7 @@ diffuse_lso2_float(float *data,
                                               channel);
         }
         if (y + 1 < height && x - 1 >= 0) {
-            offset = (size_t)(y + 1) * (size_t)width;
-            offset += (size_t)(x - 1);
+            offset = row_next + (size_t)(x - 1);
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -282,7 +283,7 @@ diffuse_lso2_float(float *data,
                                               channel);
         }
         if (y + 2 < height) {
-            offset = (size_t)(y + 2) * (size_t)width + (size_t)x;
+            offset = row_far + (size_t)x;
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -310,6 +311,7 @@ diffuse_lso2_carry_float(float *carry_curr,
     const int (*table)[7];
     const int *entry;
     int denom;
+    float factor;
     float term_r;
     float term_r2;
     float term_dl;
@@ -332,11 +334,16 @@ diffuse_lso2_carry_float(float *carry_curr,
     entry = table[index];
     denom = sixel_varcoeff_safe_denom(entry[6]);
 
-    term_r = diffuse_varerr_term_float(error, entry[0], denom);
-    term_r2 = diffuse_varerr_term_float(error, entry[1], denom);
-    term_dl = diffuse_varerr_term_float(error, entry[2], denom);
-    term_d = diffuse_varerr_term_float(error, entry[3], denom);
-    term_dr = diffuse_varerr_term_float(error, entry[4], denom);
+    /*
+     * Share a single division across the error terms so the carry path is
+     * competitive with the direct-write variant even on large frames.
+     */
+    factor = error / (float)denom;
+    term_r = factor * (float)entry[0];
+    term_r2 = factor * (float)entry[1];
+    term_dl = factor * (float)entry[2];
+    term_d = factor * (float)entry[3];
+    term_dr = factor * (float)entry[4];
     term_d2 = error - term_r - term_r2 - term_dl - term_d - term_dr;
 
     if (direction >= 0) {
