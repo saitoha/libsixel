@@ -590,13 +590,13 @@ write_atomic(const char *dst_path, const void *buf, size_t len, mode_t mode)
 
 #if !defined(_WIN32) && HAVE_FCHMOD
     if (fchmod(fd, mode) != 0) {
-        int saved_errno;
+        int saved_errno_fchmod;
 
-        saved_errno = errno;
+        saved_errno_fchmod = errno;
         (void)sixel_compat_close(fd);
         (void)sixel_compat_unlink(tmp_path);
         free(tmp_path);
-        errno = saved_errno;
+        errno = saved_errno_fchmod;
         return -1;
     }
 #else
@@ -623,13 +623,13 @@ write_atomic(const char *dst_path, const void *buf, size_t len, mode_t mode)
     }
 
     if (img2sixel_fsync(fd) != 0) {
-        int saved_errno;
+        int saved_errno_fsync;
 
-        saved_errno = errno;
+        saved_errno_fsync = errno;
         (void)sixel_compat_close(fd);
         (void)sixel_compat_unlink(tmp_path);
         free(tmp_path);
-        errno = saved_errno;
+        errno = saved_errno_fsync;
         return -1;
     }
 

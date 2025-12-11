@@ -453,9 +453,9 @@ static const LPCWSTR sixel_metadata_keys[] = {
     sixel_metadata_orientation_exif_name,
 };
 
-static const IEnumStringVtbl SixelMetadataEnumString_Vtbl;
-static const IWICMetadataQueryReaderVtbl SixelMetadataQueryReader_Vtbl;
-static const IWICMetadataQueryWriterVtbl SixelMetadataQueryWriter_Vtbl;
+extern const IEnumStringVtbl SixelMetadataEnumString_Vtbl;
+extern const IWICMetadataQueryReaderVtbl SixelMetadataQueryReader_Vtbl;
+extern const IWICMetadataQueryWriterVtbl SixelMetadataQueryWriter_Vtbl;
 
 static HRESULT
 SixelMetadata_CopyString(LPCWSTR source, LPOLESTR *destination)
@@ -1350,7 +1350,7 @@ SixelMetadataEnumString_Clone(IEnumString *iface, IEnumString **ppEnum)
     return SixelMetadataEnumString_Create(enumerator->index, ppEnum);
 }
 
-static const IEnumStringVtbl SixelMetadataEnumString_Vtbl = {
+const IEnumStringVtbl SixelMetadataEnumString_Vtbl = {
     /*** IUnknown methods ***/
     SixelMetadataEnumString_QueryInterface,
     SixelMetadataEnumString_AddRef,
@@ -1646,7 +1646,7 @@ SixelMetadataQueryReader_GetEnumerator(
     return SixelMetadataEnumString_Create(0, ppIEnumString);
 }
 
-static const IWICMetadataQueryReaderVtbl SixelMetadataQueryReader_Vtbl = {
+const IWICMetadataQueryReaderVtbl SixelMetadataQueryReader_Vtbl = {
     /*** IUnknown methods ***/
     SixelMetadataQueryReader_QueryInterface,
     SixelMetadataQueryReader_AddRef,
@@ -1855,7 +1855,7 @@ SixelMetadataQueryWriter_RemoveMetadataByName(
     return SixelMetadataQuery_Remove(query, wzName);
 }
 
-static const IWICMetadataQueryWriterVtbl SixelMetadataQueryWriter_Vtbl = {
+const IWICMetadataQueryWriterVtbl SixelMetadataQueryWriter_Vtbl = {
     /*** IUnknown methods ***/
     SixelMetadataQueryWriter_QueryInterface,
     SixelMetadataQueryWriter_AddRef,

@@ -886,7 +886,6 @@ test1(void)
     nret = EXIT_SUCCESS;
     goto error;
 #endif  /* HAVE_LIBCURL */
-    nret = EXIT_SUCCESS;
 
 error:
     free(ptr);
