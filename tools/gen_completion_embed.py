@@ -29,10 +29,18 @@ def _read_text(path: pathlib.Path) -> str:
 
 def _escape_lines(text: str) -> Iterable[str]:
     """Yield C string literal lines that reproduce *text* verbatim."""
+
+    # Keep generated literals well under the 4095-byte limit required by ISO
+    # C99 to avoid -Woverlength-strings warnings on strict compilers.
+    chunk_limit = 2000
+
     for line in text.splitlines(True):
         escaped = line.replace("\\", "\\\\").replace("\"", "\\\"")
         escaped = escaped.replace("\n", "\\n")
-        yield f"\"{escaped}\""
+        while escaped:
+            chunk = escaped[:chunk_limit]
+            escaped = escaped[chunk_limit:]
+            yield f"\"{chunk}\""
     if not text.endswith("\n"):
         yield "\"\""
 
