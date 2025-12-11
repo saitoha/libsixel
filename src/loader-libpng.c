@@ -619,6 +619,16 @@ loader_can_try_libpng(sixel_chunk_t const *chunk)
  */
 enum { sixel_loader_libpng_placeholder = 0 };
 
+#if defined(__GNUC__) || defined(__clang__)
+# define SIXEL_LIBPNG_PLACEHOLDER_UNUSED __attribute__((unused))
+#else
+# define SIXEL_LIBPNG_PLACEHOLDER_UNUSED
+#endif
+
+static void
+sixel_loader_libpng_placeholder_function(void)
+    SIXEL_LIBPNG_PLACEHOLDER_UNUSED;
+
 static void
 sixel_loader_libpng_placeholder_function(void)
 {
@@ -628,6 +638,8 @@ sixel_loader_libpng_placeholder_function(void)
      */
     (void)sixel_loader_libpng_placeholder;
 }
+
+#undef SIXEL_LIBPNG_PLACEHOLDER_UNUSED
 
 #endif  /* HAVE_LIBPNG */
 

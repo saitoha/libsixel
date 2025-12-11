@@ -226,6 +226,16 @@ loader_can_try_libjpeg(sixel_chunk_t const *chunk)
  */
 enum { sixel_loader_libjpeg_placeholder = 0 };
 
+#if defined(__GNUC__) || defined(__clang__)
+# define SIXEL_LIBJPEG_PLACEHOLDER_UNUSED __attribute__((unused))
+#else
+# define SIXEL_LIBJPEG_PLACEHOLDER_UNUSED
+#endif
+
+static void
+sixel_loader_libjpeg_placeholder_function(void)
+    SIXEL_LIBJPEG_PLACEHOLDER_UNUSED;
+
 static void
 sixel_loader_libjpeg_placeholder_function(void)
 {
@@ -235,6 +245,8 @@ sixel_loader_libjpeg_placeholder_function(void)
      */
     (void)sixel_loader_libjpeg_placeholder;
 }
+
+#undef SIXEL_LIBJPEG_PLACEHOLDER_UNUSED
 
 #endif  /* HAVE_JPEG */
 
