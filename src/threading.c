@@ -27,6 +27,15 @@
 #define _GNU_SOURCE
 #endif
 
+/*
+ * OpenBSD hides BSD typedefs such as u_long when _POSIX_C_SOURCE is defined.
+ * Enable the BSD namespace locally so sys/sysctl.h exposes the kernel
+ * structures needed for hardware concurrency detection.
+ */
+#if defined(__OpenBSD__)
+#define _BSD_SOURCE
+#endif
+
 #include "config.h"
 
 #if defined(__APPLE__) && !defined(_DARWIN_C_SOURCE)
