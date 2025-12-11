@@ -41,6 +41,7 @@
 # include "threadpool.h"
 #endif
 #include "compat_stub.h"
+#include "sixel_atomic.h"
 
 #if defined(HAVE_IMMINTRIN_H) && \
     (defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
@@ -237,6 +238,12 @@ static double gamma_to_linear_double_lut[SIXEL_COLORSPACE_LUT_SIZE];
 static double smptec_to_linear_double_lut[SIXEL_COLORSPACE_LUT_SIZE];
 static unsigned char linear_to_smptec_lut[SIXEL_COLORSPACE_LUT_SIZE];
 static int tables_initialized = 0;
+/*
+ * Gate LUT construction so concurrent callers do not rebuild the immutable
+ * tables.  The guard doubles as a rendezvous point for late entrants that
+ * arrived while another thread was still populating the buffers.
+ */
+static sixel_atomic_u32_t sixel_colorspace_table_guard = 0U;
 
 static inline double
 sixel_clamp_unit(double value)
@@ -3753,10 +3760,31 @@ sixel_colorspace_init_tables(void)
     double converted;
     double smptec_value;
     double smptec_linear;
+#if SIXEL_ENABLE_THREADS
+    unsigned int guard_previous;
+#endif
 
     if (tables_initialized) {
         return;
     }
+
+#if SIXEL_ENABLE_THREADS
+    guard_previous = sixel_atomic_fetch_add_u32(&sixel_colorspace_table_guard,
+                                                1U);
+    if (guard_previous > 0U) {
+        /*
+         * Another thread is already building the shared tables.  Spin until
+         * the initialization flag flips, then exit early so we reuse the
+         * completed buffers instead of duplicating the work.
+         */
+        while (!tables_initialized) {
+            sixel_fence_acquire();
+        }
+        sixel_atomic_fetch_sub_u32(&sixel_colorspace_table_guard, 1U);
+        sixel_fence_acquire();
+        return;
+    }
+#endif
 
     /*
      * Use the canonical sRGB transfer functions for the LUT to avoid
@@ -3816,7 +3844,17 @@ sixel_colorspace_init_tables(void)
     }
 #endif
 
+#if SIXEL_ENABLE_THREADS
+    /*
+     * Publish the populated tables before toggling the shared ready flag so
+     * waiting threads see consistent content once the spin loop exits.
+     */
+    sixel_fence_release();
+#endif
     tables_initialized = 1;
+#if SIXEL_ENABLE_THREADS
+    sixel_atomic_fetch_sub_u32(&sixel_colorspace_table_guard, 1U);
+#endif
 }
 
 static void
