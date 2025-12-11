@@ -33,15 +33,15 @@ jobs:
             cp_arch: x86-64
             cp_version: '14.3'
             variant: freebsd
-            label: freebsd 14.3
+            label: freebsd 14.3 x86_64
           - os: ubuntu-latest
             runner: ubuntu-latest
-            platform: openbsd
-            cp_os: openbsd
-            cp_arch: x86-64
-            cp_version: '7.5'
-            variant: openbsd
-            label: openbsd 7.5
+            platform: freebsd
+            cp_os: freebsd
+            cp_arch: arm64
+            cp_version: '14.3'
+            variant: freebsd
+            label: freebsd 14.3 arm64
           - os: ubuntu-latest
             runner: ubuntu-latest
             platform: openbsd
@@ -58,22 +58,6 @@ jobs:
             cp_version: '7.8'
             variant: openbsd
             label: openbsd 7.8 arm64
-          - os: ubuntu-latest
-            runner: ubuntu-latest
-            platform: openbsd
-            cp_os: openbsd
-            cp_arch: x86-64
-            cp_version: '6.8'
-            variant: openbsd
-            label: openbsd 6.8 x86-64
-          - os: ubuntu-latest
-            runner: ubuntu-latest
-            platform: openbsd
-            cp_os: openbsd
-            cp_arch: arm64
-            cp_version: '6.9'
-            variant: openbsd
-            label: openbsd 6.9 arm64
           - os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
@@ -428,7 +412,9 @@ jobs:
         run: |
           set -eux
 
-          enable_gcov_flag="--enable-gcov"
+          # OpenBSD clang (e.g., 6.8) warns that --coverage is unused and
+          # converts it into an error under -Werror, so skip gcov here.
+          enable_gcov_flag=""
           disable_threads_flag=""
           if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
             disable_threads_flag="--disable-threads"
@@ -1017,24 +1003,6 @@ jobs:
         if-no-files-found: warn
         overwrite: true
 
-#    - name: Capture coverage (Windows Cygwin via gcovr)
-#      if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
-#      shell: pwsh
-#      run: |
-#        $cygwinRoot = 'C:\cygwin'
-#        if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\cygwin64' }
-#        $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
-#        $scriptLines = @(
-#          'set -eu',
-#          'set -o pipefail 2>/dev/null || true',
-#          "export GITHUB_WORKSPACE=`"$workspace`"",
-#          "cd `"$workspace`"",
-#          'python3 -m pip install gcovr',
-#          'gcovr -r . --lcov -o coverage.info --gcov-executable /usr/bin/gcov'
-#        )
-#        $script = [string]::Join("`n", $scriptLines)
-#        &"$cygwinRoot\bin\bash.exe" --login -c $script
-
     - name: Upload to Coveralls (per-flag, parallel)
       id: coveralls_upload
       if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.os != 'macos-15' && matrix.sys != 'i686' && !(matrix.musl || false) }}
@@ -1529,7 +1497,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - label: freebsd 14.3
+          - label: freebsd 14.3 x86-64
             os: ubuntu-latest
             runner: ubuntu-latest
             platform: freebsd
@@ -1537,14 +1505,14 @@ jobs:
             cp_arch: x86-64
             cp_version: '14.3'
             variant: freebsd
-          - label: openbsd 7.5
+          - label: freebsd 14.3 arm64
             os: ubuntu-latest
             runner: ubuntu-latest
-            platform: openbsd
-            cp_os: openbsd
-            cp_arch: x86-64
-            cp_version: '7.5'
-            variant: openbsd
+            platform: freebsd
+            cp_os: freebsd
+            cp_arch: arm64
+            cp_version: '14.3'
+            variant: freebsd
           - label: openbsd 7.8 x86-64
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -1560,22 +1528,6 @@ jobs:
             cp_os: openbsd
             cp_arch: arm64
             cp_version: '7.8'
-            variant: openbsd
-          - label: openbsd 6.8 x86-64
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            platform: openbsd
-            cp_os: openbsd
-            cp_arch: x86-64
-            cp_version: '6.8'
-            variant: openbsd
-          - label: openbsd 6.9 arm64
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            platform: openbsd
-            cp_os: openbsd
-            cp_arch: arm64
-            cp_version: '6.9'
             variant: openbsd
           - label: ubuntu static-only
             os: ubuntu-latest
@@ -1813,7 +1765,7 @@ jobs:
         $script = [string]::Join("`n", $scriptLines)
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
-    - name: Configure, build, and test (Meson, non-Windows)
+    - name: Configure, build, and test (Meson, FreeBSD/OpenBSD)
       if: matrix.platform == 'freebsd' || matrix.platform == 'openbsd'
       uses: cross-platform-actions/action@v0.30.0
       with:
@@ -1840,9 +1792,6 @@ jobs:
             ${pkg_prefix:+$pkg_prefix }pkg update -f
             ${pkg_prefix:+$pkg_prefix }pkg install -y \
               pkgconf \
-              png \
-              jpeg-turbo \
-              curl \
               python3 \
               meson \
               ninja
@@ -1905,6 +1854,8 @@ jobs:
               ${disable_threads_flag} \
               ${disable_simd_flag}
           meson compile -C builddir
+          readelf -d builddir/converters/img2sixel | egrep 'RPATH|RUNPATH' || true
+          objdump -p builddir/converters/img2sixel | egrep 'RPATH|RUNPATH' || true
           meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
 
     - name: Configure, build, and test (Meson, non-Windows)
