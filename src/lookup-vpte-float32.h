@@ -34,13 +34,20 @@
 #include <stdint.h>
 
 #ifndef SIXEL_VPTE_TLS
+/* Select a thread-local qualifier only when the active language standard */
+/* promises support; this avoids pedantic warnings under strict C99. */
 # if defined(SIXEL_ENABLE_THREADS)
 #  if defined(_MSC_VER)
 #   define SIXEL_VPTE_TLS __declspec(thread)
 #   define SIXEL_VPTE_TLS_AVAILABLE 1
-#  elif !defined(__STDC_NO_THREADS__)
-#   define SIXEL_VPTE_TLS _Thread_local
-#   define SIXEL_VPTE_TLS_AVAILABLE 1
+#  elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+#   if !defined(__STDC_NO_THREADS__)
+#    define SIXEL_VPTE_TLS _Thread_local
+#    define SIXEL_VPTE_TLS_AVAILABLE 1
+#   else
+#    define SIXEL_VPTE_TLS
+#    define SIXEL_VPTE_TLS_AVAILABLE 0
+#   endif
 #  elif defined(__GNUC__)
 #   define SIXEL_VPTE_TLS __thread
 #   define SIXEL_VPTE_TLS_AVAILABLE 1
