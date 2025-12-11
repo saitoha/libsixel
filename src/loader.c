@@ -1074,6 +1074,12 @@ sixel_loader_setopt(
     case SIXEL_LOADER_OPTION_REQCOLORS:
         flag = (int const *)value;
         loader->reqcolors = flag != NULL ? *flag : SIXEL_PALETTE_MAX;
+        if (loader->reqcolors < 1) {
+            sixel_helper_set_additional_message(
+                "sixel_loader_setopt: reqcolors must be 1 or greater.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
         if (loader->reqcolors > SIXEL_PALETTE_MAX) {
             loader->reqcolors = SIXEL_PALETTE_MAX;
         }

@@ -24,12 +24,17 @@ CLI_TESTS = cli/t/test_0001_01_invalid_positional.t \
 	cli/t/test_0019_python_wheel.t \
 	cli/t/test_0020_mapfile_io.t
 
-PYTHON_TESTS = python/t/test_python_bindings.t
+PYTHON_TESTS = python/t/test_0001_python_bindings.t \
+       python/t/test_0002_python_api_formats.t \
+       python/t/test_0003_python_api_options.t \
+       python/t/test_0004_python_api_errors.t \
+       python/t/test_0005_python_resource_management.t
 
 TESTS = $(CLI_TESTS) $(PYTHON_TESTS)
 TEST_EXTENSIONS = .t
 
-HELPER_FILES = cli/t/converters-common.t
+HELPER_FILES = cli/t/converters-common.t \
+       python/lib/common.sh
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export ARTIFACT_ROOT;
