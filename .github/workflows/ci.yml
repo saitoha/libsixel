@@ -36,6 +36,14 @@ jobs:
             label: freebsd 14.3
           - os: ubuntu-latest
             runner: ubuntu-latest
+            platform: openbsd
+            cp_os: openbsd
+            cp_arch: x86-64
+            cp_version: '7.5'
+            variant: openbsd
+            label: openbsd 7.5
+          - os: ubuntu-latest
+            runner: ubuntu-latest
             sys: x86_64
             static_only: true
             variant: static-only
@@ -181,13 +189,13 @@ jobs:
         git reset --hard
 
     - name: Install multilib toolchain (Linux i686)
-      if: matrix.platform != 'freebsd' && runner.os == 'Linux' && (matrix.sys || '') == 'i686'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && runner.os == 'Linux' && (matrix.sys || '') == 'i686'
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-multilib
 
     - name: Install musl toolchain (Linux musl-cross)
-      if: ${{ matrix.platform != 'freebsd' && runner.os == 'Linux' && (matrix.musl || false) }}
+      if: ${{ matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && runner.os == 'Linux' && (matrix.musl || false) }}
       run: |
         sudo apt-get update
         sudo apt-get install -y musl-tools
@@ -236,6 +244,36 @@ jobs:
             pkgconf \
             png \
             jpeg-turbo \
+            curl
+
+    - name: Install dependencies (OpenBSD)
+      if: matrix.platform == 'openbsd'
+      uses: cross-platform-actions/action@v0.30.0
+      with:
+        operating_system: ${{ matrix.cp_os }}
+        architecture: ${{ matrix.cp_arch }}
+        version: ${{ matrix.cp_version }}
+        environment_variables: CI
+        run: |
+          set -eux
+
+          pkg_prefix=""
+          if [ "$(id -u)" -ne 0 ]; then
+            if command -v doas >/dev/null 2>&1; then
+              pkg_prefix="doas"
+            elif command -v sudo >/dev/null 2>&1; then
+              pkg_prefix="sudo"
+            else
+              echo "No privilege escalation helper available" >&2
+              exit 1
+            fi
+          fi
+
+          ${pkg_prefix:+$pkg_prefix }pkg_add \
+            gmake \
+            pkgconf \
+            png \
+            jpeg \
             curl
 
     - name: Setup MSVC developer env (vcvars)
@@ -334,7 +372,7 @@ jobs:
         packages: gcc-core,make,pkg-config,python3,python3-pip,ninja
 
     - name: Install gcovr
-      if: matrix.platform != 'freebsd' && runner.os != 'Windows' && (matrix.sys || '') != 'i686'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && runner.os != 'Windows' && (matrix.sys || '') != 'i686'
       run: |
         python3 -m venv .venv
         . .venv/bin/activate
@@ -342,7 +380,7 @@ jobs:
         echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
     - name: Install gcc-14 (Linux)
-      if: matrix.platform != 'freebsd' && runner.os == 'Linux'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && runner.os == 'Linux'
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-14
@@ -391,8 +429,52 @@ jobs:
               ${static_only_flags}
           gmake V=1
 
+    - name: Configure and build (OpenBSD)
+      if: matrix.platform == 'openbsd'
+      uses: cross-platform-actions/action@v0.30.0
+      with:
+        operating_system: ${{ matrix.cp_os }}
+        architecture: ${{ matrix.cp_arch }}
+        version: ${{ matrix.cp_version }}
+        environment_variables: CI
+        run: |
+          set -eux
+
+          enable_gcov_flag="--enable-gcov"
+          disable_threads_flag=""
+          if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
+            disable_threads_flag="--disable-threads"
+          fi
+          disable_tools_flags=""
+          if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
+            disable_tools_flags="--disable-img2sixel --disable-sixel2png"
+          fi
+          disable_simd_flag=""
+          if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
+            disable_simd_flag="--disable-simd"
+          fi
+          static_only_flags=""
+          if [ "${{ matrix.static_only || '' }}" = "true" ]; then
+            static_only_flags="--disable-shared --enable-static"
+            enable_gcov_flag=""
+          fi
+
+          ./configure \
+              --without-bashcompletiondir \
+              --without-zshcompletiondir \
+              --disable-python \
+              --enable-debug \
+              --enable-tests \
+              ${enable_gcov_flag} \
+              --disable-dependency-tracking \
+              ${disable_tools_flags} \
+              ${disable_threads_flag} \
+              ${disable_simd_flag} \
+              ${static_only_flags}
+          gmake V=1
+
     - name: Configure and build (non-Windows)
-      if: matrix.platform != 'freebsd' && runner.os != 'Windows'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && runner.os != 'Windows'
       shell: bash
       run: |
         enable_gcov_flag="--enable-gcov"
@@ -564,7 +646,7 @@ jobs:
         make V=1
 
     - name: Run tests (non-Windows)
-      if: matrix.platform == 'freebsd'
+      if: matrix.platform == 'freebsd' || matrix.platform == 'openbsd'
       uses: cross-platform-actions/action@v0.30.0
       with:
         operating_system: ${{ matrix.cp_os }}
@@ -576,7 +658,7 @@ jobs:
           gmake check
 
     - name: Run tests (non-Windows)
-      if: matrix.platform != 'freebsd' && runner.os != 'Windows'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && runner.os != 'Windows'
       shell: bash
       run: make check
 
@@ -863,7 +945,7 @@ jobs:
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Capture coverage (Linux)
-      if: matrix.platform != 'freebsd' && runner.os == 'Linux' && (matrix.sys || '') != 'i686' && !(matrix.musl || false)
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && runner.os == 'Linux' && (matrix.sys || '') != 'i686' && !(matrix.musl || false)
       shell: bash
       run: |
         gcovr -r . --lcov -o coverage.info \
@@ -890,7 +972,7 @@ jobs:
           -o coverage.info
 
     - name: Upload autotools artifacts
-      if: matrix.platform != 'freebsd' && always()
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && always()
       uses: actions/upload-artifact@v4
       with:
         name: autotools-${{ matrix.os }}-${{ matrix.sys || 'native' }}-${{ matrix.compiler || 'default' }}-${{ matrix.variant || 'default' }}
@@ -923,7 +1005,7 @@ jobs:
 
     - name: Upload to Coveralls (per-flag, parallel)
       id: coveralls_upload
-      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.os != 'macos-15' && matrix.sys != 'i686' && !(matrix.musl || false) }}
+      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.os != 'macos-15' && matrix.sys != 'i686' && !(matrix.musl || false) }}
       continue-on-error: true
       uses: coverallsapp/github-action@v2
       with:
@@ -933,11 +1015,11 @@ jobs:
         parallel: true
 
     - name: Wait before Coveralls retry (per-flag)
-      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) }}
+      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) }}
       run: sleep 5
 
     - name: Upload to Coveralls (per-flag, retry)
-      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) }}
+      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) }}
       uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -1423,6 +1505,14 @@ jobs:
             cp_arch: x86-64
             cp_version: '14.3'
             variant: freebsd
+          - label: openbsd 7.5
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            platform: openbsd
+            cp_os: openbsd
+            cp_arch: x86-64
+            cp_version: '7.5'
+            variant: openbsd
           - label: ubuntu static-only
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -1549,13 +1639,13 @@ jobs:
         git reset --hard
 
     - name: Install multilib toolchain (Linux i686)
-      if: matrix.platform != 'freebsd' && runner.os == 'Linux' && (matrix.sys || '') == 'i686'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && runner.os == 'Linux' && (matrix.sys || '') == 'i686'
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-multilib
 
     - name: Install musl toolchain (Linux musl-cross)
-      if: ${{ matrix.platform != 'freebsd' && runner.os == 'Linux' && (matrix.musl || false) }}
+      if: ${{ matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && runner.os == 'Linux' && (matrix.musl || false) }}
       run: |
         sudo apt-get update
         sudo apt-get install -y musl-tools
@@ -1634,7 +1724,7 @@ jobs:
         packages: gcc-core,make,pkg-config,python3,python3-pip,ninja
 
     - name: Install Meson (non-Windows)
-      if: matrix.platform != 'freebsd' && runner.os != 'Windows'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && runner.os != 'Windows'
       run: |
         python3 -m venv .meson-venv
         . .meson-venv/bin/activate
@@ -1660,7 +1750,7 @@ jobs:
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Configure, build, and test (Meson, non-Windows)
-      if: matrix.platform == 'freebsd'
+      if: matrix.platform == 'freebsd' || matrix.platform == 'openbsd'
       uses: cross-platform-actions/action@v0.30.0
       with:
         operating_system: ${{ matrix.cp_os }}
@@ -1690,6 +1780,27 @@ jobs:
               jpeg-turbo \
               curl \
               python3 \
+              meson \
+              ninja
+          elif [ "${{ matrix.platform || '' }}" = "openbsd" ]; then
+            pkg_prefix=""
+            if [ "$(id -u)" -ne 0 ]; then
+              if command -v doas >/dev/null 2>&1; then
+                pkg_prefix="doas"
+              elif command -v sudo >/dev/null 2>&1; then
+                pkg_prefix="sudo"
+              else
+                echo "No privilege escalation helper available" >&2
+                exit 1
+              fi
+            fi
+
+            ${pkg_prefix:+$pkg_prefix }pkg_add \
+              pkgconf \
+              png \
+              jpeg \
+              curl \
+              python%3 \
               meson \
               ninja
           fi
@@ -1733,7 +1844,7 @@ jobs:
           meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
 
     - name: Configure, build, and test (Meson, non-Windows)
-      if: matrix.platform != 'freebsd' && runner.os != 'Windows'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && runner.os != 'Windows'
       run: *meson_non_windows
 
     - name: Configure, build, and test (Meson, Windows, not MSVC/Cygwin)
@@ -1929,7 +2040,7 @@ jobs:
         endlocal
 
     - name: Upload meson artifacts
-      if: matrix.platform != 'freebsd' && always()
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && always()
       uses: actions/upload-artifact@v4
       with:
         name: meson-${{ matrix.os }}-${{ matrix.sys || 'native' }}-${{ matrix.compiler || 'default' }}-${{ matrix.variant || 'default' }}
