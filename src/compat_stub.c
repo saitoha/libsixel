@@ -615,9 +615,34 @@ sixel_compat_vsscanf(const char *buffer, const char *format, va_list args)
     }
 
 #if HAVE_SSCANF_S || defined(_MSC_VER)
+    /*
+     * vsscanf_s requires a literal format string, but our callers pass
+     * validated format strings held in variables. Suppress the
+     * -Wformat-nonliteral warning in this narrow scope while keeping the
+     * safer CRT entry point.
+     */
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
     return vsscanf_s(buffer, format, args);
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 #else
+    /*
+     * POSIX vsscanf also triggers -Wformat-nonliteral when the format is
+     * kept in a variable. The format string is verified by callers, so
+     * temporarily silence the warning only around this call.
+     */
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
     return vsscanf(buffer, format, args);
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
 #endif
 }
 
