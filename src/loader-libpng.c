@@ -611,6 +611,14 @@ loader_can_try_libpng(sixel_chunk_t const *chunk)
     return chunk_is_png(chunk);
 }
 
+#else  /* !HAVE_LIBPNG */
+
+/*
+ * Provide a dummy symbol so that pedantic compilers do not flag the unit as
+ * empty when libpng support is disabled at configure time.
+ */
+enum { sixel_loader_libpng_placeholder = 0 };
+
 #endif  /* HAVE_LIBPNG */
 
 /* emacs Local Variables:      */

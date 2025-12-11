@@ -218,6 +218,14 @@ loader_can_try_libjpeg(sixel_chunk_t const *chunk)
     return chunk_is_jpeg(chunk);
 }
 
+#else  /* !HAVE_JPEG */
+
+/*
+ * Keep a harmless placeholder around so pedantic builds skip the empty unit
+ * warning when libjpeg is not part of the build.
+ */
+enum { sixel_loader_libjpeg_placeholder = 0 };
+
 #endif  /* HAVE_JPEG */
 
 /* emacs Local Variables:      */

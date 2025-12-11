@@ -333,8 +333,9 @@ sixel_thread_pin_self(int cpu_index)
 SIXELAPI int
 sixel_get_hw_threads(void)
 {
-    long count;
 #if defined(_SC_NPROCESSORS_ONLN)
+    long count;
+
     count = sysconf(_SC_NPROCESSORS_ONLN);
     if (count > 0 && count <= (long)INT_MAX) {
         return (int)count;
