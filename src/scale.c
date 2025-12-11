@@ -81,6 +81,16 @@
 # include <immintrin.h>
 #endif
 
+#if defined(__GNUC__) && !defined(__clang__)
+/*
+ * GCC reports a -Wpsabi note when __m512 parameters are present because the
+ * calling convention changed in GCC 4.6. All callers and callees in this
+ * translation unit share the same compiler, so suppress the note globally to
+ * keep the output clean on AVX-512 builds.
+ */
+#pragma GCC diagnostic ignored "-Wpsabi"
+#endif
+
 #if defined(HAVE_SSE2)
 /*
  * MSVC does not define __SSE2__ on x86/x64.  Instead, rely on the
@@ -103,8 +113,6 @@
 #   define SIXEL_TARGET_AVX2 __attribute__((target("avx2")))
 #   define SIXEL_TARGET_AVX512 __attribute__((target("avx512f")))
 #   define SIXEL_USE_AVX 1
-#   define SIXEL_USE_AVX2 1
-#   define SIXEL_USE_AVX512 1
 #  else
 /*
  * clang rejects returning AVX vectors when the translation unit target
@@ -144,6 +152,9 @@
 #if defined(__GNUC__) && !defined(__clang__)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wpsabi"
+# undef SIXEL_USE_AVX
+# undef SIXEL_USE_AVX2
+# undef SIXEL_USE_AVX512
 #endif
 
 #if defined(HAVE_NEON)
@@ -548,20 +559,23 @@ sixel_avx512_load_rgb_ps(unsigned char const *psrc)
 }
 
 static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX512 void
-sixel_avx512_store_rgb_u8(__m512 acc, double total, unsigned char *dst)
+sixel_avx512_store_rgb_u8(__m512 const *acc,
+                          double total,
+                          unsigned char *dst)
 {
     __m512 scalev;
     __m512 minv;
     __m512 maxv;
+    __m512 accv;
     __m512i acci;
     int out[16];
 
     scalev = _mm512_set1_ps((float)(1.0 / total));
-    acc = _mm512_mul_ps(acc, scalev);
+    accv = _mm512_mul_ps(*acc, scalev);
     minv = _mm512_set1_ps(0.0f);
     maxv = _mm512_set1_ps(255.0f);
-    acc = _mm512_max_ps(minv, _mm512_min_ps(acc, maxv));
-    acci = _mm512_cvtps_epi32(acc);
+    accv = _mm512_max_ps(minv, _mm512_min_ps(accv, maxv));
+    acci = _mm512_cvtps_epi32(accv);
     _mm512_storeu_si512((void *)out, acci);
     dst[0] = (unsigned char)out[0];
     dst[1] = (unsigned char)out[1];
@@ -596,19 +610,22 @@ sixel_avx512_load_rgb_f32(float const *psrc)
 }
 
 static SIXEL_ALIGN_STACK SIXEL_TARGET_AVX512 void
-sixel_avx512_store_rgb_f32(__m512 acc, double total, float *dst)
+sixel_avx512_store_rgb_f32(__m512 const *acc,
+                           double total,
+                           float *dst)
 {
     __m512 scalev;
     __m512 minv;
     __m512 maxv;
+    __m512 accv;
     float out[16];
 
     scalev = _mm512_set1_ps((float)(1.0 / total));
-    acc = _mm512_mul_ps(acc, scalev);
+    accv = _mm512_mul_ps(*acc, scalev);
     minv = _mm512_set1_ps(0.0f);
     maxv = _mm512_set1_ps(1.0f);
-    acc = _mm512_max_ps(minv, _mm512_min_ps(acc, maxv));
-    _mm512_storeu_ps(out, acc);
+    accv = _mm512_max_ps(minv, _mm512_min_ps(accv, maxv));
+    _mm512_storeu_ps(out, accv);
     dst[0] = out[0];
     dst[1] = out[1];
     dst[2] = out[2];
@@ -678,6 +695,16 @@ scale_without_resampling_float32(
 
 typedef double (*resample_fn_t)(double const d);
 
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+/*
+ * GCC emits a -Wpsabi note for __m512 parameters because the calling
+ * convention changed in GCC 4.6. The functions only pass vectors between
+ * helpers compiled with the same compiler, so suppress the noise locally.
+ */
+#pragma GCC diagnostic ignored "-Wpsabi"
+#endif
+
 /*
  * Two-pass separable filter helpers. Each function processes a single row so
  * the caller may invoke them serially or from a threadpool worker. On i386 we
@@ -709,6 +736,7 @@ scale_horizontal_row(
     double offsets[8];
 #if defined(SIXEL_USE_AVX512)
     __m512 acc512;
+    __m512 pix512;
 #endif
 #if defined(SIXEL_USE_AVX2) || defined(SIXEL_USE_AVX)
     __m256 acc256;
@@ -763,6 +791,10 @@ scale_horizontal_row(
 
 #if defined(SIXEL_USE_AVX512)
         if (depth == 3 && simd_level >= SIXEL_SIMD_LEVEL_AVX512) {
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpsabi"
+#endif
             acc512 = sixel_avx512_zero_ps();
 
             for (x = x_first; x <= x_last; x++) {
@@ -771,16 +803,20 @@ scale_horizontal_row(
                              : (x + 0.5) * dstw / srcw - center_x;
                 weight = f_resample(fabs(diff_x));
                 pos = (y * srcw + x) * depth;
+                pix512 = sixel_avx512_load_rgb_ps(src + pos);
                 acc512 = sixel_avx512_muladd_ps(
                     acc512,
-                    sixel_avx512_load_rgb_ps(src + pos),
+                    pix512,
                     (float)weight);
                 total += weight;
             }
             if (total > 0.0) {
                 pos = (y * dstw + w) * depth;
-                sixel_avx512_store_rgb_u8(acc512, total, tmp + pos);
+                sixel_avx512_store_rgb_u8(&acc512, total, tmp + pos);
             }
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
             continue;
         }
 #endif
@@ -950,6 +986,7 @@ scale_vertical_row(
     double offsets[8];
 #if defined(SIXEL_USE_AVX512)
     __m512 acc512;
+    __m512 pix512;
 #endif
 #if defined(SIXEL_USE_AVX2) || defined(SIXEL_USE_AVX)
     __m256 acc256;
@@ -998,6 +1035,10 @@ scale_vertical_row(
 
 #if defined(SIXEL_USE_AVX512)
         if (depth == 3 && simd_level >= SIXEL_SIMD_LEVEL_AVX512) {
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpsabi"
+#endif
             acc512 = sixel_avx512_zero_ps();
 
             for (y = y_first; y <= y_last; y++) {
@@ -1006,16 +1047,20 @@ scale_vertical_row(
                              : (y + 0.5) * dsth / srch - center_y;
                 weight = f_resample(fabs(diff_y));
                 pos = (y * dstw + w) * depth;
+                pix512 = sixel_avx512_load_rgb_ps(tmp + pos);
                 acc512 = sixel_avx512_muladd_ps(
                     acc512,
-                    sixel_avx512_load_rgb_ps(tmp + pos),
+                    pix512,
                     (float)weight);
                 total += weight;
             }
             if (total > 0.0) {
                 pos = (h * dstw + w) * depth;
-                sixel_avx512_store_rgb_u8(acc512, total, dst + pos);
+                sixel_avx512_store_rgb_u8(&acc512, total, dst + pos);
             }
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
             continue;
         }
 #endif
@@ -1157,6 +1202,10 @@ scale_vertical_row(
         }
     }
 }
+
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
 
 static void
 scale_with_resampling_serial(
@@ -1847,6 +1896,7 @@ scale_with_resampling_float32(
     int simd_level;
 #if defined(SIXEL_USE_AVX512)
     __m512 acc512;
+    __m512 pix512;
 #endif
 #if defined(SIXEL_USE_AVX2) || defined(SIXEL_USE_AVX)
     __m256 acc256;
@@ -1905,15 +1955,16 @@ scale_with_resampling_float32(
                                  : (x + 0.5) * srcw / dstw - center_x;
                     weight = f_resample(fabs(diff_x));
                     pos = (y * srcw + x) * depth;
+                    pix512 = sixel_avx512_load_rgb_f32(src + pos);
                     acc512 = sixel_avx512_muladd_ps(
                         acc512,
-                        sixel_avx512_load_rgb_f32(src + pos),
+                        pix512,
                         (float)weight);
                     total += weight;
                 }
                 if (total > 0.0) {
                     pos = (y * dstw + w) * depth;
-                    sixel_avx512_store_rgb_f32(acc512, total, tmp + pos);
+                    sixel_avx512_store_rgb_f32(&acc512, total, tmp + pos);
                 }
             } else
 #endif
@@ -2081,15 +2132,16 @@ scale_with_resampling_float32(
                                  : (y + 0.5) * dsth / srch - center_y;
                     weight = f_resample(fabs(diff_y));
                     pos = (y * dstw + w) * depth;
+                    pix512 = sixel_avx512_load_rgb_f32(tmp + pos);
                     acc512 = sixel_avx512_muladd_ps(
                         acc512,
-                        sixel_avx512_load_rgb_f32(tmp + pos),
+                        pix512,
                         (float)weight);
                     total += weight;
                 }
                 if (total > 0.0) {
                     pos = (h * dstw + w) * depth;
-                    sixel_avx512_store_rgb_f32(acc512, total, dst + pos);
+                    sixel_avx512_store_rgb_f32(&acc512, total, dst + pos);
                 }
             } else
 #endif
