@@ -15,7 +15,11 @@
 #include <sixel.h>
 
 #include <time.h>
-#if HAVE_SYS_TIME_H
+#if HAVE_SYS_TIME_H || HAVE_GETTIMEOFDAY
+/*
+ * FreeBSD may advertise gettimeofday even when HAVE_SYS_TIME_H is unset, so
+ * include sys/time.h whenever the helper is used to surface the prototype.
+ */
 #include <sys/time.h>
 #endif
 
