@@ -29,7 +29,7 @@ fail() {
 
 echo "1..2"
 
-if run_img2sixel -H >"${artifact_dir}/help.txt" 2>>"${log_file}"; then
+if LD_TRACE_LOADED_OBJECTS=1 run_img2sixel -H >"${artifact_dir}/help.txt" 2>>"${log_file}"; then
     pass 1 "help output available"
 else
     fail 1 "help output failed"
