@@ -47,6 +47,9 @@ completion_embed = custom_target('completion_embed.h',
 )
 local_inc = include_directories('.')
 
+# for build_rpath
+src_build_dir = join_paths(meson.project_build_root(), 'src')
+
 img2sixel_opt = get_option('img2sixel')
 sixel2png_opt = get_option('sixel2png')
 
@@ -57,6 +60,7 @@ if img2sixel_opt.enabled()
       + sources_common + aborttrace_sources,
     dependencies: [libsixel_dep] + aborttrace_deps_local,
     include_directories: [project_inc, local_inc],
+    build_rpath: src_build_dir,
     install: true)
   img2sixel_deps = [img2sixel_exe]
   install_man('img2sixel.1')
@@ -81,6 +85,7 @@ if sixel2png_opt.enabled()
     ['sixel2png.c'] + sources_common + aborttrace_sources,
     dependencies: [libsixel_dep] + aborttrace_deps_local,
     include_directories: project_inc,
+    build_rpath: src_build_dir,
     install: true)
   install_man('sixel2png.1')
   sixel2png_deps = [sixel2png_exe]

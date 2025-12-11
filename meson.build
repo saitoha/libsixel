@@ -1020,9 +1020,12 @@ if not lpips_opt.disabled()
   endif
 endif
 
+# for build_rpath
+src_build_dir = join_paths(meson.project_build_root(), 'src')
 lsqa_bin = executable('lsqa',
            'assessment/lsqa.c',
            include_directories: lsqa_inc,
+           build_rpath: src_build_dir,
            dependencies: lsqa_deps,
            c_args: lsqa_args,
            install: true)
