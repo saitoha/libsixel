@@ -264,7 +264,8 @@ _img2sixel()
                                    linear \
                                    oklab \
                                    cielab \
-                                   din99d' -- "$cur" ) )
+                                   din99d \
+                                   yuv' -- "$cur" ) )
         return 0
         ;;
     -U|--output-colorspace)
