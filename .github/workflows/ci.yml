@@ -259,10 +259,10 @@ jobs:
 
           pkg_prefix=""
           if [ "$(id -u)" -ne 0 ]; then
-            if command -v doas >/dev/null 2>&1; then
-              pkg_prefix="doas"
-            elif command -v sudo >/dev/null 2>&1; then
+            if command -v sudo >/dev/null 2>&1; then
               pkg_prefix="sudo"
+            elif command -v doas >/dev/null 2>&1; then
+              pkg_prefix="doas"
             else
               echo "No privilege escalation helper available" >&2
               exit 1
@@ -1785,10 +1785,10 @@ jobs:
           elif [ "${{ matrix.platform || '' }}" = "openbsd" ]; then
             pkg_prefix=""
             if [ "$(id -u)" -ne 0 ]; then
-              if command -v doas >/dev/null 2>&1; then
-                pkg_prefix="doas"
-              elif command -v sudo >/dev/null 2>&1; then
+              if command -v sudo >/dev/null 2>&1; then
                 pkg_prefix="sudo"
+              elif command -v doas >/dev/null 2>&1; then
+                pkg_prefix="doas"
               else
                 echo "No privilege escalation helper available" >&2
                 exit 1
