@@ -1249,6 +1249,16 @@ scale_with_resampling_serial(
     !defined(SIXEL_USE_AVX) && !defined(SIXEL_USE_SSE2) && \
     !defined(SIXEL_USE_NEON)
     /*
+     * GCC i686 builds may compile without any SIMD backends.  Consume the
+     * runtime SIMD level here so the set-but-unused warning stays quiet
+     * without altering the function signature shared across backends.
+     */
+    (void)simd_level;
+#endif
+#if !defined(SIXEL_USE_AVX512) && !defined(SIXEL_USE_AVX2) && \
+    !defined(SIXEL_USE_AVX) && !defined(SIXEL_USE_SSE2) && \
+    !defined(SIXEL_USE_NEON)
+    /*
      * i686 + GCC disables all SIMD backends, so the runtime detection result
      * is informational only. Consume it explicitly to avoid
      * -Wunused-but-set-variable while keeping the control flow unchanged for
