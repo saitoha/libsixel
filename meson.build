@@ -120,12 +120,25 @@ if cc.compiles('''
   conf.set('HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS', 1)
 endif
 
-flags = cc.get_supported_arguments([
-    '-Wformat=2',
-    '-fno-emulated-tls',
-    '-Bsymbolic',
-])
+#flags = cc.get_supported_arguments([
+#    '-Wformat=2',
+#    '-fno-emulated-tls',
+#    '-Bsymbolic',
+#])
+
+base_flags = ['-Wformat=2']
+if host_system != 'openbsd'
+  base_flags += ['-fno-emulated-tls']
+endif
+
+sym_flags = []
+if host_system != 'openbsd'
+  sym_flags += ['-Bsymbolic']
+endif
+
+flags = cc.get_supported_arguments(base_flags + sym_flags)
 add_project_arguments(flags, language: 'c')
+
 foreach f: flags
   if f == '-fno-emulated-tls'
     conf.set('HAVE_FNO_EMULATED_TLS', 1)
