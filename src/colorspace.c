@@ -3931,6 +3931,43 @@ sixel_colorspace_supports_pixelformat(int pixelformat)
     return 0;
 }
 
+static int
+sixel_colorspace_supports_byte_format(int pixelformat)
+{
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGB888:
+    case SIXEL_PIXELFORMAT_BGR888:
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_G8:
+    case SIXEL_PIXELFORMAT_GA88:
+    case SIXEL_PIXELFORMAT_AG88:
+        return 1;
+    default:
+        break;
+    }
+
+    return 0;
+}
+
+static int
+sixel_colorspace_supports_lut_pair(int colorspace_src, int colorspace_dst)
+{
+    if (colorspace_src == SIXEL_COLORSPACE_GAMMA &&
+            colorspace_dst == SIXEL_COLORSPACE_LINEAR) {
+        return 1;
+    }
+
+    if (colorspace_src == SIXEL_COLORSPACE_LINEAR &&
+            colorspace_dst == SIXEL_COLORSPACE_GAMMA) {
+        return 1;
+    }
+
+    return 0;
+}
+
 SIXELAPI SIXELSTATUS
 sixel_helper_convert_colorspace(unsigned char *pixels,
                                 size_t size,
@@ -3940,6 +3977,9 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
 {
     size_t i;
     int simd_level;
+    int byte_format_supported;
+    int lut_pair_supported;
+    int avx2_yuv_supported;
 
     if (pixels == NULL) {
         sixel_helper_set_additional_message(
@@ -3959,6 +3999,20 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
 
     sixel_colorspace_init_tables();
 
+    /*
+     * Fast paths rely on LUT-based byte formats.  Filter out unsupported
+     * combinations early so we do not waste time probing SIMD kernels that
+     * are guaranteed to fail for the current request.
+     */
+    byte_format_supported =
+        sixel_colorspace_supports_byte_format(pixelformat);
+    lut_pair_supported = sixel_colorspace_supports_lut_pair(colorspace_src,
+                                                            colorspace_dst);
+    avx2_yuv_supported = byte_format_supported &&
+        colorspace_src == SIXEL_COLORSPACE_YUV &&
+        (colorspace_dst == SIXEL_COLORSPACE_GAMMA ||
+         colorspace_dst == SIXEL_COLORSPACE_LINEAR);
+
 #if (defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
         defined(__AVX512BW__)) || \
         (defined(SIXEL_USE_AVX2) && defined(__AVX2__)) || \
@@ -3975,6 +4029,10 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
     (void)simd_level;
 #endif
 
+#if !defined(SIXEL_USE_AVX2) || !defined(__AVX2__)
+    (void)avx2_yuv_supported;
+#endif
+
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         return sixel_convert_pixels_via_linear_float((float *)pixels,
                                                      size,
@@ -3984,7 +4042,8 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
 
 #if defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
         defined(__AVX512BW__)
-    if (simd_level >= SIXEL_SIMD_LEVEL_AVX512) {
+    if (simd_level >= SIXEL_SIMD_LEVEL_AVX512 &&
+            byte_format_supported && lut_pair_supported) {
         SIXELSTATUS avx512_status;
 
         avx512_status = sixel_colorspace_convert_avx512(pixels,
@@ -3999,7 +4058,9 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
 #endif
 
 #if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
-    if (simd_level >= SIXEL_SIMD_LEVEL_AVX2) {
+    if (simd_level >= SIXEL_SIMD_LEVEL_AVX2 &&
+            (avx2_yuv_supported || (byte_format_supported &&
+            lut_pair_supported))) {
         SIXELSTATUS avx_status;
 
         avx_status = sixel_colorspace_convert_avx2(pixels,
@@ -4014,7 +4075,8 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
 #endif
 
 #if defined(SIXEL_USE_SSE2)
-    if (simd_level >= SIXEL_SIMD_LEVEL_SSE2) {
+    if (simd_level >= SIXEL_SIMD_LEVEL_SSE2 &&
+            byte_format_supported && lut_pair_supported) {
         SIXELSTATUS sse_status;
 
         sse_status = sixel_colorspace_convert_sse2(pixels,
@@ -4030,6 +4092,7 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
 
 #if defined(SIXEL_USE_NEON)
     if (simd_level == SIXEL_SIMD_LEVEL_NEON &&
+            byte_format_supported && lut_pair_supported &&
             sixel_colorspace_neon_supported_format(pixelformat)) {
         SIXELSTATUS neon_status;
 
