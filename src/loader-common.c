@@ -141,23 +141,7 @@ loader_trace_message(char const *format, ...)
     fprintf(stderr, "libsixel: ");
 
     va_start(args, format);
-#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
-# if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wformat-nonliteral"
-# elif defined(__GNUC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wformat-nonliteral"
-# endif
-#endif
-    vfprintf(stderr, format, args);
-#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
-# if defined(__clang__)
-#  pragma clang diagnostic pop
-# elif defined(__GNUC__)
-#  pragma GCC diagnostic pop
-# endif
-#endif
+    sixel_compat_vfprintf(stderr, format, args);
     va_end(args);
 
     fprintf(stderr, "\n");
