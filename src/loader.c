@@ -1555,8 +1555,6 @@ test1(void)
     nret = EXIT_SUCCESS;
     goto error;
 
-    nret = EXIT_SUCCESS;
-
 error:
     free(ptr);
     return nret;

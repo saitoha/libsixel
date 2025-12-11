@@ -195,6 +195,10 @@ hls_to_rgb(int hue, int lum, int sat)
     double min, max;
     int r, g, b;
 
+    r = 0;
+    g = 0;
+    b = 0;
+
     if (sat == 0) {
         r = g = b = lum;
     }
