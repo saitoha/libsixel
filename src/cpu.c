@@ -9,10 +9,12 @@
 /* STDC_HEADERS */
 #include <stdlib.h>
 
-#if HAVE_INTRIN_H && \
-    (defined(_WIN32) || defined(__x86_64__) || defined(_M_X64) || \
-     defined(__i386) || defined(_M_IX86))
-/* avoid cpuid.h macro clashes on Windows toolchains */
+#if HAVE_INTRIN_H && (defined(_WIN32) || defined(_MSC_VER))
+/*
+ * Avoid cpuid.h macro clashes on Windows toolchains. Restrict intrin.h to
+ * Windows targets so platforms such as OpenBSD, whose Clang wrapper tries
+ * include_next to a non-existent system header, skip it gracefully.
+ */
 # include <intrin.h>
 #endif
 #if HAVE_CPUID_H && !defined(_WIN32) && \
