@@ -617,18 +617,20 @@ sixel_compat_vfprintf(FILE *stream, const char *format, va_list args)
         return written;
     }
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__)
     /*
-     * _vfprintf_s enforces runtime format validation and rejects
-     * mismatches that classic vfprintf would allow. The caller validates
-     * the format string, so temporarily silence the -Wformat-nonliteral
-     * warning triggered by storing the format in a variable.
+     * vfprintf_s enforces runtime format validation and rejects mismatches
+     * that classic vfprintf would allow. The caller validates the format
+     * string, so temporarily silence the -Wformat-nonliteral warning
+     * triggered by storing the format in a variable. MSVC links this entry
+     * point as vfprintf_s (no leading underscore), while Annex K platforms
+     * also expose the same name.
      */
 #if defined(__GNUC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
-    written = _vfprintf_s(stream, format, args);
+    written = vfprintf_s(stream, format, args);
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif
