@@ -29,10 +29,24 @@
 #if defined(HAVE__FILENO) && HAVE__FILENO
 # define sixel_fileno(stream) _fileno(stream)
 #elif defined(HAVE_FILENO) && HAVE_FILENO
-int fileno (FILE *);
+/*
+ * OpenBSD exposes fileno as a macro, so we avoid redeclaring it to keep
+ * the compiler happy. Other platforms may need an explicit prototype in
+ * this header to make sixel_fileno available without relying on an
+ * implicit declaration.
+ */
+# ifndef fileno
+int fileno(FILE *);
+# endif
 # define sixel_fileno(stream) fileno(stream)
 #else
-int fileno (FILE *fp) { (void) fp; return (-1); }
+static int
+sixel_fileno_stub(FILE *fp)
+{
+    return -1;
+}
+
+# define sixel_fileno(stream) sixel_fileno_stub(stream)
 #endif  /* defined(HAVE__FILENO) && HAVE__FILENO */
 
 #endif  /* LIBSIXEL_STDIO_STUB_H */
