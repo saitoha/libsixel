@@ -351,7 +351,8 @@ static sixel_option_choice_t const g_option_choices_working_colorspace[] = {
     { "linear", SIXEL_COLORSPACE_LINEAR },
     { "oklab", SIXEL_COLORSPACE_OKLAB },
     { "cielab", SIXEL_COLORSPACE_CIELAB },
-    { "din99d", SIXEL_COLORSPACE_DIN99D }
+    { "din99d", SIXEL_COLORSPACE_DIN99D },
+    { "yuv", SIXEL_COLORSPACE_YUV }
 };
 
 static sixel_option_choice_t const g_option_choices_output_colorspace[] = {
@@ -374,6 +375,8 @@ sixel_encoder_pixelformat_for_colorspace(int colorspace,
         return SIXEL_PIXELFORMAT_CIELABFLOAT32;
     case SIXEL_COLORSPACE_DIN99D:
         return SIXEL_PIXELFORMAT_DIN99DFLOAT32;
+    case SIXEL_COLORSPACE_YUV:
+        return SIXEL_PIXELFORMAT_YUVFLOAT32;
     default:
         if (prefer_float32) {
             return SIXEL_PIXELFORMAT_RGBFLOAT32;

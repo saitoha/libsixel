@@ -603,6 +603,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "                             oklab  -> OKLab color space\n"
         "                             cielab -> CIELAB color space\n"
         "                             din99d -> DIN99d color space\n"
+        "                             yuv    -> YUV (BT.601) color space\n"
     },
     {
         'U',

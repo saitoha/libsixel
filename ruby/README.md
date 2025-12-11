@@ -68,8 +68,8 @@ sources in a float format until the final palette is emitted.
 3. Request the float precision flag through ``encoder.setopt('.',
    'float32')`` so that automatic image loading uses the expanded path.
 4. Select a working colorspace via ``encoder.setopt('W', 'linear')`` or
-   ``'oklab'``/``'cielab'`` if you want libsixel to convert the source prior
-   to quantization without dropping back to 8-bit.
+   ``'oklab'``/``'cielab'``/``'din99d'``/``'yuv'`` if you want libsixel to
+   convert the source prior to quantization without dropping back to 8-bit.
 5. When passing custom buffers to ``encode_bytes`` choose one of the
    float pixel format constants exposed via ``Libsixel::API``:
 
@@ -78,6 +78,9 @@ sources in a float format until the final palette is emitted.
    | ``SIXEL_PIXELFORMAT_RGBFLOAT32``                   | Gamma-encoded RGB     |
    | ``SIXEL_PIXELFORMAT_LINEARRGBFLOAT32``             | Linear-light RGB data |
    | ``SIXEL_PIXELFORMAT_OKLABFLOAT32``                 | OKLab intermediates   |
+   | ``SIXEL_PIXELFORMAT_CIELABFLOAT32``                | CIELAB intermediates  |
+   | ``SIXEL_PIXELFORMAT_DIN99DFLOAT32``                | DIN99d intermediates  |
+   | ``SIXEL_PIXELFORMAT_YUVFLOAT32``                   | BT.601 YUV triplets   |
 
    Supplying these constants prevents the implicit byte conversion
    performed by legacy releases.

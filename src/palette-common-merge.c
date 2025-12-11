@@ -373,6 +373,7 @@ sixel_final_merge_is_lab_colorspace(int pixelformat)
     case SIXEL_PIXELFORMAT_OKLABFLOAT32:
     case SIXEL_PIXELFORMAT_CIELABFLOAT32:
     case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
+    case SIXEL_PIXELFORMAT_YUVFLOAT32:
         return 1;
     default:
         return 0;
