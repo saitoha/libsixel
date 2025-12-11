@@ -36,7 +36,6 @@ if [ "${use_wheel}" -eq 1 ]; then
     fi
 fi
 
-tap_plan 4
 case_id=1
 
 run_case() {
@@ -312,4 +311,5 @@ run_case unsupported "unsupported format errors"
 # run_case oversized "oversized encode_bytes errors"
 run_case invalid_option "invalid option value errors"
 
+tap_plan 4
 exit ${tap_status}

@@ -145,7 +145,6 @@ if [ "${use_wheel}" -eq 1 ]; then
     fi
 fi
 
-tap_plan 1
 case_id=1
 
 source_image="${TOP_SRCDIR}/images/autumn.png"
@@ -176,4 +175,5 @@ else
     fi
 fi
 
+tap_plan 1
 exit ${tap_status}

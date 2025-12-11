@@ -273,7 +273,6 @@ if [ "${use_wheel}" -eq 1 ]; then
 fi
 
 cases=3
-tap_plan ${cases}
 case_id=1
 
 run_case() {
@@ -318,4 +317,5 @@ run_case palette "palette/diffusion/quality options honor palette limit"
 run_case resize_fixed "explicit resize dimensions survive decode"
 run_case resize_aspect "width-only resize keeps aspect ratio"
 
+tap_plan ${cases}
 exit ${tap_status}

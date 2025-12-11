@@ -84,8 +84,6 @@ if [ "${use_wheel}" -eq 1 ]; then
 fi
 
 formats_count=4
-
-tap_plan ${formats_count}
 case_id=1
 
 while IFS=: read -r label source_path; do
@@ -124,4 +122,5 @@ GIF:${TOP_SRCDIR}/images/snake.gif
 BMP:${TOP_SRCDIR}/images/snake.bmp
 EOF
 
+tap_plan ${formats_count}
 exit ${tap_status}

@@ -20,7 +20,6 @@ tap_log_file="${log_file}"
 
 python_prepare "${log_file}" "${tmp_dir}"
 
-tap_plan 2
 case_id=1
 skip_code=200
 skip_reason=""
@@ -163,4 +162,5 @@ else
     fi
 fi
 
+tap_plan 2
 exit ${tap_status}
