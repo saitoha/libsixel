@@ -4099,93 +4099,104 @@ sixel_encode_linear_to_colorspace_float(int colorspace,
     *b_value = (float)b;
 }
 
-static SIXELSTATUS
-sixel_convert_pixels_via_linear(unsigned char *pixels,
-                                size_t size,
-                                int pixelformat,
-                                int colorspace_src,
-                                int colorspace_dst)
-{
-    size_t i;
+typedef struct sixel_pixelformat_layout {
     int step;
     int index_r;
     int index_g;
     int index_b;
+} sixel_pixelformat_layout_t;
 
-    if (colorspace_src == colorspace_dst) {
-        return SIXEL_OK;
-    }
+static SIXELSTATUS
+sixel_pixelformat_layout_init(int pixelformat,
+                              sixel_pixelformat_layout_t *layout)
+{
+    SIXELSTATUS status;
 
+    status = SIXEL_OK;
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_RGB888:
-        step = 3;
-        index_r = 0;
-        index_g = 1;
-        index_b = 2;
+        layout->step = 3;
+        layout->index_r = 0;
+        layout->index_g = 1;
+        layout->index_b = 2;
         break;
     case SIXEL_PIXELFORMAT_BGR888:
-        step = 3;
-        index_r = 2;
-        index_g = 1;
-        index_b = 0;
+        layout->step = 3;
+        layout->index_r = 2;
+        layout->index_g = 1;
+        layout->index_b = 0;
         break;
     case SIXEL_PIXELFORMAT_RGBA8888:
-        step = 4;
-        index_r = 0;
-        index_g = 1;
-        index_b = 2;
+        layout->step = 4;
+        layout->index_r = 0;
+        layout->index_g = 1;
+        layout->index_b = 2;
         break;
     case SIXEL_PIXELFORMAT_BGRA8888:
-        step = 4;
-        index_r = 2;
-        index_g = 1;
-        index_b = 0;
+        layout->step = 4;
+        layout->index_r = 2;
+        layout->index_g = 1;
+        layout->index_b = 0;
         break;
     case SIXEL_PIXELFORMAT_ARGB8888:
-        step = 4;
-        index_r = 1;
-        index_g = 2;
-        index_b = 3;
+        layout->step = 4;
+        layout->index_r = 1;
+        layout->index_g = 2;
+        layout->index_b = 3;
         break;
     case SIXEL_PIXELFORMAT_ABGR8888:
-        step = 4;
-        index_r = 3;
-        index_g = 2;
-        index_b = 1;
+        layout->step = 4;
+        layout->index_r = 3;
+        layout->index_g = 2;
+        layout->index_b = 1;
         break;
     case SIXEL_PIXELFORMAT_G8:
-        step = 1;
-        index_r = 0;
-        index_g = 0;
-        index_b = 0;
+        layout->step = 1;
+        layout->index_r = 0;
+        layout->index_g = 0;
+        layout->index_b = 0;
         break;
     case SIXEL_PIXELFORMAT_GA88:
-        step = 2;
-        index_r = 0;
-        index_g = 0;
-        index_b = 0;
+        layout->step = 2;
+        layout->index_r = 0;
+        layout->index_g = 0;
+        layout->index_b = 0;
         break;
     case SIXEL_PIXELFORMAT_AG88:
-        step = 2;
-        index_r = 1;
-        index_g = 1;
-        index_b = 1;
+        layout->step = 2;
+        layout->index_r = 1;
+        layout->index_g = 1;
+        layout->index_b = 1;
         break;
     default:
-        return SIXEL_BAD_INPUT;
+        status = SIXEL_BAD_INPUT;
+        break;
     }
 
-    if (size % (size_t)step != 0) {
-        return SIXEL_BAD_INPUT;
-    }
+    return status;
+}
 
-    for (i = 0; i < size; i += (size_t)step) {
-        unsigned char *pr = pixels + i + (size_t)index_r;
-        unsigned char *pg = pixels + i + (size_t)index_g;
-        unsigned char *pb = pixels + i + (size_t)index_b;
-        double r_lin;
-        double g_lin;
-        double b_lin;
+static SIXELSTATUS
+sixel_convert_pixels_via_linear_chunk(unsigned char *pixels,
+                                      size_t pixel_total,
+                                      sixel_pixelformat_layout_t const *layout,
+                                      int colorspace_src,
+                                      int colorspace_dst)
+{
+    size_t pixel_index;
+    size_t offset;
+    unsigned char *pr;
+    unsigned char *pg;
+    unsigned char *pb;
+    double r_lin;
+    double g_lin;
+    double b_lin;
+
+    for (pixel_index = 0U; pixel_index < pixel_total; ++pixel_index) {
+        offset = pixel_index * (size_t)layout->step;
+        pr = pixels + offset + (size_t)layout->index_r;
+        pg = pixels + offset + (size_t)layout->index_g;
+        pb = pixels + offset + (size_t)layout->index_b;
 
         sixel_decode_linear_from_colorspace(colorspace_src,
                                             *pr,
@@ -4205,6 +4216,393 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
     }
 
     return SIXEL_OK;
+}
+
+#if SIXEL_ENABLE_THREADS
+typedef struct sixel_colorspace_parallel_context {
+    float *pixels;
+    size_t pixel_total;
+    size_t chunk_pixels;
+    int colorspace_src;
+    int colorspace_dst;
+    int simd_level;
+    sixel_logger_t *logger;
+} sixel_colorspace_parallel_context_t;
+
+typedef struct sixel_colorspace_parallel_byte_context {
+    unsigned char *pixels;
+    size_t pixel_total;
+    size_t chunk_pixels;
+    sixel_pixelformat_layout_t layout;
+    int colorspace_src;
+    int colorspace_dst;
+    sixel_logger_t *logger;
+} sixel_colorspace_parallel_byte_context_t;
+
+static int
+sixel_colorspace_log_clamp(size_t value)
+{
+    if (value > (size_t)INT_MAX) {
+        return INT_MAX;
+    }
+
+    return (int)value;
+}
+
+/*
+ * Allow deployments to defer thread fan-out on tiny buffers via
+ * SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS. Defaults to 65537 pixels so the
+ * colorspace conversion waits for moderately sized frames before fanning
+ * out, but callers can override the behavior through the environment.
+ */
+static size_t
+sixel_colorspace_parallel_min_pixels(void)
+{
+    static int initialized = 0;
+    static size_t threshold = 65537;
+    char const *text;
+    char *endptr;
+    unsigned long long parsed;
+
+    if (initialized) {
+        return threshold;
+    }
+
+    initialized = 1;
+    text = sixel_compat_getenv("SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS");
+    if (text == NULL || text[0] == '\0') {
+        return threshold;
+    }
+
+    errno = 0;
+    parsed = strtoull(text, &endptr, 10);
+    if (endptr == text || *endptr != '\0' || errno == ERANGE) {
+        return threshold;
+    }
+
+    if (parsed > (unsigned long long)SIZE_MAX) {
+        threshold = SIZE_MAX;
+    } else {
+        threshold = (size_t)parsed;
+    }
+
+    return threshold;
+}
+
+static int
+sixel_colorspace_parallel_worker_bytes(tp_job_t job,
+                                       void *userdata,
+                                       void *workspace)
+{
+    size_t start;
+    size_t remaining;
+    size_t end;
+    sixel_colorspace_parallel_byte_context_t *ctx;
+    sixel_logger_t *logger;
+    int start_row;
+    int end_row;
+    int status;
+
+    (void)workspace;
+
+    ctx = (sixel_colorspace_parallel_byte_context_t *)userdata;
+    logger = NULL;
+    start = 0U;
+    remaining = 0U;
+    end = 0U;
+    start_row = 0;
+    end_row = 0;
+    status = SIXEL_OK;
+    if (ctx == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (job.band_index < 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    start = (size_t)job.band_index * ctx->chunk_pixels;
+    if (start >= ctx->pixel_total) {
+        return SIXEL_OK;
+    }
+
+    remaining = ctx->pixel_total - start;
+    if (remaining > ctx->chunk_pixels) {
+        remaining = ctx->chunk_pixels;
+    }
+
+    end = start + remaining;
+    logger = ctx->logger;
+    if (logger != NULL && logger->active) {
+        start_row = sixel_colorspace_log_clamp(start);
+        end_row = sixel_colorspace_log_clamp(end);
+        sixel_logger_logf(logger,
+                          "worker",
+                          "colorspace",
+                          "start",
+                          job.band_index,
+                          start_row,
+                          start_row,
+                          end_row,
+                          start_row,
+                          end_row,
+                          "chunk=%zu", remaining);
+    }
+
+    status = sixel_convert_pixels_via_linear_chunk(
+        ctx->pixels + start * (size_t)ctx->layout.step,
+        remaining,
+        &ctx->layout,
+        ctx->colorspace_src,
+        ctx->colorspace_dst);
+
+    if (logger != NULL && logger->active) {
+        sixel_logger_logf(logger,
+                          "worker",
+                          "colorspace",
+                          "finish",
+                          job.band_index,
+                          end_row,
+                          start_row,
+                          end_row,
+                          start_row,
+                          end_row,
+                          "status=%d", status);
+    }
+
+    return status;
+}
+#endif
+
+static SIXELSTATUS
+sixel_convert_pixels_via_linear(unsigned char *pixels,
+                                size_t size,
+                                int pixelformat,
+                                int colorspace_src,
+                                int colorspace_dst)
+{
+    size_t pixel_total;
+    SIXELSTATUS status;
+    sixel_pixelformat_layout_t layout;
+#if SIXEL_ENABLE_THREADS
+    size_t job_count;
+    size_t chunk_pixels;
+    sixel_colorspace_parallel_byte_context_t ctx;
+    threadpool_t *pool;
+    tp_job_t job;
+    int threads;
+    int queue_depth;
+    size_t job_index;
+    int rc;
+    sixel_logger_t logger;
+    sixel_logger_t *logger_ref;
+#endif
+
+    if (colorspace_src == colorspace_dst) {
+        return SIXEL_OK;
+    }
+
+    status = sixel_pixelformat_layout_init(pixelformat, &layout);
+    if (SIXEL_FAILED(status)) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    if (size % (size_t)layout.step != 0U) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    pixel_total = size / (size_t)layout.step;
+    status = SIXEL_OK;
+
+#if SIXEL_ENABLE_THREADS
+    logger_ref = NULL;
+    rc = SIXEL_RUNTIME_ERROR;
+    /*
+     * Keep byte and float conversions aligned: respect the same
+     * SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS threshold and emit logger events
+     * when SIXEL_PARALLEL_LOG_PATH is configured so traces show which path a
+     * frame took.
+     */
+    sixel_logger_init(&logger);
+    (void)sixel_logger_prepare_env(&logger);
+    if (logger.active) {
+        logger_ref = &logger;
+        sixel_logger_logf(logger_ref,
+                          "controller",
+                          "colorspace",
+                          "configure",
+                          -1,
+                          -1,
+                          0,
+                          sixel_colorspace_log_clamp(pixel_total),
+                          0,
+                          sixel_colorspace_log_clamp(pixel_total),
+                          "pixels=%zu", pixel_total);
+    }
+
+    if (pixel_total >= sixel_colorspace_parallel_min_pixels()) {
+        threads = sixel_threads_resolve();
+        if (threads > 1) {
+            chunk_pixels = (pixel_total + (size_t)threads - 1U)
+                / (size_t)threads;
+            if (chunk_pixels == 0U) {
+                chunk_pixels = pixel_total;
+            }
+
+            ctx.pixels = pixels;
+            ctx.pixel_total = pixel_total;
+            ctx.chunk_pixels = chunk_pixels;
+            ctx.layout = layout;
+            ctx.colorspace_src = colorspace_src;
+            ctx.colorspace_dst = colorspace_dst;
+            ctx.logger = logger_ref;
+
+            queue_depth = threads * 3;
+            job_count = (pixel_total + chunk_pixels - 1U) / chunk_pixels;
+            if (queue_depth > (int)job_count) {
+                queue_depth = (int)job_count;
+            }
+            if (queue_depth < 1) {
+                queue_depth = 1;
+            }
+
+            if (logger_ref != NULL) {
+                sixel_logger_logf(logger_ref,
+                                  "controller",
+                                  "colorspace",
+                                  "start",
+                                  -1,
+                                  -1,
+                                  0,
+                                  sixel_colorspace_log_clamp(pixel_total),
+                                  0,
+                                  sixel_colorspace_log_clamp(pixel_total),
+                                  "threads=%d chunk=%zu jobs=%zu",
+                                  threads,
+                                  chunk_pixels,
+                                  job_count);
+            }
+
+            pool = threadpool_create(threads,
+                                     queue_depth,
+                                     0,
+                                     sixel_colorspace_parallel_worker_bytes,
+                                     &ctx,
+                                     NULL);
+            if (pool != NULL) {
+                for (job_index = 0U; job_index < job_count; ++job_index) {
+                    job.band_index = (int)job_index;
+                    threadpool_push(pool, job);
+                }
+
+                threadpool_finish(pool);
+                rc = threadpool_get_error(pool);
+                threadpool_destroy(pool);
+
+                if (rc == SIXEL_OK) {
+                    if (logger_ref != NULL) {
+                        sixel_logger_logf(
+                            logger_ref,
+                            "controller",
+                            "colorspace",
+                            "finish",
+                            -1,
+                            -1,
+                            0,
+                            sixel_colorspace_log_clamp(pixel_total),
+                            0,
+                            sixel_colorspace_log_clamp(pixel_total),
+                            "parallel finish threads=%d", threads);
+                    }
+                    status = SIXEL_OK;
+                    goto end;
+                }
+            }
+
+            if (logger_ref != NULL) {
+                sixel_logger_logf(logger_ref,
+                                  "controller",
+                                  "colorspace",
+                                  "fallback",
+                                  -1,
+                                  -1,
+                                  0,
+                                  sixel_colorspace_log_clamp(pixel_total),
+                                  0,
+                                  sixel_colorspace_log_clamp(pixel_total),
+                                  "threadpool fallback rc=%d", rc);
+            }
+        } else if (logger_ref != NULL) {
+            sixel_logger_logf(logger_ref,
+                              "controller",
+                              "colorspace",
+                              "fallback",
+                              -1,
+                              -1,
+                              0,
+                              sixel_colorspace_log_clamp(pixel_total),
+                              0,
+                              sixel_colorspace_log_clamp(pixel_total),
+                              "threads=%d", threads);
+        }
+    } else if (logger_ref != NULL) {
+        sixel_logger_logf(logger_ref,
+                          "controller",
+                          "colorspace",
+                          "fallback",
+                          -1,
+                          -1,
+                          0,
+                          sixel_colorspace_log_clamp(pixel_total),
+                          0,
+                          sixel_colorspace_log_clamp(pixel_total),
+                          "below threshold=%zu",
+                          sixel_colorspace_parallel_min_pixels());
+    }
+#endif
+
+#if SIXEL_ENABLE_THREADS
+    if (logger_ref != NULL) {
+        sixel_logger_logf(logger_ref,
+                          "worker",
+                          "colorspace",
+                          "start",
+                          0,
+                          0,
+                          0,
+                          sixel_colorspace_log_clamp(pixel_total),
+                          0,
+                          sixel_colorspace_log_clamp(pixel_total),
+                          "serial chunk size=%zu", pixel_total);
+    }
+#endif
+
+    status = sixel_convert_pixels_via_linear_chunk(pixels,
+                                                   pixel_total,
+                                                   &layout,
+                                                   colorspace_src,
+                                                   colorspace_dst);
+
+#if SIXEL_ENABLE_THREADS
+    if (logger_ref != NULL) {
+        sixel_logger_logf(logger_ref,
+                          "worker",
+                          "colorspace",
+                          "finish",
+                          0,
+                          sixel_colorspace_log_clamp(pixel_total),
+                          0,
+                          sixel_colorspace_log_clamp(pixel_total),
+                          0,
+                          sixel_colorspace_log_clamp(pixel_total),
+                          "serial status=%d", status);
+    }
+
+end:
+    sixel_logger_close(&logger);
+#endif
+
+    return status;
 }
 
 /*
@@ -4284,66 +4682,6 @@ sixel_convert_pixels_via_linear_float_chunk(float *pixels,
 }
 
 #if SIXEL_ENABLE_THREADS
-typedef struct sixel_colorspace_parallel_context {
-    float *pixels;
-    size_t pixel_total;
-    size_t chunk_pixels;
-    int colorspace_src;
-    int colorspace_dst;
-    int simd_level;
-    sixel_logger_t *logger;
-} sixel_colorspace_parallel_context_t;
-
-static int
-sixel_colorspace_log_clamp(size_t value)
-{
-    if (value > (size_t)INT_MAX) {
-        return INT_MAX;
-    }
-
-    return (int)value;
-}
-
-/*
- * Allow deployments to defer thread fan-out on tiny buffers via
- * SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS. Defaults to 65537 pixels so the
- * colorspace conversion waits for moderately sized frames before fanning
- * out, but callers can override the behavior through the environment.
- */
-static size_t
-sixel_colorspace_parallel_min_pixels(void)
-{
-    static int initialized = 0;
-    static size_t threshold = 65537;
-    char const *text;
-    char *endptr;
-    unsigned long long parsed;
-
-    if (initialized) {
-        return threshold;
-    }
-
-    initialized = 1;
-    text = sixel_compat_getenv("SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS");
-    if (text == NULL || text[0] == '\0') {
-        return threshold;
-    }
-
-    errno = 0;
-    parsed = strtoull(text, &endptr, 10);
-    if (endptr == text || *endptr != '\0' || errno == ERANGE) {
-        return threshold;
-    }
-
-    if (parsed > (unsigned long long)SIZE_MAX) {
-        threshold = SIZE_MAX;
-    } else {
-        threshold = (size_t)parsed;
-    }
-
-    return threshold;
-}
-
 /*
  * Worker slices the pixel array into fixed chunks to keep writeback ranges
  * disjoint. Each job reuses the same SIMD level decision to avoid repeated
