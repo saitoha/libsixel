@@ -608,6 +608,51 @@ sixel_compat_localtime(const time_t *timer, struct tm *result)
 
 
 SIXEL_COMPAT_API int
+sixel_compat_vfprintf(FILE *stream, const char *format, va_list args)
+{
+    int written;
+
+    written = (-1);
+    if (stream == NULL || format == NULL) {
+        return written;
+    }
+
+#if defined(_MSC_VER)
+    /*
+     * _vfprintf_s enforces runtime format validation and rejects
+     * mismatches that classic vfprintf would allow. The caller validates
+     * the format string, so temporarily silence the -Wformat-nonliteral
+     * warning triggered by storing the format in a variable.
+     */
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
+    written = _vfprintf_s(stream, format, args);
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+#else
+    /*
+     * POSIX vfprintf emits the same warning when the format string is
+     * stored outside a literal. Limit the suppression to this narrow call
+     * site to keep diagnostics useful elsewhere.
+     */
+#if defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
+    written = vfprintf(stream, format, args);
+#if defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+#endif
+
+    return written;
+}
+
+
+SIXEL_COMPAT_API int
 sixel_compat_vsscanf(const char *buffer, const char *format, va_list args)
 {
     if (buffer == NULL || format == NULL) {
