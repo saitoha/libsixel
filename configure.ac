@@ -58,6 +58,7 @@ case "$CC" in
     LDFLAGS="$LDFLAGS -DEBUG"
     PKG_CONFIG=
     LD=link
+    CCLD=$LD
     if test -z "${AR}"; then
         AR="${CONFIG_SHELL-$SHELL} $am_aux_dir/ar-lib lib"
     fi
