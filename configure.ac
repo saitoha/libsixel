@@ -1980,12 +1980,14 @@ else
             if test "x${using_cl}" = xyes; then
                 dnl Use .lib style to satisfy MSVC/clang-cl linkers while
                 dnl keeping the discovery path from WIC_LIBS intact.
+                dnl Additional system libs cover COM and registry helpers
+                dnl required by the codec entrypoints.
                 WICCODEC_CFLAGS="$WIC_CFLAGS"
                 WICCODEC_LIBS="$WIC_LIBS advapi32.lib user32.lib \
-                    oleaut32.lib gdi32.lib"
+                    oleaut32.lib gdi32.lib ole32.lib uuid.lib"
             else
                 WICCODEC_CFLAGS="$WIC_CFLAGS"
-                WICCODEC_LIBS="$WIC_LIBS -loleaut32 -lgdi32"
+                WICCODEC_LIBS="$WIC_LIBS -loleaut32 -lgdi32 -lole32 -luuid"
             fi
             AC_CHECK_HEADER([wincodecsdk.h],
                             [],
@@ -1997,23 +1999,31 @@ else
             LIBS_BACKUP="$LIBS"
             if test x${prefix} != x -a x${prefix} != xNONE; then
                 if test "x${using_cl}" = xyes; then
-                    ADDED_CFLAGS=
-                    ADDED_LIBS="-lole32 -lwindowscodecs -ladvapi32 -luser32 \
-                        -loleaut32 -lgdi32"
+                    dnl Use -LIBPATH to avoid MSYS path rewriting of /LIBPATH
+                    dnl while linking against COM, registry, and GDI helpers.
+                    ADDED_CFLAGS="-I${prefix}/include"
+                    ADDED_LIBS="-LIBPATH:${prefix}/lib windowscodecs.lib \
+ole32.lib shlwapi.lib uuid.lib advapi32.lib user32.lib oleaut32.lib \
+gdi32.lib"
                 else
                     ADDED_CFLAGS="-I${prefix}/include"
                     ADDED_LIBS="-L${prefix}/lib -lole32 -lwindowscodecs \
-                        -loleaut32 -lgdi32"
+                        -loleaut32 -lgdi32 -luuid -lshlwapi -ladvapi32 \
+                        -luser32"
                 fi
             else
                 if test "x${using_cl}" = xyes; then
-                    ADDED_CFLAGS=
-                    ADDED_LIBS="-lole32 -lwindowscodecs -ladvapi32 -luser32 \
-                        -loleaut32 -lgdi32"
+                    dnl Use -LIBPATH to avoid MSYS path rewriting of /LIBPATH
+                    dnl while linking against COM, registry, and GDI helpers.
+                    ADDED_CFLAGS="-I/usr/local/include"
+                    ADDED_LIBS="-LIBPATH:/usr/local/lib windowscodecs.lib \
+ole32.lib shlwapi.lib uuid.lib advapi32.lib user32.lib oleaut32.lib \
+gdi32.lib"
                 else
                     ADDED_CFLAGS="-I/usr/local/include"
                     ADDED_LIBS="-L/usr/local/lib -lole32 -lwindowscodecs \
-                        -loleaut32 -lgdi32"
+                        -loleaut32 -lgdi32 -luuid -lshlwapi -ladvapi32 \
+                        -luser32"
                 fi
             fi
             CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
