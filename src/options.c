@@ -935,21 +935,13 @@ sixel_option_format_timestamp(
     size_t buffer_size)
 {
     struct tm *time_pointer;
-#if defined(HAVE_LOCALTIME_R)
     struct tm time_view;
-#endif
 
     if (buffer == NULL || buffer_size == 0u) {
         return;
     }
 
-#if defined(HAVE_LOCALTIME_R)
-    if (localtime_r(&value, &time_view) != NULL) {
-        (void)strftime(buffer, buffer_size, "%Y-%m-%d %H:%M", &time_view);
-        return;
-    }
-#endif
-    time_pointer = localtime(&value);
+    time_pointer = sixel_compat_localtime(&value, &time_view);
     if (time_pointer != NULL) {
         (void)strftime(buffer, buffer_size, "%Y-%m-%d %H:%M", time_pointer);
         return;

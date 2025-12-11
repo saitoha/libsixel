@@ -28,6 +28,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <time.h>
 
 #if !defined(SIXEL_COMPAT_API)
 /*
@@ -186,9 +187,25 @@ SIXEL_COMPAT_API const char *sixel_compat_getenv(const char *name);
 SIXEL_COMPAT_API int sixel_compat_setenv(const char *name,
                                          const char *value);
 
+SIXEL_COMPAT_API int sixel_compat_isatty(int fd);
+
 SIXEL_COMPAT_API char *sixel_compat_strtok(char *string,
                                            const char *delimiters,
                                            char **context);
+
+SIXEL_COMPAT_API char *sixel_compat_tmpnam(char *buffer,
+                                           size_t buffer_size);
+
+SIXEL_COMPAT_API struct tm *sixel_compat_localtime(const time_t *timer,
+                                                   struct tm *result);
+
+SIXEL_COMPAT_API int sixel_compat_vsscanf(const char *buffer,
+                                          const char *format,
+                                          va_list args);
+
+SIXEL_COMPAT_API int sixel_compat_sscanf(const char *buffer,
+                                         const char *format,
+                                         ...);
 
 SIXEL_COMPAT_API int sixel_compat_mktemp(char *templ,
                                          size_t buffer_size);

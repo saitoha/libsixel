@@ -59,6 +59,7 @@
 #endif  /* HAVE_INTTYPES_H */
 
 #include <sixel.h>
+#include "compat_stub.h"
 #include "output.h"
 #include "dither.h"
 #include "pixelformat.h"
@@ -309,7 +310,7 @@ sixel_parallel_dither_configure(int height,
 
     dither_env_override = 0;
     dither_threads = (pipeline_threads * 7 + 9) / 10;
-    text = getenv("SIXEL_DITHER_PARALLEL_THREADS_MAX");
+    text = sixel_compat_getenv("SIXEL_DITHER_PARALLEL_THREADS_MAX");
     if (text != NULL && text[0] != '\0') {
         errno = 0;
         parsed = strtol(text, &endptr, 10);
@@ -361,7 +362,7 @@ sixel_parallel_dither_configure(int height,
      * stay aligned with the encoder's natural cadence.
      */
     band_height = 0;
-    text = getenv("SIXEL_DITHER_PARALLEL_BAND_WIDTH");
+    text = sixel_compat_getenv("SIXEL_DITHER_PARALLEL_BAND_WIDTH");
     if (text != NULL && text[0] != '\0') {
         errno = 0;
         parsed = strtol(text, &endptr, 10);
@@ -382,7 +383,7 @@ sixel_parallel_dither_configure(int height,
         band_height = ((band_height + 5) / 6) * 6;
     }
 
-    text = getenv("SIXEL_DITHER_PARALLEL_BAND_OVERWRAP");
+    text = sixel_compat_getenv("SIXEL_DITHER_PARALLEL_BAND_OVERWRAP");
     /*
      * Default overlap favors quality for small palettes and speed when
      * colors are plentiful. The environment can override this policy.
@@ -3862,7 +3863,8 @@ sixel_encode_dither(
     default:
         /* apply palette */
         pipeline_threads = sixel_threads_resolve();
-        band_env_text = getenv("SIXEL_DITHER_PARALLEL_BAND_WIDTH");
+        band_env_text = sixel_compat_getenv(
+            "SIXEL_DITHER_PARALLEL_BAND_WIDTH");
         if (pipeline_threads <= 1 && band_env_text != NULL
                 && band_env_text[0] != '\0') {
             /*

@@ -354,7 +354,7 @@ sixel_lookup_vpte_env_resolution(void)
     long parsed;
     char *endptr;
 
-    env = getenv("SIXEL_LOOKUP_VPTE_RESOLUTION");
+    env = sixel_compat_getenv("SIXEL_LOOKUP_VPTE_RESOLUTION");
     if (env == NULL || env[0] == '\0') {
         return 128;
     }
@@ -376,15 +376,17 @@ sixel_lookup_vpte_env_resolution(void)
 static int
 sixel_lookup_vpte_env_refine(void)
 {
-    return sixel_lookup_vpte_parse_flag(getenv("SIXEL_LOOKUP_VPTE_REFINE"),
-                                        1);
+    return sixel_lookup_vpte_parse_flag(
+        sixel_compat_getenv("SIXEL_LOOKUP_VPTE_REFINE"),
+        1);
 }
 
 static int
 sixel_lookup_vpte_env_shared(void)
 {
-    return sixel_lookup_vpte_parse_flag(getenv("SIXEL_LOOKUP_VPTE_SHARED"),
-                                        1);
+    return sixel_lookup_vpte_parse_flag(
+        sixel_compat_getenv("SIXEL_LOOKUP_VPTE_SHARED"),
+        1);
 }
 
 static int
@@ -395,8 +397,9 @@ sixel_lookup_vpte_env_use_dist2(void)
      * consistent wins.  Enable explicitly when experimenting with boundary
      * refinement short-circuiting.
      */
-    return sixel_lookup_vpte_parse_flag(getenv("SIXEL_LOOKUP_VPTE_USE_DIST2"),
-                                        0);
+    return sixel_lookup_vpte_parse_flag(
+        sixel_compat_getenv("SIXEL_LOOKUP_VPTE_USE_DIST2"),
+        0);
 }
 
 static int
@@ -407,8 +410,9 @@ sixel_lookup_vpte_env_use_cache(void)
      * demonstrated.  Callers can opt in for experiments without impacting
      * parallel TLS availability checks.
      */
-    return sixel_lookup_vpte_parse_flag(getenv("SIXEL_LOOKUP_VPTE_USE_CACHE"),
-                                        0);
+    return sixel_lookup_vpte_parse_flag(
+        sixel_compat_getenv("SIXEL_LOOKUP_VPTE_USE_CACHE"),
+        0);
 }
 
 static void
