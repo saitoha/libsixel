@@ -22618,12 +22618,24 @@ else
         have_wiccodec=yes
         if test x${have_wic} = xyes; then
             if test "x${using_cl}" = xyes; then
-                                                                                WICCODEC_CFLAGS="$WIC_CFLAGS"
-                WICCODEC_LIBS="$WIC_LIBS advapi32.lib user32.lib \
-                    oleaut32.lib gdi32.lib ole32.lib uuid.lib"
+                                                                                                                WICCODEC_CFLAGS="$WIC_CFLAGS"
+                if test "x${WIC_LIBS}" != x; then
+                    WICCODEC_LIBS="$WIC_LIBS advapi32.lib user32.lib \
+                        oleaut32.lib gdi32.lib ole32.lib uuid.lib"
+                else
+                    WICCODEC_LIBS="windowscodecs.lib advapi32.lib \
+                        user32.lib oleaut32.lib gdi32.lib ole32.lib \
+                        uuid.lib shlwapi.lib"
+                fi
             else
                 WICCODEC_CFLAGS="$WIC_CFLAGS"
-                WICCODEC_LIBS="$WIC_LIBS -loleaut32 -lgdi32 -lole32 -luuid"
+                if test "x${WIC_LIBS}" != x; then
+                    WICCODEC_LIBS="$WIC_LIBS -loleaut32 -lgdi32 -lole32 \
+                        -luuid -lshlwapi"
+                else
+                    WICCODEC_LIBS="-lwindowscodecs -loleaut32 -lgdi32 \
+                        -lole32 -luuid -lshlwapi"
+                fi
             fi
             ac_fn_c_check_header_compile "$LINENO" "wincodecsdk.h" "ac_cv_header_wincodecsdk_h" "$ac_includes_default"
 if test "x$ac_cv_header_wincodecsdk_h" = xyes

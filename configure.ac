@@ -1981,13 +1981,27 @@ else
                 dnl Use .lib style to satisfy MSVC/clang-cl linkers while
                 dnl keeping the discovery path from WIC_LIBS intact.
                 dnl Additional system libs cover COM and registry helpers
-                dnl required by the codec entrypoints.
+                dnl required by the codec entrypoints. Fallback to
+                dnl windowscodecs.lib when WIC_LIBS is empty so link flags
+                dnl are never dropped from the generated Makefiles.
                 WICCODEC_CFLAGS="$WIC_CFLAGS"
-                WICCODEC_LIBS="$WIC_LIBS advapi32.lib user32.lib \
-                    oleaut32.lib gdi32.lib ole32.lib uuid.lib"
+                if test "x${WIC_LIBS}" != x; then
+                    WICCODEC_LIBS="$WIC_LIBS advapi32.lib user32.lib \
+                        oleaut32.lib gdi32.lib ole32.lib uuid.lib"
+                else
+                    WICCODEC_LIBS="windowscodecs.lib advapi32.lib \
+                        user32.lib oleaut32.lib gdi32.lib ole32.lib \
+                        uuid.lib shlwapi.lib"
+                fi
             else
                 WICCODEC_CFLAGS="$WIC_CFLAGS"
-                WICCODEC_LIBS="$WIC_LIBS -loleaut32 -lgdi32 -lole32 -luuid"
+                if test "x${WIC_LIBS}" != x; then
+                    WICCODEC_LIBS="$WIC_LIBS -loleaut32 -lgdi32 -lole32 \
+                        -luuid -lshlwapi"
+                else
+                    WICCODEC_LIBS="-lwindowscodecs -loleaut32 -lgdi32 \
+                        -lole32 -luuid -lshlwapi"
+                fi
             fi
             AC_CHECK_HEADER([wincodecsdk.h],
                             [],
