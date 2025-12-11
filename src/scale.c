@@ -734,6 +734,16 @@ scale_horizontal_row(
     double weight;
     double total;
     double offsets[8];
+#if !defined(SIXEL_USE_AVX512) && !defined(SIXEL_USE_AVX2) && \
+    !defined(SIXEL_USE_AVX) && !defined(SIXEL_USE_SSE2) && \
+    !defined(SIXEL_USE_NEON)
+    /*
+     * No SIMD backends are compiled for this target, so the SIMD level gate
+     * becomes a dead parameter. Silence -Wunused-parameter on 32-bit GCC
+     * builds while keeping the signature identical across configurations.
+     */
+    (void)simd_level;
+#endif
 #if defined(SIXEL_USE_AVX512)
     __m512 acc512;
     __m512 pix512;
@@ -984,6 +994,16 @@ scale_vertical_row(
     double weight;
     double total;
     double offsets[8];
+#if !defined(SIXEL_USE_AVX512) && !defined(SIXEL_USE_AVX2) && \
+    !defined(SIXEL_USE_AVX) && !defined(SIXEL_USE_SSE2) && \
+    !defined(SIXEL_USE_NEON)
+    /*
+     * When no SIMD implementations are present the runtime SIMD level does
+     * not influence the algorithm. Mark it unused to keep 32-bit GCC quiet
+     * without altering the interface shared with SIMD-enabled builds.
+     */
+    (void)simd_level;
+#endif
 #if defined(SIXEL_USE_AVX512)
     __m512 acc512;
     __m512 pix512;
@@ -1225,6 +1245,17 @@ scale_with_resampling_serial(
     int simd_level;
 
     simd_level = sixel_scale_simd_level();
+#if !defined(SIXEL_USE_AVX512) && !defined(SIXEL_USE_AVX2) && \
+    !defined(SIXEL_USE_AVX) && !defined(SIXEL_USE_SSE2) && \
+    !defined(SIXEL_USE_NEON)
+    /*
+     * i686 + GCC disables all SIMD backends, so the runtime detection result
+     * is informational only. Consume it explicitly to avoid
+     * -Wunused-but-set-variable while keeping the control flow unchanged for
+     * other targets.
+     */
+    (void)simd_level;
+#endif
 
     for (y = 0; y < srch; y++) {
         scale_horizontal_row(tmp,
