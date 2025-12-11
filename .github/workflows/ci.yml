@@ -14,6 +14,11 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  # Pin vcpkg to a stable release to avoid fetching future tool builds that
+  # depend on unavailable CMake versions during bootstrap.
+  VCPKG_REF: 2024.12.16
+
 jobs:
   ci-autotools:
     name: Autotools ${{ matrix.label }}
@@ -261,10 +266,7 @@ jobs:
         git -C $vcpkgRoot remote remove origin 2>$null
         git -C $vcpkgRoot remote add origin https://github.com/microsoft/vcpkg
 
-        $head = (git -C $vcpkgRoot ls-remote --symref origin HEAD) -join "`n"
-        $defaultBranch = if ($head -match 'refs/heads/([^\s]+)') { $matches[1] } else { 'master' }
-
-        git -C $vcpkgRoot fetch --depth 1 origin $defaultBranch
+        git -C $vcpkgRoot fetch --depth 1 origin "${{ env.VCPKG_REF }}"
         git -C $vcpkgRoot reset --hard FETCH_HEAD
 
         Set-Location $vcpkgRoot
@@ -1581,7 +1583,10 @@ jobs:
       run: |
         $vcpkgRoot = "$env:USERPROFILE\\vcpkg"
         if (-not (Test-Path $vcpkgRoot)) {
-          git clone https://github.com/microsoft/vcpkg $vcpkgRoot
+          git clone --depth 1 --branch "${{ env.VCPKG_REF }}" https://github.com/microsoft/vcpkg $vcpkgRoot
+        } else {
+          git -C $vcpkgRoot fetch --depth 1 origin "${{ env.VCPKG_REF }}"
+          git -C $vcpkgRoot reset --hard FETCH_HEAD
         }
         cd $vcpkgRoot
         .\\bootstrap-vcpkg.bat
