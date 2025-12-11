@@ -2131,11 +2131,655 @@ sixel_yuv_to_linear(double y, double u, double v,
 }
 
 /*
- * SIMD helpers below operate on interleaved RGB float triplets.
- * Channels are gathered with byte offsets, multiplied by the 3x3
- * SMPTEC↔sRGB matrices, and scattered back into the same AoS layout
- * after clamping to [0, 1].
+ * SIMD helpers below operate on interleaved RGB float triplets. Channels are
+ * gathered with byte offsets, multiplied by a 3x3 matrix, and scattered back
+ * into the same AoS layout after clamping to the destination domain.
  */
+#if defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
+        defined(__AVX512BW__)
+static SIXEL_TARGET_AVX512 size_t
+sixel_linear_to_yuv_avx512(float *pixels, size_t pixel_total)
+{
+    size_t index;
+    size_t processed;
+    const __m512 zero = _mm512_set1_ps(0.0f);
+    const __m512 u_min = _mm512_set1_ps(-SIXEL_YUV_U_MAX);
+    const __m512 u_max = _mm512_set1_ps(SIXEL_YUV_U_MAX);
+    const __m512 v_min = _mm512_set1_ps(-SIXEL_YUV_V_MAX);
+    const __m512 v_max = _mm512_set1_ps(SIXEL_YUV_V_MAX);
+    const __m512 m00 = _mm512_set1_ps(0.299f);
+    const __m512 m01 = _mm512_set1_ps(0.587f);
+    const __m512 m02 = _mm512_set1_ps(0.114f);
+    const __m512 m10 = _mm512_set1_ps(-0.14713f);
+    const __m512 m11 = _mm512_set1_ps(-0.28886f);
+    const __m512 m12 = _mm512_set1_ps(0.43600f);
+    const __m512 m20 = _mm512_set1_ps(0.61500f);
+    const __m512 m21 = _mm512_set1_ps(-0.51499f);
+    const __m512 m22 = _mm512_set1_ps(-0.10001f);
+    const __m512i idx_r = _mm512_setr_epi32(
+        0, 12, 24, 36, 48, 60, 72, 84,
+        96, 108, 120, 132, 144, 156, 168, 180);
+    const __m512i idx_g = _mm512_setr_epi32(
+        4, 16, 28, 40, 52, 64, 76, 88,
+        100, 112, 124, 136, 148, 160, 172, 184);
+    const __m512i idx_b = _mm512_setr_epi32(
+        8, 20, 32, 44, 56, 68, 80, 92,
+        104, 116, 128, 140, 152, 164, 176, 188);
+
+    processed = pixel_total - (pixel_total % 16U);
+    for (index = 0U; index < processed; index += 16U) {
+        const char *base_char;
+        const float *base;
+        __m512 r;
+        __m512 g;
+        __m512 b;
+        __m512 y;
+        __m512 u;
+        __m512 v;
+
+        base_char = (const char *)(pixels + index * 3U);
+        base = (const float *)base_char;
+
+        r = _mm512_i32gather_ps(idx_r, base, 1);
+        g = _mm512_i32gather_ps(idx_g, base, 1);
+        b = _mm512_i32gather_ps(idx_b, base, 1);
+
+        y = SIXEL_FMADD_PS512(g, m01, _mm512_mul_ps(r, m00));
+        y = SIXEL_FMADD_PS512(b, m02, y);
+
+        u = SIXEL_FMADD_PS512(g, m11, _mm512_mul_ps(r, m10));
+        u = SIXEL_FMADD_PS512(b, m12, u);
+
+        v = SIXEL_FMADD_PS512(g, m21, _mm512_mul_ps(r, m20));
+        v = SIXEL_FMADD_PS512(b, m22, v);
+
+        y = _mm512_min_ps(_mm512_set1_ps(1.0f),
+                          _mm512_max_ps(zero, y));
+        u = _mm512_min_ps(u_max, _mm512_max_ps(u_min, u));
+        v = _mm512_min_ps(v_max, _mm512_max_ps(v_min, v));
+
+        _mm512_i32scatter_ps((float *)base, idx_r, y, 1);
+        _mm512_i32scatter_ps((float *)base, idx_g, u, 1);
+        _mm512_i32scatter_ps((float *)base, idx_b, v, 1);
+    }
+
+    return processed;
+}
+#endif
+
+#if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
+static SIXEL_TARGET_AVX2 size_t
+sixel_linear_to_yuv_avx2(float *pixels, size_t pixel_total)
+{
+    size_t index;
+    size_t processed;
+    const __m256 zero = _mm256_set1_ps(0.0f);
+    const __m256 y_max = _mm256_set1_ps(1.0f);
+    const __m256 u_min = _mm256_set1_ps(-SIXEL_YUV_U_MAX);
+    const __m256 u_max = _mm256_set1_ps(SIXEL_YUV_U_MAX);
+    const __m256 v_min = _mm256_set1_ps(-SIXEL_YUV_V_MAX);
+    const __m256 v_max = _mm256_set1_ps(SIXEL_YUV_V_MAX);
+    const __m256 m00 = _mm256_set1_ps(0.299f);
+    const __m256 m01 = _mm256_set1_ps(0.587f);
+    const __m256 m02 = _mm256_set1_ps(0.114f);
+    const __m256 m10 = _mm256_set1_ps(-0.14713f);
+    const __m256 m11 = _mm256_set1_ps(-0.28886f);
+    const __m256 m12 = _mm256_set1_ps(0.43600f);
+    const __m256 m20 = _mm256_set1_ps(0.61500f);
+    const __m256 m21 = _mm256_set1_ps(-0.51499f);
+    const __m256 m22 = _mm256_set1_ps(-0.10001f);
+    const __m256i idx_r = _mm256_setr_epi32(
+        0, 12, 24, 36, 48, 60, 72, 84);
+    const __m256i idx_g = _mm256_setr_epi32(
+        4, 16, 28, 40, 52, 64, 76, 88);
+    const __m256i idx_b = _mm256_setr_epi32(
+        8, 20, 32, 44, 56, 68, 80, 92);
+    const char *base_char;
+    const float *base;
+    float *store;
+    __m256 r;
+    __m256 g;
+    __m256 b;
+    __m256 y;
+    __m256 u;
+    __m256 v;
+    __m128 y_lo;
+    __m128 y_hi;
+    __m128 u_lo;
+    __m128 u_hi;
+    __m128 v_lo;
+    __m128 v_hi;
+    __m128 yu_lo;
+    __m128 yu_hi;
+    __m128 uv_lo;
+    __m128 uv_hi;
+    __m128 vy_hi;
+    __m128 store0;
+    __m128 store1;
+    __m128 store2;
+    __m128 store3;
+    __m128 store4;
+    __m128 store5;
+
+    processed = pixel_total - (pixel_total % 8U);
+    for (index = 0U; index < processed; index += 8U) {
+        base_char = (const char *)(pixels + index * 3U);
+        base = (const float *)base_char;
+        store = (float *)base_char;
+
+        r = _mm256_i32gather_ps(base, idx_r, 1);
+        g = _mm256_i32gather_ps(base, idx_g, 1);
+        b = _mm256_i32gather_ps(base, idx_b, 1);
+
+        y = SIXEL_FMADD_PS256(g, m01, _mm256_mul_ps(r, m00));
+        y = SIXEL_FMADD_PS256(b, m02, y);
+
+        u = SIXEL_FMADD_PS256(g, m11, _mm256_mul_ps(r, m10));
+        u = SIXEL_FMADD_PS256(b, m12, u);
+
+        v = SIXEL_FMADD_PS256(g, m21, _mm256_mul_ps(r, m20));
+        v = SIXEL_FMADD_PS256(b, m22, v);
+
+        y = _mm256_min_ps(y_max, _mm256_max_ps(zero, y));
+        u = _mm256_min_ps(u_max, _mm256_max_ps(u_min, u));
+        v = _mm256_min_ps(v_max, _mm256_max_ps(v_min, v));
+
+        y_lo = _mm256_castps256_ps128(y);
+        y_hi = _mm256_extractf128_ps(y, 1);
+        u_lo = _mm256_castps256_ps128(u);
+        u_hi = _mm256_extractf128_ps(u, 1);
+        v_lo = _mm256_castps256_ps128(v);
+        v_hi = _mm256_extractf128_ps(v, 1);
+
+        yu_lo = _mm_unpacklo_ps(y_lo, u_lo);
+        yu_hi = _mm_unpackhi_ps(y_lo, u_lo);
+        uv_lo = _mm_unpacklo_ps(u_lo, v_lo);
+        uv_hi = _mm_unpackhi_ps(u_lo, v_lo);
+        vy_hi = _mm_unpackhi_ps(v_lo, y_lo);
+
+        store0 = _mm_movelh_ps(yu_lo, v_lo);
+        store0 = _mm_blend_ps(store0,
+                              _mm_shuffle_ps(y_lo, y_lo,
+                                             _MM_SHUFFLE(1, 1, 1, 1)),
+                              0x8);
+        store1 = _mm_shuffle_ps(uv_lo, yu_hi, 0x4E);
+        store2 = _mm_shuffle_ps(vy_hi, uv_hi, 0xEC);
+
+        _mm_storeu_ps(store, store0);
+        _mm_storeu_ps(store + 4U, store1);
+        _mm_storeu_ps(store + 8U, store2);
+
+        yu_lo = _mm_unpacklo_ps(y_hi, u_hi);
+        yu_hi = _mm_unpackhi_ps(y_hi, u_hi);
+        uv_lo = _mm_unpacklo_ps(u_hi, v_hi);
+        uv_hi = _mm_unpackhi_ps(u_hi, v_hi);
+        vy_hi = _mm_unpackhi_ps(v_hi, y_hi);
+
+        store3 = _mm_movelh_ps(yu_lo, v_hi);
+        store3 = _mm_blend_ps(store3,
+                              _mm_shuffle_ps(y_hi, y_hi,
+                                             _MM_SHUFFLE(1, 1, 1, 1)),
+                              0x8);
+        store4 = _mm_shuffle_ps(uv_lo, yu_hi, 0x4E);
+        store5 = _mm_shuffle_ps(vy_hi, uv_hi, 0xEC);
+
+        _mm_storeu_ps(store + 12U, store3);
+        _mm_storeu_ps(store + 16U, store4);
+        _mm_storeu_ps(store + 20U, store5);
+    }
+
+    return processed;
+}
+#endif
+
+#if defined(SIXEL_USE_SSE2)
+static size_t
+sixel_linear_to_yuv_sse2(float *pixels, size_t pixel_total)
+{
+    size_t index;
+    size_t processed;
+    const __m128 zero = _mm_set1_ps(0.0f);
+    const __m128 y_max = _mm_set1_ps(1.0f);
+    const __m128 u_min = _mm_set1_ps(-SIXEL_YUV_U_MAX);
+    const __m128 u_max = _mm_set1_ps(SIXEL_YUV_U_MAX);
+    const __m128 v_min = _mm_set1_ps(-SIXEL_YUV_V_MAX);
+    const __m128 v_max = _mm_set1_ps(SIXEL_YUV_V_MAX);
+    const __m128 m00 = _mm_set1_ps(0.299f);
+    const __m128 m01 = _mm_set1_ps(0.587f);
+    const __m128 m02 = _mm_set1_ps(0.114f);
+    const __m128 m10 = _mm_set1_ps(-0.14713f);
+    const __m128 m11 = _mm_set1_ps(-0.28886f);
+    const __m128 m12 = _mm_set1_ps(0.43600f);
+    const __m128 m20 = _mm_set1_ps(0.61500f);
+    const __m128 m21 = _mm_set1_ps(-0.51499f);
+    const __m128 m22 = _mm_set1_ps(-0.10001f);
+    float y_out[4];
+    float u_out[4];
+    float v_out[4];
+
+    processed = pixel_total - (pixel_total % 4U);
+    for (index = 0U; index < processed; index += 4U) {
+        float *base;
+        __m128 r;
+        __m128 g;
+        __m128 b;
+        __m128 y;
+        __m128 u;
+        __m128 v;
+
+        base = pixels + index * 3U;
+
+        r = _mm_set_ps(base[9], base[6], base[3], base[0]);
+        g = _mm_set_ps(base[10], base[7], base[4], base[1]);
+        b = _mm_set_ps(base[11], base[8], base[5], base[2]);
+
+        y = _mm_add_ps(_mm_mul_ps(r, m00), _mm_mul_ps(g, m01));
+        y = _mm_add_ps(y, _mm_mul_ps(b, m02));
+
+        u = _mm_add_ps(_mm_mul_ps(r, m10), _mm_mul_ps(g, m11));
+        u = _mm_add_ps(u, _mm_mul_ps(b, m12));
+
+        v = _mm_add_ps(_mm_mul_ps(r, m20), _mm_mul_ps(g, m21));
+        v = _mm_add_ps(v, _mm_mul_ps(b, m22));
+
+        y = _mm_min_ps(y_max, _mm_max_ps(zero, y));
+        u = _mm_min_ps(u_max, _mm_max_ps(u_min, u));
+        v = _mm_min_ps(v_max, _mm_max_ps(v_min, v));
+
+        _mm_storeu_ps(y_out, y);
+        _mm_storeu_ps(u_out, u);
+        _mm_storeu_ps(v_out, v);
+
+        base[0] = y_out[0];
+        base[1] = u_out[0];
+        base[2] = v_out[0];
+        base[3] = y_out[1];
+        base[4] = u_out[1];
+        base[5] = v_out[1];
+        base[6] = y_out[2];
+        base[7] = u_out[2];
+        base[8] = v_out[2];
+        base[9] = y_out[3];
+        base[10] = u_out[3];
+        base[11] = v_out[3];
+    }
+
+    return processed;
+}
+#endif
+
+#if defined(SIXEL_USE_NEON)
+static size_t
+sixel_linear_to_yuv_neon(float *pixels, size_t pixel_total)
+{
+    size_t index;
+    size_t processed;
+    const float32x4_t zero = vdupq_n_f32(0.0f);
+    const float32x4_t y_max = vdupq_n_f32(1.0f);
+    const float32x4_t u_min = vdupq_n_f32(-SIXEL_YUV_U_MAX);
+    const float32x4_t u_max = vdupq_n_f32(SIXEL_YUV_U_MAX);
+    const float32x4_t v_min = vdupq_n_f32(-SIXEL_YUV_V_MAX);
+    const float32x4_t v_max = vdupq_n_f32(SIXEL_YUV_V_MAX);
+    const float32x4_t m00 = vdupq_n_f32(0.299f);
+    const float32x4_t m01 = vdupq_n_f32(0.587f);
+    const float32x4_t m02 = vdupq_n_f32(0.114f);
+    const float32x4_t m10 = vdupq_n_f32(-0.14713f);
+    const float32x4_t m11 = vdupq_n_f32(-0.28886f);
+    const float32x4_t m12 = vdupq_n_f32(0.43600f);
+    const float32x4_t m20 = vdupq_n_f32(0.61500f);
+    const float32x4_t m21 = vdupq_n_f32(-0.51499f);
+    const float32x4_t m22 = vdupq_n_f32(-0.10001f);
+
+    processed = pixel_total - (pixel_total % 4U);
+    for (index = 0U; index < processed; index += 4U) {
+        float32x4x3_t rgb;
+        float32x4_t y;
+        float32x4_t u;
+        float32x4_t v;
+        float32x4x3_t out;
+
+        rgb = vld3q_f32(pixels + index * 3U);
+
+        y = vmlaq_f32(vmulq_f32(rgb.val[0], m00), rgb.val[1], m01);
+        y = vmlaq_f32(y, rgb.val[2], m02);
+
+        u = vmlaq_f32(vmulq_f32(rgb.val[0], m10), rgb.val[1], m11);
+        u = vmlaq_f32(u, rgb.val[2], m12);
+
+        v = vmlaq_f32(vmulq_f32(rgb.val[0], m20), rgb.val[1], m21);
+        v = vmlaq_f32(v, rgb.val[2], m22);
+
+        y = vminq_f32(y_max, vmaxq_f32(zero, y));
+        u = vminq_f32(u_max, vmaxq_f32(u_min, u));
+        v = vminq_f32(v_max, vmaxq_f32(v_min, v));
+
+        out.val[0] = y;
+        out.val[1] = u;
+        out.val[2] = v;
+
+        vst3q_f32(pixels + index * 3U, out);
+    }
+
+    return processed;
+}
+#endif
+
+#if defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
+        defined(__AVX512BW__)
+static SIXEL_TARGET_AVX512 size_t
+sixel_yuv_to_linear_avx512(float *pixels, size_t pixel_total)
+{
+    size_t index;
+    size_t processed;
+    const __m512 zero = _mm512_set1_ps(0.0f);
+    const __m512 one = _mm512_set1_ps(1.0f);
+    const __m512 y_min = _mm512_set1_ps(0.0f);
+    const __m512 y_max = _mm512_set1_ps(1.0f);
+    const __m512 u_min = _mm512_set1_ps(-SIXEL_YUV_U_MAX);
+    const __m512 u_max = _mm512_set1_ps(SIXEL_YUV_U_MAX);
+    const __m512 v_min = _mm512_set1_ps(-SIXEL_YUV_V_MAX);
+    const __m512 v_max = _mm512_set1_ps(SIXEL_YUV_V_MAX);
+    const __m512 m10 = _mm512_set1_ps(-0.39465f);
+    const __m512 m11 = _mm512_set1_ps(-0.58060f);
+    const __m512 m21 = _mm512_set1_ps(2.03211f);
+    const __m512 m20 = _mm512_set1_ps(1.13983f);
+    const __m512i idx_r = _mm512_setr_epi32(
+        0, 12, 24, 36, 48, 60, 72, 84,
+        96, 108, 120, 132, 144, 156, 168, 180);
+    const __m512i idx_g = _mm512_setr_epi32(
+        4, 16, 28, 40, 52, 64, 76, 88,
+        100, 112, 124, 136, 148, 160, 172, 184);
+    const __m512i idx_b = _mm512_setr_epi32(
+        8, 20, 32, 44, 56, 68, 80, 92,
+        104, 116, 128, 140, 152, 164, 176, 188);
+
+    processed = pixel_total - (pixel_total % 16U);
+    for (index = 0U; index < processed; index += 16U) {
+        const char *base_char;
+        const float *base;
+        __m512 y;
+        __m512 u;
+        __m512 v;
+        __m512 r;
+        __m512 g;
+        __m512 b;
+
+        base_char = (const char *)(pixels + index * 3U);
+        base = (const float *)base_char;
+
+        y = _mm512_i32gather_ps(idx_r, base, 1);
+        u = _mm512_i32gather_ps(idx_g, base, 1);
+        v = _mm512_i32gather_ps(idx_b, base, 1);
+
+        y = _mm512_min_ps(y_max, _mm512_max_ps(y_min, y));
+        u = _mm512_min_ps(u_max, _mm512_max_ps(u_min, u));
+        v = _mm512_min_ps(v_max, _mm512_max_ps(v_min, v));
+
+        r = SIXEL_FMADD_PS512(v, m20, y);
+        g = SIXEL_FMADD_PS512(v, m11, y);
+        g = SIXEL_FMADD_PS512(u, m10, g);
+        b = SIXEL_FMADD_PS512(u, m21, y);
+
+        r = _mm512_min_ps(one, _mm512_max_ps(zero, r));
+        g = _mm512_min_ps(one, _mm512_max_ps(zero, g));
+        b = _mm512_min_ps(one, _mm512_max_ps(zero, b));
+
+        _mm512_i32scatter_ps((float *)base, idx_r, r, 1);
+        _mm512_i32scatter_ps((float *)base, idx_g, g, 1);
+        _mm512_i32scatter_ps((float *)base, idx_b, b, 1);
+    }
+
+    return processed;
+}
+#endif
+
+#if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
+static SIXEL_TARGET_AVX2 size_t
+sixel_yuv_to_linear_avx2(float *pixels, size_t pixel_total)
+{
+    size_t index;
+    size_t processed;
+    const __m256 zero = _mm256_set1_ps(0.0f);
+    const __m256 one = _mm256_set1_ps(1.0f);
+    const __m256 y_min = _mm256_set1_ps(0.0f);
+    const __m256 y_max = _mm256_set1_ps(1.0f);
+    const __m256 u_min = _mm256_set1_ps(-SIXEL_YUV_U_MAX);
+    const __m256 u_max = _mm256_set1_ps(SIXEL_YUV_U_MAX);
+    const __m256 v_min = _mm256_set1_ps(-SIXEL_YUV_V_MAX);
+    const __m256 v_max = _mm256_set1_ps(SIXEL_YUV_V_MAX);
+    const __m256 m10 = _mm256_set1_ps(-0.39465f);
+    const __m256 m11 = _mm256_set1_ps(-0.58060f);
+    const __m256 m21 = _mm256_set1_ps(2.03211f);
+    const __m256 m20 = _mm256_set1_ps(1.13983f);
+    const __m256i idx_r = _mm256_setr_epi32(
+        0, 12, 24, 36, 48, 60, 72, 84);
+    const __m256i idx_g = _mm256_setr_epi32(
+        4, 16, 28, 40, 52, 64, 76, 88);
+    const __m256i idx_b = _mm256_setr_epi32(
+        8, 20, 32, 44, 56, 68, 80, 92);
+    const char *base_char;
+    const float *base;
+    float *store;
+    __m256 y;
+    __m256 u;
+    __m256 v;
+    __m256 r;
+    __m256 g;
+    __m256 b;
+    __m128 r_lo;
+    __m128 r_hi;
+    __m128 g_lo;
+    __m128 g_hi;
+    __m128 b_lo;
+    __m128 b_hi;
+    __m128 rg_lo;
+    __m128 rg_hi;
+    __m128 gb_lo;
+    __m128 gb_hi;
+    __m128 br_hi;
+    __m128 store0;
+    __m128 store1;
+    __m128 store2;
+    __m128 store3;
+    __m128 store4;
+    __m128 store5;
+
+    processed = pixel_total - (pixel_total % 8U);
+    for (index = 0U; index < processed; index += 8U) {
+        base_char = (const char *)(pixels + index * 3U);
+        base = (const float *)base_char;
+        store = (float *)base_char;
+
+        y = _mm256_i32gather_ps(base, idx_r, 1);
+        u = _mm256_i32gather_ps(base, idx_g, 1);
+        v = _mm256_i32gather_ps(base, idx_b, 1);
+
+        y = _mm256_min_ps(y_max, _mm256_max_ps(y_min, y));
+        u = _mm256_min_ps(u_max, _mm256_max_ps(u_min, u));
+        v = _mm256_min_ps(v_max, _mm256_max_ps(v_min, v));
+
+        r = SIXEL_FMADD_PS256(v, m20, y);
+        g = SIXEL_FMADD_PS256(v, m11, y);
+        g = SIXEL_FMADD_PS256(u, m10, g);
+        b = SIXEL_FMADD_PS256(u, m21, y);
+
+        r = _mm256_min_ps(one, _mm256_max_ps(zero, r));
+        g = _mm256_min_ps(one, _mm256_max_ps(zero, g));
+        b = _mm256_min_ps(one, _mm256_max_ps(zero, b));
+
+        r_lo = _mm256_castps256_ps128(r);
+        r_hi = _mm256_extractf128_ps(r, 1);
+        g_lo = _mm256_castps256_ps128(g);
+        g_hi = _mm256_extractf128_ps(g, 1);
+        b_lo = _mm256_castps256_ps128(b);
+        b_hi = _mm256_extractf128_ps(b, 1);
+
+        rg_lo = _mm_unpacklo_ps(r_lo, g_lo);
+        rg_hi = _mm_unpackhi_ps(r_lo, g_lo);
+        gb_lo = _mm_unpacklo_ps(g_lo, b_lo);
+        gb_hi = _mm_unpackhi_ps(g_lo, b_lo);
+        br_hi = _mm_unpackhi_ps(b_lo, r_lo);
+
+        store0 = _mm_movelh_ps(rg_lo, b_lo);
+        store0 = _mm_blend_ps(store0,
+                              _mm_shuffle_ps(r_lo, r_lo,
+                                             _MM_SHUFFLE(1, 1, 1, 1)),
+                              0x8);
+        store1 = _mm_shuffle_ps(gb_lo, rg_hi, 0x4E);
+        store2 = _mm_shuffle_ps(br_hi, gb_hi, 0xEC);
+
+        _mm_storeu_ps(store, store0);
+        _mm_storeu_ps(store + 4U, store1);
+        _mm_storeu_ps(store + 8U, store2);
+
+        rg_lo = _mm_unpacklo_ps(r_hi, g_hi);
+        rg_hi = _mm_unpackhi_ps(r_hi, g_hi);
+        gb_lo = _mm_unpacklo_ps(g_hi, b_hi);
+        gb_hi = _mm_unpackhi_ps(g_hi, b_hi);
+        br_hi = _mm_unpackhi_ps(b_hi, r_hi);
+
+        store3 = _mm_movelh_ps(rg_lo, b_hi);
+        store3 = _mm_blend_ps(store3,
+                              _mm_shuffle_ps(r_hi, r_hi,
+                                             _MM_SHUFFLE(1, 1, 1, 1)),
+                              0x8);
+        store4 = _mm_shuffle_ps(gb_lo, rg_hi, 0x4E);
+        store5 = _mm_shuffle_ps(br_hi, gb_hi, 0xEC);
+
+        _mm_storeu_ps(store + 12U, store3);
+        _mm_storeu_ps(store + 16U, store4);
+        _mm_storeu_ps(store + 20U, store5);
+    }
+
+    return processed;
+}
+#endif
+
+#if defined(SIXEL_USE_SSE2)
+static size_t
+sixel_yuv_to_linear_sse2(float *pixels, size_t pixel_total)
+{
+    size_t index;
+    size_t processed;
+    const __m128 zero = _mm_set1_ps(0.0f);
+    const __m128 one = _mm_set1_ps(1.0f);
+    const __m128 y_min = _mm_set1_ps(0.0f);
+    const __m128 y_max = _mm_set1_ps(1.0f);
+    const __m128 u_min = _mm_set1_ps(-SIXEL_YUV_U_MAX);
+    const __m128 u_max = _mm_set1_ps(SIXEL_YUV_U_MAX);
+    const __m128 v_min = _mm_set1_ps(-SIXEL_YUV_V_MAX);
+    const __m128 v_max = _mm_set1_ps(SIXEL_YUV_V_MAX);
+    const __m128 m10 = _mm_set1_ps(-0.39465f);
+    const __m128 m11 = _mm_set1_ps(-0.58060f);
+    const __m128 m21 = _mm_set1_ps(2.03211f);
+    const __m128 m20 = _mm_set1_ps(1.13983f);
+    float r_out[4];
+    float g_out[4];
+    float b_out[4];
+
+    processed = pixel_total - (pixel_total % 4U);
+    for (index = 0U; index < processed; index += 4U) {
+        float *base;
+        __m128 y;
+        __m128 u;
+        __m128 v;
+        __m128 r;
+        __m128 g;
+        __m128 b;
+
+        base = pixels + index * 3U;
+
+        y = _mm_set_ps(base[9], base[6], base[3], base[0]);
+        u = _mm_set_ps(base[10], base[7], base[4], base[1]);
+        v = _mm_set_ps(base[11], base[8], base[5], base[2]);
+
+        y = _mm_min_ps(y_max, _mm_max_ps(y_min, y));
+        u = _mm_min_ps(u_max, _mm_max_ps(u_min, u));
+        v = _mm_min_ps(v_max, _mm_max_ps(v_min, v));
+
+        r = _mm_add_ps(_mm_mul_ps(v, m20), y);
+        g = _mm_add_ps(_mm_mul_ps(v, m11), y);
+        g = _mm_add_ps(g, _mm_mul_ps(u, m10));
+        b = _mm_add_ps(_mm_mul_ps(u, m21), y);
+
+        r = _mm_min_ps(one, _mm_max_ps(zero, r));
+        g = _mm_min_ps(one, _mm_max_ps(zero, g));
+        b = _mm_min_ps(one, _mm_max_ps(zero, b));
+
+        _mm_storeu_ps(r_out, r);
+        _mm_storeu_ps(g_out, g);
+        _mm_storeu_ps(b_out, b);
+
+        base[0] = r_out[0];
+        base[1] = g_out[0];
+        base[2] = b_out[0];
+        base[3] = r_out[1];
+        base[4] = g_out[1];
+        base[5] = b_out[1];
+        base[6] = r_out[2];
+        base[7] = g_out[2];
+        base[8] = b_out[2];
+        base[9] = r_out[3];
+        base[10] = g_out[3];
+        base[11] = b_out[3];
+    }
+
+    return processed;
+}
+#endif
+
+#if defined(SIXEL_USE_NEON)
+static size_t
+sixel_yuv_to_linear_neon(float *pixels, size_t pixel_total)
+{
+    size_t index;
+    size_t processed;
+    const float32x4_t zero = vdupq_n_f32(0.0f);
+    const float32x4_t one = vdupq_n_f32(1.0f);
+    const float32x4_t y_min = vdupq_n_f32(0.0f);
+    const float32x4_t y_max = vdupq_n_f32(1.0f);
+    const float32x4_t u_min = vdupq_n_f32(-SIXEL_YUV_U_MAX);
+    const float32x4_t u_max = vdupq_n_f32(SIXEL_YUV_U_MAX);
+    const float32x4_t v_min = vdupq_n_f32(-SIXEL_YUV_V_MAX);
+    const float32x4_t v_max = vdupq_n_f32(SIXEL_YUV_V_MAX);
+    const float32x4_t m10 = vdupq_n_f32(-0.39465f);
+    const float32x4_t m11 = vdupq_n_f32(-0.58060f);
+    const float32x4_t m21 = vdupq_n_f32(2.03211f);
+    const float32x4_t m20 = vdupq_n_f32(1.13983f);
+
+    processed = pixel_total - (pixel_total % 4U);
+    for (index = 0U; index < processed; index += 4U) {
+        float32x4x3_t yuv;
+        float32x4_t r;
+        float32x4_t g;
+        float32x4_t b;
+        float32x4x3_t out;
+
+        yuv = vld3q_f32(pixels + index * 3U);
+
+        yuv.val[0] = vminq_f32(y_max, vmaxq_f32(y_min, yuv.val[0]));
+        yuv.val[1] = vminq_f32(u_max, vmaxq_f32(u_min, yuv.val[1]));
+        yuv.val[2] = vminq_f32(v_max, vmaxq_f32(v_min, yuv.val[2]));
+
+        r = vmlaq_f32(yuv.val[0], yuv.val[2], m20);
+        g = vmlaq_f32(yuv.val[0], yuv.val[2], m11);
+        g = vmlaq_f32(g, yuv.val[1], m10);
+        b = vmlaq_f32(yuv.val[0], yuv.val[1], m21);
+
+        r = vminq_f32(one, vmaxq_f32(zero, r));
+        g = vminq_f32(one, vmaxq_f32(zero, g));
+        b = vminq_f32(one, vmaxq_f32(zero, b));
+
+        out.val[0] = r;
+        out.val[1] = g;
+        out.val[2] = b;
+
+        vst3q_f32(pixels + index * 3U, out);
+    }
+
+    return processed;
+}
+#endif
 #if defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
         defined(__AVX512BW__)
 static SIXEL_TARGET_AVX512 size_t
@@ -2961,6 +3605,130 @@ sixel_linear_to_smptec_float_simd(float *pixels,
 }
 
 static void
+sixel_linear_to_yuv_float_simd(float *pixels,
+                               size_t pixel_total,
+                               int simd_level)
+{
+    size_t processed;
+    size_t index;
+
+    processed = 0U;
+
+    (void)simd_level;
+
+#if defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
+        defined(__AVX512BW__)
+    if (simd_level >= SIXEL_SIMD_LEVEL_AVX512) {
+        processed = sixel_linear_to_yuv_avx512(pixels, pixel_total);
+    }
+#endif
+
+#if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
+    if (processed < pixel_total &&
+            simd_level >= SIXEL_SIMD_LEVEL_AVX2) {
+        processed += sixel_linear_to_yuv_avx2(
+            pixels + processed * 3U, pixel_total - processed);
+    }
+#endif
+
+#if defined(SIXEL_USE_SSE2)
+    if (processed < pixel_total &&
+            simd_level >= SIXEL_SIMD_LEVEL_SSE2) {
+        processed += sixel_linear_to_yuv_sse2(
+            pixels + processed * 3U, pixel_total - processed);
+    }
+#endif
+
+#if defined(SIXEL_USE_NEON)
+    if (processed < pixel_total &&
+            simd_level == SIXEL_SIMD_LEVEL_NEON) {
+        processed += sixel_linear_to_yuv_neon(
+            pixels + processed * 3U, pixel_total - processed);
+    }
+#endif
+
+    for (index = processed; index < pixel_total; ++index) {
+        double y_component;
+        double u_component;
+        double v_component;
+        float *base;
+
+        base = pixels + index * 3U;
+        sixel_linear_to_yuv((double)base[0],
+                            (double)base[1],
+                            (double)base[2],
+                            &y_component,
+                            &u_component,
+                            &v_component);
+        base[0] = (float)y_component;
+        base[1] = (float)u_component;
+        base[2] = (float)v_component;
+    }
+}
+
+static void
+sixel_yuv_to_linear_float_simd(float *pixels,
+                               size_t pixel_total,
+                               int simd_level)
+{
+    size_t processed;
+    size_t index;
+
+    processed = 0U;
+
+    (void)simd_level;
+
+#if defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
+        defined(__AVX512BW__)
+    if (simd_level >= SIXEL_SIMD_LEVEL_AVX512) {
+        processed = sixel_yuv_to_linear_avx512(pixels, pixel_total);
+    }
+#endif
+
+#if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
+    if (processed < pixel_total &&
+            simd_level >= SIXEL_SIMD_LEVEL_AVX2) {
+        processed += sixel_yuv_to_linear_avx2(
+            pixels + processed * 3U, pixel_total - processed);
+    }
+#endif
+
+#if defined(SIXEL_USE_SSE2)
+    if (processed < pixel_total &&
+            simd_level >= SIXEL_SIMD_LEVEL_SSE2) {
+        processed += sixel_yuv_to_linear_sse2(
+            pixels + processed * 3U, pixel_total - processed);
+    }
+#endif
+
+#if defined(SIXEL_USE_NEON)
+    if (processed < pixel_total &&
+            simd_level == SIXEL_SIMD_LEVEL_NEON) {
+        processed += sixel_yuv_to_linear_neon(
+            pixels + processed * 3U, pixel_total - processed);
+    }
+#endif
+
+    for (index = processed; index < pixel_total; ++index) {
+        double r_lin;
+        double g_lin;
+        double b_lin;
+        float *base;
+
+        base = pixels + index * 3U;
+        sixel_yuv_to_linear((double)base[0],
+                            (double)base[1],
+                            (double)base[2],
+                            &r_lin,
+                            &g_lin,
+                            &b_lin);
+        base[0] = (float)r_lin;
+        base[1] = (float)g_lin;
+        base[2] = (float)b_lin;
+    }
+}
+
+static void
 sixel_colorspace_init_tables(void)
 {
     int i;
@@ -3474,6 +4242,18 @@ sixel_convert_pixels_via_linear_float_chunk(float *pixels,
     if (colorspace_src == SIXEL_COLORSPACE_LINEAR &&
             colorspace_dst == SIXEL_COLORSPACE_SMPTEC) {
         sixel_linear_to_smptec_float_simd(pixels, pixel_total, simd_level);
+        return SIXEL_OK;
+    }
+
+    if (colorspace_src == SIXEL_COLORSPACE_LINEAR &&
+            colorspace_dst == SIXEL_COLORSPACE_YUV) {
+        sixel_linear_to_yuv_float_simd(pixels, pixel_total, simd_level);
+        return SIXEL_OK;
+    }
+
+    if (colorspace_src == SIXEL_COLORSPACE_YUV &&
+            colorspace_dst == SIXEL_COLORSPACE_LINEAR) {
+        sixel_yuv_to_linear_float_simd(pixels, pixel_total, simd_level);
         return SIXEL_OK;
     }
 
