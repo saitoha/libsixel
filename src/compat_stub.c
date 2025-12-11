@@ -659,7 +659,7 @@ sixel_compat_vsscanf(const char *buffer, const char *format, va_list args)
         return (-1);
     }
 
-#if HAVE_SSCANF_S || defined(_MSC_VER)
+#if defined(_MSC_VER) || defined(__STDC_LIB_EXT1__)
     /*
      * vsscanf_s requires a literal format string, but our callers pass
      * validated format strings held in variables. Suppress the
