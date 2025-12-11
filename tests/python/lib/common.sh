@@ -60,6 +60,33 @@ tap_skip_all() {
     exit 0
 }
 
+# Skip all tests when a Python process failed because the dynamic loader could
+# not import the libsixel shared library. Python snippets emit the
+# SKIP_LIBSIXEL_LOAD marker on OSError so shell callers can detect the
+# condition and bail out cleanly instead of reporting a false failure during
+# cross-builds.
+python_skip_on_load_error() {
+    status=$1
+    log_path=$2
+
+    if [ "${status}" -eq 0 ]; then
+        return 0
+    fi
+
+    if [ -z "${log_path}" ] || [ ! -f "${log_path}" ]; then
+        return 1
+    fi
+
+    marker=$(grep -m1 '^SKIP_LIBSIXEL_LOAD:' "${log_path}" || true)
+    if [ -z "${marker}" ]; then
+        return 1
+    fi
+
+    reason=${marker#SKIP_LIBSIXEL_LOAD:}
+    reason=$(printf '%s' "${reason}" | sed 's/^ *//')
+    tap_skip_all "libsixel failed to load: ${reason}"
+}
+
 # Locate the build output directory that should contain the libsixel library.
 resolve_libdir() {
     build_root=$1

@@ -34,14 +34,18 @@ import sys
 import warnings
 from typing import Tuple
 
-from libsixel import (
-    SIXEL_OPTFLAG_INPUT,
-    SIXEL_OPTFLAG_OUTPUT,
-    SIXEL_OPTFLAG_WIDTH,
-    SIXEL_OPTFLAG_HEIGHT,
-)
-from libsixel.encoder import Encoder
-from libsixel.decoder import Decoder
+try:
+    from libsixel import (
+        SIXEL_OPTFLAG_INPUT,
+        SIXEL_OPTFLAG_OUTPUT,
+        SIXEL_OPTFLAG_WIDTH,
+        SIXEL_OPTFLAG_HEIGHT,
+    )
+    from libsixel.encoder import Encoder
+    from libsixel.decoder import Decoder
+except OSError as exc:
+    print(f"SKIP_LIBSIXEL_LOAD:{exc}")
+    raise SystemExit(2)
 
 
 def encode_large(source: pathlib.Path, target: pathlib.Path) -> int:
@@ -156,6 +160,7 @@ if [ "${use_wheel}" -eq 1 ]; then
        "${source_image}" "${work_dir}" >>"${log_file}" 2>&1; then
         tap_pass ${case_id} "large image roundtrip via wheel frees resources"
     else
+        python_skip_on_load_error $? "${log_file}"
         tap_fail ${case_id} "resource test via wheel failed"
     fi
 else
@@ -166,6 +171,7 @@ else
        "${source_image}" "${work_dir}" >>"${log_file}" 2>&1; then
         tap_pass ${case_id} "large image roundtrip via in-tree modules frees resources"
     else
+        python_skip_on_load_error $? "${log_file}"
         tap_fail ${case_id} "resource test via in-tree modules failed"
     fi
 fi

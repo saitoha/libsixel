@@ -37,26 +37,19 @@ else
        LD_LIBRARY_PATH="${python_in_tree_ld_library_path}" \
        LIBSIXEL_LIBDIR="${lib_dir}" \
        "${run_python}" - <<'PY' >>"${log_file}" 2>&1; then
-import os
-import sys
-import traceback
-
-skip_code = int(os.environ.get("SKIP_CODE", "200"))
-
 try:
     import libsixel
     from libsixel import encoder, decoder
+
     encoder.Encoder
     decoder.Decoder
-except OSError:
-    traceback.print_exc()
-    raise SystemExit(skip_code)
-except Exception:
-    traceback.print_exc()
-    raise SystemExit(1)
+except OSError as exc:
+    print(f"SKIP_LIBSIXEL_LOAD:{exc}")
+    raise SystemExit(2)
 PY
         tap_pass ${case_id} "imports in-tree python modules"
     else
+        python_skip_on_load_error $? "${log_file}"
         tap_fail ${case_id} "failed to import in-tree python modules"
     fi
 fi
@@ -97,6 +90,7 @@ def main():
         _prefer_build_library(name, _orig)
     )
 
+try:
     from libsixel import SIXEL_PIXELFORMAT_RGB888
     from libsixel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
 
@@ -120,19 +114,9 @@ def main():
         raise SystemExit("empty sixel output")
 
     print("encode succeeded")
-PY
-
-cat >>"${verify_script}" <<'PY'
-
-if __name__ == "__main__":
-    try:
-        main()
-    except OSError:
-        traceback.print_exc()
-        raise SystemExit(SKIP_CODE)
-    except Exception:
-        traceback.print_exc()
-        raise
+except OSError as exc:
+    print(f"SKIP_LIBSIXEL_LOAD:{exc}")
+    raise SystemExit(2)
 PY
 
 python_env="${run_python}"
@@ -165,6 +149,7 @@ if [ "${use_wheel}" -eq 1 ]; then
        "${python_env}" "${verify_script}" >>"${log_file}" 2>&1; then
         tap_pass ${case_id} "encodes image via wheel"
     else
+        python_skip_on_load_error $? "${log_file}"
         tap_fail ${case_id} "python wheel round-trip failed"
     fi
 else
@@ -173,6 +158,7 @@ else
        "${python_env}" "${verify_script}" >>"${log_file}" 2>&1; then
         tap_pass ${case_id} "encodes image via in-tree modules"
     else
+        python_skip_on_load_error $? "${log_file}"
         tap_fail ${case_id} "python in-tree round-trip failed"
     fi
 fi

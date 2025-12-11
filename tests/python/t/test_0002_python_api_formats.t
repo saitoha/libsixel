@@ -26,49 +26,52 @@ cat >"${verify_script}" <<'PY'
 import pathlib
 import sys
 
-from libsixel import SIXEL_OPTFLAG_INPUT
-from libsixel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
+try:
+    from libsixel import SIXEL_OPTFLAG_INPUT
+    from libsixel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
+
+    def ensure_sixel_signature(path: pathlib.Path) -> int:
+        data = path.read_bytes()
+        if not data.startswith(b"\x1bPq"):
+            raise SystemExit("missing sixel DCS introducer")
+
+        stripped = data.rstrip(b"\r\n")
+        if not stripped.endswith(b"\x1b\\"):
+            raise SystemExit("missing sixel ST terminator")
+
+        return len(data)
 
 
-def ensure_sixel_signature(path: pathlib.Path) -> int:
-    data = path.read_bytes()
-    if not data.startswith(b"\x1bPq"):
-        raise SystemExit("missing sixel DCS introducer")
+    def encode_image(src: pathlib.Path, dest: pathlib.Path) -> int:
+        encoder = Encoder()
+        encoder.setopt(SIXEL_OPTFLAG_INPUT, str(src))
+        encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(dest))
+        encoder.encode(str(src))
 
-    stripped = data.rstrip(b"\r\n")
-    if not stripped.endswith(b"\x1b\\"):
-        raise SystemExit("missing sixel ST terminator")
+        if not dest.exists():
+            raise SystemExit("missing sixel output")
+        if dest.stat().st_size == 0:
+            raise SystemExit("empty sixel output")
 
-    return len(data)
-
-
-def encode_image(src: pathlib.Path, dest: pathlib.Path) -> int:
-    encoder = Encoder()
-    encoder.setopt(SIXEL_OPTFLAG_INPUT, str(src))
-    encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(dest))
-    encoder.encode(str(src))
-
-    if not dest.exists():
-        raise SystemExit("missing sixel output")
-    if dest.stat().st_size == 0:
-        raise SystemExit("empty sixel output")
-
-    return ensure_sixel_signature(dest)
+        return ensure_sixel_signature(dest)
 
 
-def main() -> None:
-    if len(sys.argv) != 3:
-        raise SystemExit("usage: verify-format.py <input> <output>")
+    def main() -> None:
+        if len(sys.argv) != 3:
+            raise SystemExit("usage: verify-format.py <input> <output>")
 
-    source = pathlib.Path(sys.argv[1])
-    target = pathlib.Path(sys.argv[2])
+        source = pathlib.Path(sys.argv[1])
+        target = pathlib.Path(sys.argv[2])
 
-    size = encode_image(source, target)
-    print(f"encoded {source.name} -> {target.name} ({size} bytes)")
+        size = encode_image(source, target)
+        print(f"encoded {source.name} -> {target.name} ({size} bytes)")
 
 
-if __name__ == "__main__":
-    main()
+    if __name__ == "__main__":
+        main()
+except OSError as exc:
+    print(f"SKIP_LIBSIXEL_LOAD:{exc}")
+    raise SystemExit(2)
 PY
 
 # Install the wheel into a venv when available so the API is exercised through
@@ -97,6 +100,7 @@ while IFS=: read -r label source_path; do
            "${source_path}" "${output_path}" >>"${log_file}" 2>&1; then
             tap_pass ${case_id} "encodes ${label} via wheel (DCS/ST ok)"
         else
+            python_skip_on_load_error $? "${log_file}"
             tap_fail ${case_id} "${label} encoding via wheel failed"
         fi
     else
@@ -107,6 +111,7 @@ while IFS=: read -r label source_path; do
            "${source_path}" "${output_path}" >>"${log_file}" 2>&1; then
             tap_pass ${case_id} "encodes ${label} via in-tree modules (DCS/ST ok)"
         else
+            python_skip_on_load_error $? "${log_file}"
             tap_fail ${case_id} "${label} encoding via in-tree modules failed"
         fi
     fi
