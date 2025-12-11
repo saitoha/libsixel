@@ -2785,8 +2785,8 @@ sixel_encoder_copy_samples(sixel_encoder_t *encoder,
     int clip_h;
     int src_width;
     int src_height;
-    int width;
-    int height;
+    int width = 0;
+    int height = 0;
     int depth;
     int sample_width;
     int sample_height;

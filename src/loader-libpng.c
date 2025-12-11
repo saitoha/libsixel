@@ -619,6 +619,16 @@ loader_can_try_libpng(sixel_chunk_t const *chunk)
  */
 enum { sixel_loader_libpng_placeholder = 0 };
 
+static void
+sixel_loader_libpng_placeholder_function(void)
+{
+    /*
+     * Tie the placeholder enum to a symbol so MSVC does not warn about an
+     * empty translation unit when libpng is disabled.
+     */
+    (void)sixel_loader_libpng_placeholder;
+}
+
 #endif  /* HAVE_LIBPNG */
 
 /* emacs Local Variables:      */

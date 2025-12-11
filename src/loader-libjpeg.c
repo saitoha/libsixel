@@ -226,6 +226,16 @@ loader_can_try_libjpeg(sixel_chunk_t const *chunk)
  */
 enum { sixel_loader_libjpeg_placeholder = 0 };
 
+static void
+sixel_loader_libjpeg_placeholder_function(void)
+{
+    /*
+     * The placeholder ties the enum to a symbol so MSVC does not warn about
+     * an empty translation unit when libjpeg support is disabled.
+     */
+    (void)sixel_loader_libjpeg_placeholder;
+}
+
 #endif  /* HAVE_JPEG */
 
 /* emacs Local Variables:      */
