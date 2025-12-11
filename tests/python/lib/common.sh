@@ -19,7 +19,11 @@ run_python=""
 lib_dir=""
 shared_lib=""
 python_bits=""
+python_arch=""
 lib_bits=""
+lib_arch=""
+python_libc=""
+lib_libc=""
 wheel_path=""
 use_wheel=0
 python_in_tree_pythonpath=""
@@ -172,6 +176,41 @@ print(struct.calcsize("P") * 8)
 PY
 }
 
+# Determine the Python interpreter architecture string (e.g., x86_64).
+detect_python_arch() {
+    bin=$1
+
+    ${bin} - <<'PY' 2>/dev/null || true
+import platform
+
+print(platform.machine())
+PY
+}
+
+# Determine the Python interpreter's libc family so glibc/musl mismatches can
+# be skipped before the shared object is imported.
+detect_python_libc() {
+    bin=$1
+
+    ${bin} - <<'PY' 2>/dev/null || true
+import os
+import platform
+
+# platform.libc_ver() returns ('glibc', version) on glibc and ('musl', '') on
+# musl. Normalize to stable strings and fall back to an empty marker when the
+# libc cannot be determined.
+name, _ = platform.libc_ver()
+name = name.lower().strip()
+
+if name:
+    print(name)
+elif os.name == "nt":
+    print("msvcrt")
+else:
+    print("")
+PY
+}
+
 # Determine the shared library bit width for ELF/Mach-O/PE binaries.
 detect_library_bits() {
     bin=$1
@@ -253,6 +292,146 @@ if __name__ == "__main__":
 PY
 }
 
+# Determine the shared library architecture string so cross-builds can be
+# skipped cleanly when the target differs from the host interpreter.
+detect_library_arch() {
+    bin=$1
+    path=$2
+
+    ${bin} - <<PY 2>>"${tap_log_file}" || true
+import pathlib
+import struct
+
+
+def _elf_machine(head):
+    if not head.startswith(b"\x7fELF") or len(head) < 20:
+        return ""
+
+    machine = int.from_bytes(head[18:20], byteorder="little")
+    mapping = {
+        0x03: "i386",
+        0x08: "mips",
+        0x14: "ppc",
+        0x15: "ppc64",
+        0x28: "arm",
+        0x3E: "x86_64",
+        0xB7: "aarch64",
+    }
+    return mapping.get(machine, f"elf-{machine}")
+
+
+def _macho_machine(head):
+    macho_32 = (0xfeedface, 0xcefaedfe)
+    macho_64 = (0xfeedfacf, 0xcffaedfe)
+
+    if len(head) < 12:
+        return ""
+
+    magic = int.from_bytes(head[:4], byteorder="big", signed=False)
+    if magic not in macho_32 + macho_64:
+        return ""
+
+    byteorder = "big"
+    if magic in (0xcefaedfe, 0xcffaedfe):
+        byteorder = "little"
+
+    cputype = int.from_bytes(head[4:8], byteorder=byteorder, signed=True)
+    mapping = {
+        7: "i386",
+        0x01000007: "x86_64",
+        12: "arm",
+        0x0100000C: "arm64",
+    }
+    return mapping.get(cputype, f"macho-{cputype}")
+
+
+def _pe_machine(head, path):
+    if not head.startswith(b"MZ") or len(head) < 0x40:
+        return ""
+
+    pe_offset = int.from_bytes(head[0x3C:0x40], byteorder="little")
+    try:
+        with path.open("rb") as handle:
+            handle.seek(pe_offset)
+            signature = handle.read(6)
+    except OSError:
+        return ""
+
+    if not signature.startswith(b"PE\0\0") or len(signature) < 6:
+        return ""
+
+    machine = struct.unpack("<H", signature[4:6])[0]
+    mapping = {
+        0x014c: "i386",
+        0x8664: "x86_64",
+        0x01c0: "arm",
+        0xAA64: "arm64",
+    }
+    return mapping.get(machine, f"pe-{machine}")
+
+
+def detect(path):
+    try:
+        with path.open("rb") as handle:
+            head = handle.read(512)
+    except OSError:
+        return ""
+
+    for detector in (_elf_machine, _macho_machine):
+        arch = detector(head)
+        if arch:
+            return arch
+
+    return _pe_machine(head, path)
+
+
+if __name__ == "__main__":
+    lib_path = pathlib.Path(r"${path}")
+    print(detect(lib_path))
+PY
+}
+
+# Determine the shared library's libc family by inspecting ELF interpreter and
+# loader hints. The detection is intentionally lightweight and returns empty on
+# non-ELF binaries.
+detect_library_libc() {
+    bin=$1
+    path=$2
+
+    ${bin} - <<PY 2>>"${tap_log_file}" || true
+import pathlib
+
+
+def detect(path):
+    try:
+        with path.open("rb") as handle:
+            head = handle.read(4096)
+    except OSError:
+        return ""
+
+    if not head.startswith(b"\x7fELF"):
+        return ""
+
+    musl_markers = (b"/ld-musl", b"musl")
+    glibc_markers = (b"/ld-linux", b"glibc")
+
+    for marker in musl_markers:
+        if marker in head:
+            return "musl"
+
+    for marker in glibc_markers:
+        if marker in head:
+            return "glibc"
+
+    return ""
+
+
+if __name__ == "__main__":
+    lib_path = pathlib.Path(r"${path}")
+    print(detect(lib_path))
+PY
+}
+
 # Return the first wheel path under python-wheel/dist if it exists.
 select_wheel() {
     build_root=$1
@@ -313,6 +492,10 @@ python_prepare() {
     fi
 
     python_bits=$(detect_python_bits "${python_bin}")
+    python_arch=$(detect_python_arch "${python_bin}")
+    python_arch=$(printf '%s' "${python_arch}" | tr 'A-Z' 'a-z')
+    python_libc=$(detect_python_libc "${python_bin}")
+    python_libc=$(printf '%s' "${python_libc}" | tr 'A-Z' 'a-z')
 
     # Derive a stable path separator without invoking the interpreter, as
     # Python's stdout line endings on MSYS environments can inject stray
@@ -337,6 +520,10 @@ python_prepare() {
     fi
 
     lib_bits=$(detect_library_bits "${python_bin}" "${shared_lib}")
+    lib_arch=$(detect_library_arch "${python_bin}" "${shared_lib}")
+    lib_arch=$(printf '%s' "${lib_arch}" | tr 'A-Z' 'a-z')
+    lib_libc=$(detect_library_libc "${python_bin}" "${shared_lib}")
+    lib_libc=$(printf '%s' "${lib_libc}" | tr 'A-Z' 'a-z')
 
     python_trace_dir="${tmp_dir}/trace"
     python_trace_pythonpath="${python_trace_dir}"
@@ -448,7 +635,11 @@ PY
 
     if [ -n "${tap_log_file}" ]; then
         printf 'python_bits=%s\n' "${python_bits}" >>"${tap_log_file}"
+        printf 'python_arch=%s\n' "${python_arch}" >>"${tap_log_file}"
         printf 'lib_bits=%s\n' "${lib_bits}" >>"${tap_log_file}"
+        printf 'lib_arch=%s\n' "${lib_arch}" >>"${tap_log_file}"
+        printf 'python_libc=%s\n' "${python_libc}" >>"${tap_log_file}"
+        printf 'lib_libc=%s\n' "${lib_libc}" >>"${tap_log_file}"
         printf 'lib_dir=%s\n' "${lib_dir}" >>"${tap_log_file}"
         printf 'shared_lib=%s\n' "${shared_lib}" >>"${tap_log_file}"
     fi
@@ -456,6 +647,16 @@ PY
     if [ -n "${python_bits}" ] && [ -n "${lib_bits}" ] \
        && [ "${python_bits}" != "${lib_bits}" ]; then
         tap_skip_all "python is ${python_bits}-bit but libsixel is ${lib_bits}-bit"
+    fi
+
+    if [ -n "${python_arch}" ] && [ -n "${lib_arch}" ] \
+       && [ "${python_arch}" != "${lib_arch}" ]; then
+        tap_skip_all "python architecture ${python_arch} does not match libsixel ${lib_arch}"
+    fi
+
+    if [ -n "${python_libc}" ] && [ -n "${lib_libc}" ] \
+       && [ "${python_libc}" != "${lib_libc}" ]; then
+        tap_skip_all "python libc ${python_libc} does not match libsixel ${lib_libc}"
     fi
 
     wheel_path=$(select_wheel "${TOP_BUILDDIR}" || true)
