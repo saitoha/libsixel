@@ -193,7 +193,7 @@ sixel_lookup_vpte_parse_positive(char const *env_name, int fallback)
     char *endptr;
     long value;
 
-    env = getenv(env_name);
+    env = sixel_compat_getenv(env_name);
     if (env == NULL || env[0] == '\0') {
         return fallback;
     }
@@ -321,7 +321,7 @@ sixel_lookup_vpte_pin_threads_enabled(void)
 {
     char const *env;
 
-    env = getenv("SIXEL_VPTE_PIN_THREADS");
+    env = sixel_compat_getenv("SIXEL_VPTE_PIN_THREADS");
     if (env == NULL || env[0] == '\0') {
         return 0;
     }
@@ -334,7 +334,7 @@ sixel_lookup_vpte_first_touch_enabled(void)
 {
     char const *env;
 
-    env = getenv("SIXEL_VPTE_FIRST_TOUCH");
+    env = sixel_compat_getenv("SIXEL_VPTE_FIRST_TOUCH");
     if (env == NULL || env[0] == '\0') {
         return 0;
     }
@@ -431,7 +431,7 @@ sixel_lookup_vpte_timeline_open(sixel_lookup_vpte_timeline_t *timeline)
     (void)sixel_logger_prepare_env(&timeline->logger);
     timeline->log_lines = 0;
     timeline->line_stride = 1;
-    line_env = getenv("SIXEL_PARALLEL_LOG_LINES");
+    line_env = sixel_compat_getenv("SIXEL_PARALLEL_LOG_LINES");
     if (line_env != NULL && line_env[0] != '\0') {
         stride = strtol(line_env, NULL, 10);
         if (stride < 1L) {

@@ -59,6 +59,7 @@
 # include <sys/sysctl.h>
 #endif
 
+#include "compat_stub.h"
 #include "threading.h"
 
 /*
@@ -766,7 +767,7 @@ sixel_threads_load_env(void)
     g_thread_config.env_checked = 1;
     g_thread_config.env_valid = 0;
 
-    text = getenv("SIXEL_THREADS");
+    text = sixel_compat_getenv("SIXEL_THREADS");
     if (text == NULL || text[0] == '\0') {
         return;
     }
