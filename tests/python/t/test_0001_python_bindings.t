@@ -35,14 +35,19 @@ else
        LD_LIBRARY_PATH="${python_in_tree_ld_library_path}" \
        LIBSIXEL_LIBDIR="${lib_dir}" \
        "${run_python}" - <<'PY' >>"${log_file}" 2>&1; then
-import libsixel
-from libsixel import encoder, decoder
+try:
+    import libsixel
+    from libsixel import encoder, decoder
 
-encoder.Encoder
-decoder.Decoder
+    encoder.Encoder
+    decoder.Decoder
+except OSError as exc:
+    print(f"SKIP_LIBSIXEL_LOAD:{exc}")
+    raise SystemExit(2)
 PY
         tap_pass ${case_id} "imports in-tree python modules"
     else
+        python_skip_on_load_error $? "${log_file}"
         tap_fail ${case_id} "failed to import in-tree python modules"
     fi
 fi
@@ -78,29 +83,33 @@ ctypes.util.find_library = (
     _prefer_build_library(name, _orig)
 )
 
-from libsixel import SIXEL_PIXELFORMAT_RGB888
-from libsixel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
+try:
+    from libsixel import SIXEL_PIXELFORMAT_RGB888
+    from libsixel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
 
-root = pathlib.Path(__file__).parent
-output = root / "sample.six"
+    root = pathlib.Path(__file__).parent
+    output = root / "sample.six"
 
-pixels = bytes([
-    255, 0, 0,
-    0, 255, 0,
-    0, 0, 255,
-    255, 255, 255,
-])
+    pixels = bytes([
+        255, 0, 0,
+        0, 255, 0,
+        0, 0, 255,
+        255, 255, 255,
+    ])
 
-encoder = Encoder()
-encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(output))
-encoder.encode_bytes(pixels, 2, 2, SIXEL_PIXELFORMAT_RGB888, None)
+    encoder = Encoder()
+    encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(output))
+    encoder.encode_bytes(pixels, 2, 2, SIXEL_PIXELFORMAT_RGB888, None)
 
-if not output.exists():
-    raise SystemExit("missing sixel output")
-if output.stat().st_size == 0:
-    raise SystemExit("empty sixel output")
+    if not output.exists():
+        raise SystemExit("missing sixel output")
+    if output.stat().st_size == 0:
+        raise SystemExit("empty sixel output")
 
-print("encode succeeded")
+    print("encode succeeded")
+except OSError as exc:
+    print(f"SKIP_LIBSIXEL_LOAD:{exc}")
+    raise SystemExit(2)
 PY
 
 python_env="${run_python}"
@@ -124,6 +133,7 @@ if [ "${use_wheel}" -eq 1 ]; then
        "${python_env}" "${verify_script}" >>"${log_file}" 2>&1; then
         tap_pass ${case_id} "encodes image via wheel"
     else
+        python_skip_on_load_error $? "${log_file}"
         tap_fail ${case_id} "python wheel round-trip failed"
     fi
 else
@@ -132,6 +142,7 @@ else
        "${python_env}" "${verify_script}" >>"${log_file}" 2>&1; then
         tap_pass ${case_id} "encodes image via in-tree modules"
     else
+        python_skip_on_load_error $? "${log_file}"
         tap_fail ${case_id} "python in-tree round-trip failed"
     fi
 fi

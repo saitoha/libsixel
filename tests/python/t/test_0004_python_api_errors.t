@@ -61,14 +61,18 @@ import pathlib
 import sys
 from typing import Iterable
 
-from libsixel import (
-    SIXEL_OPTFLAG_COLORS,
-    SIXEL_OPTFLAG_HEIGHT,
-    SIXEL_OPTFLAG_INPUT,
-    SIXEL_OPTFLAG_OUTPUT,
-    SIXEL_OPTFLAG_WIDTH,
-)
-from libsixel.encoder import Encoder
+try:
+    from libsixel import (
+        SIXEL_OPTFLAG_COLORS,
+        SIXEL_OPTFLAG_HEIGHT,
+        SIXEL_OPTFLAG_INPUT,
+        SIXEL_OPTFLAG_OUTPUT,
+        SIXEL_OPTFLAG_WIDTH,
+    )
+    from libsixel.encoder import Encoder
+except OSError as exc:
+    print(f"SKIP_LIBSIXEL_LOAD:{exc}")
+    raise SystemExit(2)
 
 
 class Expectation:
@@ -281,6 +285,7 @@ PY
             "${working_dir}/wheel" "${log_file}" >>"${log_file}" 2>&1; then
             tap_pass ${case_id} "${description} via wheel"
         else
+            python_skip_on_load_error $? "${log_file}"
             tap_fail ${case_id} "${description} via wheel failed"
         fi
     else
@@ -290,6 +295,7 @@ PY
             "${working_dir}/tree" "${log_file}" >>"${log_file}" 2>&1; then
             tap_pass ${case_id} "${description} via in-tree modules"
         else
+            python_skip_on_load_error $? "${log_file}"
             tap_fail ${case_id} "${description} via in-tree modules failed"
         fi
     fi

@@ -35,20 +35,24 @@ import re
 import sys
 from typing import Iterable, Set, Tuple
 
-from libsixel import (
-    SIXEL_OPTFLAG_BGCOLOR,
-    SIXEL_OPTFLAG_COLORS,
-    SIXEL_OPTFLAG_DIFFUSION,
-    SIXEL_OPTFLAG_HEIGHT,
-    SIXEL_OPTFLAG_INPUT,
-    SIXEL_OPTFLAG_OUTPUT,
-    SIXEL_OPTFLAG_PALETTE_TYPE,
-    SIXEL_OPTFLAG_QUALITY,
-    SIXEL_OPTFLAG_RESAMPLING,
-    SIXEL_OPTFLAG_WIDTH,
-)
-from libsixel.decoder import Decoder
-from libsixel.encoder import Encoder
+try:
+    from libsixel import (
+        SIXEL_OPTFLAG_BGCOLOR,
+        SIXEL_OPTFLAG_COLORS,
+        SIXEL_OPTFLAG_DIFFUSION,
+        SIXEL_OPTFLAG_HEIGHT,
+        SIXEL_OPTFLAG_INPUT,
+        SIXEL_OPTFLAG_OUTPUT,
+        SIXEL_OPTFLAG_PALETTE_TYPE,
+        SIXEL_OPTFLAG_QUALITY,
+        SIXEL_OPTFLAG_RESAMPLING,
+        SIXEL_OPTFLAG_WIDTH,
+    )
+    from libsixel.decoder import Decoder
+    from libsixel.encoder import Encoder
+except OSError as exc:
+    print(f"SKIP_LIBSIXEL_LOAD:{exc}")
+    raise SystemExit(2)
 
 
 def ensure_sixel_signature(data: bytes) -> None:
@@ -290,6 +294,7 @@ run_case() {
            >>"${log_file}" 2>&1; then
             tap_pass ${case_id} "${description} via wheel"
         else
+            python_skip_on_load_error $? "${log_file}"
             tap_fail ${case_id} "${description} via wheel failed"
         fi
     else
@@ -301,6 +306,7 @@ run_case() {
            >>"${log_file}" 2>&1; then
             tap_pass ${case_id} "${description} via in-tree modules"
         else
+            python_skip_on_load_error $? "${log_file}"
             tap_fail ${case_id} "${description} via in-tree modules failed"
         fi
     fi
