@@ -698,8 +698,10 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
                 if (n > 0 && (
                         context->pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32 ||
                         context->pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32 ||
-                        context->pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32)) {
-                    break;  /* L only */
+                        context->pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32 ||
+                        context->pixelformat == SIXEL_PIXELFORMAT_YUVFLOAT32
+                   )) {
+                    break;  /* L or Y only */
                 }
                 if (optimize_palette) {
                     if (have_new_palette_float) {
