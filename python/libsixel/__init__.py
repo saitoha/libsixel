@@ -22,6 +22,8 @@
 
 import glob
 import os
+import pathlib
+import struct
 from ctypes import (
     cdll,
     c_void_p,
@@ -138,6 +140,80 @@ SIXEL_DIFFUSE_LSO2         = 0xa  # libsixel method based on variable error
 SIXEL_DIFFUSE_SIERRA1      = 0xc  # diffuse with Sierra Lite method
 SIXEL_DIFFUSE_SIERRA2      = 0xd  # diffuse with Sierra Two-row method
 SIXEL_DIFFUSE_SIERRA3      = 0xe  # diffuse with Sierra-3 method
+
+
+_PYTHON_BITS = struct.calcsize("P") * 8
+
+
+def _detect_elf_class(data: bytes) -> str:
+    """Return the ELF class width as a string."""
+
+    if not data.startswith(b"\x7fELF"):
+        return ""
+
+    elf_class = data[4]
+    if elf_class == 1:
+        return "32"
+    if elf_class == 2:
+        return "64"
+    return ""
+
+
+def _detect_macho_class(data: bytes) -> str:
+    """Return the Mach-O class width as a string."""
+
+    magic = data[:4]
+    macho_32 = (0xfeedface, 0xcefaedfe)
+    macho_64 = (0xfeedfacf, 0xcffaedfe)
+
+    value = int.from_bytes(magic, byteorder="big", signed=False)
+    if value in macho_32:
+        return "32"
+    if value in macho_64:
+        return "64"
+    return ""
+
+
+def _detect_pe_class(bin_path: pathlib.Path, data: bytes) -> str:
+    """Return the PE/COFF class width as a string."""
+
+    if not data.startswith(b"MZ") or len(data) < 0x40:
+        return ""
+
+    pe_offset = int.from_bytes(data[0x3C:0x40], byteorder="little")
+    try:
+        with bin_path.open("rb") as handle:
+            handle.seek(pe_offset)
+            signature = handle.read(6)
+    except OSError:
+        return ""
+
+    if not signature.startswith(b"PE\0\0") or len(signature) < 6:
+        return ""
+
+    machine = struct.unpack("<H", signature[4:6])[0]
+    if machine in (0x014C,):
+        return "32"
+    if machine in (0x8664,):
+        return "64"
+    return ""
+
+
+def _detect_library_bits(bin_path: pathlib.Path) -> str:
+    """Inspect the binary header to determine its architecture width."""
+
+    try:
+        with bin_path.open("rb") as handle:
+            head = handle.read(1024)
+    except OSError:
+        return ""
+
+    for detector in (_detect_elf_class, _detect_macho_class):
+        width = detector(head)
+        if width:
+            return width
+
+    return _detect_pe_class(bin_path, head)
 # scan order for diffusing
 SIXEL_SCAN_AUTO       = 0x0  # choose scan order automatically
 SIXEL_SCAN_RASTER     = 0x1  # scan from left to right on each line
@@ -566,11 +642,34 @@ def _prefer_env_library(lib_names):
     for name in lib_names:
         for prefix in prefixes:
             for suffix in suffixes:
-                pattern = os.path.join(libdir,
-                                       f"{prefix}{name}*{suffix}")
-                matches = sorted(glob.glob(pattern))
-                if matches:
-                    return matches[0]
+                patterns: list[str]
+                if suffix == ".so":
+                    patterns = [
+                        os.path.join(libdir, f"{prefix}{name}*{suffix}"),
+                        os.path.join(libdir, f"{prefix}{name}*{suffix}.*"),
+                    ]
+                else:
+                    patterns = [
+                        os.path.join(libdir, f"{prefix}{name}*{suffix}"),
+                    ]
+
+                matches: list[str] = []
+                for pattern in patterns:
+                    matches.extend(glob.glob(pattern))
+
+                filtered: list[str] = []
+                for candidate in sorted(set(matches)):
+                    if candidate.endswith((".dll.a", ".dll.def")):
+                        continue
+
+                    bits = _detect_library_bits(pathlib.Path(candidate))
+                    if bits and bits != str(_PYTHON_BITS):
+                        continue
+
+                    filtered.append(candidate)
+
+                if filtered:
+                    return filtered[0]
 
     return None
 
@@ -587,6 +686,13 @@ if _lib_path is None:
 if _lib_path is None:
     raise ImportError(
         "libsixel not found. Set LIBSIXEL_LIBDIR to the built shared library."
+    )
+
+_lib_bits = _detect_library_bits(pathlib.Path(_lib_path))
+if _lib_bits and _lib_bits != str(_PYTHON_BITS):
+    raise ImportError(
+        f"libsixel {_lib_bits}-bit library is incompatible with "
+        f"python {_PYTHON_BITS}-bit"
     )
 
 # load shared library
@@ -1074,10 +1180,25 @@ def sixel_encoder_unref(encoder):
 def sixel_encoder_setopt(encoder, flag, arg=None):
     _sixel.sixel_encoder_setopt.restype = c_int
     _sixel.sixel_encoder_setopt.argtypes = [c_void_p, c_int, c_char_p]
-    flag = ord(flag)
+    # Normalize flag for validation while keeping the numeric code used by the
+    # C API. Python callers may pass either the character constant ("p") or an
+    # integer value. We want to keep the original character for comparison so
+    # option-specific validation continues to work even after converting to the
+    # numeric code for ctypes.
+    if isinstance(flag, int):
+        flag_code = flag
+        flag_char = chr(flag)
+    else:
+        flag_char = str(flag)
+        if len(flag_char) != 1:
+            raise RuntimeError(
+                "invalid option flag: expected a single-character flag"
+            )
+        flag_code = ord(flag_char)
+
     if arg:
         arg = str(arg).encode('utf-8')
-    status = _sixel.sixel_encoder_setopt(encoder, flag, arg)
+    status = _sixel.sixel_encoder_setopt(encoder, flag_code, arg)
     if SIXEL_FAILED(status):
         message = sixel_helper_format_error(status)
         raise RuntimeError(message)
@@ -1086,7 +1207,18 @@ def sixel_encoder_setopt(encoder, flag, arg=None):
 # load source data from specified file and encode it to SIXEL format
 def sixel_encoder_encode(encoder, filename):
     import locale
+    import os
     language, encoding = locale.getdefaultlocale()
+
+    # Proactively validate the input path on the Python side so callers get a
+    # deterministic exception even if a platform-specific libc or loader fails
+    # to surface a failure.  This mirrors the C-side validation while keeping
+    # the behaviour consistent across wheel and in-tree builds.
+    if filename not in (None, "-"):
+        if not os.path.exists(filename):
+            raise RuntimeError(f"input path does not exist: {filename}")
+        if os.path.isdir(filename):
+            raise RuntimeError(f"input path is a directory: {filename}")
 
     _sixel.sixel_encoder_encode.restype = c_int
     _sixel.sixel_encoder_encode.argtypes = [c_void_p, c_char_p]
