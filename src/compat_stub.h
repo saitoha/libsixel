@@ -199,6 +199,10 @@ SIXEL_COMPAT_API char *sixel_compat_tmpnam(char *buffer,
 SIXEL_COMPAT_API struct tm *sixel_compat_localtime(const time_t *timer,
                                                    struct tm *result);
 
+SIXEL_COMPAT_API int sixel_compat_vfprintf(FILE *stream,
+                                           const char *format,
+                                           va_list args);
+
 SIXEL_COMPAT_API int sixel_compat_vsscanf(const char *buffer,
                                           const char *format,
                                           va_list args);
