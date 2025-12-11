@@ -41,6 +41,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
 #if HAVE_STRING_H
 # include <string.h>
@@ -467,6 +468,17 @@ sixel_compat_getenv(const char *name)
 
 
 SIXEL_COMPAT_API int
+sixel_compat_isatty(int fd)
+{
+#if defined(_WIN32)
+    return _isatty(fd);
+#else
+    return isatty(fd);
+#endif
+}
+
+
+SIXEL_COMPAT_API int
 sixel_compat_setenv(const char *name, const char *value)
 {
 #if defined(_WIN32)
@@ -513,6 +525,119 @@ sixel_compat_strtok(char *string,
     (void)context;
     return strtok(string, delimiters);
 #endif
+}
+
+
+SIXEL_COMPAT_API char *
+sixel_compat_tmpnam(char *buffer, size_t buffer_size)
+{
+#if defined(_MSC_VER)
+    int status;
+
+    status = 0;
+#elif HAVE_MKSTEMP
+    int descriptor;
+
+    descriptor = (-1);
+#endif
+    if (buffer == NULL || buffer_size == 0u) {
+        errno = EINVAL;
+        return NULL;
+    }
+
+#if defined(_MSC_VER)
+    status = tmpnam_s(buffer, buffer_size);
+    if (status != 0) {
+        errno = status;
+        return NULL;
+    }
+    return buffer;
+#else
+    (void)buffer_size;
+# if HAVE_MKSTEMP
+    descriptor = mkstemp(buffer);
+    if (descriptor < 0) {
+        return NULL;
+    }
+    (void)sixel_compat_close(descriptor);
+    descriptor = (-1);
+    if (sixel_compat_unlink(buffer) != 0) {
+        return NULL;
+    }
+    return buffer;
+# else
+    return tmpnam(buffer);
+# endif
+#endif
+}
+
+
+SIXEL_COMPAT_API struct tm *
+sixel_compat_localtime(const time_t *timer, struct tm *result)
+{
+    struct tm *converted;
+
+    converted = NULL;
+    if (timer == NULL) {
+        errno = EINVAL;
+        return NULL;
+    }
+
+#if defined(_MSC_VER)
+    if (result == NULL) {
+        errno = EINVAL;
+        return NULL;
+    }
+    if (localtime_s(result, timer) != 0) {
+        return NULL;
+    }
+    converted = result;
+#elif defined(HAVE_LOCALTIME_R)
+    if (result == NULL) {
+        errno = EINVAL;
+        return NULL;
+    }
+    converted = localtime_r(timer, result);
+#else
+    (void)result;
+    converted = localtime(timer);
+#endif
+
+    return converted;
+}
+
+
+SIXEL_COMPAT_API int
+sixel_compat_vsscanf(const char *buffer, const char *format, va_list args)
+{
+    if (buffer == NULL || format == NULL) {
+        return (-1);
+    }
+
+#if HAVE_SSCANF_S || defined(_MSC_VER)
+    return vsscanf_s(buffer, format, args);
+#else
+    return vsscanf(buffer, format, args);
+#endif
+}
+
+
+SIXEL_COMPAT_API int
+sixel_compat_sscanf(const char *buffer, const char *format, ...)
+{
+    va_list args;
+    int parsed;
+
+    parsed = (-1);
+    if (buffer == NULL || format == NULL) {
+        return parsed;
+    }
+
+    va_start(args, format);
+    parsed = sixel_compat_vsscanf(buffer, format, args);
+    va_end(args);
+
+    return parsed;
 }
 
 

@@ -193,23 +193,8 @@ decoder_clipboard_create_spool(sixel_allocator_t *allocator,
     }
 
     if (sixel_compat_mktemp(template_path, template_capacity) != 0) {
-#if defined(HAVE_TMPNAM)
-
-# if defined(__clang__)
-#  if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-#   pragma clang diagnostic push
-#   pragma clang diagnostic ignored "-Wdeprecated-declarations"
-#  endif
-# endif
-        /* Fall back to tmpnam() when mktemp variants are unavailable. */
-        tmpname_result = tmpnam(template_path);
-# if defined(__clang__)
-#  if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-#   pragma clang diagnostic pop
-#  endif
-# endif
-
-#endif  /* HAVE_TMPNAM */
+        tmpname_result = sixel_compat_tmpnam(template_path,
+                                             template_capacity);
         if (tmpname_result == NULL) {
             sixel_helper_set_additional_message(
                 "clipboard: failed to reserve spool template.");

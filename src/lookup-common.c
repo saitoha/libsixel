@@ -34,6 +34,7 @@
 
 #include <sixel.h>
 
+#include "compat_stub.h"
 #include "allocator.h"
 #include "lookup-8bit.h"
 #include "lookup-float32.h"
@@ -74,7 +75,7 @@ sixel_lookup_env_shared_certlut(void)
     if (sixel_lookup_certlut_shared < 0) {
         sixel_lookup_certlut_shared
             = sixel_lookup_parse_flag(
-                getenv("SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE"),
+                sixel_compat_getenv("SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE"),
                 0);
     }
 
@@ -86,7 +87,7 @@ sixel_lookup_env_shared_5bit(void)
 {
     if (sixel_lookup_5bit_shared < 0) {
         sixel_lookup_5bit_shared = sixel_lookup_parse_flag(
-            getenv("SIXEL_LOOKUP_5BIT_SHARED_INSTANCE"),
+            sixel_compat_getenv("SIXEL_LOOKUP_5BIT_SHARED_INSTANCE"),
             1);
     }
 
@@ -98,7 +99,7 @@ sixel_lookup_env_shared_6bit(void)
 {
     if (sixel_lookup_6bit_shared < 0) {
         sixel_lookup_6bit_shared = sixel_lookup_parse_flag(
-            getenv("SIXEL_LOOKUP_6BIT_SHARED_INSTANCE"),
+            sixel_compat_getenv("SIXEL_LOOKUP_6BIT_SHARED_INSTANCE"),
             1);
     }
 

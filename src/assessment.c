@@ -1183,7 +1183,7 @@ resolve_from_path_env(char const *name,
     char const *separator;
     size_t chunk_len;
 
-    env = getenv("PATH");
+    env = sixel_compat_getenv("PATH");
     if (env == NULL || *env == '\0') {
         return -1;
     }
@@ -1373,7 +1373,7 @@ static int find_model(char const *binary_dir,
     char binary_parent_path[PATH_MAX];
     char const *env_dir;
 
-    env_dir = getenv("LIBSIXEL_MODEL_DIR");
+    env_dir = sixel_compat_getenv("LIBSIXEL_MODEL_DIR");
     if (env_dir != NULL && env_dir[0] != '\0') {
         if (join_path(env_dir, SIXEL_LOCAL_MODELS_SEG3,
                       env_root, sizeof(env_root)) == 0) {

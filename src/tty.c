@@ -215,7 +215,7 @@ sixel_tty_init_output_device(int fd)
     istty = 0;
 
 #if HAVE_ISATTY
-    if (isatty(fd)) {
+    if (sixel_compat_isatty(fd)) {
         istty = 1;
     }
 #endif
@@ -394,7 +394,8 @@ sixel_tty_scroll(
     int result;
 
     /* confirm I/O file descriptors are tty devices */
-    if (!isatty(STDIN_FILENO) || !isatty(outfd)) {
+    if (!sixel_compat_isatty(STDIN_FILENO)
+        || !sixel_compat_isatty(outfd)) {
         /* set cursor position to top-left */
         nwrite = f_write("\033[H", 3, priv);
         if (nwrite < 0) {
