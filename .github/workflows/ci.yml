@@ -273,7 +273,7 @@ jobs:
           ${pkg_prefix:+$pkg_prefix }pkg update -f
           ${pkg_prefix:+$pkg_prefix }pkg install -y \
             gmake \
-            pkgconf
+            # pkgconf avoided to reduce fragile package installs
 
     - name: Install dependencies (NetBSD)
       if: matrix.platform == 'netbsd'
@@ -307,9 +307,7 @@ jobs:
 
           ${pkg_prefix:+$pkg_prefix }pkgin -y update
           ${pkg_prefix:+$pkg_prefix }pkgin -y install \
-            gmake \
-            pkgconf \
-            gcovr
+            gmake
 
     - name: Upload pkg_install log (Autotools NetBSD)
       if: ${{ failure() && matrix.platform == 'netbsd' }}
@@ -318,19 +316,6 @@ jobs:
         name: pkg_install-log-autotools-${{ matrix.label }}
         path: pkg_install-err.log
         if-no-files-found: ignore
-
-    - name: Capture coverage (NetBSD)
-      if: matrix.platform == 'netbsd'
-      uses: cross-platform-actions/action@v0.30.0
-      with:
-        operating_system: ${{ matrix.cp_os }}
-        architecture: ${{ matrix.cp_arch }}
-        version: ${{ matrix.cp_version }}
-        environment_variables: CI
-        run: |
-          set -eux
-
-          gcovr -r . --lcov -o coverage.info --gcov-executable gcov
 
     - name: Upload autotools artifacts
       if: matrix.platform == 'netbsd' && always()
@@ -371,7 +356,7 @@ jobs:
 
           ${pkg_prefix:+$pkg_prefix }pkg_add \
             gmake \
-            pkgconf
+            # pkgconf avoided to reduce fragile package installs
 
     - name: Setup MSVC developer env (vcvars)
       if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' }}
@@ -1704,7 +1689,6 @@ jobs:
 
             ${pkg_prefix:+$pkg_prefix }pkg update -f
             ${pkg_prefix:+$pkg_prefix }pkg install -y \
-              pkgconf \
               python3 \
               meson \
               ninja
@@ -1722,7 +1706,6 @@ jobs:
             fi
 
             ${pkg_prefix:+$pkg_prefix }pkg_add \
-              pkgconf \
               python%3 \
               meson \
               ninja
@@ -1748,11 +1731,14 @@ jobs:
 
             ${pkg_prefix:+$pkg_prefix }pkgin -y update
             ${pkg_prefix:+$pkg_prefix }pkgin -y install \
-              pkgconf \
               python311 \
-              gcovr \
-              meson \
-              ninja
+              meson
+
+            if ! command -v ninja >/dev/null 2>&1; then
+              ${pkg_prefix:+$pkg_prefix }pkgin -y install ninja
+            else
+              echo "ninja is already available; skipping install" >&2
+            fi
           fi
 
           if [ "${{ matrix.musl || '' }}" = "true" ]; then
@@ -1791,10 +1777,7 @@ jobs:
               ${disable_threads_flag} \
               ${disable_simd_flag}
           meson compile -C builddir
-          readelf -d builddir/converters/img2sixel | egrep 'RPATH|RUNPATH' || true
-          objdump -p builddir/converters/img2sixel | egrep 'RPATH|RUNPATH' || true
           meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
-          gcovr -r . --lcov -o coverage.info --gcov-executable gcov
 
     - name: Upload pkg_install log (Meson NetBSD)
       if: ${{ failure() && matrix.platform == 'netbsd' }}
