@@ -363,7 +363,13 @@ sixel_compat_strerror(int error_number,
     size_t copy_length;
 # endif
 #else
-# if defined(_GNU_SOURCE)
+# if defined(__GLIBC__) && defined(_GNU_SOURCE)
+    /*
+     * glibc exposes the GNU strerror_r() that yields a char*. Other libc
+     * implementations keep the XSI signature returning int, even when
+     * _GNU_SOURCE is defined. Keep the char* path glibc-only to avoid
+     * pointer/integer mismatches on macOS and BSD.
+     */
     char *message;
     size_t copy_length;
 # endif
@@ -413,7 +419,7 @@ sixel_compat_strerror(int error_number,
     return buffer;
 # endif
 #else
-# if defined(_GNU_SOURCE)
+# if defined(__GLIBC__) && defined(_GNU_SOURCE)
     message = strerror_r(error_number, buffer, buffer_size);
     if (message == NULL) {
         return NULL;

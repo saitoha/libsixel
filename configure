@@ -16255,6 +16255,16 @@ else
 fi
 
 
+case $host_os in #(
+  darwin*) :
+    CPPFLAGS="$CPPFLAGS -D_DARWIN_C_SOURCE=1"
+
+printf "%s\n" "#define _DARWIN_C_SOURCE 1" >>confdefs.h
+ ;; #(
+  *) :
+     ;;
+esac
+
 # Detect Microsoft Visual C compiler and clang-cl
 case "$CC" in
   *clang-cl*)

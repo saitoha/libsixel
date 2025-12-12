@@ -986,72 +986,18 @@ sixel_option_strerror(
     char *buffer,
     size_t buffer_size)
 {
-#if defined(_MSC_VER)
-    errno_t status;
-#elif defined(_WIN32)
-# if defined(__STDC_LIB_EXT1__)
-    errno_t status;
-# else
     char *message;
-    size_t copy_length;
-# endif
-#else
-# if defined(_GNU_SOURCE)
-    char *message;
-    size_t copy_length;
-# endif
-#endif
 
-    if (buffer == NULL || buffer_size == 0u) {
-        return NULL;
-    }
-
-#if defined(_MSC_VER)
-    status = strerror_s(buffer, buffer_size, error_number);
-    if (status != 0) {
-        buffer[0] = '\0';
-        return NULL;
-    }
-    return buffer;
-#elif defined(_WIN32)
-# if defined(__STDC_LIB_EXT1__)
-    status = strerror_s(buffer, buffer_size, error_number);
-    if (status != 0) {
-        buffer[0] = '\0';
-        return NULL;
-    }
-    return buffer;
-# else
-    message = strerror(error_number);
+    /*
+     * Normalize strerror_r() semantics via the compatibility layer so that
+     * GNU and XSI flavours behave uniformly across amalgamated builds.
+     */
+    message = sixel_compat_strerror(error_number, buffer, buffer_size);
     if (message == NULL) {
         buffer[0] = '\0';
-        return NULL;
     }
-    copy_length = buffer_size - 1u;
-    (void)strncpy(buffer, message, copy_length);
-    buffer[buffer_size - 1u] = '\0';
-    return buffer;
-# endif
-#else
-# if defined(_GNU_SOURCE)
-    message = strerror_r(error_number, buffer, buffer_size);
-    if (message == NULL) {
-        return NULL;
-    }
-    if (message != buffer) {
-        copy_length = buffer_size - 1u;
-        (void)strncpy(buffer, message, copy_length);
-        buffer[buffer_size - 1u] = '\0';
-    }
-    return buffer;
-# else
-    if (strerror_r(error_number, buffer, buffer_size) != 0) {
-        buffer[0] = '\0';
-        return NULL;
-    }
-    return buffer;
-# endif
-#endif
+
+    return message;
 }
 #endif /* HAVE_DIRENT_H && HAVE_SYS_STAT_H */
 
