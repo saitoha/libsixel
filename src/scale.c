@@ -1249,30 +1249,9 @@ scale_with_resampling_serial(
     !defined(SIXEL_USE_AVX) && !defined(SIXEL_USE_SSE2) && \
     !defined(SIXEL_USE_NEON)
     /*
-     * When every SIMD backend is compiled out (for example GCC i686
-     * without SSE2), the runtime detection would become an unused
-     * write. Consume it here to keep the ABI while silencing warnings.
-     */
-    (void)simd_level;
-#endif
-#if !defined(SIXEL_USE_AVX512) && !defined(SIXEL_USE_AVX2) && \
-    !defined(SIXEL_USE_AVX) && !defined(SIXEL_USE_SSE2) && \
-    !defined(SIXEL_USE_NEON)
-    /*
-     * GCC i686 builds may compile without any SIMD backends.  Consume the
-     * runtime SIMD level here so the set-but-unused warning stays quiet
-     * without altering the function signature shared across backends.
-     */
-    (void)simd_level;
-#endif
-#if !defined(SIXEL_USE_AVX512) && !defined(SIXEL_USE_AVX2) && \
-    !defined(SIXEL_USE_AVX) && !defined(SIXEL_USE_SSE2) && \
-    !defined(SIXEL_USE_NEON)
-    /*
-     * i686 + GCC disables all SIMD backends, so the runtime detection result
-     * is informational only. Consume it explicitly to avoid
-     * -Wunused-but-set-variable while keeping the control flow unchanged for
-     * other targets.
+     * GCC i686 builds can compile this function without any SIMD backends
+     * enabled; consume the detection result to keep the signature stable
+     * while avoiding an unused-but-set-variable warning.
      */
     (void)simd_level;
 #endif
@@ -1976,6 +1955,16 @@ scale_with_resampling_float32(
     }
 
     simd_level = sixel_scale_simd_level();
+#if !defined(SIXEL_USE_AVX512) && !defined(SIXEL_USE_AVX2) && \
+    !defined(SIXEL_USE_AVX) && !defined(SIXEL_USE_SSE2) && \
+    !defined(SIXEL_USE_NEON)
+    /*
+     * GCC i686 builds can reach this function with every SIMD backend
+     * compiled out; acknowledge the detection result to avoid an unused
+     * write while keeping the signature intact.
+     */
+    (void)simd_level;
+#endif
 
     for (y = 0; y < srch; y++) {
         for (w = 0; w < dstw; w++) {
