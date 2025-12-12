@@ -5651,7 +5651,14 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
         !defined(__AVX512BW__)) && \
         (!defined(SIXEL_USE_AVX2) || !defined(__AVX2__)) && \
         !defined(SIXEL_USE_SSE2) && !defined(SIXEL_USE_NEON)
+    /*
+     * Suppress unused warnings when all SIMD paths are disabled at
+     * compile-time.  These flags are consulted only by SIMD dispatch,
+     * so scalar-only builds must explicitly mark them as unused.
+     */
     (void)simd_level;
+    (void)byte_format_supported;
+    (void)lut_pair_supported;
 #endif
 
 #if !defined(SIXEL_USE_AVX2) || !defined(__AVX2__)
