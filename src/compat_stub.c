@@ -41,6 +41,7 @@
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <time.h>
 
 #if HAVE_STRING_H
@@ -996,6 +997,108 @@ sixel_compat_write(int fd, const void *buffer, size_t count)
 #else
     return write(fd, buffer, count);
 #endif
+}
+
+
+static char *
+sixel_compat_resolve_without_realpath(const char *path)
+{
+    char *cwd;
+    char *resolved;
+    size_t cwd_length;
+    size_t path_length;
+    int need_separator;
+
+    cwd = NULL;
+    resolved = NULL;
+    cwd_length = 0;
+    path_length = 0;
+    need_separator = 0;
+
+    if (path == NULL) {
+        return NULL;
+    }
+
+    if (path[0] == '/') {
+        path_length = strlen(path);
+        resolved = malloc(path_length + 1);
+        if (resolved == NULL) {
+            return NULL;
+        }
+        memcpy(resolved, path, path_length + 1);
+
+        return resolved;
+    }
+
+#if defined(PATH_MAX)
+    cwd = malloc(PATH_MAX);
+    if (cwd != NULL) {
+        if (getcwd(cwd, PATH_MAX) != NULL) {
+            cwd_length = strlen(cwd);
+            path_length = strlen(path);
+            if (cwd_length > 0 && cwd[cwd_length - 1] != '/') {
+                need_separator = 1;
+            }
+            resolved = malloc(cwd_length + need_separator + path_length + 1);
+            if (resolved != NULL) {
+                memcpy(resolved, cwd, cwd_length);
+                if (need_separator != 0) {
+                    resolved[cwd_length] = '/';
+                }
+                memcpy(resolved + cwd_length + need_separator,
+                       path,
+                       path_length + 1);
+            }
+        }
+        free(cwd);
+        if (resolved != NULL) {
+            return resolved;
+        }
+    }
+#endif  /* PATH_MAX */
+
+    path_length = strlen(path);
+    resolved = malloc(path_length + 1);
+    if (resolved == NULL) {
+        return NULL;
+    }
+    memcpy(resolved, path, path_length + 1);
+
+    return resolved;
+}
+
+
+/*
+ * Map platform-specific realpath implementations into a single helper that
+ * can be reused across modules.  The fallback path joins CWD and the input
+ * when neither POSIX nor CRT helpers are available.
+ */
+SIXEL_COMPAT_API char *
+sixel_compat_realpath(const char *path)
+{
+    char *resolved;
+
+    resolved = NULL;
+
+    if (path == NULL) {
+        return NULL;
+    }
+
+#if defined(HAVE__FULLPATH)
+    resolved = _fullpath(NULL, path, 0);
+#elif defined(HAVE__REALPATH)
+    resolved = _realpath(path, NULL);
+#elif defined(HAVE_REALPATH)
+    resolved = realpath(path, NULL);
+#else
+    resolved = sixel_compat_resolve_without_realpath(path);
+#endif
+
+    if (resolved == NULL) {
+        resolved = sixel_compat_resolve_without_realpath(path);
+    }
+
+    return resolved;
 }
 
 

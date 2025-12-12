@@ -99,9 +99,6 @@ extern char **environ;
 
 #if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
 
-# if defined(HAVE_REALPATH)
-char * realpath(const char *restrict path, char *restrict resolved_path);
-# endif
 # if defined(HAVE_MKSTEMP)
 int mkstemp(char *);
 # endif
@@ -131,78 +128,6 @@ thumbnailer_message_finalize(char *buffer, size_t capacity, int written)
     }
 }
 
-# if !defined(_WIN32) && defined(HAVE__REALPATH) && !defined(HAVE_REALPATH)
-static char *
-thumbnailer_resolve_without_realpath(char const *path)
-{
-    char *cwd;
-    char *resolved;
-    size_t cwd_length;
-    size_t path_length;
-    int need_separator;
-
-    cwd = NULL;
-    resolved = NULL;
-    cwd_length = 0;
-    path_length = 0;
-    need_separator = 0;
-
-    if (path == NULL) {
-        return NULL;
-    }
-
-    if (path[0] == '/') {
-        path_length = strlen(path);
-        resolved = malloc(path_length + 1);
-        if (resolved == NULL) {
-            return NULL;
-        }
-        memcpy(resolved, path, path_length + 1);
-
-        return resolved;
-    }
-
-#  if defined(PATH_MAX)
-    cwd = malloc(PATH_MAX);
-    if (cwd != NULL) {
-        if (getcwd(cwd, PATH_MAX) != NULL) {
-            cwd_length = strlen(cwd);
-            path_length = strlen(path);
-            need_separator = 0;
-            if (cwd_length > 0 && cwd[cwd_length - 1] != '/') {
-                need_separator = 1;
-            }
-            resolved = malloc(cwd_length + need_separator + path_length + 1);
-            if (resolved != NULL) {
-                memcpy(resolved, cwd, cwd_length);
-                if (need_separator != 0) {
-                    resolved[cwd_length] = '/';
-                }
-                memcpy(resolved + cwd_length + need_separator,
-                       path,
-                       path_length + 1);
-            }
-            free(cwd);
-            if (resolved != NULL) {
-                return resolved;
-            }
-        } else {
-            free(cwd);
-        }
-    }
-#  endif  /* PATH_MAX */
-
-    path_length = strlen(path);
-    resolved = malloc(path_length + 1);
-    if (resolved == NULL) {
-        return NULL;
-    }
-    memcpy(resolved, path, path_length + 1);
-
-    return resolved;
-}
-# endif  /* _WIN32 off, HAVE__REALPATH on, HAVE_REALPATH off */
-
 /*
  * thumbnailer_resolve_path
  *
@@ -224,15 +149,11 @@ thumbnailer_resolve_path(char const *path)
         return NULL;
     }
 
-# if defined(HAVE__FULLPATH)
-    resolved = _fullpath(NULL, path, 0);
-# elif defined(HAVE__REALPATH)
-    resolved = _realpath(path, NULL);
-# elif defined(HAVE_REALPATH)
-    resolved = realpath(path, NULL);
-# else
-    resolved = thumbnailer_resolve_without_realpath(path);
-# endif
+    /*
+     * Delegate platform quirks to the shared compatibility layer so
+     * NetBSD/MinGW builds avoid implicit CRT declarations.
+     */
+    resolved = sixel_compat_realpath(path);
 
     return resolved;
 }
