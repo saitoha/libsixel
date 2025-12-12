@@ -26,9 +26,7 @@
 
 #include <stdio.h>
 
-#if defined(HAVE__FILENO) && HAVE__FILENO
-# define sixel_fileno(stream) _fileno(stream)
-#elif defined(HAVE_FILENO) && HAVE_FILENO
+#if defined(HAVE_FILENO) && HAVE_FILENO
 /*
  * OpenBSD exposes fileno as a macro, so we avoid redeclaring it to keep
  * the compiler happy. Other platforms may need an explicit prototype in
@@ -39,6 +37,14 @@
 int fileno(FILE *);
 # endif
 # define sixel_fileno(stream) fileno(stream)
+#elif defined(HAVE__FILENO) && HAVE__FILENO
+/*
+ * Prefer the standard fileno when available. Falling back to _fileno is
+ * still required for some Windows environments, but using it on systems
+ * where both symbols are present (or misdetected during cross builds)
+ * causes implicit declaration errors.
+ */
+# define sixel_fileno(stream) _fileno(stream)
 #else
 static int
 sixel_fileno_stub(FILE *fp)
