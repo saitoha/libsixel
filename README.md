@@ -662,7 +662,9 @@ behaviour that was previously enabled implicitly by `-q full`.
 
 The *vpte* policy builds a Voronoi grid using a 3D exact distance
 transform.  Boundary voxels optionally refine the result by checking the
-cell corners.  The following environment variables tune the grid:
+cell corners.  The following environment variables tune the grid (legacy
+`SIXEL_VPTE_*` names are still honored for compatibility, but prefer the
+`SIXEL_LOOKUP_*` forms):
 
 * `SIXEL_DITHER_LOOKUP_POLICY` sets the LUT policy (auto, 5bit, 6bit, none,
   certlut, or vpte).
@@ -685,19 +687,20 @@ cell corners.  The following environment variables tune the grid:
   shared across workers (0 or 1; default 1 to reuse the cache without locks).
 * `SIXEL_LOOKUP_6BIT_SHARED_INSTANCE` controls whether the 6bit dense LUT is
   shared across workers (0 or 1; default 1 to reuse the cache without locks).
-* `SIXEL_VPTE_TILE_XY` sets the tile width/height used by the parallel EDT
-  passes (defaults now adapt to palette complexity; values are clamped to
-  the image size and fall back to the adaptive choice on invalid input).
-* `SIXEL_VPTE_TILE_DEPTH` sets the tile depth (z span) for the EDT passes
-  (defaults track the adaptive `SIXEL_VPTE_TILE_XY` decision and are clamped
-  the same way).
-* `SIXEL_VPTE_FIRST_TOUCH` enables tile-wise zeroing of the VPTE grid
-  before the EDT so that NUMA systems can place pages on the thread that
-  will use them (0 or 1; default 0 so behaviour is unchanged unless opted
-  in).
-* `SIXEL_VPTE_PIN_THREADS` pins the VPTE worker threads once at startup to
-  reduce migration on NUMA systems (0 or 1; default 0; failures are ignored
-  so portability is preserved).
+* `SIXEL_LOOKUP_VPTE_TILE_XY` sets the tile width/height used by the
+  parallel EDT passes (defaults now adapt to palette complexity; values are
+  clamped to the image size and fall back to the adaptive choice on invalid
+  input).
+* `SIXEL_LOOKUP_VPTE_TILE_DEPTH` sets the tile depth (z span) for the EDT
+  passes (defaults track the adaptive `SIXEL_LOOKUP_VPTE_TILE_XY` decision
+  and are clamped the same way).
+* `SIXEL_LOOKUP_VPTE_FIRST_TOUCH` enables tile-wise zeroing of the VPTE
+  grid before the EDT so that NUMA systems can place pages on the thread
+  that will use them (0 or 1; default 0 so behaviour is unchanged unless
+  opted in).
+* `SIXEL_LOOKUP_VPTE_PIN_THREADS` pins the VPTE worker threads once at
+  startup to reduce migration on NUMA systems (0 or 1; default 0; failures
+  are ignored so portability is preserved).
 * `SIXEL_PARALLEL_LOG_PATH` writes a JSON timeline log that can be consumed
   by `tools/timeline.py`; the log is silent when unset.
 * `SIXEL_PARALLEL_LOG_LINES` controls per-line logging when
