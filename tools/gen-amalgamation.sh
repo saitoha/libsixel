@@ -8,20 +8,6 @@
 
 set -eu
 
-PYTHON_BIN=${PYTHON:-}
-
-if [ -z "${PYTHON_BIN}" ]; then
-    if command -v python3 >/dev/null 2>&1; then
-        PYTHON_BIN=python3
-    elif command -v python >/dev/null 2>&1; then
-        PYTHON_BIN=python
-    else
-        echo "Python interpreter not found (python3 or python)." >&2
-        echo "Please install Python to run the amalgamation generator." >&2
-        exit 127
-    fi
-fi
-
 if [ "$#" -lt 1 ]; then
     echo "Usage: $0 OUTPUT [SOURCE_ROOT] [BUILD_ROOT] [UNITS...]" >&2
     exit 1
@@ -38,20 +24,6 @@ build_root=$(cd "${build_root_arg}" && pwd)
 shift 2 || true
 
 mkdir -p "$(dirname "${output}")"
-
-relpath() {
-    ${PYTHON_BIN} - "$@" <<'PY'
-import os
-import sys
-base = sys.argv[1]
-target = sys.argv[2]
-print(os.path.relpath(target, base))
-PY
-}
-
-out_dir=$(cd "$(dirname "${output}")" && pwd)
-rel_src=$(relpath "${out_dir}" "${src_root}")
-rel_build=$(relpath "${out_dir}" "${build_root}")
 
 default_units="
 src/output.c
@@ -273,30 +245,45 @@ resolve_unit() {
 # Remove project-local includes and inline vendor headers so the generated
 # translation unit can compile without the original header files present.
 filter_local_includes() {
-    ${PYTHON_BIN} - "$@" <<'PY'
-import sys
-import pathlib
+    unit_path=$1
+    header_list=$2
+    src_root=$3
 
-unit_path = pathlib.Path(sys.argv[1])
-header_names = set(sys.argv[2].split())
-src_root = pathlib.Path(sys.argv[3])
-inline_headers = {'stb_image.h', 'stb_image_write.h'}
+    awk -v headers="${header_list}" -v src_root="${src_root}" '
+BEGIN {
+    split(headers, raw, "\n");
+    for (i in raw) {
+        if (length(raw[i]) > 0) {
+            header[raw[i]] = 1;
+        }
+    }
 
-with unit_path.open('r', encoding='utf-8') as f:
-    for line in f:
-        if line.startswith('#include "'):
-            name = line.split('"')[1]
-            if name in header_names:
-                if name in inline_headers:
-                    candidate = src_root / 'src' / name
-                    if candidate.exists():
-                        sys.stdout.write(f'#line 1 "{candidate}"\n')
-                        with candidate.open('r', encoding='utf-8') as hdr:
-                            sys.stdout.write(hdr.read())
-                        sys.stdout.write('\n')
-                continue
-        sys.stdout.write(line)
-PY
+    inline["stb_image.h"] = 1;
+    inline["stb_image_write.h"] = 1;
+}
+{
+    if ($0 ~ /^#include "[^"]+"/) {
+        match($0, /^#include "([^"]+)"/, m);
+        name = m[1];
+        if (name in header) {
+            if (name in inline) {
+                path = src_root "/src/" name;
+                if ((getline line < path) > 0) {
+                    print "#line 1 \"" path "\"";
+                    print line;
+                    while ((getline line < path) > 0) {
+                        print line;
+                    }
+                    close(path);
+                    print "";
+                }
+            }
+            next;
+        }
+    }
+    print $0;
+}
+' "${unit_path}"
 }
 
 emit_unit() {
@@ -396,6 +383,22 @@ emit_all_units() {
     done
 }
 
+emit_config_header() {
+    config_path="${build_root}/config.h"
+
+    if [ ! -f "${config_path}" ]; then
+        echo "config.h is missing at ${config_path}" >&2
+        echo "Run configure to generate config.h before building amalgamation." \
+            >&2
+        exit 1
+    fi
+
+    printf "\n/* ==== config.h ==== */\n" >>"${output}"
+    printf "#line 1 \"%s\"\n" "${config_path}" >>"${output}"
+    cat "${config_path}" >>"${output}"
+    printf "\n" >>"${output}"
+}
+
 cat >"${output}" <<EOF_HEADER
 /*
  * SPDX-License-Identifier: MIT
@@ -418,8 +421,8 @@ cat >"${output}" <<EOF_HEADER
 #endif
 
 #define SIXEL_AMALGAMATION 1
-#include "${rel_build}/config.h"
 EOF_HEADER
 printf '\n' >>"${output}"
+emit_config_header
 emit_all_headers
 emit_all_units
