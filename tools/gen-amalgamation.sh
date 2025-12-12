@@ -17,8 +17,10 @@ output=$1
 shift
 script_dir=$(cd "$(dirname "$0")" && pwd)
 default_root=$(cd "${script_dir}/.." && pwd)
-src_root=${1:-${default_root}}
-build_root=${2:-${src_root}}
+src_root_arg=${1:-${default_root}}
+build_root_arg=${2:-${src_root_arg}}
+src_root=$(cd "${src_root_arg}" && pwd)
+build_root=$(cd "${build_root_arg}" && pwd)
 shift 2 || true
 
 mkdir -p "$(dirname "${output}")"
@@ -101,6 +103,142 @@ src/quicklook_thumbnailing.m
 src/clipboard_macos.m
 "
 
+project_headers="
+config.h
+sixel.h
+sixel_threads_config.h
+sixel_atomic.h
+allocator.h
+logger.h
+threading.h
+threadpool.h
+status.h
+cpu.h
+pixelformat.h
+colorspace.h
+palette.h
+palette-common-merge.h
+palette-common-snap.h
+palette-heckbert.h
+palette-kmeans.h
+dither.h
+dither-internal.h
+dither-common-pipeline.h
+dither-fixed-8bit.h
+dither-fixed-float32.h
+dither-positional-8bit.h
+dither-positional-float32.h
+dither-varcoeff-8bit.h
+dither-varcoeff-float32.h
+lookup-vpte-8bit.h
+lookup-vpte-float32.h
+lookup-8bit.h
+lookup-float32.h
+lookup-common.h
+frame.h
+options.h
+assessment.h
+encoder.h
+decoder.h
+decoder-image.h
+decoder-parallel.h
+output.h
+writer.h
+chunk.h
+tty.h
+timer.h
+sleep.h
+clipboard.h
+loader.h
+loader-builtin.h
+loader-common.h
+loader-registry.h
+loader-libpng.h
+loader-libjpeg.h
+loader-gd.h
+loader-gdk-pixbuf2.h
+loader-gnome-thumbnailer.h
+loader-coregraphics.h
+loader-quicklook.h
+loader-wic.h
+malloc_stub.h
+stdio_stub.h
+rgblookup.h
+stb_image.h
+stb_image_write.h
+lso2.h
+compat_stub.h
+"
+
+header_units="
+include/sixel.h
+src/sixel_threads_config.h
+src/sixel_atomic.h
+src/threading.h
+src/threadpool.h
+src/allocator.h
+src/logger.h
+src/status.h
+src/cpu.h
+src/pixelformat.h
+src/colorspace.h
+src/palette.h
+src/palette-common-merge.h
+src/palette-common-snap.h
+src/palette-heckbert.h
+src/palette-kmeans.h
+src/dither.h
+src/dither-internal.h
+src/dither-common-pipeline.h
+src/dither-fixed-8bit.h
+src/dither-fixed-float32.h
+src/dither-positional-8bit.h
+src/dither-positional-float32.h
+src/dither-varcoeff-8bit.h
+src/dither-varcoeff-float32.h
+src/lookup-vpte-8bit.h
+src/lookup-vpte-float32.h
+src/lookup-8bit.h
+src/lookup-float32.h
+src/lookup-common.h
+src/frame.h
+src/options.h
+src/assessment.h
+src/encoder.h
+src/decoder.h
+src/decoder-image.h
+src/decoder-parallel.h
+src/output.h
+src/writer.h
+src/chunk.h
+src/tty.h
+src/timer.h
+src/sleep.h
+src/clipboard.h
+src/loader.h
+src/loader-builtin.h
+src/loader-common.h
+src/loader-registry.h
+src/loader-libpng.h
+src/loader-libjpeg.h
+src/loader-gd.h
+src/loader-gdk-pixbuf2.h
+src/loader-gnome-thumbnailer.h
+src/loader-coregraphics.h
+src/loader-quicklook.h
+src/loader-wic.h
+src/stb_image.h
+src/stb_image_write.h
+src/malloc_stub.h
+src/stdio_stub.h
+src/rgblookup.h
+src/lso2.h
+src/compat_stub.h
+"
+
+# Headers are concatenated upfront so that the generated translation unit does
+# not rely on project-local includes at compile time.
+
 if [ "$#" -gt 0 ]; then
     user_units="$*"
 else
@@ -118,6 +256,35 @@ resolve_unit() {
     esac
 }
 
+# Remove project-local includes and inline vendor headers so the generated
+# translation unit can compile without the original header files present.
+filter_local_includes() {
+    python3 - "$@" <<'PY'
+import sys
+import pathlib
+
+unit_path = pathlib.Path(sys.argv[1])
+header_names = set(sys.argv[2].split())
+src_root = pathlib.Path(sys.argv[3])
+inline_headers = {'stb_image.h', 'stb_image_write.h'}
+
+with unit_path.open('r', encoding='utf-8') as f:
+    for line in f:
+        if line.startswith('#include "'):
+            name = line.split('"')[1]
+            if name in header_names:
+                if name in inline_headers:
+                    candidate = src_root / 'src' / name
+                    if candidate.exists():
+                        sys.stdout.write(f'#line 1 "{candidate}"\n')
+                        with candidate.open('r', encoding='utf-8') as hdr:
+                            sys.stdout.write(hdr.read())
+                        sys.stdout.write('\n')
+                continue
+        sys.stdout.write(line)
+PY
+}
+
 emit_unit() {
     unit_path=$(resolve_unit "$1")
     guard_expr=$2
@@ -133,12 +300,63 @@ emit_unit() {
 
     printf "\n/* ==== %s ==== */\n" "$1" >>"${output}"
     printf "#line 1 \"%s\"\n" "${unit_path}" >>"${output}"
-    cat "${unit_path}" >>"${output}"
+    filter_local_includes "${unit_path}" "${project_headers}" \
+        "${src_root}" >>"${output}"
     printf "\n" >>"${output}"
 
     if [ -n "${guard_expr}" ]; then
         printf "#endif /* %s */\n" "${guard_expr}" >>"${output}"
     fi
+}
+
+emit_header_unit() {
+    unit_path=$(resolve_unit "$1")
+    guard_expr=$2
+
+    if [ ! -f "${unit_path}" ]; then
+        echo "Skip missing header: ${unit_path}" >&2
+        return
+    fi
+
+    if [ -n "${guard_expr}" ]; then
+        printf "\n#if %s\n" "${guard_expr}" >>"${output}"
+    fi
+
+    printf "\n/* ==== %s ==== */\n" "$1" >>"${output}"
+    printf "#line 1 \"%s\"\n" "${unit_path}" >>"${output}"
+    filter_local_includes "${unit_path}" "${project_headers}" \
+        "${src_root}" >>"${output}"
+    printf "\n" >>"${output}"
+
+    if [ -n "${guard_expr}" ]; then
+        printf "#endif /* %s */\n" "${guard_expr}" >>"${output}"
+    fi
+}
+
+emit_all_headers() {
+    echo "${header_units}" | while IFS= read -r unit; do
+        [ -z "${unit}" ] && continue
+
+        case "${unit}" in
+            src/threadpool.h)
+                emit_header_unit "${unit}" "SIXEL_ENABLE_THREADS"
+                ;;
+            src/loader-quicklook.h|src/loader-coregraphics.h|src/loader-wic.h)
+                emit_header_unit "${unit}" "HAVE_QUICKLOOK"
+                ;;
+            include/sixel.h)
+                public_header="${build_root}/include/sixel.h"
+                if [ -f "${public_header}" ]; then
+                    emit_header_unit "${public_header}" ""
+                else
+                    emit_header_unit "${unit}" ""
+                fi
+                ;;
+            *)
+                emit_header_unit "${unit}" ""
+                ;;
+        esac
+    done
 }
 
 emit_all_units() {
@@ -189,4 +407,5 @@ cat >"${output}" <<EOF_HEADER
 #include "${rel_build}/config.h"
 EOF_HEADER
 printf '\n' >>"${output}"
+emit_all_headers
 emit_all_units
