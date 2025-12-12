@@ -897,6 +897,14 @@ endif
 config_h = configure_file(output: 'config.h', configuration: conf)
 project_inc = include_directories('.', 'include', 'src')
 
+libsixel_posix_defs = cc.get_supported_arguments([
+  '-D_POSIX_C_SOURCE=200809L',
+])
+
+if have_threads
+  libsixel_posix_defs += cc.get_supported_arguments(['-DSIXEL_ENABLE_THREADS=1'])
+endif
+
 loader_helper_sources = files(
   'src/allocator.c',
   'src/sleep.c',
@@ -943,6 +951,8 @@ loader_helper_sources = files(
   'src/lookup-common.c',
   'src/lookup-8bit.c',
   'src/lookup-float32.c',
+  'src/lookup-vpte-8bit.c',
+  'src/lookup-vpte-float32.c',
   'src/dither-common-pipeline.h',
   'src/scale.c',
   'src/status.c',
@@ -968,6 +978,7 @@ loader_helpers = static_library('sixel_loader_helpers',
   loader_helper_sources,
   include_directories: project_inc,
   dependencies: deps,
+  c_args: libsixel_posix_defs,
   pic: true,
   build_by_default: false)
 loader_helpers_dep = declare_dependency(link_with: loader_helpers,
@@ -979,7 +990,7 @@ lsqa_deps = [loader_helpers_dep]
 if m_dep.found()
   lsqa_deps += m_dep
 endif
-lsqa_args = []
+lsqa_args = libsixel_posix_defs
 lpips_model_root_opt = get_option('lpips_model_dir')
 if lpips_model_root_opt == ''
   lpips_model_root = join_paths(get_option('datadir'),
@@ -1243,16 +1254,11 @@ endif
 
 subdir('include')
 
-libsixel_posix_defs = cc.get_supported_arguments([
-  '-D_POSIX_C_SOURCE=200809L',
-])
-
-if have_threads
-  libsixel_posix_defs += cc.get_supported_arguments(['-DSIXEL_ENABLE_THREADS=1'])
-endif
-
 subdir('src')
 subdir('converters')
+if get_option('amalgamation')
+  subdir('amalgamation')
+endif
 if have_wiccodec
   subdir('wic')
 endif

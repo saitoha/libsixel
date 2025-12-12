@@ -1546,8 +1546,9 @@ sixel_helper_get_available_loader_names(char const **names, size_t max_names)
 }
 
 #if HAVE_TESTS
+/* Simple allocation smoke test to exercise loader test harness entry. */
 static int
-test1(void)
+loader_test_allocation_smoke(void)
 {
     int nret = EXIT_FAILURE;
     unsigned char *ptr = malloc(16);
@@ -1569,7 +1570,7 @@ sixel_loader_tests_main(void)
     typedef int (* testcase)(void);
 
     static testcase const testcases[] = {
-        test1,
+        loader_test_allocation_smoke,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {

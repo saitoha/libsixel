@@ -245,12 +245,12 @@ sixel_lookup_8bit_policy_uses_cache(int policy)
     return 1;
 }
 
-static int sixel_lookup_vpte_env_resolution(void);
-static int sixel_lookup_vpte_env_refine(void);
-static int sixel_lookup_vpte_env_shared(void);
-static int sixel_lookup_vpte_env_use_dist2(void);
-static int sixel_lookup_vpte_env_use_cache(void);
-
+static int sixel_lookup_vpte_env_resolution_8bit(void);
+static int sixel_lookup_vpte_env_refine_8bit(void);
+static int sixel_lookup_vpte_env_shared_8bit(void);
+static int sixel_lookup_vpte_env_use_dist2_8bit(void);
+static int sixel_lookup_vpte_env_use_cache_8bit(void);
+ 
 static SIXELSTATUS
 sixel_lookup_8bit_configure_vpte(sixel_lookup_8bit_t *lut,
                                  unsigned char const *palette,
@@ -271,12 +271,12 @@ sixel_lookup_8bit_configure_vpte(sixel_lookup_8bit_t *lut,
 
     (void)complexion;
 
-    resolution = sixel_lookup_vpte_env_resolution();
-    refine = sixel_lookup_vpte_env_refine();
-    shared_flag = sixel_lookup_vpte_env_shared();
-    use_dist2 = sixel_lookup_vpte_env_use_dist2();
-    use_cache = sixel_lookup_vpte_env_use_cache();
-
+    resolution = sixel_lookup_vpte_env_resolution_8bit();
+    refine = sixel_lookup_vpte_env_refine_8bit();
+    shared_flag = sixel_lookup_vpte_env_shared_8bit();
+    use_dist2 = sixel_lookup_vpte_env_use_dist2_8bit();
+    use_cache = sixel_lookup_vpte_env_use_cache_8bit();
+ 
     if (lut->vpte == NULL) {
         status = sixel_lookup_vpte_8bit_create(lut->allocator, &lut->vpte);
         if (SIXEL_FAILED(status)) {
@@ -321,7 +321,7 @@ sixel_lookup_8bit_configure_vpte(sixel_lookup_8bit_t *lut,
 }
 
 static int
-sixel_lookup_vpte_parse_flag(char const *text, int default_value)
+sixel_lookup_vpte_parse_flag_8bit(char const *text, int default_value)
 {
     long parsed;
     char *endptr;
@@ -348,7 +348,7 @@ sixel_lookup_vpte_parse_flag(char const *text, int default_value)
 }
 
 static int
-sixel_lookup_vpte_env_resolution(void)
+sixel_lookup_vpte_env_resolution_8bit(void)
 {
     char const *env;
     long parsed;
@@ -374,43 +374,43 @@ sixel_lookup_vpte_env_resolution(void)
 }
 
 static int
-sixel_lookup_vpte_env_refine(void)
+sixel_lookup_vpte_env_refine_8bit(void)
 {
-    return sixel_lookup_vpte_parse_flag(
+    return sixel_lookup_vpte_parse_flag_8bit(
         sixel_compat_getenv("SIXEL_LOOKUP_VPTE_REFINE"),
         1);
 }
 
 static int
-sixel_lookup_vpte_env_shared(void)
+sixel_lookup_vpte_env_shared_8bit(void)
 {
-    return sixel_lookup_vpte_parse_flag(
+    return sixel_lookup_vpte_parse_flag_8bit(
         sixel_compat_getenv("SIXEL_LOOKUP_VPTE_SHARED"),
         1);
 }
 
 static int
-sixel_lookup_vpte_env_use_dist2(void)
+sixel_lookup_vpte_env_use_dist2_8bit(void)
 {
     /*
      * Dist2 is disabled by default because measurements have not shown
      * consistent wins.  Enable explicitly when experimenting with boundary
      * refinement short-circuiting.
      */
-    return sixel_lookup_vpte_parse_flag(
+    return sixel_lookup_vpte_parse_flag_8bit(
         sixel_compat_getenv("SIXEL_LOOKUP_VPTE_USE_DIST2"),
         0);
 }
 
 static int
-sixel_lookup_vpte_env_use_cache(void)
+sixel_lookup_vpte_env_use_cache_8bit(void)
 {
     /*
      * The cache is disabled by default because its benefit has not been
      * demonstrated.  Callers can opt in for experiments without impacting
      * parallel TLS availability checks.
      */
-    return sixel_lookup_vpte_parse_flag(
+    return sixel_lookup_vpte_parse_flag_8bit(
         sixel_compat_getenv("SIXEL_LOOKUP_VPTE_USE_CACHE"),
         0);
 }

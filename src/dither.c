@@ -2491,9 +2491,13 @@ end:
 }
 
 
+/*
+ * Verify reference counting works when new dithers are created and unrefed
+ * multiple times.
+ */
 #if HAVE_TESTS
 static int
-test1(void)
+dither_test_reference_counts(void)
 {
     sixel_dither_t *dither = NULL;
     int nret = EXIT_FAILURE;
@@ -2513,8 +2517,9 @@ error:
     return nret;
 }
 
+/* Ensure guard rails reject impossibly large palette requests. */
 static int
-test2(void)
+dither_test_rejects_huge_palette(void)
 {
     sixel_dither_t *dither = NULL;
     int nret = EXIT_FAILURE;
@@ -3147,8 +3152,8 @@ sixel_dither_tests_main(void)
     typedef int (* testcase)(void);
 
     static testcase const testcases[] = {
-        test1,
-        test2,
+        dither_test_reference_counts,
+        dither_test_rejects_huge_palette,
         test_float_pixelformat_defaults_to_8bit,
         test_float_pixelformat_sets_flag,
         test_float_pixelformat_enables_quantizer,

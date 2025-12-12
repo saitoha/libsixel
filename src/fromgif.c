@@ -998,8 +998,9 @@ end:
 #endif  /* _MSC_VER */
 
 #if HAVE_TESTS
+/* Placeholder smoke test for GIF decoder entry point. */
 static int
-test1(void)
+fromgif_test_smoke(void)
 {
     int nret = EXIT_FAILURE;
 
@@ -1017,7 +1018,7 @@ sixel_fromgif_tests_main(void)
     typedef int (* testcase)(void);
 
     static testcase const testcases[] = {
-        test1,
+        fromgif_test_smoke,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {

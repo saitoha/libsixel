@@ -67,7 +67,7 @@ error_diffuse_float(float *data,
 }
 
 static void
-sixel_dither_scanline_params(int serpentine,
+sixel_dither_scanline_params_fixed_float32(int serpentine,
                              int index,
                              int limit,
                              int *start,
@@ -949,7 +949,7 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
 
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
-        sixel_dither_scanline_params(serpentine, absolute_y,
+        sixel_dither_scanline_params_fixed_float32(serpentine, absolute_y,
                                      context->width,
                                      &start, &end, &step, &direction);
         for (x = start; x != end; x += step) {

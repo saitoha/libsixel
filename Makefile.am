@@ -2,6 +2,9 @@
 # @configure_input@
 #
 SUBDIRS = include src converters assessment tools tests python
+if WANT_AMALGAMATION
+SUBDIRS += amalgamation
+endif
 if HAVE_RUBY
 SUBDIRS += ruby
 endif
@@ -13,7 +16,7 @@ SUBDIRS += wic
 endif
 
 DIST_SUBDIRS = include src converters assessment tools tests python ruby wic \
-        quicklook-extension
+        quicklook-extension amalgamation
 
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.
 EXTRA_DIST = LICENSE build-aux/depcomp

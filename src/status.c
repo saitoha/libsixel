@@ -660,9 +660,10 @@ sixel_helper_format_error(
 }
 
 
+/* Confirm simple status codes format to well-known strings. */
 #if HAVE_TESTS
 static int
-test1(void)
+status_test_basic_messages(void)
 {
     int nret = EXIT_FAILURE;
     char const *message;
@@ -678,13 +679,14 @@ test1(void)
     }
     return EXIT_SUCCESS;
 error:
-    perror("test1");
+    perror("status_test_basic_messages");
     return nret;
 }
 
 
+/* Validate formatting of extended status codes and library specific errors. */
 static int
-test2(void)
+status_test_extended_messages(void)
 {
     int nret = EXIT_FAILURE;
     char const *message;
@@ -781,7 +783,7 @@ test2(void)
 
     return EXIT_SUCCESS;
 error:
-    perror("test2");
+    perror("status_test_extended_messages");
     return nret;
 }
 
@@ -794,8 +796,8 @@ sixel_status_tests_main(void)
     typedef int (* testcase)(void);
 
     static testcase const testcases[] = {
-        test1,
-        test2,
+        status_test_basic_messages,
+        status_test_extended_messages,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
