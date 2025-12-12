@@ -412,7 +412,7 @@ AC_ARG_ENABLE([gdk-pixbuf-loader],
               [AS_HELP_STRING([--enable-gdk-pixbuf-loader],
                               [Build gdk-pixbuf SIXEL loader])],
               [],
-              [enable_gdk_pixbuf_loader=yes])
+              [enable_gdk_pixbuf_loader=no])
 
 AC_ARG_WITH([gd],
             [AS_HELP_STRING([--with-gd],
