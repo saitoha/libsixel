@@ -1,21 +1,25 @@
 #!/bin/sh
 # Generate amalgamated sixel.c that stitches together all primary C sources.
-# Usage: gen-amalgamation.sh OUTPUT [SOURCE_ROOT] [BUILD_ROOT]
+# Usage: gen-amalgamation.sh OUTPUT [SOURCE_ROOT] [BUILD_ROOT] [UNITS...]
 # SOURCE_ROOT defaults to the repository root relative to this script.
 # BUILD_ROOT defaults to SOURCE_ROOT. All comment strings must stay in English.
+# UNITS may be provided to override the default source ordering. Each entry is
+# treated as relative to SOURCE_ROOT unless an absolute path is specified.
 
 set -eu
 
-if [ "$#" -lt 1 ] || [ "$#" -gt 3 ]; then
-    echo "Usage: $0 OUTPUT [SOURCE_ROOT] [BUILD_ROOT]" >&2
+if [ "$#" -lt 1 ]; then
+    echo "Usage: $0 OUTPUT [SOURCE_ROOT] [BUILD_ROOT] [UNITS...]" >&2
     exit 1
 fi
 
 output=$1
+shift
 script_dir=$(cd "$(dirname "$0")" && pwd)
 default_root=$(cd "${script_dir}/.." && pwd)
-src_root=${2:-${default_root}}
-build_root=${3:-${src_root}}
+src_root=${1:-${default_root}}
+build_root=${2:-${src_root}}
+shift 2 || true
 
 mkdir -p "$(dirname "${output}")"
 
@@ -32,6 +36,133 @@ PY
 out_dir=$(cd "$(dirname "${output}")" && pwd)
 rel_src=$(relpath "${out_dir}" "${src_root}")
 rel_build=$(relpath "${out_dir}" "${build_root}")
+
+default_units="
+src/output.c
+src/fromsixel.c
+src/tosixel.c
+src/timer.c
+src/assessment.c
+src/sleep.c
+src/lookup-common.c
+src/lookup-8bit.c
+src/lookup-float32.c
+src/lookup-vpte-8bit.c
+src/lookup-vpte-float32.c
+src/palette-heckbert.c
+src/palette-common-merge.c
+src/palette-common-snap.c
+src/palette-kmeans.c
+src/palette.c
+src/dither.c
+src/dither-common-pipeline.c
+src/dither-positional-8bit.c
+src/dither-positional-float32.c
+src/dither-fixed-8bit.c
+src/dither-fixed-float32.c
+src/dither-varcoeff-8bit.c
+src/dither-varcoeff-float32.c
+src/logger.c
+src/colorspace.c
+src/frame.c
+src/cpu.c
+src/pixelformat.c
+src/scale.c
+src/chunk.c
+src/loader.c
+src/loader-gdk-pixbuf2.c
+src/loader-gnome-thumbnailer.c
+src/loader-coregraphics.c
+src/loader-quicklook.c
+src/loader-wic.c
+src/loader-gd.c
+src/loader-libpng.c
+src/loader-libjpeg.c
+src/loader-builtin.c
+src/loader-common.c
+src/loader-registry.c
+src/frompnm.c
+src/fromgif.c
+src/clipboard.c
+src/encoder.c
+src/decoder.c
+src/decoder-parallel.c
+src/options.c
+src/writer.c
+src/stb_image_write.c
+src/status.c
+src/compat_stub.c
+src/malloc_stub.c
+src/allocator.c
+src/tty.c
+src/threading.c
+src/threadpool.c
+src/quicklook_thumbnailing.m
+src/clipboard_macos.m
+"
+
+if [ "$#" -gt 0 ]; then
+    user_units="$*"
+else
+    user_units="${default_units}"
+fi
+
+resolve_unit() {
+    case "$1" in
+        /*)
+            echo "$1"
+            ;;
+        *)
+            echo "${src_root}/$1"
+            ;;
+    esac
+}
+
+emit_unit() {
+    unit_path=$(resolve_unit "$1")
+    guard_expr=$2
+
+    if [ ! -f "${unit_path}" ]; then
+        echo "Skip missing unit: ${unit_path}" >&2
+        return
+    fi
+
+    if [ -n "${guard_expr}" ]; then
+        printf "\n#if %s\n" "${guard_expr}" >>"${output}"
+    fi
+
+    printf "\n/* ==== %s ==== */\n" "$1" >>"${output}"
+    printf "#line 1 \"%s\"\n" "${unit_path}" >>"${output}"
+    cat "${unit_path}" >>"${output}"
+    printf "\n" >>"${output}"
+
+    if [ -n "${guard_expr}" ]; then
+        printf "#endif /* %s */\n" "${guard_expr}" >>"${output}"
+    fi
+}
+
+emit_all_units() {
+    echo "${user_units}" | while IFS= read -r unit; do
+        [ -z "${unit}" ] && continue
+
+        case "${unit}" in
+            src/threadpool.c)
+                emit_unit "${unit}" "SIXEL_ENABLE_THREADS"
+                ;;
+            src/quicklook_thumbnailing.m)
+                emit_unit "${unit}" \
+                    "HAVE_QUICKLOOK_THUMBNAILING && defined(__OBJC__)"
+                ;;
+            src/clipboard_macos.m)
+                emit_unit "${unit}" \
+                    "HAVE_CLIPBOARD_MACOS && defined(__OBJC__)"
+                ;;
+            *)
+                emit_unit "${unit}" ""
+                ;;
+        esac
+    done
+}
 
 cat >"${output}" <<EOF_HEADER
 /*
@@ -56,79 +187,6 @@ cat >"${output}" <<EOF_HEADER
 
 #define SIXEL_AMALGAMATION 1
 #include "${rel_build}/config.h"
-
-/* Core pipeline and dither helpers */
-#include "${rel_src}/src/output.c"
-#include "${rel_src}/src/fromsixel.c"
-#include "${rel_src}/src/tosixel.c"
-#include "${rel_src}/src/timer.c"
-#include "${rel_src}/src/assessment.c"
-#include "${rel_src}/src/sleep.c"
-#include "${rel_src}/src/lookup-common.c"
-#include "${rel_src}/src/lookup-8bit.c"
-#include "${rel_src}/src/lookup-float32.c"
-#include "${rel_src}/src/lookup-vpte-8bit.c"
-#include "${rel_src}/src/lookup-vpte-float32.c"
-#include "${rel_src}/src/palette-heckbert.c"
-#include "${rel_src}/src/palette-common-merge.c"
-#include "${rel_src}/src/palette-common-snap.c"
-#include "${rel_src}/src/palette-kmeans.c"
-#include "${rel_src}/src/palette.c"
-#include "${rel_src}/src/dither.c"
-#include "${rel_src}/src/dither-common-pipeline.c"
-#include "${rel_src}/src/dither-positional-8bit.c"
-#include "${rel_src}/src/dither-positional-float32.c"
-#include "${rel_src}/src/dither-fixed-8bit.c"
-#include "${rel_src}/src/dither-fixed-float32.c"
-#include "${rel_src}/src/dither-varcoeff-8bit.c"
-#include "${rel_src}/src/dither-varcoeff-float32.c"
-
-/* Support utilities and platform helpers */
-#include "${rel_src}/src/logger.c"
-#include "${rel_src}/src/colorspace.c"
-#include "${rel_src}/src/frame.c"
-#include "${rel_src}/src/cpu.c"
-#include "${rel_src}/src/pixelformat.c"
-#include "${rel_src}/src/scale.c"
-#include "${rel_src}/src/chunk.c"
-#include "${rel_src}/src/loader.c"
-#include "${rel_src}/src/loader-gdk-pixbuf2.c"
-#include "${rel_src}/src/loader-gnome-thumbnailer.c"
-#include "${rel_src}/src/loader-coregraphics.c"
-#include "${rel_src}/src/loader-quicklook.c"
-#include "${rel_src}/src/loader-wic.c"
-#include "${rel_src}/src/loader-gd.c"
-#include "${rel_src}/src/loader-libpng.c"
-#include "${rel_src}/src/loader-libjpeg.c"
-#include "${rel_src}/src/loader-builtin.c"
-#include "${rel_src}/src/loader-common.c"
-#include "${rel_src}/src/loader-registry.c"
-#include "${rel_src}/src/frompnm.c"
-#include "${rel_src}/src/fromgif.c"
-#include "${rel_src}/src/clipboard.c"
-#include "${rel_src}/src/encoder.c"
-#include "${rel_src}/src/decoder.c"
-#include "${rel_src}/src/decoder-parallel.c"
-#include "${rel_src}/src/options.c"
-#include "${rel_src}/src/writer.c"
-#include "${rel_src}/src/stb_image_write.c"
-#include "${rel_src}/src/status.c"
-#include "${rel_src}/src/compat_stub.c"
-#include "${rel_src}/src/malloc_stub.c"
-#include "${rel_src}/src/allocator.c"
-#include "${rel_src}/src/tty.c"
-#include "${rel_src}/src/threading.c"
-
-#if SIXEL_ENABLE_THREADS
-#include "${rel_src}/src/threadpool.c"
-#endif
-
-#if HAVE_QUICKLOOK_THUMBNAILING && defined(__OBJC__)
-#include "${rel_src}/src/quicklook_thumbnailing.m"
-#endif
-
-#if HAVE_CLIPBOARD_MACOS && defined(__OBJC__)
-#include "${rel_src}/src/clipboard_macos.m"
-#endif
 EOF_HEADER
 printf '\n' >>"${output}"
+emit_all_units
