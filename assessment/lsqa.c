@@ -61,6 +61,122 @@
 #define SIXEL_PATH_SEP '/'
 #endif
 
+/*
+ * Local safety shims avoid MSVC secure CRT warnings without pulling in the
+ * libsixel-wide compat layer. Each helper mirrors a single libc routine and
+ * falls back to a bounded copy where secure variants are unavailable.
+ */
+static int
+lsqa_copy_string(char *dst, size_t dst_size, char const *src)
+{
+#if defined(_MSC_VER)
+    errno_t rc;
+
+    if (dst == NULL || dst_size == 0 || src == NULL) {
+        return -1;
+    }
+    rc = strcpy_s(dst, dst_size, src);
+    if (rc != 0) {
+        return -1;
+    }
+    return 0;
+#else
+    size_t len;
+
+    if (dst == NULL || dst_size == 0 || src == NULL) {
+        return -1;
+    }
+    len = strlen(src);
+    if (len + 1u > dst_size) {
+        return -1;
+    }
+    memcpy(dst, src, len + 1u);
+    return 0;
+#endif
+}
+
+static char const *
+lsqa_strerror(int errnum, char *buffer, size_t size)
+{
+#if defined(_MSC_VER)
+    errno_t rc;
+
+    if (buffer != NULL && size > 0) {
+        rc = strerror_s(buffer, size, errnum);
+        if (rc == 0) {
+            return buffer;
+        }
+    }
+    return "unknown error";
+#elif defined(HAVE_STRERROR_R)
+    if (buffer != NULL && size > 0) {
+        if (strerror_r(errnum, buffer, size) == 0) {
+            return buffer;
+        }
+    }
+    return "unknown error";
+#else
+    (void)buffer;
+    (void)size;
+    return strerror(errnum);
+#endif
+}
+
+static char *
+lsqa_getenv_dup(char const *name)
+{
+#if defined(_MSC_VER) && defined(HAVE__DUPENV_S)
+    char *value;
+    size_t len;
+    errno_t rc;
+
+    value = NULL;
+    len = 0u;
+    rc = _dupenv_s(&value, &len, name);
+    if (rc != 0) {
+        if (value != NULL) {
+            free(value);
+        }
+        return NULL;
+    }
+    return value;
+#else
+    char const *value;
+    size_t len;
+    char *copy;
+
+    value = getenv(name);
+    if (value == NULL) {
+        return NULL;
+    }
+    len = strlen(value);
+    copy = (char *)malloc(len + 1u);
+    if (copy == NULL) {
+        return NULL;
+    }
+    memcpy(copy, value, len + 1u);
+    return copy;
+#endif
+}
+
+static FILE *
+lsqa_fopen_write(char const *path)
+{
+#if defined(HAVE_FOPEN_S)
+    FILE *stream;
+    errno_t rc;
+
+    stream = NULL;
+    rc = fopen_s(&stream, path, "w");
+    if (rc != 0) {
+        return NULL;
+    }
+    return stream;
+#else
+    return fopen(path, "w");
+#endif
+}
+
 #define SIXEL_LOCAL_MODELS_SEG1 ".."
 #define SIXEL_LOCAL_MODELS_SEG2 "models"
 #define SIXEL_LOCAL_MODELS_SEG3 "lpips"
@@ -179,15 +295,16 @@ detect_build_models_dir(char const *argv0,
         if (strlen(argv0) >= sizeof(absolute)) {
             return -1;
         }
-        strcpy(absolute, argv0);
+        if (lsqa_copy_string(absolute, sizeof(absolute), argv0) != 0) {
+            return -1;
+        }
     }
 #else
     if (realpath(argv0, absolute) == NULL) {
         if (sixel_is_path_separator(argv0[0])) {
-            if (strlen(argv0) >= sizeof(absolute)) {
+            if (lsqa_copy_string(absolute, sizeof(absolute), argv0) != 0) {
                 return -1;
             }
-            strcpy(absolute, argv0);
         } else {
             char cwd[PATH_MAX];
 
@@ -240,7 +357,9 @@ detect_build_models_dir(char const *argv0,
     if (strlen(lpips_dir) + 1u > size) {
         return -1;
     }
-    strcpy(buffer, lpips_dir);
+    if (lsqa_copy_string(buffer, size, lpips_dir) != 0) {
+        return -1;
+    }
     return 0;
 }
 
@@ -647,8 +766,14 @@ json_collect_callback(char const *chunk, size_t length, void *user_data)
     collector = (JsonCollector *)user_data;
     if (collector->stream != NULL) {
         if (fwrite(chunk, 1, length, collector->stream) != length) {
-            fprintf(stderr, "Failed to write JSON output: %s\n",
-                    strerror(errno));
+            {
+                char errbuf[128];
+
+                fprintf(stderr,
+                        "Failed to write JSON output: %s\n",
+                        lsqa_strerror(errno, errbuf,
+                                      sizeof(errbuf)));
+            }
         }
     }
     if (collector->metrics == NULL) {
@@ -736,8 +861,8 @@ parse_args(int argc, char **argv, Options *opts)
 #if defined(_WIN32)
     const char *alt_slash_pos;
 #endif
-    const char *verbose_env;
-    const char *prefix_env;
+    char *verbose_env;
+    char *prefix_env;
     const char *metrics_arg;
     const MetricSpec *metric_spec;
     size_t prefix_len;
@@ -845,22 +970,26 @@ parse_args(int argc, char **argv, Options *opts)
     }
     opts->prefix = opts->prefix_buffer;
 
-    prefix_env = getenv("LSQA_PREFIX");
+    prefix_env = lsqa_getenv_dup("LSQA_PREFIX");
     if (prefix_env != NULL && prefix_env[0] != '\0') {
         status = snprintf(opts->prefix_buffer,
                           sizeof(opts->prefix_buffer),
                           "%s",
                           prefix_env);
         if (status < 0) {
+            free(prefix_env);
             return -1;
         }
         opts->prefix = opts->prefix_buffer;
     }
 
-    verbose_env = getenv("LSQA_VERBOSE");
+    verbose_env = lsqa_getenv_dup("LSQA_VERBOSE");
     if (verbose_env != NULL && verbose_env[0] != '\0') {
         opts->verbose = 1;
     }
+
+    free(prefix_env);
+    free(verbose_env);
 
     return 0;
 }
@@ -927,11 +1056,17 @@ main(int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    if (getenv("LIBSIXEL_MODEL_DIR") == NULL) {
-        if (detect_build_models_dir(argv[0], build_models_dir,
-                                    sizeof(build_models_dir)) == 0) {
-            have_build_models_dir = 1;
+    {
+        char *model_dir;
+
+        model_dir = lsqa_getenv_dup("LIBSIXEL_MODEL_DIR");
+        if (model_dir == NULL) {
+            if (detect_build_models_dir(argv[0], build_models_dir,
+                                        sizeof(build_models_dir)) == 0) {
+                have_build_models_dir = 1;
+            }
         }
+        free(model_dir);
     }
 
     status = sixel_assessment_new(&assessment, allocator);
@@ -1057,12 +1192,14 @@ main(int argc, char **argv)
     }
     snprintf(json_path, path_len, "%s_metrics.json", opts.prefix);
 
-    fp = fopen(json_path, "w");
+    fp = lsqa_fopen_write(json_path);
     if (fp == NULL) {
+        char errbuf[128];
+
         fprintf(stderr,
                 "Failed to open %s for writing: %s\n",
                 json_path,
-                strerror(errno));
+                lsqa_strerror(errno, errbuf, sizeof(errbuf)));
         free(json_path);
         sixel_assessment_unref(assessment);
         sixel_frame_unref(ref_frame);
