@@ -22,6 +22,15 @@
  * SOFTWARE.
  */
 
+#if !defined(_DEFAULT_SOURCE)
+/*
+ * glibc hides gettimeofday() behind _DEFAULT_SOURCE when POSIX feature
+ * macros tighten the exposed surface.  Keep the default extensions on so
+ * legacy time helpers stay declared even after we request POSIX 2008 APIs.
+ */
+# define _DEFAULT_SOURCE 1
+#endif
+
 #if !defined(_POSIX_C_SOURCE)
 # define _POSIX_C_SOURCE 200809L
 #endif
@@ -56,6 +65,9 @@
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif
+#if HAVE_SYS_TIME_H
+# include <sys/time.h>
+#endif
 #if HAVE_UNISTD_H
 # include <unistd.h>
 #endif
@@ -75,6 +87,7 @@
 #if defined(HAVE_REALPATH)
 char *realpath(const char *path, char *resolved_path);
 #endif
+
 
 #if defined(_WIN32)
 # include <io.h>
