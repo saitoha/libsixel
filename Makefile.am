@@ -5,6 +5,9 @@ SUBDIRS = include src converters assessment tools tests python
 if WANT_AMALGAMATION
 SUBDIRS += amalgamation
 endif
+if ENABLE_GDK_PIXBUF_LOADER
+SUBDIRS += gdk-pixbuf-loader
+endif
 if HAVE_RUBY
 SUBDIRS += ruby
 endif
@@ -15,8 +18,19 @@ if HAVE_WICCODEC
 SUBDIRS += wic
 endif
 
-DIST_SUBDIRS = include src converters assessment tools tests python ruby wic \
-        quicklook-extension amalgamation
+DIST_SUBDIRS = \
+        include \
+        src \
+        converters \
+        assessment \
+        tools \
+        tests \
+        python \
+        ruby \
+        wic \
+        gdk-pixbuf-loader \
+        quicklook-extension \
+        amalgamation
 
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.
 EXTRA_DIST = LICENSE build-aux/depcomp

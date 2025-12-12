@@ -78,4 +78,20 @@ foreach t : ['test_0001_python_bindings.t', 'test_0002_python_api_formats.t',
     suite: ['tap'])
 endforeach
 
+if gdk_pixbuf_loader_deps.length() > 0
+  gdk_pixbuf_loader_sources = [
+    'gdk-pixbuf-loader/test-gdk-pixbuf-loader.c',
+    '../gdk-pixbuf-loader/sixel-pixbuf-loader.c',
+  ]
+  gdk_pixbuf_loader_test = executable('gdk-pixbuf-loader-test',
+    gdk_pixbuf_loader_sources,
+    include_directories: project_inc,
+    dependencies: gdk_pixbuf_loader_deps + [libsixel_dep],
+    c_args: ['-DGDK_PIXBUF_ENABLE_BACKEND'],
+    install: false)
+  test('gdk-pixbuf-loader', gdk_pixbuf_loader_test,
+    env: env,
+    suite: ['gdk-pixbuf-loader'])
+endif
+
 add_test_setup('ci', timeout_multiplier: 1)
