@@ -271,30 +271,6 @@ sixel_clamp_unit(double value)
     return value;
 }
 
-static inline float
-sixel_colorspace_cbrt_lookup(float value)
-{
-    float scaled;
-    int index;
-
-    if (value <= 0.0f) {
-        return 0.0f;
-    }
-    if (value >= 1.0f) {
-        return 1.0f;
-    }
-
-    scaled = value * (float)(SIXEL_CBR_LUT_SIZE - 1);
-    index = (int)(scaled + 0.5f);
-    if (index < 0) {
-        index = 0;
-    } else if (index >= SIXEL_CBR_LUT_SIZE) {
-        index = SIXEL_CBR_LUT_SIZE - 1;
-    }
-
-    return sixel_cbrt_lut[index];
-}
-
 static inline double
 sixel_colorspace_cbrt_lookup_double(double value)
 {
