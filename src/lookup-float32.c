@@ -73,7 +73,7 @@ sixel_lookup_float32_policy_normalize(int policy)
 }
 
 static int
-sixel_lookup_vpte_parse_flag(char const *text, int default_value)
+sixel_lookup_vpte_parse_flag_float32(char const *text, int default_value)
 {
     long parsed;
     char *endptr;
@@ -100,7 +100,7 @@ sixel_lookup_vpte_parse_flag(char const *text, int default_value)
 }
 
 static int
-sixel_lookup_vpte_env_resolution(void)
+sixel_lookup_vpte_env_resolution_float32(void)
 {
     char const *env;
     long parsed;
@@ -126,43 +126,43 @@ sixel_lookup_vpte_env_resolution(void)
 }
 
 static int
-sixel_lookup_vpte_env_refine(void)
+sixel_lookup_vpte_env_refine_float32(void)
 {
-    return sixel_lookup_vpte_parse_flag(
+    return sixel_lookup_vpte_parse_flag_float32(
         sixel_compat_getenv("SIXEL_LOOKUP_VPTE_REFINE"),
         1);
 }
 
 static int
-sixel_lookup_vpte_env_shared(void)
+sixel_lookup_vpte_env_shared_float32(void)
 {
-    return sixel_lookup_vpte_parse_flag(
+    return sixel_lookup_vpte_parse_flag_float32(
         sixel_compat_getenv("SIXEL_LOOKUP_VPTE_SHARED"),
         1);
 }
 
 static int
-sixel_lookup_vpte_env_use_dist2(void)
+sixel_lookup_vpte_env_use_dist2_float32(void)
 {
     /*
      * Dist2 is disabled by default because measurements have not shown
      * consistent wins.  Enable explicitly when experimenting with boundary
      * refinement short-circuiting.
      */
-    return sixel_lookup_vpte_parse_flag(
+    return sixel_lookup_vpte_parse_flag_float32(
         sixel_compat_getenv("SIXEL_LOOKUP_VPTE_USE_DIST2"),
         0);
 }
 
 static int
-sixel_lookup_vpte_env_use_cache(void)
+sixel_lookup_vpte_env_use_cache_float32(void)
 {
     /*
      * The cache is disabled by default because its benefit has not been
      * demonstrated.  Callers can opt in for experiments without impacting
      * parallel TLS availability checks.
      */
-    return sixel_lookup_vpte_parse_flag(
+    return sixel_lookup_vpte_parse_flag_float32(
         sixel_compat_getenv("SIXEL_LOOKUP_VPTE_USE_CACHE"),
         0);
 }
@@ -528,11 +528,11 @@ sixel_lookup_float32_configure_vpte(sixel_lookup_float32_t *lut,
     int use_cache;
     uint32_t signature;
 
-    resolution = sixel_lookup_vpte_env_resolution();
-    refine = sixel_lookup_vpte_env_refine();
-    shared_flag = sixel_lookup_vpte_env_shared();
-    use_dist2 = sixel_lookup_vpte_env_use_dist2();
-    use_cache = sixel_lookup_vpte_env_use_cache();
+    resolution = sixel_lookup_vpte_env_resolution_float32();
+    refine = sixel_lookup_vpte_env_refine_float32();
+    shared_flag = sixel_lookup_vpte_env_shared_float32();
+    use_dist2 = sixel_lookup_vpte_env_use_dist2_float32();
+    use_cache = sixel_lookup_vpte_env_use_cache_float32();
 
     if (lut->vpte == NULL) {
         status = sixel_lookup_vpte_float32_create(lut->allocator, &lut->vpte);

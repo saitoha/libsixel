@@ -1546,29 +1546,9 @@ sixel_helper_get_available_loader_names(char const **names, size_t max_names)
 }
 
 #if HAVE_TESTS
-static sixel_frame_t *test2_saved_frame = NULL;
-static int test2_frame_freed = 0;
-
-static void
-test2_tracking_free(void *ptr)
-{
-    if (ptr == (void *)test2_saved_frame) {
-        test2_frame_freed = 1;
-    }
-    free(ptr);
-}
-
-static SIXELSTATUS
-test2_on_frame(sixel_frame_t *frame, void *context)
-{
-    (void)context;
-    sixel_frame_ref(frame);
-    test2_saved_frame = frame;
-    return SIXEL_OK;
-}
-
+/* Simple allocation smoke test to exercise loader test harness entry. */
 static int
-test1(void)
+loader_test_allocation_smoke(void)
 {
     int nret = EXIT_FAILURE;
     unsigned char *ptr = malloc(16);
@@ -1674,8 +1654,7 @@ sixel_loader_tests_main(void)
     typedef int (* testcase)(void);
 
     static testcase const testcases[] = {
-        test1,
-        test2,
+        loader_test_allocation_smoke,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {

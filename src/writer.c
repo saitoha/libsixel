@@ -37,14 +37,12 @@
 #if HAVE_ERRNO_H
 # include <errno.h>
 #endif  /* HAVE_ERRNO_H */
+#include "compat_stub.h"
 #if HAVE_LIBPNG
 # include <png.h>
 #else
 # if !defined(HAVE_MEMCPY)
 #  define memcpy(d, s, n) (bcopy ((s), (d), (n)))
-# endif
-# if !defined(HAVE_MEMMOVE)
-#  define memmove(d, s, n) (bcopy ((s), (d), (n)))
 # endif
 /*
  * Silence warnings from the bundled stb_image_write header. The file is a
@@ -62,6 +60,7 @@
 #  pragma GCC diagnostic ignored "-Wextra"
 #  pragma GCC diagnostic ignored "-Wpedantic"
 # endif
+# define STBIW_MEMMOVE(a, b, sz) sixel_compat_memmove((a), (b), (sz))
 # include "stb_image_write.h"
 # if defined(__clang__)
 #  pragma clang diagnostic pop
@@ -72,7 +71,6 @@
 
 #include <sixel.h>
 #include "stdio_stub.h"
-#include "compat_stub.h"
 
 #if !defined(O_BINARY) && defined(_O_BINARY)
 # define O_BINARY _O_BINARY
@@ -810,8 +808,12 @@ end:
 
 
 #if HAVE_TESTS
+/*
+ * Verify that GIF output is rejected because the encoder is not available
+ * in this build.
+ */
 static int
-test1(void)
+writer_test_rejects_gif_output(void)
 {
     int nret = EXIT_FAILURE;
     SIXELSTATUS status;
@@ -837,8 +839,9 @@ error:
 }
 
 
+/* Ensure RGB888 data can be written to PNG successfully. */
 static int
-test2(void)
+writer_test_writes_rgb_png(void)
 {
     int nret = EXIT_FAILURE;
     SIXELSTATUS status;
@@ -911,8 +914,12 @@ writer_tests_duplicate_palette(
     return copy;
 }
 
+/*
+ * Confirm G8 data is encoded even when palette data is duplicated for the
+ * PNG writer.
+ */
 static int
-test3(void)
+writer_test_writes_g8_with_palette_copy(void)
 {
     int nret = EXIT_FAILURE;
     SIXELSTATUS status;
@@ -962,8 +969,12 @@ error:
 }
 
 
+/*
+ * Ensure PAL1 output succeeds only when a palette is provided and fails
+ * otherwise.
+ */
 static int
-test4(void)
+writer_test_pal1_requires_palette(void)
 {
     int nret = EXIT_FAILURE;
     SIXELSTATUS status;
@@ -1012,8 +1023,12 @@ error:
 }
 
 
+/*
+ * Ensure PAL8 output enforces palette availability and reports argument
+ * errors when the palette is missing.
+ */
 static int
-test5(void)
+writer_test_pal8_requires_palette(void)
 {
     int nret = EXIT_FAILURE;
     SIXELSTATUS status;
@@ -1062,8 +1077,9 @@ error:
 }
 
 
+/* Validate that BGR888 data is accepted by the PNG writer. */
 static int
-test6(void)
+writer_test_writes_bgr_png(void)
 {
     int nret = EXIT_FAILURE;
     SIXELSTATUS status;
@@ -1089,8 +1105,9 @@ error:
 }
 
 
+/* Confirm float-based RGB data is written to PNG without failures. */
 static int
-test7(void)
+writer_test_writes_float_png(void)
 {
     int nret = EXIT_FAILURE;
     SIXELSTATUS status;
@@ -1124,13 +1141,13 @@ sixel_writer_tests_main(void)
     typedef int (* testcase)(void);
 
     static testcase const testcases[] = {
-        test1,
-        test2,
-        test3,
-        test4,
-        test5,
-        test6,
-        test7,
+        writer_test_rejects_gif_output,
+        writer_test_writes_rgb_png,
+        writer_test_writes_g8_with_palette_copy,
+        writer_test_pal1_requires_palette,
+        writer_test_pal8_requires_palette,
+        writer_test_writes_bgr_png,
+        writer_test_writes_float_png,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {

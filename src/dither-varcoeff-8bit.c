@@ -41,7 +41,7 @@
 #include "lookup-common.h"
 
 static void
-sixel_dither_scanline_params(int serpentine,
+sixel_dither_scanline_params_varcoeff_8bit(int serpentine,
                              int index,
                              int limit,
                              int *start,
@@ -63,7 +63,7 @@ sixel_dither_scanline_params(int serpentine,
 }
 
 static const int (*
-lso2_table(void))[7]
+lso2_table_varcoeff_8bit(void))[7]
 {
 #include "lso2.h"
     return var_coefs;
@@ -98,7 +98,7 @@ typedef void (*diffuse_varerr_carry_mode)(int32_t *carry_curr,
                                           int channel);
 
 static int32_t
-sixel_varcoeff_safe_denom(int value)
+sixel_varcoeff_safe_denom_8bit(int value)
 {
     if (value == 0) {
         /*
@@ -190,9 +190,9 @@ diffuse_lso2(unsigned char *data,
         index = 255;
     }
 
-    table = lso2_table();
+    table = lso2_table_varcoeff_8bit();
     entry = table[index];
-    denom = sixel_varcoeff_safe_denom(entry[6]);
+    denom = sixel_varcoeff_safe_denom_8bit(entry[6]);
 
     term_r = diffuse_varerr_term(error, entry[0], denom);
     term_r2 = diffuse_varerr_term(error, entry[1], denom);
@@ -293,9 +293,9 @@ diffuse_lso2_carry(int32_t *carry_curr,
         index = 255;
     }
 
-    table = lso2_table();
+    table = lso2_table_varcoeff_8bit();
     entry = table[index];
-    denom = sixel_varcoeff_safe_denom(entry[6]);
+    denom = sixel_varcoeff_safe_denom_8bit(entry[6]);
 
     term_r = diffuse_varerr_term(error, entry[0], denom);
     term_r2 = diffuse_varerr_term(error, entry[1], denom);
@@ -508,7 +508,7 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
 
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
-        sixel_dither_scanline_params(serpentine,
+        sixel_dither_scanline_params_varcoeff_8bit(serpentine,
                                      absolute_y,
                                      context->width,
                                      &start,

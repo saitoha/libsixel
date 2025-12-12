@@ -77,10 +77,6 @@
 # define memcpy(d, s, n) (bcopy ((s), (d), (n)))
 #endif
 
-#if !defined(HAVE_MEMMOVE)
-# define memmove(d, s, n) (bcopy ((s), (d), (n)))
-#endif
-
 /* for msvc */
 #ifndef STDIN_FILENO
 # define STDIN_FILENO 0
@@ -857,9 +853,13 @@ end:
 }
 
 
+/*
+ * Validate curl memory writer helper rejects invalid inputs and maintains
+ * internal counters safely.
+ */
 #if HAVE_TESTS
 static int
-test1(void)
+chunk_test_memory_writer(void)
 {
     int nret = EXIT_FAILURE;
     unsigned char *ptr = malloc(16);
@@ -893,8 +893,9 @@ error:
 }
 
 
+/* Check argument validation for chunk construction paths. */
 static int
-test2(void)
+chunk_test_argument_validation(void)
 {
     int nret = EXIT_FAILURE;
     sixel_chunk_t *chunk = NULL;
@@ -917,8 +918,12 @@ error:
 }
 
 
+/*
+ * Ensure allocation failures during chunk initialization are reported from
+ * the first allocation site.
+ */
 static int
-test3(void)
+chunk_test_allocator_failure_first(void)
 {
     int nret = EXIT_FAILURE;
     sixel_chunk_t *chunk;
@@ -944,8 +949,12 @@ error:
 }
 
 
+/*
+ * Ensure allocation failures triggered after the initial allocation are
+ * also surfaced correctly.
+ */
 static int
-test4(void)
+chunk_test_allocator_failure_second(void)
 {
     int nret = EXIT_FAILURE;
     sixel_chunk_t *chunk;
@@ -978,10 +987,10 @@ sixel_chunk_tests_main(void)
     typedef int (* testcase)(void);
 
     static testcase const testcases[] = {
-        test1,
-        test2,
-        test3,
-        test4,
+        chunk_test_memory_writer,
+        chunk_test_argument_validation,
+        chunk_test_allocator_failure_first,
+        chunk_test_allocator_failure_second,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {

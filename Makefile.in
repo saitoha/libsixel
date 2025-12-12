@@ -89,9 +89,10 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@HAVE_RUBY_TRUE@am__append_1 = ruby
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_2 = quicklook-extension
-@HAVE_WICCODEC_TRUE@am__append_3 = wic
+@WANT_AMALGAMATION_TRUE@am__append_1 = amalgamation
+@HAVE_RUBY_TRUE@am__append_2 = ruby
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_3 = quicklook-extension
+@HAVE_WICCODEC_TRUE@am__append_4 = wic
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
@@ -462,9 +463,10 @@ zshcompletiondir = @zshcompletiondir@
 # @configure_input@
 #
 SUBDIRS = include src converters assessment tools tests python \
-	$(am__append_1) $(am__append_2) $(am__append_3)
+	$(am__append_1) $(am__append_2) $(am__append_3) \
+	$(am__append_4)
 DIST_SUBDIRS = include src converters assessment tools tests python ruby wic \
-        quicklook-extension
+        quicklook-extension amalgamation
 
 
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.

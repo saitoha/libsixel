@@ -175,6 +175,10 @@ SIXEL_COMPAT_API int sixel_compat_strcpy(char *destination,
                                          size_t destination_size,
                                          const char *source);
 
+SIXEL_COMPAT_API void *sixel_compat_memmove(void *destination,
+                                            void const *source,
+                                            size_t byte_count);
+
 SIXEL_COMPAT_API char *sixel_compat_strerror(int error_number,
                                              char *buffer,
                                              size_t buffer_size);

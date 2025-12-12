@@ -47,8 +47,19 @@
  *  removed Python original.
  */
 
+/*
+ * Feature test macros are gated so unity builds do not emit redefinition
+ * warnings when the compiler command line already requests the same POSIX
+ * surface.  The guards keep the macros consistent without changing the
+ * visibility of the libc extensions we rely on for mkstemp(), setenv(),
+ * and strerror_r().
+ */
+#if !defined(_POSIX_C_SOURCE)
 #define _POSIX_C_SOURCE 200809L
+#endif
+#if !defined(_XOPEN_SOURCE)
 #define _XOPEN_SOURCE 700
+#endif
 
 #include "config.h"
 

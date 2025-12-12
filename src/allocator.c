@@ -298,9 +298,13 @@ rpl_posix_memalign(void **memptr, size_t alignment, size_t size)
 #endif
 
 
+/*
+ * Confirm that allocator construction validates callback arguments and
+ * reports missing functions as bad arguments.
+ */
 #if HAVE_TESTS
 static int
-test1(void)
+allocator_test_rejects_null_callbacks(void)
 {
     int nret = EXIT_FAILURE;
     SIXELSTATUS status;
@@ -338,8 +342,12 @@ error:
 }
 
 
+/*
+ * Ensure debug allocation counters surface allocation failures from custom
+ * callbacks.
+ */
 static int
-test2(void)
+allocator_test_reports_debug_allocation(void)
 {
     int nret = EXIT_FAILURE;
     SIXELSTATUS status;
@@ -347,7 +355,12 @@ test2(void)
 
     sixel_debug_malloc_counter = 1;
 
-    status = sixel_allocator_new(&allocator, sixel_bad_malloc, calloc, realloc, free);
+    status = sixel_allocator_new(
+        &allocator,
+        sixel_bad_malloc,
+        calloc,
+        realloc,
+        free);
     if (status == SIXEL_BAD_ALLOCATION) {
         goto error;
     }
@@ -367,8 +380,8 @@ sixel_allocator_tests_main(void)
     typedef int (* testcase)(void);
 
     static testcase const testcases[] = {
-        test1,
-        test2
+        allocator_test_rejects_null_callbacks,
+        allocator_test_reports_debug_allocation
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {

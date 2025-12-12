@@ -297,6 +297,51 @@ sixel_compat_strcpy(char *destination,
 }
 
 
+/*
+ * Portable byte move helper
+ *
+ * Some platforms hide memmove() behind feature macros.  Keep the call
+ * surface centralized so that translation units do not need to duplicate
+ * fallback shims.  The implementation preserves overlap semantics when the
+ * native memmove() is unavailable.
+ */
+SIXEL_COMPAT_API void *
+sixel_compat_memmove(void *destination,
+                     void const *source,
+                     size_t byte_count)
+{
+#if !HAVE_MEMMOVE
+    unsigned char *dst_bytes;
+    unsigned char const *src_bytes;
+    size_t index;
+#endif
+
+    if (destination == NULL || source == NULL) {
+        return destination;
+    }
+
+#if HAVE_MEMMOVE
+    return memmove(destination, source, byte_count);
+#else
+    dst_bytes = (unsigned char *)destination;
+    src_bytes = (unsigned char const *)source;
+    if (dst_bytes < src_bytes) {
+        for (index = 0u; index < byte_count; ++index) {
+            dst_bytes[index] = src_bytes[index];
+        }
+    } else if (dst_bytes > src_bytes) {
+        index = byte_count;
+        while (index > 0u) {
+            index -= 1u;
+            dst_bytes[index] = src_bytes[index];
+        }
+    }
+
+    return destination;
+#endif
+}
+
+
 SIXEL_COMPAT_API char *
 sixel_compat_strerror(int error_number,
                       char *buffer,

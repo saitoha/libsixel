@@ -35,7 +35,7 @@
 #include "lookup-common.h"
 
 static void
-sixel_dither_scanline_params(int serpentine,
+sixel_dither_scanline_params_positional_float32(int serpentine,
                              int index,
                              int limit,
                              int *start,
@@ -57,13 +57,13 @@ sixel_dither_scanline_params(int serpentine,
 }
 
 static float
-mask_a(int x, int y, int c)
+positional_mask_a_float32(int x, int y, int c)
 {
     return ((((x + c * 67) + y * 236) * 119) & 255) / 128.0f - 1.0f;
 }
 
 static float
-mask_x(int x, int y, int c)
+positional_mask_x_float32(int x, int y, int c)
 {
     return ((((x + c * 29) ^ (y * 149)) * 1234) & 511) / 256.0f - 1.0f;
 }
@@ -113,11 +113,11 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
 
     switch (context->method_for_diffuse) {
     case SIXEL_DIFFUSE_A_DITHER:
-        f_mask = mask_a;
+        f_mask = positional_mask_a_float32;
         break;
     case SIXEL_DIFFUSE_X_DITHER:
     default:
-        f_mask = mask_x;
+        f_mask = positional_mask_x_float32;
         break;
     }
 
@@ -158,7 +158,7 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
             int step;
             int direction;
 
-            sixel_dither_scanline_params(serpentine, absolute_y,
+            sixel_dither_scanline_params_positional_float32(serpentine, absolute_y,
                                          context->width,
                                          &start, &end, &step, &direction);
             (void)direction;
@@ -290,7 +290,7 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
             int step;
             int direction;
 
-            sixel_dither_scanline_params(serpentine, absolute_y,
+            sixel_dither_scanline_params_positional_float32(serpentine, absolute_y,
                                          context->width,
                                          &start, &end, &step, &direction);
             (void)direction;

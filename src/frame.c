@@ -44,10 +44,6 @@
 #include "compat_stub.h"
 #include "scale.h"
 
-#if !defined(HAVE_MEMMOVE)
-# define memmove(d, s, n) (bcopy ((s), (d), (n)))
-#endif
-
 static SIXELSTATUS
 sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame);
 static SIXELSTATUS
@@ -1514,7 +1510,7 @@ clip(unsigned char *pixels,
         dst = pixels;
         src = pixels + cy * sx * depth + cx * depth;
         for (y = 0; y < ch; y++) {
-            memmove(dst, src, (size_t)(cw * depth));
+            sixel_compat_memmove(dst, src, (size_t)(cw * depth));
             dst += (cw * depth);
             src += (sx * depth);
         }
@@ -1635,9 +1631,10 @@ end:
 }
 
 
+/* Ensure legacy frame constructor and refcounting work. */
 #if HAVE_TESTS
 static int
-test1(void)
+frame_test_create_refcount(void)
 {
     sixel_frame_t *frame = NULL;
     int nret = EXIT_FAILURE;
@@ -1663,8 +1660,12 @@ error:
 }
 
 
+/*
+ * Verify alpha stripping blends using a provided background color when
+ * converting RGBA data.
+ */
 static int
-test2(void)
+frame_test_strip_alpha_with_background(void)
 {
     sixel_frame_t *frame = NULL;
     int nret = EXIT_FAILURE;
@@ -1735,8 +1736,9 @@ error:
 }
 
 
+/* Ensure stripping alpha without background preserves RGB values. */
 static int
-test3(void)
+frame_test_strip_alpha_preserves_rgb(void)
 {
     sixel_frame_t *frame = NULL;
     int nret = EXIT_FAILURE;
@@ -1803,8 +1805,9 @@ error:
 }
 
 
+/* Confirm ARGB input is reordered correctly when alpha is removed. */
 static int
-test4(void)
+frame_test_strip_alpha_argb_input(void)
 {
     sixel_frame_t *frame = NULL;
     int nret = EXIT_FAILURE;
@@ -1871,8 +1874,9 @@ error:
 }
 
 
+/* Convert PAL8 frames to RGB888 using the provided palette. */
 static int
-test5(void)
+frame_test_convert_pal8_to_rgb(void)
 {
     sixel_frame_t *frame = NULL;
     int nret = EXIT_FAILURE;
@@ -1941,8 +1945,9 @@ error:
 }
 
 
+/* Convert PAL1 frames to RGB888 using palette expansion. */
 static int
-test6(void)
+frame_test_convert_pal1_to_rgb(void)
 {
     sixel_frame_t *frame = NULL;
     int nret = EXIT_FAILURE;
@@ -2019,12 +2024,12 @@ sixel_frame_tests_main(void)
     typedef int (* testcase)(void);
 
     static testcase const testcases[] = {
-        test1,
-        test2,
-        test3,
-        test4,
-        test5,
-        test6,
+        frame_test_create_refcount,
+        frame_test_strip_alpha_with_background,
+        frame_test_strip_alpha_preserves_rgb,
+        frame_test_strip_alpha_argb_input,
+        frame_test_convert_pal8_to_rgb,
+        frame_test_convert_pal1_to_rgb,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {

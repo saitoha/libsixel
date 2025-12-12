@@ -41,7 +41,7 @@
  * by other dithering strategies without forcing additional shared headers.
  */
 static void
-sixel_dither_scanline_params(int serpentine,
+sixel_dither_scanline_params_fixed_8bit(int serpentine,
                              int index,
                              int limit,
                              int *start,
@@ -531,7 +531,7 @@ sixel_dither_apply_fixed_impl(
 
     for (y = 0; y < height; ++y) {
         absolute_y = band_origin + y;
-        sixel_dither_scanline_params(serpentine, absolute_y, width,
+        sixel_dither_scanline_params_fixed_8bit(serpentine, absolute_y, width,
                         &start, &end, &step, &direction);
         for (x = start; x != end; x += step) {
             pos = y * width + x;

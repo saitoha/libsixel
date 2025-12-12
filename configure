@@ -755,6 +755,8 @@ THREAD_LIBS
 THREAD_CFLAGS
 THREAD_CPPFLAGS
 modeldir
+WANT_AMALGAMATION_FALSE
+WANT_AMALGAMATION_TRUE
 SIXEL_ENABLE_THREADS_FALSE
 SIXEL_ENABLE_THREADS_TRUE
 HAVE_ABORT_TRACE_FALSE
@@ -919,6 +921,7 @@ enable_img2sixel
 enable_sixel2png
 enable_abort_trace
 enable_threads
+enable_amalgamation
 with_modeldir
 enable_thumbnailer_command
 with_gdk_pixbuf2
@@ -1635,6 +1638,7 @@ Optional Features:
   --enable-abort-trace    enable abort stack trace support for CLI tools
                           (default: auto)
   --disable-threads       disable internal threadpool support (default: auto)
+  --enable-amalgamation   enable amalgamation build (default: no)
   --enable-thumbnailer-command
                           install the sixel thumbnailer command (default:
                           auto)
@@ -16470,6 +16474,24 @@ else
 fi
 
 
+# Check whether --enable-amalgamation was given.
+if test ${enable_amalgamation+y}
+then :
+  enableval=$enable_amalgamation;
+else case e in #(
+  e) enable_amalgamation=no ;;
+esac
+fi
+
+ if test "x$enable_amalgamation" = "xyes"; then
+  WANT_AMALGAMATION_TRUE=
+  WANT_AMALGAMATION_FALSE='#'
+else
+  WANT_AMALGAMATION_TRUE='#'
+  WANT_AMALGAMATION_FALSE=
+fi
+
+
 
 # Check whether --with-modeldir was given.
 if test ${with_modeldir+y}
@@ -23694,6 +23716,17 @@ fi
 ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile assessment/Makefile tools/Makefile tools/libsixel-config tests/Makefile python/Makefile ruby/Makefile ruby/lib/libsixel/version_runtime.rb quicklook-extension/Makefile wic/Makefile"
 
 
+# Create the amalgamation Makefile only when the feature is requested.
+# This avoids failing when amalgamation/Makefile.in is not present in the
+# source tree.
+if test "x$enable_amalgamation" = "xyes"
+then :
+
+  ac_config_files="$ac_config_files amalgamation/Makefile"
+
+
+fi
+
 # Generate Ruby constants file from include/sixel.h when Ruby is enabled
 ac_config_commands="$ac_config_commands rubyconstants"
 
@@ -23887,6 +23920,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${SIXEL_ENABLE_THREADS_TRUE}" && test -z "${SIXEL_ENABLE_THREADS_FALSE}"; then
   as_fn_error $? "conditional \"SIXEL_ENABLE_THREADS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${WANT_AMALGAMATION_TRUE}" && test -z "${WANT_AMALGAMATION_FALSE}"; then
+  as_fn_error $? "conditional \"WANT_AMALGAMATION\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WANT_THUMBNAILER_TRUE}" && test -z "${WANT_THUMBNAILER_FALSE}"; then
@@ -24869,6 +24906,7 @@ do
     "ruby/lib/libsixel/version_runtime.rb") CONFIG_FILES="$CONFIG_FILES ruby/lib/libsixel/version_runtime.rb" ;;
     "quicklook-extension/Makefile") CONFIG_FILES="$CONFIG_FILES quicklook-extension/Makefile" ;;
     "wic/Makefile") CONFIG_FILES="$CONFIG_FILES wic/Makefile" ;;
+    "amalgamation/Makefile") CONFIG_FILES="$CONFIG_FILES amalgamation/Makefile" ;;
     "rubyconstants") CONFIG_COMMANDS="$CONFIG_COMMANDS rubyconstants" ;;
     "quicklook-extension/generated-resources/Host-Info.plist") CONFIG_FILES="$CONFIG_FILES quicklook-extension/generated-resources/Host-Info.plist:quicklook-extension/Resources/Host-Info.plist.in" ;;
     "quicklook-extension/generated-resources/Preview-Info.plist") CONFIG_FILES="$CONFIG_FILES quicklook-extension/generated-resources/Preview-Info.plist:quicklook-extension/Resources/Preview-Info.plist.in" ;;

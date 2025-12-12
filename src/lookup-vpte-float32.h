@@ -61,14 +61,15 @@
 # endif
 #endif
 
-#ifndef SIXEL_LOOKUP_VPTE_SHARED_T
-#define SIXEL_LOOKUP_VPTE_SHARED_T
-typedef struct sixel_lookup_vpte_shared sixel_lookup_vpte_shared_t;
+#ifndef SIXEL_LOOKUP_VPTE_SHARED_FLOAT32_T
+#define SIXEL_LOOKUP_VPTE_SHARED_FLOAT32_T
+typedef struct sixel_lookup_vpte_shared_float32
+        sixel_lookup_vpte_shared_float32_t;
 #endif
 
 typedef struct sixel_lookup_vpte_float32 {
     sixel_allocator_t *allocator;
-    sixel_lookup_vpte_shared_t *shared;
+    sixel_lookup_vpte_shared_float32_t *shared;
     int use_cache;
 } sixel_lookup_vpte_float32_t;
 
@@ -109,11 +110,11 @@ sixel_lookup_vpte_float32_signature(float const *palette,
 
 uint32_t
 sixel_lookup_vpte_float32_shared_signature(
-    sixel_lookup_vpte_shared_t const *shared);
+    sixel_lookup_vpte_shared_float32_t const *shared);
 
 void
 sixel_lookup_vpte_float32_shared_set_signature(
-    sixel_lookup_vpte_shared_t *shared,
+    sixel_lookup_vpte_shared_float32_t *shared,
     uint32_t signature);
 
 #endif /* LIBSIXEL_LOOKUP_VPTE_FLOAT32_H */
