@@ -8,6 +8,20 @@
 
 set -eu
 
+PYTHON_BIN=${PYTHON:-}
+
+if [ -z "${PYTHON_BIN}" ]; then
+    if command -v python3 >/dev/null 2>&1; then
+        PYTHON_BIN=python3
+    elif command -v python >/dev/null 2>&1; then
+        PYTHON_BIN=python
+    else
+        echo "Python interpreter not found (python3 or python)." >&2
+        echo "Please install Python to run the amalgamation generator." >&2
+        exit 127
+    fi
+fi
+
 if [ "$#" -lt 1 ]; then
     echo "Usage: $0 OUTPUT [SOURCE_ROOT] [BUILD_ROOT] [UNITS...]" >&2
     exit 1
@@ -26,7 +40,7 @@ shift 2 || true
 mkdir -p "$(dirname "${output}")"
 
 relpath() {
-    python3 - "$@" <<'PY'
+    ${PYTHON_BIN} - "$@" <<'PY'
 import os
 import sys
 base = sys.argv[1]
@@ -259,7 +273,7 @@ resolve_unit() {
 # Remove project-local includes and inline vendor headers so the generated
 # translation unit can compile without the original header files present.
 filter_local_includes() {
-    python3 - "$@" <<'PY'
+    ${PYTHON_BIN} - "$@" <<'PY'
 import sys
 import pathlib
 
