@@ -663,7 +663,7 @@ jobs:
         cat config.log
         make V=1
 
-    - name: Run tests (non-Windows)
+    - name: Run tests (FreeBSD/OpenBSD)
       if: matrix.platform == 'freebsd' || matrix.platform == 'openbsd'
       uses: cross-platform-actions/action@v0.30.0
       with:
@@ -673,23 +673,24 @@ jobs:
         environment_variables: CI
         run: |
           set -eux
-          gmake check
+          TOP_BUILDDIR=. TOP_SRCDIR=. /bin/sh tests/tools/with-timeout.sh --timeout=10 tests/cli/t/test_0002_stdin.t || true
+          gmake check V=1
 
     - name: Run tests (non-Windows)
       if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && runner.os != 'Windows'
       shell: bash
-      run: make check
+      run: make check V=1
 
     - name: Run tests (Windows, not MSVC/Cygwin/CLANG64)
       if: runner.os == 'Windows' && matrix.sys != 'CLANG64' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN'
       shell: msys2 {0}
-      run: make check
+      run: make check V=1
 
     - name: Run tests (Windows, CLANG64)
       if: runner.os == 'Windows' && matrix.sys == 'CLANG64'
       shell: msys2 {0}
       run: |
-        LLVM_PROFILE_FILE="%p-%m.profraw" make check
+        LLVM_PROFILE_FILE="%p-%m.profraw" make check V=1
         find . -name \*.profraw || true
         llvm-profdata merge -sparse coverage/*.profraw -o coverage/coverage.profdata || true
         find . -type f \( -name '*.exe' -o -name '*.dll' \) |
@@ -729,7 +730,7 @@ jobs:
           'set -o pipefail 2>/dev/null || true',
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          'make check'
+          'make check V=1'
         )
         $script = [string]::Join("`n", $scriptLines)
         &"$cygwinRoot\bin\bash.exe" --login -c $script
@@ -913,7 +914,7 @@ jobs:
         cd "$distdir"
         ./configure ${{ matrix.configure_flags }}
         make -j$(sysctl -n hw.ncpu 2>/dev/null || nproc)
-        make check
+        make check V=1
 
     - name: Build from Autotools dist archive (Windows)
       if: runner.os == 'Windows'
@@ -927,7 +928,7 @@ jobs:
         cd "$distdir"
         ./configure ${{ matrix.configure_flags }}
         make -j$(nproc)
-        make check
+        make check V=1
 
     - name: Upload autotools dist artifacts
       if: always()
