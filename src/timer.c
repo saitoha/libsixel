@@ -11,17 +11,11 @@
 #include "config.h"
 
 #include "timer.h"
+#include "compat_stub.h"
 
 #include <sixel.h>
 
 #include <time.h>
-#if HAVE_SYS_TIME_H || HAVE_GETTIMEOFDAY
-/*
- * FreeBSD may advertise gettimeofday even when HAVE_SYS_TIME_H is unset, so
- * include sys/time.h whenever the helper is used to surface the prototype.
- */
-#include <sys/time.h>
-#endif
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -55,7 +49,7 @@ sixel_assessment_timer_now(void)
 #elif defined(HAVE_GETTIMEOFDAY)
     struct timeval tv;
 
-    if (gettimeofday(&tv, NULL) != 0) {
+    if (sixel_compat_gettimeofday(&tv, NULL) != 0) {
         return 0.0;
     }
     return (double)tv.tv_sec + (double)tv.tv_usec / 1000000.0;
