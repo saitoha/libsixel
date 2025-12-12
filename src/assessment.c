@@ -166,11 +166,11 @@ static sixel_assessment_t *g_active_encode_assessment = NULL;
 static unsigned int
 assessment_metric_mask_all(void)
 {
-    if (SIXEL_ASSESSMENT_METRIC_COUNT >=
-            (int)(sizeof(unsigned int) * 8u)) {
-        return 0xffffffffu;
-    }
+#if SIXEL_ASSESSMENT_METRIC_COUNT >= 32
+    return 0xffffffffu;
+#else
     return (1u << SIXEL_ASSESSMENT_METRIC_COUNT) - 1u;
+#endif
 }
 
 static int

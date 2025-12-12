@@ -2092,6 +2092,7 @@ sixel_dither_apply_palette(
     int shared_lut;
 #endif  /* SIXEL_ENABLE_THREADS */
 
+    owns_float_pipeline = 0;
     parallel_active = 0;
 
     /* ensure dither object is not null */
@@ -2154,7 +2155,6 @@ sixel_dither_apply_palette(
 
     bufsize = (size_t)(width * height) * sizeof(sixel_index_t);
     total_pixels = (size_t)width * (size_t)height;
-    owns_float_pipeline = 0;
     pipeline_pixelformat = dither->pixelformat;
     /*
      * Reuse the externally allocated index buffer when the pipeline has
@@ -2239,7 +2239,6 @@ sixel_dither_apply_palette(
         }
     }
 
-    owns_float_pipeline = 0;
     pipeline_pixelformat = dither->pixelformat;
     prefer_float_pipeline =
         sixel_dither_method_supports_float_pipeline(dither);

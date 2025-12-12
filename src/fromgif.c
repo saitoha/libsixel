@@ -110,6 +110,16 @@ typedef struct
    int is_terminated;
 } gif_t;
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+/*
+ * MSVC warns about constant conditions and potentially uninitialized locals
+ * when walking the GIF raster/state machine. The logic is deliberate, so
+ * silence those diagnostics locally while keeping the control flow intact.
+ */
+#pragma warning(disable : 4701 4702)
+#endif  /* _MSC_VER */
+
 
 /* initialize a memory-decode context */
 static unsigned char
@@ -981,6 +991,10 @@ end:
     return status;
 }
 
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif  /* _MSC_VER */
 
 #if HAVE_TESTS
 static unsigned char const test1_gif[] = {
