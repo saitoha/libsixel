@@ -38,6 +38,21 @@
 #include "output.h"
 
 
+/*
+ * Normalize boolean-like flags to a single byte to avoid narrowing warnings
+ * when storing them in the output context.
+ */
+static unsigned char
+sixel_output_flag_to_byte(int value)
+{
+    unsigned char flag;
+
+    flag = (unsigned char)(value != 0 ? 1 : 0);
+
+    return flag;
+}
+
+
 /* create new output context object */
 SIXELAPI SIXELSTATUS
 sixel_output_new(
@@ -167,7 +182,7 @@ sixel_output_get_8bit_availability(sixel_output_t *output)
 SIXELAPI void
 sixel_output_set_8bit_availability(sixel_output_t *output, int availability)
 {
-    output->has_8bit_control = availability;
+    output->has_8bit_control = sixel_output_flag_to_byte(availability);
 }
 
 
@@ -178,7 +193,7 @@ sixel_output_set_gri_arg_limit(
     int            /* in */ value)   /* 0: don't limit arguments of DECGRI
                                         1: limit arguments of DECGRI to 255 */
 {
-    output->has_gri_arg_limit = value;
+    output->has_gri_arg_limit = sixel_output_flag_to_byte(value);
 }
 
 
@@ -194,14 +209,14 @@ sixel_output_set_penetrate_multiplexer(sixel_output_t *output, int penetrate)
 SIXELAPI void
 sixel_output_set_skip_dcs_envelope(sixel_output_t *output, int skip)
 {
-    output->skip_dcs_envelope = skip;
+    output->skip_dcs_envelope = sixel_output_flag_to_byte(skip);
 }
 
 
 SIXELAPI void
 sixel_output_set_skip_header(sixel_output_t *output, int skip)
 {
-    output->skip_header = skip;
+    output->skip_header = sixel_output_flag_to_byte(skip);
 }
 
 
@@ -209,7 +224,7 @@ sixel_output_set_skip_header(sixel_output_t *output, int skip)
 SIXELAPI void
 sixel_output_set_palette_type(sixel_output_t *output, int palettetype)
 {
-    output->palette_type = palettetype;
+    output->palette_type = (unsigned char)palettetype;
 }
 
 

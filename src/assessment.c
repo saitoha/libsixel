@@ -259,7 +259,7 @@ sixel_assessment_stage_is_encode_detail(sixel_assessment_stage_t stage)
 }
 
 static int
-sixel_assessment_stage_should_emit(int stage_index)
+sixel_assessment_stage_should_emit(size_t stage_index)
 {
     sixel_assessment_stage_t stage;
 
@@ -4659,6 +4659,7 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
     unsigned int stored_sections;
     unsigned int requested_view;
     unsigned int stored_view;
+    size_t stage_count;
     size_t stage_index;
     sixel_assessment_stage_t stage;
     char line[line_buffer_size];
@@ -4675,7 +4676,7 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
     int is_last_stage;
     int written;
     int has_more;
-    int next_index;
+    size_t next_index;
     SIXELSTATUS status;
 
     if (assessment == NULL || callback == NULL) {
@@ -4832,6 +4833,8 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
     }
 
     if ((requested_sections & SIXEL_ASSESSMENT_SECTION_PERFORMANCE) != 0u) {
+        stage_count = sizeof(g_stage_descriptors)
+                    / sizeof(g_stage_descriptors[0]);
         written = snprintf(line,
                            sizeof(line),
                            "  \"performance\": {\n");
@@ -4846,9 +4849,7 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
 
         total_duration = 0.0;
         stage_index = 0;
-        while (stage_index <
-                (int)(sizeof(g_stage_descriptors) /
-                    sizeof(g_stage_descriptors[0]))) {
+        while (stage_index < stage_count) {
             if (!sixel_assessment_stage_should_emit(stage_index)) {
                 ++stage_index;
                 continue;
@@ -4866,16 +4867,12 @@ sixel_assessment_get_json(sixel_assessment_t *assessment,
                 throughput = 0.0;
             }
 
-            next_index = stage_index + 1;
-            while (next_index <
-                    (int)(sizeof(g_stage_descriptors) /
-                        sizeof(g_stage_descriptors[0])) &&
-                    !sixel_assessment_stage_should_emit(next_index)) {
+            next_index = stage_index + 1u;
+            while (next_index < stage_count
+                    && !sixel_assessment_stage_should_emit(next_index)) {
                 ++next_index;
             }
-            is_last_stage = (next_index >=
-                    (int)(sizeof(g_stage_descriptors) /
-                        sizeof(g_stage_descriptors[0])));
+            is_last_stage = next_index >= stage_count ? 1 : 0;
 
             written = snprintf(line,
                                sizeof(line),

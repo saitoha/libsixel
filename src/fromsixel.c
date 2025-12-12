@@ -76,6 +76,21 @@
 #define SIXEL_PALETTE_MAX_DECODER 65536
 typedef unsigned char sixel_decoder_index_t;
 
+static int
+sixel_clamp_hls_component(double value)
+{
+    int channel;
+
+    channel = (int)(value + 0.5);
+    if (channel < 0) {
+        channel = 0;
+    } else if (channel > 100) {
+        channel = 100;
+    }
+
+    return channel;
+}
+
 static int const sixel_default_color_table[] = {
     SIXEL_XRGB(0,  0,  0),   /*  0 Black    */
     SIXEL_XRGB(20, 20, 80),  /*  1 Blue     */
@@ -215,34 +230,39 @@ hls_to_rgb(int hue, int lum, int sat)
     /* https://wikimedia.org/api/rest_v1/media/math/render/svg/937e8abdab308a22ff99de24d645ec9e70f1e384 */
     switch (hue / 60) {
     case 0:  /* 0 <= hue < 60 */
-        r = max;
-        g = (min + (max - min) * (hue / 60.0));
-        b = min;
+        r = sixel_clamp_hls_component(max);
+        g = sixel_clamp_hls_component(min + (max - min) * (hue / 60.0));
+        b = sixel_clamp_hls_component(min);
         break;
     case 1:  /* 60 <= hue < 120 */
-        r = min + (max - min) * ((120 - hue) / 60.0);
-        g = max;
-        b = min;
+        r = sixel_clamp_hls_component(
+                min + (max - min) * ((120 - hue) / 60.0));
+        g = sixel_clamp_hls_component(max);
+        b = sixel_clamp_hls_component(min);
         break;
     case 2:  /* 120 <= hue < 180 */
-        r = min;
-        g = max;
-        b = (min + (max - min) * ((hue - 120) / 60.0));
+        r = sixel_clamp_hls_component(min);
+        g = sixel_clamp_hls_component(max);
+        b = sixel_clamp_hls_component(
+                min + (max - min) * ((hue - 120) / 60.0));
         break;
     case 3:  /* 180 <= hue < 240 */
-        r = min;
-        g = (min + (max - min) * ((240 - hue) / 60.0));
-        b = max;
+        r = sixel_clamp_hls_component(min);
+        g = sixel_clamp_hls_component(
+                min + (max - min) * ((240 - hue) / 60.0));
+        b = sixel_clamp_hls_component(max);
         break;
     case 4:  /* 240 <= hue < 300 */
-        r = (min + (max - min) * ((hue - 240) / 60.0));
-        g = min;
-        b = max;
+        r = sixel_clamp_hls_component(
+                min + (max - min) * ((hue - 240) / 60.0));
+        g = sixel_clamp_hls_component(min);
+        b = sixel_clamp_hls_component(max);
         break;
     case 5:  /* 300 <= hue < 360 */
-        r = max;
-        g = min;
-        b = (min + (max - min) * ((360 - hue) / 60.0));
+        r = sixel_clamp_hls_component(max);
+        g = sixel_clamp_hls_component(min);
+        b = sixel_clamp_hls_component(
+                min + (max - min) * ((360 - hue) / 60.0));
         break;
     default:
 #if HAVE___BUILTIN_UNREACHABLE

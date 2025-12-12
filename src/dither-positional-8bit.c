@@ -247,7 +247,11 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
                                        : val > 255 ? 255 : val;
                 }
                 if (absolute_y >= context->output_start) {
-                    context->result[pos] =
+                    /*
+                     * Palette indices are limited to SIXEL_PALETTE_MAX, so the
+                     * cast to sixel_index_t (unsigned char) is safe here.
+                     */
+                    context->result[pos] = (sixel_index_t)
                         context->lookup(context->scratch,
                                         context->depth,
                                         context->palette,

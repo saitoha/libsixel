@@ -320,18 +320,23 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                     }
                 }
                 if (absolute_y >= context->output_start) {
+                    /*
+                     * Palette indices never exceed SIXEL_PALETTE_MAX, so
+                     * narrowing to sixel_index_t (unsigned char) is safe.
+                     */
                     if (lookup_wants_float) {
                         lookup_pixel = (unsigned char const *)(void const *)
                             lookup_pixel_float;
-                        context->result[pos] = context->lookup(
-                            lookup_pixel,
-                            context->depth,
-                            context->palette,
-                            context->reqcolor,
-                            context->indextable,
-                            context->complexion);
+                        context->result[pos] = (sixel_index_t)
+                            context->lookup(
+                                lookup_pixel,
+                                context->depth,
+                                context->palette,
+                                context->reqcolor,
+                                context->indextable,
+                                context->complexion);
                     } else if (use_palette_float_lookup) {
-                        context->result[pos] =
+                        context->result[pos] = (sixel_index_t)
                             sixel_dither_lookup_palette_float32(
                                 lookup_pixel_float,
                                 context->depth,
@@ -340,13 +345,14 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                                 context->complexion);
                     } else {
                         lookup_pixel = quantized;
-                        context->result[pos] = context->lookup(
-                            lookup_pixel,
-                            context->depth,
-                            context->palette,
-                            context->reqcolor,
-                            context->indextable,
-                            context->complexion);
+                        context->result[pos] = (sixel_index_t)
+                            context->lookup(
+                                lookup_pixel,
+                                context->depth,
+                                context->palette,
+                                context->reqcolor,
+                                context->indextable,
+                                context->complexion);
                     }
                 }
             }
