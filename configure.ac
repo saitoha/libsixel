@@ -48,6 +48,13 @@ esac
 AM_CONDITIONAL([BUILDING_ON_WINDOWS],
                [test "x$build_windows" = "xyes"])
 
+AS_CASE([$host_os],
+        [darwin*],
+        [CPPFLAGS="$CPPFLAGS -D_DARWIN_C_SOURCE=1"
+         AC_DEFINE([_DARWIN_C_SOURCE],
+                   [1],
+                   [Define to 1 to enable Darwin extensions])])
+
 # Detect Microsoft Visual C compiler and clang-cl
 case "$CC" in
   *clang-cl*)

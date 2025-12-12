@@ -62,5 +62,4 @@ converters/*.sixel
 converters/*.png
 tools/libsixel-config
 amalgamation/Makefile
-amalgamation/Makefile.in
 amalgamation/sixel.c

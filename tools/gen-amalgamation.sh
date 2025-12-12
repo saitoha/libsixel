@@ -44,6 +44,9 @@ cat >"${output}" <<EOF_HEADER
 #if !defined(_GNU_SOURCE)
 #define _GNU_SOURCE 1
 #endif
+#if !defined(_DARWIN_C_SOURCE)
+#define _DARWIN_C_SOURCE 1
+#endif
 #if !defined(_POSIX_C_SOURCE)
 #define _POSIX_C_SOURCE 200809L
 #endif

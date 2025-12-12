@@ -566,6 +566,9 @@
 /* Define if libwinpthread is available */
 #undef WITH_WINPTHREAD
 
+/* Define to 1 to enable Darwin extensions */
+#undef _DARWIN_C_SOURCE
+
 /* Define for Solaris 2.5.1 so the uint32_t typedef from <sys/synch.h>,
    <pthread.h>, or <semaphore.h> is not used. If the typedef were allowed, the
    #define below would cause a syntax error. */
