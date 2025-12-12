@@ -214,6 +214,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
 	$(srcdir)/allocator.c $(srcdir)/allocator.h $(srcdir)/tty.c \
 	$(srcdir)/tty.h $(srcdir)/threading.c $(srcdir)/threading.h \
+	$(srcdir)/probe.c $(srcdir)/probe.h \
+	$(srcdir)/sixel_decode_rgba.c $(srcdir)/sixel_decode_rgba.h \
 	$(srcdir)/sixel_atomic.h $(srcdir)/rgblookup.h \
 	$(srcdir)/lso2.h $(srcdir)/threadpool.c $(srcdir)/threadpool.h \
 	$(srcdir)/quicklook_thumbnailing.m $(srcdir)/clipboard_macos.m
@@ -279,6 +281,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-allocator.lo \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-tty.lo \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-threading.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-probe.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-sixel_decode_rgba.lo \
 @WANT_AMALGAMATION_FALSE@	$(am__objects_1) $(am__objects_2) \
 @WANT_AMALGAMATION_FALSE@	$(am__objects_3)
 @WANT_AMALGAMATION_TRUE@am_libsixel_la_OBJECTS = $(am__objects_1) \
@@ -369,8 +373,10 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-palette-kmeans.Plo \
 	./$(DEPDIR)/libsixel_la-palette.Plo \
 	./$(DEPDIR)/libsixel_la-pixelformat.Plo \
+	./$(DEPDIR)/libsixel_la-probe.Plo \
 	./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo \
 	./$(DEPDIR)/libsixel_la-scale.Plo \
+	./$(DEPDIR)/libsixel_la-sixel_decode_rgba.Plo \
 	./$(DEPDIR)/libsixel_la-sleep.Plo \
 	./$(DEPDIR)/libsixel_la-status.Plo \
 	./$(DEPDIR)/libsixel_la-stb_image_write.Plo \
@@ -490,8 +496,10 @@ ETAGS = @ETAGS@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
 FILECMD = @FILECMD@
+GDK_PIXBUF_BINARY_VERSION = @GDK_PIXBUF_BINARY_VERSION@
 GDK_PIXBUF_CFLAGS = @GDK_PIXBUF_CFLAGS@
 GDK_PIXBUF_LIBS = @GDK_PIXBUF_LIBS@
+GDK_PIXBUF_MODULEDIR = @GDK_PIXBUF_MODULEDIR@
 GD_CFLAGS = @GD_CFLAGS@
 GD_LIBS = @GD_LIBS@
 GREP = @GREP@
@@ -755,6 +763,9 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/allocator.h $(srcdir)/tty.c \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/tty.h $(srcdir)/threading.c \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/threading.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/probe.c $(srcdir)/probe.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/sixel_decode_rgba.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/sixel_decode_rgba.h \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/sixel_atomic.h \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/rgblookup.h \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/lso2.h $(am__append_1) \
@@ -951,8 +962,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette-kmeans.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-palette.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-pixelformat.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-probe.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-scale.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sixel_decode_rgba.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-sleep.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-status.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-stb_image_write.Plo@am__quote@ # am--include-marker
@@ -1400,6 +1413,20 @@ libsixel_la-threading.lo: threading.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-threading.lo `test -f 'threading.c' || echo '$(srcdir)/'`threading.c
 
+libsixel_la-probe.lo: probe.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-probe.lo -MD -MP -MF $(DEPDIR)/libsixel_la-probe.Tpo -c -o libsixel_la-probe.lo `test -f 'probe.c' || echo '$(srcdir)/'`probe.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-probe.Tpo $(DEPDIR)/libsixel_la-probe.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='probe.c' object='libsixel_la-probe.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-probe.lo `test -f 'probe.c' || echo '$(srcdir)/'`probe.c
+
+libsixel_la-sixel_decode_rgba.lo: sixel_decode_rgba.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-sixel_decode_rgba.lo -MD -MP -MF $(DEPDIR)/libsixel_la-sixel_decode_rgba.Tpo -c -o libsixel_la-sixel_decode_rgba.lo `test -f 'sixel_decode_rgba.c' || echo '$(srcdir)/'`sixel_decode_rgba.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-sixel_decode_rgba.Tpo $(DEPDIR)/libsixel_la-sixel_decode_rgba.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='sixel_decode_rgba.c' object='libsixel_la-sixel_decode_rgba.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-sixel_decode_rgba.lo `test -f 'sixel_decode_rgba.c' || echo '$(srcdir)/'`sixel_decode_rgba.c
+
 libsixel_la-threadpool.lo: threadpool.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-threadpool.lo -MD -MP -MF $(DEPDIR)/libsixel_la-threadpool.Tpo -c -o libsixel_la-threadpool.lo `test -f 'threadpool.c' || echo '$(srcdir)/'`threadpool.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-threadpool.Tpo $(DEPDIR)/libsixel_la-threadpool.Plo
@@ -1702,8 +1729,10 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-pixelformat.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-probe.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-sixel_decode_rgba.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sleep.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-status.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-stb_image_write.Plo
@@ -1810,8 +1839,10 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-palette-kmeans.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-pixelformat.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-probe.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-quicklook_thumbnailing.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-scale.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-sixel_decode_rgba.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-sleep.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-status.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-stb_image_write.Plo

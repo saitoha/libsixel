@@ -31,6 +31,25 @@ PYTHON_TESTS = python/t/test_0001_python_bindings.t \
        python/t/test_0005_python_resource_management.t
 
 TESTS = $(CLI_TESTS) $(PYTHON_TESTS)
+COPY_TESTS = $(CLI_TESTS) $(PYTHON_TESTS)
+check_PROGRAMS =
+
+if ENABLE_GDK_PIXBUF_LOADER
+TESTS += gdk-pixbuf-loader/test-gdk-pixbuf-loader
+check_PROGRAMS += gdk-pixbuf-loader/test-gdk-pixbuf-loader
+gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES = \
+    gdk-pixbuf-loader/test-gdk-pixbuf-loader.c \
+    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+gdk_pixbuf_loader_test_gdk_pixbuf_loader_CPPFLAGS = $(AM_CPPFLAGS) \
+        -I$(top_builddir)/include \
+        -I$(top_srcdir)/include \
+        -I$(top_srcdir)/src \
+        $(GDK_PIXBUF_CFLAGS) \
+        -DGDK_PIXBUF_ENABLE_BACKEND
+gdk_pixbuf_loader_test_gdk_pixbuf_loader_LDADD = \
+        $(top_builddir)/src/libsixel.la \
+        $(GDK_PIXBUF_LIBS)
+endif
 TEST_EXTENSIONS = .t
 
 HELPER_FILES = cli/t/converters-common.t \
@@ -61,15 +80,17 @@ CLEANFILES =
 # distributed sources remain intact for developers and package builds.
 clean-local:
 	@if test "$(abs_builddir)" != "$(abs_srcdir)"; then \\
-		rm -f $(LOG_COMPILER) $(TESTS) $(HELPER_FILES); \\
+		rm -f $(LOG_COMPILER) $(COPY_TESTS) $(HELPER_FILES); \\
 	fi
 
-check-local: $(LOG_COMPILER) $(TESTS) $(HELPER_FILES)
+check-local: $(LOG_COMPILER) $(COPY_TESTS) $(HELPER_FILES)
 
 $(LOG_COMPILER): $(srcdir)/tools/with-timeout.sh
 	$(MKDIR_P) $(builddir)/tools
 	$(AM_V_GEN)cp $(srcdir)/tools/with-timeout.sh $(LOG_COMPILER)
 
-$(TESTS) $(HELPER_FILES):
+$(COPY_TESTS) $(HELPER_FILES):
 	$(MKDIR_P) $(builddir)/$(dir $@)
-	$(AM_V_GEN)cp $(srcdir)/$@ $(builddir)/$@
+	$(AM_V_GEN){ if test -f $(srcdir)/$@; then \
+		cp $(srcdir)/$@ $(builddir)/$@; \
+	fi; }

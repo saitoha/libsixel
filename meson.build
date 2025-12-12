@@ -506,6 +506,33 @@ else
   message('gdk-pixbuf-2.0 not found; gdk-pixbuf2 loader disabled')
 endif
 
+gdk_pixbuf_loader_opt = get_option('gdk_pixbuf_loader')
+gdk_pixbuf_loader_deps = []
+gdk_pixbuf_binary_version = ''
+gdk_pixbuf_loader_dir = ''
+
+gdk_loader_dep = dependency('gdk-pixbuf-2.0',
+                            version: '>=2.28',
+                            required: gdk_pixbuf_loader_opt,
+                            method: 'pkg-config')
+gmodule_loader_dep = dependency('gmodule-2.0',
+                                required: gdk_pixbuf_loader_opt)
+
+if gdk_loader_dep.found() and gmodule_loader_dep.found()
+  gdk_pixbuf_binary_version = run_command(
+    'pkg-config',
+    '--variable=gdk_pixbuf_binary_version',
+    'gdk-pixbuf-2.0',
+    check: true).stdout().strip()
+  gdk_pixbuf_loader_dir = join_paths(get_option('libdir'),
+    'gdk-pixbuf-2.0', gdk_pixbuf_binary_version, 'loaders')
+  gdk_pixbuf_loader_deps = [gdk_loader_dep, gmodule_loader_dep]
+elif gdk_pixbuf_loader_opt.enabled()
+  error('gdk_pixbuf_loader=enabled requires gdk-pixbuf-2.0 >= 2.28 and gmodule-2.0')
+else
+  message('gdk-pixbuf loader disabled')
+endif
+
 gd_dep = dependency('gd', required: false)
 if not gd_dep.found()
   gd_dep = dependency('gdlib', required: get_option('gd'))
@@ -1321,6 +1348,10 @@ subdir('src')
 subdir('converters')
 if have_wiccodec
   subdir('wic')
+endif
+
+if gdk_pixbuf_loader_deps.length() > 0
+  subdir('gdk-pixbuf-loader')
 endif
 
 

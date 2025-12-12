@@ -408,6 +408,12 @@ AC_ARG_WITH([gdk-pixbuf2],
             [],
             [with_gdk_pixbuf2=no])
 
+AC_ARG_ENABLE([gdk-pixbuf-loader],
+              [AS_HELP_STRING([--enable-gdk-pixbuf-loader],
+                              [Build gdk-pixbuf SIXEL loader])],
+              [],
+              [enable_gdk_pixbuf_loader=yes])
+
 AC_ARG_WITH([gd],
             [AS_HELP_STRING([--with-gd],
                             [whether to build with gd (default: no)])],
@@ -969,6 +975,8 @@ have_winpthread="no"
 have_wic="no"
 have_coregraphics="no"
 have_gdk_pixbuf2="no"
+have_gdk_pixbuf_pkg="no"
+have_gdk_pixbuf_loader="no"
 have_sse2=no
 have_avx2=no
 have_avx512=no
@@ -981,17 +989,19 @@ if test "x$THREAD_LIBS" != x; then
     LIBS_PRIVATE="$LIBS_PRIVATE $THREAD_LIBS"
 fi
 
-if test x$with_gdk_pixbuf2 != xno; then
-    AC_MSG_NOTICE([checking for gdk-pixbuf2])
+if test x$with_gdk_pixbuf2 != xno || \
+   test x$enable_gdk_pixbuf_loader = xyes; then
+    AC_MSG_NOTICE([checking for gdk-pixbuf-2.0])
     if test x${PKG_CONFIG} != x; then
         PKG_CHECK_MODULES([GDK_PIXBUF],
-                          [gdk-pixbuf-2.0],
-                          [have_gdk_pixbuf2=yes],
-                          [have_gdk_pixbuf2=no])
-        if test x$have_gdk_pixbuf2 = xyes; then
+                          [gdk-pixbuf-2.0 >= 2.28 gmodule-2.0],
+                          [have_gdk_pixbuf_pkg=yes],
+                          [have_gdk_pixbuf_pkg=no])
+        if test x$have_gdk_pixbuf_pkg = xyes; then
             AC_MSG_NOTICE([gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}])
             AC_MSG_NOTICE([gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}])
-        elif test x$with_gdk_pixbuf2 = xyes; then
+        elif test x$with_gdk_pixbuf2 = xyes || \
+                test x$enable_gdk_pixbuf_loader = xyes; then
             AC_MSG_ERROR([gdk-pixbuf-2.0 not found via pkg-config])
         else
             AC_MSG_NOTICE([gdk-pixbuf-2.0 not found; disabling gdk-pixbuf2])
@@ -1000,25 +1010,44 @@ if test x$with_gdk_pixbuf2 != xno; then
         AC_MSG_NOTICE([pkg-config is not available])
         if test x${GDK_PIXBUF_CFLAGS} != x && \
            test x${GDK_PIXBUF_LIBS} != x; then
-            have_gdk_pixbuf2=yes
+            have_gdk_pixbuf_pkg=yes
             AC_MSG_NOTICE([gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}])
             AC_MSG_NOTICE([gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}])
-        elif test x$with_gdk_pixbuf2 = xyes; then
+        elif test x$with_gdk_pixbuf2 = xyes || \
+                test x$enable_gdk_pixbuf_loader = xyes; then
             AC_MSG_ERROR([please set GDK_PIXBUF_CFLAGS and GDK_PIXBUF_LIBS, or install pkg-config.])
         else
             AC_MSG_NOTICE([gdk-pixbuf-2.0 not found; disabling gdk-pixbuf2])
         fi
     fi
-    if test x$have_gdk_pixbuf2 = xyes; then
-        AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
-        loaders="${loaders} gdk-pixbuf2"
-        REQUIRES_PRIVATE="$REQUIRES_PRIVATE gdk-pixbuf-2.0"
-        LIBS_PRIVATE="$LIBS_PRIVATE $GDK_PIXBUF_LIBS"
-    elif test x$with_gdk_pixbuf2 = xyes; then
-        AC_MSG_ERROR([unable to find gdk-pixbuf-2.0])
+fi
+
+if test x$have_gdk_pixbuf_pkg = xyes; then
+    have_gdk_pixbuf_loader=yes
+    if test x${PKG_CONFIG} != x; then
+        PKG_CHECK_VAR([GDK_PIXBUF_BINARY_VERSION],
+                      [gdk-pixbuf-2.0],
+                      [gdk_pixbuf_binary_version])
     fi
 fi
 
+if test x$with_gdk_pixbuf2 != xno && test x$have_gdk_pixbuf_pkg = xyes; then
+    AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
+    loaders="${loaders} gdk-pixbuf2"
+    REQUIRES_PRIVATE="$REQUIRES_PRIVATE gdk-pixbuf-2.0"
+    LIBS_PRIVATE="$LIBS_PRIVATE $GDK_PIXBUF_LIBS"
+elif test x$with_gdk_pixbuf2 = xyes; then
+    AC_MSG_ERROR([unable to find gdk-pixbuf-2.0])
+fi
+
+GDK_PIXBUF_MODULEDIR='${libdir}/gdk-pixbuf-2.0/${GDK_PIXBUF_BINARY_VERSION}/loaders'
+
+AM_CONDITIONAL([ENABLE_GDK_PIXBUF_LOADER],
+               [test "x$enable_gdk_pixbuf_loader" = "xyes" -a \
+                     "x$have_gdk_pixbuf_pkg" = "xyes"])
+
+AC_SUBST(GDK_PIXBUF_BINARY_VERSION)
+AC_SUBST(GDK_PIXBUF_MODULEDIR)
 AC_SUBST(GDK_PIXBUF_CFLAGS)
 AC_SUBST(GDK_PIXBUF_LIBS)
 
@@ -2236,6 +2265,7 @@ AC_CONFIG_FILES([Makefile
                  python/Makefile
                  ruby/Makefile
                  ruby/lib/libsixel/version_runtime.rb
+                 gdk-pixbuf-loader/Makefile
                  quicklook-extension/Makefile
                  wic/Makefile
                 ])

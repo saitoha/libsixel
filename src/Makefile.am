@@ -146,10 +146,14 @@ $(srcdir)/stb_image_write.h \
                 $(srcdir)/tty.c \
                 $(srcdir)/tty.h \
                 $(srcdir)/threading.c \
-$(srcdir)/threading.h \
-$(srcdir)/sixel_atomic.h \
-$(srcdir)/rgblookup.h \
-$(srcdir)/lso2.h
+                $(srcdir)/threading.h \
+                $(srcdir)/probe.c \
+                $(srcdir)/probe.h \
+                $(srcdir)/sixel_decode_rgba.c \
+                $(srcdir)/sixel_decode_rgba.h \
+                $(srcdir)/sixel_atomic.h \
+                $(srcdir)/rgblookup.h \
+                $(srcdir)/lso2.h
 if SIXEL_ENABLE_THREADS
 libsixel_la_SOURCES += \
 $(srcdir)/threadpool.c \

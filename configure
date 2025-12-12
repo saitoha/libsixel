@@ -729,6 +729,10 @@ QUICKLOOK_LIBS
 QUICKLOOK_CFLAGS
 COREGRAPHICS_LIBS
 COREGRAPHICS_CFLAGS
+GDK_PIXBUF_MODULEDIR
+ENABLE_GDK_PIXBUF_LOADER_FALSE
+ENABLE_GDK_PIXBUF_LOADER_TRUE
+GDK_PIXBUF_BINARY_VERSION
 GDK_PIXBUF_LIBS
 GDK_PIXBUF_CFLAGS
 LIBOBJS
@@ -928,6 +932,7 @@ enable_amalgamated_tools
 with_modeldir
 enable_thumbnailer_command
 with_gdk_pixbuf2
+enable_gdk_pixbuf_loader
 with_gd
 with_coregraphics
 enable_quicklook_extension
@@ -973,6 +978,7 @@ PKG_CONFIG_PATH
 PKG_CONFIG_LIBDIR
 GDK_PIXBUF_CFLAGS
 GDK_PIXBUF_LIBS
+GDK_PIXBUF_BINARY_VERSION
 GD_CFLAGS
 GD_LIBS
 LIBCURL_CFLAGS
@@ -1648,6 +1654,8 @@ Optional Features:
   --enable-thumbnailer-command
                           install the sixel thumbnailer command (default:
                           auto)
+  --enable-gdk-pixbuf-loader
+                          Build gdk-pixbuf SIXEL loader
   --enable-quicklook-extension
                           build the macOS Quick Look extension (default: auto)
   --enable-quicklook-preview
@@ -1720,6 +1728,9 @@ Some influential environment variables:
               C compiler flags for GDK_PIXBUF, overriding pkg-config
   GDK_PIXBUF_LIBS
               linker flags for GDK_PIXBUF, overriding pkg-config
+  GDK_PIXBUF_BINARY_VERSION
+              value of gdk_pixbuf_binary_version for gdk-pixbuf-2.0,
+              overriding pkg-config
   GD_CFLAGS   C compiler flags for GD, overriding pkg-config
   GD_LIBS     linker flags for GD, overriding pkg-config
   LIBCURL_CFLAGS
@@ -16914,6 +16925,16 @@ esac
 fi
 
 
+# Check whether --enable-gdk-pixbuf-loader was given.
+if test ${enable_gdk_pixbuf_loader+y}
+then :
+  enableval=$enable_gdk_pixbuf_loader;
+else case e in #(
+  e) enable_gdk_pixbuf_loader=yes ;;
+esac
+fi
+
+
 
 # Check whether --with-gd was given.
 if test ${with_gd+y}
@@ -19546,6 +19567,8 @@ have_winpthread="no"
 have_wic="no"
 have_coregraphics="no"
 have_gdk_pixbuf2="no"
+have_gdk_pixbuf_pkg="no"
+have_gdk_pixbuf_loader="no"
 have_sse2=no
 have_avx2=no
 have_avx512=no
@@ -19558,25 +19581,26 @@ if test "x$THREAD_LIBS" != x; then
     LIBS_PRIVATE="$LIBS_PRIVATE $THREAD_LIBS"
 fi
 
-if test x$with_gdk_pixbuf2 != xno; then
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gdk-pixbuf2" >&5
-printf "%s\n" "$as_me: checking for gdk-pixbuf2" >&6;}
+if test x$with_gdk_pixbuf2 != xno || \
+   test x$enable_gdk_pixbuf_loader = xyes; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gdk-pixbuf-2.0" >&5
+printf "%s\n" "$as_me: checking for gdk-pixbuf-2.0" >&6;}
     if test x${PKG_CONFIG} != x; then
 
 pkg_failed=no
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gdk-pixbuf-2.0" >&5
-printf %s "checking for gdk-pixbuf-2.0... " >&6; }
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for gdk-pixbuf-2.0 >= 2.28 gmodule-2.0" >&5
+printf %s "checking for gdk-pixbuf-2.0 >= 2.28 gmodule-2.0... " >&6; }
 
 if test -n "$GDK_PIXBUF_CFLAGS"; then
     pkg_cv_GDK_PIXBUF_CFLAGS="$GDK_PIXBUF_CFLAGS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gdk-pixbuf-2.0\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gdk-pixbuf-2.0") 2>&5
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gdk-pixbuf-2.0 >= 2.28 gmodule-2.0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gdk-pixbuf-2.0 >= 2.28 gmodule-2.0") 2>&5
   ac_status=$?
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_GDK_PIXBUF_CFLAGS=`$PKG_CONFIG --cflags "gdk-pixbuf-2.0" 2>/dev/null`
+  pkg_cv_GDK_PIXBUF_CFLAGS=`$PKG_CONFIG --cflags "gdk-pixbuf-2.0 >= 2.28 gmodule-2.0" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -19588,12 +19612,12 @@ if test -n "$GDK_PIXBUF_LIBS"; then
     pkg_cv_GDK_PIXBUF_LIBS="$GDK_PIXBUF_LIBS"
  elif test -n "$PKG_CONFIG"; then
     if test -n "$PKG_CONFIG" && \
-    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gdk-pixbuf-2.0\""; } >&5
-  ($PKG_CONFIG --exists --print-errors "gdk-pixbuf-2.0") 2>&5
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gdk-pixbuf-2.0 >= 2.28 gmodule-2.0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gdk-pixbuf-2.0 >= 2.28 gmodule-2.0") 2>&5
   ac_status=$?
   printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-  pkg_cv_GDK_PIXBUF_LIBS=`$PKG_CONFIG --libs "gdk-pixbuf-2.0" 2>/dev/null`
+  pkg_cv_GDK_PIXBUF_LIBS=`$PKG_CONFIG --libs "gdk-pixbuf-2.0 >= 2.28 gmodule-2.0" 2>/dev/null`
 		      test "x$?" != "x0" && pkg_failed=yes
 else
   pkg_failed=yes
@@ -19614,31 +19638,32 @@ else
         _pkg_short_errors_supported=no
 fi
         if test $_pkg_short_errors_supported = yes; then
-                GDK_PIXBUF_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gdk-pixbuf-2.0" 2>&1`
+                GDK_PIXBUF_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "gdk-pixbuf-2.0 >= 2.28 gmodule-2.0" 2>&1`
         else
-                GDK_PIXBUF_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gdk-pixbuf-2.0" 2>&1`
+                GDK_PIXBUF_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "gdk-pixbuf-2.0 >= 2.28 gmodule-2.0" 2>&1`
         fi
         # Put the nasty error message in config.log where it belongs
         echo "$GDK_PIXBUF_PKG_ERRORS" >&5
 
-        have_gdk_pixbuf2=no
+        have_gdk_pixbuf_pkg=no
 elif test $pkg_failed = untried; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
-        have_gdk_pixbuf2=no
+        have_gdk_pixbuf_pkg=no
 else
         GDK_PIXBUF_CFLAGS=$pkg_cv_GDK_PIXBUF_CFLAGS
         GDK_PIXBUF_LIBS=$pkg_cv_GDK_PIXBUF_LIBS
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
-        have_gdk_pixbuf2=yes
+        have_gdk_pixbuf_pkg=yes
 fi
-        if test x$have_gdk_pixbuf2 = xyes; then
+        if test x$have_gdk_pixbuf_pkg = xyes; then
             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}" >&5
 printf "%s\n" "$as_me: gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}" >&6;}
             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}" >&5
 printf "%s\n" "$as_me: gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}" >&6;}
-        elif test x$with_gdk_pixbuf2 = xyes; then
+        elif test x$with_gdk_pixbuf2 = xyes || \
+                test x$enable_gdk_pixbuf_loader = xyes; then
             as_fn_error $? "gdk-pixbuf-2.0 not found via pkg-config" "$LINENO" 5
         else
             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: gdk-pixbuf-2.0 not found; disabling gdk-pixbuf2" >&5
@@ -19649,29 +19674,75 @@ printf "%s\n" "$as_me: gdk-pixbuf-2.0 not found; disabling gdk-pixbuf2" >&6;}
 printf "%s\n" "$as_me: pkg-config is not available" >&6;}
         if test x${GDK_PIXBUF_CFLAGS} != x && \
            test x${GDK_PIXBUF_LIBS} != x; then
-            have_gdk_pixbuf2=yes
+            have_gdk_pixbuf_pkg=yes
             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}" >&5
 printf "%s\n" "$as_me: gdk-pixbuf-2.0 cflags is ${GDK_PIXBUF_CFLAGS}" >&6;}
             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}" >&5
 printf "%s\n" "$as_me: gdk-pixbuf-2.0 libs is ${GDK_PIXBUF_LIBS}" >&6;}
-        elif test x$with_gdk_pixbuf2 = xyes; then
+        elif test x$with_gdk_pixbuf2 = xyes || \
+                test x$enable_gdk_pixbuf_loader = xyes; then
             as_fn_error $? "please set GDK_PIXBUF_CFLAGS and GDK_PIXBUF_LIBS, or install pkg-config." "$LINENO" 5
         else
             { printf "%s\n" "$as_me:${as_lineno-$LINENO}: gdk-pixbuf-2.0 not found; disabling gdk-pixbuf2" >&5
 printf "%s\n" "$as_me: gdk-pixbuf-2.0 not found; disabling gdk-pixbuf2" >&6;}
         fi
     fi
-    if test x$have_gdk_pixbuf2 = xyes; then
+fi
+
+if test x$have_gdk_pixbuf_pkg = xyes; then
+    have_gdk_pixbuf_loader=yes
+    if test x${PKG_CONFIG} != x; then
+
+if test -n "$GDK_PIXBUF_BINARY_VERSION"; then
+    pkg_cv_GDK_PIXBUF_BINARY_VERSION="$GDK_PIXBUF_BINARY_VERSION"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gdk-pixbuf-2.0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gdk-pixbuf-2.0") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_GDK_PIXBUF_BINARY_VERSION=`$PKG_CONFIG --variable="gdk_pixbuf_binary_version" "gdk-pixbuf-2.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+GDK_PIXBUF_BINARY_VERSION=$pkg_cv_GDK_PIXBUF_BINARY_VERSION
+
+if test "x$GDK_PIXBUF_BINARY_VERSION" = x""
+then :
+
+fi
+    fi
+fi
+
+if test x$with_gdk_pixbuf2 != xno && test x$have_gdk_pixbuf_pkg = xyes; then
 
 printf "%s\n" "#define HAVE_GDK_PIXBUF2 1" >>confdefs.h
 
-        loaders="${loaders} gdk-pixbuf2"
-        REQUIRES_PRIVATE="$REQUIRES_PRIVATE gdk-pixbuf-2.0"
-        LIBS_PRIVATE="$LIBS_PRIVATE $GDK_PIXBUF_LIBS"
-    elif test x$with_gdk_pixbuf2 = xyes; then
-        as_fn_error $? "unable to find gdk-pixbuf-2.0" "$LINENO" 5
-    fi
+    loaders="${loaders} gdk-pixbuf2"
+    REQUIRES_PRIVATE="$REQUIRES_PRIVATE gdk-pixbuf-2.0"
+    LIBS_PRIVATE="$LIBS_PRIVATE $GDK_PIXBUF_LIBS"
+elif test x$with_gdk_pixbuf2 = xyes; then
+    as_fn_error $? "unable to find gdk-pixbuf-2.0" "$LINENO" 5
 fi
+
+GDK_PIXBUF_MODULEDIR='${libdir}/gdk-pixbuf-2.0/${GDK_PIXBUF_BINARY_VERSION}/loaders'
+
+ if test "x$enable_gdk_pixbuf_loader" = "xyes" -a \
+                     "x$have_gdk_pixbuf_pkg" = "xyes"; then
+  ENABLE_GDK_PIXBUF_LOADER_TRUE=
+  ENABLE_GDK_PIXBUF_LOADER_FALSE='#'
+else
+  ENABLE_GDK_PIXBUF_LOADER_TRUE='#'
+  ENABLE_GDK_PIXBUF_LOADER_FALSE=
+fi
+
+
+
 
 
 
@@ -23838,7 +23909,7 @@ else
 fi
 
 
-ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile assessment/Makefile tools/Makefile tools/libsixel-config tests/Makefile python/Makefile ruby/Makefile ruby/lib/libsixel/version_runtime.rb quicklook-extension/Makefile wic/Makefile"
+ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile assessment/Makefile tools/Makefile tools/libsixel-config tests/Makefile python/Makefile ruby/Makefile ruby/lib/libsixel/version_runtime.rb gdk-pixbuf-loader/Makefile quicklook-extension/Makefile wic/Makefile"
 
 
 # Always generate the amalgamation Makefile so "make dist" can stage the
@@ -24063,6 +24134,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${COND_TESTS_TRUE}" && test -z "${COND_TESTS_FALSE}"; then
   as_fn_error $? "conditional \"COND_TESTS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ENABLE_GDK_PIXBUF_LOADER_TRUE}" && test -z "${ENABLE_GDK_PIXBUF_LOADER_FALSE}"; then
+  as_fn_error $? "conditional \"ENABLE_GDK_PIXBUF_LOADER\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_QUICKLOOK_THUMBNAILING_TRUE}" && test -z "${HAVE_QUICKLOOK_THUMBNAILING_FALSE}"; then
@@ -25027,6 +25102,7 @@ do
     "python/Makefile") CONFIG_FILES="$CONFIG_FILES python/Makefile" ;;
     "ruby/Makefile") CONFIG_FILES="$CONFIG_FILES ruby/Makefile" ;;
     "ruby/lib/libsixel/version_runtime.rb") CONFIG_FILES="$CONFIG_FILES ruby/lib/libsixel/version_runtime.rb" ;;
+    "gdk-pixbuf-loader/Makefile") CONFIG_FILES="$CONFIG_FILES gdk-pixbuf-loader/Makefile" ;;
     "quicklook-extension/Makefile") CONFIG_FILES="$CONFIG_FILES quicklook-extension/Makefile" ;;
     "wic/Makefile") CONFIG_FILES="$CONFIG_FILES wic/Makefile" ;;
     "amalgamation/Makefile") CONFIG_FILES="$CONFIG_FILES amalgamation/Makefile" ;;

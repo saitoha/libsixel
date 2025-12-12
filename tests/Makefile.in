@@ -89,6 +89,10 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+TESTS = $(CLI_TESTS) $(PYTHON_TESTS) $(am__EXEEXT_1)
+check_PROGRAMS = $(am__EXEEXT_1)
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_1 = gdk-pixbuf-loader/test-gdk-pixbuf-loader
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_2 = gdk-pixbuf-loader/test-gdk-pixbuf-loader
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
@@ -105,6 +109,22 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__EXEEXT_1 = gdk-pixbuf-loader/test-gdk-pixbuf-loader$(EXEEXT)
+am__gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES_DIST =  \
+	gdk-pixbuf-loader/test-gdk-pixbuf-loader.c \
+	$(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+am__dirstamp = $(am__leading_dot)dirstamp
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@am_gdk_pixbuf_loader_test_gdk_pixbuf_loader_OBJECTS = gdk-pixbuf-loader/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.$(OBJEXT) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.$(OBJEXT)
+gdk_pixbuf_loader_test_gdk_pixbuf_loader_OBJECTS =  \
+	$(am_gdk_pixbuf_loader_test_gdk_pixbuf_loader_OBJECTS)
+am__DEPENDENCIES_1 =
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_gdk_pixbuf_loader_DEPENDENCIES = $(top_builddir)/src/libsixel.la \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(am__DEPENDENCIES_1)
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -117,14 +137,55 @@ AM_V_at = $(am__v_at_@AM_V@)
 am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
 am__v_at_1 = 
-SOURCES =
-DIST_SOURCES =
+DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
+depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
+am__maybe_remake_depfiles = depfiles
+am__depfiles_remade = $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Po \
+	gdk-pixbuf-loader/$(DEPDIR)/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.Po
+am__mv = mv -f
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(CFLAGS)
+AM_V_CC = $(am__v_CC_@AM_V@)
+am__v_CC_ = $(am__v_CC_@AM_DEFAULT_V@)
+am__v_CC_0 = @echo "  CC      " $@;
+am__v_CC_1 = 
+CCLD = $(CC)
+LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_CCLD = $(am__v_CCLD_@AM_V@)
+am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
+am__v_CCLD_0 = @echo "  CCLD    " $@;
+am__v_CCLD_1 = 
+SOURCES = $(gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES)
+DIST_SOURCES =  \
+	$(am__gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
+# Read a list of newline-separated strings from the standard input,
+# and print each of them once, without duplicates.  Input order is
+# *not* preserved.
+am__uniquify_input = $(AWK) '\
+  BEGIN { nonempty = 0; } \
+  { items[$$0] = 1; nonempty = 1; } \
+  END { if (nonempty) { for (i in items) print i; }; } \
+'
+# Make sure the list of sources is unique.  This is necessary because,
+# e.g., the same source file might be shared among _SOURCES variables
+# for different programs/libraries.
+am__define_uniq_tagged_files = \
+  list='$(am__tagged_files)'; \
+  unique=`for i in $$list; do \
+    if test -f "$$i"; then echo $$i; else echo $(srcdir)/$$i; fi; \
+  done | $(am__uniquify_input)`
 am__tty_colors_dummy = \
   mgn= red= grn= lgn= blu= brg= std=; \
   am__color_tests=no
@@ -316,11 +377,8 @@ AM_TESTSUITE_SUMMARY_HEADER = ' for $(PACKAGE_STRING)'
 RECHECK_LOGS = $(TEST_LOGS)
 AM_RECURSIVE_TARGETS = check recheck
 TEST_SUITE_LOG = test-suite.log
-am__test_logs1 = $(TESTS:=.log)
-am__test_logs2 = $(am__test_logs1:@EXEEXT@.log=.log)
-TEST_LOGS = $(am__test_logs2:.t.log=.log)
-T_LOG_DRIVER = $(SHELL) $(top_srcdir)/build-aux/test-driver
-T_LOG_COMPILE = $(T_LOG_COMPILER) $(AM_T_LOG_FLAGS) $(T_LOG_FLAGS)
+LOG_DRIVER = $(SHELL) $(top_srcdir)/build-aux/test-driver
+LOG_COMPILE = $(LOG_COMPILER) $(AM_LOG_FLAGS) $(LOG_FLAGS)
 am__set_b = \
   case '$@' in \
     */*) \
@@ -331,7 +389,13 @@ am__set_b = \
     *) \
       b='$*';; \
   esac
+am__test_logs1 = $(TESTS:=.log)
+am__test_logs2 = $(am__test_logs1:@EXEEXT@.log=.log)
+TEST_LOGS = $(am__test_logs2:.t.log=.log)
+T_LOG_DRIVER = $(SHELL) $(top_srcdir)/build-aux/test-driver
+T_LOG_COMPILE = $(T_LOG_COMPILER) $(AM_T_LOG_FLAGS) $(T_LOG_FLAGS)
 am__DIST_COMMON = $(srcdir)/Makefile.in \
+	$(top_srcdir)/build-aux/depcomp \
 	$(top_srcdir)/build-aux/test-driver
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ABORTTRACE_LIBS = @ABORTTRACE_LIBS@
@@ -374,8 +438,10 @@ ETAGS = @ETAGS@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
 FILECMD = @FILECMD@
+GDK_PIXBUF_BINARY_VERSION = @GDK_PIXBUF_BINARY_VERSION@
 GDK_PIXBUF_CFLAGS = @GDK_PIXBUF_CFLAGS@
 GDK_PIXBUF_LIBS = @GDK_PIXBUF_LIBS@
+GDK_PIXBUF_MODULEDIR = @GDK_PIXBUF_MODULEDIR@
 GD_CFLAGS = @GD_CFLAGS@
 GD_LIBS = @GD_LIBS@
 GREP = @GREP@
@@ -559,7 +625,22 @@ PYTHON_TESTS = python/t/test_0001_python_bindings.t \
        python/t/test_0004_python_api_errors.t \
        python/t/test_0005_python_resource_management.t
 
-TESTS = $(CLI_TESTS) $(PYTHON_TESTS)
+COPY_TESTS = $(CLI_TESTS) $(PYTHON_TESTS)
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES = \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/test-gdk-pixbuf-loader.c \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_gdk_pixbuf_loader_CPPFLAGS = $(AM_CPPFLAGS) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -I$(top_builddir)/include \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -I$(top_srcdir)/include \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -I$(top_srcdir)/src \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(GDK_PIXBUF_CFLAGS) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -DGDK_PIXBUF_ENABLE_BACKEND
+
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_gdk_pixbuf_loader_LDADD = \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(top_builddir)/src/libsixel.la \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(GDK_PIXBUF_LIBS)
+
 TEST_EXTENSIONS = .t
 HELPER_FILES = cli/t/converters-common.t \
        python/lib/common.sh
@@ -586,7 +667,7 @@ CLEANFILES =
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .log .t .t$(EXEEXT) .trs
+.SUFFIXES: .c .lo .log .o .obj .t .t$(EXEEXT) .trs
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
@@ -617,17 +698,159 @@ $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 
+clean-checkPROGRAMS:
+	$(am__rm_f) $(check_PROGRAMS)
+	test -z "$(EXEEXT)" || $(am__rm_f) $(check_PROGRAMS:$(EXEEXT)=)
+gdk-pixbuf-loader/$(am__dirstamp):
+	@$(MKDIR_P) gdk-pixbuf-loader
+	@: >>gdk-pixbuf-loader/$(am__dirstamp)
+gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) gdk-pixbuf-loader/$(DEPDIR)
+	@: >>gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
+gdk-pixbuf-loader/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.$(OBJEXT):  \
+	gdk-pixbuf-loader/$(am__dirstamp) \
+	gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/gdk-pixbuf-loader/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/gdk-pixbuf-loader
+	@: >>$(top_builddir)/gdk-pixbuf-loader/$(am__dirstamp)
+$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)
+	@: >>$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.$(OBJEXT):  \
+	$(top_builddir)/gdk-pixbuf-loader/$(am__dirstamp) \
+	$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
+
+gdk-pixbuf-loader/test-gdk-pixbuf-loader$(EXEEXT): $(gdk_pixbuf_loader_test_gdk_pixbuf_loader_OBJECTS) $(gdk_pixbuf_loader_test_gdk_pixbuf_loader_DEPENDENCIES) $(EXTRA_gdk_pixbuf_loader_test_gdk_pixbuf_loader_DEPENDENCIES) gdk-pixbuf-loader/$(am__dirstamp)
+	@rm -f gdk-pixbuf-loader/test-gdk-pixbuf-loader$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(gdk_pixbuf_loader_test_gdk_pixbuf_loader_OBJECTS) $(gdk_pixbuf_loader_test_gdk_pixbuf_loader_LDADD) $(LIBS)
+
+mostlyclean-compile:
+	-rm -f *.$(OBJEXT)
+	-rm -f $(top_builddir)/gdk-pixbuf-loader/*.$(OBJEXT)
+	-rm -f gdk-pixbuf-loader/*.$(OBJEXT)
+
+distclean-compile:
+	-rm -f *.tab.c
+
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@gdk-pixbuf-loader/$(DEPDIR)/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.Po@am__quote@ # am--include-marker
+
+$(am__depfiles_remade):
+	@$(MKDIR_P) $(@D)
+	@: >>$@
+
+am--depfiles: $(am__depfiles_remade)
+
+.c.o:
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ $<
+
+.c.obj:
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+.c.lo:
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
+@am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+gdk-pixbuf-loader/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.o: gdk-pixbuf-loader/test-gdk-pixbuf-loader.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_gdk_pixbuf_loader_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gdk-pixbuf-loader/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.o -MD -MP -MF gdk-pixbuf-loader/$(DEPDIR)/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.Tpo -c -o gdk-pixbuf-loader/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.o `test -f 'gdk-pixbuf-loader/test-gdk-pixbuf-loader.c' || echo '$(srcdir)/'`gdk-pixbuf-loader/test-gdk-pixbuf-loader.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) gdk-pixbuf-loader/$(DEPDIR)/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.Tpo gdk-pixbuf-loader/$(DEPDIR)/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gdk-pixbuf-loader/test-gdk-pixbuf-loader.c' object='gdk-pixbuf-loader/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_gdk_pixbuf_loader_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gdk-pixbuf-loader/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.o `test -f 'gdk-pixbuf-loader/test-gdk-pixbuf-loader.c' || echo '$(srcdir)/'`gdk-pixbuf-loader/test-gdk-pixbuf-loader.c
+
+gdk-pixbuf-loader/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.obj: gdk-pixbuf-loader/test-gdk-pixbuf-loader.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_gdk_pixbuf_loader_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gdk-pixbuf-loader/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.obj -MD -MP -MF gdk-pixbuf-loader/$(DEPDIR)/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.Tpo -c -o gdk-pixbuf-loader/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.obj `if test -f 'gdk-pixbuf-loader/test-gdk-pixbuf-loader.c'; then $(CYGPATH_W) 'gdk-pixbuf-loader/test-gdk-pixbuf-loader.c'; else $(CYGPATH_W) '$(srcdir)/gdk-pixbuf-loader/test-gdk-pixbuf-loader.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) gdk-pixbuf-loader/$(DEPDIR)/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.Tpo gdk-pixbuf-loader/$(DEPDIR)/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gdk-pixbuf-loader/test-gdk-pixbuf-loader.c' object='gdk-pixbuf-loader/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_gdk_pixbuf_loader_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gdk-pixbuf-loader/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.obj `if test -f 'gdk-pixbuf-loader/test-gdk-pixbuf-loader.c'; then $(CYGPATH_W) 'gdk-pixbuf-loader/test-gdk-pixbuf-loader.c'; else $(CYGPATH_W) '$(srcdir)/gdk-pixbuf-loader/test-gdk-pixbuf-loader.c'; fi`
+
+$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.o: $(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_gdk_pixbuf_loader_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.o -MD -MP -MF $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Tpo -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.o `test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c' || echo '$(srcdir)/'`$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Tpo $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c' object='$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_gdk_pixbuf_loader_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.o `test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c' || echo '$(srcdir)/'`$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+
+$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.obj: $(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_gdk_pixbuf_loader_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.obj -MD -MP -MF $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Tpo -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.obj `if test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; then $(CYGPATH_W) '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Tpo $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c' object='$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_gdk_pixbuf_loader_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.obj `if test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; then $(CYGPATH_W) '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; fi`
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
 	-rm -rf .libs _libs
-tags TAGS:
+	-rm -rf gdk-pixbuf-loader/.libs gdk-pixbuf-loader/_libs
 
-ctags CTAGS:
+ID: $(am__tagged_files)
+	$(am__define_uniq_tagged_files); mkid -fID $$unique
+tags: tags-am
+TAGS: tags
 
-cscope cscopelist:
+tags-am: $(TAGS_DEPENDENCIES) $(am__tagged_files)
+	set x; \
+	here=`pwd`; \
+	$(am__define_uniq_tagged_files); \
+	shift; \
+	if test -z "$(ETAGS_ARGS)$$*$$unique"; then :; else \
+	  test -n "$$unique" || unique=$$empty_fix; \
+	  if test $$# -gt 0; then \
+	    $(ETAGS) $(ETAGSFLAGS) $(AM_ETAGSFLAGS) $(ETAGS_ARGS) \
+	      "$$@" $$unique; \
+	  else \
+	    $(ETAGS) $(ETAGSFLAGS) $(AM_ETAGSFLAGS) $(ETAGS_ARGS) \
+	      $$unique; \
+	  fi; \
+	fi
+ctags: ctags-am
 
+CTAGS: ctags
+ctags-am: $(TAGS_DEPENDENCIES) $(am__tagged_files)
+	$(am__define_uniq_tagged_files); \
+	test -z "$(CTAGS_ARGS)$$unique" \
+	  || $(CTAGS) $(CTAGSFLAGS) $(AM_CTAGSFLAGS) $(CTAGS_ARGS) \
+	     $$unique
+
+GTAGS:
+	here=`$(am__cd) $(top_builddir) && pwd` \
+	  && $(am__cd) $(top_srcdir) \
+	  && gtags -i $(GTAGS_ARGS) "$$here"
+cscopelist: cscopelist-am
+
+cscopelist-am: $(am__tagged_files)
+	list='$(am__tagged_files)'; \
+	case "$(srcdir)" in \
+	  [\\/]* | ?:[\\/]*) sdir="$(srcdir)" ;; \
+	  *) sdir=$(subdir)/$(srcdir) ;; \
+	esac; \
+	for i in $$list; do \
+	  if test -f "$$i"; then \
+	    echo "$(subdir)/$$i"; \
+	  else \
+	    echo "$$sdir/$$i"; \
+	  fi; \
+	done >> $(top_builddir)/cscope.files
+
+distclean-tags:
+	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 
 # Recover from deleted '.trs' file; this should ensure that
 # "rm -f foo.log; make foo.trs" re-run 'foo.test', and re-create
@@ -775,7 +998,7 @@ echo "information.  Thanks.";                                                \
 	fi;								\
 	$$success || exit 1
 
-check-TESTS: 
+check-TESTS: $(check_PROGRAMS)
 	@$(am__rm_f) $(RECHECK_LOGS)
 	@$(am__rm_f) $(RECHECK_LOGS:.log=.trs)
 	@$(am__rm_f) $(TEST_SUITE_LOG)
@@ -784,7 +1007,7 @@ check-TESTS:
 	log_list=`echo $$log_list`; \
 	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) TEST_LOGS="$$log_list"; \
 	exit $$?;
-recheck: all 
+recheck: all $(check_PROGRAMS)
 	@$(am__rm_f) $(TEST_SUITE_LOG)
 	@set +e; $(am__set_TESTS_bases); \
 	bases=`for i in $$bases; do echo $$i; done \
@@ -795,6 +1018,13 @@ recheck: all
 	        am__force_recheck=am--force-recheck \
 	        TEST_LOGS="$$log_list"; \
 	exit $$?
+gdk-pixbuf-loader/test-gdk-pixbuf-loader.log: gdk-pixbuf-loader/test-gdk-pixbuf-loader$(EXEEXT)
+	@p='gdk-pixbuf-loader/test-gdk-pixbuf-loader$(EXEEXT)'; \
+	b='gdk-pixbuf-loader/test-gdk-pixbuf-loader'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 .t.log:
 	@p='$<'; \
 	$(am__set_b); \
@@ -844,6 +1074,7 @@ distdir-am: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
+	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS)
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS check-local
 check: check-am
 all-am: Makefile
@@ -878,17 +1109,25 @@ clean-generic:
 distclean-generic:
 	-$(am__rm_f) $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || $(am__rm_f) $(CONFIG_CLEAN_VPATH_FILES)
+	-$(am__rm_f) $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) $(top_builddir)/gdk-pixbuf-loader/$(am__dirstamp)
+	-$(am__rm_f) gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) gdk-pixbuf-loader/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool mostlyclean-am
+clean-am: clean-checkPROGRAMS clean-generic clean-libtool clean-local \
+	mostlyclean-am
 
 distclean: distclean-am
+	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Po
+	-rm -f gdk-pixbuf-loader/$(DEPDIR)/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.Po
 	-rm -f Makefile
-distclean-am: clean-am distclean-generic
+distclean-am: clean-am distclean-compile distclean-generic \
+	distclean-tags
 
 dvi: dvi-am
 
@@ -931,12 +1170,15 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
+	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Po
+	-rm -f gdk-pixbuf-loader/$(DEPDIR)/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
 mostlyclean: mostlyclean-am
 
-mostlyclean-am: mostlyclean-generic mostlyclean-libtool
+mostlyclean-am: mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool
 
 pdf: pdf-am
 
@@ -950,18 +1192,20 @@ uninstall-am:
 
 .MAKE: check-am install-am install-strip
 
-.PHONY: all all-am check check-TESTS check-am check-local clean \
-	clean-generic clean-libtool cscopelist-am ctags-am distclean \
-	distclean-generic distclean-libtool distdir dvi dvi-am html \
+.PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-TESTS \
+	check-am check-local clean clean-checkPROGRAMS clean-generic \
+	clean-libtool clean-local cscopelist-am ctags ctags-am \
+	distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-data \
 	install-data-am install-dvi install-dvi-am install-exec \
 	install-exec-am install-html install-html-am install-info \
 	install-info-am install-man install-pdf install-pdf-am \
 	install-ps install-ps-am install-strip installcheck \
 	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am recheck tags-am \
-	uninstall uninstall-am
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	recheck tags tags-am uninstall uninstall-am
 
 .PRECIOUS: Makefile
 
@@ -971,18 +1215,20 @@ uninstall-am:
 # distributed sources remain intact for developers and package builds.
 clean-local:
 	@if test "$(abs_builddir)" != "$(abs_srcdir)"; then \\
-		rm -f $(LOG_COMPILER) $(TESTS) $(HELPER_FILES); \\
+		rm -f $(LOG_COMPILER) $(COPY_TESTS) $(HELPER_FILES); \\
 	fi
 
-check-local: $(LOG_COMPILER) $(TESTS) $(HELPER_FILES)
+check-local: $(LOG_COMPILER) $(COPY_TESTS) $(HELPER_FILES)
 
 $(LOG_COMPILER): $(srcdir)/tools/with-timeout.sh
 	$(MKDIR_P) $(builddir)/tools
 	$(AM_V_GEN)cp $(srcdir)/tools/with-timeout.sh $(LOG_COMPILER)
 
-$(TESTS) $(HELPER_FILES):
+$(COPY_TESTS) $(HELPER_FILES):
 	$(MKDIR_P) $(builddir)/$(dir $@)
-	$(AM_V_GEN)cp $(srcdir)/$@ $(builddir)/$@
+	$(AM_V_GEN){ if test -f $(srcdir)/$@; then \
+		cp $(srcdir)/$@ $(builddir)/$@; \
+	fi; }
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
