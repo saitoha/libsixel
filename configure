@@ -16930,7 +16930,7 @@ if test ${enable_gdk_pixbuf_loader+y}
 then :
   enableval=$enable_gdk_pixbuf_loader;
 else case e in #(
-  e) enable_gdk_pixbuf_loader=yes ;;
+  e) enable_gdk_pixbuf_loader=no ;;
 esac
 fi
 
