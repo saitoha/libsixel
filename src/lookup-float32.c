@@ -108,21 +108,21 @@ sixel_lookup_vpte_env_resolution(void)
 
     env = sixel_compat_getenv("SIXEL_LOOKUP_VPTE_RESOLUTION");
     if (env == NULL || env[0] == '\0') {
-        return 128;
+        return 64;
     }
 
     errno = 0;
     endptr = NULL;
     parsed = strtol(env, &endptr, 10);
     if (errno == ERANGE || endptr == env || *endptr != '\0') {
-        return 128;
+        return 64;
     }
 
     if (parsed == 64L || parsed == 128L || parsed == 256L) {
         return (int)parsed;
     }
 
-    return 128;
+    return 64;
 }
 
 static int

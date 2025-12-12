@@ -141,6 +141,115 @@ static int const sixel_lookup_vpte_resolution_max = 256;
 static int const sixel_lookup_vpte_tile_xy_default = 8;
 static int const sixel_lookup_vpte_tile_depth_default = 8;
 
+/*
+ * Choose VPTE tile defaults using palette diversity.  Highly varied palettes
+ * keep tiles small for cache locality while biased sets combine work into
+ * larger tiles to trim scheduling overhead.  Environment variables still take
+ * precedence.
+ */
+static void
+sixel_lookup_vpte_choose_tile_defaults(float const *palette,
+                                       int ncolors,
+                                       int depth,
+                                       int *tile_xy_default,
+                                       int *tile_depth_default)
+{
+    int component;
+    int color;
+    int offset;
+    float min_component[3];
+    float max_component[3];
+    double sum_component[3];
+    double deviation_sum[3];
+    int tile_xy;
+    int tile_depth;
+    double span_sum;
+    double mean_component[3];
+    double mean_deviation;
+
+    tile_xy = sixel_lookup_vpte_tile_xy_default;
+    tile_depth = sixel_lookup_vpte_tile_depth_default;
+
+    if (palette == NULL || ncolors <= 0 || depth <= 0) {
+        *tile_xy_default = tile_xy;
+        *tile_depth_default = tile_depth;
+
+        return;
+    }
+
+    for (component = 0; component < 3; ++component) {
+        min_component[component] = 1.0f;
+        max_component[component] = 0.0f;
+        sum_component[component] = 0.0;
+        deviation_sum[component] = 0.0;
+    }
+
+    for (color = 0; color < ncolors; ++color) {
+        offset = color * depth;
+        for (component = 0; component < 3 && component < depth;
+             ++component) {
+            float value;
+
+            value = palette[offset + component];
+            if (value < min_component[component]) {
+                min_component[component] = value;
+            }
+            if (value > max_component[component]) {
+                max_component[component] = value;
+            }
+            sum_component[component] += (double)value;
+        }
+    }
+
+    span_sum = 0.0;
+    for (component = 0; component < 3 && component < depth; ++component) {
+        mean_component[component] = sum_component[component]
+                                    / (double)ncolors;
+        span_sum += (double)(max_component[component] -
+                             min_component[component]);
+    }
+
+    for (color = 0; color < ncolors; ++color) {
+        offset = color * depth;
+        for (component = 0; component < 3 && component < depth;
+             ++component) {
+            double value;
+
+            value = (double)palette[offset + component];
+            deviation_sum[component] += fabs(value
+                                             - mean_component[component]);
+        }
+    }
+
+    mean_deviation = 0.0;
+    for (component = 0; component < 3 && component < depth; ++component) {
+        mean_deviation += deviation_sum[component] / (double)ncolors;
+    }
+    mean_deviation /= (double)(component > 0 ? component : 1);
+
+    if (span_sum > 1.8 || ncolors > 512) {
+        tile_xy = 6;
+        tile_depth = 6;
+    } else if (span_sum < 0.35 && ncolors < 64) {
+        tile_xy = 12;
+        tile_depth = 10;
+    } else if (span_sum < 0.75 && ncolors < 128) {
+        tile_xy = 10;
+        tile_depth = 9;
+    } else if (ncolors > 256) {
+        tile_xy = 7;
+        tile_depth = 7;
+    }
+
+    if (mean_deviation < 0.08 && tile_xy < 12) {
+        tile_xy += 1;
+        tile_depth += 1;
+    }
+
+    *tile_xy_default = tile_xy;
+    *tile_depth_default = tile_depth;
+}
+
 static int
 sixel_lookup_vpte_pow2_log(int value)
 {
@@ -198,17 +307,30 @@ sixel_lookup_vpte_parse_positive(char const *env_name, int fallback)
 }
 
 static void
-sixel_lookup_vpte_resolve_tiles(int res, int *tile_xy, int *tile_depth)
+sixel_lookup_vpte_resolve_tiles(float const *palette,
+                                int ncolors,
+                                int depth,
+                                int res,
+                                int *tile_xy,
+                                int *tile_depth)
 {
     int resolved_xy;
     int resolved_depth;
+    int default_xy;
+    int default_depth;
+
+    sixel_lookup_vpte_choose_tile_defaults(palette,
+                                           ncolors,
+                                           depth,
+                                           &default_xy,
+                                           &default_depth);
 
     resolved_xy = sixel_lookup_vpte_parse_positive(
         "SIXEL_VPTE_TILE_XY",
-        sixel_lookup_vpte_tile_xy_default);
+        default_xy);
     resolved_depth = sixel_lookup_vpte_parse_positive(
         "SIXEL_VPTE_TILE_DEPTH",
-        sixel_lookup_vpte_tile_depth_default);
+        default_depth);
     if (resolved_xy > res) {
         resolved_xy = res;
     }
@@ -1915,7 +2037,12 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_float32_t *vpte,
     threads = sixel_lookup_vpte_resolve_threads();
     pin_threads = sixel_lookup_vpte_pin_threads_enabled();
     first_touch = sixel_lookup_vpte_first_touch_enabled();
-    sixel_lookup_vpte_resolve_tiles(resolution, &tile_xy, &tile_depth);
+    sixel_lookup_vpte_resolve_tiles(palette,
+                                    ncolors,
+                                    depth,
+                                    resolution,
+                                    &tile_xy,
+                                    &tile_depth);
 
     total = (size_t)resolution * (size_t)resolution * (size_t)resolution;
     if (!shared->use_u16) {

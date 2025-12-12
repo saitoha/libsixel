@@ -350,7 +350,7 @@ The \fIvpte\fP grid honours the following environment variables:
 .br
 SIXEL_DITHER_LOOKUP_POLICY (auto, 5bit, 6bit, none, certlut, or vpte)
 .br
-SIXEL_LOOKUP_VPTE_RESOLUTION (64, 128, or 256; default 128)
+SIXEL_LOOKUP_VPTE_RESOLUTION (64, 128, or 256; default 64)
 .br
 SIXEL_LOOKUP_VPTE_REFINE (0 or 1; default 1) enables corner refinement
 for boundary cells.
@@ -375,11 +375,13 @@ SIXEL_LOOKUP_5BIT_SHARED_INSTANCE (0 or 1; default 1) controls whether the
 SIXEL_LOOKUP_6BIT_SHARED_INSTANCE (0 or 1; default 1) controls whether the
 6bit dense LUT is shared across workers without locks.
 .br
-SIXEL_VPTE_TILE_XY (default 8; clamped to the image size and falling back to 8
-on invalid input) sets the tile width/height for the EDT passes.
+SIXEL_VPTE_TILE_XY (adaptive default; clamped to the image size and falling
+back to the adaptive choice on invalid input) sets the tile width/height for
+the EDT passes.  The adaptive default shrinks tiles for diverse palettes and
+grows them when the palette is biased to reduce scheduling overhead.
 .br
-SIXEL_VPTE_TILE_DEPTH (default 8; same clamping as SIXEL_VPTE_TILE_XY) sets the
-tile depth for the EDT passes.
+SIXEL_VPTE_TILE_DEPTH (adaptive default; same clamping as SIXEL_VPTE_TILE_XY)
+sets the tile depth for the EDT passes and follows the same adaptive policy.
 .br
 SIXEL_VPTE_FIRST_TOUCH (0 or 1; default 0) zeroes VPTE tiles in parallel before
 the EDT to let NUMA systems place pages on the worker that will use them.
