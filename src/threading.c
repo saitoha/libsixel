@@ -36,6 +36,15 @@
 #define _BSD_SOURCE
 #endif
 
+/*
+ * NetBSD also conceals legacy typedefs like devmajor_t and u_int under
+ * strict POSIX feature sets. Force the wider namespace so sys/sysctl.h can
+ * provide the structures required by our concurrency probing helpers.
+ */
+#if defined(__NetBSD__)
+#define _NETBSD_SOURCE
+#endif
+
 #include "config.h"
 
 #if defined(__APPLE__) && !defined(_DARWIN_C_SOURCE)
