@@ -2189,12 +2189,9 @@ AC_CONFIG_FILES([Makefile
                  wic/Makefile
                 ])
 
-# Create the amalgamation Makefile only when the feature is requested.
-# This avoids failing when amalgamation/Makefile.in is not present in the
-# source tree.
-AS_IF([test "x$enable_amalgamation" = "xyes"], [
-  AC_CONFIG_FILES([amalgamation/Makefile])
-])
+# Always generate the amalgamation Makefile so "make dist" can stage the
+# directory even when the feature is disabled at configure time.
+AC_CONFIG_FILES([amalgamation/Makefile])
 
 # Generate Ruby constants file from include/sixel.h when Ruby is enabled
 AC_CONFIG_COMMANDS([rubyconstants], [

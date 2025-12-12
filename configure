@@ -23726,16 +23726,10 @@ fi
 ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile assessment/Makefile tools/Makefile tools/libsixel-config tests/Makefile python/Makefile ruby/Makefile ruby/lib/libsixel/version_runtime.rb quicklook-extension/Makefile wic/Makefile"
 
 
-# Create the amalgamation Makefile only when the feature is requested.
-# This avoids failing when amalgamation/Makefile.in is not present in the
-# source tree.
-if test "x$enable_amalgamation" = "xyes"
-then :
+# Always generate the amalgamation Makefile so "make dist" can stage the
+# directory even when the feature is disabled at configure time.
+ac_config_files="$ac_config_files amalgamation/Makefile"
 
-  ac_config_files="$ac_config_files amalgamation/Makefile"
-
-
-fi
 
 # Generate Ruby constants file from include/sixel.h when Ruby is enabled
 ac_config_commands="$ac_config_commands rubyconstants"
