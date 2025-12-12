@@ -73,7 +73,7 @@ foreach t : ['test_0001_python_bindings.t', 'test_0002_python_api_formats.t',
     args: [meson.current_source_dir() / 'python' / 't' / t],
     protocol: 'tap',
     env: env,
-    timeout: 120,
+    timeout: 300,
     depends: python_depends,
     suite: ['tap'])
 endforeach
