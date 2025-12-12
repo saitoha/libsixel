@@ -313,6 +313,9 @@
 /* Define if ONNX Runtime is available */
 #undef HAVE_ONNXRUNTIME
 
+/* Define to 1 if you have the 'open' function. */
+#undef HAVE_OPEN
+
 /* Define to 1 if you have the 'posix_spawnp' function. */
 #undef HAVE_POSIX_SPAWNP
 
@@ -497,9 +500,6 @@
 /* Define to 1 if you have the '_mktemp' function. */
 #undef HAVE__MKTEMP
 
-/* Define to 1 if you have the '_sopen_s' function. */
-#undef HAVE__SOPEN_S
-
 /* Define to 1 if you have the '_open' function. */
 #undef HAVE__OPEN
 
@@ -509,14 +509,14 @@
 /* Define to 1 if you have the '_setmode' function. */
 #undef HAVE__SETMODE
 
+/* Define to 1 if you have the '_sopen_s' function. */
+#undef HAVE__SOPEN_S
+
 /* Define to 1 if you have the '_strerror_r' function. */
 #undef HAVE__STRERROR_R
 
 /* Define to 1 if you have the '_write' function. */
 #undef HAVE__WRITE
-
-/* Define to 1 if you have the `open' function. */
-#undef HAVE_OPEN
 
 /* Define to 1 if the system has the `__builtin_unreachable' built-in function
    */
