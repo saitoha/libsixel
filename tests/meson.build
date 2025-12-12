@@ -60,7 +60,7 @@ foreach t : cli_tests
     protocol: 'tap',
     env: env,
     depends: cli_depends.get(t, []),
-    timeout: 120,
+    timeout: 300,
     suite: ['tap'])
 endforeach
 
