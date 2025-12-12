@@ -145,9 +145,18 @@ diffuse_lso2_float(float *data,
     float term_d;
     float term_dr;
     float term_d2;
+    int has_left;
+    int has_two_left;
+    int has_right;
+    int has_two_right;
+    int has_next;
+    int has_far;
     size_t row_curr;
     size_t row_next;
     size_t row_far;
+    size_t base_curr;
+    size_t base_next;
+    size_t base_far;
     size_t offset;
 
     if (error == 0.0f) {
@@ -180,10 +189,25 @@ diffuse_lso2_float(float *data,
     row_curr = (size_t)y * (size_t)width;
     row_next = (size_t)(y + 1) * (size_t)width;
     row_far = (size_t)(y + 2) * (size_t)width;
+    base_curr = row_curr + (size_t)x;
+    base_next = row_next + (size_t)x;
+    base_far = row_far + (size_t)x;
+    /*
+     * Precompute neighborhood availability and row bases to avoid repeating
+     * multiplications or bounds checks for every kernel tap.  Keeping the
+     * inner branch conditions simple helps the compiler schedule the
+     * diffusion math more effectively when processing wide images.
+     */
+    has_left = (x - 1) >= 0;
+    has_two_left = (x - 2) >= 0;
+    has_right = (x + 1) < width;
+    has_two_right = (x + 2) < width;
+    has_next = (y + 1) < height;
+    has_far = (y + 2) < height;
 
     if (direction >= 0) {
-        if (x + 1 < width) {
-            offset = row_curr + (size_t)(x + 1);
+        if (has_right) {
+            offset = base_curr + 1;
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -191,8 +215,8 @@ diffuse_lso2_float(float *data,
                                               pixelformat,
                                               channel);
         }
-        if (x + 2 < width) {
-            offset = row_curr + (size_t)(x + 2);
+        if (has_two_right) {
+            offset = base_curr + 2;
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -200,8 +224,8 @@ diffuse_lso2_float(float *data,
                                               pixelformat,
                                               channel);
         }
-        if (y + 1 < height && x - 1 >= 0) {
-            offset = row_next + (size_t)(x - 1);
+        if (has_next && has_left) {
+            offset = base_next - 1;
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -209,8 +233,8 @@ diffuse_lso2_float(float *data,
                                               pixelformat,
                                               channel);
         }
-        if (y + 1 < height) {
-            offset = row_next + (size_t)x;
+        if (has_next) {
+            offset = base_next;
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -218,8 +242,8 @@ diffuse_lso2_float(float *data,
                                               pixelformat,
                                               channel);
         }
-        if (y + 1 < height && x + 1 < width) {
-            offset = row_next + (size_t)(x + 1);
+        if (has_next && has_right) {
+            offset = base_next + 1;
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -227,8 +251,8 @@ diffuse_lso2_float(float *data,
                                               pixelformat,
                                               channel);
         }
-        if (y + 2 < height) {
-            offset = row_far + (size_t)x;
+        if (has_far) {
+            offset = base_far;
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -237,8 +261,8 @@ diffuse_lso2_float(float *data,
                                               channel);
         }
     } else {
-        if (x - 1 >= 0) {
-            offset = row_curr + (size_t)(x - 1);
+        if (has_left) {
+            offset = base_curr - 1;
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -246,8 +270,8 @@ diffuse_lso2_float(float *data,
                                               pixelformat,
                                               channel);
         }
-        if (x - 2 >= 0) {
-            offset = row_curr + (size_t)(x - 2);
+        if (has_two_left) {
+            offset = base_curr - 2;
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -255,8 +279,8 @@ diffuse_lso2_float(float *data,
                                               pixelformat,
                                               channel);
         }
-        if (y + 1 < height && x + 1 < width) {
-            offset = row_next + (size_t)(x + 1);
+        if (has_next && has_right) {
+            offset = base_next + 1;
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -264,8 +288,8 @@ diffuse_lso2_float(float *data,
                                               pixelformat,
                                               channel);
         }
-        if (y + 1 < height) {
-            offset = row_next + (size_t)x;
+        if (has_next) {
+            offset = base_next;
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -273,8 +297,8 @@ diffuse_lso2_float(float *data,
                                               pixelformat,
                                               channel);
         }
-        if (y + 1 < height && x - 1 >= 0) {
-            offset = row_next + (size_t)(x - 1);
+        if (has_next && has_left) {
+            offset = base_next - 1;
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -282,8 +306,8 @@ diffuse_lso2_float(float *data,
                                               pixelformat,
                                               channel);
         }
-        if (y + 2 < height) {
-            offset = row_far + (size_t)x;
+        if (has_far) {
+            offset = base_far;
             diffuse_varerr_apply_direct_float(data,
                                               depth,
                                               offset,
@@ -318,7 +342,16 @@ diffuse_lso2_carry_float(float *carry_curr,
     float term_d;
     float term_dr;
     float term_d2;
-    size_t base;
+    size_t base_curr;
+    size_t base_next;
+    size_t base_far;
+    size_t stride;
+    int has_left;
+    int has_two_left;
+    int has_right;
+    int has_two_right;
+    int has_next;
+    int has_far;
 
     if (error == 0.0f) {
         return;
@@ -346,63 +379,61 @@ diffuse_lso2_carry_float(float *carry_curr,
     term_dr = factor * (float)entry[4];
     term_d2 = error - term_r - term_r2 - term_dl - term_d - term_dr;
 
+    stride = (size_t)depth;
+    base_curr = ((size_t)x * stride) + (size_t)channel;
+    base_next = base_curr;
+    base_far = base_curr;
+    /*
+     * Compute stride- and row-aligned offsets once so the carry buffers do
+     * not pay for repeated multiplications.  Keeping the neighbor flags in
+     * registers trims branch conditions to quick boolean checks during the
+     * innermost diffusion loop.
+     */
+    
+    has_left = (x - 1) >= 0;
+    has_two_left = (x - 2) >= 0;
+    has_right = (x + 1) < width;
+    has_two_right = (x + 2) < width;
+    has_next = (y + 1) < height;
+    has_far = (y + 2) < height;
+
     if (direction >= 0) {
-        if (x + 1 < width) {
-            base = ((size_t)(x + 1) * (size_t)depth)
-                 + (size_t)channel;
-            carry_curr[base] += term_r;
+        if (has_right) {
+            carry_curr[base_curr + stride] += term_r;
         }
-        if (x + 2 < width) {
-            base = ((size_t)(x + 2) * (size_t)depth)
-                 + (size_t)channel;
-            carry_curr[base] += term_r2;
+        if (has_two_right) {
+            carry_curr[base_curr + (stride * 2)] += term_r2;
         }
-        if (y + 1 < height && x - 1 >= 0) {
-            base = ((size_t)(x - 1) * (size_t)depth)
-                 + (size_t)channel;
-            carry_next[base] += term_dl;
+        if (has_next && has_left) {
+            carry_next[base_next - stride] += term_dl;
         }
-        if (y + 1 < height) {
-            base = ((size_t)x * (size_t)depth) + (size_t)channel;
-            carry_next[base] += term_d;
+        if (has_next) {
+            carry_next[base_next] += term_d;
         }
-        if (y + 1 < height && x + 1 < width) {
-            base = ((size_t)(x + 1) * (size_t)depth)
-                 + (size_t)channel;
-            carry_next[base] += term_dr;
+        if (has_next && has_right) {
+            carry_next[base_next + stride] += term_dr;
         }
-        if (y + 2 < height) {
-            base = ((size_t)x * (size_t)depth) + (size_t)channel;
-            carry_far[base] += term_d2;
+        if (has_far) {
+            carry_far[base_far] += term_d2;
         }
     } else {
-        if (x - 1 >= 0) {
-            base = ((size_t)(x - 1) * (size_t)depth)
-                 + (size_t)channel;
-            carry_curr[base] += term_r;
+        if (has_left) {
+            carry_curr[base_curr - stride] += term_r;
         }
-        if (x - 2 >= 0) {
-            base = ((size_t)(x - 2) * (size_t)depth)
-                 + (size_t)channel;
-            carry_curr[base] += term_r2;
+        if (has_two_left) {
+            carry_curr[base_curr - (stride * 2)] += term_r2;
         }
-        if (y + 1 < height && x + 1 < width) {
-            base = ((size_t)(x + 1) * (size_t)depth)
-                 + (size_t)channel;
-            carry_next[base] += term_dl;
+        if (has_next && has_right) {
+            carry_next[base_next + stride] += term_dl;
         }
-        if (y + 1 < height) {
-            base = ((size_t)x * (size_t)depth) + (size_t)channel;
-            carry_next[base] += term_d;
+        if (has_next) {
+            carry_next[base_next] += term_d;
         }
-        if (y + 1 < height && x - 1 >= 0) {
-            base = ((size_t)(x - 1) * (size_t)depth)
-                 + (size_t)channel;
-            carry_next[base] += term_dr;
+        if (has_next && has_left) {
+            carry_next[base_next - stride] += term_dr;
         }
-        if (y + 2 < height) {
-            base = ((size_t)x * (size_t)depth) + (size_t)channel;
-            carry_far[base] += term_d2;
+        if (has_far) {
+            carry_far[base_far] += term_d2;
         }
     }
 }
