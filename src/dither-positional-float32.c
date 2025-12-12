@@ -225,7 +225,12 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                 }
                 if (context->migration_map[color_index] == 0) {
                     if (absolute_y >= context->output_start) {
-                        context->result[pos] = *context->ncolors;
+                        /*
+                         * Palette indices never exceed SIXEL_PALETTE_MAX, so
+                         * the cast to sixel_index_t (unsigned char) is safe.
+                         */
+                        context->result[pos]
+                            = (sixel_index_t)(*context->ncolors);
                     }
                     for (d = 0; d < context->depth; ++d) {
                         context->new_palette[*context->ncolors
@@ -247,11 +252,17 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                         }
                     }
                     ++*context->ncolors;
-                    context->migration_map[color_index] = *context->ncolors;
+                    /*
+                     * Migration map entries are limited to the palette size
+                     * (<= 256), so storing them as unsigned short is safe.
+                     */
+                    context->migration_map[color_index]
+                        = (unsigned short)(*context->ncolors);
                 } else {
                     if (absolute_y >= context->output_start) {
-                        context->result[pos] =
-                            context->migration_map[color_index] - 1;
+                        context->result[pos]
+                            = (sixel_index_t)(context->migration_map[
+                                  color_index] - 1);
                     }
                 }
             }

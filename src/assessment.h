@@ -65,6 +65,15 @@ typedef enum sixel_assessment_spool_mode {
     SIXEL_ASSESSMENT_SPOOL_MODE_PATH
 } sixel_assessment_spool_mode_t;
 
+#if defined(_MSC_VER)
+#pragma warning(push)
+/*
+ * jmp_buf may request extended alignment on MSVC; suppress padding noise so
+ * we can keep the struct layout near the portable definition.
+ */
+#pragma warning(disable : 4324)
+#endif  /* _MSC_VER */
+
 struct sixel_assessment {
     int refcount;
     sixel_allocator_t *allocator;
@@ -104,6 +113,10 @@ struct sixel_assessment {
     unsigned int sections_mask;
     unsigned int view_mask;
 };
+
+#if defined(_MSC_VER)
+#pragma warning(pop)
+#endif  /* _MSC_VER */
 
 /*
  *  +---------------------------+

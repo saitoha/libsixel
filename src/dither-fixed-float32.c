@@ -1007,11 +1007,11 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
             }
 
             if (context->optimize_palette) {
-                if (context->migration_map[color_index] == 0) {
-                    output_index = *context->ncolors;
-                    for (n = 0; n < context->depth; ++n) {
-                        context->new_palette[output_index * context->depth + n]
-                            = palette[color_index * context->depth + n];
+                    if (context->migration_map[color_index] == 0) {
+                        output_index = *context->ncolors;
+                        for (n = 0; n < context->depth; ++n) {
+                            context->new_palette[output_index * context->depth + n]
+                                = palette[color_index * context->depth + n];
                     }
                     if (palette_float != NULL
                             && new_palette_float != NULL
@@ -1026,17 +1026,26 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
                         }
                     }
                     ++*context->ncolors;
-                    context->migration_map[color_index] = *context->ncolors;
+                    /*
+                     * The palette count never exceeds SIXEL_PALETTE_MAX (256),
+                     * so storing it in an unsigned short is safe.
+                     */
+                    context->migration_map[color_index]
+                        = (unsigned short)(*context->ncolors);
                 } else {
                     output_index = context->migration_map[color_index] - 1;
                 }
                 if (absolute_y >= context->output_start) {
-                    context->result[pos] = output_index;
+                    /*
+                     * Palette indices are bounded by SIXEL_PALETTE_MAX, which
+                     * fits in sixel_index_t (unsigned char).
+                     */
+                    context->result[pos] = (sixel_index_t)output_index;
                 }
             } else {
                 output_index = color_index;
                 if (absolute_y >= context->output_start) {
-                    context->result[pos] = output_index;
+                    context->result[pos] = (sixel_index_t)output_index;
                 }
             }
 
