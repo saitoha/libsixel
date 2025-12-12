@@ -103,14 +103,14 @@ _CRTIMP errno_t __cdecl _dupenv_s(char **buffer,
                                   const char *name);
 #endif
 
-#if HAVE__SETMODE
+#if defined(_WIN32) && HAVE__SETMODE
 /*
  * Some MinGW headers hide `_setmode()` when POSIX feature macros are
  * enabled.  Declare it ourselves to keep the prototype visible while
- * still using the system implementation.  MSYS builds may not expose
- * the `_WIN32` feature macro, so rely on the configure probe instead
- * of the platform guard.  The signature matches the public CRT
- * contract.
+ * still using the system implementation.  Restrict the declaration to
+ * Windows targets so that the calling convention annotation is always
+ * available and we avoid leaking the symbol onto POSIX builds.  The
+ * signature matches the public CRT contract.
  */
 _CRTIMP int __cdecl _setmode(int fd, int mode);
 #endif
@@ -1094,12 +1094,18 @@ sixel_compat_realpath(const char *path)
         return NULL;
     }
 
-#if defined(HAVE__FULLPATH)
-    resolved = _fullpath(NULL, path, 0);
-#elif defined(HAVE__REALPATH)
-    resolved = _realpath(path, NULL);
-#elif defined(HAVE_REALPATH)
+#if defined(HAVE_REALPATH)
+    /* Prefer the POSIX implementation when available. */
     resolved = realpath(path, NULL);
+#elif defined(_WIN32) && defined(HAVE__FULLPATH)
+    resolved = _fullpath(NULL, path, 0);
+#elif defined(_WIN32) && defined(HAVE__REALPATH)
+    /*
+     * Some Windows SDKs offer `_realpath()` as a twin to the POSIX
+     * function.  Limit the call to Windows builds to avoid mis-detected
+     * probes on other platforms.
+     */
+    resolved = _realpath(path, NULL);
 #else
     resolved = sixel_compat_resolve_without_realpath(path);
 #endif
