@@ -43,7 +43,7 @@
 #include "pixelformat.h"
 
 static void
-sixel_dither_scanline_params(int serpentine,
+sixel_dither_scanline_params_varcoeff_float32(int serpentine,
                              int index,
                              int limit,
                              int *start,
@@ -65,7 +65,7 @@ sixel_dither_scanline_params(int serpentine,
 }
 
 static const int (*
-lso2_table(void))[7]
+lso2_table_varcoeff_float32(void))[7]
 {
 #include "lso2.h"
     return var_coefs;
@@ -97,7 +97,7 @@ typedef void (*diffuse_varerr_carry_mode_float)(float *carry_curr,
                                                  int channel);
 
 static int
-sixel_varcoeff_safe_denom(int value)
+sixel_varcoeff_safe_denom_float32(int value)
 {
     if (value == 0) {
         return 1;
@@ -169,9 +169,9 @@ diffuse_lso2_float(float *data,
         index = 255;
     }
 
-    table = lso2_table();
+    table = lso2_table_varcoeff_float32();
     entry = table[index];
-    denom = sixel_varcoeff_safe_denom(entry[6]);
+    denom = sixel_varcoeff_safe_denom_float32(entry[6]);
     /*
      * Reduce the number of costly divisions by sharing a single factor for
      * all weights in the diffusion kernel.  Multiplications are cheaper
@@ -363,9 +363,9 @@ diffuse_lso2_carry_float(float *carry_curr,
         index = 255;
     }
 
-    table = lso2_table();
+    table = lso2_table_varcoeff_float32();
     entry = table[index];
-    denom = sixel_varcoeff_safe_denom(entry[6]);
+    denom = sixel_varcoeff_safe_denom_float32(entry[6]);
 
     /*
      * Share a single division across the error terms so the carry path is
@@ -615,7 +615,7 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
 
     for (y = 0; y < context->height; ++y) {
         absolute_y = context->band_origin + y;
-        sixel_dither_scanline_params(serpentine,
+        sixel_dither_scanline_params_varcoeff_float32(serpentine,
                                      absolute_y,
                                      context->width,
                                      &start,

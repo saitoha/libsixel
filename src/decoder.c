@@ -975,7 +975,7 @@ static sixel_option_choice_t const g_decoder_dequant_choices[] = {
 };
 
 static void
-normalise_windows_drive_path(char *path)
+decoder_normalise_windows_drive_path(char *path)
 {
 #if defined(_WIN32)
     size_t length;
@@ -1084,7 +1084,7 @@ sixel_decoder_setopt(
                 return SIXEL_BAD_ALLOCATION;
             }
             memcpy(p, payload, length + 1U);
-            normalise_windows_drive_path(p);
+            decoder_normalise_windows_drive_path(p);
         } else {
             filename = value;
         }
@@ -1684,9 +1684,10 @@ end:
 }
 
 
+/* Exercise legacy constructor and refcounting for the decoder. */
 #if HAVE_TESTS
 static int
-test1(void)
+decoder_test_create_legacy(void)
 {
     int nret = EXIT_FAILURE;
     sixel_decoder_t *decoder = NULL;
@@ -1712,8 +1713,9 @@ error:
 }
 
 
+/* Build a decoder with the default allocator and ensure cleanup paths work. */
 static int
-test2(void)
+decoder_test_new_with_default_allocator(void)
 {
     int nret = EXIT_FAILURE;
     sixel_decoder_t *decoder = NULL;
@@ -1734,8 +1736,9 @@ error:
 }
 
 
+/* Verify allocation failure during construction bubbles up. */
 static int
-test3(void)
+decoder_test_allocator_failure_on_new(void)
 {
     int nret = EXIT_FAILURE;
     sixel_decoder_t *decoder = NULL;
@@ -1766,8 +1769,9 @@ error:
 }
 
 
+/* Trigger allocation failure on the second allocation path in new(). */
 static int
-test4(void)
+decoder_test_allocator_failure_on_new_second(void)
 {
     int nret = EXIT_FAILURE;
     sixel_decoder_t *decoder = NULL;
@@ -1798,8 +1802,12 @@ error:
 }
 
 
+/*
+ * Force allocation failure when setting the input path on a decoder created
+ * with failing allocator hooks.
+ */
 static int
-test5(void)
+decoder_test_setopt_input_allocation_failure(void)
 {
     int nret = EXIT_FAILURE;
     sixel_decoder_t *decoder = NULL;
@@ -1837,8 +1845,12 @@ error:
 }
 
 
+/*
+ * Force allocation failure when setting the output path on a decoder created
+ * with failing allocator hooks.
+ */
 static int
-test6(void)
+decoder_test_setopt_output_allocation_failure(void)
 {
     int nret = EXIT_FAILURE;
     sixel_decoder_t *decoder = NULL;
@@ -1877,8 +1889,9 @@ error:
 }
 
 
+/* Verify decode reports libc error when input path is invalid. */
 static int
-test7(void)
+decoder_test_decode_missing_file(void)
 {
     int nret = EXIT_FAILURE;
     sixel_decoder_t *decoder = NULL;
@@ -1920,8 +1933,9 @@ error:
 }
 
 
+/* Ensure decode surfaces allocator failures when reading a real file. */
 static int
-test8(void)
+decoder_test_decode_allocation_failure(void)
 {
     int nret = EXIT_FAILURE;
     sixel_decoder_t *decoder = NULL;
@@ -1973,14 +1987,14 @@ sixel_decoder_tests_main(void)
     typedef int (* testcase)(void);
 
     static testcase const testcases[] = {
-        test1,
-        test2,
-        test3,
-        test4,
-        test5,
-        test6,
-        test7,
-        test8
+        decoder_test_create_legacy,
+        decoder_test_new_with_default_allocator,
+        decoder_test_allocator_failure_on_new,
+        decoder_test_allocator_failure_on_new_second,
+        decoder_test_setopt_input_allocation_failure,
+        decoder_test_setopt_output_allocation_failure,
+        decoder_test_decode_missing_file,
+        decoder_test_decode_allocation_failure
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {

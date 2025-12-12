@@ -790,9 +790,10 @@ end:
 }
 
 
+/* Normalize RGB888 input without modification. */
 #if HAVE_TESTS
 static int
-test1(void)
+pixelformat_test_rgb888_passthrough(void)
 {
     unsigned char dst[3];
     int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -814,19 +815,21 @@ test1(void)
     if (dst_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         goto error;
     }
-    if ((dst[0] << 16 | dst[1] << 8 | dst[2]) != (src[0] << 16 | src[1] << 8 | src[2])) {
+    if ((dst[0] << 16 | dst[1] << 8 | dst[2])
+            != (src[0] << 16 | src[1] << 8 | src[2])) {
         goto error;
     }
     return EXIT_SUCCESS;
 
 error:
-    perror("test1");
+    perror("pixelformat_test_rgb888_passthrough");
     return nret;
 }
 
 
+/* Convert RGB555 packed data into RGB888 output. */
 static int
-test2(void)
+pixelformat_test_from_rgb555(void)
 {
     unsigned char dst[3];
     int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -848,19 +851,21 @@ test2(void)
     if (dst_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         goto error;
     }
-    if ((dst[0] >> 3 << 10 | dst[1] >> 3 << 5 | dst[2] >> 3) != (src[0] << 8 | src[1])) {
+    if ((dst[0] >> 3 << 10 | dst[1] >> 3 << 5 | dst[2] >> 3)
+            != (src[0] << 8 | src[1])) {
         goto error;
     }
     return EXIT_SUCCESS;
 
 error:
-    perror("test2");
+    perror("pixelformat_test_from_rgb555");
     return nret;
 }
 
 
+/* Convert RGB565 packed data into RGB888 output. */
 static int
-test3(void)
+pixelformat_test_from_rgb565(void)
 {
     unsigned char dst[3];
     int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -882,19 +887,21 @@ test3(void)
     if (dst_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         goto error;
     }
-    if ((dst[0] >> 3 << 11 | dst[1] >> 2 << 5 | dst[2] >> 3) != (src[0] << 8 | src[1])) {
+    if ((dst[0] >> 3 << 11 | dst[1] >> 2 << 5 | dst[2] >> 3)
+            != (src[0] << 8 | src[1])) {
         goto error;
     }
     return EXIT_SUCCESS;
 
 error:
-    perror("test3");
+    perror("pixelformat_test_from_rgb565");
     return nret;
 }
 
 
+/* Swap channels from BGR888 to RGB888. */
 static int
-test4(void)
+pixelformat_test_from_bgr888(void)
 {
     unsigned char dst[3];
     int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -916,19 +923,21 @@ test4(void)
     if (dst_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         goto error;
     }
-    if ((dst[2] << 16 | dst[1] << 8 | dst[0]) != (src[0] << 16 | src[1] << 8 | src[2])) {
+    if ((dst[2] << 16 | dst[1] << 8 | dst[0])
+            != (src[0] << 16 | src[1] << 8 | src[2])) {
         goto error;
     }
     return EXIT_SUCCESS;
 
 error:
-    perror("test4");
+    perror("pixelformat_test_from_bgr888");
     return nret;
 }
 
 
+/* Convert BGR555 packed data into RGB888 output. */
 static int
-test5(void)
+pixelformat_test_from_bgr555(void)
 {
     unsigned char dst[3];
     int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -950,19 +959,21 @@ test5(void)
     if (dst_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         goto error;
     }
-    if ((dst[2] >> 3 << 10 | dst[1] >> 3 << 5 | dst[0] >> 3) != (src[0] << 8 | src[1])) {
+    if ((dst[2] >> 3 << 10 | dst[1] >> 3 << 5 | dst[0] >> 3)
+            != (src[0] << 8 | src[1])) {
         goto error;
     }
     return EXIT_SUCCESS;
 
 error:
-    perror("test5");
+    perror("pixelformat_test_from_bgr555");
     return nret;
 }
 
 
+/* Convert BGR565 packed data into RGB888 output. */
 static int
-test6(void)
+pixelformat_test_from_bgr565(void)
 {
     unsigned char dst[3];
     int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -984,19 +995,21 @@ test6(void)
     if (dst_pixelformat != SIXEL_PIXELFORMAT_RGB888) {
         goto error;
     }
-    if ((dst[2] >> 3 << 11 | dst[1] >> 2 << 5 | dst[0] >> 3) != (src[0] << 8 | src[1])) {
+    if ((dst[2] >> 3 << 11 | dst[1] >> 2 << 5 | dst[0] >> 3)
+            != (src[0] << 8 | src[1])) {
         goto error;
     }
     return EXIT_SUCCESS;
 
 error:
-    perror("test6");
+    perror("pixelformat_test_from_bgr565");
     return nret;
 }
 
 
+/* Convert AG88 data by discarding alpha and keeping gray. */
 static int
-test7(void)
+pixelformat_test_from_ag88(void)
 {
     unsigned char dst[3];
     int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -1024,13 +1037,14 @@ test7(void)
     return EXIT_SUCCESS;
 
 error:
-    perror("test7");
+    perror("pixelformat_test_from_ag88");
     return nret;
 }
 
 
+/* Convert GA88 data by duplicating gray channel into RGB. */
 static int
-test8(void)
+pixelformat_test_from_ga88(void)
 {
     unsigned char dst[3];
     int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -1058,13 +1072,14 @@ test8(void)
     return EXIT_SUCCESS;
 
 error:
-    perror("test8");
+    perror("pixelformat_test_from_ga88");
     return nret;
 }
 
 
+/* Normalize RGBA8888 by dropping alpha. */
 static int
-test9(void)
+pixelformat_test_from_rgba8888(void)
 {
     unsigned char dst[3];
     int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -1098,13 +1113,14 @@ test9(void)
     return EXIT_SUCCESS;
 
 error:
-    perror("test8");
+    perror("pixelformat_test_from_rgba8888");
     return nret;
 }
 
 
+/* Normalize ARGB8888 while skipping the leading alpha byte. */
 static int
-test10(void)
+pixelformat_test_from_argb8888(void)
 {
     unsigned char dst[3];
     int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -1138,13 +1154,14 @@ test10(void)
     return EXIT_SUCCESS;
 
 error:
-    perror("test8");
+    perror("pixelformat_test_from_argb8888");
     return nret;
 }
 
 
+/* Convert floating point RGB data to normalized 8-bit output. */
 static int
-test11(void)
+pixelformat_test_from_rgbfloat32(void)
 {
     unsigned char dst[3];
     int dst_pixelformat = SIXEL_PIXELFORMAT_RGB888;
@@ -1178,7 +1195,7 @@ test11(void)
     return EXIT_SUCCESS;
 
 error:
-    perror("test11");
+    perror("pixelformat_test_from_rgbfloat32");
     return nret;
 }
 
@@ -1191,17 +1208,17 @@ sixel_pixelformat_tests_main(void)
     typedef int (* testcase)(void);
 
     static testcase const testcases[] = {
-        test1,
-        test2,
-        test3,
-        test4,
-        test5,
-        test6,
-        test7,
-        test8,
-        test9,
-        test10,
-        test11,
+        pixelformat_test_rgb888_passthrough,
+        pixelformat_test_from_rgb555,
+        pixelformat_test_from_rgb565,
+        pixelformat_test_from_bgr888,
+        pixelformat_test_from_bgr555,
+        pixelformat_test_from_bgr565,
+        pixelformat_test_from_ag88,
+        pixelformat_test_from_ga88,
+        pixelformat_test_from_rgba8888,
+        pixelformat_test_from_argb8888,
+        pixelformat_test_from_rgbfloat32,
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {

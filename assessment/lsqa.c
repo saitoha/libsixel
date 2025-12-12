@@ -12,8 +12,18 @@
  *             +--> libsixel loader      +--> ONNX LPIPS bridge
  */
 
+/*
+ * Guard the feature test macros so unity builds do not complain when the
+ * build system already defines the same POSIX surface area globally.  The
+ * macros remain visible when missing so mkstemp() and strerror_r() stay
+ * declared.
+ */
+#if !defined(_POSIX_C_SOURCE)
 #define _POSIX_C_SOURCE 200809L
+#endif
+#if !defined(_XOPEN_SOURCE)
 #define _XOPEN_SOURCE 700
+#endif
 
 #include "config.h"
 

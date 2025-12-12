@@ -181,6 +181,14 @@ AC_ARG_ENABLE([threads],
 AM_CONDITIONAL([SIXEL_ENABLE_THREADS],
                [test "x$enable_threads" != "xno"])
 
+AC_ARG_ENABLE([amalgamation],
+              [AS_HELP_STRING([--enable-amalgamation],
+                              [enable amalgamation build (default: no)])],
+              [],
+              [enable_amalgamation=no])
+AM_CONDITIONAL([WANT_AMALGAMATION],
+               [test "x$enable_amalgamation" = "xyes"])
+
 AC_ARG_WITH([modeldir],
             [AS_HELP_STRING([--with-modeldir=DIR],
                             [install assessment models under DIR
@@ -2173,6 +2181,13 @@ AC_CONFIG_FILES([Makefile
                  quicklook-extension/Makefile
                  wic/Makefile
                 ])
+
+# Create the amalgamation Makefile only when the feature is requested.
+# This avoids failing when amalgamation/Makefile.in is not present in the
+# source tree.
+AS_IF([test "x$enable_amalgamation" = "xyes"], [
+  AC_CONFIG_FILES([amalgamation/Makefile])
+])
 
 # Generate Ruby constants file from include/sixel.h when Ruby is enabled
 AC_CONFIG_COMMANDS([rubyconstants], [

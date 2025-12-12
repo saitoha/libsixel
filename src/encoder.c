@@ -5579,7 +5579,7 @@ png_target_payload_view(char const *argument)
 }
 
 static void
-normalise_windows_drive_path(char *path)
+encoder_normalise_windows_drive_path(char *path)
 {
 #if defined(_WIN32)
     size_t length;
@@ -5806,7 +5806,7 @@ sixel_encoder_setopt(
                 } else {
                     encoder->png_output_path[0] = '\0';
                 }
-                normalise_windows_drive_path(encoder->png_output_path);
+                encoder_normalise_windows_drive_path(encoder->png_output_path);
             }
         } else {
             encoder->output_is_png = 0;
@@ -8813,8 +8813,9 @@ sixel_encoder_copy_source_frame(
 
 
 #if HAVE_TESTS
+/* Validate legacy constructor and refcounting paths for the encoder. */
 static int
-test1(void)
+encoder_test_create_with_legacy_api(void)
 {
     int nret = EXIT_FAILURE;
     sixel_encoder_t *encoder = NULL;
@@ -8840,8 +8841,12 @@ error:
 }
 
 
+/*
+ * Exercise frame initialization and terminal scroll helper with a tiny
+ * frame.
+ */
 static int
-test2(void)
+encoder_test_scroll_with_frame(void)
 {
     int nret = EXIT_FAILURE;
     SIXELSTATUS status;
@@ -8886,7 +8891,8 @@ test2(void)
         goto error;
     }
 
-    if (sixel_frame_get_loop_no(frame) != 0 || sixel_frame_get_frame_no(frame) != 0) {
+    if (sixel_frame_get_loop_no(frame) != 0 ||
+            sixel_frame_get_frame_no(frame) != 0) {
         is_animation = 1;
     }
 
@@ -8910,8 +8916,9 @@ error:
 }
 
 
+/* Confirm stdin wait helper handles timeout path without errors. */
 static int
-test3(void)
+encoder_test_wait_stdin_timeout(void)
 {
     int nret = EXIT_FAILURE;
     int result;
@@ -8928,8 +8935,9 @@ error:
 }
 
 
+/* Ensure option setter accepts loop and pipe forcing values. */
 static int
-test4(void)
+encoder_test_force_options(void)
 {
     int nret = EXIT_FAILURE;
     sixel_encoder_t *encoder = NULL;
@@ -8969,8 +8977,9 @@ error:
 }
 
 
+/* Validate encoder construction with explicit allocator wiring. */
 static int
-test5(void)
+encoder_test_new_with_allocator(void)
 {
     int nret = EXIT_FAILURE;
     sixel_encoder_t *encoder = NULL;
@@ -9005,11 +9014,11 @@ sixel_encoder_tests_main(void)
     typedef int (* testcase)(void);
 
     static testcase const testcases[] = {
-        test1,
-        test2,
-        test3,
-        test4,
-        test5
+        encoder_test_create_with_legacy_api,
+        encoder_test_scroll_with_frame,
+        encoder_test_wait_stdin_timeout,
+        encoder_test_force_options,
+        encoder_test_new_with_allocator
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
