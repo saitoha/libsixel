@@ -565,12 +565,12 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
                                       context->complexion);
             }
 
-            if (optimize_palette) {
-                if (migration_map[color_index] == 0) {
-                    output_index = *ncolors;
-                    for (n = 0; n < depth; ++n) {
-                        new_palette[output_index * depth + n]
-                            = palette[color_index * depth + n];
+                if (optimize_palette) {
+                    if (migration_map[color_index] == 0) {
+                        output_index = *ncolors;
+                        for (n = 0; n < depth; ++n) {
+                            new_palette[output_index * depth + n]
+                                = palette[color_index * depth + n];
                     }
                     if (palette_float != NULL
                             && new_palette_float != NULL
@@ -585,17 +585,25 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
                         }
                     }
                     ++*ncolors;
-                    migration_map[color_index] = *ncolors;
+                    /*
+                     * Palette entries are capped at SIXEL_PALETTE_MAX (256),
+                     * so storing them in unsigned short is safe.
+                     */
+                    migration_map[color_index] = (unsigned short)(*ncolors);
                 } else {
                     output_index = migration_map[color_index] - 1;
                 }
                 if (absolute_y >= context->output_start) {
-                    context->result[pos] = output_index;
+                    /*
+                     * Palette indices are bounded by SIXEL_PALETTE_MAX and fit
+                     * in sixel_index_t (unsigned char).
+                     */
+                    context->result[pos] = (sixel_index_t)output_index;
                 }
             } else {
                 output_index = color_index;
                 if (absolute_y >= context->output_start) {
-                    context->result[pos] = output_index;
+                    context->result[pos] = (sixel_index_t)output_index;
                 }
             }
 
