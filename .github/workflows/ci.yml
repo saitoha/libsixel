@@ -301,6 +301,13 @@ jobs:
             fi
           fi
 
+          trap 'status=$?; if [ "$status" -ne 0 ] && \
+            [ -f /var/db/pkgin/pkg_install-err.log ]; then \
+            echo "pkg_install error log:" >&2; \
+            cat /var/db/pkgin/pkg_install-err.log >&2; \
+            cp /var/db/pkgin/pkg_install-err.log pkg_install-err.log || true; \
+          fi' EXIT
+
           ${pkg_prefix:+$pkg_prefix }pkgin -y update
           ${pkg_prefix:+$pkg_prefix }pkgin -y install \
             gmake \
@@ -308,6 +315,14 @@ jobs:
             png \
             jpeg \
             curl
+
+    - name: Upload pkg_install log (Autotools NetBSD)
+      if: ${{ failure() && matrix.platform == 'netbsd' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: pkg_install-log-autotools-${{ matrix.label }}
+        path: pkg_install-err.log
+        if-no-files-found: ignore
 
     - name: Install dependencies (OpenBSD)
       if: matrix.platform == 'openbsd'
@@ -1708,6 +1723,13 @@ jobs:
               fi
             fi
 
+            trap 'status=$?; if [ "$status" -ne 0 ] && \
+              [ -f /var/db/pkgin/pkg_install-err.log ]; then \
+              echo "pkg_install error log:" >&2; \
+              cat /var/db/pkgin/pkg_install-err.log >&2; \
+              cp /var/db/pkgin/pkg_install-err.log pkg_install-err.log || true; \
+            fi' EXIT
+
             ${pkg_prefix:+$pkg_prefix }pkgin -y update
             ${pkg_prefix:+$pkg_prefix }pkgin -y install \
               pkgconf \
@@ -1758,6 +1780,14 @@ jobs:
           readelf -d builddir/converters/img2sixel | egrep 'RPATH|RUNPATH' || true
           objdump -p builddir/converters/img2sixel | egrep 'RPATH|RUNPATH' || true
           meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
+
+    - name: Upload pkg_install log (Meson NetBSD)
+      if: ${{ failure() && matrix.platform == 'netbsd' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: pkg_install-log-meson-${{ matrix.label }}
+        path: pkg_install-err.log
+        if-no-files-found: ignore
 
     - name: Configure, build, and test (Meson, non-Windows)
       if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os != 'Windows'
