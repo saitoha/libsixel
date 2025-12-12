@@ -90,9 +90,10 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 @WANT_AMALGAMATION_TRUE@am__append_1 = amalgamation
-@HAVE_RUBY_TRUE@am__append_2 = ruby
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_3 = quicklook-extension
-@HAVE_WICCODEC_TRUE@am__append_4 = wic
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_2 = gdk-pixbuf-loader
+@HAVE_RUBY_TRUE@am__append_3 = ruby
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_4 = quicklook-extension
+@HAVE_WICCODEC_TRUE@am__append_5 = wic
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
@@ -303,8 +304,10 @@ ETAGS = @ETAGS@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
 FILECMD = @FILECMD@
+GDK_PIXBUF_BINARY_VERSION = @GDK_PIXBUF_BINARY_VERSION@
 GDK_PIXBUF_CFLAGS = @GDK_PIXBUF_CFLAGS@
 GDK_PIXBUF_LIBS = @GDK_PIXBUF_LIBS@
+GDK_PIXBUF_MODULEDIR = @GDK_PIXBUF_MODULEDIR@
 GD_CFLAGS = @GD_CFLAGS@
 GD_LIBS = @GD_LIBS@
 GREP = @GREP@
@@ -464,9 +467,20 @@ zshcompletiondir = @zshcompletiondir@
 #
 SUBDIRS = include src converters assessment tools tests python \
 	$(am__append_1) $(am__append_2) $(am__append_3) \
-	$(am__append_4)
-DIST_SUBDIRS = include src converters assessment tools tests python ruby wic \
-        quicklook-extension amalgamation
+	$(am__append_4) $(am__append_5)
+DIST_SUBDIRS = \
+        include \
+        src \
+        converters \
+        assessment \
+        tools \
+        tests \
+        python \
+        ruby \
+        wic \
+        gdk-pixbuf-loader \
+        quicklook-extension \
+        amalgamation
 
 
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.
