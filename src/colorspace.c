@@ -41,7 +41,18 @@
 # include "threadpool.h"
 #endif
 #include "compat_stub.h"
-#include "sixel_atomic.h"
+
+#if SIXEL_ENABLE_THREADS
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) && \
+        !defined(WITH_WINPTHREAD)
+#  define SIXEL_COLORSPACE_USE_WIN32_ONCE 1
+#  include <windows.h>
+static INIT_ONCE sixel_colorspace_once = INIT_ONCE_STATIC_INIT;
+# else
+#  include <pthread.h>
+static pthread_once_t sixel_colorspace_once = PTHREAD_ONCE_INIT;
+# endif
+#endif
 
 #if defined(HAVE_IMMINTRIN_H) && \
     (defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
@@ -247,12 +258,6 @@ static double smptec_to_linear_double_lut[SIXEL_COLORSPACE_LUT_SIZE];
 static unsigned char linear_to_smptec_lut[SIXEL_COLORSPACE_LUT_SIZE];
 static float sixel_cbrt_lut[SIXEL_CBR_LUT_SIZE];
 static int tables_initialized = 0;
-/*
- * Gate LUT construction so concurrent callers do not rebuild the immutable
- * tables.  The guard doubles as a rendezvous point for late entrants that
- * arrived while another thread was still populating the buffers.
- */
-static sixel_atomic_u32_t sixel_colorspace_table_guard = 0U;
 
 static inline double
 sixel_clamp_unit(double value)
@@ -4162,7 +4167,7 @@ sixel_yuv_to_linear_float_simd(float *pixels,
 }
 
 static void
-sixel_colorspace_init_tables(void)
+sixel_colorspace_build_tables(void)
 {
     int i;
     double gamma_value;
@@ -4171,31 +4176,10 @@ sixel_colorspace_init_tables(void)
     double smptec_value;
     double smptec_linear;
     double cbrt_input;
-#if SIXEL_ENABLE_THREADS
-    unsigned int guard_previous;
-#endif
 
     if (tables_initialized) {
         return;
     }
-
-#if SIXEL_ENABLE_THREADS
-    guard_previous = sixel_atomic_fetch_add_u32(&sixel_colorspace_table_guard,
-                                                1U);
-    if (guard_previous > 0U) {
-        /*
-         * Another thread is already building the shared tables.  Spin until
-         * the initialization flag flips, then exit early so we reuse the
-         * completed buffers instead of duplicating the work.
-         */
-        while (!tables_initialized) {
-            sixel_fence_acquire();
-        }
-        sixel_atomic_fetch_sub_u32(&sixel_colorspace_table_guard, 1U);
-        sixel_fence_acquire();
-        return;
-    }
-#endif
 
     /*
      * Use the canonical sRGB transfer functions for the LUT to avoid
@@ -4260,16 +4244,61 @@ sixel_colorspace_init_tables(void)
     }
 #endif
 
-#if SIXEL_ENABLE_THREADS
-    /*
-     * Publish the populated tables before toggling the shared ready flag so
-     * waiting threads see consistent content once the spin loop exits.
-     */
-    sixel_fence_release();
-#endif
     tables_initialized = 1;
+}
+
+#if SIXEL_ENABLE_THREADS && defined(SIXEL_COLORSPACE_USE_WIN32_ONCE)
+static BOOL CALLBACK
+sixel_colorspace_build_once(PINIT_ONCE init_once,
+                            PVOID parameter,
+                            PVOID *context)
+{
+    (void)init_once;
+    (void)parameter;
+    (void)context;
+
+    sixel_colorspace_build_tables();
+
+    return TRUE;
+}
+#endif
+
+static void
+sixel_colorspace_init_tables(void)
+{
 #if SIXEL_ENABLE_THREADS
-    sixel_atomic_fetch_sub_u32(&sixel_colorspace_table_guard, 1U);
+# if defined(SIXEL_COLORSPACE_USE_WIN32_ONCE)
+    BOOL executed;
+
+    executed = InitOnceExecuteOnce(&sixel_colorspace_once,
+                                   sixel_colorspace_build_once,
+                                   NULL,
+                                   NULL);
+    if (executed == FALSE) {
+        /*
+         * InitOnce failure keeps the code path live so fall back to a
+         * direct build that mirrors the single-threaded path.  Table
+         * contents remain immutable after completion.
+         */
+        sixel_colorspace_build_tables();
+    }
+# else
+    int status;
+
+    status = pthread_once(&sixel_colorspace_once,
+                          sixel_colorspace_build_tables);
+    if (status != 0) {
+        /*
+         * Defer to the plain builder when pthread_once reports an error so
+         * callers still receive the precomputed tables.  pthread_once only
+         * invokes the callback once per process even if multiple threads
+         * race the entry point.
+         */
+        sixel_colorspace_build_tables();
+    }
+# endif
+#else
+    sixel_colorspace_build_tables();
 #endif
 }
 
