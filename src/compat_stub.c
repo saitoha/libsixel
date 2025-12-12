@@ -79,6 +79,7 @@ char *realpath(const char *path, char *resolved_path);
 #if defined(_WIN32)
 # include <io.h>
 # include <direct.h>
+# include <windows.h>
 #endif
 
 #if defined(_MSC_VER)
@@ -593,6 +594,76 @@ sixel_compat_is_console(int fd)
 
     return 0;
 # endif
+#endif
+}
+
+
+/*
+ * Portable gettimeofday() wrapper used by timer helpers.
+ * +----------------------+------------------------------------------+
+ * | Platform             | Strategy                                 |
+ * +----------------------+------------------------------------------+
+ * | Windows              | FILETIME converted to Unix epoch         |
+ * | POSIX gettimeofday() | Delegate to libc                         |
+ * | clock_gettime() only | CLOCK_REALTIME mapped into struct timeval|
+ * | time() fallback      | Second resolution when nothing else      |
+ * +----------------------+------------------------------------------+
+ */
+SIXEL_COMPAT_API int
+sixel_compat_gettimeofday(struct timeval *tv, void *tz)
+{
+    int status;
+#if defined(_WIN32)
+    FILETIME file_time;
+    ULARGE_INTEGER ticks;
+    const ULONGLONG epoch_offset = 116444736000000000ULL;
+#elif defined(HAVE_GETTIMEOFDAY)
+    /* storage not needed for this branch */
+#elif defined(HAVE_CLOCK_GETTIME)
+    struct timespec ts;
+#else
+    time_t seconds;
+#endif
+
+    status = (-1);
+    if (tv == NULL) {
+        errno = EINVAL;
+        return status;
+    }
+
+#if defined(_WIN32)
+    GetSystemTimeAsFileTime(&file_time);
+    ticks.LowPart = file_time.dwLowDateTime;
+    ticks.HighPart = file_time.dwHighDateTime;
+    if (ticks.QuadPart < epoch_offset) {
+        errno = EINVAL;
+        return status;
+    }
+    ticks.QuadPart -= epoch_offset;
+    tv->tv_sec = (long)(ticks.QuadPart / 10000000ULL);
+    tv->tv_usec = (long)((ticks.QuadPart / 10ULL) % 1000000ULL);
+    (void)tz;
+    return 0;
+#elif defined(HAVE_GETTIMEOFDAY)
+    status = gettimeofday(tv, (struct timezone *)tz);
+    return status;
+#elif defined(HAVE_CLOCK_GETTIME)
+    if (clock_gettime(CLOCK_REALTIME, &ts) != 0) {
+        return status;
+    }
+    tv->tv_sec = (long)ts.tv_sec;
+    tv->tv_usec = (long)(ts.tv_nsec / 1000L);
+    (void)tz;
+    return 0;
+#else
+    seconds = time(NULL);
+    if (seconds == (time_t)(-1)) {
+        return status;
+    }
+    tv->tv_sec = (long)seconds;
+    tv->tv_usec = 0L;
+    (void)tz;
+    return 0;
 #endif
 }
 
