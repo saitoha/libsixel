@@ -44,9 +44,8 @@ AM_TESTS_ENVIRONMENT += TOP_BUILDDIR='$(abs_top_builddir)'; export TOP_BUILDDIR;
 TEST_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/build-aux/tap-driver.sh
 AM_TEST_LOG_DRIVER_FLAGS = --comments
 LOG_COMPILER = $(builddir)/tools/with-timeout.sh
-# Keep autotools test timeout aligned with meson runs (seconds per file).
-AM_LOG_FLAGS = --timeout=$(AM_TEST_TIMEOUT)
 AM_TEST_TIMEOUT = 300
+AM_LOG_FLAGS = --timeout=$(AM_TEST_TIMEOUT)
 
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
 	     lsqa_regression.sh \

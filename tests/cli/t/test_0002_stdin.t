@@ -33,7 +33,7 @@ echo "1..1"
 
 output_file=$(make_temp_file "${tmp_dir}" "capture.stdin")
 
-if echo -n a | run_img2sixel >"${output_file}" 2>>"${log_file}"; then
+if echo a | run_img2sixel >"${output_file}" 2>>"${log_file}"; then
     :
 fi
 
