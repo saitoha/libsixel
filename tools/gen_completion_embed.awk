@@ -11,6 +11,9 @@
 #   1. Path to the bash completion file
 #   2. Path to the zsh completion file
 # It writes the resulting header to STDOUT so that callers can redirect it.
+#
+# Long literals are broken into 256-byte slices to avoid triggering
+# -Woverlength-strings on strict ISO C99 compilers.
 
 function file_size(path,    cmd, size_str, status)
 {
@@ -33,6 +36,19 @@ function escape_text(text)
         gsub(/\\/, "\\\\", text)
         gsub(/"/, "\\\"", text)
         return text
+}
+
+function emit_literal_chunks(text,
+    chunk_limit, start, chunk)
+{
+        chunk_limit = 256;
+        start = 1;
+
+        while (start <= length(text)) {
+                chunk = substr(text, start, chunk_limit);
+                printf "\"%s\"\n", chunk;
+                start += chunk_limit;
+        }
 }
 
 function emit_lines(path, symbol,
@@ -63,12 +79,11 @@ function emit_lines(path, symbol,
         for (idx = 1; idx <= line_count; idx++) {
                 text = escape_text(lines[idx])
                 if (idx < line_count) {
-                        printf "\"%s\\n\"\n", text
+                        text = text "\\n"
                 } else if (has_trailing_newline) {
-                        printf "\"%s\\n\"\n", text
-                } else {
-                        printf "\"%s\"\n", text
+                        text = text "\\n"
                 }
+                emit_literal_chunks(text)
                 delete lines[idx]
         }
 
