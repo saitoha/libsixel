@@ -435,27 +435,29 @@ static void
 img2sixel_log_errno(const char *fmt, ...)
 {
     va_list ap;
+    int written;
     char errbuf[128];
+    char message[512];
+
+    written = 0;
+    /*
+     * Format into a fixed buffer so that compilers never treat the variadic
+     * format as unknown and warn about non-literal usage.
+     */
+    memset(message, 0, sizeof(message));
 
     va_start(ap, fmt);
-#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
-# if defined(__clang__)
-#  pragma clang diagnostic push
-#  pragma clang diagnostic ignored "-Wformat-nonliteral"
-# elif defined(__GNUC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wformat-nonliteral"
-# endif
-#endif
-    vfprintf(stderr, fmt, ap);
-#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
-# if defined(__clang__)
-#  pragma clang diagnostic pop
-# elif defined(__GNUC__)
-#  pragma GCC diagnostic pop
-# endif
-#endif
+    written = vsnprintf(message, sizeof(message), fmt, ap);
     va_end(ap);
+
+    if (written < 0) {
+        fputs("log formatting failed", stderr);
+    } else if ((size_t)written >= sizeof(message)) {
+        fputs(message, stderr);
+        fputs("...", stderr);
+    } else {
+        fputs(message, stderr);
+    }
     if (errno != 0) {
         if (sixel_compat_strerror(errno, errbuf, sizeof(errbuf)) != NULL) {
             fprintf(stderr, ": %s", errbuf);
