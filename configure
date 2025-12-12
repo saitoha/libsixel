@@ -19071,6 +19071,12 @@ then :
   printf "%s\n" "#define HAVE_ISATTY 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "_sopen_s" "ac_cv_func__sopen_s"
+if test "x$ac_cv_func__sopen_s" = xyes
+then :
+  printf "%s\n" "#define HAVE__SOPEN_S 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "_open" "ac_cv_func__open"
 if test "x$ac_cv_func__open" = xyes
 then :
@@ -19087,6 +19093,12 @@ ac_fn_c_check_func "$LINENO" "_close" "ac_cv_func__close"
 if test "x$ac_cv_func__close" = xyes
 then :
   printf "%s\n" "#define HAVE__CLOSE 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "open" "ac_cv_func_open"
+if test "x$ac_cv_func_open" = xyes
+then :
+  printf "%s\n" "#define HAVE_OPEN 1" >>confdefs.h
 
 fi
 ac_fn_c_check_func "$LINENO" "sscanf_s" "ac_cv_func_sscanf_s"
@@ -19195,6 +19207,20 @@ ac_fn_c_check_func "$LINENO" "gettimeofday" "ac_cv_func_gettimeofday"
 if test "x$ac_cv_func_gettimeofday" = xyes
 then :
   printf "%s\n" "#define HAVE_GETTIMEOFDAY 1" >>confdefs.h
+
+fi
+
+ac_fn_c_check_func "$LINENO" "_sopen_s" "ac_cv_func__sopen_s"
+if test "x$ac_cv_func__sopen_s" = xyes
+then :
+  printf "%s\n" "#define HAVE__SOPEN_S 1" >>confdefs.h
+
+fi
+
+ac_fn_c_check_func "$LINENO" "open" "ac_cv_func_open"
+if test "x$ac_cv_func_open" = xyes
+then :
+  printf "%s\n" "#define HAVE_OPEN 1" >>confdefs.h
 
 fi
 

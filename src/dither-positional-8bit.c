@@ -148,8 +148,14 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
 
                     val = context->pixels[pos * context->depth + d]
                         + (int)(f_mask(x, y, d) * 32.0f);
-                    context->scratch[d] = val < 0 ? 0
-                                       : val > 255 ? 255 : val;
+                    /*
+                     * The clamp keeps values within the byte range so the
+                     * cast to unsigned char is lossless and silences MSVC
+                     * C4244 diagnostics.
+                     */
+                    context->scratch[d] = (unsigned char)(val < 0 ? 0
+                                                      : val > 255 ? 255
+                                                                     : val);
                 }
                 if (use_fast_lut) {
                     color_index = sixel_lut_map_pixel(fast_lut,
@@ -243,8 +249,14 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
 
                     val = context->pixels[pos * context->depth + d]
                         + (int)(f_mask(x, y, d) * 32.0f);
-                    context->scratch[d] = val < 0 ? 0
-                                       : val > 255 ? 255 : val;
+                    /*
+                     * The clamp keeps values within the byte range so the
+                     * cast to unsigned char is lossless and silences MSVC
+                     * C4244 diagnostics.
+                     */
+                    context->scratch[d] = (unsigned char)(val < 0 ? 0
+                                                      : val > 255 ? 255
+                                                                     : val);
                 }
                 if (absolute_y >= context->output_start) {
                     /*

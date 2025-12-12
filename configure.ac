@@ -848,12 +848,14 @@ AC_CHECK_FUNCS([assert \
                 _strerror_r \
                 _isatty \
                 isatty \
-                _open \
-                _write \
-                _close \
-                sscanf_s \
-                strncmp \
-                ldiv \
+                 _sopen_s \
+                 _open \
+                 _write \
+                 _close \
+                 open \
+                 sscanf_s \
+                 strncmp \
+                 ldiv \
                 floor \
                 pow \
                 select \
@@ -869,6 +871,11 @@ AC_CHECK_FUNCS([assert \
                 strtol \
                 tmpnam \
                 gettimeofday])
+AC_CHECK_FUNCS([_sopen_s], [], [], [[#include <io.h>
+#include <share.h>]])
+AC_CHECK_FUNCS([open], [], [], [[#include <fcntl.h>
+#include <sys/types.h>
+#include <sys/stat.h>]])
 
 case "${host_os}" in
   mingw*)

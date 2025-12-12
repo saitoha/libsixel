@@ -2119,8 +2119,8 @@ sixel_lookup_vpte_float32_configure(sixel_lookup_vpte_float32_t *vpte,
         sixel_lookup_vpte_shared_ref(vpte->shared);
     }
 
-    if (SIXEL_VPTE_TLS_AVAILABLE == 0
-            && sixel_lookup_parallel_dither_active() != 0) {
+#if SIXEL_VPTE_TLS_AVAILABLE == 0
+    if (sixel_lookup_parallel_dither_active() != 0) {
         /*
          * Thread-local storage is not supported and parallel dithering is
          * active.  Disable the VPTE cache to avoid sharing a single cache
@@ -2128,6 +2128,7 @@ sixel_lookup_vpte_float32_configure(sixel_lookup_vpte_float32_t *vpte,
          */
         use_cache = 0;
     }
+#endif
 
     vpte->use_cache = use_cache;
 

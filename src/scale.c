@@ -791,12 +791,13 @@ scale_horizontal_row(
 
         if (dstw >= srcw) {
             center_x = (w + 0.5) * srcw / dstw;
-            x_first = MAX(center_x - n, 0);
-            x_last = MIN(center_x + n, srcw - 1);
+            x_first = MAX((int)(center_x - n), 0);
+            x_last = MIN((int)(center_x + n), srcw - 1);
         } else {
             center_x = w + 0.5;
-            x_first = MAX(floor((center_x - n) * srcw / dstw), 0);
-            x_last = MIN(floor((center_x + n) * srcw / dstw), srcw - 1);
+            x_first = MAX((int)floor((center_x - n) * srcw / dstw), 0);
+            x_last = MIN((int)floor((center_x + n) * srcw / dstw),
+                         srcw - 1);
         }
 
 #if defined(SIXEL_USE_AVX512)
@@ -1045,12 +1046,13 @@ scale_vertical_row(
 
         if (dsth >= srch) {
             center_y = (h + 0.5) * srch / dsth;
-            y_first = MAX(center_y - n, 0);
-            y_last = MIN(center_y + n, srch - 1);
+            y_first = MAX((int)(center_y - n), 0);
+            y_last = MIN((int)(center_y + n), srch - 1);
         } else {
             center_y = h + 0.5;
-            y_first = MAX(floor((center_y - n) * srch / dsth), 0);
-            y_last = MIN(floor((center_y + n) * srch / dsth), srch - 1);
+            y_first = MAX((int)floor((center_y - n) * srch / dsth), 0);
+            y_last = MIN((int)floor((center_y + n) * srch / dsth),
+                         srch - 1);
         }
 
 #if defined(SIXEL_USE_AVX512)
@@ -1973,16 +1975,16 @@ scale_with_resampling_float32(
                 offsets[i] = 0.0;
             }
 
-            if (dstw >= srcw) {
-                center_x = (w + 0.5) * srcw / dstw;
-                x_first = MAX(center_x - n, 0);
-                x_last = MIN(center_x + n, srcw - 1);
-            } else {
-                center_x = w + 0.5;
-                x_first = MAX(floor((center_x - n) * srcw / dstw), 0);
-                x_last = MIN(floor((center_x + n) * srcw / dstw),
-                             srcw - 1);
-            }
+        if (dstw >= srcw) {
+            center_x = (w + 0.5) * srcw / dstw;
+            x_first = MAX((int)(center_x - n), 0);
+            x_last = MIN((int)(center_x + n), srcw - 1);
+        } else {
+            center_x = w + 0.5;
+            x_first = MAX((int)floor((center_x - n) * srcw / dstw), 0);
+            x_last = MIN((int)floor((center_x + n) * srcw / dstw),
+                         srcw - 1);
+        }
 
 #if defined(SIXEL_USE_AVX512)
             if (depth == 3 &&
@@ -2152,12 +2154,12 @@ scale_with_resampling_float32(
 
             if (dsth >= srch) {
                 center_y = (h + 0.5) * srch / dsth;
-                y_first = MAX(center_y - n, 0);
-                y_last = MIN(center_y + n, srch - 1);
+                y_first = MAX((int)(center_y - n), 0);
+                y_last = MIN((int)(center_y + n), srch - 1);
             } else {
                 center_y = h + 0.5;
-                y_first = MAX(floor((center_y - n) * srch / dsth), 0);
-                y_last = MIN(floor((center_y + n) * srch / dsth),
+                y_first = MAX((int)floor((center_y - n) * srch / dsth), 0);
+                y_last = MIN((int)floor((center_y + n) * srch / dsth),
                              srch - 1);
             }
 

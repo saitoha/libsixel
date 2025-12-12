@@ -73,6 +73,14 @@
 #include "timer.h"
 
 /*
+ * K-means testcases live in palette-kmeans.c; declare them here so the
+ * unified test driver can exercise both engines without importing the
+ * entire implementation header.
+ */
+int palette_test_kmeans_float32_two_colors(void);
+int palette_test_kmeans_float32_merge_scaling(void);
+
+/*
  * Tuple table primitives live exclusively inside the Heckbert implementation.
  * Exposing them here avoids leaking histogram internals into palette.c.
  */
@@ -2770,14 +2778,6 @@ sixel_palette_tests_main(void)
     int nret = EXIT_FAILURE;
     size_t i;
     typedef int (*palette_testcase)(void);
-
-    /*
-     * K-means testcases live in palette-kmeans.c; declare them here so the
-     * unified test driver can exercise both engines without importing the
-     * entire implementation header.
-     */
-    int palette_test_kmeans_float32_two_colors(void);
-    int palette_test_kmeans_float32_merge_scaling(void);
 
     static palette_testcase const testcases[] = {
         palette_test_copy_entries_roundtrip,

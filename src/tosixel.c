@@ -2055,15 +2055,16 @@ sixel_put_flash(sixel_output_t *const output)
     }
 
     if (output->has_gri_arg_limit) {  /* VT240 Max 255 ? */
-        while (output->save_count > 255) {
-            /* argument of DECGRI('!') is limitted to 255 in real VT */
-            sixel_puts(output->buffer + output->pos, "!255", 4);
-            sixel_advance(output, 4);
-            sixel_putc(output->buffer + output->pos, output->save_pixel);
-            sixel_advance(output, 1);
-            output->save_count -= 255;
+            while (output->save_count > 255) {
+                /* argument of DECGRI('!') is limitted to 255 in real VT */
+                sixel_puts(output->buffer + output->pos, "!255", 4);
+                sixel_advance(output, 4);
+                sixel_putc(output->buffer + output->pos,
+                           (unsigned char)output->save_pixel);
+                sixel_advance(output, 1);
+                output->save_count -= 255;
+            }
         }
-    }
 
     if (output->save_count > 3) {
         /* DECGRI Graphics Repeat Introducer ! Pn Ch */
@@ -2071,7 +2072,8 @@ sixel_put_flash(sixel_output_t *const output)
         sixel_advance(output, 1);
         nwrite = sixel_putnum((char *)output->buffer + output->pos, output->save_count);
         sixel_advance(output, nwrite);
-        sixel_putc(output->buffer + output->pos, output->save_pixel);
+        sixel_putc(output->buffer + output->pos,
+                   (unsigned char)output->save_pixel);
         sixel_advance(output, 1);
     } else {
         sixel_output_emit_literal(output,
@@ -4823,6 +4825,7 @@ sixel_encode_highcolor(
     int nextpal;
     int threshold;
     int pix;
+    unsigned char mapped_index;
     int orig_height;
     unsigned char *pal;
     unsigned char *palette_entries = NULL;
@@ -4927,7 +4930,15 @@ next:
                                    ((pal[1] & 0xf8) << 2) |
                                    ((pal[2] >> 3) & 0x1f)] = 0;
                         }
-                        *dst = rgb2pal[pix] = nextpal++;
+                        /*
+                         * Palette indices never exceed 255 in this loop, so
+                         * the explicit cast keeps MSVC quiet while preserving
+                         * the existing behavior.
+                         */
+                        mapped_index = (unsigned char)nextpal;
+                        *dst = mapped_index;
+                        rgb2pal[pix] = mapped_index;
+                        nextpal++;
                         *mptr = 1;
                         palstate[*dst] = PALETTE_CHANGE;
                         palhitcount[*dst] = 1;
