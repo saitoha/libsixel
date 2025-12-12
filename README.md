@@ -667,7 +667,7 @@ cell corners.  The following environment variables tune the grid:
 * `SIXEL_DITHER_LOOKUP_POLICY` sets the LUT policy (auto, 5bit, 6bit, none,
   certlut, or vpte).
 * `SIXEL_LOOKUP_VPTE_RESOLUTION` sets the grid resolution (64, 128, 256;
-  default 128).
+  default 64).
 * `SIXEL_LOOKUP_VPTE_REFINE` enables corner refinement on boundary voxels
   (0 or 1; default 1).
 * `SIXEL_LOOKUP_VPTE_USE_DIST2` controls whether boundary safety checks rely
@@ -686,10 +686,11 @@ cell corners.  The following environment variables tune the grid:
 * `SIXEL_LOOKUP_6BIT_SHARED_INSTANCE` controls whether the 6bit dense LUT is
   shared across workers (0 or 1; default 1 to reuse the cache without locks).
 * `SIXEL_VPTE_TILE_XY` sets the tile width/height used by the parallel EDT
-  passes (default 8; values are clamped to the image size and fall back to
-  8 on invalid input).
+  passes (defaults now adapt to palette complexity; values are clamped to
+  the image size and fall back to the adaptive choice on invalid input).
 * `SIXEL_VPTE_TILE_DEPTH` sets the tile depth (z span) for the EDT passes
-  (default 8; clamped the same way as `SIXEL_VPTE_TILE_XY`).
+  (defaults track the adaptive `SIXEL_VPTE_TILE_XY` decision and are clamped
+  the same way).
 * `SIXEL_VPTE_FIRST_TOUCH` enables tile-wise zeroing of the VPTE grid
   before the EDT so that NUMA systems can place pages on the thread that
   will use them (0 or 1; default 0 so behaviour is unchanged unless opted
