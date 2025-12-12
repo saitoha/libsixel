@@ -58,6 +58,12 @@
 #if HAVE_UNISTD_H
 # include <unistd.h>
 #endif
+#if defined(_WIN32)
+# if !defined(WIN32_LEAN_AND_MEAN)
+#  define WIN32_LEAN_AND_MEAN 1
+# endif
+# include <windows.h>
+#endif
 
 #if defined(_WIN32)
 # include <io.h>
@@ -519,6 +525,55 @@ sixel_compat_isatty(int fd)
     return _isatty(fd);
 #else
     return isatty(fd);
+#endif
+}
+
+
+/*
+ * Console detection helper
+ *
+ * Windows reports the NUL device as a TTY, so callers that need an
+ * interactive console must verify the handle against GetConsoleMode().
+ * Centralizing the probe keeps feature-macro gated CRT calls in one
+ * translation unit for the unity build.
+ */
+SIXEL_COMPAT_API int
+sixel_compat_is_console(int fd)
+{
+#if defined(_WIN32)
+    intptr_t handle;
+    DWORD mode;
+
+    if (fd < 0) {
+        return 0;
+    }
+
+    if (!sixel_compat_isatty(fd)) {
+        return 0;
+    }
+
+    handle = _get_osfhandle(fd);
+    if (handle == (intptr_t)(-1)) {
+        return 0;
+    }
+
+    if (GetConsoleMode((HANDLE)handle, &mode) != 0) {
+        return 1;
+    }
+
+    return 0;
+#else
+# if HAVE_ISATTY
+    if (fd < 0) {
+        return 0;
+    }
+
+    return sixel_compat_isatty(fd);
+# else
+    (void)fd;
+
+    return 0;
+# endif
 #endif
 }
 
