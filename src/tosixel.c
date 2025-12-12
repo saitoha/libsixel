@@ -2020,7 +2020,11 @@ sixel_putnum_impl(char *buffer, long value, int pos)
     if (r.quot > 0) {
         pos = sixel_putnum_impl(buffer, r.quot, pos);
     }
-    *(buffer + pos) = '0' + r.rem;
+    /*
+     * r.rem is guaranteed to be in [0, 9] because the divisor is 10, so the
+     * explicit cast documents the safe narrowing from long to char.
+     */
+    *(buffer + pos) = (char)('0' + r.rem);
     return pos + 1;
 }
 #endif  /* HAVE_LDIV */
@@ -3798,7 +3802,7 @@ sixel_encode_dither(
     int palette_float_pixelformat;
     int output_float_pixelformat;
     int pipeline_active;
-    int pipeline_threads;
+    int pipeline_threads = 0;  /* set to a deterministic default before use */
     int pipeline_nbands;
     sixel_parallel_dither_config_t dither_parallel;
     char const *band_env_text;
@@ -4121,6 +4125,24 @@ end:
     return status;
 }
 
+/*
+ * Normalize a channel value into the range representable by an unsigned char
+ * and make the narrowing explicit for MSVC.  Negative errors are clamped to
+ * zero and large positive values are capped at 0xff.
+ */
+static unsigned char
+sixel_clamp_channel_to_byte(int value)
+{
+    if (value < 0) {
+        return 0;
+    }
+    if (value > 0xff) {
+        return 0xff;
+    }
+
+    return (unsigned char)value;
+}
+
 static void
 dither_func_none(unsigned char *data, int width)
 {
@@ -4144,21 +4166,21 @@ dither_func_fs(unsigned char *data, int width)
     r = (data[3 + 0] + (error_r * 5 >> 4));
     g = (data[3 + 1] + (error_g * 5 >> 4));
     b = (data[3 + 2] + (error_b * 5 >> 4));
-    data[3 + 0] = r > 0xff ? 0xff: r;
-    data[3 + 1] = g > 0xff ? 0xff: g;
-    data[3 + 2] = b > 0xff ? 0xff: b;
+    data[3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[width * 3 - 3 + 0] + (error_r * 3 >> 4);
     g = data[width * 3 - 3 + 1] + (error_g * 3 >> 4);
     b = data[width * 3 - 3 + 2] + (error_b * 3 >> 4);
-    data[width * 3 - 3 + 0] = r > 0xff ? 0xff: r;
-    data[width * 3 - 3 + 1] = g > 0xff ? 0xff: g;
-    data[width * 3 - 3 + 2] = b > 0xff ? 0xff: b;
+    data[width * 3 - 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[width * 3 - 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[width * 3 - 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[width * 3 + 0] + (error_r * 5 >> 4);
     g = data[width * 3 + 1] + (error_g * 5 >> 4);
     b = data[width * 3 + 2] + (error_b * 5 >> 4);
-    data[width * 3 + 0] = r > 0xff ? 0xff: r;
-    data[width * 3 + 1] = g > 0xff ? 0xff: g;
-    data[width * 3 + 2] = b > 0xff ? 0xff: b;
+    data[width * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[width * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[width * 3 + 2] = sixel_clamp_channel_to_byte(b);
 }
 
 
@@ -4182,39 +4204,39 @@ dither_func_atkinson(unsigned char *data, int width)
     r = data[(width * 0 + 1) * 3 + 0] + (error_r >> 3);
     g = data[(width * 0 + 1) * 3 + 1] + (error_g >> 3);
     b = data[(width * 0 + 1) * 3 + 2] + (error_b >> 3);
-    data[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 0 + 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 0 + 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 0 + 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 0 + 2) * 3 + 0] + (error_r >> 3);
     g = data[(width * 0 + 2) * 3 + 1] + (error_g >> 3);
     b = data[(width * 0 + 2) * 3 + 2] + (error_b >> 3);
-    data[(width * 0 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 0 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 0 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 0 + 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 0 + 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 0 + 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 - 1) * 3 + 0] + (error_r >> 3);
     g = data[(width * 1 - 1) * 3 + 1] + (error_g >> 3);
     b = data[(width * 1 - 1) * 3 + 2] + (error_b >> 3);
-    data[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 - 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 - 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 - 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 + 0) * 3 + 0] + (error_r >> 3);
     g = data[(width * 1 + 0) * 3 + 1] + (error_g >> 3);
     b = data[(width * 1 + 0) * 3 + 2] + (error_b >> 3);
-    data[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 + 0) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 + 0) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 + 0) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = (data[(width * 1 + 1) * 3 + 0] + (error_r >> 3));
     g = (data[(width * 1 + 1) * 3 + 1] + (error_g >> 3));
     b = (data[(width * 1 + 1) * 3 + 2] + (error_b >> 3));
-    data[(width * 1 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 + 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 + 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 + 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = (data[(width * 2 + 0) * 3 + 0] + (error_r >> 3));
     g = (data[(width * 2 + 0) * 3 + 1] + (error_g >> 3));
     b = (data[(width * 2 + 0) * 3 + 2] + (error_b >> 3));
-    data[(width * 2 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 2 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 2 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 2 + 0) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 2 + 0) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 2 + 0) * 3 + 2] = sixel_clamp_channel_to_byte(b);
 }
 
 
@@ -4238,75 +4260,75 @@ dither_func_jajuni(unsigned char *data, int width)
     r = data[(width * 0 + 1) * 3 + 0] + (error_r * 7 / 48);
     g = data[(width * 0 + 1) * 3 + 1] + (error_g * 7 / 48);
     b = data[(width * 0 + 1) * 3 + 2] + (error_b * 7 / 48);
-    data[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 0 + 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 0 + 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 0 + 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 0 + 2) * 3 + 0] + (error_r * 5 / 48);
     g = data[(width * 0 + 2) * 3 + 1] + (error_g * 5 / 48);
     b = data[(width * 0 + 2) * 3 + 2] + (error_b * 5 / 48);
-    data[(width * 0 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 0 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 0 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 0 + 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 0 + 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 0 + 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 - 2) * 3 + 0] + (error_r * 3 / 48);
     g = data[(width * 1 - 2) * 3 + 1] + (error_g * 3 / 48);
     b = data[(width * 1 - 2) * 3 + 2] + (error_b * 3 / 48);
-    data[(width * 1 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 - 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 - 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 - 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 - 1) * 3 + 0] + (error_r * 5 / 48);
     g = data[(width * 1 - 1) * 3 + 1] + (error_g * 5 / 48);
     b = data[(width * 1 - 1) * 3 + 2] + (error_b * 5 / 48);
-    data[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 - 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 - 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 - 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 + 0) * 3 + 0] + (error_r * 7 / 48);
     g = data[(width * 1 + 0) * 3 + 1] + (error_g * 7 / 48);
     b = data[(width * 1 + 0) * 3 + 2] + (error_b * 7 / 48);
-    data[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 + 0) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 + 0) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 + 0) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 + 1) * 3 + 0] + (error_r * 5 / 48);
     g = data[(width * 1 + 1) * 3 + 1] + (error_g * 5 / 48);
     b = data[(width * 1 + 1) * 3 + 2] + (error_b * 5 / 48);
-    data[(width * 1 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 + 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 + 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 + 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 + 2) * 3 + 0] + (error_r * 3 / 48);
     g = data[(width * 1 + 2) * 3 + 1] + (error_g * 3 / 48);
     b = data[(width * 1 + 2) * 3 + 2] + (error_b * 3 / 48);
-    data[(width * 1 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 + 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 + 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 + 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 2 - 2) * 3 + 0] + (error_r * 1 / 48);
     g = data[(width * 2 - 2) * 3 + 1] + (error_g * 1 / 48);
     b = data[(width * 2 - 2) * 3 + 2] + (error_b * 1 / 48);
-    data[(width * 2 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 2 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 2 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 2 - 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 2 - 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 2 - 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 2 - 1) * 3 + 0] + (error_r * 3 / 48);
     g = data[(width * 2 - 1) * 3 + 1] + (error_g * 3 / 48);
     b = data[(width * 2 - 1) * 3 + 2] + (error_b * 3 / 48);
-    data[(width * 2 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 2 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 2 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 2 - 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 2 - 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 2 - 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 2 + 0) * 3 + 0] + (error_r * 5 / 48);
     g = data[(width * 2 + 0) * 3 + 1] + (error_g * 5 / 48);
     b = data[(width * 2 + 0) * 3 + 2] + (error_b * 5 / 48);
-    data[(width * 2 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 2 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 2 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 2 + 0) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 2 + 0) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 2 + 0) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 2 + 1) * 3 + 0] + (error_r * 3 / 48);
     g = data[(width * 2 + 1) * 3 + 1] + (error_g * 3 / 48);
     b = data[(width * 2 + 1) * 3 + 2] + (error_b * 3 / 48);
-    data[(width * 2 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 2 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 2 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 2 + 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 2 + 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 2 + 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 2 + 2) * 3 + 0] + (error_r * 1 / 48);
     g = data[(width * 2 + 2) * 3 + 1] + (error_g * 1 / 48);
     b = data[(width * 2 + 2) * 3 + 2] + (error_b * 1 / 48);
-    data[(width * 2 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 2 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 2 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 2 + 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 2 + 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 2 + 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
 }
 
 
@@ -4330,75 +4352,75 @@ dither_func_stucki(unsigned char *data, int width)
     r = data[(width * 0 + 1) * 3 + 0] + (error_r * 8 / 48);
     g = data[(width * 0 + 1) * 3 + 1] + (error_g * 8 / 48);
     b = data[(width * 0 + 1) * 3 + 2] + (error_b * 8 / 48);
-    data[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 0 + 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 0 + 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 0 + 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 0 + 2) * 3 + 0] + (error_r * 4 / 48);
     g = data[(width * 0 + 2) * 3 + 1] + (error_g * 4 / 48);
     b = data[(width * 0 + 2) * 3 + 2] + (error_b * 4 / 48);
-    data[(width * 0 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 0 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 0 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 0 + 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 0 + 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 0 + 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 - 2) * 3 + 0] + (error_r * 2 / 48);
     g = data[(width * 1 - 2) * 3 + 1] + (error_g * 2 / 48);
     b = data[(width * 1 - 2) * 3 + 2] + (error_b * 2 / 48);
-    data[(width * 1 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 - 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 - 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 - 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 - 1) * 3 + 0] + (error_r * 4 / 48);
     g = data[(width * 1 - 1) * 3 + 1] + (error_g * 4 / 48);
     b = data[(width * 1 - 1) * 3 + 2] + (error_b * 4 / 48);
-    data[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 - 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 - 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 - 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 + 0) * 3 + 0] + (error_r * 8 / 48);
     g = data[(width * 1 + 0) * 3 + 1] + (error_g * 8 / 48);
     b = data[(width * 1 + 0) * 3 + 2] + (error_b * 8 / 48);
-    data[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 + 0) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 + 0) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 + 0) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 + 1) * 3 + 0] + (error_r * 4 / 48);
     g = data[(width * 1 + 1) * 3 + 1] + (error_g * 4 / 48);
     b = data[(width * 1 + 1) * 3 + 2] + (error_b * 4 / 48);
-    data[(width * 1 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 + 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 + 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 + 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 + 2) * 3 + 0] + (error_r * 2 / 48);
     g = data[(width * 1 + 2) * 3 + 1] + (error_g * 2 / 48);
     b = data[(width * 1 + 2) * 3 + 2] + (error_b * 2 / 48);
-    data[(width * 1 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 + 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 + 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 + 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 2 - 2) * 3 + 0] + (error_r * 1 / 48);
     g = data[(width * 2 - 2) * 3 + 1] + (error_g * 1 / 48);
     b = data[(width * 2 - 2) * 3 + 2] + (error_b * 1 / 48);
-    data[(width * 2 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 2 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 2 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 2 - 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 2 - 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 2 - 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 2 - 1) * 3 + 0] + (error_r * 2 / 48);
     g = data[(width * 2 - 1) * 3 + 1] + (error_g * 2 / 48);
     b = data[(width * 2 - 1) * 3 + 2] + (error_b * 2 / 48);
-    data[(width * 2 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 2 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 2 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 2 - 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 2 - 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 2 - 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 2 + 0) * 3 + 0] + (error_r * 4 / 48);
     g = data[(width * 2 + 0) * 3 + 1] + (error_g * 4 / 48);
     b = data[(width * 2 + 0) * 3 + 2] + (error_b * 4 / 48);
-    data[(width * 2 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 2 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 2 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 2 + 0) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 2 + 0) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 2 + 0) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 2 + 1) * 3 + 0] + (error_r * 2 / 48);
     g = data[(width * 2 + 1) * 3 + 1] + (error_g * 2 / 48);
     b = data[(width * 2 + 1) * 3 + 2] + (error_b * 2 / 48);
-    data[(width * 2 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 2 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 2 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 2 + 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 2 + 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 2 + 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 2 + 2) * 3 + 0] + (error_r * 1 / 48);
     g = data[(width * 2 + 2) * 3 + 1] + (error_g * 1 / 48);
     b = data[(width * 2 + 2) * 3 + 2] + (error_b * 1 / 48);
-    data[(width * 2 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 2 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 2 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 2 + 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 2 + 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 2 + 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
 }
 
 
@@ -4421,45 +4443,45 @@ dither_func_burkes(unsigned char *data, int width)
     r = data[(width * 0 + 1) * 3 + 0] + (error_r * 4 / 16);
     g = data[(width * 0 + 1) * 3 + 1] + (error_g * 4 / 16);
     b = data[(width * 0 + 1) * 3 + 2] + (error_b * 4 / 16);
-    data[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 0 + 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 0 + 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 0 + 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 0 + 2) * 3 + 0] + (error_r * 2 / 16);
     g = data[(width * 0 + 2) * 3 + 1] + (error_g * 2 / 16);
     b = data[(width * 0 + 2) * 3 + 2] + (error_b * 2 / 16);
-    data[(width * 0 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 0 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 0 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 0 + 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 0 + 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 0 + 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 - 2) * 3 + 0] + (error_r * 1 / 16);
     g = data[(width * 1 - 2) * 3 + 1] + (error_g * 1 / 16);
     b = data[(width * 1 - 2) * 3 + 2] + (error_b * 1 / 16);
-    data[(width * 1 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 - 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 - 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 - 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 - 1) * 3 + 0] + (error_r * 2 / 16);
     g = data[(width * 1 - 1) * 3 + 1] + (error_g * 2 / 16);
     b = data[(width * 1 - 1) * 3 + 2] + (error_b * 2 / 16);
-    data[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 - 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 - 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 - 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 + 0) * 3 + 0] + (error_r * 4 / 16);
     g = data[(width * 1 + 0) * 3 + 1] + (error_g * 4 / 16);
     b = data[(width * 1 + 0) * 3 + 2] + (error_b * 4 / 16);
-    data[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 + 0) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 + 0) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 + 0) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 + 1) * 3 + 0] + (error_r * 2 / 16);
     g = data[(width * 1 + 1) * 3 + 1] + (error_g * 2 / 16);
     b = data[(width * 1 + 1) * 3 + 2] + (error_b * 2 / 16);
-    data[(width * 1 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 + 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 + 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 + 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 + 2) * 3 + 0] + (error_r * 1 / 16);
     g = data[(width * 1 + 2) * 3 + 1] + (error_g * 1 / 16);
     b = data[(width * 1 + 2) * 3 + 2] + (error_b * 1 / 16);
-    data[(width * 1 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 + 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 + 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 + 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
 }
 
 
@@ -4482,21 +4504,21 @@ dither_func_sierra1(unsigned char *data, int width)
     r = data[(width * 0 + 1) * 3 + 0] + (error_r * 2 / 4);
     g = data[(width * 0 + 1) * 3 + 1] + (error_g * 2 / 4);
     b = data[(width * 0 + 1) * 3 + 2] + (error_b * 2 / 4);
-    data[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 0 + 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 0 + 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 0 + 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 - 1) * 3 + 0] + (error_r * 1 / 4);
     g = data[(width * 1 - 1) * 3 + 1] + (error_g * 1 / 4);
     b = data[(width * 1 - 1) * 3 + 2] + (error_b * 1 / 4);
-    data[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 - 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 - 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 - 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 + 0) * 3 + 0] + (error_r * 1 / 4);
     g = data[(width * 1 + 0) * 3 + 1] + (error_g * 1 / 4);
     b = data[(width * 1 + 0) * 3 + 2] + (error_b * 1 / 4);
-    data[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 + 0) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 + 0) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 + 0) * 3 + 2] = sixel_clamp_channel_to_byte(b);
 }
 
 
@@ -4520,69 +4542,69 @@ dither_func_sierra2(unsigned char *data, int width)
     r = data[(width * 0 + 1) * 3 + 0] + (error_r * 4 / 32);
     g = data[(width * 0 + 1) * 3 + 1] + (error_g * 4 / 32);
     b = data[(width * 0 + 1) * 3 + 2] + (error_b * 4 / 32);
-    data[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 0 + 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 0 + 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 0 + 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 0 + 2) * 3 + 0] + (error_r * 3 / 32);
     g = data[(width * 0 + 2) * 3 + 1] + (error_g * 3 / 32);
     b = data[(width * 0 + 2) * 3 + 2] + (error_b * 3 / 32);
-    data[(width * 0 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 0 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 0 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 0 + 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 0 + 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 0 + 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 - 2) * 3 + 0] + (error_r * 1 / 32);
     g = data[(width * 1 - 2) * 3 + 1] + (error_g * 1 / 32);
     b = data[(width * 1 - 2) * 3 + 2] + (error_b * 1 / 32);
-    data[(width * 1 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 - 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 - 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 - 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 - 1) * 3 + 0] + (error_r * 2 / 32);
     g = data[(width * 1 - 1) * 3 + 1] + (error_g * 2 / 32);
     b = data[(width * 1 - 1) * 3 + 2] + (error_b * 2 / 32);
-    data[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 - 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 - 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 - 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 + 0) * 3 + 0] + (error_r * 3 / 32);
     g = data[(width * 1 + 0) * 3 + 1] + (error_g * 3 / 32);
     b = data[(width * 1 + 0) * 3 + 2] + (error_b * 3 / 32);
-    data[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 + 0) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 + 0) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 + 0) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 + 1) * 3 + 0] + (error_r * 2 / 32);
     g = data[(width * 1 + 1) * 3 + 1] + (error_g * 2 / 32);
     b = data[(width * 1 + 1) * 3 + 2] + (error_b * 2 / 32);
-    data[(width * 1 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 + 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 + 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 + 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 + 2) * 3 + 0] + (error_r * 1 / 32);
     g = data[(width * 1 + 2) * 3 + 1] + (error_g * 1 / 32);
     b = data[(width * 1 + 2) * 3 + 2] + (error_b * 1 / 32);
-    data[(width * 1 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 + 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 + 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 + 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 2 - 1) * 3 + 0] + (error_r * 2 / 32);
     g = data[(width * 2 - 1) * 3 + 1] + (error_g * 2 / 32);
     b = data[(width * 2 - 1) * 3 + 2] + (error_b * 2 / 32);
-    data[(width * 2 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 2 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 2 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 2 - 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 2 - 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 2 - 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 2 + 0) * 3 + 0] + (error_r * 3 / 32);
     g = data[(width * 2 + 0) * 3 + 1] + (error_g * 3 / 32);
     b = data[(width * 2 + 0) * 3 + 2] + (error_b * 3 / 32);
-    data[(width * 2 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 2 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 2 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 2 + 0) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 2 + 0) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 2 + 0) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 2 + 1) * 3 + 0] + (error_r * 2 / 32);
     g = data[(width * 2 + 1) * 3 + 1] + (error_g * 2 / 32);
     b = data[(width * 2 + 1) * 3 + 2] + (error_b * 2 / 32);
-    data[(width * 2 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 2 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 2 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 2 + 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 2 + 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 2 + 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 2 + 2) * 3 + 0] + (error_r * 1 / 32);
     g = data[(width * 2 + 2) * 3 + 1] + (error_g * 1 / 32);
     b = data[(width * 2 + 2) * 3 + 2] + (error_b * 1 / 32);
-    data[(width * 2 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 2 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 2 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 2 + 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 2 + 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 2 + 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
 }
 
 
@@ -4606,63 +4628,63 @@ dither_func_sierra3(unsigned char *data, int width)
     r = data[(width * 0 + 1) * 3 + 0] + (error_r * 5 / 32);
     g = data[(width * 0 + 1) * 3 + 1] + (error_g * 5 / 32);
     b = data[(width * 0 + 1) * 3 + 2] + (error_b * 5 / 32);
-    data[(width * 0 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 0 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 0 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 0 + 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 0 + 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 0 + 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 0 + 2) * 3 + 0] + (error_r * 3 / 32);
     g = data[(width * 0 + 2) * 3 + 1] + (error_g * 3 / 32);
     b = data[(width * 0 + 2) * 3 + 2] + (error_b * 3 / 32);
-    data[(width * 0 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 0 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 0 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 0 + 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 0 + 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 0 + 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 - 2) * 3 + 0] + (error_r * 2 / 32);
     g = data[(width * 1 - 2) * 3 + 1] + (error_g * 2 / 32);
     b = data[(width * 1 - 2) * 3 + 2] + (error_b * 2 / 32);
-    data[(width * 1 - 2) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 - 2) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 - 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 - 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 - 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 - 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 - 1) * 3 + 0] + (error_r * 4 / 32);
     g = data[(width * 1 - 1) * 3 + 1] + (error_g * 4 / 32);
     b = data[(width * 1 - 1) * 3 + 2] + (error_b * 4 / 32);
-    data[(width * 1 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 - 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 - 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 - 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 + 0) * 3 + 0] + (error_r * 5 / 32);
     g = data[(width * 1 + 0) * 3 + 1] + (error_g * 5 / 32);
     b = data[(width * 1 + 0) * 3 + 2] + (error_b * 5 / 32);
-    data[(width * 1 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 + 0) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 + 0) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 + 0) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 + 1) * 3 + 0] + (error_r * 4 / 32);
     g = data[(width * 1 + 1) * 3 + 1] + (error_g * 4 / 32);
     b = data[(width * 1 + 1) * 3 + 2] + (error_b * 4 / 32);
-    data[(width * 1 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 + 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 + 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 + 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 1 + 2) * 3 + 0] + (error_r * 2 / 32);
     g = data[(width * 1 + 2) * 3 + 1] + (error_g * 2 / 32);
     b = data[(width * 1 + 2) * 3 + 2] + (error_b * 2 / 32);
-    data[(width * 1 + 2) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 1 + 2) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 1 + 2) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 1 + 2) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 1 + 2) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 1 + 2) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 2 - 1) * 3 + 0] + (error_r * 2 / 32);
     g = data[(width * 2 - 1) * 3 + 1] + (error_g * 2 / 32);
     b = data[(width * 2 - 1) * 3 + 2] + (error_b * 2 / 32);
-    data[(width * 2 - 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 2 - 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 2 - 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 2 - 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 2 - 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 2 - 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 2 + 0) * 3 + 0] + (error_r * 3 / 32);
     g = data[(width * 2 + 0) * 3 + 1] + (error_g * 3 / 32);
     b = data[(width * 2 + 0) * 3 + 2] + (error_b * 3 / 32);
-    data[(width * 2 + 0) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 2 + 0) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 2 + 0) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 2 + 0) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 2 + 0) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 2 + 0) * 3 + 2] = sixel_clamp_channel_to_byte(b);
     r = data[(width * 2 + 1) * 3 + 0] + (error_r * 2 / 32);
     g = data[(width * 2 + 1) * 3 + 1] + (error_g * 2 / 32);
     b = data[(width * 2 + 1) * 3 + 2] + (error_b * 2 / 32);
-    data[(width * 2 + 1) * 3 + 0] = r > 0xff ? 0xff: r;
-    data[(width * 2 + 1) * 3 + 1] = g > 0xff ? 0xff: g;
-    data[(width * 2 + 1) * 3 + 2] = b > 0xff ? 0xff: b;
+    data[(width * 2 + 1) * 3 + 0] = sixel_clamp_channel_to_byte(r);
+    data[(width * 2 + 1) * 3 + 1] = sixel_clamp_channel_to_byte(g);
+    data[(width * 2 + 1) * 3 + 2] = sixel_clamp_channel_to_byte(b);
 }
 
 
@@ -4676,14 +4698,14 @@ dither_func_a_dither(unsigned char *data, int width, int x, int y)
     (void) width; /* unused */
 
     for (c = 0; c < 3; c ++) {
-        mask = (((x + c * 17) + y * 236) * 119) & 255;
-        mask = ((mask - 128) / 256.0f) ;
+        mask = (float)((((x + c * 17) + y * 236) * 119) & 255);
+        mask = ((mask - 128) / 256.0f);
         value = data[c] + mask;
         if (value < 0) {
             value = 0;
         }
         value = value > 255 ? 255 : value;
-        data[c] = value;
+        data[c] = sixel_clamp_channel_to_byte((int)value);
     }
 }
 
@@ -4698,14 +4720,14 @@ dither_func_x_dither(unsigned char *data, int width, int x, int y)
     (void) width;  /* unused */
 
     for (c = 0; c < 3; c ++) {
-        mask = (((x + c * 17) ^ y * 236) * 1234) & 511;
-        mask = ((mask - 128) / 512.0f) ;
+        mask = (float)((((x + c * 17) ^ (y * 236)) * 1234) & 511);
+        mask = ((mask - 128) / 512.0f);
         value = data[c] + mask;
         if (value < 0) {
             value = 0;
         }
         value = value > 255 ? 255 : value;
-        data[c] = value;
+        data[c] = sixel_clamp_channel_to_byte((int)value);
     }
 }
 
