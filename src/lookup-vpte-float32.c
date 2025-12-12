@@ -281,19 +281,43 @@ sixel_lookup_vpte_validate_resolution(int resolution)
 }
 
 /*
+ * Prefer the new SIXEL_LOOKUP_* knobs while still honoring the previous
+ * SIXEL_VPTE_* names for compatibility.
+ */
+static char const *
+sixel_lookup_vpte_getenv(char const *primary, char const *legacy)
+{
+    char const *value;
+
+    value = sixel_compat_getenv(primary);
+    if (value != NULL && value[0] != '\0') {
+        return value;
+    }
+
+    value = sixel_compat_getenv(legacy);
+    if (value != NULL && value[0] != '\0') {
+        return value;
+    }
+
+    return NULL;
+}
+
+/*
  * Accept tile dimensions from the environment so profiling runs can adjust
  * cache locality without recompiling. Values outside [1, resolution] fall
  * back to the default 8x8x8 layout.
  */
 static int
-sixel_lookup_vpte_parse_positive(char const *env_name, int fallback)
+sixel_lookup_vpte_parse_positive(char const *env_name,
+                                 char const *legacy_name,
+                                 int fallback)
 {
     char const *env;
     char *endptr;
     long value;
 
-    env = sixel_compat_getenv(env_name);
-    if (env == NULL || env[0] == '\0') {
+    env = sixel_lookup_vpte_getenv(env_name, legacy_name);
+    if (env == NULL) {
         return fallback;
     }
 
@@ -326,9 +350,11 @@ sixel_lookup_vpte_resolve_tiles(float const *palette,
                                            &default_depth);
 
     resolved_xy = sixel_lookup_vpte_parse_positive(
+        "SIXEL_LOOKUP_VPTE_TILE_XY",
         "SIXEL_VPTE_TILE_XY",
         default_xy);
     resolved_depth = sixel_lookup_vpte_parse_positive(
+        "SIXEL_LOOKUP_VPTE_TILE_DEPTH",
         "SIXEL_VPTE_TILE_DEPTH",
         default_depth);
     if (resolved_xy > res) {
@@ -396,8 +422,9 @@ sixel_lookup_vpte_pin_threads_enabled(void)
 {
     char const *env;
 
-    env = sixel_compat_getenv("SIXEL_VPTE_PIN_THREADS");
-    if (env == NULL || env[0] == '\0') {
+    env = sixel_lookup_vpte_getenv("SIXEL_LOOKUP_VPTE_PIN_THREADS",
+                                   "SIXEL_VPTE_PIN_THREADS");
+    if (env == NULL) {
         return 0;
     }
 
@@ -409,8 +436,9 @@ sixel_lookup_vpte_first_touch_enabled(void)
 {
     char const *env;
 
-    env = sixel_compat_getenv("SIXEL_VPTE_FIRST_TOUCH");
-    if (env == NULL || env[0] == '\0') {
+    env = sixel_lookup_vpte_getenv("SIXEL_LOOKUP_VPTE_FIRST_TOUCH",
+                                   "SIXEL_VPTE_FIRST_TOUCH");
+    if (env == NULL) {
         return 0;
     }
 
