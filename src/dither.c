@@ -809,17 +809,21 @@ typedef struct sixel_parallel_dither_plan {
     sixel_logger_t *logger;
 } sixel_parallel_dither_plan_t;
 
-typedef struct sixel_parallel_worker_state {
+/*
+ * Dedicated worker state for dithering threads so it does not collide with
+ * encoder worker bookkeeping when compiled as a single translation unit.
+ */
+typedef struct sixel_parallel_dither_state {
     sixel_lut_t *lut;
     int lut_initialized;
-} sixel_parallel_worker_state_t;
+} sixel_parallel_dither_state_t;
 
 static void
-sixel_parallel_worker_cleanup(void *workspace)
+sixel_parallel_dither_cleanup(void *workspace)
 {
-    sixel_parallel_worker_state_t *state;
+    sixel_parallel_dither_state_t *state;
 
-    state = (sixel_parallel_worker_state_t *)workspace;
+    state = (sixel_parallel_dither_state_t *)workspace;
     if (state == NULL) {
         return;
     }
@@ -857,7 +861,7 @@ sixel_dither_parallel_worker(tp_job_t job,
     int wcomp2;
     int wcomp3;
     SIXELSTATUS status;
-    sixel_parallel_worker_state_t *state;
+    sixel_parallel_dither_state_t *state;
     sixel_lut_t *local_lut;
 
     plan = (sixel_parallel_dither_plan_t *)userdata;
@@ -919,7 +923,7 @@ sixel_dither_parallel_worker(tp_job_t job,
     }
 
     local_ncolors = plan->reqcolor;
-    state = (sixel_parallel_worker_state_t *)workspace;
+    state = (sixel_parallel_dither_state_t *)workspace;
     local_lut = plan->lut;
     if (local_lut == NULL && state != NULL) {
         if (state->lut_initialized == 0) {
@@ -1067,8 +1071,8 @@ sixel_dither_apply_palette_parallel(sixel_parallel_dither_plan_t *plan,
     workspace_size = 0U;
     cleanup = NULL;
     if (plan->lut == NULL && plan->lut_policy != SIXEL_LUT_POLICY_NONE) {
-        workspace_size = sizeof(sixel_parallel_worker_state_t);
-        cleanup = sixel_parallel_worker_cleanup;
+        workspace_size = sizeof(sixel_parallel_dither_state_t);
+        cleanup = sixel_parallel_dither_cleanup;
         /*
          * Worker-local caches are constructed only when the shared LUT is
          * disabled.  Allocating the workspace up front lets each thread keep

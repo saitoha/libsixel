@@ -61,14 +61,14 @@
 # endif
 #endif
 
-#ifndef SIXEL_LOOKUP_VPTE_SHARED_T
-#define SIXEL_LOOKUP_VPTE_SHARED_T
-typedef struct sixel_lookup_vpte_shared sixel_lookup_vpte_shared_t;
+#ifndef SIXEL_LOOKUP_VPTE_SHARED_8BIT_T
+#define SIXEL_LOOKUP_VPTE_SHARED_8BIT_T
+typedef struct sixel_lookup_vpte_shared_8bit sixel_lookup_vpte_shared_8bit_t;
 #endif
 
 typedef struct sixel_lookup_vpte_8bit {
     sixel_allocator_t *allocator;
-    sixel_lookup_vpte_shared_t *shared;
+    sixel_lookup_vpte_shared_8bit_t *shared;
     int use_cache;
 } sixel_lookup_vpte_8bit_t;
 
@@ -110,11 +110,11 @@ sixel_lookup_vpte_8bit_signature(unsigned char const *palette,
 
 uint32_t
 sixel_lookup_vpte_8bit_shared_signature(
-    sixel_lookup_vpte_shared_t const *shared);
+    sixel_lookup_vpte_shared_8bit_t const *shared);
 
 void
 sixel_lookup_vpte_8bit_shared_set_signature(
-    sixel_lookup_vpte_shared_t *shared,
+    sixel_lookup_vpte_shared_8bit_t *shared,
     uint32_t signature);
 
 #endif /* LIBSIXEL_LOOKUP_VPTE_8BIT_H */

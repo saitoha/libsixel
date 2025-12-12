@@ -107,6 +107,17 @@
 #endif
 
 #if defined(SIXEL_HAS_X86_INTRIN)
+/* Reset ISA target macros in case another compilation unit defined them */
+/* earlier in a unity or amalgamation build. */
+# if defined(SIXEL_TARGET_AVX)
+#  undef SIXEL_TARGET_AVX
+# endif
+# if defined(SIXEL_TARGET_AVX2)
+#  undef SIXEL_TARGET_AVX2
+# endif
+# if defined(SIXEL_TARGET_AVX512)
+#  undef SIXEL_TARGET_AVX512
+# endif
 # if defined(__GNUC__)
 #  if !defined(__clang__)
 #   define SIXEL_TARGET_AVX __attribute__((target("avx")))

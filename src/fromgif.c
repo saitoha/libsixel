@@ -792,10 +792,14 @@ end:
     return status;
 }
 
-typedef union _fn_pointer {
+/*
+ * Local function pointer helper to avoid clashing with loader-builtin when
+ * amalgamated into a single translation unit.
+ */
+typedef union sixel_fromgif_fn_pointer {
     sixel_load_image_function fn;
     void *                    p;
-} fn_pointer;
+} sixel_fromgif_fn_pointer_t;
 
 SIXELSTATUS
 load_gif(
@@ -814,7 +818,7 @@ load_gif(
     gif_t g;
     SIXELSTATUS status = SIXEL_FALSE;
     sixel_frame_t *frame;
-    fn_pointer fnp;
+    sixel_fromgif_fn_pointer_t fnp;
     char message[256];
     size_t pcount;
     size_t bcount;

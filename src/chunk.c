@@ -233,47 +233,7 @@ wait_file(int fd, int usec)
 static int
 sixel_fd_is_console(int fd)
 {
-#if HAVE_WINHTTP
-    intptr_t handle;
-    DWORD mode;
-
-    /*
-     * Windows reports the NUL device as a TTY.  Guard the wait loop with a
-     * console-specific probe so redirected stdin does not hang on _isatty().
-     */
-    if (fd < 0) {
-        return 0;
-    }
-# if HAVE__ISATTY
-    if (!_isatty(fd)) {
-        return 0;
-    }
-# elif HAVE_ISATTY
-    if (!isatty(fd)) {
-        return 0;
-    }
-# else
-    return 0;
-# endif
-    handle = _get_osfhandle(fd);
-    if (handle == (intptr_t)(-1)) {
-        return 0;
-    }
-    if (GetConsoleMode((HANDLE)handle, &mode)) {
-        return 1;
-    }
-    return 0;
-#else
-# if HAVE_ISATTY
-    if (fd < 0) {
-        return 0;
-    }
-    return isatty(fd);
-# else
-    (void) fd;
-    return 0;
-# endif
-#endif
+    return sixel_compat_is_console(fd);
 }
 
 

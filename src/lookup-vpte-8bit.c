@@ -127,7 +127,7 @@
  * parent VPTE handle owns one reference while any shared handoff can bump the
  * count before publishing the pointer.
  */
-struct sixel_lookup_vpte_shared {
+struct sixel_lookup_vpte_shared_8bit {
     sixel_atomic_u32_t refcount;
     int resolution;
     int refine;
@@ -146,10 +146,10 @@ struct sixel_lookup_vpte_shared {
     uint32_t signature;
 };
 
-static int const sixel_lookup_vpte_resolution_min = 64;
-static int const sixel_lookup_vpte_resolution_max = 256;
-static int const sixel_lookup_vpte_tile_xy_default = 8;
-static int const sixel_lookup_vpte_tile_depth_default = 8;
+static int const sixel_lookup_vpte_resolution_min_8bit = 64;
+static int const sixel_lookup_vpte_resolution_max_8bit = 256;
+static int const sixel_lookup_vpte_tile_xy_default_8bit = 8;
+static int const sixel_lookup_vpte_tile_depth_default_8bit = 8;
 
 /*
  * Pick VPTE tile defaults based on palette complexity so dense color sets
@@ -158,7 +158,7 @@ static int const sixel_lookup_vpte_tile_depth_default = 8;
  * variables still override the result.
  */
 static void
-sixel_lookup_vpte_choose_tile_defaults(unsigned char const *palette,
+sixel_lookup_vpte_choose_tile_defaults_8bit(unsigned char const *palette,
                                        int ncolors,
                                        int depth,
                                        int *tile_xy_default,
@@ -177,8 +177,8 @@ sixel_lookup_vpte_choose_tile_defaults(unsigned char const *palette,
     double mean_component[3];
     double mean_deviation;
 
-    tile_xy = sixel_lookup_vpte_tile_xy_default;
-    tile_depth = sixel_lookup_vpte_tile_depth_default;
+    tile_xy = sixel_lookup_vpte_tile_xy_default_8bit;
+    tile_depth = sixel_lookup_vpte_tile_depth_default_8bit;
 
     if (palette == NULL || ncolors <= 0 || depth <= 0) {
         *tile_xy_default = tile_xy;
@@ -261,7 +261,7 @@ sixel_lookup_vpte_choose_tile_defaults(unsigned char const *palette,
 }
 
 static int
-sixel_lookup_vpte_pow2_log(int value)
+sixel_lookup_vpte_pow2_log_8bit(int value)
 {
     int shift;
 
@@ -274,17 +274,17 @@ sixel_lookup_vpte_pow2_log(int value)
 }
 
 static int
-sixel_lookup_vpte_validate_resolution(int resolution)
+sixel_lookup_vpte_validate_resolution_8bit(int resolution)
 {
     int shift;
     int pow2;
 
-    if (resolution < sixel_lookup_vpte_resolution_min
-        || resolution > sixel_lookup_vpte_resolution_max) {
+    if (resolution < sixel_lookup_vpte_resolution_min_8bit
+        || resolution > sixel_lookup_vpte_resolution_max_8bit) {
         return 0;
     }
 
-    shift = sixel_lookup_vpte_pow2_log(resolution);
+    shift = sixel_lookup_vpte_pow2_log_8bit(resolution);
     pow2 = 1 << shift;
 
     return pow2 == resolution;
@@ -295,7 +295,7 @@ sixel_lookup_vpte_validate_resolution(int resolution)
  * SIXEL_VPTE_* names for compatibility.
  */
 static char const *
-sixel_lookup_vpte_getenv(char const *primary, char const *legacy)
+sixel_lookup_vpte_getenv_8bit(char const *primary, char const *legacy)
 {
     char const *value;
 
@@ -318,7 +318,7 @@ sixel_lookup_vpte_getenv(char const *primary, char const *legacy)
  * back to the default 8x8x8 layout.
  */
 static int
-sixel_lookup_vpte_parse_positive(char const *env_name,
+sixel_lookup_vpte_parse_positive_8bit(char const *env_name,
                                  char const *legacy_name,
                                  int fallback)
 {
@@ -326,7 +326,7 @@ sixel_lookup_vpte_parse_positive(char const *env_name,
     char *endptr;
     long value;
 
-    env = sixel_lookup_vpte_getenv(env_name, legacy_name);
+    env = sixel_lookup_vpte_getenv_8bit(env_name, legacy_name);
     if (env == NULL) {
         return fallback;
     }
@@ -341,7 +341,7 @@ sixel_lookup_vpte_parse_positive(char const *env_name,
 }
 
 static void
-sixel_lookup_vpte_resolve_tiles(unsigned char const *palette,
+sixel_lookup_vpte_resolve_tiles_8bit(unsigned char const *palette,
                                 int ncolors,
                                 int depth,
                                 int res,
@@ -353,17 +353,17 @@ sixel_lookup_vpte_resolve_tiles(unsigned char const *palette,
     int default_xy;
     int default_depth;
 
-    sixel_lookup_vpte_choose_tile_defaults(palette,
+    sixel_lookup_vpte_choose_tile_defaults_8bit(palette,
                                            ncolors,
                                            depth,
                                            &default_xy,
                                            &default_depth);
 
-    resolved_xy = sixel_lookup_vpte_parse_positive(
+    resolved_xy = sixel_lookup_vpte_parse_positive_8bit(
         "SIXEL_LOOKUP_VPTE_TILE_XY",
         "SIXEL_VPTE_TILE_XY",
         default_xy);
-    resolved_depth = sixel_lookup_vpte_parse_positive(
+    resolved_depth = sixel_lookup_vpte_parse_positive_8bit(
         "SIXEL_LOOKUP_VPTE_TILE_DEPTH",
         "SIXEL_VPTE_TILE_DEPTH",
         default_depth);
@@ -379,45 +379,45 @@ sixel_lookup_vpte_resolve_tiles(unsigned char const *palette,
 }
 
 static uint32_t
-sixel_lookup_vpte_mix_u32(uint32_t state, uint32_t value)
+sixel_lookup_vpte_mix_u32_8bit(uint32_t state, uint32_t value)
 {
     state ^= value + 0x9e3779b9U + (state << 6) + (state >> 2);
 
     return state;
 }
 
-typedef struct sixel_lookup_vpte_cache_set {
+typedef struct sixel_lookup_vpte_cache_set_8bit {
     uint32_t key[4];
     int value[4];
     uint8_t hand;
-} sixel_lookup_vpte_cache_set_t;
+} sixel_lookup_vpte_cache_set_8bit_t;
 
-typedef struct sixel_lookup_vpte_cache {
-    sixel_lookup_vpte_cache_set_t sets[16];
+typedef struct sixel_lookup_vpte_cache_8bit {
+    sixel_lookup_vpte_cache_set_8bit_t sets[16];
     uint32_t signature;
-    sixel_lookup_vpte_shared_t const *shared;
-} sixel_lookup_vpte_cache_t;
+    sixel_lookup_vpte_shared_8bit_t const *shared;
+} sixel_lookup_vpte_cache_8bit_t;
 
-typedef struct sixel_lookup_vpte_timeline {
+typedef struct sixel_lookup_vpte_timeline_8bit {
     int initialized;
     int log_lines;
     int line_stride;
     sixel_logger_t logger;
-} sixel_lookup_vpte_timeline_t;
+} sixel_lookup_vpte_timeline_8bit_t;
 
-typedef void (*sixel_lookup_vpte_edt1d_fn)(double *, int *, int, double);
+typedef void (*sixel_lookup_vpte_edt1d_fn_8bit)(double *, int *, int, double);
 
 /*
  * Thread-local gather/scatter buffer that keeps line data contiguous for
  * upcoming SIMD work.  The buffer is shared across passes to avoid repeated
  * allocation and to keep the hot paths short.
  */
-typedef struct sixel_lookup_vpte_line_buffer {
+typedef struct sixel_lookup_vpte_line_buffer_8bit {
     double dist[256];
     int src[256];
-} sixel_lookup_vpte_line_buffer_t;
+} sixel_lookup_vpte_line_buffer_8bit_t;
 
-typedef struct sixel_lookup_vpte_first_touch_plan {
+typedef struct sixel_lookup_vpte_first_touch_plan_8bit {
     double *distances;
     int *sources;
     size_t stride_y;
@@ -427,25 +427,25 @@ typedef struct sixel_lookup_vpte_first_touch_plan {
     int tile_z;
     int tiles_y;
     int tiles_z;
-} sixel_lookup_vpte_first_touch_plan_t;
+} sixel_lookup_vpte_first_touch_plan_8bit_t;
 
 #if SIXEL_VPTE_TLS_AVAILABLE
-static SIXEL_VPTE_TLS sixel_lookup_vpte_line_buffer_t
-    sixel_lookup_vpte_tls_line_buffer;
+static SIXEL_VPTE_TLS sixel_lookup_vpte_line_buffer_8bit_t
+    sixel_lookup_vpte_tls_line_buffer_8bit;
 #else
-static sixel_lookup_vpte_line_buffer_t
-    sixel_lookup_vpte_tls_line_buffer;
+static sixel_lookup_vpte_line_buffer_8bit_t
+    sixel_lookup_vpte_tls_line_buffer_8bit;
 #endif
 
-static SIXEL_VPTE_TLS sixel_lookup_vpte_cache_t
-    sixel_lookup_vpte_thread_cache;
+static SIXEL_VPTE_TLS sixel_lookup_vpte_cache_8bit_t
+    sixel_lookup_vpte_thread_cache_8bit;
 
 /*
  * Resolve the number of worker threads available for VPTE construction while
  * refusing to run parallel jobs when thread-local storage is unavailable.
  */
 static int
-sixel_lookup_vpte_resolve_threads(void)
+sixel_lookup_vpte_resolve_threads_8bit(void)
 {
 #if SIXEL_ENABLE_THREADS
     int threads;
@@ -465,11 +465,11 @@ sixel_lookup_vpte_resolve_threads(void)
 }
 
 static int
-sixel_lookup_vpte_pin_threads_enabled(void)
+sixel_lookup_vpte_pin_threads_enabled_8bit(void)
 {
     char const *env;
 
-    env = sixel_lookup_vpte_getenv("SIXEL_LOOKUP_VPTE_PIN_THREADS",
+    env = sixel_lookup_vpte_getenv_8bit("SIXEL_LOOKUP_VPTE_PIN_THREADS",
                                    "SIXEL_VPTE_PIN_THREADS");
     if (env == NULL) {
         return 0;
@@ -479,11 +479,11 @@ sixel_lookup_vpte_pin_threads_enabled(void)
 }
 
 static int
-sixel_lookup_vpte_first_touch_enabled(void)
+sixel_lookup_vpte_first_touch_enabled_8bit(void)
 {
     char const *env;
 
-    env = sixel_lookup_vpte_getenv("SIXEL_LOOKUP_VPTE_FIRST_TOUCH",
+    env = sixel_lookup_vpte_getenv_8bit("SIXEL_LOOKUP_VPTE_FIRST_TOUCH",
                                    "SIXEL_VPTE_FIRST_TOUCH");
     if (env == NULL) {
         return 0;
@@ -492,14 +492,14 @@ sixel_lookup_vpte_first_touch_enabled(void)
     return env[0] != '0';
 }
 
-static void sixel_lookup_vpte_dispatch_tiles(int total_tiles,
+static void sixel_lookup_vpte_dispatch_tiles_8bit(int total_tiles,
                                              int threads,
                                              int pin_threads,
                                              tp_worker_fn worker,
                                              void *plan);
 
 static uint32_t
-sixel_lookup_vpte_cache_hash(size_t offset)
+sixel_lookup_vpte_cache_hash_8bit(size_t offset)
 {
     uint32_t state;
     uint64_t offset64;
@@ -510,16 +510,16 @@ sixel_lookup_vpte_cache_hash(size_t offset)
      */
     offset64 = (uint64_t)offset;
 
-    state = sixel_lookup_vpte_mix_u32(0x811c9dc5U,
+    state = sixel_lookup_vpte_mix_u32_8bit(0x811c9dc5U,
                                       (uint32_t)offset64);
-    state = sixel_lookup_vpte_mix_u32(state,
+    state = sixel_lookup_vpte_mix_u32_8bit(state,
                                       (uint32_t)(offset64 >> 32));
 
     return state;
 }
 
 static void
-sixel_lookup_vpte_cache_clear(sixel_lookup_vpte_cache_t *cache)
+sixel_lookup_vpte_cache_clear_8bit(sixel_lookup_vpte_cache_8bit_t *cache)
 {
     size_t set;
     size_t way;
@@ -536,22 +536,25 @@ sixel_lookup_vpte_cache_clear(sixel_lookup_vpte_cache_t *cache)
 }
 
 static void
-sixel_lookup_vpte_cache_prepare(sixel_lookup_vpte_shared_t const *shared)
+sixel_lookup_vpte_cache_prepare_8bit(
+    sixel_lookup_vpte_shared_8bit_t const *shared)
 {
-    if (sixel_lookup_vpte_thread_cache.shared != shared
-        || sixel_lookup_vpte_thread_cache.signature != shared->signature) {
-        sixel_lookup_vpte_cache_clear(&sixel_lookup_vpte_thread_cache);
-        sixel_lookup_vpte_thread_cache.shared = shared;
-        sixel_lookup_vpte_thread_cache.signature = shared->signature;
+    if (sixel_lookup_vpte_thread_cache_8bit.shared != shared
+        || sixel_lookup_vpte_thread_cache_8bit.signature != shared->signature) {
+        sixel_lookup_vpte_cache_clear_8bit(
+            &sixel_lookup_vpte_thread_cache_8bit);
+        sixel_lookup_vpte_thread_cache_8bit.shared = shared;
+        sixel_lookup_vpte_thread_cache_8bit.signature = shared->signature;
     }
 }
 
 static void
-sixel_lookup_vpte_timeline_open(sixel_lookup_vpte_timeline_t *timeline);
+sixel_lookup_vpte_timeline_open_8bit(
+    sixel_lookup_vpte_timeline_8bit_t *timeline);
 
 static int
-sixel_lookup_vpte_timeline_lines_enabled(
-    sixel_lookup_vpte_timeline_t *timeline)
+sixel_lookup_vpte_timeline_lines_enabled_8bit(
+    sixel_lookup_vpte_timeline_8bit_t *timeline)
 {
 #if SIXEL_ENABLE_THREADS
     if (timeline == NULL || !timeline->initialized) {
@@ -568,7 +571,8 @@ sixel_lookup_vpte_timeline_lines_enabled(
 }
 
 static void
-sixel_lookup_vpte_timeline_open(sixel_lookup_vpte_timeline_t *timeline)
+sixel_lookup_vpte_timeline_open_8bit(
+    sixel_lookup_vpte_timeline_8bit_t *timeline)
 {
 #if SIXEL_ENABLE_THREADS
     char const *line_env;
@@ -597,7 +601,8 @@ sixel_lookup_vpte_timeline_open(sixel_lookup_vpte_timeline_t *timeline)
 }
 
 static void
-sixel_lookup_vpte_timeline_close(sixel_lookup_vpte_timeline_t *timeline)
+sixel_lookup_vpte_timeline_close_8bit(
+    sixel_lookup_vpte_timeline_8bit_t *timeline)
 {
 #if SIXEL_ENABLE_THREADS
     if (timeline == NULL || !timeline->initialized) {
@@ -610,12 +615,13 @@ sixel_lookup_vpte_timeline_close(sixel_lookup_vpte_timeline_t *timeline)
 }
 
 static void
-sixel_lookup_vpte_timeline_log(sixel_lookup_vpte_timeline_t *timeline,
-                               char const *worker,
-                               char const *event,
-                               int tile,
-                               int line,
-                               char const *message)
+sixel_lookup_vpte_timeline_log_8bit(
+    sixel_lookup_vpte_timeline_8bit_t *timeline,
+    char const *worker,
+    char const *event,
+    int tile,
+    int line,
+    char const *message)
 {
 #if SIXEL_ENABLE_THREADS
     int skip_line;
@@ -664,12 +670,12 @@ sixel_lookup_vpte_timeline_log(sixel_lookup_vpte_timeline_t *timeline,
 #endif  /* SIXEL_ENABLE_THREADS */
 }
 
-static sixel_lookup_vpte_line_buffer_t *
-sixel_lookup_vpte_line_buffer_get(void)
+static sixel_lookup_vpte_line_buffer_8bit_t *
+sixel_lookup_vpte_line_buffer_get_8bit(void)
 {
-    sixel_lookup_vpte_line_buffer_t *buffer;
+    sixel_lookup_vpte_line_buffer_8bit_t *buffer;
 
-    buffer = &sixel_lookup_vpte_tls_line_buffer;
+    buffer = &sixel_lookup_vpte_tls_line_buffer_8bit;
 
     return buffer;
 }
@@ -680,10 +686,10 @@ sixel_lookup_vpte_line_buffer_get(void)
  * tools/timeline.py can visualize where prefetching happens.
  */
 static void
-sixel_lookup_vpte_prefetch_line(double *distances,
+sixel_lookup_vpte_prefetch_line_8bit(double *distances,
                                 int *sources,
                                 size_t offset,
-                                sixel_lookup_vpte_timeline_t *timeline,
+                                sixel_lookup_vpte_timeline_8bit_t *timeline,
                                 char const *worker,
                                 int tile,
                                 int line)
@@ -720,7 +726,7 @@ sixel_lookup_vpte_prefetch_line(double *distances,
 
         (void)snprintf(message, sizeof(message),
                        "prefetch@%zu", offset);
-        sixel_lookup_vpte_timeline_log(timeline,
+        sixel_lookup_vpte_timeline_log_8bit(timeline,
                                        worker,
                                        "prefetch",
                                        tile,
@@ -736,7 +742,7 @@ sixel_lookup_vpte_prefetch_line(double *distances,
 }
 
 static int
-sixel_lookup_vpte_cache_get(sixel_lookup_vpte_cache_t *cache,
+sixel_lookup_vpte_cache_get_8bit(sixel_lookup_vpte_cache_8bit_t *cache,
                             size_t offset,
                             int *value_out)
 {
@@ -744,7 +750,7 @@ sixel_lookup_vpte_cache_get(sixel_lookup_vpte_cache_t *cache,
     size_t set;
     size_t way;
 
-    key = sixel_lookup_vpte_cache_hash(offset);
+    key = sixel_lookup_vpte_cache_hash_8bit(offset);
     set = (size_t)(key & 15U);
     for (way = 0U; way < 4U; ++way) {
         if (cache->sets[set].key[way] == key) {
@@ -758,7 +764,7 @@ sixel_lookup_vpte_cache_get(sixel_lookup_vpte_cache_t *cache,
 }
 
 static void
-sixel_lookup_vpte_cache_put(sixel_lookup_vpte_cache_t *cache,
+sixel_lookup_vpte_cache_put_8bit(sixel_lookup_vpte_cache_8bit_t *cache,
                             size_t offset,
                             int value)
 {
@@ -766,7 +772,7 @@ sixel_lookup_vpte_cache_put(sixel_lookup_vpte_cache_t *cache,
     size_t set;
     size_t way;
 
-    key = sixel_lookup_vpte_cache_hash(offset);
+    key = sixel_lookup_vpte_cache_hash_8bit(offset);
     set = (size_t)(key & 15U);
     way = cache->sets[set].hand;
     cache->sets[set].key[way] = key;
@@ -789,17 +795,17 @@ sixel_lookup_vpte_8bit_signature(unsigned char const *palette,
     size_t index;
 
     hash = 0x811c9dc5U;
-    hash = sixel_lookup_vpte_mix_u32(hash, (uint32_t)resolution);
-    hash = sixel_lookup_vpte_mix_u32(hash, (uint32_t)refine);
-    hash = sixel_lookup_vpte_mix_u32(hash, (uint32_t)ncolors);
-    hash = sixel_lookup_vpte_mix_u32(hash, (uint32_t)depth);
-    hash = sixel_lookup_vpte_mix_u32(hash, (uint32_t)wcomp1);
-    hash = sixel_lookup_vpte_mix_u32(hash, (uint32_t)wcomp2);
-    hash = sixel_lookup_vpte_mix_u32(hash, (uint32_t)wcomp3);
+    hash = sixel_lookup_vpte_mix_u32_8bit(hash, (uint32_t)resolution);
+    hash = sixel_lookup_vpte_mix_u32_8bit(hash, (uint32_t)refine);
+    hash = sixel_lookup_vpte_mix_u32_8bit(hash, (uint32_t)ncolors);
+    hash = sixel_lookup_vpte_mix_u32_8bit(hash, (uint32_t)depth);
+    hash = sixel_lookup_vpte_mix_u32_8bit(hash, (uint32_t)wcomp1);
+    hash = sixel_lookup_vpte_mix_u32_8bit(hash, (uint32_t)wcomp2);
+    hash = sixel_lookup_vpte_mix_u32_8bit(hash, (uint32_t)wcomp3);
 
     total = (size_t)ncolors * (size_t)depth;
     for (index = 0U; index < total; ++index) {
-        hash = sixel_lookup_vpte_mix_u32(hash, (uint32_t)palette[index]);
+        hash = sixel_lookup_vpte_mix_u32_8bit(hash, (uint32_t)palette[index]);
     }
 
     return hash;
@@ -807,7 +813,7 @@ sixel_lookup_vpte_8bit_signature(unsigned char const *palette,
 
 uint32_t
 sixel_lookup_vpte_8bit_shared_signature(
-    sixel_lookup_vpte_shared_t const *shared)
+    sixel_lookup_vpte_shared_8bit_t const *shared)
 {
     if (shared == NULL) {
         return 0U;
@@ -818,7 +824,7 @@ sixel_lookup_vpte_8bit_shared_signature(
 
 void
 sixel_lookup_vpte_8bit_shared_set_signature(
-    sixel_lookup_vpte_shared_t *shared,
+    sixel_lookup_vpte_shared_8bit_t *shared,
     uint32_t signature)
 {
     if (shared == NULL) {
@@ -829,8 +835,9 @@ sixel_lookup_vpte_8bit_shared_set_signature(
 }
 
 static void
-sixel_lookup_vpte_shared_release_palette(sixel_allocator_t *allocator,
-                                         sixel_lookup_vpte_shared_t *shared)
+sixel_lookup_vpte_shared_release_palette_8bit(
+    sixel_allocator_t *allocator,
+    sixel_lookup_vpte_shared_8bit_t *shared)
 {
     if (shared->palette != NULL) {
         sixel_allocator_free(allocator, shared->palette);
@@ -839,8 +846,9 @@ sixel_lookup_vpte_shared_release_palette(sixel_allocator_t *allocator,
 }
 
 static void
-sixel_lookup_vpte_shared_release_indices(sixel_allocator_t *allocator,
-                                         sixel_lookup_vpte_shared_t *shared)
+sixel_lookup_vpte_shared_release_indices_8bit(
+    sixel_allocator_t *allocator,
+    sixel_lookup_vpte_shared_8bit_t *shared)
 {
     if (shared->dist2 != NULL) {
         sixel_allocator_free(allocator, shared->dist2);
@@ -861,21 +869,21 @@ sixel_lookup_vpte_shared_release_indices(sixel_allocator_t *allocator,
 }
 
 static void
-sixel_lookup_vpte_shared_destroy(sixel_allocator_t *allocator,
-                                 sixel_lookup_vpte_shared_t *shared)
+sixel_lookup_vpte_shared_destroy_8bit(sixel_allocator_t *allocator,
+                                 sixel_lookup_vpte_shared_8bit_t *shared)
 {
     if (shared == NULL) {
         return;
     }
 
-    sixel_lookup_vpte_shared_release_palette(allocator, shared);
-    sixel_lookup_vpte_shared_release_indices(allocator, shared);
+    sixel_lookup_vpte_shared_release_palette_8bit(allocator, shared);
+    sixel_lookup_vpte_shared_release_indices_8bit(allocator, shared);
     sixel_allocator_free(allocator, shared);
 }
 
 static void
-sixel_lookup_vpte_shared_unref(sixel_allocator_t *allocator,
-                               sixel_lookup_vpte_shared_t *shared)
+sixel_lookup_vpte_shared_unref_8bit(sixel_allocator_t *allocator,
+                               sixel_lookup_vpte_shared_8bit_t *shared)
 {
     unsigned int previous;
 
@@ -886,12 +894,12 @@ sixel_lookup_vpte_shared_unref(sixel_allocator_t *allocator,
     previous = sixel_atomic_fetch_sub_u32(&shared->refcount, 1U);
     if (previous == 1U) {
         sixel_fence_acquire();
-        sixel_lookup_vpte_shared_destroy(allocator, shared);
+        sixel_lookup_vpte_shared_destroy_8bit(allocator, shared);
     }
 }
 
 static void
-sixel_lookup_vpte_shared_ref(sixel_lookup_vpte_shared_t *shared)
+sixel_lookup_vpte_shared_ref_8bit(sixel_lookup_vpte_shared_8bit_t *shared)
 {
     if (shared == NULL) {
         return;
@@ -901,14 +909,14 @@ sixel_lookup_vpte_shared_ref(sixel_lookup_vpte_shared_t *shared)
 }
 
 static int
-sixel_lookup_vpte_palette_index(int depth, int index, int component)
+sixel_lookup_vpte_palette_index_8bit(int depth, int index, int component)
 {
     return index * depth + component;
 }
 
 static void
-sixel_lookup_vpte_quantize_palette(unsigned char const *palette,
-                                   sixel_lookup_vpte_shared_t *shared)
+sixel_lookup_vpte_quantize_palette_8bit(unsigned char const *palette,
+                                   sixel_lookup_vpte_shared_8bit_t *shared)
 {
     int index;
     int component;
@@ -918,27 +926,29 @@ sixel_lookup_vpte_quantize_palette(unsigned char const *palette,
     res_shift = shared->res_shift;
     for (index = 0; index < shared->ncolors; ++index) {
         for (component = 0; component < shared->depth; ++component) {
-            channel = palette[sixel_lookup_vpte_palette_index(shared->depth,
-                                                               index,
-                                                               component)];
+            channel = palette[sixel_lookup_vpte_palette_index_8bit(
+                                   shared->depth,
+                                   index,
+                                   component)];
             channel >>= res_shift;
             if (channel >= shared->resolution) {
                 channel = shared->resolution - 1;
             }
-            shared->palette[sixel_lookup_vpte_palette_index(shared->depth,
-                                                            index,
-                                                            component)]
+            shared->palette[sixel_lookup_vpte_palette_index_8bit(
+                                   shared->depth,
+                                   index,
+                                   component)]
                 = (unsigned char)channel;
         }
     }
 }
 
 static int
-sixel_lookup_vpte_first_touch_worker(tp_job_t job,
+sixel_lookup_vpte_first_touch_worker_8bit(tp_job_t job,
                                      void *userdata,
                                      void *workspace)
 {
-    sixel_lookup_vpte_first_touch_plan_t *plan;
+    sixel_lookup_vpte_first_touch_plan_8bit_t *plan;
     int tile_index;
     int tile_z_index;
     int tile_y_index;
@@ -953,7 +963,7 @@ sixel_lookup_vpte_first_touch_worker(tp_job_t job,
 
     (void)workspace;
 
-    plan = (sixel_lookup_vpte_first_touch_plan_t *)userdata;
+    plan = (sixel_lookup_vpte_first_touch_plan_8bit_t *)userdata;
     tile_index = job.band_index;
     tile_z_index = tile_index / plan->tiles_y;
     tile_y_index = tile_index - (tile_z_index * plan->tiles_y);
@@ -983,7 +993,7 @@ sixel_lookup_vpte_first_touch_worker(tp_job_t job,
 }
 
 static void
-sixel_lookup_vpte_first_touch(double *distances,
+sixel_lookup_vpte_first_touch_8bit(double *distances,
                               int *sources,
                               int res,
                               int threads,
@@ -991,7 +1001,7 @@ sixel_lookup_vpte_first_touch(double *distances,
                               int tile_xy,
                               int tile_depth)
 {
-    sixel_lookup_vpte_first_touch_plan_t plan;
+    sixel_lookup_vpte_first_touch_plan_8bit_t plan;
     int tiles_y;
     int tiles_z;
 
@@ -1007,15 +1017,15 @@ sixel_lookup_vpte_first_touch(double *distances,
     plan.tiles_y = tiles_y;
     plan.tiles_z = tiles_z;
 
-    sixel_lookup_vpte_dispatch_tiles(tiles_y * tiles_z,
+    sixel_lookup_vpte_dispatch_tiles_8bit(tiles_y * tiles_z,
                                      threads,
                                      pin_threads,
-                                     sixel_lookup_vpte_first_touch_worker,
+                                     sixel_lookup_vpte_first_touch_worker_8bit,
                                      &plan);
 }
 
 static void
-sixel_lookup_vpte_seed_grid(int resolution,
+sixel_lookup_vpte_seed_grid_8bit(int resolution,
                             int depth,
                             int ncolors,
                             unsigned char const *palette,
@@ -1038,9 +1048,9 @@ sixel_lookup_vpte_seed_grid(int resolution,
     }
 
     for (index = 0; index < ncolors; ++index) {
-        x = palette[sixel_lookup_vpte_palette_index(depth, index, 0)];
-        y = palette[sixel_lookup_vpte_palette_index(depth, index, 1)];
-        z = palette[sixel_lookup_vpte_palette_index(depth, index, 2)];
+        x = palette[sixel_lookup_vpte_palette_index_8bit(depth, index, 0)];
+        y = palette[sixel_lookup_vpte_palette_index_8bit(depth, index, 1)];
+        z = palette[sixel_lookup_vpte_palette_index_8bit(depth, index, 2)];
         plane = (size_t)resolution * (size_t)resolution;
         offset = ((size_t)z * plane) + ((size_t)y * (size_t)resolution)
                + (size_t)x;
@@ -1057,7 +1067,7 @@ sixel_lookup_vpte_seed_grid(int resolution,
 }
 
 static void
-sixel_lookup_vpte_edt1d_scalar(double *line_dist,
+sixel_lookup_vpte_edt1d_scalar_8bit(double *line_dist,
                                int *line_src,
                                int length,
                                double weight)
@@ -1126,7 +1136,7 @@ sixel_lookup_vpte_edt1d_scalar(double *line_dist,
  * output elements.
  */
 static SIXEL_VPTE_TARGET_AVX2 void
-sixel_lookup_vpte_edt1d_avx2(double *line_dist,
+sixel_lookup_vpte_edt1d_avx2_8bit(double *line_dist,
                              int *line_src,
                              int length,
                              double weight)
@@ -1246,7 +1256,7 @@ sixel_lookup_vpte_edt1d_avx2(double *line_dist,
  * a time before deferring to the scalar remainder for short tails.
  */
 static SIXEL_VPTE_TARGET_AVX512 void
-sixel_lookup_vpte_edt1d_avx512(double *line_dist,
+sixel_lookup_vpte_edt1d_avx512_8bit(double *line_dist,
                                int *line_src,
                                int length,
                                double weight)
@@ -1364,10 +1374,10 @@ sixel_lookup_vpte_edt1d_avx512(double *line_dist,
 }
 #endif  /* SIXEL_VPTE_USE_AVX512 */
 
-static sixel_lookup_vpte_edt1d_fn
-sixel_lookup_vpte_edt1d_resolve(void)
+static sixel_lookup_vpte_edt1d_fn_8bit
+sixel_lookup_vpte_edt1d_resolve_8bit(void)
 {
-    static sixel_lookup_vpte_edt1d_fn selected;
+    static sixel_lookup_vpte_edt1d_fn_8bit selected;
 
     if (selected != NULL) {
         return selected;
@@ -1385,30 +1395,30 @@ sixel_lookup_vpte_edt1d_resolve(void)
         simd_level = sixel_cpu_simd_level();
 #  if defined(SIXEL_VPTE_USE_AVX512)
         if (simd_level >= SIXEL_SIMD_LEVEL_AVX512) {
-            selected = sixel_lookup_vpte_edt1d_avx512;
+            selected = sixel_lookup_vpte_edt1d_avx512_8bit;
             return selected;
         }
 #  endif
 #  if defined(SIXEL_VPTE_USE_AVX2)
         if (simd_level >= SIXEL_SIMD_LEVEL_AVX2) {
-            selected = sixel_lookup_vpte_edt1d_avx2;
+            selected = sixel_lookup_vpte_edt1d_avx2_8bit;
             return selected;
         }
 #  endif
 # endif
     }
 #endif
-    selected = sixel_lookup_vpte_edt1d_scalar;
+    selected = sixel_lookup_vpte_edt1d_scalar_8bit;
 
     return selected;
 }
 
-typedef struct sixel_lookup_vpte_pass_x_plan {
-    sixel_lookup_vpte_shared_t *shared;
+typedef struct sixel_lookup_vpte_pass_x_plan_8bit {
+    sixel_lookup_vpte_shared_8bit_t *shared;
     double *distances;
     int *sources;
-    sixel_lookup_vpte_timeline_t *timeline;
-    sixel_lookup_vpte_edt1d_fn edt1d;
+    sixel_lookup_vpte_timeline_8bit_t *timeline;
+    sixel_lookup_vpte_edt1d_fn_8bit edt1d;
     double weight;
     size_t stride_y;
     size_t stride_z;
@@ -1418,14 +1428,14 @@ typedef struct sixel_lookup_vpte_pass_x_plan {
     int tiles_y;
     int tiles_z;
     int log_lines;
-} sixel_lookup_vpte_pass_x_plan_t;
+} sixel_lookup_vpte_pass_x_plan_8bit_t;
 
-typedef struct sixel_lookup_vpte_pass_y_plan {
-    sixel_lookup_vpte_shared_t *shared;
+typedef struct sixel_lookup_vpte_pass_y_plan_8bit {
+    sixel_lookup_vpte_shared_8bit_t *shared;
     double *distances;
     int *sources;
-    sixel_lookup_vpte_timeline_t *timeline;
-    sixel_lookup_vpte_edt1d_fn edt1d;
+    sixel_lookup_vpte_timeline_8bit_t *timeline;
+    sixel_lookup_vpte_edt1d_fn_8bit edt1d;
     double weight;
     size_t stride_y;
     size_t stride_z;
@@ -1435,14 +1445,14 @@ typedef struct sixel_lookup_vpte_pass_y_plan {
     int tiles_x;
     int tiles_z;
     int log_lines;
-} sixel_lookup_vpte_pass_y_plan_t;
+} sixel_lookup_vpte_pass_y_plan_8bit_t;
 
-typedef struct sixel_lookup_vpte_pass_z_plan {
-    sixel_lookup_vpte_shared_t *shared;
+typedef struct sixel_lookup_vpte_pass_z_plan_8bit {
+    sixel_lookup_vpte_shared_8bit_t *shared;
     double *distances;
     int *sources;
-    sixel_lookup_vpte_timeline_t *timeline;
-    sixel_lookup_vpte_edt1d_fn edt1d;
+    sixel_lookup_vpte_timeline_8bit_t *timeline;
+    sixel_lookup_vpte_edt1d_fn_8bit edt1d;
     double weight;
     size_t stride_y;
     size_t stride_z;
@@ -1452,7 +1462,7 @@ typedef struct sixel_lookup_vpte_pass_z_plan {
     int tiles_x;
     int tiles_y;
     int log_lines;
-} sixel_lookup_vpte_pass_z_plan_t;
+} sixel_lookup_vpte_pass_z_plan_8bit_t;
 
 /*
  * Each worker processes one tile worth of x-lines.  Tiles are laid out in a
@@ -1460,12 +1470,12 @@ typedef struct sixel_lookup_vpte_pass_z_plan {
  * the visualization aligned with the new tiling.
  */
 static int
-sixel_lookup_vpte_pass_x_worker(tp_job_t job,
+sixel_lookup_vpte_pass_x_worker_8bit(tp_job_t job,
                                 void *userdata,
                                 void *workspace)
 {
-    sixel_lookup_vpte_pass_x_plan_t *plan;
-    sixel_lookup_vpte_line_buffer_t *line_buffer;
+    sixel_lookup_vpte_pass_x_plan_8bit_t *plan;
+    sixel_lookup_vpte_line_buffer_8bit_t *line_buffer;
     int tile_index;
     int tile_z_index;
     int tile_y_index;
@@ -1482,8 +1492,8 @@ sixel_lookup_vpte_pass_x_worker(tp_job_t job,
 
     (void)workspace;
 
-    plan = (sixel_lookup_vpte_pass_x_plan_t *)userdata;
-    line_buffer = sixel_lookup_vpte_line_buffer_get();
+    plan = (sixel_lookup_vpte_pass_x_plan_8bit_t *)userdata;
+    line_buffer = sixel_lookup_vpte_line_buffer_get_8bit();
     tile_index = job.band_index;
     tile_z_index = tile_index / plan->tiles_y;
     tile_y_index = tile_index - (tile_z_index * plan->tiles_y);
@@ -1504,7 +1514,7 @@ sixel_lookup_vpte_pass_x_worker(tp_job_t job,
                    + ((size_t)y * plan->stride_y);
             if (plan->log_lines != 0) {
                 snprintf(message, sizeof(message), "z=%d", z);
-                sixel_lookup_vpte_timeline_log(plan->timeline,
+                sixel_lookup_vpte_timeline_log_8bit(plan->timeline,
                                                "vpte-x",
                                                "line-start",
                                                z,
@@ -1513,7 +1523,7 @@ sixel_lookup_vpte_pass_x_worker(tp_job_t job,
             }
             if (y + 1 < plan->res) {
                 next_offset = offset + plan->stride_y;
-                sixel_lookup_vpte_prefetch_line(plan->distances,
+                sixel_lookup_vpte_prefetch_line_8bit(plan->distances,
                                                 plan->sources,
                                                 next_offset,
                                                 plan->timeline,
@@ -1534,7 +1544,7 @@ sixel_lookup_vpte_pass_x_worker(tp_job_t job,
                 plan->sources[offset + (size_t)x] = line_buffer->src[x];
             }
             if (plan->log_lines != 0) {
-                sixel_lookup_vpte_timeline_log(plan->timeline,
+                sixel_lookup_vpte_timeline_log_8bit(plan->timeline,
                                                "vpte-x",
                                                "line-end",
                                                z,
@@ -1548,12 +1558,12 @@ sixel_lookup_vpte_pass_x_worker(tp_job_t job,
 }
 
 static int
-sixel_lookup_vpte_pass_y_worker(tp_job_t job,
+sixel_lookup_vpte_pass_y_worker_8bit(tp_job_t job,
                                 void *userdata,
                                 void *workspace)
 {
-    sixel_lookup_vpte_pass_y_plan_t *plan;
-    sixel_lookup_vpte_line_buffer_t *line_buffer;
+    sixel_lookup_vpte_pass_y_plan_8bit_t *plan;
+    sixel_lookup_vpte_line_buffer_8bit_t *line_buffer;
     int tile_index;
     int tile_z_index;
     int tile_x_index;
@@ -1570,8 +1580,8 @@ sixel_lookup_vpte_pass_y_worker(tp_job_t job,
 
     (void)workspace;
 
-    plan = (sixel_lookup_vpte_pass_y_plan_t *)userdata;
-    line_buffer = sixel_lookup_vpte_line_buffer_get();
+    plan = (sixel_lookup_vpte_pass_y_plan_8bit_t *)userdata;
+    line_buffer = sixel_lookup_vpte_line_buffer_get_8bit();
     tile_index = job.band_index;
     tile_z_index = tile_index / plan->tiles_x;
     tile_x_index = tile_index - (tile_z_index * plan->tiles_x);
@@ -1590,7 +1600,7 @@ sixel_lookup_vpte_pass_y_worker(tp_job_t job,
         for (x = x_start; x < x_end; ++x) {
             if (plan->log_lines != 0) {
                 snprintf(message, sizeof(message), "z=%d", z);
-                sixel_lookup_vpte_timeline_log(plan->timeline,
+                sixel_lookup_vpte_timeline_log_8bit(plan->timeline,
                                                "vpte-y",
                                                "line-start",
                                                z,
@@ -1603,7 +1613,7 @@ sixel_lookup_vpte_pass_y_worker(tp_job_t job,
                        + (size_t)x;
                 if (y + 1 < plan->res) {
                     next_offset = offset + plan->stride_y;
-                    sixel_lookup_vpte_prefetch_line(plan->distances,
+                    sixel_lookup_vpte_prefetch_line_8bit(plan->distances,
                                                     plan->sources,
                                                     next_offset,
                                                     plan->timeline,
@@ -1626,7 +1636,7 @@ sixel_lookup_vpte_pass_y_worker(tp_job_t job,
                 plan->sources[offset] = line_buffer->src[y];
             }
             if (plan->log_lines != 0) {
-                sixel_lookup_vpte_timeline_log(plan->timeline,
+                sixel_lookup_vpte_timeline_log_8bit(plan->timeline,
                                                "vpte-y",
                                                "line-end",
                                                z,
@@ -1640,12 +1650,12 @@ sixel_lookup_vpte_pass_y_worker(tp_job_t job,
 }
 
 static int
-sixel_lookup_vpte_pass_z_worker(tp_job_t job,
+sixel_lookup_vpte_pass_z_worker_8bit(tp_job_t job,
                                 void *userdata,
                                 void *workspace)
 {
-    sixel_lookup_vpte_pass_z_plan_t *plan;
-    sixel_lookup_vpte_line_buffer_t *line_buffer;
+    sixel_lookup_vpte_pass_z_plan_8bit_t *plan;
+    sixel_lookup_vpte_line_buffer_8bit_t *line_buffer;
     int tile_index;
     int tile_y_index;
     int tile_x_index;
@@ -1662,8 +1672,8 @@ sixel_lookup_vpte_pass_z_worker(tp_job_t job,
 
     (void)workspace;
 
-    plan = (sixel_lookup_vpte_pass_z_plan_t *)userdata;
-    line_buffer = sixel_lookup_vpte_line_buffer_get();
+    plan = (sixel_lookup_vpte_pass_z_plan_8bit_t *)userdata;
+    line_buffer = sixel_lookup_vpte_line_buffer_get_8bit();
     tile_index = job.band_index;
     tile_y_index = tile_index / plan->tiles_x;
     tile_x_index = tile_index - (tile_y_index * plan->tiles_x);
@@ -1682,7 +1692,7 @@ sixel_lookup_vpte_pass_z_worker(tp_job_t job,
         for (x = x_start; x < x_end; ++x) {
             if (plan->log_lines != 0) {
                 snprintf(message, sizeof(message), "y=%d", y);
-                sixel_lookup_vpte_timeline_log(plan->timeline,
+                sixel_lookup_vpte_timeline_log_8bit(plan->timeline,
                                                "vpte-z",
                                                "line-start",
                                                y,
@@ -1695,7 +1705,7 @@ sixel_lookup_vpte_pass_z_worker(tp_job_t job,
                        + (size_t)x;
                 if (z + 1 < plan->res) {
                     next_offset = offset + plan->stride_z;
-                    sixel_lookup_vpte_prefetch_line(plan->distances,
+                    sixel_lookup_vpte_prefetch_line_8bit(plan->distances,
                                                     plan->sources,
                                                     next_offset,
                                                     plan->timeline,
@@ -1718,7 +1728,7 @@ sixel_lookup_vpte_pass_z_worker(tp_job_t job,
                 plan->sources[offset] = line_buffer->src[z];
             }
             if (plan->log_lines != 0) {
-                sixel_lookup_vpte_timeline_log(plan->timeline,
+                sixel_lookup_vpte_timeline_log_8bit(plan->timeline,
                                                "vpte-z",
                                                "line-end",
                                                y,
@@ -1732,7 +1742,7 @@ sixel_lookup_vpte_pass_z_worker(tp_job_t job,
 }
 
 static void
-sixel_lookup_vpte_dispatch_tiles(int total_tiles,
+sixel_lookup_vpte_dispatch_tiles_8bit(int total_tiles,
                                  int threads,
                                  int pin_threads,
                                  tp_worker_fn worker,
@@ -1796,18 +1806,18 @@ sixel_lookup_vpte_dispatch_tiles(int total_tiles,
 }
 
 static void
-sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
+sixel_lookup_vpte_apply_edt_8bit(sixel_lookup_vpte_shared_8bit_t *shared,
                             double *distances,
                             int *sources,
-                            sixel_lookup_vpte_timeline_t *timeline,
+                            sixel_lookup_vpte_timeline_8bit_t *timeline,
                             int threads,
                             int pin_threads,
                             int tile_xy,
                             int tile_depth)
 {
-    sixel_lookup_vpte_pass_x_plan_t plan_x;
-    sixel_lookup_vpte_pass_y_plan_t plan_y;
-    sixel_lookup_vpte_pass_z_plan_t plan_z;
+    sixel_lookup_vpte_pass_x_plan_8bit_t plan_x;
+    sixel_lookup_vpte_pass_y_plan_8bit_t plan_y;
+    sixel_lookup_vpte_pass_z_plan_8bit_t plan_z;
     int res;
     size_t plane;
     size_t stride_y;
@@ -1817,14 +1827,14 @@ sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
     int tiles_x;
     int i;
     int log_lines;
-    sixel_lookup_vpte_edt1d_fn edt1d;
+    sixel_lookup_vpte_edt1d_fn_8bit edt1d;
 
     res = shared->resolution;
     plane = (size_t)res * (size_t)res;
     stride_y = (size_t)res;
     stride_z = plane;
-    log_lines = sixel_lookup_vpte_timeline_lines_enabled(timeline);
-    edt1d = sixel_lookup_vpte_edt1d_resolve();
+    log_lines = sixel_lookup_vpte_timeline_lines_enabled_8bit(timeline);
+    edt1d = sixel_lookup_vpte_edt1d_resolve_8bit();
 
     tiles_y = (res + tile_xy - 1) / tile_xy;
     tiles_z = (res + tile_depth - 1) / tile_depth;
@@ -1844,18 +1854,18 @@ sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
     plan_x.tiles_z = tiles_z;
     plan_x.log_lines = log_lines;
 
-    sixel_lookup_vpte_timeline_log(timeline,
+    sixel_lookup_vpte_timeline_log_8bit(timeline,
                                    "vpte-x",
                                    "pass-start",
                                    -1,
                                    -1,
                                    "x-pass");
-    sixel_lookup_vpte_dispatch_tiles(tiles_y * tiles_z,
+    sixel_lookup_vpte_dispatch_tiles_8bit(tiles_y * tiles_z,
                                      threads,
                                      pin_threads,
-                                     sixel_lookup_vpte_pass_x_worker,
+                                     sixel_lookup_vpte_pass_x_worker_8bit,
                                      &plan_x);
-    sixel_lookup_vpte_timeline_log(timeline,
+    sixel_lookup_vpte_timeline_log_8bit(timeline,
                                    "vpte-x",
                                    "pass-end",
                                    -1,
@@ -1879,18 +1889,18 @@ sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
     plan_y.tiles_z = tiles_z;
     plan_y.log_lines = log_lines;
 
-    sixel_lookup_vpte_timeline_log(timeline,
+    sixel_lookup_vpte_timeline_log_8bit(timeline,
                                    "vpte-y",
                                    "pass-start",
                                    -1,
                                    -1,
                                    "y-pass");
-    sixel_lookup_vpte_dispatch_tiles(tiles_x * tiles_z,
+    sixel_lookup_vpte_dispatch_tiles_8bit(tiles_x * tiles_z,
                                      threads,
                                      pin_threads,
-                                     sixel_lookup_vpte_pass_y_worker,
+                                     sixel_lookup_vpte_pass_y_worker_8bit,
                                      &plan_y);
-    sixel_lookup_vpte_timeline_log(timeline,
+    sixel_lookup_vpte_timeline_log_8bit(timeline,
                                    "vpte-y",
                                    "pass-end",
                                    -1,
@@ -1912,18 +1922,18 @@ sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
     plan_z.tiles_y = tiles_y;
     plan_z.log_lines = log_lines;
 
-    sixel_lookup_vpte_timeline_log(timeline,
+    sixel_lookup_vpte_timeline_log_8bit(timeline,
                                    "vpte-z",
                                    "pass-start",
                                    -1,
                                    -1,
                                    "z-pass");
-    sixel_lookup_vpte_dispatch_tiles(tiles_x * tiles_y,
+    sixel_lookup_vpte_dispatch_tiles_8bit(tiles_x * tiles_y,
                                      threads,
                                      pin_threads,
-                                     sixel_lookup_vpte_pass_z_worker,
+                                     sixel_lookup_vpte_pass_z_worker_8bit,
                                      &plan_z);
-    sixel_lookup_vpte_timeline_log(timeline,
+    sixel_lookup_vpte_timeline_log_8bit(timeline,
                                    "vpte-z",
                                    "pass-end",
                                    -1,
@@ -1936,7 +1946,7 @@ sixel_lookup_vpte_apply_edt(sixel_lookup_vpte_shared_t *shared,
 }
 
 static void
-sixel_lookup_vpte_fill_indices(sixel_lookup_vpte_shared_t *shared,
+sixel_lookup_vpte_fill_indices_8bit(sixel_lookup_vpte_shared_8bit_t *shared,
                                int *sources)
 {
     size_t total;
@@ -1956,7 +1966,7 @@ sixel_lookup_vpte_fill_indices(sixel_lookup_vpte_shared_t *shared,
 }
 
 static void
-sixel_lookup_vpte_mark_boundaries(sixel_lookup_vpte_shared_t *shared,
+sixel_lookup_vpte_mark_boundaries_8bit(sixel_lookup_vpte_shared_8bit_t *shared,
                                   int *sources)
 {
     size_t plane;
@@ -2037,7 +2047,7 @@ sixel_lookup_vpte_mark_boundaries(sixel_lookup_vpte_shared_t *shared,
 }
 
 static SIXELSTATUS
-sixel_lookup_vpte_build(sixel_lookup_vpte_8bit_t *vpte,
+sixel_lookup_vpte_build_8bit(sixel_lookup_vpte_8bit_t *vpte,
                         unsigned char const *palette,
                         int ncolors,
                         int resolution,
@@ -2048,7 +2058,7 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_8bit_t *vpte,
                         int wcomp3,
                         int depth)
 {
-    sixel_lookup_vpte_shared_t *shared;
+    sixel_lookup_vpte_shared_8bit_t *shared;
     double *distances;
     int *sources;
     size_t total;
@@ -2059,15 +2069,15 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_8bit_t *vpte,
     int first_touch;
     int tile_xy;
     int tile_depth;
-    sixel_lookup_vpte_timeline_t timeline;
+    sixel_lookup_vpte_timeline_8bit_t timeline;
     char timeline_message[128];
 
     timeline.initialized = 0;
     shared = sixel_allocator_malloc(vpte->allocator, sizeof(*shared));
     if (shared == NULL) {
         sixel_helper_set_additional_message(
-            "sixel_lookup_vpte_build: allocation failed (shared).");
-        sixel_lookup_vpte_timeline_close(&timeline);
+            "sixel_lookup_vpte_build_8bit: allocation failed (shared).");
+        sixel_lookup_vpte_timeline_close_8bit(&timeline);
         return SIXEL_BAD_ALLOCATION;
     }
 
@@ -2087,24 +2097,24 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_8bit_t *vpte,
     shared->boundary = NULL;
     shared->dist2 = NULL;
     shared->palette = NULL;
-    shared->res_shift = 8 - sixel_lookup_vpte_pow2_log(resolution);
+    shared->res_shift = 8 - sixel_lookup_vpte_pow2_log_8bit(resolution);
 
     palette_size = (size_t)ncolors * (size_t)depth;
     shared->palette = (unsigned char *)sixel_allocator_malloc(vpte->allocator,
                                                              palette_size);
     if (shared->palette == NULL) {
-        sixel_lookup_vpte_shared_destroy(vpte->allocator, shared);
+        sixel_lookup_vpte_shared_destroy_8bit(vpte->allocator, shared);
         sixel_helper_set_additional_message(
-            "sixel_lookup_vpte_build: palette allocation failed.");
-        sixel_lookup_vpte_timeline_close(&timeline);
+            "sixel_lookup_vpte_build_8bit: palette allocation failed.");
+        sixel_lookup_vpte_timeline_close_8bit(&timeline);
         return SIXEL_BAD_ALLOCATION;
     }
-    sixel_lookup_vpte_quantize_palette(palette, shared);
+    sixel_lookup_vpte_quantize_palette_8bit(palette, shared);
 
-    threads = sixel_lookup_vpte_resolve_threads();
-    pin_threads = sixel_lookup_vpte_pin_threads_enabled();
-    first_touch = sixel_lookup_vpte_first_touch_enabled();
-    sixel_lookup_vpte_resolve_tiles(palette,
+    threads = sixel_lookup_vpte_resolve_threads_8bit();
+    pin_threads = sixel_lookup_vpte_pin_threads_enabled_8bit();
+    first_touch = sixel_lookup_vpte_first_touch_enabled_8bit();
+    sixel_lookup_vpte_resolve_tiles_8bit(palette,
                                     ncolors,
                                     depth,
                                     resolution,
@@ -2132,10 +2142,10 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_8bit_t *vpte,
         || (!shared->use_u16 && shared->indices8 == NULL)
         || shared->boundary == NULL
         || (use_dist2 != 0 && shared->dist2 == NULL)) {
-        sixel_lookup_vpte_shared_destroy(vpte->allocator, shared);
+        sixel_lookup_vpte_shared_destroy_8bit(vpte->allocator, shared);
         sixel_helper_set_additional_message(
-            "sixel_lookup_vpte_build: LUT allocation failed.");
-        sixel_lookup_vpte_timeline_close(&timeline);
+            "sixel_lookup_vpte_build_8bit: LUT allocation failed.");
+        sixel_lookup_vpte_timeline_close_8bit(&timeline);
         return SIXEL_BAD_ALLOCATION;
     }
 
@@ -2147,14 +2157,15 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_8bit_t *vpte,
     if (distances == NULL || sources == NULL) {
         sixel_allocator_free(vpte->allocator, distances);
         sixel_allocator_free(vpte->allocator, sources);
-        sixel_lookup_vpte_shared_destroy(vpte->allocator, shared);
+        sixel_lookup_vpte_shared_destroy_8bit(vpte->allocator, shared);
         sixel_helper_set_additional_message(
-            "sixel_lookup_vpte_build: temporary buffer allocation failed.");
-        sixel_lookup_vpte_timeline_close(&timeline);
+            "sixel_lookup_vpte_build_8bit: temporary buffer "
+            "allocation failed.");
+        sixel_lookup_vpte_timeline_close_8bit(&timeline);
         return SIXEL_BAD_ALLOCATION;
     }
 
-    sixel_lookup_vpte_timeline_open(&timeline);
+    sixel_lookup_vpte_timeline_open_8bit(&timeline);
     /* Tag the VPTE build so timeline.py surfaces backend selection. */
     (void)snprintf(timeline_message,
                    sizeof(timeline_message),
@@ -2163,14 +2174,14 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_8bit_t *vpte,
                    ncolors,
                    refine,
                    use_dist2);
-    sixel_lookup_vpte_timeline_log(&timeline,
+    sixel_lookup_vpte_timeline_log_8bit(&timeline,
                                    "vpte",
                                    "builder-start",
                                    resolution,
                                    ncolors,
                                    timeline_message);
     if (first_touch != 0) {
-        sixel_lookup_vpte_first_touch(distances,
+        sixel_lookup_vpte_first_touch_8bit(distances,
                                       sources,
                                       resolution,
                                       threads,
@@ -2178,13 +2189,13 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_8bit_t *vpte,
                                       tile_xy,
                                       tile_depth);
     }
-    sixel_lookup_vpte_seed_grid(resolution,
+    sixel_lookup_vpte_seed_grid_8bit(resolution,
                                 shared->depth,
                                 shared->ncolors,
                                 shared->palette,
                                 distances,
                                 sources);
-    sixel_lookup_vpte_apply_edt(shared,
+    sixel_lookup_vpte_apply_edt_8bit(shared,
                                 distances,
                                 sources,
                                 &timeline,
@@ -2192,15 +2203,15 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_8bit_t *vpte,
                                 pin_threads,
                                 tile_xy,
                                 tile_depth);
-    sixel_lookup_vpte_fill_indices(shared, sources);
-    sixel_lookup_vpte_mark_boundaries(shared, sources);
+    sixel_lookup_vpte_fill_indices_8bit(shared, sources);
+    sixel_lookup_vpte_mark_boundaries_8bit(shared, sources);
     if (shared->dist2 != NULL) {
         for (offset = 0U; offset < total; ++offset) {
             shared->dist2[offset] = (float)distances[offset];
         }
     }
 
-    sixel_lookup_vpte_timeline_log(&timeline,
+    sixel_lookup_vpte_timeline_log_8bit(&timeline,
                                    "vpte",
                                    "builder-end",
                                    resolution,
@@ -2208,7 +2219,7 @@ sixel_lookup_vpte_build(sixel_lookup_vpte_8bit_t *vpte,
                                    timeline_message);
     sixel_allocator_free(vpte->allocator, distances);
     sixel_allocator_free(vpte->allocator, sources);
-    sixel_lookup_vpte_timeline_close(&timeline);
+    sixel_lookup_vpte_timeline_close_8bit(&timeline);
 
     /*
      * The quantized lattice maps every voxel to a unit cube.
@@ -2257,7 +2268,7 @@ sixel_lookup_vpte_8bit_unref(sixel_lookup_vpte_8bit_t *vpte)
     }
 
     allocator = vpte->allocator;
-    sixel_lookup_vpte_shared_unref(allocator, vpte->shared);
+    sixel_lookup_vpte_shared_unref_8bit(allocator, vpte->shared);
     sixel_allocator_free(allocator, vpte);
 }
 
@@ -2286,18 +2297,18 @@ sixel_lookup_vpte_8bit_configure(sixel_lookup_vpte_8bit_t *vpte,
     if (depth != 3) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (!sixel_lookup_vpte_validate_resolution(resolution)) {
+    if (!sixel_lookup_vpte_validate_resolution_8bit(resolution)) {
         sixel_helper_set_additional_message(
             "sixel_lookup_vpte_8bit_configure: resolution must be 64/128/256.");
         return SIXEL_BAD_ARGUMENT;
     }
 
     if (vpte->shared != NULL) {
-        sixel_lookup_vpte_shared_unref(vpte->allocator, vpte->shared);
+        sixel_lookup_vpte_shared_unref_8bit(vpte->allocator, vpte->shared);
         vpte->shared = NULL;
     }
 
-    status = sixel_lookup_vpte_build(vpte,
+    status = sixel_lookup_vpte_build_8bit(vpte,
                                      palette,
                                      ncolors,
                                      resolution,
@@ -2312,7 +2323,7 @@ sixel_lookup_vpte_8bit_configure(sixel_lookup_vpte_8bit_t *vpte,
     }
 
     if (shared_flag != 0) {
-        sixel_lookup_vpte_shared_ref(vpte->shared);
+        sixel_lookup_vpte_shared_ref_8bit(vpte->shared);
     }
 
 #if SIXEL_VPTE_TLS_AVAILABLE == 0
@@ -2332,7 +2343,7 @@ sixel_lookup_vpte_8bit_configure(sixel_lookup_vpte_8bit_t *vpte,
 }
 
 static int
-sixel_lookup_vpte_read_index(sixel_lookup_vpte_shared_t const *shared,
+sixel_lookup_vpte_read_index_8bit(sixel_lookup_vpte_shared_8bit_t const *shared,
                              size_t offset)
 {
     if (!shared->use_u16) {
@@ -2343,8 +2354,9 @@ sixel_lookup_vpte_read_index(sixel_lookup_vpte_shared_t const *shared,
 }
 
 static int
-sixel_lookup_vpte_boundary_bit(sixel_lookup_vpte_shared_t const *shared,
-                               size_t offset)
+sixel_lookup_vpte_boundary_bit_8bit(
+    sixel_lookup_vpte_shared_8bit_t const *shared,
+    size_t offset)
 {
     size_t byte_index;
     size_t bit_index;
@@ -2356,8 +2368,9 @@ sixel_lookup_vpte_boundary_bit(sixel_lookup_vpte_shared_t const *shared,
 }
 
 static int
-sixel_lookup_vpte_refine_needed(sixel_lookup_vpte_shared_t const *shared,
-                                size_t offset)
+sixel_lookup_vpte_refine_needed_8bit(
+    sixel_lookup_vpte_shared_8bit_t const *shared,
+    size_t offset)
 {
     double dist2;
 
@@ -2374,11 +2387,12 @@ sixel_lookup_vpte_refine_needed(sixel_lookup_vpte_shared_t const *shared,
 }
 
 static int
-sixel_lookup_vpte_refine_candidates(sixel_lookup_vpte_shared_t const *shared,
-                                    unsigned char const *pixel,
-                                    int x,
-                                    int y,
-                                    int z)
+sixel_lookup_vpte_refine_candidates_8bit(
+    sixel_lookup_vpte_shared_8bit_t const *shared,
+    unsigned char const *pixel,
+    int x,
+    int y,
+    int z)
 {
     int best_index;
     double best_distance;
@@ -2435,7 +2449,7 @@ sixel_lookup_vpte_refine_candidates(sixel_lookup_vpte_shared_t const *shared,
                 offset = ((size_t)corner_z[cz] * plane)
                        + ((size_t)corner_y[cy] * (size_t)shared->resolution)
                        + (size_t)corner_x[cx];
-                candidate = sixel_lookup_vpte_read_index(shared, offset);
+                candidate = sixel_lookup_vpte_read_index_8bit(shared, offset);
 
                 for (idx = 0; idx < used_count; ++idx) {
                     if (used[idx] == candidate) {
@@ -2449,15 +2463,15 @@ sixel_lookup_vpte_refine_candidates(sixel_lookup_vpte_shared_t const *shared,
                 used[used_count] = candidate;
                 ++used_count;
 
-                p1 = shared->palette[sixel_lookup_vpte_palette_index(
+                p1 = shared->palette[sixel_lookup_vpte_palette_index_8bit(
                     shared->depth,
                     candidate,
                     0)];
-                p2 = shared->palette[sixel_lookup_vpte_palette_index(
+                p2 = shared->palette[sixel_lookup_vpte_palette_index_8bit(
                     shared->depth,
                     candidate,
                     1)];
-                p3 = shared->palette[sixel_lookup_vpte_palette_index(
+                p3 = shared->palette[sixel_lookup_vpte_palette_index_8bit(
                     shared->depth,
                     candidate,
                     2)];
@@ -2520,20 +2534,23 @@ sixel_lookup_vpte_8bit_map(sixel_lookup_vpte_8bit_t *vpte,
         cache_active = 0;
     }
     if (cache_active != 0) {
-        sixel_lookup_vpte_cache_prepare(vpte->shared);
-        if (sixel_lookup_vpte_cache_get(&sixel_lookup_vpte_thread_cache,
-                                         offset,
-                                         &cached_value)) {
+        sixel_lookup_vpte_cache_prepare_8bit(vpte->shared);
+        if (sixel_lookup_vpte_cache_get_8bit(
+                &sixel_lookup_vpte_thread_cache_8bit,
+                offset,
+                &cached_value)) {
             return cached_value;
         }
     }
 
-    index = sixel_lookup_vpte_read_index(vpte->shared, offset);
+    index = sixel_lookup_vpte_read_index_8bit(vpte->shared, offset);
     if (vpte->shared->refine != 0
-        && sixel_lookup_vpte_boundary_bit(vpte->shared, offset) != 0) {
-        should_refine = sixel_lookup_vpte_refine_needed(vpte->shared, offset);
+        && sixel_lookup_vpte_boundary_bit_8bit(vpte->shared, offset) != 0) {
+        should_refine = sixel_lookup_vpte_refine_needed_8bit(
+                            vpte->shared,
+                            offset);
         if (should_refine != 0) {
-            index = sixel_lookup_vpte_refine_candidates(vpte->shared,
+            index = sixel_lookup_vpte_refine_candidates_8bit(vpte->shared,
                                                         pixel,
                                                         x,
                                                         y,
@@ -2541,7 +2558,7 @@ sixel_lookup_vpte_8bit_map(sixel_lookup_vpte_8bit_t *vpte,
         }
     }
     if (cache_active != 0) {
-        sixel_lookup_vpte_cache_put(&sixel_lookup_vpte_thread_cache,
+        sixel_lookup_vpte_cache_put_8bit(&sixel_lookup_vpte_thread_cache_8bit,
                                     offset,
                                     index);
     }
