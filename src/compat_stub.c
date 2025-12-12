@@ -852,12 +852,6 @@ sixel_compat_open(const char *path, int flags, ...)
 # pragma warning(disable : 4996)
     fd = _open(path, flags, mode);
 # pragma warning(pop)
-#elif defined(HAVE__OPEN) && HAVE__OPEN
-    if (flags & O_CREAT) {
-        fd = _open(path, flags, mode);
-    } else {
-        fd = _open(path, flags);
-    }
 #elif defined(HAVE_OPEN) && HAVE_OPEN
     if (flags & O_CREAT) {
         fd = open(path, flags, (mode_t)mode);
