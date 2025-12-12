@@ -33,6 +33,7 @@ project('libsixel',
 host_system = host_machine.system()
 cc = meson.get_compiler('c')
 fs = import('fs')
+conf = configuration_data()
 have_objc = add_languages('objc', required: false, native: false)
 if have_objc
   objc = meson.get_compiler('objc')
@@ -47,7 +48,6 @@ if host_system == 'darwin'
 endif
 
 # configuration data
-conf = configuration_data()
 conf.set_quoted('PACKAGE', meson.project_name())
 conf.set_quoted('PACKAGE_NAME', meson.project_name())
 conf.set_quoted('PACKAGE_STRING',
