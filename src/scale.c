@@ -1249,6 +1249,16 @@ scale_with_resampling_serial(
     !defined(SIXEL_USE_AVX) && !defined(SIXEL_USE_SSE2) && \
     !defined(SIXEL_USE_NEON)
     /*
+     * When every SIMD backend is compiled out (for example GCC i686
+     * without SSE2), the runtime detection would become an unused
+     * write. Consume it here to keep the ABI while silencing warnings.
+     */
+    (void)simd_level;
+#endif
+#if !defined(SIXEL_USE_AVX512) && !defined(SIXEL_USE_AVX2) && \
+    !defined(SIXEL_USE_AVX) && !defined(SIXEL_USE_SSE2) && \
+    !defined(SIXEL_USE_NEON)
+    /*
      * GCC i686 builds may compile without any SIMD backends.  Consume the
      * runtime SIMD level here so the set-but-unused warning stays quiet
      * without altering the function signature shared across backends.
