@@ -774,26 +774,6 @@ sixel_option_normalized_levenshtein(
     return normalized;
 }
 
-static double
-sixel_option_extension_similarity(
-    char const *lhs,
-    char const *rhs)
-{
-    char const *lhs_extension;
-    char const *rhs_extension;
-
-    lhs_extension = sixel_option_extension_view(lhs);
-    rhs_extension = sixel_option_extension_view(rhs);
-    if (lhs_extension == NULL || rhs_extension == NULL) {
-        return 0.0;
-    }
-    if (sixel_option_case_insensitive_equals(lhs_extension, rhs_extension)) {
-        return 1.0;
-    }
-
-    return 0.0;
-}
-
 static char *
 sixel_option_duplicate_string(char const *text)
 {
@@ -873,6 +853,7 @@ sixel_option_duplicate_directory(char const *path)
     return copy;
 }
 
+#if HAVE_DIRENT_H && HAVE_SYS_STAT_H
 static char *
 sixel_option_join_directory_entry(
     char const *directory,
@@ -926,6 +907,26 @@ sixel_option_join_directory_entry(
     joined[directory_length + (size_t)needs_separator + entry_length] = '\0';
 
     return joined;
+}
+
+static double
+sixel_option_extension_similarity(
+    char const *lhs,
+    char const *rhs)
+{
+    char const *lhs_extension;
+    char const *rhs_extension;
+
+    lhs_extension = sixel_option_extension_view(lhs);
+    rhs_extension = sixel_option_extension_view(rhs);
+    if (lhs_extension == NULL || rhs_extension == NULL) {
+        return 0.0;
+    }
+    if (sixel_option_case_insensitive_equals(lhs_extension, rhs_extension)) {
+        return 1.0;
+    }
+
+    return 0.0;
 }
 
 static void
@@ -1052,6 +1053,7 @@ sixel_option_strerror(
 # endif
 #endif
 }
+#endif /* HAVE_DIRENT_H && HAVE_SYS_STAT_H */
 
 static int
 sixel_option_path_is_clipboard(char const *argument)
@@ -1134,12 +1136,12 @@ sixel_option_build_missing_path_message(
 {
     char *directory_copy;
     char const *argument_view;
-    char const *target_name;
     size_t offset;
     int written;
-    int result;
     int suggestions_enabled;
 #if HAVE_DIRENT_H && HAVE_SYS_STAT_H
+    char const *target_name;
+    int result;
     DIR *directory_stream;
     struct dirent *entry;
     sixel_option_path_candidate_t *candidates;
@@ -1168,10 +1170,8 @@ sixel_option_build_missing_path_message(
     }
     argument_view = (argument != NULL && argument[0] != '\0')
         ? argument : resolved_path;
-    target_name = sixel_option_basename_view(resolved_path);
     offset = 0u;
     written = 0;
-    result = 0;
     suggestions_enabled = 0;
 
     if (buffer == NULL || buffer_size == 0u) {
@@ -1212,6 +1212,8 @@ sixel_option_build_missing_path_message(
         free(directory_copy);
         return 0;
     }
+    target_name = sixel_option_basename_view(resolved_path);
+    result = 0;
     directory_stream = NULL;
     entry = NULL;
     candidates = NULL;
