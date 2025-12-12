@@ -263,8 +263,9 @@ BEGIN {
 }
 {
     if ($0 ~ /^#include "[^"]+"/) {
-        match($0, /^#include "([^"]+)"/, m);
-        name = m[1];
+        name = $0;
+        sub(/^#include[ \t]*"/, "", name);
+        sub(/".*/, "", name);
         if (name in header) {
             if (name in inline) {
                 path = src_root "/src/" name;
