@@ -60,6 +60,16 @@
 # include <unistd.h>
 #endif
 
+/*
+ * Some libcs (notably glibc when feature macros are trimmed by the build
+ * flags) expose `realpath()` at link time but hide the prototype.  Declare it
+ * ourselves when configure detected the symbol so that we do not rely on
+ * implicit declarations.
+ */
+#if defined(HAVE_REALPATH)
+char *realpath(const char *path, char *resolved_path);
+#endif
+
 #if defined(_WIN32)
 # include <io.h>
 # include <direct.h>
