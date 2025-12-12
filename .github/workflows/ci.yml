@@ -273,10 +273,7 @@ jobs:
           ${pkg_prefix:+$pkg_prefix }pkg update -f
           ${pkg_prefix:+$pkg_prefix }pkg install -y \
             gmake \
-            pkgconf \
-            png \
-            jpeg-turbo \
-            curl
+            pkgconf
 
     - name: Install dependencies (NetBSD)
       if: matrix.platform == 'netbsd'
@@ -312,9 +309,6 @@ jobs:
           ${pkg_prefix:+$pkg_prefix }pkgin -y install \
             gmake \
             pkgconf \
-            png \
-            jpeg \
-            curl \
             gcovr
 
     - name: Upload pkg_install log (Autotools NetBSD)
@@ -377,10 +371,7 @@ jobs:
 
           ${pkg_prefix:+$pkg_prefix }pkg_add \
             gmake \
-            pkgconf \
-            png \
-            jpeg \
-            curl
+            pkgconf
 
     - name: Setup MSVC developer env (vcvars)
       if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' }}
@@ -1732,9 +1723,6 @@ jobs:
 
             ${pkg_prefix:+$pkg_prefix }pkg_add \
               pkgconf \
-              png \
-              jpeg \
-              curl \
               python%3 \
               meson \
               ninja
@@ -1761,9 +1749,6 @@ jobs:
             ${pkg_prefix:+$pkg_prefix }pkgin -y update
             ${pkg_prefix:+$pkg_prefix }pkgin -y install \
               pkgconf \
-              png \
-              jpeg \
-              curl \
               python311 \
               gcovr \
               meson \
