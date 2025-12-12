@@ -771,6 +771,10 @@ sixel_compat_open(const char *path, int flags, ...)
     int fd;
     va_list args;
     int mode;
+#if defined(_MSC_VER) && defined(HAVE__SOPEN_S) && HAVE__SOPEN_S
+    errno_t err;
+    int share_flags;
+#endif
 
     fd = (-1);
     mode = 0;
@@ -786,14 +790,38 @@ sixel_compat_open(const char *path, int flags, ...)
     }
     va_end(args);
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && defined(HAVE__SOPEN_S) && HAVE__SOPEN_S
+    /*
+     * Prefer the secure CRT entry point when available.  _sopen_s reports
+     * errors through errno_t. Translate failures back into errno values for
+     * the public API.
+     */
+    share_flags = _SH_DENYNO;
+    err = _sopen_s(&fd, path, flags, share_flags, mode);
+    if (err != 0) {
+        errno = (int)err;
+        fd = (-1);
+    }
+#elif defined(_MSC_VER) && defined(HAVE__OPEN) && HAVE__OPEN
+# pragma warning(push)
+# pragma warning(disable : 4996)
     fd = _open(path, flags, mode);
-#else
+# pragma warning(pop)
+#elif defined(HAVE__OPEN) && HAVE__OPEN
+    if (flags & O_CREAT) {
+        fd = _open(path, flags, mode);
+    } else {
+        fd = _open(path, flags);
+    }
+#elif defined(HAVE_OPEN) && HAVE_OPEN
     if (flags & O_CREAT) {
         fd = open(path, flags, (mode_t)mode);
     } else {
         fd = open(path, flags);
     }
+#else
+    errno = ENOSYS;
+    fd = (-1);
 #endif
 
     return fd;

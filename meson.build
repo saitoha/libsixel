@@ -243,9 +243,11 @@ extra_funcs = [
   '_strerror_r',
   '_isatty',
   'isatty',
+  '_sopen_s',
   '_open',
   '_write',
   '_close',
+  'open',
   'sscanf_s',
   'strncmp',
   'ldiv',
@@ -273,6 +275,8 @@ extra_funcs = [
 func_prefixes = {
   'setmode': '#include <io.h>',
   '_setmode': '#include <io.h>',
+  '_sopen_s': '#include <io.h>\n#include <share.h>',
+  'open': '#include <fcntl.h>'
 }
 
 foreach f : extra_funcs
