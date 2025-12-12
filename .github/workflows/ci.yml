@@ -673,7 +673,6 @@ jobs:
         environment_variables: CI
         run: |
           set -eux
-          TOP_BUILDDIR=. TOP_SRCDIR=. /bin/sh tests/tools/with-timeout.sh --timeout=10 tests/cli/t/test_0002_stdin.t || true
           gmake check V=1
 
     - name: Run tests (non-Windows)
