@@ -30,6 +30,10 @@
 #include <stdarg.h>
 #include <time.h>
 
+#if HAVE_SYS_TIME_H || HAVE_GETTIMEOFDAY
+# include <sys/time.h>
+#endif
+
 #if !defined(SIXEL_COMPAT_API)
 /*
  * Export map for compatibility helper
@@ -194,6 +198,9 @@ SIXEL_COMPAT_API int sixel_compat_setenv(const char *name,
 SIXEL_COMPAT_API int sixel_compat_isatty(int fd);
 
 SIXEL_COMPAT_API int sixel_compat_is_console(int fd);
+
+SIXEL_COMPAT_API int sixel_compat_gettimeofday(struct timeval *tv,
+                                               void *tz);
 
 SIXEL_COMPAT_API char *sixel_compat_strtok(char *string,
                                            const char *delimiters,
