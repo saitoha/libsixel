@@ -34,6 +34,7 @@
 
 #if defined(SIXEL_ENABLE_ABORT_TRACE)
 
+#include <errno.h>
 #include <limits.h>
 #include <signal.h>
 #include <stddef.h>
@@ -217,6 +218,48 @@ sixel_aborttrace_ascii_tolower(unsigned char value)
     return value;
 }
 
+/*
+ * Environment readers prefer _dupenv_s on MSVC to silence deprecation
+ * diagnostics. Other platforms duplicate getenv strings into caller-owned
+ * storage so the parser can safely free them after inspection.
+ */
+static char *
+sixel_aborttrace_getenv_dup(char const *name)
+{
+#if defined(_MSC_VER) && defined(HAVE__DUPENV_S)
+    char *value;
+    size_t len;
+    errno_t rc;
+
+    value = NULL;
+    len = 0u;
+    rc = _dupenv_s(&value, &len, name);
+    if (rc != 0) {
+        if (value != NULL) {
+            free(value);
+        }
+        return NULL;
+    }
+    return value;
+#else
+    char const *value;
+    size_t len;
+    char *copy;
+
+    value = getenv(name);
+    if (value == NULL) {
+        return NULL;
+    }
+    len = strlen(value);
+    copy = (char *)malloc(len + 1u);
+    if (copy == NULL) {
+        return NULL;
+    }
+    memcpy(copy, value, len + 1u);
+    return copy;
+#endif
+}
+
 static int
 sixel_aborttrace_match_token(char const *value, char const *token)
 {
@@ -246,27 +289,31 @@ sixel_aborttrace_match_token(char const *value, char const *token)
 static int
 sixel_aborttrace_env_enabled(void)
 {
-    char const *value;
-    char const *legacy;
+    char *value;
+    char *legacy;
 
-    legacy = getenv("SIXEL_NO_ABORT_TRACE");
+    legacy = sixel_aborttrace_getenv_dup("SIXEL_NO_ABORT_TRACE");
     if (legacy != NULL && legacy[0] != '\0') {
         if (!sixel_aborttrace_match_token(legacy, "0") &&
             !sixel_aborttrace_match_token(legacy, "false") &&
             !sixel_aborttrace_match_token(legacy, "off")) {
+            free(legacy);
             return 0;
         }
     }
+    free(legacy);
 
-    value = getenv("SIXEL_ABORT_TRACE");
+    value = sixel_aborttrace_getenv_dup("SIXEL_ABORT_TRACE");
     if (value == NULL || value[0] == '\0' ||
         sixel_aborttrace_match_token(value, "auto")) {
+        free(value);
         return 1;
     }
 
     if (sixel_aborttrace_match_token(value, "0") ||
         sixel_aborttrace_match_token(value, "false") ||
         sixel_aborttrace_match_token(value, "off")) {
+        free(value);
         return 0;
     }
 
@@ -274,9 +321,11 @@ sixel_aborttrace_env_enabled(void)
         sixel_aborttrace_match_token(value, "true") ||
         sixel_aborttrace_match_token(value, "on") ||
         sixel_aborttrace_match_token(value, "yes")) {
+        free(value);
         return 1;
     }
 
+    free(value);
     return 1;
 }
 
