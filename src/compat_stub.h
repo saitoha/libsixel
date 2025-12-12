@@ -234,4 +234,6 @@ SIXEL_COMPAT_API ssize_t sixel_compat_write(int fd,
                                             const void *buffer,
                                             size_t count);
 
+SIXEL_COMPAT_API char *sixel_compat_realpath(const char *path);
+
 #endif /* SIXEL_COMPAT_STUB_H */
