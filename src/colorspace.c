@@ -232,11 +232,20 @@ static SIXELSTATUS sixel_colorspace_convert_sse2(unsigned char *pixels,
  * hot paths.  The double variants carry normalised values for the general
  * decoder while the byte versions serve the SIMD accelerators.
  */
+#define SIXEL_CBR_LUT_SIZE 4096
+
+/*
+ * Cube-root lookup flattens repeated cbrt() calls inside OKLab/CIELAB
+ * transforms.  SIMD lanes gather from this shared table so pow()-style math
+ * stays confined to the one-time initialization.
+ */
+
 static unsigned char gamma_to_linear_lut[SIXEL_COLORSPACE_LUT_SIZE];
 static unsigned char linear_to_gamma_lut[SIXEL_COLORSPACE_LUT_SIZE];
 static double gamma_to_linear_double_lut[SIXEL_COLORSPACE_LUT_SIZE];
 static double smptec_to_linear_double_lut[SIXEL_COLORSPACE_LUT_SIZE];
 static unsigned char linear_to_smptec_lut[SIXEL_COLORSPACE_LUT_SIZE];
+static float sixel_cbrt_lut[SIXEL_CBR_LUT_SIZE];
 static int tables_initialized = 0;
 /*
  * Gate LUT construction so concurrent callers do not rebuild the immutable
@@ -255,6 +264,54 @@ sixel_clamp_unit(double value)
         return 1.0;
     }
     return value;
+}
+
+static inline float
+sixel_colorspace_cbrt_lookup(float value)
+{
+    float scaled;
+    int index;
+
+    if (value <= 0.0f) {
+        return 0.0f;
+    }
+    if (value >= 1.0f) {
+        return 1.0f;
+    }
+
+    scaled = value * (float)(SIXEL_CBR_LUT_SIZE - 1);
+    index = (int)(scaled + 0.5f);
+    if (index < 0) {
+        index = 0;
+    } else if (index >= SIXEL_CBR_LUT_SIZE) {
+        index = SIXEL_CBR_LUT_SIZE - 1;
+    }
+
+    return sixel_cbrt_lut[index];
+}
+
+static inline double
+sixel_colorspace_cbrt_lookup_double(double value)
+{
+    double scaled;
+    int index;
+
+    if (value <= 0.0) {
+        return 0.0;
+    }
+    if (value >= 1.0) {
+        return 1.0;
+    }
+
+    scaled = value * (double)(SIXEL_CBR_LUT_SIZE - 1);
+    index = (int)(scaled + 0.5);
+    if (index < 0) {
+        index = 0;
+    } else if (index >= SIXEL_CBR_LUT_SIZE) {
+        index = SIXEL_CBR_LUT_SIZE - 1;
+    }
+
+    return (double)sixel_cbrt_lut[index];
 }
 
 static inline double
@@ -1212,6 +1269,359 @@ sixel_colorspace_rgb_to_yuv_block(__m256 r,
     *v = sixel_colorspace_clamp_v_avx(*v);
 }
 
+static inline __m256
+sixel_colorspace_cbrt_block_avx(__m256 value)
+{
+    __m256 zero;
+    __m256 one;
+    __m256 scaled;
+    __m256i index;
+
+    zero = _mm256_set1_ps(0.0f);
+    one = _mm256_set1_ps(1.0f);
+
+    value = _mm256_max_ps(value, zero);
+    value = _mm256_min_ps(value, one);
+
+    scaled = _mm256_mul_ps(value,
+                           _mm256_set1_ps(
+                               (float)(SIXEL_CBR_LUT_SIZE - 1)));
+    index = _mm256_cvtps_epi32(_mm256_add_ps(scaled,
+                                             _mm256_set1_ps(0.5f)));
+
+    return _mm256_i32gather_ps(sixel_cbrt_lut, index, 4);
+}
+
+static void
+sixel_colorspace_linear_to_oklab_block(__m256 r,
+                                       __m256 g,
+                                       __m256 b,
+                                       __m256 *L,
+                                       __m256 *A,
+                                       __m256 *B)
+{
+    __m256 l;
+    __m256 m;
+    __m256 s;
+    __m256 l_;
+    __m256 m_;
+    __m256 s_;
+    __m256 lr;
+    __m256 lg;
+    __m256 lb;
+    __m256 mr;
+    __m256 mg;
+    __m256 mb;
+    __m256 sr;
+    __m256 sg;
+    __m256 sb;
+    __m256 l_l;
+    __m256 l_m;
+    __m256 l_s;
+    __m256 a_l;
+    __m256 a_m;
+    __m256 a_s;
+    __m256 b_l;
+    __m256 b_m;
+    __m256 b_s;
+
+    lr = _mm256_set1_ps(0.4122214708f);
+    lg = _mm256_set1_ps(0.5363325363f);
+    lb = _mm256_set1_ps(0.0514459929f);
+    mr = _mm256_set1_ps(0.2119034982f);
+    mg = _mm256_set1_ps(0.6806995451f);
+    mb = _mm256_set1_ps(0.1073969566f);
+    sr = _mm256_set1_ps(0.0883024619f);
+    sg = _mm256_set1_ps(0.2817188376f);
+    sb = _mm256_set1_ps(0.6299787005f);
+    l_l = _mm256_set1_ps(0.2104542553f);
+    l_m = _mm256_set1_ps(0.7936177850f);
+    l_s = _mm256_set1_ps(-0.0040720468f);
+    a_l = _mm256_set1_ps(1.9779984951f);
+    a_m = _mm256_set1_ps(-2.4285922050f);
+    a_s = _mm256_set1_ps(0.4505937099f);
+    b_l = _mm256_set1_ps(0.0259040371f);
+    b_m = _mm256_set1_ps(0.7827717662f);
+    b_s = _mm256_set1_ps(-0.8086757660f);
+
+    l = _mm256_add_ps(_mm256_mul_ps(lr, r),
+                      _mm256_add_ps(_mm256_mul_ps(lg, g),
+                                    _mm256_mul_ps(lb, b)));
+    m = _mm256_add_ps(_mm256_mul_ps(mr, r),
+                      _mm256_add_ps(_mm256_mul_ps(mg, g),
+                                    _mm256_mul_ps(mb, b)));
+    s = _mm256_add_ps(_mm256_mul_ps(sr, r),
+                      _mm256_add_ps(_mm256_mul_ps(sg, g),
+                                    _mm256_mul_ps(sb, b)));
+
+    l_ = sixel_colorspace_cbrt_block_avx(l);
+    m_ = sixel_colorspace_cbrt_block_avx(m);
+    s_ = sixel_colorspace_cbrt_block_avx(s);
+
+    *L = _mm256_add_ps(_mm256_add_ps(_mm256_mul_ps(l_l, l_),
+                                     _mm256_mul_ps(l_m, m_)),
+                       _mm256_mul_ps(l_s, s_));
+    *A = _mm256_add_ps(_mm256_add_ps(_mm256_mul_ps(a_l, l_),
+                                     _mm256_mul_ps(a_m, m_)),
+                       _mm256_mul_ps(a_s, s_));
+    *B = _mm256_add_ps(_mm256_add_ps(_mm256_mul_ps(b_l, l_),
+                                     _mm256_mul_ps(b_m, m_)),
+                       _mm256_mul_ps(b_s, s_));
+}
+
+static void
+sixel_colorspace_oklab_to_linear_block(__m256 L,
+                                       __m256 A,
+                                       __m256 B,
+                                       __m256 *r,
+                                       __m256 *g,
+                                       __m256 *b)
+{
+    __m256 l_;
+    __m256 m_;
+    __m256 s_;
+    __m256 l;
+    __m256 m;
+    __m256 s;
+    __m256 l_l;
+    __m256 l_a;
+    __m256 l_b;
+    __m256 m_l;
+    __m256 m_a;
+    __m256 m_b;
+    __m256 s_l;
+    __m256 s_a;
+    __m256 s_b;
+    __m256 r_l;
+    __m256 r_m;
+    __m256 r_s;
+    __m256 g_l;
+    __m256 g_m;
+    __m256 g_s;
+    __m256 b_l;
+    __m256 b_m;
+    __m256 b_s;
+
+    l_l = _mm256_set1_ps(0.3963377774f);
+    l_a = _mm256_set1_ps(0.2158037573f);
+    m_l = _mm256_set1_ps(-0.1055613458f);
+    m_a = _mm256_set1_ps(-0.0638541728f);
+    s_l = _mm256_set1_ps(-0.0894841775f);
+    s_a = _mm256_set1_ps(-1.2914855480f);
+    r_l = _mm256_set1_ps(4.0767416621f);
+    r_m = _mm256_set1_ps(-3.3077115913f);
+    r_s = _mm256_set1_ps(0.2309699292f);
+    g_l = _mm256_set1_ps(-1.2684380046f);
+    g_m = _mm256_set1_ps(2.6097574011f);
+    g_s = _mm256_set1_ps(-0.3413193965f);
+    b_l = _mm256_set1_ps(-0.0041960863f);
+    b_m = _mm256_set1_ps(-0.7034186147f);
+    b_s = _mm256_set1_ps(1.7076147010f);
+
+    l_l = _mm256_mul_ps(l_l, A);
+    l_a = _mm256_mul_ps(l_a, B);
+    m_l = _mm256_mul_ps(m_l, A);
+    m_a = _mm256_mul_ps(m_a, B);
+    s_l = _mm256_mul_ps(s_l, A);
+    s_a = _mm256_mul_ps(s_a, B);
+
+    l_ = _mm256_add_ps(_mm256_add_ps(L, l_l), l_a);
+    m_ = _mm256_add_ps(_mm256_add_ps(L, m_l), m_a);
+    s_ = _mm256_add_ps(_mm256_add_ps(L, s_l), s_a);
+
+    l = _mm256_mul_ps(_mm256_mul_ps(l_, l_), l_);
+    m = _mm256_mul_ps(_mm256_mul_ps(m_, m_), m_);
+    s = _mm256_mul_ps(_mm256_mul_ps(s_, s_), s_);
+
+    *r = _mm256_max_ps(_mm256_add_ps(
+        _mm256_add_ps(_mm256_mul_ps(r_l, l),
+                      _mm256_mul_ps(r_m, m)),
+        _mm256_mul_ps(r_s, s)), _mm256_set1_ps(0.0f));
+    *g = _mm256_max_ps(_mm256_add_ps(
+        _mm256_add_ps(_mm256_mul_ps(g_l, l),
+                      _mm256_mul_ps(g_m, m)),
+        _mm256_mul_ps(g_s, s)), _mm256_set1_ps(0.0f));
+    *b = _mm256_max_ps(_mm256_add_ps(
+        _mm256_add_ps(_mm256_mul_ps(b_l, l),
+                      _mm256_mul_ps(b_m, m)),
+        _mm256_mul_ps(b_s, s)), _mm256_set1_ps(0.0f));
+}
+
+static size_t
+sixel_convert_pixels_via_linear_avx2(unsigned char *pixels,
+                                     size_t pixel_total,
+                                     const sixel_pixelformat_layout_t *layout,
+                                     int colorspace_src,
+                                     int colorspace_dst,
+                                     int simd_level)
+{
+    /*
+     * AVX2 block covers the OKLab<->linear pair so byte buffers can skip the
+     * scalar pow/cbrt path.  Grayscale and DIN99/CIELAB fall back to the
+     * scalar loop after the SIMD block hands back the processed count.
+     */
+    size_t processed;
+    size_t offset;
+    __m256 r_lin;
+    __m256 g_lin;
+    __m256 b_lin;
+    __m256 L;
+    __m256 A;
+    __m256 B;
+    float Lbuf[8];
+    float Abuf[8];
+    float Bbuf[8];
+    float rbuf[8];
+    float gbuf[8];
+    float bbuf[8];
+    alignas(32) unsigned char out_r[32];
+    alignas(32) unsigned char out_g[32];
+    alignas(32) unsigned char out_b[32];
+    size_t index;
+
+    (void)simd_level;
+
+    processed = 0U;
+
+    if (layout->step < 3) {
+        return processed;
+    }
+
+    if (colorspace_src != SIXEL_COLORSPACE_GAMMA &&
+            colorspace_src != SIXEL_COLORSPACE_LINEAR &&
+            colorspace_src != SIXEL_COLORSPACE_OKLAB) {
+        return processed;
+    }
+
+    if (colorspace_dst != SIXEL_COLORSPACE_GAMMA &&
+            colorspace_dst != SIXEL_COLORSPACE_LINEAR &&
+            colorspace_dst != SIXEL_COLORSPACE_OKLAB) {
+        return processed;
+    }
+
+    while (processed + 8U <= pixel_total) {
+        offset = processed * (size_t)layout->step;
+
+        switch (colorspace_src) {
+        case SIXEL_COLORSPACE_GAMMA:
+            sixel_colorspace_load_block(pixels,
+                                        offset,
+                                        layout,
+                                        1,
+                                        &r_lin,
+                                        &g_lin,
+                                        &b_lin);
+            break;
+        case SIXEL_COLORSPACE_LINEAR:
+            sixel_colorspace_load_block(pixels,
+                                        offset,
+                                        layout,
+                                        0,
+                                        &r_lin,
+                                        &g_lin,
+                                        &b_lin);
+            break;
+        case SIXEL_COLORSPACE_OKLAB:
+            for (index = 0U; index < 8U; ++index) {
+                size_t base;
+                unsigned char r_byte;
+                unsigned char g_byte;
+                unsigned char b_byte;
+
+                base = offset + index * (size_t)layout->step;
+                r_byte = pixels[base + (size_t)layout->index_r];
+                g_byte = pixels[base + (size_t)layout->index_g];
+                b_byte = pixels[base + (size_t)layout->index_b];
+
+                Lbuf[index] = (float)r_byte / 255.0f;
+                Abuf[index] = (float)sixel_oklab_decode_ab(g_byte);
+                Bbuf[index] = (float)sixel_oklab_decode_ab(b_byte);
+            }
+
+            L = _mm256_loadu_ps(Lbuf);
+            A = _mm256_loadu_ps(Abuf);
+            B = _mm256_loadu_ps(Bbuf);
+            sixel_colorspace_oklab_to_linear_block(L,
+                                                  A,
+                                                  B,
+                                                  &r_lin,
+                                                  &g_lin,
+                                                  &b_lin);
+            break;
+        default:
+            return processed;
+        }
+
+        switch (colorspace_dst) {
+        case SIXEL_COLORSPACE_GAMMA:
+            _mm256_store_si256((__m256i *)out_r,
+                               sixel_colorspace_pack_gamma_bytes_avx(r_lin));
+            _mm256_store_si256((__m256i *)out_g,
+                               sixel_colorspace_pack_gamma_bytes_avx(g_lin));
+            _mm256_store_si256((__m256i *)out_b,
+                               sixel_colorspace_pack_gamma_bytes_avx(b_lin));
+            sixel_colorspace_store_block(pixels,
+                                         offset,
+                                         layout,
+                                         out_r,
+                                         out_g,
+                                         out_b);
+            break;
+        case SIXEL_COLORSPACE_LINEAR:
+            _mm256_store_si256((__m256i *)out_r,
+                               sixel_colorspace_pack_linear_bytes_avx(r_lin));
+            _mm256_store_si256((__m256i *)out_g,
+                               sixel_colorspace_pack_linear_bytes_avx(g_lin));
+            _mm256_store_si256((__m256i *)out_b,
+                               sixel_colorspace_pack_linear_bytes_avx(b_lin));
+            sixel_colorspace_store_block(pixels,
+                                         offset,
+                                         layout,
+                                         out_r,
+                                         out_g,
+                                         out_b);
+            break;
+        case SIXEL_COLORSPACE_OKLAB:
+            sixel_colorspace_linear_to_oklab_block(r_lin,
+                                                   g_lin,
+                                                   b_lin,
+                                                   &L,
+                                                   &A,
+                                                   &B);
+
+            _mm256_storeu_ps(Lbuf, L);
+            _mm256_storeu_ps(Abuf, A);
+            _mm256_storeu_ps(Bbuf, B);
+
+            for (index = 0U; index < 8U; ++index) {
+                rbuf[index] = sixel_clamp_unit((double)Lbuf[index]);
+                gbuf[index] = sixel_oklab_clamp_ab((double)Abuf[index]);
+                bbuf[index] = sixel_oklab_clamp_ab((double)Bbuf[index]);
+            }
+
+            for (index = 0U; index < 8U; ++index) {
+                out_r[index] = sixel_oklab_encode_L((double)rbuf[index]);
+                out_g[index] = sixel_oklab_encode_ab((double)gbuf[index]);
+                out_b[index] = sixel_oklab_encode_ab((double)bbuf[index]);
+            }
+
+            sixel_colorspace_store_block(pixels,
+                                         offset,
+                                         layout,
+                                         out_r,
+                                         out_g,
+                                         out_b);
+            break;
+        default:
+            return processed;
+        }
+
+        processed += 8U;
+    }
+
+    return processed;
+}
+
 static SIXELSTATUS
 sixel_colorspace_convert_yuv_avx2(unsigned char *pixels,
                                   size_t size,
@@ -1583,7 +1993,7 @@ sixel_cielab_f(double t)
 
     delta = 6.0 / 29.0;
     if (t > delta * delta * delta) {
-        return cbrt(t);
+        return sixel_colorspace_cbrt_lookup_double(t);
     }
 
     return (t / (3.0 * delta * delta)) + (4.0 / 29.0);
@@ -1965,9 +2375,9 @@ sixel_linear_to_oklab(double r, double g, double b,
     m = 0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b;
     s = 0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b;
 
-    l_ = cbrt(l);
-    m_ = cbrt(m);
-    s_ = cbrt(s);
+    l_ = sixel_colorspace_cbrt_lookup_double(l);
+    m_ = sixel_colorspace_cbrt_lookup_double(m);
+    s_ = sixel_colorspace_cbrt_lookup_double(s);
 
     *L = 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_;
     *A = 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_;
@@ -3760,6 +4170,7 @@ sixel_colorspace_init_tables(void)
     double converted;
     double smptec_value;
     double smptec_linear;
+    double cbrt_input;
 #if SIXEL_ENABLE_THREADS
     unsigned int guard_previous;
 #endif
@@ -3827,6 +4238,11 @@ sixel_colorspace_init_tables(void)
         converted = pow((double)i / 255.0, 1.0 / 2.2);
         linear_to_smptec_lut[i] =
             sixel_colorspace_clamp((int)(converted * 255.0 + 0.5));
+    }
+
+    for (i = 0; i < SIXEL_CBR_LUT_SIZE; ++i) {
+        cbrt_input = (double)i / (double)(SIXEL_CBR_LUT_SIZE - 1);
+        sixel_cbrt_lut[i] = (float)cbrt(cbrt_input);
     }
 
 #if (defined(SIXEL_USE_AVX2) && defined(__AVX2__)) || \
@@ -4254,6 +4670,7 @@ sixel_convert_pixels_via_linear_chunk(unsigned char *pixels,
                                       int colorspace_src,
                                       int colorspace_dst)
 {
+    size_t processed;
     size_t pixel_index;
     size_t offset;
     unsigned char *pr;
@@ -4263,7 +4680,21 @@ sixel_convert_pixels_via_linear_chunk(unsigned char *pixels,
     double g_lin;
     double b_lin;
 
-    for (pixel_index = 0U; pixel_index < pixel_total; ++pixel_index) {
+    processed = 0U;
+#if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
+    {
+        int simd_level;
+
+        simd_level = sixel_cpu_simd_level();
+        if (simd_level >= SIXEL_SIMD_LEVEL_AVX2) {
+            processed = sixel_convert_pixels_via_linear_avx2(
+                pixels, pixel_total, layout, colorspace_src,
+                colorspace_dst, simd_level);
+        }
+    }
+#endif
+
+    for (pixel_index = processed; pixel_index < pixel_total; ++pixel_index) {
         offset = pixel_index * (size_t)layout->step;
         pr = pixels + offset + (size_t)layout->index_r;
         pg = pixels + offset + (size_t)layout->index_g;
