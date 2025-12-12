@@ -103,16 +103,18 @@ _CRTIMP errno_t __cdecl _dupenv_s(char **buffer,
                                   const char *name);
 #endif
 
-#if defined(_WIN32) && HAVE__SETMODE
+#if HAVE__SETMODE && (defined(_WIN32) || defined(__CYGWIN__) || \
+    defined(__MINGW32__) || defined(__MSYS__))
 /*
- * Some MinGW headers hide `_setmode()` when POSIX feature macros are
- * enabled.  Declare it ourselves to keep the prototype visible while
- * still using the system implementation.  Restrict the declaration to
- * Windows targets so that the calling convention annotation is always
- * available and we avoid leaking the symbol onto POSIX builds.  The
- * signature matches the public CRT contract.
+ * Some MinGW/MSYS headers hide `_setmode()` when POSIX feature macros
+ * are enabled.  Declare it ourselves to keep the prototype visible
+ * while still using the system implementation.  Restrict the
+ * declaration to Windows/Unix-compat runtimes that provide the CRT
+ * calling convention so we avoid leaking the symbol onto pure POSIX
+ * builds.  The signature matches the public CRT contract.
  */
 _CRTIMP int __cdecl _setmode(int fd, int mode);
+# define SIXEL_HAVE_WIN_SETMODE 1
 #endif
 
 #if defined(__APPLE__) && defined(__clang__)
@@ -973,7 +975,7 @@ sixel_compat_set_binary(int fd)
 
     result = 0;
 #if defined(O_BINARY)
-# if HAVE__SETMODE
+# if defined(SIXEL_HAVE_WIN_SETMODE)
     result = _setmode(fd, O_BINARY);
 # elif HAVE_SETMODE
     result = setmode(fd, O_BINARY);
