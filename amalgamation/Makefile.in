@@ -90,6 +90,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@BUILDING_ON_WINDOWS_TRUE@am__append_1 = -no-undefined
 subdir = amalgamation
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
@@ -400,12 +401,7 @@ libsixel_amalgamation_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 	$(WIC_CFLAGS) $(COREGRAPHICS_CFLAGS) $(QUICKLOOK_CFLAGS) \
 	$(CLIPBOARD_CFLAGS) $(ONNXRUNTIME_CFLAGS) @THREAD_CFLAGS@
 
-@BUILDING_ON_WINDOWS_FALSE@libsixel_amalgamation_la_LDFLAGS = -version-info $(LS_LTVERSION) \
-@BUILDING_ON_WINDOWS_FALSE@	$(MAYBE_COVERAGE)
-
-@BUILDING_ON_WINDOWS_TRUE@libsixel_amalgamation_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION) \
-@BUILDING_ON_WINDOWS_TRUE@	$(MAYBE_COVERAGE)
-
+libsixel_amalgamation_la_LDFLAGS = $(MAYBE_COVERAGE) $(am__append_1)
 libsixel_amalgamation_la_LIBADD = -lm $(LIBCURL_LIBS) $(WINHTTP_LIBS) \
 	$(LIBPNG_LIBS) $(LIBJPEG_LIBS) $(GDK_PIXBUF_LIBS) $(GD_LIBS) \
 	$(WIC_LIBS) $(COREGRAPHICS_LIBS) $(QUICKLOOK_LIBS) \
