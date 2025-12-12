@@ -53,13 +53,14 @@ cli_depends = {
   'test_0018_lsqa_regression.t': [lsqa_bin],
 }
 
+# Match autotools TAP timeout to keep CI behavior consistent (seconds per file).
 foreach t : cli_tests
   test(t, sh,
     args: [meson.current_source_dir() / 'cli' / 't' / t],
     protocol: 'tap',
     env: env,
     depends: cli_depends.get(t, []),
-    timeout: 300,
+    timeout: 120,
     suite: ['tap'])
 endforeach
 
@@ -72,7 +73,7 @@ foreach t : ['test_0001_python_bindings.t', 'test_0002_python_api_formats.t',
     args: [meson.current_source_dir() / 'python' / 't' / t],
     protocol: 'tap',
     env: env,
-    timeout: 300,
+    timeout: 120,
     depends: python_depends,
     suite: ['tap'])
 endforeach
