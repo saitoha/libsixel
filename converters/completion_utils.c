@@ -447,7 +447,24 @@ img2sixel_log_errno(const char *fmt, ...)
     memset(message, 0, sizeof(message));
 
     va_start(ap, fmt);
+    /*
+     * Fortified stdio wrappers warn about non-literal formats; the
+     * completion strings are fixed at generation time, so silence the
+     * diagnostic while still bounding the output.
+     */
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
+#elif defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
     written = vsnprintf(message, sizeof(message), fmt, ap);
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#elif defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
     va_end(ap);
 
     if (written < 0) {
