@@ -23,12 +23,9 @@ libsixel_amalgamation_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
 	$(LIBJPEG_CFLAGS) $(GDK_PIXBUF_CFLAGS) $(GD_CFLAGS) \
 	$(WIC_CFLAGS) $(COREGRAPHICS_CFLAGS) $(QUICKLOOK_CFLAGS) \
 	$(CLIPBOARD_CFLAGS) $(ONNXRUNTIME_CFLAGS) @THREAD_CFLAGS@
+libsixel_amalgamation_la_LDFLAGS = $(MAYBE_COVERAGE)
 if BUILDING_ON_WINDOWS
-libsixel_amalgamation_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION) \
-	$(MAYBE_COVERAGE)
-else
-libsixel_amalgamation_la_LDFLAGS = -version-info $(LS_LTVERSION) \
-	$(MAYBE_COVERAGE)
+libsixel_amalgamation_la_LDFLAGS += -no-undefined
 endif
 libsixel_amalgamation_la_LIBADD = -lm $(LIBCURL_LIBS) $(WINHTTP_LIBS) \
 	$(LIBPNG_LIBS) $(LIBJPEG_LIBS) $(GDK_PIXBUF_LIBS) $(GD_LIBS) \
