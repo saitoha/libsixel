@@ -41,6 +41,11 @@ else
   message('Objective-C compiler not available, skipping ObjC parts')
 endif
 
+if host_system == 'darwin'
+  add_project_arguments('-D_DARWIN_C_SOURCE', language: 'c')
+  conf.set('_DARWIN_C_SOURCE', 1)
+endif
+
 # configuration data
 conf = configuration_data()
 conf.set_quoted('PACKAGE', meson.project_name())
