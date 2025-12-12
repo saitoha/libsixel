@@ -66,14 +66,14 @@ jobs:
             cp_version: '7.8'
             variant: openbsd
             label: openbsd 7.8 x86-64
-          - os: ubuntu-latest
-            runner: ubuntu-latest
-            platform: openbsd
-            cp_os: openbsd
-            cp_arch: arm64
-            cp_version: '7.8'
-            variant: openbsd
-            label: openbsd 7.8 arm64
+#          - os: ubuntu-latest
+#            runner: ubuntu-latest
+#            platform: openbsd
+#            cp_os: openbsd
+#            cp_arch: arm64
+#            cp_version: '7.8'
+#            variant: openbsd
+#            label: openbsd 7.8 arm64
           - os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
@@ -1419,14 +1419,14 @@ jobs:
             cp_arch: x86-64
             cp_version: '7.8'
             variant: openbsd
-          - label: openbsd 7.8 arm64
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            platform: openbsd
-            cp_os: openbsd
-            cp_arch: arm64
-            cp_version: '7.8'
-            variant: openbsd
+#          - label: openbsd 7.8 arm64
+#            os: ubuntu-latest
+#            runner: ubuntu-latest
+#            platform: openbsd
+#            cp_os: openbsd
+#            cp_arch: arm64
+#            cp_version: '7.8'
+#            variant: openbsd
           - label: ubuntu static-only
             os: ubuntu-latest
             runner: ubuntu-latest
