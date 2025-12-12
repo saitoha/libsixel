@@ -26,7 +26,8 @@ context to support concurrent decoding.
 ## Build and install
 
 ### Autotools
-1. Enable the loader while configuring:
+1. The loader is **disabled by default** to avoid failing on systems without
+   `gdk-pixbuf-2.0`. Enable it explicitly when the dependency is available:
    ```sh
    ./configure --enable-gdk-pixbuf-loader
    ```
