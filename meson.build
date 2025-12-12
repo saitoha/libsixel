@@ -1256,7 +1256,7 @@ subdir('include')
 
 subdir('src')
 subdir('converters')
-if get_option('amalgamation')
+if get_option('amalgamation').enabled()
   subdir('amalgamation')
 endif
 if have_wiccodec
