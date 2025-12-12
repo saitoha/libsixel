@@ -88,6 +88,17 @@
 char *realpath(const char *path, char *resolved_path);
 #endif
 
+/*
+ * FreeBSD trims `gettimeofday()` from the public surface when strict POSIX
+ * feature macros are enabled even though the symbol is still provided.  Avoid
+ * implicit prototypes by declaring it whenever configure confirmed the
+ * runtime support.
+ */
+#if defined(HAVE_GETTIMEOFDAY)
+struct timezone;
+int gettimeofday(struct timeval *tv, void *tz);
+#endif
+
 
 #if defined(_WIN32)
 # include <io.h>
