@@ -45,6 +45,8 @@ typedef struct sixel_encoding_planner {
     int scale_active;
     int colorspace_active;
     int heavy_ops;
+    int working_pixelformat;
+    int scale_pixelformat;
 } sixel_encoding_planner_t;
 
 /* palette type */
