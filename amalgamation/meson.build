@@ -142,13 +142,5 @@ amalgamation_out = custom_target('sixel-amalgamation.c',
     files('../tools/gen-amalgamation.sh'),
   build_by_default: true)
 
-amalgamation_inc = [project_inc, include_directories('..')]
-
-library('sixel-amalgamation', amalgamation_out,
-        include_directories: amalgamation_inc,
-        c_args: libsixel_posix_defs,
-        dependencies: deps,
-        install: false)
-
 summary({'Amalgamation build': 'single translation unit generated'},
         section: 'amalgamation')
