@@ -86,16 +86,18 @@ libsixel_la_SOURCES = \
                 $(srcdir)/cpu.h \
                 $(srcdir)/pixelformat.c \
                 $(srcdir)/pixelformat.h \
-                $(srcdir)/filter-colors.c \
-                $(srcdir)/filter-colors.h \
-                $(srcdir)/filter-factory.c \
-                $(srcdir)/filter-factory.h \
-                $(srcdir)/filter-final-merge.c \
-                $(srcdir)/filter-final-merge.h \
-                $(srcdir)/filter-lookup.c \
-                $(srcdir)/filter-lookup.h \
-                $(srcdir)/filter-clip.c \
-                $(srcdir)/filter-clip.h \
+$(srcdir)/filter-colors.c \
+$(srcdir)/filter-colors.h \
+$(srcdir)/filter-factory.c \
+$(srcdir)/filter-factory.h \
+$(srcdir)/filter-final-merge.c \
+$(srcdir)/filter-final-merge.h \
+$(srcdir)/filter-dither.c \
+$(srcdir)/filter-dither.h \
+$(srcdir)/filter-lookup.c \
+$(srcdir)/filter-lookup.h \
+$(srcdir)/filter-clip.c \
+$(srcdir)/filter-clip.h \
                 $(srcdir)/filter-resize.c \
                 $(srcdir)/filter-resize.h \
                 $(srcdir)/filter-sample.c \
