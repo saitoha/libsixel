@@ -755,6 +755,8 @@ THREAD_LIBS
 THREAD_CFLAGS
 THREAD_CPPFLAGS
 modeldir
+WANT_AMALGAMATED_TOOLS_FALSE
+WANT_AMALGAMATED_TOOLS_TRUE
 WANT_AMALGAMATION_FALSE
 WANT_AMALGAMATION_TRUE
 SIXEL_ENABLE_THREADS_FALSE
@@ -922,6 +924,7 @@ enable_sixel2png
 enable_abort_trace
 enable_threads
 enable_amalgamation
+enable_amalgamated_tools
 with_modeldir
 enable_thumbnailer_command
 with_gdk_pixbuf2
@@ -1639,6 +1642,9 @@ Optional Features:
                           (default: auto)
   --disable-threads       disable internal threadpool support (default: auto)
   --enable-amalgamation   enable amalgamation build (default: no)
+  --enable-amalgamated-tools
+                          build CLI tools from the amalgamated source
+                          (default: no)
   --enable-thumbnailer-command
                           install the sixel thumbnailer command (default:
                           auto)
@@ -16502,6 +16508,28 @@ else
 fi
 
 
+# Check whether --enable-amalgamated-tools was given.
+if test ${enable_amalgamated_tools+y}
+then :
+  enableval=$enable_amalgamated_tools;
+else case e in #(
+  e) enable_amalgamated_tools=no ;;
+esac
+fi
+
+if test "x$enable_amalgamated_tools" = "xyes" \
+   && test "x$enable_amalgamation" != "xyes"; then
+    as_fn_error $? "--enable-amalgamated-tools requires --enable-amalgamation" "$LINENO" 5
+fi
+ if test "x$enable_amalgamated_tools" = "xyes"; then
+  WANT_AMALGAMATED_TOOLS_TRUE=
+  WANT_AMALGAMATED_TOOLS_FALSE='#'
+else
+  WANT_AMALGAMATED_TOOLS_TRUE='#'
+  WANT_AMALGAMATED_TOOLS_FALSE=
+fi
+
+
 
 # Check whether --with-modeldir was given.
 if test ${with_modeldir+y}
@@ -23928,6 +23956,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WANT_AMALGAMATION_TRUE}" && test -z "${WANT_AMALGAMATION_FALSE}"; then
   as_fn_error $? "conditional \"WANT_AMALGAMATION\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${WANT_AMALGAMATED_TOOLS_TRUE}" && test -z "${WANT_AMALGAMATED_TOOLS_FALSE}"; then
+  as_fn_error $? "conditional \"WANT_AMALGAMATED_TOOLS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WANT_THUMBNAILER_TRUE}" && test -z "${WANT_THUMBNAILER_FALSE}"; then
