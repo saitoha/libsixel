@@ -96,7 +96,7 @@ char *realpath(const char *path, char *resolved_path);
  * guessing per-platform patterns.
  */
 #if defined(HAVE_GETTIMEOFDAY)
-# if defined(HAVE_GETTIMEOFDAY_TZ_VOID)
+# if defined(HAVE_GETTIMEOFDAY_TZ_VOID) && !defined(__OpenBSD__)
 int gettimeofday(struct timeval *tv, void *tz);
 # elif defined(HAVE_GETTIMEOFDAY_TZ_TIMEZONE)
 struct timezone;
