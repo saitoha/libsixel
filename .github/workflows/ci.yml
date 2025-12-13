@@ -341,7 +341,23 @@ jobs:
       uses: msys2/setup-msys2@v2
       with:
         msystem: ${{ matrix.sys }}
-        update: true
+        update: false
+
+    - name: Update keyring then upgrade
+      if: runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'MSYS' && matrix.sys != 'CYGWIN' && matrix.sys != 'MINGW32'
+      shell: msys2 {0}
+      run: |
+        set -eux
+        pacman -Sy --noconfirm --needed msys2-keyring
+        pacman -Syu --noconfirm
+        pacman -Su --noconfirm
+
+    - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang)
+      if: runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'MSYS' && matrix.sys != 'CYGWIN' && matrix.sys != 'MINGW32'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.sys }}
+        update: false
         install: >-
           make
         pacboy: >-
