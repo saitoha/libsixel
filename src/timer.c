@@ -49,7 +49,7 @@ sixel_assessment_timer_now(void)
 #elif defined(HAVE_GETTIMEOFDAY)
     struct timeval tv;
 
-    if (sixel_compat_gettimeofday(&tv, NULL) != 0) {
+    if (sixel_compat_gettimeofday(&tv) != 0) {
         return 0.0;
     }
     return (double)tv.tv_sec + (double)tv.tv_usec / 1000000.0;
