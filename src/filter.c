@@ -7,6 +7,7 @@
 #include "config.h"
 
 /* STDC_HEADERS */
+#include <stdlib.h>
 #include <string.h>
 
 #include <sixel.h>
@@ -42,6 +43,29 @@ sixel_filter_clear(sixel_filter_t *filter)
     }
 
     memset(filter, 0, sizeof(*filter));
+}
+
+SIXELSTATUS
+sixel_filter_alloc(sixel_filter_t **filter_out)
+{
+    sixel_filter_t *filter;
+
+    if (filter_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    *filter_out = NULL;
+
+    filter = (sixel_filter_t *)malloc(sizeof(*filter));
+    if (filter == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    sixel_filter_clear(filter);
+
+    *filter_out = filter;
+
+    return SIXEL_OK;
 }
 
 SIXELSTATUS
@@ -169,6 +193,17 @@ sixel_filter_teardown(sixel_filter_t *filter)
     }
 
     sixel_filter_clear(filter);
+}
+
+void
+sixel_filter_free(sixel_filter_t *filter)
+{
+    if (filter == NULL) {
+        return;
+    }
+
+    sixel_filter_teardown(filter);
+    free(filter);
 }
 
 /* emacs Local Variables:      */
