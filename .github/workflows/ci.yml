@@ -357,10 +357,9 @@ jobs:
           { if(skip) print "#" $0; else print $0 }
         ' /etc/pacman.conf.bak > /etc/pacman.conf
         rm -f /var/lib/pacman/sync/*.db /var/lib/pacman/sync/*.files || true
-        pacman -Syy --noconfirm
         pacman -Sy --noconfirm --needed msys2-keyring
-        pacman -Syu --noconfirm
-        pacman -Su --noconfirm
+        pacboy -S --noconfirm --needed cc:p
+        pacman -S --noconfirm --needed make
 
     - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang)
       if: runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'MSYS' && matrix.sys != 'CYGWIN' && matrix.sys != 'MINGW32'
