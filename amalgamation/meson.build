@@ -1,7 +1,9 @@
+fs = import('fs')
+
 amalgamation_gen = find_program(join_paths(meson.project_source_root(),
   'tools', 'gen-amalgamation.sh'))
 
-amalgamation_units = [
+amalgamation_units = files(
   '../src/output.c',
   '../src/fromsixel.c',
   '../src/tosixel.c',
@@ -63,13 +65,80 @@ amalgamation_units = [
   '../src/threadpool.c',
   '../src/quicklook_thumbnailing.m',
   '../src/clipboard_macos.m',
-]
+)
+
+amalgamation_headers = files(
+  '../include/sixel.h.in',
+  '../src/sixel_threads_config.h',
+  '../src/sixel_atomic.h',
+  '../src/threading.h',
+  '../src/threadpool.h',
+  '../src/allocator.h',
+  '../src/logger.h',
+  '../src/status.h',
+  '../src/cpu.h',
+  '../src/pixelformat.h',
+  '../src/colorspace.h',
+  '../src/palette.h',
+  '../src/palette-common-merge.h',
+  '../src/palette-common-snap.h',
+  '../src/palette-heckbert.h',
+  '../src/palette-kmeans.h',
+  '../src/dither.h',
+  '../src/dither-internal.h',
+  '../src/dither-common-pipeline.h',
+  '../src/dither-fixed-8bit.h',
+  '../src/dither-fixed-float32.h',
+  '../src/dither-positional-8bit.h',
+  '../src/dither-positional-float32.h',
+  '../src/dither-varcoeff-8bit.h',
+  '../src/dither-varcoeff-float32.h',
+  '../src/lookup-vpte-8bit.h',
+  '../src/lookup-vpte-float32.h',
+  '../src/lookup-8bit.h',
+  '../src/lookup-float32.h',
+  '../src/lookup-common.h',
+  '../src/frame.h',
+  '../src/scale.h',
+  '../src/options.h',
+  '../src/assessment.h',
+  '../src/encoder.h',
+  '../src/decoder.h',
+  '../src/decoder-image.h',
+  '../src/decoder-parallel.h',
+  '../src/fromgif.h',
+  '../src/frompnm.h',
+  '../src/output.h',
+  '../src/writer.h',
+  '../src/chunk.h',
+  '../src/tty.h',
+  '../src/timer.h',
+  '../src/sleep.h',
+  '../src/clipboard.h',
+  '../src/loader.h',
+  '../src/loader-builtin.h',
+  '../src/loader-common.h',
+  '../src/loader-registry.h',
+  '../src/loader-libpng.h',
+  '../src/loader-libjpeg.h',
+  '../src/loader-gd.h',
+  '../src/loader-gdk-pixbuf2.h',
+  '../src/loader-gnome-thumbnailer.h',
+  '../src/loader-coregraphics.h',
+  '../src/loader-quicklook.h',
+  '../src/loader-wic.h',
+  '../src/malloc_stub.h',
+  '../src/stdio_stub.h',
+  '../src/rgblookup.h',
+  '../src/lso2.h',
+  '../src/compat_stub.h',
+)
 
 amalgamation_out = custom_target('sixel-amalgamation.c',
   output: 'sixel.c',
   command: [amalgamation_gen, '@OUTPUT@', meson.project_source_root(),
             meson.project_build_root()],
-  depend_files: files(amalgamation_units) +
+  depend_files: amalgamation_units + amalgamation_headers + [config_h] +
     files('../tools/gen-amalgamation.sh'),
   build_by_default: true)
 
