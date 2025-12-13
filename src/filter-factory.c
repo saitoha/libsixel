@@ -17,6 +17,7 @@
 #include "filter-clip.h"
 #include "filter-final-merge.h"
 #include "filter-dither.h"
+#include "filter-load.h"
 #include "filter-lookup.h"
 #include "filter-palette.h"
 #include "filter-vpte.h"
@@ -33,6 +34,20 @@ typedef struct sixel_filter_factory_entry {
     sixel_filter_kind_t kind;
     sixel_filter_initializer_fn initializer;
 } sixel_filter_factory_entry_t;
+
+static SIXELSTATUS
+sixel_filter_factory_load_init(sixel_filter_t *filter, const void *config)
+{
+    const sixel_filter_load_config_t *load_config;
+
+    if (config == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    load_config = (const sixel_filter_load_config_t *)config;
+
+    return sixel_filter_load_init(filter, load_config);
+}
 
 static SIXELSTATUS
 sixel_filter_factory_clip_init(sixel_filter_t *filter,
@@ -185,6 +200,7 @@ sixel_filter_factory_encode_init(sixel_filter_t *filter,
 
 static const sixel_filter_factory_entry_t
         sixel_filter_factory_entries[] = {
+    {"load", SIXEL_FILTER_KIND_LOAD, sixel_filter_factory_load_init},
     {"clip", SIXEL_FILTER_KIND_CLIP, sixel_filter_factory_clip_init},
     {"colorspace",
      SIXEL_FILTER_KIND_COLORS,

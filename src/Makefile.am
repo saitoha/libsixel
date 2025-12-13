@@ -88,6 +88,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/pixelformat.h \
 $(srcdir)/filter-colors.c \
 $(srcdir)/filter-colors.h \
+$(srcdir)/filter-load.c \
+$(srcdir)/filter-load.h \
 $(srcdir)/filter-factory.c \
 $(srcdir)/filter-factory.h \
 $(srcdir)/filter-final-merge.c \
