@@ -59,6 +59,8 @@ srcs = [
   'pixelformat.c',
   'filter-colors.c',
   'filter-colors.h',
+  'filter-load.c',
+  'filter-load.h',
   'filter-factory.c',
   'filter-factory.h',
   'filter-final-merge.c',
