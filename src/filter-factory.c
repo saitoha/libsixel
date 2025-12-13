@@ -15,6 +15,7 @@
 #include "filter-factory.h"
 #include "filter-colors.h"
 #include "filter-clip.h"
+#include "filter-final-merge.h"
 #include "filter-lookup.h"
 #include "filter-resize.h"
 #include "filter-sample.h"
@@ -104,12 +105,30 @@ sixel_filter_factory_lookup_init(sixel_filter_t *filter,
     return sixel_filter_lookup_init(filter, lookup_config);
 }
 
+static SIXELSTATUS
+sixel_filter_factory_final_merge_init(sixel_filter_t *filter,
+                                      const void *config)
+{
+    const sixel_filter_final_merge_config_t *merge_config;
+
+    if (config == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    merge_config = (const sixel_filter_final_merge_config_t *)config;
+
+    return sixel_filter_final_merge_init(filter, merge_config);
+}
+
 static const sixel_filter_factory_entry_t
         sixel_filter_factory_entries[] = {
     {"clip", SIXEL_FILTER_KIND_CLIP, sixel_filter_factory_clip_init},
     {"colorspace",
      SIXEL_FILTER_KIND_COLORS,
      sixel_filter_factory_colors_init},
+    {"final-merge",
+     SIXEL_FILTER_KIND_FINAL_MERGE,
+     sixel_filter_factory_final_merge_init},
     {"lookup", SIXEL_FILTER_KIND_LOOKUP, sixel_filter_factory_lookup_init},
     {"resize", SIXEL_FILTER_KIND_RESIZE, sixel_filter_factory_resize_init},
     {"sample", SIXEL_FILTER_KIND_SAMPLE, sixel_filter_factory_sample_init},

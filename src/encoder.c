@@ -127,6 +127,7 @@
 #include "filter.h"
 #include "filter-clip.h"
 #include "filter-colors.h"
+#include "filter-final-merge.h"
 #include "filter-resize.h"
 #include "filter-sample.h"
 #include "sleep.h"
@@ -3001,6 +3002,7 @@ sixel_encoder_palette_job_thread(void *priv)
     sixel_palette_async_job_t *job;
     SIXELSTATUS status;
     sixel_dither_t *local;
+    sixel_filter_final_merge_config_t merge_config;
 
     job = (sixel_palette_async_job_t *)priv;
     status = SIXEL_BAD_ARGUMENT;
@@ -3018,7 +3020,10 @@ sixel_encoder_palette_job_thread(void *priv)
             sixel_dither_set_lut_policy(local, job->lut_policy);
             sixel_dither_set_sixel_reversible(local,
                                               job->sixel_reversible);
-            sixel_dither_set_final_merge(local, job->final_merge_mode);
+            memset(&merge_config, 0, sizeof(merge_config));
+            merge_config.dither = local;
+            merge_config.final_merge_mode = job->final_merge_mode;
+            status = sixel_filter_final_merge_apply(&merge_config, NULL);
             local->quantize_model = job->quantize_model;
             status = sixel_dither_initialize(
                 local,
@@ -3527,6 +3532,7 @@ sixel_encoder_prepare_palette(
     int histogram_colors;
     sixel_assessment_t *assessment;
     int promoted_stage;
+    sixel_filter_final_merge_config_t merge_config;
 
     assessment = NULL;
     promoted_stage = 0;
@@ -3632,7 +3638,14 @@ sixel_encoder_prepare_palette(
     sixel_dither_set_lut_policy(*dither, encoder->lut_policy);
     sixel_dither_set_sixel_reversible(*dither,
                                       encoder->sixel_reversible);
-    sixel_dither_set_final_merge(*dither, encoder->final_merge_mode);
+    memset(&merge_config, 0, sizeof(merge_config));
+    merge_config.dither = *dither;
+    merge_config.final_merge_mode = encoder->final_merge_mode;
+    status = sixel_filter_final_merge_apply(&merge_config, encoder->logger);
+    if (SIXEL_FAILED(status)) {
+        sixel_dither_unref(*dither);
+        goto end;
+    }
     (*dither)->quantize_model = encoder->quantize_model;
 
     status = sixel_dither_initialize(*dither,
