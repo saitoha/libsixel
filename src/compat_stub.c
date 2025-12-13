@@ -82,6 +82,7 @@
 char *realpath(const char *path, char *resolved_path);
 #endif
 
+#if 0
 /*
  * FreeBSD trims `gettimeofday()` from the public surface when strict POSIX
  * feature macros are enabled even though the symbol is still provided.
@@ -96,6 +97,7 @@ int gettimeofday(struct timeval *tv, void *tz);
 struct timezone;
 int gettimeofday(struct timeval *tv, struct timezone *tz);
 # endif
+#endif
 #endif
 
 
@@ -533,7 +535,7 @@ sixel_compat_isatty(int fd)
  * +----------------------+------------------------------------------+
  */
 SIXEL_COMPAT_API int
-sixel_compat_gettimeofday(struct timeval *tv, void *tz)
+sixel_compat_gettimeofday(struct timeval *tv)
 {
     int status;
 #if defined(_WIN32)
@@ -565,10 +567,9 @@ sixel_compat_gettimeofday(struct timeval *tv, void *tz)
     ticks.QuadPart -= epoch_offset;
     tv->tv_sec = (long)(ticks.QuadPart / 10000000ULL);
     tv->tv_usec = (long)((ticks.QuadPart / 10ULL) % 1000000ULL);
-    (void)tz;
     return 0;
 #elif defined(HAVE_GETTIMEOFDAY)
-    status = gettimeofday(tv, (struct timezone *)tz);
+    status = gettimeofday(tv, NULL);
     return status;
 #elif defined(HAVE_CLOCK_GETTIME)
     if (clock_gettime(CLOCK_REALTIME, &ts) != 0) {
@@ -576,7 +577,6 @@ sixel_compat_gettimeofday(struct timeval *tv, void *tz)
     }
     tv->tv_sec = (long)ts.tv_sec;
     tv->tv_usec = (long)(ts.tv_nsec / 1000L);
-    (void)tz;
     return 0;
 #else
     seconds = time(NULL);
@@ -585,7 +585,6 @@ sixel_compat_gettimeofday(struct timeval *tv, void *tz)
     }
     tv->tv_sec = (long)seconds;
     tv->tv_usec = 0L;
-    (void)tz;
     return 0;
 #endif
 }
