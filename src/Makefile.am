@@ -86,6 +86,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/cpu.h \
                 $(srcdir)/pixelformat.c \
                 $(srcdir)/pixelformat.h \
+                $(srcdir)/filter-sample.c \
+                $(srcdir)/filter-sample.h \
                 $(srcdir)/filter.c \
                 $(srcdir)/filter.h \
                 $(srcdir)/scale.c \
