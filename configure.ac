@@ -905,6 +905,44 @@ AC_CHECK_FUNCS([open], [], [], [[#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>]])
 
+AS_IF([test "x$ac_cv_func_gettimeofday" = xyes], [
+    AC_MSG_CHECKING([whether gettimeofday uses a void* timezone argument])
+    AC_COMPILE_IFELSE([
+        AC_LANG_PROGRAM([
+            #include <sys/types.h>
+            #include <sys/time.h>
+        ], [
+            int (*probe)(struct timeval *, void *) = gettimeofday;
+            return probe(0, 0);
+        ])
+    ], [
+        AC_MSG_RESULT([yes])
+        AC_DEFINE([HAVE_GETTIMEOFDAY_TZ_VOID], [1],
+                  [gettimeofday timezone argument is void*])
+    ], [
+        AC_MSG_RESULT([no])
+        AC_MSG_CHECKING([
+            whether gettimeofday uses a struct timezone* argument
+        ])
+        AC_COMPILE_IFELSE([
+            AC_LANG_PROGRAM([
+                #include <sys/types.h>
+                #include <sys/time.h>
+            ], [
+                int (*probe)(struct timeval *, struct timezone *) =
+                    gettimeofday;
+                return probe(0, 0);
+            ])
+        ], [
+            AC_MSG_RESULT([yes])
+            AC_DEFINE([HAVE_GETTIMEOFDAY_TZ_TIMEZONE], [1],
+                      [gettimeofday timezone argument is struct timezone*])
+        ], [
+            AC_MSG_RESULT([no])
+        ])
+    ])
+])
+
 case "${host_os}" in
   mingw*)
     ;;
