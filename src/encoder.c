@@ -2679,6 +2679,39 @@ sixel_encoding_planner_init(sixel_encoding_planner_t *planner)
 }
 
 
+static int
+sixel_encoding_palette_job_ready(sixel_encoder_t *encoder,
+                                 sixel_encoding_planner_t *planner,
+                                 sixel_frame_t *frame)
+{
+    int pixelformat;
+
+    if (encoder == NULL || planner == NULL || frame == NULL) {
+        return 0;
+    }
+
+    if (encoder->palette_job_enabled == 0) {
+        return 0;
+    }
+    if (planner->allow_palette_async == 0) {
+        return 0;
+    }
+    if (encoder->color_option != SIXEL_COLOR_OPTION_DEFAULT) {
+        return 0;
+    }
+    if (encoder->dither_cache != NULL) {
+        return 0;
+    }
+
+    pixelformat = sixel_frame_get_pixelformat(frame);
+    if ((pixelformat & SIXEL_FORMATTYPE_PALETTE) != 0) {
+        return 0;
+    }
+
+    return 1;
+}
+
+
 static void
 sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
                             sixel_encoder_t *encoder,
@@ -2733,6 +2766,78 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
         planner->main_threads = total - planner->palette_threads;
     } else {
         planner->main_threads = total;
+    }
+}
+
+
+static void
+sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
+                            sixel_encoder_t *encoder,
+                            sixel_frame_t *frame,
+                            int palette_ready)
+{
+    int colorspace_active;
+    int scale_active;
+    int clip_active;
+    int clip_first;
+    FILE *stream;
+
+    if (planner == NULL || encoder == NULL || frame == NULL) {
+        return;
+    }
+
+    stream = stderr;
+    colorspace_active = planner->colorspace_active;
+    scale_active = planner->scale_active;
+    clip_active = planner->clip_active;
+    clip_first = encoder->clipfirst ? 1 : 0;
+
+    fprintf(stream, "[planner] DAG (Directed Acyclic Graph)\n");
+    fprintf(stream,
+            "  workers: total=%d main=%d palette=%d heavy_ops=%d\n",
+            planner->total_threads,
+            planner->main_threads,
+            planner->palette_threads,
+            planner->heavy_ops);
+
+    fprintf(stream, "  nodes:\n");
+    fprintf(stream, "    load\n");
+    if (palette_ready != 0) {
+        fprintf(stream, "    palette (async)\n");
+        fprintf(stream, "    vpte\n");
+    }
+    if (colorspace_active != 0) {
+        fprintf(stream, "    colorspace\n");
+    }
+    if (clip_first != 0 && clip_active != 0) {
+        fprintf(stream, "    clip\n");
+    }
+    if (scale_active != 0) {
+        fprintf(stream, "    scale\n");
+    }
+    if (clip_first == 0 && clip_active != 0) {
+        fprintf(stream, "    clip\n");
+    }
+    fprintf(stream, "    dither\n");
+
+    fprintf(stream, "  edges:\n");
+    if (palette_ready != 0) {
+        fprintf(stream, "    load -> palette -> vpte -> dither\n");
+    }
+    fprintf(stream, "    load -> %s\n",
+            colorspace_active != 0 ? "colorspace" : "dither");
+    if (colorspace_active != 0) {
+        fprintf(stream, "    colorspace -> %s\n",
+                scale_active != 0
+                    ? (clip_first != 0 ? "clip" : "scale")
+                    : (clip_active != 0 ? "clip" : "dither"));
+    }
+    if (scale_active != 0) {
+        fprintf(stream, "    scale -> %s\n",
+                clip_active != 0 ? "clip" : "dither");
+    }
+    if (clip_active != 0) {
+        fprintf(stream, "    clip -> dither\n");
     }
 }
 
@@ -4642,6 +4747,7 @@ sixel_encoder_encode_frame(
     sixel_dither_t *async_dither;
     int palette_job_started;
     int palette_job_initialized;
+    int palette_ready;
     sixel_encoding_planner_t *planner;
 
     fn_write = sixel_write_callback;
@@ -4659,6 +4765,7 @@ sixel_encoder_encode_frame(
     async_dither = NULL;
     palette_job_started = 0;
     palette_job_initialized = 0;
+    palette_ready = 0;
     planner = NULL;
     if (encoder != NULL) {
         assessment = encoder->assessment_observer;
@@ -4695,18 +4802,22 @@ sixel_encoder_encode_frame(
                                     frame);
     }
 
+    palette_ready = sixel_encoding_palette_job_ready(encoder,
+                                                     planner,
+                                                     frame);
+    if (encoder->verbose) {
+        sixel_encoding_planner_dump(planner,
+                                    encoder,
+                                    frame,
+                                    palette_ready);
+    }
+
     /*
      * Launch a palette worker as soon as the frame is loaded. The worker uses
      * a clipped, down-sampled copy so palette build overlaps
      * resize/clip/colorspace conversion on the main thread.
      */
-    if (encoder->palette_job_enabled != 0
-        && planner != NULL
-        && planner->allow_palette_async != 0
-        && encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT
-        && encoder->dither_cache == NULL
-        && (sixel_frame_get_pixelformat(frame)
-            & SIXEL_FORMATTYPE_PALETTE) == 0) {
+    if (palette_ready != 0) {
         status = sixel_encoder_palette_job_init(&palette_job,
                                                 encoder->allocator);
         if (SIXEL_SUCCEEDED(status)) {

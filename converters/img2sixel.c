@@ -567,7 +567,8 @@ static cli_option_help_t const g_option_help_table[] = {
     {
         'v',
         "verbose",
-        "-v, --verbose              show debugging info\n"
+        "-v, --verbose              show debugging info and the planner DAG\n"
+        "                           (DAG = Directed Acyclic Graph).\n"
     },
     {
         'L',
