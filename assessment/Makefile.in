@@ -112,13 +112,11 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(lpipsmodelsdir)"
 PROGRAMS = $(bin_PROGRAMS)
-am__lsqa_SOURCES_DIST = $(srcdir)/lsqa.c \
-	$(top_builddir)/amalgamation/sixel.c
+am__lsqa_SOURCES_DIST = $(srcdir)/lsqa.c
+@WANT_AMALGAMATED_TOOLS_FALSE@am_lsqa_OBJECTS = lsqa-lsqa.$(OBJEXT)
 am__dirstamp = $(am__leading_dot)dirstamp
 am__objects_1 = $(top_builddir)/amalgamation/lsqa-sixel.$(OBJEXT)
-@WANT_AMALGAMATED_TOOLS_FALSE@am_lsqa_OBJECTS = lsqa-lsqa.$(OBJEXT)
-@WANT_AMALGAMATED_TOOLS_TRUE@am_lsqa_OBJECTS = $(am__objects_1)
-nodist_lsqa_OBJECTS =
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_lsqa_OBJECTS = $(am__objects_1)
 lsqa_OBJECTS = $(am_lsqa_OBJECTS) $(nodist_lsqa_OBJECTS)
 am__DEPENDENCIES_1 =
 am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
@@ -457,8 +455,8 @@ AMALGAMATION_LSQA_LIBS = -lm \
         @THREAD_LIBS@
 
 @WANT_AMALGAMATED_TOOLS_FALSE@lsqa_SOURCES = $(srcdir)/lsqa.c
-@WANT_AMALGAMATED_TOOLS_TRUE@lsqa_SOURCES = $(AMALGAMATION_SIXEL)
-@WANT_AMALGAMATED_TOOLS_TRUE@nodist_lsqa_SOURCES = 
+@WANT_AMALGAMATED_TOOLS_TRUE@lsqa_SOURCES = 
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_lsqa_SOURCES = $(AMALGAMATION_SIXEL)
 @WANT_AMALGAMATED_TOOLS_FALSE@lsqa_CPPFLAGS = -I$(top_builddir)/include/ \
 @WANT_AMALGAMATED_TOOLS_FALSE@                -I$(top_srcdir)/src \
 @WANT_AMALGAMATED_TOOLS_FALSE@                $(AM_CPPFLAGS)
