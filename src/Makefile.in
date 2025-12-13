@@ -192,7 +192,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/filter-dither.h $(srcdir)/filter-encode.c \
 	$(srcdir)/filter-encode.h $(srcdir)/filter-lookup.c \
 	$(srcdir)/filter-lookup.h $(srcdir)/filter-palette.c \
-	$(srcdir)/filter-palette.h $(srcdir)/filter-clip.c \
+	$(srcdir)/filter-palette.h $(srcdir)/filter-vpte.c \
+	$(srcdir)/filter-vpte.h $(srcdir)/filter-clip.c \
 	$(srcdir)/filter-clip.h $(srcdir)/filter-resize.c \
 	$(srcdir)/filter-resize.h $(srcdir)/filter-sample.c \
 	$(srcdir)/filter-sample.h $(srcdir)/filter.c \
@@ -270,6 +271,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-filter-encode.lo \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-filter-lookup.lo \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-filter-palette.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-filter-vpte.lo \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-filter-clip.lo \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-filter-resize.lo \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-filter-sample.lo \
@@ -374,6 +376,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-filter-palette.Plo \
 	./$(DEPDIR)/libsixel_la-filter-resize.Plo \
 	./$(DEPDIR)/libsixel_la-filter-sample.Plo \
+	./$(DEPDIR)/libsixel_la-filter-vpte.Plo \
 	./$(DEPDIR)/libsixel_la-filter.Plo \
 	./$(DEPDIR)/libsixel_la-frame.Plo \
 	./$(DEPDIR)/libsixel_la-fromgif.Plo \
@@ -755,6 +758,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-lookup.h \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-palette.c \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-palette.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-vpte.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-vpte.h \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-clip.c \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-clip.h \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-resize.c \
@@ -995,6 +1000,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-palette.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-resize.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-sample.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-vpte.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frame.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromgif.Plo@am__quote@ # am--include-marker
@@ -1323,6 +1329,13 @@ libsixel_la-filter-palette.lo: filter-palette.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter-palette.c' object='libsixel_la-filter-palette.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-filter-palette.lo `test -f 'filter-palette.c' || echo '$(srcdir)/'`filter-palette.c
+
+libsixel_la-filter-vpte.lo: filter-vpte.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-filter-vpte.lo -MD -MP -MF $(DEPDIR)/libsixel_la-filter-vpte.Tpo -c -o libsixel_la-filter-vpte.lo `test -f 'filter-vpte.c' || echo '$(srcdir)/'`filter-vpte.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-filter-vpte.Tpo $(DEPDIR)/libsixel_la-filter-vpte.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter-vpte.c' object='libsixel_la-filter-vpte.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-filter-vpte.lo `test -f 'filter-vpte.c' || echo '$(srcdir)/'`filter-vpte.c
 
 libsixel_la-filter-clip.lo: filter-clip.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-filter-clip.lo -MD -MP -MF $(DEPDIR)/libsixel_la-filter-clip.Tpo -c -o libsixel_la-filter-clip.lo `test -f 'filter-clip.c' || echo '$(srcdir)/'`filter-clip.c
@@ -1850,6 +1863,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-resize.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-vpte.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frame.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromgif.Plo
@@ -1971,6 +1985,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-resize.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-vpte.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frame.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromgif.Plo
