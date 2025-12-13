@@ -98,6 +98,8 @@ $(srcdir)/filter-encode.c \
 $(srcdir)/filter-encode.h \
 $(srcdir)/filter-lookup.c \
 $(srcdir)/filter-lookup.h \
+$(srcdir)/filter-palette.c \
+$(srcdir)/filter-palette.h \
 $(srcdir)/filter-clip.c \
 $(srcdir)/filter-clip.h \
                 $(srcdir)/filter-resize.c \

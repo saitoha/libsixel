@@ -128,6 +128,8 @@
 #include "filter-clip.h"
 #include "filter-colors.h"
 #include "filter-final-merge.h"
+#include "filter-factory.h"
+#include "filter-palette.h"
 #include "filter-resize.h"
 #include "filter-sample.h"
 #include "sleep.h"
@@ -166,6 +168,8 @@ typedef struct sixel_palette_async_job {
     sixel_thread_t thread;
     sixel_mutex_t mutex;
     sixel_cond_t cond;
+    sixel_encoder_t *encoder;
+    sixel_logger_t *logger;
     sixel_frame_t *sample_frame;
     sixel_allocator_t *allocator;
     sixel_dither_t *dither;
@@ -184,9 +188,19 @@ typedef struct sixel_palette_async_job {
     int finished;
 } sixel_palette_async_job_t;
 
+typedef struct sixel_palette_builder_context {
+    sixel_encoder_t *encoder;
+    int allow_cache;
+} sixel_palette_builder_context_t;
+
 static SIXELSTATUS sixel_encoder_palette_job_init(
     sixel_palette_async_job_t *job,
     sixel_allocator_t *allocator);
+static SIXELSTATUS sixel_encoder_apply_palette_filter(
+    sixel_encoder_t *encoder,
+    sixel_frame_t **frame_slot,
+    int allow_cache,
+    sixel_dither_t **dither_out);
 static void sixel_encoding_planner_init(sixel_encoding_planner_t *planner);
 static void sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
                                         sixel_encoder_t *encoder,
@@ -3002,44 +3016,19 @@ sixel_encoder_palette_job_thread(void *priv)
     sixel_palette_async_job_t *job;
     SIXELSTATUS status;
     sixel_dither_t *local;
-    sixel_filter_final_merge_config_t merge_config;
 
     job = (sixel_palette_async_job_t *)priv;
     status = SIXEL_BAD_ARGUMENT;
     local = NULL;
 
-    if (job != NULL && job->sample_frame != NULL) {
+    if (job != NULL && job->encoder != NULL && job->sample_frame != NULL) {
         status = sixel_frame_set_pixelformat(job->sample_frame,
                                              job->target_pixelformat);
         if (SIXEL_SUCCEEDED(status)) {
-            status = sixel_dither_new(&local,
-                                      job->reqcolors,
-                                      job->allocator);
-        }
-        if (SIXEL_SUCCEEDED(status)) {
-            sixel_dither_set_lut_policy(local, job->lut_policy);
-            sixel_dither_set_sixel_reversible(local,
-                                              job->sixel_reversible);
-            memset(&merge_config, 0, sizeof(merge_config));
-            merge_config.dither = local;
-            merge_config.final_merge_mode = job->final_merge_mode;
-            status = sixel_filter_final_merge_apply(&merge_config, NULL);
-            local->quantize_model = job->quantize_model;
-            status = sixel_dither_initialize(
-                local,
-                sixel_frame_get_pixels(job->sample_frame),
-                sixel_frame_get_width(job->sample_frame),
-                sixel_frame_get_height(job->sample_frame),
-                sixel_frame_get_pixelformat(job->sample_frame),
-                job->method_for_largest,
-                job->method_for_rep,
-                job->quality_mode);
-        }
-        if (SIXEL_SUCCEEDED(status)) {
-            sixel_dither_set_pixelformat(local,
-                                         sixel_frame_get_pixelformat(
-                                             job->sample_frame));
-            local->force_palette = job->force_palette;
+            status = sixel_encoder_apply_palette_filter(job->encoder,
+                                                        &job->sample_frame,
+                                                        0,
+                                                        &local);
         }
     }
 
@@ -3069,6 +3058,8 @@ sixel_encoder_palette_job_init(sixel_palette_async_job_t *job,
         return SIXEL_BAD_ARGUMENT;
     }
 
+    job->encoder = NULL;
+    job->logger = NULL;
     job->sample_frame = NULL;
     job->allocator = allocator;
     job->dither = NULL;
@@ -3112,6 +3103,8 @@ sixel_encoder_palette_job_dispose(sixel_palette_async_job_t *job)
         sixel_frame_unref(job->sample_frame);
         job->sample_frame = NULL;
     }
+    job->encoder = NULL;
+    job->logger = NULL;
     if (job->dither != NULL) {
         sixel_dither_unref(job->dither);
         job->dither = NULL;
@@ -3134,6 +3127,8 @@ sixel_encoder_palette_job_launch(sixel_palette_async_job_t *job,
         return SIXEL_BAD_ARGUMENT;
     }
 
+    job->encoder = encoder;
+    job->logger = encoder->logger;
     job->target_pixelformat = target_pixelformat;
     job->reqcolors = encoder->reqcolors;
     job->method_for_largest = encoder->method_for_largest;
@@ -3526,23 +3521,32 @@ static SIXELSTATUS
 sixel_encoder_prepare_palette(
     sixel_encoder_t *encoder,  /* encoder object */
     sixel_frame_t   *frame,    /* input frame object */
-    sixel_dither_t  **dither)  /* dither object to be created from the frame */
+    sixel_dither_t  **dither,  /* dither object to be created from the frame */
+    int allow_cache,
+    sixel_logger_t *logger)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int histogram_colors;
     sixel_assessment_t *assessment;
     int promoted_stage;
     sixel_filter_final_merge_config_t merge_config;
+    sixel_logger_t *target_logger;
+    int cache_allowed;
 
     assessment = NULL;
     promoted_stage = 0;
+    target_logger = logger;
+    cache_allowed = allow_cache != 0;
     if (encoder != NULL) {
         assessment = encoder->assessment_observer;
+        if (target_logger == NULL) {
+            target_logger = encoder->logger;
+        }
     }
 
     switch (encoder->color_option) {
     case SIXEL_COLOR_OPTION_HIGHCOLOR:
-        if (encoder->dither_cache) {
+        if (cache_allowed && encoder->dither_cache) {
             *dither = encoder->dither_cache;
             status = SIXEL_OK;
         } else {
@@ -3551,7 +3555,7 @@ sixel_encoder_prepare_palette(
         }
         goto end;
     case SIXEL_COLOR_OPTION_MONOCHROME:
-        if (encoder->dither_cache) {
+        if (cache_allowed && encoder->dither_cache) {
             *dither = encoder->dither_cache;
             status = SIXEL_OK;
         } else {
@@ -3559,7 +3563,7 @@ sixel_encoder_prepare_palette(
         }
         goto end;
     case SIXEL_COLOR_OPTION_MAPFILE:
-        if (encoder->dither_cache) {
+        if (cache_allowed && encoder->dither_cache) {
             *dither = encoder->dither_cache;
             status = SIXEL_OK;
         } else {
@@ -3567,7 +3571,7 @@ sixel_encoder_prepare_palette(
         }
         goto end;
     case SIXEL_COLOR_OPTION_BUILTIN:
-        if (encoder->dither_cache) {
+        if (cache_allowed && encoder->dither_cache) {
             *dither = encoder->dither_cache;
             status = SIXEL_OK;
         } else {
@@ -3594,9 +3598,9 @@ sixel_encoder_prepare_palette(
         if (sixel_frame_get_transparent(frame) != (-1)) {
             sixel_dither_set_transparent(*dither, sixel_frame_get_transparent(frame));
         }
-        if (*dither && encoder->dither_cache) {
-            sixel_dither_unref(encoder->dither_cache);
-        }
+    if (*dither && cache_allowed && encoder->dither_cache) {
+        sixel_dither_unref(encoder->dither_cache);
+    }
         goto end;
     }
 
@@ -3619,7 +3623,7 @@ sixel_encoder_prepare_palette(
             status = SIXEL_LOGIC_ERROR;
             goto end;
         }
-        if (*dither && encoder->dither_cache) {
+        if (*dither && cache_allowed && encoder->dither_cache) {
             sixel_dither_unref(encoder->dither_cache);
         }
         sixel_dither_set_pixelformat(*dither, sixel_frame_get_pixelformat(frame));
@@ -3627,7 +3631,7 @@ sixel_encoder_prepare_palette(
         goto end;
     }
 
-    if (encoder->dither_cache) {
+    if (cache_allowed && encoder->dither_cache) {
         sixel_dither_unref(encoder->dither_cache);
     }
     status = sixel_dither_new(dither, encoder->reqcolors, encoder->allocator);
@@ -3641,7 +3645,7 @@ sixel_encoder_prepare_palette(
     memset(&merge_config, 0, sizeof(merge_config));
     merge_config.dither = *dither;
     merge_config.final_merge_mode = encoder->final_merge_mode;
-    status = sixel_filter_final_merge_apply(&merge_config, encoder->logger);
+    status = sixel_filter_final_merge_apply(&merge_config, target_logger);
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(*dither);
         goto end;
@@ -3688,6 +3692,82 @@ end:
         /* pass down the user's demand for an exact palette size */
         (*dither)->force_palette = encoder->force_palette;
     }
+    return status;
+}
+
+static SIXELSTATUS
+sixel_encoder_palette_builder(void *userdata,
+                              sixel_frame_t *frame,
+                              sixel_dither_t **dither_out,
+                              sixel_logger_t *logger)
+{
+    sixel_palette_builder_context_t *context;
+
+    context = NULL;
+
+    if (userdata == NULL || frame == NULL || dither_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    context = (sixel_palette_builder_context_t *)userdata;
+
+    return sixel_encoder_prepare_palette(context->encoder,
+                                         frame,
+                                         dither_out,
+                                         context->allow_cache,
+                                         logger);
+}
+
+static SIXELSTATUS
+sixel_encoder_apply_palette_filter(sixel_encoder_t *encoder,
+                                   sixel_frame_t **frame_slot,
+                                   int allow_cache,
+                                   sixel_dither_t **dither_out)
+{
+    SIXELSTATUS status;
+    sixel_palette_builder_context_t builder_context;
+    sixel_filter_palette_config_t palette_config;
+    sixel_filter_t *filter;
+    int height;
+
+    status = SIXEL_FALSE;
+    filter = NULL;
+    height = 0;
+
+    if (encoder == NULL || frame_slot == NULL || dither_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (*frame_slot == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    builder_context.encoder = encoder;
+    builder_context.allow_cache = allow_cache;
+    palette_config.builder = sixel_encoder_palette_builder;
+    palette_config.builder_userdata = &builder_context;
+    palette_config.dither_out = dither_out;
+
+    status = sixel_filter_factory_create_by_name(
+        "palette", &palette_config, &filter);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    sixel_filter_bind_input(filter,
+                            frame_slot,
+                            sixel_frame_get_pixelformat(*frame_slot),
+                            sixel_frame_get_colorspace(*frame_slot));
+
+    height = sixel_frame_get_height(*frame_slot);
+    if (height < 0) {
+        height = 0;
+    }
+    sixel_filter_set_progress(filter, NULL, NULL, height);
+
+    status = sixel_filter_run(filter, encoder->allocator, encoder->logger);
+
+    sixel_filter_free(filter);
+
     return status;
 }
 
@@ -4916,7 +4996,10 @@ sixel_encoder_encode_frame(
     }
 
     if (palette_job_started == 0) {
-        status = sixel_encoder_prepare_palette(encoder, frame, &dither);
+        status = sixel_encoder_apply_palette_filter(encoder,
+                                                    &frame,
+                                                    1,
+                                                    &dither);
         if (status != SIXEL_OK) {
             dither = NULL;
             goto end;
