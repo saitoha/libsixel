@@ -125,14 +125,19 @@ int mkstemp(char *);
 int fchmod(int, mode_t);
 #endif
 
-#if defined(HAVE_COMPLETION_EMBED_H)
+#if defined(BUILD_IMG2SIXEL) && defined(HAVE_COMPLETION_EMBED_H)
 #include "completion_embed.h"
 #define IMG2SIXEL_HAVE_COMPLETION_EMBED 1
-#elif defined(__has_include)
+#elif defined(BUILD_IMG2SIXEL) && defined(__has_include)
 #if __has_include("completion_embed.h")
 #include "completion_embed.h"
 #define IMG2SIXEL_HAVE_COMPLETION_EMBED 1
 #endif
+#endif
+
+#if defined(SIXEL_AMALGAMATION)
+#include "compat_stub.h"  /* share CRT shims with the core library */
+#define IMG2SIXEL_USE_SHARED_COMPAT 1
 #endif
 
 #define IMG2SIXEL_COMPLETION_MODE_FILE 0644
@@ -142,6 +147,7 @@ int fchmod(int, mode_t);
 #define IMG2SIXEL_COMPLETION_SHELL_BASH  1
 #define IMG2SIXEL_COMPLETION_SHELL_ZSH   2
 
+#if !defined(IMG2SIXEL_USE_SHARED_COMPAT)
 /* ------------------------------------------------------------------------ */
 /* private copies of the compat helpers we consume                          */
 /* ------------------------------------------------------------------------ */
@@ -397,6 +403,7 @@ sixel_compat_write(int fd, const void *buffer, size_t count)
     return write(fd, buffer, count);
 #endif
 }
+#endif  /* !IMG2SIXEL_USE_SHARED_COMPAT */
 
 /* ------------------------------------------------------------------------ */
 /* helpers for platform abstractions */
