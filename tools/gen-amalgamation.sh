@@ -122,12 +122,15 @@ lookup-8bit.h
 lookup-float32.h
 lookup-common.h
 frame.h
+scale.h
 options.h
 assessment.h
 encoder.h
 decoder.h
 decoder-image.h
 decoder-parallel.h
+fromgif.h
+frompnm.h
 output.h
 writer.h
 chunk.h
@@ -147,13 +150,15 @@ loader-gnome-thumbnailer.h
 loader-coregraphics.h
 loader-quicklook.h
 loader-wic.h
+stb_image.h
+stb_image_write.h
 malloc_stub.h
 stdio_stub.h
 rgblookup.h
-stb_image.h
-stb_image_write.h
 lso2.h
 compat_stub.h
+fromgif.h
+frompnm.h
 "
 
 header_units="
@@ -188,12 +193,15 @@ src/lookup-8bit.h
 src/lookup-float32.h
 src/lookup-common.h
 src/frame.h
+src/scale.h
 src/options.h
 src/assessment.h
 src/encoder.h
 src/decoder.h
 src/decoder-image.h
 src/decoder-parallel.h
+src/fromgif.h
+src/frompnm.h
 src/output.h
 src/writer.h
 src/chunk.h
@@ -213,14 +221,18 @@ src/loader-gnome-thumbnailer.h
 src/loader-coregraphics.h
 src/loader-quicklook.h
 src/loader-wic.h
-src/stb_image.h
-src/stb_image_write.h
 src/malloc_stub.h
 src/stdio_stub.h
 src/rgblookup.h
 src/lso2.h
 src/compat_stub.h
 "
+
+# Persist header names to a temporary file so portable awk can read them
+# without depending on vendor-specific split() behavior.
+header_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-headers.XXXXXX")
+trap 'rm -f "${header_temp}"' EXIT
+printf "%s\n" "${project_headers}" >"${header_temp}"
 
 # Headers are concatenated upfront so that the generated translation unit does
 # not rely on project-local includes at compile time.
@@ -242,32 +254,35 @@ resolve_unit() {
     esac
 }
 
-# Remove project-local includes and inline vendor headers so the generated
-# translation unit can compile without the original header files present.
+# Remove project-local includes so the generated translation unit can compile
+# without the original header files present. stb headers are inlined once at
+# the first include site so that implementation guards remain effective.
 filter_local_includes() {
     unit_path=$1
-    header_list=$2
+    header_file=$2
     src_root=$3
 
-    awk -v headers="${header_list}" -v src_root="${src_root}" '
+    awk -v header_file="${header_file}" -v src_root="${src_root}" '
 BEGIN {
-    split(headers, raw, "\n");
-    for (i in raw) {
-        if (length(raw[i]) > 0) {
-            header[raw[i]] = 1;
+    while ((getline line < header_file) > 0) {
+        gsub(/^[ \t]+|[ \t]+$/, "", line);
+        if (length(line) > 0) {
+            header[line] = 1;
         }
     }
+    close(header_file);
 
-    inline["stb_image.h"] = 1;
-    inline["stb_image_write.h"] = 1;
+    inline_once["stb_image.h"] = 1;
+    inline_once["stb_image_write.h"] = 1;
 }
 {
-    if ($0 ~ /^#include "[^"]+"/) {
+    if ($0 ~ /^[ \t]*#[ \t]*include[ \t]*"[^"]+"/) {
         name = $0;
-        sub(/^#include[ \t]*"/, "", name);
+        sub(/^[ \t]*#[ \t]*include[ \t]*"/, "", name);
         sub(/".*/, "", name);
         if (name in header) {
-            if (name in inline) {
+            if (name in inline_once && !(name in emitted)) {
+                emitted[name] = 1;
                 path = src_root "/src/" name;
                 if ((getline line < path) > 0) {
                     print "#line 1 \"" path "\"";
@@ -302,7 +317,7 @@ emit_unit() {
 
     printf "\n/* ==== %s ==== */\n" "$1" >>"${output}"
     printf "#line 1 \"%s\"\n" "${unit_path}" >>"${output}"
-    filter_local_includes "${unit_path}" "${project_headers}" \
+    filter_local_includes "${unit_path}" "${header_temp}" \
         "${src_root}" >>"${output}"
     printf "\n" >>"${output}"
 
@@ -326,7 +341,7 @@ emit_header_unit() {
 
     printf "\n/* ==== %s ==== */\n" "$1" >>"${output}"
     printf "#line 1 \"%s\"\n" "${unit_path}" >>"${output}"
-    filter_local_includes "${unit_path}" "${project_headers}" \
+    filter_local_includes "${unit_path}" "${header_temp}" \
         "${src_root}" >>"${output}"
     printf "\n" >>"${output}"
 
@@ -427,3 +442,4 @@ printf '\n' >>"${output}"
 emit_config_header
 emit_all_headers
 emit_all_units
+rm -f "${header_temp}"
