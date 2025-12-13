@@ -185,8 +185,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/logger.h $(srcdir)/colorspace.c \
 	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
 	$(srcdir)/cpu.c $(srcdir)/cpu.h $(srcdir)/pixelformat.c \
-	$(srcdir)/pixelformat.h $(srcdir)/scale.c $(srcdir)/scale.h \
-	$(srcdir)/chunk.c $(srcdir)/chunk.h $(srcdir)/loader.c \
+	$(srcdir)/pixelformat.h $(srcdir)/filter.c $(srcdir)/filter.h \
+	$(srcdir)/scale.c $(srcdir)/scale.h $(srcdir)/chunk.c \
+	$(srcdir)/chunk.h $(srcdir)/loader.c \
 	$(srcdir)/loader-gdk-pixbuf2.c \
 	$(srcdir)/loader-gnome-thumbnailer.c \
 	$(srcdir)/loader-coregraphics.c $(srcdir)/loader-quicklook.c \
@@ -252,6 +253,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-frame.lo \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-cpu.lo \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-pixelformat.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-filter.lo \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-scale.lo \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-chunk.lo \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-loader.lo \
@@ -342,6 +344,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-dither-varcoeff-float32.Plo \
 	./$(DEPDIR)/libsixel_la-dither.Plo \
 	./$(DEPDIR)/libsixel_la-encoder.Plo \
+	./$(DEPDIR)/libsixel_la-filter.Plo \
 	./$(DEPDIR)/libsixel_la-frame.Plo \
 	./$(DEPDIR)/libsixel_la-fromgif.Plo \
 	./$(DEPDIR)/libsixel_la-frompnm.Plo \
@@ -708,6 +711,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/cpu.c $(srcdir)/cpu.h \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/pixelformat.c \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/pixelformat.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter.c $(srcdir)/filter.h \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/scale.c $(srcdir)/scale.h \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/chunk.c $(srcdir)/chunk.h \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/loader.c \
@@ -931,6 +935,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither-varcoeff-float32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-dither.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-encoder.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frame.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromgif.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frompnm.Plo@am__quote@ # am--include-marker
@@ -1209,6 +1214,13 @@ libsixel_la-pixelformat.lo: pixelformat.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='pixelformat.c' object='libsixel_la-pixelformat.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-pixelformat.lo `test -f 'pixelformat.c' || echo '$(srcdir)/'`pixelformat.c
+
+libsixel_la-filter.lo: filter.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-filter.lo -MD -MP -MF $(DEPDIR)/libsixel_la-filter.Tpo -c -o libsixel_la-filter.lo `test -f 'filter.c' || echo '$(srcdir)/'`filter.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-filter.Tpo $(DEPDIR)/libsixel_la-filter.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter.c' object='libsixel_la-filter.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-filter.lo `test -f 'filter.c' || echo '$(srcdir)/'`filter.c
 
 libsixel_la-scale.lo: scale.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-scale.lo -MD -MP -MF $(DEPDIR)/libsixel_la-scale.Tpo -c -o libsixel_la-scale.lo `test -f 'scale.c' || echo '$(srcdir)/'`scale.c
@@ -1698,6 +1710,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-varcoeff-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frame.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromgif.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompnm.Plo
@@ -1808,6 +1821,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-dither-varcoeff-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-encoder.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frame.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromgif.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frompnm.Plo
