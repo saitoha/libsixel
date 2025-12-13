@@ -90,23 +90,16 @@ char *realpath(const char *path, char *resolved_path);
 
 /*
  * FreeBSD trims `gettimeofday()` from the public surface when strict POSIX
- * feature macros are enabled even though the symbol is still provided.  Avoid
- * implicit prototypes by declaring it whenever configure confirmed the
- * runtime support.
+ * feature macros are enabled even though the symbol is still provided.
+ * Configure probes the public prototype to record which timezone argument
+ * variant the system exposes so we can mirror the declaration without
+ * guessing per-platform patterns.
  */
 #if defined(HAVE_GETTIMEOFDAY)
-struct timezone;
-/*
- * Platform-specific prototypes for gettimeofday()
- *
- * - glibc, Darwin, and MinGW expose a `void *` timezone parameter so keep
- *   the declaration consistent with their libc headers.
- * - BSD libcs keep the POSIX-style `struct timezone *` signature.  Matching
- *   the libc prototype prevents conflicts when headers are already visible.
- */
-# if defined(__GLIBC__) || defined(__APPLE__) || defined(_WIN32)
+# if defined(HAVE_GETTIMEOFDAY_TZ_VOID)
 int gettimeofday(struct timeval *tv, void *tz);
-# else
+# elif defined(HAVE_GETTIMEOFDAY_TZ_TIMEZONE)
+struct timezone;
 int gettimeofday(struct timeval *tv, struct timezone *tz);
 # endif
 #endif

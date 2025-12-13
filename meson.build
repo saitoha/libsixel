@@ -297,6 +297,37 @@ foreach f : extra_funcs
   endif
 endforeach
 
+# The timezone parameter for gettimeofday() differs across libcs.  Probe
+# the signature at configure time so our compatibility prototype matches
+# the system declaration and avoids conflicts when headers are available.
+if conf.has('HAVE_GETTIMEOFDAY')
+  gtod_void_src = '''
+    #include <sys/types.h>
+    #include <sys/time.h>
+    int main(void) {
+      int (*probe)(struct timeval *, void *) = gettimeofday;
+      return probe(0, 0);
+    }
+  '''
+  gtod_tz_src = '''
+    #include <sys/types.h>
+    #include <sys/time.h>
+    int main(void) {
+      int (*probe)(struct timeval *, struct timezone *) = gettimeofday;
+      return probe(0, 0);
+    }
+  '''
+  if cc.compiles(gtod_void_src,
+                 name: 'gettimeofday(void*)',
+                 args: ['-Werror=implicit-function-declaration'])
+    conf.set('HAVE_GETTIMEOFDAY_TZ_VOID', 1)
+  elif cc.compiles(gtod_tz_src,
+                   name: 'gettimeofday(struct timezone*)',
+                   args: ['-Werror=implicit-function-declaration'])
+    conf.set('HAVE_GETTIMEOFDAY_TZ_TIMEZONE', 1)
+  endif
+endif
+
 if not cc.has_function('getopt_long') and cc.has_function('getopt')
     conf.set('HAVE_GETOPT', 1)
 endif

@@ -19285,6 +19285,93 @@ then :
 fi
 
 
+if test "x$ac_cv_func_gettimeofday" = xyes
+then :
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether gettimeofday uses a void* timezone argument" >&5
+printf %s "checking whether gettimeofday uses a void* timezone argument... " >&6; }
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+            #include <sys/types.h>
+            #include <sys/time.h>
+
+int
+main (void)
+{
+
+            int (*probe)(struct timeval *, void *) = gettimeofday;
+            return probe(0, 0);
+
+  ;
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+printf "%s\n" "#define HAVE_GETTIMEOFDAY_TZ_VOID 1" >>confdefs.h
+
+
+else case e in #(
+  e)
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking
+            whether gettimeofday uses a struct timezone* argument
+        " >&5
+printf %s "checking
+            whether gettimeofday uses a struct timezone* argument
+        ... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+                #include <sys/types.h>
+                #include <sys/time.h>
+
+int
+main (void)
+{
+
+                int (*probe)(struct timeval *, struct timezone *) =
+                    gettimeofday;
+                return probe(0, 0);
+
+  ;
+  return 0;
+}
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+
+printf "%s\n" "#define HAVE_GETTIMEOFDAY_TZ_TIMEZONE 1" >>confdefs.h
+
+
+else case e in #(
+  e)
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+         ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+     ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+
+fi
+
 case "${host_os}" in
   mingw*)
     ;;
