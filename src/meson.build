@@ -57,6 +57,8 @@ srcs = [
   'cpu.c',
   'cpu.h',
   'pixelformat.c',
+  'filter-sample.c',
+  'filter-sample.h',
   'filter.c',
   'filter.h',
   'scale.c',

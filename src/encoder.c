@@ -125,6 +125,7 @@
 #include "clipboard.h"
 #include "compat_stub.h"
 #include "filter.h"
+#include "filter-sample.h"
 #include "sleep.h"
 #include "threading.h"
 
