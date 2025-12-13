@@ -61,6 +61,8 @@ srcs = [
   'filter-factory.h',
   'filter-clip.c',
   'filter-clip.h',
+  'filter-resize.c',
+  'filter-resize.h',
   'filter-sample.c',
   'filter-sample.h',
   'filter.c',
