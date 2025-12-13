@@ -349,13 +349,13 @@ jobs:
       shell: msys2 {0}
       run: |
         set -eux
-        for f in /etc/pacman.d/mirrorlist.mingw* /etc/pacman.d/mirrorlist.clang* /etc/pacman.d/mirrorlist.ucrt64; do
-          [ -f "$f" ] || continue
-          printf 'Server = https://mirror.msys2.org/mingw/$repo/\n' > "$f"
-        done
-        if [ -f /etc/pacman.d/mirrorlist.msys ]; then
-          printf 'Server = https://mirror.msys2.org/msys/$arch/\n' > /etc/pacman.d/mirrorlist.msys
-        fi
+        cp -a /etc/pacman.conf /etc/pacman.conf.bak
+        awk '
+          BEGIN{skip=0}
+          /^\[clangarm64\]/{skip=1; print "#" $0; next}
+          /^\[.*\]/{ if(skip){skip=0} }
+          { if(skip) print "#" $0; else print $0 }
+        ' /etc/pacman.conf.bak > /etc/pacman.conf
         rm -f /var/lib/pacman/sync/*.db /var/lib/pacman/sync/*.files || true
         pacman -Syy --noconfirm
         pacman -Sy --noconfirm --needed msys2-keyring
