@@ -126,6 +126,7 @@
 #include "compat_stub.h"
 #include "filter.h"
 #include "filter-clip.h"
+#include "filter-resize.h"
 #include "filter-sample.h"
 #include "sleep.h"
 #include "threading.h"
@@ -3755,111 +3756,27 @@ sixel_encoder_do_resize(
     sixel_frame_t   /* in */    *frame,     /* frame object to be resized */
     sixel_encoding_planner_t *planner)
 {
-    SIXELSTATUS status = SIXEL_FALSE;
-    int src_width;
-    int src_height;
-    int dst_width;
-    int dst_height;
-    int use_float_resize;
+    SIXELSTATUS status;
+    sixel_filter_resize_config_t config;
 
-    /* get frame width and height */
-    src_width = sixel_frame_get_width(frame);
-    src_height = sixel_frame_get_height(frame);
-
-    if (src_width < 1) {
-         sixel_helper_set_additional_message(
-             "sixel_encoder_do_resize: "
-             "detected a frame with a non-positive width.");
-        return SIXEL_BAD_ARGUMENT;
+    status = SIXEL_FALSE;
+    config.pixel_width = encoder->pixelwidth;
+    config.pixel_height = encoder->pixelheight;
+    config.percent_width = encoder->percentwidth;
+    config.percent_height = encoder->percentheight;
+    config.method_for_resampling = encoder->method_for_resampling;
+    config.prefer_float32 = encoder->prefer_float32;
+    if (planner != NULL) {
+        config.planner_scale_pixelformat = planner->scale_pixelformat;
+    } else {
+        config.planner_scale_pixelformat =
+            sixel_encoder_pixelformat_for_colorspace(
+                encoder->working_colorspace,
+                encoder->prefer_float32);
     }
 
-    if (src_height < 1) {
-         sixel_helper_set_additional_message(
-             "sixel_encoder_do_resize: "
-             "detected a frame with a non-positive height.");
-        return SIXEL_BAD_ARGUMENT;
-    }
+    status = sixel_filter_resize_frame(&config, frame, encoder->logger);
 
-    /* settings around scaling */
-    dst_width = encoder->pixelwidth;    /* may be -1 (default) */
-    dst_height = encoder->pixelheight;  /* may be -1 (default) */
-
-    use_float_resize = 0;
-
-    /* if the encoder has percentwidth or percentheight property,
-       convert them to pixelwidth / pixelheight */
-    if (encoder->percentwidth > 0) {
-        dst_width = src_width * encoder->percentwidth / 100;
-    }
-    if (encoder->percentheight > 0) {
-        dst_height = src_height * encoder->percentheight / 100;
-    }
-
-    /* if only either width or height is set, set also the other
-       to retain frame aspect ratio */
-    if (dst_width > 0 && dst_height <= 0) {
-        dst_height = src_height * dst_width / src_width;
-    }
-    if (dst_height > 0 && dst_width <= 0) {
-        dst_width = src_width * dst_height / src_height;
-    }
-
-    sixel_encoder_log_stage(encoder,
-                            frame,
-                            "scale",
-                            "worker",
-                            "start",
-                            "src=%dx%d dst=%dx%d resample=%d",
-                            src_width,
-                            src_height,
-                            dst_width,
-                            dst_height,
-                            encoder->method_for_resampling);
-
-    /* do resize */
-    if (dst_width > 0 && dst_height > 0) {
-        if (encoder->method_for_resampling != SIXEL_RES_NEAREST) {
-            if (planner != NULL
-                && SIXEL_PIXELFORMAT_IS_FLOAT32(
-                    planner->scale_pixelformat) != 0) {
-                use_float_resize = 1;
-            }
-            if (encoder->prefer_float32 != 0) {
-                use_float_resize = 1;
-            }
-        }
-
-        if (use_float_resize != 0) {
-            status = sixel_frame_resize_float32(
-                frame,
-                dst_width,
-                dst_height,
-                encoder->method_for_resampling);
-        } else {
-            status = sixel_frame_resize(
-                frame,
-                dst_width,
-                dst_height,
-                encoder->method_for_resampling);
-        }
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
-
-    sixel_encoder_log_stage(encoder,
-                            frame,
-                            "scale",
-                            "worker",
-                            "finish",
-                            "result=%dx%d",
-                            sixel_frame_get_width(frame),
-                            sixel_frame_get_height(frame));
-
-    /* success */
-    status = SIXEL_OK;
-
-end:
     return status;
 }
 
