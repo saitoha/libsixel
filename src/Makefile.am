@@ -7,6 +7,11 @@ exec_prefix = @exec_prefix@
 top_builddir = @top_builddir@
 builddir = @builddir@
 
+if WANT_AMALGAMATION
+AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
+BUILT_SOURCES = $(AMALGAMATION_SIXEL)
+endif
+
 if COND_GCOV
 MAYBE_COVERAGE = --coverage
 endif
@@ -14,6 +19,14 @@ endif
 CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests
 
 lib_LTLIBRARIES = libsixel.la
+
+if WANT_AMALGAMATION
+libsixel_la_SOURCES = $(AMALGAMATION_SIXEL)
+
+$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
+	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
+
+else
 libsixel_la_SOURCES = \
                 $(srcdir)/output.c \
                 $(srcdir)/output.h \
@@ -132,22 +145,23 @@ $(srcdir)/stb_image_write.h \
                 $(srcdir)/tty.c \
                 $(srcdir)/tty.h \
                 $(srcdir)/threading.c \
-                $(srcdir)/threading.h \
-                $(srcdir)/sixel_atomic.h \
-                $(srcdir)/rgblookup.h \
-                $(srcdir)/lso2.h
+$(srcdir)/threading.h \
+$(srcdir)/sixel_atomic.h \
+$(srcdir)/rgblookup.h \
+$(srcdir)/lso2.h
 if SIXEL_ENABLE_THREADS
 libsixel_la_SOURCES += \
-                $(srcdir)/threadpool.c \
-                $(srcdir)/threadpool.h
+$(srcdir)/threadpool.c \
+$(srcdir)/threadpool.h
 endif
 if HAVE_QUICKLOOK_THUMBNAILING
 libsixel_la_SOURCES += \
-                $(srcdir)/quicklook_thumbnailing.m
+$(srcdir)/quicklook_thumbnailing.m
 endif
 if HAVE_CLIPBOARD_MACOS
 libsixel_la_SOURCES += \
-                $(srcdir)/clipboard_macos.m
+$(srcdir)/clipboard_macos.m
+endif
 endif
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS) \
                 @THREAD_CPPFLAGS@
