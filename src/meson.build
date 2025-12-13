@@ -123,8 +123,14 @@ endif
 lt_soversion = ls_lt_current - ls_lt_age
 lt_version = '@0@.@1@.@2@'.format(lt_soversion, ls_lt_age, ls_lt_revision)
 
+if get_option('amalgamation').enabled()
+  libsixel_sources = [amalgamation_out]
+else
+  libsixel_sources = srcs
+endif
+
 libsixel = library('sixel',
-                   srcs,
+                   libsixel_sources,
                    include_directories: project_inc,
                    c_args: libsixel_posix_defs,
                    dependencies: deps,

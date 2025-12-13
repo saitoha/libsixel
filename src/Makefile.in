@@ -90,15 +90,15 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@SIXEL_ENABLE_THREADS_TRUE@am__append_1 = \
-@SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/threadpool.c \
-@SIXEL_ENABLE_THREADS_TRUE@                $(srcdir)/threadpool.h
+@SIXEL_ENABLE_THREADS_TRUE@@WANT_AMALGAMATION_FALSE@am__append_1 = \
+@SIXEL_ENABLE_THREADS_TRUE@@WANT_AMALGAMATION_FALSE@$(srcdir)/threadpool.c \
+@SIXEL_ENABLE_THREADS_TRUE@@WANT_AMALGAMATION_FALSE@$(srcdir)/threadpool.h
 
-@HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__append_2 = \
-@HAVE_QUICKLOOK_THUMBNAILING_TRUE@                $(srcdir)/quicklook_thumbnailing.m
+@HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATION_FALSE@am__append_2 = \
+@HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATION_FALSE@$(srcdir)/quicklook_thumbnailing.m
 
-@HAVE_CLIPBOARD_MACOS_TRUE@am__append_3 = \
-@HAVE_CLIPBOARD_MACOS_TRUE@                $(srcdir)/clipboard_macos.m
+@HAVE_CLIPBOARD_MACOS_TRUE@@WANT_AMALGAMATION_FALSE@am__append_3 = \
+@HAVE_CLIPBOARD_MACOS_TRUE@@WANT_AMALGAMATION_FALSE@$(srcdir)/clipboard_macos.m
 
 @COND_TESTS_TRUE@noinst_PROGRAMS = tests$(EXEEXT)
 subdir = src
@@ -216,47 +216,77 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/tty.h $(srcdir)/threading.c $(srcdir)/threading.h \
 	$(srcdir)/sixel_atomic.h $(srcdir)/rgblookup.h \
 	$(srcdir)/lso2.h $(srcdir)/threadpool.c $(srcdir)/threadpool.h \
-	$(srcdir)/quicklook_thumbnailing.m $(srcdir)/clipboard_macos.m
-@SIXEL_ENABLE_THREADS_TRUE@am__objects_1 = libsixel_la-threadpool.lo
-@HAVE_QUICKLOOK_THUMBNAILING_TRUE@am__objects_2 = libsixel_la-quicklook_thumbnailing.lo
-@HAVE_CLIPBOARD_MACOS_TRUE@am__objects_3 =  \
-@HAVE_CLIPBOARD_MACOS_TRUE@	libsixel_la-clipboard_macos.lo
-am_libsixel_la_OBJECTS = libsixel_la-output.lo libsixel_la-timer.lo \
-	libsixel_la-assessment.lo libsixel_la-sleep.lo \
-	libsixel_la-fromsixel.lo libsixel_la-tosixel.lo \
-	libsixel_la-lookup-common.lo libsixel_la-lookup-8bit.lo \
-	libsixel_la-lookup-float32.lo libsixel_la-lookup-vpte-8bit.lo \
-	libsixel_la-lookup-vpte-float32.lo \
-	libsixel_la-palette-heckbert.lo \
-	libsixel_la-palette-common-merge.lo \
-	libsixel_la-palette-common-snap.lo \
-	libsixel_la-palette-kmeans.lo libsixel_la-palette.lo \
-	libsixel_la-dither.lo libsixel_la-dither-common-pipeline.lo \
-	libsixel_la-dither-positional-8bit.lo \
-	libsixel_la-dither-positional-float32.lo \
-	libsixel_la-dither-fixed-8bit.lo \
-	libsixel_la-dither-fixed-float32.lo \
-	libsixel_la-dither-varcoeff-8bit.lo \
-	libsixel_la-dither-varcoeff-float32.lo libsixel_la-logger.lo \
-	libsixel_la-colorspace.lo libsixel_la-frame.lo \
-	libsixel_la-cpu.lo libsixel_la-pixelformat.lo \
-	libsixel_la-scale.lo libsixel_la-chunk.lo \
-	libsixel_la-loader.lo libsixel_la-loader-gdk-pixbuf2.lo \
-	libsixel_la-loader-gnome-thumbnailer.lo \
-	libsixel_la-loader-coregraphics.lo \
-	libsixel_la-loader-quicklook.lo libsixel_la-loader-wic.lo \
-	libsixel_la-loader-gd.lo libsixel_la-loader-libpng.lo \
-	libsixel_la-loader-libjpeg.lo libsixel_la-loader-builtin.lo \
-	libsixel_la-loader-common.lo libsixel_la-loader-registry.lo \
-	libsixel_la-frompnm.lo libsixel_la-fromgif.lo \
-	libsixel_la-clipboard.lo libsixel_la-encoder.lo \
-	libsixel_la-decoder.lo libsixel_la-decoder-parallel.lo \
-	libsixel_la-options.lo libsixel_la-writer.lo \
-	libsixel_la-stb_image_write.lo libsixel_la-status.lo \
-	libsixel_la-compat_stub.lo libsixel_la-malloc_stub.lo \
-	libsixel_la-allocator.lo libsixel_la-tty.lo \
-	libsixel_la-threading.lo $(am__objects_1) $(am__objects_2) \
-	$(am__objects_3)
+	$(srcdir)/quicklook_thumbnailing.m $(srcdir)/clipboard_macos.m \
+	$(top_builddir)/amalgamation/sixel.c
+@SIXEL_ENABLE_THREADS_TRUE@@WANT_AMALGAMATION_FALSE@am__objects_1 = libsixel_la-threadpool.lo
+@HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATION_FALSE@am__objects_2 = libsixel_la-quicklook_thumbnailing.lo
+@HAVE_CLIPBOARD_MACOS_TRUE@@WANT_AMALGAMATION_FALSE@am__objects_3 = libsixel_la-clipboard_macos.lo
+am__dirstamp = $(am__leading_dot)dirstamp
+@WANT_AMALGAMATION_TRUE@am__objects_4 = $(top_builddir)/amalgamation/libsixel_la-sixel.lo
+@WANT_AMALGAMATION_FALSE@am_libsixel_la_OBJECTS =  \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-output.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-timer.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-assessment.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-sleep.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-fromsixel.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-tosixel.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-lookup-common.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-lookup-8bit.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-lookup-float32.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-lookup-vpte-8bit.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-lookup-vpte-float32.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-palette-heckbert.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-palette-common-merge.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-palette-common-snap.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-palette-kmeans.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-palette.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-dither.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-dither-common-pipeline.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-dither-positional-8bit.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-dither-positional-float32.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-dither-fixed-8bit.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-dither-fixed-float32.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-dither-varcoeff-8bit.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-dither-varcoeff-float32.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-logger.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-colorspace.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-frame.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-cpu.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-pixelformat.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-scale.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-chunk.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-loader.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-gdk-pixbuf2.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-gnome-thumbnailer.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-coregraphics.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-quicklook.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-wic.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-gd.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-libpng.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-libjpeg.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-builtin.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-common.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-registry.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-frompnm.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-fromgif.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-clipboard.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-encoder.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-decoder.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-decoder-parallel.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-options.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-writer.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-stb_image_write.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-status.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-compat_stub.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-malloc_stub.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-allocator.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-tty.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-threading.lo \
+@WANT_AMALGAMATION_FALSE@	$(am__objects_1) $(am__objects_2) \
+@WANT_AMALGAMATION_FALSE@	$(am__objects_3)
+@WANT_AMALGAMATION_TRUE@am_libsixel_la_OBJECTS = $(am__objects_4) \
+@WANT_AMALGAMATION_TRUE@	$(am__objects_1) $(am__objects_2) \
+@WANT_AMALGAMATION_TRUE@	$(am__objects_3)
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -287,7 +317,9 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
+am__depfiles_remade =  \
+	$(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Plo \
+	./$(DEPDIR)/libsixel_la-allocator.Plo \
 	./$(DEPDIR)/libsixel_la-assessment.Plo \
 	./$(DEPDIR)/libsixel_la-chunk.Plo \
 	./$(DEPDIR)/libsixel_la-clipboard.Plo \
@@ -610,73 +642,124 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
+@WANT_AMALGAMATION_TRUE@AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
+@WANT_AMALGAMATION_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests
 lib_LTLIBRARIES = libsixel.la
-libsixel_la_SOURCES = $(srcdir)/output.c $(srcdir)/output.h \
-	$(srcdir)/timer.c $(srcdir)/assessment.c \
-	$(srcdir)/assessment.h $(srcdir)/timer.h $(srcdir)/sleep.c \
-	$(srcdir)/sleep.h $(srcdir)/fromsixel.c $(srcdir)/tosixel.c \
-	$(srcdir)/lookup-common.c $(srcdir)/lookup-8bit.c \
-	$(srcdir)/lookup-8bit.h $(srcdir)/lookup-float32.c \
-	$(srcdir)/lookup-float32.h $(srcdir)/lookup-vpte-8bit.c \
-	$(srcdir)/lookup-vpte-8bit.h $(srcdir)/lookup-vpte-float32.c \
-	$(srcdir)/lookup-vpte-float32.h $(srcdir)/lookup-common.h \
-	$(srcdir)/palette-heckbert.c $(srcdir)/palette-heckbert.h \
-	$(srcdir)/palette-common-merge.c \
-	$(srcdir)/palette-common-merge.h \
-	$(srcdir)/palette-common-snap.c \
-	$(srcdir)/palette-common-snap.h $(srcdir)/palette-kmeans.c \
-	$(srcdir)/palette-kmeans.h $(srcdir)/palette.c \
-	$(srcdir)/palette.h $(srcdir)/dither.c $(srcdir)/dither.h \
-	$(srcdir)/dither-common-pipeline.c \
-	$(srcdir)/dither-common-pipeline.h \
-	$(srcdir)/dither-positional-8bit.c \
-	$(srcdir)/dither-positional-8bit.h \
-	$(srcdir)/dither-positional-float32.c \
-	$(srcdir)/dither-positional-float32.h \
-	$(srcdir)/dither-fixed-8bit.c $(srcdir)/dither-fixed-8bit.h \
-	$(srcdir)/dither-fixed-float32.c \
-	$(srcdir)/dither-fixed-float32.h $(srcdir)/dither-internal.h \
-	$(srcdir)/dither-varcoeff-8bit.c \
-	$(srcdir)/dither-varcoeff-8bit.h \
-	$(srcdir)/dither-varcoeff-float32.c \
-	$(srcdir)/dither-varcoeff-float32.h $(srcdir)/logger.c \
-	$(srcdir)/logger.h $(srcdir)/colorspace.c \
-	$(srcdir)/colorspace.h $(srcdir)/frame.c $(srcdir)/frame.h \
-	$(srcdir)/cpu.c $(srcdir)/cpu.h $(srcdir)/pixelformat.c \
-	$(srcdir)/pixelformat.h $(srcdir)/scale.c $(srcdir)/scale.h \
-	$(srcdir)/chunk.c $(srcdir)/chunk.h $(srcdir)/loader.c \
-	$(srcdir)/loader-gdk-pixbuf2.c \
-	$(srcdir)/loader-gnome-thumbnailer.c \
-	$(srcdir)/loader-coregraphics.c $(srcdir)/loader-quicklook.c \
-	$(srcdir)/loader-wic.c $(srcdir)/loader-gd.c \
-	$(srcdir)/loader-libpng.c $(srcdir)/loader-libjpeg.c \
-	$(srcdir)/loader-builtin.c $(srcdir)/loader-common.c \
-	$(srcdir)/loader-registry.c $(srcdir)/loader.h \
-	$(srcdir)/loader-builtin.h $(srcdir)/loader-common.h \
-	$(srcdir)/loader-coregraphics.h $(srcdir)/loader-gd.h \
-	$(srcdir)/loader-gdk-pixbuf2.h \
-	$(srcdir)/loader-gnome-thumbnailer.h \
-	$(srcdir)/loader-libjpeg.h $(srcdir)/loader-libpng.h \
-	$(srcdir)/loader-quicklook.h $(srcdir)/loader-registry.h \
-	$(srcdir)/loader-wic.h $(srcdir)/frompnm.c $(srcdir)/frompnm.h \
-	$(srcdir)/fromgif.c $(srcdir)/fromgif.h $(srcdir)/clipboard.c \
-	$(srcdir)/clipboard.h $(srcdir)/encoder.c $(srcdir)/encoder.h \
-	$(srcdir)/decoder.c $(srcdir)/decoder.h \
-	$(srcdir)/decoder-parallel.c $(srcdir)/decoder-parallel.h \
-	$(srcdir)/decoder-image.h $(srcdir)/options.c \
-	$(srcdir)/options.h $(srcdir)/stb_image.h $(srcdir)/writer.c \
-	$(srcdir)/writer.h $(srcdir)/stb_image_write.c \
-	$(srcdir)/stb_image_write.h $(srcdir)/status.c \
-	$(srcdir)/status.h $(srcdir)/stdio_stub.h \
-	$(srcdir)/compat_stub.c $(srcdir)/compat_stub.h \
-	$(srcdir)/malloc_stub.c $(srcdir)/malloc_stub.h \
-	$(srcdir)/allocator.c $(srcdir)/allocator.h $(srcdir)/tty.c \
-	$(srcdir)/tty.h $(srcdir)/threading.c $(srcdir)/threading.h \
-	$(srcdir)/sixel_atomic.h $(srcdir)/rgblookup.h \
-	$(srcdir)/lso2.h $(am__append_1) $(am__append_2) \
-	$(am__append_3)
+@WANT_AMALGAMATION_FALSE@libsixel_la_SOURCES = $(srcdir)/output.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/output.h $(srcdir)/timer.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/assessment.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/assessment.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/timer.h $(srcdir)/sleep.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/sleep.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/fromsixel.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/tosixel.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/lookup-common.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/lookup-8bit.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/lookup-8bit.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/lookup-float32.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/lookup-float32.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/lookup-vpte-8bit.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/lookup-vpte-8bit.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/lookup-vpte-float32.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/lookup-vpte-float32.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/lookup-common.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/palette-heckbert.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/palette-heckbert.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/palette-common-merge.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/palette-common-merge.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/palette-common-snap.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/palette-common-snap.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/palette-kmeans.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/palette-kmeans.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/palette.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/palette.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither.c $(srcdir)/dither.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-common-pipeline.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-common-pipeline.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-positional-8bit.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-positional-8bit.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-positional-float32.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-positional-float32.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-fixed-8bit.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-fixed-8bit.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-fixed-float32.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-fixed-float32.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-internal.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-varcoeff-8bit.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-varcoeff-8bit.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-varcoeff-float32.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-varcoeff-float32.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/logger.c $(srcdir)/logger.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/colorspace.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/colorspace.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/frame.c $(srcdir)/frame.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/cpu.c $(srcdir)/cpu.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/pixelformat.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/pixelformat.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/scale.c $(srcdir)/scale.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/chunk.c $(srcdir)/chunk.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-gdk-pixbuf2.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-gnome-thumbnailer.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-coregraphics.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-quicklook.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-wic.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-gd.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-libpng.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-libjpeg.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-builtin.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-common.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-registry.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-builtin.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-common.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-coregraphics.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-gd.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-gdk-pixbuf2.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-gnome-thumbnailer.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-libjpeg.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-libpng.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-quicklook.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-registry.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-wic.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/frompnm.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/frompnm.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/fromgif.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/fromgif.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/clipboard.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/clipboard.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/encoder.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/encoder.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/decoder.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/decoder.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/decoder-parallel.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/decoder-parallel.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/decoder-image.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/options.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/options.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/stb_image.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/writer.c $(srcdir)/writer.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/stb_image_write.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/stb_image_write.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/status.c $(srcdir)/status.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/stdio_stub.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/compat_stub.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/compat_stub.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/malloc_stub.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/malloc_stub.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/allocator.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/allocator.h $(srcdir)/tty.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/tty.h $(srcdir)/threading.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/threading.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/sixel_atomic.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/rgblookup.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/lso2.h $(am__append_1) \
+@WANT_AMALGAMATION_FALSE@	$(am__append_2) $(am__append_3)
+@WANT_AMALGAMATION_TRUE@libsixel_la_SOURCES = $(AMALGAMATION_SIXEL) \
+@WANT_AMALGAMATION_TRUE@	$(am__append_1) $(am__append_2) \
+@WANT_AMALGAMATION_TRUE@	$(am__append_3)
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS) \
                 @THREAD_CPPFLAGS@
 
@@ -720,7 +803,8 @@ libsixel_la_LIBADD = -lm \
 dist_man_MANS = $(srcdir)/sixel.5
 EXTRA_DIST = $(srcdir)/rgblookup.gperf
 GPERF_OPT = --ignore-case --language=ANSI-C
-all: all-am
+all: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .m .o .obj
@@ -790,6 +874,15 @@ clean-libLTLIBRARIES:
 	      sort -u`; \
 	echo rm -f $${locs}; \
 	$(am__rm_f) $${locs}
+$(top_builddir)/amalgamation/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/amalgamation
+	@: >>$(top_builddir)/amalgamation/$(am__dirstamp)
+$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/amalgamation/$(DEPDIR)
+	@: >>$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/libsixel_la-sixel.lo:  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 libsixel.la: $(libsixel_la_OBJECTS) $(libsixel_la_DEPENDENCIES) $(EXTRA_libsixel_la_DEPENDENCIES) 
 	$(AM_V_OBJCLD)$(libsixel_la_LINK) -rpath $(libdir) $(libsixel_la_OBJECTS) $(libsixel_la_LIBADD) $(LIBS)
@@ -800,10 +893,13 @@ tests$(EXEEXT): $(tests_OBJECTS) $(tests_DEPENDENCIES) $(EXTRA_tests_DEPENDENCIE
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f $(top_builddir)/amalgamation/*.$(OBJEXT)
+	-rm -f $(top_builddir)/amalgamation/*.lo
 
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-allocator.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-assessment.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-chunk.Plo@am__quote@ # am--include-marker
@@ -1310,6 +1406,13 @@ libsixel_la-threadpool.lo: threadpool.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-threadpool.lo `test -f 'threadpool.c' || echo '$(srcdir)/'`threadpool.c
 
+$(top_builddir)/amalgamation/libsixel_la-sixel.lo: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/libsixel_la-sixel.lo -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Tpo -c -o $(top_builddir)/amalgamation/libsixel_la-sixel.lo `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/libsixel_la-sixel.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/libsixel_la-sixel.lo `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
 tests-tests.o: tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-tests.o -MD -MP -MF $(DEPDIR)/tests-tests.Tpo -c -o tests-tests.o `test -f 'tests.c' || echo '$(srcdir)/'`tests.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-tests.Tpo $(DEPDIR)/tests-tests.Po
@@ -1366,6 +1469,7 @@ mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
+	-rm -rf $(top_builddir)/amalgamation/.libs $(top_builddir)/amalgamation/_libs
 	-rm -rf .libs _libs
 install-man5: $(dist_man_MANS)
 	@$(NORMAL_INSTALL)
@@ -1497,14 +1601,17 @@ distdir-am: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-check: check-am
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(PROGRAMS) $(LTLIBRARIES) $(MANS)
 installdirs:
 	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(man5dir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: install-am
-install-exec: install-exec-am
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-am
+install-exec: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
 
@@ -1530,16 +1637,20 @@ clean-generic:
 distclean-generic:
 	-$(am__rm_f) $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || $(am__rm_f) $(CONFIG_CLEAN_VPATH_FILES)
+	-$(am__rm_f) $(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) $(top_builddir)/amalgamation/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-$(am__rm_f) $(BUILT_SOURCES)
 clean: clean-am
 
 clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
 	clean-noinstPROGRAMS mostlyclean-am
 
 distclean: distclean-am
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-allocator.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-assessment.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-chunk.Plo
@@ -1647,6 +1758,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-allocator.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-assessment.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-chunk.Plo
@@ -1729,7 +1841,7 @@ uninstall-am: uninstall-libLTLIBRARIES uninstall-man
 
 uninstall-man: uninstall-man5
 
-.MAKE: install-am install-strip
+.MAKE: all check install install-am install-exec install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-am clean \
 	clean-generic clean-libLTLIBRARIES clean-libtool \
@@ -1749,6 +1861,9 @@ uninstall-man: uninstall-man5
 
 .PRECIOUS: Makefile
 
+
+@WANT_AMALGAMATION_TRUE@$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
+@WANT_AMALGAMATION_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
 
 unittest: all
 @COND_TESTS_TRUE@	$(srcdir)/tests

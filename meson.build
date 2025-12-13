@@ -1257,13 +1257,14 @@ if ruby_opt.enabled()
   endif
 endif
 
+if get_option('amalgamation').enabled()
+  subdir('amalgamation')
+endif
+
 subdir('include')
 
 subdir('src')
 subdir('converters')
-if get_option('amalgamation').enabled()
-  subdir('amalgamation')
-endif
 if have_wiccodec
   subdir('wic')
 endif
