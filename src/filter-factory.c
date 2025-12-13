@@ -13,6 +13,7 @@
 #include <sixel.h>
 
 #include "filter-factory.h"
+#include "filter-colors.h"
 #include "filter-clip.h"
 #include "filter-resize.h"
 #include "filter-sample.h"
@@ -72,9 +73,27 @@ sixel_filter_factory_resize_init(sixel_filter_t *filter,
     return sixel_filter_resize_init(filter, resize_config);
 }
 
+static SIXELSTATUS
+sixel_filter_factory_colors_init(sixel_filter_t *filter,
+                                 const void *config)
+{
+    const sixel_filter_colors_config_t *colors_config;
+
+    if (config == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    colors_config = (const sixel_filter_colors_config_t *)config;
+
+    return sixel_filter_colors_init(filter, colors_config);
+}
+
 static const sixel_filter_factory_entry_t
         sixel_filter_factory_entries[] = {
     {"clip", SIXEL_FILTER_KIND_CLIP, sixel_filter_factory_clip_init},
+    {"colorspace",
+     SIXEL_FILTER_KIND_COLORS,
+     sixel_filter_factory_colors_init},
     {"resize", SIXEL_FILTER_KIND_RESIZE, sixel_filter_factory_resize_init},
     {"sample", SIXEL_FILTER_KIND_SAMPLE, sixel_filter_factory_sample_init},
 };

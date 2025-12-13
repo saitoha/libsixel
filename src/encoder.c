@@ -126,6 +126,7 @@
 #include "compat_stub.h"
 #include "filter.h"
 #include "filter-clip.h"
+#include "filter-colors.h"
 #include "filter-resize.h"
 #include "filter-sample.h"
 #include "sleep.h"
@@ -3882,6 +3883,31 @@ end:
 }
 
 
+/* convert a frame to the working colorspace using the shared filter */
+static SIXELSTATUS
+sixel_encoder_do_colorspace(sixel_encoder_t *encoder,
+                            sixel_frame_t *frame,
+                            int target_pixelformat)
+{
+    SIXELSTATUS status;
+    sixel_filter_colors_config_t config;
+
+    status = SIXEL_FALSE;
+    config.target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+
+    if (encoder == NULL || frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    config.target_pixelformat = target_pixelformat;
+
+    status = sixel_filter_colors_convert(
+        &config, frame, encoder->logger);
+
+    return status;
+}
+
+
 static void
 sixel_debug_print_palette(
     sixel_dither_t /* in */ *dither /* dithering object */
@@ -4843,9 +4869,8 @@ sixel_encoder_encode_frame(
 
     if (encoder->working_colorspace != SIXEL_COLORSPACE_GAMMA
         || encoder->prefer_float32 != 0) {
-        status = sixel_frame_set_pixelformat(
-            frame,
-            target_pixelformat);
+        status = sixel_encoder_do_colorspace(
+            encoder, frame, target_pixelformat);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
