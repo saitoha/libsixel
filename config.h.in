@@ -222,6 +222,12 @@
 /* Define to 1 if you have the 'gettimeofday' function. */
 #undef HAVE_GETTIMEOFDAY
 
+/* gettimeofday timezone argument is struct timezone* */
+#undef HAVE_GETTIMEOFDAY_TZ_TIMEZONE
+
+/* gettimeofday timezone argument is void* */
+#undef HAVE_GETTIMEOFDAY_TZ_VOID
+
 /* Define to 1 if you have the <immintrin.h> header file. */
 #undef HAVE_IMMINTRIN_H
 
