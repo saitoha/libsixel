@@ -124,6 +124,7 @@
 #include "rgblookup.h"
 #include "clipboard.h"
 #include "compat_stub.h"
+#include "filter.h"
 #include "sleep.h"
 #include "threading.h"
 
@@ -2957,234 +2958,36 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
 }
 
 
-static size_t
-sixel_encoder_select_sample_stride(sixel_encoder_t *encoder,
-                                   int width,
-                                   int height,
-                                   int reqcolors,
-                                   int quality_mode)
-{
-    size_t stride;
-    size_t base_target;
-    size_t color_budget;
-    size_t target;
-    size_t total;
-
-    /*
-     * Scale the sampling grid to cover more pixels when a 256-color palette
-     * or high quality is requested. The target is:
-     *
-     *   max(4096, reqcolors * 64) adjusted by quality mode
-     *
-     * With reqcolors=256 and quality=high/full this yields ~28k-40k
-     * samples on large frames, which more closely matches the legacy
-     * heuristics.
-     *
-     * When $SIXEL_PALETTE_SAMPLE_TARGET is set, the environment-defined
-     * target bypasses this heuristic so callers can force a specific
-     * sample budget without recompiling.
-     */
-
-    stride = 1u;
-    base_target = 4096u;
-    color_budget = 0u;
-    target = base_target;
-    total = 0u;
-
-    if (width <= 0 || height <= 0) {
-        return stride;
-    }
-
-    if (encoder != NULL && encoder->palette_sample_override) {
-        target = encoder->palette_sample_target;
-    } else {
-        if (reqcolors > 0) {
-            color_budget = (size_t)reqcolors * 64u;
-            if (color_budget / 64u != (size_t)reqcolors) {
-                color_budget = base_target;
-            }
-            if (color_budget > target) {
-                target = color_budget;
-            }
-        }
-
-        if (quality_mode == SIXEL_QUALITY_HIGH
-                || quality_mode == SIXEL_QUALITY_HIGHCOLOR) {
-            if (target <= SIZE_MAX / 2u) {
-                target *= 2u;
-            } else {
-                target = SIZE_MAX;
-            }
-        } else if (quality_mode == SIXEL_QUALITY_FULL) {
-            if (target <= SIZE_MAX / 4u) {
-                target *= 4u;
-            } else {
-                target = SIZE_MAX;
-            }
-        }
-    }
-
-    total = (size_t)width * (size_t)height;
-    while (stride < total && total / (stride * stride) > target) {
-        ++stride;
-    }
-
-    return stride;
-}
-
-
 static SIXELSTATUS
 sixel_encoder_copy_samples(sixel_encoder_t *encoder,
                            sixel_frame_t *frame,
                            sixel_allocator_t *allocator,
                            sixel_frame_t **sample_out)
 {
-    SIXELSTATUS status = SIXEL_FALSE;
-    sixel_frame_t *sample;
-    unsigned char *src_pixels;
-    unsigned char *dst_pixels;
-    size_t stride;
-    int clip_x;
-    int clip_y;
-    int clip_w;
-    int clip_h;
-    int src_width;
-    int src_height;
-    int width = 0;
-    int height = 0;
-    int depth;
-    int sample_width;
-    int sample_height;
-    size_t sample_count;
-    size_t payload_size;
-    size_t dst_index;
-    size_t src_offset;
-    int x;
-    int y;
+    SIXELSTATUS status;
+    sixel_filter_sample_config_t config;
 
     if (encoder == NULL || frame == NULL || sample_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if ((sixel_frame_get_pixelformat(frame) & SIXEL_FORMATTYPE_PALETTE)) {
-        return SIXEL_FEATURE_ERROR;
-    }
 
-    sample = NULL;
-    src_pixels = sixel_frame_get_pixels(frame);
-    stride = 1u;
-    src_width = sixel_frame_get_width(frame);
-    src_height = sixel_frame_get_height(frame);
-    depth = sixel_helper_compute_depth(sixel_frame_get_pixelformat(frame));
-    sample_width = 0;
-    sample_height = 0;
-    sample_count = 0u;
-    payload_size = 0u;
-    dst_index = 0u;
-    src_offset = 0u;
+    memset(&config, 0, sizeof(config));
+    config.clip_x = encoder->clipx;
+    config.clip_y = encoder->clipy;
+    config.clip_width = encoder->clipwidth;
+    config.clip_height = encoder->clipheight;
+    config.reqcolors = encoder->reqcolors;
+    config.quality_mode = encoder->quality_mode;
+    config.palette_sample_override = encoder->palette_sample_override;
+    config.palette_sample_target = encoder->palette_sample_target;
 
-    if (depth <= 0 || src_pixels == NULL) {
-        return SIXEL_BAD_ARGUMENT;
-    }
+    status = sixel_filter_sample_frame(&config,
+                                       frame,
+                                       allocator,
+                                       sample_out,
+                                       encoder->logger);
 
-    clip_x = encoder->clipx;
-    clip_y = encoder->clipy;
-    clip_w = encoder->clipwidth;
-    clip_h = encoder->clipheight;
-
-    /*
-     * Mirror the clipping contract without mutating the source frame. Only
-     * the visible region feeds the palette worker so that off-screen areas do
-     * not skew the histogram. When clipping is disabled, the full frame
-     * is sampled to keep the worker active.
-     */
-
-    if (clip_w <= 0 || clip_h <= 0) {
-        clip_x = 0;
-        clip_y = 0;
-        clip_w = src_width;
-        clip_h = src_height;
-    } else {
-        if (clip_w + clip_x > src_width) {
-            if (clip_x > src_width) {
-                clip_w = 0;
-            } else {
-                clip_w = src_width - clip_x;
-            }
-        }
-
-        if (clip_h + clip_y > src_height) {
-            if (clip_y > src_height) {
-                clip_h = 0;
-            } else {
-                clip_h = src_height - clip_y;
-            }
-        }
-
-        if (clip_w <= 0 || clip_h <= 0) {
-            return SIXEL_BAD_ARGUMENT;
-        }
-    }
-
-    width = clip_w;
-    height = clip_h;
-
-    stride = sixel_encoder_select_sample_stride(encoder,
-                                                width,
-                                                height,
-                                                encoder->reqcolors,
-                                                encoder->quality_mode);
-    sample_width = (width + (int)stride - 1) / (int)stride;
-    sample_height = (height + (int)stride - 1) / (int)stride;
-    if (sample_width <= 0 || sample_height <= 0) {
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    sample_count = (size_t)sample_width * (size_t)sample_height;
-    if (sample_count != 0u && sample_count / (size_t)sample_height
-            != (size_t)sample_width) {
-        return SIXEL_RUNTIME_ERROR;
-    }
-
-    payload_size = sample_count * (size_t)depth;
-    if (sample_count != 0u
-            && payload_size / sample_count != (size_t)depth) {
-        return SIXEL_RUNTIME_ERROR;
-    }
-
-    status = sixel_frame_new(&sample, allocator);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    dst_pixels = (unsigned char *)sixel_allocator_malloc(allocator,
-                                                         payload_size);
-    if (dst_pixels == NULL) {
-        sixel_frame_unref(sample);
-        return SIXEL_BAD_ALLOCATION;
-    }
-
-    sample->pixels.u8ptr = dst_pixels;
-    sample->width = sample_width;
-    sample->height = sample_height;
-    sample->pixelformat = sixel_frame_get_pixelformat(frame);
-    sample->colorspace = sixel_frame_get_colorspace(frame);
-    sample->ncolors = (-1);
-
-    dst_index = 0u;
-    for (y = 0; y < height; y += (int)stride) {
-        for (x = 0; x < width; x += (int)stride) {
-            src_offset = ((size_t)(clip_y + y) * (size_t)src_width
-                       + (size_t)(clip_x + x))
-                       * (size_t)depth;
-            memcpy(dst_pixels + dst_index * (size_t)depth,
-                   src_pixels + src_offset,
-                   (size_t)depth);
-            ++dst_index;
-        }
-    }
-
-    *sample_out = sample;
-
-    return SIXEL_OK;
+    return status;
 }
 
 
