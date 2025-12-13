@@ -216,13 +216,10 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/tty.h $(srcdir)/threading.c $(srcdir)/threading.h \
 	$(srcdir)/sixel_atomic.h $(srcdir)/rgblookup.h \
 	$(srcdir)/lso2.h $(srcdir)/threadpool.c $(srcdir)/threadpool.h \
-	$(srcdir)/quicklook_thumbnailing.m $(srcdir)/clipboard_macos.m \
-	$(top_builddir)/amalgamation/sixel.c
+	$(srcdir)/quicklook_thumbnailing.m $(srcdir)/clipboard_macos.m
 @SIXEL_ENABLE_THREADS_TRUE@@WANT_AMALGAMATION_FALSE@am__objects_1 = libsixel_la-threadpool.lo
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATION_FALSE@am__objects_2 = libsixel_la-quicklook_thumbnailing.lo
 @HAVE_CLIPBOARD_MACOS_TRUE@@WANT_AMALGAMATION_FALSE@am__objects_3 = libsixel_la-clipboard_macos.lo
-am__dirstamp = $(am__leading_dot)dirstamp
-@WANT_AMALGAMATION_TRUE@am__objects_4 = $(top_builddir)/amalgamation/libsixel_la-sixel.lo
 @WANT_AMALGAMATION_FALSE@am_libsixel_la_OBJECTS =  \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-output.lo \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-timer.lo \
@@ -284,10 +281,13 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATION_FALSE@	libsixel_la-threading.lo \
 @WANT_AMALGAMATION_FALSE@	$(am__objects_1) $(am__objects_2) \
 @WANT_AMALGAMATION_FALSE@	$(am__objects_3)
-@WANT_AMALGAMATION_TRUE@am_libsixel_la_OBJECTS = $(am__objects_4) \
-@WANT_AMALGAMATION_TRUE@	$(am__objects_1) $(am__objects_2) \
-@WANT_AMALGAMATION_TRUE@	$(am__objects_3)
-libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS)
+@WANT_AMALGAMATION_TRUE@am_libsixel_la_OBJECTS = $(am__objects_1) \
+@WANT_AMALGAMATION_TRUE@	$(am__objects_2) $(am__objects_3)
+am__dirstamp = $(am__leading_dot)dirstamp
+@WANT_AMALGAMATION_TRUE@am__objects_4 = $(top_builddir)/amalgamation/libsixel_la-sixel.lo
+@WANT_AMALGAMATION_TRUE@nodist_libsixel_la_OBJECTS = $(am__objects_4)
+libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS) \
+	$(nodist_libsixel_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -417,7 +417,8 @@ AM_V_OBJCLD = $(am__v_OBJCLD_@AM_V@)
 am__v_OBJCLD_ = $(am__v_OBJCLD_@AM_DEFAULT_V@)
 am__v_OBJCLD_0 = @echo "  OBJCLD  " $@;
 am__v_OBJCLD_1 = 
-SOURCES = $(libsixel_la_SOURCES) $(tests_SOURCES)
+SOURCES = $(libsixel_la_SOURCES) $(nodist_libsixel_la_SOURCES) \
+	$(tests_SOURCES)
 DIST_SOURCES = $(am__libsixel_la_SOURCES_DIST) \
 	$(am__tests_SOURCES_DIST)
 am__can_run_installinfo = \
@@ -644,6 +645,7 @@ top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
 @WANT_AMALGAMATION_TRUE@AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 @WANT_AMALGAMATION_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATION_TRUE@nodist_libsixel_la_SOURCES = $(AMALGAMATION_SIXEL)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests
 lib_LTLIBRARIES = libsixel.la
@@ -757,9 +759,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/rgblookup.h \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/lso2.h $(am__append_1) \
 @WANT_AMALGAMATION_FALSE@	$(am__append_2) $(am__append_3)
-@WANT_AMALGAMATION_TRUE@libsixel_la_SOURCES = $(AMALGAMATION_SIXEL) \
-@WANT_AMALGAMATION_TRUE@	$(am__append_1) $(am__append_2) \
-@WANT_AMALGAMATION_TRUE@	$(am__append_3)
+@WANT_AMALGAMATION_TRUE@libsixel_la_SOURCES = $(am__append_1) \
+@WANT_AMALGAMATION_TRUE@	$(am__append_2) $(am__append_3)
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS) \
                 @THREAD_CPPFLAGS@
 
