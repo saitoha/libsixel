@@ -90,6 +90,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/filter-colors.h \
                 $(srcdir)/filter-factory.c \
                 $(srcdir)/filter-factory.h \
+                $(srcdir)/filter-lookup.c \
+                $(srcdir)/filter-lookup.h \
                 $(srcdir)/filter-clip.c \
                 $(srcdir)/filter-clip.h \
                 $(srcdir)/filter-resize.c \
