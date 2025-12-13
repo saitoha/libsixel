@@ -185,6 +185,8 @@ static void sixel_encoding_planner_init(sixel_encoding_planner_t *planner);
 static void sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
                                         sixel_encoder_t *encoder,
                                         sixel_frame_t *frame);
+static char const *
+sixel_encoding_planner_pixelformat_label(int pixelformat);
 static int sixel_encoder_parse_sample_target(char const *text,
                                              size_t *value_out);
 static void sixel_encoder_palette_job_dispose(sixel_palette_async_job_t *job);
@@ -2676,6 +2678,8 @@ sixel_encoding_planner_init(sixel_encoding_planner_t *planner)
     planner->scale_active = 0;
     planner->colorspace_active = 0;
     planner->heavy_ops = 0;
+    planner->working_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    planner->scale_pixelformat = SIXEL_PIXELFORMAT_RGB888;
 }
 
 
@@ -2720,6 +2724,11 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     int total;
     int budget;
     int source_colorspace;
+    int target_pixelformat;
+    int scale_pixelformat;
+    int prefer_float32;
+    int resample_is_heavy;
+    int float_resize_required;
 
     if (planner == NULL || encoder == NULL || frame == NULL) {
         return;
@@ -2746,11 +2755,37 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
         ? 1
         : 0;
     source_colorspace = sixel_frame_get_colorspace(frame);
+    prefer_float32 = encoder->prefer_float32;
+    target_pixelformat = sixel_encoder_pixelformat_for_colorspace(
+        encoder->working_colorspace,
+        prefer_float32);
+    planner->working_pixelformat = target_pixelformat;
+
     planner->colorspace_active = (encoder->working_colorspace
                                   != source_colorspace
-                                  || encoder->prefer_float32 != 0)
+                                  || prefer_float32 != 0)
         ? 1
         : 0;
+
+    scale_pixelformat = sixel_frame_get_pixelformat(frame);
+    resample_is_heavy = encoder->method_for_resampling
+        != SIXEL_RES_NEAREST;
+    float_resize_required = 0;
+
+    if (planner->scale_active != 0) {
+        if (resample_is_heavy != 0
+            && SIXEL_PIXELFORMAT_IS_FLOAT32(target_pixelformat)) {
+            float_resize_required = 1;
+        }
+        if (resample_is_heavy != 0 && prefer_float32 != 0) {
+            float_resize_required = 1;
+        }
+        if (float_resize_required != 0) {
+            scale_pixelformat = target_pixelformat;
+        }
+    }
+
+    planner->scale_pixelformat = scale_pixelformat;
 
     planner->heavy_ops = planner->clip_active
         + planner->scale_active
@@ -2767,6 +2802,68 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
         planner->main_threads = total - planner->palette_threads;
     } else {
         planner->main_threads = total;
+    }
+}
+
+
+static char const *
+sixel_encoding_planner_pixelformat_label(int pixelformat)
+{
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGB555:
+        return "rgb555";
+    case SIXEL_PIXELFORMAT_RGB565:
+        return "rgb565";
+    case SIXEL_PIXELFORMAT_RGB888:
+        return "rgb888";
+    case SIXEL_PIXELFORMAT_BGR555:
+        return "bgr555";
+    case SIXEL_PIXELFORMAT_BGR565:
+        return "bgr565";
+    case SIXEL_PIXELFORMAT_BGR888:
+        return "bgr888";
+    case SIXEL_PIXELFORMAT_ARGB8888:
+        return "argb8888";
+    case SIXEL_PIXELFORMAT_RGBA8888:
+        return "rgba8888";
+    case SIXEL_PIXELFORMAT_ABGR8888:
+        return "abgr8888";
+    case SIXEL_PIXELFORMAT_BGRA8888:
+        return "bgra8888";
+    case SIXEL_PIXELFORMAT_PAL1:
+        return "pal1";
+    case SIXEL_PIXELFORMAT_PAL2:
+        return "pal2";
+    case SIXEL_PIXELFORMAT_PAL4:
+        return "pal4";
+    case SIXEL_PIXELFORMAT_PAL8:
+        return "pal8";
+    case SIXEL_PIXELFORMAT_G1:
+        return "g1";
+    case SIXEL_PIXELFORMAT_G2:
+        return "g2";
+    case SIXEL_PIXELFORMAT_G4:
+        return "g4";
+    case SIXEL_PIXELFORMAT_G8:
+        return "g8";
+    case SIXEL_PIXELFORMAT_AG88:
+        return "ag88";
+    case SIXEL_PIXELFORMAT_GA88:
+        return "ga88";
+    case SIXEL_PIXELFORMAT_RGBFLOAT32:
+        return "rgb-f32";
+    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
+        return "linear-f32";
+    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
+        return "oklab-f32";
+    case SIXEL_PIXELFORMAT_CIELABFLOAT32:
+        return "cielab-f32";
+    case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
+        return "din99d-f32";
+    case SIXEL_PIXELFORMAT_YUVFLOAT32:
+        return "yuv-f32";
+    default:
+        return "unknown";
     }
 }
 
@@ -2805,6 +2902,14 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
             planner->main_threads,
             planner->palette_threads,
             planner->heavy_ops);
+    fprintf(stream,
+            "  formats: source=%s work=%s scale_out=%s\n",
+            sixel_encoding_planner_pixelformat_label(
+                sixel_frame_get_pixelformat(frame)),
+            sixel_encoding_planner_pixelformat_label(
+                planner->working_pixelformat),
+            sixel_encoding_planner_pixelformat_label(
+                planner->scale_pixelformat));
 
     fprintf(stream, "  nodes:\n");
     fprintf(stream, "    load\n");
@@ -3842,7 +3947,8 @@ sixel_encoder_compute_resize_target(
 static SIXELSTATUS
 sixel_encoder_do_resize(
     sixel_encoder_t /* in */    *encoder,   /* encoder object */
-    sixel_frame_t   /* in */    *frame)     /* frame object to be resized */
+    sixel_frame_t   /* in */    *frame,     /* frame object to be resized */
+    sixel_encoding_planner_t *planner)
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int src_width;
@@ -3908,8 +4014,9 @@ sixel_encoder_do_resize(
     /* do resize */
     if (dst_width > 0 && dst_height > 0) {
         if (encoder->method_for_resampling != SIXEL_RES_NEAREST) {
-            if (SIXEL_PIXELFORMAT_IS_FLOAT32(
-                    encoder->working_colorspace) != 0) {
+            if (planner != NULL
+                && SIXEL_PIXELFORMAT_IS_FLOAT32(
+                    planner->scale_pixelformat) != 0) {
                 use_float_resize = 1;
             }
             if (encoder->prefer_float32 != 0) {
@@ -4796,11 +4903,6 @@ sixel_encoder_encode_frame(
         }
     }
 
-    frame_colorspace = sixel_frame_get_colorspace(frame);
-    target_pixelformat = sixel_encoder_pixelformat_for_colorspace(
-        encoder->working_colorspace,
-        encoder->prefer_float32);
-
     /*
      * Build the thread allocation plan up front so palette sampling does not
      * spawn extra workers when resize/clip/colorspace conversion already have
@@ -4810,7 +4912,14 @@ sixel_encoder_encode_frame(
         sixel_encoding_planner_plan(planner,
                                     encoder,
                                     frame);
+        target_pixelformat = planner->working_pixelformat;
+    } else {
+        target_pixelformat = sixel_encoder_pixelformat_for_colorspace(
+            encoder->working_colorspace,
+            encoder->prefer_float32);
     }
+
+    frame_colorspace = sixel_frame_get_colorspace(frame);
 
     palette_ready = sixel_encoding_palette_job_ready(encoder,
                                                      planner,
@@ -4897,7 +5006,7 @@ sixel_encoder_encode_frame(
                                 "size=%dx%d",
                                 width_before,
                                 height_before);
-        status = sixel_encoder_do_resize(encoder, frame);
+        status = sixel_encoder_do_resize(encoder, frame, planner);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -4922,7 +5031,7 @@ sixel_encoder_encode_frame(
                                 "size=%dx%d",
                                 width_before,
                                 height_before);
-        status = sixel_encoder_do_resize(encoder, frame);
+        status = sixel_encoder_do_resize(encoder, frame, planner);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
