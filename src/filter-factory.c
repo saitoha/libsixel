@@ -13,6 +13,7 @@
 #include <sixel.h>
 
 #include "filter-factory.h"
+#include "filter-clip.h"
 #include "filter-sample.h"
 #include "filter.h"
 
@@ -24,6 +25,21 @@ typedef struct sixel_filter_factory_entry {
     sixel_filter_kind_t kind;
     sixel_filter_initializer_fn initializer;
 } sixel_filter_factory_entry_t;
+
+static SIXELSTATUS
+sixel_filter_factory_clip_init(sixel_filter_t *filter,
+                               const void *config)
+{
+    const sixel_filter_clip_config_t *clip_config;
+
+    if (config == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    clip_config = (const sixel_filter_clip_config_t *)config;
+
+    return sixel_filter_clip_init(filter, clip_config);
+}
 
 static SIXELSTATUS
 sixel_filter_factory_sample_init(sixel_filter_t *filter,
@@ -42,6 +58,7 @@ sixel_filter_factory_sample_init(sixel_filter_t *filter,
 
 static const sixel_filter_factory_entry_t
         sixel_filter_factory_entries[] = {
+    {"clip", SIXEL_FILTER_KIND_CLIP, sixel_filter_factory_clip_init},
     {"sample", SIXEL_FILTER_KIND_SAMPLE, sixel_filter_factory_sample_init},
 };
 

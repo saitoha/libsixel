@@ -125,6 +125,7 @@
 #include "clipboard.h"
 #include "compat_stub.h"
 #include "filter.h"
+#include "filter-clip.h"
 #include "filter-sample.h"
 #include "sleep.h"
 #include "threading.h"
@@ -3869,7 +3870,8 @@ sixel_encoder_do_clip(
     sixel_encoder_t /* in */    *encoder,   /* encoder object */
     sixel_frame_t   /* in */    *frame)     /* frame object to be resized */
 {
-    SIXELSTATUS status = SIXEL_FALSE;
+    SIXELSTATUS status;
+    sixel_filter_clip_config_t config;
     int src_width;
     int src_height;
     int clip_x;
@@ -3877,29 +3879,55 @@ sixel_encoder_do_clip(
     int clip_w;
     int clip_h;
 
-    /* get frame width and height */
+    status = SIXEL_FALSE;
+    config.clip_x = 0;
+    config.clip_y = 0;
+    config.clip_width = 0;
+    config.clip_height = 0;
+    src_width = 0;
+    src_height = 0;
+    clip_x = 0;
+    clip_y = 0;
+    clip_w = 0;
+    clip_h = 0;
+
+    if (encoder == NULL || frame == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
     src_width = sixel_frame_get_width(frame);
     src_height = sixel_frame_get_height(frame);
 
-    /* settings around clipping */
-    clip_x = encoder->clipx;
-    clip_y = encoder->clipy;
-    clip_w = encoder->clipwidth;
-    clip_h = encoder->clipheight;
+    config.clip_x = encoder->clipx;
+    config.clip_y = encoder->clipy;
+    config.clip_width = encoder->clipwidth;
+    config.clip_height = encoder->clipheight;
 
-    /*
-     * Keep clipping math overflow-safe by comparing against
-     * (dimension - offset) instead of evaluating (size + offset).
-     */
-    if (clip_x >= src_width || clip_y >= src_height) {
-        clip_w = 0;
-        clip_h = 0;
+    clip_x = config.clip_x;
+    clip_y = config.clip_y;
+    clip_w = config.clip_width;
+    clip_h = config.clip_height;
+
+    if (clip_w <= 0 || clip_h <= 0) {
+        clip_x = 0;
+        clip_y = 0;
+        clip_w = src_width;
+        clip_h = src_height;
     } else {
-        if (clip_w > src_width - clip_x) {
-            clip_w = src_width - clip_x;
+        if (clip_w + clip_x > src_width) {
+            if (clip_x > src_width) {
+                clip_w = 0;
+            } else {
+                clip_w = src_width - clip_x;
+            }
         }
-        if (clip_h > src_height - clip_y) {
-            clip_h = src_height - clip_y;
+
+        if (clip_h + clip_y > src_height) {
+            if (clip_y > src_height) {
+                clip_h = 0;
+            } else {
+                clip_h = src_height - clip_y;
+            }
         }
     }
 
@@ -3916,12 +3944,9 @@ sixel_encoder_do_clip(
                             clip_x,
                             clip_y);
 
-    /* do clipping */
-    if (clip_w > 0 && clip_h > 0) {
-        status = sixel_frame_clip(frame, clip_x, clip_y, clip_w, clip_h);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
+    status = sixel_filter_clip_frame(&config, frame, encoder->logger);
+    if (SIXEL_FAILED(status)) {
+        goto end;
     }
 
     sixel_encoder_log_stage(encoder,
@@ -3933,7 +3958,6 @@ sixel_encoder_do_clip(
                             sixel_frame_get_width(frame),
                             sixel_frame_get_height(frame));
 
-    /* success */
     status = SIXEL_OK;
 
 end:
