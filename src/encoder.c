@@ -2702,7 +2702,8 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
         : 0;
     source_colorspace = sixel_frame_get_colorspace(frame);
     planner->colorspace_active = (encoder->working_colorspace
-                                  != source_colorspace)
+                                  != source_colorspace
+                                  || encoder->prefer_float32 != 0)
         ? 1
         : 0;
 
@@ -2735,6 +2736,7 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
     int scale_active;
     int clip_active;
     int clip_first;
+    int vpte_active;
     FILE *stream;
 
     if (planner == NULL || encoder == NULL || frame == NULL) {
@@ -2746,6 +2748,10 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
     scale_active = planner->scale_active;
     clip_active = planner->clip_active;
     clip_first = encoder->clipfirst ? 1 : 0;
+    vpte_active = (palette_ready != 0
+                   && encoder->lut_policy == SIXEL_LUT_POLICY_VPTE)
+        ? 1
+        : 0;
 
     fprintf(stream, "[planner] DAG (Directed Acyclic Graph)\n");
     fprintf(stream,
@@ -2759,7 +2765,9 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
     fprintf(stream, "    load\n");
     if (palette_ready != 0) {
         fprintf(stream, "    palette (async)\n");
-        fprintf(stream, "    vpte\n");
+        if (vpte_active != 0) {
+            fprintf(stream, "    vpte\n");
+        }
     }
     if (colorspace_active != 0) {
         fprintf(stream, "    colorspace\n");
@@ -2777,7 +2785,9 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
 
     fprintf(stream, "  edges:\n");
     if (palette_ready != 0) {
-        fprintf(stream, "    load -> palette -> vpte -> dither\n");
+        fprintf(stream,
+                "    load -> palette%s -> dither\n",
+                vpte_active != 0 ? " -> vpte" : "");
     }
     fprintf(stream, "    load -> %s\n",
             colorspace_active != 0 ? "colorspace" : "dither");
