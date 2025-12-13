@@ -100,6 +100,8 @@ $(srcdir)/filter-lookup.c \
 $(srcdir)/filter-lookup.h \
 $(srcdir)/filter-palette.c \
 $(srcdir)/filter-palette.h \
+$(srcdir)/filter-vpte.c \
+$(srcdir)/filter-vpte.h \
 $(srcdir)/filter-clip.c \
 $(srcdir)/filter-clip.h \
                 $(srcdir)/filter-resize.c \
