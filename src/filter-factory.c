@@ -18,6 +18,7 @@
 #include "filter-final-merge.h"
 #include "filter-dither.h"
 #include "filter-lookup.h"
+#include "filter-palette.h"
 #include "filter-encode.h"
 #include "filter-resize.h"
 #include "filter-sample.h"
@@ -108,6 +109,21 @@ sixel_filter_factory_lookup_init(sixel_filter_t *filter,
 }
 
 static SIXELSTATUS
+sixel_filter_factory_palette_init(sixel_filter_t *filter,
+                                  const void *config)
+{
+    const sixel_filter_palette_config_t *palette_config;
+
+    if (config == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    palette_config = (const sixel_filter_palette_config_t *)config;
+
+    return sixel_filter_palette_init(filter, palette_config);
+}
+
+static SIXELSTATUS
 sixel_filter_factory_final_merge_init(sixel_filter_t *filter,
                                       const void *config)
 {
@@ -164,6 +180,7 @@ static const sixel_filter_factory_entry_t
      sixel_filter_factory_final_merge_init},
     {"encode", SIXEL_FILTER_KIND_ENCODE, sixel_filter_factory_encode_init},
     {"lookup", SIXEL_FILTER_KIND_LOOKUP, sixel_filter_factory_lookup_init},
+    {"palette", SIXEL_FILTER_KIND_PALETTE, sixel_filter_factory_palette_init},
     {"resize", SIXEL_FILTER_KIND_RESIZE, sixel_filter_factory_resize_init},
     {"sample", SIXEL_FILTER_KIND_SAMPLE, sixel_filter_factory_sample_init},
 };

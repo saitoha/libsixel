@@ -191,7 +191,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/filter-final-merge.h $(srcdir)/filter-dither.c \
 	$(srcdir)/filter-dither.h $(srcdir)/filter-encode.c \
 	$(srcdir)/filter-encode.h $(srcdir)/filter-lookup.c \
-	$(srcdir)/filter-lookup.h $(srcdir)/filter-clip.c \
+	$(srcdir)/filter-lookup.h $(srcdir)/filter-palette.c \
+	$(srcdir)/filter-palette.h $(srcdir)/filter-clip.c \
 	$(srcdir)/filter-clip.h $(srcdir)/filter-resize.c \
 	$(srcdir)/filter-resize.h $(srcdir)/filter-sample.c \
 	$(srcdir)/filter-sample.h $(srcdir)/filter.c \
@@ -268,6 +269,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-filter-dither.lo \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-filter-encode.lo \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-filter-lookup.lo \
+@WANT_AMALGAMATION_FALSE@	libsixel_la-filter-palette.lo \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-filter-clip.lo \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-filter-resize.lo \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-filter-sample.lo \
@@ -369,6 +371,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-filter-factory.Plo \
 	./$(DEPDIR)/libsixel_la-filter-final-merge.Plo \
 	./$(DEPDIR)/libsixel_la-filter-lookup.Plo \
+	./$(DEPDIR)/libsixel_la-filter-palette.Plo \
 	./$(DEPDIR)/libsixel_la-filter-resize.Plo \
 	./$(DEPDIR)/libsixel_la-filter-sample.Plo \
 	./$(DEPDIR)/libsixel_la-filter.Plo \
@@ -750,6 +753,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-encode.h \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-lookup.c \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-lookup.h \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-palette.c \
+@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-palette.h \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-clip.c \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-clip.h \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-resize.c \
@@ -987,6 +992,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-factory.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-final-merge.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-lookup.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-palette.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-resize.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-sample.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter.Plo@am__quote@ # am--include-marker
@@ -1310,6 +1316,13 @@ libsixel_la-filter-lookup.lo: filter-lookup.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter-lookup.c' object='libsixel_la-filter-lookup.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-filter-lookup.lo `test -f 'filter-lookup.c' || echo '$(srcdir)/'`filter-lookup.c
+
+libsixel_la-filter-palette.lo: filter-palette.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-filter-palette.lo -MD -MP -MF $(DEPDIR)/libsixel_la-filter-palette.Tpo -c -o libsixel_la-filter-palette.lo `test -f 'filter-palette.c' || echo '$(srcdir)/'`filter-palette.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-filter-palette.Tpo $(DEPDIR)/libsixel_la-filter-palette.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter-palette.c' object='libsixel_la-filter-palette.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-filter-palette.lo `test -f 'filter-palette.c' || echo '$(srcdir)/'`filter-palette.c
 
 libsixel_la-filter-clip.lo: filter-clip.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-filter-clip.lo -MD -MP -MF $(DEPDIR)/libsixel_la-filter-clip.Tpo -c -o libsixel_la-filter-clip.lo `test -f 'filter-clip.c' || echo '$(srcdir)/'`filter-clip.c
@@ -1834,6 +1847,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-factory.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-final-merge.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-lookup.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-resize.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter.Plo
@@ -1954,6 +1968,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-factory.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-final-merge.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-lookup.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-resize.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter.Plo
