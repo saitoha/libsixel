@@ -10,6 +10,7 @@ builddir = @builddir@
 if WANT_AMALGAMATION
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 BUILT_SOURCES = $(AMALGAMATION_SIXEL)
+nodist_libsixel_la_SOURCES = $(AMALGAMATION_SIXEL)
 endif
 
 if COND_GCOV
@@ -21,7 +22,7 @@ CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests
 lib_LTLIBRARIES = libsixel.la
 
 if WANT_AMALGAMATION
-libsixel_la_SOURCES = $(AMALGAMATION_SIXEL)
+libsixel_la_SOURCES =
 
 $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c

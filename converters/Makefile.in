@@ -131,18 +131,16 @@ am__img2sixel_SOURCES_DIST = $(srcdir)/img2sixel.c \
 	$(srcdir)/completion_utils.c $(srcdir)/completion_utils.h \
 	$(srcdir)/cli.c $(srcdir)/cli.h $(srcdir)/malloc_stub.c \
 	$(srcdir)/malloc_stub.h $(srcdir)/getopt_stub.h \
-	$(srcdir)/aborttrace.c $(srcdir)/aborttrace.h \
-	$(top_builddir)/amalgamation/sixel.c
-am__dirstamp = $(am__leading_dot)dirstamp
-am__objects_1 =  \
-	$(top_builddir)/amalgamation/img2sixel-sixel.$(OBJEXT)
+	$(srcdir)/aborttrace.c $(srcdir)/aborttrace.h
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@am_img2sixel_OBJECTS = img2sixel-img2sixel.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	img2sixel-completion_utils.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	img2sixel-cli.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	img2sixel-malloc_stub.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	img2sixel-aborttrace.$(OBJEXT)
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@am_img2sixel_OBJECTS = $(am__objects_1)
-nodist_img2sixel_OBJECTS =
+am__dirstamp = $(am__leading_dot)dirstamp
+am__objects_1 =  \
+	$(top_builddir)/amalgamation/img2sixel-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@nodist_img2sixel_OBJECTS = $(am__objects_1)
 img2sixel_OBJECTS = $(am_img2sixel_OBJECTS) \
 	$(nodist_img2sixel_OBJECTS)
 am__DEPENDENCIES_1 =
@@ -167,16 +165,14 @@ img2sixel_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 am__sixel2png_SOURCES_DIST = $(srcdir)/sixel2png.c $(srcdir)/cli.c \
 	$(srcdir)/cli.h $(srcdir)/malloc_stub.c \
 	$(srcdir)/malloc_stub.h $(srcdir)/getopt_stub.h \
-	$(srcdir)/aborttrace.c $(srcdir)/aborttrace.h \
-	$(top_builddir)/amalgamation/sixel.c
-am__objects_2 =  \
-	$(top_builddir)/amalgamation/sixel2png-sixel.$(OBJEXT)
+	$(srcdir)/aborttrace.c $(srcdir)/aborttrace.h
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am_sixel2png_OBJECTS = sixel2png-sixel2png.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	sixel2png-cli.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	sixel2png-malloc_stub.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	sixel2png-aborttrace.$(OBJEXT)
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@am_sixel2png_OBJECTS = $(am__objects_2)
-nodist_sixel2png_OBJECTS =
+am__objects_2 =  \
+	$(top_builddir)/amalgamation/sixel2png-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@nodist_sixel2png_OBJECTS = $(am__objects_2)
 sixel2png_OBJECTS = $(am_sixel2png_OBJECTS) \
 	$(nodist_sixel2png_OBJECTS)
 @HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__DEPENDENCIES_4 = $(am__DEPENDENCIES_1)
@@ -589,10 +585,10 @@ CLEANFILES = *.gcno *.gcda *.gcov \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/aborttrace.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/aborttrace.h
 
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = 
 # Track the generated header so dependency ordering stays stable.
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@nodist_img2sixel_SOURCES = completion_embed.h
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@nodist_img2sixel_SOURCES = 
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@nodist_img2sixel_SOURCES = $(AMALGAMATION_SIXEL)
 # Ensure older toolchains notice the generated completion header.
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@img2sixel_CPPFLAGS = -DHAVE_COMPLETION_EMBED_H \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@        -I$(top_builddir)/include/ \
@@ -620,8 +616,8 @@ CLEANFILES = *.gcno *.gcda *.gcov \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@                    $(srcdir)/aborttrace.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@                    $(srcdir)/aborttrace.h
 
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = $(AMALGAMATION_SIXEL)
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@nodist_sixel2png_SOURCES = 
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = 
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@nodist_sixel2png_SOURCES = $(AMALGAMATION_SIXEL)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@sixel2png_LDFLAGS = $(MAYBE_COVERAGE)
