@@ -343,23 +343,25 @@ jobs:
         msystem: ${{ matrix.sys }}
         update: false
         cache: false
+        install: >-
+          make
+        pacboy: >-
+          cc:p
 
-    - name: Update keyring then upgrade
-      if: runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'MSYS' && matrix.sys != 'CYGWIN' && matrix.sys != 'MINGW32'
-      shell: msys2 {0}
-      run: |
-        set -eux
-        cp -a /etc/pacman.conf /etc/pacman.conf.bak
-        awk '
-          BEGIN{skip=0}
-          /^\[clangarm64\]/{skip=1; print "#" $0; next}
-          /^\[.*\]/{ if(skip){skip=0} }
-          { if(skip) print "#" $0; else print $0 }
-        ' /etc/pacman.conf.bak > /etc/pacman.conf
-        rm -f /var/lib/pacman/sync/*.db /var/lib/pacman/sync/*.files || true
-        pacman -Sy --noconfirm --needed msys2-keyring
-        pacboy -S --noconfirm --needed cc:p
-        pacman -S --noconfirm --needed make
+#    - name: Update keyring then upgrade
+#      if: runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'MSYS' && matrix.sys != 'CYGWIN' && matrix.sys != 'MINGW32'
+#      shell: msys2 {0}
+#      run: |
+#        set -eux
+#        cp -a /etc/pacman.conf /etc/pacman.conf.bak
+#        awk '
+#          BEGIN{skip=0}
+#          /^\[clangarm64\]/{skip=1; print "#" $0; next}
+#          /^\[.*\]/{ if(skip){skip=0} }
+#          { if(skip) print "#" $0; else print $0 }
+#        ' /etc/pacman.conf.bak > /etc/pacman.conf
+#        rm -f /var/lib/pacman/sync/*.db /var/lib/pacman/sync/*.files || true
+#        pacman -Sy --noconfirm --needed msys2-keyring
 
     - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang)
       if: runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'MSYS' && matrix.sys != 'CYGWIN' && matrix.sys != 'MINGW32'
