@@ -47,6 +47,13 @@ typedef struct sixel_encoding_planner {
     int heavy_ops;
     int working_pixelformat;
     int scale_pixelformat;
+    int pipeline_active;
+    int pipeline_band_height;
+    int pipeline_overlap;
+    int pipeline_queue_depth;
+    int pipeline_dither_threads;
+    int pipeline_encode_threads;
+    int pipeline_bands;
 } sixel_encoding_planner_t;
 
 /* palette type */

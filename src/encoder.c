@@ -205,6 +205,10 @@ static void sixel_encoding_planner_init(sixel_encoding_planner_t *planner);
 static void sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
                                         sixel_encoder_t *encoder,
                                         sixel_frame_t *frame);
+static void sixel_encoding_planner_plan_pipeline(
+    sixel_encoding_planner_t *planner,
+    sixel_encoder_t *encoder,
+    sixel_frame_t *frame);
 static char const *
 sixel_encoding_planner_pixelformat_label(int pixelformat);
 static int sixel_encoder_parse_sample_target(char const *text,
@@ -2700,6 +2704,13 @@ sixel_encoding_planner_init(sixel_encoding_planner_t *planner)
     planner->heavy_ops = 0;
     planner->working_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     planner->scale_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    planner->pipeline_active = 0;
+    planner->pipeline_band_height = 0;
+    planner->pipeline_overlap = 0;
+    planner->pipeline_queue_depth = 0;
+    planner->pipeline_dither_threads = 0;
+    planner->pipeline_encode_threads = 0;
+    planner->pipeline_bands = 0;
 }
 
 
@@ -2823,6 +2834,167 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     } else {
         planner->main_threads = total;
     }
+
+    sixel_encoding_planner_plan_pipeline(planner, encoder, frame);
+}
+
+
+static void
+sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
+                                     sixel_encoder_t *encoder,
+                                     sixel_frame_t *frame)
+{
+    char const *text;
+    char *endptr;
+    long parsed;
+    int height;
+    int nbands;
+    int threads;
+    int dither_threads;
+    int encode_threads;
+    int band_height;
+    int overlap;
+    int queue_depth;
+    int dither_env_override;
+    int ncolors;
+
+    text = NULL;
+    endptr = NULL;
+    parsed = 0;
+    height = 0;
+    nbands = 0;
+    threads = 0;
+    dither_threads = 0;
+    encode_threads = 0;
+    band_height = 0;
+    overlap = 0;
+    queue_depth = 0;
+    dither_env_override = 0;
+    ncolors = SIXEL_PALETTE_MAX;
+
+    if (planner == NULL || encoder == NULL || frame == NULL) {
+        return;
+    }
+
+    planner->pipeline_active = 0;
+    planner->pipeline_band_height = 0;
+    planner->pipeline_overlap = 0;
+    planner->pipeline_queue_depth = 0;
+    planner->pipeline_dither_threads = 0;
+    planner->pipeline_encode_threads = 0;
+    planner->pipeline_bands = 0;
+
+    height = sixel_frame_get_height(frame);
+    threads = planner->main_threads;
+    if (height <= 0 || threads <= 1) {
+        return;
+    }
+
+    nbands = (height + 5) / 6;
+    planner->pipeline_bands = nbands;
+    if (nbands <= 1) {
+        return;
+    }
+
+    dither_threads = (threads * 7 + 9) / 10;
+    text = sixel_compat_getenv("SIXEL_DITHER_PARALLEL_THREADS_MAX");
+    if (text != NULL && text[0] != '\0') {
+        errno = 0;
+        parsed = strtol(text, &endptr, 10);
+        if (endptr != text && errno != ERANGE && parsed > 0) {
+            if (parsed > INT_MAX) {
+                parsed = INT_MAX;
+            }
+            dither_threads = (int)parsed;
+            dither_env_override = 1;
+        }
+    }
+    if (dither_threads < 1) {
+        dither_threads = 1;
+    }
+    if (dither_threads > threads) {
+        dither_threads = threads;
+    }
+
+    if (dither_env_override == 0 && threads >= 4 && dither_threads < 2) {
+        dither_threads = threads - 2;
+    }
+
+    encode_threads = threads - dither_threads;
+    if (encode_threads < 2 && threads > 2) {
+        encode_threads = 2;
+        dither_threads = threads - encode_threads;
+    }
+    if (encode_threads < 1) {
+        encode_threads = 1;
+        dither_threads = threads - encode_threads;
+    }
+    if (dither_threads < 1) {
+        return;
+    }
+
+    text = sixel_compat_getenv("SIXEL_DITHER_PARALLEL_BAND_WIDTH");
+    if (text != NULL && text[0] != '\0') {
+        errno = 0;
+        parsed = strtol(text, &endptr, 10);
+        if (endptr != text && errno != ERANGE && parsed > 0) {
+            if (parsed > INT_MAX) {
+                parsed = INT_MAX;
+            }
+            band_height = (int)parsed;
+        }
+    }
+    if (band_height <= 0) {
+        band_height = (height + dither_threads - 1) / dither_threads;
+    }
+    if (band_height < 6) {
+        band_height = 6;
+    }
+    if ((band_height % 6) != 0) {
+        band_height = ((band_height + 5) / 6) * 6;
+    }
+
+    ncolors = encoder->reqcolors;
+    if (ncolors <= 0 || ncolors > SIXEL_PALETTE_MAX) {
+        ncolors = SIXEL_PALETTE_MAX;
+    }
+    text = sixel_compat_getenv("SIXEL_DITHER_PARALLEL_BAND_OVERWRAP");
+    if (ncolors <= 32) {
+        overlap = 6;
+    } else {
+        overlap = 0;
+    }
+    if (text != NULL && text[0] != '\0') {
+        errno = 0;
+        parsed = strtol(text, &endptr, 10);
+        if (endptr != text && errno != ERANGE && parsed >= 0) {
+            if (parsed > INT_MAX) {
+                parsed = INT_MAX;
+            }
+            overlap = (int)parsed;
+        }
+    }
+    if (overlap < 0) {
+        overlap = 0;
+    }
+    if (overlap > band_height / 2) {
+        overlap = band_height / 2;
+    }
+
+    queue_depth = threads * 3;
+    if (queue_depth > nbands) {
+        queue_depth = nbands;
+    }
+    if (queue_depth < 1) {
+        queue_depth = 1;
+    }
+
+    planner->pipeline_active = 1;
+    planner->pipeline_band_height = band_height;
+    planner->pipeline_overlap = overlap;
+    planner->pipeline_queue_depth = queue_depth;
+    planner->pipeline_dither_threads = dither_threads;
+    planner->pipeline_encode_threads = encode_threads;
 }
 
 
@@ -2952,6 +3124,7 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
         fprintf(stream, "    clip\n");
     }
     fprintf(stream, "    dither\n");
+    fprintf(stream, "    encode\n");
 
     fprintf(stream, "  edges:\n");
     if (palette_ready != 0) {
@@ -2974,6 +3147,20 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
     if (clip_active != 0) {
         fprintf(stream, "    clip -> dither\n");
     }
+    fprintf(stream, "    dither -> encode (%s)\n",
+            planner->pipeline_active != 0 ? "pipeline" : "serial");
+
+    fprintf(stream, "  pipeline:\n");
+    fprintf(stream, "    bands=%d queue=%d mode=%s\n",
+            planner->pipeline_bands,
+            planner->pipeline_queue_depth,
+            planner->pipeline_active != 0 ? "pipeline" : "serial");
+    fprintf(stream,
+            "    band_height=%d overlap=%d threads: dither=%d encode=%d\n",
+            planner->pipeline_band_height,
+            planner->pipeline_overlap,
+            planner->pipeline_dither_threads,
+            planner->pipeline_encode_threads);
 }
 
 
