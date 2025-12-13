@@ -93,6 +93,7 @@ converters/completion_utils.c
 converters/img2sixel.c
 converters/malloc_stub.c
 converters/sixel2png.c
+assessment/lsqa.c
 "
 
 project_headers="
@@ -530,6 +531,9 @@ emit_all_units() {
                 ;;
             converters/sixel2png.c)
                 emit_unit "${unit}" "defined(BUILD_SIXEL2PNG)"
+                ;;
+            assessment/lsqa.c)
+                emit_unit "${unit}" "defined(BUILD_LSQA)"
                 ;;
             src/quicklook_thumbnailing.m)
                 emit_unit "${unit}" \

@@ -85,6 +85,7 @@ amalgamation_units = files(
   '../converters/img2sixel.c',
   '../converters/malloc_stub.c',
   '../converters/sixel2png.c',
+  '../assessment/lsqa.c',
 )
 
 amalgamation_headers = files(
