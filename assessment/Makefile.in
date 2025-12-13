@@ -91,6 +91,7 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@WANT_AMALGAMATED_TOOLS_TRUE@am__append_1 = $(AMALGAMATION_SIXEL)
 bin_PROGRAMS = lsqa$(EXEEXT)
 subdir = assessment
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -111,9 +112,25 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(lpipsmodelsdir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_lsqa_OBJECTS = lsqa-lsqa.$(OBJEXT)
-lsqa_OBJECTS = $(am_lsqa_OBJECTS)
-lsqa_DEPENDENCIES = $(top_builddir)/src/libsixel.la
+am__lsqa_SOURCES_DIST = $(srcdir)/lsqa.c \
+	$(top_builddir)/amalgamation/sixel.c
+am__dirstamp = $(am__leading_dot)dirstamp
+am__objects_1 = $(top_builddir)/amalgamation/lsqa-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_FALSE@am_lsqa_OBJECTS = lsqa-lsqa.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@am_lsqa_OBJECTS = $(am__objects_1)
+nodist_lsqa_OBJECTS =
+lsqa_OBJECTS = $(am_lsqa_OBJECTS) $(nodist_lsqa_OBJECTS)
+am__DEPENDENCIES_1 =
+am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
+@WANT_AMALGAMATED_TOOLS_FALSE@lsqa_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/src/libsixel.la
+@WANT_AMALGAMATED_TOOLS_TRUE@lsqa_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_2)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -136,7 +153,9 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/lsqa-lsqa.Po
+am__depfiles_remade =  \
+	$(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Po \
+	./$(DEPDIR)/lsqa-lsqa.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -156,8 +175,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(lsqa_SOURCES)
-DIST_SOURCES = $(lsqa_SOURCES)
+SOURCES = $(lsqa_SOURCES) $(nodist_lsqa_SOURCES)
+DIST_SOURCES = $(am__lsqa_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -406,20 +425,57 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
+BUILT_SOURCES = $(am__append_1)
+AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
-lsqa_SOURCES = $(srcdir)/lsqa.c
-lsqa_CPPFLAGS = -I$(top_builddir)/include/ \
-                -I$(top_srcdir)/src \
-                $(AM_CPPFLAGS)
+AMALGAMATION_LSQA_CPPFLAGS = $(AM_CPPFLAGS) \
+        $(LIBCURL_CFLAGS) \
+        $(WINHTTP_CFLAGS) \
+        $(LIBPNG_CFLAGS) \
+        $(LIBJPEG_CFLAGS) \
+        $(GDK_PIXBUF_CFLAGS) \
+        $(GD_CFLAGS) \
+        $(WIC_CFLAGS) \
+        $(COREGRAPHICS_CFLAGS) \
+        $(QUICKLOOK_CFLAGS) \
+        $(CLIPBOARD_CFLAGS) \
+        $(ONNXRUNTIME_CFLAGS) \
+        @THREAD_CFLAGS@
 
-lsqa_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
-lsqa_LDFLAGS = $(MAYBE_COVERAGE)
-lsqa_LDADD = $(top_builddir)/src/libsixel.la
+AMALGAMATION_LSQA_LIBS = -lm \
+        $(LIBCURL_LIBS) \
+        $(WINHTTP_LIBS) \
+        $(LIBPNG_LIBS) \
+        $(LIBJPEG_LIBS) \
+        $(GDK_PIXBUF_LIBS) \
+        $(GD_LIBS) \
+        $(WIC_LIBS) \
+        $(COREGRAPHICS_LIBS) \
+        $(QUICKLOOK_LIBS) \
+        $(CLIPBOARD_LIBS) \
+        $(ONNXRUNTIME_LIBS) \
+        @THREAD_LIBS@
+
+@WANT_AMALGAMATED_TOOLS_FALSE@lsqa_SOURCES = $(srcdir)/lsqa.c
+@WANT_AMALGAMATED_TOOLS_TRUE@lsqa_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_lsqa_SOURCES = 
+@WANT_AMALGAMATED_TOOLS_FALSE@lsqa_CPPFLAGS = -I$(top_builddir)/include/ \
+@WANT_AMALGAMATED_TOOLS_FALSE@                -I$(top_srcdir)/src \
+@WANT_AMALGAMATED_TOOLS_FALSE@                $(AM_CPPFLAGS)
+
+@WANT_AMALGAMATED_TOOLS_TRUE@lsqa_CPPFLAGS = $(AMALGAMATION_LSQA_CPPFLAGS) -DBUILD_LSQA
+@WANT_AMALGAMATED_TOOLS_FALSE@lsqa_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
+@WANT_AMALGAMATED_TOOLS_TRUE@lsqa_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
+@WANT_AMALGAMATED_TOOLS_FALSE@lsqa_LDFLAGS = $(MAYBE_COVERAGE)
+@WANT_AMALGAMATED_TOOLS_TRUE@lsqa_LDFLAGS = $(MAYBE_COVERAGE)
+@WANT_AMALGAMATED_TOOLS_FALSE@lsqa_LDADD = $(top_builddir)/src/libsixel.la
+@WANT_AMALGAMATED_TOOLS_TRUE@lsqa_LDADD = $(AMALGAMATION_LSQA_LIBS)
 @HAVE_ONNXRUNTIME_TRUE@lpipsmodelsdir = @modeldir@/lpips
 @HAVE_ONNXRUNTIME_TRUE@dist_lpipsmodels_DATA = $(top_srcdir)/models/lpips/lpips_diff.onnx \
 @HAVE_ONNXRUNTIME_TRUE@                        $(top_srcdir)/models/lpips/lpips_feature.onnx
 
-all: all-am
+all: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
@@ -496,6 +552,15 @@ uninstall-binPROGRAMS:
 clean-binPROGRAMS:
 	$(am__rm_f) $(bin_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(bin_PROGRAMS:$(EXEEXT)=)
+$(top_builddir)/amalgamation/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/amalgamation
+	@: >>$(top_builddir)/amalgamation/$(am__dirstamp)
+$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/amalgamation/$(DEPDIR)
+	@: >>$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/lsqa-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 lsqa$(EXEEXT): $(lsqa_OBJECTS) $(lsqa_DEPENDENCIES) $(EXTRA_lsqa_DEPENDENCIES) 
 	@rm -f lsqa$(EXEEXT)
@@ -503,10 +568,12 @@ lsqa$(EXEEXT): $(lsqa_OBJECTS) $(lsqa_DEPENDENCIES) $(EXTRA_lsqa_DEPENDENCIES)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f $(top_builddir)/amalgamation/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsqa-lsqa.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -552,6 +619,20 @@ lsqa-lsqa.obj: lsqa.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lsqa.c' object='lsqa-lsqa.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o lsqa-lsqa.obj `if test -f 'lsqa.c'; then $(CYGPATH_W) 'lsqa.c'; else $(CYGPATH_W) '$(srcdir)/lsqa.c'; fi`
+
+$(top_builddir)/amalgamation/lsqa-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/lsqa-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Tpo -c -o $(top_builddir)/amalgamation/lsqa-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/lsqa-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/lsqa-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/lsqa-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/lsqa-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Tpo -c -o $(top_builddir)/amalgamation/lsqa-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/lsqa-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/lsqa-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -666,14 +747,17 @@ distdir-am: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-check: check-am
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(PROGRAMS) $(DATA)
 installdirs:
 	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(lpipsmodelsdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: install-am
-install-exec: install-exec-am
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-am
+install-exec: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
 
@@ -698,15 +782,19 @@ clean-generic:
 distclean-generic:
 	-$(am__rm_f) $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || $(am__rm_f) $(CONFIG_CLEAN_VPATH_FILES)
+	-$(am__rm_f) $(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) $(top_builddir)/amalgamation/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-$(am__rm_f) $(BUILT_SOURCES)
 clean: clean-am
 
 clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-am
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Po
 	-rm -f ./$(DEPDIR)/lsqa-lsqa.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -753,6 +841,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Po
 	-rm -f ./$(DEPDIR)/lsqa-lsqa.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
@@ -772,7 +861,7 @@ ps-am:
 
 uninstall-am: uninstall-binPROGRAMS uninstall-dist_lpipsmodelsDATA
 
-.MAKE: install-am install-strip
+.MAKE: all check install install-am install-exec install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-am clean \
 	clean-binPROGRAMS clean-generic clean-libtool cscopelist-am \
@@ -792,6 +881,9 @@ uninstall-am: uninstall-binPROGRAMS uninstall-dist_lpipsmodelsDATA
 
 .PRECIOUS: Makefile
 
+
+@WANT_AMALGAMATED_TOOLS_TRUE@$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
