@@ -57,6 +57,7 @@
 #include "dither-varcoeff-8bit.h"
 #include "dither-varcoeff-float32.h"
 #include "dither-internal.h"
+#include "filter-lookup.h"
 #include "logger.h"
 #include "pixelformat.h"
 #if SIXEL_ENABLE_THREADS
@@ -525,10 +526,9 @@ sixel_dither_map_pixels(
     sixel_lut_t *active_lut;
     int manage_lut;
     int policy;
-    int wcomp1;
-    int wcomp2;
-    int wcomp3;
     int shared_lut;
+    sixel_filter_lookup_config_t lookup_config;
+    sixel_filter_lookup_result_t lookup_result;
 
     /*
      * Per-component weights used by the lookup backends.  These remain generic
@@ -538,6 +538,8 @@ sixel_dither_map_pixels(
 
     active_lut = NULL;
     manage_lut = 0;
+    memset(&lookup_config, 0, sizeof(lookup_config));
+    memset(&lookup_result, 0, sizeof(lookup_result));
 
     memset(&context, 0, sizeof(context));
     context.result = result;
@@ -667,44 +669,25 @@ sixel_dither_map_pixels(
             active_lut = lut;
             manage_lut = 0;
         } else {
-            if (lut == NULL) {
-                status = sixel_lut_new(&active_lut, policy, allocator);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
-                manage_lut = 1;
-            } else {
-                active_lut = lut;
-                manage_lut = 0;
-            }
-            if (policy == SIXEL_LUT_POLICY_CERTLUT) {
-                if (method_for_largest == SIXEL_LARGE_LUM) {
-                    wcomp1 = complexion * 299;
-                    wcomp2 = 587;
-                    wcomp3 = 114;
-                } else {
-                    wcomp1 = complexion;
-                    wcomp2 = 1;
-                    wcomp3 = 1;
-                }
-            } else {
-                wcomp1 = complexion;
-                wcomp2 = 1;
-                wcomp3 = 1;
-            }
-            status = sixel_lut_configure(active_lut,
-                                         palette,
-                                         depth,
-                                         reqcolor,
-                                         complexion,
-                                         wcomp1,
-                                         wcomp2,
-                                         wcomp3,
-                                         policy,
-                                         pixelformat);
+            lookup_config.palette = palette;
+            lookup_config.depth = depth;
+            lookup_config.ncolors = reqcolor;
+            lookup_config.complexion = complexion;
+            lookup_config.method_for_largest = method_for_largest;
+            lookup_config.lut_policy = policy;
+            lookup_config.pixelformat = pixelformat;
+            lookup_config.reuse_lut = lut;
+
+            status = sixel_filter_lookup_build(&lookup_config,
+                                               allocator,
+                                               NULL,
+                                               &lookup_result);
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
+
+            active_lut = lookup_result.lut;
+            manage_lut = lookup_result.owned;
         }
         context.lut = active_lut;
         dither_lut_context = active_lut;
