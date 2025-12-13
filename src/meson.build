@@ -69,6 +69,8 @@ srcs = [
   'filter-encode.h',
   'filter-lookup.c',
   'filter-lookup.h',
+  'filter-palette.c',
+  'filter-palette.h',
   'filter-clip.c',
   'filter-clip.h',
   'filter-resize.c',

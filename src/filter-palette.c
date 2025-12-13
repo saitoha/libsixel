@@ -1,0 +1,150 @@
+/*
+ * SPDX-License-Identifier: MIT
+ *
+ * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
+ */
+
+#include "config.h"
+
+/* STDC_HEADERS */
+#include <stdlib.h>
+#if HAVE_STRING_H
+#include <string.h>
+#endif  /* HAVE_STRING_H */
+
+#include <sixel.h>
+
+#include "filter-palette.h"
+#include "filter.h"
+#include "status.h"
+
+typedef struct sixel_filter_palette_state {
+    sixel_filter_palette_config_t config;
+} sixel_filter_palette_state_t;
+
+static SIXELSTATUS
+sixel_filter_palette_apply(sixel_filter_t *filter,
+                           sixel_allocator_t *allocator,
+                           sixel_logger_t *logger)
+{
+    SIXELSTATUS status;
+    sixel_filter_palette_state_t *state;
+    sixel_frame_t *frame;
+    sixel_dither_t **dither_out;
+    int height;
+
+    status = SIXEL_FALSE;
+    state = NULL;
+    frame = NULL;
+    dither_out = NULL;
+    height = 0;
+
+    (void)allocator;
+
+    if (filter == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    state = (sixel_filter_palette_state_t *)filter->userdata;
+    if (state == NULL || state->config.builder == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (filter->input.slot == NULL || filter->input.slot[0] == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    frame = filter->input.slot[0];
+    dither_out = state->config.dither_out;
+
+    if (dither_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    height = sixel_frame_get_height(frame);
+    if (height < 0) {
+        height = 0;
+    }
+
+    status = state->config.builder(state->config.builder_userdata,
+                                   frame,
+                                   dither_out,
+                                   logger);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    filter->progress.total_units = height;
+    filter->progress.completed_units = height;
+    status = sixel_filter_update_progress(filter, height);
+    if (status == SIXEL_FALSE) {
+        status = SIXEL_OK;
+    }
+
+    return status;
+}
+
+static void
+sixel_filter_palette_dispose(sixel_filter_t *filter)
+{
+    sixel_filter_palette_state_t *state;
+
+    if (filter == NULL) {
+        return;
+    }
+
+    state = (sixel_filter_palette_state_t *)filter->userdata;
+    if (state != NULL) {
+        free(state);
+        filter->userdata = NULL;
+    }
+}
+
+SIXELSTATUS
+sixel_filter_palette_init(sixel_filter_t *filter,
+                          const sixel_filter_palette_config_t *config)
+{
+    SIXELSTATUS status;
+    sixel_filter_palette_state_t *state;
+
+    status = SIXEL_FALSE;
+    state = NULL;
+
+    if (filter == NULL || config == NULL || config->builder == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    state = (sixel_filter_palette_state_t *)malloc(sizeof(*state));
+    if (state == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_filter_palette_init: malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    memset(state, 0, sizeof(*state));
+    state->config = *config;
+
+    status = sixel_filter_init(filter,
+                               "palette",
+                               SIXEL_FILTER_KIND_PALETTE,
+                               sixel_filter_palette_apply,
+                               sixel_filter_palette_dispose,
+                               state);
+    if (SIXEL_FAILED(status)) {
+        free(state);
+        return status;
+    }
+
+    sixel_filter_set_progress(filter, NULL, NULL, 1);
+
+    return SIXEL_OK;
+}
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
+/* EOF */
