@@ -94,6 +94,8 @@ $(srcdir)/filter-final-merge.c \
 $(srcdir)/filter-final-merge.h \
 $(srcdir)/filter-dither.c \
 $(srcdir)/filter-dither.h \
+$(srcdir)/filter-encode.c \
+$(srcdir)/filter-encode.h \
 $(srcdir)/filter-lookup.c \
 $(srcdir)/filter-lookup.h \
 $(srcdir)/filter-clip.c \

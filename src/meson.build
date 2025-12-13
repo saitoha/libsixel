@@ -65,6 +65,8 @@ srcs = [
   'filter-final-merge.h',
   'filter-dither.c',
   'filter-dither.h',
+  'filter-encode.c',
+  'filter-encode.h',
   'filter-lookup.c',
   'filter-lookup.h',
   'filter-clip.c',
