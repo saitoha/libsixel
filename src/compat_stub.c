@@ -106,6 +106,10 @@ int gettimeofday(struct timeval *tv, struct timezone *tz);
 #endif
 #endif
 
+#if defined(__FreeBSD__)
+struct timezone;
+int gettimeofday(struct timeval *tv, struct timezone *tz);
+#endif
 
 #if defined(_WIN32)
 # include <io.h>
