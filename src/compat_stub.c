@@ -97,24 +97,16 @@ char *realpath(const char *path, char *resolved_path);
 #if defined(HAVE_GETTIMEOFDAY)
 struct timezone;
 /*
- * Align the prototype with POSIX so platforms that only hide the symbol via
- * feature macros still agree on the function signature.  Using struct
- * timezone here avoids conflicts with libc headers that already declare the
- * function, as observed on OpenBSD.
+ * Platform-specific prototypes for gettimeofday()
+ *
+ * - glibc, Darwin, and MinGW expose a `void *` timezone parameter so keep
+ *   the declaration consistent with their libc headers.
+ * - BSD libcs keep the POSIX-style `struct timezone *` signature.  Matching
+ *   the libc prototype prevents conflicts when headers are already visible.
  */
-# if defined(__GLIBC__)
-/*
- * glibc exposes `gettimeofday()` with a `void *` timezone parameter for API
- * compatibility.  Mirror that signature when the system headers do the same
- * so our safety net does not redeclare the symbol with a different type.
- */
+# if defined(__GLIBC__) || defined(__APPLE__) || defined(_WIN32)
 int gettimeofday(struct timeval *tv, void *tz);
 # else
-/*
- * BSD libcs keep the POSIX-style `struct timezone *` signature.  Declare it
- * with the matching parameter type to prevent prototype mismatches on those
- * platforms.
- */
 int gettimeofday(struct timeval *tv, struct timezone *tz);
 # endif
 #endif
