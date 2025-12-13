@@ -342,6 +342,7 @@ jobs:
       with:
         msystem: ${{ matrix.sys }}
         update: false
+        cache: false
 
     - name: Update keyring then upgrade
       if: runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'MSYS' && matrix.sys != 'CYGWIN' && matrix.sys != 'MINGW32'
