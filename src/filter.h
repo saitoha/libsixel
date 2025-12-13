@@ -109,6 +109,8 @@ struct sixel_filter {
 
 void sixel_filter_clear(sixel_filter_t *filter);
 
+SIXELSTATUS sixel_filter_alloc(sixel_filter_t **filter_out);
+
 SIXELSTATUS
 sixel_filter_init(sixel_filter_t *filter,
                   const char *name,
@@ -141,6 +143,8 @@ sixel_filter_run(sixel_filter_t *filter,
                  sixel_logger_t *logger);
 
 void sixel_filter_teardown(sixel_filter_t *filter);
+
+void sixel_filter_free(sixel_filter_t *filter);
 
 #endif /* LIBSIXEL_FILTER_H */
 
