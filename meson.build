@@ -1228,6 +1228,8 @@ endif
 
 ruby_message = 'no'
 have_ruby = false
+amalgamation_opt = get_option('amalgamation')
+amalgamated_tools_opt = get_option('amalgamated_tools')
 # Generate Ruby version file (pure Ruby bindings)
 subdir('ruby/lib/libsixel')
 ruby_opt = get_option('ruby')
@@ -1257,7 +1259,11 @@ if ruby_opt.enabled()
   endif
 endif
 
-if get_option('amalgamation').enabled()
+if amalgamated_tools_opt.enabled() and not amalgamation_opt.enabled()
+  error('amalgamated_tools requires the amalgamation option to be enabled')
+endif
+
+if amalgamation_opt.enabled()
   subdir('amalgamation')
 endif
 

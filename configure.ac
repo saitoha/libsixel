@@ -196,6 +196,19 @@ AC_ARG_ENABLE([amalgamation],
 AM_CONDITIONAL([WANT_AMALGAMATION],
                [test "x$enable_amalgamation" = "xyes"])
 
+AC_ARG_ENABLE([amalgamated-tools],
+              [AS_HELP_STRING([--enable-amalgamated-tools],
+                              [build CLI tools from the amalgamated source
+                               (default: no)])],
+              [],
+              [enable_amalgamated_tools=no])
+if test "x$enable_amalgamated_tools" = "xyes" \
+   && test "x$enable_amalgamation" != "xyes"; then
+    AC_MSG_ERROR([--enable-amalgamated-tools requires --enable-amalgamation])
+fi
+AM_CONDITIONAL([WANT_AMALGAMATED_TOOLS],
+               [test "x$enable_amalgamated_tools" = "xyes"])
+
 AC_ARG_WITH([modeldir],
             [AS_HELP_STRING([--with-modeldir=DIR],
                             [install assessment models under DIR

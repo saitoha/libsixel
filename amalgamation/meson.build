@@ -3,6 +3,20 @@ fs = import('fs')
 amalgamation_gen = find_program(join_paths(meson.project_source_root(),
   'tools', 'gen-amalgamation.sh'))
 
+amalgamation_completion = []
+amalgamation_header_depends = []
+if get_option('amalgamated_tools').enabled()
+  gen_completion = find_program(join_paths(meson.project_source_root(),
+    'tools', 'gen_completion_embed.py'))
+  amalgamation_completion = [custom_target('amalgamation-completion-embed.h',
+    input: ['../converters/shell-completion/bash/img2sixel',
+            '../converters/shell-completion/zsh/_img2sixel'],
+    output: 'completion_embed.h',
+    command: [gen_completion, '@OUTPUT@', '@INPUT0@', '@INPUT1@']
+  )]
+  amalgamation_header_depends = amalgamation_completion
+endif
+
 amalgamation_units = files(
   '../src/output.c',
   '../src/fromsixel.c',
@@ -65,6 +79,12 @@ amalgamation_units = files(
   '../src/threadpool.c',
   '../src/quicklook_thumbnailing.m',
   '../src/clipboard_macos.m',
+  '../converters/aborttrace.c',
+  '../converters/cli.c',
+  '../converters/completion_utils.c',
+  '../converters/img2sixel.c',
+  '../converters/malloc_stub.c',
+  '../converters/sixel2png.c',
 )
 
 amalgamation_headers = files(
@@ -132,6 +152,11 @@ amalgamation_headers = files(
   '../src/rgblookup.h',
   '../src/lso2.h',
   '../src/compat_stub.h',
+  '../converters/aborttrace.h',
+  '../converters/cli.h',
+  '../converters/completion_utils.h',
+  '../converters/getopt_stub.h',
+  '../converters/malloc_stub.h',
 )
 
 amalgamation_out = custom_target('sixel-amalgamation.c',
@@ -140,6 +165,7 @@ amalgamation_out = custom_target('sixel-amalgamation.c',
             meson.project_build_root()],
   depend_files: amalgamation_units + amalgamation_headers + [config_h] +
     files('../tools/gen-amalgamation.sh'),
+  depends: amalgamation_header_depends,
   build_by_default: true)
 
 summary({'Amalgamation build': 'single translation unit generated'},

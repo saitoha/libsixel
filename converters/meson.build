@@ -52,16 +52,26 @@ src_build_dir = join_paths(meson.project_build_root(), 'src')
 
 img2sixel_opt = get_option('img2sixel')
 sixel2png_opt = get_option('sixel2png')
+amalgamated_tools_enabled = get_option('amalgamated_tools').enabled()
 
 img2sixel_deps = []
 if img2sixel_opt.enabled()
-  img2sixel_exe = executable('img2sixel',
-    ['img2sixel.c', 'completion_utils.c', completion_embed]
-      + sources_common + aborttrace_sources,
-    dependencies: [libsixel_dep] + aborttrace_deps_local,
-    include_directories: [project_inc, local_inc],
-    build_rpath: src_build_dir,
-    install: true)
+  if amalgamated_tools_enabled
+    img2sixel_exe = executable('img2sixel', amalgamation_out,
+      c_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
+                                     '-DHAVE_COMPLETION_EMBED_H'],
+      include_directories: [project_inc, local_inc],
+      dependencies: deps + aborttrace_deps_local,
+      install: true)
+  else
+    img2sixel_exe = executable('img2sixel',
+      ['img2sixel.c', 'completion_utils.c', completion_embed]
+        + sources_common + aborttrace_sources,
+      dependencies: [libsixel_dep] + aborttrace_deps_local,
+      include_directories: [project_inc, local_inc],
+      build_rpath: src_build_dir,
+      install: true)
+  endif
   img2sixel_deps = [img2sixel_exe]
   install_man('img2sixel.1')
   if bash_completion_dir != ''
@@ -81,12 +91,20 @@ endif
 
 sixel2png_deps = []
 if sixel2png_opt.enabled()
-  sixel2png_exe = executable('sixel2png',
-    ['sixel2png.c'] + sources_common + aborttrace_sources,
-    dependencies: [libsixel_dep] + aborttrace_deps_local,
-    include_directories: project_inc,
-    build_rpath: src_build_dir,
-    install: true)
+  if amalgamated_tools_enabled
+    sixel2png_exe = executable('sixel2png', amalgamation_out,
+      c_args: libsixel_posix_defs + ['-DBUILD_SIXEL2PNG'],
+      include_directories: [project_inc, local_inc],
+      dependencies: deps + aborttrace_deps_local,
+      install: true)
+  else
+    sixel2png_exe = executable('sixel2png',
+      ['sixel2png.c'] + sources_common + aborttrace_sources,
+      dependencies: [libsixel_dep] + aborttrace_deps_local,
+      include_directories: project_inc,
+      build_rpath: src_build_dir,
+      install: true)
+  endif
   install_man('sixel2png.1')
   sixel2png_deps = [sixel2png_exe]
 endif

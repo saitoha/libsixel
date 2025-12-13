@@ -87,6 +87,12 @@ src/threading.c
 src/threadpool.c
 src/quicklook_thumbnailing.m
 src/clipboard_macos.m
+converters/aborttrace.c
+converters/cli.c
+converters/completion_utils.c
+converters/img2sixel.c
+converters/malloc_stub.c
+converters/sixel2png.c
 "
 
 project_headers="
@@ -159,6 +165,12 @@ lso2.h
 compat_stub.h
 fromgif.h
 frompnm.h
+aborttrace.h
+cli.h
+completion_utils.h
+completion_embed.h
+getopt_stub.h
+malloc_stub.h
 "
 
 header_units="
@@ -226,6 +238,12 @@ src/stdio_stub.h
 src/rgblookup.h
 src/lso2.h
 src/compat_stub.h
+converters/aborttrace.h
+converters/cli.h
+converters/completion_utils.h
+converters/completion_embed.h
+converters/getopt_stub.h
+converters/malloc_stub.h
 "
 
 # Persist header names to a temporary file so portable awk can read them
@@ -381,10 +399,10 @@ BEGIN {
     inline_once["stb_image_write.h"] = 1;
 }
 {
-    if ($0 ~ /^[ \t]*#[ \t]*include[ \t]*"[^"]+"/) {
+    if ($0 ~ /^[ \t]*#[ \t]*include[ \t]*["<][^">]+[">]/) {
         name = $0;
-        sub(/^[ \t]*#[ \t]*include[ \t]*"/, "", name);
-        sub(/".*/, "", name);
+        sub(/^[ \t]*#[ \t]*include[ \t]*["<]/, "", name);
+        sub(/[">].*/, "", name);
         if (name in header) {
             if (name in inline_once && !(name in emitted)) {
                 emitted[name] = 1;
@@ -463,6 +481,20 @@ emit_all_headers() {
             src/threadpool.h)
                 emit_header_unit "${unit}" "SIXEL_ENABLE_THREADS"
                 ;;
+            converters/completion_embed.h)
+                embedded_header="${build_root}/converters/completion_embed.h"
+                if [ ! -f "${embedded_header}" ]; then
+                    embedded_header="${build_root}/amalgamation/completion_embed.h"
+                fi
+                if [ -f "${embedded_header}" ]; then
+                    emit_header_unit "${embedded_header}" \
+                        "defined(BUILD_IMG2SIXEL)"
+                fi
+                ;;
+            converters/cli.h|converters/completion_utils.h|converters/getopt_stub.h|converters/malloc_stub.h|converters/aborttrace.h)
+                emit_header_unit "${unit}" \
+                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG)"
+                ;;
             src/loader-quicklook.h|src/loader-coregraphics.h|src/loader-wic.h)
                 emit_header_unit "${unit}" "HAVE_QUICKLOOK"
                 ;;
@@ -488,6 +520,16 @@ emit_all_units() {
         case "${unit}" in
             src/threadpool.c)
                 emit_unit "${unit}" "SIXEL_ENABLE_THREADS"
+                ;;
+            converters/cli.c|converters/completion_utils.c|converters/malloc_stub.c|converters/aborttrace.c)
+                emit_unit "${unit}" \
+                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG)"
+                ;;
+            converters/img2sixel.c)
+                emit_unit "${unit}" "defined(BUILD_IMG2SIXEL)"
+                ;;
+            converters/sixel2png.c)
+                emit_unit "${unit}" "defined(BUILD_SIXEL2PNG)"
                 ;;
             src/quicklook_thumbnailing.m)
                 emit_unit "${unit}" \
