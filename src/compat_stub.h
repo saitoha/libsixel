@@ -199,6 +199,7 @@ SIXEL_COMPAT_API int sixel_compat_isatty(int fd);
 
 SIXEL_COMPAT_API int sixel_compat_is_console(int fd);
 
+struct timeval;
 SIXEL_COMPAT_API int sixel_compat_gettimeofday(struct timeval *tv);
 
 SIXEL_COMPAT_API char *sixel_compat_strtok(char *string,
