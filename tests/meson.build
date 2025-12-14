@@ -109,6 +109,24 @@ filter_lookup_unit = executable('filter_lookup_tests',
   include_directories: project_inc,
   install: false)
 
+filter_final_merge_unit = executable('filter_final_merge_tests',
+  ['filter/filter_final_merge_tests.c'],
+  dependencies: [libsixel_dep],
+  include_directories: project_inc,
+  install: false)
+
+filter_vpte_unit = executable('filter_vpte_tests',
+  ['filter/filter_vpte_tests.c'],
+  dependencies: [libsixel_dep],
+  include_directories: project_inc,
+  install: false)
+
+filter_load_unit = executable('filter_load_tests',
+  ['filter/filter_load_tests.c'],
+  dependencies: [libsixel_dep],
+  include_directories: project_inc,
+  install: false)
+
 test('test_3000_filter_clip', filter_unit,
   env: env,
   protocol: 'tap',
@@ -134,6 +152,24 @@ test('test_3003_filter_colors', filter_colors_unit,
   suite: ['tap'])
 
 test('test_3004_filter_lookup', filter_lookup_unit,
+  env: env,
+  protocol: 'tap',
+  timeout: 120,
+  suite: ['tap'])
+
+test('test_3005_filter_final_merge', filter_final_merge_unit,
+  env: env,
+  protocol: 'tap',
+  timeout: 120,
+  suite: ['tap'])
+
+test('test_3006_filter_vpte', filter_vpte_unit,
+  env: env,
+  protocol: 'tap',
+  timeout: 120,
+  suite: ['tap'])
+
+test('test_3007_filter_load', filter_load_unit,
   env: env,
   protocol: 'tap',
   timeout: 120,
