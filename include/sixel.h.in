@@ -21,7 +21,6 @@
  */
 
 #include <stddef.h>  /* for size_t */
-#include <stdint.h>
 
 #ifndef LIBSIXEL_SIXEL_H
 #define LIBSIXEL_SIXEL_H
@@ -1571,13 +1570,8 @@ sixel_helper_get_available_loader_names(
 
 /* probe helpers for SIXEL signature detection */
 SIXELAPI SIXELSTATUS
-sixel_probe_find_dcs_start(uint8_t const /* in */ *data,
-                           size_t        /* in */ len,
-                           size_t        /* out */ *out_offset);
-
-SIXELAPI SIXELSTATUS
-sixel_probe_is_probable(uint8_t const /* in */ *data,
-                        size_t        /* in */ len);
+sixel_probe_is_probable(unsigned char const /* in */ *data,
+                        size_t              /* in */ len);
 
 SIXELAPI SIXELSTATUS
 sixel_parse_header(unsigned char const /* in */ *ibuf,
