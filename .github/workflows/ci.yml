@@ -379,9 +379,7 @@ jobs:
 
           pkgman refresh
           pkgman install -y \
-            make \
-            pkgconfig \
-            python3
+            make
 
     - name: Setup MSVC developer env (vcvars)
       if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' }}
@@ -1818,7 +1816,7 @@ jobs:
             fi
           elif [ "${{ matrix.platform || '' }}" = "haiku" ]; then
             pkgman refresh
-            pkgman install -y python3 meson ninja
+            pkgman install -y python meson ninja
           fi
 
           if [ "${{ matrix.musl || '' }}" = "true" ]; then
