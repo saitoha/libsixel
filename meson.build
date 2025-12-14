@@ -468,48 +468,50 @@ if curl_dep.found()
 endif
 
 gdk_opt = get_option('gdk_pixbuf2')
-gdk_dep = dependency('gdk-pixbuf-2.0',
-                     required: false,
-                     method: 'pkg-config')
+if not gdk_opt.disabled()
+  gdk_dep = dependency('gdk-pixbuf-2.0',
+                       required: gdk_opt.enabled(),
+                       method: 'pkg-config')
+  if not gdk_dep.found()
+    vcpkg_root = get_env('VCPKG_ROOT', '')
+    vcpkg_triplet = get_env('VCPKG_DEFAULT_TRIPLET', '')
 
-if not gdk_dep.found() and not gdk_opt.disabled()
-  vcpkg_root = get_env('VCPKG_ROOT', '')
-  vcpkg_triplet = get_env('VCPKG_DEFAULT_TRIPLET', '')
+    gdk_incdirs = []
+    gdk_libdirs = []
 
-  gdk_incdirs = []
-  gdk_libdirs = []
+    if vcpkg_root != '' and vcpkg_triplet != ''
+      gdk_incdirs += include_directories(
+        join_paths(vcpkg_root, 'installed', vcpkg_triplet, 'include'))
+      gdk_libdirs += join_paths(vcpkg_root, 'installed', vcpkg_triplet, 'lib')
+    endif
 
-  if vcpkg_root != '' and vcpkg_triplet != ''
-    gdk_incdirs += include_directories(
-      join_paths(vcpkg_root, 'installed', vcpkg_triplet, 'include'))
-    gdk_libdirs += join_paths(vcpkg_root, 'installed', vcpkg_triplet, 'lib')
+    gdk_lib = cc.find_library('gdk_pixbuf-2.0',
+                               dirs: gdk_libdirs,
+                               required: gdk_opt.enabled())
+
+    if gdk_lib.found()
+      gdk_dep = declare_dependency(link_with: gdk_lib,
+                                   include_directories: gdk_incdirs)
+    endif
   endif
 
-  gdk_lib = cc.find_library('gdk_pixbuf-2.0',
-                             dirs: gdk_libdirs,
-                             required: gdk_opt.enabled())
-
-  if gdk_lib.found()
-    gdk_dep = declare_dependency(link_with: gdk_lib,
-                                 include_directories: gdk_incdirs)
+  if gdk_dep.found()
+    deps += gdk_dep
+    reqs += gdk_dep
+    conf.set('HAVE_GDK_PIXBUF2', 1)
+    loaders += 'gdk-pixbuf2'
+  elif gdk_opt.enabled()
+    error('gdk_pixbuf2=enabled requires gdk-pixbuf-2.0')
+  else
+    message('gdk-pixbuf-2.0 not found; gdk-pixbuf2 loader disabled')
   endif
-endif
-
-if gdk_dep.found()
-  deps += gdk_dep
-  reqs += gdk_dep
-  conf.set('HAVE_GDK_PIXBUF2', 1)
-  loaders += 'gdk-pixbuf2'
-elif gdk_opt.enabled()
-  error('gdk_pixbuf2=enabled requires gdk-pixbuf-2.0')
-else
-  message('gdk-pixbuf-2.0 not found; gdk-pixbuf2 loader disabled')
 endif
 
 gdk_pixbuf_loader_opt = get_option('gdk_pixbuf_loader')
 gdk_pixbuf_loader_deps = []
 gdk_pixbuf_binary_version = ''
 gdk_pixbuf_loader_dir = ''
+gdk_pixbuf_loader_message = 'no'
 
 gdk_loader_dep = dependency('gdk-pixbuf-2.0',
                             version: '>=2.28',
@@ -527,6 +529,7 @@ if gdk_loader_dep.found() and gmodule_loader_dep.found()
   gdk_pixbuf_loader_dir = join_paths(get_option('libdir'),
     'gdk-pixbuf-2.0', gdk_pixbuf_binary_version, 'loaders')
   gdk_pixbuf_loader_deps = [gdk_loader_dep, gmodule_loader_dep]
+  gdk_pixbuf_loader_message = 'yes'
 elif gdk_pixbuf_loader_opt.enabled()
   error('gdk_pixbuf_loader=enabled requires gdk-pixbuf-2.0 >= 2.28 and gmodule-2.0')
 else
@@ -1419,24 +1422,25 @@ endif
 message('')
 message('libsixel was configured as follows')
 message('')
-message('       Loader component    : ' + loaders_summary)
-message('       Network access      : ' + net_summary)
-message('       libwinpthread       : ' + (have_winpthread ? 'yes' : 'no'))
-message('       internal threads    : ' + threads_message)
-message('       pkg-config dir      : ' + pkgconfig_dir)
-message('       Bash completion dir : ' + bash_completion_message)
-message('       Zsh completion dir  : ' + zsh_completion_message)
-message('       QuickLook extension : ' + quicklook_extension_message)
-message('       ONNX Runtime        : ' + onnxruntime_message)
-message('       WIC codec           : ' + wiccodec_message)
-message('       python bindings     : ' + python_message)
-message('       ruby bindings       : ' + ruby_message)
-message('       Thumbnailer command : ' + thumbnailer_message)
-message('       SIMD                : ' + simd_message)
-message('       AVX2               : ' + avx2_message)
-message('       AVX-512            : ' + avx512_message)
-message('       gcov integration    : ' + (get_option('gcov') ? 'yes' : 'no'))
-message('       debugging           : ' + (get_option('debug') ? 'yes' : 'no'))
-message('       tests               : ' + (get_option('tests') ? 'yes' : 'no'))
+message('       Loader component        : ' + loaders_summary)
+message('       Network access          : ' + net_summary)
+message('       libwinpthread           : ' + (have_winpthread ? 'yes' : 'no'))
+message('       internal threads        : ' + threads_message)
+message('       pkg-config dir          : ' + pkgconfig_dir)
+message('       Bash completion dir     : ' + bash_completion_message)
+message('       Zsh completion dir      : ' + zsh_completion_message)
+message('       QuickLook extension     : ' + quicklook_extension_message)
+message('       ONNX Runtime            : ' + onnxruntime_message)
+message('       WIC codec               : ' + wiccodec_message)
+message('       python bindings         : ' + python_message)
+message('       ruby bindings           : ' + ruby_message)
+message('       gdk-pixbuf SIXEL loader : ' + gdk_pixbuf_loader_message)
+message('       Thumbnailer command     : ' + thumbnailer_message)
+message('       SIMD                    : ' + simd_message)
+message('       avx2                    : ' + avx2_message)
+message('       avx-512                 : ' + avx512_message)
+message('       gcov                    : ' + (get_option('gcov') ? 'yes' : 'no'))
+message('       debugging               : ' + (get_option('debug') ? 'yes' : 'no'))
+message('       tests                   : ' + (get_option('tests') ? 'yes' : 'no'))
 message('')
 # vim: set et ts=2:
