@@ -989,8 +989,9 @@ if test "x$THREAD_LIBS" != x; then
     LIBS_PRIVATE="$LIBS_PRIVATE $THREAD_LIBS"
 fi
 
+message_gdk_pixbuf_loader=
 if test x$with_gdk_pixbuf2 != xno || \
-   test x$enable_gdk_pixbuf_loader = xyes; then
+   test x$enable_gdk_pixbuf_loader != xno; then
     AC_MSG_NOTICE([checking for gdk-pixbuf-2.0])
     if test x${PKG_CONFIG} != x; then
         PKG_CHECK_MODULES([GDK_PIXBUF],
@@ -1022,22 +1023,25 @@ if test x$with_gdk_pixbuf2 != xno || \
     fi
 fi
 
-if test x$have_gdk_pixbuf_pkg = xyes; then
-    have_gdk_pixbuf_loader=yes
-    if test x${PKG_CONFIG} != x; then
-        PKG_CHECK_VAR([GDK_PIXBUF_BINARY_VERSION],
-                      [gdk-pixbuf-2.0],
-                      [gdk_pixbuf_binary_version])
+if test x$have_gdk_pixbuf_pkg = xyes ; then
+    if test x$enable_gdk_pixbuf_loader != xno ; then
+        have_gdk_pixbuf_loader=yes
+        message_gdk_pixbuf_loader=yes
+        if test x${PKG_CONFIG} != x; then
+            PKG_CHECK_VAR([GDK_PIXBUF_BINARY_VERSION],
+                          [gdk-pixbuf-2.0],
+                          [gdk_pixbuf_binary_version])
+        fi
     fi
-fi
 
-if test x$with_gdk_pixbuf2 != xno && test x$have_gdk_pixbuf_pkg = xyes; then
-    AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
-    loaders="${loaders} gdk-pixbuf2"
-    REQUIRES_PRIVATE="$REQUIRES_PRIVATE gdk-pixbuf-2.0"
-    LIBS_PRIVATE="$LIBS_PRIVATE $GDK_PIXBUF_LIBS"
-elif test x$with_gdk_pixbuf2 = xyes; then
-    AC_MSG_ERROR([unable to find gdk-pixbuf-2.0])
+    if test x$with_gdk_pixbuf2 != xno ; then
+        AC_DEFINE(HAVE_GDK_PIXBUF2, 1, [whether gdk-pixbuf2 is available])
+        loaders="${loaders} gdk-pixbuf2"
+        REQUIRES_PRIVATE="$REQUIRES_PRIVATE gdk-pixbuf-2.0"
+        LIBS_PRIVATE="$LIBS_PRIVATE $GDK_PIXBUF_LIBS"
+    elif test x$with_gdk_pixbuf2 = xyes; then
+        AC_MSG_ERROR([unable to find gdk-pixbuf-2.0])
+    fi
 fi
 
 GDK_PIXBUF_MODULEDIR='${libdir}/gdk-pixbuf-2.0/${GDK_PIXBUF_BINARY_VERSION}/loaders'
@@ -2318,26 +2322,27 @@ echo ""
 echo ""
 echo "libsixel was configured as follows"
 echo ""
-echo "       Loader component    : $loaders"
-echo "       Network access      : $net"
-echo "       libwinpthread       : $have_winpthread"
-echo "       internal threads    : $message_threads"
-echo "       pkg-config dir      : $pkgconfigdir"
-echo "       Bash completion dir : $message_bashcompletiondir"
-echo "       Zsh completion dir  : $message_zshcompletiondir"
-echo "       QuickLook extension : $message_quicklook_extension"
-echo "       WIC codec           : $message_wiccodec"
-echo "       Register WIC DLL    : $message_register_dll"
-echo "       Thumbnailer command : $message_thumbnailer"
-echo "       ONNX Runtime        : $message_onnxruntime"
-echo "       python bindings     : $message_python"
-echo "       ruby bindings       : $message_ruby"
-echo "       simd                : $message_simd"
-echo "       AVX2               : $message_avx2"
-echo "       AVX-512            : $message_avx512"
-echo "       gcov integration    : $enable_gcov"
-echo "       debugging           : $enable_debug"
-echo "       tests               : $enable_tests"
+echo "       Loader component        : $loaders"
+echo "       Network access          : $net"
+echo "       libwinpthread           : $have_winpthread"
+echo "       internal threads        : $message_threads"
+echo "       pkg-config dir          : $pkgconfigdir"
+echo "       Bash completion dir     : $message_bashcompletiondir"
+echo "       Zsh completion dir      : $message_zshcompletiondir"
+echo "       QuickLook extension     : $message_quicklook_extension"
+echo "       WIC codec               : $message_wiccodec"
+echo "       Register WIC DLL        : $message_register_dll"
+echo "       gdk-pixbuf SIXEL loader : $message_gdk_pixbuf_loader"
+echo "       Thumbnailer command     : $message_thumbnailer"
+echo "       ONNX Runtime            : $message_onnxruntime"
+echo "       python bindings         : $message_python"
+echo "       ruby bindings           : $message_ruby"
+echo "       simd                    : $message_simd"
+echo "       avx2                    : $message_avx2"
+echo "       avx-512                 : $message_avx512"
+echo "       gcov                    : $enable_gcov"
+echo "       debugging               : $enable_debug"
+echo "       tests                   : $enable_tests"
 echo ""
 echo ""
 dnl :vim set et:
