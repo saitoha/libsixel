@@ -58,6 +58,14 @@ jobs:
             cp_arch: arm64
             cp_version: '10.1'
             variant: netbsd
+          - label: haiku r1beta5 x86-64
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            platform: haiku
+            cp_os: haiku
+            cp_arch: x86-64
+            cp_version: r1beta5
+            variant: haiku
           - label: openbsd 7.8 x86-64
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -358,6 +366,23 @@ jobs:
             gmake \
             # pkgconf avoided to reduce fragile package installs
 
+    - name: Install dependencies (Haiku)
+      if: matrix.platform == 'haiku'
+      uses: cross-platform-actions/action@v0.30.0
+      with:
+        operating_system: ${{ matrix.cp_os }}
+        architecture: ${{ matrix.cp_arch }}
+        version: ${{ matrix.cp_version }}
+        environment_variables: CI
+        run: |-
+          set -eux
+
+          pkgman refresh
+          pkgman install -y \
+            make \
+            pkgconfig \
+            python3
+
     - name: Setup MSVC developer env (vcvars)
       if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' }}
       uses: ilammy/msvc-dev-cmd@v1
@@ -556,6 +581,50 @@ jobs:
               ${disable_simd_flag} \
               ${static_only_flags}
           gmake V=1
+
+    - name: Configure and build (Haiku)
+      if: matrix.platform == 'haiku'
+      uses: cross-platform-actions/action@v0.30.0
+      with:
+        operating_system: ${{ matrix.cp_os }}
+        architecture: ${{ matrix.cp_arch }}
+        version: ${{ matrix.cp_version }}
+        environment_variables: CI
+        run: |-
+          set -eux
+
+          enable_gcov_flag="--enable-gcov"
+          disable_threads_flag=""
+          if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
+            disable_threads_flag="--disable-threads"
+          fi
+          disable_tools_flags=""
+          if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
+            disable_tools_flags="--disable-img2sixel --disable-sixel2png"
+          fi
+          disable_simd_flag=""
+          if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
+            disable_simd_flag="--disable-simd"
+          fi
+          static_only_flags=""
+          if [ "${{ matrix.static_only || '' }}" = "true" ]; then
+            static_only_flags="--disable-shared --enable-static"
+            enable_gcov_flag=""
+          fi
+
+          ./configure \
+              --without-bashcompletiondir \
+              --without-zshcompletiondir \
+              --disable-python \
+              --enable-debug \
+              --enable-tests \
+              ${enable_gcov_flag} \
+              --disable-dependency-tracking \
+              ${disable_tools_flags} \
+              ${disable_threads_flag} \
+              ${disable_simd_flag} \
+              ${static_only_flags}
+          make V=1
 
     - name: Configure and build (OpenBSD)
       if: matrix.platform == 'openbsd'
@@ -773,8 +842,8 @@ jobs:
         cat config.log
         make V=1
 
-    - name: Run tests (FreeBSD/OpenBSD/NetBSD)
-      if: matrix.platform == 'freebsd' || matrix.platform == 'openbsd' || matrix.platform == 'netbsd'
+    - name: Run tests (FreeBSD/OpenBSD/NetBSD/Haiku)
+      if: matrix.platform == 'freebsd' || matrix.platform == 'openbsd' || matrix.platform == 'netbsd' || matrix.platform == 'haiku'
       uses: cross-platform-actions/action@v0.30.0
       with:
         operating_system: ${{ matrix.cp_os }}
@@ -783,10 +852,14 @@ jobs:
         environment_variables: CI
         run: |
           set -eux
-          gmake check V=1
+          if command -v gmake >/dev/null 2>&1; then
+            gmake check V=1
+          else
+            make check V=1
+          fi
 
     - name: Run tests (non-Windows)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os != 'Windows'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && runner.os != 'Windows'
       shell: bash
       run: make check V=1
 
@@ -1411,6 +1484,14 @@ jobs:
             cp_arch: arm64
             cp_version: '10.1'
             variant: netbsd
+          - label: haiku r1beta5 x86-64
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            platform: haiku
+            cp_os: haiku
+            cp_arch: x86-64
+            cp_version: r1beta5
+            variant: haiku
           - label: openbsd 7.8 x86-64
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -1634,7 +1715,7 @@ jobs:
         packages: gcc-core,make,pkg-config,python3,python3-pip,ninja
 
     - name: Install Meson (non-Windows)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os != 'Windows'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && runner.os != 'Windows'
       run: |
         python3 -m venv .meson-venv
         . .meson-venv/bin/activate
@@ -1659,8 +1740,8 @@ jobs:
         $script = [string]::Join("`n", $scriptLines)
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
-    - name: Configure, build, and test (Meson, FreeBSD/OpenBSD/NetBSD)
-      if: matrix.platform == 'freebsd' || matrix.platform == 'openbsd' || matrix.platform == 'netbsd'
+    - name: Configure, build, and test (Meson, FreeBSD/OpenBSD/NetBSD/Haiku)
+      if: matrix.platform == 'freebsd' || matrix.platform == 'openbsd' || matrix.platform == 'netbsd' || matrix.platform == 'haiku'
       uses: cross-platform-actions/action@v0.30.0
       with:
         operating_system: ${{ matrix.cp_os }}
@@ -1735,6 +1816,9 @@ jobs:
             else
               echo "ninja is already available; skipping install" >&2
             fi
+          elif [ "${{ matrix.platform || '' }}" = "haiku" ]; then
+            pkgman refresh
+            pkgman install -y python3 meson ninja
           fi
 
           if [ "${{ matrix.musl || '' }}" = "true" ]; then
@@ -1795,7 +1879,7 @@ jobs:
         if-no-files-found: warn
 
     - name: Configure, build, and test (Meson, non-Windows)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os != 'Windows'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && runner.os != 'Windows'
       run: *meson_non_windows
 
     - name: Configure, build, and test (Meson, Windows, not MSVC/Cygwin)
