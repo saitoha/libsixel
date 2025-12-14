@@ -79,6 +79,18 @@ foreach t : ['test_0001_python_bindings.t', 'test_0002_python_api_formats.t',
     suite: ['tap'])
 endforeach
 
+filter_unit = executable('filter_tests',
+  ['filter/filter_tests.c'],
+  dependencies: [libsixel_dep],
+  include_directories: project_inc,
+  install: false)
+
+test('test_3000_filter_clip', filter_unit,
+  env: env,
+  protocol: 'tap',
+  timeout: 120,
+  suite: ['tap'])
+
 if gdk_pixbuf_loader_deps.length() > 0
   gdk_pixbuf_loader_sources = [
     'gdk-pixbuf-loader/test-gdk-pixbuf-loader.c',
