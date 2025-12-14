@@ -101,6 +101,9 @@ resolve_libdir() {
         return 0
     fi
 
+    # trace dirs
+    find . -type d
+
     return 1
 }
 
