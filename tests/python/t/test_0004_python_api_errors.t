@@ -19,13 +19,13 @@ tmp_dir="${artifact_dir}/tmp"
 source_image=$(cd "$(dirname "$0")/../../.." && pwd)/images/autumn.png
 
 mkdir -p "${artifact_dir}" "${tmp_dir}"
-: >"${log_file}"
-
-printf 'source_image=%s\n' "${source_image}" >>"${log_file}"
+rm -f "${log_file}"
 
 tap_log_file="${log_file}"
 
 python_prepare "${log_file}" "${tmp_dir}"
+
+printf 'source_image=%s\n' "${source_image}" >>"${log_file}"
 
 # Install the wheel into a venv when available so the API is exercised through
 # the packaged module instead of the in-tree sources.

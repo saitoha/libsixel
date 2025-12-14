@@ -40,11 +40,10 @@ if ! command -v "${python_bin}" >/dev/null 2>&1; then
     exit 0
 fi
 
-if "${root_dir}/lsqa_regression.sh" >"${log_file}" 2>&1; then
+if VERBOSE=1 "${root_dir}/lsqa_regression.sh" >&2; then
     pass 1 "lsqa quality baseline held"
 else
     fail 1 "lsqa quality regression detected"
-    printf '%s\n' '--- log ---' >>"${log_file}"
 fi
 
 exit 0
