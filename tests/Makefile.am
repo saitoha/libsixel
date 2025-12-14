@@ -31,7 +31,9 @@ PYTHON_TESTS = python/t/test_0001_python_bindings.t \
        python/t/test_0004_python_api_errors.t \
        python/t/test_0005_python_resource_management.t
 
-FILTER_TESTS = filter/t/test_3000_filter_clip.t
+FILTER_TESTS = filter/t/test_3000_filter_clip.t \
+       filter/t/test_3001_filter_sample.t \
+       filter/t/test_3002_filter_resize.t
 
 TESTS = $(CLI_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
 COPY_TESTS = $(CLI_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
@@ -73,7 +75,8 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
              lsqa_regression.sh \
              data/baseline/*.json data/inputs/formats/* \
              data/resolutions/*.png data/corrupted/* \
-             filter/filter_tests.c
+             filter/filter_tests.c filter/filter_sample_tests.c \
+             filter/filter_resize_tests.c filter/filter_test_common.h
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
