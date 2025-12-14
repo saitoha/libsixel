@@ -1816,7 +1816,7 @@ jobs:
             fi
           elif [ "${{ matrix.platform || '' }}" = "haiku" ]; then
             pkgman refresh
-            pkgman install -y python310 meson ninja
+            pkgman install -y meson ninja
           fi
 
           if [ "${{ matrix.musl || '' }}" = "true" ]; then
