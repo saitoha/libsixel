@@ -34,7 +34,7 @@ jobs:
             cp_arch: x86-64
             cp_version: '14.3'
             variant: freebsd
-          - label: freebsd 14.3 arm64
+          - label: freebsd 14.3 aarch64
             os: ubuntu-latest
             runner: ubuntu-latest
             platform: freebsd
@@ -50,7 +50,7 @@ jobs:
             cp_arch: x86-64
             cp_version: '10.1'
             variant: netbsd
-          - label: netbsd 10.1 arm64
+          - label: netbsd 10.1 aarch64
             os: ubuntu-latest
             runner: ubuntu-latest
             platform: netbsd
@@ -74,7 +74,7 @@ jobs:
             cp_arch: x86-64
             cp_version: '7.8'
             variant: openbsd
-#          - label: openbsd 7.8 arm64
+#          - label: openbsd 7.8 aarch64
 #            os: ubuntu-latest
 #            runner: ubuntu-latest
 #            platform: openbsd
@@ -112,6 +112,11 @@ jobs:
             sys: x86_64
             musl: true
             variant: musl-cross
+          - label: ubuntu 24.04 aarch64
+            os: ubuntu-24.04-arm
+            runner: ubuntu-24.04-arm
+            sys: aarch64
+            variant: default
           - label: ubuntu i686
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -1458,7 +1463,7 @@ jobs:
             cp_arch: x86-64
             cp_version: '14.3'
             variant: freebsd
-          - label: freebsd 14.3 arm64
+          - label: freebsd 14.3 aarch64
             os: ubuntu-latest
             runner: ubuntu-latest
             platform: freebsd
@@ -1474,7 +1479,7 @@ jobs:
             cp_arch: x86-64
             cp_version: '10.1'
             variant: netbsd
-          - label: netbsd 10.1 arm64
+          - label: netbsd 10.1 aarch64
             os: ubuntu-latest
             runner: ubuntu-latest
             platform: netbsd
@@ -1498,7 +1503,7 @@ jobs:
             cp_arch: x86-64
             cp_version: '7.8'
             variant: openbsd
-#          - label: openbsd 7.8 arm64
+#          - label: openbsd 7.8 aarch64
 #            os: ubuntu-latest
 #            runner: ubuntu-latest
 #            platform: openbsd
@@ -1531,6 +1536,11 @@ jobs:
             runner: ubuntu-latest
             musl: true
             variant: musl-cross
+          - label: ubuntu 24.04 aarch64
+            os: ubuntu-24.04-arm
+            runner: ubuntu-24.04-arm
+            sys: aarch64
+            variant: default
           - label: ubuntu i686
             os: ubuntu-latest
             runner: ubuntu-latest
