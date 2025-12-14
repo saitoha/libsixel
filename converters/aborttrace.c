@@ -34,36 +34,56 @@
 
 #if defined(SIXEL_ENABLE_ABORT_TRACE)
 
-#include <errno.h>
-#include <limits.h>
-#include <signal.h>
-#include <stddef.h>
-#include <stdint.h>
 #include <stdlib.h>
 
-#if defined(HAVE_STRING_H)
-#include <string.h>
-#endif
-#if defined(HAVE_UNISTD_H)
-#include <unistd.h>
-#endif
-#if defined(HAVE_SYS_TYPES_H)
-#include <sys/types.h>
-#endif
-#if defined(HAVE_PROCESS_H)
-#include <process.h>
-#endif
+#if HAVE_ERRNO_H
+# include <errno.h>
+#endif  /* HAVE_ERRNO_H */
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif  /* HAVE_LIMITS_H */
+#if HAVE_SIGNAL_H
+# include <signal.h>
+#endif  /* HAVE_SIGNAL_H */
+#if HAVE_STDDEF_H
+# include <stddef.h>
+#endif  /* HAVE_STDDEF_H */
+#if HAVE_STDINT_H
+# include <stdint.h>
+#endif  /* HAVE_STDINT_H */
+#if HAVE_STRING_H
+# include <string.h>
+#endif  /* HAVE_STRING_H */
+#if HAVE_UNISTD_H
+# include <unistd.h>
+#endif  /* HAVE_UNISTD_H */
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif  /* HAVE_SYS_TYPES_H */
+#if HAVE_PROCESS_H
+# include <process.h>
+#endif  /* HAVE_PROCESS_H */
 
 #if defined(_WIN32)
-#include <io.h>
-#include <windows.h>
-#if defined(HAVE_DBGHELP)
-#include <dbghelp.h>
-#endif
+# include <io.h>
+# include <windows.h>
+# if HAVE_DBGHELP
+#  include <dbghelp.h>
+# endif
 #else
-#if defined(HAVE_EXECINFO_H)
-#include <execinfo.h>
-#endif
+# if HAVE_EXECINFO_H
+#  include <execinfo.h>
+# else
+/* On Haiku you need the libexecinfo_devel package to reference execinfo.h,
+ * but you can reference the symbol itself by declaring prototype.
+ */
+#  if HAVE_BACKTRACE
+int backtrace(void **buffer, int size);
+#  endif
+#  if HAVE_BACKTRACE_SYMBOLS_FD
+void backtrace_symbols_fd(void *const *buffer, int size, int fd);
+#  endif
+# endif
 #endif
 
 #define SIXEL_ABORTTRACE_STDERR_FD 2
