@@ -87,7 +87,7 @@ make_allocator(sixel_allocator_t **allocator_out)
     return status;
 }
 
-static SIXELSTATUS
+static SIXEL_TEST_UNUSED SIXELSTATUS
 make_rgb_frame(sixel_allocator_t *allocator,
                int width,
                int height,
@@ -202,7 +202,7 @@ end:
     return status;
 }
 
-static SIXELSTATUS
+static SIXEL_TEST_UNUSED SIXELSTATUS
 make_dither(sixel_allocator_t *allocator,
             int ncolors,
             sixel_dither_t **dither_out)
@@ -245,7 +245,7 @@ output_counter_write(char *data, int size, void *priv)
     return size;
 }
 
-static SIXELSTATUS
+static SIXEL_TEST_UNUSED SIXELSTATUS
 make_counter_output(sixel_allocator_t *allocator,
                     test_output_counter_t *counter,
                     sixel_output_t **output_out)
