@@ -127,6 +127,18 @@ filter_load_unit = executable('filter_load_tests',
   include_directories: project_inc,
   install: false)
 
+filter_dither_unit = executable('filter_dither_tests',
+  ['filter/filter_dither_tests.c'],
+  dependencies: [libsixel_dep],
+  include_directories: project_inc,
+  install: false)
+
+filter_encode_unit = executable('filter_encode_tests',
+  ['filter/filter_encode_tests.c'],
+  dependencies: [libsixel_dep],
+  include_directories: project_inc,
+  install: false)
+
 test('test_3000_filter_clip', filter_unit,
   env: env,
   protocol: 'tap',
@@ -170,6 +182,18 @@ test('test_3006_filter_vpte', filter_vpte_unit,
   suite: ['tap'])
 
 test('test_3007_filter_load', filter_load_unit,
+  env: env,
+  protocol: 'tap',
+  timeout: 120,
+  suite: ['tap'])
+
+test('test_3008_filter_dither', filter_dither_unit,
+  env: env,
+  protocol: 'tap',
+  timeout: 120,
+  suite: ['tap'])
+
+test('test_3009_filter_encode', filter_encode_unit,
   env: env,
   protocol: 'tap',
   timeout: 120,

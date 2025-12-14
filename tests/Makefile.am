@@ -38,7 +38,9 @@ FILTER_TESTS = filter/t/test_3000_filter_clip.t \
        filter/t/test_3004_filter_lookup.t \
        filter/t/test_3005_filter_final_merge.t \
        filter/t/test_3006_filter_vpte.t \
-       filter/t/test_3007_filter_load.t
+       filter/t/test_3007_filter_load.t \
+       filter/t/test_3008_filter_dither.t \
+       filter/t/test_3009_filter_encode.t
 
 TESTS = $(CLI_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
 COPY_TESTS = $(CLI_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
@@ -84,6 +86,7 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
              filter/filter_resize_tests.c filter/filter_colors_tests.c \
              filter/filter_lookup_tests.c filter/filter_final_merge_tests.c \
              filter/filter_vpte_tests.c filter/filter_load_tests.c \
+             filter/filter_dither_tests.c filter/filter_encode_tests.c \
              filter/filter_test_common.h
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
