@@ -21,8 +21,9 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
  * FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- *
- * Builtin loader covering SIXEL, PNM, GIF, and stb_image fallbacks.  This
+ */
+
+/* Builtin loader covering SIXEL, PNM, GIF, and stb_image fallbacks.  This
  * module keeps the heavyweight stb_image implementation isolated from the
  * registry so other backends avoid pulling in its macros and includes.
  */
