@@ -16,7 +16,7 @@ log_file="${artifact_dir}/python.log"
 tmp_dir="${artifact_dir}/tmp"
 
 mkdir -p "${artifact_dir}" "${tmp_dir}"
-: >"${log_file}"
+rm -f "${log_file}"
 
 tap_log_file="${log_file}"
 
