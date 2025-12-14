@@ -26,189 +26,185 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: ubuntu-latest
+          - label: freebsd 14.3 x86_64
+            os: ubuntu-latest
             runner: ubuntu-latest
             platform: freebsd
             cp_os: freebsd
             cp_arch: x86-64
             cp_version: '14.3'
             variant: freebsd
-            label: freebsd 14.3 x86_64
-          - os: ubuntu-latest
+          - label: freebsd 14.3 arm64
+            os: ubuntu-latest
             runner: ubuntu-latest
             platform: freebsd
             cp_os: freebsd
             cp_arch: arm64
             cp_version: '14.3'
             variant: freebsd
-            label: freebsd 14.3 arm64
-          - os: ubuntu-latest
+          - label: netbsd 10.1 x86_64
+            os: ubuntu-latest
             runner: ubuntu-latest
             platform: netbsd
             cp_os: netbsd
             cp_arch: x86-64
             cp_version: '10.1'
             variant: netbsd
-            label: netbsd 10.1 x86_64
-          - os: ubuntu-latest
+          - label: netbsd 10.1 arm64
+            os: ubuntu-latest
             runner: ubuntu-latest
             platform: netbsd
             cp_os: netbsd
             cp_arch: arm64
             cp_version: '10.1'
             variant: netbsd
-            label: netbsd 10.1 arm64
-          - os: ubuntu-latest
+          - label: openbsd 7.8 x86-64
+            os: ubuntu-latest
             runner: ubuntu-latest
             platform: openbsd
             cp_os: openbsd
             cp_arch: x86-64
             cp_version: '7.8'
             variant: openbsd
-            label: openbsd 7.8 x86-64
-#          - os: ubuntu-latest
+#          - label: openbsd 7.8 arm64
+#            os: ubuntu-latest
 #            runner: ubuntu-latest
 #            platform: openbsd
 #            cp_os: openbsd
 #            cp_arch: arm64
 #            cp_version: '7.8'
 #            variant: openbsd
-#            label: openbsd 7.8 arm64
-          - os: ubuntu-latest
+          - label: ubuntu x86_64 static-only
+            os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
             static_only: true
             variant: static-only
-            label: ubuntu x86_64 static-only
-          - os: ubuntu-latest
+          - label: ubuntu x86_64 no-simd
+            os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
             disable_simd: true
             variant: disable-simd
-            label: ubuntu x86_64 no-simd
-          - os: ubuntu-latest
+          - label: ubuntu x86_64 no-tools
+            os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
             disable_tools: true
             variant: disable-tools
-            label: ubuntu x86_64 no-tools
-          - os: ubuntu-latest
+          - label: ubuntu x86_64 no-threads
+            os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
             disable_threads: true
             variant: disable-threads
-            label: ubuntu x86_64 no-threads
-          - os: ubuntu-latest
+          - label: ubuntu x86_64 musl-cross
+            os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
             musl: true
             variant: musl-cross
-            label: ubuntu x86_64 musl-cross
-          - os: ubuntu-latest
+          - label: ubuntu i686
+            os: ubuntu-latest
             runner: ubuntu-latest
             sys: i686
             variant: default
-            label: ubuntu i686
-          - os: macos-latest
+          - label: macos aarch64
+            os: macos-latest
             runner: macos-latest
             sys: aarch64
             variant: default
-            label: macos aarch64
-          - os: macos-15
+          - label: macos x86_64
+            os: macos-15
             runner: macos-15
             sys: x86_64
             variant: default
-            label: macos x86_64
-          - os: windows-latest
+          - label: mingw64 static-only
+            os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
             static_only: true
             variant: static-only
-            label: mingw64 static-only
-          - os: windows-latest
+          - label: mingw64 no-simd
+            os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
             disable_simd: true
             variant: disable-simd
-            label: mingw64 no-simd
-          - os: windows-latest
+          - label: mingw64 no-tools
+            os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
             disable_tools: true
             variant: disable-tools
-            label: mingw64 no-tools
-          - os: windows-latest
+          - label: mingw64 no-threads
+            os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
             disable_threads: true
             variant: disable-threads
-            label: mingw64 no-threads
-          - os: windows-latest
+          - label: ucrt64
+            os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: UCRT64
             variant: default
-            label: ucrt64
-          - os: windows-latest
+          - label: clang64
+            os: windows-latest
             runner: windows-latest
             compiler: clang
             sys: CLANG64
             variant: default
-            label: clang64
-          - os: windows-latest
+          - label: clang-cl
+            os: windows-latest
             runner: windows-latest
             compiler: clang-cl
             sys: MSVC
             variant: clang-cl
-            label: clang-cl
-          - os: windows-latest
+          - label: msvc
+            os: windows-latest
             runner: windows-latest
             compiler: cl
             sys: MSVC
             variant: default
-            label: msvc
-          - os: windows-latest
+          - label: msvc vcpkg-libpng
+            os: windows-latest
             runner: windows-latest
             compiler: cl
             sys: MSVC
             variant: vcpkg-libpng
             vcpkg_libpng: true
-            label: msvc vcpkg-libpng
-          - os: windows-latest
+          - label: msvc vcpkg-libjpeg
+            os: windows-latest
             runner: windows-latest
             compiler: cl
             sys: MSVC
             variant: vcpkg-libjpeg
             vcpkg_libjpeg: true
-            label: msvc vcpkg-libjpeg
-          - os: windows-latest
+          - label: mingw32
+            os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW32
             variant: default
-            label: mingw32
-          - os: windows-latest
+          - label: msys
+            os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MSYS
             variant: default
-            label: msys
-          - os: windows-latest
+          - label: cygwin
+            os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: CYGWIN
             variant: default
-            label: cygwin
 
     steps:
-    - name: Configure git EOL
-      if: runner.os == 'Windows'
-      run: git config --global core.autocrlf false
-
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
@@ -1537,10 +1533,6 @@ jobs:
             variant: default
 
     steps:
-    - name: Configure git EOL
-      if: runner.os == 'Windows'
-      run: git config --global core.autocrlf false
-
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
