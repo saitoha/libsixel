@@ -1210,6 +1210,8 @@ def sixel_encoder_encode(encoder, filename):
     import locale
     import os
     language, encoding = locale.getdefaultlocale()
+    if not encoding:
+        encoding = "ascii"
 
     # Proactively validate the input path on the Python side so callers get a
     # deterministic exception even if a platform-specific libc or loader fails
