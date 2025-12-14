@@ -34,6 +34,11 @@ typedef struct test_progress {
     int aborted;
 } test_progress_t;
 
+typedef struct test_output_counter {
+    int calls;
+    int bytes;
+} test_output_counter_t;
+
 static void
 progress_cb(sixel_filter_t *filter,
             sixel_filter_event_t event,
@@ -220,6 +225,48 @@ make_dither(sixel_allocator_t *allocator,
     *dither_out = dither;
 
     return SIXEL_OK;
+}
+
+static int
+output_counter_write(char *data, int size, void *priv)
+{
+    test_output_counter_t *counter;
+
+    counter = (test_output_counter_t *)priv;
+    if (counter == NULL) {
+        return 0;
+    }
+
+    counter->calls += 1;
+    counter->bytes += size;
+
+    (void)data;
+
+    return size;
+}
+
+static SIXELSTATUS
+make_counter_output(sixel_allocator_t *allocator,
+                    test_output_counter_t *counter,
+                    sixel_output_t **output_out)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_FALSE;
+
+    if (allocator == NULL || counter == NULL || output_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    counter->calls = 0;
+    counter->bytes = 0;
+
+    status = sixel_output_new(output_out,
+                              output_counter_write,
+                              counter,
+                              allocator);
+
+    return status;
 }
 
 #endif /* LIBSIXEL_TESTS_FILTER_TEST_COMMON_H */
