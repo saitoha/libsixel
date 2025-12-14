@@ -674,7 +674,7 @@ jobs:
           gmake V=1
 
     - name: Configure and build (non-Windows)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os != 'Windows'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && runner.os != 'Windows'
       shell: bash
       run: |
         enable_gcov_flag="--enable-gcov"
