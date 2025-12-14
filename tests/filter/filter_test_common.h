@@ -18,6 +18,7 @@
 #include <sixel.h>
 
 #include "allocator.h"
+#include "dither.h"
 #include "frame.h"
 
 #if defined(__GNUC__)
@@ -194,6 +195,31 @@ end:
     }
 
     return status;
+}
+
+static SIXELSTATUS
+make_dither(sixel_allocator_t *allocator,
+            int ncolors,
+            sixel_dither_t **dither_out)
+{
+    SIXELSTATUS status;
+    sixel_dither_t *dither;
+
+    status = SIXEL_FALSE;
+    dither = NULL;
+
+    if (allocator == NULL || dither_out == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_dither_new(&dither, ncolors, allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    *dither_out = dither;
+
+    return SIXEL_OK;
 }
 
 #endif /* LIBSIXEL_TESTS_FILTER_TEST_COMMON_H */
