@@ -1,8 +1,8 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Simple clip filter tests. Each test emits TAP output so the surrounding
- * harness can be a thin shell wrapper.
+ * Unit tests for the resize filter. These cases verify dimension
+ * calculations, float preference, and progress reporting.
  */
 
 #include "config.h"
@@ -11,26 +11,25 @@
 
 #include <sixel.h>
 
-#include "filter-clip.h"
 #include "filter-factory.h"
+#include "filter-resize.h"
 #include "filter.h"
 #include "filter_test_common.h"
 
-static int test_clip_noop(void)
+static int
+test_resize_changes_dimensions(void)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_filter_t *filter;
-    sixel_filter_clip_config_t config;
-    sixel_frame_t *input_frame;
-    sixel_frame_t *output_frame;
+    sixel_filter_resize_config_t config;
+    sixel_frame_t *frame;
     test_progress_t progress;
 
     status = SIXEL_FALSE;
     allocator = NULL;
     filter = NULL;
-    input_frame = NULL;
-    output_frame = NULL;
+    frame = NULL;
     progress.began = 0;
     progress.progressed = 0;
     progress.completed = 0;
@@ -41,17 +40,20 @@ static int test_clip_noop(void)
         goto cleanup;
     }
 
-    status = make_rgb_frame(allocator, 2, 2, &input_frame);
+    status = make_rgb_frame(allocator, 2, 2, &frame);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
 
-    config.clip_x = 0;
-    config.clip_y = 0;
-    config.clip_width = 0;
-    config.clip_height = 0;
+    config.pixel_width = 4;
+    config.pixel_height = 2;
+    config.percent_width = 0;
+    config.percent_height = 0;
+    config.method_for_resampling = SIXEL_RES_NEAREST;
+    config.prefer_float32 = 0;
+    config.planner_scale_pixelformat = frame->pixelformat;
 
-    status = sixel_filter_factory_create_by_kind(SIXEL_FILTER_KIND_CLIP,
+    status = sixel_filter_factory_create_by_kind(SIXEL_FILTER_KIND_RESIZE,
                                                  &config,
                                                  &filter);
     if (SIXEL_FAILED(status)) {
@@ -59,13 +61,13 @@ static int test_clip_noop(void)
     }
 
     sixel_filter_bind_input(filter,
-                            &input_frame,
-                            input_frame->pixelformat,
-                            input_frame->colorspace);
+                            &frame,
+                            frame->pixelformat,
+                            frame->colorspace);
     sixel_filter_bind_output(filter,
-                             &output_frame,
-                             input_frame->pixelformat,
-                             input_frame->colorspace);
+                             &frame,
+                             frame->pixelformat,
+                             frame->colorspace);
     sixel_filter_set_progress(filter, progress_cb, &progress, 1);
 
     status = sixel_filter_run(filter, allocator, NULL);
@@ -73,12 +75,7 @@ static int test_clip_noop(void)
         goto cleanup;
     }
 
-    if (input_frame != output_frame) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto cleanup;
-    }
-
-    if (input_frame->width != 2 || input_frame->height != 2) {
+    if (frame->width != 4 || frame->height != 2) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
@@ -91,52 +88,50 @@ static int test_clip_noop(void)
 cleanup:
     sixel_filter_teardown(filter);
     sixel_filter_free(filter);
-    sixel_frame_unref(input_frame);
+    sixel_frame_unref(frame);
     sixel_allocator_unref(allocator);
 
     return SIXEL_SUCCEEDED(status);
 }
 
-static int test_clip_float_accepts_format(void)
+static int
+test_resize_prefers_float_when_requested(void)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_filter_t *filter;
-    sixel_filter_clip_config_t config;
-    sixel_frame_t *input_frame;
-    sixel_frame_t *output_frame;
+    sixel_filter_resize_config_t config;
+    sixel_frame_t *frame;
     test_progress_t progress;
-    float expected;
 
     status = SIXEL_FALSE;
     allocator = NULL;
     filter = NULL;
-    input_frame = NULL;
-    output_frame = NULL;
+    frame = NULL;
     progress.began = 0;
     progress.progressed = 0;
     progress.completed = 0;
     progress.aborted = 0;
-    expected = 0.0f;
 
     status = make_allocator(&allocator);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
 
-    status = make_float_frame(allocator, 2, 1, &input_frame);
+    status = make_float_frame(allocator, 1, 1, &frame);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
     }
 
-    expected = input_frame->pixels.f32ptr[3];
+    config.pixel_width = 2;
+    config.pixel_height = 2;
+    config.percent_width = 0;
+    config.percent_height = 0;
+    config.method_for_resampling = SIXEL_RES_BICUBIC;
+    config.prefer_float32 = 1;
+    config.planner_scale_pixelformat = frame->pixelformat;
 
-    config.clip_x = 1;
-    config.clip_y = 0;
-    config.clip_width = 1;
-    config.clip_height = 1;
-
-    status = sixel_filter_factory_create_by_name("clip",
+    status = sixel_filter_factory_create_by_name("resize",
                                                  &config,
                                                  &filter);
     if (SIXEL_FAILED(status)) {
@@ -144,13 +139,13 @@ static int test_clip_float_accepts_format(void)
     }
 
     sixel_filter_bind_input(filter,
-                            &input_frame,
-                            input_frame->pixelformat,
-                            input_frame->colorspace);
+                            &frame,
+                            frame->pixelformat,
+                            frame->colorspace);
     sixel_filter_bind_output(filter,
-                             &output_frame,
-                             input_frame->pixelformat,
-                             input_frame->colorspace);
+                             &frame,
+                             frame->pixelformat,
+                             frame->colorspace);
     sixel_filter_set_progress(filter, progress_cb, &progress, 1);
 
     status = sixel_filter_run(filter, allocator, NULL);
@@ -158,18 +153,12 @@ static int test_clip_float_accepts_format(void)
         goto cleanup;
     }
 
-    if (output_frame == NULL || output_frame->pixelformat !=
-            SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+    if (frame->pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
 
-    if (output_frame->width != 1 || output_frame->height != 1) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto cleanup;
-    }
-
-    if (fabsf(output_frame->pixels.f32ptr[0] - expected) > 0.0001f) {
+    if (frame->width != 2 || frame->height != 2) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
@@ -182,30 +171,31 @@ static int test_clip_float_accepts_format(void)
 cleanup:
     sixel_filter_teardown(filter);
     sixel_filter_free(filter);
-    sixel_frame_unref(input_frame);
+    sixel_frame_unref(frame);
     sixel_allocator_unref(allocator);
 
     return SIXEL_SUCCEEDED(status);
 }
 
-int main(void)
+int
+main(void)
 {
     int success;
 
     success = 1;
     printf("1..2\n");
 
-    if (test_clip_noop()) {
-        printf("ok 1 - clip filter skips empty region\n");
+    if (test_resize_changes_dimensions()) {
+        printf("ok 1 - resize filter updates frame dimensions\n");
     } else {
-        printf("not ok 1 - clip filter skips empty region\n");
+        printf("not ok 1 - resize filter updates frame dimensions\n");
         success = 0;
     }
 
-    if (test_clip_float_accepts_format()) {
-        printf("ok 2 - clip filter trims float32 frames\n");
+    if (test_resize_prefers_float_when_requested()) {
+        printf("ok 2 - resize filter keeps float frames when preferred\n");
     } else {
-        printf("not ok 2 - clip filter trims float32 frames\n");
+        printf("not ok 2 - resize filter keeps float frames when preferred\n");
         success = 0;
     }
 

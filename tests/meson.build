@@ -85,7 +85,31 @@ filter_unit = executable('filter_tests',
   include_directories: project_inc,
   install: false)
 
+filter_sample_unit = executable('filter_sample_tests',
+  ['filter/filter_sample_tests.c'],
+  dependencies: [libsixel_dep],
+  include_directories: project_inc,
+  install: false)
+
+filter_resize_unit = executable('filter_resize_tests',
+  ['filter/filter_resize_tests.c'],
+  dependencies: [libsixel_dep],
+  include_directories: project_inc,
+  install: false)
+
 test('test_3000_filter_clip', filter_unit,
+  env: env,
+  protocol: 'tap',
+  timeout: 120,
+  suite: ['tap'])
+
+test('test_3001_filter_sample', filter_sample_unit,
+  env: env,
+  protocol: 'tap',
+  timeout: 120,
+  suite: ['tap'])
+
+test('test_3002_filter_resize', filter_resize_unit,
   env: env,
   protocol: 'tap',
   timeout: 120,
