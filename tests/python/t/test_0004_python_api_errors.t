@@ -21,7 +21,7 @@ source_image=$(cd "$(dirname "$0")/../../.." && pwd)/images/autumn.png
 mkdir -p "${artifact_dir}" "${tmp_dir}"
 rm -f "${log_file}"
 
-printf 'source_image=%s\n' "${source_image}" >>"${log_file}"
+echo "source_image=${source_image}" > "${log_file}"
 
 tap_log_file="${log_file}"
 
