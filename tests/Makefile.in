@@ -627,7 +627,7 @@ PYTHON_TESTS = python/t/test_0001_python_bindings.t \
        python/t/test_0005_python_resource_management.t
 
 FILTER_TESTS = filter/t/test_3000_filter_clip.t
-COPY_TESTS = $(CLI_TESTS) $(PYTHON_TESTS)
+COPY_TESTS = $(CLI_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES = \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/test-gdk-pixbuf-loader.c \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
