@@ -22,12 +22,14 @@ typedef struct sixel_filter_final_merge_config {
 } sixel_filter_final_merge_config_t;
 
 SIXELSTATUS
-sixel_filter_final_merge_init(sixel_filter_t *filter,
-                              const sixel_filter_final_merge_config_t *config);
+sixel_filter_final_merge_init(
+    sixel_filter_t *filter,
+    const sixel_filter_final_merge_config_t *config);
 
-SIXELSTATUS
-sixel_filter_final_merge_apply(const sixel_filter_final_merge_config_t *config,
-                               sixel_logger_t *logger);
+SIXELAPI SIXELSTATUS
+sixel_filter_final_merge_apply(
+    const sixel_filter_final_merge_config_t *config,
+    sixel_logger_t *logger);
 
 #endif /* LIBSIXEL_FILTER_FINAL_MERGE_H */
 

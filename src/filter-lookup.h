@@ -41,11 +41,12 @@ typedef struct sixel_filter_lookup_result {
     int owned;
 } sixel_filter_lookup_result_t;
 
-SIXELSTATUS
-sixel_filter_lookup_build(const sixel_filter_lookup_config_t *config,
-                          sixel_allocator_t *allocator,
-                          sixel_logger_t *logger,
-                          sixel_filter_lookup_result_t *result_out);
+SIXELAPI SIXELSTATUS
+sixel_filter_lookup_build(
+    const sixel_filter_lookup_config_t *config,
+    sixel_allocator_t *allocator,
+    sixel_logger_t *logger,
+    sixel_filter_lookup_result_t *result_out);
 
 SIXELSTATUS
 sixel_filter_lookup_init(sixel_filter_t *filter,
