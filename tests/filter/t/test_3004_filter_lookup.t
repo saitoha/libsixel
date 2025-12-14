@@ -10,6 +10,12 @@ fi
 
 CC_BIN="${CC:-cc}"
 LIBTOOL_BIN="${TOP_BUILDDIR}/libtool"
+# Honor build-time flags (coverage, warnings) when compiling the
+# filter test binaries so Windows and gcov builds link correctly.
+CFLAGS_EXTRA="${FILTER_TEST_CFLAGS:-}"
+CPPFLAGS_EXTRA="${FILTER_TEST_CPPFLAGS:-}"
+LDFLAGS_EXTRA="${FILTER_TEST_LDFLAGS:-}"
+LIBS_EXTRA="${FILTER_TEST_LIBS:-}"
 SRC="${TOP_SRCDIR}/tests/filter/filter_lookup_tests.c"
 OBJ="${ARTIFACT_ROOT:-.}/filter_lookup_tests.lo"
 BIN="${ARTIFACT_ROOT:-.}/filter_lookup_tests"
@@ -17,6 +23,7 @@ BIN="${ARTIFACT_ROOT:-.}/filter_lookup_tests"
 mkdir -p "${ARTIFACT_ROOT:-.}"
 
 "${LIBTOOL_BIN}" --mode=compile --tag=CC "${CC_BIN}" \
+    ${CPPFLAGS_EXTRA} ${CFLAGS_EXTRA} \
     -I"${TOP_BUILDDIR}" \
     -I"${TOP_BUILDDIR}/include" \
     -I"${TOP_SRCDIR}/include" \
@@ -25,6 +32,8 @@ mkdir -p "${ARTIFACT_ROOT:-.}"
     -c "${SRC}" -o "${OBJ}"
 
 "${LIBTOOL_BIN}" --mode=link --tag=CC "${CC_BIN}" \
-    -o "${BIN}" "${OBJ}" "${TOP_BUILDDIR}/src/libsixel.la"
+    ${LDFLAGS_EXTRA} \
+    -o "${BIN}" "${OBJ}" "${TOP_BUILDDIR}/src/libsixel.la" \
+    ${LIBS_EXTRA}
 
 exec "${BIN}"
