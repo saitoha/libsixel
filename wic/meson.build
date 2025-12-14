@@ -29,6 +29,7 @@ wic_sources = files(
   '../src/status.c',
   '../src/timer.c',
   '../src/logger.c',
+  '../src/probe.c',
   '../src/compat_stub.c',
 )
 
