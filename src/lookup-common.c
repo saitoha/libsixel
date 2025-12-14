@@ -69,7 +69,7 @@ sixel_lookup_parse_flag(char const *text, int default_value)
     return value;
 }
 
-int
+SIXELAPI int
 sixel_lookup_env_shared_certlut(void)
 {
     if (sixel_lookup_certlut_shared < 0) {
@@ -82,7 +82,7 @@ sixel_lookup_env_shared_certlut(void)
     return sixel_lookup_certlut_shared;
 }
 
-int
+SIXELAPI int
 sixel_lookup_env_shared_5bit(void)
 {
     if (sixel_lookup_5bit_shared < 0) {
@@ -94,7 +94,7 @@ sixel_lookup_env_shared_5bit(void)
     return sixel_lookup_5bit_shared;
 }
 
-int
+SIXELAPI int
 sixel_lookup_env_shared_6bit(void)
 {
     if (sixel_lookup_6bit_shared < 0) {
@@ -106,19 +106,19 @@ sixel_lookup_env_shared_6bit(void)
     return sixel_lookup_6bit_shared;
 }
 
-void
+SIXELAPI void
 sixel_lookup_set_parallel_dither_active(int active)
 {
     sixel_lookup_parallel_active = (active != 0) ? 1 : 0;
 }
 
-int
+SIXELAPI int
 sixel_lookup_parallel_dither_active(void)
 {
     return sixel_lookup_parallel_active;
 }
 
-SIXELSTATUS
+SIXELAPI SIXELSTATUS
 sixel_lut_new(sixel_lut_t **out,
               int policy,
               sixel_allocator_t *allocator)
@@ -211,7 +211,7 @@ sixel_lut_configure(sixel_lut_t *lut,
                                        pixelformat);
 }
 
-int
+SIXELAPI int
 sixel_lut_map_pixel(sixel_lut_t *lut, unsigned char const *pixel)
 {
     if (lut == NULL) {
@@ -237,7 +237,7 @@ sixel_lut_clear(sixel_lut_t *lut)
     lut->input_is_float = 0;
 }
 
-void
+SIXELAPI void
 sixel_lut_unref(sixel_lut_t *lut)
 {
     if (lut == NULL) {
