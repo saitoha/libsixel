@@ -87,6 +87,8 @@ sixel_pixbuf_emit_prepared(SixelPixbufContext *context,
                            GdkPixbuf *pixbuf,
                            GError **error)
 {
+    (void) error;
+
     if (context->prepared_func != NULL) {
         context->prepared_func(pixbuf, NULL, context->user_data);
     }

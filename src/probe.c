@@ -434,7 +434,7 @@ sixel_probe_is_probable(uint8_t const *data, size_t len)
     sixel_allocator_t *allocator;
     unsigned int *params;
     size_t paramsize;
-    size_t offset;
+    size_t offset = 0;
 
     if (data == NULL) {
         return SIXEL_BAD_ARGUMENT;
