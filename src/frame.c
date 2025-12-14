@@ -1484,42 +1484,13 @@ clip(unsigned char *pixels,
     /* unused */ (void) sy;
     /* unused */ (void) cx;
 
-    switch (pixelformat) {
-    case SIXEL_PIXELFORMAT_PAL8:
-    case SIXEL_PIXELFORMAT_G8:
-    case SIXEL_PIXELFORMAT_RGB888:
-    case SIXEL_PIXELFORMAT_RGBFLOAT32:
-        depth = sixel_helper_compute_depth(pixelformat);
-        if (depth < 0) {
-            status = SIXEL_LOGIC_ERROR;
-            /*
-             * We funnel formatting through the compat helper so that MSVC
-             * receives explicit bounds information.
-             */
-            nwrite = sixel_compat_snprintf(
-                message,
-                sizeof(message),
-                "clip: sixel_helper_compute_depth(%08x) failed.",
-                pixelformat);
-            if (nwrite > 0) {
-                sixel_helper_set_additional_message(message);
-            }
-            goto end;
-        }
-
-        dst = pixels;
-        src = pixels + cy * sx * depth + cx * depth;
-        for (y = 0; y < ch; y++) {
-            sixel_compat_memmove(dst, src, (size_t)(cw * depth));
-            dst += (cw * depth);
-            src += (sx * depth);
-        }
-
-        status = SIXEL_OK;
-
-        break;
-    default:
+    depth = sixel_helper_compute_depth(pixelformat);
+    if (depth < 0) {
         status = SIXEL_BAD_ARGUMENT;
+        /*
+         * The compat helper keeps the format string bounded for MSVC while
+         * reporting the offending pixelformat to the caller.
+         */
         nwrite = sixel_compat_snprintf(
             message,
             sizeof(message),
@@ -1528,8 +1499,18 @@ clip(unsigned char *pixels,
         if (nwrite > 0) {
             sixel_helper_set_additional_message(message);
         }
-        break;
+        goto end;
     }
+
+    dst = pixels;
+    src = pixels + cy * sx * depth + cx * depth;
+    for (y = 0; y < ch; y++) {
+        memmove(dst, src, (size_t)(cw * depth));
+        dst += (cw * depth);
+        src += (sx * depth);
+    }
+
+    status = SIXEL_OK;
 
 end:
     return status;
