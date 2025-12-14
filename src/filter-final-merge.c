@@ -110,7 +110,7 @@ sixel_filter_final_merge_init(sixel_filter_t *filter,
     return SIXEL_OK;
 }
 
-SIXELSTATUS
+SIXELAPI SIXELSTATUS
 sixel_filter_final_merge_apply(const sixel_filter_final_merge_config_t *config,
                                sixel_logger_t *logger)
 {
