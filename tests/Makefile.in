@@ -628,7 +628,9 @@ PYTHON_TESTS = python/t/test_0001_python_bindings.t \
 
 FILTER_TESTS = filter/t/test_3000_filter_clip.t \
        filter/t/test_3001_filter_sample.t \
-       filter/t/test_3002_filter_resize.t
+       filter/t/test_3002_filter_resize.t \
+       filter/t/test_3003_filter_colors.t \
+       filter/t/test_3004_filter_lookup.t
 
 COPY_TESTS = $(CLI_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES = \
@@ -665,7 +667,8 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
              data/baseline/*.json data/inputs/formats/* \
              data/resolutions/*.png data/corrupted/* \
              filter/filter_tests.c filter/filter_sample_tests.c \
-             filter/filter_resize_tests.c filter/filter_test_common.h
+             filter/filter_resize_tests.c filter/filter_colors_tests.c \
+             filter/filter_lookup_tests.c filter/filter_test_common.h
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
