@@ -4798,6 +4798,7 @@ sixel_encoder_encode_frame(
     int palette_job_initialized;
     int palette_ready;
     sixel_encoding_planner_t *planner;
+    int clip_active;
 
     fn_write = sixel_write_callback;
     write_callback = sixel_write_callback;
@@ -4816,6 +4817,7 @@ sixel_encoder_encode_frame(
     palette_job_initialized = 0;
     palette_ready = 0;
     planner = NULL;
+    clip_active = 0;
     if (encoder != NULL) {
         assessment = encoder->assessment_observer;
         planner = &encoder->planner;
@@ -4856,6 +4858,7 @@ sixel_encoder_encode_frame(
     palette_ready = sixel_encoding_palette_job_ready(encoder,
                                                      planner,
                                                      frame);
+    clip_active = (encoder->clipwidth > 0 && encoder->clipheight > 0);
     if (encoder->verbose) {
         sixel_encoding_planner_dump(planner,
                                     encoder,
@@ -4899,30 +4902,32 @@ sixel_encoder_encode_frame(
      */
 
     if (encoder->clipfirst) {
-        width_before = sixel_frame_get_width(frame);
-        height_before = sixel_frame_get_height(frame);
-        sixel_encoder_log_stage(encoder,
-                                frame,
-                                "crop",
-                                "worker",
-                                "start",
-                                "size=%dx%d",
-                                width_before,
-                                height_before);
-        status = sixel_encoder_do_clip(encoder, frame);
-        if (SIXEL_FAILED(status)) {
-            goto end;
+        if (clip_active != 0) {
+            width_before = sixel_frame_get_width(frame);
+            height_before = sixel_frame_get_height(frame);
+            sixel_encoder_log_stage(encoder,
+                                    frame,
+                                    "crop",
+                                    "worker",
+                                    "start",
+                                    "size=%dx%d",
+                                    width_before,
+                                    height_before);
+            status = sixel_encoder_do_clip(encoder, frame);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            width_after = sixel_frame_get_width(frame);
+            height_after = sixel_frame_get_height(frame);
+            sixel_encoder_log_stage(encoder,
+                                    frame,
+                                    "crop",
+                                    "worker",
+                                    "finish",
+                                    "result=%dx%d",
+                                    width_after,
+                                    height_after);
         }
-        width_after = sixel_frame_get_width(frame);
-        height_after = sixel_frame_get_height(frame);
-        sixel_encoder_log_stage(encoder,
-                                frame,
-                                "crop",
-                                "worker",
-                                "finish",
-                                "result=%dx%d",
-                                width_after,
-                                height_after);
         if (assessment != NULL) {
             sixel_assessment_stage_transition(
                 assessment,
@@ -4982,30 +4987,32 @@ sixel_encoder_encode_frame(
                 assessment,
                 SIXEL_ASSESSMENT_STAGE_CROP);
         }
-        width_before = sixel_frame_get_width(frame);
-        height_before = sixel_frame_get_height(frame);
-        sixel_encoder_log_stage(encoder,
-                                frame,
-                                "crop",
-                                "worker",
-                                "start",
-                                "size=%dx%d",
-                                width_before,
-                                height_before);
-        status = sixel_encoder_do_clip(encoder, frame);
-        if (SIXEL_FAILED(status)) {
-            goto end;
+        if (clip_active != 0) {
+            width_before = sixel_frame_get_width(frame);
+            height_before = sixel_frame_get_height(frame);
+            sixel_encoder_log_stage(encoder,
+                                    frame,
+                                    "crop",
+                                    "worker",
+                                    "start",
+                                    "size=%dx%d",
+                                    width_before,
+                                    height_before);
+            status = sixel_encoder_do_clip(encoder, frame);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            width_after = sixel_frame_get_width(frame);
+            height_after = sixel_frame_get_height(frame);
+            sixel_encoder_log_stage(encoder,
+                                    frame,
+                                    "crop",
+                                    "worker",
+                                    "finish",
+                                    "result=%dx%d",
+                                    width_after,
+                                    height_after);
         }
-        width_after = sixel_frame_get_width(frame);
-        height_after = sixel_frame_get_height(frame);
-        sixel_encoder_log_stage(encoder,
-                                frame,
-                                "crop",
-                                "worker",
-                                "finish",
-                                "result=%dx%d",
-                                width_after,
-                                height_after);
     }
 
     if (assessment != NULL) {
