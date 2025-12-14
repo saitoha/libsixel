@@ -209,9 +209,9 @@ jobs:
       if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
       run: git config --global core.autocrlf false
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
-        fetch-depth: 0
+        fetch-depth: 1
 
     - name: Normalize line endings (Windows)
       if: runner.os == 'Windows'
@@ -969,9 +969,9 @@ jobs:
               --disable-dependency-tracking --enable-wiccodec
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
-        fetch-depth: 0
+        fetch-depth: 1
 
     - name: Prepare Homebrew cache
       if: runner.os == 'macOS'
@@ -1156,9 +1156,9 @@ jobs:
       if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
       run: git config --global core.autocrlf false
 
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
-        fetch-depth: 0
+        fetch-depth: 1
 
     - name: Normalize line endings (Windows)
       if: runner.os == 'Windows'
@@ -1278,9 +1278,9 @@ jobs:
               -Dwic=enabled -Dwiccodec=enabled
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
-        fetch-depth: 0
+        fetch-depth: 1
 
     - name: Install Meson toolchain (non-Windows)
       if: runner.os != 'Windows'
@@ -1537,9 +1537,9 @@ jobs:
             variant: default
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
-        fetch-depth: 0
+        fetch-depth: 1
 
     - name: Normalize line endings (Windows)
       if: runner.os == 'Windows'
