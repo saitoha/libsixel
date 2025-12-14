@@ -247,7 +247,7 @@ sixel_filter_factory_create_entry(const sixel_filter_factory_entry_t *entry,
     return SIXEL_OK;
 }
 
-SIXELSTATUS
+SIXELAPI SIXELSTATUS
 sixel_filter_factory_create_by_name(const char *name,
                                     const void *config,
                                     sixel_filter_t **filter_out)
@@ -274,7 +274,7 @@ sixel_filter_factory_create_by_name(const char *name,
     return SIXEL_BAD_ARGUMENT;
 }
 
-SIXELSTATUS
+SIXELAPI SIXELSTATUS
 sixel_filter_factory_create_by_kind(sixel_filter_kind_t kind,
                                     const void *config,
                                     sixel_filter_t **filter_out)
