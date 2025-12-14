@@ -205,6 +205,10 @@ jobs:
             variant: default
 
     steps:
+    - name: Configure git EOL
+      if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
+      run: git config --global core.autocrlf false
+
     - uses: actions/checkout@v4
       with:
         fetch-depth: 0
@@ -1149,7 +1153,7 @@ jobs:
       ASAN_LDFLAGS: "-fsanitize=address"
     steps:
     - name: Configure git EOL
-      if: runner.os == 'Windows'
+      if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
       run: git config --global core.autocrlf false
 
     - uses: actions/checkout@v4
