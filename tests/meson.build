@@ -48,7 +48,8 @@ cli_tests = ['test_0001_01_invalid_positional.t',
              'test_0018_lsqa_regression.t',
              'test_0019_python_wheel.t',
              'test_0020_mapfile_io.t',
-             'test_0021_palette_fallback.t']
+             'test_0021_palette_fallback.t',
+             'test_0021_pipeline_planner.t']
 
 cli_depends = {
   'test_0018_lsqa_regression.t': [lsqa_bin],

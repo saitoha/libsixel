@@ -1,29 +1,30 @@
 CLI_TESTS = cli/t/test_0001_01_invalid_positional.t \
-	cli/t/test_0001_02_invalid_option_arguments.t \
-	cli/t/test_0001_03_invalid_option_combinations.t \
-	cli/t/test_0002_stdin.t \
-	cli/t/test_0003_information.t \
-	cli/t/test_0004_conversion_options_01.t \
-	cli/t/test_0004_conversion_options_02.t \
-	cli/t/test_0004_conversion_options_03.t \
-	cli/t/test_0004_conversion_options_04.t \
-	cli/t/test_0005_dcs_arguments.t \
-	cli/t/test_0006_dcs_variations.t \
-	cli/t/test_0007_animation.t \
-	cli/t/test_0008_progressive_jpeg.t \
-	cli/t/test_0009_pngsuite.t \
-	cli/t/test_0010_curl.t \
-	cli/t/test_0011_basic.t \
-	cli/t/test_0012_regressions.t \
-	cli/t/test_0013_documentation.t \
-	cli/t/test_0014_option_matching.t \
-	cli/t/test_0015_argument_shift.t \
-	cli/t/test_0016_assessment_spool.t \
-        cli/t/test_0017_clipboard.t \
-        cli/t/test_0018_lsqa_regression.t \
-        cli/t/test_0019_python_wheel.t \
-        cli/t/test_0020_mapfile_io.t \
-        cli/t/test_0021_palette_fallback.t
+       cli/t/test_0001_02_invalid_option_arguments.t \
+       cli/t/test_0001_03_invalid_option_combinations.t \
+       cli/t/test_0002_stdin.t \
+       cli/t/test_0003_information.t \
+       cli/t/test_0004_conversion_options_01.t \
+       cli/t/test_0004_conversion_options_02.t \
+       cli/t/test_0004_conversion_options_03.t \
+       cli/t/test_0004_conversion_options_04.t \
+       cli/t/test_0005_dcs_arguments.t \
+       cli/t/test_0006_dcs_variations.t \
+       cli/t/test_0007_animation.t \
+       cli/t/test_0008_progressive_jpeg.t \
+       cli/t/test_0009_pngsuite.t \
+       cli/t/test_0010_curl.t \
+       cli/t/test_0011_basic.t \
+       cli/t/test_0012_regressions.t \
+       cli/t/test_0013_documentation.t \
+       cli/t/test_0014_option_matching.t \
+       cli/t/test_0015_argument_shift.t \
+       cli/t/test_0016_assessment_spool.t \
+       cli/t/test_0017_clipboard.t \
+       cli/t/test_0018_lsqa_regression.t \
+       cli/t/test_0019_python_wheel.t \
+       cli/t/test_0020_mapfile_io.t \
+       cli/t/test_0021_pipeline_planner.t \
+       cli/t/test_0021_palette_fallback.t
 
 PYTHON_TESTS = python/t/test_0001_python_bindings.t \
        python/t/test_0002_python_api_formats.t \
