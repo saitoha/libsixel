@@ -36,27 +36,27 @@ extern "C" {
 
 typedef struct sixel_lut sixel_lut_t;
 
-SIXELSTATUS
+SIXELAPI SIXELSTATUS
 sixel_lut_new(sixel_lut_t **out,
               int policy,
               sixel_allocator_t *allocator);
 
-void
+SIXELAPI void
 sixel_lookup_set_parallel_dither_active(int active);
 
-int
+SIXELAPI int
 sixel_lookup_parallel_dither_active(void);
 
-int
+SIXELAPI int
 sixel_lookup_env_shared_certlut(void);
 
-int
+SIXELAPI int
 sixel_lookup_env_shared_5bit(void);
 
-int
+SIXELAPI int
 sixel_lookup_env_shared_6bit(void);
 
-void
+SIXELAPI void
 sixel_lut_unref(sixel_lut_t *lut);
 
 /*
@@ -64,7 +64,7 @@ sixel_lut_unref(sixel_lut_t *lut);
  * the underlying color space.  Each weight scales the corresponding channel
  * when evaluating palette distance.
  */
-SIXELSTATUS
+SIXELAPI SIXELSTATUS
 sixel_lut_configure(sixel_lut_t *lut,
                     unsigned char const *palette,
                     int depth,
@@ -77,7 +77,7 @@ sixel_lut_configure(sixel_lut_t *lut,
                     int pixelformat);
 
 /* lookup */
-int
+SIXELAPI int
 sixel_lut_map_pixel(sixel_lut_t *lut, unsigned char const *pixel);
 
 #ifdef __cplusplus
