@@ -916,7 +916,7 @@ jobs:
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Capture coverage (Linux)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os == 'Linux' && (matrix.sys || '') != 'i686' && !(matrix.musl || false)
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && runner.os == 'Linux' && (matrix.sys || '') != 'i686' && !(matrix.musl || false)
       shell: bash
       run: |
         gcovr -r . --lcov -o coverage.info \
