@@ -35,7 +35,7 @@ sixel_filter_emit_progress(sixel_filter_t *filter, sixel_filter_event_t event)
     }
 }
 
-void
+SIXELAPI void
 sixel_filter_clear(sixel_filter_t *filter)
 {
     if (filter == NULL) {
@@ -45,7 +45,7 @@ sixel_filter_clear(sixel_filter_t *filter)
     memset(filter, 0, sizeof(*filter));
 }
 
-SIXELSTATUS
+SIXELAPI SIXELSTATUS
 sixel_filter_alloc(sixel_filter_t **filter_out)
 {
     sixel_filter_t *filter;
@@ -68,7 +68,7 @@ sixel_filter_alloc(sixel_filter_t **filter_out)
     return SIXEL_OK;
 }
 
-SIXELSTATUS
+SIXELAPI SIXELSTATUS
 sixel_filter_init(sixel_filter_t *filter,
                   const char *name,
                   sixel_filter_kind_t kind,
@@ -96,7 +96,7 @@ sixel_filter_init(sixel_filter_t *filter,
     return status;
 }
 
-void
+SIXELAPI void
 sixel_filter_bind_input(sixel_filter_t *filter,
                         sixel_frame_t **slot,
                         int pixelformat,
@@ -111,7 +111,7 @@ sixel_filter_bind_input(sixel_filter_t *filter,
     filter->input.colorspace = colorspace;
 }
 
-void
+SIXELAPI void
 sixel_filter_bind_output(sixel_filter_t *filter,
                          sixel_frame_t **slot,
                          int pixelformat,
@@ -126,7 +126,7 @@ sixel_filter_bind_output(sixel_filter_t *filter,
     filter->output.colorspace = colorspace;
 }
 
-void
+SIXELAPI void
 sixel_filter_set_progress(sixel_filter_t *filter,
                           sixel_filter_progress_fn progress_cb,
                           void *progress_userdata,
@@ -142,7 +142,7 @@ sixel_filter_set_progress(sixel_filter_t *filter,
     filter->progress.completed_units = 0;
 }
 
-SIXELSTATUS
+SIXELAPI SIXELSTATUS
 sixel_filter_update_progress(sixel_filter_t *filter, int completed_units)
 {
     SIXELSTATUS status;
@@ -159,7 +159,7 @@ sixel_filter_update_progress(sixel_filter_t *filter, int completed_units)
     return status;
 }
 
-SIXELSTATUS
+SIXELAPI SIXELSTATUS
 sixel_filter_run(sixel_filter_t *filter,
                  sixel_allocator_t *allocator,
                  sixel_logger_t *logger)
@@ -181,7 +181,7 @@ sixel_filter_run(sixel_filter_t *filter,
     return status;
 }
 
-void
+SIXELAPI void
 sixel_filter_teardown(sixel_filter_t *filter)
 {
     if (filter == NULL) {
@@ -195,7 +195,7 @@ sixel_filter_teardown(sixel_filter_t *filter)
     sixel_filter_clear(filter);
 }
 
-void
+SIXELAPI void
 sixel_filter_free(sixel_filter_t *filter)
 {
     if (filter == NULL) {
