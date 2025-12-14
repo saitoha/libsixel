@@ -15,8 +15,13 @@ if [ -z "${TOP_SRCDIR:-}" ] || [ -z "${TOP_BUILDDIR:-}" ]; then
     exit 1
 fi
 
-CC_BIN="${CC:-cc}"
+CC_CMD="${CC:-cc}"
 LIBTOOL_BIN="${TOP_BUILDDIR}/libtool"
+
+set -- ${CC_CMD}
+CC_TOOL="$1"
+shift
+CC_EXTRA="$*"
 # Honor build-time flags (coverage, warnings) when compiling the
 # filter test binaries so Windows and gcov builds link correctly.
 COVERAGE_EXTRA="${FILTER_TEST_COVERAGE:-}"
@@ -30,7 +35,7 @@ BIN="${ARTIFACT_ROOT:-.}/filter_resize_tests"
 
 mkdir -p "${ARTIFACT_ROOT:-.}"
 
-"${LIBTOOL_BIN}" --mode=compile --tag=CC "${CC_BIN}" \
+"${LIBTOOL_BIN}" --mode=compile --tag=CC "${CC_TOOL}" ${CC_EXTRA} \
     ${CPPFLAGS_EXTRA} ${CFLAGS_EXTRA} \
     -I"${TOP_BUILDDIR}" \
     -I"${TOP_BUILDDIR}/include" \
@@ -39,7 +44,7 @@ mkdir -p "${ARTIFACT_ROOT:-.}"
     -I"${TOP_SRCDIR}/tests/filter" \
     -c "${SRC}" -o "${OBJ}"
 
-"${LIBTOOL_BIN}" --mode=link --tag=CC "${CC_BIN}" \
+"${LIBTOOL_BIN}" --mode=link --tag=CC "${CC_TOOL}" ${CC_EXTRA} \
     ${LDFLAGS_EXTRA} \
     -o "${BIN}" "${OBJ}" "${TOP_BUILDDIR}/src/libsixel.la" \
     ${LIBS_EXTRA}

@@ -56,7 +56,7 @@ sixel_filter_lookup_weights(const sixel_filter_lookup_config_t *config,
     *wcomp3_out = wcomp3;
 }
 
-SIXELSTATUS
+SIXELAPI SIXELSTATUS
 sixel_filter_lookup_build(const sixel_filter_lookup_config_t *config,
                           sixel_allocator_t *allocator,
                           sixel_logger_t *logger,
