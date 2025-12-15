@@ -1086,21 +1086,25 @@ expand_palette(unsigned char *dst, unsigned char const *src,
     SIXELSTATUS status = SIXEL_FALSE;
     int i;
     int bpp;  /* bit per plane */
+    int use_palette_tables;
 
-    sixel_init_palette_tables();
+    use_palette_tables = 0;
 
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_G1:
         bpp = 1;
+        use_palette_tables = 1;
         break;
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_G2:
         bpp = 2;
+        use_palette_tables = 1;
         break;
     case SIXEL_PIXELFORMAT_PAL4:
     case SIXEL_PIXELFORMAT_G4:
         bpp = 4;
+        use_palette_tables = 1;
         break;
     case SIXEL_PIXELFORMAT_PAL8:
     case SIXEL_PIXELFORMAT_G8:
@@ -1114,6 +1118,14 @@ expand_palette(unsigned char *dst, unsigned char const *src,
         sixel_helper_set_additional_message(
             "expand_palette: invalid pixelformat.");
         goto end;
+    }
+
+    if (use_palette_tables) {
+        /*
+         * Initialize lookup tables only when packed palette input is
+         * present. Formats that are already 8 bpp avoid the setup cost.
+         */
+        sixel_init_palette_tables();
     }
 
 #if HAVE_DEBUG
