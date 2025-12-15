@@ -427,141 +427,355 @@ sixel_pixelformat_byte_to_float(int pixelformat,
     return (float)value / 255.0f;
 }
 
-static void
-get_rgb(unsigned char const *data,
-        int const pixelformat,
-        int depth,
-        unsigned char *r,
-        unsigned char *g,
-        unsigned char *b)
+typedef void (*sixel_rgb_reader_t)(unsigned char const *data,
+                                    unsigned char *r,
+                                    unsigned char *g,
+                                    unsigned char *b);
+
+
+static unsigned int
+sixel_rgb_read16(unsigned char const *data)
 {
-    unsigned int pixels = 0;
+    unsigned int pixels;
 #if SWAP_BYTES
     unsigned int low;
     unsigned int high;
 #endif
-    int count = 0;
 
-    if (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32
-            || pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
-        float const *fpixels = (float const *)(void const *)data;
+    pixels = ((unsigned int)data[0] << 8) | (unsigned int)data[1];
 
-        *r = sixel_pixelformat_float_to_byte(fpixels[0]);
-        *g = sixel_pixelformat_float_to_byte(fpixels[1]);
-        *b = sixel_pixelformat_float_to_byte(fpixels[2]);
-        return;
-    }
-    if (pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32) {
-        float const *fpixels = (float const *)(void const *)data;
-
-        *r = sixel_pixelformat_oklab_L_to_byte(fpixels[0]);
-        *g = sixel_pixelformat_oklab_ab_to_byte(fpixels[1]);
-        *b = sixel_pixelformat_oklab_ab_to_byte(fpixels[2]);
-        return;
-    }
-    if (pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32) {
-        float const *fpixels = (float const *)(void const *)data;
-
-        *r = sixel_pixelformat_cielab_L_to_byte(fpixels[0]);
-        *g = sixel_pixelformat_cielab_ab_to_byte(fpixels[1]);
-        *b = sixel_pixelformat_cielab_ab_to_byte(fpixels[2]);
-        return;
-    }
-    if (pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32) {
-        float const *fpixels = (float const *)(void const *)data;
-
-        *r = sixel_pixelformat_din99d_L_to_byte(fpixels[0]);
-        *g = sixel_pixelformat_din99d_ab_to_byte(fpixels[1]);
-        *b = sixel_pixelformat_din99d_ab_to_byte(fpixels[2]);
-        return;
-    }
-    if (pixelformat == SIXEL_PIXELFORMAT_YUVFLOAT32) {
-        float const *fpixels = (float const *)(void const *)data;
-
-        *r = sixel_pixelformat_float_to_byte(fpixels[0]);
-        *g = sixel_pixelformat_yuv_chroma_to_byte(fpixels[1],
-                                                  SIXEL_YUV_U_FLOAT_MAX);
-        *b = sixel_pixelformat_yuv_chroma_to_byte(fpixels[2],
-                                                  SIXEL_YUV_V_FLOAT_MAX);
-        return;
-    }
-
-    while (count < depth) {
-        pixels = *(data + count) | (pixels << 8);
-        count++;
-    }
-
-    /* TODO: we should swap bytes (only necessary on LSByte first hardware?) */
 #if SWAP_BYTES
-    if (depth == 2) {
-        low    = pixels & 0xff;
-        high   = (pixels >> 8) & 0xff;
-        pixels = (low << 8) | high;
-    }
+    low = pixels & 0xff;
+    high = (pixels >> 8) & 0xff;
+    pixels = (low << 8) | high;
 #endif
 
+    return pixels;
+}
+
+
+static void
+sixel_rgb_from_rgb555(unsigned char const *data,
+                      unsigned char *r,
+                      unsigned char *g,
+                      unsigned char *b)
+{
+    unsigned int pixels;
+
+    pixels = sixel_rgb_read16(data);
+
+    *r = ((pixels >> 10) & 0x1f) << 3;
+    *g = ((pixels >> 5) & 0x1f) << 3;
+    *b = ((pixels >> 0) & 0x1f) << 3;
+}
+
+
+static void
+sixel_rgb_from_rgb565(unsigned char const *data,
+                      unsigned char *r,
+                      unsigned char *g,
+                      unsigned char *b)
+{
+    unsigned int pixels;
+
+    pixels = sixel_rgb_read16(data);
+
+    *r = ((pixels >> 11) & 0x1f) << 3;
+    *g = ((pixels >> 5) & 0x3f) << 2;
+    *b = ((pixels >> 0) & 0x1f) << 3;
+}
+
+
+static void
+sixel_rgb_from_bgr555(unsigned char const *data,
+                      unsigned char *r,
+                      unsigned char *g,
+                      unsigned char *b)
+{
+    unsigned int pixels;
+
+    pixels = sixel_rgb_read16(data);
+
+    *r = ((pixels >> 0) & 0x1f) << 3;
+    *g = ((pixels >> 5) & 0x1f) << 3;
+    *b = ((pixels >> 10) & 0x1f) << 3;
+}
+
+
+static void
+sixel_rgb_from_bgr565(unsigned char const *data,
+                      unsigned char *r,
+                      unsigned char *g,
+                      unsigned char *b)
+{
+    unsigned int pixels;
+
+    pixels = sixel_rgb_read16(data);
+
+    *r = ((pixels >> 0) & 0x1f) << 3;
+    *g = ((pixels >> 5) & 0x3f) << 2;
+    *b = ((pixels >> 11) & 0x1f) << 3;
+}
+
+
+static void
+sixel_rgb_from_ga88(unsigned char const *data,
+                    unsigned char *r,
+                    unsigned char *g,
+                    unsigned char *b)
+{
+    unsigned int pixels;
+
+    pixels = sixel_rgb_read16(data);
+
+    *r = (pixels >> 8) & 0xff;
+    *g = (pixels >> 8) & 0xff;
+    *b = (pixels >> 8) & 0xff;
+}
+
+
+static void
+sixel_rgb_from_ag88(unsigned char const *data,
+                    unsigned char *r,
+                    unsigned char *g,
+                    unsigned char *b)
+{
+    unsigned int pixels;
+
+    pixels = sixel_rgb_read16(data);
+
+    *r = pixels & 0xff;
+    *g = pixels & 0xff;
+    *b = pixels & 0xff;
+}
+
+
+static void
+sixel_rgb_from_rgb888(unsigned char const *data,
+                      unsigned char *r,
+                      unsigned char *g,
+                      unsigned char *b)
+{
+    *r = data[0];
+    *g = data[1];
+    *b = data[2];
+}
+
+
+static void
+sixel_rgb_from_bgr888(unsigned char const *data,
+                      unsigned char *r,
+                      unsigned char *g,
+                      unsigned char *b)
+{
+    *r = data[2];
+    *g = data[1];
+    *b = data[0];
+}
+
+
+static void
+sixel_rgb_from_rgba8888(unsigned char const *data,
+                        unsigned char *r,
+                        unsigned char *g,
+                        unsigned char *b)
+{
+    *r = data[0];
+    *g = data[1];
+    *b = data[2];
+}
+
+
+static void
+sixel_rgb_from_argb8888(unsigned char const *data,
+                        unsigned char *r,
+                        unsigned char *g,
+                        unsigned char *b)
+{
+    *r = data[1];
+    *g = data[2];
+    *b = data[3];
+}
+
+
+static void
+sixel_rgb_from_bgra8888(unsigned char const *data,
+                        unsigned char *r,
+                        unsigned char *g,
+                        unsigned char *b)
+{
+    *r = data[2];
+    *g = data[1];
+    *b = data[0];
+}
+
+
+static void
+sixel_rgb_from_abgr8888(unsigned char const *data,
+                        unsigned char *r,
+                        unsigned char *g,
+                        unsigned char *b)
+{
+    *r = data[3];
+    *g = data[2];
+    *b = data[1];
+}
+
+
+static void
+sixel_rgb_from_g8(unsigned char const *data,
+                  unsigned char *r,
+                  unsigned char *g,
+                  unsigned char *b)
+{
+    *r = data[0];
+    *g = data[0];
+    *b = data[0];
+}
+
+
+static void
+sixel_rgb_from_rgbfloat32(unsigned char const *data,
+                          unsigned char *r,
+                          unsigned char *g,
+                          unsigned char *b)
+{
+    float const *fpixels;
+
+    fpixels = (float const *)(void const *)data;
+
+    *r = sixel_pixelformat_float_to_byte(fpixels[0]);
+    *g = sixel_pixelformat_float_to_byte(fpixels[1]);
+    *b = sixel_pixelformat_float_to_byte(fpixels[2]);
+}
+
+
+static void
+sixel_rgb_from_oklabfloat32(unsigned char const *data,
+                            unsigned char *r,
+                            unsigned char *g,
+                            unsigned char *b)
+{
+    float const *fpixels;
+
+    fpixels = (float const *)(void const *)data;
+
+    *r = sixel_pixelformat_oklab_L_to_byte(fpixels[0]);
+    *g = sixel_pixelformat_oklab_ab_to_byte(fpixels[1]);
+    *b = sixel_pixelformat_oklab_ab_to_byte(fpixels[2]);
+}
+
+
+static void
+sixel_rgb_from_cielabfloat32(unsigned char const *data,
+                             unsigned char *r,
+                             unsigned char *g,
+                             unsigned char *b)
+{
+    float const *fpixels;
+
+    fpixels = (float const *)(void const *)data;
+
+    *r = sixel_pixelformat_cielab_L_to_byte(fpixels[0]);
+    *g = sixel_pixelformat_cielab_ab_to_byte(fpixels[1]);
+    *b = sixel_pixelformat_cielab_ab_to_byte(fpixels[2]);
+}
+
+
+static void
+sixel_rgb_from_din99dfloat32(unsigned char const *data,
+                             unsigned char *r,
+                             unsigned char *g,
+                             unsigned char *b)
+{
+    float const *fpixels;
+
+    fpixels = (float const *)(void const *)data;
+
+    *r = sixel_pixelformat_din99d_L_to_byte(fpixels[0]);
+    *g = sixel_pixelformat_din99d_ab_to_byte(fpixels[1]);
+    *b = sixel_pixelformat_din99d_ab_to_byte(fpixels[2]);
+}
+
+
+static void
+sixel_rgb_from_yuvfloat32(unsigned char const *data,
+                          unsigned char *r,
+                          unsigned char *g,
+                          unsigned char *b)
+{
+    float const *fpixels;
+
+    fpixels = (float const *)(void const *)data;
+
+    *r = sixel_pixelformat_float_to_byte(fpixels[0]);
+    *g = sixel_pixelformat_yuv_chroma_to_byte(fpixels[1],
+                                              SIXEL_YUV_U_FLOAT_MAX);
+    *b = sixel_pixelformat_yuv_chroma_to_byte(fpixels[2],
+                                              SIXEL_YUV_V_FLOAT_MAX);
+}
+
+
+static void
+sixel_rgb_from_unknown(unsigned char const *data,
+                       unsigned char *r,
+                       unsigned char *g,
+                       unsigned char *b)
+{
+    (void)data;
+
+    *r = 0;
+    *g = 0;
+    *b = 0;
+}
+
+
+static sixel_rgb_reader_t
+sixel_select_rgb_reader(int pixelformat)
+{
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_RGB555:
-        *r = ((pixels >> 10) & 0x1f) << 3;
-        *g = ((pixels >>  5) & 0x1f) << 3;
-        *b = ((pixels >>  0) & 0x1f) << 3;
-        break;
+        return sixel_rgb_from_rgb555;
     case SIXEL_PIXELFORMAT_RGB565:
-        *r = ((pixels >> 11) & 0x1f) << 3;
-        *g = ((pixels >>  5) & 0x3f) << 2;
-        *b = ((pixels >>  0) & 0x1f) << 3;
-        break;
+        return sixel_rgb_from_rgb565;
     case SIXEL_PIXELFORMAT_RGB888:
-        *r = (pixels >> 16) & 0xff;
-        *g = (pixels >>  8) & 0xff;
-        *b = (pixels >>  0) & 0xff;
-        break;
-    case SIXEL_PIXELFORMAT_BGR555:
-        *r = ((pixels >>  0) & 0x1f) << 3;
-        *g = ((pixels >>  5) & 0x1f) << 3;
-        *b = ((pixels >> 10) & 0x1f) << 3;
-        break;
-    case SIXEL_PIXELFORMAT_BGR565:
-        *r = ((pixels >>  0) & 0x1f) << 3;
-        *g = ((pixels >>  5) & 0x3f) << 2;
-        *b = ((pixels >> 11) & 0x1f) << 3;
-        break;
-    case SIXEL_PIXELFORMAT_BGR888:
-        *r = (pixels >>  0) & 0xff;
-        *g = (pixels >>  8) & 0xff;
-        *b = (pixels >> 16) & 0xff;
-        break;
+        return sixel_rgb_from_rgb888;
     case SIXEL_PIXELFORMAT_RGBA8888:
-        *r = (pixels >> 24) & 0xff;
-        *g = (pixels >> 16) & 0xff;
-        *b = (pixels >>  8) & 0xff;
-        break;
+        return sixel_rgb_from_rgba8888;
     case SIXEL_PIXELFORMAT_ARGB8888:
-        *r = (pixels >> 16) & 0xff;
-        *g = (pixels >>  8) & 0xff;
-        *b = (pixels >>  0) & 0xff;
-        break;
+        return sixel_rgb_from_argb8888;
+    case SIXEL_PIXELFORMAT_BGR555:
+        return sixel_rgb_from_bgr555;
+    case SIXEL_PIXELFORMAT_BGR565:
+        return sixel_rgb_from_bgr565;
+    case SIXEL_PIXELFORMAT_BGR888:
+        return sixel_rgb_from_bgr888;
     case SIXEL_PIXELFORMAT_BGRA8888:
-        *r = (pixels >>  8) & 0xff;
-        *g = (pixels >> 16) & 0xff;
-        *b = (pixels >> 24) & 0xff;
-        break;
+        return sixel_rgb_from_bgra8888;
     case SIXEL_PIXELFORMAT_ABGR8888:
-        *r = (pixels >>  0) & 0xff;
-        *g = (pixels >>  8) & 0xff;
-        *b = (pixels >> 16) & 0xff;
-        break;
-    case SIXEL_PIXELFORMAT_GA88:
-        *r = *g = *b = (pixels >> 8) & 0xff;
-        break;
-    case SIXEL_PIXELFORMAT_G8:
+        return sixel_rgb_from_abgr8888;
     case SIXEL_PIXELFORMAT_AG88:
-        *r = *g = *b = pixels & 0xff;
-        break;
+        return sixel_rgb_from_ag88;
+    case SIXEL_PIXELFORMAT_GA88:
+        return sixel_rgb_from_ga88;
+    case SIXEL_PIXELFORMAT_G8:
+        return sixel_rgb_from_g8;
+    case SIXEL_PIXELFORMAT_RGBFLOAT32:
+    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
+        return sixel_rgb_from_rgbfloat32;
+    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
+        return sixel_rgb_from_oklabfloat32;
+    case SIXEL_PIXELFORMAT_CIELABFLOAT32:
+        return sixel_rgb_from_cielabfloat32;
+    case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
+        return sixel_rgb_from_din99dfloat32;
+    case SIXEL_PIXELFORMAT_YUVFLOAT32:
+        return sixel_rgb_from_yuvfloat32;
     default:
-        *r = *g = *b = 0;
         break;
     }
+
+    return sixel_rgb_from_unknown;
 }
 
 
@@ -616,8 +830,8 @@ sixel_helper_compute_depth(int pixelformat)
 
 
 static void
-expand_rgb(unsigned char *dst,
-           unsigned char const *src,
+expand_rgb(unsigned char *restrict dst,
+           unsigned char const *restrict src,
            int width, int height,
            int pixelformat, int depth)
 {
@@ -625,17 +839,27 @@ expand_rgb(unsigned char *dst,
     int y;
     int dst_stride;
     int src_stride;
+    sixel_rgb_reader_t reader;
     unsigned char const *src_row;
     unsigned char const *src_pixel;
     unsigned char *dst_row;
     unsigned char *dst_pixel;
-    unsigned char r, g, b;
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
 
     /*
-     * Pre-compute strides to avoid repeated multiplications in
-     * the inner loop. The caller guarantees that the buffers are
-     * large enough, so we can advance pointers by depth/3 bytes
-     * per pixel instead of recalculating offsets each time.
+     * Select the reader once to avoid per-pixel branching. The lookup
+     * maps each pixelformat to a dedicated decoder so the inner loop
+     * only performs pointer math and byte stores.
+     */
+    reader = sixel_select_rgb_reader(pixelformat);
+
+    /*
+     * Pre-compute strides to avoid repeated multiplications in the
+     * inner loop. The caller guarantees that the buffers are large
+     * enough, so we can advance pointers by depth/3 bytes per pixel
+     * instead of recalculating offsets each time.
      */
     dst_stride = width * 3;
     src_stride = width * depth;
@@ -646,7 +870,7 @@ expand_rgb(unsigned char *dst,
         src_pixel = src_row;
         dst_pixel = dst_row;
         for (x = 0; x < width; x++) {
-            get_rgb(src_pixel, pixelformat, depth, &r, &g, &b);
+            reader(src_pixel, &r, &g, &b);
 
             dst_pixel[0] = r;
             dst_pixel[1] = g;
