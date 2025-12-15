@@ -989,15 +989,33 @@ sixel_expand_palette_bpp1(unsigned char *dst,
     byte_count = width / 8;
     remainder = width - byte_count * 8;
 
-    for (y = 0; y < height; ++y) {
-        for (x = 0; x < byte_count; ++x) {
-            table_entry = palette_table1[src[0]];
-            memcpy(dst, table_entry, 8);
-            dst += 8;
-            src += 1;
+    if (remainder == 0) {
+        /*
+         * Fast path for byte-aligned rows. Removing the per-row
+         * remainder branch keeps the steady-state inner loop tight.
+         */
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < byte_count; ++x) {
+                table_entry = palette_table1[src[0]];
+                memcpy(dst, table_entry, 8);
+                dst += 8;
+                src += 1;
+            }
         }
+    } else {
+        /*
+         * Handle rows with a short tail. The main loop still copies a
+         * precomputed 8-pixel block per byte while the tail is expanded
+         * with a small copy loop.
+         */
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < byte_count; ++x) {
+                table_entry = palette_table1[src[0]];
+                memcpy(dst, table_entry, 8);
+                dst += 8;
+                src += 1;
+            }
 
-        if (remainder > 0) {
             table_entry = palette_table1[src[0]];
             for (x = 0; x < remainder; ++x) {
                 dst[x] = table_entry[x];
@@ -1028,15 +1046,32 @@ sixel_expand_palette_bpp2(unsigned char *dst,
     byte_count = width / 4;
     remainder = width - byte_count * 4;
 
-    for (y = 0; y < height; ++y) {
-        for (x = 0; x < byte_count; ++x) {
-            table_entry = palette_table2[src[0]];
-            memcpy(dst, table_entry, 4);
-            dst += 4;
-            src += 1;
+    if (remainder == 0) {
+        /*
+         * Width aligned to 4 pixels: skip the tail branch and keep the
+         * inner loop limited to memcpy plus pointer bumps.
+         */
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < byte_count; ++x) {
+                table_entry = palette_table2[src[0]];
+                memcpy(dst, table_entry, 4);
+                dst += 4;
+                src += 1;
+            }
         }
+    } else {
+        /*
+         * Non-multiple-of-four widths still use the table for the bulk
+         * of each row and append the remaining pixels via a short copy.
+         */
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < byte_count; ++x) {
+                table_entry = palette_table2[src[0]];
+                memcpy(dst, table_entry, 4);
+                dst += 4;
+                src += 1;
+            }
 
-        if (remainder > 0) {
             table_entry = palette_table2[src[0]];
             for (x = 0; x < remainder; ++x) {
                 dst[x] = table_entry[x];
@@ -1067,15 +1102,32 @@ sixel_expand_palette_bpp4(unsigned char *dst,
     byte_count = width / 2;
     remainder = width - byte_count * 2;
 
-    for (y = 0; y < height; ++y) {
-        for (x = 0; x < byte_count; ++x) {
-            table_entry = palette_table4[src[0]];
-            memcpy(dst, table_entry, 2);
-            dst += 2;
-            src += 1;
+    if (remainder == 0) {
+        /*
+         * When width is an even number of pixels the loop becomes a
+         * pure memcpy stream with no per-row branching.
+         */
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < byte_count; ++x) {
+                table_entry = palette_table4[src[0]];
+                memcpy(dst, table_entry, 2);
+                dst += 2;
+                src += 1;
+            }
         }
+    } else {
+        /*
+         * Otherwise process the bulk via the lookup table and append the
+         * one remaining pixel with a small copy loop.
+         */
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < byte_count; ++x) {
+                table_entry = palette_table4[src[0]];
+                memcpy(dst, table_entry, 2);
+                dst += 2;
+                src += 1;
+            }
 
-        if (remainder > 0) {
             table_entry = palette_table4[src[0]];
             for (x = 0; x < remainder; ++x) {
                 dst[x] = table_entry[x];
