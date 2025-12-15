@@ -47,6 +47,7 @@ typedef struct sixel_encoding_planner {
     int heavy_ops;
     int working_pixelformat;
     int scale_pixelformat;
+    int colorspace_before_scale;
     int pipeline_active;
     int pipeline_band_height;
     int pipeline_overlap;
