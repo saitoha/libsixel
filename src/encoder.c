@@ -2927,6 +2927,7 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     int source_colorspace;
     int target_pixelformat;
     int scale_pixelformat;
+    int scale_input_pixelformat;
     int prefer_float32;
     int prefer_float32_effective;
     int float_resize_required;
@@ -3000,10 +3001,6 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
         prefer_float32_effective = 1;
     }
 
-    if (resize_mode == SIXEL_PLANNER_RESIZE_MODE_LINEAR32) {
-        working_colorspace_effective = SIXEL_COLORSPACE_LINEAR;
-    }
-
     target_pixelformat = sixel_encoder_pixelformat_for_colorspace(
         working_colorspace_effective,
         prefer_float32_effective);
@@ -3011,17 +3008,21 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     planner->working_colorspace_effective = working_colorspace_effective;
     planner->resize_precision_mode = resize_mode;
 
+    scale_input_pixelformat = scale_pixelformat;
+
     if (planner->scale_active != 0 && float_resize_required != 0) {
         colorspace_before_scale = (sixel_frame_get_pixelformat(frame)
-                                   != scale_pixelformat);
-        colorspace_after_scale = (target_pixelformat != scale_pixelformat);
+                                   != scale_input_pixelformat);
+        colorspace_after_scale = (target_pixelformat
+                                  != scale_pixelformat);
     } else {
+        colorspace_before_scale = 0;
         colorspace_after_scale = (target_pixelformat
                                   != sixel_frame_get_pixelformat(frame));
     }
 
     planner->scale_pixelformat = scale_pixelformat;
-    planner->scale_input_pixelformat = scale_pixelformat;
+    planner->scale_input_pixelformat = scale_input_pixelformat;
     planner->colorspace_before_scale = colorspace_before_scale;
     planner->colorspace_after_scale = colorspace_after_scale;
     planner->colorspace_active = (colorspace_before_scale != 0
