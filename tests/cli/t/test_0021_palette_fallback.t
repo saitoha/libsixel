@@ -37,7 +37,7 @@ echo "1..2"
 snake_ascii_pbm="${images_dir}/snake-ascii.pbm"
 require_file "${snake_ascii_pbm}"
 
-if SIXEL_DISABLE_PALETTE_TABLES=1 \
+if SIXEL_PALETTE_DISABLE_TABLES=1 \
         run_img2sixel "${snake_ascii_pbm}" \
         -o "${output_dir}/snake-fallback.sixel" \
         >"${log_file}" 2>&1; then
