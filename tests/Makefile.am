@@ -19,10 +19,11 @@ CLI_TESTS = cli/t/test_0001_01_invalid_positional.t \
 	cli/t/test_0014_option_matching.t \
 	cli/t/test_0015_argument_shift.t \
 	cli/t/test_0016_assessment_spool.t \
-	cli/t/test_0017_clipboard.t \
-	cli/t/test_0018_lsqa_regression.t \
-	cli/t/test_0019_python_wheel.t \
-	cli/t/test_0020_mapfile_io.t
+        cli/t/test_0017_clipboard.t \
+        cli/t/test_0018_lsqa_regression.t \
+        cli/t/test_0019_python_wheel.t \
+        cli/t/test_0020_mapfile_io.t \
+        cli/t/test_0021_palette_fallback.t
 
 PYTHON_TESTS = python/t/test_0001_python_bindings.t \
        python/t/test_0002_python_api_formats.t \
