@@ -16,6 +16,15 @@ fi
 CC_CMD="${CC:-cc}"
 LIBTOOL_BIN="${TOP_BUILDDIR}/libtool"
 
+# Allow CC to be wrapped (e.g. "build-aux/compile cl"). Trim a single pair
+# of outer quotes so that libtool receives the wrapper path and compiler
+# separately.
+if [ "${CC_CMD#\"}" != "${CC_CMD}" ] && \
+   [ "${CC_CMD%\"}" != "${CC_CMD}" ]; then
+    CC_CMD=${CC_CMD#\"}
+    CC_CMD=${CC_CMD%\"}
+fi
+
 set -- ${CC_CMD}
 CC_TOOL="$1"
 shift
@@ -23,6 +32,14 @@ CC_EXTRA="$*"
 # Honor build-time flags (coverage, warnings) when compiling the
 # filter test binaries so Windows and gcov builds link correctly.
 COVERAGE_EXTRA="${FILTER_TEST_COVERAGE:-}"
+
+# When gcov is enabled (static builds often require it), default to the
+# coverage flags used for the library if the test environment did not supply
+# them explicitly.
+if [ -z "${COVERAGE_EXTRA}" ] && \
+   grep -q -- "--coverage" "${TOP_BUILDDIR}/src/Makefile" 2>/dev/null; then
+    COVERAGE_EXTRA="--coverage"
+fi
 CFLAGS_EXTRA="${FILTER_TEST_CFLAGS:-} ${COVERAGE_EXTRA}"
 CPPFLAGS_EXTRA="${FILTER_TEST_CPPFLAGS:-}"
 LDFLAGS_EXTRA="${FILTER_TEST_LDFLAGS:-} ${COVERAGE_EXTRA}"
