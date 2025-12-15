@@ -976,8 +976,8 @@ sixel_init_palette_tables(void)
  * divisible by 8.
  */
 static void
-sixel_expand_palette_bpp1(unsigned char *dst,
-                          unsigned char const *src,
+sixel_expand_palette_bpp1(unsigned char *restrict dst,
+                          unsigned char const *restrict src,
                           int width, int height)
 {
     int y;
@@ -1033,8 +1033,8 @@ sixel_expand_palette_bpp1(unsigned char *dst,
  * width leaves a remainder.
  */
 static void
-sixel_expand_palette_bpp2(unsigned char *dst,
-                          unsigned char const *src,
+sixel_expand_palette_bpp2(unsigned char *restrict dst,
+                          unsigned char const *restrict src,
                           int width, int height)
 {
     int y;
@@ -1089,8 +1089,8 @@ sixel_expand_palette_bpp2(unsigned char *dst,
  * odd.
  */
 static void
-sixel_expand_palette_bpp4(unsigned char *dst,
-                          unsigned char const *src,
+sixel_expand_palette_bpp4(unsigned char *restrict dst,
+                          unsigned char const *restrict src,
                           int width, int height)
 {
     int y;
@@ -1146,8 +1146,8 @@ sixel_expand_palette_bpp4(unsigned char *dst,
  * static buffers.
  */
 static void
-sixel_expand_palette_fallback(unsigned char *dst,
-                              unsigned char const *src,
+sixel_expand_palette_fallback(unsigned char *restrict dst,
+                              unsigned char const *restrict src,
                               int width,
                               int height,
                               int bpp)
@@ -1186,14 +1186,15 @@ sixel_expand_palette_fallback(unsigned char *dst,
 
 
 static SIXELSTATUS
-expand_palette(unsigned char *dst, unsigned char const *src,
+expand_palette(unsigned char *restrict dst,
+               unsigned char const *restrict src,
                int width, int height, int const pixelformat)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    int i;
     int bpp;  /* bit per plane */
     int use_palette_tables;
     int tables_ready;
+    size_t total_pixels;
 
     use_palette_tables = 0;
     tables_ready = 0;
@@ -1216,9 +1217,14 @@ expand_palette(unsigned char *dst, unsigned char const *src,
         break;
     case SIXEL_PIXELFORMAT_PAL8:
     case SIXEL_PIXELFORMAT_G8:
-        for (i = 0; i < width * height; ++i, ++src) {
-            *dst++ = *src;
-        }
+        total_pixels = (size_t)width * (size_t)height;
+
+        /*
+         * Direct copy for already expanded 8 bpp sources. Using memcpy
+         * avoids the per-pixel loop overhead when the input is byte
+         * aligned and requires no bit unpacking.
+         */
+        memcpy(dst, src, total_pixels);
         status = SIXEL_OK;
         goto end;
     default:
