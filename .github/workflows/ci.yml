@@ -172,6 +172,12 @@ jobs:
             compiler: clang
             sys: CLANG64
             variant: default
+          - label: clangarm64
+            os: windows-2025
+            runner: windows-2025
+            compiler: clang
+            sys: CLANGARM64
+            variant: default
           - label: clang-cl
             os: windows-latest
             runner: windows-latest
@@ -184,6 +190,15 @@ jobs:
             compiler: cl
             sys: MSVC
             variant: default
+          - label: msvc arm64
+            os: windows-2025
+            runner: windows-2025
+            compiler: cl
+            sys: MSVC
+            variant: default
+            vc_arch: arm64
+            msvc_host: aarch64-pc-windows-msvc
+            vcpkg_triplet: arm64-windows
           - label: msvc vcpkg-libpng
             os: windows-latest
             runner: windows-latest
@@ -191,6 +206,16 @@ jobs:
             sys: MSVC
             variant: vcpkg-libpng
             vcpkg_libpng: true
+          - label: msvc arm64 vcpkg-libpng
+            os: windows-2025
+            runner: windows-2025
+            compiler: cl
+            sys: MSVC
+            variant: vcpkg-libpng
+            vcpkg_libpng: true
+            vc_arch: arm64
+            msvc_host: aarch64-pc-windows-msvc
+            vcpkg_triplet: arm64-windows
           - label: msvc vcpkg-libjpeg
             os: windows-latest
             runner: windows-latest
@@ -198,6 +223,16 @@ jobs:
             sys: MSVC
             variant: vcpkg-libjpeg
             vcpkg_libjpeg: true
+          - label: msvc arm64 vcpkg-libjpeg
+            os: windows-2025
+            runner: windows-2025
+            compiler: cl
+            sys: MSVC
+            variant: vcpkg-libjpeg
+            vcpkg_libjpeg: true
+            vc_arch: arm64
+            msvc_host: aarch64-pc-windows-msvc
+            vcpkg_triplet: arm64-windows
           - label: mingw32
             os: windows-latest
             runner: windows-latest
@@ -390,7 +425,7 @@ jobs:
       if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' }}
       uses: ilammy/msvc-dev-cmd@v1
       with:
-        arch: x64
+        arch: ${{ matrix.vc_arch || 'x64' }}
 
     - name: Cache vcpkg artifacts (MSVC, vcpkg deps)
       if: ${{ runner.os == 'Windows' && (matrix.vcpkg_libpng == true || matrix.vcpkg_libjpeg == true) }}
@@ -427,7 +462,8 @@ jobs:
         if ('${{ matrix.vcpkg_libjpeg || false }}' -eq 'true') {
           $packages += 'libjpeg-turbo'
         }
-        .\\vcpkg.exe install $packages --triplet x64-windows
+        $triplet = "${{ matrix.vcpkg_triplet || 'x64-windows' }}"
+        .\\vcpkg.exe install $packages --triplet $triplet
         "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang)
@@ -802,7 +838,7 @@ jobs:
       shell: msys2 {0}
       run: |
         VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
-        cmd //c call "${VCVARS}" x64 \>nul \&\& set
+        cmd //c call "${VCVARS}" ${{ matrix.vc_arch || 'x64' }} \>nul \&\& set
         disable_threads_flag=""
         if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
           disable_threads_flag="--disable-threads"
@@ -816,7 +852,7 @@ jobs:
           disable_simd_flag="--disable-simd"
         fi
         eval $(
-            cmd //c call "${VCVARS}" x64 \>nul \&\& set |
+            cmd //c call "${VCVARS}" ${{ matrix.vc_arch || 'x64' }} \>nul \&\& set |
             grep -i '^\(PATH\|INCLUDE\|LIB\|LIBPATH\)'  |
             while IFS== read -r key val; do
                 case "$key" in PATH|Path)
@@ -829,7 +865,7 @@ jobs:
             done
         )
         ./configure CC=${{ matrix.compiler }} LD=link AR="${SHELL} $(pwd)/build-aux/ar-lib lib" ARFLAGS=cr NM="dumpbin -symbols" STRIP=: RANLIB=: \
-            --host=x86_64-pc-windows-msvc \
+            --host=${{ matrix.msvc_host || 'x86_64-pc-windows-msvc' }} \
             --without-bashcompletiondir \
             --without-zshcompletiondir \
             --disable-python \
@@ -866,15 +902,16 @@ jobs:
       shell: bash
       run: make check V=1
 
-    - name: Run tests (Windows, not MSVC/Cygwin/CLANG64)
-      if: runner.os == 'Windows' && matrix.sys != 'CLANG64' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN'
+    - name: Run tests (Windows, not MSVC/Cygwin/CLANG64/CLANGARM64)
+      if: runner.os == 'Windows' && matrix.sys != 'CLANG64' && matrix.sys != 'CLANGARM64' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN'
       shell: msys2 {0}
       run: make check V=1
 
-    - name: Run tests (Windows, CLANG64)
-      if: runner.os == 'Windows' && matrix.sys == 'CLANG64'
+    - name: Run tests (Windows, CLANG64/CLANGARM64)
+      if: runner.os == 'Windows' && (matrix.sys == 'CLANG64' || matrix.sys == 'CLANGARM64')
       shell: msys2 {0}
       run: |
+        mkdir -p coverage
         LLVM_PROFILE_FILE="%p-%m.profraw" make check V=1
         find . -name \*.profraw || true
         llvm-profdata merge -sparse coverage/*.profraw -o coverage/coverage.profdata || true
@@ -887,9 +924,9 @@ jobs:
       shell: msys2 {0}
       run: |
         VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
-        cmd //c call "${VCVARS}" x64 \>nul \&\& set
+        cmd //c call "${VCVARS}" ${{ matrix.vc_arch || 'x64' }} \>nul \&\& set
         eval $(
-            cmd //c call "${VCVARS}" x64 \>nul \&\& set |
+            cmd //c call "${VCVARS}" ${{ matrix.vc_arch || 'x64' }} \>nul \&\& set |
             grep -i '^\(PATH\|INCLUDE\|LIB\|LIBPATH\)'  |
             while IFS== read -r key val; do
                 case "$key" in PATH|Path)
@@ -1594,6 +1631,12 @@ jobs:
             compiler: clang
             sys: CLANG64
             variant: default
+          - label: clangarm64
+            os: windows-2025
+            runner: windows-2025
+            compiler: clang
+            sys: CLANGARM64
+            variant: default
           - label: clang-cl
             os: windows-latest
             runner: windows-latest
@@ -1606,6 +1649,14 @@ jobs:
             compiler: cl
             sys: MSVC
             variant: default
+          - label: msvc arm64
+            os: windows-2025
+            runner: windows-2025
+            compiler: cl
+            sys: MSVC
+            variant: default
+            vc_arch: arm64
+            vcpkg_triplet: arm64-windows
           - label: mingw32
             os: windows-latest
             runner: windows-latest
@@ -1653,7 +1704,7 @@ jobs:
       if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' }}
       uses: ilammy/msvc-dev-cmd@v1
       with:
-        arch: x64
+        arch: ${{ matrix.vc_arch || 'x64' }}
 
     - name: Cache vcpkg artifacts (MSVC, vcpkg deps)
       if: ${{ runner.os == 'Windows' && (matrix.vcpkg_libpng == true || matrix.vcpkg_libjpeg == true) }}
@@ -1686,7 +1737,8 @@ jobs:
         if ('${{ matrix.vcpkg_libjpeg || false }}' -eq 'true') {
           $packages += 'libjpeg-turbo'
         }
-        .\\vcpkg.exe install $packages --triplet x64-windows
+        $triplet = "${{ matrix.vcpkg_triplet || 'x64-windows' }}"
+        .\\vcpkg.exe install $packages --triplet $triplet
         "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang)
@@ -1969,7 +2021,7 @@ jobs:
       shell: cmd
       run: |
         setlocal ENABLEDELAYEDEXPANSION
-        call "%VSINSTALLDIR%\VC\Auxiliary\Build\vcvarsall.bat" x64
+        call "%VSINSTALLDIR%\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.vc_arch || 'x64' }}
         python -m pip install --upgrade pip
         python -m pip install meson ninja
         set "CC=${{ matrix.compiler }}"
@@ -2008,12 +2060,12 @@ jobs:
       shell: cmd
       run: |
         setlocal ENABLEDELAYEDEXPANSION
-        call "%VSINSTALLDIR%\VC\Auxiliary\Build\vcvarsall.bat" x64
+        call "%VSINSTALLDIR%\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.vc_arch || 'x64' }}
         python -m pip install --upgrade pip
         python -m pip install meson ninja
-        set "PKG_CONFIG=%VCPKG_ROOT%\installed\x64-windows\tools\pkgconf\pkgconf.exe"
-        set "PKG_CONFIG_PATH=%VCPKG_ROOT%\installed\x64-windows\lib\pkgconfig"
-        set "PATH=%VCPKG_ROOT%\installed\x64-windows\bin;%PATH%"
+        set "PKG_CONFIG=%VCPKG_ROOT%\installed\${{ matrix.vcpkg_triplet || 'x64-windows' }}\tools\pkgconf\pkgconf.exe"
+        set "PKG_CONFIG_PATH=%VCPKG_ROOT%\installed\${{ matrix.vcpkg_triplet || 'x64-windows' }}\lib\pkgconfig"
+        set "PATH=%VCPKG_ROOT%\installed\${{ matrix.vcpkg_triplet || 'x64-windows' }}\bin;%PATH%"
         set "DISABLE_THREADS_FLAG="
         if "${{ matrix.disable_threads || '' }}"=="true" set "DISABLE_THREADS_FLAG=-Dthreads=disabled"
         set "DISABLE_TOOLS_FLAGS="
@@ -2047,12 +2099,12 @@ jobs:
       shell: cmd
       run: |
         setlocal ENABLEDELAYEDEXPANSION
-        call "%VSINSTALLDIR%\VC\Auxiliary\Build\vcvarsall.bat" x64
+        call "%VSINSTALLDIR%\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.vc_arch || 'x64' }}
         python -m pip install --upgrade pip
         python -m pip install meson ninja
-        set "PKG_CONFIG=%VCPKG_ROOT%\installed\x64-windows\tools\pkgconf\pkgconf.exe"
-        set "PKG_CONFIG_PATH=%VCPKG_ROOT%\installed\x64-windows\lib\pkgconfig"
-        set "PATH=%VCPKG_ROOT%\installed\x64-windows\bin;%PATH%"
+        set "PKG_CONFIG=%VCPKG_ROOT%\installed\${{ matrix.vcpkg_triplet || 'x64-windows' }}\tools\pkgconf\pkgconf.exe"
+        set "PKG_CONFIG_PATH=%VCPKG_ROOT%\installed\${{ matrix.vcpkg_triplet || 'x64-windows' }}\lib\pkgconfig"
+        set "PATH=%VCPKG_ROOT%\installed\${{ matrix.vcpkg_triplet || 'x64-windows' }}\bin;%PATH%"
         set "DISABLE_THREADS_FLAG="
         if "${{ matrix.disable_threads || '' }}"=="true" set "DISABLE_THREADS_FLAG=-Dthreads=disabled"
         set "DISABLE_TOOLS_FLAGS="
