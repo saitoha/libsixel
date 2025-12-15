@@ -2947,7 +2947,7 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     resize_endptr = NULL;
     colorspace_after_scale = 0;
     colorspace_before_scale = 0;
-    prefer_float32_effective = 0;
+    prefer_float32_effective = prefer_float32;
     working_colorspace_effective = encoder->working_colorspace;
 
     /*
@@ -2973,6 +2973,7 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     source_colorspace = sixel_frame_get_colorspace(frame);
     prefer_float32 = encoder->prefer_float32;
     scale_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+    scale_input_pixelformat = sixel_frame_get_pixelformat(frame);
     float_resize_required = (planner->scale_active != 0) ? 1 : 0;
 
     resize_mode_env = sixel_compat_getenv(
@@ -2996,8 +2997,7 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
         resize_mode = SIXEL_PLANNER_RESIZE_MODE_LINEAR32;
     }
 
-    if (resize_mode == SIXEL_PLANNER_RESIZE_MODE_LINEAR32
-        || resize_mode == SIXEL_PLANNER_RESIZE_MODE_FLOAT_WORK) {
+    if (resize_mode == SIXEL_PLANNER_RESIZE_MODE_FLOAT_WORK) {
         prefer_float32_effective = 1;
     }
 
@@ -3008,9 +3008,30 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     planner->working_colorspace_effective = working_colorspace_effective;
     planner->resize_precision_mode = resize_mode;
 
-    scale_input_pixelformat = scale_pixelformat;
-
     if (planner->scale_active != 0 && float_resize_required != 0) {
+        switch (resize_mode) {
+        case SIXEL_PLANNER_RESIZE_MODE_LINEAR32:
+            scale_input_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            break;
+        case SIXEL_PLANNER_RESIZE_MODE_FLOAT_WORK:
+            /*
+             * Non-RGB workspaces cannot be resampled directly. Force a
+             * linear RGB buffer for scaling and convert back afterward.
+             */
+            scale_input_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+            break;
+        case SIXEL_PLANNER_RESIZE_MODE_PRESERVE:
+        default:
+            /*
+             * Preserve bit depth but still scale in linear RGB to avoid
+             * gamma artifacts. A colorspace(pre) node is inserted when the
+             * source is not already linear.
+             */
+            scale_input_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+            break;
+        }
+        scale_pixelformat = scale_input_pixelformat;
+
         colorspace_before_scale = (sixel_frame_get_pixelformat(frame)
                                    != scale_input_pixelformat);
         colorspace_after_scale = (target_pixelformat
@@ -3019,6 +3040,8 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
         colorspace_before_scale = 0;
         colorspace_after_scale = (target_pixelformat
                                   != sixel_frame_get_pixelformat(frame));
+        scale_pixelformat = sixel_frame_get_pixelformat(frame);
+        scale_input_pixelformat = sixel_frame_get_pixelformat(frame);
     }
 
     planner->scale_pixelformat = scale_pixelformat;
@@ -4956,6 +4979,15 @@ sixel_encoder_encode_frame(
     memset(&dither_config, 0, sizeof(dither_config));
     current_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     current_colorspace = SIXEL_COLORSPACE_GAMMA;
+    if (encoder != NULL) {
+        /*
+         * Hold a reference while the planner and filters manipulate encoder
+         * state.  The caller may not have incremented the count, so balance
+         * the release in the common cleanup path at the end of this
+         * function.
+         */
+        sixel_encoder_ref(encoder);
+    }
     if (encoder != NULL) {
         assessment = encoder->assessment_observer;
         planner = &encoder->planner;
@@ -8930,6 +8962,63 @@ sixel_encoder_encode_bytes(
     owned_pixels = NULL;
     owned_palette = NULL;
 
+    depth = sixel_helper_compute_depth(pixelformat);
+    if (depth <= 0) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_encode_bytes: invalid pixelformat depth.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    pixel_total = (size_t)width * (size_t)height;
+    if (width <= 0 || height <= 0 ||
+            pixel_total / (size_t)width != (size_t)height) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_encode_bytes: invalid frame dimensions.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (pixel_total > SIZE_MAX / (size_t)depth) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_encode_bytes: buffer size overflow.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    pixel_bytes = pixel_total * (size_t)depth;
+    owned_pixels = (unsigned char *)sixel_allocator_malloc(
+        encoder->allocator, pixel_bytes);
+    if (owned_pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_encode_bytes: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    memcpy(owned_pixels, bytes, pixel_bytes);
+    frame->pixels.u8ptr = owned_pixels;
+
+    palette_bytes = 0u;
+    if (palette != NULL && ncolors > 0) {
+        palette_bytes = (size_t)ncolors * 3u;
+        if (palette_bytes / 3u != (size_t)ncolors) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_encode_bytes: palette size overflow.");
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+        owned_palette = (unsigned char *)sixel_allocator_malloc(
+            encoder->allocator, palette_bytes);
+        if (owned_palette == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_encode_bytes: "
+                "sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        memcpy(owned_palette, palette, palette_bytes);
+        frame->palette = owned_palette;
+    }
+
     status = sixel_encoder_encode_frame(encoder, frame, NULL);
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -8938,17 +9027,17 @@ sixel_encoder_encode_bytes(
     status = SIXEL_OK;
 
 end:
-    if (encoder != NULL && encoder->allocator != NULL && owned_palette != NULL) {
-        sixel_allocator_free(encoder->allocator, owned_palette);
-    }
-    if (encoder != NULL && encoder->allocator != NULL && owned_pixels != NULL) {
-        sixel_allocator_free(encoder->allocator, owned_pixels);
-    }
     if (frame != NULL) {
         /*
-         * The encoder owns the copied buffers above, so a single frame unref
-         * releases both the frame and any owned heap storage.
+         * The caller owns the pixel and palette buffers, so clear the
+         * pointers before releasing the frame.  Destroying the frame then
+         * frees only the frame object and allocator reference without
+         * touching external memory.
          */
+        if (owned_palette != NULL) {
+            frame->palette = owned_palette;
+        }
+        sixel_frame_unref(frame);
         sixel_frame_unref(frame);
     }
     return status;
