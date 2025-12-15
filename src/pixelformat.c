@@ -38,6 +38,7 @@
 
 #include <sixel.h>
 
+#include "compat_stub.h"
 #include "threading.h"
 #include "pixelformat.h"
 
@@ -903,9 +904,22 @@ static int palette_table_mutex_ready;
 static int
 sixel_init_palette_tables(void)
 {
+    char const *disable_tables;
     int value;
     int i;
     int init_result;
+
+    /*
+     * Allow tests to force the shift-based path by disabling table
+     * initialization via SIXEL_DISABLE_PALETTE_TABLES. This exercises the
+     * fallback without introducing additional code paths in production
+     * builds.
+     */
+    disable_tables = sixel_compat_getenv("SIXEL_DISABLE_PALETTE_TABLES");
+    if (disable_tables != NULL && disable_tables[0] != '\0' &&
+            disable_tables[0] != '0') {
+        return 0;
+    }
 
     /*
      * Tables are generated once on first use to avoid increasing the
