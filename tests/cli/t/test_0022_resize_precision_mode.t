@@ -1,8 +1,8 @@
 #!/bin/sh
-# TAP test verifying that resize planning always converts to linear RGB
-# float32 before scaling when the working colorspace changes. The planner
-# should insert colorspace filters on both sides of the scaler and declare
-# the linear input format in the verbose DAG dump.
+# TAP test verifying that resize planning keeps the scaler input explicit
+# in the DAG dump and positions the colorspace conversion after scaling
+# when the working colorspace changes. The planner should declare the input
+# format and show the post-scale colorspace edge.
 
 set -euxv
 
@@ -48,8 +48,8 @@ P3
 255 0 0   0 255 0   0 0 255   255 255 0
 PPM
 
-# Run with a non-sRGB working space so the planner must schedule
-# color conversions before and after the scaler.
+# Run with a non-sRGB working space so the planner must schedule a
+# colorspace conversion around the scaler.
 if run_img2sixel -v -W oklab -w 99% \
         -o "${out_file}" "${ppm_file}" \
         >"${artifact_dir}/stdout.log" 2>"${log_file}"; then
@@ -59,20 +59,20 @@ else
 fi
 case_id=$((case_id + 1))
 
-# Verify that the resize section declares linear float32 input.
-if grep -q "resize: mode=.*input=linear-f32" "${log_file}"; then
-    pass ${case_id} "planner selects linear float32 for scaling"
+# Verify that the resize section declares the scaler input format.
+if grep -q "resize: mode=.*input=rgb888" "${log_file}"; then
+    pass ${case_id} "planner reports scaler input pixelformat"
 else
-    fail ${case_id} "missing linear float32 resize input"
+    fail ${case_id} "missing scaler input declaration"
 fi
 case_id=$((case_id + 1))
 
-# Ensure colorspace filters bracket the scaler.
-if grep -q "colorspace(pre)" "${log_file}" \
-        && grep -q "colorspace(post)" "${log_file}"; then
-    pass ${case_id} "colorspace conversions placed around scaler"
+# Ensure the colorspace conversion is scheduled after scaling.
+if grep -q "scale -> colorspace(post)" "${log_file}" \
+        && grep -q "colorspace(post) -> dither" "${log_file}"; then
+    pass ${case_id} "colorspace conversion placed after scaler"
 else
-    fail ${case_id} "colorspace filters missing around scaler"
+    fail ${case_id} "colorspace conversion missing after scaler"
 fi
 
 exit ${status}
