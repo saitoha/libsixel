@@ -886,15 +886,178 @@ expand_rgb(unsigned char *restrict dst,
 }
 
 
+/*
+ * Lookup tables for expanding packed palette indices. Each entry holds
+ * the unpacked values for one input byte so the inner loops only copy
+ * precomputed bytes instead of shifting each pixel.
+ */
+static unsigned char palette_table1[256][8];
+static unsigned char palette_table2[256][4];
+static unsigned char palette_table4[256][2];
+static int palette_table_initialized;
+
+
+static void
+sixel_init_palette_tables(void)
+{
+    int value;
+    int i;
+
+    /*
+     * Tables are generated once on first use to avoid increasing the
+     * binary size with large static initializers.
+     */
+    if (palette_table_initialized) {
+        return;
+    }
+
+    for (value = 0; value < 256; ++value) {
+        for (i = 0; i < 8; ++i) {
+            palette_table1[value][i] =
+                (unsigned char)((value >> (7 - i)) & 0x01);
+        }
+
+        for (i = 0; i < 4; ++i) {
+            palette_table2[value][i] =
+                (unsigned char)((value >> (6 - i * 2)) & 0x03);
+        }
+
+        for (i = 0; i < 2; ++i) {
+            palette_table4[value][i] =
+                (unsigned char)((value >> (4 - i * 4)) & 0x0f);
+        }
+    }
+
+    palette_table_initialized = 1;
+}
+
+
+/*
+ * Expand packed 1 bpp rows by copying a precomputed 8-pixel block per
+ * source byte. A tiny tail loop handles the remainder when width is not
+ * divisible by 8.
+ */
+static void
+sixel_expand_palette_bpp1(unsigned char *dst,
+                          unsigned char const *src,
+                          int width, int height)
+{
+    int y;
+    int x;
+    int remainder;
+    int byte_count;
+    unsigned char const *table_entry;
+
+    byte_count = width / 8;
+    remainder = width - byte_count * 8;
+
+    for (y = 0; y < height; ++y) {
+        for (x = 0; x < byte_count; ++x) {
+            table_entry = palette_table1[src[0]];
+            memcpy(dst, table_entry, 8);
+            dst += 8;
+            src += 1;
+        }
+
+        if (remainder > 0) {
+            table_entry = palette_table1[src[0]];
+            for (x = 0; x < remainder; ++x) {
+                dst[x] = table_entry[x];
+            }
+            dst += remainder;
+            src += 1;
+        }
+    }
+}
+
+
+/*
+ * Expand packed 2 bpp rows. Each lookup yields four pixels so the inner
+ * loop becomes a memcpy per byte, followed by a small tail when the row
+ * width leaves a remainder.
+ */
+static void
+sixel_expand_palette_bpp2(unsigned char *dst,
+                          unsigned char const *src,
+                          int width, int height)
+{
+    int y;
+    int x;
+    int remainder;
+    int byte_count;
+    unsigned char const *table_entry;
+
+    byte_count = width / 4;
+    remainder = width - byte_count * 4;
+
+    for (y = 0; y < height; ++y) {
+        for (x = 0; x < byte_count; ++x) {
+            table_entry = palette_table2[src[0]];
+            memcpy(dst, table_entry, 4);
+            dst += 4;
+            src += 1;
+        }
+
+        if (remainder > 0) {
+            table_entry = palette_table2[src[0]];
+            for (x = 0; x < remainder; ++x) {
+                dst[x] = table_entry[x];
+            }
+            dst += remainder;
+            src += 1;
+        }
+    }
+}
+
+
+/*
+ * Expand packed 4 bpp rows using two-pixel lookup entries. Like the
+ * other helpers, the remainder loop only executes when the row width is
+ * odd.
+ */
+static void
+sixel_expand_palette_bpp4(unsigned char *dst,
+                          unsigned char const *src,
+                          int width, int height)
+{
+    int y;
+    int x;
+    int remainder;
+    int byte_count;
+    unsigned char const *table_entry;
+
+    byte_count = width / 2;
+    remainder = width - byte_count * 2;
+
+    for (y = 0; y < height; ++y) {
+        for (x = 0; x < byte_count; ++x) {
+            table_entry = palette_table4[src[0]];
+            memcpy(dst, table_entry, 2);
+            dst += 2;
+            src += 1;
+        }
+
+        if (remainder > 0) {
+            table_entry = palette_table4[src[0]];
+            for (x = 0; x < remainder; ++x) {
+                dst[x] = table_entry[x];
+            }
+            dst += remainder;
+            src += 1;
+        }
+    }
+}
+
+
 static SIXELSTATUS
 expand_palette(unsigned char *dst, unsigned char const *src,
                int width, int height, int const pixelformat)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    int x;
-    int y;
     int i;
     int bpp;  /* bit per plane */
+
+    sixel_init_palette_tables();
 
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
@@ -927,23 +1090,28 @@ expand_palette(unsigned char *dst, unsigned char const *src,
     fprintf(stderr, "expanding PAL%d to PAL8...\n", bpp);
 #endif
 
-    for (y = 0; y < height; ++y) {
-        for (x = 0; x < width * bpp / 8; ++x) {
-            for (i = 0; i < 8 / bpp; ++i) {
-                *dst++ = *src >> (8 / bpp - 1 - i) * bpp & ((1 << bpp) - 1);
-            }
-            src++;
-        }
-        x = width - x * 8 / bpp;
-        if (x > 0) {
-            for (i = 0; i < x; ++i) {
-                *dst++ = *src >> (8 - (i + 1) * bpp) & ((1 << bpp) - 1);
-            }
-            src++;
-        }
+    /*
+     * Use lookup tables to unroll packed indices. Each path copies an
+     * entire byte of indices in one memcpy, leaving only a small
+     * remainder loop per row for widths that are not byte-aligned.
+     */
+    switch (bpp) {
+    case 1:
+        sixel_expand_palette_bpp1(dst, src, width, height);
+        status = SIXEL_OK;
+        break;
+    case 2:
+        sixel_expand_palette_bpp2(dst, src, width, height);
+        status = SIXEL_OK;
+        break;
+    case 4:
+        sixel_expand_palette_bpp4(dst, src, width, height);
+        status = SIXEL_OK;
+        break;
+    default:
+        status = SIXEL_BAD_ARGUMENT;
+        break;
     }
-
-    status = SIXEL_OK;
 
 end:
     return status;
