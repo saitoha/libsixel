@@ -38,6 +38,7 @@
 
 #include <sixel.h>
 
+#include "threading.h"
 #include "pixelformat.h"
 
 #define SIXEL_OKLAB_AB_FLOAT_MIN (-0.5f)
@@ -895,6 +896,8 @@ static unsigned char palette_table1[256][8];
 static unsigned char palette_table2[256][4];
 static unsigned char palette_table4[256][2];
 static int palette_table_initialized;
+static sixel_mutex_t palette_table_mutex;
+static int palette_table_mutex_ready;
 
 
 static void
@@ -902,6 +905,7 @@ sixel_init_palette_tables(void)
 {
     int value;
     int i;
+    int init_result;
 
     /*
      * Tables are generated once on first use to avoid increasing the
@@ -909,6 +913,23 @@ sixel_init_palette_tables(void)
      */
     if (palette_table_initialized) {
         return;
+    }
+
+    if (palette_table_mutex_ready == 0) {
+        init_result = sixel_mutex_init(&palette_table_mutex);
+        if (init_result == 0) {
+            palette_table_mutex_ready = 1;
+        } else {
+            palette_table_mutex_ready = -1;
+        }
+    }
+
+    if (palette_table_mutex_ready == 1) {
+        sixel_mutex_lock(&palette_table_mutex);
+        if (palette_table_initialized) {
+            sixel_mutex_unlock(&palette_table_mutex);
+            return;
+        }
     }
 
     for (value = 0; value < 256; ++value) {
@@ -929,6 +950,15 @@ sixel_init_palette_tables(void)
     }
 
     palette_table_initialized = 1;
+
+    /*
+     * When mutex creation fails, we still proceed without the lock so the
+     * tables are usable. Multiple writers are harmless because the
+     * computed values are deterministic and identical for every call.
+     */
+    if (palette_table_mutex_ready == 1) {
+        sixel_mutex_unlock(&palette_table_mutex);
+    }
 }
 
 
