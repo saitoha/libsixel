@@ -1380,7 +1380,20 @@ sixel_frame_resize_float32(
             sixel_frame_float_pixelformat_for_colorspace(
                 frame->colorspace);
     } else {
-        target_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+        /*
+         * Resampling in gamma-encoded RGB is inaccurate, so gamma and SMPTE-C
+         * frames are promoted to linear RGB. Other working spaces such as
+         * OKLab should remain in their native basis while scaling to avoid
+         * misinterpreting channels as RGB.
+         */
+        if (frame->colorspace == SIXEL_COLORSPACE_GAMMA
+            || frame->colorspace == SIXEL_COLORSPACE_SMPTEC) {
+            target_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
+        } else {
+            target_pixelformat =
+                sixel_frame_float_pixelformat_for_colorspace(
+                    frame->colorspace);
+        }
     }
 
     status = sixel_frame_set_pixelformat(frame, target_pixelformat);

@@ -2866,6 +2866,7 @@ sixel_encoding_planner_init(sixel_encoding_planner_t *planner)
     planner->heavy_ops = 0;
     planner->working_pixelformat = SIXEL_PIXELFORMAT_RGB888;
     planner->scale_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    planner->colorspace_before_scale = 0;
     planner->pipeline_active = 0;
     planner->pipeline_band_height = 0;
     planner->pipeline_overlap = 0;
@@ -2922,6 +2923,7 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     int prefer_float32;
     int resample_is_heavy;
     int float_resize_required;
+    int colorspace_before_scale;
 
     if (planner == NULL || encoder == NULL || frame == NULL) {
         return;
@@ -2949,6 +2951,7 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
         : 0;
     source_colorspace = sixel_frame_get_colorspace(frame);
     prefer_float32 = encoder->prefer_float32;
+    colorspace_before_scale = 0;
     target_pixelformat = sixel_encoder_pixelformat_for_colorspace(
         encoder->working_colorspace,
         prefer_float32);
@@ -2973,12 +2976,41 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
         if (resample_is_heavy != 0 && prefer_float32 != 0) {
             float_resize_required = 1;
         }
+        if (float_resize_required != 0
+            && planner->colorspace_active != 0) {
+            /*
+             * Float resampling must read float pixels. When conversion to the
+             * working colorspace is required, move the colorspace filter
+             * ahead of resize so the scaler consumes the promoted format
+             * instead of interpreting 8-bit data as float.
+             */
+            colorspace_before_scale = 1;
+        }
         if (float_resize_required != 0) {
             scale_pixelformat = target_pixelformat;
         }
     }
 
+    if (colorspace_before_scale != 0
+        && (target_pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32
+            || target_pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32
+            || target_pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32
+            || target_pixelformat == SIXEL_PIXELFORMAT_YUVFLOAT32)) {
+        /*
+         * Uniform color spaces are converted after scaling. Interpolating in
+         * RGB and converting once avoids feeding non-RGB bases to the scaler
+         * and matches the expected working colorspace handoff.
+         */
+        colorspace_before_scale = 0;
+        scale_pixelformat = sixel_frame_get_pixelformat(frame);
+    }
+
+    if (colorspace_before_scale == 0) {
+        scale_pixelformat = sixel_frame_get_pixelformat(frame);
+    }
+
     planner->scale_pixelformat = scale_pixelformat;
+    planner->colorspace_before_scale = colorspace_before_scale;
 
     planner->heavy_ops = planner->clip_active
         + planner->scale_active
@@ -3233,6 +3265,7 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
     int clip_active;
     int clip_first;
     int vpte_active;
+    int colorspace_before_scale;
     FILE *stream;
 
     if (planner == NULL || encoder == NULL || frame == NULL) {
@@ -3244,6 +3277,7 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
     scale_active = planner->scale_active;
     clip_active = planner->clip_active;
     clip_first = encoder->clipfirst ? 1 : 0;
+    colorspace_before_scale = planner->colorspace_before_scale;
     vpte_active = (palette_ready != 0
                    && encoder->lut_policy == SIXEL_LUT_POLICY_VPTE)
         ? 1
@@ -3294,20 +3328,47 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
                 "    load -> palette%s -> dither\n",
                 vpte_active != 0 ? " -> vpte" : "");
     }
-    fprintf(stream, "    load -> %s\n",
-            colorspace_active != 0 ? "colorspace" : "dither");
-    if (colorspace_active != 0) {
+    if (clip_first != 0 && clip_active != 0) {
+        fprintf(stream, "    load -> clip\n");
+    } else if (colorspace_active != 0 && colorspace_before_scale != 0) {
+        fprintf(stream, "    load -> colorspace\n");
+    } else if (scale_active != 0) {
+        fprintf(stream, "    load -> scale\n");
+    } else if (clip_active != 0) {
+        fprintf(stream, "    load -> clip\n");
+    } else {
+        fprintf(stream, "    load -> dither\n");
+    }
+
+    if (clip_first != 0 && clip_active != 0) {
+        fprintf(stream, "    clip -> %s\n",
+                colorspace_active != 0 && colorspace_before_scale != 0
+                    ? "colorspace"
+                    : (scale_active != 0 ? "scale" : "dither"));
+    }
+    if (colorspace_active != 0 && colorspace_before_scale != 0) {
         fprintf(stream, "    colorspace -> %s\n",
                 scale_active != 0
-                    ? (clip_first != 0 ? "clip" : "scale")
+                    ? (clip_first != 0 ? "scale" : "clip")
                     : (clip_active != 0 ? "clip" : "dither"));
     }
     if (scale_active != 0) {
         fprintf(stream, "    scale -> %s\n",
-                clip_active != 0 ? "clip" : "dither");
+                clip_active != 0
+                    ? (clip_first != 0 ? "clip" : "colorspace")
+                    : (colorspace_active != 0
+                           && colorspace_before_scale == 0
+                           ? "colorspace"
+                           : "dither"));
     }
-    if (clip_active != 0) {
-        fprintf(stream, "    clip -> dither\n");
+    if (clip_active != 0 && (clip_first == 0 || scale_active == 0)) {
+        fprintf(stream, "    clip -> %s\n",
+                colorspace_active != 0 && colorspace_before_scale == 0
+                    ? "colorspace"
+                    : "dither");
+    }
+    if (colorspace_active != 0 && colorspace_before_scale == 0) {
+        fprintf(stream, "    colorspace -> dither\n");
     }
     fprintf(stream, "    dither -> encode (%s)\n",
             planner->pipeline_active != 0 ? "pipeline" : "serial");
@@ -5001,6 +5062,25 @@ sixel_encoder_encode_frame(
         }
     }
 
+    if (planner != NULL && planner->colorspace_before_scale != 0
+        && planner->colorspace_active != 0) {
+        colors_config.target_pixelformat = planner->working_pixelformat;
+        status = sixel_encoder_filter_plan_append(&pre_plan,
+                                                  SIXEL_FILTER_KIND_COLORS,
+                                                  &colors_config,
+                                                  &frame,
+                                                  current_pixelformat,
+                                                  current_colorspace,
+                                                  planner->working_pixelformat,
+                                                  encoder->working_colorspace,
+                                                  height);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        current_pixelformat = planner->working_pixelformat;
+        current_colorspace = encoder->working_colorspace;
+    }
+
     if (planner != NULL && planner->scale_active != 0) {
         status = sixel_encoder_filter_plan_append(&pre_plan,
                                                   SIXEL_FILTER_KIND_RESIZE,
@@ -5032,7 +5112,8 @@ sixel_encoder_encode_frame(
         }
     }
 
-    if (planner != NULL && planner->colorspace_active != 0) {
+    if (planner != NULL && planner->colorspace_active != 0
+        && planner->colorspace_before_scale == 0) {
         colors_config.target_pixelformat = planner->working_pixelformat;
         status = sixel_encoder_filter_plan_append(&pre_plan,
                                                   SIXEL_FILTER_KIND_COLORS,
