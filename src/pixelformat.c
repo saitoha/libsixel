@@ -900,7 +900,7 @@ static sixel_mutex_t palette_table_mutex;
 static int palette_table_mutex_ready;
 
 
-static void
+static int
 sixel_init_palette_tables(void)
 {
     int value;
@@ -912,7 +912,7 @@ sixel_init_palette_tables(void)
      * binary size with large static initializers.
      */
     if (palette_table_initialized) {
-        return;
+        return 1;
     }
 
     if (palette_table_mutex_ready == 0) {
@@ -924,11 +924,20 @@ sixel_init_palette_tables(void)
         }
     }
 
+    if (palette_table_mutex_ready < 0) {
+        /*
+         * Without a mutex we cannot guarantee a race-free initialization.
+         * Defer to the shift-based fallback path so multiple threads do not
+         * write the static tables concurrently.
+         */
+        return 0;
+    }
+
     if (palette_table_mutex_ready == 1) {
         sixel_mutex_lock(&palette_table_mutex);
         if (palette_table_initialized) {
             sixel_mutex_unlock(&palette_table_mutex);
-            return;
+            return 1;
         }
     }
 
@@ -952,13 +961,12 @@ sixel_init_palette_tables(void)
     palette_table_initialized = 1;
 
     /*
-     * When mutex creation fails, we still proceed without the lock so the
-     * tables are usable. Multiple writers are harmless because the
-     * computed values are deterministic and identical for every call.
+     * Release the mutex after the single initialization pass so later calls
+     * can reuse the tables without redundant locking.
      */
-    if (palette_table_mutex_ready == 1) {
-        sixel_mutex_unlock(&palette_table_mutex);
-    }
+    sixel_mutex_unlock(&palette_table_mutex);
+
+    return 1;
 }
 
 
@@ -1079,6 +1087,52 @@ sixel_expand_palette_bpp4(unsigned char *dst,
 }
 
 
+/*
+ * Fallback path that mirrors the original shift-and-mask expansion for
+ * packed palette formats. This is selected when the lookup tables cannot be
+ * initialized, preserving correctness without concurrent writes to the
+ * static buffers.
+ */
+static void
+sixel_expand_palette_fallback(unsigned char *dst,
+                              unsigned char const *src,
+                              int width,
+                              int height,
+                              int bpp)
+{
+    int x;
+    int y;
+    int i;
+    int bytes_per_row;
+    int remainder;
+    int bits_per_byte;
+    int mask;
+
+    bits_per_byte = 8 / bpp;
+    mask = (1 << bpp) - 1;
+    bytes_per_row = width * bpp / 8;
+    remainder = width - bytes_per_row * bits_per_byte;
+
+    for (y = 0; y < height; ++y) {
+        for (x = 0; x < bytes_per_row; ++x) {
+            for (i = 0; i < bits_per_byte; ++i) {
+                *dst++ = (unsigned char)((src[0] >>
+                    (bits_per_byte - 1 - i) * bpp) & mask);
+            }
+            ++src;
+        }
+
+        if (remainder > 0) {
+            for (i = 0; i < remainder; ++i) {
+                *dst++ = (unsigned char)((src[0] >>
+                    (bits_per_byte * bpp - (i + 1) * bpp)) & mask);
+            }
+            ++src;
+        }
+    }
+}
+
+
 static SIXELSTATUS
 expand_palette(unsigned char *dst, unsigned char const *src,
                int width, int height, int const pixelformat)
@@ -1087,8 +1141,10 @@ expand_palette(unsigned char *dst, unsigned char const *src,
     int i;
     int bpp;  /* bit per plane */
     int use_palette_tables;
+    int tables_ready;
 
     use_palette_tables = 0;
+    tables_ready = 0;
 
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
@@ -1125,34 +1181,44 @@ expand_palette(unsigned char *dst, unsigned char const *src,
          * Initialize lookup tables only when packed palette input is
          * present. Formats that are already 8 bpp avoid the setup cost.
          */
-        sixel_init_palette_tables();
+        tables_ready = sixel_init_palette_tables();
     }
 
 #if HAVE_DEBUG
     fprintf(stderr, "expanding PAL%d to PAL8...\n", bpp);
 #endif
 
-    /*
-     * Use lookup tables to unroll packed indices. Each path copies an
-     * entire byte of indices in one memcpy, leaving only a small
-     * remainder loop per row for widths that are not byte-aligned.
-     */
-    switch (bpp) {
-    case 1:
-        sixel_expand_palette_bpp1(dst, src, width, height);
+    if (tables_ready) {
+        /*
+         * Use lookup tables to unroll packed indices. Each path copies an
+         * entire byte of indices in one memcpy, leaving only a small
+         * remainder loop per row for widths that are not byte-aligned.
+         */
+        switch (bpp) {
+        case 1:
+            sixel_expand_palette_bpp1(dst, src, width, height);
+            status = SIXEL_OK;
+            break;
+        case 2:
+            sixel_expand_palette_bpp2(dst, src, width, height);
+            status = SIXEL_OK;
+            break;
+        case 4:
+            sixel_expand_palette_bpp4(dst, src, width, height);
+            status = SIXEL_OK;
+            break;
+        default:
+            status = SIXEL_BAD_ARGUMENT;
+            break;
+        }
+    } else {
+        /*
+         * Mutex initialization failed or tables are unavailable.
+         * Fall back to the original shift-based expansion to avoid
+         * concurrent writes to the static lookup buffers.
+         */
+        sixel_expand_palette_fallback(dst, src, width, height, bpp);
         status = SIXEL_OK;
-        break;
-    case 2:
-        sixel_expand_palette_bpp2(dst, src, width, height);
-        status = SIXEL_OK;
-        break;
-    case 4:
-        sixel_expand_palette_bpp4(dst, src, width, height);
-        status = SIXEL_OK;
-        break;
-    default:
-        status = SIXEL_BAD_ARGUMENT;
-        break;
     }
 
 end:
