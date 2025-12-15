@@ -623,20 +623,41 @@ expand_rgb(unsigned char *dst,
 {
     int x;
     int y;
-    int dst_offset;
-    int src_offset;
+    int dst_stride;
+    int src_stride;
+    unsigned char const *src_row;
+    unsigned char const *src_pixel;
+    unsigned char *dst_row;
+    unsigned char *dst_pixel;
     unsigned char r, g, b;
 
-    for (y = 0; y < height; y++) {
-        for (x = 0; x < width; x++) {
-            src_offset = depth * (y * width + x);
-            dst_offset = 3 * (y * width + x);
-            get_rgb(src + src_offset, pixelformat, depth, &r, &g, &b);
+    /*
+     * Pre-compute strides to avoid repeated multiplications in
+     * the inner loop. The caller guarantees that the buffers are
+     * large enough, so we can advance pointers by depth/3 bytes
+     * per pixel instead of recalculating offsets each time.
+     */
+    dst_stride = width * 3;
+    src_stride = width * depth;
+    src_row = src;
+    dst_row = dst;
 
-            *(dst + dst_offset + 0) = r;
-            *(dst + dst_offset + 1) = g;
-            *(dst + dst_offset + 2) = b;
+    for (y = 0; y < height; y++) {
+        src_pixel = src_row;
+        dst_pixel = dst_row;
+        for (x = 0; x < width; x++) {
+            get_rgb(src_pixel, pixelformat, depth, &r, &g, &b);
+
+            dst_pixel[0] = r;
+            dst_pixel[1] = g;
+            dst_pixel[2] = b;
+
+            src_pixel += depth;
+            dst_pixel += 3;
         }
+
+        src_row += src_stride;
+        dst_row += dst_stride;
     }
 }
 
