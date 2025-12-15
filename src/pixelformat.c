@@ -38,6 +38,8 @@
 
 #include <sixel.h>
 
+#include "compat_stub.h"
+#include "threading.h"
 #include "pixelformat.h"
 
 #define SIXEL_OKLAB_AB_FLOAT_MIN (-0.5f)
@@ -427,141 +429,355 @@ sixel_pixelformat_byte_to_float(int pixelformat,
     return (float)value / 255.0f;
 }
 
-static void
-get_rgb(unsigned char const *data,
-        int const pixelformat,
-        int depth,
-        unsigned char *r,
-        unsigned char *g,
-        unsigned char *b)
+typedef void (*sixel_rgb_reader_t)(unsigned char const *data,
+                                    unsigned char *r,
+                                    unsigned char *g,
+                                    unsigned char *b);
+
+
+static unsigned int
+sixel_rgb_read16(unsigned char const *data)
 {
-    unsigned int pixels = 0;
+    unsigned int pixels;
 #if SWAP_BYTES
     unsigned int low;
     unsigned int high;
 #endif
-    int count = 0;
 
-    if (pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32
-            || pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
-        float const *fpixels = (float const *)(void const *)data;
+    pixels = ((unsigned int)data[0] << 8) | (unsigned int)data[1];
 
-        *r = sixel_pixelformat_float_to_byte(fpixels[0]);
-        *g = sixel_pixelformat_float_to_byte(fpixels[1]);
-        *b = sixel_pixelformat_float_to_byte(fpixels[2]);
-        return;
-    }
-    if (pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32) {
-        float const *fpixels = (float const *)(void const *)data;
-
-        *r = sixel_pixelformat_oklab_L_to_byte(fpixels[0]);
-        *g = sixel_pixelformat_oklab_ab_to_byte(fpixels[1]);
-        *b = sixel_pixelformat_oklab_ab_to_byte(fpixels[2]);
-        return;
-    }
-    if (pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32) {
-        float const *fpixels = (float const *)(void const *)data;
-
-        *r = sixel_pixelformat_cielab_L_to_byte(fpixels[0]);
-        *g = sixel_pixelformat_cielab_ab_to_byte(fpixels[1]);
-        *b = sixel_pixelformat_cielab_ab_to_byte(fpixels[2]);
-        return;
-    }
-    if (pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32) {
-        float const *fpixels = (float const *)(void const *)data;
-
-        *r = sixel_pixelformat_din99d_L_to_byte(fpixels[0]);
-        *g = sixel_pixelformat_din99d_ab_to_byte(fpixels[1]);
-        *b = sixel_pixelformat_din99d_ab_to_byte(fpixels[2]);
-        return;
-    }
-    if (pixelformat == SIXEL_PIXELFORMAT_YUVFLOAT32) {
-        float const *fpixels = (float const *)(void const *)data;
-
-        *r = sixel_pixelformat_float_to_byte(fpixels[0]);
-        *g = sixel_pixelformat_yuv_chroma_to_byte(fpixels[1],
-                                                  SIXEL_YUV_U_FLOAT_MAX);
-        *b = sixel_pixelformat_yuv_chroma_to_byte(fpixels[2],
-                                                  SIXEL_YUV_V_FLOAT_MAX);
-        return;
-    }
-
-    while (count < depth) {
-        pixels = *(data + count) | (pixels << 8);
-        count++;
-    }
-
-    /* TODO: we should swap bytes (only necessary on LSByte first hardware?) */
 #if SWAP_BYTES
-    if (depth == 2) {
-        low    = pixels & 0xff;
-        high   = (pixels >> 8) & 0xff;
-        pixels = (low << 8) | high;
-    }
+    low = pixels & 0xff;
+    high = (pixels >> 8) & 0xff;
+    pixels = (low << 8) | high;
 #endif
 
+    return pixels;
+}
+
+
+static void
+sixel_rgb_from_rgb555(unsigned char const *data,
+                      unsigned char *r,
+                      unsigned char *g,
+                      unsigned char *b)
+{
+    unsigned int pixels;
+
+    pixels = sixel_rgb_read16(data);
+
+    *r = ((pixels >> 10) & 0x1f) << 3;
+    *g = ((pixels >> 5) & 0x1f) << 3;
+    *b = ((pixels >> 0) & 0x1f) << 3;
+}
+
+
+static void
+sixel_rgb_from_rgb565(unsigned char const *data,
+                      unsigned char *r,
+                      unsigned char *g,
+                      unsigned char *b)
+{
+    unsigned int pixels;
+
+    pixels = sixel_rgb_read16(data);
+
+    *r = ((pixels >> 11) & 0x1f) << 3;
+    *g = ((pixels >> 5) & 0x3f) << 2;
+    *b = ((pixels >> 0) & 0x1f) << 3;
+}
+
+
+static void
+sixel_rgb_from_bgr555(unsigned char const *data,
+                      unsigned char *r,
+                      unsigned char *g,
+                      unsigned char *b)
+{
+    unsigned int pixels;
+
+    pixels = sixel_rgb_read16(data);
+
+    *r = ((pixels >> 0) & 0x1f) << 3;
+    *g = ((pixels >> 5) & 0x1f) << 3;
+    *b = ((pixels >> 10) & 0x1f) << 3;
+}
+
+
+static void
+sixel_rgb_from_bgr565(unsigned char const *data,
+                      unsigned char *r,
+                      unsigned char *g,
+                      unsigned char *b)
+{
+    unsigned int pixels;
+
+    pixels = sixel_rgb_read16(data);
+
+    *r = ((pixels >> 0) & 0x1f) << 3;
+    *g = ((pixels >> 5) & 0x3f) << 2;
+    *b = ((pixels >> 11) & 0x1f) << 3;
+}
+
+
+static void
+sixel_rgb_from_ga88(unsigned char const *data,
+                    unsigned char *r,
+                    unsigned char *g,
+                    unsigned char *b)
+{
+    unsigned int pixels;
+
+    pixels = sixel_rgb_read16(data);
+
+    *r = (pixels >> 8) & 0xff;
+    *g = (pixels >> 8) & 0xff;
+    *b = (pixels >> 8) & 0xff;
+}
+
+
+static void
+sixel_rgb_from_ag88(unsigned char const *data,
+                    unsigned char *r,
+                    unsigned char *g,
+                    unsigned char *b)
+{
+    unsigned int pixels;
+
+    pixels = sixel_rgb_read16(data);
+
+    *r = pixels & 0xff;
+    *g = pixels & 0xff;
+    *b = pixels & 0xff;
+}
+
+
+static void
+sixel_rgb_from_rgb888(unsigned char const *data,
+                      unsigned char *r,
+                      unsigned char *g,
+                      unsigned char *b)
+{
+    *r = data[0];
+    *g = data[1];
+    *b = data[2];
+}
+
+
+static void
+sixel_rgb_from_bgr888(unsigned char const *data,
+                      unsigned char *r,
+                      unsigned char *g,
+                      unsigned char *b)
+{
+    *r = data[2];
+    *g = data[1];
+    *b = data[0];
+}
+
+
+static void
+sixel_rgb_from_rgba8888(unsigned char const *data,
+                        unsigned char *r,
+                        unsigned char *g,
+                        unsigned char *b)
+{
+    *r = data[0];
+    *g = data[1];
+    *b = data[2];
+}
+
+
+static void
+sixel_rgb_from_argb8888(unsigned char const *data,
+                        unsigned char *r,
+                        unsigned char *g,
+                        unsigned char *b)
+{
+    *r = data[1];
+    *g = data[2];
+    *b = data[3];
+}
+
+
+static void
+sixel_rgb_from_bgra8888(unsigned char const *data,
+                        unsigned char *r,
+                        unsigned char *g,
+                        unsigned char *b)
+{
+    *r = data[2];
+    *g = data[1];
+    *b = data[0];
+}
+
+
+static void
+sixel_rgb_from_abgr8888(unsigned char const *data,
+                        unsigned char *r,
+                        unsigned char *g,
+                        unsigned char *b)
+{
+    *r = data[3];
+    *g = data[2];
+    *b = data[1];
+}
+
+
+static void
+sixel_rgb_from_g8(unsigned char const *data,
+                  unsigned char *r,
+                  unsigned char *g,
+                  unsigned char *b)
+{
+    *r = data[0];
+    *g = data[0];
+    *b = data[0];
+}
+
+
+static void
+sixel_rgb_from_rgbfloat32(unsigned char const *data,
+                          unsigned char *r,
+                          unsigned char *g,
+                          unsigned char *b)
+{
+    float const *fpixels;
+
+    fpixels = (float const *)(void const *)data;
+
+    *r = sixel_pixelformat_float_to_byte(fpixels[0]);
+    *g = sixel_pixelformat_float_to_byte(fpixels[1]);
+    *b = sixel_pixelformat_float_to_byte(fpixels[2]);
+}
+
+
+static void
+sixel_rgb_from_oklabfloat32(unsigned char const *data,
+                            unsigned char *r,
+                            unsigned char *g,
+                            unsigned char *b)
+{
+    float const *fpixels;
+
+    fpixels = (float const *)(void const *)data;
+
+    *r = sixel_pixelformat_oklab_L_to_byte(fpixels[0]);
+    *g = sixel_pixelformat_oklab_ab_to_byte(fpixels[1]);
+    *b = sixel_pixelformat_oklab_ab_to_byte(fpixels[2]);
+}
+
+
+static void
+sixel_rgb_from_cielabfloat32(unsigned char const *data,
+                             unsigned char *r,
+                             unsigned char *g,
+                             unsigned char *b)
+{
+    float const *fpixels;
+
+    fpixels = (float const *)(void const *)data;
+
+    *r = sixel_pixelformat_cielab_L_to_byte(fpixels[0]);
+    *g = sixel_pixelformat_cielab_ab_to_byte(fpixels[1]);
+    *b = sixel_pixelformat_cielab_ab_to_byte(fpixels[2]);
+}
+
+
+static void
+sixel_rgb_from_din99dfloat32(unsigned char const *data,
+                             unsigned char *r,
+                             unsigned char *g,
+                             unsigned char *b)
+{
+    float const *fpixels;
+
+    fpixels = (float const *)(void const *)data;
+
+    *r = sixel_pixelformat_din99d_L_to_byte(fpixels[0]);
+    *g = sixel_pixelformat_din99d_ab_to_byte(fpixels[1]);
+    *b = sixel_pixelformat_din99d_ab_to_byte(fpixels[2]);
+}
+
+
+static void
+sixel_rgb_from_yuvfloat32(unsigned char const *data,
+                          unsigned char *r,
+                          unsigned char *g,
+                          unsigned char *b)
+{
+    float const *fpixels;
+
+    fpixels = (float const *)(void const *)data;
+
+    *r = sixel_pixelformat_float_to_byte(fpixels[0]);
+    *g = sixel_pixelformat_yuv_chroma_to_byte(fpixels[1],
+                                              SIXEL_YUV_U_FLOAT_MAX);
+    *b = sixel_pixelformat_yuv_chroma_to_byte(fpixels[2],
+                                              SIXEL_YUV_V_FLOAT_MAX);
+}
+
+
+static void
+sixel_rgb_from_unknown(unsigned char const *data,
+                       unsigned char *r,
+                       unsigned char *g,
+                       unsigned char *b)
+{
+    (void)data;
+
+    *r = 0;
+    *g = 0;
+    *b = 0;
+}
+
+
+static sixel_rgb_reader_t
+sixel_select_rgb_reader(int pixelformat)
+{
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_RGB555:
-        *r = ((pixels >> 10) & 0x1f) << 3;
-        *g = ((pixels >>  5) & 0x1f) << 3;
-        *b = ((pixels >>  0) & 0x1f) << 3;
-        break;
+        return sixel_rgb_from_rgb555;
     case SIXEL_PIXELFORMAT_RGB565:
-        *r = ((pixels >> 11) & 0x1f) << 3;
-        *g = ((pixels >>  5) & 0x3f) << 2;
-        *b = ((pixels >>  0) & 0x1f) << 3;
-        break;
+        return sixel_rgb_from_rgb565;
     case SIXEL_PIXELFORMAT_RGB888:
-        *r = (pixels >> 16) & 0xff;
-        *g = (pixels >>  8) & 0xff;
-        *b = (pixels >>  0) & 0xff;
-        break;
-    case SIXEL_PIXELFORMAT_BGR555:
-        *r = ((pixels >>  0) & 0x1f) << 3;
-        *g = ((pixels >>  5) & 0x1f) << 3;
-        *b = ((pixels >> 10) & 0x1f) << 3;
-        break;
-    case SIXEL_PIXELFORMAT_BGR565:
-        *r = ((pixels >>  0) & 0x1f) << 3;
-        *g = ((pixels >>  5) & 0x3f) << 2;
-        *b = ((pixels >> 11) & 0x1f) << 3;
-        break;
-    case SIXEL_PIXELFORMAT_BGR888:
-        *r = (pixels >>  0) & 0xff;
-        *g = (pixels >>  8) & 0xff;
-        *b = (pixels >> 16) & 0xff;
-        break;
+        return sixel_rgb_from_rgb888;
     case SIXEL_PIXELFORMAT_RGBA8888:
-        *r = (pixels >> 24) & 0xff;
-        *g = (pixels >> 16) & 0xff;
-        *b = (pixels >>  8) & 0xff;
-        break;
+        return sixel_rgb_from_rgba8888;
     case SIXEL_PIXELFORMAT_ARGB8888:
-        *r = (pixels >> 16) & 0xff;
-        *g = (pixels >>  8) & 0xff;
-        *b = (pixels >>  0) & 0xff;
-        break;
+        return sixel_rgb_from_argb8888;
+    case SIXEL_PIXELFORMAT_BGR555:
+        return sixel_rgb_from_bgr555;
+    case SIXEL_PIXELFORMAT_BGR565:
+        return sixel_rgb_from_bgr565;
+    case SIXEL_PIXELFORMAT_BGR888:
+        return sixel_rgb_from_bgr888;
     case SIXEL_PIXELFORMAT_BGRA8888:
-        *r = (pixels >>  8) & 0xff;
-        *g = (pixels >> 16) & 0xff;
-        *b = (pixels >> 24) & 0xff;
-        break;
+        return sixel_rgb_from_bgra8888;
     case SIXEL_PIXELFORMAT_ABGR8888:
-        *r = (pixels >>  0) & 0xff;
-        *g = (pixels >>  8) & 0xff;
-        *b = (pixels >> 16) & 0xff;
-        break;
-    case SIXEL_PIXELFORMAT_GA88:
-        *r = *g = *b = (pixels >> 8) & 0xff;
-        break;
-    case SIXEL_PIXELFORMAT_G8:
+        return sixel_rgb_from_abgr8888;
     case SIXEL_PIXELFORMAT_AG88:
-        *r = *g = *b = pixels & 0xff;
-        break;
+        return sixel_rgb_from_ag88;
+    case SIXEL_PIXELFORMAT_GA88:
+        return sixel_rgb_from_ga88;
+    case SIXEL_PIXELFORMAT_G8:
+        return sixel_rgb_from_g8;
+    case SIXEL_PIXELFORMAT_RGBFLOAT32:
+    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
+        return sixel_rgb_from_rgbfloat32;
+    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
+        return sixel_rgb_from_oklabfloat32;
+    case SIXEL_PIXELFORMAT_CIELABFLOAT32:
+        return sixel_rgb_from_cielabfloat32;
+    case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
+        return sixel_rgb_from_din99dfloat32;
+    case SIXEL_PIXELFORMAT_YUVFLOAT32:
+        return sixel_rgb_from_yuvfloat32;
     default:
-        *r = *g = *b = 0;
         break;
     }
+
+    return sixel_rgb_from_unknown;
 }
 
 
@@ -616,59 +832,420 @@ sixel_helper_compute_depth(int pixelformat)
 
 
 static void
-expand_rgb(unsigned char *dst,
-           unsigned char const *src,
+expand_rgb(unsigned char *restrict dst,
+           unsigned char const *restrict src,
            int width, int height,
            int pixelformat, int depth)
 {
     int x;
     int y;
-    int dst_offset;
-    int src_offset;
-    unsigned char r, g, b;
+    int dst_stride;
+    int src_stride;
+    sixel_rgb_reader_t reader;
+    unsigned char const *src_row;
+    unsigned char const *src_pixel;
+    unsigned char *dst_row;
+    unsigned char *dst_pixel;
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+
+    /*
+     * Select the reader once to avoid per-pixel branching. The lookup
+     * maps each pixelformat to a dedicated decoder so the inner loop
+     * only performs pointer math and byte stores.
+     */
+    reader = sixel_select_rgb_reader(pixelformat);
+
+    /*
+     * Pre-compute strides to avoid repeated multiplications in the
+     * inner loop. The caller guarantees that the buffers are large
+     * enough, so we can advance pointers by depth/3 bytes per pixel
+     * instead of recalculating offsets each time.
+     */
+    dst_stride = width * 3;
+    src_stride = width * depth;
+    src_row = src;
+    dst_row = dst;
 
     for (y = 0; y < height; y++) {
+        src_pixel = src_row;
+        dst_pixel = dst_row;
         for (x = 0; x < width; x++) {
-            src_offset = depth * (y * width + x);
-            dst_offset = 3 * (y * width + x);
-            get_rgb(src + src_offset, pixelformat, depth, &r, &g, &b);
+            reader(src_pixel, &r, &g, &b);
 
-            *(dst + dst_offset + 0) = r;
-            *(dst + dst_offset + 1) = g;
-            *(dst + dst_offset + 2) = b;
+            dst_pixel[0] = r;
+            dst_pixel[1] = g;
+            dst_pixel[2] = b;
+
+            src_pixel += depth;
+            dst_pixel += 3;
+        }
+
+        src_row += src_stride;
+        dst_row += dst_stride;
+    }
+}
+
+
+/*
+ * Lookup tables for expanding packed palette indices. Each entry holds
+ * the unpacked values for one input byte so the inner loops only copy
+ * precomputed bytes instead of shifting each pixel.
+ */
+static unsigned char palette_table1[256][8];
+static unsigned char palette_table2[256][4];
+static unsigned char palette_table4[256][2];
+static int palette_table_initialized;
+static sixel_mutex_t palette_table_mutex;
+static int palette_table_mutex_ready;
+
+
+static int
+sixel_init_palette_tables(void)
+{
+    char const *disable_tables;
+    int value;
+    int i;
+    int init_result;
+
+    /*
+     * Allow tests to force the shift-based path by disabling table
+     * initialization via SIXEL_PALETTE_DISABLE_TABLES. This exercises
+     * the fallback without introducing additional code paths in
+     * production builds.
+     */
+    disable_tables = sixel_compat_getenv(
+            "SIXEL_PALETTE_DISABLE_TABLES");
+    if (disable_tables != NULL && disable_tables[0] != '\0' &&
+            disable_tables[0] != '0') {
+        return 0;
+    }
+
+    /*
+     * Tables are generated once on first use to avoid increasing the
+     * binary size with large static initializers.
+     */
+    if (palette_table_initialized) {
+        return 1;
+    }
+
+    if (palette_table_mutex_ready == 0) {
+        init_result = sixel_mutex_init(&palette_table_mutex);
+        if (init_result == 0) {
+            palette_table_mutex_ready = 1;
+        } else {
+            palette_table_mutex_ready = -1;
+        }
+    }
+
+    if (palette_table_mutex_ready < 0) {
+        /*
+         * Without a mutex we cannot guarantee a race-free initialization.
+         * Defer to the shift-based fallback path so multiple threads do not
+         * write the static tables concurrently.
+         */
+        return 0;
+    }
+
+    if (palette_table_mutex_ready == 1) {
+        sixel_mutex_lock(&palette_table_mutex);
+        if (palette_table_initialized) {
+            sixel_mutex_unlock(&palette_table_mutex);
+            return 1;
+        }
+    }
+
+    for (value = 0; value < 256; ++value) {
+        for (i = 0; i < 8; ++i) {
+            palette_table1[value][i] =
+                (unsigned char)((value >> (7 - i)) & 0x01);
+        }
+
+        for (i = 0; i < 4; ++i) {
+            palette_table2[value][i] =
+                (unsigned char)((value >> (6 - i * 2)) & 0x03);
+        }
+
+        for (i = 0; i < 2; ++i) {
+            palette_table4[value][i] =
+                (unsigned char)((value >> (4 - i * 4)) & 0x0f);
+        }
+    }
+
+    palette_table_initialized = 1;
+
+    /*
+     * Release the mutex after the single initialization pass so later calls
+     * can reuse the tables without redundant locking.
+     */
+    sixel_mutex_unlock(&palette_table_mutex);
+
+    return 1;
+}
+
+
+/*
+ * Expand packed 1 bpp rows by copying a precomputed 8-pixel block per
+ * source byte. A tiny tail loop handles the remainder when width is not
+ * divisible by 8.
+ */
+static void
+sixel_expand_palette_bpp1(unsigned char *restrict dst,
+                          unsigned char const *restrict src,
+                          int width, int height)
+{
+    int y;
+    int x;
+    int remainder;
+    int byte_count;
+    unsigned char const *table_entry;
+
+    byte_count = width / 8;
+    remainder = width - byte_count * 8;
+
+    if (remainder == 0) {
+        /*
+         * Fast path for byte-aligned rows. Removing the per-row
+         * remainder branch keeps the steady-state inner loop tight.
+         */
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < byte_count; ++x) {
+                table_entry = palette_table1[src[0]];
+                memcpy(dst, table_entry, 8);
+                dst += 8;
+                src += 1;
+            }
+        }
+    } else {
+        /*
+         * Handle rows with a short tail. The main loop still copies a
+         * precomputed 8-pixel block per byte while the tail is expanded
+         * via a short memcpy so the steady-state loop remains branch free.
+         */
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < byte_count; ++x) {
+                table_entry = palette_table1[src[0]];
+                memcpy(dst, table_entry, 8);
+                dst += 8;
+                src += 1;
+            }
+
+            table_entry = palette_table1[src[0]];
+            memcpy(dst, table_entry, (size_t)remainder);
+            dst += remainder;
+            src += 1;
+        }
+    }
+}
+
+
+/*
+ * Expand packed 2 bpp rows. Each lookup yields four pixels so the inner
+ * loop becomes a memcpy per byte, followed by a small tail when the row
+ * width leaves a remainder.
+ */
+static void
+sixel_expand_palette_bpp2(unsigned char *restrict dst,
+                          unsigned char const *restrict src,
+                          int width, int height)
+{
+    int y;
+    int x;
+    int remainder;
+    int byte_count;
+    unsigned char const *table_entry;
+
+    byte_count = width / 4;
+    remainder = width - byte_count * 4;
+
+    if (remainder == 0) {
+        /*
+         * Width aligned to 4 pixels: skip the tail branch and keep the
+         * inner loop limited to memcpy plus pointer bumps.
+         */
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < byte_count; ++x) {
+                table_entry = palette_table2[src[0]];
+                memcpy(dst, table_entry, 4);
+                dst += 4;
+                src += 1;
+            }
+        }
+    } else {
+        /*
+         * Non-multiple-of-four widths still use the table for the bulk
+         * of each row and append the remaining pixels via a short memcpy.
+         */
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < byte_count; ++x) {
+                table_entry = palette_table2[src[0]];
+                memcpy(dst, table_entry, 4);
+                dst += 4;
+                src += 1;
+            }
+
+            table_entry = palette_table2[src[0]];
+            memcpy(dst, table_entry, (size_t)remainder);
+            dst += remainder;
+            src += 1;
+        }
+    }
+}
+
+
+/*
+ * Expand packed 4 bpp rows using two-pixel lookup entries. Like the
+ * other helpers, the remainder loop only executes when the row width is
+ * odd.
+ */
+static void
+sixel_expand_palette_bpp4(unsigned char *restrict dst,
+                          unsigned char const *restrict src,
+                          int width, int height)
+{
+    int y;
+    int x;
+    int remainder;
+    int byte_count;
+    unsigned char const *table_entry;
+
+    byte_count = width / 2;
+    remainder = width - byte_count * 2;
+
+    if (remainder == 0) {
+        /*
+         * When width is an even number of pixels the loop becomes a
+         * pure memcpy stream with no per-row branching.
+         */
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < byte_count; ++x) {
+                table_entry = palette_table4[src[0]];
+                memcpy(dst, table_entry, 2);
+                dst += 2;
+                src += 1;
+            }
+        }
+    } else {
+        /*
+         * Otherwise process the bulk via the lookup table and append the
+         * one remaining pixel with a short memcpy.
+         */
+        for (y = 0; y < height; ++y) {
+            for (x = 0; x < byte_count; ++x) {
+                table_entry = palette_table4[src[0]];
+                memcpy(dst, table_entry, 2);
+                dst += 2;
+                src += 1;
+            }
+
+            table_entry = palette_table4[src[0]];
+            memcpy(dst, table_entry, (size_t)remainder);
+            dst += remainder;
+            src += 1;
+        }
+    }
+}
+
+
+/*
+ * Fallback path that mirrors the original shift-and-mask expansion for
+ * packed palette formats. This is selected when the lookup tables cannot be
+ * initialized, preserving correctness without concurrent writes to the
+ * static buffers.
+ */
+static void
+sixel_expand_palette_fallback(unsigned char *restrict dst,
+                              unsigned char const *restrict src,
+                              int width,
+                              int height,
+                              int bpp)
+{
+    int x;
+    int y;
+    int i;
+    int bytes_per_row;
+    int remainder;
+    int bits_per_byte;
+    int mask;
+
+    bits_per_byte = 8 / bpp;
+    mask = (1 << bpp) - 1;
+    bytes_per_row = width * bpp / 8;
+    remainder = width - bytes_per_row * bits_per_byte;
+
+    for (y = 0; y < height; ++y) {
+        for (x = 0; x < bytes_per_row; ++x) {
+            for (i = 0; i < bits_per_byte; ++i) {
+                *dst++ = (unsigned char)((src[0] >>
+                    (bits_per_byte - 1 - i) * bpp) & mask);
+            }
+            ++src;
+        }
+
+        if (remainder > 0) {
+            for (i = 0; i < remainder; ++i) {
+                *dst++ = (unsigned char)((src[0] >>
+                    (bits_per_byte * bpp - (i + 1) * bpp)) & mask);
+            }
+            ++src;
         }
     }
 }
 
 
 static SIXELSTATUS
-expand_palette(unsigned char *dst, unsigned char const *src,
+expand_palette(unsigned char *restrict dst,
+               unsigned char const *restrict src,
                int width, int height, int const pixelformat)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    int x;
-    int y;
-    int i;
     int bpp;  /* bit per plane */
+    int use_palette_tables;
+    int tables_ready;
+    size_t total_pixels;
+
+    /*
+     * Reject empty dimensions early. An empty row or column would make the
+     * byte count calculations negative and does not represent a valid image
+     * to expand.
+     */
+    if (width <= 0 || height <= 0) {
+        sixel_helper_set_additional_message(
+            "expand_palette: width and height must be positive.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
+    use_palette_tables = 0;
+    tables_ready = 0;
 
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_G1:
         bpp = 1;
+        use_palette_tables = 1;
         break;
     case SIXEL_PIXELFORMAT_PAL2:
     case SIXEL_PIXELFORMAT_G2:
         bpp = 2;
+        use_palette_tables = 1;
         break;
     case SIXEL_PIXELFORMAT_PAL4:
     case SIXEL_PIXELFORMAT_G4:
         bpp = 4;
+        use_palette_tables = 1;
         break;
     case SIXEL_PIXELFORMAT_PAL8:
     case SIXEL_PIXELFORMAT_G8:
-        for (i = 0; i < width * height; ++i, ++src) {
-            *dst++ = *src;
-        }
+        total_pixels = (size_t)width * (size_t)height;
+
+        /*
+         * Direct copy for already expanded 8 bpp sources. Using memcpy
+         * avoids the per-pixel loop overhead when the input is byte
+         * aligned and requires no bit unpacking.
+         */
+        memcpy(dst, src, total_pixels);
         status = SIXEL_OK;
         goto end;
     default:
@@ -678,27 +1255,50 @@ expand_palette(unsigned char *dst, unsigned char const *src,
         goto end;
     }
 
+    if (use_palette_tables) {
+        /*
+         * Initialize lookup tables only when packed palette input is
+         * present. Formats that are already 8 bpp avoid the setup cost.
+         */
+        tables_ready = sixel_init_palette_tables();
+    }
+
 #if HAVE_DEBUG
     fprintf(stderr, "expanding PAL%d to PAL8...\n", bpp);
 #endif
 
-    for (y = 0; y < height; ++y) {
-        for (x = 0; x < width * bpp / 8; ++x) {
-            for (i = 0; i < 8 / bpp; ++i) {
-                *dst++ = *src >> (8 / bpp - 1 - i) * bpp & ((1 << bpp) - 1);
-            }
-            src++;
+    if (tables_ready) {
+        /*
+         * Use lookup tables to unroll packed indices. Each path copies an
+         * entire byte of indices in one memcpy, leaving only a small
+         * remainder loop per row for widths that are not byte-aligned.
+         */
+        switch (bpp) {
+        case 1:
+            sixel_expand_palette_bpp1(dst, src, width, height);
+            status = SIXEL_OK;
+            break;
+        case 2:
+            sixel_expand_palette_bpp2(dst, src, width, height);
+            status = SIXEL_OK;
+            break;
+        case 4:
+            sixel_expand_palette_bpp4(dst, src, width, height);
+            status = SIXEL_OK;
+            break;
+        default:
+            status = SIXEL_BAD_ARGUMENT;
+            break;
         }
-        x = width - x * 8 / bpp;
-        if (x > 0) {
-            for (i = 0; i < x; ++i) {
-                *dst++ = *src >> (8 - (i + 1) * bpp) & ((1 << bpp) - 1);
-            }
-            src++;
-        }
+    } else {
+        /*
+         * Mutex initialization failed or tables are unavailable.
+         * Fall back to the original shift-based expansion to avoid
+         * concurrent writes to the static lookup buffers.
+         */
+        sixel_expand_palette_fallback(dst, src, width, height, bpp);
+        status = SIXEL_OK;
     }
-
-    status = SIXEL_OK;
 
 end:
     return status;
