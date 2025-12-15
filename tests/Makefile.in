@@ -90,7 +90,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 TESTS = $(CLI_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS) $(am__EXEEXT_1)
-check_PROGRAMS = $(am__EXEEXT_1)
+check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_1 = gdk-pixbuf-loader/test-gdk-pixbuf-loader
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_2 = gdk-pixbuf-loader/test-gdk-pixbuf-loader
 subdir = tests
@@ -110,21 +110,121 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@am__EXEEXT_1 = gdk-pixbuf-loader/test-gdk-pixbuf-loader$(EXEEXT)
-am__gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES_DIST =  \
-	gdk-pixbuf-loader/test-gdk-pixbuf-loader.c \
-	$(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+am__EXEEXT_2 = filter/filter_tests$(EXEEXT) \
+	filter/filter_sample_tests$(EXEEXT) \
+	filter/filter_resize_tests$(EXEEXT) \
+	filter/filter_colors_tests$(EXEEXT) \
+	filter/filter_lookup_tests$(EXEEXT) \
+	filter/filter_final_merge_tests$(EXEEXT) \
+	filter/filter_vpte_tests$(EXEEXT) \
+	filter/filter_load_tests$(EXEEXT) \
+	filter/filter_dither_tests$(EXEEXT) \
+	filter/filter_encode_tests$(EXEEXT)
 am__dirstamp = $(am__leading_dot)dirstamp
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@am_gdk_pixbuf_loader_test_gdk_pixbuf_loader_OBJECTS = gdk-pixbuf-loader/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.$(OBJEXT) \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.$(OBJEXT)
-gdk_pixbuf_loader_test_gdk_pixbuf_loader_OBJECTS =  \
-	$(am_gdk_pixbuf_loader_test_gdk_pixbuf_loader_OBJECTS)
+am_filter_filter_colors_tests_OBJECTS =  \
+	filter/filter_colors_tests-filter_colors_tests.$(OBJEXT)
+filter_filter_colors_tests_OBJECTS =  \
+	$(am_filter_filter_colors_tests_OBJECTS)
 am__DEPENDENCIES_1 =
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_gdk_pixbuf_loader_DEPENDENCIES = $(top_builddir)/src/libsixel.la \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(am__DEPENDENCIES_1)
+am__DEPENDENCIES_2 = $(top_builddir)/src/libsixel.la \
+	$(am__DEPENDENCIES_1)
+filter_filter_colors_tests_DEPENDENCIES = $(am__DEPENDENCIES_2)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+filter_filter_colors_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(filter_filter_colors_tests_CFLAGS) $(CFLAGS) \
+	$(filter_filter_colors_tests_LDFLAGS) $(LDFLAGS) -o $@
+am_filter_filter_dither_tests_OBJECTS =  \
+	filter/filter_dither_tests-filter_dither_tests.$(OBJEXT)
+filter_filter_dither_tests_OBJECTS =  \
+	$(am_filter_filter_dither_tests_OBJECTS)
+filter_filter_dither_tests_DEPENDENCIES = $(am__DEPENDENCIES_2)
+filter_filter_dither_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(filter_filter_dither_tests_CFLAGS) $(CFLAGS) \
+	$(filter_filter_dither_tests_LDFLAGS) $(LDFLAGS) -o $@
+am_filter_filter_encode_tests_OBJECTS =  \
+	filter/filter_encode_tests-filter_encode_tests.$(OBJEXT)
+filter_filter_encode_tests_OBJECTS =  \
+	$(am_filter_filter_encode_tests_OBJECTS)
+filter_filter_encode_tests_DEPENDENCIES = $(am__DEPENDENCIES_2)
+filter_filter_encode_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(filter_filter_encode_tests_CFLAGS) $(CFLAGS) \
+	$(filter_filter_encode_tests_LDFLAGS) $(LDFLAGS) -o $@
+am_filter_filter_final_merge_tests_OBJECTS = filter/filter_final_merge_tests-filter_final_merge_tests.$(OBJEXT)
+filter_filter_final_merge_tests_OBJECTS =  \
+	$(am_filter_filter_final_merge_tests_OBJECTS)
+filter_filter_final_merge_tests_DEPENDENCIES = $(am__DEPENDENCIES_2)
+filter_filter_final_merge_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(filter_filter_final_merge_tests_CFLAGS) $(CFLAGS) \
+	$(filter_filter_final_merge_tests_LDFLAGS) $(LDFLAGS) -o $@
+am_filter_filter_load_tests_OBJECTS =  \
+	filter/filter_load_tests-filter_load_tests.$(OBJEXT)
+filter_filter_load_tests_OBJECTS =  \
+	$(am_filter_filter_load_tests_OBJECTS)
+filter_filter_load_tests_DEPENDENCIES = $(am__DEPENDENCIES_2)
+filter_filter_load_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(filter_filter_load_tests_CFLAGS) $(CFLAGS) \
+	$(filter_filter_load_tests_LDFLAGS) $(LDFLAGS) -o $@
+am_filter_filter_lookup_tests_OBJECTS =  \
+	filter/filter_lookup_tests-filter_lookup_tests.$(OBJEXT)
+filter_filter_lookup_tests_OBJECTS =  \
+	$(am_filter_filter_lookup_tests_OBJECTS)
+filter_filter_lookup_tests_DEPENDENCIES = $(am__DEPENDENCIES_2)
+filter_filter_lookup_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(filter_filter_lookup_tests_CFLAGS) $(CFLAGS) \
+	$(filter_filter_lookup_tests_LDFLAGS) $(LDFLAGS) -o $@
+am_filter_filter_resize_tests_OBJECTS =  \
+	filter/filter_resize_tests-filter_resize_tests.$(OBJEXT)
+filter_filter_resize_tests_OBJECTS =  \
+	$(am_filter_filter_resize_tests_OBJECTS)
+filter_filter_resize_tests_DEPENDENCIES = $(am__DEPENDENCIES_2)
+filter_filter_resize_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(filter_filter_resize_tests_CFLAGS) $(CFLAGS) \
+	$(filter_filter_resize_tests_LDFLAGS) $(LDFLAGS) -o $@
+am_filter_filter_sample_tests_OBJECTS =  \
+	filter/filter_sample_tests-filter_sample_tests.$(OBJEXT)
+filter_filter_sample_tests_OBJECTS =  \
+	$(am_filter_filter_sample_tests_OBJECTS)
+filter_filter_sample_tests_DEPENDENCIES = $(am__DEPENDENCIES_2)
+filter_filter_sample_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(filter_filter_sample_tests_CFLAGS) $(CFLAGS) \
+	$(filter_filter_sample_tests_LDFLAGS) $(LDFLAGS) -o $@
+am_filter_filter_tests_OBJECTS =  \
+	filter/filter_tests-filter_tests.$(OBJEXT)
+filter_filter_tests_OBJECTS = $(am_filter_filter_tests_OBJECTS)
+filter_filter_tests_DEPENDENCIES = $(am__DEPENDENCIES_2)
+filter_filter_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(filter_filter_tests_CFLAGS) $(CFLAGS) \
+	$(filter_filter_tests_LDFLAGS) $(LDFLAGS) -o $@
+am_filter_filter_vpte_tests_OBJECTS =  \
+	filter/filter_vpte_tests-filter_vpte_tests.$(OBJEXT)
+filter_filter_vpte_tests_OBJECTS =  \
+	$(am_filter_filter_vpte_tests_OBJECTS)
+filter_filter_vpte_tests_DEPENDENCIES = $(am__DEPENDENCIES_2)
+filter_filter_vpte_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(filter_filter_vpte_tests_CFLAGS) $(CFLAGS) \
+	$(filter_filter_vpte_tests_LDFLAGS) $(LDFLAGS) -o $@
+am__gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES_DIST =  \
+	gdk-pixbuf-loader/test-gdk-pixbuf-loader.c \
+	$(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@am_gdk_pixbuf_loader_test_gdk_pixbuf_loader_OBJECTS = gdk-pixbuf-loader/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.$(OBJEXT) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.$(OBJEXT)
+gdk_pixbuf_loader_test_gdk_pixbuf_loader_OBJECTS =  \
+	$(am_gdk_pixbuf_loader_test_gdk_pixbuf_loader_OBJECTS)
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_gdk_pixbuf_loader_DEPENDENCIES = $(top_builddir)/src/libsixel.la \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(am__DEPENDENCIES_1)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -141,6 +241,16 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade = $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Po \
+	filter/$(DEPDIR)/filter_colors_tests-filter_colors_tests.Po \
+	filter/$(DEPDIR)/filter_dither_tests-filter_dither_tests.Po \
+	filter/$(DEPDIR)/filter_encode_tests-filter_encode_tests.Po \
+	filter/$(DEPDIR)/filter_final_merge_tests-filter_final_merge_tests.Po \
+	filter/$(DEPDIR)/filter_load_tests-filter_load_tests.Po \
+	filter/$(DEPDIR)/filter_lookup_tests-filter_lookup_tests.Po \
+	filter/$(DEPDIR)/filter_resize_tests-filter_resize_tests.Po \
+	filter/$(DEPDIR)/filter_sample_tests-filter_sample_tests.Po \
+	filter/$(DEPDIR)/filter_tests-filter_tests.Po \
+	filter/$(DEPDIR)/filter_vpte_tests-filter_vpte_tests.Po \
 	gdk-pixbuf-loader/$(DEPDIR)/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -161,8 +271,27 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES)
-DIST_SOURCES =  \
+SOURCES = $(filter_filter_colors_tests_SOURCES) \
+	$(filter_filter_dither_tests_SOURCES) \
+	$(filter_filter_encode_tests_SOURCES) \
+	$(filter_filter_final_merge_tests_SOURCES) \
+	$(filter_filter_load_tests_SOURCES) \
+	$(filter_filter_lookup_tests_SOURCES) \
+	$(filter_filter_resize_tests_SOURCES) \
+	$(filter_filter_sample_tests_SOURCES) \
+	$(filter_filter_tests_SOURCES) \
+	$(filter_filter_vpte_tests_SOURCES) \
+	$(gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES)
+DIST_SOURCES = $(filter_filter_colors_tests_SOURCES) \
+	$(filter_filter_dither_tests_SOURCES) \
+	$(filter_filter_encode_tests_SOURCES) \
+	$(filter_filter_final_merge_tests_SOURCES) \
+	$(filter_filter_load_tests_SOURCES) \
+	$(filter_filter_lookup_tests_SOURCES) \
+	$(filter_filter_resize_tests_SOURCES) \
+	$(filter_filter_sample_tests_SOURCES) \
+	$(filter_filter_tests_SOURCES) \
+	$(filter_filter_vpte_tests_SOURCES) \
 	$(am__gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
@@ -638,6 +767,18 @@ FILTER_TESTS = filter/t/test_3000_filter_clip.t \
        filter/t/test_3008_filter_dither.t \
        filter/t/test_3009_filter_encode.t
 
+FILTER_TEST_BINARIES = \
+       filter/filter_tests \
+       filter/filter_sample_tests \
+       filter/filter_resize_tests \
+       filter/filter_colors_tests \
+       filter/filter_lookup_tests \
+       filter/filter_final_merge_tests \
+       filter/filter_vpte_tests \
+       filter/filter_load_tests \
+       filter/filter_dither_tests \
+       filter/filter_encode_tests
+
 COPY_TESTS = $(CLI_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES = \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/test-gdk-pixbuf-loader.c \
@@ -663,12 +804,65 @@ AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	ARTIFACT_ROOT; TOP_SRCDIR='$(abs_top_srcdir)'; export \
 	TOP_SRCDIR; TOP_BUILDDIR='$(abs_top_builddir)'; export \
 	TOP_BUILDDIR; CC='$(CC)'; export CC; \
-	FILTER_TEST_CPPFLAGS='$(CPPFLAGS) $(AM_CPPFLAGS)'; export \
-	FILTER_TEST_CPPFLAGS; FILTER_TEST_CFLAGS='$(CFLAGS) \
-	$(AM_CFLAGS) $(MAYBE_COVERAGE)'; export FILTER_TEST_CFLAGS; \
-	FILTER_TEST_LDFLAGS='$(LDFLAGS) $(MAYBE_COVERAGE)'; export \
-	FILTER_TEST_LDFLAGS; FILTER_TEST_LIBS='$(LIBS) \
-	$(MAYBE_COVERAGE)'; export FILTER_TEST_LIBS;
+	CROSS_COMPILING='@cross_compiling@'; export CROSS_COMPILING;
+FILTER_TEST_CPPFLAGS = $(AM_CPPFLAGS) \
+       -I$(top_builddir) -I$(top_builddir)/include \
+       -I$(top_srcdir)/include -I$(top_srcdir)/src \
+       -I$(top_srcdir)/tests/filter
+
+FILTER_TEST_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
+FILTER_TEST_LDFLAGS = $(AM_LDFLAGS) $(MAYBE_COVERAGE)
+FILTER_TEST_LDADD = $(top_builddir)/src/libsixel.la $(LIBS)
+filter_filter_tests_SOURCES = filter/filter_tests.c
+filter_filter_tests_CPPFLAGS = $(FILTER_TEST_CPPFLAGS)
+filter_filter_tests_CFLAGS = $(FILTER_TEST_CFLAGS)
+filter_filter_tests_LDFLAGS = $(FILTER_TEST_LDFLAGS)
+filter_filter_tests_LDADD = $(FILTER_TEST_LDADD)
+filter_filter_sample_tests_SOURCES = filter/filter_sample_tests.c
+filter_filter_sample_tests_CPPFLAGS = $(FILTER_TEST_CPPFLAGS)
+filter_filter_sample_tests_CFLAGS = $(FILTER_TEST_CFLAGS)
+filter_filter_sample_tests_LDFLAGS = $(FILTER_TEST_LDFLAGS)
+filter_filter_sample_tests_LDADD = $(FILTER_TEST_LDADD)
+filter_filter_resize_tests_SOURCES = filter/filter_resize_tests.c
+filter_filter_resize_tests_CPPFLAGS = $(FILTER_TEST_CPPFLAGS)
+filter_filter_resize_tests_CFLAGS = $(FILTER_TEST_CFLAGS)
+filter_filter_resize_tests_LDFLAGS = $(FILTER_TEST_LDFLAGS)
+filter_filter_resize_tests_LDADD = $(FILTER_TEST_LDADD)
+filter_filter_colors_tests_SOURCES = filter/filter_colors_tests.c
+filter_filter_colors_tests_CPPFLAGS = $(FILTER_TEST_CPPFLAGS)
+filter_filter_colors_tests_CFLAGS = $(FILTER_TEST_CFLAGS)
+filter_filter_colors_tests_LDFLAGS = $(FILTER_TEST_LDFLAGS)
+filter_filter_colors_tests_LDADD = $(FILTER_TEST_LDADD)
+filter_filter_lookup_tests_SOURCES = filter/filter_lookup_tests.c
+filter_filter_lookup_tests_CPPFLAGS = $(FILTER_TEST_CPPFLAGS)
+filter_filter_lookup_tests_CFLAGS = $(FILTER_TEST_CFLAGS)
+filter_filter_lookup_tests_LDFLAGS = $(FILTER_TEST_LDFLAGS)
+filter_filter_lookup_tests_LDADD = $(FILTER_TEST_LDADD)
+filter_filter_final_merge_tests_SOURCES = filter/filter_final_merge_tests.c
+filter_filter_final_merge_tests_CPPFLAGS = $(FILTER_TEST_CPPFLAGS)
+filter_filter_final_merge_tests_CFLAGS = $(FILTER_TEST_CFLAGS)
+filter_filter_final_merge_tests_LDFLAGS = $(FILTER_TEST_LDFLAGS)
+filter_filter_final_merge_tests_LDADD = $(FILTER_TEST_LDADD)
+filter_filter_vpte_tests_SOURCES = filter/filter_vpte_tests.c
+filter_filter_vpte_tests_CPPFLAGS = $(FILTER_TEST_CPPFLAGS)
+filter_filter_vpte_tests_CFLAGS = $(FILTER_TEST_CFLAGS)
+filter_filter_vpte_tests_LDFLAGS = $(FILTER_TEST_LDFLAGS)
+filter_filter_vpte_tests_LDADD = $(FILTER_TEST_LDADD)
+filter_filter_load_tests_SOURCES = filter/filter_load_tests.c
+filter_filter_load_tests_CPPFLAGS = $(FILTER_TEST_CPPFLAGS)
+filter_filter_load_tests_CFLAGS = $(FILTER_TEST_CFLAGS)
+filter_filter_load_tests_LDFLAGS = $(FILTER_TEST_LDFLAGS)
+filter_filter_load_tests_LDADD = $(FILTER_TEST_LDADD)
+filter_filter_dither_tests_SOURCES = filter/filter_dither_tests.c
+filter_filter_dither_tests_CPPFLAGS = $(FILTER_TEST_CPPFLAGS)
+filter_filter_dither_tests_CFLAGS = $(FILTER_TEST_CFLAGS)
+filter_filter_dither_tests_LDFLAGS = $(FILTER_TEST_LDFLAGS)
+filter_filter_dither_tests_LDADD = $(FILTER_TEST_LDADD)
+filter_filter_encode_tests_SOURCES = filter/filter_encode_tests.c
+filter_filter_encode_tests_CPPFLAGS = $(FILTER_TEST_CPPFLAGS)
+filter_filter_encode_tests_CFLAGS = $(FILTER_TEST_CFLAGS)
+filter_filter_encode_tests_LDFLAGS = $(FILTER_TEST_LDFLAGS)
+filter_filter_encode_tests_LDADD = $(FILTER_TEST_LDADD)
 TEST_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/build-aux/tap-driver.sh
 AM_TEST_LOG_DRIVER_FLAGS = --comments
 LOG_COMPILER = $(builddir)/tools/with-timeout.sh
@@ -726,6 +920,72 @@ $(am__aclocal_m4_deps):
 clean-checkPROGRAMS:
 	$(am__rm_f) $(check_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(check_PROGRAMS:$(EXEEXT)=)
+filter/$(am__dirstamp):
+	@$(MKDIR_P) filter
+	@: >>filter/$(am__dirstamp)
+filter/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) filter/$(DEPDIR)
+	@: >>filter/$(DEPDIR)/$(am__dirstamp)
+filter/filter_colors_tests-filter_colors_tests.$(OBJEXT):  \
+	filter/$(am__dirstamp) filter/$(DEPDIR)/$(am__dirstamp)
+
+filter/filter_colors_tests$(EXEEXT): $(filter_filter_colors_tests_OBJECTS) $(filter_filter_colors_tests_DEPENDENCIES) $(EXTRA_filter_filter_colors_tests_DEPENDENCIES) filter/$(am__dirstamp)
+	@rm -f filter/filter_colors_tests$(EXEEXT)
+	$(AM_V_CCLD)$(filter_filter_colors_tests_LINK) $(filter_filter_colors_tests_OBJECTS) $(filter_filter_colors_tests_LDADD) $(LIBS)
+filter/filter_dither_tests-filter_dither_tests.$(OBJEXT):  \
+	filter/$(am__dirstamp) filter/$(DEPDIR)/$(am__dirstamp)
+
+filter/filter_dither_tests$(EXEEXT): $(filter_filter_dither_tests_OBJECTS) $(filter_filter_dither_tests_DEPENDENCIES) $(EXTRA_filter_filter_dither_tests_DEPENDENCIES) filter/$(am__dirstamp)
+	@rm -f filter/filter_dither_tests$(EXEEXT)
+	$(AM_V_CCLD)$(filter_filter_dither_tests_LINK) $(filter_filter_dither_tests_OBJECTS) $(filter_filter_dither_tests_LDADD) $(LIBS)
+filter/filter_encode_tests-filter_encode_tests.$(OBJEXT):  \
+	filter/$(am__dirstamp) filter/$(DEPDIR)/$(am__dirstamp)
+
+filter/filter_encode_tests$(EXEEXT): $(filter_filter_encode_tests_OBJECTS) $(filter_filter_encode_tests_DEPENDENCIES) $(EXTRA_filter_filter_encode_tests_DEPENDENCIES) filter/$(am__dirstamp)
+	@rm -f filter/filter_encode_tests$(EXEEXT)
+	$(AM_V_CCLD)$(filter_filter_encode_tests_LINK) $(filter_filter_encode_tests_OBJECTS) $(filter_filter_encode_tests_LDADD) $(LIBS)
+filter/filter_final_merge_tests-filter_final_merge_tests.$(OBJEXT):  \
+	filter/$(am__dirstamp) filter/$(DEPDIR)/$(am__dirstamp)
+
+filter/filter_final_merge_tests$(EXEEXT): $(filter_filter_final_merge_tests_OBJECTS) $(filter_filter_final_merge_tests_DEPENDENCIES) $(EXTRA_filter_filter_final_merge_tests_DEPENDENCIES) filter/$(am__dirstamp)
+	@rm -f filter/filter_final_merge_tests$(EXEEXT)
+	$(AM_V_CCLD)$(filter_filter_final_merge_tests_LINK) $(filter_filter_final_merge_tests_OBJECTS) $(filter_filter_final_merge_tests_LDADD) $(LIBS)
+filter/filter_load_tests-filter_load_tests.$(OBJEXT):  \
+	filter/$(am__dirstamp) filter/$(DEPDIR)/$(am__dirstamp)
+
+filter/filter_load_tests$(EXEEXT): $(filter_filter_load_tests_OBJECTS) $(filter_filter_load_tests_DEPENDENCIES) $(EXTRA_filter_filter_load_tests_DEPENDENCIES) filter/$(am__dirstamp)
+	@rm -f filter/filter_load_tests$(EXEEXT)
+	$(AM_V_CCLD)$(filter_filter_load_tests_LINK) $(filter_filter_load_tests_OBJECTS) $(filter_filter_load_tests_LDADD) $(LIBS)
+filter/filter_lookup_tests-filter_lookup_tests.$(OBJEXT):  \
+	filter/$(am__dirstamp) filter/$(DEPDIR)/$(am__dirstamp)
+
+filter/filter_lookup_tests$(EXEEXT): $(filter_filter_lookup_tests_OBJECTS) $(filter_filter_lookup_tests_DEPENDENCIES) $(EXTRA_filter_filter_lookup_tests_DEPENDENCIES) filter/$(am__dirstamp)
+	@rm -f filter/filter_lookup_tests$(EXEEXT)
+	$(AM_V_CCLD)$(filter_filter_lookup_tests_LINK) $(filter_filter_lookup_tests_OBJECTS) $(filter_filter_lookup_tests_LDADD) $(LIBS)
+filter/filter_resize_tests-filter_resize_tests.$(OBJEXT):  \
+	filter/$(am__dirstamp) filter/$(DEPDIR)/$(am__dirstamp)
+
+filter/filter_resize_tests$(EXEEXT): $(filter_filter_resize_tests_OBJECTS) $(filter_filter_resize_tests_DEPENDENCIES) $(EXTRA_filter_filter_resize_tests_DEPENDENCIES) filter/$(am__dirstamp)
+	@rm -f filter/filter_resize_tests$(EXEEXT)
+	$(AM_V_CCLD)$(filter_filter_resize_tests_LINK) $(filter_filter_resize_tests_OBJECTS) $(filter_filter_resize_tests_LDADD) $(LIBS)
+filter/filter_sample_tests-filter_sample_tests.$(OBJEXT):  \
+	filter/$(am__dirstamp) filter/$(DEPDIR)/$(am__dirstamp)
+
+filter/filter_sample_tests$(EXEEXT): $(filter_filter_sample_tests_OBJECTS) $(filter_filter_sample_tests_DEPENDENCIES) $(EXTRA_filter_filter_sample_tests_DEPENDENCIES) filter/$(am__dirstamp)
+	@rm -f filter/filter_sample_tests$(EXEEXT)
+	$(AM_V_CCLD)$(filter_filter_sample_tests_LINK) $(filter_filter_sample_tests_OBJECTS) $(filter_filter_sample_tests_LDADD) $(LIBS)
+filter/filter_tests-filter_tests.$(OBJEXT): filter/$(am__dirstamp) \
+	filter/$(DEPDIR)/$(am__dirstamp)
+
+filter/filter_tests$(EXEEXT): $(filter_filter_tests_OBJECTS) $(filter_filter_tests_DEPENDENCIES) $(EXTRA_filter_filter_tests_DEPENDENCIES) filter/$(am__dirstamp)
+	@rm -f filter/filter_tests$(EXEEXT)
+	$(AM_V_CCLD)$(filter_filter_tests_LINK) $(filter_filter_tests_OBJECTS) $(filter_filter_tests_LDADD) $(LIBS)
+filter/filter_vpte_tests-filter_vpte_tests.$(OBJEXT):  \
+	filter/$(am__dirstamp) filter/$(DEPDIR)/$(am__dirstamp)
+
+filter/filter_vpte_tests$(EXEEXT): $(filter_filter_vpte_tests_OBJECTS) $(filter_filter_vpte_tests_DEPENDENCIES) $(EXTRA_filter_filter_vpte_tests_DEPENDENCIES) filter/$(am__dirstamp)
+	@rm -f filter/filter_vpte_tests$(EXEEXT)
+	$(AM_V_CCLD)$(filter_filter_vpte_tests_LINK) $(filter_filter_vpte_tests_OBJECTS) $(filter_filter_vpte_tests_LDADD) $(LIBS)
 gdk-pixbuf-loader/$(am__dirstamp):
 	@$(MKDIR_P) gdk-pixbuf-loader
 	@: >>gdk-pixbuf-loader/$(am__dirstamp)
@@ -752,12 +1012,23 @@ gdk-pixbuf-loader/test-gdk-pixbuf-loader$(EXEEXT): $(gdk_pixbuf_loader_test_gdk_
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/*.$(OBJEXT)
+	-rm -f filter/*.$(OBJEXT)
 	-rm -f gdk-pixbuf-loader/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@filter/$(DEPDIR)/filter_colors_tests-filter_colors_tests.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@filter/$(DEPDIR)/filter_dither_tests-filter_dither_tests.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@filter/$(DEPDIR)/filter_encode_tests-filter_encode_tests.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@filter/$(DEPDIR)/filter_final_merge_tests-filter_final_merge_tests.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@filter/$(DEPDIR)/filter_load_tests-filter_load_tests.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@filter/$(DEPDIR)/filter_lookup_tests-filter_lookup_tests.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@filter/$(DEPDIR)/filter_resize_tests-filter_resize_tests.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@filter/$(DEPDIR)/filter_sample_tests-filter_sample_tests.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@filter/$(DEPDIR)/filter_tests-filter_tests.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@filter/$(DEPDIR)/filter_vpte_tests-filter_vpte_tests.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@gdk-pixbuf-loader/$(DEPDIR)/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -789,6 +1060,146 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+filter/filter_colors_tests-filter_colors_tests.o: filter/filter_colors_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_colors_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_colors_tests_CFLAGS) $(CFLAGS) -MT filter/filter_colors_tests-filter_colors_tests.o -MD -MP -MF filter/$(DEPDIR)/filter_colors_tests-filter_colors_tests.Tpo -c -o filter/filter_colors_tests-filter_colors_tests.o `test -f 'filter/filter_colors_tests.c' || echo '$(srcdir)/'`filter/filter_colors_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_colors_tests-filter_colors_tests.Tpo filter/$(DEPDIR)/filter_colors_tests-filter_colors_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_colors_tests.c' object='filter/filter_colors_tests-filter_colors_tests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_colors_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_colors_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_colors_tests-filter_colors_tests.o `test -f 'filter/filter_colors_tests.c' || echo '$(srcdir)/'`filter/filter_colors_tests.c
+
+filter/filter_colors_tests-filter_colors_tests.obj: filter/filter_colors_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_colors_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_colors_tests_CFLAGS) $(CFLAGS) -MT filter/filter_colors_tests-filter_colors_tests.obj -MD -MP -MF filter/$(DEPDIR)/filter_colors_tests-filter_colors_tests.Tpo -c -o filter/filter_colors_tests-filter_colors_tests.obj `if test -f 'filter/filter_colors_tests.c'; then $(CYGPATH_W) 'filter/filter_colors_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_colors_tests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_colors_tests-filter_colors_tests.Tpo filter/$(DEPDIR)/filter_colors_tests-filter_colors_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_colors_tests.c' object='filter/filter_colors_tests-filter_colors_tests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_colors_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_colors_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_colors_tests-filter_colors_tests.obj `if test -f 'filter/filter_colors_tests.c'; then $(CYGPATH_W) 'filter/filter_colors_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_colors_tests.c'; fi`
+
+filter/filter_dither_tests-filter_dither_tests.o: filter/filter_dither_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_dither_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_dither_tests_CFLAGS) $(CFLAGS) -MT filter/filter_dither_tests-filter_dither_tests.o -MD -MP -MF filter/$(DEPDIR)/filter_dither_tests-filter_dither_tests.Tpo -c -o filter/filter_dither_tests-filter_dither_tests.o `test -f 'filter/filter_dither_tests.c' || echo '$(srcdir)/'`filter/filter_dither_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_dither_tests-filter_dither_tests.Tpo filter/$(DEPDIR)/filter_dither_tests-filter_dither_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_dither_tests.c' object='filter/filter_dither_tests-filter_dither_tests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_dither_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_dither_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_dither_tests-filter_dither_tests.o `test -f 'filter/filter_dither_tests.c' || echo '$(srcdir)/'`filter/filter_dither_tests.c
+
+filter/filter_dither_tests-filter_dither_tests.obj: filter/filter_dither_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_dither_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_dither_tests_CFLAGS) $(CFLAGS) -MT filter/filter_dither_tests-filter_dither_tests.obj -MD -MP -MF filter/$(DEPDIR)/filter_dither_tests-filter_dither_tests.Tpo -c -o filter/filter_dither_tests-filter_dither_tests.obj `if test -f 'filter/filter_dither_tests.c'; then $(CYGPATH_W) 'filter/filter_dither_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_dither_tests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_dither_tests-filter_dither_tests.Tpo filter/$(DEPDIR)/filter_dither_tests-filter_dither_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_dither_tests.c' object='filter/filter_dither_tests-filter_dither_tests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_dither_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_dither_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_dither_tests-filter_dither_tests.obj `if test -f 'filter/filter_dither_tests.c'; then $(CYGPATH_W) 'filter/filter_dither_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_dither_tests.c'; fi`
+
+filter/filter_encode_tests-filter_encode_tests.o: filter/filter_encode_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_encode_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_encode_tests_CFLAGS) $(CFLAGS) -MT filter/filter_encode_tests-filter_encode_tests.o -MD -MP -MF filter/$(DEPDIR)/filter_encode_tests-filter_encode_tests.Tpo -c -o filter/filter_encode_tests-filter_encode_tests.o `test -f 'filter/filter_encode_tests.c' || echo '$(srcdir)/'`filter/filter_encode_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_encode_tests-filter_encode_tests.Tpo filter/$(DEPDIR)/filter_encode_tests-filter_encode_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_encode_tests.c' object='filter/filter_encode_tests-filter_encode_tests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_encode_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_encode_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_encode_tests-filter_encode_tests.o `test -f 'filter/filter_encode_tests.c' || echo '$(srcdir)/'`filter/filter_encode_tests.c
+
+filter/filter_encode_tests-filter_encode_tests.obj: filter/filter_encode_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_encode_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_encode_tests_CFLAGS) $(CFLAGS) -MT filter/filter_encode_tests-filter_encode_tests.obj -MD -MP -MF filter/$(DEPDIR)/filter_encode_tests-filter_encode_tests.Tpo -c -o filter/filter_encode_tests-filter_encode_tests.obj `if test -f 'filter/filter_encode_tests.c'; then $(CYGPATH_W) 'filter/filter_encode_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_encode_tests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_encode_tests-filter_encode_tests.Tpo filter/$(DEPDIR)/filter_encode_tests-filter_encode_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_encode_tests.c' object='filter/filter_encode_tests-filter_encode_tests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_encode_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_encode_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_encode_tests-filter_encode_tests.obj `if test -f 'filter/filter_encode_tests.c'; then $(CYGPATH_W) 'filter/filter_encode_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_encode_tests.c'; fi`
+
+filter/filter_final_merge_tests-filter_final_merge_tests.o: filter/filter_final_merge_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_final_merge_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_final_merge_tests_CFLAGS) $(CFLAGS) -MT filter/filter_final_merge_tests-filter_final_merge_tests.o -MD -MP -MF filter/$(DEPDIR)/filter_final_merge_tests-filter_final_merge_tests.Tpo -c -o filter/filter_final_merge_tests-filter_final_merge_tests.o `test -f 'filter/filter_final_merge_tests.c' || echo '$(srcdir)/'`filter/filter_final_merge_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_final_merge_tests-filter_final_merge_tests.Tpo filter/$(DEPDIR)/filter_final_merge_tests-filter_final_merge_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_final_merge_tests.c' object='filter/filter_final_merge_tests-filter_final_merge_tests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_final_merge_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_final_merge_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_final_merge_tests-filter_final_merge_tests.o `test -f 'filter/filter_final_merge_tests.c' || echo '$(srcdir)/'`filter/filter_final_merge_tests.c
+
+filter/filter_final_merge_tests-filter_final_merge_tests.obj: filter/filter_final_merge_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_final_merge_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_final_merge_tests_CFLAGS) $(CFLAGS) -MT filter/filter_final_merge_tests-filter_final_merge_tests.obj -MD -MP -MF filter/$(DEPDIR)/filter_final_merge_tests-filter_final_merge_tests.Tpo -c -o filter/filter_final_merge_tests-filter_final_merge_tests.obj `if test -f 'filter/filter_final_merge_tests.c'; then $(CYGPATH_W) 'filter/filter_final_merge_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_final_merge_tests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_final_merge_tests-filter_final_merge_tests.Tpo filter/$(DEPDIR)/filter_final_merge_tests-filter_final_merge_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_final_merge_tests.c' object='filter/filter_final_merge_tests-filter_final_merge_tests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_final_merge_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_final_merge_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_final_merge_tests-filter_final_merge_tests.obj `if test -f 'filter/filter_final_merge_tests.c'; then $(CYGPATH_W) 'filter/filter_final_merge_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_final_merge_tests.c'; fi`
+
+filter/filter_load_tests-filter_load_tests.o: filter/filter_load_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_load_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_load_tests_CFLAGS) $(CFLAGS) -MT filter/filter_load_tests-filter_load_tests.o -MD -MP -MF filter/$(DEPDIR)/filter_load_tests-filter_load_tests.Tpo -c -o filter/filter_load_tests-filter_load_tests.o `test -f 'filter/filter_load_tests.c' || echo '$(srcdir)/'`filter/filter_load_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_load_tests-filter_load_tests.Tpo filter/$(DEPDIR)/filter_load_tests-filter_load_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_load_tests.c' object='filter/filter_load_tests-filter_load_tests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_load_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_load_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_load_tests-filter_load_tests.o `test -f 'filter/filter_load_tests.c' || echo '$(srcdir)/'`filter/filter_load_tests.c
+
+filter/filter_load_tests-filter_load_tests.obj: filter/filter_load_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_load_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_load_tests_CFLAGS) $(CFLAGS) -MT filter/filter_load_tests-filter_load_tests.obj -MD -MP -MF filter/$(DEPDIR)/filter_load_tests-filter_load_tests.Tpo -c -o filter/filter_load_tests-filter_load_tests.obj `if test -f 'filter/filter_load_tests.c'; then $(CYGPATH_W) 'filter/filter_load_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_load_tests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_load_tests-filter_load_tests.Tpo filter/$(DEPDIR)/filter_load_tests-filter_load_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_load_tests.c' object='filter/filter_load_tests-filter_load_tests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_load_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_load_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_load_tests-filter_load_tests.obj `if test -f 'filter/filter_load_tests.c'; then $(CYGPATH_W) 'filter/filter_load_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_load_tests.c'; fi`
+
+filter/filter_lookup_tests-filter_lookup_tests.o: filter/filter_lookup_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_lookup_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_lookup_tests_CFLAGS) $(CFLAGS) -MT filter/filter_lookup_tests-filter_lookup_tests.o -MD -MP -MF filter/$(DEPDIR)/filter_lookup_tests-filter_lookup_tests.Tpo -c -o filter/filter_lookup_tests-filter_lookup_tests.o `test -f 'filter/filter_lookup_tests.c' || echo '$(srcdir)/'`filter/filter_lookup_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_lookup_tests-filter_lookup_tests.Tpo filter/$(DEPDIR)/filter_lookup_tests-filter_lookup_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_lookup_tests.c' object='filter/filter_lookup_tests-filter_lookup_tests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_lookup_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_lookup_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_lookup_tests-filter_lookup_tests.o `test -f 'filter/filter_lookup_tests.c' || echo '$(srcdir)/'`filter/filter_lookup_tests.c
+
+filter/filter_lookup_tests-filter_lookup_tests.obj: filter/filter_lookup_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_lookup_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_lookup_tests_CFLAGS) $(CFLAGS) -MT filter/filter_lookup_tests-filter_lookup_tests.obj -MD -MP -MF filter/$(DEPDIR)/filter_lookup_tests-filter_lookup_tests.Tpo -c -o filter/filter_lookup_tests-filter_lookup_tests.obj `if test -f 'filter/filter_lookup_tests.c'; then $(CYGPATH_W) 'filter/filter_lookup_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_lookup_tests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_lookup_tests-filter_lookup_tests.Tpo filter/$(DEPDIR)/filter_lookup_tests-filter_lookup_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_lookup_tests.c' object='filter/filter_lookup_tests-filter_lookup_tests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_lookup_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_lookup_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_lookup_tests-filter_lookup_tests.obj `if test -f 'filter/filter_lookup_tests.c'; then $(CYGPATH_W) 'filter/filter_lookup_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_lookup_tests.c'; fi`
+
+filter/filter_resize_tests-filter_resize_tests.o: filter/filter_resize_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_resize_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_resize_tests_CFLAGS) $(CFLAGS) -MT filter/filter_resize_tests-filter_resize_tests.o -MD -MP -MF filter/$(DEPDIR)/filter_resize_tests-filter_resize_tests.Tpo -c -o filter/filter_resize_tests-filter_resize_tests.o `test -f 'filter/filter_resize_tests.c' || echo '$(srcdir)/'`filter/filter_resize_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_resize_tests-filter_resize_tests.Tpo filter/$(DEPDIR)/filter_resize_tests-filter_resize_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_resize_tests.c' object='filter/filter_resize_tests-filter_resize_tests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_resize_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_resize_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_resize_tests-filter_resize_tests.o `test -f 'filter/filter_resize_tests.c' || echo '$(srcdir)/'`filter/filter_resize_tests.c
+
+filter/filter_resize_tests-filter_resize_tests.obj: filter/filter_resize_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_resize_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_resize_tests_CFLAGS) $(CFLAGS) -MT filter/filter_resize_tests-filter_resize_tests.obj -MD -MP -MF filter/$(DEPDIR)/filter_resize_tests-filter_resize_tests.Tpo -c -o filter/filter_resize_tests-filter_resize_tests.obj `if test -f 'filter/filter_resize_tests.c'; then $(CYGPATH_W) 'filter/filter_resize_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_resize_tests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_resize_tests-filter_resize_tests.Tpo filter/$(DEPDIR)/filter_resize_tests-filter_resize_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_resize_tests.c' object='filter/filter_resize_tests-filter_resize_tests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_resize_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_resize_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_resize_tests-filter_resize_tests.obj `if test -f 'filter/filter_resize_tests.c'; then $(CYGPATH_W) 'filter/filter_resize_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_resize_tests.c'; fi`
+
+filter/filter_sample_tests-filter_sample_tests.o: filter/filter_sample_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_sample_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_sample_tests_CFLAGS) $(CFLAGS) -MT filter/filter_sample_tests-filter_sample_tests.o -MD -MP -MF filter/$(DEPDIR)/filter_sample_tests-filter_sample_tests.Tpo -c -o filter/filter_sample_tests-filter_sample_tests.o `test -f 'filter/filter_sample_tests.c' || echo '$(srcdir)/'`filter/filter_sample_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_sample_tests-filter_sample_tests.Tpo filter/$(DEPDIR)/filter_sample_tests-filter_sample_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_sample_tests.c' object='filter/filter_sample_tests-filter_sample_tests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_sample_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_sample_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_sample_tests-filter_sample_tests.o `test -f 'filter/filter_sample_tests.c' || echo '$(srcdir)/'`filter/filter_sample_tests.c
+
+filter/filter_sample_tests-filter_sample_tests.obj: filter/filter_sample_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_sample_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_sample_tests_CFLAGS) $(CFLAGS) -MT filter/filter_sample_tests-filter_sample_tests.obj -MD -MP -MF filter/$(DEPDIR)/filter_sample_tests-filter_sample_tests.Tpo -c -o filter/filter_sample_tests-filter_sample_tests.obj `if test -f 'filter/filter_sample_tests.c'; then $(CYGPATH_W) 'filter/filter_sample_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_sample_tests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_sample_tests-filter_sample_tests.Tpo filter/$(DEPDIR)/filter_sample_tests-filter_sample_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_sample_tests.c' object='filter/filter_sample_tests-filter_sample_tests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_sample_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_sample_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_sample_tests-filter_sample_tests.obj `if test -f 'filter/filter_sample_tests.c'; then $(CYGPATH_W) 'filter/filter_sample_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_sample_tests.c'; fi`
+
+filter/filter_tests-filter_tests.o: filter/filter_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_tests_CFLAGS) $(CFLAGS) -MT filter/filter_tests-filter_tests.o -MD -MP -MF filter/$(DEPDIR)/filter_tests-filter_tests.Tpo -c -o filter/filter_tests-filter_tests.o `test -f 'filter/filter_tests.c' || echo '$(srcdir)/'`filter/filter_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_tests-filter_tests.Tpo filter/$(DEPDIR)/filter_tests-filter_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_tests.c' object='filter/filter_tests-filter_tests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_tests-filter_tests.o `test -f 'filter/filter_tests.c' || echo '$(srcdir)/'`filter/filter_tests.c
+
+filter/filter_tests-filter_tests.obj: filter/filter_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_tests_CFLAGS) $(CFLAGS) -MT filter/filter_tests-filter_tests.obj -MD -MP -MF filter/$(DEPDIR)/filter_tests-filter_tests.Tpo -c -o filter/filter_tests-filter_tests.obj `if test -f 'filter/filter_tests.c'; then $(CYGPATH_W) 'filter/filter_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_tests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_tests-filter_tests.Tpo filter/$(DEPDIR)/filter_tests-filter_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_tests.c' object='filter/filter_tests-filter_tests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_tests-filter_tests.obj `if test -f 'filter/filter_tests.c'; then $(CYGPATH_W) 'filter/filter_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_tests.c'; fi`
+
+filter/filter_vpte_tests-filter_vpte_tests.o: filter/filter_vpte_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_vpte_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_vpte_tests_CFLAGS) $(CFLAGS) -MT filter/filter_vpte_tests-filter_vpte_tests.o -MD -MP -MF filter/$(DEPDIR)/filter_vpte_tests-filter_vpte_tests.Tpo -c -o filter/filter_vpte_tests-filter_vpte_tests.o `test -f 'filter/filter_vpte_tests.c' || echo '$(srcdir)/'`filter/filter_vpte_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_vpte_tests-filter_vpte_tests.Tpo filter/$(DEPDIR)/filter_vpte_tests-filter_vpte_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_vpte_tests.c' object='filter/filter_vpte_tests-filter_vpte_tests.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_vpte_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_vpte_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_vpte_tests-filter_vpte_tests.o `test -f 'filter/filter_vpte_tests.c' || echo '$(srcdir)/'`filter/filter_vpte_tests.c
+
+filter/filter_vpte_tests-filter_vpte_tests.obj: filter/filter_vpte_tests.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_vpte_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_vpte_tests_CFLAGS) $(CFLAGS) -MT filter/filter_vpte_tests-filter_vpte_tests.obj -MD -MP -MF filter/$(DEPDIR)/filter_vpte_tests-filter_vpte_tests.Tpo -c -o filter/filter_vpte_tests-filter_vpte_tests.obj `if test -f 'filter/filter_vpte_tests.c'; then $(CYGPATH_W) 'filter/filter_vpte_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_vpte_tests.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_vpte_tests-filter_vpte_tests.Tpo filter/$(DEPDIR)/filter_vpte_tests-filter_vpte_tests.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_vpte_tests.c' object='filter/filter_vpte_tests-filter_vpte_tests.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_vpte_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_vpte_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_vpte_tests-filter_vpte_tests.obj `if test -f 'filter/filter_vpte_tests.c'; then $(CYGPATH_W) 'filter/filter_vpte_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_vpte_tests.c'; fi`
 
 gdk-pixbuf-loader/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.o: gdk-pixbuf-loader/test-gdk-pixbuf-loader.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_gdk_pixbuf_loader_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gdk-pixbuf-loader/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.o -MD -MP -MF gdk-pixbuf-loader/$(DEPDIR)/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.Tpo -c -o gdk-pixbuf-loader/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.o `test -f 'gdk-pixbuf-loader/test-gdk-pixbuf-loader.c' || echo '$(srcdir)/'`gdk-pixbuf-loader/test-gdk-pixbuf-loader.c
@@ -823,6 +1234,7 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
+	-rm -rf filter/.libs filter/_libs
 	-rm -rf gdk-pixbuf-loader/.libs gdk-pixbuf-loader/_libs
 
 ID: $(am__tagged_files)
@@ -1136,6 +1548,8 @@ distclean-generic:
 	-test . = "$(srcdir)" || $(am__rm_f) $(CONFIG_CLEAN_VPATH_FILES)
 	-$(am__rm_f) $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/gdk-pixbuf-loader/$(am__dirstamp)
+	-$(am__rm_f) filter/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) filter/$(am__dirstamp)
 	-$(am__rm_f) gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) gdk-pixbuf-loader/$(am__dirstamp)
 
@@ -1149,6 +1563,16 @@ clean-am: clean-checkPROGRAMS clean-generic clean-libtool clean-local \
 
 distclean: distclean-am
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Po
+	-rm -f filter/$(DEPDIR)/filter_colors_tests-filter_colors_tests.Po
+	-rm -f filter/$(DEPDIR)/filter_dither_tests-filter_dither_tests.Po
+	-rm -f filter/$(DEPDIR)/filter_encode_tests-filter_encode_tests.Po
+	-rm -f filter/$(DEPDIR)/filter_final_merge_tests-filter_final_merge_tests.Po
+	-rm -f filter/$(DEPDIR)/filter_load_tests-filter_load_tests.Po
+	-rm -f filter/$(DEPDIR)/filter_lookup_tests-filter_lookup_tests.Po
+	-rm -f filter/$(DEPDIR)/filter_resize_tests-filter_resize_tests.Po
+	-rm -f filter/$(DEPDIR)/filter_sample_tests-filter_sample_tests.Po
+	-rm -f filter/$(DEPDIR)/filter_tests-filter_tests.Po
+	-rm -f filter/$(DEPDIR)/filter_vpte_tests-filter_vpte_tests.Po
 	-rm -f gdk-pixbuf-loader/$(DEPDIR)/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -1196,6 +1620,16 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Po
+	-rm -f filter/$(DEPDIR)/filter_colors_tests-filter_colors_tests.Po
+	-rm -f filter/$(DEPDIR)/filter_dither_tests-filter_dither_tests.Po
+	-rm -f filter/$(DEPDIR)/filter_encode_tests-filter_encode_tests.Po
+	-rm -f filter/$(DEPDIR)/filter_final_merge_tests-filter_final_merge_tests.Po
+	-rm -f filter/$(DEPDIR)/filter_load_tests-filter_load_tests.Po
+	-rm -f filter/$(DEPDIR)/filter_lookup_tests-filter_lookup_tests.Po
+	-rm -f filter/$(DEPDIR)/filter_resize_tests-filter_resize_tests.Po
+	-rm -f filter/$(DEPDIR)/filter_sample_tests-filter_sample_tests.Po
+	-rm -f filter/$(DEPDIR)/filter_tests-filter_tests.Po
+	-rm -f filter/$(DEPDIR)/filter_vpte_tests-filter_vpte_tests.Po
 	-rm -f gdk-pixbuf-loader/$(DEPDIR)/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic

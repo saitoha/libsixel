@@ -1,7 +1,7 @@
 #!/bin/sh
 
-# Build and run the VPTE filter unit tests using the in-tree libtool archive.
-# The TAP output comes from the test binary itself.
+# Run the prebuilt VPTE filter unit tests. The TAP output comes from the test
+# binary itself.
 
 set -eu
 
@@ -10,60 +10,16 @@ if [ "${CROSS_COMPILING:-no}" = "yes" ]; then
     exit 0
 fi
 
-if [ -z "${TOP_SRCDIR:-}" ] || [ -z "${TOP_BUILDDIR:-}" ]; then
-    echo "Bail out! missing TOP_SRCDIR or TOP_BUILDDIR" 1>&2
+if [ -z "${TOP_BUILDDIR:-}" ]; then
+    echo "Bail out! missing TOP_BUILDDIR" 1>&2
     exit 1
 fi
 
-CC_CMD="${CC:-cc}"
-LIBTOOL_BIN="${TOP_BUILDDIR}/libtool"
+BIN="${TOP_BUILDDIR}/tests/filter/filter_vpte_tests"
 
-# Allow CC to be wrapped (e.g. "build-aux/compile cl"). Trim a single pair
-# of outer quotes so that libtool receives the wrapper path and compiler
-# separately.
-if [ "${CC_CMD#\"}" != "${CC_CMD}" ] && \
-   [ "${CC_CMD%\"}" != "${CC_CMD}" ]; then
-    CC_CMD=${CC_CMD#\"}
-    CC_CMD=${CC_CMD%\"}
+if [ ! -x "${BIN}" ]; then
+    echo "Bail out! missing test binary: ${BIN}" 1>&2
+    exit 1
 fi
-
-set -- ${CC_CMD}
-CC_TOOL="$1"
-shift
-CC_EXTRA="$*"
-# Honor build-time flags (coverage, warnings) when compiling the
-# filter test binaries so Windows and gcov builds link correctly.
-COVERAGE_EXTRA="${FILTER_TEST_COVERAGE:-}"
-
-# When gcov is enabled (static builds often require it), default to the
-# coverage flags used for the library if the test environment did not supply
-# them explicitly.
-if [ -z "${COVERAGE_EXTRA}" ] && \
-   grep -q -- "--coverage" "${TOP_BUILDDIR}/src/Makefile" 2>/dev/null; then
-    COVERAGE_EXTRA="--coverage"
-fi
-CFLAGS_EXTRA="${FILTER_TEST_CFLAGS:-} ${COVERAGE_EXTRA}"
-CPPFLAGS_EXTRA="${FILTER_TEST_CPPFLAGS:-}"
-LDFLAGS_EXTRA="${FILTER_TEST_LDFLAGS:-} ${COVERAGE_EXTRA}"
-LIBS_EXTRA="${FILTER_TEST_LIBS:-} ${COVERAGE_EXTRA}"
-SRC="${TOP_SRCDIR}/tests/filter/filter_vpte_tests.c"
-OBJ="${ARTIFACT_ROOT:-.}/filter_vpte_tests.lo"
-BIN="${ARTIFACT_ROOT:-.}/filter_vpte_tests"
-
-mkdir -p "${ARTIFACT_ROOT:-.}"
-
-"${LIBTOOL_BIN}" --mode=compile --tag=CC "${CC_TOOL}" ${CC_EXTRA} \
-    ${CPPFLAGS_EXTRA} ${CFLAGS_EXTRA} \
-    -I"${TOP_BUILDDIR}" \
-    -I"${TOP_BUILDDIR}/include" \
-    -I"${TOP_SRCDIR}/include" \
-    -I"${TOP_SRCDIR}/src" \
-    -I"${TOP_SRCDIR}/tests/filter" \
-    -c "${SRC}" -o "${OBJ}"
-
-"${LIBTOOL_BIN}" --mode=link --tag=CC "${CC_TOOL}" ${CC_EXTRA} \
-    ${LDFLAGS_EXTRA} \
-    -o "${BIN}" "${OBJ}" "${TOP_BUILDDIR}/src/libsixel.la" \
-    ${LIBS_EXTRA}
 
 exec "${BIN}"
