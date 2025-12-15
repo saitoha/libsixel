@@ -1006,7 +1006,7 @@ sixel_expand_palette_bpp1(unsigned char *restrict dst,
         /*
          * Handle rows with a short tail. The main loop still copies a
          * precomputed 8-pixel block per byte while the tail is expanded
-         * with a small copy loop.
+         * via a short memcpy so the steady-state loop remains branch free.
          */
         for (y = 0; y < height; ++y) {
             for (x = 0; x < byte_count; ++x) {
@@ -1017,9 +1017,7 @@ sixel_expand_palette_bpp1(unsigned char *restrict dst,
             }
 
             table_entry = palette_table1[src[0]];
-            for (x = 0; x < remainder; ++x) {
-                dst[x] = table_entry[x];
-            }
+            memcpy(dst, table_entry, (size_t)remainder);
             dst += remainder;
             src += 1;
         }
@@ -1062,7 +1060,7 @@ sixel_expand_palette_bpp2(unsigned char *restrict dst,
     } else {
         /*
          * Non-multiple-of-four widths still use the table for the bulk
-         * of each row and append the remaining pixels via a short copy.
+         * of each row and append the remaining pixels via a short memcpy.
          */
         for (y = 0; y < height; ++y) {
             for (x = 0; x < byte_count; ++x) {
@@ -1073,9 +1071,7 @@ sixel_expand_palette_bpp2(unsigned char *restrict dst,
             }
 
             table_entry = palette_table2[src[0]];
-            for (x = 0; x < remainder; ++x) {
-                dst[x] = table_entry[x];
-            }
+            memcpy(dst, table_entry, (size_t)remainder);
             dst += remainder;
             src += 1;
         }
@@ -1118,7 +1114,7 @@ sixel_expand_palette_bpp4(unsigned char *restrict dst,
     } else {
         /*
          * Otherwise process the bulk via the lookup table and append the
-         * one remaining pixel with a small copy loop.
+         * one remaining pixel with a short memcpy.
          */
         for (y = 0; y < height; ++y) {
             for (x = 0; x < byte_count; ++x) {
@@ -1129,9 +1125,7 @@ sixel_expand_palette_bpp4(unsigned char *restrict dst,
             }
 
             table_entry = palette_table4[src[0]];
-            for (x = 0; x < remainder; ++x) {
-                dst[x] = table_entry[x];
-            }
+            memcpy(dst, table_entry, (size_t)remainder);
             dst += remainder;
             src += 1;
         }
