@@ -1312,10 +1312,11 @@ end:
 }
 
 /*
- * Resize a frame using float buffers. Non-nearest filters run in linear RGB
- * so interpolation blends radiometrically instead of on gamma encoded values.
- * Callers can still request nearest-neighbor sampling, in which case the
- * routine preserves the frame's current colorspace while scaling.
+ * Resize a frame using float buffers. Callers must supply RGB float32 input
+ * that already matches the intended resampling basis (linear RGB). The
+ * planner is responsible for any required color conversions prior to calling
+ * this routine. Unexpected pixelformats are rejected so that order mistakes
+ * surface early.
  */
 SIXELAPI SIXELSTATUS
 sixel_frame_resize_float32(
@@ -1338,7 +1339,7 @@ sixel_frame_resize_float32(
     size = 0u;
     depth = 0;
     depth_bytes = 0;
-    target_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+    target_pixelformat = frame->pixelformat;
 
     sixel_frame_ref(frame);
 
@@ -1371,34 +1372,17 @@ sixel_frame_resize_float32(
         goto end;
     }
 
+    if (target_pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32
+        && target_pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_resize_float32: "
+            "resize expects RGB float32 input.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
     if (width == frame->width && height == frame->height) {
         goto out;
-    }
-
-    if (method_for_resampling == SIXEL_RES_NEAREST) {
-        target_pixelformat =
-            sixel_frame_float_pixelformat_for_colorspace(
-                frame->colorspace);
-    } else {
-        /*
-         * Resampling in gamma-encoded RGB is inaccurate, so gamma and SMPTE-C
-         * frames are promoted to linear RGB. Other working spaces such as
-         * OKLab should remain in their native basis while scaling to avoid
-         * misinterpreting channels as RGB.
-         */
-        if (frame->colorspace == SIXEL_COLORSPACE_GAMMA
-            || frame->colorspace == SIXEL_COLORSPACE_SMPTEC) {
-            target_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
-        } else {
-            target_pixelformat =
-                sixel_frame_float_pixelformat_for_colorspace(
-                    frame->colorspace);
-        }
-    }
-
-    status = sixel_frame_set_pixelformat(frame, target_pixelformat);
-    if (SIXEL_FAILED(status)) {
-        goto end;
     }
 
     status = sixel_frame_validate_size("sixel_frame_resize_float32",

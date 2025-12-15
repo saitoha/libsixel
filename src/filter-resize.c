@@ -75,8 +75,7 @@ sixel_filter_resize_use_float(const sixel_filter_resize_config_t *config)
         return prefer_float;
     }
 
-    if (config->method_for_resampling != SIXEL_RES_NEAREST
-        && SIXEL_PIXELFORMAT_IS_FLOAT32(config->planner_scale_pixelformat)) {
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(config->planner_scale_pixelformat)) {
         prefer_float = 1;
     }
 
