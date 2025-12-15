@@ -1190,6 +1190,18 @@ expand_palette(unsigned char *restrict dst,
     int tables_ready;
     size_t total_pixels;
 
+    /*
+     * Reject empty dimensions early. An empty row or column would make the
+     * byte count calculations negative and does not represent a valid image
+     * to expand.
+     */
+    if (width <= 0 || height <= 0) {
+        sixel_helper_set_additional_message(
+            "expand_palette: width and height must be positive.");
+        status = SIXEL_BAD_ARGUMENT;
+        goto end;
+    }
+
     use_palette_tables = 0;
     tables_ready = 0;
 
