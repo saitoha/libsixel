@@ -2931,10 +2931,16 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     int prefer_float32 = 0;
     int prefer_float32_effective;
     int float_resize_required;
+    int source_width;
+    int source_height;
+    int scale_depth;
     int colorspace_before_scale;
     int colorspace_after_scale;
     int working_colorspace_effective;
     int resize_mode;
+    size_t scale_pixels;
+    size_t scale_bytes;
+    size_t scale_limit;
     char const *resize_mode_env;
     char *resize_endptr;
 
@@ -2975,6 +2981,12 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     scale_pixelformat = SIXEL_PIXELFORMAT_LINEARRGBFLOAT32;
     scale_input_pixelformat = sixel_frame_get_pixelformat(frame);
     float_resize_required = (planner->scale_active != 0) ? 1 : 0;
+    source_width = sixel_frame_get_width(frame);
+    source_height = sixel_frame_get_height(frame);
+    scale_pixels = 0U;
+    scale_bytes = 0U;
+    scale_depth = 0;
+    scale_limit = SIXEL_ALLOCATE_BYTES_MAX / 2U;
 
     resize_mode_env = sixel_compat_getenv(
         "SIXEL_PLANNER_RESIZE_PRECISION_MODE");
@@ -3042,6 +3054,50 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
                                   != sixel_frame_get_pixelformat(frame));
         scale_pixelformat = sixel_frame_get_pixelformat(frame);
         scale_input_pixelformat = sixel_frame_get_pixelformat(frame);
+    }
+
+    if (encoder->verbose != 0) {
+        fprintf(stderr,
+                "libsixel: scale plan active=%d width=%d height=%d fmt=%08x\n",
+                planner->scale_active,
+                source_width,
+                source_height,
+                scale_input_pixelformat);
+    }
+
+    /*
+     * Avoid promoting extremely tall frames to float32 when the intermediate
+     * buffer would exceed the allocation guard. Crafted regressions feed
+     * thousands of rows into tiny outputs; scaling in byte RGB keeps the
+     * temporary working set below half of SIXEL_ALLOCATE_BYTES_MAX while still
+     * downsampling before the palette stage.
+     */
+    if (planner->scale_active != 0
+        && float_resize_required != 0
+        && source_width > 0
+        && source_height > 0
+        && SIXEL_PIXELFORMAT_IS_FLOAT32(scale_input_pixelformat)) {
+                scale_depth = sixel_helper_compute_depth(scale_input_pixelformat);
+        if (scale_depth > 0
+            && (size_t)source_width <= SIZE_MAX / (size_t)source_height) {
+            scale_pixels = (size_t)source_width * (size_t)source_height;
+            if (scale_pixels <= SIZE_MAX / (size_t)scale_depth) {
+                scale_bytes = scale_pixels * (size_t)scale_depth;
+                if (encoder->verbose != 0) {
+                    fprintf(stderr,
+                            "libsixel: scale budget float=%zu limit=%zu\n",
+                            scale_bytes,
+                            scale_limit);
+                }
+                if (scale_limit == 0U || scale_bytes > scale_limit) {
+                    scale_input_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+                    scale_pixelformat = scale_input_pixelformat;
+                    colorspace_before_scale = 1;
+                    colorspace_after_scale = (target_pixelformat
+                                              != scale_pixelformat);
+                }
+            }
+        }
     }
 
     planner->scale_pixelformat = scale_pixelformat;
