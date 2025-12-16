@@ -80,8 +80,10 @@
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif
-#if HAVE_SYS_SYSCTL_H
-# include <sys/sysctl.h>
+#if defined(__APPLE__)
+# if HAVE_SYS_SYSCTL_H
+#  include <sys/sysctl.h>
+# endif
 #endif
 
 #include "compat_stub.h"
