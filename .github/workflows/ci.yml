@@ -928,7 +928,7 @@ jobs:
         gmake check V=1
 
     - name: Run tests (non-Windows)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && runner.os != 'Windows'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows'
       shell: bash
       run: make check V=1
 
@@ -2002,7 +2002,7 @@ jobs:
         if-no-files-found: warn
 
     - name: Configure, build, and test (Meson, non-Windows)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && runner.os != 'Windows'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows'
       run: *meson_non_windows
 
     - name: Configure, build, and test (Meson, Windows, not MSVC/Cygwin)
