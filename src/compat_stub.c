@@ -110,7 +110,7 @@ int gettimeofday(struct timeval *tv, struct timezone *tz);
 # include <winsock2.h>  /* for struct timeval */
 #endif  /* defined(_MSC_VER) */
 
-#if defined(__FreeBSD__)
+#if defined(__FreeBSD__) || defined(__DragonFly__)
 struct timezone;
 int gettimeofday(struct timeval *tv, struct timezone *tz);
 #endif
