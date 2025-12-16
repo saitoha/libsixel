@@ -8,6 +8,7 @@
 
 /* STDC_HEADERS */
 #include <stdlib.h>
+#include <stdint.h>
 
 #include <sixel.h>
 
@@ -148,6 +149,10 @@ sixel_filter_resize_frame(const sixel_filter_resize_config_t *config,
     int dst_width;
     int dst_height;
     int use_float_resize;
+    int float_depth;
+    size_t float_pixels;
+    size_t float_bytes;
+    size_t float_limit;
 
     status = SIXEL_FALSE;
     src_width = 0;
@@ -155,6 +160,10 @@ sixel_filter_resize_frame(const sixel_filter_resize_config_t *config,
     dst_width = 0;
     dst_height = 0;
     use_float_resize = 0;
+    float_depth = 0;
+    float_pixels = 0U;
+    float_bytes = 0U;
+    float_limit = SIXEL_ALLOCATE_BYTES_MAX / 2U;
 
     if (frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -196,6 +205,38 @@ sixel_filter_resize_frame(const sixel_filter_resize_config_t *config,
 
     if (dst_width > 0 && dst_height > 0) {
         use_float_resize = sixel_filter_resize_use_float(config);
+        if (use_float_resize != 0) {
+            float_depth = sixel_helper_compute_depth(
+                config != NULL ? config->planner_scale_pixelformat
+                                : sixel_frame_get_pixelformat(frame));
+            if (float_depth > 0
+                && (size_t)src_width <= SIZE_MAX / (size_t)src_height) {
+                float_pixels = (size_t)src_width * (size_t)src_height;
+                if (float_pixels <= SIZE_MAX / (size_t)float_depth) {
+                    float_bytes = float_pixels * (size_t)float_depth;
+                    if (float_limit == 0U
+                        || float_bytes > float_limit) {
+                        use_float_resize = 0;
+                        if (logger != NULL) {
+                            sixel_logger_logf(
+                                logger,
+                                "filter",
+                                "worker",
+                                "scale-fallback",
+                                -1,
+                                -1,
+                                0,
+                                0,
+                                src_width,
+                                src_height,
+                                "float-bytes=%zu limit=%zu",
+                                float_bytes,
+                                float_limit);
+                        }
+                    }
+                }
+            }
+        }
         if (use_float_resize != 0) {
             status = sixel_frame_resize_float32(
                 frame,
