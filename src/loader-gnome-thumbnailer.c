@@ -77,9 +77,9 @@
 # include <dirent.h>
 #endif
 
-#if HAVE_SPAWN_H && HAVE_POSIX_SPAWNP && !defined(__FreeBSD__)
+#if HAVE_SPAWN_H && HAVE_POSIX_SPAWNP && !defined(__FreeBSD__) && !defined(__DragonFly__)
 /*
- * FreeBSD's libc does not export `environ` from shared libraries when they
+ * FreeBSD/DragonflyBSD's libc does not export `environ` from shared libraries when they
  * are linked with --no-undefined.  Restrict the declaration to platforms
  * that will actually route thumbnailer_spawn() through posix_spawnp().
  */
@@ -1854,7 +1854,7 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
     size_t to_write;
     char const *display_command;
     int written;
-# if HAVE_POSIX_SPAWNP && !defined(__FreeBSD__)
+# if HAVE_POSIX_SPAWNP && !defined(__FreeBSD__) && !defined(__DragonFly__)
     posix_spawn_file_actions_t actions;
     int spawn_result;
 # endif
@@ -1886,7 +1886,7 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
     write_result = 0;
     to_write = 0;
     display_command = NULL;
-# if HAVE_POSIX_SPAWNP && !defined(__FreeBSD__)
+# if HAVE_POSIX_SPAWNP && !defined(__FreeBSD__) && !defined(__DragonFly__)
     spawn_result = 0;
 # endif
 
@@ -1957,7 +1957,7 @@ thumbnailer_spawn(struct thumbnailer_command const *command,
                          log_prefix,
                          display_command);
 
-# if HAVE_POSIX_SPAWNP && !defined(__FreeBSD__)
+# if HAVE_POSIX_SPAWNP && !defined(__FreeBSD__) && !defined(__DragonFly__)
     if (posix_spawn_file_actions_init(&actions) != 0) {
         written = sixel_compat_snprintf(
             message,
