@@ -82,6 +82,20 @@ jobs:
 #            cp_arch: arm64
 #            cp_version: '7.8'
 #            variant: openbsd
+          - label: dragonflybsd 6.4.2 x86-64
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            platform: dragonflybsd
+            df_release: '6.4.2'
+            variant: dragonflybsd
+#          - label: openbsd 7.8 aarch64
+#            os: ubuntu-latest
+#            runner: ubuntu-latest
+#            platform: openbsd
+#            cp_os: openbsd
+#            cp_arch: arm64
+#            cp_version: '7.8'
+#            variant: openbsd
           - label: ubuntu x86_64 static-only
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -370,6 +384,50 @@ jobs:
           ${pkg_prefix:+$pkg_prefix }pkg_add \
             gmake \
             # pkgconf avoided to reduce fragile package installs
+
+    - name: Configure and build (DragonFlyBSD)
+      if: matrix.platform == 'dragonflybsd'
+      uses: vmactions/dragonflybsd-vm@v1
+      with:
+        release: ${{ matrix.df_release }}
+        usesh: true
+        copyback: true
+        run: |
+          set -eux
+          pkg update -f
+          pkg install -y gmake pkgconf
+
+          disable_threads_flag=""
+          if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
+            disable_threads_flag="--disable-threads"
+          fi
+          disable_tools_flags=""
+          if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
+            disable_tools_flags="--disable-img2sixel --disable-sixel2png"
+          fi
+          disable_simd_flag=""
+          if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
+            disable_simd_flag="--disable-simd"
+          fi
+          static_only_flags=""
+          if [ "${{ matrix.static_only || '' }}" = "true" ]; then
+            static_only_flags="--disable-shared --enable-static"
+          fi
+
+          cd "$GITHUB_WORKSPACE"
+          ./configure \
+            --without-bashcompletiondir \
+            --without-zshcompletiondir \
+            --disable-python \
+            --enable-debug \
+            --enable-tests \
+            --disable-dependency-tracking \
+            ${disable_tools_flags} \
+            ${disable_threads_flag} \
+            ${disable_simd_flag} \
+            ${static_only_flags}
+          cat config.log
+          gmake V=1
 
     - name: Install dependencies (Haiku)
       if: matrix.platform == 'haiku'
@@ -860,6 +918,18 @@ jobs:
           else
             make check V=1
           fi
+
+    - name: Run tests (DragonFlyBSD)
+      if: matrix.platform == 'dragonflybsd'
+      uses: vmactions/dragonflybsd-vm@v1
+      with:
+        release: ${{ matrix.df_release }}
+        usesh: true
+        copyback: true
+        run: |
+          set -eux
+          cd "$GITHUB_WORKSPACE"
+          gmake check V=1
 
     - name: Run tests (non-Windows)
       if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && runner.os != 'Windows'
@@ -1511,6 +1581,12 @@ jobs:
 #            cp_arch: arm64
 #            cp_version: '7.8'
 #            variant: openbsd
+          - label: dragonflybsd 6.4.2 x86-64
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            platform: dragonflybsd
+            df_release: '6.4.2'
+            variant: dragonflybsd
           - label: ubuntu static-only
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -1723,7 +1799,7 @@ jobs:
         packages: gcc-core,make,pkg-config,python3,python3-pip,ninja
 
     - name: Install Meson (non-Windows)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && runner.os != 'Windows'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows'
       run: |
         python3 -m venv .meson-venv
         . .meson-venv/bin/activate
@@ -1854,6 +1930,49 @@ jobs:
           if [ "${{ matrix.static_only || '' }}" = "true" ]; then
             default_library_flag="--default-library static"
           fi
+          meson setup builddir \
+              --wrap-mode=nodownload \
+              ${default_library_flag} \
+              -Dbashcompletiondir=disabled \
+              -Dzshcompletiondir=disabled \
+              -Dpython=disabled \
+              -Dtests=true \
+              ${disable_tools_flags} \
+              ${disable_threads_flag} \
+              ${disable_simd_flag}
+          meson compile -C builddir
+          meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
+
+    - name: Configure, build, and test (Meson, DragonFlyBSD)
+      if: matrix.platform == 'dragonflybsd'
+      uses: vmactions/dragonflybsd-vm@v1
+      with:
+        release: ${{ matrix.df_release }}
+        usesh: true
+        copyback: true
+        run: |
+          set -eux
+          pkg update -f
+          pkg install -y python3 meson ninja pkgconf
+
+          disable_threads_flag=""
+          if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
+            disable_threads_flag="-Dthreads=disabled"
+          fi
+          disable_tools_flags=""
+          if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
+            disable_tools_flags="-Dimg2sixel=disabled -Dsixel2png=disabled"
+          fi
+          disable_simd_flag=""
+          if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
+            disable_simd_flag="-Dsimd=disabled"
+          fi
+          default_library_flag=""
+          if [ "${{ matrix.static_only || '' }}" = "true" ]; then
+            default_library_flag="--default-library static"
+          fi
+
+          cd "$GITHUB_WORKSPACE"
           meson setup builddir \
               --wrap-mode=nodownload \
               ${default_library_flag} \
