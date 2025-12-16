@@ -31,11 +31,26 @@ sixel_filter_resize_compute_target(const sixel_filter_resize_config_t *config,
                                    int *dst_width_out,
                                    int *dst_height_out)
 {
+    long long scaled_width;
+    long long scaled_height;
     int dst_width;
     int dst_height;
 
+    /*
+     * Guard aspect-ratio math against zero results. Extremely skewed images
+     * (e.g., thousands of rows with only a few columns) can round down to a
+     * zero target width when the user requests only a height. A zero target
+     * keeps the resize filter from running and leaves the oversized frame in
+     * place. Later stages can fail while promoting the original frame to
+     * float32. Clamping to a minimum of one pixel preserves the intent to
+     * shrink the image while keeping the resize path active for the crafted
+     * POC samples (issues #166 and #167).
+     */
+
     dst_width = 0;
     dst_height = 0;
+    scaled_width = 0LL;
+    scaled_height = 0LL;
 
     if (config == NULL) {
         *dst_width_out = dst_width;
@@ -47,17 +62,53 @@ sixel_filter_resize_compute_target(const sixel_filter_resize_config_t *config,
     dst_height = config->pixel_height;
 
     if (config->percent_width > 0) {
-        dst_width = src_width * config->percent_width / 100;
+        scaled_width = (long long)src_width *
+            (long long)config->percent_width;
+        scaled_width /= 100LL;
+        if (scaled_width < 1LL) {
+            scaled_width = 1LL;
+        }
+        if (scaled_width > (long long)SIXEL_WIDTH_LIMIT) {
+            scaled_width = (long long)SIXEL_WIDTH_LIMIT;
+        }
+        dst_width = (int)scaled_width;
     }
     if (config->percent_height > 0) {
-        dst_height = src_height * config->percent_height / 100;
+        scaled_height = (long long)src_height *
+            (long long)config->percent_height;
+        scaled_height /= 100LL;
+        if (scaled_height < 1LL) {
+            scaled_height = 1LL;
+        }
+        if (scaled_height > (long long)SIXEL_HEIGHT_LIMIT) {
+            scaled_height = (long long)SIXEL_HEIGHT_LIMIT;
+        }
+        dst_height = (int)scaled_height;
     }
 
     if (dst_width > 0 && dst_height <= 0) {
-        dst_height = src_height * dst_width / src_width;
+        scaled_height = (long long)src_height * (long long)dst_width;
+        scaled_height += (long long)src_width - 1LL;
+        scaled_height /= (long long)src_width;
+        if (scaled_height < 1LL) {
+            scaled_height = 1LL;
+        }
+        if (scaled_height > (long long)SIXEL_HEIGHT_LIMIT) {
+            scaled_height = (long long)SIXEL_HEIGHT_LIMIT;
+        }
+        dst_height = (int)scaled_height;
     }
     if (dst_height > 0 && dst_width <= 0) {
-        dst_width = src_width * dst_height / src_height;
+        scaled_width = (long long)src_width * (long long)dst_height;
+        scaled_width += (long long)src_height - 1LL;
+        scaled_width /= (long long)src_height;
+        if (scaled_width < 1LL) {
+            scaled_width = 1LL;
+        }
+        if (scaled_width > (long long)SIXEL_WIDTH_LIMIT) {
+            scaled_width = (long long)SIXEL_WIDTH_LIMIT;
+        }
+        dst_width = (int)scaled_width;
     }
 
     *dst_width_out = dst_width;
