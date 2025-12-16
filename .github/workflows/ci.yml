@@ -1968,6 +1968,11 @@ jobs:
             default_library_flag="--default-library static"
           fi
 
+          date -u
+          rdate -n pool.ntp.org || true
+          sleep 2
+          date -u
+
           cd "$GITHUB_WORKSPACE"
           meson setup builddir \
               --wrap-mode=nodownload \
