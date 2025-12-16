@@ -732,7 +732,7 @@ jobs:
           gmake V=1
 
     - name: Configure and build (non-Windows)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && runner.os != 'Windows'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows'
       shell: bash
       run: |
         enable_gcov_flag="--enable-gcov"
@@ -1945,7 +1945,7 @@ jobs:
       with:
         release: ${{ matrix.df_release }}
         usesh: true
-        sync: nfs
+        copyback: true
         run: |
           set -eux
           pkg update -f
