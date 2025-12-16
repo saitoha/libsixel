@@ -2928,7 +2928,7 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     int target_pixelformat;
     int scale_pixelformat;
     int scale_input_pixelformat;
-    int prefer_float32;
+    int prefer_float32 = 0;
     int prefer_float32_effective;
     int float_resize_required;
     int colorspace_before_scale;
