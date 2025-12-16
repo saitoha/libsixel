@@ -23,8 +23,10 @@
  * SOFTWARE.
  */
 
+#include "config.h"
+
 #if defined(__linux__) && !defined(_GNU_SOURCE)
-#define _GNU_SOURCE
+# define _GNU_SOURCE
 #endif
 
 /*
@@ -33,7 +35,7 @@
  * structures needed for hardware concurrency detection.
  */
 #if defined(__OpenBSD__)
-#define _BSD_SOURCE
+# define _BSD_SOURCE
 #endif
 
 /*
@@ -42,10 +44,15 @@
  * provide the structures required by our concurrency probing helpers.
  */
 #if defined(__NetBSD__)
-#define _NETBSD_SOURCE
+# define _NETBSD_SOURCE
 #endif
 
-#include "config.h"
+/*
+ * for including sys/sysctl.h on DragonflyBSD
+ */
+#if defined(__DragonFly__)
+# define _DRAGONFLY_SOURCE
+#endif
 
 #if defined(__APPLE__) && !defined(_DARWIN_C_SOURCE)
 /*
