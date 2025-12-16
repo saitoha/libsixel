@@ -391,7 +391,7 @@ jobs:
       with:
         release: ${{ matrix.df_release }}
         usesh: true
-        sync: nfs
+        copyback: true
         run: |
           set -eux
           pkg update -f
