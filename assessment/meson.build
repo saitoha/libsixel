@@ -5,11 +5,17 @@ if m_dep.found()
 endif
 lsqa_args = libsixel_posix_defs
 ort_dep = disabler()
+model_root_opt = get_option('modeldir')
+if model_root_opt == ''
+  model_root = join_paths(get_option('datadir'),
+                          meson.project_name(),
+                          'models')
+else
+  model_root = model_root_opt
+endif
 lpips_model_root_opt = get_option('lpips_model_dir')
 if lpips_model_root_opt == ''
-  lpips_model_root = join_paths(get_option('datadir'),
-                                meson.project_name(),
-                                'models')
+  lpips_model_root = model_root
 else
   lpips_model_root = lpips_model_root_opt
 endif
