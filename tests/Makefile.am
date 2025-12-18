@@ -188,8 +188,8 @@ CLEANFILES =
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 clean-local:
-	@if test "$(abs_builddir)" != "$(abs_srcdir)"; then \\
-		rm -f $(LOG_COMPILER) $(COPY_TESTS) $(HELPER_FILES); \\
+	@if test "$(abs_builddir)" != "$(abs_srcdir)"; then \
+		rm -f $(LOG_COMPILER) $(COPY_TESTS) $(HELPER_FILES); \
 	fi
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
