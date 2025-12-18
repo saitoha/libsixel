@@ -34,6 +34,15 @@ jobs:
             cp_arch: x86-64
             cp_version: '14.3'
             variant: freebsd
+          - label: freebsd 14.3 x86_64 amalgamation
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            platform: freebsd
+            cp_os: freebsd
+            cp_arch: x86-64
+            cp_version: '14.3'
+            variant: amalgamation
+            configure_extra: '--enable-amalgamation'
           - label: freebsd 14.3 aarch64
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -131,6 +140,12 @@ jobs:
             runner: ubuntu-24.04-arm
             sys: aarch64
             variant: default
+          - label: ubuntu 24.04 aarch64 amalgamation
+            os: ubuntu-24.04-arm
+            runner: ubuntu-24.04-arm
+            sys: aarch64
+            variant: amalgamation
+            configure_extra: '--enable-amalgamation'
           - label: ubuntu i686
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -141,11 +156,23 @@ jobs:
             runner: macos-latest
             sys: aarch64
             variant: default
+          - label: macos aarch64 amalgamation
+            os: macos-latest
+            runner: macos-latest
+            sys: aarch64
+            variant: amalgamation
+            configure_extra: '--enable-amalgamation'
           - label: macos x86_64
             os: macos-15
             runner: macos-15
             sys: x86_64
             variant: default
+          - label: macos x86_64 amalgamation
+            os: macos-15
+            runner: macos-15
+            sys: x86_64
+            variant: amalgamation
+            configure_extra: '--enable-amalgamation'
           - label: mingw64 static-only
             os: windows-latest
             runner: windows-latest
@@ -180,6 +207,13 @@ jobs:
             compiler: gcc
             sys: UCRT64
             variant: default
+          - label: ucrt64 amalgamation
+            os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: UCRT64
+            variant: amalgamation
+            configure_extra: '--enable-amalgamation'
           - label: clang64
             os: windows-latest
             runner: windows-latest
@@ -198,6 +232,20 @@ jobs:
             compiler: cl
             sys: MSVC
             variant: default
+          - label: msvc amalgamation
+            os: windows-latest
+            runner: windows-latest
+            compiler: cl
+            sys: MSVC
+            variant: amalgamation
+            configure_extra: '--enable-amalgamation'
+          - label: cygwin amalgamation
+            os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: CYGWIN
+            variant: amalgamation
+            configure_extra: '--enable-amalgamation'
           - label: msvc vcpkg-libpng
             os: windows-latest
             runner: windows-latest
@@ -398,6 +446,7 @@ jobs:
           pkg install -y gmake pkgconf
 
           disable_threads_flag=""
+          extra_config_flags="${{ matrix.configure_extra || '' }}"
           if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
             disable_threads_flag="--disable-threads"
           fi
@@ -567,6 +616,7 @@ jobs:
           # OpenBSD clang (e.g., 6.8) warns that --coverage is unused and
           # converts it into an error under -Werror, so skip gcov here.
           enable_gcov_flag=""
+          extra_config_flags="${{ matrix.configure_extra || '' }}"
           disable_threads_flag=""
           if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
             disable_threads_flag="--disable-threads"
@@ -596,7 +646,8 @@ jobs:
               ${disable_tools_flags} \
               ${disable_threads_flag} \
               ${disable_simd_flag} \
-              ${static_only_flags}
+              ${static_only_flags} \
+              ${extra_config_flags}
           gmake V=1
 
     - name: Configure and build (NetBSD)
@@ -611,6 +662,7 @@ jobs:
           set -eux
 
           enable_gcov_flag="--enable-gcov"
+          extra_config_flags="${{ matrix.configure_extra || '' }}"
           disable_threads_flag=""
           if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
             disable_threads_flag="--disable-threads"
@@ -640,7 +692,8 @@ jobs:
               ${disable_tools_flags} \
               ${disable_threads_flag} \
               ${disable_simd_flag} \
-              ${static_only_flags}
+              ${static_only_flags} \
+              ${extra_config_flags}
           gmake V=1
 
     - name: Configure and build (Haiku)
@@ -655,6 +708,7 @@ jobs:
           set -eux
 
           enable_gcov_flag="--enable-gcov"
+          extra_config_flags="${{ matrix.configure_extra || '' }}"
           disable_threads_flag=""
           if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
             disable_threads_flag="--disable-threads"
@@ -684,7 +738,8 @@ jobs:
               ${disable_tools_flags} \
               ${disable_threads_flag} \
               ${disable_simd_flag} \
-              ${static_only_flags}
+              ${static_only_flags} \
+              ${extra_config_flags}
           make V=1
 
     - name: Configure and build (OpenBSD)
@@ -699,6 +754,7 @@ jobs:
           set -eux
 
           enable_gcov_flag="--enable-gcov"
+          extra_config_flags="${{ matrix.configure_extra || '' }}"
           disable_threads_flag=""
           if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
             disable_threads_flag="--disable-threads"
@@ -728,7 +784,8 @@ jobs:
               ${disable_tools_flags} \
               ${disable_threads_flag} \
               ${disable_simd_flag} \
-              ${static_only_flags}
+              ${static_only_flags} \
+              ${extra_config_flags}
           gmake V=1
 
     - name: Configure and build (non-Windows)
@@ -736,6 +793,7 @@ jobs:
       shell: bash
       run: |
         enable_gcov_flag="--enable-gcov"
+        extra_config_flags="${{ matrix.configure_extra || '' }}"
         if [ "${{ matrix.musl || '' }}" = "true" ]; then
           export CC=musl-gcc
           enable_gcov_flag=""
@@ -774,7 +832,8 @@ jobs:
             ${disable_tools_flags} \
             ${disable_threads_flag} \
             ${disable_simd_flag} \
-            ${static_only_flags}
+            ${static_only_flags} \
+            ${extra_config_flags}
         cat config.log
         make V=1
 
@@ -783,6 +842,7 @@ jobs:
       shell: msys2 {0}
       run: |
         disable_threads_flag=""
+        extra_config_flags="${{ matrix.configure_extra || '' }}"
         if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
           disable_threads_flag="--disable-threads"
         fi
@@ -812,7 +872,8 @@ jobs:
             ${disable_tools_flags} \
             ${disable_threads_flag} \
             ${disable_simd_flag} \
-            ${static_only_flags}
+            ${static_only_flags} \
+            ${extra_config_flags}
         cat config.log
         make V=1
 
@@ -839,6 +900,7 @@ jobs:
         if ('${{ matrix.static_only }}' -eq 'true') {
           $staticOnlyFlags = '--disable-shared --enable-static'
         }
+        $extraConfigFlags = '${{ matrix.configure_extra || '' }}'
         $scriptLines = @(
           'set -eu',
           'set -o pipefail 2>/dev/null || true',
@@ -846,9 +908,10 @@ jobs:
           "disable_tools_flags=`"$disableToolsFlags`"",
           "disable_simd_flag=`"$disableSimdFlag`"",
           "static_only_flags=`"$staticOnlyFlags`"",
+          "extra_config_flags=`"$extraConfigFlags`"",
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-debug --enable-tests --enable-gcov --disable-dependency-tracking ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${static_only_flags}',
+          './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-debug --enable-tests --enable-gcov --disable-dependency-tracking ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${static_only_flags} ${extra_config_flags}',
           'cat config.log',
           'make V=1'
         )
@@ -862,6 +925,7 @@ jobs:
         VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
         cmd //c call "${VCVARS}" x64 \>nul \&\& set
         disable_threads_flag=""
+        extra_config_flags="${{ matrix.configure_extra || '' }}"
         if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
           disable_threads_flag="--disable-threads"
         fi
@@ -899,7 +963,8 @@ jobs:
             --without-libcurl \
             ${disable_tools_flags} \
             ${disable_threads_flag} \
-            ${disable_simd_flag}
+            ${disable_simd_flag} \
+            ${extra_config_flags}
         cat config.log
         make V=1
 
@@ -1529,6 +1594,15 @@ jobs:
             cp_arch: x86-64
             cp_version: '14.3'
             variant: freebsd
+          - label: freebsd 14.3 x86-64 amalgamation
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            platform: freebsd
+            cp_os: freebsd
+            cp_arch: x86-64
+            cp_version: '14.3'
+            variant: amalgamation
+            amalgamation: true
           - label: freebsd 14.3 aarch64
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -1613,6 +1687,12 @@ jobs:
             runner: ubuntu-24.04-arm
             sys: aarch64
             variant: default
+          - label: ubuntu 24.04 aarch64 amalgamation
+            os: ubuntu-24.04-arm
+            runner: ubuntu-24.04-arm
+            sys: aarch64
+            variant: amalgamation
+            amalgamation: true
           - label: ubuntu i686
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -1622,10 +1702,20 @@ jobs:
             os: macos-latest
             runner: macos-latest
             variant: default
+          - label: macos aarch64 amalgamation
+            os: macos-latest
+            runner: macos-latest
+            variant: amalgamation
+            amalgamation: true
           - label: macos x86_64
             os: macos-15
             runner: macos-15
             variant: default
+          - label: macos x86_64 amalgamation
+            os: macos-15
+            runner: macos-15
+            variant: amalgamation
+            amalgamation: true
           - label: mingw64 static-only
             os: windows-latest
             runner: windows-latest
@@ -1660,6 +1750,13 @@ jobs:
             compiler: gcc
             sys: UCRT64
             variant: default
+          - label: ucrt64 amalgamation
+            os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: UCRT64
+            variant: amalgamation
+            amalgamation: true
           - label: clang64
             os: windows-latest
             runner: windows-latest
@@ -1678,6 +1775,13 @@ jobs:
             compiler: cl
             sys: MSVC
             variant: default
+          - label: msvc amalgamation
+            os: windows-latest
+            runner: windows-latest
+            compiler: cl
+            sys: MSVC
+            variant: amalgamation
+            amalgamation: true
           - label: mingw32
             os: windows-latest
             runner: windows-latest
@@ -1696,6 +1800,13 @@ jobs:
             compiler: gcc
             sys: CYGWIN
             variant: default
+          - label: cygwin amalgamation
+            os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: CYGWIN
+            variant: amalgamation
+            amalgamation: true
 
     steps:
     - uses: actions/checkout@v6
@@ -1926,6 +2037,10 @@ jobs:
           if [ "${{ matrix.static_only || '' }}" = "true" ]; then
             default_library_flag="--default-library static"
           fi
+          amalgamation_flag=""
+          if [ "${{ matrix.amalgamation || '' }}" = "true" ]; then
+            amalgamation_flag="-Damalgamation=enabled"
+          fi
           meson setup builddir \
               --wrap-mode=nodownload \
               ${default_library_flag} \
@@ -1933,6 +2048,7 @@ jobs:
               -Dzshcompletiondir=disabled \
               -Dpython=disabled \
               -Dtests=true \
+              ${amalgamation_flag} \
               ${disable_tools_flags} \
               ${disable_threads_flag} \
               ${disable_simd_flag}
@@ -1967,6 +2083,10 @@ jobs:
           if [ "${{ matrix.static_only || '' }}" = "true" ]; then
             default_library_flag="--default-library static"
           fi
+          amalgamation_flag=""
+          if [ "${{ matrix.amalgamation || '' }}" = "true" ]; then
+            amalgamation_flag="-Damalgamation=enabled"
+          fi
 
           date -u
           rdate -n pool.ntp.org || true
@@ -1981,6 +2101,7 @@ jobs:
               -Dzshcompletiondir=disabled \
               -Dpython=disabled \
               -Dtests=true \
+              ${amalgamation_flag} \
               ${disable_tools_flags} \
               ${disable_threads_flag} \
               ${disable_simd_flag}
@@ -2015,6 +2136,7 @@ jobs:
       shell: msys2 {0}
       run: |
         disable_threads_flag=""
+        amalgamation_flag=""
         if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
           disable_threads_flag="-Dthreads=disabled"
         fi
@@ -2030,6 +2152,9 @@ jobs:
         if [ "${{ matrix.static_only || '' }}" = "true" ]; then
           default_library_flag="--default-library static"
         fi
+        if [ "${{ matrix.amalgamation || '' }}" = "true" ]; then
+          amalgamation_flag="-Damalgamation=enabled"
+        fi
         meson setup builddir \
             --wrap-mode=nodownload \
             ${default_library_flag} \
@@ -2037,6 +2162,7 @@ jobs:
             -Dzshcompletiondir=disabled \
             -Dpython=disabled \
             -Dtests=true \
+            ${amalgamation_flag} \
             ${disable_tools_flags} \
             ${disable_threads_flag} \
             ${disable_simd_flag}
@@ -2066,6 +2192,10 @@ jobs:
         if ('${{ matrix.static_only }}' -eq 'true') {
           $defaultLibraryFlag = '--default-library static'
         }
+        $amalgamationFlag = ''
+        if ('${{ matrix.amalgamation }}' -eq 'true') {
+          $amalgamationFlag = '-Damalgamation=enabled'
+        }
         $scriptLines = @(
           'set -eu',
           'set -o pipefail 2>/dev/null || true',
@@ -2075,9 +2205,10 @@ jobs:
           "disable_tools_flags=`"$disableToolsFlags`"",
           "disable_simd_flag=`"$disableSimdFlag`"",
           "default_library_flag=`"$defaultLibraryFlag`"",
+          "amalgamation_flag=`"$amalgamationFlag`"",
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          'meson setup builddir --wrap-mode=nodownload ${default_library_flag} -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled -Dpython=disabled -Dtests=true ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag}',
+          'meson setup builddir --wrap-mode=nodownload ${default_library_flag} ${amalgamation_flag} -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled -Dpython=disabled -Dtests=true ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag}',
           'meson compile -C builddir',
           'meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }'
         )
@@ -2100,6 +2231,8 @@ jobs:
         if "${{ matrix.disable_tools || '' }}"=="true" set "DISABLE_TOOLS_FLAGS=-Dimg2sixel=disabled -Dsixel2png=disabled"
         set "DISABLE_SIMD_FLAG="
         if "${{ matrix.disable_simd || '' }}"=="true" set "DISABLE_SIMD_FLAG=-Dsimd=disabled"
+        set "AMALGAMATION_FLAG="
+        if "${{ matrix.amalgamation || '' }}"=="true" set "AMALGAMATION_FLAG=-Damalgamation=enabled"
         python -m mesonbuild.mesonmain setup builddir ^
             --wrap-mode=nodownload ^
             --default-library static ^
@@ -2110,6 +2243,7 @@ jobs:
             -Dzshcompletiondir=disabled ^
             -Dpython=disabled ^
             -Dtests=true ^
+            %AMALGAMATION_FLAG% ^
             %DISABLE_TOOLS_FLAGS% ^
             %DISABLE_THREADS_FLAG% ^
             %DISABLE_SIMD_FLAG%
@@ -2140,6 +2274,8 @@ jobs:
         if "${{ matrix.disable_tools || '' }}"=="true" set "DISABLE_TOOLS_FLAGS=-Dimg2sixel=disabled -Dsixel2png=disabled"
         set "DISABLE_SIMD_FLAG="
         if "${{ matrix.disable_simd || '' }}"=="true" set "DISABLE_SIMD_FLAG=-Dsimd=disabled"
+        set "AMALGAMATION_FLAG="
+        if "${{ matrix.amalgamation || '' }}"=="true" set "AMALGAMATION_FLAG=-Damalgamation=enabled"
         python -m mesonbuild.mesonmain setup builddir ^
             --wrap-mode=nodownload ^
             --default-library shared ^
@@ -2149,6 +2285,7 @@ jobs:
             -Dtests=true ^
             -Dcurl=disabled ^
             -Djpeg=disabled ^
+            %AMALGAMATION_FLAG% ^
             %DISABLE_TOOLS_FLAGS% ^
             %DISABLE_THREADS_FLAG% ^
             %DISABLE_SIMD_FLAG%
@@ -2179,6 +2316,8 @@ jobs:
         if "${{ matrix.disable_tools || '' }}"=="true" set "DISABLE_TOOLS_FLAGS=-Dimg2sixel=disabled -Dsixel2png=disabled"
         set "DISABLE_SIMD_FLAG="
         if "${{ matrix.disable_simd || '' }}"=="true" set "DISABLE_SIMD_FLAG=-Dsimd=disabled"
+        set "AMALGAMATION_FLAG="
+        if "${{ matrix.amalgamation || '' }}"=="true" set "AMALGAMATION_FLAG=-Damalgamation=enabled"
         python -m mesonbuild.mesonmain setup builddir ^
             --wrap-mode=nodownload ^
             --default-library shared ^
@@ -2189,6 +2328,7 @@ jobs:
             -Dcurl=disabled ^
             -Dpng=disabled ^
             -Djpeg=enabled ^
+            %AMALGAMATION_FLAG% ^
             %DISABLE_TOOLS_FLAGS% ^
             %DISABLE_THREADS_FLAG% ^
             %DISABLE_SIMD_FLAG%
