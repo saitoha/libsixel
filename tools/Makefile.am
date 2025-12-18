@@ -17,6 +17,7 @@ EXTRA_DIST = libsixel-config.in \
              gen_completion_embed.awk \
              gen-amalgamation.sh
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 install-data-hook:
 	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/thumbnailers"; do \
 	@WANT_THUMBNAILER_TRUE@      $(MKDIR_P) "$$dest" && \
@@ -33,6 +34,7 @@ install-data-hook:
 	@WANT_THUMBNAILER_TRUE@    fi
 	@WANT_THUMBNAILER_FALSE@    @:
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 uninstall-hook:
 	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/thumbnailers"; do \
 	@WANT_THUMBNAILER_TRUE@      rm -f "$$dest/libsixel-thumbnailer.thumbnailer"; \
