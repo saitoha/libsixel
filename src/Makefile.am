@@ -190,9 +190,13 @@ if HAVE_QUICKLOOK_THUMBNAILING
 libsixel_la_SOURCES += \
 $(srcdir)/quicklook_thumbnailing.m
 endif
-if HAVE_CLIPBOARD_MACOS
+if HAVE_CLIPBOARD_MACOS_APPKIT
 libsixel_la_SOURCES += \
 $(srcdir)/clipboard_macos.m
+endif
+if HAVE_CLIPBOARD_MACOS_CARBON
+libsixel_la_SOURCES += \
+$(srcdir)/clipboard_carbon.c
 endif
 endif
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS) \

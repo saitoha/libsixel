@@ -426,6 +426,13 @@ AC_ARG_WITH([coregraphics],
             [],
             [with_coregraphics=auto])
 
+AC_ARG_ENABLE([appkit],
+              [AS_HELP_STRING([--disable-appkit],
+                              [build the macOS clipboard backend without AppKit
+                               (default: enable AppKit when available)])],
+              [],
+              [enable_appkit=yes])
+
 AC_ARG_ENABLE([quicklook-extension],
               [AS_HELP_STRING([--enable-quicklook-extension],
                               [build the macOS Quick Look extension
@@ -1167,27 +1174,61 @@ AM_CONDITIONAL([HAVE_QUICKLOOK_THUMBNAILING],
 CLIPBOARD_LIBS=""
 CLIPBOARD_CFLAGS=""
 have_clipboard_macos=no
+have_clipboard_macos_appkit=no
+have_clipboard_macos_carbon=no
 have_clipboard_windows=no
 have_clipboard_linux=no
 case $host_os in
   darwin*)
-    AC_LANG_PUSH([Objective C])
-    saved_LIBS="$LIBS"
-    LIBS="$LIBS -framework AppKit -framework Foundation"
-    AC_LINK_IFELSE(
-        [AC_LANG_PROGRAM([[#import <AppKit/AppKit.h>]],
-                         [[@autoreleasepool {
-    NSPasteboard *pb = [NSPasteboard generalPasteboard];
-    return pb == nil;
-}]])],
-        [have_clipboard_macos=yes],
-        [have_clipboard_macos=no])
-    LIBS="$saved_LIBS"
-    AC_LANG_POP([Objective C])
+    if test x$enable_appkit != xno; then
+        AC_LANG_PUSH([Objective C])
+        saved_LIBS="$LIBS"
+        LIBS="$LIBS -framework AppKit -framework Foundation"
+        AC_LINK_IFELSE(
+            [AC_LANG_PROGRAM([[#import <AppKit/AppKit.h>]],
+                             [[@autoreleasepool {
+        NSPasteboard *pb = [NSPasteboard generalPasteboard];
+        return pb == nil;
+    }]])],
+            [have_clipboard_macos=yes
+             have_clipboard_macos_appkit=yes],
+            [have_clipboard_macos=no])
+        LIBS="$saved_LIBS"
+        AC_LANG_POP([Objective C])
+        if test x$have_clipboard_macos_appkit = xyes; then
+            AC_DEFINE(HAVE_APPKIT, 1,
+                      [whether AppKit clipboard backend is available])
+            CLIPBOARD_LIBS="-framework AppKit -framework Foundation"
+        fi
+    fi
+    if test x$have_clipboard_macos != xyes; then
+        AC_LANG_PUSH([C])
+        saved_LIBS="$LIBS"
+        LIBS="$LIBS -framework Carbon -framework CoreGraphics \
+            -framework CoreFoundation"
+        AC_LINK_IFELSE(
+            [AC_LANG_PROGRAM([[#include <ApplicationServices/ApplicationServices.h>]],
+                             [[PasteboardRef pasteboard;
+    OSStatus status;
+
+    pasteboard = NULL;
+    status = PasteboardCreate(kPasteboardClipboard, &pasteboard);
+    if (status != noErr) {
+        return 1;
+    }
+    status = PasteboardSynchronize(pasteboard);
+    return status != noErr;]])],
+            [have_clipboard_macos=yes
+             have_clipboard_macos_carbon=yes
+             CLIPBOARD_LIBS="-framework Carbon -framework CoreGraphics \
+                -framework CoreFoundation"],
+            [have_clipboard_macos=no])
+        LIBS="$saved_LIBS"
+        AC_LANG_POP([C])
+    fi
     if test x$have_clipboard_macos = xyes; then
         AC_DEFINE(HAVE_CLIPBOARD_MACOS, 1,
                   [whether macOS clipboard backend is available])
-        CLIPBOARD_LIBS="-framework AppKit -framework Foundation"
     fi
     ;;
   mingw* | msys*)
@@ -1209,6 +1250,10 @@ AC_SUBST(CLIPBOARD_CFLAGS)
 AC_SUBST(CLIPBOARD_LIBS)
 AM_CONDITIONAL([HAVE_CLIPBOARD_MACOS],
                [test x$have_clipboard_macos = xyes])
+AM_CONDITIONAL([HAVE_CLIPBOARD_MACOS_APPKIT],
+               [test x$have_clipboard_macos_appkit = xyes])
+AM_CONDITIONAL([HAVE_CLIPBOARD_MACOS_CARBON],
+               [test x$have_clipboard_macos_carbon = xyes])
 
 APPLE_QUICKLOOK_EXTENSION_LIBS=""
 APPLE_QUICKLOOK_REGISTER_LIBS=""
@@ -1303,7 +1348,7 @@ esac
 
 AMALGAMATION_SUFFIX=".c"
 if test x$enable_amalgamation = xyes; then
-    if test x$have_clipboard_macos = xyes \
+    if test x$have_clipboard_macos_appkit = xyes \
         || test x$have_quicklook_thumbnailing = xyes; then
         AMALGAMATION_SUFFIX=".m"
     fi

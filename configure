@@ -722,6 +722,10 @@ APPLE_QUICKLOOK_EXTENSION_LIBS
 AMALGAMATION_NEEDS_OBJC_FALSE
 AMALGAMATION_NEEDS_OBJC_TRUE
 AMALGAMATION_SUFFIX
+HAVE_CLIPBOARD_MACOS_CARBON_FALSE
+HAVE_CLIPBOARD_MACOS_CARBON_TRUE
+HAVE_CLIPBOARD_MACOS_APPKIT_FALSE
+HAVE_CLIPBOARD_MACOS_APPKIT_TRUE
 HAVE_CLIPBOARD_MACOS_FALSE
 HAVE_CLIPBOARD_MACOS_TRUE
 CLIPBOARD_LIBS
@@ -938,6 +942,7 @@ with_gdk_pixbuf2
 enable_gdk_pixbuf_loader
 with_gd
 with_coregraphics
+enable_appkit
 enable_quicklook_extension
 enable_quicklook_preview
 with_libcurl
@@ -1659,6 +1664,8 @@ Optional Features:
                           auto)
   --enable-gdk-pixbuf-loader
                           Build gdk-pixbuf SIXEL loader
+  --disable-appkit        build the macOS clipboard backend without AppKit
+                          (default: enable AppKit when available)
   --enable-quicklook-extension
                           build the macOS Quick Look extension (default: auto)
   --enable-quicklook-preview
@@ -16960,6 +16967,16 @@ esac
 fi
 
 
+# Check whether --enable-appkit was given.
+if test ${enable_appkit+y}
+then :
+  enableval=$enable_appkit;
+else case e in #(
+  e) enable_appkit=yes ;;
+esac
+fi
+
+
 # Check whether --enable-quicklook-extension was given.
 if test ${enable_quicklook_extension+y}
 then :
@@ -19931,28 +19948,31 @@ fi
 CLIPBOARD_LIBS=""
 CLIPBOARD_CFLAGS=""
 have_clipboard_macos=no
+have_clipboard_macos_appkit=no
+have_clipboard_macos_carbon=no
 have_clipboard_windows=no
 have_clipboard_linux=no
 case $host_os in
   darwin*)
-    ac_ext=m
+    if test x$enable_appkit != xno; then
+        ac_ext=m
 ac_cpp='$OBJCPP $CPPFLAGS'
 ac_compile='$OBJC -c $OBJCFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$OBJC -o conftest$ac_exeext $OBJCFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_objc_compiler_gnu
 
-    saved_LIBS="$LIBS"
-    LIBS="$LIBS -framework AppKit -framework Foundation"
-    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+        saved_LIBS="$LIBS"
+        LIBS="$LIBS -framework AppKit -framework Foundation"
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #import <AppKit/AppKit.h>
 int
 main (void)
 {
 @autoreleasepool {
-    NSPasteboard *pb = [NSPasteboard generalPasteboard];
-    return pb == nil;
-}
+        NSPasteboard *pb = [NSPasteboard generalPasteboard];
+        return pb == nil;
+    }
   ;
   return 0;
 }
@@ -19960,24 +19980,81 @@ _ACEOF
 if ac_fn_objc_try_link "$LINENO"
 then :
   have_clipboard_macos=yes
+             have_clipboard_macos_appkit=yes
 else case e in #(
   e) have_clipboard_macos=no ;;
 esac
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
-    LIBS="$saved_LIBS"
-    ac_ext=c
+        LIBS="$saved_LIBS"
+        ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
+        if test x$have_clipboard_macos_appkit = xyes; then
+
+printf "%s\n" "#define HAVE_APPKIT 1" >>confdefs.h
+
+            CLIPBOARD_LIBS="-framework AppKit -framework Foundation"
+        fi
+    fi
+    if test x$have_clipboard_macos != xyes; then
+        ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+        saved_LIBS="$LIBS"
+        LIBS="$LIBS -framework Carbon -framework CoreGraphics \
+            -framework CoreFoundation"
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <ApplicationServices/ApplicationServices.h>
+int
+main (void)
+{
+PasteboardRef pasteboard;
+    OSStatus status;
+
+    pasteboard = NULL;
+    status = PasteboardCreate(kPasteboardClipboard, &pasteboard);
+    if (status != noErr) {
+        return 1;
+    }
+    status = PasteboardSynchronize(pasteboard);
+    return status != noErr;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  have_clipboard_macos=yes
+             have_clipboard_macos_carbon=yes
+             CLIPBOARD_LIBS="-framework Carbon -framework CoreGraphics \
+                -framework CoreFoundation"
+else case e in #(
+  e) have_clipboard_macos=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+        LIBS="$saved_LIBS"
+        ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+    fi
     if test x$have_clipboard_macos = xyes; then
 
 printf "%s\n" "#define HAVE_CLIPBOARD_MACOS 1" >>confdefs.h
 
-        CLIPBOARD_LIBS="-framework AppKit -framework Foundation"
     fi
     ;;
   mingw* | msys*)
@@ -20053,6 +20130,22 @@ esac
 else
   HAVE_CLIPBOARD_MACOS_TRUE='#'
   HAVE_CLIPBOARD_MACOS_FALSE=
+fi
+
+ if test x$have_clipboard_macos_appkit = xyes; then
+  HAVE_CLIPBOARD_MACOS_APPKIT_TRUE=
+  HAVE_CLIPBOARD_MACOS_APPKIT_FALSE='#'
+else
+  HAVE_CLIPBOARD_MACOS_APPKIT_TRUE='#'
+  HAVE_CLIPBOARD_MACOS_APPKIT_FALSE=
+fi
+
+ if test x$have_clipboard_macos_carbon = xyes; then
+  HAVE_CLIPBOARD_MACOS_CARBON_TRUE=
+  HAVE_CLIPBOARD_MACOS_CARBON_FALSE='#'
+else
+  HAVE_CLIPBOARD_MACOS_CARBON_TRUE='#'
+  HAVE_CLIPBOARD_MACOS_CARBON_FALSE=
 fi
 
 
@@ -20174,7 +20267,7 @@ esac
 
 AMALGAMATION_SUFFIX=".c"
 if test x$enable_amalgamation = xyes; then
-    if test x$have_clipboard_macos = xyes \
+    if test x$have_clipboard_macos_appkit = xyes \
         || test x$have_quicklook_thumbnailing = xyes; then
         AMALGAMATION_SUFFIX=".m"
     fi
@@ -24170,6 +24263,14 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_CLIPBOARD_MACOS_TRUE}" && test -z "${HAVE_CLIPBOARD_MACOS_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_CLIPBOARD_MACOS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_CLIPBOARD_MACOS_APPKIT_TRUE}" && test -z "${HAVE_CLIPBOARD_MACOS_APPKIT_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_CLIPBOARD_MACOS_APPKIT\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_CLIPBOARD_MACOS_CARBON_TRUE}" && test -z "${HAVE_CLIPBOARD_MACOS_CARBON_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_CLIPBOARD_MACOS_CARBON\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${AMALGAMATION_NEEDS_OBJC_TRUE}" && test -z "${AMALGAMATION_NEEDS_OBJC_FALSE}"; then
