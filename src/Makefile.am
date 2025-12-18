@@ -25,7 +25,7 @@ if WANT_AMALGAMATION
 libsixel_la_SOURCES =
 
 $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
-        $(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel@AMALGAMATION_SUFFIX@
+	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel@AMALGAMATION_SUFFIX@
 
 else
 libsixel_la_SOURCES = \
