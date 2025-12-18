@@ -106,6 +106,10 @@ amalgamation_units = files(
   '../assessment/lsqa.c',
 )
 
+if get_option('tests')
+  amalgamation_units += files('../src/tests.c')
+endif
+
 amalgamation_headers = files(
   '../include/sixel.h.in',
   '../src/sixel_threads_config.h',
