@@ -871,10 +871,34 @@ AM_TEST_LOG_DRIVER_FLAGS = --comments
 LOG_COMPILER = $(builddir)/tools/with-timeout.sh
 AM_TEST_TIMEOUT = 300
 AM_LOG_FLAGS = --timeout=$(AM_TEST_TIMEOUT)
+BASELINE_JSON = data/baseline/grayscale.json \
+       data/baseline/hd_landscape.json \
+       data/baseline/palette.json \
+       data/baseline/panorama_tall.json \
+       data/baseline/panorama_wide.json \
+       data/baseline/quarter_square.json \
+       data/baseline/rgb.json \
+       data/baseline/svga_landscape.json \
+       data/baseline/tiny_square.json
+
+INPUT_FORMAT_FILES = data/inputs/formats/grayscale.jpg \
+       data/inputs/formats/palette.png \
+       data/inputs/formats/rgb.png
+
+RESOLUTION_IMAGES = data/resolutions/hd_landscape.png \
+       data/resolutions/panorama_tall.png \
+       data/resolutions/panorama_wide.png \
+       data/resolutions/quarter_square.png \
+       data/resolutions/svga_landscape.png \
+       data/resolutions/tiny_square.png
+
+CORRUPTED_INPUTS = data/corrupted/metadata_noise.jpg \
+       data/corrupted/truncated.png
+
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
              lsqa_regression.sh \
-             data/baseline/*.json data/inputs/formats/* \
-             data/resolutions/*.png data/corrupted/* \
+             $(BASELINE_JSON) $(INPUT_FORMAT_FILES) \
+             $(RESOLUTION_IMAGES) $(CORRUPTED_INPUTS) \
              filter/filter_tests.c filter/filter_sample_tests.c \
              filter/filter_resize_tests.c filter/filter_colors_tests.c \
              filter/filter_lookup_tests.c filter/filter_final_merge_tests.c \
@@ -1679,8 +1703,10 @@ uninstall-am:
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 clean-local:
 	@if test "$(abs_builddir)" != "$(abs_srcdir)"; then \
-		rm -f $(LOG_COMPILER) $(COPY_TESTS) $(HELPER_FILES); \
+	rm -f $(LOG_COMPILER) $(COPY_TESTS) $(HELPER_FILES); \
 	fi
+	rm -rf $(ARTIFACT_ROOT)
+	rm -f $(builddir)/*_metrics.json
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 check-local: $(LOG_COMPILER) $(COPY_TESTS) $(HELPER_FILES)
