@@ -5556,6 +5556,7 @@ sixel_colorspace_supports_pixelformat(int pixelformat)
     return 0;
 }
 
+#if SIXEL_USE_DEPRECATED_SYMBOLS
 static int
 sixel_colorspace_supports_byte_format(int pixelformat)
 {
@@ -5889,6 +5890,7 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
 
     return SIXEL_OK;
 }
+#endif /* SIXEL_USE_DEPRECATED_SYMBOLS */
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */
