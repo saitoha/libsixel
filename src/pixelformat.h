@@ -58,9 +58,9 @@ SIXELAPI int
 sixel_pixelformat_colorspace_from_format(int pixelformat);
 
 SIXELAPI SIXELSTATUS
-sixel_pixelformat_convert(unsigned char *dst,
+sixel_pixelformat_convert(void *dst,
                           int dst_pixelformat,
-                          unsigned char const *src,
+                          void const *src,
                           int src_pixelformat,
                           int width,
                           int height,
