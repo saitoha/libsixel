@@ -8,7 +8,7 @@ top_builddir = @top_builddir@
 builddir = @builddir@
 
 if WANT_AMALGAMATION
-AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
+AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel@AMALGAMATION_SUFFIX@
 BUILT_SOURCES = $(AMALGAMATION_SIXEL)
 nodist_libsixel_la_SOURCES = $(AMALGAMATION_SIXEL)
 endif
@@ -25,7 +25,7 @@ if WANT_AMALGAMATION
 libsixel_la_SOURCES =
 
 $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
-	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
+        $(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel@AMALGAMATION_SUFFIX@
 
 else
 libsixel_la_SOURCES = \
