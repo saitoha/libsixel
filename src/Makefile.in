@@ -97,8 +97,11 @@ host_triplet = @host@
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATION_FALSE@am__append_2 = \
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATION_FALSE@$(srcdir)/quicklook_thumbnailing.m
 
-@HAVE_CLIPBOARD_MACOS_TRUE@@WANT_AMALGAMATION_FALSE@am__append_3 = \
-@HAVE_CLIPBOARD_MACOS_TRUE@@WANT_AMALGAMATION_FALSE@$(srcdir)/clipboard_macos.m
+@HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATION_FALSE@am__append_3 = \
+@HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATION_FALSE@$(srcdir)/clipboard_macos.m
+
+@HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATION_FALSE@am__append_4 = \
+@HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATION_FALSE@$(srcdir)/clipboard_carbon.c
 
 @COND_TESTS_TRUE@noinst_PROGRAMS = tests$(EXEEXT)
 subdir = src
@@ -231,10 +234,12 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/sixel_decode_rgba.c $(srcdir)/sixel_decode_rgba.h \
 	$(srcdir)/sixel_atomic.h $(srcdir)/rgblookup.h \
 	$(srcdir)/lso2.h $(srcdir)/threadpool.c $(srcdir)/threadpool.h \
-	$(srcdir)/quicklook_thumbnailing.m $(srcdir)/clipboard_macos.m
+	$(srcdir)/quicklook_thumbnailing.m $(srcdir)/clipboard_macos.m \
+	$(srcdir)/clipboard_carbon.c
 @SIXEL_ENABLE_THREADS_TRUE@@WANT_AMALGAMATION_FALSE@am__objects_1 = libsixel_la-threadpool.lo
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATION_FALSE@am__objects_2 = libsixel_la-quicklook_thumbnailing.lo
-@HAVE_CLIPBOARD_MACOS_TRUE@@WANT_AMALGAMATION_FALSE@am__objects_3 = libsixel_la-clipboard_macos.lo
+@HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATION_FALSE@am__objects_3 = libsixel_la-clipboard_macos.lo
+@HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATION_FALSE@am__objects_4 = libsixel_la-clipboard_carbon.lo
 @WANT_AMALGAMATION_FALSE@am_libsixel_la_OBJECTS =  \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-output.lo \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-timer.lo \
@@ -310,11 +315,12 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-probe.lo \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-sixel_decode_rgba.lo \
 @WANT_AMALGAMATION_FALSE@	$(am__objects_1) $(am__objects_2) \
-@WANT_AMALGAMATION_FALSE@	$(am__objects_3)
+@WANT_AMALGAMATION_FALSE@	$(am__objects_3) $(am__objects_4)
 @WANT_AMALGAMATION_TRUE@am_libsixel_la_OBJECTS = $(am__objects_1) \
-@WANT_AMALGAMATION_TRUE@	$(am__objects_2) $(am__objects_3)
-am__objects_4 =
-@WANT_AMALGAMATION_TRUE@nodist_libsixel_la_OBJECTS = $(am__objects_4)
+@WANT_AMALGAMATION_TRUE@	$(am__objects_2) $(am__objects_3) \
+@WANT_AMALGAMATION_TRUE@	$(am__objects_4)
+am__objects_5 =
+@WANT_AMALGAMATION_TRUE@nodist_libsixel_la_OBJECTS = $(am__objects_5)
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS) \
 	$(nodist_libsixel_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -350,6 +356,7 @@ am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
 	./$(DEPDIR)/libsixel_la-assessment.Plo \
 	./$(DEPDIR)/libsixel_la-chunk.Plo \
 	./$(DEPDIR)/libsixel_la-clipboard.Plo \
+	./$(DEPDIR)/libsixel_la-clipboard_carbon.Plo \
 	./$(DEPDIR)/libsixel_la-clipboard_macos.Plo \
 	./$(DEPDIR)/libsixel_la-colorspace.Plo \
 	./$(DEPDIR)/libsixel_la-compat_stub.Plo \
@@ -831,9 +838,11 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/sixel_atomic.h \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/rgblookup.h \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/lso2.h $(am__append_1) \
-@WANT_AMALGAMATION_FALSE@	$(am__append_2) $(am__append_3)
+@WANT_AMALGAMATION_FALSE@	$(am__append_2) $(am__append_3) \
+@WANT_AMALGAMATION_FALSE@	$(am__append_4)
 @WANT_AMALGAMATION_TRUE@libsixel_la_SOURCES = $(am__append_1) \
-@WANT_AMALGAMATION_TRUE@	$(am__append_2) $(am__append_3)
+@WANT_AMALGAMATION_TRUE@	$(am__append_2) $(am__append_3) \
+@WANT_AMALGAMATION_TRUE@	$(am__append_4)
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS) \
                 @THREAD_CPPFLAGS@
 
@@ -966,6 +975,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-assessment.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-chunk.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-clipboard.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-clipboard_carbon.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-clipboard_macos.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-colorspace.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-compat_stub.Plo@am__quote@ # am--include-marker
@@ -1588,6 +1598,13 @@ libsixel_la-threadpool.lo: threadpool.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-threadpool.lo `test -f 'threadpool.c' || echo '$(srcdir)/'`threadpool.c
 
+libsixel_la-clipboard_carbon.lo: clipboard_carbon.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-clipboard_carbon.lo -MD -MP -MF $(DEPDIR)/libsixel_la-clipboard_carbon.Tpo -c -o libsixel_la-clipboard_carbon.lo `test -f 'clipboard_carbon.c' || echo '$(srcdir)/'`clipboard_carbon.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-clipboard_carbon.Tpo $(DEPDIR)/libsixel_la-clipboard_carbon.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='clipboard_carbon.c' object='libsixel_la-clipboard_carbon.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-clipboard_carbon.lo `test -f 'clipboard_carbon.c' || echo '$(srcdir)/'`clipboard_carbon.c
+
 tests-tests.o: tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-tests.o -MD -MP -MF $(DEPDIR)/tests-tests.Tpo -c -o tests-tests.o `test -f 'tests.c' || echo '$(srcdir)/'`tests.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-tests.Tpo $(DEPDIR)/tests-tests.Po
@@ -1826,6 +1843,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-assessment.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-chunk.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-clipboard.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-clipboard_carbon.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-clipboard_macos.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-colorspace.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-compat_stub.Plo
@@ -1948,6 +1966,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-assessment.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-chunk.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-clipboard.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-clipboard_carbon.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-clipboard_macos.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-colorspace.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-compat_stub.Plo
