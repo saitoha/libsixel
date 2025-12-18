@@ -132,7 +132,7 @@ make_rgb_frame(sixel_allocator_t *allocator,
         goto end;
     }
 
-    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    sixel_frame_set_colorspace(frame, SIXEL_COLORSPACE_GAMMA);
 
 end:
     if (SIXEL_FAILED(status)) {
@@ -190,7 +190,7 @@ make_float_frame(sixel_allocator_t *allocator,
         goto end;
     }
 
-    frame->colorspace = SIXEL_COLORSPACE_LINEAR;
+    sixel_frame_set_colorspace(frame, SIXEL_COLORSPACE_LINEAR);
 
 end:
     if (SIXEL_FAILED(status)) {

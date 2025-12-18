@@ -50,6 +50,8 @@ static SIXELSTATUS
 sixel_frame_promote_to_float32(sixel_frame_t *frame);
 static int
 sixel_frame_colorspace_from_pixelformat(int pixelformat);
+static int
+sixel_frame_float_pixelformat_for_colorspace(int colorspace);
 static void
 sixel_frame_apply_pixelformat(sixel_frame_t *frame, int pixelformat);
 static SIXELSTATUS
@@ -517,7 +519,8 @@ sixel_frame_set_pixelformat(
 
     status = SIXEL_OK;
     working_pixelformat = frame->pixelformat;
-    source_colorspace = frame->colorspace;
+    source_colorspace = sixel_frame_colorspace_from_pixelformat(
+        frame->pixelformat);
     float_depth = 0;
     float_pixels = 0U;
     float_bytes = 0U;
@@ -579,7 +582,8 @@ sixel_frame_set_pixelformat(
     }
 
     working_pixelformat = frame->pixelformat;
-    source_colorspace = frame->colorspace;
+    source_colorspace = sixel_frame_colorspace_from_pixelformat(
+        frame->pixelformat);
     target_colorspace = sixel_frame_colorspace_from_pixelformat(pixelformat);
 
     if (target_colorspace != source_colorspace) {
@@ -636,7 +640,11 @@ sixel_frame_set_pixelformat(
 SIXELAPI int
 sixel_frame_get_colorspace(sixel_frame_t /* in */ *frame)  /* frame object */
 {
-    return frame->colorspace;
+    if (frame == NULL) {
+        return SIXEL_COLORSPACE_GAMMA;
+    }
+
+    return sixel_frame_colorspace_from_pixelformat(frame->pixelformat);
 }
 
 
@@ -646,7 +654,31 @@ sixel_frame_set_colorspace(
     sixel_frame_t  /* in */ *frame,
     int            /* in */ colorspace)
 {
-    frame->colorspace = colorspace;
+    SIXELSTATUS status;
+    int target_pixelformat;
+    int current_colorspace;
+
+    status = SIXEL_FALSE;
+    target_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+    if (frame == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_set_colorspace: frame is null.");
+        return;
+    }
+
+    current_colorspace = sixel_frame_get_colorspace(frame);
+
+    if (current_colorspace == colorspace) {
+        return;
+    }
+
+    target_pixelformat =
+        sixel_frame_float_pixelformat_for_colorspace(colorspace);
+    status = sixel_frame_set_pixelformat(frame, target_pixelformat);
+    if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "sixel_frame_set_colorspace: pixelformat update failed.");
+    }
 }
 
 
@@ -1044,27 +1076,13 @@ end:
 static int
 sixel_frame_colorspace_from_pixelformat(int pixelformat)
 {
-    switch (pixelformat) {
-    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
-        return SIXEL_COLORSPACE_LINEAR;
-    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
-        return SIXEL_COLORSPACE_OKLAB;
-    case SIXEL_PIXELFORMAT_CIELABFLOAT32:
-        return SIXEL_COLORSPACE_CIELAB;
-    case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
-        return SIXEL_COLORSPACE_DIN99D;
-    case SIXEL_PIXELFORMAT_YUVFLOAT32:
-        return SIXEL_COLORSPACE_YUV;
-    default:
-        return SIXEL_COLORSPACE_GAMMA;
-    }
+    return sixel_pixelformat_colorspace_from_format(pixelformat);
 }
 
 static void
 sixel_frame_apply_pixelformat(sixel_frame_t *frame, int pixelformat)
 {
     frame->pixelformat = pixelformat;
-    frame->colorspace = sixel_frame_colorspace_from_pixelformat(pixelformat);
 }
 
 #if HAVE_DIAGNOSTIC_UNUSED_FUNCTION
@@ -1206,8 +1224,8 @@ sixel_frame_promote_to_float32(sixel_frame_t *frame)
     }
 
     byte_pixels = frame->pixels.u8ptr;
-    float_pixelformat =
-        sixel_frame_float_pixelformat_for_colorspace(frame->colorspace);
+    float_pixelformat = sixel_frame_float_pixelformat_for_colorspace(
+        sixel_frame_get_colorspace(frame));
 
     for (index = 0U; index < pixel_total; ++index) {
         unsigned char r8;
