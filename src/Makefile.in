@@ -2063,7 +2063,7 @@ uninstall-man: uninstall-man5
 
 
 @WANT_AMALGAMATION_TRUE@$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
-@WANT_AMALGAMATION_TRUE@        $(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel@AMALGAMATION_SUFFIX@
+@WANT_AMALGAMATION_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel@AMALGAMATION_SUFFIX@
 
 unittest: all
 @COND_TESTS_TRUE@	$(srcdir)/tests
