@@ -20,7 +20,10 @@ AMALGAMATION_DEPS = $(AMALGAMATION_GEN) $(AMALGAMATION_SRC_DEPS) \
         $(AMALGAMATION_CONVERTER_DEPS) $(AMALGAMATION_ASSESSMENT_DEPS) \
         $(AMALGAMATION_PUBLIC_DEPS) $(AMALGAMATION_BUILD_DEPS)
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(builddir)/sixel@AMALGAMATION_SUFFIX@: $(AMALGAMATION_DEPS)
 	$(AM_V_GEN)$(SHELL) $(AMALGAMATION_GEN) "$@" \
 		"$(top_srcdir)" "$(top_builddir)"
+
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 all-local: $(builddir)/sixel@AMALGAMATION_SUFFIX@

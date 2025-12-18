@@ -1287,8 +1287,9 @@ uninstall-man: uninstall-man1
 .PRECIOUS: Makefile
 
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 @WANT_AMALGAMATED_TOOLS_TRUE@$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
-@WANT_AMALGAMATED_TOOLS_TRUE@        $(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel@AMALGAMATION_SUFFIX@
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel@AMALGAMATION_SUFFIX@
 @WANT_AMALGAMATED_TOOLS_TRUE@$(AMALGAMATION_SIXEL): completion_embed.h
 
 # +--------------------------------------------------------------+
@@ -1297,6 +1298,8 @@ uninstall-man: uninstall-man1
 # bash/img2sixel ----\
 #                      >--[gen_completion_embed.awk]--> completion_embed.h
 # zsh/_img2sixel  ----/
+
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 completion_embed.h: \
 	$(srcdir)/shell-completion/bash/img2sixel \
 	$(srcdir)/shell-completion/zsh/_img2sixel \

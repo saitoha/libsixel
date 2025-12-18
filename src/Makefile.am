@@ -24,6 +24,7 @@ lib_LTLIBRARIES = libsixel.la
 if WANT_AMALGAMATION
 libsixel_la_SOURCES =
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel@AMALGAMATION_SUFFIX@
 
@@ -241,6 +242,7 @@ endif
 dist_man_MANS = $(srcdir)/sixel.5
 EXTRA_DIST = $(srcdir)/rgblookup.gperf
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 unittest: all
 if COND_TESTS
 	$(srcdir)/tests
@@ -248,6 +250,7 @@ endif
 
 GPERF_OPT=--ignore-case --language=ANSI-C
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 gen-rgblookup: $(srcdir)/rgblookup.gperf
 	gperf -C -N lookup_rgb $(GPERF_OPT) $<  |\
 	sed 's/{""}/\{"", 0, 0, 0\}/g'          |\

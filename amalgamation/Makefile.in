@@ -544,9 +544,12 @@ uninstall-am:
 .PRECIOUS: Makefile
 
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(builddir)/sixel@AMALGAMATION_SUFFIX@: $(AMALGAMATION_DEPS)
 	$(AM_V_GEN)$(SHELL) $(AMALGAMATION_GEN) "$@" \
 		"$(top_srcdir)" "$(top_builddir)"
+
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 all-local: $(builddir)/sixel@AMALGAMATION_SUFFIX@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

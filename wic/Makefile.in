@@ -951,6 +951,7 @@ ps-am:
 .PRECIOUS: Makefile
 
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 @REGISTER_DLL_TRUE@install-exec-hook:
 @REGISTER_DLL_TRUE@	$(LIBTOOL) --mode=execute \
 @REGISTER_DLL_TRUE@	    $(REGSVR32) -s \
@@ -958,9 +959,11 @@ ps-am:
 @REGISTER_DLL_FALSE@install-exec-hook:
 
 @REGISTER_DLL_TRUE@.PHONY: preuninstall
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 @REGISTER_DLL_TRUE@uninstall-am: preuninstall
 @REGISTER_DLL_TRUE@	$(MAKE) uninstall-pkglibLTLIBRARIES
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 @REGISTER_DLL_TRUE@preuninstall:
 @REGISTER_DLL_TRUE@	$(LIBTOOL) --mode=execute \
 @REGISTER_DLL_TRUE@	    $(REGSVR32) -u -s \

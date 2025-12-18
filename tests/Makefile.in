@@ -1675,17 +1675,22 @@ uninstall-am:
 # Avoid deleting in-tree test scripts when "make clean" is invoked.
 # Only remove copied test files in an out-of-tree build so that the
 # distributed sources remain intact for developers and package builds.
+
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 clean-local:
 	@if test "$(abs_builddir)" != "$(abs_srcdir)"; then \\
 		rm -f $(LOG_COMPILER) $(COPY_TESTS) $(HELPER_FILES); \\
 	fi
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 check-local: $(LOG_COMPILER) $(COPY_TESTS) $(HELPER_FILES)
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(LOG_COMPILER): $(srcdir)/tools/with-timeout.sh
 	$(MKDIR_P) $(builddir)/tools
 	$(AM_V_GEN)cp $(srcdir)/tools/with-timeout.sh $(LOG_COMPILER)
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(COPY_TESTS) $(HELPER_FILES):
 	$(MKDIR_P) $(builddir)/$(dir $@)
 	$(AM_V_GEN){ if test -f $(srcdir)/$@; then \

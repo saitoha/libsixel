@@ -12,8 +12,9 @@ AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel@AMALGAMATION_SUFFIX@
 if WANT_AMALGAMATED_TOOLS
 BUILT_SOURCES += $(AMALGAMATION_SIXEL)
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
-        $(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel@AMALGAMATION_SUFFIX@
+	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel@AMALGAMATION_SUFFIX@
 $(AMALGAMATION_SIXEL): completion_embed.h
 endif
 
@@ -79,6 +80,8 @@ CLEANFILES = *.gcno *.gcda *.gcov \
 # bash/img2sixel ----\
 #                      >--[gen_completion_embed.awk]--> completion_embed.h
 # zsh/_img2sixel  ----/
+
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 completion_embed.h: \
 	$(srcdir)/shell-completion/bash/img2sixel \
 	$(srcdir)/shell-completion/zsh/_img2sixel \
