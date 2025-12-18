@@ -2062,12 +2062,15 @@ uninstall-man: uninstall-man5
 .PRECIOUS: Makefile
 
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 @WANT_AMALGAMATION_TRUE@$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
 @WANT_AMALGAMATION_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel@AMALGAMATION_SUFFIX@
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 unittest: all
 @COND_TESTS_TRUE@	$(srcdir)/tests
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 gen-rgblookup: $(srcdir)/rgblookup.gperf
 	gperf -C -N lookup_rgb $(GPERF_OPT) $<  |\
 	sed 's/{""}/\{"", 0, 0, 0\}/g'          |\

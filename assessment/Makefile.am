@@ -5,8 +5,9 @@ AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel@AMALGAMATION_SUFFIX@
 if WANT_AMALGAMATED_TOOLS
 BUILT_SOURCES += $(AMALGAMATION_SIXEL)
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
-      $(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel@AMALGAMATION_SUFFIX@
+	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel@AMALGAMATION_SUFFIX@
 endif
 
 if COND_GCOV

@@ -43,6 +43,7 @@ libwicsixel_la_LIBADD = $(WICCODEC_LIBS)
 REGSVR32 = "$(shell cygpath $(SYSTEMROOT)/System32/regsvr32.exe)"
 
 if REGISTER_DLL
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 install-exec-hook:
 	$(LIBTOOL) --mode=execute \
 	    $(REGSVR32) -s \
@@ -53,9 +54,11 @@ endif
 
 if REGISTER_DLL
 .PHONY: preuninstall
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 uninstall-am: preuninstall
 	$(MAKE) uninstall-pkglibLTLIBRARIES
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 preuninstall:
 	$(LIBTOOL) --mode=execute \
 	    $(REGSVR32) -u -s \

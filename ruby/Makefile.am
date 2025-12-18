@@ -1,5 +1,6 @@
 # Ruby bindings: build helpers, tests, install/uninstall
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 all-local:
 	@if test -x "$(RUBY)"; then \
 	  echo "Ensuring Ruby constants are generated..."; \
@@ -7,6 +8,7 @@ all-local:
 	  $(RUBY) $(top_srcdir)/tools/gen_ruby_constants.rb $(top_srcdir)/include/sixel.h $(builddir)/lib/libsixel/constants.rb || true; \
 	fi
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 check-local:
 	@if test -x "$(RUBY)"; then \
 	  echo "Running Ruby tests..."; \
@@ -17,6 +19,7 @@ check-local:
 	  echo "Ruby not found; skipping Ruby tests"; \
 	fi
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 install-data-local:
 	@if test "x$(RUBY_SITE_LIBDIR)" != x; then \
 	  echo "Installing Ruby bindings to $(DESTDIR)$(RUBY_SITE_LIBDIR)"; \
@@ -40,6 +43,7 @@ install-data-local:
 	  echo "Ruby site libdir not detected; skip installing Ruby bindings"; \
 	fi
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 uninstall-local:
 	@if test "x$(RUBY_SITE_LIBDIR)" != x; then \
 	  rm -f $(DESTDIR)$(RUBY_SITE_LIBDIR)/libsixel.rb; \
