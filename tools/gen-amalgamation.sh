@@ -303,6 +303,29 @@ else
     user_units="${default_units}"
 fi
 
+config_path="${build_root}/config.h"
+
+append_unique_unit() {
+    candidate=$1
+    pattern=$(printf '\n%s\n' "${candidate}")
+
+    case "${user_units}" in
+        *"${pattern}"*)
+            return
+            ;;
+        *)
+            user_units="${user_units}
+${candidate}"
+            ;;
+    esac
+}
+
+if [ -f "${config_path}" ] && \
+        grep -Eq '^#define[[:space:]]+HAVE_TESTS[[:space:]]+1' \
+            "${config_path}"; then
+    append_unique_unit "src/tests.c"
+fi
+
 resolve_unit() {
     case "$1" in
         /*)
