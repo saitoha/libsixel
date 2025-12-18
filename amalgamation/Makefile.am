@@ -21,6 +21,6 @@ AMALGAMATION_DEPS = $(AMALGAMATION_GEN) $(AMALGAMATION_SRC_DEPS) \
         $(AMALGAMATION_PUBLIC_DEPS) $(AMALGAMATION_BUILD_DEPS)
 
 $(builddir)/sixel@AMALGAMATION_SUFFIX@: $(AMALGAMATION_DEPS)
-        $(AM_V_GEN)$(SHELL) $(AMALGAMATION_GEN) "$@" \
-                "$(top_srcdir)" "$(top_builddir)"
+	$(AM_V_GEN)$(SHELL) $(AMALGAMATION_GEN) "$@" \
+		"$(top_srcdir)" "$(top_builddir)"
 all-local: $(builddir)/sixel@AMALGAMATION_SUFFIX@
