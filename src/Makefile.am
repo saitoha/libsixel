@@ -22,7 +22,7 @@ CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests
 lib_LTLIBRARIES = libsixel.la
 
 if WANT_AMALGAMATION
-libsixel_la_SOURCES =
+libsixel_la_SOURCES = $(AMALGAMATION_SIXEL)
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile

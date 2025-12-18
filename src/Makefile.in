@@ -235,11 +235,13 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/sixel_atomic.h $(srcdir)/rgblookup.h \
 	$(srcdir)/lso2.h $(srcdir)/threadpool.c $(srcdir)/threadpool.h \
 	$(srcdir)/quicklook_thumbnailing.m $(srcdir)/clipboard_macos.m \
-	$(srcdir)/clipboard_carbon.c
+	$(srcdir)/clipboard_carbon.c \
+	$(top_builddir)/amalgamation/sixel@AMALGAMATION_SUFFIX@
 @SIXEL_ENABLE_THREADS_TRUE@@WANT_AMALGAMATION_FALSE@am__objects_1 = libsixel_la-threadpool.lo
 @HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATION_FALSE@am__objects_2 = libsixel_la-quicklook_thumbnailing.lo
 @HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATION_FALSE@am__objects_3 = libsixel_la-clipboard_macos.lo
 @HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATION_FALSE@am__objects_4 = libsixel_la-clipboard_carbon.lo
+am__objects_5 =
 @WANT_AMALGAMATION_FALSE@am_libsixel_la_OBJECTS =  \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-output.lo \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-timer.lo \
@@ -316,10 +318,9 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATION_FALSE@	libsixel_la-sixel_decode_rgba.lo \
 @WANT_AMALGAMATION_FALSE@	$(am__objects_1) $(am__objects_2) \
 @WANT_AMALGAMATION_FALSE@	$(am__objects_3) $(am__objects_4)
-@WANT_AMALGAMATION_TRUE@am_libsixel_la_OBJECTS = $(am__objects_1) \
-@WANT_AMALGAMATION_TRUE@	$(am__objects_2) $(am__objects_3) \
-@WANT_AMALGAMATION_TRUE@	$(am__objects_4)
-am__objects_5 =
+@WANT_AMALGAMATION_TRUE@am_libsixel_la_OBJECTS = $(am__objects_5) \
+@WANT_AMALGAMATION_TRUE@	$(am__objects_1) $(am__objects_2) \
+@WANT_AMALGAMATION_TRUE@	$(am__objects_3) $(am__objects_4)
 @WANT_AMALGAMATION_TRUE@nodist_libsixel_la_OBJECTS = $(am__objects_5)
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS) \
 	$(nodist_libsixel_la_OBJECTS)
@@ -840,9 +841,9 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/lso2.h $(am__append_1) \
 @WANT_AMALGAMATION_FALSE@	$(am__append_2) $(am__append_3) \
 @WANT_AMALGAMATION_FALSE@	$(am__append_4)
-@WANT_AMALGAMATION_TRUE@libsixel_la_SOURCES = $(am__append_1) \
-@WANT_AMALGAMATION_TRUE@	$(am__append_2) $(am__append_3) \
-@WANT_AMALGAMATION_TRUE@	$(am__append_4)
+@WANT_AMALGAMATION_TRUE@libsixel_la_SOURCES = $(AMALGAMATION_SIXEL) \
+@WANT_AMALGAMATION_TRUE@	$(am__append_1) $(am__append_2) \
+@WANT_AMALGAMATION_TRUE@	$(am__append_3) $(am__append_4)
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS) \
                 @THREAD_CPPFLAGS@
 
