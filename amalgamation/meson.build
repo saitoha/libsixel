@@ -17,6 +17,11 @@ if get_option('amalgamated_tools').enabled()
   amalgamation_header_depends = amalgamation_completion
 endif
 
+amalgamation_suffix = 'c'
+if have_objc and (have_quicklook_thumbnailing or have_clipboard_macos)
+  amalgamation_suffix = 'm'
+endif
+
 amalgamation_units = files(
   '../src/output.c',
   '../src/fromsixel.c',
@@ -160,8 +165,8 @@ amalgamation_headers = files(
   '../converters/malloc_stub.h',
 )
 
-amalgamation_out = custom_target('sixel-amalgamation.c',
-  output: 'sixel.c',
+amalgamation_out = custom_target('sixel-amalgamation.' + amalgamation_suffix,
+  output: 'sixel.' + amalgamation_suffix,
   command: [amalgamation_gen, '@OUTPUT@', meson.project_source_root(),
             meson.project_build_root()],
   depend_files: amalgamation_units + amalgamation_headers + [config_h] +

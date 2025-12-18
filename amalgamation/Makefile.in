@@ -129,6 +129,7 @@ am__DIST_COMMON = $(srcdir)/Makefile.in
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ABORTTRACE_LIBS = @ABORTTRACE_LIBS@
 ACLOCAL = @ACLOCAL@
+AMALGAMATION_SUFFIX = @AMALGAMATION_SUFFIX@
 AMTAR = @AMTAR@
 AM_CFLAGS = @AM_CFLAGS@
 AM_CPPFLAGS = @AM_CPPFLAGS@
@@ -324,8 +325,8 @@ top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 EXTRA_DIST = meson.build
-BUILT_SOURCES = $(builddir)/sixel.c
-CLEANFILES = $(builddir)/sixel.c
+BUILT_SOURCES = $(builddir)/sixel@AMALGAMATION_SUFFIX@
+CLEANFILES = $(builddir)/sixel@AMALGAMATION_SUFFIX@
 AMALGAMATION_GEN = $(top_srcdir)/tools/gen-amalgamation.sh
 AMALGAMATION_SRC_DEPS = $(wildcard $(top_srcdir)/src/*.[chm])
 AMALGAMATION_CONVERTER_DEPS = $(wildcard $(top_srcdir)/converters/*.[ch])
@@ -543,10 +544,10 @@ uninstall-am:
 .PRECIOUS: Makefile
 
 
-$(builddir)/sixel.c: $(AMALGAMATION_DEPS)
-	$(AM_V_GEN)$(SHELL) $(AMALGAMATION_GEN) "$@" \
-		"$(top_srcdir)" "$(top_builddir)"
-all-local: $(builddir)/sixel.c
+$(builddir)/sixel@AMALGAMATION_SUFFIX@: $(AMALGAMATION_DEPS)
+        $(AM_V_GEN)$(SHELL) $(AMALGAMATION_GEN) "$@" \
+                "$(top_srcdir)" "$(top_builddir)"
+all-local: $(builddir)/sixel@AMALGAMATION_SUFFIX@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
