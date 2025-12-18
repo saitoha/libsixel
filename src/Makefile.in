@@ -313,8 +313,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATION_FALSE@	$(am__objects_3)
 @WANT_AMALGAMATION_TRUE@am_libsixel_la_OBJECTS = $(am__objects_1) \
 @WANT_AMALGAMATION_TRUE@	$(am__objects_2) $(am__objects_3)
-am__dirstamp = $(am__leading_dot)dirstamp
-@WANT_AMALGAMATION_TRUE@am__objects_4 = $(top_builddir)/amalgamation/libsixel_la-sixel.lo
+am__objects_4 =
 @WANT_AMALGAMATION_TRUE@nodist_libsixel_la_OBJECTS = $(am__objects_4)
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS) \
 	$(nodist_libsixel_la_OBJECTS)
@@ -347,9 +346,7 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade =  \
-	$(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Plo \
-	./$(DEPDIR)/libsixel_la-allocator.Plo \
+am__depfiles_remade = ./$(DEPDIR)/libsixel_la-allocator.Plo \
 	./$(DEPDIR)/libsixel_la-assessment.Plo \
 	./$(DEPDIR)/libsixel_la-chunk.Plo \
 	./$(DEPDIR)/libsixel_la-clipboard.Plo \
@@ -497,6 +494,7 @@ DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 VPATH = @srcdir@
 ABORTTRACE_LIBS = @ABORTTRACE_LIBS@
 ACLOCAL = @ACLOCAL@
+AMALGAMATION_SUFFIX = @AMALGAMATION_SUFFIX@
 AMTAR = @AMTAR@
 AM_CFLAGS = @AM_CFLAGS@
 AM_CPPFLAGS = @AM_CPPFLAGS@
@@ -690,7 +688,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
-@WANT_AMALGAMATION_TRUE@AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
+@WANT_AMALGAMATION_TRUE@AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel@AMALGAMATION_SUFFIX@
 @WANT_AMALGAMATION_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL)
 @WANT_AMALGAMATION_TRUE@nodist_libsixel_la_SOURCES = $(AMALGAMATION_SIXEL)
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
@@ -950,15 +948,6 @@ clean-libLTLIBRARIES:
 	      sort -u`; \
 	echo rm -f $${locs}; \
 	$(am__rm_f) $${locs}
-$(top_builddir)/amalgamation/$(am__dirstamp):
-	@$(MKDIR_P) $(top_builddir)/amalgamation
-	@: >>$(top_builddir)/amalgamation/$(am__dirstamp)
-$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) $(top_builddir)/amalgamation/$(DEPDIR)
-	@: >>$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
-$(top_builddir)/amalgamation/libsixel_la-sixel.lo:  \
-	$(top_builddir)/amalgamation/$(am__dirstamp) \
-	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 libsixel.la: $(libsixel_la_OBJECTS) $(libsixel_la_DEPENDENCIES) $(EXTRA_libsixel_la_DEPENDENCIES) 
 	$(AM_V_OBJCLD)$(libsixel_la_LINK) -rpath $(libdir) $(libsixel_la_OBJECTS) $(libsixel_la_LIBADD) $(LIBS)
@@ -969,13 +958,10 @@ tests$(EXEEXT): $(tests_OBJECTS) $(tests_DEPENDENCIES) $(EXTRA_tests_DEPENDENCIE
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
-	-rm -f $(top_builddir)/amalgamation/*.$(OBJEXT)
-	-rm -f $(top_builddir)/amalgamation/*.lo
 
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-allocator.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-assessment.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-chunk.Plo@am__quote@ # am--include-marker
@@ -1602,13 +1588,6 @@ libsixel_la-threadpool.lo: threadpool.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-threadpool.lo `test -f 'threadpool.c' || echo '$(srcdir)/'`threadpool.c
 
-$(top_builddir)/amalgamation/libsixel_la-sixel.lo: $(top_builddir)/amalgamation/sixel.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/libsixel_la-sixel.lo -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Tpo -c -o $(top_builddir)/amalgamation/libsixel_la-sixel.lo `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/libsixel_la-sixel.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/libsixel_la-sixel.lo `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
-
 tests-tests.o: tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(tests_CPPFLAGS) $(CPPFLAGS) $(tests_CFLAGS) $(CFLAGS) -MT tests-tests.o -MD -MP -MF $(DEPDIR)/tests-tests.Tpo -c -o tests-tests.o `test -f 'tests.c' || echo '$(srcdir)/'`tests.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/tests-tests.Tpo $(DEPDIR)/tests-tests.Po
@@ -1665,7 +1644,6 @@ mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
-	-rm -rf $(top_builddir)/amalgamation/.libs $(top_builddir)/amalgamation/_libs
 	-rm -rf .libs _libs
 install-man5: $(dist_man_MANS)
 	@$(NORMAL_INSTALL)
@@ -1833,8 +1811,6 @@ clean-generic:
 distclean-generic:
 	-$(am__rm_f) $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || $(am__rm_f) $(CONFIG_CLEAN_VPATH_FILES)
-	-$(am__rm_f) $(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
-	-$(am__rm_f) $(top_builddir)/amalgamation/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -1846,7 +1822,6 @@ clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
 	clean-noinstPROGRAMS mostlyclean-am
 
 distclean: distclean-am
-	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-allocator.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-assessment.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-chunk.Plo
@@ -1969,7 +1944,6 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-allocator.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-assessment.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-chunk.Plo
@@ -2089,7 +2063,7 @@ uninstall-man: uninstall-man5
 
 
 @WANT_AMALGAMATION_TRUE@$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
-@WANT_AMALGAMATION_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
+@WANT_AMALGAMATION_TRUE@        $(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel@AMALGAMATION_SUFFIX@
 
 unittest: all
 @COND_TESTS_TRUE@	$(srcdir)/tests

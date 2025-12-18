@@ -1301,6 +1301,17 @@ case $host_os in
     ;;
 esac
 
+AMALGAMATION_SUFFIX=".c"
+if test x$enable_amalgamation = xyes; then
+    if test x$have_clipboard_macos = xyes \
+        || test x$have_quicklook_thumbnailing = xyes; then
+        AMALGAMATION_SUFFIX=".m"
+    fi
+fi
+AC_SUBST([AMALGAMATION_SUFFIX])
+AM_CONDITIONAL([AMALGAMATION_NEEDS_OBJC],
+               [test "x$AMALGAMATION_SUFFIX" = "x.m"])
+
 AC_SUBST(APPLE_QUICKLOOK_EXTENSION_LIBS)
 AC_SUBST(APPLE_QUICKLOOK_REGISTER_LIBS)
 AC_SUBST(APPLE_QUICKLOOK_OBJCFLAGS)

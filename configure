@@ -719,6 +719,9 @@ HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE
 APPLE_QUICKLOOK_OBJCFLAGS
 APPLE_QUICKLOOK_REGISTER_LIBS
 APPLE_QUICKLOOK_EXTENSION_LIBS
+AMALGAMATION_NEEDS_OBJC_FALSE
+AMALGAMATION_NEEDS_OBJC_TRUE
+AMALGAMATION_SUFFIX
 HAVE_CLIPBOARD_MACOS_FALSE
 HAVE_CLIPBOARD_MACOS_TRUE
 CLIPBOARD_LIBS
@@ -20169,6 +20172,23 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
     ;;
 esac
 
+AMALGAMATION_SUFFIX=".c"
+if test x$enable_amalgamation = xyes; then
+    if test x$have_clipboard_macos = xyes \
+        || test x$have_quicklook_thumbnailing = xyes; then
+        AMALGAMATION_SUFFIX=".m"
+    fi
+fi
+
+ if test "x$AMALGAMATION_SUFFIX" = "x.m"; then
+  AMALGAMATION_NEEDS_OBJC_TRUE=
+  AMALGAMATION_NEEDS_OBJC_FALSE='#'
+else
+  AMALGAMATION_NEEDS_OBJC_TRUE='#'
+  AMALGAMATION_NEEDS_OBJC_FALSE=
+fi
+
+
 
 
 
@@ -24150,6 +24170,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_CLIPBOARD_MACOS_TRUE}" && test -z "${HAVE_CLIPBOARD_MACOS_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_CLIPBOARD_MACOS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${AMALGAMATION_NEEDS_OBJC_TRUE}" && test -z "${AMALGAMATION_NEEDS_OBJC_FALSE}"; then
+  as_fn_error $? "conditional \"AMALGAMATION_NEEDS_OBJC\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE}" && test -z "${HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE}"; then

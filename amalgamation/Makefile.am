@@ -4,8 +4,8 @@ endif
 
 EXTRA_DIST = meson.build
 
-BUILT_SOURCES = $(builddir)/sixel.c
-CLEANFILES = $(builddir)/sixel.c
+BUILT_SOURCES = $(builddir)/sixel@AMALGAMATION_SUFFIX@
+CLEANFILES = $(builddir)/sixel@AMALGAMATION_SUFFIX@
 
 AMALGAMATION_GEN = $(top_srcdir)/tools/gen-amalgamation.sh
 AMALGAMATION_SRC_DEPS = $(wildcard $(top_srcdir)/src/*.[chm])
@@ -20,7 +20,7 @@ AMALGAMATION_DEPS = $(AMALGAMATION_GEN) $(AMALGAMATION_SRC_DEPS) \
         $(AMALGAMATION_CONVERTER_DEPS) $(AMALGAMATION_ASSESSMENT_DEPS) \
         $(AMALGAMATION_PUBLIC_DEPS) $(AMALGAMATION_BUILD_DEPS)
 
-$(builddir)/sixel.c: $(AMALGAMATION_DEPS)
-	$(AM_V_GEN)$(SHELL) $(AMALGAMATION_GEN) "$@" \
-		"$(top_srcdir)" "$(top_builddir)"
-all-local: $(builddir)/sixel.c
+$(builddir)/sixel@AMALGAMATION_SUFFIX@: $(AMALGAMATION_DEPS)
+        $(AM_V_GEN)$(SHELL) $(AMALGAMATION_GEN) "$@" \
+                "$(top_srcdir)" "$(top_builddir)"
+all-local: $(builddir)/sixel@AMALGAMATION_SUFFIX@

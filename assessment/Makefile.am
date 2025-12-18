@@ -1,12 +1,12 @@
 BUILT_SOURCES =
 
-AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
+AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel@AMALGAMATION_SUFFIX@
 
 if WANT_AMALGAMATED_TOOLS
 BUILT_SOURCES += $(AMALGAMATION_SIXEL)
 
 $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
-	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
+      $(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel@AMALGAMATION_SUFFIX@
 endif
 
 if COND_GCOV
