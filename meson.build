@@ -702,6 +702,7 @@ elif cg_opt.enabled()
 endif
 
 quicklook_preview_opt = get_option('quicklook_preview')
+appkit_opt = get_option('appkit')
 have_quicklook_thumbnailing = false
 if host_system == 'darwin'
   if not quicklook_preview_opt.disabled()
@@ -791,15 +792,35 @@ elif quicklook_ext_opt.enabled()
   error('Quick Look extension is only available on macOS')
 endif
 
-if host_system == 'darwin' and have_objc
-  clipboard_candidate = dependency('appleframeworks',
-    modules: ['AppKit', 'Foundation'],
-    required: false)
-  if clipboard_candidate.found()
-    have_clipboard_macos = true
-    clipboard_dep = [clipboard_candidate]
-    conf.set('HAVE_CLIPBOARD_MACOS', 1)
-    deps += clipboard_dep
+if host_system == 'darwin'
+  if not appkit_opt.disabled()
+    if not have_objc and appkit_opt.enabled()
+      error('AppKit clipboard backend requires an Objective-C compiler')
+    endif
+    if have_objc
+      clipboard_candidate = dependency('appleframeworks',
+        modules: ['AppKit', 'Foundation'],
+        required: appkit_opt.enabled())
+      if clipboard_candidate.found()
+        have_clipboard_macos = true
+        clipboard_dep = [clipboard_candidate]
+        conf.set('HAVE_APPKIT', 1)
+        conf.set('HAVE_CLIPBOARD_MACOS', 1)
+        deps += clipboard_dep
+      endif
+    endif
+  endif
+
+  if not have_clipboard_macos
+    clipboard_candidate = dependency('appleframeworks',
+      modules: ['Carbon', 'CoreGraphics', 'CoreFoundation'],
+      required: false)
+    if clipboard_candidate.found()
+      have_clipboard_macos = true
+      clipboard_dep = [clipboard_candidate]
+      conf.set('HAVE_CLIPBOARD_MACOS', 1)
+      deps += clipboard_dep
+    endif
   endif
 elif host_system == 'windows'
   clipboard_candidate = cc.find_library('user32', required: false)
