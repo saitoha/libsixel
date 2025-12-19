@@ -72,13 +72,11 @@ clipboard_carbon_duplicate_cfdata(CFDataRef payload,
                                   unsigned char **buffer_out,
                                   size_t *length_out)
 {
-    SIXELSTATUS status;
     CFIndex length;
     CGDataProviderRef provider;
     unsigned char *buffer;
     UInt8 const *source;
 
-    status = SIXEL_FALSE;
     length = 0;
     provider = NULL;
     buffer = NULL;
