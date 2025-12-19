@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* whether AppKit clipboard backend is available */
+#undef HAVE_APPKIT
+
 /* Define to 1 if you have the <arm_neon.h> header file. */
 #undef HAVE_ARM_NEON_H
 

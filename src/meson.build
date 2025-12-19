@@ -147,7 +147,11 @@ if have_quicklook_thumbnailing
 endif
 
 if have_clipboard_macos
-  srcs += ['clipboard_macos.m']
+  if conf.get('HAVE_APPKIT', 0) == 1
+    srcs += ['clipboard_macos.m']
+  else
+    srcs += ['clipboard_carbon.c']
+  endif
 endif
 
 lt_soversion = ls_lt_current - ls_lt_age
