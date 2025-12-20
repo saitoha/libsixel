@@ -8377,18 +8377,10 @@ sixel_encoder_encode(
     }
 
     if (encoder == NULL) {
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
-        encoder = sixel_encoder_create();
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-#  pragma GCC diagnostic pop
-#endif
-        if (encoder == NULL) {
+        status = sixel_encoder_new(&encoder, NULL);
+        if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
-                "sixel_encoder_encode: sixel_encoder_create() failed.");
-            status = SIXEL_BAD_ALLOCATION;
+                "sixel_encoder_encode: sixel_encoder_new() failed.");
             goto end;
         }
     } else {

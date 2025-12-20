@@ -1,6 +1,9 @@
 if COND_GCOV
 MAYBE_COVERAGE = --coverage
 endif
+if CFLAGS_HAVE_COVERAGE
+MAYBE_COVERAGE = --coverage
+endif
 
 bin_SCRIPTS = libsixel-config
 

@@ -13,6 +13,9 @@ endif
 if COND_GCOV
 MAYBE_COVERAGE = --coverage
 endif
+if CFLAGS_HAVE_COVERAGE
+MAYBE_COVERAGE = --coverage
+endif
 
 AMALGAMATION_LSQA_CPPFLAGS = $(AM_CPPFLAGS) \
         $(LIBCURL_CFLAGS) \

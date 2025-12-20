@@ -1,6 +1,9 @@
 if COND_GCOV
 MAYBE_COVERAGE = --coverage
 endif
+if CFLAGS_HAVE_COVERAGE
+MAYBE_COVERAGE = --coverage
+endif
 CLI_TESTS = cli/t/test_0001_01_invalid_positional.t \
        cli/t/test_0001_02_invalid_option_arguments.t \
        cli/t/test_0001_03_invalid_option_combinations.t \

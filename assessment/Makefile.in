@@ -428,6 +428,7 @@ top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
 BUILT_SOURCES = $(am__append_1)
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
+@CFLAGS_HAVE_COVERAGE_TRUE@MAYBE_COVERAGE = --coverage
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 AMALGAMATION_LSQA_CPPFLAGS = $(AM_CPPFLAGS) $(LIBCURL_CFLAGS) \
 	$(WINHTTP_CFLAGS) $(LIBPNG_CFLAGS) $(LIBJPEG_CFLAGS) \

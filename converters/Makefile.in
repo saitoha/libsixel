@@ -537,6 +537,7 @@ EXTRA_DIST = $(srcdir)/aborttrace.c $(srcdir)/aborttrace.h
 dist_man_MANS = $(am__append_5) $(am__append_12)
 dist_bashcompletion_DATA = $(am__append_6)
 dist_zshcompletion_DATA = $(am__append_7)
+@CFLAGS_HAVE_COVERAGE_TRUE@MAYBE_COVERAGE = --coverage
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 AMALGAMATION_TOOL_CPPFLAGS = $(AM_CPPFLAGS) $(LIBCURL_CFLAGS) \
 	$(WINHTTP_CFLAGS) $(LIBPNG_CFLAGS) $(LIBJPEG_CFLAGS) \
