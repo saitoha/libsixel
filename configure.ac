@@ -620,7 +620,21 @@ AC_ARG_ENABLE([gcov],
                               [Use gcov])],
               [],
               [enable_gcov=no])
+coverage_from_cflags=no
+case " $CFLAGS " in
+  *" --coverage "*|*" -fprofile-arcs "*|*" -ftest-coverage "*)
+    coverage_from_cflags=yes
+    ;;
+esac
+AS_IF([test x$enable_gcov = xno \
+            -a x$coverage_from_cflags = xyes],
+      [enable_gcov=yes
+       AC_MSG_NOTICE([
+         enabling gcov because coverage flags are present in CFLAGS
+       ])])
 AM_CONDITIONAL([COND_GCOV], [test x$enable_gcov != xno])
+AM_CONDITIONAL([CFLAGS_HAVE_COVERAGE],
+               [test x$coverage_from_cflags = xyes])
 
 AC_ARG_ENABLE([tests],
               [AS_HELP_STRING([--enable-tests],

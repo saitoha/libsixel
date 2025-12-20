@@ -751,6 +751,8 @@ PKG_CONFIG_PATH
 PKG_CONFIG
 COND_TESTS_FALSE
 COND_TESTS_TRUE
+CFLAGS_HAVE_COVERAGE_FALSE
+CFLAGS_HAVE_COVERAGE_TRUE
 COND_GCOV_FALSE
 COND_GCOV_TRUE
 COND_DEBUG_FALSE
@@ -17274,12 +17276,37 @@ else case e in #(
 esac
 fi
 
+coverage_from_cflags=no
+case " $CFLAGS " in
+  *" --coverage "*|*" -fprofile-arcs "*|*" -ftest-coverage "*)
+    coverage_from_cflags=yes
+    ;;
+esac
+if test x$enable_gcov = xno \
+            -a x$coverage_from_cflags = xyes
+then :
+  enable_gcov=yes
+       { printf "%s\n" "$as_me:${as_lineno-$LINENO}:
+         enabling gcov because coverage flags are present in CFLAGS
+       " >&5
+printf "%s\n" "$as_me:
+         enabling gcov because coverage flags are present in CFLAGS
+       " >&6;}
+fi
  if test x$enable_gcov != xno; then
   COND_GCOV_TRUE=
   COND_GCOV_FALSE='#'
 else
   COND_GCOV_TRUE='#'
   COND_GCOV_FALSE=
+fi
+
+ if test x$coverage_from_cflags = xyes; then
+  CFLAGS_HAVE_COVERAGE_TRUE=
+  CFLAGS_HAVE_COVERAGE_FALSE='#'
+else
+  CFLAGS_HAVE_COVERAGE_TRUE='#'
+  CFLAGS_HAVE_COVERAGE_FALSE=
 fi
 
 
@@ -24245,6 +24272,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${COND_GCOV_TRUE}" && test -z "${COND_GCOV_FALSE}"; then
   as_fn_error $? "conditional \"COND_GCOV\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${CFLAGS_HAVE_COVERAGE_TRUE}" && test -z "${CFLAGS_HAVE_COVERAGE_FALSE}"; then
+  as_fn_error $? "conditional \"CFLAGS_HAVE_COVERAGE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${COND_TESTS_TRUE}" && test -z "${COND_TESTS_FALSE}"; then

@@ -24,6 +24,9 @@ endif
 if COND_GCOV
 MAYBE_COVERAGE = --coverage
 endif
+if CFLAGS_HAVE_COVERAGE
+MAYBE_COVERAGE = --coverage
+endif
 
 CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests
 
