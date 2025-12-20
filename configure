@@ -721,7 +721,6 @@ APPLE_QUICKLOOK_REGISTER_LIBS
 APPLE_QUICKLOOK_EXTENSION_LIBS
 AMALGAMATION_NEEDS_OBJC_FALSE
 AMALGAMATION_NEEDS_OBJC_TRUE
-AMALGAMATION_SUFFIX
 HAVE_CLIPBOARD_MACOS_CARBON_FALSE
 HAVE_CLIPBOARD_MACOS_CARBON_TRUE
 HAVE_CLIPBOARD_MACOS_APPKIT_FALSE
@@ -20265,15 +20264,14 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
     ;;
 esac
 
-AMALGAMATION_SUFFIX=".c"
+AMALGAMATION_NEEDS_OBJC=no
 if test x$enable_amalgamation = xyes; then
     if test x$have_clipboard_macos_appkit = xyes \
         || test x$have_quicklook_thumbnailing = xyes; then
-        AMALGAMATION_SUFFIX=".m"
+        AMALGAMATION_NEEDS_OBJC=yes
     fi
 fi
-
- if test "x$AMALGAMATION_SUFFIX" = "x.m"; then
+ if test x$AMALGAMATION_NEEDS_OBJC = xyes; then
   AMALGAMATION_NEEDS_OBJC_TRUE=
   AMALGAMATION_NEEDS_OBJC_FALSE='#'
 else
