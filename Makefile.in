@@ -466,8 +466,8 @@ zshcompletiondir = @zshcompletiondir@
 # @configure_input@
 #
 SUBDIRS = include src converters assessment tools tests python \
-	$(am__append_1) $(am__append_2) $(am__append_3) \
-	$(am__append_4) $(am__append_5)
+	examples images $(am__append_1) $(am__append_2) \
+	$(am__append_3) $(am__append_4) $(am__append_5)
 DIST_SUBDIRS = \
         include \
         src \
@@ -476,6 +476,8 @@ DIST_SUBDIRS = \
         tools \
         tests \
         python \
+        examples \
+        images \
         ruby \
         wic \
         gdk-pixbuf-loader \
@@ -484,197 +486,12 @@ DIST_SUBDIRS = \
 
 
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.
-EXTRA_DIST = LICENSE build-aux/depcomp \
-	examples/windows/wsh_decoder_sample.vbs tests/issue/167/poc \
-	tests/issue/166/poc \
-	tests/issue/200/POC_img2sixel_heap_buffer_overflow \
-	images/map8.png images/autumn.png images/egret.jpg \
-	images/map16-palette.png images/map16.png images/map64.six \
-	images/map8-palette.png images/map8.png images/map8.six \
-	images/seq2gif.gif images/snake-ascii.pbm \
-	images/snake-ascii.pgm images/snake-ascii.ppm \
-	images/snake-grayscale.jpg images/snake-grayscale.png \
-	images/snake-palette.png images/snake-progressive.jpg \
-	images/snake.bmp images/snake.gif images/snake.jpg \
-	images/snake.pbm images/snake.pgm images/snake.png \
-	images/snake.ppm images/snake.six images/snake.tga \
-	images/snake.tiff images/pngsuite/background/bgwn6a08.png \
-	images/pngsuite/background/bggn4a16.png \
-	images/pngsuite/background/bgbn4a08.png \
-	images/pngsuite/background/bgyn6a16.png \
-	images/pngsuite/background/bgai4a08.png \
-	images/pngsuite/background/bgan6a16.png \
-	images/pngsuite/background/bgan6a08.png \
-	images/pngsuite/background/bgai4a16.png \
-	images/pngsuite/gamma/g03n3p04.png \
-	images/pngsuite/gamma/g04n0g16.png \
-	images/pngsuite/gamma/g05n0g16.png \
-	images/pngsuite/gamma/g05n3p04.png \
-	images/pngsuite/gamma/g04n3p04.png \
-	images/pngsuite/gamma/g03n0g16.png \
-	images/pngsuite/gamma/g07n2c08.png \
-	images/pngsuite/gamma/g25n2c08.png \
-	images/pngsuite/gamma/g10n2c08.png \
-	images/pngsuite/gamma/g07n0g16.png \
-	images/pngsuite/gamma/g03n2c08.png \
-	images/pngsuite/gamma/g10n0g16.png \
-	images/pngsuite/gamma/g25n0g16.png \
-	images/pngsuite/gamma/g25n3p04.png \
-	images/pngsuite/gamma/g10n3p04.png \
-	images/pngsuite/gamma/g05n2c08.png \
-	images/pngsuite/gamma/g04n2c08.png \
-	images/pngsuite/gamma/g07n3p04.png \
-	images/pngsuite/order/oi1n2c16.png \
-	images/pngsuite/order/oi1n0g16.png \
-	images/pngsuite/order/oi9n2c16.png \
-	images/pngsuite/order/oi9n0g16.png \
-	images/pngsuite/order/oi2n2c16.png \
-	images/pngsuite/order/oi2n0g16.png \
-	images/pngsuite/order/oi4n2c16.png \
-	images/pngsuite/order/oi4n0g16.png \
-	images/pngsuite/transparency/tbgn3p08.png \
-	images/pngsuite/transparency/tbyn3p08.png \
-	images/pngsuite/transparency/tbbn2c16.png \
-	images/pngsuite/transparency/tm3n3p02.png \
-	images/pngsuite/transparency/tbrn2c08.png \
-	images/pngsuite/transparency/tbbn0g04.png \
-	images/pngsuite/transparency/tbwn0g16.png \
-	images/pngsuite/transparency/tp0n2c08.png \
-	images/pngsuite/transparency/tp0n0g08.png \
-	images/pngsuite/transparency/tbgn2c16.png \
-	images/pngsuite/transparency/tbbn3p08.png \
-	images/pngsuite/transparency/tp1n3p08.png \
-	images/pngsuite/transparency/tp0n3p08.png \
-	images/pngsuite/transparency/tbwn3p08.png \
-	images/pngsuite/chunk/cs5n2c08.png \
-	images/pngsuite/chunk/cm0n0g04.png \
-	images/pngsuite/chunk/ccwn3p08.png \
-	images/pngsuite/chunk/cdhn2c08.png \
-	images/pngsuite/chunk/cs8n3p08.png \
-	images/pngsuite/chunk/cthn0g04.png \
-	images/pngsuite/chunk/cs3n3p08.png \
-	images/pngsuite/chunk/ct0n0g04.png \
-	images/pngsuite/chunk/ct1n0g04.png \
-	images/pngsuite/chunk/cten0g04.png \
-	images/pngsuite/chunk/cs5n3p08.png \
-	images/pngsuite/chunk/cs8n2c08.png \
-	images/pngsuite/chunk/ctzn0g04.png \
-	images/pngsuite/chunk/cm7n0g04.png \
-	images/pngsuite/chunk/ccwn2c08.png \
-	images/pngsuite/chunk/ctjn0g04.png \
-	images/pngsuite/chunk/cdun2c08.png \
-	images/pngsuite/chunk/ch1n3p04.png \
-	images/pngsuite/chunk/cs3n2c16.png \
-	images/pngsuite/chunk/cm9n0g04.png \
-	images/pngsuite/chunk/cdsn2c08.png \
-	images/pngsuite/chunk/ch2n3p08.png \
-	images/pngsuite/chunk/cdfn2c08.png \
-	images/pngsuite/chunk/ctfn0g04.png \
-	images/pngsuite/chunk/ctgn0g04.png \
-	images/pngsuite/interlacing/basi0g08.png \
-	images/pngsuite/interlacing/basi2c08.png \
-	images/pngsuite/interlacing/basi3p08.png \
-	images/pngsuite/interlacing/basi4a08.png \
-	images/pngsuite/interlacing/basi6a08.png \
-	images/pngsuite/interlacing/basi3p01.png \
-	images/pngsuite/interlacing/basi4a16.png \
-	images/pngsuite/interlacing/basi3p02.png \
-	images/pngsuite/interlacing/basi3p04.png \
-	images/pngsuite/interlacing/basi6a16.png \
-	images/pngsuite/interlacing/basi0g02.png \
-	images/pngsuite/interlacing/basi0g16.png \
-	images/pngsuite/interlacing/basi2c16.png \
-	images/pngsuite/interlacing/basi0g01.png \
-	images/pngsuite/interlacing/basi0g04.png \
-	images/pngsuite/basic/basn3p02.png \
-	images/pngsuite/basic/basn4a16.png \
-	images/pngsuite/basic/basn3p01.png \
-	images/pngsuite/basic/basn6a16.png \
-	images/pngsuite/basic/basn3p04.png \
-	images/pngsuite/basic/basn0g01.png \
-	images/pngsuite/basic/basn2c16.png \
-	images/pngsuite/basic/basn0g02.png \
-	images/pngsuite/basic/basn0g16.png \
-	images/pngsuite/basic/basn0g04.png \
-	images/pngsuite/basic/basn2c08.png \
-	images/pngsuite/basic/basn0g08.png \
-	images/pngsuite/basic/basn4a08.png \
-	images/pngsuite/basic/basn3p08.png \
-	images/pngsuite/basic/basn6a08.png \
-	images/pngsuite/zlib/z03n2c08.png \
-	images/pngsuite/zlib/z09n2c08.png \
-	images/pngsuite/zlib/z06n2c08.png \
-	images/pngsuite/zlib/z00n2c08.png \
-	images/pngsuite/odd/s39i3p04.png \
-	images/pngsuite/odd/s38i3p04.png \
-	images/pngsuite/odd/s05n3p02.png \
-	images/pngsuite/odd/s04n3p01.png \
-	images/pngsuite/odd/s33i3p04.png \
-	images/pngsuite/odd/s32i3p04.png \
-	images/pngsuite/odd/s06i3p02.png \
-	images/pngsuite/odd/s07i3p02.png \
-	images/pngsuite/odd/s40n3p04.png \
-	images/pngsuite/odd/s37n3p04.png \
-	images/pngsuite/odd/s36n3p04.png \
-	images/pngsuite/odd/s01i3p01.png \
-	images/pngsuite/odd/s08n3p02.png \
-	images/pngsuite/odd/s09n3p02.png \
-	images/pngsuite/odd/s34i3p04.png \
-	images/pngsuite/odd/s35i3p04.png \
-	images/pngsuite/odd/s03n3p01.png \
-	images/pngsuite/odd/s02n3p01.png \
-	images/pngsuite/odd/s04i3p01.png \
-	images/pngsuite/odd/s33n3p04.png \
-	images/pngsuite/odd/s32n3p04.png \
-	images/pngsuite/odd/s05i3p02.png \
-	images/pngsuite/odd/s39n3p04.png \
-	images/pngsuite/odd/s38n3p04.png \
-	images/pngsuite/odd/s06n3p02.png \
-	images/pngsuite/odd/s07n3p02.png \
-	images/pngsuite/odd/s37i3p04.png \
-	images/pngsuite/odd/s36i3p04.png \
-	images/pngsuite/odd/s01n3p01.png \
-	images/pngsuite/odd/s40i3p04.png \
-	images/pngsuite/odd/s34n3p04.png \
-	images/pngsuite/odd/s35n3p04.png \
-	images/pngsuite/odd/s03i3p01.png \
-	images/pngsuite/odd/s02i3p01.png \
-	images/pngsuite/odd/s08i3p02.png \
-	images/pngsuite/odd/s09i3p02.png \
-	images/pngsuite/corrupted/xc1n0g08.png \
-	images/pngsuite/corrupted/xs1n0g01.png \
-	images/pngsuite/corrupted/xhdn0g08.png \
-	images/pngsuite/corrupted/xs7n0g01.png \
-	images/pngsuite/corrupted/xdtn0g01.png \
-	images/pngsuite/corrupted/xcsn0g01.png \
-	images/pngsuite/corrupted/xcrn0g04.png \
-	images/pngsuite/corrupted/xd0n2c08.png \
-	images/pngsuite/corrupted/xs2n0g01.png \
-	images/pngsuite/corrupted/xc9n2c08.png \
-	images/pngsuite/corrupted/xd9n2c08.png \
-	images/pngsuite/corrupted/xlfn0g04.png \
-	images/pngsuite/corrupted/xd3n2c08.png \
-	images/pngsuite/corrupted/xs4n0g01.png \
-	images/pngsuite/filter/f03n0g08.png \
-	images/pngsuite/filter/f02n0g08.png \
-	images/pngsuite/filter/f03n2c08.png \
-	images/pngsuite/filter/f02n2c08.png \
-	images/pngsuite/filter/f04n0g08.png \
-	images/pngsuite/filter/f04n2c08.png \
-	images/pngsuite/filter/f99n0g04.png \
-	images/pngsuite/filter/f00n0g08.png \
-	images/pngsuite/filter/f01n0g08.png \
-	images/pngsuite/filter/f00n2c08.png \
-	images/pngsuite/filter/f01n2c08.png \
-	images/pngsuite/palette/ps1n2c16.png \
-	images/pngsuite/palette/pp0n6a08.png \
-	images/pngsuite/palette/ps2n0g08.png \
-	images/pngsuite/palette/ps2n2c16.png \
-	images/pngsuite/palette/ps1n0g08.png \
-	images/pngsuite/palette/pp0n2c16.png
+EXTRA_DIST = LICENSE build-aux/depcomp
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = $(builddir)/libsixel.pc
-CLEANFILES = $(builddir)/valgrind.log $(builddir)/test.log $(builddir)/unittest.log
+CLEANFILES = $(builddir)/valgrind.log $(builddir)/test.log $(builddir)/unittest.log \
+    $(builddir)/package.json
+
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
