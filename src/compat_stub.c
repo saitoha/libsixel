@@ -127,6 +127,16 @@ int gettimeofday(struct timeval *tv, struct timezone *tz);
 
 #include "compat_stub.h"
 
+/*
+ * MSVC deprecates POSIX getcwd(). Use the secure CRT spelling when
+ * available to silence warnings without changing behavior elsewhere.
+ */
+#if defined(_MSC_VER)
+# define sixel_compat_getcwd _getcwd
+#else
+# define sixel_compat_getcwd getcwd
+#endif
+
 #if !defined(_CRTIMP)
 # define _CRTIMP
 #endif
@@ -1152,7 +1162,7 @@ sixel_compat_resolve_without_realpath(const char *path)
 #if defined(PATH_MAX)
     cwd = malloc(PATH_MAX);
     if (cwd != NULL) {
-        if (getcwd(cwd, PATH_MAX) != NULL) {
+        if (sixel_compat_getcwd(cwd, PATH_MAX) != NULL) {
             cwd_length = strlen(cwd);
             path_length = strlen(path);
             if (cwd_length > 0 && cwd[cwd_length - 1] != '/') {
