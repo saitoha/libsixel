@@ -4,8 +4,8 @@ endif
 
 EXTRA_DIST = meson.build
 
-BUILT_SOURCES = $(builddir)/sixel@AMALGAMATION_SUFFIX@
-CLEANFILES = $(builddir)/sixel@AMALGAMATION_SUFFIX@
+BUILT_SOURCES = $(builddir)/sixel.c
+CLEANFILES = $(builddir)/sixel.c
 
 AMALGAMATION_GEN = $(top_srcdir)/tools/gen-amalgamation.sh
 AMALGAMATION_SRC_DEPS = $(wildcard $(top_srcdir)/src/*.[chm])
@@ -21,9 +21,9 @@ AMALGAMATION_DEPS = $(AMALGAMATION_GEN) $(AMALGAMATION_SRC_DEPS) \
         $(AMALGAMATION_PUBLIC_DEPS) $(AMALGAMATION_BUILD_DEPS)
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-$(builddir)/sixel@AMALGAMATION_SUFFIX@: $(AMALGAMATION_DEPS)
+$(builddir)/sixel.c: $(AMALGAMATION_DEPS)
 	$(AM_V_GEN)$(SHELL) $(AMALGAMATION_GEN) "$@" \
-		"$(top_srcdir)" "$(top_builddir)"
+	                "$(top_srcdir)" "$(top_builddir)"
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-all-local: $(builddir)/sixel@AMALGAMATION_SUFFIX@
+all-local: $(builddir)/sixel.c

@@ -1,13 +1,13 @@
 BUILT_SOURCES =
 
-AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel@AMALGAMATION_SUFFIX@
+AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 
 if WANT_AMALGAMATED_TOOLS
 BUILT_SOURCES += $(AMALGAMATION_SIXEL)
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
-	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel@AMALGAMATION_SUFFIX@
+        $(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
 endif
 
 if COND_GCOV
@@ -27,6 +27,9 @@ AMALGAMATION_LSQA_CPPFLAGS = $(AM_CPPFLAGS) \
         $(CLIPBOARD_CFLAGS) \
         $(ONNXRUNTIME_CFLAGS) \
         @THREAD_CFLAGS@
+if AMALGAMATION_NEEDS_OBJC
+AMALGAMATION_LSQA_CPPFLAGS += -x objective-c
+endif
 
 AMALGAMATION_LSQA_LIBS = -lm \
         $(LIBCURL_LIBS) \

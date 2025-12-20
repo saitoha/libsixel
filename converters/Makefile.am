@@ -7,14 +7,14 @@ VPATH = @srcdir@
 
 BUILT_SOURCES = completion_embed.h
 
-AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel@AMALGAMATION_SUFFIX@
+AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 
 if WANT_AMALGAMATED_TOOLS
 BUILT_SOURCES += $(AMALGAMATION_SIXEL)
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
-	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel@AMALGAMATION_SUFFIX@
+        $(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
 $(AMALGAMATION_SIXEL): completion_embed.h
 endif
 
@@ -48,6 +48,9 @@ AMALGAMATION_TOOL_CPPFLAGS = $(AM_CPPFLAGS) \
         $(CLIPBOARD_CFLAGS) \
         $(ONNXRUNTIME_CFLAGS) \
         @THREAD_CFLAGS@
+if AMALGAMATION_NEEDS_OBJC
+AMALGAMATION_TOOL_CPPFLAGS += -x objective-c
+endif
 
 AMALGAMATION_TOOL_LIBS = -lm \
         $(LIBCURL_LIBS) \
