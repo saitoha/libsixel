@@ -2321,6 +2321,13 @@ AC_CONFIG_FILES([Makefile
                  assessment/Makefile
                  tools/Makefile
                  tools/libsixel-config
+                 examples/Makefile
+                 examples/drawing/Makefile
+                 examples/opengl/Makefile
+                 examples/python/Makefile
+                 examples/ruby/Makefile
+                 examples/windows/Makefile
+                 images/Makefile
                  tests/Makefile
                  python/Makefile
                  ruby/Makefile
