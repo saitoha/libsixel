@@ -8,12 +8,14 @@ top_builddir = @top_builddir@
 builddir = @builddir@
 
 if WANT_AMALGAMATION
-AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel@AMALGAMATION_SUFFIX@
-AMALGAMATION_TARGET = sixel@AMALGAMATION_SUFFIX@
+AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
+AMALGAMATION_TARGET = sixel.c
 if AMALGAMATION_NEEDS_OBJC
 AMALGAMATION_COMPILE = $(LTOBJCCOMPILE)
+AMALGAMATION_CPPFLAGS = -x objective-c
 else
 AMALGAMATION_COMPILE = $(LTCOMPILE)
+AMALGAMATION_CPPFLAGS =
 endif
 BUILT_SOURCES = $(AMALGAMATION_SIXEL)
 nodist_libsixel_la_SOURCES = $(AMALGAMATION_SIXEL)
@@ -36,7 +38,7 @@ $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 libsixel_la-sixel.lo: $(AMALGAMATION_SIXEL)
-	$(AMALGAMATION_COMPILE) -c -o $@ $<
+	$(AMALGAMATION_COMPILE) $(AMALGAMATION_CPPFLAGS) -c -o $@ $<
 
 else
 libsixel_la_SOURCES = \
