@@ -1301,6 +1301,8 @@ endif
 if have_python
   subdir('python')
 endif
+subdir('examples')
+subdir('images')
 
 
 if get_option('tests')
