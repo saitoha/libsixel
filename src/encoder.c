@@ -6234,6 +6234,8 @@ sixel_encoder_setopt(
     int png_argument_has_prefix = 0;
     char const *png_path_view = NULL;
     size_t png_path_length;
+    size_t cell_prefix_length;
+    size_t cell_detail_length;
     char cell_message[256];
     char const *cell_detail;
     unsigned int path_flags;
@@ -6865,10 +6867,23 @@ sixel_encoder_setopt(
             if (SIXEL_FAILED(status)) {
                 cell_detail = sixel_helper_get_additional_message();
                 if (cell_detail != NULL && cell_detail[0] != '\0') {
+                    /* Clamp the rendered detail to the fixed buffer size. */
+                    cell_prefix_length = strlen("cannot determine terminal "
+                                              "cell size for -w/--width "
+                                              "option: ");
+                    cell_detail_length = strnlen(cell_detail,
+                                                 sizeof(cell_message));
+                    if (cell_prefix_length + cell_detail_length
+                            >= sizeof(cell_message)) {
+                        cell_detail_length = sizeof(cell_message)
+                                            - cell_prefix_length
+                                            - 1U;
+                    }
                     (void) snprintf(cell_message,
                                     sizeof(cell_message),
                                     "cannot determine terminal cell size for "
-                                    "-w/--width option: %s",
+                                    "-w/--width option: %.*s",
+                                    (int)cell_detail_length,
                                     cell_detail);
                     sixel_helper_set_additional_message(cell_message);
                 } else {
@@ -6936,10 +6951,23 @@ sixel_encoder_setopt(
             if (SIXEL_FAILED(status)) {
                 cell_detail = sixel_helper_get_additional_message();
                 if (cell_detail != NULL && cell_detail[0] != '\0') {
+                    /* Clamp the rendered detail to the fixed buffer size. */
+                    cell_prefix_length = strlen("cannot determine terminal "
+                                              "cell size for -h/--height "
+                                              "option: ");
+                    cell_detail_length = strnlen(cell_detail,
+                                                 sizeof(cell_message));
+                    if (cell_prefix_length + cell_detail_length
+                            >= sizeof(cell_message)) {
+                        cell_detail_length = sizeof(cell_message)
+                                            - cell_prefix_length
+                                            - 1U;
+                    }
                     (void) snprintf(cell_message,
                                     sizeof(cell_message),
                                     "cannot determine terminal cell size for "
-                                    "-h/--height option: %s",
+                                    "-h/--height option: %.*s",
+                                    (int)cell_detail_length,
                                     cell_detail);
                     sixel_helper_set_additional_message(cell_message);
                 } else {
