@@ -191,10 +191,14 @@ RESOLUTION_IMAGES = data/resolutions/hd_landscape.png \
 CORRUPTED_INPUTS = data/corrupted/metadata_noise.jpg \
        data/corrupted/truncated.png
 
+ISSUE_INPUTS = issue/166/poc \
+       issue/167/poc \
+       issue/200/POC_img2sixel_heap_buffer_overflow
+
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
              lsqa_regression.sh \
              $(BASELINE_JSON) $(INPUT_FORMAT_FILES) \
-             $(RESOLUTION_IMAGES) $(CORRUPTED_INPUTS) \
+             $(RESOLUTION_IMAGES) $(CORRUPTED_INPUTS) $(ISSUE_INPUTS) \
              filter/filter_tests.c filter/filter_sample_tests.c \
              filter/filter_resize_tests.c filter/filter_colors_tests.c \
              filter/filter_lookup_tests.c filter/filter_final_merge_tests.c \

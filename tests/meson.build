@@ -24,6 +24,10 @@ if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
   endforeach
 endif
 
+issue_inputs = files('issue/166/poc', 'issue/167/poc',
+  'issue/200/POC_img2sixel_heap_buffer_overflow')
+meson.add_dist_script('sh', '-c', 'true', sources: issue_inputs)
+
 cli_tests = ['test_0001_01_invalid_positional.t',
              'test_0001_02_invalid_option_arguments.t',
              'test_0001_03_invalid_option_combinations.t',
