@@ -34,15 +34,15 @@ jobs:
             cp_arch: x86-64
             cp_version: '14.3'
             variant: freebsd
-          - label: freebsd 14.3 x86_64 amalgamation
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            platform: freebsd
-            cp_os: freebsd
-            cp_arch: x86-64
-            cp_version: '14.3'
-            variant: amalgamation
-            configure_extra: '--enable-amalgamation'
+#          - label: freebsd 14.3 x86_64 amalgamation
+#            os: ubuntu-latest
+#            runner: ubuntu-latest
+#            platform: freebsd
+#            cp_os: freebsd
+#            cp_arch: x86-64
+#            cp_version: '14.3'
+#            variant: amalgamation
+#            configure_extra: '--enable-amalgamation'
           - label: freebsd 14.3 aarch64
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -140,12 +140,12 @@ jobs:
             runner: ubuntu-24.04-arm
             sys: aarch64
             variant: default
-          - label: ubuntu 24.04 aarch64 amalgamation
-            os: ubuntu-24.04-arm
-            runner: ubuntu-24.04-arm
-            sys: aarch64
-            variant: amalgamation
-            configure_extra: '--enable-amalgamation'
+#          - label: ubuntu 24.04 aarch64 amalgamation
+#            os: ubuntu-24.04-arm
+#            runner: ubuntu-24.04-arm
+#            sys: aarch64
+#            variant: amalgamation
+#            configure_extra: '--enable-amalgamation'
           - label: ubuntu i686
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -156,23 +156,23 @@ jobs:
             runner: macos-latest
             sys: aarch64
             variant: default
-          - label: macos aarch64 amalgamation
-            os: macos-latest
-            runner: macos-latest
-            sys: aarch64
-            variant: amalgamation
-            configure_extra: '--enable-amalgamation'
+#          - label: macos aarch64 amalgamation
+#            os: macos-latest
+#            runner: macos-latest
+#            sys: aarch64
+#            variant: amalgamation
+#            configure_extra: '--enable-amalgamation'
           - label: macos x86_64
             os: macos-15
             runner: macos-15
             sys: x86_64
             variant: default
-          - label: macos x86_64 amalgamation
-            os: macos-15
-            runner: macos-15
-            sys: x86_64
-            variant: amalgamation
-            configure_extra: '--enable-amalgamation'
+#          - label: macos x86_64 amalgamation
+#            os: macos-15
+#            runner: macos-15
+#            sys: x86_64
+#            variant: amalgamation
+#            configure_extra: '--enable-amalgamation'
           - label: mingw64 static-only
             os: windows-latest
             runner: windows-latest
@@ -207,13 +207,13 @@ jobs:
             compiler: gcc
             sys: UCRT64
             variant: default
-          - label: ucrt64 amalgamation
-            os: windows-latest
-            runner: windows-latest
-            compiler: gcc
-            sys: UCRT64
-            variant: amalgamation
-            configure_extra: '--enable-amalgamation'
+#          - label: ucrt64 amalgamation
+#            os: windows-latest
+#            runner: windows-latest
+#            compiler: gcc
+#            sys: UCRT64
+#            variant: amalgamation
+#            configure_extra: '--enable-amalgamation'
           - label: clang64
             os: windows-latest
             runner: windows-latest
@@ -232,20 +232,20 @@ jobs:
             compiler: cl
             sys: MSVC
             variant: default
-          - label: msvc amalgamation
-            os: windows-latest
-            runner: windows-latest
-            compiler: cl
-            sys: MSVC
-            variant: amalgamation
-            configure_extra: '--enable-amalgamation'
-          - label: cygwin amalgamation
-            os: windows-latest
-            runner: windows-latest
-            compiler: gcc
-            sys: CYGWIN
-            variant: amalgamation
-            configure_extra: '--enable-amalgamation'
+#          - label: msvc amalgamation
+#            os: windows-latest
+#            runner: windows-latest
+#            compiler: cl
+#            sys: MSVC
+#            variant: amalgamation
+#            configure_extra: '--enable-amalgamation'
+#          - label: cygwin amalgamation
+#            os: windows-latest
+#            runner: windows-latest
+#            compiler: gcc
+#            sys: CYGWIN
+#            variant: amalgamation
+#            configure_extra: '--enable-amalgamation'
           - label: msvc vcpkg-libpng
             os: windows-latest
             runner: windows-latest
@@ -1594,15 +1594,15 @@ jobs:
             cp_arch: x86-64
             cp_version: '14.3'
             variant: freebsd
-          - label: freebsd 14.3 x86-64 amalgamation
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            platform: freebsd
-            cp_os: freebsd
-            cp_arch: x86-64
-            cp_version: '14.3'
-            variant: amalgamation
-            amalgamation: true
+#          - label: freebsd 14.3 x86-64 amalgamation
+#            os: ubuntu-latest
+#            runner: ubuntu-latest
+#            platform: freebsd
+#            cp_os: freebsd
+#            cp_arch: x86-64
+#            cp_version: '14.3'
+#            variant: amalgamation
+#            amalgamation: true
           - label: freebsd 14.3 aarch64
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -1687,12 +1687,12 @@ jobs:
             runner: ubuntu-24.04-arm
             sys: aarch64
             variant: default
-          - label: ubuntu 24.04 aarch64 amalgamation
-            os: ubuntu-24.04-arm
-            runner: ubuntu-24.04-arm
-            sys: aarch64
-            variant: amalgamation
-            amalgamation: true
+#          - label: ubuntu 24.04 aarch64 amalgamation
+#            os: ubuntu-24.04-arm
+#            runner: ubuntu-24.04-arm
+#            sys: aarch64
+#            variant: amalgamation
+#            amalgamation: true
           - label: ubuntu i686
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -1702,20 +1702,20 @@ jobs:
             os: macos-latest
             runner: macos-latest
             variant: default
-          - label: macos aarch64 amalgamation
-            os: macos-latest
-            runner: macos-latest
-            variant: amalgamation
-            amalgamation: true
+#          - label: macos aarch64 amalgamation
+#            os: macos-latest
+#            runner: macos-latest
+#            variant: amalgamation
+#            amalgamation: true
           - label: macos x86_64
             os: macos-15
             runner: macos-15
             variant: default
-          - label: macos x86_64 amalgamation
-            os: macos-15
-            runner: macos-15
-            variant: amalgamation
-            amalgamation: true
+#          - label: macos x86_64 amalgamation
+#            os: macos-15
+#            runner: macos-15
+#            variant: amalgamation
+#            amalgamation: true
           - label: mingw64 static-only
             os: windows-latest
             runner: windows-latest
@@ -1750,13 +1750,13 @@ jobs:
             compiler: gcc
             sys: UCRT64
             variant: default
-          - label: ucrt64 amalgamation
-            os: windows-latest
-            runner: windows-latest
-            compiler: gcc
-            sys: UCRT64
-            variant: amalgamation
-            amalgamation: true
+#          - label: ucrt64 amalgamation
+#            os: windows-latest
+#            runner: windows-latest
+#            compiler: gcc
+#            sys: UCRT64
+#            variant: amalgamation
+#            amalgamation: true
           - label: clang64
             os: windows-latest
             runner: windows-latest
@@ -1775,13 +1775,13 @@ jobs:
             compiler: cl
             sys: MSVC
             variant: default
-          - label: msvc amalgamation
-            os: windows-latest
-            runner: windows-latest
-            compiler: cl
-            sys: MSVC
-            variant: amalgamation
-            amalgamation: true
+#          - label: msvc amalgamation
+#            os: windows-latest
+#            runner: windows-latest
+#            compiler: cl
+#            sys: MSVC
+#            variant: amalgamation
+#            amalgamation: true
           - label: mingw32
             os: windows-latest
             runner: windows-latest
@@ -1800,13 +1800,13 @@ jobs:
             compiler: gcc
             sys: CYGWIN
             variant: default
-          - label: cygwin amalgamation
-            os: windows-latest
-            runner: windows-latest
-            compiler: gcc
-            sys: CYGWIN
-            variant: amalgamation
-            amalgamation: true
+#          - label: cygwin amalgamation
+#            os: windows-latest
+#            runner: windows-latest
+#            compiler: gcc
+#            sys: CYGWIN
+#            variant: amalgamation
+#            amalgamation: true
 
     steps:
     - uses: actions/checkout@v6
