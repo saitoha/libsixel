@@ -170,6 +170,9 @@ sixel_filter_resize_frame(const sixel_filter_resize_config_t *config,
     size_t float_pixels;
     size_t float_bytes;
     size_t float_limit;
+    int target_zero;
+    int target_clamped_width;
+    int target_clamped_height;
 
     status = SIXEL_FALSE;
     src_width = 0;
@@ -181,6 +184,9 @@ sixel_filter_resize_frame(const sixel_filter_resize_config_t *config,
     float_pixels = 0U;
     float_bytes = 0U;
     float_limit = SIXEL_ALLOCATE_BYTES_MAX / 2U;
+    target_zero = 0;
+    target_clamped_width = 0;
+    target_clamped_height = 0;
 
     if (frame == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -200,6 +206,44 @@ sixel_filter_resize_frame(const sixel_filter_resize_config_t *config,
                                        src_height,
                                        &dst_width,
                                        &dst_height);
+
+    if (dst_width <= 0 || dst_height <= 0) {
+        target_zero = 1;
+    }
+    if (dst_width >= SIXEL_WIDTH_LIMIT) {
+        target_clamped_width = 1;
+    }
+    if (dst_height >= SIXEL_HEIGHT_LIMIT) {
+        target_clamped_height = 1;
+    }
+
+    if (logger != NULL) {
+        /*
+         * Emit detailed target information so crafted inputs can be diagnosed
+         * in CI logs without reproducing locally.
+         */
+        sixel_logger_logf(logger,
+                          "filter",
+                          "worker",
+                          "scale-target",
+                          -1,
+                          -1,
+                          0,
+                          0,
+                          src_width,
+                          src_height,
+                          "resize-target: cfg px=%d/%d pct=%d%%/%d%% dst=%dx%d "
+                          "zero=%d clamp=%d/%d",
+                          config != NULL ? config->pixel_width : 0,
+                          config != NULL ? config->pixel_height : 0,
+                          config != NULL ? config->percent_width : 0,
+                          config != NULL ? config->percent_height : 0,
+                          dst_width,
+                          dst_height,
+                          target_zero,
+                          target_clamped_width,
+                          target_clamped_height);
+    }
 
     if (logger != NULL) {
         sixel_logger_logf(logger,
