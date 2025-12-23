@@ -269,6 +269,7 @@ cli_print_option_help(FILE *stream,
         if (table[index].help != NULL) {
             fputs(table[index].help, stream);
         }
+        fputs("\n", stream);
         index += 1u;
     }
 }
