@@ -316,7 +316,7 @@ jobs:
         brew doctor || true
 
     - name: Install lcov (macOS)
-      if: runner.os == 'macOS'
+      if: runner.os == 'macOS' && matrix.variant != 'amalgamation'
       shell: bash
       run: |
         brew update
@@ -561,7 +561,7 @@ jobs:
           cc:p
 
     - name: Setup MSYS2 (Windows, MSYS gcc)
-      if: runner.os == 'Windows' && matrix.sys == 'MSYS' && matrix.compiler == 'gcc'
+      if: runner.os == 'Windows' && matrix.sys == 'MSYS' && matrix.compiler == 'gcc' && matrix.variant != 'amalgamation'
       uses: msys2/setup-msys2@v2
       with:
         msystem: MSYS
@@ -589,7 +589,7 @@ jobs:
         packages: gcc-core,make,pkg-config,python3,python3-pip,ninja
 
     - name: Install gcovr
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os != 'Windows' && (matrix.sys || '') != 'i686'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os != 'Windows' && (matrix.sys || '') != 'i686' && matrix.variant != 'amalgamation'
       run: |
         python3 -m venv .venv
         . .venv/bin/activate
@@ -617,6 +617,9 @@ jobs:
           # converts it into an error under -Werror, so skip gcov here.
           enable_gcov_flag=""
           extra_config_flags="${{ matrix.configure_extra || '' }}"
+          if [ "${{ matrix.variant || '' }}" = "amalgamation" ]; then
+            enable_gcov_flag=""
+          fi
           disable_threads_flag=""
           if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
             disable_threads_flag="--disable-threads"
@@ -663,6 +666,9 @@ jobs:
 
           enable_gcov_flag="--enable-gcov"
           extra_config_flags="${{ matrix.configure_extra || '' }}"
+          if [ "${{ matrix.variant || '' }}" = "amalgamation" ]; then
+            enable_gcov_flag=""
+          fi
           disable_threads_flag=""
           if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
             disable_threads_flag="--disable-threads"
@@ -709,6 +715,9 @@ jobs:
 
           enable_gcov_flag="--enable-gcov"
           extra_config_flags="${{ matrix.configure_extra || '' }}"
+          if [ "${{ matrix.variant || '' }}" = "amalgamation" ]; then
+            enable_gcov_flag=""
+          fi
           disable_threads_flag=""
           if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
             disable_threads_flag="--disable-threads"
@@ -755,6 +764,9 @@ jobs:
 
           enable_gcov_flag="--enable-gcov"
           extra_config_flags="${{ matrix.configure_extra || '' }}"
+          if [ "${{ matrix.variant || '' }}" = "amalgamation" ]; then
+            enable_gcov_flag=""
+          fi
           disable_threads_flag=""
           if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
             disable_threads_flag="--disable-threads"
@@ -794,6 +806,9 @@ jobs:
       run: |
         enable_gcov_flag="--enable-gcov"
         extra_config_flags="${{ matrix.configure_extra || '' }}"
+        if [ "${{ matrix.variant || '' }}" = "amalgamation" ]; then
+          enable_gcov_flag=""
+        fi
         if [ "${{ matrix.musl || '' }}" = "true" ]; then
           export CC=musl-gcc
           enable_gcov_flag=""
@@ -842,7 +857,11 @@ jobs:
       shell: msys2 {0}
       run: |
         disable_threads_flag=""
+        enable_gcov_flag="--enable-gcov"
         extra_config_flags="${{ matrix.configure_extra || '' }}"
+        if [ "${{ matrix.variant || '' }}" = "amalgamation" ]; then
+          enable_gcov_flag=""
+        fi
         if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
           disable_threads_flag="--disable-threads"
         fi
@@ -867,7 +886,7 @@ jobs:
             --disable-python \
             --enable-debug \
             --enable-tests \
-            --enable-gcov \
+            ${enable_gcov_flag} \
             --disable-dependency-tracking \
             ${disable_tools_flags} \
             ${disable_threads_flag} \
@@ -885,6 +904,7 @@ jobs:
         if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\cygwin64' }
         $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
         $disableThreadsFlag = ''
+        $enableGcovFlag = '--enable-gcov'
         if ('${{ matrix.disable_threads }}' -eq 'true') {
           $disableThreadsFlag = '--disable-threads'
         }
@@ -901,6 +921,9 @@ jobs:
           $staticOnlyFlags = '--disable-shared --enable-static'
         }
         $extraConfigFlags = '${{ matrix.configure_extra || '' }}'
+        if ('${{ matrix.variant }}' -eq 'amalgamation') {
+          $enableGcovFlag = ''
+        }
         $scriptLines = @(
           'set -eu',
           'set -o pipefail 2>/dev/null || true',
@@ -908,10 +931,11 @@ jobs:
           "disable_tools_flags=`"$disableToolsFlags`"",
           "disable_simd_flag=`"$disableSimdFlag`"",
           "static_only_flags=`"$staticOnlyFlags`"",
+          "enable_gcov_flag=`"$enableGcovFlag`"",
           "extra_config_flags=`"$extraConfigFlags`"",
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-debug --enable-tests --enable-gcov --disable-dependency-tracking ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${static_only_flags} ${extra_config_flags}',
+          './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-debug --enable-tests ${enable_gcov_flag} --disable-dependency-tracking ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${static_only_flags} ${extra_config_flags}',
           'cat config.log',
           'make V=1'
         )
@@ -1052,14 +1076,14 @@ jobs:
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Capture coverage (Linux)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && runner.os == 'Linux' && (matrix.sys || '') != 'i686' && !(matrix.musl || false)
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && runner.os == 'Linux' && (matrix.sys || '') != 'i686' && !(matrix.musl || false) && matrix.variant != 'amalgamation'
       shell: bash
       run: |
         gcovr -r . --lcov -o coverage.info \
                    --gcov-executable gcov-14
 
     - name: Capture coverage (non-MSVC)
-      if: runner.os == 'macOS'
+      if: runner.os == 'macOS' && matrix.variant != 'amalgamation'
       shell: bash
       run: |
         lcov -c \
@@ -1069,7 +1093,7 @@ jobs:
           -o coverage.info
 
     - name: Capture coverage (Windows MSYS2/MinGW/UCRT/Clang)
-      if: runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' && matrix.sys != 'MINGW32'
+      if: runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' && matrix.sys != 'MINGW32' && matrix.variant != 'amalgamation'
       shell: msys2 {0}
       run: |
         lcov -c \
@@ -1094,7 +1118,7 @@ jobs:
 
     - name: Upload to Coveralls (per-flag, parallel)
       id: coveralls_upload
-      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && matrix.os != 'macos-15' && matrix.sys != 'i686' && !(matrix.musl || false) }}
+      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && matrix.os != 'macos-15' && matrix.sys != 'i686' && !(matrix.musl || false) && matrix.variant != 'amalgamation' }}
       continue-on-error: true
       uses: coverallsapp/github-action@v2
       with:
@@ -1104,11 +1128,11 @@ jobs:
         parallel: true
 
     - name: Wait before Coveralls retry (per-flag)
-      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) }}
+      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) && matrix.variant != 'amalgamation' }}
       run: sleep 5
 
     - name: Upload to Coveralls (per-flag, retry)
-      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) }}
+      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) && matrix.variant != 'amalgamation' }}
       uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
