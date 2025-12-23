@@ -1,1 +1,16 @@
-* binary
+*.avif binary
+*.bmp binary
+*.dds binary
+*.gif binary
+*.hdp binary
+*.heic binary
+*.jpg binary
+*.jxl binary
+*.pbm binary
+*.pgm binary
+*.png binary
+*.ppm binary
+*.six binary
+*.tga binary
+*.tiff binary
+*.webp binary
