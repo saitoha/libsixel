@@ -1236,7 +1236,6 @@ sixel_compat_realpath(const char *path)
     return resolved;
 }
 
-
 /* emacs Local Variables:      */
 /* emacs mode: c               */
 /* emacs tab-width: 4          */
