@@ -26,7 +26,7 @@ endif
 
 issue_inputs = files('issue/166/poc', 'issue/167/poc',
   'issue/200/POC_img2sixel_heap_buffer_overflow')
-meson.add_dist_script('sh', '-c', 'true', sources: issue_inputs)
+meson.add_dist_script('sh', '-c', 'true', issue_inputs)
 
 cli_tests = ['test_0001_01_invalid_positional.t',
              'test_0001_02_invalid_option_arguments.t',
