@@ -1,7 +1,16 @@
 fs = import('fs')
 
 # Collect all sample images so `meson dist` ships the full corpus.
-pngsuite_images = fs.glob('pngsuite/**/*.png')
+pngsuite_find = 'cd @0@ && find pngsuite -type f -name "*.png" | sort'
+pngsuite_cmd = pngsuite_find.format(meson.current_source_dir())
+# Meson 0.59 does not provide fs.glob(), so rely on find(1) for recursion.
+pngsuite_result = run_command('sh', '-c', pngsuite_cmd, check: true)
+pngsuite_output = pngsuite_result.stdout().strip()
+pngsuite_list = pngsuite_output.split('\n')
+pngsuite_images = []
+if pngsuite_list != ['']
+  pngsuite_images = files(pngsuite_list)
+endif
 root_images = files('autumn.dds',
   'autumn.hdp',
   'autumn.heic',
@@ -43,4 +52,4 @@ root_images = files('autumn.dds',
   'snake.tiff',
   'vimperator3.png')
 
-meson.add_dist_script('sh', '-c', 'true', sources: pngsuite_images + root_images)
+meson.add_dist_script('sh', '-c', 'true', pngsuite_images + root_images)
