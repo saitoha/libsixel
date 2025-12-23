@@ -140,12 +140,12 @@ jobs:
             runner: ubuntu-24.04-arm
             sys: aarch64
             variant: default
-#          - label: ubuntu 24.04 aarch64 amalgamation
-#            os: ubuntu-24.04-arm
-#            runner: ubuntu-24.04-arm
-#            sys: aarch64
-#            variant: amalgamation
-#            configure_extra: '--enable-amalgamation'
+          - label: ubuntu 24.04 aarch64 amalgamation
+            os: ubuntu-24.04-arm
+            runner: ubuntu-24.04-arm
+            sys: aarch64
+            variant: amalgamation
+            configure_extra: '--enable-amalgamation'
           - label: ubuntu i686
             os: ubuntu-latest
             runner: ubuntu-latest
