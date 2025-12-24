@@ -597,6 +597,9 @@ emit_all_units() {
             assessment/lsqa.c)
                 emit_unit "${unit}" "defined(BUILD_LSQA)"
                 ;;
+            src/tests.c)
+                emit_unit "${unit}" "defined(BUILD_TESTS)"
+                ;;
             src/quicklook_thumbnailing.m)
                 emit_unit "${unit}" \
                     "HAVE_QUICKLOOK_THUMBNAILING && defined(__OBJC__)"
