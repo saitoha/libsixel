@@ -26,6 +26,7 @@ shift 2 || true
 mkdir -p "$(dirname "${output}")"
 
 default_units="
+src/compat_stub.c
 src/output.c
 src/fromsixel.c
 src/tosixel.c
@@ -92,7 +93,6 @@ src/options.c
 src/writer.c
 src/stb_image_write.c
 src/status.c
-src/compat_stub.c
 src/malloc_stub.c
 src/allocator.c
 src/tty.c
