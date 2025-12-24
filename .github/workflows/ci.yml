@@ -59,14 +59,14 @@ jobs:
             cp_arch: x86-64
             cp_version: '10.1'
             variant: netbsd
-          - label: netbsd 10.1 aarch64
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            platform: netbsd
-            cp_os: netbsd
-            cp_arch: arm64
-            cp_version: '10.1'
-            variant: netbsd
+#          - label: netbsd 10.1 aarch64
+#            os: ubuntu-latest
+#            runner: ubuntu-latest
+#            platform: netbsd
+#            cp_os: netbsd
+#            cp_arch: arm64
+#            cp_version: '10.1'
+#            variant: netbsd
           - label: haiku r1beta5 x86-64
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -83,14 +83,14 @@ jobs:
             cp_arch: x86-64
             cp_version: '7.8'
             variant: openbsd
-          - label: openbsd 7.8 aarch64
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            platform: openbsd
-            cp_os: openbsd
-            cp_arch: arm64
-            cp_version: '7.8'
-            variant: openbsd
+#          - label: openbsd 7.8 aarch64
+#            os: ubuntu-latest
+#            runner: ubuntu-latest
+#            platform: openbsd
+#            cp_os: openbsd
+#            cp_arch: arm64
+#            cp_version: '7.8'
+#            variant: openbsd
           - label: dragonflybsd 6.4.2 x86-64
             os: ubuntu-latest
             runner: ubuntu-latest
