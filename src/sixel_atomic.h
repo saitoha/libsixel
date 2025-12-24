@@ -47,6 +47,15 @@ sixel_atomic_fetch_sub_u32(sixel_atomic_u32_t *ptr,
     return __atomic_fetch_sub(ptr, value, __ATOMIC_ACQ_REL);
 }
 # elif defined(_MSC_VER)
+#  if !defined(UNICODE)
+#   define UNICODE
+#  endif
+#  if !defined(_UNICODE)
+#   define _UNICODE
+#  endif
+#  if !defined(WIN32_LEAN_AND_MEAN)
+#   define WIN32_LEAN_AND_MEAN
+#  endif
 #  include <windows.h>
 #  define sixel_fence_release() MemoryBarrier()
 #  define sixel_fence_acquire() MemoryBarrier()
