@@ -5,7 +5,7 @@
  * reuse, and progress reporting through the common filter interface.
  */
 
-#if HAVE_CONFIG_H
+#if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
 

@@ -28,7 +28,7 @@
  * registry so other backends avoid pulling in its macros and includes.
  */
 
-#if HAVE_CONFIG_H
+#if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
 
