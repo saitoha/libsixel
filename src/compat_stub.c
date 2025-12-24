@@ -74,8 +74,14 @@
 # include <unistd.h>
 #endif
 #if defined(_WIN32)
+# if !defined(UNICODE)
+#  define UNICODE
+# endif
+# if !defined(_UNICODE)
+#  define _UNICODE
+# endif
 # if !defined(WIN32_LEAN_AND_MEAN)
-#  define WIN32_LEAN_AND_MEAN 1
+#  define WIN32_LEAN_AND_MEAN
 # endif
 # include <windows.h>
 #endif
@@ -120,7 +126,6 @@ int gettimeofday(struct timeval *tv, struct timezone *tz);
 #if defined(_WIN32)
 # include <io.h>
 # include <direct.h>
-# include <windows.h>
 #endif
 
 #if defined(_MSC_VER)

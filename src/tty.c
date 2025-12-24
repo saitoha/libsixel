@@ -64,8 +64,17 @@
 #include "compat_stub.h"
 
 #if defined(_WIN32)
-# include <io.h>
+# if !defined(UNICODE)
+#  define UNICODE
+# endif
+# if !defined(_UNICODE)
+#  define _UNICODE
+# endif
+# if !defined(WIN32_LEAN_AND_MEAN)
+#  define WIN32_LEAN_AND_MEAN
+# endif
 # include <windows.h>
+# include <io.h>
 # if !defined(ENABLE_VIRTUAL_TERMINAL_PROCESSING)
 #  define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
 # endif

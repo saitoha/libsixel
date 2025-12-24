@@ -38,6 +38,15 @@
 #endif
 
 #if HAVE_WINDOWS_H
+# if !defined(UNICODE)
+#  define UNICODE
+# endif
+# if !defined(_UNICODE)
+#  define _UNICODE
+# endif
+# if !defined(WIN32_LEAN_AND_MEAN)
+#  define WIN32_LEAN_AND_MEAN
+# endif
 # include <windows.h>
 #endif
 #include <wincodec.h>
