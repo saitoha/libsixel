@@ -28,7 +28,9 @@
  * registry so other backends avoid pulling in its macros and includes.
  */
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 /* STDC_HEADERS */
 #include <stdio.h>

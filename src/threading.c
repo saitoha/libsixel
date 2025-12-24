@@ -23,7 +23,9 @@
  * SOFTWARE.
  */
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #if defined(__linux__) && !defined(_GNU_SOURCE)
 # define _GNU_SOURCE

@@ -23,7 +23,9 @@
  * SOFTWARE.
  */
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 /* STDC_HEADERS */
 #include <stdlib.h>

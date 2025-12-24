@@ -9,7 +9,9 @@
 #ifndef LIBSIXEL_TESTS_FILTER_TEST_COMMON_H
 #define LIBSIXEL_TESTS_FILTER_TEST_COMMON_H
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 /* STDC_HEADERS */
 #include <math.h>

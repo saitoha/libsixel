@@ -25,7 +25,9 @@
 # define _POSIX_C_SOURCE 200809L
 #endif
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 #include "completion_utils.h"
 
 #include <stdio.h>

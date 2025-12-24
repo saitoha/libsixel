@@ -5,7 +5,9 @@
  * clipping support, and progress reporting.
  */
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <math.h>
 #include <stdio.h>

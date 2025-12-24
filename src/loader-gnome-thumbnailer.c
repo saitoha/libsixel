@@ -26,7 +26,9 @@
  * process management and file(1) helpers stay behind platform guards.
  */
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 #if !defined(_POSIX_C_SOURCE)
 # define _POSIX_C_SOURCE 200809L
 #endif
