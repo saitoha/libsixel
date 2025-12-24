@@ -84,6 +84,15 @@
 #  define WIN32_LEAN_AND_MEAN
 # endif
 # include <windows.h>
+# if 0
+# if defined(_MSC_VER)
+#  include <winsock2.h>  /* for struct timeval */
+# endif  /* defined(_MSC_VER) */
+# endif
+typedef struct timeval {
+  long tv_sec;
+  long tv_usec;
+} TIMEVAL, *PTIMEVAL, *LPTIMEVAL;
 #endif
 
 /*
@@ -113,10 +122,6 @@ int gettimeofday(struct timeval *tv, struct timezone *tz);
 # endif
 #endif
 #endif
-
-#if defined(_MSC_VER)
-# include <winsock2.h>  /* for struct timeval */
-#endif  /* defined(_MSC_VER) */
 
 #if defined(__FreeBSD__) || defined(__DragonFly__)
 struct timezone;
