@@ -1337,7 +1337,7 @@ uninstall-man: uninstall-man1
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 @WANT_AMALGAMATED_TOOLS_TRUE@$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
-@WANT_AMALGAMATED_TOOLS_TRUE@        $(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
 @WANT_AMALGAMATED_TOOLS_TRUE@$(AMALGAMATION_SIXEL): completion_embed.h
 
 # +--------------------------------------------------------------+
