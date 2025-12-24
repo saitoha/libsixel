@@ -27,7 +27,9 @@
  * request a thumbnail, and blit it into a sixel frame.
  */
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
 

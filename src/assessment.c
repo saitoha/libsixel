@@ -61,7 +61,9 @@
 #define _XOPEN_SOURCE 700
 #endif
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <ctype.h>
 #include <errno.h>

@@ -27,7 +27,9 @@
  * headers and keeps the dispatcher lean.
  */
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #ifdef HAVE_GDK_PIXBUF2
 

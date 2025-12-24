@@ -5,7 +5,9 @@
  * forwards pixels to the encoder, and reports progress via callbacks.
  */
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <stdio.h>
 

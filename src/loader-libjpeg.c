@@ -28,7 +28,9 @@
  * can reference them without pulling libjpeg headers into unrelated code.
  */
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #if HAVE_JPEG
 

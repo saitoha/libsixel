@@ -27,7 +27,9 @@
 # define _POSIX_C_SOURCE 200809L
 #endif
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 #include "malloc_stub.h"
 #include "getopt_stub.h"
 #include "aborttrace.h"
