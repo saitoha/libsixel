@@ -110,7 +110,6 @@ assessment/lsqa.c
 "
 
 project_headers="
-config.h
 sixel.h
 sixel_threads_config.h
 sixel_atomic.h
