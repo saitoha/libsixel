@@ -97,14 +97,6 @@ jobs:
             platform: dragonflybsd
             df_release: '6.4.2'
             variant: dragonflybsd
-          - label: openbsd 7.8 aarch64
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            platform: openbsd
-            cp_os: openbsd
-            cp_arch: arm64
-            cp_version: '7.8'
-            variant: openbsd
           - label: ubuntu x86_64 static-only
             os: ubuntu-latest
             runner: ubuntu-latest
