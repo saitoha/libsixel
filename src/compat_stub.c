@@ -89,10 +89,12 @@
 #  include <winsock2.h>  /* for struct timeval */
 # endif  /* defined(_MSC_VER) */
 # endif
+# if defined(_MSC_VER)
 typedef struct timeval {
   long tv_sec;
   long tv_usec;
 } TIMEVAL, *PTIMEVAL, *LPTIMEVAL;
+# endif
 #endif
 
 /*
