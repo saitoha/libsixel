@@ -41,7 +41,7 @@ $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 libsixel_la-sixel.lo: $(AMALGAMATION_SIXEL)
-	$(AMALGAMATION_COMPILE) $(AMALGAMATION_CPPFLAGS) -c -o $@ $<
+	$(AMALGAMATION_COMPILE) -c -o $@ $<
 
 else
 libsixel_la_SOURCES = \
@@ -215,7 +215,7 @@ $(srcdir)/clipboard_carbon.c
 endif
 endif
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS) \
-                @THREAD_CPPFLAGS@
+                @THREAD_CPPFLAGS@ $(AMALGAMATION_CPPFLAGS)
 libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(LIBCURL_CFLAGS) \
                 $(WINHTTP_CFLAGS) \
