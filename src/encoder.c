@@ -259,7 +259,15 @@ static SIXELSTATUS sixel_encoder_filter_plan_run(
     sixel_assessment_t *assessment);
 
 #if defined(_WIN32)
-
+# if !defined(UNICODE)
+#  define UNICODE
+# endif
+# if !defined(_UNICODE)
+#  define _UNICODE
+# endif
+# if !defined(WIN32_LEAN_AND_MEAN)
+#  define WIN32_LEAN_AND_MEAN
+# endif
 # include <windows.h>
 # if defined(_MSC_VER) || defined(__MINGW32__) || defined(__MINGW64__)
 #  include <io.h>
