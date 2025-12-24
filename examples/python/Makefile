@@ -144,7 +144,7 @@ AWK = gawk
 BASH = /bin/sh
 CC = clang
 CCDEPMODE = depmode=gcc3
-CFLAGS = -g -O2 -std=c99
+CFLAGS = -fsanitize=address -O1 -g -fno-omit-frame-pointer -std=c99
 CLIPBOARD_CFLAGS = 
 CLIPBOARD_LIBS = -framework AppKit -framework Foundation
 COREGRAPHICS_CFLAGS = 
@@ -180,7 +180,7 @@ INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 LD = /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld
-LDFLAGS = 
+LDFLAGS = -fsanitize=address
 LIBCURL_CFLAGS = -I/usr/local/include
 LIBCURL_LIBS = -L/usr/local/lib -lcurl
 LIBJPEG_CFLAGS = -I/opt/homebrew/opt/jpeg-turbo/include

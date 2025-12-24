@@ -852,7 +852,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATION_TRUE@	$(am__append_2) $(am__append_3) \
 @WANT_AMALGAMATION_TRUE@	$(am__append_4)
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS) \
-                @THREAD_CPPFLAGS@
+                @THREAD_CPPFLAGS@ $(AMALGAMATION_CPPFLAGS)
 
 libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(LIBCURL_CFLAGS) \
@@ -2119,7 +2119,7 @@ uninstall-man: uninstall-man5
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 @WANT_AMALGAMATION_TRUE@libsixel_la-sixel.lo: $(AMALGAMATION_SIXEL)
-@WANT_AMALGAMATION_TRUE@	$(AMALGAMATION_COMPILE) $(AMALGAMATION_CPPFLAGS) -c -o $@ $<
+@WANT_AMALGAMATION_TRUE@	$(AMALGAMATION_COMPILE) -c -o $@ $<
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 unittest: all
