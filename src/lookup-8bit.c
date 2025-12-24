@@ -49,7 +49,7 @@
  * palette-heckbert.c so this file can concentrate on lookup responsibilities.
  */
 
-#if HAVE_CONFIG_H
+#if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
 

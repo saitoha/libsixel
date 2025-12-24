@@ -27,7 +27,7 @@
  * helpers so backend files stay narrow and platform headers remain isolated.
  */
 
-#if HAVE_CONFIG_H
+#if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
 

@@ -29,7 +29,7 @@
  * 8bit and RGBFLOAT32 workers expose identical signatures.
  */
 
-#if HAVE_CONFIG_H
+#if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
 
