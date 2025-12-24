@@ -100,6 +100,7 @@ src/threading.c
 src/threadpool.c
 src/quicklook_thumbnailing.m
 src/clipboard_macos.m
+src/tests.c
 converters/aborttrace.c
 converters/cli.c
 converters/completion_utils.c
@@ -318,12 +319,6 @@ ${candidate}"
             ;;
     esac
 }
-
-if [ -f "${config_path}" ] && \
-        grep -Eq '^#define[[:space:]]+HAVE_TESTS[[:space:]]+1' \
-            "${config_path}"; then
-    append_unique_unit "src/tests.c"
-fi
 
 resolve_unit() {
     case "$1" in
