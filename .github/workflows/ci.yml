@@ -1547,7 +1547,7 @@ jobs:
           -Dbashcompletiondir=disabled \
           -Dzshcompletiondir=disabled \
           ${{ matrix.setup_flags }}
-        meson compile -C builddir
+        meson compile -C builddir -v
         meson dist -C builddir
         ls -l builddir/meson-dist
 
@@ -1560,7 +1560,7 @@ jobs:
           -Dbashcompletiondir=disabled \
           -Dzshcompletiondir=disabled \
           ${{ matrix.setup_flags }}
-        meson compile -C builddir
+        meson compile -C builddir -v
         meson dist -C builddir --allow-dirty
         ls -l builddir/meson-dist
 
@@ -1575,7 +1575,7 @@ jobs:
         distdir=$(find dist-build -maxdepth 1 -type d -name 'libsixel-*' | head -n1)
         cd "$distdir"
         meson setup build --wrap-mode=nodownload ${{ matrix.setup_flags }}
-        meson compile -C build
+        meson compile -C build -v
         meson test -C build || { cat build/meson-logs/testlog.txt || true; exit 1; }
 
     - name: Build from Meson dist archive (Windows)
@@ -1589,7 +1589,7 @@ jobs:
         distdir=$(find dist-build -maxdepth 1 -type d -name 'libsixel-*' | head -n1)
         cd "$distdir"
         meson setup build ${{ matrix.setup_flags }}
-        meson compile -C build
+        meson compile -C build -v
         meson test -C build || { cat build/meson-logs/testlog.txt || true; exit 1; }
 
     - name: Upload meson dist artifacts
@@ -2076,7 +2076,7 @@ jobs:
               ${disable_tools_flags} \
               ${disable_threads_flag} \
               ${disable_simd_flag}
-          meson compile -C builddir
+          meson compile -C builddir -v
           meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
 
     - name: Configure, build, and test (Meson, DragonFlyBSD)
@@ -2129,7 +2129,7 @@ jobs:
               ${disable_tools_flags} \
               ${disable_threads_flag} \
               ${disable_simd_flag}
-          meson compile -C builddir
+          meson compile -C builddir -v
           meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
 
     - name: Upload pkg_install log (Meson NetBSD)
@@ -2190,7 +2190,7 @@ jobs:
             ${disable_tools_flags} \
             ${disable_threads_flag} \
             ${disable_simd_flag}
-        meson compile -C builddir
+        meson compile -C builddir -v
         meson test -C builddir || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
 
     - name: Configure, build, and test (Meson, Windows, Cygwin)
@@ -2233,7 +2233,7 @@ jobs:
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
           'meson setup builddir --wrap-mode=nodownload ${default_library_flag} ${amalgamation_flag} -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled -Dpython=disabled -Dtests=true ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag}',
-          'meson compile -C builddir',
+          'meson compile -C builddir -v',
           'meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }'
         )
         $script = [string]::Join("`n", $scriptLines)
