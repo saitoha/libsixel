@@ -5,7 +5,7 @@
  * policy and reports progress through the shared filter interface.
  */
 
-#if HAVE_CONFIG_H
+#if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
 

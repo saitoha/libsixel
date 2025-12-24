@@ -4,7 +4,7 @@
  * Copyright (c) 2025 libsixel developers.
  */
 
-#if HAVE_CONFIG_H
+#if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
 

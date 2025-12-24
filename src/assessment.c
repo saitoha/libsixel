@@ -61,7 +61,7 @@
 #define _XOPEN_SOURCE 700
 #endif
 
-#if HAVE_CONFIG_H
+#if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
 

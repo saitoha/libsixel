@@ -27,7 +27,7 @@
  * other backends while preserving the existing control flow and diagnostics.
  */
 
-#if HAVE_CONFIG_H
+#if defined(HAVE_CONFIG_H)
 #include "config.h"
 #endif
 

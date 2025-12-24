@@ -37,10 +37,6 @@
 #ifndef LIBSIXEL_CLIPBOARD_H
 #define LIBSIXEL_CLIPBOARD_H
 
-#if HAVE_CONFIG_H
-#include "config.h"
-#endif
-
 #include <stddef.h>
 
 #include <sixel.h>
