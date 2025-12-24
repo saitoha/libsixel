@@ -47,6 +47,9 @@ if host_system == 'darwin'
   conf.set('_DARWIN_C_SOURCE', 1)
 endif
 
+# Always expose generated config.h so headers stay reachable across platforms.
+add_project_arguments('-DHAVE_CONFIG_H', language: 'c')
+
 # configuration data
 conf.set_quoted('PACKAGE', meson.project_name())
 conf.set_quoted('PACKAGE_NAME', meson.project_name())
