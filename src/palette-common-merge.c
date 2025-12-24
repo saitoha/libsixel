@@ -29,7 +29,9 @@
  * without depending on each other's internals.
  */
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <errno.h>
 #include <float.h>

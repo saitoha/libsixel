@@ -18,7 +18,9 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include "wic_stub.h"
 #include <strsafe.h>

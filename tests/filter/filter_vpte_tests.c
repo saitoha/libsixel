@@ -5,7 +5,9 @@
  * and progress reporting through the filter facade.
  */
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <stdio.h>
 

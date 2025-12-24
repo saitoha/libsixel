@@ -7,7 +7,9 @@
 #ifndef LIBSIXEL_CPU_H
 #define LIBSIXEL_CPU_H
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #ifdef __cplusplus
 extern "C" {

@@ -38,7 +38,9 @@
  * Hayaki Saito <saitoha@me.com> modified this and re-licensed
  * it to the MIT license.
  */
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 /* STDC_HEADERS */
 #include <stdlib.h>

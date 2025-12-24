@@ -43,7 +43,9 @@
 # define _CRT_DECLARE_NONSTDC_NAMES 1
 #endif
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 /* STDC_HEADERS */
 #include <errno.h>

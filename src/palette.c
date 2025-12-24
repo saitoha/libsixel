@@ -36,7 +36,9 @@
  * when adjusting palette-heckbert.c or palette-kmeans.c.
  */
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #include <stdlib.h>
 #include <string.h>

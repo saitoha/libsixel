@@ -22,7 +22,9 @@
  * SOFTWARE.
  */
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #if HAVE_MATH_H
 # include <math.h>

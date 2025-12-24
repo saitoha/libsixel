@@ -30,7 +30,9 @@
 
 #include <sixel.h>
 
+#if HAVE_CONFIG_H
 #include "config.h"
+#endif
 
 #if !defined(PATH_MAX)
 #define PATH_MAX 4096
