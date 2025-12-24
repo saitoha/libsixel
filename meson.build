@@ -49,6 +49,7 @@ endif
 
 # Always expose generated config.h so headers stay reachable across platforms.
 add_project_arguments('-DHAVE_CONFIG_H', language: 'c')
+add_project_arguments('-DHAVE_CONFIG_H', language: 'objc')
 
 # configuration data
 conf.set_quoted('PACKAGE', meson.project_name())
