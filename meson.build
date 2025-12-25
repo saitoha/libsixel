@@ -1277,6 +1277,34 @@ if amalgamated_tools_opt.enabled() and not amalgamation_opt.enabled()
   error('amalgamated_tools requires the amalgamation option to be enabled')
 endif
 
+# Build the embedded completion header once so both the converter targets and
+# the amalgamated translation unit can consume the same generated artifact.
+sh = find_program('sh')
+gen_completion = find_program(
+  join_paths(meson.project_source_root(), 'tools', 'gen_completion_embed.py'),
+  required: true,
+)
+completion_inputs = files(
+  'converters/shell-completion/bash/img2sixel',
+  'converters/shell-completion/zsh/_img2sixel',
+)
+completion_embed = custom_target('completion_embed.h',
+  input: completion_inputs,
+  output: 'completion_embed.h',
+  command: [
+    sh, '-c',
+    'set -eu; out="$1"; bash_in="$2"; zsh_in="$3"; conv_dir="$4"; ' +
+    'mkdir -p "${conv_dir}"; ' +
+    '"$5" "${out}" "${bash_in}" "${zsh_in}"; ' +
+    'cp "${out}" "${conv_dir}/completion_embed.h"',
+    '@OUTPUT@', '@INPUT0@', '@INPUT1@',
+    meson.project_build_root() / 'converters',
+    gen_completion,
+  ],
+  build_by_default: true,
+  install: false,
+)
+
 if amalgamation_opt.enabled()
   subdir('amalgamation')
 endif
