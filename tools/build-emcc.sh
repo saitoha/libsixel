@@ -16,6 +16,10 @@ cd "${EMSDK}" && ./emsdk activate latest
 
 source "${EMSDK}"/emsdk_env.sh
 
+emcc --show-ports
+
+exit 0
+
 cd "${BUILDDIR}" && (
 sh ${TOP_SRCDIR}/configure \
   --disable-simd \
@@ -31,6 +35,7 @@ sh ${TOP_SRCDIR}/configure \
   --disable-quicklook-extension \
   --disable-quicklook-preview \
   --enable-amalgamation \
+  --enable-amalgamated-tools \
   --host=wasm32-unknown-emscripten \
   CC=emcc \
   CFLAGS=-O3 \
@@ -42,6 +47,7 @@ sh ${TOP_SRCDIR}/configure \
            -sFORCE_FILESYSTEM=1 \
            -sALLOW_MEMORY_GROWTH=1 \
            -sINITIAL_MEMORY=67108864 \
-           -sSTACK_SIZE=2097152"
+           -sSTACK_SIZE=2097152 \
+  "
 make -C"${BUILDDIR}" -j
 )
