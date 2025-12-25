@@ -102,6 +102,16 @@ src/quicklook_thumbnailing.m
 src/clipboard_macos.m
 src/clipboard_carbon.c
 src/tests.c
+tests/filter/filter_tests.c
+tests/filter/filter_sample_tests.c
+tests/filter/filter_resize_tests.c
+tests/filter/filter_colors_tests.c
+tests/filter/filter_lookup_tests.c
+tests/filter/filter_final_merge_tests.c
+tests/filter/filter_vpte_tests.c
+tests/filter/filter_load_tests.c
+tests/filter/filter_dither_tests.c
+tests/filter/filter_encode_tests.c
 converters/aborttrace.c
 converters/cli.c
 converters/completion_utils.c
@@ -594,6 +604,36 @@ emit_all_units() {
                 ;;
             src/tests.c)
                 emit_unit "${unit}" "defined(BUILD_TESTS)"
+                ;;
+            tests/filter/filter_tests.c)
+                emit_unit "${unit}" "defined(BUILD_FILTER_TESTS)"
+                ;;
+            tests/filter/filter_sample_tests.c)
+                emit_unit "${unit}" "defined(BUILD_FILTER_SAMPLE_TESTS)"
+                ;;
+            tests/filter/filter_resize_tests.c)
+                emit_unit "${unit}" "defined(BUILD_FILTER_RESIZE_TESTS)"
+                ;;
+            tests/filter/filter_colors_tests.c)
+                emit_unit "${unit}" "defined(BUILD_FILTER_COLORS_TESTS)"
+                ;;
+            tests/filter/filter_lookup_tests.c)
+                emit_unit "${unit}" "defined(BUILD_FILTER_LOOKUP_TESTS)"
+                ;;
+            tests/filter/filter_final_merge_tests.c)
+                emit_unit "${unit}" "defined(BUILD_FILTER_FINAL_MERGE_TESTS)"
+                ;;
+            tests/filter/filter_vpte_tests.c)
+                emit_unit "${unit}" "defined(BUILD_FILTER_VPTE_TESTS)"
+                ;;
+            tests/filter/filter_load_tests.c)
+                emit_unit "${unit}" "defined(BUILD_FILTER_LOAD_TESTS)"
+                ;;
+            tests/filter/filter_dither_tests.c)
+                emit_unit "${unit}" "defined(BUILD_FILTER_DITHER_TESTS)"
+                ;;
+            tests/filter/filter_encode_tests.c)
+                emit_unit "${unit}" "defined(BUILD_FILTER_ENCODE_TESTS)"
                 ;;
             src/clipboard_carbon.c)
                 emit_unit "${unit}" \
