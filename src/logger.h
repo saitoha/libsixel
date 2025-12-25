@@ -4,8 +4,8 @@
  * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
  */
 
-#ifndef LIBSIXEL_PARALLEL_LOG_H
-#define LIBSIXEL_PARALLEL_LOG_H
+#ifndef LIBSIXEL_LOGGER_H
+#define LIBSIXEL_LOGGER_H
 
 #include <stdio.h>
 
@@ -53,7 +53,7 @@ void sixel_logger_logf(sixel_logger_t *logger,
 }
 #endif
 
-#endif /* LIBSIXEL_PARALLEL_LOG_H */
+#endif /* LIBSIXEL_LOGGER_H */
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

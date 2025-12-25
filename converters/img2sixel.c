@@ -1099,9 +1099,9 @@ void show_help(void)
             "SIXEL_LOOKUP_VPTE_PIN_THREADS\n"
             "                           pin VPTE worker threads at startup to\n"
             "                           reduce migration (0 or 1; default 0).\n"
-            "SIXEL_PARALLEL_LOG_PATH    write a JSON timeline for VPTE or LUT\n"
+            "SIXEL_LOGGER_LOG_PATH      write a JSON timeline for VPTE or LUT\n"
             "                           builds when set.\n"
-            "SIXEL_PARALLEL_LOG_LINES   log every Nth line in the timeline;\n"
+            "SIXEL_LOGGER_LOG_LINES     log every Nth line in the timeline;\n"
             "                           0 disables line events.\n"
             );
 }

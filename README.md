@@ -701,10 +701,10 @@ cell corners.  The following environment variables tune the grid (legacy
 * `SIXEL_LOOKUP_VPTE_PIN_THREADS` pins the VPTE worker threads once at
   startup to reduce migration on NUMA systems (0 or 1; default 0; failures
   are ignored so portability is preserved).
-* `SIXEL_PARALLEL_LOG_PATH` writes a JSON timeline log that can be consumed
+* `SIXEL_LOGGER_LOG_PATH` writes a JSON timeline log that can be consumed
   by `tools/timeline.py`; the log is silent when unset.
-* `SIXEL_PARALLEL_LOG_LINES` controls per-line logging when
-  `SIXEL_PARALLEL_LOG_PATH` is set.  Use 0 to suppress line events, or a
+* `SIXEL_LOGGER_LOG_LINES` controls per-line logging when
+  `SIXEL_LOGGER_LOG_PATH` is set.  Use 0 to suppress line events, or a
   positive integer to log every Nth line (unset logs every line and may be
   heavy).
 
