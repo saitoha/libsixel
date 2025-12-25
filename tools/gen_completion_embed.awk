@@ -4,8 +4,8 @@
 # ASCII pipeline summary:
 #
 #   bash/img2sixel ----\
-#                        >--[gen_completion_embed.awk]--> completion_embed.h
-#   zsh/_img2sixel  ----/
+#                       >--[gen_completion_embed.awk]--> completion_embed.h
+#   zsh/_img2sixel ----/
 #
 # The script accepts two arguments:
 #   1. Path to the bash completion file
@@ -104,7 +104,6 @@ BEGIN {
         ARGV[2] = ""
 
         print "/* auto-generated; do not edit */"
-        print "#pragma once"
         print ""
 
         emit_lines(bash_path, "img2sixel_bash_completion")
