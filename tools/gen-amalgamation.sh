@@ -100,6 +100,7 @@ src/threading.c
 src/threadpool.c
 src/quicklook_thumbnailing.m
 src/clipboard_macos.m
+src/clipboard_carbon.c
 src/tests.c
 converters/aborttrace.c
 converters/cli.c
@@ -594,13 +595,17 @@ emit_all_units() {
             src/tests.c)
                 emit_unit "${unit}" "defined(BUILD_TESTS)"
                 ;;
+            src/clipboard_carbon.c)
+                emit_unit "${unit}" \
+                    "!defined(HAVE_APPKIT) || !defined(__OBJC__)"
+                ;;
             src/quicklook_thumbnailing.m)
                 emit_unit "${unit}" \
                     "HAVE_QUICKLOOK_THUMBNAILING && defined(__OBJC__)"
                 ;;
             src/clipboard_macos.m)
                 emit_unit "${unit}" \
-                    "HAVE_CLIPBOARD_MACOS && defined(__OBJC__)"
+                    "defined(HAVE_APPKIT) && defined(__OBJC__)"
                 ;;
             *)
                 emit_unit "${unit}" ""
