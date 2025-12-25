@@ -40,6 +40,7 @@
 # include <memory.h>
 #endif  /* HAVE_MEMORY_H */
 
+#if 0
 #if !HAVE_MALLOC
 void *
 rpl_malloc(size_t n)
@@ -64,6 +65,7 @@ rpl_realloc(void *p, size_t n)
     return (void *)realloc(p, n);
 }
 #endif /* !HAVE_REALLOC */
+#endif
 
 #if 0
 int

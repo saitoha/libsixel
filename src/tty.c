@@ -351,14 +351,14 @@ end:
 SIXELSTATUS
 sixel_tty_wait_stdin(int usec)
 {
-#if HAVE_SYS_SELECT_H
+#if HAVE_SYS_SELECT_H && !defined(__EMSCRIPTEN__)
     fd_set rfds;
     struct timeval tv;
     int ret = 0;
 #endif  /* HAVE_SYS_SELECT_H */
     SIXELSTATUS status = SIXEL_FALSE;
 
-#if HAVE_SYS_SELECT_H
+#if HAVE_SYS_SELECT_H && !defined(__EMSCRIPTEN__)
     tv.tv_sec = usec / 1000000;
     tv.tv_usec = usec % 1000000;
     FD_ZERO(&rfds);
