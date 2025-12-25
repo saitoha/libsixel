@@ -121,15 +121,15 @@ am__EXEEXT_2 = filter/filter_tests$(EXEEXT) \
 	filter/filter_dither_tests$(EXEEXT) \
 	filter/filter_encode_tests$(EXEEXT)
 am__filter_filter_colors_tests_SOURCES_DIST =  \
-	filter/filter_colors_tests.c \
-	$(top_builddir)/amalgamation/sixel.c
+	filter/filter_colors_tests.c
 am__dirstamp = $(am__leading_dot)dirstamp
-am__objects_1 = $(top_builddir)/amalgamation/filter_filter_colors_tests-sixel.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_FALSE@am_filter_filter_colors_tests_OBJECTS = filter/filter_colors_tests-filter_colors_tests.$(OBJEXT)
-@WANT_AMALGAMATED_TOOLS_TRUE@am_filter_filter_colors_tests_OBJECTS =  \
+am__objects_1 = $(top_builddir)/amalgamation/filter_filter_colors_tests-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_colors_tests_OBJECTS =  \
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_1)
 filter_filter_colors_tests_OBJECTS =  \
-	$(am_filter_filter_colors_tests_OBJECTS)
+	$(am_filter_filter_colors_tests_OBJECTS) \
+	$(nodist_filter_filter_colors_tests_OBJECTS)
 am__DEPENDENCIES_1 =
 @WANT_AMALGAMATED_TOOLS_FALSE@am__DEPENDENCIES_2 =  \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/src/libsixel.la \
@@ -177,14 +177,14 @@ filter_filter_colors_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(filter_filter_colors_tests_CFLAGS) $(CFLAGS) \
 	$(filter_filter_colors_tests_LDFLAGS) $(LDFLAGS) -o $@
 am__filter_filter_dither_tests_SOURCES_DIST =  \
-	filter/filter_dither_tests.c \
-	$(top_builddir)/amalgamation/sixel.c
-am__objects_2 = $(top_builddir)/amalgamation/filter_filter_dither_tests-sixel.$(OBJEXT)
+	filter/filter_dither_tests.c
 @WANT_AMALGAMATED_TOOLS_FALSE@am_filter_filter_dither_tests_OBJECTS = filter/filter_dither_tests-filter_dither_tests.$(OBJEXT)
-@WANT_AMALGAMATED_TOOLS_TRUE@am_filter_filter_dither_tests_OBJECTS =  \
+am__objects_2 = $(top_builddir)/amalgamation/filter_filter_dither_tests-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_dither_tests_OBJECTS =  \
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_2)
 filter_filter_dither_tests_OBJECTS =  \
-	$(am_filter_filter_dither_tests_OBJECTS)
+	$(am_filter_filter_dither_tests_OBJECTS) \
+	$(nodist_filter_filter_dither_tests_OBJECTS)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_dither_tests_DEPENDENCIES =  \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_dither_tests_DEPENDENCIES =  \
@@ -194,14 +194,14 @@ filter_filter_dither_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(filter_filter_dither_tests_CFLAGS) $(CFLAGS) \
 	$(filter_filter_dither_tests_LDFLAGS) $(LDFLAGS) -o $@
 am__filter_filter_encode_tests_SOURCES_DIST =  \
-	filter/filter_encode_tests.c \
-	$(top_builddir)/amalgamation/sixel.c
-am__objects_3 = $(top_builddir)/amalgamation/filter_filter_encode_tests-sixel.$(OBJEXT)
+	filter/filter_encode_tests.c
 @WANT_AMALGAMATED_TOOLS_FALSE@am_filter_filter_encode_tests_OBJECTS = filter/filter_encode_tests-filter_encode_tests.$(OBJEXT)
-@WANT_AMALGAMATED_TOOLS_TRUE@am_filter_filter_encode_tests_OBJECTS =  \
+am__objects_3 = $(top_builddir)/amalgamation/filter_filter_encode_tests-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_encode_tests_OBJECTS =  \
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_3)
 filter_filter_encode_tests_OBJECTS =  \
-	$(am_filter_filter_encode_tests_OBJECTS)
+	$(am_filter_filter_encode_tests_OBJECTS) \
+	$(nodist_filter_filter_encode_tests_OBJECTS)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_encode_tests_DEPENDENCIES =  \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_encode_tests_DEPENDENCIES =  \
@@ -211,14 +211,14 @@ filter_filter_encode_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(filter_filter_encode_tests_CFLAGS) $(CFLAGS) \
 	$(filter_filter_encode_tests_LDFLAGS) $(LDFLAGS) -o $@
 am__filter_filter_final_merge_tests_SOURCES_DIST =  \
-	filter/filter_final_merge_tests.c \
-	$(top_builddir)/amalgamation/sixel.c
-am__objects_4 = $(top_builddir)/amalgamation/filter_filter_final_merge_tests-sixel.$(OBJEXT)
+	filter/filter_final_merge_tests.c
 @WANT_AMALGAMATED_TOOLS_FALSE@am_filter_filter_final_merge_tests_OBJECTS = filter/filter_final_merge_tests-filter_final_merge_tests.$(OBJEXT)
-@WANT_AMALGAMATED_TOOLS_TRUE@am_filter_filter_final_merge_tests_OBJECTS =  \
+am__objects_4 = $(top_builddir)/amalgamation/filter_filter_final_merge_tests-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_final_merge_tests_OBJECTS =  \
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_4)
 filter_filter_final_merge_tests_OBJECTS =  \
-	$(am_filter_filter_final_merge_tests_OBJECTS)
+	$(am_filter_filter_final_merge_tests_OBJECTS) \
+	$(nodist_filter_filter_final_merge_tests_OBJECTS)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_final_merge_tests_DEPENDENCIES =  \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_final_merge_tests_DEPENDENCIES =  \
@@ -228,14 +228,14 @@ filter_filter_final_merge_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(filter_filter_final_merge_tests_CFLAGS) $(CFLAGS) \
 	$(filter_filter_final_merge_tests_LDFLAGS) $(LDFLAGS) -o $@
 am__filter_filter_load_tests_SOURCES_DIST =  \
-	filter/filter_load_tests.c \
-	$(top_builddir)/amalgamation/sixel.c
-am__objects_5 = $(top_builddir)/amalgamation/filter_filter_load_tests-sixel.$(OBJEXT)
+	filter/filter_load_tests.c
 @WANT_AMALGAMATED_TOOLS_FALSE@am_filter_filter_load_tests_OBJECTS = filter/filter_load_tests-filter_load_tests.$(OBJEXT)
-@WANT_AMALGAMATED_TOOLS_TRUE@am_filter_filter_load_tests_OBJECTS =  \
+am__objects_5 = $(top_builddir)/amalgamation/filter_filter_load_tests-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_load_tests_OBJECTS =  \
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_5)
 filter_filter_load_tests_OBJECTS =  \
-	$(am_filter_filter_load_tests_OBJECTS)
+	$(am_filter_filter_load_tests_OBJECTS) \
+	$(nodist_filter_filter_load_tests_OBJECTS)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_load_tests_DEPENDENCIES =  \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_load_tests_DEPENDENCIES =  \
@@ -245,14 +245,14 @@ filter_filter_load_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(filter_filter_load_tests_CFLAGS) $(CFLAGS) \
 	$(filter_filter_load_tests_LDFLAGS) $(LDFLAGS) -o $@
 am__filter_filter_lookup_tests_SOURCES_DIST =  \
-	filter/filter_lookup_tests.c \
-	$(top_builddir)/amalgamation/sixel.c
-am__objects_6 = $(top_builddir)/amalgamation/filter_filter_lookup_tests-sixel.$(OBJEXT)
+	filter/filter_lookup_tests.c
 @WANT_AMALGAMATED_TOOLS_FALSE@am_filter_filter_lookup_tests_OBJECTS = filter/filter_lookup_tests-filter_lookup_tests.$(OBJEXT)
-@WANT_AMALGAMATED_TOOLS_TRUE@am_filter_filter_lookup_tests_OBJECTS =  \
+am__objects_6 = $(top_builddir)/amalgamation/filter_filter_lookup_tests-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_lookup_tests_OBJECTS =  \
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_6)
 filter_filter_lookup_tests_OBJECTS =  \
-	$(am_filter_filter_lookup_tests_OBJECTS)
+	$(am_filter_filter_lookup_tests_OBJECTS) \
+	$(nodist_filter_filter_lookup_tests_OBJECTS)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_lookup_tests_DEPENDENCIES =  \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_lookup_tests_DEPENDENCIES =  \
@@ -262,14 +262,14 @@ filter_filter_lookup_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(filter_filter_lookup_tests_CFLAGS) $(CFLAGS) \
 	$(filter_filter_lookup_tests_LDFLAGS) $(LDFLAGS) -o $@
 am__filter_filter_resize_tests_SOURCES_DIST =  \
-	filter/filter_resize_tests.c \
-	$(top_builddir)/amalgamation/sixel.c
-am__objects_7 = $(top_builddir)/amalgamation/filter_filter_resize_tests-sixel.$(OBJEXT)
+	filter/filter_resize_tests.c
 @WANT_AMALGAMATED_TOOLS_FALSE@am_filter_filter_resize_tests_OBJECTS = filter/filter_resize_tests-filter_resize_tests.$(OBJEXT)
-@WANT_AMALGAMATED_TOOLS_TRUE@am_filter_filter_resize_tests_OBJECTS =  \
+am__objects_7 = $(top_builddir)/amalgamation/filter_filter_resize_tests-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_resize_tests_OBJECTS =  \
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_7)
 filter_filter_resize_tests_OBJECTS =  \
-	$(am_filter_filter_resize_tests_OBJECTS)
+	$(am_filter_filter_resize_tests_OBJECTS) \
+	$(nodist_filter_filter_resize_tests_OBJECTS)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_resize_tests_DEPENDENCIES =  \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_resize_tests_DEPENDENCIES =  \
@@ -279,14 +279,14 @@ filter_filter_resize_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(filter_filter_resize_tests_CFLAGS) $(CFLAGS) \
 	$(filter_filter_resize_tests_LDFLAGS) $(LDFLAGS) -o $@
 am__filter_filter_sample_tests_SOURCES_DIST =  \
-	filter/filter_sample_tests.c \
-	$(top_builddir)/amalgamation/sixel.c
-am__objects_8 = $(top_builddir)/amalgamation/filter_filter_sample_tests-sixel.$(OBJEXT)
+	filter/filter_sample_tests.c
 @WANT_AMALGAMATED_TOOLS_FALSE@am_filter_filter_sample_tests_OBJECTS = filter/filter_sample_tests-filter_sample_tests.$(OBJEXT)
-@WANT_AMALGAMATED_TOOLS_TRUE@am_filter_filter_sample_tests_OBJECTS =  \
+am__objects_8 = $(top_builddir)/amalgamation/filter_filter_sample_tests-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_sample_tests_OBJECTS =  \
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_8)
 filter_filter_sample_tests_OBJECTS =  \
-	$(am_filter_filter_sample_tests_OBJECTS)
+	$(am_filter_filter_sample_tests_OBJECTS) \
+	$(nodist_filter_filter_sample_tests_OBJECTS)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_sample_tests_DEPENDENCIES =  \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_sample_tests_DEPENDENCIES =  \
@@ -295,13 +295,13 @@ filter_filter_sample_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(filter_filter_sample_tests_CFLAGS) $(CFLAGS) \
 	$(filter_filter_sample_tests_LDFLAGS) $(LDFLAGS) -o $@
-am__filter_filter_tests_SOURCES_DIST = filter/filter_tests.c \
-	$(top_builddir)/amalgamation/sixel.c
-am__objects_9 = $(top_builddir)/amalgamation/filter_filter_tests-sixel.$(OBJEXT)
+am__filter_filter_tests_SOURCES_DIST = filter/filter_tests.c
 @WANT_AMALGAMATED_TOOLS_FALSE@am_filter_filter_tests_OBJECTS = filter/filter_tests-filter_tests.$(OBJEXT)
-@WANT_AMALGAMATED_TOOLS_TRUE@am_filter_filter_tests_OBJECTS =  \
+am__objects_9 = $(top_builddir)/amalgamation/filter_filter_tests-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_tests_OBJECTS =  \
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_9)
-filter_filter_tests_OBJECTS = $(am_filter_filter_tests_OBJECTS)
+filter_filter_tests_OBJECTS = $(am_filter_filter_tests_OBJECTS) \
+	$(nodist_filter_filter_tests_OBJECTS)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_tests_DEPENDENCIES =  \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_tests_DEPENDENCIES =  \
@@ -311,14 +311,14 @@ filter_filter_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(filter_filter_tests_CFLAGS) $(CFLAGS) \
 	$(filter_filter_tests_LDFLAGS) $(LDFLAGS) -o $@
 am__filter_filter_vpte_tests_SOURCES_DIST =  \
-	filter/filter_vpte_tests.c \
-	$(top_builddir)/amalgamation/sixel.c
-am__objects_10 = $(top_builddir)/amalgamation/filter_filter_vpte_tests-sixel.$(OBJEXT)
+	filter/filter_vpte_tests.c
 @WANT_AMALGAMATED_TOOLS_FALSE@am_filter_filter_vpte_tests_OBJECTS = filter/filter_vpte_tests-filter_vpte_tests.$(OBJEXT)
-@WANT_AMALGAMATED_TOOLS_TRUE@am_filter_filter_vpte_tests_OBJECTS =  \
+am__objects_10 = $(top_builddir)/amalgamation/filter_filter_vpte_tests-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_vpte_tests_OBJECTS =  \
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_10)
 filter_filter_vpte_tests_OBJECTS =  \
-	$(am_filter_filter_vpte_tests_OBJECTS)
+	$(am_filter_filter_vpte_tests_OBJECTS) \
+	$(nodist_filter_filter_vpte_tests_OBJECTS)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_vpte_tests_DEPENDENCIES =  \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_vpte_tests_DEPENDENCIES =  \
@@ -393,15 +393,25 @@ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(filter_filter_colors_tests_SOURCES) \
+	$(nodist_filter_filter_colors_tests_SOURCES) \
 	$(filter_filter_dither_tests_SOURCES) \
+	$(nodist_filter_filter_dither_tests_SOURCES) \
 	$(filter_filter_encode_tests_SOURCES) \
+	$(nodist_filter_filter_encode_tests_SOURCES) \
 	$(filter_filter_final_merge_tests_SOURCES) \
+	$(nodist_filter_filter_final_merge_tests_SOURCES) \
 	$(filter_filter_load_tests_SOURCES) \
+	$(nodist_filter_filter_load_tests_SOURCES) \
 	$(filter_filter_lookup_tests_SOURCES) \
+	$(nodist_filter_filter_lookup_tests_SOURCES) \
 	$(filter_filter_resize_tests_SOURCES) \
+	$(nodist_filter_filter_resize_tests_SOURCES) \
 	$(filter_filter_sample_tests_SOURCES) \
+	$(nodist_filter_filter_sample_tests_SOURCES) \
 	$(filter_filter_tests_SOURCES) \
+	$(nodist_filter_filter_tests_SOURCES) \
 	$(filter_filter_vpte_tests_SOURCES) \
+	$(nodist_filter_filter_vpte_tests_SOURCES) \
 	$(gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES)
 DIST_SOURCES = $(am__filter_filter_colors_tests_SOURCES_DIST) \
 	$(am__filter_filter_dither_tests_SOURCES_DIST) \
@@ -988,8 +998,7 @@ FILTER_AMALGAMATION_LDFLAGS_COMMON = $(FILTER_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(ONNXRUNTIME_LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        @THREAD_LIBS@
 
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_tests_SOURCES = filter/filter_tests.c
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_tests_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_tests_SOURCES = $(AMALGAMATION_SIXEL)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_TESTS=1
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
@@ -998,8 +1007,8 @@ FILTER_AMALGAMATION_LDFLAGS_COMMON = $(FILTER_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_sample_tests_SOURCES = filter/filter_sample_tests.c
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_sample_tests_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_tests_SOURCES = filter/filter_tests.c
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_sample_tests_SOURCES = $(AMALGAMATION_SIXEL)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_sample_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_sample_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_SAMPLE_TESTS=1
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_sample_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
@@ -1008,8 +1017,8 @@ FILTER_AMALGAMATION_LDFLAGS_COMMON = $(FILTER_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_sample_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_sample_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_sample_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_resize_tests_SOURCES = filter/filter_resize_tests.c
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_resize_tests_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_sample_tests_SOURCES = filter/filter_sample_tests.c
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_resize_tests_SOURCES = $(AMALGAMATION_SIXEL)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_resize_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_resize_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_RESIZE_TESTS=1
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_resize_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
@@ -1018,8 +1027,8 @@ FILTER_AMALGAMATION_LDFLAGS_COMMON = $(FILTER_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_resize_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_resize_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_resize_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_colors_tests_SOURCES = filter/filter_colors_tests.c
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_colors_tests_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_resize_tests_SOURCES = filter/filter_resize_tests.c
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_colors_tests_SOURCES = $(AMALGAMATION_SIXEL)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_colors_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_colors_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_COLORS_TESTS=1
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_colors_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
@@ -1028,8 +1037,8 @@ FILTER_AMALGAMATION_LDFLAGS_COMMON = $(FILTER_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_colors_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_colors_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_colors_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_lookup_tests_SOURCES = filter/filter_lookup_tests.c
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_lookup_tests_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_colors_tests_SOURCES = filter/filter_colors_tests.c
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_lookup_tests_SOURCES = $(AMALGAMATION_SIXEL)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_lookup_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_lookup_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_LOOKUP_TESTS=1
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_lookup_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
@@ -1038,8 +1047,8 @@ FILTER_AMALGAMATION_LDFLAGS_COMMON = $(FILTER_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_lookup_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_lookup_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_lookup_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_final_merge_tests_SOURCES = filter/filter_final_merge_tests.c
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_final_merge_tests_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_lookup_tests_SOURCES = filter/filter_lookup_tests.c
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_final_merge_tests_SOURCES = $(AMALGAMATION_SIXEL)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_final_merge_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_final_merge_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_FINAL_MERGE_TESTS=1
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_final_merge_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
@@ -1048,8 +1057,8 @@ FILTER_AMALGAMATION_LDFLAGS_COMMON = $(FILTER_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_final_merge_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_final_merge_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_final_merge_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_vpte_tests_SOURCES = filter/filter_vpte_tests.c
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_vpte_tests_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_final_merge_tests_SOURCES = filter/filter_final_merge_tests.c
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_vpte_tests_SOURCES = $(AMALGAMATION_SIXEL)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_vpte_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_vpte_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_VPTE_TESTS=1
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_vpte_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
@@ -1058,8 +1067,8 @@ FILTER_AMALGAMATION_LDFLAGS_COMMON = $(FILTER_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_vpte_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_vpte_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_vpte_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_load_tests_SOURCES = filter/filter_load_tests.c
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_load_tests_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_vpte_tests_SOURCES = filter/filter_vpte_tests.c
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_load_tests_SOURCES = $(AMALGAMATION_SIXEL)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_load_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_load_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_LOAD_TESTS=1
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_load_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
@@ -1068,8 +1077,8 @@ FILTER_AMALGAMATION_LDFLAGS_COMMON = $(FILTER_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_load_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_load_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_load_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_dither_tests_SOURCES = filter/filter_dither_tests.c
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_dither_tests_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_load_tests_SOURCES = filter/filter_load_tests.c
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_dither_tests_SOURCES = $(AMALGAMATION_SIXEL)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_dither_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_dither_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_DITHER_TESTS=1
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_dither_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
@@ -1078,8 +1087,8 @@ FILTER_AMALGAMATION_LDFLAGS_COMMON = $(FILTER_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_dither_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_dither_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_dither_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_encode_tests_SOURCES = filter/filter_encode_tests.c
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_encode_tests_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_dither_tests_SOURCES = filter/filter_dither_tests.c
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_encode_tests_SOURCES = $(AMALGAMATION_SIXEL)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_encode_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_encode_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_ENCODE_TESTS=1
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_encode_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
@@ -1088,6 +1097,7 @@ FILTER_AMALGAMATION_LDFLAGS_COMMON = $(FILTER_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_encode_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_encode_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_encode_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_encode_tests_SOURCES = filter/filter_encode_tests.c
 TEST_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/build-aux/tap-driver.sh
 AM_TEST_LOG_DRIVER_FLAGS = --comments
 LOG_COMPILER = $(builddir)/tools/with-timeout.sh
