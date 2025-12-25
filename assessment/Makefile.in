@@ -877,6 +877,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-dist_lpipsmodelsDATA
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 @WANT_AMALGAMATED_TOOLS_TRUE@$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

@@ -4,6 +4,15 @@ endif
 if CFLAGS_HAVE_COVERAGE
 MAYBE_COVERAGE = --coverage
 endif
+AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
+if WANT_AMALGAMATED_TOOLS
+BUILT_SOURCES = $(AMALGAMATION_SIXEL)
+
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
+$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
+	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
+	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
+endif
 CLI_TESTS = cli/t/test_0001_01_invalid_positional.t \
        cli/t/test_0001_02_invalid_option_arguments.t \
        cli/t/test_0001_03_invalid_option_combinations.t \
@@ -98,71 +107,206 @@ FILTER_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_builddir) -I$(top_builddir)/include \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \
        -I$(top_srcdir)/tests/filter
-FILTER_COMMON_CFLAGS_VAL = $(AM_CFLAGS) $(MAYBE_COVERAGE)
+if WANT_AMALGAMATED_TOOLS
+FILTER_COMMON_CFLAGS_VAL = $(AM_CFLAGS) \
+        $(LIBCURL_CFLAGS) \
+        $(WINHTTP_CFLAGS) \
+        $(LIBPNG_CFLAGS) \
+        $(LIBJPEG_CFLAGS) \
+        $(GDK_PIXBUF_CFLAGS) \
+        $(GD_CFLAGS) \
+        $(WIC_CFLAGS) \
+        $(COREGRAPHICS_CFLAGS) \
+        $(QUICKLOOK_CFLAGS) \
+        $(CLIPBOARD_CFLAGS) \
+        $(ONNXRUNTIME_CFLAGS) \
+        @THREAD_CFLAGS@ \
+        $(MAYBE_COVERAGE)
+else
+FILTER_COMMON_CFLAGS_VAL = $(AM_CFLAGS) \
+        $(MAYBE_COVERAGE)
+endif
 FILTER_COMMON_LDFLAGS_VAL = $(AM_LDFLAGS) $(MAYBE_COVERAGE)
+if WANT_AMALGAMATED_TOOLS
+FILTER_COMMON_LDADD_VAL = $(top_builddir)/src/libsixel.la $(LIBS) \
+        $(LIBCURL_LIBS) \
+        $(WINHTTP_LIBS) \
+        $(LIBPNG_LIBS) \
+        $(LIBJPEG_LIBS) \
+        $(GDK_PIXBUF_LIBS) \
+        $(GD_LIBS) \
+        $(WIC_LIBS) \
+        $(COREGRAPHICS_LIBS) \
+        $(QUICKLOOK_LIBS) \
+        $(CLIPBOARD_LIBS) \
+        $(ONNXRUNTIME_LIBS) \
+        @THREAD_LIBS@
+else
 FILTER_COMMON_LDADD_VAL = $(top_builddir)/src/libsixel.la $(LIBS)
+endif
+
+FILTER_AMALGAMATION_CPPFLAGS_COMMON = $(FILTER_COMMON_CPPFLAGS_VAL)
+FILTER_AMALGAMATION_CFLAGS_COMMON = $(FILTER_COMMON_CFLAGS_VAL)
+FILTER_AMALGAMATION_LDFLAGS_COMMON = $(FILTER_COMMON_LDFLAGS_VAL)
+if WANT_AMALGAMATED_TOOLS
+FILTER_AMALGAMATION_LDADD_COMMON = $(top_builddir)/src/libsixel.la $(LIBS) \
+        $(LIBCURL_LIBS) \
+        $(WINHTTP_LIBS) \
+        $(LIBPNG_LIBS) \
+        $(LIBJPEG_LIBS) \
+        $(GDK_PIXBUF_LIBS) \
+        $(GD_LIBS) \
+        $(WIC_LIBS) \
+        $(COREGRAPHICS_LIBS) \
+        $(QUICKLOOK_LIBS) \
+        $(CLIPBOARD_LIBS) \
+        $(ONNXRUNTIME_LIBS) \
+        @THREAD_LIBS@
+else
+FILTER_AMALGAMATION_LDADD_COMMON = $(LIBS)
+endif
 
 check_PROGRAMS += $(FILTER_TEST_BINARIES)
 
+if WANT_AMALGAMATED_TOOLS
+filter_filter_tests_SOURCES = $(AMALGAMATION_SIXEL)
+filter_filter_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_TESTS=1
+filter_filter_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
+filter_filter_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
+filter_filter_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+else
 filter_filter_tests_SOURCES = filter/filter_tests.c
 filter_filter_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
 filter_filter_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
 filter_filter_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
 filter_filter_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
+endif
 
+if WANT_AMALGAMATED_TOOLS
+filter_filter_sample_tests_SOURCES = $(AMALGAMATION_SIXEL)
+filter_filter_sample_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_SAMPLE_TESTS=1
+filter_filter_sample_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
+filter_filter_sample_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
+filter_filter_sample_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+else
 filter_filter_sample_tests_SOURCES = filter/filter_sample_tests.c
 filter_filter_sample_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
 filter_filter_sample_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
 filter_filter_sample_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
 filter_filter_sample_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
+endif
 
+if WANT_AMALGAMATED_TOOLS
+filter_filter_resize_tests_SOURCES = $(AMALGAMATION_SIXEL)
+filter_filter_resize_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_RESIZE_TESTS=1
+filter_filter_resize_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
+filter_filter_resize_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
+filter_filter_resize_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+else
 filter_filter_resize_tests_SOURCES = filter/filter_resize_tests.c
 filter_filter_resize_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
 filter_filter_resize_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
 filter_filter_resize_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
 filter_filter_resize_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
+endif
 
+if WANT_AMALGAMATED_TOOLS
+filter_filter_colors_tests_SOURCES = $(AMALGAMATION_SIXEL)
+filter_filter_colors_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_COLORS_TESTS=1
+filter_filter_colors_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
+filter_filter_colors_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
+filter_filter_colors_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+else
 filter_filter_colors_tests_SOURCES = filter/filter_colors_tests.c
 filter_filter_colors_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
 filter_filter_colors_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
 filter_filter_colors_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
 filter_filter_colors_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
+endif
 
+if WANT_AMALGAMATED_TOOLS
+filter_filter_lookup_tests_SOURCES = $(AMALGAMATION_SIXEL)
+filter_filter_lookup_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_LOOKUP_TESTS=1
+filter_filter_lookup_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
+filter_filter_lookup_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
+filter_filter_lookup_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+else
 filter_filter_lookup_tests_SOURCES = filter/filter_lookup_tests.c
 filter_filter_lookup_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
 filter_filter_lookup_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
 filter_filter_lookup_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
 filter_filter_lookup_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
+endif
 
+if WANT_AMALGAMATED_TOOLS
+filter_filter_final_merge_tests_SOURCES = $(AMALGAMATION_SIXEL)
+filter_filter_final_merge_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_FINAL_MERGE_TESTS=1
+filter_filter_final_merge_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
+filter_filter_final_merge_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
+filter_filter_final_merge_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+else
 filter_filter_final_merge_tests_SOURCES = filter/filter_final_merge_tests.c
 filter_filter_final_merge_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
 filter_filter_final_merge_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
 filter_filter_final_merge_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
 filter_filter_final_merge_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
+endif
 
+if WANT_AMALGAMATED_TOOLS
+filter_filter_vpte_tests_SOURCES = $(AMALGAMATION_SIXEL)
+filter_filter_vpte_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_VPTE_TESTS=1
+filter_filter_vpte_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
+filter_filter_vpte_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
+filter_filter_vpte_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+else
 filter_filter_vpte_tests_SOURCES = filter/filter_vpte_tests.c
 filter_filter_vpte_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
 filter_filter_vpte_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
 filter_filter_vpte_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
 filter_filter_vpte_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
+endif
 
+if WANT_AMALGAMATED_TOOLS
+filter_filter_load_tests_SOURCES = $(AMALGAMATION_SIXEL)
+filter_filter_load_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_LOAD_TESTS=1
+filter_filter_load_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
+filter_filter_load_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
+filter_filter_load_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+else
 filter_filter_load_tests_SOURCES = filter/filter_load_tests.c
 filter_filter_load_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
 filter_filter_load_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
 filter_filter_load_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
 filter_filter_load_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
+endif
 
+if WANT_AMALGAMATED_TOOLS
+filter_filter_dither_tests_SOURCES = $(AMALGAMATION_SIXEL)
+filter_filter_dither_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_DITHER_TESTS=1
+filter_filter_dither_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
+filter_filter_dither_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
+filter_filter_dither_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+else
 filter_filter_dither_tests_SOURCES = filter/filter_dither_tests.c
 filter_filter_dither_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
 filter_filter_dither_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
 filter_filter_dither_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
 filter_filter_dither_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
+endif
 
+if WANT_AMALGAMATED_TOOLS
+filter_filter_encode_tests_SOURCES = $(AMALGAMATION_SIXEL)
+filter_filter_encode_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_ENCODE_TESTS=1
+filter_filter_encode_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
+filter_filter_encode_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
+filter_filter_encode_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+else
 filter_filter_encode_tests_SOURCES = filter/filter_encode_tests.c
 filter_filter_encode_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
 filter_filter_encode_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
 filter_filter_encode_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
 filter_filter_encode_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
+endif
   
 TEST_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/build-aux/tap-driver.sh
 AM_TEST_LOG_DRIVER_FLAGS = --comments
