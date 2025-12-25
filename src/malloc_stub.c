@@ -40,7 +40,6 @@
 #endif  /* HAVE_MEMORY_H */
 
 #if !HAVE_MALLOC
-#undef malloc
 void *
 rpl_malloc(size_t n)
 {
@@ -52,7 +51,6 @@ rpl_malloc(size_t n)
 #endif /* !HAVE_MALLOC */
 
 #if !HAVE_REALLOC
-#undef realloc
 void *
 rpl_realloc(void *p, size_t n)
 {
