@@ -29,17 +29,20 @@ sh ${TOP_SRCDIR}/configure \
   --without-png \
   --without-jpeg \
   --without-libcurl \
+  --without-winhttp \
   --without-onnxruntime \
   --without-wiccodec \
   --disable-appkit \
   --without-coregraphics \
   --disable-quicklook-extension \
   --disable-quicklook-preview \
+  --disable-thumbnailer-command \
+  --disable-abort-trace \
   --enable-amalgamation \
   --enable-amalgamated-tools \
   --host=wasm32-unknown-emscripten \
   CC=emcc \
-  CFLAGS=-O3 \
+  CFLAGS="-O3" \
   LDFLAGS="-sWASM_BIGINT=1 \
            -sSINGLE_FILE=1 \
            -sENVIRONMENT=node \
@@ -51,4 +54,5 @@ sh ${TOP_SRCDIR}/configure \
            -sSTACK_SIZE=2097152 \
   "
 make -j
+make check
 )
