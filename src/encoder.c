@@ -1064,7 +1064,7 @@ sixel_encoder_log_stage(sixel_encoder_t *encoder,
 static SIXELSTATUS
 sixel_encoder_ensure_cell_size(sixel_encoder_t *encoder)
 {
-#if defined(TIOCGWINSZ)
+#if defined(TIOCGWINSZ) && !defined(__EMSCRIPTEN__)
     struct winsize ws;
     int result;
     int fd = 0;

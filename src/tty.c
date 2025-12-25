@@ -393,7 +393,7 @@ sixel_tty_scroll(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int nwrite;
-#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
+#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY && !defined(__EMSCRIPTEN__)
     struct winsize size = {0, 0, 0, 0};
     struct termios old_termios;
     struct termios new_termios;
@@ -547,7 +547,7 @@ sixel_tty_scroll(
             "sixel_tty_scroll: f_write() failed.");
         goto end;
     }
-#endif  /* HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY */
+#endif  /* HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY && !defined(__EMSCRIPTEN__) */
 
     status = SIXEL_OK;
 
