@@ -37,6 +37,7 @@ libsixel_la_SOURCES =
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
+	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation $(AMALGAMATION_TARGET)
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
