@@ -169,7 +169,7 @@ endif
 check_PROGRAMS += $(FILTER_TEST_BINARIES)
 
 if WANT_AMALGAMATED_TOOLS
-filter_filter_tests_SOURCES = $(AMALGAMATION_SIXEL)
+nodist_filter_filter_tests_SOURCES = $(AMALGAMATION_SIXEL)
 filter_filter_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_TESTS=1
 filter_filter_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
 filter_filter_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
@@ -183,7 +183,7 @@ filter_filter_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-filter_filter_sample_tests_SOURCES = $(AMALGAMATION_SIXEL)
+nodist_filter_filter_sample_tests_SOURCES = $(AMALGAMATION_SIXEL)
 filter_filter_sample_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_SAMPLE_TESTS=1
 filter_filter_sample_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
 filter_filter_sample_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
@@ -197,7 +197,7 @@ filter_filter_sample_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-filter_filter_resize_tests_SOURCES = $(AMALGAMATION_SIXEL)
+nodist_filter_filter_resize_tests_SOURCES = $(AMALGAMATION_SIXEL)
 filter_filter_resize_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_RESIZE_TESTS=1
 filter_filter_resize_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
 filter_filter_resize_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
@@ -211,7 +211,7 @@ filter_filter_resize_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-filter_filter_colors_tests_SOURCES = $(AMALGAMATION_SIXEL)
+nodist_filter_filter_colors_tests_SOURCES = $(AMALGAMATION_SIXEL)
 filter_filter_colors_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_COLORS_TESTS=1
 filter_filter_colors_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
 filter_filter_colors_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
@@ -225,7 +225,7 @@ filter_filter_colors_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-filter_filter_lookup_tests_SOURCES = $(AMALGAMATION_SIXEL)
+nodist_filter_filter_lookup_tests_SOURCES = $(AMALGAMATION_SIXEL)
 filter_filter_lookup_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_LOOKUP_TESTS=1
 filter_filter_lookup_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
 filter_filter_lookup_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
@@ -239,7 +239,7 @@ filter_filter_lookup_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-filter_filter_final_merge_tests_SOURCES = $(AMALGAMATION_SIXEL)
+nodist_filter_filter_final_merge_tests_SOURCES = $(AMALGAMATION_SIXEL)
 filter_filter_final_merge_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_FINAL_MERGE_TESTS=1
 filter_filter_final_merge_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
 filter_filter_final_merge_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
@@ -253,7 +253,7 @@ filter_filter_final_merge_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-filter_filter_vpte_tests_SOURCES = $(AMALGAMATION_SIXEL)
+nodist_filter_filter_vpte_tests_SOURCES = $(AMALGAMATION_SIXEL)
 filter_filter_vpte_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_VPTE_TESTS=1
 filter_filter_vpte_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
 filter_filter_vpte_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
@@ -267,7 +267,7 @@ filter_filter_vpte_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-filter_filter_load_tests_SOURCES = $(AMALGAMATION_SIXEL)
+nodist_filter_filter_load_tests_SOURCES = $(AMALGAMATION_SIXEL)
 filter_filter_load_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_LOAD_TESTS=1
 filter_filter_load_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
 filter_filter_load_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
@@ -281,7 +281,7 @@ filter_filter_load_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-filter_filter_dither_tests_SOURCES = $(AMALGAMATION_SIXEL)
+nodist_filter_filter_dither_tests_SOURCES = $(AMALGAMATION_SIXEL)
 filter_filter_dither_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_DITHER_TESTS=1
 filter_filter_dither_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
 filter_filter_dither_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
@@ -295,7 +295,7 @@ filter_filter_dither_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-filter_filter_encode_tests_SOURCES = $(AMALGAMATION_SIXEL)
+nodist_filter_filter_encode_tests_SOURCES = $(AMALGAMATION_SIXEL)
 filter_filter_encode_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_ENCODE_TESTS=1
 filter_filter_encode_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
 filter_filter_encode_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
