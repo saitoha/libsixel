@@ -3,19 +3,7 @@ fs = import('fs')
 amalgamation_gen = find_program(join_paths(meson.project_source_root(),
   'tools', 'gen-amalgamation.sh'))
 
-amalgamation_completion = []
-amalgamation_header_depends = []
-if get_option('amalgamated_tools').enabled()
-  gen_completion = find_program(join_paths(meson.project_source_root(),
-    'tools', 'gen_completion_embed.py'))
-  amalgamation_completion = [custom_target('amalgamation-completion-embed.h',
-    input: ['../converters/shell-completion/bash/img2sixel',
-            '../converters/shell-completion/zsh/_img2sixel'],
-    output: 'completion_embed.h',
-    command: [gen_completion, '@OUTPUT@', '@INPUT0@', '@INPUT1@']
-  )]
-  amalgamation_header_depends = amalgamation_completion
-endif
+amalgamation_header_depends = [completion_embed]
 
 amalgamation_suffix = 'c'
 if have_objc and (have_quicklook_thumbnailing or have_clipboard_macos)

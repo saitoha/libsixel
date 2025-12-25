@@ -27,24 +27,6 @@ if abort_trace_enabled
   aborttrace_deps_local = abort_trace_deps
 endif
 
-# +--------------------------------------------------------------+
-# | Embedded completion header generation pipeline (ASCII view). |
-# +--------------------------------------------------------------+
-# bash/img2sixel ----\
-#                      >--[gen_completion_embed.py]--> completion_embed.h
-# zsh/_img2sixel  ----/
-gen_completion = find_program(
-  join_paths(meson.project_source_root(), 'tools', 'gen_completion_embed.py'),
-  required: true,
-)
-completion_embed = custom_target('completion_embed.h',
-  input: [
-    'shell-completion/bash/img2sixel',
-    'shell-completion/zsh/_img2sixel',
-  ],
-  output: 'completion_embed.h',
-  command: [gen_completion, '@OUTPUT@', '@INPUT0@', '@INPUT1@'],
-)
 local_inc = include_directories('.')
 
 # for build_rpath
