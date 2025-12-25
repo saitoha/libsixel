@@ -120,15 +120,54 @@ am__EXEEXT_2 = filter/filter_tests$(EXEEXT) \
 	filter/filter_load_tests$(EXEEXT) \
 	filter/filter_dither_tests$(EXEEXT) \
 	filter/filter_encode_tests$(EXEEXT)
+am__filter_filter_colors_tests_SOURCES_DIST =  \
+	filter/filter_colors_tests.c \
+	$(top_builddir)/amalgamation/sixel.c
 am__dirstamp = $(am__leading_dot)dirstamp
-am_filter_filter_colors_tests_OBJECTS =  \
-	filter/filter_colors_tests-filter_colors_tests.$(OBJEXT)
+am__objects_1 = $(top_builddir)/amalgamation/filter_filter_colors_tests-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_FALSE@am_filter_filter_colors_tests_OBJECTS = filter/filter_colors_tests-filter_colors_tests.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@am_filter_filter_colors_tests_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_1)
 filter_filter_colors_tests_OBJECTS =  \
 	$(am_filter_filter_colors_tests_OBJECTS)
 am__DEPENDENCIES_1 =
-am__DEPENDENCIES_2 = $(top_builddir)/src/libsixel.la \
-	$(am__DEPENDENCIES_1)
-filter_filter_colors_tests_DEPENDENCIES = $(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_FALSE@am__DEPENDENCIES_2 =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/src/libsixel.la \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_1)
+@WANT_AMALGAMATED_TOOLS_TRUE@am__DEPENDENCIES_2 =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(top_builddir)/src/libsixel.la \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1)
+@WANT_AMALGAMATED_TOOLS_FALSE@am__DEPENDENCIES_3 =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_1)
+@WANT_AMALGAMATED_TOOLS_TRUE@am__DEPENDENCIES_3 =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(top_builddir)/src/libsixel.la \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_colors_tests_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_colors_tests_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_3)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -137,81 +176,153 @@ filter_filter_colors_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(filter_filter_colors_tests_CFLAGS) $(CFLAGS) \
 	$(filter_filter_colors_tests_LDFLAGS) $(LDFLAGS) -o $@
-am_filter_filter_dither_tests_OBJECTS =  \
-	filter/filter_dither_tests-filter_dither_tests.$(OBJEXT)
+am__filter_filter_dither_tests_SOURCES_DIST =  \
+	filter/filter_dither_tests.c \
+	$(top_builddir)/amalgamation/sixel.c
+am__objects_2 = $(top_builddir)/amalgamation/filter_filter_dither_tests-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_FALSE@am_filter_filter_dither_tests_OBJECTS = filter/filter_dither_tests-filter_dither_tests.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@am_filter_filter_dither_tests_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_2)
 filter_filter_dither_tests_OBJECTS =  \
 	$(am_filter_filter_dither_tests_OBJECTS)
-filter_filter_dither_tests_DEPENDENCIES = $(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_dither_tests_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_dither_tests_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_3)
 filter_filter_dither_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(filter_filter_dither_tests_CFLAGS) $(CFLAGS) \
 	$(filter_filter_dither_tests_LDFLAGS) $(LDFLAGS) -o $@
-am_filter_filter_encode_tests_OBJECTS =  \
-	filter/filter_encode_tests-filter_encode_tests.$(OBJEXT)
+am__filter_filter_encode_tests_SOURCES_DIST =  \
+	filter/filter_encode_tests.c \
+	$(top_builddir)/amalgamation/sixel.c
+am__objects_3 = $(top_builddir)/amalgamation/filter_filter_encode_tests-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_FALSE@am_filter_filter_encode_tests_OBJECTS = filter/filter_encode_tests-filter_encode_tests.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@am_filter_filter_encode_tests_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_3)
 filter_filter_encode_tests_OBJECTS =  \
 	$(am_filter_filter_encode_tests_OBJECTS)
-filter_filter_encode_tests_DEPENDENCIES = $(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_encode_tests_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_encode_tests_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_3)
 filter_filter_encode_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(filter_filter_encode_tests_CFLAGS) $(CFLAGS) \
 	$(filter_filter_encode_tests_LDFLAGS) $(LDFLAGS) -o $@
-am_filter_filter_final_merge_tests_OBJECTS = filter/filter_final_merge_tests-filter_final_merge_tests.$(OBJEXT)
+am__filter_filter_final_merge_tests_SOURCES_DIST =  \
+	filter/filter_final_merge_tests.c \
+	$(top_builddir)/amalgamation/sixel.c
+am__objects_4 = $(top_builddir)/amalgamation/filter_filter_final_merge_tests-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_FALSE@am_filter_filter_final_merge_tests_OBJECTS = filter/filter_final_merge_tests-filter_final_merge_tests.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@am_filter_filter_final_merge_tests_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_4)
 filter_filter_final_merge_tests_OBJECTS =  \
 	$(am_filter_filter_final_merge_tests_OBJECTS)
-filter_filter_final_merge_tests_DEPENDENCIES = $(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_final_merge_tests_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_final_merge_tests_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_3)
 filter_filter_final_merge_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(filter_filter_final_merge_tests_CFLAGS) $(CFLAGS) \
 	$(filter_filter_final_merge_tests_LDFLAGS) $(LDFLAGS) -o $@
-am_filter_filter_load_tests_OBJECTS =  \
-	filter/filter_load_tests-filter_load_tests.$(OBJEXT)
+am__filter_filter_load_tests_SOURCES_DIST =  \
+	filter/filter_load_tests.c \
+	$(top_builddir)/amalgamation/sixel.c
+am__objects_5 = $(top_builddir)/amalgamation/filter_filter_load_tests-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_FALSE@am_filter_filter_load_tests_OBJECTS = filter/filter_load_tests-filter_load_tests.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@am_filter_filter_load_tests_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_5)
 filter_filter_load_tests_OBJECTS =  \
 	$(am_filter_filter_load_tests_OBJECTS)
-filter_filter_load_tests_DEPENDENCIES = $(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_load_tests_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_load_tests_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_3)
 filter_filter_load_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(filter_filter_load_tests_CFLAGS) $(CFLAGS) \
 	$(filter_filter_load_tests_LDFLAGS) $(LDFLAGS) -o $@
-am_filter_filter_lookup_tests_OBJECTS =  \
-	filter/filter_lookup_tests-filter_lookup_tests.$(OBJEXT)
+am__filter_filter_lookup_tests_SOURCES_DIST =  \
+	filter/filter_lookup_tests.c \
+	$(top_builddir)/amalgamation/sixel.c
+am__objects_6 = $(top_builddir)/amalgamation/filter_filter_lookup_tests-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_FALSE@am_filter_filter_lookup_tests_OBJECTS = filter/filter_lookup_tests-filter_lookup_tests.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@am_filter_filter_lookup_tests_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_6)
 filter_filter_lookup_tests_OBJECTS =  \
 	$(am_filter_filter_lookup_tests_OBJECTS)
-filter_filter_lookup_tests_DEPENDENCIES = $(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_lookup_tests_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_lookup_tests_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_3)
 filter_filter_lookup_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(filter_filter_lookup_tests_CFLAGS) $(CFLAGS) \
 	$(filter_filter_lookup_tests_LDFLAGS) $(LDFLAGS) -o $@
-am_filter_filter_resize_tests_OBJECTS =  \
-	filter/filter_resize_tests-filter_resize_tests.$(OBJEXT)
+am__filter_filter_resize_tests_SOURCES_DIST =  \
+	filter/filter_resize_tests.c \
+	$(top_builddir)/amalgamation/sixel.c
+am__objects_7 = $(top_builddir)/amalgamation/filter_filter_resize_tests-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_FALSE@am_filter_filter_resize_tests_OBJECTS = filter/filter_resize_tests-filter_resize_tests.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@am_filter_filter_resize_tests_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_7)
 filter_filter_resize_tests_OBJECTS =  \
 	$(am_filter_filter_resize_tests_OBJECTS)
-filter_filter_resize_tests_DEPENDENCIES = $(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_resize_tests_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_resize_tests_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_3)
 filter_filter_resize_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(filter_filter_resize_tests_CFLAGS) $(CFLAGS) \
 	$(filter_filter_resize_tests_LDFLAGS) $(LDFLAGS) -o $@
-am_filter_filter_sample_tests_OBJECTS =  \
-	filter/filter_sample_tests-filter_sample_tests.$(OBJEXT)
+am__filter_filter_sample_tests_SOURCES_DIST =  \
+	filter/filter_sample_tests.c \
+	$(top_builddir)/amalgamation/sixel.c
+am__objects_8 = $(top_builddir)/amalgamation/filter_filter_sample_tests-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_FALSE@am_filter_filter_sample_tests_OBJECTS = filter/filter_sample_tests-filter_sample_tests.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@am_filter_filter_sample_tests_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_8)
 filter_filter_sample_tests_OBJECTS =  \
 	$(am_filter_filter_sample_tests_OBJECTS)
-filter_filter_sample_tests_DEPENDENCIES = $(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_sample_tests_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_sample_tests_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_3)
 filter_filter_sample_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(filter_filter_sample_tests_CFLAGS) $(CFLAGS) \
 	$(filter_filter_sample_tests_LDFLAGS) $(LDFLAGS) -o $@
-am_filter_filter_tests_OBJECTS =  \
-	filter/filter_tests-filter_tests.$(OBJEXT)
+am__filter_filter_tests_SOURCES_DIST = filter/filter_tests.c \
+	$(top_builddir)/amalgamation/sixel.c
+am__objects_9 = $(top_builddir)/amalgamation/filter_filter_tests-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_FALSE@am_filter_filter_tests_OBJECTS = filter/filter_tests-filter_tests.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@am_filter_filter_tests_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_9)
 filter_filter_tests_OBJECTS = $(am_filter_filter_tests_OBJECTS)
-filter_filter_tests_DEPENDENCIES = $(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_tests_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_tests_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_3)
 filter_filter_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(filter_filter_tests_CFLAGS) $(CFLAGS) \
 	$(filter_filter_tests_LDFLAGS) $(LDFLAGS) -o $@
-am_filter_filter_vpte_tests_OBJECTS =  \
-	filter/filter_vpte_tests-filter_vpte_tests.$(OBJEXT)
+am__filter_filter_vpte_tests_SOURCES_DIST =  \
+	filter/filter_vpte_tests.c \
+	$(top_builddir)/amalgamation/sixel.c
+am__objects_10 = $(top_builddir)/amalgamation/filter_filter_vpte_tests-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_FALSE@am_filter_filter_vpte_tests_OBJECTS = filter/filter_vpte_tests-filter_vpte_tests.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@am_filter_filter_vpte_tests_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_10)
 filter_filter_vpte_tests_OBJECTS =  \
 	$(am_filter_filter_vpte_tests_OBJECTS)
-filter_filter_vpte_tests_DEPENDENCIES = $(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_vpte_tests_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_vpte_tests_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_3)
 filter_filter_vpte_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(filter_filter_vpte_tests_CFLAGS) $(CFLAGS) \
@@ -240,7 +351,17 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Po \
+am__depfiles_remade = $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_colors_tests-sixel.Po \
+	$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_dither_tests-sixel.Po \
+	$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_encode_tests-sixel.Po \
+	$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_final_merge_tests-sixel.Po \
+	$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_load_tests-sixel.Po \
+	$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_lookup_tests-sixel.Po \
+	$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_resize_tests-sixel.Po \
+	$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_sample_tests-sixel.Po \
+	$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_tests-sixel.Po \
+	$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_vpte_tests-sixel.Po \
+	$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Po \
 	filter/$(DEPDIR)/filter_colors_tests-filter_colors_tests.Po \
 	filter/$(DEPDIR)/filter_dither_tests-filter_dither_tests.Po \
 	filter/$(DEPDIR)/filter_encode_tests-filter_encode_tests.Po \
@@ -282,16 +403,16 @@ SOURCES = $(filter_filter_colors_tests_SOURCES) \
 	$(filter_filter_tests_SOURCES) \
 	$(filter_filter_vpte_tests_SOURCES) \
 	$(gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES)
-DIST_SOURCES = $(filter_filter_colors_tests_SOURCES) \
-	$(filter_filter_dither_tests_SOURCES) \
-	$(filter_filter_encode_tests_SOURCES) \
-	$(filter_filter_final_merge_tests_SOURCES) \
-	$(filter_filter_load_tests_SOURCES) \
-	$(filter_filter_lookup_tests_SOURCES) \
-	$(filter_filter_resize_tests_SOURCES) \
-	$(filter_filter_sample_tests_SOURCES) \
-	$(filter_filter_tests_SOURCES) \
-	$(filter_filter_vpte_tests_SOURCES) \
+DIST_SOURCES = $(am__filter_filter_colors_tests_SOURCES_DIST) \
+	$(am__filter_filter_dither_tests_SOURCES_DIST) \
+	$(am__filter_filter_encode_tests_SOURCES_DIST) \
+	$(am__filter_filter_final_merge_tests_SOURCES_DIST) \
+	$(am__filter_filter_load_tests_SOURCES_DIST) \
+	$(am__filter_filter_lookup_tests_SOURCES_DIST) \
+	$(am__filter_filter_resize_tests_SOURCES_DIST) \
+	$(am__filter_filter_sample_tests_SOURCES_DIST) \
+	$(am__filter_filter_tests_SOURCES_DIST) \
+	$(am__filter_filter_vpte_tests_SOURCES_DIST) \
 	$(am__gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
@@ -724,6 +845,8 @@ top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
 @CFLAGS_HAVE_COVERAGE_TRUE@MAYBE_COVERAGE = --coverage
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
+AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
+@WANT_AMALGAMATED_TOOLS_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL)
 CLI_TESTS = cli/t/test_0001_01_invalid_positional.t \
        cli/t/test_0001_02_invalid_option_arguments.t \
        cli/t/test_0001_03_invalid_option_combinations.t \
@@ -813,59 +936,158 @@ FILTER_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \
        -I$(top_srcdir)/tests/filter
 
-FILTER_COMMON_CFLAGS_VAL = $(AM_CFLAGS) $(MAYBE_COVERAGE)
+@WANT_AMALGAMATED_TOOLS_FALSE@FILTER_COMMON_CFLAGS_VAL = $(AM_CFLAGS) \
+@WANT_AMALGAMATED_TOOLS_FALSE@        $(MAYBE_COVERAGE)
+
+@WANT_AMALGAMATED_TOOLS_TRUE@FILTER_COMMON_CFLAGS_VAL = $(AM_CFLAGS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(LIBCURL_CFLAGS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(WINHTTP_CFLAGS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(LIBPNG_CFLAGS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(LIBJPEG_CFLAGS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(GDK_PIXBUF_CFLAGS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(GD_CFLAGS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(WIC_CFLAGS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(COREGRAPHICS_CFLAGS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(QUICKLOOK_CFLAGS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(CLIPBOARD_CFLAGS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(ONNXRUNTIME_CFLAGS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        @THREAD_CFLAGS@ \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(MAYBE_COVERAGE)
+
 FILTER_COMMON_LDFLAGS_VAL = $(AM_LDFLAGS) $(MAYBE_COVERAGE)
-FILTER_COMMON_LDADD_VAL = $(top_builddir)/src/libsixel.la $(LIBS)
-filter_filter_tests_SOURCES = filter/filter_tests.c
-filter_filter_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
-filter_filter_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
-filter_filter_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
-filter_filter_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
-filter_filter_sample_tests_SOURCES = filter/filter_sample_tests.c
-filter_filter_sample_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
-filter_filter_sample_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
-filter_filter_sample_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
-filter_filter_sample_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
-filter_filter_resize_tests_SOURCES = filter/filter_resize_tests.c
-filter_filter_resize_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
-filter_filter_resize_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
-filter_filter_resize_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
-filter_filter_resize_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
-filter_filter_colors_tests_SOURCES = filter/filter_colors_tests.c
-filter_filter_colors_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
-filter_filter_colors_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
-filter_filter_colors_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
-filter_filter_colors_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
-filter_filter_lookup_tests_SOURCES = filter/filter_lookup_tests.c
-filter_filter_lookup_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
-filter_filter_lookup_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
-filter_filter_lookup_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
-filter_filter_lookup_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
-filter_filter_final_merge_tests_SOURCES = filter/filter_final_merge_tests.c
-filter_filter_final_merge_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
-filter_filter_final_merge_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
-filter_filter_final_merge_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
-filter_filter_final_merge_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
-filter_filter_vpte_tests_SOURCES = filter/filter_vpte_tests.c
-filter_filter_vpte_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
-filter_filter_vpte_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
-filter_filter_vpte_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
-filter_filter_vpte_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
-filter_filter_load_tests_SOURCES = filter/filter_load_tests.c
-filter_filter_load_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
-filter_filter_load_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
-filter_filter_load_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
-filter_filter_load_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
-filter_filter_dither_tests_SOURCES = filter/filter_dither_tests.c
-filter_filter_dither_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
-filter_filter_dither_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
-filter_filter_dither_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
-filter_filter_dither_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
-filter_filter_encode_tests_SOURCES = filter/filter_encode_tests.c
-filter_filter_encode_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
-filter_filter_encode_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
-filter_filter_encode_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
-filter_filter_encode_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_FALSE@FILTER_COMMON_LDADD_VAL = $(top_builddir)/src/libsixel.la $(LIBS)
+@WANT_AMALGAMATED_TOOLS_TRUE@FILTER_COMMON_LDADD_VAL = $(top_builddir)/src/libsixel.la $(LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(LIBCURL_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(WINHTTP_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(LIBPNG_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(LIBJPEG_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(GDK_PIXBUF_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(GD_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(WIC_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(COREGRAPHICS_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(QUICKLOOK_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(CLIPBOARD_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(ONNXRUNTIME_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        @THREAD_LIBS@
+
+FILTER_AMALGAMATION_CPPFLAGS_COMMON = $(FILTER_COMMON_CPPFLAGS_VAL)
+FILTER_AMALGAMATION_CFLAGS_COMMON = $(FILTER_COMMON_CFLAGS_VAL)
+FILTER_AMALGAMATION_LDFLAGS_COMMON = $(FILTER_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_FALSE@FILTER_AMALGAMATION_LDADD_COMMON = $(LIBS)
+@WANT_AMALGAMATED_TOOLS_TRUE@FILTER_AMALGAMATION_LDADD_COMMON = $(top_builddir)/src/libsixel.la $(LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(LIBCURL_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(WINHTTP_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(LIBPNG_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(LIBJPEG_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(GDK_PIXBUF_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(GD_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(WIC_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(COREGRAPHICS_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(QUICKLOOK_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(CLIPBOARD_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(ONNXRUNTIME_LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        @THREAD_LIBS@
+
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_tests_SOURCES = filter/filter_tests.c
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_tests_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_TESTS=1
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_sample_tests_SOURCES = filter/filter_sample_tests.c
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_sample_tests_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_sample_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_sample_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_SAMPLE_TESTS=1
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_sample_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_sample_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_sample_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_sample_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_sample_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_sample_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_resize_tests_SOURCES = filter/filter_resize_tests.c
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_resize_tests_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_resize_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_resize_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_RESIZE_TESTS=1
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_resize_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_resize_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_resize_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_resize_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_resize_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_resize_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_colors_tests_SOURCES = filter/filter_colors_tests.c
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_colors_tests_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_colors_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_colors_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_COLORS_TESTS=1
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_colors_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_colors_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_colors_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_colors_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_colors_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_colors_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_lookup_tests_SOURCES = filter/filter_lookup_tests.c
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_lookup_tests_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_lookup_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_lookup_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_LOOKUP_TESTS=1
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_lookup_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_lookup_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_lookup_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_lookup_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_lookup_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_lookup_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_final_merge_tests_SOURCES = filter/filter_final_merge_tests.c
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_final_merge_tests_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_final_merge_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_final_merge_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_FINAL_MERGE_TESTS=1
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_final_merge_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_final_merge_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_final_merge_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_final_merge_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_final_merge_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_final_merge_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_vpte_tests_SOURCES = filter/filter_vpte_tests.c
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_vpte_tests_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_vpte_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_vpte_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_VPTE_TESTS=1
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_vpte_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_vpte_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_vpte_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_vpte_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_vpte_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_vpte_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_load_tests_SOURCES = filter/filter_load_tests.c
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_load_tests_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_load_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_load_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_LOAD_TESTS=1
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_load_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_load_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_load_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_load_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_load_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_load_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_dither_tests_SOURCES = filter/filter_dither_tests.c
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_dither_tests_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_dither_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_dither_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_DITHER_TESTS=1
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_dither_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_dither_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_dither_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_dither_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_dither_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_dither_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_encode_tests_SOURCES = filter/filter_encode_tests.c
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_encode_tests_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_encode_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_encode_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_ENCODE_TESTS=1
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_encode_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_encode_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_encode_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_encode_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_encode_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_encode_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
 TEST_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/build-aux/tap-driver.sh
 AM_TEST_LOG_DRIVER_FLAGS = --comments
 LOG_COMPILER = $(builddir)/tools/with-timeout.sh
@@ -914,7 +1136,8 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
 CLEANFILES = 
-all: all-am
+all: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .log .o .obj .t .t$(EXEEXT) .trs
@@ -959,60 +1182,96 @@ filter/$(DEPDIR)/$(am__dirstamp):
 	@: >>filter/$(DEPDIR)/$(am__dirstamp)
 filter/filter_colors_tests-filter_colors_tests.$(OBJEXT):  \
 	filter/$(am__dirstamp) filter/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/amalgamation
+	@: >>$(top_builddir)/amalgamation/$(am__dirstamp)
+$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/amalgamation/$(DEPDIR)
+	@: >>$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/filter_filter_colors_tests-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 filter/filter_colors_tests$(EXEEXT): $(filter_filter_colors_tests_OBJECTS) $(filter_filter_colors_tests_DEPENDENCIES) $(EXTRA_filter_filter_colors_tests_DEPENDENCIES) filter/$(am__dirstamp)
 	@rm -f filter/filter_colors_tests$(EXEEXT)
 	$(AM_V_CCLD)$(filter_filter_colors_tests_LINK) $(filter_filter_colors_tests_OBJECTS) $(filter_filter_colors_tests_LDADD) $(LIBS)
 filter/filter_dither_tests-filter_dither_tests.$(OBJEXT):  \
 	filter/$(am__dirstamp) filter/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/filter_filter_dither_tests-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 filter/filter_dither_tests$(EXEEXT): $(filter_filter_dither_tests_OBJECTS) $(filter_filter_dither_tests_DEPENDENCIES) $(EXTRA_filter_filter_dither_tests_DEPENDENCIES) filter/$(am__dirstamp)
 	@rm -f filter/filter_dither_tests$(EXEEXT)
 	$(AM_V_CCLD)$(filter_filter_dither_tests_LINK) $(filter_filter_dither_tests_OBJECTS) $(filter_filter_dither_tests_LDADD) $(LIBS)
 filter/filter_encode_tests-filter_encode_tests.$(OBJEXT):  \
 	filter/$(am__dirstamp) filter/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/filter_filter_encode_tests-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 filter/filter_encode_tests$(EXEEXT): $(filter_filter_encode_tests_OBJECTS) $(filter_filter_encode_tests_DEPENDENCIES) $(EXTRA_filter_filter_encode_tests_DEPENDENCIES) filter/$(am__dirstamp)
 	@rm -f filter/filter_encode_tests$(EXEEXT)
 	$(AM_V_CCLD)$(filter_filter_encode_tests_LINK) $(filter_filter_encode_tests_OBJECTS) $(filter_filter_encode_tests_LDADD) $(LIBS)
 filter/filter_final_merge_tests-filter_final_merge_tests.$(OBJEXT):  \
 	filter/$(am__dirstamp) filter/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/filter_filter_final_merge_tests-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 filter/filter_final_merge_tests$(EXEEXT): $(filter_filter_final_merge_tests_OBJECTS) $(filter_filter_final_merge_tests_DEPENDENCIES) $(EXTRA_filter_filter_final_merge_tests_DEPENDENCIES) filter/$(am__dirstamp)
 	@rm -f filter/filter_final_merge_tests$(EXEEXT)
 	$(AM_V_CCLD)$(filter_filter_final_merge_tests_LINK) $(filter_filter_final_merge_tests_OBJECTS) $(filter_filter_final_merge_tests_LDADD) $(LIBS)
 filter/filter_load_tests-filter_load_tests.$(OBJEXT):  \
 	filter/$(am__dirstamp) filter/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/filter_filter_load_tests-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 filter/filter_load_tests$(EXEEXT): $(filter_filter_load_tests_OBJECTS) $(filter_filter_load_tests_DEPENDENCIES) $(EXTRA_filter_filter_load_tests_DEPENDENCIES) filter/$(am__dirstamp)
 	@rm -f filter/filter_load_tests$(EXEEXT)
 	$(AM_V_CCLD)$(filter_filter_load_tests_LINK) $(filter_filter_load_tests_OBJECTS) $(filter_filter_load_tests_LDADD) $(LIBS)
 filter/filter_lookup_tests-filter_lookup_tests.$(OBJEXT):  \
 	filter/$(am__dirstamp) filter/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/filter_filter_lookup_tests-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 filter/filter_lookup_tests$(EXEEXT): $(filter_filter_lookup_tests_OBJECTS) $(filter_filter_lookup_tests_DEPENDENCIES) $(EXTRA_filter_filter_lookup_tests_DEPENDENCIES) filter/$(am__dirstamp)
 	@rm -f filter/filter_lookup_tests$(EXEEXT)
 	$(AM_V_CCLD)$(filter_filter_lookup_tests_LINK) $(filter_filter_lookup_tests_OBJECTS) $(filter_filter_lookup_tests_LDADD) $(LIBS)
 filter/filter_resize_tests-filter_resize_tests.$(OBJEXT):  \
 	filter/$(am__dirstamp) filter/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/filter_filter_resize_tests-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 filter/filter_resize_tests$(EXEEXT): $(filter_filter_resize_tests_OBJECTS) $(filter_filter_resize_tests_DEPENDENCIES) $(EXTRA_filter_filter_resize_tests_DEPENDENCIES) filter/$(am__dirstamp)
 	@rm -f filter/filter_resize_tests$(EXEEXT)
 	$(AM_V_CCLD)$(filter_filter_resize_tests_LINK) $(filter_filter_resize_tests_OBJECTS) $(filter_filter_resize_tests_LDADD) $(LIBS)
 filter/filter_sample_tests-filter_sample_tests.$(OBJEXT):  \
 	filter/$(am__dirstamp) filter/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/filter_filter_sample_tests-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 filter/filter_sample_tests$(EXEEXT): $(filter_filter_sample_tests_OBJECTS) $(filter_filter_sample_tests_DEPENDENCIES) $(EXTRA_filter_filter_sample_tests_DEPENDENCIES) filter/$(am__dirstamp)
 	@rm -f filter/filter_sample_tests$(EXEEXT)
 	$(AM_V_CCLD)$(filter_filter_sample_tests_LINK) $(filter_filter_sample_tests_OBJECTS) $(filter_filter_sample_tests_LDADD) $(LIBS)
 filter/filter_tests-filter_tests.$(OBJEXT): filter/$(am__dirstamp) \
 	filter/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/filter_filter_tests-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 filter/filter_tests$(EXEEXT): $(filter_filter_tests_OBJECTS) $(filter_filter_tests_DEPENDENCIES) $(EXTRA_filter_filter_tests_DEPENDENCIES) filter/$(am__dirstamp)
 	@rm -f filter/filter_tests$(EXEEXT)
 	$(AM_V_CCLD)$(filter_filter_tests_LINK) $(filter_filter_tests_OBJECTS) $(filter_filter_tests_LDADD) $(LIBS)
 filter/filter_vpte_tests-filter_vpte_tests.$(OBJEXT):  \
 	filter/$(am__dirstamp) filter/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/filter_filter_vpte_tests-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 filter/filter_vpte_tests$(EXEEXT): $(filter_filter_vpte_tests_OBJECTS) $(filter_filter_vpte_tests_DEPENDENCIES) $(EXTRA_filter_filter_vpte_tests_DEPENDENCIES) filter/$(am__dirstamp)
 	@rm -f filter/filter_vpte_tests$(EXEEXT)
@@ -1042,6 +1301,7 @@ gdk-pixbuf-loader/test-gdk-pixbuf-loader$(EXEEXT): $(gdk_pixbuf_loader_test_gdk_
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f $(top_builddir)/amalgamation/*.$(OBJEXT)
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/*.$(OBJEXT)
 	-rm -f filter/*.$(OBJEXT)
 	-rm -f gdk-pixbuf-loader/*.$(OBJEXT)
@@ -1049,6 +1309,16 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_colors_tests-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_dither_tests-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_encode_tests-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_final_merge_tests-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_load_tests-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_lookup_tests-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_resize_tests-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_sample_tests-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_tests-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_vpte_tests-sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@filter/$(DEPDIR)/filter_colors_tests-filter_colors_tests.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@filter/$(DEPDIR)/filter_dither_tests-filter_dither_tests.Po@am__quote@ # am--include-marker
@@ -1106,6 +1376,20 @@ filter/filter_colors_tests-filter_colors_tests.obj: filter/filter_colors_tests.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_colors_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_colors_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_colors_tests-filter_colors_tests.obj `if test -f 'filter/filter_colors_tests.c'; then $(CYGPATH_W) 'filter/filter_colors_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_colors_tests.c'; fi`
 
+$(top_builddir)/amalgamation/filter_filter_colors_tests-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_colors_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_colors_tests_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/filter_filter_colors_tests-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_colors_tests-sixel.Tpo -c -o $(top_builddir)/amalgamation/filter_filter_colors_tests-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_colors_tests-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_colors_tests-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/filter_filter_colors_tests-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_colors_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_colors_tests_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/filter_filter_colors_tests-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/filter_filter_colors_tests-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_colors_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_colors_tests_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/filter_filter_colors_tests-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_colors_tests-sixel.Tpo -c -o $(top_builddir)/amalgamation/filter_filter_colors_tests-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_colors_tests-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_colors_tests-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/filter_filter_colors_tests-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_colors_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_colors_tests_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/filter_filter_colors_tests-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+
 filter/filter_dither_tests-filter_dither_tests.o: filter/filter_dither_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_dither_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_dither_tests_CFLAGS) $(CFLAGS) -MT filter/filter_dither_tests-filter_dither_tests.o -MD -MP -MF filter/$(DEPDIR)/filter_dither_tests-filter_dither_tests.Tpo -c -o filter/filter_dither_tests-filter_dither_tests.o `test -f 'filter/filter_dither_tests.c' || echo '$(srcdir)/'`filter/filter_dither_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_dither_tests-filter_dither_tests.Tpo filter/$(DEPDIR)/filter_dither_tests-filter_dither_tests.Po
@@ -1119,6 +1403,20 @@ filter/filter_dither_tests-filter_dither_tests.obj: filter/filter_dither_tests.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_dither_tests.c' object='filter/filter_dither_tests-filter_dither_tests.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_dither_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_dither_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_dither_tests-filter_dither_tests.obj `if test -f 'filter/filter_dither_tests.c'; then $(CYGPATH_W) 'filter/filter_dither_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_dither_tests.c'; fi`
+
+$(top_builddir)/amalgamation/filter_filter_dither_tests-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_dither_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_dither_tests_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/filter_filter_dither_tests-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_dither_tests-sixel.Tpo -c -o $(top_builddir)/amalgamation/filter_filter_dither_tests-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_dither_tests-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_dither_tests-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/filter_filter_dither_tests-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_dither_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_dither_tests_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/filter_filter_dither_tests-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/filter_filter_dither_tests-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_dither_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_dither_tests_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/filter_filter_dither_tests-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_dither_tests-sixel.Tpo -c -o $(top_builddir)/amalgamation/filter_filter_dither_tests-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_dither_tests-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_dither_tests-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/filter_filter_dither_tests-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_dither_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_dither_tests_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/filter_filter_dither_tests-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
 
 filter/filter_encode_tests-filter_encode_tests.o: filter/filter_encode_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_encode_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_encode_tests_CFLAGS) $(CFLAGS) -MT filter/filter_encode_tests-filter_encode_tests.o -MD -MP -MF filter/$(DEPDIR)/filter_encode_tests-filter_encode_tests.Tpo -c -o filter/filter_encode_tests-filter_encode_tests.o `test -f 'filter/filter_encode_tests.c' || echo '$(srcdir)/'`filter/filter_encode_tests.c
@@ -1134,6 +1432,20 @@ filter/filter_encode_tests-filter_encode_tests.obj: filter/filter_encode_tests.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_encode_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_encode_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_encode_tests-filter_encode_tests.obj `if test -f 'filter/filter_encode_tests.c'; then $(CYGPATH_W) 'filter/filter_encode_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_encode_tests.c'; fi`
 
+$(top_builddir)/amalgamation/filter_filter_encode_tests-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_encode_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_encode_tests_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/filter_filter_encode_tests-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_encode_tests-sixel.Tpo -c -o $(top_builddir)/amalgamation/filter_filter_encode_tests-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_encode_tests-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_encode_tests-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/filter_filter_encode_tests-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_encode_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_encode_tests_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/filter_filter_encode_tests-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/filter_filter_encode_tests-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_encode_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_encode_tests_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/filter_filter_encode_tests-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_encode_tests-sixel.Tpo -c -o $(top_builddir)/amalgamation/filter_filter_encode_tests-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_encode_tests-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_encode_tests-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/filter_filter_encode_tests-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_encode_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_encode_tests_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/filter_filter_encode_tests-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+
 filter/filter_final_merge_tests-filter_final_merge_tests.o: filter/filter_final_merge_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_final_merge_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_final_merge_tests_CFLAGS) $(CFLAGS) -MT filter/filter_final_merge_tests-filter_final_merge_tests.o -MD -MP -MF filter/$(DEPDIR)/filter_final_merge_tests-filter_final_merge_tests.Tpo -c -o filter/filter_final_merge_tests-filter_final_merge_tests.o `test -f 'filter/filter_final_merge_tests.c' || echo '$(srcdir)/'`filter/filter_final_merge_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_final_merge_tests-filter_final_merge_tests.Tpo filter/$(DEPDIR)/filter_final_merge_tests-filter_final_merge_tests.Po
@@ -1147,6 +1459,20 @@ filter/filter_final_merge_tests-filter_final_merge_tests.obj: filter/filter_fina
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_final_merge_tests.c' object='filter/filter_final_merge_tests-filter_final_merge_tests.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_final_merge_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_final_merge_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_final_merge_tests-filter_final_merge_tests.obj `if test -f 'filter/filter_final_merge_tests.c'; then $(CYGPATH_W) 'filter/filter_final_merge_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_final_merge_tests.c'; fi`
+
+$(top_builddir)/amalgamation/filter_filter_final_merge_tests-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_final_merge_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_final_merge_tests_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/filter_filter_final_merge_tests-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_final_merge_tests-sixel.Tpo -c -o $(top_builddir)/amalgamation/filter_filter_final_merge_tests-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_final_merge_tests-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_final_merge_tests-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/filter_filter_final_merge_tests-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_final_merge_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_final_merge_tests_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/filter_filter_final_merge_tests-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/filter_filter_final_merge_tests-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_final_merge_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_final_merge_tests_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/filter_filter_final_merge_tests-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_final_merge_tests-sixel.Tpo -c -o $(top_builddir)/amalgamation/filter_filter_final_merge_tests-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_final_merge_tests-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_final_merge_tests-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/filter_filter_final_merge_tests-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_final_merge_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_final_merge_tests_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/filter_filter_final_merge_tests-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
 
 filter/filter_load_tests-filter_load_tests.o: filter/filter_load_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_load_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_load_tests_CFLAGS) $(CFLAGS) -MT filter/filter_load_tests-filter_load_tests.o -MD -MP -MF filter/$(DEPDIR)/filter_load_tests-filter_load_tests.Tpo -c -o filter/filter_load_tests-filter_load_tests.o `test -f 'filter/filter_load_tests.c' || echo '$(srcdir)/'`filter/filter_load_tests.c
@@ -1162,6 +1488,20 @@ filter/filter_load_tests-filter_load_tests.obj: filter/filter_load_tests.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_load_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_load_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_load_tests-filter_load_tests.obj `if test -f 'filter/filter_load_tests.c'; then $(CYGPATH_W) 'filter/filter_load_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_load_tests.c'; fi`
 
+$(top_builddir)/amalgamation/filter_filter_load_tests-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_load_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_load_tests_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/filter_filter_load_tests-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_load_tests-sixel.Tpo -c -o $(top_builddir)/amalgamation/filter_filter_load_tests-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_load_tests-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_load_tests-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/filter_filter_load_tests-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_load_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_load_tests_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/filter_filter_load_tests-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/filter_filter_load_tests-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_load_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_load_tests_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/filter_filter_load_tests-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_load_tests-sixel.Tpo -c -o $(top_builddir)/amalgamation/filter_filter_load_tests-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_load_tests-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_load_tests-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/filter_filter_load_tests-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_load_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_load_tests_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/filter_filter_load_tests-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+
 filter/filter_lookup_tests-filter_lookup_tests.o: filter/filter_lookup_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_lookup_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_lookup_tests_CFLAGS) $(CFLAGS) -MT filter/filter_lookup_tests-filter_lookup_tests.o -MD -MP -MF filter/$(DEPDIR)/filter_lookup_tests-filter_lookup_tests.Tpo -c -o filter/filter_lookup_tests-filter_lookup_tests.o `test -f 'filter/filter_lookup_tests.c' || echo '$(srcdir)/'`filter/filter_lookup_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_lookup_tests-filter_lookup_tests.Tpo filter/$(DEPDIR)/filter_lookup_tests-filter_lookup_tests.Po
@@ -1175,6 +1515,20 @@ filter/filter_lookup_tests-filter_lookup_tests.obj: filter/filter_lookup_tests.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_lookup_tests.c' object='filter/filter_lookup_tests-filter_lookup_tests.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_lookup_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_lookup_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_lookup_tests-filter_lookup_tests.obj `if test -f 'filter/filter_lookup_tests.c'; then $(CYGPATH_W) 'filter/filter_lookup_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_lookup_tests.c'; fi`
+
+$(top_builddir)/amalgamation/filter_filter_lookup_tests-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_lookup_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_lookup_tests_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/filter_filter_lookup_tests-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_lookup_tests-sixel.Tpo -c -o $(top_builddir)/amalgamation/filter_filter_lookup_tests-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_lookup_tests-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_lookup_tests-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/filter_filter_lookup_tests-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_lookup_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_lookup_tests_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/filter_filter_lookup_tests-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/filter_filter_lookup_tests-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_lookup_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_lookup_tests_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/filter_filter_lookup_tests-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_lookup_tests-sixel.Tpo -c -o $(top_builddir)/amalgamation/filter_filter_lookup_tests-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_lookup_tests-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_lookup_tests-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/filter_filter_lookup_tests-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_lookup_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_lookup_tests_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/filter_filter_lookup_tests-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
 
 filter/filter_resize_tests-filter_resize_tests.o: filter/filter_resize_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_resize_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_resize_tests_CFLAGS) $(CFLAGS) -MT filter/filter_resize_tests-filter_resize_tests.o -MD -MP -MF filter/$(DEPDIR)/filter_resize_tests-filter_resize_tests.Tpo -c -o filter/filter_resize_tests-filter_resize_tests.o `test -f 'filter/filter_resize_tests.c' || echo '$(srcdir)/'`filter/filter_resize_tests.c
@@ -1190,6 +1544,20 @@ filter/filter_resize_tests-filter_resize_tests.obj: filter/filter_resize_tests.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_resize_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_resize_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_resize_tests-filter_resize_tests.obj `if test -f 'filter/filter_resize_tests.c'; then $(CYGPATH_W) 'filter/filter_resize_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_resize_tests.c'; fi`
 
+$(top_builddir)/amalgamation/filter_filter_resize_tests-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_resize_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_resize_tests_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/filter_filter_resize_tests-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_resize_tests-sixel.Tpo -c -o $(top_builddir)/amalgamation/filter_filter_resize_tests-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_resize_tests-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_resize_tests-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/filter_filter_resize_tests-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_resize_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_resize_tests_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/filter_filter_resize_tests-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/filter_filter_resize_tests-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_resize_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_resize_tests_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/filter_filter_resize_tests-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_resize_tests-sixel.Tpo -c -o $(top_builddir)/amalgamation/filter_filter_resize_tests-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_resize_tests-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_resize_tests-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/filter_filter_resize_tests-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_resize_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_resize_tests_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/filter_filter_resize_tests-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+
 filter/filter_sample_tests-filter_sample_tests.o: filter/filter_sample_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_sample_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_sample_tests_CFLAGS) $(CFLAGS) -MT filter/filter_sample_tests-filter_sample_tests.o -MD -MP -MF filter/$(DEPDIR)/filter_sample_tests-filter_sample_tests.Tpo -c -o filter/filter_sample_tests-filter_sample_tests.o `test -f 'filter/filter_sample_tests.c' || echo '$(srcdir)/'`filter/filter_sample_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_sample_tests-filter_sample_tests.Tpo filter/$(DEPDIR)/filter_sample_tests-filter_sample_tests.Po
@@ -1203,6 +1571,20 @@ filter/filter_sample_tests-filter_sample_tests.obj: filter/filter_sample_tests.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_sample_tests.c' object='filter/filter_sample_tests-filter_sample_tests.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_sample_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_sample_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_sample_tests-filter_sample_tests.obj `if test -f 'filter/filter_sample_tests.c'; then $(CYGPATH_W) 'filter/filter_sample_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_sample_tests.c'; fi`
+
+$(top_builddir)/amalgamation/filter_filter_sample_tests-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_sample_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_sample_tests_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/filter_filter_sample_tests-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_sample_tests-sixel.Tpo -c -o $(top_builddir)/amalgamation/filter_filter_sample_tests-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_sample_tests-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_sample_tests-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/filter_filter_sample_tests-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_sample_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_sample_tests_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/filter_filter_sample_tests-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/filter_filter_sample_tests-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_sample_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_sample_tests_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/filter_filter_sample_tests-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_sample_tests-sixel.Tpo -c -o $(top_builddir)/amalgamation/filter_filter_sample_tests-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_sample_tests-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_sample_tests-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/filter_filter_sample_tests-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_sample_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_sample_tests_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/filter_filter_sample_tests-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
 
 filter/filter_tests-filter_tests.o: filter/filter_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_tests_CFLAGS) $(CFLAGS) -MT filter/filter_tests-filter_tests.o -MD -MP -MF filter/$(DEPDIR)/filter_tests-filter_tests.Tpo -c -o filter/filter_tests-filter_tests.o `test -f 'filter/filter_tests.c' || echo '$(srcdir)/'`filter/filter_tests.c
@@ -1218,6 +1600,20 @@ filter/filter_tests-filter_tests.obj: filter/filter_tests.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_tests-filter_tests.obj `if test -f 'filter/filter_tests.c'; then $(CYGPATH_W) 'filter/filter_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_tests.c'; fi`
 
+$(top_builddir)/amalgamation/filter_filter_tests-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_tests_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/filter_filter_tests-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_tests-sixel.Tpo -c -o $(top_builddir)/amalgamation/filter_filter_tests-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_tests-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_tests-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/filter_filter_tests-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_tests_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/filter_filter_tests-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/filter_filter_tests-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_tests_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/filter_filter_tests-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_tests-sixel.Tpo -c -o $(top_builddir)/amalgamation/filter_filter_tests-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_tests-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_tests-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/filter_filter_tests-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_tests_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/filter_filter_tests-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+
 filter/filter_vpte_tests-filter_vpte_tests.o: filter/filter_vpte_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_vpte_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_vpte_tests_CFLAGS) $(CFLAGS) -MT filter/filter_vpte_tests-filter_vpte_tests.o -MD -MP -MF filter/$(DEPDIR)/filter_vpte_tests-filter_vpte_tests.Tpo -c -o filter/filter_vpte_tests-filter_vpte_tests.o `test -f 'filter/filter_vpte_tests.c' || echo '$(srcdir)/'`filter/filter_vpte_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) filter/$(DEPDIR)/filter_vpte_tests-filter_vpte_tests.Tpo filter/$(DEPDIR)/filter_vpte_tests-filter_vpte_tests.Po
@@ -1231,6 +1627,20 @@ filter/filter_vpte_tests-filter_vpte_tests.obj: filter/filter_vpte_tests.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter/filter_vpte_tests.c' object='filter/filter_vpte_tests-filter_vpte_tests.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_vpte_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_vpte_tests_CFLAGS) $(CFLAGS) -c -o filter/filter_vpte_tests-filter_vpte_tests.obj `if test -f 'filter/filter_vpte_tests.c'; then $(CYGPATH_W) 'filter/filter_vpte_tests.c'; else $(CYGPATH_W) '$(srcdir)/filter/filter_vpte_tests.c'; fi`
+
+$(top_builddir)/amalgamation/filter_filter_vpte_tests-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_vpte_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_vpte_tests_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/filter_filter_vpte_tests-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_vpte_tests-sixel.Tpo -c -o $(top_builddir)/amalgamation/filter_filter_vpte_tests-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_vpte_tests-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_vpte_tests-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/filter_filter_vpte_tests-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_vpte_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_vpte_tests_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/filter_filter_vpte_tests-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/filter_filter_vpte_tests-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_vpte_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_vpte_tests_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/filter_filter_vpte_tests-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_vpte_tests-sixel.Tpo -c -o $(top_builddir)/amalgamation/filter_filter_vpte_tests-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_vpte_tests-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_vpte_tests-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/filter_filter_vpte_tests-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_vpte_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_vpte_tests_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/filter_filter_vpte_tests-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
 
 gdk-pixbuf-loader/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.o: gdk-pixbuf-loader/test-gdk-pixbuf-loader.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_gdk_pixbuf_loader_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gdk-pixbuf-loader/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.o -MD -MP -MF gdk-pixbuf-loader/$(DEPDIR)/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.Tpo -c -o gdk-pixbuf-loader/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.o `test -f 'gdk-pixbuf-loader/test-gdk-pixbuf-loader.c' || echo '$(srcdir)/'`gdk-pixbuf-loader/test-gdk-pixbuf-loader.c
@@ -1544,11 +1954,14 @@ distdir-am: $(DISTFILES)
 check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS)
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS check-local
-check: check-am
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile
 installdirs:
-install: install-am
-install-exec: install-exec-am
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-am
+install-exec: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
 
@@ -1577,6 +1990,8 @@ clean-generic:
 distclean-generic:
 	-$(am__rm_f) $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || $(am__rm_f) $(CONFIG_CLEAN_VPATH_FILES)
+	-$(am__rm_f) $(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) $(top_builddir)/amalgamation/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/gdk-pixbuf-loader/$(am__dirstamp)
 	-$(am__rm_f) filter/$(DEPDIR)/$(am__dirstamp)
@@ -1587,12 +2002,23 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-$(am__rm_f) $(BUILT_SOURCES)
 clean: clean-am
 
 clean-am: clean-checkPROGRAMS clean-generic clean-libtool clean-local \
 	mostlyclean-am
 
 distclean: distclean-am
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_colors_tests-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_dither_tests-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_encode_tests-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_final_merge_tests-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_load_tests-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_lookup_tests-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_resize_tests-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_sample_tests-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_tests-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_vpte_tests-sixel.Po
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Po
 	-rm -f filter/$(DEPDIR)/filter_colors_tests-filter_colors_tests.Po
 	-rm -f filter/$(DEPDIR)/filter_dither_tests-filter_dither_tests.Po
@@ -1650,6 +2076,16 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_colors_tests-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_dither_tests-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_encode_tests-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_final_merge_tests-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_load_tests-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_lookup_tests-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_resize_tests-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_sample_tests-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_tests-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_vpte_tests-sixel.Po
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Po
 	-rm -f filter/$(DEPDIR)/filter_colors_tests-filter_colors_tests.Po
 	-rm -f filter/$(DEPDIR)/filter_dither_tests-filter_dither_tests.Po
@@ -1680,7 +2116,8 @@ ps-am:
 
 uninstall-am:
 
-.MAKE: check-am install-am install-strip
+.MAKE: all check check-am install install-am install-exec \
+	install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-TESTS \
 	check-am check-local clean clean-checkPROGRAMS clean-generic \
@@ -1699,6 +2136,11 @@ uninstall-am:
 
 .PRECIOUS: Makefile
 
+
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
+@WANT_AMALGAMATED_TOOLS_TRUE@$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
 
 # Avoid deleting in-tree test scripts when "make clean" is invoked.
 # Only remove copied test files in an out-of-tree build so that the
