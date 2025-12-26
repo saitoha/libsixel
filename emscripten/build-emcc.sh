@@ -23,6 +23,9 @@ fi
 
 cd "${BUILDDIR}" && (
 sh ${TOP_SRCDIR}/configure \
+  --host=wasm32-unknown-emscripten \
+  --enable-amalgamation \
+  --enable-amalgamated-tools \
   --disable-simd \
   --disable-shared \
   --enable-static \
@@ -31,16 +34,13 @@ sh ${TOP_SRCDIR}/configure \
   --without-libcurl \
   --without-winhttp \
   --without-onnxruntime \
-  --without-wiccodec \
+  --disable-wiccodec \
   --disable-appkit \
   --without-coregraphics \
   --disable-quicklook-extension \
   --disable-quicklook-preview \
   --disable-thumbnailer-command \
   --disable-abort-trace \
-  --enable-amalgamation \
-  --enable-amalgamated-tools \
-  --host=wasm32-unknown-emscripten \
   CC=emcc \
   CFLAGS="-O3" \
   LDFLAGS="-sWASM_BIGINT=1 \
