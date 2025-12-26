@@ -67,6 +67,7 @@ cd "${BUILDDIR}" && (
 emconfigure ${TOP_SRCDIR}/configure \
   --host=wasm32-unknown-emscripten \
   --disable-shared \
+  --program-suffix=.js \
   --with-shebang-file="${SHEBANG_FILE}" \
   CFLAGS="-O3" \
   LDFLAGS="-sWASM_BIGINT=1 \
