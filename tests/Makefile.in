@@ -922,11 +922,12 @@ HELPER_FILES = cli/t/converters-common.t \
        python/lib/common.sh
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
+#AM_TESTS_ENVIRONMENT += CC='$(CC)'; export CC;
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	ARTIFACT_ROOT; TOP_SRCDIR='$(abs_top_srcdir)'; export \
 	TOP_SRCDIR; TOP_BUILDDIR='$(abs_top_builddir)'; export \
-	TOP_BUILDDIR; CC='$(CC)'; export CC; \
-	CROSS_COMPILING='@cross_compiling@'; export CROSS_COMPILING;
+	TOP_BUILDDIR; CROSS_COMPILING='@cross_compiling@'; export \
+	CROSS_COMPILING;
 FILTER_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_builddir) -I$(top_builddir)/include \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \

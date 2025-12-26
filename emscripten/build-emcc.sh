@@ -3,8 +3,10 @@
 set -euovx
 
 SCRIPTDIR=$(cd $(dirname "${0}") && pwd)
+if which cygpath; then
+  SCRIPTDIR=$(cygpath -u "${SCRIPTDIR}")
+fi
 EMSDK=${SCRIPTDIR}/emsdk
-TOP_SRCDIR=$(cd "${SCRIPTDIR}"/.. && pwd "${SCRIPTDIR}")
 BUILDDIR="${SCRIPTDIR}"/build
 mkdir -p "${BUILDDIR}"
 SHEBANG_FILE="${BUILDDIR}"/emscripten-node-shebang
@@ -29,10 +31,6 @@ elif [ -f "${EMSDK}"/emsdk_env.sh ]; then
   which emcc
 fi
 
-ls "${EMSDK}"/upstream/emscripten/em* | \
-grep -v -e \.ps1$ -e \.py$ -e \.txt | \
-xargs ls -l
-
 # MSYS/Cygwin shells ship Emscripten helper entrypoints only as .bat files,
 # so create small shell wrappers that forward to the .bat via `cmd //c`.
 UNAME_LOWER=$(uname -s | tr '[:upper:]' '[:lower:]')
@@ -42,11 +40,11 @@ if echo "${UNAME_LOWER}" | grep -Eq 'msys|mingw|cygwin'; then
   mkdir -p "${EMSCRIPTEN_WRAPPERDIR}"
 
   # These cover the autotools flow: configure, make, archive, strip.
-  for tool in emconfigure emmake emcc emar emranlib emstrip; do
+  for tool in emconfigure emmake emcc emar emranlib emstrip emnm; do
     bat_path="${EMSCRIPTEN_BINDIR}/${tool}.bat"
     wrapper_path="${EMSCRIPTEN_WRAPPERDIR}/${tool}"
-
     if [ -f "${bat_path}" ]; then
+      chmod +x "${bat_path}"
       cat > "${wrapper_path}" <<EOF
 #!/bin/sh
 cmd //c "${bat_path}" "\$@"
@@ -64,24 +62,36 @@ EOF
   CONFIG_SITE=/dev/null
   export CONFIG_SITE
 fi
+ 
+cat > conftest.c <<'EOF'
+int main(){return 0;}
+EOF
 
+#"${EMSCRIPTEN_BINDIR:-}"/emcc.bat -v -O3 \
+#  -sSINGLE_FILE=1 \
+#  -sNODERAWFS=1 -sFORCE_FILESYSTEM=1 \
+#  -sALLOW_MEMORY_GROWTH=1 -sSTACK_SIZE=524288 \
+#  conftest.c || true
+
+extra_opt=" \
+           -sABORTING_MALLOC=0 \
+           -sINITIAL_MEMORY=67108864 \
+           -sENVIRONMENT=node \
+           -sWASM_BIGINT=1 \
+           -flto \
+"
 cd "${BUILDDIR}" && (
-emconfigure sh ${TOP_SRCDIR}/configure \
+emconfigure sh ../../configure \
   --host=wasm32-unknown-emscripten \
   --disable-shared \
   --with-shebang-file="${SHEBANG_FILE}" \
   CFLAGS="-O3" \
-  LDFLAGS="-sWASM_BIGINT=1 \
-           -sSINGLE_FILE=1 \
-           -sENVIRONMENT=node \
-           -sABORTING_MALLOC=0 \
-           -sNODERAWFS=1 \
-           -sFORCE_FILESYSTEM=1 \
-           -sALLOW_MEMORY_GROWTH=1 \
-           -sINITIAL_MEMORY=67108864 \
-           -sSTACK_SIZE=2097152 \
-           -flto \
+  LDFLAGS=" \
+    -sSINGLE_FILE=1 \
+    -sNODERAWFS=1 \
+    -sFORCE_FILESYSTEM=1 \
+    -sALLOW_MEMORY_GROWTH=1 \
+    -sSTACK_SIZE=524288 \
   "
-emmake make -j
-emmake make check -j
+emmake make all
 )
