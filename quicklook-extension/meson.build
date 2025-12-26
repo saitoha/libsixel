@@ -84,6 +84,14 @@ preview = executable(
   link_with: quicklook_core,
   dependencies: quicklook_extension_frameworks,
   install: false)
+if shebang_enabled
+  shebang_targets += [custom_target('SixelPreview_shebang',
+    input: preview,
+    output: 'SixelPreview.shebang.stamp',
+    command: [shebang_helper, shebang_file, '@INPUT@'],
+    depend_files: shebang_file,
+    build_by_default: true)]
+endif
 
 thumbnail = executable(
   'SixelThumbnail',
@@ -98,6 +106,14 @@ thumbnail = executable(
   link_with: quicklook_core,
   dependencies: quicklook_extension_frameworks,
   install: false)
+if shebang_enabled
+  shebang_targets += [custom_target('SixelThumbnail_shebang',
+    input: thumbnail,
+    output: 'SixelThumbnail.shebang.stamp',
+    command: [shebang_helper, shebang_file, '@INPUT@'],
+    depend_files: shebang_file,
+    build_by_default: true)]
+endif
 
 host = executable(
   'SixelQuickLookHost',
@@ -106,6 +122,14 @@ host = executable(
   objc_args: common_objc_args,
   dependencies: quicklook_extension_frameworks,
   install: false)
+if shebang_enabled
+  shebang_targets += [custom_target('SixelQuickLookHost_shebang',
+    input: host,
+    output: 'SixelQuickLookHost.shebang.stamp',
+    command: [shebang_helper, shebang_file, '@INPUT@'],
+    depend_files: shebang_file,
+    build_by_default: true)]
+endif
 
 bridge = executable(
   'SixelPreviewBridge',
@@ -119,6 +143,14 @@ bridge = executable(
   link_with: quicklook_core,
   dependencies: quicklook_extension_frameworks,
   install: false)
+if shebang_enabled
+  shebang_targets += [custom_target('SixelPreviewBridge_shebang',
+    input: bridge,
+    output: 'SixelPreviewBridge.shebang.stamp',
+    command: [shebang_helper, shebang_file, '@INPUT@'],
+    depend_files: shebang_file,
+    build_by_default: true)]
+endif
 
 register_tool = executable(
   'register_sixel_preview',
@@ -128,6 +160,14 @@ register_tool = executable(
   dependencies: quicklook_extension_register_frameworks,
   install: true,
   install_dir: join_paths(get_option('libexecdir'), 'libsixel'))
+if shebang_enabled
+  shebang_targets += [custom_target('register_sixel_preview_shebang',
+    input: register_tool,
+    output: 'register_sixel_preview.shebang.stamp',
+    command: [shebang_helper, shebang_file, '@INPUT@'],
+    depend_files: shebang_file,
+    build_by_default: true)]
+endif
 
 install_subdir('products/SixelQuickLookHost.app',
   install_dir: join_paths(get_option('libexecdir'), 'libsixel'),

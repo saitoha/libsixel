@@ -4,6 +4,8 @@ endif
 if CFLAGS_HAVE_COVERAGE
 MAYBE_COVERAGE = --coverage
 endif
+SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
+SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 if WANT_AMALGAMATED_TOOLS
 BUILT_SOURCES = $(AMALGAMATION_SIXEL)
@@ -386,3 +388,16 @@ $(COPY_TESTS) $(HELPER_FILES):
 	$(AM_V_GEN){ if test -f $(srcdir)/$@; then \
 		cp $(srcdir)/$@ $(builddir)/$@; \
 	fi; }
+
+
+if WITH_SHEBANG_FILE
+SIXEL_SHEBANG_TARGETS = $(check_PROGRAMS)
+
+apply-shebang-check: $(SIXEL_SHEBANG_TARGETS)
+	@if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
+		$(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
+			$(SIXEL_SHEBANG_TARGETS); \
+	fi
+
+check-am: apply-shebang-check
+endif

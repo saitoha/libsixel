@@ -7,6 +7,8 @@ EMSDK=${SCRIPTDIR}/emsdk
 TOP_SRCDIR=$(cd "${SCRIPTDIR}"/.. && pwd "${SCRIPTDIR}")
 BUILDDIR="${SCRIPTDIR}"/build
 mkdir -p "${BUILDDIR}"
+SHEBANG_FILE="${BUILDDIR}"/emscripten-node-shebang
+printf '#!/usr/bin/env node\n' > "${SHEBANG_FILE}"
 
 if ! which emcc; then
   if [ ! -d "${EMSDK}/.git" ]; then
@@ -15,9 +17,15 @@ if ! which emcc; then
   [ -f "${EMSDK}"/emsdk_env.sh ] || exit 1
   sh "${EMSDK}"/emsdk install latest
   sh "${EMSDK}"/emsdk activate latest
-  source "${EMSDK}"/emsdk_env.sh
+  SAVED_PWD=$(pwd)
+  cd "${EMSDK}"
+  . ./emsdk_env.sh
+  cd "${SAVED_PWD}"
 elif [ -f "${EMSDK}"/emsdk_env.sh ]; then
-  source "${EMSDK}"/emsdk_env.sh
+  SAVED_PWD=$(pwd)
+  cd "${EMSDK}"
+  . ./emsdk_env.sh
+  cd "${SAVED_PWD}"
   which emcc
 fi
 
@@ -26,9 +34,9 @@ sh ${TOP_SRCDIR}/configure \
   --host=wasm32-unknown-emscripten \
   --enable-amalgamation \
   --enable-amalgamated-tools \
-  --disable-simd \
   --disable-shared \
   --enable-static \
+  --with-shebang-file="${SHEBANG_FILE}" \
   --without-png \
   --without-jpeg \
   --without-libcurl \

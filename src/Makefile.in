@@ -104,6 +104,7 @@ host_triplet = @host@
 @HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATION_FALSE@$(srcdir)/clipboard_carbon.c
 
 @COND_TESTS_TRUE@noinst_PROGRAMS = tests$(EXEEXT)
+@WITH_SHEBANG_FILE_TRUE@am__append_5 = $(SIXEL_SHEBANG_STAMP)
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
@@ -619,6 +620,8 @@ RUBY_VERSION = @RUBY_VERSION@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
+SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 STRIP = @STRIP@
 THREAD_CFLAGS = @THREAD_CFLAGS@
 THREAD_CPPFLAGS = @THREAD_CPPFLAGS@
@@ -707,7 +710,8 @@ zshcompletiondir = @zshcompletiondir@
 @WANT_AMALGAMATION_TRUE@nodist_libsixel_la_SOURCES = $(AMALGAMATION_SIXEL)
 @CFLAGS_HAVE_COVERAGE_TRUE@MAYBE_COVERAGE = --coverage
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
-CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests
+CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests \
+	$(am__append_5)
 lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATION_FALSE@libsixel_la_SOURCES = $(srcdir)/output.c \
 @WANT_AMALGAMATION_FALSE@	$(srcdir)/output.h $(srcdir)/timer.c \
@@ -894,6 +898,8 @@ libsixel_la_LIBADD = -lm \
 dist_man_MANS = $(srcdir)/sixel.5
 EXTRA_DIST = $(srcdir)/rgblookup.gperf
 GPERF_OPT = --ignore-case --language=ANSI-C
+@WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(noinst_PROGRAMS)
+@WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_STAMP = src-tests-shebang.stamp
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -1822,7 +1828,8 @@ distdir-am: $(DISTFILES)
 check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
-all-am: Makefile $(PROGRAMS) $(LTLIBRARIES) $(MANS)
+@WITH_SHEBANG_FILE_FALSE@all-local:
+all-am: Makefile $(PROGRAMS) $(LTLIBRARIES) $(MANS) all-local
 installdirs:
 	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(man5dir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -2094,21 +2101,22 @@ uninstall-man: uninstall-man5
 
 .MAKE: all check install install-am install-exec install-strip
 
-.PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-am clean \
-	clean-generic clean-libLTLIBRARIES clean-libtool \
-	clean-noinstPROGRAMS cscopelist-am ctags ctags-am distclean \
-	distclean-compile distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am \
-	install-libLTLIBRARIES install-man install-man5 install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-am uninstall uninstall-am uninstall-libLTLIBRARIES \
-	uninstall-man uninstall-man5
+.PHONY: CTAGS GTAGS TAGS all all-am all-local am--depfiles check \
+	check-am clean clean-generic clean-libLTLIBRARIES \
+	clean-libtool clean-noinstPROGRAMS cscopelist-am ctags \
+	ctags-am distclean distclean-compile distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-libLTLIBRARIES install-man \
+	install-man5 install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs maintainer-clean maintainer-clean-generic \
+	mostlyclean mostlyclean-compile mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
+	uninstall-am uninstall-libLTLIBRARIES uninstall-man \
+	uninstall-man5
 
 .PRECIOUS: Makefile
 
@@ -2131,6 +2139,15 @@ gen-rgblookup: $(srcdir)/rgblookup.gperf
 	gperf -C -N lookup_rgb $(GPERF_OPT) $<  |\
 	sed 's/{""}/\{"", 0, 0, 0\}/g'          |\
 	astyle                                  > $(srcdir)/rgblookup.h
+
+@WITH_SHEBANG_FILE_TRUE@$(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
+@WITH_SHEBANG_FILE_TRUE@	@if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
+@WITH_SHEBANG_FILE_TRUE@		$(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
+@WITH_SHEBANG_FILE_TRUE@			$(SIXEL_SHEBANG_TARGETS); \
+@WITH_SHEBANG_FILE_TRUE@	fi
+@WITH_SHEBANG_FILE_TRUE@	@touch $@
+
+@WITH_SHEBANG_FILE_TRUE@all-local: $(SIXEL_SHEBANG_STAMP)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -103,6 +103,7 @@ bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_10 = -I$(top_builddir)/include/
 @HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_11 = $(ABORTTRACE_LIBS)
 @WANT_SIXEL2PNG_TRUE@am__append_12 = $(srcdir)/sixel2png.1
+@WITH_SHEBANG_FILE_TRUE@am__append_13 = $(SIXEL_SHEBANG_STAMP)
 subdir = converters
 SUBDIRS =
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -452,6 +453,8 @@ RUBY_VERSION = @RUBY_VERSION@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
+SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 STRIP = @STRIP@
 THREAD_CFLAGS = @THREAD_CFLAGS@
 THREAD_CPPFLAGS = @THREAD_CPPFLAGS@
@@ -558,17 +561,11 @@ AMALGAMATION_TOOL_LIBS = -lm \
         $(ONNXRUNTIME_LIBS) \
         @THREAD_LIBS@
 
-CLEANFILES = *.gcno *.gcda *.gcov \
-  $(builddir)/tmp/*.png \
-  $(builddir)/tmp/*.sixel \
-  $(builddir)/tmp/*.txt \
-  $(builddir)/tmp/*.pipe \
-  $(builddir)/tmp/server.py \
-  $(builddir)/tmp/server.key \
-  $(builddir)/tmp/server.crt \
-  $(builddir)/tmp/testfile \
-  completion_embed.h
-
+CLEANFILES = *.gcno *.gcda *.gcov $(builddir)/tmp/*.png \
+	$(builddir)/tmp/*.sixel $(builddir)/tmp/*.txt \
+	$(builddir)/tmp/*.pipe $(builddir)/tmp/server.py \
+	$(builddir)/tmp/server.key $(builddir)/tmp/server.crt \
+	$(builddir)/tmp/testfile completion_embed.h $(am__append_13)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = $(srcdir)/img2sixel.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/completion_utils.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/completion_utils.h \
@@ -621,6 +618,8 @@ CLEANFILES = *.gcno *.gcda *.gcov \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(am__append_11)
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(AMALGAMATION_TOOL_LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@	$(am__append_11)
+@WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(bin_PROGRAMS)
+@WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_STAMP = converters-shebang.stamp
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -1174,7 +1173,8 @@ distdir-am: $(DISTFILES)
 check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-recursive
-all-am: Makefile $(PROGRAMS) $(MANS) $(DATA)
+@WITH_SHEBANG_FILE_FALSE@all-local:
+all-am: Makefile $(PROGRAMS) $(MANS) $(DATA) all-local
 installdirs: installdirs-recursive
 installdirs-am:
 	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" "$(DESTDIR)$(bashcompletiondir)" "$(DESTDIR)$(zshcompletiondir)"; do \
@@ -1313,7 +1313,7 @@ uninstall-man: uninstall-man1
 .MAKE: $(am__recursive_targets) all check install install-am \
 	install-exec install-strip
 
-.PHONY: $(am__recursive_targets) CTAGS GTAGS TAGS all all-am \
+.PHONY: $(am__recursive_targets) CTAGS GTAGS TAGS all all-am all-local \
 	am--depfiles check check-am clean clean-binPROGRAMS \
 	clean-generic clean-libtool cscopelist-am ctags ctags-am \
 	distclean distclean-compile distclean-generic \
@@ -1355,6 +1355,15 @@ completion_embed.h: \
 	$(AM_V_GEN)$(AWK) -f $(top_srcdir)/tools/gen_completion_embed.awk \
 	       $(srcdir)/shell-completion/bash/img2sixel \
 	       $(srcdir)/shell-completion/zsh/_img2sixel > $@
+
+@WITH_SHEBANG_FILE_TRUE@$(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
+@WITH_SHEBANG_FILE_TRUE@	@if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
+@WITH_SHEBANG_FILE_TRUE@		$(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
+@WITH_SHEBANG_FILE_TRUE@			$(SIXEL_SHEBANG_TARGETS); \
+@WITH_SHEBANG_FILE_TRUE@	fi
+@WITH_SHEBANG_FILE_TRUE@	@touch $@
+
+@WITH_SHEBANG_FILE_TRUE@all-local: $(SIXEL_SHEBANG_STAMP)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -104,6 +104,7 @@ host_triplet = @host@
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	SixelQuickLookHost$(EXEEXT) \
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	SixelPreviewBridge$(EXEEXT) \
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@	register_sixel_preview$(EXEEXT)
+@WITH_SHEBANG_FILE_TRUE@am__append_2 = $(SIXEL_SHEBANG_STAMP)
 subdir = quicklook-extension
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
@@ -439,6 +440,8 @@ RUBY_VERSION = @RUBY_VERSION@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
+SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 STRIP = @STRIP@
 THREAD_CFLAGS = @THREAD_CFLAGS@
 THREAD_CPPFLAGS = @THREAD_CPPFLAGS@
@@ -608,7 +611,9 @@ libsixelquicklookcore_a_CPPFLAGS = $(AM_CPPFLAGS) \
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@plist_templates = Host-Info.plist Preview-Info.plist Thumbnail-Info.plist Bridge-Info.plist
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@GENERATED_RESOURCES_DIR = $(builddir)/generated-resources
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@plist_outputs = $(addprefix $(GENERATED_RESOURCES_DIR)/,$(plist_templates))
-CLEANFILES = bundle-stamp
+CLEANFILES = bundle-stamp $(am__append_2)
+@WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(noinst_PROGRAMS)
+@WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_STAMP = quicklook-shebang.stamp
 all: all-am
 
 .SUFFIXES:
@@ -1423,6 +1428,15 @@ uninstall-am: uninstall-local
 @HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@install-exec-local:
 @HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@uninstall-local:
 @HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@clean-local:
+
+@WITH_SHEBANG_FILE_TRUE@$(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
+@WITH_SHEBANG_FILE_TRUE@	@if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
+@WITH_SHEBANG_FILE_TRUE@		$(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
+@WITH_SHEBANG_FILE_TRUE@			$(SIXEL_SHEBANG_TARGETS); \
+@WITH_SHEBANG_FILE_TRUE@	fi
+@WITH_SHEBANG_FILE_TRUE@	@touch $@
+
+@WITH_SHEBANG_FILE_TRUE@all-local: $(SIXEL_SHEBANG_STAMP)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

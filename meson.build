@@ -72,6 +72,13 @@ if get_option('tests')
   conf.set('HAVE_TESTS', 1)
 endif
 
+shebang_file = get_option('shebang_file')
+shebang_helper = join_paths(meson.project_source_root(),
+                            'build-aux',
+                            'sixel-apply-shebang.sh')
+shebang_enabled = shebang_file != ''
+shebang_targets = []
+
 # bookkeeping for configuration summary
 loaders = ['stb_image']
 net = []
@@ -1390,6 +1397,11 @@ if zsh_completion_dir != ''
   zsh_completion_message = zsh_completion_dir
 endif
 
+shebang_message = 'disabled'
+if shebang_file != ''
+  shebang_message = shebang_file
+endif
+
 message('')
 message('libsixel was configured as follows')
 message('')
@@ -1407,6 +1419,7 @@ message('       python bindings         : ' + python_message)
 message('       ruby bindings           : ' + ruby_message)
 message('       gdk-pixbuf SIXEL loader : ' + gdk_pixbuf_loader_message)
 message('       Thumbnailer command     : ' + thumbnailer_message)
+message('       Shebang template        : ' + shebang_message)
 message('       SIMD                    : ' + simd_message)
 message('       avx2                    : ' + avx2_message)
 message('       avx-512                 : ' + avx512_message)

@@ -178,10 +178,18 @@ libsixel_dep = declare_dependency(link_with: libsixel,
                                   dependencies: deps)
 
 if get_option('tests')
-  executable('tests', ['tests.c'],
+  tests_exe = executable('tests', ['tests.c'],
     dependencies: libsixel_dep,
     include_directories: project_inc,
     install: false)
+  if shebang_enabled
+    shebang_targets += [custom_target('libsixel-tests-shebang',
+      input: tests_exe,
+      output: 'libsixel-tests.shebang.stamp',
+      command: [shebang_helper, shebang_file, '@INPUT@'],
+      depend_files: shebang_file,
+      build_by_default: true)]
+  endif
 endif
 
 # vim: set et ts=2:

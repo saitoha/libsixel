@@ -102,17 +102,26 @@ filter_sources = {
 filter_units = {}
 foreach unit_name, unit_source : filter_sources
   if amalgamated_tools_enabled
-    filter_units += { unit_name: executable(unit_name, amalgamation_out,
+    unit_exe = executable(unit_name, amalgamation_out,
       c_args: libsixel_posix_defs + ['-DBUILD_FILTER_TESTS'],
       include_directories: project_inc,
       dependencies: deps,
-      install: false) }
+      install: false)
   else
-    filter_units += { unit_name: executable(unit_name, [unit_source],
+    unit_exe = executable(unit_name, [unit_source],
       dependencies: [libsixel_dep],
       include_directories: project_inc,
-      install: false) }
+      install: false)
   endif
+  if shebang_enabled
+    shebang_targets += [custom_target(unit_name + '_shebang',
+      input: unit_exe,
+      output: unit_name + '.shebang.stamp',
+      command: [shebang_helper, shebang_file, '@INPUT@'],
+      depend_files: shebang_file,
+      build_by_default: true)]
+  endif
+  filter_units += { unit_name: unit_exe }
 endforeach
 
 test('test_3000_filter_clip', filter_units['filter_tests'],
@@ -186,6 +195,14 @@ if gdk_pixbuf_loader_deps.length() > 0
     dependencies: gdk_pixbuf_loader_deps + [libsixel_dep],
     c_args: ['-DGDK_PIXBUF_ENABLE_BACKEND'],
     install: false)
+  if shebang_enabled
+    shebang_targets += [custom_target('gdk-pixbuf-loader-test-shebang',
+      input: gdk_pixbuf_loader_test,
+      output: 'gdk-pixbuf-loader-test.shebang.stamp',
+      command: [shebang_helper, shebang_file, '@INPUT@'],
+      depend_files: shebang_file,
+      build_by_default: true)]
+  endif
   test('gdk-pixbuf-loader', gdk_pixbuf_loader_test,
     env: env,
     suite: ['gdk-pixbuf-loader'])

@@ -7,6 +7,9 @@ VPATH = @srcdir@
 
 BUILT_SOURCES = completion_embed.h
 
+SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
+SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
+
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 
 if WANT_AMALGAMATED_TOOLS
@@ -163,4 +166,20 @@ sixel2png_LDADD += $(ABORTTRACE_LIBS)
 endif
 endif
 dist_man_MANS += $(srcdir)/sixel2png.1
+endif
+
+
+if WITH_SHEBANG_FILE
+SIXEL_SHEBANG_TARGETS = $(bin_PROGRAMS)
+SIXEL_SHEBANG_STAMP = converters-shebang.stamp
+
+$(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
+	@if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
+		$(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
+			$(SIXEL_SHEBANG_TARGETS); \
+	fi
+	@touch $@
+
+all-local: $(SIXEL_SHEBANG_STAMP)
+CLEANFILES += $(SIXEL_SHEBANG_STAMP)
 endif
