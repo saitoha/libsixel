@@ -30,25 +30,10 @@ elif [ -f "${EMSDK}"/emsdk_env.sh ]; then
 fi
 
 cd "${BUILDDIR}" && (
-sh ${TOP_SRCDIR}/configure \
+emconfigure ${TOP_SRCDIR}/configure \
   --host=wasm32-unknown-emscripten \
-  --enable-amalgamation \
-  --enable-amalgamated-tools \
   --disable-shared \
-  --enable-static \
   --with-shebang-file="${SHEBANG_FILE}" \
-  --without-png \
-  --without-jpeg \
-  --without-libcurl \
-  --without-winhttp \
-  --without-onnxruntime \
-  --disable-wiccodec \
-  --disable-appkit \
-  --without-coregraphics \
-  --disable-quicklook-extension \
-  --disable-quicklook-preview \
-  --disable-thumbnailer-command \
-  --disable-abort-trace \
   CC=emcc \
   CFLAGS="-O3" \
   LDFLAGS="-sWASM_BIGINT=1 \
@@ -60,7 +45,8 @@ sh ${TOP_SRCDIR}/configure \
            -sALLOW_MEMORY_GROWTH=1 \
            -sINITIAL_MEMORY=67108864 \
            -sSTACK_SIZE=2097152 \
+           -flto \
   "
-make -j
-make check
+emmake make -j
+emmake make check -j
 )
