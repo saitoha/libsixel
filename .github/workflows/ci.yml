@@ -600,7 +600,6 @@ jobs:
           git
           make
           python
-          nodejs
 
     - name: Setup Cygwin
       if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'

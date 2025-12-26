@@ -29,6 +29,10 @@ elif [ -f "${EMSDK}"/emsdk_env.sh ]; then
   which emcc
 fi
 
+ls "${EMSDK}"/upstream/emscripten/em* | \
+grep -v -e \.ps1$ -e \.py$ -e \.txt | \
+xargs ls -l
+
 cd "${BUILDDIR}" && (
 emconfigure ${TOP_SRCDIR}/configure \
   --host=wasm32-unknown-emscripten \
