@@ -1280,9 +1280,9 @@ endif
 # Build the embedded completion header once so both the converter targets and
 # the amalgamated translation unit can consume the same generated artifact.
 sh = find_program('sh')
-gen_completion = find_program(
-  join_paths(meson.project_source_root(), 'tools', 'gen_completion_embed.py'),
-  required: true,
+python3 = find_program('python3', required: true)
+gen_completion = join_paths(
+  meson.project_source_root(), 'tools', 'gen_completion_embed.py'
 )
 completion_inputs = files(
   'converters/shell-completion/bash/img2sixel',
@@ -1295,11 +1295,11 @@ completion_embed = custom_target('completion_embed.h',
     sh, '-c',
     'set -eu; out="$1"; bash_in="$2"; zsh_in="$3"; conv_dir="$4"; ' +
     'mkdir -p "${conv_dir}"; ' +
-    '"$5" "${out}" "${bash_in}" "${zsh_in}"; ' +
+    '"$5" "$6" "${out}" "${bash_in}" "${zsh_in}"; ' +
     'cp "${out}" "${conv_dir}/completion_embed.h"',
-    '@OUTPUT@', '@INPUT0@', '@INPUT1@',
+    'completion_embed', '@OUTPUT@', '@INPUT0@', '@INPUT1@',
     meson.project_build_root() / 'converters',
-    gen_completion,
+    python3, gen_completion,
   ],
   build_by_default: true,
   install: false,
