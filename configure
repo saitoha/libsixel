@@ -767,6 +767,10 @@ THREAD_LIBS
 THREAD_CFLAGS
 THREAD_CPPFLAGS
 modeldir
+WITH_SHEBANG_FILE_FALSE
+WITH_SHEBANG_FILE_TRUE
+SIXEL_SHEBANG_HELPER
+SIXEL_SHEBANG_FILE
 WANT_AMALGAMATED_TOOLS_FALSE
 WANT_AMALGAMATED_TOOLS_TRUE
 WANT_AMALGAMATION_FALSE
@@ -937,6 +941,7 @@ enable_abort_trace
 enable_threads
 enable_amalgamation
 enable_amalgamated_tools
+with_shebang_file
 with_modeldir
 enable_thumbnailer_command
 with_gdk_pixbuf2
@@ -1690,6 +1695,8 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-sysroot[=DIR]    Search for dependent libraries within DIR (or the
                           compiler's sysroot if not specified).
+  --with-shebang-file=PATH
+                          prepend PATH contents to generated executables
   --with-modeldir=DIR     install assessment models under DIR
                           [default=${pkgdatadir}/models]
   --with-gdk-pixbuf2      whether to build with gdk-pixbuf2 (default: no)
@@ -16553,6 +16560,83 @@ fi
 
 
 
+# Check whether --with-shebang-file was given.
+if test ${with_shebang_file+y}
+then :
+  withval=$with_shebang_file; with_shebang_file="$withval"
+else case e in #(
+  e) with_shebang_file="" ;;
+esac
+fi
+
+
+SIXEL_SHEBANG_FILE=""
+if test -n "$with_shebang_file"; then
+  if test -f "$with_shebang_file"
+then :
+  :
+else case e in #(
+  e) as_fn_error $? "unable to read --with-shebang-file: $with_shebang_file" "$LINENO" 5 ;;
+esac
+fi
+  shebang_dir=`$as_dirname -- "$with_shebang_file" ||
+$as_expr X"$with_shebang_file" : 'X\(.*[^/]\)//*[^/][^/]*/*$' \| \
+	 X"$with_shebang_file" : 'X\(//\)[^/]' \| \
+	 X"$with_shebang_file" : 'X\(//\)$' \| \
+	 X"$with_shebang_file" : 'X\(/\)' \| . 2>/dev/null ||
+printf "%s\n" X"$with_shebang_file" |
+    sed '/^X\(.*[^/]\)\/\/*[^/][^/]*\/*$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)[^/].*/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\/\)$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\(\/\).*/{
+	    s//\1/
+	    q
+	  }
+	  s/.*/./; q'`
+  shebang_base=`$as_basename -- "$with_shebang_file" ||
+$as_expr X/"$with_shebang_file" : '.*/\([^/][^/]*\)/*$' \| \
+	 X"$with_shebang_file" : 'X\(//\)$' \| \
+	 X"$with_shebang_file" : 'X\(/\)' \| . 2>/dev/null ||
+printf "%s\n" X/"$with_shebang_file" |
+    sed '/^.*\/\([^/][^/]*\)\/*$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\/\(\/\/\)$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\/\(\/\).*/{
+	    s//\1/
+	    q
+	  }
+	  s/.*/./; q'`
+  shebang_abs_dir=`cd "$shebang_dir" && pwd`
+  SIXEL_SHEBANG_FILE="$shebang_abs_dir/$shebang_base"
+fi
+
+
+SIXEL_SHEBANG_HELPER="${top_srcdir}/build-aux/sixel-apply-shebang.sh"
+
+ if test -n "$SIXEL_SHEBANG_FILE"; then
+  WITH_SHEBANG_FILE_TRUE=
+  WITH_SHEBANG_FILE_FALSE='#'
+else
+  WITH_SHEBANG_FILE_TRUE='#'
+  WITH_SHEBANG_FILE_FALSE=
+fi
+
+
+
 # Check whether --with-modeldir was given.
 if test ${with_modeldir+y}
 then :
@@ -24260,6 +24344,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WANT_AMALGAMATED_TOOLS_TRUE}" && test -z "${WANT_AMALGAMATED_TOOLS_FALSE}"; then
   as_fn_error $? "conditional \"WANT_AMALGAMATED_TOOLS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${WITH_SHEBANG_FILE_TRUE}" && test -z "${WITH_SHEBANG_FILE_FALSE}"; then
+  as_fn_error $? "conditional \"WITH_SHEBANG_FILE\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WANT_THUMBNAILER_TRUE}" && test -z "${WANT_THUMBNAILER_FALSE}"; then

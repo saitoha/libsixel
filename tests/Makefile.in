@@ -759,6 +759,8 @@ RUBY_VERSION = @RUBY_VERSION@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
+SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 STRIP = @STRIP@
 THREAD_CFLAGS = @THREAD_CFLAGS@
 THREAD_CPPFLAGS = @THREAD_CPPFLAGS@
@@ -1131,6 +1133,7 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
 CLEANFILES = 
+@WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(check_PROGRAMS)
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -2163,6 +2166,14 @@ $(COPY_TESTS) $(HELPER_FILES):
 	$(AM_V_GEN){ if test -f $(srcdir)/$@; then \
 		cp $(srcdir)/$@ $(builddir)/$@; \
 	fi; }
+
+@WITH_SHEBANG_FILE_TRUE@apply-shebang-check: $(SIXEL_SHEBANG_TARGETS)
+@WITH_SHEBANG_FILE_TRUE@	@if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
+@WITH_SHEBANG_FILE_TRUE@		$(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
+@WITH_SHEBANG_FILE_TRUE@			$(SIXEL_SHEBANG_TARGETS); \
+@WITH_SHEBANG_FILE_TRUE@	fi
+
+@WITH_SHEBANG_FILE_TRUE@check-am: apply-shebang-check
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

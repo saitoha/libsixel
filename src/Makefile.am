@@ -7,6 +7,9 @@ exec_prefix = @exec_prefix@
 top_builddir = @top_builddir@
 builddir = @builddir@
 
+SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
+SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
+
 if WANT_AMALGAMATION
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 AMALGAMATION_TARGET = sixel.c
@@ -276,3 +279,19 @@ gen-rgblookup: $(srcdir)/rgblookup.gperf
 	sed 's/{""}/\{"", 0, 0, 0\}/g'          |\
 	astyle                                  > $(srcdir)/rgblookup.h
 
+
+
+if WITH_SHEBANG_FILE
+SIXEL_SHEBANG_TARGETS = $(noinst_PROGRAMS)
+SIXEL_SHEBANG_STAMP = src-tests-shebang.stamp
+
+$(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
+	@if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
+		$(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
+			$(SIXEL_SHEBANG_TARGETS); \
+	fi
+	@touch $@
+
+all-local: $(SIXEL_SHEBANG_STAMP)
+CLEANFILES += $(SIXEL_SHEBANG_STAMP)
+endif
