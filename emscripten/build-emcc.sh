@@ -61,12 +61,13 @@ EOF
   RANLIB=${RANLIB:-emranlib}
   STRIP=${STRIP:-emstrip}
   export AR RANLIB STRIP
+  CONFIG_SITE=/dev/null
+  export CONFIG_SITE
 fi
 
 cd "${BUILDDIR}" && (
 emconfigure sh ${TOP_SRCDIR}/configure \
   --host=wasm32-unknown-emscripten \
-  --srcdir=${TOP_SRCDIR} \
   --disable-shared \
   --with-shebang-file="${SHEBANG_FILE}" \
   CFLAGS="-O3" \
