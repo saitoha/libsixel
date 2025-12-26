@@ -165,6 +165,16 @@ jobs:
             sys: x86_64
             variant: amalgamation
             configure_extra: '--enable-amalgamation'
+          - label: emscripten ubuntu 24.04 aarch64
+            os: ubuntu-24.04-arm
+            runner: ubuntu-24.04-arm
+            variant: emscripten
+            emscripten: true
+          - label: emscripten macos aarch64
+            os: macos-latest
+            runner: macos-latest
+            variant: emscripten
+            emscripten: true
           - label: mingw64 static-only
             os: windows-latest
             runner: windows-latest
@@ -252,6 +262,12 @@ jobs:
             sys: MSVC
             variant: vcpkg-libjpeg
             vcpkg_libjpeg: true
+          - label: emscripten windows msys x86_64
+            os: windows-latest
+            runner: windows-latest
+            sys: MSYS
+            variant: emscripten
+            emscripten: true
           - label: mingw32
             os: windows-latest
             runner: windows-latest
@@ -308,7 +324,7 @@ jobs:
         brew doctor || true
 
     - name: Install lcov (macOS)
-      if: runner.os == 'macOS' && matrix.variant != 'amalgamation'
+      if: runner.os == 'macOS' && matrix.variant != 'amalgamation' && matrix.emscripten != true
       shell: bash
       run: |
         brew update
@@ -574,6 +590,18 @@ jobs:
         install: >-
           make
 
+    - name: Setup MSYS2 (Windows, Emscripten)
+      if: runner.os == 'Windows' && matrix.emscripten == true
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MSYS
+        update: true
+        install: >-
+          git
+          make
+          python
+          nodejs
+
     - name: Setup Cygwin
       if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
       uses: cygwin/cygwin-install-action@v4
@@ -581,7 +609,7 @@ jobs:
         packages: gcc-core,make,pkg-config,python3,python3-pip,ninja
 
     - name: Install gcovr
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os != 'Windows' && (matrix.sys || '') != 'i686' && matrix.variant != 'amalgamation'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os != 'Windows' && (matrix.sys || '') != 'i686' && matrix.variant != 'amalgamation' && matrix.emscripten != true
       run: |
         python3 -m venv .venv
         . .venv/bin/activate
@@ -589,13 +617,24 @@ jobs:
         echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
     - name: Install gcc-14 (Linux)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os == 'Linux'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os == 'Linux' && matrix.emscripten != true
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-14
 
+    - name: Build with Emscripten (non-Windows)
+      if: matrix.emscripten == true && runner.os != 'Windows'
+      run: |
+        emscripten/build-emcc.sh
+
+    - name: Build with Emscripten (Windows)
+      if: matrix.emscripten == true && runner.os == 'Windows'
+      shell: msys2 {0}
+      run: |
+        ./emscripten/build-emcc.sh
+
     - name: Configure and build (FreeBSD)
-      if: matrix.platform == 'freebsd'
+      if: matrix.platform == 'freebsd' && matrix.emscripten != true
       uses: cross-platform-actions/action@v0.30.0
       with:
         operating_system: ${{ matrix.cp_os }}
@@ -695,7 +734,7 @@ jobs:
           gmake V=1
 
     - name: Configure and build (Haiku)
-      if: matrix.platform == 'haiku'
+      if: matrix.platform == 'haiku' && matrix.emscripten != true
       uses: cross-platform-actions/action@v0.30.0
       with:
         operating_system: ${{ matrix.cp_os }}
@@ -744,7 +783,7 @@ jobs:
           make V=1
 
     - name: Configure and build (OpenBSD)
-      if: matrix.platform == 'openbsd'
+      if: matrix.platform == 'openbsd' && matrix.emscripten != true
       uses: cross-platform-actions/action@v0.30.0
       with:
         operating_system: ${{ matrix.cp_os }}
@@ -793,7 +832,7 @@ jobs:
           gmake V=1
 
     - name: Configure and build (non-Windows)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows' && matrix.emscripten != true
       shell: bash
       run: |
         enable_gcov_flag="--enable-gcov"
@@ -845,7 +884,7 @@ jobs:
         make V=1
 
     - name: Configure and build (Windows, not MSVC/Cygwin)
-      if: ${{ runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' }}
+      if: ${{ runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' && matrix.emscripten != true }}
       shell: msys2 {0}
       run: |
         disable_threads_flag=""
@@ -889,7 +928,7 @@ jobs:
         make V=1
 
     - name: Configure and build (Windows, Cygwin)
-      if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
+      if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' && matrix.emscripten != true }}
       shell: pwsh
       run: |
         $cygwinRoot = 'C:\cygwin'
@@ -985,7 +1024,7 @@ jobs:
         make V=1
 
     - name: Run tests (FreeBSD/OpenBSD/NetBSD/Haiku)
-      if: matrix.platform == 'freebsd' || matrix.platform == 'openbsd' || matrix.platform == 'netbsd' || matrix.platform == 'haiku'
+      if: (matrix.platform == 'freebsd' || matrix.platform == 'openbsd' || matrix.platform == 'netbsd' || matrix.platform == 'haiku') && matrix.emscripten != true
       uses: cross-platform-actions/action@v0.30.0
       with:
         operating_system: ${{ matrix.cp_os }}
@@ -1001,7 +1040,7 @@ jobs:
           fi
 
     - name: Run tests (DragonFlyBSD)
-      if: matrix.platform == 'dragonflybsd'
+      if: matrix.platform == 'dragonflybsd' && matrix.emscripten != true
       shell: dragonflybsd {0}
       run: |
         set -eux
@@ -1009,17 +1048,17 @@ jobs:
         gmake check V=1
 
     - name: Run tests (non-Windows)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows' && matrix.emscripten != true
       shell: bash
       run: make check V=1
 
     - name: Run tests (Windows, not MSVC/Cygwin/CLANG64)
-      if: runner.os == 'Windows' && matrix.sys != 'CLANG64' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN'
+      if: runner.os == 'Windows' && matrix.sys != 'CLANG64' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' && matrix.emscripten != true
       shell: msys2 {0}
       run: make check V=1
 
     - name: Run tests (Windows, CLANG64)
-      if: runner.os == 'Windows' && matrix.sys == 'CLANG64'
+      if: runner.os == 'Windows' && matrix.sys == 'CLANG64' && matrix.emscripten != true
       shell: msys2 {0}
       run: |
         LLVM_PROFILE_FILE="%p-%m.profraw" make check V=1
@@ -1030,7 +1069,7 @@ jobs:
           -instr-profile=coverage/coverage.profdata > coverage.info || true
 
     - name: Run tests (Windows, MSVC)
-      if: runner.os == 'Windows' && matrix.sys == 'MSVC'
+      if: runner.os == 'Windows' && matrix.sys == 'MSVC' && matrix.emscripten != true
       shell: msys2 {0}
       run: |
         VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
@@ -1068,14 +1107,14 @@ jobs:
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Capture coverage (Linux)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && runner.os == 'Linux' && (matrix.sys || '') != 'i686' && !(matrix.musl || false) && matrix.variant != 'amalgamation'
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && runner.os == 'Linux' && (matrix.sys || '') != 'i686' && !(matrix.musl || false) && matrix.variant != 'amalgamation' && matrix.emscripten != true
       shell: bash
       run: |
         gcovr -r . --lcov -o coverage.info \
                    --gcov-executable gcov-14
 
     - name: Capture coverage (non-MSVC)
-      if: runner.os == 'macOS' && matrix.variant != 'amalgamation'
+      if: runner.os == 'macOS' && matrix.variant != 'amalgamation' && matrix.emscripten != true
       shell: bash
       run: |
         lcov -c \
@@ -1085,7 +1124,7 @@ jobs:
           -o coverage.info
 
     - name: Capture coverage (Windows MSYS2/MinGW/UCRT/Clang)
-      if: runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' && matrix.sys != 'MINGW32' && matrix.variant != 'amalgamation'
+      if: runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' && matrix.sys != 'MINGW32' && matrix.variant != 'amalgamation' && matrix.emscripten != true
       shell: msys2 {0}
       run: |
         lcov -c \
@@ -1110,7 +1149,7 @@ jobs:
 
     - name: Upload to Coveralls (per-flag, parallel)
       id: coveralls_upload
-      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && matrix.os != 'macos-15' && matrix.sys != 'i686' && !(matrix.musl || false) && matrix.variant != 'amalgamation' }}
+      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && matrix.os != 'macos-15' && matrix.sys != 'i686' && !(matrix.musl || false) && matrix.variant != 'amalgamation' && matrix.emscripten != true }}
       continue-on-error: true
       uses: coverallsapp/github-action@v2
       with:
@@ -1120,11 +1159,11 @@ jobs:
         parallel: true
 
     - name: Wait before Coveralls retry (per-flag)
-      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) && matrix.variant != 'amalgamation' }}
+      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) && matrix.variant != 'amalgamation' && matrix.emscripten != true }}
       run: sleep 5
 
     - name: Upload to Coveralls (per-flag, retry)
-      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) && matrix.variant != 'amalgamation' }}
+      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) && matrix.variant != 'amalgamation' && matrix.emscripten != true }}
       uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
