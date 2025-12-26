@@ -262,7 +262,7 @@ jobs:
             sys: MSVC
             variant: vcpkg-libjpeg
             vcpkg_libjpeg: true
-          - label: emscripten windows msys x86_64
+          - label: emscripten msys x86_64
             os: windows-latest
             runner: windows-latest
             sys: MSYS
@@ -546,7 +546,7 @@ jobs:
         "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang)
-      if: runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'MSYS' && matrix.sys != 'CYGWIN' && matrix.sys != 'MINGW32'
+      if: runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'MSYS' && matrix.sys != 'CYGWIN' && matrix.sys != 'MINGW32' && matrix.emscripten != true
       uses: msys2/setup-msys2@v2
       with:
         msystem: ${{ matrix.sys }}
@@ -558,7 +558,7 @@ jobs:
           lcov:p
 
     - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang)
-      if: matrix.sys == 'MINGW32'
+      if: matrix.sys == 'MINGW32' && matrix.emscripten != true
       uses: msys2/setup-msys2@v2
       with:
         msystem: ${{ matrix.sys }}
@@ -590,15 +590,15 @@ jobs:
         install: >-
           make
 
-    - name: Setup MSYS2 (Windows, Emscripten)
+    - name: Setup MSYS2 (Windows, MSYS Emscripten)
       if: runner.os == 'Windows' && matrix.emscripten == true
       uses: msys2/setup-msys2@v2
       with:
         msystem: MSYS
         update: true
         install: >-
-          git
           make
+          git
           python
 
     - name: Setup Cygwin
