@@ -1639,8 +1639,8 @@ Optional Features:
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --enable-silent-rules   less verbose build output (undo: "make V=1")
   --disable-silent-rules  verbose build output (undo: "make V=0")
-  --disable-maintainer-mode
-                          disable make rules and dependencies not useful (and
+  --enable-maintainer-mode
+                          enable make rules and dependencies not useful (and
                           sometimes confusing) to the casual installer
   --enable-shared[=PKGS]  build shared libraries [default=yes]
   --enable-static[=PKGS]  build static libraries [default=yes]
@@ -4373,7 +4373,7 @@ if test ${enable_maintainer_mode+y}
 then :
   enableval=$enable_maintainer_mode; USE_MAINTAINER_MODE=$enableval
 else case e in #(
-  e) USE_MAINTAINER_MODE=yes ;;
+  e) USE_MAINTAINER_MODE=no ;;
 esac
 fi
 
