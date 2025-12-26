@@ -33,9 +33,10 @@ ls "${EMSDK}"/upstream/emscripten/em* | \
 grep -v -e \.ps1$ -e \.py$ -e \.txt | \
 xargs ls -l
 
-# MSYS ships Emscripten helper entrypoints only as .bat files, so create
-# small shell wrappers that forward to the .bat via `cmd //c`.
-if uname -s | grep -qi 'msys'; then
+# MSYS/Cygwin shells ship Emscripten helper entrypoints only as .bat files,
+# so create small shell wrappers that forward to the .bat via `cmd //c`.
+UNAME_LOWER=$(uname -s | tr '[:upper:]' '[:lower:]')
+if echo "${UNAME_LOWER}" | grep -Eq 'msys|mingw|cygwin'; then
   EMSCRIPTEN_BINDIR="${EMSDK}/upstream/emscripten"
   EMSCRIPTEN_WRAPPERDIR="${BUILDDIR}/emscripten-msys-wrappers"
   mkdir -p "${EMSCRIPTEN_WRAPPERDIR}"
