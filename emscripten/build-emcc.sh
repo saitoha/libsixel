@@ -33,9 +33,7 @@ cd "${BUILDDIR}" && (
 emconfigure ${TOP_SRCDIR}/configure \
   --host=wasm32-unknown-emscripten \
   --disable-shared \
-  --disable-dependency-tracking \
   --with-shebang-file="${SHEBANG_FILE}" \
-  CC=emcc \
   CFLAGS="-O3" \
   LDFLAGS="-sWASM_BIGINT=1 \
            -sSINGLE_FILE=1 \

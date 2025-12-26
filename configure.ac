@@ -18,7 +18,7 @@ AC_CANONICAL_HOST
 
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 AC_REQUIRE_AUX_FILE([ar-lib])
-AM_MAINTAINER_MODE([enable])
+AM_MAINTAINER_MODE([disable])
 AM_SILENT_RULES([yes])
 LT_INIT
 AC_CONFIG_SRCDIR([src/fromsixel.c])
