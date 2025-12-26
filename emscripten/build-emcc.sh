@@ -33,6 +33,35 @@ ls "${EMSDK}"/upstream/emscripten/em* | \
 grep -v -e \.ps1$ -e \.py$ -e \.txt | \
 xargs ls -l
 
+# MSYS ships Emscripten helper entrypoints only as .bat files, so create
+# small shell wrappers that forward to the .bat via `cmd //c`.
+if uname -s | grep -qi 'msys'; then
+  EMSCRIPTEN_BINDIR="${EMSDK}/upstream/emscripten"
+  EMSCRIPTEN_WRAPPERDIR="${BUILDDIR}/emscripten-msys-wrappers"
+  mkdir -p "${EMSCRIPTEN_WRAPPERDIR}"
+
+  # These cover the autotools flow: configure, make, archive, strip.
+  for tool in emconfigure emmake emcc emar emranlib emstrip; do
+    bat_path="${EMSCRIPTEN_BINDIR}/${tool}.bat"
+    wrapper_path="${EMSCRIPTEN_WRAPPERDIR}/${tool}"
+
+    if [ -f "${bat_path}" ]; then
+      cat > "${wrapper_path}" <<EOF
+#!/bin/sh
+cmd //c "${bat_path}" "\$@"
+EOF
+      chmod +x "${wrapper_path}"
+    fi
+  done
+
+  PATH="${EMSCRIPTEN_WRAPPERDIR}:${PATH}"
+  export PATH
+  AR=${AR:-emar}
+  RANLIB=${RANLIB:-emranlib}
+  STRIP=${STRIP:-emstrip}
+  export AR RANLIB STRIP
+fi
+
 cd "${BUILDDIR}" && (
 emconfigure ${TOP_SRCDIR}/configure \
   --host=wasm32-unknown-emscripten \
