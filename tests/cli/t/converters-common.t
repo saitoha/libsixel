@@ -189,20 +189,20 @@ ensure_feature_available() {
     skip_all "${description} is disabled in this build"
 }
 
-wine_exec() {
-    if [ -n "${WINE:-}" ]; then
-        "${WINE}" "$@"
+runtime_exec() {
+    if [ -n "${SIXEL_RUNTIME:-}" ]; then
+        "${SIXEL_RUNTIME}" "$@"
     else
         "$@"
     fi
 }
 
 run_img2sixel() {
-    wine_exec "${IMG2SIXEL_PATH}" "$@"
+    runtime_exec "${IMG2SIXEL_PATH}" "$@"
 }
 
 run_sixel2png() {
-    wine_exec "${SIXEL2PNG_PATH}" "$@"
+    runtime_exec "${SIXEL2PNG_PATH}" "$@"
 }
 
 make_temp_file() {
