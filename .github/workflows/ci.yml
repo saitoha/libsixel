@@ -262,12 +262,12 @@ jobs:
             sys: MSVC
             variant: vcpkg-libjpeg
             vcpkg_libjpeg: true
-          - label: emscripten msys x86_64
-            os: windows-latest
-            runner: windows-latest
-            sys: MSYS
-            variant: emscripten
-            emscripten: true
+#          - label: emscripten msys x86_64
+#            os: windows-latest
+#            runner: windows-latest
+#            sys: MSYS
+#            variant: emscripten
+#            emscripten: true
           - label: mingw32
             os: windows-latest
             runner: windows-latest
