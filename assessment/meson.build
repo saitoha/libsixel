@@ -73,6 +73,7 @@ src_build_dir = join_paths(meson.project_build_root(), 'src')
 lsqa_sources = ['lsqa.c']
 lsqa_dependencies = lsqa_deps
 lsqa_c_args = lsqa_args
+lsqa_objc_args = lsqa_c_args
 lsqa_rpath = src_build_dir
 
 if amalgamation_opt.enabled() and amalgamated_tools_opt.enabled()
@@ -82,6 +83,7 @@ if amalgamation_opt.enabled() and amalgamated_tools_opt.enabled()
     lsqa_dependencies += ort_dep
   endif
   lsqa_c_args = libsixel_posix_defs + ['-DBUILD_LSQA']
+  lsqa_objc_args = lsqa_c_args
   lsqa_rpath = ''
 endif
 
@@ -91,5 +93,6 @@ lsqa_bin = executable('lsqa',
            build_rpath: lsqa_rpath,
            dependencies: lsqa_dependencies,
            c_args: lsqa_c_args,
+           objc_args: lsqa_objc_args,
            install: true)
 set_variable('lsqa_bin', lsqa_bin)
