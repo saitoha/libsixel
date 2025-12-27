@@ -55,43 +55,24 @@ EOF
 
   PATH="${EMSCRIPTEN_WRAPPERDIR}:${PATH}"
   export PATH
-  AR=${AR:-emar}
-  RANLIB=${RANLIB:-emranlib}
-  STRIP=${STRIP:-emstrip}
-  export AR RANLIB STRIP
-  CONFIG_SITE=/dev/null
-  export CONFIG_SITE
 fi
  
-cat > conftest.c <<'EOF'
-int main(){return 0;}
-EOF
-
-#"${EMSCRIPTEN_BINDIR:-}"/emcc.bat -v -O3 \
-#  -sSINGLE_FILE=1 \
-#  -sNODERAWFS=1 -sFORCE_FILESYSTEM=1 \
-#  -sALLOW_MEMORY_GROWTH=1 -sSTACK_SIZE=524288 \
-#  conftest.c || true
-
-extra_opt=" \
-           -sABORTING_MALLOC=0 \
-           -sINITIAL_MEMORY=67108864 \
-           -sENVIRONMENT=node \
-           -sWASM_BIGINT=1 \
-           -flto \
-"
 cd "${BUILDDIR}" && (
 emconfigure sh ../../configure \
   --host=wasm32-unknown-emscripten \
   --disable-shared \
   --with-shebang-file="${SHEBANG_FILE}" \
-  CFLAGS="-O3" \
+  CFLAGS="-O3 -g0" \
   LDFLAGS=" \
-    -sSINGLE_FILE=1 \
     -sNODERAWFS=1 \
-    -sFORCE_FILESYSTEM=1 \
-    -sALLOW_MEMORY_GROWTH=1 \
     -sSTACK_SIZE=524288 \
+    -sINITIAL_MEMORY=268435456 \
+    -sSINGLE_FILE=1 \
+    -sENVIRONMENT=node \
+    -sALLOW_MEMORY_GROWTH=1 \
+    -sWASM_BIGINT=1 \
+    -flto \
   "
-emmake make all
+emmake make all -j
+emmake make check -j
 )
