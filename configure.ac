@@ -18,7 +18,7 @@ AC_CANONICAL_HOST
 
 AM_INIT_AUTOMAKE([foreign subdir-objects])
 AC_REQUIRE_AUX_FILE([ar-lib])
-AM_MAINTAINER_MODE([enable])
+AM_MAINTAINER_MODE([disable])
 AM_SILENT_RULES([yes])
 LT_INIT
 AC_CONFIG_SRCDIR([src/fromsixel.c])
@@ -208,6 +208,29 @@ if test "x$enable_amalgamated_tools" = "xyes" \
 fi
 AM_CONDITIONAL([WANT_AMALGAMATED_TOOLS],
                [test "x$enable_amalgamated_tools" = "xyes"])
+
+AC_ARG_WITH([shebang-file],
+            [AS_HELP_STRING([--with-shebang-file=PATH],
+                            [prepend PATH contents to generated executables])],
+            [with_shebang_file="$withval"],
+            [with_shebang_file=""])
+
+SIXEL_SHEBANG_FILE=""
+if test -n "$with_shebang_file"; then
+  AS_IF([test -f "$with_shebang_file"],
+        [:],
+        [AC_MSG_ERROR([unable to read --with-shebang-file: $with_shebang_file])])
+  shebang_dir=`AS_DIRNAME(["$with_shebang_file"])`
+  shebang_base=`AS_BASENAME(["$with_shebang_file"])`
+  shebang_abs_dir=`cd "$shebang_dir" && pwd`
+  SIXEL_SHEBANG_FILE="$shebang_abs_dir/$shebang_base"
+fi
+
+AC_SUBST([SIXEL_SHEBANG_FILE])
+AC_SUBST([SIXEL_SHEBANG_HELPER],
+         ["${top_srcdir}/build-aux/sixel-apply-shebang.sh"])
+AM_CONDITIONAL([WITH_SHEBANG_FILE],
+               [test -n "$SIXEL_SHEBANG_FILE"])
 
 AC_ARG_WITH([modeldir],
             [AS_HELP_STRING([--with-modeldir=DIR],

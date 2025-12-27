@@ -206,7 +206,7 @@ static int
 wait_file(int fd, int usec)
 {
     int ret = 1;
-#if HAVE_SYS_SELECT_H
+#if HAVE_SYS_SELECT_H && !defined(__EMSCRIPTEN__)
     fd_set rfds;
     struct timeval tv;
 

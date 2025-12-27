@@ -351,14 +351,14 @@ end:
 SIXELSTATUS
 sixel_tty_wait_stdin(int usec)
 {
-#if HAVE_SYS_SELECT_H
+#if HAVE_SYS_SELECT_H && !defined(__EMSCRIPTEN__)
     fd_set rfds;
     struct timeval tv;
     int ret = 0;
 #endif  /* HAVE_SYS_SELECT_H */
     SIXELSTATUS status = SIXEL_FALSE;
 
-#if HAVE_SYS_SELECT_H
+#if HAVE_SYS_SELECT_H && !defined(__EMSCRIPTEN__)
     tv.tv_sec = usec / 1000000;
     tv.tv_usec = usec % 1000000;
     FD_ZERO(&rfds);
@@ -393,7 +393,7 @@ sixel_tty_scroll(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int nwrite;
-#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY
+#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY && !defined(__EMSCRIPTEN__)
     struct winsize size = {0, 0, 0, 0};
     struct termios old_termios;
     struct termios new_termios;
@@ -547,7 +547,7 @@ sixel_tty_scroll(
             "sixel_tty_scroll: f_write() failed.");
         goto end;
     }
-#endif  /* HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY */
+#endif  /* HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY && !defined(__EMSCRIPTEN__) */
 
     status = SIXEL_OK;
 

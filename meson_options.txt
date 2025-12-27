@@ -59,4 +59,6 @@ option('img2sixel', type: 'feature', value: 'enabled', description: 'Build img2s
 option('sixel2png', type: 'feature', value: 'enabled', description: 'Build sixel2png tool')
 option('abort_trace', type: 'feature', value: 'auto', description: 'Enable abort stack traces in CLI tools')
 option('thumbnailer_command', type: 'feature', value: 'auto', description: 'Install sixel thumbnailer command')
+option('shebang_file', type: 'string', value: '',
+       description: 'Path to a shebang template file for built executables')
 # vim: set et ts=2:

@@ -57,6 +57,14 @@ if img2sixel_opt.enabled()
       install: true)
   endif
   img2sixel_deps = [img2sixel_exe]
+  if shebang_enabled
+    shebang_targets += [custom_target('img2sixel_shebang',
+      input: img2sixel_exe,
+      output: 'img2sixel.shebang.stamp',
+      command: [shebang_helper, shebang_file, '@INPUT@'],
+      depend_files: shebang_file,
+      build_by_default: true)]
+  endif
   install_man('img2sixel.1')
   if bash_completion_dir != ''
     # Explicitly tag the completion install so Meson does not try to
@@ -91,6 +99,14 @@ if sixel2png_opt.enabled()
       install: true)
   endif
   install_man('sixel2png.1')
+  if shebang_enabled
+    shebang_targets += [custom_target('sixel2png_shebang',
+      input: sixel2png_exe,
+      output: 'sixel2png.shebang.stamp',
+      command: [shebang_helper, shebang_file, '@INPUT@'],
+      depend_files: shebang_file,
+      build_by_default: true)]
+  endif
   sixel2png_deps = [sixel2png_exe]
 endif
 

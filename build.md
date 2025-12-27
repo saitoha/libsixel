@@ -69,6 +69,7 @@ or provide the desired directory path explicitly.
 | `--enable-debug` | `no` | Enable debug macros and apply extra diagnostic compiler flags. |
 | `--enable-gcov` | `no` | Compile with gcov coverage instrumentation. |
 | `--enable-tests` | `no` | Build the optional test suites. |
+| `--with-shebang-file=PATH` | disabled | Prepend the contents of `PATH` to generated executables (skips files that already start with a shebang) and mark them executable. |
 
 #### macOS Quick Look preview
 
@@ -105,6 +106,67 @@ make uninstall
 
 The uninstall target invokes `regsvr32 /u` automatically when the DLL was
 registered during install.
+
+### Emscripten (Autotools)
+
+`emscripten/build-emcc.sh` is included as a **sample helper** that wraps the
+steps below.  For a transparent, reproducible setup without the script, follow
+this manual procedure.
+
+1. **Install and activate Emscripten SDK** (skip if you already have `emcc`):
+
+   ```sh
+   git clone --depth 1 https://github.com/emscripten-core/emsdk.git emscripten/emsdk
+   emscripten/emsdk/emsdk install latest
+   emscripten/emsdk/emsdk activate latest
+   . emscripten/emsdk/emsdk_env.sh
+   ```
+
+2. **Prepare a build directory** for the generated JS:
+
+   ```sh
+   mkdir -p emscripten/build
+   ```
+
+3. **Configure** (from `emscripten/build`) using `--with-shebang-file` to embed
+   a Node-friendly shebang into the generated wrapper:
+
+   ```sh
+   cd emscripten/build
+   SHEBANG_FILE="$(pwd)"/emscripten-node-shebang
+   printf '#!/usr/bin/env node\n' > "${SHEBANG_FILE}"
+   emconfigure ../../configure \
+     --host=wasm32-unknown-emscripten \
+     --disable-shared \
+     --with-shebang-file="${SHEBANG_FILE}" \
+     CFLAGS="-O3" \
+     LDFLAGS="-sWASM_BIGINT=1 \
+              -sSINGLE_FILE=1 \
+              -sENVIRONMENT=node \
+              -sABORTING_MALLOC=0 \
+              -sNODERAWFS=1 \
+              -sFORCE_FILESYSTEM=1 \
+              -sALLOW_MEMORY_GROWTH=1 \
+              -sINITIAL_MEMORY=67108864 \
+              -sSTACK_SIZE=2097152 \
+              -flto"
+   ```
+
+   The `--with-shebang-file=PATH` flag inserts the contents of `PATH` (for
+   example, `#!/usr/bin/env node`) at the top of the generated JavaScript
+   wrapper so the resulting program is directly executable without an
+   additional shim.
+
+4. **Build and (optionally) test**:
+
+   ```sh
+   emmake make -j
+   emmake make check  # optional, requires Node.js
+   ```
+
+Re-run the configure and build steps after updating Emscripten or changing
+configuration flags.  `emscripten/build-emcc.sh` can still be used as a quick
+reference or automated example of the same sequence.
 
 ## Building with Meson
 
@@ -144,6 +206,7 @@ meson setup builddir
 | `-Dpython=` | feature, `disabled` | Build and install the Python bindings. |
 | `-Druby=` | feature, `disabled` | Build and install the Ruby bindings. |
 | `-Dtests=` | boolean, `false` | Build the test suites. |
+| `-Dshebang_file=` | string, empty | Prepend the file contents to generated executables (skips files that already start with a shebang) and mark them executable. |
 | `-Dgcov=` | boolean, `false` | Enable gcov coverage instrumentation. |
 | `-Dimg2sixel=` | feature, `enabled` | Build the `img2sixel` CLI tool. |
 | `-Dsixel2png=` | feature, `enabled` | Build the `sixel2png` CLI tool. |

@@ -94,6 +94,7 @@ host_triplet = @host@
 @WANT_AMALGAMATED_TOOLS_TRUE@am__append_1 = $(AMALGAMATION_SIXEL)
 @AMALGAMATION_NEEDS_OBJC_TRUE@am__append_2 = -x objective-c
 bin_PROGRAMS = lsqa$(EXEEXT)
+@WITH_SHEBANG_FILE_TRUE@am__append_3 = $(SIXEL_SHEBANG_STAMP)
 subdir = assessment
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
@@ -348,6 +349,8 @@ RUBY_VERSION = @RUBY_VERSION@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
+SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 STRIP = @STRIP@
 THREAD_CFLAGS = @THREAD_CFLAGS@
 THREAD_CPPFLAGS = @THREAD_CPPFLAGS@
@@ -427,6 +430,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
 BUILT_SOURCES = $(am__append_1)
+CLEANFILES = $(am__append_3)
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 @CFLAGS_HAVE_COVERAGE_TRUE@MAYBE_COVERAGE = --coverage
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
@@ -467,6 +471,8 @@ AMALGAMATION_LSQA_LIBS = -lm \
 @HAVE_ONNXRUNTIME_TRUE@dist_lpipsmodels_DATA = $(top_srcdir)/models/lpips/lpips_diff.onnx \
 @HAVE_ONNXRUNTIME_TRUE@                        $(top_srcdir)/models/lpips/lpips_feature.onnx
 
+@WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(bin_PROGRAMS)
+@WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_STAMP = assessment-shebang.stamp
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -742,7 +748,8 @@ distdir-am: $(DISTFILES)
 check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
-all-am: Makefile $(PROGRAMS) $(DATA)
+@WITH_SHEBANG_FILE_FALSE@all-local:
+all-am: Makefile $(PROGRAMS) $(DATA) all-local
 installdirs:
 	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(lpipsmodelsdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -771,6 +778,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-$(am__rm_f) $(CLEANFILES)
 
 distclean-generic:
 	-$(am__rm_f) $(CONFIG_CLEAN_FILES)
@@ -856,20 +864,20 @@ uninstall-am: uninstall-binPROGRAMS uninstall-dist_lpipsmodelsDATA
 
 .MAKE: all check install install-am install-exec install-strip
 
-.PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-am clean \
-	clean-binPROGRAMS clean-generic clean-libtool cscopelist-am \
-	ctags ctags-am distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-binPROGRAMS \
-	install-data install-data-am install-dist_lpipsmodelsDATA \
-	install-dvi install-dvi-am install-exec install-exec-am \
-	install-html install-html-am install-info install-info-am \
-	install-man install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-binPROGRAMS \
+.PHONY: CTAGS GTAGS TAGS all all-am all-local am--depfiles check \
+	check-am clean clean-binPROGRAMS clean-generic clean-libtool \
+	cscopelist-am ctags ctags-am distclean distclean-compile \
+	distclean-generic distclean-libtool distclean-tags distdir dvi \
+	dvi-am html html-am info info-am install install-am \
+	install-binPROGRAMS install-data install-data-am \
+	install-dist_lpipsmodelsDATA install-dvi install-dvi-am \
+	install-exec install-exec-am install-html install-html-am \
+	install-info install-info-am install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags tags-am uninstall uninstall-am uninstall-binPROGRAMS \
 	uninstall-dist_lpipsmodelsDATA
 
 .PRECIOUS: Makefile
@@ -879,6 +887,15 @@ uninstall-am: uninstall-binPROGRAMS uninstall-dist_lpipsmodelsDATA
 @WANT_AMALGAMATED_TOOLS_TRUE@$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
+
+@WITH_SHEBANG_FILE_TRUE@$(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
+@WITH_SHEBANG_FILE_TRUE@	@if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
+@WITH_SHEBANG_FILE_TRUE@		$(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
+@WITH_SHEBANG_FILE_TRUE@			$(SIXEL_SHEBANG_TARGETS); \
+@WITH_SHEBANG_FILE_TRUE@	fi
+@WITH_SHEBANG_FILE_TRUE@	@touch $@
+
+@WITH_SHEBANG_FILE_TRUE@all-local: $(SIXEL_SHEBANG_STAMP)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

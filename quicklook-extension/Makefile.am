@@ -204,3 +204,22 @@ clean-local:
 endif
 
 CLEANFILES = bundle-stamp
+
+SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
+SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
+
+
+if WITH_SHEBANG_FILE
+SIXEL_SHEBANG_TARGETS = $(noinst_PROGRAMS)
+SIXEL_SHEBANG_STAMP = quicklook-shebang.stamp
+
+$(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
+	@if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
+		$(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
+			$(SIXEL_SHEBANG_TARGETS); \
+	fi
+	@touch $@
+
+all-local: $(SIXEL_SHEBANG_STAMP)
+CLEANFILES += $(SIXEL_SHEBANG_STAMP)
+endif
