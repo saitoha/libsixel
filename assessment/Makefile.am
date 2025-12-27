@@ -1,5 +1,10 @@
 BUILT_SOURCES =
 
+CLEANFILES =
+
+SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
+SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
+
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 
 if WANT_AMALGAMATED_TOOLS
@@ -72,4 +77,20 @@ if HAVE_ONNXRUNTIME
 lpipsmodelsdir = @modeldir@/lpips
 dist_lpipsmodels_DATA = $(top_srcdir)/models/lpips/lpips_diff.onnx \
                         $(top_srcdir)/models/lpips/lpips_feature.onnx
+endif
+
+
+if WITH_SHEBANG_FILE
+SIXEL_SHEBANG_TARGETS = $(bin_PROGRAMS)
+SIXEL_SHEBANG_STAMP = assessment-shebang.stamp
+
+$(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
+	@if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
+		$(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
+			$(SIXEL_SHEBANG_TARGETS); \
+	fi
+	@touch $@
+
+all-local: $(SIXEL_SHEBANG_STAMP)
+CLEANFILES += $(SIXEL_SHEBANG_STAMP)
 endif

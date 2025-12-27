@@ -4,6 +4,8 @@ endif
 if CFLAGS_HAVE_COVERAGE
 MAYBE_COVERAGE = --coverage
 endif
+SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
+SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 if WANT_AMALGAMATED_TOOLS
 BUILT_SOURCES = $(AMALGAMATION_SIXEL)
@@ -100,7 +102,7 @@ ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export ARTIFACT_ROOT;
 AM_TESTS_ENVIRONMENT += TOP_SRCDIR='$(abs_top_srcdir)'; export TOP_SRCDIR;
 AM_TESTS_ENVIRONMENT += TOP_BUILDDIR='$(abs_top_builddir)'; export TOP_BUILDDIR;
-AM_TESTS_ENVIRONMENT += CC='$(CC)'; export CC;
+#AM_TESTS_ENVIRONMENT += CC='$(CC)'; export CC;
 AM_TESTS_ENVIRONMENT += CROSS_COMPILING='@cross_compiling@'; \
        export CROSS_COMPILING;
 FILTER_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
@@ -128,7 +130,7 @@ FILTER_COMMON_CFLAGS_VAL = $(AM_CFLAGS) \
 endif
 FILTER_COMMON_LDFLAGS_VAL = $(AM_LDFLAGS) $(MAYBE_COVERAGE)
 if WANT_AMALGAMATED_TOOLS
-FILTER_COMMON_LDADD_VAL = $(top_builddir)/src/libsixel.la $(LIBS) \
+FILTER_COMMON_LDADD_VAL = $(LIBS) \
         $(LIBCURL_LIBS) \
         $(WINHTTP_LIBS) \
         $(LIBPNG_LIBS) \
@@ -152,7 +154,7 @@ if AMALGAMATION_NEEDS_OBJC
 FILTER_AMALGAMATION_CPPFLAGS_COMMON += -x objective-c
 endif
 if WANT_AMALGAMATED_TOOLS
-FILTER_AMALGAMATION_LDADD_COMMON = $(top_builddir)/src/libsixel.la $(LIBS) \
+FILTER_AMALGAMATION_LDADD_COMMON = $(LIBS) \
         $(LIBCURL_LIBS) \
         $(WINHTTP_LIBS) \
         $(LIBPNG_LIBS) \
@@ -166,7 +168,7 @@ FILTER_AMALGAMATION_LDADD_COMMON = $(top_builddir)/src/libsixel.la $(LIBS) \
         $(ONNXRUNTIME_LIBS) \
         @THREAD_LIBS@
 else
-FILTER_AMALGAMATION_LDADD_COMMON = $(LIBS)
+FILTER_AMALGAMATION_LDADD_COMMON = $(top_builddir)/src/libsixel.la $(LIBS)
 endif
 
 check_PROGRAMS += $(FILTER_TEST_BINARIES)
@@ -386,3 +388,16 @@ $(COPY_TESTS) $(HELPER_FILES):
 	$(AM_V_GEN){ if test -f $(srcdir)/$@; then \
 		cp $(srcdir)/$@ $(builddir)/$@; \
 	fi; }
+
+
+if WITH_SHEBANG_FILE
+SIXEL_SHEBANG_TARGETS = $(check_PROGRAMS)
+
+apply-shebang-check: $(SIXEL_SHEBANG_TARGETS)
+	@if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
+		$(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
+			$(SIXEL_SHEBANG_TARGETS); \
+	fi
+
+check-am: apply-shebang-check
+endif

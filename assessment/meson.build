@@ -50,12 +50,20 @@ if not lpips_opt.disabled()
     lpips_inc = lsqa_inc
     lpips_deps = lsqa_deps
     lpips_args = lsqa_args
-    executable('lpips',
+    lpips_exe = executable('lpips',
                '../tools/lpips.c',
                include_directories: lpips_inc,
                dependencies: lpips_deps,
                c_args: lpips_args,
                install: false)
+    if shebang_enabled
+      shebang_targets += [custom_target('lpips_shebang',
+        input: lpips_exe,
+        output: 'lpips.shebang.stamp',
+        command: [shebang_helper, shebang_file, '@INPUT@'],
+        depend_files: shebang_file,
+        build_by_default: true)]
+    endif
     install_data(['../models/lpips/lpips_diff.onnx',
                   '../models/lpips/lpips_feature.onnx'],
                  install_dir: lpips_model_dir)
@@ -92,7 +100,14 @@ lsqa_bin = executable('lsqa',
            include_directories: lsqa_inc,
            build_rpath: lsqa_rpath,
            dependencies: lsqa_dependencies,
-           c_args: lsqa_c_args,
-           objc_args: lsqa_objc_args,
-           install: true)
+            c_args: lsqa_c_args,
+            install: true)
+if shebang_enabled
+  shebang_targets += [custom_target('lsqa_shebang',
+    input: lsqa_bin,
+    output: 'lsqa.shebang.stamp',
+    command: [shebang_helper, shebang_file, '@INPUT@'],
+    depend_files: shebang_file,
+    build_by_default: true)]
+endif
 set_variable('lsqa_bin', lsqa_bin)
