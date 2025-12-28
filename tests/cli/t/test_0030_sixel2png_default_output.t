@@ -32,15 +32,18 @@ echo "1..1"
 input_path="${images_dir}/snake.six"
 require_file "${input_path}"
 
-output_path="${output_dir}/snake.png"
-rm -f "${output_path}"
+stdout_path="${output_dir}/stdout.png"
+stderr_path="${output_dir}/stderr.txt"
+rm -f "${stdout_path}" "${stderr_path}"
 
-if run_sixel2png -i "${input_path}" >"${output_dir}/stdout.txt" \
-        2>"${output_dir}/stderr.txt"; then
-    if [ -s "${output_path}" ]; then
-        pass 1 "default output name created"
+if run_sixel2png -i "${input_path}" >"${stdout_path}" 2>"${stderr_path}"; then
+    if [ -s "${stdout_path}" ] \
+            && [ "$(head -c 8 "${stdout_path}" | \
+                LC_ALL=C od -An -tx1 | tr -d ' \n')" \
+                = "89504e470d0a1a0a" ]; then
+        pass 1 "default stdout PNG produced"
     else
-        fail 1 "default-named png not created"
+        fail 1 "stdout png missing or invalid signature"
     fi
 else
     fail 1 "sixel2png without -o failed"

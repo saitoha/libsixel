@@ -41,7 +41,7 @@ else
 fi
 
 help_output="${output_dir}/help.txt"
-if run_sixel2png -H >"${help_output}" 2>>"${log_file}"; then
+if run_sixel2png -H 2>>"${log_file}" 1>"${help_output}"; then
     if grep -Eq '^Usage: sixel2png' "${help_output}"; then
         pass 2 "-H prints usage"
     else

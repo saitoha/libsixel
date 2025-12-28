@@ -401,12 +401,17 @@ void show_version(void)
 static void
 show_help(void)
 {
-    fprintf(stderr,
+    /*
+     * Help text must go to stdout so shell pipelines like `sixel2png -H
+     * | less` work without redirection. Keep error details on stderr in
+     * other code paths.
+     */
+    fprintf(stdout,
             "Usage: sixel2png -i input.sixel -o output.png\n"
             "       sixel2png < input.sixel > output.png\n"
             "\n"
             "Options:\n");
-    sixel2png_print_option_help(stderr);
+    sixel2png_print_option_help(stdout);
 }
 
 
