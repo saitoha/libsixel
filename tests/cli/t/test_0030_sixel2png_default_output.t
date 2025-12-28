@@ -27,6 +27,21 @@ fail() {
     status=1
 }
 
+head_bytes() {
+  n=$1; shift
+
+  if head -c 0 </dev/null >/dev/null 2>&1; then
+    head -c "$n" "$@"
+    return
+  fi
+
+  if [ $# -gt 0 ] && [ "$1" != "-" ]; then
+    dd if="$1" bs=1 count="$n" 2>/dev/null
+  else
+    dd bs=1 count="$n" 2>/dev/null
+  fi
+}
+
 echo "1..1"
 
 input_path="${images_dir}/snake.six"
@@ -38,7 +53,7 @@ rm -f "${stdout_path}" "${stderr_path}"
 
 if run_sixel2png -i "${input_path}" >"${stdout_path}" 2>"${stderr_path}"; then
     if [ -s "${stdout_path}" ] \
-            && [ "$(head -c 5 "${stdout_path}" | \
+            && [ "$(head_bytes 5 "${stdout_path}" | \
                 LC_ALL=C od -An -tx1 | tr -d ' \n')" \
                 = "89504e470d" ]; then
         pass 1 "default stdout PNG produced"
