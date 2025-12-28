@@ -42,7 +42,12 @@ CLI_TESTS = cli/t/test_0001_01_invalid_positional.t \
        cli/t/test_0020_mapfile_io.t \
        cli/t/test_0021_pipeline_planner.t \
        cli/t/test_0021_palette_fallback.t \
-       cli/t/test_0022_resize_precision_mode.t
+       cli/t/test_0022_resize_precision_mode.t \
+       cli/t/test_0026_sixel2png_version_help.t \
+       cli/t/test_0027_sixel2png_missing_args.t \
+       cli/t/test_0028_sixel2png_unknown_option.t \
+       cli/t/test_0029_sixel2png_invalid_decoder_value.t \
+       cli/t/test_0030_sixel2png_default_output.t
 
 PYTHON_TESTS = python/t/test_0001_python_bindings.t \
        python/t/test_0002_python_api_formats.t \
