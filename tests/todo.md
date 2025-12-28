@@ -1,13 +1,15 @@
 # Test TODOs
 
 ## CLI helper coverage (converters/cli.c)
-- Add TAP unit tests under `tests/cli/t` using `test_xxxx_*.t` naming.
-  - `test_0023_cli_token_is_known_option.t`: register `-a`/`--alpha` and probe tokens `-`, `---bad`, `-ab`, `--`, `plain`, `----too-long`, `--a=b`.
-    - Expect true only for registered tokens; `out_short_opt` set for short options; malformed or overlong tokens return false; `--a=b` accepted when `--a` registered.
-  - `test_0024_cli_option_requires_argument.t`: query optstring `"a:b::c"` for `a`, `b`, `c`.
-    - Expect required/optional/none mapping in line with colons.
-  - `test_0025_cli_guard_missing_argument.t`: simulate `optopt='i'` with `optarg=NULL` plus requires-argument flag; also `optarg="-file.six"` with hyphen-allowed flag.
-    - Expect missing argument error mentioning `-i/--input`; hyphen-prefixed value passes without error.
+- Covered by new TAP unit tests in `tests/cli/t` using `test_xxxx_*.t` naming.
+  - `test_0023_cli_token_is_known_option.t`: exercises short/long options,
+    value-bearing tokens, bare hyphens, long-name overflow, and unknown tokens
+    while checking `out_short_opt` resets.
+  - `test_0024_cli_option_requires_argument.t`: verifies optstring parsing for
+    required/optional/none cases using `"a:b::c"`.
+  - `test_0025_cli_guard_missing_argument.t`: covers missing-argument
+    reporting, leading-dash allowances, and optind rewind when a candidate
+    argument is an option.
 
 ## sixel2png option handling
 - Add integration TAP tests under `tests/cli/t` for `sixel2png` option flows with `test_xxxx_*.t` naming.
