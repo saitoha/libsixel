@@ -76,6 +76,22 @@ sixel_pixbuf_propagate_error(GError **error,
     return FALSE;
 }
 
+#if defined(SIXEL_PIXBUF_LOADER_TESTING)
+gboolean
+sixel_pixbuf_testing_propagate_error(GError **error,
+                                     SIXELSTATUS status,
+                                     char const *message)
+{
+    return sixel_pixbuf_propagate_error(error, status, message);
+}
+
+void
+sixel_pixbuf_testing_context_free(gpointer context_ptr)
+{
+    sixel_pixbuf_context_free((SixelPixbufContext *)context_ptr);
+}
+#endif
+
 static void
 sixel_pixbuf_destroy_pixels(guchar *pixels, gpointer data)
 {
