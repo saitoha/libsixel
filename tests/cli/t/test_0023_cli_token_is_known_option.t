@@ -35,9 +35,11 @@ fi
 cc=${CC:-cc}
 
 cflags="-std=c99 -Wall -Wextra -Werror -DHAVE_CONFIG_H"
-cflags="${cflags} -I${top_builddir} -I${top_srcdir} -I${top_srcdir}/converters"
+cflags="${cflags} -I${top_builddir} -I${top_builddir}/include"
+cflags="${cflags} -I${top_srcdir} -I${top_srcdir}/converters"
+cflags="${cflags} -I${top_srcdir}/include"
 
-ldflags="-L${top_builddir}/src/.libs -lsixel"
+ldflags="-L${top_builddir}/src/.libs -L${top_builddir}/src -lsixel"
 ldpath="${top_builddir}/src/.libs:${top_builddir}/src"
 
 if pkg-config --exists libsixel; then
