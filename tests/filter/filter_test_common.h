@@ -19,10 +19,16 @@
 #include "dither.h"
 #include "frame.h"
 
-#if defined(__GNUC__)
-#define SIXEL_TEST_UNUSED __attribute__((unused))
+#if defined(__clang__)
+# if __has_attribute(unused)
+#  define SIXEL_TEST_UNUSED __attribute__((unused))
+# else
+#  define SIXEL_TEST_UNUSED
+# endif
+#elif defined(__GNUC__)
+# define SIXEL_TEST_UNUSED __attribute__((unused))
 #else
-#define SIXEL_TEST_UNUSED
+# define SIXEL_TEST_UNUSED
 #endif
 
 typedef struct test_progress {

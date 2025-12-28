@@ -137,10 +137,8 @@ int fchmod(int, mode_t);
 #endif
 #endif
 
-#if defined(SIXEL_AMALGAMATION)
 #include "compat_stub.h"  /* share CRT shims with the core library */
 #define IMG2SIXEL_USE_SHARED_COMPAT 1
-#endif
 
 #define IMG2SIXEL_COMPLETION_MODE_FILE 0644
 #define IMG2SIXEL_COMPLETION_DIR_MODE 0755
