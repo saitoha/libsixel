@@ -20,12 +20,12 @@
   - `test_0030_sixel2png_default_output.t`: run `sixel2png -i dummy.six`; expect `dummy.png` created when `-o/--output` omitted.
 
 ## GDK Pixbuf loader robustness
-- Add small GLib/C tests in `tests/gdk-pixbuf-loader` with `test_xxxx_*.c` naming.
-  - `test_0001_incremental_load.c`: feed minimal SIXEL bytes; call `sixel_pixbuf_begin_load` → `load_increment` (split chunks) → `stop_load`.
-    - Expect both `prepared_func` and `updated_func`; resulting `GdkPixbuf` width/height match fixture; no `GError` set.
-  - `test_0002_corrupt_data.c`: feed truncated/malformed SIXEL data through same sequence.
-    - Expect failure with `GError` domain `GDK_PIXBUF_ERROR` and code `GDK_PIXBUF_ERROR_CORRUPT_IMAGE`.
-  - `test_0003_propagate_error.c`: call `sixel_pixbuf_propagate_error` with `SIXEL_BAD_INPUT`, `SIXEL_BAD_ALLOCATION`, etc.
-    - Expect domain `GDK_PIXBUF_ERROR`, correct enum codes, and messages including status name.
-  - `test_0004_context_free.c`: call `sixel_pixbuf_context_free(NULL)` and double-free scenarios.
-    - Expect no crash or double-free side effects.
+- Covered by GLib unit tests in `tests/gdk-pixbuf-loader` using `test_xxxx_*.c` naming.
+  - `test_0001_incremental_load.c`: feeds the tiny SIXEL sample in chunks and asserts
+    prepared/updated callbacks, image dimensions, and successful completion.
+  - `test_0002_corrupt_data.c`: provides clearly invalid SIXEL text, expects stop_load
+    failure with `GDK_PIXBUF_ERROR_CORRUPT_IMAGE`.
+  - `test_0003_propagate_error.c`: exercises `sixel_pixbuf_propagate_error` via the
+    testing wrapper to confirm error domain, codes, and message prefix.
+  - `test_0004_context_free.c`: obtains a loader context and frees it through the
+    testing wrapper (plus NULL), ensuring no crash on cleanup.
