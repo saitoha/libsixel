@@ -137,9 +137,6 @@ int fchmod(int, mode_t);
 #endif
 #endif
 
-#include "compat_stub.h"  /* share CRT shims with the core library */
-#define IMG2SIXEL_USE_SHARED_COMPAT 1
-
 #define IMG2SIXEL_COMPLETION_MODE_FILE 0644
 #define IMG2SIXEL_COMPLETION_DIR_MODE 0755
 #define IMG2SIXEL_TMP_SUFFIX ".tmpXXXXXX"
@@ -147,27 +144,35 @@ int fchmod(int, mode_t);
 #define IMG2SIXEL_COMPLETION_SHELL_BASH  1
 #define IMG2SIXEL_COMPLETION_SHELL_ZSH   2
 
-#if !defined(IMG2SIXEL_USE_SHARED_COMPAT)
 /* ------------------------------------------------------------------------ */
 /* private copies of the compat helpers we consume                          */
+/*                                                                          */
+/* The completion binary must not reach into src/compat_stub.c because      */
+/* amalgamation mode concatenates all sources into a single file.  To avoid */
+/* clashing with the library's shim symbols we keep a tool-specific         */
+/* prefix.                                                                  */
 /* ------------------------------------------------------------------------ */
 
-static char *sixel_compat_strerror(int error_number,
-                                   char *buffer,
-                                   size_t buffer_size);
-static FILE *sixel_compat_fopen(const char *filename, const char *mode);
-static const char *sixel_compat_getenv(const char *name);
+static char *img2sixel_compat_strerror(int error_number,
+                                       char *buffer,
+                                       size_t buffer_size);
+static FILE *img2sixel_compat_fopen(const char *filename, const char *mode);
+static const char *img2sixel_compat_getenv(const char *name);
 #if !defined(HAVE_MKSTEMP)
-static int sixel_compat_mktemp(char *templ, size_t buffer_size);
-static int sixel_compat_open(const char *path, int flags, ...);
+static int img2sixel_compat_mktemp(char *templ, size_t buffer_size);
+static int img2sixel_compat_open(const char *path, int flags, ...);
 #endif
-static int sixel_compat_close(int fd);
-static int sixel_compat_unlink(const char *path);
-static int sixel_compat_access(const char *path, int mode);
-static ssize_t sixel_compat_write(int fd, const void *buffer, size_t count);
+static int img2sixel_compat_close(int fd);
+static int img2sixel_compat_unlink(const char *path);
+static int img2sixel_compat_access(const char *path, int mode);
+static ssize_t img2sixel_compat_write(int fd,
+                                      const void *buffer,
+                                      size_t count);
 
 static char *
-sixel_compat_strerror(int error_number, char *buffer, size_t buffer_size)
+img2sixel_compat_strerror(int error_number,
+                          char *buffer,
+                          size_t buffer_size)
 {
 #if defined(_MSC_VER)
     errno_t status;
@@ -243,7 +248,7 @@ sixel_compat_strerror(int error_number, char *buffer, size_t buffer_size)
 }
 
 static FILE *
-sixel_compat_fopen(const char *filename, const char *mode)
+img2sixel_compat_fopen(const char *filename, const char *mode)
 {
     FILE *handle;
 
@@ -263,7 +268,7 @@ sixel_compat_fopen(const char *filename, const char *mode)
 }
 
 static const char *
-sixel_compat_getenv(const char *name)
+img2sixel_compat_getenv(const char *name)
 {
 #if defined(_MSC_VER)
     static char buffer[32768];
@@ -295,7 +300,7 @@ sixel_compat_getenv(const char *name)
 
 #if !defined(HAVE_MKSTEMP)
 static int
-sixel_compat_mktemp(char *templ, size_t buffer_size)
+img2sixel_compat_mktemp(char *templ, size_t buffer_size)
 {
 #if defined(_MSC_VER)
     errno_t error;
@@ -330,7 +335,7 @@ sixel_compat_mktemp(char *templ, size_t buffer_size)
 }
 
 static int
-sixel_compat_open(const char *path, int flags, ...)
+img2sixel_compat_open(const char *path, int flags, ...)
 {
     int fd;
     va_list args;
@@ -365,7 +370,7 @@ sixel_compat_open(const char *path, int flags, ...)
 #endif  /* !HAVE_MKSTEMP */
 
 static int
-sixel_compat_close(int fd)
+img2sixel_compat_close(int fd)
 {
 #if defined(_MSC_VER)
     return _close(fd);
@@ -375,7 +380,7 @@ sixel_compat_close(int fd)
 }
 
 static int
-sixel_compat_unlink(const char *path)
+img2sixel_compat_unlink(const char *path)
 {
 #if defined(_MSC_VER)
     return _unlink(path);
@@ -385,7 +390,7 @@ sixel_compat_unlink(const char *path)
 }
 
 static int
-sixel_compat_access(const char *path, int mode)
+img2sixel_compat_access(const char *path, int mode)
 {
 #if defined(_MSC_VER)
     return _access(path, mode);
@@ -395,7 +400,7 @@ sixel_compat_access(const char *path, int mode)
 }
 
 static ssize_t
-sixel_compat_write(int fd, const void *buffer, size_t count)
+img2sixel_compat_write(int fd, const void *buffer, size_t count)
 {
 #if defined(_MSC_VER)
     return (ssize_t)_write(fd, buffer, (unsigned int)count);
@@ -403,7 +408,6 @@ sixel_compat_write(int fd, const void *buffer, size_t count)
     return write(fd, buffer, count);
 #endif
 }
-#endif  /* !IMG2SIXEL_USE_SHARED_COMPAT */
 
 /* ------------------------------------------------------------------------ */
 /* helpers for platform abstractions */
@@ -483,7 +487,7 @@ img2sixel_log_errno(const char *fmt, ...)
         fputs(message, stderr);
     }
     if (errno != 0) {
-        if (sixel_compat_strerror(errno, errbuf, sizeof(errbuf)) != NULL) {
+        if (img2sixel_compat_strerror(errno, errbuf, sizeof(errbuf)) != NULL) {
             fprintf(stderr, ": %s", errbuf);
         } else {
             fprintf(stderr, ": errno=%d", errno);
@@ -535,7 +539,7 @@ read_entire_file(const char *path, char **buf, size_t *len)
         return -1;
     }
 
-    fp = sixel_compat_fopen(path, "rb");
+    fp = img2sixel_compat_fopen(path, "rb");
     if (fp == NULL) {
         return -1;
     }
@@ -599,11 +603,11 @@ write_atomic(const char *dst_path, const void *buf, size_t len, mode_t mode)
         return -1;
     }
 #else
-    if (sixel_compat_mktemp(tmp_path, dst_len + suffix_len + 1) != 0) {
+    if (img2sixel_compat_mktemp(tmp_path, dst_len + suffix_len + 1) != 0) {
         free(tmp_path);
         return -1;
     }
-    fd = sixel_compat_open(tmp_path,
+    fd = img2sixel_compat_open(tmp_path,
                            O_RDWR | O_CREAT | O_TRUNC,
                            S_IRUSR | S_IWUSR);
     if (fd < 0) {
@@ -619,8 +623,8 @@ write_atomic(const char *dst_path, const void *buf, size_t len, mode_t mode)
         int saved_errno_fchmod;
 
         saved_errno_fchmod = errno;
-        (void)sixel_compat_close(fd);
-        (void)sixel_compat_unlink(tmp_path);
+        (void)img2sixel_compat_close(fd);
+        (void)img2sixel_compat_unlink(tmp_path);
         free(tmp_path);
         errno = saved_errno_fchmod;
         return -1;
@@ -631,7 +635,7 @@ write_atomic(const char *dst_path, const void *buf, size_t len, mode_t mode)
 
     total = 0;
     while (total < len) {
-        written = sixel_compat_write(fd,
+        written = img2sixel_compat_write(fd,
                                      (const char *)buf + total,
                                      len - total);
         if (written < 0) {
@@ -639,8 +643,8 @@ write_atomic(const char *dst_path, const void *buf, size_t len, mode_t mode)
                 continue;
             }
             saved_errno = errno;
-            (void)sixel_compat_close(fd);
-            (void)sixel_compat_unlink(tmp_path);
+            (void)img2sixel_compat_close(fd);
+            (void)img2sixel_compat_unlink(tmp_path);
             free(tmp_path);
             errno = saved_errno;
             return -1;
@@ -652,16 +656,16 @@ write_atomic(const char *dst_path, const void *buf, size_t len, mode_t mode)
         int saved_errno_fsync;
 
         saved_errno_fsync = errno;
-        (void)sixel_compat_close(fd);
-        (void)sixel_compat_unlink(tmp_path);
+        (void)img2sixel_compat_close(fd);
+        (void)img2sixel_compat_unlink(tmp_path);
         free(tmp_path);
         errno = saved_errno_fsync;
         return -1;
     }
 
-    if (sixel_compat_close(fd) != 0) {
+    if (img2sixel_compat_close(fd) != 0) {
         saved_errno = errno;
-        (void)sixel_compat_unlink(tmp_path);
+        (void)img2sixel_compat_unlink(tmp_path);
         free(tmp_path);
         errno = saved_errno;
         return -1;
@@ -669,7 +673,7 @@ write_atomic(const char *dst_path, const void *buf, size_t len, mode_t mode)
 
     if (rename(tmp_path, dst_path) != 0) {
         saved_errno = errno;
-        (void)sixel_compat_unlink(tmp_path);
+        (void)img2sixel_compat_unlink(tmp_path);
         free(tmp_path);
         errno = saved_errno;
         return -1;
@@ -791,7 +795,7 @@ files_equal(const char *path, const void *buf, size_t len)
         return -1;
     }
 
-    fp = sixel_compat_fopen(path, "rb");
+    fp = img2sixel_compat_fopen(path, "rb");
     if (fp == NULL) {
         if (errno == ENOENT) {
             return 0;
@@ -904,7 +908,7 @@ ensure_line_in_file(const char *path, const char *line)
         return 0;
     }
 
-    fp = sixel_compat_fopen(path, "ab");
+    fp = img2sixel_compat_fopen(path, "ab");
     if (fp == NULL) {
         free(content);
         return -1;
@@ -973,7 +977,7 @@ img2sixel_read_if_exists(const char *path, char **out, size_t *len)
     if (path == NULL) {
         return -1;
     }
-    if (sixel_compat_access(path, R_OK) != 0) {
+    if (img2sixel_compat_access(path, R_OK) != 0) {
         return -1;
     }
     return read_entire_file(path, out, len);
@@ -984,7 +988,7 @@ img2sixel_try_env(const char *env_name, char **out, size_t *len)
 {
     const char *path;
 
-    path = sixel_compat_getenv(env_name);
+    path = img2sixel_compat_getenv(env_name);
     if (path == NULL || path[0] == '\0') {
         return -1;
     }
@@ -1000,7 +1004,7 @@ img2sixel_try_env_dir(const char *env_name, const char *suffix,
     char *candidate;
     int ret;
 
-    dir = sixel_compat_getenv(env_name);
+    dir = img2sixel_compat_getenv(env_name);
     if (dir == NULL || dir[0] == '\0') {
         return -1;
     }
@@ -1161,12 +1165,12 @@ img2sixel_completion_home(void)
 {
     const char *home;
 
-    home = sixel_compat_getenv("IMG2SIXEL_COMPLETION_HOME");
+    home = img2sixel_compat_getenv("IMG2SIXEL_COMPLETION_HOME");
     if (home != NULL && home[0] != '\0') {
         return home;
     }
 
-    home = sixel_compat_getenv("HOME");
+    home = img2sixel_compat_getenv("HOME");
     if (home == NULL || home[0] == '\0') {
         return NULL;
     }
@@ -1235,7 +1239,7 @@ img2sixel_prefer_legacy_bash_path(void)
     /*   +----------------------------+                                   */
     /*                                                                    */
     /* ------------------------------------------------------------------ */
-    version = sixel_compat_getenv("BASH_VERSION");
+    version = img2sixel_compat_getenv("BASH_VERSION");
     if (version == NULL) {
         return 0;
     }
@@ -1281,7 +1285,7 @@ img2sixel_install_single(const char *shell, const char *target_path,
     }
 
     if (fallback_path != NULL
-        && sixel_compat_access(fallback_path, F_OK) == 0) {
+        && img2sixel_compat_access(fallback_path, F_OK) == 0) {
         equal = files_equal(fallback_path, buf, len);
         if (equal == 0) {
             ret = write_atomic(fallback_path, buf, len,
@@ -1525,7 +1529,7 @@ img2sixel_handle_show(int mask)
 static int
 img2sixel_unlink_result(const char *path)
 {
-    if (sixel_compat_unlink(path) == 0) {
+    if (img2sixel_compat_unlink(path) == 0) {
         printf("removed %s\n", path);
         return 0;
     }
