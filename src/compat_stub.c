@@ -1198,6 +1198,10 @@ sixel_compat_resolve_without_realpath(const char *path)
             return resolved;
         }
     }
+#else
+    (void)cwd;
+    (void)cwd_length;
+    (void)need_separator;
 #endif  /* PATH_MAX */
 
     path_length = strlen(path);
