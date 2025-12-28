@@ -330,95 +330,6 @@ jobs:
         brew update
         brew install lcov
 
-    - name: Install dependencies (FreeBSD)
-      if: matrix.platform == 'freebsd'
-      uses: cross-platform-actions/action@v0.30.0
-      with:
-        operating_system: ${{ matrix.cp_os }}
-        architecture: ${{ matrix.cp_arch }}
-        version: ${{ matrix.cp_version }}
-        environment_variables: CI,GITHUB_WORKSPACE
-        run: |
-          set -eux
-
-          pkg_prefix=""
-          if [ "$(id -u)" -ne 0 ]; then
-            if command -v sudo >/dev/null 2>&1; then
-              pkg_prefix="sudo"
-            elif command -v doas >/dev/null 2>&1; then
-              pkg_prefix="doas"
-            else
-              echo "No privilege escalation helper available" >&2
-              exit 1
-            fi
-          fi
-
-          ${pkg_prefix:+$pkg_prefix }pkg update -f
-          ${pkg_prefix:+$pkg_prefix }pkg install -y \
-            gmake \
-            # pkgconf avoided to reduce fragile package installs
-
-    - name: Install dependencies (NetBSD)
-      if: matrix.platform == 'netbsd'
-      uses: cross-platform-actions/action@v0.30.0
-      with:
-        operating_system: ${{ matrix.cp_os }}
-        architecture: ${{ matrix.cp_arch }}
-        version: ${{ matrix.cp_version }}
-        environment_variables: CI,GITHUB_WORKSPACE
-        run: |
-          set -eux
-
-          pkg_prefix=""
-          if [ "$(id -u)" -ne 0 ]; then
-            if command -v sudo >/dev/null 2>&1; then
-              pkg_prefix="sudo"
-            elif command -v doas >/dev/null 2>&1; then
-              pkg_prefix="doas"
-            else
-              echo "No privilege escalation helper available" >&2
-              exit 1
-            fi
-          fi
-
-          trap 'status=$?; if [ "$status" -ne 0 ] && \
-            [ -f /var/db/pkgin/pkg_install-err.log ]; then \
-            echo "pkg_install error log:" >&2; \
-            cat /var/db/pkgin/pkg_install-err.log >&2; \
-            cp /var/db/pkgin/pkg_install-err.log pkg_install-err.log || true; \
-          fi' EXIT
-
-          ${pkg_prefix:+$pkg_prefix }pkgin -y update
-          ${pkg_prefix:+$pkg_prefix }pkgin -y install \
-            gmake
-
-    - name: Install dependencies (OpenBSD)
-      if: matrix.platform == 'openbsd'
-      uses: cross-platform-actions/action@v0.30.0
-      with:
-        operating_system: ${{ matrix.cp_os }}
-        architecture: ${{ matrix.cp_arch }}
-        version: ${{ matrix.cp_version }}
-        environment_variables: CI,GITHUB_WORKSPACE
-        run: |
-          set -eux
-
-          pkg_prefix=""
-          if [ "$(id -u)" -ne 0 ]; then
-            if command -v sudo >/dev/null 2>&1; then
-              pkg_prefix="sudo"
-            elif command -v doas >/dev/null 2>&1; then
-              pkg_prefix="doas"
-            else
-              echo "No privilege escalation helper available" >&2
-              exit 1
-            fi
-          fi
-
-          ${pkg_prefix:+$pkg_prefix }pkg_add \
-            gmake \
-            # pkgconf avoided to reduce fragile package installs
-
     - name: Configure and build (DragonFlyBSD)
       if: matrix.platform == 'dragonflybsd'
       uses: vmactions/dragonflybsd-vm@v1
@@ -480,21 +391,6 @@ jobs:
             ${static_only_flags}
           cat config.log
           gmake V=1
-
-    - name: Install dependencies (Haiku)
-      if: matrix.platform == 'haiku'
-      uses: cross-platform-actions/action@v0.30.0
-      with:
-        operating_system: ${{ matrix.cp_os }}
-        architecture: ${{ matrix.cp_arch }}
-        version: ${{ matrix.cp_version }}
-        environment_variables: CI,GITHUB_WORKSPACE
-        run: |-
-          set -eux
-
-          pkgman refresh
-          pkgman install -y \
-            make
 
     - name: Setup MSVC developer env (vcvars)
       if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' }}
@@ -626,204 +522,6 @@ jobs:
       shell: msys2 {0}
       run: |
         ./emscripten/build-emcc.sh
-
-    - name: Configure and build (FreeBSD)
-      if: matrix.platform == 'freebsd' && matrix.emscripten != true
-      uses: cross-platform-actions/action@v0.30.0
-      with:
-        operating_system: ${{ matrix.cp_os }}
-        architecture: ${{ matrix.cp_arch }}
-        version: ${{ matrix.cp_version }}
-        environment_variables: CI,GITHUB_WORKSPACE
-        run: |
-          set -eux
-
-          # OpenBSD clang (e.g., 6.8) warns that --coverage is unused and
-          # converts it into an error under -Werror, so skip gcov here.
-          enable_gcov_flag=""
-          extra_config_flags="${{ matrix.configure_extra || '' }}"
-          if [ "${{ matrix.variant || '' }}" = "amalgamation" ]; then
-            enable_gcov_flag=""
-          fi
-          disable_threads_flag=""
-          if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
-            disable_threads_flag="--disable-threads"
-          fi
-          disable_tools_flags=""
-          if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
-            disable_tools_flags="--disable-img2sixel --disable-sixel2png"
-          fi
-          disable_simd_flag=""
-          if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
-            disable_simd_flag="--disable-simd"
-          fi
-          static_only_flags=""
-          if [ "${{ matrix.static_only || '' }}" = "true" ]; then
-            static_only_flags="--disable-shared --enable-static"
-            enable_gcov_flag=""
-          fi
-
-          ./configure \
-              --without-bashcompletiondir \
-              --without-zshcompletiondir \
-              --disable-python \
-              --enable-debug \
-              --enable-tests \
-              ${enable_gcov_flag} \
-              --disable-dependency-tracking \
-              ${disable_tools_flags} \
-              ${disable_threads_flag} \
-              ${disable_simd_flag} \
-              ${static_only_flags} \
-              ${extra_config_flags}
-          gmake V=1
-
-    - name: Configure and build (NetBSD)
-      if: matrix.platform == 'netbsd'
-      uses: cross-platform-actions/action@v0.30.0
-      with:
-        operating_system: ${{ matrix.cp_os }}
-        architecture: ${{ matrix.cp_arch }}
-        version: ${{ matrix.cp_version }}
-        environment_variables: CI,GITHUB_WORKSPACE
-        run: |
-          set -eux
-
-          enable_gcov_flag="--enable-gcov"
-          extra_config_flags="${{ matrix.configure_extra || '' }}"
-          if [ "${{ matrix.variant || '' }}" = "amalgamation" ]; then
-            enable_gcov_flag=""
-          fi
-          disable_threads_flag=""
-          if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
-            disable_threads_flag="--disable-threads"
-          fi
-          disable_tools_flags=""
-          if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
-            disable_tools_flags="--disable-img2sixel --disable-sixel2png"
-          fi
-          disable_simd_flag=""
-          if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
-            disable_simd_flag="--disable-simd"
-          fi
-          static_only_flags=""
-          if [ "${{ matrix.static_only || '' }}" = "true" ]; then
-            static_only_flags="--disable-shared --enable-static"
-            enable_gcov_flag=""
-          fi
-
-          ./configure \
-              --without-bashcompletiondir \
-              --without-zshcompletiondir \
-              --disable-python \
-              --enable-debug \
-              --enable-tests \
-              ${enable_gcov_flag} \
-              --disable-dependency-tracking \
-              ${disable_tools_flags} \
-              ${disable_threads_flag} \
-              ${disable_simd_flag} \
-              ${static_only_flags} \
-              ${extra_config_flags}
-          gmake V=1
-
-    - name: Configure and build (Haiku)
-      if: matrix.platform == 'haiku' && matrix.emscripten != true
-      uses: cross-platform-actions/action@v0.30.0
-      with:
-        operating_system: ${{ matrix.cp_os }}
-        architecture: ${{ matrix.cp_arch }}
-        version: ${{ matrix.cp_version }}
-        environment_variables: CI,GITHUB_WORKSPACE
-        run: |-
-          set -eux
-
-          enable_gcov_flag="--enable-gcov"
-          extra_config_flags="${{ matrix.configure_extra || '' }}"
-          if [ "${{ matrix.variant || '' }}" = "amalgamation" ]; then
-            enable_gcov_flag=""
-          fi
-          disable_threads_flag=""
-          if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
-            disable_threads_flag="--disable-threads"
-          fi
-          disable_tools_flags=""
-          if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
-            disable_tools_flags="--disable-img2sixel --disable-sixel2png"
-          fi
-          disable_simd_flag=""
-          if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
-            disable_simd_flag="--disable-simd"
-          fi
-          static_only_flags=""
-          if [ "${{ matrix.static_only || '' }}" = "true" ]; then
-            static_only_flags="--disable-shared --enable-static"
-            enable_gcov_flag=""
-          fi
-
-          ./configure \
-              --without-bashcompletiondir \
-              --without-zshcompletiondir \
-              --disable-python \
-              --enable-debug \
-              --enable-tests \
-              ${enable_gcov_flag} \
-              --disable-dependency-tracking \
-              ${disable_tools_flags} \
-              ${disable_threads_flag} \
-              ${disable_simd_flag} \
-              ${static_only_flags} \
-              ${extra_config_flags}
-          make V=1
-
-    - name: Configure and build (OpenBSD)
-      if: matrix.platform == 'openbsd' && matrix.emscripten != true
-      uses: cross-platform-actions/action@v0.30.0
-      with:
-        operating_system: ${{ matrix.cp_os }}
-        architecture: ${{ matrix.cp_arch }}
-        version: ${{ matrix.cp_version }}
-        environment_variables: CI,GITHUB_WORKSPACE
-        run: |
-          set -eux
-
-          enable_gcov_flag="--enable-gcov"
-          extra_config_flags="${{ matrix.configure_extra || '' }}"
-          if [ "${{ matrix.variant || '' }}" = "amalgamation" ]; then
-            enable_gcov_flag=""
-          fi
-          disable_threads_flag=""
-          if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
-            disable_threads_flag="--disable-threads"
-          fi
-          disable_tools_flags=""
-          if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
-            disable_tools_flags="--disable-img2sixel --disable-sixel2png"
-          fi
-          disable_simd_flag=""
-          if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
-            disable_simd_flag="--disable-simd"
-          fi
-          static_only_flags=""
-          if [ "${{ matrix.static_only || '' }}" = "true" ]; then
-            static_only_flags="--disable-shared --enable-static"
-            enable_gcov_flag=""
-          fi
-
-          ./configure \
-              --without-bashcompletiondir \
-              --without-zshcompletiondir \
-              --disable-python \
-              --enable-debug \
-              --enable-tests \
-              ${enable_gcov_flag} \
-              --disable-dependency-tracking \
-              ${disable_tools_flags} \
-              ${disable_threads_flag} \
-              ${disable_simd_flag} \
-              ${static_only_flags} \
-              ${extra_config_flags}
-          gmake V=1
 
     - name: Configure and build (non-Windows)
       if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows' && matrix.emscripten != true
@@ -1017,7 +715,7 @@ jobs:
         cat config.log
         make V=1
 
-    - name: Run tests (FreeBSD/OpenBSD/NetBSD/Haiku)
+    - name: Build and test (FreeBSD/OpenBSD/NetBSD/Haiku)
       if: (matrix.platform == 'freebsd' || matrix.platform == 'openbsd' || matrix.platform == 'netbsd' || matrix.platform == 'haiku') && matrix.emscripten != true
       uses: cross-platform-actions/action@v0.30.0
       with:
@@ -1028,6 +726,7 @@ jobs:
         run: |
           set -eux
           : "${GITHUB_WORKSPACE:=$PWD}"
+
           artifact_dir="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}"
           collect_logs() {
             status=$?
@@ -1044,6 +743,192 @@ jobs:
             exit "$status"
           }
           trap 'collect_logs' EXIT
+
+          pkg_prefix=""
+          if [ "$(id -u)" -ne 0 ]; then
+            if command -v sudo >/dev/null 2>&1; then
+              pkg_prefix="sudo"
+            elif command -v doas >/dev/null 2>&1; then
+              pkg_prefix="doas"
+            else
+              echo "No privilege escalation helper available" >&2
+              exit 1
+            fi
+          fi
+
+          if [ "${{ matrix.platform }}" = "freebsd" ]; then
+            ${pkg_prefix:+$pkg_prefix }pkg update -f
+            ${pkg_prefix:+$pkg_prefix }pkg install -y \
+              gmake \
+              # pkgconf avoided to reduce fragile package installs
+
+            enable_gcov_flag=""
+            extra_config_flags="${{ matrix.configure_extra || '' }}"
+            if [ "${{ matrix.variant || '' }}" = "amalgamation" ]; then
+              enable_gcov_flag=""
+            fi
+            disable_threads_flag=""
+            if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
+              disable_threads_flag="--disable-threads"
+            fi
+            disable_tools_flags=""
+            if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
+              disable_tools_flags="--disable-img2sixel --disable-sixel2png"
+            fi
+            disable_simd_flag=""
+            if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
+              disable_simd_flag="--disable-simd"
+            fi
+            static_only_flags=""
+            if [ "${{ matrix.static_only || '' }}" = "true" ]; then
+              static_only_flags="--disable-shared --enable-static"
+              enable_gcov_flag=""
+            fi
+
+            ./configure \
+                --without-bashcompletiondir \
+                --without-zshcompletiondir \
+                --disable-python \
+                --enable-debug \
+                --enable-tests \
+                ${enable_gcov_flag} \
+                --disable-dependency-tracking \
+                ${disable_tools_flags} \
+                ${disable_threads_flag} \
+                ${disable_simd_flag} \
+                ${static_only_flags} \
+                ${extra_config_flags}
+            gmake V=1
+          elif [ "${{ matrix.platform }}" = "netbsd" ]; then
+            ${pkg_prefix:+$pkg_prefix }pkgin -y update
+            ${pkg_prefix:+$pkg_prefix }pkgin -y install \
+              gmake
+            if [ -f /var/db/pkgin/pkg_install-err.log ]; then
+              cp /var/db/pkgin/pkg_install-err.log "$GITHUB_WORKSPACE/pkg_install-err.log" || true
+            fi
+
+            enable_gcov_flag="--enable-gcov"
+            extra_config_flags="${{ matrix.configure_extra || '' }}"
+            if [ "${{ matrix.variant || '' }}" = "amalgamation" ]; then
+              enable_gcov_flag=""
+            fi
+            disable_threads_flag=""
+            if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
+              disable_threads_flag="--disable-threads"
+            fi
+            disable_tools_flags=""
+            if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
+              disable_tools_flags="--disable-img2sixel --disable-sixel2png"
+            fi
+            disable_simd_flag=""
+            if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
+              disable_simd_flag="--disable-simd"
+            fi
+            static_only_flags=""
+            if [ "${{ matrix.static_only || '' }}" = "true" ]; then
+              static_only_flags="--disable-shared --enable-static"
+              enable_gcov_flag=""
+            fi
+
+            ./configure \
+                --without-bashcompletiondir \
+                --without-zshcompletiondir \
+                --disable-python \
+                --enable-debug \
+                --enable-tests \
+                ${enable_gcov_flag} \
+                --disable-dependency-tracking \
+                ${disable_tools_flags} \
+                ${disable_threads_flag} \
+                ${disable_simd_flag} \
+                ${static_only_flags} \
+                ${extra_config_flags}
+            gmake V=1
+          elif [ "${{ matrix.platform }}" = "openbsd" ]; then
+            ${pkg_prefix:+$pkg_prefix }pkg_add \
+              gmake \
+              # pkgconf avoided to reduce fragile package installs
+
+            enable_gcov_flag="--enable-gcov"
+            extra_config_flags="${{ matrix.configure_extra || '' }}"
+            if [ "${{ matrix.variant || '' }}" = "amalgamation" ]; then
+              enable_gcov_flag=""
+            fi
+            disable_threads_flag=""
+            if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
+              disable_threads_flag="--disable-threads"
+            fi
+            disable_tools_flags=""
+            if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
+              disable_tools_flags="--disable-img2sixel --disable-sixel2png"
+            fi
+            disable_simd_flag=""
+            if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
+              disable_simd_flag="--disable-simd"
+            fi
+            static_only_flags=""
+            if [ "${{ matrix.static_only || '' }}" = "true" ]; then
+              static_only_flags="--disable-shared --enable-static"
+              enable_gcov_flag=""
+            fi
+
+            ./configure \
+                --without-bashcompletiondir \
+                --without-zshcompletiondir \
+                --disable-python \
+                --enable-debug \
+                --enable-tests \
+                ${enable_gcov_flag} \
+                --disable-dependency-tracking \
+                ${disable_tools_flags} \
+                ${disable_threads_flag} \
+                ${disable_simd_flag} \
+                ${static_only_flags} \
+                ${extra_config_flags}
+            gmake V=1
+          else
+            pkgman refresh
+            pkgman install -y \
+              make
+
+            enable_gcov_flag="--enable-gcov"
+            extra_config_flags="${{ matrix.configure_extra || '' }}"
+            if [ "${{ matrix.variant || '' }}" = "amalgamation" ]; then
+              enable_gcov_flag=""
+            fi
+            disable_threads_flag=""
+            if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
+              disable_threads_flag="--disable-threads"
+            fi
+            disable_tools_flags=""
+            if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
+              disable_tools_flags="--disable-img2sixel --disable-sixel2png"
+            fi
+            disable_simd_flag=""
+            if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
+              disable_simd_flag="--disable-simd"
+            fi
+            static_only_flags=""
+            if [ "${{ matrix.static_only || '' }}" = "true" ]; then
+              static_only_flags="--disable-shared --enable-static"
+              enable_gcov_flag=""
+            fi
+
+            ./configure \
+                --without-bashcompletiondir \
+                --without-zshcompletiondir \
+                --disable-python \
+                --enable-debug \
+                --enable-tests \
+                ${enable_gcov_flag} \
+                --disable-dependency-tracking \
+                ${disable_tools_flags} \
+                ${disable_threads_flag} \
+                ${disable_simd_flag} \
+                ${static_only_flags} \
+                ${extra_config_flags}
+            make V=1
+          fi
 
           if command -v gmake >/dev/null 2>&1; then
             gmake check V=1
