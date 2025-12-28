@@ -1024,6 +1024,8 @@ sixel_decoder_setopt(
     char match_message[256];
     char const *filename = NULL;
     char *p = NULL;
+    long bias;
+    char *endptr;
 
     sixel_decoder_ref(decoder);
     path_flags = 0u;
@@ -1159,14 +1161,17 @@ sixel_decoder_setopt(
         break;
 
     case SIXEL_OPTFLAG_SIMILARITY:  /* S */
-        decoder->dequantize_similarity_bias = atoi(value);
-        if (decoder->dequantize_similarity_bias < 0 ||
-            decoder->dequantize_similarity_bias > 1000) {
+        errno = 0;
+        bias = strtol(value, &endptr, 10);
+        if (endptr == value || endptr[0] != '\0' ||
+            errno == ERANGE || bias < 0 || bias > 1000) {
             sixel_helper_set_additional_message(
-                "similarity must be between 1 and 1000.");
+                "similarity must be an integer between 0 and 1000.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
+
+        decoder->dequantize_similarity_bias = (int)bias;
         break;
 
     case SIXEL_OPTFLAG_SIZE:  /* s */
