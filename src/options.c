@@ -65,6 +65,18 @@
 #define SIXEL_OPTION_CHOICE_SUGGESTION_THRESHOLD 0.6
 #define SIXEL_OPTION_CHOICE_SHORT_NAME_LENGTH 3u
 
+#if defined(__clang__)
+# if __has_attribute(unused)
+#  define SIXEL_OPTION_UNUSED __attribute__((unused))
+# else
+#  define SIXEL_OPTION_UNUSED
+# endif
+#elif defined(__GNUC__)
+# define SIXEL_OPTION_UNUSED __attribute__((unused))
+#else
+# define SIXEL_OPTION_UNUSED
+#endif
+
 static void
 sixel_option_apply_env_default(char const *variable);
 
@@ -588,7 +600,7 @@ typedef struct sixel_option_path_candidate {
     double total_score;
 } sixel_option_path_candidate_t;
 
-static int
+static SIXEL_OPTION_UNUSED int
 sixel_option_case_insensitive_equals(
     char const *lhs,
     char const *rhs)
@@ -615,7 +627,7 @@ sixel_option_case_insensitive_equals(
     return lhs[index] == '\0' && rhs[index] == '\0';
 }
 
-static char const *
+static SIXEL_OPTION_UNUSED char const *
 sixel_option_basename_view(char const *path)
 {
     char const *forward;
@@ -649,7 +661,7 @@ sixel_option_basename_view(char const *path)
     return start;
 }
 
-static char const *
+static SIXEL_OPTION_UNUSED char const *
 sixel_option_extension_view(char const *name)
 {
     char const *dot;
