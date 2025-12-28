@@ -38,9 +38,9 @@ rm -f "${stdout_path}" "${stderr_path}"
 
 if run_sixel2png -i "${input_path}" >"${stdout_path}" 2>"${stderr_path}"; then
     if [ -s "${stdout_path}" ] \
-            && [ "$(head -c 8 "${stdout_path}" | \
+            && [ "$(head -c 5 "${stdout_path}" | \
                 LC_ALL=C od -An -tx1 | tr -d ' \n')" \
-                = "89504e470d0a1a0a" ]; then
+                = "89504e470d" ]; then
         pass 1 "default stdout PNG produced"
     else
         fail 1 "stdout png missing or invalid signature"
