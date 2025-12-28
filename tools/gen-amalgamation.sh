@@ -467,6 +467,10 @@ BEGIN {
     inline_once["stb_image_write.h"] = 1;
 }
 {
+    if ($0 ~ /^[ \t]*#pragma[ \t]+once[ \t]*$/) {
+        print "/* #pragma once */";
+        next;
+    }
     if ($0 ~ /^[ \t]*#[ \t]*include[ \t]*["<][^">]+[">]/) {
         name = $0;
         sub(/^[ \t]*#[ \t]*include[ \t]*["<]/, "", name);

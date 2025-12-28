@@ -49,7 +49,8 @@ def _write_header(path: pathlib.Path, bash_text: str, zsh_text: str) -> None:
     """Emit the header file contents."""
     lines = [
         "/* auto-generated; do not edit */",
-        "#pragma once",
+        "#ifndef SIXEL_CONVERTERS_COMPLETION_EMBED_H",
+        "#define SIXEL_CONVERTERS_COMPLETION_EMBED_H",
         "",
         "static const char img2sixel_bash_completion[] =",
         *(_escape_lines(bash_text)),
@@ -59,6 +60,7 @@ def _write_header(path: pathlib.Path, bash_text: str, zsh_text: str) -> None:
         *(_escape_lines(zsh_text)),
         "\"\";",
         "",
+        "#endif /* SIXEL_CONVERTERS_COMPLETION_EMBED_H */",
     ]
     path.write_text("\n".join(lines), encoding="utf-8")
 
