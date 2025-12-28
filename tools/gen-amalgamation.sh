@@ -475,20 +475,28 @@ BEGIN {
         name = $0;
         sub(/^[ \t]*#[ \t]*include[ \t]*["<]/, "", name);
         sub(/[">].*/, "", name);
-        if (name in header) {
-            if (name in inline_once && !(name in emitted)) {
-                emitted[name] = 1;
-                path = src_root "/src/" name;
-                if ((getline line < path) > 0) {
-                    print "#line 1 \"" path "\"";
-                    print line;
-                    while ((getline line < path) > 0) {
-                        print line;
+            if (name in header) {
+                if (name in inline_once && !(name in emitted)) {
+                    emitted[name] = 1;
+                    path = src_root "/src/" name;
+                    if ((getline line < path) > 0) {
+                        print "#line 1 \"" path "\"";
+                        if (line ~ /^[ \t]*#pragma[ \t]+once[ \t]*$/) {
+                            print "/* #pragma once */";
+                        } else {
+                            print line;
+                        }
+                        while ((getline line < path) > 0) {
+                            if (line ~ /^[ \t]*#pragma[ \t]+once[ \t]*$/) {
+                                print "/* #pragma once */";
+                                continue;
+                            }
+                            print line;
+                        }
+                        close(path);
+                        print "";
                     }
-                    close(path);
-                    print "";
                 }
-            }
             next;
         }
     }
@@ -672,7 +680,13 @@ emit_config_header() {
 
     printf "\n/* ==== config.h ==== */\n" >>"${output}"
     printf "#line 1 \"%s\"\n" "${config_path}" >>"${output}"
-    cat "${config_path}" >>"${output}"
+    awk '
+        /^[ \t]*#pragma[ \t]+once[ \t]*$/ {
+            print "/* #pragma once */";
+            next;
+        }
+        { print; }
+    ' "${config_path}" >>"${output}"
     printf "\n" >>"${output}"
 }
 
