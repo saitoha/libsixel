@@ -43,6 +43,9 @@ CLI_TESTS = cli/t/test_0001_01_invalid_positional.t \
        cli/t/test_0021_pipeline_planner.t \
        cli/t/test_0021_palette_fallback.t \
        cli/t/test_0022_resize_precision_mode.t \
+       cli/t/test_0023_cli_token_is_known_option.t \
+       cli/t/test_0024_cli_option_requires_argument.t \
+       cli/t/test_0025_cli_guard_missing_argument.t \
        cli/t/test_0026_sixel2png_version_help.t \
        cli/t/test_0027_sixel2png_missing_args.t \
        cli/t/test_0028_sixel2png_unknown_option.t \
