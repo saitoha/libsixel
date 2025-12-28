@@ -337,7 +337,7 @@ jobs:
         operating_system: ${{ matrix.cp_os }}
         architecture: ${{ matrix.cp_arch }}
         version: ${{ matrix.cp_version }}
-        environment_variables: CI
+        environment_variables: CI,GITHUB_WORKSPACE
         run: |
           set -eux
 
@@ -365,7 +365,7 @@ jobs:
         operating_system: ${{ matrix.cp_os }}
         architecture: ${{ matrix.cp_arch }}
         version: ${{ matrix.cp_version }}
-        environment_variables: CI
+        environment_variables: CI,GITHUB_WORKSPACE
         run: |
           set -eux
 
@@ -399,7 +399,7 @@ jobs:
         operating_system: ${{ matrix.cp_os }}
         architecture: ${{ matrix.cp_arch }}
         version: ${{ matrix.cp_version }}
-        environment_variables: CI
+        environment_variables: CI,GITHUB_WORKSPACE
         run: |
           set -eux
 
@@ -488,7 +488,7 @@ jobs:
         operating_system: ${{ matrix.cp_os }}
         architecture: ${{ matrix.cp_arch }}
         version: ${{ matrix.cp_version }}
-        environment_variables: CI
+        environment_variables: CI,GITHUB_WORKSPACE
         run: |-
           set -eux
 
@@ -634,7 +634,7 @@ jobs:
         operating_system: ${{ matrix.cp_os }}
         architecture: ${{ matrix.cp_arch }}
         version: ${{ matrix.cp_version }}
-        environment_variables: CI
+        environment_variables: CI,GITHUB_WORKSPACE
         run: |
           set -eux
 
@@ -685,7 +685,7 @@ jobs:
         operating_system: ${{ matrix.cp_os }}
         architecture: ${{ matrix.cp_arch }}
         version: ${{ matrix.cp_version }}
-        environment_variables: CI
+        environment_variables: CI,GITHUB_WORKSPACE
         run: |
           set -eux
 
@@ -734,7 +734,7 @@ jobs:
         operating_system: ${{ matrix.cp_os }}
         architecture: ${{ matrix.cp_arch }}
         version: ${{ matrix.cp_version }}
-        environment_variables: CI
+        environment_variables: CI,GITHUB_WORKSPACE
         run: |-
           set -eux
 
@@ -783,7 +783,7 @@ jobs:
         operating_system: ${{ matrix.cp_os }}
         architecture: ${{ matrix.cp_arch }}
         version: ${{ matrix.cp_version }}
-        environment_variables: CI
+        environment_variables: CI,GITHUB_WORKSPACE
         run: |
           set -eux
 
@@ -2109,7 +2109,7 @@ jobs:
         operating_system: ${{ matrix.cp_os }}
         architecture: ${{ matrix.cp_arch }}
         version: ${{ matrix.cp_version }}
-        environment_variables: CI
+        environment_variables: CI,GITHUB_WORKSPACE
         run: &meson_non_windows |
           set -eux
 
