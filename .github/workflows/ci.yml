@@ -392,28 +392,6 @@ jobs:
           ${pkg_prefix:+$pkg_prefix }pkgin -y install \
             gmake
 
-    - name: Upload pkg_install log (Autotools NetBSD)
-      if: ${{ failure() && matrix.platform == 'netbsd' }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: pkg_install-log-autotools-${{ matrix.label }}
-        path: pkg_install-err.log
-        if-no-files-found: ignore
-
-    - name: Upload autotools artifacts
-      if: matrix.platform == 'netbsd' && always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: autotools-${{ matrix.label }}
-        path: |
-          **/test-suite.log
-          **/*.log
-          **/*.trs
-          **/_artifacts/**
-          coverage.info
-        if-no-files-found: warn
-        overwrite: true
-
     - name: Install dependencies (OpenBSD)
       if: matrix.platform == 'openbsd'
       uses: cross-platform-actions/action@v0.30.0
@@ -450,6 +428,23 @@ jobs:
         copyback: true
         run: |
           set -eux
+          artifact_dir="${GITHUB_WORKSPACE}/_artifacts/dragonflybsd"
+          collect_logs() {
+            status=$?
+            cd "$GITHUB_WORKSPACE"
+            mkdir -p "$artifact_dir"
+            find . -type f \( -name 'config.log' -o -name 'test-suite.log' -o -name '*.log' -o -name '*.trs' \) \
+              ! -path "./_artifacts/*" \
+              | while IFS= read -r f; do
+                  rel="${f#./}"
+                  dest="${artifact_dir}/${rel}"
+                  mkdir -p "$(dirname "$dest")"
+                  cp "$f" "$dest"
+                done || true
+            exit "$status"
+          }
+          trap 'collect_logs' EXIT
+
           pkg update -f
           pkg install -y gmake pkgconf
 
@@ -1032,6 +1027,23 @@ jobs:
         environment_variables: CI
         run: |
           set -eux
+          artifact_dir="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}"
+          collect_logs() {
+            status=$?
+            cd "$GITHUB_WORKSPACE"
+            mkdir -p "$artifact_dir"
+            find . -type f \( -name 'config.log' -o -name 'test-suite.log' -o -name '*.log' -o -name '*.trs' \) \
+              ! -path "./_artifacts/*" \
+              | while IFS= read -r f; do
+                  rel="${f#./}"
+                  dest="${artifact_dir}/${rel}"
+                  mkdir -p "$(dirname "$dest")"
+                  cp "$f" "$dest"
+                done || true
+            exit "$status"
+          }
+          trap 'collect_logs' EXIT
+
           if command -v gmake >/dev/null 2>&1; then
             gmake check V=1
           else
@@ -1043,6 +1055,23 @@ jobs:
       shell: dragonflybsd {0}
       run: |
         set -eux
+        artifact_dir="${GITHUB_WORKSPACE}/_artifacts/dragonflybsd"
+        collect_logs() {
+          status=$?
+          cd "$GITHUB_WORKSPACE"
+          mkdir -p "$artifact_dir"
+          find . -type f \( -name 'config.log' -o -name 'test-suite.log' -o -name '*.log' -o -name '*.trs' \) \
+            ! -path "./_artifacts/*" \
+            | while IFS= read -r f; do
+                rel="${f#./}"
+                dest="${artifact_dir}/${rel}"
+                mkdir -p "$(dirname "$dest")"
+                cp "$f" "$dest"
+              done || true
+          exit "$status"
+        }
+        trap 'collect_logs' EXIT
+
         cd "$GITHUB_WORKSPACE"
         gmake check V=1
 
@@ -1143,6 +1172,21 @@ jobs:
           **/*.trs
           **/_artifacts/**
           coverage.info
+        if-no-files-found: warn
+        overwrite: true
+
+    - name: Upload autotools artifacts (cross-platform VMs)
+      if: always() && (matrix.platform == 'freebsd' || matrix.platform == 'openbsd' || matrix.platform == 'netbsd' || matrix.platform == 'haiku' || matrix.platform == 'dragonflybsd')
+      uses: actions/upload-artifact@v4
+      with:
+        name: autotools-${{ matrix.label }}
+        path: |
+          **/test-suite.log
+          **/*.log
+          **/*.trs
+          **/_artifacts/**
+          coverage.info
+          pkg_install-err.log
         if-no-files-found: warn
         overwrite: true
 
@@ -1277,6 +1321,24 @@ jobs:
       shell: bash
       run: |
         set -euxo pipefail
+        artifact_dir="dist-build/_artifacts"
+        collect_logs() {
+          status=$?
+          if [ -d "dist-build" ]; then
+            mkdir -p "$artifact_dir"
+            find dist-build -type f \( -name 'config.log' -o -name 'test-suite.log' -o -name '*.log' -o -name '*.trs' \) \
+              ! -path "dist-build/_artifacts/*" \
+              | while IFS= read -r f; do
+                  rel="${f#dist-build/}"
+                  dest="${artifact_dir}/${rel}"
+                  mkdir -p "$(dirname "$dest")"
+                  cp "$f" "$dest"
+                done || true
+          fi
+          exit "$status"
+        }
+        trap 'collect_logs' EXIT
+
         tarball=$(ls libsixel-*.tar.* | head -n1)
         mkdir dist-build
         tar -xf "$tarball" -C dist-build
@@ -1291,6 +1353,24 @@ jobs:
       shell: msys2 {0}
       run: |
         set -euxo pipefail
+        artifact_dir="dist-build/_artifacts"
+        collect_logs() {
+          status=$?
+          if [ -d "dist-build" ]; then
+            mkdir -p "$artifact_dir"
+            find dist-build -type f \( -name 'config.log' -o -name 'test-suite.log' -o -name '*.log' -o -name '*.trs' \) \
+              ! -path "dist-build/_artifacts/*" \
+              | while IFS= read -r f; do
+                  rel="${f#dist-build/}"
+                  dest="${artifact_dir}/${rel}"
+                  mkdir -p "$(dirname "$dest")"
+                  cp "$f" "$dest"
+                done || true
+          fi
+          exit "$status"
+        }
+        trap 'collect_logs' EXIT
+
         tarball=$(ls libsixel-*.tar.* | head -n1)
         mkdir dist-build
         tar -xf "$tarball" -C dist-build
@@ -1599,6 +1679,24 @@ jobs:
       shell: bash
       run: |
         set -euxo pipefail
+        artifact_dir="dist-build/_artifacts"
+        collect_logs() {
+          status=$?
+          if [ -d "dist-build" ]; then
+            mkdir -p "$artifact_dir"
+            find dist-build -type f \( -name 'config.log' -o -name 'test-suite.log' -o -name '*.log' -o -name '*.trs' -o -name 'testlog.txt' -o -path '*/meson-logs/*' \) \
+              ! -path "dist-build/_artifacts/*" \
+              | while IFS= read -r f; do
+                  rel="${f#dist-build/}"
+                  dest="${artifact_dir}/${rel}"
+                  mkdir -p "$(dirname "$dest")"
+                  cp "$f" "$dest"
+                done || true
+          fi
+          exit "$status"
+        }
+        trap 'collect_logs' EXIT
+
         tarball=$(ls builddir/meson-dist/libsixel-*.tar.* | head -n1)
         mkdir dist-build
         tar -xf "$tarball" -C dist-build
@@ -1613,6 +1711,24 @@ jobs:
       shell: msys2 {0}
       run: |
         set -euxo pipefail
+        artifact_dir="dist-build/_artifacts"
+        collect_logs() {
+          status=$?
+          if [ -d "dist-build" ]; then
+            mkdir -p "$artifact_dir"
+            find dist-build -type f \( -name 'config.log' -o -name 'test-suite.log' -o -name '*.log' -o -name '*.trs' -o -name 'testlog.txt' -o -path '*/meson-logs/*' \) \
+              ! -path "dist-build/_artifacts/*" \
+              | while IFS= read -r f; do
+                  rel="${f#dist-build/}"
+                  dest="${artifact_dir}/${rel}"
+                  mkdir -p "$(dirname "$dest")"
+                  cp "$f" "$dest"
+                done || true
+          fi
+          exit "$status"
+        }
+        trap 'collect_logs' EXIT
+
         tarball=$(ls builddir/meson-dist/libsixel-*.tar.* | head -n1)
         mkdir dist-build
         tar -xf "$tarball" -C dist-build
