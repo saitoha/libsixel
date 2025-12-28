@@ -35,9 +35,11 @@ fi
 cc=${CC:-cc}
 
 cflags="-std=c99 -Wall -Wextra -Werror -DHAVE_CONFIG_H"
-cflags="${cflags} -I${top_builddir} -I${top_srcdir} -I${top_srcdir}/converters"
+cflags="${cflags} -I${top_builddir} -I${top_builddir}/include"
+cflags="${cflags} -I${top_srcdir} -I${top_srcdir}/converters"
+cflags="${cflags} -I${top_srcdir}/include"
 
-ldflags="-L${top_builddir}/src/.libs -lsixel"
+ldflags="-L${top_builddir}/src/.libs -L${top_builddir}/src -lsixel"
 ldpath="${top_builddir}/src/.libs:${top_builddir}/src"
 
 if pkg-config --exists libsixel; then
@@ -138,8 +140,10 @@ main(void)
         { 'i', "input", "--input help\n" },
         { 'x', "extract", "--extract help\n" },
     };
+    char argv0[] = "tool";
+    char argv1[] = "-x";
     char dash_value[] = "-file.six";
-    char const *argv[] = { "tool", "-x", NULL };
+    char *argv[] = { argv0, argv1, NULL };
     size_t table_count;
     int optind_value;
     guard_result_t result;
@@ -182,7 +186,7 @@ main(void)
 
     optind_value = 2;
     result = run_guard_case(argv,
-                             (char *)argv[1],
+                             argv[1],
                              &optind_value,
                              "i:",
                              table,
