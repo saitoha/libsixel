@@ -647,6 +647,168 @@ static cli_option_help_t const g_option_help_table[] = {
     }
 };
 
+/*
+ * Environment variable help entries mirror the option table so we can
+ * assemble the --help output without one gigantic literal.
+ */
+typedef struct {
+    char const *name;
+    char const *help;
+} cli_env_help_t;
+
+static cli_env_help_t const g_env_help_table[] = {
+    {
+        "SIXEL_BGCOLOR",
+        "specify background color.\n"
+        "overrided by -B(--bgcolor) option.\n"
+        "represented by the following syntax:\n"
+        "#rgb\n"
+        "#rrggbb\n"
+        "#rrrgggbbb\n"
+        "#rrrrggggbbbb\n"
+        "rgb:r/g/b\n"
+        "rgb:rr/gg/bb\n"
+        "rgb:rrr/ggg/bbb\n"
+        "rgb:rrrr/gggg/bbbb"
+    },
+    {
+        "SIXEL_THREADS",
+        "override encoder thread count.\n"
+        "Accepts positive integers or the word 'auto' to match the\n"
+        "hardware thread count."
+    },
+    {
+        "SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS",
+        "Defer RGBFLOAT32 colorspace fan-out until the frame reaches this\n"
+        "pixel count. Defaults to 65537 so tiny frames stay\n"
+        "single-threaded unless overridden."
+    },
+    {
+        "SIXEL_LOADER_PRIORITY_LIST",
+        "Override default loader search order. Accepts the same comma\n"
+        "separated names as -L. Ignored when -L/--loaders is provided."
+    },
+    {
+        "SIXEL_PALETTE_OVERSPLIT_FACTOR",
+        "Scale provisional palette size before the final merge. Accepts\n"
+        "1.0-3.0, default 1.81."
+    },
+    {
+        "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT",
+        "Repeat Lloyd refinement after the final merge. Accepts 0-30.\n"
+        "Default is 3."
+    },
+    {
+        "SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX",
+        "Cap Lloyd passes in the primary k-means solver. Accepts 1-30,\n"
+        "default 20."
+    },
+    {
+        "SIXEL_PALETTE_KMEANS_THRESHOLD",
+        "Break condition for k-means refinement (0.0-0.5, default 0.125)."
+    },
+    {
+        "SIXEL_PALETTE_LUMIN_FACTOR_R",
+        "Override the luminosity weighting for the red channel (0.0-1.0)."
+    },
+    {
+        "SIXEL_PALETTE_LUMIN_FACTOR_G",
+        "Override the luminosity weighting for the green channel\n"
+        "(0.0-1.0). The blue factor becomes 1 - R - G; negative results\n"
+        "ignore both overrides."
+    },
+    {
+        "SIXEL_PALETTE_SNAP_TARGET_POLICY",
+        "Control palette snap target search. Accepts 'reversible' for\n"
+        "legacy fixed points or 'nearest'/'auto' for nearby fixed points\n"
+        "in the working colorspace."
+    },
+    {
+        "SIXEL_PALETTE_SNAP_TIMING_POLICY",
+        "Decide when snaps run: 'once', 'polish', 'merge', 'resolve', or\n"
+        "'all'. Defaults to 'once'."
+    },
+    {
+        "SIXEL_PALETTE_SNAP_APPROACH_RATE",
+        "Blend factor (0.0-1.0) toward the snap target; 1.0 snaps fully,\n"
+        "lower values ease toward the target."
+    },
+    {
+        "SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L",
+        "Weight L* relative to a/b* when snapping in Lab-family\n"
+        "colorspaces. Accepts 0.0-1.0, default 0.85."
+    },
+    {
+        "SIXEL_DITHER_LOOKUP_POLICY",
+        "select palette lookup policy (auto, 5bit, 6bit, none, certlut,\n"
+        "or vpte)."
+    },
+    {
+        "SIXEL_LOOKUP_VPTE_RESOLUTION",
+        "choose VPTE grid resolution (64, 128, or 256; default 64)."
+    },
+    {
+        "SIXEL_LOOKUP_VPTE_REFINE",
+        "enable corner refinement on VPTE boundary cells (0 or 1; default 1)."
+    },
+    {
+        "SIXEL_LOOKUP_VPTE_USE_DIST2",
+        "reuse EDT distances to skip corner refinement (0 or 1; default 0)."
+    },
+    {
+        "SIXEL_LOOKUP_VPTE_USE_CACHE",
+        "enable a small VPTE lookup cache keyed by voxel coordinates\n"
+        "(0 or 1; default 0)."
+    },
+    {
+        "SIXEL_LOOKUP_VPTE_SHARED",
+        "share the VPTE grid between workers after building it once\n"
+        "(0 or 1; default 1)."
+    },
+    {
+        "SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE",
+        "share the CERTLUT cache across threads (0 or 1; default 0)."
+    },
+    {
+        "SIXEL_LOOKUP_5BIT_SHARED_INSTANCE",
+        "share the 5bit LUT across threads without locks\n"
+        "(0 or 1; default 1)."
+    },
+    {
+        "SIXEL_LOOKUP_6BIT_SHARED_INSTANCE",
+        "share the 6bit LUT across threads without locks\n"
+        "(0 or 1; default 1)."
+    },
+    {
+        "SIXEL_LOOKUP_VPTE_TILE_XY",
+        "set VPTE tile width/height; adaptive defaults shrink tiles for\n"
+        "diverse palettes and grow them for skewed palettes."
+    },
+    {
+        "SIXEL_LOOKUP_VPTE_TILE_DEPTH",
+        "set VPTE tile depth; follows the same adaptive policy as\n"
+        "SIXEL_LOOKUP_VPTE_TILE_XY."
+    },
+    {
+        "SIXEL_LOOKUP_VPTE_FIRST_TOUCH",
+        "zero VPTE tiles before the EDT so NUMA systems can place pages on\n"
+        "the worker that will consume them (0 or 1; default 0)."
+    },
+    {
+        "SIXEL_LOOKUP_VPTE_PIN_THREADS",
+        "pin VPTE worker threads at startup to reduce migration\n"
+        "(0 or 1; default 0)."
+    },
+    {
+        "SIXEL_PARALLEL_LOG_PATH",
+        "write a JSON timeline for VPTE or LUT builds when set."
+    },
+    {
+        "SIXEL_PARALLEL_LOG_LINES",
+        "log every Nth line in the timeline; 0 disables line events."
+    }
+};
+
 static char const g_option_help_fallback[] =
     "    Refer to \"img2sixel -H\" for more details.\n";
 
@@ -720,6 +882,64 @@ img2sixel_print_option_help(FILE *stream)
     cli_print_option_help(stream,
                           g_option_help_table,
                           img2sixel_option_help_count());
+}
+
+static size_t
+img2sixel_env_help_count(void)
+{
+    return sizeof(g_env_help_table) /
+        sizeof(g_env_help_table[0]);
+}
+
+static void
+img2sixel_print_env_help(FILE *stream)
+{
+    size_t name_width;
+    size_t index;
+
+    name_width = 27u;
+
+    fprintf(stream, "Environment variables:\n");
+
+    for (index = 0u; index < img2sixel_env_help_count(); ++index) {
+        cli_env_help_t const *entry;
+        char const *line_start;
+
+        entry = &g_env_help_table[index];
+        line_start = entry->help;
+
+        while (line_start != NULL && line_start[0] != '\0') {
+            char const *line_end;
+            char const *name_field;
+            size_t line_length;
+
+            line_end = strchr(line_start, '\n');
+            if (line_end == NULL) {
+                line_length = strlen(line_start);
+            } else {
+                line_length = (size_t)(line_end - line_start);
+            }
+
+            if (line_start == entry->help) {
+                name_field = entry->name;
+            } else {
+                name_field = "";
+            }
+
+            fprintf(stream,
+                    "%-*s %.*s\n",
+                    (int)name_width,
+                    name_field,
+                    (int)line_length,
+                    line_start);
+
+            if (line_end == NULL) {
+                break;
+            }
+
+            line_start = line_end + 1u;
+        }
+    }
 }
 
 static void
@@ -985,125 +1205,8 @@ void show_help(void)
             "  clipboard:             exchange data with the desktop clipboard.\n"
             "                         Prefix with png: or tiff: when writing to\n"
             "                         request image snapshots.\n"
-            "\n"
-            "Environment variables:\n"
-            "SIXEL_BGCOLOR              specify background color.\n"
-            "                           overrided by -B(--bgcolor) option.\n"
-            "                           represented by the following\n"
-            "                           syntax:\n"
-            "                             #rgb\n"
-            "                             #rrggbb\n"
-            "                             #rrrgggbbb\n"
-            "                             #rrrrggggbbbb\n"
-            "                             rgb:r/g/b\n"
-            "                             rgb:rr/gg/bb\n"
-            "                             rgb:rrr/ggg/bbb\n"
-            "                             rgb:rrrr/gggg/bbbb\n"
-            "SIXEL_THREADS             override encoder thread count.\n"
-            "                           Accepts positive integers or\n"
-            "                           the word 'auto' to match the\n"
-            "                           hardware thread count.\n"
-            "SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS\n"
-            "                           Defer RGBFLOAT32 colorspace\n"
-            "                           fan-out until the frame reaches\n"
-            "                           this pixel count. Defaults to\n"
-            "                           65537 so tiny frames stay\n"
-            "                           single-threaded unless overridden.\n"
-            "SIXEL_LOADER_PRIORITY_LIST\n"
-            "                           Override default loader search\n"
-            "                           order. Accepts the same comma\n"
-            "                           separated names as -L. Ignored\n"
-            "                           when -L/--loaders is provided.\n"
-            "SIXEL_PALETTE_OVERSPLIT_FACTOR\n"
-            "                           Scale provisional palette size\n"
-            "                           before the final merge. Accepts\n"
-            "                           1.0-3.0, default 1.81.\n"
-            "SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT\n"
-            "                           Repeat Lloyd refinement after the\n"
-            "                           final merge. Accepts 0-30. Default\n"
-            "                           is 3.\n"
-            "SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX\n"
-            "                           Cap Lloyd passes in the primary\n"
-            "                           k-means solver. Accepts 1-30,\n"
-            "                           default 20.\n"
-            "SIXEL_PALETTE_KMEANS_THRESHOLD\n"
-            "                           Break condition for k-means\n"
-            "                           refinement (0.0-0.5, default\n"
-            "                           0.125).\n"
-            "SIXEL_PALETTE_LUMIN_FACTOR_R\n"
-            "                           Override the luminosity weighting\n"
-            "                           for the red channel (0.0-1.0).\n"
-            "SIXEL_PALETTE_LUMIN_FACTOR_G\n"
-            "                           Override the luminosity weighting\n"
-            "                           for the green channel (0.0-1.0).\n"
-            "                           The blue factor becomes\n"
-            "                           1 - R - G; negative results ignore\n"
-            "                           both overrides.\n"
-            "SIXEL_PALETTE_SNAP_TARGET_POLICY\n"
-            "                           Control palette snap target search.\n"
-            "                           Accepts 'reversible' for legacy fixed\n"
-            "                           points or 'nearest'/'auto' for nearby\n"
-            "                           fixed points in the working colorspace.\n"
-            "SIXEL_PALETTE_SNAP_TIMING_POLICY\n"
-            "                           Decide when snaps run: 'once',\n"
-            "                           'polish', 'merge', 'resolve', or 'all'.\n"
-            "                           Defaults to 'once'.\n"
-            "SIXEL_PALETTE_SNAP_APPROACH_RATE\n"
-            "                           Blend factor (0.0-1.0) toward the snap\n"
-            "                           target; 1.0 snaps fully, lower values\n"
-            "                           ease toward the target.\n"
-            "SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L\n"
-            "                           Weight L* relative to a/b* when\n"
-            "                           snapping in Lab-family colorspaces.\n"
-            "                           Accepts 0.0-1.0, default 0.85.\n"
-            "SIXEL_DITHER_LOOKUP_POLICY  select palette lookup policy\n"
-            "                           (auto, 5bit, 6bit, none, certlut,\n"
-            "                           or vpte).\n"
-            "SIXEL_LOOKUP_VPTE_RESOLUTION\n"
-            "                           choose VPTE grid resolution\n"
-            "                           (64, 128, or 256; default 64).\n"
-            "SIXEL_LOOKUP_VPTE_REFINE   enable corner refinement on VPTE\n"
-            "                           boundary cells (0 or 1; default 1).\n"
-            "SIXEL_LOOKUP_VPTE_USE_DIST2\n"
-            "                           reuse EDT distances to skip corner\n"
-            "                           refinement (0 or 1; default 0).\n"
-            "SIXEL_LOOKUP_VPTE_USE_CACHE\n"
-            "                           enable a small VPTE lookup cache\n"
-            "                           keyed by voxel coordinates (0 or 1;\n"
-            "                           default 0).\n"
-            "SIXEL_LOOKUP_VPTE_SHARED   share the VPTE grid between workers\n"
-            "                           after building it once (0 or 1;\n"
-            "                           default 1).\n"
-            "SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE\n"
-            "                           share the CERTLUT cache across\n"
-            "                           threads (0 or 1; default 0).\n"
-            "SIXEL_LOOKUP_5BIT_SHARED_INSTANCE\n"
-            "                           share the 5bit LUT across threads\n"
-            "                           without locks (0 or 1; default 1).\n"
-            "SIXEL_LOOKUP_6BIT_SHARED_INSTANCE\n"
-            "                           share the 6bit LUT across threads\n"
-            "                           without locks (0 or 1; default 1).\n"
-            "SIXEL_LOOKUP_VPTE_TILE_XY  set VPTE tile width/height; adaptive\n"
-            "                           defaults shrink tiles for diverse\n"
-            "                           palettes and grow them for skewed\n"
-            "                           palettes.\n"
-            "SIXEL_LOOKUP_VPTE_TILE_DEPTH\n"
-            "                           set VPTE tile depth; follows the same\n"
-            "                           adaptive policy as SIXEL_LOOKUP_\n"
-            "                           VPTE_TILE_XY.\n"
-            "SIXEL_LOOKUP_VPTE_FIRST_TOUCH\n"
-            "                           zero VPTE tiles before the EDT so\n"
-            "                           NUMA systems can place pages on the\n"
-            "                           worker that will consume them (0 or 1;\n"
-            "                           default 0).\n"
-            "SIXEL_LOOKUP_VPTE_PIN_THREADS\n"
-            "                           pin VPTE worker threads at startup to\n"
-            "                           reduce migration (0 or 1; default 0).\n"
-            "SIXEL_PARALLEL_LOG_PATH    write a JSON timeline for VPTE or LUT\n"
-            "                           builds when set.\n"
-            "SIXEL_PARALLEL_LOG_LINES   log every Nth line in the timeline;\n"
-            "                           0 disables line events.\n"
-            );
+            "\n");
+    img2sixel_print_env_help(stdout);
 }
 
 
