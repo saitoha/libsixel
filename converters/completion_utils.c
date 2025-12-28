@@ -224,7 +224,7 @@ img2sixel_compat_strerror(int error_number,
     return buffer;
 # endif
 #else
-# if defined(_GNU_SOURCE)
+# if defined(_GNU_SOURCE) && !defined(__APPLE__)
     message = strerror_r(error_number, buffer, buffer_size);
     if (message == NULL) {
         buffer[0] = '\0';
