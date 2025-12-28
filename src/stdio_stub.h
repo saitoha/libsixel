@@ -26,7 +26,14 @@
 
 #include <stdio.h>
 
-#if defined(HAVE_FILENO) && HAVE_FILENO
+#if defined(_WIN32)
+/*
+ * The Windows CRT already exports _fileno with the correct dllimport
+ * decoration. Redeclaring fileno here triggers -Winconsistent-dllimport
+ * under clang-cl, so we always prefer the vendor prototype.
+ */
+# define sixel_fileno(stream) _fileno(stream)
+#elif defined(HAVE_FILENO) && HAVE_FILENO
 /*
  * OpenBSD exposes fileno as a macro, so we avoid redeclaring it to keep
  * the compiler happy. Other platforms may need an explicit prototype in
