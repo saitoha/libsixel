@@ -6916,7 +6916,9 @@ sixel_encoder_setopt(
             }
             encoder->pixelwidth = number * encoder->cell_width;
             encoder->percentwidth = (-1);
-        } else if (parsed == 1 || (parsed == 2 && strcmp(unit, "px") == 0)) {
+        } else if (parsed == 1 ||
+                   (parsed == 2 && strcmp(unit, "px") == 0) ||
+                   (parsed == 2 && strcmp(unit, "") == 0)) {
             if (number <= 0) {
                 sixel_helper_set_additional_message(
                     "-w/--width must be 1 or more.");
@@ -6999,7 +7001,9 @@ sixel_encoder_setopt(
             }
             encoder->pixelheight = number * encoder->cell_height;
             encoder->percentheight = (-1);
-        } else if (parsed == 1 || (parsed == 2 && strcmp(unit, "px") == 0)) {
+        } else if (parsed == 1 ||
+                   (parsed == 2 && strcmp(unit, "px") == 0) ||
+                   (parsed == 2 && strcmp(unit, "") == 0)) {
             if (number <= 0) {
                 sixel_helper_set_additional_message(
                     "-h/--height must be 1 or more.");
