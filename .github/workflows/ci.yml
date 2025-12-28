@@ -1024,9 +1024,10 @@ jobs:
         operating_system: ${{ matrix.cp_os }}
         architecture: ${{ matrix.cp_arch }}
         version: ${{ matrix.cp_version }}
-        environment_variables: CI
+        environment_variables: CI,GITHUB_WORKSPACE
         run: |
           set -eux
+          : "${GITHUB_WORKSPACE:=$PWD}"
           artifact_dir="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}"
           collect_logs() {
             status=$?
