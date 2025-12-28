@@ -55,7 +55,12 @@ cli_tests = ['test_0001_01_invalid_positional.t',
              'test_0020_mapfile_io.t',
              'test_0021_palette_fallback.t',
              'test_0021_pipeline_planner.t',
-             'test_0022_resize_precision_mode.t']
+             'test_0022_resize_precision_mode.t',
+             'test_0026_sixel2png_version_help.t',
+             'test_0027_sixel2png_missing_args.t',
+             'test_0028_sixel2png_unknown_option.t',
+             'test_0029_sixel2png_invalid_decoder_value.t',
+             'test_0030_sixel2png_default_output.t']
 
 cli_depends = {
   'test_0018_lsqa_regression.t': [lsqa_bin],
