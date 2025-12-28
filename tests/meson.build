@@ -99,18 +99,21 @@ filter_sources = {
   'filter_encode_tests': 'filter/filter_encode_tests.c',
 }
 
+filter_inc = include_directories('filter')
+
 filter_units = {}
 foreach unit_name, unit_source : filter_sources
   if amalgamated_tools_enabled
+    define_flag = '-DBUILD_' + unit_name.to_upper() + '=1'
     unit_exe = executable(unit_name, amalgamation_out,
-      c_args: libsixel_posix_defs + ['-DBUILD_FILTER_TESTS'],
-      include_directories: project_inc,
+      c_args: libsixel_posix_defs + [define_flag],
+      include_directories: [project_inc, filter_inc],
       dependencies: deps,
       install: false)
   else
     unit_exe = executable(unit_name, [unit_source],
       dependencies: [libsixel_dep],
-      include_directories: project_inc,
+      include_directories: [project_inc, filter_inc],
       install: false)
   endif
   if shebang_enabled
