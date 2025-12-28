@@ -86,10 +86,30 @@ COPY_TESTS = $(CLI_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
 check_PROGRAMS =
 
 if ENABLE_GDK_PIXBUF_LOADER
-TESTS += gdk-pixbuf-loader/test-gdk-pixbuf-loader
-check_PROGRAMS += gdk-pixbuf-loader/test-gdk-pixbuf-loader
+TESTS += gdk-pixbuf-loader/test-gdk-pixbuf-loader \
+    gdk-pixbuf-loader/test_0001_incremental_load \
+    gdk-pixbuf-loader/test_0002_corrupt_data \
+    gdk-pixbuf-loader/test_0003_propagate_error \
+    gdk-pixbuf-loader/test_0004_context_free
+check_PROGRAMS += gdk-pixbuf-loader/test-gdk-pixbuf-loader \
+    gdk-pixbuf-loader/test_0001_incremental_load \
+    gdk-pixbuf-loader/test_0002_corrupt_data \
+    gdk-pixbuf-loader/test_0003_propagate_error \
+    gdk-pixbuf-loader/test_0004_context_free
 gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES = \
     gdk-pixbuf-loader/test-gdk-pixbuf-loader.c \
+    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+gdk_pixbuf_loader_test_0001_incremental_load_SOURCES = \
+    gdk-pixbuf-loader/test_0001_incremental_load.c \
+    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+gdk_pixbuf_loader_test_0002_corrupt_data_SOURCES = \
+    gdk-pixbuf-loader/test_0002_corrupt_data.c \
+    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+gdk_pixbuf_loader_test_0003_propagate_error_SOURCES = \
+    gdk-pixbuf-loader/test_0003_propagate_error.c \
+    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+gdk_pixbuf_loader_test_0004_context_free_SOURCES = \
+    gdk-pixbuf-loader/test_0004_context_free.c \
     $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
 gdk_pixbuf_loader_test_gdk_pixbuf_loader_CPPFLAGS = $(AM_CPPFLAGS) \
         -I$(top_builddir)/include \
@@ -98,6 +118,46 @@ gdk_pixbuf_loader_test_gdk_pixbuf_loader_CPPFLAGS = $(AM_CPPFLAGS) \
         $(GDK_PIXBUF_CFLAGS) \
         -DGDK_PIXBUF_ENABLE_BACKEND
 gdk_pixbuf_loader_test_gdk_pixbuf_loader_LDADD = \
+        $(top_builddir)/src/libsixel.la \
+        $(GDK_PIXBUF_LIBS)
+gdk_pixbuf_loader_test_0001_incremental_load_CPPFLAGS = $(AM_CPPFLAGS) \
+        -I$(top_builddir)/include \
+        -I$(top_srcdir)/include \
+        -I$(top_srcdir)/src \
+        $(GDK_PIXBUF_CFLAGS) \
+        -DGDK_PIXBUF_ENABLE_BACKEND \
+        -DSIXEL_PIXBUF_LOADER_TESTING
+gdk_pixbuf_loader_test_0002_corrupt_data_CPPFLAGS = $(AM_CPPFLAGS) \
+        -I$(top_builddir)/include \
+        -I$(top_srcdir)/include \
+        -I$(top_srcdir)/src \
+        $(GDK_PIXBUF_CFLAGS) \
+        -DGDK_PIXBUF_ENABLE_BACKEND \
+        -DSIXEL_PIXBUF_LOADER_TESTING
+gdk_pixbuf_loader_test_0003_propagate_error_CPPFLAGS = $(AM_CPPFLAGS) \
+        -I$(top_builddir)/include \
+        -I$(top_srcdir)/include \
+        -I$(top_srcdir)/src \
+        $(GDK_PIXBUF_CFLAGS) \
+        -DGDK_PIXBUF_ENABLE_BACKEND \
+        -DSIXEL_PIXBUF_LOADER_TESTING
+gdk_pixbuf_loader_test_0004_context_free_CPPFLAGS = $(AM_CPPFLAGS) \
+        -I$(top_builddir)/include \
+        -I$(top_srcdir)/include \
+        -I$(top_srcdir)/src \
+        $(GDK_PIXBUF_CFLAGS) \
+        -DGDK_PIXBUF_ENABLE_BACKEND \
+        -DSIXEL_PIXBUF_LOADER_TESTING
+gdk_pixbuf_loader_test_0001_incremental_load_LDADD = \
+        $(top_builddir)/src/libsixel.la \
+        $(GDK_PIXBUF_LIBS)
+gdk_pixbuf_loader_test_0002_corrupt_data_LDADD = \
+        $(top_builddir)/src/libsixel.la \
+        $(GDK_PIXBUF_LIBS)
+gdk_pixbuf_loader_test_0003_propagate_error_LDADD = \
+        $(top_builddir)/src/libsixel.la \
+        $(GDK_PIXBUF_LIBS)
+gdk_pixbuf_loader_test_0004_context_free_LDADD = \
         $(top_builddir)/src/libsixel.la \
         $(GDK_PIXBUF_LIBS)
 endif

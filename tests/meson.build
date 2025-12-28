@@ -199,26 +199,37 @@ test('test_3009_filter_encode', filter_units['filter_encode_tests'],
 
 if gdk_pixbuf_loader_deps.length() > 0
   gdk_pixbuf_loader_sources = [
-    'gdk-pixbuf-loader/test-gdk-pixbuf-loader.c',
     '../gdk-pixbuf-loader/sixel-pixbuf-loader.c',
   ]
-  gdk_pixbuf_loader_test = executable('gdk-pixbuf-loader-test',
-    gdk_pixbuf_loader_sources,
-    include_directories: project_inc,
-    dependencies: gdk_pixbuf_loader_deps + [libsixel_dep],
-    c_args: ['-DGDK_PIXBUF_ENABLE_BACKEND'],
-    install: false)
-  if shebang_enabled
-    shebang_targets += [custom_target('gdk-pixbuf-loader-test-shebang',
-      input: gdk_pixbuf_loader_test,
-      output: 'gdk-pixbuf-loader-test.shebang.stamp',
-      command: [shebang_helper, shebang_file, '@INPUT@'],
-      depend_files: shebang_file,
-      build_by_default: true)]
-  endif
-  test('gdk-pixbuf-loader', gdk_pixbuf_loader_test,
-    env: env,
-    suite: ['gdk-pixbuf-loader'])
+  gdk_pixbuf_loader_tests = {
+    'test-gdk-pixbuf-loader': 'gdk-pixbuf-loader/test-gdk-pixbuf-loader.c',
+    'test_0001_incremental_load':
+      'gdk-pixbuf-loader/test_0001_incremental_load.c',
+    'test_0002_corrupt_data': 'gdk-pixbuf-loader/test_0002_corrupt_data.c',
+    'test_0003_propagate_error':
+      'gdk-pixbuf-loader/test_0003_propagate_error.c',
+    'test_0004_context_free': 'gdk-pixbuf-loader/test_0004_context_free.c',
+  }
+  foreach test_name, source_file : gdk_pixbuf_loader_tests
+    target = executable(test_name,
+      [source_file] + gdk_pixbuf_loader_sources,
+      include_directories: project_inc,
+      dependencies: gdk_pixbuf_loader_deps + [libsixel_dep],
+      c_args: ['-DGDK_PIXBUF_ENABLE_BACKEND',
+               '-DSIXEL_PIXBUF_LOADER_TESTING'],
+      install: false)
+    if shebang_enabled
+      shebang_targets += [custom_target(test_name + '-shebang',
+        input: target,
+        output: test_name + '.shebang.stamp',
+        command: [shebang_helper, shebang_file, '@INPUT@'],
+        depend_files: shebang_file,
+        build_by_default: true)]
+    endif
+    test(test_name, target,
+      env: env,
+      suite: ['gdk-pixbuf-loader'])
+  endforeach
 endif
 
 add_test_setup('ci', timeout_multiplier: 1)
