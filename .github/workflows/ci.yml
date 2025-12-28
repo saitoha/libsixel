@@ -165,6 +165,18 @@ jobs:
             sys: x86_64
             variant: amalgamation
             configure_extra: '--enable-amalgamation'
+          - label: cosmopolitan ubuntu 24.04 aarch64
+            os: ubuntu-24.04-arm
+            runner: ubuntu-24.04-arm
+            sys: aarch64
+            variant: cosmopolitan
+            cosmopolitan: true
+          - label: cosmopolitan macos aarch64
+            os: macos-latest
+            runner: macos-latest
+            sys: aarch64
+            variant: cosmopolitan
+            cosmopolitan: true
           - label: emscripten ubuntu 24.04 aarch64
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
@@ -248,6 +260,20 @@ jobs:
             sys: CYGWIN
             variant: amalgamation
             configure_extra: '--enable-amalgamation'
+          - label: cosmopolitan msys
+            os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: MSYS
+            variant: cosmopolitan
+            cosmopolitan: true
+          - label: cosmopolitan cygwin
+            os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: CYGWIN
+            variant: cosmopolitan
+            cosmopolitan: true
           - label: msvc vcpkg-libpng
             os: windows-latest
             runner: windows-latest
@@ -324,7 +350,7 @@ jobs:
         brew doctor || true
 
     - name: Install lcov (macOS)
-      if: runner.os == 'macOS' && matrix.variant != 'amalgamation' && matrix.emscripten != true
+      if: runner.os == 'macOS' && matrix.variant != 'amalgamation' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
       shell: bash
       run: |
         brew update
@@ -437,7 +463,7 @@ jobs:
         "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang)
-      if: runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'MSYS' && matrix.sys != 'CYGWIN' && matrix.sys != 'MINGW32' && matrix.emscripten != true
+      if: runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'MSYS' && matrix.sys != 'CYGWIN' && matrix.sys != 'MINGW32' && matrix.emscripten != true && matrix.cosmopolitan != true
       uses: msys2/setup-msys2@v2
       with:
         msystem: ${{ matrix.sys }}
@@ -448,8 +474,8 @@ jobs:
           cc:p
           lcov:p
 
-    - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang)
-      if: matrix.sys == 'MINGW32' && matrix.emscripten != true
+    - name: Setup MSYS2 (Windows, MinGW32)
+      if: matrix.sys == 'MINGW32'
       uses: msys2/setup-msys2@v2
       with:
         msystem: ${{ matrix.sys }}
@@ -460,7 +486,7 @@ jobs:
           cc:p
 
     - name: Setup MSYS2 (Windows, MSYS gcc)
-      if: runner.os == 'Windows' && matrix.sys == 'MSYS' && matrix.compiler == 'gcc' && matrix.variant != 'amalgamation'
+      if: runner.os == 'Windows' && matrix.sys == 'MSYS' && matrix.compiler == 'gcc' && matrix.variant != 'amalgamation' && matrix.variant != 'cosmopolitan'
       uses: msys2/setup-msys2@v2
       with:
         msystem: MSYS
@@ -492,14 +518,73 @@ jobs:
           git
           python
 
+    - name: Setup MSYS2 (Windows, MSYS Cosmopolitan)
+      if: runner.os == 'Windows' && matrix.cosmopolitan == true
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: MSYS
+        update: true
+        install: >-
+          unzip
+
     - name: Setup Cygwin
       if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
       uses: cygwin/cygwin-install-action@v4
       with:
         packages: gcc-core,make,pkg-config,python3,python3-pip,ninja
 
+    - name: Cache Cosmopolitan toolchain
+      if: matrix.variant == 'cosmopolitan'
+      uses: actions/cache@v4
+      with:
+        path: cosmopolitan/cosmocc.zip
+        key: cosmocc-${{ runner.os }}-${{ matrix.sys || 'native' }}-${{ hashFiles('cosmopolitan/build-cosmocc.sh') }}
+
+    - name: Prepare Cosmopolitan toolchain (non-Windows)
+      if: matrix.variant == 'cosmopolitan' && runner.os != 'Windows'
+      shell: bash
+      run: |
+        set -eux
+        mkdir -p cosmopolitan
+        if [ ! -f cosmopolitan/cosmocc.zip ]; then
+          curl -L -o cosmopolitan/cosmocc.zip https://cosmo.zip/pub/cosmocc/cosmocc.zip
+        fi
+        unzip -o -d cosmopolitan cosmopolitan/cosmocc.zip
+        chmod +x cosmopolitan/bin/cosmo*
+
+    - name: Prepare Cosmopolitan toolchain (Windows, MSYS2)
+      if: matrix.variant == 'cosmopolitan' && runner.os == 'Windows' && matrix.sys != 'CYGWIN'
+      shell: msys2 {0}
+      run: |
+        set -eux
+        mkdir -p cosmopolitan
+        if [ ! -f cosmopolitan/cosmocc.zip ]; then
+          curl -L -o cosmopolitan/cosmocc.zip https://cosmo.zip/pub/cosmocc/cosmocc.zip
+        fi
+        unzip -o -d cosmopolitan cosmopolitan/cosmocc.zip
+        chmod +x cosmopolitan/bin/cosmo*
+
+    - name: Prepare Cosmopolitan toolchain (Windows, Cygwin)
+      if: matrix.variant == 'cosmopolitan' && runner.os == 'Windows' && matrix.sys == 'CYGWIN'
+      shell: pwsh
+      run: |
+        $cygwinRoot = 'C:\\cygwin'
+        if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\\cygwin64' }
+        $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
+        $scriptLines = @(
+          'set -eux',
+          'set -o pipefail 2>/dev/null || true',
+          "cd `"$workspace`"",
+          'mkdir -p cosmopolitan',
+          'if [ ! -f cosmopolitan/cosmocc.zip ]; then curl -L -o cosmopolitan/cosmocc.zip https://cosmo.zip/pub/cosmocc/cosmocc.zip; fi',
+          'unzip -o -d cosmopolitan cosmopolitan/cosmocc.zip',
+          'chmod +x cosmopolitan/bin/cosmo*'
+        )
+        $script = [string]::Join("`n", $scriptLines)
+        &"$cygwinRoot\bin\bash.exe" --login -c $script
+
     - name: Install gcovr
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os != 'Windows' && (matrix.sys || '') != 'i686' && matrix.variant != 'amalgamation' && matrix.emscripten != true
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os != 'Windows' && (matrix.sys || '') != 'i686' && matrix.variant != 'amalgamation' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
       run: |
         python3 -m venv .venv
         . .venv/bin/activate
@@ -507,7 +592,7 @@ jobs:
         echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
     - name: Install gcc-14 (Linux)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os == 'Linux' && matrix.emscripten != true
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os == 'Linux' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-14
@@ -524,7 +609,7 @@ jobs:
         ./emscripten/build-emcc.sh
 
     - name: Configure and build (non-Windows)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows' && matrix.emscripten != true
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
       shell: bash
       run: |
         enable_gcov_flag="--enable-gcov"
@@ -576,7 +661,7 @@ jobs:
         make V=1
 
     - name: Configure and build (Windows, not MSVC/Cygwin)
-      if: ${{ runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' && matrix.emscripten != true }}
+      if: ${{ runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true }}
       shell: msys2 {0}
       run: |
         disable_threads_flag=""
@@ -619,7 +704,7 @@ jobs:
         make V=1
 
     - name: Configure and build (Windows, Cygwin)
-      if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' && matrix.emscripten != true }}
+      if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true }}
       shell: pwsh
       run: |
         $cygwinRoot = 'C:\cygwin'
@@ -714,7 +799,88 @@ jobs:
         cat config.log
         make V=1
 
-    - name: Build and test (FreeBSD/OpenBSD/NetBSD/Haiku)
+    - name: Configure and build (Cosmopolitan, non-Windows)
+      if: matrix.variant == 'cosmopolitan' && runner.os != 'Windows'
+      shell: bash
+      run: |
+        set -eux
+        export PATH="$PWD/cosmopolitan/bin:$PATH"
+        builddir="$PWD/cosmopolitan/build"
+        mkdir -p "$builddir"
+        cd "$builddir"
+        ../../configure \
+          --enable-simd \
+          --disable-shared \
+          --enable-static \
+          --without-png \
+          --without-jpeg \
+          --without-libcurl \
+          --without-onnxruntime \
+          --disable-wiccodec \
+          --disable-appkit \
+          --without-coregraphics \
+          --disable-quicklook-extension \
+          --disable-quicklook-preview \
+          CC=cosmocc \
+          LD=cosmocc \
+          AR=cosmoar \
+          RANLIB=cosmoranlib \
+          INSTALL=cosmoinstall
+        make -j V=1
+        make check -j
+
+    - name: Configure and build (Cosmopolitan, Windows MinGW)
+      if: matrix.variant == 'cosmopolitan' && runner.os == 'Windows' && matrix.sys != 'CYGWIN'
+      shell: msys2 {0}
+      run: |
+        set -eux
+        export PATH="$PWD/cosmopolitan/bin:$PATH"
+        builddir="$PWD/cosmopolitan/build"
+        mkdir -p "$builddir"
+        cd "$builddir"
+        ../../configure \
+          --enable-simd \
+          --disable-shared \
+          --enable-static \
+          --without-png \
+          --without-jpeg \
+          --without-libcurl \
+          --without-onnxruntime \
+          --disable-wiccodec \
+          --disable-appkit \
+          --without-coregraphics \
+          --disable-quicklook-extension \
+          --disable-quicklook-preview \
+          CC=cosmocc \
+          LD=cosmocc \
+          AR=cosmoar \
+          RANLIB=cosmoranlib \
+          INSTALL=cosmoinstall
+        make V=1
+        make check
+
+    - name: Configure and build (Cosmopolitan, Cygwin)
+      if: matrix.variant == 'cosmopolitan' && runner.os == 'Windows' && matrix.sys == 'CYGWIN'
+      shell: pwsh
+      run: |
+        $cygwinRoot = 'C:\\cygwin'
+        if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\\cygwin64' }
+        $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
+        $scriptLines = @(
+          'set -eux',
+          'set -o pipefail 2>/dev/null || true',
+          "export PATH=`"$workspace/cosmopolitan/bin:$PATH`"",
+          "cd `"$workspace/cosmopolitan`"",
+          'mkdir -p build',
+          'cd build',
+          '../../configure --enable-simd --disable-shared --enable-static --without-png --without-jpeg --without-libcurl --without-onnxruntime --disable-wiccodec --disable-appkit --without-coregraphics --disable-quicklook-extension --disable-quicklook-preview CC=cosmocc LD=cosmocc AR=cosmoar RANLIB=cosmoranlib INSTALL=cosmoinstall',
+          'make V=1',
+          'make check'
+        )
+        $script = [string]::Join("`n", $scriptLines)
+        &"$cygwinRoot\bin\bash.exe" --login -c $script
+
+    - name: Run tests (FreeBSD/OpenBSD/NetBSD/Haiku)
       if: (matrix.platform == 'freebsd' || matrix.platform == 'openbsd' || matrix.platform == 'netbsd' || matrix.platform == 'haiku') && matrix.emscripten != true
       uses: cross-platform-actions/action@v0.30.0
       with:
@@ -936,17 +1102,17 @@ jobs:
           fi
 
     - name: Run tests (non-Windows)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows' && matrix.emscripten != true
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
       shell: bash
       run: make check V=1
 
     - name: Run tests (Windows, not MSVC/Cygwin/CLANG64)
-      if: runner.os == 'Windows' && matrix.sys != 'CLANG64' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' && matrix.emscripten != true
+      if: runner.os == 'Windows' && matrix.sys != 'CLANG64' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
       shell: msys2 {0}
       run: make check V=1
 
     - name: Run tests (Windows, CLANG64)
-      if: runner.os == 'Windows' && matrix.sys == 'CLANG64' && matrix.emscripten != true
+      if: runner.os == 'Windows' && matrix.sys == 'CLANG64' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
       shell: msys2 {0}
       run: |
         LLVM_PROFILE_FILE="%p-%m.profraw" make check V=1
@@ -957,7 +1123,7 @@ jobs:
           -instr-profile=coverage/coverage.profdata > coverage.info || true
 
     - name: Run tests (Windows, MSVC)
-      if: runner.os == 'Windows' && matrix.sys == 'MSVC' && matrix.emscripten != true
+      if: runner.os == 'Windows' && matrix.sys == 'MSVC' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
       shell: msys2 {0}
       run: |
         VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
@@ -978,7 +1144,7 @@ jobs:
         make check V=1
 
     - name: Run tests (Windows, Cygwin)
-      if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
+      if: runner.os == 'Windows' && matrix.sys == 'CYGWIN' && matrix.variant != 'cosmopolitan'
       shell: pwsh
       run: |
         $cygwinRoot = 'C:\cygwin'
@@ -995,14 +1161,14 @@ jobs:
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Capture coverage (Linux)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && runner.os == 'Linux' && (matrix.sys || '') != 'i686' && !(matrix.musl || false) && matrix.variant != 'amalgamation' && matrix.emscripten != true
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && runner.os == 'Linux' && (matrix.sys || '') != 'i686' && !(matrix.musl || false) && matrix.variant != 'amalgamation' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
       shell: bash
       run: |
         gcovr -r . --lcov -o coverage.info \
                    --gcov-executable gcov-14
 
     - name: Capture coverage (non-MSVC)
-      if: runner.os == 'macOS' && matrix.variant != 'amalgamation' && matrix.emscripten != true
+      if: runner.os == 'macOS' && matrix.variant != 'amalgamation' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
       shell: bash
       run: |
         lcov -c \
@@ -1012,7 +1178,7 @@ jobs:
           -o coverage.info
 
     - name: Capture coverage (Windows MSYS2/MinGW/UCRT/Clang)
-      if: runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' && matrix.sys != 'MINGW32' && matrix.variant != 'amalgamation' && matrix.emscripten != true
+      if: runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' && matrix.sys != 'MINGW32' && matrix.variant != 'amalgamation' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
       shell: msys2 {0}
       run: |
         lcov -c \
@@ -1052,7 +1218,7 @@ jobs:
 
     - name: Upload to Coveralls (per-flag, parallel)
       id: coveralls_upload
-      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && matrix.os != 'macos-15' && matrix.sys != 'i686' && !(matrix.musl || false) && matrix.variant != 'amalgamation' && matrix.emscripten != true }}
+      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && matrix.os != 'macos-15' && matrix.sys != 'i686' && !(matrix.musl || false) && matrix.variant != 'amalgamation' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true }}
       continue-on-error: true
       uses: coverallsapp/github-action@v2
       with:
@@ -1062,18 +1228,17 @@ jobs:
         parallel: true
 
     - name: Wait before Coveralls retry (per-flag)
-      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) && matrix.variant != 'amalgamation' && matrix.emscripten != true }}
+      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) && matrix.variant != 'amalgamation' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true }}
       run: sleep 5
 
     - name: Upload to Coveralls (per-flag, retry)
-      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) && matrix.variant != 'amalgamation' && matrix.emscripten != true }}
+      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) && matrix.variant != 'amalgamation' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true }}
       uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: coverage.info
         flag-name: ${{ matrix.cfg }}
         parallel: true
-
 
   ci-autotools-finish:
     needs: ci-autotools
@@ -1097,7 +1262,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           parallel-finished: true
-
 
   ci-dist-autotools:
     name: AT-tarball ${{ matrix.label }}
@@ -1252,8 +1416,6 @@ jobs:
           dist-build/**/*.trs
           dist-build/**/_artifacts/**
         if-no-files-found: warn
-
-
 
   ci-autotools-asan:
     name: AT-ASan ${{ matrix.label }}
@@ -2387,8 +2549,7 @@ jobs:
 
 # emacs Local Variables:
 # emacs mode: c
-# emacs tab-width: 4
+# emacs tab-width: 2
 # emacs indent-tabs-mode: nil
-# emacs c-basic-offset: 4
 # emacs End:
-# vim: set ft=awk et ts=4 sw=0 sts=-1 fdm=marker fdl=0:
+# vim: set ft=yml et ts=4 sw=0 sts=-1 fdm=indent fdl=1:
