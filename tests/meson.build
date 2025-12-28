@@ -105,8 +105,11 @@ filter_units = {}
 foreach unit_name, unit_source : filter_sources
   if amalgamated_tools_enabled
     define_flag = '-DBUILD_' + unit_name.to_upper() + '=1'
+    # Propagate the build guard to both C and ObjC translations so macOS
+    # builds enable the test harness embedded in the amalgamated source.
     unit_exe = executable(unit_name, amalgamation_out,
       c_args: libsixel_posix_defs + [define_flag],
+      objc_args: libsixel_posix_defs + [define_flag],
       include_directories: [project_inc, filter_inc],
       dependencies: deps,
       install: false)
