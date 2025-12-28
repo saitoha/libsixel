@@ -608,7 +608,6 @@ if not threads_opt.disabled()
   if host_system != 'windows'
     threads_dep = dependency('threads', required: true)
     deps += threads_dep
-    reqs += threads_dep
     link_libs += threads_dep
   endif
 else
