@@ -519,7 +519,7 @@ jobs:
           python
 
     - name: Setup MSYS2 (Windows, MSYS Cosmopolitan)
-      if: runner.os == 'Windows' && matrix.cosmopolitan == true
+      if: runner.sys == 'MSYS' && matrix.cosmopolitan == true
       uses: msys2/setup-msys2@v2
       with:
         msystem: MSYS
@@ -569,7 +569,7 @@ jobs:
       shell: pwsh
       run: |
         $cygwinRoot = 'C:\\cygwin'
-        if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\\cygwin64' }
+        $env:PATH = "$cygwinRoot\bin;$env:PATH"
         $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
         $scriptLines = @(
           'set -eux',
@@ -708,7 +708,7 @@ jobs:
       shell: pwsh
       run: |
         $cygwinRoot = 'C:\cygwin'
-        if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\cygwin64' }
+        $env:PATH = "$cygwinRoot\bin;$env:PATH"
         $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
         $disableThreadsFlag = ''
         $enableGcovFlag = '--enable-gcov'
@@ -864,16 +864,16 @@ jobs:
       shell: pwsh
       run: |
         $cygwinRoot = 'C:\\cygwin'
-        if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\\cygwin64' }
+        $env:PATH = "$cygwinRoot\bin;$env:PATH"
         $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
         $scriptLines = @(
           'set -eux',
           'set -o pipefail 2>/dev/null || true',
-          "export PATH=`"$workspace/cosmopolitan/bin:$PATH`"",
+          "export PATH=`"$workspace/cosmopolitan/bin:`$PATH`"",
           "cd `"$workspace/cosmopolitan`"",
           'mkdir -p build',
           'cd build',
-          '../../configure --enable-simd --disable-shared --enable-static --without-png --without-jpeg --without-libcurl --without-onnxruntime --disable-wiccodec --disable-appkit --without-coregraphics --disable-quicklook-extension --disable-quicklook-preview CC=cosmocc LD=cosmocc AR=cosmoar RANLIB=cosmoranlib INSTALL=cosmoinstall',
+          '../../configure --enable-simd --disable-shared --enable-static --without-png --without-jpeg --without-libcurl --without-onnxruntime --disable-wiccodec --disable-appkit --without-coregraphics --disable-quicklook-extension --disable-quicklook-preview CC=cosmocc LD=cosmocc AR=cosmoar RANLIB=cosmoranlib INSTALL=cosmoinstall --host=x86_64-unknown-cosmo CFLAGS="-nostdlib -nostartfiles -nodefaultlibs -ffreestanding"',
           'make V=1',
           'make check'
         )
@@ -1149,6 +1149,7 @@ jobs:
       run: |
         $cygwinRoot = 'C:\cygwin'
         if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\cygwin64' }
+        $env:PATH = "$cygwinRoot\bin;$env:PATH"
         $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
         $scriptLines = @(
           'set -eu',
