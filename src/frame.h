@@ -39,7 +39,6 @@ struct sixel_frame {
     int height;                     /* frame height */
     int ncolors;                    /* palette colors */
     int pixelformat;                /* one of enum pixelFormat */
-    int colorspace;                 /* one of SIXEL_COLORSPACE_* */
     int delay;                      /* delay in msec */
     int frame_no;                   /* frame number */
     int loop_count;                 /* loop count */

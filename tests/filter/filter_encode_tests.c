@@ -83,7 +83,7 @@ test_encode_updates_output_and_progress(void)
     sixel_filter_bind_input(filter,
                             &frame,
                             frame->pixelformat,
-                            frame->colorspace);
+                            sixel_frame_get_colorspace(frame));
     sixel_filter_set_progress(filter, progress_cb, &progress, 1);
 
     status = sixel_filter_run(filter, allocator, NULL);
@@ -101,7 +101,7 @@ test_encode_updates_output_and_progress(void)
         goto cleanup;
     }
 
-    if (output->source_colorspace != frame->colorspace) {
+    if (output->source_colorspace != sixel_frame_get_colorspace(frame)) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
