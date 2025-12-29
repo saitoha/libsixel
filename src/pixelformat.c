@@ -2479,58 +2479,6 @@ error:
 }
 
 
-#if SIXEL_USE_DEPRECATED_SYMBOLS
-static int
-pixelformat_test_colorspace_roundtrip_g8(void)
-{
-    unsigned char pixels[] = { 0x10, 0x80, 0xf0 };
-    unsigned char original[] = { 0x10, 0x80, 0xf0 };
-    size_t i;
-    SIXELSTATUS status;
-
-    int nret = EXIT_FAILURE;
-
-    status = sixel_helper_convert_colorspace(
-        pixels,
-        sizeof(pixels),
-        SIXEL_PIXELFORMAT_G8,
-        SIXEL_COLORSPACE_GAMMA,
-        SIXEL_COLORSPACE_LINEAR);
-    if (SIXEL_FAILED(status)) {
-        goto error;
-    }
-
-    status = sixel_helper_convert_colorspace(
-        pixels,
-        sizeof(pixels),
-        SIXEL_PIXELFORMAT_G8,
-        SIXEL_COLORSPACE_LINEAR,
-        SIXEL_COLORSPACE_GAMMA);
-    if (SIXEL_FAILED(status)) {
-        goto error;
-    }
-
-    for (i = 0U; i < sizeof(pixels); ++i) {
-        int diff;
-
-        diff = (int)pixels[i] - (int)original[i];
-        if (diff < 0) {
-            diff = -diff;
-        }
-        if (diff > 1) {
-            goto error;
-        }
-    }
-
-    return EXIT_SUCCESS;
-
-error:
-    perror("pixelformat_test_colorspace_roundtrip_g8");
-    return nret;
-}
-#endif  /* SIXEL_USE_DEPRECATED_SYMBOLS */
-
-
 /* Map pixelformat to colorspace helper. */
 static int
 pixelformat_test_colorspace_from_pixelformat(void)
@@ -2581,9 +2529,6 @@ sixel_pixelformat_tests_main(void)
         pixelformat_test_convert_rgb888_to_bgr888,
         pixelformat_test_convert_g8_to_rgb888,
         pixelformat_test_colorspace_from_pixelformat,
-#if SIXEL_USE_DEPRECATED_SYMBOLS
-        pixelformat_test_colorspace_roundtrip_g8,
-#endif  /* SIXEL_USE_DEPRECATED_SYMBOLS */
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
