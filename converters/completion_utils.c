@@ -463,18 +463,22 @@ img2sixel_log_errno(const char *fmt, ...)
      * completion strings are fixed at generation time, so silence the
      * diagnostic while still bounding the output.
      */
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat-nonliteral"
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
+# if defined(__clang__)
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wformat-nonliteral"
+# elif defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-nonliteral"
+# endif
 #endif
     written = vsnprintf(message, sizeof(message), fmt, ap);
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-#pragma GCC diagnostic pop
+#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
+# if defined(__clang__)
+#  pragma clang diagnostic pop
+# elif defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic pop
+# endif
 #endif
     va_end(ap);
 

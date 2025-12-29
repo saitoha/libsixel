@@ -870,6 +870,20 @@ AC_COMPILE_IFELSE([
      AC_MSG_RESULT([yes])],
     [AC_MSG_RESULT([no])])
 
+AC_MSG_CHECKING([for __builtin_prefetch])
+AC_COMPILE_IFELSE([
+    AC_LANG_PROGRAM([], [[
+        #if !defined(__GNUC__) && !defined(__clang__)
+        # error
+        #endif
+        double distances[32];
+        __builtin_prefetch(distances, 0, 3);
+    ]])],
+    [AC_DEFINE([HAVE_BUILTIN_PREFETCH], [1],
+               [Define if __builtin_prefetch is available])
+     AC_MSG_RESULT([yes])],
+    [AC_MSG_RESULT([no])])
+
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_INLINE
 AC_TYPE_INT16_T

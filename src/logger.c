@@ -242,22 +242,26 @@ sixel_logger_logf(sixel_logger_t *logger,
 
     va_start(args, fmt);
     if (fmt != NULL) {
+#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
 #if defined(__clang__)
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wformat-nonliteral"
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) && !defined(__PCC__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#endif
 #endif
         /*
          * The format strings are defined in our code paths.  Suppress the
          * nonliteral warning so we can forward variadic arguments safely.
          */
         (void)sixel_compat_vsnprintf(message, sizeof(message), fmt, args);
+#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
 #if defined(__clang__)
 #pragma clang diagnostic pop
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) && !defined(__PCC__)
 #pragma GCC diagnostic pop
+#endif
 #endif
     } else {
         message[0] = '\0';

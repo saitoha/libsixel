@@ -93,10 +93,10 @@ sixel_cpu_detect_native(void)
     level = SIXEL_SIMD_LEVEL_SCALAR;
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
     defined(_M_IX86)
-# if HAVE_BUILTIN_CPU_INIT && !defined(_MSC_VER)
+# if HAVE_BUILTIN_CPU_INIT && !defined(_MSC_VER) && !defined(__PCC__)
     __builtin_cpu_init();
 # endif
-# if HAVE_BUILTIN_CPU_SUPPORTS && !defined(_MSC_VER)
+# if HAVE_BUILTIN_CPU_SUPPORTS && !defined(_MSC_VER) && !defined(__PCC__)
     /*
      * clang-cl accepts __builtin_cpu_supports() but MSVC-style
      * toolchains do not ship the runtime helpers (e.g.

@@ -30,7 +30,7 @@
     __STDC_VERSION__ < 201112L
 typedef unsigned int sixel_atomic_u32_t;
 
-# if defined(__GNUC__)
+# if defined(__GNUC__) && defined(__ATOMIC_ACQ_REL)
 #  define sixel_fence_release() __atomic_thread_fence(__ATOMIC_RELEASE)
 #  define sixel_fence_acquire() __atomic_thread_fence(__ATOMIC_ACQUIRE)
 static inline unsigned int
