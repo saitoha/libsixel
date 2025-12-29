@@ -389,8 +389,8 @@ jobs:
             ${disable_threads_flag} \
             ${disable_simd_flag} \
             ${static_only_flags}
-          cat config.log
           gmake V=1
+          gmake check
 
     - name: Setup MSVC developer env (vcvars)
       if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' }}
@@ -935,31 +935,6 @@ jobs:
           else
             make check V=1
           fi
-
-    - name: Run tests (DragonFlyBSD)
-      if: matrix.platform == 'dragonflybsd' && matrix.emscripten != true
-      shell: dragonflybsd {0}
-      run: |
-        set -eux
-        artifact_dir="${GITHUB_WORKSPACE}/_artifacts/dragonflybsd"
-        collect_logs() {
-          status=$?
-          cd "$GITHUB_WORKSPACE"
-          mkdir -p "$artifact_dir"
-          find . -type f \( -name 'config.log' -o -name 'test-suite.log' -o -name '*.log' -o -name '*.trs' \) \
-            ! -path "./_artifacts/*" \
-            | while IFS= read -r f; do
-                rel="${f#./}"
-                dest="${artifact_dir}/${rel}"
-                mkdir -p "$(dirname "$dest")"
-                cp "$f" "$dest"
-              done || true
-          exit "$status"
-        }
-        trap 'collect_logs' EXIT
-
-        cd "$GITHUB_WORKSPACE"
-        gmake check V=1
 
     - name: Run tests (non-Windows)
       if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows' && matrix.emscripten != true
