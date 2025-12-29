@@ -257,6 +257,7 @@ sixel_filter_sample_copy_frame(
     sample->width = sample_width;
     sample->height = sample_height;
     sample->pixelformat = sixel_frame_get_pixelformat(frame);
+    sample->colorspace = sixel_frame_get_colorspace(frame);
     sample->ncolors = (-1);
 
     dst_index = 0u;

@@ -91,6 +91,8 @@ sixel_output_new(
     (*output)->skip_dcs_envelope = 0;
     (*output)->skip_header = 0;
     (*output)->palette_type = SIXEL_PALETTETYPE_AUTO;
+    (*output)->colorspace = SIXEL_COLORSPACE_GAMMA;
+    (*output)->source_colorspace = SIXEL_COLORSPACE_GAMMA;
     (*output)->pixelformat = SIXEL_PIXELFORMAT_RGB888;
     (*output)->fn_write = fn_write;
     (*output)->save_pixel = 0;
@@ -248,8 +250,7 @@ sixel_output_convert_colorspace(sixel_output_t *output,
                                 unsigned char *pixels,
                                 size_t size)
 {
-    int colorspace;
-    int depth;
+    SIXELSTATUS status = SIXEL_FALSE;
 
     if (output == NULL || pixels == NULL) {
         sixel_helper_set_additional_message(
@@ -257,22 +258,16 @@ sixel_output_convert_colorspace(sixel_output_t *output,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    depth = sixel_helper_compute_depth(output->pixelformat);
-    if (depth <= 0) {
-        sixel_helper_set_additional_message(
-            "sixel_output_convert_colorspace: unsupported pixelformat.");
-        return SIXEL_BAD_ARGUMENT;
+    status = sixel_helper_convert_colorspace(pixels,
+                                             size,
+                                             output->pixelformat,
+                                             output->source_colorspace,
+                                             output->colorspace);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
 
-    /*
-     * Kept for compatibility: pixelformat encodes the transfer curve, so the
-     * pixels already reside in the expected colorspace.  Validate input and
-     * return success without further modification.
-     */
-    colorspace = sixel_pixelformat_colorspace_from_format(
-        output->pixelformat);
-    (void)colorspace;
-    (void)size;
+    output->source_colorspace = output->colorspace;
 
     return SIXEL_OK;
 }

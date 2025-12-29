@@ -1202,23 +1202,6 @@ sixel_helper_compute_depth(
     int /* in */ pixelformat /* one of enum pixelFormat */
 );
 
-/* derive colorspace from pixelformat */
-SIXELAPI int
-sixel_pixelformat_colorspace_from_format(
-    int /* in */ pixelformat /* one of enum pixelFormat */
-);
-
-/* convert pixelformat using RGB888/LinearRGB hubs */
-SIXELAPI SIXELSTATUS
-sixel_pixelformat_convert(
-    void               /* out */ *dst,
-    int                /* in */  dst_pixelformat,
-    void const         /* in */  *src,
-    int                /* in */  src_pixelformat,
-    int                /* in */  width,
-    int                /* in */  height,
-    sixel_allocator_t  /* in */  *allocator);
-
 /* convert pixelFormat into PIXELFORMAT_RGB888 */
 SIXELAPI SIXELSTATUS
 sixel_helper_normalize_pixelformat(
@@ -1244,13 +1227,20 @@ sixel_helper_scale_image(
     sixel_allocator_t   /* in */  *allocator             /* allocator object */
 );
 
+SIXELAPI SIXELSTATUS
+sixel_helper_convert_colorspace(
+    unsigned char       /* in/out */ *pixels,
+    size_t              /* in */      size,
+    int                 /* in */      pixelformat,
+    int                 /* in */      colorspace_src,
+    int                 /* in */      colorspace_dst);
+
 /*
  * CLI frontends call this helper so they default to the friendlier
  * suggestions while keeping library usage opt-in.
  */
 SIXELAPI void
 sixel_option_apply_cli_suggestion_defaults(void);
-
 
 #ifdef __cplusplus
 }

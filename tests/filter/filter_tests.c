@@ -63,11 +63,11 @@ static int test_clip_noop(void)
     sixel_filter_bind_input(filter,
                             &input_frame,
                             input_frame->pixelformat,
-                            sixel_frame_get_colorspace(input_frame));
+                            input_frame->colorspace);
     sixel_filter_bind_output(filter,
                              &output_frame,
                              input_frame->pixelformat,
-                             sixel_frame_get_colorspace(input_frame));
+                             input_frame->colorspace);
     sixel_filter_set_progress(filter, progress_cb, &progress, 1);
 
     status = sixel_filter_run(filter, allocator, NULL);
@@ -148,11 +148,11 @@ static int test_clip_float_accepts_format(void)
     sixel_filter_bind_input(filter,
                             &input_frame,
                             input_frame->pixelformat,
-                            sixel_frame_get_colorspace(input_frame));
+                            input_frame->colorspace);
     sixel_filter_bind_output(filter,
                              &output_frame,
                              input_frame->pixelformat,
-                             sixel_frame_get_colorspace(input_frame));
+                             input_frame->colorspace);
     sixel_filter_set_progress(filter, progress_cb, &progress, 1);
 
     status = sixel_filter_run(filter, allocator, NULL);

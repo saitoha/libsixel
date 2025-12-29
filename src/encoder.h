@@ -141,6 +141,7 @@ struct sixel_encoder {
     int capture_width;
     int capture_height;
     int capture_pixelformat;
+    int capture_colorspace;
     int capture_ncolors;
     int capture_valid;
     struct sixel_frame *capture_source_frame;
