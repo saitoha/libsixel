@@ -616,7 +616,6 @@ jobs:
             ${disable_simd_flag} \
             ${static_only_flags} \
             ${extra_config_flags}
-        cat config.log
         make V=1
 
     - name: Configure and build (Windows, Cygwin)
