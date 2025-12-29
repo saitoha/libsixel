@@ -1211,13 +1211,13 @@ sixel_pixelformat_colorspace_from_format(
 /* convert pixelformat using RGB888/LinearRGB hubs */
 SIXELAPI SIXELSTATUS
 sixel_pixelformat_convert(
-    unsigned char       /* out */ *dst,
-    int                 /* in */  dst_pixelformat,
-    unsigned char const /* in */  *src,
-    int                 /* in */  src_pixelformat,
-    int                 /* in */  width,
-    int                 /* in */  height,
-    sixel_allocator_t   /* in */  *allocator);
+    void               /* out */ *dst,
+    int                /* in */  dst_pixelformat,
+    void const         /* in */  *src,
+    int                /* in */  src_pixelformat,
+    int                /* in */  width,
+    int                /* in */  height,
+    sixel_allocator_t  /* in */  *allocator);
 
 /* convert pixelFormat into PIXELFORMAT_RGB888 */
 SIXELAPI SIXELSTATUS
