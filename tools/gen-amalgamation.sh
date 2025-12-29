@@ -102,16 +102,26 @@ src/quicklook_thumbnailing.m
 src/clipboard_macos.m
 src/clipboard_carbon.c
 src/tests.c
-tests/filter/filter_tests.c
-tests/filter/filter_sample_tests.c
-tests/filter/filter_resize_tests.c
+tests/gdk-pixbuf-loader/test_0002_corrupt_data.c
+tests/gdk-pixbuf-loader/test-gdk-pixbuf-loader.c
+tests/gdk-pixbuf-loader/test_0004_context_free.c
+tests/gdk-pixbuf-loader/test_0001_incremental_load.c
+tests/gdk-pixbuf-loader/test_0003_propagate_error.c
+tests/cli/test_0023_cli_token_is_known_option.c
+tests/cli/test_0024_cli_option_requires_argument.c
+tests/cli/test_0025_cli_guard_missing_argument.c
 tests/filter/filter_colors_tests.c
-tests/filter/filter_lookup_tests.c
-tests/filter/filter_final_merge_tests.c
-tests/filter/filter_vpte_tests.c
-tests/filter/filter_load_tests.c
-tests/filter/filter_dither_tests.c
 tests/filter/filter_encode_tests.c
+tests/filter/filter_vpte_tests.c
+tests/filter/filter_dither_tests.c
+tests/filter/filter_resize_tests.c
+tests/filter/filter_final_merge_tests.c
+tests/filter/filter_load_tests.c
+tests/filter/filter_tests.c
+tests/filter/filter_lookup_tests.c
+tests/filter/filter_sample_tests.c
+tests/probe/test_probe_parse.c
+tests/palette/test_palette_kmeans_init.c
 converters/aborttrace.c
 converters/cli.c
 converters/completion_utils.c
@@ -617,35 +627,9 @@ emit_all_units() {
             src/tests.c)
                 emit_unit "${unit}" "defined(BUILD_TESTS)"
                 ;;
-            tests/filter/filter_tests.c)
-                emit_unit "${unit}" "defined(BUILD_FILTER_TESTS)"
-                ;;
-            tests/filter/filter_sample_tests.c)
-                emit_unit "${unit}" "defined(BUILD_FILTER_SAMPLE_TESTS)"
-                ;;
-            tests/filter/filter_resize_tests.c)
-                emit_unit "${unit}" "defined(BUILD_FILTER_RESIZE_TESTS)"
-                ;;
-            tests/filter/filter_colors_tests.c)
-                emit_unit "${unit}" "defined(BUILD_FILTER_COLORS_TESTS)"
-                ;;
-            tests/filter/filter_lookup_tests.c)
-                emit_unit "${unit}" "defined(BUILD_FILTER_LOOKUP_TESTS)"
-                ;;
-            tests/filter/filter_final_merge_tests.c)
-                emit_unit "${unit}" "defined(BUILD_FILTER_FINAL_MERGE_TESTS)"
-                ;;
-            tests/filter/filter_vpte_tests.c)
-                emit_unit "${unit}" "defined(BUILD_FILTER_VPTE_TESTS)"
-                ;;
-            tests/filter/filter_load_tests.c)
-                emit_unit "${unit}" "defined(BUILD_FILTER_LOAD_TESTS)"
-                ;;
-            tests/filter/filter_dither_tests.c)
-                emit_unit "${unit}" "defined(BUILD_FILTER_DITHER_TESTS)"
-                ;;
-            tests/filter/filter_encode_tests.c)
-                emit_unit "${unit}" "defined(BUILD_FILTER_ENCODE_TESTS)"
+            tests/*.c)
+                guard=$(echo "${unit}" | sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
+                emit_unit "${unit}" "defined(${guard})"
                 ;;
             src/clipboard_carbon.c)
                 emit_unit "${unit}" \
