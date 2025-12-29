@@ -729,6 +729,12 @@ ease toward the target.
 .br
 weight L* relative to a/b* when snapping in Lab-family colorspaces.
 Accepts 0.0-1.0, default 0.85.
+.TP 5
+.B SIXEL_PALETTE_DIFFUSE_USE_L_R
+.br
+enable the Bottosson L_r toe curve for OKLab float input when using the
+LSO2 diffuser. Non-empty values other than "0" switch L distance to L_r;
+unset or "0" keeps raw L.
 
 
 .SH Image loaders

@@ -99,10 +99,13 @@ sixel_dither_lookup_palette_float32(float const *pixel,
                                     int depth,
                                     float const *palette,
                                     int reqcolor,
-                                    int complexion)
+                                    int complexion,
+                                    int use_l_r_distance)
 {
     double best_error;
     double error;
+    double sample_l;
+    double palette_l;
     double delta;
     int best_index;
     int color;
@@ -118,9 +121,31 @@ sixel_dither_lookup_palette_float32(float const *pixel,
 
     best_index = 0;
     best_error = DBL_MAX;
+    sample_l = (double)pixel[0];
+    if (use_l_r_distance != 0) {
+        /*
+         * Optional OKLab L_r remap keeps shadow distances stable without
+         * mutating the stored sample buffers.
+         */
+        const double k1 = 0.206;
+        const double k2 = 0.03;
+        const double k3 = (1.0 + k1) / (1.0 + k2);
+
+        sample_l = 0.5 * (((k3 * sample_l) / (sample_l + k1))
+                          + (sample_l / ((k2 * sample_l) + 1.0)));
+    }
     for (color = 0; color < reqcolor; ++color) {
         palette_offset = color * depth;
-        delta = (double)pixel[0] - (double)palette[palette_offset + 0];
+        palette_l = (double)palette[palette_offset];
+        if (use_l_r_distance != 0) {
+            const double k1 = 0.206;
+            const double k2 = 0.03;
+            const double k3 = (1.0 + k1) / (1.0 + k2);
+
+            palette_l = 0.5 * (((k3 * palette_l) / (palette_l + k1))
+                                + (palette_l / ((k2 * palette_l) + 1.0)));
+        }
+        delta = sample_l - palette_l;
         error = delta * delta * (double)complexion;
         for (channel = 1; channel < depth; ++channel) {
             delta = (double)pixel[channel]
