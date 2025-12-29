@@ -83,7 +83,40 @@ FILTER_TEST_BINARIES = \
 
 TESTS = $(CLI_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
 COPY_TESTS = $(CLI_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
-check_PROGRAMS =
+check_PROGRAMS = \
+    cli/test_0023_cli_token_is_known_option \
+    cli/test_0024_cli_option_requires_argument \
+    cli/test_0025_cli_guard_missing_argument
+
+cli_test_0023_cli_token_is_known_option_SOURCES = \
+    cli/test_0023_cli_token_is_known_option.c \
+    $(top_srcdir)/converters/cli.c
+cli_test_0023_cli_token_is_known_option_CPPFLAGS = $(AM_CPPFLAGS) \
+    -I$(top_builddir) -I$(top_builddir)/include \
+    -I$(top_srcdir) -I$(top_srcdir)/include \
+    -I$(top_srcdir)/converters
+cli_test_0023_cli_token_is_known_option_LDADD = \
+    $(top_builddir)/src/libsixel.la
+
+cli_test_0024_cli_option_requires_argument_SOURCES = \
+    cli/test_0024_cli_option_requires_argument.c \
+    $(top_srcdir)/converters/cli.c
+cli_test_0024_cli_option_requires_argument_CPPFLAGS = $(AM_CPPFLAGS) \
+    -I$(top_builddir) -I$(top_builddir)/include \
+    -I$(top_srcdir) -I$(top_srcdir)/include \
+    -I$(top_srcdir)/converters
+cli_test_0024_cli_option_requires_argument_LDADD = \
+    $(top_builddir)/src/libsixel.la
+
+cli_test_0025_cli_guard_missing_argument_SOURCES = \
+    cli/test_0025_cli_guard_missing_argument.c \
+    $(top_srcdir)/converters/cli.c
+cli_test_0025_cli_guard_missing_argument_CPPFLAGS = $(AM_CPPFLAGS) \
+    -I$(top_builddir) -I$(top_builddir)/include \
+    -I$(top_srcdir) -I$(top_srcdir)/include \
+    -I$(top_srcdir)/converters
+cli_test_0025_cli_guard_missing_argument_LDADD = \
+    $(top_builddir)/src/libsixel.la
 
 if ENABLE_GDK_PIXBUF_LOADER
 TESTS += gdk-pixbuf-loader/test-gdk-pixbuf-loader \

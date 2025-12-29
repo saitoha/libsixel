@@ -12,6 +12,26 @@ env.set('MESON_BUILD_ROOT', meson.project_build_root())
 env.set('LIBSIXEL_LIBDIR', meson.project_build_root() / 'src')
 amalgamated_tools_enabled = get_option('amalgamated_tools').enabled()
 
+cli_helper_sources = {
+  'test_0023_cli_token_is_known_option':
+    ['cli/test_0023_cli_token_is_known_option.c',
+     '../converters/cli.c'],
+  'test_0024_cli_option_requires_argument':
+    ['cli/test_0024_cli_option_requires_argument.c',
+     '../converters/cli.c'],
+  'test_0025_cli_guard_missing_argument':
+    ['cli/test_0025_cli_guard_missing_argument.c',
+     '../converters/cli.c'],
+}
+
+cli_helper_targets = {}
+foreach helper_name, helper_sources : cli_helper_sources
+  cli_helper_targets += {helper_name: executable(helper_name, helper_sources,
+    include_directories: [project_inc, include_directories('..')],
+    dependencies: [libsixel_dep],
+    install: false)}
+endforeach
+
 if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
   # Ensure Windows-style runners (including MSYS2) locate the freshly built
   # DLLs when executing the converter TAP suite. Without these PATH entries
@@ -67,6 +87,12 @@ cli_tests = ['test_0001_01_invalid_positional.t',
 
 cli_depends = {
   'test_0018_lsqa_regression.t': [lsqa_bin],
+  'test_0023_cli_token_is_known_option.t':
+    [cli_helper_targets['test_0023_cli_token_is_known_option']],
+  'test_0024_cli_option_requires_argument.t':
+    [cli_helper_targets['test_0024_cli_option_requires_argument']],
+  'test_0025_cli_guard_missing_argument.t':
+    [cli_helper_targets['test_0025_cli_guard_missing_argument']],
 }
 
 # Match autotools TAP timeout to keep CI behavior consistent (seconds per file).
