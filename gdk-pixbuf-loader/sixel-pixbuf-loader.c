@@ -183,6 +183,7 @@ sixel_pixbuf_stop_load(gpointer context_ptr, GError **error)
     SIXELSTATUS status;
     GdkPixbuf *pixbuf;
     gboolean result;
+    gchar const *signature;
 
     context = (SixelPixbufContext *)context_ptr;
     if (context == NULL || context->buffer == NULL) {
@@ -200,6 +201,22 @@ sixel_pixbuf_stop_load(gpointer context_ptr, GError **error)
     channels = 0;
     pixbuf = NULL;
     result = FALSE;
+    signature = "\x1bP";
+
+    /*
+     * Reject obvious non-SIXEL data before attempting to decode.  The SIXEL
+     * stream must begin with an ESC P introducer somewhere in the payload.
+     */
+    if (context->buffer->len == 0 ||
+        g_strstr_len((char const *)context->buffer->data,
+                     (gssize)context->buffer->len,
+                     signature) == NULL) {
+        sixel_pixbuf_context_free(context);
+        return sixel_pixbuf_propagate_error(error,
+                                            SIXEL_BAD_INPUT,
+                                            "sixel loader: missing SIXEL"
+                                            " signature");
+    }
 
     /* Decode with black compositing. Missing ST/BEL terminators are
      * tolerated inside sixel_decode_rgba(). */
