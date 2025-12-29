@@ -101,6 +101,7 @@ src/threadpool.c
 src/quicklook_thumbnailing.m
 src/clipboard_macos.m
 src/clipboard_carbon.c
+src/probe.c
 src/tests.c
 tests/gdk-pixbuf-loader/test_0002_corrupt_data.c
 tests/gdk-pixbuf-loader/test-gdk-pixbuf-loader.c
@@ -192,6 +193,7 @@ tty.h
 timer.h
 sleep.h
 clipboard.h
+probe.h
 loader.h
 loader-builtin.h
 loader-common.h
@@ -282,6 +284,7 @@ src/tty.h
 src/timer.h
 src/sleep.h
 src/clipboard.h
+src/probe.h
 src/loader.h
 src/loader-builtin.h
 src/loader-common.h
@@ -612,8 +615,9 @@ emit_all_units() {
                 emit_unit "${unit}" "SIXEL_ENABLE_THREADS"
                 ;;
             converters/cli.c|converters/completion_utils.c|converters/malloc_stub.c|converters/aborttrace.c)
+                guard=$(echo "${unit}" | sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
                 emit_unit "${unit}" \
-                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG)"
+                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_${guard})"
                 ;;
             converters/img2sixel.c)
                 emit_unit "${unit}" "defined(BUILD_IMG2SIXEL)"
@@ -629,7 +633,7 @@ emit_all_units() {
                 ;;
             tests/*.c)
                 guard=$(echo "${unit}" | sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
-                emit_unit "${unit}" "defined(${guard})"
+                emit_unit "${unit}" "defined(BUILD_${guard})"
                 ;;
             src/clipboard_carbon.c)
                 emit_unit "${unit}" \
