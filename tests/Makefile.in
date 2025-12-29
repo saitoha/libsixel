@@ -89,14 +89,13 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-TESTS = $(CLI_TESTS) $(CORE_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS) \
-	$(am__EXEEXT_1)
+TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) \
+	$(FILTER_TESTS) $(am__EXEEXT_1)
 check_PROGRAMS = cli/test_0023_cli_token_is_known_option$(EXEEXT) \
 	cli/test_0024_cli_option_requires_argument$(EXEEXT) \
 	cli/test_0025_cli_guard_missing_argument$(EXEEXT) \
-	probe/test_probe_parse$(EXEEXT) \
-	palette/test_palette_kmeans_init$(EXEEXT) $(am__EXEEXT_1) \
-	$(am__EXEEXT_2)
+	$(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3) \
+	$(am__EXEEXT_4)
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_1 = gdk-pixbuf-loader/test-gdk-pixbuf-loader \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/test_0001_incremental_load \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/test_0002_corrupt_data \
@@ -141,6 +140,8 @@ am__EXEEXT_2 = filter/filter_tests$(EXEEXT) \
 	filter/filter_load_tests$(EXEEXT) \
 	filter/filter_dither_tests$(EXEEXT) \
 	filter/filter_encode_tests$(EXEEXT)
+am__EXEEXT_3 = probe/test_probe_parse$(EXEEXT)
+am__EXEEXT_4 = palette/test_palette_kmeans_init$(EXEEXT)
 am__dirstamp = $(am__leading_dot)dirstamp
 am_cli_test_0023_cli_token_is_known_option_OBJECTS = cli/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.$(OBJEXT) \
 	$(top_builddir)/converters/cli_test_0023_cli_token_is_known_option-cli.$(OBJEXT)
@@ -394,15 +395,38 @@ gdk_pixbuf_loader_test_0004_context_free_OBJECTS =  \
 	$(am_gdk_pixbuf_loader_test_0004_context_free_OBJECTS)
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_0004_context_free_DEPENDENCIES = $(top_builddir)/src/libsixel.la \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(am__DEPENDENCIES_1)
-am_palette_test_palette_kmeans_init_OBJECTS = palette/test_palette_kmeans_init-test_palette_kmeans_init.$(OBJEXT)
+am__palette_test_palette_kmeans_init_SOURCES_DIST =  \
+	palette/test_palette_kmeans_init.c \
+	$(top_builddir)/amalgamation/sixel.c
+am__objects_11 = $(top_builddir)/amalgamation/palette_test_palette_kmeans_init-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_FALSE@am_palette_test_palette_kmeans_init_OBJECTS = palette/test_palette_kmeans_init-test_palette_kmeans_init.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@am_palette_test_palette_kmeans_init_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_11)
 palette_test_palette_kmeans_init_OBJECTS =  \
 	$(am_palette_test_palette_kmeans_init_OBJECTS)
-palette_test_palette_kmeans_init_DEPENDENCIES =  \
-	$(top_builddir)/src/libsixel.la
-am_probe_test_probe_parse_OBJECTS =  \
-	probe/test_probe_parse-test_probe_parse.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_FALSE@palette_test_palette_kmeans_init_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@palette_test_palette_kmeans_init_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_2)
+palette_test_palette_kmeans_init_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(palette_test_palette_kmeans_init_CFLAGS) $(CFLAGS) \
+	$(palette_test_palette_kmeans_init_LDFLAGS) $(LDFLAGS) -o $@
+am__probe_test_probe_parse_SOURCES_DIST = probe/test_probe_parse.c \
+	$(top_builddir)/amalgamation/sixel.c
+am__objects_12 = $(top_builddir)/amalgamation/probe_test_probe_parse-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_FALSE@am_probe_test_probe_parse_OBJECTS = probe/test_probe_parse-test_probe_parse.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@am_probe_test_probe_parse_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_12)
 probe_test_probe_parse_OBJECTS = $(am_probe_test_probe_parse_OBJECTS)
-probe_test_probe_parse_DEPENDENCIES = $(top_builddir)/src/libsixel.la
+@WANT_AMALGAMATED_TOOLS_FALSE@probe_test_probe_parse_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@probe_test_probe_parse_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_2)
+probe_test_probe_parse_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(probe_test_probe_parse_CFLAGS) $(CFLAGS) \
+	$(probe_test_probe_parse_LDFLAGS) $(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -428,6 +452,8 @@ am__depfiles_remade = $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_color
 	$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_sample_tests-sixel.Po \
 	$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_tests-sixel.Po \
 	$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_vpte_tests-sixel.Po \
+	$(top_builddir)/amalgamation/$(DEPDIR)/palette_test_palette_kmeans_init-sixel.Po \
+	$(top_builddir)/amalgamation/$(DEPDIR)/probe_test_probe_parse-sixel.Po \
 	$(top_builddir)/converters/$(DEPDIR)/cli_test_0023_cli_token_is_known_option-cli.Po \
 	$(top_builddir)/converters/$(DEPDIR)/cli_test_0024_cli_option_requires_argument-cli.Po \
 	$(top_builddir)/converters/$(DEPDIR)/cli_test_0025_cli_guard_missing_argument-cli.Po \
@@ -523,8 +549,8 @@ DIST_SOURCES = $(cli_test_0023_cli_token_is_known_option_SOURCES) \
 	$(am__gdk_pixbuf_loader_test_0002_corrupt_data_SOURCES_DIST) \
 	$(am__gdk_pixbuf_loader_test_0003_propagate_error_SOURCES_DIST) \
 	$(am__gdk_pixbuf_loader_test_0004_context_free_SOURCES_DIST) \
-	$(palette_test_palette_kmeans_init_SOURCES) \
-	$(probe_test_probe_parse_SOURCES)
+	$(am__palette_test_palette_kmeans_init_SOURCES_DIST) \
+	$(am__probe_test_probe_parse_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -997,9 +1023,10 @@ CLI_TESTS = cli/t/test_0001_01_invalid_positional.t \
        cli/t/test_0029_sixel2png_invalid_decoder_value.t \
        cli/t/test_0030_sixel2png_default_output.t
 
-CORE_TESTS = probe/test_probe_parse.t \
-       palette/test_palette_kmeans_init.t
-
+PROBE_TESTS = probe/test_probe_parse.t
+PROBE_TESTS_BINARIES = probe/test_probe_parse
+PALETTE_TESTS = palette/test_palette_kmeans_init.t
+PALETTE_TESTS_BINARIES = palette/test_palette_kmeans_init
 PYTHON_TESTS = python/t/test_0001_python_bindings.t \
        python/t/test_0002_python_api_formats.t \
        python/t/test_0003_python_api_options.t \
@@ -1029,7 +1056,7 @@ FILTER_TEST_BINARIES = \
        filter/filter_dither_tests \
        filter/filter_encode_tests
 
-COPY_TESTS = $(CLI_TESTS) $(CORE_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
+COPY_TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
 cli_test_0023_cli_token_is_known_option_SOURCES = \
     cli/test_0023_cli_token_is_known_option.c \
     $(top_srcdir)/converters/cli.c
@@ -1066,24 +1093,6 @@ cli_test_0025_cli_guard_missing_argument_CPPFLAGS = $(AM_CPPFLAGS) \
 cli_test_0025_cli_guard_missing_argument_LDADD = \
     $(top_builddir)/src/libsixel.la
 
-probe_test_probe_parse_SOURCES = \
-    probe/test_probe_parse.c
-
-probe_test_probe_parse_CPPFLAGS = $(AM_CPPFLAGS) \
-    -I$(top_builddir) -I$(top_builddir)/include \
-    -I$(top_srcdir) -I$(top_srcdir)/include \
-    -I$(top_srcdir)/src
-
-probe_test_probe_parse_LDADD = $(top_builddir)/src/libsixel.la
-palette_test_palette_kmeans_init_SOURCES = \
-    palette/test_palette_kmeans_init.c
-
-palette_test_palette_kmeans_init_CPPFLAGS = $(AM_CPPFLAGS) \
-    -I$(top_builddir) -I$(top_builddir)/include \
-    -I$(top_srcdir) -I$(top_srcdir)/include \
-    -I$(top_srcdir)/src
-
-palette_test_palette_kmeans_init_LDADD = $(top_builddir)/src/libsixel.la
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES = \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/test-gdk-pixbuf-loader.c \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
@@ -1168,21 +1177,20 @@ HELPER_FILES = cli/t/converters-common.t \
        python/lib/common.sh
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
-#AM_TESTS_ENVIRONMENT += CC='$(CC)'; export CC;
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	ARTIFACT_ROOT; TOP_SRCDIR='$(abs_top_srcdir)'; export \
 	TOP_SRCDIR; TOP_BUILDDIR='$(abs_top_builddir)'; export \
 	TOP_BUILDDIR; CROSS_COMPILING='@cross_compiling@'; export \
 	CROSS_COMPILING;
-FILTER_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
+TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_builddir) -I$(top_builddir)/include \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \
        -I$(top_srcdir)/tests/filter
 
-@WANT_AMALGAMATED_TOOLS_FALSE@FILTER_COMMON_CFLAGS_VAL = $(AM_CFLAGS) \
+@WANT_AMALGAMATED_TOOLS_FALSE@TESTS_COMMON_CFLAGS_VAL = $(AM_CFLAGS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@        $(MAYBE_COVERAGE)
 
-@WANT_AMALGAMATED_TOOLS_TRUE@FILTER_COMMON_CFLAGS_VAL = $(AM_CFLAGS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@TESTS_COMMON_CFLAGS_VAL = $(AM_CFLAGS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(LIBCURL_CFLAGS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(WINHTTP_CFLAGS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(LIBPNG_CFLAGS) \
@@ -1197,9 +1205,9 @@ FILTER_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        @THREAD_CFLAGS@ \
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(MAYBE_COVERAGE)
 
-FILTER_COMMON_LDFLAGS_VAL = $(AM_LDFLAGS) $(MAYBE_COVERAGE)
-@WANT_AMALGAMATED_TOOLS_FALSE@FILTER_COMMON_LDADD_VAL = $(top_builddir)/src/libsixel.la $(LIBS)
-@WANT_AMALGAMATED_TOOLS_TRUE@FILTER_COMMON_LDADD_VAL = $(LIBS) \
+TESTS_COMMON_LDFLAGS_VAL = $(AM_LDFLAGS) $(MAYBE_COVERAGE)
+@WANT_AMALGAMATED_TOOLS_FALSE@TESTS_COMMON_LDADD_VAL = $(top_builddir)/src/libsixel.la $(LIBS)
+@WANT_AMALGAMATED_TOOLS_TRUE@TESTS_COMMON_LDADD_VAL = $(LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(LIBCURL_LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(WINHTTP_LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(LIBPNG_LIBS) \
@@ -1213,12 +1221,12 @@ FILTER_COMMON_LDFLAGS_VAL = $(AM_LDFLAGS) $(MAYBE_COVERAGE)
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(ONNXRUNTIME_LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        @THREAD_LIBS@
 
-FILTER_AMALGAMATION_CPPFLAGS_COMMON = $(FILTER_COMMON_CPPFLAGS_VAL) \
+TESTS_AMALGAMATION_CPPFLAGS_COMMON = $(TESTS_COMMON_CPPFLAGS_VAL) \
 	$(am__append_3)
-FILTER_AMALGAMATION_CFLAGS_COMMON = $(FILTER_COMMON_CFLAGS_VAL)
-FILTER_AMALGAMATION_LDFLAGS_COMMON = $(FILTER_COMMON_LDFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_FALSE@FILTER_AMALGAMATION_LDADD_COMMON = $(top_builddir)/src/libsixel.la $(LIBS)
-@WANT_AMALGAMATED_TOOLS_TRUE@FILTER_AMALGAMATION_LDADD_COMMON = $(LIBS) \
+TESTS_AMALGAMATION_CFLAGS_COMMON = $(TESTS_COMMON_CFLAGS_VAL)
+TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_FALSE@TESTS_AMALGAMATION_LDADD_COMMON = $(top_builddir)/src/libsixel.la $(LIBS)
+@WANT_AMALGAMATED_TOOLS_TRUE@TESTS_AMALGAMATION_LDADD_COMMON = $(LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(LIBCURL_LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(WINHTTP_LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(LIBPNG_LIBS) \
@@ -1233,105 +1241,125 @@ FILTER_AMALGAMATION_LDFLAGS_COMMON = $(FILTER_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@        @THREAD_LIBS@
 
 @WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_tests_SOURCES = $(AMALGAMATION_SIXEL)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_TESTS=1
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_tests_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_tests_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_TESTS=1
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_tests_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_tests_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_tests_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_tests_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_tests_LDADD = $(TESTS_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_tests_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_tests_SOURCES = filter/filter_tests.c
 @WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_sample_tests_SOURCES = $(AMALGAMATION_SIXEL)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_sample_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_sample_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_SAMPLE_TESTS=1
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_sample_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_sample_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_sample_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_sample_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_sample_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_sample_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_sample_tests_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_sample_tests_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_SAMPLE_TESTS=1
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_sample_tests_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_sample_tests_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_sample_tests_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_sample_tests_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_sample_tests_LDADD = $(TESTS_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_sample_tests_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_sample_tests_SOURCES = filter/filter_sample_tests.c
 @WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_resize_tests_SOURCES = $(AMALGAMATION_SIXEL)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_resize_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_resize_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_RESIZE_TESTS=1
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_resize_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_resize_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_resize_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_resize_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_resize_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_resize_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_resize_tests_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_resize_tests_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_RESIZE_TESTS=1
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_resize_tests_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_resize_tests_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_resize_tests_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_resize_tests_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_resize_tests_LDADD = $(TESTS_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_resize_tests_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_resize_tests_SOURCES = filter/filter_resize_tests.c
 @WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_colors_tests_SOURCES = $(AMALGAMATION_SIXEL)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_colors_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_colors_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_COLORS_TESTS=1
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_colors_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_colors_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_colors_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_colors_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_colors_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_colors_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_colors_tests_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_colors_tests_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_COLORS_TESTS=1
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_colors_tests_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_colors_tests_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_colors_tests_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_colors_tests_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_colors_tests_LDADD = $(TESTS_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_colors_tests_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_colors_tests_SOURCES = filter/filter_colors_tests.c
 @WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_lookup_tests_SOURCES = $(AMALGAMATION_SIXEL)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_lookup_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_lookup_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_LOOKUP_TESTS=1
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_lookup_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_lookup_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_lookup_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_lookup_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_lookup_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_lookup_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_lookup_tests_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_lookup_tests_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_LOOKUP_TESTS=1
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_lookup_tests_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_lookup_tests_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_lookup_tests_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_lookup_tests_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_lookup_tests_LDADD = $(TESTS_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_lookup_tests_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_lookup_tests_SOURCES = filter/filter_lookup_tests.c
 @WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_final_merge_tests_SOURCES = $(AMALGAMATION_SIXEL)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_final_merge_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_final_merge_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_FINAL_MERGE_TESTS=1
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_final_merge_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_final_merge_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_final_merge_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_final_merge_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_final_merge_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_final_merge_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_final_merge_tests_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_final_merge_tests_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_FINAL_MERGE_TESTS=1
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_final_merge_tests_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_final_merge_tests_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_final_merge_tests_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_final_merge_tests_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_final_merge_tests_LDADD = $(TESTS_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_final_merge_tests_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_final_merge_tests_SOURCES = filter/filter_final_merge_tests.c
 @WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_vpte_tests_SOURCES = $(AMALGAMATION_SIXEL)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_vpte_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_vpte_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_VPTE_TESTS=1
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_vpte_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_vpte_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_vpte_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_vpte_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_vpte_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_vpte_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_vpte_tests_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_vpte_tests_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_VPTE_TESTS=1
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_vpte_tests_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_vpte_tests_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_vpte_tests_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_vpte_tests_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_vpte_tests_LDADD = $(TESTS_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_vpte_tests_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_vpte_tests_SOURCES = filter/filter_vpte_tests.c
 @WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_load_tests_SOURCES = $(AMALGAMATION_SIXEL)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_load_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_load_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_LOAD_TESTS=1
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_load_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_load_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_load_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_load_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_load_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_load_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_load_tests_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_load_tests_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_LOAD_TESTS=1
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_load_tests_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_load_tests_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_load_tests_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_load_tests_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_load_tests_LDADD = $(TESTS_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_load_tests_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_load_tests_SOURCES = filter/filter_load_tests.c
 @WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_dither_tests_SOURCES = $(AMALGAMATION_SIXEL)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_dither_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_dither_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_DITHER_TESTS=1
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_dither_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_dither_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_dither_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_dither_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_dither_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_dither_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_dither_tests_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_dither_tests_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_DITHER_TESTS=1
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_dither_tests_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_dither_tests_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_dither_tests_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_dither_tests_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_dither_tests_LDADD = $(TESTS_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_dither_tests_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_dither_tests_SOURCES = filter/filter_dither_tests.c
 @WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_encode_tests_SOURCES = $(AMALGAMATION_SIXEL)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_encode_tests_CPPFLAGS = $(FILTER_COMMON_CPPFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_encode_tests_CPPFLAGS = $(FILTER_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_ENCODE_TESTS=1
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_encode_tests_CFLAGS = $(FILTER_COMMON_CFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_encode_tests_CFLAGS = $(FILTER_AMALGAMATION_CFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_encode_tests_LDFLAGS = $(FILTER_COMMON_LDFLAGS_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_encode_tests_LDFLAGS = $(FILTER_AMALGAMATION_LDFLAGS_COMMON)
-@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_encode_tests_LDADD = $(FILTER_COMMON_LDADD_VAL)
-@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_encode_tests_LDADD = $(FILTER_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_encode_tests_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_encode_tests_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_FILTER_ENCODE_TESTS=1
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_encode_tests_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_encode_tests_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_encode_tests_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_encode_tests_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_encode_tests_LDADD = $(TESTS_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_encode_tests_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@filter_filter_encode_tests_SOURCES = filter/filter_encode_tests.c
+@WANT_AMALGAMATED_TOOLS_FALSE@probe_test_probe_parse_SOURCES = probe/test_probe_parse.c
+@WANT_AMALGAMATED_TOOLS_TRUE@probe_test_probe_parse_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@probe_test_probe_parse_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@probe_test_probe_parse_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_TEST_PROBE_PARSE=1
+@WANT_AMALGAMATED_TOOLS_FALSE@probe_test_probe_parse_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@probe_test_probe_parse_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@probe_test_probe_parse_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@probe_test_probe_parse_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@probe_test_probe_parse_LDADD = $(TESTS_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@probe_test_probe_parse_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@palette_test_palette_kmeans_init_SOURCES = palette/test_palette_kmeans_init.c
+@WANT_AMALGAMATED_TOOLS_TRUE@palette_test_palette_kmeans_init_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@palette_test_palette_kmeans_init_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@palette_test_palette_kmeans_init_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_TEST_PALETTE_KMEANS_INIT=1
+@WANT_AMALGAMATED_TOOLS_FALSE@palette_test_palette_kmeans_init_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@palette_test_palette_kmeans_init_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@palette_test_palette_kmeans_init_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@palette_test_palette_kmeans_init_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@palette_test_palette_kmeans_init_LDADD = $(TESTS_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@palette_test_palette_kmeans_init_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 TEST_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/build-aux/tap-driver.sh
 AM_TEST_LOG_DRIVER_FLAGS = --comments
 LOG_COMPILER = $(builddir)/tools/with-timeout.sh
@@ -1630,10 +1658,13 @@ palette/$(DEPDIR)/$(am__dirstamp):
 	@: >>palette/$(DEPDIR)/$(am__dirstamp)
 palette/test_palette_kmeans_init-test_palette_kmeans_init.$(OBJEXT):  \
 	palette/$(am__dirstamp) palette/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/palette_test_palette_kmeans_init-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 palette/test_palette_kmeans_init$(EXEEXT): $(palette_test_palette_kmeans_init_OBJECTS) $(palette_test_palette_kmeans_init_DEPENDENCIES) $(EXTRA_palette_test_palette_kmeans_init_DEPENDENCIES) palette/$(am__dirstamp)
 	@rm -f palette/test_palette_kmeans_init$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(palette_test_palette_kmeans_init_OBJECTS) $(palette_test_palette_kmeans_init_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(palette_test_palette_kmeans_init_LINK) $(palette_test_palette_kmeans_init_OBJECTS) $(palette_test_palette_kmeans_init_LDADD) $(LIBS)
 probe/$(am__dirstamp):
 	@$(MKDIR_P) probe
 	@: >>probe/$(am__dirstamp)
@@ -1642,10 +1673,13 @@ probe/$(DEPDIR)/$(am__dirstamp):
 	@: >>probe/$(DEPDIR)/$(am__dirstamp)
 probe/test_probe_parse-test_probe_parse.$(OBJEXT):  \
 	probe/$(am__dirstamp) probe/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/probe_test_probe_parse-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 probe/test_probe_parse$(EXEEXT): $(probe_test_probe_parse_OBJECTS) $(probe_test_probe_parse_DEPENDENCIES) $(EXTRA_probe_test_probe_parse_DEPENDENCIES) probe/$(am__dirstamp)
 	@rm -f probe/test_probe_parse$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(probe_test_probe_parse_OBJECTS) $(probe_test_probe_parse_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(probe_test_probe_parse_LINK) $(probe_test_probe_parse_OBJECTS) $(probe_test_probe_parse_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -1671,6 +1705,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_sample_tests-sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_tests-sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_vpte_tests-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/palette_test_palette_kmeans_init-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/probe_test_probe_parse-sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/cli_test_0023_cli_token_is_known_option-cli.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/cli_test_0024_cli_option_requires_argument-cli.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/cli_test_0025_cli_guard_missing_argument-cli.Po@am__quote@ # am--include-marker
@@ -2235,32 +2271,60 @@ $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0004_context_free-sixel
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0004_context_free_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.obj `if test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; then $(CYGPATH_W) '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; fi`
 
 palette/test_palette_kmeans_init-test_palette_kmeans_init.o: palette/test_palette_kmeans_init.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(palette_test_palette_kmeans_init_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT palette/test_palette_kmeans_init-test_palette_kmeans_init.o -MD -MP -MF palette/$(DEPDIR)/test_palette_kmeans_init-test_palette_kmeans_init.Tpo -c -o palette/test_palette_kmeans_init-test_palette_kmeans_init.o `test -f 'palette/test_palette_kmeans_init.c' || echo '$(srcdir)/'`palette/test_palette_kmeans_init.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(palette_test_palette_kmeans_init_CPPFLAGS) $(CPPFLAGS) $(palette_test_palette_kmeans_init_CFLAGS) $(CFLAGS) -MT palette/test_palette_kmeans_init-test_palette_kmeans_init.o -MD -MP -MF palette/$(DEPDIR)/test_palette_kmeans_init-test_palette_kmeans_init.Tpo -c -o palette/test_palette_kmeans_init-test_palette_kmeans_init.o `test -f 'palette/test_palette_kmeans_init.c' || echo '$(srcdir)/'`palette/test_palette_kmeans_init.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/$(DEPDIR)/test_palette_kmeans_init-test_palette_kmeans_init.Tpo palette/$(DEPDIR)/test_palette_kmeans_init-test_palette_kmeans_init.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/test_palette_kmeans_init.c' object='palette/test_palette_kmeans_init-test_palette_kmeans_init.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(palette_test_palette_kmeans_init_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o palette/test_palette_kmeans_init-test_palette_kmeans_init.o `test -f 'palette/test_palette_kmeans_init.c' || echo '$(srcdir)/'`palette/test_palette_kmeans_init.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(palette_test_palette_kmeans_init_CPPFLAGS) $(CPPFLAGS) $(palette_test_palette_kmeans_init_CFLAGS) $(CFLAGS) -c -o palette/test_palette_kmeans_init-test_palette_kmeans_init.o `test -f 'palette/test_palette_kmeans_init.c' || echo '$(srcdir)/'`palette/test_palette_kmeans_init.c
 
 palette/test_palette_kmeans_init-test_palette_kmeans_init.obj: palette/test_palette_kmeans_init.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(palette_test_palette_kmeans_init_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT palette/test_palette_kmeans_init-test_palette_kmeans_init.obj -MD -MP -MF palette/$(DEPDIR)/test_palette_kmeans_init-test_palette_kmeans_init.Tpo -c -o palette/test_palette_kmeans_init-test_palette_kmeans_init.obj `if test -f 'palette/test_palette_kmeans_init.c'; then $(CYGPATH_W) 'palette/test_palette_kmeans_init.c'; else $(CYGPATH_W) '$(srcdir)/palette/test_palette_kmeans_init.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(palette_test_palette_kmeans_init_CPPFLAGS) $(CPPFLAGS) $(palette_test_palette_kmeans_init_CFLAGS) $(CFLAGS) -MT palette/test_palette_kmeans_init-test_palette_kmeans_init.obj -MD -MP -MF palette/$(DEPDIR)/test_palette_kmeans_init-test_palette_kmeans_init.Tpo -c -o palette/test_palette_kmeans_init-test_palette_kmeans_init.obj `if test -f 'palette/test_palette_kmeans_init.c'; then $(CYGPATH_W) 'palette/test_palette_kmeans_init.c'; else $(CYGPATH_W) '$(srcdir)/palette/test_palette_kmeans_init.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/$(DEPDIR)/test_palette_kmeans_init-test_palette_kmeans_init.Tpo palette/$(DEPDIR)/test_palette_kmeans_init-test_palette_kmeans_init.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/test_palette_kmeans_init.c' object='palette/test_palette_kmeans_init-test_palette_kmeans_init.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(palette_test_palette_kmeans_init_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o palette/test_palette_kmeans_init-test_palette_kmeans_init.obj `if test -f 'palette/test_palette_kmeans_init.c'; then $(CYGPATH_W) 'palette/test_palette_kmeans_init.c'; else $(CYGPATH_W) '$(srcdir)/palette/test_palette_kmeans_init.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(palette_test_palette_kmeans_init_CPPFLAGS) $(CPPFLAGS) $(palette_test_palette_kmeans_init_CFLAGS) $(CFLAGS) -c -o palette/test_palette_kmeans_init-test_palette_kmeans_init.obj `if test -f 'palette/test_palette_kmeans_init.c'; then $(CYGPATH_W) 'palette/test_palette_kmeans_init.c'; else $(CYGPATH_W) '$(srcdir)/palette/test_palette_kmeans_init.c'; fi`
+
+$(top_builddir)/amalgamation/palette_test_palette_kmeans_init-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(palette_test_palette_kmeans_init_CPPFLAGS) $(CPPFLAGS) $(palette_test_palette_kmeans_init_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/palette_test_palette_kmeans_init-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/palette_test_palette_kmeans_init-sixel.Tpo -c -o $(top_builddir)/amalgamation/palette_test_palette_kmeans_init-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/palette_test_palette_kmeans_init-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/palette_test_palette_kmeans_init-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/palette_test_palette_kmeans_init-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(palette_test_palette_kmeans_init_CPPFLAGS) $(CPPFLAGS) $(palette_test_palette_kmeans_init_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/palette_test_palette_kmeans_init-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/palette_test_palette_kmeans_init-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(palette_test_palette_kmeans_init_CPPFLAGS) $(CPPFLAGS) $(palette_test_palette_kmeans_init_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/palette_test_palette_kmeans_init-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/palette_test_palette_kmeans_init-sixel.Tpo -c -o $(top_builddir)/amalgamation/palette_test_palette_kmeans_init-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/palette_test_palette_kmeans_init-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/palette_test_palette_kmeans_init-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/palette_test_palette_kmeans_init-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(palette_test_palette_kmeans_init_CPPFLAGS) $(CPPFLAGS) $(palette_test_palette_kmeans_init_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/palette_test_palette_kmeans_init-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
 
 probe/test_probe_parse-test_probe_parse.o: probe/test_probe_parse.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(probe_test_probe_parse_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT probe/test_probe_parse-test_probe_parse.o -MD -MP -MF probe/$(DEPDIR)/test_probe_parse-test_probe_parse.Tpo -c -o probe/test_probe_parse-test_probe_parse.o `test -f 'probe/test_probe_parse.c' || echo '$(srcdir)/'`probe/test_probe_parse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(probe_test_probe_parse_CPPFLAGS) $(CPPFLAGS) $(probe_test_probe_parse_CFLAGS) $(CFLAGS) -MT probe/test_probe_parse-test_probe_parse.o -MD -MP -MF probe/$(DEPDIR)/test_probe_parse-test_probe_parse.Tpo -c -o probe/test_probe_parse-test_probe_parse.o `test -f 'probe/test_probe_parse.c' || echo '$(srcdir)/'`probe/test_probe_parse.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) probe/$(DEPDIR)/test_probe_parse-test_probe_parse.Tpo probe/$(DEPDIR)/test_probe_parse-test_probe_parse.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='probe/test_probe_parse.c' object='probe/test_probe_parse-test_probe_parse.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(probe_test_probe_parse_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o probe/test_probe_parse-test_probe_parse.o `test -f 'probe/test_probe_parse.c' || echo '$(srcdir)/'`probe/test_probe_parse.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(probe_test_probe_parse_CPPFLAGS) $(CPPFLAGS) $(probe_test_probe_parse_CFLAGS) $(CFLAGS) -c -o probe/test_probe_parse-test_probe_parse.o `test -f 'probe/test_probe_parse.c' || echo '$(srcdir)/'`probe/test_probe_parse.c
 
 probe/test_probe_parse-test_probe_parse.obj: probe/test_probe_parse.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(probe_test_probe_parse_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT probe/test_probe_parse-test_probe_parse.obj -MD -MP -MF probe/$(DEPDIR)/test_probe_parse-test_probe_parse.Tpo -c -o probe/test_probe_parse-test_probe_parse.obj `if test -f 'probe/test_probe_parse.c'; then $(CYGPATH_W) 'probe/test_probe_parse.c'; else $(CYGPATH_W) '$(srcdir)/probe/test_probe_parse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(probe_test_probe_parse_CPPFLAGS) $(CPPFLAGS) $(probe_test_probe_parse_CFLAGS) $(CFLAGS) -MT probe/test_probe_parse-test_probe_parse.obj -MD -MP -MF probe/$(DEPDIR)/test_probe_parse-test_probe_parse.Tpo -c -o probe/test_probe_parse-test_probe_parse.obj `if test -f 'probe/test_probe_parse.c'; then $(CYGPATH_W) 'probe/test_probe_parse.c'; else $(CYGPATH_W) '$(srcdir)/probe/test_probe_parse.c'; fi`
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) probe/$(DEPDIR)/test_probe_parse-test_probe_parse.Tpo probe/$(DEPDIR)/test_probe_parse-test_probe_parse.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='probe/test_probe_parse.c' object='probe/test_probe_parse-test_probe_parse.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(probe_test_probe_parse_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o probe/test_probe_parse-test_probe_parse.obj `if test -f 'probe/test_probe_parse.c'; then $(CYGPATH_W) 'probe/test_probe_parse.c'; else $(CYGPATH_W) '$(srcdir)/probe/test_probe_parse.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(probe_test_probe_parse_CPPFLAGS) $(CPPFLAGS) $(probe_test_probe_parse_CFLAGS) $(CFLAGS) -c -o probe/test_probe_parse-test_probe_parse.obj `if test -f 'probe/test_probe_parse.c'; then $(CYGPATH_W) 'probe/test_probe_parse.c'; else $(CYGPATH_W) '$(srcdir)/probe/test_probe_parse.c'; fi`
+
+$(top_builddir)/amalgamation/probe_test_probe_parse-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(probe_test_probe_parse_CPPFLAGS) $(CPPFLAGS) $(probe_test_probe_parse_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/probe_test_probe_parse-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/probe_test_probe_parse-sixel.Tpo -c -o $(top_builddir)/amalgamation/probe_test_probe_parse-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/probe_test_probe_parse-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/probe_test_probe_parse-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/probe_test_probe_parse-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(probe_test_probe_parse_CPPFLAGS) $(CPPFLAGS) $(probe_test_probe_parse_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/probe_test_probe_parse-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/probe_test_probe_parse-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(probe_test_probe_parse_CPPFLAGS) $(CPPFLAGS) $(probe_test_probe_parse_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/probe_test_probe_parse-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/probe_test_probe_parse-sixel.Tpo -c -o $(top_builddir)/amalgamation/probe_test_probe_parse-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/probe_test_probe_parse-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/probe_test_probe_parse-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/probe_test_probe_parse-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(probe_test_probe_parse_CPPFLAGS) $(CPPFLAGS) $(probe_test_probe_parse_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/probe_test_probe_parse-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -2650,6 +2714,8 @@ distclean: distclean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_sample_tests-sixel.Po
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_tests-sixel.Po
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_vpte_tests-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/palette_test_palette_kmeans_init-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/probe_test_probe_parse-sixel.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/cli_test_0023_cli_token_is_known_option-cli.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/cli_test_0024_cli_option_requires_argument-cli.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/cli_test_0025_cli_guard_missing_argument-cli.Po
@@ -2733,6 +2799,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_sample_tests-sixel.Po
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_tests-sixel.Po
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_vpte_tests-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/palette_test_palette_kmeans_init-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/probe_test_probe_parse-sixel.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/cli_test_0023_cli_token_is_known_option-cli.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/cli_test_0024_cli_option_requires_argument-cli.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/cli_test_0025_cli_guard_missing_argument-cli.Po
