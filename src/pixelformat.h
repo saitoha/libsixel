@@ -25,6 +25,8 @@
 #ifndef LIBSIXEL_PIXELFORMAT_H
 #define LIBSIXEL_PIXELFORMAT_H
 
+#include <sixel.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -51,6 +53,18 @@ sixel_pixelformat_byte_to_float(int pixelformat,
 
 int
 sixel_helper_compute_depth(int pixelformat);
+
+SIXELAPI int
+sixel_pixelformat_colorspace_from_format(int pixelformat);
+
+SIXELAPI SIXELSTATUS
+sixel_pixelformat_convert(unsigned char *dst,
+                          int dst_pixelformat,
+                          unsigned char const *src,
+                          int src_pixelformat,
+                          int width,
+                          int height,
+                          sixel_allocator_t *allocator);
 
 #ifdef __cplusplus
 }
