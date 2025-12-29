@@ -96,36 +96,6 @@ check_PROGRAMS = \
     cli/test_0024_cli_option_requires_argument \
     cli/test_0025_cli_guard_missing_argument
 
-cli_test_0023_cli_token_is_known_option_SOURCES = \
-    cli/test_0023_cli_token_is_known_option.c \
-    $(top_srcdir)/converters/cli.c
-cli_test_0023_cli_token_is_known_option_CPPFLAGS = $(AM_CPPFLAGS) \
-    -I$(top_builddir) -I$(top_builddir)/include \
-    -I$(top_srcdir) -I$(top_srcdir)/include \
-    -I$(top_srcdir)/converters
-cli_test_0023_cli_token_is_known_option_LDADD = \
-    $(top_builddir)/src/libsixel.la
-
-cli_test_0024_cli_option_requires_argument_SOURCES = \
-    cli/test_0024_cli_option_requires_argument.c \
-    $(top_srcdir)/converters/cli.c
-cli_test_0024_cli_option_requires_argument_CPPFLAGS = $(AM_CPPFLAGS) \
-    -I$(top_builddir) -I$(top_builddir)/include \
-    -I$(top_srcdir) -I$(top_srcdir)/include \
-    -I$(top_srcdir)/converters
-cli_test_0024_cli_option_requires_argument_LDADD = \
-    $(top_builddir)/src/libsixel.la
-
-cli_test_0025_cli_guard_missing_argument_SOURCES = \
-    cli/test_0025_cli_guard_missing_argument.c \
-    $(top_srcdir)/converters/cli.c
-cli_test_0025_cli_guard_missing_argument_CPPFLAGS = $(AM_CPPFLAGS) \
-    -I$(top_builddir) -I$(top_builddir)/include \
-    -I$(top_srcdir) -I$(top_srcdir)/include \
-    -I$(top_srcdir)/converters
-cli_test_0025_cli_guard_missing_argument_LDADD = \
-    $(top_builddir)/src/libsixel.la
-
 if ENABLE_GDK_PIXBUF_LOADER
 TESTS += gdk-pixbuf-loader/test-gdk-pixbuf-loader \
     gdk-pixbuf-loader/test_0001_incremental_load \
@@ -422,8 +392,63 @@ filter_filter_encode_tests_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-probe_test_probe_parse_SOURCES = $(AMALGAMATION_SIXEL)
-probe_test_probe_parse_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_TEST_PROBE_PARSE=1
+nodist_cli_test_0023_cli_token_is_known_option_SOURCES = $(AMALGAMATION_SIXEL)
+cli_test_0023_cli_token_is_known_option_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+    -DBUILD_TEST_0023_CLI_TOKEN_IS_KNOWN_OPTION=1 \
+    -DBUILD_CLI=1
+cli_test_0023_cli_token_is_known_option_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+cli_test_0023_cli_token_is_known_option_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+cli_test_0023_cli_token_is_known_option_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+else
+cli_test_0023_cli_token_is_known_option_SOURCES = \
+    cli/test_0023_cli_token_is_known_option.c \
+    $(top_srcdir)/converters/cli.c
+cli_test_0023_cli_token_is_known_option_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+cli_test_0023_cli_token_is_known_option_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+cli_test_0023_cli_token_is_known_option_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+cli_test_0023_cli_token_is_known_option_LDADD = $(TESTS_COMMON_LDADD_VAL)
+endif
+
+if WANT_AMALGAMATED_TOOLS
+nodist_cli_test_0024_cli_option_requires_argument_SOURCES = $(AMALGAMATION_SIXEL)
+cli_test_0024_cli_option_requires_argument_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+    -DBUILD_TEST_0024_CLI_OPTION_REQUIRES_ARGUMENT=1 \
+    -DBUILD_CLI=1
+cli_test_0024_cli_option_requires_argument_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+cli_test_0024_cli_option_requires_argument_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+cli_test_0024_cli_option_requires_argument_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+else
+cli_test_0024_cli_option_requires_argument_SOURCES = \
+    cli/test_0024_cli_option_requires_argument.c \
+    $(top_srcdir)/converters/cli.c
+cli_test_0024_cli_option_requires_argument_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+cli_test_0024_cli_option_requires_argument_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+cli_test_0024_cli_option_requires_argument_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+cli_test_0024_cli_option_requires_argument_LDADD = $(TESTS_COMMON_LDADD_VAL)
+endif
+
+if WANT_AMALGAMATED_TOOLS
+nodist_cli_test_0025_cli_guard_missing_argument_SOURCES = $(AMALGAMATION_SIXEL)
+cli_test_0025_cli_guard_missing_argument_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+    -DBUILD_TEST_0025_CLI_GUARD_MISSING_ARGUMENT=1 \
+    -DBUILD_CLI=1
+cli_test_0025_cli_guard_missing_argument_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+cli_test_0025_cli_guard_missing_argument_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+cli_test_0025_cli_guard_missing_argument_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+else
+cli_test_0025_cli_guard_missing_argument_SOURCES = \
+    cli/test_0025_cli_guard_missing_argument.c \
+    $(top_srcdir)/converters/cli.c
+cli_test_0025_cli_guard_missing_argument_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+cli_test_0025_cli_guard_missing_argument_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+cli_test_0025_cli_guard_missing_argument_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+cli_test_0025_cli_guard_missing_argument_LDADD = $(TESTS_COMMON_LDADD_VAL)
+endif
+
+if WANT_AMALGAMATED_TOOLS
+nodist_probe_test_probe_parse_SOURCES = $(AMALGAMATION_SIXEL)
+probe_test_probe_parse_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+    -DBUILD_TEST_PROBE_PARSE=1
 probe_test_probe_parse_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
 probe_test_probe_parse_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
 probe_test_probe_parse_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
@@ -436,8 +461,9 @@ probe_test_probe_parse_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-palette_test_palette_kmeans_init_SOURCES = $(AMALGAMATION_SIXEL)
-palette_test_palette_kmeans_init_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) -DBUILD_TEST_PALETTE_KMEANS_INIT=1
+nodist_palette_test_palette_kmeans_init_SOURCES = $(AMALGAMATION_SIXEL)
+palette_test_palette_kmeans_init_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+    -DBUILD_TEST_PALETTE_KMEANS_INIT=1
 palette_test_palette_kmeans_init_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
 palette_test_palette_kmeans_init_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
 palette_test_palette_kmeans_init_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
