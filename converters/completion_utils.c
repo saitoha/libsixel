@@ -184,7 +184,7 @@ img2sixel_compat_strerror(int error_number,
     size_t copy_length;
 # endif
 #else
-# if defined(_GNU_SOURCE)
+# if defined(_GNU_SOURCE) && !defined(__APPLE__)
     char *message;
     size_t copy_length;
 # endif
