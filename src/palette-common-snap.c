@@ -37,7 +37,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "colorspace.h"
 #include "compat_stub.h"
 #include "lookup-common.h"
 #include "palette-common-snap.h"

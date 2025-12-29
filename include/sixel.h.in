@@ -1251,15 +1251,6 @@ sixel_helper_scale_image(
 SIXELAPI void
 sixel_option_apply_cli_suggestion_defaults(void);
 
-#if SIXEL_USE_DEPRECATED_SYMBOLS
-SIXELAPI SIXELSTATUS
-sixel_helper_convert_colorspace(
-    unsigned char       /* in/out */ *pixels,
-    size_t              /* in */      size,
-    int                 /* in */      pixelformat,
-    int                 /* in */      colorspace_src,
-    int                 /* in */      colorspace_dst);
-#endif
 
 #ifdef __cplusplus
 }
