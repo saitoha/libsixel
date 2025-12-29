@@ -677,8 +677,6 @@ sixel_parallel_worker_prepare(sixel_parallel_worker_state_t *state,
     state->output->skip_dcs_envelope = 1;
     state->output->skip_header = 1;
     state->output->palette_type = ctx->output->palette_type;
-    state->output->colorspace = ctx->output->colorspace;
-    state->output->source_colorspace = ctx->output->source_colorspace;
     state->output->pixelformat = ctx->output->pixelformat;
     state->output->penetrate_multiplexer =
         ctx->output->penetrate_multiplexer;
@@ -3798,13 +3796,12 @@ sixel_encode_dither(
     sixel_palette_t *palette_obj = NULL;
     size_t palette_count = 0U;
     size_t palette_float_count = 0U;
-    size_t palette_bytes = 0U;
-    size_t palette_float_bytes = 0U;
     size_t palette_channels = 0U;
     size_t palette_index = 0U;
     int palette_source_colorspace;
     int palette_float_pixelformat;
     int output_float_pixelformat;
+    int output_colorspace;
     int pipeline_active;
     int pipeline_threads = 0;  /* set to a deterministic default before use */
     int pipeline_nbands;
@@ -3816,11 +3813,14 @@ sixel_encode_dither(
 #endif  /* SIXEL_ENABLE_THREADS */
     sixel_logger_t *logger = NULL;
 
-    palette_source_colorspace = SIXEL_COLORSPACE_GAMMA;
+    output_colorspace = sixel_pixelformat_colorspace_from_format(
+        output != NULL ? output->pixelformat : dither->pixelformat);
+    palette_source_colorspace = output_colorspace;
     palette_float_pixelformat =
         sixel_palette_float_pixelformat_for_colorspace(
             palette_source_colorspace);
-    output_float_pixelformat = SIXEL_PIXELFORMAT_RGBFLOAT32;
+    output_float_pixelformat =
+        sixel_palette_float_pixelformat_for_colorspace(output_colorspace);
     status = sixel_dither_get_quantized_palette(dither, &palette_obj);
     if (SIXEL_FAILED(status)) {
         sixel_helper_set_additional_message(
@@ -3960,13 +3960,6 @@ sixel_encode_dither(
     }
 #endif
 
-    if (output != NULL) {
-        palette_source_colorspace = output->source_colorspace;
-        palette_float_pixelformat =
-            sixel_palette_float_pixelformat_for_colorspace(
-                palette_source_colorspace);
-    }
-
     status = sixel_palette_copy_entries_8bit(
         palette_obj,
         &palette_entries,
@@ -4001,9 +3994,7 @@ sixel_encode_dither(
                                            palette_float_pixelformat);
     }
     if (palette_entries != NULL && palette_count > 0U
-            && output != NULL
-            && output->source_colorspace != output->colorspace) {
-        palette_bytes = palette_count * 3U;
+            && palette_source_colorspace != output_colorspace) {
         if (palette_entries_float32 != NULL
                 && palette_float_count == palette_count) {
             /*
@@ -4013,21 +4004,19 @@ sixel_encode_dither(
              * them from float again, doubling the amount of work and rounding
              * the palette twice.
              */
-            palette_float_bytes = palette_bytes * sizeof(float);
-            status = sixel_helper_convert_colorspace(
-                (unsigned char *)palette_entries_float32,
-                palette_float_bytes,
+            status = sixel_pixelformat_convert(
+                palette_entries_float32,
+                output_float_pixelformat,
+                palette_entries_float32,
                 palette_float_pixelformat,
-                output->source_colorspace,
-                output->colorspace);
+                (int)palette_count,
+                1,
+                dither->allocator);
             if (SIXEL_FAILED(status)) {
                 sixel_helper_set_additional_message(
                     "sixel_encode_dither: float palette colorspace conversion failed.");
                 goto end;
             }
-            output_float_pixelformat =
-                sixel_palette_float_pixelformat_for_colorspace(
-                    output->colorspace);
             palette_channels = palette_count * 3U;
             for (palette_index = 0U; palette_index < palette_channels;
                     ++palette_index) {
@@ -4041,11 +4030,14 @@ sixel_encode_dither(
                         palette_entries_float32[palette_index]);
             }
         } else {
-            status = sixel_helper_convert_colorspace(palette_entries,
-                                                     palette_bytes,
-                                                     SIXEL_PIXELFORMAT_RGB888,
-                                                     output->source_colorspace,
-                                                     output->colorspace);
+            status = sixel_pixelformat_convert(
+                palette_entries,
+                SIXEL_PIXELFORMAT_RGB888,
+                palette_entries,
+                SIXEL_PIXELFORMAT_RGB888,
+                (int)palette_count,
+                1,
+                dither->allocator);
             if (SIXEL_FAILED(status)) {
                 sixel_helper_set_additional_message(
                     "sixel_encode_dither: palette colorspace "

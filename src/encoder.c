@@ -1102,9 +1102,7 @@ sixel_encoder_capture_quantized(sixel_encoder_t *encoder,
                                 size_t size,
                                 int width,
                                 int height,
-                                int pixelformat,
-                                int source_colorspace,
-                                int colorspace)
+                                int pixelformat)
 {
     SIXELSTATUS status;
     int ncolors;
@@ -1244,14 +1242,6 @@ sixel_encoder_capture_quantized(sixel_encoder_t *encoder,
                 memcpy(encoder->capture_palette,
                        palette_copy,
                        palette_bytes);
-                if (source_colorspace != colorspace) {
-                    (void)sixel_helper_convert_colorspace(
-                        encoder->capture_palette,
-                        palette_bytes,
-                        SIXEL_PIXELFORMAT_RGB888,
-                        source_colorspace,
-                        colorspace);
-                }
             }
             if (palette_copy != NULL) {
                 sixel_allocator_free(encoder->allocator, palette_copy);
@@ -1266,7 +1256,6 @@ sixel_encoder_capture_quantized(sixel_encoder_t *encoder,
     } else {
         encoder->capture_pixelformat = pixelformat;
     }
-    encoder->capture_colorspace = colorspace;
     encoder->capture_palette_size = palette_bytes;
     encoder->capture_ncolors = ncolors;
     encoder->capture_valid = 1;
@@ -4337,8 +4326,6 @@ sixel_encoder_output_without_macro(
     pixelformat = sixel_frame_get_pixelformat(frame);
     frame_colorspace = sixel_frame_get_colorspace(frame);
     output->pixelformat = pixelformat;
-    output->source_colorspace = frame_colorspace;
-    output->colorspace = encoder->output_colorspace;
     sixel_dither_set_pixelformat(dither, pixelformat);
     depth = sixel_helper_compute_depth(pixelformat);
     if (depth < 0) {
@@ -4368,7 +4355,7 @@ sixel_encoder_output_without_macro(
                             width,
                             height,
                             pixelformat,
-                            output->colorspace);
+                            frame_colorspace);
 
     p = (unsigned char *)sixel_allocator_malloc(encoder->allocator, size);
     if (p == NULL) {
@@ -4428,9 +4415,7 @@ sixel_encoder_output_without_macro(
                                                  size,
                                                  width,
                                                  height,
-                                                 pixelformat,
-                                                 frame_colorspace,
-                                                 output->colorspace);
+                                                 pixelformat);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -4461,7 +4446,6 @@ end:
                                 height);
     }
     output->pixelformat = pixelformat;
-    output->source_colorspace = frame_colorspace;
     sixel_allocator_free(encoder->allocator, p);
 
     return status;
@@ -4487,7 +4471,6 @@ sixel_encoder_output_with_macro(
     int pixelformat;
     int depth;
     size_t size = 0;
-    int frame_colorspace = SIXEL_COLORSPACE_GAMMA;
     unsigned char *converted = NULL;
 #if defined(HAVE_CLOCK) || defined(HAVE_CLOCK_WIN)
     sixel_clock_t last_clock;
@@ -4524,7 +4507,6 @@ sixel_encoder_output_with_macro(
         goto end;
     }
 
-    frame_colorspace = sixel_frame_get_colorspace(frame);
     size = (size_t)width * (size_t)height * (size_t)depth;
     converted = (unsigned char *)sixel_allocator_malloc(
         encoder->allocator, size);
@@ -4538,8 +4520,6 @@ sixel_encoder_output_with_macro(
 
     memcpy(converted, sixel_frame_get_pixels(frame), size);
     output->pixelformat = pixelformat;
-    output->source_colorspace = frame_colorspace;
-    output->colorspace = encoder->output_colorspace;
 
     if (sixel_frame_get_loop_no(frame) == 0) {
         if (encoder->macro_number >= 0) {
@@ -4709,7 +4689,6 @@ sixel_encoder_output_with_macro(
 
 end:
     output->pixelformat = pixelformat;
-    output->source_colorspace = frame_colorspace;
     sixel_allocator_free(encoder->allocator, converted);
 
     return status;
@@ -5635,7 +5614,6 @@ sixel_encoder_new(
     (*ppencoder)->capture_width         = 0;
     (*ppencoder)->capture_height        = 0;
     (*ppencoder)->capture_pixelformat   = SIXEL_PIXELFORMAT_RGB888;
-    (*ppencoder)->capture_colorspace    = SIXEL_COLORSPACE_GAMMA;
     (*ppencoder)->capture_ncolors       = 0;
     (*ppencoder)->capture_valid         = 0;
     (*ppencoder)->capture_source_frame  = NULL;
@@ -9152,12 +9130,6 @@ sixel_encoder_copy_quantized_frame(
 
     pixels = NULL;
     palette = NULL;
-    /*
-     * Capture colorspace must be preserved for assessment consumers.
-     * Keep access encapsulated via the public setter to avoid
-     * depending on frame internals.
-     */
-    sixel_frame_set_colorspace(frame, encoder->capture_colorspace);
     *ppframe = frame;
     return SIXEL_OK;
 

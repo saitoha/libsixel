@@ -59,6 +59,8 @@ test_encode_updates_output_and_progress(void)
         goto cleanup;
     }
 
+    expected_colorspace = sixel_frame_get_colorspace(frame);
+
     status = make_dither(allocator, 8, &dither);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
@@ -83,7 +85,7 @@ test_encode_updates_output_and_progress(void)
     sixel_filter_bind_input(filter,
                             &frame,
                             frame->pixelformat,
-                            frame->colorspace);
+                            sixel_frame_get_colorspace(frame));
     sixel_filter_set_progress(filter, progress_cb, &progress, 1);
 
     status = sixel_filter_run(filter, allocator, NULL);
@@ -96,12 +98,8 @@ test_encode_updates_output_and_progress(void)
         goto cleanup;
     }
 
-    if (output->colorspace != expected_colorspace) {
-        status = SIXEL_BAD_ARGUMENT;
-        goto cleanup;
-    }
-
-    if (output->source_colorspace != frame->colorspace) {
+    if (sixel_pixelformat_colorspace_from_format(output->pixelformat)
+            != expected_colorspace) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
