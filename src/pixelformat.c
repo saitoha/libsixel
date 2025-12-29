@@ -68,7 +68,6 @@ extern SIXELSTATUS sixel_convert_pixels_via_linear_float(
 #define SIXEL_YUV_U_FLOAT_MAX     (0.436f)
 #define SIXEL_YUV_V_FLOAT_MIN     (-0.615f)
 #define SIXEL_YUV_V_FLOAT_MAX     (0.615f)
-#define SIXEL_RGB_BYTE_SCALE      (255.0f)
 
 static int
 sixel_pixelformat_is_color_format(int pixelformat)
@@ -84,6 +83,10 @@ sixel_pixelformat_is_color_format(int pixelformat)
     case SIXEL_PIXELFORMAT_RGBA8888:
     case SIXEL_PIXELFORMAT_ABGR8888:
     case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_G8:
+    case SIXEL_PIXELFORMAT_GA88:
+    case SIXEL_PIXELFORMAT_AG88:
+    case SIXEL_PIXELFORMAT_PAL8:
     case SIXEL_PIXELFORMAT_RGBFLOAT32:
     case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
     case SIXEL_PIXELFORMAT_OKLABFLOAT32:
@@ -834,6 +837,8 @@ sixel_select_rgb_reader(int pixelformat)
         return sixel_rgb_from_ga88;
     case SIXEL_PIXELFORMAT_G8:
         return sixel_rgb_from_g8;
+    case SIXEL_PIXELFORMAT_PAL8:
+        return sixel_rgb_from_g8;
     case SIXEL_PIXELFORMAT_RGBFLOAT32:
     case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
         return sixel_rgb_from_rgbfloat32;
@@ -1540,7 +1545,7 @@ sixel_pixelformat_pack_rgb16(unsigned char *dst,
 }
 
 
-static SIXELSTATUS
+SIXELSTATUS
 sixel_pixelformat_pack_rgb888(unsigned char *dst,
                               unsigned char const *src,
                               int dst_pixelformat,
@@ -1553,6 +1558,7 @@ sixel_pixelformat_pack_rgb888(unsigned char *dst,
     unsigned char const *pixel;
     unsigned char *dst_pixel;
     SIXELSTATUS status;
+    unsigned char gray;
 
     dst_depth = sixel_helper_compute_depth(dst_pixelformat);
     if (dst_depth <= 0) {
@@ -1600,6 +1606,33 @@ sixel_pixelformat_pack_rgb888(unsigned char *dst,
                 dst_pixel[2] = pixel[1];
                 dst_pixel[3] = pixel[0];
                 break;
+            case SIXEL_PIXELFORMAT_G8:
+            case SIXEL_PIXELFORMAT_PAL8:
+                gray = (unsigned char)((unsigned int)pixel[0] * 77u
+                                       + (unsigned int)pixel[1] * 150u
+                                       + (unsigned int)pixel[2] * 29u
+                                       + 128u);
+                gray = (unsigned char)(gray >> 8);
+                dst_pixel[0] = gray;
+                break;
+            case SIXEL_PIXELFORMAT_GA88:
+                gray = (unsigned char)((unsigned int)pixel[0] * 77u
+                                       + (unsigned int)pixel[1] * 150u
+                                       + (unsigned int)pixel[2] * 29u
+                                       + 128u);
+                gray = (unsigned char)(gray >> 8);
+                dst_pixel[0] = gray;
+                dst_pixel[1] = 0xffu;
+                break;
+            case SIXEL_PIXELFORMAT_AG88:
+                gray = (unsigned char)((unsigned int)pixel[0] * 77u
+                                       + (unsigned int)pixel[1] * 150u
+                                       + (unsigned int)pixel[2] * 29u
+                                       + 128u);
+                gray = (unsigned char)(gray >> 8);
+                dst_pixel[0] = 0xffu;
+                dst_pixel[1] = gray;
+                break;
             case SIXEL_PIXELFORMAT_RGB555:
             case SIXEL_PIXELFORMAT_RGB565:
             case SIXEL_PIXELFORMAT_BGR555:
@@ -1629,7 +1662,7 @@ sixel_pixelformat_pack_rgb888(unsigned char *dst,
 }
 
 
-static SIXELSTATUS
+SIXELSTATUS
 sixel_pixelformat_unpack_rgb888(unsigned char *dst,
                                 unsigned char const *src,
                                 int src_pixelformat,
@@ -1827,8 +1860,7 @@ sixel_pixelformat_convert(void *dst,
     if (!sixel_pixelformat_is_color_format(src_pixelformat) ||
             !sixel_pixelformat_is_color_format(dst_pixelformat)) {
         sixel_helper_set_additional_message(
-            "sixel_pixelformat_convert: only color pixelformats are"
-            " supported.");
+            "sixel_pixelformat_convert: unsupported pixelformat.");
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -2416,6 +2448,89 @@ error:
 }
 
 
+static int
+pixelformat_test_convert_g8_to_rgb888(void)
+{
+    unsigned char dst[3];
+    unsigned char const src[] = { 0xa4 };
+    int ret;
+
+    int nret = EXIT_FAILURE;
+
+    ret = sixel_pixelformat_convert(dst,
+                                    SIXEL_PIXELFORMAT_RGB888,
+                                    src,
+                                    SIXEL_PIXELFORMAT_G8,
+                                    1,
+                                    1,
+                                    NULL);
+    if (ret != SIXEL_OK) {
+        goto error;
+    }
+    if (dst[0] != src[0] || dst[1] != src[0] || dst[2] != src[0]) {
+        goto error;
+    }
+
+    return EXIT_SUCCESS;
+
+error:
+    perror("pixelformat_test_convert_g8_to_rgb888");
+    return nret;
+}
+
+
+#if SIXEL_USE_DEPRECATED_SYMBOLS
+static int
+pixelformat_test_colorspace_roundtrip_g8(void)
+{
+    unsigned char pixels[] = { 0x10, 0x80, 0xf0 };
+    unsigned char original[] = { 0x10, 0x80, 0xf0 };
+    size_t i;
+    SIXELSTATUS status;
+
+    int nret = EXIT_FAILURE;
+
+    status = sixel_helper_convert_colorspace(
+        pixels,
+        sizeof(pixels),
+        SIXEL_PIXELFORMAT_G8,
+        SIXEL_COLORSPACE_GAMMA,
+        SIXEL_COLORSPACE_LINEAR);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    status = sixel_helper_convert_colorspace(
+        pixels,
+        sizeof(pixels),
+        SIXEL_PIXELFORMAT_G8,
+        SIXEL_COLORSPACE_LINEAR,
+        SIXEL_COLORSPACE_GAMMA);
+    if (SIXEL_FAILED(status)) {
+        goto error;
+    }
+
+    for (i = 0U; i < sizeof(pixels); ++i) {
+        int diff;
+
+        diff = (int)pixels[i] - (int)original[i];
+        if (diff < 0) {
+            diff = -diff;
+        }
+        if (diff > 1) {
+            goto error;
+        }
+    }
+
+    return EXIT_SUCCESS;
+
+error:
+    perror("pixelformat_test_colorspace_roundtrip_g8");
+    return nret;
+}
+#endif  /* SIXEL_USE_DEPRECATED_SYMBOLS */
+
+
 /* Map pixelformat to colorspace helper. */
 static int
 pixelformat_test_colorspace_from_pixelformat(void)
@@ -2464,7 +2579,11 @@ sixel_pixelformat_tests_main(void)
         pixelformat_test_from_argb8888,
         pixelformat_test_from_rgbfloat32,
         pixelformat_test_convert_rgb888_to_bgr888,
+        pixelformat_test_convert_g8_to_rgb888,
         pixelformat_test_colorspace_from_pixelformat,
+#if SIXEL_USE_DEPRECATED_SYMBOLS
+        pixelformat_test_colorspace_roundtrip_g8,
+#endif  /* SIXEL_USE_DEPRECATED_SYMBOLS */
     };
 
     for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
