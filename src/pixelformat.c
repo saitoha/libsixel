@@ -1850,9 +1850,9 @@ sixel_pixelformat_release(sixel_allocator_t *allocator, void *memory)
 
 
 SIXELAPI SIXELSTATUS
-sixel_pixelformat_convert(unsigned char *dst,
+sixel_pixelformat_convert(void *dst,
                           int dst_pixelformat,
-                          unsigned char const *src,
+                          void const *src,
                           int src_pixelformat,
                           int width,
                           int height,
@@ -1865,6 +1865,8 @@ sixel_pixelformat_convert(unsigned char *dst,
     size_t dst_bytes;
     int dst_depth;
     sixel_allocator_t *fallback_allocator;
+    unsigned char *dst_pixels;
+    unsigned char const *src_pixels;
 
     if (dst == NULL || src == NULL) {
         sixel_helper_set_additional_message(
@@ -1886,6 +1888,9 @@ sixel_pixelformat_convert(unsigned char *dst,
         return SIXEL_BAD_ARGUMENT;
     }
 
+    dst_pixels = (unsigned char *)dst;
+    src_pixels = (unsigned char const *)src;
+
     dst_depth = sixel_helper_compute_depth(dst_pixelformat);
     if (dst_depth <= 0) {
         sixel_helper_set_additional_message(
@@ -1897,7 +1902,7 @@ sixel_pixelformat_convert(unsigned char *dst,
     dst_bytes = pixel_total * (size_t)dst_depth;
 
     if (src_pixelformat == dst_pixelformat) {
-        memcpy(dst, src, dst_bytes);
+        memcpy(dst_pixels, src_pixels, dst_bytes);
         return SIXEL_OK;
     }
 
@@ -1920,7 +1925,7 @@ sixel_pixelformat_convert(unsigned char *dst,
 
         status = sixel_pixelformat_unpack_linearrgbfloat32(
             hub_linear,
-            src,
+            src_pixels,
             src_pixelformat,
             width,
             height);
@@ -1932,7 +1937,7 @@ sixel_pixelformat_convert(unsigned char *dst,
         if (dst_pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32 ||
                 dst_pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
             status = sixel_pixelformat_pack_linearrgbfloat32(
-                dst,
+                dst_pixels,
                 hub_linear,
                 dst_pixelformat,
                 width,
@@ -1958,7 +1963,7 @@ sixel_pixelformat_convert(unsigned char *dst,
                 return status;
             }
 
-            status = sixel_pixelformat_pack_rgb888(dst,
+            status = sixel_pixelformat_pack_rgb888(dst_pixels,
                                                    hub_rgb,
                                                    dst_pixelformat,
                                                    width,
@@ -1979,7 +1984,7 @@ sixel_pixelformat_convert(unsigned char *dst,
     }
 
     status = sixel_pixelformat_unpack_rgb888(hub_rgb,
-                                             src,
+                                             src_pixels,
                                              src_pixelformat,
                                              width,
                                              height);
@@ -1988,7 +1993,7 @@ sixel_pixelformat_convert(unsigned char *dst,
         return status;
     }
 
-    status = sixel_pixelformat_pack_rgb888(dst,
+    status = sixel_pixelformat_pack_rgb888(dst_pixels,
                                            hub_rgb,
                                            dst_pixelformat,
                                            width,
