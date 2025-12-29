@@ -64,8 +64,6 @@ static double
 sixel_palette_get_snap_approach_rate(void);
 static double
 sixel_palette_get_snap_channel_factor(void);
-static int
-sixel_palette_determine_colorspace(int pixelformat);
 static void
 sixel_palette_clamp_float_triplet(float *components, int pixelformat);
 static SIXELSTATUS
@@ -248,25 +246,6 @@ sixel_palette_should_snap(enum sixel_palette_snap_stage stage)
     return 0;
 }
 
-static int
-sixel_palette_determine_colorspace(int pixelformat)
-{
-    switch (pixelformat) {
-    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
-        return SIXEL_COLORSPACE_LINEAR;
-    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
-        return SIXEL_COLORSPACE_OKLAB;
-    case SIXEL_PIXELFORMAT_CIELABFLOAT32:
-        return SIXEL_COLORSPACE_CIELAB;
-    case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
-        return SIXEL_COLORSPACE_DIN99D;
-    case SIXEL_PIXELFORMAT_YUVFLOAT32:
-        return SIXEL_COLORSPACE_YUV;
-    default:
-        return SIXEL_COLORSPACE_GAMMA;
-    }
-}
-
 void
 sixel_palette_reversible_palette(unsigned char *palette,
                                  unsigned int colors,
@@ -279,6 +258,8 @@ sixel_palette_reversible_palette(unsigned char *palette,
     int depth;
     int channel;
     int colorspace;
+    int snap_depth;
+    int snap_pixelformat;
     double approach;
 
     status = SIXEL_OK;
@@ -287,7 +268,9 @@ sixel_palette_reversible_palette(unsigned char *palette,
     color_index = 0U;
     depth = sixel_helper_compute_depth(pixelformat);
     channel = 0;
-    colorspace = sixel_palette_determine_colorspace(pixelformat);
+    colorspace = sixel_pixelformat_colorspace_from_format(pixelformat);
+    snap_depth = depth;
+    snap_pixelformat = pixelformat;
     approach = sixel_palette_get_snap_approach_rate();
     if (!sixel_palette_should_snap(SIXEL_PALETTE_SNAP_STAGE_FINAL_OUTPUT)) {
         return;
@@ -307,23 +290,27 @@ sixel_palette_reversible_palette(unsigned char *palette,
      * gamma space are processed in-place; others are converted to sRGB, snapped
      * on the safe-tone grid, then converted back to the original colorspace.
      */
-    palette_bytes = (size_t)colors * (size_t)depth;
     if (colorspace != SIXEL_COLORSPACE_GAMMA) {
+        snap_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        snap_depth = sixel_helper_compute_depth(snap_pixelformat);
+        palette_bytes = (size_t)colors * (size_t)snap_depth;
         working = (unsigned char *)malloc(palette_bytes);
         if (working == NULL) {
             return;
         }
-        memcpy(working, palette, palette_bytes);
-        status = sixel_helper_convert_colorspace(working,
-                                                 palette_bytes,
-                                                 pixelformat,
-                                                 colorspace,
-                                                 SIXEL_COLORSPACE_GAMMA);
+        status = sixel_pixelformat_convert(working,
+                                           snap_pixelformat,
+                                           palette,
+                                           pixelformat,
+                                           (int)colors,
+                                           1,
+                                           NULL);
         if (SIXEL_FAILED(status)) {
             free(working);
             return;
         }
     } else {
+        palette_bytes = (size_t)colors * (size_t)depth;
         working = palette;
     }
 
@@ -335,43 +322,44 @@ sixel_palette_reversible_palette(unsigned char *palette,
         float original[4];
         float target[4];
 
-        for (channel = 0; channel < depth; ++channel) {
+        for (channel = 0; channel < snap_depth; ++channel) {
             size_t index;
             unsigned char snapped_byte;
             float snapped_float;
 
-            index = color_index * (size_t)depth + (size_t)channel;
+            index = color_index * (size_t)snap_depth + (size_t)channel;
             original[channel] = sixel_pixelformat_byte_to_float(
-                pixelformat, channel, working[index]);
+                snap_pixelformat, channel, working[index]);
             snapped_byte = sixel_palette_reversible_value(working[index]);
             snapped_float = sixel_pixelformat_byte_to_float(
-                pixelformat, channel, snapped_byte);
+                snap_pixelformat, channel, snapped_byte);
             target[channel] = original[channel]
                               + (snapped_float - original[channel])
                                     * (float)approach;
         }
-        for (channel = 0; channel < depth; ++channel) {
+        for (channel = 0; channel < snap_depth; ++channel) {
             size_t index;
             unsigned char blended_byte;
 
-            index = color_index * (size_t)depth + (size_t)channel;
+            index = color_index * (size_t)snap_depth + (size_t)channel;
             blended_byte = sixel_pixelformat_float_channel_to_byte(
-                pixelformat, channel, target[channel]);
+                snap_pixelformat, channel, target[channel]);
             working[index] = blended_byte;
         }
     }
 
     if (colorspace != SIXEL_COLORSPACE_GAMMA) {
-        status = sixel_helper_convert_colorspace(working,
-                                                 palette_bytes,
-                                                 pixelformat,
-                                                 SIXEL_COLORSPACE_GAMMA,
-                                                 colorspace);
+        status = sixel_pixelformat_convert(palette,
+                                           pixelformat,
+                                           working,
+                                           snap_pixelformat,
+                                           (int)colors,
+                                           1,
+                                           NULL);
         if (SIXEL_FAILED(status)) {
             free(working);
             return;
         }
-        memcpy(palette, working, palette_bytes);
         free(working);
     }
 }
@@ -392,7 +380,7 @@ sixel_palette_reversible_palette_float(float *palette,
     status = SIXEL_OK;
     index = 0U;
     color_index = 0U;
-    colorspace = sixel_palette_determine_colorspace(pixelformat);
+    colorspace = sixel_pixelformat_colorspace_from_format(pixelformat);
     channel_count = 0;
     channel = 0;
     approach = sixel_palette_get_snap_approach_rate();
@@ -474,6 +462,7 @@ sixel_palette_snap_float_triplet(float *components,
     float target_original[3];
     float candidate_gamma[3];
     float candidate_target[3];
+    float candidate_converted[3];
     float candidate_gamma_values[3][2];
     float best_target[3];
     unsigned char snapped_bytes[3];
@@ -498,7 +487,7 @@ sixel_palette_snap_float_triplet(float *components,
     double channel_factor;
 
     status = SIXEL_OK;
-    colorspace = sixel_palette_determine_colorspace(pixelformat);
+    colorspace = sixel_pixelformat_colorspace_from_format(pixelformat);
     original_pixelformat = pixelformat;
     snap_policy = sixel_palette_get_snap_policy();
     approach = sixel_palette_get_snap_approach_rate();
@@ -529,12 +518,14 @@ sixel_palette_snap_float_triplet(float *components,
                                       original_pixelformat);
     memcpy(target_original, working_palette, sizeof(target_original));
     if (colorspace != SIXEL_COLORSPACE_GAMMA) {
-        status = sixel_helper_convert_colorspace(
-            (unsigned char *)working_palette,
-            sizeof(working_palette),
+        status = sixel_pixelformat_convert(
+            working_palette,
+            SIXEL_PIXELFORMAT_RGBFLOAT32,
+            working_palette,
             pixelformat,
-            colorspace,
-            SIXEL_COLORSPACE_GAMMA);
+            1,
+            1,
+            NULL);
         if (SIXEL_FAILED(status)) {
             return status;
         }
@@ -596,15 +587,20 @@ sixel_palette_snap_float_triplet(float *components,
                            candidate_gamma,
                            sizeof(candidate_target));
                     if (colorspace != SIXEL_COLORSPACE_GAMMA) {
-                        status = sixel_helper_convert_colorspace(
-                            (unsigned char *)candidate_target,
-                            sizeof(candidate_target),
+                        status = sixel_pixelformat_convert(
+                            candidate_converted,
+                            original_pixelformat,
+                            candidate_target,
                             SIXEL_PIXELFORMAT_RGBFLOAT32,
-                            SIXEL_COLORSPACE_GAMMA,
-                            colorspace);
+                            1,
+                            1,
+                            NULL);
                         if (SIXEL_FAILED(status)) {
                             continue;
                         }
+                        memcpy(candidate_target,
+                               candidate_converted,
+                               sizeof(candidate_target));
                     }
 
                     /*
@@ -669,12 +665,14 @@ sixel_palette_snap_float_triplet(float *components,
         }
 
         if (colorspace != SIXEL_COLORSPACE_GAMMA) {
-            status = sixel_helper_convert_colorspace(
-                (unsigned char *)working_palette,
-                sizeof(working_palette),
+            status = sixel_pixelformat_convert(
+                working_palette,
+                original_pixelformat,
+                working_palette,
                 SIXEL_PIXELFORMAT_RGBFLOAT32,
-                SIXEL_COLORSPACE_GAMMA,
-                colorspace);
+                1,
+                1,
+                NULL);
             if (SIXEL_FAILED(status)) {
                 return status;
             }
