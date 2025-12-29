@@ -61,11 +61,11 @@ test_colors_promotes_to_linear_float(void)
     sixel_filter_bind_input(filter,
                             &input_frame,
                             input_frame->pixelformat,
-                            sixel_frame_get_colorspace(input_frame));
+                            input_frame->colorspace);
     sixel_filter_bind_output(filter,
                              &output_frame,
                              input_frame->pixelformat,
-                             sixel_frame_get_colorspace(input_frame));
+                             input_frame->colorspace);
     sixel_filter_set_progress(filter, progress_cb, &progress, 1);
 
     status = sixel_filter_run(filter, allocator, NULL);
@@ -76,8 +76,7 @@ test_colors_promotes_to_linear_float(void)
     if (output_frame == NULL
             || output_frame->pixelformat
                 != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
-            || sixel_frame_get_colorspace(output_frame)
-                != SIXEL_COLORSPACE_LINEAR) {
+            || output_frame->colorspace != SIXEL_COLORSPACE_LINEAR) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
@@ -139,11 +138,11 @@ test_colors_noop_keeps_frame_bound(void)
     sixel_filter_bind_input(filter,
                             &input_frame,
                             input_frame->pixelformat,
-                            sixel_frame_get_colorspace(input_frame));
+                            input_frame->colorspace);
     sixel_filter_bind_output(filter,
                              &output_frame,
                              input_frame->pixelformat,
-                             sixel_frame_get_colorspace(input_frame));
+                             input_frame->colorspace);
     sixel_filter_set_progress(filter, progress_cb, &progress, 1);
 
     status = sixel_filter_run(filter, allocator, NULL);
