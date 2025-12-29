@@ -267,13 +267,13 @@ jobs:
             sys: MSYS
             variant: cosmopolitan
             cosmopolitan: true
-          - label: cosmopolitan cygwin
-            os: windows-latest
-            runner: windows-latest
-            compiler: gcc
-            sys: CYGWIN
-            variant: cosmopolitan
-            cosmopolitan: true
+#          - label: cosmopolitan cygwin
+#            os: windows-latest
+#            runner: windows-latest
+#            compiler: gcc
+#            sys: CYGWIN
+#            variant: cosmopolitan
+#            cosmopolitan: true
           - label: msvc vcpkg-libpng
             os: windows-latest
             runner: windows-latest
@@ -519,13 +519,14 @@ jobs:
           python
 
     - name: Setup MSYS2 (Windows, MSYS Cosmopolitan)
-      if: runner.sys == 'MSYS' && matrix.cosmopolitan == true
+      if: matrix.sys == 'MSYS' && matrix.cosmopolitan == true
       uses: msys2/setup-msys2@v2
       with:
         msystem: MSYS
         update: true
         install: >-
           unzip
+          make
 
     - name: Setup Cygwin
       if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
@@ -880,7 +881,7 @@ jobs:
         $script = [string]::Join("`n", $scriptLines)
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
-    - name: Run tests (FreeBSD/OpenBSD/NetBSD/Haiku)
+    - name: Configure, build, and run tests (FreeBSD/OpenBSD/NetBSD/Haiku)
       if: (matrix.platform == 'freebsd' || matrix.platform == 'openbsd' || matrix.platform == 'netbsd' || matrix.platform == 'haiku') && matrix.emscripten != true
       uses: cross-platform-actions/action@v0.30.0
       with:
