@@ -69,6 +69,7 @@ typedef struct sixel_dither_context {
     int float_depth;
     int lookup_source_is_float;
     int prefer_palette_float_lookup;
+    int use_l_r_distance;
 } sixel_dither_context_t;
 
 #endif /* LIBSIXEL_DITHER_INTERNAL_H */

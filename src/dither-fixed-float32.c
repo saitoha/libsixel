@@ -992,7 +992,8 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
                     context->depth,
                     palette_float,
                     context->reqcolor,
-                    context->complexion);
+                    context->complexion,
+                    0);
             } else {
                 lookup_pixel = quantized;
                 if (use_fast_lut) {
