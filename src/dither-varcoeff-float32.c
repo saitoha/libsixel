@@ -468,9 +468,9 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     float corrected[max_channels];
     float quantized_float;
     unsigned char quantized[max_channels];
-    float *carry_curr;
-    float *carry_next;
-    float *carry_far;
+    float *carry_curr = NULL;
+    float *carry_next = NULL;
+    float *carry_far = NULL;
     float palette_value_float;
     unsigned char palette_value;
     float error;
