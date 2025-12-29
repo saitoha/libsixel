@@ -89,10 +89,26 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-TESTS = $(CLI_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS) $(am__EXEEXT_1)
-check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_1 = gdk-pixbuf-loader/test-gdk-pixbuf-loader
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_2 = gdk-pixbuf-loader/test-gdk-pixbuf-loader
+TESTS = $(CLI_TESTS) $(CORE_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS) \
+	$(am__EXEEXT_1)
+check_PROGRAMS = cli/test_0023_cli_token_is_known_option$(EXEEXT) \
+	cli/test_0024_cli_option_requires_argument$(EXEEXT) \
+	cli/test_0025_cli_guard_missing_argument$(EXEEXT) \
+	probe/test_probe_parse$(EXEEXT) \
+	palette/test_palette_kmeans_init$(EXEEXT) $(am__EXEEXT_1) \
+	$(am__EXEEXT_2)
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_1 = gdk-pixbuf-loader/test-gdk-pixbuf-loader \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/test_0001_incremental_load \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/test_0002_corrupt_data \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/test_0003_propagate_error \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/test_0004_context_free
+
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_2 = gdk-pixbuf-loader/test-gdk-pixbuf-loader \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/test_0001_incremental_load \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/test_0002_corrupt_data \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/test_0003_propagate_error \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/test_0004_context_free
+
 @AMALGAMATION_NEEDS_OBJC_TRUE@am__append_3 = -x objective-c
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -110,7 +126,11 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__EXEEXT_1 = gdk-pixbuf-loader/test-gdk-pixbuf-loader$(EXEEXT)
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__EXEEXT_1 = gdk-pixbuf-loader/test-gdk-pixbuf-loader$(EXEEXT) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@	gdk-pixbuf-loader/test_0001_incremental_load$(EXEEXT) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@	gdk-pixbuf-loader/test_0002_corrupt_data$(EXEEXT) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@	gdk-pixbuf-loader/test_0003_propagate_error$(EXEEXT) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@	gdk-pixbuf-loader/test_0004_context_free$(EXEEXT)
 am__EXEEXT_2 = filter/filter_tests$(EXEEXT) \
 	filter/filter_sample_tests$(EXEEXT) \
 	filter/filter_resize_tests$(EXEEXT) \
@@ -121,9 +141,31 @@ am__EXEEXT_2 = filter/filter_tests$(EXEEXT) \
 	filter/filter_load_tests$(EXEEXT) \
 	filter/filter_dither_tests$(EXEEXT) \
 	filter/filter_encode_tests$(EXEEXT)
+am__dirstamp = $(am__leading_dot)dirstamp
+am_cli_test_0023_cli_token_is_known_option_OBJECTS = cli/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.$(OBJEXT) \
+	$(top_builddir)/converters/cli_test_0023_cli_token_is_known_option-cli.$(OBJEXT)
+cli_test_0023_cli_token_is_known_option_OBJECTS =  \
+	$(am_cli_test_0023_cli_token_is_known_option_OBJECTS)
+cli_test_0023_cli_token_is_known_option_DEPENDENCIES =  \
+	$(top_builddir)/src/libsixel.la
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
+am_cli_test_0024_cli_option_requires_argument_OBJECTS = cli/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.$(OBJEXT) \
+	$(top_builddir)/converters/cli_test_0024_cli_option_requires_argument-cli.$(OBJEXT)
+cli_test_0024_cli_option_requires_argument_OBJECTS =  \
+	$(am_cli_test_0024_cli_option_requires_argument_OBJECTS)
+cli_test_0024_cli_option_requires_argument_DEPENDENCIES =  \
+	$(top_builddir)/src/libsixel.la
+am_cli_test_0025_cli_guard_missing_argument_OBJECTS = cli/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.$(OBJEXT) \
+	$(top_builddir)/converters/cli_test_0025_cli_guard_missing_argument-cli.$(OBJEXT)
+cli_test_0025_cli_guard_missing_argument_OBJECTS =  \
+	$(am_cli_test_0025_cli_guard_missing_argument_OBJECTS)
+cli_test_0025_cli_guard_missing_argument_DEPENDENCIES =  \
+	$(top_builddir)/src/libsixel.la
 am__filter_filter_colors_tests_SOURCES_DIST =  \
 	filter/filter_colors_tests.c
-am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@am_filter_filter_colors_tests_OBJECTS = filter/filter_colors_tests-filter_colors_tests.$(OBJEXT)
 am__objects_1 = $(top_builddir)/amalgamation/filter_filter_colors_tests-sixel.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_TRUE@nodist_filter_filter_colors_tests_OBJECTS =  \
@@ -152,10 +194,6 @@ am__DEPENDENCIES_1 =
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
 @WANT_AMALGAMATED_TOOLS_TRUE@filter_filter_colors_tests_DEPENDENCIES =  \
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_2)
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
 filter_filter_colors_tests_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(filter_filter_colors_tests_CFLAGS) $(CFLAGS) \
@@ -320,6 +358,51 @@ gdk_pixbuf_loader_test_gdk_pixbuf_loader_OBJECTS =  \
 	$(am_gdk_pixbuf_loader_test_gdk_pixbuf_loader_OBJECTS)
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_gdk_pixbuf_loader_DEPENDENCIES = $(top_builddir)/src/libsixel.la \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(am__DEPENDENCIES_1)
+am__gdk_pixbuf_loader_test_0001_incremental_load_SOURCES_DIST =  \
+	gdk-pixbuf-loader/test_0001_incremental_load.c \
+	$(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@am_gdk_pixbuf_loader_test_0001_incremental_load_OBJECTS = gdk-pixbuf-loader/test_0001_incremental_load-test_0001_incremental_load.$(OBJEXT) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.$(OBJEXT)
+gdk_pixbuf_loader_test_0001_incremental_load_OBJECTS =  \
+	$(am_gdk_pixbuf_loader_test_0001_incremental_load_OBJECTS)
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_0001_incremental_load_DEPENDENCIES = $(top_builddir)/src/libsixel.la \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(am__DEPENDENCIES_1)
+am__gdk_pixbuf_loader_test_0002_corrupt_data_SOURCES_DIST =  \
+	gdk-pixbuf-loader/test_0002_corrupt_data.c \
+	$(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@am_gdk_pixbuf_loader_test_0002_corrupt_data_OBJECTS = gdk-pixbuf-loader/test_0002_corrupt_data-test_0002_corrupt_data.$(OBJEXT) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.$(OBJEXT)
+gdk_pixbuf_loader_test_0002_corrupt_data_OBJECTS =  \
+	$(am_gdk_pixbuf_loader_test_0002_corrupt_data_OBJECTS)
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_0002_corrupt_data_DEPENDENCIES = $(top_builddir)/src/libsixel.la \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(am__DEPENDENCIES_1)
+am__gdk_pixbuf_loader_test_0003_propagate_error_SOURCES_DIST =  \
+	gdk-pixbuf-loader/test_0003_propagate_error.c \
+	$(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@am_gdk_pixbuf_loader_test_0003_propagate_error_OBJECTS = gdk-pixbuf-loader/test_0003_propagate_error-test_0003_propagate_error.$(OBJEXT) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.$(OBJEXT)
+gdk_pixbuf_loader_test_0003_propagate_error_OBJECTS =  \
+	$(am_gdk_pixbuf_loader_test_0003_propagate_error_OBJECTS)
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_0003_propagate_error_DEPENDENCIES = $(top_builddir)/src/libsixel.la \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(am__DEPENDENCIES_1)
+am__gdk_pixbuf_loader_test_0004_context_free_SOURCES_DIST =  \
+	gdk-pixbuf-loader/test_0004_context_free.c \
+	$(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@am_gdk_pixbuf_loader_test_0004_context_free_OBJECTS = gdk-pixbuf-loader/test_0004_context_free-test_0004_context_free.$(OBJEXT) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.$(OBJEXT)
+gdk_pixbuf_loader_test_0004_context_free_OBJECTS =  \
+	$(am_gdk_pixbuf_loader_test_0004_context_free_OBJECTS)
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_0004_context_free_DEPENDENCIES = $(top_builddir)/src/libsixel.la \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(am__DEPENDENCIES_1)
+am_palette_test_palette_kmeans_init_OBJECTS = palette/test_palette_kmeans_init-test_palette_kmeans_init.$(OBJEXT)
+palette_test_palette_kmeans_init_OBJECTS =  \
+	$(am_palette_test_palette_kmeans_init_OBJECTS)
+palette_test_palette_kmeans_init_DEPENDENCIES =  \
+	$(top_builddir)/src/libsixel.la
+am_probe_test_probe_parse_OBJECTS =  \
+	probe/test_probe_parse-test_probe_parse.$(OBJEXT)
+probe_test_probe_parse_OBJECTS = $(am_probe_test_probe_parse_OBJECTS)
+probe_test_probe_parse_DEPENDENCIES = $(top_builddir)/src/libsixel.la
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -345,7 +428,17 @@ am__depfiles_remade = $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_color
 	$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_sample_tests-sixel.Po \
 	$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_tests-sixel.Po \
 	$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_vpte_tests-sixel.Po \
+	$(top_builddir)/converters/$(DEPDIR)/cli_test_0023_cli_token_is_known_option-cli.Po \
+	$(top_builddir)/converters/$(DEPDIR)/cli_test_0024_cli_option_requires_argument-cli.Po \
+	$(top_builddir)/converters/$(DEPDIR)/cli_test_0025_cli_guard_missing_argument-cli.Po \
+	$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.Po \
+	$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.Po \
+	$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.Po \
+	$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.Po \
 	$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Po \
+	cli/$(DEPDIR)/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.Po \
+	cli/$(DEPDIR)/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.Po \
+	cli/$(DEPDIR)/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.Po \
 	filter/$(DEPDIR)/filter_colors_tests-filter_colors_tests.Po \
 	filter/$(DEPDIR)/filter_dither_tests-filter_dither_tests.Po \
 	filter/$(DEPDIR)/filter_encode_tests-filter_encode_tests.Po \
@@ -356,7 +449,13 @@ am__depfiles_remade = $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_color
 	filter/$(DEPDIR)/filter_sample_tests-filter_sample_tests.Po \
 	filter/$(DEPDIR)/filter_tests-filter_tests.Po \
 	filter/$(DEPDIR)/filter_vpte_tests-filter_vpte_tests.Po \
-	gdk-pixbuf-loader/$(DEPDIR)/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.Po
+	gdk-pixbuf-loader/$(DEPDIR)/test_0001_incremental_load-test_0001_incremental_load.Po \
+	gdk-pixbuf-loader/$(DEPDIR)/test_0002_corrupt_data-test_0002_corrupt_data.Po \
+	gdk-pixbuf-loader/$(DEPDIR)/test_0003_propagate_error-test_0003_propagate_error.Po \
+	gdk-pixbuf-loader/$(DEPDIR)/test_0004_context_free-test_0004_context_free.Po \
+	gdk-pixbuf-loader/$(DEPDIR)/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.Po \
+	palette/$(DEPDIR)/test_palette_kmeans_init-test_palette_kmeans_init.Po \
+	probe/$(DEPDIR)/test_probe_parse-test_probe_parse.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -376,7 +475,10 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(filter_filter_colors_tests_SOURCES) \
+SOURCES = $(cli_test_0023_cli_token_is_known_option_SOURCES) \
+	$(cli_test_0024_cli_option_requires_argument_SOURCES) \
+	$(cli_test_0025_cli_guard_missing_argument_SOURCES) \
+	$(filter_filter_colors_tests_SOURCES) \
 	$(nodist_filter_filter_colors_tests_SOURCES) \
 	$(filter_filter_dither_tests_SOURCES) \
 	$(nodist_filter_filter_dither_tests_SOURCES) \
@@ -396,8 +498,17 @@ SOURCES = $(filter_filter_colors_tests_SOURCES) \
 	$(nodist_filter_filter_tests_SOURCES) \
 	$(filter_filter_vpte_tests_SOURCES) \
 	$(nodist_filter_filter_vpte_tests_SOURCES) \
-	$(gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES)
-DIST_SOURCES = $(am__filter_filter_colors_tests_SOURCES_DIST) \
+	$(gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES) \
+	$(gdk_pixbuf_loader_test_0001_incremental_load_SOURCES) \
+	$(gdk_pixbuf_loader_test_0002_corrupt_data_SOURCES) \
+	$(gdk_pixbuf_loader_test_0003_propagate_error_SOURCES) \
+	$(gdk_pixbuf_loader_test_0004_context_free_SOURCES) \
+	$(palette_test_palette_kmeans_init_SOURCES) \
+	$(probe_test_probe_parse_SOURCES)
+DIST_SOURCES = $(cli_test_0023_cli_token_is_known_option_SOURCES) \
+	$(cli_test_0024_cli_option_requires_argument_SOURCES) \
+	$(cli_test_0025_cli_guard_missing_argument_SOURCES) \
+	$(am__filter_filter_colors_tests_SOURCES_DIST) \
 	$(am__filter_filter_dither_tests_SOURCES_DIST) \
 	$(am__filter_filter_encode_tests_SOURCES_DIST) \
 	$(am__filter_filter_final_merge_tests_SOURCES_DIST) \
@@ -407,7 +518,13 @@ DIST_SOURCES = $(am__filter_filter_colors_tests_SOURCES_DIST) \
 	$(am__filter_filter_sample_tests_SOURCES_DIST) \
 	$(am__filter_filter_tests_SOURCES_DIST) \
 	$(am__filter_filter_vpte_tests_SOURCES_DIST) \
-	$(am__gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES_DIST)
+	$(am__gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES_DIST) \
+	$(am__gdk_pixbuf_loader_test_0001_incremental_load_SOURCES_DIST) \
+	$(am__gdk_pixbuf_loader_test_0002_corrupt_data_SOURCES_DIST) \
+	$(am__gdk_pixbuf_loader_test_0003_propagate_error_SOURCES_DIST) \
+	$(am__gdk_pixbuf_loader_test_0004_context_free_SOURCES_DIST) \
+	$(palette_test_palette_kmeans_init_SOURCES) \
+	$(probe_test_probe_parse_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -870,7 +987,18 @@ CLI_TESTS = cli/t/test_0001_01_invalid_positional.t \
        cli/t/test_0020_mapfile_io.t \
        cli/t/test_0021_pipeline_planner.t \
        cli/t/test_0021_palette_fallback.t \
-       cli/t/test_0022_resize_precision_mode.t
+       cli/t/test_0022_resize_precision_mode.t \
+       cli/t/test_0023_cli_token_is_known_option.t \
+       cli/t/test_0024_cli_option_requires_argument.t \
+       cli/t/test_0025_cli_guard_missing_argument.t \
+       cli/t/test_0026_sixel2png_version_help.t \
+       cli/t/test_0027_sixel2png_missing_args.t \
+       cli/t/test_0028_sixel2png_unknown_option.t \
+       cli/t/test_0029_sixel2png_invalid_decoder_value.t \
+       cli/t/test_0030_sixel2png_default_output.t
+
+CORE_TESTS = probe/test_probe_parse.t \
+       palette/test_palette_kmeans_init.t
 
 PYTHON_TESTS = python/t/test_0001_python_bindings.t \
        python/t/test_0002_python_api_formats.t \
@@ -901,9 +1029,79 @@ FILTER_TEST_BINARIES = \
        filter/filter_dither_tests \
        filter/filter_encode_tests
 
-COPY_TESTS = $(CLI_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
+COPY_TESTS = $(CLI_TESTS) $(CORE_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
+cli_test_0023_cli_token_is_known_option_SOURCES = \
+    cli/test_0023_cli_token_is_known_option.c \
+    $(top_srcdir)/converters/cli.c
+
+cli_test_0023_cli_token_is_known_option_CPPFLAGS = $(AM_CPPFLAGS) \
+    -I$(top_builddir) -I$(top_builddir)/include \
+    -I$(top_srcdir) -I$(top_srcdir)/include \
+    -I$(top_srcdir)/converters
+
+cli_test_0023_cli_token_is_known_option_LDADD = \
+    $(top_builddir)/src/libsixel.la
+
+cli_test_0024_cli_option_requires_argument_SOURCES = \
+    cli/test_0024_cli_option_requires_argument.c \
+    $(top_srcdir)/converters/cli.c
+
+cli_test_0024_cli_option_requires_argument_CPPFLAGS = $(AM_CPPFLAGS) \
+    -I$(top_builddir) -I$(top_builddir)/include \
+    -I$(top_srcdir) -I$(top_srcdir)/include \
+    -I$(top_srcdir)/converters
+
+cli_test_0024_cli_option_requires_argument_LDADD = \
+    $(top_builddir)/src/libsixel.la
+
+cli_test_0025_cli_guard_missing_argument_SOURCES = \
+    cli/test_0025_cli_guard_missing_argument.c \
+    $(top_srcdir)/converters/cli.c
+
+cli_test_0025_cli_guard_missing_argument_CPPFLAGS = $(AM_CPPFLAGS) \
+    -I$(top_builddir) -I$(top_builddir)/include \
+    -I$(top_srcdir) -I$(top_srcdir)/include \
+    -I$(top_srcdir)/converters
+
+cli_test_0025_cli_guard_missing_argument_LDADD = \
+    $(top_builddir)/src/libsixel.la
+
+probe_test_probe_parse_SOURCES = \
+    probe/test_probe_parse.c
+
+probe_test_probe_parse_CPPFLAGS = $(AM_CPPFLAGS) \
+    -I$(top_builddir) -I$(top_builddir)/include \
+    -I$(top_srcdir) -I$(top_srcdir)/include \
+    -I$(top_srcdir)/src
+
+probe_test_probe_parse_LDADD = $(top_builddir)/src/libsixel.la
+palette_test_palette_kmeans_init_SOURCES = \
+    palette/test_palette_kmeans_init.c
+
+palette_test_palette_kmeans_init_CPPFLAGS = $(AM_CPPFLAGS) \
+    -I$(top_builddir) -I$(top_builddir)/include \
+    -I$(top_srcdir) -I$(top_srcdir)/include \
+    -I$(top_srcdir)/src
+
+palette_test_palette_kmeans_init_LDADD = $(top_builddir)/src/libsixel.la
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_gdk_pixbuf_loader_SOURCES = \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/test-gdk-pixbuf-loader.c \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_0001_incremental_load_SOURCES = \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/test_0001_incremental_load.c \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_0002_corrupt_data_SOURCES = \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/test_0002_corrupt_data.c \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_0003_propagate_error_SOURCES = \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/test_0003_propagate_error.c \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_0004_context_free_SOURCES = \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/test_0004_context_free.c \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
 
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_gdk_pixbuf_loader_CPPFLAGS = $(AM_CPPFLAGS) \
@@ -914,6 +1112,54 @@ COPY_TESTS = $(CLI_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@        -DGDK_PIXBUF_ENABLE_BACKEND
 
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_gdk_pixbuf_loader_LDADD = \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(top_builddir)/src/libsixel.la \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(GDK_PIXBUF_LIBS)
+
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_0001_incremental_load_CPPFLAGS = $(AM_CPPFLAGS) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -I$(top_builddir)/include \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -I$(top_srcdir)/include \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -I$(top_srcdir)/src \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(GDK_PIXBUF_CFLAGS) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -DGDK_PIXBUF_ENABLE_BACKEND \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -DSIXEL_PIXBUF_LOADER_TESTING
+
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_0002_corrupt_data_CPPFLAGS = $(AM_CPPFLAGS) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -I$(top_builddir)/include \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -I$(top_srcdir)/include \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -I$(top_srcdir)/src \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(GDK_PIXBUF_CFLAGS) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -DGDK_PIXBUF_ENABLE_BACKEND \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -DSIXEL_PIXBUF_LOADER_TESTING
+
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_0003_propagate_error_CPPFLAGS = $(AM_CPPFLAGS) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -I$(top_builddir)/include \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -I$(top_srcdir)/include \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -I$(top_srcdir)/src \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(GDK_PIXBUF_CFLAGS) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -DGDK_PIXBUF_ENABLE_BACKEND \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -DSIXEL_PIXBUF_LOADER_TESTING
+
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_0004_context_free_CPPFLAGS = $(AM_CPPFLAGS) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -I$(top_builddir)/include \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -I$(top_srcdir)/include \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -I$(top_srcdir)/src \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(GDK_PIXBUF_CFLAGS) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -DGDK_PIXBUF_ENABLE_BACKEND \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -DSIXEL_PIXBUF_LOADER_TESTING
+
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_0001_incremental_load_LDADD = \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(top_builddir)/src/libsixel.la \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(GDK_PIXBUF_LIBS)
+
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_0002_corrupt_data_LDADD = \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(top_builddir)/src/libsixel.la \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(GDK_PIXBUF_LIBS)
+
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_0003_propagate_error_LDADD = \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(top_builddir)/src/libsixel.la \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(GDK_PIXBUF_LIBS)
+
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_test_0004_context_free_LDADD = \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(top_builddir)/src/libsixel.la \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(GDK_PIXBUF_LIBS)
 
@@ -1173,6 +1419,45 @@ $(am__aclocal_m4_deps):
 clean-checkPROGRAMS:
 	$(am__rm_f) $(check_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(check_PROGRAMS:$(EXEEXT)=)
+cli/$(am__dirstamp):
+	@$(MKDIR_P) cli
+	@: >>cli/$(am__dirstamp)
+cli/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) cli/$(DEPDIR)
+	@: >>cli/$(DEPDIR)/$(am__dirstamp)
+cli/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.$(OBJEXT):  \
+	cli/$(am__dirstamp) cli/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/converters/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/converters
+	@: >>$(top_builddir)/converters/$(am__dirstamp)
+$(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/converters/$(DEPDIR)
+	@: >>$(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/converters/cli_test_0023_cli_token_is_known_option-cli.$(OBJEXT):  \
+	$(top_builddir)/converters/$(am__dirstamp) \
+	$(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
+
+cli/test_0023_cli_token_is_known_option$(EXEEXT): $(cli_test_0023_cli_token_is_known_option_OBJECTS) $(cli_test_0023_cli_token_is_known_option_DEPENDENCIES) $(EXTRA_cli_test_0023_cli_token_is_known_option_DEPENDENCIES) cli/$(am__dirstamp)
+	@rm -f cli/test_0023_cli_token_is_known_option$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(cli_test_0023_cli_token_is_known_option_OBJECTS) $(cli_test_0023_cli_token_is_known_option_LDADD) $(LIBS)
+cli/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.$(OBJEXT):  \
+	cli/$(am__dirstamp) cli/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/converters/cli_test_0024_cli_option_requires_argument-cli.$(OBJEXT):  \
+	$(top_builddir)/converters/$(am__dirstamp) \
+	$(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
+
+cli/test_0024_cli_option_requires_argument$(EXEEXT): $(cli_test_0024_cli_option_requires_argument_OBJECTS) $(cli_test_0024_cli_option_requires_argument_DEPENDENCIES) $(EXTRA_cli_test_0024_cli_option_requires_argument_DEPENDENCIES) cli/$(am__dirstamp)
+	@rm -f cli/test_0024_cli_option_requires_argument$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(cli_test_0024_cli_option_requires_argument_OBJECTS) $(cli_test_0024_cli_option_requires_argument_LDADD) $(LIBS)
+cli/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.$(OBJEXT):  \
+	cli/$(am__dirstamp) cli/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/converters/cli_test_0025_cli_guard_missing_argument-cli.$(OBJEXT):  \
+	$(top_builddir)/converters/$(am__dirstamp) \
+	$(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
+
+cli/test_0025_cli_guard_missing_argument$(EXEEXT): $(cli_test_0025_cli_guard_missing_argument_OBJECTS) $(cli_test_0025_cli_guard_missing_argument_DEPENDENCIES) $(EXTRA_cli_test_0025_cli_guard_missing_argument_DEPENDENCIES) cli/$(am__dirstamp)
+	@rm -f cli/test_0025_cli_guard_missing_argument$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(cli_test_0025_cli_guard_missing_argument_OBJECTS) $(cli_test_0025_cli_guard_missing_argument_LDADD) $(LIBS)
 filter/$(am__dirstamp):
 	@$(MKDIR_P) filter
 	@: >>filter/$(am__dirstamp)
@@ -1297,13 +1582,81 @@ $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel
 gdk-pixbuf-loader/test-gdk-pixbuf-loader$(EXEEXT): $(gdk_pixbuf_loader_test_gdk_pixbuf_loader_OBJECTS) $(gdk_pixbuf_loader_test_gdk_pixbuf_loader_DEPENDENCIES) $(EXTRA_gdk_pixbuf_loader_test_gdk_pixbuf_loader_DEPENDENCIES) gdk-pixbuf-loader/$(am__dirstamp)
 	@rm -f gdk-pixbuf-loader/test-gdk-pixbuf-loader$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gdk_pixbuf_loader_test_gdk_pixbuf_loader_OBJECTS) $(gdk_pixbuf_loader_test_gdk_pixbuf_loader_LDADD) $(LIBS)
+gdk-pixbuf-loader/test_0001_incremental_load-test_0001_incremental_load.$(OBJEXT):  \
+	gdk-pixbuf-loader/$(am__dirstamp) \
+	gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.$(OBJEXT):  \
+	$(top_builddir)/gdk-pixbuf-loader/$(am__dirstamp) \
+	$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
+
+gdk-pixbuf-loader/test_0001_incremental_load$(EXEEXT): $(gdk_pixbuf_loader_test_0001_incremental_load_OBJECTS) $(gdk_pixbuf_loader_test_0001_incremental_load_DEPENDENCIES) $(EXTRA_gdk_pixbuf_loader_test_0001_incremental_load_DEPENDENCIES) gdk-pixbuf-loader/$(am__dirstamp)
+	@rm -f gdk-pixbuf-loader/test_0001_incremental_load$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(gdk_pixbuf_loader_test_0001_incremental_load_OBJECTS) $(gdk_pixbuf_loader_test_0001_incremental_load_LDADD) $(LIBS)
+gdk-pixbuf-loader/test_0002_corrupt_data-test_0002_corrupt_data.$(OBJEXT):  \
+	gdk-pixbuf-loader/$(am__dirstamp) \
+	gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.$(OBJEXT):  \
+	$(top_builddir)/gdk-pixbuf-loader/$(am__dirstamp) \
+	$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
+
+gdk-pixbuf-loader/test_0002_corrupt_data$(EXEEXT): $(gdk_pixbuf_loader_test_0002_corrupt_data_OBJECTS) $(gdk_pixbuf_loader_test_0002_corrupt_data_DEPENDENCIES) $(EXTRA_gdk_pixbuf_loader_test_0002_corrupt_data_DEPENDENCIES) gdk-pixbuf-loader/$(am__dirstamp)
+	@rm -f gdk-pixbuf-loader/test_0002_corrupt_data$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(gdk_pixbuf_loader_test_0002_corrupt_data_OBJECTS) $(gdk_pixbuf_loader_test_0002_corrupt_data_LDADD) $(LIBS)
+gdk-pixbuf-loader/test_0003_propagate_error-test_0003_propagate_error.$(OBJEXT):  \
+	gdk-pixbuf-loader/$(am__dirstamp) \
+	gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.$(OBJEXT):  \
+	$(top_builddir)/gdk-pixbuf-loader/$(am__dirstamp) \
+	$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
+
+gdk-pixbuf-loader/test_0003_propagate_error$(EXEEXT): $(gdk_pixbuf_loader_test_0003_propagate_error_OBJECTS) $(gdk_pixbuf_loader_test_0003_propagate_error_DEPENDENCIES) $(EXTRA_gdk_pixbuf_loader_test_0003_propagate_error_DEPENDENCIES) gdk-pixbuf-loader/$(am__dirstamp)
+	@rm -f gdk-pixbuf-loader/test_0003_propagate_error$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(gdk_pixbuf_loader_test_0003_propagate_error_OBJECTS) $(gdk_pixbuf_loader_test_0003_propagate_error_LDADD) $(LIBS)
+gdk-pixbuf-loader/test_0004_context_free-test_0004_context_free.$(OBJEXT):  \
+	gdk-pixbuf-loader/$(am__dirstamp) \
+	gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.$(OBJEXT):  \
+	$(top_builddir)/gdk-pixbuf-loader/$(am__dirstamp) \
+	$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
+
+gdk-pixbuf-loader/test_0004_context_free$(EXEEXT): $(gdk_pixbuf_loader_test_0004_context_free_OBJECTS) $(gdk_pixbuf_loader_test_0004_context_free_DEPENDENCIES) $(EXTRA_gdk_pixbuf_loader_test_0004_context_free_DEPENDENCIES) gdk-pixbuf-loader/$(am__dirstamp)
+	@rm -f gdk-pixbuf-loader/test_0004_context_free$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(gdk_pixbuf_loader_test_0004_context_free_OBJECTS) $(gdk_pixbuf_loader_test_0004_context_free_LDADD) $(LIBS)
+palette/$(am__dirstamp):
+	@$(MKDIR_P) palette
+	@: >>palette/$(am__dirstamp)
+palette/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) palette/$(DEPDIR)
+	@: >>palette/$(DEPDIR)/$(am__dirstamp)
+palette/test_palette_kmeans_init-test_palette_kmeans_init.$(OBJEXT):  \
+	palette/$(am__dirstamp) palette/$(DEPDIR)/$(am__dirstamp)
+
+palette/test_palette_kmeans_init$(EXEEXT): $(palette_test_palette_kmeans_init_OBJECTS) $(palette_test_palette_kmeans_init_DEPENDENCIES) $(EXTRA_palette_test_palette_kmeans_init_DEPENDENCIES) palette/$(am__dirstamp)
+	@rm -f palette/test_palette_kmeans_init$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(palette_test_palette_kmeans_init_OBJECTS) $(palette_test_palette_kmeans_init_LDADD) $(LIBS)
+probe/$(am__dirstamp):
+	@$(MKDIR_P) probe
+	@: >>probe/$(am__dirstamp)
+probe/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) probe/$(DEPDIR)
+	@: >>probe/$(DEPDIR)/$(am__dirstamp)
+probe/test_probe_parse-test_probe_parse.$(OBJEXT):  \
+	probe/$(am__dirstamp) probe/$(DEPDIR)/$(am__dirstamp)
+
+probe/test_probe_parse$(EXEEXT): $(probe_test_probe_parse_OBJECTS) $(probe_test_probe_parse_DEPENDENCIES) $(EXTRA_probe_test_probe_parse_DEPENDENCIES) probe/$(am__dirstamp)
+	@rm -f probe/test_probe_parse$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(probe_test_probe_parse_OBJECTS) $(probe_test_probe_parse_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f $(top_builddir)/amalgamation/*.$(OBJEXT)
+	-rm -f $(top_builddir)/converters/*.$(OBJEXT)
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/*.$(OBJEXT)
+	-rm -f cli/*.$(OBJEXT)
 	-rm -f filter/*.$(OBJEXT)
 	-rm -f gdk-pixbuf-loader/*.$(OBJEXT)
+	-rm -f palette/*.$(OBJEXT)
+	-rm -f probe/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
@@ -1318,7 +1671,17 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_sample_tests-sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_tests-sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_vpte_tests-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/cli_test_0023_cli_token_is_known_option-cli.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/cli_test_0024_cli_option_requires_argument-cli.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/cli_test_0025_cli_guard_missing_argument-cli.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@filter/$(DEPDIR)/filter_colors_tests-filter_colors_tests.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@filter/$(DEPDIR)/filter_dither_tests-filter_dither_tests.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@filter/$(DEPDIR)/filter_encode_tests-filter_encode_tests.Po@am__quote@ # am--include-marker
@@ -1329,7 +1692,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@filter/$(DEPDIR)/filter_sample_tests-filter_sample_tests.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@filter/$(DEPDIR)/filter_tests-filter_tests.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@filter/$(DEPDIR)/filter_vpte_tests-filter_vpte_tests.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@gdk-pixbuf-loader/$(DEPDIR)/test_0001_incremental_load-test_0001_incremental_load.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@gdk-pixbuf-loader/$(DEPDIR)/test_0002_corrupt_data-test_0002_corrupt_data.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@gdk-pixbuf-loader/$(DEPDIR)/test_0003_propagate_error-test_0003_propagate_error.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@gdk-pixbuf-loader/$(DEPDIR)/test_0004_context_free-test_0004_context_free.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@gdk-pixbuf-loader/$(DEPDIR)/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@palette/$(DEPDIR)/test_palette_kmeans_init-test_palette_kmeans_init.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@probe/$(DEPDIR)/test_probe_parse-test_probe_parse.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -1360,6 +1729,90 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+cli/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.o: cli/test_0023_cli_token_is_known_option.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0023_cli_token_is_known_option_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cli/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.o -MD -MP -MF cli/$(DEPDIR)/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.Tpo -c -o cli/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.o `test -f 'cli/test_0023_cli_token_is_known_option.c' || echo '$(srcdir)/'`cli/test_0023_cli_token_is_known_option.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cli/$(DEPDIR)/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.Tpo cli/$(DEPDIR)/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/test_0023_cli_token_is_known_option.c' object='cli/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0023_cli_token_is_known_option_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cli/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.o `test -f 'cli/test_0023_cli_token_is_known_option.c' || echo '$(srcdir)/'`cli/test_0023_cli_token_is_known_option.c
+
+cli/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.obj: cli/test_0023_cli_token_is_known_option.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0023_cli_token_is_known_option_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cli/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.obj -MD -MP -MF cli/$(DEPDIR)/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.Tpo -c -o cli/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.obj `if test -f 'cli/test_0023_cli_token_is_known_option.c'; then $(CYGPATH_W) 'cli/test_0023_cli_token_is_known_option.c'; else $(CYGPATH_W) '$(srcdir)/cli/test_0023_cli_token_is_known_option.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cli/$(DEPDIR)/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.Tpo cli/$(DEPDIR)/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/test_0023_cli_token_is_known_option.c' object='cli/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0023_cli_token_is_known_option_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cli/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.obj `if test -f 'cli/test_0023_cli_token_is_known_option.c'; then $(CYGPATH_W) 'cli/test_0023_cli_token_is_known_option.c'; else $(CYGPATH_W) '$(srcdir)/cli/test_0023_cli_token_is_known_option.c'; fi`
+
+$(top_builddir)/converters/cli_test_0023_cli_token_is_known_option-cli.o: $(top_builddir)/converters/cli.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0023_cli_token_is_known_option_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/converters/cli_test_0023_cli_token_is_known_option-cli.o -MD -MP -MF $(top_builddir)/converters/$(DEPDIR)/cli_test_0023_cli_token_is_known_option-cli.Tpo -c -o $(top_builddir)/converters/cli_test_0023_cli_token_is_known_option-cli.o `test -f '$(top_builddir)/converters/cli.c' || echo '$(srcdir)/'`$(top_builddir)/converters/cli.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/converters/$(DEPDIR)/cli_test_0023_cli_token_is_known_option-cli.Tpo $(top_builddir)/converters/$(DEPDIR)/cli_test_0023_cli_token_is_known_option-cli.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/converters/cli.c' object='$(top_builddir)/converters/cli_test_0023_cli_token_is_known_option-cli.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0023_cli_token_is_known_option_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/converters/cli_test_0023_cli_token_is_known_option-cli.o `test -f '$(top_builddir)/converters/cli.c' || echo '$(srcdir)/'`$(top_builddir)/converters/cli.c
+
+$(top_builddir)/converters/cli_test_0023_cli_token_is_known_option-cli.obj: $(top_builddir)/converters/cli.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0023_cli_token_is_known_option_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/converters/cli_test_0023_cli_token_is_known_option-cli.obj -MD -MP -MF $(top_builddir)/converters/$(DEPDIR)/cli_test_0023_cli_token_is_known_option-cli.Tpo -c -o $(top_builddir)/converters/cli_test_0023_cli_token_is_known_option-cli.obj `if test -f '$(top_builddir)/converters/cli.c'; then $(CYGPATH_W) '$(top_builddir)/converters/cli.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/converters/cli.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/converters/$(DEPDIR)/cli_test_0023_cli_token_is_known_option-cli.Tpo $(top_builddir)/converters/$(DEPDIR)/cli_test_0023_cli_token_is_known_option-cli.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/converters/cli.c' object='$(top_builddir)/converters/cli_test_0023_cli_token_is_known_option-cli.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0023_cli_token_is_known_option_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/converters/cli_test_0023_cli_token_is_known_option-cli.obj `if test -f '$(top_builddir)/converters/cli.c'; then $(CYGPATH_W) '$(top_builddir)/converters/cli.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/converters/cli.c'; fi`
+
+cli/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.o: cli/test_0024_cli_option_requires_argument.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0024_cli_option_requires_argument_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cli/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.o -MD -MP -MF cli/$(DEPDIR)/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.Tpo -c -o cli/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.o `test -f 'cli/test_0024_cli_option_requires_argument.c' || echo '$(srcdir)/'`cli/test_0024_cli_option_requires_argument.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cli/$(DEPDIR)/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.Tpo cli/$(DEPDIR)/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/test_0024_cli_option_requires_argument.c' object='cli/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0024_cli_option_requires_argument_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cli/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.o `test -f 'cli/test_0024_cli_option_requires_argument.c' || echo '$(srcdir)/'`cli/test_0024_cli_option_requires_argument.c
+
+cli/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.obj: cli/test_0024_cli_option_requires_argument.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0024_cli_option_requires_argument_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cli/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.obj -MD -MP -MF cli/$(DEPDIR)/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.Tpo -c -o cli/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.obj `if test -f 'cli/test_0024_cli_option_requires_argument.c'; then $(CYGPATH_W) 'cli/test_0024_cli_option_requires_argument.c'; else $(CYGPATH_W) '$(srcdir)/cli/test_0024_cli_option_requires_argument.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cli/$(DEPDIR)/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.Tpo cli/$(DEPDIR)/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/test_0024_cli_option_requires_argument.c' object='cli/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0024_cli_option_requires_argument_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cli/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.obj `if test -f 'cli/test_0024_cli_option_requires_argument.c'; then $(CYGPATH_W) 'cli/test_0024_cli_option_requires_argument.c'; else $(CYGPATH_W) '$(srcdir)/cli/test_0024_cli_option_requires_argument.c'; fi`
+
+$(top_builddir)/converters/cli_test_0024_cli_option_requires_argument-cli.o: $(top_builddir)/converters/cli.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0024_cli_option_requires_argument_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/converters/cli_test_0024_cli_option_requires_argument-cli.o -MD -MP -MF $(top_builddir)/converters/$(DEPDIR)/cli_test_0024_cli_option_requires_argument-cli.Tpo -c -o $(top_builddir)/converters/cli_test_0024_cli_option_requires_argument-cli.o `test -f '$(top_builddir)/converters/cli.c' || echo '$(srcdir)/'`$(top_builddir)/converters/cli.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/converters/$(DEPDIR)/cli_test_0024_cli_option_requires_argument-cli.Tpo $(top_builddir)/converters/$(DEPDIR)/cli_test_0024_cli_option_requires_argument-cli.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/converters/cli.c' object='$(top_builddir)/converters/cli_test_0024_cli_option_requires_argument-cli.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0024_cli_option_requires_argument_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/converters/cli_test_0024_cli_option_requires_argument-cli.o `test -f '$(top_builddir)/converters/cli.c' || echo '$(srcdir)/'`$(top_builddir)/converters/cli.c
+
+$(top_builddir)/converters/cli_test_0024_cli_option_requires_argument-cli.obj: $(top_builddir)/converters/cli.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0024_cli_option_requires_argument_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/converters/cli_test_0024_cli_option_requires_argument-cli.obj -MD -MP -MF $(top_builddir)/converters/$(DEPDIR)/cli_test_0024_cli_option_requires_argument-cli.Tpo -c -o $(top_builddir)/converters/cli_test_0024_cli_option_requires_argument-cli.obj `if test -f '$(top_builddir)/converters/cli.c'; then $(CYGPATH_W) '$(top_builddir)/converters/cli.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/converters/cli.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/converters/$(DEPDIR)/cli_test_0024_cli_option_requires_argument-cli.Tpo $(top_builddir)/converters/$(DEPDIR)/cli_test_0024_cli_option_requires_argument-cli.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/converters/cli.c' object='$(top_builddir)/converters/cli_test_0024_cli_option_requires_argument-cli.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0024_cli_option_requires_argument_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/converters/cli_test_0024_cli_option_requires_argument-cli.obj `if test -f '$(top_builddir)/converters/cli.c'; then $(CYGPATH_W) '$(top_builddir)/converters/cli.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/converters/cli.c'; fi`
+
+cli/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.o: cli/test_0025_cli_guard_missing_argument.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0025_cli_guard_missing_argument_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cli/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.o -MD -MP -MF cli/$(DEPDIR)/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.Tpo -c -o cli/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.o `test -f 'cli/test_0025_cli_guard_missing_argument.c' || echo '$(srcdir)/'`cli/test_0025_cli_guard_missing_argument.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cli/$(DEPDIR)/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.Tpo cli/$(DEPDIR)/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/test_0025_cli_guard_missing_argument.c' object='cli/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0025_cli_guard_missing_argument_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cli/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.o `test -f 'cli/test_0025_cli_guard_missing_argument.c' || echo '$(srcdir)/'`cli/test_0025_cli_guard_missing_argument.c
+
+cli/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.obj: cli/test_0025_cli_guard_missing_argument.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0025_cli_guard_missing_argument_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT cli/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.obj -MD -MP -MF cli/$(DEPDIR)/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.Tpo -c -o cli/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.obj `if test -f 'cli/test_0025_cli_guard_missing_argument.c'; then $(CYGPATH_W) 'cli/test_0025_cli_guard_missing_argument.c'; else $(CYGPATH_W) '$(srcdir)/cli/test_0025_cli_guard_missing_argument.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) cli/$(DEPDIR)/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.Tpo cli/$(DEPDIR)/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli/test_0025_cli_guard_missing_argument.c' object='cli/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0025_cli_guard_missing_argument_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o cli/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.obj `if test -f 'cli/test_0025_cli_guard_missing_argument.c'; then $(CYGPATH_W) 'cli/test_0025_cli_guard_missing_argument.c'; else $(CYGPATH_W) '$(srcdir)/cli/test_0025_cli_guard_missing_argument.c'; fi`
+
+$(top_builddir)/converters/cli_test_0025_cli_guard_missing_argument-cli.o: $(top_builddir)/converters/cli.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0025_cli_guard_missing_argument_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/converters/cli_test_0025_cli_guard_missing_argument-cli.o -MD -MP -MF $(top_builddir)/converters/$(DEPDIR)/cli_test_0025_cli_guard_missing_argument-cli.Tpo -c -o $(top_builddir)/converters/cli_test_0025_cli_guard_missing_argument-cli.o `test -f '$(top_builddir)/converters/cli.c' || echo '$(srcdir)/'`$(top_builddir)/converters/cli.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/converters/$(DEPDIR)/cli_test_0025_cli_guard_missing_argument-cli.Tpo $(top_builddir)/converters/$(DEPDIR)/cli_test_0025_cli_guard_missing_argument-cli.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/converters/cli.c' object='$(top_builddir)/converters/cli_test_0025_cli_guard_missing_argument-cli.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0025_cli_guard_missing_argument_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/converters/cli_test_0025_cli_guard_missing_argument-cli.o `test -f '$(top_builddir)/converters/cli.c' || echo '$(srcdir)/'`$(top_builddir)/converters/cli.c
+
+$(top_builddir)/converters/cli_test_0025_cli_guard_missing_argument-cli.obj: $(top_builddir)/converters/cli.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0025_cli_guard_missing_argument_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/converters/cli_test_0025_cli_guard_missing_argument-cli.obj -MD -MP -MF $(top_builddir)/converters/$(DEPDIR)/cli_test_0025_cli_guard_missing_argument-cli.Tpo -c -o $(top_builddir)/converters/cli_test_0025_cli_guard_missing_argument-cli.obj `if test -f '$(top_builddir)/converters/cli.c'; then $(CYGPATH_W) '$(top_builddir)/converters/cli.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/converters/cli.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/converters/$(DEPDIR)/cli_test_0025_cli_guard_missing_argument-cli.Tpo $(top_builddir)/converters/$(DEPDIR)/cli_test_0025_cli_guard_missing_argument-cli.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/converters/cli.c' object='$(top_builddir)/converters/cli_test_0025_cli_guard_missing_argument-cli.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(cli_test_0025_cli_guard_missing_argument_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/converters/cli_test_0025_cli_guard_missing_argument-cli.obj `if test -f '$(top_builddir)/converters/cli.c'; then $(CYGPATH_W) '$(top_builddir)/converters/cli.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/converters/cli.c'; fi`
 
 filter/filter_colors_tests-filter_colors_tests.o: filter/filter_colors_tests.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(filter_filter_colors_tests_CPPFLAGS) $(CPPFLAGS) $(filter_filter_colors_tests_CFLAGS) $(CFLAGS) -MT filter/filter_colors_tests-filter_colors_tests.o -MD -MP -MF filter/$(DEPDIR)/filter_colors_tests-filter_colors_tests.Tpo -c -o filter/filter_colors_tests-filter_colors_tests.o `test -f 'filter/filter_colors_tests.c' || echo '$(srcdir)/'`filter/filter_colors_tests.c
@@ -1669,13 +2122,156 @@ $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_gdk_pixbuf_loader_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.obj `if test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; then $(CYGPATH_W) '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; fi`
 
+gdk-pixbuf-loader/test_0001_incremental_load-test_0001_incremental_load.o: gdk-pixbuf-loader/test_0001_incremental_load.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0001_incremental_load_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gdk-pixbuf-loader/test_0001_incremental_load-test_0001_incremental_load.o -MD -MP -MF gdk-pixbuf-loader/$(DEPDIR)/test_0001_incremental_load-test_0001_incremental_load.Tpo -c -o gdk-pixbuf-loader/test_0001_incremental_load-test_0001_incremental_load.o `test -f 'gdk-pixbuf-loader/test_0001_incremental_load.c' || echo '$(srcdir)/'`gdk-pixbuf-loader/test_0001_incremental_load.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) gdk-pixbuf-loader/$(DEPDIR)/test_0001_incremental_load-test_0001_incremental_load.Tpo gdk-pixbuf-loader/$(DEPDIR)/test_0001_incremental_load-test_0001_incremental_load.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gdk-pixbuf-loader/test_0001_incremental_load.c' object='gdk-pixbuf-loader/test_0001_incremental_load-test_0001_incremental_load.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0001_incremental_load_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gdk-pixbuf-loader/test_0001_incremental_load-test_0001_incremental_load.o `test -f 'gdk-pixbuf-loader/test_0001_incremental_load.c' || echo '$(srcdir)/'`gdk-pixbuf-loader/test_0001_incremental_load.c
+
+gdk-pixbuf-loader/test_0001_incremental_load-test_0001_incremental_load.obj: gdk-pixbuf-loader/test_0001_incremental_load.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0001_incremental_load_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gdk-pixbuf-loader/test_0001_incremental_load-test_0001_incremental_load.obj -MD -MP -MF gdk-pixbuf-loader/$(DEPDIR)/test_0001_incremental_load-test_0001_incremental_load.Tpo -c -o gdk-pixbuf-loader/test_0001_incremental_load-test_0001_incremental_load.obj `if test -f 'gdk-pixbuf-loader/test_0001_incremental_load.c'; then $(CYGPATH_W) 'gdk-pixbuf-loader/test_0001_incremental_load.c'; else $(CYGPATH_W) '$(srcdir)/gdk-pixbuf-loader/test_0001_incremental_load.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) gdk-pixbuf-loader/$(DEPDIR)/test_0001_incremental_load-test_0001_incremental_load.Tpo gdk-pixbuf-loader/$(DEPDIR)/test_0001_incremental_load-test_0001_incremental_load.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gdk-pixbuf-loader/test_0001_incremental_load.c' object='gdk-pixbuf-loader/test_0001_incremental_load-test_0001_incremental_load.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0001_incremental_load_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gdk-pixbuf-loader/test_0001_incremental_load-test_0001_incremental_load.obj `if test -f 'gdk-pixbuf-loader/test_0001_incremental_load.c'; then $(CYGPATH_W) 'gdk-pixbuf-loader/test_0001_incremental_load.c'; else $(CYGPATH_W) '$(srcdir)/gdk-pixbuf-loader/test_0001_incremental_load.c'; fi`
+
+$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.o: $(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0001_incremental_load_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.o -MD -MP -MF $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.Tpo -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.o `test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c' || echo '$(srcdir)/'`$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.Tpo $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c' object='$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0001_incremental_load_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.o `test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c' || echo '$(srcdir)/'`$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+
+$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.obj: $(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0001_incremental_load_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.obj -MD -MP -MF $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.Tpo -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.obj `if test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; then $(CYGPATH_W) '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.Tpo $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c' object='$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0001_incremental_load_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.obj `if test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; then $(CYGPATH_W) '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; fi`
+
+gdk-pixbuf-loader/test_0002_corrupt_data-test_0002_corrupt_data.o: gdk-pixbuf-loader/test_0002_corrupt_data.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0002_corrupt_data_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gdk-pixbuf-loader/test_0002_corrupt_data-test_0002_corrupt_data.o -MD -MP -MF gdk-pixbuf-loader/$(DEPDIR)/test_0002_corrupt_data-test_0002_corrupt_data.Tpo -c -o gdk-pixbuf-loader/test_0002_corrupt_data-test_0002_corrupt_data.o `test -f 'gdk-pixbuf-loader/test_0002_corrupt_data.c' || echo '$(srcdir)/'`gdk-pixbuf-loader/test_0002_corrupt_data.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) gdk-pixbuf-loader/$(DEPDIR)/test_0002_corrupt_data-test_0002_corrupt_data.Tpo gdk-pixbuf-loader/$(DEPDIR)/test_0002_corrupt_data-test_0002_corrupt_data.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gdk-pixbuf-loader/test_0002_corrupt_data.c' object='gdk-pixbuf-loader/test_0002_corrupt_data-test_0002_corrupt_data.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0002_corrupt_data_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gdk-pixbuf-loader/test_0002_corrupt_data-test_0002_corrupt_data.o `test -f 'gdk-pixbuf-loader/test_0002_corrupt_data.c' || echo '$(srcdir)/'`gdk-pixbuf-loader/test_0002_corrupt_data.c
+
+gdk-pixbuf-loader/test_0002_corrupt_data-test_0002_corrupt_data.obj: gdk-pixbuf-loader/test_0002_corrupt_data.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0002_corrupt_data_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gdk-pixbuf-loader/test_0002_corrupt_data-test_0002_corrupt_data.obj -MD -MP -MF gdk-pixbuf-loader/$(DEPDIR)/test_0002_corrupt_data-test_0002_corrupt_data.Tpo -c -o gdk-pixbuf-loader/test_0002_corrupt_data-test_0002_corrupt_data.obj `if test -f 'gdk-pixbuf-loader/test_0002_corrupt_data.c'; then $(CYGPATH_W) 'gdk-pixbuf-loader/test_0002_corrupt_data.c'; else $(CYGPATH_W) '$(srcdir)/gdk-pixbuf-loader/test_0002_corrupt_data.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) gdk-pixbuf-loader/$(DEPDIR)/test_0002_corrupt_data-test_0002_corrupt_data.Tpo gdk-pixbuf-loader/$(DEPDIR)/test_0002_corrupt_data-test_0002_corrupt_data.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gdk-pixbuf-loader/test_0002_corrupt_data.c' object='gdk-pixbuf-loader/test_0002_corrupt_data-test_0002_corrupt_data.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0002_corrupt_data_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gdk-pixbuf-loader/test_0002_corrupt_data-test_0002_corrupt_data.obj `if test -f 'gdk-pixbuf-loader/test_0002_corrupt_data.c'; then $(CYGPATH_W) 'gdk-pixbuf-loader/test_0002_corrupt_data.c'; else $(CYGPATH_W) '$(srcdir)/gdk-pixbuf-loader/test_0002_corrupt_data.c'; fi`
+
+$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.o: $(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0002_corrupt_data_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.o -MD -MP -MF $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.Tpo -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.o `test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c' || echo '$(srcdir)/'`$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.Tpo $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c' object='$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0002_corrupt_data_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.o `test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c' || echo '$(srcdir)/'`$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+
+$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.obj: $(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0002_corrupt_data_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.obj -MD -MP -MF $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.Tpo -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.obj `if test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; then $(CYGPATH_W) '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.Tpo $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c' object='$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0002_corrupt_data_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.obj `if test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; then $(CYGPATH_W) '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; fi`
+
+gdk-pixbuf-loader/test_0003_propagate_error-test_0003_propagate_error.o: gdk-pixbuf-loader/test_0003_propagate_error.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0003_propagate_error_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gdk-pixbuf-loader/test_0003_propagate_error-test_0003_propagate_error.o -MD -MP -MF gdk-pixbuf-loader/$(DEPDIR)/test_0003_propagate_error-test_0003_propagate_error.Tpo -c -o gdk-pixbuf-loader/test_0003_propagate_error-test_0003_propagate_error.o `test -f 'gdk-pixbuf-loader/test_0003_propagate_error.c' || echo '$(srcdir)/'`gdk-pixbuf-loader/test_0003_propagate_error.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) gdk-pixbuf-loader/$(DEPDIR)/test_0003_propagate_error-test_0003_propagate_error.Tpo gdk-pixbuf-loader/$(DEPDIR)/test_0003_propagate_error-test_0003_propagate_error.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gdk-pixbuf-loader/test_0003_propagate_error.c' object='gdk-pixbuf-loader/test_0003_propagate_error-test_0003_propagate_error.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0003_propagate_error_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gdk-pixbuf-loader/test_0003_propagate_error-test_0003_propagate_error.o `test -f 'gdk-pixbuf-loader/test_0003_propagate_error.c' || echo '$(srcdir)/'`gdk-pixbuf-loader/test_0003_propagate_error.c
+
+gdk-pixbuf-loader/test_0003_propagate_error-test_0003_propagate_error.obj: gdk-pixbuf-loader/test_0003_propagate_error.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0003_propagate_error_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gdk-pixbuf-loader/test_0003_propagate_error-test_0003_propagate_error.obj -MD -MP -MF gdk-pixbuf-loader/$(DEPDIR)/test_0003_propagate_error-test_0003_propagate_error.Tpo -c -o gdk-pixbuf-loader/test_0003_propagate_error-test_0003_propagate_error.obj `if test -f 'gdk-pixbuf-loader/test_0003_propagate_error.c'; then $(CYGPATH_W) 'gdk-pixbuf-loader/test_0003_propagate_error.c'; else $(CYGPATH_W) '$(srcdir)/gdk-pixbuf-loader/test_0003_propagate_error.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) gdk-pixbuf-loader/$(DEPDIR)/test_0003_propagate_error-test_0003_propagate_error.Tpo gdk-pixbuf-loader/$(DEPDIR)/test_0003_propagate_error-test_0003_propagate_error.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gdk-pixbuf-loader/test_0003_propagate_error.c' object='gdk-pixbuf-loader/test_0003_propagate_error-test_0003_propagate_error.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0003_propagate_error_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gdk-pixbuf-loader/test_0003_propagate_error-test_0003_propagate_error.obj `if test -f 'gdk-pixbuf-loader/test_0003_propagate_error.c'; then $(CYGPATH_W) 'gdk-pixbuf-loader/test_0003_propagate_error.c'; else $(CYGPATH_W) '$(srcdir)/gdk-pixbuf-loader/test_0003_propagate_error.c'; fi`
+
+$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.o: $(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0003_propagate_error_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.o -MD -MP -MF $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.Tpo -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.o `test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c' || echo '$(srcdir)/'`$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.Tpo $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c' object='$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0003_propagate_error_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.o `test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c' || echo '$(srcdir)/'`$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+
+$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.obj: $(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0003_propagate_error_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.obj -MD -MP -MF $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.Tpo -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.obj `if test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; then $(CYGPATH_W) '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.Tpo $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c' object='$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0003_propagate_error_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.obj `if test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; then $(CYGPATH_W) '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; fi`
+
+gdk-pixbuf-loader/test_0004_context_free-test_0004_context_free.o: gdk-pixbuf-loader/test_0004_context_free.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0004_context_free_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gdk-pixbuf-loader/test_0004_context_free-test_0004_context_free.o -MD -MP -MF gdk-pixbuf-loader/$(DEPDIR)/test_0004_context_free-test_0004_context_free.Tpo -c -o gdk-pixbuf-loader/test_0004_context_free-test_0004_context_free.o `test -f 'gdk-pixbuf-loader/test_0004_context_free.c' || echo '$(srcdir)/'`gdk-pixbuf-loader/test_0004_context_free.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) gdk-pixbuf-loader/$(DEPDIR)/test_0004_context_free-test_0004_context_free.Tpo gdk-pixbuf-loader/$(DEPDIR)/test_0004_context_free-test_0004_context_free.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gdk-pixbuf-loader/test_0004_context_free.c' object='gdk-pixbuf-loader/test_0004_context_free-test_0004_context_free.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0004_context_free_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gdk-pixbuf-loader/test_0004_context_free-test_0004_context_free.o `test -f 'gdk-pixbuf-loader/test_0004_context_free.c' || echo '$(srcdir)/'`gdk-pixbuf-loader/test_0004_context_free.c
+
+gdk-pixbuf-loader/test_0004_context_free-test_0004_context_free.obj: gdk-pixbuf-loader/test_0004_context_free.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0004_context_free_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gdk-pixbuf-loader/test_0004_context_free-test_0004_context_free.obj -MD -MP -MF gdk-pixbuf-loader/$(DEPDIR)/test_0004_context_free-test_0004_context_free.Tpo -c -o gdk-pixbuf-loader/test_0004_context_free-test_0004_context_free.obj `if test -f 'gdk-pixbuf-loader/test_0004_context_free.c'; then $(CYGPATH_W) 'gdk-pixbuf-loader/test_0004_context_free.c'; else $(CYGPATH_W) '$(srcdir)/gdk-pixbuf-loader/test_0004_context_free.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) gdk-pixbuf-loader/$(DEPDIR)/test_0004_context_free-test_0004_context_free.Tpo gdk-pixbuf-loader/$(DEPDIR)/test_0004_context_free-test_0004_context_free.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gdk-pixbuf-loader/test_0004_context_free.c' object='gdk-pixbuf-loader/test_0004_context_free-test_0004_context_free.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0004_context_free_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gdk-pixbuf-loader/test_0004_context_free-test_0004_context_free.obj `if test -f 'gdk-pixbuf-loader/test_0004_context_free.c'; then $(CYGPATH_W) 'gdk-pixbuf-loader/test_0004_context_free.c'; else $(CYGPATH_W) '$(srcdir)/gdk-pixbuf-loader/test_0004_context_free.c'; fi`
+
+$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.o: $(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0004_context_free_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.o -MD -MP -MF $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.Tpo -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.o `test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c' || echo '$(srcdir)/'`$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.Tpo $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c' object='$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0004_context_free_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.o `test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c' || echo '$(srcdir)/'`$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+
+$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.obj: $(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0004_context_free_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.obj -MD -MP -MF $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.Tpo -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.obj `if test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; then $(CYGPATH_W) '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.Tpo $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c' object='$(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_test_0004_context_free_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/gdk-pixbuf-loader/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.obj `if test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; then $(CYGPATH_W) '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; fi`
+
+palette/test_palette_kmeans_init-test_palette_kmeans_init.o: palette/test_palette_kmeans_init.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(palette_test_palette_kmeans_init_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT palette/test_palette_kmeans_init-test_palette_kmeans_init.o -MD -MP -MF palette/$(DEPDIR)/test_palette_kmeans_init-test_palette_kmeans_init.Tpo -c -o palette/test_palette_kmeans_init-test_palette_kmeans_init.o `test -f 'palette/test_palette_kmeans_init.c' || echo '$(srcdir)/'`palette/test_palette_kmeans_init.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/$(DEPDIR)/test_palette_kmeans_init-test_palette_kmeans_init.Tpo palette/$(DEPDIR)/test_palette_kmeans_init-test_palette_kmeans_init.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/test_palette_kmeans_init.c' object='palette/test_palette_kmeans_init-test_palette_kmeans_init.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(palette_test_palette_kmeans_init_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o palette/test_palette_kmeans_init-test_palette_kmeans_init.o `test -f 'palette/test_palette_kmeans_init.c' || echo '$(srcdir)/'`palette/test_palette_kmeans_init.c
+
+palette/test_palette_kmeans_init-test_palette_kmeans_init.obj: palette/test_palette_kmeans_init.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(palette_test_palette_kmeans_init_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT palette/test_palette_kmeans_init-test_palette_kmeans_init.obj -MD -MP -MF palette/$(DEPDIR)/test_palette_kmeans_init-test_palette_kmeans_init.Tpo -c -o palette/test_palette_kmeans_init-test_palette_kmeans_init.obj `if test -f 'palette/test_palette_kmeans_init.c'; then $(CYGPATH_W) 'palette/test_palette_kmeans_init.c'; else $(CYGPATH_W) '$(srcdir)/palette/test_palette_kmeans_init.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/$(DEPDIR)/test_palette_kmeans_init-test_palette_kmeans_init.Tpo palette/$(DEPDIR)/test_palette_kmeans_init-test_palette_kmeans_init.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='palette/test_palette_kmeans_init.c' object='palette/test_palette_kmeans_init-test_palette_kmeans_init.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(palette_test_palette_kmeans_init_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o palette/test_palette_kmeans_init-test_palette_kmeans_init.obj `if test -f 'palette/test_palette_kmeans_init.c'; then $(CYGPATH_W) 'palette/test_palette_kmeans_init.c'; else $(CYGPATH_W) '$(srcdir)/palette/test_palette_kmeans_init.c'; fi`
+
+probe/test_probe_parse-test_probe_parse.o: probe/test_probe_parse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(probe_test_probe_parse_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT probe/test_probe_parse-test_probe_parse.o -MD -MP -MF probe/$(DEPDIR)/test_probe_parse-test_probe_parse.Tpo -c -o probe/test_probe_parse-test_probe_parse.o `test -f 'probe/test_probe_parse.c' || echo '$(srcdir)/'`probe/test_probe_parse.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) probe/$(DEPDIR)/test_probe_parse-test_probe_parse.Tpo probe/$(DEPDIR)/test_probe_parse-test_probe_parse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='probe/test_probe_parse.c' object='probe/test_probe_parse-test_probe_parse.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(probe_test_probe_parse_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o probe/test_probe_parse-test_probe_parse.o `test -f 'probe/test_probe_parse.c' || echo '$(srcdir)/'`probe/test_probe_parse.c
+
+probe/test_probe_parse-test_probe_parse.obj: probe/test_probe_parse.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(probe_test_probe_parse_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT probe/test_probe_parse-test_probe_parse.obj -MD -MP -MF probe/$(DEPDIR)/test_probe_parse-test_probe_parse.Tpo -c -o probe/test_probe_parse-test_probe_parse.obj `if test -f 'probe/test_probe_parse.c'; then $(CYGPATH_W) 'probe/test_probe_parse.c'; else $(CYGPATH_W) '$(srcdir)/probe/test_probe_parse.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) probe/$(DEPDIR)/test_probe_parse-test_probe_parse.Tpo probe/$(DEPDIR)/test_probe_parse-test_probe_parse.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='probe/test_probe_parse.c' object='probe/test_probe_parse-test_probe_parse.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(probe_test_probe_parse_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o probe/test_probe_parse-test_probe_parse.obj `if test -f 'probe/test_probe_parse.c'; then $(CYGPATH_W) 'probe/test_probe_parse.c'; else $(CYGPATH_W) '$(srcdir)/probe/test_probe_parse.c'; fi`
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
 	-rm -rf .libs _libs
+	-rm -rf cli/.libs cli/_libs
 	-rm -rf filter/.libs filter/_libs
 	-rm -rf gdk-pixbuf-loader/.libs gdk-pixbuf-loader/_libs
+	-rm -rf palette/.libs palette/_libs
+	-rm -rf probe/.libs probe/_libs
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -1902,6 +2498,34 @@ gdk-pixbuf-loader/test-gdk-pixbuf-loader.log: gdk-pixbuf-loader/test-gdk-pixbuf-
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+gdk-pixbuf-loader/test_0001_incremental_load.log: gdk-pixbuf-loader/test_0001_incremental_load$(EXEEXT)
+	@p='gdk-pixbuf-loader/test_0001_incremental_load$(EXEEXT)'; \
+	b='gdk-pixbuf-loader/test_0001_incremental_load'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+gdk-pixbuf-loader/test_0002_corrupt_data.log: gdk-pixbuf-loader/test_0002_corrupt_data$(EXEEXT)
+	@p='gdk-pixbuf-loader/test_0002_corrupt_data$(EXEEXT)'; \
+	b='gdk-pixbuf-loader/test_0002_corrupt_data'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+gdk-pixbuf-loader/test_0003_propagate_error.log: gdk-pixbuf-loader/test_0003_propagate_error$(EXEEXT)
+	@p='gdk-pixbuf-loader/test_0003_propagate_error$(EXEEXT)'; \
+	b='gdk-pixbuf-loader/test_0003_propagate_error'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+gdk-pixbuf-loader/test_0004_context_free.log: gdk-pixbuf-loader/test_0004_context_free$(EXEEXT)
+	@p='gdk-pixbuf-loader/test_0004_context_free$(EXEEXT)'; \
+	b='gdk-pixbuf-loader/test_0004_context_free'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 .t.log:
 	@p='$<'; \
 	$(am__set_b); \
@@ -1991,12 +2615,20 @@ distclean-generic:
 	-test . = "$(srcdir)" || $(am__rm_f) $(CONFIG_CLEAN_VPATH_FILES)
 	-$(am__rm_f) $(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/amalgamation/$(am__dirstamp)
+	-$(am__rm_f) $(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) $(top_builddir)/converters/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/gdk-pixbuf-loader/$(am__dirstamp)
+	-$(am__rm_f) cli/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) cli/$(am__dirstamp)
 	-$(am__rm_f) filter/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) filter/$(am__dirstamp)
 	-$(am__rm_f) gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) gdk-pixbuf-loader/$(am__dirstamp)
+	-$(am__rm_f) palette/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) palette/$(am__dirstamp)
+	-$(am__rm_f) probe/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) probe/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -2018,7 +2650,17 @@ distclean: distclean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_sample_tests-sixel.Po
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_tests-sixel.Po
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_vpte_tests-sixel.Po
+	-rm -f $(top_builddir)/converters/$(DEPDIR)/cli_test_0023_cli_token_is_known_option-cli.Po
+	-rm -f $(top_builddir)/converters/$(DEPDIR)/cli_test_0024_cli_option_requires_argument-cli.Po
+	-rm -f $(top_builddir)/converters/$(DEPDIR)/cli_test_0025_cli_guard_missing_argument-cli.Po
+	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.Po
+	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.Po
+	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.Po
+	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.Po
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Po
+	-rm -f cli/$(DEPDIR)/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.Po
+	-rm -f cli/$(DEPDIR)/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.Po
+	-rm -f cli/$(DEPDIR)/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.Po
 	-rm -f filter/$(DEPDIR)/filter_colors_tests-filter_colors_tests.Po
 	-rm -f filter/$(DEPDIR)/filter_dither_tests-filter_dither_tests.Po
 	-rm -f filter/$(DEPDIR)/filter_encode_tests-filter_encode_tests.Po
@@ -2029,7 +2671,13 @@ distclean: distclean-am
 	-rm -f filter/$(DEPDIR)/filter_sample_tests-filter_sample_tests.Po
 	-rm -f filter/$(DEPDIR)/filter_tests-filter_tests.Po
 	-rm -f filter/$(DEPDIR)/filter_vpte_tests-filter_vpte_tests.Po
+	-rm -f gdk-pixbuf-loader/$(DEPDIR)/test_0001_incremental_load-test_0001_incremental_load.Po
+	-rm -f gdk-pixbuf-loader/$(DEPDIR)/test_0002_corrupt_data-test_0002_corrupt_data.Po
+	-rm -f gdk-pixbuf-loader/$(DEPDIR)/test_0003_propagate_error-test_0003_propagate_error.Po
+	-rm -f gdk-pixbuf-loader/$(DEPDIR)/test_0004_context_free-test_0004_context_free.Po
 	-rm -f gdk-pixbuf-loader/$(DEPDIR)/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.Po
+	-rm -f palette/$(DEPDIR)/test_palette_kmeans_init-test_palette_kmeans_init.Po
+	-rm -f probe/$(DEPDIR)/test_probe_parse-test_probe_parse.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -2085,7 +2733,17 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_sample_tests-sixel.Po
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_tests-sixel.Po
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_filter_vpte_tests-sixel.Po
+	-rm -f $(top_builddir)/converters/$(DEPDIR)/cli_test_0023_cli_token_is_known_option-cli.Po
+	-rm -f $(top_builddir)/converters/$(DEPDIR)/cli_test_0024_cli_option_requires_argument-cli.Po
+	-rm -f $(top_builddir)/converters/$(DEPDIR)/cli_test_0025_cli_guard_missing_argument-cli.Po
+	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0001_incremental_load-sixel-pixbuf-loader.Po
+	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0002_corrupt_data-sixel-pixbuf-loader.Po
+	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0003_propagate_error-sixel-pixbuf-loader.Po
+	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_0004_context_free-sixel-pixbuf-loader.Po
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/gdk_pixbuf_loader_test_gdk_pixbuf_loader-sixel-pixbuf-loader.Po
+	-rm -f cli/$(DEPDIR)/test_0023_cli_token_is_known_option-test_0023_cli_token_is_known_option.Po
+	-rm -f cli/$(DEPDIR)/test_0024_cli_option_requires_argument-test_0024_cli_option_requires_argument.Po
+	-rm -f cli/$(DEPDIR)/test_0025_cli_guard_missing_argument-test_0025_cli_guard_missing_argument.Po
 	-rm -f filter/$(DEPDIR)/filter_colors_tests-filter_colors_tests.Po
 	-rm -f filter/$(DEPDIR)/filter_dither_tests-filter_dither_tests.Po
 	-rm -f filter/$(DEPDIR)/filter_encode_tests-filter_encode_tests.Po
@@ -2096,7 +2754,13 @@ maintainer-clean: maintainer-clean-am
 	-rm -f filter/$(DEPDIR)/filter_sample_tests-filter_sample_tests.Po
 	-rm -f filter/$(DEPDIR)/filter_tests-filter_tests.Po
 	-rm -f filter/$(DEPDIR)/filter_vpte_tests-filter_vpte_tests.Po
+	-rm -f gdk-pixbuf-loader/$(DEPDIR)/test_0001_incremental_load-test_0001_incremental_load.Po
+	-rm -f gdk-pixbuf-loader/$(DEPDIR)/test_0002_corrupt_data-test_0002_corrupt_data.Po
+	-rm -f gdk-pixbuf-loader/$(DEPDIR)/test_0003_propagate_error-test_0003_propagate_error.Po
+	-rm -f gdk-pixbuf-loader/$(DEPDIR)/test_0004_context_free-test_0004_context_free.Po
 	-rm -f gdk-pixbuf-loader/$(DEPDIR)/test_gdk_pixbuf_loader-test-gdk-pixbuf-loader.Po
+	-rm -f palette/$(DEPDIR)/test_palette_kmeans_init-test_palette_kmeans_init.Po
+	-rm -f probe/$(DEPDIR)/test_probe_parse-test_probe_parse.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
