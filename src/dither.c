@@ -69,6 +69,26 @@
 
 
 /*
+ * Enable optional OKLab L_r distance for variable-coefficient diffusion when
+ * the user requests it via environment flag.
+ */
+static int
+sixel_dither_env_use_l_r_distance(void)
+{
+    char const *env;
+
+    env = sixel_compat_getenv("SIXEL_PALETTE_DIFFUSE_USE_L_R");
+    if (env == NULL || env[0] == '\0') {
+        return 0;
+    }
+    if (env[0] == '0') {
+        return 0;
+    }
+    return 1;
+}
+
+
+/*
  * Promote an RGB888 buffer to RGBFLOAT32 by normalising each channel to the
  * 0.0-1.0 range.  The helper is used when a float32 pipeline is requested via
  * the pixelformat but the incoming frame still relies on 8bit pixels.
@@ -565,9 +585,15 @@ sixel_dither_map_pixels(
     context.float_depth = 0;
     context.lookup_source_is_float = 0;
     context.prefer_palette_float_lookup = 0;
+    context.use_l_r_distance = 0;
     context.lut = NULL;
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         context.pixels_float = (float *)(void *)data;
+    }
+    if (methodForDiffuse == SIXEL_DIFFUSE_LSO2
+            && pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32
+            && sixel_dither_env_use_l_r_distance() != 0) {
+        context.use_l_r_distance = 1;
     }
 
     if (dither != NULL && dither->palette != NULL) {
