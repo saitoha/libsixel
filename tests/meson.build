@@ -12,6 +12,26 @@ env.set('MESON_BUILD_ROOT', meson.project_build_root())
 env.set('LIBSIXEL_LIBDIR', meson.project_build_root() / 'src')
 amalgamated_tools_enabled = get_option('amalgamated_tools').enabled()
 
+cli_helper_sources = {
+  'test_0023_cli_token_is_known_option':
+    ['cli/test_0023_cli_token_is_known_option.c',
+     '../converters/cli.c'],
+  'test_0024_cli_option_requires_argument':
+    ['cli/test_0024_cli_option_requires_argument.c',
+     '../converters/cli.c'],
+  'test_0025_cli_guard_missing_argument':
+    ['cli/test_0025_cli_guard_missing_argument.c',
+     '../converters/cli.c'],
+}
+
+cli_helper_targets = {}
+foreach helper_name, helper_sources : cli_helper_sources
+  cli_helper_targets += {helper_name: executable(helper_name, helper_sources,
+    include_directories: [project_inc, include_directories('..')],
+    dependencies: [libsixel_dep],
+    install: false)}
+endforeach
+
 if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
   # Ensure Windows-style runners (including MSYS2) locate the freshly built
   # DLLs when executing the converter TAP suite. Without these PATH entries
@@ -51,14 +71,28 @@ cli_tests = ['test_0001_01_invalid_positional.t',
              'test_0016_assessment_spool.t',
              'test_0017_clipboard.t',
              'test_0018_lsqa_regression.t',
-             'test_0019_python_wheel.t',
-             'test_0020_mapfile_io.t',
-             'test_0021_palette_fallback.t',
-             'test_0021_pipeline_planner.t',
-             'test_0022_resize_precision_mode.t']
+            'test_0019_python_wheel.t',
+            'test_0020_mapfile_io.t',
+            'test_0021_palette_fallback.t',
+            'test_0021_pipeline_planner.t',
+            'test_0022_resize_precision_mode.t',
+            'test_0023_cli_token_is_known_option.t',
+            'test_0024_cli_option_requires_argument.t',
+            'test_0025_cli_guard_missing_argument.t',
+            'test_0026_sixel2png_version_help.t',
+            'test_0027_sixel2png_missing_args.t',
+            'test_0028_sixel2png_unknown_option.t',
+            'test_0029_sixel2png_invalid_decoder_value.t',
+            'test_0030_sixel2png_default_output.t']
 
 cli_depends = {
   'test_0018_lsqa_regression.t': [lsqa_bin],
+  'test_0023_cli_token_is_known_option.t':
+    [cli_helper_targets['test_0023_cli_token_is_known_option']],
+  'test_0024_cli_option_requires_argument.t':
+    [cli_helper_targets['test_0024_cli_option_requires_argument']],
+  'test_0025_cli_guard_missing_argument.t':
+    [cli_helper_targets['test_0025_cli_guard_missing_argument']],
 }
 
 # Match autotools TAP timeout to keep CI behavior consistent (seconds per file).
@@ -191,26 +225,37 @@ test('test_3009_filter_encode', filter_units['filter_encode_tests'],
 
 if gdk_pixbuf_loader_deps.length() > 0
   gdk_pixbuf_loader_sources = [
-    'gdk-pixbuf-loader/test-gdk-pixbuf-loader.c',
     '../gdk-pixbuf-loader/sixel-pixbuf-loader.c',
   ]
-  gdk_pixbuf_loader_test = executable('gdk-pixbuf-loader-test',
-    gdk_pixbuf_loader_sources,
-    include_directories: project_inc,
-    dependencies: gdk_pixbuf_loader_deps + [libsixel_dep],
-    c_args: ['-DGDK_PIXBUF_ENABLE_BACKEND'],
-    install: false)
-  if shebang_enabled
-    shebang_targets += [custom_target('gdk-pixbuf-loader-test-shebang',
-      input: gdk_pixbuf_loader_test,
-      output: 'gdk-pixbuf-loader-test.shebang.stamp',
-      command: [shebang_helper, shebang_file, '@INPUT@'],
-      depend_files: shebang_file,
-      build_by_default: true)]
-  endif
-  test('gdk-pixbuf-loader', gdk_pixbuf_loader_test,
-    env: env,
-    suite: ['gdk-pixbuf-loader'])
+  gdk_pixbuf_loader_tests = {
+    'test-gdk-pixbuf-loader': 'gdk-pixbuf-loader/test-gdk-pixbuf-loader.c',
+    'test_0001_incremental_load':
+      'gdk-pixbuf-loader/test_0001_incremental_load.c',
+    'test_0002_corrupt_data': 'gdk-pixbuf-loader/test_0002_corrupt_data.c',
+    'test_0003_propagate_error':
+      'gdk-pixbuf-loader/test_0003_propagate_error.c',
+    'test_0004_context_free': 'gdk-pixbuf-loader/test_0004_context_free.c',
+  }
+  foreach test_name, source_file : gdk_pixbuf_loader_tests
+    target = executable(test_name,
+      [source_file] + gdk_pixbuf_loader_sources,
+      include_directories: project_inc,
+      dependencies: gdk_pixbuf_loader_deps + [libsixel_dep],
+      c_args: ['-DGDK_PIXBUF_ENABLE_BACKEND',
+               '-DSIXEL_PIXBUF_LOADER_TESTING'],
+      install: false)
+    if shebang_enabled
+      shebang_targets += [custom_target(test_name + '-shebang',
+        input: target,
+        output: test_name + '.shebang.stamp',
+        command: [shebang_helper, shebang_file, '@INPUT@'],
+        depend_files: shebang_file,
+        build_by_default: true)]
+    endif
+    test(test_name, target,
+      env: env,
+      suite: ['gdk-pixbuf-loader'])
+  endforeach
 endif
 
 add_test_setup('ci', timeout_multiplier: 1)
