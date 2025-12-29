@@ -248,8 +248,8 @@ sixel_output_convert_colorspace(sixel_output_t *output,
                                 unsigned char *pixels,
                                 size_t size)
 {
-    SIXELSTATUS status = SIXEL_FALSE;
     int colorspace;
+    int depth;
 
     if (output == NULL || pixels == NULL) {
         sixel_helper_set_additional_message(
@@ -257,16 +257,22 @@ sixel_output_convert_colorspace(sixel_output_t *output,
         return SIXEL_BAD_ARGUMENT;
     }
 
+    depth = sixel_helper_compute_depth(output->pixelformat);
+    if (depth <= 0) {
+        sixel_helper_set_additional_message(
+            "sixel_output_convert_colorspace: unsupported pixelformat.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    /*
+     * Kept for compatibility: pixelformat encodes the transfer curve, so the
+     * pixels already reside in the expected colorspace.  Validate input and
+     * return success without further modification.
+     */
     colorspace = sixel_pixelformat_colorspace_from_format(
         output->pixelformat);
-    status = sixel_helper_convert_colorspace(pixels,
-                                             size,
-                                             output->pixelformat,
-                                             colorspace,
-                                             colorspace);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
+    (void)colorspace;
+    (void)size;
 
     return SIXEL_OK;
 }
