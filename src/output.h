@@ -78,6 +78,9 @@ struct sixel_output {
      * PALETTETYPE_HLS : HLS color space
      * PALETTETYPE_RGB : RGB color space */
     unsigned char palette_type;
+
+    int colorspace;
+    int source_colorspace;
     int pixelformat;
 
     sixel_write_function fn_write;

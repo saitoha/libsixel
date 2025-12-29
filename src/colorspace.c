@@ -43,19 +43,6 @@
 # include "threadpool.h"
 #endif
 #include "compat_stub.h"
-#include "pixelformat.h"
-
-#if defined(__GNUC__)
-# define SIXEL_UNUSED __attribute__((unused))
-#else
-# define SIXEL_UNUSED
-#endif
-
-#if defined(__GNUC__)
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wunused-function"
-# pragma GCC diagnostic ignored "-Wunused-variable"
-#endif
 
 #if SIXEL_ENABLE_THREADS
 # if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) && \
@@ -246,12 +233,11 @@ sixel_colorspace_convert_avx512(unsigned char *pixels,
 #endif
 
 #if defined(SIXEL_USE_SSE2)
-static SIXELSTATUS SIXEL_UNUSED
-sixel_colorspace_convert_sse2(unsigned char *pixels,
-                              size_t size,
-                              int pixelformat,
-                              int colorspace_src,
-                              int colorspace_dst);
+static SIXELSTATUS sixel_colorspace_convert_sse2(unsigned char *pixels,
+                                                 size_t size,
+                                                 int pixelformat,
+                                                 int colorspace_src,
+                                                 int colorspace_dst);
 #endif
 
 /*
@@ -5128,10 +5114,6 @@ end:
     return status;
 }
 
-#if defined(__GNUC__)
-# pragma GCC diagnostic pop
-#endif
-
 /*
  * Convert RGBFLOAT32 buffers in-place by round-tripping through linear space.
  * The general path keeps double intermediates for OKLab/CIELAB precision, and
@@ -5299,7 +5281,7 @@ sixel_colorspace_parallel_worker(tp_job_t job,
 }
 #endif
 
-SIXELSTATUS
+static SIXELSTATUS
 sixel_convert_pixels_via_linear_float(float *pixels,
                                       size_t size,
                                       int colorspace_src,
@@ -5527,9 +5509,388 @@ end:
     return status;
 }
 
+static unsigned char
+sixel_colorspace_convert_component(unsigned char value,
+                                   int colorspace_src,
+                                   int colorspace_dst)
+{
+    if (colorspace_src == colorspace_dst) {
+        return value;
+    }
 
+    if (colorspace_src == SIXEL_COLORSPACE_GAMMA &&
+            colorspace_dst == SIXEL_COLORSPACE_LINEAR) {
+        return gamma_to_linear_lut[value];
+    }
 
+    if (colorspace_src == SIXEL_COLORSPACE_LINEAR &&
+            colorspace_dst == SIXEL_COLORSPACE_GAMMA) {
+        return linear_to_gamma_lut[value];
+    }
 
+    return value;
+}
+
+int
+sixel_colorspace_supports_pixelformat(int pixelformat)
+{
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGB888:
+    case SIXEL_PIXELFORMAT_BGR888:
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_G8:
+    case SIXEL_PIXELFORMAT_GA88:
+    case SIXEL_PIXELFORMAT_AG88:
+    case SIXEL_PIXELFORMAT_RGBFLOAT32:
+    case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
+    case SIXEL_PIXELFORMAT_OKLABFLOAT32:
+    case SIXEL_PIXELFORMAT_CIELABFLOAT32:
+    case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
+    case SIXEL_PIXELFORMAT_YUVFLOAT32:
+        return 1;
+    default:
+        break;
+    }
+
+    return 0;
+}
+
+static int
+sixel_colorspace_supports_byte_format(int pixelformat)
+{
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGB888:
+    case SIXEL_PIXELFORMAT_BGR888:
+    case SIXEL_PIXELFORMAT_RGBA8888:
+    case SIXEL_PIXELFORMAT_ARGB8888:
+    case SIXEL_PIXELFORMAT_BGRA8888:
+    case SIXEL_PIXELFORMAT_ABGR8888:
+    case SIXEL_PIXELFORMAT_G8:
+    case SIXEL_PIXELFORMAT_GA88:
+    case SIXEL_PIXELFORMAT_AG88:
+        return 1;
+    default:
+        break;
+    }
+
+    return 0;
+}
+
+static int
+sixel_colorspace_supports_lut_pair(int colorspace_src, int colorspace_dst)
+{
+    if (colorspace_src == SIXEL_COLORSPACE_GAMMA &&
+            colorspace_dst == SIXEL_COLORSPACE_LINEAR) {
+        return 1;
+    }
+
+    if (colorspace_src == SIXEL_COLORSPACE_LINEAR &&
+            colorspace_dst == SIXEL_COLORSPACE_GAMMA) {
+        return 1;
+    }
+
+    return 0;
+}
+
+SIXELAPI SIXELSTATUS
+sixel_helper_convert_colorspace(unsigned char *pixels,
+                                size_t size,
+                                int pixelformat,
+                                int colorspace_src,
+                                int colorspace_dst)
+{
+    size_t i;
+    int simd_level;
+    int byte_format_supported;
+    int lut_pair_supported;
+    int avx2_yuv_supported;
+
+    if (pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_helper_convert_colorspace: pixels is null.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (colorspace_src == colorspace_dst) {
+        return SIXEL_OK;
+    }
+
+    if (!sixel_colorspace_supports_pixelformat(pixelformat)) {
+        sixel_helper_set_additional_message(
+            "sixel_helper_convert_colorspace: unsupported pixelformat.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    sixel_colorspace_init_tables();
+
+    /*
+     * Fast paths rely on LUT-based byte formats.  Filter out unsupported
+     * combinations early so we do not waste time probing SIMD kernels that
+     * are guaranteed to fail for the current request.
+     */
+    byte_format_supported =
+        sixel_colorspace_supports_byte_format(pixelformat);
+    lut_pair_supported = sixel_colorspace_supports_lut_pair(colorspace_src,
+                                                            colorspace_dst);
+    avx2_yuv_supported = byte_format_supported &&
+        colorspace_src == SIXEL_COLORSPACE_YUV &&
+        (colorspace_dst == SIXEL_COLORSPACE_GAMMA ||
+         colorspace_dst == SIXEL_COLORSPACE_LINEAR);
+
+#if (defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
+        defined(__AVX512BW__)) || \
+        (defined(SIXEL_USE_AVX2) && defined(__AVX2__)) || \
+        defined(SIXEL_USE_SSE2) || defined(SIXEL_USE_NEON)
+    simd_level = sixel_cpu_simd_level();
+#else
+    simd_level = SIXEL_SIMD_LEVEL_SCALAR;
+#endif
+
+#if (!defined(SIXEL_USE_AVX512) || !defined(__AVX512F__) || \
+        !defined(__AVX512BW__)) && \
+        (!defined(SIXEL_USE_AVX2) || !defined(__AVX2__)) && \
+        !defined(SIXEL_USE_SSE2) && !defined(SIXEL_USE_NEON)
+    /*
+     * Suppress unused warnings when all SIMD paths are disabled at
+     * compile-time.  These flags are consulted only by SIMD dispatch,
+     * so scalar-only builds must explicitly mark them as unused.
+     */
+    (void)simd_level;
+    (void)byte_format_supported;
+    (void)lut_pair_supported;
+#endif
+
+#if !defined(SIXEL_USE_AVX2) || !defined(__AVX2__)
+    (void)avx2_yuv_supported;
+#endif
+
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        return sixel_convert_pixels_via_linear_float((float *)pixels,
+                                                     size,
+                                                     colorspace_src,
+                                                     colorspace_dst);
+    }
+
+#if defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
+        defined(__AVX512BW__)
+    if (simd_level >= SIXEL_SIMD_LEVEL_AVX512 &&
+            byte_format_supported && lut_pair_supported) {
+        SIXELSTATUS avx512_status;
+
+        avx512_status = sixel_colorspace_convert_avx512(pixels,
+                                                        size,
+                                                        pixelformat,
+                                                        colorspace_src,
+                                                        colorspace_dst);
+        if (avx512_status == SIXEL_OK) {
+            return SIXEL_OK;
+        }
+    }
+#endif
+
+#if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
+    if (simd_level >= SIXEL_SIMD_LEVEL_AVX2 &&
+            (avx2_yuv_supported || (byte_format_supported &&
+            lut_pair_supported))) {
+        SIXELSTATUS avx_status;
+
+        avx_status = sixel_colorspace_convert_avx2(pixels,
+                                                   size,
+                                                   pixelformat,
+                                                   colorspace_src,
+                                                   colorspace_dst);
+        if (avx_status == SIXEL_OK) {
+            return SIXEL_OK;
+        }
+    }
+#endif
+
+#if defined(SIXEL_USE_SSE2)
+    if (simd_level >= SIXEL_SIMD_LEVEL_SSE2 &&
+            byte_format_supported && lut_pair_supported) {
+        SIXELSTATUS sse_status;
+
+        sse_status = sixel_colorspace_convert_sse2(pixels,
+                                                   size,
+                                                   pixelformat,
+                                                   colorspace_src,
+                                                   colorspace_dst);
+        if (sse_status == SIXEL_OK) {
+            return SIXEL_OK;
+        }
+    }
+#endif
+
+#if defined(SIXEL_USE_NEON)
+    if (simd_level == SIXEL_SIMD_LEVEL_NEON &&
+            byte_format_supported && lut_pair_supported &&
+            sixel_colorspace_neon_supported_format(pixelformat)) {
+        SIXELSTATUS neon_status;
+
+        neon_status = sixel_colorspace_convert_neon(pixels,
+                                                    size,
+                                                    pixelformat,
+                                                    colorspace_src,
+                                                    colorspace_dst);
+        if (neon_status == SIXEL_OK) {
+            return SIXEL_OK;
+        }
+    }
+#endif
+
+    if (colorspace_src == SIXEL_COLORSPACE_OKLAB ||
+            colorspace_dst == SIXEL_COLORSPACE_OKLAB ||
+            colorspace_src == SIXEL_COLORSPACE_CIELAB ||
+            colorspace_dst == SIXEL_COLORSPACE_CIELAB ||
+            colorspace_src == SIXEL_COLORSPACE_DIN99D ||
+            colorspace_dst == SIXEL_COLORSPACE_DIN99D ||
+            colorspace_src == SIXEL_COLORSPACE_YUV ||
+            colorspace_dst == SIXEL_COLORSPACE_YUV ||
+            colorspace_src == SIXEL_COLORSPACE_SMPTEC ||
+            colorspace_dst == SIXEL_COLORSPACE_SMPTEC) {
+        SIXELSTATUS status = sixel_convert_pixels_via_linear(pixels,
+                                                             size,
+                                                             pixelformat,
+                                                             colorspace_src,
+                                                             colorspace_dst);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "sixel_helper_convert_colorspace: unsupported "
+                "pixelformat for conversion.");
+        }
+        return status;
+    }
+
+    switch (pixelformat) {
+    case SIXEL_PIXELFORMAT_RGB888:
+        if (size % 3 != 0) {
+            sixel_helper_set_additional_message(
+                "sixel_helper_convert_colorspace: invalid data size.");
+            return SIXEL_BAD_INPUT;
+        }
+        for (i = 0; i + 2 < size; i += 3) {
+            pixels[i + 0] = sixel_colorspace_convert_component(
+                pixels[i + 0], colorspace_src, colorspace_dst);
+            pixels[i + 1] = sixel_colorspace_convert_component(
+                pixels[i + 1], colorspace_src, colorspace_dst);
+            pixels[i + 2] = sixel_colorspace_convert_component(
+                pixels[i + 2], colorspace_src, colorspace_dst);
+        }
+        break;
+    case SIXEL_PIXELFORMAT_BGR888:
+        if (size % 3 != 0) {
+            sixel_helper_set_additional_message(
+                "sixel_helper_convert_colorspace: invalid data size.");
+            return SIXEL_BAD_INPUT;
+        }
+        for (i = 0; i + 2 < size; i += 3) {
+            pixels[i + 0] = sixel_colorspace_convert_component(
+                pixels[i + 0], colorspace_src, colorspace_dst);
+            pixels[i + 1] = sixel_colorspace_convert_component(
+                pixels[i + 1], colorspace_src, colorspace_dst);
+            pixels[i + 2] = sixel_colorspace_convert_component(
+                pixels[i + 2], colorspace_src, colorspace_dst);
+        }
+        break;
+    case SIXEL_PIXELFORMAT_RGBA8888:
+        if (size % 4 != 0) {
+            sixel_helper_set_additional_message(
+                "sixel_helper_convert_colorspace: invalid data size.");
+            return SIXEL_BAD_INPUT;
+        }
+        for (i = 0; i + 3 < size; i += 4) {
+            pixels[i + 0] = sixel_colorspace_convert_component(
+                pixels[i + 0], colorspace_src, colorspace_dst);
+            pixels[i + 1] = sixel_colorspace_convert_component(
+                pixels[i + 1], colorspace_src, colorspace_dst);
+            pixels[i + 2] = sixel_colorspace_convert_component(
+                pixels[i + 2], colorspace_src, colorspace_dst);
+        }
+        break;
+    case SIXEL_PIXELFORMAT_ARGB8888:
+        if (size % 4 != 0) {
+            sixel_helper_set_additional_message(
+                "sixel_helper_convert_colorspace: invalid data size.");
+            return SIXEL_BAD_INPUT;
+        }
+        for (i = 0; i + 3 < size; i += 4) {
+            pixels[i + 1] = sixel_colorspace_convert_component(
+                pixels[i + 1], colorspace_src, colorspace_dst);
+            pixels[i + 2] = sixel_colorspace_convert_component(
+                pixels[i + 2], colorspace_src, colorspace_dst);
+            pixels[i + 3] = sixel_colorspace_convert_component(
+                pixels[i + 3], colorspace_src, colorspace_dst);
+        }
+        break;
+    case SIXEL_PIXELFORMAT_BGRA8888:
+        if (size % 4 != 0) {
+            sixel_helper_set_additional_message(
+                "sixel_helper_convert_colorspace: invalid data size.");
+            return SIXEL_BAD_INPUT;
+        }
+        for (i = 0; i + 3 < size; i += 4) {
+            pixels[i + 0] = sixel_colorspace_convert_component(
+                pixels[i + 0], colorspace_src, colorspace_dst);
+            pixels[i + 1] = sixel_colorspace_convert_component(
+                pixels[i + 1], colorspace_src, colorspace_dst);
+            pixels[i + 2] = sixel_colorspace_convert_component(
+                pixels[i + 2], colorspace_src, colorspace_dst);
+        }
+        break;
+    case SIXEL_PIXELFORMAT_ABGR8888:
+        if (size % 4 != 0) {
+            sixel_helper_set_additional_message(
+                "sixel_helper_convert_colorspace: invalid data size.");
+            return SIXEL_BAD_INPUT;
+        }
+        for (i = 0; i + 3 < size; i += 4) {
+            pixels[i + 1] = sixel_colorspace_convert_component(
+                pixels[i + 1], colorspace_src, colorspace_dst);
+            pixels[i + 2] = sixel_colorspace_convert_component(
+                pixels[i + 2], colorspace_src, colorspace_dst);
+            pixels[i + 3] = sixel_colorspace_convert_component(
+                pixels[i + 3], colorspace_src, colorspace_dst);
+        }
+        break;
+    case SIXEL_PIXELFORMAT_G8:
+        for (i = 0; i < size; ++i) {
+            pixels[i] = sixel_colorspace_convert_component(
+                pixels[i], colorspace_src, colorspace_dst);
+        }
+        break;
+    case SIXEL_PIXELFORMAT_GA88:
+        if (size % 2 != 0) {
+            sixel_helper_set_additional_message(
+                "sixel_helper_convert_colorspace: invalid data size.");
+            return SIXEL_BAD_INPUT;
+        }
+        for (i = 0; i + 1 < size; i += 2) {
+            pixels[i + 0] = sixel_colorspace_convert_component(
+                pixels[i + 0], colorspace_src, colorspace_dst);
+        }
+        break;
+    case SIXEL_PIXELFORMAT_AG88:
+        if (size % 2 != 0) {
+            sixel_helper_set_additional_message(
+                "sixel_helper_convert_colorspace: invalid data size.");
+            return SIXEL_BAD_INPUT;
+        }
+        for (i = 0; i + 1 < size; i += 2) {
+            pixels[i + 1] = sixel_colorspace_convert_component(
+                pixels[i + 1], colorspace_src, colorspace_dst);
+        }
+        break;
+    default:
+        sixel_helper_set_additional_message(
+            "sixel_helper_convert_colorspace: unsupported pixelformat.");
+        return SIXEL_BAD_INPUT;
+    }
+
+    return SIXEL_OK;
+}
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

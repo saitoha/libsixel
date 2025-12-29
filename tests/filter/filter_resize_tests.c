@@ -65,11 +65,11 @@ test_resize_changes_dimensions(void)
     sixel_filter_bind_input(filter,
                             &frame,
                             frame->pixelformat,
-                            sixel_frame_get_colorspace(frame));
+                            frame->colorspace);
     sixel_filter_bind_output(filter,
                              &frame,
                              frame->pixelformat,
-                             sixel_frame_get_colorspace(frame));
+                             frame->colorspace);
     sixel_filter_set_progress(filter, progress_cb, &progress, 1);
 
     status = sixel_filter_run(filter, allocator, NULL);
@@ -143,11 +143,11 @@ test_resize_prefers_float_when_requested(void)
     sixel_filter_bind_input(filter,
                             &frame,
                             frame->pixelformat,
-                            sixel_frame_get_colorspace(frame));
+                            frame->colorspace);
     sixel_filter_bind_output(filter,
                              &frame,
                              frame->pixelformat,
-                             sixel_frame_get_colorspace(frame));
+                             frame->colorspace);
     sixel_filter_set_progress(filter, progress_cb, &progress, 1);
 
     status = sixel_filter_run(filter, allocator, NULL);
