@@ -45,6 +45,18 @@
 #include "compat_stub.h"
 #include "pixelformat.h"
 
+#if defined(__GNUC__)
+# define SIXEL_UNUSED __attribute__((unused))
+#else
+# define SIXEL_UNUSED
+#endif
+
+#if defined(__GNUC__)
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wunused-function"
+# pragma GCC diagnostic ignored "-Wunused-variable"
+#endif
+
 #if SIXEL_ENABLE_THREADS
 # if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) && \
         !defined(WITH_WINPTHREAD)
@@ -234,11 +246,12 @@ sixel_colorspace_convert_avx512(unsigned char *pixels,
 #endif
 
 #if defined(SIXEL_USE_SSE2)
-static SIXELSTATUS sixel_colorspace_convert_sse2(unsigned char *pixels,
-                                                 size_t size,
-                                                 int pixelformat,
-                                                 int colorspace_src,
-                                                 int colorspace_dst);
+static SIXELSTATUS SIXEL_UNUSED
+sixel_colorspace_convert_sse2(unsigned char *pixels,
+                              size_t size,
+                              int pixelformat,
+                              int colorspace_src,
+                              int colorspace_dst);
 #endif
 
 /*
@@ -5115,6 +5128,10 @@ end:
     return status;
 }
 
+#if defined(__GNUC__)
+# pragma GCC diagnostic pop
+#endif
+
 /*
  * Convert RGBFLOAT32 buffers in-place by round-tripping through linear space.
  * The general path keeps double intermediates for OKLab/CIELAB precision, and
@@ -5513,132 +5530,6 @@ end:
 
 
 
-
-#if SIXEL_USE_DEPRECATED_SYMBOLS
-SIXELAPI SIXELSTATUS
-sixel_helper_convert_colorspace(unsigned char *pixels,
-                                size_t size,
-                                int pixelformat,
-                                int colorspace_src,
-                                int colorspace_dst)
-{
-    SIXELSTATUS status;
-    int depth;
-    size_t pixel_total;
-    int width;
-    int height;
-    size_t rgb_bytes;
-    size_t linear_bytes;
-    unsigned char *rgb;
-    float *linear;
-    size_t i;
-
-    if (pixels == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_helper_convert_colorspace: pixels is null.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    if (size == 0U || colorspace_src == colorspace_dst) {
-        return SIXEL_OK;
-    }
-
-    depth = sixel_helper_compute_depth(pixelformat);
-    if (depth <= 0) {
-        sixel_helper_set_additional_message(
-            "sixel_helper_convert_colorspace: unsupported pixelformat.");
-        return SIXEL_BAD_INPUT;
-    }
-
-    if (size % (size_t)depth != 0U) {
-        sixel_helper_set_additional_message(
-            "sixel_helper_convert_colorspace: invalid data size.");
-        return SIXEL_BAD_INPUT;
-    }
-
-    pixel_total = size / (size_t)depth;
-    if (pixel_total == 0U) {
-        return SIXEL_OK;
-    }
-
-    if (pixel_total > (size_t)INT_MAX) {
-        sixel_helper_set_additional_message(
-            "sixel_helper_convert_colorspace: invalid data size.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    width = (int)pixel_total;
-    height = 1;
-
-    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-        return sixel_convert_pixels_via_linear_float((float *)pixels,
-                                                     size,
-                                                     colorspace_src,
-                                                     colorspace_dst);
-    }
-
-    rgb_bytes = pixel_total * (size_t)3;
-    linear_bytes = rgb_bytes * sizeof(float);
-
-    rgb = (unsigned char *)malloc(rgb_bytes);
-    if (rgb == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_helper_convert_colorspace: allocation failure.");
-        return SIXEL_BAD_ALLOCATION;
-    }
-
-    linear = (float *)malloc(linear_bytes);
-    if (linear == NULL) {
-        free(rgb);
-        sixel_helper_set_additional_message(
-            "sixel_helper_convert_colorspace: allocation failure.");
-        return SIXEL_BAD_ALLOCATION;
-    }
-
-    status = sixel_pixelformat_unpack_rgb888(rgb,
-                                             pixels,
-                                             pixelformat,
-                                             width,
-                                             height);
-    if (SIXEL_FAILED(status)) {
-        free(linear);
-        free(rgb);
-        return status;
-    }
-
-    for (i = 0U; i < rgb_bytes; ++i) {
-        linear[i] = (float)rgb[i] / SIXEL_RGB_BYTE_SCALE;
-    }
-
-    status = sixel_convert_pixels_via_linear_float(linear,
-                                                   linear_bytes,
-                                                   colorspace_src,
-                                                   colorspace_dst);
-    if (SIXEL_FAILED(status)) {
-        free(linear);
-        free(rgb);
-        return status;
-    }
-
-    for (i = 0U; i < rgb_bytes; ++i) {
-        rgb[i] = sixel_pixelformat_float_channel_to_byte(
-            SIXEL_PIXELFORMAT_RGBFLOAT32,
-            (int)(i % 3U),
-            linear[i]);
-    }
-
-    status = sixel_pixelformat_pack_rgb888(pixels,
-                                           rgb,
-                                           pixelformat,
-                                           width,
-                                           height);
-
-    free(linear);
-    free(rgb);
-
-    return status;
-}
-#endif /* SIXEL_USE_DEPRECATED_SYMBOLS */
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */
