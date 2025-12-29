@@ -494,8 +494,6 @@ sixel_frame_set_pixelformat(
     int            /* in */ pixelformat)
 {
     SIXELSTATUS status;
-    int source_colorspace;
-    int target_colorspace;
     int working_pixelformat;
     int working_depth;
     int target_depth;
@@ -616,51 +614,33 @@ sixel_frame_set_pixelformat(
             pixels = (unsigned char *)frame->pixels.f32ptr;
         }
 
-        source_colorspace = sixel_frame_colorspace_from_pixelformat(
-            working_pixelformat);
-        target_colorspace = sixel_frame_colorspace_from_pixelformat(
-            pixelformat);
+        target_bytes = pixel_total * (size_t)target_depth;
 
-        if (SIXEL_PIXELFORMAT_IS_FLOAT32(working_pixelformat) &&
-                SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
-            status = sixel_helper_convert_colorspace(pixels,
-                                                     pixel_total
-                                                         * (size_t)
-                                                         working_depth,
-                                                     working_pixelformat,
-                                                     source_colorspace,
-                                                     target_colorspace);
-            if (SIXEL_FAILED(status)) {
-                return status;
-            }
-        } else {
-            target_bytes = pixel_total * (size_t)target_depth;
-
-            converted = (unsigned char *)sixel_allocator_malloc(
-                frame->allocator, target_bytes);
-            if (converted == NULL) {
-                sixel_helper_set_additional_message(
-                    "sixel_frame_set_pixelformat: sixel_allocator_malloc() "
-                    "failed.");
-                return SIXEL_BAD_ALLOCATION;
-            }
-
-            status = sixel_pixelformat_convert(converted,
-                                               pixelformat,
-                                               pixels,
-                                               working_pixelformat,
-                                               frame->width,
-                                               frame->height,
-                                               frame->allocator);
-            if (SIXEL_FAILED(status)) {
-                sixel_allocator_free(frame->allocator, converted);
-                return status;
-            }
-
-            sixel_allocator_free(frame->allocator, frame->pixels.u8ptr);
-            frame->pixels.u8ptr = converted;
-            working_pixelformat = pixelformat;
+        converted = (unsigned char *)sixel_allocator_malloc(
+            frame->allocator,
+            target_bytes);
+        if (converted == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_frame_set_pixelformat: sixel_allocator_malloc() "
+                "failed.");
+            return SIXEL_BAD_ALLOCATION;
         }
+
+        status = sixel_pixelformat_convert(converted,
+                                           pixelformat,
+                                           pixels,
+                                           working_pixelformat,
+                                           frame->width,
+                                           frame->height,
+                                           frame->allocator);
+        if (SIXEL_FAILED(status)) {
+            sixel_allocator_free(frame->allocator, converted);
+            return status;
+        }
+
+        sixel_allocator_free(frame->allocator, frame->pixels.u8ptr);
+        frame->pixels.u8ptr = converted;
+        working_pixelformat = pixelformat;
     }
 
     sixel_frame_apply_pixelformat(frame, pixelformat);

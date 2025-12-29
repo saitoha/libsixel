@@ -5281,7 +5281,7 @@ sixel_colorspace_parallel_worker(tp_job_t job,
 }
 #endif
 
-static SIXELSTATUS
+SIXELSTATUS
 sixel_convert_pixels_via_linear_float(float *pixels,
                                       size_t size,
                                       int colorspace_src,

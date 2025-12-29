@@ -46,6 +46,12 @@
 #include "threading.h"
 #include "pixelformat.h"
 
+extern SIXELSTATUS sixel_convert_pixels_via_linear_float(
+    float *pixels,
+    size_t size,
+    int colorspace_src,
+    int colorspace_dst);
+
 #define SIXEL_OKLAB_AB_FLOAT_MIN (-0.5f)
 #define SIXEL_OKLAB_AB_FLOAT_MAX (0.5f)
 #define SIXEL_CIELAB_AB_FLOAT_MIN (-1.5f)
@@ -1723,71 +1729,6 @@ sixel_pixelformat_unpack_linearrgbfloat32(float *dst,
 
 
 static SIXELSTATUS
-sixel_pixelformat_pack_linearrgbfloat32(unsigned char *dst,
-                                        float const *src,
-                                        int dst_pixelformat,
-                                        int width,
-                                        int height)
-{
-    int y;
-    int x;
-    float r;
-    float g;
-    float b;
-    float encoded_r;
-    float encoded_g;
-    float encoded_b;
-    unsigned char *dst_pixel;
-    int depth;
-    SIXELSTATUS status;
-
-    depth = sixel_helper_compute_depth(dst_pixelformat);
-    if (depth <= 0) {
-        sixel_helper_set_additional_message(
-            "sixel_pixelformat_pack_linearrgbfloat32: invalid destination"
-            " pixelformat.");
-        return SIXEL_BAD_ARGUMENT;
-    }
-
-    status = SIXEL_OK;
-    for (y = 0; y < height; ++y) {
-        for (x = 0; x < width; ++x) {
-            r = src[(size_t)(y * width + x) * 3u];
-            g = src[(size_t)(y * width + x) * 3u + 1u];
-            b = src[(size_t)(y * width + x) * 3u + 2u];
-            encoded_r = sixel_pixelformat_linear_to_srgb(r);
-            encoded_g = sixel_pixelformat_linear_to_srgb(g);
-            encoded_b = sixel_pixelformat_linear_to_srgb(b);
-            dst_pixel = dst + ((size_t)(y * width + x)
-                               * (size_t)depth);
-            switch (dst_pixelformat) {
-            case SIXEL_PIXELFORMAT_LINEARRGBFLOAT32:
-                dst_pixel[0] = (unsigned char)0;
-                dst_pixel[1] = (unsigned char)0;
-                dst_pixel[2] = (unsigned char)0;
-                ((float *)(void *)dst_pixel)[0] = r;
-                ((float *)(void *)dst_pixel)[1] = g;
-                ((float *)(void *)dst_pixel)[2] = b;
-                break;
-            case SIXEL_PIXELFORMAT_RGBFLOAT32:
-                ((float *)(void *)dst_pixel)[0] = encoded_r;
-                ((float *)(void *)dst_pixel)[1] = encoded_g;
-                ((float *)(void *)dst_pixel)[2] = encoded_b;
-                break;
-            default:
-                sixel_helper_set_additional_message(
-                    "sixel_pixelformat_pack_linearrgbfloat32: unsupported"
-                    " destination pixelformat.");
-                return SIXEL_BAD_ARGUMENT;
-            }
-        }
-    }
-
-    return status;
-}
-
-
-static SIXELSTATUS
 sixel_pixelformat_linear_to_rgb888(unsigned char *dst,
                                    float const *src,
                                    int width,
@@ -1867,6 +1808,9 @@ sixel_pixelformat_convert(void *dst,
     sixel_allocator_t *fallback_allocator;
     unsigned char *dst_pixels;
     unsigned char const *src_pixels;
+    size_t linear_bytes;
+    int src_colorspace;
+    int dst_colorspace;
 
     if (dst == NULL || src == NULL) {
         sixel_helper_set_additional_message(
@@ -1888,6 +1832,7 @@ sixel_pixelformat_convert(void *dst,
         return SIXEL_BAD_ARGUMENT;
     }
 
+    status = SIXEL_OK;
     dst_pixels = (unsigned char *)dst;
     src_pixels = (unsigned char const *)src;
 
@@ -1912,72 +1857,90 @@ sixel_pixelformat_convert(void *dst,
 
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(dst_pixelformat) ||
             SIXEL_PIXELFORMAT_IS_FLOAT32(src_pixelformat)) {
-        if ((dst_pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 &&
-                    dst_pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) ||
-                (src_pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 &&
-                    src_pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32)) {
-            sixel_helper_set_additional_message(
-                "sixel_pixelformat_convert: only RGB/linear float formats "
-                "are supported.");
-            return SIXEL_BAD_ARGUMENT;
-        }
+        src_colorspace = sixel_pixelformat_colorspace_from_format(
+            src_pixelformat);
+        dst_colorspace = sixel_pixelformat_colorspace_from_format(
+            dst_pixelformat);
+        linear_bytes = pixel_total * (size_t)3 * sizeof(float);
 
-        hub_linear = (float *)sixel_pixelformat_alloc(
-            fallback_allocator,
-            pixel_total * (size_t)3 * sizeof(float));
+        hub_linear = (float *)sixel_pixelformat_alloc(fallback_allocator,
+                                                      linear_bytes);
         if (hub_linear == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_pixelformat_convert: allocation failure.");
             return SIXEL_BAD_ALLOCATION;
         }
 
-        status = sixel_pixelformat_unpack_linearrgbfloat32(
-            hub_linear,
-            src_pixels,
-            src_pixelformat,
-            width,
-            height);
-        if (SIXEL_FAILED(status)) {
-            sixel_allocator_free(fallback_allocator, hub_linear);
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(src_pixelformat)) {
+            memcpy(hub_linear, src_pixels, linear_bytes);
+            if (src_colorspace != SIXEL_COLORSPACE_LINEAR) {
+                status = sixel_convert_pixels_via_linear_float(
+                    hub_linear,
+                    linear_bytes,
+                    src_colorspace,
+                    SIXEL_COLORSPACE_LINEAR);
+                if (SIXEL_FAILED(status)) {
+                    sixel_pixelformat_release(fallback_allocator, hub_linear);
+                    return status;
+                }
+            }
+        } else {
+            status = sixel_pixelformat_unpack_linearrgbfloat32(
+                hub_linear,
+                src_pixels,
+                src_pixelformat,
+                width,
+                height);
+            if (SIXEL_FAILED(status)) {
+                sixel_pixelformat_release(fallback_allocator, hub_linear);
+                return status;
+            }
+        }
+
+        if (SIXEL_PIXELFORMAT_IS_FLOAT32(dst_pixelformat)) {
+            if (dst_colorspace != SIXEL_COLORSPACE_LINEAR) {
+                status = sixel_convert_pixels_via_linear_float(
+                    hub_linear,
+                    linear_bytes,
+                    SIXEL_COLORSPACE_LINEAR,
+                    dst_colorspace);
+                if (SIXEL_FAILED(status)) {
+                    sixel_pixelformat_release(fallback_allocator, hub_linear);
+                    return status;
+                }
+            }
+
+            memcpy(dst_pixels, hub_linear, linear_bytes);
+            sixel_pixelformat_release(fallback_allocator, hub_linear);
             return status;
         }
 
-        if (dst_pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32 ||
-                dst_pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
-            status = sixel_pixelformat_pack_linearrgbfloat32(
-                dst_pixels,
-                hub_linear,
-                dst_pixelformat,
-                width,
-                height);
-        } else {
-            hub_rgb = (unsigned char *)sixel_pixelformat_alloc(
-                fallback_allocator,
-                pixel_total * (size_t)3);
-            if (hub_rgb == NULL) {
-                sixel_helper_set_additional_message(
-                    "sixel_pixelformat_convert: allocation failure.");
-                sixel_pixelformat_release(fallback_allocator, hub_linear);
-                return SIXEL_BAD_ALLOCATION;
-            }
-
-            status = sixel_pixelformat_linear_to_rgb888(hub_rgb,
-                                                        hub_linear,
-                                                        width,
-                                                        height);
-            if (SIXEL_FAILED(status)) {
-                sixel_pixelformat_release(fallback_allocator, hub_linear);
-                sixel_pixelformat_release(fallback_allocator, hub_rgb);
-                return status;
-            }
-
-            status = sixel_pixelformat_pack_rgb888(dst_pixels,
-                                                   hub_rgb,
-                                                   dst_pixelformat,
-                                                   width,
-                                                   height);
-            sixel_pixelformat_release(fallback_allocator, hub_rgb);
+        hub_rgb = (unsigned char *)sixel_pixelformat_alloc(
+            fallback_allocator,
+            pixel_total * (size_t)3);
+        if (hub_rgb == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_pixelformat_convert: allocation failure.");
+            sixel_pixelformat_release(fallback_allocator, hub_linear);
+            return SIXEL_BAD_ALLOCATION;
         }
+
+        status = sixel_pixelformat_linear_to_rgb888(hub_rgb,
+                                                    hub_linear,
+                                                    width,
+                                                    height);
+        if (SIXEL_FAILED(status)) {
+            sixel_pixelformat_release(fallback_allocator, hub_linear);
+            sixel_pixelformat_release(fallback_allocator, hub_rgb);
+            return status;
+        }
+
+        status = sixel_pixelformat_pack_rgb888(dst_pixels,
+                                               hub_rgb,
+                                               dst_pixelformat,
+                                               width,
+                                               height);
+        sixel_pixelformat_release(fallback_allocator, hub_rgb);
         sixel_pixelformat_release(fallback_allocator, hub_linear);
         return status;
     }
