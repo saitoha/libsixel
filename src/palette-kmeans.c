@@ -161,7 +161,7 @@ sixel_kmeans_resolve_init_type(sixel_kmeans_init_type init_type)
     return SIXEL_PALETTE_KMEANS_INIT_NONE;
 }
 
-sixel_kmeans_init_type
+SIXELAPI sixel_kmeans_init_type
 sixel_get_kmeans_init_type(void)
 {
     sixel_kmeans_init_type parsed;

@@ -72,7 +72,7 @@ sixel_palette_kmeans_iter_max(void);
 double
 sixel_palette_kmeans_threshold(void);
 
-sixel_kmeans_init_type
+SIXELAPI sixel_kmeans_init_type
 sixel_get_kmeans_init_type(void);
 
 SIXELSTATUS
