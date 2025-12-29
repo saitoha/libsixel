@@ -52,6 +52,9 @@ CLI_TESTS = cli/t/test_0001_01_invalid_positional.t \
        cli/t/test_0029_sixel2png_invalid_decoder_value.t \
        cli/t/test_0030_sixel2png_default_output.t
 
+CORE_TESTS = probe/test_probe_parse.t \
+       palette/test_palette_kmeans_init.t
+
 PYTHON_TESTS = python/t/test_0001_python_bindings.t \
        python/t/test_0002_python_api_formats.t \
        python/t/test_0003_python_api_options.t \
@@ -81,12 +84,14 @@ FILTER_TEST_BINARIES = \
        filter/filter_dither_tests \
        filter/filter_encode_tests
 
-TESTS = $(CLI_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
-COPY_TESTS = $(CLI_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
+TESTS = $(CLI_TESTS) $(CORE_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
+COPY_TESTS = $(CLI_TESTS) $(CORE_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
 check_PROGRAMS = \
     cli/test_0023_cli_token_is_known_option \
     cli/test_0024_cli_option_requires_argument \
-    cli/test_0025_cli_guard_missing_argument
+    cli/test_0025_cli_guard_missing_argument \
+    probe/test_probe_parse \
+    palette/test_palette_kmeans_init
 
 cli_test_0023_cli_token_is_known_option_SOURCES = \
     cli/test_0023_cli_token_is_known_option.c \
@@ -117,6 +122,22 @@ cli_test_0025_cli_guard_missing_argument_CPPFLAGS = $(AM_CPPFLAGS) \
     -I$(top_srcdir)/converters
 cli_test_0025_cli_guard_missing_argument_LDADD = \
     $(top_builddir)/src/libsixel.la
+
+probe_test_probe_parse_SOURCES = \
+    probe/test_probe_parse.c
+probe_test_probe_parse_CPPFLAGS = $(AM_CPPFLAGS) \
+    -I$(top_builddir) -I$(top_builddir)/include \
+    -I$(top_srcdir) -I$(top_srcdir)/include \
+    -I$(top_srcdir)/src
+probe_test_probe_parse_LDADD = $(top_builddir)/src/libsixel.la
+
+palette_test_palette_kmeans_init_SOURCES = \
+    palette/test_palette_kmeans_init.c
+palette_test_palette_kmeans_init_CPPFLAGS = $(AM_CPPFLAGS) \
+    -I$(top_builddir) -I$(top_builddir)/include \
+    -I$(top_srcdir) -I$(top_srcdir)/include \
+    -I$(top_srcdir)/src
+palette_test_palette_kmeans_init_LDADD = $(top_builddir)/src/libsixel.la
 
 if ENABLE_GDK_PIXBUF_LOADER
 TESTS += gdk-pixbuf-loader/test-gdk-pixbuf-loader \
