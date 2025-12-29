@@ -1910,10 +1910,18 @@ sixel_pixelformat_convert(void *dst,
     hub_linear = NULL;
     fallback_allocator = allocator;
 
-    if (dst_pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32 ||
-            dst_pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32 ||
-            src_pixelformat == SIXEL_PIXELFORMAT_RGBFLOAT32 ||
-            src_pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) {
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(dst_pixelformat) ||
+            SIXEL_PIXELFORMAT_IS_FLOAT32(src_pixelformat)) {
+        if ((dst_pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 &&
+                    dst_pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32) ||
+                (src_pixelformat != SIXEL_PIXELFORMAT_RGBFLOAT32 &&
+                    src_pixelformat != SIXEL_PIXELFORMAT_LINEARRGBFLOAT32)) {
+            sixel_helper_set_additional_message(
+                "sixel_pixelformat_convert: only RGB/linear float formats "
+                "are supported.");
+            return SIXEL_BAD_ARGUMENT;
+        }
+
         hub_linear = (float *)sixel_pixelformat_alloc(
             fallback_allocator,
             pixel_total * (size_t)3 * sizeof(float));
