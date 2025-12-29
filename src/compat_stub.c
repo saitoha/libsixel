@@ -48,13 +48,21 @@
 #endif
 
 /* STDC_HEADERS */
-#include <errno.h>
-#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
-#include <time.h>
 
+#if HAVE_ERRNO_H
+# include <errno.h>
+#endif
+#if HAVE_STDARG_H
+# include <stdarg.h>
+#endif
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif
+#if HAVE_TIME_H
+# include <time.h>
+#endif
 #if HAVE_STRING_H
 # include <string.h>
 #endif
@@ -876,28 +884,36 @@ sixel_compat_vfprintf(FILE *stream, const char *format, va_list args)
      * point as vfprintf_s (no leading underscore), while Annex K platforms
      * also expose the same name.
      */
-#if defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
-#endif
+# if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
+#  if defined(__GNUC__) && !defined(__PCC__)
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#  endif
+# endif
     written = vfprintf_s(stream, format, args);
-#if defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
+# if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
+#  if defined(__GNUC__) && !defined(__PCC__)
+#   pragma GCC diagnostic pop
+#  endif
+# endif
 #else
     /*
      * POSIX vfprintf emits the same warning when the format string is
      * stored outside a literal. Limit the suppression to this narrow call
      * site to keep diagnostics useful elsewhere.
      */
-#if defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
-#endif
+# if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
+#  if defined(__GNUC__) && !defined(__PCC__)
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#  endif
+# endif
     written = vfprintf(stream, format, args);
-#if defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
+# if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
+#  if defined(__GNUC__) && !defined(__PCC__)
+#   pragma GCC diagnostic pop
+#  endif
+# endif
 #endif
 
     return written;
@@ -918,28 +934,36 @@ sixel_compat_vsscanf(const char *buffer, const char *format, va_list args)
      * -Wformat-nonliteral warning in this narrow scope while keeping the
      * safer CRT entry point.
      */
-#if defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
-#endif
+# if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
+#  if defined(__GNUC__) && !defined(__PCC__)
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#  endif
+# endif
     return vsscanf_s(buffer, format, args);
-#if defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
+# if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
+#  if defined(__GNUC__) && !defined(__PCC__)
+#   pragma GCC diagnostic pop
+#  endif
+# endif
 #else
     /*
      * POSIX vsscanf also triggers -Wformat-nonliteral when the format is
      * kept in a variable. The format string is verified by callers, so
      * temporarily silence the warning only around this call.
      */
-#if defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
-#endif
+# if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
+#  if defined(__GNUC__) && !defined(__PCC__)
+#   pragma GCC diagnostic push
+#   pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#  endif
+# endif
     return vsscanf(buffer, format, args);
-#if defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
+# if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
+#  if defined(__GNUC__) && !defined(__PCC__)
+#   pragma GCC diagnostic pop
+#  endif
+# endif
 #endif
 }
 

@@ -1966,17 +1966,11 @@ end:
 }
 
 static SIXELSTATUS
-sixel_palette_heckbert_colormap(unsigned char const *data,
+sixel_palette_heckbert_colormap(sixel_palette_t *palette,
+                                unsigned char const *data,
                                 unsigned int length,
                                 unsigned int depth,
-                                unsigned int reqColors,
-                                int methodForLargest,
-                                int methodForRep,
-                                int qualityMode,
-                                int force_palette,
                                 int use_reversible,
-                                int final_merge_mode,
-                                int lut_policy,
                                 tupletable2 *colormapP,
                                 unsigned int *origcolors,
                                 unsigned int pixel_stride,
@@ -2010,9 +2004,9 @@ sixel_palette_heckbert_colormap(unsigned char const *data,
                                        depth,
                                        pixel_stride,
                                        pixelformat,
-                                       qualityMode,
+                                       palette->quality_mode,
                                        use_reversible,
-                                       lut_policy,
+                                       palette->lut_policy,
                                        &colorfreqtable,
                                        allocator);
     if (SIXEL_FAILED(status)) {
@@ -2022,10 +2016,10 @@ sixel_palette_heckbert_colormap(unsigned char const *data,
         *origcolors = colorfreqtable.size;
     }
 
-    if (colorfreqtable.size <= reqColors) {
+    if (colorfreqtable.size <= palette->requested_colors) {
         sixel_debugf("Image already has few enough colors (<=%u). Keeping "
                      "same colors.",
-                     reqColors);
+                     palette->requested_colors);
         colormapP->size = colorfreqtable.size;
         status = alloctupletable(&colormapP->table,
                                  depth,
@@ -2048,14 +2042,14 @@ sixel_palette_heckbert_colormap(unsigned char const *data,
             }
         }
     } else {
-        sixel_debugf("choosing %u colors...", reqColors);
+        sixel_debugf("choosing %u colors...", palette->requested_colors);
         status = mediancut(colorfreqtable,
                            depth,
-                           reqColors,
-                           methodForLargest,
-                           methodForRep,
+                           palette->requested_colors,
+                           palette->method_for_largest,
+                           palette->method_for_rep,
                            use_reversible,
-                           final_merge_mode,
+                           palette->final_merge_mode,
                            pixelformat,
                            colormapP,
                            allocator,
@@ -2072,10 +2066,10 @@ sixel_palette_heckbert_colormap(unsigned char const *data,
         }
         sixel_debugf("%u colors are chosen.", colorfreqtable.size);
     }
-    if (force_palette) {
+    if (palette->force_palette) {
         status = force_palette_completion(colormapP,
                                           depth,
-                                          reqColors,
+                                          palette->requested_colors,
                                           colorfreqtable,
                                           allocator);
         if (SIXEL_FAILED(status)) {
@@ -2196,17 +2190,11 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
     float_entries = NULL;
     float_stride = 0;
     reversible_for_quantizer = palette->use_reversible;
-    status = sixel_palette_heckbert_colormap(data,
+    status = sixel_palette_heckbert_colormap(palette,
+                                             data,
                                              length,
                                              depth,
-                                             palette->requested_colors,
-                                             palette->method_for_largest,
-                                             palette->method_for_rep,
-                                             palette->quality_mode,
-                                             palette->force_palette,
                                              reversible_for_quantizer,
-                                             palette->final_merge_mode,
-                                             palette->lut_policy,
                                              &colormap,
                                              &origcolors,
                                              pixel_stride,
