@@ -262,7 +262,13 @@ gif_init_frame(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+        /*
+         * sixel_frame_set_pixelformat may replace the pixel buffer, so
+         * refresh the pointer before releasing and reallocating it.
+         */
+        pixels = sixel_frame_get_pixels(frame);
         sixel_allocator_free(allocator, pixels);
+        sixel_frame_set_pixels(frame, NULL);
         frame_size = (size_t)frame_width * (size_t)frame_height;
         pixels = (unsigned char *)sixel_allocator_malloc(
             allocator,
@@ -310,7 +316,13 @@ gif_init_frame(
             goto end;
         }
         /* TODO: Allocated memory should be reused */
+        /*
+         * sixel_frame_set_pixelformat may replace the pixel buffer, so
+         * refresh the pointer before releasing and reallocating it.
+         */
+        pixels = sixel_frame_get_pixels(frame);
         sixel_allocator_free(allocator, pixels);
+        sixel_frame_set_pixels(frame, NULL);
         frame_size = (size_t)pg->w * (size_t)pg->h * 3;
         pixels = (unsigned char *)sixel_allocator_malloc(
             allocator,

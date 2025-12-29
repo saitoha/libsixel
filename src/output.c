@@ -91,8 +91,6 @@ sixel_output_new(
     (*output)->skip_dcs_envelope = 0;
     (*output)->skip_header = 0;
     (*output)->palette_type = SIXEL_PALETTETYPE_AUTO;
-    (*output)->colorspace = SIXEL_COLORSPACE_GAMMA;
-    (*output)->source_colorspace = SIXEL_COLORSPACE_GAMMA;
     (*output)->pixelformat = SIXEL_PIXELFORMAT_RGB888;
     (*output)->fn_write = fn_write;
     (*output)->save_pixel = 0;
@@ -251,6 +249,7 @@ sixel_output_convert_colorspace(sixel_output_t *output,
                                 size_t size)
 {
     SIXELSTATUS status = SIXEL_FALSE;
+    int colorspace;
 
     if (output == NULL || pixels == NULL) {
         sixel_helper_set_additional_message(
@@ -258,16 +257,16 @@ sixel_output_convert_colorspace(sixel_output_t *output,
         return SIXEL_BAD_ARGUMENT;
     }
 
+    colorspace = sixel_pixelformat_colorspace_from_format(
+        output->pixelformat);
     status = sixel_helper_convert_colorspace(pixels,
                                              size,
                                              output->pixelformat,
-                                             output->source_colorspace,
-                                             output->colorspace);
+                                             colorspace,
+                                             colorspace);
     if (SIXEL_FAILED(status)) {
         return status;
     }
-
-    output->source_colorspace = output->colorspace;
 
     return SIXEL_OK;
 }
