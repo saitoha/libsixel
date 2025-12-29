@@ -1147,9 +1147,7 @@ sixel_encoder_capture_quantized(sixel_encoder_t *encoder,
                                 size_t size,
                                 int width,
                                 int height,
-                                int pixelformat,
-                                int source_colorspace,
-                                int colorspace)
+                                int pixelformat)
 {
     SIXELSTATUS status;
     int ncolors;
@@ -1289,14 +1287,6 @@ sixel_encoder_capture_quantized(sixel_encoder_t *encoder,
                 memcpy(encoder->capture_palette,
                        palette_copy,
                        palette_bytes);
-                if (source_colorspace != colorspace) {
-                    (void)sixel_helper_convert_colorspace(
-                        encoder->capture_palette,
-                        palette_bytes,
-                        SIXEL_PIXELFORMAT_RGB888,
-                        source_colorspace,
-                        colorspace);
-                }
             }
             if (palette_copy != NULL) {
                 sixel_allocator_free(encoder->allocator, palette_copy);
@@ -1311,7 +1301,6 @@ sixel_encoder_capture_quantized(sixel_encoder_t *encoder,
     } else {
         encoder->capture_pixelformat = pixelformat;
     }
-    encoder->capture_colorspace = colorspace;
     encoder->capture_palette_size = palette_bytes;
     encoder->capture_ncolors = ncolors;
     encoder->capture_valid = 1;
@@ -4471,9 +4460,7 @@ sixel_encoder_output_without_macro(
                                                  size,
                                                  width,
                                                  height,
-                                                 pixelformat,
-                                                 frame_colorspace,
-                                                 frame_colorspace);
+                                                 pixelformat);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -5672,7 +5659,6 @@ sixel_encoder_new(
     (*ppencoder)->capture_width         = 0;
     (*ppencoder)->capture_height        = 0;
     (*ppencoder)->capture_pixelformat   = SIXEL_PIXELFORMAT_RGB888;
-    (*ppencoder)->capture_colorspace    = SIXEL_COLORSPACE_GAMMA;
     (*ppencoder)->capture_ncolors       = 0;
     (*ppencoder)->capture_valid         = 0;
     (*ppencoder)->capture_source_frame  = NULL;
@@ -9258,12 +9244,6 @@ sixel_encoder_copy_quantized_frame(
 
     pixels = NULL;
     palette = NULL;
-    /*
-     * Capture colorspace must be preserved for assessment consumers.
-     * Keep access encapsulated via the public setter to avoid
-     * depending on frame internals.
-     */
-    sixel_frame_set_colorspace(frame, encoder->capture_colorspace);
     *ppframe = frame;
     return SIXEL_OK;
 
