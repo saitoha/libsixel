@@ -98,6 +98,7 @@ src/allocator.c
 src/tty.c
 src/threading.c
 src/threadpool.c
+src/sixel_decode_rgba.c
 src/quicklook_thumbnailing.m
 src/clipboard_macos.m
 src/clipboard_carbon.c
@@ -221,6 +222,7 @@ completion_utils.h
 completion_embed.h
 getopt_stub.h
 malloc_stub.h
+sixel_decode_rgba.h
 "
 
 header_units="
@@ -302,6 +304,7 @@ src/stdio_stub.h
 src/rgblookup.h
 src/lso2.h
 src/compat_stub.h
+src/sixel_decode_rgba.h
 converters/aborttrace.h
 converters/cli.h
 converters/completion_utils.h
