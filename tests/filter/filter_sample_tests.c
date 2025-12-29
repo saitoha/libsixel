@@ -81,11 +81,11 @@ test_sample_stride_override(void)
     sixel_filter_bind_input(filter,
                             &input_frame,
                             input_frame->pixelformat,
-                            input_frame->colorspace);
+                            sixel_frame_get_colorspace(input_frame));
     sixel_filter_bind_output(filter,
                              &sample_frame,
                              input_frame->pixelformat,
-                             input_frame->colorspace);
+                             sixel_frame_get_colorspace(input_frame));
     sixel_filter_set_progress(filter, progress_cb, &progress, 1);
 
     expected_first = input_frame->pixels.u8ptr[0];
@@ -192,11 +192,11 @@ test_sample_respects_clip_region(void)
     sixel_filter_bind_input(filter,
                             &input_frame,
                             input_frame->pixelformat,
-                            input_frame->colorspace);
+                            sixel_frame_get_colorspace(input_frame));
     sixel_filter_bind_output(filter,
                              &sample_frame,
                              input_frame->pixelformat,
-                             input_frame->colorspace);
+                             sixel_frame_get_colorspace(input_frame));
     sixel_filter_set_progress(filter, progress_cb, &progress, 1);
 
     status = sixel_filter_run(filter, allocator, NULL);
