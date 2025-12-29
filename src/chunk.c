@@ -199,8 +199,10 @@ end:
 
 
 #if HAVE_DIAGNOSTIC_SIGN_CONVERSION
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wsign-conversion"
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wsign-conversion"
+# endif
 #endif
 static int
 wait_file(int fd, int usec)
@@ -229,7 +231,9 @@ wait_file(int fd, int usec)
     return (0);
 }
 #if HAVE_DIAGNOSTIC_SIGN_CONVERSION
-# pragma GCC diagnostic pop
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic pop
+# endif
 #endif
 
 static int

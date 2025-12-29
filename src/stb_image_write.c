@@ -40,7 +40,7 @@
 # pragma clang diagnostic ignored "-Wall"
 # pragma clang diagnostic ignored "-Wextra"
 # pragma clang diagnostic ignored "-Wpedantic"
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) && !defined(__PCC__)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wall"
 # pragma GCC diagnostic ignored "-Wextra"
@@ -52,38 +52,58 @@
  * upstream sources.
  */
 #if HAVE_DIAGNOSTIC_SIGN_CONVERSION
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wsign-conversion"
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wsign-conversion"
+# endif
 #endif
 #if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wstrict-overflow"
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wstrict-overflow"
+# endif
 #endif
 #if HAVE_DIAGNOSTIC_SWITCH_DEFAULT
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wswitch-default"
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wswitch-default"
+# endif
 #endif
 #if HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdouble-promotion"
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdouble-promotion"
+# endif
 #endif
 #include "stb_image_write.h"
 #if HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
-# pragma GCC diagnostic pop
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic pop
+# endif
 #endif
 #if HAVE_DIAGNOSTIC_SWITCH_DEFAULT
-# pragma GCC diagnostic pop
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic pop
+# endif
 #endif
 #if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
-# pragma GCC diagnostic pop
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic pop
+# endif
 #endif
 #if HAVE_DIAGNOSTIC_SIGN_CONVERSION
-# pragma GCC diagnostic pop
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic pop
+# endif
 #endif
 #if defined(__clang__)
-# pragma clang diagnostic pop
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma clang diagnostic pop
+# endif
 #elif defined(__GNUC__)
-# pragma GCC diagnostic pop
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic pop
+# endif
 #endif
 
 /* emacs Local Variables:      */

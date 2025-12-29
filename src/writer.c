@@ -23,7 +23,7 @@
  */
 
 #if defined(HAVE_CONFIG_H)
-#include "config.h"
+# include "config.h"
 #endif
 
 /* STDC_HEADERS */
@@ -56,7 +56,7 @@
 #  pragma clang diagnostic ignored "-Wall"
 #  pragma clang diagnostic ignored "-Wextra"
 #  pragma clang diagnostic ignored "-Wpedantic"
-# elif defined(__GNUC__)
+# elif defined(__GNUC__) && !defined(__PCC__)
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wall"
 #  pragma GCC diagnostic ignored "-Wextra"
@@ -66,7 +66,7 @@
 # include "stb_image_write.h"
 # if defined(__clang__)
 #  pragma clang diagnostic pop
-# elif defined(__GNUC__)
+# elif defined(__GNUC__) && !defined(__PCC__)
 #  pragma GCC diagnostic pop
 # endif
 #endif  /* HAVE_LIBPNG */

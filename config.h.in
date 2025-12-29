@@ -27,6 +27,9 @@
 /* Define if __builtin_cpu_supports is available */
 #undef HAVE_BUILTIN_CPU_SUPPORTS
 
+/* Define if __builtin_prefetch is available */
+#undef HAVE_BUILTIN_PREFETCH
+
 /* Define to 1 if you have the 'calloc' function. */
 #undef HAVE_CALLOC
 

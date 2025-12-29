@@ -162,7 +162,7 @@
 # endif
 #endif
 
-#if defined(__GNUC__) && !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__) && !defined(__PCC__)
 # pragma GCC diagnostic push
 # pragma GCC diagnostic ignored "-Wpsabi"
 # undef SIXEL_USE_AVX
@@ -708,7 +708,7 @@ scale_without_resampling_float32(
 
 typedef double (*resample_fn_t)(double const d);
 
-#if defined(__GNUC__) && !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__) && !defined(__PCC__)
 #pragma GCC diagnostic push
 /*
  * GCC emits a -Wpsabi note for __m512 parameters because the calling
@@ -1238,8 +1238,8 @@ scale_vertical_row(
     }
 }
 
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
+#if defined(__GNUC__) && !defined(__clang__) && !defined(__PCC__)
+# pragma GCC diagnostic pop
 #endif
 
 static void
@@ -2621,7 +2621,7 @@ end:
 
 #endif /* HAVE_TESTS */
 
-#if defined(__GNUC__) && !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__) && !defined(__PCC__)
 # pragma GCC diagnostic pop
 #endif
 

@@ -655,7 +655,7 @@ sixel_lookup_vpte_prefetch_line_float32(double *distances,
     int skip_line;
     char message[64];
 #endif
-#if defined(__GNUC__)
+#if HAVE_BUILTIN_PREFETCH
     __builtin_prefetch(distances + offset, 0, 3);
     __builtin_prefetch(sources + offset, 0, 3);
 #else

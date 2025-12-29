@@ -1071,8 +1071,10 @@ sixel_frame_apply_pixelformat(sixel_frame_t *frame, int pixelformat)
 }
 
 #if HAVE_DIAGNOSTIC_UNUSED_FUNCTION
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wunused-function"
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wunused-function"
+# endif
 #endif
 
 /*
@@ -1238,7 +1240,9 @@ sixel_frame_promote_to_float32(sixel_frame_t *frame)
 }
 
 #if HAVE_DIAGNOSTIC_UNUSED_FUNCTION
-# pragma GCC diagnostic pop
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic pop
+# endif
 #endif
 
 /* resize a frame to given size with specified resampling filter */

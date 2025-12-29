@@ -90,56 +90,87 @@ stbi_free(void *p)
 #endif
 #define STBI_NO_GIF
 #define STBI_NO_PNM
+#if !defined(HAVE_EMMINTRIN_H)
+# define STBI_NO_SIMD
+#endif
 
 #if HAVE_DIAGNOSTIC_SIGN_CONVERSION
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wsign-conversion"
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wsign-conversion"
+# endif
 #endif
 #if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wstrict-overflow"
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wstrict-overflow"
+# endif
 #endif
 #if HAVE_DIAGNOSTIC_SWITCH_DEFAULT
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wswitch-default"
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wswitch-default"
+# endif
 #endif
 #if HAVE_DIAGNOSTIC_SHADOW
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wshadow"
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wshadow"
+# endif
 #endif
 #if HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdouble-promotion"
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdouble-promotion"
+# endif
 #endif
 #if HAVE_DIAGNOSTIC_UNUSED_FUNCTION
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wunused-function"
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wunused-function"
+# endif
 #endif
 #if HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+# endif
 #endif
 #include "stb_image.h"
 #if HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE
-# pragma GCC diagnostic pop
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic pop
+# endif
 #endif
 #if HAVE_DIAGNOSTIC_UNUSED_FUNCTION
-# pragma GCC diagnostic pop
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic pop
+# endif
 #endif
 #if HAVE_DIAGNOSTIC_DOUBLE_PROMOTION
-# pragma GCC diagnostic pop
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic pop
+# endif
 #endif
 #if HAVE_DIAGNOSTIC_SHADOW
-# pragma GCC diagnostic pop
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic pop
+# endif
 #endif
 #if HAVE_DIAGNOSTIC_SWITCH_DEFAULT
-# pragma GCC diagnostic pop
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic pop
+# endif
 #endif
 #if HAVE_DIAGNOSTIC_STRICT_OVERFLOW
-# pragma GCC diagnostic pop
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic pop
+# endif
 #endif
 #if HAVE_DIAGNOSTIC_SIGN_CONVERSION
-# pragma GCC diagnostic pop
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic pop
+# endif
 #endif
 
 static SIXELSTATUS

@@ -1017,34 +1017,26 @@ sixel_encoder_log_stage(sixel_encoder_t *encoder,
     }
 
     message[0] = '\0';
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat-nonliteral"
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
+# if defined(__clang__)
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wformat-nonliteral"
+# elif defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-nonliteral"
+# endif
 #endif
     va_start(args, fmt);
     if (fmt != NULL) {
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat-nonliteral"
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
-#endif
         (void)vsnprintf(message, sizeof(message), fmt, args);
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
     }
     va_end(args);
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#elif defined(__GNUC__)
-#pragma GCC diagnostic pop
+#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
+# if defined(__clang__)
+#  pragma clang diagnostic pop
+# elif defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic pop
+# endif
 #endif
 
     sixel_logger_logf(logger,
