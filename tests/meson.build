@@ -32,6 +32,19 @@ foreach helper_name, helper_sources : cli_helper_sources
     install: false)}
 endforeach
 
+core_helper_sources = {
+  'test_palette_kmeans_init': ['palette/test_palette_kmeans_init.c'],
+  'test_probe_parse': ['probe/test_probe_parse.c'],
+}
+
+core_helper_targets = {}
+foreach helper_name, helper_sources : core_helper_sources
+  core_helper_targets += {helper_name: executable(helper_name, helper_sources,
+    include_directories: [project_inc, include_directories('..')],
+    dependencies: [libsixel_dep],
+    install: false)}
+endforeach
+
 if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
   # Ensure Windows-style runners (including MSYS2) locate the freshly built
   # DLLs when executing the converter TAP suite. Without these PATH entries
@@ -95,6 +108,12 @@ cli_depends = {
     [cli_helper_targets['test_0025_cli_guard_missing_argument']],
 }
 
+core_depends = {
+  'palette/test_palette_kmeans_init.t':
+    [core_helper_targets['test_palette_kmeans_init']],
+  'probe/test_probe_parse.t': [core_helper_targets['test_probe_parse']],
+}
+
 # Match autotools TAP timeout to keep CI behavior consistent (seconds per file).
 foreach t : cli_tests
   test(t, sh,
@@ -103,6 +122,16 @@ foreach t : cli_tests
     env: env,
     depends: cli_depends.get(t, []),
     timeout: 300,
+    suite: ['tap'])
+endforeach
+
+foreach t : ['palette/test_palette_kmeans_init.t', 'probe/test_probe_parse.t']
+  test(t, sh,
+    args: [meson.current_source_dir() / t],
+    protocol: 'tap',
+    env: env,
+    depends: core_depends.get(t, []),
+    timeout: 120,
     suite: ['tap'])
 endforeach
 
