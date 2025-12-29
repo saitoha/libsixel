@@ -1201,7 +1201,8 @@ AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_builddir) -I$(top_builddir)/include \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \
-       -I$(top_srcdir)/tests/filter
+       -I$(top_srcdir)/tests/filter \
+       -I$(top_srcdir)
 
 @WANT_AMALGAMATED_TOOLS_FALSE@TESTS_COMMON_CFLAGS_VAL = $(AM_CFLAGS) \
 @WANT_AMALGAMATED_TOOLS_FALSE@        $(MAYBE_COVERAGE)
