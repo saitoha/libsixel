@@ -569,43 +569,71 @@ sixel_decoder_parallel_worker(void *arg)
     stop = context->input + context->end_offset;
     limit = context->input + context->length;
     while (cursor < limit) {
+        /*
+         * Hot path prefers raster tokens ('?' - '~') to reduce branching.
+         * Control and attribute tokens fall back to the slow path below.
+         */
         ch = *cursor;
 
-        if (ch < 0x20) {
-            if (ch == 0x18 || ch == 0x1a) {
-                fallback = 1;
-                status = (-1);
+        /*
+         * Branch ordering follows observed frequency:
+         *   raster ('?' - '~') > '#' > '!' > '$' > '-'
+         *   >>> control (< 0x20) > '"'.
+         */
+        if (ch >= '?' && ch <= '~') {
+            bits = ch - '?';
+            for (i = 0; i < 6; ++i) {
+                if ((bits & (1 << i)) != 0) {
+                    if (pos_x + repeat > width ||
+                            row_offset + pos_y + i >= height) {
+                        fallback = 1;
+                        status = (-1);
+                        break;
+                    }
+                    chunk_cursor = sixel_local_buffer_reserve_row(
+                        &local_buffer, pos_y + i);
+                    if (chunk_cursor == NULL) {
+                        fallback = 1;
+                        status = (-1);
+                        break;
+                    }
+
+                    row_base = (pos_y + i - chunk_cursor->start_row) *
+                        width + pos_x;
+                    relative = (pos_y + i) * width + pos_x;
+
+                    if (pixel_size == 1 && repeat > 3) {
+                        memset(chunk_cursor->data + (size_t)row_base,
+                               color_index,
+                               repeat);
+                    } else {
+                        for (r = 0; r < repeat; ++r) {
+                            sixel_decoder_parallel_store_pixel(
+                                chunk_cursor->data +
+                                (size_t)(row_base + r) *
+                                (size_t)pixel_size,
+                                depth,
+                                color_index,
+                                context->palette);
+                        }
+                    }
+                    written += repeat;
+                    if (min_relative < 0 || relative < min_relative) {
+                        min_relative = relative;
+                    }
+                    if (max_relative < relative + repeat - 1) {
+                        max_relative = relative + repeat - 1;
+                    }
+                }
+            }
+
+            if (fallback) {
                 break;
             }
+
             cursor += 1;
-            if (ch == 0x1b && cursor < limit && *cursor == '\\') {
-                status = (0);
-                break;
-            }
-            continue;
-        }
-
-        if (ch == '"') {
-            fallback = 1;
-            status = (-1);
-            break;
-        }
-
-        if (ch == '!') {
-            int value;
-            unsigned char *p;
-
-            value = 0;
-            p = cursor + 1;
-            while (p < limit && *p >= '0' && *p <= '9') {
-                value = value * 10 + (*p - '0');
-                p += 1;
-            }
-            if (value <= 0) {
-                value = 1;
-            }
-            repeat = value;
-            cursor = p;
+            pos_x += repeat;
+            repeat = 1;
             continue;
         }
 
@@ -635,6 +663,24 @@ sixel_decoder_parallel_worker(void *arg)
             continue;
         }
 
+        if (ch == '!') {
+            int value;
+            unsigned char *p;
+
+            value = 0;
+            p = cursor + 1;
+            while (p < limit && *p >= '0' && *p <= '9') {
+                value = value * 10 + (*p - '0');
+                p += 1;
+            }
+            if (value <= 0) {
+                value = 1;
+            }
+            repeat = value;
+            cursor = p;
+            continue;
+        }
+
         if (ch == '$') {
             cursor += 1;
             pos_x = 0;
@@ -658,64 +704,27 @@ sixel_decoder_parallel_worker(void *arg)
             continue;
         }
 
-        if (ch < '?' || ch > '~') {
+        if (ch < 0x20) {
+            if (ch == 0x18 || ch == 0x1a) {
+                fallback = 1;
+                status = (-1);
+                break;
+            }
             cursor += 1;
+            if (ch == 0x1b && cursor < limit && *cursor == '\\') {
+                status = (0);
+                break;
+            }
             continue;
         }
 
-        bits = ch - '?';
-        for (i = 0; i < 6; ++i) {
-            if ((bits & (1 << i)) != 0) {
-                if (pos_x + repeat > width ||
-                        row_offset + pos_y + i >= height) {
-                    fallback = 1;
-                    status = (-1);
-                    break;
-                }
-                chunk_cursor = sixel_local_buffer_reserve_row(
-                    &local_buffer, pos_y + i);
-                if (chunk_cursor == NULL) {
-                    fallback = 1;
-                    status = (-1);
-                    break;
-                }
-
-                row_base = (pos_y + i - chunk_cursor->start_row) * width +
-                    pos_x;
-                relative = (pos_y + i) * width + pos_x;
-
-                if (pixel_size == 1 && repeat > 3) {
-                    memset(chunk_cursor->data + (size_t)row_base,
-                           color_index,
-                           repeat);
-                } else {
-                    for (r = 0; r < repeat; ++r) {
-                        sixel_decoder_parallel_store_pixel(
-                            chunk_cursor->data +
-                            (size_t)(row_base + r) * (size_t)pixel_size,
-                            depth,
-                            color_index,
-                            context->palette);
-                    }
-                }
-                written += repeat;
-                if (min_relative < 0 || relative < min_relative) {
-                    min_relative = relative;
-                }
-                if (max_relative < relative + repeat - 1) {
-                    max_relative = relative + repeat - 1;
-                }
-            }
-        }
-
-        if (fallback) {
+        if (ch == '"') {
+            fallback = 1;
+            status = (-1);
             break;
         }
 
         cursor += 1;
-        pos_x += repeat;
-        repeat = 1;
-
     }
 
     copy_span = max_relative + 1;
