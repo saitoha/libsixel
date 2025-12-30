@@ -60,7 +60,8 @@ CLI_TESTS = cli-core/t/0001_invalid_positional.t \
     docs/t/0003_bash_vs_zsh_completion.t \
     assessment/t/0001_spool.t \
     clipboard/t/0001_clipboard_basic.t \
-    packaging/t/0001_python_wheel.t \
+    packaging/t/0001_python_wheel_install.t \
+    packaging/t/0002_python_wheel_roundtrip.t \
     mapfile/t/0001_mapfile_export_act.t \
     mapfile/t/0002_mapfile_export_pal_default.t \
     mapfile/t/0003_mapfile_export_pal_stdout.t \
@@ -217,7 +218,9 @@ TEST_EXTENSIONS = .t
 HELPER_FILES = common/t/0001_converters_common.t \
        python/lib/common.sh \
        palette/t/kmeans_init_common.sh \
-       pipeline/t/pipeline_planner_common.sh
+       pipeline/t/pipeline_planner_common.sh \
+       mapfile/t/mapfile_common.sh \
+       packaging/t/python_wheel_common.sh
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export ARTIFACT_ROOT;
