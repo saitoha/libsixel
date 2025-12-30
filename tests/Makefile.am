@@ -45,7 +45,11 @@ CLI_TESTS = cli-core/t/0001_invalid_positional.t \
     loader/t/0005_pngsuite_background_convert.t \
     loader/t/0006_pngsuite_background_white.t \
     loader/t/0007_pngsuite_background_width32_white.t \
-    network/t/0001_curl_basic.t \
+    network/t/0001_curl_invalid_file_url.t \
+    network/t/0002_curl_invalid_https_url.t \
+    network/t/0003_curl_file_scheme.t \
+    network/t/0004_curl_self_signed_blocked.t \
+    network/t/0005_curl_self_signed_with_k.t \
     regression/t/0001_issue167_empty_bg.t \
     regression/t/0002_issue167_height.t \
     regression/t/0003_issue166_width.t \
@@ -58,9 +62,15 @@ CLI_TESTS = cli-core/t/0001_invalid_positional.t \
     clipboard/t/0001_clipboard_basic.t \
     packaging/t/0001_python_wheel.t \
     mapfile/t/0001_io.t \
-    palette/t/0001_fallback.t \
-    pipeline/t/0001_pipeline_planner.t \
-    resize/t/0001_resize_precision_mode.t \
+    pipeline/t/0001_pipeline_planner_baseline_run.t \
+    pipeline/t/0002_pipeline_planner_baseline_summary.t \
+    pipeline/t/0003_pipeline_planner_baseline_threads.t \
+    pipeline/t/0004_pipeline_planner_overrides_run.t \
+    pipeline/t/0005_pipeline_planner_overrides_summary.t \
+    pipeline/t/0006_pipeline_planner_overrides_threads.t \
+    resize/t/0001_resize_precision_mode_run.t \
+    resize/t/0002_resize_precision_mode_scaler_input.t \
+    resize/t/0003_resize_precision_mode_post_colorspace.t \
     sixel2png/t/0001_version.t \
     sixel2png/t/0002_help.t \
     sixel2png/t/0002_missing_args.t \
@@ -72,7 +82,13 @@ PROBE_TESTS = probe/t/0001_probe_parse.t
 
 PROBE_TESTS_BINARIES = probe/0001_probe_parse
 
-PALETTE_TESTS = palette/t/0001_kmeans_init.t
+PALETTE_TESTS = palette/t/0001_kmeans_init_default_unset.t \
+       palette/t/0002_kmeans_init_auto.t \
+       palette/t/0003_kmeans_init_unknown.t \
+       palette/t/0004_kmeans_init_pca.t \
+       palette/t/0005_kmeans_init_cache.t \
+       palette/t/0006_palette_fallback_conversion.t \
+       palette/t/0007_palette_fallback_output.t
 
 PALETTE_TESTS_BINARIES = palette/0001_kmeans_init
 
@@ -191,7 +207,9 @@ endif
 TEST_EXTENSIONS = .t
 
 HELPER_FILES = common/t/0001_converters_common.t \
-       python/lib/common.sh
+       python/lib/common.sh \
+       palette/t/kmeans_init_common.sh \
+       pipeline/t/pipeline_planner_common.sh
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export ARTIFACT_ROOT;
