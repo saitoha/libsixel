@@ -658,7 +658,6 @@ jobs:
             ${disable_simd_flag} \
             ${static_only_flags} \
             ${extra_config_flags}
-        cat config.log
         make V=1
 
     - name: Configure and build (Windows, not MSVC/Cygwin)
@@ -744,7 +743,6 @@ jobs:
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
           './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-debug --enable-tests ${enable_gcov_flag} --disable-dependency-tracking ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${static_only_flags} ${extra_config_flags}',
-          'cat config.log',
           'make V=1'
         )
         $script = [string]::Join("`n", $scriptLines)
@@ -797,7 +795,6 @@ jobs:
             ${disable_threads_flag} \
             ${disable_simd_flag} \
             ${extra_config_flags}
-        cat config.log
         make V=1
 
     - name: Configure and build (Cosmopolitan, non-Windows)
@@ -1572,7 +1569,6 @@ jobs:
             --enable-tests \
             --disable-dependency-tracking \
             ${extra:+$extra}
-        cat config.log
         make V=1
 
     - name: Configure and build (ASan, Windows)
@@ -1591,7 +1587,6 @@ jobs:
             --enable-tests \
             --disable-dependency-tracking \
             ${extra:+$extra}
-        cat config.log
         make V=1
 
     - name: Upload autotools ASan artifacts
