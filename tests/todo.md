@@ -8,6 +8,7 @@ This document tracks remaining TAP files that still bundle multiple test cases a
 - `tests/pipeline/t/` (baseline/override planner scenarios split, shared helper)
 - `tests/network/t/` (curl scenarios split and port conflicts resolved)
 - `tests/loader/t/` (pngsuite cases split)
+- `tests/mapfile/t/` (palette import/export cases split with shared helper)
 
 ## Remaining work
 ### CLI core
@@ -22,9 +23,6 @@ This document tracks remaining TAP files that still bundle multiple test cases a
 - `tests/converter-options/t/0002_conversion_options_02.t`
 - `tests/converter-options/t/0003_conversion_options_03.t`
 - `tests/converter-options/t/0004_conversion_options_04.t`
-
-### Mapfile
-- `tests/mapfile/t/0001_io.t`
 
 ### Packaging
 - `tests/packaging/t/0001_python_wheel.t`
