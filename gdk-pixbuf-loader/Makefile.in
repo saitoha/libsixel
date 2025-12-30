@@ -256,6 +256,7 @@ GDK_PIXBUF_BINARY_VERSION = @GDK_PIXBUF_BINARY_VERSION@
 GDK_PIXBUF_CFLAGS = @GDK_PIXBUF_CFLAGS@
 GDK_PIXBUF_LIBS = @GDK_PIXBUF_LIBS@
 GDK_PIXBUF_MODULEDIR = @GDK_PIXBUF_MODULEDIR@
+GDK_PIXBUF_QUERY_LOADERS = @GDK_PIXBUF_QUERY_LOADERS@
 GD_CFLAGS = @GD_CFLAGS@
 GD_LIBS = @GD_LIBS@
 GREP = @GREP@
@@ -677,7 +678,8 @@ info: info-am
 info-am:
 
 install-data-am: install-pluginLTLIBRARIES
-
+	@$(NORMAL_INSTALL)
+	$(MAKE) $(AM_MAKEFLAGS) install-data-hook
 install-dvi: install-dvi-am
 
 install-dvi-am:
@@ -724,25 +726,42 @@ ps-am:
 
 uninstall-am: uninstall-pluginLTLIBRARIES
 
-.MAKE: install-am install-strip
+.MAKE: install-am install-data-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-am clean \
 	clean-generic clean-libtool clean-pluginLTLIBRARIES \
 	cscopelist-am ctags ctags-am distclean distclean-compile \
 	distclean-generic distclean-libtool distclean-tags distdir dvi \
 	dvi-am html html-am info info-am install install-am \
-	install-data install-data-am install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-pluginLTLIBRARIES install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-pluginLTLIBRARIES
+	install-data install-data-am install-data-hook install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-pluginLTLIBRARIES \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags tags-am uninstall uninstall-am \
+	uninstall-pluginLTLIBRARIES
 
 .PRECIOUS: Makefile
 
+
+install-data-hook:
+	@if test "x$(DESTDIR)" = x; then \
+	  if test "x$(GDK_PIXBUF_QUERY_LOADERS)" != x; then \
+	    echo "Updating gdk-pixbuf loader cache"; \
+	    if "$(GDK_PIXBUF_QUERY_LOADERS)" --update-cache; then \
+	      echo "Updated gdk-pixbuf loader cache"; \
+	    else \
+	      echo "Warning: failed to update gdk-pixbuf loader cache" >&2; \
+	    fi; \
+	  else \
+	    echo "Skipping gdk-pixbuf cache update (query tool not found)"; \
+	  fi; \
+	else \
+	  echo "Skipping gdk-pixbuf cache update (DESTDIR is set)"; \
+	fi
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
