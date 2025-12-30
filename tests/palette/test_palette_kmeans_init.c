@@ -11,7 +11,7 @@
 #include "palette-kmeans.h"
 
 static char const *
-sixel_kmeans_init_type_to_string(sixel_kmeans_init_type init_type)
+test_sixel_kmeans_init_type_to_string(sixel_kmeans_init_type init_type)
 {
     switch (init_type) {
     case SIXEL_PALETTE_KMEANS_INIT_PCA:
@@ -38,7 +38,7 @@ main(int argc, char **argv)
 
     first = sixel_get_kmeans_init_type();
     if (!run_cache_check) {
-        printf("%s\n", sixel_kmeans_init_type_to_string(first));
+        printf("%s\n", test_sixel_kmeans_init_type_to_string(first));
 
         return 0;
     }
@@ -52,8 +52,8 @@ main(int argc, char **argv)
 
     second = sixel_get_kmeans_init_type();
     printf("%s %s\n",
-           sixel_kmeans_init_type_to_string(first),
-           sixel_kmeans_init_type_to_string(second));
+           test_sixel_kmeans_init_type_to_string(first),
+           test_sixel_kmeans_init_type_to_string(second));
 
     return 0;
 }

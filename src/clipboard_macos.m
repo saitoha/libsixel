@@ -6,7 +6,7 @@
 #include "config.h"
 #endif
 
-#if defined(HAVE_CLIPBOARD_MACOS)
+#if defined(HAVE_CLIPBOARD_MACOS) && defined(HAVE_APPKIT)
 
 #import <AppKit/AppKit.h>
 

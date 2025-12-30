@@ -574,9 +574,6 @@ emit_all_headers() {
         [ -z "${unit}" ] && continue
 
         case "${unit}" in
-            src/threadpool.h)
-                emit_header_unit "${unit}" "SIXEL_ENABLE_THREADS"
-                ;;
             converters/completion_embed.h)
                 embedded_header="${build_root}/converters/completion_embed.h"
                 if [ ! -f "${embedded_header}" ]; then
@@ -590,9 +587,6 @@ emit_all_headers() {
             converters/cli.h|converters/completion_utils.h|converters/getopt_stub.h|converters/malloc_stub.h|converters/aborttrace.h)
                 emit_header_unit "${unit}" \
                     "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG)"
-                ;;
-            src/loader-quicklook.h|src/loader-coregraphics.h|src/loader-wic.h)
-                emit_header_unit "${unit}" "HAVE_QUICKLOOK"
                 ;;
             include/sixel.h)
                 public_header="${build_root}/include/sixel.h"
@@ -622,33 +616,9 @@ emit_all_units() {
                 emit_unit "${unit}" \
                     "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_${guard})"
                 ;;
-            converters/img2sixel.c)
-                emit_unit "${unit}" "defined(BUILD_IMG2SIXEL)"
-                ;;
-            converters/sixel2png.c)
-                emit_unit "${unit}" "defined(BUILD_SIXEL2PNG)"
-                ;;
-            assessment/lsqa.c)
-                emit_unit "${unit}" "defined(BUILD_LSQA)"
-                ;;
-            src/tests.c)
-                emit_unit "${unit}" "defined(BUILD_TESTS)"
-                ;;
-            tests/*.c)
+            converters/img2sixel.c|converters/sixel2png.c|assessment/lsqa.c|tests.c|tests/*.c)
                 guard=$(echo "${unit}" | sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
                 emit_unit "${unit}" "defined(BUILD_${guard})"
-                ;;
-            src/clipboard_carbon.c)
-                emit_unit "${unit}" \
-                    "!defined(HAVE_APPKIT) || !defined(__OBJC__)"
-                ;;
-            src/quicklook_thumbnailing.m)
-                emit_unit "${unit}" \
-                    "HAVE_QUICKLOOK_THUMBNAILING && defined(__OBJC__)"
-                ;;
-            src/clipboard_macos.m)
-                emit_unit "${unit}" \
-                    "defined(HAVE_APPKIT) && defined(__OBJC__)"
                 ;;
             *)
                 emit_unit "${unit}" ""
