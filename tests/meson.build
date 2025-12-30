@@ -13,14 +13,14 @@ env.set('LIBSIXEL_LIBDIR', meson.project_build_root() / 'src')
 amalgamated_tools_enabled = get_option('amalgamated_tools').enabled()
 
 cli_helper_sources = {
-  'test_0023_cli_token_is_known_option':
-    ['cli/test_0023_cli_token_is_known_option.c',
+  '0029_cli_token_is_known_option':
+    ['cli/0029_cli_token_is_known_option.c',
      '../converters/cli.c'],
-  'test_0024_cli_option_requires_argument':
-    ['cli/test_0024_cli_option_requires_argument.c',
+  '0030_cli_option_requires_argument':
+    ['cli/0030_cli_option_requires_argument.c',
      '../converters/cli.c'],
-  'test_0025_cli_guard_missing_argument':
-    ['cli/test_0025_cli_guard_missing_argument.c',
+  '0031_cli_guard_missing_argument':
+    ['cli/0031_cli_guard_missing_argument.c',
      '../converters/cli.c'],
 }
 
@@ -33,8 +33,8 @@ foreach helper_name, helper_sources : cli_helper_sources
 endforeach
 
 core_helper_sources = {
-  'test_palette_kmeans_init': ['palette/test_palette_kmeans_init.c'],
-  'test_probe_parse': ['probe/test_probe_parse.c'],
+  '0001_kmeans_init': ['palette/0001_kmeans_init.c'],
+  '0001_probe_parse': ['probe/0001_probe_parse.c'],
 }
 
 core_helper_targets = {}
@@ -62,62 +62,79 @@ issue_inputs = files('issue/166/poc', 'issue/167/poc',
   'issue/200/POC_img2sixel_heap_buffer_overflow')
 meson.add_dist_script('sh', '-c', 'true', issue_inputs)
 
-cli_tests = ['test_0001_01_invalid_positional.t',
-             'test_0001_02_invalid_option_arguments.t',
-             'test_0001_03_invalid_option_combinations.t',
-             'test_0002_stdin.t', 'test_0003_information.t',
-             'test_0004_conversion_options_01.t',
-             'test_0004_conversion_options_02.t',
-             'test_0004_conversion_options_03.t',
-             'test_0004_conversion_options_04.t',
-             'test_0005_dcs_arguments.t',
-             'test_0006_dcs_variations.t',
-             'test_0007_animation.t',
-             'test_0008_progressive_jpeg.t',
-             'test_0009_pngsuite.t',
-             'test_0010_curl.t',
-             'test_0011_basic.t',
-             'test_0012_regressions.t',
-             'test_0013_documentation.t',
-             'test_0014_option_matching.t',
-             'test_0015_argument_shift.t',
-             'test_0016_assessment_spool.t',
-             'test_0017_clipboard.t',
-             'test_0018_lsqa_regression.t',
-             'test_0019_python_wheel.t',
-             'test_0020_mapfile_io.t',
-             'test_0021_palette_fallback.t',
-             'test_0021_pipeline_planner.t',
-             'test_0022_resize_precision_mode.t',
-             'test_0023_cli_token_is_known_option.t',
-             'test_0024_cli_option_requires_argument.t',
-             'test_0025_cli_guard_missing_argument.t',
-             'test_0026_sixel2png_version_help.t',
-             'test_0027_sixel2png_missing_args.t',
-             'test_0028_sixel2png_unknown_option.t',
-             'test_0029_sixel2png_invalid_decoder_value.t',
-             'test_0030_sixel2png_default_output.t']
+cli_tests = ['cli-core/t/0001_invalid_positional.t',
+             'cli-core/t/0002_invalid_option_arguments.t',
+             'cli-core/t/0003_invalid_option_combinations.t',
+             'cli-core/t/0004_stdin.t',
+             'cli-core/t/0005_information.t',
+             'cli-core/t/0006_basic.t',
+             'cli-core/t/0007_option_matching.t',
+             'cli-core/t/0008_argument_shift.t',
+             'cli-core/t/0009_cli_token_is_known_option.t',
+             'cli-core/t/0010_cli_option_requires_argument.t',
+             'cli-core/t/0011_cli_guard_missing_argument.t',
+             'converter-options/t/0001_conversion_options_01.t',
+             'converter-options/t/0002_conversion_options_02.t',
+             'converter-options/t/0003_conversion_options_03.t',
+             'converter-options/t/0004_conversion_options_04.t',
+             'decoder/t/0001_dcs_arguments.t',
+             'decoder/t/0002_dcs_variations.t',
+            'animation/t/0001_disable_update_mode.t',
+            'animation/t/0002_static_frame_render.t',
+            'animation/t/0003_update_and_static_frame.t',
+            'animation/t/0004_split_sequence_atkinson.t',
+             'loader/t/0001_progressive_jpeg.t',
+            'loader/t/0002_pngsuite_basic_convert.t',
+            'loader/t/0003_pngsuite_basic_width32.t',
+            'loader/t/0004_pngsuite_basic_cropped.t',
+            'loader/t/0005_pngsuite_background_convert.t',
+            'loader/t/0006_pngsuite_background_white.t',
+            'loader/t/0007_pngsuite_background_width32_white.t',
+             'network/t/0001_curl_basic.t',
+             'regression/t/0001_issue167_empty_bg.t',
+             'regression/t/0002_issue167_height.t',
+             'regression/t/0003_issue166_width.t',
+             'regression/t/0004_issue200_heap_overflow.t',
+             'regression/t/0005_lsqa_regression.t',
+             'docs/t/0001_help_vs_man.t',
+             'docs/t/0002_man_vs_bash_completion.t',
+             'docs/t/0003_bash_vs_zsh_completion.t',
+             'assessment/t/0001_spool.t',
+             'clipboard/t/0001_clipboard_basic.t',
+             'packaging/t/0001_python_wheel.t',
+             'mapfile/t/0001_io.t',
+             'palette/t/0001_fallback.t',
+             'pipeline/t/0001_pipeline_planner.t',
+             'resize/t/0001_resize_precision_mode.t',
+             'converter-core/t/0001_decode.t',
+             'converter-core/t/0002_encode.t',
+             'converter-core/t/0003_roundtrip.t',
+             'sixel2png/t/0001_version_help.t',
+             'sixel2png/t/0002_missing_args.t',
+             'sixel2png/t/0003_unknown_option.t',
+             'sixel2png/t/0004_invalid_decoder_value.t',
+             'sixel2png/t/0005_default_output.t']
 
 cli_depends = {
-  'test_0018_lsqa_regression.t': [lsqa_bin],
-  'test_0023_cli_token_is_known_option.t':
-    [cli_helper_targets['test_0023_cli_token_is_known_option']],
-  'test_0024_cli_option_requires_argument.t':
-    [cli_helper_targets['test_0024_cli_option_requires_argument']],
-  'test_0025_cli_guard_missing_argument.t':
-    [cli_helper_targets['test_0025_cli_guard_missing_argument']],
+  'regression/t/0005_lsqa_regression.t': [lsqa_bin],
+  'cli-core/t/0009_cli_token_is_known_option.t':
+    [cli_helper_targets['0029_cli_token_is_known_option']],
+  'cli-core/t/0010_cli_option_requires_argument.t':
+    [cli_helper_targets['0030_cli_option_requires_argument']],
+  'cli-core/t/0011_cli_guard_missing_argument.t':
+    [cli_helper_targets['0031_cli_guard_missing_argument']],
 }
 
 core_depends = {
-  'palette/test_palette_kmeans_init.t':
-    [core_helper_targets['test_palette_kmeans_init']],
-  'probe/test_probe_parse.t': [core_helper_targets['test_probe_parse']],
+  'palette/t/0001_kmeans_init.t':
+    [core_helper_targets['0001_kmeans_init']],
+  'probe/t/0001_probe_parse.t': [core_helper_targets['0001_probe_parse']],
 }
 
 # Match autotools TAP timeout to keep CI behavior consistent (seconds per file).
 foreach t : cli_tests
   test(t, sh,
-    args: [meson.current_source_dir() / 'cli' / 't' / t],
+    args: [meson.current_source_dir() / t],
     protocol: 'tap',
     env: env,
     depends: cli_depends.get(t, []),
@@ -125,7 +142,7 @@ foreach t : cli_tests
     suite: ['tap'])
 endforeach
 
-foreach t : ['palette/test_palette_kmeans_init.t', 'probe/test_probe_parse.t']
+foreach t : ['palette/t/0001_kmeans_init.t', 'probe/t/0001_probe_parse.t']
   test(t, sh,
     args: [meson.current_source_dir() / t],
     protocol: 'tap',
@@ -137,9 +154,9 @@ endforeach
 
 python_depends = [libsixel]
 
-foreach t : ['test_0001_python_bindings.t', 'test_0002_python_api_formats.t',
-             'test_0003_python_api_options.t', 'test_0004_python_api_errors.t',
-             'test_0005_python_resource_management.t']
+foreach t : ['0001_python_bindings.t', '0002_python_api_formats.t',
+             '0003_python_api_options.t', '0004_python_api_errors.t',
+             '0005_python_resource_management.t']
   test(t, sh,
     args: [meson.current_source_dir() / 'python' / 't' / t],
     protocol: 'tap',
@@ -150,16 +167,16 @@ foreach t : ['test_0001_python_bindings.t', 'test_0002_python_api_formats.t',
 endforeach
 
 filter_sources = {
-  'filter_tests': 'filter/filter_tests.c',
-  'filter_sample_tests': 'filter/filter_sample_tests.c',
-  'filter_resize_tests': 'filter/filter_resize_tests.c',
-  'filter_colors_tests': 'filter/filter_colors_tests.c',
-  'filter_lookup_tests': 'filter/filter_lookup_tests.c',
-  'filter_final_merge_tests': 'filter/filter_final_merge_tests.c',
-  'filter_vpte_tests': 'filter/filter_vpte_tests.c',
-  'filter_load_tests': 'filter/filter_load_tests.c',
-  'filter_dither_tests': 'filter/filter_dither_tests.c',
-  'filter_encode_tests': 'filter/filter_encode_tests.c',
+  '0001_filter_clip': 'filter/0001_filter_clip.c',
+  '0002_filter_sample': 'filter/0002_filter_sample.c',
+  '0003_filter_resize': 'filter/0003_filter_resize.c',
+  '0004_filter_colors': 'filter/0004_filter_colors.c',
+  '0005_filter_lookup': 'filter/0005_filter_lookup.c',
+  '0006_filter_final_merge': 'filter/0006_filter_final_merge.c',
+  '0007_filter_vpte': 'filter/0007_filter_vpte.c',
+  '0008_filter_load': 'filter/0008_filter_load.c',
+  '0009_filter_dither': 'filter/0009_filter_dither.c',
+  '0010_filter_encode': 'filter/0010_filter_encode.c',
 }
 
 filter_test_inc = [project_inc, include_directories('filter')]
@@ -192,61 +209,61 @@ foreach unit_name, unit_source : filter_sources
   filter_units += { unit_name: unit_exe }
 endforeach
 
-test('test_3000_filter_clip', filter_units['filter_tests'],
+test('0001_filter_clip', filter_units['0001_filter_clip'],
   env: env,
   protocol: 'tap',
   timeout: 120,
   suite: ['tap'])
 
-test('test_3001_filter_sample', filter_units['filter_sample_tests'],
+test('0002_filter_sample', filter_units['0002_filter_sample'],
   env: env,
   protocol: 'tap',
   timeout: 120,
   suite: ['tap'])
 
-test('test_3002_filter_resize', filter_units['filter_resize_tests'],
+test('0003_filter_resize', filter_units['0003_filter_resize'],
   env: env,
   protocol: 'tap',
   timeout: 120,
   suite: ['tap'])
 
-test('test_3003_filter_colors', filter_units['filter_colors_tests'],
+test('0004_filter_colors', filter_units['0004_filter_colors'],
   env: env,
   protocol: 'tap',
   timeout: 120,
   suite: ['tap'])
 
-test('test_3004_filter_lookup', filter_units['filter_lookup_tests'],
+test('0005_filter_lookup', filter_units['0005_filter_lookup'],
   env: env,
   protocol: 'tap',
   timeout: 120,
   suite: ['tap'])
 
-test('test_3005_filter_final_merge', filter_units['filter_final_merge_tests'],
+test('0006_filter_final_merge', filter_units['0006_filter_final_merge'],
   env: env,
   protocol: 'tap',
   timeout: 120,
   suite: ['tap'])
 
-test('test_3006_filter_vpte', filter_units['filter_vpte_tests'],
+test('0007_filter_vpte', filter_units['0007_filter_vpte'],
   env: env,
   protocol: 'tap',
   timeout: 120,
   suite: ['tap'])
 
-test('test_3007_filter_load', filter_units['filter_load_tests'],
+test('0008_filter_load', filter_units['0008_filter_load'],
   env: env,
   protocol: 'tap',
   timeout: 120,
   suite: ['tap'])
 
-test('test_3008_filter_dither', filter_units['filter_dither_tests'],
+test('0009_filter_dither', filter_units['0009_filter_dither'],
   env: env,
   protocol: 'tap',
   timeout: 120,
   suite: ['tap'])
 
-test('test_3009_filter_encode', filter_units['filter_encode_tests'],
+test('0010_filter_encode', filter_units['0010_filter_encode'],
   env: env,
   protocol: 'tap',
   timeout: 120,
@@ -257,13 +274,13 @@ if gdk_pixbuf_loader_deps.length() > 0
     '../gdk-pixbuf-loader/sixel-pixbuf-loader.c',
   ]
   gdk_pixbuf_loader_tests = {
-    'test-gdk-pixbuf-loader': 'gdk-pixbuf-loader/test-gdk-pixbuf-loader.c',
-    'test_0001_incremental_load':
-      'gdk-pixbuf-loader/test_0001_incremental_load.c',
-    'test_0002_corrupt_data': 'gdk-pixbuf-loader/test_0002_corrupt_data.c',
-    'test_0003_propagate_error':
-      'gdk-pixbuf-loader/test_0003_propagate_error.c',
-    'test_0004_context_free': 'gdk-pixbuf-loader/test_0004_context_free.c',
+    '0001_gdk_pixbuf_loader': 'gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c',
+    '0002_incremental_load':
+      'gdk-pixbuf-loader/0002_incremental_load.c',
+    '0003_corrupt_data': 'gdk-pixbuf-loader/0003_corrupt_data.c',
+    '0004_propagate_error':
+      'gdk-pixbuf-loader/0004_propagate_error.c',
+    '0005_context_free': 'gdk-pixbuf-loader/0005_context_free.c',
   }
   foreach test_name, source_file : gdk_pixbuf_loader_tests
     target = executable(test_name,
