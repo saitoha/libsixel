@@ -16,48 +16,48 @@ $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
 endif
 CLI_TESTS = cli-core/t/0001_invalid_positional.t \
-cli-core/t/0002_invalid_option_arguments.t \
-cli-core/t/0003_invalid_option_combinations.t \
-cli-core/t/0004_stdin.t \
-cli-core/t/0005_help.t \
-cli-core/t/0005_version.t \
-cli-core/t/0006_basic.t \
-cli-core/t/0007_option_matching.t \
-cli-core/t/0008_argument_shift.t \
-cli-core/t/0009_cli_token_is_known_option.t \
-cli-core/t/0010_cli_option_requires_argument.t \
-cli-core/t/0011_cli_guard_missing_argument.t \
-converter-options/t/0001_conversion_options_01.t \
-converter-options/t/0002_conversion_options_02.t \
-converter-options/t/0003_conversion_options_03.t \
-converter-options/t/0004_conversion_options_04.t \
-decoder/t/0001_dcs_arguments.t \
-decoder/t/0002_tab_separated_colour_introducers.t \
-decoder/t/0003_oversized_dcs_geometry.t \
+    cli-core/t/0002_invalid_option_arguments.t \
+    cli-core/t/0003_invalid_option_combinations.t \
+    cli-core/t/0004_stdin.t \
+    cli-core/t/0005_help.t \
+    cli-core/t/0005_version.t \
+    cli-core/t/0006_basic.t \
+    cli-core/t/0007_option_matching.t \
+    cli-core/t/0008_argument_shift.t \
+    cli-core/t/0009_cli_token_is_known_option.t \
+    cli-core/t/0010_cli_option_requires_argument.t \
+    cli-core/t/0011_cli_guard_missing_argument.t \
+    converter-options/t/0001_conversion_options_01.t \
+    converter-options/t/0002_conversion_options_02.t \
+    converter-options/t/0003_conversion_options_03.t \
+    converter-options/t/0004_conversion_options_04.t \
+    decoder/t/0001_dcs_arguments.t \
+    decoder/t/0002_tab_separated_colour_introducers.t \
+    decoder/t/0003_oversized_dcs_geometry.t \
     animation/t/0001_disable_update_mode.t \
     animation/t/0002_static_frame_render.t \
     animation/t/0003_update_and_static_frame.t \
     animation/t/0004_split_sequence_atkinson.t \
-loader/t/0001_progressive_jpeg.t \
+    loader/t/0001_progressive_jpeg.t \
     loader/t/0002_pngsuite_basic_convert.t \
     loader/t/0003_pngsuite_basic_width32.t \
     loader/t/0004_pngsuite_basic_cropped.t \
     loader/t/0005_pngsuite_background_convert.t \
     loader/t/0006_pngsuite_background_white.t \
     loader/t/0007_pngsuite_background_width32_white.t \
-network/t/0001_curl_basic.t \
-regression/t/0001_issue167_empty_bg.t \
-regression/t/0002_issue167_height.t \
-regression/t/0003_issue166_width.t \
-regression/t/0004_issue200_heap_overflow.t \
-regression/t/0005_lsqa_regression.t \
-docs/t/0001_help_vs_man.t \
-docs/t/0002_man_vs_bash_completion.t \
-docs/t/0003_bash_vs_zsh_completion.t \
-assessment/t/0001_spool.t \
-clipboard/t/0001_clipboard_basic.t \
-packaging/t/0001_python_wheel.t \
-mapfile/t/0001_io.t \
+    network/t/0001_curl_basic.t \
+    regression/t/0001_issue167_empty_bg.t \
+    regression/t/0002_issue167_height.t \
+    regression/t/0003_issue166_width.t \
+    regression/t/0004_issue200_heap_overflow.t \
+    regression/t/0005_lsqa_regression.t \
+    docs/t/0001_help_vs_man.t \
+    docs/t/0002_man_vs_bash_completion.t \
+    docs/t/0003_bash_vs_zsh_completion.t \
+    assessment/t/0001_spool.t \
+    clipboard/t/0001_clipboard_basic.t \
+    packaging/t/0001_python_wheel.t \
+    mapfile/t/0001_io.t \
     palette/t/0001_fallback.t \
     pipeline/t/0001_pipeline_planner.t \
     resize/t/0001_resize_precision_mode.t \
@@ -66,7 +66,7 @@ mapfile/t/0001_io.t \
     sixel2png/t/0002_missing_args.t \
     sixel2png/t/0003_unknown_option.t \
     sixel2png/t/0004_invalid_decoder_value.t \
-sixel2png/t/0005_default_output.t
+    sixel2png/t/0005_default_output.t
 
 PROBE_TESTS = probe/t/0001_probe_parse.t
 
@@ -539,6 +539,7 @@ ISSUE_INPUTS = issue/166/poc \
 
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
              lsqa_regression.sh \
+             loader/pngsuite_common.sh \
              $(BASELINE_JSON) $(INPUT_FORMAT_FILES) \
              $(RESOLUTION_IMAGES) $(CORRUPTED_INPUTS) $(ISSUE_INPUTS) \
              filter/0001_filter_clip.c filter/0002_filter_sample.c \
