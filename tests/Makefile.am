@@ -268,7 +268,7 @@ TESTS_COMMON_LDADD_VAL = $(LIBS) \
         $(ONNXRUNTIME_LIBS) \
         @THREAD_LIBS@
 else
-TESTS_COMMON_LDADD_VAL = -lm $(top_builddir)/src/libsixel.la $(LIBS)
+TESTS_COMMON_LDADD_VAL = $(top_builddir)/src/libsixel.la $(LIBS) -lm
 endif
 
 TESTS_AMALGAMATED_CPPFLAGS_COMMON = $(TESTS_COMMON_CPPFLAGS_VAL)
