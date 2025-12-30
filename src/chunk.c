@@ -620,14 +620,14 @@ sixel_chunk_from_url_with_curl(
 
     curl = curl_easy_init();
     if (curl == NULL) {
-        status = SIXEL_CURL_ERROR | CURLE_FAILED_INIT;
+        status = SIXEL_CURL_ERROR & CURLE_FAILED_INIT;
         sixel_helper_set_additional_message("curl_easy_init() failed.");
         goto end;
     }
 
     code = curl_easy_setopt(curl, CURLOPT_URL, url);
     if (code != CURLE_OK) {
-        status = SIXEL_CURL_ERROR | (code & 0xff);
+        status = SIXEL_CURL_ERROR & (code & 0xff);
         sixel_helper_set_additional_message(
             "curl_easy_setopt(CURLOPT_URL) failed.");
         goto end;
@@ -635,7 +635,7 @@ sixel_chunk_from_url_with_curl(
 
     code = curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
     if (code != CURLE_OK) {
-        status = SIXEL_CURL_ERROR | (code & 0xff);
+        status = SIXEL_CURL_ERROR & (code & 0xff);
         sixel_helper_set_additional_message(
             "curl_easy_setopt(CURLOPT_FOLLOWLOCATION) failed.");
         goto end;
@@ -644,7 +644,7 @@ sixel_chunk_from_url_with_curl(
     code = curl_easy_setopt(curl, CURLOPT_USERAGENT,
                             "libsixel/" LIBSIXEL_VERSION);
     if (code != CURLE_OK) {
-        status = SIXEL_CURL_ERROR | (code & 0xff);
+        status = SIXEL_CURL_ERROR & (code & 0xff);
         sixel_helper_set_additional_message(
             "curl_easy_setopt(CURLOPT_USERAGENT) failed.");
         goto end;
@@ -653,7 +653,7 @@ sixel_chunk_from_url_with_curl(
     if (finsecure && strncmp(url, "https://", 8) == 0) {
         code = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
         if (code != CURLE_OK) {
-            status = SIXEL_CURL_ERROR | (code & 0xff);
+            status = SIXEL_CURL_ERROR & (code & 0xff);
             sixel_helper_set_additional_message(
                 "curl_easy_setopt(CURLOPT_SSL_VERIFYPEER) failed.");
             goto end;
@@ -661,7 +661,7 @@ sixel_chunk_from_url_with_curl(
 
         code = curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
         if (code != CURLE_OK) {
-            status = SIXEL_CURL_ERROR | (code & 0xff);
+            status = SIXEL_CURL_ERROR & (code & 0xff);
             sixel_helper_set_additional_message(
                 "curl_easy_setopt(CURLOPT_SSL_VERIFYHOST) failed.");
             goto end;
@@ -671,7 +671,7 @@ sixel_chunk_from_url_with_curl(
 
     code = curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, memory_write);
     if (code != CURLE_OK) {
-        status = SIXEL_CURL_ERROR | (code & 0xff);
+        status = SIXEL_CURL_ERROR & (code & 0xff);
         sixel_helper_set_additional_message(
             "curl_easy_setopt(CURLOPT_WRITEFUNCTION) failed.");
         goto end;
@@ -679,7 +679,7 @@ sixel_chunk_from_url_with_curl(
 
     code = curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)pchunk);
     if (code != CURLE_OK) {
-        status = SIXEL_CURL_ERROR | (code & 0xff);
+        status = SIXEL_CURL_ERROR & (code & 0xff);
         sixel_helper_set_additional_message(
             "curl_easy_setopt(CURLOPT_WRITEDATA) failed.");
         goto end;
@@ -687,7 +687,7 @@ sixel_chunk_from_url_with_curl(
 
     code = curl_easy_perform(curl);
     if (code != CURLE_OK) {
-        status = SIXEL_CURL_ERROR | (code & 0xff);
+        status = SIXEL_CURL_ERROR & (code & 0xff);
         sixel_helper_set_additional_message("curl_easy_perform() failed.");
         goto end;
     }
