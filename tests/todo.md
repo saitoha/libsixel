@@ -10,12 +10,10 @@ This document tracks remaining TAP files that still bundle multiple test cases a
 - `tests/loader/t/` (pngsuite cases split)
 - `tests/mapfile/t/` (palette import/export cases split with shared helper)
 - `tests/packaging/t/` (python wheel install and roundtrip split, shared helper)
+- `tests/cli-core/t/` (basic option handling and invalid argument/combination suites split; option-matching and argument-shift remain)
 
 ## Remaining work
 ### CLI core
-- `tests/cli-core/t/0002_invalid_option_arguments.t`
-- `tests/cli-core/t/0003_invalid_option_combinations.t`
-- `tests/cli-core/t/0006_basic.t`
 - `tests/cli-core/t/0007_option_matching.t`
 - `tests/cli-core/t/0008_argument_shift.t`
 

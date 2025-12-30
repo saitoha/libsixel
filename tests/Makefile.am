@@ -16,12 +16,50 @@ $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
 endif
 CLI_TESTS = cli-core/t/0001_invalid_positional.t \
-    cli-core/t/0002_invalid_option_arguments.t \
-    cli-core/t/0003_invalid_option_combinations.t \
+    cli-core/t/0002_invalid_option_arguments_unknown_dither.t \
+    cli-core/t/0002_invalid_option_arguments_unknown_resize_filter.t \
+    cli-core/t/0002_invalid_option_arguments_unknown_scaling_mode.t \
+    cli-core/t/0002_invalid_option_arguments_unknown_tone_adjustment.t \
+    cli-core/t/0002_invalid_option_arguments_invalid_width.t \
+    cli-core/t/0002_invalid_option_arguments_invalid_height.t \
+    cli-core/t/0002_invalid_option_arguments_invalid_format.t \
+    cli-core/t/0002_invalid_option_arguments_invalid_quality.t \
+    cli-core/t/0002_invalid_option_arguments_invalid_layout.t \
+    cli-core/t/0002_invalid_option_arguments_invalid_bpp.t \
+    cli-core/t/0002_invalid_option_arguments_invalid_encoder_tweak.t \
+    cli-core/t/0002_invalid_option_arguments_invalid_background_colour.t \
+    cli-core/t/0002_invalid_option_arguments_missing_background_component.t \
+    cli-core/t/0002_invalid_option_arguments_overlong_background.t \
+    cli-core/t/0002_invalid_option_arguments_malformed_hex_background.t \
+    cli-core/t/0002_invalid_option_arguments_unknown_named_colour.t \
+    cli-core/t/0002_invalid_option_arguments_incomplete_rgb_background.t \
+    cli-core/t/0002_invalid_option_arguments_unsupported_legacy_width.t \
+    cli-core/t/0002_invalid_option_arguments_missing_palette_file.t \
+    cli-core/t/0002_invalid_option_arguments_invalid_colour_space_index.t \
+    cli-core/t/0003_invalid_option_combinations_palette_and_encode.t \
+    cli-core/t/0003_invalid_option_combinations_inspect_with_palette.t \
+    cli-core/t/0003_invalid_option_combinations_palette_with_terminal_preset.t \
+    cli-core/t/0003_invalid_option_combinations_eight_bit_with_palette_dump.t \
     cli-core/t/0004_stdin.t \
     cli-core/t/0005_help.t \
     cli-core/t/0005_version.t \
-    cli-core/t/0006_basic.t \
+    cli-core/t/0006_basic_missing_input.t \
+    cli-core/t/0006_basic_help_option.t \
+    cli-core/t/0006_basic_version_option.t \
+    cli-core/t/0006_basic_stdin_snake.t \
+    cli-core/t/0006_basic_stdin_map8.t \
+    cli-core/t/0006_basic_stdin_stdout_map64.t \
+    cli-core/t/0006_basic_file_arguments_snake.t \
+    cli-core/t/0006_basic_direct_output.t \
+    cli-core/t/0006_basic_direct_with_dequantize_conflict.t \
+    cli-core/t/0006_basic_png_prefix_path.t \
+    cli-core/t/0006_basic_png_stdout.t \
+    cli-core/t/0006_basic_png_prefix_missing_target.t \
+    cli-core/t/0006_basic_dequantize_unique_prefix.t \
+    cli-core/t/0006_basic_parallel_indexed.t \
+    cli-core/t/0006_basic_parallel_direct.t \
+    cli-core/t/0006_basic_parallel_cli_override.t \
+    cli-core/t/0006_basic_invalid_threads_token.t \
     cli-core/t/0007_option_matching.t \
     cli-core/t/0008_argument_shift.t \
     cli-core/t/0009_cli_token_is_known_option.t \
@@ -216,6 +254,7 @@ endif
 TEST_EXTENSIONS = .t
 
 HELPER_FILES = common/t/0001_converters_common.t \
+       cli-core/t/cli_core_common.sh \
        python/lib/common.sh \
        palette/t/kmeans_init_common.sh \
        pipeline/t/pipeline_planner_common.sh \
