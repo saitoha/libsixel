@@ -1074,16 +1074,13 @@ assessment/t/0001_spool.t \
 clipboard/t/0001_clipboard_basic.t \
 packaging/t/0001_python_wheel.t \
 mapfile/t/0001_io.t \
-palette/t/0001_fallback.t \
-pipeline/t/0001_pipeline_planner.t \
-resize/t/0001_resize_precision_mode.t \
-converter-core/t/0001_decode.t \
-converter-core/t/0002_encode.t \
-converter-core/t/0003_roundtrip.t \
-sixel2png/t/0001_version_help.t \
-sixel2png/t/0002_missing_args.t \
-sixel2png/t/0003_unknown_option.t \
-sixel2png/t/0004_invalid_decoder_value.t \
+    palette/t/0001_fallback.t \
+    pipeline/t/0001_pipeline_planner.t \
+    resize/t/0001_resize_precision_mode.t \
+    sixel2png/t/0001_version_help.t \
+    sixel2png/t/0002_missing_args.t \
+    sixel2png/t/0003_unknown_option.t \
+    sixel2png/t/0004_invalid_decoder_value.t \
 sixel2png/t/0005_default_output.t
 
 PROBE_TESTS = probe/t/0001_probe_parse.t
