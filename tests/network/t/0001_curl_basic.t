@@ -85,7 +85,7 @@ case_id=$((case_id + 1))
 
 if command -v openssl >/dev/null 2>&1 && command -v python >/dev/null 2>&1; then
     require_file "${images_dir}/snake.six"
-    require_file "${top_srcdir}/tests/network/0001_curl_basic.t"
+    require_file "${top_srcdir}/tests/network/t/0001_curl_basic.t"
 
     cp "${images_dir}/snake.six" "${tmp_dir}/snake.sixel"
 
