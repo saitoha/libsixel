@@ -9,6 +9,7 @@ artifact_dir="${artifact_root}/${test_name}"
 log_file="${artifact_dir}/curl.log"
 output_dir="${artifact_dir}/outputs"
 tmp_dir="${artifact_dir}/tmp"
+server_port=4444
 
 mkdir -p "${output_dir}" "${tmp_dir}"
 
@@ -35,7 +36,7 @@ cp "${images_dir}/snake.six" "${tmp_dir}/snake.sixel"
     && openssl x509 -req -in "server.csr" -signkey "server.key" \
         -out "server.crt" 2>>"${log_file}" || exit 1)
 
-cat >"${tmp_dir}/server.py" <<'PY'
+cat >"${tmp_dir}/server.py" <<PY
 try:
     from http.server import SimpleHTTPRequestHandler
     from socketserver import TCPServer
@@ -60,7 +61,7 @@ def configure_socket(sock):
         server_side=True,
     )
 
-with TLSHTTPServer(('localhost', 4443), SimpleHTTPRequestHandler) as httpd:
+with TLSHTTPServer(('localhost', ${server_port}), SimpleHTTPRequestHandler) as httpd:
     httpd.socket = configure_socket(httpd.socket)
     for _ in range(1):
         httpd.handle_request()
@@ -77,7 +78,7 @@ rm -f "${server_pid_file}"
 sleep 1
 
 verify_output="${output_dir}/https.sixel"
-if run_img2sixel -k 'https://localhost:4443/snake.sixel' \
+if run_img2sixel -k "https://localhost:${server_port}/snake.sixel" \
         >"${verify_output}" 2>>"${log_file}"; then
     server_ok=0
 else
