@@ -104,26 +104,26 @@ src/clipboard_macos.m
 src/clipboard_carbon.c
 src/probe.c
 src/tests.c
-tests/gdk-pixbuf-loader/test_0002_corrupt_data.c
-tests/gdk-pixbuf-loader/test-gdk-pixbuf-loader.c
-tests/gdk-pixbuf-loader/test_0004_context_free.c
-tests/gdk-pixbuf-loader/test_0001_incremental_load.c
-tests/gdk-pixbuf-loader/test_0003_propagate_error.c
-tests/cli/test_0023_cli_token_is_known_option.c
-tests/cli/test_0024_cli_option_requires_argument.c
-tests/cli/test_0025_cli_guard_missing_argument.c
-tests/filter/filter_colors_tests.c
-tests/filter/filter_encode_tests.c
-tests/filter/filter_vpte_tests.c
-tests/filter/filter_dither_tests.c
-tests/filter/filter_resize_tests.c
-tests/filter/filter_final_merge_tests.c
-tests/filter/filter_load_tests.c
-tests/filter/filter_tests.c
-tests/filter/filter_lookup_tests.c
-tests/filter/filter_sample_tests.c
-tests/probe/test_probe_parse.c
-tests/palette/test_palette_kmeans_init.c
+tests/gdk-pixbuf-loader/0003_corrupt_data.c
+tests/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c
+tests/gdk-pixbuf-loader/0005_context_free.c
+tests/gdk-pixbuf-loader/0002_incremental_load.c
+tests/gdk-pixbuf-loader/0004_propagate_error.c
+tests/cli/0029_cli_token_is_known_option.c
+tests/cli/0030_cli_option_requires_argument.c
+tests/cli/0031_cli_guard_missing_argument.c
+tests/filter/0004_filter_colors.c
+tests/filter/0010_filter_encode.c
+tests/filter/0007_filter_vpte.c
+tests/filter/0009_filter_dither.c
+tests/filter/0003_filter_resize.c
+tests/filter/0006_filter_final_merge.c
+tests/filter/0008_filter_load.c
+tests/filter/0001_filter_clip.c
+tests/filter/0005_filter_lookup.c
+tests/filter/0002_filter_sample.c
+tests/probe/0001_probe_parse.c
+tests/palette/0001_kmeans_init.c
 converters/aborttrace.c
 converters/cli.c
 converters/completion_utils.c
@@ -616,7 +616,7 @@ emit_all_units() {
                 emit_unit "${unit}" \
                     "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_${guard})"
                 ;;
-            converters/img2sixel.c|converters/sixel2png.c|assessment/lsqa.c|tests.c|tests/*.c)
+            converters/img2sixel.c|converters/sixel2png.c|assessment/lsqa.c|src/tests.c|tests/*.c)
                 guard=$(echo "${unit}" | sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
                 emit_unit "${unit}" "defined(BUILD_${guard})"
                 ;;
