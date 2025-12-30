@@ -315,7 +315,7 @@ jobs:
 
     steps:
     - name: Configure git EOL
-      if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
+      if: matrix.sys == 'CYGWIN'
       run: git config --global core.autocrlf false
 
     - uses: actions/checkout@v6
@@ -1998,16 +1998,13 @@ jobs:
             amalgamation: true
 
     steps:
+    - name: Configure git EOL
+      if: matrix.sys == 'CYGWIN'
+      run: git config --global core.autocrlf false
+
     - uses: actions/checkout@v6
       with:
         fetch-depth: 1
-
-    - name: Normalize line endings (Windows)
-      if: runner.os == 'Windows'
-      shell: bash
-      run: |
-        git config core.autocrlf false
-        git reset --hard
 
     - name: Install multilib toolchain (Linux i686)
       if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os == 'Linux' && (matrix.sys || '') == 'i686'
