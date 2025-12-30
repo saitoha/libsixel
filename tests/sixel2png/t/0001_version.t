@@ -1,12 +1,12 @@
 #!/bin/sh
-# TAP test verifying sixel2png reports version/help and exits successfully.
+# TAP test verifying sixel2png reports version and exits successfully.
 
 set -euxv
 
 test_name=$(basename "$0")
 artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
 artifact_dir="${artifact_root}/${test_name}"
-log_file="${artifact_dir}/version-help.log"
+log_file="${artifact_dir}/version.log"
 output_dir="${artifact_dir}/out"
 
 mkdir -p "${output_dir}"
@@ -27,7 +27,7 @@ fail() {
     status=1
 }
 
-echo "1..2"
+echo "1..1"
 
 version_output="${output_dir}/version.txt"
 if run_sixel2png -V >"${version_output}" 2>>"${log_file}"; then
@@ -38,17 +38,6 @@ if run_sixel2png -V >"${version_output}" 2>>"${log_file}"; then
     fi
 else
     fail 1 "-V exited with failure"
-fi
-
-help_output="${output_dir}/help.txt"
-if run_sixel2png -H 2>>"${log_file}" 1>"${help_output}"; then
-    if grep -Eq '^Usage: sixel2png' "${help_output}"; then
-        pass 2 "-H prints usage"
-    else
-        fail 2 "help usage header missing"
-    fi
-else
-    fail 2 "-H exited with failure"
 fi
 
 exit "${status}"

@@ -1037,7 +1037,8 @@ CLI_TESTS = cli-core/t/0001_invalid_positional.t \
 cli-core/t/0002_invalid_option_arguments.t \
 cli-core/t/0003_invalid_option_combinations.t \
 cli-core/t/0004_stdin.t \
-cli-core/t/0005_information.t \
+cli-core/t/0005_help.t \
+cli-core/t/0005_version.t \
 cli-core/t/0006_basic.t \
 cli-core/t/0007_option_matching.t \
 cli-core/t/0008_argument_shift.t \
@@ -1049,7 +1050,8 @@ converter-options/t/0002_conversion_options_02.t \
 converter-options/t/0003_conversion_options_03.t \
 converter-options/t/0004_conversion_options_04.t \
 decoder/t/0001_dcs_arguments.t \
-decoder/t/0002_dcs_variations.t \
+decoder/t/0002_tab_separated_colour_introducers.t \
+decoder/t/0003_oversized_dcs_geometry.t \
     animation/t/0001_disable_update_mode.t \
     animation/t/0002_static_frame_render.t \
     animation/t/0003_update_and_static_frame.t \
@@ -1077,7 +1079,8 @@ mapfile/t/0001_io.t \
     palette/t/0001_fallback.t \
     pipeline/t/0001_pipeline_planner.t \
     resize/t/0001_resize_precision_mode.t \
-    sixel2png/t/0001_version_help.t \
+    sixel2png/t/0001_version.t \
+    sixel2png/t/0002_help.t \
     sixel2png/t/0002_missing_args.t \
     sixel2png/t/0003_unknown_option.t \
     sixel2png/t/0004_invalid_decoder_value.t \
