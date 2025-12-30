@@ -26,6 +26,8 @@
 #include "config.h"
 #endif
 
+#if SIXEL_ENABLE_THREADS
+
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
@@ -531,6 +533,8 @@ threadpool_get_error(threadpool_t *pool)
     sixel_mutex_unlock(&pool->mutex);
     return error;
 }
+
+#endif  /* SIXEL_ENABLE_THREADS */
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */
