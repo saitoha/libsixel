@@ -26,9 +26,9 @@ fail() {
     status=1
 }
 
-echo "1..1"
-
 ensure_pngsuite_prereqs
+
+echo "1..1"
 
 if convert_pngsuite_group "${pngsuite_basic}" "basic samples" "-c16x16+8+8" "${output_dir}" "${log_file}"; then
     pass 1 "basic samples cropped"
