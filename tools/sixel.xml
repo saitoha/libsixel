@@ -2,6 +2,10 @@
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
   <mime-type type="image/sixel">
     <comment>DEC SIXEL image</comment>
+    <magic priority="60">
+      <match type="string" offset="0" value="\x1bPq"/>
+      <match type="string" offset="0" value="\x1bP"/>
+    </magic>
     <glob pattern="*.six"/>
     <glob pattern="*.sixel"/>
   </mime-type>

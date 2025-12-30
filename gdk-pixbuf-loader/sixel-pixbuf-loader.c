@@ -292,9 +292,14 @@ fill_vtable(GdkPixbufModule *module)
 G_MODULE_EXPORT void
 fill_info(GdkPixbufFormat *info)
 {
+    /*
+     * Mask bytes use spaces for exact matching. The leading '*' unanchors
+     * the second pattern so ESC P is detected even when the introducer is
+     * preceded by control codes.
+     */
     static GdkPixbufModulePattern signature[] = {
-        { "\x1bPq", "zzz", 100 }, /* anchored ESC P q */
-        { "\x1bP", "zz", 90 },    /* unanchored ESC P */
+        { "\x1bPq", "   ", 100 }, /* anchored ESC P q */
+        { "\x1bP", "* ", 90 },    /* unanchored ESC P */
         { NULL, NULL, 0 }
     };
     static gchar *mime_types[] = {

@@ -1036,6 +1036,7 @@ have_coregraphics="no"
 have_gdk_pixbuf2="no"
 have_gdk_pixbuf_pkg="no"
 have_gdk_pixbuf_loader="no"
+GDK_PIXBUF_QUERY_LOADERS=""
 have_sse2=no
 have_avx2=no
 have_avx512=no
@@ -1089,7 +1090,12 @@ if test x$have_gdk_pixbuf_pkg = xyes ; then
         if test x${PKG_CONFIG} != x; then
             PKG_CHECK_VAR([GDK_PIXBUF_BINARY_VERSION],
                           [gdk-pixbuf-2.0],
-                          [gdk_pixbuf_binary_version])
+                          [gdk_pixbuf_binary_version],
+                          [GDK_PIXBUF_BINARY_VERSION=])
+            PKG_CHECK_VAR([GDK_PIXBUF_MODULEDIR],
+                          [gdk-pixbuf-2.0],
+                          [gdk_pixbuf_moduledir],
+                          [GDK_PIXBUF_MODULEDIR=])
         fi
     fi
 
@@ -1103,7 +1109,43 @@ if test x$have_gdk_pixbuf_pkg = xyes ; then
     fi
 fi
 
-GDK_PIXBUF_MODULEDIR='${libdir}/gdk-pixbuf-2.0/${GDK_PIXBUF_BINARY_VERSION}/loaders'
+if test "x$GDK_PIXBUF_BINARY_VERSION" = x; then
+    GDK_PIXBUF_BINARY_VERSION=2.10.0
+fi
+
+if test "x$GDK_PIXBUF_MODULEDIR" = x; then
+    if test x${PKG_CONFIG} != x; then
+        GDK_PIXBUF_MODULEDIR=`$PKG_CONFIG --variable=gdk_pixbuf_moduledir \
+                                         gdk-pixbuf-2.0 2>/dev/null`
+    fi
+fi
+
+if test "x$GDK_PIXBUF_MODULEDIR" = x; then
+    GDK_PIXBUF_MODULEDIR='${libdir}/gdk-pixbuf-2.0/${GDK_PIXBUF_BINARY_VERSION}/loaders'
+fi
+
+if test "x$GDK_PIXBUF_MODULEDIR" != x; then
+    AC_MSG_NOTICE([gdk-pixbuf moduledir is ${GDK_PIXBUF_MODULEDIR}])
+fi
+
+if test x$have_gdk_pixbuf_loader = xyes; then
+    if test x${PKG_CONFIG} != x; then
+        PKG_CHECK_VAR([GDK_PIXBUF_QUERY_LOADERS],
+                      [gdk-pixbuf-2.0],
+                      [gdk_pixbuf_query_loaders],
+                      [],
+                      [GDK_PIXBUF_QUERY_LOADERS=])
+    fi
+    if test "x$GDK_PIXBUF_QUERY_LOADERS" = x; then
+        AC_PATH_PROG([GDK_PIXBUF_QUERY_LOADERS],
+                     [gdk-pixbuf-query-loaders])
+    fi
+    if test "x$GDK_PIXBUF_QUERY_LOADERS" != x; then
+        AC_MSG_NOTICE([gdk-pixbuf-query-loaders is ${GDK_PIXBUF_QUERY_LOADERS}])
+    else
+        AC_MSG_WARN([gdk-pixbuf-query-loaders not found; skipping cache updates during install])
+    fi
+fi
 
 AM_CONDITIONAL([ENABLE_GDK_PIXBUF_LOADER],
                [test "x$enable_gdk_pixbuf_loader" = "xyes" -a \
@@ -1113,6 +1155,7 @@ AC_SUBST(GDK_PIXBUF_BINARY_VERSION)
 AC_SUBST(GDK_PIXBUF_MODULEDIR)
 AC_SUBST(GDK_PIXBUF_CFLAGS)
 AC_SUBST(GDK_PIXBUF_LIBS)
+AC_SUBST(GDK_PIXBUF_QUERY_LOADERS)
 
 if test x$with_coregraphics != xno; then
     saved_LIBS="$LIBS"

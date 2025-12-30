@@ -520,9 +520,9 @@ endif
 
 gdk_pixbuf_loader_opt = get_option('gdk_pixbuf_loader')
 gdk_pixbuf_loader_deps = []
-gdk_pixbuf_binary_version = ''
 gdk_pixbuf_loader_dir = ''
 gdk_pixbuf_loader_message = 'no'
+gdk_pixbuf_query_loader_path = ''
 
 gdk_loader_dep = dependency('gdk-pixbuf-2.0',
                             version: '>=2.28',
@@ -532,13 +532,15 @@ gmodule_loader_dep = dependency('gmodule-2.0',
                                 required: gdk_pixbuf_loader_opt)
 
 if gdk_loader_dep.found() and gmodule_loader_dep.found()
-  gdk_pixbuf_binary_version = run_command(
-    'pkg-config',
-    '--variable=gdk_pixbuf_binary_version',
-    'gdk-pixbuf-2.0',
-    check: true).stdout().strip()
-  gdk_pixbuf_loader_dir = join_paths(get_option('libdir'),
-    'gdk-pixbuf-2.0', gdk_pixbuf_binary_version, 'loaders')
+  gdk_pixbuf_binary_version = gdk_loader_dep.get_variable(
+    pkgconfig: 'gdk_pixbuf_binary_version')
+  gdk_pixbuf_loader_dir = gdk_loader_dep.get_variable(
+    pkgconfig: 'gdk_pixbuf_moduledir',
+    default_value: join_paths(get_option('libdir'),
+      'gdk-pixbuf-2.0', gdk_pixbuf_binary_version, 'loaders'))
+  gdk_pixbuf_query_loader_path = gdk_loader_dep.get_variable(
+    pkgconfig: 'gdk_pixbuf_query_loaders',
+    default_value: '')
   gdk_pixbuf_loader_deps = [gdk_loader_dep, gmodule_loader_dep]
   gdk_pixbuf_loader_message = 'yes'
 elif gdk_pixbuf_loader_opt.enabled()
@@ -1217,8 +1219,10 @@ else
       install: true,
       install_dir: get_option('bindir')
     )
-    install_data('tools/libsixel-thumbnailer.thumbnailer', install_dir: join_paths(get_option('datadir'), 'thumbnailers'))
-    install_data('tools/sixel.xml', install_dir: join_paths(get_option('datadir'), 'packages'))
+    install_data('tools/libsixel-thumbnailer.thumbnailer',
+                 install_dir: join_paths(get_option('datadir'), 'thumbnailers'))
+    install_data('tools/sixel.xml',
+                 install_dir: join_paths(get_option('datadir'), 'mime', 'packages'))
     if update_mime_database.found()
       update_mime_script = join_paths(meson.project_source_root(), 'tools', 'update-mime-database.sh')
       meson.add_install_script(update_mime_script, update_mime_database.path(), join_paths(get_option('prefix'), get_option('datadir')), 'install', skip_if_destdir: true)
@@ -1329,6 +1333,23 @@ endif
 
 if gdk_pixbuf_loader_deps.length() > 0
   subdir('gdk-pixbuf-loader')
+  if gdk_pixbuf_query_loader_path != ''
+    query_loader_candidates = [gdk_pixbuf_query_loader_path,
+      'gdk-pixbuf-query-loaders']
+  else
+    query_loader_candidates = ['gdk-pixbuf-query-loaders']
+  endif
+  gdk_pixbuf_query_loaders = find_program(query_loader_candidates,
+    required: false)
+  if gdk_pixbuf_query_loaders.found()
+    gdk_pixbuf_cache_script = join_paths(meson.project_source_root(),
+      'tools', 'update-gdk-pixbuf-cache.sh')
+    meson.add_install_script(gdk_pixbuf_cache_script,
+      gdk_pixbuf_query_loaders.path(),
+      skip_if_destdir: true)
+  else
+    message('gdk-pixbuf-query-loaders not found; skip cache update')
+  endif
 endif
 
 subdir('assessment')
