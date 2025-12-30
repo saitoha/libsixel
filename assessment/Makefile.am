@@ -5,13 +5,13 @@ CLEANFILES =
 SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
 SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 
-AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
+AMALGAMATED_SIXEL = $(top_builddir)/amalgamation/sixel.c
 
 if WANT_AMALGAMATED_TOOLS
-BUILT_SOURCES += $(AMALGAMATION_SIXEL)
+BUILT_SOURCES += $(AMALGAMATED_SIXEL)
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
+$(AMALGAMATED_SIXEL): $(top_builddir)/amalgamation/Makefile
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
 endif
@@ -23,7 +23,7 @@ if CFLAGS_HAVE_COVERAGE
 MAYBE_COVERAGE = --coverage
 endif
 
-AMALGAMATION_LSQA_CPPFLAGS = $(AM_CPPFLAGS) \
+AMALGAMATED_LSQA_CPPFLAGS = $(AM_CPPFLAGS) \
         $(LIBCURL_CFLAGS) \
         $(WINHTTP_CFLAGS) \
         $(LIBPNG_CFLAGS) \
@@ -36,11 +36,11 @@ AMALGAMATION_LSQA_CPPFLAGS = $(AM_CPPFLAGS) \
         $(CLIPBOARD_CFLAGS) \
         $(ONNXRUNTIME_CFLAGS) \
         @THREAD_CFLAGS@
-if AMALGAMATION_NEEDS_OBJC
-AMALGAMATION_LSQA_CPPFLAGS += -x objective-c
+if AMALGAMATED_LIB_NEEDS_OBJC
+AMALGAMATED_LSQA_CPPFLAGS += -x objective-c
 endif
 
-AMALGAMATION_LSQA_LIBS = -lm \
+AMALGAMATED_LSQA_LIBS = -lm \
         $(LIBCURL_LIBS) \
         $(WINHTTP_LIBS) \
         $(LIBPNG_LIBS) \
@@ -58,11 +58,11 @@ bin_PROGRAMS = lsqa
 
 if WANT_AMALGAMATED_TOOLS
 lsqa_SOURCES =
-nodist_lsqa_SOURCES = $(AMALGAMATION_SIXEL)
-lsqa_CPPFLAGS = $(AMALGAMATION_LSQA_CPPFLAGS) -DBUILD_LSQA
+nodist_lsqa_SOURCES = $(AMALGAMATED_SIXEL)
+lsqa_CPPFLAGS = $(AMALGAMATED_LSQA_CPPFLAGS) -DBUILD_LSQA
 lsqa_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 lsqa_LDFLAGS = $(MAYBE_COVERAGE)
-lsqa_LDADD = $(AMALGAMATION_LSQA_LIBS)
+lsqa_LDADD = $(AMALGAMATED_LSQA_LIBS)
 else
 lsqa_SOURCES = $(srcdir)/lsqa.c
 lsqa_CPPFLAGS = -I$(top_builddir)/include/ \

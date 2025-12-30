@@ -188,26 +188,26 @@ AC_ARG_ENABLE([threads],
 AM_CONDITIONAL([SIXEL_ENABLE_THREADS],
                [test "x$enable_threads" != "xno"])
 
-AC_ARG_ENABLE([amalgamation],
-              [AS_HELP_STRING([--enable-amalgamation],
-                              [enable amalgamation build (default: no)])],
-              [],
-              [enable_amalgamation=no])
-AM_CONDITIONAL([WANT_AMALGAMATION],
-               [test "x$enable_amalgamation" = "xyes"])
+AC_ARG_ENABLE([amalgamated-lib],
+              [AS_HELP_STRING([--enable-amalgamated-lib],
+                              [enable amalgamation when building libsixel
+                               (default: no)])],
+              [enable_amalgamated_lib="$enableval"],
+              [enable_amalgamated_lib=no])
+AM_CONDITIONAL([WANT_AMALGAMATED_LIB],
+               [test "x$enable_amalgamated_lib" = "xyes"])
 
 AC_ARG_ENABLE([amalgamated-tools],
               [AS_HELP_STRING([--enable-amalgamated-tools],
-                              [build CLI tools from the amalgamated source
-                               (default: no)])],
+                              [build CLI tools and tests from the amalgamated
+                               source (default: no)])],
               [],
               [enable_amalgamated_tools=no])
-if test "x$enable_amalgamated_tools" = "xyes" \
-   && test "x$enable_amalgamation" != "xyes"; then
-    AC_MSG_ERROR([--enable-amalgamated-tools requires --enable-amalgamation])
-fi
 AM_CONDITIONAL([WANT_AMALGAMATED_TOOLS],
                [test "x$enable_amalgamated_tools" = "xyes"])
+AM_CONDITIONAL([WANT_AMALGAMATION_ARTIFACTS],
+               [test "x$enable_amalgamated_lib" = "xyes" \
+                 -o "x$enable_amalgamated_tools" = "xyes"])
 
 AC_ARG_WITH([shebang-file],
             [AS_HELP_STRING([--with-shebang-file=PATH],
@@ -1440,15 +1440,15 @@ case $host_os in
     ;;
 esac
 
-AMALGAMATION_NEEDS_OBJC=no
-if test x$enable_amalgamation = xyes; then
+AMALGAMATED_LIB_NEEDS_OBJC=no
+if test x$enable_amalgamated_lib = xyes; then
     if test x$have_clipboard_macos_appkit = xyes \
         || test x$have_quicklook_thumbnailing = xyes; then
-        AMALGAMATION_NEEDS_OBJC=yes
+        AMALGAMATED_LIB_NEEDS_OBJC=yes
     fi
 fi
-AM_CONDITIONAL([AMALGAMATION_NEEDS_OBJC],
-               [test x$AMALGAMATION_NEEDS_OBJC = xyes])
+AM_CONDITIONAL([AMALGAMATED_LIB_NEEDS_OBJC],
+               [test x$AMALGAMATED_LIB_NEEDS_OBJC = xyes])
 
 AC_SUBST(APPLE_QUICKLOOK_EXTENSION_LIBS)
 AC_SUBST(APPLE_QUICKLOOK_REGISTER_LIBS)

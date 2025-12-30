@@ -10,15 +10,15 @@ BUILT_SOURCES = completion_embed.h
 SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
 SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 
-AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
+AMALGAMATED_SIXEL = $(top_builddir)/amalgamation/sixel.c
 
 if WANT_AMALGAMATED_TOOLS
-BUILT_SOURCES += $(AMALGAMATION_SIXEL)
+BUILT_SOURCES += $(AMALGAMATED_SIXEL)
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
+$(AMALGAMATED_SIXEL): $(top_builddir)/amalgamation/Makefile
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
-$(AMALGAMATION_SIXEL): completion_embed.h
+$(AMALGAMATED_SIXEL): completion_embed.h
 endif
 
 BASH = @BASH@
@@ -41,7 +41,7 @@ if CFLAGS_HAVE_COVERAGE
 MAYBE_COVERAGE = --coverage
 endif
 
-AMALGAMATION_TOOL_CPPFLAGS = $(AM_CPPFLAGS) \
+AMALGAMATED_TOOL_CPPFLAGS = $(AM_CPPFLAGS) \
         $(LIBCURL_CFLAGS) \
         $(WINHTTP_CFLAGS) \
         $(LIBPNG_CFLAGS) \
@@ -54,11 +54,11 @@ AMALGAMATION_TOOL_CPPFLAGS = $(AM_CPPFLAGS) \
         $(CLIPBOARD_CFLAGS) \
         $(ONNXRUNTIME_CFLAGS) \
         @THREAD_CFLAGS@
-if AMALGAMATION_NEEDS_OBJC
-AMALGAMATION_TOOL_CPPFLAGS += -x objective-c
+if AMALGAMATED_LIB_NEEDS_OBJC
+AMALGAMATED_TOOL_CPPFLAGS += -x objective-c
 endif
 
-AMALGAMATION_TOOL_LIBS = -lm \
+AMALGAMATED_TOOL_LIBS = -lm \
         $(LIBCURL_LIBS) \
         $(WINHTTP_LIBS) \
         $(LIBPNG_LIBS) \
@@ -103,12 +103,12 @@ if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
 if WANT_AMALGAMATED_TOOLS
 img2sixel_SOURCES =
-nodist_img2sixel_SOURCES = $(AMALGAMATION_SIXEL)
-img2sixel_CPPFLAGS = $(AMALGAMATION_TOOL_CPPFLAGS) \
+nodist_img2sixel_SOURCES = $(AMALGAMATED_SIXEL)
+img2sixel_CPPFLAGS = $(AMALGAMATED_TOOL_CPPFLAGS) \
         -DBUILD_IMG2SIXEL -DHAVE_COMPLETION_EMBED_H
 img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 img2sixel_LDFLAGS = $(MAYBE_COVERAGE)
-img2sixel_LDADD = $(AMALGAMATION_TOOL_LIBS)
+img2sixel_LDADD = $(AMALGAMATED_TOOL_LIBS)
 else
 img2sixel_SOURCES = $(srcdir)/img2sixel.c \
                     $(srcdir)/completion_utils.c \
@@ -143,11 +143,11 @@ bin_PROGRAMS += sixel2png
 sixel2png_CPPFLAGS = $(AM_CPPFLAGS)
 if WANT_AMALGAMATED_TOOLS
 sixel2png_SOURCES =
-nodist_sixel2png_SOURCES = $(AMALGAMATION_SIXEL)
-sixel2png_CPPFLAGS += $(AMALGAMATION_TOOL_CPPFLAGS) -DBUILD_SIXEL2PNG
+nodist_sixel2png_SOURCES = $(AMALGAMATED_SIXEL)
+sixel2png_CPPFLAGS += $(AMALGAMATED_TOOL_CPPFLAGS) -DBUILD_SIXEL2PNG
 sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 sixel2png_LDFLAGS = $(MAYBE_COVERAGE)
-sixel2png_LDADD = $(AMALGAMATION_TOOL_LIBS)
+sixel2png_LDADD = $(AMALGAMATED_TOOL_LIBS)
 else
 sixel2png_SOURCES = $(srcdir)/sixel2png.c \
                     $(srcdir)/cli.c \

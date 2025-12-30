@@ -91,8 +91,8 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@WANT_AMALGAMATED_TOOLS_TRUE@am__append_1 = $(AMALGAMATION_SIXEL)
-@AMALGAMATION_NEEDS_OBJC_TRUE@am__append_2 = -x objective-c
+@WANT_AMALGAMATED_TOOLS_TRUE@am__append_1 = $(AMALGAMATED_SIXEL)
+@AMALGAMATED_LIB_NEEDS_OBJC_TRUE@am__append_2 = -x objective-c
 bin_PROGRAMS = lsqa$(EXEEXT)
 @WITH_SHEBANG_FILE_TRUE@am__append_3 = $(SIXEL_SHEBANG_STAMP)
 subdir = assessment
@@ -432,15 +432,15 @@ top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
 BUILT_SOURCES = $(am__append_1)
 CLEANFILES = $(am__append_3)
-AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
+AMALGAMATED_SIXEL = $(top_builddir)/amalgamation/sixel.c
 @CFLAGS_HAVE_COVERAGE_TRUE@MAYBE_COVERAGE = --coverage
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
-AMALGAMATION_LSQA_CPPFLAGS = $(AM_CPPFLAGS) $(LIBCURL_CFLAGS) \
+AMALGAMATED_LSQA_CPPFLAGS = $(AM_CPPFLAGS) $(LIBCURL_CFLAGS) \
 	$(WINHTTP_CFLAGS) $(LIBPNG_CFLAGS) $(LIBJPEG_CFLAGS) \
 	$(GDK_PIXBUF_CFLAGS) $(GD_CFLAGS) $(WIC_CFLAGS) \
 	$(COREGRAPHICS_CFLAGS) $(QUICKLOOK_CFLAGS) $(CLIPBOARD_CFLAGS) \
 	$(ONNXRUNTIME_CFLAGS) @THREAD_CFLAGS@ $(am__append_2)
-AMALGAMATION_LSQA_LIBS = -lm \
+AMALGAMATED_LSQA_LIBS = -lm \
         $(LIBCURL_LIBS) \
         $(WINHTTP_LIBS) \
         $(LIBPNG_LIBS) \
@@ -456,18 +456,18 @@ AMALGAMATION_LSQA_LIBS = -lm \
 
 @WANT_AMALGAMATED_TOOLS_FALSE@lsqa_SOURCES = $(srcdir)/lsqa.c
 @WANT_AMALGAMATED_TOOLS_TRUE@lsqa_SOURCES = 
-@WANT_AMALGAMATED_TOOLS_TRUE@nodist_lsqa_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_lsqa_SOURCES = $(AMALGAMATED_SIXEL)
 @WANT_AMALGAMATED_TOOLS_FALSE@lsqa_CPPFLAGS = -I$(top_builddir)/include/ \
 @WANT_AMALGAMATED_TOOLS_FALSE@                -I$(top_srcdir)/src \
 @WANT_AMALGAMATED_TOOLS_FALSE@                $(AM_CPPFLAGS)
 
-@WANT_AMALGAMATED_TOOLS_TRUE@lsqa_CPPFLAGS = $(AMALGAMATION_LSQA_CPPFLAGS) -DBUILD_LSQA
+@WANT_AMALGAMATED_TOOLS_TRUE@lsqa_CPPFLAGS = $(AMALGAMATED_LSQA_CPPFLAGS) -DBUILD_LSQA
 @WANT_AMALGAMATED_TOOLS_FALSE@lsqa_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
 @WANT_AMALGAMATED_TOOLS_TRUE@lsqa_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 @WANT_AMALGAMATED_TOOLS_FALSE@lsqa_LDFLAGS = $(MAYBE_COVERAGE)
 @WANT_AMALGAMATED_TOOLS_TRUE@lsqa_LDFLAGS = $(MAYBE_COVERAGE)
 @WANT_AMALGAMATED_TOOLS_FALSE@lsqa_LDADD = $(top_builddir)/src/libsixel.la
-@WANT_AMALGAMATED_TOOLS_TRUE@lsqa_LDADD = $(AMALGAMATION_LSQA_LIBS)
+@WANT_AMALGAMATED_TOOLS_TRUE@lsqa_LDADD = $(AMALGAMATED_LSQA_LIBS)
 @HAVE_ONNXRUNTIME_TRUE@lpipsmodelsdir = @modeldir@/lpips
 @HAVE_ONNXRUNTIME_TRUE@dist_lpipsmodels_DATA = $(top_srcdir)/models/lpips/lpips_diff.onnx \
 @HAVE_ONNXRUNTIME_TRUE@                        $(top_srcdir)/models/lpips/lpips_feature.onnx
@@ -885,7 +885,7 @@ uninstall-am: uninstall-binPROGRAMS uninstall-dist_lpipsmodelsDATA
 
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-@WANT_AMALGAMATED_TOOLS_TRUE@$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
+@WANT_AMALGAMATED_TOOLS_TRUE@$(AMALGAMATED_SIXEL): $(top_builddir)/amalgamation/Makefile
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
 

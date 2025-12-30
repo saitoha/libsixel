@@ -1295,7 +1295,7 @@ main(int argc, char *argv[])
         {0, 0, 0, 0}
     };
 #endif  /* HAVE_GETOPT_LONG */
-    char detail_buffer[2048];
+    char detail_buffer[4096];
     char const *detail_source = NULL;
     int input_count = 0;
     int assessment_enabled = 0;

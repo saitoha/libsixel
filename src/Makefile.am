@@ -10,18 +10,18 @@ builddir = @builddir@
 SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
 SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 
-if WANT_AMALGAMATION
-AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
-AMALGAMATION_TARGET = sixel.c
-if AMALGAMATION_NEEDS_OBJC
-AMALGAMATION_COMPILE = $(LTOBJCCOMPILE)
-AMALGAMATION_CPPFLAGS = -x objective-c
+if WANT_AMALGAMATED_LIB
+AMALGAMATED_LIB_SIXEL = $(top_builddir)/amalgamation/sixel.c
+AMALGAMATED_LIB_TARGET = sixel.c
+if AMALGAMATED_LIB_NEEDS_OBJC
+AMALGAMATED_LIB_COMPILE = $(LTOBJCCOMPILE)
+AMALGAMATED_LIB_CPPFLAGS = -x objective-c
 else
-AMALGAMATION_COMPILE = $(LTCOMPILE)
-AMALGAMATION_CPPFLAGS =
+AMALGAMATED_LIB_COMPILE = $(LTCOMPILE)
+AMALGAMATED_LIB_CPPFLAGS =
 endif
-BUILT_SOURCES = $(AMALGAMATION_SIXEL)
-nodist_libsixel_la_SOURCES = $(AMALGAMATION_SIXEL)
+BUILT_SOURCES = $(AMALGAMATED_LIB_SIXEL)
+nodist_libsixel_la_SOURCES = $(AMALGAMATED_LIB_SIXEL)
 endif
 
 if COND_GCOV
@@ -35,17 +35,17 @@ CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests
 
 lib_LTLIBRARIES = libsixel.la
 
-if WANT_AMALGAMATION
+if WANT_AMALGAMATED_LIB
 libsixel_la_SOURCES =
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
+$(AMALGAMATED_LIB_SIXEL): $(top_builddir)/amalgamation/Makefile
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
-	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation $(AMALGAMATION_TARGET)
+	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation $(AMALGAMATED_LIB_TARGET)
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-libsixel_la-sixel.lo: $(AMALGAMATION_SIXEL)
-	$(AMALGAMATION_COMPILE) -c -o $@ $<
+libsixel_la-sixel.lo: $(AMALGAMATED_LIB_SIXEL)
+	$(AMALGAMATED_LIB_COMPILE) -c -o $@ $<
 
 else
 libsixel_la_SOURCES = \
@@ -219,7 +219,7 @@ $(srcdir)/clipboard_carbon.c
 endif
 endif
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS) \
-                @THREAD_CPPFLAGS@ $(AMALGAMATION_CPPFLAGS)
+                @THREAD_CPPFLAGS@ $(AMALGAMATED_LIB_CPPFLAGS)
 libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(LIBCURL_CFLAGS) \
                 $(WINHTTP_CFLAGS) \

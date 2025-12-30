@@ -426,7 +426,7 @@ main(int argc, char *argv[])
     int option_index;
 #endif  /* HAVE_GETOPT_LONG */
     char const *optstring;
-    char detail_buffer[1024];
+    char detail_buffer[4096];
     char const *detail_source = NULL;
 
     sixel_tty_init_output_device(STDERR_FILENO);

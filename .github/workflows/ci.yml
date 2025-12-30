@@ -42,7 +42,7 @@ jobs:
             cp_arch: x86-64
             cp_version: '14.3'
             variant: amalgamation
-            configure_extra: '--enable-amalgamation'
+            configure_extra: '--enable-amalgamated-lib --enable-amalgamated-tools'
           - label: freebsd 14.3 aarch64
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -137,7 +137,7 @@ jobs:
             runner: ubuntu-24.04-arm
             sys: aarch64
             variant: amalgamation
-            configure_extra: '--enable-amalgamation'
+            configure_extra: '--enable-amalgamated-lib --enable-amalgamated-tools'
           - label: ubuntu i686
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -153,7 +153,7 @@ jobs:
             runner: macos-latest
             sys: aarch64
             variant: amalgamation
-            configure_extra: '--enable-amalgamation'
+            configure_extra: '--enable-amalgamated-lib --enable-amalgamated-tools'
           - label: macos x86_64
             os: macos-15
             runner: macos-15
@@ -164,7 +164,7 @@ jobs:
             runner: macos-15
             sys: x86_64
             variant: amalgamation
-            configure_extra: '--enable-amalgamation'
+            configure_extra: '--enable-amalgamated-lib --enable-amalgamated-tools'
           - label: cosmopolitan ubuntu 24.04 aarch64
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
@@ -227,7 +227,7 @@ jobs:
             compiler: gcc
             sys: UCRT64
             variant: amalgamation
-            configure_extra: '--enable-amalgamation'
+            configure_extra: '--enable-amalgamated-lib --enable-amalgamated-tools'
           - label: clang64
             os: windows-latest
             runner: windows-latest
@@ -252,14 +252,14 @@ jobs:
             compiler: cl
             sys: MSVC
             variant: amalgamation
-            configure_extra: '--enable-amalgamation'
+            configure_extra: '--enable-amalgamated-lib --enable-amalgamated-tools'
           - label: cygwin amalgamation
             os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: CYGWIN
             variant: amalgamation
-            configure_extra: '--enable-amalgamation'
+            configure_extra: '--enable-amalgamated-lib --enable-amalgamated-tools'
           - label: cosmopolitan msys
             os: windows-latest
             runner: windows-latest
@@ -2225,7 +2225,7 @@ jobs:
           fi
           amalgamation_flag=""
           if [ "${{ matrix.amalgamation || '' }}" = "true" ]; then
-            amalgamation_flag="-Damalgamation=enabled"
+            amalgamation_flag="-Damalgamated_lib=true"
           fi
           meson setup builddir \
               --wrap-mode=nodownload \
@@ -2271,7 +2271,7 @@ jobs:
           fi
           amalgamation_flag=""
           if [ "${{ matrix.amalgamation || '' }}" = "true" ]; then
-            amalgamation_flag="-Damalgamation=enabled"
+            amalgamation_flag="-Damalgamated_lib=true"
           fi
 
           date -u
@@ -2339,7 +2339,7 @@ jobs:
           default_library_flag="--default-library static"
         fi
         if [ "${{ matrix.amalgamation || '' }}" = "true" ]; then
-          amalgamation_flag="-Damalgamation=enabled"
+          amalgamation_flag="-Damalgamated_lib=true"
         fi
         meson setup builddir \
             --wrap-mode=nodownload \
@@ -2380,7 +2380,7 @@ jobs:
         }
         $amalgamationFlag = ''
         if ('${{ matrix.amalgamation }}' -eq 'true') {
-          $amalgamationFlag = '-Damalgamation=enabled'
+          $amalgamationFlag = '-Damalgamated_lib=true'
         }
         $scriptLines = @(
           'set -eu',
@@ -2418,7 +2418,7 @@ jobs:
         set "DISABLE_SIMD_FLAG="
         if "${{ matrix.disable_simd || '' }}"=="true" set "DISABLE_SIMD_FLAG=-Dsimd=disabled"
         set "AMALGAMATION_FLAG="
-        if "${{ matrix.amalgamation || '' }}"=="true" set "AMALGAMATION_FLAG=-Damalgamation=enabled"
+        if "${{ matrix.amalgamation || '' }}"=="true" set "AMALGAMATION_FLAG=-Damalgamated_lib=true"
         python -m mesonbuild.mesonmain setup builddir ^
             --wrap-mode=nodownload ^
             --default-library static ^
@@ -2461,7 +2461,7 @@ jobs:
         set "DISABLE_SIMD_FLAG="
         if "${{ matrix.disable_simd || '' }}"=="true" set "DISABLE_SIMD_FLAG=-Dsimd=disabled"
         set "AMALGAMATION_FLAG="
-        if "${{ matrix.amalgamation || '' }}"=="true" set "AMALGAMATION_FLAG=-Damalgamation=enabled"
+        if "${{ matrix.amalgamation || '' }}"=="true" set "AMALGAMATION_FLAG=-Damalgamated_lib=true"
         python -m mesonbuild.mesonmain setup builddir ^
             --wrap-mode=nodownload ^
             --default-library shared ^
@@ -2503,7 +2503,7 @@ jobs:
         set "DISABLE_SIMD_FLAG="
         if "${{ matrix.disable_simd || '' }}"=="true" set "DISABLE_SIMD_FLAG=-Dsimd=disabled"
         set "AMALGAMATION_FLAG="
-        if "${{ matrix.amalgamation || '' }}"=="true" set "AMALGAMATION_FLAG=-Damalgamation=enabled"
+        if "${{ matrix.amalgamation || '' }}"=="true" set "AMALGAMATION_FLAG=-Damalgamated_lib=true"
         python -m mesonbuild.mesonmain setup builddir ^
             --wrap-mode=nodownload ^
             --default-library shared ^

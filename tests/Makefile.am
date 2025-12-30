@@ -6,12 +6,12 @@ MAYBE_COVERAGE = --coverage
 endif
 SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
 SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
-AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
+AMALGAMATED_SIXEL = $(top_builddir)/amalgamation/sixel.c
 if WANT_AMALGAMATED_TOOLS
-BUILT_SOURCES = $(AMALGAMATION_SIXEL)
+BUILT_SOURCES = $(AMALGAMATED_SIXEL)
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
+$(AMALGAMATED_SIXEL): $(top_builddir)/amalgamation/Makefile
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
 endif
@@ -271,14 +271,14 @@ else
 TESTS_COMMON_LDADD_VAL = $(top_builddir)/src/libsixel.la $(LIBS)
 endif
 
-TESTS_AMALGAMATION_CPPFLAGS_COMMON = $(TESTS_COMMON_CPPFLAGS_VAL)
-TESTS_AMALGAMATION_CFLAGS_COMMON = $(TESTS_COMMON_CFLAGS_VAL)
-TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
-if AMALGAMATION_NEEDS_OBJC
-TESTS_AMALGAMATION_CPPFLAGS_COMMON += -x objective-c
+TESTS_AMALGAMATED_CPPFLAGS_COMMON = $(TESTS_COMMON_CPPFLAGS_VAL)
+TESTS_AMALGAMATED_CFLAGS_COMMON = $(TESTS_COMMON_CFLAGS_VAL)
+TESTS_AMALGAMATED_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
+if AMALGAMATED_LIB_NEEDS_OBJC
+TESTS_AMALGAMATED_CPPFLAGS_COMMON += -x objective-c
 endif
 if WANT_AMALGAMATED_TOOLS
-TESTS_AMALGAMATION_LDADD_COMMON = $(LIBS) \
+TESTS_AMALGAMATED_LDADD_COMMON = $(LIBS) \
         $(LIBCURL_LIBS) \
         $(WINHTTP_LIBS) \
         $(LIBPNG_LIBS) \
@@ -292,18 +292,18 @@ TESTS_AMALGAMATION_LDADD_COMMON = $(LIBS) \
         $(ONNXRUNTIME_LIBS) \
         @THREAD_LIBS@
 else
-TESTS_AMALGAMATION_LDADD_COMMON = $(top_builddir)/src/libsixel.la $(LIBS)
+TESTS_AMALGAMATED_LDADD_COMMON = $(top_builddir)/src/libsixel.la $(LIBS)
 endif
 
 check_PROGRAMS += $(FILTER_TEST_BINARIES) $(PROBE_TESTS_BINARIES) $(PALETTE_TESTS_BINARIES)
 
 if WANT_AMALGAMATED_TOOLS
-nodist_filter_0001_filter_clip_SOURCES = $(AMALGAMATION_SIXEL)
-filter_0001_filter_clip_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+nodist_filter_0001_filter_clip_SOURCES = $(AMALGAMATED_SIXEL)
+filter_0001_filter_clip_CPPFLAGS = $(TESTS_AMALGAMATED_CPPFLAGS_COMMON) \
     -DBUILD_0001_FILTER_CLIP=1
-filter_0001_filter_clip_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
-filter_0001_filter_clip_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
-filter_0001_filter_clip_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+filter_0001_filter_clip_CFLAGS = $(TESTS_AMALGAMATED_CFLAGS_COMMON)
+filter_0001_filter_clip_LDFLAGS = $(TESTS_AMALGAMATED_LDFLAGS_COMMON)
+filter_0001_filter_clip_LDADD = $(TESTS_AMALGAMATED_LDADD_COMMON)
 else
 filter_0001_filter_clip_SOURCES = filter/0001_filter_clip.c
 filter_0001_filter_clip_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
@@ -313,12 +313,12 @@ filter_0001_filter_clip_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-nodist_filter_0002_filter_sample_SOURCES = $(AMALGAMATION_SIXEL)
-filter_0002_filter_sample_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+nodist_filter_0002_filter_sample_SOURCES = $(AMALGAMATED_SIXEL)
+filter_0002_filter_sample_CPPFLAGS = $(TESTS_AMALGAMATED_CPPFLAGS_COMMON) \
     -DBUILD_0002_FILTER_SAMPLE=1
-filter_0002_filter_sample_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
-filter_0002_filter_sample_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
-filter_0002_filter_sample_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+filter_0002_filter_sample_CFLAGS = $(TESTS_AMALGAMATED_CFLAGS_COMMON)
+filter_0002_filter_sample_LDFLAGS = $(TESTS_AMALGAMATED_LDFLAGS_COMMON)
+filter_0002_filter_sample_LDADD = $(TESTS_AMALGAMATED_LDADD_COMMON)
 else
 filter_0002_filter_sample_SOURCES = filter/0002_filter_sample.c
 filter_0002_filter_sample_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
@@ -328,12 +328,12 @@ filter_0002_filter_sample_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-nodist_filter_0003_filter_resize_SOURCES = $(AMALGAMATION_SIXEL)
-filter_0003_filter_resize_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+nodist_filter_0003_filter_resize_SOURCES = $(AMALGAMATED_SIXEL)
+filter_0003_filter_resize_CPPFLAGS = $(TESTS_AMALGAMATED_CPPFLAGS_COMMON) \
     -DBUILD_0003_FILTER_RESIZE=1
-filter_0003_filter_resize_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
-filter_0003_filter_resize_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
-filter_0003_filter_resize_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+filter_0003_filter_resize_CFLAGS = $(TESTS_AMALGAMATED_CFLAGS_COMMON)
+filter_0003_filter_resize_LDFLAGS = $(TESTS_AMALGAMATED_LDFLAGS_COMMON)
+filter_0003_filter_resize_LDADD = $(TESTS_AMALGAMATED_LDADD_COMMON)
 else
 filter_0003_filter_resize_SOURCES = filter/0003_filter_resize.c
 filter_0003_filter_resize_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
@@ -343,12 +343,12 @@ filter_0003_filter_resize_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-nodist_filter_0004_filter_colors_SOURCES = $(AMALGAMATION_SIXEL)
-filter_0004_filter_colors_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+nodist_filter_0004_filter_colors_SOURCES = $(AMALGAMATED_SIXEL)
+filter_0004_filter_colors_CPPFLAGS = $(TESTS_AMALGAMATED_CPPFLAGS_COMMON) \
     -DBUILD_0004_FILTER_COLORS=1
-filter_0004_filter_colors_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
-filter_0004_filter_colors_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
-filter_0004_filter_colors_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+filter_0004_filter_colors_CFLAGS = $(TESTS_AMALGAMATED_CFLAGS_COMMON)
+filter_0004_filter_colors_LDFLAGS = $(TESTS_AMALGAMATED_LDFLAGS_COMMON)
+filter_0004_filter_colors_LDADD = $(TESTS_AMALGAMATED_LDADD_COMMON)
 else
 filter_0004_filter_colors_SOURCES = filter/0004_filter_colors.c
 filter_0004_filter_colors_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
@@ -358,12 +358,12 @@ filter_0004_filter_colors_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-nodist_filter_0005_filter_lookup_SOURCES = $(AMALGAMATION_SIXEL)
-filter_0005_filter_lookup_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+nodist_filter_0005_filter_lookup_SOURCES = $(AMALGAMATED_SIXEL)
+filter_0005_filter_lookup_CPPFLAGS = $(TESTS_AMALGAMATED_CPPFLAGS_COMMON) \
     -DBUILD_0005_FILTER_LOOKUP=1
-filter_0005_filter_lookup_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
-filter_0005_filter_lookup_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
-filter_0005_filter_lookup_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+filter_0005_filter_lookup_CFLAGS = $(TESTS_AMALGAMATED_CFLAGS_COMMON)
+filter_0005_filter_lookup_LDFLAGS = $(TESTS_AMALGAMATED_LDFLAGS_COMMON)
+filter_0005_filter_lookup_LDADD = $(TESTS_AMALGAMATED_LDADD_COMMON)
 else
 filter_0005_filter_lookup_SOURCES = filter/0005_filter_lookup.c
 filter_0005_filter_lookup_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
@@ -373,12 +373,12 @@ filter_0005_filter_lookup_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-nodist_filter_0006_filter_final_merge_SOURCES = $(AMALGAMATION_SIXEL)
-filter_0006_filter_final_merge_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+nodist_filter_0006_filter_final_merge_SOURCES = $(AMALGAMATED_SIXEL)
+filter_0006_filter_final_merge_CPPFLAGS = $(TESTS_AMALGAMATED_CPPFLAGS_COMMON) \
     -DBUILD_0006_FILTER_FINAL_MERGE=1
-filter_0006_filter_final_merge_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
-filter_0006_filter_final_merge_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
-filter_0006_filter_final_merge_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+filter_0006_filter_final_merge_CFLAGS = $(TESTS_AMALGAMATED_CFLAGS_COMMON)
+filter_0006_filter_final_merge_LDFLAGS = $(TESTS_AMALGAMATED_LDFLAGS_COMMON)
+filter_0006_filter_final_merge_LDADD = $(TESTS_AMALGAMATED_LDADD_COMMON)
 else
 filter_0006_filter_final_merge_SOURCES = filter/0006_filter_final_merge.c
 filter_0006_filter_final_merge_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
@@ -388,12 +388,12 @@ filter_0006_filter_final_merge_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-nodist_filter_0007_filter_vpte_SOURCES = $(AMALGAMATION_SIXEL)
-filter_0007_filter_vpte_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+nodist_filter_0007_filter_vpte_SOURCES = $(AMALGAMATED_SIXEL)
+filter_0007_filter_vpte_CPPFLAGS = $(TESTS_AMALGAMATED_CPPFLAGS_COMMON) \
     -DBUILD_0007_FILTER_VPTE=1
-filter_0007_filter_vpte_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
-filter_0007_filter_vpte_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
-filter_0007_filter_vpte_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+filter_0007_filter_vpte_CFLAGS = $(TESTS_AMALGAMATED_CFLAGS_COMMON)
+filter_0007_filter_vpte_LDFLAGS = $(TESTS_AMALGAMATED_LDFLAGS_COMMON)
+filter_0007_filter_vpte_LDADD = $(TESTS_AMALGAMATED_LDADD_COMMON)
 else
 filter_0007_filter_vpte_SOURCES = filter/0007_filter_vpte.c
 filter_0007_filter_vpte_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
@@ -403,12 +403,12 @@ filter_0007_filter_vpte_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-nodist_filter_0008_filter_load_SOURCES = $(AMALGAMATION_SIXEL)
-filter_0008_filter_load_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+nodist_filter_0008_filter_load_SOURCES = $(AMALGAMATED_SIXEL)
+filter_0008_filter_load_CPPFLAGS = $(TESTS_AMALGAMATED_CPPFLAGS_COMMON) \
     -DBUILD_0008_FILTER_LOAD=1
-filter_0008_filter_load_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
-filter_0008_filter_load_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
-filter_0008_filter_load_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+filter_0008_filter_load_CFLAGS = $(TESTS_AMALGAMATED_CFLAGS_COMMON)
+filter_0008_filter_load_LDFLAGS = $(TESTS_AMALGAMATED_LDFLAGS_COMMON)
+filter_0008_filter_load_LDADD = $(TESTS_AMALGAMATED_LDADD_COMMON)
 else
 filter_0008_filter_load_SOURCES = filter/0008_filter_load.c
 filter_0008_filter_load_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
@@ -418,12 +418,12 @@ filter_0008_filter_load_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-nodist_filter_0009_filter_dither_SOURCES = $(AMALGAMATION_SIXEL)
-filter_0009_filter_dither_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+nodist_filter_0009_filter_dither_SOURCES = $(AMALGAMATED_SIXEL)
+filter_0009_filter_dither_CPPFLAGS = $(TESTS_AMALGAMATED_CPPFLAGS_COMMON) \
     -DBUILD_0009_FILTER_DITHER=1
-filter_0009_filter_dither_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
-filter_0009_filter_dither_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
-filter_0009_filter_dither_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+filter_0009_filter_dither_CFLAGS = $(TESTS_AMALGAMATED_CFLAGS_COMMON)
+filter_0009_filter_dither_LDFLAGS = $(TESTS_AMALGAMATED_LDFLAGS_COMMON)
+filter_0009_filter_dither_LDADD = $(TESTS_AMALGAMATED_LDADD_COMMON)
 else
 filter_0009_filter_dither_SOURCES = filter/0009_filter_dither.c
 filter_0009_filter_dither_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
@@ -433,12 +433,12 @@ filter_0009_filter_dither_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-nodist_filter_0010_filter_encode_SOURCES = $(AMALGAMATION_SIXEL)
-filter_0010_filter_encode_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+nodist_filter_0010_filter_encode_SOURCES = $(AMALGAMATED_SIXEL)
+filter_0010_filter_encode_CPPFLAGS = $(TESTS_AMALGAMATED_CPPFLAGS_COMMON) \
     -DBUILD_0010_FILTER_ENCODE=1
-filter_0010_filter_encode_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
-filter_0010_filter_encode_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
-filter_0010_filter_encode_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+filter_0010_filter_encode_CFLAGS = $(TESTS_AMALGAMATED_CFLAGS_COMMON)
+filter_0010_filter_encode_LDFLAGS = $(TESTS_AMALGAMATED_LDFLAGS_COMMON)
+filter_0010_filter_encode_LDADD = $(TESTS_AMALGAMATED_LDADD_COMMON)
 else
 filter_0010_filter_encode_SOURCES = filter/0010_filter_encode.c
 filter_0010_filter_encode_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
@@ -448,13 +448,13 @@ filter_0010_filter_encode_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-nodist_cli_0029_cli_token_is_known_option_SOURCES = $(AMALGAMATION_SIXEL)
-cli_0029_cli_token_is_known_option_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+nodist_cli_0029_cli_token_is_known_option_SOURCES = $(AMALGAMATED_SIXEL)
+cli_0029_cli_token_is_known_option_CPPFLAGS = $(TESTS_AMALGAMATED_CPPFLAGS_COMMON) \
     -DBUILD_0029_CLI_TOKEN_IS_KNOWN_OPTION=1 \
     -DBUILD_CLI=1
-cli_0029_cli_token_is_known_option_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
-cli_0029_cli_token_is_known_option_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
-cli_0029_cli_token_is_known_option_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+cli_0029_cli_token_is_known_option_CFLAGS = $(TESTS_AMALGAMATED_CFLAGS_COMMON)
+cli_0029_cli_token_is_known_option_LDFLAGS = $(TESTS_AMALGAMATED_LDFLAGS_COMMON)
+cli_0029_cli_token_is_known_option_LDADD = $(TESTS_AMALGAMATED_LDADD_COMMON)
 else
 cli_0029_cli_token_is_known_option_SOURCES = \
     cli/0029_cli_token_is_known_option.c \
@@ -466,13 +466,13 @@ cli_0029_cli_token_is_known_option_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-nodist_cli_0030_cli_option_requires_argument_SOURCES = $(AMALGAMATION_SIXEL)
-cli_0030_cli_option_requires_argument_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+nodist_cli_0030_cli_option_requires_argument_SOURCES = $(AMALGAMATED_SIXEL)
+cli_0030_cli_option_requires_argument_CPPFLAGS = $(TESTS_AMALGAMATED_CPPFLAGS_COMMON) \
     -DBUILD_0030_CLI_OPTION_REQUIRES_ARGUMENT=1 \
     -DBUILD_CLI=1
-cli_0030_cli_option_requires_argument_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
-cli_0030_cli_option_requires_argument_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
-cli_0030_cli_option_requires_argument_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+cli_0030_cli_option_requires_argument_CFLAGS = $(TESTS_AMALGAMATED_CFLAGS_COMMON)
+cli_0030_cli_option_requires_argument_LDFLAGS = $(TESTS_AMALGAMATED_LDFLAGS_COMMON)
+cli_0030_cli_option_requires_argument_LDADD = $(TESTS_AMALGAMATED_LDADD_COMMON)
 else
 cli_0030_cli_option_requires_argument_SOURCES = \
     cli/0030_cli_option_requires_argument.c \
@@ -484,13 +484,13 @@ cli_0030_cli_option_requires_argument_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-nodist_cli_0031_cli_guard_missing_argument_SOURCES = $(AMALGAMATION_SIXEL)
-cli_0031_cli_guard_missing_argument_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+nodist_cli_0031_cli_guard_missing_argument_SOURCES = $(AMALGAMATED_SIXEL)
+cli_0031_cli_guard_missing_argument_CPPFLAGS = $(TESTS_AMALGAMATED_CPPFLAGS_COMMON) \
     -DBUILD_0031_CLI_GUARD_MISSING_ARGUMENT=1 \
     -DBUILD_CLI=1
-cli_0031_cli_guard_missing_argument_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
-cli_0031_cli_guard_missing_argument_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
-cli_0031_cli_guard_missing_argument_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+cli_0031_cli_guard_missing_argument_CFLAGS = $(TESTS_AMALGAMATED_CFLAGS_COMMON)
+cli_0031_cli_guard_missing_argument_LDFLAGS = $(TESTS_AMALGAMATED_LDFLAGS_COMMON)
+cli_0031_cli_guard_missing_argument_LDADD = $(TESTS_AMALGAMATED_LDADD_COMMON)
 else
 cli_0031_cli_guard_missing_argument_SOURCES = \
     cli/0031_cli_guard_missing_argument.c \
@@ -502,12 +502,12 @@ cli_0031_cli_guard_missing_argument_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-nodist_probe_0001_probe_parse_SOURCES = $(AMALGAMATION_SIXEL)
-probe_0001_probe_parse_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+nodist_probe_0001_probe_parse_SOURCES = $(AMALGAMATED_SIXEL)
+probe_0001_probe_parse_CPPFLAGS = $(TESTS_AMALGAMATED_CPPFLAGS_COMMON) \
     -DBUILD_0001_PROBE_PARSE=1
-probe_0001_probe_parse_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
-probe_0001_probe_parse_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
-probe_0001_probe_parse_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+probe_0001_probe_parse_CFLAGS = $(TESTS_AMALGAMATED_CFLAGS_COMMON)
+probe_0001_probe_parse_LDFLAGS = $(TESTS_AMALGAMATED_LDFLAGS_COMMON)
+probe_0001_probe_parse_LDADD = $(TESTS_AMALGAMATED_LDADD_COMMON)
 else
 probe_0001_probe_parse_SOURCES = probe/0001_probe_parse.c
 probe_0001_probe_parse_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
@@ -517,12 +517,12 @@ probe_0001_probe_parse_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-nodist_palette_0001_kmeans_init_SOURCES = $(AMALGAMATION_SIXEL)
-palette_0001_kmeans_init_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+nodist_palette_0001_kmeans_init_SOURCES = $(AMALGAMATED_SIXEL)
+palette_0001_kmeans_init_CPPFLAGS = $(TESTS_AMALGAMATED_CPPFLAGS_COMMON) \
     -DBUILD_0001_KMEANS_INIT=1
-palette_0001_kmeans_init_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
-palette_0001_kmeans_init_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
-palette_0001_kmeans_init_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+palette_0001_kmeans_init_CFLAGS = $(TESTS_AMALGAMATED_CFLAGS_COMMON)
+palette_0001_kmeans_init_LDFLAGS = $(TESTS_AMALGAMATED_LDFLAGS_COMMON)
+palette_0001_kmeans_init_LDADD = $(TESTS_AMALGAMATED_LDADD_COMMON)
 else
 palette_0001_kmeans_init_SOURCES = palette/0001_kmeans_init.c
 palette_0001_kmeans_init_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
