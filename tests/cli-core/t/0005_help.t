@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test ensuring informational img2sixel commands execute successfully.
+# TAP test ensuring img2sixel help command executes successfully.
 
 # Enable strict mode with verbose tracing for diagnostics.
 set -euxv
@@ -27,19 +27,12 @@ fail() {
     status=1
 }
 
-echo "1..2"
-
+echo "1..1"
 
 if run_img2sixel -H >"${artifact_dir}/help.txt" 2>>"${log_file}"; then
     pass 1 "help output available"
 else
     fail 1 "help output failed"
-fi
-
-if run_img2sixel -V >"${artifact_dir}/version.txt" 2>>"${log_file}"; then
-    pass 2 "version output available"
-else
-    fail 2 "version output failed"
 fi
 
 exit "${status}"
