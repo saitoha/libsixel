@@ -21,7 +21,7 @@ AMALGAMATION_BUILD_DEPS = $(wildcard $(top_builddir)/config.h \
         $(top_builddir)/converters/completion_embed.h)
 AMALGAMATION_DEPS = $(AMALGAMATION_GEN) $(AMALGAMATION_SRC_DEPS) \
         $(AMALGAMATION_CONVERTER_DEPS) $(AMALGAMATION_ASSESSMENT_DEPS) \
-        $(AMALGAMATION_PUBLIC_DEPS) $(AMALGAMATION_BUILD_DEPS)
+        $(AMALGAMATION_PUBLIC_DEPS) $(AMALGAMATION_BUILD_DEPS) Makefile
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(builddir)/sixel.c: $(AMALGAMATION_DEPS)

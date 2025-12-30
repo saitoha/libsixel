@@ -26,7 +26,6 @@
 #define LIBSIXEL_THREADPOOL_H
 
 #include <stddef.h>
-
 #include <sixel.h>
 
 #include "threading.h"

@@ -103,6 +103,7 @@ load_with_gdkpixbuf(
     int anim_loop_count = (-1);  /* (-1): infinite, >=0: finite loop count */
     int delay_ms;
     gboolean use_animation = FALSE;
+    GError *error = NULL;
 
     (void) fuse_palette;
     (void) reqcolors;
@@ -134,11 +135,13 @@ load_with_gdkpixbuf(
      * feed the entire chunk; gdk-pixbuf will buffer as needed.  Always close
      * the loader to let gdk finalize the parse state before consuming.
      */
-    if (! gdk_pixbuf_loader_write(loader, pchunk->buffer, pchunk->size, NULL)) {
+    if (! gdk_pixbuf_loader_write(loader, pchunk->buffer, pchunk->size, &error)) {
+        sixel_helper_set_additional_message(error->message);
         status = SIXEL_GDK_ERROR;
         goto end;
     }
-    if (! gdk_pixbuf_loader_close(loader, NULL)) {
+    if (! gdk_pixbuf_loader_close(loader, &error)) {
+        sixel_helper_set_additional_message(error->message);
         status = SIXEL_GDK_ERROR;
         goto end;
     }
@@ -205,8 +208,10 @@ load_with_gdkpixbuf(
         frame->loop_count = 0;
 
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+# endif
 #endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
         it = gdk_pixbuf_animation_get_iter(animation, &time_val);
         if (it == NULL) {
@@ -316,7 +321,9 @@ load_with_gdkpixbuf(
             time_val = start_time;
             it = gdk_pixbuf_animation_get_iter(animation, &time_val);
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-# pragma GCC diagnostic pop
+# if defined(__GNUC__) && !defined(__PCC__)
+#  pragma GCC diagnostic pop
+# endif
 #endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
             if (it == NULL) {
                 status = SIXEL_GDK_ERROR;
