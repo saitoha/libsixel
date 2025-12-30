@@ -735,9 +735,10 @@ QUICKLOOK_LIBS
 QUICKLOOK_CFLAGS
 COREGRAPHICS_LIBS
 COREGRAPHICS_CFLAGS
-GDK_PIXBUF_MODULEDIR
 ENABLE_GDK_PIXBUF_LOADER_FALSE
 ENABLE_GDK_PIXBUF_LOADER_TRUE
+GDK_PIXBUF_QUERY_LOADERS
+GDK_PIXBUF_MODULEDIR
 GDK_PIXBUF_BINARY_VERSION
 GDK_PIXBUF_LIBS
 GDK_PIXBUF_CFLAGS
@@ -993,6 +994,8 @@ PKG_CONFIG_LIBDIR
 GDK_PIXBUF_CFLAGS
 GDK_PIXBUF_LIBS
 GDK_PIXBUF_BINARY_VERSION
+GDK_PIXBUF_MODULEDIR
+GDK_PIXBUF_QUERY_LOADERS
 GD_CFLAGS
 GD_LIBS
 LIBCURL_CFLAGS
@@ -1749,6 +1752,12 @@ Some influential environment variables:
   GDK_PIXBUF_BINARY_VERSION
               value of gdk_pixbuf_binary_version for gdk-pixbuf-2.0,
               overriding pkg-config
+  GDK_PIXBUF_MODULEDIR
+              value of gdk_pixbuf_moduledir for gdk-pixbuf-2.0, overriding
+              pkg-config
+  GDK_PIXBUF_QUERY_LOADERS
+              value of gdk_pixbuf_query_loaders for gdk-pixbuf-2.0, overriding
+              pkg-config
   GD_CFLAGS   C compiler flags for GD, overriding pkg-config
   GD_LIBS     linker flags for GD, overriding pkg-config
   LIBCURL_CFLAGS
@@ -19733,6 +19742,7 @@ have_coregraphics="no"
 have_gdk_pixbuf2="no"
 have_gdk_pixbuf_pkg="no"
 have_gdk_pixbuf_loader="no"
+GDK_PIXBUF_QUERY_LOADERS=""
 have_sse2=no
 have_avx2=no
 have_avx512=no
@@ -19882,6 +19892,36 @@ GDK_PIXBUF_BINARY_VERSION=$pkg_cv_GDK_PIXBUF_BINARY_VERSION
 if test "x$GDK_PIXBUF_BINARY_VERSION" = x""
 then :
 
+else case e in #(
+  e) GDK_PIXBUF_BINARY_VERSION= ;;
+esac
+fi
+
+if test -n "$GDK_PIXBUF_MODULEDIR"; then
+    pkg_cv_GDK_PIXBUF_MODULEDIR="$GDK_PIXBUF_MODULEDIR"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gdk-pixbuf-2.0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gdk-pixbuf-2.0") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_GDK_PIXBUF_MODULEDIR=`$PKG_CONFIG --variable="gdk_pixbuf_moduledir" "gdk-pixbuf-2.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+GDK_PIXBUF_MODULEDIR=$pkg_cv_GDK_PIXBUF_MODULEDIR
+
+if test "x$GDK_PIXBUF_MODULEDIR" = x""
+then :
+
+else case e in #(
+  e) GDK_PIXBUF_MODULEDIR= ;;
+esac
 fi
         fi
     fi
@@ -19898,7 +19938,109 @@ printf "%s\n" "#define HAVE_GDK_PIXBUF2 1" >>confdefs.h
     fi
 fi
 
-GDK_PIXBUF_MODULEDIR='${libdir}/gdk-pixbuf-2.0/${GDK_PIXBUF_BINARY_VERSION}/loaders'
+if test "x$GDK_PIXBUF_BINARY_VERSION" = x; then
+    GDK_PIXBUF_BINARY_VERSION=2.10.0
+fi
+
+if test "x$GDK_PIXBUF_MODULEDIR" = x; then
+    if test x${PKG_CONFIG} != x; then
+        GDK_PIXBUF_MODULEDIR=`$PKG_CONFIG --variable=gdk_pixbuf_moduledir \
+                                         gdk-pixbuf-2.0 2>/dev/null`
+    fi
+fi
+
+if test "x$GDK_PIXBUF_MODULEDIR" = x; then
+    GDK_PIXBUF_MODULEDIR='${libdir}/gdk-pixbuf-2.0/${GDK_PIXBUF_BINARY_VERSION}/loaders'
+fi
+
+if test "x$GDK_PIXBUF_MODULEDIR" != x; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: gdk-pixbuf moduledir is ${GDK_PIXBUF_MODULEDIR}" >&5
+printf "%s\n" "$as_me: gdk-pixbuf moduledir is ${GDK_PIXBUF_MODULEDIR}" >&6;}
+fi
+
+if test x$have_gdk_pixbuf_loader = xyes; then
+    if test x${PKG_CONFIG} != x; then
+
+if test -n "$GDK_PIXBUF_QUERY_LOADERS"; then
+    pkg_cv_GDK_PIXBUF_QUERY_LOADERS="$GDK_PIXBUF_QUERY_LOADERS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gdk-pixbuf-2.0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gdk-pixbuf-2.0") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_GDK_PIXBUF_QUERY_LOADERS=`$PKG_CONFIG --variable="gdk_pixbuf_query_loaders" "gdk-pixbuf-2.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+GDK_PIXBUF_QUERY_LOADERS=$pkg_cv_GDK_PIXBUF_QUERY_LOADERS
+
+if test "x$GDK_PIXBUF_QUERY_LOADERS" = x""
+then :
+  GDK_PIXBUF_QUERY_LOADERS=
+fi
+    fi
+    if test "x$GDK_PIXBUF_QUERY_LOADERS" = x; then
+        # Extract the first word of "gdk-pixbuf-query-loaders", so it can be a program name with args.
+set dummy gdk-pixbuf-query-loaders; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_GDK_PIXBUF_QUERY_LOADERS+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $GDK_PIXBUF_QUERY_LOADERS in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_GDK_PIXBUF_QUERY_LOADERS="$GDK_PIXBUF_QUERY_LOADERS" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_GDK_PIXBUF_QUERY_LOADERS="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac ;;
+esac
+fi
+GDK_PIXBUF_QUERY_LOADERS=$ac_cv_path_GDK_PIXBUF_QUERY_LOADERS
+if test -n "$GDK_PIXBUF_QUERY_LOADERS"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $GDK_PIXBUF_QUERY_LOADERS" >&5
+printf "%s\n" "$GDK_PIXBUF_QUERY_LOADERS" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+    fi
+    if test "x$GDK_PIXBUF_QUERY_LOADERS" != x; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: gdk-pixbuf-query-loaders is ${GDK_PIXBUF_QUERY_LOADERS}" >&5
+printf "%s\n" "$as_me: gdk-pixbuf-query-loaders is ${GDK_PIXBUF_QUERY_LOADERS}" >&6;}
+    else
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: gdk-pixbuf-query-loaders not found; skipping cache updates during install" >&5
+printf "%s\n" "$as_me: WARNING: gdk-pixbuf-query-loaders not found; skipping cache updates during install" >&2;}
+    fi
+fi
 
  if test "x$enable_gdk_pixbuf_loader" = "xyes" -a \
                      "x$have_gdk_pixbuf_pkg" = "xyes"; then
@@ -19908,6 +20050,7 @@ else
   ENABLE_GDK_PIXBUF_LOADER_TRUE='#'
   ENABLE_GDK_PIXBUF_LOADER_FALSE=
 fi
+
 
 
 

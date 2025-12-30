@@ -15,6 +15,7 @@ EXTRA_DIST = libsixel-config.in \
              quicklook-extension.bash \
              sixel-thumbnailer \
              update-mime-database.sh \
+             update-gdk-pixbuf-cache.sh \
              libsixel-thumbnailer.thumbnailer \
              sixel.xml \
              gen_completion_embed.awk \
@@ -26,7 +27,7 @@ install-data-hook:
 	@WANT_THUMBNAILER_TRUE@      $(MKDIR_P) "$$dest" && \
 	@WANT_THUMBNAILER_TRUE@      $(INSTALL_DATA) "$(srcdir)/libsixel-thumbnailer.thumbnailer" "$$dest/"; \
 	@WANT_THUMBNAILER_TRUE@    done
-	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/packages"; do \
+	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/mime/packages"; do \
 	@WANT_THUMBNAILER_TRUE@      $(MKDIR_P) "$$dest" && \
 	@WANT_THUMBNAILER_TRUE@      $(INSTALL_DATA) "$(srcdir)/sixel.xml" "$$dest/"; \
 	@WANT_THUMBNAILER_TRUE@    done
@@ -42,7 +43,7 @@ uninstall-hook:
 	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/thumbnailers"; do \
 	@WANT_THUMBNAILER_TRUE@      rm -f "$$dest/libsixel-thumbnailer.thumbnailer"; \
 	@WANT_THUMBNAILER_TRUE@    done
-	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/packages"; do \
+	@WANT_THUMBNAILER_TRUE@    @for dest in "$(DESTDIR)$(datadir)/mime/packages"; do \
 	@WANT_THUMBNAILER_TRUE@      rm -f "$$dest/sixel.xml"; \
 	@WANT_THUMBNAILER_TRUE@    done
 	@WANT_THUMBNAILER_TRUE@    @if test -n "$(UPDATE_MIME_DATABASE)"; then \

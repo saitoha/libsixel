@@ -36,11 +36,12 @@ context to support concurrent decoding.
    make -j$(nproc)
    make install
    ```
-3. The gdk-pixbuf binary version is obtained with
-   `pkg-config --variable=gdk_pixbuf_binary_version gdk-pixbuf-2.0`. The module
-   installs into
-   `$(libdir)/gdk-pixbuf-2.0/$(gdk_pixbuf_binary_version)/loaders`.
-4. Update the loader cache after installation:
+3. The install directory follows
+   `pkg-config --variable=gdk_pixbuf_moduledir gdk-pixbuf-2.0`, matching
+   distro-specific multiarch paths automatically.
+4. The loader cache is refreshed automatically when `gdk-pixbuf-query-loaders`
+   is available and `DESTDIR` is not set. If your install skips the refresh
+   (for example when staging with `DESTDIR`), run:
    ```sh
    gdk-pixbuf-query-loaders --update-cache
    ```
@@ -56,7 +57,17 @@ context to support concurrent decoding.
    meson install -C builddir
    ```
 3. The install destination matches the Autotools layout.
-4. Run `gdk-pixbuf-query-loaders --update-cache` to refresh the cache.
+4. Meson refreshes the loader cache automatically when
+   `gdk-pixbuf-query-loaders` is available and `DESTDIR` is not set. If the
+   refresh is skipped, run:
+   ```sh
+   gdk-pixbuf-query-loaders --update-cache
+   ```
+5. If the thumbnailer is installed, refresh the shared MIME database so
+   `image/x-sixel` is registered:
+   ```sh
+   update-mime-database "$PREFIX/share/mime"
+   ```
 
 ## Usage
 

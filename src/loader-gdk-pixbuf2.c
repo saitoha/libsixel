@@ -44,14 +44,14 @@
 #endif
 
 #ifdef HAVE_GDK_PIXBUF2
-# if HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wtypedef-redefinition"
+# if HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION && defined(__clang__)
+#  pragma clang diagnostic push
+#  pragma clang diagnostic ignored "-Wtypedef-redefinition"
 # endif
 # include <gdk-pixbuf/gdk-pixbuf.h>
 # include <gdk-pixbuf/gdk-pixbuf-simple-anim.h>
-# if HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION
-#  pragma GCC diagnostic pop
+# if HAVE_DIAGNOSTIC_TYPEDEF_REDEFINITION && defined(__clang__)
+#  pragma clang diagnostic pop
 # endif
 #endif
 
@@ -60,6 +60,7 @@
 #include "allocator.h"
 #include "frame.h"
 #include "loader-gdk-pixbuf2.h"
+#include "probe.h"
 
 /*
  * Loader backed by gdk-pixbuf2. The entire animation is consumed via
@@ -83,6 +84,7 @@ load_with_gdkpixbuf(
     GdkPixbuf *pixbuf;
     GdkPixbufLoader *loader = NULL;
     gboolean loader_closed = FALSE;  /* remember if loader was already closed */
+    GError *loader_error;
     GdkPixbufAnimation *animation;
     GdkPixbufAnimationIter *it = NULL;
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
@@ -103,11 +105,14 @@ load_with_gdkpixbuf(
     int anim_loop_count = (-1);  /* (-1): infinite, >=0: finite loop count */
     int delay_ms;
     gboolean use_animation = FALSE;
-    GError *error = NULL;
+    gboolean is_sixel = FALSE;
+    SIXELSTATUS probe_status;
 
     (void) fuse_palette;
     (void) reqcolors;
     (void) bgcolor;
+
+    loader_error = NULL;
 
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
@@ -126,6 +131,14 @@ load_with_gdkpixbuf(
 # pragma GCC diagnostic pop
 #endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
     start_time = time_val;
+    /*
+     * Try the generic loader first. Fall back to the SIXEL-specific loader
+     * only when the data looks like SIXEL and the generic path fails.
+     */
+    probe_status = sixel_probe_is_probable(pchunk->buffer, pchunk->size);
+    if (probe_status == SIXEL_OK) {
+        is_sixel = TRUE;
+    }
     loader = gdk_pixbuf_loader_new();
     if (loader == NULL) {
         status = SIXEL_GDK_ERROR;
@@ -135,15 +148,54 @@ load_with_gdkpixbuf(
      * feed the entire chunk; gdk-pixbuf will buffer as needed.  Always close
      * the loader to let gdk finalize the parse state before consuming.
      */
-    if (! gdk_pixbuf_loader_write(loader, pchunk->buffer, pchunk->size, &error)) {
-        sixel_helper_set_additional_message(error->message);
-        status = SIXEL_GDK_ERROR;
-        goto end;
+    if (! gdk_pixbuf_loader_write(
+            loader, pchunk->buffer, pchunk->size, NULL)) {
+        if (!is_sixel) {
+            status = SIXEL_GDK_ERROR;
+            goto end;
+        }
+        g_object_unref(loader);
+        loader = NULL;
+        loader = gdk_pixbuf_loader_new_with_type("sixel", &loader_error);
+        if (loader_error) {
+            g_error_free(loader_error);
+            loader_error = NULL;
+        }
+        if (loader == NULL) {
+            status = SIXEL_GDK_ERROR;
+            goto end;
+        }
+        if (! gdk_pixbuf_loader_write(
+                loader, pchunk->buffer, pchunk->size, NULL)) {
+            status = SIXEL_GDK_ERROR;
+            goto end;
+        }
     }
-    if (! gdk_pixbuf_loader_close(loader, &error)) {
-        sixel_helper_set_additional_message(error->message);
-        status = SIXEL_GDK_ERROR;
-        goto end;
+    if (! gdk_pixbuf_loader_close(loader, NULL)) {
+        if (!is_sixel) {
+            status = SIXEL_GDK_ERROR;
+            goto end;
+        }
+        g_object_unref(loader);
+        loader = NULL;
+        loader = gdk_pixbuf_loader_new_with_type("sixel", &loader_error);
+        if (loader_error) {
+            g_error_free(loader_error);
+            loader_error = NULL;
+        }
+        if (loader == NULL) {
+            status = SIXEL_GDK_ERROR;
+            goto end;
+        }
+        if (! gdk_pixbuf_loader_write(
+                loader, pchunk->buffer, pchunk->size, NULL)) {
+            status = SIXEL_GDK_ERROR;
+            goto end;
+        }
+        if (! gdk_pixbuf_loader_close(loader, NULL)) {
+            status = SIXEL_GDK_ERROR;
+            goto end;
+        }
     }
     loader_closed = TRUE;
     animation = gdk_pixbuf_loader_get_animation(loader);
@@ -208,10 +260,8 @@ load_with_gdkpixbuf(
         frame->loop_count = 0;
 
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-# if defined(__GNUC__) && !defined(__PCC__)
-#  pragma GCC diagnostic push
-#  pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-# endif
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 #endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
         it = gdk_pixbuf_animation_get_iter(animation, &time_val);
         if (it == NULL) {
@@ -321,9 +371,7 @@ load_with_gdkpixbuf(
             time_val = start_time;
             it = gdk_pixbuf_animation_get_iter(animation, &time_val);
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-# if defined(__GNUC__) && !defined(__PCC__)
-#  pragma GCC diagnostic pop
-# endif
+# pragma GCC diagnostic pop
 #endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
             if (it == NULL) {
                 status = SIXEL_GDK_ERROR;
