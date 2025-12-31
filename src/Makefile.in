@@ -14,7 +14,6 @@
 
 @SET_MAKE@
 
-
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
     false; \
@@ -103,7 +102,7 @@ host_triplet = @host@
 @HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_4 = \
 @HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/clipboard_carbon.c
 
-@COND_TESTS_TRUE@noinst_PROGRAMS = tests$(EXEEXT)
+@COND_TESTS_TRUE@check_PROGRAMS = tests$(EXEEXT)
 @WITH_SHEBANG_FILE_TRUE@am__append_5 = $(SIXEL_SHEBANG_STAMP)
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -121,7 +120,6 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-PROGRAMS = $(noinst_PROGRAMS)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -912,7 +910,7 @@ libsixel_la_LIBADD = -lm \
 dist_man_MANS = $(srcdir)/sixel.5
 EXTRA_DIST = $(srcdir)/rgblookup.gperf
 GPERF_OPT = --ignore-case --language=ANSI-C
-@WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(noinst_PROGRAMS)
+@WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(check_PROGRAMS)
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_STAMP = src-tests-shebang.stamp
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -949,9 +947,9 @@ $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
 
-clean-noinstPROGRAMS:
-	$(am__rm_f) $(noinst_PROGRAMS)
-	test -z "$(EXEEXT)" || $(am__rm_f) $(noinst_PROGRAMS:$(EXEEXT)=)
+clean-checkPROGRAMS:
+	$(am__rm_f) $(check_PROGRAMS)
+	test -z "$(EXEEXT)" || $(am__rm_f) $(check_PROGRAMS:$(EXEEXT)=)
 
 install-libLTLIBRARIES: $(lib_LTLIBRARIES)
 	@$(NORMAL_INSTALL)
@@ -1839,11 +1837,15 @@ distdir-am: $(DISTFILES)
 	    || exit 1; \
 	  fi; \
 	done
+@WITH_SHEBANG_FILE_FALSE@check-local:
 check-am: all-am
+	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS)
+	$(MAKE) $(AM_MAKEFLAGS) check-local
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
-@WITH_SHEBANG_FILE_FALSE@all-local:
-all-am: Makefile $(PROGRAMS) $(LTLIBRARIES) $(MANS) all-local
+all-am: Makefile $(LTLIBRARIES) $(MANS)
+install-checkPROGRAMS: install-libLTLIBRARIES
+
 installdirs:
 	for dir in "$(DESTDIR)$(libdir)" "$(DESTDIR)$(man5dir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -1886,8 +1888,8 @@ maintainer-clean-generic:
 	-$(am__rm_f) $(BUILT_SOURCES)
 clean: clean-am
 
-clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
-	clean-noinstPROGRAMS mostlyclean-am
+clean-am: clean-checkPROGRAMS clean-generic clean-libLTLIBRARIES \
+	clean-libtool mostlyclean-am
 
 distclean: distclean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Plo
@@ -2113,11 +2115,12 @@ uninstall-am: uninstall-libLTLIBRARIES uninstall-man
 
 uninstall-man: uninstall-man5
 
-.MAKE: all check install install-am install-exec install-strip
+.MAKE: all check check-am install install-am install-exec \
+	install-strip
 
-.PHONY: CTAGS GTAGS TAGS all all-am all-local am--depfiles check \
-	check-am clean clean-generic clean-libLTLIBRARIES \
-	clean-libtool clean-noinstPROGRAMS cscopelist-am ctags \
+.PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-am \
+	check-local clean clean-checkPROGRAMS clean-generic \
+	clean-libLTLIBRARIES clean-libtool cscopelist-am ctags \
 	ctags-am distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-data \
@@ -2145,7 +2148,7 @@ uninstall-man: uninstall-man5
 @WANT_AMALGAMATED_LIB_TRUE@	$(AMALGAMATION_COMPILE) -c -o $@ $<
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-unittest: all
+unittest: tests
 @COND_TESTS_TRUE@	$(srcdir)/tests
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
@@ -2154,14 +2157,14 @@ gen-rgblookup: $(srcdir)/rgblookup.gperf
 	sed 's/{""}/\{"", 0, 0, 0\}/g'          |\
 	astyle                                  > $(srcdir)/rgblookup.h
 
-@WITH_SHEBANG_FILE_TRUE@$(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
-@WITH_SHEBANG_FILE_TRUE@	@if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
-@WITH_SHEBANG_FILE_TRUE@		$(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
-@WITH_SHEBANG_FILE_TRUE@			$(SIXEL_SHEBANG_TARGETS); \
-@WITH_SHEBANG_FILE_TRUE@	fi
-@WITH_SHEBANG_FILE_TRUE@	@touch $@
+@WITH_SHEBANG_FILE_TRUE@check-local: $(SIXEL_SHEBANG_STAMP)
 
-@WITH_SHEBANG_FILE_TRUE@all-local: $(SIXEL_SHEBANG_STAMP)
+@WITH_SHEBANG_FILE_TRUE@$(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
+@WITH_SHEBANG_FILE_TRUE@        @if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
+@WITH_SHEBANG_FILE_TRUE@                $(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
+@WITH_SHEBANG_FILE_TRUE@                        $(SIXEL_SHEBANG_TARGETS); \
+@WITH_SHEBANG_FILE_TRUE@        fi
+@WITH_SHEBANG_FILE_TRUE@        @touch $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
