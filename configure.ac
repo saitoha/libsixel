@@ -188,13 +188,14 @@ AC_ARG_ENABLE([threads],
 AM_CONDITIONAL([SIXEL_ENABLE_THREADS],
                [test "x$enable_threads" != "xno"])
 
-AC_ARG_ENABLE([amalgamation],
-              [AS_HELP_STRING([--enable-amalgamation],
-                              [enable amalgamation build (default: no)])],
+AC_ARG_ENABLE([amalgamated-lib],
+              [AS_HELP_STRING([--enable-amalgamated-lib],
+                              [build libsixel from the amalgamated source
+                               (default: no)])],
               [],
-              [enable_amalgamation=no])
-AM_CONDITIONAL([WANT_AMALGAMATION],
-               [test "x$enable_amalgamation" = "xyes"])
+              [enable_amalgamated_lib=no])
+AM_CONDITIONAL([WANT_AMALGAMATED_LIB],
+               [test "x$enable_amalgamated_lib" = "xyes"])
 
 AC_ARG_ENABLE([amalgamated-tools],
               [AS_HELP_STRING([--enable-amalgamated-tools],
@@ -202,12 +203,17 @@ AC_ARG_ENABLE([amalgamated-tools],
                                (default: no)])],
               [],
               [enable_amalgamated_tools=no])
-if test "x$enable_amalgamated_tools" = "xyes" \
-   && test "x$enable_amalgamation" != "xyes"; then
-    AC_MSG_ERROR([--enable-amalgamated-tools requires --enable-amalgamation])
-fi
 AM_CONDITIONAL([WANT_AMALGAMATED_TOOLS],
                [test "x$enable_amalgamated_tools" = "xyes"])
+
+if test "x$enable_amalgamated_lib" = "xyes" \
+   || test "x$enable_amalgamated_tools" = "xyes"; then
+  want_amalgamated_sources=yes
+else
+  want_amalgamated_sources=no
+fi
+AM_CONDITIONAL([WANT_AMALGAMATED_SOURCES],
+               [test "x$want_amalgamated_sources" = "xyes"])
 
 AC_ARG_WITH([shebang-file],
             [AS_HELP_STRING([--with-shebang-file=PATH],
@@ -1441,7 +1447,7 @@ case $host_os in
 esac
 
 AMALGAMATION_NEEDS_OBJC=no
-if test x$enable_amalgamation = xyes; then
+if test x$want_amalgamated_sources = xyes; then
     if test x$have_clipboard_macos_appkit = xyes \
         || test x$have_quicklook_thumbnailing = xyes; then
         AMALGAMATION_NEEDS_OBJC=yes

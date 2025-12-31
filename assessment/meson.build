@@ -84,7 +84,7 @@ lsqa_c_args = lsqa_args
 lsqa_objc_args = lsqa_c_args
 lsqa_rpath = src_build_dir
 
-if amalgamation_opt.enabled() and amalgamated_tools_opt.enabled()
+if amalgamated_lib_enabled and amalgamated_tools_enabled
   lsqa_sources = [amalgamation_out]
   lsqa_dependencies = deps
   if ort_dep.found()

@@ -34,7 +34,6 @@ src_build_dir = join_paths(meson.project_build_root(), 'src')
 
 img2sixel_opt = get_option('img2sixel')
 sixel2png_opt = get_option('sixel2png')
-amalgamated_tools_enabled = get_option('amalgamated_tools').enabled()
 
 img2sixel_deps = []
 if img2sixel_opt.enabled()
