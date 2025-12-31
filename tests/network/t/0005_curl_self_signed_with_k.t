@@ -9,7 +9,10 @@ artifact_dir="${artifact_root}/${test_name}"
 log_file="${artifact_dir}/curl.log"
 output_dir="${artifact_dir}/outputs"
 tmp_dir="${artifact_dir}/tmp"
-server_port=4444
+server_port_base=4444
+max_port_attempts=5
+port_file="${tmp_dir}/server.port"
+# Use nearby ports so the HTTPS server can start when the default is busy.
 
 mkdir -p "${output_dir}" "${tmp_dir}"
 
@@ -45,6 +48,7 @@ except ImportError:
     from SimpleHTTPServer import SimpleHTTPRequestHandler  # type: ignore
     from SocketServer import TCPServer  # type: ignore
 import ssl
+import sys
 
 class TLSHTTPServer(TCPServer):
     allow_reuse_address = True
@@ -62,10 +66,37 @@ def configure_socket(sock):
         server_side=True,
     )
 
-with TLSHTTPServer(('localhost', ${server_port}), SimpleHTTPRequestHandler) as httpd:
-    httpd.socket = configure_socket(httpd.socket)
-    for _ in range(1):
-        httpd.handle_request()
+def serve_requests(port):
+    with TLSHTTPServer(('localhost', port), SimpleHTTPRequestHandler) as httpd:
+        httpd.socket = configure_socket(httpd.socket)
+        httpd.timeout = 5
+        with open('server.port', 'w', encoding='ascii') as port_fp:
+            port_fp.write(str(port))
+
+        for _ in range(5):
+            httpd.handle_request()
+
+
+def main():
+    last_error = None
+
+    for offset in range(${max_port_attempts}):
+        port = ${server_port_base} + offset
+        try:
+            serve_requests(port)
+            return 0
+        except OSError as exc:
+            last_error = exc
+            continue
+
+    sys.stderr.write(
+        f"Failed to bind after ${max_port_attempts} attempts: {last_error}\n",
+    )
+    return 75
+
+
+if __name__ == '__main__':
+    sys.exit(main())
 PY
 
 server_pid_file=$(make_temp_file "${tmp_dir}" "curl-server-pid")
@@ -77,6 +108,29 @@ server_pid_file=$(make_temp_file "${tmp_dir}" "curl-server-pid")
 server_pid=$(cat "${server_pid_file}")
 rm -f "${server_pid_file}"
 sleep 1
+
+server_port=""
+for _ in 1 2 3 4 5; do
+    if [ -s "${port_file}" ]; then
+        server_port=$(cat "${port_file}")
+        break
+    fi
+
+    if ! kill -0 "${server_pid}" 2>/dev/null; then
+        break
+    fi
+
+    sleep 1
+done
+
+if [ -z "${server_port}" ]; then
+    if kill "${server_pid}" 2>/dev/null; then
+        wait "${server_pid}" 2>/dev/null || :
+    fi
+
+    printf 'ok 1 - self-signed fetch with -k # SKIP failed to start HTTPS server\n'
+    exit 0
+fi
 
 verify_output="${output_dir}/https.sixel"
 server_ok=1
