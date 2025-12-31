@@ -17582,9 +17582,9 @@ fi
 
 
 
-if test "x$using_cl" = "xyes"; then
-  CPPFLAGS="$CPPFLAGS -D_CRT_SECURE_NO_WARNINGS"
-  CFLAGS="$CFLAGS -nologo"
+  if test "x$using_cl" = "xyes"; then
+    # Keep the MSVC banner quiet during compilation and preprocessing.
+    CPPFLAGS="$CPPFLAGS -nologo"
 
 printf "%s\n" "#define HAVE_MSVC 1" >>confdefs.h
 
