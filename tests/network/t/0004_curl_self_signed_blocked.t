@@ -21,20 +21,21 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 echo "1..1"
 
-if ! command -v openssl >/dev/null 2>&1 || \
-        ! command -v python >/dev/null 2>&1; then
-    printf 'ok 1 - self-signed fetch blocked # SKIP openssl or python missing\n'
+if ! command -v python >/dev/null 2>&1; then
+    printf 'ok 1 - self-signed fetch blocked # SKIP python missing\n'
     exit 0
 fi
 
 require_file "${images_dir}/snake.six"
 cp "${images_dir}/snake.six" "${tmp_dir}/snake.sixel"
 
-(cd "${tmp_dir}" && openssl genrsa >"server.key" 2>>"${log_file}" \
-    && openssl req -new -key "server.key" -subj "/CN=localhost" \
-        >"server.csr" 2>>"${log_file}" \
-    && openssl x509 -req -in "server.csr" -signkey "server.key" \
-        -out "server.crt" 2>>"${log_file}" || exit 1)
+cert_dir="${script_dir}/../certs"
+require_file "${cert_dir}/server.crt"
+require_file "${cert_dir}/server.key"
+# Use a pre-generated localhost certificate to avoid depending on openssl
+# during test execution on platforms without it.
+cp "${cert_dir}/server.crt" "${tmp_dir}/server.crt"
+cp "${cert_dir}/server.key" "${tmp_dir}/server.key"
 
 cat >"${tmp_dir}/server.py" <<PY
 try:
