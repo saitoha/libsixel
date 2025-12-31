@@ -21,8 +21,11 @@
 #
 
 wic_sources = files(
-  'wic.c',
+  # Place wic_stub first so INITGUID definitions are emitted before wic.c
+  # when unity builds concatenate sources. This prevents missing GUID
+  # symbols such as GUID_MetadataFormatExif.
   'wic_stub.c',
+  'wic.c',
   'wic_stub.h',
   '../src/fromsixel.c',
   '../src/allocator.c',
