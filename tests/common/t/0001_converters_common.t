@@ -27,7 +27,7 @@ run_quiet() {
 # locations when available to read the right config headers.
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-parent_dir=$(CDPATH=; cd "${script_dir}/../.." && pwd)
+parent_dir=$(CDPATH=; cd "${script_dir}/../../.." && pwd)
 
 if [ -n "${MESON_SOURCE_ROOT:-}" ]; then
     top_srcdir=${TOP_SRCDIR:-${MESON_SOURCE_ROOT}}

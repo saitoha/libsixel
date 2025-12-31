@@ -78,12 +78,17 @@ rm -f "${server_pid_file}"
 sleep 1
 
 verify_output="${output_dir}/https.sixel"
-if run_img2sixel -k "https://localhost:${server_port}/snake.sixel" \
-        >"${verify_output}" 2>>"${log_file}"; then
-    server_ok=0
-else
-    server_ok=1
-fi
+server_ok=1
+
+for attempt in 1 2 3; do
+    if run_img2sixel -k "https://localhost:${server_port}/snake.sixel" \
+            >"${verify_output}" 2>>"${log_file}"; then
+        server_ok=0
+        break
+    fi
+
+    sleep 1
+done
 
 if kill "${server_pid}" 2>/dev/null; then
     wait "${server_pid}" 2>/dev/null || :
