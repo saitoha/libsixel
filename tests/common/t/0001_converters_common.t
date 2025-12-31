@@ -189,6 +189,23 @@ ensure_feature_available() {
     skip_all "${description} is disabled in this build"
 }
 
+# Confirm that at least one network backend is enabled. Network tests rely on
+# either libcurl or WinHTTP to perform HTTP operations, so allow either backend
+# to satisfy the requirement before running the suite.
+ensure_network_backend_available() {
+    if feature_defined_in_config "HAVE_LIBCURL" || \
+            check_meson_option "curl"; then
+        return 0
+    fi
+
+    if feature_defined_in_config "HAVE_WINHTTP" || \
+            check_meson_option "winhttp"; then
+        return 0
+    fi
+
+    skip_all "libcurl or WinHTTP support is disabled in this build"
+}
+
 runtime_exec() {
     if [ -n "${SIXEL_RUNTIME:-}" ]; then
         "${SIXEL_RUNTIME}" "$@"
