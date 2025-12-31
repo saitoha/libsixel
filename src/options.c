@@ -1538,6 +1538,15 @@ sixel_option_validate_filesystem_path(
     if (allow_stdin && argument != NULL && strcmp(argument, "-") == 0) {
         return 0;
     }
+    /*
+     * Palette prefixes like "gpl:-" resolve to "-" after stripping. Allow
+     * those through the stdin fast-path as well so prefixed mapfile values
+     * behave the same as a bare "-" argument.
+     */
+    if (allow_stdin && resolved_path != NULL && strcmp(resolved_path, "-")
+            == 0) {
+        return 0;
+    }
     if (allow_clipboard && sixel_option_path_is_clipboard(argument)) {
         return 0;
     }
