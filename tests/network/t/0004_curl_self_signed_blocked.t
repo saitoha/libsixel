@@ -140,10 +140,17 @@ if kill "${server_pid}" 2>/dev/null; then
     wait "${server_pid}" 2>/dev/null || :
 fi
 
-if [ -s "${verify_output}" ] || [ ${command_status} -eq 0 ]; then
+# The HTTPS request must fail TLS verification when -k is omitted.
+if [ ${command_status} -eq 0 ]; then
     rm -f "${verify_output}"
-    printf 'ok 1 - self-signed fetch allowed by libcurl defaults # SKIP\n'
-    exit 0
+    printf 'not ok 1 - self-signed fetch unexpectedly succeeded without -k\n'
+    exit 1
+fi
+
+if [ -s "${verify_output}" ]; then
+    rm -f "${verify_output}"
+    printf 'not ok 1 - self-signed fetch produced output without -k\n'
+    exit 1
 fi
 
 rm -f "${verify_output}"
