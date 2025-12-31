@@ -216,6 +216,9 @@
 /* whether gdk-pixbuf2 is available */
 #undef HAVE_GDK_PIXBUF2
 
+/* whether gdk-pixbuf2 2.44 or later is available */
+#undef HAVE_GDK_PIXBUF_244
+
 /* whether getopt is avilable */
 #undef HAVE_GETOPT
 

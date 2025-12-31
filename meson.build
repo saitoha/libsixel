@@ -481,11 +481,14 @@ if curl_dep.found()
   net += 'libcurl'
 endif
 
+gdk_dep = dependency('gdk-pixbuf-2.0', required: false, method: 'pkg-config')
 gdk_opt = get_option('gdk_pixbuf2')
 if not gdk_opt.disabled()
-  gdk_dep = dependency('gdk-pixbuf-2.0',
-                       required: gdk_opt.enabled(),
-                       method: 'pkg-config')
+  if not gdk_dep.found()
+    gdk_dep = dependency('gdk-pixbuf-2.0',
+                         required: gdk_opt.enabled(),
+                         method: 'pkg-config')
+  endif
   if not gdk_dep.found()
     vcpkg_root = get_env('VCPKG_ROOT', '')
     vcpkg_triplet = get_env('VCPKG_DEFAULT_TRIPLET', '')
@@ -550,6 +553,19 @@ elif gdk_pixbuf_loader_opt.enabled()
   error('gdk_pixbuf_loader=enabled requires gdk-pixbuf-2.0 >= 2.28 and gmodule-2.0')
 else
   message('gdk-pixbuf loader disabled')
+endif
+
+gdk_pixbuf_version = ''
+if gdk_dep.found()
+  gdk_pixbuf_version = gdk_dep.version()
+elif gdk_loader_dep.found()
+  gdk_pixbuf_version = gdk_loader_dep.version()
+endif
+
+if gdk_pixbuf_version != '' and gdk_pixbuf_version != 'unknown'
+  if gdk_pixbuf_version.version_compare('>=2.44')
+    conf.set('HAVE_GDK_PIXBUF_244', 1)
+  endif
 endif
 
 gd_dep = dependency('gd', required: false)
