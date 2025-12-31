@@ -6235,6 +6235,10 @@ sixel_encoder_setopt(
     char match_message[256];
     int png_argument_has_prefix = 0;
     char const *png_path_view = NULL;
+    char *mapfile_copy;
+    char *mapfile_copy_view;
+    size_t mapfile_offset;
+    size_t mapfile_length;
     size_t png_path_length;
     size_t cell_prefix_length;
     size_t cell_detail_length;
@@ -6246,6 +6250,10 @@ sixel_encoder_setopt(
 
     sixel_encoder_ref(encoder);
     opt_copy = NULL;
+    mapfile_copy = NULL;
+    mapfile_copy_view = NULL;
+    mapfile_offset = 0u;
+    mapfile_length = 0u;
     path_flags = 0u;
     mapfile_view = NULL;
     path_check = 0;
@@ -6549,28 +6557,45 @@ sixel_encoder_setopt(
         if (mapfile_view == NULL) {
             mapfile_view = value;
         }
+        mapfile_length = strlen(value);
+        mapfile_offset = (size_t)(mapfile_view - value);
+        mapfile_copy = arg_strdup(value, encoder->allocator);
+        if (mapfile_copy == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_setopt: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        if (mapfile_offset < mapfile_length) {
+            mapfile_copy_view = mapfile_copy + mapfile_offset;
+        } else {
+            mapfile_copy_view = mapfile_copy;
+        }
+        /*
+         * Normalise MSYS-style drive prefixes in the copied payload so native
+         * Windows binaries can resolve paths like "/d/..." passed via
+         * TYPE:/d/... arguments.  The original token is retained for
+         * diagnostics so users see the exact CLI input in error messages.
+         */
+        encoder_normalise_windows_drive_path(mapfile_copy_view);
         path_flags = SIXEL_OPTION_PATH_ALLOW_STDIN |
             SIXEL_OPTION_PATH_ALLOW_CLIPBOARD |
             SIXEL_OPTION_PATH_ALLOW_REMOTE |
             SIXEL_OPTION_PATH_ALLOW_EMPTY;
         path_check = sixel_option_validate_filesystem_path(
             value,
-            mapfile_view,
+            mapfile_copy_view,
             path_flags);
         if (path_check != 0) {
+            sixel_allocator_free(encoder->allocator, mapfile_copy);
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
         if (encoder->mapfile) {
             sixel_allocator_free(encoder->allocator, encoder->mapfile);
         }
-        encoder->mapfile = arg_strdup(value, encoder->allocator);
-        if (encoder->mapfile == NULL) {
-            sixel_helper_set_additional_message(
-                "sixel_encoder_setopt: sixel_allocator_malloc() failed.");
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
+        encoder->mapfile = mapfile_copy;
+        mapfile_copy = NULL;
         encoder->color_option = SIXEL_COLOR_OPTION_MAPFILE;
         break;
     case SIXEL_OPTFLAG_MAPFILE_OUTPUT:  /* M */
@@ -7595,6 +7620,9 @@ sixel_encoder_setopt(
 end:
     if (opt_copy != NULL) {
         sixel_allocator_free(encoder->allocator, opt_copy);
+    }
+    if (mapfile_copy != NULL) {
+        sixel_allocator_free(encoder->allocator, mapfile_copy);
     }
     sixel_encoder_unref(encoder);
 
