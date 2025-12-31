@@ -54,7 +54,8 @@ if ! command -v "${python_bin}" >/dev/null 2>&1; then
     python_bin="python3"
 fi
 
-"${python_bin}" - <<PY
+"${python_bin}" - <<'PY'
+import errno
 import json
 import math
 import os
@@ -91,9 +92,25 @@ custom_floors = {
 def run_lsqa(path):
     env = os.environ.copy()
     env["LSQA_RANDOM_SEED"] = str(seed)
+    try:
+        proc = subprocess.run([
+            os.environ["LSQA_BIN"],
+            path,
+            path,
+        ], check=False, capture_output=True, text=True, env=env)
+        return proc.returncode, proc.stdout, proc.stderr
+    except OSError as exc:
+        if exc.errno != errno.ENOEXEC:
+            raise
+
+    # Cosmopolitan APE binaries can trip macOS's posix_spawn when invoked
+    # through Python's subprocess. Falling back to /bin/sh avoids the
+    # spawn path while preserving the original argument vector.
     proc = subprocess.run([
+        "/bin/sh",
+        "-c",
+        "exec \"$0\" \"$1\" \"$1\"",
         os.environ["LSQA_BIN"],
-        path,
         path,
     ], check=False, capture_output=True, text=True, env=env)
     return proc.returncode, proc.stdout, proc.stderr
