@@ -75,6 +75,21 @@
 # include <winhttp.h>
 #endif
 
+#if HAVE_WINHTTP && HAVE_WINDOWS_H
+static void
+sixel_winhttp_set_error_message(char const *context)
+{
+    DWORD last_error;
+    char buffer[128];
+
+    last_error = GetLastError();
+    snprintf(buffer, sizeof(buffer),
+             "%s failed (GetLastError=%lu).",
+             context, (unsigned long) last_error);
+    sixel_helper_set_additional_message(buffer);
+}
+#endif
+
 #if !defined(HAVE_MEMCPY)
 # define memcpy(d, s, n) (bcopy ((s), (d), (n)))
 #endif
@@ -397,7 +412,7 @@ sixel_chunk_from_url_with_winhttp(
     int             /* in */ finsecure
 )
 {
-    SIXELSTATUS status = SIXEL_FALSE;
+    SIXELSTATUS status = SIXEL_RUNTIME_ERROR;
     unsigned long const timeout_ms = 10000;
     wchar_t *wua = NULL;
     wchar_t *wurl = NULL;
@@ -421,11 +436,17 @@ sixel_chunk_from_url_with_winhttp(
 
     wua = utf8_to_wide("libsixel/" LIBSIXEL_VERSION);
     if (wua == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        sixel_helper_set_additional_message(
+            "utf8_to_wide(user agent) failed.");
         goto end;
     }
 
     wurl = utf8_to_wide(url);
     if (wurl == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        sixel_helper_set_additional_message(
+            "utf8_to_wide(url) failed.");
         goto end;
     }
 
@@ -440,6 +461,8 @@ sixel_chunk_from_url_with_winhttp(
 
     bRet = WinHttpCrackUrl(wurl, 0, 0, &uc);
     if (! bRet || ! uc.lpszHostName) {
+        sixel_helper_set_additional_message(
+            "WinHttpCrackUrl failed.");
         goto end;
     }
 
@@ -464,6 +487,7 @@ sixel_chunk_from_url_with_winhttp(
                            WINHTTP_NO_PROXY_NAME,
                            WINHTTP_NO_PROXY_BYPASS, 0);
     if (!hSession) {
+        sixel_helper_set_additional_message("WinHttpOpen failed.");
         goto end;
     }
 
@@ -478,6 +502,7 @@ sixel_chunk_from_url_with_winhttp(
 
     hConnect = WinHttpConnect(hSession, uc.lpszHostName, port, 0);
     if (!hConnect) {
+        sixel_helper_set_additional_message("WinHttpConnect failed.");
         goto end;
     }
 
@@ -492,6 +517,8 @@ sixel_chunk_from_url_with_winhttp(
                                   WINHTTP_DEFAULT_ACCEPT_TYPES,
                                   dwFlags);
     if (!hRequest) {
+        sixel_helper_set_additional_message(
+            "WinHttpOpenRequest failed.");
         goto end;
     }
     WinHttpSetOption(hRequest, WINHTTP_OPTION_ENABLE_FEATURE,
@@ -527,11 +554,13 @@ sixel_chunk_from_url_with_winhttp(
                               WINHTTP_NO_ADDITIONAL_HEADERS, 0,
                               WINHTTP_NO_REQUEST_DATA, 0, 0, 0);
     if (!bRet) {
+        sixel_winhttp_set_error_message("WinHttpSendRequest");
         goto end;
     }
 
     bRet = WinHttpReceiveResponse(hRequest, NULL);
     if (!bRet) {
+        sixel_winhttp_set_error_message("WinHttpReceiveResponse");
         goto end;
     }
 
@@ -544,6 +573,7 @@ sixel_chunk_from_url_with_winhttp(
 
     for (;;) {
         if (! WinHttpQueryDataAvailable(hRequest, &dwAvail)) {
+            sixel_winhttp_set_error_message("WinHttpQueryDataAvailable");
             goto err;
         }
         if (dwAvail == 0) {
@@ -556,6 +586,8 @@ sixel_chunk_from_url_with_winhttp(
             p = sixel_allocator_realloc(
                 pchunk->allocator, pchunk->buffer, pchunk->max_size);
             if (! p) {
+                status = SIXEL_BAD_ALLOCATION;
+                sixel_helper_set_additional_message("realloc failed.");
                 goto err;
             }
             pchunk->buffer = p;
@@ -565,6 +597,7 @@ sixel_chunk_from_url_with_winhttp(
         if (! WinHttpReadData(hRequest,
                               pchunk->buffer + pchunk->size,
                               dwAvail, &dwRead)) {
+            sixel_winhttp_set_error_message("WinHttpReadData");
             goto err;
         }
         if (dwRead == 0) {
@@ -581,6 +614,9 @@ sixel_chunk_from_url_with_winhttp(
 err:
     if (pchunk->buffer) {
         free(pchunk->buffer);
+    }
+    if (status == SIXEL_OK) {
+        status = SIXEL_RUNTIME_ERROR;
     }
 
 end:
@@ -599,8 +635,6 @@ end:
     if (wurl) {
         free(wurl);
     }
-
-    status = SIXEL_OK;
 
     return status;
 }
