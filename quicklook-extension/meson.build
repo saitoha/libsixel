@@ -176,7 +176,7 @@ install_subdir('products/SixelPreviewBridge.app',
   install_dir: join_paths(get_option('libexecdir'), 'libsixel'),
   install_mode: 'rwxr-xr-x')
 
-quicklook_installer = find_program(join_paths(meson.source_root(), 'tools', 'quicklook-extension.bash'))
+quicklook_installer = find_program(join_paths(meson.project_source_root(), 'tools', 'quicklook-extension.bash'))
 
 run_target(
   'install-quicklook-extension',
