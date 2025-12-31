@@ -198,12 +198,227 @@ load_with_gdkpixbuf(
         }
     }
     loader_closed = TRUE;
+
+#if HAVE_GDK_PIXBUF_244
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
     animation = gdk_pixbuf_loader_get_animation(loader);
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic pop
+#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
+#else
+    animation = gdk_pixbuf_loader_get_animation(loader);
+#endif
     if (animation == NULL) {
         status = SIXEL_GDK_ERROR;
         goto end;
     }
 
+#if HAVE_GDK_PIXBUF_244
+    /*
+     * gdk-pixbuf 2.44 deprecates static-image helpers. Probe whether the
+     * payload is animated by advancing an iterator once and checking if it
+     * can move forward. The iterator is recreated later for the real decode.
+     */
+    pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
+    if (pixbuf == NULL) {
+        status = SIXEL_GDK_ERROR;
+        goto end;
+    }
+
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
+    time_val = start_time;
+    it = gdk_pixbuf_animation_get_iter(animation, &time_val);
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic pop
+#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
+    if (it == NULL) {
+        status = SIXEL_GDK_ERROR;
+        goto end;
+    }
+    use_animation = gdk_pixbuf_animation_iter_advance(it, &time_val);
+    g_object_unref(it);
+    it = NULL;
+    if (fstatic || !use_animation) {
+        frame->width = gdk_pixbuf_get_width(pixbuf);
+        frame->height = gdk_pixbuf_get_height(pixbuf);
+        stride = gdk_pixbuf_get_rowstride(pixbuf);
+        sixel_frame_set_pixels(
+            frame,
+            sixel_allocator_malloc(
+                pchunk->allocator,
+                (size_t)(frame->height * stride)));
+        pixels = sixel_frame_get_pixels(frame);
+        if (pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_gdkpixbuf: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        if (gdk_pixbuf_get_has_alpha(pixbuf)) {
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+            depth = 4;
+        } else {
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            depth = 3;
+        }
+        p = gdk_pixbuf_get_pixels(pixbuf);
+        if (stride == frame->width * depth) {
+            memcpy(pixels, p, (size_t)(frame->height * stride));
+        } else {
+            for (i = 0; i < frame->height; ++i) {
+                memcpy(pixels + frame->width * depth * i,
+                       p + stride * i,
+                       (size_t)(frame->width * depth));
+            }
+        }
+        frame->delay = 0;
+        frame->multiframe = 0;
+        frame->loop_count = 0;
+        status = fn_load(frame, context);
+        if (status != SIXEL_OK) {
+            goto end;
+        }
+    } else {
+        gboolean finished;
+
+        time_val = start_time;
+        frame->frame_no = 0;
+        frame->loop_count = 0;
+
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
+        it = gdk_pixbuf_animation_get_iter(animation, &time_val);
+        if (it == NULL) {
+            status = SIXEL_GDK_ERROR;
+            goto end;
+        }
+
+        /*
+         * gdk-pixbuf 2.44 still exposes the iterator API under deprecation
+         * guards. Keep warnings silenced while walking frames so we can reuse
+         * the same code path for animation playback.
+         */
+        for (;;) {
+            /* handle one logical loop of the animation */
+            finished = FALSE;
+            while (!gdk_pixbuf_animation_iter_on_currently_loading_frame(it)) {
+                /* {{{ */
+                pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(it);
+                if (pixbuf == NULL) {
+                    finished = TRUE;
+                    break;
+                }
+                /* allocate a scratch copy of the current frame */
+                frame->width = gdk_pixbuf_get_width(pixbuf);
+                frame->height = gdk_pixbuf_get_height(pixbuf);
+                stride = gdk_pixbuf_get_rowstride(pixbuf);
+                sixel_frame_set_pixels(
+                    frame,
+                    sixel_allocator_malloc(
+                        pchunk->allocator,
+                        (size_t)(frame->height * stride)));
+                pixels = sixel_frame_get_pixels(frame);
+                if (pixels == NULL) {
+                    sixel_helper_set_additional_message(
+                        "load_with_gdkpixbuf: "
+                        "sixel_allocator_malloc() failed.");
+                    status = SIXEL_BAD_ALLOCATION;
+                    goto end;
+                }
+                if (gdk_pixbuf_get_has_alpha(pixbuf)) {
+                    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+                    depth = 4;
+                } else {
+                    frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+                    depth = 3;
+                }
+                p = gdk_pixbuf_get_pixels(pixbuf);
+                if (stride == frame->width * depth) {
+                    memcpy(pixels, p,
+                           (size_t)(frame->height * stride));
+                } else {
+                    for (i = 0; i < frame->height; ++i) {
+                        memcpy(pixels + frame->width * depth * i,
+                               p + stride * i,
+                               (size_t)(frame->width * depth));
+                    }
+                }
+                delay_ms = gdk_pixbuf_animation_iter_get_delay_time(it);
+                if (delay_ms < 0) {
+                    delay_ms = 0;
+                }
+                /*
+                 * advance the synthetic clock before asking gdk to move
+                 * forward
+                 */
+                g_time_val_add(&time_val, delay_ms * 1000);
+                frame->delay = delay_ms / 10;
+                frame->multiframe = 1;
+
+                if (!gdk_pixbuf_animation_iter_advance(it, &time_val)) {
+                    finished = TRUE;
+                }
+                status = fn_load(frame, context);
+                if (status != SIXEL_OK) {
+                    goto end;
+                }
+                /* release scratch pixels before decoding the next frame */
+                sixel_allocator_free(pchunk->allocator, pixels);
+                sixel_frame_set_pixels(frame, NULL);
+                frame->frame_no++;
+
+                if (finished) {
+                    break;
+                }
+                /* }}} */
+            }
+
+            if (frame->frame_no == 0) {
+                break;
+            }
+
+            /* finished processing one full loop */
+            ++frame->loop_count;
+
+            if (loop_control == SIXEL_LOOP_DISABLE || frame->frame_no == 1) {
+                break;
+            }
+            if (loop_control == SIXEL_LOOP_AUTO) {
+                /* obey header-provided loop count when AUTO */
+                if (anim_loop_count >= 0 &&
+                    frame->loop_count >= anim_loop_count) {
+                    break;
+                }
+            } else if (loop_control != SIXEL_LOOP_FORCE &&
+                       anim_loop_count > 0 &&
+                       frame->loop_count >= anim_loop_count) {
+                break;
+            }
+
+            /* restart iteration from the beginning for the next pass */
+            g_object_unref(it);
+            time_val = start_time;
+            it = gdk_pixbuf_animation_get_iter(animation, &time_val);
+            if (it == NULL) {
+                status = SIXEL_GDK_ERROR;
+                goto end;
+            }
+            /* next pass starts counting frames from zero again */
+            frame->frame_no = 0;
+        }
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic pop
+#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
+    }
+#else
     use_animation = gdk_pixbuf_animation_is_static_image(animation) ? FALSE :
                     TRUE;
     if (fstatic || !use_animation) {
@@ -381,6 +596,7 @@ load_with_gdkpixbuf(
             frame->frame_no = 0;
         }
     }
+#endif
 
     status = SIXEL_OK;
 

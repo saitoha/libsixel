@@ -19755,6 +19755,7 @@ have_winpthread="no"
 have_wic="no"
 have_coregraphics="no"
 have_gdk_pixbuf2="no"
+have_gdk_pixbuf_244="no"
 have_gdk_pixbuf_pkg="no"
 have_gdk_pixbuf_loader="no"
 GDK_PIXBUF_QUERY_LOADERS=""
@@ -19948,9 +19949,27 @@ printf "%s\n" "#define HAVE_GDK_PIXBUF2 1" >>confdefs.h
         loaders="${loaders} gdk-pixbuf2"
         REQUIRES_PRIVATE="$REQUIRES_PRIVATE gdk-pixbuf-2.0"
         LIBS_PRIVATE="$LIBS_PRIVATE $GDK_PIXBUF_LIBS"
+        if test x${PKG_CONFIG} != x; then
+            if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gdk-pixbuf-2.0 >= 2.44\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "gdk-pixbuf-2.0 >= 2.44") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  have_gdk_pixbuf_244=yes
+else
+  have_gdk_pixbuf_244=no
+fi
+        fi
     elif test x$with_gdk_pixbuf2 = xyes; then
         as_fn_error $? "unable to find gdk-pixbuf-2.0" "$LINENO" 5
     fi
+fi
+
+if test x$have_gdk_pixbuf_244 = xyes ; then
+
+printf "%s\n" "#define HAVE_GDK_PIXBUF_244 1" >>confdefs.h
+
 fi
 
 if test "x$GDK_PIXBUF_BINARY_VERSION" = x; then
