@@ -693,10 +693,10 @@ AC_DEFUN([LS_CHECK_CFLAG],
                 [m4_default([$3], :)])
          ])
 
-if test "x$using_cl" = "xyes"; then
-  CPPFLAGS="$CPPFLAGS -D_CRT_SECURE_NO_WARNINGS"
-  CFLAGS="$CFLAGS -nologo"
-  AC_DEFINE([HAVE_MSVC], [1], [Define if building with MSVC])
+  if test "x$using_cl" = "xyes"; then
+    # Keep the MSVC banner quiet during compilation and preprocessing.
+    CPPFLAGS="$CPPFLAGS -nologo"
+    AC_DEFINE([HAVE_MSVC], [1], [Define if building with MSVC])
 else
   AX_GCC_VAR_ATTRIBUTE([deprecated])
   if test x$ax_cv_have_var_attribute_deprecated != x; then
