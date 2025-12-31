@@ -11,13 +11,10 @@ This document tracks remaining TAP files that still bundle multiple test cases a
 - `tests/mapfile/t/` (palette import/export cases split with shared helper)
 - `tests/packaging/t/` (python wheel install and roundtrip split, shared helper)
 - `tests/cli-core/t/` (basic option handling, invalid argument/combination, option matching, and argument-shift suites split)
+- `tests/converter-options/t/` (conversion options split with dedicated helper)
 
 ## Remaining work
-### Converter options
-- `tests/converter-options/t/0001_conversion_options_01.t`
-- `tests/converter-options/t/0002_conversion_options_02.t`
-- `tests/converter-options/t/0003_conversion_options_03.t`
-- `tests/converter-options/t/0004_conversion_options_04.t`
+None. All previously bundled TAP files have been split.
 
 ## Work pattern
 1. Split one directory at a time, keeping numbering contiguous and naming each new file descriptively.
