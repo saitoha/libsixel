@@ -166,7 +166,8 @@ endforeach
 wflags = cc.get_supported_arguments([
     '-Wdeprecated-declarations',
     '-Wunused-but-set-variable',
-    '-Wclobbered'
+    '-Wclobbered',
+    '-Wformat-nonliteral'
 ])
 foreach f: wflags
   if f == '-Wdeprecated-declarations'
@@ -175,6 +176,8 @@ foreach f: wflags
     conf.set('HAVE_DIAGNOSTIC_UNUSED_BUT_SET_VARIABLE', 1)
   elif f == '-Wclobbered'
     conf.set('HAVE_DIAGNOSTIC_CLOBBERED', 1)
+  elif f == '-Wformat-nonliteral'
+    conf.set('HAVE_DIAGNOSTIC_FORMAT_NONLITERAL', 1)
   endif
 endforeach
 
