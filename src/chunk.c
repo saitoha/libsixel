@@ -75,6 +75,8 @@
 # include <winhttp.h>
 #endif
 
+#include <sixel.h>
+
 #if HAVE_WINHTTP && HAVE_WINDOWS_H
 static void
 sixel_winhttp_set_error_message(char const *context)
