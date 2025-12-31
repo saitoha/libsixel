@@ -2,7 +2,7 @@
 # @configure_input@
 #
 SUBDIRS = include src converters assessment tools tests python examples images
-if WANT_AMALGAMATION
+if WANT_AMALGAMATED_SOURCES
 SUBDIRS += amalgamation
 endif
 if ENABLE_GDK_PIXBUF_LOADER

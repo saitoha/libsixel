@@ -10,7 +10,7 @@ builddir = @builddir@
 SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
 SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 
-if WANT_AMALGAMATION
+if WANT_AMALGAMATED_LIB
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 AMALGAMATION_TARGET = sixel.c
 if AMALGAMATION_NEEDS_OBJC
@@ -35,7 +35,7 @@ CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests
 
 lib_LTLIBRARIES = libsixel.la
 
-if WANT_AMALGAMATION
+if WANT_AMALGAMATED_LIB
 libsixel_la_SOURCES =
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
