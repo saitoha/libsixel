@@ -62,6 +62,7 @@ emconfigure sh ../../configure \
   --host=wasm32-unknown-emscripten \
   --disable-shared \
   --with-shebang-file="${SHEBANG_FILE}" \
+  --disable-dependency-tracking \
   CFLAGS="-O3 -g0" \
   LDFLAGS=" \
     -sNODERAWFS=1 \
