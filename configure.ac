@@ -1040,6 +1040,7 @@ have_winpthread="no"
 have_wic="no"
 have_coregraphics="no"
 have_gdk_pixbuf2="no"
+have_gdk_pixbuf_244="no"
 have_gdk_pixbuf_pkg="no"
 have_gdk_pixbuf_loader="no"
 GDK_PIXBUF_QUERY_LOADERS=""
@@ -1110,9 +1111,19 @@ if test x$have_gdk_pixbuf_pkg = xyes ; then
         loaders="${loaders} gdk-pixbuf2"
         REQUIRES_PRIVATE="$REQUIRES_PRIVATE gdk-pixbuf-2.0"
         LIBS_PRIVATE="$LIBS_PRIVATE $GDK_PIXBUF_LIBS"
+        if test x${PKG_CONFIG} != x; then
+            PKG_CHECK_EXISTS([gdk-pixbuf-2.0 >= 2.44],
+                             [have_gdk_pixbuf_244=yes],
+                             [have_gdk_pixbuf_244=no])
+        fi
     elif test x$with_gdk_pixbuf2 = xyes; then
         AC_MSG_ERROR([unable to find gdk-pixbuf-2.0])
     fi
+fi
+
+if test x$have_gdk_pixbuf_244 = xyes ; then
+    AC_DEFINE(HAVE_GDK_PIXBUF_244, 1,
+              [whether gdk-pixbuf2 2.44 or later is available])
 fi
 
 if test "x$GDK_PIXBUF_BINARY_VERSION" = x; then
