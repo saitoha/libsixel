@@ -851,7 +851,6 @@ am__set_b = \
 am__test_logs1 = $(TESTS:=.log)
 am__test_logs2 = $(am__test_logs1:@EXEEXT@.log=.log)
 TEST_LOGS = $(am__test_logs2:.t.log=.log)
-T_LOG_DRIVER = $(SHELL) $(top_srcdir)/build-aux/test-driver
 T_LOG_COMPILE = $(T_LOG_COMPILER) $(AM_T_LOG_FLAGS) $(T_LOG_FLAGS)
 am__DIST_COMMON = $(srcdir)/Makefile.in \
 	$(top_srcdir)/build-aux/depcomp \
@@ -1644,9 +1643,10 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@palette_0001_kmeans_init_LDADD = $(TESTS_COMMON_LDADD_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@palette_0001_kmeans_init_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@palette_0001_kmeans_init_SOURCES = palette/0001_kmeans_init.c
-TEST_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/build-aux/lso-tap-driver.sh
+T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/build-aux/lso-tap-driver.sh
 AM_TEST_LOG_DRIVER_FLAGS = --comments
-LOG_COMPILER = $(builddir)/tools/with-timeout.sh
+#LOG_COMPILER = $(builddir)/tools/with-timeout.sh
+#LOG_COMPILER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/build-aux/lso-tap-driver.sh
 AM_TEST_TIMEOUT = 300
 AM_LOG_FLAGS = --timeout=$(AM_TEST_TIMEOUT)
 BASELINE_JSON = data/baseline/grayscale.json \
@@ -3295,10 +3295,9 @@ clean-local:
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 check-local: $(LOG_COMPILER) $(COPY_TESTS) $(HELPER_FILES)
 
-# Keep this recipe tab-indented; GNU make requires tabs for commands.
-$(LOG_COMPILER): $(srcdir)/tools/with-timeout.sh
-	$(MKDIR_P) $(builddir)/tools
-	$(AM_V_GEN)cp $(srcdir)/tools/with-timeout.sh $(LOG_COMPILER)
+#$(LOG_COMPILER): $(srcdir)/tools/with-timeout.sh
+#	$(MKDIR_P) $(builddir)/tools
+#	$(AM_V_GEN)cp $(srcdir)/tools/with-timeout.sh $(LOG_COMPILER)
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(COPY_TESTS) $(HELPER_FILES):

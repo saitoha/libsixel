@@ -51,6 +51,9 @@ while [ $# -gt 0 ]; do
     --trs-file)  trs_file=${2-}; shift ;;
     --ignore-exit) ignore_exit=yes ;;
     --comments) comments=yes ;;
+    --color-tests) color_tests=${2-}; shift ;;
+    --enable-hard-errors) hard_errors=${2-}; shift ;;
+    --expect-failure) expect_failur=${2-} shift ;;
     --) shift; break ;;
     -*) echo "lso-tap-driver.sh: invalid option: $1" >&2; usage ;;
     *) break ;;
@@ -68,17 +71,22 @@ done
 # Run the test script, capture all output in .log (format free). :contentReference[oaicite:3]{index=3}
 # We don't stream to console; Automake shows progress separately.
 # If you want streaming, do it in the test itself (or add tee here).
+time_begin=$(date +%s.%N);
 "$@" >"$log_file" 2>&1
 rc=$?
+time_end=$(date +%s.%N);
 
 # Generate .trs (reStructuredText fields), at minimum :test-result: fields. :contentReference[oaicite:4]{index=4}
 # Also write :global-test-result:, :recheck:, :copy-in-global-log: for convenience
 # (Automake recognizes these fields). :contentReference[oaicite:5]{index=5}
-"$AM_TAP_AWK" \
+"$AM_TAP_AWK" < "$log_file" \
   -v test_name="$test_name" \
   -v rc="$rc" \
   -v ignore_exit="$ignore_exit" \
   -v comments="$comments" \
+  -v time_begin="$time_begin" \
+  -v time_end="$time_end" \
+  -v color_tests="$color_tests" \
   'BEGIN{
      plan=0; saw_plan=0;
      pass=0; fail=0; skip=0; xfail=0; xpass=0; error=0;
@@ -91,6 +99,10 @@ rc=$?
    # TAP plan line: 1..N
    $0 ~ /^1\.\.[0-9]+/ {
      split($0,a,".."); plan=a[2]+0; saw_plan=1;
+     if ($0 ~ /#[ \t]*SKIP/) {
+       skip++
+       printf(":test-result: SKIP\n") > "'"$trs_file"'"
+     }
    }
 
    # Test point: ok / not ok
@@ -123,18 +135,18 @@ rc=$?
 
      if (is_skip) {
        skip++
-       printf(":test-result: SKIP %s\n", desc)
+       printf(":test-result: SKIP %s\n", desc) > "'"$trs_file"'"
      } else if (is_todo) {
        # Minimal TODO mapping: ok+TODO => XFAIL, not ok+TODO => XFAIL
        # (You can refine if you care about XPASS/XFAIL semantics.)
        xfail++
-       printf(":test-result: XFAIL %s\n", desc)
+       printf(":test-result: XFAIL %s\n", desc) > "'"$trs_file"'"
      } else if (is_not) {
        fail++
-       printf(":test-result: FAIL %s\n", desc)
+       printf(":test-result: FAIL %s\n", desc) > "'"$trs_file"'"
      } else {
        pass++
-       printf(":test-result: PASS %s\n", desc)
+       printf(":test-result: PASS %s\n", desc) > "'"$trs_file"'"
      }
      next
    }
@@ -145,7 +157,7 @@ rc=$?
      if (ignore_exit != "yes" && rc != 0) {
        if (fail==0 && pass==0 && skip==0 && xfail==0 && xpass==0) {
          error=1
-         printf(":test-result: ERROR %s\n", test_name)
+         printf(":test-result: ERROR %s\n", test_name) > "'"$trs_file"'"
        }
      }
 
@@ -154,11 +166,16 @@ rc=$?
      else if (fail>0) global="FAIL"
      else if (pass==0 && skip>0) global="SKIP"
 
-     printf(":global-test-result: %s\n", global)
-     printf(":recheck: %s\n", (global=="FAIL"||global=="ERROR") ? "yes" : "no")
-     printf(":copy-in-global-log: %s\n", (global=="FAIL"||global=="ERROR"||global=="SKIP") ? "yes" : "no")
-   }' \
-  >"$trs_file"
+     printf(":global-test-result: %s\n", global) > "'"$trs_file"'"
+     printf(":recheck: %s\n", (global=="FAIL"||global=="ERROR") ? "yes" : "no") > "'"$trs_file"'"
+     printf(":copy-in-global-log: %s\n", (global=="FAIL"||global=="ERROR"||global=="SKIP") ? "yes" : "no") > "'"$trs_file"'"
+     sgr["FAIL"]  = "\033[0;31m"
+     sgr["ERROR"] = "\033[1;31m"
+     sgr["SKIP"]  = "\033[0;33m"
+     sgr["PASS"]  = "\033[0;32m"
+     printf("%s%-5s\033[m \033[1m%.03f\033[ms %s", color_tests ? sgr[global]: "", global, time_end - time_begin, test_name)
+     printf("\n")
+   }'
 
 # Exit code: Automake mostly consults .trs, but keep conventional codes sane.
 # 0 for PASS/SKIP/XFAIL-only; 1 for FAIL/ERROR.
