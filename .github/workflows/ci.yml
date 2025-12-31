@@ -127,6 +127,10 @@ jobs:
             sys: x86_64
             musl: true
             variant: musl-cross
+          - label: alpine 3.20 x86_64
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            variant: alpine
           - label: ubuntu 24.04 aarch64
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
@@ -330,13 +334,13 @@ jobs:
         git reset --hard
 
     - name: Install multilib toolchain (Linux i686)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os == 'Linux' && (matrix.sys || '') == 'i686'
+      if: matrix.variant != 'alpine' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os == 'Linux' && (matrix.sys || '') == 'i686'
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-multilib
 
     - name: Install musl toolchain (Linux musl-cross)
-      if: ${{ matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os == 'Linux' && (matrix.musl || false) }}
+      if: ${{ matrix.variant != 'alpine' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os == 'Linux' && (matrix.musl || false) }}
       run: |
         sudo apt-get update
         sudo apt-get install -y musl-tools
@@ -610,7 +614,7 @@ jobs:
         ./emscripten/build-emcc.sh
 
     - name: Configure and build (non-Windows)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
+      if: matrix.variant != 'alpine' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
       shell: bash
       run: |
         enable_gcov_flag="--enable-gcov"
@@ -659,6 +663,38 @@ jobs:
             ${static_only_flags} \
             ${extra_config_flags}
         make V=1
+
+    - name: Configure and build (Autotools, Alpine container)
+      if: matrix.variant == 'alpine'
+      run: |
+        set -eux
+        docker run --rm -v "$PWD":/src -w /src alpine:3.20 sh -euc '
+          apk add --no-cache \
+            autoconf \
+            automake \
+            bash \
+            build-base \
+            coreutils \
+            curl-dev \
+            findutils \
+            libjpeg-turbo-dev \
+            libpng-dev \
+            libtool \
+            pkgconf \
+            zlib-dev
+
+          enable_gcov_flag="--enable-gcov"
+          ./configure \
+              --without-bashcompletiondir \
+              --without-zshcompletiondir \
+              --disable-python \
+              --enable-debug \
+              --enable-tests \
+              ${enable_gcov_flag} \
+              --disable-dependency-tracking
+          make V=1
+          make check V=1
+        '
 
     - name: Configure and build (Windows, not MSVC/Cygwin)
       if: ${{ runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true }}
@@ -1219,7 +1255,7 @@ jobs:
 
     - name: Upload to Coveralls (per-flag, parallel)
       id: coveralls_upload
-      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && matrix.os != 'macos-15' && matrix.sys != 'i686' && !(matrix.musl || false) && matrix.variant != 'amalgamated_lib' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true }}
+      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && matrix.os != 'macos-15' && matrix.sys != 'i686' && !(matrix.musl || false) && matrix.variant != 'amalgamated_lib' && matrix.variant != 'cosmopolitan' && matrix.variant != 'alpine' && matrix.emscripten != true }}
       continue-on-error: true
       uses: coverallsapp/github-action@v2
       with:
@@ -1229,11 +1265,11 @@ jobs:
         parallel: true
 
     - name: Wait before Coveralls retry (per-flag)
-      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) && matrix.variant != 'amalgamated_lib' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true }}
+      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) && matrix.variant != 'amalgamated_lib' && matrix.variant != 'cosmopolitan' && matrix.variant != 'alpine' && matrix.emscripten != true }}
       run: sleep 5
 
     - name: Upload to Coveralls (per-flag, retry)
-      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) && matrix.variant != 'amalgamated_lib' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true }}
+      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) && matrix.variant != 'amalgamated_lib' && matrix.variant != 'cosmopolitan' && matrix.variant != 'alpine' && matrix.emscripten != true }}
       uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -1873,6 +1909,10 @@ jobs:
             runner: ubuntu-latest
             musl: true
             variant: musl-cross
+          - label: alpine 3.20 x86_64
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            variant: alpine
           - label: ubuntu 24.04 aarch64
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
@@ -2041,13 +2081,13 @@ jobs:
         fetch-depth: 1
 
     - name: Install multilib toolchain (Linux i686)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os == 'Linux' && (matrix.sys || '') == 'i686'
+      if: matrix.variant != 'alpine' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os == 'Linux' && (matrix.sys || '') == 'i686'
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-multilib
 
     - name: Install musl toolchain (Linux musl-cross)
-      if: ${{ matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os == 'Linux' && (matrix.musl || false) }}
+      if: ${{ matrix.variant != 'alpine' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os == 'Linux' && (matrix.musl || false) }}
       run: |
         sudo apt-get update
         sudo apt-get install -y musl-tools
@@ -2126,7 +2166,7 @@ jobs:
         packages: gcc-core,make,pkg-config,python3,python3-pip,ninja
 
     - name: Install Meson (non-Windows)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows'
+      if: matrix.variant != 'alpine' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows'
       run: |
         python3 -m venv .meson-venv
         . .meson-venv/bin/activate
@@ -2383,8 +2423,62 @@ jobs:
         if-no-files-found: warn
 
     - name: Configure, build, and test (Meson, non-Windows)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows'
+      if: matrix.variant != 'alpine' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows'
       run: *meson_non_windows
+
+    - name: Configure, build, and test (Meson, Alpine container)
+      if: matrix.variant == 'alpine'
+      run: |
+        set -eux
+        docker run --rm -v "$PWD":/src -w /src alpine:3.20 sh -euc '
+          apk add --no-cache \
+            bash \
+            build-base \
+            coreutils \
+            curl-dev \
+            findutils \
+            libjpeg-turbo-dev \
+            libpng-dev \
+            meson \
+            ninja \
+            pkgconf \
+            python3 \
+            zlib-dev
+
+          disable_threads_flag=""
+          if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
+            disable_threads_flag="-Dthreads=disabled"
+          fi
+          disable_tools_flags=""
+          if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
+            disable_tools_flags="-Dimg2sixel=disabled -Dsixel2png=disabled"
+          fi
+          disable_simd_flag=""
+          if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
+            disable_simd_flag="-Dsimd=disabled"
+          fi
+          default_library_flag=""
+          if [ "${{ matrix.static_only || '' }}" = "true" ]; then
+            default_library_flag="--default-library static"
+          fi
+          amalgamated_lib_flag=""
+          if [ "${{ matrix.amalgamated_lib || '' }}" = "true" ]; then
+            amalgamated_lib_flag="-Damalgamated_lib=true"
+          fi
+          meson setup builddir \
+              --wrap-mode=nodownload \
+              ${default_library_flag} \
+              -Dbashcompletiondir=disabled \
+              -Dzshcompletiondir=disabled \
+              -Dpython=disabled \
+              -Dtests=true \
+              ${amalgamated_lib_flag} \
+              ${disable_tools_flags} \
+              ${disable_threads_flag} \
+              ${disable_simd_flag}
+          meson compile -C builddir
+          meson test -C builddir || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
+        '
 
     - name: Configure, build, and test (Meson, Windows, not MSVC/Cygwin)
       if: ${{ runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' }}
