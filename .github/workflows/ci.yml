@@ -1882,6 +1882,12 @@ jobs:
             sys: aarch64
             variant: amalgamated_lib
             amalgamated_lib: true
+          - label: ubuntu 24.04 aarch64 unity
+            os: ubuntu-24.04-arm
+            runner: ubuntu-24.04-arm
+            sys: aarch64
+            variant: unity
+            unity: true
           - label: ubuntu i686
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -1896,6 +1902,11 @@ jobs:
             runner: macos-latest
             variant: amalgamated_lib
             amalgamated_lib: true
+          - label: macos aarch64 unity
+            os: macos-latest
+            runner: macos-latest
+            variant: unity
+            unity: true
           - label: macos x86_64
             os: macos-15
             runner: macos-15
@@ -1964,6 +1975,13 @@ jobs:
             compiler: cl
             sys: MSVC
             variant: default
+          - label: msvc unity
+            os: windows-latest
+            runner: windows-latest
+            compiler: cl
+            sys: MSVC
+            variant: unity
+            unity: true
           - label: msvc amalgamated_lib
             os: windows-latest
             runner: windows-latest
@@ -1971,6 +1989,13 @@ jobs:
             sys: MSVC
             variant: amalgamated_lib
             amalgamated_lib: true
+          - label: mingw64 unity
+            os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: MINGW64
+            variant: unity
+            unity: true
           - label: mingw32
             os: windows-latest
             runner: windows-latest
@@ -1989,6 +2014,13 @@ jobs:
             compiler: gcc
             sys: CYGWIN
             variant: default
+          - label: cygwin unity
+            os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: CYGWIN
+            variant: unity
+            unity: true
           - label: cygwin amalgamated_lib
             os: windows-latest
             runner: windows-latest
@@ -2219,6 +2251,10 @@ jobs:
           if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
             disable_simd_flag="-Dsimd=disabled"
           fi
+          unity_flag=""
+          if [ "${{ matrix.unity || '' }}" = "true" ]; then
+            unity_flag="-Dunity=on"
+          fi
           default_library_flag=""
           if [ "${{ matrix.static_only || '' }}" = "true" ]; then
             default_library_flag="--default-library static"
@@ -2266,6 +2302,10 @@ jobs:
           disable_simd_flag=""
           if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
             disable_simd_flag="-Dsimd=disabled"
+          fi
+          unity_flag=""
+          if [ "${{ matrix.unity || '' }}" = "true" ]; then
+            unity_flag="-Dunity=on"
           fi
           default_library_flag=""
           if [ "${{ matrix.static_only || '' }}" = "true" ]; then
@@ -2338,6 +2378,10 @@ jobs:
         if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
           disable_simd_flag="-Dsimd=disabled"
         fi
+        unity_flag=""
+        if [ "${{ matrix.unity || '' }}" = "true" ]; then
+          unity_flag="-Dunity=on"
+        fi
         default_library_flag=""
         if [ "${{ matrix.static_only || '' }}" = "true" ]; then
           default_library_flag="--default-library static"
@@ -2355,7 +2399,8 @@ jobs:
             ${amalgamated_lib_flag} \
             ${disable_tools_flags} \
             ${disable_threads_flag} \
-            ${disable_simd_flag}
+            ${disable_simd_flag} \
+            ${unity_flag}
         meson compile -C builddir -v
         meson test -C builddir || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
 
@@ -2378,6 +2423,10 @@ jobs:
         if ('${{ matrix.disable_simd }}' -eq 'true') {
           $disableSimdFlag = '-Dsimd=disabled'
         }
+        $unityFlag = ''
+        if ('${{ matrix.unity }}' -eq 'true') {
+          $unityFlag = '-Dunity=on'
+        }
         $defaultLibraryFlag = ''
         if ('${{ matrix.static_only }}' -eq 'true') {
           $defaultLibraryFlag = '--default-library static'
@@ -2395,10 +2444,11 @@ jobs:
           "disable_tools_flags=`"$disableToolsFlags`"",
           "disable_simd_flag=`"$disableSimdFlag`"",
           "default_library_flag=`"$defaultLibraryFlag`"",
+          "unity_flag=`"$unityFlag`"",
           "amalgamated_lib_flag=`"$amalgamated_libFlag`"",
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          'meson setup builddir --wrap-mode=nodownload ${default_library_flag} ${amalgamated_lib_flag} -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled -Dpython=disabled -Dtests=true ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag}',
+          'meson setup builddir --wrap-mode=nodownload ${default_library_flag} ${amalgamated_lib_flag} -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled -Dpython=disabled -Dtests=true ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${unity_flag}',
           'meson compile -C builddir -v',
           'meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }'
         )
@@ -2421,6 +2471,8 @@ jobs:
         if "${{ matrix.disable_tools || '' }}"=="true" set "DISABLE_TOOLS_FLAGS=-Dimg2sixel=disabled -Dsixel2png=disabled"
         set "DISABLE_SIMD_FLAG="
         if "${{ matrix.disable_simd || '' }}"=="true" set "DISABLE_SIMD_FLAG=-Dsimd=disabled"
+        set "UNITY_FLAG="
+        if "${{ matrix.unity || '' }}"=="true" set "UNITY_FLAG=-Dunity=on"
         set "AMALGAMATED_LIB_FLAG="
         if "${{ matrix.amalgamated_lib || '' }}"=="true" set "AMALGAMATED_LIB_FLAG=-Damalgamated_lib=true"
         python -m mesonbuild.mesonmain setup builddir ^
@@ -2436,7 +2488,8 @@ jobs:
             %AMALGAMATED_LIB_FLAG% ^
             %DISABLE_TOOLS_FLAGS% ^
             %DISABLE_THREADS_FLAG% ^
-            %DISABLE_SIMD_FLAG%
+            %DISABLE_SIMD_FLAG% ^
+            %UNITY_FLAG%
         if errorlevel 1 exit /b !errorlevel!
         python -m mesonbuild.mesonmain compile -C builddir
         if errorlevel 1 exit /b !errorlevel!
@@ -2464,6 +2517,8 @@ jobs:
         if "${{ matrix.disable_tools || '' }}"=="true" set "DISABLE_TOOLS_FLAGS=-Dimg2sixel=disabled -Dsixel2png=disabled"
         set "DISABLE_SIMD_FLAG="
         if "${{ matrix.disable_simd || '' }}"=="true" set "DISABLE_SIMD_FLAG=-Dsimd=disabled"
+        set "UNITY_FLAG="
+        if "${{ matrix.unity || '' }}"=="true" set "UNITY_FLAG=-Dunity=on"
         set "AMALGAMATED_LIB_FLAG="
         if "${{ matrix.amalgamated_lib || '' }}"=="true" set "AMALGAMATED_LIB_FLAG=-Damalgamated_lib=true"
         python -m mesonbuild.mesonmain setup builddir ^
@@ -2478,7 +2533,8 @@ jobs:
             %AMALGAMATED_LIB_FLAG% ^
             %DISABLE_TOOLS_FLAGS% ^
             %DISABLE_THREADS_FLAG% ^
-            %DISABLE_SIMD_FLAG%
+            %DISABLE_SIMD_FLAG% ^
+            %UNITY_FLAG%
         if errorlevel 1 exit /b !errorlevel!
         python -m mesonbuild.mesonmain compile -C builddir
         if errorlevel 1 exit /b !errorlevel!
@@ -2506,6 +2562,8 @@ jobs:
         if "${{ matrix.disable_tools || '' }}"=="true" set "DISABLE_TOOLS_FLAGS=-Dimg2sixel=disabled -Dsixel2png=disabled"
         set "DISABLE_SIMD_FLAG="
         if "${{ matrix.disable_simd || '' }}"=="true" set "DISABLE_SIMD_FLAG=-Dsimd=disabled"
+        set "UNITY_FLAG="
+        if "${{ matrix.unity || '' }}"=="true" set "UNITY_FLAG=-Dunity=on"
         set "AMALGAMATED_LIB_FLAG="
         if "${{ matrix.amalgamated_lib || '' }}"=="true" set "AMALGAMATED_LIB_FLAG=-Damalgamated_lib=true"
         python -m mesonbuild.mesonmain setup builddir ^
@@ -2521,7 +2579,8 @@ jobs:
             %AMALGAMATED_LIB_FLAG% ^
             %DISABLE_TOOLS_FLAGS% ^
             %DISABLE_THREADS_FLAG% ^
-            %DISABLE_SIMD_FLAG%
+            %DISABLE_SIMD_FLAG% ^
+            %UNITY_FLAG%
         if errorlevel 1 exit /b !errorlevel!
         python -m mesonbuild.mesonmain compile -C builddir
         if errorlevel 1 exit /b !errorlevel!
