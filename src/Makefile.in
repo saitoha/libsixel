@@ -2159,12 +2159,13 @@ gen-rgblookup: $(srcdir)/rgblookup.gperf
 
 @WITH_SHEBANG_FILE_TRUE@check-local: $(SIXEL_SHEBANG_STAMP)
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 @WITH_SHEBANG_FILE_TRUE@$(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
-@WITH_SHEBANG_FILE_TRUE@        @if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
-@WITH_SHEBANG_FILE_TRUE@                $(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
-@WITH_SHEBANG_FILE_TRUE@                        $(SIXEL_SHEBANG_TARGETS); \
-@WITH_SHEBANG_FILE_TRUE@        fi
-@WITH_SHEBANG_FILE_TRUE@        @touch $@
+@WITH_SHEBANG_FILE_TRUE@	@if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
+@WITH_SHEBANG_FILE_TRUE@	        $(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
+@WITH_SHEBANG_FILE_TRUE@	                $(SIXEL_SHEBANG_TARGETS); \
+@WITH_SHEBANG_FILE_TRUE@	fi
+@WITH_SHEBANG_FILE_TRUE@	@touch $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

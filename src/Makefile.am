@@ -287,12 +287,13 @@ SIXEL_SHEBANG_STAMP = src-tests-shebang.stamp
 
 check-local: $(SIXEL_SHEBANG_STAMP)
 
+# Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
-        @if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
-                $(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
-                        $(SIXEL_SHEBANG_TARGETS); \
-        fi
-        @touch $@
+	@if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
+	        $(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
+	                $(SIXEL_SHEBANG_TARGETS); \
+	fi
+	@touch $@
 
 CLEANFILES += $(SIXEL_SHEBANG_STAMP)
 endif
