@@ -187,11 +187,13 @@ write_loader_cache(char const *query_path,
 }
 
 static gchar *
-find_module_dir(void)
+find_module_dir(gboolean *has_dylib)
 {
     gchar *module_dir;
     gchar *module_path;
     gchar *module_alt_path;
+
+    *has_dylib = FALSE;
 
     module_dir = resolve_build_path("gdk-pixbuf-loader");
     module_path = g_build_filename(module_dir,
@@ -201,12 +203,14 @@ find_module_dir(void)
                                        "libpixbufloader-sixel.dylib",
                                        NULL);
 
-    if (g_file_test(module_path, G_FILE_TEST_IS_REGULAR) ||
-        g_file_test(module_alt_path, G_FILE_TEST_IS_REGULAR)) {
+    if (g_file_test(module_path, G_FILE_TEST_IS_REGULAR)) {
+        g_test_message("found module: %s", module_path);
         g_free(module_path);
         g_free(module_alt_path);
         return module_dir;
     }
+
+    *has_dylib = g_file_test(module_alt_path, G_FILE_TEST_IS_REGULAR);
 
     g_free(module_dir);
     module_dir = resolve_build_path("gdk-pixbuf-loader/.libs");
@@ -219,12 +223,15 @@ find_module_dir(void)
                                        "libpixbufloader-sixel.dylib",
                                        NULL);
 
-    if (g_file_test(module_path, G_FILE_TEST_IS_REGULAR) ||
-        g_file_test(module_alt_path, G_FILE_TEST_IS_REGULAR)) {
+    if (g_file_test(module_path, G_FILE_TEST_IS_REGULAR)) {
+        g_test_message("found module: %s", module_path);
         g_free(module_path);
         g_free(module_alt_path);
         return module_dir;
     }
+
+    *has_dylib = *has_dylib ||
+                  g_file_test(module_alt_path, G_FILE_TEST_IS_REGULAR);
 
     g_free(module_dir);
     g_free(module_path);
@@ -254,11 +261,17 @@ run_loader_plugin_integration(void)
     gchar **argv;
     gboolean ok;
     int status;
+    gboolean has_dylib;
 
     error = NULL;
-    module_dir = find_module_dir();
+    has_dylib = FALSE;
+    module_dir = find_module_dir(&has_dylib);
     if (module_dir == NULL) {
-        g_test_skip("loader module directory is missing");
+        if (has_dylib) {
+            g_test_skip("only .dylib module found; gdk-pixbuf expects .so");
+        } else {
+            g_test_skip("loader module directory is missing");
+        }
         return;
     }
 
