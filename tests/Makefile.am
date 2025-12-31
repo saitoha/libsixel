@@ -60,8 +60,15 @@ CLI_TESTS = cli-core/t/0001_invalid_positional.t \
     cli-core/t/0006_basic_parallel_direct.t \
     cli-core/t/0006_basic_parallel_cli_override.t \
     cli-core/t/0006_basic_invalid_threads_token.t \
-    cli-core/t/0007_option_matching.t \
-    cli-core/t/0008_argument_shift.t \
+    cli-core/t/0007_option_matching_prefix_unique.t \
+    cli-core/t/0007_option_matching_prefix_ambiguous.t \
+    cli-core/t/0007_option_matching_diffusion_correction.t \
+    cli-core/t/0007_option_matching_distance1_multi.t \
+    cli-core/t/0007_option_matching_distance2.t \
+    cli-core/t/0007_option_matching_distance3.t \
+    cli-core/t/0008_argument_shift_missing_mapfile.t \
+    cli-core/t/0008_argument_shift_outfile_named_like_option.t \
+    cli-core/t/0008_argument_shift_assessment_named_like_option.t \
     cli-core/t/0009_cli_token_is_known_option.t \
     cli-core/t/0010_cli_option_requires_argument.t \
     cli-core/t/0011_cli_guard_missing_argument.t \
