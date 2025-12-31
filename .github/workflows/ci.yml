@@ -2238,8 +2238,10 @@ jobs:
               ${disable_tools_flags} \
               ${disable_threads_flag} \
               ${disable_simd_flag}
-          meson compile -C builddir -v
-          meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
+          meson compile -C builddir
+          meson test -C builddir
+#          meson compile -C builddir -v
+#          meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
 
     - name: Configure, build, and test (Meson, DragonFlyBSD)
       if: matrix.platform == 'dragonflybsd'
@@ -2291,8 +2293,10 @@ jobs:
               ${disable_tools_flags} \
               ${disable_threads_flag} \
               ${disable_simd_flag}
-          meson compile -C builddir -v
-          meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
+          meson compile -C builddir
+          meson test -C builddir
+#          meson compile -C builddir -v
+#          meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
 
     - name: Upload pkg_install log (Meson NetBSD)
       if: ${{ failure() && matrix.platform == 'netbsd' }}
