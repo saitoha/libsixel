@@ -10,13 +10,9 @@ This document tracks remaining TAP files that still bundle multiple test cases a
 - `tests/loader/t/` (pngsuite cases split)
 - `tests/mapfile/t/` (palette import/export cases split with shared helper)
 - `tests/packaging/t/` (python wheel install and roundtrip split, shared helper)
-- `tests/cli-core/t/` (basic option handling and invalid argument/combination suites split; option-matching and argument-shift remain)
+- `tests/cli-core/t/` (basic option handling, invalid argument/combination, option matching, and argument-shift suites split)
 
 ## Remaining work
-### CLI core
-- `tests/cli-core/t/0007_option_matching.t`
-- `tests/cli-core/t/0008_argument_shift.t`
-
 ### Converter options
 - `tests/converter-options/t/0001_conversion_options_01.t`
 - `tests/converter-options/t/0002_conversion_options_02.t`
