@@ -1,0 +1,169 @@
+#!/bin/sh
+#
+# SPDX-License-Identifier: MIT
+#
+# lso-tap-driver.sh - Minimal TAP consumer for Automake custom test driver protocol.
+#
+# Copyright (c) 2025 libsixel developers. See `AUTHORS`.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to
+# deal in the Software without restriction, including without limitation the
+# rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+# sell copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+# FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+# DEALINGS IN THE SOFTWARE.
+
+set -u
+
+test_name=
+log_file=
+trs_file=
+ignore_exit=no
+comments=no
+
+usage() {
+  cat <<'EOF' >&2
+Usage:
+  lso-tap-driver.sh --test-name NAME --log-file PATH.log --trs-file PATH.trs
+    [--ignore-exit] [--comments] [--] TEST-SCRIPT [ARGS...]
+EOF
+  exit 2
+}
+
+# Parse options required by Automake custom test driver protocol.
+# (Automake mandates --test-name/--log-file/--trs-file.) :contentReference[oaicite:2]{index=2}
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --help) usage ;;
+    --test-name) test_name=${2-}; shift ;;
+    --log-file)  log_file=${2-}; shift ;;
+    --trs-file)  trs_file=${2-}; shift ;;
+    --ignore-exit) ignore_exit=yes ;;
+    --comments) comments=yes ;;
+    --) shift; break ;;
+    -*) echo "lso-tap-driver.sh: invalid option: $1" >&2; usage ;;
+    *) break ;;
+  esac
+  shift
+done
+
+[ -n "${test_name}" ] || { echo "lso-tap-driver.sh: missing --test-name" >&2; usage; }
+[ -n "${log_file}" ]  || { echo "lso-tap-driver.sh: missing --log-file" >&2; usage; }
+[ -n "${trs_file}" ]  || { echo "lso-tap-driver.sh: missing --trs-file" >&2; usage; }
+[ $# -ge 1 ] || { echo "lso-tap-driver.sh: missing TEST-SCRIPT" >&2; usage; }
+
+: "${AM_TAP_AWK:=awk}"
+
+# Run the test script, capture all output in .log (format free). :contentReference[oaicite:3]{index=3}
+# We don't stream to console; Automake shows progress separately.
+# If you want streaming, do it in the test itself (or add tee here).
+"$@" >"$log_file" 2>&1
+rc=$?
+
+# Generate .trs (reStructuredText fields), at minimum :test-result: fields. :contentReference[oaicite:4]{index=4}
+# Also write :global-test-result:, :recheck:, :copy-in-global-log: for convenience
+# (Automake recognizes these fields). :contentReference[oaicite:5]{index=5}
+"$AM_TAP_AWK" \
+  -v test_name="$test_name" \
+  -v rc="$rc" \
+  -v ignore_exit="$ignore_exit" \
+  -v comments="$comments" \
+  'BEGIN{
+     plan=0; saw_plan=0;
+     pass=0; fail=0; skip=0; xfail=0; xpass=0; error=0;
+     tc=0;
+   }
+   function ltrim(s){ sub(/^[ \t\r\n]+/,"",s); return s }
+   function rtrim(s){ sub(/[ \t\r\n]+$/,"",s); return s }
+   function trim(s){ return rtrim(ltrim(s)) }
+
+   # TAP plan line: 1..N
+   $0 ~ /^1\.\.[0-9]+/ {
+     split($0,a,".."); plan=a[2]+0; saw_plan=1;
+   }
+
+   # Test point: ok / not ok
+   $0 ~ /^(not[ \t]+)?ok([ \t]+[0-9]+)?([ \t]+-)?/ {
+     line=$0
+     is_not = (line ~ /^not[ \t]+ok/)
+     # Extract optional number
+     n=0
+     if (match(line,/^(not[ \t]+)?ok[ \t]+[0-9]+/)) {
+       s=substr(line,RSTART,RLENGTH)
+       sub(/^(not[ \t]+)?ok[ \t]+/,"",s)
+       n=s+0
+     } else {
+       n=++tc
+     }
+
+     # Extract description after "-"
+     desc=""
+     if (match(line,/[ \t]+-[ \t]+/)) {
+       desc=substr(line,RSTART+RLENGTH)
+     }
+     # Strip directives from description
+     sub(/[ \t]*#[ \t]*(SKIP|TODO)\b.*/,"",desc)
+     desc=trim(desc)
+     if (desc=="") desc=sprintf("test %d", n)
+
+     # Directives
+     is_skip = (line ~ /#[ \t]*SKIP\b/)
+     is_todo = (line ~ /#[ \t]*TODO\b/)
+
+     if (is_skip) {
+       skip++
+       printf(":test-result: SKIP %s\n", desc)
+     } else if (is_todo) {
+       # Minimal TODO mapping: ok+TODO => XFAIL, not ok+TODO => XFAIL
+       # (You can refine if you care about XPASS/XFAIL semantics.)
+       xfail++
+       printf(":test-result: XFAIL %s\n", desc)
+     } else if (is_not) {
+       fail++
+       printf(":test-result: FAIL %s\n", desc)
+     } else {
+       pass++
+       printf(":test-result: PASS %s\n", desc)
+     }
+     next
+   }
+
+   # Comment lines: keep in .log already; optionally treat as metadata? no-op.
+   END{
+     # If exit status matters and is non-zero, treat as ERROR unless failures already recorded.
+     if (ignore_exit != "yes" && rc != 0) {
+       if (fail==0 && pass==0 && skip==0 && xfail==0 && xpass==0) {
+         error=1
+         printf(":test-result: ERROR %s\n", test_name)
+       }
+     }
+
+     global="PASS"
+     if (error>0) global="ERROR"
+     else if (fail>0) global="FAIL"
+     else if (pass==0 && skip>0) global="SKIP"
+
+     printf(":global-test-result: %s\n", global)
+     printf(":recheck: %s\n", (global=="FAIL"||global=="ERROR") ? "yes" : "no")
+     printf(":copy-in-global-log: %s\n", (global=="FAIL"||global=="ERROR"||global=="SKIP") ? "yes" : "no")
+   }' \
+  >"$trs_file"
+
+# Exit code: Automake mostly consults .trs, but keep conventional codes sane.
+# 0 for PASS/SKIP/XFAIL-only; 1 for FAIL/ERROR.
+# (If you want stricter mapping, tune here.)
+if grep -q '^:global-test-result: FAIL\|^:global-test-result: ERROR' "$trs_file"; then
+  exit 1
+fi
+exit 0

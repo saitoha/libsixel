@@ -1644,7 +1644,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@palette_0001_kmeans_init_LDADD = $(TESTS_COMMON_LDADD_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@palette_0001_kmeans_init_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@palette_0001_kmeans_init_SOURCES = palette/0001_kmeans_init.c
-TEST_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/build-aux/tap-driver.sh
+TEST_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/build-aux/lso-tap-driver.sh
 AM_TEST_LOG_DRIVER_FLAGS = --comments
 LOG_COMPILER = $(builddir)/tools/with-timeout.sh
 AM_TEST_TIMEOUT = 300

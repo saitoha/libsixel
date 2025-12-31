@@ -205,16 +205,16 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/build-aux/config.guess \
 	$(top_srcdir)/build-aux/config.sub \
 	$(top_srcdir)/build-aux/install-sh \
+	$(top_srcdir)/build-aux/lso-tap-driver.sh \
 	$(top_srcdir)/build-aux/ltmain.sh \
 	$(top_srcdir)/build-aux/missing \
-	$(top_srcdir)/build-aux/tap-driver.sh \
 	$(top_srcdir)/quicklook-extension/Resources/Bridge-Info.plist.in \
 	$(top_srcdir)/quicklook-extension/Resources/Host-Info.plist.in \
 	$(top_srcdir)/quicklook-extension/Resources/Preview-Info.plist.in \
 	$(top_srcdir)/quicklook-extension/Resources/Thumbnail-Info.plist.in \
 	$(top_srcdir)/ruby/lib/libsixel/version_runtime.rb.in AUTHORS \
 	ChangeLog NEWS README.md build-aux/ar-lib build-aux/compile \
-	build-aux/config.guess build-aux/config.sub \
+	build-aux/config.guess build-aux/config.sub build-aux/depcomp \
 	build-aux/install-sh build-aux/ltmain.sh build-aux/missing \
 	build-aux/py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)

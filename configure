@@ -3116,7 +3116,7 @@ as_fn_append ac_header_c_list " sys/types.h sys_types_h HAVE_SYS_TYPES_H"
 as_fn_append ac_header_c_list " unistd.h unistd_h HAVE_UNISTD_H"
 
 # Auxiliary files required by this configure script.
-ac_aux_files="compile ltmain.sh ar-lib missing install-sh config.guess config.sub tap-driver.sh"
+ac_aux_files="compile ltmain.sh ar-lib missing install-sh config.guess config.sub lso-tap-driver.sh"
 
 # Locations in which to look for auxiliary files.
 ac_aux_dir_candidates="${srcdir}/build-aux"

@@ -658,7 +658,7 @@ palette_0001_kmeans_init_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 
-TEST_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/build-aux/tap-driver.sh
+TEST_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/build-aux/lso-tap-driver.sh
 AM_TEST_LOG_DRIVER_FLAGS = --comments
 LOG_COMPILER = $(builddir)/tools/with-timeout.sh
 AM_TEST_TIMEOUT = 300
