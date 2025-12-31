@@ -9,8 +9,10 @@ set -euxv
 . "$(dirname "$0")/../lib/common.sh"
 
 test_name=$(basename "$0")
+test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+category_name=$(basename "$(dirname "${test_dir}")")
 artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_dir="${artifact_root}/${test_name}"
+artifact_dir="${artifact_root}/${category_name}/${test_name}"
 log_file="${artifact_dir}/python.log"
 tmp_dir="${artifact_dir}/tmp"
 
