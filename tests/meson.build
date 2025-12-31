@@ -418,6 +418,7 @@ if gdk_pixbuf_loader_deps.length() > 0
     '0004_propagate_error':
       'gdk-pixbuf-loader/0004_propagate_error.c',
     '0005_context_free': 'gdk-pixbuf-loader/0005_context_free.c',
+    '0006_loader_module': 'gdk-pixbuf-loader/0006_loader_module.c',
   }
   foreach test_name, source_file : gdk_pixbuf_loader_tests
     target = executable(test_name,
@@ -437,7 +438,8 @@ if gdk_pixbuf_loader_deps.length() > 0
     endif
     test(test_name, target,
       env: env,
-      suite: ['gdk-pixbuf-loader'])
+      suite: ['gdk-pixbuf-loader'],
+      depends: [pixbufloader_sixel])
   endforeach
 endif
 

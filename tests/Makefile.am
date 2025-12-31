@@ -242,12 +242,14 @@ TESTS += gdk-pixbuf-loader/0001_gdk_pixbuf_loader \
     gdk-pixbuf-loader/0002_incremental_load \
     gdk-pixbuf-loader/0003_corrupt_data \
     gdk-pixbuf-loader/0004_propagate_error \
-    gdk-pixbuf-loader/0005_context_free
+    gdk-pixbuf-loader/0005_context_free \
+    gdk-pixbuf-loader/0006_loader_module
 check_PROGRAMS += gdk-pixbuf-loader/0001_gdk_pixbuf_loader \
     gdk-pixbuf-loader/0002_incremental_load \
     gdk-pixbuf-loader/0003_corrupt_data \
     gdk-pixbuf-loader/0004_propagate_error \
-    gdk-pixbuf-loader/0005_context_free
+    gdk-pixbuf-loader/0005_context_free \
+    gdk-pixbuf-loader/0006_loader_module
 gdk_pixbuf_loader_0001_gdk_pixbuf_loader_SOURCES = \
     gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
     $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
@@ -263,6 +265,8 @@ gdk_pixbuf_loader_0004_propagate_error_SOURCES = \
 gdk_pixbuf_loader_0005_context_free_SOURCES = \
     gdk-pixbuf-loader/0005_context_free.c \
     $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+gdk_pixbuf_loader_0006_loader_module_SOURCES = \
+    gdk-pixbuf-loader/0006_loader_module.c
 gdk_pixbuf_loader_0001_gdk_pixbuf_loader_CPPFLAGS = $(AM_CPPFLAGS) \
         -I$(top_builddir)/include \
         -I$(top_srcdir)/include \
@@ -300,6 +304,11 @@ gdk_pixbuf_loader_0005_context_free_CPPFLAGS = $(AM_CPPFLAGS) \
         $(GDK_PIXBUF_CFLAGS) \
         -DGDK_PIXBUF_ENABLE_BACKEND \
         -DSIXEL_PIXBUF_LOADER_TESTING
+gdk_pixbuf_loader_0006_loader_module_CPPFLAGS = $(AM_CPPFLAGS) \
+        -I$(top_builddir)/include \
+        -I$(top_srcdir)/include \
+        -I$(top_srcdir)/src \
+        $(GDK_PIXBUF_CFLAGS)
 gdk_pixbuf_loader_0002_incremental_load_LDADD = \
         $(top_builddir)/src/libsixel.la \
         $(GDK_PIXBUF_LIBS)
@@ -310,6 +319,9 @@ gdk_pixbuf_loader_0004_propagate_error_LDADD = \
         $(top_builddir)/src/libsixel.la \
         $(GDK_PIXBUF_LIBS)
 gdk_pixbuf_loader_0005_context_free_LDADD = \
+        $(top_builddir)/src/libsixel.la \
+        $(GDK_PIXBUF_LIBS)
+gdk_pixbuf_loader_0006_loader_module_LDADD = \
         $(top_builddir)/src/libsixel.la \
         $(GDK_PIXBUF_LIBS)
 endif

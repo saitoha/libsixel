@@ -109,6 +109,7 @@ tests/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c
 tests/gdk-pixbuf-loader/0005_context_free.c
 tests/gdk-pixbuf-loader/0002_incremental_load.c
 tests/gdk-pixbuf-loader/0004_propagate_error.c
+tests/gdk-pixbuf-loader/0006_loader_module.c
 tests/cli/0029_cli_token_is_known_option.c
 tests/cli/0030_cli_option_requires_argument.c
 tests/cli/0031_cli_guard_missing_argument.c
