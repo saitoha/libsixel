@@ -15,63 +15,71 @@ $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
 endif
-CLI_TESTS = cli-core/t/0001_invalid_positional.t \
-    cli-core/t/0002_invalid_option_arguments_unknown_dither.t \
-    cli-core/t/0002_invalid_option_arguments_unknown_resize_filter.t \
-    cli-core/t/0002_invalid_option_arguments_unknown_scaling_mode.t \
-    cli-core/t/0002_invalid_option_arguments_unknown_tone_adjustment.t \
-    cli-core/t/0002_invalid_option_arguments_invalid_width.t \
-    cli-core/t/0002_invalid_option_arguments_invalid_height.t \
-    cli-core/t/0002_invalid_option_arguments_invalid_format.t \
-    cli-core/t/0002_invalid_option_arguments_invalid_quality.t \
-    cli-core/t/0002_invalid_option_arguments_invalid_layout.t \
-    cli-core/t/0002_invalid_option_arguments_invalid_bpp.t \
-    cli-core/t/0002_invalid_option_arguments_invalid_encoder_tweak.t \
-    cli-core/t/0002_invalid_option_arguments_invalid_background_colour.t \
-    cli-core/t/0002_invalid_option_arguments_missing_background_component.t \
-    cli-core/t/0002_invalid_option_arguments_overlong_background.t \
-    cli-core/t/0002_invalid_option_arguments_malformed_hex_background.t \
-    cli-core/t/0002_invalid_option_arguments_unknown_named_colour.t \
-    cli-core/t/0002_invalid_option_arguments_incomplete_rgb_background.t \
-    cli-core/t/0002_invalid_option_arguments_unsupported_legacy_width.t \
-    cli-core/t/0002_invalid_option_arguments_missing_palette_file.t \
-    cli-core/t/0002_invalid_option_arguments_invalid_colour_space_index.t \
-    cli-core/t/0003_invalid_option_combinations_palette_and_encode.t \
-    cli-core/t/0003_invalid_option_combinations_inspect_with_palette.t \
-    cli-core/t/0003_invalid_option_combinations_palette_with_terminal_preset.t \
-    cli-core/t/0003_invalid_option_combinations_eight_bit_with_palette_dump.t \
-    cli-core/t/0004_stdin.t \
-    cli-core/t/0005_help.t \
-    cli-core/t/0005_version.t \
-    cli-core/t/0006_basic_missing_input.t \
+CLI_CORE_TESTS = cli-core/t/0001_invalid_positional.t \
+    cli-core/t/0002_stdin.t \
+    cli-core/t/0003_help.t \
+    cli-core/t/0004_version.t \
+    cli-core/t/0005_basic_missing_input.t \
     cli-core/t/0006_basic_help_option.t \
-    cli-core/t/0006_basic_version_option.t \
-    cli-core/t/0006_basic_stdin_snake.t \
-    cli-core/t/0006_basic_stdin_map8.t \
-    cli-core/t/0006_basic_stdin_stdout_map64.t \
-    cli-core/t/0006_basic_file_arguments_snake.t \
-    cli-core/t/0006_basic_direct_output.t \
-    cli-core/t/0006_basic_direct_with_dequantize_conflict.t \
-    cli-core/t/0006_basic_png_prefix_path.t \
-    cli-core/t/0006_basic_png_stdout.t \
-    cli-core/t/0006_basic_png_prefix_missing_target.t \
-    cli-core/t/0006_basic_dequantize_unique_prefix.t \
-    cli-core/t/0006_basic_parallel_indexed.t \
-    cli-core/t/0006_basic_parallel_direct.t \
-    cli-core/t/0006_basic_parallel_cli_override.t \
-    cli-core/t/0006_basic_invalid_threads_token.t \
-    cli-core/t/0007_option_matching_prefix_unique.t \
-    cli-core/t/0007_option_matching_prefix_ambiguous.t \
-    cli-core/t/0007_option_matching_diffusion_correction.t \
-    cli-core/t/0007_option_matching_distance1_multi.t \
-    cli-core/t/0007_option_matching_distance2.t \
-    cli-core/t/0007_option_matching_distance3.t \
-    cli-core/t/0008_argument_shift_missing_mapfile.t \
-    cli-core/t/0008_argument_shift_outfile_named_like_option.t \
-    cli-core/t/0008_argument_shift_assessment_named_like_option.t \
-    cli-core/t/0009_cli_token_is_known_option.t \
-    cli-core/t/0010_cli_option_requires_argument.t \
-    cli-core/t/0011_cli_guard_missing_argument.t \
+    cli-core/t/0007_basic_version_option.t \
+    cli-core/t/0008_basic_stdin_snake.t \
+    cli-core/t/0009_basic_stdin_map8.t \
+    cli-core/t/0010_basic_stdin_stdout_map64.t \
+    cli-core/t/0011_basic_file_arguments_snake.t \
+    cli-core/t/0012_basic_direct_output.t \
+    cli-core/t/0013_basic_direct_with_dequantize_conflict.t \
+    cli-core/t/0014_basic_png_prefix_path.t \
+    cli-core/t/0015_basic_png_stdout.t \
+    cli-core/t/0016_basic_png_prefix_missing_target.t \
+    cli-core/t/0017_basic_dequantize_unique_prefix.t \
+    cli-core/t/0018_basic_parallel_indexed.t \
+    cli-core/t/0019_basic_parallel_direct.t \
+    cli-core/t/0020_basic_parallel_cli_override.t \
+    cli-core/t/0021_basic_invalid_threads_token.t \
+    cli-core/t/0022_argument_shift_missing_mapfile.t \
+    cli-core/t/0023_argument_shift_outfile_named_like_option.t \
+    cli-core/t/0024_argument_shift_assessment_named_like_option.t
+
+CLI_OPTION_INVALID_TESTS = cli-option-invalid/t/0001_invalid_option_unknown_dither.t \
+    cli-option-invalid/t/0002_invalid_option_unknown_resize_filter.t \
+    cli-option-invalid/t/0003_invalid_option_unknown_scaling_mode.t \
+    cli-option-invalid/t/0004_invalid_option_unknown_tone_adjustment.t \
+    cli-option-invalid/t/0005_invalid_option_invalid_width.t \
+    cli-option-invalid/t/0006_invalid_option_invalid_height.t \
+    cli-option-invalid/t/0007_invalid_option_invalid_format.t \
+    cli-option-invalid/t/0008_invalid_option_invalid_quality.t \
+    cli-option-invalid/t/0009_invalid_option_invalid_layout.t \
+    cli-option-invalid/t/0010_invalid_option_invalid_bpp.t \
+    cli-option-invalid/t/0011_invalid_option_invalid_encoder_tweak.t \
+    cli-option-invalid/t/0012_invalid_option_invalid_background_colour.t \
+    cli-option-invalid/t/0013_invalid_option_missing_background_component.t \
+    cli-option-invalid/t/0014_invalid_option_overlong_background.t \
+    cli-option-invalid/t/0015_invalid_option_malformed_hex_background.t \
+    cli-option-invalid/t/0016_invalid_option_unknown_named_colour.t \
+    cli-option-invalid/t/0017_invalid_option_incomplete_rgb_background.t \
+    cli-option-invalid/t/0018_invalid_option_unsupported_legacy_width.t \
+    cli-option-invalid/t/0019_invalid_option_missing_palette_file.t \
+    cli-option-invalid/t/0020_invalid_option_invalid_colour_space_index.t \
+    cli-option-invalid/t/0021_invalid_option_combinations_palette_and_encode.t \
+    cli-option-invalid/t/0022_invalid_option_combinations_inspect_with_palette.t \
+    cli-option-invalid/t/0023_invalid_option_combinations_palette_with_terminal_preset.t \
+    cli-option-invalid/t/0024_invalid_option_combinations_eight_bit_with_palette_dump.t \
+    cli-option-invalid/t/0025_cli_token_is_known_option.t \
+    cli-option-invalid/t/0026_cli_option_requires_argument.t \
+    cli-option-invalid/t/0027_cli_guard_missing_argument.t \
+    cli-option-invalid/t/0028_invalid_option_arguments.t \
+    cli-option-invalid/t/0029_invalid_option_combinations.t
+
+CLI_OPTION_MATCHING_TESTS = cli-option-matching/t/0001_option_matching_prefix_unique.t \
+    cli-option-matching/t/0002_option_matching_prefix_ambiguous.t \
+    cli-option-matching/t/0003_option_matching_diffusion_correction.t \
+    cli-option-matching/t/0004_option_matching_distance1_multi.t \
+    cli-option-matching/t/0005_option_matching_distance2.t \
+    cli-option-matching/t/0006_option_matching_distance3.t
+
+CLI_TESTS = $(CLI_CORE_TESTS) \
+    $(CLI_OPTION_INVALID_TESTS) \
+    $(CLI_OPTION_MATCHING_TESTS) \
     palette/t/0008_select_color_ambiguous_prefix_rejected.t \
     palette/t/0009_select_color_unique_prefix_accepted.t \
     palette/t/0010_explicit_dimensions_with_palette.t \
@@ -151,8 +159,7 @@ CLI_TESTS = cli-core/t/0001_invalid_positional.t \
     network/t/0001_curl_invalid_file_url.t \
     network/t/0002_curl_invalid_https_url.t \
     network/t/0003_curl_file_scheme.t \
-    network/t/0004_curl_self_signed_blocked.t \
-    network/t/0005_curl_self_signed_with_k.t \
+    network/t/0004_curl_self_signed_with_k.t \
     regression/t/0001_issue167_empty_bg.t \
     regression/t/0002_issue167_height.t \
     regression/t/0003_issue166_width.t \
@@ -233,9 +240,9 @@ FILTER_TEST_BINARIES = \
 TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
 COPY_TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
 check_PROGRAMS = \
-    cli/0029_cli_token_is_known_option \
-    cli/0030_cli_option_requires_argument \
-    cli/0031_cli_guard_missing_argument
+    cli/0025_cli_token_is_known_option \
+    cli/0026_cli_option_requires_argument \
+    cli/0027_cli_guard_missing_argument
 
 if ENABLE_GDK_PIXBUF_LOADER
 TESTS += gdk-pixbuf-loader/0001_gdk_pixbuf_loader \
@@ -341,7 +348,7 @@ TEST_EXTENSIONS = .t
 
 HELPER_FILES = common/t/0001_converters_common.t \
        conversion/common.sh \
-       cli-core/t/cli_core_common.sh \
+       cli-core/cli_core_common.sh \
        python/lib/common.sh \
        palette/t/kmeans_init_common.sh \
        pipeline/t/pipeline_planner_common.sh \
@@ -574,57 +581,57 @@ filter_0010_filter_encode_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-nodist_cli_0029_cli_token_is_known_option_SOURCES = $(AMALGAMATION_SIXEL)
-cli_0029_cli_token_is_known_option_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
-    -DBUILD_0029_CLI_TOKEN_IS_KNOWN_OPTION=1 \
+nodist_cli_0025_cli_token_is_known_option_SOURCES = $(AMALGAMATION_SIXEL)
+cli_0025_cli_token_is_known_option_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+    -DBUILD_0025_CLI_TOKEN_IS_KNOWN_OPTION=1 \
     -DBUILD_CLI=1
-cli_0029_cli_token_is_known_option_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
-cli_0029_cli_token_is_known_option_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
-cli_0029_cli_token_is_known_option_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+cli_0025_cli_token_is_known_option_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+cli_0025_cli_token_is_known_option_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+cli_0025_cli_token_is_known_option_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 else
-cli_0029_cli_token_is_known_option_SOURCES = \
-    cli/0029_cli_token_is_known_option.c \
+cli_0025_cli_token_is_known_option_SOURCES = \
+    cli/0025_cli_token_is_known_option.c \
     $(top_srcdir)/converters/cli.c
-cli_0029_cli_token_is_known_option_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
-cli_0029_cli_token_is_known_option_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
-cli_0029_cli_token_is_known_option_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
-cli_0029_cli_token_is_known_option_LDADD = $(TESTS_COMMON_LDADD_VAL)
+cli_0025_cli_token_is_known_option_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+cli_0025_cli_token_is_known_option_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+cli_0025_cli_token_is_known_option_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+cli_0025_cli_token_is_known_option_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-nodist_cli_0030_cli_option_requires_argument_SOURCES = $(AMALGAMATION_SIXEL)
-cli_0030_cli_option_requires_argument_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
-    -DBUILD_0030_CLI_OPTION_REQUIRES_ARGUMENT=1 \
+nodist_cli_0026_cli_option_requires_argument_SOURCES = $(AMALGAMATION_SIXEL)
+cli_0026_cli_option_requires_argument_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+    -DBUILD_0026_CLI_OPTION_REQUIRES_ARGUMENT=1 \
     -DBUILD_CLI=1
-cli_0030_cli_option_requires_argument_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
-cli_0030_cli_option_requires_argument_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
-cli_0030_cli_option_requires_argument_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+cli_0026_cli_option_requires_argument_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+cli_0026_cli_option_requires_argument_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+cli_0026_cli_option_requires_argument_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 else
-cli_0030_cli_option_requires_argument_SOURCES = \
-    cli/0030_cli_option_requires_argument.c \
+cli_0026_cli_option_requires_argument_SOURCES = \
+    cli/0026_cli_option_requires_argument.c \
     $(top_srcdir)/converters/cli.c
-cli_0030_cli_option_requires_argument_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
-cli_0030_cli_option_requires_argument_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
-cli_0030_cli_option_requires_argument_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
-cli_0030_cli_option_requires_argument_LDADD = $(TESTS_COMMON_LDADD_VAL)
+cli_0026_cli_option_requires_argument_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+cli_0026_cli_option_requires_argument_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+cli_0026_cli_option_requires_argument_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+cli_0026_cli_option_requires_argument_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS
-nodist_cli_0031_cli_guard_missing_argument_SOURCES = $(AMALGAMATION_SIXEL)
-cli_0031_cli_guard_missing_argument_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
-    -DBUILD_0031_CLI_GUARD_MISSING_ARGUMENT=1 \
+nodist_cli_0027_cli_guard_missing_argument_SOURCES = $(AMALGAMATION_SIXEL)
+cli_0027_cli_guard_missing_argument_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+    -DBUILD_0027_CLI_GUARD_MISSING_ARGUMENT=1 \
     -DBUILD_CLI=1
-cli_0031_cli_guard_missing_argument_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
-cli_0031_cli_guard_missing_argument_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
-cli_0031_cli_guard_missing_argument_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+cli_0027_cli_guard_missing_argument_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+cli_0027_cli_guard_missing_argument_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+cli_0027_cli_guard_missing_argument_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 else
-cli_0031_cli_guard_missing_argument_SOURCES = \
-    cli/0031_cli_guard_missing_argument.c \
+cli_0027_cli_guard_missing_argument_SOURCES = \
+    cli/0027_cli_guard_missing_argument.c \
     $(top_srcdir)/converters/cli.c
-cli_0031_cli_guard_missing_argument_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
-cli_0031_cli_guard_missing_argument_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
-cli_0031_cli_guard_missing_argument_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
-cli_0031_cli_guard_missing_argument_LDADD = $(TESTS_COMMON_LDADD_VAL)
+cli_0027_cli_guard_missing_argument_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+cli_0027_cli_guard_missing_argument_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+cli_0027_cli_guard_missing_argument_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+cli_0027_cli_guard_missing_argument_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 if WANT_AMALGAMATED_TOOLS

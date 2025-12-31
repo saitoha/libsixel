@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test verifying sixel2png prints help output.
+# TAP test verifying sixel2png prints version information.
 
 set -euxv
 
@@ -11,10 +11,10 @@ ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 
 echo "1..1"
 
-if run_sixel2png -H >"${output_dir}/help.txt" 2>>"${log_file}"; then
-    cli_core_pass 1 "prints help"
+if run_sixel2png -V >"${output_dir}/version.txt" 2>>"${log_file}"; then
+    cli_core_pass 1 "prints version"
 else
-    cli_core_fail 1 "help option failed"
+    cli_core_fail 1 "version option failed"
 fi
 
 exit "${status}"
