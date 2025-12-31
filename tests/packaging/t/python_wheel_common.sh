@@ -20,8 +20,10 @@ skip_all() {
 
 setup_wheel_paths() {
     test_name=$1
+    test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+    category_name=$(basename "$(dirname "${test_dir}")")
     artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-    artifact_dir="${artifact_root}/${test_name}"
+    artifact_dir="${artifact_root}/${category_name}/${test_name}"
     log_file="${artifact_dir}/wheel.log"
     tmp_dir="${artifact_dir}/tmp"
     run_venv="${tmp_dir}/venv"
