@@ -340,6 +340,9 @@ img2sixel_compat_open(const char *path, int flags, ...)
     int fd;
     va_list args;
     int mode;
+#if defined(_MSC_VER)
+    errno_t error;
+#endif
 
     fd = (-1);
     mode = 0;
@@ -356,7 +359,15 @@ img2sixel_compat_open(const char *path, int flags, ...)
     va_end(args);
 
 #if defined(_MSC_VER)
-    fd = _open(path, flags, mode);
+    /*
+     * _sopen_s requires an explicit sharing mode.  _SH_DENYNO mirrors the
+     * default POSIX behaviour by allowing other processes to access the file
+     * while keeping the rest of the flag set intact.
+     */
+    error = _sopen_s(&fd, path, flags, _SH_DENYNO, mode);
+    if (error != 0) {
+        fd = (-1);
+    }
 #else
     if (flags & O_CREAT) {
         fd = open(path, flags, (mode_t)mode);
