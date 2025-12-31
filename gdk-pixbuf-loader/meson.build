@@ -9,6 +9,7 @@ pixbufloader_sixel = shared_module('pixbufloader-sixel',
   include_directories: project_inc,
   dependencies: loader_deps,
   c_args: ['-DGDK_PIXBUF_ENABLE_BACKEND'],
+  name_suffix: 'so',
   build_by_default: true,
   install: true,
   install_dir: gdk_pixbuf_loader_dir)
