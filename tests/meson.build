@@ -10,7 +10,6 @@ env.set('MESON_BUILD_ROOT', meson.project_build_root())
 # Meson is invoked without a prior `meson compile`. The binding smoke test
 # relies on LIBSIXEL_LIBDIR to point at the build artifact directory.
 env.set('LIBSIXEL_LIBDIR', meson.project_build_root() / 'src')
-amalgamated_tools_enabled = get_option('amalgamated_tools').enabled()
 
 cli_helper_sources = {
   '0029_cli_token_is_known_option':

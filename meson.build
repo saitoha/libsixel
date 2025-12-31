@@ -1087,9 +1087,9 @@ loader_helpers_dep = declare_dependency(link_with: loader_helpers,
   include_directories: project_inc,
   dependencies: deps)
 
-amalgamation_opt = get_option('amalgamation')
-amalgamated_tools_opt = get_option('amalgamated_tools')
-amalgamated_tools_enabled = amalgamated_tools_opt.enabled()
+amalgamated_lib_enabled = get_option('amalgamated_lib')
+amalgamated_tools_enabled = get_option('amalgamated_tools')
+amalgamated_sources_enabled = amalgamated_lib_enabled or amalgamated_tools_enabled
 
 bash_completion_opt = get_option('bashcompletiondir')
 bash_completion_dir = ''
@@ -1287,10 +1287,6 @@ if ruby_opt.enabled()
   endif
 endif
 
-if amalgamated_tools_enabled and not amalgamation_opt.enabled()
-  error('amalgamated_tools requires the amalgamation option to be enabled')
-endif
-
 # Build the embedded completion header once so both the converter targets and
 # the amalgamated translation unit can consume the same generated artifact.
 sh = find_program('sh')
@@ -1319,7 +1315,7 @@ completion_embed = custom_target('completion_embed.h',
   install: false,
 )
 
-if amalgamation_opt.enabled()
+if amalgamated_sources_enabled
   subdir('amalgamation')
 endif
 

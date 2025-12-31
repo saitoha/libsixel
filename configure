@@ -772,10 +772,12 @@ WITH_SHEBANG_FILE_FALSE
 WITH_SHEBANG_FILE_TRUE
 SIXEL_SHEBANG_HELPER
 SIXEL_SHEBANG_FILE
+WANT_AMALGAMATED_SOURCES_FALSE
+WANT_AMALGAMATED_SOURCES_TRUE
 WANT_AMALGAMATED_TOOLS_FALSE
 WANT_AMALGAMATED_TOOLS_TRUE
-WANT_AMALGAMATION_FALSE
-WANT_AMALGAMATION_TRUE
+WANT_AMALGAMATED_LIB_FALSE
+WANT_AMALGAMATED_LIB_TRUE
 SIXEL_ENABLE_THREADS_FALSE
 SIXEL_ENABLE_THREADS_TRUE
 HAVE_ABORT_TRACE_FALSE
@@ -940,7 +942,7 @@ enable_img2sixel
 enable_sixel2png
 enable_abort_trace
 enable_threads
-enable_amalgamation
+enable_amalgamated_lib
 enable_amalgamated_tools
 with_shebang_file
 with_modeldir
@@ -1664,7 +1666,9 @@ Optional Features:
   --enable-abort-trace    enable abort stack trace support for CLI tools
                           (default: auto)
   --disable-threads       disable internal threadpool support (default: auto)
-  --enable-amalgamation   enable amalgamation build (default: no)
+  --enable-amalgamated-lib
+                          build libsixel from the amalgamated source (default:
+                          no)
   --enable-amalgamated-tools
                           build CLI tools from the amalgamated source
                           (default: no)
@@ -16528,21 +16532,21 @@ else
 fi
 
 
-# Check whether --enable-amalgamation was given.
-if test ${enable_amalgamation+y}
+# Check whether --enable-amalgamated-lib was given.
+if test ${enable_amalgamated_lib+y}
 then :
-  enableval=$enable_amalgamation;
+  enableval=$enable_amalgamated_lib;
 else case e in #(
-  e) enable_amalgamation=no ;;
+  e) enable_amalgamated_lib=no ;;
 esac
 fi
 
- if test "x$enable_amalgamation" = "xyes"; then
-  WANT_AMALGAMATION_TRUE=
-  WANT_AMALGAMATION_FALSE='#'
+ if test "x$enable_amalgamated_lib" = "xyes"; then
+  WANT_AMALGAMATED_LIB_TRUE=
+  WANT_AMALGAMATED_LIB_FALSE='#'
 else
-  WANT_AMALGAMATION_TRUE='#'
-  WANT_AMALGAMATION_FALSE=
+  WANT_AMALGAMATED_LIB_TRUE='#'
+  WANT_AMALGAMATED_LIB_FALSE=
 fi
 
 
@@ -16555,16 +16559,27 @@ else case e in #(
 esac
 fi
 
-if test "x$enable_amalgamated_tools" = "xyes" \
-   && test "x$enable_amalgamation" != "xyes"; then
-    as_fn_error $? "--enable-amalgamated-tools requires --enable-amalgamation" "$LINENO" 5
-fi
  if test "x$enable_amalgamated_tools" = "xyes"; then
   WANT_AMALGAMATED_TOOLS_TRUE=
   WANT_AMALGAMATED_TOOLS_FALSE='#'
 else
   WANT_AMALGAMATED_TOOLS_TRUE='#'
   WANT_AMALGAMATED_TOOLS_FALSE=
+fi
+
+
+if test "x$enable_amalgamated_lib" = "xyes" \
+   || test "x$enable_amalgamated_tools" = "xyes"; then
+  want_amalgamated_sources=yes
+else
+  want_amalgamated_sources=no
+fi
+ if test "x$want_amalgamated_sources" = "xyes"; then
+  WANT_AMALGAMATED_SOURCES_TRUE=
+  WANT_AMALGAMATED_SOURCES_FALSE='#'
+else
+  WANT_AMALGAMATED_SOURCES_TRUE='#'
+  WANT_AMALGAMATED_SOURCES_FALSE=
 fi
 
 
@@ -20553,7 +20568,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 esac
 
 AMALGAMATION_NEEDS_OBJC=no
-if test x$enable_amalgamation = xyes; then
+if test x$want_amalgamated_sources = xyes; then
     if test x$have_clipboard_macos_appkit = xyes \
         || test x$have_quicklook_thumbnailing = xyes; then
         AMALGAMATION_NEEDS_OBJC=yes
@@ -24515,12 +24530,16 @@ if test -z "${SIXEL_ENABLE_THREADS_TRUE}" && test -z "${SIXEL_ENABLE_THREADS_FAL
   as_fn_error $? "conditional \"SIXEL_ENABLE_THREADS\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
-if test -z "${WANT_AMALGAMATION_TRUE}" && test -z "${WANT_AMALGAMATION_FALSE}"; then
-  as_fn_error $? "conditional \"WANT_AMALGAMATION\" was never defined.
+if test -z "${WANT_AMALGAMATED_LIB_TRUE}" && test -z "${WANT_AMALGAMATED_LIB_FALSE}"; then
+  as_fn_error $? "conditional \"WANT_AMALGAMATED_LIB\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WANT_AMALGAMATED_TOOLS_TRUE}" && test -z "${WANT_AMALGAMATED_TOOLS_FALSE}"; then
   as_fn_error $? "conditional \"WANT_AMALGAMATED_TOOLS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${WANT_AMALGAMATED_SOURCES_TRUE}" && test -z "${WANT_AMALGAMATED_SOURCES_FALSE}"; then
+  as_fn_error $? "conditional \"WANT_AMALGAMATED_SOURCES\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WITH_SHEBANG_FILE_TRUE}" && test -z "${WITH_SHEBANG_FILE_FALSE}"; then

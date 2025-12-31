@@ -90,18 +90,18 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-@SIXEL_ENABLE_THREADS_TRUE@@WANT_AMALGAMATION_FALSE@am__append_1 = \
-@SIXEL_ENABLE_THREADS_TRUE@@WANT_AMALGAMATION_FALSE@$(srcdir)/threadpool.c \
-@SIXEL_ENABLE_THREADS_TRUE@@WANT_AMALGAMATION_FALSE@$(srcdir)/threadpool.h
+@SIXEL_ENABLE_THREADS_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_1 = \
+@SIXEL_ENABLE_THREADS_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/threadpool.c \
+@SIXEL_ENABLE_THREADS_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/threadpool.h
 
-@HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATION_FALSE@am__append_2 = \
-@HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATION_FALSE@$(srcdir)/quicklook_thumbnailing.m
+@HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_2 = \
+@HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/quicklook_thumbnailing.m
 
-@HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATION_FALSE@am__append_3 = \
-@HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATION_FALSE@$(srcdir)/clipboard_macos.m
+@HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_3 = \
+@HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/clipboard_macos.m
 
-@HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATION_FALSE@am__append_4 = \
-@HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATION_FALSE@$(srcdir)/clipboard_carbon.c
+@HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__append_4 = \
+@HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@$(srcdir)/clipboard_carbon.c
 
 @COND_TESTS_TRUE@noinst_PROGRAMS = tests$(EXEEXT)
 @WITH_SHEBANG_FILE_TRUE@am__append_5 = $(SIXEL_SHEBANG_STAMP)
@@ -237,92 +237,93 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/lso2.h $(srcdir)/threadpool.c $(srcdir)/threadpool.h \
 	$(srcdir)/quicklook_thumbnailing.m $(srcdir)/clipboard_macos.m \
 	$(srcdir)/clipboard_carbon.c
-@SIXEL_ENABLE_THREADS_TRUE@@WANT_AMALGAMATION_FALSE@am__objects_1 = libsixel_la-threadpool.lo
-@HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATION_FALSE@am__objects_2 = libsixel_la-quicklook_thumbnailing.lo
-@HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATION_FALSE@am__objects_3 = libsixel_la-clipboard_macos.lo
-@HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATION_FALSE@am__objects_4 = libsixel_la-clipboard_carbon.lo
-@WANT_AMALGAMATION_FALSE@am_libsixel_la_OBJECTS =  \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-output.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-timer.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-assessment.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-sleep.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-fromsixel.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-tosixel.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-lookup-common.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-lookup-8bit.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-lookup-float32.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-lookup-vpte-8bit.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-lookup-vpte-float32.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-palette-heckbert.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-palette-common-merge.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-palette-common-snap.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-palette-kmeans.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-palette.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-dither.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-dither-common-pipeline.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-dither-positional-8bit.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-dither-positional-float32.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-dither-fixed-8bit.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-dither-fixed-float32.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-dither-varcoeff-8bit.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-dither-varcoeff-float32.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-logger.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-colorspace.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-frame.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-cpu.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-pixelformat.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-filter-colors.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-filter-load.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-filter-factory.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-filter-final-merge.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-filter-dither.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-filter-encode.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-filter-lookup.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-filter-palette.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-filter-vpte.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-filter-clip.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-filter-resize.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-filter-sample.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-filter.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-scale.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-chunk.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-loader.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-gdk-pixbuf2.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-gnome-thumbnailer.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-coregraphics.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-quicklook.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-wic.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-gd.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-libpng.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-libjpeg.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-builtin.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-common.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-loader-registry.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-frompnm.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-fromgif.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-clipboard.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-encoder.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-decoder.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-decoder-parallel.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-options.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-writer.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-stb_image_write.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-status.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-compat_stub.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-malloc_stub.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-allocator.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-tty.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-threading.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-probe.lo \
-@WANT_AMALGAMATION_FALSE@	libsixel_la-sixel_decode_rgba.lo \
-@WANT_AMALGAMATION_FALSE@	$(am__objects_1) $(am__objects_2) \
-@WANT_AMALGAMATION_FALSE@	$(am__objects_3) $(am__objects_4)
-@WANT_AMALGAMATION_TRUE@am_libsixel_la_OBJECTS = $(am__objects_1) \
-@WANT_AMALGAMATION_TRUE@	$(am__objects_2) $(am__objects_3) \
-@WANT_AMALGAMATION_TRUE@	$(am__objects_4)
+@SIXEL_ENABLE_THREADS_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_1 = libsixel_la-threadpool.lo
+@HAVE_QUICKLOOK_THUMBNAILING_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_2 = libsixel_la-quicklook_thumbnailing.lo
+@HAVE_CLIPBOARD_MACOS_APPKIT_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_3 = libsixel_la-clipboard_macos.lo
+@HAVE_CLIPBOARD_MACOS_CARBON_TRUE@@WANT_AMALGAMATED_LIB_FALSE@am__objects_4 = libsixel_la-clipboard_carbon.lo
+@WANT_AMALGAMATED_LIB_FALSE@am_libsixel_la_OBJECTS =  \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-output.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-timer.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-assessment.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sleep.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromsixel.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-tosixel.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-common.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-8bit.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-float32.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-vpte-8bit.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-vpte-float32.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-heckbert.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-common-merge.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-common-snap.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-kmeans.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-common-pipeline.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-positional-8bit.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-positional-float32.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-fixed-8bit.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-fixed-float32.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-varcoeff-8bit.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-dither-varcoeff-float32.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-logger.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-colorspace.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-frame.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-cpu.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-pixelformat.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-colors.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-load.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-factory.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-final-merge.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-dither.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-encode.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-lookup.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-palette.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-vpte.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-clip.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-resize.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-sample.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-scale.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-chunk.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-gdk-pixbuf2.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-gnome-thumbnailer.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-coregraphics.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-quicklook.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-wic.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-gd.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-libpng.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-libjpeg.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-builtin.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-common.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-loader-registry.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-frompnm.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromgif.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-clipboard.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-encoder.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-decoder.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-decoder-parallel.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-options.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-writer.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-stb_image_write.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-status.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-compat_stub.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-malloc_stub.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-allocator.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-tty.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-threading.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-probe.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sixel_decode_rgba.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	$(am__objects_1) $(am__objects_2) \
+@WANT_AMALGAMATED_LIB_FALSE@	$(am__objects_3) $(am__objects_4)
+@WANT_AMALGAMATED_LIB_TRUE@am_libsixel_la_OBJECTS = $(am__objects_1) \
+@WANT_AMALGAMATED_LIB_TRUE@	$(am__objects_2) $(am__objects_3) \
+@WANT_AMALGAMATED_LIB_TRUE@	$(am__objects_4)
 am__dirstamp = $(am__leading_dot)dirstamp
-@WANT_AMALGAMATION_TRUE@am__objects_5 = $(top_builddir)/amalgamation/libsixel_la-sixel.lo
-@WANT_AMALGAMATION_TRUE@nodist_libsixel_la_OBJECTS = $(am__objects_5)
+@WANT_AMALGAMATED_LIB_TRUE@am__objects_5 = $(top_builddir)/amalgamation/libsixel_la-sixel.lo
+@WANT_AMALGAMATED_LIB_TRUE@nodist_libsixel_la_OBJECTS =  \
+@WANT_AMALGAMATED_LIB_TRUE@	$(am__objects_5)
 libsixel_la_OBJECTS = $(am_libsixel_la_OBJECTS) \
 	$(nodist_libsixel_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
@@ -701,161 +702,173 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
-@WANT_AMALGAMATION_TRUE@AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
-@WANT_AMALGAMATION_TRUE@AMALGAMATION_TARGET = sixel.c
-@AMALGAMATION_NEEDS_OBJC_FALSE@@WANT_AMALGAMATION_TRUE@AMALGAMATION_COMPILE = $(LTCOMPILE)
-@AMALGAMATION_NEEDS_OBJC_TRUE@@WANT_AMALGAMATION_TRUE@AMALGAMATION_COMPILE = $(LTOBJCCOMPILE)
-@AMALGAMATION_NEEDS_OBJC_FALSE@@WANT_AMALGAMATION_TRUE@AMALGAMATION_CPPFLAGS = 
-@AMALGAMATION_NEEDS_OBJC_TRUE@@WANT_AMALGAMATION_TRUE@AMALGAMATION_CPPFLAGS = -x objective-c
-@WANT_AMALGAMATION_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL)
-@WANT_AMALGAMATION_TRUE@nodist_libsixel_la_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_LIB_TRUE@AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
+@WANT_AMALGAMATED_LIB_TRUE@AMALGAMATION_TARGET = sixel.c
+@AMALGAMATION_NEEDS_OBJC_FALSE@@WANT_AMALGAMATED_LIB_TRUE@AMALGAMATION_COMPILE = $(LTCOMPILE)
+@AMALGAMATION_NEEDS_OBJC_TRUE@@WANT_AMALGAMATED_LIB_TRUE@AMALGAMATION_COMPILE = $(LTOBJCCOMPILE)
+@AMALGAMATION_NEEDS_OBJC_FALSE@@WANT_AMALGAMATED_LIB_TRUE@AMALGAMATION_CPPFLAGS = 
+@AMALGAMATION_NEEDS_OBJC_TRUE@@WANT_AMALGAMATED_LIB_TRUE@AMALGAMATION_CPPFLAGS = -x objective-c
+@WANT_AMALGAMATED_LIB_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_LIB_TRUE@nodist_libsixel_la_SOURCES = $(AMALGAMATION_SIXEL)
 @CFLAGS_HAVE_COVERAGE_TRUE@MAYBE_COVERAGE = --coverage
 @COND_GCOV_TRUE@MAYBE_COVERAGE = --coverage
 CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests \
 	$(am__append_5)
 lib_LTLIBRARIES = libsixel.la
-@WANT_AMALGAMATION_FALSE@libsixel_la_SOURCES = $(srcdir)/output.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/output.h $(srcdir)/timer.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/assessment.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/assessment.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/timer.h $(srcdir)/sleep.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/sleep.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/fromsixel.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/tosixel.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/lookup-common.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/lookup-8bit.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/lookup-8bit.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/lookup-float32.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/lookup-float32.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/lookup-vpte-8bit.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/lookup-vpte-8bit.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/lookup-vpte-float32.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/lookup-vpte-float32.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/lookup-common.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/palette-heckbert.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/palette-heckbert.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/palette-common-merge.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/palette-common-merge.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/palette-common-snap.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/palette-common-snap.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/palette-kmeans.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/palette-kmeans.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/palette.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/palette.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither.c $(srcdir)/dither.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-common-pipeline.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-common-pipeline.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-positional-8bit.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-positional-8bit.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-positional-float32.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-positional-float32.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-fixed-8bit.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-fixed-8bit.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-fixed-float32.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-fixed-float32.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-internal.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-varcoeff-8bit.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-varcoeff-8bit.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-varcoeff-float32.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/dither-varcoeff-float32.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/logger.c $(srcdir)/logger.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/colorspace.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/colorspace.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/frame.c $(srcdir)/frame.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/cpu.c $(srcdir)/cpu.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/pixelformat.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/pixelformat.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-colors.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-colors.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-load.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-load.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-factory.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-factory.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-final-merge.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-final-merge.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-dither.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-dither.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-encode.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-encode.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-lookup.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-lookup.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-palette.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-palette.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-vpte.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-vpte.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-clip.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-clip.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-resize.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-resize.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-sample.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter-sample.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/filter.c $(srcdir)/filter.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/scale.c $(srcdir)/scale.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/chunk.c $(srcdir)/chunk.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-gdk-pixbuf2.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-gnome-thumbnailer.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-coregraphics.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-quicklook.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-wic.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-gd.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-libpng.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-libjpeg.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-builtin.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-common.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-registry.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-builtin.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-common.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-coregraphics.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-gd.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-gdk-pixbuf2.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-gnome-thumbnailer.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-libjpeg.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-libpng.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-quicklook.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-registry.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/loader-wic.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/frompnm.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/frompnm.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/fromgif.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/fromgif.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/clipboard.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/clipboard.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/encoder.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/encoder.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/decoder.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/decoder.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/decoder-parallel.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/decoder-parallel.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/decoder-image.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/options.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/options.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/stb_image.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/writer.c $(srcdir)/writer.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/stb_image_write.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/stb_image_write.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/status.c $(srcdir)/status.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/stdio_stub.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/compat_stub.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/compat_stub.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/malloc_stub.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/malloc_stub.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/allocator.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/allocator.h $(srcdir)/tty.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/tty.h $(srcdir)/threading.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/threading.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/probe.c $(srcdir)/probe.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/sixel_decode_rgba.c \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/sixel_decode_rgba.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/sixel_atomic.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/rgblookup.h \
-@WANT_AMALGAMATION_FALSE@	$(srcdir)/lso2.h $(am__append_1) \
-@WANT_AMALGAMATION_FALSE@	$(am__append_2) $(am__append_3) \
-@WANT_AMALGAMATION_FALSE@	$(am__append_4)
-@WANT_AMALGAMATION_TRUE@libsixel_la_SOURCES = $(am__append_1) \
-@WANT_AMALGAMATION_TRUE@	$(am__append_2) $(am__append_3) \
-@WANT_AMALGAMATION_TRUE@	$(am__append_4)
+@WANT_AMALGAMATED_LIB_FALSE@libsixel_la_SOURCES = $(srcdir)/output.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/output.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/timer.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/assessment.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/assessment.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/timer.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sleep.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sleep.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromsixel.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/tosixel.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-common.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-8bit.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-8bit.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-float32.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-float32.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vpte-8bit.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vpte-8bit.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vpte-float32.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vpte-float32.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-common.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-heckbert.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-heckbert.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-common-merge.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-common-merge.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-common-snap.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-common-snap.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-kmeans.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-common-pipeline.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-common-pipeline.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-positional-8bit.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-positional-8bit.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-positional-float32.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-positional-float32.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-fixed-8bit.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-fixed-8bit.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-fixed-float32.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-fixed-float32.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-internal.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-varcoeff-8bit.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-varcoeff-8bit.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-varcoeff-float32.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-varcoeff-float32.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/logger.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/logger.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/colorspace.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/colorspace.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frame.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frame.h $(srcdir)/cpu.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/cpu.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/pixelformat.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/pixelformat.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-colors.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-colors.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-load.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-load.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-factory.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-factory.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-final-merge.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-final-merge.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-dither.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-dither.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-encode.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-encode.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-lookup.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-lookup.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-palette.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-palette.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-vpte.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-vpte.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-clip.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-clip.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-resize.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-resize.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-sample.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-sample.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/scale.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/scale.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/chunk.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/chunk.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-gdk-pixbuf2.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-gnome-thumbnailer.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-coregraphics.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-quicklook.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-wic.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-gd.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-libpng.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-libjpeg.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-builtin.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-common.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-registry.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-builtin.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-common.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-coregraphics.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-gd.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-gdk-pixbuf2.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-gnome-thumbnailer.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-libjpeg.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-libpng.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-quicklook.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-registry.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/loader-wic.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frompnm.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/frompnm.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromgif.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/fromgif.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/clipboard.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/clipboard.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/encoder.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-parallel.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-parallel.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/decoder-image.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/options.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/options.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/stb_image.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/writer.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/writer.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/stb_image_write.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/stb_image_write.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/status.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/status.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/stdio_stub.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/compat_stub.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/compat_stub.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/malloc_stub.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/malloc_stub.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/allocator.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/allocator.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/tty.c $(srcdir)/tty.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/threading.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/threading.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/probe.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/probe.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_decode_rgba.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_decode_rgba.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sixel_atomic.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/rgblookup.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lso2.h $(am__append_1) \
+@WANT_AMALGAMATED_LIB_FALSE@	$(am__append_2) $(am__append_3) \
+@WANT_AMALGAMATED_LIB_FALSE@	$(am__append_4)
+@WANT_AMALGAMATED_LIB_TRUE@libsixel_la_SOURCES = $(am__append_1) \
+@WANT_AMALGAMATED_LIB_TRUE@	$(am__append_2) $(am__append_3) \
+@WANT_AMALGAMATED_LIB_TRUE@	$(am__append_4)
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS) \
                 @THREAD_CPPFLAGS@ $(AMALGAMATION_CPPFLAGS)
 
@@ -2123,13 +2136,13 @@ uninstall-man: uninstall-man5
 
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-@WANT_AMALGAMATION_TRUE@$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
-@WANT_AMALGAMATION_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
-@WANT_AMALGAMATION_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation $(AMALGAMATION_TARGET)
+@WANT_AMALGAMATED_LIB_TRUE@$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
+@WANT_AMALGAMATED_LIB_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
+@WANT_AMALGAMATED_LIB_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation $(AMALGAMATION_TARGET)
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-@WANT_AMALGAMATION_TRUE@libsixel_la-sixel.lo: $(AMALGAMATION_SIXEL)
-@WANT_AMALGAMATION_TRUE@	$(AMALGAMATION_COMPILE) -c -o $@ $<
+@WANT_AMALGAMATED_LIB_TRUE@libsixel_la-sixel.lo: $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_LIB_TRUE@	$(AMALGAMATION_COMPILE) -c -o $@ $<
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 unittest: all
