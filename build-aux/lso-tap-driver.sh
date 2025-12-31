@@ -91,6 +91,7 @@ time_end=$(date +%s.%N);
      plan=0; saw_plan=0;
      pass=0; fail=0; skip=0; xfail=0; xpass=0; error=0;
      tc=0;
+     desc="";
    }
    function ltrim(s){ sub(/^[ \t\r\n]+/,"",s); return s }
    function rtrim(s){ sub(/[ \t\r\n]+$/,"",s); return s }
@@ -99,9 +100,10 @@ time_end=$(date +%s.%N);
    # TAP plan line: 1..N
    $0 ~ /^1\.\.[0-9]+/ {
      split($0,a,".."); plan=a[2]+0; saw_plan=1;
-     if ($0 ~ /#[ \t]*SKIP/) {
+     if (match($0, /#[ \t]*SKIP /)) {
        skip++
-       printf(":test-result: SKIP\n") > "'"$trs_file"'"
+       desc=substr($0, RSTART+RLENGTH)
+       printf(":test-result: SKIP %s\n", desc) > "'"$trs_file"'"
      }
    }
 
@@ -120,7 +122,6 @@ time_end=$(date +%s.%N);
      }
 
      # Extract description after "-"
-     desc=""
      if (match(line,/[ \t]+-[ \t]+/)) {
        desc=substr(line,RSTART+RLENGTH)
      }
@@ -173,8 +174,10 @@ time_end=$(date +%s.%N);
      sgr["ERROR"] = "\033[1;31m"
      sgr["SKIP"]  = "\033[0;33m"
      sgr["PASS"]  = "\033[0;32m"
-     printf("%s%-5s\033[m \033[1m%.03f\033[ms %s", color_tests ? sgr[global]: "", global, time_end - time_begin, test_name)
-     printf("\n")
+     printf("%s%-5s\033[m \033[1m%.03f\033[ms %s\n", color_tests ? sgr[global]: "", global, time_end - time_begin, test_name)
+     if (global != "PASS" && desc != "") {
+       printf("             > %s\n", desc)
+     }
    }'
 
 # Exit code: Automake mostly consults .trs, but keep conventional codes sane.
