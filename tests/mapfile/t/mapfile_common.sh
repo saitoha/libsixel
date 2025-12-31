@@ -25,7 +25,7 @@ load_mapfile_prereqs() {
     . "${script_dir}/../../common/t/0001_converters_common.t"
 
     status=0
-    ensure_converter_available "ENABLE_CONVERTERS" "${IMG2SIXEL_PATH}" "img2sixel"
+    ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
     snake_png="${images_dir}/snake.png"
     require_file "${snake_png}"
