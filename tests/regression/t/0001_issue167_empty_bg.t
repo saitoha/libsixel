@@ -4,8 +4,10 @@
 set -euxv
 
 test_name=$(basename "$0")
+test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+category_name=$(basename "$(dirname "${test_dir}")")
 artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_dir="${artifact_root}/${test_name}"
+artifact_dir="${artifact_root}/${category_name}/${test_name}"
 log_file="${artifact_dir}/regression.log"
 output_dir="${artifact_dir}/outputs"
 
@@ -13,7 +15,7 @@ tmp_dir="${artifact_dir}/tmp"
 
 mkdir -p "${output_dir}" "${tmp_dir}"
 
-script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+script_dir=${test_dir}
 . "${script_dir}/../../common/t/0001_converters_common.t"
 
 status=0
