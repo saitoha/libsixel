@@ -9301,6 +9301,10 @@ sixel_encoder_emit_palette_output(sixel_encoder_t *encoder)
     sixel_palette_format_t format_ext;
     sixel_palette_format_t format_final;
     char const *mode;
+#if defined(_WIN32)
+    char *path_copy;
+    size_t path_length;
+#endif
 
     status = SIXEL_OK;
     frame = NULL;
@@ -9313,6 +9317,10 @@ sixel_encoder_emit_palette_output(sixel_encoder_t *encoder)
     format_ext = SIXEL_PALETTE_FORMAT_NONE;
     format_final = SIXEL_PALETTE_FORMAT_NONE;
     mode = "wb";
+#if defined(_WIN32)
+    path_copy = NULL;
+    path_length = 0u;
+#endif
 
     if (encoder == NULL || encoder->palette_output == NULL) {
         return SIXEL_OK;
@@ -9367,6 +9375,22 @@ sixel_encoder_emit_palette_output(sixel_encoder_t *encoder)
     if (format_final == SIXEL_PALETTE_FORMAT_PAL_AUTO) {
         format_final = SIXEL_PALETTE_FORMAT_PAL_JASC;
     }
+
+#if defined(_WIN32)
+    path_length = strlen(path);
+    path_copy = (char *)sixel_allocator_malloc(encoder->allocator,
+                                               path_length + 1u);
+    if (path_copy == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_encoder_emit_palette_output: "
+            "sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto cleanup;
+    }
+    (void)sixel_compat_strcpy(path_copy, path_length + 1u, path);
+    encoder_normalise_windows_drive_path(path_copy);
+    path = path_copy;
+#endif
 
     if (strcmp(path, "-") == 0) {
         stream = stdout;
@@ -9454,6 +9478,11 @@ cleanup:
     if (close_stream && stream != NULL) {
         (void) fclose(stream);
     }
+#if defined(_WIN32)
+    if (path_copy != NULL) {
+        sixel_allocator_free(encoder->allocator, path_copy);
+    }
+#endif
     if (frame != NULL) {
         sixel_frame_unref(frame);
     }
