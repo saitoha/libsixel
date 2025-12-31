@@ -253,7 +253,7 @@ libsixel_la_LIBADD = -lm \
                 @THREAD_LIBS@
 
 if COND_TESTS
-noinst_PROGRAMS = tests
+check_PROGRAMS = tests
 tests_SOURCES = $(srcdir)/tests.c
 tests_CPPFLAGS = -I$(top_builddir)/include/ \
                  -I$(top_builddir)/src/ $(AM_CPPFLAGS)
@@ -266,7 +266,7 @@ dist_man_MANS = $(srcdir)/sixel.5
 EXTRA_DIST = $(srcdir)/rgblookup.gperf
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
-unittest: all
+unittest: tests
 if COND_TESTS
 	$(srcdir)/tests
 endif
@@ -282,16 +282,17 @@ gen-rgblookup: $(srcdir)/rgblookup.gperf
 
 
 if WITH_SHEBANG_FILE
-SIXEL_SHEBANG_TARGETS = $(noinst_PROGRAMS)
+SIXEL_SHEBANG_TARGETS = $(check_PROGRAMS)
 SIXEL_SHEBANG_STAMP = src-tests-shebang.stamp
 
-$(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
-	@if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
-		$(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
-			$(SIXEL_SHEBANG_TARGETS); \
-	fi
-	@touch $@
+check-local: $(SIXEL_SHEBANG_STAMP)
 
-all-local: $(SIXEL_SHEBANG_STAMP)
+$(SIXEL_SHEBANG_STAMP): $(SIXEL_SHEBANG_TARGETS)
+        @if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
+                $(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
+                        $(SIXEL_SHEBANG_TARGETS); \
+        fi
+        @touch $@
+
 CLEANFILES += $(SIXEL_SHEBANG_STAMP)
 endif
