@@ -14,7 +14,10 @@ mkdir -p "${output_dir}"
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${script_dir}/../../common/t/0001_converters_common.t"
 
-ensure_network_backend_available
+if ! feature_defined_in_config "HAVE_LIBCURL"; then
+    skip_all "libcurl is required for file scheme access"
+fi
+
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 echo "1..1"
