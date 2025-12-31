@@ -100,14 +100,16 @@ check_PROGRAMS = cli/0029_cli_token_is_known_option$(EXEEXT) \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0003_corrupt_data \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0004_propagate_error \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0005_context_free \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0006_loader_module
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0006_loader_module \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0007_loader_plugin_integration
 
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_2 = gdk-pixbuf-loader/0001_gdk_pixbuf_loader \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0002_incremental_load \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0003_corrupt_data \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0004_propagate_error \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0005_context_free \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0006_loader_module
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0006_loader_module \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0007_loader_plugin_integration
 
 @AMALGAMATION_NEEDS_OBJC_TRUE@am__append_3 = -x objective-c
 subdir = tests
@@ -131,7 +133,8 @@ CONFIG_CLEAN_VPATH_FILES =
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@	gdk-pixbuf-loader/0003_corrupt_data$(EXEEXT) \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@	gdk-pixbuf-loader/0004_propagate_error$(EXEEXT) \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@	gdk-pixbuf-loader/0005_context_free$(EXEEXT) \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@	gdk-pixbuf-loader/0006_loader_module$(EXEEXT)
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@	gdk-pixbuf-loader/0006_loader_module$(EXEEXT) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@	gdk-pixbuf-loader/0007_loader_plugin_integration$(EXEEXT)
 am__EXEEXT_2 = filter/0001_filter_clip$(EXEEXT) \
 	filter/0002_filter_sample$(EXEEXT) \
 	filter/0003_filter_resize$(EXEEXT) \
@@ -444,6 +447,12 @@ gdk_pixbuf_loader_0006_loader_module_OBJECTS =  \
 	$(am_gdk_pixbuf_loader_0006_loader_module_OBJECTS)
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_0006_loader_module_DEPENDENCIES = $(top_builddir)/src/libsixel.la \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(am__DEPENDENCIES_1)
+am__gdk_pixbuf_loader_0007_loader_plugin_integration_SOURCES_DIST =  \
+	gdk-pixbuf-loader/0007_loader_plugin_integration.c
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@am_gdk_pixbuf_loader_0007_loader_plugin_integration_OBJECTS = gdk-pixbuf-loader/0007_loader_plugin_integration-0007_loader_plugin_integration.$(OBJEXT)
+gdk_pixbuf_loader_0007_loader_plugin_integration_OBJECTS = $(am_gdk_pixbuf_loader_0007_loader_plugin_integration_OBJECTS)
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_0007_loader_plugin_integration_DEPENDENCIES = $(top_builddir)/src/libsixel.la \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(am__DEPENDENCIES_1)
 am__palette_0001_kmeans_init_SOURCES_DIST =  \
 	palette/0001_kmeans_init.c
 @WANT_AMALGAMATED_TOOLS_FALSE@am_palette_0001_kmeans_init_OBJECTS = palette/0001_kmeans_init-0001_kmeans_init.$(OBJEXT)
@@ -533,6 +542,7 @@ am__depfiles_remade = $(top_builddir)/amalgamation/$(DEPDIR)/cli_0029_cli_token_
 	gdk-pixbuf-loader/$(DEPDIR)/0004_propagate_error-0004_propagate_error.Po \
 	gdk-pixbuf-loader/$(DEPDIR)/0005_context_free-0005_context_free.Po \
 	gdk-pixbuf-loader/$(DEPDIR)/0006_loader_module-0006_loader_module.Po \
+	gdk-pixbuf-loader/$(DEPDIR)/0007_loader_plugin_integration-0007_loader_plugin_integration.Po \
 	palette/$(DEPDIR)/0001_kmeans_init-0001_kmeans_init.Po \
 	probe/$(DEPDIR)/0001_probe_parse-0001_probe_parse.Po
 am__mv = mv -f
@@ -586,6 +596,7 @@ SOURCES = $(cli_0029_cli_token_is_known_option_SOURCES) \
 	$(gdk_pixbuf_loader_0004_propagate_error_SOURCES) \
 	$(gdk_pixbuf_loader_0005_context_free_SOURCES) \
 	$(gdk_pixbuf_loader_0006_loader_module_SOURCES) \
+	$(gdk_pixbuf_loader_0007_loader_plugin_integration_SOURCES) \
 	$(palette_0001_kmeans_init_SOURCES) \
 	$(nodist_palette_0001_kmeans_init_SOURCES) \
 	$(probe_0001_probe_parse_SOURCES) \
@@ -609,6 +620,7 @@ DIST_SOURCES = $(am__cli_0029_cli_token_is_known_option_SOURCES_DIST) \
 	$(am__gdk_pixbuf_loader_0004_propagate_error_SOURCES_DIST) \
 	$(am__gdk_pixbuf_loader_0005_context_free_SOURCES_DIST) \
 	$(am__gdk_pixbuf_loader_0006_loader_module_SOURCES_DIST) \
+	$(am__gdk_pixbuf_loader_0007_loader_plugin_integration_SOURCES_DIST) \
 	$(am__palette_0001_kmeans_init_SOURCES_DIST) \
 	$(am__probe_0001_probe_parse_SOURCES_DIST)
 am__can_run_installinfo = \
@@ -1283,6 +1295,9 @@ COPY_TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) $(FILT
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_0006_loader_module_SOURCES = \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0006_loader_module.c
 
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_0007_loader_plugin_integration_SOURCES = \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0007_loader_plugin_integration.c
+
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_0001_gdk_pixbuf_loader_CPPFLAGS = $(AM_CPPFLAGS) \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@        -I$(top_builddir)/include \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@        -I$(top_srcdir)/include \
@@ -1332,6 +1347,12 @@ COPY_TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) $(FILT
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@        -I$(top_srcdir)/src \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(GDK_PIXBUF_CFLAGS)
 
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_0007_loader_plugin_integration_CPPFLAGS = $(AM_CPPFLAGS) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -I$(top_builddir)/include \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -I$(top_srcdir)/include \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        -I$(top_srcdir)/src \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(GDK_PIXBUF_CFLAGS)
+
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_0002_incremental_load_LDADD = \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(top_builddir)/src/libsixel.la \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(GDK_PIXBUF_LIBS)
@@ -1349,6 +1370,10 @@ COPY_TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) $(FILT
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(GDK_PIXBUF_LIBS)
 
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_0006_loader_module_LDADD = \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(top_builddir)/src/libsixel.la \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(GDK_PIXBUF_LIBS)
+
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_0007_loader_plugin_integration_LDADD = \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(top_builddir)/src/libsixel.la \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@        $(GDK_PIXBUF_LIBS)
 
@@ -1926,6 +1951,13 @@ gdk-pixbuf-loader/0006_loader_module-0006_loader_module.$(OBJEXT):  \
 gdk-pixbuf-loader/0006_loader_module$(EXEEXT): $(gdk_pixbuf_loader_0006_loader_module_OBJECTS) $(gdk_pixbuf_loader_0006_loader_module_DEPENDENCIES) $(EXTRA_gdk_pixbuf_loader_0006_loader_module_DEPENDENCIES) gdk-pixbuf-loader/$(am__dirstamp)
 	@rm -f gdk-pixbuf-loader/0006_loader_module$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gdk_pixbuf_loader_0006_loader_module_OBJECTS) $(gdk_pixbuf_loader_0006_loader_module_LDADD) $(LIBS)
+gdk-pixbuf-loader/0007_loader_plugin_integration-0007_loader_plugin_integration.$(OBJEXT):  \
+	gdk-pixbuf-loader/$(am__dirstamp) \
+	gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
+
+gdk-pixbuf-loader/0007_loader_plugin_integration$(EXEEXT): $(gdk_pixbuf_loader_0007_loader_plugin_integration_OBJECTS) $(gdk_pixbuf_loader_0007_loader_plugin_integration_DEPENDENCIES) $(EXTRA_gdk_pixbuf_loader_0007_loader_plugin_integration_DEPENDENCIES) gdk-pixbuf-loader/$(am__dirstamp)
+	@rm -f gdk-pixbuf-loader/0007_loader_plugin_integration$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(gdk_pixbuf_loader_0007_loader_plugin_integration_OBJECTS) $(gdk_pixbuf_loader_0007_loader_plugin_integration_LDADD) $(LIBS)
 palette/$(am__dirstamp):
 	@$(MKDIR_P) palette
 	@: >>palette/$(am__dirstamp)
@@ -2013,6 +2045,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gdk-pixbuf-loader/$(DEPDIR)/0004_propagate_error-0004_propagate_error.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@gdk-pixbuf-loader/$(DEPDIR)/0005_context_free-0005_context_free.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@gdk-pixbuf-loader/$(DEPDIR)/0006_loader_module-0006_loader_module.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@gdk-pixbuf-loader/$(DEPDIR)/0007_loader_plugin_integration-0007_loader_plugin_integration.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/$(DEPDIR)/0001_kmeans_init-0001_kmeans_init.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@probe/$(DEPDIR)/0001_probe_parse-0001_probe_parse.Po@am__quote@ # am--include-marker
 
@@ -2606,6 +2639,20 @@ gdk-pixbuf-loader/0006_loader_module-0006_loader_module.obj: gdk-pixbuf-loader/0
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_0006_loader_module_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gdk-pixbuf-loader/0006_loader_module-0006_loader_module.obj `if test -f 'gdk-pixbuf-loader/0006_loader_module.c'; then $(CYGPATH_W) 'gdk-pixbuf-loader/0006_loader_module.c'; else $(CYGPATH_W) '$(srcdir)/gdk-pixbuf-loader/0006_loader_module.c'; fi`
 
+gdk-pixbuf-loader/0007_loader_plugin_integration-0007_loader_plugin_integration.o: gdk-pixbuf-loader/0007_loader_plugin_integration.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_0007_loader_plugin_integration_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gdk-pixbuf-loader/0007_loader_plugin_integration-0007_loader_plugin_integration.o -MD -MP -MF gdk-pixbuf-loader/$(DEPDIR)/0007_loader_plugin_integration-0007_loader_plugin_integration.Tpo -c -o gdk-pixbuf-loader/0007_loader_plugin_integration-0007_loader_plugin_integration.o `test -f 'gdk-pixbuf-loader/0007_loader_plugin_integration.c' || echo '$(srcdir)/'`gdk-pixbuf-loader/0007_loader_plugin_integration.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) gdk-pixbuf-loader/$(DEPDIR)/0007_loader_plugin_integration-0007_loader_plugin_integration.Tpo gdk-pixbuf-loader/$(DEPDIR)/0007_loader_plugin_integration-0007_loader_plugin_integration.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gdk-pixbuf-loader/0007_loader_plugin_integration.c' object='gdk-pixbuf-loader/0007_loader_plugin_integration-0007_loader_plugin_integration.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_0007_loader_plugin_integration_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gdk-pixbuf-loader/0007_loader_plugin_integration-0007_loader_plugin_integration.o `test -f 'gdk-pixbuf-loader/0007_loader_plugin_integration.c' || echo '$(srcdir)/'`gdk-pixbuf-loader/0007_loader_plugin_integration.c
+
+gdk-pixbuf-loader/0007_loader_plugin_integration-0007_loader_plugin_integration.obj: gdk-pixbuf-loader/0007_loader_plugin_integration.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_0007_loader_plugin_integration_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT gdk-pixbuf-loader/0007_loader_plugin_integration-0007_loader_plugin_integration.obj -MD -MP -MF gdk-pixbuf-loader/$(DEPDIR)/0007_loader_plugin_integration-0007_loader_plugin_integration.Tpo -c -o gdk-pixbuf-loader/0007_loader_plugin_integration-0007_loader_plugin_integration.obj `if test -f 'gdk-pixbuf-loader/0007_loader_plugin_integration.c'; then $(CYGPATH_W) 'gdk-pixbuf-loader/0007_loader_plugin_integration.c'; else $(CYGPATH_W) '$(srcdir)/gdk-pixbuf-loader/0007_loader_plugin_integration.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) gdk-pixbuf-loader/$(DEPDIR)/0007_loader_plugin_integration-0007_loader_plugin_integration.Tpo gdk-pixbuf-loader/$(DEPDIR)/0007_loader_plugin_integration-0007_loader_plugin_integration.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gdk-pixbuf-loader/0007_loader_plugin_integration.c' object='gdk-pixbuf-loader/0007_loader_plugin_integration-0007_loader_plugin_integration.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_0007_loader_plugin_integration_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gdk-pixbuf-loader/0007_loader_plugin_integration-0007_loader_plugin_integration.obj `if test -f 'gdk-pixbuf-loader/0007_loader_plugin_integration.c'; then $(CYGPATH_W) 'gdk-pixbuf-loader/0007_loader_plugin_integration.c'; else $(CYGPATH_W) '$(srcdir)/gdk-pixbuf-loader/0007_loader_plugin_integration.c'; fi`
+
 palette/0001_kmeans_init-0001_kmeans_init.o: palette/0001_kmeans_init.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(palette_0001_kmeans_init_CPPFLAGS) $(CPPFLAGS) $(palette_0001_kmeans_init_CFLAGS) $(CFLAGS) -MT palette/0001_kmeans_init-0001_kmeans_init.o -MD -MP -MF palette/$(DEPDIR)/0001_kmeans_init-0001_kmeans_init.Tpo -c -o palette/0001_kmeans_init-0001_kmeans_init.o `test -f 'palette/0001_kmeans_init.c' || echo '$(srcdir)/'`palette/0001_kmeans_init.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/$(DEPDIR)/0001_kmeans_init-0001_kmeans_init.Tpo palette/$(DEPDIR)/0001_kmeans_init-0001_kmeans_init.Po
@@ -2933,6 +2980,13 @@ gdk-pixbuf-loader/0006_loader_module.log: gdk-pixbuf-loader/0006_loader_module$(
 	--log-file $$b.log --trs-file $$b.trs \
 	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
 	"$$tst" $(AM_TESTS_FD_REDIRECT)
+gdk-pixbuf-loader/0007_loader_plugin_integration.log: gdk-pixbuf-loader/0007_loader_plugin_integration$(EXEEXT)
+	@p='gdk-pixbuf-loader/0007_loader_plugin_integration$(EXEEXT)'; \
+	b='gdk-pixbuf-loader/0007_loader_plugin_integration'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 .t.log:
 	@p='$<'; \
 	$(am__set_b); \
@@ -3089,6 +3143,7 @@ distclean: distclean-am
 	-rm -f gdk-pixbuf-loader/$(DEPDIR)/0004_propagate_error-0004_propagate_error.Po
 	-rm -f gdk-pixbuf-loader/$(DEPDIR)/0005_context_free-0005_context_free.Po
 	-rm -f gdk-pixbuf-loader/$(DEPDIR)/0006_loader_module-0006_loader_module.Po
+	-rm -f gdk-pixbuf-loader/$(DEPDIR)/0007_loader_plugin_integration-0007_loader_plugin_integration.Po
 	-rm -f palette/$(DEPDIR)/0001_kmeans_init-0001_kmeans_init.Po
 	-rm -f probe/$(DEPDIR)/0001_probe_parse-0001_probe_parse.Po
 	-rm -f Makefile
@@ -3178,6 +3233,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f gdk-pixbuf-loader/$(DEPDIR)/0004_propagate_error-0004_propagate_error.Po
 	-rm -f gdk-pixbuf-loader/$(DEPDIR)/0005_context_free-0005_context_free.Po
 	-rm -f gdk-pixbuf-loader/$(DEPDIR)/0006_loader_module-0006_loader_module.Po
+	-rm -f gdk-pixbuf-loader/$(DEPDIR)/0007_loader_plugin_integration-0007_loader_plugin_integration.Po
 	-rm -f palette/$(DEPDIR)/0001_kmeans_init-0001_kmeans_init.Po
 	-rm -f probe/$(DEPDIR)/0001_probe_parse-0001_probe_parse.Po
 	-rm -f Makefile

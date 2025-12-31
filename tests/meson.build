@@ -420,6 +420,12 @@ if gdk_pixbuf_loader_deps.length() > 0
     '0005_context_free': 'gdk-pixbuf-loader/0005_context_free.c',
     '0006_loader_module': 'gdk-pixbuf-loader/0006_loader_module.c',
   }
+  if conf.has('HAVE_GDK_PIXBUF2') and get_option('img2sixel').enabled()
+    gdk_pixbuf_loader_tests += {
+      '0007_loader_plugin_integration':
+        'gdk-pixbuf-loader/0007_loader_plugin_integration.c',
+    }
+  endif
   foreach test_name, source_file : gdk_pixbuf_loader_tests
     target = executable(test_name,
       [source_file] + gdk_pixbuf_loader_sources,
@@ -436,10 +442,14 @@ if gdk_pixbuf_loader_deps.length() > 0
         depend_files: shebang_file,
         build_by_default: true)]
     endif
+    deps = [pixbufloader_sixel]
+    if test_name == '0007_loader_plugin_integration'
+      deps += [img2sixel_exe]
+    endif
     test(test_name, target,
       env: env,
       suite: ['gdk-pixbuf-loader'],
-      depends: [pixbufloader_sixel])
+      depends: deps)
   endforeach
 endif
 
