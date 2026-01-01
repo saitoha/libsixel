@@ -1138,7 +1138,7 @@ jobs:
           fi
 
     - name: Run tests (non-Windows)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows' && matrix.variant != 'cosmopolitan' && matrix.variant != 'alpine' && matrix.emscripten != true
       shell: bash
       run: make check V=1
 
@@ -1198,7 +1198,7 @@ jobs:
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Capture coverage (Linux)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && runner.os == 'Linux' && (matrix.sys || '') != 'i686' && !(matrix.musl || false) && matrix.variant != 'amalgamated_lib' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
+      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.variant != 'alpine' && runner.os == 'Linux' && (matrix.sys || '') != 'i686' && !(matrix.musl || false) && matrix.variant != 'amalgamated_lib' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
       shell: bash
       run: |
         gcovr -r . --lcov -o coverage.info \
@@ -1228,7 +1228,7 @@ jobs:
       if: ${{ matrix.variant == 'alpine' && always() }}
       run: |
         set -eux
-        for dir in builddir _artifacts; do
+        for dir in tests tests/_artifacts; do
           if [ -e "$dir" ]; then
             sudo chown -R "$(id -u):$(id -g)" "$dir"
             sudo find "$dir" -type d -exec chmod u+rwx,go+rx {} +
