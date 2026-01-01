@@ -67,10 +67,10 @@ done
 [ $# -ge 1 ] || { echo "lso-tap-driver.sh: missing TEST-SCRIPT" >&2; usage; }
 
 : "${AM_TAP_AWK:=awk}"
-: "${LSO_TAP_DATE_CMD:=date +%s.%N}"
-: "${LSO_TAP_TIMER_BIN:=../tools/lso-timer}"
-: "${LSO_TAP_TIMER_SRC:=../tools/lso-timer}"
-: "${LSO_TAP_TIMER_BUILD:=../tools/lso-timer}"
+: "${LSO_TAP_DATE_CMD:=@LSO_TAP_DATE_CMD@}"
+: "${LSO_TAP_TIMER_BIN:=@top_builddir@/tools/lso-timer@EXEEXT@}"
+: "${LSO_TAP_TIMER_SRC:=@top_srcdir@/tools/lso-timer@EXEEXT@}"
+: "${LSO_TAP_TIMER_BUILD:=@top_builddir@/tools/lso-timer@EXEEXT@}"
 
 timestamp_millis() {
   if [ -n "$LSO_TAP_DATE_CMD" ]; then
