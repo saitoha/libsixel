@@ -356,6 +356,19 @@ AM_TESTS_ENVIRONMENT += TOP_SRCDIR='$(abs_top_srcdir)'; export TOP_SRCDIR;
 AM_TESTS_ENVIRONMENT += TOP_BUILDDIR='$(abs_top_builddir)'; export TOP_BUILDDIR;
 AM_TESTS_ENVIRONMENT += CROSS_COMPILING='@cross_compiling@'; \
        export CROSS_COMPILING;
+WATCHDOG_STATE_DIR = $(abs_builddir)/_watchdog
+WATCHDOG_PID_FILE = $(WATCHDOG_STATE_DIR)/watchdog.pid
+WATCHDOG_LOG_FILE = $(WATCHDOG_STATE_DIR)/watchdog.log
+AM_TESTS_ENVIRONMENT += SIXEL_WATCHDOG_DIR='$(WATCHDOG_STATE_DIR)'; \
+       export SIXEL_WATCHDOG_DIR;
+AM_TESTS_ENVIRONMENT += SIXEL_WATCHDOG_TIMEOUT='$(AM_TEST_TIMEOUT)'; \
+       export SIXEL_WATCHDOG_TIMEOUT;
+AM_TESTS_ENVIRONMENT += SIXEL_WATCHDOG_LOG='$(WATCHDOG_LOG_FILE)'; \
+       export SIXEL_WATCHDOG_LOG;
+AM_TESTS_ENVIRONMENT += $(MKDIR_P) '$(WATCHDOG_STATE_DIR)'; \
+       $(SHELL) '$(top_srcdir)/tests/tools/test-watchdog.sh' ensure \
+       --state-dir '$(WATCHDOG_STATE_DIR)' --pid-file '$(WATCHDOG_PID_FILE)' \
+       --log-file '$(WATCHDOG_LOG_FILE)';
 TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_builddir) -I$(top_builddir)/include \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \
@@ -703,7 +716,7 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
              filter/0005_filter_lookup.c filter/0006_filter_final_merge.c \
              filter/0007_filter_vpte.c filter/0008_filter_load.c \
              filter/0009_filter_dither.c filter/0010_filter_encode.c \
-             filter/filter_test_common.h
+             filter/filter_test_common.h tools/test-watchdog.sh
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
@@ -720,9 +733,16 @@ clean-local:
 	fi
 	rm -rf $(ARTIFACT_ROOT)
 	rm -f $(builddir)/*_metrics.json
+	rm -rf $(WATCHDOG_STATE_DIR)
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 check-local: $(LOG_COMPILER) $(COPY_TESTS) $(HELPER_FILES)
+	@if test -f "$(WATCHDOG_PID_FILE)"; then \
+		$(SHELL) '$(top_srcdir)/tests/tools/test-watchdog.sh' stop \
+		--state-dir '$(WATCHDOG_STATE_DIR)' \
+		--pid-file '$(WATCHDOG_PID_FILE)' \
+		--log-file '$(WATCHDOG_LOG_FILE)'; \
+	fi
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(COPY_TESTS) $(HELPER_FILES):
