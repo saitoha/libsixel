@@ -67,8 +67,30 @@ done
 [ $# -ge 1 ] || { echo "lso-tap-driver.sh: missing TEST-SCRIPT" >&2; usage; }
 
 : "${AM_TAP_AWK:=awk}"
+: "${LSO_TAP_DATE_CMD:=date +%s.%N}"
+: "${LSO_TAP_TIMER_BIN:=../tools/lso-timer}"
+: "${LSO_TAP_TIMER_SRC:=../tools/lso-timer}"
+: "${LSO_TAP_TIMER_BUILD:=../tools/lso-timer}"
 
 timestamp_millis() {
+  if [ -n "$LSO_TAP_DATE_CMD" ]; then
+    if $LSO_TAP_DATE_CMD 2>/dev/null; then
+      return
+    fi
+  fi
+
+  if [ -x "$LSO_TAP_TIMER_BIN" ]; then
+    "$LSO_TAP_TIMER_BIN" && return
+  fi
+
+  if [ -x "$LSO_TAP_TIMER_BUILD" ]; then
+    "$LSO_TAP_TIMER_BUILD" && return
+  fi
+
+  if [ -x "$LSO_TAP_TIMER_SRC" ]; then
+    "$LSO_TAP_TIMER_SRC" && return
+  fi
+
   if command -v python3 >/dev/null 2>&1; then
     python3 - <<'PY'
 import time
@@ -90,7 +112,6 @@ PY
     return
   fi
 
-  # Fallback: seconds precision only if no high-res tool exists.
   date +%s
 }
 
