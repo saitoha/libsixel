@@ -885,6 +885,7 @@ jobs:
         operating_system: ${{ matrix.cp_os }}
         architecture: ${{ matrix.cp_arch }}
         version: ${{ matrix.cp_version }}
+        sync_files: vm-to-runner
         environment_variables: CI,GITHUB_WORKSPACE
         run: |
           set -eux
@@ -895,6 +896,7 @@ jobs:
             status=$?
             cd "$GITHUB_WORKSPACE"
             mkdir -p "$artifact_dir"
+            touch "${artifact_dir}/.placeholder"
             find . -type f \( -name 'config.log' -o -name 'test-suite.log' -o -name '*.log' -o -name '*.trs' \) \
               ! -path "./_artifacts/*" \
               | while IFS= read -r f; do
@@ -2156,9 +2158,32 @@ jobs:
         operating_system: ${{ matrix.cp_os }}
         architecture: ${{ matrix.cp_arch }}
         version: ${{ matrix.cp_version }}
+        sync_files: vm-to-runner
         environment_variables: CI,GITHUB_WORKSPACE
         run: &meson_non_windows |
           set -eux
+
+          : "${GITHUB_WORKSPACE:=$PWD}"
+          artifact_dir="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}"
+          collect_logs() {
+            status=$?
+            cd "$GITHUB_WORKSPACE"
+            mkdir -p "$artifact_dir"
+            touch "${artifact_dir}/.placeholder"
+            find . \( -type f \( -name 'config.log' -o -name 'test-suite.log' \
+              -o -name '*.log' -o -name '*.trs' -o -name 'meson-log.txt' \
+              -o -name 'testlog.txt' \) \
+              ! -path "./_artifacts/*" \) \
+              -o \( -type f -path "./builddir/meson-logs/*" \) \
+              | while IFS= read -r f; do
+                  rel="${f#./}"
+                  dest="${artifact_dir}/${rel}"
+                  mkdir -p "$(dirname "$dest")"
+                  cp "$f" "$dest"
+                done || true
+            exit "$status"
+          }
+          trap 'collect_logs' EXIT
 
           if [ "${{ matrix.platform || '' }}" = "freebsd" ]; then
             pkg_prefix=""
