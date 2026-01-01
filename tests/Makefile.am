@@ -660,10 +660,8 @@ palette_0001_kmeans_init_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
 
-T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/build-aux/lso-tap-driver.sh
+T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_builddir)/build-aux/lso-tap-driver.sh
 AM_TEST_LOG_DRIVER_FLAGS = --comments
-#LOG_COMPILER = $(builddir)/tools/with-timeout.sh
-#LOG_COMPILER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_srcdir)/build-aux/lso-tap-driver.sh
 AM_TEST_TIMEOUT = 300
 AM_LOG_FLAGS = --timeout=$(AM_TEST_TIMEOUT)
 
@@ -725,11 +723,6 @@ clean-local:
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 check-local: $(LOG_COMPILER) $(COPY_TESTS) $(HELPER_FILES)
-
-## Keep this recipe tab-indented; GNU make requires tabs for commands.
-#$(LOG_COMPILER): $(srcdir)/tools/with-timeout.sh
-#	$(MKDIR_P) $(builddir)/tools
-#	$(AM_V_GEN)cp $(srcdir)/tools/with-timeout.sh $(LOG_COMPILER)
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(COPY_TESTS) $(HELPER_FILES):
