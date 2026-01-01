@@ -42,7 +42,7 @@
 #endif
 #if defined(HAVE_IMMINTRIN_H) && defined(ENABLE_XSAVE_PROBE) && \
     (defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
-     defined(_M_IX86)) && !defined(__COSMOPOLITAN__)
+     defined(_M_IX86))
 # include <immintrin.h>
 #endif
 
@@ -161,11 +161,12 @@ sixel_cpu_detect_native(void)
          */
         osxsave = (ecx & (1U << 27)) != 0;
         avx_capable = (ecx & (1U << 28)) != 0;
-#  if defined(HAVE_IMMINTRIN_H) && !defined(__COSMOPOLITAN__)
+#  if defined(HAVE_IMMINTRIN_H)
         /*
-         * Cosmopolitan builds target very old x86 CPUs and omit -mxsave/-mavx
-         * from the default flags. Skip the XGETBV probe there to avoid
-         * triggering target-specific option mismatches during compilation.
+         * The XGETBV probe is optional. It is only enabled when the
+         * toolchain can emit the intrinsic without extra target flags (see
+         * ENABLE_XSAVE_PROBE/HAVE_XGETBV_INTRIN). Toolchains that cannot
+         * support it will skip this block and fall back to SSE2.
          */
 #  if defined(ENABLE_XSAVE_PROBE)
         if (osxsave != 0 && avx_capable != 0) {
