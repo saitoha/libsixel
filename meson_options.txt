@@ -61,4 +61,6 @@ option('abort_trace', type: 'feature', value: 'auto', description: 'Enable abort
 option('thumbnailer_command', type: 'feature', value: 'auto', description: 'Install sixel thumbnailer command')
 option('shebang_file', type: 'string', value: '',
        description: 'Path to a shebang template file for built executables')
+option('xsave_probe', type: 'feature', value: 'auto',
+       description: 'Probe XGETBV during AVX capability detection')
 # vim: set et ts=2:

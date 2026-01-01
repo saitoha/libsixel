@@ -965,6 +965,7 @@ with_pkgconfigdir
 with_bashcompletiondir
 with_zshcompletiondir
 enable_simd
+enable_xsave_probe
 enable_avx2
 enable_avx512
 enable_wiccodec
@@ -1686,6 +1687,8 @@ Optional Features:
                           use macOS Quick Look for preview extraction
                           (default: auto)
   --enable-simd           enable SS2 and NEON (default: auto)
+  --enable-xsave-probe    control _xgetbv probing for AVX detection (default:
+                          auto)
   --enable-avx2           enable AVX2 optimizations (default: no)
   --enable-avx512         enable AVX-512 optimizations (default: no)
   --enable-wiccodec       build WIC codec DLL (default: auto)
@@ -17343,6 +17346,16 @@ then :
 fi
 
 
+# Check whether --enable-xsave-probe was given.
+if test ${enable_xsave_probe+y}
+then :
+  enableval=$enable_xsave_probe;
+else case e in #(
+  e) enable_xsave_probe=auto ;;
+esac
+fi
+
+
 # Check whether --enable-avx2 was given.
 if test ${enable_avx2+y}
 then :
@@ -19805,6 +19818,7 @@ have_gdk_pixbuf_pkg="no"
 have_gdk_pixbuf_loader="no"
 GDK_PIXBUF_QUERY_LOADERS=""
 have_sse2=no
+have_xgetbv_intrin=no
 have_avx2=no
 have_avx512=no
 have_neon=no
@@ -19814,6 +19828,57 @@ LIBS_PRIVATE="$LIBS"
 
 if test "x$THREAD_LIBS" != x; then
     LIBS_PRIVATE="$LIBS_PRIVATE $THREAD_LIBS"
+fi
+
+case "${host_cpu}" in
+  x86_64|amd64|i*86)
+    if test "x$enable_xsave_probe" != xno && \
+       test "x$ac_cv_header_immintrin_h" = xyes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether _xgetbv(0) builds without extra flags" >&5
+printf %s "checking whether _xgetbv(0) builds without extra flags... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+            #include <immintrin.h>
+int
+main (void)
+{
+unsigned long long xcr0;
+                              xcr0 = _xgetbv(0);
+                              return (int)xcr0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  have_xgetbv_intrin=yes
+else case e in #(
+  e) have_xgetbv_intrin=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_xgetbv_intrin" >&5
+printf "%s\n" "$have_xgetbv_intrin" >&6; }
+    fi
+    ;;
+  *)
+    ;;
+esac
+
+if test "x$enable_xsave_probe" = xyes && \
+   test "x$have_xgetbv_intrin" != xyes; then
+    as_fn_error $? "--enable-xsave-probe requested but _xgetbv is unavailable" "$LINENO" 5
+fi
+
+if test "x$enable_xsave_probe" != xno && \
+   test "x$have_xgetbv_intrin" = xyes; then
+
+printf "%s\n" "#define HAVE_XGETBV_INTRIN 1" >>confdefs.h
+
+
+printf "%s\n" "#define ENABLE_XSAVE_PROBE 1" >>confdefs.h
+
 fi
 
 message_gdk_pixbuf_loader=
@@ -23341,6 +23406,14 @@ elif test "x$have_avx2" = xyes; then
     message_avx2=yes
 else
     message_avx2=no
+fi
+
+if test "x$enable_xsave_probe" = xno; then
+    message_xsave_probe=disabled
+elif test "x$have_xgetbv_intrin" = xyes; then
+    message_xsave_probe=yes
+else
+    message_xsave_probe=no
 fi
 
 if test "x$enable_avx512" = xno; then
@@ -26959,6 +27032,7 @@ echo "       ONNX Runtime            : $message_onnxruntime"
 echo "       python bindings         : $message_python"
 echo "       ruby bindings           : $message_ruby"
 echo "       simd                    : $message_simd"
+echo "       xsave probe             : $message_xsave_probe"
 echo "       avx2                    : $message_avx2"
 echo "       avx-512                 : $message_avx512"
 echo "       gcov                    : $enable_gcov"
