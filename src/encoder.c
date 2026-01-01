@@ -2928,6 +2928,8 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     int total;
     int budget;
     int source_colorspace;
+    int source_pixelformat;
+    int source_ncolors;
     int target_pixelformat;
     int scale_pixelformat;
     int scale_input_pixelformat;
@@ -2941,6 +2943,7 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     int colorspace_after_scale;
     int working_colorspace_effective;
     int resize_mode;
+    int effective_reqcolors;
     size_t scale_pixels;
     size_t scale_bytes;
     size_t scale_limit;
@@ -2958,6 +2961,12 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     colorspace_before_scale = 0;
     prefer_float32_effective = prefer_float32;
     working_colorspace_effective = encoder->working_colorspace;
+    source_pixelformat = sixel_frame_get_pixelformat(frame);
+    source_ncolors = sixel_frame_get_ncolors(frame);
+    effective_reqcolors = encoder->reqcolors;
+    if (effective_reqcolors <= 0 || effective_reqcolors > SIXEL_PALETTE_MAX) {
+        effective_reqcolors = SIXEL_PALETTE_MAX;
+    }
 
     /*
      * Keep palette sampling from spawning extra threads when resize/clip or
@@ -3019,6 +3028,23 @@ sixel_encoding_planner_plan(sixel_encoding_planner_t *planner,
     target_pixelformat = sixel_encoder_pixelformat_for_colorspace(
         working_colorspace_effective,
         prefer_float32_effective);
+
+    /*
+     * PAL sources that already satisfy the requested palette size do not need
+     * to round-trip through RGB and a new palette solve. Keep the existing
+     * palette so the DAG skips redundant work and preserves image fidelity.
+     */
+    if ((source_pixelformat & SIXEL_FORMATTYPE_PALETTE) != 0
+        && encoder->color_option == SIXEL_COLOR_OPTION_DEFAULT
+        && planner->scale_active == 0
+        && sixel_frame_get_palette(frame) != NULL
+        && source_ncolors > 0
+        && source_ncolors <= effective_reqcolors) {
+        target_pixelformat = source_pixelformat;
+        working_colorspace_effective = sixel_frame_get_colorspace(frame);
+        prefer_float32_effective = 0;
+    }
+
     planner->working_pixelformat = target_pixelformat;
     planner->working_colorspace_effective = working_colorspace_effective;
     planner->resize_precision_mode = resize_mode;
