@@ -41,12 +41,6 @@ void sixel_logger_logf(sixel_logger_t *logger,
                        char const *worker,
                        char const *event,
                        int job_id,
-                       int row_index,
-                       int y0,
-                       int y1,
-                       int in0,
-                       int in1,
-                       char const *fmt,
                        ...);
 
 #ifdef __cplusplus

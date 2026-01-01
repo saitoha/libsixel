@@ -311,14 +311,7 @@ sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
                       "palette",
                       "palette/build",
                       "start",
-                      job_id,
-                      -1,
-                      0,
-                      0,
-                      0,
-                      0,
-                      "engine=%s",
-                      engine->name);
+                      job_id);
 
     status = engine->build_fn(palette,
                               data,
@@ -339,14 +332,7 @@ sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
                       "palette",
                       "palette/build",
                       "finish",
-                      job_id,
-                      -1,
-                      0,
-                      0,
-                      0,
-                      0,
-                      "%s",
-                      span_message);
+                      job_id);
 
     return status;
 }
