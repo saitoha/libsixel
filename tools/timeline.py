@@ -32,12 +32,6 @@ class ParallelEvent:
         self.worker = str(record.get("worker", ""))
         self.event = str(record.get("event", ""))
         self.job = int(record.get("job", -1))
-        self.row = int(record.get("row", -1))
-        self.y0 = int(record.get("y0", -1))
-        self.y1 = int(record.get("y1", -1))
-        self.in0 = int(record.get("in0", -1))
-        self.in1 = int(record.get("in1", -1))
-        self.message = str(record.get("message", ""))
 
 
 def load_events(path: str) -> List[ParallelEvent]:
