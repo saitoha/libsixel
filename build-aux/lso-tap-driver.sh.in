@@ -127,6 +127,63 @@ select_timeout_bin() {
   echo ""
 }
 
+watchdog_pid_file=
+watchdog_registered=no
+watchdog_start_time=
+
+watchdog_cleanup() {
+  if [ "$watchdog_registered" = "yes" ] && [ -n "$watchdog_pid_file" ]; then
+    rm -f "$watchdog_pid_file"
+  fi
+}
+
+watchdog_timestamp() {
+  if command -v date >/dev/null 2>&1; then
+    date +%s
+    return
+  fi
+
+  timestamp_millis | cut -d. -f1
+}
+
+watchdog_register_file() {
+  dir=$1
+  test_id=$2
+  pid_value=$3
+  start_value=$4
+
+  if [ -z "$dir" ]; then
+    return
+  fi
+
+  if ! mkdir -p "$dir" 2>/dev/null; then
+    return
+  fi
+
+  watchdog_pid_file="$dir/$test_id.pid"
+  cat >"$watchdog_pid_file" <<EOF
+pid=$pid_value
+ppid=$$
+started_at=$start_value
+name=$test_name
+EOF
+  watchdog_registered=yes
+  trap 'watchdog_cleanup' EXIT INT TERM HUP
+}
+
+watchdog_start() {
+  helper_dir=${SIXEL_WATCHDOG_DIR-}
+
+  if [ -z "$helper_dir" ]; then
+    return
+  fi
+
+  test_id=$(printf '%s' "$test_name" | tr ' /' '__')
+  watchdog_start_time=$(watchdog_timestamp)
+  watchdog_register_file "$helper_dir" "$test_id" "$cmd_pid" \
+    "$watchdog_start_time"
+}
+
 run_with_helper() {
   helper=$1
   shift
@@ -174,6 +231,16 @@ run_with_timeout() {
 
   if [ $# -gt 0 ] && [ -f "$1" ] && [ ! -x "$1" ]; then
     set -- "$SHELL" "$@"
+  fi
+
+  if [ -n "${SIXEL_WATCHDOG_DIR-}" ]; then
+    "$@" &
+    cmd_pid=$!
+    watchdog_start
+    wait "$cmd_pid"
+    status=$?
+    watchdog_cleanup
+    return "$status"
   fi
 
   if [ -n "$helper_bin" ]; then
