@@ -3308,10 +3308,10 @@ clean-local:
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 check-local: $(LOG_COMPILER) $(COPY_TESTS) $(HELPER_FILES)
 	@if test -f "$(WATCHDOG_PID_FILE)"; then \
-		$(SHELL) '$(top_srcdir)/tests/tools/test-watchdog.sh' stop \
-		--state-dir '$(WATCHDOG_STATE_DIR)' \
-		--pid-file '$(WATCHDOG_PID_FILE)' \
-		--log-file '$(WATCHDOG_LOG_FILE)'; \
+	$(SHELL) '$(top_srcdir)/tests/tools/test-watchdog.sh' stop \
+	--state-dir '$(WATCHDOG_STATE_DIR)' \
+	--pid-file '$(WATCHDOG_PID_FILE)' \
+	--log-file '$(WATCHDOG_LOG_FILE)'; \
 	fi
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.

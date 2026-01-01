@@ -633,6 +633,13 @@ AC_ARG_ENABLE([simd],
               [],
               [])
 
+AC_ARG_ENABLE([xsave-probe],
+              [AS_HELP_STRING([--enable-xsave-probe],
+                              [control _xgetbv probing for AVX detection
+                               (default: auto)])],
+              [],
+              [enable_xsave_probe=auto])
+
 AC_ARG_ENABLE([avx2],
               [AS_HELP_STRING([--enable-avx2],
                               [enable AVX2 optimizations (default: no)])],
@@ -1077,6 +1084,7 @@ have_gdk_pixbuf_pkg="no"
 have_gdk_pixbuf_loader="no"
 GDK_PIXBUF_QUERY_LOADERS=""
 have_sse2=no
+have_xgetbv_intrin=no
 have_avx2=no
 have_avx512=no
 have_neon=no
@@ -1086,6 +1094,38 @@ LIBS_PRIVATE="$LIBS"
 
 if test "x$THREAD_LIBS" != x; then
     LIBS_PRIVATE="$LIBS_PRIVATE $THREAD_LIBS"
+fi
+
+case "${host_cpu}" in
+  x86_64|amd64|i*86)
+    if test "x$enable_xsave_probe" != xno && \
+       test "x$ac_cv_header_immintrin_h" = xyes; then
+        AC_MSG_CHECKING([whether _xgetbv(0) builds without extra flags])
+        AC_COMPILE_IFELSE([
+            AC_LANG_PROGRAM([[#include <immintrin.h>]],
+                            [[unsigned long long xcr0;
+                              xcr0 = _xgetbv(0);
+                              return (int)xcr0;]])],
+            [have_xgetbv_intrin=yes],
+            [have_xgetbv_intrin=no])
+        AC_MSG_RESULT([$have_xgetbv_intrin])
+    fi
+    ;;
+  *)
+    ;;
+esac
+
+if test "x$enable_xsave_probe" = xyes && \
+   test "x$have_xgetbv_intrin" != xyes; then
+    AC_MSG_ERROR([--enable-xsave-probe requested but _xgetbv is unavailable])
+fi
+
+if test "x$enable_xsave_probe" != xno && \
+   test "x$have_xgetbv_intrin" = xyes; then
+    AC_DEFINE([HAVE_XGETBV_INTRIN], [1],
+              [Define to 1 if _xgetbv is available without extra flags])
+    AC_DEFINE([ENABLE_XSAVE_PROBE], [1],
+              [Define to 1 to enable XGETBV probing for AVX support])
 fi
 
 message_gdk_pixbuf_loader=
@@ -2279,6 +2319,14 @@ else
     message_avx2=no
 fi
 
+if test "x$enable_xsave_probe" = xno; then
+    message_xsave_probe=disabled
+elif test "x$have_xgetbv_intrin" = xyes; then
+    message_xsave_probe=yes
+else
+    message_xsave_probe=no
+fi
+
 if test "x$enable_avx512" = xno; then
     message_avx512=no
 elif test "x$have_avx512" = xyes; then
@@ -2545,6 +2593,7 @@ echo "       ONNX Runtime            : $message_onnxruntime"
 echo "       python bindings         : $message_python"
 echo "       ruby bindings           : $message_ruby"
 echo "       simd                    : $message_simd"
+echo "       xsave probe             : $message_xsave_probe"
 echo "       avx2                    : $message_avx2"
 echo "       avx-512                 : $message_avx512"
 echo "       gcov                    : $enable_gcov"

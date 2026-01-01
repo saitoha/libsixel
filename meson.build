@@ -892,6 +892,32 @@ if cpu == 'x86' or cpu == 'x86_64'
   endif
 endif
 
+xsave_probe_opt = get_option('xsave_probe')
+xsave_probe_message = 'no'
+have_xgetbv_intrin = false
+
+if cpu == 'x86' or cpu == 'x86_64'
+  if not xsave_probe_opt.disabled()
+    if cc.has_header('immintrin.h') and cc.has_function('_xgetbv',
+        prefix: '#include <immintrin.h>')
+      conf.set('HAVE_XGETBV_INTRIN', 1)
+      have_xgetbv_intrin = true
+    endif
+    if have_xgetbv_intrin
+      conf.set('ENABLE_XSAVE_PROBE', 1)
+      xsave_probe_message = 'yes'
+    elif xsave_probe_opt.enabled()
+      error('xsave probe requested but _xgetbv is unavailable')
+    else
+      xsave_probe_message = 'no (compiler)'
+    endif
+  else
+    xsave_probe_message = 'disabled'
+  endif
+else
+  xsave_probe_message = 'no (arch)'
+endif
+
 simd_opt = get_option('simd')
 if simd_opt.disabled()
   simd_message = 'no'
@@ -1457,6 +1483,7 @@ message('       gdk-pixbuf SIXEL loader : ' + gdk_pixbuf_loader_message)
 message('       Thumbnailer command     : ' + thumbnailer_message)
 message('       Shebang template        : ' + shebang_message)
 message('       SIMD                    : ' + simd_message)
+message('       XGETBV probe            : ' + xsave_probe_message)
 message('       avx2                    : ' + avx2_message)
 message('       avx-512                 : ' + avx512_message)
 message('       gcov                    : ' + (get_option('gcov') ? 'yes' : 'no'))

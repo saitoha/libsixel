@@ -63,7 +63,14 @@ emconfigure sh ../../configure \
   --disable-shared \
   --with-shebang-file="${SHEBANG_FILE}" \
   --disable-dependency-tracking \
-  CFLAGS="-O3 -g0" \
+  CFLAGS=" \
+    -O3 \
+    -g0 \
+    -flto \
+    -msimd128 \
+    -fdata-sections \
+    -ffunction-sections \
+  " \
   LDFLAGS=" \
     -sNODERAWFS=1 \
     -sSTACK_SIZE=524288 \
@@ -72,7 +79,8 @@ emconfigure sh ../../configure \
     -sENVIRONMENT=node \
     -sALLOW_MEMORY_GROWTH=1 \
     -sWASM_BIGINT=1 \
-    -flto \
+    -sUSE_PTHREADS=1 \
+    -sASSERTIONS=0 \
   "
 emmake make all -j
 emmake make check -j

@@ -40,7 +40,7 @@
     (defined(__x86_64__) || defined(__i386))
 # include <cpuid.h>
 #endif
-#if defined(HAVE_IMMINTRIN_H) && \
+#if defined(HAVE_IMMINTRIN_H) && defined(ENABLE_XSAVE_PROBE) && \
     (defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
      defined(_M_IX86)) && !defined(__COSMOPOLITAN__)
 # include <immintrin.h>
@@ -121,6 +121,7 @@ sixel_cpu_detect_native(void)
     osxsave = (cpu_info[2] & (1 << 27));
     avx_capable = (cpu_info[2] & (1 << 28));
     if (osxsave && avx_capable) {
+#  if defined(ENABLE_XSAVE_PROBE)
         unsigned long long xcr0;
 
         xcr0 = _xgetbv(0);
@@ -136,6 +137,7 @@ sixel_cpu_detect_native(void)
                 level = SIXEL_SIMD_LEVEL_AVX;
             }
         }
+#  endif
     }
     if (level == SIXEL_SIMD_LEVEL_SCALAR && (cpu_info[3] & (1 << 26))) {
         level = SIXEL_SIMD_LEVEL_SSE2;
@@ -154,7 +156,8 @@ sixel_cpu_detect_native(void)
          * OS has not enabled XSAVE. Guard against executing AVX-class
          * instructions by checking OSXSAVE and XCR0 before raising the
          * SIMD level. Fall back to SSE2 when the OS cannot preserve the
-         * extended state.
+         * extended state. The XGETBV probe is optional so toolchains that
+         * lack the intrinsic still succeed.
          */
         osxsave = (ecx & (1U << 27)) != 0;
         avx_capable = (ecx & (1U << 28)) != 0;
@@ -164,6 +167,7 @@ sixel_cpu_detect_native(void)
          * from the default flags. Skip the XGETBV probe there to avoid
          * triggering target-specific option mismatches during compilation.
          */
+#  if defined(ENABLE_XSAVE_PROBE)
         if (osxsave != 0 && avx_capable != 0) {
             unsigned long long xcr0;
 
@@ -184,6 +188,7 @@ sixel_cpu_detect_native(void)
                 }
             }
         }
+#  endif
 #  endif
         if (level == SIXEL_SIMD_LEVEL_SCALAR &&
             (edx & (1U << 26)) != 0) {
