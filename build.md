@@ -229,7 +229,9 @@ Developers can opt into the repository-provided Git hooks to catch common
 mistakes before they land in a commit.  The pre-commit hook currently rejects
 any staged file that tries to include private headers located under `src/`
 because public tools such as the CLI converters must restrict themselves to
-the installed headers in `include/`.
+the installed headers in `include/`.  It also inspects any staged
+`Makefile.am`/`Makefile.in` to ensure recipe lines remain tab-indented, which
+prevents accidental replacement of tabs with spaces.
 
 Enable the hooks once per clone by pointing Git at the bundled hook directory:
 
@@ -239,7 +241,12 @@ git config core.hooksPath .githooks
 
 The check is also available as a standalone script, so continuous-integration
 jobs can run `tools/check_private_includes.py` directly without installing the
-hook.
+hook.  Likewise, `tools/check_makefile_recipes.sh` can be executed manually or
+from CI to enforce tab-indented recipes:
+
+```sh
+tools/check_makefile_recipes.sh path/to/Makefile.am
+```
 
 ### macOS Quick Look (Meson)
 
