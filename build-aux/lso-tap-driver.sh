@@ -53,7 +53,7 @@ while [ $# -gt 0 ]; do
     --comments) comments=yes ;;
     --color-tests) color_tests=${2-}; shift ;;
     --enable-hard-errors) hard_errors=${2-}; shift ;;
-    --expect-failure) expect_failur=${2-} shift ;;
+    --expect-failure) expect_failure=${2-}; shift ;;
     --) shift; break ;;
     -*) echo "lso-tap-driver.sh: invalid option: $1" >&2; usage ;;
     *) break ;;
@@ -68,13 +68,109 @@ done
 
 : "${AM_TAP_AWK:=awk}"
 
+timestamp_millis() {
+  if command -v python3 >/dev/null 2>&1; then
+    python3 - <<'PY'
+import time
+print("{:.3f}".format(time.time()))
+PY
+    return
+  fi
+
+  if command -v python >/dev/null 2>&1; then
+    python - <<'PY'
+import time
+print("{:.3f}".format(time.time()))
+PY
+    return
+  fi
+
+  if command -v perl >/dev/null 2>&1; then
+    perl -MTime::HiRes=time -e 'printf "%.3f\n", time();'
+    return
+  fi
+
+  # Fallback: seconds precision only if no high-res tool exists.
+  date +%s
+}
+
+select_timeout_bin() {
+  if command -v timeout >/dev/null 2>&1; then
+    echo "timeout"
+    return
+  fi
+  if command -v gtimeout >/dev/null 2>&1; then
+    echo "gtimeout"
+    return
+  fi
+  echo ""
+}
+
+run_with_helper() {
+  helper=$1
+  shift
+  "$helper" -k 10s "90s" "$@"
+  status=$?
+  if [ "$status" -eq 124 ] || [ "$status" -eq 137 ]; then
+    echo "Bail out! timeout after 90s" >&2
+  fi
+  return "$status"
+}
+
+run_with_watchdog() {
+  flag_file=$(mktemp -t lso-timeout.XXXXXX 2>/dev/null || mktemp /tmp/lso-timeout.XXXXXX)
+  trap 'rm -f "$flag_file"' EXIT
+
+  "$@" &
+  cmd_pid=$!
+
+  (
+    sleep 90
+    echo "expired" > "$flag_file"
+    kill -TERM "$cmd_pid" 2>/dev/null || exit 0
+    sleep 10
+    kill -KILL "$cmd_pid" 2>/dev/null || true
+  ) &
+  watchdog_pid=$!
+
+  wait "$cmd_pid"
+  cmd_status=$?
+
+  if [ -f "$flag_file" ]; then
+    rm -f "$flag_file"
+    kill "$watchdog_pid" 2>/dev/null || true
+    echo "Bail out! timeout after 90s" >&2
+    return 124
+  fi
+
+  kill "$watchdog_pid" 2>/dev/null || true
+  rm -f "$flag_file"
+  return "$cmd_status"
+}
+
+run_with_timeout() {
+  helper_bin=$(select_timeout_bin)
+
+  if [ $# -gt 0 ] && [ -f "$1" ] && [ ! -x "$1" ]; then
+    set -- "$SHELL" "$@"
+  fi
+
+  if [ -n "$helper_bin" ]; then
+    run_with_helper "$helper_bin" "$@"
+    return $?
+  fi
+
+  run_with_watchdog "$@"
+  return $?
+}
+
 # Run the test script, capture all output in .log (format free). :contentReference[oaicite:3]{index=3}
 # We don't stream to console; Automake shows progress separately.
 # If you want streaming, do it in the test itself (or add tee here).
-time_begin=$(date +%s.%N);
-"$@" >"$log_file" 2>&1
+time_begin=$(timestamp_millis)
+run_with_timeout "$@" >"$log_file" 2>&1
 rc=$?
-time_end=$(date +%s.%N);
+time_end=$(timestamp_millis)
 
 # Generate .trs (reStructuredText fields), at minimum :test-result: fields. :contentReference[oaicite:4]{index=4}
 # Also write :global-test-result:, :recheck:, :copy-in-global-log: for convenience
