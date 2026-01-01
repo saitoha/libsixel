@@ -42,7 +42,7 @@
 #endif
 #if defined(HAVE_IMMINTRIN_H) && \
     (defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
-     defined(_M_IX86))
+     defined(_M_IX86)) && !defined(__COSMOPOLITAN__)
 # include <immintrin.h>
 #endif
 
@@ -158,7 +158,12 @@ sixel_cpu_detect_native(void)
          */
         osxsave = (ecx & (1U << 27)) != 0;
         avx_capable = (ecx & (1U << 28)) != 0;
-#  if defined(HAVE_IMMINTRIN_H)
+#  if defined(HAVE_IMMINTRIN_H) && !defined(__COSMOPOLITAN__)
+        /*
+         * Cosmopolitan builds target very old x86 CPUs and omit -mxsave/-mavx
+         * from the default flags. Skip the XGETBV probe there to avoid
+         * triggering target-specific option mismatches during compilation.
+         */
         if (osxsave != 0 && avx_capable != 0) {
             unsigned long long xcr0;
 
