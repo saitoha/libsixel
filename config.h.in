@@ -1,5 +1,8 @@
 /* config.h.in.  Generated from configure.ac by autoheader.  */
 
+/* Define to 1 to enable XGETBV probing for AVX support */
+#undef ENABLE_XSAVE_PROBE
+
 /* whether AppKit clipboard backend is available */
 #undef HAVE_APPKIT
 
@@ -490,6 +493,9 @@
 
 /* whether WinHTTP is available */
 #undef HAVE_WINHTTP
+
+/* Define to 1 if _xgetbv is available without extra flags */
+#undef HAVE_XGETBV_INTRIN
 
 /* Define to 1 if you have the '_close' function. */
 #undef HAVE__CLOSE
