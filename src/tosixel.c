@@ -742,16 +742,7 @@ sixel_parallel_context_grow(sixel_parallel_context_t *ctx, int target_threads)
                           "controller",
                           "encode",
                           "grow_workers",
-                          -1,
-                          -1,
-                          0,
-                          ctx->height,
-                          0,
-                          ctx->height,
-                          "threads=%d target=%d delta=%d",
-                          ctx->thread_count,
-                          capped_target,
-                          delta);
+                          -1);
     }
 
     return SIXEL_OK;
@@ -878,16 +869,7 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
                           "controller",
                           "encode",
                           "context_begin",
-                          -1,
-                          -1,
-                          0,
-                          height,
-                          0,
-                          height,
-                          "threads=%d queue=%d bands=%d",
-                          threads,
-                          queue_capacity,
-                          nbands);
+                          -1);
     }
 
     ctx->bands = (sixel_parallel_band_buffer_t *)calloc((size_t)nbands,
@@ -995,25 +977,11 @@ sixel_parallel_submit_band(sixel_parallel_context_t *ctx, int band_index)
 
     sixel_fence_release();
     if (ctx->logger != NULL) {
-        int y0;
-        int y1;
-
-        y0 = band_index * 6;
-        y1 = y0 + 6;
-        if (ctx->height > 0 && y1 > ctx->height) {
-            y1 = ctx->height;
-        }
         sixel_logger_logf(ctx->logger,
                           "controller",
                           "encode",
                           "dispatch",
-                          band_index,
-                          y1 - 1,
-                          y0,
-                          y1,
-                          y0,
-                          y1,
-                          "enqueue band");
+                          band_index);
     }
     job.band_index = band_index;
     threadpool_push(ctx->pool, job);
@@ -1055,8 +1023,6 @@ sixel_parallel_palette_row_ready(void *priv, int row_index)
     sixel_logger_t *logger;
     int band_height;
     int band_index;
-    int y0;
-    int y1;
 
     notifier = (sixel_parallel_row_notifier_t *)priv;
     if (notifier == NULL) {
@@ -1087,23 +1053,12 @@ sixel_parallel_palette_row_ready(void *priv, int row_index)
         return;
     }
 
-    y0 = band_index * band_height;
-    y1 = y0 + band_height;
-    if (notifier->image_height > 0 && y1 > notifier->image_height) {
-        y1 = notifier->image_height;
-    }
     if (logger != NULL) {
         sixel_logger_logf(logger,
                           "controller",
                           "encode",
                           "row_gate",
-                          band_index,
-                          row_index,
-                          y0,
-                          y1,
-                          y0,
-                          y1,
-                          "trigger band enqueue");
+                          band_index);
     }
 
     sixel_parallel_submit_band(ctx, band_index);
@@ -1118,26 +1073,11 @@ sixel_parallel_flush_band(sixel_parallel_context_t *ctx, int band_index)
 
     band = &ctx->bands[band_index];
     if (ctx->logger != NULL) {
-        int y0;
-        int y1;
-
-        y0 = band_index * 6;
-        y1 = y0 + 6;
-        if (ctx->height > 0 && y1 > ctx->height) {
-            y1 = ctx->height;
-        }
         sixel_logger_logf(ctx->logger,
                           "worker",
                           "encode",
                           "writer_flush",
-                          band_index,
-                          y1 - 1,
-                          y0,
-                          y1,
-                          y0,
-                          y1,
-                          "bytes=%zu",
-                          band->used);
+                          band_index);
     }
     offset = 0;
     while (offset < band->used) {
@@ -1234,14 +1174,7 @@ sixel_parallel_worker_main(tp_job_t job, void *userdata, void *workspace)
                           "worker",
                           "encode",
                           "worker_start",
-                          band_index,
-                          band_start,
-                          band_start,
-                          band_start + band_height,
-                          band_start,
-                          band_start + band_height,
-                          "worker=%d",
-                          state->index);
+                          band_index);
     }
 
     for (row_index = 0; row_index < band_height; row_index++) {
@@ -1320,15 +1253,7 @@ cleanup:
                           "worker",
                           "encode",
                           "worker_done",
-                          band_index,
-                          last_row_index,
-                          band_start,
-                          band_start + band_height,
-                          band_start,
-                          band_start + band_height,
-                          "status=%d bytes=%zu",
-                          status,
-                          emitted_bytes);
+                          band_index);
     }
     if (SIXEL_FAILED(status)) {
         return status;
@@ -1365,14 +1290,7 @@ sixel_parallel_writer_stop(sixel_parallel_context_t *ctx, int force_abort)
                           "writer",
                           "encode",
                           "writer_stop",
-                          -1,
-                          -1,
-                          0,
-                          ctx->height,
-                          0,
-                          ctx->height,
-                          "force=%d",
-                          force_abort);
+                          -1);
     }
 }
 
@@ -1394,14 +1312,7 @@ sixel_parallel_writer_main(void *arg)
                                    "writer",
                                    "encode",
                                    "writer_start",
-                                   -1,
-                                   -1,
-                                   0,
-                                   ctx->height,
-                                   0,
-                                   ctx->height,
-                                   "bands=%d",
-                                   ctx->band_count);
+                                   -1);
     }
 
     for (;;) {
@@ -1439,26 +1350,11 @@ sixel_parallel_writer_main(void *arg)
         sixel_fence_acquire();
         status = band->status;
         if (ctx->logger != NULL) {
-            int y0;
-            int y1;
-
-            y0 = band_index * 6;
-            y1 = y0 + 6;
-            if (ctx->height > 0 && y1 > ctx->height) {
-                y1 = ctx->height;
-            }
             sixel_logger_logf(ctx->logger,
                               "writer",
                               "encode",
                               "writer_dequeue",
-                              band_index,
-                              y1 - 1,
-                              y0,
-                              y1,
-                              y0,
-                              y1,
-                              "bytes=%zu",
-                              band->used);
+                              band_index);
         }
         if (SIXEL_SUCCEEDED(status)) {
             status = sixel_parallel_flush_band(ctx, band_index);
@@ -1680,18 +1576,7 @@ sixel_encode_body_pipeline(unsigned char *pixels,
                           "controller",
                           "pipeline",
                           "configure",
-                          -1,
-                          -1,
-                          0,
-                          height,
-                          0,
-                          height,
-                          "encode_threads=%d dither_threads=%d "
-                          "band=%d overlap=%d",
-                          threads,
-                          dither->pipeline_dither_threads,
-                          dither->pipeline_band_height,
-                          dither->pipeline_band_overlap);
+                          -1);
     }
 
     status = sixel_parallel_context_begin(&ctx,
@@ -3485,14 +3370,7 @@ sixel_encode_body(
                           "controller",
                           "encode",
                           "configure",
-                          -1,
-                          -1,
-                          0,
-                          height,
-                          0,
-                          height,
-                          "serial encoder bands=%d",
-                          (height + 5) / 6);
+                          -1);
     }
 
     status = sixel_encode_work_allocate(&work,
@@ -3519,13 +3397,7 @@ sixel_encode_body(
                               "worker",
                               "encode",
                               "start",
-                              job_index,
-                              band_start,
-                              band_start,
-                              band_start + band_height,
-                              band_start,
-                              band_start + band_height,
-                              "serial band start");
+                              job_index);
         }
 
         for (row_index = 0; row_index < band_height; row_index++) {
@@ -3589,13 +3461,7 @@ sixel_encode_body(
                               "worker",
                               "encode",
                               "finish",
-                              job_index,
-                              band_start + band_height - 1,
-                              band_start,
-                              band_start + band_height,
-                              band_start,
-                              band_start + band_height,
-                              "serial band done");
+                              job_index);
         }
 
         band_start += band_height;
