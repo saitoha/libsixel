@@ -1224,6 +1224,18 @@ jobs:
           --rc branch_coverage=1 \
           -o coverage.info
 
+    - name: Fix artifact permissions (Autotools Alpine container)
+      if: matrix.variant == 'alpine'
+      run: |
+        set -eux
+        for dir in builddir _artifacts; do
+          if [ -e "$dir" ]; then
+            sudo chown -R "$(id -u):$(id -g)" "$dir"
+            sudo find "$dir" -type d -exec chmod u+rwx,go+rx {} +
+            sudo find "$dir" -type f -exec chmod u+rw,go+r {} +
+          fi
+        done
+
     - name: Upload autotools artifacts
       if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && always()
       uses: actions/upload-artifact@v4
@@ -2709,6 +2721,18 @@ jobs:
             exit /b !errorlevel!
         )
         endlocal
+
+    - name: Fix artifact permissions (Meson Alpine container)
+      if: matrix.variant == 'alpine'
+      run: |
+        set -eux
+        for dir in builddir _artifacts; do
+          if [ -e "$dir" ]; then
+            sudo chown -R "$(id -u):$(id -g)" "$dir"
+            sudo find "$dir" -type d -exec chmod u+rwx,go+rx {} +
+            sudo find "$dir" -type f -exec chmod u+rw,go+r {} +
+          fi
+        done
 
     - name: Upload meson artifacts
       if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && always()
