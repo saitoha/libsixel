@@ -17,9 +17,11 @@ conversion_helper_dir=$(CDPATH=; cd "$(dirname "${conversion_common_path}")" && 
 
 setup_conversion_env() {
     test_name=$1
+    test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+    category_name=$(basename "$(dirname "${test_dir}")")
 
     artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-    artifact_dir="${artifact_root}/${test_name}"
+    artifact_dir="${artifact_root}/${category_name}/${test_name}"
     log_file="${artifact_dir}/conversion.log"
     tmp_dir="${artifact_dir}/tmp"
     output_dir="${artifact_dir}/outputs"
