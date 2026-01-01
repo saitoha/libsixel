@@ -2,4 +2,5 @@
 set -eu
 
 repo_root="$(git rev-parse --show-toplevel)"
-exec "$repo_root/tools/check_private_includes.py"
+"$repo_root/tools/check_private_includes.py"
+"$repo_root/tools/check_makefile_recipes.sh"
