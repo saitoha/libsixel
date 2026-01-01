@@ -2400,6 +2400,11 @@ jobs:
           sleep 2
           date -u
 
+          # DragonFly guests in the cross-platform runner do not expose
+          # AVX/AVX2 state, so force a portable SIMD baseline to avoid
+          # SIGILL in VPTE-heavy tests while still exercising the filter.
+          export SIXEL_SIMD_LEVEL=sse2
+
           cd "$GITHUB_WORKSPACE"
           meson setup builddir \
               --wrap-mode=nodownload \
