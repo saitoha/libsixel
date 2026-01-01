@@ -1048,6 +1048,7 @@ jobs:
           elif [ "${{ matrix.platform }}" = "openbsd" ]; then
             ${pkg_prefix:+$pkg_prefix }pkg_add \
               gmake \
+              rsync \
               # pkgconf avoided to reduce fragile package installs
 
             enable_gcov_flag="--enable-gcov"
@@ -2269,6 +2270,7 @@ jobs:
             fi
 
             ${pkg_prefix:+$pkg_prefix }pkg_add \
+              rsync \
               python%3 \
               meson \
               ninja
