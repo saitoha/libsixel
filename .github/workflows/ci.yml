@@ -362,6 +362,7 @@ jobs:
 
     - name: Configure and build (DragonFlyBSD)
       if: matrix.platform == 'dragonflybsd'
+      timeout-minutes: 90
       uses: vmactions/dragonflybsd-vm@v1
       with:
         release: ${{ matrix.df_release }}
@@ -370,6 +371,7 @@ jobs:
         run: |
           set -eux
           artifact_dir="${GITHUB_WORKSPACE}/_artifacts/dragonflybsd"
+          artifact_tar="${GITHUB_WORKSPACE}/_artifacts/dragonflybsd.tar.gz"
           collect_logs() {
             status=$?
             cd "$GITHUB_WORKSPACE"
@@ -382,6 +384,16 @@ jobs:
                   mkdir -p "$(dirname "$dest")"
                   cp "$f" "$dest"
                 done || true
+            if [ -f "$GITHUB_WORKSPACE/coverage.info" ]; then
+              cp "$GITHUB_WORKSPACE/coverage.info" "$artifact_dir/coverage.info" || true
+            fi
+            if [ -d "$artifact_dir" ]; then
+              tar -czf "$artifact_tar" -C "${GITHUB_WORKSPACE}/_artifacts" dragonflybsd || true
+            fi
+            find "$GITHUB_WORKSPACE" -mindepth 1 -maxdepth 1 \
+              ! -name '_artifacts' \
+              ! -name "$(basename "$artifact_tar")" \
+              -exec rm -rf {} +
             exit "$status"
           }
           trap 'collect_logs' EXIT
@@ -916,6 +928,7 @@ jobs:
 
     - name: Configure, build, and run tests (FreeBSD/OpenBSD/NetBSD/Haiku)
       if: (matrix.platform == 'freebsd' || matrix.platform == 'openbsd' || matrix.platform == 'netbsd' || matrix.platform == 'haiku') && matrix.emscripten != true
+      timeout-minutes: 90
       uses: cross-platform-actions/action@v0.30.0
       with:
         operating_system: ${{ matrix.cp_os }}
@@ -928,6 +941,7 @@ jobs:
           : "${GITHUB_WORKSPACE:=$PWD}"
 
           artifact_dir="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}"
+          artifact_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
           collect_logs() {
             status=$?
             cd "$GITHUB_WORKSPACE"
@@ -941,6 +955,16 @@ jobs:
                   mkdir -p "$(dirname "$dest")"
                   cp "$f" "$dest"
                 done || true
+            if [ -f "$GITHUB_WORKSPACE/coverage.info" ]; then
+              cp "$GITHUB_WORKSPACE/coverage.info" "$artifact_dir/coverage.info" || true
+            fi
+            if [ -d "$artifact_dir" ]; then
+              tar -czf "$artifact_tar" -C "${GITHUB_WORKSPACE}/_artifacts" "${{ matrix.platform }}" || true
+            fi
+            find "$GITHUB_WORKSPACE" -mindepth 1 -maxdepth 1 \
+              ! -name '_artifacts' \
+              ! -name "$(basename "$artifact_tar")" \
+              -exec rm -rf {} +
             exit "$status"
           }
           trap 'collect_logs' EXIT
@@ -2206,6 +2230,7 @@ jobs:
 
     - name: Configure, build, and test (Meson, FreeBSD/OpenBSD/NetBSD/Haiku)
       if: matrix.platform == 'freebsd' || matrix.platform == 'openbsd' || matrix.platform == 'netbsd' || matrix.platform == 'haiku'
+      timeout-minutes: 90
       uses: cross-platform-actions/action@v0.30.0
       with:
         operating_system: ${{ matrix.cp_os }}
@@ -2218,6 +2243,7 @@ jobs:
 
           : "${GITHUB_WORKSPACE:=$PWD}"
           artifact_dir="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}"
+          artifact_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
           collect_logs() {
             status=$?
             cd "$GITHUB_WORKSPACE"
@@ -2234,6 +2260,16 @@ jobs:
                   mkdir -p "$(dirname "$dest")"
                   cp "$f" "$dest"
                 done || true
+            if [ -f "$GITHUB_WORKSPACE/coverage.info" ]; then
+              cp "$GITHUB_WORKSPACE/coverage.info" "$artifact_dir/coverage.info" || true
+            fi
+            if [ -d "$artifact_dir" ]; then
+              tar -czf "$artifact_tar" -C "${GITHUB_WORKSPACE}/_artifacts" "${{ matrix.platform }}" || true
+            fi
+            find "$GITHUB_WORKSPACE" -mindepth 1 -maxdepth 1 \
+              ! -name '_artifacts' \
+              ! -name "$(basename "$artifact_tar")" \
+              -exec rm -rf {} +
             exit "$status"
           }
           trap 'collect_logs' EXIT
@@ -2360,6 +2396,7 @@ jobs:
 
     - name: Configure, build, and test (Meson, DragonFlyBSD)
       if: matrix.platform == 'dragonflybsd'
+      timeout-minutes: 90
       uses: vmactions/dragonflybsd-vm@v1
       with:
         release: ${{ matrix.df_release }}
@@ -2367,6 +2404,36 @@ jobs:
         copyback: true
         run: |
           set -eux
+          artifact_dir="${GITHUB_WORKSPACE}/_artifacts/dragonflybsd"
+          artifact_tar="${GITHUB_WORKSPACE}/_artifacts/dragonflybsd.tar.gz"
+          collect_logs() {
+            status=$?
+            cd "$GITHUB_WORKSPACE"
+            mkdir -p "$artifact_dir"
+            find . \( -type f \( -name 'config.log' -o -name 'test-suite.log' \
+              -o -name '*.log' -o -name '*.trs' -o -name 'meson-log.txt' \
+              -o -name 'testlog.txt' \) \
+              ! -path "./_artifacts/*" \) \
+              -o \( -type f -path "./builddir/meson-logs/*" \) \
+              | while IFS= read -r f; do
+                  rel="${f#./}"
+                  dest="${artifact_dir}/${rel}"
+                  mkdir -p "$(dirname "$dest")"
+                  cp "$f" "$dest"
+                done || true
+            if [ -f "$GITHUB_WORKSPACE/coverage.info" ]; then
+              cp "$GITHUB_WORKSPACE/coverage.info" "$artifact_dir/coverage.info" || true
+            fi
+            if [ -d "$artifact_dir" ]; then
+              tar -czf "$artifact_tar" -C "${GITHUB_WORKSPACE}/_artifacts" dragonflybsd || true
+            fi
+            find "$GITHUB_WORKSPACE" -mindepth 1 -maxdepth 1 \
+              ! -name '_artifacts' \
+              ! -name "$(basename "$artifact_tar")" \
+              -exec rm -rf {} +
+            exit "$status"
+          }
+          trap 'collect_logs' EXIT
           pkg update -f
           pkg install -y python3 meson ninja pkgconf
 
