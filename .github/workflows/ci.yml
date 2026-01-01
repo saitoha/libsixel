@@ -1225,7 +1225,7 @@ jobs:
           -o coverage.info
 
     - name: Fix artifact permissions (Autotools Alpine container)
-      if: matrix.variant == 'alpine'
+      if: ${{ matrix.variant == 'alpine' && always() }}
       run: |
         set -eux
         for dir in builddir _artifacts; do
@@ -2723,7 +2723,7 @@ jobs:
         endlocal
 
     - name: Fix artifact permissions (Meson Alpine container)
-      if: matrix.variant == 'alpine'
+      if: ${{ matrix.variant == 'alpine' && always() }}
       run: |
         set -eux
         for dir in builddir _artifacts; do
