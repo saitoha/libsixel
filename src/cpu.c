@@ -145,22 +145,43 @@ sixel_cpu_detect_native(void)
     unsigned int ebx;
     unsigned int ecx;
     unsigned int edx;
+    int osxsave;
+    int avx_capable;
 
     if (__get_cpuid(1, &eax, &ebx, &ecx, &edx) != 0) {
-        if ((ecx & (1U << 28)) != 0) {
-            if (__get_cpuid_max(0, NULL) >= 7 &&
-                __get_cpuid_count(7, 0, &eax, &ebx, &ecx, &edx) != 0) {
-                if ((ebx & (1U << 16)) != 0) {
-                    level = SIXEL_SIMD_LEVEL_AVX512;
-                } else if ((ebx & (1U << 5)) != 0) {
-                    level = SIXEL_SIMD_LEVEL_AVX2;
+        /*
+         * DragonFlyBSD kernels expose AVX/AVX2/AVX512 bits even when the
+         * OS has not enabled XSAVE. Guard against executing AVX-class
+         * instructions by checking OSXSAVE and XCR0 before raising the
+         * SIMD level. Fall back to SSE2 when the OS cannot preserve the
+         * extended state.
+         */
+        osxsave = (ecx & (1U << 27)) != 0;
+        avx_capable = (ecx & (1U << 28)) != 0;
+#  if defined(HAVE_IMMINTRIN_H)
+        if (osxsave != 0 && avx_capable != 0) {
+            unsigned long long xcr0;
+
+            xcr0 = _xgetbv(0);
+            if ((xcr0 & 0x6) == 0x6) {
+                if (__get_cpuid_max(0, NULL) >= 7 &&
+                    __get_cpuid_count(7, 0, &eax, &ebx, &ecx,
+                                      &edx) != 0) {
+                    if ((ebx & (1U << 16)) != 0) {
+                        level = SIXEL_SIMD_LEVEL_AVX512;
+                    } else if ((ebx & (1U << 5)) != 0) {
+                        level = SIXEL_SIMD_LEVEL_AVX2;
+                    } else {
+                        level = SIXEL_SIMD_LEVEL_AVX;
+                    }
                 } else {
                     level = SIXEL_SIMD_LEVEL_AVX;
                 }
-            } else {
-                level = SIXEL_SIMD_LEVEL_AVX;
             }
-        } else if ((edx & (1U << 26)) != 0) {
+        }
+#  endif
+        if (level == SIXEL_SIMD_LEVEL_SCALAR &&
+            (edx & (1U << 26)) != 0) {
             level = SIXEL_SIMD_LEVEL_SSE2;
         }
     }
