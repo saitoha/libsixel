@@ -6588,6 +6588,7 @@ sixel_encoder_setopt(
             path_flags);
         if (path_check != 0) {
             sixel_allocator_free(encoder->allocator, mapfile_copy);
+            mapfile_copy = NULL;
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
