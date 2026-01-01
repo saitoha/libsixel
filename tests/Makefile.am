@@ -100,6 +100,7 @@ CLI_TESTS = cli-core/t/0001_help.t \
     dither/t/0007_sixel_inspection_alternate_dither.t \
     dither/t/0008_sixel_inspection_x_dither.t \
     dither/t/0009_lanczos2_without_diffusion.t \
+    conversion/t/0001_ssim_regression.t \
     geometry/t/0001_scaling_histogram_background.t \
     geometry/t/0002_dcs_crc_width_scaling.t \
     geometry/t/0003_dcs_crc_height_scaling.t \
@@ -114,6 +115,7 @@ CLI_TESTS = cli-core/t/0001_help.t \
     geometry/t/0012_resize_precision_mode_run.t \
     geometry/t/0013_resize_precision_mode_scaler_input.t \
     geometry/t/0014_resize_precision_mode_post_colorspace.t \
+    geometry/t/0015_resize_ssim.t \
     format/t/0001_prefixed_png_output_default.t \
     format/t/0002_prefixed_png_output_explicit_path.t \
     format/t/0003_filename_driven_png_header.t \
@@ -343,6 +345,7 @@ TEST_EXTENSIONS = .t
 
 HELPER_FILES = common/t/0001_converters_common.t \
        conversion/common.sh \
+       common/quality.sh \
        cli-core/t/cli_core_common.sh \
        python/lib/common.sh \
        palette/t/kmeans_init_common.sh \
@@ -688,9 +691,12 @@ BASELINE_JSON = data/baseline/grayscale.json \
        data/baseline/svga_landscape.json \
        data/baseline/tiny_square.json
 
+BASELINE_IMAGES = data/baseline/resize_source_50.png
+
 INPUT_FORMAT_FILES = data/inputs/formats/grayscale.jpg \
        data/inputs/formats/palette.png \
-       data/inputs/formats/rgb.png
+       data/inputs/formats/rgb.png \
+       data/inputs/formats/resize_source.png
 
 RESOLUTION_IMAGES = data/resolutions/hd_landscape.png \
        data/resolutions/panorama_tall.png \
@@ -707,11 +713,13 @@ ISSUE_INPUTS = issue/166/poc \
        issue/200/POC_img2sixel_heap_buffer_overflow
 
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
-             lsqa_regression.sh \
-             loader/pngsuite_common.sh \
-             $(BASELINE_JSON) $(INPUT_FORMAT_FILES) \
-             $(RESOLUTION_IMAGES) $(CORRUPTED_INPUTS) $(ISSUE_INPUTS) \
-             filter/0001_filter_clip.c filter/0002_filter_sample.c \
+            lsqa_regression.sh \
+            common/quality.sh \
+            loader/pngsuite_common.sh \
+            $(BASELINE_JSON) $(INPUT_FORMAT_FILES) \
+            $(BASELINE_IMAGES) \
+            $(RESOLUTION_IMAGES) $(CORRUPTED_INPUTS) $(ISSUE_INPUTS) \
+            filter/0001_filter_clip.c filter/0002_filter_sample.c \
              filter/0003_filter_resize.c filter/0004_filter_colors.c \
              filter/0005_filter_lookup.c filter/0006_filter_final_merge.c \
              filter/0007_filter_vpte.c filter/0008_filter_load.c \
