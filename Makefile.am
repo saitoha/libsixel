@@ -1,7 +1,7 @@
 #
 # @configure_input@
 #
-SUBDIRS = include src converters assessment tools tests python examples images
+SUBDIRS = include src converters assessment tools python examples images
 if WANT_AMALGAMATED_SOURCES
 SUBDIRS += amalgamation
 endif
@@ -11,12 +11,13 @@ endif
 if HAVE_RUBY
 SUBDIRS += ruby
 endif
-if HAVE_APPLE_QUICKLOOK_EXTENSION
-SUBDIRS += quicklook-extension
-endif
 if HAVE_WICCODEC
 SUBDIRS += wic
 endif
+if HAVE_APPLE_QUICKLOOK_EXTENSION
+SUBDIRS += quicklook-extension
+endif
+SUBDIRS += tests
 
 DIST_SUBDIRS = \
         include \
@@ -24,7 +25,6 @@ DIST_SUBDIRS = \
         converters \
         assessment \
         tools \
-        tests \
         python \
         examples \
         images \
@@ -32,7 +32,8 @@ DIST_SUBDIRS = \
         wic \
         gdk-pixbuf-loader \
         quicklook-extension \
-        amalgamation
+        amalgamation \
+        tests
 
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.
 EXTRA_DIST = LICENSE build-aux/depcomp
