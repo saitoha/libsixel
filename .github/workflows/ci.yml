@@ -390,11 +390,12 @@ jobs:
             if [ -d "$artifact_dir" ]; then
               tar -czf "$artifact_tar" -C "${GITHUB_WORKSPACE}/_artifacts" dragonflybsd || true
             fi
-            find "$GITHUB_WORKSPACE" -mindepth 1 -maxdepth 1 \
-              ! -name '_artifacts' \
-              ! -name "$(basename "$artifact_tar")" \
-              -exec rm -rf {} +
-            exit "$status"
+            if command -v git >/dev/null 2>&1; then
+              git -C "$GITHUB_WORKSPACE" clean -ffdX \
+                -e _artifacts \
+                -e "$(basename "$artifact_tar")" || true
+            fi
+            return "$status"
           }
           trap 'collect_logs' EXIT
 
@@ -961,11 +962,12 @@ jobs:
             if [ -d "$artifact_dir" ]; then
               tar -czf "$artifact_tar" -C "${GITHUB_WORKSPACE}/_artifacts" "${{ matrix.platform }}" || true
             fi
-            find "$GITHUB_WORKSPACE" -mindepth 1 -maxdepth 1 \
-              ! -name '_artifacts' \
-              ! -name "$(basename "$artifact_tar")" \
-              -exec rm -rf {} +
-            exit "$status"
+            if command -v git >/dev/null 2>&1; then
+              git -C "$GITHUB_WORKSPACE" clean -ffdX \
+                -e _artifacts \
+                -e "$(basename "$artifact_tar")" || true
+            fi
+            return "$status"
           }
           trap 'collect_logs' EXIT
 
@@ -2266,11 +2268,12 @@ jobs:
             if [ -d "$artifact_dir" ]; then
               tar -czf "$artifact_tar" -C "${GITHUB_WORKSPACE}/_artifacts" "${{ matrix.platform }}" || true
             fi
-            find "$GITHUB_WORKSPACE" -mindepth 1 -maxdepth 1 \
-              ! -name '_artifacts' \
-              ! -name "$(basename "$artifact_tar")" \
-              -exec rm -rf {} +
-            exit "$status"
+            if command -v git >/dev/null 2>&1; then
+              git -C "$GITHUB_WORKSPACE" clean -ffdX \
+                -e _artifacts \
+                -e "$(basename "$artifact_tar")" || true
+            fi
+            return "$status"
           }
           trap 'collect_logs' EXIT
 
@@ -2427,11 +2430,12 @@ jobs:
             if [ -d "$artifact_dir" ]; then
               tar -czf "$artifact_tar" -C "${GITHUB_WORKSPACE}/_artifacts" dragonflybsd || true
             fi
-            find "$GITHUB_WORKSPACE" -mindepth 1 -maxdepth 1 \
-              ! -name '_artifacts' \
-              ! -name "$(basename "$artifact_tar")" \
-              -exec rm -rf {} +
-            exit "$status"
+            if command -v git >/dev/null 2>&1; then
+              git -C "$GITHUB_WORKSPACE" clean -ffdX \
+                -e _artifacts \
+                -e "$(basename "$artifact_tar")" || true
+            fi
+            return "$status"
           }
           trap 'collect_logs' EXIT
           pkg update -f
