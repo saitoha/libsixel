@@ -885,7 +885,7 @@ jobs:
         operating_system: ${{ matrix.cp_os }}
         architecture: ${{ matrix.cp_arch }}
         version: ${{ matrix.cp_version }}
-        sync_files: runner-to-vm-and-back
+        sync_files: true
         environment_variables: CI,GITHUB_WORKSPACE
         run: |
           set -eux
@@ -2158,7 +2158,7 @@ jobs:
         operating_system: ${{ matrix.cp_os }}
         architecture: ${{ matrix.cp_arch }}
         version: ${{ matrix.cp_version }}
-        sync_files: runner-to-vm-and-back
+        sync_files: true
         environment_variables: CI,GITHUB_WORKSPACE
         run: &meson_non_windows |
           set -eux
