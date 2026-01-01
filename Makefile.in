@@ -92,8 +92,8 @@ host_triplet = @host@
 @WANT_AMALGAMATED_SOURCES_TRUE@am__append_1 = amalgamation
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_2 = gdk-pixbuf-loader
 @HAVE_RUBY_TRUE@am__append_3 = ruby
-@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_4 = quicklook-extension
-@HAVE_WICCODEC_TRUE@am__append_5 = wic
+@HAVE_WICCODEC_TRUE@am__append_4 = wic
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_5 = quicklook-extension
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
@@ -468,16 +468,15 @@ zshcompletiondir = @zshcompletiondir@
 #
 # @configure_input@
 #
-SUBDIRS = include src converters assessment tools tests python \
-	examples images $(am__append_1) $(am__append_2) \
-	$(am__append_3) $(am__append_4) $(am__append_5)
+SUBDIRS = include src converters assessment tools python examples \
+	images $(am__append_1) $(am__append_2) $(am__append_3) \
+	$(am__append_4) $(am__append_5) tests
 DIST_SUBDIRS = \
         include \
         src \
         converters \
         assessment \
         tools \
-        tests \
         python \
         examples \
         images \
@@ -485,7 +484,8 @@ DIST_SUBDIRS = \
         wic \
         gdk-pixbuf-loader \
         quicklook-extension \
-        amalgamation
+        amalgamation \
+        tests
 
 
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.
