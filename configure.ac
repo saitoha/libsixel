@@ -5,7 +5,7 @@ AC_PREREQ([2.60])
 LT_PREREQ([2.4])
 AC_INIT([libsixel], [1.8.7], [saitoha@me.com])
 AC_CONFIG_AUX_DIR([build-aux])
-AC_REQUIRE_AUX_FILE([lso-tap-driver.sh])
+AC_REQUIRE_AUX_FILE([lso-tap-driver.sh.in])
 LS_LT_CURRENT=1
 LS_LT_REVISION=6
 LS_LT_AGE=0
@@ -36,6 +36,38 @@ AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PATH_PROG([UPDATE_MIME_DATABASE], [update-mime-database])
+
+AC_CACHE_CHECK([for date +%s.%N with sub-second resolution],
+               [ac_cv_lso_date_epoch_nsec],
+               [ac_cv_lso_date_epoch_nsec=no
+                lso_date_sample1=`date +%s.%N 2>/dev/null`
+                case $lso_date_sample1 in
+                  *N*|*' '*|'') ;;
+                  *.*)
+                    sleep 0.02
+                    lso_date_sample2=`date +%s.%N 2>/dev/null`
+                    case $lso_date_sample2 in
+                      *N*|*' '*|'') ;;
+                      *.*)
+                        if test "x$lso_date_sample1" != \
+                                "x$lso_date_sample2"; then
+                          lso_date_frac=`printf '%s\n' "$lso_date_sample1" \
+                            | sed 's/^[^.]*\.//'`
+                          lso_date_frac_len=`printf '%s\n' \
+                            "$lso_date_frac" | "$AWK" '{print length($0)}'`
+                          if test "$lso_date_frac_len" -ge 3; then
+                            ac_cv_lso_date_epoch_nsec=yes
+                          fi
+                        fi
+                        ;;
+                    esac
+                    ;;
+                esac])
+
+AS_IF([test "x$ac_cv_lso_date_epoch_nsec" = "xyes"],
+      [LSO_TAP_DATE_CMD='date +%s.%N'],
+      [LSO_TAP_DATE_CMD=''])
+AC_SUBST([LSO_TAP_DATE_CMD])
 
 case "$host_os" in
   mingw*|msys*|cygwin*)
@@ -2432,6 +2464,7 @@ AC_CONFIG_FILES([Makefile
                  assessment/Makefile
                  tools/Makefile
                  tools/libsixel-config
+                 build-aux/lso-tap-driver.sh:build-aux/lso-tap-driver.sh.in
                  examples/Makefile
                  examples/drawing/Makefile
                  examples/opengl/Makefile

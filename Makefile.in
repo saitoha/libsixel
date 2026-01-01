@@ -112,6 +112,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = libsixel.pc package.json.in \
+	build-aux/lso-tap-driver.sh \
 	ruby/lib/libsixel/version_runtime.rb \
 	quicklook-extension/generated-resources/Host-Info.plist \
 	quicklook-extension/generated-resources/Preview-Info.plist \
@@ -205,7 +206,7 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/build-aux/config.guess \
 	$(top_srcdir)/build-aux/config.sub \
 	$(top_srcdir)/build-aux/install-sh \
-	$(top_srcdir)/build-aux/lso-tap-driver.sh \
+	$(top_srcdir)/build-aux/lso-tap-driver.sh.in \
 	$(top_srcdir)/build-aux/ltmain.sh \
 	$(top_srcdir)/build-aux/missing \
 	$(top_srcdir)/quicklook-extension/Resources/Bridge-Info.plist.in \
@@ -331,6 +332,7 @@ LIBS_PRIVATE = @LIBS_PRIVATE@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
+LSO_TAP_DATE_CMD = @LSO_TAP_DATE_CMD@
 LS_LTVERSION = @LS_LTVERSION@
 LTLIBOBJS = @LTLIBOBJS@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@
@@ -550,6 +552,8 @@ distclean-hdr:
 libsixel.pc: $(top_builddir)/config.status $(srcdir)/libsixel.pc.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 package.json.in: $(top_builddir)/config.status $(srcdir)/package.json.in.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+build-aux/lso-tap-driver.sh: $(top_builddir)/config.status $(top_srcdir)/build-aux/lso-tap-driver.sh.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 ruby/lib/libsixel/version_runtime.rb: $(top_builddir)/config.status $(top_srcdir)/ruby/lib/libsixel/version_runtime.rb.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@

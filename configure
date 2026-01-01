@@ -790,6 +790,7 @@ USING_CL_FALSE
 USING_CL_TRUE
 BUILDING_ON_WINDOWS_FALSE
 BUILDING_ON_WINDOWS_TRUE
+LSO_TAP_DATE_CMD
 UPDATE_MIME_DATABASE
 CPP
 am__fastdepOBJC_FALSE
@@ -3116,7 +3117,7 @@ as_fn_append ac_header_c_list " sys/types.h sys_types_h HAVE_SYS_TYPES_H"
 as_fn_append ac_header_c_list " unistd.h unistd_h HAVE_UNISTD_H"
 
 # Auxiliary files required by this configure script.
-ac_aux_files="compile ltmain.sh ar-lib missing install-sh config.guess config.sub lso-tap-driver.sh"
+ac_aux_files="compile ltmain.sh ar-lib missing install-sh config.guess config.sub lso-tap-driver.sh.in"
 
 # Locations in which to look for auxiliary files.
 ac_aux_dir_candidates="${srcdir}/build-aux"
@@ -16286,6 +16287,50 @@ fi
 
 
 
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for date +%s.%N with sub-second resolution" >&5
+printf %s "checking for date +%s.%N with sub-second resolution... " >&6; }
+if test ${ac_cv_lso_date_epoch_nsec+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_cv_lso_date_epoch_nsec=no
+                lso_date_sample1=`date +%s.%N 2>/dev/null`
+                case $lso_date_sample1 in
+                  *N*|*' '*|'') ;;
+                  *.*)
+                    sleep 0.02
+                    lso_date_sample2=`date +%s.%N 2>/dev/null`
+                    case $lso_date_sample2 in
+                      *N*|*' '*|'') ;;
+                      *.*)
+                        if test "x$lso_date_sample1" != \
+                                "x$lso_date_sample2"; then
+                          lso_date_frac=`printf '%s\n' "$lso_date_sample1" \
+                            | sed 's/^^.*\.//'`
+                          lso_date_frac_len=`printf '%s\n' \
+                            "$lso_date_frac" | "$AWK" '{print length($0)}'`
+                          if test "$lso_date_frac_len" -ge 3; then
+                            ac_cv_lso_date_epoch_nsec=yes
+                          fi
+                        fi
+                        ;;
+                    esac
+                    ;;
+                esac ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lso_date_epoch_nsec" >&5
+printf "%s\n" "$ac_cv_lso_date_epoch_nsec" >&6; }
+
+if test "x$ac_cv_lso_date_epoch_nsec" = "xyes"
+then :
+  LSO_TAP_DATE_CMD='date +%s.%N'
+else case e in #(
+  e) LSO_TAP_DATE_CMD='' ;;
+esac
+fi
+
+
 case "$host_os" in
   mingw*|msys*|cygwin*)
       build_windows=yes
@@ -24346,7 +24391,7 @@ else
 fi
 
 
-ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile assessment/Makefile tools/Makefile tools/libsixel-config examples/Makefile examples/drawing/Makefile examples/opengl/Makefile examples/python/Makefile examples/ruby/Makefile examples/windows/Makefile images/Makefile tests/Makefile python/Makefile ruby/Makefile ruby/lib/libsixel/version_runtime.rb gdk-pixbuf-loader/Makefile quicklook-extension/Makefile wic/Makefile"
+ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile assessment/Makefile tools/Makefile tools/libsixel-config build-aux/lso-tap-driver.sh:build-aux/lso-tap-driver.sh.in examples/Makefile examples/drawing/Makefile examples/opengl/Makefile examples/python/Makefile examples/ruby/Makefile examples/windows/Makefile images/Makefile tests/Makefile python/Makefile ruby/Makefile ruby/lib/libsixel/version_runtime.rb gdk-pixbuf-loader/Makefile quicklook-extension/Makefile wic/Makefile"
 
 
 # Always generate the amalgamation Makefile so "make dist" can stage the
@@ -25559,6 +25604,7 @@ do
     "assessment/Makefile") CONFIG_FILES="$CONFIG_FILES assessment/Makefile" ;;
     "tools/Makefile") CONFIG_FILES="$CONFIG_FILES tools/Makefile" ;;
     "tools/libsixel-config") CONFIG_FILES="$CONFIG_FILES tools/libsixel-config" ;;
+    "build-aux/lso-tap-driver.sh") CONFIG_FILES="$CONFIG_FILES build-aux/lso-tap-driver.sh:build-aux/lso-tap-driver.sh.in" ;;
     "examples/Makefile") CONFIG_FILES="$CONFIG_FILES examples/Makefile" ;;
     "examples/drawing/Makefile") CONFIG_FILES="$CONFIG_FILES examples/drawing/Makefile" ;;
     "examples/opengl/Makefile") CONFIG_FILES="$CONFIG_FILES examples/opengl/Makefile" ;;

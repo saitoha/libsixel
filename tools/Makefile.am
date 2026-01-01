@@ -11,6 +11,8 @@ if WANT_THUMBNAILER
 bin_SCRIPTS += sixel-thumbnailer
 endif
 
+noinst_PROGRAMS = lso-timer
+
 EXTRA_DIST = libsixel-config.in \
              quicklook-extension.bash \
              sixel-thumbnailer \
@@ -19,7 +21,10 @@ EXTRA_DIST = libsixel-config.in \
              libsixel-thumbnailer.thumbnailer \
              sixel.xml \
              gen_completion_embed.awk \
-             gen-amalgamation.sh
+             gen-amalgamation.sh \
+             timer.c
+
+lso_timer_SOURCES = timer.c
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 install-data-hook:
