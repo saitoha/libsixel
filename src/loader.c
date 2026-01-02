@@ -1564,47 +1564,6 @@ sixel_helper_get_available_loader_names(char const **names, size_t max_names)
     return entry_count;
 }
 
-#if HAVE_TESTS
-/* Simple allocation smoke test to exercise loader test harness entry. */
-static int
-loader_test_allocation_smoke(void)
-{
-    int nret = EXIT_FAILURE;
-    unsigned char *ptr = malloc(16);
-
-    nret = EXIT_SUCCESS;
-    goto error;
-
-error:
-    free(ptr);
-    return nret;
-}
-
-
-SIXELAPI int
-sixel_loader_tests_main(void)
-{
-    int nret = EXIT_FAILURE;
-    size_t i;
-    typedef int (* testcase)(void);
-
-    static testcase const testcases[] = {
-        loader_test_allocation_smoke,
-    };
-
-    for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
-        nret = testcases[i]();
-        if (nret != EXIT_SUCCESS) {
-            goto error;
-        }
-    }
-
-    nret = EXIT_SUCCESS;
-
-error:
-    return nret;
-}
-#endif  /* HAVE_TESTS */
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test validating img2sixel DCS argument permutations.
+# TAP test validating img2sixel DCS argument permutations with j=0.
 
 # Enable strict mode with verbose tracing for diagnostics.
 set -euxv
@@ -31,32 +31,30 @@ fail() {
     status=1
 }
 
-echo "1..33"
+echo "1..11"
 
 map8_png="${images_dir}/map8.png"
 
 require_file "${map8_png}"
 
 i=0
+j=0
 while [ "${i}" -le 10 ]; do
-    j=0
-    while [ "${j}" -le 2 ]; do
-        stage_file="${output_dir}/stage-${i}-${j}.sixel"
-        output_file="${output_dir}/dcs-${i}-${j}.sixel"
+    stage_file="${output_dir}/stage-${i}-${j}.sixel"
+    output_file="${output_dir}/dcs-${i}-${j}.sixel"
 
-        if run_img2sixel "${map8_png}" >"${stage_file}" \
-                2>>"${log_file}" && \
-                sed "s/Pq/P${i};;${j}q/" "${stage_file}" | \
-                run_img2sixel >"${output_file}" 2>>"${log_file}"; then
-            pass ${case_id} "DCS prefix ${i};${j} accepted"
-        else
-            fail ${case_id} "DCS prefix ${i};${j} rejected"
-        fi
+    if run_img2sixel "${map8_png}" >"${stage_file}" \
+            2>>"${log_file}" && \
+            sed "s/Pq/P${i};;${j}q/" "${stage_file}" | \
+            run_img2sixel >"${output_file}" 2>>"${log_file}"; then
+        pass ${case_id} "DCS prefix ${i};${j} accepted"
+    else
+        fail ${case_id} "DCS prefix ${i};${j} rejected"
+    fi
 
-        case_id=$((case_id + 1))
-        j=$((j + 1))
-    done
+    case_id=$((case_id + 1))
     i=$((i + 1))
 done
 
 exit "${status}"
+

@@ -43,10 +43,6 @@ sixel_loader_get_last_source_path(sixel_loader_t const *loader);
 SIXELAPI size_t
 sixel_loader_get_last_input_bytes(sixel_loader_t const *loader);
 
-#if HAVE_TESTS
-SIXELAPI int
-sixel_loader_tests_main(void);
-#endif
 
 #ifdef __cplusplus
 }
