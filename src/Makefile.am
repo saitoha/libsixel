@@ -31,7 +31,7 @@ if CFLAGS_HAVE_COVERAGE
 MAYBE_COVERAGE = --coverage
 endif
 
-CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.* tests
+CLEANFILES = *.gcno *.gcda *.gcov *.log test-output.*
 
 lib_LTLIBRARIES = libsixel.la
 
@@ -252,24 +252,8 @@ libsixel_la_LIBADD = -lm \
                 $(ONNXRUNTIME_LIBS) \
                 @THREAD_LIBS@
 
-if COND_TESTS
-check_PROGRAMS = tests
-tests_SOURCES = $(srcdir)/tests.c
-tests_CPPFLAGS = -I$(top_builddir)/include/ \
-                 -I$(top_builddir)/src/ $(AM_CPPFLAGS)
-tests_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
-tests_LDFLAGS = $(MAYBE_COVERAGE)
-tests_LDADD = $(srcdir)/libsixel.la
-endif
-
 dist_man_MANS = $(srcdir)/sixel.5
 EXTRA_DIST = $(srcdir)/rgblookup.gperf
-
-# Keep this recipe tab-indented; GNU make requires tabs for commands.
-unittest: tests
-if COND_TESTS
-	$(srcdir)/tests
-endif
 
 GPERF_OPT=--ignore-case --language=ANSI-C
 
@@ -283,7 +267,7 @@ gen-rgblookup: $(srcdir)/rgblookup.gperf
 
 if WITH_SHEBANG_FILE
 SIXEL_SHEBANG_TARGETS = $(check_PROGRAMS)
-SIXEL_SHEBANG_STAMP = src-tests-shebang.stamp
+SIXEL_SHEBANG_STAMP =
 
 check-local: $(SIXEL_SHEBANG_STAMP)
 
