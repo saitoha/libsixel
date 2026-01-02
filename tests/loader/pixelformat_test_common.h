@@ -19,6 +19,18 @@
 #include "chunk.h"
 #include "status.h"
 
+#if defined(__clang__)
+# if __has_attribute(unused)
+#  define SIXEL_TEST_UNUSED __attribute__((unused))
+# else
+#  define SIXEL_TEST_UNUSED
+# endif
+#elif defined(__GNUC__)
+# define SIXEL_TEST_UNUSED __attribute__((unused))
+#else
+# define SIXEL_TEST_UNUSED
+#endif
+
 #ifndef PATH_MAX
 #define PATH_MAX 4096
 #endif
@@ -37,7 +49,7 @@ typedef struct loader_probe_context {
 
 #define GEOMETRY_ANY (-1)
 
-static SIXELSTATUS
+static SIXEL_TEST_UNUSED SIXELSTATUS
 capture_frame(sixel_frame_t *frame, void *data)
 {
     loader_probe_context_t *context;
@@ -51,7 +63,7 @@ capture_frame(sixel_frame_t *frame, void *data)
     return SIXEL_OK;
 }
 
-static int
+static SIXEL_TEST_UNUSED int
 build_image_path(char const *source_root,
                  char const *relative,
                  char *buffer,
@@ -77,7 +89,7 @@ typedef SIXELSTATUS (*loader_entry_fn)(
     sixel_load_image_function,
     void *);
 
-static int
+static SIXEL_TEST_UNUSED int
 run_loader_case(char const *label,
                 char const *relative_path,
                 int expected_pixelformat,

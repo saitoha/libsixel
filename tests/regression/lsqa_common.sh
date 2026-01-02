@@ -17,12 +17,43 @@ lsqa_init() {
     repo_root=$(CDPATH=; cd "${regression_root}/.." && pwd)
 
     LSQA_ARTIFACT_ROOT=${ARTIFACT_ROOT:-"${repo_root}/tests/_artifacts"}
-    LSQA_DATA_ROOT=${LSQA_DATA_ROOT:-"${repo_root}/tests/data"}
-    LSQA_BASELINE_DIR=${LSQA_BASELINE_DIR:-"${LSQA_DATA_ROOT}/baseline"}
-    LSQA_INPUT_ROOT=${LSQA_INPUT_ROOT:-"${LSQA_DATA_ROOT}"}
+    LSQA_INPUT_ROOT=${LSQA_INPUT_ROOT-}
+    LSQA_BASELINE_DIR=${LSQA_BASELINE_DIR-}
     LSQA_SEED=${LSQA_SEED:-2024}
 
     build_root=${TOP_BUILDDIR:-${repo_root}}
+
+    # Search for test assets in the build or source trees; prefer an explicit
+    # LSQA_DATA_ROOT override when provided.
+    set --
+    if [ -n "${LSQA_DATA_ROOT-}" ]; then
+        set -- "$@" "${LSQA_DATA_ROOT}"
+    fi
+    set -- "$@" \
+        "${test_dir}/../data" \
+        "${repo_root}/tests/data" \
+        "${build_root}/tests/data"
+    if [ -n "${TOP_SRCDIR-}" ]; then
+        set -- "$@" "${TOP_SRCDIR}/tests/data"
+    fi
+
+    found_data_root=""
+    for candidate in "$@"; do
+        if [ -d "${candidate}/baseline" ] && [ -d "${candidate}/inputs" ]; then
+            found_data_root=${candidate}
+            break
+        fi
+    done
+
+    if [ -z "${found_data_root}" ]; then
+        printf 'lsqa data directory not found. looked for:%s\n' \
+            "\n  $(printf '%s\n  ' "$@" | sed '/^ *$/d')" >&2
+        return 1
+    fi
+
+    LSQA_DATA_ROOT=${found_data_root}
+    LSQA_INPUT_ROOT=${LSQA_INPUT_ROOT:-"${LSQA_DATA_ROOT}"}
+    LSQA_BASELINE_DIR=${LSQA_BASELINE_DIR:-"${LSQA_DATA_ROOT}/baseline"}
     lsqa_bin_env=${LSQA_BIN-}
     if [ -n "${lsqa_bin_env}" ]; then
         if [ -x "${lsqa_bin_env}" ]; then
