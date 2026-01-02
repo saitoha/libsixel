@@ -38,9 +38,9 @@ capture_frame(sixel_frame_t *frame, void *data)
 
     context = (loader_probe_context_t *)data;
     context->callback_count += 1;
-    context->pixelformat = frame->pixelformat;
-    context->width = frame->width;
-    context->height = frame->height;
+    context->pixelformat = sixel_frame_get_pixelformat(frame);
+    context->width = sixel_frame_get_width(frame);
+    context->height = sixel_frame_get_height(frame);
 
     return SIXEL_OK;
 }
