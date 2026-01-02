@@ -159,7 +159,19 @@ CLI_TESTS = cli-core/t/0001_help.t \
     regression/t/0002_issue167_height.t \
     regression/t/0003_issue166_width.t \
     regression/t/0004_issue200_heap_overflow.t \
-    regression/t/0005_lsqa_regression.t \
+    regression/t/0005_lsqa_format_grayscale.t \
+    regression/t/0006_lsqa_format_palette.t \
+    regression/t/0007_lsqa_format_rgb.t \
+    regression/t/0008_lsqa_format_rgba.t \
+    regression/t/0009_lsqa_resolution_hd_landscape.t \
+    regression/t/0010_lsqa_resolution_panorama_tall.t \
+    regression/t/0011_lsqa_resolution_panorama_wide.t \
+    regression/t/0012_lsqa_resolution_quarter_square.t \
+    regression/t/0013_lsqa_resolution_svga_landscape.t \
+    regression/t/0014_lsqa_resolution_tiny_square.t \
+    regression/t/0015_lsqa_repeat_palette_variance.t \
+    regression/t/0016_lsqa_corrupted_metadata_noise.t \
+    regression/t/0017_lsqa_corrupted_truncated_png.t \
     docs/t/0001_help_vs_man.t \
     docs/t/0002_man_vs_bash_completion.t \
     docs/t/0003_bash_vs_zsh_completion.t \
@@ -361,7 +373,8 @@ HELPER_FILES = common/t/0001_converters_common.t \
        palette/t/kmeans_init_common.sh \
        pipeline/t/pipeline_planner_common.sh \
        mapfile/t/mapfile_common.sh \
-       packaging/t/python_wheel_common.sh
+       packaging/t/python_wheel_common.sh \
+       regression/lsqa_common.sh
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export ARTIFACT_ROOT;
@@ -820,11 +833,10 @@ ISSUE_INPUTS = issue/166/poc \
        issue/200/POC_img2sixel_heap_buffer_overflow
 
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
-             lsqa_regression.sh \
-             loader/pngsuite_common.sh \
-             $(BASELINE_JSON) $(INPUT_FORMAT_FILES) \
-             $(RESOLUTION_IMAGES) $(CORRUPTED_INPUTS) $(ISSUE_INPUTS) \
-             filter/0001_filter_clip.c filter/0002_filter_sample.c \
+            loader/pngsuite_common.sh \
+            $(BASELINE_JSON) $(INPUT_FORMAT_FILES) \
+            $(RESOLUTION_IMAGES) $(CORRUPTED_INPUTS) $(ISSUE_INPUTS) \
+            filter/0001_filter_clip.c filter/0002_filter_sample.c \
              filter/0003_filter_resize.c filter/0004_filter_colors.c \
              filter/0005_filter_lookup.c filter/0006_filter_final_merge.c \
              filter/0007_filter_vpte.c filter/0008_filter_load.c \
