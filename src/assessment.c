@@ -1722,7 +1722,6 @@ run_lpips(char const *diff_model,
     diff_inputs = 0;
     status = NULL;
     rc = -1;
-    *result_out = NAN;
 
     g_lpips_api = OrtGetApiBase()->GetApi(ORT_API_VERSION);
     if (g_lpips_api == NULL) {

@@ -519,41 +519,70 @@ typedef struct Metrics {
     float gmsd_value;
     float psnr_y;
     float lpips;
+    unsigned int valid_mask;
 } Metrics;
 
 typedef struct MetricBinding {
     const char *name;
     size_t offset;
+    int metric_id;
 } MetricBinding;
 
 static const MetricBinding g_metric_bindings[] = {
-    {"MS-SSIM", offsetof(Metrics, ms_ssim)},
-    {"HighFreqRatio_out", offsetof(Metrics, high_freq_out)},
-    {"HighFreqRatio_ref", offsetof(Metrics, high_freq_ref)},
-    {"HighFreqRatio_delta", offsetof(Metrics, high_freq_delta)},
-    {"StripeScore_ref", offsetof(Metrics, stripe_ref)},
-    {"StripeScore_out", offsetof(Metrics, stripe_out)},
-    {"StripeScore_rel", offsetof(Metrics, stripe_rel)},
-    {"BandingIndex_rel", offsetof(Metrics, band_run_rel)},
-    {"BandingIndex_grad_rel", offsetof(Metrics, band_grad_rel)},
-    {"ClipRate_L_ref", offsetof(Metrics, clip_l_ref)},
-    {"ClipRate_R_ref", offsetof(Metrics, clip_r_ref)},
-    {"ClipRate_G_ref", offsetof(Metrics, clip_g_ref)},
-    {"ClipRate_B_ref", offsetof(Metrics, clip_b_ref)},
-    {"ClipRate_L_out", offsetof(Metrics, clip_l_out)},
-    {"ClipRate_R_out", offsetof(Metrics, clip_r_out)},
-    {"ClipRate_G_out", offsetof(Metrics, clip_g_out)},
-    {"ClipRate_B_out", offsetof(Metrics, clip_b_out)},
-    {"ClipRate_L_rel", offsetof(Metrics, clip_l_rel)},
-    {"ClipRate_R_rel", offsetof(Metrics, clip_r_rel)},
-    {"ClipRate_G_rel", offsetof(Metrics, clip_g_rel)},
-    {"ClipRate_B_rel", offsetof(Metrics, clip_b_rel)},
-    {"Δ Chroma_mean", offsetof(Metrics, delta_chroma_mean)},
-    {"Δ E00_mean", offsetof(Metrics, delta_e00_mean)},
-    {"GMSD", offsetof(Metrics, gmsd_value)},
-    {"PSNR_Y", offsetof(Metrics, psnr_y)},
-    {"LPIPS", offsetof(Metrics, lpips)},
-    {"LPIPS(alex)", offsetof(Metrics, lpips)},
+    {"MS-SSIM", offsetof(Metrics, ms_ssim),
+     SIXEL_ASSESSMENT_METRIC_MS_SSIM},
+    {"HighFreqRatio_out", offsetof(Metrics, high_freq_out),
+     SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_OUT},
+    {"HighFreqRatio_ref", offsetof(Metrics, high_freq_ref),
+     SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_REF},
+    {"HighFreqRatio_delta", offsetof(Metrics, high_freq_delta),
+     SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_DELTA},
+    {"StripeScore_ref", offsetof(Metrics, stripe_ref),
+     SIXEL_ASSESSMENT_METRIC_STRIPE_REF},
+    {"StripeScore_out", offsetof(Metrics, stripe_out),
+     SIXEL_ASSESSMENT_METRIC_STRIPE_OUT},
+    {"StripeScore_rel", offsetof(Metrics, stripe_rel),
+     SIXEL_ASSESSMENT_METRIC_STRIPE_REL},
+    {"BandingIndex_rel", offsetof(Metrics, band_run_rel),
+     SIXEL_ASSESSMENT_METRIC_BAND_RUN_REL},
+    {"BandingIndex_grad_rel", offsetof(Metrics, band_grad_rel),
+     SIXEL_ASSESSMENT_METRIC_BAND_GRAD_REL},
+    {"ClipRate_L_ref", offsetof(Metrics, clip_l_ref),
+     SIXEL_ASSESSMENT_METRIC_CLIP_L_REF},
+    {"ClipRate_R_ref", offsetof(Metrics, clip_r_ref),
+     SIXEL_ASSESSMENT_METRIC_CLIP_R_REF},
+    {"ClipRate_G_ref", offsetof(Metrics, clip_g_ref),
+     SIXEL_ASSESSMENT_METRIC_CLIP_G_REF},
+    {"ClipRate_B_ref", offsetof(Metrics, clip_b_ref),
+     SIXEL_ASSESSMENT_METRIC_CLIP_B_REF},
+    {"ClipRate_L_out", offsetof(Metrics, clip_l_out),
+     SIXEL_ASSESSMENT_METRIC_CLIP_L_OUT},
+    {"ClipRate_R_out", offsetof(Metrics, clip_r_out),
+     SIXEL_ASSESSMENT_METRIC_CLIP_R_OUT},
+    {"ClipRate_G_out", offsetof(Metrics, clip_g_out),
+     SIXEL_ASSESSMENT_METRIC_CLIP_G_OUT},
+    {"ClipRate_B_out", offsetof(Metrics, clip_b_out),
+     SIXEL_ASSESSMENT_METRIC_CLIP_B_OUT},
+    {"ClipRate_L_rel", offsetof(Metrics, clip_l_rel),
+     SIXEL_ASSESSMENT_METRIC_CLIP_L_REL},
+    {"ClipRate_R_rel", offsetof(Metrics, clip_r_rel),
+     SIXEL_ASSESSMENT_METRIC_CLIP_R_REL},
+    {"ClipRate_G_rel", offsetof(Metrics, clip_g_rel),
+     SIXEL_ASSESSMENT_METRIC_CLIP_G_REL},
+    {"ClipRate_B_rel", offsetof(Metrics, clip_b_rel),
+     SIXEL_ASSESSMENT_METRIC_CLIP_B_REL},
+    {"Δ Chroma_mean", offsetof(Metrics, delta_chroma_mean),
+     SIXEL_ASSESSMENT_METRIC_DELTA_CHROMA},
+    {"Δ E00_mean", offsetof(Metrics, delta_e00_mean),
+     SIXEL_ASSESSMENT_METRIC_DELTA_E00},
+    {"GMSD", offsetof(Metrics, gmsd_value),
+     SIXEL_ASSESSMENT_METRIC_GMSD},
+    {"PSNR_Y", offsetof(Metrics, psnr_y),
+     SIXEL_ASSESSMENT_METRIC_PSNR_Y},
+    {"LPIPS", offsetof(Metrics, lpips),
+     SIXEL_ASSESSMENT_METRIC_LPIPS_VGG},
+    {"LPIPS(alex)", offsetof(Metrics, lpips),
+     SIXEL_ASSESSMENT_METRIC_LPIPS_VGG},
 };
 
 typedef struct MetricSpec {
@@ -618,22 +647,15 @@ static const MetricSpec sixel_metric_specs[] = {
 static void
 metrics_init(Metrics *metrics)
 {
-    size_t i;
-    unsigned char *base;
-
-    base = (unsigned char *)metrics;
-    for (i = 0;
-            i < sizeof(g_metric_bindings) / sizeof(g_metric_bindings[0]);
-            ++i) {
-        float *field;
-
-        field = (float *)(void *)(base + g_metric_bindings[i].offset);
-        *field = NAN;
-    }
+    memset(metrics, 0, sizeof(*metrics));
+    metrics->valid_mask = 0u;
 }
 
 static void
-metrics_set_value(Metrics *metrics, const char *name, double value, int is_nan)
+metrics_set_value(Metrics *metrics,
+                  const char *name,
+                  double value,
+                  int is_valid)
 {
     size_t i;
     unsigned char *base;
@@ -644,12 +666,17 @@ metrics_set_value(Metrics *metrics, const char *name, double value, int is_nan)
             ++i) {
         if (strcmp(name, g_metric_bindings[i].name) == 0) {
             float *field;
+            unsigned int mask;
 
             field = (float *)(void *)(base + g_metric_bindings[i].offset);
-            if (is_nan) {
-                *field = NAN;
-            } else {
+            mask = SIXEL_ASSESSMENT_METRIC_MASK(
+                    g_metric_bindings[i].metric_id);
+            if (is_valid && isfinite(value)) {
                 *field = (float)value;
+                metrics->valid_mask |= mask;
+            } else {
+                *field = 0.0f;
+                metrics->valid_mask &= ~mask;
             }
             return;
         }
@@ -700,11 +727,13 @@ metrics_get_value(const Metrics *metrics,
 {
     size_t i;
     const unsigned char *base;
+    unsigned int mask;
 
     if (metrics == NULL || name == NULL || out_value == NULL) {
         return -1;
     }
     base = (const unsigned char *)metrics;
+    mask = 0u;
     for (i = 0; i < sizeof(g_metric_bindings) / sizeof(g_metric_bindings[0]);
             ++i) {
         if (strcmp(name, g_metric_bindings[i].name) == 0) {
@@ -712,11 +741,34 @@ metrics_get_value(const Metrics *metrics,
 
             field = (const float *)(const void *)(base +
                     g_metric_bindings[i].offset);
+            mask = SIXEL_ASSESSMENT_METRIC_MASK(
+                    g_metric_bindings[i].metric_id);
+            if ((metrics->valid_mask & mask) == 0u) {
+                return 1;
+            }
             *out_value = *field;
             return 0;
         }
     }
     return -1;
+}
+
+static unsigned int
+metrics_mask_for_name(const char *name)
+{
+    size_t i;
+
+    if (name == NULL) {
+        return 0u;
+    }
+    for (i = 0; i < sizeof(g_metric_bindings) / sizeof(g_metric_bindings[0]);
+            ++i) {
+        if (strcmp(name, g_metric_bindings[i].name) == 0) {
+            return SIXEL_ASSESSMENT_METRIC_MASK(
+                    g_metric_bindings[i].metric_id);
+        }
+    }
+    return 0u;
 }
 
 typedef struct MetricItem {
@@ -759,10 +811,15 @@ verbose_print(const Metrics *m)
 
     fprintf(stderr, "\n=== Image Quality Report (Raw Metrics) ===\n");
     for (i = 0; i < sizeof(items) / sizeof(items[0]); ++i) {
-        if (isnan(items[i].value)) {
+        unsigned int mask;
+
+        mask = metrics_mask_for_name(items[i].name);
+        if (mask == 0u || (m->valid_mask & mask) == 0u) {
             fprintf(stderr, "%24s: NaN\n", items[i].name);
         } else {
-            fprintf(stderr, "%24s: %.6f\n", items[i].name, items[i].value);
+            fprintf(stderr, "%24s: %.6f\n",
+                    items[i].name,
+                    items[i].value);
         }
     }
 }
@@ -782,7 +839,7 @@ json_collect_callback(char const *chunk, size_t length, void *user_data)
     char *colon;
     char name[64];
     double value;
-    int is_nan;
+    int is_valid;
 
     collector = (JsonCollector *)user_data;
     if (collector->stream != NULL) {
@@ -821,24 +878,27 @@ json_collect_callback(char const *chunk, size_t length, void *user_data)
     while (*colon == ' ') {
         colon += 1;
     }
+    value = 0.0;
+    is_valid = 0;
     if (strncmp(colon, "NaN", 3) == 0) {
-        is_nan = 1;
-        value = NAN;
+        is_valid = 0;
+    } else if (strncmp(colon, "null", 4) == 0) {
+        is_valid = 0;
     } else {
         char *tail;
 
-        is_nan = 0;
         value = strtod(colon, &tail);
         if (tail == colon) {
             return;
         }
+        is_valid = 1;
     }
     if ((size_t)(end - start - 1) >= sizeof(name)) {
         return;
     }
     memcpy(name, start + 1, (size_t)(end - start - 1));
     name[end - start - 1] = '\0';
-    metrics_set_value(collector->metrics, name, value, is_nan);
+    metrics_set_value(collector->metrics, name, value, is_valid);
 }
 
 typedef struct Options {
@@ -1048,7 +1108,7 @@ main(int argc, char **argv)
         SIXEL_ASSESSMENT_METRIC_LPIPS_VGG);
     exit_code = EXIT_FAILURE;
     metric_status = 0;
-    metric_value = NAN;
+    metric_value = 0.0f;
 
     if (parse_args(argc, argv, &opts) != 0) {
         print_usage(argv[0]);
@@ -1176,7 +1236,7 @@ main(int argc, char **argv)
         metric_status = metrics_get_value(&metrics,
                                           opts.metric_key,
                                           &metric_value);
-        if (metric_status != 0) {
+        if (metric_status < 0) {
             fprintf(stderr,
                     "Requested metric not found in output: %s\n",
                     opts.metric_key);
@@ -1186,7 +1246,7 @@ main(int argc, char **argv)
             sixel_allocator_unref(allocator);
             return EXIT_FAILURE;
         }
-        if (isnan(metric_value)) {
+        if (metric_status > 0) {
             fprintf(stdout, "nan\n");
         } else {
             fprintf(stdout, "%.6f\n", metric_value);
