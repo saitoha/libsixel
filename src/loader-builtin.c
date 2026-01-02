@@ -322,7 +322,7 @@ typedef union _fn_pointer {
     void *                    p;
 } fn_pointer;
 
-SIXELSTATUS
+SIXELAPI SIXELSTATUS
 load_with_builtin(
     sixel_chunk_t const *pchunk,
     int fstatic,

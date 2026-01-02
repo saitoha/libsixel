@@ -32,7 +32,7 @@
 
 #include "chunk.h"
 
-SIXELSTATUS load_with_builtin(
+SIXELAPI SIXELSTATUS load_with_builtin(
     sixel_chunk_t const       *pchunk,
     int                        fstatic,
     int                        fuse_palette,
