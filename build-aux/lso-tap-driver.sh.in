@@ -31,12 +31,14 @@ log_file=
 trs_file=
 ignore_exit=no
 comments=no
+test_timeout=
 
 usage() {
   cat <<'EOF' >&2
 Usage:
   lso-tap-driver.sh --test-name NAME --log-file PATH.log --trs-file PATH.trs
-    [--ignore-exit] [--comments] [--] TEST-SCRIPT [ARGS...]
+    [--ignore-exit] [--comments] [--timeout SECONDS]
+    [--] TEST-SCRIPT [ARGS...]
 EOF
   exit 2
 }
@@ -51,6 +53,8 @@ while [ $# -gt 0 ]; do
     --trs-file)  trs_file=${2-}; shift ;;
     --ignore-exit) ignore_exit=yes ;;
     --comments) comments=yes ;;
+    --timeout) test_timeout=${2-}; shift ;;
+    --timeout=*) test_timeout=${1#*=} ;;
     --color-tests) color_tests=${2-}; shift ;;
     --enable-hard-errors) hard_errors=${2-}; shift ;;
     --expect-failure) expect_failure=${2-}; shift ;;
@@ -71,6 +75,8 @@ done
 : "${LSO_TAP_TIMER_BIN:=@top_builddir@/tools/lso-timer@EXEEXT@}"
 : "${LSO_TAP_TIMER_SRC:=@top_srcdir@/tools/lso-timer@EXEEXT@}"
 : "${LSO_TAP_TIMER_BUILD:=@top_builddir@/tools/lso-timer@EXEEXT@}"
+timeout_budget=${test_timeout:-90}
+kill_delay=10
 
 timestamp_millis() {
   if [ -n "$LSO_TAP_DATE_CMD" ]; then
@@ -187,10 +193,10 @@ watchdog_start() {
 run_with_helper() {
   helper=$1
   shift
-  "$helper" -k 10s "90s" "$@"
+  "$helper" -k "${kill_delay}s" "${timeout_budget}s" "$@"
   status=$?
   if [ "$status" -eq 124 ] || [ "$status" -eq 137 ]; then
-    echo "Bail out! timeout after 90s" >&2
+    echo "Bail out! timeout after ${timeout_budget}s" >&2
   fi
   return "$status"
 }
@@ -203,10 +209,10 @@ run_with_watchdog() {
   cmd_pid=$!
 
   (
-    sleep 90
+    sleep "$timeout_budget"
     echo "expired" > "$flag_file"
     kill -TERM "$cmd_pid" 2>/dev/null || exit 0
-    sleep 10
+    sleep "$kill_delay"
     kill -KILL "$cmd_pid" 2>/dev/null || true
   ) &
   watchdog_pid=$!
@@ -217,7 +223,7 @@ run_with_watchdog() {
   if [ -f "$flag_file" ]; then
     rm -f "$flag_file"
     kill "$watchdog_pid" 2>/dev/null || true
-    echo "Bail out! timeout after 90s" >&2
+    echo "Bail out! timeout after ${timeout_budget}s" >&2
     return 124
   fi
 

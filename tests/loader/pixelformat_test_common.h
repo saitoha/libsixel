@@ -111,6 +111,12 @@ run_loader_case(char const *label,
     cancel_flag = 0;
     source_root = getenv("MESON_SOURCE_ROOT");
     if (source_root == NULL) {
+        source_root = getenv("abs_top_srcdir");
+    }
+    if (source_root == NULL) {
+        source_root = getenv("TOP_SRCDIR");
+    }
+    if (source_root == NULL) {
         source_root = ".";
     }
 

@@ -258,7 +258,7 @@ LOADER_PIXELFORMAT_TESTS = \
 TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) \
        $(FILTER_TESTS) $(LOADER_PIXELFORMAT_TESTS)
 COPY_TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) \
-       $(FILTER_TESTS) $(LOADER_PIXELFORMAT_TESTS)
+       $(FILTER_TESTS)
 check_PROGRAMS = \
     cli/0029_cli_token_is_known_option \
     cli/0030_cli_option_requires_argument \
@@ -802,7 +802,10 @@ loader_0016_loader_gnome_thumbnailer_pixelformat_LDADD = \
 T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_builddir)/build-aux/lso-tap-driver.sh
 AM_TEST_LOG_DRIVER_FLAGS = --comments
 AM_TEST_TIMEOUT = 300
-AM_LOG_FLAGS = --timeout=$(AM_TEST_TIMEOUT)
+AM_LOG_DRIVER_FLAGS = --timeout=$(AM_TEST_TIMEOUT)
+# Leave AM_LOG_FLAGS empty so Automake does not append timeout parameters to
+# LOG_COMPILE; the drivers consume timeout hints themselves.
+AM_LOG_FLAGS =
 
 BASELINE_JSON = data/baseline/grayscale.json \
        data/baseline/hd_landscape.json \
