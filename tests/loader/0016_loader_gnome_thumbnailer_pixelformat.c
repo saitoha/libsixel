@@ -54,7 +54,7 @@ main(void)
 
     if (thumbnailer_available() == 0) {
         printf("ok 1 - GNOME thumbnailer unavailable"
-               " # SKIP missing gdk-pixbuf-thumbnailer\n");
+               " # SKIP gdk-pixbuf-thumbnailer missing or unusable\n");
         return 0;
     }
 
