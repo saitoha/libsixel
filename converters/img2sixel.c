@@ -693,6 +693,23 @@ static cli_env_help_t const g_env_help_table[] = {
         "test workflows in sandboxed locations."
     },
     {
+        "LIBSIXEL_MODEL_DIR",
+        "override the assessment model directory used by quality\n"
+        "reporting. When set, files under $LIBSIXEL_MODEL_DIR/models take\n"
+        "precedence over packaged assets."
+    },
+    {
+        "SIXEL_ABORT_TRACE",
+        "dump abort backtraces when img2sixel terminates abnormally.\n"
+        "Defaults to auto (enabled). Set to 0/false/off to disable explicit\n"
+        "traces; truthy values force them on."
+    },
+    {
+        "SIXEL_NO_ABORT_TRACE",
+        "legacy inverse toggle for abort tracing. Any non-zero/true value\n"
+        "suppresses dumps while 0/false/off keeps tracing enabled."
+    },
+    {
         "SIXEL_BGCOLOR",
         "specify background color.\n"
         "overrided by -B(--bgcolor) option.\n"
@@ -714,6 +731,13 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_FLOAT32_DITHER",
         "prefer the float32 quantization path. Any non-zero/true string\n"
         "enables it while 0, off, false, or no keep the 8-bit pipeline."
+    },
+    {
+        "SIXEL_PLANNER_RESIZE_PRECISION_MODE",
+        "force the resize precision planner. Accepts 1 (preserve integer\n"
+        "buffers), 2 (linear float workspace), or 3 (float32 working\n"
+        "colorspace). Defaults follow precision and working-colorspace\n"
+        "choices."
     },
     {
         "SIXEL_THREADS",
@@ -847,6 +871,12 @@ static cli_env_help_t const g_env_help_table[] = {
         "snap tuning (0.0-1.0)."
     },
     {
+        "SIXEL_PALETTE_DISABLE_TABLES",
+        "disable palette expansion lookup tables and exercise the\n"
+        "shift-based fallback used for testing. Non-zero values skip table\n"
+        "initialisation."
+    },
+    {
         "SIXEL_PALETTE_DIFFUSE_USE_L_R",
         "Enable the Bottosson L_r toe curve for OKLab float LSO2 distance\n"
         "when set. Non-empty values except '0' switch distance to L_r;\n"
@@ -912,6 +942,26 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_LOOKUP_VPTE_PIN_THREADS",
         "pin VPTE worker threads at startup to reduce migration\n"
         "(0 or 1; default 0)."
+    },
+    {
+        "SIXEL_VPTE_TILE_XY",
+        "compatibility alias for SIXEL_LOOKUP_VPTE_TILE_XY. Shares the same\n"
+        "semantics and adaptive defaults."
+    },
+    {
+        "SIXEL_VPTE_TILE_DEPTH",
+        "compatibility alias for SIXEL_LOOKUP_VPTE_TILE_DEPTH. Shares the\n"
+        "same semantics and adaptive defaults."
+    },
+    {
+        "SIXEL_VPTE_FIRST_TOUCH",
+        "compatibility alias for SIXEL_LOOKUP_VPTE_FIRST_TOUCH. Same\n"
+        "behaviour and defaults."
+    },
+    {
+        "SIXEL_VPTE_PIN_THREADS",
+        "compatibility alias for SIXEL_LOOKUP_VPTE_PIN_THREADS. Same\n"
+        "behaviour and defaults."
     },
     {
         "SIXEL_PARALLEL_LOG_PATH",
