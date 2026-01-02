@@ -27,6 +27,12 @@
 #endif
 
 #include <float.h>
+#if defined(__AVX2__)
+#include <immintrin.h>
+#endif
+#if defined(__wasm_simd128__)
+#include <wasm_simd128.h>
+#endif
 
 #include "dither-common-pipeline.h"
 #include "logger.h"
@@ -84,8 +90,40 @@ sixel_dither_lookup_palette_float32(float const *pixel,
     double delta;
     int best_index;
     int color;
+    int color_simd_end;
     int channel;
     int palette_offset;
+#if defined(__AVX2__)
+    __m256 sample_l_ps;
+    __m256 sample_r_ps;
+    __m256 sample_g_ps;
+    __m256 complexion_ps;
+    __m256 palette_l_ps;
+    __m256 palette_r_ps;
+    __m256 palette_g_ps;
+    __m256 diff_l_ps;
+    __m256 diff_r_ps;
+    __m256 diff_g_ps;
+    __m256 error_ps;
+    float error_block[8];
+#endif
+#if defined(__wasm_simd128__)
+    v128_t sample_l_ps;
+    v128_t sample_r_ps;
+    v128_t sample_g_ps;
+    v128_t complexion_ps;
+    v128_t palette_l_ps;
+    v128_t palette_r_ps;
+    v128_t palette_g_ps;
+    v128_t diff_l_ps;
+    v128_t diff_r_ps;
+    v128_t diff_g_ps;
+    v128_t error_ps;
+    float error_lane0;
+    float error_lane1;
+    float error_lane2;
+    float error_lane3;
+#endif
 
     if (pixel == NULL || palette == NULL) {
         return 0;
@@ -96,6 +134,7 @@ sixel_dither_lookup_palette_float32(float const *pixel,
 
     best_index = 0;
     best_error = DBL_MAX;
+    color_simd_end = 0;
     sample_l = (double)pixel[0];
     if (use_l_r_distance != 0) {
         /*
@@ -109,7 +148,149 @@ sixel_dither_lookup_palette_float32(float const *pixel,
         sample_l = 0.5 * (((k3 * sample_l) / (sample_l + k1))
                           + (sample_l / ((k2 * sample_l) + 1.0)));
     }
-    for (color = 0; color < reqcolor; ++color) {
+#if defined(__AVX2__)
+    /*
+     * AVX2 fast path for depth==3 without L_r remap.  Eight palette entries
+     * are compared at once, keeping the scalar tail to handle any remainder
+     * or non-RGB layouts.
+     */
+    if (depth == 3 && use_l_r_distance == 0) {
+        sample_l_ps = _mm256_set1_ps(pixel[0]);
+        sample_r_ps = _mm256_set1_ps(pixel[1]);
+        sample_g_ps = _mm256_set1_ps(pixel[2]);
+        complexion_ps = _mm256_set1_ps((float)complexion);
+        color_simd_end = reqcolor & ~7;
+        for (color = 0; color < color_simd_end; color += 8) {
+            palette_l_ps = _mm256_set_ps(palette[(color + 7) * 3],
+                                         palette[(color + 6) * 3],
+                                         palette[(color + 5) * 3],
+                                         palette[(color + 4) * 3],
+                                         palette[(color + 3) * 3],
+                                         palette[(color + 2) * 3],
+                                         palette[(color + 1) * 3],
+                                         palette[color * 3]);
+            palette_r_ps = _mm256_set_ps(palette[(color + 7) * 3 + 1],
+                                         palette[(color + 6) * 3 + 1],
+                                         palette[(color + 5) * 3 + 1],
+                                         palette[(color + 4) * 3 + 1],
+                                         palette[(color + 3) * 3 + 1],
+                                         palette[(color + 2) * 3 + 1],
+                                         palette[(color + 1) * 3 + 1],
+                                         palette[color * 3 + 1]);
+            palette_g_ps = _mm256_set_ps(palette[(color + 7) * 3 + 2],
+                                         palette[(color + 6) * 3 + 2],
+                                         palette[(color + 5) * 3 + 2],
+                                         palette[(color + 4) * 3 + 2],
+                                         palette[(color + 3) * 3 + 2],
+                                         palette[(color + 2) * 3 + 2],
+                                         palette[(color + 1) * 3 + 2],
+                                         palette[color * 3 + 2]);
+            diff_l_ps = _mm256_sub_ps(sample_l_ps, palette_l_ps);
+            error_ps = _mm256_mul_ps(diff_l_ps, diff_l_ps);
+            error_ps = _mm256_mul_ps(error_ps, complexion_ps);
+            diff_r_ps = _mm256_sub_ps(sample_r_ps, palette_r_ps);
+            error_ps = _mm256_fmadd_ps(diff_r_ps, diff_r_ps, error_ps);
+            diff_g_ps = _mm256_sub_ps(sample_g_ps, palette_g_ps);
+            error_ps = _mm256_fmadd_ps(diff_g_ps, diff_g_ps, error_ps);
+            _mm256_storeu_ps(error_block, error_ps);
+            if (error_block[0] < best_error) {
+                best_error = (double)error_block[0];
+                best_index = color;
+            }
+            if (error_block[1] < best_error) {
+                best_error = (double)error_block[1];
+                best_index = color + 1;
+            }
+            if (error_block[2] < best_error) {
+                best_error = (double)error_block[2];
+                best_index = color + 2;
+            }
+            if (error_block[3] < best_error) {
+                best_error = (double)error_block[3];
+                best_index = color + 3;
+            }
+            if (error_block[4] < best_error) {
+                best_error = (double)error_block[4];
+                best_index = color + 4;
+            }
+            if (error_block[5] < best_error) {
+                best_error = (double)error_block[5];
+                best_index = color + 5;
+            }
+            if (error_block[6] < best_error) {
+                best_error = (double)error_block[6];
+                best_index = color + 6;
+            }
+            if (error_block[7] < best_error) {
+                best_error = (double)error_block[7];
+                best_index = color + 7;
+            }
+        }
+    }
+#endif
+#if defined(__wasm_simd128__)
+    /*
+     * WASM SIMD fast path for depth==3 without L_r remap.  Palette entries
+     * are processed in groups of four to balance gather cost and register
+     * pressure; any remainder is handled by the scalar loop below.
+     */
+    if (color_simd_end == 0 && depth == 3 && use_l_r_distance == 0) {
+        sample_l_ps = wasm_f32x4_splat(pixel[0]);
+        sample_r_ps = wasm_f32x4_splat(pixel[1]);
+        sample_g_ps = wasm_f32x4_splat(pixel[2]);
+        complexion_ps = wasm_f32x4_splat((float)complexion);
+        color_simd_end = reqcolor & ~3;
+        for (color = 0; color < color_simd_end; color += 4) {
+            palette_l_ps = wasm_f32x4_make(palette[color * 3],
+                                           palette[(color + 1) * 3],
+                                           palette[(color + 2) * 3],
+                                           palette[(color + 3) * 3]);
+            palette_r_ps = wasm_f32x4_make(palette[color * 3 + 1],
+                                           palette[(color + 1) * 3 + 1],
+                                           palette[(color + 2) * 3 + 1],
+                                           palette[(color + 3) * 3 + 1]);
+            palette_g_ps = wasm_f32x4_make(palette[color * 3 + 2],
+                                           palette[(color + 1) * 3 + 2],
+                                           palette[(color + 2) * 3 + 2],
+                                           palette[(color + 3) * 3 + 2]);
+            diff_l_ps = wasm_f32x4_sub(sample_l_ps, palette_l_ps);
+            error_ps = wasm_f32x4_mul(diff_l_ps, diff_l_ps);
+            error_ps = wasm_f32x4_mul(error_ps, complexion_ps);
+            diff_r_ps = wasm_f32x4_sub(sample_r_ps, palette_r_ps);
+            error_ps = wasm_f32x4_add(error_ps,
+                    wasm_f32x4_mul(diff_r_ps, diff_r_ps));
+            diff_g_ps = wasm_f32x4_sub(sample_g_ps, palette_g_ps);
+            error_ps = wasm_f32x4_add(error_ps,
+                    wasm_f32x4_mul(diff_g_ps, diff_g_ps));
+            error_lane0 = wasm_f32x4_extract_lane(error_ps, 0);
+            error_lane1 = wasm_f32x4_extract_lane(error_ps, 1);
+            error_lane2 = wasm_f32x4_extract_lane(error_ps, 2);
+            error_lane3 = wasm_f32x4_extract_lane(error_ps, 3);
+            if (error_lane0 < best_error) {
+                best_error = (double)error_lane0;
+                best_index = color;
+            }
+            if (error_lane1 < best_error) {
+                best_error = (double)error_lane1;
+                best_index = color + 1;
+            }
+            if (error_lane2 < best_error) {
+                best_error = (double)error_lane2;
+                best_index = color + 2;
+            }
+            if (error_lane3 < best_error) {
+                best_error = (double)error_lane3;
+                best_index = color + 3;
+            }
+        }
+    }
+#endif
+    /*
+     * color_simd_end carries the handoff point from the SIMD fast paths.
+     * Any remaining palette entries (including non-RGB layouts) are handled
+     * by the scalar loop to keep behavior identical to the baseline path.
+     */
+    for (color = color_simd_end; color < reqcolor; ++color) {
         palette_offset = color * depth;
         palette_l = (double)palette[palette_offset];
         if (use_l_r_distance != 0) {
