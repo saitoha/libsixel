@@ -35,6 +35,8 @@ typedef struct loader_probe_context {
     int height;
 } loader_probe_context_t;
 
+#define GEOMETRY_ANY (-1)
+
 static SIXELSTATUS
 capture_frame(sixel_frame_t *frame, void *data)
 {
@@ -158,13 +160,25 @@ run_loader_case(char const *label,
         goto cleanup;
     }
 
-    if (context.width != expected_width || context.height != expected_height) {
-        printf("not ok 1 - %s unexpected geometry %dx%d\n",
+    if (context.width <= 0 || context.height <= 0) {
+        printf("not ok 1 - %s invalid geometry %dx%d\n",
                label,
                context.width,
                context.height);
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
+    }
+
+    if (expected_width != GEOMETRY_ANY && expected_height != GEOMETRY_ANY) {
+        if (context.width != expected_width ||
+            context.height != expected_height) {
+            printf("not ok 1 - %s unexpected geometry %dx%d\n",
+                   label,
+                   context.width,
+                   context.height);
+            status = SIXEL_BAD_ARGUMENT;
+            goto cleanup;
+        }
     }
 
     printf("ok 1 - %s preserves expected pixelformat\n", label);
