@@ -1430,16 +1430,7 @@ sixel_decoder_decode(
                                   "decoder",
                                   "undither",
                                   "start",
-                                  0,
-                                  0,
-                                  0,
-                                  sy,
-                                  0,
-                                  sx,
-                                  "k_undither begin %dx%d palette=%d",
-                                  sx,
-                                  sy,
-                                  ncolors);
+                                  0);
             }
             status = sixel_dequantize_k_undither(
                 indexed_pixels,
@@ -1458,14 +1449,7 @@ sixel_decoder_decode(
                         "decoder",
                         "undither",
                         "abort",
-                        0,
-                        0,
-                        0,
-                        sy,
-                        0,
-                        sx,
-                        "k_undither failed status=%d",
-                        status);
+                        0);
                 }
                 goto end;
             }
@@ -1474,15 +1458,7 @@ sixel_decoder_decode(
                                   "decoder",
                                   "undither",
                                   "finish",
-                                  0,
-                                  0,
-                                  0,
-                                  sy,
-                                  0,
-                                  sx,
-                                  "k_undither complete %dx%d",
-                                  sx,
-                                  sy);
+                                  0);
             }
             output_pixels = rgb_pixels;
             output_palette = NULL;
@@ -1593,16 +1569,7 @@ sixel_decoder_decode(
                           "io",
                           "png",
                           "start",
-                          0,
-                          0,
-                          0,
-                          sy,
-                          0,
-                          sx,
-                          "png output begin %dx%d format=%d",
-                          sx,
-                          sy,
-                          output_pixelformat);
+                          0);
     }
     status = sixel_helper_write_image_file(
         output_pixels,
@@ -1621,14 +1588,7 @@ sixel_decoder_decode(
                               "io",
                               "png",
                               "abort",
-                              0,
-                              0,
-                              0,
-                              sy,
-                              0,
-                              sx,
-                              "png output failed status=%d",
-                              status);
+                              0);
         }
         goto end;
     }
@@ -1637,15 +1597,7 @@ sixel_decoder_decode(
                           "io",
                           "png",
                           "finish",
-                          0,
-                          0,
-                          0,
-                          sy,
-                          0,
-                          sx,
-                          "png output complete %dx%d",
-                          sx,
-                          sy);
+                          0);
     }
 
     if (decoder->clipboard_output_active) {
