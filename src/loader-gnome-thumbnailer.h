@@ -47,6 +47,7 @@ void loader_probe_gnome_thumbnailers(char const *mime_type,
                                      int *has_directories,
                                      int *has_match);
 char *thumbnailer_strdup(char const *src);
+int thumbnailer_has_fallback_thumbnailer(void);
 #endif
 
 #endif /* LIBSIXEL_LOADER_GNOME_THUMBNAILER_H */
