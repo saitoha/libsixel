@@ -208,8 +208,10 @@ lsqa_expect_low_quality_or_fail() {
     out_file="${artifact_dir}/lsqa.json"
     err_file="${artifact_dir}/lsqa.err"
 
-    status=$(lsqa_run "${image_path}" "${out_file}" "${err_file}")
-    if [ ${status} -eq 0 ]; then
+    # Track the lsqa exit code locally so the caller's status variable is not
+    # clobbered when failures are permitted for corrupted inputs.
+    run_status=$(lsqa_run "${image_path}" "${out_file}" "${err_file}")
+    if [ ${run_status} -eq 0 ]; then
         ms_val=$(lsqa_parse_metric "MS-SSIM" "${out_file}")
         psnr_val=$(lsqa_parse_metric "PSNR_Y" "${out_file}")
         if lsqa_below_floor "${ms_val}" "0.5" || \
