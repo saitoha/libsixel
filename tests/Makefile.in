@@ -965,7 +965,6 @@ AM_TESTSUITE_SUMMARY_HEADER = ' for $(PACKAGE_STRING)'
 RECHECK_LOGS = $(TEST_LOGS)
 AM_RECURSIVE_TARGETS = check recheck
 TEST_SUITE_LOG = test-suite.log
-LOG_DRIVER = $(SHELL) $(top_srcdir)/build-aux/test-driver
 LOG_COMPILE = $(LOG_COMPILER) $(AM_LOG_FLAGS) $(LOG_FLAGS)
 am__set_b = \
   case '$@' in \
@@ -982,8 +981,7 @@ am__test_logs2 = $(am__test_logs1:@EXEEXT@.log=.log)
 TEST_LOGS = $(am__test_logs2:.t.log=.log)
 T_LOG_COMPILE = $(T_LOG_COMPILER) $(AM_T_LOG_FLAGS) $(T_LOG_FLAGS)
 am__DIST_COMMON = $(srcdir)/Makefile.in \
-	$(top_srcdir)/build-aux/depcomp \
-	$(top_srcdir)/build-aux/test-driver
+	$(top_srcdir)/build-aux/depcomp
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ABORTTRACE_LIBS = @ABORTTRACE_LIBS@
 ACLOCAL = @ACLOCAL@
@@ -1933,6 +1931,8 @@ loader_0016_loader_gnome_thumbnailer_pixelformat_LDFLAGS = \
 loader_0016_loader_gnome_thumbnailer_pixelformat_LDADD = \
     $(LOADER_PIXELFORMAT_LDADD_VAL)
 
+LOG_DRIVER = $(T_LOG_DRIVER)
+LOG_DRIVER_FLAGS = $(AM_TEST_LOG_DRIVER_FLAGS)
 T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_builddir)/build-aux/lso-tap-driver.sh
 AM_TEST_LOG_DRIVER_FLAGS = --comments
 AM_TEST_TIMEOUT = 300
