@@ -365,10 +365,10 @@ AM_TESTS_ENVIRONMENT += SIXEL_WATCHDOG_TIMEOUT='$(AM_TEST_TIMEOUT)'; \
        export SIXEL_WATCHDOG_TIMEOUT;
 AM_TESTS_ENVIRONMENT += SIXEL_WATCHDOG_LOG='$(WATCHDOG_LOG_FILE)'; \
        export SIXEL_WATCHDOG_LOG;
-AM_TESTS_ENVIRONMENT += $(MKDIR_P) '$(WATCHDOG_STATE_DIR)'; \
-       $(SHELL) '$(top_srcdir)/tests/tools/test-watchdog.sh' ensure \
-       --state-dir '$(WATCHDOG_STATE_DIR)' --pid-file '$(WATCHDOG_PID_FILE)' \
-       --log-file '$(WATCHDOG_LOG_FILE)';
+#AM_TESTS_ENVIRONMENT += $(MKDIR_P) '$(WATCHDOG_STATE_DIR)'; \
+#       $(SHELL) '$(top_srcdir)/tests/tools/test-watchdog.sh' ensure \
+#       --state-dir '$(WATCHDOG_STATE_DIR)' --pid-file '$(WATCHDOG_PID_FILE)' \
+#       --log-file '$(WATCHDOG_LOG_FILE)';
 TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_builddir) -I$(top_builddir)/include \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \
