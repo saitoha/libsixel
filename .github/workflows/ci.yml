@@ -362,7 +362,7 @@ jobs:
 
     - name: Configure and build (DragonFlyBSD)
       if: matrix.platform == 'dragonflybsd'
-      timeout-minutes: 90
+      timeout-minutes: 30
       uses: vmactions/dragonflybsd-vm@v1
       with:
         release: ${{ matrix.df_release }}
@@ -923,7 +923,7 @@ jobs:
 
     - name: Configure, build, and run tests (FreeBSD/OpenBSD/NetBSD/Haiku)
       if: (matrix.platform == 'freebsd' || matrix.platform == 'openbsd' || matrix.platform == 'netbsd' || matrix.platform == 'haiku') && matrix.emscripten != true
-      timeout-minutes: 90
+      timeout-minutes: 30
       uses: cross-platform-actions/action@v0.30.0
       with:
         operating_system: ${{ matrix.cp_os }}
@@ -2219,7 +2219,7 @@ jobs:
 
     - name: Configure, build, and test (Meson, FreeBSD/OpenBSD/NetBSD/Haiku)
       if: matrix.platform == 'freebsd' || matrix.platform == 'openbsd' || matrix.platform == 'netbsd' || matrix.platform == 'haiku'
-      timeout-minutes: 90
+      timeout-minutes: 30
       uses: cross-platform-actions/action@v0.30.0
       with:
         operating_system: ${{ matrix.cp_os }}
@@ -2376,7 +2376,7 @@ jobs:
 
     - name: Configure, build, and test (Meson, DragonFlyBSD)
       if: matrix.platform == 'dragonflybsd'
-      timeout-minutes: 90
+      timeout-minutes: 30
       uses: vmactions/dragonflybsd-vm@v1
       with:
         release: ${{ matrix.df_release }}

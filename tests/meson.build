@@ -408,6 +408,26 @@ test('0010_filter_encode', filter_units['0010_filter_encode'],
   timeout: 120,
   suite: ['tap'])
 
+loader_coregraphics_tests = {}
+if conf.get('HAVE_COREGRAPHICS', 0) == 1
+  loader_coregraphics_tests += {
+    '0008_loader_coregraphics_pixelformat':
+      'loader/0008_loader_coregraphics_pixelformat.c',
+  }
+endif
+
+foreach test_name, source_file : loader_coregraphics_tests
+  loader_exe = executable(test_name, [source_file],
+    dependencies: [libsixel_dep],
+    include_directories: project_inc,
+    install: false)
+  test(test_name, loader_exe,
+    env: env,
+    protocol: 'tap',
+    timeout: 120,
+    suite: ['tap'])
+endforeach
+
 if gdk_pixbuf_loader_deps.length() > 0
   gdk_pixbuf_loader_sources = [
     '../gdk-pixbuf-loader/sixel-pixbuf-loader.c',

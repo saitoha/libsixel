@@ -168,7 +168,12 @@ load_with_coregraphics(
 
         frame->width = (int)CGImageGetWidth(image);
         frame->height = (int)CGImageGetHeight(image);
-        frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+        /*
+         * CoreGraphics renders into a premultiplied RGBA surface. Report the
+         * four-component layout so downstream planners know an alpha channel
+         * is available.
+         */
+        frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
 
         if (frame->width > SIXEL_WIDTH_LIMIT) {
             sixel_helper_set_additional_message(
