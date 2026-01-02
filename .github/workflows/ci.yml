@@ -376,26 +376,8 @@ jobs:
             status=$?
             cd "$GITHUB_WORKSPACE"
             mkdir -p "$artifact_dir"
-            find . -type f \( -name 'config.log' -o -name 'test-suite.log' -o -name '*.log' -o -name '*.trs' \) \
-              ! -path "./_artifacts/*" \
-              | while IFS= read -r f; do
-                  rel="${f#./}"
-                  dest="${artifact_dir}/${rel}"
-                  mkdir -p "$(dirname "$dest")"
-                  cp "$f" "$dest"
-                done || true
-            if [ -f "$GITHUB_WORKSPACE/coverage.info" ]; then
-              cp "$GITHUB_WORKSPACE/coverage.info" "$artifact_dir/coverage.info" || true
-            fi
-            if [ -d "$artifact_dir" ]; then
-              tar -czf "$artifact_tar" -C "${GITHUB_WORKSPACE}/_artifacts" dragonflybsd || true
-            fi
-            if command -v git >/dev/null 2>&1; then
-              git -C "$GITHUB_WORKSPACE" clean -ffdX \
-                -e _artifacts \
-                -e "$(basename "$artifact_tar")" || true
-            fi
-            return "$status"
+            find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar cvzf "$artifact_tar" {} +
+            exit "$status"
           }
           trap 'collect_logs' EXIT
 
@@ -959,27 +941,8 @@ jobs:
             status=$?
             cd "$GITHUB_WORKSPACE"
             mkdir -p "$artifact_dir"
-            touch "${artifact_dir}/.placeholder"
-            find . -type f \( -name 'config.log' -o -name 'test-suite.log' -o -name '*.log' -o -name '*.trs' \) \
-              ! -path "./_artifacts/*" \
-              | while IFS= read -r f; do
-                  rel="${f#./}"
-                  dest="${artifact_dir}/${rel}"
-                  mkdir -p "$(dirname "$dest")"
-                  cp "$f" "$dest"
-                done || true
-            if [ -f "$GITHUB_WORKSPACE/coverage.info" ]; then
-              cp "$GITHUB_WORKSPACE/coverage.info" "$artifact_dir/coverage.info" || true
-            fi
-            if [ -d "$artifact_dir" ]; then
-              tar -czf "$artifact_tar" -C "${GITHUB_WORKSPACE}/_artifacts" "${{ matrix.platform }}" || true
-            fi
-            if command -v git >/dev/null 2>&1; then
-              git -C "$GITHUB_WORKSPACE" clean -ffdX \
-                -e _artifacts \
-                -e "$(basename "$artifact_tar")" || true
-            fi
-            return "$status"
+            find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar cvzf "$artifact_tar" {} +
+            exit "$status"
           }
           trap 'collect_logs' EXIT
 
@@ -2274,30 +2237,8 @@ jobs:
             status=$?
             cd "$GITHUB_WORKSPACE"
             mkdir -p "$artifact_dir"
-            touch "${artifact_dir}/.placeholder"
-            find . \( -type f \( -name 'config.log' -o -name 'test-suite.log' \
-              -o -name '*.log' -o -name '*.trs' -o -name 'meson-log.txt' \
-              -o -name 'testlog.txt' \) \
-              ! -path "./_artifacts/*" \) \
-              -o \( -type f -path "./builddir/meson-logs/*" \) \
-              | while IFS= read -r f; do
-                  rel="${f#./}"
-                  dest="${artifact_dir}/${rel}"
-                  mkdir -p "$(dirname "$dest")"
-                  cp "$f" "$dest"
-                done || true
-            if [ -f "$GITHUB_WORKSPACE/coverage.info" ]; then
-              cp "$GITHUB_WORKSPACE/coverage.info" "$artifact_dir/coverage.info" || true
-            fi
-            if [ -d "$artifact_dir" ]; then
-              tar -czf "$artifact_tar" -C "${GITHUB_WORKSPACE}/_artifacts" "${{ matrix.platform }}" || true
-            fi
-            if command -v git >/dev/null 2>&1; then
-              git -C "$GITHUB_WORKSPACE" clean -ffdX \
-                -e _artifacts \
-                -e "$(basename "$artifact_tar")" || true
-            fi
-            return "$status"
+            find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar cvzf "$artifact_tar" {} +
+            exit "$status"
           }
           trap 'collect_logs' EXIT
 
@@ -2449,29 +2390,8 @@ jobs:
             status=$?
             cd "$GITHUB_WORKSPACE"
             mkdir -p "$artifact_dir"
-            find . \( -type f \( -name 'config.log' -o -name 'test-suite.log' \
-              -o -name '*.log' -o -name '*.trs' -o -name 'meson-log.txt' \
-              -o -name 'testlog.txt' \) \
-              ! -path "./_artifacts/*" \) \
-              -o \( -type f -path "./builddir/meson-logs/*" \) \
-              | while IFS= read -r f; do
-                  rel="${f#./}"
-                  dest="${artifact_dir}/${rel}"
-                  mkdir -p "$(dirname "$dest")"
-                  cp "$f" "$dest"
-                done || true
-            if [ -f "$GITHUB_WORKSPACE/coverage.info" ]; then
-              cp "$GITHUB_WORKSPACE/coverage.info" "$artifact_dir/coverage.info" || true
-            fi
-            if [ -d "$artifact_dir" ]; then
-              tar -czf "$artifact_tar" -C "${GITHUB_WORKSPACE}/_artifacts" dragonflybsd || true
-            fi
-            if command -v git >/dev/null 2>&1; then
-              git -C "$GITHUB_WORKSPACE" clean -ffdX \
-                -e _artifacts \
-                -e "$(basename "$artifact_tar")" || true
-            fi
-            return "$status"
+            find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar cvzf "$artifact_tar" {} +
+            exit "$status"
           }
           trap 'collect_logs' EXIT
           pkg update -f
