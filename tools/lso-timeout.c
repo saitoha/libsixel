@@ -95,6 +95,7 @@ usage(void)
   exit(EXIT_FAILURE);
 }
 
+#if defined(HAVE_FORK) && defined(HAVE_WAITPID)
 static void
 sleep_millis(long millis)
 {
@@ -123,7 +124,6 @@ sleep_millis(long millis)
 #endif
 }
 
-#if defined(HAVE_FORK) && defined(HAVE_WAITPID)
 static int
 wait_with_timeout(pid_t child, double deadline, double kill_deadline)
 {
