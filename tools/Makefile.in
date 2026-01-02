@@ -92,7 +92,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 @WANT_THUMBNAILER_TRUE@am__append_1 = sixel-thumbnailer
-noinst_PROGRAMS = lso-timer$(EXEEXT)
+noinst_PROGRAMS = lso-timer$(EXEEXT) lso-timeout$(EXEEXT)
 subdir = tools
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
@@ -110,13 +110,16 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES = libsixel-config
 CONFIG_CLEAN_VPATH_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
-am_lso_timer_OBJECTS = timer.$(OBJEXT)
-lso_timer_OBJECTS = $(am_lso_timer_OBJECTS)
-lso_timer_LDADD = $(LDADD)
+am_lso_timeout_OBJECTS = lso-timeout.$(OBJEXT)
+lso_timeout_OBJECTS = $(am_lso_timeout_OBJECTS)
+lso_timeout_LDADD = $(LDADD)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
+am_lso_timer_OBJECTS = timer.$(OBJEXT)
+lso_timer_OBJECTS = $(am_lso_timer_OBJECTS)
+lso_timer_LDADD = $(LDADD)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -160,7 +163,7 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/timer.Po
+am__depfiles_remade = ./$(DEPDIR)/lso-timeout.Po ./$(DEPDIR)/timer.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -180,8 +183,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(lso_timer_SOURCES)
-DIST_SOURCES = $(lso_timer_SOURCES)
+SOURCES = $(lso_timeout_SOURCES) $(lso_timer_SOURCES)
+DIST_SOURCES = $(lso_timeout_SOURCES) $(lso_timer_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -418,9 +421,11 @@ EXTRA_DIST = libsixel-config.in \
              sixel.xml \
              gen_completion_embed.awk \
              gen-amalgamation.sh \
-             timer.c
+             timer.c \
+             lso-timeout.c
 
 lso_timer_SOURCES = timer.c
+lso_timeout_SOURCES = lso-timeout.c
 all: all-am
 
 .SUFFIXES:
@@ -460,6 +465,10 @@ libsixel-config: $(top_builddir)/config.status $(srcdir)/libsixel-config.in
 clean-noinstPROGRAMS:
 	$(am__rm_f) $(noinst_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(noinst_PROGRAMS:$(EXEEXT)=)
+
+lso-timeout$(EXEEXT): $(lso_timeout_OBJECTS) $(lso_timeout_DEPENDENCIES) $(EXTRA_lso_timeout_DEPENDENCIES) 
+	@rm -f lso-timeout$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(lso_timeout_OBJECTS) $(lso_timeout_LDADD) $(LIBS)
 
 lso-timer$(EXEEXT): $(lso_timer_OBJECTS) $(lso_timer_DEPENDENCIES) $(EXTRA_lso_timer_DEPENDENCIES) 
 	@rm -f lso-timer$(EXEEXT)
@@ -506,6 +515,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lso-timeout.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/timer.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -672,6 +682,7 @@ clean-am: clean-generic clean-libtool clean-noinstPROGRAMS \
 	mostlyclean-am
 
 distclean: distclean-am
+	-rm -f ./$(DEPDIR)/lso-timeout.Po
 	-rm -f ./$(DEPDIR)/timer.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -719,6 +730,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
+	-rm -f ./$(DEPDIR)/lso-timeout.Po
 	-rm -f ./$(DEPDIR)/timer.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
