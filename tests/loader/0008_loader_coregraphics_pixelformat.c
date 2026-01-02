@@ -31,20 +31,6 @@ typedef struct loader_probe_context {
     int height;
 } loader_probe_context_t;
 
-static SIXELSTATUS
-capture_frame(sixel_frame_t *frame, void *data)
-{
-    loader_probe_context_t *context;
-
-    context = (loader_probe_context_t *)data;
-    context->callback_count += 1;
-    context->pixelformat = sixel_frame_get_pixelformat(frame);
-    context->width = sixel_frame_get_width(frame);
-    context->height = sixel_frame_get_height(frame);
-
-    return SIXEL_OK;
-}
-
 #if HAVE_COREGRAPHICS
 static int
 run_coregraphics_loader_test(void)
