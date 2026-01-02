@@ -12,15 +12,22 @@ thumbnailer_available(void)
 {
     int has_directories;
     int has_match;
+    int has_fallback;
 
     has_directories = 0;
     has_match = 0;
+    has_fallback = 0;
 
     loader_probe_gnome_thumbnailers("image/png",
                                     &has_directories,
                                     &has_match);
 
     if (has_directories == 0 || has_match == 0) {
+        return 0;
+    }
+
+    has_fallback = thumbnailer_has_fallback_thumbnailer();
+    if (has_fallback == 0) {
         return 0;
     }
 
@@ -46,7 +53,8 @@ main(void)
     printf("1..1\n");
 
     if (thumbnailer_available() == 0) {
-        printf("ok 1 - GNOME thumbnailer unavailable # SKIP missing helper\n");
+        printf("ok 1 - GNOME thumbnailer unavailable"
+               " # SKIP missing gdk-pixbuf-thumbnailer\n");
         return 0;
     }
 

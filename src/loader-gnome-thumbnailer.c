@@ -177,6 +177,7 @@ static int thumbnailer_parse_file(char const *path,
 static int thumbnailer_has_tryexec(char const *tryexec);
 static int thumbnailer_supports_mime(struct thumbnailer_entry *entry,
                                      char const *mime_type);
+int thumbnailer_has_fallback_thumbnailer(void);
 
 /*
  * thumbnailer_strdup
@@ -893,6 +894,27 @@ thumbnailer_has_tryexec(char const *tryexec)
         }
         start = end + 1;
     }
+
+    return executable;
+}
+
+/*
+ * thumbnailer_has_fallback_thumbnailer
+ *
+ * Confirm that the built-in gdk-pixbuf fallback is runnable.  Tests use
+ * this to skip when the thumbnailer binary is absent from PATH.
+ *
+ * Arguments:
+ *     None.
+ * Returns:
+ *     1 when executable, 0 otherwise.
+ */
+int
+thumbnailer_has_fallback_thumbnailer(void)
+{
+    int executable;
+
+    executable = thumbnailer_has_tryexec("gdk-pixbuf-thumbnailer");
 
     return executable;
 }
