@@ -36,11 +36,6 @@ struct sixel_allocator {
     sixel_free_t fn_free;
 };
 
-#if HAVE_TESTS
-SIXELAPI int
-sixel_allocator_tests_main(void);
-#endif
-
 #endif /* LIBSIXEL_ALLOCATOR_H */
 
 /* emacs Local Variables:      */

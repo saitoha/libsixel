@@ -29,10 +29,6 @@
 extern "C" {
 #endif
 
-#if HAVE_TESTS
-SIXELAPI int
-sixel_writer_tests_main(void);
-#endif
 
 #ifdef __cplusplus
 }

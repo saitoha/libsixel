@@ -136,9 +136,11 @@ CLI_TESTS = cli-core/t/0001_help.t \
     output/t/0005_monochrome_frame_trailer.t \
     output/t/0006_two_pass_sixel_conversion.t \
     cli-options/t/0001_long_option_forms.t \
-    decoder/t/0001_dcs_arguments.t \
-    decoder/t/0002_tab_separated_colour_introducers.t \
-    decoder/t/0003_oversized_dcs_geometry.t \
+    decoder/t/0001_dcs_arguments_j0.t \
+    decoder/t/0002_dcs_arguments_j1.t \
+    decoder/t/0003_dcs_arguments_j2.t \
+    decoder/t/0004_tab_separated_colour_introducers.t \
+    decoder/t/0005_oversized_dcs_geometry.t \
     animation/t/0001_disable_update_mode.t \
     animation/t/0002_static_frame_render.t \
     animation/t/0003_update_and_static_frame.t \

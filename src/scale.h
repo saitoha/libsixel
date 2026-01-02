@@ -42,10 +42,6 @@ sixel_helper_scale_image_float32(
     int               /* in */  method_for_resampling,
     sixel_allocator_t /* in */  *allocator);
 
-#if HAVE_TESTS
-SIXELAPI int
-sixel_scale_tests_main(void);
-#endif
 
 #ifdef __cplusplus
 }

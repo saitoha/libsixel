@@ -46,10 +46,6 @@ load_gif(
     sixel_allocator_t   /* in */ *allocator    /* allocator object */
 );
 
-#if HAVE_TESTS
-SIXELAPI int
-sixel_fromgif_tests_main(void);
-#endif
 
 #ifdef __cplusplus
 }

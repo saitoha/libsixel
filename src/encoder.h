@@ -165,10 +165,6 @@ struct sixel_encoder {
     sixel_encoding_planner_t planner;
 };
 
-#if HAVE_TESTS
-SIXELAPI int
-sixel_encoder_tests_main(void);
-#endif
 
 #endif /* LIBSIXEL_ENCODER_H */
 

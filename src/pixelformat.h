@@ -29,10 +29,6 @@
 extern "C" {
 #endif
 
-#if HAVE_TESTS
-SIXELAPI int
-sixel_pixelformat_tests_main(void);
-#endif
 
 float
 sixel_pixelformat_float_channel_clamp(int pixelformat,

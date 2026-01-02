@@ -122,16 +122,6 @@ void
 sixel_palette_free_palette(unsigned char *data,
                            sixel_allocator_t *allocator);
 
-#if HAVE_TESTS
-SIXELAPI int
-sixel_palette_tests_main(void);
-void
-sixel_palette_tests_reset_last_engine(void);
-int
-sixel_palette_tests_last_engine_requires_float32(void);
-int
-sixel_palette_tests_last_engine_model(void);
-#endif
 
 #ifdef __cplusplus
 }

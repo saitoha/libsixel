@@ -73,29 +73,6 @@
 #include "compat_stub.h"
 #include "logger.h"
 
-#if HAVE_TESTS
-static int sixel_palette_last_engine_requires_float32 = 0;
-static int sixel_palette_last_engine_model = 0;
-
-void
-sixel_palette_tests_reset_last_engine(void)
-{
-    sixel_palette_last_engine_requires_float32 = 0;
-    sixel_palette_last_engine_model = 0;
-}
-
-int
-sixel_palette_tests_last_engine_requires_float32(void)
-{
-    return sixel_palette_last_engine_requires_float32;
-}
-
-int
-sixel_palette_tests_last_engine_model(void)
-{
-    return sixel_palette_last_engine_model;
-}
-#endif
 
 static int palette_default_lut_policy = SIXEL_LUT_POLICY_AUTO;
 static int palette_method_for_largest = SIXEL_LARGE_NORM;
@@ -301,11 +278,6 @@ sixel_palette_quant_engine_run(sixel_palette_quant_engine_t const *engine,
         return status;
     }
 
-#if HAVE_TESTS
-    sixel_palette_last_engine_requires_float32 =
-        engine->requires_float32;
-    sixel_palette_last_engine_model = engine->quantize_model;
-#endif
 
     sixel_logger_logf(&logger,
                       "palette",

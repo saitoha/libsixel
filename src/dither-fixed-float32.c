@@ -769,30 +769,6 @@ diffuse_sierra3_float(float *data,
     }
 }
 
-#if HAVE_TESTS
-static int g_sixel_dither_float32_diffusion_hits = 0;
-
-void
-sixel_dither_diffusion_tests_reset_float32_hits(void)
-{
-    g_sixel_dither_float32_diffusion_hits = 0;
-}
-
-int
-sixel_dither_diffusion_tests_float32_hits(void)
-{
-    return g_sixel_dither_float32_diffusion_hits;
-}
-
-#define SIXEL_DITHER_FLOAT32_HIT()                                      \
-    do {                                                                \
-        ++g_sixel_dither_float32_diffusion_hits;                        \
-    } while (0)
-#else
-#define SIXEL_DITHER_FLOAT32_HIT()                                      \
-    do {                                                                \
-    } while (0)
-#endif
 
 SIXELSTATUS
 sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
@@ -1116,7 +1092,6 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
     }
 
     status = SIXEL_OK;
-    SIXEL_DITHER_FLOAT32_HIT();
     return status;
 }
 

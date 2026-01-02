@@ -103,7 +103,6 @@ src/quicklook_thumbnailing.m
 src/clipboard_macos.m
 src/clipboard_carbon.c
 src/probe.c
-src/tests.c
 tests/gdk-pixbuf-loader/0003_corrupt_data.c
 tests/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c
 tests/gdk-pixbuf-loader/0005_context_free.c
@@ -617,7 +616,7 @@ emit_all_units() {
                 emit_unit "${unit}" \
                     "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_${guard})"
                 ;;
-            converters/img2sixel.c|converters/sixel2png.c|assessment/lsqa.c|src/tests.c|tests/*.c)
+            converters/img2sixel.c|converters/sixel2png.c|assessment/lsqa.c|tests/*.c)
                 guard=$(echo "${unit}" | sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
                 emit_unit "${unit}" "defined(BUILD_${guard})"
                 ;;

@@ -52,10 +52,6 @@ struct sixel_frame {
 extern "C" {
 #endif
 
-#if HAVE_TESTS
-SIXELAPI int
-sixel_dither_tests_main(void);
-#endif
 
 #ifdef __cplusplus
 }
