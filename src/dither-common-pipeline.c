@@ -119,7 +119,10 @@ sixel_dither_lookup_palette_float32(float const *pixel,
     v128_t diff_r_ps;
     v128_t diff_g_ps;
     v128_t error_ps;
-    float error_block_wasm[4];
+    float error_lane0;
+    float error_lane1;
+    float error_lane2;
+    float error_lane3;
 #endif
 
     if (pixel == NULL || palette == NULL) {
@@ -259,26 +262,34 @@ sixel_dither_lookup_palette_float32(float const *pixel,
             diff_g_ps = wasm_f32x4_sub(sample_g_ps, palette_g_ps);
             error_ps = wasm_f32x4_add(error_ps,
                     wasm_f32x4_mul(diff_g_ps, diff_g_ps));
-            wasm_v128_store(error_block_wasm, error_ps);
-            if (error_block_wasm[0] < best_error) {
-                best_error = (double)error_block_wasm[0];
+            error_lane0 = wasm_f32x4_extract_lane(error_ps, 0);
+            error_lane1 = wasm_f32x4_extract_lane(error_ps, 1);
+            error_lane2 = wasm_f32x4_extract_lane(error_ps, 2);
+            error_lane3 = wasm_f32x4_extract_lane(error_ps, 3);
+            if (error_lane0 < best_error) {
+                best_error = (double)error_lane0;
                 best_index = color;
             }
-            if (error_block_wasm[1] < best_error) {
-                best_error = (double)error_block_wasm[1];
+            if (error_lane1 < best_error) {
+                best_error = (double)error_lane1;
                 best_index = color + 1;
             }
-            if (error_block_wasm[2] < best_error) {
-                best_error = (double)error_block_wasm[2];
+            if (error_lane2 < best_error) {
+                best_error = (double)error_lane2;
                 best_index = color + 2;
             }
-            if (error_block_wasm[3] < best_error) {
-                best_error = (double)error_block_wasm[3];
+            if (error_lane3 < best_error) {
+                best_error = (double)error_lane3;
                 best_index = color + 3;
             }
         }
     }
 #endif
+    /*
+     * color_simd_end carries the handoff point from the SIMD fast paths.
+     * Any remaining palette entries (including non-RGB layouts) are handled
+     * by the scalar loop to keep behavior identical to the baseline path.
+     */
     for (color = color_simd_end; color < reqcolor; ++color) {
         palette_offset = color * depth;
         palette_l = (double)palette[palette_offset];
