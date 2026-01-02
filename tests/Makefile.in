@@ -1547,19 +1547,7 @@ AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	ARTIFACT_ROOT; TOP_SRCDIR='$(abs_top_srcdir)'; export \
 	TOP_SRCDIR; TOP_BUILDDIR='$(abs_top_builddir)'; export \
 	TOP_BUILDDIR; CROSS_COMPILING='@cross_compiling@'; export \
-	CROSS_COMPILING; SIXEL_WATCHDOG_DIR='$(WATCHDOG_STATE_DIR)'; \
-	export SIXEL_WATCHDOG_DIR; \
-	SIXEL_WATCHDOG_TIMEOUT='$(AM_TEST_TIMEOUT)'; export \
-	SIXEL_WATCHDOG_TIMEOUT; \
-	SIXEL_WATCHDOG_LOG='$(WATCHDOG_LOG_FILE)'; export \
-	SIXEL_WATCHDOG_LOG;
-WATCHDOG_STATE_DIR = $(abs_builddir)/_watchdog
-WATCHDOG_PID_FILE = $(WATCHDOG_STATE_DIR)/watchdog.pid
-WATCHDOG_LOG_FILE = $(WATCHDOG_STATE_DIR)/watchdog.log
-#AM_TESTS_ENVIRONMENT += $(MKDIR_P) '$(WATCHDOG_STATE_DIR)'; \
-#       $(SHELL) '$(top_srcdir)/tests/tools/test-watchdog.sh' ensure \
-#       --state-dir '$(WATCHDOG_STATE_DIR)' --pid-file '$(WATCHDOG_PID_FILE)' \
-#       --log-file '$(WATCHDOG_LOG_FILE)';
+	CROSS_COMPILING;
 TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_builddir) -I$(top_builddir)/include \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \
@@ -1977,7 +1965,7 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
              filter/0005_filter_lookup.c filter/0006_filter_final_merge.c \
              filter/0007_filter_vpte.c filter/0008_filter_load.c \
              filter/0009_filter_dither.c filter/0010_filter_encode.c \
-             filter/filter_test_common.h tools/test-watchdog.sh
+             filter/filter_test_common.h
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
@@ -3587,7 +3575,7 @@ distdir-am: $(DISTFILES)
 	done
 check-am: all-am
 	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS)
-	$(MAKE) $(AM_MAKEFLAGS) check-TESTS check-local
+	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile
@@ -3828,19 +3816,19 @@ uninstall-am:
 	install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am am--depfiles check check-TESTS \
-	check-am check-local clean clean-checkPROGRAMS clean-generic \
-	clean-libtool clean-local cscopelist-am ctags ctags-am \
-	distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	recheck tags tags-am uninstall uninstall-am
+	check-am clean clean-checkPROGRAMS clean-generic clean-libtool \
+	clean-local cscopelist-am ctags ctags-am distclean \
+	distclean-compile distclean-generic distclean-libtool \
+	distclean-tags distdir dvi dvi-am html html-am info info-am \
+	install install-am install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am recheck tags tags-am uninstall \
+	uninstall-am
 
 .PRECIOUS: Makefile
 
@@ -3861,16 +3849,6 @@ clean-local:
 	fi
 	rm -rf $(ARTIFACT_ROOT)
 	rm -f $(builddir)/*_metrics.json
-	rm -rf $(WATCHDOG_STATE_DIR)
-
-# Keep this recipe tab-indented; GNU make requires tabs for commands.
-check-local: $(LOG_COMPILER) $(COPY_TESTS) $(HELPER_FILES)
-	@if test -f "$(WATCHDOG_PID_FILE)"; then \
-	$(SHELL) '$(top_srcdir)/tests/tools/test-watchdog.sh' stop \
-	--state-dir '$(WATCHDOG_STATE_DIR)' \
-	--pid-file '$(WATCHDOG_PID_FILE)' \
-	--log-file '$(WATCHDOG_LOG_FILE)'; \
-	fi
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 $(COPY_TESTS) $(HELPER_FILES):
