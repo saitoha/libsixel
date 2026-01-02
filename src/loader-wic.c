@@ -207,6 +207,12 @@ load_with_wic(
         goto end;
     }
 
+    status = sixel_frame_new(&frame, pchunk->allocator);
+    if (SIXEL_FAILED(status)) {
+        hr = E_FAIL;
+        goto end;
+    }
+
     decoded_frames = 0;
     while (decoded_frames < frame_count) {
         hr = decoder->lpVtbl->GetFrame(decoder, decoded_frames, &wicframe);
@@ -230,6 +236,18 @@ load_with_wic(
                             sixel_helper_set_additional_message(
                                 "load_with_wic: malloc failed.");
                             status = SIXEL_BAD_ALLOCATION;
+                            hr = E_FAIL;
+                            goto end;
+                        }
+                        frame->palette = (unsigned char *)
+                            sixel_allocator_malloc(
+                                pchunk->allocator,
+                                (size_t)ncolors * 3);
+                        if (frame->palette == NULL) {
+                            sixel_helper_set_additional_message(
+                                "load_with_wic: malloc failed.");
+                            status = SIXEL_BAD_ALLOCATION;
+                            hr = E_FAIL;
                             goto end;
                         }
                         hr = wicpalette->lpVtbl->GetColors(
@@ -294,24 +312,28 @@ load_with_wic(
             sixel_helper_set_additional_message(
                 "load_with_wic: an invalid width parameter detected.");
             status = SIXEL_BAD_INPUT;
+            hr = E_FAIL;
             goto end;
         }
         if (frame->height <= 0) {
             sixel_helper_set_additional_message(
                 "load_with_wic: an invalid width parameter detected.");
             status = SIXEL_BAD_INPUT;
+            hr = E_FAIL;
             goto end;
         }
         if (frame->width > SIXEL_WIDTH_LIMIT) {
             sixel_helper_set_additional_message(
                 "load_with_wic: given width parameter is too huge.");
             status = SIXEL_BAD_INPUT;
+            hr = E_FAIL;
             goto end;
         }
         if (frame->height > SIXEL_HEIGHT_LIMIT) {
             sixel_helper_set_additional_message(
                 "load_with_wic: given height parameter is too huge.");
             status = SIXEL_BAD_INPUT;
+            hr = E_FAIL;
             goto end;
         }
 
@@ -320,6 +342,13 @@ load_with_wic(
                                    pchunk->allocator,
                                    (size_t)(frame->height * frame->width * comp)));
         pixels = sixel_frame_get_pixels(frame);
+        if (pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_wic: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            hr = E_FAIL;
+            goto end;
+        }
 
         {
             WICRect rc = { 0, 0, (INT)frame->width, (INT)frame->height };
@@ -336,6 +365,7 @@ load_with_wic(
 
         status = fn_load(frame, context);
         if (SIXEL_FAILED(status)) {
+            hr = E_FAIL;
             goto end;
         }
 
