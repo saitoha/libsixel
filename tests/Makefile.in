@@ -1399,13 +1399,14 @@ AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	SIXEL_WATCHDOG_TIMEOUT='$(AM_TEST_TIMEOUT)'; export \
 	SIXEL_WATCHDOG_TIMEOUT; \
 	SIXEL_WATCHDOG_LOG='$(WATCHDOG_LOG_FILE)'; export \
-	SIXEL_WATCHDOG_LOG; $(MKDIR_P) '$(WATCHDOG_STATE_DIR)'; \
-	$(SHELL) '$(top_srcdir)/tests/tools/test-watchdog.sh' ensure \
-	--state-dir '$(WATCHDOG_STATE_DIR)' --pid-file \
-	'$(WATCHDOG_PID_FILE)' --log-file '$(WATCHDOG_LOG_FILE)';
+	SIXEL_WATCHDOG_LOG;
 WATCHDOG_STATE_DIR = $(abs_builddir)/_watchdog
 WATCHDOG_PID_FILE = $(WATCHDOG_STATE_DIR)/watchdog.pid
 WATCHDOG_LOG_FILE = $(WATCHDOG_STATE_DIR)/watchdog.log
+#AM_TESTS_ENVIRONMENT += $(MKDIR_P) '$(WATCHDOG_STATE_DIR)'; \
+#       $(SHELL) '$(top_srcdir)/tests/tools/test-watchdog.sh' ensure \
+#       --state-dir '$(WATCHDOG_STATE_DIR)' --pid-file '$(WATCHDOG_PID_FILE)' \
+#       --log-file '$(WATCHDOG_LOG_FILE)';
 TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_builddir) -I$(top_builddir)/include \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \
