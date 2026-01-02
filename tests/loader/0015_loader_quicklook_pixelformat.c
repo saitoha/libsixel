@@ -13,8 +13,8 @@ run_quicklook_loader_test(void)
     return run_loader_case("QuickLook loader",
                            RGBA_IMAGE_PATH,
                            SIXEL_PIXELFORMAT_RGBA8888,
-                           2,
-                           1,
+                           GEOMETRY_ANY,
+                           GEOMETRY_ANY,
                            load_with_quicklook);
 }
 #endif

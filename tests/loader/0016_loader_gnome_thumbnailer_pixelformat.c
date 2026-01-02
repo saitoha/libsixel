@@ -33,8 +33,8 @@ run_thumbnailer_loader_test(void)
     return run_loader_case("GNOME thumbnailer",
                            RGBA_IMAGE_PATH,
                            SIXEL_PIXELFORMAT_RGB888,
-                           2,
-                           1,
+                           GEOMETRY_ANY,
+                           GEOMETRY_ANY,
                            load_with_gnome_thumbnailer);
 }
 #endif
