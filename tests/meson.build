@@ -425,6 +425,72 @@ foreach test_name, source_file : loader_coregraphics_tests
     env: env,
     protocol: 'tap',
     timeout: 120,
+  suite: ['tap'])
+endforeach
+
+loader_pixelformat_tests = {
+  '0014_loader_builtin_pixelformat':
+    'loader/0014_loader_builtin_pixelformat.c',
+}
+
+if conf.get('HAVE_WIC', 0) == 1
+  loader_pixelformat_tests += {
+    '0009_loader_wic_pixelformat':
+      'loader/0009_loader_wic_pixelformat.c',
+  }
+endif
+
+if conf.has('HAVE_GDK_PIXBUF2')
+  loader_pixelformat_tests += {
+    '0010_loader_gdk_pixbuf_pixelformat':
+      'loader/0010_loader_gdk_pixbuf_pixelformat.c',
+  }
+endif
+
+if conf.get('HAVE_GD', 0) == 1
+  loader_pixelformat_tests += {
+    '0011_loader_gd_pixelformat':
+      'loader/0011_loader_gd_pixelformat.c',
+  }
+endif
+
+if conf.get('HAVE_LIBPNG', 0) == 1
+  loader_pixelformat_tests += {
+    '0012_loader_libpng_pixelformat':
+      'loader/0012_loader_libpng_pixelformat.c',
+  }
+endif
+
+if conf.get('HAVE_JPEG', 0) == 1
+  loader_pixelformat_tests += {
+    '0013_loader_libjpeg_pixelformat':
+      'loader/0013_loader_libjpeg_pixelformat.c',
+  }
+endif
+
+if conf.get('HAVE_COREGRAPHICS', 0) == 1 and conf.get('HAVE_QUICKLOOK', 0) == 1
+  loader_pixelformat_tests += {
+    '0015_loader_quicklook_pixelformat':
+      'loader/0015_loader_quicklook_pixelformat.c',
+  }
+endif
+
+if conf.has('HAVE_UNISTD_H') and conf.has('HAVE_SYS_WAIT_H') and conf.get('HAVE_FORK', 0) == 1
+  loader_pixelformat_tests += {
+    '0016_loader_gnome_thumbnailer_pixelformat':
+      'loader/0016_loader_gnome_thumbnailer_pixelformat.c',
+  }
+endif
+
+foreach test_name, source_file : loader_pixelformat_tests
+  loader_exe = executable(test_name, [source_file],
+    dependencies: [libsixel_dep],
+    include_directories: project_inc,
+    install: false)
+  test(test_name, loader_exe,
+    env: env,
+    protocol: 'tap',
+    timeout: 120,
     suite: ['tap'])
 endforeach
 
