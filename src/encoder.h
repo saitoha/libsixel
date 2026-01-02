@@ -59,6 +59,7 @@ typedef struct sixel_encoding_planner {
     int pipeline_dither_threads;
     int pipeline_encode_threads;
     int pipeline_bands;
+    int pipeline_pin_threads;
 } sixel_encoding_planner_t;
 
 /* palette type */

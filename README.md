@@ -701,6 +701,8 @@ cell corners.  The following environment variables tune the grid (legacy
 * `SIXEL_LOOKUP_VPTE_PIN_THREADS` pins the VPTE worker threads once at
   startup to reduce migration on NUMA systems (0 or 1; default 0; failures
   are ignored so portability is preserved).
+* `SIXEL_DITHER_PIN_THREADS` pins PaletteApply and encode pipeline workers
+  (0 or 1; default 1; failures are ignored so portability is preserved).
 * `SIXEL_PARALLEL_LOG_PATH` writes a JSON timeline log that can be consumed
   by `tools/timeline.py`; the log is silent when unset.
 * `SIXEL_PARALLEL_LOG_LINES` controls per-line logging when

@@ -98,6 +98,7 @@ typedef struct sixel_parallel_dither_config {
     int dither_threads;
     int encode_threads;
     int dither_env_override;
+    int pin_threads;
 } sixel_parallel_dither_config_t;
 
 typedef struct sixel_encode_work {
@@ -195,6 +196,7 @@ typedef struct sixel_parallel_context {
     int writer_should_stop;
     SIXELSTATUS writer_error;
     int queue_capacity;
+    int pin_threads;
 } sixel_parallel_context_t;
 
 typedef struct sixel_parallel_row_notifier {
@@ -285,6 +287,7 @@ static void
 sixel_parallel_dither_configure(int height,
                                 int ncolors,
                                 int pipeline_threads,
+                                int pin_threads,
                                 sixel_parallel_dither_config_t *config)
 {
     char const *text;
@@ -305,6 +308,7 @@ sixel_parallel_dither_configure(int height,
     config->overlap = 0;
     config->dither_threads = 0;
     config->encode_threads = pipeline_threads;
+    config->pin_threads = (pin_threads != 0) ? 1 : 0;
 
     if (pipeline_threads <= 1 || height <= 0) {
         return;
@@ -437,6 +441,7 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
                              int requested_threads,
                              int worker_capacity,
                              int queue_capacity,
+                             int pin_threads,
                              sixel_logger_t *logger);
 static SIXELSTATUS sixel_parallel_context_grow(sixel_parallel_context_t *ctx,
                                               int target_threads);
@@ -481,6 +486,7 @@ sixel_parallel_context_init(sixel_parallel_context_t *ctx)
     ctx->writer_should_stop = 0;
     ctx->writer_error = SIXEL_OK;
     ctx->queue_capacity = 0;
+    ctx->pin_threads = 0;
 }
 
 static void
@@ -818,6 +824,7 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
                              int requested_threads,
                              int worker_capacity,
                              int queue_capacity,
+                             int pin_threads,
                              sixel_logger_t *logger)
 {
     SIXELSTATUS status;
@@ -840,6 +847,7 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
     ctx->output = output;
     ctx->encode_probe_active = 0;
     ctx->logger = logger;
+    ctx->pin_threads = (pin_threads != 0) ? 1 : 0;
 
     nbands = (height + 5) / 6;
     if (nbands <= 0) {
@@ -913,6 +921,8 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
     if (ctx->pool == NULL) {
         return SIXEL_RUNTIME_ERROR;
     }
+
+    threadpool_set_affinity(ctx->pool, ctx->pin_threads);
 
     status = sixel_thread_create(&ctx->writer_thread,
                                  sixel_parallel_writer_main,
@@ -1373,7 +1383,8 @@ sixel_encode_body_parallel(sixel_index_t *pixels,
                            sixel_output_t *output,
                            unsigned char *palstate,
                            sixel_allocator_t *allocator,
-                           int requested_threads)
+                           int requested_threads,
+                           int pin_threads)
 {
     sixel_parallel_context_t ctx;
     SIXELSTATUS status;
@@ -1421,6 +1432,7 @@ sixel_encode_body_parallel(sixel_index_t *pixels,
                                           threads,
                                           threads,
                                           queue_depth,
+                                          pin_threads,
                                           &logger);
     if (SIXEL_FAILED(status)) {
         sixel_parallel_context_cleanup(&ctx);
@@ -1587,6 +1599,7 @@ sixel_encode_body_pipeline(unsigned char *pixels,
                                           threads,
                                           worker_capacity,
                                           queue_depth,
+                                          dither->pipeline_pin_threads,
                                           logger);
     if (SIXEL_FAILED(status)) {
         goto cleanup;
@@ -3283,6 +3296,7 @@ sixel_encode_body(
     sixel_output_t      /* in */ *output,
     unsigned char       /* in */ *palstate,
     sixel_allocator_t   /* in */ *allocator,
+    int                 /* in */ pin_threads,
     sixel_logger_t      /* in */ *logger)
 {
     SIXELSTATUS status = SIXEL_FALSE;
@@ -3352,7 +3366,8 @@ sixel_encode_body(
                                                 output,
                                                 palstate,
                                                 allocator,
-                                                threads);
+                                                threads,
+                                                pin_threads);
             if (SIXEL_FAILED(status)) {
                 goto cleanup;
             }
@@ -3699,6 +3714,7 @@ sixel_encode_dither(
     dither_parallel.overlap = 0;
     dither_parallel.dither_threads = 0;
     dither_parallel.encode_threads = 0;
+    dither_parallel.pin_threads = dither->pipeline_pin_threads;
     switch (dither->pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
     case SIXEL_PIXELFORMAT_PAL2:
@@ -3765,6 +3781,7 @@ sixel_encode_dither(
         sixel_parallel_dither_configure(height,
                                         dither->ncolors,
                                         pipeline_threads,
+                                        dither->pipeline_pin_threads,
                                         &dither_parallel);
         if (dither_parallel.enabled) {
             dither->pipeline_parallel_active = 1;
@@ -3956,6 +3973,7 @@ sixel_encode_dither(
                                    output,
                                    NULL,
                                    dither->allocator,
+                                   dither->pipeline_pin_threads,
                                    logger != NULL && logger->active ?
                                        logger :
                                        NULL);
@@ -4851,6 +4869,7 @@ next:
                                        output,
                                        palstate,
                                        dither->allocator,
+                                       dither->pipeline_pin_threads,
                                        NULL);
             if (SIXEL_FAILED(status)) {
                 goto error;
@@ -4889,6 +4908,7 @@ end:
                                output,
                                palstate,
                                dither->allocator,
+                               dither->pipeline_pin_threads,
                                NULL);
     if (SIXEL_FAILED(status)) {
         goto error;
