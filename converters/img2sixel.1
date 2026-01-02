@@ -632,6 +632,23 @@ override variables.
 fake the home directory used during completion installation and removal. This
 is helpful for testing the workflow inside disposable directories.
 .TP 5
+.B LIBSIXEL_MODEL_DIR
+.br
+override the assessment model directory used by quality reporting (for
+example via \fB\-a\fP/\fB\-\-assessment\fP). Files under
+\fBLIBSIXEL_MODEL_DIR/models\fP take precedence over packaged assets.
+.TP 5
+.B SIXEL_ABORT_TRACE
+.br
+dump abort backtraces when \fIimg2sixel\fP terminates abnormally. Defaults to
+auto (enabled). Set to "0"/"false"/"off" to disable explicit traces; any other
+non-empty value forces them on.
+.TP 5
+.B SIXEL_NO_ABORT_TRACE
+.br
+legacy inverse toggle for abort tracing. Any non-zero/true value suppresses
+dumps while "0"/"false"/"off" keeps tracing enabled.
+.TP 5
 .B SIXEL_BGCOLOR
 .br
 specify background color.
@@ -668,6 +685,13 @@ overrided by -p(--colors) option.
 .br
 prefer the float32 quantization path. Any non-empty string other than 0, off,
 false, or no enables the high-precision pipeline.
+.TP 5
+.B SIXEL_PLANNER_RESIZE_PRECISION_MODE
+.br
+force the resize precision planner. Accepts 1 (preserve integer buffers), 2
+(linear float workspace), or 3 (float32 working colorspace). Defaults follow
+the precision and working-colorspace choices described under
+\fB\-\.\fP/\fB\-\-precision\fP and \fB\-W\fP/\fB\-\-working\-colorspace\fP.
 .TP 5
 .B SIXEL_THREADS
 .br
@@ -776,6 +800,11 @@ emphasise L* weight in Lab-family distances before snapping (0.0-1.0).
 emphasise L* weight during final merge distances independently of snap tuning
 (0.0-1.0).
 .TP 5
+.B SIXEL_PALETTE_DISABLE_TABLES
+.br
+disable palette expansion lookup tables and exercise the shift-based fallback
+used for testing. Non-zero values skip table initialisation.
+.TP 5
 .B SIXEL_PALETTE_SNAP_TARGET_POLICY
 .br
 control palette snap target search. Accepts "reversible" for legacy fixed
@@ -858,6 +887,26 @@ that will consume them (0 or 1; default 0).
 .B SIXEL_LOOKUP_VPTE_PIN_THREADS
 .br
 pin VPTE worker threads at startup to reduce migration (0 or 1; default 0).
+.TP 5
+.B SIXEL_VPTE_TILE_XY
+.br
+compatibility alias for \fBSIXEL_LOOKUP_VPTE_TILE_XY\fP with identical
+behaviour and adaptive defaults.
+.TP 5
+.B SIXEL_VPTE_TILE_DEPTH
+.br
+compatibility alias for \fBSIXEL_LOOKUP_VPTE_TILE_DEPTH\fP with identical
+behaviour and adaptive defaults.
+.TP 5
+.B SIXEL_VPTE_FIRST_TOUCH
+.br
+compatibility alias for \fBSIXEL_LOOKUP_VPTE_FIRST_TOUCH\fP with identical
+behaviour and defaults.
+.TP 5
+.B SIXEL_VPTE_PIN_THREADS
+.br
+compatibility alias for \fBSIXEL_LOOKUP_VPTE_PIN_THREADS\fP with identical
+behaviour and defaults.
 .TP 5
 .B SIXEL_PARALLEL_LOG_PATH
 .br
