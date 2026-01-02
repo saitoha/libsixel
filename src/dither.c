@@ -2374,7 +2374,8 @@ sixel_dither_apply_palette(
         plan.method_for_largest = dither->method_for_largest;
         plan.reqcolor = dither->ncolors;
         plan.pixelformat = pipeline_pixelformat;
-        plan.pin_threads = dither->pipeline_pin_threads;
+        /* Carry the pipeline pinning preference as a strict 0/1 flag. */
+        plan.pin_threads = dither->pipeline_pin_threads != 0 ? 1 : 0;
         plan.logger = logger;
 
 #if SIXEL_ENABLE_THREADS

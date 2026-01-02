@@ -703,6 +703,9 @@ cell corners.  The following environment variables tune the grid (legacy
   are ignored so portability is preserved).
 * `SIXEL_DITHER_PIN_THREADS` pins PaletteApply and encode pipeline workers
   (0 or 1; default 1; failures are ignored so portability is preserved).
+  The planner applies the same preference to both palette workers and the
+  encoder-side band workers (including the non-pipeline parallel encoder);
+  set this to 0 to allow the OS to migrate those jobs.
 * `SIXEL_PARALLEL_LOG_PATH` writes a JSON timeline log that can be consumed
   by `tools/timeline.py`; the log is silent when unset.
 * `SIXEL_PARALLEL_LOG_LINES` controls per-line logging when

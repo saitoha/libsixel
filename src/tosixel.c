@@ -3714,6 +3714,12 @@ sixel_encode_dither(
     dither_parallel.overlap = 0;
     dither_parallel.dither_threads = 0;
     dither_parallel.encode_threads = 0;
+    /*
+     * Normalize the planner-provided pinning request so both palette and
+     * encode workers see the same 0/1 flag.
+     */
+    dither->pipeline_pin_threads =
+        dither->pipeline_pin_threads != 0 ? 1 : 0;
     dither_parallel.pin_threads = dither->pipeline_pin_threads;
     switch (dither->pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
