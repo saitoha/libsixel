@@ -2835,6 +2835,7 @@ sixel_encoding_planner_init(sixel_encoding_planner_t *planner)
     planner->pipeline_dither_threads = 0;
     planner->pipeline_encode_threads = 0;
     planner->pipeline_bands = 0;
+    planner->pipeline_pin_threads = 1;
 }
 
 
@@ -3104,6 +3105,8 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     int overlap;
     int queue_depth;
     int dither_env_override;
+    int pin_threads;
+    int pin_env_override;
     int ncolors;
 
     text = NULL;
@@ -3131,6 +3134,22 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     planner->pipeline_dither_threads = 0;
     planner->pipeline_encode_threads = 0;
     planner->pipeline_bands = 0;
+    planner->pipeline_pin_threads = 1;
+
+    pin_threads = 1;
+    pin_env_override = 0;
+
+    text = sixel_compat_getenv("SIXEL_DITHER_PIN_THREADS");
+    if (text != NULL && text[0] != '\0') {
+        errno = 0;
+        parsed = strtol(text, &endptr, 10);
+        if (endptr != text && errno != ERANGE) {
+            pin_env_override = 1;
+            pin_threads = (parsed != 0) ? 1 : 0;
+        }
+    }
+    planner->pipeline_pin_threads = pin_threads;
+    (void)pin_env_override;
 
     height = sixel_frame_get_height(frame);
     threads = planner->main_threads;
@@ -3243,6 +3262,7 @@ sixel_encoding_planner_plan_pipeline(sixel_encoding_planner_t *planner,
     planner->pipeline_queue_depth = queue_depth;
     planner->pipeline_dither_threads = dither_threads;
     planner->pipeline_encode_threads = encode_threads;
+    planner->pipeline_pin_threads = pin_threads;
 }
 
 
@@ -4297,6 +4317,7 @@ sixel_encoder_output_without_macro(
     int pixelformat = 0;
     size_t size;
     int frame_colorspace = SIXEL_COLORSPACE_GAMMA;
+    sixel_encoding_planner_t *planner;
 #if defined(HAVE_CLOCK) || defined(HAVE_CLOCK_WIN)
     sixel_clock_t last_clock;
 #endif
@@ -4307,6 +4328,8 @@ sixel_encoder_output_without_macro(
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
+
+    planner = &encoder->planner;
 
     if (encoder->assessment_observer != NULL) {
         sixel_assessment_stage_transition(
@@ -4430,6 +4453,9 @@ sixel_encoder_output_without_macro(
             encoder->assessment_observer,
             SIXEL_ASSESSMENT_STAGE_ENCODE);
     }
+    if (planner != NULL && dither != NULL) {
+        dither->pipeline_pin_threads = planner->pipeline_pin_threads;
+    }
     status = sixel_encode(p, width, height, depth, dither, output);
     if (encoder->assessment_observer != NULL) {
         sixel_assessment_stage_finish(encoder->assessment_observer);
@@ -4478,12 +4504,15 @@ sixel_encoder_output_with_macro(
     size_t size = 0;
     int frame_colorspace = SIXEL_COLORSPACE_GAMMA;
     unsigned char *converted = NULL;
+    sixel_encoding_planner_t *planner;
 #if defined(HAVE_CLOCK) || defined(HAVE_CLOCK_WIN)
     sixel_clock_t last_clock;
 #endif
     double write_started_at;
     double write_finished_at;
     double write_duration;
+
+    planner = (encoder != NULL) ? &encoder->planner : NULL;
 
     if (encoder != NULL && encoder->assessment_observer != NULL) {
         sixel_assessment_stage_transition(
@@ -4584,6 +4613,10 @@ sixel_encoder_output_with_macro(
             sixel_assessment_stage_transition(
                 encoder->assessment_observer,
                 SIXEL_ASSESSMENT_STAGE_ENCODE);
+        }
+        if (planner != NULL && dither != NULL) {
+            dither->pipeline_pin_threads =
+                planner->pipeline_pin_threads;
         }
         status = sixel_encode(converted,
                               width,
