@@ -29,19 +29,38 @@ export SEED=${LSQA_SEED:-2024}
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 build_root=${TOP_BUILDDIR:-${script_dir}/..}
-lsqa_bin_default="${build_root}/assessment/lsqa"
 
-if [ ! -x "${lsqa_bin_default}" ] && [ -x "${build_root}/lsqa" ]; then
-    lsqa_bin_default="${build_root}/lsqa"
+# Prefer an explicit override to support out-of-tree and alternate prefix
+# builds. When unset, walk common in-tree locations including the Autotools
+# .libs directory used on macOS.
+lsqa_bin_env=${LSQA_BIN-}
+if [ -n "${lsqa_bin_env}" ]; then
+    if [ -x "${lsqa_bin_env}" ]; then
+        export LSQA_BIN=${lsqa_bin_env}
+    else
+        printf 'LSQA_BIN points to a missing or non-executable path: %s\n' \
+            "${lsqa_bin_env}" >&2
+        exit 1
+    fi
+else
+    set -- \
+        "${build_root}/assessment/lsqa" \
+        "${build_root}/assessment/.libs/lsqa" \
+        "${build_root}/lsqa"
+    for candidate in "$@"; do
+        if [ -x "${candidate}" ]; then
+            export LSQA_BIN=${candidate}
+            break
+        fi
+    done
+    if [ -z "${LSQA_BIN-}" ]; then
+        printf 'lsqa binary not found. looked for:%s%s%s\n' \
+            "\n  ${build_root}/assessment/lsqa" \
+            "\n  ${build_root}/assessment/.libs/lsqa" \
+            "\n  ${build_root}/lsqa" >&2
+        exit 1
+    fi
 fi
-
-if [ ! -x "${lsqa_bin_default}" ]; then
-    printf 'lsqa binary not found. looked for %s and %s\n' \
-        "${build_root}/assessment/lsqa" "${build_root}/lsqa" >&2
-    exit 1
-fi
-
-export LSQA_BIN=${LSQA_BIN:-${lsqa_bin_default}}
 
 mkdir -p "${ARTIFACT_ROOT}"
 
