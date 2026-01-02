@@ -805,12 +805,14 @@ BASELINE_JSON = data/baseline/grayscale.json \
        data/baseline/panorama_wide.json \
        data/baseline/quarter_square.json \
        data/baseline/rgb.json \
+       data/baseline/rgba.json \
        data/baseline/svga_landscape.json \
        data/baseline/tiny_square.json
 
 INPUT_FORMAT_FILES = data/inputs/formats/grayscale.jpg \
        data/inputs/formats/palette.png \
-       data/inputs/formats/rgb.png
+       data/inputs/formats/rgb.png \
+       data/inputs/formats/rgba.png
 
 RESOLUTION_IMAGES = data/resolutions/hd_landscape.png \
        data/resolutions/panorama_tall.png \
