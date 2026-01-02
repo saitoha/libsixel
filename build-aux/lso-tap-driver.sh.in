@@ -26,6 +26,9 @@
 
 set -u
 
+# Ensure SHELL is available for non-executable test scripts.
+: "${SHELL:=/bin/sh}"
+
 test_name=
 log_file=
 trs_file=
