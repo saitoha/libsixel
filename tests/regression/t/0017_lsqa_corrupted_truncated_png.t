@@ -1,0 +1,47 @@
+#!/bin/sh
+# Expect truncated PNG input to be rejected or graded as low quality.
+
+set -eu
+
+if [ "${VERBOSE:-0}" -eq 1 ]; then
+    set -x
+fi
+
+test_name=$(basename "$0")
+test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+category_name=$(basename "$(dirname "${test_dir}")")
+
+pass() {
+    printf 'ok %s - %s\n' "$1" "$2"
+}
+
+fail() {
+    printf 'not ok %s - %s\n' "$1" "$2"
+    status=1
+}
+
+. "${test_dir}/../lsqa_common.sh"
+
+status=0
+
+if ! lsqa_init "$0"; then
+    printf '1..1\n'
+    fail 1 "lsqa binary missing"
+    exit "${status}"
+fi
+
+artifact_root=${LSQA_ARTIFACT_ROOT}
+artifact_dir="${artifact_root}/${category_name}/${test_name}"
+mkdir -p "${artifact_dir}"
+
+printf '1..1\n'
+
+image_path="${LSQA_INPUT_ROOT}/corrupted/truncated.png"
+if lsqa_expect_low_quality_or_fail "${image_path}" \
+    "truncated.png" "${artifact_dir}"; then
+    pass 1 "truncated input rejected or scored low"
+else
+    fail 1 "truncated input unexpectedly accepted"
+fi
+
+exit "${status}"
