@@ -232,8 +232,21 @@ FILTER_TEST_BINARIES = \
        filter/0009_filter_dither \
        filter/0010_filter_encode
 
-TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
-COPY_TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
+LOADER_PIXELFORMAT_TESTS = \
+       loader/0008_loader_coregraphics_pixelformat \
+       loader/0009_loader_wic_pixelformat \
+       loader/0010_loader_gdk_pixbuf_pixelformat \
+       loader/0011_loader_gd_pixelformat \
+       loader/0012_loader_libpng_pixelformat \
+       loader/0013_loader_libjpeg_pixelformat \
+       loader/0014_loader_builtin_pixelformat \
+       loader/0015_loader_quicklook_pixelformat \
+       loader/0016_loader_gnome_thumbnailer_pixelformat
+
+TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) \
+       $(FILTER_TESTS) $(LOADER_PIXELFORMAT_TESTS)
+COPY_TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) \
+       $(FILTER_TESTS) $(LOADER_PIXELFORMAT_TESTS)
 check_PROGRAMS = \
     cli/0029_cli_token_is_known_option \
     cli/0030_cli_option_requires_argument \
@@ -412,6 +425,11 @@ else
 TESTS_COMMON_LDADD_VAL = $(top_builddir)/src/libsixel.la $(LIBS)
 endif
 
+LOADER_PIXELFORMAT_CPPFLAGS_VAL = $(TESTS_COMMON_CPPFLAGS_VAL)
+LOADER_PIXELFORMAT_CFLAGS_VAL = $(TESTS_COMMON_CFLAGS_VAL)
+LOADER_PIXELFORMAT_LDFLAGS_VAL = $(TESTS_COMMON_LDFLAGS_VAL)
+LOADER_PIXELFORMAT_LDADD_VAL = $(TESTS_COMMON_LDADD_VAL)
+
 TESTS_AMALGAMATION_CPPFLAGS_COMMON = $(TESTS_COMMON_CPPFLAGS_VAL)
 TESTS_AMALGAMATION_CFLAGS_COMMON = $(TESTS_COMMON_CFLAGS_VAL)
 TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
@@ -437,6 +455,7 @@ TESTS_AMALGAMATION_LDADD_COMMON = $(top_builddir)/src/libsixel.la $(LIBS)
 endif
 
 check_PROGRAMS += $(FILTER_TEST_BINARIES) $(PROBE_TESTS_BINARIES) $(PALETTE_TESTS_BINARIES)
+check_PROGRAMS += $(LOADER_PIXELFORMAT_TESTS)
 
 if WANT_AMALGAMATED_TOOLS
 nodist_filter_0001_filter_clip_SOURCES = $(AMALGAMATION_SIXEL)
@@ -671,6 +690,100 @@ palette_0001_kmeans_init_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
 palette_0001_kmeans_init_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
 palette_0001_kmeans_init_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
+
+loader_0008_loader_coregraphics_pixelformat_SOURCES = \
+    loader/0008_loader_coregraphics_pixelformat.c \
+    loader/pixelformat_test_common.h
+loader_0008_loader_coregraphics_pixelformat_CPPFLAGS = \
+    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+loader_0008_loader_coregraphics_pixelformat_CFLAGS = \
+    $(LOADER_PIXELFORMAT_CFLAGS_VAL)
+loader_0008_loader_coregraphics_pixelformat_LDFLAGS = \
+    $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
+loader_0008_loader_coregraphics_pixelformat_LDADD = \
+    $(LOADER_PIXELFORMAT_LDADD_VAL)
+
+loader_0009_loader_wic_pixelformat_SOURCES = \
+    loader/0009_loader_wic_pixelformat.c \
+    loader/pixelformat_test_common.h
+loader_0009_loader_wic_pixelformat_CPPFLAGS = \
+    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+loader_0009_loader_wic_pixelformat_CFLAGS = $(LOADER_PIXELFORMAT_CFLAGS_VAL)
+loader_0009_loader_wic_pixelformat_LDFLAGS = $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
+loader_0009_loader_wic_pixelformat_LDADD = $(LOADER_PIXELFORMAT_LDADD_VAL)
+
+loader_0010_loader_gdk_pixbuf_pixelformat_SOURCES = \
+    loader/0010_loader_gdk_pixbuf_pixelformat.c \
+    loader/pixelformat_test_common.h
+loader_0010_loader_gdk_pixbuf_pixelformat_CPPFLAGS = \
+    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+loader_0010_loader_gdk_pixbuf_pixelformat_CFLAGS = \
+    $(LOADER_PIXELFORMAT_CFLAGS_VAL)
+loader_0010_loader_gdk_pixbuf_pixelformat_LDFLAGS = \
+    $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
+loader_0010_loader_gdk_pixbuf_pixelformat_LDADD = \
+    $(LOADER_PIXELFORMAT_LDADD_VAL)
+
+loader_0011_loader_gd_pixelformat_SOURCES = \
+    loader/0011_loader_gd_pixelformat.c \
+    loader/pixelformat_test_common.h
+loader_0011_loader_gd_pixelformat_CPPFLAGS = \
+    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+loader_0011_loader_gd_pixelformat_CFLAGS = $(LOADER_PIXELFORMAT_CFLAGS_VAL)
+loader_0011_loader_gd_pixelformat_LDFLAGS = $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
+loader_0011_loader_gd_pixelformat_LDADD = $(LOADER_PIXELFORMAT_LDADD_VAL)
+
+loader_0012_loader_libpng_pixelformat_SOURCES = \
+    loader/0012_loader_libpng_pixelformat.c \
+    loader/pixelformat_test_common.h
+loader_0012_loader_libpng_pixelformat_CPPFLAGS = \
+    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+loader_0012_loader_libpng_pixelformat_CFLAGS = $(LOADER_PIXELFORMAT_CFLAGS_VAL)
+loader_0012_loader_libpng_pixelformat_LDFLAGS = $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
+loader_0012_loader_libpng_pixelformat_LDADD = $(LOADER_PIXELFORMAT_LDADD_VAL)
+
+loader_0013_loader_libjpeg_pixelformat_SOURCES = \
+    loader/0013_loader_libjpeg_pixelformat.c \
+    loader/pixelformat_test_common.h
+loader_0013_loader_libjpeg_pixelformat_CPPFLAGS = \
+    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+loader_0013_loader_libjpeg_pixelformat_CFLAGS = $(LOADER_PIXELFORMAT_CFLAGS_VAL)
+loader_0013_loader_libjpeg_pixelformat_LDFLAGS = $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
+loader_0013_loader_libjpeg_pixelformat_LDADD = $(LOADER_PIXELFORMAT_LDADD_VAL)
+
+loader_0014_loader_builtin_pixelformat_SOURCES = \
+    loader/0014_loader_builtin_pixelformat.c \
+    loader/pixelformat_test_common.h
+loader_0014_loader_builtin_pixelformat_CPPFLAGS = \
+    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+loader_0014_loader_builtin_pixelformat_CFLAGS = $(LOADER_PIXELFORMAT_CFLAGS_VAL)
+loader_0014_loader_builtin_pixelformat_LDFLAGS = \
+    $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
+loader_0014_loader_builtin_pixelformat_LDADD = $(LOADER_PIXELFORMAT_LDADD_VAL)
+
+loader_0015_loader_quicklook_pixelformat_SOURCES = \
+    loader/0015_loader_quicklook_pixelformat.c \
+    loader/pixelformat_test_common.h
+loader_0015_loader_quicklook_pixelformat_CPPFLAGS = \
+    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+loader_0015_loader_quicklook_pixelformat_CFLAGS = \
+    $(LOADER_PIXELFORMAT_CFLAGS_VAL)
+loader_0015_loader_quicklook_pixelformat_LDFLAGS = \
+    $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
+loader_0015_loader_quicklook_pixelformat_LDADD = \
+    $(LOADER_PIXELFORMAT_LDADD_VAL)
+
+loader_0016_loader_gnome_thumbnailer_pixelformat_SOURCES = \
+    loader/0016_loader_gnome_thumbnailer_pixelformat.c \
+    loader/pixelformat_test_common.h
+loader_0016_loader_gnome_thumbnailer_pixelformat_CPPFLAGS = \
+    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+loader_0016_loader_gnome_thumbnailer_pixelformat_CFLAGS = \
+    $(LOADER_PIXELFORMAT_CFLAGS_VAL)
+loader_0016_loader_gnome_thumbnailer_pixelformat_LDFLAGS = \
+    $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
+loader_0016_loader_gnome_thumbnailer_pixelformat_LDADD = \
+    $(LOADER_PIXELFORMAT_LDADD_VAL)
 
 
 T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_builddir)/build-aux/lso-tap-driver.sh
