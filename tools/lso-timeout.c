@@ -7,19 +7,39 @@
  * given via -k.
  */
 
+#if !defined(_POSIX_C_SOURCE)
+# define _POSIX_C_SOURCE 200809L
+#endif
+
+#include "config.h"
+
 #include <errno.h>
-#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
+
+#if defined(HAVE_WINDOWS_PROC)
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+#else
+# include <signal.h>
+# include <unistd.h>
+# include <sys/types.h>
+# include <sys/wait.h>
+# include <sys/time.h>
+#endif
 
 static double
 current_time_seconds(void)
 {
+#if defined(HAVE_WINDOWS_PROC)
+  ULONGLONG ticks;
+
+  ticks = GetTickCount64();
+  return (double) ticks / 1000.0;
+#else
+# if defined(CLOCK_MONOTONIC)
   struct timespec ts;
 
   if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
@@ -27,6 +47,16 @@ current_time_seconds(void)
   }
 
   return (double) ts.tv_sec + (double) ts.tv_nsec / 1.0e9;
+# else
+  struct timeval tv;
+
+  if (gettimeofday(&tv, NULL) != 0) {
+    return -1.0;
+  }
+
+  return (double) tv.tv_sec + (double) tv.tv_usec / 1.0e6;
+# endif
+#endif
 }
 
 static int
@@ -68,6 +98,10 @@ usage(void)
 static void
 sleep_millis(long millis)
 {
+#if defined(HAVE_WINDOWS_PROC)
+  Sleep((DWORD) millis);
+#else
+# if defined(HAVE_NANOSLEEP)
   struct timespec req;
   struct timespec rem;
 
@@ -80,8 +114,16 @@ sleep_millis(long millis)
     }
     req = rem;
   }
+# else
+  if (millis <= 0) {
+    return;
+  }
+  usleep((useconds_t) millis * 1000U);
+# endif
+#endif
 }
 
+#if defined(HAVE_FORK) && defined(HAVE_WAITPID)
 static int
 wait_with_timeout(pid_t child, double deadline, double kill_deadline)
 {
@@ -123,6 +165,177 @@ wait_with_timeout(pid_t child, double deadline, double kill_deadline)
     sleep_millis(10);
   }
 }
+#endif
+
+#if defined(HAVE_WINDOWS_PROC)
+static size_t
+command_line_length(char **argv)
+{
+  size_t length;
+  size_t i;
+  const char *p;
+
+  /*
+   * Each argument is always quoted to preserve whitespace and shell
+   * metacharacters. Quotes and backslashes are escaped so the Windows
+   * command-line parser reconstructs the original argv array.
+   */
+  length = 1;
+  for (i = 0; argv[i] != NULL; i++) {
+    if (i != 0) {
+      length++;
+    }
+    length += 2;
+    for (p = argv[i]; *p != '\0'; p++) {
+      if (*p == '"' || *p == '\\') {
+        length++;
+      }
+      length++;
+    }
+  }
+
+  return length;
+}
+
+static void
+copy_command_line(char *dst, char **argv)
+{
+  char *cur;
+  size_t i;
+  const char *p;
+
+  cur = dst;
+  for (i = 0; argv[i] != NULL; i++) {
+    if (i != 0) {
+      *cur++ = ' ';
+    }
+    *cur++ = '"';
+    for (p = argv[i]; *p != '\0'; p++) {
+      if (*p == '"' || *p == '\\') {
+        *cur++ = '\\';
+      }
+      *cur++ = *p;
+    }
+    *cur++ = '"';
+  }
+  *cur = '\0';
+}
+
+static HANDLE
+spawn_process(char **argv)
+{
+  STARTUPINFOA si;
+  PROCESS_INFORMATION pi;
+  size_t length;
+  char *cmdline;
+
+  /*
+   * CreateProcessA requires a single command-line string. We build it
+   * from argv with quoting and escaping to match the POSIX execvp
+   * behaviour used on other platforms.
+   */
+  length = command_line_length(argv);
+  cmdline = (char *) malloc(length);
+  if (cmdline == NULL) {
+    fprintf(stderr, "lso-timeout: out of memory\n");
+    return NULL;
+  }
+
+  copy_command_line(cmdline, argv);
+
+  memset(&si, 0, sizeof(si));
+  si.cb = sizeof(si);
+  memset(&pi, 0, sizeof(pi));
+
+  if (CreateProcessA(NULL, cmdline, NULL, NULL, TRUE, 0, NULL, NULL, &si,
+                     &pi) == 0) {
+    fprintf(stderr, "lso-timeout: CreateProcessA failed: %lu\n",
+            (unsigned long) GetLastError());
+    free(cmdline);
+    return NULL;
+  }
+
+  CloseHandle(pi.hThread);
+  free(cmdline);
+  return pi.hProcess;
+}
+
+static int
+wait_with_timeout_win(HANDLE child, double deadline, double kill_deadline)
+{
+  DWORD wait_ms;
+  DWORD wait_result;
+  DWORD exit_code;
+  double now;
+  double next_deadline;
+  int term_sent;
+
+  term_sent = 0;
+
+  for (;;) {
+    now = current_time_seconds();
+    if (now < 0.0) {
+      TerminateProcess(child, 1);
+      CloseHandle(child);
+      return EXIT_FAILURE;
+    }
+
+    /*
+     * Wait in short slices so we can reevaluate whether the soft
+     * deadline has passed and send termination promptly.
+     */
+    next_deadline = deadline;
+    if (term_sent != 0 && kill_deadline >= 0.0 &&
+        kill_deadline < next_deadline) {
+      next_deadline = kill_deadline;
+    }
+
+    if (now >= next_deadline) {
+      wait_ms = 0;
+    } else {
+      wait_ms = (DWORD) ((next_deadline - now) * 1000.0);
+      if (wait_ms > 50) {
+        wait_ms = 50;
+      }
+    }
+
+    wait_result = WaitForSingleObject(child, wait_ms);
+    if (wait_result == WAIT_OBJECT_0) {
+      if (GetExitCodeProcess(child, &exit_code) == 0) {
+        CloseHandle(child);
+        return EXIT_FAILURE;
+      }
+      CloseHandle(child);
+      if (term_sent != 0) {
+        return 124;
+      }
+      return (int) exit_code;
+    }
+
+    if (wait_result != WAIT_TIMEOUT) {
+      TerminateProcess(child, 1);
+      CloseHandle(child);
+      return EXIT_FAILURE;
+    }
+
+    now = current_time_seconds();
+    if (now < 0.0) {
+      TerminateProcess(child, 1);
+      CloseHandle(child);
+      return EXIT_FAILURE;
+    }
+
+    if (term_sent == 0 && now >= deadline) {
+      TerminateProcess(child, 1);
+      term_sent = 1;
+    } else if (term_sent != 0 && kill_deadline >= 0.0 &&
+               now >= kill_deadline) {
+      TerminateProcess(child, 1);
+      kill_deadline = -1.0;
+    }
+  }
+}
+#endif
 
 int
 main(int argc, char **argv)
@@ -131,7 +344,6 @@ main(int argc, char **argv)
   double kill_delay;
   double deadline;
   double kill_deadline;
-  pid_t pid;
   int argi;
 
   timeout_seconds = -1.0;
@@ -157,6 +369,9 @@ main(int argc, char **argv)
   }
   argi++;
 
+#if defined(HAVE_FORK) && defined(HAVE_WAITPID)
+  pid_t pid;
+
   pid = fork();
   if (pid < 0) {
     perror("fork");
@@ -179,4 +394,29 @@ main(int argc, char **argv)
   kill_deadline = deadline + kill_delay;
 
   return wait_with_timeout(pid, deadline, kill_deadline);
+#elif defined(HAVE_WINDOWS_PROC)
+  HANDLE child;
+
+  child = spawn_process(&argv[argi]);
+  if (child == NULL) {
+    return EXIT_FAILURE;
+  }
+
+  deadline = current_time_seconds();
+  if (deadline < 0.0) {
+    TerminateProcess(child, 1);
+    CloseHandle(child);
+    return EXIT_FAILURE;
+  }
+  deadline += timeout_seconds;
+
+  kill_deadline = deadline + kill_delay;
+
+  return wait_with_timeout_win(child, deadline, kill_deadline);
+#else
+  fprintf(stderr, "lso-timeout: timeout support is disabled\n");
+  execvp(argv[argi], &argv[argi]);
+  perror("execvp");
+  return EXIT_FAILURE;
+#endif
 }

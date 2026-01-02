@@ -1057,9 +1057,27 @@ case "${host_os}" in
   mingw*)
     ;;
   *)
-    AC_CHECK_FUNCS([clock nanosleep fork posix_spawnp])
+    AC_CHECK_FUNCS([clock nanosleep fork waitpid posix_spawnp])
     ;;
 esac
+
+AC_CHECK_HEADERS([windows.h])
+AC_CHECK_FUNCS([CreateProcessA \
+                TerminateProcess \
+                WaitForSingleObject \
+                CloseHandle \
+                GetExitCodeProcess],
+               [],
+               [],
+               [[#include <windows.h>]])
+AS_IF([test "x$ac_cv_header_windows_h" = xyes && \
+      test "x$ac_cv_func_CreateProcessA" = xyes && \
+      test "x$ac_cv_func_TerminateProcess" = xyes && \
+      test "x$ac_cv_func_WaitForSingleObject" = xyes && \
+      test "x$ac_cv_func_CloseHandle" = xyes && \
+      test "x$ac_cv_func_GetExitCodeProcess" = xyes],
+      [AC_DEFINE([HAVE_WINDOWS_PROC], [1],
+                 [Define to 1 if Win32 process APIs are available.])])
 
 AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
                [

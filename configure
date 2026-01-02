@@ -19661,6 +19661,12 @@ then :
   printf "%s\n" "#define HAVE_FORK 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "waitpid" "ac_cv_func_waitpid"
+if test "x$ac_cv_func_waitpid" = xyes
+then :
+  printf "%s\n" "#define HAVE_WAITPID 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "posix_spawnp" "ac_cv_func_posix_spawnp"
 if test "x$ac_cv_func_posix_spawnp" = xyes
 then :
@@ -19670,6 +19676,56 @@ fi
 
     ;;
 esac
+
+ac_fn_c_check_header_compile "$LINENO" "windows.h" "ac_cv_header_windows_h" "$ac_includes_default"
+if test "x$ac_cv_header_windows_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_WINDOWS_H 1" >>confdefs.h
+
+fi
+
+ac_fn_c_check_func "$LINENO" "CreateProcessA" "ac_cv_func_CreateProcessA"
+if test "x$ac_cv_func_CreateProcessA" = xyes
+then :
+  printf "%s\n" "#define HAVE_CREATEPROCESSA 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "TerminateProcess" "ac_cv_func_TerminateProcess"
+if test "x$ac_cv_func_TerminateProcess" = xyes
+then :
+  printf "%s\n" "#define HAVE_TERMINATEPROCESS 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "WaitForSingleObject" "ac_cv_func_WaitForSingleObject"
+if test "x$ac_cv_func_WaitForSingleObject" = xyes
+then :
+  printf "%s\n" "#define HAVE_WAITFORSINGLEOBJECT 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "CloseHandle" "ac_cv_func_CloseHandle"
+if test "x$ac_cv_func_CloseHandle" = xyes
+then :
+  printf "%s\n" "#define HAVE_CLOSEHANDLE 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "GetExitCodeProcess" "ac_cv_func_GetExitCodeProcess"
+if test "x$ac_cv_func_GetExitCodeProcess" = xyes
+then :
+  printf "%s\n" "#define HAVE_GETEXITCODEPROCESS 1" >>confdefs.h
+
+fi
+
+if test "x$ac_cv_header_windows_h" = xyes && \
+      test "x$ac_cv_func_CreateProcessA" = xyes && \
+      test "x$ac_cv_func_TerminateProcess" = xyes && \
+      test "x$ac_cv_func_WaitForSingleObject" = xyes && \
+      test "x$ac_cv_func_CloseHandle" = xyes && \
+      test "x$ac_cv_func_GetExitCodeProcess" = xyes
+then :
+
+printf "%s\n" "#define HAVE_WINDOWS_PROC 1" >>confdefs.h
+
+fi
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $CC options needed to detect all undeclared functions" >&5
 printf %s "checking for $CC options needed to detect all undeclared functions... " >&6; }
