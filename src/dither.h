@@ -70,6 +70,7 @@ struct sixel_dither {
     int pipeline_band_height;       /* band thickness for dither */
     int pipeline_band_overlap;      /* overlap rows for burn-in */
     int pipeline_dither_threads;    /* thread budget for dither */
+    int pipeline_pin_threads;       /* pin palette/encode workers */
     int pipeline_image_height;      /* total image rows for logging */
     struct sixel_logger *pipeline_logger; /* parallel log sink */
 };
