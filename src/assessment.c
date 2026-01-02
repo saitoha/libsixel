@@ -141,6 +141,7 @@ typedef struct sixel_assessment_complex {
 } sixel_assessment_complex_t;
 
 typedef struct sixel_assessment_metrics {
+    unsigned int valid_mask; /* bit mask for computed metrics */
     float ms_ssim;
     float high_freq_out;
     float high_freq_ref;
@@ -3535,15 +3536,24 @@ psnr_metric(const sixel_assessment_float_buffer_t *ref,
  * sixel_assessment_metrics_t aggregation
  */
 static void
+assessment_metric_mark(sixel_assessment_metrics_t *metrics,
+                       int metric_id,
+                       float value)
+{
+    if (metrics == NULL) {
+        return;
+    }
+    if (!isfinite((double)value)) {
+        return;
+    }
+    metrics->valid_mask |= SIXEL_ASSESSMENT_METRIC_MASK(metric_id);
+}
+
+static void
 assessment_metrics_init(sixel_assessment_metrics_t *metrics)
 {
-    float *fields;
-    size_t index;
-
-    fields = (float *)(void *)metrics;
-    for (index = 0; index < sizeof(*metrics) / sizeof(float); ++index) {
-        fields[index] = NAN;
-    }
+    memset(metrics, 0, sizeof(*metrics));
+    metrics->valid_mask = 0u;
 }
 
 static sixel_assessment_metrics_t
@@ -3595,14 +3605,14 @@ evaluate_metrics(sixel_assessment_t *assessment,
 
     assessment_metrics_init(&metrics);
 
-    high_freq_out_value = NAN;
-    high_freq_ref_value = NAN;
-    stripe_ref_value = NAN;
-    stripe_out_value = NAN;
-    band_run_out = NAN;
-    band_run_ref = NAN;
-    band_grad_out = NAN;
-    band_grad_ref = NAN;
+    high_freq_out_value = 0.0f;
+    high_freq_ref_value = 0.0f;
+    stripe_ref_value = 0.0f;
+    stripe_out_value = 0.0f;
+    band_run_out = 0.0f;
+    band_run_ref = 0.0f;
+    band_grad_out = 0.0f;
+    band_grad_ref = 0.0f;
 
     ref_luma.length = 0;
     ref_luma.values = NULL;
@@ -3696,6 +3706,9 @@ evaluate_metrics(sixel_assessment_t *assessment,
     if (want_ms_ssim && need_luma) {
         metrics.ms_ssim = ms_ssim_luma(&ref_luma, &out_luma,
                                        width, height);
+        assessment_metric_mark(&metrics,
+                               SIXEL_ASSESSMENT_METRIC_MS_SSIM,
+                               metrics.ms_ssim);
     }
     if (need_luma && (want_high_freq_out || want_high_freq_delta)) {
         high_freq_out_value = high_frequency_ratio(&out_luma,
@@ -3713,14 +3726,23 @@ evaluate_metrics(sixel_assessment_t *assessment,
             assessment_metric_selected(assessment,
                 SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_OUT)) {
         metrics.high_freq_out = high_freq_out_value;
+        assessment_metric_mark(&metrics,
+                               SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_OUT,
+                               metrics.high_freq_out);
     }
     if (want_high_freq_ref && need_luma &&
             assessment_metric_selected(assessment,
                 SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_REF)) {
         metrics.high_freq_ref = high_freq_ref_value;
+        assessment_metric_mark(&metrics,
+                               SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_REF,
+                               metrics.high_freq_ref);
     }
     if (want_high_freq_delta && need_luma) {
         metrics.high_freq_delta = high_freq_out_value - high_freq_ref_value;
+        assessment_metric_mark(&metrics,
+                               SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_DELTA,
+                               metrics.high_freq_delta);
     }
     if (need_luma && (want_stripe_ref || want_stripe_rel)) {
         stripe_ref_value = stripe_score(&ref_luma, width, height, 180);
@@ -3732,24 +3754,39 @@ evaluate_metrics(sixel_assessment_t *assessment,
             assessment_metric_selected(assessment,
                 SIXEL_ASSESSMENT_METRIC_STRIPE_REF)) {
         metrics.stripe_ref = stripe_ref_value;
+        assessment_metric_mark(&metrics,
+                               SIXEL_ASSESSMENT_METRIC_STRIPE_REF,
+                               metrics.stripe_ref);
     }
     if (want_stripe_out && need_luma &&
             assessment_metric_selected(assessment,
                 SIXEL_ASSESSMENT_METRIC_STRIPE_OUT)) {
         metrics.stripe_out = stripe_out_value;
+        assessment_metric_mark(&metrics,
+                               SIXEL_ASSESSMENT_METRIC_STRIPE_OUT,
+                               metrics.stripe_out);
     }
     if (want_stripe_rel && need_luma) {
         metrics.stripe_rel = stripe_out_value - stripe_ref_value;
+        assessment_metric_mark(&metrics,
+                               SIXEL_ASSESSMENT_METRIC_STRIPE_REL,
+                               metrics.stripe_rel);
     }
     if (want_banding_run_rel && need_luma) {
         band_run_out = banding_index_runlen(&out_luma, width, height, 32);
         band_run_ref = banding_index_runlen(&ref_luma, width, height, 32);
         metrics.band_run_rel = band_run_out - band_run_ref;
+        assessment_metric_mark(&metrics,
+                               SIXEL_ASSESSMENT_METRIC_BAND_RUN_REL,
+                               metrics.band_run_rel);
     }
     if (want_banding_grad_rel && need_luma) {
         band_grad_out = banding_index_gradient(&out_luma, width, height);
         band_grad_ref = banding_index_gradient(&ref_luma, width, height);
         metrics.band_grad_rel = band_grad_out - band_grad_ref;
+        assessment_metric_mark(&metrics,
+                               SIXEL_ASSESSMENT_METRIC_BAND_GRAD_REL,
+                               metrics.band_grad_rel);
     }
     if (need_clip != 0) {
         if (want_clip_ref) {
@@ -3758,6 +3795,18 @@ evaluate_metrics(sixel_assessment_t *assessment,
                            &metrics.clip_r_ref,
                            &metrics.clip_g_ref,
                            &metrics.clip_b_ref);
+            assessment_metric_mark(&metrics,
+                                   SIXEL_ASSESSMENT_METRIC_CLIP_L_REF,
+                                   metrics.clip_l_ref);
+            assessment_metric_mark(&metrics,
+                                   SIXEL_ASSESSMENT_METRIC_CLIP_R_REF,
+                                   metrics.clip_r_ref);
+            assessment_metric_mark(&metrics,
+                                   SIXEL_ASSESSMENT_METRIC_CLIP_G_REF,
+                                   metrics.clip_g_ref);
+            assessment_metric_mark(&metrics,
+                                   SIXEL_ASSESSMENT_METRIC_CLIP_B_REF,
+                                   metrics.clip_b_ref);
         }
         if (want_clip_out) {
             clipping_rates(out_pixels, width, height,
@@ -3765,12 +3814,36 @@ evaluate_metrics(sixel_assessment_t *assessment,
                            &metrics.clip_r_out,
                            &metrics.clip_g_out,
                            &metrics.clip_b_out);
+            assessment_metric_mark(&metrics,
+                                   SIXEL_ASSESSMENT_METRIC_CLIP_L_OUT,
+                                   metrics.clip_l_out);
+            assessment_metric_mark(&metrics,
+                                   SIXEL_ASSESSMENT_METRIC_CLIP_R_OUT,
+                                   metrics.clip_r_out);
+            assessment_metric_mark(&metrics,
+                                   SIXEL_ASSESSMENT_METRIC_CLIP_G_OUT,
+                                   metrics.clip_g_out);
+            assessment_metric_mark(&metrics,
+                                   SIXEL_ASSESSMENT_METRIC_CLIP_B_OUT,
+                                   metrics.clip_b_out);
         }
         if (want_clip_rel) {
             metrics.clip_l_rel = metrics.clip_l_out - metrics.clip_l_ref;
             metrics.clip_r_rel = metrics.clip_r_out - metrics.clip_r_ref;
             metrics.clip_g_rel = metrics.clip_g_out - metrics.clip_g_ref;
             metrics.clip_b_rel = metrics.clip_b_out - metrics.clip_b_ref;
+            assessment_metric_mark(&metrics,
+                                   SIXEL_ASSESSMENT_METRIC_CLIP_L_REL,
+                                   metrics.clip_l_rel);
+            assessment_metric_mark(&metrics,
+                                   SIXEL_ASSESSMENT_METRIC_CLIP_R_REL,
+                                   metrics.clip_r_rel);
+            assessment_metric_mark(&metrics,
+                                   SIXEL_ASSESSMENT_METRIC_CLIP_G_REL,
+                                   metrics.clip_g_rel);
+            assessment_metric_mark(&metrics,
+                                   SIXEL_ASSESSMENT_METRIC_CLIP_B_REL,
+                                   metrics.clip_b_rel);
         }
     }
     if (need_lab != 0) {
@@ -3787,6 +3860,9 @@ evaluate_metrics(sixel_assessment_t *assessment,
             }
             metrics.delta_chroma_mean =
                 (float)(sum_value / (double)pixels);
+            assessment_metric_mark(&metrics,
+                                   SIXEL_ASSESSMENT_METRIC_DELTA_CHROMA,
+                                   metrics.delta_chroma_mean);
         }
         if (want_delta_e00_mean) {
             de00 = deltaE00(&ref_lab, &out_lab, pixels);
@@ -3795,14 +3871,23 @@ evaluate_metrics(sixel_assessment_t *assessment,
                 sum_value += de00.values[iter];
             }
             metrics.delta_e00_mean = (float)(sum_value / (double)pixels);
+            assessment_metric_mark(&metrics,
+                                   SIXEL_ASSESSMENT_METRIC_DELTA_E00,
+                                   metrics.delta_e00_mean);
         }
     }
     if (want_gmsd && need_luma) {
         metrics.gmsd_value = gmsd_metric(&ref_luma, &out_luma,
                                          width, height);
+        assessment_metric_mark(&metrics,
+                               SIXEL_ASSESSMENT_METRIC_GMSD,
+                               metrics.gmsd_value);
     }
     if (want_psnr_y && need_luma) {
         metrics.psnr_y = psnr_metric(&ref_luma, &out_luma, width, height);
+        assessment_metric_mark(&metrics,
+                               SIXEL_ASSESSMENT_METRIC_PSNR_Y,
+                               metrics.psnr_y);
     }
 
     if (ref_luma.values != NULL) {
@@ -3833,26 +3918,32 @@ evaluate_metrics(sixel_assessment_t *assessment,
 /*
  * LPIPS metric integration (ONNX Runtime)
  */
-static float
+static int
 compute_lpips_alex(sixel_assessment_t *assessment,
                    const float *ref_pixels,
                    const float *out_pixels,
                    int width,
-                   int height)
+                   int height,
+                   float *value_out)
 {
-    float value;
-
-    value = NAN;
+    int valid;
 #if defined(HAVE_ONNXRUNTIME)
     image_f32_t ref_tensor;
     image_f32_t out_tensor;
     float distance;
+#endif
 
+    valid = 0;
+    if (value_out == NULL) {
+        return 0;
+    }
+    *value_out = 0.0f;
+#if defined(HAVE_ONNXRUNTIME)
     ref_tensor.width = 0;
     ref_tensor.height = 0;
     ref_tensor.nchw = NULL;
     out_tensor = ref_tensor;
-    distance = NAN;
+    distance = 0.0f;
 
     if (assessment->enable_lpips == 0) {
         goto done;
@@ -3877,7 +3968,8 @@ compute_lpips_alex(sixel_assessment_t *assessment,
                   &distance) != 0) {
         goto done;
     }
-    value = distance;
+    *value_out = distance;
+    valid = 1;
 
 done:
     free_image_f32(&ref_tensor);
@@ -3889,7 +3981,7 @@ done:
     (void)width;
     (void)height;
 #endif
-    return value;
+    return valid;
 }
 
 static void
@@ -3984,64 +4076,136 @@ static const MetricDescriptor g_metric_table[] = {
 };
 
 static void
+store_metric_if_valid(double *results,
+                      unsigned int mask,
+                      int metric_id,
+                      double value)
+{
+    if ((mask & SIXEL_ASSESSMENT_METRIC_MASK(metric_id)) == 0u) {
+        return;
+    }
+    results[SIXEL_ASSESSMENT_INDEX(metric_id)] = value;
+}
+
+static void
 store_metrics(sixel_assessment_t *assessment,
               const sixel_assessment_metrics_t *metrics)
 {
     double *results;
+    unsigned int mask;
 
+    if (assessment == NULL || metrics == NULL) {
+        return;
+    }
     results = assessment->results;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_MS_SSIM)]
-        = metrics->ms_ssim;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_OUT)]
-        = metrics->high_freq_out;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_REF)]
-        = metrics->high_freq_ref;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_DELTA)]
-        = metrics->high_freq_delta;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_STRIPE_REF)]
-        = metrics->stripe_ref;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_STRIPE_OUT)]
-        = metrics->stripe_out;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_STRIPE_REL)]
-        = metrics->stripe_rel;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_BAND_RUN_REL)]
-        = metrics->band_run_rel;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_BAND_GRAD_REL)]
-        = metrics->band_grad_rel;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_L_REF)]
-        = metrics->clip_l_ref;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_R_REF)]
-        = metrics->clip_r_ref;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_G_REF)]
-        = metrics->clip_g_ref;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_B_REF)]
-        = metrics->clip_b_ref;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_L_OUT)]
-        = metrics->clip_l_out;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_R_OUT)]
-        = metrics->clip_r_out;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_G_OUT)]
-        = metrics->clip_g_out;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_B_OUT)]
-        = metrics->clip_b_out;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_L_REL)]
-        = metrics->clip_l_rel;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_R_REL)]
-        = metrics->clip_r_rel;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_G_REL)]
-        = metrics->clip_g_rel;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_CLIP_B_REL)]
-        = metrics->clip_b_rel;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_DELTA_CHROMA)]
-        = metrics->delta_chroma_mean;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_DELTA_E00)]
-        = metrics->delta_e00_mean;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_GMSD)]
-        = metrics->gmsd_value;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_PSNR_Y)]
-        = metrics->psnr_y;
-    results[SIXEL_ASSESSMENT_INDEX(SIXEL_ASSESSMENT_METRIC_LPIPS_VGG)]
-        = metrics->lpips_alex;
+    memset(results, 0, sizeof(assessment->results));
+    mask = metrics->valid_mask;
+    assessment->results_valid_mask = mask;
+
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_MS_SSIM,
+                          metrics->ms_ssim);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_OUT,
+                          metrics->high_freq_out);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_REF,
+                          metrics->high_freq_ref);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_HIGH_FREQ_DELTA,
+                          metrics->high_freq_delta);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_STRIPE_REF,
+                          metrics->stripe_ref);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_STRIPE_OUT,
+                          metrics->stripe_out);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_STRIPE_REL,
+                          metrics->stripe_rel);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_BAND_RUN_REL,
+                          metrics->band_run_rel);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_BAND_GRAD_REL,
+                          metrics->band_grad_rel);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_CLIP_L_REF,
+                          metrics->clip_l_ref);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_CLIP_R_REF,
+                          metrics->clip_r_ref);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_CLIP_G_REF,
+                          metrics->clip_g_ref);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_CLIP_B_REF,
+                          metrics->clip_b_ref);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_CLIP_L_OUT,
+                          metrics->clip_l_out);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_CLIP_R_OUT,
+                          metrics->clip_r_out);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_CLIP_G_OUT,
+                          metrics->clip_g_out);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_CLIP_B_OUT,
+                          metrics->clip_b_out);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_CLIP_L_REL,
+                          metrics->clip_l_rel);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_CLIP_R_REL,
+                          metrics->clip_r_rel);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_CLIP_G_REL,
+                          metrics->clip_g_rel);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_CLIP_B_REL,
+                          metrics->clip_b_rel);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_DELTA_CHROMA,
+                          metrics->delta_chroma_mean);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_DELTA_E00,
+                          metrics->delta_e00_mean);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_GMSD,
+                          metrics->gmsd_value);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_PSNR_Y,
+                          metrics->psnr_y);
+    store_metric_if_valid(results,
+                          mask,
+                          SIXEL_ASSESSMENT_METRIC_LPIPS_VGG,
+                          metrics->lpips_alex);
 }
 
 static SIXELSTATUS
@@ -4397,6 +4561,7 @@ sixel_assessment_new(sixel_assessment_t **ppassessment,
     assessment->lpips_models_ready = 0;
     assessment->diff_model_path[0] = '\0';
     assessment->feat_model_path[0] = '\0';
+    assessment->results_valid_mask = 0u;
     memset(assessment->results, 0,
            sizeof(assessment->results));
     assessment_reset_stage_bookkeeping(assessment);
@@ -4555,6 +4720,9 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
     assessment->last_error = SIXEL_OK;
     assessment->error_message[0] = '\0';
     assessment->results_ready = 0;
+    assessment->results_valid_mask = 0u;
+    memset(assessment->results, 0,
+           sizeof(assessment->results));
     g_assessment_context = assessment;
     bail = setjmp(assessment->bailout);
     if (bail != 0) {
@@ -4592,11 +4760,16 @@ sixel_assessment_analyze(sixel_assessment_t *assessment,
     want_lpips = assessment_metric_selected(assessment,
                  SIXEL_ASSESSMENT_METRIC_LPIPS_VGG);
     if (want_lpips) {
-        metrics.lpips_alex = compute_lpips_alex(assessment,
-                                                ref_pixels,
-                                                out_pixels,
-                                                ref_width,
-                                                ref_height);
+        if (compute_lpips_alex(assessment,
+                               ref_pixels,
+                               out_pixels,
+                               ref_width,
+                               ref_height,
+                               &metrics.lpips_alex)) {
+            assessment_metric_mark(&metrics,
+                                   SIXEL_ASSESSMENT_METRIC_LPIPS_VGG,
+                                   metrics.lpips_alex);
+        }
     }
     store_metrics(assessment, &metrics);
     assessment->results_ready = 1;
@@ -4634,8 +4807,8 @@ assessment_emit_quality_lines(sixel_assessment_t *assessment,
         last = (i + 1 == sizeof(g_metric_table) /
                 sizeof(g_metric_table[0]));
         index = SIXEL_ASSESSMENT_INDEX(g_metric_table[i].id);
-        value = assessment->results[index];
-        if (isnan(value)) {
+        if ((assessment->results_valid_mask &
+                SIXEL_ASSESSMENT_METRIC_MASK(g_metric_table[i].id)) == 0u) {
             written = snprintf(line,
                                sizeof(line),
                                "%s\"%s\": null%s\n",
@@ -4643,6 +4816,7 @@ assessment_emit_quality_lines(sixel_assessment_t *assessment,
                                g_metric_table[i].json_key,
                                last ? "" : ",");
         } else {
+            value = assessment->results[index];
             written = snprintf(line,
                                sizeof(line),
                                "%s\"%s\": %.6f%s\n",

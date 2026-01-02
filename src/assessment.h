@@ -87,6 +87,7 @@ struct sixel_assessment {
     int lpips_models_ready;
     char diff_model_path[PATH_MAX];
     char feat_model_path[PATH_MAX];
+    unsigned int results_valid_mask; /* valid bits for results[] */
     double results[SIXEL_ASSESSMENT_METRIC_COUNT];
     sixel_assessment_stage_t active_stage;
     double stage_started_at;
