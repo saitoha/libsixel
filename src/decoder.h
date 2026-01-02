@@ -44,10 +44,6 @@ struct sixel_decoder {
     char clipboard_output_format[32];
 };
 
-#if HAVE_TESTS
-SIXELAPI int
-sixel_decoder_tests_main(void);
-#endif
 
 #endif /* LIBSIXEL_DECODER_H */
 

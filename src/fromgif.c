@@ -1003,43 +1003,6 @@ end:
 #pragma warning(pop)
 #endif  /* _MSC_VER */
 
-#if HAVE_TESTS
-/* Placeholder smoke test for GIF decoder entry point. */
-static int
-fromgif_test_smoke(void)
-{
-    int nret = EXIT_FAILURE;
-
-    nret = EXIT_SUCCESS;
-
-    return nret;
-}
-
-
-SIXELAPI int
-sixel_fromgif_tests_main(void)
-{
-    int nret = EXIT_FAILURE;
-    size_t i;
-    typedef int (* testcase)(void);
-
-    static testcase const testcases[] = {
-        fromgif_test_smoke,
-    };
-
-    for (i = 0; i < sizeof(testcases) / sizeof(testcase); ++i) {
-        nret = testcases[i]();
-        if (nret != EXIT_SUCCESS) {
-            goto error;
-        }
-    }
-
-    nret = EXIT_SUCCESS;
-
-error:
-    return nret;
-}
-#endif  /* HAVE_TESTS */
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

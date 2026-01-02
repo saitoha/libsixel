@@ -39,10 +39,6 @@ sixel_status_render_markup_text(char const *source,
                                 char *destination,
                                 size_t destination_size);
 
-#if HAVE_TESTS
-SIXELAPI int
-sixel_status_tests_main(void);
-#endif
 
 #ifdef __cplusplus
 }
