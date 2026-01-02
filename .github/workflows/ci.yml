@@ -367,7 +367,7 @@ jobs:
       with:
         release: ${{ matrix.df_release }}
         usesh: true
-        copyback: true
+        copyback: false
         run: |
           set -eux
           artifact_dir="${GITHUB_WORKSPACE}/_artifacts/dragonflybsd"
@@ -434,6 +434,18 @@ jobs:
             ${static_only_flags}
           gmake V=1
           gmake check
+
+    - name: Fetch DragonFlyBSD artifacts from VM (Autotools)
+      if: matrix.platform == 'dragonflybsd'
+      run: |
+        set -eux
+        mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
+        remote_tar="${GITHUB_WORKSPACE}/_artifacts/dragonflybsd.tar.gz"
+        if ssh cross_platform_actions_host "test -f \"${remote_tar}\""; then
+          scp cross_platform_actions_host:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
+        else
+          echo "No artifact archive found on VM; skipping copy" >&2
+        fi
 
     - name: Setup MSVC developer env (vcvars)
       if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' }}
@@ -935,7 +947,7 @@ jobs:
         operating_system: ${{ matrix.cp_os }}
         architecture: ${{ matrix.cp_arch }}
         version: ${{ matrix.cp_version }}
-        sync_files: true
+        sync_files: runner-to-vm
         environment_variables: CI,GITHUB_WORKSPACE
         run: |
           set -eux
@@ -1173,6 +1185,18 @@ jobs:
       if: runner.os == 'Windows' && matrix.sys != 'CLANG64' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
       shell: msys2 {0}
       run: make check V=1
+
+    - name: Fetch BSD artifacts from VM (Autotools)
+      if: (matrix.platform == 'freebsd' || matrix.platform == 'openbsd' || matrix.platform == 'netbsd' || matrix.platform == 'haiku') && matrix.emscripten != true
+      run: |
+        set -eux
+        mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
+        remote_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
+        if ssh cross_platform_actions_host "test -f \"${remote_tar}\""; then
+          scp cross_platform_actions_host:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
+        else
+          echo "No artifact archive found on VM; skipping copy" >&2
+        fi
 
     - name: Run tests (Windows, CLANG64)
       if: runner.os == 'Windows' && matrix.sys == 'CLANG64' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
@@ -2238,7 +2262,7 @@ jobs:
         operating_system: ${{ matrix.cp_os }}
         architecture: ${{ matrix.cp_arch }}
         version: ${{ matrix.cp_version }}
-        sync_files: true
+        sync_files: runner-to-vm
         environment_variables: CI,GITHUB_WORKSPACE
         run: &meson_non_windows |
           set -eux
@@ -2397,6 +2421,18 @@ jobs:
 #          meson compile -C builddir -v
 #          meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
 
+    - name: Fetch BSD artifacts from VM (Meson)
+      if: matrix.platform == 'freebsd' || matrix.platform == 'openbsd' || matrix.platform == 'netbsd' || matrix.platform == 'haiku'
+      run: |
+        set -eux
+        mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
+        remote_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
+        if ssh cross_platform_actions_host "test -f \"${remote_tar}\""; then
+          scp cross_platform_actions_host:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
+        else
+          echo "No artifact archive found on VM; skipping copy" >&2
+        fi
+
     - name: Configure, build, and test (Meson, DragonFlyBSD)
       if: matrix.platform == 'dragonflybsd'
       timeout-minutes: 90
@@ -2404,7 +2440,7 @@ jobs:
       with:
         release: ${{ matrix.df_release }}
         usesh: true
-        copyback: true
+        copyback: false
         run: |
           set -eux
           artifact_dir="${GITHUB_WORKSPACE}/_artifacts/dragonflybsd"
@@ -2492,6 +2528,18 @@ jobs:
           meson test -C builddir
 #          meson compile -C builddir -v
 #          meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
+
+    - name: Fetch DragonFlyBSD artifacts from VM (Meson)
+      if: matrix.platform == 'dragonflybsd'
+      run: |
+        set -eux
+        mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
+        remote_tar="${GITHUB_WORKSPACE}/_artifacts/dragonflybsd.tar.gz"
+        if ssh cross_platform_actions_host "test -f \"${remote_tar}\""; then
+          scp cross_platform_actions_host:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
+        else
+          echo "No artifact archive found on VM; skipping copy" >&2
+        fi
 
     - name: Upload pkg_install log (Meson NetBSD)
       if: ${{ failure() && matrix.platform == 'netbsd' }}
