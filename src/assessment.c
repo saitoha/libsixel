@@ -2405,20 +2405,27 @@ ms_ssim_luma(const sixel_assessment_float_buffer_t *ref,
     for (level = 0; level < 5; ++level) {
         ssim_value = ssim_luma(&cur_ref, &cur_out, cur_width, cur_height,
                                0.01f, 0.03f, 11, 1.5f);
+        if (!isfinite(ssim_value)) {
+            ssim_value = 0.0f;
+        }
         weighted_sum += ssim_value * weights[level];
         weight_total += weights[level];
-        if (level < 4) {
-            next_ref = downsample2(&cur_ref, cur_width, cur_height,
-                                   &next_width, &next_height);
-            next_out = downsample2(&cur_out, cur_width, cur_height,
-                                   &next_width, &next_height);
-            float_buffer_free(&cur_ref);
-            float_buffer_free(&cur_out);
-            cur_ref = next_ref;
-            cur_out = next_out;
-            cur_width = next_width;
-            cur_height = next_height;
+        if (level >= 4) {
+            continue;
         }
+        if (cur_width < 2 || cur_height < 2) {
+            break;
+        }
+        next_ref = downsample2(&cur_ref, cur_width, cur_height,
+                               &next_width, &next_height);
+        next_out = downsample2(&cur_out, cur_width, cur_height,
+                               &next_width, &next_height);
+        float_buffer_free(&cur_ref);
+        float_buffer_free(&cur_out);
+        cur_ref = next_ref;
+        cur_out = next_out;
+        cur_width = next_width;
+        cur_height = next_height;
     }
 
     float_buffer_free(&cur_ref);
