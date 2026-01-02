@@ -658,6 +658,41 @@ typedef struct {
 
 static cli_env_help_t const g_env_help_table[] = {
     {
+        "SIXEL_OPTION_PREFIX_SUGGESTIONS",
+        "toggle prefix disambiguation hints for ambiguous option values.\n"
+        "Set to '1' (default) to print candidates or '0' to silence them."
+    },
+    {
+        "SIXEL_OPTION_FUZZY_SUGGESTIONS",
+        "toggle normalized Levenshtein suggestions after typos.\n"
+        "Set to '1' (default) to show hints or '0' to disable them."
+    },
+    {
+        "SIXEL_OPTION_PATH_SUGGESTIONS",
+        "toggle filesystem diagnostics when a path cannot be resolved.\n"
+        "Set to '1' to explain failures or '0' (default) to suppress them."
+    },
+    {
+        "IMG2SIXEL_COMPLETION_BASH",
+        "override the bash completion source path. When set, completion\n"
+        "commands load this file before packaged defaults."
+    },
+    {
+        "IMG2SIXEL_COMPLETION_ZSH",
+        "override the zsh completion source path. Shares priority rules with\n"
+        "the bash override."
+    },
+    {
+        "IMG2SIXEL_COMPLETION_DIR",
+        "provide a directory containing bash/img2sixel and zsh/_img2sixel\n"
+        "entries. Consulted after shell-specific overrides."
+    },
+    {
+        "IMG2SIXEL_COMPLETION_HOME",
+        "fake the home directory during completion install/remove steps to\n"
+        "test workflows in sandboxed locations."
+    },
+    {
         "SIXEL_BGCOLOR",
         "specify background color.\n"
         "overrided by -B(--bgcolor) option.\n"
@@ -672,10 +707,49 @@ static cli_env_help_t const g_env_help_table[] = {
         "rgb:rrrr/gggg/bbbb"
     },
     {
+        "SIXEL_COLORS",
+        "specify palette size (default 256). Overrides -p/--colors when set."
+    },
+    {
+        "SIXEL_FLOAT32_DITHER",
+        "prefer the float32 quantization path. Any non-zero/true string\n"
+        "enables it while 0, off, false, or no keep the 8-bit pipeline."
+    },
+    {
         "SIXEL_THREADS",
         "override encoder thread count.\n"
         "Accepts positive integers or the word 'auto' to match the\n"
         "hardware thread count."
+    },
+    {
+        "SIXEL_DITHER_PIN_THREADS",
+        "pin pipeline worker threads to their initial CPUs (0 or 1;\n"
+        "default 1)."
+    },
+    {
+        "SIXEL_DITHER_PARALLEL_THREADS_MAX",
+        "cap the number of dither workers when band parallelism is active.\n"
+        "Accepts positive integers."
+    },
+    {
+        "SIXEL_DITHER_PARALLEL_BAND_WIDTH",
+        "override the band height assigned to each dither worker.\n"
+        "Values are rounded to a multiple of six scanlines."
+    },
+    {
+        "SIXEL_DITHER_PARALLEL_BAND_OVERWRAP",
+        "set overlap between adjacent dither bands to smooth seams. Accepts\n"
+        "non-negative integers."
+    },
+    {
+        "SIXEL_SCALE_PARALLEL_MIN_BYTES",
+        "delay parallel resize until the frame exceeds this byte threshold.\n"
+        "Default 0 keeps eager threading."
+    },
+    {
+        "SIXEL_PARALLEL_FACTOR",
+        "override the row span assigned to each resize worker. Accepts\n"
+        "positive integers."
     },
     {
         "SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS",
@@ -684,9 +758,29 @@ static cli_env_help_t const g_env_help_table[] = {
         "single-threaded unless overridden."
     },
     {
+        "SIXEL_PARALLEL_SKEW",
+        "bias parallel decode spans by +/-20 percent so trailing workers\n"
+        "take a larger share. Defaults to 0 (balanced)."
+    },
+    {
+        "SIXEL_SIMD_LEVEL",
+        "force SIMD selection. Accepts auto, none/scalar, sse2, avx, avx2,\n"
+        "avx512, or neon."
+    },
+    {
+        "SIXEL_THUMBNAILER_HINT_SIZE",
+        "adjust the thumbnail target size used by loader helpers. Accepts\n"
+        "positive integers; defaults to the built-in hint."
+    },
+    {
         "SIXEL_LOADER_PRIORITY_LIST",
         "Override default loader search order. Accepts the same comma\n"
         "separated names as -L. Ignored when -L/--loaders is provided."
+    },
+    {
+        "SIXEL_PALETTE_SAMPLE_TARGET",
+        "request a specific sample count for palette estimation. Positive\n"
+        "integers override automatic sizing."
     },
     {
         "SIXEL_PALETTE_OVERSPLIT_FACTOR",
@@ -706,6 +800,10 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_PALETTE_KMEANS_THRESHOLD",
         "Break condition for k-means refinement (0.0-0.5, default 0.125)."
+    },
+    {
+        "SIXEL_PALETTE_KMEANS_INITTYPE",
+        "choose k-means seed selection: auto, pca, or none (default auto)."
     },
     {
         "SIXEL_PALETTE_LUMIN_FACTOR_R",
@@ -737,6 +835,16 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L",
         "Weight L* relative to a/b* when snapping in Lab-family\n"
         "colorspaces. Accepts 0.0-1.0, default 0.85."
+    },
+    {
+        "SIXEL_PALETTE_CHANNEL_FACTOR_L",
+        "emphasise L* weight in Lab-family distances before snapping\n"
+        "(0.0-1.0)."
+    },
+    {
+        "SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L",
+        "emphasise L* weight during final merge distances independently of\n"
+        "snap tuning (0.0-1.0)."
     },
     {
         "SIXEL_PALETTE_DIFFUSE_USE_L_R",

@@ -591,62 +591,18 @@ print help.
 .SH "ENVIRONMENT VARIABLES"
 \fIimg2sixel\fP honours the following environment variables:
 .TP 5
-.B SIXEL_BGCOLOR
-.br
-specify background color.
-.br
-overrided by -B(--bgcolor) option.
-.br
-represented by the following syntax:
-.br
-#rgb
-.br
-#rrggbb
-.br
-#rrrgggbbb
-.br
-#rrrrggggbbbb
-.br
-rgb:r/g/b
-.br
-rgb:rr/gg/bb
-.br
-rgb:rrr/ggg/bbb
-.br
-rgb:rrrr/gggg/bbbb
-.br
-.TP 5
-.B SIXEL_THREADS
-.br
-override the encoder thread count used for band processing.
-.br
-Accept positive integers or the string \(dqauto\(dq to match the
-hardware thread count.
-.TP 5
-.B SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS
-.br
-defer RGBFLOAT32 colorspace fan-out until the frame reaches this pixel
-count. Defaults to 65537 pixels to avoid eager splitting on small images.
-.TP 5
-.B SIXEL_LOADER_PRIORITY_LIST
-.br
-override the default loader priority. Accepts the same comma separated
-names recognised by \fB-L\fP/\fB--loaders\fP. The environment setting
-is ignored when the command-line option is present.
-.TP 5
 .B SIXEL_OPTION_PREFIX_SUGGESTIONS
 .br
 toggle the prefix disambiguation hints emitted when a value matches more
-than one option. Set to "1" (the default when unset) to print the
-candidate list, or "0" to silence the diagnostic. Library embedders
-must opt in explicitly.
+than one option. Set to "1" (the default when unset) to print the candidate
+list, or "0" to silence the diagnostic. Library embedders must opt in
+explicitly.
 .TP 5
 .B SIXEL_OPTION_FUZZY_SUGGESTIONS
 .br
 toggle the normalized Levenshtein suggestions that recommend the closest
-option names after a typo. Set to "1" (the default when unset) to print
-the hint list, or "0" to disable it. Library embedders must opt in
-explicitly.
+option names after a typo. Set to "1" (the default when unset) to print the
+hint list, or "0" to disable it. Library embedders must opt in explicitly.
 .TP 5
 .B SIXEL_OPTION_PATH_SUGGESTIONS
 .br
@@ -676,12 +632,109 @@ override variables.
 fake the home directory used during completion installation and removal. This
 is helpful for testing the workflow inside disposable directories.
 .TP 5
-.B SIXEL_NCOLORS
+.B SIXEL_BGCOLOR
+.br
+specify background color.
+.br
+overrided by -B(--bgcolor) option.
+.br
+represented by the following syntax:
+.br
+#rgb
+.br
+#rrggbb
+.br
+#rrrgggbbb
+.br
+#rrrrggggbbbb
+.br
+rgb:r/g/b
+.br
+rgb:rr/gg/bb
+.br
+rgb:rrr/ggg/bbb
+.br
+rgb:rrrr/gggg/bbbb
+.br
+.TP 5
+.B SIXEL_COLORS
 .br
 specify number of colors to reduce the image to (default=256).
 .br
 overrided by -p(--colors) option.
 .br
+.TP 5
+.B SIXEL_FLOAT32_DITHER
+.br
+prefer the float32 quantization path. Any non-empty string other than 0, off,
+false, or no enables the high-precision pipeline.
+.TP 5
+.B SIXEL_THREADS
+.br
+override the encoder thread count used for band processing.
+.br
+Accept positive integers or the string \(dqauto\(dq to match the
+hardware thread count.
+.TP 5
+.B SIXEL_DITHER_PIN_THREADS
+.br
+pin pipeline worker threads to their initial CPUs (0 or 1; default 1).
+.TP 5
+.B SIXEL_DITHER_PARALLEL_THREADS_MAX
+.br
+cap the number of dither workers when band parallelism is active. Accepts
+positive integers.
+.TP 5
+.B SIXEL_DITHER_PARALLEL_BAND_WIDTH
+.br
+override the band height assigned to each dither worker. Values are rounded to
+a multiple of six scanlines.
+.TP 5
+.B SIXEL_DITHER_PARALLEL_BAND_OVERWRAP
+.br
+set overlap between adjacent dither bands to smooth seams. Accepts non-negative
+integers.
+.TP 5
+.B SIXEL_SCALE_PARALLEL_MIN_BYTES
+.br
+delay parallel resize until the frame exceeds this byte threshold. Default 0
+keeps eager threading.
+.TP 5
+.B SIXEL_PARALLEL_FACTOR
+.br
+override the row span assigned to each resize worker. Accepts positive
+integers.
+.TP 5
+.B SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS
+.br
+defer RGBFLOAT32 colorspace fan-out until the frame reaches this pixel
+count. Defaults to 65537 pixels to avoid eager splitting on small images.
+.TP 5
+.B SIXEL_PARALLEL_SKEW
+.br
+bias parallel decode spans by +/-20%% so trailing workers take a larger share.
+Defaults to 0 (balanced).
+.TP 5
+.B SIXEL_SIMD_LEVEL
+.br
+force SIMD selection. Accepts auto, none/scalar, sse2, avx, avx2, avx512, or
+neon.
+.TP 5
+.B SIXEL_THUMBNAILER_HINT_SIZE
+.br
+adjust the thumbnail target size used by loader helpers. Accepts positive
+integers; defaults to the built-in hint.
+.TP 5
+.B SIXEL_LOADER_PRIORITY_LIST
+.br
+override the default loader priority. Accepts the same comma separated
+names recognised by \fB-L\fP/\fB--loaders\fP. The environment setting
+is ignored when the command-line option is present.
+.TP 5
+.B SIXEL_PALETTE_SAMPLE_TARGET
+.br
+request a specific sample count for palette estimation. Positive integers
+override automatic sizing.
 .TP 5
 .B SIXEL_PALETTE_OVERSPLIT_FACTOR
 .br
@@ -701,6 +754,10 @@ cap the primary k-means Lloyd refinement (1-30, default 20).
 .br
 delta threshold for k-means refinement (0.0-0.5, default 0.125).
 .TP 5
+.B SIXEL_PALETTE_KMEANS_INITTYPE
+.br
+choose k-means seed selection: auto, pca, or none (default auto).
+.TP 5
 .B SIXEL_PALETTE_LUMIN_FACTOR_R
 .br
 override the luminosity coefficient for red (0.0-1.0).
@@ -709,6 +766,15 @@ override the luminosity coefficient for red (0.0-1.0).
 .br
 override the luminosity coefficient for green (0.0-1.0). The blue
 coefficient becomes 1 - R - G; negative results ignore both overrides.
+.TP 5
+.B SIXEL_PALETTE_CHANNEL_FACTOR_L
+.br
+emphasise L* weight in Lab-family distances before snapping (0.0-1.0).
+.TP 5
+.B SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L
+.br
+emphasise L* weight during final merge distances independently of snap tuning
+(0.0-1.0).
 .TP 5
 .B SIXEL_PALETTE_SNAP_TARGET_POLICY
 .br
@@ -735,6 +801,71 @@ Accepts 0.0-1.0, default 0.85.
 enable the Bottosson L_r toe curve for OKLab float input when using the
 LSO2 diffuser. Non-empty values other than "0" switch L distance to L_r;
 unset or "0" keeps raw L.
+.TP 5
+.B SIXEL_DITHER_LOOKUP_POLICY
+.br
+select palette lookup policy (auto, 5bit, 6bit, none, certlut, or vpte).
+.TP 5
+.B SIXEL_LOOKUP_VPTE_RESOLUTION
+.br
+choose VPTE grid resolution (64, 128, or 256; default 64).
+.TP 5
+.B SIXEL_LOOKUP_VPTE_REFINE
+.br
+enable corner refinement on VPTE boundary cells (0 or 1; default 1).
+.TP 5
+.B SIXEL_LOOKUP_VPTE_USE_DIST2
+.br
+reuse EDT distances to skip corner refinement (0 or 1; default 0).
+.TP 5
+.B SIXEL_LOOKUP_VPTE_USE_CACHE
+.br
+enable a small VPTE lookup cache keyed by voxel coordinates (0 or 1; default
+0).
+.TP 5
+.B SIXEL_LOOKUP_VPTE_SHARED
+.br
+share the VPTE grid between workers after building it once (0 or 1; default
+1).
+.TP 5
+.B SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE
+.br
+share the CERTLUT cache across threads (0 or 1; default 0).
+.TP 5
+.B SIXEL_LOOKUP_5BIT_SHARED_INSTANCE
+.br
+share the 5bit LUT across threads without locks (0 or 1; default 1).
+.TP 5
+.B SIXEL_LOOKUP_6BIT_SHARED_INSTANCE
+.br
+share the 6bit LUT across threads without locks (0 or 1; default 1).
+.TP 5
+.B SIXEL_LOOKUP_VPTE_TILE_XY
+.br
+set VPTE tile width/height; adaptive defaults shrink tiles for diverse
+palettes and grow them for skewed palettes.
+.TP 5
+.B SIXEL_LOOKUP_VPTE_TILE_DEPTH
+.br
+set VPTE tile depth; follows the same adaptive policy as
+\fISIXEL_LOOKUP_VPTE_TILE_XY\fP.
+.TP 5
+.B SIXEL_LOOKUP_VPTE_FIRST_TOUCH
+.br
+zero VPTE tiles before the EDT so NUMA systems can place pages on the worker
+that will consume them (0 or 1; default 0).
+.TP 5
+.B SIXEL_LOOKUP_VPTE_PIN_THREADS
+.br
+pin VPTE worker threads at startup to reduce migration (0 or 1; default 0).
+.TP 5
+.B SIXEL_PARALLEL_LOG_PATH
+.br
+write a JSON timeline for VPTE or LUT builds when set.
+.TP 5
+.B SIXEL_PARALLEL_LOG_LINES
+.br
+log every Nth line in the timeline; 0 disables line events.
 
 
 .SH Image loaders
