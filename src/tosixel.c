@@ -1107,7 +1107,6 @@ sixel_parallel_worker_main(tp_job_t job, void *userdata, void *workspace)
     int row_index;
     int absolute_row;
     int last_row_index;
-    size_t emitted_bytes;
 
     ctx = (sixel_parallel_context_t *)userdata;
     state = (sixel_parallel_worker_state_t *)workspace;
@@ -1122,7 +1121,6 @@ sixel_parallel_worker_main(tp_job_t job, void *userdata, void *workspace)
     band_start = 0;
     band_height = 0;
     last_row_index = -1;
-    emitted_bytes = 0U;
     if (band_index < 0 || band_index >= ctx->band_count) {
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
@@ -1228,8 +1226,6 @@ sixel_parallel_worker_main(tp_job_t job, void *userdata, void *workspace)
                                 state);
         state->output->pos = 0;
     }
-    emitted_bytes = band->used;
-
     if (state->writer_error != SIXEL_OK) {
         status = state->writer_error;
         goto cleanup;
