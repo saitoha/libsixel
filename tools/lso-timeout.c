@@ -13,22 +13,36 @@
 
 #include "config.h"
 
-#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
+#if defined(HAVE_TIME_H)
+# include <time.h>
+#endif  /* defined(HAVE_TIME_H) */
+#if defined(HAVE_ERRNO_H)
+# include <errno.h>
+#endif  /* defined(HAVE_ERRNO_H) */
 
 #if defined(HAVE_WINDOWS_PROC)
 # define WIN32_LEAN_AND_MEAN
 # include <windows.h>
 #else
-# include <signal.h>
-# include <unistd.h>
-# include <sys/types.h>
-# include <sys/wait.h>
-# include <sys/time.h>
-#endif
+# if defined(HAVE_SIGNAL_H)
+#  include <signal.h>
+# endif  /* defined(HAVE_SIGNAL_H) */
+# if defined(HAVE_UNISTD_H)
+#  include <unistd.h>
+# endif  /* defined(HAVE_UNISTD_H) */
+# if defined(HAVE_SYS_TYPES_H)
+#  include <sys/types.h>
+# endif  /* defined(HAVE_SYS_TYPES_H) */
+# if defined(HAVE_SYS_WAIT_H)
+#  include <sys/wait.h>
+# endif  /* defined(HAVE_SYS_WAIT_H) */
+# if defined(HAVE_SYS_TIME_H)
+#  include <sys/time.h>
+# endif  /* defined(HAVE_SYS_TIME_H) */
+#endif  /* defined(HAVE_WINDOWS_PROC) */
 
 static double
 current_time_seconds(void)
@@ -47,7 +61,7 @@ current_time_seconds(void)
   }
 
   return (double) ts.tv_sec + (double) ts.tv_nsec / 1.0e9;
-# else
+# elif defined(HAVE_SYS_TIME_H)
   struct timeval tv;
 
   if (gettimeofday(&tv, NULL) != 0) {
@@ -55,6 +69,8 @@ current_time_seconds(void)
   }
 
   return (double) tv.tv_sec + (double) tv.tv_usec / 1.0e6;
+# else
+  return -1.0;
 # endif
 #endif
 }
@@ -95,7 +111,7 @@ usage(void)
   exit(EXIT_FAILURE);
 }
 
-#if defined(HAVE_FORK) && defined(HAVE_WAITPID)
+#if defined(HAVE_FORK) && defined(HAVE_WAITPID) && defined(HAVE_SYS_WAIT_H)
 static void
 sleep_millis(long millis)
 {
