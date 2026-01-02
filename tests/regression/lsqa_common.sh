@@ -111,170 +111,188 @@ lsqa_above_ceiling() {
 }
 
 lsqa_run() {
-    local target stdout_path stderr_path status
+    lsqa_run_target=$1
+    lsqa_run_stdout_path=$2
+    lsqa_run_stderr_path=$3
+    lsqa_run_status=0
 
-    target=$1
-    stdout_path=$2
-    stderr_path=$3
-    status=0
+    : >"${lsqa_run_stdout_path}"
+    : >"${lsqa_run_stderr_path}"
 
-    : >"${stdout_path}"
-    : >"${stderr_path}"
+    env LSQA_RANDOM_SEED="${LSQA_SEED}" "${LSQA_BIN}" "${lsqa_run_target}" \
+        "${lsqa_run_target}" >"${lsqa_run_stdout_path}" \
+        2>"${lsqa_run_stderr_path}" || lsqa_run_status=$?
 
-    env LSQA_RANDOM_SEED="${LSQA_SEED}" "${LSQA_BIN}" "${target}" \
-        "${target}" >"${stdout_path}" 2>"${stderr_path}" || status=$?
-
-    if [ ${status} -eq 126 ]; then
-        : >"${stdout_path}"
-        : >"${stderr_path}"
+    if [ ${lsqa_run_status} -eq 126 ]; then
+        : >"${lsqa_run_stdout_path}"
+        : >"${lsqa_run_stderr_path}"
         env LSQA_RANDOM_SEED="${LSQA_SEED}" /bin/sh -c \
-            'exec "$0" "$1" "$1"' "${LSQA_BIN}" "${target}" \
-            >"${stdout_path}" 2>"${stderr_path}" || status=$?
+            'exec "$0" "$1" "$1"' "${LSQA_BIN}" "${lsqa_run_target}" \
+            >"${lsqa_run_stdout_path}" 2>"${lsqa_run_stderr_path}" \
+            || lsqa_run_status=$?
     fi
 
-    printf '%s' "${status}"
+    printf '%s' "${lsqa_run_status}"
 }
 
 lsqa_assert_quality() {
-    local image_path label artifact_dir out_file err_file
-    local run_status ms_val psnr_val base_name base_path
-    local floor_ms floor_psnr ms_enforced
+    lsqa_quality_image_path=$1
+    lsqa_quality_label=$2
+    lsqa_quality_artifact_dir=$3
 
-    image_path=$1
-    label=$2
-    artifact_dir=$3
+    lsqa_quality_out_file="${lsqa_quality_artifact_dir}/lsqa.json"
+    lsqa_quality_err_file="${lsqa_quality_artifact_dir}/lsqa.err"
 
-    out_file="${artifact_dir}/lsqa.json"
-    err_file="${artifact_dir}/lsqa.err"
-
-    run_status=$(lsqa_run "${image_path}" "${out_file}" "${err_file}")
-    if [ ${run_status} -ne 0 ]; then
+    lsqa_quality_run_status=$(lsqa_run "${lsqa_quality_image_path}" \
+        "${lsqa_quality_out_file}" "${lsqa_quality_err_file}")
+    if [ ${lsqa_quality_run_status} -ne 0 ]; then
         printf '%s: assessment/lsqa returned %s: %s\n' \
-            "${label}" "${run_status}" "$(cat "${err_file}")" >&2
+            "${lsqa_quality_label}" "${lsqa_quality_run_status}" \
+            "$(cat "${lsqa_quality_err_file}")" >&2
         return 1
     fi
 
-    ms_val=$(lsqa_parse_metric "MS-SSIM" "${out_file}")
-    psnr_val=$(lsqa_parse_metric "PSNR_Y" "${out_file}")
+    lsqa_quality_ms_val=$(lsqa_parse_metric "MS-SSIM" \
+        "${lsqa_quality_out_file}")
+    lsqa_quality_psnr_val=$(lsqa_parse_metric "PSNR_Y" \
+        "${lsqa_quality_out_file}")
 
-    base_name="${label%.*}.json"
-    base_path="${LSQA_BASELINE_DIR}/${base_name}"
-    if [ ! -f "${base_path}" ]; then
-        printf '%s: baseline %s missing\n' "${label}" "${base_name}" >&2
+    lsqa_quality_base_name="${lsqa_quality_label%.*}.json"
+    lsqa_quality_base_path="${LSQA_BASELINE_DIR}/${lsqa_quality_base_name}"
+    if [ ! -f "${lsqa_quality_base_path}" ]; then
+        printf '%s: baseline %s missing\n' "${lsqa_quality_label}" \
+            "${lsqa_quality_base_name}" >&2
         return 1
     fi
 
-    base_ms=$(lsqa_parse_metric "MS-SSIM" "${base_path}")
-    base_psnr=$(lsqa_parse_metric "PSNR_Y" "${base_path}")
+    lsqa_quality_base_ms=$(lsqa_parse_metric "MS-SSIM" \
+        "${lsqa_quality_base_path}")
+    lsqa_quality_base_psnr=$(lsqa_parse_metric "PSNR_Y" \
+        "${lsqa_quality_base_path}")
 
-    floor_ms=${MS_SSIM_FLOOR}
-    floor_psnr=${PSNR_FLOOR}
-    if [ "${label}" = "palette.png" ]; then
-        floor_ms=0.0
+    lsqa_quality_floor_ms=${MS_SSIM_FLOOR}
+    lsqa_quality_floor_psnr=${PSNR_FLOOR}
+    if [ "${lsqa_quality_label}" = "palette.png" ]; then
+        lsqa_quality_floor_ms=0.0
     fi
 
-    ms_enforced=1
-    if ! lsqa_above_ceiling "${ms_val}" "1e-6" && \
-        ! lsqa_above_ceiling "${base_ms}" "1e-6"; then
-        ms_enforced=0
+    lsqa_quality_ms_enforced=1
+    if ! lsqa_above_ceiling "${lsqa_quality_ms_val}" "1e-6" && \
+        ! lsqa_above_ceiling "${lsqa_quality_base_ms}" "1e-6"; then
+        lsqa_quality_ms_enforced=0
     fi
 
-    if [ ${ms_enforced} -ne 0 ] && lsqa_below_floor "${ms_val}" "${floor_ms}"; then
+    if [ ${lsqa_quality_ms_enforced} -ne 0 ] && \
+        lsqa_below_floor "${lsqa_quality_ms_val}" \
+            "${lsqa_quality_floor_ms}"; then
         printf '%s: MS-SSIM %s below floor %s\n' \
-            "${label}" "${ms_val}" "${floor_ms}" >&2
+            "${lsqa_quality_label}" "${lsqa_quality_ms_val}" \
+            "${lsqa_quality_floor_ms}" >&2
         return 1
     fi
-    if lsqa_below_floor "${psnr_val}" "${floor_psnr}"; then
+    if lsqa_below_floor "${lsqa_quality_psnr_val}" \
+        "${lsqa_quality_floor_psnr}"; then
         printf '%s: PSNR_Y %s below floor %s dB\n' \
-            "${label}" "${psnr_val}" "${floor_psnr}" >&2
+            "${lsqa_quality_label}" "${lsqa_quality_psnr_val}" \
+            "${lsqa_quality_floor_psnr}" >&2
         return 1
     fi
-    if [ ${ms_enforced} -ne 0 ] && lsqa_below_floor "${ms_val}" "${base_ms}"; then
+    if [ ${lsqa_quality_ms_enforced} -ne 0 ] && \
+        lsqa_below_floor "${lsqa_quality_ms_val}" \
+            "${lsqa_quality_base_ms}"; then
         printf '%s: MS-SSIM %s regressed from baseline %s\n' \
-            "${label}" "${ms_val}" "${base_ms}" >&2
+            "${lsqa_quality_label}" "${lsqa_quality_ms_val}" \
+            "${lsqa_quality_base_ms}" >&2
         return 1
     fi
-    if lsqa_below_floor "${psnr_val}" "${base_psnr}"; then
+    if lsqa_below_floor "${lsqa_quality_psnr_val}" \
+        "${lsqa_quality_base_psnr}"; then
         printf '%s: PSNR_Y %s regressed from baseline %s\n' \
-            "${label}" "${psnr_val}" "${base_psnr}" >&2
+            "${lsqa_quality_label}" "${lsqa_quality_psnr_val}" \
+            "${lsqa_quality_base_psnr}" >&2
         return 1
     fi
 
-    printf 'MS-SSIM=%s PSNR_Y=%s\n' "${ms_val}" "${psnr_val}" \
-        >"${artifact_dir}/lsqa_metrics.txt"
+    printf 'MS-SSIM=%s PSNR_Y=%s\n' "${lsqa_quality_ms_val}" \
+        "${lsqa_quality_psnr_val}" \
+        >"${lsqa_quality_artifact_dir}/lsqa_metrics.txt"
     return 0
 }
 
 lsqa_expect_low_quality_or_fail() {
-    local image_path label artifact_dir out_file err_file
-    local run_status ms_val psnr_val
+    lsqa_low_image_path=$1
+    lsqa_low_label=$2
+    lsqa_low_artifact_dir=$3
 
-    image_path=$1
-    label=$2
-    artifact_dir=$3
+    lsqa_low_out_file="${lsqa_low_artifact_dir}/lsqa.json"
+    lsqa_low_err_file="${lsqa_low_artifact_dir}/lsqa.err"
 
-    out_file="${artifact_dir}/lsqa.json"
-    err_file="${artifact_dir}/lsqa.err"
-
-    # Track the lsqa exit code locally so the caller's status variable is not
-    # clobbered when failures are permitted for corrupted inputs.
-    run_status=$(lsqa_run "${image_path}" "${out_file}" "${err_file}")
-    if [ ${run_status} -eq 0 ]; then
-        ms_val=$(lsqa_parse_metric "MS-SSIM" "${out_file}")
-        psnr_val=$(lsqa_parse_metric "PSNR_Y" "${out_file}")
-        if lsqa_below_floor "${ms_val}" "0.5" || \
-            lsqa_below_floor "${psnr_val}" "10"; then
-            printf 'MS-SSIM=%s PSNR_Y=%s\n' "${ms_val}" "${psnr_val}" \
-                >"${artifact_dir}/lsqa_metrics.txt"
+    lsqa_low_run_status=$(lsqa_run "${lsqa_low_image_path}" \
+        "${lsqa_low_out_file}" "${lsqa_low_err_file}")
+    if [ ${lsqa_low_run_status} -eq 0 ]; then
+        lsqa_low_ms_val=$(lsqa_parse_metric "MS-SSIM" \
+            "${lsqa_low_out_file}")
+        lsqa_low_psnr_val=$(lsqa_parse_metric "PSNR_Y" \
+            "${lsqa_low_out_file}")
+        if lsqa_below_floor "${lsqa_low_ms_val}" "0.5" || \
+            lsqa_below_floor "${lsqa_low_psnr_val}" "10"; then
+            printf 'MS-SSIM=%s PSNR_Y=%s\n' "${lsqa_low_ms_val}" \
+                "${lsqa_low_psnr_val}" \
+                >"${lsqa_low_artifact_dir}/lsqa_metrics.txt"
             return 0
         fi
         printf '%s: low-quality input accepted (MS-SSIM=%s PSNR_Y=%s)\n' \
-            "${label}" "${ms_val}" "${psnr_val}" >&2
+            "${lsqa_low_label}" "${lsqa_low_ms_val}" \
+            "${lsqa_low_psnr_val}" >&2
         return 1
     fi
 
-    if [ ! -s "${err_file}" ]; then
-        printf '%s: failed without diagnostic output\n' "${label}" >&2
+    if [ ! -s "${lsqa_low_err_file}" ]; then
+        printf '%s: failed without diagnostic output\n' \
+            "${lsqa_low_label}" >&2
         return 1
     fi
     return 0
 }
 
 lsqa_assert_repeat_stability() {
-    local image_path label artifact_dir run_log out_file err_file
-    local i run_status ms_val psnr_val vars ms_var ps_var
+    lsqa_repeat_image_path=$1
+    lsqa_repeat_label=$2
+    lsqa_repeat_artifact_dir=$3
 
-    image_path=$1
-    label=$2
-    artifact_dir=$3
+    lsqa_repeat_run_log="${lsqa_repeat_artifact_dir}/repeat.log"
+    : >"${lsqa_repeat_run_log}"
 
-    run_log="${artifact_dir}/repeat.log"
-    : >"${run_log}"
-
-    i=1
-    while [ ${i} -le ${REPEAT_COUNT} ]; do
-        out_file=$(mktemp)
-        err_file=$(mktemp)
-        run_status=$(lsqa_run "${image_path}" "${out_file}" "${err_file}")
-        if [ ${run_status} -ne 0 ]; then
+    lsqa_repeat_i=1
+    while [ ${lsqa_repeat_i} -le ${REPEAT_COUNT} ]; do
+        lsqa_repeat_out_file=$(mktemp)
+        lsqa_repeat_err_file=$(mktemp)
+        lsqa_repeat_run_status=$(lsqa_run "${lsqa_repeat_image_path}" \
+            "${lsqa_repeat_out_file}" "${lsqa_repeat_err_file}")
+        if [ ${lsqa_repeat_run_status} -ne 0 ]; then
             printf '%s: repeat run %s failed (%s): %s\n' \
-                "${label}" "${i}" "${run_status}" "$(cat "${err_file}")" >&2
-            rm -f "${out_file}" "${err_file}"
+                "${lsqa_repeat_label}" "${lsqa_repeat_i}" \
+                "${lsqa_repeat_run_status}" \
+                "$(cat "${lsqa_repeat_err_file}")" >&2
+            rm -f "${lsqa_repeat_out_file}" "${lsqa_repeat_err_file}"
             return 1
         fi
-        ms_val=$(lsqa_parse_metric "MS-SSIM" "${out_file}")
-        psnr_val=$(lsqa_parse_metric "PSNR_Y" "${out_file}")
-        printf '%s %s\n' "${ms_val}" "${psnr_val}" >>"${run_log}"
-        rm -f "${out_file}" "${err_file}"
-        i=$((i + 1))
+        lsqa_repeat_ms_val=$(lsqa_parse_metric "MS-SSIM" \
+            "${lsqa_repeat_out_file}")
+        lsqa_repeat_psnr_val=$(lsqa_parse_metric "PSNR_Y" \
+            "${lsqa_repeat_out_file}")
+        printf '%s %s\n' "${lsqa_repeat_ms_val}" "${lsqa_repeat_psnr_val}" \
+            >>"${lsqa_repeat_run_log}"
+        rm -f "${lsqa_repeat_out_file}" "${lsqa_repeat_err_file}"
+        lsqa_repeat_i=$((lsqa_repeat_i + 1))
     done
 
-    if [ ! -s "${run_log}" ]; then
-        printf '%s: repeat log empty\n' "${label}" >&2
+    if [ ! -s "${lsqa_repeat_run_log}" ]; then
+        printf '%s: repeat log empty\n' "${lsqa_repeat_label}" >&2
         return 1
     fi
 
-    vars=$(awk '{ms_sum+=$1; ps_sum+=$2; ms[NR]=$1; ps[NR]=$2}
+    lsqa_repeat_vars=$(awk '{ms_sum+=$1; ps_sum+=$2; ms[NR]=$1; ps[NR]=$2}
         END {
             if (NR == 0) { exit 0 }
             ms_avg = ms_sum / NR
@@ -284,23 +302,24 @@ lsqa_assert_repeat_stability() {
                 ps_var += (ps[i] - ps_avg) * (ps[i] - ps_avg)
             }
             printf "%f %f\n", ms_var / NR, ps_var / NR
-        }' "${run_log}")
+        }' "${lsqa_repeat_run_log}")
 
-    ms_var=$(printf '%s' "${vars}" | awk '{print $1}')
-    ps_var=$(printf '%s' "${vars}" | awk '{print $2}')
+    lsqa_repeat_ms_var=$(printf '%s' "${lsqa_repeat_vars}" | awk '{print $1}')
+    lsqa_repeat_ps_var=$(printf '%s' "${lsqa_repeat_vars}" | awk '{print $2}')
 
-    if lsqa_above_ceiling "${ms_var}" "1e-6"; then
+    if lsqa_above_ceiling "${lsqa_repeat_ms_var}" "1e-6"; then
         printf '%s: MS-SSIM variance %s exceeds 1e-6\n' \
-            "${label}" "${ms_var}" >&2
+            "${lsqa_repeat_label}" "${lsqa_repeat_ms_var}" >&2
         return 1
     fi
-    if lsqa_above_ceiling "${ps_var}" "1e-3"; then
+    if lsqa_above_ceiling "${lsqa_repeat_ps_var}" "1e-3"; then
         printf '%s: PSNR_Y variance %s exceeds 1e-3\n' \
-            "${label}" "${ps_var}" >&2
+            "${lsqa_repeat_label}" "${lsqa_repeat_ps_var}" >&2
         return 1
     fi
 
-    printf 'variance_ms=%s variance_psnr=%s\n' "${ms_var}" "${ps_var}" \
-        >"${artifact_dir}/lsqa_variance.txt"
+    printf 'variance_ms=%s variance_psnr=%s\n' \
+        "${lsqa_repeat_ms_var}" "${lsqa_repeat_ps_var}" \
+        >"${lsqa_repeat_artifact_dir}/lsqa_variance.txt"
     return 0
 }
