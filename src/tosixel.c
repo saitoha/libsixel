@@ -3314,6 +3314,10 @@ sixel_encode_body(
     int logging_active;
     int job_index;
 
+#if !defined(SIXEL_ENABLE_THREADS)
+    (void) pin_threads;
+#endif
+
     sixel_encode_work_init(&work);
     sixel_band_state_reset(&band);
     sixel_encode_metrics_init(&metrics);
