@@ -26,7 +26,6 @@
 #include "config.h"
 #endif
 
-#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -51,32 +50,6 @@ sixel_logger_thread_id(void)
 #else
     return 0ULL;
 #endif
-}
-
-static void
-sixel_logger_escape(char const *message, char *buffer, size_t size)
-{
-    size_t i;
-    size_t written;
-
-    if (buffer == NULL || size == 0) {
-        return;
-    }
-    buffer[0] = '\0';
-    if (message == NULL) {
-        return;
-    }
-    written = 0;
-    for (i = 0; message[i] != '\0' && written + 2 < size; ++i) {
-        if (message[i] == '\"' || message[i] == '\\') {
-            buffer[written++] = '\\';
-            if (written + 1 >= size) {
-                break;
-            }
-        }
-        buffer[written++] = message[i];
-    }
-    buffer[written] = '\0';
 }
 
 void
@@ -217,20 +190,15 @@ sixel_logger_logf(sixel_logger_t *logger,
                            char const *worker,
                            char const *event,
                            int job_id,
-                           int row_index,
-                           int y0,
-                           int y1,
-                           int in0,
-                           int in1,
-                           char const *fmt,
                            ...)
 {
     sixel_logger_t *target;
-    char message[256];
-    char escaped[512];
-    va_list args;
     double timestamp;
 
+    /*
+     * Extra arguments are accepted for compatibility with older call sites
+     * but intentionally ignored to keep timeline logging lightweight.
+     */
     target = logger;
     if (logger != NULL && logger->delegate != NULL) {
         target = logger->delegate;
@@ -239,36 +207,6 @@ sixel_logger_logf(sixel_logger_t *logger,
             || !target->mutex_ready) {
         return;
     }
-
-    va_start(args, fmt);
-    if (fmt != NULL) {
-#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
-#if defined(__clang__)
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wformat-nonliteral"
-#elif defined(__GNUC__) && !defined(__PCC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
-#endif
-#endif
-        /*
-         * The format strings are defined in our code paths.  Suppress the
-         * nonliteral warning so we can forward variadic arguments safely.
-         */
-        (void)sixel_compat_vsnprintf(message, sizeof(message), fmt, args);
-#if HAVE_DIAGNOSTIC_FORMAT_NONLITERAL
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#elif defined(__GNUC__) && !defined(__PCC__)
-#pragma GCC diagnostic pop
-#endif
-#endif
-    } else {
-        message[0] = '\0';
-    }
-    va_end(args);
-
-    sixel_logger_escape(message, escaped, sizeof(escaped));
 
 #if SIXEL_ENABLE_THREADS
     sixel_mutex_lock(&target->mutex);
@@ -279,21 +217,13 @@ sixel_logger_logf(sixel_logger_t *logger,
     }
     fprintf(target->file,
             "{\"ts\":%.6f,\"thread\":%llu,\"worker\":\"%s\","\
-            "\"role\":\"%s\",\"event\":\"%s\",\"job\":%d,"\
-            "\"row\":%d,\"y0\":%d,\"y1\":%d,\"in0\":%d,\"in1\":%d,"\
-            "\"message\":\"%s\"}\n",
+            "\"role\":\"%s\",\"event\":\"%s\",\"job\":%d}\n",
             timestamp,
             sixel_logger_thread_id(),
             worker != NULL ? worker : "",
             role != NULL ? role : "",
             event != NULL ? event : "",
-            job_id,
-            row_index,
-            y0,
-            y1,
-            in0,
-            in1,
-            escaped);
+            job_id);
     fflush(target->file);
 #if SIXEL_ENABLE_THREADS
     sixel_mutex_unlock(&target->mutex);

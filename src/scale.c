@@ -1447,8 +1447,6 @@ scale_parallel_worker(tp_job_t job, void *userdata, void *workspace)
     char const *role;
     int y0;
     int y1;
-    int in0;
-    int in1;
     int limit;
     int y;
 
@@ -1461,8 +1459,6 @@ scale_parallel_worker(tp_job_t job, void *userdata, void *workspace)
     role = "horizontal";
     y0 = 0;
     y1 = 0;
-    in0 = 0;
-    in1 = 0;
     index = job.band_index;
     limit = ctx->srch;
     if (ctx->pass == SCALE_PASS_HORIZONTAL) {
@@ -1482,19 +1478,12 @@ scale_parallel_worker(tp_job_t job, void *userdata, void *workspace)
     }
 
     if (ctx->pass == SCALE_PASS_HORIZONTAL) {
-        in1 = ctx->dstw;
         if (scale_parallel_should_log(ctx, index)) {
             sixel_logger_logf(ctx->logger,
                               role,
                               "scale",
                               "start",
-                              index,
-                              y1 - 1,
-                              y0,
-                              y1,
-                              in0,
-                              in1,
-                              "horizontal pass");
+                              index);
         }
         for (y = y0; y < y1; y++) {
             scale_horizontal_row(ctx->tmp,
@@ -1509,19 +1498,12 @@ scale_parallel_worker(tp_job_t job, void *userdata, void *workspace)
         }
     } else {
         role = "vertical";
-        in1 = ctx->srch;
         if (scale_parallel_should_log(ctx, index)) {
             sixel_logger_logf(ctx->logger,
                               role,
                               "scale",
                               "start",
-                              index,
-                              y1 - 1,
-                              y0,
-                              y1,
-                              in0,
-                              in1,
-                              "vertical pass");
+                              index);
         }
         for (y = y0; y < y1; y++) {
             scale_vertical_row(ctx->dst,
@@ -1542,13 +1524,7 @@ scale_parallel_worker(tp_job_t job, void *userdata, void *workspace)
                           role,
                           "scale",
                           "finish",
-                          index,
-                          y1 - 1,
-                          y0,
-                          y1,
-                          in0,
-                          in1,
-                          "pass complete");
+                          index);
     }
 
     return SIXEL_OK;
@@ -1593,14 +1569,7 @@ scale_with_resampling_parallel(
                               "controller",
                               "scale",
                               "skip",
-                              -1,
-                              -1,
-                              0,
-                              0,
-                              0,
-                              0,
-                              "below threshold bytes=%zu",
-                              image_bytes);
+                              -1);
         }
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1612,14 +1581,7 @@ scale_with_resampling_parallel(
                               "controller",
                               "scale",
                               "skip",
-                              -1,
-                              -1,
-                              0,
-                              0,
-                              0,
-                              0,
-                              "threads=%d",
-                              threads);
+                              -1);
         }
         return SIXEL_BAD_ARGUMENT;
     }
@@ -1630,17 +1592,7 @@ scale_with_resampling_parallel(
                           "controller",
                           "scale",
                           "start",
-                          -1,
-                          -1,
-                          0,
-                          srch,
-                          0,
-                          dsth,
-                          "parallel scale src=%dx%d dst=%dx%d",
-                          srcw,
-                          srch,
-                          dstw,
-                          dsth);
+                          -1);
     }
 
     ctx.dst = dst;
@@ -1679,15 +1631,7 @@ scale_with_resampling_parallel(
                           "controller",
                           "scale",
                           "pass_start",
-                          -1,
-                          0,
-                          0,
-                          srch,
-                          0,
-                          ctx.dstw,
-                          "horizontal queue=%d threads=%d",
-                          queue_depth,
-                          threads);
+                          -1);
     }
     pool = threadpool_create(threads,
                              queue_depth,
@@ -1715,13 +1659,7 @@ scale_with_resampling_parallel(
                           "controller",
                           "scale",
                           "pass_finish",
-                          -1,
-                          srch - 1,
-                          0,
-                          srch,
-                          0,
-                          ctx.dstw,
-                          "horizontal complete");
+                          -1);
     }
 
     queue_depth = threads * 3;
@@ -1739,15 +1677,7 @@ scale_with_resampling_parallel(
                           "controller",
                           "scale",
                           "pass_start",
-                          -1,
-                          0,
-                          0,
-                          dsth,
-                          0,
-                          ctx.srch,
-                          "vertical queue=%d threads=%d",
-                          queue_depth,
-                          threads);
+                          -1);
     }
     pool = threadpool_create(threads,
                              queue_depth,
@@ -1772,26 +1702,12 @@ scale_with_resampling_parallel(
                           "controller",
                           "scale",
                           "pass_finish",
-                          -1,
-                          dsth - 1,
-                          0,
-                          dsth,
-                          0,
-                          ctx.srch,
-                          "vertical complete rc=%d",
-                          rc);
+                          -1);
         sixel_logger_logf(logger,
                           "controller",
                           "scale",
                           "finish",
-                          -1,
-                          dsth - 1,
-                          0,
-                          dsth,
-                          0,
-                          ctx.srch,
-                          "parallel scale status=%d",
-                          rc);
+                          -1);
     }
 
     return rc;
@@ -1869,14 +1785,7 @@ scale_with_resampling(
                           "controller",
                           "scale",
                           "fallback",
-                          -1,
-                          -1,
-                          0,
-                          dsth,
-                          0,
-                          srch,
-                          "parallel rc=%d",
-                          rc);
+                          -1);
     }
 #endif
 
