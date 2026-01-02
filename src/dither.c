@@ -817,6 +817,7 @@ typedef struct sixel_parallel_dither_plan {
     int method_for_largest;
     int reqcolor;
     int pixelformat;
+    int pin_threads;
     sixel_logger_t *logger;
 } sixel_parallel_dither_plan_t;
 
@@ -1101,6 +1102,8 @@ sixel_dither_apply_palette_parallel(sixel_parallel_dither_plan_t *plan,
         return SIXEL_BAD_ALLOCATION;
     }
 
+    threadpool_set_affinity(pool, plan->pin_threads);
+
     /*
      * Distribute the initial jobs so each worker starts far apart, then feed
      * follow-up work that walks downward from those seeds.  This staggered
@@ -1370,6 +1373,7 @@ sixel_dither_new(
     (*ppdither)->pipeline_band_height = 0;
     (*ppdither)->pipeline_band_overlap = 0;
     (*ppdither)->pipeline_dither_threads = 0;
+    (*ppdither)->pipeline_pin_threads = 1;
     (*ppdither)->pipeline_image_height = 0;
     (*ppdither)->pipeline_logger = NULL;
 
@@ -2370,6 +2374,7 @@ sixel_dither_apply_palette(
         plan.method_for_largest = dither->method_for_largest;
         plan.reqcolor = dither->ncolors;
         plan.pixelformat = pipeline_pixelformat;
+        plan.pin_threads = dither->pipeline_pin_threads;
         plan.logger = logger;
 
 #if SIXEL_ENABLE_THREADS
