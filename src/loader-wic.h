@@ -33,7 +33,7 @@
 #include "chunk.h"
 
 #if HAVE_WIC
-SIXELSTATUS load_with_wic(
+SIXELAPI SIXELSTATUS load_with_wic(
     sixel_chunk_t const       *pchunk,
     int                        fstatic,
     int                        fuse_palette,
@@ -43,7 +43,7 @@ SIXELSTATUS load_with_wic(
     sixel_load_image_function  fn_load,
     void                      *context);
 
-int loader_can_try_wic(sixel_chunk_t const *chunk);
+SIXELAPI int loader_can_try_wic(sixel_chunk_t const *chunk);
 #endif
 
 #endif /* LIBSIXEL_LOADER_WIC_H */

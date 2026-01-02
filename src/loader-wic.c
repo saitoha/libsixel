@@ -72,7 +72,7 @@ typedef BYTE *WICInProcPointer;
 #include "loader-common.h"
 #include "loader-wic.h"
 
-SIXELSTATUS
+SIXELAPI SIXELSTATUS
 load_with_wic(
     sixel_chunk_t const       /* in */     *pchunk,      /* image data */
     int                       /* in */     fstatic,      /* static */
@@ -411,7 +411,7 @@ end:
     return SIXEL_OK;
 }
 
-int
+SIXELAPI int
 loader_can_try_wic(sixel_chunk_t const *chunk)
 {
     if (chunk == NULL) {

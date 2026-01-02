@@ -111,16 +111,18 @@ lsqa_above_ceiling() {
 }
 
 lsqa_run() {
+    local target stdout_path stderr_path status
+
     target=$1
     stdout_path=$2
     stderr_path=$3
+    status=0
 
     : >"${stdout_path}"
     : >"${stderr_path}"
 
-    env LSQA_RANDOM_SEED="${LSQA_SEED}" "${LSQA_BIN}" "${target}" "${target}" \
-        >"${stdout_path}" 2>"${stderr_path}" || status=$?
-    status=${status:-0}
+    env LSQA_RANDOM_SEED="${LSQA_SEED}" "${LSQA_BIN}" "${target}" \
+        "${target}" >"${stdout_path}" 2>"${stderr_path}" || status=$?
 
     if [ ${status} -eq 126 ]; then
         : >"${stdout_path}"
@@ -128,13 +130,16 @@ lsqa_run() {
         env LSQA_RANDOM_SEED="${LSQA_SEED}" /bin/sh -c \
             'exec "$0" "$1" "$1"' "${LSQA_BIN}" "${target}" \
             >"${stdout_path}" 2>"${stderr_path}" || status=$?
-        status=${status:-0}
     fi
 
     printf '%s' "${status}"
 }
 
 lsqa_assert_quality() {
+    local image_path label artifact_dir out_file err_file
+    local run_status ms_val psnr_val base_name base_path
+    local floor_ms floor_psnr ms_enforced
+
     image_path=$1
     label=$2
     artifact_dir=$3
@@ -142,10 +147,10 @@ lsqa_assert_quality() {
     out_file="${artifact_dir}/lsqa.json"
     err_file="${artifact_dir}/lsqa.err"
 
-    status=$(lsqa_run "${image_path}" "${out_file}" "${err_file}")
-    if [ ${status} -ne 0 ]; then
+    run_status=$(lsqa_run "${image_path}" "${out_file}" "${err_file}")
+    if [ ${run_status} -ne 0 ]; then
         printf '%s: assessment/lsqa returned %s: %s\n' \
-            "${label}" "${status}" "$(cat "${err_file}")" >&2
+            "${label}" "${run_status}" "$(cat "${err_file}")" >&2
         return 1
     fi
 
@@ -201,6 +206,9 @@ lsqa_assert_quality() {
 }
 
 lsqa_expect_low_quality_or_fail() {
+    local image_path label artifact_dir out_file err_file
+    local run_status ms_val psnr_val
+
     image_path=$1
     label=$2
     artifact_dir=$3
@@ -233,6 +241,9 @@ lsqa_expect_low_quality_or_fail() {
 }
 
 lsqa_assert_repeat_stability() {
+    local image_path label artifact_dir run_log out_file err_file
+    local i run_status ms_val psnr_val vars ms_var ps_var
+
     image_path=$1
     label=$2
     artifact_dir=$3
@@ -244,10 +255,10 @@ lsqa_assert_repeat_stability() {
     while [ ${i} -le ${REPEAT_COUNT} ]; do
         out_file=$(mktemp)
         err_file=$(mktemp)
-        status=$(lsqa_run "${image_path}" "${out_file}" "${err_file}")
-        if [ ${status} -ne 0 ]; then
+        run_status=$(lsqa_run "${image_path}" "${out_file}" "${err_file}")
+        if [ ${run_status} -ne 0 ]; then
             printf '%s: repeat run %s failed (%s): %s\n' \
-                "${label}" "${i}" "${status}" "$(cat "${err_file}")" >&2
+                "${label}" "${i}" "${run_status}" "$(cat "${err_file}")" >&2
             rm -f "${out_file}" "${err_file}"
             return 1
         fi
