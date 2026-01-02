@@ -90,11 +90,12 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) \
-	$(FILTER_TESTS) $(am__EXEEXT_1)
+	$(FILTER_TESTS) $(am__EXEEXT_5) $(am__EXEEXT_1)
 check_PROGRAMS = cli/0029_cli_token_is_known_option$(EXEEXT) \
 	cli/0030_cli_option_requires_argument$(EXEEXT) \
 	cli/0031_cli_guard_missing_argument$(EXEEXT) $(am__EXEEXT_1) \
-	$(am__EXEEXT_2) $(am__EXEEXT_3) $(am__EXEEXT_4)
+	$(am__EXEEXT_2) $(am__EXEEXT_3) $(am__EXEEXT_4) \
+	$(am__EXEEXT_5)
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_1 = gdk-pixbuf-loader/0001_gdk_pixbuf_loader \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0002_incremental_load \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0003_corrupt_data \
@@ -147,6 +148,15 @@ am__EXEEXT_2 = filter/0001_filter_clip$(EXEEXT) \
 	filter/0010_filter_encode$(EXEEXT)
 am__EXEEXT_3 = probe/0001_probe_parse$(EXEEXT)
 am__EXEEXT_4 = palette/0001_kmeans_init$(EXEEXT)
+am__EXEEXT_5 = loader/0008_loader_coregraphics_pixelformat$(EXEEXT) \
+	loader/0009_loader_wic_pixelformat$(EXEEXT) \
+	loader/0010_loader_gdk_pixbuf_pixelformat$(EXEEXT) \
+	loader/0011_loader_gd_pixelformat$(EXEEXT) \
+	loader/0012_loader_libpng_pixelformat$(EXEEXT) \
+	loader/0013_loader_libjpeg_pixelformat$(EXEEXT) \
+	loader/0014_loader_builtin_pixelformat$(EXEEXT) \
+	loader/0015_loader_quicklook_pixelformat$(EXEEXT) \
+	loader/0016_loader_gnome_thumbnailer_pixelformat$(EXEEXT)
 am__cli_0029_cli_token_is_known_option_SOURCES_DIST =  \
 	cli/0029_cli_token_is_known_option.c \
 	$(top_srcdir)/converters/cli.c
@@ -453,6 +463,98 @@ am__gdk_pixbuf_loader_0007_loader_plugin_integration_SOURCES_DIST =  \
 gdk_pixbuf_loader_0007_loader_plugin_integration_OBJECTS = $(am_gdk_pixbuf_loader_0007_loader_plugin_integration_OBJECTS)
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_0007_loader_plugin_integration_DEPENDENCIES = $(top_builddir)/src/libsixel.la \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(am__DEPENDENCIES_1)
+am_loader_0008_loader_coregraphics_pixelformat_OBJECTS = loader/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.$(OBJEXT)
+loader_0008_loader_coregraphics_pixelformat_OBJECTS =  \
+	$(am_loader_0008_loader_coregraphics_pixelformat_OBJECTS)
+am__DEPENDENCIES_3 = $(am__DEPENDENCIES_2)
+loader_0008_loader_coregraphics_pixelformat_DEPENDENCIES =  \
+	$(am__DEPENDENCIES_3)
+loader_0008_loader_coregraphics_pixelformat_LINK = $(LIBTOOL) \
+	$(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CCLD) \
+	$(loader_0008_loader_coregraphics_pixelformat_CFLAGS) \
+	$(CFLAGS) \
+	$(loader_0008_loader_coregraphics_pixelformat_LDFLAGS) \
+	$(LDFLAGS) -o $@
+am_loader_0009_loader_wic_pixelformat_OBJECTS = loader/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.$(OBJEXT)
+loader_0009_loader_wic_pixelformat_OBJECTS =  \
+	$(am_loader_0009_loader_wic_pixelformat_OBJECTS)
+loader_0009_loader_wic_pixelformat_DEPENDENCIES =  \
+	$(am__DEPENDENCIES_3)
+loader_0009_loader_wic_pixelformat_LINK = $(LIBTOOL) $(AM_V_lt) \
+	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(loader_0009_loader_wic_pixelformat_CFLAGS) $(CFLAGS) \
+	$(loader_0009_loader_wic_pixelformat_LDFLAGS) $(LDFLAGS) -o $@
+am_loader_0010_loader_gdk_pixbuf_pixelformat_OBJECTS = loader/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.$(OBJEXT)
+loader_0010_loader_gdk_pixbuf_pixelformat_OBJECTS =  \
+	$(am_loader_0010_loader_gdk_pixbuf_pixelformat_OBJECTS)
+loader_0010_loader_gdk_pixbuf_pixelformat_DEPENDENCIES =  \
+	$(am__DEPENDENCIES_3)
+loader_0010_loader_gdk_pixbuf_pixelformat_LINK = $(LIBTOOL) $(AM_V_lt) \
+	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(loader_0010_loader_gdk_pixbuf_pixelformat_CFLAGS) \
+	$(CFLAGS) $(loader_0010_loader_gdk_pixbuf_pixelformat_LDFLAGS) \
+	$(LDFLAGS) -o $@
+am_loader_0011_loader_gd_pixelformat_OBJECTS = loader/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.$(OBJEXT)
+loader_0011_loader_gd_pixelformat_OBJECTS =  \
+	$(am_loader_0011_loader_gd_pixelformat_OBJECTS)
+loader_0011_loader_gd_pixelformat_DEPENDENCIES =  \
+	$(am__DEPENDENCIES_3)
+loader_0011_loader_gd_pixelformat_LINK = $(LIBTOOL) $(AM_V_lt) \
+	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(loader_0011_loader_gd_pixelformat_CFLAGS) $(CFLAGS) \
+	$(loader_0011_loader_gd_pixelformat_LDFLAGS) $(LDFLAGS) -o $@
+am_loader_0012_loader_libpng_pixelformat_OBJECTS = loader/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.$(OBJEXT)
+loader_0012_loader_libpng_pixelformat_OBJECTS =  \
+	$(am_loader_0012_loader_libpng_pixelformat_OBJECTS)
+loader_0012_loader_libpng_pixelformat_DEPENDENCIES =  \
+	$(am__DEPENDENCIES_3)
+loader_0012_loader_libpng_pixelformat_LINK = $(LIBTOOL) $(AM_V_lt) \
+	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(loader_0012_loader_libpng_pixelformat_CFLAGS) \
+	$(CFLAGS) $(loader_0012_loader_libpng_pixelformat_LDFLAGS) \
+	$(LDFLAGS) -o $@
+am_loader_0013_loader_libjpeg_pixelformat_OBJECTS = loader/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.$(OBJEXT)
+loader_0013_loader_libjpeg_pixelformat_OBJECTS =  \
+	$(am_loader_0013_loader_libjpeg_pixelformat_OBJECTS)
+loader_0013_loader_libjpeg_pixelformat_DEPENDENCIES =  \
+	$(am__DEPENDENCIES_3)
+loader_0013_loader_libjpeg_pixelformat_LINK = $(LIBTOOL) $(AM_V_lt) \
+	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(loader_0013_loader_libjpeg_pixelformat_CFLAGS) \
+	$(CFLAGS) $(loader_0013_loader_libjpeg_pixelformat_LDFLAGS) \
+	$(LDFLAGS) -o $@
+am_loader_0014_loader_builtin_pixelformat_OBJECTS = loader/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.$(OBJEXT)
+loader_0014_loader_builtin_pixelformat_OBJECTS =  \
+	$(am_loader_0014_loader_builtin_pixelformat_OBJECTS)
+loader_0014_loader_builtin_pixelformat_DEPENDENCIES =  \
+	$(am__DEPENDENCIES_3)
+loader_0014_loader_builtin_pixelformat_LINK = $(LIBTOOL) $(AM_V_lt) \
+	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(loader_0014_loader_builtin_pixelformat_CFLAGS) \
+	$(CFLAGS) $(loader_0014_loader_builtin_pixelformat_LDFLAGS) \
+	$(LDFLAGS) -o $@
+am_loader_0015_loader_quicklook_pixelformat_OBJECTS = loader/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.$(OBJEXT)
+loader_0015_loader_quicklook_pixelformat_OBJECTS =  \
+	$(am_loader_0015_loader_quicklook_pixelformat_OBJECTS)
+loader_0015_loader_quicklook_pixelformat_DEPENDENCIES =  \
+	$(am__DEPENDENCIES_3)
+loader_0015_loader_quicklook_pixelformat_LINK = $(LIBTOOL) $(AM_V_lt) \
+	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(loader_0015_loader_quicklook_pixelformat_CFLAGS) \
+	$(CFLAGS) $(loader_0015_loader_quicklook_pixelformat_LDFLAGS) \
+	$(LDFLAGS) -o $@
+am_loader_0016_loader_gnome_thumbnailer_pixelformat_OBJECTS = loader/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT)
+loader_0016_loader_gnome_thumbnailer_pixelformat_OBJECTS = $(am_loader_0016_loader_gnome_thumbnailer_pixelformat_OBJECTS)
+loader_0016_loader_gnome_thumbnailer_pixelformat_DEPENDENCIES =  \
+	$(am__DEPENDENCIES_3)
+loader_0016_loader_gnome_thumbnailer_pixelformat_LINK = $(LIBTOOL) \
+	$(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CCLD) \
+	$(loader_0016_loader_gnome_thumbnailer_pixelformat_CFLAGS) \
+	$(CFLAGS) \
+	$(loader_0016_loader_gnome_thumbnailer_pixelformat_LDFLAGS) \
+	$(LDFLAGS) -o $@
 am__palette_0001_kmeans_init_SOURCES_DIST =  \
 	palette/0001_kmeans_init.c
 @WANT_AMALGAMATED_TOOLS_FALSE@am_palette_0001_kmeans_init_OBJECTS = palette/0001_kmeans_init-0001_kmeans_init.$(OBJEXT)
@@ -543,6 +645,15 @@ am__depfiles_remade = $(top_builddir)/amalgamation/$(DEPDIR)/cli_0029_cli_token_
 	gdk-pixbuf-loader/$(DEPDIR)/0005_context_free-0005_context_free.Po \
 	gdk-pixbuf-loader/$(DEPDIR)/0006_loader_module-0006_loader_module.Po \
 	gdk-pixbuf-loader/$(DEPDIR)/0007_loader_plugin_integration-0007_loader_plugin_integration.Po \
+	loader/$(DEPDIR)/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.Po \
+	loader/$(DEPDIR)/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.Po \
+	loader/$(DEPDIR)/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.Po \
+	loader/$(DEPDIR)/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.Po \
+	loader/$(DEPDIR)/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.Po \
+	loader/$(DEPDIR)/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.Po \
+	loader/$(DEPDIR)/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.Po \
+	loader/$(DEPDIR)/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.Po \
+	loader/$(DEPDIR)/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.Po \
 	palette/$(DEPDIR)/0001_kmeans_init-0001_kmeans_init.Po \
 	probe/$(DEPDIR)/0001_probe_parse-0001_probe_parse.Po
 am__mv = mv -f
@@ -597,6 +708,15 @@ SOURCES = $(cli_0029_cli_token_is_known_option_SOURCES) \
 	$(gdk_pixbuf_loader_0005_context_free_SOURCES) \
 	$(gdk_pixbuf_loader_0006_loader_module_SOURCES) \
 	$(gdk_pixbuf_loader_0007_loader_plugin_integration_SOURCES) \
+	$(loader_0008_loader_coregraphics_pixelformat_SOURCES) \
+	$(loader_0009_loader_wic_pixelformat_SOURCES) \
+	$(loader_0010_loader_gdk_pixbuf_pixelformat_SOURCES) \
+	$(loader_0011_loader_gd_pixelformat_SOURCES) \
+	$(loader_0012_loader_libpng_pixelformat_SOURCES) \
+	$(loader_0013_loader_libjpeg_pixelformat_SOURCES) \
+	$(loader_0014_loader_builtin_pixelformat_SOURCES) \
+	$(loader_0015_loader_quicklook_pixelformat_SOURCES) \
+	$(loader_0016_loader_gnome_thumbnailer_pixelformat_SOURCES) \
 	$(palette_0001_kmeans_init_SOURCES) \
 	$(nodist_palette_0001_kmeans_init_SOURCES) \
 	$(probe_0001_probe_parse_SOURCES) \
@@ -621,6 +741,15 @@ DIST_SOURCES = $(am__cli_0029_cli_token_is_known_option_SOURCES_DIST) \
 	$(am__gdk_pixbuf_loader_0005_context_free_SOURCES_DIST) \
 	$(am__gdk_pixbuf_loader_0006_loader_module_SOURCES_DIST) \
 	$(am__gdk_pixbuf_loader_0007_loader_plugin_integration_SOURCES_DIST) \
+	$(loader_0008_loader_coregraphics_pixelformat_SOURCES) \
+	$(loader_0009_loader_wic_pixelformat_SOURCES) \
+	$(loader_0010_loader_gdk_pixbuf_pixelformat_SOURCES) \
+	$(loader_0011_loader_gd_pixelformat_SOURCES) \
+	$(loader_0012_loader_libpng_pixelformat_SOURCES) \
+	$(loader_0013_loader_libjpeg_pixelformat_SOURCES) \
+	$(loader_0014_loader_builtin_pixelformat_SOURCES) \
+	$(loader_0015_loader_quicklook_pixelformat_SOURCES) \
+	$(loader_0016_loader_gnome_thumbnailer_pixelformat_SOURCES) \
 	$(am__palette_0001_kmeans_init_SOURCES_DIST) \
 	$(am__probe_0001_probe_parse_SOURCES_DIST)
 am__can_run_installinfo = \
@@ -1203,7 +1332,19 @@ CLI_TESTS = cli-core/t/0001_help.t \
     regression/t/0002_issue167_height.t \
     regression/t/0003_issue166_width.t \
     regression/t/0004_issue200_heap_overflow.t \
-    regression/t/0005_lsqa_regression.t \
+    regression/t/0005_lsqa_format_grayscale.t \
+    regression/t/0006_lsqa_format_palette.t \
+    regression/t/0007_lsqa_format_rgb.t \
+    regression/t/0008_lsqa_format_rgba.t \
+    regression/t/0009_lsqa_resolution_hd_landscape.t \
+    regression/t/0010_lsqa_resolution_panorama_tall.t \
+    regression/t/0011_lsqa_resolution_panorama_wide.t \
+    regression/t/0012_lsqa_resolution_quarter_square.t \
+    regression/t/0013_lsqa_resolution_svga_landscape.t \
+    regression/t/0014_lsqa_resolution_tiny_square.t \
+    regression/t/0015_lsqa_repeat_palette_variance.t \
+    regression/t/0016_lsqa_corrupted_metadata_noise.t \
+    regression/t/0017_lsqa_corrupted_truncated_png.t \
     docs/t/0001_help_vs_man.t \
     docs/t/0002_man_vs_bash_completion.t \
     docs/t/0003_bash_vs_zsh_completion.t \
@@ -1273,7 +1414,20 @@ FILTER_TEST_BINARIES = \
        filter/0009_filter_dither \
        filter/0010_filter_encode
 
-COPY_TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) $(FILTER_TESTS)
+LOADER_PIXELFORMAT_TESTS = \
+       loader/0008_loader_coregraphics_pixelformat \
+       loader/0009_loader_wic_pixelformat \
+       loader/0010_loader_gdk_pixbuf_pixelformat \
+       loader/0011_loader_gd_pixelformat \
+       loader/0012_loader_libpng_pixelformat \
+       loader/0013_loader_libjpeg_pixelformat \
+       loader/0014_loader_builtin_pixelformat \
+       loader/0015_loader_quicklook_pixelformat \
+       loader/0016_loader_gnome_thumbnailer_pixelformat
+
+COPY_TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) \
+       $(FILTER_TESTS) $(LOADER_PIXELFORMAT_TESTS)
+
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_0001_gdk_pixbuf_loader_SOURCES = \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
@@ -1387,7 +1541,8 @@ HELPER_FILES = common/t/0001_converters_common.t \
        palette/t/kmeans_init_common.sh \
        pipeline/t/pipeline_planner_common.sh \
        mapfile/t/mapfile_common.sh \
-       packaging/t/python_wheel_common.sh
+       packaging/t/python_wheel_common.sh \
+       regression/lsqa_common.sh
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
@@ -1447,6 +1602,10 @@ TESTS_COMMON_LDFLAGS_VAL = $(AM_LDFLAGS) $(MAYBE_COVERAGE)
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(ONNXRUNTIME_LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        @THREAD_LIBS@
 
+LOADER_PIXELFORMAT_CPPFLAGS_VAL = $(TESTS_COMMON_CPPFLAGS_VAL)
+LOADER_PIXELFORMAT_CFLAGS_VAL = $(TESTS_COMMON_CFLAGS_VAL)
+LOADER_PIXELFORMAT_LDFLAGS_VAL = $(TESTS_COMMON_LDFLAGS_VAL)
+LOADER_PIXELFORMAT_LDADD_VAL = $(TESTS_COMMON_LDADD_VAL)
 TESTS_AMALGAMATION_CPPFLAGS_COMMON = $(TESTS_COMMON_CPPFLAGS_VAL) \
 	$(am__append_3)
 TESTS_AMALGAMATION_CFLAGS_COMMON = $(TESTS_COMMON_CFLAGS_VAL)
@@ -1658,6 +1817,122 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@palette_0001_kmeans_init_LDADD = $(TESTS_COMMON_LDADD_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@palette_0001_kmeans_init_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@palette_0001_kmeans_init_SOURCES = palette/0001_kmeans_init.c
+loader_0008_loader_coregraphics_pixelformat_SOURCES = \
+    loader/0008_loader_coregraphics_pixelformat.c \
+    loader/pixelformat_test_common.h
+
+loader_0008_loader_coregraphics_pixelformat_CPPFLAGS = \
+    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+
+loader_0008_loader_coregraphics_pixelformat_CFLAGS = \
+    $(LOADER_PIXELFORMAT_CFLAGS_VAL)
+
+loader_0008_loader_coregraphics_pixelformat_LDFLAGS = \
+    $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
+
+loader_0008_loader_coregraphics_pixelformat_LDADD = \
+    $(LOADER_PIXELFORMAT_LDADD_VAL)
+
+loader_0009_loader_wic_pixelformat_SOURCES = \
+    loader/0009_loader_wic_pixelformat.c \
+    loader/pixelformat_test_common.h
+
+loader_0009_loader_wic_pixelformat_CPPFLAGS = \
+    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+
+loader_0009_loader_wic_pixelformat_CFLAGS = $(LOADER_PIXELFORMAT_CFLAGS_VAL)
+loader_0009_loader_wic_pixelformat_LDFLAGS = $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
+loader_0009_loader_wic_pixelformat_LDADD = $(LOADER_PIXELFORMAT_LDADD_VAL)
+loader_0010_loader_gdk_pixbuf_pixelformat_SOURCES = \
+    loader/0010_loader_gdk_pixbuf_pixelformat.c \
+    loader/pixelformat_test_common.h
+
+loader_0010_loader_gdk_pixbuf_pixelformat_CPPFLAGS = \
+    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+
+loader_0010_loader_gdk_pixbuf_pixelformat_CFLAGS = \
+    $(LOADER_PIXELFORMAT_CFLAGS_VAL)
+
+loader_0010_loader_gdk_pixbuf_pixelformat_LDFLAGS = \
+    $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
+
+loader_0010_loader_gdk_pixbuf_pixelformat_LDADD = \
+    $(LOADER_PIXELFORMAT_LDADD_VAL)
+
+loader_0011_loader_gd_pixelformat_SOURCES = \
+    loader/0011_loader_gd_pixelformat.c \
+    loader/pixelformat_test_common.h
+
+loader_0011_loader_gd_pixelformat_CPPFLAGS = \
+    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+
+loader_0011_loader_gd_pixelformat_CFLAGS = $(LOADER_PIXELFORMAT_CFLAGS_VAL)
+loader_0011_loader_gd_pixelformat_LDFLAGS = $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
+loader_0011_loader_gd_pixelformat_LDADD = $(LOADER_PIXELFORMAT_LDADD_VAL)
+loader_0012_loader_libpng_pixelformat_SOURCES = \
+    loader/0012_loader_libpng_pixelformat.c \
+    loader/pixelformat_test_common.h
+
+loader_0012_loader_libpng_pixelformat_CPPFLAGS = \
+    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+
+loader_0012_loader_libpng_pixelformat_CFLAGS = $(LOADER_PIXELFORMAT_CFLAGS_VAL)
+loader_0012_loader_libpng_pixelformat_LDFLAGS = $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
+loader_0012_loader_libpng_pixelformat_LDADD = $(LOADER_PIXELFORMAT_LDADD_VAL)
+loader_0013_loader_libjpeg_pixelformat_SOURCES = \
+    loader/0013_loader_libjpeg_pixelformat.c \
+    loader/pixelformat_test_common.h
+
+loader_0013_loader_libjpeg_pixelformat_CPPFLAGS = \
+    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+
+loader_0013_loader_libjpeg_pixelformat_CFLAGS = $(LOADER_PIXELFORMAT_CFLAGS_VAL)
+loader_0013_loader_libjpeg_pixelformat_LDFLAGS = $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
+loader_0013_loader_libjpeg_pixelformat_LDADD = $(LOADER_PIXELFORMAT_LDADD_VAL)
+loader_0014_loader_builtin_pixelformat_SOURCES = \
+    loader/0014_loader_builtin_pixelformat.c \
+    loader/pixelformat_test_common.h
+
+loader_0014_loader_builtin_pixelformat_CPPFLAGS = \
+    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+
+loader_0014_loader_builtin_pixelformat_CFLAGS = $(LOADER_PIXELFORMAT_CFLAGS_VAL)
+loader_0014_loader_builtin_pixelformat_LDFLAGS = \
+    $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
+
+loader_0014_loader_builtin_pixelformat_LDADD = $(LOADER_PIXELFORMAT_LDADD_VAL)
+loader_0015_loader_quicklook_pixelformat_SOURCES = \
+    loader/0015_loader_quicklook_pixelformat.c \
+    loader/pixelformat_test_common.h
+
+loader_0015_loader_quicklook_pixelformat_CPPFLAGS = \
+    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+
+loader_0015_loader_quicklook_pixelformat_CFLAGS = \
+    $(LOADER_PIXELFORMAT_CFLAGS_VAL)
+
+loader_0015_loader_quicklook_pixelformat_LDFLAGS = \
+    $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
+
+loader_0015_loader_quicklook_pixelformat_LDADD = \
+    $(LOADER_PIXELFORMAT_LDADD_VAL)
+
+loader_0016_loader_gnome_thumbnailer_pixelformat_SOURCES = \
+    loader/0016_loader_gnome_thumbnailer_pixelformat.c \
+    loader/pixelformat_test_common.h
+
+loader_0016_loader_gnome_thumbnailer_pixelformat_CPPFLAGS = \
+    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+
+loader_0016_loader_gnome_thumbnailer_pixelformat_CFLAGS = \
+    $(LOADER_PIXELFORMAT_CFLAGS_VAL)
+
+loader_0016_loader_gnome_thumbnailer_pixelformat_LDFLAGS = \
+    $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
+
+loader_0016_loader_gnome_thumbnailer_pixelformat_LDADD = \
+    $(LOADER_PIXELFORMAT_LDADD_VAL)
+
 T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_builddir)/build-aux/lso-tap-driver.sh
 AM_TEST_LOG_DRIVER_FLAGS = --comments
 AM_TEST_TIMEOUT = 300
@@ -1691,11 +1966,10 @@ ISSUE_INPUTS = issue/166/poc \
        issue/200/POC_img2sixel_heap_buffer_overflow
 
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
-             lsqa_regression.sh \
-             loader/pngsuite_common.sh \
-             $(BASELINE_JSON) $(INPUT_FORMAT_FILES) \
-             $(RESOLUTION_IMAGES) $(CORRUPTED_INPUTS) $(ISSUE_INPUTS) \
-             filter/0001_filter_clip.c filter/0002_filter_sample.c \
+            loader/pngsuite_common.sh \
+            $(BASELINE_JSON) $(INPUT_FORMAT_FILES) \
+            $(RESOLUTION_IMAGES) $(CORRUPTED_INPUTS) $(ISSUE_INPUTS) \
+            filter/0001_filter_clip.c filter/0002_filter_sample.c \
              filter/0003_filter_resize.c filter/0004_filter_colors.c \
              filter/0005_filter_lookup.c filter/0006_filter_final_merge.c \
              filter/0007_filter_vpte.c filter/0008_filter_load.c \
@@ -1971,6 +2245,66 @@ gdk-pixbuf-loader/0007_loader_plugin_integration-0007_loader_plugin_integration.
 gdk-pixbuf-loader/0007_loader_plugin_integration$(EXEEXT): $(gdk_pixbuf_loader_0007_loader_plugin_integration_OBJECTS) $(gdk_pixbuf_loader_0007_loader_plugin_integration_DEPENDENCIES) $(EXTRA_gdk_pixbuf_loader_0007_loader_plugin_integration_DEPENDENCIES) gdk-pixbuf-loader/$(am__dirstamp)
 	@rm -f gdk-pixbuf-loader/0007_loader_plugin_integration$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(gdk_pixbuf_loader_0007_loader_plugin_integration_OBJECTS) $(gdk_pixbuf_loader_0007_loader_plugin_integration_LDADD) $(LIBS)
+loader/$(am__dirstamp):
+	@$(MKDIR_P) loader
+	@: >>loader/$(am__dirstamp)
+loader/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) loader/$(DEPDIR)
+	@: >>loader/$(DEPDIR)/$(am__dirstamp)
+loader/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+
+loader/0008_loader_coregraphics_pixelformat$(EXEEXT): $(loader_0008_loader_coregraphics_pixelformat_OBJECTS) $(loader_0008_loader_coregraphics_pixelformat_DEPENDENCIES) $(EXTRA_loader_0008_loader_coregraphics_pixelformat_DEPENDENCIES) loader/$(am__dirstamp)
+	@rm -f loader/0008_loader_coregraphics_pixelformat$(EXEEXT)
+	$(AM_V_CCLD)$(loader_0008_loader_coregraphics_pixelformat_LINK) $(loader_0008_loader_coregraphics_pixelformat_OBJECTS) $(loader_0008_loader_coregraphics_pixelformat_LDADD) $(LIBS)
+loader/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+
+loader/0009_loader_wic_pixelformat$(EXEEXT): $(loader_0009_loader_wic_pixelformat_OBJECTS) $(loader_0009_loader_wic_pixelformat_DEPENDENCIES) $(EXTRA_loader_0009_loader_wic_pixelformat_DEPENDENCIES) loader/$(am__dirstamp)
+	@rm -f loader/0009_loader_wic_pixelformat$(EXEEXT)
+	$(AM_V_CCLD)$(loader_0009_loader_wic_pixelformat_LINK) $(loader_0009_loader_wic_pixelformat_OBJECTS) $(loader_0009_loader_wic_pixelformat_LDADD) $(LIBS)
+loader/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+
+loader/0010_loader_gdk_pixbuf_pixelformat$(EXEEXT): $(loader_0010_loader_gdk_pixbuf_pixelformat_OBJECTS) $(loader_0010_loader_gdk_pixbuf_pixelformat_DEPENDENCIES) $(EXTRA_loader_0010_loader_gdk_pixbuf_pixelformat_DEPENDENCIES) loader/$(am__dirstamp)
+	@rm -f loader/0010_loader_gdk_pixbuf_pixelformat$(EXEEXT)
+	$(AM_V_CCLD)$(loader_0010_loader_gdk_pixbuf_pixelformat_LINK) $(loader_0010_loader_gdk_pixbuf_pixelformat_OBJECTS) $(loader_0010_loader_gdk_pixbuf_pixelformat_LDADD) $(LIBS)
+loader/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+
+loader/0011_loader_gd_pixelformat$(EXEEXT): $(loader_0011_loader_gd_pixelformat_OBJECTS) $(loader_0011_loader_gd_pixelformat_DEPENDENCIES) $(EXTRA_loader_0011_loader_gd_pixelformat_DEPENDENCIES) loader/$(am__dirstamp)
+	@rm -f loader/0011_loader_gd_pixelformat$(EXEEXT)
+	$(AM_V_CCLD)$(loader_0011_loader_gd_pixelformat_LINK) $(loader_0011_loader_gd_pixelformat_OBJECTS) $(loader_0011_loader_gd_pixelformat_LDADD) $(LIBS)
+loader/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+
+loader/0012_loader_libpng_pixelformat$(EXEEXT): $(loader_0012_loader_libpng_pixelformat_OBJECTS) $(loader_0012_loader_libpng_pixelformat_DEPENDENCIES) $(EXTRA_loader_0012_loader_libpng_pixelformat_DEPENDENCIES) loader/$(am__dirstamp)
+	@rm -f loader/0012_loader_libpng_pixelformat$(EXEEXT)
+	$(AM_V_CCLD)$(loader_0012_loader_libpng_pixelformat_LINK) $(loader_0012_loader_libpng_pixelformat_OBJECTS) $(loader_0012_loader_libpng_pixelformat_LDADD) $(LIBS)
+loader/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+
+loader/0013_loader_libjpeg_pixelformat$(EXEEXT): $(loader_0013_loader_libjpeg_pixelformat_OBJECTS) $(loader_0013_loader_libjpeg_pixelformat_DEPENDENCIES) $(EXTRA_loader_0013_loader_libjpeg_pixelformat_DEPENDENCIES) loader/$(am__dirstamp)
+	@rm -f loader/0013_loader_libjpeg_pixelformat$(EXEEXT)
+	$(AM_V_CCLD)$(loader_0013_loader_libjpeg_pixelformat_LINK) $(loader_0013_loader_libjpeg_pixelformat_OBJECTS) $(loader_0013_loader_libjpeg_pixelformat_LDADD) $(LIBS)
+loader/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+
+loader/0014_loader_builtin_pixelformat$(EXEEXT): $(loader_0014_loader_builtin_pixelformat_OBJECTS) $(loader_0014_loader_builtin_pixelformat_DEPENDENCIES) $(EXTRA_loader_0014_loader_builtin_pixelformat_DEPENDENCIES) loader/$(am__dirstamp)
+	@rm -f loader/0014_loader_builtin_pixelformat$(EXEEXT)
+	$(AM_V_CCLD)$(loader_0014_loader_builtin_pixelformat_LINK) $(loader_0014_loader_builtin_pixelformat_OBJECTS) $(loader_0014_loader_builtin_pixelformat_LDADD) $(LIBS)
+loader/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+
+loader/0015_loader_quicklook_pixelformat$(EXEEXT): $(loader_0015_loader_quicklook_pixelformat_OBJECTS) $(loader_0015_loader_quicklook_pixelformat_DEPENDENCIES) $(EXTRA_loader_0015_loader_quicklook_pixelformat_DEPENDENCIES) loader/$(am__dirstamp)
+	@rm -f loader/0015_loader_quicklook_pixelformat$(EXEEXT)
+	$(AM_V_CCLD)$(loader_0015_loader_quicklook_pixelformat_LINK) $(loader_0015_loader_quicklook_pixelformat_OBJECTS) $(loader_0015_loader_quicklook_pixelformat_LDADD) $(LIBS)
+loader/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+
+loader/0016_loader_gnome_thumbnailer_pixelformat$(EXEEXT): $(loader_0016_loader_gnome_thumbnailer_pixelformat_OBJECTS) $(loader_0016_loader_gnome_thumbnailer_pixelformat_DEPENDENCIES) $(EXTRA_loader_0016_loader_gnome_thumbnailer_pixelformat_DEPENDENCIES) loader/$(am__dirstamp)
+	@rm -f loader/0016_loader_gnome_thumbnailer_pixelformat$(EXEEXT)
+	$(AM_V_CCLD)$(loader_0016_loader_gnome_thumbnailer_pixelformat_LINK) $(loader_0016_loader_gnome_thumbnailer_pixelformat_OBJECTS) $(loader_0016_loader_gnome_thumbnailer_pixelformat_LDADD) $(LIBS)
 palette/$(am__dirstamp):
 	@$(MKDIR_P) palette
 	@: >>palette/$(am__dirstamp)
@@ -2010,6 +2344,7 @@ mostlyclean-compile:
 	-rm -f cli/*.$(OBJEXT)
 	-rm -f filter/*.$(OBJEXT)
 	-rm -f gdk-pixbuf-loader/*.$(OBJEXT)
+	-rm -f loader/*.$(OBJEXT)
 	-rm -f palette/*.$(OBJEXT)
 	-rm -f probe/*.$(OBJEXT)
 
@@ -2059,6 +2394,15 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@gdk-pixbuf-loader/$(DEPDIR)/0005_context_free-0005_context_free.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@gdk-pixbuf-loader/$(DEPDIR)/0006_loader_module-0006_loader_module.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@gdk-pixbuf-loader/$(DEPDIR)/0007_loader_plugin_integration-0007_loader_plugin_integration.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/$(DEPDIR)/0001_kmeans_init-0001_kmeans_init.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@probe/$(DEPDIR)/0001_probe_parse-0001_probe_parse.Po@am__quote@ # am--include-marker
 
@@ -2666,6 +3010,132 @@ gdk-pixbuf-loader/0007_loader_plugin_integration-0007_loader_plugin_integration.
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(gdk_pixbuf_loader_0007_loader_plugin_integration_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o gdk-pixbuf-loader/0007_loader_plugin_integration-0007_loader_plugin_integration.obj `if test -f 'gdk-pixbuf-loader/0007_loader_plugin_integration.c'; then $(CYGPATH_W) 'gdk-pixbuf-loader/0007_loader_plugin_integration.c'; else $(CYGPATH_W) '$(srcdir)/gdk-pixbuf-loader/0007_loader_plugin_integration.c'; fi`
 
+loader/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.o: loader/0008_loader_coregraphics_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0008_loader_coregraphics_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0008_loader_coregraphics_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.o -MD -MP -MF loader/$(DEPDIR)/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.Tpo -c -o loader/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.o `test -f 'loader/0008_loader_coregraphics_pixelformat.c' || echo '$(srcdir)/'`loader/0008_loader_coregraphics_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.Tpo loader/$(DEPDIR)/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0008_loader_coregraphics_pixelformat.c' object='loader/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0008_loader_coregraphics_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0008_loader_coregraphics_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.o `test -f 'loader/0008_loader_coregraphics_pixelformat.c' || echo '$(srcdir)/'`loader/0008_loader_coregraphics_pixelformat.c
+
+loader/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.obj: loader/0008_loader_coregraphics_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0008_loader_coregraphics_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0008_loader_coregraphics_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.obj -MD -MP -MF loader/$(DEPDIR)/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.Tpo -c -o loader/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.obj `if test -f 'loader/0008_loader_coregraphics_pixelformat.c'; then $(CYGPATH_W) 'loader/0008_loader_coregraphics_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0008_loader_coregraphics_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.Tpo loader/$(DEPDIR)/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0008_loader_coregraphics_pixelformat.c' object='loader/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0008_loader_coregraphics_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0008_loader_coregraphics_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.obj `if test -f 'loader/0008_loader_coregraphics_pixelformat.c'; then $(CYGPATH_W) 'loader/0008_loader_coregraphics_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0008_loader_coregraphics_pixelformat.c'; fi`
+
+loader/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.o: loader/0009_loader_wic_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0009_loader_wic_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0009_loader_wic_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.o -MD -MP -MF loader/$(DEPDIR)/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.Tpo -c -o loader/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.o `test -f 'loader/0009_loader_wic_pixelformat.c' || echo '$(srcdir)/'`loader/0009_loader_wic_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.Tpo loader/$(DEPDIR)/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0009_loader_wic_pixelformat.c' object='loader/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0009_loader_wic_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0009_loader_wic_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.o `test -f 'loader/0009_loader_wic_pixelformat.c' || echo '$(srcdir)/'`loader/0009_loader_wic_pixelformat.c
+
+loader/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.obj: loader/0009_loader_wic_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0009_loader_wic_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0009_loader_wic_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.obj -MD -MP -MF loader/$(DEPDIR)/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.Tpo -c -o loader/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.obj `if test -f 'loader/0009_loader_wic_pixelformat.c'; then $(CYGPATH_W) 'loader/0009_loader_wic_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0009_loader_wic_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.Tpo loader/$(DEPDIR)/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0009_loader_wic_pixelformat.c' object='loader/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0009_loader_wic_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0009_loader_wic_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.obj `if test -f 'loader/0009_loader_wic_pixelformat.c'; then $(CYGPATH_W) 'loader/0009_loader_wic_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0009_loader_wic_pixelformat.c'; fi`
+
+loader/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.o: loader/0010_loader_gdk_pixbuf_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0010_loader_gdk_pixbuf_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0010_loader_gdk_pixbuf_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.o -MD -MP -MF loader/$(DEPDIR)/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.Tpo -c -o loader/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.o `test -f 'loader/0010_loader_gdk_pixbuf_pixelformat.c' || echo '$(srcdir)/'`loader/0010_loader_gdk_pixbuf_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.Tpo loader/$(DEPDIR)/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0010_loader_gdk_pixbuf_pixelformat.c' object='loader/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0010_loader_gdk_pixbuf_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0010_loader_gdk_pixbuf_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.o `test -f 'loader/0010_loader_gdk_pixbuf_pixelformat.c' || echo '$(srcdir)/'`loader/0010_loader_gdk_pixbuf_pixelformat.c
+
+loader/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.obj: loader/0010_loader_gdk_pixbuf_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0010_loader_gdk_pixbuf_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0010_loader_gdk_pixbuf_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.obj -MD -MP -MF loader/$(DEPDIR)/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.Tpo -c -o loader/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.obj `if test -f 'loader/0010_loader_gdk_pixbuf_pixelformat.c'; then $(CYGPATH_W) 'loader/0010_loader_gdk_pixbuf_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0010_loader_gdk_pixbuf_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.Tpo loader/$(DEPDIR)/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0010_loader_gdk_pixbuf_pixelformat.c' object='loader/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0010_loader_gdk_pixbuf_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0010_loader_gdk_pixbuf_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.obj `if test -f 'loader/0010_loader_gdk_pixbuf_pixelformat.c'; then $(CYGPATH_W) 'loader/0010_loader_gdk_pixbuf_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0010_loader_gdk_pixbuf_pixelformat.c'; fi`
+
+loader/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.o: loader/0011_loader_gd_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0011_loader_gd_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0011_loader_gd_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.o -MD -MP -MF loader/$(DEPDIR)/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.Tpo -c -o loader/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.o `test -f 'loader/0011_loader_gd_pixelformat.c' || echo '$(srcdir)/'`loader/0011_loader_gd_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.Tpo loader/$(DEPDIR)/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0011_loader_gd_pixelformat.c' object='loader/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0011_loader_gd_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0011_loader_gd_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.o `test -f 'loader/0011_loader_gd_pixelformat.c' || echo '$(srcdir)/'`loader/0011_loader_gd_pixelformat.c
+
+loader/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.obj: loader/0011_loader_gd_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0011_loader_gd_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0011_loader_gd_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.obj -MD -MP -MF loader/$(DEPDIR)/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.Tpo -c -o loader/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.obj `if test -f 'loader/0011_loader_gd_pixelformat.c'; then $(CYGPATH_W) 'loader/0011_loader_gd_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0011_loader_gd_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.Tpo loader/$(DEPDIR)/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0011_loader_gd_pixelformat.c' object='loader/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0011_loader_gd_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0011_loader_gd_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.obj `if test -f 'loader/0011_loader_gd_pixelformat.c'; then $(CYGPATH_W) 'loader/0011_loader_gd_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0011_loader_gd_pixelformat.c'; fi`
+
+loader/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.o: loader/0012_loader_libpng_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0012_loader_libpng_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0012_loader_libpng_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.o -MD -MP -MF loader/$(DEPDIR)/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.Tpo -c -o loader/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.o `test -f 'loader/0012_loader_libpng_pixelformat.c' || echo '$(srcdir)/'`loader/0012_loader_libpng_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.Tpo loader/$(DEPDIR)/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0012_loader_libpng_pixelformat.c' object='loader/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0012_loader_libpng_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0012_loader_libpng_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.o `test -f 'loader/0012_loader_libpng_pixelformat.c' || echo '$(srcdir)/'`loader/0012_loader_libpng_pixelformat.c
+
+loader/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.obj: loader/0012_loader_libpng_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0012_loader_libpng_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0012_loader_libpng_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.obj -MD -MP -MF loader/$(DEPDIR)/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.Tpo -c -o loader/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.obj `if test -f 'loader/0012_loader_libpng_pixelformat.c'; then $(CYGPATH_W) 'loader/0012_loader_libpng_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0012_loader_libpng_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.Tpo loader/$(DEPDIR)/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0012_loader_libpng_pixelformat.c' object='loader/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0012_loader_libpng_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0012_loader_libpng_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.obj `if test -f 'loader/0012_loader_libpng_pixelformat.c'; then $(CYGPATH_W) 'loader/0012_loader_libpng_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0012_loader_libpng_pixelformat.c'; fi`
+
+loader/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.o: loader/0013_loader_libjpeg_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0013_loader_libjpeg_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0013_loader_libjpeg_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.o -MD -MP -MF loader/$(DEPDIR)/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.Tpo -c -o loader/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.o `test -f 'loader/0013_loader_libjpeg_pixelformat.c' || echo '$(srcdir)/'`loader/0013_loader_libjpeg_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.Tpo loader/$(DEPDIR)/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0013_loader_libjpeg_pixelformat.c' object='loader/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0013_loader_libjpeg_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0013_loader_libjpeg_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.o `test -f 'loader/0013_loader_libjpeg_pixelformat.c' || echo '$(srcdir)/'`loader/0013_loader_libjpeg_pixelformat.c
+
+loader/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.obj: loader/0013_loader_libjpeg_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0013_loader_libjpeg_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0013_loader_libjpeg_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.obj -MD -MP -MF loader/$(DEPDIR)/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.Tpo -c -o loader/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.obj `if test -f 'loader/0013_loader_libjpeg_pixelformat.c'; then $(CYGPATH_W) 'loader/0013_loader_libjpeg_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0013_loader_libjpeg_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.Tpo loader/$(DEPDIR)/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0013_loader_libjpeg_pixelformat.c' object='loader/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0013_loader_libjpeg_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0013_loader_libjpeg_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.obj `if test -f 'loader/0013_loader_libjpeg_pixelformat.c'; then $(CYGPATH_W) 'loader/0013_loader_libjpeg_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0013_loader_libjpeg_pixelformat.c'; fi`
+
+loader/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.o: loader/0014_loader_builtin_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0014_loader_builtin_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0014_loader_builtin_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.o -MD -MP -MF loader/$(DEPDIR)/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.Tpo -c -o loader/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.o `test -f 'loader/0014_loader_builtin_pixelformat.c' || echo '$(srcdir)/'`loader/0014_loader_builtin_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.Tpo loader/$(DEPDIR)/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0014_loader_builtin_pixelformat.c' object='loader/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0014_loader_builtin_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0014_loader_builtin_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.o `test -f 'loader/0014_loader_builtin_pixelformat.c' || echo '$(srcdir)/'`loader/0014_loader_builtin_pixelformat.c
+
+loader/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.obj: loader/0014_loader_builtin_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0014_loader_builtin_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0014_loader_builtin_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.obj -MD -MP -MF loader/$(DEPDIR)/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.Tpo -c -o loader/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.obj `if test -f 'loader/0014_loader_builtin_pixelformat.c'; then $(CYGPATH_W) 'loader/0014_loader_builtin_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0014_loader_builtin_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.Tpo loader/$(DEPDIR)/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0014_loader_builtin_pixelformat.c' object='loader/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0014_loader_builtin_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0014_loader_builtin_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.obj `if test -f 'loader/0014_loader_builtin_pixelformat.c'; then $(CYGPATH_W) 'loader/0014_loader_builtin_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0014_loader_builtin_pixelformat.c'; fi`
+
+loader/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.o: loader/0015_loader_quicklook_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0015_loader_quicklook_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0015_loader_quicklook_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.o -MD -MP -MF loader/$(DEPDIR)/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.Tpo -c -o loader/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.o `test -f 'loader/0015_loader_quicklook_pixelformat.c' || echo '$(srcdir)/'`loader/0015_loader_quicklook_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.Tpo loader/$(DEPDIR)/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0015_loader_quicklook_pixelformat.c' object='loader/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0015_loader_quicklook_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0015_loader_quicklook_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.o `test -f 'loader/0015_loader_quicklook_pixelformat.c' || echo '$(srcdir)/'`loader/0015_loader_quicklook_pixelformat.c
+
+loader/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.obj: loader/0015_loader_quicklook_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0015_loader_quicklook_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0015_loader_quicklook_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.obj -MD -MP -MF loader/$(DEPDIR)/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.Tpo -c -o loader/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.obj `if test -f 'loader/0015_loader_quicklook_pixelformat.c'; then $(CYGPATH_W) 'loader/0015_loader_quicklook_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0015_loader_quicklook_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.Tpo loader/$(DEPDIR)/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0015_loader_quicklook_pixelformat.c' object='loader/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0015_loader_quicklook_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0015_loader_quicklook_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.obj `if test -f 'loader/0015_loader_quicklook_pixelformat.c'; then $(CYGPATH_W) 'loader/0015_loader_quicklook_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0015_loader_quicklook_pixelformat.c'; fi`
+
+loader/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.o: loader/0016_loader_gnome_thumbnailer_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0016_loader_gnome_thumbnailer_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0016_loader_gnome_thumbnailer_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.o -MD -MP -MF loader/$(DEPDIR)/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.Tpo -c -o loader/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.o `test -f 'loader/0016_loader_gnome_thumbnailer_pixelformat.c' || echo '$(srcdir)/'`loader/0016_loader_gnome_thumbnailer_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.Tpo loader/$(DEPDIR)/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0016_loader_gnome_thumbnailer_pixelformat.c' object='loader/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0016_loader_gnome_thumbnailer_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0016_loader_gnome_thumbnailer_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.o `test -f 'loader/0016_loader_gnome_thumbnailer_pixelformat.c' || echo '$(srcdir)/'`loader/0016_loader_gnome_thumbnailer_pixelformat.c
+
+loader/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.obj: loader/0016_loader_gnome_thumbnailer_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0016_loader_gnome_thumbnailer_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0016_loader_gnome_thumbnailer_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.obj -MD -MP -MF loader/$(DEPDIR)/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.Tpo -c -o loader/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.obj `if test -f 'loader/0016_loader_gnome_thumbnailer_pixelformat.c'; then $(CYGPATH_W) 'loader/0016_loader_gnome_thumbnailer_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0016_loader_gnome_thumbnailer_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.Tpo loader/$(DEPDIR)/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0016_loader_gnome_thumbnailer_pixelformat.c' object='loader/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0016_loader_gnome_thumbnailer_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0016_loader_gnome_thumbnailer_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.obj `if test -f 'loader/0016_loader_gnome_thumbnailer_pixelformat.c'; then $(CYGPATH_W) 'loader/0016_loader_gnome_thumbnailer_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0016_loader_gnome_thumbnailer_pixelformat.c'; fi`
+
 palette/0001_kmeans_init-0001_kmeans_init.o: palette/0001_kmeans_init.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(palette_0001_kmeans_init_CPPFLAGS) $(CPPFLAGS) $(palette_0001_kmeans_init_CFLAGS) $(CFLAGS) -MT palette/0001_kmeans_init-0001_kmeans_init.o -MD -MP -MF palette/$(DEPDIR)/0001_kmeans_init-0001_kmeans_init.Tpo -c -o palette/0001_kmeans_init-0001_kmeans_init.o `test -f 'palette/0001_kmeans_init.c' || echo '$(srcdir)/'`palette/0001_kmeans_init.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) palette/$(DEPDIR)/0001_kmeans_init-0001_kmeans_init.Tpo palette/$(DEPDIR)/0001_kmeans_init-0001_kmeans_init.Po
@@ -2730,6 +3200,7 @@ clean-libtool:
 	-rm -rf cli/.libs cli/_libs
 	-rm -rf filter/.libs filter/_libs
 	-rm -rf gdk-pixbuf-loader/.libs gdk-pixbuf-loader/_libs
+	-rm -rf loader/.libs loader/_libs
 	-rm -rf palette/.libs palette/_libs
 	-rm -rf probe/.libs probe/_libs
 
@@ -2951,6 +3422,69 @@ recheck: all $(check_PROGRAMS)
 	        am__force_recheck=am--force-recheck \
 	        TEST_LOGS="$$log_list"; \
 	exit $$?
+loader/0008_loader_coregraphics_pixelformat.log: loader/0008_loader_coregraphics_pixelformat$(EXEEXT)
+	@p='loader/0008_loader_coregraphics_pixelformat$(EXEEXT)'; \
+	b='loader/0008_loader_coregraphics_pixelformat'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+loader/0009_loader_wic_pixelformat.log: loader/0009_loader_wic_pixelformat$(EXEEXT)
+	@p='loader/0009_loader_wic_pixelformat$(EXEEXT)'; \
+	b='loader/0009_loader_wic_pixelformat'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+loader/0010_loader_gdk_pixbuf_pixelformat.log: loader/0010_loader_gdk_pixbuf_pixelformat$(EXEEXT)
+	@p='loader/0010_loader_gdk_pixbuf_pixelformat$(EXEEXT)'; \
+	b='loader/0010_loader_gdk_pixbuf_pixelformat'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+loader/0011_loader_gd_pixelformat.log: loader/0011_loader_gd_pixelformat$(EXEEXT)
+	@p='loader/0011_loader_gd_pixelformat$(EXEEXT)'; \
+	b='loader/0011_loader_gd_pixelformat'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+loader/0012_loader_libpng_pixelformat.log: loader/0012_loader_libpng_pixelformat$(EXEEXT)
+	@p='loader/0012_loader_libpng_pixelformat$(EXEEXT)'; \
+	b='loader/0012_loader_libpng_pixelformat'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+loader/0013_loader_libjpeg_pixelformat.log: loader/0013_loader_libjpeg_pixelformat$(EXEEXT)
+	@p='loader/0013_loader_libjpeg_pixelformat$(EXEEXT)'; \
+	b='loader/0013_loader_libjpeg_pixelformat'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+loader/0014_loader_builtin_pixelformat.log: loader/0014_loader_builtin_pixelformat$(EXEEXT)
+	@p='loader/0014_loader_builtin_pixelformat$(EXEEXT)'; \
+	b='loader/0014_loader_builtin_pixelformat'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+loader/0015_loader_quicklook_pixelformat.log: loader/0015_loader_quicklook_pixelformat$(EXEEXT)
+	@p='loader/0015_loader_quicklook_pixelformat$(EXEEXT)'; \
+	b='loader/0015_loader_quicklook_pixelformat'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
+loader/0016_loader_gnome_thumbnailer_pixelformat.log: loader/0016_loader_gnome_thumbnailer_pixelformat$(EXEEXT)
+	@p='loader/0016_loader_gnome_thumbnailer_pixelformat$(EXEEXT)'; \
+	b='loader/0016_loader_gnome_thumbnailer_pixelformat'; \
+	$(am__check_pre) $(LOG_DRIVER) --test-name "$$f" \
+	--log-file $$b.log --trs-file $$b.trs \
+	$(am__common_driver_flags) $(AM_LOG_DRIVER_FLAGS) $(LOG_DRIVER_FLAGS) -- $(LOG_COMPILE) \
+	"$$tst" $(AM_TESTS_FD_REDIRECT)
 gdk-pixbuf-loader/0001_gdk_pixbuf_loader.log: gdk-pixbuf-loader/0001_gdk_pixbuf_loader$(EXEEXT)
 	@p='gdk-pixbuf-loader/0001_gdk_pixbuf_loader$(EXEEXT)'; \
 	b='gdk-pixbuf-loader/0001_gdk_pixbuf_loader'; \
@@ -3099,6 +3633,8 @@ distclean-generic:
 	-$(am__rm_f) filter/$(am__dirstamp)
 	-$(am__rm_f) gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) gdk-pixbuf-loader/$(am__dirstamp)
+	-$(am__rm_f) loader/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) loader/$(am__dirstamp)
 	-$(am__rm_f) palette/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) palette/$(am__dirstamp)
 	-$(am__rm_f) probe/$(DEPDIR)/$(am__dirstamp)
@@ -3157,6 +3693,15 @@ distclean: distclean-am
 	-rm -f gdk-pixbuf-loader/$(DEPDIR)/0005_context_free-0005_context_free.Po
 	-rm -f gdk-pixbuf-loader/$(DEPDIR)/0006_loader_module-0006_loader_module.Po
 	-rm -f gdk-pixbuf-loader/$(DEPDIR)/0007_loader_plugin_integration-0007_loader_plugin_integration.Po
+	-rm -f loader/$(DEPDIR)/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.Po
+	-rm -f loader/$(DEPDIR)/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.Po
+	-rm -f loader/$(DEPDIR)/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.Po
+	-rm -f loader/$(DEPDIR)/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.Po
+	-rm -f loader/$(DEPDIR)/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.Po
+	-rm -f loader/$(DEPDIR)/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.Po
+	-rm -f loader/$(DEPDIR)/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.Po
+	-rm -f loader/$(DEPDIR)/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.Po
+	-rm -f loader/$(DEPDIR)/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.Po
 	-rm -f palette/$(DEPDIR)/0001_kmeans_init-0001_kmeans_init.Po
 	-rm -f probe/$(DEPDIR)/0001_probe_parse-0001_probe_parse.Po
 	-rm -f Makefile
@@ -3247,6 +3792,15 @@ maintainer-clean: maintainer-clean-am
 	-rm -f gdk-pixbuf-loader/$(DEPDIR)/0005_context_free-0005_context_free.Po
 	-rm -f gdk-pixbuf-loader/$(DEPDIR)/0006_loader_module-0006_loader_module.Po
 	-rm -f gdk-pixbuf-loader/$(DEPDIR)/0007_loader_plugin_integration-0007_loader_plugin_integration.Po
+	-rm -f loader/$(DEPDIR)/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.Po
+	-rm -f loader/$(DEPDIR)/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.Po
+	-rm -f loader/$(DEPDIR)/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.Po
+	-rm -f loader/$(DEPDIR)/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.Po
+	-rm -f loader/$(DEPDIR)/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.Po
+	-rm -f loader/$(DEPDIR)/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.Po
+	-rm -f loader/$(DEPDIR)/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.Po
+	-rm -f loader/$(DEPDIR)/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.Po
+	-rm -f loader/$(DEPDIR)/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.Po
 	-rm -f palette/$(DEPDIR)/0001_kmeans_init-0001_kmeans_init.Po
 	-rm -f probe/$(DEPDIR)/0001_probe_parse-0001_probe_parse.Po
 	-rm -f Makefile
