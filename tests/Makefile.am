@@ -799,6 +799,8 @@ loader_0016_loader_gnome_thumbnailer_pixelformat_LDADD = \
     $(LOADER_PIXELFORMAT_LDADD_VAL)
 
 
+LOG_DRIVER = $(T_LOG_DRIVER)
+LOG_DRIVER_FLAGS = $(AM_TEST_LOG_DRIVER_FLAGS)
 T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_builddir)/build-aux/lso-tap-driver.sh
 AM_TEST_LOG_DRIVER_FLAGS = --comments
 AM_TEST_TIMEOUT = 300
