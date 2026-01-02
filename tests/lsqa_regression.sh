@@ -19,13 +19,13 @@ if [ "${VERBOSE:-0}" -eq 1 ]; then
     set -x
 fi
 
-export MS_SSIM_FLOOR=0.98
-export PSNR_FLOOR=40.0
-export BASELINE_DIR="$(dirname "$0")/data/baseline"
-export INPUT_ROOT="$(dirname "$0")/data"
-export ARTIFACT_ROOT="${ARTIFACT_ROOT:-$(pwd)/tests/_artifacts}"
-export CSV_REPORT="${ARTIFACT_ROOT}/lsqa_resolutions.csv"
-export SEED=${LSQA_SEED:-2024}
+MS_SSIM_FLOOR=0.98
+PSNR_FLOOR=40.0
+BASELINE_DIR="$(dirname "$0")/data/baseline"
+INPUT_ROOT="$(dirname "$0")/data"
+ARTIFACT_ROOT="${ARTIFACT_ROOT:-$(pwd)/tests/_artifacts}"
+CSV_REPORT="${ARTIFACT_ROOT}/lsqa_resolutions.csv"
+SEED=${LSQA_SEED:-2024}
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 build_root=${TOP_BUILDDIR:-${script_dir}/..}
@@ -36,7 +36,7 @@ build_root=${TOP_BUILDDIR:-${script_dir}/..}
 lsqa_bin_env=${LSQA_BIN-}
 if [ -n "${lsqa_bin_env}" ]; then
     if [ -x "${lsqa_bin_env}" ]; then
-        export LSQA_BIN=${lsqa_bin_env}
+        LSQA_BIN=${lsqa_bin_env}
     else
         printf 'LSQA_BIN points to a missing or non-executable path: %s\n' \
             "${lsqa_bin_env}" >&2
@@ -49,7 +49,7 @@ else
         "${build_root}/lsqa"
     for candidate in "$@"; do
         if [ -x "${candidate}" ]; then
-            export LSQA_BIN=${candidate}
+            LSQA_BIN=${candidate}
             break
         fi
     done
@@ -64,172 +64,203 @@ fi
 
 mkdir -p "${ARTIFACT_ROOT}"
 
-# Prefer the explicit python3 interpreter when the generic `python`
-# shim is unavailable (e.g., on FreeBSD images). Using a common helper
-# keeps the shebang POSIX-compliant while still locating a functional
-# Python runtime for the regression harness.
-python_bin="${PYTHON:-python}"
-if ! command -v "${python_bin}" >/dev/null 2>&1; then
-    python_bin="python3"
-fi
+failures=""
+failure_count=0
+rows="label,ms_ssim,psnr_y"
 
-"${python_bin}" - <<'PY'
-import errno
-import json
-import math
-import os
-import subprocess
-import sys
-
-ms_floor = float(os.environ.get("MS_SSIM_FLOOR", "0.98"))
-psnr_floor = float(os.environ.get("PSNR_FLOOR", "40.0"))
-base_dir = os.environ["BASELINE_DIR"]
-input_root = os.environ["INPUT_ROOT"]
-artifact_root = os.environ["ARTIFACT_ROOT"]
-csv_report = os.environ["CSV_REPORT"]
-seed = int(os.environ.get("SEED", "2024"))
-
-cases = []
-formats_dir = os.path.join(input_root, "inputs", "formats")
-for entry in sorted(os.listdir(formats_dir)):
-    cases.append((os.path.join(formats_dir, entry), entry))
-
-res_dir = os.path.join(input_root, "resolutions")
-for entry in sorted(os.listdir(res_dir)):
-    cases.append((os.path.join(res_dir, entry), entry))
-
-corrupted_dir = os.path.join(input_root, "corrupted")
-corrupted = [os.path.join(corrupted_dir, name)
-             for name in sorted(os.listdir(corrupted_dir))]
-
-# Palette sources rely on indexed color and may omit MS-SSIM in the report.
-custom_floors = {
-    "palette.png": (0.0, psnr_floor),
+add_failure() {
+    failures="${failures}$1\n"
+    failure_count=$((failure_count + 1))
 }
 
+parse_metric_file() {
+    metric_name=$1
+    json_path=$2
+    value=$(sed -n "s/.*\"${metric_name}\"[[:space:]]*:[[:space:]]*\\([^,]*\\),.*/\\1/p" \
+        "${json_path}" | head -n 1)
+    if [ -z "${value}" ] || [ "${value}" = "null" ]; then
+        printf '0.0'
+    else
+        printf '%s' "${value}"
+    fi
+}
 
-def run_lsqa(path):
-    env = os.environ.copy()
-    env["LSQA_RANDOM_SEED"] = str(seed)
-    try:
-        proc = subprocess.run([
-            os.environ["LSQA_BIN"],
-            path,
-            path,
-        ], check=False, capture_output=True, text=True, env=env)
-        return proc.returncode, proc.stdout, proc.stderr
-    except OSError as exc:
-        if exc.errno != errno.ENOEXEC:
-            raise
+below_floor() {
+    lhs=$1
+    rhs=$2
+    awk -v a="${lhs}" -v b="${rhs}" 'BEGIN { exit (a + 1e-6 < b) ? 0 : 1 }'
+}
 
-    # Cosmopolitan APE binaries can trip macOS's posix_spawn when invoked
-    # through Python's subprocess. Falling back to /bin/sh avoids the
-    # spawn path while preserving the original argument vector.
-    proc = subprocess.run([
-        "/bin/sh",
-        "-c",
-        "exec \"$0\" \"$1\" \"$1\"",
-        os.environ["LSQA_BIN"],
-        path,
-    ], check=False, capture_output=True, text=True, env=env)
-    return proc.returncode, proc.stdout, proc.stderr
+above_ceiling() {
+    lhs=$1
+    rhs=$2
+    awk -v a="${lhs}" -v b="${rhs}" 'BEGIN { exit (a > b + 1e-12) ? 0 : 1 }'
+}
 
+run_lsqa() {
+    target=$1
+    stdout_path=$2
+    stderr_path=$3
 
-def parse_metrics(text):
-    data = json.loads(text)
-    quality = data.get("quality", {})
-    ms = quality.get("MS-SSIM", 0.0)
-    psnr = quality.get("PSNR_Y", 0.0)
-    ms = 0.0 if ms is None else float(ms)
-    psnr = 0.0 if psnr is None else float(psnr)
-    return ms, psnr
+    : >"${stdout_path}"
+    : >"${stderr_path}"
 
+    env LSQA_RANDOM_SEED="${SEED}" "${LSQA_BIN}" "${target}" "${target}" \
+        >"${stdout_path}" 2>"${stderr_path}" || status=$?
+    status=${status:-0}
 
-failures = []
-rows = ["label,ms_ssim,psnr_y"]
+    if [ ${status} -eq 126 ]; then
+        : >"${stdout_path}"
+        : >"${stderr_path}"
+        env LSQA_RANDOM_SEED="${SEED}" /bin/sh -c \
+            'exec "$0" "$1" "$1"' "${LSQA_BIN}" "${target}" \
+            >"${stdout_path}" 2>"${stderr_path}" || status=$?
+        status=${status:-0}
+    fi
 
-for path, label in cases:
-    code, out, err = run_lsqa(path)
-    if code != 0:
-        failures.append(f"{label}: assessment/lsqa returned {code}: {err.strip()}")
-        continue
-    try:
-        ms, psnr = parse_metrics(out)
-    except Exception as exc:  # noqa: BLE001
-        failures.append(f"{label}: failed to parse metrics ({exc})")
-        continue
-    base_name = os.path.splitext(label)[0] + ".json"
-    base_path = os.path.join(base_dir, base_name)
-    if not os.path.exists(base_path):
-        failures.append(f"{label}: baseline {base_name} missing")
-        continue
-    with open(base_path, "r", encoding="utf-8") as handle:
-        base_data = json.load(handle).get("quality", {})
-    base_ms_val = base_data.get("MS-SSIM", 0.0)
-    base_psnr_val = base_data.get("PSNR_Y", 0.0)
-    base_ms = 0.0 if base_ms_val is None else float(base_ms_val)
-    base_psnr = 0.0 if base_psnr_val is None else float(base_psnr_val)
-    floor_ms, floor_psnr = custom_floors.get(label, (ms_floor, psnr_floor))
-    if ms + 1e-6 < floor_ms:
-        failures.append(f"{label}: MS-SSIM {ms:.6f} below floor {floor_ms}")
-    if psnr + 1e-6 < floor_psnr:
-        failures.append(
-            f"{label}: PSNR_Y {psnr:.3f} below floor {floor_psnr}dB")
-    if ms + 1e-6 < base_ms:
-        failures.append(
-            f"{label}: MS-SSIM {ms:.6f} regressed from baseline {base_ms:.6f}")
-    if psnr + 1e-6 < base_psnr:
-        failures.append(
-            f"{label}: PSNR_Y {psnr:.3f} regressed from baseline {base_psnr:.3f}")
-    rows.append(f"{label},{ms:.6f},{psnr:.3f}")
+    printf '%s' "${status}"
+}
 
-with open(csv_report, "w", encoding="utf-8") as handle:
-    handle.write("\n".join(rows))
+process_case() {
+    path=$1
+    label=$2
 
-# Repeat a stability check to monitor variance on the high-entropy palette
-# case. A stable encoder should keep variance near zero when the seed is
-# pinned; a jump indicates nondeterminism or state leakage.
-repeat_label = "palette.png"
-repeat_path = os.path.join(formats_dir, repeat_label)
-repeats = []
-for _ in range(5):
-    code, out, err = run_lsqa(repeat_path)
-    if code != 0:
-        failures.append(f"{repeat_label}: repeat run failed ({code}) {err.strip()}")
+    out_file=$(mktemp)
+    err_file=$(mktemp)
+    status=$(run_lsqa "${path}" "${out_file}" "${err_file}")
+    if [ ${status} -ne 0 ]; then
+        msg=$(cat "${err_file}")
+        add_failure "${label}: assessment/lsqa returned ${status}: ${msg}"
+        rm -f "${out_file}" "${err_file}"
+        return
+    fi
+
+    ms_val=$(parse_metric_file "MS-SSIM" "${out_file}")
+    psnr_val=$(parse_metric_file "PSNR_Y" "${out_file}")
+    base_name="${label%.*}.json"
+    base_path="${BASELINE_DIR}/${base_name}"
+
+    if [ ! -f "${base_path}" ]; then
+        add_failure "${label}: baseline ${base_name} missing"
+        rm -f "${out_file}" "${err_file}"
+        return
+    fi
+
+    base_ms=$(parse_metric_file "MS-SSIM" "${base_path}")
+    base_psnr=$(parse_metric_file "PSNR_Y" "${base_path}")
+
+    floor_ms=${MS_SSIM_FLOOR}
+    floor_psnr=${PSNR_FLOOR}
+    if [ "${label}" = "palette.png" ]; then
+        floor_ms=0.0
+    fi
+
+    ms_enforced=1
+    if ! above_ceiling "${ms_val}" "1e-6" && \
+        ! above_ceiling "${base_ms}" "1e-6"; then
+        ms_enforced=0
+    fi
+
+    if [ ${ms_enforced} -ne 0 ] && below_floor "${ms_val}" "${floor_ms}"; then
+        add_failure "${label}: MS-SSIM ${ms_val} below floor ${floor_ms}"
+    fi
+    if below_floor "${psnr_val}" "${floor_psnr}"; then
+        add_failure "${label}: PSNR_Y ${psnr_val} below floor ${floor_psnr}dB"
+    fi
+    if [ ${ms_enforced} -ne 0 ] && below_floor "${ms_val}" "${base_ms}"; then
+        add_failure "${label}: MS-SSIM ${ms_val} regressed from baseline ${base_ms}"
+    fi
+    if below_floor "${psnr_val}" "${base_psnr}"; then
+        add_failure \
+            "${label}: PSNR_Y ${psnr_val} regressed from baseline ${base_psnr}"
+    fi
+
+    rows="${rows}\n${label},${ms_val},${psnr_val}"
+    rm -f "${out_file}" "${err_file}"
+}
+
+formats_dir="${INPUT_ROOT}/inputs/formats"
+res_dir="${INPUT_ROOT}/resolutions"
+corrupted_dir="${INPUT_ROOT}/corrupted"
+
+for entry in $(LC_ALL=C ls "${formats_dir}" | LC_ALL=C sort); do
+    process_case "${formats_dir}/${entry}" "${entry}"
+done
+
+for entry in $(LC_ALL=C ls "${res_dir}" | LC_ALL=C sort); do
+    process_case "${res_dir}/${entry}" "${entry}"
+done
+
+echo "${rows}" >"${CSV_REPORT}"
+
+repeat_label="palette.png"
+repeat_path="${formats_dir}/${repeat_label}"
+repeat_log=$(mktemp)
+
+for _ in 1 2 3 4 5; do
+    out_file=$(mktemp)
+    err_file=$(mktemp)
+    status=$(run_lsqa "${repeat_path}" "${out_file}" "${err_file}")
+    if [ ${status} -ne 0 ]; then
+        msg=$(cat "${err_file}")
+        add_failure "${repeat_label}: repeat run failed (${status}) ${msg}"
+        rm -f "${out_file}" "${err_file}"
         break
-    ms, psnr = parse_metrics(out)
-    repeats.append((ms, psnr))
-if repeats:
-    avg_ms = sum(v[0] for v in repeats) / len(repeats)
-    avg_psnr = sum(v[1] for v in repeats) / len(repeats)
-    var_ms = sum((v[0] - avg_ms) ** 2 for v in repeats) / len(repeats)
-    var_psnr = sum((v[1] - avg_psnr) ** 2 for v in repeats) / len(repeats)
-    if var_ms > 1e-6:
-        failures.append(
-            f"{repeat_label}: MS-SSIM variance {var_ms:.2e} exceeds 1e-6")
-    if var_psnr > 1e-3:
-        failures.append(
-            f"{repeat_label}: PSNR_Y variance {var_psnr:.2e} exceeds 1e-3")
+    fi
+    ms_val=$(parse_metric_file "MS-SSIM" "${out_file}")
+    psnr_val=$(parse_metric_file "PSNR_Y" "${out_file}")
+    printf '%s %s\n' "${ms_val}" "${psnr_val}" >>"${repeat_log}"
+    rm -f "${out_file}" "${err_file}"
+done
 
-# Corrupted inputs must not crash; a non-zero exit code paired with stderr is
-# acceptable as long as the process returns control.
-for path in corrupted:
-    code, out, err = run_lsqa(path)
-    if code == 0:
-        try:
-            ms, psnr = parse_metrics(out)
-        except Exception:  # noqa: BLE001
-            failures.append(f"{path}: succeeded without parsable output")
-            continue
-        if ms < 0.5 or psnr < 10:
-            failures.append(f"{path}: low quality accepted unexpectedly")
-    else:
-        if not err.strip():
-            failures.append(f"{path}: failed without diagnostic output")
+if [ -s "${repeat_log}" ]; then
+    vars=$(awk '{ms_sum+=$1; ps_sum+=$2; ms[NR]=$1; ps[NR]=$2}
+        END {
+            if (NR == 0) { exit 0 }
+            ms_avg = ms_sum / NR
+            ps_avg = ps_sum / NR
+            for (i = 1; i <= NR; i++) {
+                ms_var += (ms[i] - ms_avg) * (ms[i] - ms_avg)
+                ps_var += (ps[i] - ps_avg) * (ps[i] - ps_avg)
+            }
+            printf "%f %f\n", ms_var / NR, ps_var / NR
+        }' "${repeat_log}")
+    ms_var=$(printf '%s' "${vars}" | awk '{print $1}')
+    ps_var=$(printf '%s' "${vars}" | awk '{print $2}')
+    if above_ceiling "${ms_var}" "1e-6"; then
+        add_failure "${repeat_label}: MS-SSIM variance ${ms_var} exceeds 1e-6"
+    fi
+    if above_ceiling "${ps_var}" "1e-3"; then
+        add_failure "${repeat_label}: PSNR_Y variance ${ps_var} exceeds 1e-3"
+    fi
+fi
 
-if failures:
-    sys.stderr.write("\n".join(failures) + "\n")
-    sys.exit(1)
+rm -f "${repeat_log}"
 
-print("lsqa regression suite passed; CSV stored at", csv_report)
-PY
+for entry in $(LC_ALL=C ls "${corrupted_dir}" | LC_ALL=C sort); do
+    path="${corrupted_dir}/${entry}"
+    out_file=$(mktemp)
+    err_file=$(mktemp)
+    status=$(run_lsqa "${path}" "${out_file}" "${err_file}")
+    if [ ${status} -eq 0 ]; then
+        ms_val=$(parse_metric_file "MS-SSIM" "${out_file}")
+        psnr_val=$(parse_metric_file "PSNR_Y" "${out_file}")
+        if below_floor "${ms_val}" "0.5" || below_floor "${psnr_val}" "10"; then
+            :
+        else
+            add_failure "${path}: low quality accepted unexpectedly"
+        fi
+    else
+        if [ ! -s "${err_file}" ]; then
+            add_failure "${path}: failed without diagnostic output"
+        fi
+    fi
+    rm -f "${out_file}" "${err_file}"
+done
+
+if [ ${failure_count} -ne 0 ]; then
+    printf '%s' "${failures}" >&2
+    exit 1
+fi
+
+echo "lsqa regression suite passed; CSV stored at ${CSV_REPORT}"
