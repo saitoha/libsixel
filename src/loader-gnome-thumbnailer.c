@@ -902,7 +902,8 @@ thumbnailer_has_tryexec(char const *tryexec)
  * thumbnailer_has_fallback_thumbnailer
  *
  * Confirm that the built-in gdk-pixbuf fallback is runnable.  Tests use
- * this to skip when the thumbnailer binary is absent from PATH.
+ * this to skip when the thumbnailer binary is absent from PATH or fails
+ * to start because of missing runtime dependencies.
  *
  * Arguments:
  *     None.
@@ -912,11 +913,46 @@ thumbnailer_has_tryexec(char const *tryexec)
 int
 thumbnailer_has_fallback_thumbnailer(void)
 {
+    pid_t pid;
+    int status;
+    int wait_result;
     int executable;
 
+    pid = (-1);
+    status = 0;
+    wait_result = 0;
     executable = thumbnailer_has_tryexec("gdk-pixbuf-thumbnailer");
 
-    return executable;
+    if (executable == 0) {
+        return 0;
+    }
+
+    pid = fork();
+    if (pid < 0) {
+        return 0;
+    }
+    if (pid == 0) {
+        execlp("gdk-pixbuf-thumbnailer",
+               "gdk-pixbuf-thumbnailer",
+               "--help",
+               NULL);
+        _exit(127);
+    }
+
+    while ((wait_result = waitpid(pid, &status, 0)) < 0 &&
+            errno == EINTR) {
+        continue;
+    }
+
+    if (wait_result < 0) {
+        return 0;
+    }
+
+    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+        return 0;
+    }
+
+    return 1;
 }
 
 /*
