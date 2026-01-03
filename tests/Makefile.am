@@ -246,7 +246,7 @@ FILTER_TEST_BINARIES = \
        filter/0009_filter_dither \
        filter/0010_filter_encode
 
-LOADER_PIXELFORMAT_TESTS = \
+TESTS_COMMON_TESTS = \
        loader/0008_loader_coregraphics_pixelformat \
        loader/0009_loader_wic_pixelformat \
        loader/0010_loader_gdk_pixbuf_pixelformat \
@@ -258,7 +258,7 @@ LOADER_PIXELFORMAT_TESTS = \
        loader/0016_loader_gnome_thumbnailer_pixelformat
 
 TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) \
-       $(FILTER_TESTS) $(LOADER_PIXELFORMAT_TESTS)
+       $(FILTER_TESTS) $(TESTS_COMMON_TESTS)
 COPY_TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) \
        $(FILTER_TESTS)
 check_PROGRAMS = \
@@ -427,11 +427,6 @@ else
 TESTS_COMMON_LDADD_VAL = $(top_builddir)/src/libsixel.la $(LIBS)
 endif
 
-LOADER_PIXELFORMAT_CPPFLAGS_VAL = $(TESTS_COMMON_CPPFLAGS_VAL)
-LOADER_PIXELFORMAT_CFLAGS_VAL = $(TESTS_COMMON_CFLAGS_VAL)
-LOADER_PIXELFORMAT_LDFLAGS_VAL = $(TESTS_COMMON_LDFLAGS_VAL)
-LOADER_PIXELFORMAT_LDADD_VAL = $(TESTS_COMMON_LDADD_VAL)
-
 TESTS_AMALGAMATION_CPPFLAGS_COMMON = $(TESTS_COMMON_CPPFLAGS_VAL)
 TESTS_AMALGAMATION_CFLAGS_COMMON = $(TESTS_COMMON_CFLAGS_VAL)
 TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
@@ -456,8 +451,11 @@ else
 TESTS_AMALGAMATION_LDADD_COMMON = $(top_builddir)/src/libsixel.la $(LIBS)
 endif
 
-check_PROGRAMS += $(FILTER_TEST_BINARIES) $(PROBE_TESTS_BINARIES) $(PALETTE_TESTS_BINARIES)
-check_PROGRAMS += $(LOADER_PIXELFORMAT_TESTS)
+check_PROGRAMS += \
+    $(FILTER_TEST_BINARIES) \
+    $(PROBE_TESTS_BINARIES) \
+    $(PALETTE_TESTS_BINARIES) \
+    $(TESTS_COMMON_TESTS)
 
 if WANT_AMALGAMATED_TOOLS
 nodist_filter_0001_filter_clip_SOURCES = $(AMALGAMATION_SIXEL)
@@ -693,99 +691,157 @@ palette_0001_kmeans_init_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
 palette_0001_kmeans_init_LDADD = $(TESTS_COMMON_LDADD_VAL)
 endif
 
+if WANT_AMALGAMATED_TOOLS
+nodist_loader_0008_loader_coregraphics_pixelformat_SOURCES = $(AMALGAMATION_SIXEL)
+loader_0008_loader_coregraphics_pixelformat_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+    -DBUILD_0008_LOADER_COREGRAPHICS_PIXELFORMAT=1
+loader_0008_loader_coregraphics_pixelformat_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+loader_0008_loader_coregraphics_pixelformat_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+loader_0008_loader_coregraphics_pixelformat_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+else
 loader_0008_loader_coregraphics_pixelformat_SOURCES = \
-    loader/0008_loader_coregraphics_pixelformat.c \
-    loader/pixelformat_test_common.h
-loader_0008_loader_coregraphics_pixelformat_CPPFLAGS = \
-    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
-loader_0008_loader_coregraphics_pixelformat_CFLAGS = \
-    $(LOADER_PIXELFORMAT_CFLAGS_VAL)
-loader_0008_loader_coregraphics_pixelformat_LDFLAGS = \
-    $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
-loader_0008_loader_coregraphics_pixelformat_LDADD = \
-    $(LOADER_PIXELFORMAT_LDADD_VAL)
+    loader/0008_loader_coregraphics_pixelformat.c
+loader_0008_loader_coregraphics_pixelformat_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+loader_0008_loader_coregraphics_pixelformat_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+loader_0008_loader_coregraphics_pixelformat_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+loader_0008_loader_coregraphics_pixelformat_LDADD = $(TESTS_COMMON_LDADD_VAL)
+endif
 
+if WANT_AMALGAMATED_TOOLS
+nodist_loader_0009_loader_wic_pixelformat_SOURCES = $(AMALGAMATION_SIXEL)
+loader_0009_loader_wic_pixelformat_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+    -DBUILD_0009_LOADER_WIC_PIXELFORMAT=1
+loader_0009_loader_wic_pixelformat_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+loader_0009_loader_wic_pixelformat_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+loader_0009_loader_wic_pixelformat_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+else
 loader_0009_loader_wic_pixelformat_SOURCES = \
     loader/0009_loader_wic_pixelformat.c \
     loader/pixelformat_test_common.h
-loader_0009_loader_wic_pixelformat_CPPFLAGS = \
-    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
-loader_0009_loader_wic_pixelformat_CFLAGS = $(LOADER_PIXELFORMAT_CFLAGS_VAL)
-loader_0009_loader_wic_pixelformat_LDFLAGS = $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
-loader_0009_loader_wic_pixelformat_LDADD = $(LOADER_PIXELFORMAT_LDADD_VAL)
+loader_0009_loader_wic_pixelformat_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+loader_0009_loader_wic_pixelformat_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+loader_0009_loader_wic_pixelformat_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+loader_0009_loader_wic_pixelformat_LDADD = $(TESTS_COMMON_LDADD_VAL)
+endif
 
+if WANT_AMALGAMATED_TOOLS
+nodist_loader_0010_loader_gdk_pixbuf_pixelformat_SOURCES = $(AMALGAMATION_SIXEL)
+loader_0010_loader_gdk_pixbuf_pixelformat_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+    -DBUILD_0010_LOADER_GDK_PIXBUF_PIXELFORMAT=1
+loader_0010_loader_gdk_pixbuf_pixelformat_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+loader_0010_loader_gdk_pixbuf_pixelformat_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+loader_0010_loader_gdk_pixbuf_pixelformat_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+else
 loader_0010_loader_gdk_pixbuf_pixelformat_SOURCES = \
     loader/0010_loader_gdk_pixbuf_pixelformat.c \
     loader/pixelformat_test_common.h
-loader_0010_loader_gdk_pixbuf_pixelformat_CPPFLAGS = \
-    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
-loader_0010_loader_gdk_pixbuf_pixelformat_CFLAGS = \
-    $(LOADER_PIXELFORMAT_CFLAGS_VAL)
-loader_0010_loader_gdk_pixbuf_pixelformat_LDFLAGS = \
-    $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
-loader_0010_loader_gdk_pixbuf_pixelformat_LDADD = \
-    $(LOADER_PIXELFORMAT_LDADD_VAL)
+loader_0010_loader_gdk_pixbuf_pixelformat_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+loader_0010_loader_gdk_pixbuf_pixelformat_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+loader_0010_loader_gdk_pixbuf_pixelformat_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+loader_0010_loader_gdk_pixbuf_pixelformat_LDADD = $(TESTS_COMMON_LDADD_VAL)
+endif
 
+if WANT_AMALGAMATED_TOOLS
+nodist_loader_0011_loader_gd_pixelformat_SOURCES = $(AMALGAMATION_SIXEL)
+loader_0011_loader_gd_pixelformat_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+    -DBUILD_0011_LOADER_GD_PIXELFORMAT=1
+loader_0011_loader_gd_pixelformat_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+loader_0011_loader_gd_pixelformat_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+loader_0011_loader_gd_pixelformat_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+else
 loader_0011_loader_gd_pixelformat_SOURCES = \
     loader/0011_loader_gd_pixelformat.c \
     loader/pixelformat_test_common.h
-loader_0011_loader_gd_pixelformat_CPPFLAGS = \
-    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
-loader_0011_loader_gd_pixelformat_CFLAGS = $(LOADER_PIXELFORMAT_CFLAGS_VAL)
-loader_0011_loader_gd_pixelformat_LDFLAGS = $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
-loader_0011_loader_gd_pixelformat_LDADD = $(LOADER_PIXELFORMAT_LDADD_VAL)
+loader_0011_loader_gd_pixelformat_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+loader_0011_loader_gd_pixelformat_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+loader_0011_loader_gd_pixelformat_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+loader_0011_loader_gd_pixelformat_LDADD = $(TESTS_COMMON_LDADD_VAL)
+endif
 
+if WANT_AMALGAMATED_TOOLS
+nodist_loader_0012_loader_libpng_pixelformat_SOURCES = $(AMALGAMATION_SIXEL)
+loader_0012_loader_libpng_pixelformat_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+    -DBUILD_0012_LOADER_LIBPNG_PIXELFORMAT=1
+loader_0012_loader_libpng_pixelformat_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+loader_0012_loader_libpng_pixelformat_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+loader_0012_loader_libpng_pixelformat_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+else
 loader_0012_loader_libpng_pixelformat_SOURCES = \
     loader/0012_loader_libpng_pixelformat.c \
     loader/pixelformat_test_common.h
-loader_0012_loader_libpng_pixelformat_CPPFLAGS = \
-    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
-loader_0012_loader_libpng_pixelformat_CFLAGS = $(LOADER_PIXELFORMAT_CFLAGS_VAL)
-loader_0012_loader_libpng_pixelformat_LDFLAGS = $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
-loader_0012_loader_libpng_pixelformat_LDADD = $(LOADER_PIXELFORMAT_LDADD_VAL)
+loader_0012_loader_libpng_pixelformat_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+loader_0012_loader_libpng_pixelformat_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+loader_0012_loader_libpng_pixelformat_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+loader_0012_loader_libpng_pixelformat_LDADD = $(TESTS_COMMON_LDADD_VAL)
+endif
 
+if WANT_AMALGAMATED_TOOLS
+nodist_loader_0013_loader_libjpeg_pixelformat_SOURCES = $(AMALGAMATION_SIXEL)
+loader_0013_loader_libjpeg_pixelformat_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+    -DBUILD_0013_LOADER_LIBJPEG_PIXELFORMAT=1
+loader_0013_loader_libjpeg_pixelformat_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+loader_0013_loader_libjpeg_pixelformat_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+loader_0013_loader_libjpeg_pixelformat_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+else
 loader_0013_loader_libjpeg_pixelformat_SOURCES = \
     loader/0013_loader_libjpeg_pixelformat.c \
     loader/pixelformat_test_common.h
-loader_0013_loader_libjpeg_pixelformat_CPPFLAGS = \
-    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
-loader_0013_loader_libjpeg_pixelformat_CFLAGS = $(LOADER_PIXELFORMAT_CFLAGS_VAL)
-loader_0013_loader_libjpeg_pixelformat_LDFLAGS = $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
-loader_0013_loader_libjpeg_pixelformat_LDADD = $(LOADER_PIXELFORMAT_LDADD_VAL)
+loader_0013_loader_libjpeg_pixelformat_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+loader_0013_loader_libjpeg_pixelformat_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+loader_0013_loader_libjpeg_pixelformat_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+loader_0013_loader_libjpeg_pixelformat_LDADD = $(TESTS_COMMON_LDADD_VAL)
+endif
 
+if WANT_AMALGAMATED_TOOLS
+nodist_loader_0014_loader_builtin_pixelformat_SOURCES = $(AMALGAMATION_SIXEL)
+loader_0014_loader_builtin_pixelformat_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+    -DBUILD_0014_LOADER_BUILTIN_PIXELFORMAT=1
+loader_0014_loader_builtin_pixelformat_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+loader_0014_loader_builtin_pixelformat_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+loader_0014_loader_builtin_pixelformat_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+else
 loader_0014_loader_builtin_pixelformat_SOURCES = \
     loader/0014_loader_builtin_pixelformat.c \
     loader/pixelformat_test_common.h
-loader_0014_loader_builtin_pixelformat_CPPFLAGS = \
-    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
-loader_0014_loader_builtin_pixelformat_CFLAGS = $(LOADER_PIXELFORMAT_CFLAGS_VAL)
-loader_0014_loader_builtin_pixelformat_LDFLAGS = \
-    $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
-loader_0014_loader_builtin_pixelformat_LDADD = $(LOADER_PIXELFORMAT_LDADD_VAL)
+loader_0014_loader_builtin_pixelformat_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+loader_0014_loader_builtin_pixelformat_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+loader_0014_loader_builtin_pixelformat_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+loader_0014_loader_builtin_pixelformat_LDADD = $(TESTS_COMMON_LDADD_VAL)
+endif
 
+if WANT_AMALGAMATED_TOOLS
+nodist_loader_0015_loader_quicklook_pixelformat_SOURCES = $(AMALGAMATION_SIXEL)
+loader_0015_loader_quicklook_pixelformat_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+    -DBUILD_0015_LOADER_QUICKLOOK_PIXELFORMAT=1
+loader_0015_loader_quicklook_pixelformat_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+loader_0015_loader_quicklook_pixelformat_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+loader_0015_loader_quicklook_pixelformat_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+else
 loader_0015_loader_quicklook_pixelformat_SOURCES = \
     loader/0015_loader_quicklook_pixelformat.c \
     loader/pixelformat_test_common.h
-loader_0015_loader_quicklook_pixelformat_CPPFLAGS = \
-    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
-loader_0015_loader_quicklook_pixelformat_CFLAGS = \
-    $(LOADER_PIXELFORMAT_CFLAGS_VAL)
-loader_0015_loader_quicklook_pixelformat_LDFLAGS = \
-    $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
-loader_0015_loader_quicklook_pixelformat_LDADD = \
-    $(LOADER_PIXELFORMAT_LDADD_VAL)
+loader_0015_loader_quicklook_pixelformat_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+loader_0015_loader_quicklook_pixelformat_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+loader_0015_loader_quicklook_pixelformat_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+loader_0015_loader_quicklook_pixelformat_LDADD = $(TESTS_COMMON_LDADD_VAL)
+endif
 
+if WANT_AMALGAMATED_TOOLS
+nodist_loader_0016_loader_gnome_thumbnailer_pixelformat_SOURCES = $(AMALGAMATION_SIXEL)
+loader_0016_loader_gnome_thumbnailer_pixelformat_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+    -DBUILD_0016_LOADER_GNOME_THUMBNAILER_PIXELFORMAT=1
+loader_0016_loader_gnome_thumbnailer_pixelformat_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+loader_0016_loader_gnome_thumbnailer_pixelformat_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+loader_0016_loader_gnome_thumbnailer_pixelformat_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+else
 loader_0016_loader_gnome_thumbnailer_pixelformat_SOURCES = \
     loader/0016_loader_gnome_thumbnailer_pixelformat.c \
     loader/pixelformat_test_common.h
-loader_0016_loader_gnome_thumbnailer_pixelformat_CPPFLAGS = \
-    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
-loader_0016_loader_gnome_thumbnailer_pixelformat_CFLAGS = \
-    $(LOADER_PIXELFORMAT_CFLAGS_VAL)
-loader_0016_loader_gnome_thumbnailer_pixelformat_LDFLAGS = \
-    $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
-loader_0016_loader_gnome_thumbnailer_pixelformat_LDADD = \
-    $(LOADER_PIXELFORMAT_LDADD_VAL)
+loader_0016_loader_gnome_thumbnailer_pixelformat_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+loader_0016_loader_gnome_thumbnailer_pixelformat_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+loader_0016_loader_gnome_thumbnailer_pixelformat_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+loader_0016_loader_gnome_thumbnailer_pixelformat_LDADD = $(TESTS_COMMON_LDADD_VAL)
+endif
 
 
 LOG_DRIVER = $(T_LOG_DRIVER)
@@ -829,10 +885,10 @@ ISSUE_INPUTS = issue/166/poc \
        issue/200/POC_img2sixel_heap_buffer_overflow
 
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
-            loader/pngsuite_common.sh \
-            $(BASELINE_JSON) $(INPUT_FORMAT_FILES) \
-            $(RESOLUTION_IMAGES) $(CORRUPTED_INPUTS) $(ISSUE_INPUTS) \
-            filter/0001_filter_clip.c filter/0002_filter_sample.c \
+             loader/pngsuite_common.sh \
+             $(BASELINE_JSON) $(INPUT_FORMAT_FILES) \
+             $(RESOLUTION_IMAGES) $(CORRUPTED_INPUTS) $(ISSUE_INPUTS) \
+             filter/0001_filter_clip.c filter/0002_filter_sample.c \
              filter/0003_filter_resize.c filter/0004_filter_colors.c \
              filter/0005_filter_lookup.c filter/0006_filter_final_merge.c \
              filter/0007_filter_vpte.c filter/0008_filter_load.c \
