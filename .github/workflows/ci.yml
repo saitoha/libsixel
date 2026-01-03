@@ -1626,7 +1626,6 @@ jobs:
     runs-on: ${{ matrix.runner || matrix.os }}
     strategy:
       matrix:
-        vcpkg_packages: ['']
         include:
           - label: freebsd 14.3 x86-64
             os: ubuntu-latest
