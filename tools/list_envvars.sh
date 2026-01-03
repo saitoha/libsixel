@@ -68,16 +68,21 @@ list_source_vars() {
                 {
                     line = $0
                     while (match(line,
-                                 /(getenv|sixel_helper_getenv_[A-Za-z0-9_]+)[[:space:]]*\([[:space:]]*"([^"]+)"/,
-                                 m)) {
-                        emit(m[2])
-                        line = substr(line, RSTART + RLENGTH)
+                                 /(getenv|sixel_helper_getenv_[A-Za-z0-9_]+)[ \t]*\([ \t]*"/)) {
+                        start = RSTART + RLENGTH
+                        rest = substr(line, start)
+                        quote = index(rest, "\"")
+                        if (quote == 0) {
+                            break
+                        }
+                        emit(substr(rest, 1, quote - 1))
+                        line = substr(rest, quote + 1)
                     }
                     line = $0
                     while (match(line,
-                                 /"((SIXEL|IMG2SIXEL|LIBSIXEL)_[A-Z0-9_]+)"/,
-                                 m)) {
-                        emit(m[1])
+                                 /"(SIXEL|IMG2SIXEL|LIBSIXEL)_[A-Z0-9_]+"/)) {
+                        start = RSTART + 1
+                        emit(substr(line, start, RLENGTH - 2))
                         line = substr(line, RSTART + RLENGTH)
                     }
                 }
