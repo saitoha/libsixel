@@ -93,9 +93,9 @@ while IFS=: read -r label source_path; do
 
     if [ "${use_wheel}" -eq 1 ]; then
         ld_env="${python_wheel_ld_library_path}"
-        if PYTHONPATH="${python_trace_pythonpath}" \
+        if PYTHONPATH="${python_wheel_trace_pythonpath}" \
            LD_LIBRARY_PATH="${ld_env}" \
-           LIBSIXEL_LIBDIR="${lib_dir}" \
+           LIBSIXEL_LIBDIR="${python_lib_dir}" \
            "${run_python}" "${verify_script}" \
            "${source_path}" "${output_path}" >>"${log_file}" 2>&1; then
             tap_pass ${case_id} "encodes ${label} via wheel (DCS/ST ok)"
@@ -106,7 +106,7 @@ while IFS=: read -r label source_path; do
     else
         if PYTHONPATH="${python_in_tree_trace_pythonpath}" \
            LD_LIBRARY_PATH="${python_in_tree_ld_library_path}" \
-           LIBSIXEL_LIBDIR="${lib_dir}" \
+           LIBSIXEL_LIBDIR="${python_lib_dir}" \
            "${run_python}" "${verify_script}" \
            "${source_path}" "${output_path}" >>"${log_file}" 2>&1; then
             tap_pass ${case_id} "encodes ${label} via in-tree modules (DCS/ST ok)"

@@ -36,7 +36,7 @@ if [ "${use_wheel}" -eq 1 ]; then
 else
     if PYTHONPATH="${python_in_tree_pythonpath}" \
        LD_LIBRARY_PATH="${python_in_tree_ld_library_path}" \
-       LIBSIXEL_LIBDIR="${lib_dir}" \
+       LIBSIXEL_LIBDIR="${python_lib_dir}" \
        "${run_python}" - <<'PY' >>"${log_file}" 2>&1; then
 try:
     import libsixel
@@ -121,7 +121,7 @@ except OSError as exc:
 PY
 
 python_env="${run_python}"
-libdir="${lib_dir}"
+libdir="${python_lib_dir}"
 
 if [ -z "${libdir}" ]; then
     tap_fail ${case_id} "could not locate libsixel build output"
@@ -144,10 +144,9 @@ if [ "${use_wheel}" -eq 1 ]; then
         ld_library_path_env="${ld_library_path_env}:${LD_LIBRARY_PATH}"
     fi
 
-    if PYTHONPATH="${python_trace_pythonpath}" \
+    if PYTHONPATH="${python_wheel_trace_pythonpath}" \
        LD_LIBRARY_PATH="${ld_library_path_env}" \
-       SKIP_CODE=${skip_code} \
-       "${python_env}" "${verify_script}" >>"${log_file}" 2>&1; then
+        "${python_env}" "${verify_script}" >>"${log_file}" 2>&1; then
         tap_pass ${case_id} "encodes image via wheel"
     else
         python_skip_on_load_error $? "${log_file}"
