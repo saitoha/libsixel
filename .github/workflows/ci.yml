@@ -114,6 +114,7 @@ jobs:
               --disable-shared
               --enable-static
             extra_packages: gcc-14
+            pip_packages: gcovr
           - label: ubuntu x86_64 no-simd
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -124,6 +125,7 @@ jobs:
               --enable-gcov
               --disable-simd
             extra_packages: gcc-14
+            pip_packages: gcovr
           - label: ubuntu x86_64 no-tools
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -135,6 +137,7 @@ jobs:
               --disable-img2sixel
               --disable-sixel2png
             extra_packages: gcc-14
+            pip_packages: gcovr
           - label: ubuntu x86_64 no-threads
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -145,6 +148,7 @@ jobs:
               --enable-gcov
               --disable-threads
             extra_packages: gcc-14
+            pip_packages: gcovr
           - label: ubuntu x86_64 musl-cross
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -169,6 +173,7 @@ jobs:
               CC=gcc-14
               --enable-gcov
             extra_packages: gcc-14
+            pip_packages: gcovr
           - label: ubuntu 24.04 aarch64 amalgamated_lib
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
@@ -639,12 +644,12 @@ jobs:
         $script = [string]::Join("`n", $scriptLines)
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
-    - name: Install gcovr
-      if: runner.os != 'Windows' && matrix.emscripten != true && (matrix.sys || '') != 'i686' && !contains(fromJson('["freebsd","openbsd","netbsd"]'), matrix.platform || '') && !contains(fromJson('["amalgamated_lib","cosmopolitan"]'), matrix.variant || '')
+    - name: Install pip packages
+      if: (matrix.pip_packages || '') != ''
       run: |
         python3 -m venv .venv
         . .venv/bin/activate
-        pip install -U pip gcovr
+        pip install -U pip ${{ matrix.pip_packages }}
         echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
     - name: Build with Emscripten (non-Windows)
