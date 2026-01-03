@@ -101,32 +101,45 @@ jobs:
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
-            static_only: true
             variant: static-only
+            extra_options: >-
+              --enable-gcov
+              --disable-shared
+              --enable-static
           - label: ubuntu x86_64 no-simd
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
-            disable_simd: true
             variant: disable-simd
+            extra_options: >-
+              --enable-gcov
+              --disable-simd
           - label: ubuntu x86_64 no-tools
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
-            disable_tools: true
             variant: disable-tools
+            extra_options: >-
+              --enable-gcov
+              --disable-img2sixel
+              --disable-sixel2png
           - label: ubuntu x86_64 no-threads
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
-            disable_threads: true
             variant: disable-threads
+            extra_options: >-
+              --enable-gcov
+              --disable-threads
           - label: ubuntu x86_64 musl-cross
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
             musl: true
             variant: musl-cross
+            extra_options: >-
+              CC=musl-gcc
+              --enable-gcov
             extra_packages: musl-tools
           - label: alpine 3.20 x86_64
             os: ubuntu-latest
@@ -142,12 +155,20 @@ jobs:
             runner: ubuntu-24.04-arm
             sys: aarch64
             variant: amalgamated_lib
-            extra_options: '--enable-amalgamated-lib'
+            extra_options: >-
+              --enable-amalgamated-lib
           - label: ubuntu i686
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: i686
             variant: default
+            extra_options: >-
+              CC=gcc
+              CFLAGS="-m32"
+              LDFLAGS="-m32"
+              PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
+              PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
+              --enable-gcov
             extra_packages: gcc-multilib
           - label: macos aarch64
             os: macos-latest
@@ -159,7 +180,8 @@ jobs:
             runner: macos-latest
             sys: aarch64
             variant: amalgamated_lib
-            extra_options: '--enable-amalgamated-lib'
+            extra_options: >-
+              --enable-amalgamated-lib
           - label: macos x86_64
             os: macos-15
             runner: macos-15
@@ -170,7 +192,8 @@ jobs:
             runner: macos-15
             sys: x86_64
             variant: amalgamated_lib
-            extra_options: '--enable-amalgamated-lib'
+            extra_options: >-
+              --enable-amalgamated-lib
           - label: cosmopolitan ubuntu 24.04 aarch64
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
@@ -233,7 +256,8 @@ jobs:
             compiler: gcc
             sys: UCRT64
             variant: amalgamated_lib
-            extra_options: '--enable-amalgamated-lib'
+            extra_options: >-
+              --enable-amalgamated-lib
           - label: clang64
             os: windows-latest
             runner: windows-latest
@@ -252,20 +276,26 @@ jobs:
             compiler: cl
             sys: MSVC
             variant: default
+            extra_options: >-
+              CC=cl
+              --enable-gcov
           - label: msvc amalgamated_lib
             os: windows-latest
             runner: windows-latest
             compiler: cl
             sys: MSVC
             variant: amalgamated_lib
-            extra_options: '--enable-amalgamated-lib'
+            extra_options: >-
+              CC=cl
+              --enable-amalgamated-lib
           - label: cygwin amalgamated_lib
             os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: CYGWIN
             variant: amalgamated_lib
-            extra_options: '--enable-amalgamated-lib'
+            extra_options: >-
+              --enable-amalgamated-lib
           - label: cosmopolitan msys
             os: windows-latest
             runner: windows-latest
@@ -287,6 +317,9 @@ jobs:
             sys: MSVC
             variant: vcpkg-libpng
             vcpkg_libpng: true
+            extra_options: >-
+              CC=cl
+              --enable-gcov
           - label: msvc vcpkg-libjpeg
             os: windows-latest
             runner: windows-latest
@@ -294,6 +327,9 @@ jobs:
             sys: MSVC
             variant: vcpkg-libjpeg
             vcpkg_libjpeg: true
+            extra_options: >-
+              CC=cl
+              --enable-gcov
 #          - label: emscripten msys x86_64
 #            os: windows-latest
 #            runner: windows-latest
