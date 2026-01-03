@@ -463,12 +463,19 @@ am__gdk_pixbuf_loader_0007_loader_plugin_integration_SOURCES_DIST =  \
 gdk_pixbuf_loader_0007_loader_plugin_integration_OBJECTS = $(am_gdk_pixbuf_loader_0007_loader_plugin_integration_OBJECTS)
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_0007_loader_plugin_integration_DEPENDENCIES = $(top_builddir)/src/libsixel.la \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(am__DEPENDENCIES_1)
-am_loader_0008_loader_coregraphics_pixelformat_OBJECTS = loader/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.$(OBJEXT)
+am__loader_0008_loader_coregraphics_pixelformat_SOURCES_DIST =  \
+	loader/0008_loader_coregraphics_pixelformat.c
+@WANT_AMALGAMATED_TOOLS_FALSE@am_loader_0008_loader_coregraphics_pixelformat_OBJECTS = loader/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.$(OBJEXT)
+am__objects_14 = $(top_builddir)/amalgamation/loader_0008_loader_coregraphics_pixelformat-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_loader_0008_loader_coregraphics_pixelformat_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_14)
 loader_0008_loader_coregraphics_pixelformat_OBJECTS =  \
-	$(am_loader_0008_loader_coregraphics_pixelformat_OBJECTS)
-am__DEPENDENCIES_3 = $(am__DEPENDENCIES_2)
-loader_0008_loader_coregraphics_pixelformat_DEPENDENCIES =  \
-	$(am__DEPENDENCIES_3)
+	$(am_loader_0008_loader_coregraphics_pixelformat_OBJECTS) \
+	$(nodist_loader_0008_loader_coregraphics_pixelformat_OBJECTS)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0008_loader_coregraphics_pixelformat_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0008_loader_coregraphics_pixelformat_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_2)
 loader_0008_loader_coregraphics_pixelformat_LINK = $(LIBTOOL) \
 	$(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) \
@@ -476,78 +483,150 @@ loader_0008_loader_coregraphics_pixelformat_LINK = $(LIBTOOL) \
 	$(CFLAGS) \
 	$(loader_0008_loader_coregraphics_pixelformat_LDFLAGS) \
 	$(LDFLAGS) -o $@
-am_loader_0009_loader_wic_pixelformat_OBJECTS = loader/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.$(OBJEXT)
+am__loader_0009_loader_wic_pixelformat_SOURCES_DIST =  \
+	loader/0009_loader_wic_pixelformat.c \
+	loader/pixelformat_test_common.h
+@WANT_AMALGAMATED_TOOLS_FALSE@am_loader_0009_loader_wic_pixelformat_OBJECTS = loader/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.$(OBJEXT)
+am__objects_15 = $(top_builddir)/amalgamation/loader_0009_loader_wic_pixelformat-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_loader_0009_loader_wic_pixelformat_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_15)
 loader_0009_loader_wic_pixelformat_OBJECTS =  \
-	$(am_loader_0009_loader_wic_pixelformat_OBJECTS)
-loader_0009_loader_wic_pixelformat_DEPENDENCIES =  \
-	$(am__DEPENDENCIES_3)
+	$(am_loader_0009_loader_wic_pixelformat_OBJECTS) \
+	$(nodist_loader_0009_loader_wic_pixelformat_OBJECTS)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0009_loader_wic_pixelformat_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0009_loader_wic_pixelformat_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_2)
 loader_0009_loader_wic_pixelformat_LINK = $(LIBTOOL) $(AM_V_lt) \
 	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 	$(CCLD) $(loader_0009_loader_wic_pixelformat_CFLAGS) $(CFLAGS) \
 	$(loader_0009_loader_wic_pixelformat_LDFLAGS) $(LDFLAGS) -o $@
-am_loader_0010_loader_gdk_pixbuf_pixelformat_OBJECTS = loader/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.$(OBJEXT)
+am__loader_0010_loader_gdk_pixbuf_pixelformat_SOURCES_DIST =  \
+	loader/0010_loader_gdk_pixbuf_pixelformat.c \
+	loader/pixelformat_test_common.h
+@WANT_AMALGAMATED_TOOLS_FALSE@am_loader_0010_loader_gdk_pixbuf_pixelformat_OBJECTS = loader/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.$(OBJEXT)
+am__objects_16 = $(top_builddir)/amalgamation/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_loader_0010_loader_gdk_pixbuf_pixelformat_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_16)
 loader_0010_loader_gdk_pixbuf_pixelformat_OBJECTS =  \
-	$(am_loader_0010_loader_gdk_pixbuf_pixelformat_OBJECTS)
-loader_0010_loader_gdk_pixbuf_pixelformat_DEPENDENCIES =  \
-	$(am__DEPENDENCIES_3)
+	$(am_loader_0010_loader_gdk_pixbuf_pixelformat_OBJECTS) \
+	$(nodist_loader_0010_loader_gdk_pixbuf_pixelformat_OBJECTS)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0010_loader_gdk_pixbuf_pixelformat_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0010_loader_gdk_pixbuf_pixelformat_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_2)
 loader_0010_loader_gdk_pixbuf_pixelformat_LINK = $(LIBTOOL) $(AM_V_lt) \
 	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 	$(CCLD) $(loader_0010_loader_gdk_pixbuf_pixelformat_CFLAGS) \
 	$(CFLAGS) $(loader_0010_loader_gdk_pixbuf_pixelformat_LDFLAGS) \
 	$(LDFLAGS) -o $@
-am_loader_0011_loader_gd_pixelformat_OBJECTS = loader/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.$(OBJEXT)
+am__loader_0011_loader_gd_pixelformat_SOURCES_DIST =  \
+	loader/0011_loader_gd_pixelformat.c \
+	loader/pixelformat_test_common.h
+@WANT_AMALGAMATED_TOOLS_FALSE@am_loader_0011_loader_gd_pixelformat_OBJECTS = loader/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.$(OBJEXT)
+am__objects_17 = $(top_builddir)/amalgamation/loader_0011_loader_gd_pixelformat-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_loader_0011_loader_gd_pixelformat_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_17)
 loader_0011_loader_gd_pixelformat_OBJECTS =  \
-	$(am_loader_0011_loader_gd_pixelformat_OBJECTS)
-loader_0011_loader_gd_pixelformat_DEPENDENCIES =  \
-	$(am__DEPENDENCIES_3)
+	$(am_loader_0011_loader_gd_pixelformat_OBJECTS) \
+	$(nodist_loader_0011_loader_gd_pixelformat_OBJECTS)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0011_loader_gd_pixelformat_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0011_loader_gd_pixelformat_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_2)
 loader_0011_loader_gd_pixelformat_LINK = $(LIBTOOL) $(AM_V_lt) \
 	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 	$(CCLD) $(loader_0011_loader_gd_pixelformat_CFLAGS) $(CFLAGS) \
 	$(loader_0011_loader_gd_pixelformat_LDFLAGS) $(LDFLAGS) -o $@
-am_loader_0012_loader_libpng_pixelformat_OBJECTS = loader/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.$(OBJEXT)
+am__loader_0012_loader_libpng_pixelformat_SOURCES_DIST =  \
+	loader/0012_loader_libpng_pixelformat.c \
+	loader/pixelformat_test_common.h
+@WANT_AMALGAMATED_TOOLS_FALSE@am_loader_0012_loader_libpng_pixelformat_OBJECTS = loader/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.$(OBJEXT)
+am__objects_18 = $(top_builddir)/amalgamation/loader_0012_loader_libpng_pixelformat-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_loader_0012_loader_libpng_pixelformat_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_18)
 loader_0012_loader_libpng_pixelformat_OBJECTS =  \
-	$(am_loader_0012_loader_libpng_pixelformat_OBJECTS)
-loader_0012_loader_libpng_pixelformat_DEPENDENCIES =  \
-	$(am__DEPENDENCIES_3)
+	$(am_loader_0012_loader_libpng_pixelformat_OBJECTS) \
+	$(nodist_loader_0012_loader_libpng_pixelformat_OBJECTS)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0012_loader_libpng_pixelformat_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0012_loader_libpng_pixelformat_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_2)
 loader_0012_loader_libpng_pixelformat_LINK = $(LIBTOOL) $(AM_V_lt) \
 	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 	$(CCLD) $(loader_0012_loader_libpng_pixelformat_CFLAGS) \
 	$(CFLAGS) $(loader_0012_loader_libpng_pixelformat_LDFLAGS) \
 	$(LDFLAGS) -o $@
-am_loader_0013_loader_libjpeg_pixelformat_OBJECTS = loader/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.$(OBJEXT)
+am__loader_0013_loader_libjpeg_pixelformat_SOURCES_DIST =  \
+	loader/0013_loader_libjpeg_pixelformat.c \
+	loader/pixelformat_test_common.h
+@WANT_AMALGAMATED_TOOLS_FALSE@am_loader_0013_loader_libjpeg_pixelformat_OBJECTS = loader/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.$(OBJEXT)
+am__objects_19 = $(top_builddir)/amalgamation/loader_0013_loader_libjpeg_pixelformat-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_loader_0013_loader_libjpeg_pixelformat_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_19)
 loader_0013_loader_libjpeg_pixelformat_OBJECTS =  \
-	$(am_loader_0013_loader_libjpeg_pixelformat_OBJECTS)
-loader_0013_loader_libjpeg_pixelformat_DEPENDENCIES =  \
-	$(am__DEPENDENCIES_3)
+	$(am_loader_0013_loader_libjpeg_pixelformat_OBJECTS) \
+	$(nodist_loader_0013_loader_libjpeg_pixelformat_OBJECTS)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0013_loader_libjpeg_pixelformat_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0013_loader_libjpeg_pixelformat_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_2)
 loader_0013_loader_libjpeg_pixelformat_LINK = $(LIBTOOL) $(AM_V_lt) \
 	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 	$(CCLD) $(loader_0013_loader_libjpeg_pixelformat_CFLAGS) \
 	$(CFLAGS) $(loader_0013_loader_libjpeg_pixelformat_LDFLAGS) \
 	$(LDFLAGS) -o $@
-am_loader_0014_loader_builtin_pixelformat_OBJECTS = loader/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.$(OBJEXT)
+am__loader_0014_loader_builtin_pixelformat_SOURCES_DIST =  \
+	loader/0014_loader_builtin_pixelformat.c \
+	loader/pixelformat_test_common.h
+@WANT_AMALGAMATED_TOOLS_FALSE@am_loader_0014_loader_builtin_pixelformat_OBJECTS = loader/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.$(OBJEXT)
+am__objects_20 = $(top_builddir)/amalgamation/loader_0014_loader_builtin_pixelformat-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_loader_0014_loader_builtin_pixelformat_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_20)
 loader_0014_loader_builtin_pixelformat_OBJECTS =  \
-	$(am_loader_0014_loader_builtin_pixelformat_OBJECTS)
-loader_0014_loader_builtin_pixelformat_DEPENDENCIES =  \
-	$(am__DEPENDENCIES_3)
+	$(am_loader_0014_loader_builtin_pixelformat_OBJECTS) \
+	$(nodist_loader_0014_loader_builtin_pixelformat_OBJECTS)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0014_loader_builtin_pixelformat_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0014_loader_builtin_pixelformat_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_2)
 loader_0014_loader_builtin_pixelformat_LINK = $(LIBTOOL) $(AM_V_lt) \
 	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 	$(CCLD) $(loader_0014_loader_builtin_pixelformat_CFLAGS) \
 	$(CFLAGS) $(loader_0014_loader_builtin_pixelformat_LDFLAGS) \
 	$(LDFLAGS) -o $@
-am_loader_0015_loader_quicklook_pixelformat_OBJECTS = loader/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.$(OBJEXT)
+am__loader_0015_loader_quicklook_pixelformat_SOURCES_DIST =  \
+	loader/0015_loader_quicklook_pixelformat.c \
+	loader/pixelformat_test_common.h
+@WANT_AMALGAMATED_TOOLS_FALSE@am_loader_0015_loader_quicklook_pixelformat_OBJECTS = loader/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.$(OBJEXT)
+am__objects_21 = $(top_builddir)/amalgamation/loader_0015_loader_quicklook_pixelformat-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_loader_0015_loader_quicklook_pixelformat_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_21)
 loader_0015_loader_quicklook_pixelformat_OBJECTS =  \
-	$(am_loader_0015_loader_quicklook_pixelformat_OBJECTS)
-loader_0015_loader_quicklook_pixelformat_DEPENDENCIES =  \
-	$(am__DEPENDENCIES_3)
+	$(am_loader_0015_loader_quicklook_pixelformat_OBJECTS) \
+	$(nodist_loader_0015_loader_quicklook_pixelformat_OBJECTS)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0015_loader_quicklook_pixelformat_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0015_loader_quicklook_pixelformat_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_2)
 loader_0015_loader_quicklook_pixelformat_LINK = $(LIBTOOL) $(AM_V_lt) \
 	--tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 	$(CCLD) $(loader_0015_loader_quicklook_pixelformat_CFLAGS) \
 	$(CFLAGS) $(loader_0015_loader_quicklook_pixelformat_LDFLAGS) \
 	$(LDFLAGS) -o $@
-am_loader_0016_loader_gnome_thumbnailer_pixelformat_OBJECTS = loader/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT)
-loader_0016_loader_gnome_thumbnailer_pixelformat_OBJECTS = $(am_loader_0016_loader_gnome_thumbnailer_pixelformat_OBJECTS)
-loader_0016_loader_gnome_thumbnailer_pixelformat_DEPENDENCIES =  \
-	$(am__DEPENDENCIES_3)
+am__loader_0016_loader_gnome_thumbnailer_pixelformat_SOURCES_DIST =  \
+	loader/0016_loader_gnome_thumbnailer_pixelformat.c \
+	loader/pixelformat_test_common.h
+@WANT_AMALGAMATED_TOOLS_FALSE@am_loader_0016_loader_gnome_thumbnailer_pixelformat_OBJECTS = loader/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT)
+am__objects_22 = $(top_builddir)/amalgamation/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_loader_0016_loader_gnome_thumbnailer_pixelformat_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_22)
+loader_0016_loader_gnome_thumbnailer_pixelformat_OBJECTS = $(am_loader_0016_loader_gnome_thumbnailer_pixelformat_OBJECTS) \
+	$(nodist_loader_0016_loader_gnome_thumbnailer_pixelformat_OBJECTS)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0016_loader_gnome_thumbnailer_pixelformat_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0016_loader_gnome_thumbnailer_pixelformat_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_2)
 loader_0016_loader_gnome_thumbnailer_pixelformat_LINK = $(LIBTOOL) \
 	$(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) \
@@ -558,9 +637,9 @@ loader_0016_loader_gnome_thumbnailer_pixelformat_LINK = $(LIBTOOL) \
 am__palette_0001_kmeans_init_SOURCES_DIST =  \
 	palette/0001_kmeans_init.c
 @WANT_AMALGAMATED_TOOLS_FALSE@am_palette_0001_kmeans_init_OBJECTS = palette/0001_kmeans_init-0001_kmeans_init.$(OBJEXT)
-am__objects_14 = $(top_builddir)/amalgamation/palette_0001_kmeans_init-sixel.$(OBJEXT)
+am__objects_23 = $(top_builddir)/amalgamation/palette_0001_kmeans_init-sixel.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_TRUE@nodist_palette_0001_kmeans_init_OBJECTS =  \
-@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_14)
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_23)
 palette_0001_kmeans_init_OBJECTS =  \
 	$(am_palette_0001_kmeans_init_OBJECTS) \
 	$(nodist_palette_0001_kmeans_init_OBJECTS)
@@ -574,9 +653,9 @@ palette_0001_kmeans_init_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(palette_0001_kmeans_init_LDFLAGS) $(LDFLAGS) -o $@
 am__probe_0001_probe_parse_SOURCES_DIST = probe/0001_probe_parse.c
 @WANT_AMALGAMATED_TOOLS_FALSE@am_probe_0001_probe_parse_OBJECTS = probe/0001_probe_parse-0001_probe_parse.$(OBJEXT)
-am__objects_15 = $(top_builddir)/amalgamation/probe_0001_probe_parse-sixel.$(OBJEXT)
+am__objects_24 = $(top_builddir)/amalgamation/probe_0001_probe_parse-sixel.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_TRUE@nodist_probe_0001_probe_parse_OBJECTS =  \
-@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_15)
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_24)
 probe_0001_probe_parse_OBJECTS = $(am_probe_0001_probe_parse_OBJECTS) \
 	$(nodist_probe_0001_probe_parse_OBJECTS)
 @WANT_AMALGAMATED_TOOLS_FALSE@probe_0001_probe_parse_DEPENDENCIES =  \
@@ -615,6 +694,15 @@ am__depfiles_remade = $(top_builddir)/amalgamation/$(DEPDIR)/cli_0029_cli_token_
 	$(top_builddir)/amalgamation/$(DEPDIR)/filter_0008_filter_load-sixel.Po \
 	$(top_builddir)/amalgamation/$(DEPDIR)/filter_0009_filter_dither-sixel.Po \
 	$(top_builddir)/amalgamation/$(DEPDIR)/filter_0010_filter_encode-sixel.Po \
+	$(top_builddir)/amalgamation/$(DEPDIR)/loader_0008_loader_coregraphics_pixelformat-sixel.Po \
+	$(top_builddir)/amalgamation/$(DEPDIR)/loader_0009_loader_wic_pixelformat-sixel.Po \
+	$(top_builddir)/amalgamation/$(DEPDIR)/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.Po \
+	$(top_builddir)/amalgamation/$(DEPDIR)/loader_0011_loader_gd_pixelformat-sixel.Po \
+	$(top_builddir)/amalgamation/$(DEPDIR)/loader_0012_loader_libpng_pixelformat-sixel.Po \
+	$(top_builddir)/amalgamation/$(DEPDIR)/loader_0013_loader_libjpeg_pixelformat-sixel.Po \
+	$(top_builddir)/amalgamation/$(DEPDIR)/loader_0014_loader_builtin_pixelformat-sixel.Po \
+	$(top_builddir)/amalgamation/$(DEPDIR)/loader_0015_loader_quicklook_pixelformat-sixel.Po \
+	$(top_builddir)/amalgamation/$(DEPDIR)/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.Po \
 	$(top_builddir)/amalgamation/$(DEPDIR)/palette_0001_kmeans_init-sixel.Po \
 	$(top_builddir)/amalgamation/$(DEPDIR)/probe_0001_probe_parse-sixel.Po \
 	$(top_builddir)/converters/$(DEPDIR)/cli_0029_cli_token_is_known_option-cli.Po \
@@ -709,14 +797,23 @@ SOURCES = $(cli_0029_cli_token_is_known_option_SOURCES) \
 	$(gdk_pixbuf_loader_0006_loader_module_SOURCES) \
 	$(gdk_pixbuf_loader_0007_loader_plugin_integration_SOURCES) \
 	$(loader_0008_loader_coregraphics_pixelformat_SOURCES) \
+	$(nodist_loader_0008_loader_coregraphics_pixelformat_SOURCES) \
 	$(loader_0009_loader_wic_pixelformat_SOURCES) \
+	$(nodist_loader_0009_loader_wic_pixelformat_SOURCES) \
 	$(loader_0010_loader_gdk_pixbuf_pixelformat_SOURCES) \
+	$(nodist_loader_0010_loader_gdk_pixbuf_pixelformat_SOURCES) \
 	$(loader_0011_loader_gd_pixelformat_SOURCES) \
+	$(nodist_loader_0011_loader_gd_pixelformat_SOURCES) \
 	$(loader_0012_loader_libpng_pixelformat_SOURCES) \
+	$(nodist_loader_0012_loader_libpng_pixelformat_SOURCES) \
 	$(loader_0013_loader_libjpeg_pixelformat_SOURCES) \
+	$(nodist_loader_0013_loader_libjpeg_pixelformat_SOURCES) \
 	$(loader_0014_loader_builtin_pixelformat_SOURCES) \
+	$(nodist_loader_0014_loader_builtin_pixelformat_SOURCES) \
 	$(loader_0015_loader_quicklook_pixelformat_SOURCES) \
+	$(nodist_loader_0015_loader_quicklook_pixelformat_SOURCES) \
 	$(loader_0016_loader_gnome_thumbnailer_pixelformat_SOURCES) \
+	$(nodist_loader_0016_loader_gnome_thumbnailer_pixelformat_SOURCES) \
 	$(palette_0001_kmeans_init_SOURCES) \
 	$(nodist_palette_0001_kmeans_init_SOURCES) \
 	$(probe_0001_probe_parse_SOURCES) \
@@ -741,15 +838,15 @@ DIST_SOURCES = $(am__cli_0029_cli_token_is_known_option_SOURCES_DIST) \
 	$(am__gdk_pixbuf_loader_0005_context_free_SOURCES_DIST) \
 	$(am__gdk_pixbuf_loader_0006_loader_module_SOURCES_DIST) \
 	$(am__gdk_pixbuf_loader_0007_loader_plugin_integration_SOURCES_DIST) \
-	$(loader_0008_loader_coregraphics_pixelformat_SOURCES) \
-	$(loader_0009_loader_wic_pixelformat_SOURCES) \
-	$(loader_0010_loader_gdk_pixbuf_pixelformat_SOURCES) \
-	$(loader_0011_loader_gd_pixelformat_SOURCES) \
-	$(loader_0012_loader_libpng_pixelformat_SOURCES) \
-	$(loader_0013_loader_libjpeg_pixelformat_SOURCES) \
-	$(loader_0014_loader_builtin_pixelformat_SOURCES) \
-	$(loader_0015_loader_quicklook_pixelformat_SOURCES) \
-	$(loader_0016_loader_gnome_thumbnailer_pixelformat_SOURCES) \
+	$(am__loader_0008_loader_coregraphics_pixelformat_SOURCES_DIST) \
+	$(am__loader_0009_loader_wic_pixelformat_SOURCES_DIST) \
+	$(am__loader_0010_loader_gdk_pixbuf_pixelformat_SOURCES_DIST) \
+	$(am__loader_0011_loader_gd_pixelformat_SOURCES_DIST) \
+	$(am__loader_0012_loader_libpng_pixelformat_SOURCES_DIST) \
+	$(am__loader_0013_loader_libjpeg_pixelformat_SOURCES_DIST) \
+	$(am__loader_0014_loader_builtin_pixelformat_SOURCES_DIST) \
+	$(am__loader_0015_loader_quicklook_pixelformat_SOURCES_DIST) \
+	$(am__loader_0016_loader_gnome_thumbnailer_pixelformat_SOURCES_DIST) \
 	$(am__palette_0001_kmeans_init_SOURCES_DIST) \
 	$(am__probe_0001_probe_parse_SOURCES_DIST)
 am__can_run_installinfo = \
@@ -1414,7 +1511,7 @@ FILTER_TEST_BINARIES = \
        filter/0009_filter_dither \
        filter/0010_filter_encode
 
-LOADER_PIXELFORMAT_TESTS = \
+TESTS_COMMON_TESTS = \
        loader/0008_loader_coregraphics_pixelformat \
        loader/0009_loader_wic_pixelformat \
        loader/0010_loader_gdk_pixbuf_pixelformat \
@@ -1590,10 +1687,6 @@ TESTS_COMMON_LDFLAGS_VAL = $(AM_LDFLAGS) $(MAYBE_COVERAGE)
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(ONNXRUNTIME_LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        @THREAD_LIBS@
 
-LOADER_PIXELFORMAT_CPPFLAGS_VAL = $(TESTS_COMMON_CPPFLAGS_VAL)
-LOADER_PIXELFORMAT_CFLAGS_VAL = $(TESTS_COMMON_CFLAGS_VAL)
-LOADER_PIXELFORMAT_LDFLAGS_VAL = $(TESTS_COMMON_LDFLAGS_VAL)
-LOADER_PIXELFORMAT_LDADD_VAL = $(TESTS_COMMON_LDADD_VAL)
 TESTS_AMALGAMATION_CPPFLAGS_COMMON = $(TESTS_COMMON_CPPFLAGS_VAL) \
 	$(am__append_3)
 TESTS_AMALGAMATION_CFLAGS_COMMON = $(TESTS_COMMON_CFLAGS_VAL)
@@ -1805,121 +1898,139 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@palette_0001_kmeans_init_LDADD = $(TESTS_COMMON_LDADD_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@palette_0001_kmeans_init_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@palette_0001_kmeans_init_SOURCES = palette/0001_kmeans_init.c
-loader_0008_loader_coregraphics_pixelformat_SOURCES = \
-    loader/0008_loader_coregraphics_pixelformat.c \
-    loader/pixelformat_test_common.h
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_loader_0008_loader_coregraphics_pixelformat_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0008_loader_coregraphics_pixelformat_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0008_loader_coregraphics_pixelformat_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_0008_LOADER_COREGRAPHICS_PIXELFORMAT=1
 
-loader_0008_loader_coregraphics_pixelformat_CPPFLAGS = \
-    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0008_loader_coregraphics_pixelformat_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0008_loader_coregraphics_pixelformat_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0008_loader_coregraphics_pixelformat_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0008_loader_coregraphics_pixelformat_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0008_loader_coregraphics_pixelformat_LDADD = $(TESTS_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0008_loader_coregraphics_pixelformat_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0008_loader_coregraphics_pixelformat_SOURCES = \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0008_loader_coregraphics_pixelformat.c
 
-loader_0008_loader_coregraphics_pixelformat_CFLAGS = \
-    $(LOADER_PIXELFORMAT_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_loader_0009_loader_wic_pixelformat_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0009_loader_wic_pixelformat_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0009_loader_wic_pixelformat_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_0009_LOADER_WIC_PIXELFORMAT=1
 
-loader_0008_loader_coregraphics_pixelformat_LDFLAGS = \
-    $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0009_loader_wic_pixelformat_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0009_loader_wic_pixelformat_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0009_loader_wic_pixelformat_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0009_loader_wic_pixelformat_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0009_loader_wic_pixelformat_LDADD = $(TESTS_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0009_loader_wic_pixelformat_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0009_loader_wic_pixelformat_SOURCES = \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0009_loader_wic_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h
 
-loader_0008_loader_coregraphics_pixelformat_LDADD = \
-    $(LOADER_PIXELFORMAT_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_loader_0010_loader_gdk_pixbuf_pixelformat_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0010_loader_gdk_pixbuf_pixelformat_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0010_loader_gdk_pixbuf_pixelformat_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_0010_LOADER_GDK_PIXBUF_PIXELFORMAT=1
 
-loader_0009_loader_wic_pixelformat_SOURCES = \
-    loader/0009_loader_wic_pixelformat.c \
-    loader/pixelformat_test_common.h
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0010_loader_gdk_pixbuf_pixelformat_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0010_loader_gdk_pixbuf_pixelformat_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0010_loader_gdk_pixbuf_pixelformat_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0010_loader_gdk_pixbuf_pixelformat_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0010_loader_gdk_pixbuf_pixelformat_LDADD = $(TESTS_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0010_loader_gdk_pixbuf_pixelformat_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0010_loader_gdk_pixbuf_pixelformat_SOURCES = \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0010_loader_gdk_pixbuf_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h
 
-loader_0009_loader_wic_pixelformat_CPPFLAGS = \
-    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_loader_0011_loader_gd_pixelformat_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0011_loader_gd_pixelformat_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0011_loader_gd_pixelformat_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_0011_LOADER_GD_PIXELFORMAT=1
 
-loader_0009_loader_wic_pixelformat_CFLAGS = $(LOADER_PIXELFORMAT_CFLAGS_VAL)
-loader_0009_loader_wic_pixelformat_LDFLAGS = $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
-loader_0009_loader_wic_pixelformat_LDADD = $(LOADER_PIXELFORMAT_LDADD_VAL)
-loader_0010_loader_gdk_pixbuf_pixelformat_SOURCES = \
-    loader/0010_loader_gdk_pixbuf_pixelformat.c \
-    loader/pixelformat_test_common.h
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0011_loader_gd_pixelformat_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0011_loader_gd_pixelformat_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0011_loader_gd_pixelformat_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0011_loader_gd_pixelformat_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0011_loader_gd_pixelformat_LDADD = $(TESTS_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0011_loader_gd_pixelformat_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0011_loader_gd_pixelformat_SOURCES = \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0011_loader_gd_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h
 
-loader_0010_loader_gdk_pixbuf_pixelformat_CPPFLAGS = \
-    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_loader_0012_loader_libpng_pixelformat_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0012_loader_libpng_pixelformat_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0012_loader_libpng_pixelformat_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_0012_LOADER_LIBPNG_PIXELFORMAT=1
 
-loader_0010_loader_gdk_pixbuf_pixelformat_CFLAGS = \
-    $(LOADER_PIXELFORMAT_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0012_loader_libpng_pixelformat_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0012_loader_libpng_pixelformat_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0012_loader_libpng_pixelformat_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0012_loader_libpng_pixelformat_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0012_loader_libpng_pixelformat_LDADD = $(TESTS_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0012_loader_libpng_pixelformat_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0012_loader_libpng_pixelformat_SOURCES = \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0012_loader_libpng_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h
 
-loader_0010_loader_gdk_pixbuf_pixelformat_LDFLAGS = \
-    $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_loader_0013_loader_libjpeg_pixelformat_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0013_loader_libjpeg_pixelformat_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0013_loader_libjpeg_pixelformat_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_0013_LOADER_LIBJPEG_PIXELFORMAT=1
 
-loader_0010_loader_gdk_pixbuf_pixelformat_LDADD = \
-    $(LOADER_PIXELFORMAT_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0013_loader_libjpeg_pixelformat_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0013_loader_libjpeg_pixelformat_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0013_loader_libjpeg_pixelformat_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0013_loader_libjpeg_pixelformat_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0013_loader_libjpeg_pixelformat_LDADD = $(TESTS_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0013_loader_libjpeg_pixelformat_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0013_loader_libjpeg_pixelformat_SOURCES = \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0013_loader_libjpeg_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h
 
-loader_0011_loader_gd_pixelformat_SOURCES = \
-    loader/0011_loader_gd_pixelformat.c \
-    loader/pixelformat_test_common.h
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_loader_0014_loader_builtin_pixelformat_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0014_loader_builtin_pixelformat_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0014_loader_builtin_pixelformat_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_0014_LOADER_BUILTIN_PIXELFORMAT=1
 
-loader_0011_loader_gd_pixelformat_CPPFLAGS = \
-    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0014_loader_builtin_pixelformat_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0014_loader_builtin_pixelformat_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0014_loader_builtin_pixelformat_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0014_loader_builtin_pixelformat_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0014_loader_builtin_pixelformat_LDADD = $(TESTS_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0014_loader_builtin_pixelformat_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0014_loader_builtin_pixelformat_SOURCES = \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0014_loader_builtin_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h
 
-loader_0011_loader_gd_pixelformat_CFLAGS = $(LOADER_PIXELFORMAT_CFLAGS_VAL)
-loader_0011_loader_gd_pixelformat_LDFLAGS = $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
-loader_0011_loader_gd_pixelformat_LDADD = $(LOADER_PIXELFORMAT_LDADD_VAL)
-loader_0012_loader_libpng_pixelformat_SOURCES = \
-    loader/0012_loader_libpng_pixelformat.c \
-    loader/pixelformat_test_common.h
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_loader_0015_loader_quicklook_pixelformat_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0015_loader_quicklook_pixelformat_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0015_loader_quicklook_pixelformat_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_0015_LOADER_QUICKLOOK_PIXELFORMAT=1
 
-loader_0012_loader_libpng_pixelformat_CPPFLAGS = \
-    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0015_loader_quicklook_pixelformat_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0015_loader_quicklook_pixelformat_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0015_loader_quicklook_pixelformat_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0015_loader_quicklook_pixelformat_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0015_loader_quicklook_pixelformat_LDADD = $(TESTS_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0015_loader_quicklook_pixelformat_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0015_loader_quicklook_pixelformat_SOURCES = \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0015_loader_quicklook_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h
 
-loader_0012_loader_libpng_pixelformat_CFLAGS = $(LOADER_PIXELFORMAT_CFLAGS_VAL)
-loader_0012_loader_libpng_pixelformat_LDFLAGS = $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
-loader_0012_loader_libpng_pixelformat_LDADD = $(LOADER_PIXELFORMAT_LDADD_VAL)
-loader_0013_loader_libjpeg_pixelformat_SOURCES = \
-    loader/0013_loader_libjpeg_pixelformat.c \
-    loader/pixelformat_test_common.h
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_loader_0016_loader_gnome_thumbnailer_pixelformat_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0016_loader_gnome_thumbnailer_pixelformat_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0016_loader_gnome_thumbnailer_pixelformat_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_0016_LOADER_GNOME_THUMBNAILER_PIXELFORMAT=1
 
-loader_0013_loader_libjpeg_pixelformat_CPPFLAGS = \
-    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
-
-loader_0013_loader_libjpeg_pixelformat_CFLAGS = $(LOADER_PIXELFORMAT_CFLAGS_VAL)
-loader_0013_loader_libjpeg_pixelformat_LDFLAGS = $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
-loader_0013_loader_libjpeg_pixelformat_LDADD = $(LOADER_PIXELFORMAT_LDADD_VAL)
-loader_0014_loader_builtin_pixelformat_SOURCES = \
-    loader/0014_loader_builtin_pixelformat.c \
-    loader/pixelformat_test_common.h
-
-loader_0014_loader_builtin_pixelformat_CPPFLAGS = \
-    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
-
-loader_0014_loader_builtin_pixelformat_CFLAGS = $(LOADER_PIXELFORMAT_CFLAGS_VAL)
-loader_0014_loader_builtin_pixelformat_LDFLAGS = \
-    $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
-
-loader_0014_loader_builtin_pixelformat_LDADD = $(LOADER_PIXELFORMAT_LDADD_VAL)
-loader_0015_loader_quicklook_pixelformat_SOURCES = \
-    loader/0015_loader_quicklook_pixelformat.c \
-    loader/pixelformat_test_common.h
-
-loader_0015_loader_quicklook_pixelformat_CPPFLAGS = \
-    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
-
-loader_0015_loader_quicklook_pixelformat_CFLAGS = \
-    $(LOADER_PIXELFORMAT_CFLAGS_VAL)
-
-loader_0015_loader_quicklook_pixelformat_LDFLAGS = \
-    $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
-
-loader_0015_loader_quicklook_pixelformat_LDADD = \
-    $(LOADER_PIXELFORMAT_LDADD_VAL)
-
-loader_0016_loader_gnome_thumbnailer_pixelformat_SOURCES = \
-    loader/0016_loader_gnome_thumbnailer_pixelformat.c \
-    loader/pixelformat_test_common.h
-
-loader_0016_loader_gnome_thumbnailer_pixelformat_CPPFLAGS = \
-    $(LOADER_PIXELFORMAT_CPPFLAGS_VAL)
-
-loader_0016_loader_gnome_thumbnailer_pixelformat_CFLAGS = \
-    $(LOADER_PIXELFORMAT_CFLAGS_VAL)
-
-loader_0016_loader_gnome_thumbnailer_pixelformat_LDFLAGS = \
-    $(LOADER_PIXELFORMAT_LDFLAGS_VAL)
-
-loader_0016_loader_gnome_thumbnailer_pixelformat_LDADD = \
-    $(LOADER_PIXELFORMAT_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0016_loader_gnome_thumbnailer_pixelformat_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0016_loader_gnome_thumbnailer_pixelformat_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0016_loader_gnome_thumbnailer_pixelformat_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0016_loader_gnome_thumbnailer_pixelformat_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0016_loader_gnome_thumbnailer_pixelformat_LDADD = $(TESTS_COMMON_LDADD_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@loader_0016_loader_gnome_thumbnailer_pixelformat_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@loader_0016_loader_gnome_thumbnailer_pixelformat_SOURCES = \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0016_loader_gnome_thumbnailer_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h
 
 LOG_DRIVER = $(T_LOG_DRIVER)
 LOG_DRIVER_FLAGS = $(AM_TEST_LOG_DRIVER_FLAGS)
@@ -1961,10 +2072,10 @@ ISSUE_INPUTS = issue/166/poc \
        issue/200/POC_img2sixel_heap_buffer_overflow
 
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
-            loader/pngsuite_common.sh \
-            $(BASELINE_JSON) $(INPUT_FORMAT_FILES) \
-            $(RESOLUTION_IMAGES) $(CORRUPTED_INPUTS) $(ISSUE_INPUTS) \
-            filter/0001_filter_clip.c filter/0002_filter_sample.c \
+             loader/pngsuite_common.sh \
+             $(BASELINE_JSON) $(INPUT_FORMAT_FILES) \
+             $(RESOLUTION_IMAGES) $(CORRUPTED_INPUTS) $(ISSUE_INPUTS) \
+             filter/0001_filter_clip.c filter/0002_filter_sample.c \
              filter/0003_filter_resize.c filter/0004_filter_colors.c \
              filter/0005_filter_lookup.c filter/0006_filter_final_merge.c \
              filter/0007_filter_vpte.c filter/0008_filter_load.c \
@@ -2248,54 +2359,81 @@ loader/$(DEPDIR)/$(am__dirstamp):
 	@: >>loader/$(DEPDIR)/$(am__dirstamp)
 loader/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/loader_0008_loader_coregraphics_pixelformat-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 loader/0008_loader_coregraphics_pixelformat$(EXEEXT): $(loader_0008_loader_coregraphics_pixelformat_OBJECTS) $(loader_0008_loader_coregraphics_pixelformat_DEPENDENCIES) $(EXTRA_loader_0008_loader_coregraphics_pixelformat_DEPENDENCIES) loader/$(am__dirstamp)
 	@rm -f loader/0008_loader_coregraphics_pixelformat$(EXEEXT)
 	$(AM_V_CCLD)$(loader_0008_loader_coregraphics_pixelformat_LINK) $(loader_0008_loader_coregraphics_pixelformat_OBJECTS) $(loader_0008_loader_coregraphics_pixelformat_LDADD) $(LIBS)
 loader/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/loader_0009_loader_wic_pixelformat-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 loader/0009_loader_wic_pixelformat$(EXEEXT): $(loader_0009_loader_wic_pixelformat_OBJECTS) $(loader_0009_loader_wic_pixelformat_DEPENDENCIES) $(EXTRA_loader_0009_loader_wic_pixelformat_DEPENDENCIES) loader/$(am__dirstamp)
 	@rm -f loader/0009_loader_wic_pixelformat$(EXEEXT)
 	$(AM_V_CCLD)$(loader_0009_loader_wic_pixelformat_LINK) $(loader_0009_loader_wic_pixelformat_OBJECTS) $(loader_0009_loader_wic_pixelformat_LDADD) $(LIBS)
 loader/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 loader/0010_loader_gdk_pixbuf_pixelformat$(EXEEXT): $(loader_0010_loader_gdk_pixbuf_pixelformat_OBJECTS) $(loader_0010_loader_gdk_pixbuf_pixelformat_DEPENDENCIES) $(EXTRA_loader_0010_loader_gdk_pixbuf_pixelformat_DEPENDENCIES) loader/$(am__dirstamp)
 	@rm -f loader/0010_loader_gdk_pixbuf_pixelformat$(EXEEXT)
 	$(AM_V_CCLD)$(loader_0010_loader_gdk_pixbuf_pixelformat_LINK) $(loader_0010_loader_gdk_pixbuf_pixelformat_OBJECTS) $(loader_0010_loader_gdk_pixbuf_pixelformat_LDADD) $(LIBS)
 loader/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/loader_0011_loader_gd_pixelformat-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 loader/0011_loader_gd_pixelformat$(EXEEXT): $(loader_0011_loader_gd_pixelformat_OBJECTS) $(loader_0011_loader_gd_pixelformat_DEPENDENCIES) $(EXTRA_loader_0011_loader_gd_pixelformat_DEPENDENCIES) loader/$(am__dirstamp)
 	@rm -f loader/0011_loader_gd_pixelformat$(EXEEXT)
 	$(AM_V_CCLD)$(loader_0011_loader_gd_pixelformat_LINK) $(loader_0011_loader_gd_pixelformat_OBJECTS) $(loader_0011_loader_gd_pixelformat_LDADD) $(LIBS)
 loader/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/loader_0012_loader_libpng_pixelformat-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 loader/0012_loader_libpng_pixelformat$(EXEEXT): $(loader_0012_loader_libpng_pixelformat_OBJECTS) $(loader_0012_loader_libpng_pixelformat_DEPENDENCIES) $(EXTRA_loader_0012_loader_libpng_pixelformat_DEPENDENCIES) loader/$(am__dirstamp)
 	@rm -f loader/0012_loader_libpng_pixelformat$(EXEEXT)
 	$(AM_V_CCLD)$(loader_0012_loader_libpng_pixelformat_LINK) $(loader_0012_loader_libpng_pixelformat_OBJECTS) $(loader_0012_loader_libpng_pixelformat_LDADD) $(LIBS)
 loader/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/loader_0013_loader_libjpeg_pixelformat-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 loader/0013_loader_libjpeg_pixelformat$(EXEEXT): $(loader_0013_loader_libjpeg_pixelformat_OBJECTS) $(loader_0013_loader_libjpeg_pixelformat_DEPENDENCIES) $(EXTRA_loader_0013_loader_libjpeg_pixelformat_DEPENDENCIES) loader/$(am__dirstamp)
 	@rm -f loader/0013_loader_libjpeg_pixelformat$(EXEEXT)
 	$(AM_V_CCLD)$(loader_0013_loader_libjpeg_pixelformat_LINK) $(loader_0013_loader_libjpeg_pixelformat_OBJECTS) $(loader_0013_loader_libjpeg_pixelformat_LDADD) $(LIBS)
 loader/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/loader_0014_loader_builtin_pixelformat-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 loader/0014_loader_builtin_pixelformat$(EXEEXT): $(loader_0014_loader_builtin_pixelformat_OBJECTS) $(loader_0014_loader_builtin_pixelformat_DEPENDENCIES) $(EXTRA_loader_0014_loader_builtin_pixelformat_DEPENDENCIES) loader/$(am__dirstamp)
 	@rm -f loader/0014_loader_builtin_pixelformat$(EXEEXT)
 	$(AM_V_CCLD)$(loader_0014_loader_builtin_pixelformat_LINK) $(loader_0014_loader_builtin_pixelformat_OBJECTS) $(loader_0014_loader_builtin_pixelformat_LDADD) $(LIBS)
 loader/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/loader_0015_loader_quicklook_pixelformat-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 loader/0015_loader_quicklook_pixelformat$(EXEEXT): $(loader_0015_loader_quicklook_pixelformat_OBJECTS) $(loader_0015_loader_quicklook_pixelformat_DEPENDENCIES) $(EXTRA_loader_0015_loader_quicklook_pixelformat_DEPENDENCIES) loader/$(am__dirstamp)
 	@rm -f loader/0015_loader_quicklook_pixelformat$(EXEEXT)
 	$(AM_V_CCLD)$(loader_0015_loader_quicklook_pixelformat_LINK) $(loader_0015_loader_quicklook_pixelformat_OBJECTS) $(loader_0015_loader_quicklook_pixelformat_LDADD) $(LIBS)
 loader/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 loader/0016_loader_gnome_thumbnailer_pixelformat$(EXEEXT): $(loader_0016_loader_gnome_thumbnailer_pixelformat_OBJECTS) $(loader_0016_loader_gnome_thumbnailer_pixelformat_DEPENDENCIES) $(EXTRA_loader_0016_loader_gnome_thumbnailer_pixelformat_DEPENDENCIES) loader/$(am__dirstamp)
 	@rm -f loader/0016_loader_gnome_thumbnailer_pixelformat$(EXEEXT)
@@ -2359,6 +2497,15 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/filter_0008_filter_load-sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/filter_0009_filter_dither-sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/filter_0010_filter_encode-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/loader_0008_loader_coregraphics_pixelformat-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/loader_0009_loader_wic_pixelformat-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/loader_0011_loader_gd_pixelformat-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/loader_0012_loader_libpng_pixelformat-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/loader_0013_loader_libjpeg_pixelformat-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/loader_0014_loader_builtin_pixelformat-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/loader_0015_loader_quicklook_pixelformat-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/palette_0001_kmeans_init-sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/probe_0001_probe_parse-sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/cli_0029_cli_token_is_known_option-cli.Po@am__quote@ # am--include-marker
@@ -3019,6 +3166,20 @@ loader/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0008_loader_coregraphics_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0008_loader_coregraphics_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0008_loader_coregraphics_pixelformat-0008_loader_coregraphics_pixelformat.obj `if test -f 'loader/0008_loader_coregraphics_pixelformat.c'; then $(CYGPATH_W) 'loader/0008_loader_coregraphics_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0008_loader_coregraphics_pixelformat.c'; fi`
 
+$(top_builddir)/amalgamation/loader_0008_loader_coregraphics_pixelformat-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0008_loader_coregraphics_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0008_loader_coregraphics_pixelformat_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/loader_0008_loader_coregraphics_pixelformat-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/loader_0008_loader_coregraphics_pixelformat-sixel.Tpo -c -o $(top_builddir)/amalgamation/loader_0008_loader_coregraphics_pixelformat-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/loader_0008_loader_coregraphics_pixelformat-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/loader_0008_loader_coregraphics_pixelformat-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/loader_0008_loader_coregraphics_pixelformat-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0008_loader_coregraphics_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0008_loader_coregraphics_pixelformat_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/loader_0008_loader_coregraphics_pixelformat-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/loader_0008_loader_coregraphics_pixelformat-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0008_loader_coregraphics_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0008_loader_coregraphics_pixelformat_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/loader_0008_loader_coregraphics_pixelformat-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/loader_0008_loader_coregraphics_pixelformat-sixel.Tpo -c -o $(top_builddir)/amalgamation/loader_0008_loader_coregraphics_pixelformat-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/loader_0008_loader_coregraphics_pixelformat-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/loader_0008_loader_coregraphics_pixelformat-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/loader_0008_loader_coregraphics_pixelformat-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0008_loader_coregraphics_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0008_loader_coregraphics_pixelformat_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/loader_0008_loader_coregraphics_pixelformat-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+
 loader/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.o: loader/0009_loader_wic_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0009_loader_wic_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0009_loader_wic_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.o -MD -MP -MF loader/$(DEPDIR)/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.Tpo -c -o loader/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.o `test -f 'loader/0009_loader_wic_pixelformat.c' || echo '$(srcdir)/'`loader/0009_loader_wic_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.Tpo loader/$(DEPDIR)/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.Po
@@ -3032,6 +3193,20 @@ loader/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.obj: loader/0009_
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0009_loader_wic_pixelformat.c' object='loader/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0009_loader_wic_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0009_loader_wic_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0009_loader_wic_pixelformat-0009_loader_wic_pixelformat.obj `if test -f 'loader/0009_loader_wic_pixelformat.c'; then $(CYGPATH_W) 'loader/0009_loader_wic_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0009_loader_wic_pixelformat.c'; fi`
+
+$(top_builddir)/amalgamation/loader_0009_loader_wic_pixelformat-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0009_loader_wic_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0009_loader_wic_pixelformat_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/loader_0009_loader_wic_pixelformat-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/loader_0009_loader_wic_pixelformat-sixel.Tpo -c -o $(top_builddir)/amalgamation/loader_0009_loader_wic_pixelformat-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/loader_0009_loader_wic_pixelformat-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/loader_0009_loader_wic_pixelformat-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/loader_0009_loader_wic_pixelformat-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0009_loader_wic_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0009_loader_wic_pixelformat_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/loader_0009_loader_wic_pixelformat-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/loader_0009_loader_wic_pixelformat-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0009_loader_wic_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0009_loader_wic_pixelformat_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/loader_0009_loader_wic_pixelformat-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/loader_0009_loader_wic_pixelformat-sixel.Tpo -c -o $(top_builddir)/amalgamation/loader_0009_loader_wic_pixelformat-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/loader_0009_loader_wic_pixelformat-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/loader_0009_loader_wic_pixelformat-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/loader_0009_loader_wic_pixelformat-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0009_loader_wic_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0009_loader_wic_pixelformat_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/loader_0009_loader_wic_pixelformat-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
 
 loader/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.o: loader/0010_loader_gdk_pixbuf_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0010_loader_gdk_pixbuf_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0010_loader_gdk_pixbuf_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.o -MD -MP -MF loader/$(DEPDIR)/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.Tpo -c -o loader/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.o `test -f 'loader/0010_loader_gdk_pixbuf_pixelformat.c' || echo '$(srcdir)/'`loader/0010_loader_gdk_pixbuf_pixelformat.c
@@ -3047,6 +3222,20 @@ loader/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.obj
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0010_loader_gdk_pixbuf_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0010_loader_gdk_pixbuf_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0010_loader_gdk_pixbuf_pixelformat-0010_loader_gdk_pixbuf_pixelformat.obj `if test -f 'loader/0010_loader_gdk_pixbuf_pixelformat.c'; then $(CYGPATH_W) 'loader/0010_loader_gdk_pixbuf_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0010_loader_gdk_pixbuf_pixelformat.c'; fi`
 
+$(top_builddir)/amalgamation/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0010_loader_gdk_pixbuf_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0010_loader_gdk_pixbuf_pixelformat_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.Tpo -c -o $(top_builddir)/amalgamation/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0010_loader_gdk_pixbuf_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0010_loader_gdk_pixbuf_pixelformat_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0010_loader_gdk_pixbuf_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0010_loader_gdk_pixbuf_pixelformat_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.Tpo -c -o $(top_builddir)/amalgamation/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0010_loader_gdk_pixbuf_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0010_loader_gdk_pixbuf_pixelformat_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+
 loader/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.o: loader/0011_loader_gd_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0011_loader_gd_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0011_loader_gd_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.o -MD -MP -MF loader/$(DEPDIR)/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.Tpo -c -o loader/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.o `test -f 'loader/0011_loader_gd_pixelformat.c' || echo '$(srcdir)/'`loader/0011_loader_gd_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.Tpo loader/$(DEPDIR)/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.Po
@@ -3060,6 +3249,20 @@ loader/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.obj: loader/0011_lo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0011_loader_gd_pixelformat.c' object='loader/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0011_loader_gd_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0011_loader_gd_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0011_loader_gd_pixelformat-0011_loader_gd_pixelformat.obj `if test -f 'loader/0011_loader_gd_pixelformat.c'; then $(CYGPATH_W) 'loader/0011_loader_gd_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0011_loader_gd_pixelformat.c'; fi`
+
+$(top_builddir)/amalgamation/loader_0011_loader_gd_pixelformat-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0011_loader_gd_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0011_loader_gd_pixelformat_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/loader_0011_loader_gd_pixelformat-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/loader_0011_loader_gd_pixelformat-sixel.Tpo -c -o $(top_builddir)/amalgamation/loader_0011_loader_gd_pixelformat-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/loader_0011_loader_gd_pixelformat-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/loader_0011_loader_gd_pixelformat-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/loader_0011_loader_gd_pixelformat-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0011_loader_gd_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0011_loader_gd_pixelformat_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/loader_0011_loader_gd_pixelformat-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/loader_0011_loader_gd_pixelformat-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0011_loader_gd_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0011_loader_gd_pixelformat_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/loader_0011_loader_gd_pixelformat-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/loader_0011_loader_gd_pixelformat-sixel.Tpo -c -o $(top_builddir)/amalgamation/loader_0011_loader_gd_pixelformat-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/loader_0011_loader_gd_pixelformat-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/loader_0011_loader_gd_pixelformat-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/loader_0011_loader_gd_pixelformat-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0011_loader_gd_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0011_loader_gd_pixelformat_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/loader_0011_loader_gd_pixelformat-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
 
 loader/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.o: loader/0012_loader_libpng_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0012_loader_libpng_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0012_loader_libpng_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.o -MD -MP -MF loader/$(DEPDIR)/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.Tpo -c -o loader/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.o `test -f 'loader/0012_loader_libpng_pixelformat.c' || echo '$(srcdir)/'`loader/0012_loader_libpng_pixelformat.c
@@ -3075,6 +3278,20 @@ loader/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.obj: loader
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0012_loader_libpng_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0012_loader_libpng_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0012_loader_libpng_pixelformat-0012_loader_libpng_pixelformat.obj `if test -f 'loader/0012_loader_libpng_pixelformat.c'; then $(CYGPATH_W) 'loader/0012_loader_libpng_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0012_loader_libpng_pixelformat.c'; fi`
 
+$(top_builddir)/amalgamation/loader_0012_loader_libpng_pixelformat-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0012_loader_libpng_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0012_loader_libpng_pixelformat_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/loader_0012_loader_libpng_pixelformat-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/loader_0012_loader_libpng_pixelformat-sixel.Tpo -c -o $(top_builddir)/amalgamation/loader_0012_loader_libpng_pixelformat-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/loader_0012_loader_libpng_pixelformat-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/loader_0012_loader_libpng_pixelformat-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/loader_0012_loader_libpng_pixelformat-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0012_loader_libpng_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0012_loader_libpng_pixelformat_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/loader_0012_loader_libpng_pixelformat-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/loader_0012_loader_libpng_pixelformat-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0012_loader_libpng_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0012_loader_libpng_pixelformat_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/loader_0012_loader_libpng_pixelformat-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/loader_0012_loader_libpng_pixelformat-sixel.Tpo -c -o $(top_builddir)/amalgamation/loader_0012_loader_libpng_pixelformat-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/loader_0012_loader_libpng_pixelformat-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/loader_0012_loader_libpng_pixelformat-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/loader_0012_loader_libpng_pixelformat-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0012_loader_libpng_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0012_loader_libpng_pixelformat_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/loader_0012_loader_libpng_pixelformat-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+
 loader/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.o: loader/0013_loader_libjpeg_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0013_loader_libjpeg_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0013_loader_libjpeg_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.o -MD -MP -MF loader/$(DEPDIR)/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.Tpo -c -o loader/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.o `test -f 'loader/0013_loader_libjpeg_pixelformat.c' || echo '$(srcdir)/'`loader/0013_loader_libjpeg_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.Tpo loader/$(DEPDIR)/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.Po
@@ -3088,6 +3305,20 @@ loader/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.obj: load
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0013_loader_libjpeg_pixelformat.c' object='loader/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0013_loader_libjpeg_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0013_loader_libjpeg_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0013_loader_libjpeg_pixelformat-0013_loader_libjpeg_pixelformat.obj `if test -f 'loader/0013_loader_libjpeg_pixelformat.c'; then $(CYGPATH_W) 'loader/0013_loader_libjpeg_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0013_loader_libjpeg_pixelformat.c'; fi`
+
+$(top_builddir)/amalgamation/loader_0013_loader_libjpeg_pixelformat-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0013_loader_libjpeg_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0013_loader_libjpeg_pixelformat_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/loader_0013_loader_libjpeg_pixelformat-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/loader_0013_loader_libjpeg_pixelformat-sixel.Tpo -c -o $(top_builddir)/amalgamation/loader_0013_loader_libjpeg_pixelformat-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/loader_0013_loader_libjpeg_pixelformat-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/loader_0013_loader_libjpeg_pixelformat-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/loader_0013_loader_libjpeg_pixelformat-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0013_loader_libjpeg_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0013_loader_libjpeg_pixelformat_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/loader_0013_loader_libjpeg_pixelformat-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/loader_0013_loader_libjpeg_pixelformat-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0013_loader_libjpeg_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0013_loader_libjpeg_pixelformat_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/loader_0013_loader_libjpeg_pixelformat-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/loader_0013_loader_libjpeg_pixelformat-sixel.Tpo -c -o $(top_builddir)/amalgamation/loader_0013_loader_libjpeg_pixelformat-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/loader_0013_loader_libjpeg_pixelformat-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/loader_0013_loader_libjpeg_pixelformat-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/loader_0013_loader_libjpeg_pixelformat-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0013_loader_libjpeg_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0013_loader_libjpeg_pixelformat_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/loader_0013_loader_libjpeg_pixelformat-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
 
 loader/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.o: loader/0014_loader_builtin_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0014_loader_builtin_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0014_loader_builtin_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.o -MD -MP -MF loader/$(DEPDIR)/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.Tpo -c -o loader/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.o `test -f 'loader/0014_loader_builtin_pixelformat.c' || echo '$(srcdir)/'`loader/0014_loader_builtin_pixelformat.c
@@ -3103,6 +3334,20 @@ loader/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.obj: load
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0014_loader_builtin_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0014_loader_builtin_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0014_loader_builtin_pixelformat-0014_loader_builtin_pixelformat.obj `if test -f 'loader/0014_loader_builtin_pixelformat.c'; then $(CYGPATH_W) 'loader/0014_loader_builtin_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0014_loader_builtin_pixelformat.c'; fi`
 
+$(top_builddir)/amalgamation/loader_0014_loader_builtin_pixelformat-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0014_loader_builtin_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0014_loader_builtin_pixelformat_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/loader_0014_loader_builtin_pixelformat-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/loader_0014_loader_builtin_pixelformat-sixel.Tpo -c -o $(top_builddir)/amalgamation/loader_0014_loader_builtin_pixelformat-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/loader_0014_loader_builtin_pixelformat-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/loader_0014_loader_builtin_pixelformat-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/loader_0014_loader_builtin_pixelformat-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0014_loader_builtin_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0014_loader_builtin_pixelformat_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/loader_0014_loader_builtin_pixelformat-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/loader_0014_loader_builtin_pixelformat-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0014_loader_builtin_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0014_loader_builtin_pixelformat_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/loader_0014_loader_builtin_pixelformat-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/loader_0014_loader_builtin_pixelformat-sixel.Tpo -c -o $(top_builddir)/amalgamation/loader_0014_loader_builtin_pixelformat-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/loader_0014_loader_builtin_pixelformat-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/loader_0014_loader_builtin_pixelformat-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/loader_0014_loader_builtin_pixelformat-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0014_loader_builtin_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0014_loader_builtin_pixelformat_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/loader_0014_loader_builtin_pixelformat-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+
 loader/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.o: loader/0015_loader_quicklook_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0015_loader_quicklook_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0015_loader_quicklook_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.o -MD -MP -MF loader/$(DEPDIR)/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.Tpo -c -o loader/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.o `test -f 'loader/0015_loader_quicklook_pixelformat.c' || echo '$(srcdir)/'`loader/0015_loader_quicklook_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.Tpo loader/$(DEPDIR)/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.Po
@@ -3117,6 +3362,20 @@ loader/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.obj: 
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0015_loader_quicklook_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0015_loader_quicklook_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0015_loader_quicklook_pixelformat-0015_loader_quicklook_pixelformat.obj `if test -f 'loader/0015_loader_quicklook_pixelformat.c'; then $(CYGPATH_W) 'loader/0015_loader_quicklook_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0015_loader_quicklook_pixelformat.c'; fi`
 
+$(top_builddir)/amalgamation/loader_0015_loader_quicklook_pixelformat-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0015_loader_quicklook_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0015_loader_quicklook_pixelformat_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/loader_0015_loader_quicklook_pixelformat-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/loader_0015_loader_quicklook_pixelformat-sixel.Tpo -c -o $(top_builddir)/amalgamation/loader_0015_loader_quicklook_pixelformat-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/loader_0015_loader_quicklook_pixelformat-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/loader_0015_loader_quicklook_pixelformat-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/loader_0015_loader_quicklook_pixelformat-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0015_loader_quicklook_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0015_loader_quicklook_pixelformat_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/loader_0015_loader_quicklook_pixelformat-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/loader_0015_loader_quicklook_pixelformat-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0015_loader_quicklook_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0015_loader_quicklook_pixelformat_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/loader_0015_loader_quicklook_pixelformat-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/loader_0015_loader_quicklook_pixelformat-sixel.Tpo -c -o $(top_builddir)/amalgamation/loader_0015_loader_quicklook_pixelformat-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/loader_0015_loader_quicklook_pixelformat-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/loader_0015_loader_quicklook_pixelformat-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/loader_0015_loader_quicklook_pixelformat-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0015_loader_quicklook_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0015_loader_quicklook_pixelformat_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/loader_0015_loader_quicklook_pixelformat-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+
 loader/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.o: loader/0016_loader_gnome_thumbnailer_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0016_loader_gnome_thumbnailer_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0016_loader_gnome_thumbnailer_pixelformat_CFLAGS) $(CFLAGS) -MT loader/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.o -MD -MP -MF loader/$(DEPDIR)/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.Tpo -c -o loader/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.o `test -f 'loader/0016_loader_gnome_thumbnailer_pixelformat.c' || echo '$(srcdir)/'`loader/0016_loader_gnome_thumbnailer_pixelformat.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.Tpo loader/$(DEPDIR)/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.Po
@@ -3130,6 +3389,20 @@ loader/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_p
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0016_loader_gnome_thumbnailer_pixelformat.c' object='loader/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0016_loader_gnome_thumbnailer_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0016_loader_gnome_thumbnailer_pixelformat_CFLAGS) $(CFLAGS) -c -o loader/0016_loader_gnome_thumbnailer_pixelformat-0016_loader_gnome_thumbnailer_pixelformat.obj `if test -f 'loader/0016_loader_gnome_thumbnailer_pixelformat.c'; then $(CYGPATH_W) 'loader/0016_loader_gnome_thumbnailer_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0016_loader_gnome_thumbnailer_pixelformat.c'; fi`
+
+$(top_builddir)/amalgamation/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0016_loader_gnome_thumbnailer_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0016_loader_gnome_thumbnailer_pixelformat_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.Tpo -c -o $(top_builddir)/amalgamation/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0016_loader_gnome_thumbnailer_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0016_loader_gnome_thumbnailer_pixelformat_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0016_loader_gnome_thumbnailer_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0016_loader_gnome_thumbnailer_pixelformat_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.Tpo -c -o $(top_builddir)/amalgamation/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(loader_0016_loader_gnome_thumbnailer_pixelformat_CPPFLAGS) $(CPPFLAGS) $(loader_0016_loader_gnome_thumbnailer_pixelformat_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
 
 palette/0001_kmeans_init-0001_kmeans_init.o: palette/0001_kmeans_init.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(palette_0001_kmeans_init_CPPFLAGS) $(CPPFLAGS) $(palette_0001_kmeans_init_CFLAGS) $(CFLAGS) -MT palette/0001_kmeans_init-0001_kmeans_init.o -MD -MP -MF palette/$(DEPDIR)/0001_kmeans_init-0001_kmeans_init.Tpo -c -o palette/0001_kmeans_init-0001_kmeans_init.o `test -f 'palette/0001_kmeans_init.c' || echo '$(srcdir)/'`palette/0001_kmeans_init.c
@@ -3658,6 +3931,15 @@ distclean: distclean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_0008_filter_load-sixel.Po
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_0009_filter_dither-sixel.Po
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_0010_filter_encode-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/loader_0008_loader_coregraphics_pixelformat-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/loader_0009_loader_wic_pixelformat-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/loader_0011_loader_gd_pixelformat-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/loader_0012_loader_libpng_pixelformat-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/loader_0013_loader_libjpeg_pixelformat-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/loader_0014_loader_builtin_pixelformat-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/loader_0015_loader_quicklook_pixelformat-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.Po
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/palette_0001_kmeans_init-sixel.Po
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/probe_0001_probe_parse-sixel.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/cli_0029_cli_token_is_known_option-cli.Po
@@ -3757,6 +4039,15 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_0008_filter_load-sixel.Po
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_0009_filter_dither-sixel.Po
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/filter_0010_filter_encode-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/loader_0008_loader_coregraphics_pixelformat-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/loader_0009_loader_wic_pixelformat-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/loader_0010_loader_gdk_pixbuf_pixelformat-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/loader_0011_loader_gd_pixelformat-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/loader_0012_loader_libpng_pixelformat-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/loader_0013_loader_libjpeg_pixelformat-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/loader_0014_loader_builtin_pixelformat-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/loader_0015_loader_quicklook_pixelformat-sixel.Po
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/loader_0016_loader_gnome_thumbnailer_pixelformat-sixel.Po
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/palette_0001_kmeans_init-sixel.Po
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/probe_0001_probe_parse-sixel.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/cli_0029_cli_token_is_known_option-cli.Po
