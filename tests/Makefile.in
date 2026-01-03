@@ -2071,10 +2071,14 @@ ISSUE_INPUTS = issue/166/poc \
        issue/167/poc \
        issue/200/POC_img2sixel_heap_buffer_overflow
 
+NETWORK_CERTS = network/certs/server.crt \
+       network/certs/server.key
+
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
              loader/pngsuite_common.sh \
              $(BASELINE_JSON) $(INPUT_FORMAT_FILES) \
              $(RESOLUTION_IMAGES) $(CORRUPTED_INPUTS) $(ISSUE_INPUTS) \
+             $(NETWORK_CERTS) \
              filter/0001_filter_clip.c filter/0002_filter_sample.c \
              filter/0003_filter_resize.c filter/0004_filter_colors.c \
              filter/0005_filter_lookup.c filter/0006_filter_final_merge.c \
