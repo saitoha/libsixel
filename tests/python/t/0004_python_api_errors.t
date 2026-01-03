@@ -53,7 +53,7 @@ run_case() {
         shift
         LD_LIBRARY_PATH=$1
         shift
-        LIBSIXEL_LIBDIR=${lib_dir}
+        LIBSIXEL_LIBDIR=${python_lib_dir}
         export PYTHONPATH LD_LIBRARY_PATH LIBSIXEL_LIBDIR
 
         "${run_python}" - "$@" <<'PY'
@@ -280,7 +280,7 @@ PY
     }
 
     if [ "${use_wheel}" -eq 1 ]; then
-        if run_python_scenarios "${python_trace_pythonpath}" \
+        if run_python_scenarios "${python_wheel_trace_pythonpath}" \
             "${python_wheel_ld_library_path}" \
             "${scenario}" "${source_image}" \
             "${working_dir}/wheel" "${log_file}" >>"${log_file}" 2>&1; then
