@@ -32,7 +32,11 @@ python_wheel_ld_library_path=""
 python_trace_dir=""
 python_trace_pythonpath=""
 python_trace_env=""
+python_trace_prefixes=""
 python_in_tree_trace_pythonpath=""
+python_wheel_trace_pythonpath=""
+python_lib_dir=""
+python_needs_windows_paths=0
 
 # Emit a TAP plan line.
 tap_plan() {
@@ -136,6 +140,70 @@ sanitize_pythonpath() {
     unset IFS
 
     printf '%s' "${cleaned}"
+}
+
+# Convert a single path to Windows form when running against a native
+# (msvcrt-linked) interpreter. The function falls back to the original path
+# when cygpath is unavailable so POSIX callers remain unaffected.
+python_to_windows_path() {
+    target=$1
+
+    if [ "${python_needs_windows_paths}" -ne 1 ]; then
+        printf '%s' "${target}"
+        return 0
+    fi
+
+    if command -v cygpath >/dev/null 2>&1; then
+        cygpath -m "${target}" 2>/dev/null || printf '%s' "${target}"
+        return 0
+    fi
+
+    if [ -n "${tap_log_file:-}" ]; then
+        printf 'cygpath missing, leaving POSIX path as-is: %s\n' \
+            "${target}" >>"${tap_log_file}"
+    fi
+
+    printf '%s' "${target}"
+}
+
+# Apply Windows path normalization to every entry in a separator-delimited
+# string. Empty inputs are preserved to avoid altering intentional blanks in
+# PYTHONPATH-like variables.
+python_normalize_pathlist() {
+    raw=$1
+    sep=$2
+
+    if [ -z "${raw}" ]; then
+        printf '%s' "${raw}"
+        return 0
+    fi
+
+    if [ "${python_needs_windows_paths}" -eq 1 ] && [ "${sep}" = ":" ]; then
+        if command -v cygpath >/dev/null 2>&1; then
+            cygpath -m -p "${raw}" 2>/dev/null || printf '%s' "${raw}"
+            return 0
+        fi
+    fi
+
+    normalized=""
+
+    IFS="${sep}"
+    for entry in ${raw}; do
+        unset IFS
+
+        converted=$(python_to_windows_path "${entry}")
+
+        if [ -z "${normalized}" ]; then
+            normalized="${converted}"
+        else
+            normalized="${normalized}${sep}${converted}"
+        fi
+
+        IFS="${sep}"
+    done
+    unset IFS
+
+    printf '%s' "${normalized}"
 }
 
 # Find a shared library matching libsixel on Unix-like and Windows/MSYS names.
@@ -527,6 +595,11 @@ python_prepare() {
     python_libc=$(detect_python_libc "${python_bin}")
     python_libc=$(printf '%s' "${python_libc}" | tr 'A-Z' 'a-z')
 
+    python_needs_windows_paths=0
+    if [ "${python_libc}" = "msvcrt" ]; then
+        python_needs_windows_paths=1
+    fi
+
     # Derive a stable path separator without invoking the interpreter, as
     # Python's stdout line endings on MSYS environments can inject stray
     # carriage returns. A simple uname check keeps PYTHONPATH predictable.
@@ -557,15 +630,7 @@ python_prepare() {
 
     python_trace_dir="${tmp_dir}/trace"
     python_trace_pythonpath="${python_trace_dir}"
-    python_trace_env="SIXEL_PY_TRACE_LOG=${tap_log_file}"
-    export SIXEL_PY_TRACE_LOG="${tap_log_file}"
-
-    # Limit Python tracing to repository files so CI logs stay compact even on
-    # verbose MSYS/MinGW import paths. The prefixes are joined with the Python
-    # path separator to match sys.path semantics on each platform.
     python_trace_prefixes="${TOP_SRCDIR}${python_pathsep}${tmp_dir}"
-    python_trace_env="${python_trace_env} SIXEL_PY_TRACE_PREFIXES=${python_trace_prefixes}"
-    export SIXEL_PY_TRACE_PREFIXES="${python_trace_prefixes}"
 
     mkdir -p "${python_trace_dir}"
     cat >"${python_trace_dir}/sitecustomize.py" <<'PY'
@@ -710,6 +775,11 @@ PY
         python_in_tree_trace_pythonpath="${python_in_tree_trace_pythonpath}${python_pathsep}${python_in_tree_pythonpath}"
     fi
 
+    python_wheel_trace_pythonpath="${python_trace_pythonpath}"
+    if [ -n "${python_in_tree_pythonpath}" ]; then
+        python_wheel_trace_pythonpath="${python_wheel_trace_pythonpath}${python_pathsep}${python_in_tree_pythonpath}"
+    fi
+
     python_in_tree_ld_library_path="${lib_dir}"
     if [ -n "${LD_LIBRARY_PATH-}" ]; then
         python_in_tree_ld_library_path="${python_in_tree_ld_library_path}:${LD_LIBRARY_PATH}"
@@ -718,6 +788,43 @@ PY
     python_wheel_ld_library_path="${lib_dir}"
     if [ -n "${LD_LIBRARY_PATH-}" ]; then
         python_wheel_ld_library_path="${python_wheel_ld_library_path}:${LD_LIBRARY_PATH}"
+    fi
+
+    python_lib_dir="${lib_dir}"
+
+    if [ "${python_needs_windows_paths}" -eq 1 ]; then
+        python_trace_pythonpath=$(python_normalize_pathlist \
+            "${python_trace_pythonpath}" "${python_pathsep}")
+        python_in_tree_pythonpath=$(python_normalize_pathlist \
+            "${python_in_tree_pythonpath}" "${python_pathsep}")
+        python_in_tree_trace_pythonpath=$(python_normalize_pathlist \
+            "${python_in_tree_trace_pythonpath}" "${python_pathsep}")
+        python_wheel_trace_pythonpath=$(python_normalize_pathlist \
+            "${python_wheel_trace_pythonpath}" "${python_pathsep}")
+        python_trace_prefixes=$(python_normalize_pathlist \
+            "${python_trace_prefixes}" "${python_pathsep}")
+        python_lib_dir=$(python_to_windows_path "${python_lib_dir}")
+        python_in_tree_ld_library_path=$(python_normalize_pathlist \
+            "${python_in_tree_ld_library_path}" ':')
+        python_wheel_ld_library_path=$(python_normalize_pathlist \
+            "${python_wheel_ld_library_path}" ':')
+
+        if [ -n "${wheel_path}" ]; then
+            wheel_path=$(python_to_windows_path "${wheel_path}")
+        fi
+    fi
+
+    python_trace_env="SIXEL_PY_TRACE_LOG=${tap_log_file}"
+    export SIXEL_PY_TRACE_LOG="${tap_log_file}"
+
+    python_trace_env="${python_trace_env} SIXEL_PY_TRACE_PREFIXES=${python_trace_prefixes}"
+    export SIXEL_PY_TRACE_PREFIXES="${python_trace_prefixes}"
+
+    if [ -n "${tap_log_file}" ]; then
+        printf 'python_lib_dir_normalized=%s\n' "${python_lib_dir}" \
+            >>"${tap_log_file}"
+        printf 'python_trace_pythonpath=%s\n' "${python_trace_pythonpath}" \
+            >>"${tap_log_file}"
     fi
 
     run_python="${python_bin}"
