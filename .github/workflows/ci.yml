@@ -1030,7 +1030,6 @@ jobs:
 
           "${config_env[@]}" ./configure "${config_args[@]}"
           ${make_cmd} V=1
-        fi
 
           if command -v gmake >/dev/null 2>&1; then
             gmake check V=1
@@ -1821,7 +1820,6 @@ jobs:
             musl: true
             variant: musl-cross
             extra_packages: musl-tools
-            extra_packages: musl-tools
           - label: alpine 3.20 x86_64
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -1848,7 +1846,6 @@ jobs:
             runner: ubuntu-latest
             sys: i686
             variant: default
-            extra_packages: gcc-multilib
             extra_packages: gcc-multilib
           - label: macos aarch64
             os: macos-latest
