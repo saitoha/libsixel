@@ -59,16 +59,17 @@
 # endif  /* defined(HAVE_SYS_TIME_H) */
 #endif  /* defined(LSO_HAVE_POSIX_TIMEOUT) */
 
+#if defined(LSO_HAVE_POSIX_TIMEOUT) || defined(LSO_HAVE_WINDOWS_TIMEOUT)
 static double
 current_time_seconds(void)
 {
-#if defined(LSO_HAVE_WINDOWS_TIMEOUT)
+# if defined(LSO_HAVE_WINDOWS_TIMEOUT)
   ULONGLONG ticks;
 
   ticks = GetTickCount64();
   return (double) ticks / 1000.0;
-#else
-# if defined(CLOCK_MONOTONIC)
+# else
+#  if defined(CLOCK_MONOTONIC)
   struct timespec ts;
 
   if (clock_gettime(CLOCK_MONOTONIC, &ts) != 0) {
@@ -76,7 +77,7 @@ current_time_seconds(void)
   }
 
   return (double) ts.tv_sec + (double) ts.tv_nsec / 1.0e9;
-# elif defined(HAVE_SYS_TIME_H)
+#  elif defined(HAVE_SYS_TIME_H)
   struct timeval tv;
 
   if (gettimeofday(&tv, NULL) != 0) {
@@ -84,11 +85,12 @@ current_time_seconds(void)
   }
 
   return (double) tv.tv_sec + (double) tv.tv_usec / 1.0e6;
-# else
+#  else
   return -1.0;
+#  endif
 # endif
-#endif
 }
+#endif
 
 static int
 parse_duration(const char *text, double *out)
@@ -369,9 +371,16 @@ main(int argc, char **argv)
 {
   double timeout_seconds;
   double kill_delay;
+  int argi;
+#if defined(LSO_HAVE_POSIX_TIMEOUT)
   double deadline;
   double kill_deadline;
-  int argi;
+  pid_t pid;
+#elif defined(LSO_HAVE_WINDOWS_TIMEOUT)
+  double deadline;
+  double kill_deadline;
+  HANDLE child;
+#endif
 
   timeout_seconds = -1.0;
   kill_delay = 10.0;
@@ -397,8 +406,6 @@ main(int argc, char **argv)
   argi++;
 
 #if defined(LSO_HAVE_POSIX_TIMEOUT)
-  pid_t pid;
-
   pid = fork();
   if (pid < 0) {
     perror("fork");
@@ -422,8 +429,6 @@ main(int argc, char **argv)
 
   return wait_with_timeout(pid, deadline, kill_deadline);
 #elif defined(LSO_HAVE_WINDOWS_TIMEOUT)
-  HANDLE child;
-
   child = spawn_process(&argv[argi]);
   if (child == NULL) {
     return EXIT_FAILURE;
