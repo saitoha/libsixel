@@ -68,7 +68,8 @@ tap_skip_all() {
 # not import the libsixel shared library. Python snippets emit the
 # SKIP_LIBSIXEL_LOAD marker on OSError so shell callers can detect the
 # condition and bail out cleanly instead of reporting a false failure during
-# cross-builds.
+# cross-builds. The helper always returns success so callers running with
+# `set -e` do not abort before emitting TAP results.
 python_skip_on_load_error() {
     status=$1
     log_path=$2
@@ -78,12 +79,16 @@ python_skip_on_load_error() {
     fi
 
     if [ -z "${log_path}" ] || [ ! -f "${log_path}" ]; then
-        return 1
+        printf 'python_skip_on_load_error: missing log file for status %s\n' \
+            "${status}" >&2
+        return 0
     fi
 
     marker=$(grep -m1 '^SKIP_LIBSIXEL_LOAD:' "${log_path}" || true)
     if [ -z "${marker}" ]; then
-        return 1
+        printf 'python_skip_on_load_error: no load marker for status %s\n' \
+            "${status}" >&2
+        return 0
     fi
 
     reason=${marker#SKIP_LIBSIXEL_LOAD:}
