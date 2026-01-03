@@ -198,6 +198,7 @@ jobs:
             variant: default
             extra_options: >-
               --enable-gcov
+            extra_packages: lcov
           - label: macos aarch64 amalgamated_lib
             os: macos-latest
             runner: macos-latest
@@ -212,6 +213,7 @@ jobs:
             variant: default
             extra_options: >-
               --enable-gcov
+            extra_packages: lcov
           - label: macos x86_64 amalgamated_lib
             os: macos-15
             runner: macos-15
@@ -251,6 +253,10 @@ jobs:
               --disable-shared
               --enable-static
               --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
           - label: mingw64 no-simd
             os: windows-latest
             runner: windows-latest
@@ -260,6 +266,10 @@ jobs:
             extra_options: >-
               --disable-simd
               --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
           - label: mingw64 no-tools
             os: windows-latest
             runner: windows-latest
@@ -270,6 +280,10 @@ jobs:
               --disable-img2sixel
               --disable-sixel2png
               --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
           - label: mingw64 no-threads
             os: windows-latest
             runner: windows-latest
@@ -279,6 +293,10 @@ jobs:
             extra_options: >-
               --disable-threads
               --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
           - label: ucrt64
             os: windows-latest
             runner: windows-latest
@@ -287,6 +305,10 @@ jobs:
             variant: default
             extra_options: >-
               --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
           - label: ucrt64 amalgamated_lib
             os: windows-latest
             runner: windows-latest
@@ -295,6 +317,10 @@ jobs:
             variant: amalgamated_lib
             extra_options: >-
               --enable-amalgamated-lib
+            extra_packages: >-
+              make
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
           - label: clang64
             os: windows-latest
             runner: windows-latest
@@ -303,6 +329,10 @@ jobs:
             variant: default
             extra_options: >-
               --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-clang-x86_64-toolchain
+              mingw-w64-clang-x86_64-lcov
           - label: clang-cl
             os: windows-latest
             runner: windows-latest
@@ -311,6 +341,7 @@ jobs:
             variant: clang-cl
             extra_options: >-
               --enable-gcov
+            extra_packages: make
           - label: msvc
             os: windows-latest
             runner: windows-latest
@@ -320,6 +351,7 @@ jobs:
             extra_options: >-
               CC=cl
               --enable-gcov
+            extra_packages: make
           - label: msvc amalgamated_lib
             os: windows-latest
             runner: windows-latest
@@ -329,6 +361,7 @@ jobs:
             extra_options: >-
               CC=cl
               --enable-amalgamated-lib
+            extra_packages: make
           - label: cygwin amalgamated_lib
             os: windows-latest
             runner: windows-latest
@@ -344,6 +377,9 @@ jobs:
             sys: MSYS
             variant: cosmopolitan
             cosmopolitan: true
+            extra_packages: >-
+              unzip
+              make
 #          - label: cosmopolitan cygwin
 #            os: windows-latest
 #            runner: windows-latest
@@ -361,6 +397,7 @@ jobs:
             extra_options: >-
               CC=cl
               --enable-gcov
+            extra_packages: make
           - label: msvc vcpkg-libjpeg
             os: windows-latest
             runner: windows-latest
@@ -371,6 +408,7 @@ jobs:
             extra_options: >-
               CC=cl
               --enable-gcov
+            extra_packages: make
 #          - label: emscripten msys x86_64
 #            os: windows-latest
 #            runner: windows-latest
@@ -385,6 +423,9 @@ jobs:
             variant: default
             extra_options: >-
               --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-i686-toolchain
           - label: msys
             os: windows-latest
             runner: windows-latest
@@ -393,6 +434,12 @@ jobs:
             variant: default
             extra_options: >-
               --enable-gcov
+            extra_packages: >-
+              make
+              gcc
+              pkgconf
+              python-pip
+              lcov
           - label: cygwin
             os: windows-latest
             runner: windows-latest
@@ -432,12 +479,12 @@ jobs:
         brew update -f
         brew doctor || true
 
-    - name: Install lcov (macOS)
-      if: runner.os == 'macOS' && !contains(fromJson('["amalgamated_lib","cosmopolitan"]'), matrix.variant || '') && matrix.emscripten != true
+    - name: Install extra packages (macOS)
+      if: runner.os == 'macOS' && (matrix.extra_packages || '') != ''
       shell: bash
       run: |
         brew update
-        brew install lcov
+        brew install ${{ matrix.extra_packages }}
 
     - name: Configure and build (DragonFlyBSD)
       if: matrix.platform == 'dragonflybsd'
@@ -529,71 +576,13 @@ jobs:
         .\\vcpkg.exe install $packages --triplet x64-windows
         "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
-    - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang)
-      if: runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'MSYS' && matrix.sys != 'CYGWIN' && matrix.sys != 'MINGW32' && matrix.emscripten != true && matrix.cosmopolitan != true
+    - name: Setup MSYS2 (Windows)
+      if: runner.os == 'Windows' && matrix.sys != 'CYGWIN'
       uses: msys2/setup-msys2@v2
       with:
-        msystem: ${{ matrix.sys }}
+        msystem: ${{ matrix.sys == 'MSVC' && 'MSYS' || matrix.sys }}
         update: true
-        install: >-
-          make
-        pacboy: >-
-          cc:p
-          lcov:p
-
-    - name: Setup MSYS2 (Windows, MinGW32)
-      if: matrix.sys == 'MINGW32'
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: ${{ matrix.sys }}
-        update: true
-        install: >-
-          make
-        pacboy: >-
-          cc:p
-
-    - name: Setup MSYS2 (Windows, MSYS gcc)
-      if: runner.os == 'Windows' && matrix.sys == 'MSYS' && matrix.compiler == 'gcc' && matrix.variant != 'amalgamated_lib' && matrix.variant != 'cosmopolitan'
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: MSYS
-        update: true
-        install: >-
-          make
-          gcc
-          pkgconf
-          python-pip
-          lcov
-
-    - name: Setup MSYS2 (Windows, MSVC)
-      if: runner.os == 'Windows' && matrix.sys == 'MSVC'
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: MSYS
-        update: true
-        install: >-
-          make
-
-    - name: Setup MSYS2 (Windows, MSYS Emscripten)
-      if: runner.os == 'Windows' && matrix.emscripten == true
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: MSYS
-        update: true
-        install: >-
-          make
-          git
-          python
-
-    - name: Setup MSYS2 (Windows, MSYS Cosmopolitan)
-      if: matrix.sys == 'MSYS' && matrix.cosmopolitan == true
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: MSYS
-        update: true
-        install: >-
-          unzip
-          make
+        install: ${{ matrix.extra_packages || 'make' }}
 
     - name: Setup Cygwin
       if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
@@ -1157,6 +1146,9 @@ jobs:
                 --without-png --without-jpeg --without-libcurl
                 --enable-debug --enable-tests
                 --disable-dependency-tracking --enable-wiccodec
+              extra_packages: >-
+                make
+                mingw-w64-x86_64-toolchain
 
     steps:
     - uses: actions/checkout@v6
@@ -1176,10 +1168,7 @@ jobs:
       with:
         msystem: ${{ matrix.msystem }}
         update: true
-        install: >-
-          make
-        pacboy: >-
-          cc:p
+        install: ${{ matrix.extra_packages || 'make' }}
 
     - name: Create Autotools dist archive (non-Windows)
       if: runner.os != 'Windows'
@@ -1357,21 +1346,30 @@ jobs:
             sys: CLANG64
             extra_options: '--with-wic'
             artifact_suffix: with-wic
-            extra_packages: ''
+            extra_packages: >-
+              make
+              pkgconf
+              mingw-w64-clang-x86_64-toolchain
           - label: clang64 enable-wiccodec
             os: windows-latest
             runner: windows-latest
             sys: CLANG64
             extra_options: '--enable-wiccodec'
             artifact_suffix: enable-wiccodec
-            extra_packages: ''
+            extra_packages: >-
+              make
+              pkgconf
+              mingw-w64-clang-x86_64-toolchain
           - label: clang64 with-winhttp
             os: windows-latest
             runner: windows-latest
             sys: CLANG64
             extra_options: '--with-winhttp'
             artifact_suffix: with-winhttp
-            extra_packages: ''
+            extra_packages: >-
+              make
+              pkgconf
+              mingw-w64-clang-x86_64-toolchain
     env:
       ASAN_CFLAGS: "-fsanitize=address -O1 -g -fno-omit-frame-pointer"
       ASAN_LDFLAGS: "-fsanitize=address"
@@ -1403,17 +1401,13 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y ${{ matrix.extra_packages }}
 
-    - name: Setup MSYS2 (Windows, clang)
+    - name: Setup MSYS2 (Windows)
       if: runner.os == 'Windows'
       uses: msys2/setup-msys2@v2
       with:
         msystem: ${{ matrix.sys }}
         update: true
-        install: >-
-          make
-          pkgconf
-        pacboy: >-
-          cc:p
+        install: ${{ matrix.extra_packages || 'make' }}
 
     - name: Configure and build (ASan, non-Windows)
       if: runner.os != 'Windows'
@@ -1492,6 +1486,13 @@ jobs:
               -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled
               -Dpython=disabled -Druby=disabled -Dtests=true
               -Dwic=enabled -Dwiccodec=enabled
+            extra_packages: >-
+              python
+              ninja
+              git
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-ninja
 
     steps:
     - uses: actions/checkout@v6
@@ -1507,20 +1508,13 @@ jobs:
         pip install meson ninja
         echo "$PWD/.meson-venv/bin" >> "$GITHUB_PATH"
 
-    - name: Setup MSYS2 with Meson (Windows)
+    - name: Setup MSYS2 (Windows)
       if: runner.os == 'Windows'
       uses: msys2/setup-msys2@v2
       with:
         msystem: ${{ matrix.msystem }}
         update: true
-        install: >-
-          python
-          ninja
-          git
-        pacboy: >-
-          cc:p
-          meson:p
-          ninja:p
+        install: ${{ matrix.extra_packages || 'python ninja git' }}
 
     - name: Create Meson dist archive (Linux/macOS)
       if: runner.os != 'Windows'
@@ -1787,6 +1781,12 @@ jobs:
             sys: MINGW64
             static_only: true
             variant: static-only
+            extra_packages: >-
+              python
+              ninja
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-ninja
           - label: mingw64 disable-simd
             os: windows-latest
             runner: windows-latest
@@ -1794,6 +1794,12 @@ jobs:
             sys: MINGW64
             disable_simd: true
             variant: disable-simd
+            extra_packages: >-
+              python
+              ninja
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-ninja
           - label: mingw64 disable-tools
             os: windows-latest
             runner: windows-latest
@@ -1801,6 +1807,12 @@ jobs:
             sys: MINGW64
             disable_tools: true
             variant: disable-tools
+            extra_packages: >-
+              python
+              ninja
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-ninja
           - label: mingw64 disable-threads
             os: windows-latest
             runner: windows-latest
@@ -1808,12 +1820,24 @@ jobs:
             sys: MINGW64
             disable_threads: true
             variant: disable-threads
+            extra_packages: >-
+              python
+              ninja
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-ninja
           - label: ucrt64
             os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: UCRT64
             variant: default
+            extra_packages: >-
+              python
+              ninja
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-meson
+              mingw-w64-ucrt-x86_64-ninja
           - label: ucrt64 amalgamated_lib
             os: windows-latest
             runner: windows-latest
@@ -1821,24 +1845,42 @@ jobs:
             sys: UCRT64
             variant: amalgamated_lib
             amalgamated_lib: true
+            extra_packages: >-
+              python
+              ninja
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-meson
+              mingw-w64-ucrt-x86_64-ninja
           - label: clang64
             os: windows-latest
             runner: windows-latest
             compiler: clang
             sys: CLANG64
             variant: default
+            extra_packages: >-
+              python
+              ninja
+              mingw-w64-clang-x86_64-toolchain
+              mingw-w64-clang-x86_64-meson
+              mingw-w64-clang-x86_64-ninja
           - label: clang-cl
             os: windows-latest
             runner: windows-latest
             compiler: clang-cl
             sys: MSVC
             variant: clang-cl
+            extra_packages: >-
+              python
+              ninja
           - label: msvc
             os: windows-latest
             runner: windows-latest
             compiler: cl
             sys: MSVC
             variant: default
+            extra_packages: >-
+              python
+              ninja
           - label: msvc unity
             os: windows-latest
             runner: windows-latest
@@ -1846,6 +1888,9 @@ jobs:
             sys: MSVC
             variant: unity
             unity: true
+            extra_packages: >-
+              python
+              ninja
           - label: msvc amalgamated_lib
             os: windows-latest
             runner: windows-latest
@@ -1853,6 +1898,9 @@ jobs:
             sys: MSVC
             variant: amalgamated_lib
             amalgamated_lib: true
+            extra_packages: >-
+              python
+              ninja
           - label: mingw64 unity
             os: windows-latest
             runner: windows-latest
@@ -1860,18 +1908,36 @@ jobs:
             sys: MINGW64
             variant: unity
             unity: true
+            extra_packages: >-
+              python
+              ninja
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-ninja
           - label: mingw32
             os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW32
             variant: default
+            extra_packages: >-
+              python
+              ninja
+              mingw-w64-i686-toolchain
+              mingw-w64-i686-meson
+              mingw-w64-i686-ninja
           - label: msys
             os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MSYS
             variant: default
+            extra_packages: >-
+              python
+              ninja
+              meson
+              gcc
+              pkgconf
           - label: cygwin
             os: windows-latest
             runner: windows-latest
@@ -1948,32 +2014,13 @@ jobs:
         .\\vcpkg.exe install $packages --triplet x64-windows
         "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
-    - name: Setup MSYS2 (Windows, MinGW/UCRT/Clang)
-      if: runner.os == 'Windows' && matrix.compiler != 'cl' && matrix.sys != 'MSYS' && matrix.sys != 'CYGWIN' && matrix.sys != 'MSVC'
+    - name: Setup MSYS2 (Windows)
+      if: runner.os == 'Windows' && matrix.sys != 'CYGWIN' && matrix.sys != 'MSVC'
       uses: msys2/setup-msys2@v2
       with:
-        msystem: ${{ matrix.sys }}
+        msystem: ${{ matrix.sys == 'MSYS' && 'MSYS' || matrix.sys }}
         update: true
-        install: >-
-          python
-          ninja
-        pacboy: >-
-          cc:p
-          meson:p
-          ninja:p
-
-    - name: Setup MSYS2 (Windows, MSYS gcc)
-      if: runner.os == 'Windows' && matrix.sys == 'MSYS' && matrix.compiler == 'gcc'
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: MSYS
-        update: true
-        install: >-
-          python
-          ninja
-          meson
-          gcc
-          pkgconf
+        install: ${{ matrix.extra_packages || 'python ninja' }}
 
     - name: Setup Cygwin
       if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
