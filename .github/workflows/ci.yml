@@ -1180,7 +1180,7 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: coverage.info
-        flag-name: ${{ matrix.cfg }}
+        flag-name: ${{ matrix.label }}
         parallel: true
 
     - name: Wait before Coveralls retry (per-flag)
@@ -1193,7 +1193,7 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: coverage.info
-        flag-name: ${{ matrix.cfg }}
+        flag-name: ${{ matrix.label }}
         parallel: true
 
   ci-autotools-finish:
@@ -1225,30 +1225,33 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - label: Linux thumbnailer command
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            configure_flags: >-
-              --without-png --without-jpeg --without-libcurl
-              --enable-debug --enable-tests
-              --disable-dependency-tracking --enable-thumbnailer-command
-          - label: macOS Quick Look extension
-            os: macos-latest
-            runner: macos-latest
-            configure_flags: >-
-              --without-png --without-jpeg --without-libcurl
-              --enable-debug --enable-tests
-              --disable-dependency-tracking --enable-quicklook-extension
-              --enable-quicklook-preview
-          - label: Windows WIC codec (MinGW)
-            os: windows-latest
-            runner: windows-latest
-            msystem: MINGW64
-            configure_flags: >-
-              --without-png --without-jpeg --without-libcurl
-              --enable-debug --enable-tests
-              --disable-dependency-tracking --enable-wiccodec
+          include:
+            - label: Linux thumbnailer command
+              os: ubuntu-latest
+              runner: ubuntu-latest
+              sys: native
+              configure_flags: >-
+                --without-png --without-jpeg --without-libcurl
+                --enable-debug --enable-tests
+                --disable-dependency-tracking --enable-thumbnailer-command
+            - label: macOS Quick Look extension
+              os: macos-latest
+              runner: macos-latest
+              sys: native
+              configure_flags: >-
+                --without-png --without-jpeg --without-libcurl
+                --enable-debug --enable-tests
+                --disable-dependency-tracking --enable-quicklook-extension
+                --enable-quicklook-preview
+            - label: Windows WIC codec (MinGW)
+              os: windows-latest
+              runner: windows-latest
+              msystem: MINGW64
+              sys: MINGW64
+              configure_flags: >-
+                --without-png --without-jpeg --without-libcurl
+                --enable-debug --enable-tests
+                --disable-dependency-tracking --enable-wiccodec
 
     steps:
     - uses: actions/checkout@v6
@@ -1722,6 +1725,8 @@ jobs:
     runs-on: ${{ matrix.runner || matrix.os }}
     strategy:
       matrix:
+        vcpkg_libpng: [false]
+        vcpkg_libjpeg: [false]
         include:
           - label: freebsd 14.3 x86-64
             os: ubuntu-latest
@@ -1820,6 +1825,7 @@ jobs:
             musl: true
             variant: musl-cross
             extra_packages: musl-tools
+            extra_packages: musl-tools
           - label: alpine 3.20 x86_64
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -1846,6 +1852,7 @@ jobs:
             runner: ubuntu-latest
             sys: i686
             variant: default
+            extra_packages: gcc-multilib
             extra_packages: gcc-multilib
           - label: macos aarch64
             os: macos-latest
