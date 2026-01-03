@@ -404,9 +404,6 @@ jobs:
 
           cd "$GITHUB_WORKSPACE"
           ./configure \
-            --without-bashcompletiondir \
-            --without-zshcompletiondir \
-            --disable-python \
             --enable-debug \
             --enable-tests \
             --disable-dependency-tracking \
@@ -657,9 +654,6 @@ jobs:
           static_only_flags="--disable-shared --enable-static"
         fi
         ./configure \
-            --without-bashcompletiondir \
-            --without-zshcompletiondir \
-            --disable-python \
             --enable-debug \
             --enable-tests \
             ${enable_gcov_flag} \
@@ -670,6 +664,7 @@ jobs:
             ${static_only_flags} \
             ${extra_config_flags}
         make V=1
+        make check V=1
 
     - name: Configure and build (Autotools, Alpine container)
       if: matrix.variant == 'alpine'
@@ -692,9 +687,6 @@ jobs:
 
           enable_gcov_flag="--enable-gcov"
           ./configure \
-              --without-bashcompletiondir \
-              --without-zshcompletiondir \
-              --disable-python \
               --enable-debug \
               --enable-tests \
               ${enable_gcov_flag} \
@@ -732,9 +724,6 @@ jobs:
             --without-png \
             --without-jpeg \
             --without-libcurl \
-            --without-bashcompletiondir \
-            --without-zshcompletiondir \
-            --disable-python \
             --enable-debug \
             --enable-tests \
             ${enable_gcov_flag} \
@@ -785,7 +774,7 @@ jobs:
           "extra_config_flags=`"$extraConfigFlags`"",
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --without-bashcompletiondir --without-zshcompletiondir --disable-python --enable-debug --enable-tests ${enable_gcov_flag} --disable-dependency-tracking ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${static_only_flags} ${extra_config_flags}',
+          './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --enable-debug --enable-tests ${enable_gcov_flag} --disable-dependency-tracking ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${static_only_flags} ${extra_config_flags}',
           'make V=1'
         )
         $script = [string]::Join("`n", $scriptLines)
@@ -825,9 +814,6 @@ jobs:
         )
         ./configure CC=${{ matrix.compiler }} LD=link AR="${SHELL} $(pwd)/build-aux/ar-lib lib" ARFLAGS=cr NM="dumpbin -symbols" STRIP=: RANLIB=: \
             --host=x86_64-pc-windows-msvc \
-            --without-bashcompletiondir \
-            --without-zshcompletiondir \
-            --disable-python \
             --enable-debug \
             --enable-tests \
             --disable-dependency-tracking \
@@ -988,9 +974,6 @@ jobs:
             fi
 
             ./configure \
-                --without-bashcompletiondir \
-                --without-zshcompletiondir \
-                --disable-python \
                 --enable-debug \
                 --enable-tests \
                 ${enable_gcov_flag} \
@@ -1033,9 +1016,6 @@ jobs:
             fi
 
             ./configure \
-                --without-bashcompletiondir \
-                --without-zshcompletiondir \
-                --disable-python \
                 --enable-debug \
                 --enable-tests \
                 ${enable_gcov_flag} \
@@ -1076,9 +1056,6 @@ jobs:
             fi
 
             ./configure \
-                --without-bashcompletiondir \
-                --without-zshcompletiondir \
-                --disable-python \
                 --enable-debug \
                 --enable-tests \
                 ${enable_gcov_flag} \
@@ -1118,9 +1095,6 @@ jobs:
             fi
 
             ./configure \
-                --without-bashcompletiondir \
-                --without-zshcompletiondir \
-                --disable-python \
                 --enable-debug \
                 --enable-tests \
                 ${enable_gcov_flag} \
@@ -1138,11 +1112,6 @@ jobs:
           else
             make check V=1
           fi
-
-    - name: Run tests (non-Windows)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows' && matrix.variant != 'cosmopolitan' && matrix.variant != 'alpine' && matrix.emscripten != true
-      shell: bash
-      run: make check V=1
 
     - name: Run tests (Windows, not MSVC/Cygwin/CLANG64)
       if: runner.os == 'Windows' && matrix.sys != 'CLANG64' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
@@ -1338,16 +1307,14 @@ jobs:
             runner: ubuntu-latest
             configure_flags: >-
               --without-png --without-jpeg --without-libcurl
-              --without-bashcompletiondir --without-zshcompletiondir
-              --disable-python --enable-debug --enable-tests
+              --enable-debug --enable-tests
               --disable-dependency-tracking --enable-thumbnailer-command
           - label: macOS Quick Look extension
             os: macos-latest
             runner: macos-latest
             configure_flags: >-
               --without-png --without-jpeg --without-libcurl
-              --without-bashcompletiondir --without-zshcompletiondir
-              --disable-python --enable-debug --enable-tests
+              --enable-debug --enable-tests
               --disable-dependency-tracking --enable-quicklook-extension
               --enable-quicklook-preview
           - label: Windows WIC codec (MinGW)
@@ -1356,8 +1323,7 @@ jobs:
             msystem: MINGW64
             configure_flags: >-
               --without-png --without-jpeg --without-libcurl
-              --without-bashcompletiondir --without-zshcompletiondir
-              --disable-python --enable-debug --enable-tests
+              --enable-debug --enable-tests
               --disable-dependency-tracking --enable-wiccodec
 
     steps:
@@ -1626,9 +1592,6 @@ jobs:
         CFLAGS="$ASAN_CFLAGS" \
         LDFLAGS="$ASAN_LDFLAGS" \
         ./configure \
-            --without-bashcompletiondir \
-            --without-zshcompletiondir \
-            --disable-python \
             --enable-debug \
             --enable-tests \
             --disable-dependency-tracking \
@@ -1644,9 +1607,6 @@ jobs:
             --without-png \
             --without-jpeg \
             --without-libcurl \
-            --without-bashcompletiondir \
-            --without-zshcompletiondir \
-            --disable-python \
             --enable-debug \
             --enable-tests \
             --disable-dependency-tracking \
