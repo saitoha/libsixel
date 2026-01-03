@@ -465,24 +465,16 @@ jobs:
 
           cd "$GITHUB_WORKSPACE"
 
-          config_env=(env)
-          config_args=(
-            --enable-debug
-            --enable-tests
+          set -- \
+            --enable-debug \
+            --enable-tests \
             --disable-dependency-tracking
-          )
+          extra_opts=${{ matrix.extra_options || '' }}
+          if [ -n "$extra_opts" ]; then
+            eval "set -- \"$@\" ${extra_opts}"
+          fi
 
-          set -- ${{ matrix.extra_options || '' }}
-          for arg in "$@"; do
-            [ -z "$arg" ] && continue
-            if [ "${arg#--}" = "$arg" ] && [ "${arg%%=*}" != "$arg" ]; then
-              config_env+=("$arg")
-            else
-              config_args+=("$arg")
-            fi
-          done
-
-          "${config_env[@]}" ./configure "${config_args[@]}"
+          ./configure "$@"
           gmake V=1
           gmake check
 
@@ -689,24 +681,16 @@ jobs:
       run: |
         set -eux
 
-        config_env=(env)
-        config_args=(
-          --enable-debug
-          --enable-tests
+        set -- \
+          --enable-debug \
+          --enable-tests \
           --disable-dependency-tracking
-        )
+        extra_opts=${{ matrix.extra_options || '' }}
+        if [ -n "$extra_opts" ]; then
+          eval "set -- \"$@\" ${extra_opts}"
+        fi
 
-        set -- ${{ matrix.extra_options || '' }}
-        for arg in "$@"; do
-          [ -z "$arg" ] && continue
-          if [ "${arg#--}" = "$arg" ] && [ "${arg%%=*}" != "$arg" ]; then
-            config_env+=("$arg")
-          else
-            config_args+=("$arg")
-          fi
-        done
-
-        "${config_env[@]}" ./configure "${config_args[@]}"
+        ./configure "$@"
         make V=1
         make check V=1
 
@@ -744,29 +728,19 @@ jobs:
       run: |
         set -eux
 
-        config_env=(env)
-        config_args=(
-          --without-png
-          --without-jpeg
-          --without-libcurl
-          --enable-debug
-          --enable-tests
+        set -- \
+          --without-png \
+          --without-jpeg \
+          --without-libcurl \
+          --enable-debug \
+          --enable-tests \
           --disable-dependency-tracking
-        )
+        extra_opts=${{ matrix.extra_options || '' }}
+        if [ -n "$extra_opts" ]; then
+          eval "set -- \"$@\" ${extra_opts}"
+        fi
 
-        set -- ${{ matrix.extra_options || '' }}
-        for arg in "$@"; do
-          [ -z "$arg" ] && continue
-          if [ "${arg#--}" = "$arg" ] && [ "${arg%%=*}" != "$arg" ]; then
-            config_env+=("$arg")
-          else
-            config_args+=("$arg")
-          fi
-        done
-
-        config_env+=("CC=${{ matrix.compiler }}")
-
-        "${config_env[@]}" ./configure "${config_args[@]}"
+        ./configure "$@"
         make V=1
         make check V=1
 
@@ -782,26 +756,12 @@ jobs:
           'set -o pipefail 2>/dev/null || true',
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          'config_env=(env)',
-          'config_args=(',
-          '  --without-png',
-          '  --without-jpeg',
-          '  --without-libcurl',
-          '  --enable-debug',
-          '  --enable-tests',
-          '  --disable-dependency-tracking',
-          ')',
-            "set -- ${{ matrix.extra_options || '' }}",
-            'for arg in "$@"; do',
-            '  [ -z "$arg" ] && continue',
-            '  if [ "${arg#--}" = "$arg" ] && [ "${arg%%=*}" != "$arg" ]; then',
-            '    config_env+=("$arg")',
-            '  else',
-            '    config_args+=("$arg")',
-            '  fi',
-            'done',
-          "config_env+=(\"CC=${{ matrix.compiler }}\")",
-          '"${config_env[@]}" ./configure "${config_args[@]}"',
+          'set -- --without-png --without-jpeg --without-libcurl --enable-debug --enable-tests --disable-dependency-tracking',
+            "extra_opts=${{ matrix.extra_options || '' }}",
+            'if [ -n "$extra_opts" ]; then',
+            '  eval "set -- \"$@\" ${extra_opts}"',
+            'fi',
+          "CC=${{ matrix.compiler }} ./configure \"$@\"",
           'make V=1'
         )
         $script = [string]::Join("`n", $scriptLines)
@@ -826,38 +786,28 @@ jobs:
                 esac;
             done
         )
-        config_env=(env)
-        config_args=(
-          --host=x86_64-pc-windows-msvc
-          --enable-debug
-          --enable-tests
-          --disable-dependency-tracking
-          --without-png
-          --without-jpeg
+        set -- \
+          --host=x86_64-pc-windows-msvc \
+          --enable-debug \
+          --enable-tests \
+          --disable-dependency-tracking \
+          --without-png \
+          --without-jpeg \
           --without-libcurl
-        )
 
-        set -- ${{ matrix.extra_options || '' }}
-        for arg in "$@"; do
-          [ -z "$arg" ] && continue
-          if [ "${arg#--}" = "$arg" ] && [ "${arg%%=*}" != "$arg" ]; then
-            config_env+=("$arg")
-          else
-            config_args+=("$arg")
-          fi
-        done
+        extra_opts=${{ matrix.extra_options || '' }}
+        if [ -n "$extra_opts" ]; then
+          eval "set -- \"$@\" ${extra_opts}"
+        fi
 
-        config_env+=(
-          "CC=${{ matrix.compiler }}"
-          "LD=link"
-          "AR=${SHELL} $(pwd)/build-aux/ar-lib lib"
-          "ARFLAGS=cr"
-          "NM=dumpbin -symbols"
-          "STRIP=:"
-          "RANLIB=:"
-        )
-
-        "${config_env[@]}" ./configure "${config_args[@]}"
+        CC=${{ matrix.compiler }} \
+        LD=link \
+        AR="${SHELL} $(pwd)/build-aux/ar-lib lib" \
+        ARFLAGS=cr \
+        NM="dumpbin -symbols" \
+        STRIP=: \
+        RANLIB=: \
+        ./configure "$@"
         make V=1
 
     - name: Configure and build (Cosmopolitan, non-Windows)
@@ -1005,24 +955,17 @@ jobs:
             make_cmd="make"
           fi
 
-          config_env=(env)
-          config_args=(
-            --enable-debug
-            --enable-tests
+          set -- \
+            --enable-debug \
+            --enable-tests \
             --disable-dependency-tracking
-          )
 
-          set -- ${{ matrix.extra_options || '' }}
-          for arg in "$@"; do
-            [ -z "$arg" ] && continue
-            if [ "${arg#--}" = "$arg" ] && [ "${arg%%=*}" != "$arg" ]; then
-              config_env+=("$arg")
-            else
-              config_args+=("$arg")
-            fi
-          done
+          extra_opts=${{ matrix.extra_options || '' }}
+          if [ -n "$extra_opts" ]; then
+            eval "set -- \"$@\" ${extra_opts}"
+          fi
 
-          "${config_env[@]}" ./configure "${config_args[@]}"
+          ./configure "$@"
           ${make_cmd} V=1
 
           if command -v gmake >/dev/null 2>&1; then
