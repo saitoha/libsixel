@@ -96,7 +96,7 @@ def decode_large(source: pathlib.Path, target: pathlib.Path) -> Tuple[int, int]:
 
 def remove_path(
     path: pathlib.Path,
-    retries: int = 6,
+    retries: int = 10,
     base_delay: float = 0.25,
 ) -> None:
     """Delete a path with retries to handle slow handle release on Windows."""
@@ -144,7 +144,7 @@ def main() -> None:
     # Release references and allow handle shutdown before deletion to
     # surface slow cleanup on platforms such as Windows.
     gc.collect()
-    time.sleep(0.25)
+    time.sleep(0.75)
 
     remove_path(sixel_path)
     remove_path(decoded_png)
