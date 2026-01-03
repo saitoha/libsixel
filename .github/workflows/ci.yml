@@ -465,16 +465,11 @@ jobs:
 
           cd "$GITHUB_WORKSPACE"
 
-          set -- \
+          ./configure \
             --enable-debug \
             --enable-tests \
-            --disable-dependency-tracking
-          extra_opts=${{ matrix.extra_options || '' }}
-          if [ -n "$extra_opts" ]; then
-            eval "set -- \"$@\" ${extra_opts}"
-          fi
-
-          ./configure "$@"
+            --disable-dependency-tracking \
+            ${{ matrix.extra_options || '' }}
           gmake V=1
           gmake check
 
@@ -681,16 +676,11 @@ jobs:
       run: |
         set -eux
 
-        set -- \
+        ./configure \
           --enable-debug \
           --enable-tests \
-          --disable-dependency-tracking
-        extra_opts=${{ matrix.extra_options || '' }}
-        if [ -n "$extra_opts" ]; then
-          eval "set -- \"$@\" ${extra_opts}"
-        fi
-
-        ./configure "$@"
+          --disable-dependency-tracking \
+          ${{ matrix.extra_options || '' }}
         make V=1
         make check V=1
 
@@ -728,19 +718,14 @@ jobs:
       run: |
         set -eux
 
-        set -- \
+        ./configure \
           --without-png \
           --without-jpeg \
           --without-libcurl \
           --enable-debug \
           --enable-tests \
-          --disable-dependency-tracking
-        extra_opts=${{ matrix.extra_options || '' }}
-        if [ -n "$extra_opts" ]; then
-          eval "set -- \"$@\" ${extra_opts}"
-        fi
-
-        ./configure "$@"
+          --disable-dependency-tracking \
+          ${{ matrix.extra_options || '' }}
         make V=1
         make check V=1
 
@@ -756,12 +741,7 @@ jobs:
           'set -o pipefail 2>/dev/null || true',
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          'set -- --without-png --without-jpeg --without-libcurl --enable-debug --enable-tests --disable-dependency-tracking',
-            "extra_opts=${{ matrix.extra_options || '' }}",
-            'if [ -n "$extra_opts" ]; then',
-            '  eval "set -- \"$@\" ${extra_opts}"',
-            'fi',
-          "CC=${{ matrix.compiler }} ./configure \"$@\"",
+          "CC=${{ matrix.compiler }} ./configure --without-png --without-jpeg --without-libcurl --enable-debug --enable-tests --disable-dependency-tracking ${{ matrix.extra_options || '' }}",
           'make V=1'
         )
         $script = [string]::Join("`n", $scriptLines)
@@ -786,20 +766,6 @@ jobs:
                 esac;
             done
         )
-        set -- \
-          --host=x86_64-pc-windows-msvc \
-          --enable-debug \
-          --enable-tests \
-          --disable-dependency-tracking \
-          --without-png \
-          --without-jpeg \
-          --without-libcurl
-
-        extra_opts=${{ matrix.extra_options || '' }}
-        if [ -n "$extra_opts" ]; then
-          eval "set -- \"$@\" ${extra_opts}"
-        fi
-
         CC=${{ matrix.compiler }} \
         LD=link \
         AR="${SHELL} $(pwd)/build-aux/ar-lib lib" \
@@ -807,7 +773,15 @@ jobs:
         NM="dumpbin -symbols" \
         STRIP=: \
         RANLIB=: \
-        ./configure "$@"
+        ./configure \
+          --host=x86_64-pc-windows-msvc \
+          --enable-debug \
+          --enable-tests \
+          --disable-dependency-tracking \
+          --without-png \
+          --without-jpeg \
+          --without-libcurl \
+          ${{ matrix.extra_options || '' }}
         make V=1
 
     - name: Configure and build (Cosmopolitan, non-Windows)
@@ -955,17 +929,11 @@ jobs:
             make_cmd="make"
           fi
 
-          set -- \
+          ./configure \
             --enable-debug \
             --enable-tests \
-            --disable-dependency-tracking
-
-          extra_opts=${{ matrix.extra_options || '' }}
-          if [ -n "$extra_opts" ]; then
-            eval "set -- \"$@\" ${extra_opts}"
-          fi
-
-          ./configure "$@"
+            --disable-dependency-tracking \
+            ${{ matrix.extra_options || '' }}
           ${make_cmd} V=1
 
           if command -v gmake >/dev/null 2>&1; then
