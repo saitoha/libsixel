@@ -1000,32 +1000,50 @@ jobs:
         $script = [string]::Join("`n", $scriptLines)
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
-    - name: Capture coverage (Linux)
-      if: runner.os == 'Linux' && matrix.emscripten != true && (matrix.sys || '') != 'i686' && !(matrix.musl || false) && !contains(fromJson('["freebsd","openbsd","netbsd","haiku"]'), matrix.platform || '') && !contains(fromJson('["alpine","amalgamated_lib","cosmopolitan"]'), matrix.variant || '')
+    - name: Capture coverage
+      if: runner.os != 'Windows'
       shell: bash
       run: |
-        gcovr -r . --lcov -o coverage.info \
-                   --gcov-executable gcov-14
+        set -eu
+        set -o pipefail
+        if [ -e coverage.info ]; then
+          echo "coverage.info already exists; skipping capture"
+          exit 0
+        fi
+        if command -v gcovr >/dev/null 2>&1; then
+          gcovr -r . --lcov -o coverage.info \
+            --gcov-executable gcov-14
+        elif command -v lcov >/dev/null 2>&1; then
+          lcov -c \
+            -d "$PWD/src/.libs" \
+            -d "$PWD/converters" \
+            --rc branch_coverage=1 \
+            -o coverage.info
+        else
+          echo "No gcovr or lcov found; skipping coverage capture"
+        fi
 
-    - name: Capture coverage (non-MSVC)
-      if: runner.os == 'macOS' && !contains(fromJson('["amalgamated_lib","cosmopolitan"]'), matrix.variant || '') && matrix.emscripten != true
-      shell: bash
-      run: |
-        lcov -c \
-          -d "$PWD/src/.libs" \
-          -d "$PWD/converters" \
-          --rc branch_coverage=1 \
-          -o coverage.info
-
-    - name: Capture coverage (Windows MSYS2/MinGW/UCRT/Clang)
-      if: runner.os == 'Windows' && !contains(fromJson('["MSVC","CYGWIN","MINGW32"]'), matrix.sys || '') && !contains(fromJson('["amalgamated_lib","cosmopolitan"]'), matrix.variant || '') && matrix.emscripten != true
+    - name: Capture coverage (Windows)
+      if: runner.os == 'Windows'
       shell: msys2 {0}
       run: |
-        lcov -c \
-          -d "$PWD/src/.libs" \
-          -d "$PWD/converters" \
-          --rc branch_coverage=1 \
-          -o coverage.info
+        set -eu
+        set -o pipefail
+        if [ -e coverage.info ]; then
+          echo "coverage.info already exists; skipping capture"
+          exit 0
+        fi
+        if command -v gcovr >/dev/null 2>&1; then
+          gcovr -r . --lcov -o coverage.info
+        elif command -v lcov >/dev/null 2>&1; then
+          lcov -c \
+            -d "$PWD/src/.libs" \
+            -d "$PWD/converters" \
+            --rc branch_coverage=1 \
+            -o coverage.info
+        else
+          echo "No gcovr or lcov found; skipping coverage capture"
+        fi
 
     - name: Fix artifact permissions (Autotools Alpine container)
       if: ${{ matrix.variant == 'alpine' && always() }}
