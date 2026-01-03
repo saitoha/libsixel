@@ -42,7 +42,7 @@ jobs:
             cp_arch: x86-64
             cp_version: '14.3'
             variant: amalgamated_lib
-            configure_extra: '--enable-amalgamated-lib'
+            extra_options: '--enable-amalgamated-lib'
           - label: freebsd 14.3 aarch64
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -127,6 +127,7 @@ jobs:
             sys: x86_64
             musl: true
             variant: musl-cross
+            extra_packages: musl-tools
           - label: alpine 3.20 x86_64
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -141,12 +142,13 @@ jobs:
             runner: ubuntu-24.04-arm
             sys: aarch64
             variant: amalgamated_lib
-            configure_extra: '--enable-amalgamated-lib'
+            extra_options: '--enable-amalgamated-lib'
           - label: ubuntu i686
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: i686
             variant: default
+            extra_packages: gcc-multilib
           - label: macos aarch64
             os: macos-latest
             runner: macos-latest
@@ -157,7 +159,7 @@ jobs:
             runner: macos-latest
             sys: aarch64
             variant: amalgamated_lib
-            configure_extra: '--enable-amalgamated-lib'
+            extra_options: '--enable-amalgamated-lib'
           - label: macos x86_64
             os: macos-15
             runner: macos-15
@@ -168,7 +170,7 @@ jobs:
             runner: macos-15
             sys: x86_64
             variant: amalgamated_lib
-            configure_extra: '--enable-amalgamated-lib'
+            extra_options: '--enable-amalgamated-lib'
           - label: cosmopolitan ubuntu 24.04 aarch64
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
@@ -231,7 +233,7 @@ jobs:
             compiler: gcc
             sys: UCRT64
             variant: amalgamated_lib
-            configure_extra: '--enable-amalgamated-lib'
+            extra_options: '--enable-amalgamated-lib'
           - label: clang64
             os: windows-latest
             runner: windows-latest
@@ -256,14 +258,14 @@ jobs:
             compiler: cl
             sys: MSVC
             variant: amalgamated_lib
-            configure_extra: '--enable-amalgamated-lib'
+            extra_options: '--enable-amalgamated-lib'
           - label: cygwin amalgamated_lib
             os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: CYGWIN
             variant: amalgamated_lib
-            configure_extra: '--enable-amalgamated-lib'
+            extra_options: '--enable-amalgamated-lib'
           - label: cosmopolitan msys
             os: windows-latest
             runner: windows-latest
@@ -333,17 +335,11 @@ jobs:
         git config core.autocrlf false
         git reset --hard
 
-    - name: Install multilib toolchain (Linux i686)
-      if: matrix.variant != 'alpine' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os == 'Linux' && (matrix.sys || '') == 'i686'
+    - name: Install extra packages (Linux)
+      if: runner.os == 'Linux' && (matrix.extra_packages || '') != ''
       run: |
         sudo apt-get update
-        sudo apt-get install -y gcc-multilib
-
-    - name: Install musl toolchain (Linux musl-cross)
-      if: ${{ matrix.variant != 'alpine' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os == 'Linux' && (matrix.musl || false) }}
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y musl-tools
+        sudo apt-get install -y ${{ matrix.extra_packages }}
 
     - name: Fix Homebrew taps/cache
       if: runner.os == 'macOS'
@@ -385,7 +381,7 @@ jobs:
           pkg install -y gmake pkgconf
 
           disable_threads_flag=""
-          extra_config_flags="${{ matrix.configure_extra || '' }}"
+          extra_config_flags="${{ matrix.extra_options || '' }}"
           if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
             disable_threads_flag="--disable-threads"
           fi
@@ -593,7 +589,7 @@ jobs:
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Install gcovr
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os != 'Windows' && (matrix.sys || '') != 'i686' && matrix.variant != 'amalgamated_lib' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
+      if: runner.os != 'Windows' && matrix.emscripten != true && (matrix.sys || '') != 'i686' && !contains(fromJson('["freebsd","openbsd","netbsd"]'), matrix.platform || '') && !contains(fromJson('["amalgamated_lib","cosmopolitan"]'), matrix.variant || '')
       run: |
         python3 -m venv .venv
         . .venv/bin/activate
@@ -601,7 +597,7 @@ jobs:
         echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
     - name: Install gcc-14 (Linux)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os == 'Linux' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
+      if: runner.os == 'Linux' && matrix.emscripten != true && (matrix.variant || '') != 'cosmopolitan' && !contains(fromJson('["freebsd","openbsd","netbsd"]'), matrix.platform || '')
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-14
@@ -618,11 +614,11 @@ jobs:
         ./emscripten/build-emcc.sh
 
     - name: Configure and build (non-Windows)
-      if: matrix.variant != 'alpine' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
+      if: runner.os != 'Windows' && matrix.emscripten != true && !contains(fromJson('["alpine","cosmopolitan"]'), matrix.variant || '') && !contains(fromJson('["freebsd","openbsd","netbsd","haiku","dragonflybsd"]'), matrix.platform || '')
       shell: bash
       run: |
         enable_gcov_flag="--enable-gcov"
-        extra_config_flags="${{ matrix.configure_extra || '' }}"
+        extra_config_flags="${{ matrix.extra_options || '' }}"
         if [ "${{ matrix.variant || '' }}" = "amalgamated_lib" ]; then
           enable_gcov_flag=""
         fi
@@ -701,7 +697,7 @@ jobs:
       run: |
         disable_threads_flag=""
         enable_gcov_flag="--enable-gcov"
-        extra_config_flags="${{ matrix.configure_extra || '' }}"
+        extra_config_flags="${{ matrix.extra_options || '' }}"
         if [ "${{ matrix.variant || '' }}" = "amalgamated_lib" ]; then
           enable_gcov_flag=""
         fi
@@ -759,7 +755,7 @@ jobs:
         if ('${{ matrix.static_only }}' -eq 'true') {
           $staticOnlyFlags = '--disable-shared --enable-static'
         }
-        $extraConfigFlags = '${{ matrix.configure_extra || '' }}'
+        $extraConfigFlags = '${{ matrix.extra_options || '' }}'
         if ('${{ matrix.variant }}' -eq 'amalgamated_lib') {
           $enableGcovFlag = ''
         }
@@ -787,7 +783,7 @@ jobs:
         VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
         cmd //c call "${VCVARS}" x64 \>nul \&\& set
         disable_threads_flag=""
-        extra_config_flags="${{ matrix.configure_extra || '' }}"
+        extra_config_flags="${{ matrix.extra_options || '' }}"
         if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
           disable_threads_flag="--disable-threads"
         fi
@@ -951,7 +947,7 @@ jobs:
               # pkgconf avoided to reduce fragile package installs
 
             enable_gcov_flag=""
-            extra_config_flags="${{ matrix.configure_extra || '' }}"
+            extra_config_flags="${{ matrix.extra_options || '' }}"
             if [ "${{ matrix.variant || '' }}" = "amalgamated_lib" ]; then
               enable_gcov_flag=""
             fi
@@ -993,7 +989,7 @@ jobs:
             fi
 
             enable_gcov_flag="--enable-gcov"
-            extra_config_flags="${{ matrix.configure_extra || '' }}"
+            extra_config_flags="${{ matrix.extra_options || '' }}"
             if [ "${{ matrix.variant || '' }}" = "amalgamated_lib" ]; then
               enable_gcov_flag=""
             fi
@@ -1033,7 +1029,7 @@ jobs:
               # pkgconf avoided to reduce fragile package installs
 
             enable_gcov_flag="--enable-gcov"
-            extra_config_flags="${{ matrix.configure_extra || '' }}"
+            extra_config_flags="${{ matrix.extra_options || '' }}"
             if [ "${{ matrix.variant || '' }}" = "amalgamated_lib" ]; then
               enable_gcov_flag=""
             fi
@@ -1072,7 +1068,7 @@ jobs:
               make
 
             enable_gcov_flag="--enable-gcov"
-            extra_config_flags="${{ matrix.configure_extra || '' }}"
+            extra_config_flags="${{ matrix.extra_options || '' }}"
             if [ "${{ matrix.variant || '' }}" = "amalgamated_lib" ]; then
               enable_gcov_flag=""
             fi
@@ -1455,89 +1451,89 @@ jobs:
           - label: ubuntu clang
             os: ubuntu-latest
             runner: ubuntu-latest
-            configure_extra: ''
+            extra_options: ''
             artifact_suffix: default
             apt: ''
           - label: ubuntu clang with-gd
             os: ubuntu-latest
             runner: ubuntu-latest
-            configure_extra: '--with-gd'
+            extra_options: '--with-gd'
             artifact_suffix: with-gd
             apt: 'libgd-dev'
           - label: ubuntu clang with-gdk-pixbuf2
             os: ubuntu-latest
             runner: ubuntu-latest
-            configure_extra: '--with-gdk-pixbuf2'
+            extra_options: '--with-gdk-pixbuf2'
             artifact_suffix: with-gdk-pixbuf2
             apt: 'libgdk-pixbuf2.0-dev'
           - label: ubuntu clang with-png
             os: ubuntu-latest
             runner: ubuntu-latest
-            configure_extra: '--with-png'
+            extra_options: '--with-png'
             artifact_suffix: with-png
             apt: 'libpng-dev'
           - label: ubuntu clang with-jpeg
             os: ubuntu-latest
             runner: ubuntu-latest
-            configure_extra: '--with-jpeg'
+            extra_options: '--with-jpeg'
             artifact_suffix: with-jpeg
             apt: 'libjpeg-turbo8-dev'
           - label: ubuntu clang with-libcurl
             os: ubuntu-latest
             runner: ubuntu-latest
-            configure_extra: '--with-libcurl'
+            extra_options: '--with-libcurl'
             artifact_suffix: with-libcurl
             apt: 'libcurl4-openssl-dev'
           - label: macos aarch64 clang
             os: macos-latest
             runner: macos-latest
-            configure_extra: ''
+            extra_options: ''
             artifact_suffix: default
             apt: ''
           - label: macos aarch64 clang enable-quicklook-extension
             os: macos-latest
             runner: macos-latest
-            configure_extra: '--enable-quicklook-extension'
+            extra_options: '--enable-quicklook-extension'
             artifact_suffix: enable-quicklook-extension
             apt: ''
           - label: macos aarch64 clang with-coregraphics
             os: macos-latest
             runner: macos-latest
-            configure_extra: '--with-coregraphics'
+            extra_options: '--with-coregraphics'
             artifact_suffix: with-coregraphics
             apt: ''
           - label: macos x86_64 clang
             os: macos-15
             runner: macos-15
-            configure_extra: ''
+            extra_options: ''
             artifact_suffix: default
             apt: ''
           - label: clang64
             os: windows-latest
             runner: windows-latest
             sys: CLANG64
-            configure_extra: ''
+            extra_options: ''
             artifact_suffix: default
             apt: ''
           - label: clang64 with-wic
             os: windows-latest
             runner: windows-latest
             sys: CLANG64
-            configure_extra: '--with-wic'
+            extra_options: '--with-wic'
             artifact_suffix: with-wic
             apt: ''
           - label: clang64 enable-wiccodec
             os: windows-latest
             runner: windows-latest
             sys: CLANG64
-            configure_extra: '--enable-wiccodec'
+            extra_options: '--enable-wiccodec'
             artifact_suffix: enable-wiccodec
             apt: ''
           - label: clang64 with-winhttp
             os: windows-latest
             runner: windows-latest
             sys: CLANG64
-            configure_extra: '--with-winhttp'
+            extra_options: '--with-winhttp'
             artifact_suffix: with-winhttp
             apt: ''
     env:
@@ -1587,7 +1583,7 @@ jobs:
       if: runner.os != 'Windows'
       shell: bash
       run: |
-        extra='${{ matrix.configure_extra }}'
+        extra='${{ matrix.extra_options }}'
         CC=clang \
         CFLAGS="$ASAN_CFLAGS" \
         LDFLAGS="$ASAN_LDFLAGS" \
@@ -1602,7 +1598,7 @@ jobs:
       if: runner.os == 'Windows'
       shell: msys2 {0}
       run: |
-        extra='${{ matrix.configure_extra }}'
+        extra='${{ matrix.extra_options }}'
         CC=clang CFLAGS="$ASAN_CFLAGS" LDFLAGS="$ASAN_LDFLAGS" ./configure \
             --without-png \
             --without-jpeg \
