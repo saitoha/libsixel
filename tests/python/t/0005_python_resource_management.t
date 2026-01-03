@@ -35,7 +35,7 @@ import pathlib
 import sys
 import time
 import warnings
-from typing import Tuple
+from typing import Optional, Tuple
 
 try:
     from libsixel import (
@@ -94,24 +94,35 @@ def decode_large(source: pathlib.Path, target: pathlib.Path) -> Tuple[int, int]:
     return width, height
 
 
-def remove_path(path: pathlib.Path, retries: int = 3, delay: float = 0.2) -> None:
+def remove_path(
+    path: pathlib.Path,
+    retries: int = 6,
+    base_delay: float = 0.25,
+) -> None:
     """Delete a path with retries to handle slow handle release on Windows."""
 
+    last_exc: Optional[PermissionError] = None
     for attempt in range(retries):
+        gc.collect()
         try:
             path.unlink()
             return
         except FileNotFoundError:
             return
         except PermissionError as exc:
+            last_exc = exc
             if attempt + 1 >= retries:
-                raise SystemExit(
-                    f"failed to remove {path.name}: {exc}"
-                ) from exc
-            gc.collect()
-            time.sleep(delay)
+                break
+            sleep_time = base_delay * (2**attempt)
+            print(
+                f"retry {attempt + 1}/{retries} removing {path.name}: {exc}"
+            )
+            time.sleep(sleep_time)
         except Exception as exc:  # noqa: BLE001 - propagate exact failure context
             raise SystemExit(f"failed to remove {path.name}: {exc}") from exc
+
+    if last_exc is not None:
+        raise SystemExit(f"failed to remove {path.name}: {last_exc}") from last_exc
 
 
 def main() -> None:
@@ -130,8 +141,10 @@ def main() -> None:
         size = encode_large(source_image, sixel_path)
         width, height = decode_large(sixel_path, decoded_png)
 
-    # Release references before deletion to surface handle leaks.
+    # Release references and allow handle shutdown before deletion to
+    # surface slow cleanup on platforms such as Windows.
     gc.collect()
+    time.sleep(0.25)
 
     remove_path(sixel_path)
     remove_path(decoded_png)
