@@ -653,48 +653,31 @@ jobs:
       if: runner.os != 'Windows' && matrix.emscripten != true && !contains(fromJson('["alpine","cosmopolitan"]'), matrix.variant || '') && !contains(fromJson('["freebsd","openbsd","netbsd","haiku","dragonflybsd"]'), matrix.platform || '')
       shell: bash
       run: |
-        enable_gcov_flag="--enable-gcov"
-        extra_config_flags="${{ matrix.extra_options || '' }}"
-        if [ "${{ matrix.variant || '' }}" = "amalgamated_lib" ]; then
-          enable_gcov_flag=""
+        set -eux
+
+        config_env=(env)
+        config_args=(
+          --enable-debug
+          --enable-tests
+          --disable-dependency-tracking
+        )
+
+        while read -r arg; do
+          [ -z "$arg" ] && continue
+          if [ "${arg#--}" = "$arg" ] && [ "${arg%%=*}" != "$arg" ]; then
+            config_env+=("$arg")
+          else
+            config_args+=("$arg")
+          fi
+        done <<'EOF'
+${{ matrix.extra_options || '--enable-gcov' }}
+EOF
+
+        if [ "${{ runner.os }}" = "Linux" ]; then
+          export CC=${CC:-gcc-14}
         fi
-        if [ "${{ matrix.musl || '' }}" = "true" ]; then
-          export CC=musl-gcc
-          enable_gcov_flag=""
-        elif [ '${{ matrix.sys || '' }}' = 'i686' ]; then
-          export CC="gcc -m32"
-          export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
-          export PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
-          enable_gcov_flag=""
-        elif [ "${{ runner.os }}" = "Linux" ]; then
-          export CC=gcc-14
-        fi
-        disable_threads_flag=""
-        if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
-          disable_threads_flag="--disable-threads"
-        fi
-        disable_tools_flags=""
-        if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
-          disable_tools_flags="--disable-img2sixel --disable-sixel2png"
-        fi
-        disable_simd_flag=""
-        if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
-          disable_simd_flag="--disable-simd"
-        fi
-        static_only_flags=""
-        if [ "${{ matrix.static_only || '' }}" = "true" ]; then
-          static_only_flags="--disable-shared --enable-static"
-        fi
-        ./configure \
-            --enable-debug \
-            --enable-tests \
-            ${enable_gcov_flag} \
-            --disable-dependency-tracking \
-            ${disable_tools_flags} \
-            ${disable_threads_flag} \
-            ${disable_simd_flag} \
-            ${static_only_flags} \
-            ${extra_config_flags}
+
+        "${config_env[@]}" ./configure "${config_args[@]}"
         make V=1
         make check V=1
 
@@ -731,41 +714,34 @@ jobs:
       if: ${{ runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true }}
       shell: msys2 {0}
       run: |
-        disable_threads_flag=""
-        enable_gcov_flag="--enable-gcov"
-        extra_config_flags="${{ matrix.extra_options || '' }}"
-        if [ "${{ matrix.variant || '' }}" = "amalgamated_lib" ]; then
-          enable_gcov_flag=""
-        fi
-        if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
-          disable_threads_flag="--disable-threads"
-        fi
-        disable_tools_flags=""
-        if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
-          disable_tools_flags="--disable-img2sixel --disable-sixel2png"
-        fi
-        disable_simd_flag=""
-        if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
-          disable_simd_flag="--disable-simd"
-        fi
-        static_only_flags=""
-        if [ "${{ matrix.static_only || '' }}" = "true" ]; then
-          static_only_flags="--disable-shared --enable-static"
-        fi
-        ./configure CC=${{ matrix.compiler }} \
-            --without-png \
-            --without-jpeg \
-            --without-libcurl \
-            --enable-debug \
-            --enable-tests \
-            ${enable_gcov_flag} \
-            --disable-dependency-tracking \
-            ${disable_tools_flags} \
-            ${disable_threads_flag} \
-            ${disable_simd_flag} \
-            ${static_only_flags} \
-            ${extra_config_flags}
+        set -eux
+
+        config_env=(env)
+        config_args=(
+          --without-png
+          --without-jpeg
+          --without-libcurl
+          --enable-debug
+          --enable-tests
+          --disable-dependency-tracking
+        )
+
+        while read -r arg; do
+          [ -z "$arg" ] && continue
+          if [ "${arg#--}" = "$arg" ] && [ "${arg%%=*}" != "$arg" ]; then
+            config_env+=("$arg")
+          else
+            config_args+=("$arg")
+          fi
+        done <<'EOF'
+${{ matrix.extra_options || '--enable-gcov' }}
+EOF
+
+        config_env+=("CC=${{ matrix.compiler }}")
+
+        "${config_env[@]}" ./configure "${config_args[@]}"
         make V=1
+        make check V=1
 
     - name: Configure and build (Windows, Cygwin)
       if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true }}
