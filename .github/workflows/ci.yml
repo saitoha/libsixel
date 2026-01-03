@@ -1359,7 +1359,10 @@ jobs:
             sys: CLANG64
             extra_options: ''
             artifact_suffix: default
-            extra_packages: ''
+            extra_packages: >-
+              make
+              pkgconf
+              mingw-w64-clang-x86_64-toolchain
           - label: clang64 with-wic
             os: windows-latest
             runner: windows-latest
