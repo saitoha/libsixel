@@ -4,10 +4,6 @@ endif
 if CFLAGS_HAVE_COVERAGE
 MAYBE_COVERAGE = --coverage
 endif
-if USING_CL
-LIBTOOL = $(SHELL) $(top_srcdir)/build-aux/libtool-normalize-exe.sh -- \
-    $(SHELL) $(top_builddir)/libtool
-endif
 SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
 SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
