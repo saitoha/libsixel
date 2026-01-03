@@ -703,8 +703,8 @@ jobs:
             config_args+=("$arg")
           fi
         done <<'EOF'
-${{ matrix.extra_options || '' }}
-EOF
+          ${{ matrix.extra_options || '' }}
+        EOF
 
         if [ "${{ runner.os }}" = "Linux" ]; then
           export CC=${CC:-gcc-14}
@@ -766,8 +766,8 @@ EOF
             config_args+=("$arg")
           fi
         done <<'EOF'
-${{ matrix.extra_options || '' }}
-EOF
+          ${{ matrix.extra_options || '' }}
+        EOF
 
         config_env+=("CC=${{ matrix.compiler }}")
 
