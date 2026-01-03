@@ -178,7 +178,6 @@ jobs:
               LDFLAGS="-m32"
               PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
               PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
-              --enable-gcov
             extra_packages: gcc-multilib
           - label: macos aarch64
             os: macos-latest
