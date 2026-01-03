@@ -33,6 +33,7 @@ confirm no lingering file handles remain.
 import gc
 import pathlib
 import sys
+import time
 import warnings
 from typing import Tuple
 
@@ -53,12 +54,12 @@ except OSError as exc:
 def encode_large(source: pathlib.Path, target: pathlib.Path) -> int:
     """Encode a large image into SIXEL and return the output size."""
 
-    encoder = Encoder()
-    encoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
-    encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(target))
-    encoder.setopt(SIXEL_OPTFLAG_WIDTH, "800")
-    encoder.setopt(SIXEL_OPTFLAG_HEIGHT, "600")
-    encoder.encode(str(source))
+    with Encoder() as encoder:
+        encoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
+        encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(target))
+        encoder.setopt(SIXEL_OPTFLAG_WIDTH, "800")
+        encoder.setopt(SIXEL_OPTFLAG_HEIGHT, "600")
+        encoder.encode(str(source))
 
     if not target.exists():
         raise SystemExit("encoder did not write output")
@@ -72,10 +73,10 @@ def encode_large(source: pathlib.Path, target: pathlib.Path) -> int:
 def decode_large(source: pathlib.Path, target: pathlib.Path) -> Tuple[int, int]:
     """Decode the SIXEL back to PNG and return its dimensions."""
 
-    decoder = Decoder()
-    decoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
-    decoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(target))
-    decoder.decode(str(source))
+    with Decoder() as decoder:
+        decoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
+        decoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(target))
+        decoder.decode(str(source))
 
     if not target.exists():
         raise SystemExit("decoder did not write output")
@@ -93,15 +94,24 @@ def decode_large(source: pathlib.Path, target: pathlib.Path) -> Tuple[int, int]:
     return width, height
 
 
-def remove_path(path: pathlib.Path) -> None:
-    """Delete a path and report detailed errors on failure."""
+def remove_path(path: pathlib.Path, retries: int = 3, delay: float = 0.2) -> None:
+    """Delete a path with retries to handle slow handle release on Windows."""
 
-    try:
-        path.unlink()
-    except FileNotFoundError:
-        return
-    except Exception as exc:  # noqa: BLE001 - propagate exact failure context
-        raise SystemExit(f"failed to remove {path.name}: {exc}") from exc
+    for attempt in range(retries):
+        try:
+            path.unlink()
+            return
+        except FileNotFoundError:
+            return
+        except PermissionError as exc:
+            if attempt + 1 >= retries:
+                raise SystemExit(
+                    f"failed to remove {path.name}: {exc}"
+                ) from exc
+            gc.collect()
+            time.sleep(delay)
+        except Exception as exc:  # noqa: BLE001 - propagate exact failure context
+            raise SystemExit(f"failed to remove {path.name}: {exc}") from exc
 
 
 def main() -> None:

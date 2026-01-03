@@ -27,9 +27,27 @@ class Decoder(object):
 
     def __init__(self):
         self._decoder = sixel_decoder_new()
+        self._closed = False
+
+    def close(self):
+        if self._closed:
+            return
+
+        sixel_decoder_unref(self._decoder)
+        self._closed = True
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
 
     def __del__(self):
-        sixel_decoder_unref(self._decoder)
+        try:
+            self.close()
+        except Exception:
+            # Avoid raising from __del__ to keep interpreter shutdown quiet.
+            pass
 
     def setopt(self, flag, arg=None):
         """Set decoder options mirroring the sixel2png CLI flags.
@@ -44,9 +62,13 @@ class Decoder(object):
         Pass the string as ``arg`` alongside the ``'d'`` flag to
         activate the smoothing step during decode.
         """
+        if self._closed:
+            raise RuntimeError("decoder has been closed")
         sixel_decoder_setopt(self._decoder, flag, arg)
 
     def decode(self, infile=None):
+        if self._closed:
+            raise RuntimeError("decoder has been closed")
         sixel_decoder_decode(self._decoder, infile)
 
     def test(self, infile=None, outfile=None):

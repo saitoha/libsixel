@@ -27,17 +27,41 @@ class Encoder(object):
 
     def __init__(self):
         self._encoder = sixel_encoder_new()
+        self._closed = False
+
+    def close(self):
+        if self._closed:
+            return
+
+        sixel_encoder_unref(self._encoder)
+        self._closed = True
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
 
     def __del__(self):
-        sixel_encoder_unref(self._encoder)
+        try:
+            self.close()
+        except Exception:
+            # Avoid raising from __del__ to keep interpreter shutdown quiet.
+            pass
 
     def setopt(self, flag, arg=None):
+        if self._closed:
+            raise RuntimeError("encoder has been closed")
         sixel_encoder_setopt(self._encoder, flag, arg)
 
     def encode(self, filename="-"):
+        if self._closed:
+            raise RuntimeError("encoder has been closed")
         sixel_encoder_encode(self._encoder, filename)
 
     def encode_bytes(self, buf, width, height, pixelformat, palette):
+        if self._closed:
+            raise RuntimeError("encoder has been closed")
         sixel_encoder_encode_bytes(self._encoder, buf, width, height, pixelformat, palette)
 
     def test(self, filename):
