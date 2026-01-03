@@ -153,7 +153,6 @@ jobs:
             variant: musl-cross
             extra_options: >-
               CC=musl-gcc
-              --enable-gcov
             extra_packages: musl-tools
           - label: alpine 3.20 x86_64
             os: ubuntu-latest
