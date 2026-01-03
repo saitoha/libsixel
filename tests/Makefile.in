@@ -1145,9 +1145,6 @@ LIBPNG_LIBS = @LIBPNG_LIBS@
 LIBS = @LIBS@
 LIBS_PRIVATE = @LIBS_PRIVATE@
 LIBTOOL = @LIBTOOL@
-@USING_CL_TRUE@LIBTOOL = $(SHELL) $(top_srcdir)/build-aux/libtool-normalize-exe.sh -- \
-@USING_CL_TRUE@    $(SHELL) $(top_builddir)/libtool
-
 LIPO = @LIPO@
 LN_S = @LN_S@
 LSO_TAP_DATE_CMD = @LSO_TAP_DATE_CMD@
