@@ -397,7 +397,7 @@ jobs:
             compiler: cl
             sys: MSVC
             variant: vcpkg-libpng
-            vcpkg_libpng: true
+            vcpkg_packages: libpng
             extra_options: >-
               CC=cl
               --enable-gcov
@@ -408,7 +408,7 @@ jobs:
             compiler: cl
             sys: MSVC
             variant: vcpkg-libjpeg
-            vcpkg_libjpeg: true
+            vcpkg_packages: libjpeg-turbo
             extra_options: >-
               CC=cl
               --enable-gcov
@@ -543,7 +543,7 @@ jobs:
         arch: x64
 
     - name: Cache vcpkg artifacts (MSVC, vcpkg deps)
-      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_libpng == true || matrix.vcpkg_libjpeg == true) }}
+      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_packages || '') != '' }}
       uses: actions/cache@v4
       with:
         path: |
@@ -551,10 +551,10 @@ jobs:
           ~\vcpkg\buildtrees
           ~\vcpkg\packages
           ~\vcpkg\downloads
-        key: vcpkg-${{ runner.os }}-msvc-${{ matrix.vcpkg_libpng || false }}-${{ matrix.vcpkg_libjpeg || false }}-${{ hashFiles('.github/workflows/ci.yml') }}
+        key: vcpkg-${{ runner.os }}-msvc-${{ replace(matrix.vcpkg_packages || 'none', ' ', '-') }}-${{ hashFiles('.github/workflows/ci.yml') }}
 
-    - name: Install vcpkg dependencies (MSVC, libpng/libjpeg)
-      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_libpng == true || matrix.vcpkg_libjpeg == true) }}
+    - name: Install vcpkg dependencies (MSVC, vcpkg deps)
+      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_packages || '') != '' }}
       shell: pwsh
       run: |
         $vcpkgRoot = "$env:USERPROFILE\\vcpkg"
@@ -571,11 +571,9 @@ jobs:
 
         cmd /c bootstrap-vcpkg.bat
         $packages = @('pkgconf')
-        if ('${{ matrix.vcpkg_libpng || false }}' -eq 'true') {
-          $packages += 'libpng'
-        }
-        if ('${{ matrix.vcpkg_libjpeg || false }}' -eq 'true') {
-          $packages += 'libjpeg-turbo'
+        $extra = '${{ matrix.vcpkg_packages || '' }}'.Trim()
+        if ($extra -ne '') {
+          $packages += $extra -split '\s+'
         }
         .\\vcpkg.exe install $packages --triplet x64-windows
         "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
@@ -1628,8 +1626,7 @@ jobs:
     runs-on: ${{ matrix.runner || matrix.os }}
     strategy:
       matrix:
-        vcpkg_libpng: [false]
-        vcpkg_libjpeg: [false]
+        vcpkg_packages: ['']
         include:
           - label: freebsd 14.3 x86-64
             os: ubuntu-latest
@@ -1985,7 +1982,7 @@ jobs:
         arch: x64
 
     - name: Cache vcpkg artifacts (MSVC, vcpkg deps)
-      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_libpng == true || matrix.vcpkg_libjpeg == true) }}
+      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_packages || '') != '' }}
       uses: actions/cache@v4
       with:
         path: |
@@ -1993,10 +1990,10 @@ jobs:
           ~\vcpkg\buildtrees
           ~\vcpkg\packages
           ~\vcpkg\downloads
-        key: vcpkg-${{ runner.os }}-msvc-${{ matrix.vcpkg_libpng || false }}-${{ matrix.vcpkg_libjpeg || false }}-${{ hashFiles('.github/workflows/ci.yml') }}
+        key: vcpkg-${{ runner.os }}-msvc-${{ replace(matrix.vcpkg_packages || 'none', ' ', '-') }}-${{ hashFiles('.github/workflows/ci.yml') }}
 
-    - name: Install vcpkg dependencies (MSVC, libpng/libjpeg)
-      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_libpng == true || matrix.vcpkg_libjpeg == true) }}
+    - name: Install vcpkg dependencies (MSVC, vcpkg deps)
+      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_packages || '') != '' }}
       shell: pwsh
       run: |
         $vcpkgRoot = "$env:USERPROFILE\\vcpkg"
@@ -2009,11 +2006,9 @@ jobs:
         cd $vcpkgRoot
         .\\bootstrap-vcpkg.bat
         $packages = @('pkgconf')
-        if ('${{ matrix.vcpkg_libpng || false }}' -eq 'true') {
-          $packages += 'libpng'
-        }
-        if ('${{ matrix.vcpkg_libjpeg || false }}' -eq 'true') {
-          $packages += 'libjpeg-turbo'
+        $extra = '${{ matrix.vcpkg_packages || '' }}'.Trim()
+        if ($extra -ne '') {
+          $packages += $extra -split '\s+'
         }
         .\\vcpkg.exe install $packages --triplet x64-windows
         "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
@@ -2474,7 +2469,7 @@ jobs:
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Configure, build, and test (Meson, Windows, MSVC)
-      if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' && matrix.vcpkg_libpng != true && matrix.vcpkg_libjpeg != true }}
+      if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' && (matrix.vcpkg_packages || '') == '' }}
       shell: cmd
       run: |
         setlocal ENABLEDELAYEDEXPANSION
@@ -2519,7 +2514,7 @@ jobs:
         endlocal
 
     - name: Configure, build, and test (Meson, Windows, MSVC, vcpkg libpng)
-      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' && matrix.vcpkg_libpng == true }}
+      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' && contains(matrix.vcpkg_packages || '', 'libpng') }}
       shell: cmd
       run: |
         setlocal ENABLEDELAYEDEXPANSION
@@ -2564,7 +2559,7 @@ jobs:
         endlocal
 
     - name: Configure, build, and test (Meson, Windows, MSVC, vcpkg libjpeg)
-      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' && matrix.vcpkg_libjpeg == true }}
+      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' && contains(matrix.vcpkg_packages || '', 'libjpeg') }}
       shell: cmd
       run: |
         setlocal ENABLEDELAYEDEXPANSION
