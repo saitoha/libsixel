@@ -59,6 +59,8 @@ jobs:
             cp_arch: x86-64
             cp_version: '10.1'
             variant: netbsd
+            extra_options: >-
+              --enable-gcov
 #          - label: netbsd 10.1 aarch64
 #            os: ubuntu-latest
 #            runner: ubuntu-latest
@@ -75,6 +77,8 @@ jobs:
             cp_arch: x86-64
             cp_version: r1beta5
             variant: haiku
+            extra_options: >-
+              --enable-gcov
           - label: openbsd 7.8 x86-64
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -83,6 +87,8 @@ jobs:
             cp_arch: x86-64
             cp_version: '7.8'
             variant: openbsd
+            extra_options: >-
+              --enable-gcov
 #          - label: openbsd 7.8 aarch64
 #            os: ubuntu-latest
 #            runner: ubuntu-latest
@@ -145,11 +151,15 @@ jobs:
             os: ubuntu-latest
             runner: ubuntu-latest
             variant: alpine
+            extra_options: >-
+              --enable-gcov
           - label: ubuntu 24.04 aarch64
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
             sys: aarch64
             variant: default
+            extra_options: >-
+              --enable-gcov
           - label: ubuntu 24.04 aarch64 amalgamated_lib
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
@@ -175,6 +185,8 @@ jobs:
             runner: macos-latest
             sys: aarch64
             variant: default
+            extra_options: >-
+              --enable-gcov
           - label: macos aarch64 amalgamated_lib
             os: macos-latest
             runner: macos-latest
@@ -187,6 +199,8 @@ jobs:
             runner: macos-15
             sys: x86_64
             variant: default
+            extra_options: >-
+              --enable-gcov
           - label: macos x86_64 amalgamated_lib
             os: macos-15
             runner: macos-15
@@ -223,6 +237,8 @@ jobs:
             sys: MINGW64
             static_only: true
             variant: static-only
+            extra_options: >-
+              --enable-gcov
           - label: mingw64 no-simd
             os: windows-latest
             runner: windows-latest
@@ -230,6 +246,8 @@ jobs:
             sys: MINGW64
             disable_simd: true
             variant: disable-simd
+            extra_options: >-
+              --enable-gcov
           - label: mingw64 no-tools
             os: windows-latest
             runner: windows-latest
@@ -237,6 +255,8 @@ jobs:
             sys: MINGW64
             disable_tools: true
             variant: disable-tools
+            extra_options: >-
+              --enable-gcov
           - label: mingw64 no-threads
             os: windows-latest
             runner: windows-latest
@@ -244,12 +264,16 @@ jobs:
             sys: MINGW64
             disable_threads: true
             variant: disable-threads
+            extra_options: >-
+              --enable-gcov
           - label: ucrt64
             os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: UCRT64
             variant: default
+            extra_options: >-
+              --enable-gcov
           - label: ucrt64 amalgamated_lib
             os: windows-latest
             runner: windows-latest
@@ -264,12 +288,16 @@ jobs:
             compiler: clang
             sys: CLANG64
             variant: default
+            extra_options: >-
+              --enable-gcov
           - label: clang-cl
             os: windows-latest
             runner: windows-latest
             compiler: clang-cl
             sys: MSVC
             variant: clang-cl
+            extra_options: >-
+              --enable-gcov
           - label: msvc
             os: windows-latest
             runner: windows-latest
@@ -342,18 +370,24 @@ jobs:
             compiler: gcc
             sys: MINGW32
             variant: default
+            extra_options: >-
+              --enable-gcov
           - label: msys
             os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MSYS
             variant: default
+            extra_options: >-
+              --enable-gcov
           - label: cygwin
             os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: CYGWIN
             variant: default
+            extra_options: >-
+              --enable-gcov
 
     steps:
     - name: Configure git EOL
@@ -670,7 +704,7 @@ jobs:
             config_args+=("$arg")
           fi
         done <<'EOF'
-${{ matrix.extra_options || '--enable-gcov' }}
+${{ matrix.extra_options || '' }}
 EOF
 
         if [ "${{ runner.os }}" = "Linux" ]; then
@@ -700,12 +734,11 @@ EOF
             pkgconf \
             zlib-dev
 
-          enable_gcov_flag="--enable-gcov"
-          ./configure \
-              --enable-debug \
-              --enable-tests \
-              ${enable_gcov_flag} \
-              --disable-dependency-tracking
+            ./configure \
+                --enable-debug \
+                --enable-tests \
+                ${{ matrix.extra_options || '' }} \
+                --disable-dependency-tracking
           make V=1
           make check V=1
         '
@@ -734,7 +767,7 @@ EOF
             config_args+=("$arg")
           fi
         done <<'EOF'
-${{ matrix.extra_options || '--enable-gcov' }}
+${{ matrix.extra_options || '' }}
 EOF
 
         config_env+=("CC=${{ matrix.compiler }}")
@@ -751,7 +784,6 @@ EOF
         $env:PATH = "$cygwinRoot\bin;$env:PATH"
         $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
         $disableThreadsFlag = ''
-        $enableGcovFlag = '--enable-gcov'
         if ('${{ matrix.disable_threads }}' -eq 'true') {
           $disableThreadsFlag = '--disable-threads'
         }
@@ -768,9 +800,6 @@ EOF
           $staticOnlyFlags = '--disable-shared --enable-static'
         }
         $extraConfigFlags = '${{ matrix.extra_options || '' }}'
-        if ('${{ matrix.variant }}' -eq 'amalgamated_lib') {
-          $enableGcovFlag = ''
-        }
         $scriptLines = @(
           'set -eu',
           'set -o pipefail 2>/dev/null || true',
@@ -778,11 +807,10 @@ EOF
           "disable_tools_flags=`"$disableToolsFlags`"",
           "disable_simd_flag=`"$disableSimdFlag`"",
           "static_only_flags=`"$staticOnlyFlags`"",
-          "enable_gcov_flag=`"$enableGcovFlag`"",
           "extra_config_flags=`"$extraConfigFlags`"",
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --enable-debug --enable-tests ${enable_gcov_flag} --disable-dependency-tracking ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${static_only_flags} ${extra_config_flags}',
+          './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --enable-debug --enable-tests --disable-dependency-tracking ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${static_only_flags} ${extra_config_flags}',
           'make V=1'
         )
         $script = [string]::Join("`n", $scriptLines)
@@ -958,11 +986,7 @@ EOF
               gmake \
               # pkgconf avoided to reduce fragile package installs
 
-            enable_gcov_flag=""
             extra_config_flags="${{ matrix.extra_options || '' }}"
-            if [ "${{ matrix.variant || '' }}" = "amalgamated_lib" ]; then
-              enable_gcov_flag=""
-            fi
             disable_threads_flag=""
             if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
               disable_threads_flag="--disable-threads"
@@ -978,13 +1002,11 @@ EOF
             static_only_flags=""
             if [ "${{ matrix.static_only || '' }}" = "true" ]; then
               static_only_flags="--disable-shared --enable-static"
-              enable_gcov_flag=""
             fi
 
             ./configure \
                 --enable-debug \
                 --enable-tests \
-                ${enable_gcov_flag} \
                 --disable-dependency-tracking \
                 ${disable_tools_flags} \
                 ${disable_threads_flag} \
@@ -1000,11 +1022,7 @@ EOF
               cp /var/db/pkgin/pkg_install-err.log "$GITHUB_WORKSPACE/pkg_install-err.log" || true
             fi
 
-            enable_gcov_flag="--enable-gcov"
             extra_config_flags="${{ matrix.extra_options || '' }}"
-            if [ "${{ matrix.variant || '' }}" = "amalgamated_lib" ]; then
-              enable_gcov_flag=""
-            fi
             disable_threads_flag=""
             if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
               disable_threads_flag="--disable-threads"
@@ -1020,13 +1038,11 @@ EOF
             static_only_flags=""
             if [ "${{ matrix.static_only || '' }}" = "true" ]; then
               static_only_flags="--disable-shared --enable-static"
-              enable_gcov_flag=""
             fi
 
             ./configure \
                 --enable-debug \
                 --enable-tests \
-                ${enable_gcov_flag} \
                 --disable-dependency-tracking \
                 ${disable_tools_flags} \
                 ${disable_threads_flag} \
@@ -1040,11 +1056,7 @@ EOF
               rsync \
               # pkgconf avoided to reduce fragile package installs
 
-            enable_gcov_flag="--enable-gcov"
             extra_config_flags="${{ matrix.extra_options || '' }}"
-            if [ "${{ matrix.variant || '' }}" = "amalgamated_lib" ]; then
-              enable_gcov_flag=""
-            fi
             disable_threads_flag=""
             if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
               disable_threads_flag="--disable-threads"
@@ -1060,13 +1072,11 @@ EOF
             static_only_flags=""
             if [ "${{ matrix.static_only || '' }}" = "true" ]; then
               static_only_flags="--disable-shared --enable-static"
-              enable_gcov_flag=""
             fi
 
             ./configure \
                 --enable-debug \
                 --enable-tests \
-                ${enable_gcov_flag} \
                 --disable-dependency-tracking \
                 ${disable_tools_flags} \
                 ${disable_threads_flag} \
@@ -1079,11 +1089,7 @@ EOF
             pkgman install -y \
               make
 
-            enable_gcov_flag="--enable-gcov"
             extra_config_flags="${{ matrix.extra_options || '' }}"
-            if [ "${{ matrix.variant || '' }}" = "amalgamated_lib" ]; then
-              enable_gcov_flag=""
-            fi
             disable_threads_flag=""
             if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
               disable_threads_flag="--disable-threads"
@@ -1099,13 +1105,11 @@ EOF
             static_only_flags=""
             if [ "${{ matrix.static_only || '' }}" = "true" ]; then
               static_only_flags="--disable-shared --enable-static"
-              enable_gcov_flag=""
             fi
 
             ./configure \
                 --enable-debug \
                 --enable-tests \
-                ${enable_gcov_flag} \
                 --disable-dependency-tracking \
                 ${disable_tools_flags} \
                 ${disable_threads_flag} \
@@ -1904,6 +1908,7 @@ EOF
             musl: true
             variant: musl-cross
             extra_packages: musl-tools
+            extra_packages: musl-tools
           - label: alpine 3.20 x86_64
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -1930,6 +1935,7 @@ EOF
             runner: ubuntu-latest
             sys: i686
             variant: default
+            extra_packages: gcc-multilib
             extra_packages: gcc-multilib
           - label: macos aarch64
             os: macos-latest
