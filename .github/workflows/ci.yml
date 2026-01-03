@@ -350,7 +350,7 @@ jobs:
         brew doctor || true
 
     - name: Install lcov (macOS)
-      if: runner.os == 'macOS' && matrix.variant != 'amalgamated_lib' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
+      if: runner.os == 'macOS' && !contains(fromJson('["amalgamated_lib","cosmopolitan"]'), matrix.variant || '') && matrix.emscripten != true
       shell: bash
       run: |
         brew update
@@ -1110,7 +1110,7 @@ jobs:
           fi
 
     - name: Run tests (Windows, not MSVC/Cygwin/CLANG64)
-      if: runner.os == 'Windows' && matrix.sys != 'CLANG64' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
+      if: runner.os == 'Windows' && !contains(fromJson('["CLANG64","MSVC","CYGWIN"]'), matrix.sys || '') && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
       shell: msys2 {0}
       run: make check V=1
 
@@ -1177,14 +1177,14 @@ jobs:
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Capture coverage (Linux)
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.variant != 'alpine' && runner.os == 'Linux' && (matrix.sys || '') != 'i686' && !(matrix.musl || false) && matrix.variant != 'amalgamated_lib' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
+      if: runner.os == 'Linux' && matrix.emscripten != true && (matrix.sys || '') != 'i686' && !(matrix.musl || false) && !contains(fromJson('["freebsd","openbsd","netbsd","haiku"]'), matrix.platform || '') && !contains(fromJson('["alpine","amalgamated_lib","cosmopolitan"]'), matrix.variant || '')
       shell: bash
       run: |
         gcovr -r . --lcov -o coverage.info \
                    --gcov-executable gcov-14
 
     - name: Capture coverage (non-MSVC)
-      if: runner.os == 'macOS' && matrix.variant != 'amalgamated_lib' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
+      if: runner.os == 'macOS' && !contains(fromJson('["amalgamated_lib","cosmopolitan"]'), matrix.variant || '') && matrix.emscripten != true
       shell: bash
       run: |
         lcov -c \
@@ -1194,7 +1194,7 @@ jobs:
           -o coverage.info
 
     - name: Capture coverage (Windows MSYS2/MinGW/UCRT/Clang)
-      if: runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' && matrix.sys != 'MINGW32' && matrix.variant != 'amalgamated_lib' && matrix.variant != 'cosmopolitan' && matrix.emscripten != true
+      if: runner.os == 'Windows' && !contains(fromJson('["MSVC","CYGWIN","MINGW32"]'), matrix.sys || '') && !contains(fromJson('["amalgamated_lib","cosmopolitan"]'), matrix.variant || '') && matrix.emscripten != true
       shell: msys2 {0}
       run: |
         lcov -c \
@@ -1216,7 +1216,7 @@ jobs:
         done
 
     - name: Upload autotools artifacts
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && always()
+      if: always() && !contains(fromJson('["freebsd","openbsd","netbsd"]'), matrix.platform || '')
       uses: actions/upload-artifact@v4
       with:
         name: autotools-${{ matrix.os }}-${{ matrix.sys || 'native' }}-${{ matrix.compiler || 'default' }}-${{ matrix.variant || 'default' }}
@@ -1246,7 +1246,7 @@ jobs:
 
     - name: Upload to Coveralls (per-flag, parallel)
       id: coveralls_upload
-      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && matrix.os != 'macos-15' && matrix.sys != 'i686' && !(matrix.musl || false) && matrix.variant != 'amalgamated_lib' && matrix.variant != 'cosmopolitan' && matrix.variant != 'alpine' && matrix.emscripten != true }}
+      if: ${{ runner.os != 'Windows' && matrix.os != 'macos-15' && matrix.sys != 'i686' && matrix.emscripten != true && !(matrix.musl || false) && !contains(fromJson('["freebsd","openbsd","netbsd","haiku","dragonflybsd"]'), matrix.platform || '') && !contains(fromJson('["amalgamated_lib","cosmopolitan","alpine"]'), matrix.variant || '') }}
       continue-on-error: true
       uses: coverallsapp/github-action@v2
       with:
@@ -1256,11 +1256,11 @@ jobs:
         parallel: true
 
     - name: Wait before Coveralls retry (per-flag)
-      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) && matrix.variant != 'amalgamated_lib' && matrix.variant != 'cosmopolitan' && matrix.variant != 'alpine' && matrix.emscripten != true }}
+      if: ${{ runner.os != 'Windows' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && matrix.emscripten != true && !(matrix.musl || false) && !contains(fromJson('["freebsd","openbsd","netbsd","haiku"]'), matrix.platform || '') && !contains(fromJson('["amalgamated_lib","cosmopolitan","alpine"]'), matrix.variant || '') }}
       run: sleep 5
 
     - name: Upload to Coveralls (per-flag, retry)
-      if: ${{ runner.os != 'Windows' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && !(matrix.musl || false) && matrix.variant != 'amalgamated_lib' && matrix.variant != 'cosmopolitan' && matrix.variant != 'alpine' && matrix.emscripten != true }}
+      if: ${{ runner.os != 'Windows' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && matrix.emscripten != true && !(matrix.musl || false) && !contains(fromJson('["freebsd","openbsd","netbsd","haiku","dragonflybsd"]'), matrix.platform || '') && !contains(fromJson('["amalgamated_lib","cosmopolitan","alpine"]'), matrix.variant || '') }}
       uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -1453,89 +1453,89 @@ jobs:
             runner: ubuntu-latest
             extra_options: ''
             artifact_suffix: default
-            apt: ''
+            extra_packages: ''
           - label: ubuntu clang with-gd
             os: ubuntu-latest
             runner: ubuntu-latest
             extra_options: '--with-gd'
             artifact_suffix: with-gd
-            apt: 'libgd-dev'
+            extra_packages: 'libgd-dev'
           - label: ubuntu clang with-gdk-pixbuf2
             os: ubuntu-latest
             runner: ubuntu-latest
             extra_options: '--with-gdk-pixbuf2'
             artifact_suffix: with-gdk-pixbuf2
-            apt: 'libgdk-pixbuf2.0-dev'
+            extra_packages: 'libgdk-pixbuf2.0-dev'
           - label: ubuntu clang with-png
             os: ubuntu-latest
             runner: ubuntu-latest
             extra_options: '--with-png'
             artifact_suffix: with-png
-            apt: 'libpng-dev'
+            extra_packages: 'libpng-dev'
           - label: ubuntu clang with-jpeg
             os: ubuntu-latest
             runner: ubuntu-latest
             extra_options: '--with-jpeg'
             artifact_suffix: with-jpeg
-            apt: 'libjpeg-turbo8-dev'
+            extra_packages: 'libjpeg-turbo8-dev'
           - label: ubuntu clang with-libcurl
             os: ubuntu-latest
             runner: ubuntu-latest
             extra_options: '--with-libcurl'
             artifact_suffix: with-libcurl
-            apt: 'libcurl4-openssl-dev'
+            extra_packages: 'libcurl4-openssl-dev'
           - label: macos aarch64 clang
             os: macos-latest
             runner: macos-latest
             extra_options: ''
             artifact_suffix: default
-            apt: ''
+            extra_packages: ''
           - label: macos aarch64 clang enable-quicklook-extension
             os: macos-latest
             runner: macos-latest
             extra_options: '--enable-quicklook-extension'
             artifact_suffix: enable-quicklook-extension
-            apt: ''
+            extra_packages: ''
           - label: macos aarch64 clang with-coregraphics
             os: macos-latest
             runner: macos-latest
             extra_options: '--with-coregraphics'
             artifact_suffix: with-coregraphics
-            apt: ''
+            extra_packages: ''
           - label: macos x86_64 clang
             os: macos-15
             runner: macos-15
             extra_options: ''
             artifact_suffix: default
-            apt: ''
+            extra_packages: ''
           - label: clang64
             os: windows-latest
             runner: windows-latest
             sys: CLANG64
             extra_options: ''
             artifact_suffix: default
-            apt: ''
+            extra_packages: ''
           - label: clang64 with-wic
             os: windows-latest
             runner: windows-latest
             sys: CLANG64
             extra_options: '--with-wic'
             artifact_suffix: with-wic
-            apt: ''
+            extra_packages: ''
           - label: clang64 enable-wiccodec
             os: windows-latest
             runner: windows-latest
             sys: CLANG64
             extra_options: '--enable-wiccodec'
             artifact_suffix: enable-wiccodec
-            apt: ''
+            extra_packages: ''
           - label: clang64 with-winhttp
             os: windows-latest
             runner: windows-latest
             sys: CLANG64
             extra_options: '--with-winhttp'
             artifact_suffix: with-winhttp
-            apt: ''
+            extra_packages: ''
     env:
       ASAN_CFLAGS: "-fsanitize=address -O1 -g -fno-omit-frame-pointer"
       ASAN_LDFLAGS: "-fsanitize=address"
@@ -1561,11 +1561,11 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y clang
 
-    - name: Install dependencies (Ubuntu variant)
-      if: runner.os == 'Linux' && matrix.apt != ''
+    - name: Install extra packages (Linux)
+      if: runner.os == 'Linux' && (matrix.extra_packages || '') != ''
       run: |
         sudo apt-get update
-        sudo apt-get install -y ${{ matrix.apt }}
+        sudo apt-get install -y ${{ matrix.extra_packages }}
 
     - name: Setup MSYS2 (Windows, clang)
       if: runner.os == 'Windows'
@@ -1891,6 +1891,7 @@ jobs:
             runner: ubuntu-latest
             musl: true
             variant: musl-cross
+            extra_packages: musl-tools
           - label: alpine 3.20 x86_64
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -1917,6 +1918,7 @@ jobs:
             runner: ubuntu-latest
             sys: i686
             variant: default
+            extra_packages: gcc-multilib
           - label: macos aarch64
             os: macos-latest
             runner: macos-latest
@@ -2062,17 +2064,11 @@ jobs:
       with:
         fetch-depth: 1
 
-    - name: Install multilib toolchain (Linux i686)
-      if: matrix.variant != 'alpine' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os == 'Linux' && (matrix.sys || '') == 'i686'
+    - name: Install extra packages (Linux)
+      if: runner.os == 'Linux' && (matrix.extra_packages || '') != ''
       run: |
         sudo apt-get update
-        sudo apt-get install -y gcc-multilib
-
-    - name: Install musl toolchain (Linux musl-cross)
-      if: ${{ matrix.variant != 'alpine' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && runner.os == 'Linux' && (matrix.musl || false) }}
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y musl-tools
+        sudo apt-get install -y ${{ matrix.extra_packages }}
 
     - name: Setup MSVC developer env (vcvars)
       if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' }}
@@ -2148,7 +2144,7 @@ jobs:
         packages: gcc-core,make,pkg-config,python3,python3-pip,ninja
 
     - name: Install Meson (non-Windows)
-      if: matrix.variant != 'alpine' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows'
+      if: runner.os != 'Windows' && matrix.variant != 'alpine' && !contains(fromJson('["freebsd","openbsd","netbsd","haiku","dragonflybsd"]'), matrix.platform || '')
       run: |
         python3 -m venv .meson-venv
         . .meson-venv/bin/activate
@@ -2437,7 +2433,7 @@ jobs:
         if-no-files-found: warn
 
     - name: Configure, build, and test (Meson, non-Windows)
-      if: matrix.variant != 'alpine' && matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && matrix.platform != 'haiku' && matrix.platform != 'dragonflybsd' && runner.os != 'Windows'
+      if: runner.os != 'Windows' && matrix.variant != 'alpine' && !contains(fromJson('["freebsd","openbsd","netbsd","haiku","dragonflybsd"]'), matrix.platform || '')
       run: *meson_non_windows
 
     - name: Configure, build, and test (Meson, Alpine container)
@@ -2737,7 +2733,7 @@ jobs:
         done
 
     - name: Upload meson artifacts
-      if: matrix.platform != 'freebsd' && matrix.platform != 'openbsd' && matrix.platform != 'netbsd' && always()
+      if: always() && !contains(fromJson('["freebsd","openbsd","netbsd"]'), matrix.platform || '')
       uses: actions/upload-artifact@v4
       with:
         name: meson-${{ matrix.os }}-${{ matrix.sys || 'native' }}-${{ matrix.compiler || 'default' }}-${{ matrix.variant || 'default' }}
