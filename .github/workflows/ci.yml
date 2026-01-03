@@ -109,34 +109,42 @@ jobs:
             sys: x86_64
             variant: static-only
             extra_options: >-
+              CC=gcc-14
               --enable-gcov
               --disable-shared
               --enable-static
+            extra_packages: gcc-14
           - label: ubuntu x86_64 no-simd
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
             variant: disable-simd
             extra_options: >-
+              CC=gcc-14
               --enable-gcov
               --disable-simd
+            extra_packages: gcc-14
           - label: ubuntu x86_64 no-tools
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
             variant: disable-tools
             extra_options: >-
+              CC=gcc-14
               --enable-gcov
               --disable-img2sixel
               --disable-sixel2png
+            extra_packages: gcc-14
           - label: ubuntu x86_64 no-threads
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
             variant: disable-threads
             extra_options: >-
+              CC=gcc-14
               --enable-gcov
               --disable-threads
+            extra_packages: gcc-14
           - label: ubuntu x86_64 musl-cross
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -159,14 +167,18 @@ jobs:
             sys: aarch64
             variant: default
             extra_options: >-
+              CC=gcc-14
               --enable-gcov
+            extra_packages: gcc-14
           - label: ubuntu 24.04 aarch64 amalgamated_lib
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
             sys: aarch64
             variant: amalgamated_lib
             extra_options: >-
+              CC=gcc-14
               --enable-amalgamated-lib
+            extra_packages: gcc-14
           - label: ubuntu i686
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -234,36 +246,38 @@ jobs:
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
-            static_only: true
             variant: static-only
             extra_options: >-
+              --disable-shared
+              --enable-static
               --enable-gcov
           - label: mingw64 no-simd
             os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
-            disable_simd: true
             variant: disable-simd
             extra_options: >-
+              --disable-simd
               --enable-gcov
           - label: mingw64 no-tools
             os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
-            disable_tools: true
             variant: disable-tools
             extra_options: >-
+              --disable-img2sixel
+              --disable-sixel2png
               --enable-gcov
           - label: mingw64 no-threads
             os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
-            disable_threads: true
             variant: disable-threads
             extra_options: >-
+              --disable-threads
               --enable-gcov
           - label: ucrt64
             os: windows-latest
@@ -449,33 +463,27 @@ jobs:
           pkg update -f
           pkg install -y gmake pkgconf
 
-          disable_threads_flag=""
-          extra_config_flags="${{ matrix.extra_options || '' }}"
-          if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
-            disable_threads_flag="--disable-threads"
-          fi
-          disable_tools_flags=""
-          if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
-            disable_tools_flags="--disable-img2sixel --disable-sixel2png"
-          fi
-          disable_simd_flag=""
-          if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
-            disable_simd_flag="--disable-simd"
-          fi
-          static_only_flags=""
-          if [ "${{ matrix.static_only || '' }}" = "true" ]; then
-            static_only_flags="--disable-shared --enable-static"
-          fi
-
           cd "$GITHUB_WORKSPACE"
-          ./configure \
-            --enable-debug \
-            --enable-tests \
-            --disable-dependency-tracking \
-            ${disable_tools_flags} \
-            ${disable_threads_flag} \
-            ${disable_simd_flag} \
-            ${static_only_flags}
+
+          config_env=(env)
+          config_args=(
+            --enable-debug
+            --enable-tests
+            --disable-dependency-tracking
+          )
+
+          while read -r arg; do
+            [ -z "$arg" ] && continue
+            if [ "${arg#--}" = "$arg" ] && [ "${arg%%=*}" != "$arg" ]; then
+              config_env+=("$arg")
+            else
+              config_args+=("$arg")
+            fi
+          done <<'EOF'
+            ${{ matrix.extra_options || '' }}
+          EOF
+
+          "${config_env[@]}" ./configure "${config_args[@]}"
           gmake V=1
           gmake check
 
@@ -665,12 +673,6 @@ jobs:
         pip install -U pip gcovr
         echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
 
-    - name: Install gcc-14 (Linux)
-      if: runner.os == 'Linux' && matrix.emscripten != true && (matrix.variant || '') != 'cosmopolitan' && !contains(fromJson('["freebsd","openbsd","netbsd"]'), matrix.platform || '')
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y gcc-14
-
     - name: Build with Emscripten (non-Windows)
       if: matrix.emscripten == true && runner.os != 'Windows'
       run: |
@@ -705,10 +707,6 @@ jobs:
         done <<'EOF'
           ${{ matrix.extra_options || '' }}
         EOF
-
-        if [ "${{ runner.os }}" = "Linux" ]; then
-          export CC=${CC:-gcc-14}
-        fi
 
         "${config_env[@]}" ./configure "${config_args[@]}"
         make V=1
@@ -782,34 +780,32 @@ jobs:
         $cygwinRoot = 'C:\cygwin'
         $env:PATH = "$cygwinRoot\bin;$env:PATH"
         $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
-        $disableThreadsFlag = ''
-        if ('${{ matrix.disable_threads }}' -eq 'true') {
-          $disableThreadsFlag = '--disable-threads'
-        }
-        $disableToolsFlags = ''
-        if ('${{ matrix.disable_tools }}' -eq 'true') {
-          $disableToolsFlags = '--disable-img2sixel --disable-sixel2png'
-        }
-        $disableSimdFlag = ''
-        if ('${{ matrix.disable_simd }}' -eq 'true') {
-          $disableSimdFlag = '--disable-simd'
-        }
-        $staticOnlyFlags = ''
-        if ('${{ matrix.static_only }}' -eq 'true') {
-          $staticOnlyFlags = '--disable-shared --enable-static'
-        }
-        $extraConfigFlags = '${{ matrix.extra_options || '' }}'
         $scriptLines = @(
           'set -eu',
           'set -o pipefail 2>/dev/null || true',
-          "disable_threads_flag=`"$disableThreadsFlag`"",
-          "disable_tools_flags=`"$disableToolsFlags`"",
-          "disable_simd_flag=`"$disableSimdFlag`"",
-          "static_only_flags=`"$staticOnlyFlags`"",
-          "extra_config_flags=`"$extraConfigFlags`"",
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          './configure CC=${{ matrix.compiler }} --without-png --without-jpeg --without-libcurl --enable-debug --enable-tests --disable-dependency-tracking ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${static_only_flags} ${extra_config_flags}',
+          'config_env=(env)',
+          'config_args=(',
+          '  --without-png',
+          '  --without-jpeg',
+          '  --without-libcurl',
+          '  --enable-debug',
+          '  --enable-tests',
+          '  --disable-dependency-tracking',
+          ')',
+          'while read -r arg; do',
+          '  [ -z "$arg" ] && continue',
+          '  if [ "${arg#--}" = "$arg" ] && [ "${arg%%=*}" != "$arg" ]; then',
+          '    config_env+=("$arg")',
+          '  else',
+          '    config_args+=("$arg")',
+          '  fi',
+          "done <<'EOF'",
+          "  ${{ matrix.extra_options || '' }}",
+          'EOF',
+          "config_env+=(\"CC=${{ matrix.compiler }}\")",
+          '"${config_env[@]}" ./configure "${config_args[@]}"',
           'make V=1'
         )
         $script = [string]::Join("`n", $scriptLines)
@@ -821,19 +817,6 @@ jobs:
       run: |
         VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
         cmd //c call "${VCVARS}" x64 \>nul \&\& set
-        disable_threads_flag=""
-        extra_config_flags="${{ matrix.extra_options || '' }}"
-        if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
-          disable_threads_flag="--disable-threads"
-        fi
-        disable_tools_flags=""
-        if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
-          disable_tools_flags="--disable-img2sixel --disable-sixel2png"
-        fi
-        disable_simd_flag=""
-        if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
-          disable_simd_flag="--disable-simd"
-        fi
         eval $(
             cmd //c call "${VCVARS}" x64 \>nul \&\& set |
             grep -i '^\(PATH\|INCLUDE\|LIB\|LIBPATH\)'  |
@@ -847,18 +830,39 @@ jobs:
                 esac;
             done
         )
-        ./configure CC=${{ matrix.compiler }} LD=link AR="${SHELL} $(pwd)/build-aux/ar-lib lib" ARFLAGS=cr NM="dumpbin -symbols" STRIP=: RANLIB=: \
-            --host=x86_64-pc-windows-msvc \
-            --enable-debug \
-            --enable-tests \
-            --disable-dependency-tracking \
-            --without-png \
-            --without-jpeg \
-            --without-libcurl \
-            ${disable_tools_flags} \
-            ${disable_threads_flag} \
-            ${disable_simd_flag} \
-            ${extra_config_flags}
+        config_env=(env)
+        config_args=(
+          --host=x86_64-pc-windows-msvc
+          --enable-debug
+          --enable-tests
+          --disable-dependency-tracking
+          --without-png
+          --without-jpeg
+          --without-libcurl
+        )
+
+        while read -r arg; do
+          [ -z "$arg" ] && continue
+          if [ "${arg#--}" = "$arg" ] && [ "${arg%%=*}" != "$arg" ]; then
+            config_env+=("$arg")
+          else
+            config_args+=("$arg")
+          fi
+        done <<'EOF'
+          ${{ matrix.extra_options || '' }}
+        EOF
+
+        config_env+=(
+          "CC=${{ matrix.compiler }}"
+          "LD=link"
+          "AR=${SHELL} $(pwd)/build-aux/ar-lib lib"
+          "ARFLAGS=cr"
+          "NM=dumpbin -symbols"
+          "STRIP=:"
+          "RANLIB=:"
+        )
+
+        "${config_env[@]}" ./configure "${config_args[@]}"
         make V=1
 
     - name: Configure and build (Cosmopolitan, non-Windows)
@@ -979,40 +983,13 @@ jobs:
             fi
           fi
 
+          make_cmd="gmake"
           if [ "${{ matrix.platform }}" = "freebsd" ]; then
             ${pkg_prefix:+$pkg_prefix }pkg update -f
             ${pkg_prefix:+$pkg_prefix }pkg install -y \
               gmake \
               # pkgconf avoided to reduce fragile package installs
-
-            extra_config_flags="${{ matrix.extra_options || '' }}"
-            disable_threads_flag=""
-            if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
-              disable_threads_flag="--disable-threads"
-            fi
-            disable_tools_flags=""
-            if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
-              disable_tools_flags="--disable-img2sixel --disable-sixel2png"
-            fi
-            disable_simd_flag=""
-            if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
-              disable_simd_flag="--disable-simd"
-            fi
-            static_only_flags=""
-            if [ "${{ matrix.static_only || '' }}" = "true" ]; then
-              static_only_flags="--disable-shared --enable-static"
-            fi
-
-            ./configure \
-                --enable-debug \
-                --enable-tests \
-                --disable-dependency-tracking \
-                ${disable_tools_flags} \
-                ${disable_threads_flag} \
-                ${disable_simd_flag} \
-                ${static_only_flags} \
-                ${extra_config_flags}
-            gmake V=1
+            :
           elif [ "${{ matrix.platform }}" = "netbsd" ]; then
             ${pkg_prefix:+$pkg_prefix }pkgin -y update
             ${pkg_prefix:+$pkg_prefix }pkgin -y install \
@@ -1020,103 +997,40 @@ jobs:
             if [ -f /var/db/pkgin/pkg_install-err.log ]; then
               cp /var/db/pkgin/pkg_install-err.log "$GITHUB_WORKSPACE/pkg_install-err.log" || true
             fi
-
-            extra_config_flags="${{ matrix.extra_options || '' }}"
-            disable_threads_flag=""
-            if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
-              disable_threads_flag="--disable-threads"
-            fi
-            disable_tools_flags=""
-            if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
-              disable_tools_flags="--disable-img2sixel --disable-sixel2png"
-            fi
-            disable_simd_flag=""
-            if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
-              disable_simd_flag="--disable-simd"
-            fi
-            static_only_flags=""
-            if [ "${{ matrix.static_only || '' }}" = "true" ]; then
-              static_only_flags="--disable-shared --enable-static"
-            fi
-
-            ./configure \
-                --enable-debug \
-                --enable-tests \
-                --disable-dependency-tracking \
-                ${disable_tools_flags} \
-                ${disable_threads_flag} \
-                ${disable_simd_flag} \
-                ${static_only_flags} \
-                ${extra_config_flags}
-            gmake V=1
           elif [ "${{ matrix.platform }}" = "openbsd" ]; then
             ${pkg_prefix:+$pkg_prefix }pkg_add \
               gmake \
               rsync \
               # pkgconf avoided to reduce fragile package installs
-
-            extra_config_flags="${{ matrix.extra_options || '' }}"
-            disable_threads_flag=""
-            if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
-              disable_threads_flag="--disable-threads"
-            fi
-            disable_tools_flags=""
-            if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
-              disable_tools_flags="--disable-img2sixel --disable-sixel2png"
-            fi
-            disable_simd_flag=""
-            if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
-              disable_simd_flag="--disable-simd"
-            fi
-            static_only_flags=""
-            if [ "${{ matrix.static_only || '' }}" = "true" ]; then
-              static_only_flags="--disable-shared --enable-static"
-            fi
-
-            ./configure \
-                --enable-debug \
-                --enable-tests \
-                --disable-dependency-tracking \
-                ${disable_tools_flags} \
-                ${disable_threads_flag} \
-                ${disable_simd_flag} \
-                ${static_only_flags} \
-                ${extra_config_flags}
-            gmake V=1
+            :
           else
             pkgman refresh
             pkgman install -y \
               make
-
-            extra_config_flags="${{ matrix.extra_options || '' }}"
-            disable_threads_flag=""
-            if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
-              disable_threads_flag="--disable-threads"
-            fi
-            disable_tools_flags=""
-            if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
-              disable_tools_flags="--disable-img2sixel --disable-sixel2png"
-            fi
-            disable_simd_flag=""
-            if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
-              disable_simd_flag="--disable-simd"
-            fi
-            static_only_flags=""
-            if [ "${{ matrix.static_only || '' }}" = "true" ]; then
-              static_only_flags="--disable-shared --enable-static"
-            fi
-
-            ./configure \
-                --enable-debug \
-                --enable-tests \
-                --disable-dependency-tracking \
-                ${disable_tools_flags} \
-                ${disable_threads_flag} \
-                ${disable_simd_flag} \
-                ${static_only_flags} \
-                ${extra_config_flags}
-            make V=1
+            make_cmd="make"
           fi
+
+          config_env=(env)
+          config_args=(
+            --enable-debug
+            --enable-tests
+            --disable-dependency-tracking
+          )
+
+          while read -r arg; do
+            [ -z "$arg" ] && continue
+            if [ "${arg#--}" = "$arg" ] && [ "${arg%%=*}" != "$arg" ]; then
+              config_env+=("$arg")
+            else
+              config_args+=("$arg")
+            fi
+          done <<'EOF'
+            ${{ matrix.extra_options || '' }}
+          EOF
+
+          "${config_env[@]}" ./configure "${config_args[@]}"
+          ${make_cmd} V=1
+        fi
 
           if command -v gmake >/dev/null 2>&1; then
             gmake check V=1
