@@ -23,16 +23,31 @@
 # include <errno.h>
 #endif  /* defined(HAVE_ERRNO_H) */
 
+#if defined(HAVE_FORK) && defined(HAVE_WAITPID) && defined(HAVE_SYS_WAIT_H)
+# define LSO_HAVE_POSIX_TIMEOUT 1
+#endif
+
 #if defined(HAVE_WINDOWS_PROC)
+# define LSO_HAVE_WINDOWS_TIMEOUT 1
+#endif
+
+#if defined(LSO_HAVE_WINDOWS_TIMEOUT) && defined(LSO_HAVE_POSIX_TIMEOUT)
+# undef LSO_HAVE_WINDOWS_TIMEOUT
+#endif
+
+#if defined(LSO_HAVE_WINDOWS_TIMEOUT)
 # define WIN32_LEAN_AND_MEAN
 # include <windows.h>
-#else
+#endif
+
+#if defined(HAVE_UNISTD_H)
+# include <unistd.h>
+#endif  /* defined(HAVE_UNISTD_H) */
+
+#if defined(LSO_HAVE_POSIX_TIMEOUT)
 # if defined(HAVE_SIGNAL_H)
 #  include <signal.h>
 # endif  /* defined(HAVE_SIGNAL_H) */
-# if defined(HAVE_UNISTD_H)
-#  include <unistd.h>
-# endif  /* defined(HAVE_UNISTD_H) */
 # if defined(HAVE_SYS_TYPES_H)
 #  include <sys/types.h>
 # endif  /* defined(HAVE_SYS_TYPES_H) */
@@ -42,12 +57,12 @@
 # if defined(HAVE_SYS_TIME_H)
 #  include <sys/time.h>
 # endif  /* defined(HAVE_SYS_TIME_H) */
-#endif  /* defined(HAVE_WINDOWS_PROC) */
+#endif  /* defined(LSO_HAVE_POSIX_TIMEOUT) */
 
 static double
 current_time_seconds(void)
 {
-#if defined(HAVE_WINDOWS_PROC)
+#if defined(LSO_HAVE_WINDOWS_TIMEOUT)
   ULONGLONG ticks;
 
   ticks = GetTickCount64();
@@ -111,13 +126,10 @@ usage(void)
   exit(EXIT_FAILURE);
 }
 
-#if defined(HAVE_FORK) && defined(HAVE_WAITPID) && defined(HAVE_SYS_WAIT_H)
+#if defined(LSO_HAVE_POSIX_TIMEOUT)
 static void
 sleep_millis(long millis)
 {
-#if defined(HAVE_WINDOWS_PROC)
-  Sleep((DWORD) millis);
-#else
 # if defined(HAVE_NANOSLEEP)
   struct timespec req;
   struct timespec rem;
@@ -137,7 +149,6 @@ sleep_millis(long millis)
   }
   usleep((useconds_t) millis * 1000U);
 # endif
-#endif
 }
 
 static int
@@ -181,9 +192,9 @@ wait_with_timeout(pid_t child, double deadline, double kill_deadline)
     sleep_millis(10);
   }
 }
-#endif
+#endif  /* defined(LSO_HAVE_POSIX_TIMEOUT) */
 
-#if defined(HAVE_WINDOWS_PROC)
+#if defined(LSO_HAVE_WINDOWS_TIMEOUT)
 static size_t
 command_line_length(char **argv)
 {
@@ -351,7 +362,7 @@ wait_with_timeout_win(HANDLE child, double deadline, double kill_deadline)
     }
   }
 }
-#endif
+#endif  /* defined(LSO_HAVE_WINDOWS_TIMEOUT) */
 
 int
 main(int argc, char **argv)
@@ -385,7 +396,7 @@ main(int argc, char **argv)
   }
   argi++;
 
-#if defined(HAVE_FORK) && defined(HAVE_WAITPID)
+#if defined(LSO_HAVE_POSIX_TIMEOUT)
   pid_t pid;
 
   pid = fork();
@@ -410,7 +421,7 @@ main(int argc, char **argv)
   kill_deadline = deadline + kill_delay;
 
   return wait_with_timeout(pid, deadline, kill_deadline);
-#elif defined(HAVE_WINDOWS_PROC)
+#elif defined(LSO_HAVE_WINDOWS_TIMEOUT)
   HANDLE child;
 
   child = spawn_process(&argv[argi]);
@@ -431,8 +442,6 @@ main(int argc, char **argv)
   return wait_with_timeout_win(child, deadline, kill_deadline);
 #else
   fprintf(stderr, "lso-timeout: timeout support is disabled\n");
-  execvp(argv[argi], &argv[argi]);
-  perror("execvp");
   return EXIT_FAILURE;
 #endif
 }
