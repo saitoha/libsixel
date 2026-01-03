@@ -551,7 +551,7 @@ jobs:
           ~\vcpkg\buildtrees
           ~\vcpkg\packages
           ~\vcpkg\downloads
-        key: vcpkg-${{ runner.os }}-msvc-${{ replace(matrix.vcpkg_packages || 'none', ' ', '-') }}-${{ hashFiles('.github/workflows/ci.yml') }}
+        key: vcpkg-${{ runner.os }}-msvc-${{ matrix.vcpkg_packages || 'none' }}-${{ hashFiles('.github/workflows/ci.yml') }}
 
     - name: Install vcpkg dependencies (MSVC, vcpkg deps)
       if: ${{ runner.os == 'Windows' && (matrix.vcpkg_packages || '') != '' }}
@@ -1989,7 +1989,7 @@ jobs:
           ~\vcpkg\buildtrees
           ~\vcpkg\packages
           ~\vcpkg\downloads
-        key: vcpkg-${{ runner.os }}-msvc-${{ replace(matrix.vcpkg_packages || 'none', ' ', '-') }}-${{ hashFiles('.github/workflows/ci.yml') }}
+        key: vcpkg-${{ runner.os }}-msvc-${{ matrix.vcpkg_packages || 'none' }}-${{ hashFiles('.github/workflows/ci.yml') }}
 
     - name: Install vcpkg dependencies (MSVC, vcpkg deps)
       if: ${{ runner.os == 'Windows' && (matrix.vcpkg_packages || '') != '' }}
