@@ -595,8 +595,8 @@ jobs:
         copyback: false
         run: |
           set -eux
-          artifact_dir="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.exec_type }}"
-          artifact_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.exec_type }}.tar.gz"
+          artifact_dir="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}"
+          artifact_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
           collect_logs() {
             status=$?
             cd "$GITHUB_WORKSPACE"
@@ -624,7 +624,7 @@ jobs:
       run: |
         set -eux
         mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
-        remote_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.exec_type }}.tar.gz"
+        remote_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
         if ssh cross_platform_actions_host "test -f \"${remote_tar}\""; then
           scp cross_platform_actions_host:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
         else
@@ -903,7 +903,7 @@ jobs:
           fi
 
     - name: Fetch BSD artifacts from VM (Autotools)
-      if: ${{ (matrix.exec_type || '') == 'cross-platform-vms' }}
+      if: ${{ always() && (matrix.exec_type || '') == 'cross-platform-vms' }}
       run: |
         mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
         remote_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
@@ -968,7 +968,7 @@ jobs:
         fi
 
     - name: Fix artifact permissions (Autotools Alpine container)
-      if: ${{ (matrix.exec_type || '') == 'alpine' && always() }}
+      if: ${{ always() && (matrix.exec_type || '') == 'alpine' }}
       run: |
         for dir in tests tests/_artifacts; do
           if [ -e "$dir" ]; then
@@ -979,7 +979,7 @@ jobs:
         done
 
     - name: Upload autotools artifacts
-      if: always() && !((matrix.exec_type || '') == 'cross-platform-vms' || (matrix.exec_type || '') == 'dragonflybsd-vm')
+      if: ${{ always() && !((matrix.exec_type || '') == 'cross-platform-vms' || (matrix.exec_type || '') == 'dragonflybsd-vm') }}
       uses: actions/upload-artifact@v4
       with:
         name: autotools-${{ matrix.os }}-${{ matrix.sys || 'native' }}-${{ matrix.compiler || 'default' }}-${{ matrix.variant || 'default' }}
@@ -993,7 +993,7 @@ jobs:
         overwrite: true
 
     - name: Upload autotools artifacts (cross-platform VMs, dragonflybsd VM)
-      if: always() && ((matrix.exec_type || '') == 'cross-platform-vms' || (matrix.exec_type || '') == 'dragonflybsd-vm')
+      if: ${{ always() && ((matrix.exec_type || '') == 'cross-platform-vms' || (matrix.exec_type || '') == 'dragonflybsd-vm') }}
       uses: actions/upload-artifact@v4
       with:
         name: autotools-${{ matrix.label }}
@@ -1009,9 +1009,9 @@ jobs:
 
     - name: Upload to Coveralls (per-flag, parallel)
       id: coveralls_upload
-      if: ${{ runner.os != 'Windows' && matrix.os != 'macos-15' && matrix.sys != 'i686' && matrix.emscripten != true && !(matrix.musl || false) && !contains(fromJson('["freebsd","openbsd","netbsd","haiku","dragonflybsd"]'), matrix.platform || '') && !contains(fromJson('["amalgamated_lib","cosmopolitan","alpine"]'), matrix.variant || '') }}
       continue-on-error: true
       uses: coverallsapp/github-action@v2
+      if: ${{ hashFiles('coverage.info') != '' }}
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: coverage.info
@@ -1019,11 +1019,11 @@ jobs:
         parallel: true
 
     - name: Wait before Coveralls retry (per-flag)
-      if: ${{ runner.os != 'Windows' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && matrix.emscripten != true && !(matrix.musl || false) && !contains(fromJson('["freebsd","openbsd","netbsd","haiku"]'), matrix.platform || '') && !contains(fromJson('["amalgamated_lib","cosmopolitan","alpine"]'), matrix.variant || '') }}
+      if: ${{ hashFiles('coverage.info') != '' && steps.coveralls_upload.outcome == 'failure' }}
       run: sleep 5
 
     - name: Upload to Coveralls (per-flag, retry)
-      if: ${{ runner.os != 'Windows' && matrix.os != 'macos-15' && steps.coveralls_upload.outcome == 'failure' && matrix.emscripten != true && !(matrix.musl || false) && !contains(fromJson('["freebsd","openbsd","netbsd","haiku","dragonflybsd"]'), matrix.platform || '') && !contains(fromJson('["amalgamated_lib","cosmopolitan","alpine"]'), matrix.variant || '') }}
+      if: ${{ hashFiles('coverage.info') != '' && steps.coveralls_upload.outcome == 'failure' }}
       uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -1111,89 +1111,39 @@ jobs:
         update: true
         install: ${{ matrix.extra_packages || 'make' }}
 
-    - name: Create Autotools dist archive (non-Windows)
+    - name: Autotools distcheck (non-Windows)
       if: runner.os != 'Windows'
       shell: bash
       run: |
-        set -euxo pipefail
-        ./configure ${{ matrix.configure_flags }}
-        make -j$(sysctl -n hw.ncpu 2>/dev/null || nproc)
-        make dist
-        ls -l libsixel-*.tar.*
-
-    - name: Create Autotools dist archive (Windows)
-      if: runner.os == 'Windows'
-      shell: msys2 {0}
-      run: |
-        set -euxo pipefail
-        ./configure ${{ matrix.configure_flags }}
-        make -j$(nproc)
-        make dist
-        ls -l libsixel-*.tar.*
-
-    - name: Build from Autotools dist archive (non-Windows)
-      if: runner.os != 'Windows'
-      shell: bash
-      run: |
-        set -euxo pipefail
-        artifact_dir="dist-build/_artifacts"
+        artifact_dir="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}"
+        artifact_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
         collect_logs() {
           status=$?
-          if [ -d "dist-build" ]; then
-            mkdir -p "$artifact_dir"
-            find dist-build -type f \( -name 'config.log' -o -name 'test-suite.log' -o -name '*.log' -o -name '*.trs' \) \
-              ! -path "dist-build/_artifacts/*" \
-              | while IFS= read -r f; do
-                  rel="${f#dist-build/}"
-                  dest="${artifact_dir}/${rel}"
-                  mkdir -p "$(dirname "$dest")"
-                  cp "$f" "$dest"
-                done || true
-          fi
+          cd "$GITHUB_WORKSPACE"
+          mkdir -p "$artifact_dir"
+          find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar cvzf "$artifact_tar" {} +
           exit "$status"
         }
         trap 'collect_logs' EXIT
-
-        tarball=$(ls libsixel-*.tar.* | head -n1)
-        mkdir dist-build
-        tar -xf "$tarball" -C dist-build
-        distdir=$(find dist-build -maxdepth 1 -type d -name 'libsixel-*' | head -n1)
-        cd "$distdir"
         ./configure ${{ matrix.configure_flags }}
-        make -j$(sysctl -n hw.ncpu 2>/dev/null || nproc)
-        make check V=1
+        make distcheck V=1
 
-    - name: Build from Autotools dist archive (Windows)
+    - name: Autotools distcheck (Windows)
       if: runner.os == 'Windows'
       shell: msys2 {0}
       run: |
-        set -euxo pipefail
-        artifact_dir="dist-build/_artifacts"
+        artifact_dir="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}"
+        artifact_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
         collect_logs() {
           status=$?
-          if [ -d "dist-build" ]; then
-            mkdir -p "$artifact_dir"
-            find dist-build -type f \( -name 'config.log' -o -name 'test-suite.log' -o -name '*.log' -o -name '*.trs' \) \
-              ! -path "dist-build/_artifacts/*" \
-              | while IFS= read -r f; do
-                  rel="${f#dist-build/}"
-                  dest="${artifact_dir}/${rel}"
-                  mkdir -p "$(dirname "$dest")"
-                  cp "$f" "$dest"
-                done || true
-          fi
+          cd "$GITHUB_WORKSPACE"
+          mkdir -p "$artifact_dir"
+          find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar cvzf "$artifact_tar" {} +
           exit "$status"
         }
         trap 'collect_logs' EXIT
-
-        tarball=$(ls libsixel-*.tar.* | head -n1)
-        mkdir dist-build
-        tar -xf "$tarball" -C dist-build
-        distdir=$(find dist-build -maxdepth 1 -type d -name 'libsixel-*' | head -n1)
-        cd "$distdir"
         ./configure ${{ matrix.configure_flags }}
-        make -j$(nproc)
-        make check V=1
+        make distcheck V=1
 
     - name: Upload autotools dist artifacts
       if: always()
