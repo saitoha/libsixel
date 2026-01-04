@@ -36,17 +36,17 @@ if [ -z "$destdir" ]; then
     destdir=${MESON_INSTALL_DESTDIR:-}
 fi
 
-if [ -n "$destdir" ]; then
-    # Skip the cache update when running inside a staged DESTDIR install.
-    # The outer packaging system is responsible for refreshing the cache
-    # once the files land on the real root filesystem.
-    exit 0
-fi
-
 mime_dir="${datadir_path}/mime"
 packages_dir="${mime_dir}/packages"
 
 if [ "$mode" = "install" ]; then
+    if [ -n "$destdir" ]; then
+        # Skip the cache update when running inside a staged DESTDIR install.
+        # The outer packaging system is responsible for refreshing the cache
+        # once the files land on the real root filesystem.
+        exit 0
+    fi
+
     if [ ! -d "$mime_dir" ]; then
         if ! mkdir -p "$mime_dir" 2>/dev/null && [ ! -d "$mime_dir" ]; then
             echo "$0: failed to create '$mime_dir'" >&2
@@ -57,14 +57,31 @@ if [ "$mode" = "install" ]; then
     exec "$command_path" "$mime_dir"
 fi
 
-if [ ! -d "$mime_dir" ]; then
-    exit 0
-fi
-
 # Refresh the cache after uninstall so that any remaining MIME definitions
 # keep working. When no packages are left, also remove the cache files to
 # satisfy distuninstallcheck and avoid stale caches for a clean prefix.
-"$command_path" "$mime_dir"
+if [ -z "$destdir" ]; then
+    # Refresh the cache after uninstall on the real root so that any
+    # remaining MIME definitions keep working.
+    "$command_path" "$mime_dir"
+fi
+
+staged_mime_dir=$mime_dir
+staged_packages_dir=$packages_dir
+
+if [ -n "$destdir" ]; then
+    # When uninstalling under DESTDIR (e.g. distcheck), clean the staged
+    # prefix to avoid leftovers while keeping the real prefix untouched.
+    staged_mime_dir="${destdir}${mime_dir}"
+    staged_packages_dir="${destdir}${packages_dir}"
+fi
+
+mime_dir=$staged_mime_dir
+packages_dir=$staged_packages_dir
+
+if [ ! -d "$mime_dir" ]; then
+    exit 0
+fi
 
 if [ -d "$packages_dir" ]; then
     if find "$packages_dir" -type f -print -quit 2>/dev/null | grep -q .;
