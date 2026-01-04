@@ -35,6 +35,9 @@ trs_file=
 ignore_exit=no
 comments=no
 test_timeout=
+color_tests=
+expect_failure=
+hard_errors=no
 
 usage() {
   cat <<'EOF' >&2
@@ -59,8 +62,16 @@ while [ $# -gt 0 ]; do
     --timeout) test_timeout=${2-}; shift ;;
     --timeout=*) test_timeout=${1#*=} ;;
     --color-tests) color_tests=${2-}; shift ;;
-    --enable-hard-errors) hard_errors=${2-}; shift ;;
+    --color-tests=*) color_tests=${1#*=} ;;
+    --enable-hard-errors)
+      case ${2-} in
+        ""|--*) hard_errors=yes ;;
+        *) hard_errors=$2; shift ;;
+      esac
+      ;;
+    --enable-hard-errors=*) hard_errors=${1#*=} ;;
     --expect-failure) expect_failure=${2-}; shift ;;
+    --expect-failure=*) expect_failure=${1#*=} ;;
     --) shift; break ;;
     -*) echo "lso-tap-driver.sh: invalid option: $1" >&2; usage ;;
     *) break ;;
@@ -276,10 +287,14 @@ time_end=$(timestamp_millis)
      }
    }'
 
-# Exit code: Automake mostly consults .trs, but keep conventional codes sane.
-# 0 for PASS/SKIP/XFAIL-only; 1 for FAIL/ERROR.
-# (If you want stricter mapping, tune here.)
-if grep -q '^:global-test-result: FAIL\|^:global-test-result: ERROR' "$trs_file"; then
-  exit 1
+# Exit code: default to success so the harness can complete even with FAIL.
+# When --enable-hard-errors[=yes] is specified, keep the conventional
+# non-zero exit on FAIL/ERROR to preserve the legacy stop-on-first-failure
+# behaviour for callers that explicitly request it.
+if [ "$hard_errors" = "yes" ]; then
+  if grep -q '^:global-test-result: FAIL\|^:global-test-result: ERROR' \
+      "$trs_file"; then
+    exit 1
+  fi
 fi
 exit 0
