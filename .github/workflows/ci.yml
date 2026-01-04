@@ -29,75 +29,59 @@ jobs:
           - label: freebsd-14.3-x86_64
             os: ubuntu-latest
             runner: ubuntu-latest
-            platform: freebsd
             cp_os: freebsd
             cp_arch: x86-64
             cp_version: '14.3'
-            variant: freebsd
             exec_type: cross-platform-vms
-          - label: freebsd-14.3-x86_64-amalgamated_lib
+          - label: freebsd-14.3-x86_64-amalgamated-lib
             os: ubuntu-latest
             runner: ubuntu-latest
-            platform: freebsd
             cp_os: freebsd
             cp_arch: x86-64
             cp_version: '14.3'
-            variant: amalgamated_lib
             extra_options: '--enable-amalgamated-lib'
             exec_type: cross-platform-vms
           - label: freebsd-14.3-aarch64
             os: ubuntu-latest
             runner: ubuntu-latest
-            platform: freebsd
             cp_os: freebsd
             cp_arch: arm64
             cp_version: '14.3'
-            variant: freebsd
             exec_type: cross-platform-vms
           - label: netbsd-10.1-x86_64
             os: ubuntu-latest
             runner: ubuntu-latest
-            platform: netbsd
             cp_os: netbsd
             cp_arch: x86-64
             cp_version: '10.1'
-            variant: netbsd
             extra_options: >-
               --enable-gcov
             exec_type: cross-platform-vms
           - label: haiku-r1beta5-x86-64
             os: ubuntu-latest
             runner: ubuntu-latest
-            platform: haiku
             cp_os: haiku
             cp_arch: x86-64
             cp_version: r1beta5
-            variant: haiku
             extra_options: >-
               --enable-gcov
             exec_type: cross-platform-vms
           - label: openbsd-7.8-x86-64
             os: ubuntu-latest
             runner: ubuntu-latest
-            platform: openbsd
             cp_os: openbsd
             cp_arch: x86-64
             cp_version: '7.8'
-            variant: openbsd
             extra_options: >-
               --enable-gcov
             exec_type: cross-platform-vms
           - label: dragonflybsd-6.4.2-x86-64
             os: ubuntu-latest
             runner: ubuntu-latest
-            platform: dragonflybsd
-            df_release: '6.4.2'
-            variant: dragonflybsd
             exec_type: dragonflybsd-vm
           - label: alpine-3.20-x86_64
             os: ubuntu-latest
             runner: ubuntu-latest
-            variant: alpine
             extra_options: >-
               --enable-gcov
             exec_type: alpine
@@ -105,32 +89,59 @@ jobs:
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
-            variant: default
             extra_options: >-
               CC=clang
               CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
               LDFLAGS="-fsanitize=address"
+              --without-png
+              --without-jpeg
             extra_packages: clang
-          - label: ubuntu-x86_64-ASan-GD_gdk-pixbuf2
+          - label: ubuntu-x86_64-ASan-libpng-libjpeg
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
-            variant: default
             extra_options: >-
               CC=clang
               CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
               LDFLAGS="-fsanitize=address"
-              --with-gd
+              --with-png
+              --with-jpeg
+            extra_packages: >-
+              clang
+              libpng-dev
+              libjpeg-dev
+          - label: ubuntu-x86_64-ASan-gdk-pixbuf2
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            sys: x86_64
+            extra_options: >-
+              CC=clang
+              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+              LDFLAGS="-fsanitize=address"
+              --without-png
+              --without-jpeg
               --with-gdk-pixbuf2
             extra_packages: >-
               clang
-              libgd-dev
               libgdk-pixbuf2.0-dev
+          - label: ubuntu-x86_64-ASan-GD
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            sys: x86_64
+            extra_options: >-
+              CC=clang
+              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+              LDFLAGS="-fsanitize=address"
+              --without-png
+              --without-jpeg
+              --with-gd
+            extra_packages: >-
+              clang
+              libgd-dev
           - label: ubuntu-x86_64-static-only
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
-            variant: static-only
             extra_options: >-
               CC=gcc-14
               --enable-gcov
@@ -142,7 +153,6 @@ jobs:
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
-            variant: disable-simd
             extra_options: >-
               CC=gcc-14
               --enable-gcov
@@ -153,7 +163,6 @@ jobs:
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
-            variant: disable-tools
             extra_options: >-
               CC=gcc-14
               --enable-gcov
@@ -165,7 +174,6 @@ jobs:
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
-            variant: disable-threads
             extra_options: >-
               CC=gcc-14
               --enable-gcov
@@ -177,7 +185,6 @@ jobs:
             runner: ubuntu-latest
             sys: x86_64
             musl: true
-            variant: musl-cross
             extra_options: >-
               CC=musl-gcc
             extra_packages: musl-tools
@@ -185,18 +192,16 @@ jobs:
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
             sys: aarch64
-            variant: default
             extra_options: >-
               CC=gcc-14
               --enable-gcov
             extra_packages: gcc-14
             pip_packages: gcovr
             check_target: distcheck
-          - label: ubuntu-24.04-aarch64-amalgamated_lib
+          - label: ubuntu-24.04-aarch64-amalgamated-lib
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
             sys: aarch64
-            variant: amalgamated_lib
             extra_options: >-
               CC=gcc-14
               --enable-amalgamated-lib
@@ -205,7 +210,6 @@ jobs:
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: i686
-            variant: default
             extra_options: >-
               CC=gcc
               CFLAGS="-m32"
@@ -217,7 +221,6 @@ jobs:
             os: macos-latest
             runner: macos-latest
             sys: aarch64
-            variant: default
             extra_options: >-
               --enable-gcov
             extra_packages: lcov
@@ -226,7 +229,6 @@ jobs:
             os: macos-latest
             runner: macos-latest
             sys: aarch64
-            variant: default
             extra_options: >-
               CC=clang
               CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
@@ -236,52 +238,45 @@ jobs:
             extra_packages: >-
               gd
               gdk-pixbuf
-          - label: macos-aarch64-amalgamated_lib
+          - label: macos-aarch64-amalgamated-lib
             os: macos-latest
             runner: macos-latest
             sys: aarch64
-            variant: amalgamated_lib
             extra_options: >-
               --enable-amalgamated-lib
           - label: macos-x86_64
             os: macos-15
             runner: macos-15
             sys: x86_64
-            variant: default
             extra_options: >-
               --enable-gcov
             extra_packages: lcov
-          - label: macos-x86_64-amalgamated_lib
+          - label: macos-x86_64-amalgamated-lib
             os: macos-15
             runner: macos-15
             sys: x86_64
-            variant: amalgamated_lib
             extra_options: >-
               --enable-amalgamated-lib
           - label: cosmopolitan-ubuntu-24.04-aarch64
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
             sys: aarch64
-            variant: cosmopolitan
             cosmopolitan: true
             exec_type: cosmopolitan
           - label: cosmopolitan-macos-aarch64
             os: macos-latest
             runner: macos-latest
             sys: aarch64
-            variant: cosmopolitan
             cosmopolitan: true
             exec_type: cosmopolitan
           - label: emscripten-ubuntu-24.04-aarch64
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
-            variant: emscripten
             emscripten: true
             exec_type: emscripten
           - label: emscripten-macos-aarch64
             os: macos-latest
             runner: macos-latest
-            variant: emscripten
             emscripten: true
             exec_type: emscripten
           - label: mingw64-static-only
@@ -289,7 +284,6 @@ jobs:
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
-            variant: static-only
             extra_options: >-
               --disable-shared
               --enable-static
@@ -303,7 +297,6 @@ jobs:
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
-            variant: disable-simd
             extra_options: >-
               --disable-simd
               --enable-gcov
@@ -316,7 +309,6 @@ jobs:
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
-            variant: disable-tools
             extra_options: >-
               --disable-img2sixel
               --disable-sixel2png
@@ -330,7 +322,6 @@ jobs:
             runner: windows-latest
             compiler: gcc
             sys: MINGW64
-            variant: disable-threads
             extra_options: >-
               --disable-threads
               --enable-gcov
@@ -343,19 +334,17 @@ jobs:
             runner: windows-latest
             compiler: gcc
             sys: UCRT64
-            variant: default
             extra_options: >-
               --enable-gcov
             extra_packages: >-
               make
               mingw-w64-ucrt-x86_64-toolchain
               mingw-w64-ucrt-x86_64-lcov
-          - label: ucrt64-amalgamated_lib
+          - label: ucrt64-amalgamated-lib
             os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: UCRT64
-            variant: amalgamated_lib
             extra_options: >-
               --enable-amalgamated-lib
             extra_packages: >-
@@ -367,7 +356,6 @@ jobs:
             runner: windows-latest
             compiler: clang
             sys: CLANG64
-            variant: default
             extra_options: >-
               --enable-gcov
             extra_packages: >-
@@ -379,7 +367,6 @@ jobs:
             runner: windows-latest
             compiler: clang
             sys: CLANG64
-            variant: default
             extra_options: >-
               CC=clang
               CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
@@ -393,7 +380,6 @@ jobs:
             runner: windows-latest
             compiler: clang-cl
             sys: MSVC
-            variant: clang-cl
             extra_options: >-
               --enable-gcov
             extra_packages: make
@@ -403,29 +389,26 @@ jobs:
             runner: windows-latest
             compiler: cl
             sys: MSVC
-            variant: default
             extra_options: >-
               CC=cl
               --enable-gcov
             extra_packages: make
             exec_type: msvc
-          - label: msvc-amalgamated_lib
+          - label: msvc-amalgamated-lib
             os: windows-latest
             runner: windows-latest
             compiler: cl
             sys: MSVC
-            variant: amalgamated_lib
             extra_options: >-
               CC=cl
               --enable-amalgamated-lib
             extra_packages: make
             exec_type: msvc
-          - label: cygwin-amalgamated_lib
+          - label: cygwin-amalgamated-lib
             os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: CYGWIN
-            variant: amalgamated_lib
             extra_options: >-
               --enable-amalgamated-lib
           - label: cosmopolitan-msys
@@ -433,7 +416,6 @@ jobs:
             runner: windows-latest
             compiler: gcc
             sys: MSYS
-            variant: cosmopolitan
             cosmopolitan: true
             extra_packages: >-
               unzip
@@ -444,7 +426,6 @@ jobs:
             runner: windows-latest
             compiler: cl
             sys: MSVC
-            variant: vcpkg-libpng
             vcpkg_packages: libpng
             extra_options: >-
               CC=cl
@@ -456,7 +437,6 @@ jobs:
             runner: windows-latest
             compiler: cl
             sys: MSVC
-            variant: vcpkg-libjpeg
             vcpkg_packages: libjpeg-turbo
             extra_options: >-
               CC=cl
@@ -468,7 +448,6 @@ jobs:
             runner: windows-latest
             compiler: gcc
             sys: MINGW32
-            variant: default
             extra_options: >-
               --enable-gcov
             extra_packages: >-
@@ -479,7 +458,6 @@ jobs:
             runner: windows-latest
             compiler: gcc
             sys: MSYS
-            variant: default
             extra_options: >-
               --enable-gcov
             extra_packages: >-
@@ -493,7 +471,6 @@ jobs:
             runner: windows-latest
             compiler: gcc
             sys: CYGWIN
-            variant: default
             extra_options: >-
               --enable-gcov
 
@@ -583,7 +560,7 @@ jobs:
         packages: gcc-core,make,pkg-config,python3,python3-pip,ninja
 
     - name: Cache Cosmopolitan toolchain
-      if: matrix.variant == 'cosmopolitan'
+      if: ${{ (matrix.exec_type || '') == 'cosmopolitan' }}
       uses: actions/cache@v4
       with:
         path: cosmopolitan/cosmocc.zip
@@ -645,13 +622,13 @@ jobs:
       timeout-minutes: 30
       uses: vmactions/dragonflybsd-vm@v1
       with:
-        release: ${{ matrix.df_release }}
+        release: 6.4.2
         usesh: true
         copyback: false
         run: |
           set -eux
-          artifact_dir="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}"
-          artifact_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
+          artifact_dir="${GITHUB_WORKSPACE}/_artifacts"
+          artifact_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
           collect_logs() {
             status=$?
             cd "$GITHUB_WORKSPACE"
@@ -679,7 +656,7 @@ jobs:
       run: |
         set -eux
         mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
-        remote_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
+        remote_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
         if ssh cross_platform_actions_host "test -f \"${remote_tar}\""; then
           scp cross_platform_actions_host:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
         else
@@ -894,8 +871,8 @@ jobs:
         run: |
           : "${GITHUB_WORKSPACE:=$PWD}"
 
-          artifact_dir="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}"
-          artifact_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
+          artifact_dir="${GITHUB_WORKSPACE}/_artifacts"
+          artifact_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
           collect_logs() {
             status=$?
             cd "$GITHUB_WORKSPACE"
@@ -918,20 +895,20 @@ jobs:
           fi
 
           make_cmd="gmake"
-          if [ "${{ matrix.platform }}" = "freebsd" ]; then
+          if command -v pkg; then
             ${pkg_prefix:+$pkg_prefix }pkg update -f
             ${pkg_prefix:+$pkg_prefix }pkg install -y \
               gmake \
               # pkgconf avoided to reduce fragile package installs
             :
-          elif [ "${{ matrix.platform }}" = "netbsd" ]; then
+          elif command -v pkgin; then
             ${pkg_prefix:+$pkg_prefix }pkgin -y update
             ${pkg_prefix:+$pkg_prefix }pkgin -y install \
               gmake
             if [ -f /var/db/pkgin/pkg_install-err.log ]; then
               cp /var/db/pkgin/pkg_install-err.log "$GITHUB_WORKSPACE/pkg_install-err.log" || true
             fi
-          elif [ "${{ matrix.platform }}" = "openbsd" ]; then
+          elif command -v pkg_add; then
             ${pkg_prefix:+$pkg_prefix }pkg_add \
               gmake \
               rsync \
@@ -939,8 +916,7 @@ jobs:
             :
           else
             pkgman refresh
-            pkgman install -y \
-              make
+            pkgman install -y make
             make_cmd="make"
           fi
 
@@ -956,7 +932,7 @@ jobs:
       if: ${{ always() && (matrix.exec_type || '') == 'cross-platform-vms' }}
       run: |
         mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
-        remote_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
+        remote_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
         if ssh cross_platform_actions_host "test -f \"${remote_tar}\""; then
           scp cross_platform_actions_host:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
         else
@@ -1039,7 +1015,6 @@ jobs:
           **/*.trs
           **/_artifacts/**
           coverage.info
-          **/${{ matrix.platform }}.tar.gz
         if-no-files-found: warn
         overwrite: true
 
@@ -1055,7 +1030,7 @@ jobs:
           **/_artifacts/**
           coverage.info
           pkg_install-err.log
-          **/${{ matrix.platform }}.tar.gz
+          **/artifacts.tar.gz
         if-no-files-found: warn
         overwrite: true
 
@@ -1286,15 +1261,15 @@ jobs:
             cp_arch: x86-64
             cp_version: '14.3'
             variant: freebsd
-          - label: freebsd 14.3 x86-64 amalgamated_lib
+          - label: freebsd 14.3 x86-64 amalgamated-lib
             os: ubuntu-latest
             runner: ubuntu-latest
             platform: freebsd
             cp_os: freebsd
             cp_arch: x86-64
             cp_version: '14.3'
-            variant: amalgamated_lib
-            amalgamated_lib: true
+            variant: amalgamated-lib
+            amalgamated-lib: true
           - label: freebsd 14.3 aarch64
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -1384,12 +1359,12 @@ jobs:
             runner: ubuntu-24.04-arm
             sys: aarch64
             variant: default
-          - label: ubuntu 24.04 aarch64 amalgamated_lib
+          - label: ubuntu 24.04 aarch64 amalgamated-lib
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
             sys: aarch64
-            variant: amalgamated_lib
-            amalgamated_lib: true
+            variant: amalgamated-lib
+            amalgamated-lib: true
           - label: ubuntu 24.04 aarch64 unity
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
@@ -1406,11 +1381,11 @@ jobs:
             os: macos-latest
             runner: macos-latest
             variant: default
-          - label: macos aarch64 amalgamated_lib
+          - label: macos aarch64 amalgamated-lib
             os: macos-latest
             runner: macos-latest
-            variant: amalgamated_lib
-            amalgamated_lib: true
+            variant: amalgamated-lib
+            amalgamated-lib: true
           - label: macos aarch64 unity
             os: macos-latest
             runner: macos-latest
@@ -1420,11 +1395,11 @@ jobs:
             os: macos-15
             runner: macos-15
             variant: default
-          - label: macos x86_64 amalgamated_lib
+          - label: macos x86_64 amalgamated-lib
             os: macos-15
             runner: macos-15
-            variant: amalgamated_lib
-            amalgamated_lib: true
+            variant: amalgamated-lib
+            amalgamated-lib: true
           - label: mingw64 static-only
             os: windows-latest
             runner: windows-latest
@@ -1489,13 +1464,13 @@ jobs:
               mingw-w64-ucrt-x86_64-toolchain
               mingw-w64-ucrt-x86_64-meson
               mingw-w64-ucrt-x86_64-ninja
-          - label: ucrt64 amalgamated_lib
+          - label: ucrt64 amalgamated-lib
             os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: UCRT64
-            variant: amalgamated_lib
-            amalgamated_lib: true
+            variant: amalgamated-lib
+            amalgamated-lib: true
             extra_packages: >-
               python
               ninja
@@ -1542,13 +1517,13 @@ jobs:
             extra_packages: >-
               python
               ninja
-          - label: msvc amalgamated_lib
+          - label: msvc amalgamated-lib
             os: windows-latest
             runner: windows-latest
             compiler: cl
             sys: MSVC
-            variant: amalgamated_lib
-            amalgamated_lib: true
+            variant: amalgamated-lib
+            amalgamated-lib: true
             extra_packages: >-
               python
               ninja
@@ -1602,13 +1577,13 @@ jobs:
             sys: CYGWIN
             variant: unity
             unity: true
-          - label: cygwin amalgamated_lib
+          - label: cygwin amalgamated-lib
             os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: CYGWIN
-            variant: amalgamated_lib
-            amalgamated_lib: true
+            variant: amalgamated-lib
+            amalgamated-lib: true
 
     steps:
     - name: Configure git EOL
@@ -1828,9 +1803,9 @@ jobs:
           if [ "${{ matrix.static_only || '' }}" = "true" ]; then
             default_library_flag="--default-library static"
           fi
-          amalgamated_lib_flag=""
-          if [ "${{ matrix.amalgamated_lib || '' }}" = "true" ]; then
-            amalgamated_lib_flag="-Damalgamated_lib=true"
+          amalgamated-lib_flag=""
+          if [ "${{ matrix.amalgamated-lib || '' }}" = "true" ]; then
+            amalgamated-lib_flag="-Damalgamated-lib=true"
           fi
           meson setup builddir \
               --wrap-mode=nodownload \
@@ -1839,7 +1814,7 @@ jobs:
               -Dzshcompletiondir=disabled \
               -Dpython=disabled \
               -Dtests=true \
-              ${amalgamated_lib_flag} \
+              ${amalgamated-lib_flag} \
               ${disable_tools_flags} \
               ${disable_threads_flag} \
               ${disable_simd_flag}
@@ -1903,9 +1878,9 @@ jobs:
           if [ "${{ matrix.static_only || '' }}" = "true" ]; then
             default_library_flag="--default-library static"
           fi
-          amalgamated_lib_flag=""
-          if [ "${{ matrix.amalgamated_lib || '' }}" = "true" ]; then
-            amalgamated_lib_flag="-Damalgamated_lib=true"
+          amalgamated-lib_flag=""
+          if [ "${{ matrix.amalgamated-lib || '' }}" = "true" ]; then
+            amalgamated-lib_flag="-Damalgamated-lib=true"
           fi
 
           date -u
@@ -1926,7 +1901,7 @@ jobs:
               -Dzshcompletiondir=disabled \
               -Dpython=disabled \
               -Dtests=true \
-              ${amalgamated_lib_flag} \
+              ${amalgamated-lib_flag} \
               ${disable_tools_flags} \
               ${disable_threads_flag} \
               ${disable_simd_flag}
@@ -2005,9 +1980,9 @@ jobs:
           if [ "${{ matrix.static_only || '' }}" = "true" ]; then
             default_library_flag="--default-library static"
           fi
-          amalgamated_lib_flag=""
-          if [ "${{ matrix.amalgamated_lib || '' }}" = "true" ]; then
-            amalgamated_lib_flag="-Damalgamated_lib=true"
+          amalgamated-lib_flag=""
+          if [ "${{ matrix.amalgamated-lib || '' }}" = "true" ]; then
+            amalgamated-lib_flag="-Damalgamated-lib=true"
           fi
           meson setup builddir \
               --wrap-mode=nodownload \
@@ -2016,7 +1991,7 @@ jobs:
               -Dzshcompletiondir=disabled \
               -Dpython=disabled \
               -Dtests=true \
-              ${amalgamated_lib_flag} \
+              ${amalgamated-lib_flag} \
               ${disable_tools_flags} \
               ${disable_threads_flag} \
               ${disable_simd_flag}
@@ -2029,7 +2004,7 @@ jobs:
       shell: msys2 {0}
       run: |
         disable_threads_flag=""
-        amalgamated_lib_flag=""
+        amalgamated-lib_flag=""
         if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
           disable_threads_flag="-Dthreads=disabled"
         fi
@@ -2049,8 +2024,8 @@ jobs:
         if [ "${{ matrix.static_only || '' }}" = "true" ]; then
           default_library_flag="--default-library static"
         fi
-        if [ "${{ matrix.amalgamated_lib || '' }}" = "true" ]; then
-          amalgamated_lib_flag="-Damalgamated_lib=true"
+        if [ "${{ matrix.amalgamated-lib || '' }}" = "true" ]; then
+          amalgamated-lib_flag="-Damalgamated-lib=true"
         fi
         meson setup builddir \
             --wrap-mode=nodownload \
@@ -2059,7 +2034,7 @@ jobs:
             -Dzshcompletiondir=disabled \
             -Dpython=disabled \
             -Dtests=true \
-            ${amalgamated_lib_flag} \
+            ${amalgamated-lib_flag} \
             ${disable_tools_flags} \
             ${disable_threads_flag} \
             ${disable_simd_flag} \
@@ -2094,9 +2069,9 @@ jobs:
         if ('${{ matrix.static_only }}' -eq 'true') {
           $defaultLibraryFlag = '--default-library static'
         }
-        $amalgamated_libFlag = ''
-        if ('${{ matrix.amalgamated_lib }}' -eq 'true') {
-          $amalgamated_libFlag = '-Damalgamated_lib=true'
+        $amalgamated-libFlag = ''
+        if ('${{ matrix.amalgamated-lib }}' -eq 'true') {
+          $amalgamated-libFlag = '-Damalgamated-lib=true'
         }
         $scriptLines = @(
           'set -eu',
@@ -2108,10 +2083,10 @@ jobs:
           "disable_simd_flag=`"$disableSimdFlag`"",
           "default_library_flag=`"$defaultLibraryFlag`"",
           "unity_flag=`"$unityFlag`"",
-          "amalgamated_lib_flag=`"$amalgamated_libFlag`"",
+          "amalgamated-lib_flag=`"$amalgamated-libFlag`"",
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          'meson setup builddir --wrap-mode=nodownload ${default_library_flag} ${amalgamated_lib_flag} -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled -Dpython=disabled -Dtests=true ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${unity_flag}',
+          'meson setup builddir --wrap-mode=nodownload ${default_library_flag} ${amalgamated-lib_flag} -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled -Dpython=disabled -Dtests=true ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${unity_flag}',
           'meson compile -C builddir -v',
           'meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }'
         )
@@ -2137,7 +2112,7 @@ jobs:
         set "UNITY_FLAG="
         if "${{ matrix.unity || '' }}"=="true" set "UNITY_FLAG=-Dunity=on"
         set "AMALGAMATED_LIB_FLAG="
-        if "${{ matrix.amalgamated_lib || '' }}"=="true" set "AMALGAMATED_LIB_FLAG=-Damalgamated_lib=true"
+        if "${{ matrix.amalgamated-lib || '' }}"=="true" set "AMALGAMATED_LIB_FLAG=-Damalgamated-lib=true"
         python -m mesonbuild.mesonmain setup builddir ^
             --wrap-mode=nodownload ^
             --default-library static ^
@@ -2183,7 +2158,7 @@ jobs:
         set "UNITY_FLAG="
         if "${{ matrix.unity || '' }}"=="true" set "UNITY_FLAG=-Dunity=on"
         set "AMALGAMATED_LIB_FLAG="
-        if "${{ matrix.amalgamated_lib || '' }}"=="true" set "AMALGAMATED_LIB_FLAG=-Damalgamated_lib=true"
+        if "${{ matrix.amalgamated-lib || '' }}"=="true" set "AMALGAMATED_LIB_FLAG=-Damalgamated-lib=true"
         python -m mesonbuild.mesonmain setup builddir ^
             --wrap-mode=nodownload ^
             --default-library shared ^
@@ -2228,7 +2203,7 @@ jobs:
         set "UNITY_FLAG="
         if "${{ matrix.unity || '' }}"=="true" set "UNITY_FLAG=-Dunity=on"
         set "AMALGAMATED_LIB_FLAG="
-        if "${{ matrix.amalgamated_lib || '' }}"=="true" set "AMALGAMATED_LIB_FLAG=-Damalgamated_lib=true"
+        if "${{ matrix.amalgamated-lib || '' }}"=="true" set "AMALGAMATED_LIB_FLAG=-Damalgamated-lib=true"
         python -m mesonbuild.mesonmain setup builddir ^
             --wrap-mode=nodownload ^
             --default-library shared ^
