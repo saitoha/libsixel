@@ -177,6 +177,7 @@ CLI_TESTS = cli-core/t/0001_help.t \
     docs/t/0001_help_vs_man.t \
     docs/t/0002_man_vs_bash_completion.t \
     docs/t/0003_bash_vs_zsh_completion.t \
+    docs/t/0004_envvars_vs_help.t \
     assessment/t/0001_spool.t \
     clipboard/t/0001_clipboard_basic.t \
     packaging/t/0001_python_wheel_install.t \
@@ -376,7 +377,8 @@ HELPER_FILES = common/t/0001_converters_common.t \
        pipeline/t/pipeline_planner_common.sh \
        mapfile/t/mapfile_common.sh \
        packaging/t/python_wheel_common.sh \
-       regression/lsqa_common.sh
+       regression/lsqa_common.sh \
+       docs/list_envvars.sh
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export ARTIFACT_ROOT;
@@ -851,9 +853,6 @@ AM_TEST_LOG_DRIVER_FLAGS = --comments
 
 # Default to soft errors so the harness continues after individual failures.
 DISABLE_HARD_ERRORS = yes
-ifneq ($(strip $(ENABLE_HARD_ERRORS)),)
-DISABLE_HARD_ERRORS =
-endif
 AM_TEST_TIMEOUT = 300
 AM_LOG_DRIVER_FLAGS = --timeout=$(AM_TEST_TIMEOUT)
 # Leave AM_LOG_FLAGS empty so Automake does not append timeout parameters to
@@ -924,7 +923,7 @@ clean-local:
 $(COPY_TESTS) $(HELPER_FILES):
 	$(MKDIR_P) $(builddir)/$(dir $@)
 	$(AM_V_GEN){ if test -f $(srcdir)/$@; then \
-		cp $(srcdir)/$@ $(builddir)/$@; \
+	    cp $(srcdir)/$@ $(builddir)/$@; \
 	fi; }
 
 
@@ -933,8 +932,8 @@ SIXEL_SHEBANG_TARGETS = $(check_PROGRAMS)
 
 apply-shebang-check: $(SIXEL_SHEBANG_TARGETS)
 	@if test -n "$(SIXEL_SHEBANG_TARGETS)"; then \
-		$(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
-			$(SIXEL_SHEBANG_TARGETS); \
+	    $(SIXEL_SHEBANG_HELPER) "$(SIXEL_SHEBANG_FILE)" \
+	        $(SIXEL_SHEBANG_TARGETS); \
 	fi
 
 check-am: apply-shebang-check
