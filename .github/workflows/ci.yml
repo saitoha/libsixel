@@ -180,7 +180,7 @@ jobs:
               --disable-threads
             extra_packages: gcc-14
             pip_packages: gcovr
-          - label: ubuntu-x86_64-musl-cross
+          - label: ubuntu-x86_64-musl
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
@@ -583,7 +583,6 @@ jobs:
       if: ${{ (matrix.exec_type || '') == 'cosmopolitan' && runner.os != 'Windows' }}
       shell: bash
       run: |
-        set -eux
         mkdir -p cosmopolitan
         if [ ! -f cosmopolitan/cosmocc.zip ]; then
           curl -L -o cosmopolitan/cosmocc.zip https://cosmo.zip/pub/cosmocc/cosmocc.zip
@@ -595,7 +594,6 @@ jobs:
       if: ${{ (matrix.exec_type || '') == 'cosmopolitan' && runner.os == 'Windows' && matrix.sys != 'CYGWIN' }}
       shell: msys2 {0}
       run: |
-        set -eux
         mkdir -p cosmopolitan
         if [ ! -f cosmopolitan/cosmocc.zip ]; then
           curl -L -o cosmopolitan/cosmocc.zip https://cosmo.zip/pub/cosmocc/cosmocc.zip
@@ -611,8 +609,6 @@ jobs:
         $env:PATH = "$cygwinRoot\bin;$env:PATH"
         $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
         $scriptLines = @(
-          'set -eux',
-          'set -o pipefail 2>/dev/null || true',
           "cd `"$workspace`"",
           'mkdir -p cosmopolitan',
           'if [ ! -f cosmopolitan/cosmocc.zip ]; then curl -L -o cosmopolitan/cosmocc.zip https://cosmo.zip/pub/cosmocc/cosmocc.zip; fi',
@@ -639,14 +635,13 @@ jobs:
         usesh: true
         copyback: false
         run: |
-          set -eux
           artifact_dir="${GITHUB_WORKSPACE}/_artifacts"
           artifact_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
           collect_logs() {
             status=$?
             cd "$GITHUB_WORKSPACE"
             mkdir -p "$artifact_dir"
-            find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar cvzf "$artifact_tar" {} +
+            find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar czf "$artifact_tar" {} +
             exit "$status"
           }
           trap 'collect_logs' EXIT
@@ -667,7 +662,6 @@ jobs:
     - name: Fetch DragonFlyBSD artifacts from VM (Autotools)
       if: ${{ (matrix.exec_type || '') == 'dragonflybsd-vm' }}
       run: |
-        set -eux
         mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
         remote_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
         if ssh cross_platform_actions_host "test -f \"${remote_tar}\""; then
@@ -708,8 +702,6 @@ jobs:
         $env:PATH = "$cygwinRoot\bin;$env:PATH"
         $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
         $scriptLines = @(
-          'set -eu',
-          'set -o pipefail 2>/dev/null || true',
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
           "CC=${{ matrix.compiler }} ./configure --without-png --without-jpeg --without-libcurl --enable-debug --enable-tests --disable-dependency-tracking ${{ matrix.extra_options || '' }}",
@@ -824,7 +816,6 @@ jobs:
       if: ${{ (matrix.exec_type || '') == 'cosmopolitan' && runner.os == 'Windows' && matrix.sys != 'CYGWIN' }}
       shell: msys2 {0}
       run: |
-        set -eux
         export PATH="$PWD/cosmopolitan/bin:$PATH"
         builddir="$PWD/cosmopolitan/build"
         mkdir -p "$builddir"
@@ -858,8 +849,6 @@ jobs:
         $env:PATH = "$cygwinRoot\bin;$env:PATH"
         $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
         $scriptLines = @(
-          'set -eux',
-          'set -o pipefail 2>/dev/null || true',
           "export PATH=`"$workspace/cosmopolitan/bin:`$PATH`"",
           "cd `"$workspace/cosmopolitan`"",
           'mkdir -p build',
@@ -890,7 +879,7 @@ jobs:
             status=$?
             cd "$GITHUB_WORKSPACE"
             mkdir -p "$artifact_dir"
-            find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar cvzf "$artifact_tar" {} +
+            find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar czf "$artifact_tar" {} +
             exit "$status"
           }
           trap 'collect_logs' EXIT
@@ -967,8 +956,6 @@ jobs:
       if: runner.os != 'Windows'
       shell: bash
       run: |
-        set -eu
-        set -o pipefail
         if test -f coverage.info; then
           echo "coverage.info already exists; skipping capture"
           exit 0
@@ -1173,7 +1160,6 @@ jobs:
       if: runner.os != 'Windows'
       shell: bash
       run: |
-        set -euxo pipefail
         meson setup builddir \
           --wrap-mode=nodownload \
           -Dbashcompletiondir=disabled \
@@ -1187,12 +1173,11 @@ jobs:
       if: runner.os == 'Windows'
       shell: msys2 {0}
       run: |
-        set -euxo pipefail
         meson setup builddir \
           -Dbashcompletiondir=disabled \
           -Dzshcompletiondir=disabled \
           ${{ matrix.setup_flags }}
-        meson compile -C builddir -v
+        meson compile -C builddir
         meson dist -C builddir --allow-dirty
         ls -l builddir/meson-dist
 
@@ -1200,7 +1185,6 @@ jobs:
       if: runner.os != 'Windows'
       shell: bash
       run: |
-        set -euxo pipefail
         artifact_dir="dist-build/_artifacts"
         collect_logs() {
           status=$?
@@ -1225,14 +1209,13 @@ jobs:
         distdir=$(find dist-build -maxdepth 1 -type d -name 'libsixel-*' | head -n1)
         cd "$distdir"
         meson setup build --wrap-mode=nodownload ${{ matrix.setup_flags }}
-        meson compile -C build -v
-        meson test -C build || { cat build/meson-logs/testlog.txt || true; exit 1; }
+        meson compile -C build
+        meson test -C build
 
     - name: Build from Meson dist archive (Windows)
       if: runner.os == 'Windows'
       shell: msys2 {0}
       run: |
-        set -euxo pipefail
         artifact_dir="dist-build/_artifacts"
         collect_logs() {
           status=$?
@@ -1257,8 +1240,8 @@ jobs:
         distdir=$(find dist-build -maxdepth 1 -type d -name 'libsixel-*' | head -n1)
         cd "$distdir"
         meson setup build ${{ matrix.setup_flags }}
-        meson compile -C build -v
-        meson test -C build || { cat build/meson-logs/testlog.txt || true; exit 1; }
+        meson compile -C build
+        meson test -C build
 
     - name: Upload meson dist artifacts
       if: always()
@@ -1278,7 +1261,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - label: freebsd 14.3 x86-64
+          - label: freebsd-14.3-x86-64
             os: ubuntu-latest
             runner: ubuntu-latest
             platform: freebsd
@@ -1286,7 +1269,8 @@ jobs:
             cp_arch: x86-64
             cp_version: '14.3'
             variant: freebsd
-          - label: freebsd 14.3 x86-64 amalgamated-lib
+            exec_type: cross-platform-vms
+          - label: freebsd-14.3-x86-64-amalgamated-lib
             os: ubuntu-latest
             runner: ubuntu-latest
             platform: freebsd
@@ -1295,7 +1279,8 @@ jobs:
             cp_version: '14.3'
             variant: amalgamated-lib
             amalgamated-lib: true
-          - label: freebsd 14.3 aarch64
+            exec_type: cross-platform-vms
+          - label: freebsd-14.3-aarch64
             os: ubuntu-latest
             runner: ubuntu-latest
             platform: freebsd
@@ -1303,7 +1288,8 @@ jobs:
             cp_arch: arm64
             cp_version: '14.3'
             variant: freebsd
-          - label: netbsd 10.1 x86-64
+            exec_type: cross-platform-vms
+          - label: netbsd-10.1-x86-64
             os: ubuntu-latest
             runner: ubuntu-latest
             platform: netbsd
@@ -1311,7 +1297,8 @@ jobs:
             cp_arch: x86-64
             cp_version: '10.1'
             variant: netbsd
-          - label: netbsd 10.1 aarch64
+            exec_type: cross-platform-vms
+          - label: netbsd-10.1-aarch64
             os: ubuntu-latest
             runner: ubuntu-latest
             platform: netbsd
@@ -1319,7 +1306,8 @@ jobs:
             cp_arch: arm64
             cp_version: '10.1'
             variant: netbsd
-          - label: haiku r1beta5 x86-64
+            exec_type: cross-platform-vms
+          - label: haiku-r1beta5-x86-64
             os: ubuntu-latest
             runner: ubuntu-latest
             platform: haiku
@@ -1327,7 +1315,8 @@ jobs:
             cp_arch: x86-64
             cp_version: r1beta5
             variant: haiku
-          - label: openbsd 7.8 x86-64
+            exec_type: cross-platform-vms
+          - label: openbsd-7.8-x86-64
             os: ubuntu-latest
             runner: ubuntu-latest
             platform: openbsd
@@ -1335,97 +1324,92 @@ jobs:
             cp_arch: x86-64
             cp_version: '7.8'
             variant: openbsd
-#          - label: openbsd 7.8 aarch64
-#            os: ubuntu-latest
-#            runner: ubuntu-latest
-#            platform: openbsd
-#            cp_os: openbsd
-#            cp_arch: arm64
-#            cp_version: '7.8'
-#            variant: openbsd
-          - label: dragonflybsd 6.4.2 x86-64
+            exec_type: cross-platform-vms
+          - label: dragonflybsd-6.4.2-x86-64
             os: ubuntu-latest
             runner: ubuntu-latest
             platform: dragonflybsd
             df_release: '6.4.2'
             variant: dragonflybsd
-          - label: ubuntu static-only
+            exec_type: dragonflybsd-vm
+          - label: ubuntu-static-only
             os: ubuntu-latest
             runner: ubuntu-latest
             static_only: true
             variant: static-only
-          - label: ubuntu disable-simd
+          - label: ubuntu-disable-simd
             os: ubuntu-latest
             runner: ubuntu-latest
             disable_simd: true
             variant: disable-simd
-          - label: ubuntu disable-tools
+          - label: ubuntu-disable-tools
             os: ubuntu-latest
             runner: ubuntu-latest
             disable_tools: true
             variant: disable-tools
-          - label: ubuntu disable-threads
+          - label: ubuntu-disable-threads
             os: ubuntu-latest
             runner: ubuntu-latest
             disable_threads: true
             variant: disable-threads
-          - label: ubuntu musl-cross
+          - label: ubuntu-musl
             os: ubuntu-latest
             runner: ubuntu-latest
             musl: true
             variant: musl-cross
             extra_packages: musl-tools
-          - label: alpine 3.20 x86_64
+          - label: alpine-3.20-x86_64
             os: ubuntu-latest
             runner: ubuntu-latest
             variant: alpine
-          - label: ubuntu 24.04 aarch64
+            exec_type: alpine
+          - label: ubuntu-24.04-aarch64
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
             sys: aarch64
             variant: default
-          - label: ubuntu 24.04 aarch64 amalgamated-lib
+          - label: ubuntu-24.04-aarch64-amalgamated-lib
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
             sys: aarch64
             variant: amalgamated-lib
             amalgamated-lib: true
-          - label: ubuntu 24.04 aarch64 unity
+          - label: ubuntu-24.04-aarch64-unity
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
             sys: aarch64
             variant: unity
             unity: true
-          - label: ubuntu i686
+          - label: ubuntu-i686
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: i686
             variant: default
             extra_packages: gcc-multilib
-          - label: macos aarch64
+          - label: macos-aarch64
             os: macos-latest
             runner: macos-latest
             variant: default
-          - label: macos aarch64 amalgamated-lib
+          - label: macos-aarch64-amalgamated-lib
             os: macos-latest
             runner: macos-latest
             variant: amalgamated-lib
             amalgamated-lib: true
-          - label: macos aarch64 unity
+          - label: macos-aarch64-unity
             os: macos-latest
             runner: macos-latest
             variant: unity
             unity: true
-          - label: macos x86_64
+          - label: macos-x86_64
             os: macos-15
             runner: macos-15
             variant: default
-          - label: macos x86_64 amalgamated-lib
+          - label: macos-x86_64-amalgamated-lib
             os: macos-15
             runner: macos-15
             variant: amalgamated-lib
             amalgamated-lib: true
-          - label: mingw64 static-only
+          - label: mingw64-static-only
             os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -1438,7 +1422,7 @@ jobs:
               mingw-w64-x86_64-toolchain
               mingw-w64-x86_64-meson
               mingw-w64-x86_64-ninja
-          - label: mingw64 disable-simd
+          - label: mingw64-disable-simd
             os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -1451,7 +1435,7 @@ jobs:
               mingw-w64-x86_64-toolchain
               mingw-w64-x86_64-meson
               mingw-w64-x86_64-ninja
-          - label: mingw64 disable-tools
+          - label: mingw64-disable-tools
             os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -1464,7 +1448,7 @@ jobs:
               mingw-w64-x86_64-toolchain
               mingw-w64-x86_64-meson
               mingw-w64-x86_64-ninja
-          - label: mingw64 disable-threads
+          - label: mingw64-disable-threads
             os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -1489,7 +1473,7 @@ jobs:
               mingw-w64-ucrt-x86_64-toolchain
               mingw-w64-ucrt-x86_64-meson
               mingw-w64-ucrt-x86_64-ninja
-          - label: ucrt64 amalgamated-lib
+          - label: ucrt64-amalgamated-lib
             os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -1532,7 +1516,7 @@ jobs:
             extra_packages: >-
               python
               ninja
-          - label: msvc unity
+          - label: msvc-unity
             os: windows-latest
             runner: windows-latest
             compiler: cl
@@ -1542,7 +1526,7 @@ jobs:
             extra_packages: >-
               python
               ninja
-          - label: msvc amalgamated-lib
+          - label: msvc-amalgamated-lib
             os: windows-latest
             runner: windows-latest
             compiler: cl
@@ -1552,7 +1536,7 @@ jobs:
             extra_packages: >-
               python
               ninja
-          - label: mingw64 unity
+          - label: mingw64-unity
             os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -1595,14 +1579,14 @@ jobs:
             compiler: gcc
             sys: CYGWIN
             variant: default
-          - label: cygwin unity
+          - label: cygwin-unity
             os: windows-latest
             runner: windows-latest
             compiler: gcc
             sys: CYGWIN
             variant: unity
             unity: true
-          - label: cygwin amalgamated-lib
+          - label: cygwin-amalgamated-lib
             os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -1664,7 +1648,7 @@ jobs:
         "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - name: Setup MSYS2 (Windows)
-      if: runner.os == 'Windows' && matrix.sys != 'CYGWIN' && matrix.sys != 'MSVC'
+      if: ${{ runner.os == 'Windows' && matrix.sys != 'CYGWIN' && matrix.sys != 'MSVC' }}
       uses: msys2/setup-msys2@v2
       with:
         msystem: ${{ matrix.sys == 'MSYS' && 'MSYS' || matrix.sys }}
@@ -1672,13 +1656,13 @@ jobs:
         install: ${{ matrix.extra_packages || 'python ninja' }}
 
     - name: Setup Cygwin
-      if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
+      if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
       uses: cygwin/cygwin-install-action@v4
       with:
         packages: gcc-core,make,pkg-config,python3,python3-pip,ninja
 
     - name: Install Meson (non-Windows)
-      if: runner.os != 'Windows' && matrix.variant != 'alpine' && !contains(fromJson('["freebsd","openbsd","netbsd","haiku","dragonflybsd"]'), matrix.platform || '')
+      if: ${{ runner.os != 'Windows' && ((matrix.exec_type || '') == '') }}
       run: |
         python3 -m venv .meson-venv
         . .meson-venv/bin/activate
@@ -1687,14 +1671,12 @@ jobs:
         echo "$PWD/.meson-venv/bin" >> "$GITHUB_PATH"
 
     - name: Install Meson (Cygwin)
-      if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
+      if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
       shell: pwsh
       run: |
         $cygwinRoot = 'C:\cygwin'
         if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\cygwin64' }
         $scriptLines = @(
-          'set -eu',
-          'set -o pipefail 2>/dev/null || true',
           'python3 -m pip install --upgrade pip',
           'python3 -m pip install meson',
           'gp_posix=$(cygpath -u "$GITHUB_PATH")',
@@ -1704,7 +1686,7 @@ jobs:
         &"$cygwinRoot\bin\bash.exe" --login -c $script
 
     - name: Configure, build, and test (Meson, FreeBSD/OpenBSD/NetBSD/Haiku)
-      if: matrix.platform == 'freebsd' || matrix.platform == 'openbsd' || matrix.platform == 'netbsd' || matrix.platform == 'haiku'
+      if: ${{ (matrix.exec_type || '') == 'cross-platform-vms' }}
       timeout-minutes: 30
       uses: cross-platform-actions/action@v0.30.0
       with:
@@ -1714,8 +1696,6 @@ jobs:
         sync_files: runner-to-vm
         environment_variables: CI,GITHUB_WORKSPACE
         run: &meson_non_windows |
-          set -eux
-
           : "${GITHUB_WORKSPACE:=$PWD}"
           artifact_dir="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}"
           artifact_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
@@ -1723,7 +1703,7 @@ jobs:
             status=$?
             cd "$GITHUB_WORKSPACE"
             mkdir -p "$artifact_dir"
-            find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar cvzf "$artifact_tar" {} +
+            find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar czf "$artifact_tar" {} +
             exit "$status"
           }
           trap 'collect_logs' EXIT
@@ -1845,13 +1825,10 @@ jobs:
               ${disable_simd_flag}
           meson compile -C builddir
           meson test -C builddir
-#          meson compile -C builddir -v
-#          meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
 
     - name: Fetch BSD artifacts from VM (Meson)
-      if: matrix.platform == 'freebsd' || matrix.platform == 'openbsd' || matrix.platform == 'netbsd' || matrix.platform == 'haiku'
+      if: ${{ (matrix.exec_type || '') == 'cross-platform-vms' }}
       run: |
-        set -eux
         mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
         remote_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
         if ssh cross_platform_actions_host "test -f \"${remote_tar}\""; then
@@ -1861,7 +1838,7 @@ jobs:
         fi
 
     - name: Configure, build, and test (Meson, DragonFlyBSD)
-      if: matrix.platform == 'dragonflybsd'
+      if: ${{ (matrix.exec_type || '') == 'dragonflybsd-vm' }}
       timeout-minutes: 30
       uses: vmactions/dragonflybsd-vm@v1
       with:
@@ -1869,14 +1846,13 @@ jobs:
         usesh: true
         copyback: false
         run: |
-          set -eux
           artifact_dir="${GITHUB_WORKSPACE}/_artifacts/dragonflybsd"
           artifact_tar="${GITHUB_WORKSPACE}/_artifacts/dragonflybsd.tar.gz"
           collect_logs() {
             status=$?
             cd "$GITHUB_WORKSPACE"
             mkdir -p "$artifact_dir"
-            find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar cvzf "$artifact_tar" {} +
+            find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar czf "$artifact_tar" {} +
             exit "$status"
           }
           trap 'collect_logs' EXIT
@@ -1932,13 +1908,10 @@ jobs:
               ${disable_simd_flag}
           meson compile -C builddir
           meson test -C builddir
-#          meson compile -C builddir -v
-#          meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
 
     - name: Fetch DragonFlyBSD artifacts from VM (Meson)
-      if: matrix.platform == 'dragonflybsd'
+      if: ${{ (matrix.exec_type || '') == 'dragonflybsd-vm' }}
       run: |
-        set -eux
         mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
         remote_tar="${GITHUB_WORKSPACE}/_artifacts/dragonflybsd.tar.gz"
         if ssh cross_platform_actions_host "test -f \"${remote_tar}\""; then
@@ -1947,33 +1920,13 @@ jobs:
           echo "No artifact archive found on VM; skipping copy" >&2
         fi
 
-    - name: Upload pkg_install log (Meson NetBSD)
-      if: ${{ failure() && matrix.platform == 'netbsd' }}
-      uses: actions/upload-artifact@v4
-      with:
-        name: pkg_install-log-meson-${{ matrix.label }}
-        path: pkg_install-err.log
-        if-no-files-found: ignore
-
-    - name: Upload meson artifacts (NetBSD)
-      if: matrix.platform == 'netbsd' && always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: meson-${{ matrix.label }}
-        path: |
-          builddir/meson-logs/**
-          builddir/_artifacts/**
-          coverage.info
-        if-no-files-found: warn
-
     - name: Configure, build, and test (Meson, non-Windows)
-      if: runner.os != 'Windows' && matrix.variant != 'alpine' && !contains(fromJson('["freebsd","openbsd","netbsd","haiku","dragonflybsd"]'), matrix.platform || '')
+      if: ${{ runner.os != 'Windows' && !((matrix.exec_type || '') != '') }}
       run: *meson_non_windows
 
     - name: Configure, build, and test (Meson, Alpine container)
-      if: matrix.variant == 'alpine'
+      if: ${{ (matrix.exec_type || '') == 'alpine' }}
       run: |
-        set -eux
         docker run --rm -v "$PWD":/src -w /src alpine:3.20 sh -euc '
           apk add --no-cache \
             bash \
@@ -2021,7 +1974,7 @@ jobs:
               ${disable_threads_flag} \
               ${disable_simd_flag}
           meson compile -C builddir
-          meson test -C builddir || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
+          meson test -C builddir
         '
 
     - name: Configure, build, and test (Meson, Windows, not MSVC/Cygwin)
@@ -2064,8 +2017,8 @@ jobs:
             ${disable_threads_flag} \
             ${disable_simd_flag} \
             ${unity_flag}
-        meson compile -C builddir -v
-        meson test -C builddir || { cat builddir/meson-logs/testlog.txt || true; exit 1; }
+        meson compile -C builddir
+        meson test -C builddir
 
     - name: Configure, build, and test (Meson, Windows, Cygwin)
       if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
@@ -2099,8 +2052,6 @@ jobs:
           $amalgamatedLibFlag = '-Damalgamated_lib=true'
         }
         $scriptLines = @(
-          'set -eu',
-          'set -o pipefail 2>/dev/null || true',
           'export PATH=/usr/local/bin:/usr/bin',
           'export CC=gcc',
           "disable_threads_flag=`"$disableThreadsFlag`"",
@@ -2112,8 +2063,8 @@ jobs:
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
           'meson setup builddir --wrap-mode=nodownload ${default_library_flag} ${amalgamated_lib_flag} -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled -Dpython=disabled -Dtests=true ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${unity_flag}',
-          'meson compile -C builddir -v',
-          'meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }'
+          'meson compile -C builddir',
+          'meson test -C builddir
         )
         $script = [string]::Join("`n", $scriptLines)
         &"$cygwinRoot\bin\bash.exe" --login -c $script
@@ -2156,7 +2107,7 @@ jobs:
         if errorlevel 1 exit /b !errorlevel!
         python -m mesonbuild.mesonmain compile -C builddir
         if errorlevel 1 exit /b !errorlevel!
-        python -m mesonbuild.mesonmain test -C builddir -v
+        python -m mesonbuild.mesonmain test -C builddir
         if errorlevel 1 (
             if exist builddir\meson-logs\testlog.txt type builddir\meson-logs\testlog.txt
             exit /b !errorlevel!
@@ -2201,7 +2152,7 @@ jobs:
         if errorlevel 1 exit /b !errorlevel!
         python -m mesonbuild.mesonmain compile -C builddir
         if errorlevel 1 exit /b !errorlevel!
-        python -m mesonbuild.mesonmain test -C builddir -v
+        python -m mesonbuild.mesonmain test -C builddir
         if errorlevel 1 (
             if exist builddir\meson-logs\testlog.txt type builddir\meson-logs\testlog.txt
             exit /b !errorlevel!
@@ -2247,7 +2198,7 @@ jobs:
         if errorlevel 1 exit /b !errorlevel!
         python -m mesonbuild.mesonmain compile -C builddir
         if errorlevel 1 exit /b !errorlevel!
-        python -m mesonbuild.mesonmain test -C builddir -v
+        python -m mesonbuild.mesonmain test -C builddir
         if errorlevel 1 (
             if exist builddir\meson-logs\testlog.txt type builddir\meson-logs\testlog.txt
             exit /b !errorlevel!
@@ -2255,7 +2206,7 @@ jobs:
         endlocal
 
     - name: Fix artifact permissions (Meson Alpine container)
-      if: ${{ matrix.variant == 'alpine' && always() }}
+      if: ${{ always() && (matrix.exec_type || '') == 'alpine' }}
       run: |
         set -eux
         for dir in builddir _artifacts; do
@@ -2267,10 +2218,10 @@ jobs:
         done
 
     - name: Upload meson artifacts
-      if: always() && !contains(fromJson('["freebsd","openbsd","netbsd"]'), matrix.platform || '')
+      if: ${{ always() && (matrix.exec_type || '') != 'cross-platform-vms' }}
       uses: actions/upload-artifact@v4
       with:
-        name: meson-${{ matrix.os }}-${{ matrix.sys || 'native' }}-${{ matrix.compiler || 'default' }}-${{ matrix.variant || 'default' }}
+        name: meson-${{ matrix.label }}
         path: |
           builddir/meson-logs/**
           builddir/**/_artifacts/**
