@@ -111,4 +111,8 @@ if [ -d "${mime_dir}/icons" ]; then
     rm -rf "${mime_dir}/icons"
 fi
 
+# remove all generated MIME data (e.g., image/x-sixel.xml) once no packages
+# remain; this keeps staged DESTDIR trees clean for distuninstallcheck
+find "$mime_dir" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+
 rmdir "$mime_dir" 2>/dev/null || true
