@@ -5,22 +5,25 @@
 
 set -eu
 
+script_dir=$(CDPATH=; cd -- "$(dirname "$0")" && pwd)
+repo_root=$(CDPATH=; cd -- "${script_dir}/../.." && pwd)
+
 usage() {
     cat <<'USAGE'
-Usage: tools/list_envvars.sh [--check] [--img2sixel PATH]
-                             [--source-root DIR]
+Usage: tests/docs/list_envvars.sh [--check] [--img2sixel PATH]
+                                  [--source-root DIR]
 
 Options:
   --check           Return non-zero when a mismatch is detected.
   --img2sixel PATH   Path to the img2sixel binary built by Meson
-                     (default: ./build/converters/img2sixel).
+                     (default: <repo>/build/converters/img2sixel).
   --source-root DIR  Repository root that contains the converters/src/
-                     assessment/ trees (default: current directory).
+                     assessment/ trees (default: repository root).
 USAGE
 }
 
-img2sixel=./build/converters/img2sixel
-source_root=.
+img2sixel=${repo_root}/build/converters/img2sixel
+source_root=${repo_root}
 check_only=0
 
 while [ $# -gt 0 ]; do
