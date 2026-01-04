@@ -1,14 +1,14 @@
 #!/bin/sh
-# Minimal harness that runs tools/list_envvars.sh in check mode to ensure
-# img2sixel -H stays in sync with the environment variables referenced by
-# the sources.
+# Minimal harness that runs tests/docs/list_envvars.sh in check mode to
+# ensure img2sixel -H stays in sync with the environment variables
+# referenced by the sources.
 
 set -eu
 
 script_dir=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
 repo_root=$(CDPATH= cd -- "$script_dir/.." && pwd)
 
-list_script="$repo_root/tools/list_envvars.sh"
+list_script="$repo_root/tests/docs/list_envvars.sh"
 default_img2sixel="$repo_root/build/converters/img2sixel"
 img2sixel=${IMG2SIXEL:-$default_img2sixel}
 
