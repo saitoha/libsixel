@@ -734,7 +734,8 @@ AC_DEFUN([LS_CHECK_CFLAG],
 
   if test "x$using_cl" = "xyes"; then
     # Keep the MSVC banner quiet during compilation and preprocessing.
-    CPPFLAGS="$CPPFLAGS -nologo"
+    CPPFLAGS="-nologo $CPPFLAGS"
+    LDFLAGS="-nologo $LDFLAGS"
     AC_DEFINE([HAVE_MSVC], [1], [Define if building with MSVC])
 else
   AX_GCC_VAR_ATTRIBUTE([deprecated])
