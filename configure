@@ -17642,7 +17642,8 @@ fi
 
   if test "x$using_cl" = "xyes"; then
     # Keep the MSVC banner quiet during compilation and preprocessing.
-    CPPFLAGS="$CPPFLAGS -nologo"
+    CPPFLAGS="-nologo $CPPFLAGS"
+    LDFLAGS="-nologo $LDFLAGS"
 
 printf "%s\n" "#define HAVE_MSVC 1" >>confdefs.h
 
