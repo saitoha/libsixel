@@ -44,12 +44,47 @@ if [ -n "$destdir" ]; then
 fi
 
 mime_dir="${datadir_path}/mime"
+packages_dir="${mime_dir}/packages"
+
+if [ "$mode" = "install" ]; then
+    if [ ! -d "$mime_dir" ]; then
+        if ! mkdir -p "$mime_dir" 2>/dev/null && [ ! -d "$mime_dir" ]; then
+            echo "$0: failed to create '$mime_dir'" >&2
+            exit 1
+        fi
+    fi
+
+    exec "$command_path" "$mime_dir"
+fi
 
 if [ ! -d "$mime_dir" ]; then
-    if ! mkdir -p "$mime_dir" 2>/dev/null && [ ! -d "$mime_dir" ]; then
-        echo "$0: failed to create '$mime_dir'" >&2
-        exit 1
+    exit 0
+fi
+
+# Refresh the cache after uninstall so that any remaining MIME definitions
+# keep working. When no packages are left, also remove the cache files to
+# satisfy distuninstallcheck and avoid stale caches for a clean prefix.
+"$command_path" "$mime_dir"
+
+if [ -d "$packages_dir" ]; then
+    if find "$packages_dir" -type f -print -quit 2>/dev/null | grep -q .;
+    then
+        exit 0
     fi
 fi
 
-exec "$command_path" "$mime_dir"
+rm -f "${mime_dir}/aliases" \
+    "${mime_dir}/generic-icons" \
+    "${mime_dir}/globs" \
+    "${mime_dir}/globs2" \
+    "${mime_dir}/magic" \
+    "${mime_dir}/mime.cache" \
+    "${mime_dir}/subclasses" \
+    "${mime_dir}/treemagic" \
+    "${mime_dir}/types" \
+    "${mime_dir}/version" \
+    "${mime_dir}/XMLnamespaces"
+
+rmdir "$packages_dir" 2>/dev/null || true
+rmdir "${mime_dir}/icons" 2>/dev/null || true
+rmdir "$mime_dir" 2>/dev/null || true
