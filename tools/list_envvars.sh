@@ -7,9 +7,11 @@ set -eu
 
 usage() {
     cat <<'USAGE'
-Usage: tools/list_envvars.sh [--img2sixel PATH] [--source-root DIR]
+Usage: tools/list_envvars.sh [--check] [--img2sixel PATH]
+                             [--source-root DIR]
 
 Options:
+  --check           Return non-zero when a mismatch is detected.
   --img2sixel PATH   Path to the img2sixel binary built by Meson
                      (default: ./build/converters/img2sixel).
   --source-root DIR  Repository root that contains the converters/src/
@@ -19,6 +21,7 @@ USAGE
 
 img2sixel=./build/converters/img2sixel
 source_root=.
+check_only=0
 
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -29,6 +32,9 @@ while [ $# -gt 0 ]; do
         --source-root)
             shift || { usage >&2; exit 1; }
             source_root=$1
+            ;;
+        --check)
+            check_only=1
             ;;
         -h|--help)
             usage
@@ -139,4 +145,11 @@ if [ -n "$missing_in_source" ]; then
     printf '%s\n' "$missing_in_source"
 else
     echo '(none)'
+fi
+
+if [ "$check_only" -eq 1 ]; then
+    if [ -n "$missing_in_help" ] || [ -n "$missing_in_source" ]; then
+        echo "Mismatch detected between sources and -H output" >&2
+        exit 1
+    fi
 fi
