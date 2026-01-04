@@ -993,7 +993,7 @@ jobs:
         fi
 
     - name: Capture coverage (Windows)
-      if: runner.os == 'Windows'
+      if: runner.os == 'Windows' && matrix.sys != 'CYGWIN'
       shell: msys2 {0}
       run: |
         if [ -e coverage.info ]; then
