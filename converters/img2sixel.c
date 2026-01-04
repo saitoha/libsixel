@@ -1465,11 +1465,9 @@ main(int argc, char *argv[])
     completion_exit_status = 0;
     completion_cli_result = img2sixel_handle_completion_cli(
         argc, argv, &completion_exit_status);
-    if (completion_cli_result < 0) {
-        return completion_exit_status;
-    }
-    if (completion_cli_result > 0) {
-        return completion_exit_status;
+    if (completion_cli_result != 0) {
+        status = completion_exit_status;
+        goto end;
     }
 
     status = sixel_encoder_new(&encoder, NULL);
@@ -1625,7 +1623,9 @@ unknown_option_error:
     goto end;
 
 end:
-    sixel_encoder_unref(encoder);
+    if (encoder != NULL) {
+        sixel_encoder_unref(encoder);
+    }
     return status;
 }
 
