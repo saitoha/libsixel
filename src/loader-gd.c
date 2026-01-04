@@ -179,6 +179,10 @@ load_with_gd(
                 goto end;
             }
         }
+
+        status = SIXEL_GD_ERROR;
+        gdImageDestroy(im);
+        goto end;
     }
 
     status = sixel_frame_new(&frame, pchunk->allocator);
