@@ -1035,10 +1035,12 @@ if test -n '$(IGNORE_SKIPPED_LOGS)'; then		\
 else							\
   am__collect_skipped_logs='';				\
 fi;							\
-if test -n '$(DISABLE_HARD_ERRORS)'; then		\
+if test -n '$(ENABLE_HARD_ERRORS)'; then		\
+  am__enable_hard_errors=yes; 				\
+elif test -n '$(DISABLE_HARD_ERRORS)'; then			\
   am__enable_hard_errors=no; 				\
 else							\
-  am__enable_hard_errors=yes; 				\
+  am__enable_hard_errors=no; 				\
 fi; 							\
 case " $(XFAIL_TESTS) " in				\
   *[\ \	]$$f[\ \	]* | *[\ \	]$$dir$$f[\ \	]*) \

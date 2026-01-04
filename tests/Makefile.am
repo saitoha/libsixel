@@ -848,6 +848,12 @@ LOG_DRIVER = $(T_LOG_DRIVER)
 LOG_DRIVER_FLAGS = $(AM_TEST_LOG_DRIVER_FLAGS)
 T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_builddir)/build-aux/lso-tap-driver.sh
 AM_TEST_LOG_DRIVER_FLAGS = --comments
+
+# Default to soft errors so the harness continues after individual failures.
+DISABLE_HARD_ERRORS = yes
+ifneq ($(strip $(ENABLE_HARD_ERRORS)),)
+DISABLE_HARD_ERRORS =
+endif
 AM_TEST_TIMEOUT = 300
 AM_LOG_DRIVER_FLAGS = --timeout=$(AM_TEST_TIMEOUT)
 # Leave AM_LOG_FLAGS empty so Automake does not append timeout parameters to
