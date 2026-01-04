@@ -70,6 +70,7 @@ typedef struct sixel_lookup_vpte_shared_float32
 typedef struct sixel_lookup_vpte_float32 {
     sixel_allocator_t *allocator;
     sixel_lookup_vpte_shared_float32_t *shared;
+    int shared_published;
     int use_cache;
 } sixel_lookup_vpte_float32_t;
 

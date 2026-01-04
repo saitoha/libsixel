@@ -2235,24 +2235,40 @@ sixel_lookup_vpte_float32_create(sixel_allocator_t *allocator,
 
     vpte->allocator = allocator;
     vpte->shared = NULL;
+    vpte->shared_published = 0;
     vpte->use_cache = 0;
     *vpte_out = vpte;
 
     return SIXEL_OK;
 }
 
-void
-sixel_lookup_vpte_float32_unref(sixel_lookup_vpte_float32_t *vpte)
+static void
+sixel_lookup_vpte_float32_release_shared(sixel_lookup_vpte_float32_t *vpte)
 {
     sixel_allocator_t *allocator;
 
-    if (vpte == NULL) {
+    if (vpte == NULL || vpte->shared == NULL) {
         return;
     }
 
     allocator = vpte->allocator;
     sixel_lookup_vpte_shared_unref_float32(allocator, vpte->shared);
-    sixel_allocator_free(allocator, vpte);
+    if (vpte->shared_published != 0) {
+        sixel_lookup_vpte_shared_unref_float32(allocator, vpte->shared);
+    }
+    vpte->shared = NULL;
+    vpte->shared_published = 0;
+}
+
+void
+sixel_lookup_vpte_float32_unref(sixel_lookup_vpte_float32_t *vpte)
+{
+    if (vpte == NULL) {
+        return;
+    }
+
+    sixel_lookup_vpte_float32_release_shared(vpte);
+    sixel_allocator_free(vpte->allocator, vpte);
 }
 
 SIXELSTATUS
@@ -2284,8 +2300,7 @@ sixel_lookup_vpte_float32_configure(sixel_lookup_vpte_float32_t *vpte,
     }
 
     if (vpte->shared != NULL) {
-        sixel_lookup_vpte_shared_unref_float32(vpte->allocator, vpte->shared);
-        vpte->shared = NULL;
+        sixel_lookup_vpte_float32_release_shared(vpte);
     }
 
     status = sixel_lookup_vpte_float32_build(vpte,
@@ -2304,6 +2319,9 @@ sixel_lookup_vpte_float32_configure(sixel_lookup_vpte_float32_t *vpte,
 
     if (shared_flag != 0) {
         sixel_lookup_vpte_shared_ref_float32(vpte->shared);
+        vpte->shared_published = 1;
+    } else {
+        vpte->shared_published = 0;
     }
 
 #if SIXEL_VPTE_TLS_AVAILABLE == 0
