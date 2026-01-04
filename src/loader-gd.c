@@ -118,8 +118,22 @@ load_with_gd(
         goto end;
     }
 
+    if (gdImageSX(im) <= 0 || gdImageSY(im) <= 0 ||
+            (im->tpixels == NULL && im->pixels == NULL)) {
+        /*
+         * GD returned a stub image without valid pixel buffers. This can
+         * happen when GD detects a malformed frame but still allocates a
+         * partially initialized object. Avoid dereferencing null pixel
+         * storage by rejecting the image here.
+         */
+        status = SIXEL_GD_ERROR;
+        gdImageDestroy(im);
+        goto end;
+    }
+
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
+        gdImageDestroy(im);
         goto end;
     }
 
