@@ -156,7 +156,7 @@ jobs:
             extra_options: >-
               CC=musl-gcc
             extra_packages: musl-tools
-          - label: ubuntu 24.04 aarch64
+          - label: ubuntu 24.04 aarch64 distcheck
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
             sys: aarch64
@@ -166,6 +166,7 @@ jobs:
               --enable-gcov
             extra_packages: gcc-14
             pip_packages: gcovr
+            check_target: distcheck
           - label: ubuntu 24.04 aarch64 amalgamated_lib
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
@@ -187,7 +188,7 @@ jobs:
               PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
               PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
             extra_packages: gcc-multilib
-          - label: macos aarch64
+          - label: macos aarch64 distcheck
             os: macos-latest
             runner: macos-latest
             sys: aarch64
@@ -195,6 +196,7 @@ jobs:
             extra_options: >-
               --enable-gcov
             extra_packages: lcov
+            check_target: distcheck
           - label: macos aarch64 amalgamated_lib
             os: macos-latest
             runner: macos-latest
@@ -617,7 +619,7 @@ jobs:
             --disable-dependency-tracking \
             ${{ matrix.extra_options || '' }}
           gmake V=1
-          gmake check
+          gmake ${{ matrix.check_target || 'check' }}
 
     - name: Fetch DragonFlyBSD artifacts from VM (Autotools)
       if: ${{ (matrix.exec_type || '') == 'dragonflybsd-vm' }}
@@ -641,7 +643,7 @@ jobs:
           --disable-dependency-tracking \
           ${{ matrix.extra_options || '' }}
         make V=1
-        make check V=1
+        make ${{ matrix.check_target || 'check' }}
 
     - name: Configure and build (Windows, not MSVC/Cygwin)
       if: ${{ (matrix.exec_type || '') == '' && runner.os == 'Windows' && matrix.sys != 'CYGWIN' }}
@@ -653,7 +655,7 @@ jobs:
           --disable-dependency-tracking \
           ${{ matrix.extra_options || '' }}
         make V=1
-        make check V=1
+        make ${{ matrix.check_target || 'check' }}
 
     - name: Configure and build (Windows, Cygwin)
       if: ${{ (matrix.exec_type || '') == '' && runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
@@ -708,7 +710,7 @@ jobs:
                 ${{ matrix.extra_options || '' }} \
                 --disable-dependency-tracking
           make V=1
-          make check V=1
+          make ${{ matrix.check_target || 'check' }}
         '
 
     - name: Configure and build, and run tests (Windows, MSVC)
@@ -744,7 +746,7 @@ jobs:
           --disable-dependency-tracking \
           ${{ matrix.extra_options || '' }}
         make V=1
-        make check V=1
+        make ${{ matrix.check_target || 'check' }}
 
     - name: Configure and build, and run tests (Cosmopolitan, non-Windows)
       if: ${{ (matrix.exec_type || '') == 'cosmopolitan' && runner.os != 'Windows' }}
@@ -772,8 +774,8 @@ jobs:
           AR=cosmoar \
           RANLIB=cosmoranlib \
           INSTALL=cosmoinstall
-        make -j V=1
-        make check
+        make V=1
+        make ${{ matrix.check_target || 'check' }}
 
     - name: Configure and build, and run tests (Cosmopolitan, Windows MinGW)
       if: ${{ (matrix.exec_type || '') == 'cosmopolitan' && runner.os == 'Windows' && matrix.sys != 'CYGWIN' }}
@@ -803,7 +805,7 @@ jobs:
           RANLIB=cosmoranlib \
           INSTALL=cosmoinstall
         make V=1
-        make check
+        make ${{ matrix.check_target || 'check' }}
 
     - name: Configure and build, and run tests (Cosmopolitan, Cygwin)
       if: ${{ (matrix.exec_type || '') == 'cosmopolitan' && runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
@@ -895,12 +897,7 @@ jobs:
             --disable-dependency-tracking \
             ${{ matrix.extra_options || '' }}
           ${make_cmd} V=1
-
-          if command -v gmake >/dev/null 2>&1; then
-            gmake check V=1
-          else
-            make check V=1
-          fi
+          ${make_cmd} ${{ matrix.check_target || 'check' }}
 
     - name: Fetch BSD artifacts from VM (Autotools)
       if: ${{ always() && (matrix.exec_type || '') == 'cross-platform-vms' }}
@@ -1053,110 +1050,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           parallel-finished: true
-
-  ci-dist-autotools:
-    name: AT-tarball ${{ matrix.label }}
-    runs-on: ${{ matrix.runner || matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-          include:
-            - label: Linux thumbnailer command
-              os: ubuntu-latest
-              runner: ubuntu-latest
-              sys: native
-              configure_flags: >-
-                --without-png --without-jpeg --without-libcurl
-                --enable-debug --enable-tests
-                --disable-dependency-tracking --enable-thumbnailer-command
-            - label: macOS Quick Look extension
-              os: macos-latest
-              runner: macos-latest
-              sys: native
-              configure_flags: >-
-                --without-png --without-jpeg --without-libcurl
-                --enable-debug --enable-tests
-                --disable-dependency-tracking --enable-quicklook-extension
-                --enable-quicklook-preview
-            - label: Windows WIC codec (MinGW)
-              os: windows-latest
-              runner: windows-latest
-              msystem: MINGW64
-              sys: MINGW64
-              configure_flags: >-
-                --without-png --without-jpeg --without-libcurl
-                --enable-debug --enable-tests
-                --disable-dependency-tracking --enable-wiccodec
-              extra_packages: >-
-                make
-                mingw-w64-x86_64-toolchain
-
-    steps:
-    - uses: actions/checkout@v6
-      with:
-        fetch-depth: 1
-
-    - name: Prepare Homebrew cache
-      if: runner.os == 'macOS'
-      run: |
-        brew update-reset
-        rm -f ~/Library/Caches/Homebrew/downloads/* || true
-        brew update -f
-
-    - name: Setup MSYS2 (Windows)
-      if: runner.os == 'Windows'
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: ${{ matrix.msystem }}
-        update: true
-        install: ${{ matrix.extra_packages || 'make' }}
-
-    - name: Autotools distcheck (non-Windows)
-      if: runner.os != 'Windows'
-      shell: bash
-      run: |
-        artifact_dir="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}"
-        artifact_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
-        collect_logs() {
-          status=$?
-          cd "$GITHUB_WORKSPACE"
-          mkdir -p "$artifact_dir"
-          find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar cvzf "$artifact_tar" {} +
-          exit "$status"
-        }
-        trap 'collect_logs' EXIT
-        ./configure ${{ matrix.configure_flags }}
-        make distcheck V=1
-
-    - name: Autotools distcheck (Windows)
-      if: runner.os == 'Windows'
-      shell: msys2 {0}
-      run: |
-        artifact_dir="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}"
-        artifact_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
-        collect_logs() {
-          status=$?
-          cd "$GITHUB_WORKSPACE"
-          mkdir -p "$artifact_dir"
-          find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar cvzf "$artifact_tar" {} +
-          exit "$status"
-        }
-        trap 'collect_logs' EXIT
-        ./configure ${{ matrix.configure_flags }}
-        make distcheck V=1
-
-    - name: Upload autotools dist artifacts
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: autotools-dist-${{ matrix.os }}-${{ matrix.sys || 'native' }}
-        path: |
-          libsixel-*.tar.*
-          dist-build/**/test-suite.log
-          dist-build/**/*.log
-          dist-build/**/*.trs
-          dist-build/**/_artifacts/**
-        if-no-files-found: warn
 
   ci-autotools-asan:
     name: AT-ASan ${{ matrix.label }}
