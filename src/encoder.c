@@ -5613,6 +5613,9 @@ end:
     if (dither) {
         sixel_dither_unref(dither);
     }
+    if (encoder) {
+        sixel_encoder_unref(encoder);
+    }
 
     return status;
 }
