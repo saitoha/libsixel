@@ -1545,6 +1545,11 @@ bilinear_resize_nchw3(float const *src,
     float wx;
     size_t src_stride;
     size_t dst_index;
+    float value_top;
+    float value_bottom;
+    float value_left;
+    float value_right;
+    float value_center;
 
     dst = (float *)malloc((size_t)3 * (size_t)dst_height *
                           (size_t)dst_width * sizeof(float));
@@ -1552,15 +1557,46 @@ bilinear_resize_nchw3(float const *src,
         return NULL;
     }
     src_stride = (size_t)src_width * (size_t)src_height;
-    for (channel = 0; channel < 3; ++channel) {
-        for (y = 0; y < dst_height; ++y) {
-            scale_y = (float)src_height / (float)dst_height;
-            fy = (float)y * scale_y;
-            y0 = (int)fy;
-            if (y0 >= src_height - 1) {
-                y0 = src_height - 2;
+    /*
+     * Bilinear interpolation requires at least 2 pixels on each axis.
+     * When one axis is shorter, fall back to safe replication so that we
+     * never read outside of the source buffer.
+     */
+    if (src_width < 2 && src_height < 2) {
+        for (channel = 0; channel < 3; ++channel) {
+            value_center = src[(size_t)channel * src_stride];
+            for (y = 0; y < dst_height; ++y) {
+                for (x = 0; x < dst_width; ++x) {
+                    dst[(size_t)channel * (size_t)dst_width *
+                        (size_t)dst_height + (size_t)y *
+                        (size_t)dst_width + (size_t)x] = value_center;
+                }
             }
-            wy = fy - (float)y0;
+        }
+    } else if (src_width < 2) {
+        for (channel = 0; channel < 3; ++channel) {
+            for (y = 0; y < dst_height; ++y) {
+                scale_y = (float)src_height / (float)dst_height;
+                fy = (float)y * scale_y;
+                y0 = (int)fy;
+                if (y0 >= src_height - 1) {
+                    y0 = src_height - 2;
+                }
+                wy = fy - (float)y0;
+                value_top = src[(size_t)channel * src_stride +
+                                (size_t)y0];
+                value_bottom = src[(size_t)channel * src_stride +
+                                   (size_t)(y0 + 1)];
+                for (x = 0; x < dst_width; ++x) {
+                    dst[(size_t)channel * (size_t)dst_width *
+                        (size_t)dst_height + (size_t)y *
+                        (size_t)dst_width + (size_t)x] =
+                        (1.0f - wy) * value_top + wy * value_bottom;
+                }
+            }
+        }
+    } else if (src_height < 2) {
+        for (channel = 0; channel < 3; ++channel) {
             for (x = 0; x < dst_width; ++x) {
                 scale_x = (float)src_width / (float)dst_width;
                 fx = (float)x * scale_x;
@@ -1569,25 +1605,57 @@ bilinear_resize_nchw3(float const *src,
                     x0 = src_width - 2;
                 }
                 wx = fx - (float)x0;
-                dst_index = (size_t)channel * (size_t)dst_width *
-                            (size_t)dst_height +
-                            (size_t)y * (size_t)dst_width + (size_t)x;
-                dst[dst_index] =
-                    (1.0f - wx) * (1.0f - wy) *
-                        src[(size_t)channel * src_stride +
-                            (size_t)y0 * (size_t)src_width + (size_t)x0] +
-                    wx * (1.0f - wy) *
-                        src[(size_t)channel * src_stride +
-                            (size_t)y0 * (size_t)src_width +
-                            (size_t)(x0 + 1)] +
-                    (1.0f - wx) * wy *
-                        src[(size_t)channel * src_stride +
-                            (size_t)(y0 + 1) * (size_t)src_width +
-                            (size_t)x0] +
-                    wx * wy *
-                        src[(size_t)channel * src_stride +
-                            (size_t)(y0 + 1) * (size_t)src_width +
-                            (size_t)(x0 + 1)];
+                value_left = src[(size_t)channel * src_stride +
+                                 (size_t)x0];
+                value_right = src[(size_t)channel * src_stride +
+                                  (size_t)(x0 + 1)];
+                for (y = 0; y < dst_height; ++y) {
+                    dst[(size_t)channel * (size_t)dst_width *
+                        (size_t)dst_height + (size_t)y *
+                        (size_t)dst_width + (size_t)x] =
+                        (1.0f - wx) * value_left + wx * value_right;
+                }
+            }
+        }
+    } else {
+        for (channel = 0; channel < 3; ++channel) {
+            for (y = 0; y < dst_height; ++y) {
+                scale_y = (float)src_height / (float)dst_height;
+                fy = (float)y * scale_y;
+                y0 = (int)fy;
+                if (y0 >= src_height - 1) {
+                    y0 = src_height - 2;
+                }
+                wy = fy - (float)y0;
+                for (x = 0; x < dst_width; ++x) {
+                    scale_x = (float)src_width / (float)dst_width;
+                    fx = (float)x * scale_x;
+                    x0 = (int)fx;
+                    if (x0 >= src_width - 1) {
+                        x0 = src_width - 2;
+                    }
+                    wx = fx - (float)x0;
+                    dst_index = (size_t)channel * (size_t)dst_width *
+                                (size_t)dst_height + (size_t)y *
+                                (size_t)dst_width + (size_t)x;
+                    dst[dst_index] =
+                        (1.0f - wx) * (1.0f - wy) *
+                            src[(size_t)channel * src_stride +
+                                (size_t)y0 * (size_t)src_width +
+                                (size_t)x0] +
+                        wx * (1.0f - wy) *
+                            src[(size_t)channel * src_stride +
+                                (size_t)y0 * (size_t)src_width +
+                                (size_t)(x0 + 1)] +
+                        (1.0f - wx) * wy *
+                            src[(size_t)channel * src_stride +
+                                (size_t)(y0 + 1) * (size_t)src_width +
+                                (size_t)x0] +
+                        wx * wy *
+                            src[(size_t)channel * src_stride +
+                                (size_t)(y0 + 1) * (size_t)src_width +
+                                (size_t)(x0 + 1)];
+                }
             }
         }
     }
