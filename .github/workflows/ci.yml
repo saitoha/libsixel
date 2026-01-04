@@ -2064,7 +2064,7 @@ jobs:
           "cd `"$workspace`"",
           'meson setup builddir --wrap-mode=nodownload ${default_library_flag} ${amalgamated_lib_flag} -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled -Dpython=disabled -Dtests=true ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${unity_flag}',
           'meson compile -C builddir',
-          'meson test -C builddir
+          'meson test -C builddir'
         )
         $script = [string]::Join("`n", $scriptLines)
         &"$cygwinRoot\bin\bash.exe" --login -c $script
