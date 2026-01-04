@@ -71,6 +71,8 @@ load_with_gd(
     int gif;
     int bmp;
     int tiff;
+    int *truecolor_row;
+    unsigned char *palette_row;
 
     (void) fstatic;
     (void) fuse_palette;
@@ -139,6 +141,20 @@ load_with_gd(
             gdImageDestroy(im);
             goto end;
         }
+
+        for (y = 0; y < gdImageSY(im); y++) {
+            truecolor_row = im->tpixels[y];
+            if (truecolor_row == NULL) {
+                /*
+                 * GD sometimes allocates the tpixels array but leaves one or
+                 * more row pointers unset. The encoder would crash on such a
+                 * row, so reject the image before iterating over its pixels.
+                 */
+                status = SIXEL_GD_ERROR;
+                gdImageDestroy(im);
+                goto end;
+            }
+        }
     } else {
         if (im->pixels == NULL) {
             /*
@@ -149,6 +165,19 @@ load_with_gd(
             status = SIXEL_GD_ERROR;
             gdImageDestroy(im);
             goto end;
+        }
+
+        for (y = 0; y < gdImageSY(im); y++) {
+            palette_row = im->pixels[y];
+            if (palette_row == NULL) {
+                /*
+                 * gdImageGetPixel() reads the row pointer directly. Guard
+                 * against partially initialised rows before touching them.
+                 */
+                status = SIXEL_GD_ERROR;
+                gdImageDestroy(im);
+                goto end;
+            }
         }
     }
 
