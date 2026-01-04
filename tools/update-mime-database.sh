@@ -86,5 +86,12 @@ rm -f "${mime_dir}/aliases" \
     "${mime_dir}/XMLnamespaces"
 
 rmdir "$packages_dir" 2>/dev/null || true
-rmdir "${mime_dir}/icons" 2>/dev/null || true
+
+# update-mime-database leaves an icons/ tree even when no packages remain.
+# Remove it once packages/ is empty so distuninstallcheck sees a clean
+# uninstall, but leave it intact when other packages still exist.
+if [ -d "${mime_dir}/icons" ]; then
+    rm -rf "${mime_dir}/icons"
+fi
+
 rmdir "$mime_dir" 2>/dev/null || true
