@@ -121,6 +121,7 @@ test_final_merge_direct_apply_updates_palette(void)
         goto cleanup;
     }
 
+    sixel_palette_unref(dither->palette);
     dither->palette = palette;
 
     config.dither = dither;
