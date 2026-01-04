@@ -269,6 +269,36 @@ find_shared_library() {
     return 1
 }
 
+# Detect whether the shared library carries AddressSanitizer instrumentation so
+# Python bindings can be skipped when ASan runtimes would otherwise break
+# import-time interceptors.
+library_built_with_asan() {
+    target=$1
+
+    if command -v nm >/dev/null 2>&1; then
+        if nm -an "${target}" 2>/dev/null | grep -q "__asan_init"; then
+            if [ -n "${tap_log_file:-}" ]; then
+                printf 'asan detected via nm in %s\n' "${target}" \
+                    >>"${tap_log_file}"
+            fi
+            return 0
+        fi
+    fi
+
+    if command -v strings >/dev/null 2>&1; then
+        if strings "${target}" 2>/dev/null | \
+           grep -qiE 'libclang_rt\.asan|asan\.dll|__asan_init'; then
+            if [ -n "${tap_log_file:-}" ]; then
+                printf 'asan detected via strings in %s\n' "${target}" \
+                    >>"${tap_log_file}"
+            fi
+            return 0
+        fi
+    fi
+
+    return 1
+}
+
 # Determine the Python interpreter bit width.
 detect_python_bits() {
     bin=$1
@@ -676,6 +706,10 @@ python_prepare() {
     shared_lib=$(find_shared_library "${lib_dir}" "${python_bits}" || true)
     if [ -z "${shared_lib}" ]; then
         tap_skip_all "missing libsixel shared library for ${python_bits}-bit python"
+    fi
+
+    if library_built_with_asan "${shared_lib}"; then
+        tap_skip_all "libsixel built with AddressSanitizer"
     fi
 
     lib_bits=$(detect_library_bits "${python_bin}" "${shared_lib}")
