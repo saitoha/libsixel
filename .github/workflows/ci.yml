@@ -101,6 +101,31 @@ jobs:
             extra_options: >-
               --enable-gcov
             exec_type: alpine
+          - label: ubuntu x86_64 ASan
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            sys: x86_64
+            variant: default
+            extra_options: >-
+              CC=clang
+              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+              LDFLAGS="-fsanitize=address"
+            extra_packages: clang
+          - label: ubuntu x86_64 ASan GD/gdk-pixbuf2
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            sys: x86_64
+            variant: default
+            extra_options: >-
+              CC=clang
+              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+              LDFLAGS="-fsanitize=address"
+              --with-gd
+              --with-gdk-pixbuf2
+            extra_packages: >-
+              clang
+              libgd-dev
+              libgdk-pixbuf2.0-dev
           - label: ubuntu x86_64 static-only
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -197,6 +222,20 @@ jobs:
               --enable-gcov
             extra_packages: lcov
             check_target: distcheck
+          - label: macos aarch64 ASan GD/gdk-pixbuf2
+            os: macos-latest
+            runner: macos-latest
+            sys: aarch64
+            variant: default
+            extra_options: >-
+              CC=clang
+              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+              LDFLAGS="-fsanitize=address"
+              --with-gd
+              --with-gdk-pixbuf2
+            extra_packages: >-
+              gd
+              gdk-pixbuf
           - label: macos aarch64 amalgamated_lib
             os: macos-latest
             runner: macos-latest
@@ -335,6 +374,20 @@ jobs:
               make
               mingw-w64-clang-x86_64-toolchain
               mingw-w64-clang-x86_64-lcov
+          - label: clang64 ASan
+            os: windows-latest
+            runner: windows-latest
+            compiler: clang
+            sys: CLANG64
+            variant: default
+            extra_options: >-
+              CC=clang
+              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+              LDFLAGS="-fsanitize=address"
+            extra_packages: >-
+              make
+              pkgconf
+              mingw-w64-clang-x86_64-toolchain
           - label: clang-cl
             os: windows-latest
             runner: windows-latest
@@ -1050,195 +1103,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           parallel-finished: true
-
-  ci-autotools-asan:
-    name: AT-ASan ${{ matrix.label }}
-    runs-on: ${{ matrix.runner || matrix.os }}
-    strategy:
-      matrix:
-        include:
-          - label: ubuntu clang
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            extra_options: ''
-            artifact_suffix: default
-            extra_packages: ''
-          - label: ubuntu clang with-gd
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            extra_options: '--with-gd'
-            artifact_suffix: with-gd
-            extra_packages: 'libgd-dev'
-          - label: ubuntu clang with-gdk-pixbuf2
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            extra_options: '--with-gdk-pixbuf2'
-            artifact_suffix: with-gdk-pixbuf2
-            extra_packages: 'libgdk-pixbuf2.0-dev'
-          - label: ubuntu clang with-png
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            extra_options: '--with-png'
-            artifact_suffix: with-png
-            extra_packages: 'libpng-dev'
-          - label: ubuntu clang with-jpeg
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            extra_options: '--with-jpeg'
-            artifact_suffix: with-jpeg
-            extra_packages: 'libjpeg-turbo8-dev'
-          - label: ubuntu clang with-libcurl
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            extra_options: '--with-libcurl'
-            artifact_suffix: with-libcurl
-            extra_packages: 'libcurl4-openssl-dev'
-          - label: macos aarch64 clang
-            os: macos-latest
-            runner: macos-latest
-            extra_options: ''
-            artifact_suffix: default
-            extra_packages: ''
-          - label: macos aarch64 clang enable-quicklook-extension
-            os: macos-latest
-            runner: macos-latest
-            extra_options: '--enable-quicklook-extension'
-            artifact_suffix: enable-quicklook-extension
-            extra_packages: ''
-          - label: macos aarch64 clang with-coregraphics
-            os: macos-latest
-            runner: macos-latest
-            extra_options: '--with-coregraphics'
-            artifact_suffix: with-coregraphics
-            extra_packages: ''
-          - label: macos x86_64 clang
-            os: macos-15
-            runner: macos-15
-            extra_options: ''
-            artifact_suffix: default
-            extra_packages: ''
-          - label: clang64
-            os: windows-latest
-            runner: windows-latest
-            sys: CLANG64
-            extra_options: ''
-            artifact_suffix: default
-            extra_packages: >-
-              make
-              pkgconf
-              mingw-w64-clang-x86_64-toolchain
-          - label: clang64 with-wic
-            os: windows-latest
-            runner: windows-latest
-            sys: CLANG64
-            extra_options: '--with-wic'
-            artifact_suffix: with-wic
-            extra_packages: >-
-              make
-              pkgconf
-              mingw-w64-clang-x86_64-toolchain
-          - label: clang64 enable-wiccodec
-            os: windows-latest
-            runner: windows-latest
-            sys: CLANG64
-            extra_options: '--enable-wiccodec'
-            artifact_suffix: enable-wiccodec
-            extra_packages: >-
-              make
-              pkgconf
-              mingw-w64-clang-x86_64-toolchain
-          - label: clang64 with-winhttp
-            os: windows-latest
-            runner: windows-latest
-            sys: CLANG64
-            extra_options: '--with-winhttp'
-            artifact_suffix: with-winhttp
-            extra_packages: >-
-              make
-              pkgconf
-              mingw-w64-clang-x86_64-toolchain
-    env:
-      ASAN_CFLAGS: "-fsanitize=address -O1 -g -fno-omit-frame-pointer"
-      ASAN_LDFLAGS: "-fsanitize=address"
-    steps:
-    - name: Configure git EOL
-      if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
-      run: git config --global core.autocrlf false
-
-    - uses: actions/checkout@v6
-      with:
-        fetch-depth: 1
-
-    - name: Normalize line endings (Windows)
-      if: runner.os == 'Windows'
-      shell: bash
-      run: |
-        git config core.autocrlf false
-        git reset --hard
-
-    - name: Install clang (Ubuntu)
-      if: runner.os == 'Linux'
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y clang
-
-    - name: Install extra packages (Linux)
-      if: runner.os == 'Linux' && (matrix.extra_packages || '') != ''
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y ${{ matrix.extra_packages }}
-
-    - name: Setup MSYS2 (Windows)
-      if: runner.os == 'Windows'
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: ${{ matrix.sys }}
-        update: true
-        install: ${{ matrix.extra_packages || 'make' }}
-
-    - name: Configure and build (ASan, non-Windows)
-      if: runner.os != 'Windows'
-      shell: bash
-      run: |
-        extra='${{ matrix.extra_options }}'
-        CC=clang \
-        CFLAGS="$ASAN_CFLAGS" \
-        LDFLAGS="$ASAN_LDFLAGS" \
-        ./configure \
-            --enable-debug \
-            --enable-tests \
-            --disable-dependency-tracking \
-            ${extra:+$extra}
-        make V=1
-
-    - name: Configure and build (ASan, Windows)
-      if: runner.os == 'Windows'
-      shell: msys2 {0}
-      run: |
-        extra='${{ matrix.extra_options }}'
-        CC=clang CFLAGS="$ASAN_CFLAGS" LDFLAGS="$ASAN_LDFLAGS" ./configure \
-            --without-png \
-            --without-jpeg \
-            --without-libcurl \
-            --enable-debug \
-            --enable-tests \
-            --disable-dependency-tracking \
-            ${extra:+$extra}
-        make V=1
-
-    - name: Upload autotools ASan artifacts
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: autotools-asan-${{ matrix.os }}-${{ matrix.sys || 'native' }}-${{ matrix.artifact_suffix }}
-        path: |
-          **/config.log
-          **/test-suite.log
-          **/*.log
-          **/*.trs
-          **/_artifacts/**
-        if-no-files-found: warn
-        overwrite: true
 
   ci-dist-meson:
     name: Meson-tarball ${{ matrix.label }}
