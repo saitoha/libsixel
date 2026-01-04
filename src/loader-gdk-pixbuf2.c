@@ -241,7 +241,19 @@ load_with_gdkpixbuf(
         status = SIXEL_GDK_ERROR;
         goto end;
     }
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
+    /*
+     * gdk-pixbuf 2.44 keeps animation_iter_advance() deprecated, but newer
+     * helpers are unavailable in older releases. Silence the warning while we
+     * probe whether the stream should be decoded as an animation.
+     */
     use_animation = gdk_pixbuf_animation_iter_advance(it, &time_val);
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic pop
+#endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
     g_object_unref(it);
     it = NULL;
     if (fstatic || !use_animation) {
