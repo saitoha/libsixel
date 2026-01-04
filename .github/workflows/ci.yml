@@ -54,8 +54,6 @@ jobs:
             cp_os: netbsd
             cp_arch: x86-64
             cp_version: '10.1'
-            extra_options: >-
-              --enable-gcov
             exec_type: cross-platform-vms
           - label: haiku-r1beta5-x86-64
             os: ubuntu-latest
@@ -63,8 +61,6 @@ jobs:
             cp_os: haiku
             cp_arch: x86-64
             cp_version: r1beta5
-            extra_options: >-
-              --enable-gcov
             exec_type: cross-platform-vms
           - label: openbsd-7.8-x86-64
             os: ubuntu-latest
@@ -72,8 +68,6 @@ jobs:
             cp_os: openbsd
             cp_arch: x86-64
             cp_version: '7.8'
-            extra_options: >-
-              --enable-gcov
             exec_type: cross-platform-vms
           - label: dragonflybsd-6.4.2-x86-64
             os: ubuntu-latest
@@ -82,8 +76,6 @@ jobs:
           - label: alpine-3.20-x86_64
             os: ubuntu-latest
             runner: ubuntu-latest
-            extra_options: >-
-              --enable-gcov
             exec_type: alpine
           - label: ubuntu-x86_64-ASan
             os: ubuntu-latest
@@ -148,7 +140,6 @@ jobs:
               --disable-shared
               --enable-static
             extra_packages: gcc-14
-            pip_packages: gcovr
           - label: ubuntu-x86_64-no-simd
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -164,12 +155,8 @@ jobs:
             runner: ubuntu-latest
             sys: x86_64
             extra_options: >-
-              CC=gcc-14
-              --enable-gcov
               --disable-img2sixel
               --disable-sixel2png
-            extra_packages: gcc-14
-            pip_packages: gcovr
           - label: ubuntu-x86_64-no-threads
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -192,11 +179,6 @@ jobs:
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
             sys: aarch64
-            extra_options: >-
-              CC=gcc-14
-              --enable-gcov
-            extra_packages: gcc-14
-            pip_packages: gcovr
             check_target: distcheck
           - label: ubuntu-24.04-aarch64-amalgamated-lib
             os: ubuntu-24.04-arm
@@ -292,10 +274,9 @@ jobs:
             runner: macos-latest
             emscripten: true
             exec_type: emscripten
-          - label: mingw64-static-only
+          - label: mingw64-static
             os: windows-latest
             runner: windows-latest
-            compiler: gcc
             sys: MINGW64
             extra_options: >-
               --disable-shared
@@ -308,7 +289,6 @@ jobs:
           - label: mingw64-no-simd
             os: windows-latest
             runner: windows-latest
-            compiler: gcc
             sys: MINGW64
             extra_options: >-
               --disable-simd
@@ -320,20 +300,16 @@ jobs:
           - label: mingw64-no-tools
             os: windows-latest
             runner: windows-latest
-            compiler: gcc
             sys: MINGW64
             extra_options: >-
               --disable-img2sixel
               --disable-sixel2png
-              --enable-gcov
             extra_packages: >-
               make
               mingw-w64-x86_64-toolchain
-              mingw-w64-x86_64-lcov
           - label: mingw64-no-threads
             os: windows-latest
             runner: windows-latest
-            compiler: gcc
             sys: MINGW64
             extra_options: >-
               --disable-threads
@@ -345,7 +321,6 @@ jobs:
           - label: ucrt64
             os: windows-latest
             runner: windows-latest
-            compiler: gcc
             sys: UCRT64
             extra_options: >-
               --enable-gcov
@@ -356,7 +331,6 @@ jobs:
           - label: ucrt64-amalgamated-lib
             os: windows-latest
             runner: windows-latest
-            compiler: gcc
             sys: UCRT64
             extra_options: >-
               --enable-amalgamated-lib
@@ -367,9 +341,9 @@ jobs:
           - label: clang64
             os: windows-latest
             runner: windows-latest
-            compiler: clang
             sys: CLANG64
             extra_options: >-
+              CC=clang
               --enable-gcov
             extra_packages: >-
               make
@@ -378,7 +352,6 @@ jobs:
           - label: clang64-ASan
             os: windows-latest
             runner: windows-latest
-            compiler: clang
             sys: CLANG64
             extra_options: >-
               CC=clang
@@ -391,85 +364,91 @@ jobs:
           - label: clang-cl
             os: windows-latest
             runner: windows-latest
-            compiler: clang-cl
             sys: MSVC
             extra_options: >-
-              --enable-gcov
+              CC=clang-cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+              --host=x86_64-pc-windows-msvc
             extra_packages: make
-            exec_type: clang-cl
+            exec_type: msvc
           - label: msvc
             os: windows-latest
             runner: windows-latest
-            compiler: cl
             sys: MSVC
             extra_options: >-
               CC=cl
-              --enable-gcov
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+              --host=x86_64-pc-windows-msvc
             extra_packages: make
             exec_type: msvc
           - label: msvc-amalgamated-lib
             os: windows-latest
             runner: windows-latest
-            compiler: cl
             sys: MSVC
             extra_options: >-
               CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+              --host=x86_64-pc-windows-msvc
               --enable-amalgamated-lib
             extra_packages: make
             exec_type: msvc
-          - label: cygwin-amalgamated-lib
-            os: windows-latest
-            runner: windows-latest
-            compiler: gcc
-            sys: CYGWIN
-            extra_options: >-
-              --enable-amalgamated-lib
-          - label: cosmopolitan-msys
-            os: windows-latest
-            runner: windows-latest
-            compiler: gcc
-            sys: MSYS
-            cosmopolitan: true
-            extra_packages: >-
-              unzip
-              make
-            exec_type: cosmopolitan
           - label: msvc-vcpkg-libpng
             os: windows-latest
             runner: windows-latest
-            compiler: cl
             sys: MSVC
-            vcpkg_packages: libpng
             extra_options: >-
               CC=cl
-              --enable-gcov
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+              --host=x86_64-pc-windows-msvc
             extra_packages: make
+            vcpkg_packages: libpng
             exec_type: msvc
           - label: msvc-vcpkg-libjpeg
             os: windows-latest
             runner: windows-latest
-            compiler: cl
             sys: MSVC
-            vcpkg_packages: libjpeg-turbo
             extra_options: >-
               CC=cl
-              --enable-gcov
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+              --host=x86_64-pc-windows-msvc
             extra_packages: make
+            vcpkg_packages: libjpeg-turbo
             exec_type: msvc
           - label: mingw32
             os: windows-latest
             runner: windows-latest
-            compiler: gcc
             sys: MINGW32
-            extra_options: >-
-              --enable-gcov
             extra_packages: >-
               make
               mingw-w64-i686-toolchain
           - label: msys
             os: windows-latest
             runner: windows-latest
-            compiler: gcc
             sys: MSYS
             extra_options: >-
               --enable-gcov
@@ -479,13 +458,25 @@ jobs:
               pkgconf
               python-pip
               lcov
+          - label: cosmopolitan-msys
+            os: windows-latest
+            runner: windows-latest
+            sys: MSYS
+            cosmopolitan: true
+            extra_packages: >-
+              unzip
+              make
+            exec_type: cosmopolitan
           - label: cygwin
             os: windows-latest
             runner: windows-latest
-            compiler: gcc
+            sys: CYGWIN
+          - label: cygwin-amalgamated-lib
+            os: windows-latest
+            runner: windows-latest
             sys: CYGWIN
             extra_options: >-
-              --enable-gcov
+              --enable-amalgamated-lib
 
     steps:
     - name: Configure git EOL
@@ -570,7 +561,7 @@ jobs:
       if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
       uses: cygwin/cygwin-install-action@v4
       with:
-        packages: gcc-core,make,pkg-config,python3,python3-pip,ninja
+        packages: gcc-core,make,python3
 
     - name: Cache Cosmopolitan toolchain
       if: ${{ (matrix.exec_type || '') == 'cosmopolitan' }}
@@ -645,16 +636,10 @@ jobs:
             exit "$status"
           }
           trap 'collect_logs' EXIT
-
           pkg update -f
           pkg install -y gmake pkgconf
-
           cd "$GITHUB_WORKSPACE"
-
           ./configure \
-            --enable-debug \
-            --enable-tests \
-            --disable-dependency-tracking \
             ${{ matrix.extra_options || '' }}
           gmake V=1
           gmake ${{ matrix.check_target || 'check' }}
@@ -675,9 +660,6 @@ jobs:
       shell: bash
       run: |
         ./configure \
-          --enable-debug \
-          --enable-tests \
-          --disable-dependency-tracking \
           ${{ matrix.extra_options || '' }}
         make V=1
         make ${{ matrix.check_target || 'check' }}
@@ -687,9 +669,6 @@ jobs:
       shell: msys2 {0}
       run: |
         ./configure \
-          --enable-debug \
-          --enable-tests \
-          --disable-dependency-tracking \
           ${{ matrix.extra_options || '' }}
         make V=1
         make ${{ matrix.check_target || 'check' }}
@@ -704,8 +683,9 @@ jobs:
         $scriptLines = @(
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          "CC=${{ matrix.compiler }} ./configure --without-png --without-jpeg --without-libcurl --enable-debug --enable-tests --disable-dependency-tracking ${{ matrix.extra_options || '' }}",
-          'make V=1'
+          "./configure ${{ matrix.extra_options || '' }}",
+          'make V=1',
+          'make check'
         )
         $script = [string]::Join("`n", $scriptLines)
         &"$cygwinRoot\bin\bash.exe" --login -c $script
@@ -738,12 +718,7 @@ jobs:
             libtool \
             pkgconf \
             zlib-dev
-
-            ./configure \
-                --enable-debug \
-                --enable-tests \
-                ${{ matrix.extra_options || '' }} \
-                --disable-dependency-tracking
+            ./configure ${{ matrix.extra_options || '' }}
           make V=1
           make ${{ matrix.check_target || 'check' }}
         '
@@ -767,18 +742,8 @@ jobs:
                 esac;
             done
         )
-        CC=${{ matrix.compiler }} \
-        LD=link \
-        AR="${SHELL} $(pwd)/build-aux/ar-lib lib" \
-        ARFLAGS=cr \
-        NM="dumpbin -symbols" \
-        STRIP=: \
-        RANLIB=: \
+        PATH="$(pwd)/build-aux:$PATH"
         ./configure \
-          --host=x86_64-pc-windows-msvc \
-          --enable-debug \
-          --enable-tests \
-          --disable-dependency-tracking \
           ${{ matrix.extra_options || '' }}
         make V=1
         make ${{ matrix.check_target || 'check' }}
@@ -923,9 +888,6 @@ jobs:
           fi
 
           ./configure \
-            --enable-debug \
-            --enable-tests \
-            --disable-dependency-tracking \
             ${{ matrix.extra_options || '' }}
           ${make_cmd} V=1
           ${make_cmd} ${{ matrix.check_target || 'check' }}
@@ -2078,7 +2040,6 @@ jobs:
         python -m pip install --upgrade pip
         python -m pip install meson ninja
         set "CC=${{ matrix.compiler }}"
-        set "CXX=${{ matrix.compiler }}"
         set "DISABLE_THREADS_FLAG="
         if "${{ matrix.disable_threads || '' }}"=="true" set "DISABLE_THREADS_FLAG=-Dthreads=disabled"
         set "DISABLE_TOOLS_FLAGS="
