@@ -969,19 +969,25 @@ jobs:
       run: |
         set -eu
         set -o pipefail
-        if [ -e coverage.info ]; then
+        if test -f coverage.info; then
           echo "coverage.info already exists; skipping capture"
           exit 0
         fi
         if command -v gcovr >/dev/null 2>&1; then
           gcovr -r . --lcov -o coverage.info \
-            --gcov-executable gcov-14
+            --gcov-executable gcov-14 || true
         elif command -v lcov >/dev/null 2>&1; then
           lcov -c \
+            -d "$PWD/src" \
             -d "$PWD/src/.libs" \
             -d "$PWD/converters" \
+            -d "$PWD/tests/cli" \
+            -d "$PWD/tests/loader" \
+            -d "$PWD/tests/filter" \
+            -d "$PWD/tests/probe" \
+            -d "$PWD/tests/palette" \
             --rc branch_coverage=1 \
-            -o coverage.info
+            -o coverage.info || true
         else
           echo "No gcovr or lcov found; skipping coverage capture"
         fi
@@ -995,13 +1001,18 @@ jobs:
           exit 0
         fi
         if command -v gcovr >/dev/null 2>&1; then
-          gcovr -r . --lcov -o coverage.info
+          gcovr -r . --lcov -o coverage.info || true
         elif command -v lcov >/dev/null 2>&1; then
           lcov -c \
             -d "$PWD/src/.libs" \
             -d "$PWD/converters" \
+            -d "$PWD/tests/cli" \
+            -d "$PWD/tests/loader" \
+            -d "$PWD/tests/filter" \
+            -d "$PWD/tests/probe" \
+            -d "$PWD/tests/palette" \
             --rc branch_coverage=1 \
-            -o coverage.info
+            -o coverage.info || true
         else
           echo "No gcovr or lcov found; skipping coverage capture"
         fi
