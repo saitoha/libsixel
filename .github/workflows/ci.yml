@@ -26,7 +26,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - label: freebsd 14.3 x86_64
+          - label: freebsd-14.3-x86_64
             os: ubuntu-latest
             runner: ubuntu-latest
             platform: freebsd
@@ -35,7 +35,7 @@ jobs:
             cp_version: '14.3'
             variant: freebsd
             exec_type: cross-platform-vms
-          - label: freebsd 14.3 x86_64 amalgamated_lib
+          - label: freebsd-14.3-x86_64-amalgamated_lib
             os: ubuntu-latest
             runner: ubuntu-latest
             platform: freebsd
@@ -45,7 +45,7 @@ jobs:
             variant: amalgamated_lib
             extra_options: '--enable-amalgamated-lib'
             exec_type: cross-platform-vms
-          - label: freebsd 14.3 aarch64
+          - label: freebsd-14.3-aarch64
             os: ubuntu-latest
             runner: ubuntu-latest
             platform: freebsd
@@ -54,7 +54,7 @@ jobs:
             cp_version: '14.3'
             variant: freebsd
             exec_type: cross-platform-vms
-          - label: netbsd 10.1 x86_64
+          - label: netbsd-10.1-x86_64
             os: ubuntu-latest
             runner: ubuntu-latest
             platform: netbsd
@@ -65,7 +65,7 @@ jobs:
             extra_options: >-
               --enable-gcov
             exec_type: cross-platform-vms
-          - label: haiku r1beta5 x86-64
+          - label: haiku-r1beta5-x86-64
             os: ubuntu-latest
             runner: ubuntu-latest
             platform: haiku
@@ -76,7 +76,7 @@ jobs:
             extra_options: >-
               --enable-gcov
             exec_type: cross-platform-vms
-          - label: openbsd 7.8 x86-64
+          - label: openbsd-7.8-x86-64
             os: ubuntu-latest
             runner: ubuntu-latest
             platform: openbsd
@@ -87,21 +87,21 @@ jobs:
             extra_options: >-
               --enable-gcov
             exec_type: cross-platform-vms
-          - label: dragonflybsd 6.4.2 x86-64
+          - label: dragonflybsd-6.4.2-x86-64
             os: ubuntu-latest
             runner: ubuntu-latest
             platform: dragonflybsd
             df_release: '6.4.2'
             variant: dragonflybsd
             exec_type: dragonflybsd-vm
-          - label: alpine 3.20 x86_64
+          - label: alpine-3.20-x86_64
             os: ubuntu-latest
             runner: ubuntu-latest
             variant: alpine
             extra_options: >-
               --enable-gcov
             exec_type: alpine
-          - label: ubuntu x86_64 ASan
+          - label: ubuntu-x86_64-ASan
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
@@ -111,7 +111,7 @@ jobs:
               CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
               LDFLAGS="-fsanitize=address"
             extra_packages: clang
-          - label: ubuntu x86_64 ASan GD/gdk-pixbuf2
+          - label: ubuntu-x86_64-ASan-GD_gdk-pixbuf2
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
@@ -126,7 +126,7 @@ jobs:
               clang
               libgd-dev
               libgdk-pixbuf2.0-dev
-          - label: ubuntu x86_64 static-only
+          - label: ubuntu-x86_64-static-only
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
@@ -138,7 +138,7 @@ jobs:
               --enable-static
             extra_packages: gcc-14
             pip_packages: gcovr
-          - label: ubuntu x86_64 no-simd
+          - label: ubuntu-x86_64-no-simd
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
@@ -149,7 +149,7 @@ jobs:
               --disable-simd
             extra_packages: gcc-14
             pip_packages: gcovr
-          - label: ubuntu x86_64 no-tools
+          - label: ubuntu-x86_64-no-tools
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
@@ -161,7 +161,7 @@ jobs:
               --disable-sixel2png
             extra_packages: gcc-14
             pip_packages: gcovr
-          - label: ubuntu x86_64 no-threads
+          - label: ubuntu-x86_64-no-threads
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
@@ -172,7 +172,7 @@ jobs:
               --disable-threads
             extra_packages: gcc-14
             pip_packages: gcovr
-          - label: ubuntu x86_64 musl-cross
+          - label: ubuntu-x86_64-musl-cross
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: x86_64
@@ -181,7 +181,7 @@ jobs:
             extra_options: >-
               CC=musl-gcc
             extra_packages: musl-tools
-          - label: ubuntu 24.04 aarch64 distcheck
+          - label: ubuntu-24.04-aarch64-distcheck
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
             sys: aarch64
@@ -192,7 +192,7 @@ jobs:
             extra_packages: gcc-14
             pip_packages: gcovr
             check_target: distcheck
-          - label: ubuntu 24.04 aarch64 amalgamated_lib
+          - label: ubuntu-24.04-aarch64-amalgamated_lib
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
             sys: aarch64
@@ -201,7 +201,7 @@ jobs:
               CC=gcc-14
               --enable-amalgamated-lib
             extra_packages: gcc-14
-          - label: ubuntu i686
+          - label: ubuntu-i686
             os: ubuntu-latest
             runner: ubuntu-latest
             sys: i686
@@ -213,7 +213,7 @@ jobs:
               PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
               PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
             extra_packages: gcc-multilib
-          - label: macos aarch64 distcheck
+          - label: macos-aarch64-distcheck
             os: macos-latest
             runner: macos-latest
             sys: aarch64
@@ -222,7 +222,7 @@ jobs:
               --enable-gcov
             extra_packages: lcov
             check_target: distcheck
-          - label: macos aarch64 ASan GD/gdk-pixbuf2
+          - label: macos-aarch64-ASan-GD/gdk-pixbuf2
             os: macos-latest
             runner: macos-latest
             sys: aarch64
@@ -236,14 +236,14 @@ jobs:
             extra_packages: >-
               gd
               gdk-pixbuf
-          - label: macos aarch64 amalgamated_lib
+          - label: macos-aarch64-amalgamated_lib
             os: macos-latest
             runner: macos-latest
             sys: aarch64
             variant: amalgamated_lib
             extra_options: >-
               --enable-amalgamated-lib
-          - label: macos x86_64
+          - label: macos-x86_64
             os: macos-15
             runner: macos-15
             sys: x86_64
@@ -251,40 +251,40 @@ jobs:
             extra_options: >-
               --enable-gcov
             extra_packages: lcov
-          - label: macos x86_64 amalgamated_lib
+          - label: macos-x86_64-amalgamated_lib
             os: macos-15
             runner: macos-15
             sys: x86_64
             variant: amalgamated_lib
             extra_options: >-
               --enable-amalgamated-lib
-          - label: cosmopolitan ubuntu 24.04 aarch64
+          - label: cosmopolitan-ubuntu-24.04-aarch64
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
             sys: aarch64
             variant: cosmopolitan
             cosmopolitan: true
             exec_type: cosmopolitan
-          - label: cosmopolitan macos aarch64
+          - label: cosmopolitan-macos-aarch64
             os: macos-latest
             runner: macos-latest
             sys: aarch64
             variant: cosmopolitan
             cosmopolitan: true
             exec_type: cosmopolitan
-          - label: emscripten ubuntu 24.04 aarch64
+          - label: emscripten-ubuntu-24.04-aarch64
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
             variant: emscripten
             emscripten: true
             exec_type: emscripten
-          - label: emscripten macos aarch64
+          - label: emscripten-macos-aarch64
             os: macos-latest
             runner: macos-latest
             variant: emscripten
             emscripten: true
             exec_type: emscripten
-          - label: mingw64 static-only
+          - label: mingw64-static-only
             os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -298,7 +298,7 @@ jobs:
               make
               mingw-w64-x86_64-toolchain
               mingw-w64-x86_64-lcov
-          - label: mingw64 no-simd
+          - label: mingw64-no-simd
             os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -311,7 +311,7 @@ jobs:
               make
               mingw-w64-x86_64-toolchain
               mingw-w64-x86_64-lcov
-          - label: mingw64 no-tools
+          - label: mingw64-no-tools
             os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -325,7 +325,7 @@ jobs:
               make
               mingw-w64-x86_64-toolchain
               mingw-w64-x86_64-lcov
-          - label: mingw64 no-threads
+          - label: mingw64-no-threads
             os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -350,7 +350,7 @@ jobs:
               make
               mingw-w64-ucrt-x86_64-toolchain
               mingw-w64-ucrt-x86_64-lcov
-          - label: ucrt64 amalgamated_lib
+          - label: ucrt64-amalgamated_lib
             os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -374,7 +374,7 @@ jobs:
               make
               mingw-w64-clang-x86_64-toolchain
               mingw-w64-clang-x86_64-lcov
-          - label: clang64 ASan
+          - label: clang64-ASan
             os: windows-latest
             runner: windows-latest
             compiler: clang
@@ -409,7 +409,7 @@ jobs:
               --enable-gcov
             extra_packages: make
             exec_type: msvc
-          - label: msvc amalgamated_lib
+          - label: msvc-amalgamated_lib
             os: windows-latest
             runner: windows-latest
             compiler: cl
@@ -420,7 +420,7 @@ jobs:
               --enable-amalgamated-lib
             extra_packages: make
             exec_type: msvc
-          - label: cygwin amalgamated_lib
+          - label: cygwin-amalgamated_lib
             os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -428,7 +428,7 @@ jobs:
             variant: amalgamated_lib
             extra_options: >-
               --enable-amalgamated-lib
-          - label: cosmopolitan msys
+          - label: cosmopolitan-msys
             os: windows-latest
             runner: windows-latest
             compiler: gcc
@@ -439,7 +439,7 @@ jobs:
               unzip
               make
             exec_type: cosmopolitan
-          - label: msvc vcpkg-libpng
+          - label: msvc-vcpkg-libpng
             os: windows-latest
             runner: windows-latest
             compiler: cl
@@ -451,7 +451,7 @@ jobs:
               --enable-gcov
             extra_packages: make
             exec_type: msvc
-          - label: msvc vcpkg-libjpeg
+          - label: msvc-vcpkg-libjpeg
             os: windows-latest
             runner: windows-latest
             compiler: cl
@@ -1032,7 +1032,7 @@ jobs:
       if: ${{ always() && !((matrix.exec_type || '') == 'cross-platform-vms' || (matrix.exec_type || '') == 'dragonflybsd-vm') }}
       uses: actions/upload-artifact@v4
       with:
-        name: autotools-${{ matrix.os }}-${{ matrix.sys || 'native' }}-${{ matrix.compiler || 'default' }}-${{ matrix.variant || 'default' }}
+        name: autotools-${{ matrix.label }}
         path: |
           **/test-suite.log
           **/*.log
