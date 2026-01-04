@@ -29,6 +29,8 @@ use_wheel=0
 python_in_tree_pythonpath=""
 python_in_tree_ld_library_path=""
 python_wheel_ld_library_path=""
+python_in_tree_loader_env=""
+python_wheel_loader_env=""
 python_trace_dir=""
 python_trace_pythonpath=""
 python_trace_env=""
@@ -902,6 +904,14 @@ PY
         if [ -n "${wheel_path}" ]; then
             wheel_path=$(python_to_windows_path "${wheel_path}")
         fi
+    fi
+
+    python_in_tree_loader_env="LD_LIBRARY_PATH=${python_in_tree_ld_library_path}"
+    python_wheel_loader_env="LD_LIBRARY_PATH=${python_wheel_ld_library_path}"
+
+    if [ "$(uname -s)" = "Darwin" ]; then
+        python_in_tree_loader_env="${python_in_tree_loader_env} DYLD_LIBRARY_PATH=${python_in_tree_ld_library_path}"
+        python_wheel_loader_env="${python_wheel_loader_env} DYLD_LIBRARY_PATH=${python_wheel_ld_library_path}"
     fi
 
     python_trace_env="SIXEL_PY_TRACE_LOG=${tap_log_file}"

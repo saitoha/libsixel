@@ -34,8 +34,8 @@ if [ "${use_wheel}" -eq 1 ]; then
         tap_fail ${case_id} "wheel installation failed"
     fi
 else
-    if PYTHONPATH="${python_in_tree_pythonpath}" \
-       LD_LIBRARY_PATH="${python_in_tree_ld_library_path}" \
+    if env ${python_in_tree_loader_env} \
+       PYTHONPATH="${python_in_tree_pythonpath}" \
        LIBSIXEL_LIBDIR="${python_lib_dir}" \
        "${run_python}" - <<'PY' >>"${log_file}" 2>&1; then
 try:
@@ -139,13 +139,8 @@ if [ -n "${skip_reason}" ]; then
 fi
 
 if [ "${use_wheel}" -eq 1 ]; then
-    ld_library_path_env="${libdir}"
-    if [ -n "${LD_LIBRARY_PATH-}" ]; then
-        ld_library_path_env="${ld_library_path_env}:${LD_LIBRARY_PATH}"
-    fi
-
-    if PYTHONPATH="${python_wheel_trace_pythonpath}" \
-       LD_LIBRARY_PATH="${ld_library_path_env}" \
+    if env ${python_wheel_loader_env} \
+       PYTHONPATH="${python_wheel_trace_pythonpath}" \
         "${python_env}" "${verify_script}" >>"${log_file}" 2>&1; then
         tap_pass ${case_id} "encodes image via wheel"
     else
@@ -153,8 +148,8 @@ if [ "${use_wheel}" -eq 1 ]; then
         tap_fail ${case_id} "python wheel round-trip failed"
     fi
 else
-    if PYTHONPATH="${python_in_tree_trace_pythonpath}" \
-       LD_LIBRARY_PATH="${python_in_tree_ld_library_path}" \
+    if env ${python_in_tree_loader_env} \
+       PYTHONPATH="${python_in_tree_trace_pythonpath}" \
        "${python_env}" "${verify_script}" >>"${log_file}" 2>&1; then
         tap_pass ${case_id} "encodes image via in-tree modules"
     else

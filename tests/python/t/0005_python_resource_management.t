@@ -170,9 +170,8 @@ source_image="${TOP_SRCDIR}/images/autumn.png"
 work_dir="${tmp_dir}/work"
 
 if [ "${use_wheel}" -eq 1 ]; then
-    ld_env="${python_wheel_ld_library_path}"
-    if PYTHONPATH="${python_wheel_trace_pythonpath}" \
-       LD_LIBRARY_PATH="${ld_env}" \
+    if env ${python_wheel_loader_env} \
+       PYTHONPATH="${python_wheel_trace_pythonpath}" \
        LIBSIXEL_LIBDIR="${python_lib_dir}" \
        "${run_python}" "${verify_script}" \
        "${source_image}" "${work_dir}" >>"${log_file}" 2>&1; then
@@ -182,8 +181,8 @@ if [ "${use_wheel}" -eq 1 ]; then
         tap_fail ${case_id} "resource test via wheel failed"
     fi
 else
-    if PYTHONPATH="${python_in_tree_trace_pythonpath}" \
-       LD_LIBRARY_PATH="${python_in_tree_ld_library_path}" \
+    if env ${python_in_tree_loader_env} \
+       PYTHONPATH="${python_in_tree_trace_pythonpath}" \
        LIBSIXEL_LIBDIR="${python_lib_dir}" \
        "${run_python}" "${verify_script}" \
        "${source_image}" "${work_dir}" >>"${log_file}" 2>&1; then

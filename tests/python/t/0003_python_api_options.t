@@ -286,9 +286,8 @@ run_case() {
     mkdir -p "${working_dir}"
 
     if [ "${use_wheel}" -eq 1 ]; then
-        ld_env="${python_wheel_ld_library_path}"
-        if PYTHONPATH="${python_wheel_trace_pythonpath}" \
-           LD_LIBRARY_PATH="${ld_env}" \
+        if env ${python_wheel_loader_env} \
+           PYTHONPATH="${python_wheel_trace_pythonpath}" \
            LIBSIXEL_LIBDIR="${python_lib_dir}" \
            "${run_python}" "${verify_script}" \
            "${scenario}" "${TOP_SRCDIR}/images/autumn.png" \
@@ -299,8 +298,8 @@ run_case() {
             tap_fail ${case_id} "${description} via wheel failed"
         fi
     else
-        if PYTHONPATH="${python_in_tree_trace_pythonpath}" \
-           LD_LIBRARY_PATH="${python_in_tree_ld_library_path}" \
+        if env ${python_in_tree_loader_env} \
+           PYTHONPATH="${python_in_tree_trace_pythonpath}" \
            LIBSIXEL_LIBDIR="${python_lib_dir}" \
            "${run_python}" "${verify_script}" \
            "${scenario}" "${TOP_SRCDIR}/images/autumn.png" "${working_dir}" \

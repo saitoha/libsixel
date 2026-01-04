@@ -49,14 +49,14 @@ run_case() {
     mkdir -p "${working_dir}" "${working_dir}/wheel" "${working_dir}/tree"
 
     run_python_scenarios() {
+        loader_env=$1
+        shift
         PYTHONPATH=$1
         shift
-        LD_LIBRARY_PATH=$1
-        shift
         LIBSIXEL_LIBDIR=${python_lib_dir}
-        export PYTHONPATH LD_LIBRARY_PATH LIBSIXEL_LIBDIR
+        export PYTHONPATH LIBSIXEL_LIBDIR
 
-        "${run_python}" - "$@" <<'PY'
+        env ${loader_env} "${run_python}" - "$@" <<'PY'
 """Exercise Python encoder error handling without temporary scripts."""
 import pathlib
 import sys
@@ -280,8 +280,8 @@ PY
     }
 
     if [ "${use_wheel}" -eq 1 ]; then
-        if run_python_scenarios "${python_wheel_trace_pythonpath}" \
-            "${python_wheel_ld_library_path}" \
+        if run_python_scenarios "${python_wheel_loader_env}" \
+            "${python_wheel_trace_pythonpath}" \
             "${scenario}" "${source_image}" \
             "${working_dir}/wheel" "${log_file}" >>"${log_file}" 2>&1; then
             tap_pass ${case_id} "${description} via wheel"
@@ -290,8 +290,8 @@ PY
             tap_fail ${case_id} "${description} via wheel failed"
         fi
     else
-        if run_python_scenarios "${python_in_tree_trace_pythonpath}" \
-            "${python_in_tree_ld_library_path}" \
+        if run_python_scenarios "${python_in_tree_loader_env}" \
+            "${python_in_tree_trace_pythonpath}" \
             "${scenario}" "${source_image}" \
             "${working_dir}/tree" "${log_file}" >>"${log_file}" 2>&1; then
             tap_pass ${case_id} "${description} via in-tree modules"
