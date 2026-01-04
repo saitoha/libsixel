@@ -1075,6 +1075,7 @@ jobs:
 
     - name: Upload to Coveralls (per-flag, retry)
       if: ${{ hashFiles('coverage.info') != '' && steps.coveralls_upload.outcome == 'failure' }}
+      continue-on-error: true
       uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
