@@ -225,7 +225,7 @@ jobs:
               --enable-gcov
             extra_packages: lcov
             check_target: distcheck
-          - label: macos-aarch64-ASan-GD/gdk-pixbuf2
+          - label: macos-aarch64-ASan-gdk-pixbuf2
             os: macos-latest
             runner: macos-latest
             sys: aarch64
@@ -233,11 +233,24 @@ jobs:
               CC=clang
               CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
               LDFLAGS="-fsanitize=address"
-              --with-gd
+              --without-png
+              --without-jpeg
               --with-gdk-pixbuf2
             extra_packages: >-
-              gd
               gdk-pixbuf
+          - label: macos-aarch64-ASan-GD
+            os: macos-latest
+            runner: macos-latest
+            sys: aarch64
+            extra_options: >-
+              CC=clang
+              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+              LDFLAGS="-fsanitize=address"
+              --without-png
+              --without-jpeg
+              --with-gd
+            extra_packages: >-
+              gd
           - label: macos-aarch64-amalgamated-lib
             os: macos-latest
             runner: macos-latest
@@ -1803,9 +1816,9 @@ jobs:
           if [ "${{ matrix.static_only || '' }}" = "true" ]; then
             default_library_flag="--default-library static"
           fi
-          amalgamated-lib_flag=""
+          amalgamated_lib_flag=""
           if [ "${{ matrix.amalgamated-lib || '' }}" = "true" ]; then
-            amalgamated-lib_flag="-Damalgamated-lib=true"
+            amalgamated_lib_flag="-Damalgamated_lib=true"
           fi
           meson setup builddir \
               --wrap-mode=nodownload \
@@ -1814,7 +1827,7 @@ jobs:
               -Dzshcompletiondir=disabled \
               -Dpython=disabled \
               -Dtests=true \
-              ${amalgamated-lib_flag} \
+              ${amalgamated_lib_flag} \
               ${disable_tools_flags} \
               ${disable_threads_flag} \
               ${disable_simd_flag}
@@ -1878,9 +1891,9 @@ jobs:
           if [ "${{ matrix.static_only || '' }}" = "true" ]; then
             default_library_flag="--default-library static"
           fi
-          amalgamated-lib_flag=""
+          amalgamated_lib_flag=""
           if [ "${{ matrix.amalgamated-lib || '' }}" = "true" ]; then
-            amalgamated-lib_flag="-Damalgamated-lib=true"
+            amalgamated_lib_flag="-Damalgamated_lib=true"
           fi
 
           date -u
@@ -1901,7 +1914,7 @@ jobs:
               -Dzshcompletiondir=disabled \
               -Dpython=disabled \
               -Dtests=true \
-              ${amalgamated-lib_flag} \
+              ${amalgamated_lib_flag} \
               ${disable_tools_flags} \
               ${disable_threads_flag} \
               ${disable_simd_flag}
@@ -1980,9 +1993,9 @@ jobs:
           if [ "${{ matrix.static_only || '' }}" = "true" ]; then
             default_library_flag="--default-library static"
           fi
-          amalgamated-lib_flag=""
+          amalgamated_lib_flag=""
           if [ "${{ matrix.amalgamated-lib || '' }}" = "true" ]; then
-            amalgamated-lib_flag="-Damalgamated-lib=true"
+            amalgamated_lib_flag="-Damalgamated_lib=true"
           fi
           meson setup builddir \
               --wrap-mode=nodownload \
@@ -1991,7 +2004,7 @@ jobs:
               -Dzshcompletiondir=disabled \
               -Dpython=disabled \
               -Dtests=true \
-              ${amalgamated-lib_flag} \
+              ${amalgamated_lib_flag} \
               ${disable_tools_flags} \
               ${disable_threads_flag} \
               ${disable_simd_flag}
@@ -2004,7 +2017,7 @@ jobs:
       shell: msys2 {0}
       run: |
         disable_threads_flag=""
-        amalgamated-lib_flag=""
+        amalgamated_lib_flag=""
         if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
           disable_threads_flag="-Dthreads=disabled"
         fi
@@ -2025,7 +2038,7 @@ jobs:
           default_library_flag="--default-library static"
         fi
         if [ "${{ matrix.amalgamated-lib || '' }}" = "true" ]; then
-          amalgamated-lib_flag="-Damalgamated-lib=true"
+          amalgamated_lib_flag="-Damalgamated_lib=true"
         fi
         meson setup builddir \
             --wrap-mode=nodownload \
@@ -2034,7 +2047,7 @@ jobs:
             -Dzshcompletiondir=disabled \
             -Dpython=disabled \
             -Dtests=true \
-            ${amalgamated-lib_flag} \
+            ${amalgamated_lib_flag} \
             ${disable_tools_flags} \
             ${disable_threads_flag} \
             ${disable_simd_flag} \
@@ -2069,9 +2082,9 @@ jobs:
         if ('${{ matrix.static_only }}' -eq 'true') {
           $defaultLibraryFlag = '--default-library static'
         }
-        $amalgamated-libFlag = ''
+        $amalgamatedLibFlag = ''
         if ('${{ matrix.amalgamated-lib }}' -eq 'true') {
-          $amalgamated-libFlag = '-Damalgamated-lib=true'
+          $amalgamatedLibFlag = '-Damalgamated_lib=true'
         }
         $scriptLines = @(
           'set -eu',
@@ -2083,10 +2096,10 @@ jobs:
           "disable_simd_flag=`"$disableSimdFlag`"",
           "default_library_flag=`"$defaultLibraryFlag`"",
           "unity_flag=`"$unityFlag`"",
-          "amalgamated-lib_flag=`"$amalgamated-libFlag`"",
+          "amalgamated_lib_flag=`"$amalgamatedLibFlag`"",
           "export GITHUB_WORKSPACE=`"$workspace`"",
           "cd `"$workspace`"",
-          'meson setup builddir --wrap-mode=nodownload ${default_library_flag} ${amalgamated-lib_flag} -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled -Dpython=disabled -Dtests=true ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${unity_flag}',
+          'meson setup builddir --wrap-mode=nodownload ${default_library_flag} ${amalgamated_lib_flag} -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled -Dpython=disabled -Dtests=true ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${unity_flag}',
           'meson compile -C builddir -v',
           'meson test -C builddir -v || { cat builddir/meson-logs/testlog.txt || true; exit 1; }'
         )
@@ -2112,7 +2125,7 @@ jobs:
         set "UNITY_FLAG="
         if "${{ matrix.unity || '' }}"=="true" set "UNITY_FLAG=-Dunity=on"
         set "AMALGAMATED_LIB_FLAG="
-        if "${{ matrix.amalgamated-lib || '' }}"=="true" set "AMALGAMATED_LIB_FLAG=-Damalgamated-lib=true"
+        if "${{ matrix.amalgamated-lib || '' }}"=="true" set "AMALGAMATED_LIB_FLAG=-Damalgamated_lib=true"
         python -m mesonbuild.mesonmain setup builddir ^
             --wrap-mode=nodownload ^
             --default-library static ^
@@ -2158,7 +2171,7 @@ jobs:
         set "UNITY_FLAG="
         if "${{ matrix.unity || '' }}"=="true" set "UNITY_FLAG=-Dunity=on"
         set "AMALGAMATED_LIB_FLAG="
-        if "${{ matrix.amalgamated-lib || '' }}"=="true" set "AMALGAMATED_LIB_FLAG=-Damalgamated-lib=true"
+        if "${{ matrix.amalgamated-lib || '' }}"=="true" set "AMALGAMATED_LIB_FLAG=-Damalgamated_lib=true"
         python -m mesonbuild.mesonmain setup builddir ^
             --wrap-mode=nodownload ^
             --default-library shared ^
@@ -2203,7 +2216,7 @@ jobs:
         set "UNITY_FLAG="
         if "${{ matrix.unity || '' }}"=="true" set "UNITY_FLAG=-Dunity=on"
         set "AMALGAMATED_LIB_FLAG="
-        if "${{ matrix.amalgamated-lib || '' }}"=="true" set "AMALGAMATED_LIB_FLAG=-Damalgamated-lib=true"
+        if "${{ matrix.amalgamated-lib || '' }}"=="true" set "AMALGAMATED_LIB_FLAG=-Damalgamated_lib=true"
         python -m mesonbuild.mesonmain setup builddir ^
             --wrap-mode=nodownload ^
             --default-library shared ^
