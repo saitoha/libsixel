@@ -118,17 +118,38 @@ load_with_gd(
         goto end;
     }
 
-    if (gdImageSX(im) <= 0 || gdImageSY(im) <= 0 ||
-            (im->tpixels == NULL && im->pixels == NULL)) {
+    if (gdImageSX(im) <= 0 || gdImageSY(im) <= 0) {
         /*
-         * GD returned a stub image without valid pixel buffers. This can
-         * happen when GD detects a malformed frame but still allocates a
-         * partially initialized object. Avoid dereferencing null pixel
-         * storage by rejecting the image here.
+         * GD returned a stub image without valid dimensions. Prevent
+         * downstream allocations when the frame size is not usable.
          */
         status = SIXEL_GD_ERROR;
         gdImageDestroy(im);
         goto end;
+    }
+
+    if (im->trueColor) {
+        if (im->tpixels == NULL) {
+            /*
+             * Some malformed inputs make GD allocate an image shell without
+             * tpixels. gdImageTrueColorPixel() would dereference this field,
+             * so abort loading before accessing it.
+             */
+            status = SIXEL_GD_ERROR;
+            gdImageDestroy(im);
+            goto end;
+        }
+    } else {
+        if (im->pixels == NULL) {
+            /*
+             * Paletted images also rely on a populated pixel buffer. Reject
+             * frames that omit it to avoid null dereferences when accessing
+             * palette entries.
+             */
+            status = SIXEL_GD_ERROR;
+            gdImageDestroy(im);
+            goto end;
+        }
     }
 
     status = sixel_frame_new(&frame, pchunk->allocator);
