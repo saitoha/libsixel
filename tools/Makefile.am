@@ -39,9 +39,7 @@ install-data-hook:
 	@WANT_THUMBNAILER_TRUE@      $(INSTALL_DATA) "$(srcdir)/sixel.xml" "$$dest/"; \
 	@WANT_THUMBNAILER_TRUE@    done
 	@WANT_THUMBNAILER_TRUE@    @if test -n "$(UPDATE_MIME_DATABASE)"; then \
-	@WANT_THUMBNAILER_TRUE@      if test -z "$(DESTDIR)"; then \
-	@WANT_THUMBNAILER_TRUE@        $(SHELL) "$(top_srcdir)/tools/update-mime-database.sh" "$(UPDATE_MIME_DATABASE)" "$(datadir)" install; \
-	@WANT_THUMBNAILER_TRUE@      fi; \
+	@WANT_THUMBNAILER_TRUE@      $(SHELL) "$(top_srcdir)/tools/update-mime-database.sh" "$(UPDATE_MIME_DATABASE)" "$(datadir)" install; \
 	@WANT_THUMBNAILER_TRUE@    fi
 	@WANT_THUMBNAILER_FALSE@    @:
 
@@ -54,8 +52,6 @@ uninstall-hook:
 	@WANT_THUMBNAILER_TRUE@      rm -f "$$dest/sixel.xml"; \
 	@WANT_THUMBNAILER_TRUE@    done
 	@WANT_THUMBNAILER_TRUE@    @if test -n "$(UPDATE_MIME_DATABASE)"; then \
-	@WANT_THUMBNAILER_TRUE@      if test -z "$(DESTDIR)"; then \
-	@WANT_THUMBNAILER_TRUE@        $(SHELL) "$(top_srcdir)/tools/update-mime-database.sh" "$(UPDATE_MIME_DATABASE)" "$(datadir)" uninstall; \
-	@WANT_THUMBNAILER_TRUE@      fi; \
+	@WANT_THUMBNAILER_TRUE@      $(SHELL) "$(top_srcdir)/tools/update-mime-database.sh" "$(UPDATE_MIME_DATABASE)" "$(datadir)" uninstall; \
 	@WANT_THUMBNAILER_TRUE@    fi
 	@WANT_THUMBNAILER_FALSE@    @:
