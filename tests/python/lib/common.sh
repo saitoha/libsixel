@@ -297,20 +297,50 @@ detect_python_libc() {
 
     ${bin} - <<'PY' 2>/dev/null || true
 import os
+import pathlib
 import platform
+import sys
 
-# platform.libc_ver() returns ('glibc', version) on glibc and ('musl', '') on
-# musl. Normalize to stable strings and fall back to an empty marker when the
-# libc cannot be determined.
-name, _ = platform.libc_ver()
-name = name.lower().strip()
 
-if name:
-    print(name)
-elif os.name == "nt":
-    print("msvcrt")
-else:
+def _detect_windows_libc():
+    """Return the Windows CRT dependency of the current interpreter."""
+
+    exe = pathlib.Path(sys.executable)
+    try:
+        payload = exe.read_bytes().lower()
+    except OSError:
+        return "msvcrt"
+
+    if b"ucrtbase.dll" in payload or b"vcruntime" in payload:
+        return "ucrt"
+    if b"msvcrt.dll" in payload:
+        return "msvcrt"
+
+    return "msvcrt"
+
+
+def main():
+    """Detect libc family in a platform-specific manner."""
+
+    # platform.libc_ver() returns ('glibc', version) on glibc and ('musl', '')
+    # on musl. Normalize to stable strings and fall back to an empty marker
+    # when the libc cannot be determined.
+    name, _ = platform.libc_ver()
+    name = name.lower().strip()
+
+    if name:
+        print(name)
+        return
+
+    if os.name == "nt":
+        print(_detect_windows_libc())
+        return
+
     print("")
+
+
+if __name__ == "__main__":
+    main()
 PY
 }
 
@@ -494,9 +524,9 @@ if __name__ == "__main__":
 PY
 }
 
-# Determine the shared library's libc family by inspecting ELF interpreter and
-# loader hints. The detection is intentionally lightweight and returns empty on
-# non-ELF binaries.
+# Determine the shared library's libc family. ELF binaries are inspected for
+# interpreter/loader hints while PE binaries are scanned for CRT import
+# strings. Unknown formats return an empty marker.
 detect_library_libc() {
     bin=$1
     path=$2
@@ -505,15 +535,8 @@ detect_library_libc() {
 import pathlib
 
 
-def detect(path):
-    try:
-        with path.open("rb") as handle:
-            head = handle.read(4096)
-    except OSError:
-        return ""
-
-    if not head.startswith(b"\x7fELF"):
-        return ""
+def _detect_elf_libc(head):
+    """Return glibc/musl markers for ELF binaries."""
 
     musl_markers = (b"/ld-musl", b"musl")
     glibc_markers = (b"/ld-linux", b"glibc")
@@ -525,6 +548,34 @@ def detect(path):
     for marker in glibc_markers:
         if marker in head:
             return "glibc"
+
+    return ""
+
+
+def _detect_pe_libc(payload):
+    """Return CRT family for PE binaries based on import table strings."""
+
+    lower = payload.lower()
+
+    if b"ucrtbase.dll" in lower or b"vcruntime" in lower:
+        return "ucrt"
+    if b"msvcrt.dll" in lower:
+        return "msvcrt"
+
+    return ""
+
+
+def detect(path):
+    try:
+        payload = path.read_bytes()
+    except OSError:
+        return ""
+
+    if payload.startswith(b"\x7fELF"):
+        return _detect_elf_libc(payload)
+
+    if payload.startswith(b"MZ"):
+        return _detect_pe_libc(payload)
 
     return ""
 
