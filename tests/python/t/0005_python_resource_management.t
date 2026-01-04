@@ -94,15 +94,13 @@ def decode_large(source: pathlib.Path, target: pathlib.Path) -> Tuple[int, int]:
     return width, height
 
 
-def remove_path(
-    path: pathlib.Path,
-    retries: int = 10,
-    base_delay: float = 0.25,
-) -> None:
-    """Delete a path with retries to handle slow handle release on Windows."""
+def remove_path(path: pathlib.Path, deadline: float = 15.0) -> None:
+    """Delete a path with bounded retries for slow Windows handle release."""
 
-    last_exc: Optional[PermissionError] = None
-    for attempt in range(retries):
+    limit = time.monotonic() + deadline
+    attempts = 0
+    while True:
+        attempts += 1
         gc.collect()
         try:
             path.unlink()
@@ -110,19 +108,15 @@ def remove_path(
         except FileNotFoundError:
             return
         except PermissionError as exc:
-            last_exc = exc
-            if attempt + 1 >= retries:
-                break
-            sleep_time = base_delay * (2**attempt)
-            print(
-                f"retry {attempt + 1}/{retries} removing {path.name}: {exc}"
-            )
-            time.sleep(sleep_time)
+            remaining = limit - time.monotonic()
+            if remaining <= 0:
+                raise SystemExit(
+                    f"failed to remove {path.name} after {attempts} attempts: {exc}"
+                ) from exc
+            print(f"retry {attempts} removing {path.name}: {exc}")
+            time.sleep(min(0.5, max(0.05, remaining / 4)))
         except Exception as exc:  # noqa: BLE001 - propagate exact failure context
             raise SystemExit(f"failed to remove {path.name}: {exc}") from exc
-
-    if last_exc is not None:
-        raise SystemExit(f"failed to remove {path.name}: {last_exc}") from last_exc
 
 
 def main() -> None:
@@ -144,7 +138,7 @@ def main() -> None:
     # Release references and allow handle shutdown before deletion to
     # surface slow cleanup on platforms such as Windows.
     gc.collect()
-    time.sleep(0.75)
+    time.sleep(0.5)
 
     remove_path(sixel_path)
     remove_path(decoded_png)
