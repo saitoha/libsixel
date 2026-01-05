@@ -471,16 +471,18 @@ jobs:
             os: windows-latest
             runner: windows-latest
             sys: CYGWIN
+            exec_type: cygwin
           - label: cygwin-amalgamated-lib
             os: windows-latest
             runner: windows-latest
             sys: CYGWIN
             extra_options: >-
               --enable-amalgamated-lib
+            exec_type: cygwin
 
     steps:
     - name: Configure git EOL
-      if: matrix.sys == 'CYGWIN'
+      if: ${{ (matrix.exec_type || '') == 'cygwin' }}
       run: git config --global core.autocrlf false
 
     - uses: actions/checkout@v6
@@ -558,7 +560,7 @@ jobs:
         install: ${{ matrix.extra_packages || 'make' }}
 
     - name: Setup Cygwin
-      if: runner.os == 'Windows' && matrix.sys == 'CYGWIN'
+      if: ${{ (matrix.exec_type || '') == 'cygwin' }}
       uses: cygwin/cygwin-install-action@v4
       with:
         packages: gcc-core,make,python3
@@ -593,7 +595,7 @@ jobs:
         chmod +x cosmopolitan/bin/cosmo*
 
     - name: Prepare Cosmopolitan toolchain (Windows, Cygwin)
-      if: ${{ (matrix.exec_type || '') == 'cosmopolitan' && runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
+      if: ${{ (matrix.exec_type || '') == 'cygwin/cosmopolitan' }}
       shell: pwsh
       run: |
         $cygwinRoot = 'C:\\cygwin'
@@ -673,22 +675,33 @@ jobs:
         make V=1
         make ${{ matrix.check_target || 'check' }}
 
+#    - name: Configure and build (Windows, Cygwin)
+#      if: ${{ (matrix.exec_type || '') == '' && runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
+#      shell: pwsh
+#      run: |
+#        $cygwinRoot = 'C:\cygwin'
+#        $env:PATH = "$cygwinRoot\bin;$env:PATH"
+#        $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
+#        $scriptLines = @(
+#          "export GITHUB_WORKSPACE=`"$workspace`"",
+#          "cd `"$workspace`"",
+#          "./configure ${{ matrix.extra_options || '' }}",
+#          'make V=1',
+#          'make check'
+#        )
+#        $script = [string]::Join("`n", $scriptLines)
+#        &"$cygwinRoot\bin\bash.exe" --login -c $script
+
     - name: Configure and build (Windows, Cygwin)
-      if: ${{ (matrix.exec_type || '') == '' && runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
-      shell: pwsh
+      if: ${{ (matrix.exec_type || '') == 'cygwin' }}
+      shell: C:\cygwin\bin\bash.exe -o igncr {0}
       run: |
-        $cygwinRoot = 'C:\cygwin'
-        $env:PATH = "$cygwinRoot\bin;$env:PATH"
-        $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
-        $scriptLines = @(
-          "export GITHUB_WORKSPACE=`"$workspace`"",
-          "cd `"$workspace`"",
-          "./configure ${{ matrix.extra_options || '' }}",
-          'make V=1',
-          'make check'
-        )
-        $script = [string]::Join("`n", $scriptLines)
-        &"$cygwinRoot\bin\bash.exe" --login -c $script
+        set -xv
+        pwd
+        cd "$(cygpath -u "$GITHUB_WORKSPACE")"
+        ./configure ${{ matrix.extra_options || '' }}
+        make V=1
+        make check
 
     - name: Build with Emscripten (non-Windows)
       if: ${{ (matrix.exec_type || '') == 'emscripten' && runner.os != 'Windows' }}
