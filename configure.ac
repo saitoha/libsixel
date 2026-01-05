@@ -13,12 +13,9 @@ AC_SUBST([LS_LTVERSION], [$LS_LT_CURRENT:$LS_LT_REVISION:$LS_LT_AGE])
 AC_SUBST([PACKAGE_DESCRIPTION],
          ["A lightweight, fast implementation of DEC SIXEL graphics codec"])
 
-AS_IF([test -z "$CC" && { test "x$MSYSTEM" = "xCLANG64" || test "x$MSYSTEM" = "xCLANGARM64"; }], [
-  AC_CHECK_TOOLS([CC],  [clang clang.exe],  [gcc])
-])
-AS_IF([test -z "$CC" && test -n "x$CYGWIN" ], [
-  AC_CHECK_TOOLS([CC],  [gcc],  [clang clang.exe])
-])
+#AS_IF([test -z "$CC" && { test "x$MSYSTEM" = "xCLANG64" || test "x$MSYSTEM" = "xCLANGARM64"; }], [
+#  AC_CHECK_TOOLS([CC],  [clang], [gcc])
+#])
 AC_CANONICAL_HOST
 
 AM_INIT_AUTOMAKE([foreign subdir-objects])
