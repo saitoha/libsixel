@@ -450,7 +450,7 @@ jobs:
               --enable-amalgamated-lib
             extra_packages: make
             exec_type: msvc
-          - label: msvc-vcpkg-libpng
+          - label: msvc-vcpkg-libpng-libjpeg
             os: windows-latest
             runner: windows-latest
             msystem: MSYS
@@ -464,23 +464,9 @@ jobs:
               RANLIB=:
               --host=x86_64-pc-windows-msvc
             extra_packages: make
-            vcpkg_packages: libpng
-            exec_type: msvc
-          - label: msvc-vcpkg-libjpeg
-            os: windows-latest
-            runner: windows-latest
-            msystem: MSYS
-            extra_options: >-
-              CC=cl
-              LD=link
-              AR="sh ar-lib lib"
-              ARFLAGS=cr
-              NM="dumpbin -symbols"
-              STRIP=:
-              RANLIB=:
-              --host=x86_64-pc-windows-msvc
-            extra_packages: make
-            vcpkg_packages: libjpeg-turbo
+            vcpkg_packages: >-
+              libpng
+              libjpeg-turbo
             exec_type: msvc
           - label: mingw32
             os: windows-latest
@@ -542,7 +528,7 @@ jobs:
             extra_options: >-
               --enable-amalgamated-lib
             extra_packages: >-
-              make,gcc
+              gcc-core,make
             exec_type: cygwin
           - label: cygwin-msvc-cross
             os: windows-latest
@@ -608,6 +594,8 @@ jobs:
 
     - name: Install extra packages (Linux)
       if: ${{ runner.os == 'Linux' && (matrix.extra_packages || '') != '' }}
+      shell: bash
+      timeout-minutes: 5
       run: |
         sudo apt-get update
         sudo apt-get install -y ${{ matrix.extra_packages }}
@@ -615,6 +603,7 @@ jobs:
     - name: Install extra packages (macOS)
       if: ${{ runner.os == 'macOS' && (matrix.extra_packages || '') != '' }}
       shell: bash
+      timeout-minutes: 5
       run: |
         brew update
         brew install ${{ matrix.extra_packages }}
@@ -626,7 +615,7 @@ jobs:
         arch: x64
 
     - name: Cache vcpkg artifacts (MSVC, vcpkg deps)
-      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_packages || '') != '' }}
+      if: ${{ (matrix.vcpkg_packages || '') != '' }}
       uses: actions/cache@v4
       with:
         path: |
@@ -637,7 +626,7 @@ jobs:
         key: vcpkg-${{ runner.os }}-msvc-${{ matrix.vcpkg_packages || 'none' }}-${{ hashFiles('.github/workflows/ci.yml') }}
 
     - name: Install vcpkg dependencies (MSVC, vcpkg deps)
-      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_packages || '') != '' }}
+      if: ${{ (matrix.vcpkg_packages || '') != '' }}
       shell: pwsh
       run: |
         $vcpkgRoot = "$env:USERPROFILE\\vcpkg"
@@ -690,6 +679,7 @@ jobs:
     - name: Prepare Cosmopolitan toolchain
       if: ${{ contains(matrix.extra_options || '', 'CC=cosmocc') }}
       shell: bash
+      timeout-minutes: 5
       run: |
         set -exv
         mkdir -p cosmopolitan
@@ -702,6 +692,7 @@ jobs:
     - name: Install pip packages
       if: ${{ (matrix.pip_packages || '') != '' }}
       shell: bash
+      timeout-minutes: 5
       run: |
         python3 -m venv .venv
         . .venv/bin/activate
@@ -714,8 +705,8 @@ jobs:
 
     - name: Configure and build (DragonFlyBSD)
       if: ${{ (matrix.exec_type || '') == 'dragonflybsd-vm' }}
-      timeout-minutes: 30
       uses: vmactions/dragonflybsd-vm@v1
+      timeout-minutes: 15
       with:
         release: 6.4.2
         usesh: true
@@ -743,8 +734,8 @@ jobs:
       run: |
         mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
         remote_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
-        if ssh cross_platform_actions_host "test -f \"${remote_tar}\""; then
-          scp cross_platform_actions_host:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
+        if ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dragonflybsd "test -f \"${remote_tar}\""; then
+          scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dragonflybsd:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
         else
           echo "No artifact archive found on VM; skipping copy" >&2
         fi
@@ -752,6 +743,7 @@ jobs:
     - name: Configure and build (non-Windows)
       if: ${{ (matrix.exec_type || '') == '' }}
       shell: bash
+      timeout-minutes: 15
       run: |
         set -e
         export PATH="$PWD/bin:$PATH"
@@ -762,6 +754,7 @@ jobs:
     - name: Configure and build (Windows, msys2)
       if: ${{ (matrix.exec_type || '') == 'msys' }}
       shell: msys2 {0}
+      timeout-minutes: 15
       run: |
         set -e
         export PATH="$PWD/bin:$PATH"
@@ -772,6 +765,7 @@ jobs:
     - name: Configure and build (Windows, Cygwin)
       if: ${{ (matrix.exec_type || '') == 'cygwin' }}
       shell: C:\cygwin\bin\bash.exe -o igncr {0}
+      timeout-minutes: 15
       run: |
         set -e
         PATH="$(pwd)/build-aux:$PATH"
@@ -787,17 +781,21 @@ jobs:
     - name: Build with Emscripten (non-Windows)
       if: ${{ (matrix.exec_type || '') == 'emscripten' && runner.os != 'Windows' }}
       shell: bash
+      timeout-minutes: 15
       run: |
         ./emscripten/build-emcc.sh
 
     - name: Build with Emscripten (Windows)
       if: ${{ (matrix.exec_type || '') == 'emscripten' && runner.os == 'Windows' }}
       shell: msys2 {0}
+      timeout-minutes: 15
       run: |
         ./emscripten/build-emcc.sh
 
     - name: Configure and build (Autotools, Alpine container)
       if: ${{ (matrix.exec_type || '') == 'alpine' }}
+      shell: bash
+      timeout-minutes: 15
       run: |
         docker run --rm -v "$PWD":/src -w /src alpine:3.20 sh -euc '
           apk add --no-cache ${{ matrix.guest_packages || '' }}
@@ -809,6 +807,7 @@ jobs:
     - name: Configure and build, and run tests (Windows, MSVC)
       if: ${{ (matrix.exec_type || '') == 'msvc' }}
       shell: msys2 {0}
+      timeout-minutes: 15
       run: |
         VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
         cmd //c call "${VCVARS}" x64 \>nul \&\& set
@@ -832,8 +831,8 @@ jobs:
 
     - name: Configure, build, and run tests (FreeBSD/OpenBSD/NetBSD/Haiku)
       if: ${{ (matrix.exec_type || '') == 'cross-platform-vms' }}
-      timeout-minutes: 30
       uses: cross-platform-actions/action@v0.30.0
+      timeout-minutes: 15
       with:
         operating_system: ${{ matrix.cp_os }}
         architecture: ${{ matrix.cp_arch }}
@@ -846,7 +845,6 @@ jobs:
           artifact_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
           collect_logs() {
             status=$?
-            cd "$GITHUB_WORKSPACE"
             mkdir -p "$artifact_dir"
             find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar czf "$artifact_tar" {} +
             exit "$status"
@@ -897,6 +895,8 @@ jobs:
 
     - name: Fetch BSD artifacts from VM (Autotools)
       if: ${{ always() && (matrix.exec_type || '') == 'cross-platform-vms' }}
+      shell: bash
+      timeout-minutes: 5
       run: |
         mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
         remote_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
@@ -906,20 +906,22 @@ jobs:
           echo "No artifact archive found on VM; skipping copy" >&2
         fi
 
-    - name: Capture coverage (Windows, CLANG64)
-      if: ${{ (matrix.exec_type || '') == 'msys' && matrix.msystem == 'CLANG64' }}
-      shell: msys2 {0}
-      run: |
-        LLVM_PROFILE_FILE="%p-%m.profraw" make check V=1
-        find . -name \*.profraw || true
-        llvm-profdata merge -sparse coverage/*.profraw -o coverage/coverage.profdata || true
-        find . -type f \( -name '*.exe' -o -name '*.dll' \) |
-        xargs llvm-cov export -format=lcov \
-          -instr-profile=coverage/coverage.profdata > coverage.info || true
+#    - name: Capture coverage (Windows, CLANG64)
+#      if: ${{ (matrix.exec_type || '') == 'msys' && matrix.msystem == 'CLANG64' }}
+#      shell: msys2 {0}
+#      timeout-minutes: 15
+#      run: |
+#        LLVM_PROFILE_FILE="%p-%m.profraw" make check
+#        find . -name \*.profraw || true
+#        llvm-profdata merge -sparse coverage/*.profraw -o coverage/coverage.profdata || true
+#        find . -type f \( -name '*.exe' -o -name '*.dll' \) |
+#        xargs llvm-cov export -format=lcov \
+#          -instr-profile=coverage/coverage.profdata > coverage.info || true
 
     - name: Capture coverage
       if: runner.os != 'Windows'
       shell: bash
+      timeout-minutes: 5
       run: |
         if test -f coverage.info; then
           echo "coverage.info already exists; skipping capture"
@@ -947,6 +949,7 @@ jobs:
     - name: Capture coverage (Windows)
       if: ${{ (matrix.exec_type || '') == 'msys' }}
       shell: msys2 {0}
+      timeout-minutes: 5
       run: |
         if [ -e coverage.info ]; then
           echo "coverage.info already exists; skipping capture"
@@ -971,6 +974,8 @@ jobs:
 
     - name: Fix artifact permissions (Autotools Alpine container)
       if: ${{ always() && (matrix.exec_type || '') == 'alpine' }}
+      shell: bash
+      timeout-minutes: 5
       run: |
         for dir in tests tests/_artifacts; do
           if [ -e "$dir" ]; then
@@ -1043,1141 +1048,1141 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           parallel-finished: true
 
-#  ci-dist-meson:
-#    name: Meson-tarball ${{ matrix.label }}
-#    runs-on: ${{ matrix.runner || matrix.os }}
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        include:
-#          - label: Linux thumbnailer command
-#            os: ubuntu-latest
-#            runner: ubuntu-latest
-#            setup_flags: >-
-#              -Dpng=disabled -Djpeg=disabled -Dcurl=disabled
-#              -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled
-#              -Dpython=disabled -Druby=disabled -Dtests=true
-#              -Dthumbnailer_command=enabled
-#          - label: macOS Quick Look extension
-#            os: macos-latest
-#            runner: macos-latest
-#            setup_flags: >-
-#              -Dpng=disabled -Djpeg=disabled -Dcurl=disabled
-#              -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled
-#              -Dpython=disabled -Druby=disabled -Dtests=true
-#              -Dquicklook_extension=enabled -Dquicklook_preview=enabled
-#          - label: mingw64 wiccodec
-#            os: windows-latest
-#            runner: windows-latest
-#            msystem: MINGW64
-#            setup_flags: >-
-#              --default-library static --wrap-mode=nodownload
-#              -Dpng=disabled -Djpeg=disabled -Dcurl=disabled
-#              -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled
-#              -Dpython=disabled -Druby=disabled -Dtests=true
-#              -Dwic=enabled -Dwiccodec=enabled
-#            extra_packages: >-
-#              python
-#              ninja
-#              git
-#              mingw-w64-x86_64-toolchain
-#              mingw-w64-x86_64-meson
-#              mingw-w64-x86_64-ninja
-#
-#    steps:
-#    - uses: actions/checkout@v6
-#      with:
-#        fetch-depth: 1
-#
-#    - name: Install Meson toolchain (non-Windows)
-#      if: runner.os != 'Windows'
-#      run: |
-#        python3 -m venv .meson-venv
-#        . .meson-venv/bin/activate
-#        pip install --upgrade pip
-#        pip install meson ninja
-#        echo "$PWD/.meson-venv/bin" >> "$GITHUB_PATH"
-#
-#    - name: Setup MSYS2 (Windows)
-#      if: runner.os == 'Windows'
-#      uses: msys2/setup-msys2@v2
-#      with:
-#        msystem: ${{ matrix.msystem }}
-#        update: true
-#        install: ${{ matrix.extra_packages || 'python ninja git' }}
-#
-#    - name: Create Meson dist archive (Linux/macOS)
-#      if: runner.os != 'Windows'
-#      shell: bash
-#      run: |
-#        meson setup builddir \
-#          --wrap-mode=nodownload \
-#          -Dbashcompletiondir=disabled \
-#          -Dzshcompletiondir=disabled \
-#          ${{ matrix.setup_flags }}
-#        meson compile -C builddir -v
-#        meson dist -C builddir
-#        ls -l builddir/meson-dist
-#
-#    - name: Create Meson dist archive (Windows)
-#      if: runner.os == 'Windows'
-#      shell: msys2 {0}
-#      run: |
-#        meson setup builddir \
-#          -Dbashcompletiondir=disabled \
-#          -Dzshcompletiondir=disabled \
-#          ${{ matrix.setup_flags }}
-#        meson compile -C builddir
-#        meson dist -C builddir --allow-dirty
-#        ls -l builddir/meson-dist
-#
-#    - name: Build from Meson dist archive (Linux/macOS)
-#      if: runner.os != 'Windows'
-#      shell: bash
-#      run: |
-#        artifact_dir="dist-build/_artifacts"
-#        collect_logs() {
-#          status=$?
-#          if [ -d "dist-build" ]; then
-#            mkdir -p "$artifact_dir"
-#            find dist-build -type f \( -name 'config.log' -o -name 'test-suite.log' -o -name '*.log' -o -name '*.trs' -o -name 'testlog.txt' -o -path '*/meson-logs/*' \) \
-#              ! -path "dist-build/_artifacts/*" \
-#              | while IFS= read -r f; do
-#                  rel="${f#dist-build/}"
-#                  dest="${artifact_dir}/${rel}"
-#                  mkdir -p "$(dirname "$dest")"
-#                  cp "$f" "$dest"
-#                done || true
-#          fi
-#          exit "$status"
-#        }
-#        trap 'collect_logs' EXIT
-#
-#        tarball=$(ls builddir/meson-dist/libsixel-*.tar.* | head -n1)
-#        mkdir dist-build
-#        tar -xf "$tarball" -C dist-build
-#        distdir=$(find dist-build -maxdepth 1 -type d -name 'libsixel-*' | head -n1)
-#        cd "$distdir"
-#        meson setup build --wrap-mode=nodownload ${{ matrix.setup_flags }}
-#        meson compile -C build
-#        meson test -C build
-#
-#    - name: Build from Meson dist archive (Windows)
-#      if: runner.os == 'Windows'
-#      shell: msys2 {0}
-#      run: |
-#        artifact_dir="dist-build/_artifacts"
-#        collect_logs() {
-#          status=$?
-#          if [ -d "dist-build" ]; then
-#            mkdir -p "$artifact_dir"
-#            find dist-build -type f \( -name 'config.log' -o -name 'test-suite.log' -o -name '*.log' -o -name '*.trs' -o -name 'testlog.txt' -o -path '*/meson-logs/*' \) \
-#              ! -path "dist-build/_artifacts/*" \
-#              | while IFS= read -r f; do
-#                  rel="${f#dist-build/}"
-#                  dest="${artifact_dir}/${rel}"
-#                  mkdir -p "$(dirname "$dest")"
-#                  cp "$f" "$dest"
-#                done || true
-#          fi
-#          exit "$status"
-#        }
-#        trap 'collect_logs' EXIT
-#
-#        tarball=$(ls builddir/meson-dist/libsixel-*.tar.* | head -n1)
-#        mkdir dist-build
-#        tar -xf "$tarball" -C dist-build
-#        distdir=$(find dist-build -maxdepth 1 -type d -name 'libsixel-*' | head -n1)
-#        cd "$distdir"
-#        meson setup build ${{ matrix.setup_flags }}
-#        meson compile -C build
-#        meson test -C build
-#
-#    - name: Upload meson dist artifacts
-#      if: always()
-#      uses: actions/upload-artifact@v4
-#      with:
-#        name: meson-dist-${{ matrix.os }}-${{ matrix.msystem || 'native' }}
-#        path: |
-#          builddir/meson-dist/**
-#          dist-build/**/meson-logs/**
-#          dist-build/**/_artifacts/**
-#          dist-build/**/testlog.txt
-#        if-no-files-found: warn
-#
-#  ci-meson:
-#    name: Meson ${{ matrix.label }}
-#    runs-on: ${{ matrix.runner || matrix.os }}
-#    strategy:
-#      matrix:
-#        include:
-#          - label: freebsd-14.3-x86-64
-#            os: ubuntu-latest
-#            runner: ubuntu-latest
-#            platform: freebsd
-#            cp_os: freebsd
-#            cp_arch: x86-64
-#            cp_version: '14.3'
-#            variant: freebsd
-#            exec_type: cross-platform-vms
-#          - label: freebsd-14.3-x86-64-amalgamated-lib
-#            os: ubuntu-latest
-#            runner: ubuntu-latest
-#            platform: freebsd
-#            cp_os: freebsd
-#            cp_arch: x86-64
-#            cp_version: '14.3'
-#            variant: amalgamated-lib
-#            amalgamated-lib: true
-#            exec_type: cross-platform-vms
-#          - label: freebsd-14.3-aarch64
-#            os: ubuntu-latest
-#            runner: ubuntu-latest
-#            platform: freebsd
-#            cp_os: freebsd
-#            cp_arch: arm64
-#            cp_version: '14.3'
-#            variant: freebsd
-#            exec_type: cross-platform-vms
-#          - label: netbsd-10.1-x86-64
-#            os: ubuntu-latest
-#            runner: ubuntu-latest
-#            platform: netbsd
-#            cp_os: netbsd
-#            cp_arch: x86-64
-#            cp_version: '10.1'
-#            variant: netbsd
-#            exec_type: cross-platform-vms
-#          - label: netbsd-10.1-aarch64
-#            os: ubuntu-latest
-#            runner: ubuntu-latest
-#            platform: netbsd
-#            cp_os: netbsd
-#            cp_arch: arm64
-#            cp_version: '10.1'
-#            variant: netbsd
-#            exec_type: cross-platform-vms
-#          - label: haiku-r1beta5-x86-64
-#            os: ubuntu-latest
-#            runner: ubuntu-latest
-#            platform: haiku
-#            cp_os: haiku
-#            cp_arch: x86-64
-#            cp_version: r1beta5
-#            variant: haiku
-#            exec_type: cross-platform-vms
-#          - label: openbsd-7.8-x86-64
-#            os: ubuntu-latest
-#            runner: ubuntu-latest
-#            platform: openbsd
-#            cp_os: openbsd
-#            cp_arch: x86-64
-#            cp_version: '7.8'
-#            variant: openbsd
-#            exec_type: cross-platform-vms
-#          - label: dragonflybsd-6.4.2-x86-64
-#            os: ubuntu-latest
-#            runner: ubuntu-latest
-#            platform: dragonflybsd
-#            df_release: '6.4.2'
-#            variant: dragonflybsd
-#            exec_type: dragonflybsd-vm
-#          - label: ubuntu-static-only
-#            os: ubuntu-latest
-#            runner: ubuntu-latest
-#            static_only: true
-#            variant: static-only
-#          - label: ubuntu-disable-simd
-#            os: ubuntu-latest
-#            runner: ubuntu-latest
-#            disable_simd: true
-#            variant: disable-simd
-#          - label: ubuntu-disable-tools
-#            os: ubuntu-latest
-#            runner: ubuntu-latest
-#            disable_tools: true
-#            variant: disable-tools
-#          - label: ubuntu-disable-threads
-#            os: ubuntu-latest
-#            runner: ubuntu-latest
-#            disable_threads: true
-#            variant: disable-threads
-#          - label: ubuntu-musl
-#            os: ubuntu-latest
-#            runner: ubuntu-latest
-#            musl: true
-#            variant: musl-cross
-#            extra_packages: musl-tools
-#          - label: alpine-3.20-x86_64
-#            os: ubuntu-latest
-#            runner: ubuntu-latest
-#            variant: alpine
-#            exec_type: alpine
-#          - label: ubuntu-24.04-aarch64
-#            os: ubuntu-24.04-arm
-#            runner: ubuntu-24.04-arm
-#            sys: aarch64
-#            variant: default
-#          - label: ubuntu-24.04-aarch64-amalgamated-lib
-#            os: ubuntu-24.04-arm
-#            runner: ubuntu-24.04-arm
-#            sys: aarch64
-#            variant: amalgamated-lib
-#            amalgamated-lib: true
-#          - label: ubuntu-24.04-aarch64-unity
-#            os: ubuntu-24.04-arm
-#            runner: ubuntu-24.04-arm
-#            sys: aarch64
-#            variant: unity
-#            unity: true
-#          - label: ubuntu-i686
-#            os: ubuntu-latest
-#            runner: ubuntu-latest
-#            sys: i686
-#            variant: default
-#            extra_packages: gcc-multilib
-#          - label: macos-aarch64
-#            os: macos-latest
-#            runner: macos-latest
-#            variant: default
-#          - label: macos-aarch64-amalgamated-lib
-#            os: macos-latest
-#            runner: macos-latest
-#            variant: amalgamated-lib
-#            amalgamated-lib: true
-#          - label: macos-aarch64-unity
-#            os: macos-latest
-#            runner: macos-latest
-#            variant: unity
-#            unity: true
-#          - label: macos-x86_64
-#            os: macos-15
-#            runner: macos-15
-#            variant: default
-#          - label: macos-x86_64-amalgamated-lib
-#            os: macos-15
-#            runner: macos-15
-#            variant: amalgamated-lib
-#            amalgamated-lib: true
-#          - label: mingw64-static-only
-#            os: windows-latest
-#            runner: windows-latest
-#            compiler: gcc
-#            sys: MINGW64
-#            static_only: true
-#            variant: static-only
-#            extra_packages: >-
-#              python
-#              ninja
-#              mingw-w64-x86_64-toolchain
-#              mingw-w64-x86_64-meson
-#              mingw-w64-x86_64-ninja
-#          - label: mingw64-disable-simd
-#            os: windows-latest
-#            runner: windows-latest
-#            compiler: gcc
-#            sys: MINGW64
-#            disable_simd: true
-#            variant: disable-simd
-#            extra_packages: >-
-#              python
-#              ninja
-#              mingw-w64-x86_64-toolchain
-#              mingw-w64-x86_64-meson
-#              mingw-w64-x86_64-ninja
-#          - label: mingw64-disable-tools
-#            os: windows-latest
-#            runner: windows-latest
-#            compiler: gcc
-#            sys: MINGW64
-#            disable_tools: true
-#            variant: disable-tools
-#            extra_packages: >-
-#              python
-#              ninja
-#              mingw-w64-x86_64-toolchain
-#              mingw-w64-x86_64-meson
-#              mingw-w64-x86_64-ninja
-#          - label: mingw64-disable-threads
-#            os: windows-latest
-#            runner: windows-latest
-#            compiler: gcc
-#            sys: MINGW64
-#            disable_threads: true
-#            variant: disable-threads
-#            extra_packages: >-
-#              python
-#              ninja
-#              mingw-w64-x86_64-toolchain
-#              mingw-w64-x86_64-meson
-#              mingw-w64-x86_64-ninja
-#          - label: ucrt64
-#            os: windows-latest
-#            runner: windows-latest
-#            compiler: gcc
-#            sys: UCRT64
-#            variant: default
-#            extra_packages: >-
-#              python
-#              ninja
-#              mingw-w64-ucrt-x86_64-toolchain
-#              mingw-w64-ucrt-x86_64-meson
-#              mingw-w64-ucrt-x86_64-ninja
-#          - label: ucrt64-amalgamated-lib
-#            os: windows-latest
-#            runner: windows-latest
-#            compiler: gcc
-#            sys: UCRT64
-#            variant: amalgamated-lib
-#            amalgamated-lib: true
-#            extra_packages: >-
-#              python
-#              ninja
-#              mingw-w64-ucrt-x86_64-toolchain
-#              mingw-w64-ucrt-x86_64-meson
-#              mingw-w64-ucrt-x86_64-ninja
-#          - label: clang64
-#            os: windows-latest
-#            runner: windows-latest
-#            compiler: clang
-#            sys: CLANG64
-#            variant: default
-#            extra_packages: >-
-#              python
-#              ninja
-#              mingw-w64-clang-x86_64-toolchain
-#              mingw-w64-clang-x86_64-meson
-#              mingw-w64-clang-x86_64-ninja
-#          - label: clang-cl
-#            os: windows-latest
-#            runner: windows-latest
-#            compiler: clang-cl
-#            sys: MSVC
-#            variant: clang-cl
-#            extra_packages: >-
-#              python
-#              ninja
-#          - label: msvc
-#            os: windows-latest
-#            runner: windows-latest
-#            compiler: cl
-#            sys: MSVC
-#            variant: default
-#            extra_packages: >-
-#              python
-#              ninja
-#          - label: msvc-unity
-#            os: windows-latest
-#            runner: windows-latest
-#            compiler: cl
-#            sys: MSVC
-#            variant: unity
-#            unity: true
-#            extra_packages: >-
-#              python
-#              ninja
-#          - label: msvc-amalgamated-lib
-#            os: windows-latest
-#            runner: windows-latest
-#            compiler: cl
-#            sys: MSVC
-#            variant: amalgamated-lib
-#            amalgamated-lib: true
-#            extra_packages: >-
-#              python
-#              ninja
-#          - label: mingw64-unity
-#            os: windows-latest
-#            runner: windows-latest
-#            compiler: gcc
-#            sys: MINGW64
-#            variant: unity
-#            unity: true
-#            extra_packages: >-
-#              python
-#              ninja
-#              mingw-w64-x86_64-toolchain
-#              mingw-w64-x86_64-meson
-#              mingw-w64-x86_64-ninja
-#          - label: mingw32
-#            os: windows-latest
-#            runner: windows-latest
-#            compiler: gcc
-#            sys: MINGW32
-#            variant: default
-#            extra_packages: >-
-#              python
-#              ninja
-#              mingw-w64-i686-toolchain
-#              mingw-w64-i686-meson
-#              mingw-w64-i686-ninja
-#          - label: msys
-#            os: windows-latest
-#            runner: windows-latest
-#            compiler: gcc
-#            sys: MSYS
-#            variant: default
-#            extra_packages: >-
-#              python
-#              ninja
-#              meson
-#              gcc
-#              pkgconf
-#          - label: cygwin
-#            os: windows-latest
-#            runner: windows-latest
-#            compiler: gcc
-#            sys: CYGWIN
-#            variant: default
-#          - label: cygwin-unity
-#            os: windows-latest
-#            runner: windows-latest
-#            compiler: gcc
-#            sys: CYGWIN
-#            variant: unity
-#            unity: true
-#          - label: cygwin-amalgamated-lib
-#            os: windows-latest
-#            runner: windows-latest
-#            compiler: gcc
-#            sys: CYGWIN
-#            variant: amalgamated-lib
-#            amalgamated-lib: true
-#
-#    steps:
-#    - name: Configure git EOL
-#      if: matrix.sys == 'CYGWIN'
-#      run: git config --global core.autocrlf false
-#
-#    - uses: actions/checkout@v6
-#      with:
-#        fetch-depth: 1
-#
-#    - name: Install extra packages (Linux)
-#      if: runner.os == 'Linux' && (matrix.extra_packages || '') != ''
-#      run: |
-#        sudo apt-get update
-#        sudo apt-get install -y ${{ matrix.extra_packages }}
-#
-#    - name: Setup MSVC developer env (vcvars)
-#      if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' }}
-#      uses: ilammy/msvc-dev-cmd@v1
-#      with:
-#        arch: x64
-#
-#    - name: Cache vcpkg artifacts (MSVC, vcpkg deps)
-#      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_packages || '') != '' }}
-#      uses: actions/cache@v4
-#      with:
-#        path: |
-#          ~\vcpkg\installed
-#          ~\vcpkg\buildtrees
-#          ~\vcpkg\packages
-#          ~\vcpkg\downloads
-#        key: vcpkg-${{ runner.os }}-msvc-${{ matrix.vcpkg_packages || 'none' }}-${{ hashFiles('.github/workflows/ci.yml') }}
-#
-#    - name: Install vcpkg dependencies (MSVC, vcpkg deps)
-#      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_packages || '') != '' }}
-#      shell: pwsh
-#      run: |
-#        $vcpkgRoot = "$env:USERPROFILE\\vcpkg"
-#        if (-not (Test-Path $vcpkgRoot)) {
-#          git clone --depth 1 --branch "${{ env.VCPKG_REF }}" https://github.com/microsoft/vcpkg $vcpkgRoot
-#        } else {
-#          git -C $vcpkgRoot fetch --depth 1 origin "${{ env.VCPKG_REF }}"
-#          git -C $vcpkgRoot reset --hard FETCH_HEAD
-#        }
-#        cd $vcpkgRoot
-#        .\\bootstrap-vcpkg.bat
-#        $packages = @('pkgconf')
-#        $extra = '${{ matrix.vcpkg_packages || '' }}'.Trim()
-#        if ($extra -ne '') {
-#          $packages += $extra -split '\s+'
-#        }
-#        .\\vcpkg.exe install $packages --triplet x64-windows
-#        "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-#
-#    - name: Setup MSYS2 (Windows)
-#      if: ${{ runner.os == 'Windows' && matrix.sys != 'CYGWIN' && matrix.sys != 'MSVC' }}
-#      uses: msys2/setup-msys2@v2
-#      with:
-#        msystem: ${{ matrix.sys == 'MSYS' && 'MSYS' || matrix.sys }}
-#        update: true
-#        install: ${{ matrix.extra_packages || 'python ninja' }}
-#
-#    - name: Setup Cygwin
-#      if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
-#      uses: cygwin/cygwin-install-action@v4
-#      with:
-#        packages: gcc-core,make,pkg-config,python3,python3-pip,ninja
-#
-#    - name: Install Meson (non-Windows)
-#      if: ${{ runner.os != 'Windows' && ((matrix.exec_type || '') == '') }}
-#      run: |
-#        python3 -m venv .meson-venv
-#        . .meson-venv/bin/activate
-#        pip install --upgrade pip
-#        pip install meson ninja
-#        echo "$PWD/.meson-venv/bin" >> "$GITHUB_PATH"
-#
-#    - name: Install Meson (Cygwin)
-#      if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
-#      shell: pwsh
-#      run: |
-#        $cygwinRoot = 'C:\cygwin'
-#        if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\cygwin64' }
-#        $scriptLines = @(
-#          'python3 -m pip install --upgrade pip',
-#          'python3 -m pip install meson',
-#          'gp_posix=$(cygpath -u "$GITHUB_PATH")',
-#          'echo "$HOME/.local/bin" >> "$gp_posix"'
-#        )
-#        $script = [string]::Join("`n", $scriptLines)
-#        &"$cygwinRoot\bin\bash.exe" --login -c $script
-#
-#    - name: Configure, build, and test (Meson, FreeBSD/OpenBSD/NetBSD/Haiku)
-#      if: ${{ (matrix.exec_type || '') == 'cross-platform-vms' }}
-#      timeout-minutes: 30
-#      uses: cross-platform-actions/action@v0.30.0
-#      with:
-#        operating_system: ${{ matrix.cp_os }}
-#        architecture: ${{ matrix.cp_arch }}
-#        version: ${{ matrix.cp_version }}
-#        sync_files: runner-to-vm
-#        environment_variables: CI,GITHUB_WORKSPACE
-#        run: &meson_non_windows |
-#          : "${GITHUB_WORKSPACE:=$PWD}"
-#          artifact_dir="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}"
-#          artifact_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
-#          collect_logs() {
-#            status=$?
-#            cd "$GITHUB_WORKSPACE"
-#            mkdir -p "$artifact_dir"
-#            find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar czf "$artifact_tar" {} +
-#            exit "$status"
-#          }
-#          trap 'collect_logs' EXIT
-#
-#          if [ "${{ matrix.platform || '' }}" = "freebsd" ]; then
-#            pkg_prefix=""
-#            if [ "$(id -u)" -ne 0 ]; then
-#              if command -v sudo >/dev/null 2>&1; then
-#                pkg_prefix="sudo"
-#              elif command -v doas >/dev/null 2>&1; then
-#                pkg_prefix="doas"
-#              else
-#                echo "No privilege escalation helper available" >&2
-#                exit 1
-#              fi
-#            fi
-#
-#            ${pkg_prefix:+$pkg_prefix }pkg update -f
-#            ${pkg_prefix:+$pkg_prefix }pkg install -y \
-#              python3 \
-#              meson \
-#              ninja
-#          elif [ "${{ matrix.platform || '' }}" = "openbsd" ]; then
-#            pkg_prefix=""
-#            if [ "$(id -u)" -ne 0 ]; then
-#              if command -v sudo >/dev/null 2>&1; then
-#                pkg_prefix="sudo"
-#              elif command -v doas >/dev/null 2>&1; then
-#                pkg_prefix="doas"
-#              else
-#                echo "No privilege escalation helper available" >&2
-#                exit 1
-#              fi
-#            fi
-#
-#            ${pkg_prefix:+$pkg_prefix }pkg_add \
-#              rsync \
-#              python%3 \
-#              meson \
-#              ninja
-#          elif [ "${{ matrix.platform || '' }}" = "netbsd" ]; then
-#            pkg_prefix=""
-#            if [ "$(id -u)" -ne 0 ]; then
-#              if command -v sudo >/dev/null 2>&1; then
-#                pkg_prefix="sudo"
-#              elif command -v doas >/dev/null 2>&1; then
-#                pkg_prefix="doas"
-#              else
-#                echo "No privilege escalation helper available" >&2
-#                exit 1
-#              fi
-#            fi
-#
-#            trap 'status=$?; if [ "$status" -ne 0 ] && \
-#              [ -f /var/db/pkgin/pkg_install-err.log ]; then \
-#              echo "pkg_install error log:" >&2; \
-#              cat /var/db/pkgin/pkg_install-err.log >&2; \
-#              cp /var/db/pkgin/pkg_install-err.log pkg_install-err.log || true; \
-#            fi' EXIT
-#
-#            ${pkg_prefix:+$pkg_prefix }pkgin -y update
-#            ${pkg_prefix:+$pkg_prefix }pkgin -y install \
-#              python311 \
-#              meson
-#
-#            if ! command -v ninja >/dev/null 2>&1; then
-#              ${pkg_prefix:+$pkg_prefix }pkgin -y install ninja
-#            else
-#              echo "ninja is already available; skipping install" >&2
-#            fi
-#          elif [ "${{ matrix.platform || '' }}" = "haiku" ]; then
-#            pkgman refresh
-#            pkgman install -y meson ninja
-#          fi
-#
-#          if [ "${{ matrix.musl || '' }}" = "true" ]; then
-#            export CC=musl-gcc
-#          elif [ '${{ matrix.sys || '' }}' = 'i686' ]; then
-#            export CC=gcc
-#            export CFLAGS="-m32"
-#            export LDFLAGS="-m32"
-#            export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
-#            export PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
-#          fi
-#          disable_threads_flag=""
-#          if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
-#            disable_threads_flag="-Dthreads=disabled"
-#          fi
-#          disable_tools_flags=""
-#          if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
-#            disable_tools_flags="-Dimg2sixel=disabled -Dsixel2png=disabled"
-#          fi
-#          disable_simd_flag=""
-#          if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
-#            disable_simd_flag="-Dsimd=disabled"
-#          fi
-#          unity_flag=""
-#          if [ "${{ matrix.unity || '' }}" = "true" ]; then
-#            unity_flag="-Dunity=on"
-#          fi
-#          default_library_flag=""
-#          if [ "${{ matrix.static_only || '' }}" = "true" ]; then
-#            default_library_flag="--default-library static"
-#          fi
-#          amalgamated_lib_flag=""
-#          if [ "${{ matrix.amalgamated-lib || '' }}" = "true" ]; then
-#            amalgamated_lib_flag="-Damalgamated_lib=true"
-#          fi
-#          meson setup builddir \
-#              --wrap-mode=nodownload \
-#              ${default_library_flag} \
-#              -Dbashcompletiondir=disabled \
-#              -Dzshcompletiondir=disabled \
-#              -Dpython=disabled \
-#              -Dtests=true \
-#              ${amalgamated_lib_flag} \
-#              ${disable_tools_flags} \
-#              ${disable_threads_flag} \
-#              ${disable_simd_flag}
-#          meson compile -C builddir
-#          meson test -C builddir
-#
-#    - name: Fetch BSD artifacts from VM (Meson)
-#      if: ${{ (matrix.exec_type || '') == 'cross-platform-vms' }}
-#      run: |
-#        mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
-#        remote_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
-#        if ssh cross_platform_actions_host "test -f \"${remote_tar}\""; then
-#          scp cross_platform_actions_host:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
-#        else
-#          echo "No artifact archive found on VM; skipping copy" >&2
-#        fi
-#
-#    - name: Configure, build, and test (Meson, DragonFlyBSD)
-#      if: ${{ (matrix.exec_type || '') == 'dragonflybsd-vm' }}
-#      timeout-minutes: 30
-#      uses: vmactions/dragonflybsd-vm@v1
-#      with:
-#        release: ${{ matrix.df_release }}
-#        usesh: true
-#        copyback: false
-#        run: |
-#          artifact_dir="${GITHUB_WORKSPACE}/_artifacts/dragonflybsd"
-#          artifact_tar="${GITHUB_WORKSPACE}/_artifacts/dragonflybsd.tar.gz"
-#          collect_logs() {
-#            status=$?
-#            cd "$GITHUB_WORKSPACE"
-#            mkdir -p "$artifact_dir"
-#            find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar czf "$artifact_tar" {} +
-#            exit "$status"
-#          }
-#          trap 'collect_logs' EXIT
-#          pkg update -f
-#          pkg install -y python3 meson ninja pkgconf
-#
-#          disable_threads_flag=""
-#          if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
-#            disable_threads_flag="-Dthreads=disabled"
-#          fi
-#          disable_tools_flags=""
-#          if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
-#            disable_tools_flags="-Dimg2sixel=disabled -Dsixel2png=disabled"
-#          fi
-#          disable_simd_flag=""
-#          if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
-#            disable_simd_flag="-Dsimd=disabled"
-#          fi
-#          unity_flag=""
-#          if [ "${{ matrix.unity || '' }}" = "true" ]; then
-#            unity_flag="-Dunity=on"
-#          fi
-#          default_library_flag=""
-#          if [ "${{ matrix.static_only || '' }}" = "true" ]; then
-#            default_library_flag="--default-library static"
-#          fi
-#          amalgamated_lib_flag=""
-#          if [ "${{ matrix.amalgamated-lib || '' }}" = "true" ]; then
-#            amalgamated_lib_flag="-Damalgamated_lib=true"
-#          fi
-#
-#          date -u
-#          rdate -n pool.ntp.org || true
-#          sleep 2
-#          date -u
-#
-#          # DragonFly guests in the cross-platform runner do not expose
-#          # AVX/AVX2 state, so force a portable SIMD baseline to avoid
-#          # SIGILL in VPTE-heavy tests while still exercising the filter.
-#          export SIXEL_SIMD_LEVEL=sse2
-#
-#          cd "$GITHUB_WORKSPACE"
-#          meson setup builddir \
-#              --wrap-mode=nodownload \
-#              ${default_library_flag} \
-#              -Dbashcompletiondir=disabled \
-#              -Dzshcompletiondir=disabled \
-#              -Dpython=disabled \
-#              -Dtests=true \
-#              ${amalgamated_lib_flag} \
-#              ${disable_tools_flags} \
-#              ${disable_threads_flag} \
-#              ${disable_simd_flag}
-#          meson compile -C builddir
-#          meson test -C builddir
-#
-#    - name: Fetch DragonFlyBSD artifacts from VM (Meson)
-#      if: ${{ (matrix.exec_type || '') == 'dragonflybsd-vm' }}
-#      run: |
-#        mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
-#        remote_tar="${GITHUB_WORKSPACE}/_artifacts/dragonflybsd.tar.gz"
-#        if ssh cross_platform_actions_host "test -f \"${remote_tar}\""; then
-#          scp cross_platform_actions_host:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
-#        else
-#          echo "No artifact archive found on VM; skipping copy" >&2
-#        fi
-#
-#    - name: Configure, build, and test (Meson, non-Windows)
-#      if: ${{ runner.os != 'Windows' && !((matrix.exec_type || '') != '') }}
-#      run: *meson_non_windows
-#
-#    - name: Configure, build, and test (Meson, Alpine container)
-#      if: ${{ (matrix.exec_type || '') == 'alpine' }}
-#      run: |
-#        docker run --rm -v "$PWD":/src -w /src alpine:3.20 sh -euc '
-#          apk add --no-cache \
-#            bash \
-#            build-base \
-#            coreutils \
-#            curl-dev \
-#            findutils \
-#            libjpeg-turbo-dev \
-#            libpng-dev \
-#            meson \
-#            ninja \
-#            pkgconf \
-#            python3 \
-#            zlib-dev
-#
-#          disable_threads_flag=""
-#          if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
-#            disable_threads_flag="-Dthreads=disabled"
-#          fi
-#          disable_tools_flags=""
-#          if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
-#            disable_tools_flags="-Dimg2sixel=disabled -Dsixel2png=disabled"
-#          fi
-#          disable_simd_flag=""
-#          if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
-#            disable_simd_flag="-Dsimd=disabled"
-#          fi
-#          default_library_flag=""
-#          if [ "${{ matrix.static_only || '' }}" = "true" ]; then
-#            default_library_flag="--default-library static"
-#          fi
-#          amalgamated_lib_flag=""
-#          if [ "${{ matrix.amalgamated-lib || '' }}" = "true" ]; then
-#            amalgamated_lib_flag="-Damalgamated_lib=true"
-#          fi
-#          meson setup builddir \
-#              --wrap-mode=nodownload \
-#              ${default_library_flag} \
-#              -Dbashcompletiondir=disabled \
-#              -Dzshcompletiondir=disabled \
-#              -Dpython=disabled \
-#              -Dtests=true \
-#              ${amalgamated_lib_flag} \
-#              ${disable_tools_flags} \
-#              ${disable_threads_flag} \
-#              ${disable_simd_flag}
-#          meson compile -C builddir
-#          meson test -C builddir
-#        '
-#
-#    - name: Configure, build, and test (Meson, Windows, not MSVC/Cygwin)
-#      if: ${{ runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' }}
-#      shell: msys2 {0}
-#      run: |
-#        disable_threads_flag=""
-#        amalgamated_lib_flag=""
-#        if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
-#          disable_threads_flag="-Dthreads=disabled"
-#        fi
-#        disable_tools_flags=""
-#        if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
-#          disable_tools_flags="-Dimg2sixel=disabled -Dsixel2png=disabled"
-#        fi
-#        disable_simd_flag=""
-#        if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
-#          disable_simd_flag="-Dsimd=disabled"
-#        fi
-#        unity_flag=""
-#        if [ "${{ matrix.unity || '' }}" = "true" ]; then
-#          unity_flag="-Dunity=on"
-#        fi
-#        default_library_flag=""
-#        if [ "${{ matrix.static_only || '' }}" = "true" ]; then
-#          default_library_flag="--default-library static"
-#        fi
-#        if [ "${{ matrix.amalgamated-lib || '' }}" = "true" ]; then
-#          amalgamated_lib_flag="-Damalgamated_lib=true"
-#        fi
-#        meson setup builddir \
-#            --wrap-mode=nodownload \
-#            ${default_library_flag} \
-#            -Dbashcompletiondir=disabled \
-#            -Dzshcompletiondir=disabled \
-#            -Dpython=disabled \
-#            -Dtests=true \
-#            ${amalgamated_lib_flag} \
-#            ${disable_tools_flags} \
-#            ${disable_threads_flag} \
-#            ${disable_simd_flag} \
-#            ${unity_flag}
-#        meson compile -C builddir
-#        meson test -C builddir
-#
-#    - name: Configure, build, and test (Meson, Windows, Cygwin)
-#      if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
-#      shell: pwsh
-#      run: |
-#        $cygwinRoot = 'C:\cygwin'
-#        if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\cygwin64' }
-#        $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
-#        $disableThreadsFlag = ''
-#        if ('${{ matrix.disable_threads }}' -eq 'true') {
-#          $disableThreadsFlag = '-Dthreads=disabled'
-#        }
-#        $disableToolsFlags = ''
-#        if ('${{ matrix.disable_tools }}' -eq 'true') {
-#          $disableToolsFlags = '-Dimg2sixel=disabled -Dsixel2png=disabled'
-#        }
-#        $disableSimdFlag = ''
-#        if ('${{ matrix.disable_simd }}' -eq 'true') {
-#          $disableSimdFlag = '-Dsimd=disabled'
-#        }
-#        $unityFlag = ''
-#        if ('${{ matrix.unity }}' -eq 'true') {
-#          $unityFlag = '-Dunity=on'
-#        }
-#        $defaultLibraryFlag = ''
-#        if ('${{ matrix.static_only }}' -eq 'true') {
-#          $defaultLibraryFlag = '--default-library static'
-#        }
-#        $amalgamatedLibFlag = ''
-#        if ('${{ matrix.amalgamated-lib }}' -eq 'true') {
-#          $amalgamatedLibFlag = '-Damalgamated_lib=true'
-#        }
-#        $scriptLines = @(
-#          'export PATH=/usr/local/bin:/usr/bin',
-#          'export CC=gcc',
-#          "disable_threads_flag=`"$disableThreadsFlag`"",
-#          "disable_tools_flags=`"$disableToolsFlags`"",
-#          "disable_simd_flag=`"$disableSimdFlag`"",
-#          "default_library_flag=`"$defaultLibraryFlag`"",
-#          "unity_flag=`"$unityFlag`"",
-#          "amalgamated_lib_flag=`"$amalgamatedLibFlag`"",
-#          "export GITHUB_WORKSPACE=`"$workspace`"",
-#          "cd `"$workspace`"",
-#          'meson setup builddir --wrap-mode=nodownload ${default_library_flag} ${amalgamated_lib_flag} -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled -Dpython=disabled -Dtests=true ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${unity_flag}',
-#          'meson compile -C builddir',
-#          'meson test -C builddir'
-#        )
-#        $script = [string]::Join("`n", $scriptLines)
-#        &"$cygwinRoot\bin\bash.exe" --login -c $script
-#
-#    - name: Configure, build, and test (Meson, Windows, MSVC)
-#      if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' && (matrix.vcpkg_packages || '') == '' }}
-#      shell: cmd
-#      run: |
-#        setlocal ENABLEDELAYEDEXPANSION
-#        call "%VSINSTALLDIR%\VC\Auxiliary\Build\vcvarsall.bat" x64
-#        python -m pip install --upgrade pip
-#        python -m pip install meson ninja
-#        set "CC=${{ matrix.compiler }}"
-#        set "DISABLE_THREADS_FLAG="
-#        if "${{ matrix.disable_threads || '' }}"=="true" set "DISABLE_THREADS_FLAG=-Dthreads=disabled"
-#        set "DISABLE_TOOLS_FLAGS="
-#        if "${{ matrix.disable_tools || '' }}"=="true" set "DISABLE_TOOLS_FLAGS=-Dimg2sixel=disabled -Dsixel2png=disabled"
-#        set "DISABLE_SIMD_FLAG="
-#        if "${{ matrix.disable_simd || '' }}"=="true" set "DISABLE_SIMD_FLAG=-Dsimd=disabled"
-#        set "UNITY_FLAG="
-#        if "${{ matrix.unity || '' }}"=="true" set "UNITY_FLAG=-Dunity=on"
-#        set "AMALGAMATED_LIB_FLAG="
-#        if "${{ matrix.amalgamated-lib || '' }}"=="true" set "AMALGAMATED_LIB_FLAG=-Damalgamated_lib=true"
-#        python -m mesonbuild.mesonmain setup builddir ^
-#            --wrap-mode=nodownload ^
-#            --default-library static ^
-#            -Dpng=disabled ^
-#            -Djpeg=disabled ^
-#            -Dcurl=disabled ^
-#            -Dbashcompletiondir=disabled ^
-#            -Dzshcompletiondir=disabled ^
-#            -Dpython=disabled ^
-#            -Dtests=true ^
-#            %AMALGAMATED_LIB_FLAG% ^
-#            %DISABLE_TOOLS_FLAGS% ^
-#            %DISABLE_THREADS_FLAG% ^
-#            %DISABLE_SIMD_FLAG% ^
-#            %UNITY_FLAG%
-#        if errorlevel 1 exit /b !errorlevel!
-#        python -m mesonbuild.mesonmain compile -C builddir
-#        if errorlevel 1 exit /b !errorlevel!
-#        python -m mesonbuild.mesonmain test -C builddir
-#        if errorlevel 1 (
-#            if exist builddir\meson-logs\testlog.txt type builddir\meson-logs\testlog.txt
-#            exit /b !errorlevel!
-#        )
-#        endlocal
-#
-#    - name: Configure, build, and test (Meson, Windows, MSVC, vcpkg libpng)
-#      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' && contains(matrix.vcpkg_packages || '', 'libpng') }}
-#      shell: cmd
-#      run: |
-#        setlocal ENABLEDELAYEDEXPANSION
-#        call "%VSINSTALLDIR%\VC\Auxiliary\Build\vcvarsall.bat" x64
-#        python -m pip install --upgrade pip
-#        python -m pip install meson ninja
-#        set "PKG_CONFIG=%VCPKG_ROOT%\installed\x64-windows\tools\pkgconf\pkgconf.exe"
-#        set "PKG_CONFIG_PATH=%VCPKG_ROOT%\installed\x64-windows\lib\pkgconfig"
-#        set "PATH=%VCPKG_ROOT%\installed\x64-windows\bin;%PATH%"
-#        set "DISABLE_THREADS_FLAG="
-#        if "${{ matrix.disable_threads || '' }}"=="true" set "DISABLE_THREADS_FLAG=-Dthreads=disabled"
-#        set "DISABLE_TOOLS_FLAGS="
-#        if "${{ matrix.disable_tools || '' }}"=="true" set "DISABLE_TOOLS_FLAGS=-Dimg2sixel=disabled -Dsixel2png=disabled"
-#        set "DISABLE_SIMD_FLAG="
-#        if "${{ matrix.disable_simd || '' }}"=="true" set "DISABLE_SIMD_FLAG=-Dsimd=disabled"
-#        set "UNITY_FLAG="
-#        if "${{ matrix.unity || '' }}"=="true" set "UNITY_FLAG=-Dunity=on"
-#        set "AMALGAMATED_LIB_FLAG="
-#        if "${{ matrix.amalgamated-lib || '' }}"=="true" set "AMALGAMATED_LIB_FLAG=-Damalgamated_lib=true"
-#        python -m mesonbuild.mesonmain setup builddir ^
-#            --wrap-mode=nodownload ^
-#            --default-library shared ^
-#            -Dbashcompletiondir=disabled ^
-#            -Dzshcompletiondir=disabled ^
-#            -Dpython=disabled ^
-#            -Dtests=true ^
-#            -Dcurl=disabled ^
-#            -Djpeg=disabled ^
-#            %AMALGAMATED_LIB_FLAG% ^
-#            %DISABLE_TOOLS_FLAGS% ^
-#            %DISABLE_THREADS_FLAG% ^
-#            %DISABLE_SIMD_FLAG% ^
-#            %UNITY_FLAG%
-#        if errorlevel 1 exit /b !errorlevel!
-#        python -m mesonbuild.mesonmain compile -C builddir
-#        if errorlevel 1 exit /b !errorlevel!
-#        python -m mesonbuild.mesonmain test -C builddir
-#        if errorlevel 1 (
-#            if exist builddir\meson-logs\testlog.txt type builddir\meson-logs\testlog.txt
-#            exit /b !errorlevel!
-#        )
-#        endlocal
-#
-#    - name: Configure, build, and test (Meson, Windows, MSVC, vcpkg libjpeg)
-#      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' && contains(matrix.vcpkg_packages || '', 'libjpeg') }}
-#      shell: cmd
-#      run: |
-#        setlocal ENABLEDELAYEDEXPANSION
-#        call "%VSINSTALLDIR%\VC\Auxiliary\Build\vcvarsall.bat" x64
-#        python -m pip install --upgrade pip
-#        python -m pip install meson ninja
-#        set "PKG_CONFIG=%VCPKG_ROOT%\installed\x64-windows\tools\pkgconf\pkgconf.exe"
-#        set "PKG_CONFIG_PATH=%VCPKG_ROOT%\installed\x64-windows\lib\pkgconfig"
-#        set "PATH=%VCPKG_ROOT%\installed\x64-windows\bin;%PATH%"
-#        set "DISABLE_THREADS_FLAG="
-#        if "${{ matrix.disable_threads || '' }}"=="true" set "DISABLE_THREADS_FLAG=-Dthreads=disabled"
-#        set "DISABLE_TOOLS_FLAGS="
-#        if "${{ matrix.disable_tools || '' }}"=="true" set "DISABLE_TOOLS_FLAGS=-Dimg2sixel=disabled -Dsixel2png=disabled"
-#        set "DISABLE_SIMD_FLAG="
-#        if "${{ matrix.disable_simd || '' }}"=="true" set "DISABLE_SIMD_FLAG=-Dsimd=disabled"
-#        set "UNITY_FLAG="
-#        if "${{ matrix.unity || '' }}"=="true" set "UNITY_FLAG=-Dunity=on"
-#        set "AMALGAMATED_LIB_FLAG="
-#        if "${{ matrix.amalgamated-lib || '' }}"=="true" set "AMALGAMATED_LIB_FLAG=-Damalgamated_lib=true"
-#        python -m mesonbuild.mesonmain setup builddir ^
-#            --wrap-mode=nodownload ^
-#            --default-library shared ^
-#            -Dbashcompletiondir=disabled ^
-#            -Dzshcompletiondir=disabled ^
-#            -Dpython=disabled ^
-#            -Dtests=true ^
-#            -Dcurl=disabled ^
-#            -Dpng=disabled ^
-#            -Djpeg=enabled ^
-#            %AMALGAMATED_LIB_FLAG% ^
-#            %DISABLE_TOOLS_FLAGS% ^
-#            %DISABLE_THREADS_FLAG% ^
-#            %DISABLE_SIMD_FLAG% ^
-#            %UNITY_FLAG%
-#        if errorlevel 1 exit /b !errorlevel!
-#        python -m mesonbuild.mesonmain compile -C builddir
-#        if errorlevel 1 exit /b !errorlevel!
-#        python -m mesonbuild.mesonmain test -C builddir
-#        if errorlevel 1 (
-#            if exist builddir\meson-logs\testlog.txt type builddir\meson-logs\testlog.txt
-#            exit /b !errorlevel!
-#        )
-#        endlocal
-#
-#    - name: Fix artifact permissions (Meson Alpine container)
-#      if: ${{ always() && (matrix.exec_type || '') == 'alpine' }}
-#      run: |
-#        set -eux
-#        for dir in builddir _artifacts; do
-#          if [ -e "$dir" ]; then
-#            sudo chown -R "$(id -u):$(id -g)" "$dir"
-#            sudo find "$dir" -type d -exec chmod u+rwx,go+rx {} +
-#            sudo find "$dir" -type f -exec chmod u+rw,go+r {} +
-#          fi
-#        done
-#
-#    - name: Upload meson artifacts
-#      if: ${{ always() && (matrix.exec_type || '') != 'cross-platform-vms' }}
-#      uses: actions/upload-artifact@v4
-#      with:
-#        name: meson-${{ matrix.label }}
-#        path: |
-#          builddir/meson-logs/**
-#          builddir/**/_artifacts/**
-#          builddir/**/testlog.txt
-#          builddir/**/*.log
-#        if-no-files-found: warn
-#        overwrite: true
+  ci-dist-meson:
+    name: Meson-tarball ${{ matrix.label }}
+    runs-on: ${{ matrix.runner || matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: Linux thumbnailer command
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            setup_flags: >-
+              -Dpng=disabled -Djpeg=disabled -Dcurl=disabled
+              -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled
+              -Dpython=disabled -Druby=disabled -Dtests=true
+              -Dthumbnailer_command=enabled
+          - label: macOS Quick Look extension
+            os: macos-latest
+            runner: macos-latest
+            setup_flags: >-
+              -Dpng=disabled -Djpeg=disabled -Dcurl=disabled
+              -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled
+              -Dpython=disabled -Druby=disabled -Dtests=true
+              -Dquicklook_extension=enabled -Dquicklook_preview=enabled
+          - label: mingw64 wiccodec
+            os: windows-latest
+            runner: windows-latest
+            msystem: MINGW64
+            setup_flags: >-
+              --default-library static --wrap-mode=nodownload
+              -Dpng=disabled -Djpeg=disabled -Dcurl=disabled
+              -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled
+              -Dpython=disabled -Druby=disabled -Dtests=true
+              -Dwic=enabled -Dwiccodec=enabled
+            extra_packages: >-
+              python
+              ninja
+              git
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-ninja
+
+    steps:
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 1
+
+    - name: Install Meson toolchain (non-Windows)
+      if: runner.os != 'Windows'
+      run: |
+        python3 -m venv .meson-venv
+        . .meson-venv/bin/activate
+        pip install --upgrade pip
+        pip install meson ninja
+        echo "$PWD/.meson-venv/bin" >> "$GITHUB_PATH"
+
+    - name: Setup MSYS2 (Windows)
+      if: runner.os == 'Windows'
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.msystem }}
+        update: true
+        install: ${{ matrix.extra_packages || 'python ninja git' }}
+
+    - name: Create Meson dist archive (Linux/macOS)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        meson setup builddir \
+          --wrap-mode=nodownload \
+          -Dbashcompletiondir=disabled \
+          -Dzshcompletiondir=disabled \
+          ${{ matrix.setup_flags }}
+        meson compile -C builddir -v
+        meson dist -C builddir
+        ls -l builddir/meson-dist
+
+    - name: Create Meson dist archive (Windows)
+      if: runner.os == 'Windows'
+      shell: msys2 {0}
+      run: |
+        meson setup builddir \
+          -Dbashcompletiondir=disabled \
+          -Dzshcompletiondir=disabled \
+          ${{ matrix.setup_flags }}
+        meson compile -C builddir
+        meson dist -C builddir --allow-dirty
+        ls -l builddir/meson-dist
+
+    - name: Build from Meson dist archive (Linux/macOS)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: |
+        artifact_dir="dist-build/_artifacts"
+        collect_logs() {
+          status=$?
+          if [ -d "dist-build" ]; then
+            mkdir -p "$artifact_dir"
+            find dist-build -type f \( -name 'config.log' -o -name 'test-suite.log' -o -name '*.log' -o -name '*.trs' -o -name 'testlog.txt' -o -path '*/meson-logs/*' \) \
+              ! -path "dist-build/_artifacts/*" \
+              | while IFS= read -r f; do
+                  rel="${f#dist-build/}"
+                  dest="${artifact_dir}/${rel}"
+                  mkdir -p "$(dirname "$dest")"
+                  cp "$f" "$dest"
+                done || true
+          fi
+          exit "$status"
+        }
+        trap 'collect_logs' EXIT
+
+        tarball=$(ls builddir/meson-dist/libsixel-*.tar.* | head -n1)
+        mkdir dist-build
+        tar -xf "$tarball" -C dist-build
+        distdir=$(find dist-build -maxdepth 1 -type d -name 'libsixel-*' | head -n1)
+        cd "$distdir"
+        meson setup build --wrap-mode=nodownload ${{ matrix.setup_flags }}
+        meson compile -C build
+        meson test -C build
+
+    - name: Build from Meson dist archive (Windows)
+      if: runner.os == 'Windows'
+      shell: msys2 {0}
+      run: |
+        artifact_dir="dist-build/_artifacts"
+        collect_logs() {
+          status=$?
+          if [ -d "dist-build" ]; then
+            mkdir -p "$artifact_dir"
+            find dist-build -type f \( -name 'config.log' -o -name 'test-suite.log' -o -name '*.log' -o -name '*.trs' -o -name 'testlog.txt' -o -path '*/meson-logs/*' \) \
+              ! -path "dist-build/_artifacts/*" \
+              | while IFS= read -r f; do
+                  rel="${f#dist-build/}"
+                  dest="${artifact_dir}/${rel}"
+                  mkdir -p "$(dirname "$dest")"
+                  cp "$f" "$dest"
+                done || true
+          fi
+          exit "$status"
+        }
+        trap 'collect_logs' EXIT
+
+        tarball=$(ls builddir/meson-dist/libsixel-*.tar.* | head -n1)
+        mkdir dist-build
+        tar -xf "$tarball" -C dist-build
+        distdir=$(find dist-build -maxdepth 1 -type d -name 'libsixel-*' | head -n1)
+        cd "$distdir"
+        meson setup build ${{ matrix.setup_flags }}
+        meson compile -C build
+        meson test -C build
+
+    - name: Upload meson dist artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: meson-dist-${{ matrix.os }}-${{ matrix.msystem || 'native' }}
+        path: |
+          builddir/meson-dist/**
+          dist-build/**/meson-logs/**
+          dist-build/**/_artifacts/**
+          dist-build/**/testlog.txt
+        if-no-files-found: warn
+
+  ci-meson:
+    name: Meson ${{ matrix.label }}
+    runs-on: ${{ matrix.runner || matrix.os }}
+    strategy:
+      matrix:
+        include:
+          - label: freebsd-14.3-x86-64
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            platform: freebsd
+            cp_os: freebsd
+            cp_arch: x86-64
+            cp_version: '14.3'
+            variant: freebsd
+            exec_type: cross-platform-vms
+          - label: freebsd-14.3-x86-64-amalgamated-lib
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            platform: freebsd
+            cp_os: freebsd
+            cp_arch: x86-64
+            cp_version: '14.3'
+            variant: amalgamated-lib
+            amalgamated-lib: true
+            exec_type: cross-platform-vms
+          - label: freebsd-14.3-aarch64
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            platform: freebsd
+            cp_os: freebsd
+            cp_arch: arm64
+            cp_version: '14.3'
+            variant: freebsd
+            exec_type: cross-platform-vms
+          - label: netbsd-10.1-x86-64
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            platform: netbsd
+            cp_os: netbsd
+            cp_arch: x86-64
+            cp_version: '10.1'
+            variant: netbsd
+            exec_type: cross-platform-vms
+          - label: netbsd-10.1-aarch64
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            platform: netbsd
+            cp_os: netbsd
+            cp_arch: arm64
+            cp_version: '10.1'
+            variant: netbsd
+            exec_type: cross-platform-vms
+          - label: haiku-r1beta5-x86-64
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            platform: haiku
+            cp_os: haiku
+            cp_arch: x86-64
+            cp_version: r1beta5
+            variant: haiku
+            exec_type: cross-platform-vms
+          - label: openbsd-7.8-x86-64
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            platform: openbsd
+            cp_os: openbsd
+            cp_arch: x86-64
+            cp_version: '7.8'
+            variant: openbsd
+            exec_type: cross-platform-vms
+          - label: dragonflybsd-6.4.2-x86-64
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            platform: dragonflybsd
+            df_release: '6.4.2'
+            variant: dragonflybsd
+            exec_type: dragonflybsd-vm
+          - label: ubuntu-static-only
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            static_only: true
+            variant: static-only
+          - label: ubuntu-disable-simd
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            disable_simd: true
+            variant: disable-simd
+          - label: ubuntu-disable-tools
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            disable_tools: true
+            variant: disable-tools
+          - label: ubuntu-disable-threads
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            disable_threads: true
+            variant: disable-threads
+          - label: ubuntu-musl
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            musl: true
+            variant: musl-cross
+            extra_packages: musl-tools
+          - label: alpine-3.20-x86_64
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            variant: alpine
+            exec_type: alpine
+          - label: ubuntu-24.04-aarch64
+            os: ubuntu-24.04-arm
+            runner: ubuntu-24.04-arm
+            sys: aarch64
+            variant: default
+          - label: ubuntu-24.04-aarch64-amalgamated-lib
+            os: ubuntu-24.04-arm
+            runner: ubuntu-24.04-arm
+            sys: aarch64
+            variant: amalgamated-lib
+            amalgamated-lib: true
+          - label: ubuntu-24.04-aarch64-unity
+            os: ubuntu-24.04-arm
+            runner: ubuntu-24.04-arm
+            sys: aarch64
+            variant: unity
+            unity: true
+          - label: ubuntu-i686
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            sys: i686
+            variant: default
+            extra_packages: gcc-multilib
+          - label: macos-aarch64
+            os: macos-latest
+            runner: macos-latest
+            variant: default
+          - label: macos-aarch64-amalgamated-lib
+            os: macos-latest
+            runner: macos-latest
+            variant: amalgamated-lib
+            amalgamated-lib: true
+          - label: macos-aarch64-unity
+            os: macos-latest
+            runner: macos-latest
+            variant: unity
+            unity: true
+          - label: macos-x86_64
+            os: macos-15
+            runner: macos-15
+            variant: default
+          - label: macos-x86_64-amalgamated-lib
+            os: macos-15
+            runner: macos-15
+            variant: amalgamated-lib
+            amalgamated-lib: true
+          - label: mingw64-static-only
+            os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: MINGW64
+            static_only: true
+            variant: static-only
+            extra_packages: >-
+              python
+              ninja
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-ninja
+          - label: mingw64-disable-simd
+            os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: MINGW64
+            disable_simd: true
+            variant: disable-simd
+            extra_packages: >-
+              python
+              ninja
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-ninja
+          - label: mingw64-disable-tools
+            os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: MINGW64
+            disable_tools: true
+            variant: disable-tools
+            extra_packages: >-
+              python
+              ninja
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-ninja
+          - label: mingw64-disable-threads
+            os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: MINGW64
+            disable_threads: true
+            variant: disable-threads
+            extra_packages: >-
+              python
+              ninja
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-ninja
+          - label: ucrt64
+            os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: UCRT64
+            variant: default
+            extra_packages: >-
+              python
+              ninja
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-meson
+              mingw-w64-ucrt-x86_64-ninja
+          - label: ucrt64-amalgamated-lib
+            os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: UCRT64
+            variant: amalgamated-lib
+            amalgamated-lib: true
+            extra_packages: >-
+              python
+              ninja
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-meson
+              mingw-w64-ucrt-x86_64-ninja
+          - label: clang64
+            os: windows-latest
+            runner: windows-latest
+            compiler: clang
+            sys: CLANG64
+            variant: default
+            extra_packages: >-
+              python
+              ninja
+              mingw-w64-clang-x86_64-toolchain
+              mingw-w64-clang-x86_64-meson
+              mingw-w64-clang-x86_64-ninja
+          - label: clang-cl
+            os: windows-latest
+            runner: windows-latest
+            compiler: clang-cl
+            sys: MSVC
+            variant: clang-cl
+            extra_packages: >-
+              python
+              ninja
+          - label: msvc
+            os: windows-latest
+            runner: windows-latest
+            compiler: cl
+            sys: MSVC
+            variant: default
+            extra_packages: >-
+              python
+              ninja
+          - label: msvc-unity
+            os: windows-latest
+            runner: windows-latest
+            compiler: cl
+            sys: MSVC
+            variant: unity
+            unity: true
+            extra_packages: >-
+              python
+              ninja
+          - label: msvc-amalgamated-lib
+            os: windows-latest
+            runner: windows-latest
+            compiler: cl
+            sys: MSVC
+            variant: amalgamated-lib
+            amalgamated-lib: true
+            extra_packages: >-
+              python
+              ninja
+          - label: mingw64-unity
+            os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: MINGW64
+            variant: unity
+            unity: true
+            extra_packages: >-
+              python
+              ninja
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-ninja
+          - label: mingw32
+            os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: MINGW32
+            variant: default
+            extra_packages: >-
+              python
+              ninja
+              mingw-w64-i686-toolchain
+              mingw-w64-i686-meson
+              mingw-w64-i686-ninja
+          - label: msys
+            os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: MSYS
+            variant: default
+            extra_packages: >-
+              python
+              ninja
+              meson
+              gcc
+              pkgconf
+          - label: cygwin
+            os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: CYGWIN
+            variant: default
+          - label: cygwin-unity
+            os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: CYGWIN
+            variant: unity
+            unity: true
+          - label: cygwin-amalgamated-lib
+            os: windows-latest
+            runner: windows-latest
+            compiler: gcc
+            sys: CYGWIN
+            variant: amalgamated-lib
+            amalgamated-lib: true
+
+    steps:
+    - name: Configure git EOL
+      if: matrix.sys == 'CYGWIN'
+      run: git config --global core.autocrlf false
+
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 1
+
+    - name: Install extra packages (Linux)
+      if: runner.os == 'Linux' && (matrix.extra_packages || '') != ''
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y ${{ matrix.extra_packages }}
+
+    - name: Setup MSVC developer env (vcvars)
+      if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' }}
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+
+    - name: Cache vcpkg artifacts (MSVC, vcpkg deps)
+      if: ${{ (matrix.vcpkg_packages || '') != '' }}
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~\vcpkg\installed
+          ~\vcpkg\buildtrees
+          ~\vcpkg\packages
+          ~\vcpkg\downloads
+        key: vcpkg-${{ runner.os }}-msvc-${{ matrix.vcpkg_packages || 'none' }}-${{ hashFiles('.github/workflows/ci.yml') }}
+
+    - name: Install vcpkg dependencies (MSVC, vcpkg deps)
+      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_packages || '') != '' }}
+      shell: pwsh
+      run: |
+        $vcpkgRoot = "$env:USERPROFILE\\vcpkg"
+        if (-not (Test-Path $vcpkgRoot)) {
+          git clone --depth 1 --branch "${{ env.VCPKG_REF }}" https://github.com/microsoft/vcpkg $vcpkgRoot
+        } else {
+          git -C $vcpkgRoot fetch --depth 1 origin "${{ env.VCPKG_REF }}"
+          git -C $vcpkgRoot reset --hard FETCH_HEAD
+        }
+        cd $vcpkgRoot
+        .\\bootstrap-vcpkg.bat
+        $packages = @('pkgconf')
+        $extra = '${{ matrix.vcpkg_packages || '' }}'.Trim()
+        if ($extra -ne '') {
+          $packages += $extra -split '\s+'
+        }
+        .\\vcpkg.exe install $packages --triplet x64-windows
+        "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+    - name: Setup MSYS2 (Windows)
+      if: ${{ runner.os == 'Windows' && matrix.sys != 'CYGWIN' && matrix.sys != 'MSVC' }}
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ matrix.sys == 'MSYS' && 'MSYS' || matrix.sys }}
+        update: true
+        install: ${{ matrix.extra_packages || 'python ninja' }}
+
+    - name: Setup Cygwin
+      if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
+      uses: cygwin/cygwin-install-action@v4
+      with:
+        packages: gcc-core,make,pkg-config,python3,python3-pip,ninja
+
+    - name: Install Meson (non-Windows)
+      if: ${{ runner.os != 'Windows' && ((matrix.exec_type || '') == '') }}
+      run: |
+        python3 -m venv .meson-venv
+        . .meson-venv/bin/activate
+        pip install --upgrade pip
+        pip install meson ninja
+        echo "$PWD/.meson-venv/bin" >> "$GITHUB_PATH"
+
+    - name: Install Meson (Cygwin)
+      if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
+      shell: pwsh
+      run: |
+        $cygwinRoot = 'C:\cygwin'
+        if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\cygwin64' }
+        $scriptLines = @(
+          'python3 -m pip install --upgrade pip',
+          'python3 -m pip install meson',
+          'gp_posix=$(cygpath -u "$GITHUB_PATH")',
+          'echo "$HOME/.local/bin" >> "$gp_posix"'
+        )
+        $script = [string]::Join("`n", $scriptLines)
+        &"$cygwinRoot\bin\bash.exe" --login -c $script
+
+    - name: Configure, build, and test (Meson, FreeBSD/OpenBSD/NetBSD/Haiku)
+      if: ${{ (matrix.exec_type || '') == 'cross-platform-vms' }}
+      timeout-minutes: 30
+      uses: cross-platform-actions/action@v0.30.0
+      with:
+        operating_system: ${{ matrix.cp_os }}
+        architecture: ${{ matrix.cp_arch }}
+        version: ${{ matrix.cp_version }}
+        sync_files: runner-to-vm
+        environment_variables: CI,GITHUB_WORKSPACE
+        run: &meson_non_windows |
+          : "${GITHUB_WORKSPACE:=$PWD}"
+          artifact_dir="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}"
+          artifact_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
+          collect_logs() {
+            status=$?
+            cd "$GITHUB_WORKSPACE"
+            mkdir -p "$artifact_dir"
+            find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar czf "$artifact_tar" {} +
+            exit "$status"
+          }
+          trap 'collect_logs' EXIT
+
+          if [ "${{ matrix.platform || '' }}" = "freebsd" ]; then
+            pkg_prefix=""
+            if [ "$(id -u)" -ne 0 ]; then
+              if command -v sudo >/dev/null 2>&1; then
+                pkg_prefix="sudo"
+              elif command -v doas >/dev/null 2>&1; then
+                pkg_prefix="doas"
+              else
+                echo "No privilege escalation helper available" >&2
+                exit 1
+              fi
+            fi
+
+            ${pkg_prefix:+$pkg_prefix }pkg update -f
+            ${pkg_prefix:+$pkg_prefix }pkg install -y \
+              python3 \
+              meson \
+              ninja
+          elif [ "${{ matrix.platform || '' }}" = "openbsd" ]; then
+            pkg_prefix=""
+            if [ "$(id -u)" -ne 0 ]; then
+              if command -v sudo >/dev/null 2>&1; then
+                pkg_prefix="sudo"
+              elif command -v doas >/dev/null 2>&1; then
+                pkg_prefix="doas"
+              else
+                echo "No privilege escalation helper available" >&2
+                exit 1
+              fi
+            fi
+
+            ${pkg_prefix:+$pkg_prefix }pkg_add \
+              rsync \
+              python%3 \
+              meson \
+              ninja
+          elif [ "${{ matrix.platform || '' }}" = "netbsd" ]; then
+            pkg_prefix=""
+            if [ "$(id -u)" -ne 0 ]; then
+              if command -v sudo >/dev/null 2>&1; then
+                pkg_prefix="sudo"
+              elif command -v doas >/dev/null 2>&1; then
+                pkg_prefix="doas"
+              else
+                echo "No privilege escalation helper available" >&2
+                exit 1
+              fi
+            fi
+
+            trap 'status=$?; if [ "$status" -ne 0 ] && \
+              [ -f /var/db/pkgin/pkg_install-err.log ]; then \
+              echo "pkg_install error log:" >&2; \
+              cat /var/db/pkgin/pkg_install-err.log >&2; \
+              cp /var/db/pkgin/pkg_install-err.log pkg_install-err.log || true; \
+            fi' EXIT
+
+            ${pkg_prefix:+$pkg_prefix }pkgin -y update
+            ${pkg_prefix:+$pkg_prefix }pkgin -y install \
+              python311 \
+              meson
+
+            if ! command -v ninja >/dev/null 2>&1; then
+              ${pkg_prefix:+$pkg_prefix }pkgin -y install ninja
+            else
+              echo "ninja is already available; skipping install" >&2
+            fi
+          elif [ "${{ matrix.platform || '' }}" = "haiku" ]; then
+            pkgman refresh
+            pkgman install -y meson ninja
+          fi
+
+          if [ "${{ matrix.musl || '' }}" = "true" ]; then
+            export CC=musl-gcc
+          elif [ '${{ matrix.sys || '' }}' = 'i686' ]; then
+            export CC=gcc
+            export CFLAGS="-m32"
+            export LDFLAGS="-m32"
+            export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
+            export PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
+          fi
+          disable_threads_flag=""
+          if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
+            disable_threads_flag="-Dthreads=disabled"
+          fi
+          disable_tools_flags=""
+          if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
+            disable_tools_flags="-Dimg2sixel=disabled -Dsixel2png=disabled"
+          fi
+          disable_simd_flag=""
+          if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
+            disable_simd_flag="-Dsimd=disabled"
+          fi
+          unity_flag=""
+          if [ "${{ matrix.unity || '' }}" = "true" ]; then
+            unity_flag="-Dunity=on"
+          fi
+          default_library_flag=""
+          if [ "${{ matrix.static_only || '' }}" = "true" ]; then
+            default_library_flag="--default-library static"
+          fi
+          amalgamated_lib_flag=""
+          if [ "${{ matrix.amalgamated-lib || '' }}" = "true" ]; then
+            amalgamated_lib_flag="-Damalgamated_lib=true"
+          fi
+          meson setup builddir \
+              --wrap-mode=nodownload \
+              ${default_library_flag} \
+              -Dbashcompletiondir=disabled \
+              -Dzshcompletiondir=disabled \
+              -Dpython=disabled \
+              -Dtests=true \
+              ${amalgamated_lib_flag} \
+              ${disable_tools_flags} \
+              ${disable_threads_flag} \
+              ${disable_simd_flag}
+          meson compile -C builddir
+          meson test -C builddir
+
+    - name: Fetch BSD artifacts from VM (Meson)
+      if: ${{ (matrix.exec_type || '') == 'cross-platform-vms' }}
+      run: |
+        mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
+        remote_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
+        if ssh cross_platform_actions_host "test -f \"${remote_tar}\""; then
+          scp cross_platform_actions_host:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
+        else
+          echo "No artifact archive found on VM; skipping copy" >&2
+        fi
+
+    - name: Configure, build, and test (Meson, DragonFlyBSD)
+      if: ${{ (matrix.exec_type || '') == 'dragonflybsd-vm' }}
+      timeout-minutes: 30
+      uses: vmactions/dragonflybsd-vm@v1
+      with:
+        release: ${{ matrix.df_release }}
+        usesh: true
+        copyback: false
+        run: |
+          artifact_dir="${GITHUB_WORKSPACE}/_artifacts/dragonflybsd"
+          artifact_tar="${GITHUB_WORKSPACE}/_artifacts/dragonflybsd.tar.gz"
+          collect_logs() {
+            status=$?
+            cd "$GITHUB_WORKSPACE"
+            mkdir -p "$artifact_dir"
+            find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar czf "$artifact_tar" {} +
+            exit "$status"
+          }
+          trap 'collect_logs' EXIT
+          pkg update -f
+          pkg install -y python3 meson ninja pkgconf
+
+          disable_threads_flag=""
+          if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
+            disable_threads_flag="-Dthreads=disabled"
+          fi
+          disable_tools_flags=""
+          if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
+            disable_tools_flags="-Dimg2sixel=disabled -Dsixel2png=disabled"
+          fi
+          disable_simd_flag=""
+          if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
+            disable_simd_flag="-Dsimd=disabled"
+          fi
+          unity_flag=""
+          if [ "${{ matrix.unity || '' }}" = "true" ]; then
+            unity_flag="-Dunity=on"
+          fi
+          default_library_flag=""
+          if [ "${{ matrix.static_only || '' }}" = "true" ]; then
+            default_library_flag="--default-library static"
+          fi
+          amalgamated_lib_flag=""
+          if [ "${{ matrix.amalgamated-lib || '' }}" = "true" ]; then
+            amalgamated_lib_flag="-Damalgamated_lib=true"
+          fi
+
+          date -u
+          rdate -n pool.ntp.org || true
+          sleep 2
+          date -u
+
+          # DragonFly guests in the cross-platform runner do not expose
+          # AVX/AVX2 state, so force a portable SIMD baseline to avoid
+          # SIGILL in VPTE-heavy tests while still exercising the filter.
+          export SIXEL_SIMD_LEVEL=sse2
+
+          cd "$GITHUB_WORKSPACE"
+          meson setup builddir \
+              --wrap-mode=nodownload \
+              ${default_library_flag} \
+              -Dbashcompletiondir=disabled \
+              -Dzshcompletiondir=disabled \
+              -Dpython=disabled \
+              -Dtests=true \
+              ${amalgamated_lib_flag} \
+              ${disable_tools_flags} \
+              ${disable_threads_flag} \
+              ${disable_simd_flag}
+          meson compile -C builddir
+          meson test -C builddir
+
+    - name: Fetch DragonFlyBSD artifacts from VM (Meson)
+      if: ${{ (matrix.exec_type || '') == 'dragonflybsd-vm' }}
+      run: |
+        mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
+        remote_tar="${GITHUB_WORKSPACE}/_artifacts/dragonflybsd.tar.gz"
+        if ssh cross_platform_actions_host "test -f \"${remote_tar}\""; then
+          scp cross_platform_actions_host:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
+        else
+          echo "No artifact archive found on VM; skipping copy" >&2
+        fi
+
+    - name: Configure, build, and test (Meson, non-Windows)
+      if: ${{ runner.os != 'Windows' && !((matrix.exec_type || '') != '') }}
+      run: *meson_non_windows
+
+    - name: Configure, build, and test (Meson, Alpine container)
+      if: ${{ (matrix.exec_type || '') == 'alpine' }}
+      run: |
+        docker run --rm -v "$PWD":/src -w /src alpine:3.20 sh -euc '
+          apk add --no-cache \
+            bash \
+            build-base \
+            coreutils \
+            curl-dev \
+            findutils \
+            libjpeg-turbo-dev \
+            libpng-dev \
+            meson \
+            ninja \
+            pkgconf \
+            python3 \
+            zlib-dev
+
+          disable_threads_flag=""
+          if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
+            disable_threads_flag="-Dthreads=disabled"
+          fi
+          disable_tools_flags=""
+          if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
+            disable_tools_flags="-Dimg2sixel=disabled -Dsixel2png=disabled"
+          fi
+          disable_simd_flag=""
+          if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
+            disable_simd_flag="-Dsimd=disabled"
+          fi
+          default_library_flag=""
+          if [ "${{ matrix.static_only || '' }}" = "true" ]; then
+            default_library_flag="--default-library static"
+          fi
+          amalgamated_lib_flag=""
+          if [ "${{ matrix.amalgamated-lib || '' }}" = "true" ]; then
+            amalgamated_lib_flag="-Damalgamated_lib=true"
+          fi
+          meson setup builddir \
+              --wrap-mode=nodownload \
+              ${default_library_flag} \
+              -Dbashcompletiondir=disabled \
+              -Dzshcompletiondir=disabled \
+              -Dpython=disabled \
+              -Dtests=true \
+              ${amalgamated_lib_flag} \
+              ${disable_tools_flags} \
+              ${disable_threads_flag} \
+              ${disable_simd_flag}
+          meson compile -C builddir
+          meson test -C builddir
+        '
+
+    - name: Configure, build, and test (Meson, Windows, not MSVC/Cygwin)
+      if: ${{ runner.os == 'Windows' && matrix.sys != 'MSVC' && matrix.sys != 'CYGWIN' }}
+      shell: msys2 {0}
+      run: |
+        disable_threads_flag=""
+        amalgamated_lib_flag=""
+        if [ "${{ matrix.disable_threads || '' }}" = "true" ]; then
+          disable_threads_flag="-Dthreads=disabled"
+        fi
+        disable_tools_flags=""
+        if [ "${{ matrix.disable_tools || '' }}" = "true" ]; then
+          disable_tools_flags="-Dimg2sixel=disabled -Dsixel2png=disabled"
+        fi
+        disable_simd_flag=""
+        if [ "${{ matrix.disable_simd || '' }}" = "true" ]; then
+          disable_simd_flag="-Dsimd=disabled"
+        fi
+        unity_flag=""
+        if [ "${{ matrix.unity || '' }}" = "true" ]; then
+          unity_flag="-Dunity=on"
+        fi
+        default_library_flag=""
+        if [ "${{ matrix.static_only || '' }}" = "true" ]; then
+          default_library_flag="--default-library static"
+        fi
+        if [ "${{ matrix.amalgamated-lib || '' }}" = "true" ]; then
+          amalgamated_lib_flag="-Damalgamated_lib=true"
+        fi
+        meson setup builddir \
+            --wrap-mode=nodownload \
+            ${default_library_flag} \
+            -Dbashcompletiondir=disabled \
+            -Dzshcompletiondir=disabled \
+            -Dpython=disabled \
+            -Dtests=true \
+            ${amalgamated_lib_flag} \
+            ${disable_tools_flags} \
+            ${disable_threads_flag} \
+            ${disable_simd_flag} \
+            ${unity_flag}
+        meson compile -C builddir
+        meson test -C builddir
+
+    - name: Configure, build, and test (Meson, Windows, Cygwin)
+      if: ${{ runner.os == 'Windows' && matrix.sys == 'CYGWIN' }}
+      shell: pwsh
+      run: |
+        $cygwinRoot = 'C:\cygwin'
+        if (-not (Test-Path $cygwinRoot)) { $cygwinRoot = 'C:\cygwin64' }
+        $workspace = &"$cygwinRoot\bin\cygpath.exe" -u $env:GITHUB_WORKSPACE
+        $disableThreadsFlag = ''
+        if ('${{ matrix.disable_threads }}' -eq 'true') {
+          $disableThreadsFlag = '-Dthreads=disabled'
+        }
+        $disableToolsFlags = ''
+        if ('${{ matrix.disable_tools }}' -eq 'true') {
+          $disableToolsFlags = '-Dimg2sixel=disabled -Dsixel2png=disabled'
+        }
+        $disableSimdFlag = ''
+        if ('${{ matrix.disable_simd }}' -eq 'true') {
+          $disableSimdFlag = '-Dsimd=disabled'
+        }
+        $unityFlag = ''
+        if ('${{ matrix.unity }}' -eq 'true') {
+          $unityFlag = '-Dunity=on'
+        }
+        $defaultLibraryFlag = ''
+        if ('${{ matrix.static_only }}' -eq 'true') {
+          $defaultLibraryFlag = '--default-library static'
+        }
+        $amalgamatedLibFlag = ''
+        if ('${{ matrix.amalgamated-lib }}' -eq 'true') {
+          $amalgamatedLibFlag = '-Damalgamated_lib=true'
+        }
+        $scriptLines = @(
+          'export PATH=/usr/local/bin:/usr/bin',
+          'export CC=gcc',
+          "disable_threads_flag=`"$disableThreadsFlag`"",
+          "disable_tools_flags=`"$disableToolsFlags`"",
+          "disable_simd_flag=`"$disableSimdFlag`"",
+          "default_library_flag=`"$defaultLibraryFlag`"",
+          "unity_flag=`"$unityFlag`"",
+          "amalgamated_lib_flag=`"$amalgamatedLibFlag`"",
+          "export GITHUB_WORKSPACE=`"$workspace`"",
+          "cd `"$workspace`"",
+          'meson setup builddir --wrap-mode=nodownload ${default_library_flag} ${amalgamated_lib_flag} -Dpng=disabled -Djpeg=disabled -Dcurl=disabled -Dbashcompletiondir=disabled -Dzshcompletiondir=disabled -Dpython=disabled -Dtests=true ${disable_tools_flags} ${disable_threads_flag} ${disable_simd_flag} ${unity_flag}',
+          'meson compile -C builddir',
+          'meson test -C builddir'
+        )
+        $script = [string]::Join("`n", $scriptLines)
+        &"$cygwinRoot\bin\bash.exe" --login -c $script
+
+    - name: Configure, build, and test (Meson, Windows, MSVC)
+      if: ${{ runner.os == 'Windows' && matrix.sys == 'MSVC' && (matrix.vcpkg_packages || '') == '' }}
+      shell: cmd
+      run: |
+        setlocal ENABLEDELAYEDEXPANSION
+        call "%VSINSTALLDIR%\VC\Auxiliary\Build\vcvarsall.bat" x64
+        python -m pip install --upgrade pip
+        python -m pip install meson ninja
+        set "CC=${{ matrix.compiler }}"
+        set "DISABLE_THREADS_FLAG="
+        if "${{ matrix.disable_threads || '' }}"=="true" set "DISABLE_THREADS_FLAG=-Dthreads=disabled"
+        set "DISABLE_TOOLS_FLAGS="
+        if "${{ matrix.disable_tools || '' }}"=="true" set "DISABLE_TOOLS_FLAGS=-Dimg2sixel=disabled -Dsixel2png=disabled"
+        set "DISABLE_SIMD_FLAG="
+        if "${{ matrix.disable_simd || '' }}"=="true" set "DISABLE_SIMD_FLAG=-Dsimd=disabled"
+        set "UNITY_FLAG="
+        if "${{ matrix.unity || '' }}"=="true" set "UNITY_FLAG=-Dunity=on"
+        set "AMALGAMATED_LIB_FLAG="
+        if "${{ matrix.amalgamated-lib || '' }}"=="true" set "AMALGAMATED_LIB_FLAG=-Damalgamated_lib=true"
+        python -m mesonbuild.mesonmain setup builddir ^
+            --wrap-mode=nodownload ^
+            --default-library static ^
+            -Dpng=disabled ^
+            -Djpeg=disabled ^
+            -Dcurl=disabled ^
+            -Dbashcompletiondir=disabled ^
+            -Dzshcompletiondir=disabled ^
+            -Dpython=disabled ^
+            -Dtests=true ^
+            %AMALGAMATED_LIB_FLAG% ^
+            %DISABLE_TOOLS_FLAGS% ^
+            %DISABLE_THREADS_FLAG% ^
+            %DISABLE_SIMD_FLAG% ^
+            %UNITY_FLAG%
+        if errorlevel 1 exit /b !errorlevel!
+        python -m mesonbuild.mesonmain compile -C builddir
+        if errorlevel 1 exit /b !errorlevel!
+        python -m mesonbuild.mesonmain test -C builddir
+        if errorlevel 1 (
+            if exist builddir\meson-logs\testlog.txt type builddir\meson-logs\testlog.txt
+            exit /b !errorlevel!
+        )
+        endlocal
+
+    - name: Configure, build, and test (Meson, Windows, MSVC, vcpkg libpng)
+      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' && contains(matrix.vcpkg_packages || '', 'libpng') }}
+      shell: cmd
+      run: |
+        setlocal ENABLEDELAYEDEXPANSION
+        call "%VSINSTALLDIR%\VC\Auxiliary\Build\vcvarsall.bat" x64
+        python -m pip install --upgrade pip
+        python -m pip install meson ninja
+        set "PKG_CONFIG=%VCPKG_ROOT%\installed\x64-windows\tools\pkgconf\pkgconf.exe"
+        set "PKG_CONFIG_PATH=%VCPKG_ROOT%\installed\x64-windows\lib\pkgconfig"
+        set "PATH=%VCPKG_ROOT%\installed\x64-windows\bin;%PATH%"
+        set "DISABLE_THREADS_FLAG="
+        if "${{ matrix.disable_threads || '' }}"=="true" set "DISABLE_THREADS_FLAG=-Dthreads=disabled"
+        set "DISABLE_TOOLS_FLAGS="
+        if "${{ matrix.disable_tools || '' }}"=="true" set "DISABLE_TOOLS_FLAGS=-Dimg2sixel=disabled -Dsixel2png=disabled"
+        set "DISABLE_SIMD_FLAG="
+        if "${{ matrix.disable_simd || '' }}"=="true" set "DISABLE_SIMD_FLAG=-Dsimd=disabled"
+        set "UNITY_FLAG="
+        if "${{ matrix.unity || '' }}"=="true" set "UNITY_FLAG=-Dunity=on"
+        set "AMALGAMATED_LIB_FLAG="
+        if "${{ matrix.amalgamated-lib || '' }}"=="true" set "AMALGAMATED_LIB_FLAG=-Damalgamated_lib=true"
+        python -m mesonbuild.mesonmain setup builddir ^
+            --wrap-mode=nodownload ^
+            --default-library shared ^
+            -Dbashcompletiondir=disabled ^
+            -Dzshcompletiondir=disabled ^
+            -Dpython=disabled ^
+            -Dtests=true ^
+            -Dcurl=disabled ^
+            -Djpeg=disabled ^
+            %AMALGAMATED_LIB_FLAG% ^
+            %DISABLE_TOOLS_FLAGS% ^
+            %DISABLE_THREADS_FLAG% ^
+            %DISABLE_SIMD_FLAG% ^
+            %UNITY_FLAG%
+        if errorlevel 1 exit /b !errorlevel!
+        python -m mesonbuild.mesonmain compile -C builddir
+        if errorlevel 1 exit /b !errorlevel!
+        python -m mesonbuild.mesonmain test -C builddir
+        if errorlevel 1 (
+            if exist builddir\meson-logs\testlog.txt type builddir\meson-logs\testlog.txt
+            exit /b !errorlevel!
+        )
+        endlocal
+
+    - name: Configure, build, and test (Meson, Windows, MSVC, vcpkg libjpeg)
+      if: ${{ runner.os == 'Windows' && matrix.compiler == 'cl' && contains(matrix.vcpkg_packages || '', 'libjpeg') }}
+      shell: cmd
+      run: |
+        setlocal ENABLEDELAYEDEXPANSION
+        call "%VSINSTALLDIR%\VC\Auxiliary\Build\vcvarsall.bat" x64
+        python -m pip install --upgrade pip
+        python -m pip install meson ninja
+        set "PKG_CONFIG=%VCPKG_ROOT%\installed\x64-windows\tools\pkgconf\pkgconf.exe"
+        set "PKG_CONFIG_PATH=%VCPKG_ROOT%\installed\x64-windows\lib\pkgconfig"
+        set "PATH=%VCPKG_ROOT%\installed\x64-windows\bin;%PATH%"
+        set "DISABLE_THREADS_FLAG="
+        if "${{ matrix.disable_threads || '' }}"=="true" set "DISABLE_THREADS_FLAG=-Dthreads=disabled"
+        set "DISABLE_TOOLS_FLAGS="
+        if "${{ matrix.disable_tools || '' }}"=="true" set "DISABLE_TOOLS_FLAGS=-Dimg2sixel=disabled -Dsixel2png=disabled"
+        set "DISABLE_SIMD_FLAG="
+        if "${{ matrix.disable_simd || '' }}"=="true" set "DISABLE_SIMD_FLAG=-Dsimd=disabled"
+        set "UNITY_FLAG="
+        if "${{ matrix.unity || '' }}"=="true" set "UNITY_FLAG=-Dunity=on"
+        set "AMALGAMATED_LIB_FLAG="
+        if "${{ matrix.amalgamated-lib || '' }}"=="true" set "AMALGAMATED_LIB_FLAG=-Damalgamated_lib=true"
+        python -m mesonbuild.mesonmain setup builddir ^
+            --wrap-mode=nodownload ^
+            --default-library shared ^
+            -Dbashcompletiondir=disabled ^
+            -Dzshcompletiondir=disabled ^
+            -Dpython=disabled ^
+            -Dtests=true ^
+            -Dcurl=disabled ^
+            -Dpng=disabled ^
+            -Djpeg=enabled ^
+            %AMALGAMATED_LIB_FLAG% ^
+            %DISABLE_TOOLS_FLAGS% ^
+            %DISABLE_THREADS_FLAG% ^
+            %DISABLE_SIMD_FLAG% ^
+            %UNITY_FLAG%
+        if errorlevel 1 exit /b !errorlevel!
+        python -m mesonbuild.mesonmain compile -C builddir
+        if errorlevel 1 exit /b !errorlevel!
+        python -m mesonbuild.mesonmain test -C builddir
+        if errorlevel 1 (
+            if exist builddir\meson-logs\testlog.txt type builddir\meson-logs\testlog.txt
+            exit /b !errorlevel!
+        )
+        endlocal
+
+    - name: Fix artifact permissions (Meson Alpine container)
+      if: ${{ always() && (matrix.exec_type || '') == 'alpine' }}
+      run: |
+        set -eux
+        for dir in builddir _artifacts; do
+          if [ -e "$dir" ]; then
+            sudo chown -R "$(id -u):$(id -g)" "$dir"
+            sudo find "$dir" -type d -exec chmod u+rwx,go+rx {} +
+            sudo find "$dir" -type f -exec chmod u+rw,go+r {} +
+          fi
+        done
+
+    - name: Upload meson artifacts
+      if: ${{ always() && (matrix.exec_type || '') != 'cross-platform-vms' }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: meson-${{ matrix.label }}
+        path: |
+          builddir/meson-logs/**
+          builddir/**/_artifacts/**
+          builddir/**/testlog.txt
+          builddir/**/*.log
+        if-no-files-found: warn
+        overwrite: true
 
 # emacs Local Variables:
 # emacs mode: c
