@@ -450,7 +450,7 @@ jobs:
               --enable-amalgamated-lib
             extra_packages: make
             exec_type: msvc
-          - label: msvc-vcpkg-libpng
+          - label: msvc-vcpkg-libpng-libjpeg
             os: windows-latest
             runner: windows-latest
             msystem: MSYS
@@ -464,23 +464,9 @@ jobs:
               RANLIB=:
               --host=x86_64-pc-windows-msvc
             extra_packages: make
-            vcpkg_packages: libpng
-            exec_type: msvc
-          - label: msvc-vcpkg-libjpeg
-            os: windows-latest
-            runner: windows-latest
-            msystem: MSYS
-            extra_options: >-
-              CC=cl
-              LD=link
-              AR="sh ar-lib lib"
-              ARFLAGS=cr
-              NM="dumpbin -symbols"
-              STRIP=:
-              RANLIB=:
-              --host=x86_64-pc-windows-msvc
-            extra_packages: make
-            vcpkg_packages: libjpeg-turbo
+            vcpkg_packages: >-
+              libpng
+              libjpeg-turbo
             exec_type: msvc
           - label: mingw32
             os: windows-latest
@@ -542,7 +528,7 @@ jobs:
             extra_options: >-
               --enable-amalgamated-lib
             extra_packages: >-
-              make,gcc
+              gcc-core,make
             exec_type: cygwin
           - label: cygwin-msvc-cross
             os: windows-latest
@@ -608,6 +594,8 @@ jobs:
 
     - name: Install extra packages (Linux)
       if: ${{ runner.os == 'Linux' && (matrix.extra_packages || '') != '' }}
+      shell: bash
+      timeout-minutes: 5
       run: |
         sudo apt-get update
         sudo apt-get install -y ${{ matrix.extra_packages }}
@@ -615,6 +603,7 @@ jobs:
     - name: Install extra packages (macOS)
       if: ${{ runner.os == 'macOS' && (matrix.extra_packages || '') != '' }}
       shell: bash
+      timeout-minutes: 5
       run: |
         brew update
         brew install ${{ matrix.extra_packages }}
@@ -626,7 +615,7 @@ jobs:
         arch: x64
 
     - name: Cache vcpkg artifacts (MSVC, vcpkg deps)
-      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_packages || '') != '' }}
+      if: ${{ (matrix.vcpkg_packages || '') != '' }}
       uses: actions/cache@v4
       with:
         path: |
@@ -637,7 +626,7 @@ jobs:
         key: vcpkg-${{ runner.os }}-msvc-${{ matrix.vcpkg_packages || 'none' }}-${{ hashFiles('.github/workflows/ci.yml') }}
 
     - name: Install vcpkg dependencies (MSVC, vcpkg deps)
-      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_packages || '') != '' }}
+      if: ${{ (matrix.vcpkg_packages || '') != '' }}
       shell: pwsh
       run: |
         $vcpkgRoot = "$env:USERPROFILE\\vcpkg"
@@ -690,6 +679,7 @@ jobs:
     - name: Prepare Cosmopolitan toolchain
       if: ${{ contains(matrix.extra_options || '', 'CC=cosmocc') }}
       shell: bash
+      timeout-minutes: 5
       run: |
         set -exv
         mkdir -p cosmopolitan
@@ -702,6 +692,7 @@ jobs:
     - name: Install pip packages
       if: ${{ (matrix.pip_packages || '') != '' }}
       shell: bash
+      timeout-minutes: 5
       run: |
         python3 -m venv .venv
         . .venv/bin/activate
@@ -714,8 +705,8 @@ jobs:
 
     - name: Configure and build (DragonFlyBSD)
       if: ${{ (matrix.exec_type || '') == 'dragonflybsd-vm' }}
-      timeout-minutes: 30
       uses: vmactions/dragonflybsd-vm@v1
+      timeout-minutes: 15
       with:
         release: 6.4.2
         usesh: true
@@ -743,8 +734,8 @@ jobs:
       run: |
         mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
         remote_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
-        if ssh cross_platform_actions_host "test -f \"${remote_tar}\""; then
-          scp cross_platform_actions_host:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
+        if ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dragonflybsd "test -f \"${remote_tar}\""; then
+          scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dragonflybsd:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
         else
           echo "No artifact archive found on VM; skipping copy" >&2
         fi
@@ -752,6 +743,7 @@ jobs:
     - name: Configure and build (non-Windows)
       if: ${{ (matrix.exec_type || '') == '' }}
       shell: bash
+      timeout-minutes: 15
       run: |
         set -e
         export PATH="$PWD/bin:$PATH"
@@ -762,6 +754,7 @@ jobs:
     - name: Configure and build (Windows, msys2)
       if: ${{ (matrix.exec_type || '') == 'msys' }}
       shell: msys2 {0}
+      timeout-minutes: 15
       run: |
         set -e
         export PATH="$PWD/bin:$PATH"
@@ -772,6 +765,7 @@ jobs:
     - name: Configure and build (Windows, Cygwin)
       if: ${{ (matrix.exec_type || '') == 'cygwin' }}
       shell: C:\cygwin\bin\bash.exe -o igncr {0}
+      timeout-minutes: 15
       run: |
         set -e
         PATH="$(pwd)/build-aux:$PATH"
@@ -787,17 +781,21 @@ jobs:
     - name: Build with Emscripten (non-Windows)
       if: ${{ (matrix.exec_type || '') == 'emscripten' && runner.os != 'Windows' }}
       shell: bash
+      timeout-minutes: 15
       run: |
         ./emscripten/build-emcc.sh
 
     - name: Build with Emscripten (Windows)
       if: ${{ (matrix.exec_type || '') == 'emscripten' && runner.os == 'Windows' }}
       shell: msys2 {0}
+      timeout-minutes: 15
       run: |
         ./emscripten/build-emcc.sh
 
     - name: Configure and build (Autotools, Alpine container)
       if: ${{ (matrix.exec_type || '') == 'alpine' }}
+      shell: bash
+      timeout-minutes: 15
       run: |
         docker run --rm -v "$PWD":/src -w /src alpine:3.20 sh -euc '
           apk add --no-cache ${{ matrix.guest_packages || '' }}
@@ -809,6 +807,7 @@ jobs:
     - name: Configure and build, and run tests (Windows, MSVC)
       if: ${{ (matrix.exec_type || '') == 'msvc' }}
       shell: msys2 {0}
+      timeout-minutes: 15
       run: |
         VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
         cmd //c call "${VCVARS}" x64 \>nul \&\& set
@@ -832,8 +831,8 @@ jobs:
 
     - name: Configure, build, and run tests (FreeBSD/OpenBSD/NetBSD/Haiku)
       if: ${{ (matrix.exec_type || '') == 'cross-platform-vms' }}
-      timeout-minutes: 30
       uses: cross-platform-actions/action@v0.30.0
+      timeout-minutes: 15
       with:
         operating_system: ${{ matrix.cp_os }}
         architecture: ${{ matrix.cp_arch }}
@@ -846,7 +845,6 @@ jobs:
           artifact_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
           collect_logs() {
             status=$?
-            cd "$GITHUB_WORKSPACE"
             mkdir -p "$artifact_dir"
             find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar czf "$artifact_tar" {} +
             exit "$status"
@@ -897,6 +895,8 @@ jobs:
 
     - name: Fetch BSD artifacts from VM (Autotools)
       if: ${{ always() && (matrix.exec_type || '') == 'cross-platform-vms' }}
+      shell: bash
+      timeout-minutes: 5
       run: |
         mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
         remote_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
@@ -906,20 +906,22 @@ jobs:
           echo "No artifact archive found on VM; skipping copy" >&2
         fi
 
-    - name: Capture coverage (Windows, CLANG64)
-      if: ${{ (matrix.exec_type || '') == 'msys' && matrix.msystem == 'CLANG64' }}
-      shell: msys2 {0}
-      run: |
-        LLVM_PROFILE_FILE="%p-%m.profraw" make check V=1
-        find . -name \*.profraw || true
-        llvm-profdata merge -sparse coverage/*.profraw -o coverage/coverage.profdata || true
-        find . -type f \( -name '*.exe' -o -name '*.dll' \) |
-        xargs llvm-cov export -format=lcov \
-          -instr-profile=coverage/coverage.profdata > coverage.info || true
+#    - name: Capture coverage (Windows, CLANG64)
+#      if: ${{ (matrix.exec_type || '') == 'msys' && matrix.msystem == 'CLANG64' }}
+#      shell: msys2 {0}
+#      timeout-minutes: 15
+#      run: |
+#        LLVM_PROFILE_FILE="%p-%m.profraw" make check
+#        find . -name \*.profraw || true
+#        llvm-profdata merge -sparse coverage/*.profraw -o coverage/coverage.profdata || true
+#        find . -type f \( -name '*.exe' -o -name '*.dll' \) |
+#        xargs llvm-cov export -format=lcov \
+#          -instr-profile=coverage/coverage.profdata > coverage.info || true
 
     - name: Capture coverage
       if: runner.os != 'Windows'
       shell: bash
+      timeout-minutes: 5
       run: |
         if test -f coverage.info; then
           echo "coverage.info already exists; skipping capture"
@@ -947,6 +949,7 @@ jobs:
     - name: Capture coverage (Windows)
       if: ${{ (matrix.exec_type || '') == 'msys' }}
       shell: msys2 {0}
+      timeout-minutes: 5
       run: |
         if [ -e coverage.info ]; then
           echo "coverage.info already exists; skipping capture"
@@ -971,6 +974,8 @@ jobs:
 
     - name: Fix artifact permissions (Autotools Alpine container)
       if: ${{ always() && (matrix.exec_type || '') == 'alpine' }}
+      shell: bash
+      timeout-minutes: 5
       run: |
         for dir in tests tests/_artifacts; do
           if [ -e "$dir" ]; then
@@ -1566,7 +1571,7 @@ jobs:
 #        arch: x64
 #
 #    - name: Cache vcpkg artifacts (MSVC, vcpkg deps)
-#      if: ${{ runner.os == 'Windows' && (matrix.vcpkg_packages || '') != '' }}
+#      if: ${{ (matrix.vcpkg_packages || '') != '' }}
 #      uses: actions/cache@v4
 #      with:
 #        path: |
