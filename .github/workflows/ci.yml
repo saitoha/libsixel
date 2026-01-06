@@ -803,11 +803,17 @@ jobs:
       shell: bash
       timeout-minutes: 15
       run: |
-        docker run --rm --user "$(id -u):$(id -g)" -v "$PWD":/src -w /src alpine:3.20 sh -euc '
+        set -xve
+        docker run --rm -v "$PWD":/src -w /src alpine:3.20 sh -euc '
           apk add --no-cache ${{ matrix.guest_packages || '' }}
-          ./configure ${{ matrix.extra_options || '' }}
-          make V=1
-          make ${{ matrix.check_target || 'check' }}
+          addgroup -g '"$(id -g)"' hostgrp 2>/dev/null || true
+          adduser  -D -u '"$(id -u)"' -G hostgrp hostusr 2>/dev/null || true
+          chown -R '"$(id -u):$(id -g)"' /src
+          su hostusr -c "
+            ./configure ${{ matrix.extra_options || '' }}
+            make V=1
+            make ${{ matrix.check_target || 'check' }}
+          "
         '
 
     - name: Configure and build, and run tests (Windows, MSVC)
