@@ -810,7 +810,7 @@ jobs:
       timeout-minutes: 15
       run: |
         VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
-        cmd //c call "${VCVARS}" x64 \>nul \&\& set
+        #cmd //c call "${VCVARS}" x64 \>nul \&\& set
         eval $(
             cmd //c call "${VCVARS}" x64 \>nul \&\& set |
             grep -i '^\(PATH\|INCLUDE\|LIB\|LIBPATH\)'  |
