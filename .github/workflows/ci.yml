@@ -803,7 +803,7 @@ jobs:
       shell: bash
       timeout-minutes: 15
       run: |
-        docker run --rm -v "$PWD":/src -w /src alpine:3.20 sh -euc '
+        docker run --rm --user "$(id -u):$(id -g)" -v "$PWD":/src -w /src alpine:3.20 sh -euc '
           apk add --no-cache ${{ matrix.guest_packages || '' }}
           ./configure ${{ matrix.extra_options || '' }}
           make V=1
@@ -915,7 +915,7 @@ jobs:
 #          -instr-profile=coverage/coverage.profdata > coverage.info || true
 
     - name: Capture coverage
-      if: runner.os != 'Windows'
+      if: ${{ always() && contains(matrix.extra_options || '', '--enable-gcov') && (matrix.exec_type || '') == '' }}
       shell: bash
       timeout-minutes: 5
       run: |
@@ -943,7 +943,7 @@ jobs:
         fi
 
     - name: Capture coverage (Windows)
-      if: ${{ (matrix.exec_type || '') == 'msys' }}
+      if: ${{ always() && contains(matrix.extra_options || '', '--enable-gcov') && (matrix.exec_type || '') == 'msys' }}
       shell: msys2 {0}
       timeout-minutes: 5
       run: |
@@ -967,19 +967,6 @@ jobs:
         else
           echo "No gcovr or lcov found; skipping coverage capture"
         fi
-
-    - name: Fix artifact permissions (Autotools Alpine container)
-      if: ${{ always() && (matrix.exec_type || '') == 'alpine' }}
-      shell: bash
-      timeout-minutes: 5
-      run: |
-        for dir in tests tests/_artifacts; do
-          if [ -e "$dir" ]; then
-            sudo chown -R "$(id -u):$(id -g)" "$dir"
-            sudo find "$dir" -type d -exec chmod u+rwx,go+rx {} +
-            sudo find "$dir" -type f -exec chmod u+rw,go+r {} +
-          fi
-        done
 
     - name: Upload autotools artifacts
       uses: actions/upload-artifact@v4
