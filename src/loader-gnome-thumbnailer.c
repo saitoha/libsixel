@@ -917,11 +917,15 @@ thumbnailer_has_fallback_thumbnailer(void)
     int status;
     int wait_result;
     int executable;
+    int devnull;
+    int dup_status;
 
     pid = (-1);
     status = 0;
     wait_result = 0;
     executable = thumbnailer_has_tryexec("gdk-pixbuf-thumbnailer");
+    devnull = -1;
+    dup_status = 0;
 
     if (executable == 0) {
         return 0;
@@ -932,6 +936,19 @@ thumbnailer_has_fallback_thumbnailer(void)
         return 0;
     }
     if (pid == 0) {
+        /* Silence usage text so test harness output remains clean. */
+        devnull = sixel_compat_open("/dev/null", O_WRONLY);
+        if (devnull >= 0) {
+            dup_status = dup2(devnull, STDOUT_FILENO);
+            if (dup_status >= 0) {
+                dup_status = dup2(devnull, STDERR_FILENO);
+            }
+            sixel_compat_close(devnull);
+            devnull = -1;
+        }
+        if (dup_status < 0) {
+            _exit(127);
+        }
         execlp("gdk-pixbuf-thumbnailer",
                "gdk-pixbuf-thumbnailer",
                "--help",
