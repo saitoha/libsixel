@@ -815,9 +815,12 @@ jobs:
       shell: msys2 {0}
       timeout-minutes: 15
       run: |
+        set -xve
         echo $MSVC_PATH >&2
         cygpath -u -p $MSVC_PATH >&2
-        PATH="$(pwd)/build-aux:$(cygpath -u -p $MSVC_PATH):$PATH"
+        echo new path: >&2
+        echo "$(pwd)/build-aux:$(echo $MSVC_PATH | tr -d \\r | xargs cygpath -u -p):$PATH" >&2
+        PATH="$(pwd)/build-aux:$(echo $MSVC_PATH | tr -d \\r | xargs cygpath -u -p):$PATH"
         ./configure ${{ matrix.extra_options || '' }}
         make V=1
         make ${{ matrix.check_target || 'check' }}
