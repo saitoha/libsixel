@@ -614,6 +614,12 @@ jobs:
       with:
         arch: x64
 
+    - name: Save MSVC env:Path
+      if: ${{ runner.os == 'Windows' }}
+      shell: pwsh
+      run: |
+        "MSVC_PATH=$env:Path" >> $env:GITHUB_ENV
+
     - name: Cache vcpkg artifacts (MSVC, vcpkg deps)
       if: ${{ (matrix.vcpkg_packages || '') != '' }}
       uses: actions/cache@v4
@@ -809,22 +815,9 @@ jobs:
       shell: msys2 {0}
       timeout-minutes: 15
       run: |
-        VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
-        #cmd //c call "${VCVARS}" x64 \>nul \&\& set
-        eval $(
-            cmd //c call "${VCVARS}" x64 \>nul \&\& set |
-            grep -i '^\(PATH\|INCLUDE\|LIB\|LIBPATH\)'  |
-            while IFS== read -r key val; do
-                case "$key" in PATH|Path)
-                    echo export PATH=\"$(echo "$val" | tr \; \\n | while read -r p; do cygpath "$p"; done | grep ^/ | tr \\n :)\"\;
-                    ;;
-                *)
-                    echo export "$key"=\""$val"\"\;
-                    ;;
-                esac;
-            done
-        )
-        PATH="$(pwd)/build-aux:$PATH"
+        echo $MSVC_PATH >&2
+        cygpath -u -p $MSVC_PATH >&2
+        PATH="$(pwd)/build-aux:$(cygpath -u -p $MSVC_PATH):$PATH"
         ./configure ${{ matrix.extra_options || '' }}
         make V=1
         make ${{ matrix.check_target || 'check' }}
