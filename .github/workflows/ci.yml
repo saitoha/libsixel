@@ -41,7 +41,7 @@ jobs:
             cp_os: freebsd
             cp_arch: x86-64
             cp_version: '14.3'
-            extra_options: '--enable-amalgamated-lib'
+            setup_options: '--enable-amalgamated-lib'
             exec_type: cross-platform-vms
           - label: Autotools-freebsd-14.3-aarch64
             buildtool: autotools
@@ -89,24 +89,32 @@ jobs:
               coreutils
               findutils
             exec_type: alpine
+          - label: Meson-alpine-3.20-x86_64
+            buildtool: meson
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            guest_packages: >-
+              build-base
+              meson
+            exec_type: alpine
           - label: Autotools-ubuntu-x86_64-ASan
             buildtool: autotools
             os: ubuntu-latest
             runner: ubuntu-latest
-            shell: bash
-            extra_options: >-
+            setup_options: >-
               CC=clang
               CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
               LDFLAGS="-fsanitize=address"
               --without-png
               --without-jpeg
-            extra_packages: clang
+            extra_packages: >-
+              clang
+            exec_type: bash
           - label: Autotools-ubuntu-x86_64-ASan-libpng-libjpeg
             buildtool: autotools
             os: ubuntu-latest
             runner: ubuntu-latest
-            shell: bash
-            extra_options: >-
+            setup_options: >-
               CC=clang
               CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
               LDFLAGS="-fsanitize=address"
@@ -116,12 +124,12 @@ jobs:
               clang
               libpng-dev
               libjpeg-dev
+            exec_type: bash
           - label: Autotools-ubuntu-x86_64-ASan-gdk-pixbuf2
             buildtool: autotools
             os: ubuntu-latest
             runner: ubuntu-latest
-            shell: bash
-            extra_options: >-
+            setup_options: >-
               CC=clang
               CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
               LDFLAGS="-fsanitize=address"
@@ -131,12 +139,12 @@ jobs:
             extra_packages: >-
               clang
               libgdk-pixbuf2.0-dev
+            exec_type: bash
           - label: Autotools-ubuntu-x86_64-ASan-GD
             buildtool: autotools
             os: ubuntu-latest
             runner: ubuntu-latest
-            shell: bash
-            extra_options: >-
+            setup_options: >-
               CC=clang
               CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
               LDFLAGS="-fsanitize=address"
@@ -146,97 +154,105 @@ jobs:
             extra_packages: >-
               clang
               libgd-dev
+            exec_type: bash
           - label: Autotools-ubuntu-x86_64-static-only
             buildtool: autotools
             os: ubuntu-latest
             runner: ubuntu-latest
-            shell: bash
-            extra_options: >-
+            setup_options: >-
               CC=gcc-14
               --enable-gcov
               --disable-shared
               --enable-static
-            extra_packages: gcc-14
+            extra_packages: >-
+              gcc-14
+            exec_type: bash
           - label: Autotools-ubuntu-x86_64-no-simd
             buildtool: autotools
             os: ubuntu-latest
             runner: ubuntu-latest
-            shell: bash
-            extra_options: >-
+            setup_options: >-
               CC=gcc-14
               --enable-gcov
               --disable-simd
-            extra_packages: gcc-14
-            pip_packages: gcovr
+            extra_packages: >-
+              gcc-14
+            pip_packages: >-
+              gcovr
+            exec_type: bash
           - label: Autotools-ubuntu-x86_64-no-tools
             buildtool: autotools
             os: ubuntu-latest
             runner: ubuntu-latest
-            shell: bash
-            extra_options: >-
+            setup_options: >-
               --disable-img2sixel
               --disable-sixel2png
+            exec_type: bash
           - label: Autotools-ubuntu-x86_64-no-threads
             buildtool: autotools
             os: ubuntu-latest
             runner: ubuntu-latest
-            shell: bash
-            extra_options: >-
+            setup_options: >-
               CC=gcc-14
               --enable-gcov
               --disable-threads
-            extra_packages: gcc-14
-            pip_packages: gcovr
+            extra_packages: >-
+              gcc-14
+            pip_packages: >-
+              gcovr
+            exec_type: bash
           - label: Autotools-ubuntu-x86_64-musl
             buildtool: autotools
             os: ubuntu-latest
             runner: ubuntu-latest
-            shell: bash
-            extra_options: >-
+            setup_options: >-
               CC=musl-gcc
-            extra_packages: musl-tools
+            extra_packages: >-
+              musl-tools
+            exec_type: bash
           - label: Autotools-ubuntu-24.04-aarch64-distcheck
             buildtool: autotools
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
-            shell: bash
             check_target: distcheck
+            exec_type: bash
           - label: Autotools-ubuntu-24.04-aarch64-amalgamated-lib
             buildtool: autotools
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
-            shell: bash
-            extra_options: >-
+            setup_options: >-
               CC=gcc-14
               --enable-amalgamated-lib
-            extra_packages: gcc-14
+            extra_packages: >-
+              gcc-14
+            exec_type: bash
           - label: Autotools-ubuntu-i686
             buildtool: autotools
             os: ubuntu-latest
             runner: ubuntu-latest
-            shell: bash
-            extra_options: >-
+            setup_options: >-
               CC=gcc
               CFLAGS="-m32"
               LDFLAGS="-m32"
               PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
               PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
-            extra_packages: gcc-multilib
+            extra_packages: >-
+              gcc-multilib
+            exec_type: bash
           - label: Autotools-macos-aarch64-distcheck
             buildtool: autotools
             os: macos-latest
             runner: macos-latest
-            shell: bash
-            extra_options: >-
+            setup_options: >-
               --enable-gcov
             extra_packages: lcov
             check_target: distcheck
+            exec_type: bash
           - label: Autotools-macos-aarch64-ASan-gdk-pixbuf2
             buildtool: autotools
             os: macos-latest
             runner: macos-latest
-            shell: bash
-            extra_options: >-
+            setup_options: >-
               CC=clang
               CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
               LDFLAGS="-fsanitize=address"
@@ -245,12 +261,12 @@ jobs:
               --with-gdk-pixbuf2
             extra_packages: >-
               gdk-pixbuf
+            exec_type: bash
           - label: Autotools-macos-aarch64-ASan-GD
             buildtool: autotools
             os: macos-latest
             runner: macos-latest
-            shell: bash
-            extra_options: >-
+            setup_options: >-
               CC=clang
               CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
               LDFLAGS="-fsanitize=address"
@@ -259,34 +275,34 @@ jobs:
               --with-gd
             extra_packages: >-
               gd
+            exec_type: bash
           - label: Autotools-macos-aarch64-amalgamated-lib
             buildtool: autotools
             os: macos-latest
             runner: macos-latest
-            shell: bash
-            extra_options: >-
+            setup_options: >-
               --enable-amalgamated-lib
           - label: Autotools-macos-x86_64
             buildtool: autotools
             os: macos-15
             runner: macos-15
-            shell: bash
-            extra_options: >-
+            setup_options: >-
               --enable-gcov
-            extra_packages: lcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
           - label: Autotools-macos-x86_64-amalgamated-lib
             buildtool: autotools
             os: macos-15
             runner: macos-15
-            shell: bash
-            extra_options: >-
+            setup_options: >-
               --enable-amalgamated-lib
+            exec_type: bash
           - label: Autotools-ubuntu-aarch64-cosmopolitan
             buildtool: autotools
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
-            shell: bash
-            extra_options: >-
+            setup_options: >-
               CC=cosmocc
               LD=cosmocc
               AR=cosmoar
@@ -304,12 +320,12 @@ jobs:
               --without-coregraphics
               --disable-quicklook-extension
               --disable-quicklook-preview
+            exec_type: bash
           - label: Autotools-macos-aarch64-cosmopolitan
             buildtool: autotools
             os: macos-latest
             runner: macos-latest
-            shell: bash
-            extra_options: >-
+            setup_options: >-
               CC=cosmocc
               LD=cosmocc
               AR=cosmoar
@@ -327,6 +343,7 @@ jobs:
               --without-coregraphics
               --disable-quicklook-extension
               --disable-quicklook-preview
+            exec_type: bash
           - label: Autotools-ubuntu-aarch64-emscripten
             buildtool: autotools
             os: ubuntu-24.04-arm
@@ -344,7 +361,7 @@ jobs:
             os: windows-latest
             runner: windows-latest
             msystem: MINGW64
-            extra_options: >-
+            setup_options: >-
               --disable-shared
               --enable-static
               --enable-gcov
@@ -358,7 +375,7 @@ jobs:
             os: windows-latest
             runner: windows-latest
             msystem: MINGW64
-            extra_options: >-
+            setup_options: >-
               --disable-simd
               --enable-gcov
             extra_packages: >-
@@ -371,7 +388,7 @@ jobs:
             os: windows-latest
             runner: windows-latest
             msystem: MINGW64
-            extra_options: >-
+            setup_options: >-
               --disable-img2sixel
               --disable-sixel2png
             extra_packages: >-
@@ -383,7 +400,7 @@ jobs:
             os: windows-latest
             runner: windows-latest
             msystem: MINGW64
-            extra_options: >-
+            setup_options: >-
               --disable-threads
               --enable-gcov
             extra_packages: >-
@@ -396,7 +413,7 @@ jobs:
             os: windows-latest
             runner: windows-latest
             msystem: UCRT64
-            extra_options: >-
+            setup_options: >-
               --enable-gcov
             extra_packages: >-
               make
@@ -408,7 +425,7 @@ jobs:
             os: windows-latest
             runner: windows-latest
             msystem: UCRT64
-            extra_options: >-
+            setup_options: >-
               --enable-amalgamated-lib
             extra_packages: >-
               make
@@ -420,7 +437,7 @@ jobs:
             os: windows-latest
             runner: windows-latest
             msystem: CLANG64
-            extra_options: >-
+            setup_options: >-
               CC=clang
               --enable-gcov
             extra_packages: >-
@@ -433,7 +450,7 @@ jobs:
             os: windows-latest
             runner: windows-latest
             msystem: CLANG64
-            extra_options: >-
+            setup_options: >-
               CC=clang
               CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
               LDFLAGS="-fsanitize=address"
@@ -447,7 +464,7 @@ jobs:
             os: windows-latest
             runner: windows-latest
             msystem: MSYS
-            extra_options: >-
+            setup_options: >-
               CC=clang-cl
               LD=link
               AR="sh ar-lib lib"
@@ -457,13 +474,13 @@ jobs:
               RANLIB=:
               --host=x86_64-pc-windows-msvc
             extra_packages: make
-            exec_type: msvc
+            exec_type: msys
           - label: Autotools-msys-msvc
             buildtool: autotools
             os: windows-latest
             runner: windows-latest
             msystem: MSYS
-            extra_options: >-
+            setup_options: >-
               CC=cl
               LD=link
               AR="sh ar-lib lib"
@@ -479,7 +496,7 @@ jobs:
             os: windows-latest
             runner: windows-latest
             msystem: MSYS
-            extra_options: >-
+            setup_options: >-
               CC=cl
               LD=link
               AR="sh ar-lib lib"
@@ -496,7 +513,7 @@ jobs:
             os: windows-latest
             runner: windows-latest
             msystem: MSYS
-            extra_options: >-
+            setup_options: >-
               CC=cl
               LD=link
               AR="sh ar-lib lib"
@@ -524,7 +541,7 @@ jobs:
             os: windows-latest
             runner: windows-latest
             msystem: MSYS
-            extra_options: >-
+            setup_options: >-
               --enable-gcov
             extra_packages: >-
               make
@@ -538,8 +555,7 @@ jobs:
             os: windows-latest
             runner: windows-latest
             msystem: MSYS
-            shell: msys2 {0}
-            extra_options: >-
+            setup_options: >-
               CC=cosmocc
               LD=cosmocc
               AR=cosmoar
@@ -572,7 +588,7 @@ jobs:
             buildtool: autotools
             os: windows-latest
             runner: windows-latest
-            extra_options: >-
+            setup_options: >-
               --enable-amalgamated-lib
             extra_packages: >-
               gcc-core,make
@@ -581,7 +597,7 @@ jobs:
             buildtool: autotools
             os: windows-latest
             runner: windows-latest
-            extra_options: >-
+            setup_options: >-
               CC=cl
               LD=link
               AR="sh ar-lib lib"
@@ -597,7 +613,7 @@ jobs:
             buildtool: autotools
             os: windows-latest
             runner: windows-latest
-            extra_options: >-
+            setup_options: >-
               CC=clang-cl
               LD=link
               AR="sh ar-lib lib"
@@ -613,7 +629,7 @@ jobs:
             buildtool: autotools
             os: windows-latest
             runner: windows-latest
-            extra_options: >-
+            setup_options: >-
               CC=clang
               LD=link
               AR="sh ar-lib lib"
@@ -625,460 +641,519 @@ jobs:
             extra_packages: >-
               make
             exec_type: cygwin
-          - label: Autotools-gitbash-msvc
-            buildtool: autotools
-            os: windows-latest
-            runner: windows-latest
-            extra_options: >-
-              CC=cl
-              LD=link
-              AR="sh ar-lib lib"
-              ARFLAGS=cr
-              NM="dumpbin -symbols"
-              STRIP=:
-              RANLIB=:
-              --host=x86_64-pc-windows-msvc
-            extra_packages: >-
-              make
-            exec_type: gitbash
-
     steps:
-    - name: Configure git EOL
-      if: ${{ (matrix.exec_type || '') == 'cygwin' }}
-      run: git config --global core.autocrlf false
+      - name: Configure git EOL
+        if: ${{ (matrix.exec_type || '') == 'cygwin' }}
+        run: git config --global core.autocrlf false
 
-    - uses: actions/checkout@v6
-      with:
-        fetch-depth: 1
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
 
-    - name: Normalize line endings (Windows)
-      if: runner.os == 'Windows'
-      shell: bash
-      run: |
-        git config core.autocrlf false
-        git reset --hard
-
-    - name: Install extra packages (Linux)
-      if: ${{ runner.os == 'Linux' && (matrix.extra_packages || '') != '' }}
-      shell: bash
-      timeout-minutes: 5
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y ${{ matrix.extra_packages }}
-
-    - name: Install extra packages (macOS)
-      if: ${{ runner.os == 'macOS' && (matrix.extra_packages || '') != '' }}
-      shell: bash
-      timeout-minutes: 5
-      run: |
-        brew update
-        brew install ${{ matrix.extra_packages }}
-
-    - name: Setup MSVC developer env (vcvars)
-      if: ${{ runner.os == 'Windows' }}
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x64
-
-    - name: Save MSVC env:Path
-      if: ${{ runner.os == 'Windows' }}
-      shell: pwsh
-      run: |
-        "MSVC_PATH=$env:Path" >> $env:GITHUB_ENV
-
-    - name: Cache vcpkg artifacts (MSVC, vcpkg deps)
-      if: ${{ (matrix.vcpkg_packages || '') != '' }}
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~\vcpkg\installed
-          ~\vcpkg\buildtrees
-          ~\vcpkg\packages
-          ~\vcpkg\downloads
-        key: vcpkg-${{ runner.os }}-msvc-${{ matrix.vcpkg_packages || 'none' }}-${{ hashFiles('.github/workflows/ci.yml') }}
-
-    - name: Install vcpkg dependencies (MSVC, vcpkg deps)
-      if: ${{ (matrix.vcpkg_packages || '') != '' }}
-      shell: pwsh
-      run: |
-        $vcpkgRoot = "$env:USERPROFILE\\vcpkg"
-        if (-not (Test-Path (Join-Path $vcpkgRoot '.git'))) {
-          git init $vcpkgRoot
-        }
-        git -C $vcpkgRoot remote remove origin 2>$null
-        git -C $vcpkgRoot remote add origin https://github.com/microsoft/vcpkg
-
-        git -C $vcpkgRoot fetch --depth 1 origin "${{ env.VCPKG_REF }}"
-        git -C $vcpkgRoot reset --hard FETCH_HEAD
-
-        Set-Location $vcpkgRoot
-
-        cmd /c bootstrap-vcpkg.bat
-        $packages = @('pkgconf')
-        $extra = '${{ matrix.vcpkg_packages || '' }}'.Trim()
-        if ($extra -ne '') {
-          $packages += $extra -split '\s+'
-        }
-        .\\vcpkg.exe install $packages --triplet x64-windows
-        "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-
-    - name: Setup MSYS2 (Windows)
-      if: ${{ (matrix.msystem || '') != '' }}
-      uses: msys2/setup-msys2@v2
-      with:
-        msystem: ${{ matrix.msystem }}
-        update: true
-        install: ${{ matrix.extra_packages || 'make' }}
-
-    - name: Create junction to Git for Windows
-      if: ${{ (matrix.exec_type || '') == 'gitbash' }}
-      shell: pwsh
-      run: |
-        if (!(Test-Path 'C:\GitBash')) {
-          New-Item -ItemType Junction -Path 'C:\GitBash' -Target 'C:\Program Files\Git' | Out-Null
-        }
-        'C:\GitBash\usr\bin' | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
-        'C:\GitBash\bin'     | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
-
-    - name: Setup Chocolatey
-      if: ${{ (matrix.exec_type || '') == 'gitbash' }}
-      run: |
-        choco install ${{ matrix.extra_packages || 'make' }}
-
-    - name: Setup Cygwin
-      if: ${{ (matrix.exec_type || '') == 'cygwin' }}
-      uses: cygwin/cygwin-install-action@v4
-      with:
-        packages: ${{ matrix.extra_packages || 'make' }}
-
-    - name: Cache Cosmopolitan toolchain
-      if: ${{ contains(matrix.extra_options || '', 'CC=cosmocc') }}
-      uses: actions/cache@v4
-      with:
-        path: cosmopolitan/cosmocc.zip
-        key: cosmocc-${{ hashFiles('cosmopolitan/cosmocc.zip') }}
-
-    - name: Prepare Cosmopolitan toolchain
-      if: ${{ contains(matrix.extra_options || '', 'CC=cosmocc') }}
-      shell: bash
-      timeout-minutes: 5
-      run: |
-        set -exv
-        mkdir -p cosmopolitan
-        if [ ! -f cosmopolitan/cosmocc.zip ]; then
-          curl -L -o cosmopolitan/cosmocc.zip https://cosmo.zip/pub/cosmocc/cosmocc.zip
-        fi
-        unzip -o -q cosmopolitan/cosmocc.zip
-        chmod +x bin/cosmo*
-
-    - name: Install pip packages
-      if: ${{ (matrix.pip_packages || '') != '' }}
-      shell: bash
-      timeout-minutes: 5
-      run: |
-        python3 -m venv .venv
-        . .venv/bin/activate
-        pip install -U pip ${{ matrix.pip_packages }}
-        if command -v cygpath; then
-          echo "$(cygpath -w "$PWD/.venv/bin")" >> "$GITHUB_PATH"
-        else
-          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
-        fi
-
-    - name: Configure and build (Autotools, DragonFlyBSD)
-      if: ${{ matrix.buildtool == 'autotools' && (matrix.exec_type || '') == 'dragonflybsd-vm' }}
-      uses: vmactions/dragonflybsd-vm@v1
-      timeout-minutes: 15
-      with:
-        release: 6.4.2
-        usesh: true
-        copyback: false
+      - name: Normalize line endings (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
         run: |
-          artifact_dir="${GITHUB_WORKSPACE}/_artifacts"
-          artifact_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
-          collect_logs() {
-            status=$?
-            cd "$GITHUB_WORKSPACE"
-            mkdir -p "$artifact_dir"
-            find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar czf "$artifact_tar" {} +
-            exit "$status"
-          }
-          trap 'collect_logs' EXIT
-          pkg update -f
-          pkg install -y gmake pkgconf
-          cd "$GITHUB_WORKSPACE"
-          ./configure ${{ matrix.extra_options || '' }}
-          gmake V=1
-          gmake ${{ matrix.check_target || 'check' }}
+          git config core.autocrlf false
+          git reset --hard
 
-    - name: Configure and build (non-Windows)
-      if: ${{ matrix.buildtool == 'autotools' && (matrix.exec_type || '') == '' }}
-      shell: bash
-      timeout-minutes: 15
-      run: |
-        set -e
-        export PATH="$PWD/bin:$PATH"
-        ./configure ${{ matrix.extra_options || '' }}
-        make V=1
-        make ${{ matrix.check_target || 'check' }}
-
-    - name: Configure and build (Windows, msys2)
-      if: ${{ matrix.buildtool == 'autotools' && (matrix.exec_type || '') == 'msys' }}
-      shell: msys2 {0}
-      timeout-minutes: 15
-      run: |
-        set -xve
-        MSVC_BIN_PATH="$(cygpath -u -p "$MSVC_PATH")"
-        PATH="$PWD/build-aux:$PWD/bin:$PATH:$MSVC_BIN_PATH"
-        ./configure ${{ matrix.extra_options || '' }}
-        make V=1
-        make ${{ matrix.check_target || 'check' }}
-
-    - name: Configure and build (Windows, Cygwin)
-      if: ${{ matrix.buildtool == 'autotools' && (matrix.exec_type || '') == 'cygwin' }}
-      shell: C:\cygwin\bin\bash.exe -o igncr {0}
-      timeout-minutes: 15
-      run: |
-        set -e
-        PATH="$(pwd)/build-aux:$PATH"
-        export PATH
-        ./configure ${{ matrix.extra_options || '' }}
-        make V=1
-        if grep ^ac_cv_prog_ac_ct_CC=gcc$ config.log; then
-          make check
-        else
-          : # cross build: don't run test
-        fi
-
-    - name: Build with Emscripten (non-Windows)
-      if: ${{ matrix.buildtool == 'autotools' && (matrix.exec_type || '') == 'emscripten' && runner.os != 'Windows' }}
-      shell: bash
-      timeout-minutes: 15
-      run: |
-        ./emscripten/build-emcc.sh
-
-    - name: Build with Emscripten (Windows)
-      if: ${{ matrix.buildtool == 'autotools' && (matrix.exec_type || '') == 'emscripten' && runner.os == 'Windows' }}
-      shell: msys2 {0}
-      timeout-minutes: 15
-      run: |
-        ./emscripten/build-emcc.sh
-
-    - name: Configure and build (Autotools, Alpine container)
-      if: ${{ matrix.buildtool == 'autotools' && (matrix.exec_type || '') == 'alpine' }}
-      shell: bash
-      timeout-minutes: 15
-      run: |
-        set -xve
-        docker run --rm -v "$PWD":/src -w /src alpine:3.20 sh -euc '
-          apk add --no-cache ${{ matrix.guest_packages || '' }}
-          addgroup -g '"$(id -g)"' hostgrp 2>/dev/null || true
-          adduser  -D -u '"$(id -u)"' -G hostgrp hostusr 2>/dev/null || true
-          chown -R '"$(id -u):$(id -g)"' /src
-          su hostusr -c "
-            ./configure ${{ matrix.extra_options || '' }}
-            make V=1
-            make ${{ matrix.check_target || 'check' }}
-          "
-        '
-
-    - name: Configure, build, and run tests (FreeBSD/OpenBSD/NetBSD/Haiku)
-      if: ${{ matrix.buildtool == 'autotools' && (matrix.exec_type || '') == 'cross-platform-vms' }}
-      uses: cross-platform-actions/action@v0.30.0
-      timeout-minutes: 15
-      with:
-        operating_system: ${{ matrix.cp_os }}
-        architecture: ${{ matrix.cp_arch }}
-        version: ${{ matrix.cp_version }}
-        sync_files: runner-to-vm
-        environment_variables: CI,GITHUB_WORKSPACE
+      - name: Install extra packages (Linux)
+        if: ${{ runner.os == 'Linux' && (matrix.extra_packages || '') != '' }}
+        shell: bash
+        timeout-minutes: 5
         run: |
-          : "${GITHUB_WORKSPACE:=$PWD}"
-          artifact_dir="${GITHUB_WORKSPACE}/_artifacts"
-          artifact_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
-          collect_logs() {
-            status=$?
-            mkdir -p "$artifact_dir"
-            find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar czf "$artifact_tar" {} +
-            exit "$status"
-          }
-          trap 'collect_logs' EXIT
+          sudo apt-get update
+          sudo apt-get install -y ${{ matrix.extra_packages }}
 
-          pkg_prefix=""
-          if [ "$(id -u)" -ne 0 ]; then
-            if command -v sudo >/dev/null 2>&1; then
-              pkg_prefix="sudo"
-            elif command -v doas >/dev/null 2>&1; then
-              pkg_prefix="doas"
-            else
-              echo "No privilege escalation helper available" >&2
-              exit 1
-            fi
+      - name: Install extra packages (macOS)
+        if: ${{ runner.os == 'macOS' && (matrix.extra_packages || '') != '' }}
+        shell: bash
+        timeout-minutes: 5
+        run: |
+          brew update
+          brew install ${{ matrix.extra_packages }}
+
+      - name: Setup MSVC developer env (vcvars)
+        if: ${{ runner.os == 'Windows' }}
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+
+      - name: Save MSVC env:Path
+        if: ${{ runner.os == 'Windows' }}
+        shell: pwsh
+        run: |
+          "MSVC_PATH=$env:Path" >> $env:GITHUB_ENV
+
+      - name: Cache vcpkg artifacts (MSVC, vcpkg deps)
+        if: ${{ (matrix.vcpkg_packages || '') != '' }}
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~\vcpkg\installed
+            ~\vcpkg\buildtrees
+            ~\vcpkg\packages
+            ~\vcpkg\downloads
+          key: vcpkg-${{ runner.os }}-msvc-${{ matrix.vcpkg_packages || 'none' }}-${{ hashFiles('.github/workflows/ci.yml') }}
+
+      - name: Install vcpkg dependencies (MSVC, vcpkg deps)
+        if: ${{ (matrix.vcpkg_packages || '') != '' }}
+        shell: pwsh
+        run: |
+          $vcpkgRoot = "$env:USERPROFILE\\vcpkg"
+          if (-not (Test-Path (Join-Path $vcpkgRoot '.git'))) {
+            git init $vcpkgRoot
+          }
+          git -C $vcpkgRoot remote remove origin 2>$null
+          git -C $vcpkgRoot remote add origin https://github.com/microsoft/vcpkg
+
+          git -C $vcpkgRoot fetch --depth 1 origin "${{ env.VCPKG_REF }}"
+          git -C $vcpkgRoot reset --hard FETCH_HEAD
+
+          Set-Location $vcpkgRoot
+
+          cmd /c bootstrap-vcpkg.bat
+          $packages = @('pkgconf')
+          $extra = '${{ matrix.vcpkg_packages || '' }}'.Trim()
+          if ($extra -ne '') {
+            $packages += $extra -split '\s+'
+          }
+          .\\vcpkg.exe install $packages --triplet x64-windows
+          "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Setup MSYS2 (Windows)
+        if: ${{ (matrix.msystem || '') != '' }}
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          update: true
+          install: ${{ matrix.extra_packages || 'make' }}
+
+      - name: Create junction to Git for Windows
+        if: ${{ (matrix.exec_type || '') == 'gitbash' }}
+        shell: pwsh
+        run: |
+          if (!(Test-Path 'C:\GitBash')) {
+            New-Item -ItemType Junction -Path 'C:\GitBash' -Target 'C:\Program Files\Git' | Out-Null
+          }
+          'C:\GitBash\bin'     | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+          'C:\GitBash\usr\bin' | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+
+      - name: Setup Cygwin
+        if: ${{ (matrix.exec_type || '') == 'cygwin' }}
+        uses: cygwin/cygwin-install-action@v4
+        with:
+          packages: ${{ matrix.extra_packages || 'make' }}
+
+      - name: Cache Cosmopolitan toolchain
+        if: ${{ contains(matrix.setup_options || '', 'CC=cosmocc') }}
+        uses: actions/cache@v4
+        with:
+          path: cosmopolitan/cosmocc.zip
+          key: cosmocc-${{ hashFiles('cosmopolitan/cosmocc.zip') }}
+
+      - name: Prepare Cosmopolitan toolchain
+        if: ${{ contains(matrix.setup_options || '', 'CC=cosmocc') }}
+        shell: bash
+        timeout-minutes: 5
+        run: |
+          set -exv
+          mkdir -p cosmopolitan
+          if [ ! -f cosmopolitan/cosmocc.zip ]; then
+            curl -L -o cosmopolitan/cosmocc.zip https://cosmo.zip/pub/cosmocc/cosmocc.zip
           fi
+          unzip -o -q cosmopolitan/cosmocc.zip
+          chmod +x bin/cosmo*
 
-          make_cmd="gmake"
-          if command -v pkg; then
-            ${pkg_prefix:+$pkg_prefix }pkg update -f
-            ${pkg_prefix:+$pkg_prefix }pkg install -y \
-              gmake \
-              # pkgconf avoided to reduce fragile package installs
-            :
-          elif command -v pkgin; then
-            ${pkg_prefix:+$pkg_prefix }pkgin -y update
-            ${pkg_prefix:+$pkg_prefix }pkgin -y install \
-              gmake
-            if [ -f /var/db/pkgin/pkg_install-err.log ]; then
-              cp /var/db/pkgin/pkg_install-err.log "$GITHUB_WORKSPACE/pkg_install-err.log" || true
-            fi
-          elif command -v pkg_add; then
-            ${pkg_prefix:+$pkg_prefix }pkg_add \
-              gmake \
-              rsync \
-              # pkgconf avoided to reduce fragile package installs
-            :
+      - name: Install pip packages
+        if: ${{ (matrix.pip_packages || '') != '' }}
+        shell: bash
+        timeout-minutes: 5
+        run: |
+          python3 -m venv .venv
+          . .venv/bin/activate
+          pip install -U pip ${{ matrix.pip_packages }}
+          if command -v cygpath; then
+            echo "$(cygpath -w "$PWD/.venv/bin")" >> "$GITHUB_PATH"
           else
-            pkgman refresh
-            pkgman install -y make
-            make_cmd="make"
+            echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
           fi
 
-          ./configure ${{ matrix.extra_options || '' }}
-          ${make_cmd} V=1
-          ${make_cmd} ${{ matrix.check_target || 'check' }}
+      - name: Configure and build (Autotools, DragonFlyBSD)
+        if: ${{ matrix.buildtool == 'autotools' && (matrix.exec_type || '') == 'dragonflybsd-vm' }}
+        uses: vmactions/dragonflybsd-vm@v1
+        timeout-minutes: 15
+        with:
+          release: 6.4.2
+          usesh: true
+          copyback: false
+          run: |
+            artifact_dir="${GITHUB_WORKSPACE}/_artifacts"
+            artifact_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
+            collect_logs() {
+              status=$?
+              cd "$GITHUB_WORKSPACE"
+              mkdir -p "$artifact_dir"
+              find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar czf "$artifact_tar" {} +
+              exit "$status"
+            }
+            trap 'collect_logs' EXIT
+            pkg update -f
+            pkg install -y gmake pkgconf
+            cd "$GITHUB_WORKSPACE"
+            ./configure ${{ matrix.setup_options || '' }}
+            gmake V=1
+            gmake ${{ matrix.check_target || 'check' }}
 
-#    - name: Capture coverage (Windows, CLANG64)
-#      if: ${{ (matrix.exec_type || '') == 'msys' && matrix.msystem == 'CLANG64' }}
-#      shell: msys2 {0}
-#      timeout-minutes: 15
-#      run: |
-#        LLVM_PROFILE_FILE="%p-%m.profraw" make check
-#        find . -name \*.profraw || true
-#        llvm-profdata merge -sparse coverage/*.profraw -o coverage/coverage.profdata || true
-#        find . -type f \( -name '*.exe' -o -name '*.dll' \) |
-#        xargs llvm-cov export -format=lcov \
-#          -instr-profile=coverage/coverage.profdata > coverage.info || true
+      - name: Configure and build (non-Windows)
+        if: ${{ matrix.buildtool == 'autotools' && (matrix.exec_type || '') == 'bash' }}
+        shell: bash
+        timeout-minutes: 15
+        run: |
+          set -e
+          export PATH="$PWD/bin:$PATH"
+          ./configure ${{ matrix.setup_options || '' }}
+          make V=1
+          make ${{ matrix.check_target || 'check' }}
 
-    - name: Capture coverage
-      if: ${{ always() && contains(matrix.extra_options || '', '--enable-gcov') && (matrix.exec_type || '') == '' }}
-      shell: bash
-      timeout-minutes: 5
-      run: |
-        if test -f coverage.info; then
-          echo "coverage.info already exists; skipping capture"
-          exit 0
-        fi
-        if command -v gcovr >/dev/null 2>&1; then
-          gcovr -r . --lcov -o coverage.info \
-            --gcov-executable gcov-14 || true
-        elif command -v lcov >/dev/null 2>&1; then
-          lcov -c \
-            -d "$PWD/src" \
-            -d "$PWD/src/.libs" \
-            -d "$PWD/converters" \
-            -d "$PWD/tests/cli" \
-            -d "$PWD/tests/loader" \
-            -d "$PWD/tests/filter" \
-            -d "$PWD/tests/probe" \
-            -d "$PWD/tests/palette" \
-            --rc branch_coverage=1 \
-            -o coverage.info || true
-        else
-          echo "No gcovr or lcov found; skipping coverage capture"
-        fi
+      - name: Configure and build (Windows, msys2)
+        if: ${{ matrix.buildtool == 'autotools' && (matrix.exec_type || '') == 'msys' }}
+        shell: msys2 {0}
+        timeout-minutes: 15
+        run: |
+          set -xve
+          MSVC_BIN_PATH="$(cygpath -u -p "$MSVC_PATH")"
+          PATH="$PWD/build-aux:$PWD/bin:$PATH:$MSVC_BIN_PATH"
+          ./configure ${{ matrix.setup_options || '' }}
+          make V=1
+          make ${{ matrix.check_target || 'check' }}
 
-    - name: Capture coverage (Windows)
-      if: ${{ always() && contains(matrix.extra_options || '', '--enable-gcov') && (matrix.exec_type || '') == 'msys' }}
-      shell: msys2 {0}
-      timeout-minutes: 5
-      run: |
-        if [ -e coverage.info ]; then
-          echo "coverage.info already exists; skipping capture"
-          exit 0
-        fi
-        if command -v gcovr >/dev/null 2>&1; then
-          gcovr -r . --lcov -o coverage.info || true
-        elif command -v lcov >/dev/null 2>&1; then
-          lcov -c \
-            -d "$PWD/src/.libs" \
-            -d "$PWD/converters" \
-            -d "$PWD/tests/cli" \
-            -d "$PWD/tests/loader" \
-            -d "$PWD/tests/filter" \
-            -d "$PWD/tests/probe" \
-            -d "$PWD/tests/palette" \
-            --rc branch_coverage=1 \
-            -o coverage.info || true
-        else
-          echo "No gcovr or lcov found; skipping coverage capture"
-        fi
+      - name: Configure and build (Windows, Cygwin)
+        if: ${{ matrix.buildtool == 'autotools' && (matrix.exec_type || '') == 'cygwin' }}
+        shell: C:\cygwin\bin\bash.exe -o igncr {0}
+        timeout-minutes: 15
+        run: |
+          set -e
+          PATH="$(pwd)/build-aux:$PATH"
+          export PATH
+          ./configure ${{ matrix.setup_options || '' }}
+          make V=1
+          if grep ^ac_cv_prog_ac_ct_CC=gcc$ config.log; then
+            make ${{ matrix.check_target || 'check' }}
+          else
+            : # cross build: don't run test
+          fi
 
-    - name: Fetch DragonFlyBSD artifacts from VM (Autotools)
-      if: ${{ matrix.buildtool == 'autotools' && (matrix.exec_type || '') == 'dragonflybsd-vm' }}
-      run: |
-        mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
-        remote_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
-        if ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dragonflybsd "test -f \"${remote_tar}\""; then
-          scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dragonflybsd:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
-        else
-          echo "No artifact archive found on VM; skipping copy" >&2
-        fi
+      - name: Build with Emscripten (non-Windows)
+        if: ${{ matrix.buildtool == 'autotools' && (matrix.exec_type || '') == 'emscripten' && runner.os != 'Windows' }}
+        shell: bash
+        timeout-minutes: 15
+        run: |
+          EMSDK="$GITHUB_WORKSPACE"/emsdk
+          BUILDDIR="$GITHUB_WORKSPACE"
+          SHEBANG_FILE="${PWD}"/emscripten-node-shebang
+          printf '#!/usr/bin/env node\n' > "${SHEBANG_FILE}"
 
-    - name: Fetch BSD artifacts from VM (Autotools)
-      if: ${{ always() && (matrix.exec_type || '') == 'cross-platform-vms' }}
-      shell: bash
-      timeout-minutes: 5
-      run: |
-        mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
-        remote_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
-        if ssh cross_platform_actions_host "test -f \"${remote_tar}\""; then
-          scp cross_platform_actions_host:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
-        else
-          echo "No artifact archive found on VM; skipping copy" >&2
-        fi
+          git clone --depth 1 https://github.com/emscripten-core/emsdk.git "${EMSDK}"
+          sh "${EMSDK}"/emsdk install latest
+          sh "${EMSDK}"/emsdk activate latest
+          cd "${EMSDK}"
+          . ./emsdk_env.sh
+          cd "${GITHUB_WORKSPACE}"
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ matrix.label }}
-        path: |
-          **/test-suite.log
-          **/*.log
-          **/*.trs
-          **/_artifacts/**
-          coverage.info
-          pkg_install-err.log
-          **/artifacts.tar.gz
-          builddir/meson-dist/**
-          dist-build/**/meson-logs/**
-          dist-build/**/_artifacts/**
-          dist-build/**/testlog.txt
-        if-no-files-found: warn
-        overwrite: true
+          # MSYS/Cygwin shells ship Emscripten helper entrypoints only as .bat files,
+          # so create small shell wrappers that forward to the .bat via `cmd //c`.
+          UNAME_LOWER=$(uname -s | tr '[:upper:]' '[:lower:]')
+          if echo "${UNAME_LOWER}" | grep -Eq 'msys|mingw|cygwin'; then
+            EMSCRIPTEN_BINDIR="${EMSDK}/upstream/emscripten"
+            EMSCRIPTEN_WRAPPERDIR="${BUILDDIR}/emscripten-msys-wrappers"
+            mkdir -p "${EMSCRIPTEN_WRAPPERDIR}"
+          
+            # These cover the autotools flow: configure, make, archive, strip.
+            for tool in emconfigure emmake emcc emar emranlib emstrip emnm; do
+              bat_path="${EMSCRIPTEN_BINDIR}/${tool}.bat"
+              wrapper_path="${EMSCRIPTEN_WRAPPERDIR}/${tool}"
+              if [ -f "${bat_path}" ]; then
+                chmod +x "${bat_path}"
+                cat > "${wrapper_path}" <<EOF
+          #!/bin/sh
+          cmd //c "${bat_path}" "\$@"
+          EOF
+                chmod +x "${wrapper_path}"
+              fi
+            done
+          
+            PATH="${EMSCRIPTEN_WRAPPERDIR}:${PATH}"
+            export PATH
+          fi
+           
+          emconfigure sh ./configure \
+            --host=wasm32-unknown-emscripten \
+            --disable-shared \
+            --with-shebang-file="${SHEBANG_FILE}" \
+            --disable-dependency-tracking \
+            CFLAGS=" \
+              -O3 \
+              -g0 \
+              -flto \
+              -msimd128 \
+              -fdata-sections \
+              -ffunction-sections \
+            " \
+            LDFLAGS=" \
+              -sNODERAWFS=1 \
+              -sSTACK_SIZE=524288 \
+              -sINITIAL_MEMORY=268435456 \
+              -sSINGLE_FILE=1 \
+              -sENVIRONMENT=node \
+              -sALLOW_MEMORY_GROWTH=1 \
+              -sWASM_BIGINT=1 \
+              -sUSE_PTHREADS=1 \
+              -sASSERTIONS=0 \
+            "
+          emmake make
+          emmake make check
 
-    - name: Upload to Coveralls (per-flag, parallel)
-      id: coveralls_upload
-      continue-on-error: true
-      uses: coverallsapp/github-action@v2
-      if: ${{ hashFiles('coverage.info') != '' }}
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: coverage.info
-        flag-name: ${{ matrix.label }}
-        parallel: true
+      - name: Build with Emscripten (Windows)
+        if: ${{ matrix.buildtool == 'autotools' && (matrix.exec_type || '') == 'emscripten' && runner.os == 'Windows' }}
+        shell: msys2 {0}
+        timeout-minutes: 15
+        run: |
+          ./emscripten/build-emcc.sh
 
-    - name: Wait before Coveralls retry (per-flag)
-      if: ${{ hashFiles('coverage.info') != '' && steps.coveralls_upload.outcome == 'failure' }}
-      run: sleep 5
+      - name: Configure and build (Autotools, Alpine container)
+        if: ${{ matrix.buildtool == 'autotools' && (matrix.exec_type || '') == 'alpine' }}
+        shell: bash
+        timeout-minutes: 15
+        run: |
+          docker run --rm -v "$PWD":/src -w /src alpine:3.20 sh -euc '
+            set -xve
+            apk add --no-cache ${{ matrix.guest_packages || '' }}
+            addgroup -g '"$(id -g)"' hostgrp 2>/dev/null || true
+            adduser  -D -u '"$(id -u)"' -G hostgrp hostusr 2>/dev/null || true
+            chown -R '"$(id -u):$(id -g)"' /src
+            su hostusr -c "
+              ./configure ${{ matrix.setup_options || '' }}
+              make V=1
+              make ${{ matrix.check_target || 'check' }}
+            "
+          '
 
-    - name: Upload to Coveralls (per-flag, retry)
-      if: ${{ hashFiles('coverage.info') != '' && steps.coveralls_upload.outcome == 'failure' }}
-      continue-on-error: true
-      uses: coverallsapp/github-action@v2
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: coverage.info
-        flag-name: ${{ matrix.label }}
-        parallel: true
+      - name: Configure and build (Meson, Alpine container)
+        if: ${{ matrix.buildtool == 'meson' && (matrix.exec_type || '') == 'alpine' }}
+        shell: bash
+        timeout-minutes: 15
+        run: |
+          docker run --rm -v "$PWD":/src -w /src alpine:3.20 sh -euc '
+            set -xve
+            apk add --no-cache ${{ matrix.guest_packages || '' }}
+            addgroup -g '"$(id -g)"' hostgrp 2>/dev/null || true
+            adduser  -D -u '"$(id -u)"' -G hostgrp hostusr 2>/dev/null || true
+            chown -R '"$(id -u):$(id -g)"' /src
+            su hostusr -c "
+              meson setup builddir ${{ matrix.setup_options || '' }}
+              meson compile -C builddir -v
+              meson test -C builddir
+            "
+          '
+
+      - name: Configure, build, and run tests (FreeBSD/OpenBSD/NetBSD/Haiku)
+        if: ${{ matrix.buildtool == 'autotools' && (matrix.exec_type || '') == 'cross-platform-vms' }}
+        uses: cross-platform-actions/action@v0.30.0
+        timeout-minutes: 15
+        with:
+          operating_system: ${{ matrix.cp_os }}
+          architecture: ${{ matrix.cp_arch }}
+          version: ${{ matrix.cp_version }}
+          sync_files: runner-to-vm
+          environment_variables: CI,GITHUB_WORKSPACE
+          run: |
+            : "${GITHUB_WORKSPACE:=$PWD}"
+            artifact_dir="${GITHUB_WORKSPACE}/_artifacts"
+            artifact_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
+            collect_logs() {
+              status=$?
+              mkdir -p "$artifact_dir"
+              find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar czf "$artifact_tar" {} +
+              exit "$status"
+            }
+            trap 'collect_logs' EXIT
+
+            pkg_prefix=""
+            if [ "$(id -u)" -ne 0 ]; then
+              if command -v sudo >/dev/null 2>&1; then
+                pkg_prefix="sudo"
+              elif command -v doas >/dev/null 2>&1; then
+                pkg_prefix="doas"
+              else
+                echo "No privilege escalation helper available" >&2
+                exit 1
+              fi
+            fi
+
+            make_cmd="gmake"
+            if command -v pkg; then
+              ${pkg_prefix:+$pkg_prefix }pkg update -f
+              ${pkg_prefix:+$pkg_prefix }pkg install -y \
+                gmake \
+                # pkgconf avoided to reduce fragile package installs
+              :
+            elif command -v pkgin; then
+              ${pkg_prefix:+$pkg_prefix }pkgin -y update
+              ${pkg_prefix:+$pkg_prefix }pkgin -y install \
+                gmake
+              if [ -f /var/db/pkgin/pkg_install-err.log ]; then
+                cp /var/db/pkgin/pkg_install-err.log "$GITHUB_WORKSPACE/pkg_install-err.log" || true
+              fi
+            elif command -v pkg_add; then
+              ${pkg_prefix:+$pkg_prefix }pkg_add \
+                gmake \
+                rsync \
+                # pkgconf avoided to reduce fragile package installs
+              :
+            else
+              pkgman refresh
+              pkgman install -y make
+              make_cmd="make"
+            fi
+
+            ./configure ${{ matrix.setup_options || '' }}
+            ${make_cmd} V=1
+            ${make_cmd} ${{ matrix.check_target || 'check' }}
+
+#      - name: Capture coverage (Windows, CLANG64)
+#        if: ${{ (matrix.exec_type || '') == 'msys' && matrix.msystem == 'CLANG64' }}
+#        shell: msys2 {0}
+#        timeout-minutes: 15
+#        run: |
+#          LLVM_PROFILE_FILE="%p-%m.profraw" make check
+#          find . -name \*.profraw || true
+#          llvm-profdata merge -sparse coverage/*.profraw -o coverage/coverage.profdata || true
+#          find . -type f \( -name '*.exe' -o -name '*.dll' \) |
+#          xargs llvm-cov export -format=lcov \
+#            -instr-profile=coverage/coverage.profdata > coverage.info || true
+
+      - name: Capture coverage
+        if: ${{ always() && contains(matrix.setup_options || '', '--enable-gcov') && (matrix.exec_type || '') == 'bash' }}
+        shell: bash
+        timeout-minutes: 5
+        run: |
+          if test -f coverage.info; then
+            echo "coverage.info already exists; skipping capture"
+            exit 0
+          fi
+          if command -v gcovr >/dev/null 2>&1; then
+            gcovr -r . --lcov -o coverage.info \
+              --gcov-executable gcov-14 || true
+          elif command -v lcov >/dev/null 2>&1; then
+            lcov -c \
+              -d "$PWD/src" \
+              -d "$PWD/src/.libs" \
+              -d "$PWD/converters" \
+              -d "$PWD/tests/cli" \
+              -d "$PWD/tests/loader" \
+              -d "$PWD/tests/filter" \
+              -d "$PWD/tests/probe" \
+              -d "$PWD/tests/palette" \
+              --rc branch_coverage=1 \
+              -o coverage.info || true
+          else
+            echo "No gcovr or lcov found; skipping coverage capture"
+          fi
+
+      - name: Capture coverage (Windows)
+        if: ${{ always() && contains(matrix.setup_options || '', '--enable-gcov') && (matrix.exec_type || '') == 'msys' }}
+        shell: msys2 {0}
+        timeout-minutes: 5
+        run: |
+          if [ -e coverage.info ]; then
+            echo "coverage.info already exists; skipping capture"
+            exit 0
+          fi
+          if command -v gcovr >/dev/null 2>&1; then
+            gcovr -r . --lcov -o coverage.info || true
+          elif command -v lcov >/dev/null 2>&1; then
+            lcov -c \
+              -d "$PWD/src/.libs" \
+              -d "$PWD/converters" \
+              -d "$PWD/tests/cli" \
+              -d "$PWD/tests/loader" \
+              -d "$PWD/tests/filter" \
+              -d "$PWD/tests/probe" \
+              -d "$PWD/tests/palette" \
+              --rc branch_coverage=1 \
+              -o coverage.info || true
+          else
+            echo "No gcovr or lcov found; skipping coverage capture"
+          fi
+
+      - name: Fetch DragonFlyBSD artifacts from VM (Autotools)
+        if: ${{ matrix.buildtool == 'autotools' && (matrix.exec_type || '') == 'dragonflybsd-vm' }}
+        run: |
+          mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
+          remote_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
+          if ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dragonflybsd "test -f \"${remote_tar}\""; then
+            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dragonflybsd:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
+          else
+            echo "No artifact archive found on VM; skipping copy" >&2
+          fi
+
+      - name: Fetch BSD artifacts from VM (Autotools)
+        if: ${{ always() && (matrix.exec_type || '') == 'cross-platform-vms' }}
+        shell: bash
+        timeout-minutes: 5
+        run: |
+          mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
+          remote_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
+          if ssh cross_platform_actions_host "test -f \"${remote_tar}\""; then
+            scp cross_platform_actions_host:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
+          else
+            echo "No artifact archive found on VM; skipping copy" >&2
+          fi
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.label }}
+          path: |
+            **/test-suite.log
+            **/*.log
+            **/*.trs
+            **/_artifacts/**
+            coverage.info
+            pkg_install-err.log
+            **/artifacts.tar.gz
+            builddir/meson-dist/**
+            dist-build/**/meson-logs/**
+            dist-build/**/_artifacts/**
+            dist-build/**/testlog.txt
+          if-no-files-found: warn
+          overwrite: true
+
+      - name: Upload to Coveralls (per-flag, parallel)
+        id: coveralls_upload
+        continue-on-error: true
+        uses: coverallsapp/github-action@v2
+        if: ${{ hashFiles('coverage.info') != '' }}
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: coverage.info
+          flag-name: ${{ matrix.label }}
+          parallel: true
+
+      - name: Wait before Coveralls retry (per-flag)
+        if: ${{ hashFiles('coverage.info') != '' && steps.coveralls_upload.outcome == 'failure' }}
+        run: sleep 5
+
+      - name: Upload to Coveralls (per-flag, retry)
+        if: ${{ hashFiles('coverage.info') != '' && steps.coveralls_upload.outcome == 'failure' }}
+        continue-on-error: true
+        uses: coverallsapp/github-action@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path-to-lcov: coverage.info
+          flag-name: ${{ matrix.label }}
+          parallel: true
 
   ci-autotools-finish:
     needs: ci-autotools
