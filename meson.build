@@ -847,10 +847,26 @@ if host_system == 'darwin'
       modules: ['Carbon', 'CoreGraphics', 'CoreFoundation'],
       required: false)
     if clipboard_candidate.found()
-      have_clipboard_macos = true
-      clipboard_dep = [clipboard_candidate]
-      conf.set('HAVE_CLIPBOARD_MACOS', 1)
-      deps += clipboard_dep
+      if cc.compiles('''
+          __attribute__((deprecated)) void test(void) {}
+          #include <ApplicationServices/ApplicationServices.h>
+          int main(void) {
+              PasteboardRef pasteboard;
+              OSStatus status;
+              pasteboard = NULL;
+              status = PasteboardCreate(kPasteboardClipboard, &pasteboard);
+              if (status != noErr) {
+                  return 1;
+              }
+              status = PasteboardSynchronize(pasteboard);
+              return status != noErr;
+          }
+      ''')
+        have_clipboard_macos = true
+        clipboard_dep = [clipboard_candidate]
+        conf.set('HAVE_CLIPBOARD_MACOS', 1)
+        deps += clipboard_dep
+      endif
     endif
   endif
 elif host_system == 'windows'

@@ -21,6 +21,10 @@ fi
 
  
 cd "${BUILDDIR}" && (
+    CC=cosmocc \
+    AR=cosmoar \
+    RANLIB=cosmoranlib \
+    INSTALL=cosmoinstall \
   ../../configure \
     --enable-simd \
     --disable-shared \
@@ -33,11 +37,7 @@ cd "${BUILDDIR}" && (
     --disable-appkit \
     --without-coregraphics \
     --disable-quicklook-extension \
-    --disable-quicklook-preview \
-    CC=cosmocc \
-    AR=cosmoar \
-    RANLIB=cosmoranlib \
-    INSTALL=cosmoinstall
+    --disable-quicklook-preview
   make -j V=1
   make check -j
 )
