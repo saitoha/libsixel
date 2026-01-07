@@ -284,6 +284,7 @@ extra_funcs = [
   'strtol',
   'clock',
   'nanosleep',
+  'usleep',
   'fork',
   'posix_spawnp',
   'fchmod',

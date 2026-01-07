@@ -1,0 +1,23 @@
+[binaries]
+c = 'emcc-meson'
+ar = 'emar'
+ranlib = 'emranlib'
+strip = 'emstrip'
+nm = 'llvm-nm'
+
+[properties]
+exe_suffix = ''
+needs_exe_wrapper = true
+exe_wrapper = 'node'
+
+[built-in options]
+c_args = ['-O3', '-g0', '-msimd128', '-fdata-sections', '-ffunction-sections']
+c_link_args = ['-sNODERAWFS=1', '-sSTACK_SIZE=524288', '-sINITIAL_MEMORY=268435456',
+               '-sSINGLE_FILE=1', '-sENVIRONMENT=node', '-sALLOW_MEMORY_GROWTH=1',
+               '-sWASM_BIGINT=1', '-sUSE_PTHREADS=1', '-sASSERTIONS=0']
+ 
+[host_machine] 
+system = 'emscripten'
+cpu_family = 'wasm32'
+cpu = 'wasm32'
+endian = 'little'
