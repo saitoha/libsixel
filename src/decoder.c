@@ -1025,6 +1025,7 @@ sixel_decoder_setopt(
     char const *filename = NULL;
     char *p = NULL;
     long bias;
+    long parsed_value;
     char *endptr;
 
     sixel_decoder_ref(decoder);
@@ -1175,24 +1176,33 @@ sixel_decoder_setopt(
         break;
 
     case SIXEL_OPTFLAG_SIZE:  /* s */
-        decoder->thumbnail_size = atoi(value);
-        if (decoder->thumbnail_size <= 0) {
+        parsed_value = 0L;
+        endptr = NULL;
+        errno = 0;
+        parsed_value = strtol(value, &endptr, 10);
+        if (endptr == value || *endptr != '\0' || errno == ERANGE ||
+            parsed_value < 1L || parsed_value > (long)INT_MAX) {
             sixel_helper_set_additional_message(
                 "size must be greater than zero.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
+        decoder->thumbnail_size = (int)parsed_value;
         break;
 
     case SIXEL_OPTFLAG_EDGE:  /* e */
-        decoder->dequantize_edge_strength = atoi(value);
-        if (decoder->dequantize_edge_strength < 0 ||
-            decoder->dequantize_edge_strength > 1000) {
+        parsed_value = 0L;
+        endptr = NULL;
+        errno = 0;
+        parsed_value = strtol(value, &endptr, 10);
+        if (endptr == value || *endptr != '\0' || errno == ERANGE ||
+            parsed_value < 0L || parsed_value > 1000L) {
             sixel_helper_set_additional_message(
                 "edge bias must be between 1 and 1000.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
+        decoder->dequantize_edge_strength = (int)parsed_value;
         break;
 
     case SIXEL_OPTFLAG_DIRECT:  /* D */

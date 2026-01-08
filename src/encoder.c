@@ -5635,6 +5635,8 @@ sixel_encoder_new(
     char const *env_lookup_policy = NULL;
     char const *env_sample_target = NULL;
     int ncolors;
+    long parsed_ncolors;
+    char *endptr;
     int prefer_float32;
     int env_match_value;
     size_t parsed_sample_target;
@@ -5815,9 +5817,16 @@ sixel_encoder_new(
     /* evaluate environment variable ${SIXEL_COLORS} */
     env_default_ncolors = sixel_compat_getenv("SIXEL_COLORS");
     if (env_default_ncolors) {
-        ncolors = atoi(env_default_ncolors); /* may overflow */
-        if (ncolors > 1 && ncolors <= SIXEL_PALETTE_MAX) {
-            (*ppencoder)->reqcolors = ncolors;
+        parsed_ncolors = 0L;
+        endptr = NULL;
+        errno = 0;
+        parsed_ncolors = strtol(env_default_ncolors, &endptr, 10);
+        if (endptr != env_default_ncolors && *endptr == '\0' &&
+            errno != ERANGE && parsed_ncolors <= (long)INT_MAX) {
+            ncolors = (int)parsed_ncolors;
+            if (ncolors > 1 && ncolors <= SIXEL_PALETTE_MAX) {
+                (*ppencoder)->reqcolors = ncolors;
+            }
         }
     }
 
@@ -6263,6 +6272,111 @@ sixel_encoder_parse_threads_argument(char const *text, int *value)
     return 1;
 }
 
+static int
+sixel_encoder_parse_crop_geometry(char const *value,
+                                  int *width,
+                                  int *height,
+                                  int *offset_x,
+                                  int *offset_y)
+{
+    long parsed;
+    char *endptr;
+    char const *cursor;
+
+    parsed = 0L;
+    endptr = NULL;
+    cursor = NULL;
+
+    if (value == NULL || width == NULL || height == NULL ||
+        offset_x == NULL || offset_y == NULL) {
+        return 0;
+    }
+
+    /*
+     * Crop geometry uses a fixed grammar:
+     *
+     *   <width>x<height>+<x>+<y>
+     *
+     * The parser walks each token with strtol() and validates the expected
+     * delimiter so MSVCRT avoids sscanf_s() constraints.
+     */
+    cursor = value;
+    errno = 0;
+    parsed = strtol(cursor, &endptr, 10);
+    if (endptr == cursor || errno == ERANGE ||
+        parsed <= 0L || parsed > (long)INT_MAX) {
+        return 0;
+    }
+    if (*endptr != 'x') {
+        return 0;
+    }
+    *width = (int)parsed;
+
+    cursor = endptr + 1;
+    errno = 0;
+    parsed = strtol(cursor, &endptr, 10);
+    if (endptr == cursor || errno == ERANGE ||
+        parsed <= 0L || parsed > (long)INT_MAX) {
+        return 0;
+    }
+    if (*endptr != '+') {
+        return 0;
+    }
+    *height = (int)parsed;
+
+    cursor = endptr + 1;
+    errno = 0;
+    parsed = strtol(cursor, &endptr, 10);
+    if (endptr == cursor || errno == ERANGE ||
+        parsed < 0L || parsed > (long)INT_MAX) {
+        return 0;
+    }
+    if (*endptr != '+') {
+        return 0;
+    }
+    *offset_x = (int)parsed;
+
+    cursor = endptr + 1;
+    errno = 0;
+    parsed = strtol(cursor, &endptr, 10);
+    if (endptr == cursor || errno == ERANGE ||
+        parsed < 0L || parsed > (long)INT_MAX) {
+        return 0;
+    }
+    if (*endptr != '\0') {
+        return 0;
+    }
+    *offset_y = (int)parsed;
+
+    return 1;
+}
+
+static int
+sixel_encoder_parse_dimension_value(char const *value,
+                                    long *number,
+                                    char const **suffix)
+{
+    long parsed;
+    char *endptr;
+
+    parsed = 0L;
+    endptr = NULL;
+
+    if (value == NULL || number == NULL || suffix == NULL) {
+        return 0;
+    }
+
+    errno = 0;
+    parsed = strtol(value, &endptr, 10);
+    if (endptr == value || errno == ERANGE) {
+        return 0;
+    }
+
+    *number = parsed;
+    *suffix = endptr;
+    return 1;
+}
+
 /* set an option flag to encoder object */
 SIXELAPI SIXELSTATUS
 sixel_encoder_setopt(
@@ -6272,15 +6386,16 @@ sixel_encoder_setopt(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int number;
-    int parsed;
-    char unit[32];
     char lowered[16];
     size_t len;
     size_t i;
     long parsed_reqcolors;
+    long parsed_value;
     char *endptr;
     int forced_palette;
     char *opt_copy;
+    char const *suffix;
+    int geometry_ok;
     char const *drcs_arg_delim;
     char const *drcs_arg_charset;
     char const *drcs_arg_second_delim;
@@ -6319,6 +6434,9 @@ sixel_encoder_setopt(
     path_flags = 0u;
     mapfile_view = NULL;
     path_check = 0;
+    parsed_value = 0L;
+    suffix = NULL;
+    geometry_ok = 0;
 
     switch(arg) {
     case SIXEL_OPTFLAG_OUTFILE:  /* o */
@@ -6918,32 +7036,40 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_CROP:  /* c */
-        number = sixel_compat_sscanf(value,
-                                     "%dx%d+%d+%d",
-                                     &encoder->clipwidth,
-                                     &encoder->clipheight,
-                                     &encoder->clipx,
-                                     &encoder->clipy);
-        if (number != 4) {
-            status = SIXEL_BAD_ARGUMENT;
-            goto end;
-        }
-        if (encoder->clipwidth <= 0 || encoder->clipheight <= 0) {
-            status = SIXEL_BAD_ARGUMENT;
-            goto end;
-        }
-        if (encoder->clipx < 0 || encoder->clipy < 0) {
+        geometry_ok = sixel_encoder_parse_crop_geometry(
+            value,
+            &encoder->clipwidth,
+            &encoder->clipheight,
+            &encoder->clipx,
+            &encoder->clipy);
+        if (!geometry_ok) {
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
         encoder->clipfirst = 0;
         break;
     case SIXEL_OPTFLAG_WIDTH:  /* w */
-        parsed = sixel_compat_sscanf(value,
-                                     "%d%2s",
-                                     &number,
-                                     unit);
-        if (parsed == 2 && strcmp(unit, "%") == 0) {
+        if (strcmp(value, "auto") == 0) {
+            encoder->pixelwidth = (-1);
+            encoder->percentwidth = (-1);
+            break;
+        }
+        if (!sixel_encoder_parse_dimension_value(value,
+                                                 &parsed_value,
+                                                 &suffix)) {
+            sixel_helper_set_additional_message(
+                "cannot parse -w/--width option.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        if (parsed_value > (long)INT_MAX) {
+            sixel_helper_set_additional_message(
+                "cannot parse -w/--width option.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        number = (int)parsed_value;
+        if (suffix[0] == '%' && suffix[1] == '\0') {
             if (number <= 0) {
                 sixel_helper_set_additional_message(
                     "-w/--width percent must be 1 or more.");
@@ -6952,7 +7078,7 @@ sixel_encoder_setopt(
             }
             encoder->pixelwidth = (-1);
             encoder->percentwidth = number;
-        } else if (parsed == 2 && strcmp(unit, "c") == 0) {
+        } else if (suffix[0] == 'c' && suffix[1] == '\0') {
             status = sixel_encoder_ensure_cell_size(encoder);
             if (SIXEL_FAILED(status)) {
                 cell_detail = sixel_helper_get_additional_message();
@@ -6996,9 +7122,9 @@ sixel_encoder_setopt(
             }
             encoder->pixelwidth = number * encoder->cell_width;
             encoder->percentwidth = (-1);
-        } else if (parsed == 1 ||
-                   (parsed == 2 && strcmp(unit, "px") == 0) ||
-                   (parsed == 2 && strcmp(unit, "") == 0)) {
+        } else if (suffix[0] == '\0' ||
+                   (suffix[0] == 'p' && suffix[1] == 'x' &&
+                    suffix[2] == '\0')) {
             if (number <= 0) {
                 sixel_helper_set_additional_message(
                     "-w/--width must be 1 or more.");
@@ -7006,9 +7132,6 @@ sixel_encoder_setopt(
                 goto end;
             }
             encoder->pixelwidth = number;
-            encoder->percentwidth = (-1);
-        } else if (strcmp(value, "auto") == 0) {
-            encoder->pixelwidth = (-1);
             encoder->percentwidth = (-1);
         } else {
             sixel_helper_set_additional_message(
@@ -7021,15 +7144,27 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_HEIGHT:  /* h */
-#if HAVE_SSCANF_S
-        parsed = sscanf_s(value, "%d%2s", &number, unit, sizeof(unit) - 1);
-#else
-        parsed = sixel_compat_sscanf(value,
-                                     "%d%2s",
-                                     &number,
-                                     unit);
-#endif  /* HAVE_SSCANF_S */
-        if (parsed == 2 && strcmp(unit, "%") == 0) {
+        if (strcmp(value, "auto") == 0) {
+            encoder->pixelheight = (-1);
+            encoder->percentheight = (-1);
+            break;
+        }
+        if (!sixel_encoder_parse_dimension_value(value,
+                                                 &parsed_value,
+                                                 &suffix)) {
+            sixel_helper_set_additional_message(
+                "cannot parse -h/--height option.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        if (parsed_value > (long)INT_MAX) {
+            sixel_helper_set_additional_message(
+                "cannot parse -h/--height option.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        number = (int)parsed_value;
+        if (suffix[0] == '%' && suffix[1] == '\0') {
             if (number <= 0) {
                 sixel_helper_set_additional_message(
                     "-h/--height percent must be 1 or more.");
@@ -7038,7 +7173,7 @@ sixel_encoder_setopt(
             }
             encoder->pixelheight = (-1);
             encoder->percentheight = number;
-        } else if (parsed == 2 && strcmp(unit, "c") == 0) {
+        } else if (suffix[0] == 'c' && suffix[1] == '\0') {
             status = sixel_encoder_ensure_cell_size(encoder);
             if (SIXEL_FAILED(status)) {
                 cell_detail = sixel_helper_get_additional_message();
@@ -7081,9 +7216,9 @@ sixel_encoder_setopt(
             }
             encoder->pixelheight = number * encoder->cell_height;
             encoder->percentheight = (-1);
-        } else if (parsed == 1 ||
-                   (parsed == 2 && strcmp(unit, "px") == 0) ||
-                   (parsed == 2 && strcmp(unit, "") == 0)) {
+        } else if (suffix[0] == '\0' ||
+                   (suffix[0] == 'p' && suffix[1] == 'x' &&
+                    suffix[2] == '\0')) {
             if (number <= 0) {
                 sixel_helper_set_additional_message(
                     "-h/--height must be 1 or more.");
@@ -7091,9 +7226,6 @@ sixel_encoder_setopt(
                 goto end;
             }
             encoder->pixelheight = number;
-            encoder->percentheight = (-1);
-        } else if (strcmp(value, "auto") == 0) {
-            encoder->pixelheight = (-1);
             encoder->percentheight = (-1);
         } else {
             sixel_helper_set_additional_message(
@@ -7243,11 +7375,15 @@ sixel_encoder_setopt(
         encoder->fuse_macro = 1;
         break;
     case SIXEL_OPTFLAG_MACRO_NUMBER:  /* n */
-        encoder->macro_number = atoi(value);
-        if (encoder->macro_number < 0) {
+        errno = 0;
+        endptr = NULL;
+        parsed_value = strtol(value, &endptr, 10);
+        if (endptr == value || *endptr != '\0' || errno == ERANGE ||
+            parsed_value < 0L || parsed_value > (long)INT_MAX) {
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
+        encoder->macro_number = (int)parsed_value;
         break;
     case SIXEL_OPTFLAG_IGNORE_DELAY:  /* g */
         encoder->fignore_delay = 1;
@@ -7621,13 +7757,17 @@ sixel_encoder_setopt(
         encoder->ormode = 1;
         break;
     case SIXEL_OPTFLAG_COMPLEXION_SCORE:  /* C */
-        encoder->complexion = atoi(value);
-        if (encoder->complexion < 1) {
+        errno = 0;
+        endptr = NULL;
+        parsed_value = strtol(value, &endptr, 10);
+        if (endptr == value || *endptr != '\0' || errno == ERANGE ||
+            parsed_value < 1L || parsed_value > (long)INT_MAX) {
             sixel_helper_set_additional_message(
                 "complexion parameter must be 1 or more.");
             status = SIXEL_BAD_ARGUMENT;
             goto end;
         }
+        encoder->complexion = (int)parsed_value;
         break;
     case SIXEL_OPTFLAG_PIPE_MODE:  /* D */
         encoder->pipe_mode = 1;
