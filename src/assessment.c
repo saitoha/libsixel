@@ -1712,6 +1712,8 @@ tail_index(char const *name)
 {
     int length;
     int index;
+    long parsed;
+    char *endptr;
 
     length = (int)strlen(name);
     index = length - 1;
@@ -1721,7 +1723,18 @@ tail_index(char const *name)
     if (index == length - 1) {
         return -1;
     }
-    return atoi(name + index + 1);
+    parsed = 0L;
+    endptr = NULL;
+    errno = 0;
+    parsed = strtol(name + index + 1, &endptr, 10);
+    if (endptr == name + index + 1 || *endptr != '\0' ||
+        errno == ERANGE || parsed > (long)INT_MAX) {
+        return -1;
+    }
+    if (parsed < 0L) {
+        return -1;
+    }
+    return (int)parsed;
 }
 
 static int
