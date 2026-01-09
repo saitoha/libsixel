@@ -57,6 +57,16 @@
 # define SIXEL_ALIGNAS(bytes)
 #endif
 
+/*
+ * pixelformat layout
+ */
+typedef struct sixel_pixelformat_layout {
+    int step;
+    int index_r;
+    int index_g;
+    int index_b;
+} sixel_pixelformat_layout_t;
+
 static inline unsigned char
 sixel_oklab_encode_L(double L);
 static inline unsigned char
@@ -4615,13 +4625,6 @@ sixel_encode_linear_to_colorspace_float(int colorspace,
     *g_value = (float)g;
     *b_value = (float)b;
 }
-
-typedef struct sixel_pixelformat_layout {
-    int step;
-    int index_r;
-    int index_g;
-    int index_b;
-} sixel_pixelformat_layout_t;
 
 static SIXELSTATUS
 sixel_pixelformat_layout_init(int pixelformat,
