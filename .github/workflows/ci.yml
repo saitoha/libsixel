@@ -20,131 +20,12 @@ env:
   VCPKG_REF: 2024.12.16
 
 jobs:
-  ci-autotools:
+  ci:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner || matrix.os }}
     strategy:
       matrix:
         include:
-          - label: Autotools-freebsd-14.3-x86_64
-            buildtool: autotools
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            cp_os: freebsd
-            cp_arch: x86-64
-            cp_version: '14.3'
-            exec_type: cross-platform-vms
-          - label: Meson-freebsd-14.3-x86_64
-            buildtool: meson
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            cp_os: freebsd
-            cp_arch: x86-64
-            cp_version: '14.3'
-            exec_type: cross-platform-vms
-          - label: Autotools-freebsd-14.3-x86_64-amalgamated-lib
-            buildtool: autotools
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            cp_os: freebsd
-            cp_arch: x86-64
-            cp_version: '14.3'
-            setup_options: >-
-              --enable-amalgamated-lib
-            exec_type: cross-platform-vms
-          - label: Meson-freebsd-14.3-x86_64-amalgamated-lib
-            buildtool: meson
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            cp_os: freebsd
-            cp_arch: x86-64
-            cp_version: '14.3'
-            setup_options: >-
-              -Damalgamated_lib=true
-            exec_type: cross-platform-vms
-          - label: Autotools-freebsd-14.3-aarch64
-            buildtool: autotools
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            cp_os: freebsd
-            cp_arch: arm64
-            cp_version: '14.3'
-            exec_type: cross-platform-vms
-          - label: Meson-freebsd-14.3-aarch64
-            buildtool: meson
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            cp_os: freebsd
-            cp_arch: arm64
-            cp_version: '14.3'
-            exec_type: cross-platform-vms
-          - label: Autotools-netbsd-10.1-x86_64
-            buildtool: autotools
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            cp_os: netbsd
-            cp_arch: x86-64
-            cp_version: '10.1'
-            exec_type: cross-platform-vms
-          - label: Meson-netbsd-10.1-x86_64
-            buildtool: meson
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            cp_os: netbsd
-            cp_arch: x86-64
-            cp_version: '10.1'
-            exec_type: cross-platform-vms
-          - label: Meson-netbsd-10.1-aarch64
-            buildtool: meson
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            cp_os: netbsd
-            cp_arch: arm64
-            cp_version: '10.1'
-            exec_type: cross-platform-vms
-          - label: Autotools-haiku-r1beta5-x86-64
-            buildtool: autotools
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            cp_os: haiku
-            cp_arch: x86-64
-            cp_version: r1beta5
-            exec_type: cross-platform-vms
-          - label: Meson-haiku-r1beta5-x86-64
-            buildtool: meson
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            cp_os: haiku
-            cp_arch: x86-64
-            cp_version: r1beta5
-            exec_type: cross-platform-vms
-          - label: Autotools-openbsd-7.8-x86-64
-            buildtool: autotools
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            cp_os: openbsd
-            cp_arch: x86-64
-            cp_version: '7.8'
-            exec_type: cross-platform-vms
-          - label: Meson-openbsd-7.8-x86-64
-            buildtool: meson
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            cp_os: openbsd
-            cp_arch: x86-64
-            cp_version: '7.8'
-            exec_type: cross-platform-vms
-          - label: Autotools-dragonflybsd-6.4.2-x86-64
-            buildtool: autotools
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            exec_type: dragonflybsd-vm
-          - label: Meson-dragonflybsd-6.4.2-x86-64
-            buildtool: meson
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            df_release: '6.4.2'
-            exec_type: dragonflybsd-vm
           - label: Autotools-alpine-3.20-x86_64
             buildtool: autotools
             os: ubuntu-latest
@@ -154,6 +35,7 @@ jobs:
               coreutils
               findutils
             exec_type: alpine
+
           - label: Meson-alpine-3.20-x86_64
             buildtool: meson
             os: ubuntu-latest
@@ -162,7 +44,8 @@ jobs:
               build-base
               meson
             exec_type: alpine
-          - label: Autotools-ubuntu-x86_64-ASan
+
+          - label: Autotools-ubuntu-x86_64-ASan-avx2
             buildtool: autotools
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -173,10 +56,12 @@ jobs:
             setup_options: >-
               --without-png
               --without-jpeg
+              --enable-avx2
             extra_packages: >-
               clang
             exec_type: bash
-          - label: Meson-ubuntu-x86_64-ASan
+
+          - label: Meson-ubuntu-x86_64-ASan-avx2
             buildtool: meson
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -186,11 +71,13 @@ jobs:
               --buildtype=debug
               -Db_sanitize=address
               -Db_lundef=false
+              -Davx2=true
             extra_packages: >-
               meson
               clang
             exec_type: bash
-          - label: Autotools-ubuntu-x86_64-ASan-png-jpeg
+
+          - label: Autotools-ubuntu-x86_64-ASan-png-jpeg-avx512
             buildtool: autotools
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -201,13 +88,15 @@ jobs:
             setup_options: >-
               --with-png
               --with-jpeg
+              --enable-avx512
             extra_packages: >-
               meson
               clang
               libpng-dev
               libjpeg-dev
             exec_type: bash
-          - label: Meson-ubuntu-x86_64-ASan-png-jpeg
+
+          - label: Meson-ubuntu-x86_64-ASan-png-jpeg-avx512
             buildtool: meson
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -219,12 +108,14 @@ jobs:
               -Db_lundef=false
               -Dpng=enabled
               -Djpeg=enabled
+              -Davx512=enabled
             extra_packages: >-
               meson
               clang
               libpng-dev
               libjpeg-dev
             exec_type: bash
+
           - label: Autotools-ubuntu-x86_64-ASan-gdk-pixbuf2
             buildtool: autotools
             os: ubuntu-latest
@@ -241,6 +132,7 @@ jobs:
               clang
               libgdk-pixbuf2.0-dev
             exec_type: bash
+
           - label: Meson-ubuntu-x86_64-ASan-gdk-pixbuf2
             buildtool: meson
             os: ubuntu-latest
@@ -259,7 +151,8 @@ jobs:
               clang
               libgdk-pixbuf2.0-dev
             exec_type: bash
-          - label: Autotools-ubuntu-x86_64-ASan-GD
+
+          - label: Autotools-ubuntu-x86_64-ASan-GD-no-aborttrace
             buildtool: autotools
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -271,11 +164,13 @@ jobs:
               --without-png
               --without-jpeg
               --with-gd
+              --disable-abort-trace
             extra_packages: >-
               clang
               libgd-dev
             exec_type: bash
-          - label: Meson-ubuntu-x86_64-ASan-GD
+
+          - label: Meson-ubuntu-x86_64-ASan-GD-no-aborttrace
             buildtool: meson
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -288,11 +183,13 @@ jobs:
               -Dpng=disabled
               -Djpeg=disabled
               -Dgd=enabled
+              -Dabort_trace=disabled
             extra_packages: >-
               meson
               clang
               libgd-dev
             exec_type: bash
+
           - label: Autotools-ubuntu-x86_64-static
             buildtool: autotools
             os: ubuntu-latest
@@ -307,6 +204,7 @@ jobs:
               gcc-14
               gcovr
             exec_type: bash
+
           - label: Meson-ubuntu-x86_64-static
             buildtool: meson
             os: ubuntu-latest
@@ -322,6 +220,7 @@ jobs:
               gcc-14
               gcovr
             exec_type: bash
+
           - label: Autotools-ubuntu-x86_64-no-simd
             buildtool: autotools
             os: ubuntu-latest
@@ -336,6 +235,7 @@ jobs:
             pip_packages: >-
               gcovr
             exec_type: bash
+
           - label: Meson-ubuntu-x86_64-no-simd
             buildtool: meson
             os: ubuntu-latest
@@ -351,6 +251,7 @@ jobs:
             pip_packages: >-
               gcovr
             exec_type: bash
+
           - label: Autotools-ubuntu-x86_64-no-tools
             buildtool: autotools
             os: ubuntu-latest
@@ -359,6 +260,7 @@ jobs:
               --disable-img2sixel
               --disable-sixel2png
             exec_type: bash
+
           - label: Meson-ubuntu-x86_64-no-tools
             buildtool: meson
             os: ubuntu-latest
@@ -369,6 +271,7 @@ jobs:
             extra_packages: >-
               meson
             exec_type: bash
+
           - label: Autotools-ubuntu-x86_64-no-threads
             buildtool: autotools
             os: ubuntu-latest
@@ -383,6 +286,7 @@ jobs:
             pip_packages: >-
               gcovr
             exec_type: bash
+
           - label: Meson-ubuntu-x86_64-no-threads
             buildtool: meson
             os: ubuntu-latest
@@ -398,6 +302,7 @@ jobs:
               meson
               gcovr
             exec_type: bash
+
           - label: Autotools-ubuntu-x86_64-musl
             buildtool: autotools
             os: ubuntu-latest
@@ -407,6 +312,7 @@ jobs:
             extra_packages: >-
               musl-tools
             exec_type: bash
+
           - label: Meson-ubuntu-x86_64-musl
             buildtool: meson
             os: ubuntu-latest
@@ -417,12 +323,14 @@ jobs:
               meson
               musl-tools
             exec_type: bash
+
           - label: Autotools-ubuntu-24.04-aarch64-distcheck
             buildtool: autotools
             os: ubuntu-24.04-arm
             runner: ubuntu-24.04-arm
             check_target: distcheck
             exec_type: bash
+
           - label: Meson-ubuntu-24.04-aarch64-distcheck
             buildtool: meson
             os: ubuntu-24.04-arm
@@ -432,6 +340,7 @@ jobs:
               meson
               ninja-build
             exec_type: bash
+
           - label: Autotools-ubuntu-24.04-aarch64-amalgamated-lib
             buildtool: autotools
             os: ubuntu-24.04-arm
@@ -443,6 +352,7 @@ jobs:
             extra_packages: >-
               gcc-14
             exec_type: bash
+
           - label: Meson-ubuntu-24.04-aarch64-amalgamated-lib
             buildtool: meson
             os: ubuntu-24.04-arm
@@ -455,6 +365,7 @@ jobs:
               meson
               gcc-14
             exec_type: bash
+
           - label: Autotools-ubuntu-aarch64-cosmopolitan-static
             buildtool: autotools
             os: ubuntu-24.04-arm
@@ -472,6 +383,7 @@ jobs:
               --without-libcurl
               --without-onnxruntime
             exec_type: bash
+
           - label: Meson-ubuntu-aarch64-cosmopolitan-static
             buildtool: meson
             os: ubuntu-24.04-arm
@@ -493,6 +405,7 @@ jobs:
             extra_packages: >-
               meson
             exec_type: bash
+
           - label: Autotools-ubuntu-aarch64-emscripten
             buildtool: autotools
             os: ubuntu-24.04-arm
@@ -508,6 +421,7 @@ jobs:
             extra_packages: >-
               nodejs
             exec_type: bash
+
           - label: Meson-ubuntu-aarch64-emscripten
             buildtool: meson
             os: ubuntu-24.04-arm
@@ -521,6 +435,7 @@ jobs:
               meson
               nodejs
             exec_type: bash
+
           - label: Autotools-ubuntu-i686
             buildtool: autotools
             os: ubuntu-latest
@@ -534,6 +449,7 @@ jobs:
             extra_packages: >-
               gcc-multilib
             exec_type: bash
+
           - label: Meson-ubuntu-i686
             buildtool: meson
             os: ubuntu-latest
@@ -548,12 +464,14 @@ jobs:
               meson
               gcc-multilib
             exec_type: bash
+
           - label: Autotools-macos-aarch64-distcheck
             buildtool: autotools
             os: macos-latest
             runner: macos-latest
             check_target: distcheck
             exec_type: bash
+
           - label: Meson-macos-aarch64-distcheck
             buildtool: meson
             os: macos-latest
@@ -562,6 +480,7 @@ jobs:
             extra_packages: >-
               meson
             exec_type: bash
+
           - label: Autotools-macos-aarch64-ASan-gdk-pixbuf2
             buildtool: autotools
             os: macos-latest
@@ -577,6 +496,7 @@ jobs:
             extra_packages: >-
               gdk-pixbuf
             exec_type: bash
+
           - label: Meson-macos-aarch64-ASan-gdk-pixbuf2
             buildtool: meson
             os: macos-latest
@@ -594,6 +514,7 @@ jobs:
               meson
               gdk-pixbuf
             exec_type: bash
+
           - label: Autotools-macos-aarch64-ASan-GD
             buildtool: autotools
             os: macos-latest
@@ -609,6 +530,7 @@ jobs:
             extra_packages: >-
               gd
             exec_type: bash
+
           - label: Meson-macos-aarch64-ASan-GD
             buildtool: meson
             os: macos-latest
@@ -628,6 +550,7 @@ jobs:
               meson
               gd
             exec_type: bash
+
           - label: Autotools-macos-aarch64-amalgamated-lib-disable-appkit
             buildtool: autotools
             os: macos-latest
@@ -636,6 +559,7 @@ jobs:
               --enable-amalgamated-lib
               --disable-appkit
             exec_type: bash
+
           - label: Meson-macos-aarch64-amalgamated-lib-disable-appkit
             buildtool: meson
             os: macos-latest
@@ -646,6 +570,7 @@ jobs:
             extra_packages: >-
               meson
             exec_type: bash
+
           - label: Autotools-macos-x86_64
             buildtool: autotools
             os: macos-15
@@ -655,6 +580,7 @@ jobs:
             extra_packages: >-
               lcov
             exec_type: bash
+
           - label: Meson-macos-x86_64
             buildtool: meson
             os: macos-15
@@ -665,6 +591,7 @@ jobs:
               meson
               lcov
             exec_type: bash
+
           - label: Autotools-macos-x86_64-amalgamated-lib
             buildtool: autotools
             os: macos-15
@@ -672,6 +599,7 @@ jobs:
             setup_options: >-
               --enable-amalgamated-lib
             exec_type: bash
+
           - label: Meson-macos-x86_64-amalgamated-lib
             buildtool: meson
             os: macos-15
@@ -681,6 +609,7 @@ jobs:
             extra_packages: >-
               meson
             exec_type: bash
+
           - label: Autotools-macos-aarch64-cosmopolitan-static
             buildtool: autotools
             os: macos-latest
@@ -702,6 +631,7 @@ jobs:
               --disable-quicklook-preview
               --disable-appkit
             exec_type: bash
+
           - label: Meson-macos-aarch64-cosmopolitan-static
             buildtool: meson
             os: macos-latest
@@ -727,6 +657,7 @@ jobs:
             extra_packages: >-
               meson
             exec_type: bash
+
           - label: Autotools-macos-aarch64-emscripten
             buildtool: autotools
             os: macos-latest
@@ -742,6 +673,7 @@ jobs:
             extra_packages: >-
               node
             exec_type: bash
+
           - label: Meson-macos-aarch64-emscripten
             buildtool: meson
             os: macos-latest
@@ -755,6 +687,7 @@ jobs:
               meson
               node
             exec_type: bash
+
           - label: Autotools-msys2-mingw64-static
             buildtool: autotools
             os: windows-latest
@@ -769,6 +702,7 @@ jobs:
               mingw-w64-x86_64-toolchain
               mingw-w64-x86_64-lcov
             exec_type: msys2
+
           - label: Autotools-msys2-mingw64-no-simd
             buildtool: autotools
             os: windows-latest
@@ -782,6 +716,7 @@ jobs:
               mingw-w64-x86_64-toolchain
               mingw-w64-x86_64-lcov
             exec_type: msys2
+
           - label: Meson-msys2-mingw64-no-simd
             buildtool: meson
             os: windows-latest
@@ -797,6 +732,7 @@ jobs:
               mingw-w64-x86_64-toolchain
               mingw-w64-x86_64-lcov
             exec_type: msys2
+
           - label: Autotools-msys2-mingw64-no-tools
             buildtool: autotools
             os: windows-latest
@@ -809,6 +745,7 @@ jobs:
               make
               mingw-w64-x86_64-toolchain
             exec_type: msys2
+
           - label: Meson-msys2-mingw64-no-tools
             buildtool: meson
             os: windows-latest
@@ -823,6 +760,7 @@ jobs:
               mingw-w64-x86_64-meson
               mingw-w64-x86_64-toolchain
             exec_type: msys2
+
           - label: Autotools-msys2-mingw64-no-threads
             buildtool: autotools
             os: windows-latest
@@ -836,6 +774,7 @@ jobs:
               mingw-w64-x86_64-toolchain
               mingw-w64-x86_64-lcov
             exec_type: msys2
+
           - label: Meson-msys2-mingw64-no-threads
             buildtool: meson
             os: windows-latest
@@ -851,6 +790,7 @@ jobs:
               mingw-w64-x86_64-toolchain
               mingw-w64-x86_64-lcov
             exec_type: msys2
+
           - label: Autotools-msys2-ucrt64
             buildtool: autotools
             os: windows-latest
@@ -863,6 +803,7 @@ jobs:
               mingw-w64-ucrt-x86_64-toolchain
               mingw-w64-ucrt-x86_64-lcov
             exec_type: msys2
+
           - label: Meson-msys2-ucrt64
             buildtool: meson
             os: windows-latest
@@ -877,6 +818,7 @@ jobs:
               mingw-w64-ucrt-x86_64-toolchain
               mingw-w64-ucrt-x86_64-lcov
             exec_type: msys2
+
           - label: Autotools-msys2-ucrt64-amalgamated-lib
             buildtool: autotools
             os: windows-latest
@@ -889,6 +831,7 @@ jobs:
               mingw-w64-ucrt-x86_64-toolchain
               mingw-w64-ucrt-x86_64-lcov
             exec_type: msys2
+
           - label: Meson-msys2-ucrt64-amalgamated-lib
             buildtool: meson
             os: windows-latest
@@ -904,6 +847,7 @@ jobs:
               mingw-w64-ucrt-x86_64-toolchain
               mingw-w64-ucrt-x86_64-lcov
             exec_type: msys2
+
           - label: Autotools-msys2-clang64
             buildtool: autotools
             os: windows-latest
@@ -918,6 +862,7 @@ jobs:
               mingw-w64-clang-x86_64-toolchain
               mingw-w64-clang-x86_64-lcov
             exec_type: msys2
+
           - label: Meson-msys2-clang64
             buildtool: meson
             os: windows-latest
@@ -932,6 +877,7 @@ jobs:
               mingw-w64-clang-x86_64-toolchain
               mingw-w64-clang-x86_64-lcov
             exec_type: msys2
+
           - label: Autotools-msys2-clang64-ASan
             buildtool: autotools
             os: windows-latest
@@ -946,6 +892,7 @@ jobs:
               make
               mingw-w64-clang-x86_64-toolchain
             exec_type: msys2
+
           - label: Meson-msys2-clang64-ASan
             buildtool: meson
             os: windows-latest
@@ -961,6 +908,7 @@ jobs:
               mingw-w64-clang-x86_64-meson
               mingw-w64-clang-x86_64-toolchain
             exec_type: msys2
+
           - label: Autotools-msys2-msys-vs-clang-cl
             buildtool: autotools
             os: windows-latest
@@ -979,6 +927,7 @@ jobs:
             extra_packages: >-
               make
             exec_type: msys2
+
           - label: Autotools-msys2-msys-msvc
             buildtool: autotools
             os: windows-latest
@@ -997,6 +946,7 @@ jobs:
             extra_packages: >-
               make
             exec_type: msys2
+
           - label: Autotools-msys2-msvc-amalgamated-lib
             buildtool: autotools
             os: windows-latest
@@ -1015,6 +965,7 @@ jobs:
               --enable-amalgamated-lib
             extra_packages: make
             exec_type: msys2
+
           - label: Autotools-msys2-msvc-vcpkg-libpng-libjpeg
             buildtool: autotools
             os: windows-latest
@@ -1035,6 +986,7 @@ jobs:
               libpng
               libjpeg-turbo
             exec_type: msys2
+
           - label: Autotools-msys2-mingw32
             buildtool: autotools
             os: windows-latest
@@ -1044,6 +996,7 @@ jobs:
               make
               mingw-w64-i686-toolchain
             exec_type: msys2
+
           - label: Meson-msys2-mingw32
             buildtool: meson
             os: windows-latest
@@ -1055,6 +1008,7 @@ jobs:
             extra_packages: >-
               mingw-w64-i686-meson
               mingw-w64-i686-toolchain
+
           - label: Autotools-msys2-msys-gcc
             buildtool: autotools
             os: windows-latest
@@ -1069,6 +1023,7 @@ jobs:
               python-pip
               lcov
             exec_type: msys2
+
           - label: Meson-msys2-msys-gcc
             buildtool: meson
             os: windows-latest
@@ -1083,6 +1038,7 @@ jobs:
               gcc
               lcov
             exec_type: msys2
+
           - label: Autotools-msys2-msys-cosmopolitan-static
             buildtool: autotools
             os: windows-latest
@@ -1105,6 +1061,7 @@ jobs:
               unzip
               make
             exec_type: msys2
+
           - label: Autotools-cygwin-gcc
             buildtool: autotools
             os: windows-latest
@@ -1113,6 +1070,7 @@ jobs:
               make
               gcc-core
             exec_type: cygwin
+
           - label: Meson-cygwin-gcc
             buildtool: meson
             os: windows-latest
@@ -1123,6 +1081,7 @@ jobs:
               meson
               gcc-core
             exec_type: cygwin
+
           - label: Autotools-cygwin-amalgamated-lib
             buildtool: autotools
             os: windows-latest
@@ -1133,6 +1092,7 @@ jobs:
               gcc-core
               make
             exec_type: cygwin
+
           - label: Meson-cygwin-amalgamated-lib
             buildtool: meson
             os: windows-latest
@@ -1145,6 +1105,7 @@ jobs:
               meson
               gcc-core
             exec_type: cygwin
+
           - label: Autotools-cygwin-msvc-cross
             buildtool: autotools
             os: windows-latest
@@ -1162,6 +1123,7 @@ jobs:
             extra_packages: >-
               make
             exec_type: cygwin
+
           - label: Autotools-cygwin-clang-cl-cross
             buildtool: autotools
             os: windows-latest
@@ -1179,6 +1141,7 @@ jobs:
             extra_packages: >-
               make
             exec_type: cygwin
+
           - label: Autotools-cygwin-clang-msvc-abi-cross
             buildtool: autotools
             os: windows-latest
@@ -1196,11 +1159,147 @@ jobs:
             extra_packages: >-
               make
             exec_type: cygwin
+
           - label: Meson-cmd-msvc
             buildtool: meson
             os: windows-latest
             runner: windows-latest
             exec_type: cmd
+
+          - label: Autotools-freebsd-14.3-x86_64
+            buildtool: autotools
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            cp_os: freebsd
+            cp_arch: x86-64
+            cp_version: '14.3'
+            exec_type: cross-platform-vms
+
+          - label: Meson-freebsd-14.3-x86_64
+            buildtool: meson
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            cp_os: freebsd
+            cp_arch: x86-64
+            cp_version: '14.3'
+            exec_type: cross-platform-vms
+
+          - label: Autotools-freebsd-14.3-x86_64-amalgamated-lib
+            buildtool: autotools
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            cp_os: freebsd
+            cp_arch: x86-64
+            cp_version: '14.3'
+            setup_options: >-
+              --enable-amalgamated-lib
+            exec_type: cross-platform-vms
+
+          - label: Meson-freebsd-14.3-x86_64-amalgamated-lib
+            buildtool: meson
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            cp_os: freebsd
+            cp_arch: x86-64
+            cp_version: '14.3'
+            setup_options: >-
+              -Damalgamated_lib=true
+            exec_type: cross-platform-vms
+
+          - label: Autotools-freebsd-14.3-aarch64
+            buildtool: autotools
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            cp_os: freebsd
+            cp_arch: arm64
+            cp_version: '14.3'
+            exec_type: cross-platform-vms
+
+          - label: Meson-freebsd-14.3-aarch64
+            buildtool: meson
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            cp_os: freebsd
+            cp_arch: arm64
+            cp_version: '14.3'
+            exec_type: cross-platform-vms
+
+          - label: Autotools-netbsd-10.1-x86_64
+            buildtool: autotools
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            cp_os: netbsd
+            cp_arch: x86-64
+            cp_version: '10.1'
+            exec_type: cross-platform-vms
+
+          - label: Meson-netbsd-10.1-x86_64
+            buildtool: meson
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            cp_os: netbsd
+            cp_arch: x86-64
+            cp_version: '10.1'
+            exec_type: cross-platform-vms
+
+          - label: Meson-netbsd-10.1-aarch64
+            buildtool: meson
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            cp_os: netbsd
+            cp_arch: arm64
+            cp_version: '10.1'
+            exec_type: cross-platform-vms
+
+          - label: Autotools-haiku-r1beta5-x86-64
+            buildtool: autotools
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            cp_os: haiku
+            cp_arch: x86-64
+            cp_version: r1beta5
+            exec_type: cross-platform-vms
+
+          - label: Meson-haiku-r1beta5-x86-64
+            buildtool: meson
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            cp_os: haiku
+            cp_arch: x86-64
+            cp_version: r1beta5
+            exec_type: cross-platform-vms
+
+          - label: Autotools-openbsd-7.8-x86-64
+            buildtool: autotools
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            cp_os: openbsd
+            cp_arch: x86-64
+            cp_version: '7.8'
+            exec_type: cross-platform-vms
+
+          - label: Meson-openbsd-7.8-x86-64
+            buildtool: meson
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            cp_os: openbsd
+            cp_arch: x86-64
+            cp_version: '7.8'
+            exec_type: cross-platform-vms
+
+          - label: Autotools-dragonflybsd-6.4.2-x86-64
+            buildtool: autotools
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            exec_type: dragonflybsd-vm
+
+          - label: Meson-dragonflybsd-6.4.2-x86-64
+            buildtool: meson
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            df_release: '6.4.2'
+            exec_type: dragonflybsd-vm
+
     steps:
       - name: Configure git EOL
         if: ${{ matrix.exec_type == 'cygwin' }}
@@ -1440,6 +1539,7 @@ jobs:
           python -m mesonbuild.mesonmain compile -C builddir
           if errorlevel 1 exit /b !errorlevel!
           python -m mesonbuild.mesonmain ${{ matrix.check_target || 'test' }} -C builddir
+          if errorlevel 1 exit /b !errorlevel!
           endlocal
 
       - name: Build and test (Autotools, Alpine container)
@@ -1722,8 +1822,8 @@ jobs:
         run: |
           mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
           remote_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
-          if ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dragonflybsd "test -f \"${remote_tar}\""; then
-            scp -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dragonflybsd:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
+          if ssh -v -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dragonflybsd "test -f \"${remote_tar}\""; then
+            scp -v -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null dragonflybsd:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
           else
             echo "No artifact archive found on VM; skipping copy" >&2
           fi
@@ -1735,8 +1835,8 @@ jobs:
         run: |
           mkdir -p "${GITHUB_WORKSPACE}/_artifacts"
           remote_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
-          if ssh cross_platform_actions_host "test -f \"${remote_tar}\""; then
-            scp cross_platform_actions_host:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
+          if ssh -v -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null cross_platform_actions_host "test -f \"${remote_tar}\""; then
+            scp -v -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null cross_platform_actions_host:"${remote_tar}" "${GITHUB_WORKSPACE}/_artifacts/"
           else
             echo "No artifact archive found on VM; skipping copy" >&2
           fi
@@ -1759,9 +1859,6 @@ jobs:
             builddir/**/_artifacts/**
             builddir/**/testlog.txt
             builddir/**/*.log
-            builddir/meson-private/sanitycheckc.exe
-            builddir/tests/0001_filter_clip
-            builddir/converters/img2sixel
           if-no-files-found: warn
           overwrite: true
 
@@ -1790,8 +1887,8 @@ jobs:
           flag-name: ${{ matrix.label }}
           parallel: true
 
-  ci-autotools-finish:
-    needs: ci-autotools
+  ci-finish:
+    needs: ci
     runs-on: ubuntu-latest
     steps:
       - name: Finalize Coveralls

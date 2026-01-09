@@ -102,6 +102,10 @@ run_loader_case(char const *label,
     sixel_chunk_t *chunk;
     loader_probe_context_t context;
     char const *source_root;
+#if defined(_MSC_VER)
+    char *source_root_dupe;
+    size_t source_root_len;
+#endif
     char image_path[PATH_MAX];
     int cancel_flag;
 
@@ -109,6 +113,21 @@ run_loader_case(char const *label,
     allocator = NULL;
     chunk = NULL;
     cancel_flag = 0;
+#if defined(_MSC_VER)
+    source_root = NULL;
+    source_root_dupe = NULL;
+    source_root_len = 0;
+    _dupenv_s(&source_root_dupe, &source_root_len, "MESON_SOURCE_ROOT");
+    if (source_root_dupe == NULL) {
+        _dupenv_s(&source_root_dupe, &source_root_len, "abs_top_srcdir");
+    }
+    if (source_root_dupe == NULL) {
+        _dupenv_s(&source_root_dupe, &source_root_len, "TOP_SRCDIR");
+    }
+    if (source_root_dupe != NULL) {
+        source_root = source_root_dupe;
+    }
+#else
     source_root = getenv("MESON_SOURCE_ROOT");
     if (source_root == NULL) {
         source_root = getenv("abs_top_srcdir");
@@ -116,6 +135,7 @@ run_loader_case(char const *label,
     if (source_root == NULL) {
         source_root = getenv("TOP_SRCDIR");
     }
+#endif
     if (source_root == NULL) {
         source_root = ".";
     }
@@ -204,6 +224,9 @@ run_loader_case(char const *label,
 cleanup:
     sixel_chunk_destroy(chunk);
     sixel_allocator_unref(allocator);
+#if defined(_MSC_VER)
+    free(source_root_dupe);
+#endif
 
     return SIXEL_FAILED(status);
 }

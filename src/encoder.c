@@ -4386,8 +4386,8 @@ sixel_encoder_output_without_macro(
     int delay;
     unsigned int remaining_delay;
     unsigned char *pixbuf;
-    int width;
-    int height;
+    int width = 0;
+    int height = 0;
     int pixelformat = 0;
     size_t size;
     int frame_colorspace = SIXEL_COLORSPACE_GAMMA;
@@ -4866,7 +4866,7 @@ sixel_encoder_emit_iso2022_chars(
     *(buf_p++) = '\033';
     *(buf_p++) = ')';
     *(buf_p++) = ' ';
-    *(buf_p++) = charset;
+    *(buf_p++) = (char)charset;
     for(row = 0; row < num_rows; row++) {
         for(col = 0; col < num_cols; col++) {
             if ((code & 0x7f) == 0x0) {
@@ -4880,9 +4880,9 @@ sixel_encoder_emit_iso2022_chars(
                 *(buf_p++) = '\033';
                 *(buf_p++) = is_96cs ? '-': ')';
                 *(buf_p++) = ' ';
-                *(buf_p++) = charset;
+                *(buf_p++) = (char)charset;
             }
-            *(buf_p++) = code++;
+            *(buf_p++) = (char)code++;
         }
         *(buf_p++) = '\n';
     }
@@ -4947,20 +4947,20 @@ sixel_encoder_emit_drcsmmv2_chars(
     }
     if (encoder->drcs_mmv == 0) {
         is_96cs = (charset_no > 63u) ? 1 : 0;
-        ibytes[1] = (int)(((charset_no - 1u) % 63u) + 0x40u);
+        ibytes[1] = (char)(((charset_no - 1u) % 63u) + 0x40u);
         fill = 0;
     } else if (encoder->drcs_mmv == 1) {
         is_96cs = 0;
-        ibytes[1] = (int)(charset_no + 0x3fu);
+        ibytes[1] = (char)(charset_no + 0x3fu);
         fill = 0;
     } else if (encoder->drcs_mmv == 2) {
         is_96cs = (charset_no > 79u) ? 1 : 0;
-        ibytes[1] = (int)(((charset_no - 1u) % 79u) + 0x30u);
+        ibytes[1] = (char)(((charset_no - 1u) % 79u) + 0x30u);
         fill = 0;
     } else {  /* v3 */
         is_96cs = 0;
-        ibytes[1] = (int)(((charset_no - 1u) / 63u) + 0x20u);
-        ibytes[2] = (int)(((charset_no - 1u) % 63u) + 0x40u);
+        ibytes[1] = (char)(((charset_no - 1u) / 63u) + 0x20u);
+        ibytes[2] = (char)(((charset_no - 1u) % 63u) + 0x40u);
         fill = 1;
     }
     if (fill) {
@@ -5484,25 +5484,25 @@ sixel_encoder_encode_frame(
             drcs_is_96cs_param =
                 (encoder->drcs_charset_no > 63u) ? 1 : 0;
             drcs_designate_str[1] =
-                (int)(((encoder->drcs_charset_no - 1u) % 63u) + 0x40u);
+                (char)(((encoder->drcs_charset_no - 1u) % 63u) + 0x40u);
             drcs_designate_str[2] = 0x00;
         } else if (encoder->drcs_mmv == 1) {
             drcs_is_96cs_param = 0;
             drcs_designate_str[1] =
-                (int)(encoder->drcs_charset_no + 0x3fu);
+                (char)(encoder->drcs_charset_no + 0x3fu);
             drcs_designate_str[2] = 0x00;
         } else if (encoder->drcs_mmv == 2) {
             drcs_is_96cs_param =
                 (encoder->drcs_charset_no > 79u) ? 1 : 0;
             drcs_designate_str[1] =
-                (int)(((encoder->drcs_charset_no - 1u) % 79u) + 0x30u);
+                (char)(((encoder->drcs_charset_no - 1u) % 79u) + 0x30u);
             drcs_designate_str[2] = 0x00;
         } else {
             drcs_is_96cs_param = 0;
             drcs_designate_str[1] =
-                (int)(((encoder->drcs_charset_no - 1u) / 63u) + 0x20u);
+                (char)(((encoder->drcs_charset_no - 1u) / 63u) + 0x20u);
             drcs_designate_str[2] =
-                (int)(((encoder->drcs_charset_no - 1u) % 63u) + 0x40u);
+                (char)(((encoder->drcs_charset_no - 1u) % 63u) + 0x40u);
             drcs_designate_str[3] = 0x00;
         }
         nwrite = sixel_compat_snprintf(
