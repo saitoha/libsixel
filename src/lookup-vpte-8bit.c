@@ -706,6 +706,7 @@ sixel_lookup_vpte_prefetch_line_8bit(double *distances,
 #else
     (void)distances;
     (void)sources;
+    (void)offset;
 #endif
 #if SIXEL_ENABLE_THREADS
     if (timeline != NULL && timeline->initialized
