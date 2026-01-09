@@ -2214,7 +2214,7 @@ else
             if test "x$using_cl" = xyes; then
                 avx2_flag="/arch:AVX2"
             else
-                avx2_flag="-mavx2"
+                avx2_flag="-mavx2 -mfma"
             fi
             saved_CFLAGS="$CFLAGS"
             CFLAGS="$CFLAGS $avx2_flag"
@@ -2239,7 +2239,7 @@ else
             if test "x$using_cl" = xyes; then
                 avx512_flag="/arch:AVX512"
             else
-                avx512_flag="-mavx512f -mavx512bw"
+                avx512_flag="-mavx512f -mavx512bw -mfma"
             fi
             saved_CFLAGS="$CFLAGS"
             CFLAGS="$CFLAGS $avx512_flag"
