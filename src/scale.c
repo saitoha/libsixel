@@ -322,7 +322,7 @@ normalize(double x, double total)
 {
     int result;
 
-    result = floor(x / total);
+    result = (int)floor(x / total);
     if (result > 255) {
         return 0xff;
     }
