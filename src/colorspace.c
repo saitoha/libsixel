@@ -44,6 +44,32 @@
 #endif
 #include "compat_stub.h"
 
+#if defined(_MSC_VER)
+/*
+ * Provide a C99-friendly alignment annotation for stack buffers used by
+ * SIMD helpers.  This keeps the build compatible with compilers that do
+ * not support C11 alignas.
+ */
+# define SIXEL_ALIGNAS(bytes) __declspec(align(bytes))
+#elif defined(__GNUC__) || defined(__clang__)
+# define SIXEL_ALIGNAS(bytes) __attribute__((aligned(bytes)))
+#else
+# define SIXEL_ALIGNAS(bytes)
+#endif
+
+static inline unsigned char
+sixel_oklab_encode_L(double L);
+static inline unsigned char
+sixel_oklab_encode_ab(double value);
+static inline double
+sixel_oklab_decode_ab(unsigned char v);
+static SIXELSTATUS
+sixel_convert_pixels_via_linear(unsigned char *pixels,
+                                size_t size,
+                                int pixelformat,
+                                int colorspace_src,
+                                int colorspace_dst);
+
 #if SIXEL_ENABLE_THREADS
 # if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) && \
         !defined(WITH_WINPTHREAD)
@@ -1073,7 +1099,7 @@ sixel_colorspace_pack_gamma_bytes_avx(__m256 value)
     __m256i linear_bytes;
     __m128i mapped_low;
     __m128i mapped_high;
-    alignas(32) unsigned char buffer[32];
+    SIXEL_ALIGNAS(32) unsigned char buffer[32];
     __m256i packed;
 
     linear_bytes = sixel_colorspace_pack_linear_bytes_avx(value);
@@ -1368,13 +1394,10 @@ sixel_colorspace_oklab_to_linear_block(__m256 L,
     __m256 s;
     __m256 l_l;
     __m256 l_a;
-    __m256 l_b;
     __m256 m_l;
     __m256 m_a;
-    __m256 m_b;
     __m256 s_l;
     __m256 s_a;
-    __m256 s_b;
     __m256 r_l;
     __m256 r_m;
     __m256 r_s;
@@ -1457,9 +1480,9 @@ sixel_convert_pixels_via_linear_avx2(unsigned char *pixels,
     float rbuf[8];
     float gbuf[8];
     float bbuf[8];
-    alignas(32) unsigned char out_r[32];
-    alignas(32) unsigned char out_g[32];
-    alignas(32) unsigned char out_b[32];
+    SIXEL_ALIGNAS(32) unsigned char out_r[32];
+    SIXEL_ALIGNAS(32) unsigned char out_g[32];
+    SIXEL_ALIGNAS(32) unsigned char out_b[32];
     size_t index;
 
     (void)simd_level;
@@ -1644,9 +1667,9 @@ sixel_colorspace_convert_yuv_avx2(unsigned char *pixels,
         __m256i packed0;
         __m256i packed1;
         __m256i packed2;
-        alignas(32) unsigned char buf0[32];
-        alignas(32) unsigned char buf1[32];
-        alignas(32) unsigned char buf2[32];
+        SIXEL_ALIGNAS(32) unsigned char buf0[32];
+        SIXEL_ALIGNAS(32) unsigned char buf1[32];
+        SIXEL_ALIGNAS(32) unsigned char buf2[32];
 
         sixel_colorspace_load_block(pixels,
                                     offset,
