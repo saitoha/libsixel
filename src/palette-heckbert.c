@@ -947,7 +947,7 @@ computePcaAxis(tupletable2 const colorfreqtable,
     lambda = 0.0;
     for (plane = 0U; plane < 3U; ++plane) {
         mean[plane] = 0.0;
-        vec[plane] = 1.0;
+        vec[plane] = (plane < dims) ? 1.0 : 0.0;
         axis[plane] = 0.0;
         for (other = 0U; other < 3U; ++other) {
             cov[plane][other] = 0.0;
@@ -1003,6 +1003,9 @@ computePcaAxis(tupletable2 const colorfreqtable,
     }
 
     for (iter = 0U; iter < 12U; ++iter) {
+        for (plane = 0U; plane < 3U; ++plane) {
+            next[plane] = 0.0;
+        }
         for (plane = 0U; plane < dims; ++plane) {
             next[plane] = cov[plane][0] * vec[0]
                           + cov[plane][1] * vec[1]
