@@ -45,7 +45,7 @@ jobs:
               meson
             exec_type: alpine
 
-          - label: Autotools-ubuntu-x86_64-ASan-avx2
+          - label: Autotools-ubuntu-x86_64-clang-ASan
             buildtool: autotools
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -56,12 +56,11 @@ jobs:
             setup_options: >-
               --without-png
               --without-jpeg
-              --enable-avx2
             extra_packages: >-
               clang
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-ASan-avx2
+          - label: Meson-ubuntu-x86_64-clang-ASan
             buildtool: meson
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -71,13 +70,74 @@ jobs:
               --buildtype=debug
               -Db_sanitize=address
               -Db_lundef=false
+              -Dpng=disabled
+              -Djpeg=disabled
+            extra_packages: >-
+              meson
+              clang
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-clang-simd-avx2
+            buildtool: autotools
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+              LDFLAGS="-fsanitize=address"
+            setup_options: >-
+              --enable-simd
+              --enable-avx2
+            extra_packages: >-
+              clang
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-clang-simd-avx2
+            buildtool: meson
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              -Dsimd=enabled
               -Davx2=true
             extra_packages: >-
               meson
               clang
             exec_type: bash
 
-          - label: Autotools-ubuntu-x86_64-ASan-png-jpeg-avx512
+          - label: Autotools-ubuntu-x86_64-clang-simd-avx512
+            buildtool: autotools
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+              LDFLAGS="-fsanitize=address"
+            setup_options: >-
+              --enable-simd
+              --enable-avx512
+              --enable-xsave-probe
+            extra_packages: >-
+              clang
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-clang-simd-avx512
+            buildtool: meson
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              -Dsimd=enabled
+              -Davx512=true
+              -Dxsave_probe=enabled
+            extra_packages: >-
+              meson
+              clang
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-clang-ASan-png-jpeg
             buildtool: autotools
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -96,7 +156,7 @@ jobs:
               libjpeg-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-ASan-png-jpeg-avx512
+          - label: Meson-ubuntu-x86_64-clang-ASan-png-jpeg
             buildtool: meson
             os: ubuntu-latest
             runner: ubuntu-latest
@@ -108,7 +168,6 @@ jobs:
               -Db_lundef=false
               -Dpng=enabled
               -Djpeg=enabled
-              -Davx512=enabled
             extra_packages: >-
               meson
               clang
@@ -1589,6 +1648,7 @@ jobs:
           sync_files: runner-to-vm
           environment_variables: CI,GITHUB_WORKSPACE
           run: |
+            set -exv
             : "${GITHUB_WORKSPACE:=$PWD}"
             artifact_dir="${GITHUB_WORKSPACE}/_artifacts"
             artifact_tar="${GITHUB_WORKSPACE}/_artifacts/artifacts.tar.gz"
@@ -1645,12 +1705,12 @@ jobs:
           sync_files: runner-to-vm
           environment_variables: CI,GITHUB_WORKSPACE
           run: |
+            set -exv
             : "${GITHUB_WORKSPACE:=$PWD}"
             artifact_dir="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}"
             artifact_tar="${GITHUB_WORKSPACE}/_artifacts/${{ matrix.platform }}.tar.gz"
             collect_logs() {
               status=$?
-              cd "$GITHUB_WORKSPACE"
               mkdir -p "$artifact_dir"
               find . -type f \( -name '*.log' -o -name '*.trs' -o -name '*.info' \) -exec tar czf "$artifact_tar" {} +
               exit "$status"
@@ -1796,12 +1856,13 @@ jobs:
         shell: msys2 {0}
         timeout-minutes: 5
         run: |
+          set -exv
           if [ -e coverage.info ]; then
             echo "coverage.info already exists; skipping capture"
             exit 0
           fi
           if command -v gcovr >/dev/null 2>&1; then
-            gcovr -r . --lcov -o coverage.info || true
+            gcovr -r . --lcov -o coverage.info
           elif command -v lcov >/dev/null 2>&1; then
             lcov -c \
               -d "$PWD/src/.libs" \
@@ -1812,7 +1873,7 @@ jobs:
               -d "$PWD/tests/probe" \
               -d "$PWD/tests/palette" \
               --rc branch_coverage=1 \
-              -o coverage.info || true
+              -o coverage.info
           else
             echo "No gcovr or lcov found; skipping coverage capture"
           fi
