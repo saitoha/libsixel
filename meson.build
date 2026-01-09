@@ -1014,7 +1014,7 @@ if (cpu == 'x86' or cpu == 'x86_64') and avx2_opt
   if cc.get_argument_syntax() == 'msvc'
     avx2_args = ['/arch:AVX2']
   else
-    avx2_args = ['-mavx2']
+    avx2_args = ['-mavx2', '-mfma']
   endif
   if cc.has_multi_arguments(avx2_args) and cc.compiles('''
       #include <immintrin.h>
@@ -1037,7 +1037,7 @@ if (cpu == 'x86' or cpu == 'x86_64') and avx512_opt
   if cc.get_argument_syntax() == 'msvc'
     avx512_args = ['/arch:AVX512']
   else
-    avx512_args = ['-mavx512f', '-mavx512bw']
+    avx512_args = ['-mavx512f', '-mavx512bw', '-mfma']
   endif
   if cc.has_multi_arguments(avx512_args) and cc.compiles('''
       #include <immintrin.h>
