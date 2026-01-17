@@ -418,7 +418,32 @@ jobs:
             setup_prefix: >-
               CC=gcc-14
             setup_options: >-
-              -Damalgamated_lib=false
+              -Damalgamated_lib=true
+            extra_packages: >-
+              meson
+              gcc-14
+            exec_type: bash
+
+          - label: Autotools-ubuntu-24.04-aarch64-amalgamated_tools
+            buildtool: autotools
+            os: ubuntu-24.04-arm
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CC=gcc-14
+            setup_options: >-
+              --enable-amalgamated-tools
+            extra_packages: >-
+              gcc-14
+            exec_type: bash
+
+          - label: Meson-ubuntu-24.04-aarch64-amalgamated_tools
+            buildtool: meson
+            os: ubuntu-24.04-arm
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CC=gcc-14
+            setup_options: >-
+              -Damalgamated_tools=true
             extra_packages: >-
               meson
               gcc-14
@@ -653,20 +678,22 @@ jobs:
               lcov
             exec_type: bash
 
-          - label: Autotools-macos-x86_64-amalgamated_lib
+          - label: Autotools-macos-x86_64-amalgamated_lib-amalgamated_tools
             buildtool: autotools
             os: macos-15
             runner: macos-15
             setup_options: >-
               --enable-amalgamated-lib
+              --enable-amalgamated-tools
             exec_type: bash
 
-          - label: Meson-macos-x86_64-amalgamated_lib
+          - label: Meson-macos-x86_64-amalgamated_lib-amalgamated_tools
             buildtool: meson
             os: macos-15
             runner: macos-15
             setup_options: >-
               -Damalgamated_lib=true
+              -Damalgamated_tools=true
             extra_packages: >-
               meson
             exec_type: bash
