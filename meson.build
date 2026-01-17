@@ -206,6 +206,7 @@ std_headers = [
     'sys/signal.h',
     'termios.h',
     'sys/ioctl.h',
+    'sys/ttycom.h',
     'sys/wait.h',
     'spawn.h',
     'execinfo.h',

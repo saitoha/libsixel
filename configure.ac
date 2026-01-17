@@ -872,6 +872,7 @@ AC_CHECK_HEADERS([assert.h \
                   sys/signal.h \
                   termios.h \
                   sys/ioctl.h \
+                  sys/ttycom.h \
                   sys/wait.h \
                   spawn.h \
                   strings.h \
