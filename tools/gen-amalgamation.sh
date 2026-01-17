@@ -25,301 +25,195 @@ shift 2 || true
 
 mkdir -p "$(dirname "${output}")"
 
-default_units="
-src/compat_stub.c
-src/output.c
-src/fromsixel.c
-src/tosixel.c
-src/timer.c
-src/assessment.c
-src/sleep.c
-src/lookup-common.c
-src/lookup-8bit.c
-src/lookup-float32.c
-src/lookup-vpte-8bit.c
-src/lookup-vpte-float32.c
-src/palette-heckbert.c
-src/palette-common-merge.c
-src/palette-common-snap.c
-src/palette-kmeans.c
-src/palette.c
-src/dither.c
-src/dither-common-pipeline.c
-src/dither-positional-8bit.c
-src/dither-positional-float32.c
-src/dither-fixed-8bit.c
-src/dither-fixed-float32.c
-src/dither-varcoeff-8bit.c
-src/dither-varcoeff-float32.c
-src/logger.c
-src/colorspace.c
-src/frame.c
-src/filter.c
-src/filter-clip.c
-src/filter-colors.c
-src/filter-dither.c
-src/filter-encode.c
-src/filter-factory.c
-src/filter-final-merge.c
-src/filter-load.c
-src/filter-lookup.c
-src/filter-palette.c
-src/filter-resize.c
-src/filter-sample.c
-src/filter-vpte.c
-src/cpu.c
-src/pixelformat.c
-src/scale.c
-src/chunk.c
-src/loader.c
-src/loader-gdk-pixbuf2.c
-src/loader-gnome-thumbnailer.c
-src/loader-coregraphics.c
-src/loader-quicklook.c
-src/loader-wic.c
-src/loader-gd.c
-src/loader-libpng.c
-src/loader-libjpeg.c
-src/loader-builtin.c
-src/loader-common.c
-src/loader-registry.c
-src/frompnm.c
-src/fromgif.c
-src/clipboard.c
-src/encoder.c
-src/decoder.c
-src/decoder-parallel.c
-src/options.c
-src/writer.c
-src/stb_image_write.c
-src/status.c
-src/malloc_stub.c
-src/allocator.c
-src/tty.c
-src/threading.c
-src/threadpool.c
-src/sixel_decode_rgba.c
-src/quicklook_thumbnailing.m
-src/clipboard_macos.m
-src/clipboard_carbon.c
-src/probe.c
-tests/gdk-pixbuf-loader/0003_corrupt_data.c
-tests/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c
-tests/gdk-pixbuf-loader/0005_context_free.c
-tests/gdk-pixbuf-loader/0002_incremental_load.c
-tests/gdk-pixbuf-loader/0004_propagate_error.c
-tests/gdk-pixbuf-loader/0006_loader_module.c
-tests/cli/0029_cli_token_is_known_option.c
-tests/cli/0030_cli_option_requires_argument.c
-tests/cli/0031_cli_guard_missing_argument.c
-tests/filter/0004_filter_colors.c
-tests/filter/0010_filter_encode.c
-tests/filter/0007_filter_vpte.c
-tests/filter/0009_filter_dither.c
-tests/filter/0003_filter_resize.c
-tests/filter/0006_filter_final_merge.c
-tests/filter/0008_filter_load.c
-tests/filter/0001_filter_clip.c
-tests/filter/0005_filter_lookup.c
-tests/filter/0002_filter_sample.c
-tests/probe/0001_probe_parse.c
-tests/palette/0001_kmeans_init.c
-converters/aborttrace.c
-converters/cli.c
-converters/completion_utils.c
-converters/img2sixel.c
-converters/malloc_stub.c
-converters/sixel2png.c
-assessment/lsqa.c
-"
+collect_units_from_dirs() {
+    search_dirs=$1
+    shift
+    units=""
 
-project_headers="
-sixel.h
-sixel_threads_config.h
-sixel_atomic.h
-allocator.h
-logger.h
-threading.h
-threadpool.h
-status.h
-cpu.h
-pixelformat.h
-colorspace.h
-palette.h
-palette-common-merge.h
-palette-common-snap.h
-palette-heckbert.h
-palette-kmeans.h
-dither.h
-dither-internal.h
-dither-common-pipeline.h
-dither-fixed-8bit.h
-dither-fixed-float32.h
-dither-positional-8bit.h
-dither-positional-float32.h
-dither-varcoeff-8bit.h
-dither-varcoeff-float32.h
-lookup-vpte-8bit.h
-lookup-vpte-float32.h
-lookup-8bit.h
-lookup-float32.h
-lookup-common.h
-filter.h
-filter-clip.h
-filter-colors.h
-filter-dither.h
-filter-encode.h
-filter-factory.h
-filter-final-merge.h
-filter-load.h
-filter-lookup.h
-filter-palette.h
-filter-resize.h
-filter-sample.h
-filter-vpte.h
-frame.h
-scale.h
-options.h
-assessment.h
-encoder.h
-decoder.h
-decoder-image.h
-decoder-parallel.h
-fromgif.h
-frompnm.h
-output.h
-writer.h
-chunk.h
-tty.h
-timer.h
-sleep.h
-clipboard.h
-probe.h
-loader.h
-loader-builtin.h
-loader-common.h
-loader-registry.h
-loader-libpng.h
-loader-libjpeg.h
-loader-gd.h
-loader-gdk-pixbuf2.h
-loader-gnome-thumbnailer.h
-loader-coregraphics.h
-loader-quicklook.h
-loader-wic.h
-stb_image.h
-stb_image_write.h
-malloc_stub.h
-stdio_stub.h
-rgblookup.h
-lso2.h
-compat_stub.h
-fromgif.h
-frompnm.h
-aborttrace.h
-cli.h
-completion_utils.h
-completion_embed.h
-getopt_stub.h
-malloc_stub.h
-sixel_decode_rgba.h
-"
+    # Discovery rules:
+    # - Use repository paths so downstream logic can resolve paths uniformly.
+    # - Keep output deterministic via LC_ALL=C sort.
+    # - Each directory group is appended in order to preserve a stable
+    #   translation-unit layout.
+    for dir in ${search_dirs}; do
+        if [ ! -d "${src_root}/${dir}" ]; then
+            continue
+        fi
+        found=$(find "${src_root}/${dir}" -type f "$@" | \
+            LC_ALL=C sort | sed "s#^${src_root}/##")
+        if [ -n "${found}" ]; then
+            if [ -n "${units}" ]; then
+                units="${units}
+${found}"
+            else
+                units="${found}"
+            fi
+        fi
+    done
 
-header_units="
-include/sixel.h
-src/sixel_threads_config.h
-src/sixel_atomic.h
-src/threading.h
-src/threadpool.h
-src/allocator.h
-src/logger.h
-src/status.h
-src/cpu.h
-src/pixelformat.h
-src/colorspace.h
-src/palette.h
-src/palette-common-merge.h
-src/palette-common-snap.h
-src/palette-heckbert.h
-src/palette-kmeans.h
-src/dither.h
-src/dither-internal.h
-src/dither-common-pipeline.h
-src/dither-fixed-8bit.h
-src/dither-fixed-float32.h
-src/dither-positional-8bit.h
-src/dither-positional-float32.h
-src/dither-varcoeff-8bit.h
-src/dither-varcoeff-float32.h
-src/lookup-vpte-8bit.h
-src/lookup-vpte-float32.h
-src/lookup-8bit.h
-src/lookup-float32.h
-src/lookup-common.h
-src/filter.h
-src/filter-clip.h
-src/filter-colors.h
-src/filter-dither.h
-src/filter-encode.h
-src/filter-factory.h
-src/filter-final-merge.h
-src/filter-load.h
-src/filter-lookup.h
-src/filter-palette.h
-src/filter-resize.h
-src/filter-sample.h
-src/filter-vpte.h
-src/frame.h
-src/scale.h
-src/options.h
-src/assessment.h
-src/encoder.h
-src/decoder.h
-src/decoder-image.h
-src/decoder-parallel.h
-src/fromgif.h
-src/frompnm.h
-src/output.h
-src/writer.h
-src/chunk.h
-src/tty.h
-src/timer.h
-src/sleep.h
-src/clipboard.h
-src/probe.h
-src/loader.h
-src/loader-builtin.h
-src/loader-common.h
-src/loader-registry.h
-src/loader-libpng.h
-src/loader-libjpeg.h
-src/loader-gd.h
-src/loader-gdk-pixbuf2.h
-src/loader-gnome-thumbnailer.h
-src/loader-coregraphics.h
-src/loader-quicklook.h
-src/loader-wic.h
-src/malloc_stub.h
-src/stdio_stub.h
-src/rgblookup.h
-src/lso2.h
-src/compat_stub.h
-src/sixel_decode_rgba.h
-converters/aborttrace.h
-converters/cli.h
-converters/completion_utils.h
-converters/completion_embed.h
-converters/getopt_stub.h
-converters/malloc_stub.h
-"
+    printf "%s\n" "${units}"
+}
+
+order_headers_by_includes() {
+    awk -v src_root="${src_root}" -v build_root="${build_root}" '
+function add_dep(parent, child) {
+    key = parent SUBSEP child;
+    if (!(key in deps)) {
+        deps[key] = 1;
+        indeg[child]++;
+    }
+}
+function pick_file(path,    candidate) {
+    candidate = src_root "/" path;
+    if ((getline line < candidate) >= 0) {
+        close(candidate);
+        return candidate;
+    }
+    close(candidate);
+    candidate = build_root "/" path;
+    if ((getline line < candidate) >= 0) {
+        close(candidate);
+        return candidate;
+    }
+    close(candidate);
+    return "";
+}
+BEGIN {
+    count = 0;
+}
+NF {
+    count++;
+    paths[count] = $0;
+    path_index[$0] = count;
+    dirs[count] = $0;
+    sub(/\/[^\/]+$/, "", dirs[count]);
+    if (dirs[count] == paths[count]) {
+        dirs[count] = "";
+    }
+    bases[count] = $0;
+    sub(/^.*\//, "", bases[count]);
+    base_count[bases[count]]++;
+    base_path[bases[count]] = paths[count];
+}
+END {
+    for (i = 1; i <= count; i++) {
+        file = pick_file(paths[i]);
+        if (file == "") {
+            continue;
+        }
+        while ((getline line < file) > 0) {
+            if (line ~ /^[ \t]*#[ \t]*include[ \t]*["<][^">]+[">]/) {
+                inc = line;
+                sub(/^[ \t]*#[ \t]*include[ \t]*["<]/, "", inc);
+                sub(/[">].*$/, "", inc);
+                dep = "";
+                if (index(inc, "/") > 0 && (inc in path_index)) {
+                    dep = inc;
+                } else if (dirs[i] != "" &&
+                           ((dirs[i] "/" inc) in path_index)) {
+                    dep = dirs[i] "/" inc;
+                } else if (("include/" inc) in path_index) {
+                    dep = "include/" inc;
+                } else if (base_count[inc] == 1 &&
+                           (base_path[inc] in path_index)) {
+                    dep = base_path[inc];
+                }
+                if (dep != "" && dep != paths[i]) {
+                    add_dep(dep, paths[i]);
+                }
+            }
+        }
+        close(file);
+    }
+
+    processed_count = 0;
+    while (processed_count < count) {
+        candidate = "";
+        for (i = 1; i <= count; i++) {
+            path = paths[i];
+            if (!(path in processed) && indeg[path] == 0) {
+                if (candidate == "" || path < candidate) {
+                    candidate = path;
+                }
+            }
+        }
+        if (candidate == "") {
+            for (i = 1; i <= count; i++) {
+                path = paths[i];
+                if (!(path in processed)) {
+                    if (candidate == "" || path < candidate) {
+                        candidate = path;
+                    }
+                }
+            }
+        }
+        processed[candidate] = 1;
+        print candidate;
+        for (key in deps) {
+            split(key, parts, SUBSEP);
+            if (parts[1] == candidate) {
+                indeg[parts[2]]--;
+            }
+        }
+        processed_count++;
+    }
+}
+'
+}
+
+default_units=$(collect_units_from_dirs \
+    "src tests converters assessment" \
+    \( -name '*.c' -o -name '*.m' \))
+
+header_units=$(collect_units_from_dirs \
+    "include src converters tests" \
+    \( -name '*.h' \))
+
+# Ensure generated headers that may not exist in the source tree are still
+# recognized by the amalgamation workflow.
+header_units=$(printf "%s\n" \
+    "include/sixel.h" \
+    "${header_units}" \
+    "converters/completion_embed.h" | \
+    awk 'NF && !seen[$0]++')
+
+existing_headers=""
+missing_headers=""
+while IFS= read -r header; do
+    [ -z "${header}" ] && continue
+    if [ -f "${src_root}/${header}" ] || [ -f "${build_root}/${header}" ]; then
+        existing_headers="${existing_headers}
+${header}"
+    else
+        missing_headers="${missing_headers}
+${header}"
+    fi
+done <<EOF_HEADERS
+${header_units}
+EOF_HEADERS
+
+header_units=$(printf "%s\n" "${existing_headers}" | \
+    order_headers_by_includes)
+header_units=$(printf "%s\n%s\n" "${header_units}" \
+    "${missing_headers}" | awk 'NF && !seen[$0]++')
+
+header_filter_units="${header_units}"
+header_units=$(printf "%s\n" "${header_units}" | \
+    awk '$0 != "src/stb_image.h" && $0 != "src/stb_image_write.h"')
 
 # Persist header names to a temporary file so portable awk can read them
 # without depending on vendor-specific split() behavior.
 header_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-headers.XXXXXX")
 license_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-licenses.XXXXXX")
 license_hash_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-license-hash.XXXXXX")
-trap 'rm -f "${header_temp}" "${license_temp}" "${license_hash_temp}"' EXIT
-printf "%s\n" "${project_headers}" >"${header_temp}"
+inline_state_temp=$(mktemp "${TMPDIR:-/tmp}/sixel-inline-once.XXXXXX")
+trap 'rm -f "${header_temp}" "${license_temp}" \
+    "${license_hash_temp}" "${inline_state_temp}"' EXIT
+# Use the dynamically collected header list to build a basename registry for
+# local-include filtering. The filter logic relies on filename matches rather
+# than paths, so we collapse each entry to its final component.
+printf "%s\n" "${header_filter_units}" | \
+    awk -F/ 'NF { print $NF }' | LC_ALL=C sort -u >"${header_temp}"
 
 # Headers are concatenated upfront so that the generated translation unit does
 # not rely on project-local includes at compile time.
@@ -378,7 +272,8 @@ BEGIN {
     collected = 0;
 }
 NR == 1 {
-    sub(/^\xef\xbb\xbf/, "");
+    # Use octal escapes for the UTF-8 BOM so BSD awk stays compatible.
+    sub(/^\357\273\277/, "");
 }
 in_block == 0 && collected == 0 {
     if ($0 ~ /^[ \t]*$/) {
@@ -430,7 +325,7 @@ append_license_block() {
 }
 
 collect_license_blocks() {
-    printf "%s\n" "${header_units}" | while IFS= read -r unit; do
+    printf "%s\n" "${header_filter_units}" | while IFS= read -r unit; do
         [ -z "${unit}" ] && continue
 
         case "${unit}" in
@@ -468,8 +363,10 @@ filter_local_includes() {
     unit_path=$1
     header_file=$2
     src_root=$3
+    inline_state=$4
 
-    awk -v header_file="${header_file}" -v src_root="${src_root}" '
+    awk -v header_file="${header_file}" -v src_root="${src_root}" \
+        -v inline_state="${inline_state}" '
 BEGIN {
     while ((getline line < header_file) > 0) {
         gsub(/^[ \t]+|[ \t]+$/, "", line);
@@ -478,6 +375,14 @@ BEGIN {
         }
     }
     close(header_file);
+
+    while ((getline line < inline_state) > 0) {
+        gsub(/^[ \t]+|[ \t]+$/, "", line);
+        if (length(line) > 0) {
+            emitted[line] = 1;
+        }
+    }
+    close(inline_state);
 
     inline_once["stb_image.h"] = 1;
     inline_once["stb_image_write.h"] = 1;
@@ -491,28 +396,30 @@ BEGIN {
         name = $0;
         sub(/^[ \t]*#[ \t]*include[ \t]*["<]/, "", name);
         sub(/[">].*/, "", name);
-            if (name in header) {
-                if (name in inline_once && !(name in emitted)) {
-                    emitted[name] = 1;
-                    path = src_root "/src/" name;
-                    if ((getline line < path) > 0) {
-                        print "#line 1 \"" path "\"";
+        if (name in header) {
+            if (name in inline_once && !(name in emitted)) {
+                emitted[name] = 1;
+                print name >> inline_state;
+                close(inline_state);
+                path = src_root "/src/" name;
+                if ((getline line < path) > 0) {
+                    print "#line 1 \"" path "\"";
+                    if (line ~ /^[ \t]*#pragma[ \t]+once[ \t]*$/) {
+                        print "/* #pragma once */";
+                    } else {
+                        print line;
+                    }
+                    while ((getline line < path) > 0) {
                         if (line ~ /^[ \t]*#pragma[ \t]+once[ \t]*$/) {
                             print "/* #pragma once */";
-                        } else {
-                            print line;
+                            continue;
                         }
-                        while ((getline line < path) > 0) {
-                            if (line ~ /^[ \t]*#pragma[ \t]+once[ \t]*$/) {
-                                print "/* #pragma once */";
-                                continue;
-                            }
-                            print line;
-                        }
-                        close(path);
-                        print "";
+                        print line;
                     }
+                    close(path);
+                    print "";
                 }
+            }
             next;
         }
     }
@@ -537,7 +444,7 @@ emit_unit() {
     printf "\n/* ==== %s ==== */\n" "$1" >>"${output}"
     printf "#line 1 \"%s\"\n" "${unit_path}" >>"${output}"
     filter_local_includes "${unit_path}" "${header_temp}" \
-        "${src_root}" >>"${output}"
+        "${src_root}" "${inline_state_temp}" >>"${output}"
     printf "\n" >>"${output}"
 
     if [ -n "${guard_expr}" ]; then
@@ -561,7 +468,7 @@ emit_header_unit() {
     printf "\n/* ==== %s ==== */\n" "$1" >>"${output}"
     printf "#line 1 \"%s\"\n" "${unit_path}" >>"${output}"
     filter_local_includes "${unit_path}" "${header_temp}" \
-        "${src_root}" >>"${output}"
+        "${src_root}" "${inline_state_temp}" >>"${output}"
     printf "\n" >>"${output}"
 
     if [ -n "${guard_expr}" ]; then

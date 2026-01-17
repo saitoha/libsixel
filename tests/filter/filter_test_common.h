@@ -43,7 +43,7 @@ typedef struct test_output_counter {
     int bytes;
 } test_output_counter_t;
 
-static void
+static SIXEL_TEST_UNUSED void
 progress_cb(sixel_filter_t *filter,
             sixel_filter_event_t event,
             int completed_units,
@@ -77,7 +77,7 @@ progress_cb(sixel_filter_t *filter,
     }
 }
 
-static SIXELSTATUS
+static SIXEL_TEST_UNUSED SIXELSTATUS
 make_allocator(sixel_allocator_t **allocator_out)
 {
     SIXELSTATUS status;

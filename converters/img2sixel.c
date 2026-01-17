@@ -1455,6 +1455,7 @@ main(int argc, char *argv[])
 #endif  /* HAVE_GETOPT_LONG */
     char detail_buffer[2048];
     char const *detail_source = NULL;
+    int detail_limit;
     int input_count = 0;
     int assessment_enabled = 0;
 
@@ -1526,9 +1527,11 @@ main(int argc, char *argv[])
                 detail_buffer[0] = '\0';
                 detail_source = sixel_helper_get_additional_message();
                 if (detail_source != NULL && detail_source[0] != '\0') {
+                    detail_limit = (int)(sizeof(detail_buffer) - 1);
                     (void) snprintf(detail_buffer,
                                     sizeof(detail_buffer),
-                                    "%s",
+                                    "%.*s",
+                                    detail_limit,
                                     detail_source);
                 }
                 if (status == SIXEL_BAD_ARGUMENT) {
