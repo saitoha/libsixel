@@ -235,6 +235,10 @@ FILTER_TESTS = filter/t/0001_filter_clip.t \
        filter/t/0009_filter_dither.t \
        filter/t/0010_filter_encode.t
 
+if HAVE_WICCODEC
+WIC_TESTS = wic/t/0001_wsh_automation_regfree.t
+endif
+
 FILTER_TEST_BINARIES = \
        filter/0001_filter_clip \
        filter/0002_filter_sample \
@@ -259,9 +263,9 @@ TESTS_COMMON_TESTS = \
        loader/0016_loader_gnome_thumbnailer_pixelformat
 
 TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) \
-       $(FILTER_TESTS) $(TESTS_COMMON_TESTS)
+       $(FILTER_TESTS) $(TESTS_COMMON_TESTS) $(WIC_TESTS)
 COPY_TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) \
-       $(FILTER_TESTS)
+       $(FILTER_TESTS) $(WIC_TESTS)
 check_PROGRAMS = \
     cli/0029_cli_token_is_known_option \
     cli/0030_cli_option_requires_argument \
@@ -378,7 +382,8 @@ HELPER_FILES = common/t/0001_converters_common.t \
        mapfile/t/mapfile_common.sh \
        packaging/t/python_wheel_common.sh \
        regression/lsqa_common.sh \
-       docs/list_envvars.sh
+       docs/list_envvars.sh \
+       wic/wsh_decoder_regfree.vbs
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export ARTIFACT_ROOT;

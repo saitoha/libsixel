@@ -1,0 +1,119 @@
+#!/bin/sh
+# TAP test verifying registration-free WSH automation decoding.
+
+# Enable strict mode with verbose tracing for diagnostics.
+set -euxv
+
+test_name=$(basename "$0")
+test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+category_name=$(basename "$(dirname "${test_dir}")")
+artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
+artifact_dir="${artifact_root}/${category_name}/${test_name}"
+log_file="${artifact_dir}/wsh_automation.log"
+
+mkdir -p "${artifact_dir}"
+
+script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+. "${script_dir}/../../common/t/0001_converters_common.t"
+
+case "$(uname -s)" in
+    CYGWIN*|MINGW*|MSYS*)
+        :
+        ;;
+    *)
+        skip_all "Windows host required for WSH automation"
+        ;;
+esac
+
+ensure_feature_available "HAVE_WICCODEC" "wiccodec" "WIC codec support"
+
+if command -v cscript >/dev/null 2>&1; then
+    cscript_path=$(command -v cscript)
+elif command -v cscript.exe >/dev/null 2>&1; then
+    cscript_path=$(command -v cscript.exe)
+else
+    skip_all "cscript not available"
+fi
+
+wicsixel_dll=""
+for candidate in \
+    "${top_builddir}/wic/libwicsixel.dll" \
+    "${top_builddir}/wic/wicsixel.dll"; do
+    if [ -f "${candidate}" ]; then
+        wicsixel_dll=${candidate}
+        break
+    fi
+done
+
+if [ -z "${wicsixel_dll}" ]; then
+    skip_all "WIC codec DLL not built"
+fi
+
+vbs_source="${top_srcdir}/tests/wic/wsh_decoder_regfree.vbs"
+require_file "${vbs_source}"
+
+sixel_input="${images_dir}/snake.six"
+require_file "${sixel_input}"
+
+echo "1..1"
+
+pass() {
+    printf 'ok 1 - %s\n' "$1"
+}
+
+fail() {
+    printf 'not ok 1 - %s\n' "$1"
+    exit 1
+}
+
+regfree_dir="${artifact_dir}/regfree"
+mkdir -p "${regfree_dir}"
+
+cscript_copy="${regfree_dir}/cscript.exe"
+cp "${cscript_path}" "${cscript_copy}"
+
+dll_name=$(basename "${wicsixel_dll}")
+cp "${wicsixel_dll}" "${regfree_dir}/${dll_name}"
+
+cp "${vbs_source}" "${regfree_dir}/wsh_decoder_regfree.vbs"
+
+cat >"${regfree_dir}/cscript.exe.manifest" <<EOF_MANIFEST
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
+  <assemblyIdentity
+    version="1.0.0.0"
+    processorArchitecture="*"
+    name="libsixel.regfree"
+    type="win32" />
+  <file name="${dll_name}">
+    <comClass
+      clsid="{1EAF6501-96E9-4A4E-92A2-2B15B90DDADE}"
+      progid="Libsixel.Decoder.1"
+      threadingModel="Both" />
+    <comClass
+      clsid="{1EAF6501-96E9-4A4E-92A2-2B15B90DDADE}"
+      progid="Libsixel.Decoder"
+      threadingModel="Both" />
+  </file>
+</assembly>
+EOF_MANIFEST
+
+if "${cscript_copy}" //nologo "${regfree_dir}/wsh_decoder_regfree.vbs" \
+        "${sixel_input}" >"${log_file}" 2>&1; then
+    :
+else
+    fail "WSH automation decode failed (see ${log_file})"
+fi
+
+if grep -Eq '^OK [0-9]+ [0-9]+$' "${log_file}"; then
+    :
+else
+    fail "automation decode did not report dimensions"
+fi
+
+if awk 'BEGIN{ok=0} /^OK / {if ($2 > 0 && $3 > 0) ok=1} END{exit ok?0:1}' \
+        "${log_file}"; then
+    pass "reg-free WSH automation decode succeeded"
+else
+    fail "automation decode reported invalid dimensions"
+fi

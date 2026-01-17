@@ -90,7 +90,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) \
-	$(FILTER_TESTS) $(am__EXEEXT_5) $(am__EXEEXT_1)
+	$(FILTER_TESTS) $(WIC_TESTS) $(am__EXEEXT_5) $(am__EXEEXT_1)
 check_PROGRAMS = cli/0029_cli_token_is_known_option$(EXEEXT) \
 	cli/0030_cli_option_requires_argument$(EXEEXT) \
 	cli/0031_cli_guard_missing_argument$(EXEEXT) $(am__EXEEXT_1) \
@@ -1500,6 +1500,9 @@ FILTER_TESTS = filter/t/0001_filter_clip.t \
        filter/t/0009_filter_dither.t \
        filter/t/0010_filter_encode.t
 
+@HAVE_WICCODEC_TRUE@WIC_TESTS = wic/t/0001_wsh_automation_regfree.t
+@HAVE_WICCODEC_FALSE@WIC_TESTS =
+
 FILTER_TEST_BINARIES = \
        filter/0001_filter_clip \
        filter/0002_filter_sample \
@@ -1524,7 +1527,7 @@ TESTS_COMMON_TESTS = \
        loader/0016_loader_gnome_thumbnailer_pixelformat
 
 COPY_TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) \
-       $(FILTER_TESTS)
+       $(FILTER_TESTS) $(WIC_TESTS)
 
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@gdk_pixbuf_loader_0001_gdk_pixbuf_loader_SOURCES = \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
@@ -1641,7 +1644,8 @@ HELPER_FILES = common/t/0001_converters_common.t \
        mapfile/t/mapfile_common.sh \
        packaging/t/python_wheel_common.sh \
        regression/lsqa_common.sh \
-       docs/list_envvars.sh
+       docs/list_envvars.sh \
+       wic/wsh_decoder_regfree.vbs
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \

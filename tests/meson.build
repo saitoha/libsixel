@@ -250,6 +250,10 @@ cli_tests = ['cli-core/t/0001_help.t',
              'sixel2png/t/0004_invalid_decoder_value.t',
              'sixel2png/t/0005_default_output.t']
 
+if host_machine.system() == 'windows' and conf.get('HAVE_WICCODEC', 0) == 1
+  cli_tests += ['wic/t/0001_wsh_automation_regfree.t']
+endif
+
 cli_depends = {
   'regression/t/0005_lsqa_format_grayscale.t': [lsqa_bin],
   'regression/t/0006_lsqa_format_palette.t': [lsqa_bin],
