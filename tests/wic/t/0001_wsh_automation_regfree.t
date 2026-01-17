@@ -27,7 +27,10 @@ esac
 
 ensure_feature_available "HAVE_WICCODEC" "wiccodec" "WIC codec support"
 
-if command -v cscript >/dev/null 2>&1; then
+systemroot=${SystemRoot:-}
+if [ -n "${systemroot}" ] && [ -x "${systemroot}/System32/cscript.exe" ]; then
+    cscript_path="${systemroot}/System32/cscript.exe"
+elif command -v cscript >/dev/null 2>&1; then
     cscript_path=$(command -v cscript)
 elif command -v cscript.exe >/dev/null 2>&1; then
     cscript_path=$(command -v cscript.exe)
@@ -76,6 +79,18 @@ dll_name=$(basename "${wicsixel_dll}")
 cp "${wicsixel_dll}" "${regfree_dir}/${dll_name}"
 
 cp "${vbs_source}" "${regfree_dir}/wsh_decoder_regfree.vbs"
+
+if command -v ldd >/dev/null 2>&1; then
+    ldd "${wicsixel_dll}" >"${artifact_dir}/wicsixel_ldd.log" 2>&1 || :
+    awk '/=>/ && $3 ~ /^\// {print $3}' \
+            "${artifact_dir}/wicsixel_ldd.log" \
+        | while read -r dep_path; do
+            dep_name=$(basename "${dep_path}")
+            if [ -f "${dep_path}" ]; then
+                cp "${dep_path}" "${regfree_dir}/${dep_name}"
+            fi
+        done
+fi
 
 cat >"${regfree_dir}/cscript.exe.manifest" <<EOF_MANIFEST
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
