@@ -428,6 +428,7 @@ main(int argc, char *argv[])
     char const *optstring;
     char detail_buffer[1024];
     char const *detail_source = NULL;
+    int detail_limit;
 
     sixel_tty_init_output_device(STDERR_FILENO);
     sixel_aborttrace_install_if_unhandled();
@@ -506,9 +507,11 @@ main(int argc, char *argv[])
                 detail_buffer[0] = '\0';
                 detail_source = sixel_helper_get_additional_message();
                 if (detail_source != NULL && detail_source[0] != '\0') {
+                    detail_limit = (int)(sizeof(detail_buffer) - 1);
                     (void) snprintf(detail_buffer,
                                     sizeof(detail_buffer),
-                                    "%s",
+                                    "%.*s",
+                                    detail_limit,
                                     detail_source);
                 }
                 if (status == SIXEL_BAD_ARGUMENT) {
