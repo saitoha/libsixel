@@ -742,6 +742,7 @@ GDK_PIXBUF_MODULEDIR
 GDK_PIXBUF_BINARY_VERSION
 GDK_PIXBUF_LIBS
 GDK_PIXBUF_CFLAGS
+CLOCK_GETTIME_LIBS
 LIBOBJS
 MD5SUM
 AM_CFLAGS
@@ -18560,6 +18561,12 @@ then :
   printf "%s\n" "#define HAVE_SYS_IOCTL_H 1" >>confdefs.h
 
 fi
+ac_fn_c_check_header_compile "$LINENO" "sys/ttycom.h" "ac_cv_header_sys_ttycom_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_ttycom_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_SYS_TTYCOM_H 1" >>confdefs.h
+
+fi
 ac_fn_c_check_header_compile "$LINENO" "sys/wait.h" "ac_cv_header_sys_wait_h" "$ac_includes_default"
 if test "x$ac_cv_header_sys_wait_h" = xyes
 then :
@@ -18984,6 +18991,85 @@ fi
 
 
 
+CLOCK_GETTIME_LIBS=""
+LS_SAVED_LIBS=$LIBS
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for library containing clock_gettime" >&5
+printf %s "checking for library containing clock_gettime... " >&6; }
+if test ${ac_cv_search_clock_gettime+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_func_search_save_LIBS=$LIBS
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.
+   The 'extern "C"' is for builds by C++ compilers;
+   although this is not generally supported in C code supporting it here
+   has little cost and some practical benefit (sr 110532).  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char clock_gettime (void);
+int
+main (void)
+{
+return clock_gettime ();
+  ;
+  return 0;
+}
+_ACEOF
+for ac_lib in '' rt
+do
+  if test -z "$ac_lib"; then
+    ac_res="none required"
+  else
+    ac_res=-l$ac_lib
+    LIBS="-l$ac_lib  $ac_func_search_save_LIBS"
+  fi
+  if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_search_clock_gettime=$ac_res
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext
+  if test ${ac_cv_search_clock_gettime+y}
+then :
+  break
+fi
+done
+if test ${ac_cv_search_clock_gettime+y}
+then :
+
+else case e in #(
+  e) ac_cv_search_clock_gettime=no ;;
+esac
+fi
+rm conftest.$ac_ext
+LIBS=$ac_func_search_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_search_clock_gettime" >&5
+printf "%s\n" "$ac_cv_search_clock_gettime" >&6; }
+ac_res=$ac_cv_search_clock_gettime
+if test "$ac_res" != no
+then :
+  test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+  CLOCK_GETTIME_LIBS="$ac_cv_search_clock_gettime"
+fi
+
+if test "x$CLOCK_GETTIME_LIBS" = "xnone required"
+then :
+  CLOCK_GETTIME_LIBS=""
+fi
+if test "x$CLOCK_GETTIME_LIBS" != "x" && \
+       test "x$CLOCK_GETTIME_LIBS" != "xno"
+then :
+  LIBS="$LIBS $CLOCK_GETTIME_LIBS"
+fi
+
 ac_fn_c_check_func "$LINENO" "getopt_long" "ac_cv_func_getopt_long"
 if test "x$ac_cv_func_getopt_long" = xyes
 then :
@@ -19189,6 +19275,12 @@ then :
   printf "%s\n" "#define HAVE_ISATTY 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "clock_gettime" "ac_cv_func_clock_gettime"
+if test "x$ac_cv_func_clock_gettime" = xyes
+then :
+  printf "%s\n" "#define HAVE_CLOCK_GETTIME 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "_sopen_s" "ac_cv_func__sopen_s"
 if test "x$ac_cv_func__sopen_s" = xyes
 then :
@@ -19327,6 +19419,8 @@ then :
   printf "%s\n" "#define HAVE_GETTIMEOFDAY 1" >>confdefs.h
 
 fi
+
+LIBS=$LS_SAVED_LIBS
 
 ac_fn_c_check_func "$LINENO" "_sopen_s" "ac_cv_func__sopen_s"
 if test "x$ac_cv_func__sopen_s" = xyes

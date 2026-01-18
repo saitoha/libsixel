@@ -112,14 +112,15 @@ CONFIG_CLEAN_VPATH_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
 am_lso_timeout_OBJECTS = lso-timeout.$(OBJEXT)
 lso_timeout_OBJECTS = $(am_lso_timeout_OBJECTS)
-lso_timeout_LDADD = $(LDADD)
+am__DEPENDENCIES_1 =
+lso_timeout_DEPENDENCIES = $(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
 am_lso_timer_OBJECTS = timer.$(OBJEXT)
 lso_timer_OBJECTS = $(am_lso_timer_OBJECTS)
-lso_timer_LDADD = $(LDADD)
+lso_timer_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -230,6 +231,7 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CLIPBOARD_CFLAGS = @CLIPBOARD_CFLAGS@
 CLIPBOARD_LIBS = @CLIPBOARD_LIBS@
+CLOCK_GETTIME_LIBS = @CLOCK_GETTIME_LIBS@
 COREGRAPHICS_CFLAGS = @COREGRAPHICS_CFLAGS@
 COREGRAPHICS_LIBS = @COREGRAPHICS_LIBS@
 CPP = @CPP@
@@ -426,6 +428,8 @@ EXTRA_DIST = libsixel-config.in \
 
 lso_timer_SOURCES = timer.c
 lso_timeout_SOURCES = lso-timeout.c
+lso_timer_LDADD = $(CLOCK_GETTIME_LIBS)
+lso_timeout_LDADD = $(CLOCK_GETTIME_LIBS)
 all: all-am
 
 .SUFFIXES:

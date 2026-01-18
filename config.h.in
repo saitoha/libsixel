@@ -446,9 +446,6 @@
 /* Define to 1 if you have the <sys/ioctl.h> header file. */
 #undef HAVE_SYS_IOCTL_H
 
-/* Define to 1 if you have the <sys/ttycom.h> header file. */
-#undef HAVE_SYS_TTYCOM_H
-
 /* Define to 1 if you have the <sys/select.h> header file. */
 #undef HAVE_SYS_SELECT_H
 
@@ -463,6 +460,9 @@
 
 /* Define to 1 if you have the <sys/time.h> header file. */
 #undef HAVE_SYS_TIME_H
+
+/* Define to 1 if you have the <sys/ttycom.h> header file. */
+#undef HAVE_SYS_TTYCOM_H
 
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
