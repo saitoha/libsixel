@@ -4636,6 +4636,9 @@ typedef struct
 {
    stbi__context *s;
    stbi_uc *idata, *expanded, *out;
+   stbi_uc palette[1024];
+   stbi__uint32 pal_len;
+   stbi_uc pal_img_n;
    int depth;
 } stbi__png;
 
@@ -5080,18 +5083,25 @@ static void stbi__de_iphone(stbi__png *z)
 
 #define STBI__PNG_TYPE(a,b,c,d)  (((unsigned) (a) << 24) + ((unsigned) (b) << 16) + ((unsigned) (c) << 8) + (unsigned) (d))
 
-static int stbi__parse_png_file(stbi__png *z, int scan, int req_comp)
+/*
+ * keep_palette preserves indexed PNG output (PAL8) and copies the palette
+ * entries into the stbi__png struct. When it is disabled, the palette is
+ * expanded into RGB/RGBA pixels as usual.
+ */
+static int stbi__parse_png_file(stbi__png *z, int scan, int req_comp,
+                                int keep_palette)
 {
-   stbi_uc palette[1024], pal_img_n=0;
    stbi_uc has_trans=0, tc[3]={0};
    stbi__uint16 tc16[3];
-   stbi__uint32 ioff=0, idata_limit=0, i, pal_len=0;
+   stbi__uint32 ioff=0, idata_limit=0, i;
    int first=1,k,interlace=0, color=0, is_iphone=0;
    stbi__context *s = z->s;
 
    z->expanded = NULL;
    z->idata = NULL;
    z->out = NULL;
+   z->pal_len = 0;
+   z->pal_img_n = 0;
 
    if (!stbi__check_png_header(s)) return 0;
 
@@ -5116,12 +5126,13 @@ static int stbi__parse_png_file(stbi__png *z, int scan, int req_comp)
             z->depth = stbi__get8(s);  if (z->depth != 1 && z->depth != 2 && z->depth != 4 && z->depth != 8 && z->depth != 16)  return stbi__err("1/2/4/8/16-bit only","PNG not supported: 1/2/4/8/16-bit only");
             color = stbi__get8(s);  if (color > 6)         return stbi__err("bad ctype","Corrupt PNG");
             if (color == 3 && z->depth == 16)                  return stbi__err("bad ctype","Corrupt PNG");
-            if (color == 3) pal_img_n = 3; else if (color & 1) return stbi__err("bad ctype","Corrupt PNG");
+            if (color == 3) z->pal_img_n = 3;
+            else if (color & 1) return stbi__err("bad ctype","Corrupt PNG");
             comp  = stbi__get8(s);  if (comp) return stbi__err("bad comp method","Corrupt PNG");
             filter= stbi__get8(s);  if (filter) return stbi__err("bad filter method","Corrupt PNG");
             interlace = stbi__get8(s); if (interlace>1) return stbi__err("bad interlace method","Corrupt PNG");
             if (!s->img_x || !s->img_y) return stbi__err("0-pixel image","Corrupt PNG");
-            if (!pal_img_n) {
+            if (!z->pal_img_n) {
                s->img_n = (color & 2 ? 3 : 1) + (color & 4 ? 1 : 0);
                if ((1 << 30) / s->img_x / s->img_n < s->img_y) return stbi__err("too large", "Image too large to decode");
             } else {
@@ -5137,13 +5148,13 @@ static int stbi__parse_png_file(stbi__png *z, int scan, int req_comp)
          case STBI__PNG_TYPE('P','L','T','E'):  {
             if (first) return stbi__err("first not IHDR", "Corrupt PNG");
             if (c.length > 256*3) return stbi__err("invalid PLTE","Corrupt PNG");
-            pal_len = c.length / 3;
-            if (pal_len * 3 != c.length) return stbi__err("invalid PLTE","Corrupt PNG");
-            for (i=0; i < pal_len; ++i) {
-               palette[i*4+0] = stbi__get8(s);
-               palette[i*4+1] = stbi__get8(s);
-               palette[i*4+2] = stbi__get8(s);
-               palette[i*4+3] = 255;
+            z->pal_len = c.length / 3;
+            if (z->pal_len * 3 != c.length) return stbi__err("invalid PLTE","Corrupt PNG");
+            for (i=0; i < z->pal_len; ++i) {
+               z->palette[i*4+0] = stbi__get8(s);
+               z->palette[i*4+1] = stbi__get8(s);
+               z->palette[i*4+2] = stbi__get8(s);
+               z->palette[i*4+3] = 255;
             }
             break;
          }
@@ -5151,13 +5162,13 @@ static int stbi__parse_png_file(stbi__png *z, int scan, int req_comp)
          case STBI__PNG_TYPE('t','R','N','S'): {
             if (first) return stbi__err("first not IHDR", "Corrupt PNG");
             if (z->idata) return stbi__err("tRNS after IDAT","Corrupt PNG");
-            if (pal_img_n) {
+            if (z->pal_img_n) {
                if (scan == STBI__SCAN_header) { s->img_n = 4; return 1; }
-               if (pal_len == 0) return stbi__err("tRNS before PLTE","Corrupt PNG");
-               if (c.length > pal_len) return stbi__err("bad tRNS len","Corrupt PNG");
-               pal_img_n = 4;
+               if (z->pal_len == 0) return stbi__err("tRNS before PLTE","Corrupt PNG");
+               if (c.length > z->pal_len) return stbi__err("bad tRNS len","Corrupt PNG");
+               z->pal_img_n = 4;
                for (i=0; i < c.length; ++i)
-                  palette[i*4+3] = stbi__get8(s);
+                  z->palette[i*4+3] = stbi__get8(s);
             } else {
                if (!(s->img_n & 1)) return stbi__err("tRNS with alpha","Corrupt PNG");
                if (c.length != (stbi__uint32) s->img_n*2) return stbi__err("bad tRNS len","Corrupt PNG");
@@ -5177,11 +5188,11 @@ static int stbi__parse_png_file(stbi__png *z, int scan, int req_comp)
 
          case STBI__PNG_TYPE('I','D','A','T'): {
             if (first) return stbi__err("first not IHDR", "Corrupt PNG");
-            if (pal_img_n && !pal_len) return stbi__err("no PLTE","Corrupt PNG");
+            if (z->pal_img_n && !z->pal_len) return stbi__err("no PLTE","Corrupt PNG");
             if (scan == STBI__SCAN_header) {
                // header scan definitely stops at first IDAT
-               if (pal_img_n)
-                  s->img_n = pal_img_n;
+               if (z->pal_img_n)
+                  s->img_n = z->pal_img_n;
                return 1;
             }
             if (c.length > (1u << 30)) return stbi__err("IDAT size limit", "IDAT section larger than 2^30 bytes");
@@ -5212,7 +5223,8 @@ static int stbi__parse_png_file(stbi__png *z, int scan, int req_comp)
             z->expanded = (stbi_uc *) stbi_zlib_decode_malloc_guesssize_headerflag((char *) z->idata, ioff, raw_len, (int *) &raw_len, !is_iphone);
             if (z->expanded == NULL) return 0; // zlib should set error
             STBI_FREE(z->idata); z->idata = NULL;
-            if ((req_comp == s->img_n+1 && req_comp != 3 && !pal_img_n) || has_trans)
+            if ((req_comp == s->img_n+1 && req_comp != 3 &&
+                 !z->pal_img_n) || has_trans)
                s->img_out_n = s->img_n+1;
             else
                s->img_out_n = s->img_n;
@@ -5226,13 +5238,19 @@ static int stbi__parse_png_file(stbi__png *z, int scan, int req_comp)
             }
             if (is_iphone && stbi__de_iphone_flag && s->img_out_n > 2)
                stbi__de_iphone(z);
-            if (pal_img_n) {
+            if (z->pal_img_n) {
                // pal_img_n == 3 or 4
-               s->img_n = pal_img_n; // record the actual colors we had
-               s->img_out_n = pal_img_n;
-               if (req_comp >= 3) s->img_out_n = req_comp;
-               if (!stbi__expand_png_palette(z, palette, pal_len, s->img_out_n))
-                  return 0;
+               if (keep_palette) {
+                  if (!z->pal_len) return stbi__err("no PLTE","Corrupt PNG");
+               } else {
+                  s->img_n = z->pal_img_n; // record actual colors we had
+                  s->img_out_n = z->pal_img_n;
+                  if (req_comp >= 3) s->img_out_n = req_comp;
+                  if (!stbi__expand_png_palette(z, z->palette, z->pal_len,
+                                                s->img_out_n)) {
+                     return 0;
+                  }
+               }
             } else if (has_trans) {
                // non-paletted image with tRNS -> source image has (constant) alpha
                ++s->img_n;
@@ -5265,11 +5283,12 @@ static int stbi__parse_png_file(stbi__png *z, int scan, int req_comp)
    }
 }
 
-static void *stbi__do_png(stbi__png *p, int *x, int *y, int *n, int req_comp, stbi__result_info *ri)
+static void *stbi__do_png(stbi__png *p, int *x, int *y, int *n, int req_comp,
+                          stbi__result_info *ri)
 {
    void *result=NULL;
    if (req_comp < 0 || req_comp > 4) return stbi__errpuc("bad req_comp", "Internal error");
-   if (stbi__parse_png_file(p, STBI__SCAN_load, req_comp)) {
+   if (stbi__parse_png_file(p, STBI__SCAN_load, req_comp, 0)) {
       if (p->depth <= 8)
          ri->bits_per_channel = 8;
       else if (p->depth == 16)
@@ -5297,6 +5316,82 @@ static void *stbi__do_png(stbi__png *p, int *x, int *y, int *n, int req_comp, st
    return result;
 }
 
+/*
+ * Load paletted PNG data without expanding indices. The caller receives:
+ * - palette: RGB or RGBA entries (pal_comp == 3 or 4)
+ * - output: 8-bit indices referencing the palette
+ */
+static stbi_uc *stbi__png_load_palette(stbi__context *s, int *x, int *y,
+                                       int *pal_comp, stbi_uc **palette,
+                                       int *pal_len, stbi__result_info *ri)
+{
+   stbi__png p;
+   stbi_uc *result;
+   stbi_uc *packed_palette;
+   stbi__uint32 i;
+
+   result = NULL;
+   packed_palette = NULL;
+
+   p.s = s;
+   if (!stbi__parse_png_file(&p, STBI__SCAN_load, 0, 1)) {
+      goto end;
+   }
+
+   if (p.depth <= 8) {
+      ri->bits_per_channel = 8;
+   } else {
+      stbi__err("bad bits_per_channel",
+                "PNG not supported: unsupported color depth");
+      goto end;
+   }
+
+   if (p.pal_len == 0 || p.pal_img_n == 0) {
+      goto end;
+   }
+
+   packed_palette = (stbi_uc *) stbi__malloc_mad2(p.pal_len,
+                                                  p.pal_img_n, 0);
+   if (packed_palette == NULL) {
+      stbi__err("outofmem", "Out of memory");
+      goto end;
+   }
+
+   if (p.pal_img_n == 3) {
+      for (i = 0; i < p.pal_len; ++i) {
+         packed_palette[i * 3 + 0] = p.palette[i * 4 + 0];
+         packed_palette[i * 3 + 1] = p.palette[i * 4 + 1];
+         packed_palette[i * 3 + 2] = p.palette[i * 4 + 2];
+      }
+   } else {
+      for (i = 0; i < p.pal_len; ++i) {
+         packed_palette[i * 4 + 0] = p.palette[i * 4 + 0];
+         packed_palette[i * 4 + 1] = p.palette[i * 4 + 1];
+         packed_palette[i * 4 + 2] = p.palette[i * 4 + 2];
+         packed_palette[i * 4 + 3] = p.palette[i * 4 + 3];
+      }
+   }
+
+   *x = p.s->img_x;
+   *y = p.s->img_y;
+   if (pal_comp) *pal_comp = p.pal_img_n;
+   if (pal_len) *pal_len = (int)p.pal_len;
+   if (palette) *palette = packed_palette;
+
+   result = p.out;
+   p.out = NULL;
+
+end:
+   STBI_FREE(p.out);      p.out      = NULL;
+   STBI_FREE(p.expanded); p.expanded = NULL;
+   STBI_FREE(p.idata);    p.idata    = NULL;
+   if (result == NULL && packed_palette != NULL) {
+      STBI_FREE(packed_palette);
+   }
+
+   return result;
+}
+
 static void *stbi__png_load(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__result_info *ri)
 {
    stbi__png p;
@@ -5314,7 +5409,7 @@ static int stbi__png_test(stbi__context *s)
 
 static int stbi__png_info_raw(stbi__png *p, int *x, int *y, int *comp)
 {
-   if (!stbi__parse_png_file(p, STBI__SCAN_header, 0)) {
+   if (!stbi__parse_png_file(p, STBI__SCAN_header, 0, 0)) {
       stbi__rewind( p->s );
       return 0;
    }
