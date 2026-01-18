@@ -159,7 +159,8 @@ else
         cmd_line="\"${cscript_win}\" //nologo \"${vbs_win}\" \"${input_win}\""
         printf '%s\n' "INFO: retry via cmd.exe" >"${log_file}"
         printf '%s\n' "INFO: cmd.exe /d /s /c ${cmd_line}" >>"${log_file}"
-        "${cmd_path}" /d /s /c "${cmd_line}" >>"${log_file}" 2>&1 || :
+        "${cmd_path}" /d /s /c "\"${cscript_win}\" //nologo \"${vbs_win}\" \"${input_win}\"" \
+            >>"${log_file}" 2>&1 || :
     fi
 fi
 
