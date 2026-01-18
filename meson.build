@@ -373,6 +373,11 @@ if host_system == 'emscripten'
     error('abort_trace=enabled is not supported on emscripten')
   endif
   abort_trace_enabled = false
+elif host_system == 'windows'
+  if abort_trace_opt.enabled()
+    error('abort_trace=enabled is not supported on this Windows environment')
+  endif
+  abort_trace_enabled = false
 endif
 abort_trace_deps = []
 if abort_trace_enabled
