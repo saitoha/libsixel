@@ -1414,21 +1414,22 @@ jobs:
             runner: ubuntu-latest
             version: r151056
             extra_packages: >-
-              gcc
-              gnu-make
+              developer/gcc13
+              developer/build/gnu-make
             make: gmake
             exec_type: omnios-vm
 
-          - label: Meson-omnios-r151056-x86_64
-            buildtool: meson
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            version: r151056
-            extra_packages: >-
-              gcc
-              meson
-            exec_type: omnios-vm
-
+#          - label: Meson-omnios-r151056-x86_64
+#            buildtool: meson
+#            os: ubuntu-latest
+#            runner: ubuntu-latest
+#            version: r151056
+#            extra_packages: >-
+#              developer/gcc13
+#              runtime/python-313
+#              library/python-3/pip-313
+#            exec_type: omnios-vm
+#
           - label: Autotools-dragonflybsd-6.4.2-x86-64
             buildtool: autotools
             os: ubuntu-latest
@@ -1911,7 +1912,7 @@ jobs:
           sync: rsync
           prepare: |
             pkg update -f
-            pkg install --accept ${{ matrix.extra_packages || 'gcc gnu-make' }}
+            pkg install --accept ${{ matrix.extra_packages || 'developer/gcc13 developer/build/gnu-make' }}
           run: |
             cd "$GITHUB_WORKSPACE"
             ${{ matrix.setup_prefix || '' }} ./configure ${{ matrix.setup_options || '' }}
@@ -1928,9 +1929,11 @@ jobs:
           sync: rsync
           prepare: |
             pkg update -f
-            pkg install --accept ${{ matrix.extra_packages || 'gcc meson ninja' }}
+            pkg install --accept ${{ matrix.extra_packages || 'developer/build/gnu-make' }}
           run: |
             cd "$GITHUB_WORKSPACE"
+            export PATH="$HOME/.local/bin:$PATH"
+            python3 -m pip install --user --upgrade pip meson ninja
             ${{ matrix.setup_prefix || '' }} meson setup builddir ${{ matrix.setup_options || '' }}
             meson compile -C builddir
             meson ${{ matrix.check_target || 'test' }} -C builddir
