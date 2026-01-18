@@ -147,7 +147,9 @@ if "${cscript_copy}" //nologo "${exec_regfree_dir}/wsh_decoder_regfree.vbs" \
     mv "${direct_log}" "${log_file}"
 else
     cmd_path=""
-    if command -v cmd.exe >/dev/null 2>&1; then
+    if [ -n "${systemroot}" ] && [ -x "${systemroot}/System32/cmd.exe" ]; then
+        cmd_path="${systemroot}/System32/cmd.exe"
+    elif command -v cmd.exe >/dev/null 2>&1; then
         cmd_path=$(command -v cmd.exe)
     elif command -v cmd >/dev/null 2>&1; then
         cmd_path=$(command -v cmd)
@@ -165,10 +167,11 @@ cd /d "${exec_dir_win}"
 EOF_CMD
         cmd_script_win=$(cygpath -wa "${cmd_script}")
         printf '%s\n' "INFO: retry via cmd.exe" >"${log_file}"
-        printf '%s\n' "INFO: cmd.exe /d /s /c \"${cmd_script_win}\"" >>"${log_file}"
+        printf '%s\n' "INFO: cmd.exe /d /s /c call \"${cmd_script_win}\"" >>"${log_file}"
+        printf '%s\n' "INFO: cmd.exe path ${cmd_path}" >>"${log_file}"
         printf '%s\n' "INFO: cmd script contents:" >>"${log_file}"
         sed -e 's/^/INFO: /' "${cmd_script}" >>"${log_file}" 2>&1 || :
-        "${cmd_path}" /d /s /c "\"${cmd_script_win}\"" >>"${log_file}" 2>&1 || :
+        "${cmd_path}" /d /s /c "call \"${cmd_script_win}\"" >>"${log_file}" 2>&1 || :
     fi
 fi
 
