@@ -107,8 +107,6 @@ cli_tests = ['cli-core/t/0001_help.t',
              'cli-core/t/0018_basic_parallel_direct.t',
              'cli-core/t/0019_basic_parallel_cli_override.t',
              'cli-core/t/0020_basic_invalid_threads_token.t',
-             'aborttrace/t/0001_img2sixel_aborttrace.t',
-             'aborttrace/t/0002_sixel2png_aborttrace.t',
              'cli-option-invalid/t/0001_invalid_option_arguments.t',
              'cli-option-invalid/t/0002_invalid_option_arguments_invalid_width.t',
              'cli-option-invalid/t/0003_invalid_option_arguments_invalid_height.t',
@@ -283,6 +281,11 @@ cli_tests = ['cli-core/t/0001_help.t',
              'sixel2png/t/0004_invalid_decoder_value.t',
              'sixel2png/t/0005_default_output.t']
 
+aborttrace_tests = [
+  'aborttrace/t/0001_img2sixel_aborttrace.t',
+  'aborttrace/t/0002_sixel2png_aborttrace.t',
+]
+
 cli_depends = {
   'regression/t/0005_lsqa_format_grayscale.t': [lsqa_bin],
   'regression/t/0006_lsqa_format_palette.t': [lsqa_bin],
@@ -330,6 +333,17 @@ foreach t : cli_tests
     protocol: 'tap',
     env: env,
     depends: cli_depends.get(t, []),
+    timeout: 300,
+    suite: ['tap'])
+endforeach
+
+foreach t : aborttrace_tests
+  test(t, sh,
+    args: [meson.current_source_dir() / t],
+    protocol: 'tap',
+    env: env,
+    depends: cli_depends.get(t, []),
+    is_parallel: false,
     timeout: 300,
     suite: ['tap'])
 endforeach
