@@ -72,14 +72,19 @@ fail() {
 regfree_dir="${artifact_dir}/regfree"
 mkdir -p "${regfree_dir}"
 
-cscript_copy="${regfree_dir}/cscript.exe"
+exec_root=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-wsh-XXXXXX")
+trap 'rm -rf "${exec_root}"' EXIT
+exec_regfree_dir="${exec_root}/regfree"
+mkdir -p "${exec_regfree_dir}"
+
+cscript_copy="${exec_regfree_dir}/cscript.exe"
 cp "${cscript_path}" "${cscript_copy}"
 chmod +x "${cscript_copy}" || :
 
 dll_name=$(basename "${wicsixel_dll}")
-cp "${wicsixel_dll}" "${regfree_dir}/${dll_name}"
+cp "${wicsixel_dll}" "${exec_regfree_dir}/${dll_name}"
 
-cp "${vbs_source}" "${regfree_dir}/wsh_decoder_regfree.vbs"
+cp "${vbs_source}" "${exec_regfree_dir}/wsh_decoder_regfree.vbs"
 
 if command -v ldd >/dev/null 2>&1; then
     ldd "${wicsixel_dll}" >"${artifact_dir}/wicsixel_ldd.log" 2>&1 || :
@@ -88,12 +93,12 @@ if command -v ldd >/dev/null 2>&1; then
         | while read -r dep_path; do
             dep_name=$(basename "${dep_path}")
             if [ -f "${dep_path}" ]; then
-                cp "${dep_path}" "${regfree_dir}/${dep_name}"
+                cp "${dep_path}" "${exec_regfree_dir}/${dep_name}"
             fi
         done
 fi
 
-manifest_path="${regfree_dir}/cscript.exe.manifest"
+manifest_path="${exec_regfree_dir}/cscript.exe.manifest"
 cat >"${manifest_path}" <<EOF_MANIFEST
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
@@ -133,7 +138,9 @@ if [ -n "${mt_path}" ]; then
     chmod +x "${cscript_copy}" || :
 fi
 
-if "${cscript_copy}" //nologo "${regfree_dir}/wsh_decoder_regfree.vbs" \
+cp "${manifest_path}" "${regfree_dir}/cscript.exe.manifest"
+
+if "${cscript_copy}" //nologo "${exec_regfree_dir}/wsh_decoder_regfree.vbs" \
         "${sixel_input}" >"${log_file}" 2>&1; then
     :
 else
