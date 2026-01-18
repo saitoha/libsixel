@@ -284,6 +284,7 @@ extra_funcs = [
   'strstr',
   'strtol',
   'clock',
+  'clock_gettime',
   'nanosleep',
   'usleep',
   'fork',
@@ -297,7 +298,8 @@ func_prefixes = {
   'setmode': '#include <io.h>',
   '_setmode': '#include <io.h>',
   '_sopen_s': '#include <io.h>\n#include <share.h>',
-  'open': '#include <fcntl.h>'
+  'open': '#include <fcntl.h>',
+  'clock_gettime': '#include <time.h>'
 }
 
 foreach f : extra_funcs
