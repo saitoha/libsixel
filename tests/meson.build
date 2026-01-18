@@ -423,6 +423,9 @@ endforeach
 
 loader_pixelformat_tests = [
   '0014_loader_builtin_pixelformat',
+  '0017_loader_builtin_psd',
+  '0018_loader_builtin_hdr',
+  '0019_loader_builtin_pic',
 ]
 
 if conf.get('HAVE_WIC', 0) == 1
