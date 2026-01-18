@@ -2,9 +2,9 @@
  * Verify GNOME thumbnailer path reports RGB output for RGBA sources.
  */
 
-#include "pixelformat_test_common.h"
+#include "tests/loader/pixelformat_test_common.h"
 
-#include "loader-gnome-thumbnailer.h"
+#include "src/loader-gnome-thumbnailer.h"
 
 #if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
 static int
@@ -47,21 +47,23 @@ run_thumbnailer_loader_test(void)
 #endif
 
 int
-main(void)
+test_loader_0016_loader_gnome_thumbnailer_pixelformat(int argc, char **argv)
 {
-#if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
-    printf("1..1\n");
+    (void) argc;
+    (void) argv;
 
+#if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
     if (thumbnailer_available() == 0) {
-        printf("ok 1 - GNOME thumbnailer unavailable"
-               " # SKIP gdk-pixbuf-thumbnailer missing or unusable\n");
-        return 0;
+        fprintf(stderr,
+                "GNOME thumbnailer unavailable: "
+                "gdk-pixbuf-thumbnailer missing or unusable\n");
+        return SIXEL_TEST_SKIP;
     }
 
     return run_thumbnailer_loader_test();
 #else
-    printf("1..0 # SKIP GNOME thumbnailer unavailable\n");
-    return 0;
+    fprintf(stderr, "GNOME thumbnailer unavailable\n");
+    return SIXEL_TEST_SKIP;
 #endif
 }
 

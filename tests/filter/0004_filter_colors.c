@@ -10,13 +10,14 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <sixel.h>
 
-#include "filter-colors.h"
-#include "filter-factory.h"
-#include "filter.h"
-#include "filter_test_common.h"
+#include "src/filter-colors.h"
+#include "src/filter-factory.h"
+#include "src/filter.h"
+#include "tests/filter/filter_test_common.h"
 
 static int
 test_colors_promotes_to_linear_float(void)
@@ -169,28 +170,27 @@ cleanup:
     return SIXEL_SUCCEEDED(status);
 }
 
-int main(void)
+int
+test_filter_0004_filter_colors(int argc, char **argv)
 {
     int success;
 
+    (void) argc;
+    (void) argv;
+
     success = 1;
-    printf("1..2\n");
 
-    if (test_colors_promotes_to_linear_float()) {
-        printf("ok 1 - colors filter converts to linear float\n");
-    } else {
-        printf("not ok 1 - colors filter converts to linear float\n");
+    if (!test_colors_promotes_to_linear_float()) {
+        fprintf(stderr, "colors filter converts to linear float failed\n");
         success = 0;
     }
 
-    if (test_colors_noop_keeps_frame_bound()) {
-        printf("ok 2 - colors filter keeps binding for noop\n");
-    } else {
-        printf("not ok 2 - colors filter keeps binding for noop\n");
+    if (!test_colors_noop_keeps_frame_bound()) {
+        fprintf(stderr, "colors filter keeps binding for noop failed\n");
         success = 0;
     }
 
-    return success ? 0 : 1;
+    return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 /* emacs Local Variables:      */

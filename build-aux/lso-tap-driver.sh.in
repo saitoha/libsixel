@@ -195,7 +195,7 @@ time_end=$(timestamp_millis)
   -v time_end="$time_end" \
   -v color_tests="$color_tests" \
   'BEGIN{
-     plan=0; saw_plan=0;
+     plan=0; saw_plan=0; saw_tap=0;
      pass=0; fail=0; skip=0; xfail=0; xpass=0; error=0;
      tc=0;
      desc="";
@@ -207,6 +207,7 @@ time_end=$(timestamp_millis)
    # TAP plan line: 1..N
    $0 ~ /^1\.\.[0-9]+/ {
      split($0,a,".."); plan=a[2]+0; saw_plan=1;
+     saw_tap=1;
      if (match($0, /#[ \t]*SKIP /)) {
        skip++
        desc=substr($0, RSTART+RLENGTH)
@@ -218,6 +219,7 @@ time_end=$(timestamp_millis)
    $0 ~ /^(not[ \t]+)?ok([ \t]+[0-9]+)?([ \t]+-)?/ {
      line=$0
      is_not = (line ~ /^not[ \t]+ok/)
+     saw_tap=1;
      # Extract optional number
      n=0
      if (match(line,/^(not[ \t]+)?ok[ \t]+[0-9]+/)) {
@@ -261,9 +263,16 @@ time_end=$(timestamp_millis)
 
    # Comment lines: keep in .log already; optionally treat as metadata? no-op.
    END{
-     # If exit status matters and is non-zero, treat as ERROR unless failures already recorded.
+     # Non-zero exit handling mirrors lso-tap-driver: if TAP was emitted,
+     # treat the overall result as FAIL; otherwise surface it as ERROR.
      if (ignore_exit != "yes" && rc != 0) {
-       if (fail==0 && pass==0 && skip==0 && xfail==0 && xpass==0) {
+       if (saw_tap) {
+         if (fail==0) {
+           fail=1
+           desc=sprintf("non-zero exit status (%d)", rc)
+           printf(":test-result: FAIL %s\n", desc) > "'"$trs_file"'"
+         }
+       } else {
          error=1
          printf(":test-result: ERROR %s\n", test_name) > "'"$trs_file"'"
        }
