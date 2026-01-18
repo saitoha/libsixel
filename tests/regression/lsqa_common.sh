@@ -89,8 +89,13 @@ lsqa_init() {
 lsqa_parse_metric() {
     metric_name=$1
     json_path=$2
-    value=$(sed -n "s/.*\"${metric_name}\"[[:space:]]*:[[:space:]]*\\([^,]*\\),.*/\\1/p" \
-        "${json_path}" | head -n 1)
+    # Keep the parser POSIX sed compatible (no capture groups or extensions).
+    value=$(sed -n "/\"${metric_name}\"[[:space:]]*:/ {
+        s/.*\"${metric_name}\"[[:space:]]*:[[:space:]]*//
+        s/[ ,}].*$//
+        p
+        q
+    }" "${json_path}")
     if [ -z "${value}" ] || [ "${value}" = "null" ]; then
         printf '0.0'
     else
