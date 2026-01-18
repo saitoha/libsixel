@@ -1116,7 +1116,8 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
              filter/0005_filter_lookup.c filter/0006_filter_final_merge.c \
              filter/0007_filter_vpte.c filter/0008_filter_load.c \
              filter/0009_filter_dither.c filter/0010_filter_encode.c \
-             filter/filter_test_common.h
+             filter/filter_test_common.h \
+             loader/pixelformat_test_common.h
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
