@@ -1408,6 +1408,27 @@ jobs:
               meson
             exec_type: solaris-vm
 
+          - label: Autotools-omnios-r151056-x86_64
+            buildtool: autotools
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            version: r151056
+            extra_packages: >-
+              gcc
+              gnu-make
+            make: gmake
+            exec_type: omnios-vm
+
+          - label: Meson-omnios-r151056-x86_64
+            buildtool: meson
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            version: r151056
+            extra_packages: >-
+              gcc
+              meson
+            exec_type: omnios-vm
+
           - label: Autotools-dragonflybsd-6.4.2-x86-64
             buildtool: autotools
             os: ubuntu-latest
@@ -1874,6 +1895,40 @@ jobs:
           prepare: |
             pkg update -f
             pkg install --accept ${{ matrix.extra_packages || 'gnu-make gcc meson ninja' }}
+          run: |
+            cd "$GITHUB_WORKSPACE"
+            ${{ matrix.setup_prefix || '' }} meson setup builddir ${{ matrix.setup_options || '' }}
+            meson compile -C builddir
+            meson ${{ matrix.check_target || 'test' }} -C builddir
+
+      - name: Build and test (Autotools, OmniOS)
+        if: ${{ matrix.buildtool == 'autotools' && matrix.exec_type == 'omnios-vm' }}
+        timeout-minutes: 20
+        uses: vmactions/omnios-vm@v1
+        with:
+          release: ${{ matrix.version }}
+          usesh: true
+          sync: rsync
+          prepare: |
+            pkg update -f
+            pkg install --accept ${{ matrix.extra_packages || 'gcc gnu-make' }}
+          run: |
+            cd "$GITHUB_WORKSPACE"
+            ${{ matrix.setup_prefix || '' }} ./configure ${{ matrix.setup_options || '' }}
+            ${{ matrix.make || 'gmake' }} V=1
+            ${{ matrix.make || 'gmake' }} ${{ matrix.check_target || 'check' }}
+
+      - name: Configure, build, and test (Meson, OmniOS)
+        if: ${{ matrix.buildtool == 'meson' && matrix.exec_type == 'omnios-vm' }}
+        timeout-minutes: 20
+        uses: vmactions/omnios-vm@v1
+        with:
+          release: ${{ matrix.version }}
+          usesh: true
+          sync: rsync
+          prepare: |
+            pkg update -f
+            pkg install --accept ${{ matrix.extra_packages || 'gcc meson ninja' }}
           run: |
             cd "$GITHUB_WORKSPACE"
             ${{ matrix.setup_prefix || '' }} meson setup builddir ${{ matrix.setup_options || '' }}
