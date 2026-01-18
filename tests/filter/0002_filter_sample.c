@@ -11,6 +11,7 @@
 
 #include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <sixel.h>
 
@@ -231,24 +232,22 @@ cleanup:
 }
 
 int
-main(void)
+test_filter_0002_filter_sample(int argc, char **argv)
 {
     int success;
 
-    success = 1;
-    printf("1..2\n");
+    (void) argc;
+    (void) argv;
 
-    if (test_sample_stride_override()) {
-        printf("ok 1 - sample filter honors override target\n");
-    } else {
-        printf("not ok 1 - sample filter honors override target\n");
+    success = 1;
+
+    if (!test_sample_stride_override()) {
+        fprintf(stderr, "sample filter honors override target failed\n");
         success = 0;
     }
 
-    if (test_sample_respects_clip_region()) {
-        printf("ok 2 - sample filter crops before sampling\n");
-    } else {
-        printf("not ok 2 - sample filter crops before sampling\n");
+    if (!test_sample_respects_clip_region()) {
+        fprintf(stderr, "sample filter crops before sampling failed\n");
         success = 0;
     }
 

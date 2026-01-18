@@ -10,6 +10,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <sixel.h>
 
@@ -136,21 +137,23 @@ cleanup:
     return SIXEL_SUCCEEDED(status);
 }
 
-int main(void)
+int
+test_filter_0010_filter_encode(int argc, char **argv)
 {
     int success;
 
-    success = 1;
-    printf("1..1\n");
+    (void) argc;
+    (void) argv;
 
-    if (test_encode_updates_output_and_progress()) {
-        printf("ok 1 - encode filter writes metadata and streams data\n");
-    } else {
-        printf("not ok 1 - encode filter writes metadata and streams data\n");
+    success = 1;
+
+    if (!test_encode_updates_output_and_progress()) {
+        fprintf(stderr,
+                "encode filter writes metadata and streams data failed\n");
         success = 0;
     }
 
-    return success ? 0 : 1;
+    return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 /* emacs Local Variables:      */
