@@ -91,6 +91,7 @@ CLI_TESTS = cli-core/t/0001_help.t \
     palette/t/0022_lanczos3_two_colour_palette.t \
     palette/t/0023_lanczos4_palette_dump.t \
     palette/t/0024_interlaced_palette_dump.t \
+    palette/t/0025_lookup_policy_vpte_float32.t \
     dither/t/0001_roundtrip_dither_gamma.t \
     dither/t/0002_inspection_with_diffusion.t \
     dither/t/0003_ascii_ppm_inspection_diffusion.t \
