@@ -16327,6 +16327,16 @@ case $enable_abort_trace in #(
   *) :
     as_fn_error $? "invalid value for --enable-abort-trace: $enable_abort_trace" "$LINENO" 5 ;;
 esac
+case $host_os in #(
+  *emscripten*) :
+    if test "x$enable_abort_trace" = "xyes"
+then :
+  as_fn_error $? "--enable-abort-trace is not supported on emscripten" "$LINENO" 5
+fi
+         enable_abort_trace="no" ;; #(
+  *) :
+     ;;
+esac
  if test "x$enable_abort_trace" != "xno"; then
   HAVE_ABORT_TRACE_TRUE=
   HAVE_ABORT_TRACE_FALSE='#'

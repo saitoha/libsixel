@@ -747,6 +747,8 @@ CLI_TESTS = cli-core/t/0001_help.t \
     cli-core/t/0018_basic_parallel_direct.t \
     cli-core/t/0019_basic_parallel_cli_override.t \
     cli-core/t/0020_basic_invalid_threads_token.t \
+    aborttrace/t/0001_img2sixel_aborttrace.t \
+    aborttrace/t/0002_sixel2png_aborttrace.t \
     cli-option-invalid/t/0001_invalid_option_arguments.t \
     cli-option-invalid/t/0002_invalid_option_arguments_invalid_width.t \
     cli-option-invalid/t/0003_invalid_option_arguments_invalid_height.t \
@@ -803,6 +805,7 @@ CLI_TESTS = cli-core/t/0001_help.t \
     palette/t/0022_lanczos3_two_colour_palette.t \
     palette/t/0023_lanczos4_palette_dump.t \
     palette/t/0024_interlaced_palette_dump.t \
+    palette/t/0025_lookup_policy_vpte_float32.t \
     dither/t/0001_roundtrip_dither_gamma.t \
     dither/t/0002_inspection_with_diffusion.t \
     dither/t/0003_ascii_ppm_inspection_diffusion.t \
@@ -812,6 +815,10 @@ CLI_TESTS = cli-core/t/0001_help.t \
     dither/t/0007_sixel_inspection_alternate_dither.t \
     dither/t/0008_sixel_inspection_x_dither.t \
     dither/t/0009_lanczos2_without_diffusion.t \
+    dither/t/0010_positional_8bit_dither.t \
+    dither/t/0011_positional_float32_dither.t \
+    dither/t/0012_varcoeff_8bit_dither.t \
+    dither/t/0013_varcoeff_float32_dither.t \
     geometry/t/0001_scaling_histogram_background.t \
     geometry/t/0002_dcs_crc_width_scaling.t \
     geometry/t/0003_dcs_crc_height_scaling.t \
