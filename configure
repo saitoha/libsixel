@@ -16334,6 +16334,12 @@ then :
   as_fn_error $? "--enable-abort-trace is not supported on emscripten" "$LINENO" 5
 fi
          enable_abort_trace="no" ;; #(
+  mingw*|*mingw*|*ucrt*|*win32*|*windows*) :
+    if test "x$enable_abort_trace" = "xyes"
+then :
+  as_fn_error $? "--enable-abort-trace is not supported on this Windows environment" "$LINENO" 5
+fi
+         enable_abort_trace="no" ;; #(
   *) :
      ;;
 esac
