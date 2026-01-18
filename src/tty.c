@@ -58,6 +58,10 @@
 #if HAVE_SYS_IOCTL_H
 # include <sys/ioctl.h>
 #endif  /* HAVE_SYS_IOCTL_H */
+#if HAVE_SYS_TTYCOM_H
+/* Some systems expose winsize/TIOCGWINSZ in sys/ttycom.h. */
+# include <sys/ttycom.h>
+#endif  /* HAVE_SYS_TTYCOM_H */
 
 #include <sixel.h>
 #include "tty.h"
@@ -393,7 +397,8 @@ sixel_tty_scroll(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int nwrite;
-#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY && !defined(__EMSCRIPTEN__)
+#if HAVE_TERMIOS_H && HAVE_SYS_IOCTL_H && HAVE_ISATTY \
+    && !defined(__EMSCRIPTEN__) && defined(TIOCGWINSZ)
     struct winsize size = {0, 0, 0, 0};
     struct termios old_termios;
     struct termios new_termios;
