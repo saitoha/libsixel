@@ -72,7 +72,8 @@ fail() {
 regfree_dir="${artifact_dir}/regfree"
 mkdir -p "${regfree_dir}"
 
-exec_root=$(mktemp -d "${TMPDIR:-/tmp}/libsixel-wsh-XXXXXX")
+temp_base=${TMPDIR:-${TEMP:-/tmp}}
+exec_root=$(mktemp -d "${temp_base%/}/libsixel-wsh-XXXXXX")
 trap 'rm -rf "${exec_root}"' EXIT
 exec_regfree_dir="${exec_root}/regfree"
 mkdir -p "${exec_regfree_dir}"
@@ -140,11 +141,23 @@ fi
 
 cp "${manifest_path}" "${regfree_dir}/cscript.exe.manifest"
 
+direct_log="${artifact_dir}/wsh_automation_direct.log"
 if "${cscript_copy}" //nologo "${exec_regfree_dir}/wsh_decoder_regfree.vbs" \
-        "${sixel_input}" >"${log_file}" 2>&1; then
-    :
+        "${sixel_input}" >"${direct_log}" 2>&1; then
+    mv "${direct_log}" "${log_file}"
 else
-    fail "WSH automation decode failed (see ${log_file})"
+    if command -v cmd >/dev/null 2>&1; then
+        cscript_win=$(cygpath -w "${cscript_copy}")
+        vbs_win=$(cygpath -w "${exec_regfree_dir}/wsh_decoder_regfree.vbs")
+        input_win=$(cygpath -w "${sixel_input}")
+        printf '%s\n' "INFO: retry via cmd.exe" >"${log_file}"
+        cmd //c "\"${cscript_win}\" //nologo \"${vbs_win}\" \"${input_win}\"" \
+            >>"${log_file}" 2>&1 || :
+    fi
+fi
+
+if [ ! -s "${log_file}" ]; then
+    fail "WSH automation decode failed (see ${direct_log})"
 fi
 
 if grep -Eq '^OK [0-9]+ [0-9]+$' "${log_file}"; then
