@@ -92,7 +92,8 @@ if command -v ldd >/dev/null 2>&1; then
         done
 fi
 
-cat >"${regfree_dir}/cscript.exe.manifest" <<EOF_MANIFEST
+manifest_path="${regfree_dir}/cscript.exe.manifest"
+cat >"${manifest_path}" <<EOF_MANIFEST
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
   <assemblyIdentity
@@ -112,6 +113,23 @@ cat >"${regfree_dir}/cscript.exe.manifest" <<EOF_MANIFEST
   </file>
 </assembly>
 EOF_MANIFEST
+
+mt_path=""
+if command -v mt >/dev/null 2>&1; then
+    mt_path=$(command -v mt)
+elif command -v mt.exe >/dev/null 2>&1; then
+    mt_path=$(command -v mt.exe)
+elif command -v cmd >/dev/null 2>&1; then
+    mt_path=$(cmd //c "where mt.exe" 2>/dev/null | head -n 1 || :)
+fi
+
+if [ -n "${mt_path}" ]; then
+    cscript_win=$(cygpath -w "${cscript_copy}")
+    manifest_win=$(cygpath -w "${manifest_path}")
+    "${mt_path}" -manifest "${manifest_win}" \
+        -outputresource:"${cscript_win};#1" \
+        >"${artifact_dir}/mt_embed.log" 2>&1 || :
+fi
 
 if "${cscript_copy}" //nologo "${regfree_dir}/wsh_decoder_regfree.vbs" \
         "${sixel_input}" >"${log_file}" 2>&1; then
