@@ -162,7 +162,7 @@ END {
 }
 
 default_units=$(collect_units_from_dirs \
-    "src tests converters assessment" \
+    "src tests converters assessment gdk-pixbuf-loader" \
     \( -name '*.c' -o -name '*.m' \))
 
 header_units=$(collect_units_from_dirs \
@@ -515,6 +515,16 @@ emit_all_units() {
         [ -z "${unit}" ] && continue
 
         case "${unit}" in
+            gdk-pixbuf-loader/*.c|tests/*.c)
+                guard=$(echo "${unit}" | \
+                    sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
+                case "${guard}" in
+                    [0-9]*)
+                        guard="TEST_${guard}"
+                        ;;
+                esac
+                emit_unit "${unit}" "defined(BUILD_${guard})"
+                ;;
             src/threadpool.c)
                 emit_unit "${unit}" "SIXEL_ENABLE_THREADS"
                 ;;
@@ -523,7 +533,7 @@ emit_all_units() {
                 emit_unit "${unit}" \
                     "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_${guard})"
                 ;;
-            converters/img2sixel.c|converters/sixel2png.c|assessment/lsqa.c|tests/*.c)
+            converters/img2sixel.c|converters/sixel2png.c|assessment/lsqa.c)
                 guard=$(echo "${unit}" | sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
                 emit_unit "${unit}" "defined(BUILD_${guard})"
                 ;;
