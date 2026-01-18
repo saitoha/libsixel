@@ -100,6 +100,10 @@ CLI_TESTS = cli-core/t/0001_help.t \
     dither/t/0007_sixel_inspection_alternate_dither.t \
     dither/t/0008_sixel_inspection_x_dither.t \
     dither/t/0009_lanczos2_without_diffusion.t \
+    dither/t/0010_positional_8bit_dither.t \
+    dither/t/0011_positional_float32_dither.t \
+    dither/t/0012_varcoeff_8bit_dither.t \
+    dither/t/0013_varcoeff_float32_dither.t \
     geometry/t/0001_scaling_histogram_background.t \
     geometry/t/0002_dcs_crc_width_scaling.t \
     geometry/t/0003_dcs_crc_height_scaling.t \
