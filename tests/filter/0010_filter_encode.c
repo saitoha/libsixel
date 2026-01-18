@@ -14,11 +14,11 @@
 
 #include <sixel.h>
 
-#include "filter-encode.h"
-#include "filter-factory.h"
-#include "filter.h"
-#include "filter_test_common.h"
-#include "output.h"
+#include "src/filter-encode.h"
+#include "src/filter-factory.h"
+#include "src/filter.h"
+#include "tests/filter/filter_test_common.h"
+#include "src/output.h"
 
 static int
 test_encode_updates_output_and_progress(void)

@@ -14,11 +14,11 @@
 
 #include <sixel.h>
 
-#include "dither.h"
-#include "filter-factory.h"
-#include "filter-final-merge.h"
-#include "filter.h"
-#include "filter_test_common.h"
+#include "src/dither.h"
+#include "src/filter-factory.h"
+#include "src/filter-final-merge.h"
+#include "src/filter.h"
+#include "tests/filter/filter_test_common.h"
 
 static int
 test_final_merge_sets_mode_and_progress(void)

@@ -7,9 +7,9 @@
 #include <string.h>
 
 #include "config.h"
-#include "allocator.h"
-#include "probe.h"
-#include "status.h"
+#include "src/allocator.h"
+#include "src/probe.h"
+#include "src/status.h"
 
 int
 test_probe_0001_probe_parse(int argc, char **argv)

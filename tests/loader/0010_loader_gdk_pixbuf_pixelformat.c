@@ -2,9 +2,9 @@
  * Verify GDK-Pixbuf loader reports RGBA output for RGBA sources.
  */
 
-#include "pixelformat_test_common.h"
+#include "tests/loader/pixelformat_test_common.h"
 
-#include "loader-gdk-pixbuf2.h"
+#include "src/loader-gdk-pixbuf2.h"
 
 #if defined(HAVE_GDK_PIXBUF2)
 static int

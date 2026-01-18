@@ -14,10 +14,10 @@
 
 #include <sixel.h>
 
-#include "filter-factory.h"
-#include "filter-resize.h"
-#include "filter.h"
-#include "filter_test_common.h"
+#include "src/filter-factory.h"
+#include "src/filter-resize.h"
+#include "src/filter.h"
+#include "tests/filter/filter_test_common.h"
 
 static int
 test_resize_changes_dimensions(void)

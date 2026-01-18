@@ -2,9 +2,9 @@
  * Verify CoreGraphics loads RGBA sources as four-component frames.
  */
 
-#include "pixelformat_test_common.h"
+#include "tests/loader/pixelformat_test_common.h"
 
-#include "loader-coregraphics.h"
+#include "src/loader-coregraphics.h"
 
 #if HAVE_COREGRAPHICS
 static int

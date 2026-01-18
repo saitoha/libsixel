@@ -2,9 +2,9 @@
  * Verify WIC loader reports RGBA output for RGBA sources.
  */
 
-#include "pixelformat_test_common.h"
+#include "tests/loader/pixelformat_test_common.h"
 
-#include "loader-wic.h"
+#include "src/loader-wic.h"
 
 #if HAVE_WIC
 static int

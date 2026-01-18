@@ -13,10 +13,10 @@
 
 #include <sixel.h>
 
-#include "filter-clip.h"
-#include "filter-factory.h"
-#include "filter.h"
-#include "filter_test_common.h"
+#include "src/filter-clip.h"
+#include "src/filter-factory.h"
+#include "src/filter.h"
+#include "tests/filter/filter_test_common.h"
 
 static int test_clip_noop(void)
 {

@@ -15,10 +15,10 @@
 
 #include <sixel.h>
 
-#include "filter-factory.h"
-#include "filter-load.h"
-#include "filter.h"
-#include "filter_test_common.h"
+#include "src/filter-factory.h"
+#include "src/filter-load.h"
+#include "src/filter.h"
+#include "tests/filter/filter_test_common.h"
 
 static SIXELSTATUS
 stub_loader(void *userdata,

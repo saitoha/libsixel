@@ -15,10 +15,10 @@
 
 #include <sixel.h>
 
-#include "filter-dither.h"
-#include "filter-factory.h"
-#include "filter.h"
-#include "filter_test_common.h"
+#include "src/filter-dither.h"
+#include "src/filter-factory.h"
+#include "src/filter.h"
+#include "tests/filter/filter_test_common.h"
 
 static int
 test_dither_updates_pixelformat_and_progress(void)

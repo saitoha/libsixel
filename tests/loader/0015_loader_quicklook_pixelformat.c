@@ -2,9 +2,9 @@
  * Verify QuickLook loader reports RGBA output for RGBA sources.
  */
 
-#include "pixelformat_test_common.h"
+#include "tests/loader/pixelformat_test_common.h"
 
-#include "loader-quicklook.h"
+#include "src/loader-quicklook.h"
 
 #if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
 static int
