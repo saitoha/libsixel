@@ -89,13 +89,16 @@ lsqa_init() {
 lsqa_parse_metric() {
     metric_name=$1
     json_path=$2
-    # Keep the parser POSIX sed compatible (no capture groups or extensions).
-    value=$(sed -n "/\"${metric_name}\"[[:space:]]*:/ {
-        s/.*\"${metric_name}\"[[:space:]]*:[[:space:]]*//
-        s/[ ,}].*$//
-        p
-        q
-    }" "${json_path}")
+    # Use POSIX awk to avoid sed flavor differences on Solaris.
+    value=$(awk -v key="${metric_name}" '
+        $0 ~ "\"" key "\"" {
+            line=$0
+            sub(/^.*"[^"]+"[[:space:]]*:[[:space:]]*/, "", line)
+            sub(/[ ,}].*$/, "", line)
+            print line
+            exit
+        }
+    ' "${json_path}")
     if [ -z "${value}" ] || [ "${value}" = "null" ]; then
         printf '0.0'
     else
