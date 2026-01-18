@@ -183,7 +183,8 @@ lsqa_getenv_dup(char const *name)
 static FILE *
 lsqa_fopen_write(char const *path)
 {
-#if defined(HAVE_FOPEN_S)
+    /* fopen_s depends on errno_t, which is MSVC-specific. */
+#if defined(HAVE_FOPEN_S) && defined(_MSC_VER)
     FILE *stream;
     errno_t rc;
 

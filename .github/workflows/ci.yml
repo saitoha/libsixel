@@ -1414,6 +1414,27 @@ jobs:
               meson
             exec_type: cross-platform-vms
 
+          - label: Autotools-solaris-11.4-x86_64
+            buildtool: autotools
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            version: '11.4'
+            extra_packages: >-
+              gnu-make
+              gcc
+            make: gmake
+            exec_type: solaris-vm
+
+          - label: Meson-solaris-11.4-x86_64
+            buildtool: meson
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            version: '11.4'
+            extra_packages: >-
+              gcc
+              meson
+            exec_type: solaris-vm
+
           - label: Autotools-dragonflybsd-6.4.2-x86-64
             buildtool: autotools
             os: ubuntu-latest
@@ -1449,14 +1470,23 @@ jobs:
           git config core.autocrlf false
           git reset --hard
 
-      - name: Start VM (DragonFlyBSD)
-        if: ${{ matrix.exec_type == 'dragonflybsd-vm' }}
-        timeout-minutes: 30
-        uses: vmactions/dragonflybsd-vm@v1
-        with:
-          release: ${{ matrix.version }}
-          sync-time: true
-          sync: nfs
+#      - name: Start VM (DragonFlyBSD)
+#        if: ${{ matrix.exec_type == 'dragonflybsd-vm' }}
+#        timeout-minutes: 30
+#        uses: vmactions/dragonflybsd-vm@v1
+#        with:
+#          release: ${{ matrix.version }}
+#          sync-time: true
+#          sync: nfs
+#
+#      - name: Start VM (Solaris)
+#        if: ${{ matrix.exec_type == 'solaris-vm' }}
+#        timeout-minutes: 30
+#        uses: vmactions/solaris-vm@v1
+#        with:
+#          release: ${{ matrix.version }}
+#          sync-time: true
+#          sync: rsync
 
       - name: Install extra packages (Linux)
         if: ${{ runner.os == 'Linux' && matrix.exec_type == 'bash' && (matrix.extra_packages || '') != '' }}
@@ -1834,10 +1864,43 @@ jobs:
         with:
           release: ${{ matrix.version }}
           sync-time: true
-          sync: nfs
+          sync: rsync
           prepare: |
             pkg update -f
             pkg install -y ${{ matrix.extra_packages || 'meson' }}
+          run: |
+            cd "$GITHUB_WORKSPACE"
+            ${{ matrix.setup_prefix || '' }} meson setup builddir ${{ matrix.setup_options || '' }}
+            meson compile -C builddir
+            meson ${{ matrix.check_target || 'test' }} -C builddir
+
+      - name: Build and test (Autotools, Solaris)
+        if: ${{ matrix.buildtool == 'autotools' && matrix.exec_type == 'solaris-vm' }}
+        timeout-minutes: 20
+        uses: vmactions/solaris-vm@v1
+        with:
+          release: ${{ matrix.version }}
+          sync-time: true
+          sync: nfs
+          prepare: |
+            pkg update -f
+            pkg install --accept ${{ matrix.extra_packages || 'gnu-make gcc' }}
+          run: |
+            ${{ matrix.setup_prefix || '' }} ./configure ${{ matrix.setup_options || '' }}
+            ${{ matrix.make || 'gmake' }} V=1
+            ${{ matrix.make || 'gmake' }} ${{ matrix.check_target || 'check' }}
+
+      - name: Configure, build, and test (Meson, Solaris)
+        if: ${{ matrix.buildtool == 'meson' && matrix.exec_type == 'solaris-vm' }}
+        timeout-minutes: 20
+        uses: vmactions/solaris-vm@v1
+        with:
+          release: ${{ matrix.version }}
+          sync-time: true
+          sync: nfs
+          prepare: |
+            pkg update -f
+            pkg install --accept ${{ matrix.extra_packages || 'gnu-make gcc meson ninja' }}
           run: |
             cd "$GITHUB_WORKSPACE"
             ${{ matrix.setup_prefix || '' }} meson setup builddir ${{ matrix.setup_options || '' }}
