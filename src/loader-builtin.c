@@ -317,6 +317,82 @@ chunk_is_pnm(sixel_chunk_t const *chunk)
     return 0;
 }
 
+/*
+ * Convert PNG palette entries into RGB triplets while resolving tRNS alpha.
+ * This matches the libpng backend by pre-blending against the background
+ * color so PAL8 output stays opaque.
+ */
+static SIXELSTATUS
+convert_png_palette(
+    unsigned char **ppalette_rgb,
+    unsigned char *palette,
+    int palette_colors,
+    int palette_comp,
+    unsigned char *bgcolor,
+    sixel_allocator_t *allocator)
+{
+    SIXELSTATUS status;
+    unsigned char *rgb_palette;
+    int i;
+    int bg_r;
+    int bg_g;
+    int bg_b;
+
+    status = SIXEL_FALSE;
+    rgb_palette = NULL;
+    i = 0;
+    bg_r = 0;
+    bg_g = 0;
+    bg_b = 0;
+
+    if (ppalette_rgb == NULL || palette == NULL || allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (palette_colors <= 0 || (palette_comp != 3 && palette_comp != 4)) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    rgb_palette = (unsigned char *)
+        sixel_allocator_malloc(allocator, (size_t)palette_colors * 3);
+    if (rgb_palette == NULL) {
+        sixel_helper_set_additional_message(
+            "convert_png_palette: sixel_allocator_malloc() failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    if (bgcolor != NULL) {
+        bg_r = bgcolor[0];
+        bg_g = bgcolor[1];
+        bg_b = bgcolor[2];
+    }
+
+    for (i = 0; i < palette_colors; ++i) {
+        if (palette_comp == 4) {
+            int alpha = palette[i * 4 + 3];
+            /* Blend: out = ((1-a) * bg + a * fg) / 255. */
+            rgb_palette[i * 3 + 0] =
+                (unsigned char)(((255 - alpha) * bg_r
+                                 + alpha * palette[i * 4 + 0]) / 255);
+            rgb_palette[i * 3 + 1] =
+                (unsigned char)(((255 - alpha) * bg_g
+                                 + alpha * palette[i * 4 + 1]) / 255);
+            rgb_palette[i * 3 + 2] =
+                (unsigned char)(((255 - alpha) * bg_b
+                                 + alpha * palette[i * 4 + 2]) / 255);
+        } else {
+            rgb_palette[i * 3 + 0] = palette[i * 3 + 0];
+            rgb_palette[i * 3 + 1] = palette[i * 3 + 1];
+            rgb_palette[i * 3 + 2] = palette[i * 3 + 2];
+        }
+    }
+
+    stbi_free(palette);
+    *ppalette_rgb = rgb_palette;
+    status = SIXEL_OK;
+
+    return status;
+}
+
 typedef union _fn_pointer {
     sixel_load_image_function fn;
     void *                    p;
@@ -336,18 +412,26 @@ load_with_builtin(
     SIXELSTATUS status;
     unsigned char *pixels;
     int depth;
+    unsigned char *palette;
+    int palette_colors;
+    int palette_comp;
     sixel_frame_t *frame;
     fn_pointer fnp;
     stbi__context stb_context;
+    stbi__result_info ri;
     char message[80];
     int nwrite;
 
     status = SIXEL_BAD_INPUT;
     pixels = NULL;
     depth = 0;
+    palette = NULL;
+    palette_colors = 0;
+    palette_comp = 0;
     frame = NULL;
     fnp.fn = NULL;
     stb_context = (stbi__context){ 0 };
+    ri = (stbi__result_info){ 0 };
     nwrite = 0;
 
     if (pchunk == NULL) {
@@ -430,6 +514,43 @@ load_with_builtin(
             goto end;
         }
         stbi_allocator = pchunk->allocator;
+        if (fuse_palette && chunk_is_png(pchunk)) {
+            /*
+             * Try indexed PNG first to keep PAL8 output. If the PNG is not
+             * paletted, fall back to the normal RGB path.
+             */
+            stbi__start_mem(&stb_context,
+                            pchunk->buffer,
+                            (int)pchunk->size);
+            pixels = stbi__png_load_palette(&stb_context,
+                                            &frame->width,
+                                            &frame->height,
+                                            &palette_comp,
+                                            &palette,
+                                            &palette_colors,
+                                            &ri);
+            if (pixels != NULL && palette != NULL) {
+                status = convert_png_palette(&frame->palette,
+                                             palette,
+                                             palette_colors,
+                                             palette_comp,
+                                             bgcolor,
+                                             pchunk->allocator);
+                if (SIXEL_FAILED(status)) {
+                    stbi_free(palette);
+                    sixel_allocator_free(pchunk->allocator, pixels);
+                    goto end;
+                }
+                frame->ncolors = palette_colors;
+                frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
+                sixel_frame_set_pixels(frame, pixels);
+                frame->loop_count = 1;
+                goto done;
+            }
+            pixels = NULL;
+            palette = NULL;
+        }
+
         stbi__start_mem(&stb_context,
                         pchunk->buffer,
                         (int)pchunk->size);
@@ -465,6 +586,7 @@ load_with_builtin(
         }
     }
 
+done:
     status = sixel_frame_strip_alpha(frame, bgcolor);
     if (SIXEL_FAILED(status)) {
         goto end;
