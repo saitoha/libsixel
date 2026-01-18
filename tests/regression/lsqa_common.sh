@@ -97,6 +97,7 @@ lsqa_parse_metric() {
             line=substr(line, pos + length(key))
             sub(/^[[:space:]]*:[[:space:]]*/, "", line)
             sub(/[ ,}].*$/, "", line)
+            gsub(/^[[:space:]]+|[[:space:]]+$/, "", line)
             print line
             exit
         }
