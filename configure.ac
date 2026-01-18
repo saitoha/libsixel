@@ -212,6 +212,10 @@ AS_CASE([$host_os],
         [*emscripten*],
         [AS_IF([test "x$enable_abort_trace" = "xyes"],
                [AC_MSG_ERROR([--enable-abort-trace is not supported on emscripten])])
+         enable_abort_trace="no"],
+        [mingw*|*mingw*|*ucrt*|*win32*|*windows*],
+        [AS_IF([test "x$enable_abort_trace" = "xyes"],
+               [AC_MSG_ERROR([--enable-abort-trace is not supported on this Windows environment])])
          enable_abort_trace="no"])
 AM_CONDITIONAL([HAVE_ABORT_TRACE],
                [test "x$enable_abort_trace" != "xno"])
