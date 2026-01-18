@@ -6,13 +6,23 @@
  * "date +%s.%N" is unavailable or lacks sub-second resolution.
  */
 
+#if !defined(_POSIX_C_SOURCE)
+#define _POSIX_C_SOURCE 200809L
+#endif
+
+#if defined(HAVE_CONFIG_H)
+#include "config.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
+#if defined(HAVE_TIME_H)
 #include <time.h>
+#endif
 
 #ifdef _WIN32
 #include <windows.h>
-#else
+#elif defined(HAVE_SYS_TIME_H)
 #include <sys/time.h>
 #endif
 
@@ -31,7 +41,7 @@ get_time_seconds(void)
   }
 
   return (double) counter.QuadPart / (double) freq.QuadPart;
-#elif defined(CLOCK_REALTIME)
+#elif defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_REALTIME)
   struct timespec ts;
 
   if (clock_gettime(CLOCK_REALTIME, &ts) != 0) {
@@ -39,7 +49,7 @@ get_time_seconds(void)
   }
 
   return (double) ts.tv_sec + (double) ts.tv_nsec / 1.0e9;
-#else
+#elif defined(HAVE_GETTIMEOFDAY)
   struct timeval tv;
 
   if (gettimeofday(&tv, NULL) != 0) {
@@ -47,6 +57,8 @@ get_time_seconds(void)
   }
 
   return (double) tv.tv_sec + (double) tv.tv_usec / 1.0e6;
+#else
+  return -1.0;
 #endif
 }
 

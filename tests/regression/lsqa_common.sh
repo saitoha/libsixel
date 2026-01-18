@@ -91,16 +91,37 @@ lsqa_parse_metric() {
     json_path=$2
     # Use POSIX awk and index() to avoid regex quirks on Solaris awk.
     value=$(awk -F: -v key="\"${metric_name}\"" '
+        function debug(msg) {
+            if (ENVIRON["LSQA_PARSE_DEBUG"] == "1") {
+                printf "lsqa_parse_metric: %s\n", msg > "/dev/stderr"
+            }
+        }
+        BEGIN {
+            debug("key=" key)
+        }
         index($0, key) {
+            debug("raw_line=" $0)
             line=$2
+            debug("field2=" line)
             sub(/^[[:space:]]*/, "", line)
+            debug("trim_left=" line)
             sub(/[ ,}].*$/, "", line)
+            debug("trim_tail=" line)
             gsub(/^[[:space:]]+|[[:space:]]+$/, "", line)
+            debug("trim_both=" line)
             print line
             exit
         }
+        END {
+            if (NR == 0) {
+                debug("input_empty=1")
+            }
+        }
     ' "${json_path}")
     if [ -z "${value}" ] || [ "${value}" = "null" ]; then
+        if [ "${LSQA_PARSE_DEBUG-}" = "1" ]; then
+            printf 'lsqa_parse_metric: empty_or_null=1\n' >&2
+        fi
         printf '0.0'
     else
         printf '%s' "${value}"

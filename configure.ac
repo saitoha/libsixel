@@ -942,6 +942,16 @@ AC_TYPE_UINT32_T
 AC_FUNC_MALLOC
 AC_FUNC_REALLOC
 
+CLOCK_GETTIME_LIBS=""
+LS_SAVED_LIBS=$LIBS
+AC_SEARCH_LIBS([clock_gettime], [rt],
+               [CLOCK_GETTIME_LIBS="$ac_cv_search_clock_gettime"])
+AS_IF([test "x$CLOCK_GETTIME_LIBS" = "xnone required"],
+      [CLOCK_GETTIME_LIBS=""])
+AS_IF([test "x$CLOCK_GETTIME_LIBS" != "x" && \
+       test "x$CLOCK_GETTIME_LIBS" != "xno"],
+      [LIBS="$LIBS $CLOCK_GETTIME_LIBS"])
+
 AC_CHECK_FUNC([getopt_long],
               [AC_DEFINE(HAVE_GETOPT_LONG, 1, [whether getopt_long is avilable])
                have_getopt_long=1],
@@ -986,6 +996,7 @@ AC_CHECK_FUNCS([assert \
                 _strerror_r \
                 _isatty \
                 isatty \
+                clock_gettime \
                 _sopen_s \
                 _open \
                 _write \
@@ -1010,6 +1021,8 @@ AC_CHECK_FUNCS([assert \
                 tmpnam \
                 gettimeofday \
                ])
+LIBS=$LS_SAVED_LIBS
+AC_SUBST([CLOCK_GETTIME_LIBS])
 AC_CHECK_FUNCS([_sopen_s], [], [], [[#include <io.h>
 #include <share.h>]])
 AC_CHECK_FUNCS([open], [], [], [[#include <fcntl.h>
