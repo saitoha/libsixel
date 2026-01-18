@@ -89,22 +89,54 @@ lsqa_init() {
 lsqa_parse_metric() {
     metric_name=$1
     json_path=$2
-    # Use POSIX tr/cut to avoid awk regex and locale differences.
+    # Use awk index/match with substr to avoid regex-heavy parsing.
     value=$(
-        sed -n "/\"${metric_name}\"/p" "${json_path}" | \
-        tr -d ' "' | \
-        cut -d: -f2
+        awk -v key="${metric_name}" -v debug="${LSQA_PARSE_DEBUG-}" '
+            BEGIN {
+                value = ""
+                raw = ""
+            }
+            {
+                if (index($0, "\"" key "\"") > 0) {
+                    raw = $0
+                    if (match($0, ":")) {
+                        value = substr($0, RSTART + RLENGTH)
+                        gsub(/^[[:space:]]+/, "", value)
+                        gsub(/[[:space:]]+$/, "", value)
+                        gsub(/[",}]/, "", value)
+                        gsub(/^[[:space:]]+/, "", value)
+                        gsub(/[[:space:]]+$/, "", value)
+                    }
+                    if (debug == "1") {
+                        printf("lsqa_parse_metric: key=%s\n", key) \
+                            > "/dev/stderr"
+                        printf("lsqa_parse_metric: raw=%s\n", raw) \
+                            > "/dev/stderr"
+                        printf("lsqa_parse_metric: parsed=%s\n", value) \
+                            > "/dev/stderr"
+                    }
+                    print value
+                    exit 0
+                }
+            }
+            END {
+                if (debug == "1" && raw == "") {
+                    printf("lsqa_parse_metric: key=%s\n", key) \
+                        > "/dev/stderr"
+                    printf("lsqa_parse_metric: raw=\n") \
+                        > "/dev/stderr"
+                    printf("lsqa_parse_metric: parsed=\n") \
+                        > "/dev/stderr"
+                }
+            }
+        ' "${json_path}"
     )
     if [ "${LSQA_PARSE_DEBUG-}" = "1" ]; then
-        printf 'lsqa_parse_metric: key=%s\n' "${metric_name}" >&2
-        printf 'lsqa_parse_metric: raw=%s\n' \
-            "$(sed -n "/\"${metric_name}\"/p" "${json_path}")" >&2
-        printf 'lsqa_parse_metric: parsed=%s\n' "${value}" >&2
-    fi
-    if [ -z "${value}" ] || [ "${value}" = "null" ]; then
-        if [ "${LSQA_PARSE_DEBUG-}" = "1" ]; then
+        if [ -z "${value}" ] && [ "${value}" != "0" ]; then
             printf 'lsqa_parse_metric: empty_or_null=1\n' >&2
         fi
+    fi
+    if [ -z "${value}" ] || [ "${value}" = "null" ]; then
         printf '0.0'
     else
         printf '%s' "${value}"
