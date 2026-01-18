@@ -99,22 +99,35 @@ check_PROGRAMS = test_runner$(EXEEXT)
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/t/0007_loader_plugin_integration.t
 
 @AMALGAMATION_NEEDS_OBJC_TRUE@am__append_2 = -x objective-c
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_3 = \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0002_incremental_load.c \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0003_corrupt_data.c \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0004_propagate_error.c \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0005_context_free.c \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0006_loader_module.c \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@    gdk-pixbuf-loader/0007_loader_plugin_integration.c \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_TRUE@am__append_3 = $(GDK_PIXBUF_CFLAGS) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_TRUE@    -DGDK_PIXBUF_ENABLE_BACKEND \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_TRUE@    -DSIXEL_PIXBUF_LOADER_TESTING \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_TRUE@    -DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GDK_PIXBUF_LOADER \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_INCREMENTAL_LOAD \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_CORRUPT_DATA \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_PROPAGATE_ERROR \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_CONTEXT_FREE \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_LOADER_MODULE \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_LOADER_PLUGIN_INTEGRATION \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_SIXEL_PIXBUF_LOADER
 
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_4 = $(GDK_PIXBUF_CFLAGS) \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@    -DGDK_PIXBUF_ENABLE_BACKEND \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@    -DSIXEL_PIXBUF_LOADER_TESTING \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@    -DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@am__append_4 = \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@    gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@    gdk-pixbuf-loader/0002_incremental_load.c \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@    gdk-pixbuf-loader/0003_corrupt_data.c \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@    gdk-pixbuf-loader/0004_propagate_error.c \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@    gdk-pixbuf-loader/0005_context_free.c \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@    gdk-pixbuf-loader/0006_loader_module.c \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@    gdk-pixbuf-loader/0007_loader_plugin_integration.c \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
 
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_5 = $(GDK_PIXBUF_LIBS)
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@am__append_5 = $(GDK_PIXBUF_CFLAGS) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@    -DGDK_PIXBUF_ENABLE_BACKEND \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@    -DSIXEL_PIXBUF_LOADER_TESTING \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@    -DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS
+
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_6 = $(GDK_PIXBUF_LIBS)
 subdir = tests
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
@@ -160,42 +173,47 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	gdk-pixbuf-loader/0007_loader_plugin_integration.c \
 	$(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
 am__dirstamp = $(am__leading_dot)dirstamp
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__objects_1 = gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.$(OBJEXT) \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@	gdk-pixbuf-loader/test_runner-0002_incremental_load.$(OBJEXT) \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@	gdk-pixbuf-loader/test_runner-0003_corrupt_data.$(OBJEXT) \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@	gdk-pixbuf-loader/test_runner-0004_propagate_error.$(OBJEXT) \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@	gdk-pixbuf-loader/test_runner-0005_context_free.$(OBJEXT) \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@	gdk-pixbuf-loader/test_runner-0006_loader_module.$(OBJEXT) \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@	gdk-pixbuf-loader/test_runner-0007_loader_plugin_integration.$(OBJEXT) \
-@ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(top_builddir)/gdk-pixbuf-loader/test_runner-sixel-pixbuf-loader.$(OBJEXT)
-am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
-	cli/test_runner-0029_cli_token_is_known_option.$(OBJEXT) \
-	cli/test_runner-0030_cli_option_requires_argument.$(OBJEXT) \
-	cli/test_runner-0031_cli_guard_missing_argument.$(OBJEXT) \
-	filter/test_runner-0001_filter_clip.$(OBJEXT) \
-	filter/test_runner-0002_filter_sample.$(OBJEXT) \
-	filter/test_runner-0003_filter_resize.$(OBJEXT) \
-	filter/test_runner-0004_filter_colors.$(OBJEXT) \
-	filter/test_runner-0005_filter_lookup.$(OBJEXT) \
-	filter/test_runner-0006_filter_final_merge.$(OBJEXT) \
-	filter/test_runner-0007_filter_vpte.$(OBJEXT) \
-	filter/test_runner-0008_filter_load.$(OBJEXT) \
-	filter/test_runner-0009_filter_dither.$(OBJEXT) \
-	filter/test_runner-0010_filter_encode.$(OBJEXT) \
-	loader/test_runner-0008_loader_coregraphics_pixelformat.$(OBJEXT) \
-	loader/test_runner-0009_loader_wic_pixelformat.$(OBJEXT) \
-	loader/test_runner-0010_loader_gdk_pixbuf_pixelformat.$(OBJEXT) \
-	loader/test_runner-0011_loader_gd_pixelformat.$(OBJEXT) \
-	loader/test_runner-0012_loader_libpng_pixelformat.$(OBJEXT) \
-	loader/test_runner-0013_loader_libjpeg_pixelformat.$(OBJEXT) \
-	loader/test_runner-0014_loader_builtin_pixelformat.$(OBJEXT) \
-	loader/test_runner-0015_loader_quicklook_pixelformat.$(OBJEXT) \
-	loader/test_runner-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT) \
-	palette/test_runner-0001_kmeans_init.$(OBJEXT) \
-	probe/test_runner-0001_probe_parse.$(OBJEXT) \
-	$(top_builddir)/converters/test_runner-cli.$(OBJEXT) \
-	$(am__objects_1)
-test_runner_OBJECTS = $(am_test_runner_OBJECTS)
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@am__objects_1 = gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.$(OBJEXT) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@	gdk-pixbuf-loader/test_runner-0002_incremental_load.$(OBJEXT) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@	gdk-pixbuf-loader/test_runner-0003_corrupt_data.$(OBJEXT) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@	gdk-pixbuf-loader/test_runner-0004_propagate_error.$(OBJEXT) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@	gdk-pixbuf-loader/test_runner-0005_context_free.$(OBJEXT) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@	gdk-pixbuf-loader/test_runner-0006_loader_module.$(OBJEXT) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@	gdk-pixbuf-loader/test_runner-0007_loader_plugin_integration.$(OBJEXT) \
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/gdk-pixbuf-loader/test_runner-sixel-pixbuf-loader.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0029_cli_token_is_known_option.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0030_cli_option_requires_argument.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0031_cli_guard_missing_argument.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	filter/test_runner-0001_filter_clip.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	filter/test_runner-0002_filter_sample.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	filter/test_runner-0003_filter_resize.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	filter/test_runner-0004_filter_colors.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	filter/test_runner-0005_filter_lookup.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	filter/test_runner-0006_filter_final_merge.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	filter/test_runner-0007_filter_vpte.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	filter/test_runner-0008_filter_load.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	filter/test_runner-0009_filter_dither.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	filter/test_runner-0010_filter_encode.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0008_loader_coregraphics_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0009_loader_wic_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0010_loader_gdk_pixbuf_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0011_loader_gd_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0012_loader_libpng_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0013_loader_libjpeg_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0014_loader_builtin_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0015_loader_quicklook_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/test_runner-0001_kmeans_init.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	probe/test_runner-0001_probe_parse.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-cli.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__objects_1)
+am__objects_2 =  \
+	$(top_builddir)/amalgamation/test_runner-sixel.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_test_runner_OBJECTS =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__objects_2)
+test_runner_OBJECTS = $(am_test_runner_OBJECTS) \
+	$(nodist_test_runner_OBJECTS)
 am__DEPENDENCIES_1 =
 @WANT_AMALGAMATED_TOOLS_FALSE@am__DEPENDENCIES_2 =  \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/src/libsixel.la \
@@ -215,7 +233,12 @@ am__DEPENDENCIES_1 =
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_1)
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@am__DEPENDENCIES_3 =  \
 @ENABLE_GDK_PIXBUF_LOADER_TRUE@	$(am__DEPENDENCIES_1)
-test_runner_DEPENDENCIES = $(am__DEPENDENCIES_2) $(am__DEPENDENCIES_3)
+@WANT_AMALGAMATED_TOOLS_FALSE@test_runner_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_2) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__DEPENDENCIES_3)
+@WANT_AMALGAMATED_TOOLS_TRUE@test_runner_DEPENDENCIES =  \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_2) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__DEPENDENCIES_3)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -239,6 +262,7 @@ DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade =  \
+	$(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po \
 	$(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po \
 	$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po \
 	./$(DEPDIR)/test_runner-test_runner.Po \
@@ -292,7 +316,7 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(test_runner_SOURCES)
+SOURCES = $(test_runner_SOURCES) $(nodist_test_runner_SOURCES)
 DIST_SOURCES = $(am__test_runner_SOURCES_DIST)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
@@ -544,6 +568,7 @@ CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
 CLIPBOARD_CFLAGS = @CLIPBOARD_CFLAGS@
 CLIPBOARD_LIBS = @CLIPBOARD_LIBS@
+CLOCK_GETTIME_LIBS = @CLOCK_GETTIME_LIBS@
 COREGRAPHICS_CFLAGS = @COREGRAPHICS_CFLAGS@
 COREGRAPHICS_LIBS = @COREGRAPHICS_LIBS@
 CPP = @CPP@
@@ -1010,7 +1035,7 @@ TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
 TESTS_COMMON_LDFLAGS_VAL = $(AM_LDFLAGS) $(MAYBE_COVERAGE)
 @WANT_AMALGAMATED_TOOLS_FALSE@TESTS_COMMON_LDADD_VAL = $(top_builddir)/src/libsixel.la $(LIBS)
 @WANT_AMALGAMATED_TOOLS_TRUE@TESTS_COMMON_LDADD_VAL = -lm \
-@WANT_AMALGAMATED_TOOLS_TRUE@	$(LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(LIBCURL_LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(WINHTTP_LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(LIBPNG_LIBS) \
@@ -1030,7 +1055,7 @@ TESTS_AMALGAMATION_CFLAGS_COMMON = $(TESTS_COMMON_CFLAGS_VAL)
 TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@TESTS_AMALGAMATION_LDADD_COMMON = $(top_builddir)/src/libsixel.la $(LIBS)
 @WANT_AMALGAMATED_TOOLS_TRUE@TESTS_AMALGAMATION_LDADD_COMMON = -lm \
-@WANT_AMALGAMATED_TOOLS_TRUE@	$(LIBS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@        $(LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(LIBCURL_LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(WINHTTP_LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(LIBPNG_LIBS) \
@@ -1044,30 +1069,77 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@        $(ONNXRUNTIME_LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@        @THREAD_LIBS@
 
-test_runner_SOURCES = test_runner.c \
-	cli/0029_cli_token_is_known_option.c \
-	cli/0030_cli_option_requires_argument.c \
-	cli/0031_cli_guard_missing_argument.c \
-	filter/0001_filter_clip.c filter/0002_filter_sample.c \
-	filter/0003_filter_resize.c filter/0004_filter_colors.c \
-	filter/0005_filter_lookup.c filter/0006_filter_final_merge.c \
-	filter/0007_filter_vpte.c filter/0008_filter_load.c \
-	filter/0009_filter_dither.c filter/0010_filter_encode.c \
-	loader/0008_loader_coregraphics_pixelformat.c \
-	loader/0009_loader_wic_pixelformat.c \
-	loader/0010_loader_gdk_pixbuf_pixelformat.c \
-	loader/0011_loader_gd_pixelformat.c \
-	loader/0012_loader_libpng_pixelformat.c \
-	loader/0013_loader_libjpeg_pixelformat.c \
-	loader/0014_loader_builtin_pixelformat.c \
-	loader/0015_loader_quicklook_pixelformat.c \
-	loader/0016_loader_gnome_thumbnailer_pixelformat.c \
-	palette/0001_kmeans_init.c probe/0001_probe_parse.c \
-	$(top_srcdir)/converters/cli.c $(am__append_3)
-test_runner_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL) $(am__append_4)
-test_runner_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
-test_runner_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
-test_runner_LDADD = $(TESTS_COMMON_LDADD_VAL) $(am__append_5)
+@WANT_AMALGAMATED_TOOLS_TRUE@nodist_test_runner_SOURCES = $(AMALGAMATION_SIXEL)
+@WANT_AMALGAMATED_TOOLS_TRUE@TEST_RUNNER_AMALGAMATION_DEFINES = \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_RUNNER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0029_CLI_TOKEN_IS_KNOWN_OPTION \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0030_CLI_OPTION_REQUIRES_ARGUMENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0031_CLI_GUARD_MISSING_ARGUMENT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_FILTER_CLIP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0002_FILTER_SAMPLE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0003_FILTER_RESIZE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0004_FILTER_COLORS \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0005_FILTER_LOOKUP \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0006_FILTER_FINAL_MERGE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0007_FILTER_VPTE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_FILTER_LOAD \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_FILTER_DITHER \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_FILTER_ENCODE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0008_LOADER_COREGRAPHICS_PIXELFORMAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0009_LOADER_WIC_PIXELFORMAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0011_LOADER_GD_PIXELFORMAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0012_LOADER_LIBPNG_PIXELFORMAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0013_LOADER_LIBJPEG_PIXELFORMAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_LOADER_BUILTIN_PIXELFORMAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_LOADER_QUICKLOOK_PIXELFORMAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_LOADER_GNOME_THUMBNAILER_PIXELFORMAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_KMEANS_INIT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_PROBE_PARSE \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_CLI
+
+@WANT_AMALGAMATED_TOOLS_FALSE@test_runner_CPPFLAGS =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(TESTS_COMMON_CPPFLAGS_VAL) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__append_3) $(am__append_5)
+@WANT_AMALGAMATED_TOOLS_TRUE@test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(TEST_RUNNER_AMALGAMATION_DEFINES) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__append_3) $(am__append_5)
+@WANT_AMALGAMATED_TOOLS_FALSE@test_runner_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@test_runner_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@test_runner_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+@WANT_AMALGAMATED_TOOLS_TRUE@test_runner_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
+@WANT_AMALGAMATED_TOOLS_FALSE@test_runner_LDADD =  \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(TESTS_COMMON_LDADD_VAL) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__append_6)
+@WANT_AMALGAMATED_TOOLS_TRUE@test_runner_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON) \
+@WANT_AMALGAMATED_TOOLS_TRUE@	$(am__append_6)
+@WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	cli/0029_cli_token_is_known_option.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	cli/0030_cli_option_requires_argument.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	cli/0031_cli_guard_missing_argument.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	filter/0001_filter_clip.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	filter/0002_filter_sample.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	filter/0003_filter_resize.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	filter/0004_filter_colors.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	filter/0005_filter_lookup.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	filter/0006_filter_final_merge.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	filter/0007_filter_vpte.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	filter/0008_filter_load.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	filter/0009_filter_dither.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	filter/0010_filter_encode.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/0008_loader_coregraphics_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/0009_loader_wic_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/0010_loader_gdk_pixbuf_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/0011_loader_gd_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/0012_loader_libpng_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/0013_loader_libjpeg_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/0014_loader_builtin_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/0015_loader_quicklook_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/0016_loader_gnome_thumbnailer_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	palette/0001_kmeans_init.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	probe/0001_probe_parse.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(top_srcdir)/converters/cli.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(am__append_4)
 LOG_DRIVER = $(T_LOG_DRIVER)
 LOG_DRIVER_FLAGS = $(AM_TEST_LOG_DRIVER_FLAGS)
 T_LOG_DRIVER = env AM_TAP_AWK='$(AWK)' $(SHELL) $(top_builddir)/build-aux/lso-tap-driver.sh
@@ -1292,6 +1364,15 @@ $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp):
 $(top_builddir)/gdk-pixbuf-loader/test_runner-sixel-pixbuf-loader.$(OBJEXT):  \
 	$(top_builddir)/gdk-pixbuf-loader/$(am__dirstamp) \
 	$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/amalgamation
+	@: >>$(top_builddir)/amalgamation/$(am__dirstamp)
+$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/amalgamation/$(DEPDIR)
+	@: >>$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/amalgamation/test_runner-sixel.$(OBJEXT):  \
+	$(top_builddir)/amalgamation/$(am__dirstamp) \
+	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 
 test_runner$(EXEEXT): $(test_runner_OBJECTS) $(test_runner_DEPENDENCIES) $(EXTRA_test_runner_DEPENDENCIES) 
 	@rm -f test_runner$(EXEEXT)
@@ -1299,6 +1380,7 @@ test_runner$(EXEEXT): $(test_runner_OBJECTS) $(test_runner_DEPENDENCIES) $(EXTRA
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f $(top_builddir)/amalgamation/*.$(OBJEXT)
 	-rm -f $(top_builddir)/converters/*.$(OBJEXT)
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/*.$(OBJEXT)
 	-rm -f cli/*.$(OBJEXT)
@@ -1311,6 +1393,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_runner-test_runner.Po@am__quote@ # am--include-marker
@@ -1852,6 +1935,20 @@ $(top_builddir)/gdk-pixbuf-loader/test_runner-sixel-pixbuf-loader.obj: $(top_bui
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/gdk-pixbuf-loader/test_runner-sixel-pixbuf-loader.obj `if test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; then $(CYGPATH_W) '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; fi`
 
+$(top_builddir)/amalgamation/test_runner-sixel.o: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/test_runner-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Tpo -c -o $(top_builddir)/amalgamation/test_runner-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/test_runner-sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/test_runner-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
+
+$(top_builddir)/amalgamation/test_runner-sixel.obj: $(top_builddir)/amalgamation/sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/test_runner-sixel.obj -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Tpo -c -o $(top_builddir)/amalgamation/test_runner-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Tpo $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/test_runner-sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/test_runner-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+
 mostlyclean-libtool:
 	-rm -f *.lo
 
@@ -2163,6 +2260,8 @@ clean-generic:
 distclean-generic:
 	-$(am__rm_f) $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || $(am__rm_f) $(CONFIG_CLEAN_VPATH_FILES)
+	-$(am__rm_f) $(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) $(top_builddir)/amalgamation/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/converters/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
@@ -2190,6 +2289,7 @@ clean-am: clean-checkPROGRAMS clean-generic clean-libtool clean-local \
 	mostlyclean-am
 
 distclean: distclean-am
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po
 	-rm -f ./$(DEPDIR)/test_runner-test_runner.Po
@@ -2269,6 +2369,7 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
+	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po
 	-rm -f ./$(DEPDIR)/test_runner-test_runner.Po
