@@ -5,7 +5,7 @@ set -euxv
 
 name=$(basename "$0")
 artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_dir="${artifact_root}/${name}" 
+artifact_dir="${artifact_root}/${name}"
 mkdir -p "${artifact_dir}"
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -17,15 +17,24 @@ else
     top_builddir=${TOP_BUILDDIR:-${parent_dir}}
 fi
 
-binary="${top_builddir}/tests/0001_probe_parse"
+binary="${top_builddir}/tests/test_runner"
 if [ ! -x "${binary}" ]; then
-    alt_binary="${top_builddir}/tests/probe/0001_probe_parse"
-    if [ -x "${alt_binary}" ]; then
-        binary="${alt_binary}"
-    else
-        echo "harness not built" >&2
-        exit 99
-    fi
+    echo "harness not built" >&2
+    exit 99
 fi
 
-"${binary}" | tee "${artifact_dir}/tap.log"
+log_file="${artifact_dir}/test.log"
+set +e
+"${binary}" "probe/0001_probe_parse" >"${log_file}" 2>&1
+rc=$?
+set -e
+
+echo "1..1"
+
+if [ "${rc}" -eq 0 ]; then
+    echo "ok 1 - probe_parse"
+else
+    echo "not ok 1 - probe_parse"
+    sed 's/^/# /' "${log_file}"
+    exit 1
+fi

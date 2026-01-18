@@ -13,15 +13,10 @@ locate_kmeans_binary() {
         top_builddir=${TOP_BUILDDIR:-${parent_dir}}
     fi
 
-    binary="${top_builddir}/tests/0001_kmeans_init"
+    binary="${top_builddir}/tests/test_runner"
     if [ ! -x "${binary}" ]; then
-        alt_binary="${top_builddir}/tests/palette/0001_kmeans_init"
-        if [ -x "${alt_binary}" ]; then
-            binary="${alt_binary}"
-        else
-            echo "harness not built" >&2
-            exit 99
-        fi
+        echo "harness not built" >&2
+        exit 99
     fi
 
     printf '%s\n' "${binary}"
@@ -33,5 +28,5 @@ run_kmeans_init() {
 
     binary=$(locate_kmeans_binary)
     SIXEL_PALETTE_KMEANS_INITTYPE="${env_value}" \
-        "${binary}" "$@" | tr -d '\r'
+        "${binary}" "palette/0001_kmeans_init" "$@" | tr -d '\r'
 }

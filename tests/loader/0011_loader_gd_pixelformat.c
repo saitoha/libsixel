@@ -2,9 +2,9 @@
  * Verify GD loader reports RGB output for RGBA sources.
  */
 
-#include "pixelformat_test_common.h"
+#include "tests/loader/pixelformat_test_common.h"
 
-#include "loader-gd.h"
+#include "src/loader-gd.h"
 
 #if HAVE_GD
 static int
@@ -20,14 +20,16 @@ run_gd_loader_test(void)
 #endif
 
 int
-main(void)
+test_loader_0011_loader_gd_pixelformat(int argc, char **argv)
 {
+    (void) argc;
+    (void) argv;
+
 #if HAVE_GD
-    printf("1..1\n");
     return run_gd_loader_test();
 #else
-    printf("1..0 # SKIP GD loader unavailable\n");
-    return 0;
+    fprintf(stderr, "GD loader unavailable\n");
+    return SIXEL_TEST_SKIP;
 #endif
 }
 

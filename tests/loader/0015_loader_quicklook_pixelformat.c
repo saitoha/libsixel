@@ -2,9 +2,9 @@
  * Verify QuickLook loader reports RGBA output for RGBA sources.
  */
 
-#include "pixelformat_test_common.h"
+#include "tests/loader/pixelformat_test_common.h"
 
-#include "loader-quicklook.h"
+#include "src/loader-quicklook.h"
 
 #if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
 static int
@@ -20,14 +20,16 @@ run_quicklook_loader_test(void)
 #endif
 
 int
-main(void)
+test_loader_0015_loader_quicklook_pixelformat(int argc, char **argv)
 {
+    (void) argc;
+    (void) argv;
+
 #if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
-    printf("1..1\n");
     return run_quicklook_loader_test();
 #else
-    printf("1..0 # SKIP QuickLook loader unavailable\n");
-    return 0;
+    fprintf(stderr, "QuickLook loader unavailable\n");
+    return SIXEL_TEST_SKIP;
 #endif
 }
 

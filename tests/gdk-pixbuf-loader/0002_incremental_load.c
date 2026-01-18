@@ -148,7 +148,7 @@ incremental_load_test(void)
 }
 
 int
-main(int argc, char **argv)
+test_gdk_pixbuf_loader_0002_incremental_load(int argc, char **argv)
 {
     g_test_init(&argc, &argv, NULL);
 

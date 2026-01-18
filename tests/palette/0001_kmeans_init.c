@@ -7,8 +7,8 @@
 #include <string.h>
 
 #include "config.h"
-#include "compat_stub.h"
-#include "palette-kmeans.h"
+#include "src/compat_stub.h"
+#include "src/palette-kmeans.h"
 
 static char const *
 test_sixel_kmeans_init_type_to_string(sixel_kmeans_init_type init_type)
@@ -25,7 +25,7 @@ test_sixel_kmeans_init_type_to_string(sixel_kmeans_init_type init_type)
 }
 
 int
-main(int argc, char **argv)
+test_palette_0001_kmeans_init(int argc, char **argv)
 {
     sixel_kmeans_init_type first;
     sixel_kmeans_init_type second;

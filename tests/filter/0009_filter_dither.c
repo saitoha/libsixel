@@ -11,13 +11,14 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <sixel.h>
 
-#include "filter-dither.h"
-#include "filter-factory.h"
-#include "filter.h"
-#include "filter_test_common.h"
+#include "src/filter-dither.h"
+#include "src/filter-factory.h"
+#include "src/filter.h"
+#include "tests/filter/filter_test_common.h"
 
 static int
 test_dither_updates_pixelformat_and_progress(void)
@@ -97,21 +98,22 @@ cleanup:
     return SIXEL_SUCCEEDED(status);
 }
 
-int main(void)
+int
+test_filter_0009_filter_dither(int argc, char **argv)
 {
     int success;
 
-    success = 1;
-    printf("1..1\n");
+    (void) argc;
+    (void) argv;
 
-    if (test_dither_updates_pixelformat_and_progress()) {
-        printf("ok 1 - dither filter sets format and progress\n");
-    } else {
-        printf("not ok 1 - dither filter sets format and progress\n");
+    success = 1;
+
+    if (!test_dither_updates_pixelformat_and_progress()) {
+        fprintf(stderr, "dither filter sets format and progress failed\n");
         success = 0;
     }
 
-    return success ? 0 : 1;
+    return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 /* emacs Local Variables:      */

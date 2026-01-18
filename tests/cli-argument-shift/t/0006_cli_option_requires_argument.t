@@ -17,15 +17,24 @@ else
     top_builddir=${TOP_BUILDDIR:-${parent_dir}}
 fi
 
-binary="${top_builddir}/tests/0030_cli_option_requires_argument"
+binary="${top_builddir}/tests/test_runner"
 if [ ! -x "${binary}" ]; then
-    alt_binary="${top_builddir}/tests/cli/0030_cli_option_requires_argument"
-    if [ -x "${alt_binary}" ]; then
-        binary="${alt_binary}"
-    else
-        echo "harness not built" >&2
-        exit 99
-    fi
+    echo "harness not built" >&2
+    exit 99
 fi
 
-"${binary}" | tee "${artifact_dir}/tap.log"
+log_file="${artifact_dir}/test.log"
+set +e
+"${binary}" "cli/0030_cli_option_requires_argument" >"${log_file}" 2>&1
+rc=$?
+set -e
+
+echo "1..1"
+
+if [ "${rc}" -eq 0 ]; then
+    echo "ok 1 - cli_option_requires_argument"
+else
+    echo "not ok 1 - cli_option_requires_argument"
+    sed 's/^/# /' "${log_file}"
+    exit 1
+fi
