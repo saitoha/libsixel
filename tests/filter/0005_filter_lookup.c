@@ -14,10 +14,10 @@
 
 #include <sixel.h>
 
-#include "filter-factory.h"
-#include "filter-lookup.h"
-#include "filter.h"
-#include "filter_test_common.h"
+#include "src/filter-factory.h"
+#include "src/filter-lookup.h"
+#include "src/filter.h"
+#include "tests/filter/filter_test_common.h"
 
 static int
 test_lookup_build_allocates_owned_lut(void)

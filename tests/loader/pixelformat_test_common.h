@@ -15,9 +15,9 @@
 
 #include <sixel.h>
 
-#include "allocator.h"
-#include "chunk.h"
-#include "status.h"
+#include "src/allocator.h"
+#include "src/chunk.h"
+#include "src/status.h"
 
 #if defined(__clang__)
 # if __has_attribute(unused)

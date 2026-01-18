@@ -2,9 +2,9 @@
  * Verify builtin loader reports RGB output for RGBA sources.
  */
 
-#include "pixelformat_test_common.h"
+#include "tests/loader/pixelformat_test_common.h"
 
-#include "loader-builtin.h"
+#include "src/loader-builtin.h"
 
 static int
 run_builtin_loader_test(void)

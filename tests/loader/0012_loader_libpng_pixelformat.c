@@ -2,9 +2,9 @@
  * Verify libpng loader reports RGB output for RGBA sources.
  */
 
-#include "pixelformat_test_common.h"
+#include "tests/loader/pixelformat_test_common.h"
 
-#include "loader-libpng.h"
+#include "src/loader-libpng.h"
 
 #if HAVE_LIBPNG
 static int
