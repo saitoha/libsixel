@@ -368,6 +368,12 @@ endforeach
 
 abort_trace_opt = get_option('abort_trace')
 abort_trace_enabled = not abort_trace_opt.disabled()
+if host_system == 'emscripten'
+  if abort_trace_opt.enabled()
+    error('abort_trace=enabled is not supported on emscripten')
+  endif
+  abort_trace_enabled = false
+endif
 abort_trace_deps = []
 if abort_trace_enabled
   conf.set('SIXEL_ENABLE_ABORT_TRACE', 1)
