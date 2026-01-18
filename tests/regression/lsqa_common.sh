@@ -90,12 +90,10 @@ lsqa_parse_metric() {
     metric_name=$1
     json_path=$2
     # Use POSIX awk and index() to avoid regex quirks on Solaris awk.
-    value=$(awk -v key="\"${metric_name}\"" '
+    value=$(awk -F: -v key="\"${metric_name}\"" '
         index($0, key) {
-            line=$0
-            pos=index(line, key)
-            line=substr(line, pos + length(key))
-            sub(/^[[:space:]]*:[[:space:]]*/, "", line)
+            line=$2
+            sub(/^[[:space:]]*/, "", line)
             sub(/[ ,}].*$/, "", line)
             gsub(/^[[:space:]]+|[[:space:]]+$/, "", line)
             print line
