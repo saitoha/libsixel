@@ -74,6 +74,7 @@ mkdir -p "${regfree_dir}"
 
 cscript_copy="${regfree_dir}/cscript.exe"
 cp "${cscript_path}" "${cscript_copy}"
+chmod +x "${cscript_copy}" || :
 
 dll_name=$(basename "${wicsixel_dll}")
 cp "${wicsixel_dll}" "${regfree_dir}/${dll_name}"
@@ -129,6 +130,7 @@ if [ -n "${mt_path}" ]; then
     "${mt_path}" -manifest "${manifest_win}" \
         -outputresource:"${cscript_win};#1" \
         >"${artifact_dir}/mt_embed.log" 2>&1 || :
+    chmod +x "${cscript_copy}" || :
 fi
 
 if "${cscript_copy}" //nologo "${regfree_dir}/wsh_decoder_regfree.vbs" \
