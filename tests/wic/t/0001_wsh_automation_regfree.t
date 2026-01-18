@@ -78,9 +78,10 @@ trap 'rm -rf "${exec_root}"' EXIT
 exec_regfree_dir="${exec_root}/regfree"
 mkdir -p "${exec_regfree_dir}"
 
-cscript_copy="${exec_regfree_dir}/cscript.exe"
-cp "${cscript_path}" "${cscript_copy}"
-chmod +x "${cscript_copy}" || :
+cscript_host="${cscript_path}"
+if [ -n "${systemroot}" ] && [ -x "${systemroot}/System32/cscript.exe" ]; then
+    cscript_host="${systemroot}/System32/cscript.exe"
+fi
 
 dll_name=$(basename "${wicsixel_dll}")
 cp "${wicsixel_dll}" "${exec_regfree_dir}/${dll_name}"
@@ -99,7 +100,7 @@ if command -v ldd >/dev/null 2>&1; then
         done
 fi
 
-manifest_path="${exec_regfree_dir}/cscript.exe.manifest"
+manifest_path="${exec_regfree_dir}/wsh_decoder_regfree.vbs.manifest"
 cat >"${manifest_path}" <<EOF_MANIFEST
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
@@ -121,62 +122,14 @@ cat >"${manifest_path}" <<EOF_MANIFEST
 </assembly>
 EOF_MANIFEST
 
-mt_path=""
-if command -v mt >/dev/null 2>&1; then
-    mt_path=$(command -v mt)
-elif command -v mt.exe >/dev/null 2>&1; then
-    mt_path=$(command -v mt.exe)
-elif command -v cmd >/dev/null 2>&1; then
-    mt_path=$(cmd //c "where mt.exe" 2>/dev/null | head -n 1 || :)
-fi
+cp "${manifest_path}" "${regfree_dir}/wsh_decoder_regfree.vbs.manifest"
 
-if [ -n "${mt_path}" ]; then
-    cscript_win=$(cygpath -w "${cscript_copy}")
-    manifest_win=$(cygpath -w "${manifest_path}")
-    "${mt_path}" -manifest "${manifest_win}" \
-        -outputresource:"${cscript_win};#1" \
-        >"${artifact_dir}/mt_embed.log" 2>&1 || :
-    chmod +x "${cscript_copy}" || :
-fi
-
-cp "${manifest_path}" "${regfree_dir}/cscript.exe.manifest"
-
-direct_log="${artifact_dir}/wsh_automation_direct.log"
-if "${cscript_copy}" //nologo "${exec_regfree_dir}/wsh_decoder_regfree.vbs" \
-        "${sixel_input}" >"${direct_log}" 2>&1; then
-    mv "${direct_log}" "${log_file}"
+printf '%s\n' "INFO: cscript host ${cscript_host}" >"${log_file}"
+if "${cscript_host}" //nologo "${exec_regfree_dir}/wsh_decoder_regfree.vbs" \
+        "${sixel_input}" >>"${log_file}" 2>&1; then
+    :
 else
-    cmd_path=""
-    if [ -n "${systemroot}" ] && [ -x "${systemroot}/System32/cmd.exe" ]; then
-        cmd_path="${systemroot}/System32/cmd.exe"
-    elif command -v cmd.exe >/dev/null 2>&1; then
-        cmd_path=$(command -v cmd.exe)
-    elif command -v cmd >/dev/null 2>&1; then
-        cmd_path=$(command -v cmd)
-    fi
-    if [ -n "${cmd_path}" ]; then
-        cscript_win=$(cygpath -wa "${cscript_copy}")
-        vbs_win=$(cygpath -wa "${exec_regfree_dir}/wsh_decoder_regfree.vbs")
-        input_win=$(cygpath -wa "${sixel_input}")
-        exec_dir_win=$(cygpath -wa "${exec_regfree_dir}")
-        cmd_script="${exec_regfree_dir}/run_wsh_regfree.cmd"
-        cat >"${cmd_script}" <<EOF_CMD
-@echo off
-cd /d "${exec_dir_win}"
-"${cscript_win}" //nologo "${vbs_win}" "${input_win}"
-EOF_CMD
-        cmd_script_win=$(cygpath -wa "${cmd_script}")
-        printf '%s\n' "INFO: retry via cmd.exe" >"${log_file}"
-        printf '%s\n' "INFO: cmd.exe /d /s /c call \"${cmd_script_win}\"" >>"${log_file}"
-        printf '%s\n' "INFO: cmd.exe path ${cmd_path}" >>"${log_file}"
-        printf '%s\n' "INFO: cmd script contents:" >>"${log_file}"
-        sed -e 's/^/INFO: /' "${cmd_script}" >>"${log_file}" 2>&1 || :
-        "${cmd_path}" /d /s /c "call \"${cmd_script_win}\"" >>"${log_file}" 2>&1 || :
-    fi
-fi
-
-if [ ! -s "${log_file}" ]; then
-    fail "WSH automation decode failed (see ${direct_log})"
+    fail "WSH automation decode failed (see ${log_file})"
 fi
 
 if grep -Eq '^OK [0-9]+ [0-9]+$' "${log_file}"; then
