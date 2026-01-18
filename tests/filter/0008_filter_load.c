@@ -11,6 +11,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <sixel.h>
 
@@ -181,31 +182,30 @@ cleanup:
     return SIXEL_SUCCEEDED(status);
 }
 
-int main(void)
+int
+test_filter_0008_filter_load(int argc, char **argv)
 {
     int success;
 
+    (void) argc;
+    (void) argv;
+
     success = 1;
-    printf("1..2\n");
 
-    if (test_load_filter_uses_config_slot()) {
-        printf("ok 1 - load filter uses config slot when no binding is set\n");
-    } else {
-        printf("not ok 1 - load filter uses config slot when no binding is "
-               "set\n");
+    if (!test_load_filter_uses_config_slot()) {
+        fprintf(stderr,
+                "load filter uses config slot when no binding is set failed\n");
         success = 0;
     }
 
-    if (test_load_filter_prefers_bound_output_slot()) {
-        printf("ok 2 - load filter writes into bound output slot when "
-               "present\n");
-    } else {
-        printf("not ok 2 - load filter writes into bound output slot when "
-               "present\n");
+    if (!test_load_filter_prefers_bound_output_slot()) {
+        fprintf(stderr,
+                "load filter writes into bound output slot when present "
+                "failed\n");
         success = 0;
     }
 
-    return success ? 0 : 1;
+    return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 /* emacs Local Variables:      */

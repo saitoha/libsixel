@@ -20,14 +20,16 @@ run_coregraphics_loader_test(void)
 #endif
 
 int
-main(void)
+test_loader_0008_loader_coregraphics_pixelformat(int argc, char **argv)
 {
+    (void) argc;
+    (void) argv;
+
 #if HAVE_COREGRAPHICS
-    printf("1..1\n");
     return run_coregraphics_loader_test();
 #else
-    printf("1..0 # SKIP CoreGraphics loader unavailable\n");
-    return 0;
+    fprintf(stderr, "CoreGraphics loader unavailable\n");
+    return SIXEL_TEST_SKIP;
 #endif
 }
 

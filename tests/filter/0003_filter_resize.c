@@ -10,6 +10,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <sixel.h>
 
@@ -180,24 +181,23 @@ cleanup:
 }
 
 int
-main(void)
+test_filter_0003_filter_resize(int argc, char **argv)
 {
     int success;
 
-    success = 1;
-    printf("1..2\n");
+    (void) argc;
+    (void) argv;
 
-    if (test_resize_changes_dimensions()) {
-        printf("ok 1 - resize filter updates frame dimensions\n");
-    } else {
-        printf("not ok 1 - resize filter updates frame dimensions\n");
+    success = 1;
+
+    if (!test_resize_changes_dimensions()) {
+        fprintf(stderr, "resize filter updates frame dimensions failed\n");
         success = 0;
     }
 
-    if (test_resize_prefers_float_when_requested()) {
-        printf("ok 2 - resize filter keeps float frames when preferred\n");
-    } else {
-        printf("not ok 2 - resize filter keeps float frames when preferred\n");
+    if (!test_resize_prefers_float_when_requested()) {
+        fprintf(stderr,
+                "resize filter keeps float frames when preferred failed\n");
         success = 0;
     }
 

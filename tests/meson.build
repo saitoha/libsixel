@@ -11,38 +11,66 @@ env.set('MESON_BUILD_ROOT', meson.project_build_root())
 # relies on LIBSIXEL_LIBDIR to point at the build artifact directory.
 env.set('LIBSIXEL_LIBDIR', meson.project_build_root() / 'src')
 
-cli_helper_sources = {
-  '0029_cli_token_is_known_option':
-    ['cli/0029_cli_token_is_known_option.c',
-     '../converters/cli.c'],
-  '0030_cli_option_requires_argument':
-    ['cli/0030_cli_option_requires_argument.c',
-     '../converters/cli.c'],
-  '0031_cli_guard_missing_argument':
-    ['cli/0031_cli_guard_missing_argument.c',
-     '../converters/cli.c'],
-}
+test_runner_sources = [
+  'test_runner.c',
+  'cli/0029_cli_token_is_known_option.c',
+  'cli/0030_cli_option_requires_argument.c',
+  'cli/0031_cli_guard_missing_argument.c',
+  'filter/0001_filter_clip.c',
+  'filter/0002_filter_sample.c',
+  'filter/0003_filter_resize.c',
+  'filter/0004_filter_colors.c',
+  'filter/0005_filter_lookup.c',
+  'filter/0006_filter_final_merge.c',
+  'filter/0007_filter_vpte.c',
+  'filter/0008_filter_load.c',
+  'filter/0009_filter_dither.c',
+  'filter/0010_filter_encode.c',
+  'loader/0008_loader_coregraphics_pixelformat.c',
+  'loader/0009_loader_wic_pixelformat.c',
+  'loader/0010_loader_gdk_pixbuf_pixelformat.c',
+  'loader/0011_loader_gd_pixelformat.c',
+  'loader/0012_loader_libpng_pixelformat.c',
+  'loader/0013_loader_libjpeg_pixelformat.c',
+  'loader/0014_loader_builtin_pixelformat.c',
+  'loader/0015_loader_quicklook_pixelformat.c',
+  'loader/0016_loader_gnome_thumbnailer_pixelformat.c',
+  'palette/0001_kmeans_init.c',
+  'probe/0001_probe_parse.c',
+  '../converters/cli.c',
+]
+test_runner_deps = [libsixel_dep]
+test_runner_c_args = []
 
-cli_helper_targets = {}
-foreach helper_name, helper_sources : cli_helper_sources
-  cli_helper_targets += {helper_name: executable(helper_name, helper_sources,
-    include_directories: [project_inc, include_directories('..')],
-    dependencies: [libsixel_dep],
-    install: false)}
-endforeach
+if gdk_pixbuf_loader_deps.length() > 0
+  test_runner_sources += [
+    'gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c',
+    'gdk-pixbuf-loader/0002_incremental_load.c',
+    'gdk-pixbuf-loader/0003_corrupt_data.c',
+    'gdk-pixbuf-loader/0004_propagate_error.c',
+    'gdk-pixbuf-loader/0005_context_free.c',
+    'gdk-pixbuf-loader/0006_loader_module.c',
+    'gdk-pixbuf-loader/0007_loader_plugin_integration.c',
+    '../gdk-pixbuf-loader/sixel-pixbuf-loader.c',
+  ]
+  test_runner_deps += gdk_pixbuf_loader_deps
+  test_runner_c_args += ['-DGDK_PIXBUF_ENABLE_BACKEND',
+                         '-DSIXEL_PIXBUF_LOADER_TESTING',
+                         '-DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS']
+endif
 
-core_helper_sources = {
-  '0001_kmeans_init': ['palette/0001_kmeans_init.c'],
-  '0001_probe_parse': ['probe/0001_probe_parse.c'],
-}
+test_runner_inc = [
+  project_inc,
+  include_directories('..'),
+  include_directories('filter'),
+  include_directories('loader'),
+]
 
-core_helper_targets = {}
-foreach helper_name, helper_sources : core_helper_sources
-  core_helper_targets += {helper_name: executable(helper_name, helper_sources,
-    include_directories: [project_inc, include_directories('..')],
-    dependencies: [libsixel_dep],
-    install: false)}
-endforeach
+test_runner_exe = executable('test_runner', test_runner_sources,
+  include_directories: test_runner_inc,
+  dependencies: test_runner_deps,
+  c_args: test_runner_c_args,
+  install: false)
 
 if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
   # Ensure Windows-style runners (including MSYS2) locate the freshly built
@@ -265,29 +293,29 @@ cli_depends = {
   'regression/t/0016_lsqa_corrupted_metadata_noise.t': [lsqa_bin],
   'regression/t/0017_lsqa_corrupted_truncated_png.t': [lsqa_bin],
   'cli-argument-shift/t/0005_cli_token_is_known_option.t':
-    [cli_helper_targets['0029_cli_token_is_known_option']],
+    [test_runner_exe],
   'cli-argument-shift/t/0006_cli_option_requires_argument.t':
-    [cli_helper_targets['0030_cli_option_requires_argument']],
+    [test_runner_exe],
   'cli-argument-shift/t/0007_cli_guard_missing_argument.t':
-    [cli_helper_targets['0031_cli_guard_missing_argument']],
+    [test_runner_exe],
 }
 
 core_depends = {
   'palette/t/0001_kmeans_init_default_unset.t':
-    [core_helper_targets['0001_kmeans_init']],
+    [test_runner_exe],
   'palette/t/0002_kmeans_init_auto.t':
-    [core_helper_targets['0001_kmeans_init']],
+    [test_runner_exe],
   'palette/t/0003_kmeans_init_unknown.t':
-    [core_helper_targets['0001_kmeans_init']],
+    [test_runner_exe],
   'palette/t/0004_kmeans_init_pca.t':
-    [core_helper_targets['0001_kmeans_init']],
+    [test_runner_exe],
   'palette/t/0005_kmeans_init_cache.t':
-    [core_helper_targets['0001_kmeans_init']],
+    [test_runner_exe],
   'palette/t/0006_palette_fallback_conversion.t':
-    [core_helper_targets['0001_kmeans_init']],
+    [test_runner_exe],
   'palette/t/0007_palette_fallback_output.t':
-    [core_helper_targets['0001_kmeans_init']],
-  'probe/t/0001_probe_parse.t': [core_helper_targets['0001_probe_parse']],
+    [test_runner_exe],
+  'probe/t/0001_probe_parse.t': [test_runner_exe],
 }
 
 # Match autotools TAP timeout to keep CI behavior consistent (seconds per file).
@@ -332,237 +360,117 @@ foreach t : ['0001_python_bindings.t', '0002_python_api_formats.t',
     suite: ['tap'])
 endforeach
 
-filter_sources = {
-  '0001_filter_clip': 'filter/0001_filter_clip.c',
-  '0002_filter_sample': 'filter/0002_filter_sample.c',
-  '0003_filter_resize': 'filter/0003_filter_resize.c',
-  '0004_filter_colors': 'filter/0004_filter_colors.c',
-  '0005_filter_lookup': 'filter/0005_filter_lookup.c',
-  '0006_filter_final_merge': 'filter/0006_filter_final_merge.c',
-  '0007_filter_vpte': 'filter/0007_filter_vpte.c',
-  '0008_filter_load': 'filter/0008_filter_load.c',
-  '0009_filter_dither': 'filter/0009_filter_dither.c',
-  '0010_filter_encode': 'filter/0010_filter_encode.c',
-}
+filter_tests = [
+  'filter/t/0001_filter_clip.t',
+  'filter/t/0002_filter_sample.t',
+  'filter/t/0003_filter_resize.t',
+  'filter/t/0004_filter_colors.t',
+  'filter/t/0005_filter_lookup.t',
+  'filter/t/0006_filter_final_merge.t',
+  'filter/t/0007_filter_vpte.t',
+  'filter/t/0008_filter_load.t',
+  'filter/t/0009_filter_dither.t',
+  'filter/t/0010_filter_encode.t',
+]
 
-filter_test_inc = [project_inc, include_directories('filter')]
-filter_units = {}
-foreach unit_name, unit_source : filter_sources
-  if amalgamated_tools_enabled
-    define_flag = '-DBUILD_' + unit_name.to_upper() + '=1'
-    # Propagate the build guard to both C and ObjC translations so macOS
-    # builds enable the test harness embedded in the amalgamated source.
-    unit_exe = executable(unit_name, amalgamation_out,
-      c_args: libsixel_posix_defs + [define_flag],
-      objc_args: libsixel_posix_defs + [define_flag],
-      include_directories: filter_test_inc,
-      dependencies: deps,
-      install: false)
-  else
-    unit_exe = executable(unit_name, [unit_source],
-      dependencies: [libsixel_dep],
-      include_directories: filter_test_inc,
-      install: false)
-  endif
-  if shebang_enabled
-    shebang_targets += [custom_target(unit_name + '_shebang',
-      input: unit_exe,
-      output: unit_name + '.shebang.stamp',
-      command: [shebang_helper, shebang_file, '@INPUT@'],
-      depend_files: shebang_file,
-      build_by_default: true)]
-  endif
-  filter_units += { unit_name: unit_exe }
-endforeach
-
-test('0001_filter_clip', filter_units['0001_filter_clip'],
-  env: env,
-  protocol: 'tap',
-  timeout: 120,
-  suite: ['tap'])
-
-test('0002_filter_sample', filter_units['0002_filter_sample'],
-  env: env,
-  protocol: 'tap',
-  timeout: 120,
-  suite: ['tap'])
-
-test('0003_filter_resize', filter_units['0003_filter_resize'],
-  env: env,
-  protocol: 'tap',
-  timeout: 120,
-  suite: ['tap'])
-
-test('0004_filter_colors', filter_units['0004_filter_colors'],
-  env: env,
-  protocol: 'tap',
-  timeout: 120,
-  suite: ['tap'])
-
-test('0005_filter_lookup', filter_units['0005_filter_lookup'],
-  env: env,
-  protocol: 'tap',
-  timeout: 120,
-  suite: ['tap'])
-
-test('0006_filter_final_merge', filter_units['0006_filter_final_merge'],
-  env: env,
-  protocol: 'tap',
-  timeout: 120,
-  suite: ['tap'])
-
-test('0007_filter_vpte', filter_units['0007_filter_vpte'],
-  env: env,
-  protocol: 'tap',
-  timeout: 120,
-  suite: ['tap'])
-
-test('0008_filter_load', filter_units['0008_filter_load'],
-  env: env,
-  protocol: 'tap',
-  timeout: 120,
-  suite: ['tap'])
-
-test('0009_filter_dither', filter_units['0009_filter_dither'],
-  env: env,
-  protocol: 'tap',
-  timeout: 120,
-  suite: ['tap'])
-
-test('0010_filter_encode', filter_units['0010_filter_encode'],
-  env: env,
-  protocol: 'tap',
-  timeout: 120,
-  suite: ['tap'])
-
-loader_coregraphics_tests = {}
-if conf.get('HAVE_COREGRAPHICS', 0) == 1
-  loader_coregraphics_tests += {
-    '0008_loader_coregraphics_pixelformat':
-      'loader/0008_loader_coregraphics_pixelformat.c',
-  }
-endif
-
-foreach test_name, source_file : loader_coregraphics_tests
-  loader_exe = executable(test_name, [source_file],
-    dependencies: [libsixel_dep],
-    include_directories: project_inc,
-    install: false)
-  test(test_name, loader_exe,
-    env: env,
+foreach t : filter_tests
+  test(t, sh,
+    args: [meson.current_source_dir() / t],
     protocol: 'tap',
-    timeout: 120,
-  suite: ['tap'])
-endforeach
-
-loader_pixelformat_tests = {
-  '0014_loader_builtin_pixelformat':
-    'loader/0014_loader_builtin_pixelformat.c',
-}
-
-if conf.get('HAVE_WIC', 0) == 1
-  loader_pixelformat_tests += {
-    '0009_loader_wic_pixelformat':
-      'loader/0009_loader_wic_pixelformat.c',
-  }
-endif
-
-if conf.has('HAVE_GDK_PIXBUF2')
-  loader_pixelformat_tests += {
-    '0010_loader_gdk_pixbuf_pixelformat':
-      'loader/0010_loader_gdk_pixbuf_pixelformat.c',
-  }
-endif
-
-if conf.get('HAVE_GD', 0) == 1
-  loader_pixelformat_tests += {
-    '0011_loader_gd_pixelformat':
-      'loader/0011_loader_gd_pixelformat.c',
-  }
-endif
-
-if conf.get('HAVE_LIBPNG', 0) == 1
-  loader_pixelformat_tests += {
-    '0012_loader_libpng_pixelformat':
-      'loader/0012_loader_libpng_pixelformat.c',
-  }
-endif
-
-if conf.get('HAVE_JPEG', 0) == 1
-  loader_pixelformat_tests += {
-    '0013_loader_libjpeg_pixelformat':
-      'loader/0013_loader_libjpeg_pixelformat.c',
-  }
-endif
-
-if conf.get('HAVE_COREGRAPHICS', 0) == 1 and conf.get('HAVE_QUICKLOOK', 0) == 1
-  loader_pixelformat_tests += {
-    '0015_loader_quicklook_pixelformat':
-      'loader/0015_loader_quicklook_pixelformat.c',
-  }
-endif
-
-if conf.has('HAVE_UNISTD_H') and conf.has('HAVE_SYS_WAIT_H') and conf.get('HAVE_FORK', 0) == 1
-  loader_pixelformat_tests += {
-    '0016_loader_gnome_thumbnailer_pixelformat':
-      'loader/0016_loader_gnome_thumbnailer_pixelformat.c',
-  }
-endif
-
-foreach test_name, source_file : loader_pixelformat_tests
-  loader_exe = executable(test_name, [source_file],
-    dependencies: [libsixel_dep],
-    include_directories: project_inc,
-    install: false)
-  test(test_name, loader_exe,
     env: env,
-    protocol: 'tap',
+    depends: [test_runner_exe],
     timeout: 120,
     suite: ['tap'])
 endforeach
 
+
+loader_coregraphics_tests = []
+if conf.get('HAVE_COREGRAPHICS', 0) == 1
+  loader_coregraphics_tests += ['0008_loader_coregraphics_pixelformat']
+endif
+
+foreach test_name : loader_coregraphics_tests
+  test(test_name, sh,
+    args: [meson.current_source_dir()
+      / 'loader'
+      / 't'
+      / (test_name + '.t')],
+    env: env,
+    protocol: 'tap',
+    timeout: 120,
+    depends: [test_runner_exe],
+    suite: ['tap'])
+endforeach
+
+loader_pixelformat_tests = [
+  '0014_loader_builtin_pixelformat',
+]
+
+if conf.get('HAVE_WIC', 0) == 1
+  loader_pixelformat_tests += ['0009_loader_wic_pixelformat']
+endif
+
+if conf.has('HAVE_GDK_PIXBUF2')
+  loader_pixelformat_tests += ['0010_loader_gdk_pixbuf_pixelformat']
+endif
+
+if conf.get('HAVE_GD', 0) == 1
+  loader_pixelformat_tests += ['0011_loader_gd_pixelformat']
+endif
+
+if conf.get('HAVE_LIBPNG', 0) == 1
+  loader_pixelformat_tests += ['0012_loader_libpng_pixelformat']
+endif
+
+if conf.get('HAVE_JPEG', 0) == 1
+  loader_pixelformat_tests += ['0013_loader_libjpeg_pixelformat']
+endif
+
+if conf.get('HAVE_COREGRAPHICS', 0) == 1 and conf.get('HAVE_QUICKLOOK', 0) == 1
+  loader_pixelformat_tests += ['0015_loader_quicklook_pixelformat']
+endif
+
+if conf.has('HAVE_UNISTD_H') and conf.has('HAVE_SYS_WAIT_H') and conf.get('HAVE_FORK', 0) == 1
+  loader_pixelformat_tests += ['0016_loader_gnome_thumbnailer_pixelformat']
+endif
+
+foreach test_name : loader_pixelformat_tests
+  test(test_name, sh,
+    args: [meson.current_source_dir()
+      / 'loader'
+      / 't'
+      / (test_name + '.t')],
+    env: env,
+    protocol: 'tap',
+    timeout: 120,
+    depends: [test_runner_exe],
+    suite: ['tap'])
+endforeach
+
 if gdk_pixbuf_loader_deps.length() > 0
-  gdk_pixbuf_loader_sources = [
-    '../gdk-pixbuf-loader/sixel-pixbuf-loader.c',
+  gdk_pixbuf_loader_tests = [
+    '0001_gdk_pixbuf_loader',
+    '0002_incremental_load',
+    '0003_corrupt_data',
+    '0004_propagate_error',
+    '0005_context_free',
+    '0006_loader_module',
   ]
-  gdk_pixbuf_loader_tests = {
-    '0001_gdk_pixbuf_loader': 'gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c',
-    '0002_incremental_load':
-      'gdk-pixbuf-loader/0002_incremental_load.c',
-    '0003_corrupt_data': 'gdk-pixbuf-loader/0003_corrupt_data.c',
-    '0004_propagate_error':
-      'gdk-pixbuf-loader/0004_propagate_error.c',
-    '0005_context_free': 'gdk-pixbuf-loader/0005_context_free.c',
-    '0006_loader_module': 'gdk-pixbuf-loader/0006_loader_module.c',
-  }
   if conf.has('HAVE_GDK_PIXBUF2') and get_option('img2sixel').enabled()
-    gdk_pixbuf_loader_tests += {
-      '0007_loader_plugin_integration':
-        'gdk-pixbuf-loader/0007_loader_plugin_integration.c',
-    }
+    gdk_pixbuf_loader_tests += ['0007_loader_plugin_integration']
   endif
-  foreach test_name, source_file : gdk_pixbuf_loader_tests
-    target = executable(test_name,
-      [source_file] + gdk_pixbuf_loader_sources,
-      include_directories: project_inc,
-      dependencies: gdk_pixbuf_loader_deps + [libsixel_dep],
-      c_args: ['-DGDK_PIXBUF_ENABLE_BACKEND',
-               '-DSIXEL_PIXBUF_LOADER_TESTING'],
-      install: false)
-    if shebang_enabled
-      shebang_targets += [custom_target(test_name + '-shebang',
-        input: target,
-        output: test_name + '.shebang.stamp',
-        command: [shebang_helper, shebang_file, '@INPUT@'],
-        depend_files: shebang_file,
-        build_by_default: true)]
-    endif
+  foreach test_name : gdk_pixbuf_loader_tests
     deps = [pixbufloader_sixel]
     if test_name == '0007_loader_plugin_integration'
       deps += [img2sixel_exe]
     endif
-    test(test_name, target,
+    test(test_name, sh,
+      args: [meson.current_source_dir()
+        / 'gdk-pixbuf-loader'
+        / 't'
+        / (test_name + '.t')],
       env: env,
+      protocol: 'tap',
       suite: ['gdk-pixbuf-loader'],
       depends: deps)
   endforeach

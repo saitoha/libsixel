@@ -393,7 +393,7 @@ run_loader_module_test(void)
 }
 
 int
-main(int argc, char **argv)
+test_gdk_pixbuf_loader_0006_loader_module(int argc, char **argv)
 {
     g_test_init(&argc, &argv, NULL);
 
