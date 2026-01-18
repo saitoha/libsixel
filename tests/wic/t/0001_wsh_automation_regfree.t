@@ -156,10 +156,11 @@ else
         cscript_win=$(cygpath -wa "${cscript_copy}")
         vbs_win=$(cygpath -wa "${exec_regfree_dir}/wsh_decoder_regfree.vbs")
         input_win=$(cygpath -wa "${sixel_input}")
-        cmd_line="\"${cscript_win}\" //nologo \"${vbs_win}\" \"${input_win}\""
+        exec_dir_win=$(cygpath -wa "${exec_regfree_dir}")
+        cmd_line="cd /d \"${exec_dir_win}\" && \"${cscript_win}\" //nologo \"${vbs_win}\" \"${input_win}\""
         printf '%s\n' "INFO: retry via cmd.exe" >"${log_file}"
         printf '%s\n' "INFO: cmd.exe /d /s /c ${cmd_line}" >>"${log_file}"
-        "${cmd_path}" /d /s /c "\"${cscript_win}\" //nologo \"${vbs_win}\" \"${input_win}\"" \
+        "${cmd_path}" /d /s /c "\"${cmd_line}\"" \
             >>"${log_file}" 2>&1 || :
     fi
 fi
