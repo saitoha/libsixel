@@ -252,6 +252,10 @@ TESTS_COMMON_TESTS = \
        loader/t/0015_loader_quicklook_pixelformat.t \
        loader/t/0016_loader_gnome_thumbnailer_pixelformat.t
 
+SERIAL_TESTS = \
+       aborttrace/t/0001_img2sixel_aborttrace.t \
+       aborttrace/t/0002_sixel2png_aborttrace.t
+
 TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) \
        $(FILTER_TESTS) $(TESTS_COMMON_TESTS)
 COPY_TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) \
