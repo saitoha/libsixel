@@ -3,29 +3,21 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "config.h"
 #include "converters/cli.h"
 
-typedef struct test_case {
+typedef struct cli_requires_case {
     int short_opt;
     int expected;
-} test_case_t;
-
-static void
-print_result(int index, int success, char const *message)
-{
-    printf("%s %d - %s\n",
-           success ? "ok" : "not ok",
-           index,
-           message);
-}
+} cli_requires_case_t;
 
 int
-main(void)
+test_cli_0030_cli_option_requires_argument(int argc, char **argv)
 {
     char const optstring[] = "a:b::c";
-    test_case_t cases[] = {
+    cli_requires_case_t cases[] = {
         { 'a', 1 },
         { 'b', 1 },
         { 'c', 0 },
@@ -35,19 +27,18 @@ main(void)
     int status;
     int requires;
 
-    printf("1..%zu\n", sizeof(cases) / sizeof(cases[0]));
+    (void) argc;
+    (void) argv;
 
     status = 0;
     for (index = 0u; index < sizeof(cases) / sizeof(cases[0]); index++) {
         requires = cli_option_requires_argument(optstring,
                                                 cases[index].short_opt);
-        if (requires == cases[index].expected) {
-            print_result((int)(index + 1u), 1, "optstring parsed");
-        } else {
-            print_result((int)(index + 1u), 0, "optstring mismatch");
+        if (requires != cases[index].expected) {
+            fprintf(stderr, "case %zu: optstring mismatch\n", index + 1u);
             status = 1;
         }
     }
 
-    return status;
+    return status == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }

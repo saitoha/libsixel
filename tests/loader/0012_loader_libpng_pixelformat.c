@@ -20,14 +20,16 @@ run_libpng_loader_test(void)
 #endif
 
 int
-main(void)
+test_loader_0012_loader_libpng_pixelformat(int argc, char **argv)
 {
+    (void) argc;
+    (void) argv;
+
 #if HAVE_LIBPNG
-    printf("1..1\n");
     return run_libpng_loader_test();
 #else
-    printf("1..0 # SKIP libpng loader unavailable\n");
-    return 0;
+    fprintf(stderr, "libpng loader unavailable\n");
+    return SIXEL_TEST_SKIP;
 #endif
 }
 

@@ -18,9 +18,11 @@ run_builtin_loader_test(void)
 }
 
 int
-main(void)
+test_loader_0014_loader_builtin_pixelformat(int argc, char **argv)
 {
-    printf("1..1\n");
+    (void) argc;
+    (void) argv;
+
     return run_builtin_loader_test();
 }
 

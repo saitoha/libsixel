@@ -268,7 +268,7 @@ test_threaded_load(void)
 }
 
 int
-main(int argc, char **argv)
+test_gdk_pixbuf_loader_0001_gdk_pixbuf_loader(int argc, char **argv)
 {
     g_test_init(&argc, &argv, NULL);
 

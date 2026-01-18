@@ -1,8 +1,7 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Simple clip filter tests. Each test emits TAP output so the surrounding
- * harness can be a thin shell wrapper.
+ * Simple clip filter tests. The wrapper reports TAP based on exit status.
  */
 
 #if defined(HAVE_CONFIG_H)
@@ -10,6 +9,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <sixel.h>
 
@@ -190,24 +190,23 @@ cleanup:
     return SIXEL_SUCCEEDED(status);
 }
 
-int main(void)
+int
+test_filter_0001_filter_clip(int argc, char **argv)
 {
     int success;
 
-    success = 1;
-    printf("1..2\n");
+    (void) argc;
+    (void) argv;
 
-    if (test_clip_noop()) {
-        printf("ok 1 - clip filter skips empty region\n");
-    } else {
-        printf("not ok 1 - clip filter skips empty region\n");
+    success = 1;
+
+    if (!test_clip_noop()) {
+        fprintf(stderr, "clip filter skips empty region failed\n");
         success = 0;
     }
 
-    if (test_clip_float_accepts_format()) {
-        printf("ok 2 - clip filter trims float32 frames\n");
-    } else {
-        printf("not ok 2 - clip filter trims float32 frames\n");
+    if (!test_clip_float_accepts_format()) {
+        fprintf(stderr, "clip filter trims float32 frames failed\n");
         success = 0;
     }
 

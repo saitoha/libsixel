@@ -3,6 +3,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "config.h"
@@ -78,17 +79,8 @@ run_guard_case(char *const *argv,
     return (guard_result_t){ result, g_missing_calls, g_rewound };
 }
 
-static void
-print_result(int index, int success, char const *message)
-{
-    printf("%s %d - %s\n",
-           success ? "ok" : "not ok",
-           index,
-           message);
-}
-
 int
-main(void)
+test_cli_0031_cli_guard_missing_argument(int argc, char **argv)
 {
     cli_option_help_t const table[] = {
         { 'i', "input", "--input help\n" },
@@ -97,18 +89,19 @@ main(void)
     char argv0[] = "tool";
     char argv1[] = "-x";
     char dash_value[] = "-file.six";
-    char *argv[] = { argv0, argv1, NULL };
+    char *args[] = { argv0, argv1, NULL };
     size_t table_count;
     int optind_value;
     guard_result_t result;
     int status;
 
+    (void) argc;
+    (void) argv;
+
     table_count = sizeof(table) / sizeof(table[0]);
 
-    printf("1..3\n");
-
     optind_value = 1;
-    result = run_guard_case(argv,
+    result = run_guard_case(args,
                              NULL,
                              &optind_value,
                              "i:",
@@ -117,14 +110,13 @@ main(void)
                              0);
     status = 0;
     if (result.code == -1 && result.missing_calls == 1) {
-        print_result(1, 1, "reports missing argument");
     } else {
-        print_result(1, 0, "missing argument not reported");
+        fprintf(stderr, "case 1: missing argument not reported\n");
         status = 1;
     }
 
     optind_value = 0;
-    result = run_guard_case(argv,
+    result = run_guard_case(args,
                              dash_value,
                              &optind_value,
                              "i:",
@@ -132,15 +124,14 @@ main(void)
                              table_count,
                              1);
     if (result.code == 0 && result.missing_calls == 0) {
-        print_result(2, 1, "leading dash accepted as value");
     } else {
-        print_result(2, 0, "leading dash rejected");
+        fprintf(stderr, "case 2: leading dash rejected\n");
         status = 1;
     }
 
     optind_value = 2;
-    result = run_guard_case(argv,
-                             argv[1],
+    result = run_guard_case(args,
+                             args[1],
                              &optind_value,
                              "i:",
                              table,
@@ -148,11 +139,10 @@ main(void)
                              0);
     if (result.code == -1 && result.missing_calls == 1 &&
             result.rewound_optind != 0) {
-        print_result(3, 1, "rewinds recognised option");
     } else {
-        print_result(3, 0, "did not rewind recognised option");
+        fprintf(stderr, "case 3: did not rewind recognised option\n");
         status = 1;
     }
 
-    return status;
+    return status == 0 ? EXIT_SUCCESS : EXIT_FAILURE;
 }

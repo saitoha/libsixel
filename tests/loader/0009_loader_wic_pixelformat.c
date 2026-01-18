@@ -20,14 +20,16 @@ run_wic_loader_test(void)
 #endif
 
 int
-main(void)
+test_loader_0009_loader_wic_pixelformat(int argc, char **argv)
 {
+    (void) argc;
+    (void) argv;
+
 #if HAVE_WIC
-    printf("1..1\n");
     return run_wic_loader_test();
 #else
-    printf("1..0 # SKIP WIC loader unavailable\n");
-    return 0;
+    fprintf(stderr, "WIC loader unavailable\n");
+    return SIXEL_TEST_SKIP;
 #endif
 }
 

@@ -1,5 +1,5 @@
 /*
- * Shared helpers for loader pixelformat TAP tests.
+ * Shared helpers for loader pixelformat checks.
  */
 
 #ifndef PIXELFORMAT_TEST_COMMON_H
@@ -48,6 +48,7 @@ typedef struct loader_probe_context {
 } loader_probe_context_t;
 
 #define GEOMETRY_ANY (-1)
+#define SIXEL_TEST_SKIP 77
 
 static SIXEL_TEST_UNUSED SIXELSTATUS
 capture_frame(sixel_frame_t *frame, void *data)
@@ -108,11 +109,13 @@ run_loader_case(char const *label,
 #endif
     char image_path[PATH_MAX];
     int cancel_flag;
+    int result;
 
     status = SIXEL_FALSE;
     allocator = NULL;
     chunk = NULL;
     cancel_flag = 0;
+    result = 1;
 #if defined(_MSC_VER)
     source_root = NULL;
     source_root_dupe = NULL;
@@ -144,13 +147,13 @@ run_loader_case(char const *label,
                          relative_path,
                          image_path,
                          sizeof(image_path)) != 0) {
-        printf("not ok 1 - %s failed to build image path\n", label);
+        fprintf(stderr, "%s: failed to build image path\n", label);
         return 1;
     }
 
     status = sixel_allocator_new(&allocator, NULL, NULL, NULL, NULL);
     if (SIXEL_FAILED(status)) {
-        printf("not ok 1 - %s allocator initialization failed\n", label);
+        fprintf(stderr, "%s: allocator initialization failed\n", label);
         return 1;
     }
 
@@ -160,7 +163,7 @@ run_loader_case(char const *label,
                              &cancel_flag,
                              allocator);
     if (SIXEL_FAILED(status)) {
-        printf("not ok 1 - %s failed to read sample\n", label);
+        fprintf(stderr, "%s: failed to read sample\n", label);
         goto cleanup;
     }
 
@@ -178,31 +181,34 @@ run_loader_case(char const *label,
                     capture_frame,
                     &context);
     if (SIXEL_FAILED(status)) {
-        printf("not ok 1 - %s loader reported failure (%d)\n",
-               label,
-               (int)status);
+        fprintf(stderr,
+                "%s: loader reported failure (%d)\n",
+                label,
+                (int)status);
         goto cleanup;
     }
 
     if (context.callback_count != 1) {
-        printf("not ok 1 - %s callback count mismatch\n", label);
+        fprintf(stderr, "%s: callback count mismatch\n", label);
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
 
     if (context.pixelformat != expected_pixelformat) {
-        printf("not ok 1 - %s reported pixelformat %d\n",
-               label,
-               context.pixelformat);
+        fprintf(stderr,
+                "%s: reported pixelformat %d\n",
+                label,
+                context.pixelformat);
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
 
     if (context.width <= 0 || context.height <= 0) {
-        printf("not ok 1 - %s invalid geometry %dx%d\n",
-               label,
-               context.width,
-               context.height);
+        fprintf(stderr,
+                "%s: invalid geometry %dx%d\n",
+                label,
+                context.width,
+                context.height);
         status = SIXEL_BAD_ARGUMENT;
         goto cleanup;
     }
@@ -210,16 +216,16 @@ run_loader_case(char const *label,
     if (expected_width != GEOMETRY_ANY && expected_height != GEOMETRY_ANY) {
         if (context.width != expected_width ||
             context.height != expected_height) {
-            printf("not ok 1 - %s unexpected geometry %dx%d\n",
-                   label,
-                   context.width,
-                   context.height);
+            fprintf(stderr,
+                    "%s: unexpected geometry %dx%d\n",
+                    label,
+                    context.width,
+                    context.height);
             status = SIXEL_BAD_ARGUMENT;
             goto cleanup;
         }
     }
-
-    printf("ok 1 - %s preserves expected pixelformat\n", label);
+    result = 0;
 
 cleanup:
     sixel_chunk_destroy(chunk);
@@ -228,7 +234,7 @@ cleanup:
     free(source_root_dupe);
 #endif
 
-    return SIXEL_FAILED(status);
+    return result;
 }
 
 #endif /* PIXELFORMAT_TEST_COMMON_H */

@@ -358,7 +358,7 @@ run_loader_plugin_integration(void)
 }
 
 int
-main(int argc, char **argv)
+test_gdk_pixbuf_loader_0007_loader_plugin_integration(int argc, char **argv)
 {
     g_test_init(&argc, &argv, NULL);
 

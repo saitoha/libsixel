@@ -10,6 +10,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <sixel.h>
 
@@ -153,30 +154,29 @@ cleanup:
     return SIXEL_SUCCEEDED(status);
 }
 
-int main(void)
+int
+test_filter_0006_filter_final_merge(int argc, char **argv)
 {
     int success;
 
+    (void) argc;
+    (void) argv;
+
     success = 1;
-    printf("1..2\n");
 
-    if (test_final_merge_sets_mode_and_progress()) {
-        printf("ok 1 - final-merge filter sets mode and reports "
-               "progress\n");
-    } else {
-        printf("not ok 1 - final-merge filter sets mode and reports "
-               "progress\n");
+    if (!test_final_merge_sets_mode_and_progress()) {
+        fprintf(stderr,
+                "final-merge filter sets mode and reports progress failed\n");
         success = 0;
     }
 
-    if (test_final_merge_direct_apply_updates_palette()) {
-        printf("ok 2 - final-merge apply updates palette and dither\n");
-    } else {
-        printf("not ok 2 - final-merge apply updates palette and dither\n");
+    if (!test_final_merge_direct_apply_updates_palette()) {
+        fprintf(stderr,
+                "final-merge apply updates palette and dither failed\n");
         success = 0;
     }
 
-    return success ? 0 : 1;
+    return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 /* emacs Local Variables:      */

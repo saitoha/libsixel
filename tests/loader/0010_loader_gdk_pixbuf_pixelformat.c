@@ -20,14 +20,16 @@ run_gdk_pixbuf_loader_test(void)
 #endif
 
 int
-main(void)
+test_loader_0010_loader_gdk_pixbuf_pixelformat(int argc, char **argv)
 {
+    (void) argc;
+    (void) argv;
+
 #if defined(HAVE_GDK_PIXBUF2)
-    printf("1..1\n");
     return run_gdk_pixbuf_loader_test();
 #else
-    printf("1..0 # SKIP GDK-Pixbuf loader unavailable\n");
-    return 0;
+    fprintf(stderr, "GDK-Pixbuf loader unavailable\n");
+    return SIXEL_TEST_SKIP;
 #endif
 }
 

@@ -10,6 +10,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <sixel.h>
 
@@ -139,28 +140,27 @@ test_vpte_init_rejects_non_vpte_policy(void)
     return 1;
 }
 
-int main(void)
+int
+test_filter_0007_filter_vpte(int argc, char **argv)
 {
     int success;
 
+    (void) argc;
+    (void) argv;
+
     success = 1;
-    printf("1..2\n");
 
-    if (test_vpte_builds_owned_lut_and_transfers_result()) {
-        printf("ok 1 - vpte filter builds lut and reports progress\n");
-    } else {
-        printf("not ok 1 - vpte filter builds lut and reports progress\n");
+    if (!test_vpte_builds_owned_lut_and_transfers_result()) {
+        fprintf(stderr, "vpte filter builds lut and reports progress failed\n");
         success = 0;
     }
 
-    if (test_vpte_init_rejects_non_vpte_policy()) {
-        printf("ok 2 - vpte init rejects non-vpte policy\n");
-    } else {
-        printf("not ok 2 - vpte init rejects non-vpte policy\n");
+    if (!test_vpte_init_rejects_non_vpte_policy()) {
+        fprintf(stderr, "vpte init rejects non-vpte policy failed\n");
         success = 0;
     }
 
-    return success ? 0 : 1;
+    return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 /* emacs Local Variables:      */
