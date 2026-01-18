@@ -89,35 +89,18 @@ lsqa_init() {
 lsqa_parse_metric() {
     metric_name=$1
     json_path=$2
-    # Use POSIX awk and index() to avoid regex quirks on Solaris awk.
-    value=$(awk -F: -v key="\"${metric_name}\"" '
-        function debug(msg) {
-            if (ENVIRON["LSQA_PARSE_DEBUG"] == "1") {
-                printf "lsqa_parse_metric: %s\n", msg > "/dev/stderr"
-            }
-        }
-        BEGIN {
-            debug("key=" key)
-        }
-        index($0, key) {
-            debug("raw_line=" $0)
-            line=$2
-            debug("field2=" line)
-            sub(/^[[:space:]]*/, "", line)
-            debug("trim_left=" line)
-            sub(/[ ,}].*$/, "", line)
-            debug("trim_tail=" line)
-            gsub(/^[[:space:]]+|[[:space:]]+$/, "", line)
-            debug("trim_both=" line)
-            print line
-            exit
-        }
-        END {
-            if (NR == 0) {
-                debug("input_empty=1")
-            }
-        }
-    ' "${json_path}")
+    # Use POSIX tr/cut to avoid awk regex and locale differences.
+    value=$(
+        sed -n "/\"${metric_name}\"/p" "${json_path}" | \
+        tr -d ' "' | \
+        cut -d: -f2
+    )
+    if [ "${LSQA_PARSE_DEBUG-}" = "1" ]; then
+        printf 'lsqa_parse_metric: key=%s\n' "${metric_name}" >&2
+        printf 'lsqa_parse_metric: raw=%s\n' \
+            "$(sed -n "/\"${metric_name}\"/p" "${json_path}")" >&2
+        printf 'lsqa_parse_metric: parsed=%s\n' "${value}" >&2
+    fi
     if [ -z "${value}" ] || [ "${value}" = "null" ]; then
         if [ "${LSQA_PARSE_DEBUG-}" = "1" ]; then
             printf 'lsqa_parse_metric: empty_or_null=1\n' >&2
