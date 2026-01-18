@@ -14,10 +14,10 @@
 
 #include <sixel.h>
 
-#include "filter-colors.h"
-#include "filter-factory.h"
-#include "filter.h"
-#include "filter_test_common.h"
+#include "src/filter-colors.h"
+#include "src/filter-factory.h"
+#include "src/filter.h"
+#include "tests/filter/filter_test_common.h"
 
 static int
 test_colors_promotes_to_linear_float(void)

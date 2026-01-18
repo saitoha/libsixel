@@ -14,10 +14,10 @@
 
 #include <sixel.h>
 
-#include "filter-factory.h"
-#include "filter-vpte.h"
-#include "filter.h"
-#include "filter_test_common.h"
+#include "src/filter-factory.h"
+#include "src/filter-vpte.h"
+#include "src/filter.h"
+#include "tests/filter/filter_test_common.h"
 
 static int
 test_vpte_builds_owned_lut_and_transfers_result(void)

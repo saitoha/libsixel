@@ -62,8 +62,6 @@ endif
 test_runner_inc = [
   project_inc,
   include_directories('..'),
-  include_directories('filter'),
-  include_directories('loader'),
 ]
 
 test_runner_exe = executable('test_runner', test_runner_sources,

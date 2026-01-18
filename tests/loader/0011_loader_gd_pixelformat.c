@@ -2,9 +2,9 @@
  * Verify GD loader reports RGB output for RGBA sources.
  */
 
-#include "pixelformat_test_common.h"
+#include "tests/loader/pixelformat_test_common.h"
 
-#include "loader-gd.h"
+#include "src/loader-gd.h"
 
 #if HAVE_GD
 static int

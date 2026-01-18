@@ -15,9 +15,9 @@
 
 #include <sixel.h>
 
-#include "allocator.h"
-#include "dither.h"
-#include "frame.h"
+#include "src/allocator.h"
+#include "src/dither.h"
+#include "src/frame.h"
 
 #if defined(__clang__)
 # if __has_attribute(unused)

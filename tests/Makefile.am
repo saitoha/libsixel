@@ -282,9 +282,6 @@ AM_TESTS_ENVIRONMENT += CROSS_COMPILING='@cross_compiling@'; \
 TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_builddir) -I$(top_builddir)/include \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \
-       -I$(srcdir)/loader \
-       -I$(top_srcdir)/tests/loader \
-       -I$(top_srcdir)/tests/filter \
        -I$(top_srcdir)
 if WANT_AMALGAMATED_TOOLS
 TESTS_COMMON_CFLAGS_VAL = $(AM_CFLAGS) \

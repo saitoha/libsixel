@@ -2,9 +2,9 @@
  * Verify libjpeg loader reports RGB output for JPEG sources.
  */
 
-#include "pixelformat_test_common.h"
+#include "tests/loader/pixelformat_test_common.h"
 
-#include "loader-libjpeg.h"
+#include "src/loader-libjpeg.h"
 
 #if HAVE_JPEG
 static int
