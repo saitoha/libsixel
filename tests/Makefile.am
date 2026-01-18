@@ -35,6 +35,8 @@ CLI_TESTS = cli-core/t/0001_help.t \
     cli-core/t/0018_basic_parallel_direct.t \
     cli-core/t/0019_basic_parallel_cli_override.t \
     cli-core/t/0020_basic_invalid_threads_token.t \
+    aborttrace/t/0001_img2sixel_aborttrace.t \
+    aborttrace/t/0002_sixel2png_aborttrace.t \
     cli-option-invalid/t/0001_invalid_option_arguments.t \
     cli-option-invalid/t/0002_invalid_option_arguments_invalid_width.t \
     cli-option-invalid/t/0003_invalid_option_arguments_invalid_height.t \
