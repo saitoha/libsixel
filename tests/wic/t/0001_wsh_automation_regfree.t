@@ -146,14 +146,20 @@ if "${cscript_copy}" //nologo "${exec_regfree_dir}/wsh_decoder_regfree.vbs" \
         "${sixel_input}" >"${direct_log}" 2>&1; then
     mv "${direct_log}" "${log_file}"
 else
-    if command -v cmd >/dev/null 2>&1; then
-        cscript_win=$(cygpath -w "${cscript_copy}")
-        vbs_win=$(cygpath -w "${exec_regfree_dir}/wsh_decoder_regfree.vbs")
-        input_win=$(cygpath -w "${sixel_input}")
+    cmd_path=""
+    if command -v cmd.exe >/dev/null 2>&1; then
+        cmd_path=$(command -v cmd.exe)
+    elif command -v cmd >/dev/null 2>&1; then
+        cmd_path=$(command -v cmd)
+    fi
+    if [ -n "${cmd_path}" ]; then
+        cscript_win=$(cygpath -wa "${cscript_copy}")
+        vbs_win=$(cygpath -wa "${exec_regfree_dir}/wsh_decoder_regfree.vbs")
+        input_win=$(cygpath -wa "${sixel_input}")
         cmd_line="\"${cscript_win}\" //nologo \"${vbs_win}\" \"${input_win}\""
         printf '%s\n' "INFO: retry via cmd.exe" >"${log_file}"
-        printf '%s\n' "INFO: cmd.exe /c ${cmd_line}" >>"${log_file}"
-        cmd //c "${cmd_line}" >>"${log_file}" 2>&1 || :
+        printf '%s\n' "INFO: cmd.exe /d /s /c ${cmd_line}" >>"${log_file}"
+        "${cmd_path}" /d /s /c "${cmd_line}" >>"${log_file}" 2>&1 || :
     fi
 fi
 
