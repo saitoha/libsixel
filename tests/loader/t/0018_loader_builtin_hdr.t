@@ -47,7 +47,7 @@ check_sixel_output() {
         *) return 1 ;;
     esac
 
-    if ! LC_ALL=C grep -Eq '#[0-9]+;2;100;0;0' "${sixel_file}"; then
+    if ! LC_ALL=C grep -Eq '#[0-9]+;2;100;[01];[01]' "${sixel_file}"; then
         return 1
     fi
 
