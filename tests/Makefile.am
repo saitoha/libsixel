@@ -250,7 +250,10 @@ TESTS_COMMON_TESTS = \
        loader/t/0013_loader_libjpeg_pixelformat.t \
        loader/t/0014_loader_builtin_pixelformat.t \
        loader/t/0015_loader_quicklook_pixelformat.t \
-       loader/t/0016_loader_gnome_thumbnailer_pixelformat.t
+       loader/t/0016_loader_gnome_thumbnailer_pixelformat.t \
+       loader/t/0017_loader_builtin_psd.t \
+       loader/t/0018_loader_builtin_hdr.t \
+       loader/t/0019_loader_builtin_pic.t
 
 SERIAL_TESTS = \
        aborttrace/t/0001_img2sixel_aborttrace.t \
