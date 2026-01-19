@@ -729,11 +729,11 @@ ensure_dir_p(const char *path, mode_t mode)
             saved = tmp[i];
             tmp[i] = '\0';
             if (tmp[0] != '\0') {
-#if defined(_WIN32)
                 /*
-                 * Drive-qualified paths include a `letter:` prefix.  The
-                 * ladder below sketches how we peel the segments without
-                 * attempting to `mkdir("d:")`:
+                 * Drive-qualified paths include a `letter:` prefix.  Keep
+                 * the drive component intact so we never attempt to
+                 * `mkdir("d:")` even when cosmopolitan builds do not define
+                 * _WIN32. The ladder below sketches the intent:
                  *
                  *   d:/logs/run
                  *   |  |
@@ -747,7 +747,6 @@ ensure_dir_p(const char *path, mode_t mode)
                     tmp[i] = saved;
                     continue;
                 }
-#endif
                 component = strrchr(tmp, '/');
                 if (component == NULL) {
                     component = tmp;
