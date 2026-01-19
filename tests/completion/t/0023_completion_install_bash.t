@@ -29,6 +29,7 @@ fail() {
 }
 
 completion_dir="${top_srcdir}/converters/shell-completion"
+completion_dir=$(printf '%s' "${completion_dir}" | tr '\\\\' '/')
 completion_source="${completion_dir}/bash/img2sixel"
 completion_home="${artifact_dir}/home"
 target_path="${completion_home}/.local/share/bash-completion/completions/img2sixel"
