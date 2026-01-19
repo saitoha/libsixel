@@ -89,6 +89,29 @@ static enum sixel_simd_level
 sixel_cpu_detect_native(void)
 {
     enum sixel_simd_level level;
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
+    defined(_M_IX86)
+# if defined(_MSC_VER) && HAVE_INTRIN_H
+    int cpu_info[4];
+#  if defined(ENABLE_XSAVE_PROBE)
+    unsigned long long xcr0;
+    int extended[4];
+#  endif
+# elif HAVE_CPUID_H
+    unsigned int eax;
+    unsigned int ebx;
+    unsigned int ecx;
+    unsigned int edx;
+#  if defined(ENABLE_XSAVE_PROBE) && defined(HAVE_IMMINTRIN_H)
+    unsigned long long xcr0;
+#  endif
+# endif
+# if defined(ENABLE_XSAVE_PROBE) && \
+     ((defined(_MSC_VER) && HAVE_INTRIN_H) || HAVE_CPUID_H)
+    int osxsave;
+    int avx_capable;
+# endif
+#endif
 
     level = SIXEL_SIMD_LEVEL_SCALAR;
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
@@ -113,21 +136,13 @@ sixel_cpu_detect_native(void)
         level = SIXEL_SIMD_LEVEL_SSE2;
     }
 # elif defined(_MSC_VER) && HAVE_INTRIN_H
-    int cpu_info[4];
-    int osxsave;
-    int avx_capable;
-
     __cpuid(cpu_info, 1);
+#  if defined(ENABLE_XSAVE_PROBE)
     osxsave = (cpu_info[2] & (1 << 27));
     avx_capable = (cpu_info[2] & (1 << 28));
     if (osxsave && avx_capable) {
-#  if defined(ENABLE_XSAVE_PROBE)
-        unsigned long long xcr0;
-
         xcr0 = _xgetbv(0);
         if ((xcr0 & 0x6) == 0x6) {
-            int extended[4];
-
             __cpuidex(extended, 7, 0);
             if ((extended[1] & (1 << 16)) != 0) {
                 level = SIXEL_SIMD_LEVEL_AVX512;
@@ -137,19 +152,12 @@ sixel_cpu_detect_native(void)
                 level = SIXEL_SIMD_LEVEL_AVX;
             }
         }
-#  endif
     }
+#  endif
     if (level == SIXEL_SIMD_LEVEL_SCALAR && (cpu_info[3] & (1 << 26))) {
         level = SIXEL_SIMD_LEVEL_SSE2;
     }
 # elif HAVE_CPUID_H
-    unsigned int eax;
-    unsigned int ebx;
-    unsigned int ecx;
-    unsigned int edx;
-    int osxsave;
-    int avx_capable;
-
     if (__get_cpuid(1, &eax, &ebx, &ecx, &edx) != 0) {
         /*
          * DragonFlyBSD kernels expose AVX/AVX2/AVX512 bits even when the
@@ -159,19 +167,17 @@ sixel_cpu_detect_native(void)
          * extended state. The XGETBV probe is optional so toolchains that
          * lack the intrinsic still succeed.
          */
+#  if defined(HAVE_IMMINTRIN_H)
+#   if defined(ENABLE_XSAVE_PROBE)
         osxsave = (ecx & (1U << 27)) != 0;
         avx_capable = (ecx & (1U << 28)) != 0;
-#  if defined(HAVE_IMMINTRIN_H)
         /*
          * The XGETBV probe is optional. It is only enabled when the
          * toolchain can emit the intrinsic without extra target flags (see
          * ENABLE_XSAVE_PROBE/HAVE_XGETBV_INTRIN). Toolchains that cannot
          * support it will skip this block and fall back to SSE2.
          */
-#  if defined(ENABLE_XSAVE_PROBE)
         if (osxsave != 0 && avx_capable != 0) {
-            unsigned long long xcr0;
-
             xcr0 = _xgetbv(0);
             if ((xcr0 & 0x6) == 0x6) {
                 if (__get_cpuid_max(0, NULL) >= 7 &&
@@ -189,7 +195,7 @@ sixel_cpu_detect_native(void)
                 }
             }
         }
-#  endif
+#   endif
 #  endif
         if (level == SIXEL_SIMD_LEVEL_SCALAR &&
             (edx & (1U << 26)) != 0) {
