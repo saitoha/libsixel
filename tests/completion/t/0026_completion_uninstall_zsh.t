@@ -37,8 +37,10 @@ printf '# stub completion\n' >"${target_path}"
 
 printf '1..1\n'
 
-if IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
-        run_img2sixel -3 zsh >"${log_file}" 2>&1; then
+IMG2SIXEL_COMPLETION_HOME="${completion_home}"
+export IMG2SIXEL_COMPLETION_HOME
+
+if run_img2sixel -3 zsh >"${log_file}" 2>&1; then
     if [ ! -e "${target_path}" ]; then
         pass 1 "zsh completion removed"
     else
