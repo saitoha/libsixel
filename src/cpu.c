@@ -114,7 +114,9 @@ sixel_cpu_detect_native(void)
 #  endif
 # endif
 # if defined(ENABLE_XSAVE_PROBE) && \
-     ((defined(_MSC_VER) && HAVE_INTRIN_H) || HAVE_CPUID_H)
+     ((defined(_MSC_VER) && HAVE_INTRIN_H) || \
+      (HAVE_CPUID_H && !(HAVE_BUILTIN_CPU_SUPPORTS && \
+       !defined(_MSC_VER) && !defined(__PCC__))))
     int osxsave;
     int avx_capable;
 # endif
