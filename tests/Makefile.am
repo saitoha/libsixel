@@ -100,6 +100,14 @@ CLI_TESTS = cli-core/t/0001_help.t \
     palette/t/0023_lanczos4_palette_dump.t \
     palette/t/0024_interlaced_palette_dump.t \
     palette/t/0025_lookup_policy_vpte_float32.t \
+    palette/t/0026_merge_kmeans_float32_lsqa.t \
+    palette/t/0027_merge_heckbert_float32_lsqa.t \
+    palette/t/0028_merge_kmeans_8bit_lsqa.t \
+    palette/t/0029_merge_heckbert_8bit_lsqa.t \
+    palette/t/0030_snap_kmeans_float32_lsqa.t \
+    palette/t/0031_snap_heckbert_float32_lsqa.t \
+    palette/t/0032_snap_kmeans_8bit_lsqa.t \
+    palette/t/0033_snap_heckbert_8bit_lsqa.t \
     dither/t/0001_roundtrip_dither_gamma.t \
     dither/t/0002_inspection_with_diffusion.t \
     dither/t/0003_ascii_ppm_inspection_diffusion.t \
@@ -287,6 +295,7 @@ HELPER_FILES = common/t/0001_converters_common.t \
        cli-core/t/cli_core_common.sh \
        python/lib/common.sh \
        palette/t/kmeans_init_common.sh \
+       palette/lsqa_palette_common.sh \
        pipeline/t/pipeline_planner_common.sh \
        mapfile/t/mapfile_common.sh \
        packaging/t/python_wheel_common.sh \
