@@ -1510,15 +1510,15 @@ jobs:
         shell: bash
         timeout-minutes: 5
         run: |
-          sudo apt-get update || true
-          sudo apt-get install -y ${{ matrix.extra_packages }} || true
+          sudo apt-get update
+          sudo apt-get install -y ${{ matrix.extra_packages }}
 
       - name: Install extra packages (macOS)
         if: ${{ runner.os == 'macOS' && (matrix.extra_packages || '') != '' }}
         shell: bash
         timeout-minutes: 5
         run: |
-          brew update
+          #brew update
           brew install ${{ matrix.extra_packages }}
 
       - name: Install extra packages (FreeBSD)
@@ -1532,8 +1532,7 @@ jobs:
           sync_files: runner-to-vm
           environment_variables: CI,GITHUB_WORKSPACE
           run: |
-            command -v pkg
-            sudo pkg update -f
+            #sudo pkg update -f
             sudo pkg install -y ${{ matrix.extra_packages }}
 
       - name: Install extra packages (NetBSD)
@@ -1547,7 +1546,7 @@ jobs:
           sync_files: runner-to-vm
           environment_variables: CI,GITHUB_WORKSPACE
           run: |
-            sudo pkgin -y update
+            #sudo pkgin -y update
             sudo pkgin -y install ${{ matrix.extra_packages }}
             if [ -f /var/db/pkgin/pkg_install-err.log ]; then
               cp /var/db/pkgin/pkg_install-err.log "$GITHUB_WORKSPACE/pkg_install-err.log" || true
@@ -1633,7 +1632,7 @@ jobs:
         uses: msys2/setup-msys2@v2
         with:
           msystem: ${{ matrix.msystem }}
-          update: true
+          #update: true
           install: ${{ matrix.extra_packages || 'make' }}
 
       - name: Create junction to Git for Windows
@@ -1867,7 +1866,7 @@ jobs:
           sync-time: true
           sync: nfs
           prepare: |
-            pkg update -f
+            #pkg update -f
             pkg install -y ${{ matrix.extra_packages || 'gmake' }}
           run: |
             ${{ matrix.setup_prefix || '' }} ./configure ${{ matrix.setup_options || '' }}
@@ -1883,7 +1882,7 @@ jobs:
           sync-time: true
           sync: rsync
           prepare: |
-            pkg update -f
+            #pkg update -f
             pkg install -y ${{ matrix.extra_packages || 'meson' }}
           run: |
             cd "$GITHUB_WORKSPACE"
@@ -1900,8 +1899,9 @@ jobs:
           usesh: true
           sync: rsync
           prepare: |
-            pkg update -f
-            pkg install --accept ${{ matrix.extra_packages || 'gnu-make gcc' }}
+            pkg set-publisher -g http://pkg.openindiana.org/hipster/ openindiana.org
+            #pkg update -f
+            pkg install --accept --no-be ${{ matrix.extra_packages }}
           run: |
             cd "$GITHUB_WORKSPACE"
             ${{ matrix.setup_prefix || '' }} ./configure ${{ matrix.setup_options || '' }}
@@ -1917,8 +1917,9 @@ jobs:
           usesh: true
           sync: rsync
           prepare: |
-            pkg update -f
-            pkg install --accept ${{ matrix.extra_packages || 'gcc meson ninja' }}
+            pkg set-publisher -g http://pkg.openindiana.org/hipster/ openindiana.org
+            #pkg update -f
+            pkg install --accept --no-be ${{ matrix.extra_packages }}
           run: |
             cd "$GITHUB_WORKSPACE"
             ${{ matrix.setup_prefix || '' }} meson setup builddir ${{ matrix.setup_options || '' }}
@@ -1934,7 +1935,7 @@ jobs:
           sync-time: true
           sync: nfs
           prepare: |
-            pkg update -f
+            #pkg update -f
             pkg install --accept ${{ matrix.extra_packages || 'gnu-make gcc' }}
           run: |
             ${{ matrix.setup_prefix || '' }} ./configure ${{ matrix.setup_options || '' }}
@@ -1950,7 +1951,7 @@ jobs:
           sync-time: true
           sync: nfs
           prepare: |
-            pkg update -f
+            #pkg update -f
             pkg install --accept ${{ matrix.extra_packages || 'gnu-make gcc meson ninja' }}
           run: |
             cd "$GITHUB_WORKSPACE"
@@ -1967,7 +1968,7 @@ jobs:
           usesh: true
           sync: rsync
           prepare: |
-            pkg update -f
+            #pkg update -f
             pkg install --accept ${{ matrix.extra_packages || 'developer/gcc13 developer/build/gnu-make' }}
           run: |
             cd "$GITHUB_WORKSPACE"
@@ -1984,7 +1985,7 @@ jobs:
           usesh: true
           sync: rsync
           prepare: |
-            pkg update -f
+            #pkg update -f
             pkg install --accept ${{ matrix.extra_packages || 'developer/build/gnu-make' }}
           run: |
             cd "$GITHUB_WORKSPACE"
