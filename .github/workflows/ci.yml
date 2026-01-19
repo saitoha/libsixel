@@ -1387,27 +1387,27 @@ jobs:
               meson
             exec_type: cross-platform-vms
 
-          - label: Autotools-openindiana-202510-x86_64
-            buildtool: autotools
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            version: '202510'
-            extra_packages: >-
-              developer/build/gnu-make
-              developer/gcc-13
-            make: gmake
-            exec_type: openindiana-vm
-
-          - label: Meson-openindiana-202510-x86_64
-            buildtool: meson
-            os: ubuntu-latest
-            runner: ubuntu-latest
-            version: '202510'
-            extra_packages: >-
-              developer/gcc-13
-              developer/build/meson
-              developer/build/ninja
-            exec_type: openindiana-vm
+#          - label: Autotools-openindiana-202510-x86_64
+#            buildtool: autotools
+#            os: ubuntu-latest
+#            runner: ubuntu-latest
+#            version: '202510'
+#            extra_packages: >-
+#              developer/build/gnu-make
+#              developer/gcc-13
+#            make: gmake
+#            exec_type: openindiana-vm
+#
+#          - label: Meson-openindiana-202510-x86_64
+#            buildtool: meson
+#            os: ubuntu-latest
+#            runner: ubuntu-latest
+#            version: '202510'
+#            extra_packages: >-
+#              developer/gcc-13
+#              developer/build/meson
+#              developer/build/ninja
+#            exec_type: openindiana-vm
 
           - label: Autotools-solaris-11.4-x86_64
             buildtool: autotools

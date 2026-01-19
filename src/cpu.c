@@ -98,10 +98,17 @@ sixel_cpu_detect_native(void)
     int extended[4];
 #  endif
 # elif HAVE_CPUID_H
+#  if !HAVE_BUILTIN_CPU_SUPPORTS || defined(_MSC_VER) || defined(__PCC__)
+    /*
+     * Keep CPUID register storage only when the builtin CPU probe is
+     * unavailable, so builds using __builtin_cpu_supports() avoid
+     * unused-variable warnings.
+     */
     unsigned int eax;
     unsigned int ebx;
     unsigned int ecx;
     unsigned int edx;
+#  endif
 #  if defined(ENABLE_XSAVE_PROBE) && defined(HAVE_IMMINTRIN_H)
     unsigned long long xcr0;
 #  endif
