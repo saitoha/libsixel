@@ -35,6 +35,12 @@ CLI_TESTS = cli-core/t/0001_help.t \
     cli-core/t/0018_basic_parallel_direct.t \
     cli-core/t/0019_basic_parallel_cli_override.t \
     cli-core/t/0020_basic_invalid_threads_token.t \
+    completion/t/0021_completion_show_bash.t \
+    completion/t/0022_completion_show_zsh.t \
+    completion/t/0023_completion_install_bash.t \
+    completion/t/0024_completion_install_zsh.t \
+    completion/t/0025_completion_uninstall_bash.t \
+    completion/t/0026_completion_uninstall_zsh.t \
     aborttrace/t/0001_img2sixel_aborttrace.t \
     aborttrace/t/0002_sixel2png_aborttrace.t \
     cli-option-invalid/t/0001_invalid_option_arguments.t \
