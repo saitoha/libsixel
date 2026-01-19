@@ -271,9 +271,30 @@ static const char *
 img2sixel_compat_getenv(const char *name)
 {
 #if defined(_MSC_VER)
-    static char buffer[32768];
+    struct img2sixel_env_cache {
+        char *name;
+        char *value;
+        struct img2sixel_env_cache *next;
+    };
+    static struct img2sixel_env_cache *cache_head = NULL;
+    struct img2sixel_env_cache *entry;
+    struct img2sixel_env_cache *new_entry;
     char *value;
+    char *name_copy;
+    char *value_copy;
     size_t length;
+
+    if (name == NULL) {
+        return NULL;
+    }
+
+    entry = cache_head;
+    while (entry != NULL) {
+        if (strcmp(entry->name, name) == 0) {
+            break;
+        }
+        entry = entry->next;
+    }
 
     value = NULL;
     length = 0;
@@ -286,13 +307,42 @@ img2sixel_compat_getenv(const char *name)
     if (value == NULL) {
         return NULL;
     }
-    if (length >= sizeof(buffer)) {
-        length = sizeof(buffer) - 1;
+
+    value_copy = (char *)malloc(length + 1);
+    if (value_copy == NULL) {
+        free(value);
+        return NULL;
     }
-    memcpy(buffer, value, length);
-    buffer[length] = '\0';
+    memcpy(value_copy, value, length);
+    value_copy[length] = '\0';
     free(value);
-    return buffer;
+
+    if (entry != NULL) {
+        free(entry->value);
+        entry->value = value_copy;
+        return entry->value;
+    }
+
+    new_entry = (struct img2sixel_env_cache *)malloc(sizeof(*new_entry));
+    if (new_entry == NULL) {
+        free(value_copy);
+        return NULL;
+    }
+
+    name_copy = (char *)malloc(strlen(name) + 1);
+    if (name_copy == NULL) {
+        free(value_copy);
+        free(new_entry);
+        return NULL;
+    }
+    strcpy(name_copy, name);
+
+    new_entry->name = name_copy;
+    new_entry->value = value_copy;
+    new_entry->next = cache_head;
+    cache_head = new_entry;
+
+    return new_entry->value;
 #else
     return getenv(name);
 #endif
