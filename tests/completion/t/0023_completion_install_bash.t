@@ -33,6 +33,7 @@ completion_dir=$(printf '%s' "${completion_dir}" | tr '\\\\' '/')
 completion_source="${completion_dir}/bash/img2sixel"
 completion_home="${artifact_dir}/home"
 target_path="${completion_home}/.local/share/bash-completion/completions/img2sixel"
+legacy_path="${completion_home}/.bash_completion.d/img2sixel"
 
 require_file "${completion_source}"
 rm -rf "${completion_home}"
@@ -47,6 +48,10 @@ if IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
     if [ -f "${target_path}" ] && \
             grep -F '# bash completion for img2sixel' \
             "${target_path}" >/dev/null 2>&1; then
+        pass 1 "bash completion installed"
+    elif [ -f "${legacy_path}" ] && \
+            grep -F '# bash completion for img2sixel' \
+            "${legacy_path}" >/dev/null 2>&1; then
         pass 1 "bash completion installed"
     else
         fail 1 "bash completion not installed"
