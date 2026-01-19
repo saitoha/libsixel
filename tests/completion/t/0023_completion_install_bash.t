@@ -41,10 +41,14 @@ mkdir -p "${completion_home}"
 
 printf '1..1\n'
 
-if IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
-        IMG2SIXEL_COMPLETION_DIR="${completion_dir}" \
-        BASH_VERSION=5.0 \
-        run_img2sixel -2 bash >"${log_file}" 2>&1; then
+IMG2SIXEL_COMPLETION_HOME="${completion_home}"
+IMG2SIXEL_COMPLETION_DIR="${completion_dir}"
+BASH_VERSION=5.0
+export IMG2SIXEL_COMPLETION_HOME
+export IMG2SIXEL_COMPLETION_DIR
+export BASH_VERSION
+
+if run_img2sixel -2 bash >"${log_file}" 2>&1; then
     if [ -f "${target_path}" ] && \
             grep -F '# bash completion for img2sixel' \
             "${target_path}" >/dev/null 2>&1; then
