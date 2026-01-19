@@ -1387,6 +1387,28 @@ jobs:
               meson
             exec_type: cross-platform-vms
 
+          - label: Autotools-openindiana-202510-x86_64
+            buildtool: autotools
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            version: '202510'
+            extra_packages: >-
+              developer/build/gnu-make
+              developer/gcc-13
+            make: gmake
+            exec_type: openindiana-vm
+
+          - label: Meson-openindiana-202510-x86_64
+            buildtool: meson
+            os: ubuntu-latest
+            runner: ubuntu-latest
+            version: '202510'
+            extra_packages: >-
+              developer/gcc-13
+              developer/build/meson
+              developer/build/ninja
+            exec_type: openindiana-vm
+
           - label: Autotools-solaris-11.4-x86_64
             buildtool: autotools
             os: ubuntu-latest
@@ -1863,6 +1885,40 @@ jobs:
           prepare: |
             pkg update -f
             pkg install -y ${{ matrix.extra_packages || 'meson' }}
+          run: |
+            cd "$GITHUB_WORKSPACE"
+            ${{ matrix.setup_prefix || '' }} meson setup builddir ${{ matrix.setup_options || '' }}
+            meson compile -C builddir
+            meson ${{ matrix.check_target || 'test' }} -C builddir
+
+      - name: Build and test (Autotools, OpenIndiana)
+        if: ${{ matrix.buildtool == 'autotools' && matrix.exec_type == 'openindiana-vm' }}
+        timeout-minutes: 40
+        uses: vmactions/openindiana-vm@v1
+        with:
+          release: ${{ matrix.version }}
+          usesh: true
+          sync: rsync
+          prepare: |
+            pkg update -f
+            pkg install --accept ${{ matrix.extra_packages || 'gnu-make gcc' }}
+          run: |
+            cd "$GITHUB_WORKSPACE"
+            ${{ matrix.setup_prefix || '' }} ./configure ${{ matrix.setup_options || '' }}
+            ${{ matrix.make || 'gmake' }} V=1
+            ${{ matrix.make || 'gmake' }} ${{ matrix.check_target || 'check' }}
+
+      - name: Configure, build, and test (Meson, OpenIndiana)
+        if: ${{ matrix.buildtool == 'meson' && matrix.exec_type == 'openindiana-vm' }}
+        timeout-minutes: 40
+        uses: vmactions/openindiana-vm@v1
+        with:
+          release: ${{ matrix.version }}
+          usesh: true
+          sync: rsync
+          prepare: |
+            pkg update -f
+            pkg install --accept ${{ matrix.extra_packages || 'gcc meson ninja' }}
           run: |
             cd "$GITHUB_WORKSPACE"
             ${{ matrix.setup_prefix || '' }} meson setup builddir ${{ matrix.setup_options || '' }}
