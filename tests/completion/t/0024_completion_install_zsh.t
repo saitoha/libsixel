@@ -41,9 +41,12 @@ mkdir -p "${completion_home}"
 
 printf '1..1\n'
 
-if IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
-        IMG2SIXEL_COMPLETION_DIR="${completion_dir}" \
-        run_img2sixel -2 zsh >"${log_file}" 2>&1; then
+IMG2SIXEL_COMPLETION_HOME="${completion_home}"
+IMG2SIXEL_COMPLETION_DIR="${completion_dir}"
+export IMG2SIXEL_COMPLETION_HOME
+export IMG2SIXEL_COMPLETION_DIR
+
+if run_img2sixel -2 zsh >"${log_file}" 2>&1; then
     if [ -f "${target_path}" ] && \
             grep -F '#compdef img2sixel' \
             "${target_path}" >/dev/null 2>&1 && \

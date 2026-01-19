@@ -35,8 +35,10 @@ require_file "${completion_source}"
 
 printf '1..1\n'
 
-if IMG2SIXEL_COMPLETION_DIR="${completion_dir}" \
-        run_img2sixel -1 zsh >"${output_file}" 2>>"${log_file}"; then
+IMG2SIXEL_COMPLETION_DIR="${completion_dir}"
+export IMG2SIXEL_COMPLETION_DIR
+
+if run_img2sixel -1 zsh >"${output_file}" 2>>"${log_file}"; then
     if grep -F '#compdef img2sixel' "${output_file}" >/dev/null 2>&1; then
         pass 1 "zsh completion output available"
     else
