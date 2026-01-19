@@ -852,6 +852,37 @@ CLI_TESTS = cli-core/t/0001_help.t \
     dither/t/0011_positional_float32_dither.t \
     dither/t/0012_varcoeff_8bit_dither.t \
     dither/t/0013_varcoeff_float32_dither.t \
+    dither/t/0014_varcoeff_8bit_serpentine_lsqa.t \
+    dither/t/0015_varcoeff_8bit_carry_lsqa.t \
+    dither/t/0016_varcoeff_8bit_carry_serpentine_lsqa.t \
+    dither/t/0017_varcoeff_float32_carry_lsqa.t \
+    dither/t/0018_varcoeff_float32_carry_serpentine_lsqa.t \
+    dither/t/0019_varcoeff_float32_oklab_use_lr_lsqa.t \
+    dither/t/0020_positional_8bit_x_dither_lsqa.t \
+    dither/t/0021_positional_8bit_no_diffuse_lsqa.t \
+    dither/t/0022_positional_float32_a_dither_lsqa.t \
+    dither/t/0023_positional_float32_no_diffuse_lsqa.t \
+    dither/t/0024_fixed_8bit_fs_carry_lsqa.t \
+    dither/t/0025_fixed_8bit_fs_carry_serpentine_lsqa.t \
+    dither/t/0026_fixed_8bit_atkinson_carry_lsqa.t \
+    dither/t/0027_fixed_8bit_jajuni_carry_lsqa.t \
+    dither/t/0028_fixed_8bit_stucki_carry_lsqa.t \
+    dither/t/0029_fixed_8bit_burkes_carry_lsqa.t \
+    dither/t/0030_fixed_8bit_sierra1_lsqa.t \
+    dither/t/0031_fixed_8bit_sierra1_carry_lsqa.t \
+    dither/t/0032_fixed_8bit_sierra2_lsqa.t \
+    dither/t/0033_fixed_8bit_sierra2_carry_lsqa.t \
+    dither/t/0034_fixed_8bit_sierra3_lsqa.t \
+    dither/t/0035_fixed_8bit_sierra3_carry_lsqa.t \
+    dither/t/0036_fixed_float32_fs_lsqa.t \
+    dither/t/0037_fixed_float32_fs_serpentine_lsqa.t \
+    dither/t/0038_fixed_float32_atkinson_lsqa.t \
+    dither/t/0039_fixed_float32_jajuni_lsqa.t \
+    dither/t/0040_fixed_float32_stucki_lsqa.t \
+    dither/t/0041_fixed_float32_burkes_lsqa.t \
+    dither/t/0042_fixed_float32_sierra1_lsqa.t \
+    dither/t/0043_fixed_float32_sierra2_lsqa.t \
+    dither/t/0044_fixed_float32_sierra3_lsqa.t \
     geometry/t/0001_scaling_histogram_background.t \
     geometry/t/0002_dcs_crc_width_scaling.t \
     geometry/t/0003_dcs_crc_height_scaling.t \
@@ -1013,6 +1044,7 @@ HELPER_FILES = common/t/0001_converters_common.t \
        python/lib/common.sh \
        palette/t/kmeans_init_common.sh \
        palette/lsqa_palette_common.sh \
+       dither/lsqa_dither_common.sh \
        pipeline/t/pipeline_planner_common.sh \
        mapfile/t/mapfile_common.sh \
        packaging/t/python_wheel_common.sh \

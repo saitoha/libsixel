@@ -12,7 +12,7 @@ permissions:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   # Pin vcpkg to a stable release to avoid fetching future tool builds that
@@ -33,7 +33,8 @@ jobs:
               build-base
               coreutils
               findutils
-            exec_type: alpine
+            exec_type: docker
+            image: alpine:3.20
 
           - label: Meson-alpine-3.20-x86_64
             buildtool: meson
@@ -42,6 +43,7 @@ jobs:
               build-base
               meson
             exec_type: alpine
+            image: alpine:3.20
 
           - label: Autotools-ubuntu-x86_64-clang-ASan
             buildtool: autotools
@@ -1792,11 +1794,11 @@ jobs:
           endlocal
 
       - name: Build and test (Autotools, Alpine container)
-        if: ${{ matrix.buildtool == 'autotools' && matrix.exec_type == 'alpine' }}
+        if: ${{ matrix.buildtool == 'autotools' && matrix.exec_type == 'docker' }}
         shell: bash
         timeout-minutes: 15
         run: |
-          docker run --rm -v "$PWD":/src -w /src alpine:3.20 sh -euc '
+          docker run --rm -v "$PWD":/src -w /src ${{ matrix.image }} sh -euc '
             set -xve
             apk add --no-cache ${{ matrix.guest_packages || '' }}
             addgroup -g '"$(id -g)"' hostgrp 2>/dev/null || true
@@ -1810,11 +1812,11 @@ jobs:
           '
 
       - name: Build and test (Meson, Alpine container)
-        if: ${{ matrix.buildtool == 'meson' && matrix.exec_type == 'alpine' }}
+        if: ${{ matrix.buildtool == 'meson' && matrix.exec_type == 'docker' }}
         shell: bash
         timeout-minutes: 15
         run: |
-          docker run --rm -v "$PWD":/src -w /src alpine:3.20 sh -euc '
+          docker run --rm -v "$PWD":/src -w /src ${{ matrix.image }} sh -euc '
             set -xve
             apk add --no-cache ${{ matrix.guest_packages || '' }}
             addgroup -g '"$(id -g)"' hostgrp 2>/dev/null || true
