@@ -50,6 +50,10 @@ if img2sixel_opt.enabled()
     img2sixel_exe = executable('img2sixel',
       ['img2sixel.c', 'completion_utils.c', completion_embed]
         + sources_common + aborttrace_sources,
+      c_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
+                                     '-DHAVE_COMPLETION_EMBED_H'],
+      objc_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
+                                        '-DHAVE_COMPLETION_EMBED_H'],
       dependencies: [libsixel_dep] + aborttrace_deps_local,
       include_directories: [project_inc, local_inc],
       build_rpath: src_build_dir,
@@ -92,6 +96,8 @@ if sixel2png_opt.enabled()
   else
     sixel2png_exe = executable('sixel2png',
       ['sixel2png.c'] + sources_common + aborttrace_sources,
+      c_args: libsixel_posix_defs + ['-DBUILD_SIXEL2PNG'],
+      objc_args: libsixel_posix_defs + ['-DBUILD_SIXEL2PNG'],
       dependencies: [libsixel_dep] + aborttrace_deps_local,
       include_directories: project_inc,
       build_rpath: src_build_dir,

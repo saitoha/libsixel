@@ -2028,12 +2028,9 @@ jobs:
             vm_workspace="${GITHUB_WORKSPACE}"
             user=runner
           fi
-          if ssh "${user}"@cross_platform_actions_host bash -c 'cd '"${vm_workspace}"' && find . -type f "(" -name "*.log" -o -name "*.trs" -o -name "*.info" ")" -exec tar cvzf /tmp/artifacts.tar.gz {} +'; then
-            scp "${user}"@cross_platform_actions_host:/tmp/artifacts.tar.gz . ;
-            tar xvzf artifacts.tar.gz ;
-          else
-            echo "No artifact archive found on VM; skipping copy" >&2 ;
-          fi
+          ssh "${user}"@cross_platform_actions_host bash -c 'cd '"${vm_workspace}"' && find . -type f "(" -name "*.log" -o -name "*.trs" -o -name "*.info" ")" -exec tar cvzf /tmp/artifacts.tar.gz {} +' || true
+          scp "${user}"@cross_platform_actions_host:/tmp/artifacts.tar.gz . || true
+          tar xvzf artifacts.tar.gz || true
 
       - name: Upload artifacts
         if: ${{ always() }}
