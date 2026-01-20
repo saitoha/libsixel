@@ -27,22 +27,22 @@ def _read_text(path: pathlib.Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def _escape_lines(text: str) -> Iterable[str]:
-    """Yield C string literal lines that reproduce *text* verbatim."""
+def _escape_bytes(text: str) -> Iterable[str]:
+    """Yield formatted byte rows that reproduce *text* verbatim."""
 
-    # Keep generated literals well under the 4095-byte limit required by ISO
-    # C99 to avoid -Woverlength-strings warnings on strict compilers.
-    chunk_limit = 2000
+    # Emit byte arrays to avoid ISO C99 overlength string warnings.
+    count_per_line = 12
+    row: list[str] = []
 
-    for line in text.splitlines(True):
-        escaped = line.replace("\\", "\\\\").replace("\"", "\\\"")
-        escaped = escaped.replace("\n", "\\n")
-        while escaped:
-            chunk = escaped[:chunk_limit]
-            escaped = escaped[chunk_limit:]
-            yield f"\"{chunk}\""
-    if not text.endswith("\n"):
-        yield "\"\""
+    for byte in text.encode("utf-8"):
+        row.append(f"0x{byte:02x}")
+        if len(row) >= count_per_line:
+            yield "    " + ", ".join(row) + ","
+            row.clear()
+
+    row.append("0x00")
+    if row:
+        yield "    " + ", ".join(row) + ","
 
 
 def _write_header(path: pathlib.Path, bash_text: str, zsh_text: str) -> None:
@@ -52,13 +52,13 @@ def _write_header(path: pathlib.Path, bash_text: str, zsh_text: str) -> None:
         "#ifndef SIXEL_CONVERTERS_COMPLETION_EMBED_H",
         "#define SIXEL_CONVERTERS_COMPLETION_EMBED_H",
         "",
-        "static const char img2sixel_bash_completion[] =",
-        *(_escape_lines(bash_text)),
-        "\"\";",
+        "static const unsigned char img2sixel_bash_completion[] = {",
+        *(_escape_bytes(bash_text)),
+        "};",
         "",
-        "static const char img2sixel_zsh_completion[] =",
-        *(_escape_lines(zsh_text)),
-        "\"\";",
+        "static const unsigned char img2sixel_zsh_completion[] = {",
+        *(_escape_bytes(zsh_text)),
+        "};",
         "",
         "#endif /* SIXEL_CONVERTERS_COMPLETION_EMBED_H */",
     ]

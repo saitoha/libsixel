@@ -12,82 +12,53 @@
 #   2. Path to the zsh completion file
 # It writes the resulting header to STDOUT so that callers can redirect it.
 #
-# Long literals are broken into 256-byte slices to avoid triggering
-# -Woverlength-strings on strict ISO C99 compilers.
+# Emit byte arrays to avoid triggering -Woverlength-strings on
+# strict ISO C99 compilers while preserving raw file contents.
 
-function file_size(path,    cmd, size_str, status)
+function emit_byte(byte,
+    count_per_line)
 {
-        cmd = "wc -c < '" path "'"
-        size_str = ""
-        status = (cmd | getline size_str)
-        close(cmd)
-        if (status <= 0) {
-                print "gen_completion_embed.awk: failed to stat " path > \
-                    "/dev/stderr"
-                exit 1
+        count_per_line = 12;
+
+        if (byte_count == 0) {
+                printf "    "
         }
-        sub(/^ +/, "", size_str)
-        sub(/ +$/, "", size_str)
-        return size_str + 0
-}
 
-function escape_text(text)
-{
-        gsub(/\\/, "\\\\", text)
-        gsub(/"/, "\\\"", text)
-        return text
-}
+        printf "0x%s", byte
+        byte_count++
 
-function emit_literal_chunks(text,
-    chunk_limit, start, chunk)
-{
-        chunk_limit = 256;
-        start = 1;
-
-        while (start <= length(text)) {
-                chunk = substr(text, start, chunk_limit);
-                printf "\"%s\"\n", chunk;
-                start += chunk_limit;
+        if (byte_count >= count_per_line) {
+                printf ",\n"
+                byte_count = 0
+        } else {
+                printf ", "
         }
 }
 
-function emit_lines(path, symbol,
-    total_bytes, line_count, text_bytes, idx, has_trailing_newline)
+function emit_bytes(path, symbol,
+    cmd, line, fields, idx, field_count)
 {
-        total_bytes = file_size(path)
-        line_count = 0
-        text_bytes = 0
-        while ((getline line < path) > 0) {
-                line_count++
-                text_bytes += length(line)
-                lines[line_count] = line
-        }
-        close(path)
+        print "static const unsigned char " symbol "[] = {"
 
-        has_trailing_newline = 0
-        if (line_count == 0) {
-                has_trailing_newline = 1
-        } else if (total_bytes == text_bytes + line_count) {
-                has_trailing_newline = 1
-        }
-
-        print "static const char " symbol "[] ="
-        if (line_count == 0) {
-                print "\"\""
-        }
-
-        for (idx = 1; idx <= line_count; idx++) {
-                text = escape_text(lines[idx])
-                if (idx < line_count) {
-                        text = text "\\n"
-                } else if (has_trailing_newline) {
-                        text = text "\\n"
+        byte_count = 0
+        cmd = "od -An -tx1 -v '" path "'"
+        while ((cmd | getline line) > 0) {
+                field_count = split(line, fields, /[ \t]+/)
+                for (idx = 1; idx <= field_count; idx++) {
+                        if (fields[idx] == "") {
+                                continue
+                        }
+                        emit_byte(fields[idx])
                 }
-                emit_literal_chunks(text)
-                delete lines[idx]
+        }
+        close(cmd)
+
+        emit_byte("00")
+        if (byte_count != 0) {
+                printf "\n"
         }
 
-        print "\"\";"
+        print "};"
         print ""
 }
 
@@ -106,8 +77,8 @@ BEGIN {
         print "/* auto-generated; do not edit */"
         print ""
 
-        emit_lines(bash_path, "img2sixel_bash_completion")
-        emit_lines(zsh_path, "img2sixel_zsh_completion")
+        emit_bytes(bash_path, "img2sixel_bash_completion")
+        emit_bytes(zsh_path, "img2sixel_zsh_completion")
 
         exit 0
 }
