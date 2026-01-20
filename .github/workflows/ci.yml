@@ -1788,10 +1788,6 @@ jobs:
           environment_variables: CI,GITHUB_WORKSPACE
           run: |
             set -xv
-            umask 022
-            mkdir -p tests/_artifacts
-            chown -R "$(id -u)":"$(id -g)" tests/_artifacts || true
-            chmod -R u+rwX,go+rX tests/_artifacts
             ${{ matrix.setup_prefix || '' }} ./configure ${{ matrix.setup_options || '' }}
             ${{ matrix.make || 'make' }} V=1
             ${{ matrix.make || 'make' }} ${{ matrix.check_target || 'check' }}
@@ -1824,10 +1820,6 @@ jobs:
             #pkg update -f
             pkg install -y ${{ matrix.extra_packages || 'gmake' }}
           run: |
-            umask 022
-            mkdir -p tests/_artifacts
-            chown -R "$(id -u)":"$(id -g)" tests/_artifacts || true
-            chmod -R u+rwX,go+rX tests/_artifacts
             ${{ matrix.setup_prefix || '' }} ./configure ${{ matrix.setup_options || '' }}
             gmake V=1
             gmake ${{ matrix.check_target || 'check' }}

@@ -35,13 +35,30 @@ fail() {
 completion_dir="${top_srcdir}/converters/shell-completion"
 completion_dir=$(printf '%s' "${completion_dir}" | tr '\\\\' '/')
 completion_source="${completion_dir}/bash/img2sixel"
-completion_home="${artifact_dir}/home"
-target_path="${completion_home}/.local/share/bash-completion/completions/img2sixel"
-legacy_path="${completion_home}/.bash_completion.d/img2sixel"
 
 require_file "${completion_source}"
-rm -rf "${completion_home}"
-mkdir -p "${completion_home}"
+
+# Use a writable temporary home to avoid permission issues on shared
+# workspaces while still keeping logs under tests/_artifacts.
+completion_home=""
+if command -v mktemp >/dev/null 2>&1; then
+    completion_home=$(mktemp -d "${TMPDIR:-/tmp}/img2sixel-home.XXXXXX")
+else
+    completion_home="${artifact_dir}/home.$$"
+    mkdir -p "${completion_home}"
+fi
+if [ -z "${completion_home}" ]; then
+    echo "Failed to create a temporary home directory" >&2
+    exit 1
+fi
+
+cleanup_home() {
+    rm -rf "${completion_home}"
+}
+trap cleanup_home EXIT INT TERM
+
+target_path="${completion_home}/.local/share/bash-completion/completions/img2sixel"
+legacy_path="${completion_home}/.bash_completion.d/img2sixel"
 
 printf '1..1\n'
 
