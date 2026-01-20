@@ -15,7 +15,7 @@ mkdir -p "${artifact_dir}"
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${script_dir}/../../common/t/0001_converters_common.t"
 
-if ! command -v bash; then
+if ! command -v bash >/dev/null; then
     skip_all "bash is not found"
 fi
 
