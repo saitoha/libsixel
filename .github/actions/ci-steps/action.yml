@@ -75,11 +75,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Configure git EOL
-      if: ${{ inputs.exec_type == 'cygwin' }}
-      shell: bash
-      run: git config --global core.autocrlf false
-
     - name: Normalize line endings (Windows)
       if: runner.os == 'Windows'
       shell: bash
