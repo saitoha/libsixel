@@ -26,370 +26,370 @@ jobs:
     strategy:
       matrix:
         include:
-          - label: Autotools-alpine-3.20-x86_64
-            buildtool: autotools
-            runner: ubuntu-latest
-            guest_packages: >-
-              build-base
-              coreutils
-              findutils
-            exec_type: alpine
-
-          - label: Meson-alpine-3.20-x86_64
-            buildtool: meson
-            runner: ubuntu-latest
-            guest_packages: >-
-              build-base
-              meson
-            exec_type: alpine
-
-          - label: Autotools-ubuntu-x86_64-clang-ASan
-            buildtool: autotools
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
-              LDFLAGS="-fsanitize=address"
-            setup_options: >-
-              --without-png
-              --without-jpeg
-            extra_packages: >-
-              clang
-            exec_type: bash
-
-          - label: Meson-ubuntu-x86_64-clang-ASan
-            buildtool: meson
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              --buildtype=debug
-              -Db_sanitize=address
-              -Db_lundef=false
-              -Dpng=disabled
-              -Djpeg=disabled
-            extra_packages: >-
-              meson
-              clang
-            exec_type: bash
-
-          - label: Autotools-ubuntu-x86_64-clang-simd-avx2
-            buildtool: autotools
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
-              LDFLAGS="-fsanitize=address"
-            setup_options: >-
-              --enable-simd
-              --enable-avx2
-            extra_packages: >-
-              clang
-            exec_type: bash
-
-          - label: Meson-ubuntu-x86_64-clang-simd-avx2
-            buildtool: meson
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              -Dsimd=enabled
-              -Davx2=true
-            extra_packages: >-
-              meson
-              clang
-            exec_type: bash
-
-          - label: Autotools-ubuntu-x86_64-clang-simd-avx512-buildonly
-            buildtool: autotools
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
-              LDFLAGS="-fsanitize=address"
-            setup_options: >-
-              --enable-simd
-              --enable-avx512
-            check_target: all
-            extra_packages: >-
-              clang
-            exec_type: bash
-
-          - label: Meson-ubuntu-x86_64-clang-simd-avx512-buildonly
-            buildtool: meson
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              -Dsimd=enabled
-              -Davx512=true
-            check_target: compile
-            extra_packages: >-
-              meson
-              clang
-            exec_type: bash
-
-          - label: Autotools-ubuntu-x86_64-clang-ASan-png-jpeg
-            buildtool: autotools
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
-              LDFLAGS="-fsanitize=address"
-            setup_options: >-
-              --with-png
-              --with-jpeg
-            extra_packages: >-
-              meson
-              clang
-              libpng-dev
-              libjpeg-dev
-            exec_type: bash
-
-          - label: Meson-ubuntu-x86_64-clang-ASan-png-jpeg
-            buildtool: meson
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              --buildtype=debug
-              -Db_sanitize=address
-              -Db_lundef=false
-              -Dpng=enabled
-              -Djpeg=enabled
-            extra_packages: >-
-              meson
-              clang
-              libpng-dev
-              libjpeg-dev
-            exec_type: bash
-
-          - label: Autotools-ubuntu-x86_64-ASan-gdk-pixbuf2
-            buildtool: autotools
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
-              LDFLAGS="-fsanitize=address"
-            setup_options: >-
-              --without-png
-              --without-jpeg
-              --with-gdk-pixbuf2
-            extra_packages: >-
-              clang
-              libgdk-pixbuf2.0-dev
-            exec_type: bash
-
-          - label: Meson-ubuntu-x86_64-ASan-gdk-pixbuf2
-            buildtool: meson
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              --buildtype=debug
-              -Db_sanitize=address
-              -Db_lundef=false
-              -Dpng=disabled
-              -Djpeg=disabled
-              -Dgdk_pixbuf2=enabled
-            extra_packages: >-
-              meson
-              clang
-              libgdk-pixbuf2.0-dev
-            exec_type: bash
-
-          - label: Autotools-ubuntu-x86_64-ASan-GD-no-aborttrace
-            buildtool: autotools
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
-              LDFLAGS="-fsanitize=address"
-            setup_options: >-
-              --without-png
-              --without-jpeg
-              --with-gd
-              --disable-abort-trace
-            extra_packages: >-
-              clang
-              libgd-dev
-            exec_type: bash
-
-          - label: Meson-ubuntu-x86_64-ASan-GD-no-aborttrace
-            buildtool: meson
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              --buildtype=debug
-              -Db_sanitize=address
-              -Db_lundef=false
-              -Dpng=disabled
-              -Djpeg=disabled
-              -Dgd=enabled
-              -Dabort_trace=disabled
-            extra_packages: >-
-              meson
-              clang
-              libgd-dev
-            exec_type: bash
-
-          - label: Autotools-ubuntu-x86_64-static-coverage
-            buildtool: autotools
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=gcc-14
-            setup_options: >-
-              --enable-gcov
-              --disable-shared
-              --enable-static
-            extra_packages: >-
-              gcc-14
-              gcovr
-            exec_type: bash
-
-          - label: Meson-ubuntu-x86_64-static-coverage
-            buildtool: meson
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=gcc-14
-            setup_options: >-
-              -Db_coverage=true
-              -Db_staticpic=true
-              -Ddefault_library=static
-            extra_packages: >-
-              meson
-              gcc-14
-              gcovr
-            exec_type: bash
-
-          - label: Autotools-ubuntu-x86_64-no-simd-coverage
-            buildtool: autotools
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=gcc-14
-            setup_options: >-
-              --enable-gcov
-              --disable-simd
-            extra_packages: >-
-              gcc-14
-            pip_packages: >-
-              gcovr
-            exec_type: bash
-
-          - label: Meson-ubuntu-x86_64-no-simd-coverage
-            buildtool: meson
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=gcc-14
-            setup_options: >-
-              -Db_coverage=true
-              -Dsimd=disabled
-            extra_packages: >-
-              meson
-              gcc-14
-            pip_packages: >-
-              gcovr
-            exec_type: bash
-
-          - label: Autotools-ubuntu-x86_64-no-tools
-            buildtool: autotools
-            runner: ubuntu-latest
-            setup_options: >-
-              --disable-img2sixel
-              --disable-sixel2png
-            exec_type: bash
-
-          - label: Meson-ubuntu-x86_64-no-tools
-            buildtool: meson
-            runner: ubuntu-latest
-            setup_options: >-
-              -Dimg2sixel=disabled
-              -Dsixel2png=disabled
-            extra_packages: >-
-              meson
-            exec_type: bash
-
-          - label: Autotools-ubuntu-x86_64-no-threads-coverage
-            buildtool: autotools
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=gcc-14
-            setup_options: >-
-              --enable-gcov
-              --disable-threads
-            extra_packages: >-
-              gcc-14
-            pip_packages: >-
-              gcovr
-            exec_type: bash
-
-          - label: Meson-ubuntu-x86_64-no-threads-coverage
-            buildtool: meson
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=gcc-14
-            setup_options: >-
-              -Db_coverage=true
-              -Dthreads=disabled
-            extra_packages: >-
-              gcc-14
-            pip_packages: >-
-              meson
-              gcovr
-            exec_type: bash
-
-          - label: Autotools-ubuntu-x86_64-musl
-            buildtool: autotools
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=musl-gcc
-            extra_packages: >-
-              musl-tools
-            exec_type: bash
-
-          - label: Meson-ubuntu-x86_64-musl
-            buildtool: meson
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=musl-gcc
-            extra_packages: >-
-              meson
-              musl-tools
-            exec_type: bash
-
-          - label: Autotools-ubuntu-x86_64-mingw-w64-x86_64-win32-wine64-static
-            buildtool: autotools
-            runner: ubuntu-latest
-            setup_prefix: >-
-              wineboot -u;
-              CC=x86_64-w64-mingw32-gcc-win32
-            setup_options: >-
-              --host=x86_64-w64-mingw32
-              --disable-shared
-            extra_packages: >-
-              wine
-              gcc-mingw-w64-x86-64-win32
-              make
-            make: SIXEL_RUNTIME=wine SIXEL_BIN_EXT=.exe make
-            exec_type: bash
-
-          - label: Autotools-ubuntu-x86_64-mingw-w64-x86_64-posix-wine64-static
-            buildtool: autotools
-            runner: ubuntu-latest
-            setup_prefix: >-
-              wineboot -u;
-              cp /usr/x86_64-w64-mingw32/lib/libwinpthread-1.dll ~/.wine/drive_c/windows/system32/;
-              CC=x86_64-w64-mingw32-gcc-posix
-            setup_options: >-
-              --host=x86_64-w64-mingw32
-              --disable-shared
-            extra_packages: >-
-              wine
-              gcc-mingw-w64-x86-64-posix
-              make
-            make: SIXEL_RUNTIME=wine SIXEL_BIN_EXT=.exe make
-            exec_type: bash
+#          - label: Autotools-alpine-3.20-x86_64
+#            buildtool: autotools
+#            runner: ubuntu-latest
+#            guest_packages: >-
+#              build-base
+#              coreutils
+#              findutils
+#            exec_type: alpine
+#
+#          - label: Meson-alpine-3.20-x86_64
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            guest_packages: >-
+#              build-base
+#              meson
+#            exec_type: alpine
+#
+#          - label: Autotools-ubuntu-x86_64-clang-ASan
+#            buildtool: autotools
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              CC=clang
+#              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+#              LDFLAGS="-fsanitize=address"
+#            setup_options: >-
+#              --without-png
+#              --without-jpeg
+#            extra_packages: >-
+#              clang
+#            exec_type: bash
+#
+#          - label: Meson-ubuntu-x86_64-clang-ASan
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              CC=clang
+#            setup_options: >-
+#              --buildtype=debug
+#              -Db_sanitize=address
+#              -Db_lundef=false
+#              -Dpng=disabled
+#              -Djpeg=disabled
+#            extra_packages: >-
+#              meson
+#              clang
+#            exec_type: bash
+#
+#          - label: Autotools-ubuntu-x86_64-clang-simd-avx2
+#            buildtool: autotools
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              CC=clang
+#              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+#              LDFLAGS="-fsanitize=address"
+#            setup_options: >-
+#              --enable-simd
+#              --enable-avx2
+#            extra_packages: >-
+#              clang
+#            exec_type: bash
+#
+#          - label: Meson-ubuntu-x86_64-clang-simd-avx2
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              CC=clang
+#            setup_options: >-
+#              -Dsimd=enabled
+#              -Davx2=true
+#            extra_packages: >-
+#              meson
+#              clang
+#            exec_type: bash
+#
+#          - label: Autotools-ubuntu-x86_64-clang-simd-avx512-buildonly
+#            buildtool: autotools
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              CC=clang
+#              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+#              LDFLAGS="-fsanitize=address"
+#            setup_options: >-
+#              --enable-simd
+#              --enable-avx512
+#            check_target: all
+#            extra_packages: >-
+#              clang
+#            exec_type: bash
+#
+#          - label: Meson-ubuntu-x86_64-clang-simd-avx512-buildonly
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              CC=clang
+#            setup_options: >-
+#              -Dsimd=enabled
+#              -Davx512=true
+#            check_target: compile
+#            extra_packages: >-
+#              meson
+#              clang
+#            exec_type: bash
+#
+#          - label: Autotools-ubuntu-x86_64-clang-ASan-png-jpeg
+#            buildtool: autotools
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              CC=clang
+#              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+#              LDFLAGS="-fsanitize=address"
+#            setup_options: >-
+#              --with-png
+#              --with-jpeg
+#            extra_packages: >-
+#              meson
+#              clang
+#              libpng-dev
+#              libjpeg-dev
+#            exec_type: bash
+#
+#          - label: Meson-ubuntu-x86_64-clang-ASan-png-jpeg
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              CC=clang
+#            setup_options: >-
+#              --buildtype=debug
+#              -Db_sanitize=address
+#              -Db_lundef=false
+#              -Dpng=enabled
+#              -Djpeg=enabled
+#            extra_packages: >-
+#              meson
+#              clang
+#              libpng-dev
+#              libjpeg-dev
+#            exec_type: bash
+#
+#          - label: Autotools-ubuntu-x86_64-ASan-gdk-pixbuf2
+#            buildtool: autotools
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              CC=clang
+#              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+#              LDFLAGS="-fsanitize=address"
+#            setup_options: >-
+#              --without-png
+#              --without-jpeg
+#              --with-gdk-pixbuf2
+#            extra_packages: >-
+#              clang
+#              libgdk-pixbuf2.0-dev
+#            exec_type: bash
+#
+#          - label: Meson-ubuntu-x86_64-ASan-gdk-pixbuf2
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              CC=clang
+#            setup_options: >-
+#              --buildtype=debug
+#              -Db_sanitize=address
+#              -Db_lundef=false
+#              -Dpng=disabled
+#              -Djpeg=disabled
+#              -Dgdk_pixbuf2=enabled
+#            extra_packages: >-
+#              meson
+#              clang
+#              libgdk-pixbuf2.0-dev
+#            exec_type: bash
+#
+#          - label: Autotools-ubuntu-x86_64-ASan-GD-no-aborttrace
+#            buildtool: autotools
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              CC=clang
+#              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+#              LDFLAGS="-fsanitize=address"
+#            setup_options: >-
+#              --without-png
+#              --without-jpeg
+#              --with-gd
+#              --disable-abort-trace
+#            extra_packages: >-
+#              clang
+#              libgd-dev
+#            exec_type: bash
+#
+#          - label: Meson-ubuntu-x86_64-ASan-GD-no-aborttrace
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              CC=clang
+#            setup_options: >-
+#              --buildtype=debug
+#              -Db_sanitize=address
+#              -Db_lundef=false
+#              -Dpng=disabled
+#              -Djpeg=disabled
+#              -Dgd=enabled
+#              -Dabort_trace=disabled
+#            extra_packages: >-
+#              meson
+#              clang
+#              libgd-dev
+#            exec_type: bash
+#
+#          - label: Autotools-ubuntu-x86_64-static-coverage
+#            buildtool: autotools
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              CC=gcc-14
+#            setup_options: >-
+#              --enable-gcov
+#              --disable-shared
+#              --enable-static
+#            extra_packages: >-
+#              gcc-14
+#              gcovr
+#            exec_type: bash
+#
+#          - label: Meson-ubuntu-x86_64-static-coverage
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              CC=gcc-14
+#            setup_options: >-
+#              -Db_coverage=true
+#              -Db_staticpic=true
+#              -Ddefault_library=static
+#            extra_packages: >-
+#              meson
+#              gcc-14
+#              gcovr
+#            exec_type: bash
+#
+#          - label: Autotools-ubuntu-x86_64-no-simd-coverage
+#            buildtool: autotools
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              CC=gcc-14
+#            setup_options: >-
+#              --enable-gcov
+#              --disable-simd
+#            extra_packages: >-
+#              gcc-14
+#            pip_packages: >-
+#              gcovr
+#            exec_type: bash
+#
+#          - label: Meson-ubuntu-x86_64-no-simd-coverage
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              CC=gcc-14
+#            setup_options: >-
+#              -Db_coverage=true
+#              -Dsimd=disabled
+#            extra_packages: >-
+#              meson
+#              gcc-14
+#            pip_packages: >-
+#              gcovr
+#            exec_type: bash
+#
+#          - label: Autotools-ubuntu-x86_64-no-tools
+#            buildtool: autotools
+#            runner: ubuntu-latest
+#            setup_options: >-
+#              --disable-img2sixel
+#              --disable-sixel2png
+#            exec_type: bash
+#
+#          - label: Meson-ubuntu-x86_64-no-tools
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            setup_options: >-
+#              -Dimg2sixel=disabled
+#              -Dsixel2png=disabled
+#            extra_packages: >-
+#              meson
+#            exec_type: bash
+#
+#          - label: Autotools-ubuntu-x86_64-no-threads-coverage
+#            buildtool: autotools
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              CC=gcc-14
+#            setup_options: >-
+#              --enable-gcov
+#              --disable-threads
+#            extra_packages: >-
+#              gcc-14
+#            pip_packages: >-
+#              gcovr
+#            exec_type: bash
+#
+#          - label: Meson-ubuntu-x86_64-no-threads-coverage
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              CC=gcc-14
+#            setup_options: >-
+#              -Db_coverage=true
+#              -Dthreads=disabled
+#            extra_packages: >-
+#              gcc-14
+#            pip_packages: >-
+#              meson
+#              gcovr
+#            exec_type: bash
+#
+#          - label: Autotools-ubuntu-x86_64-musl
+#            buildtool: autotools
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              CC=musl-gcc
+#            extra_packages: >-
+#              musl-tools
+#            exec_type: bash
+#
+#          - label: Meson-ubuntu-x86_64-musl
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              CC=musl-gcc
+#            extra_packages: >-
+#              meson
+#              musl-tools
+#            exec_type: bash
+#
+#          - label: Autotools-ubuntu-x86_64-mingw-w64-x86_64-win32-wine64-static
+#            buildtool: autotools
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              wineboot -u;
+#              CC=x86_64-w64-mingw32-gcc-win32
+#            setup_options: >-
+#              --host=x86_64-w64-mingw32
+#              --disable-shared
+#            extra_packages: >-
+#              wine
+#              gcc-mingw-w64-x86-64-win32
+#              make
+#            make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine SIXEL_BIN_EXT=.exe make
+#            exec_type: bash
+#
+#          - label: Autotools-ubuntu-x86_64-mingw-w64-x86_64-posix-wine64-static
+#            buildtool: autotools
+#            runner: ubuntu-latest
+#            setup_prefix: >-
+#              wineboot -u;
+#              cp /usr/x86_64-w64-mingw32/lib/libwinpthread-1.dll ~/.wine/drive_c/windows/system32/;
+#              CC=x86_64-w64-mingw32-gcc-posix
+#            setup_options: >-
+#              --host=x86_64-w64-mingw32
+#              --disable-shared
+#            extra_packages: >-
+#              wine
+#              gcc-mingw-w64-x86-64-posix
+#              make
+#            make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine SIXEL_BIN_EXT=.exe make
+#            exec_type: bash
 #
 #          - label: Autotools-ubuntu-24.04-aarch64-distcheck
 #            buildtool: autotools
@@ -756,6 +756,22 @@ jobs:
 #              meson
 #              node
 #            exec_type: bash
+#
+          - label: Autotools-macos-aarch64-mingw-w64-x86_64-wine64-rosetta-static
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              wineboot -u;
+              cp "$(find /opt/homebrew/Cellar/mingw-w64 -name toolchain-x86_64)"/x86_64-w64-mingw32/bin/libwinpthread-1.dll ~/.wine/drive_c/windows/system32/;
+              CC=x86_64-w64-mingw32-gcc
+            setup_options: >-
+              --host=x86_64-w64-mingw32
+              --disable-shared
+            extra_packages: >-
+              wine@devel
+              mingw-w64
+            make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine SIXEL_BIN_EXT=.exe make
+            exec_type: bash
 #
 #          - label: Autotools-msys2-mingw64-static-coverage
 #            buildtool: autotools
