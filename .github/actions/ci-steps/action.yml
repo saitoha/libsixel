@@ -1,0 +1,707 @@
+name: libsixel CI steps
+
+description: >-
+  Composite action that runs the build and test steps for the CI matrix.
+
+inputs:
+  exec_type:
+    description: Execution type for the matrix entry.
+    required: true
+  extra_packages:
+    description: Extra packages to install.
+    required: false
+    default: ''
+  buildtool:
+    description: Build system to run (autotools or meson).
+    required: true
+  runner:
+    description: Runner label to select platform-specific setup.
+    required: true
+  setup_prefix:
+    description: Prefix command to inject environment variables.
+    required: false
+    default: ''
+  setup_options:
+    description: Configure/meson options for the build.
+    required: false
+    default: ''
+  check_target:
+    description: Build/test target to run.
+    required: false
+    default: ''
+  make:
+    description: Make command override.
+    required: false
+    default: ''
+  guest_packages:
+    description: Alpine guest packages to install.
+    required: false
+    default: ''
+  cp_os:
+    description: cross-platform-actions OS name.
+    required: false
+    default: ''
+  cp_arch:
+    description: cross-platform-actions architecture.
+    required: false
+    default: ''
+  cp_version:
+    description: cross-platform-actions version.
+    required: false
+    default: ''
+  version:
+    description: VM version for some platforms.
+    required: false
+    default: ''
+  msystem:
+    description: MSYS2 msystem name.
+    required: false
+    default: ''
+  vcpkg_packages:
+    description: vcpkg packages to install.
+    required: false
+    default: ''
+  pip_packages:
+    description: pip packages to install.
+    required: false
+    default: ''
+  label:
+    description: Matrix label for artifact and coveralls flag.
+    required: true
+  github_token:
+    description: Token used for Coveralls uploads.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Configure git EOL
+      if: ${{ inputs.exec_type == 'cygwin' }}
+      shell: bash
+      run: git config --global core.autocrlf false
+
+    - uses: actions/checkout@v6
+      with:
+        fetch-depth: 1
+
+    - name: Normalize line endings (Windows)
+      if: runner.os == 'Windows'
+      shell: bash
+      run: |
+        git config core.autocrlf false
+        git reset --hard
+
+    - name: Install extra packages (Linux)
+      if: ${{ runner.os == 'Linux' && inputs.exec_type == 'bash' && inputs.extra_packages != '' }}
+      shell: bash
+      timeout-minutes: 5
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y --no-install-recommends ${{ inputs.extra_packages }}
+
+    - name: Install extra packages (macOS)
+      if: ${{ runner.os == 'macOS' && inputs.extra_packages != '' }}
+      shell: bash
+      timeout-minutes: 5
+      run: |
+        #brew update
+        brew install ${{ inputs.extra_packages }}
+
+    - name: Install extra packages (FreeBSD)
+      if: ${{ inputs.exec_type == 'cross-platform-vms' && inputs.cp_os == 'freebsd' && inputs.extra_packages != '' }}
+      timeout-minutes: 15
+      uses: cross-platform-actions/action@v0.30.0
+      with:
+        operating_system: ${{ inputs.cp_os }}
+        architecture: ${{ inputs.cp_arch }}
+        version: ${{ inputs.cp_version }}
+        sync_files: runner-to-vm
+        environment_variables: CI,GITHUB_WORKSPACE
+        run: |
+          #sudo pkg update -f
+          sudo pkg install -y ${{ inputs.extra_packages }}
+
+    - name: Install extra packages (NetBSD)
+      if: ${{ inputs.exec_type == 'cross-platform-vms' && inputs.cp_os == 'netbsd' && inputs.extra_packages != '' }}
+      timeout-minutes: 15
+      uses: cross-platform-actions/action@v0.30.0
+      with:
+        operating_system: ${{ inputs.cp_os }}
+        architecture: ${{ inputs.cp_arch }}
+        version: ${{ inputs.cp_version }}
+        sync_files: runner-to-vm
+        environment_variables: CI,GITHUB_WORKSPACE
+        run: |
+          #sudo pkgin -y update
+          sudo pkgin -y install ${{ inputs.extra_packages }}
+          if [ -f /var/db/pkgin/pkg_install-err.log ]; then
+            cp /var/db/pkgin/pkg_install-err.log "$GITHUB_WORKSPACE/pkg_install-err.log" || true
+          fi
+
+    - name: Install extra packages (OpenBSD)
+      if: ${{ inputs.exec_type == 'cross-platform-vms' && inputs.cp_os == 'openbsd' && inputs.extra_packages != '' }}
+      timeout-minutes: 15
+      uses: cross-platform-actions/action@v0.30.0
+      with:
+        operating_system: ${{ inputs.cp_os }}
+        architecture: ${{ inputs.cp_arch }}
+        version: ${{ inputs.cp_version }}
+        sync_files: runner-to-vm
+        environment_variables: CI,GITHUB_WORKSPACE
+        run: |
+          sudo pkg_add ${{ inputs.extra_packages }}
+
+    - name: Install extra packages (Haiku)
+      if: ${{ inputs.exec_type == 'cross-platform-vms' && inputs.cp_os == 'haiku' && inputs.extra_packages != '' }}
+      timeout-minutes: 15
+      uses: cross-platform-actions/action@v0.30.0
+      with:
+        operating_system: ${{ inputs.cp_os }}
+        architecture: ${{ inputs.cp_arch }}
+        version: ${{ inputs.cp_version }}
+        sync_files: runner-to-vm
+        environment_variables: CI,GITHUB_WORKSPACE
+        run: |
+          pkgman refresh
+          pkgman install -y ${{ inputs.extra_packages }}
+
+    - name: Setup MSVC developer env (vcvars, x86_64 target)
+      if: ${{ inputs.runner == 'windows-latest' }}
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+
+    - name: Setup MSVC developer env (vcvars, arm64 target)
+      if: ${{ inputs.runner == 'windows-11-arm' }}
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: amd64_arm64
+
+    - name: Save MSVC env:Path
+      if: ${{ runner.os == 'Windows' }}
+      shell: pwsh
+      run: |
+        "MSVC_PATH=$env:Path" >> $env:GITHUB_ENV
+
+    - name: Cache vcpkg artifacts (MSVC, vcpkg deps)
+      if: ${{ inputs.vcpkg_packages != '' }}
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~\vcpkg\installed
+          ~\vcpkg\buildtrees
+          ~\vcpkg\packages
+          ~\vcpkg\downloads
+        key: vcpkg-${{ runner.os }}-msvc-${{ inputs.vcpkg_packages || 'none' }}-${{ hashFiles('.github/workflows/ci.yml') }}
+
+    - name: Install vcpkg dependencies (MSVC, vcpkg deps)
+      if: ${{ inputs.vcpkg_packages != '' }}
+      shell: pwsh
+      run: |
+        $vcpkgRoot = "$env:USERPROFILE\\vcpkg"
+        if (-not (Test-Path (Join-Path $vcpkgRoot '.git'))) {
+          git init $vcpkgRoot
+        }
+        git -C $vcpkgRoot remote remove origin 2>$null
+        git -C $vcpkgRoot remote add origin https://github.com/microsoft/vcpkg
+
+        git -C $vcpkgRoot fetch --depth 1 origin "${{ env.VCPKG_REF }}"
+        git -C $vcpkgRoot reset --hard FETCH_HEAD
+
+        Set-Location $vcpkgRoot
+
+        cmd /c bootstrap-vcpkg.bat
+        $packages = @('pkgconf')
+        $extra = '${{ inputs.vcpkg_packages }}'.Trim()
+        if ($extra -ne '') {
+          $packages += $extra -split '\\s+'
+        }
+        .\\vcpkg.exe install $packages --triplet x64-windows
+        "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+    - name: Setup MSYS2 (Windows)
+      if: ${{ inputs.msystem != '' }}
+      uses: msys2/setup-msys2@v2
+      with:
+        msystem: ${{ inputs.msystem }}
+        #update: true
+        install: ${{ inputs.extra_packages || 'make' }}
+
+    - name: Create junction to Git for Windows
+      if: ${{ inputs.exec_type == 'gitbash' }}
+      shell: pwsh
+      run: |
+        if (!(Test-Path 'C:\GitBash')) {
+          New-Item -ItemType Junction -Path 'C:\GitBash' -Target 'C:\Program Files\Git' | Out-Null
+        }
+        'C:\GitBash\bin'     | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+        'C:\GitBash\usr\bin' | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+
+    - name: Setup Cygwin
+      if: ${{ inputs.exec_type == 'cygwin' }}
+      uses: cygwin/cygwin-install-action@v4
+      with:
+        packages: ${{ inputs.extra_packages || 'make' }}
+
+    - name: Cache Cosmopolitan toolchain
+      if: ${{ contains(inputs.setup_prefix, 'CC=cosmocc') }}
+      uses: actions/cache@v4
+      with:
+        path: cosmopolitan/cosmocc.zip
+        key: cosmocc-${{ hashFiles('cosmopolitan/cosmocc.zip') }}
+
+    - name: Prepare Cosmopolitan toolchain
+      if: ${{ contains(inputs.setup_prefix, 'CC=cosmocc') }}
+      shell: bash
+      timeout-minutes: 5
+      run: |
+        set -exv
+        mkdir -p cosmopolitan
+        if [ ! -f cosmopolitan/cosmocc.zip ]; then
+          curl -L -o cosmopolitan/cosmocc.zip https://cosmo.zip/pub/cosmocc/cosmocc.zip
+        fi
+        unzip -o -q cosmopolitan/cosmocc.zip
+        chmod +x bin/cosmo*
+
+    - name: Prepare Emscripten toolchain
+      if: ${{ contains(inputs.label, 'emscripten') }}
+      shell: bash
+      timeout-minutes: 15
+      run: |
+        set -exv
+        git clone --depth 1 https://github.com/emscripten-core/emsdk.git
+        sh emsdk/emsdk install latest
+        sh emsdk/emsdk activate latest
+        echo "$PWD/emsdk/upstream/emscripten" >> "$GITHUB_PATH"
+
+    - name: Install pip packages
+      if: ${{ inputs.pip_packages != '' }}
+      shell: bash
+      timeout-minutes: 5
+      run: |
+        python3 -m venv .venv
+        . .venv/bin/activate
+        pip install -U pip ${{ inputs.pip_packages }}
+        if command -v cygpath; then
+          echo "$(cygpath -w "$PWD/.venv/bin")" >> "$GITHUB_PATH"
+        else
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+        fi
+
+    - name: Build and test (Autotools, bash)
+      if: ${{ inputs.buildtool == 'autotools' && inputs.exec_type == 'bash' }}
+      shell: bash
+      timeout-minutes: 15
+      run: |
+        set -exv
+        export PATH="$PWD/build-aux:$PWD/bin:$PATH"
+        ${{ inputs.setup_prefix }} ./configure ${{ inputs.setup_options }}
+        ${{ inputs.make || 'make' }} V=1
+        ${{ inputs.make || 'make' }} ${{ inputs.check_target || 'check' }}
+
+    - name: Build and test (Meson, bash)
+      if: ${{ inputs.buildtool == 'meson' && inputs.exec_type == 'bash' }}
+      shell: bash
+      timeout-minutes: 15
+      run: |
+        set -exv
+        export PATH="$PWD/build-aux:$PWD/bin:$PATH"
+        ${{ inputs.setup_prefix }} meson setup builddir ${{ inputs.setup_options }}
+        meson compile -C builddir -v
+        meson ${{ inputs.check_target || 'test' }} -C builddir
+
+    - name: Build and test (Autotools, msys2)
+      if: ${{ inputs.buildtool == 'autotools' && inputs.exec_type == 'msys2' }}
+      shell: msys2 {0}
+      timeout-minutes: 30
+      run: |
+        set -exv
+        MSVC_BIN_PATH="$(cygpath -u -p "$MSVC_PATH")"
+        PATH="$PWD/build-aux:$PWD/bin:$PATH:$MSVC_BIN_PATH"
+        ${{ inputs.setup_prefix }} ./configure ${{ inputs.setup_options }}
+        ${{ inputs.make || 'make' }} V=1
+        ${{ inputs.make || 'make' }} ${{ inputs.check_target || 'check' }}
+
+    - name: Build and test (Meson, msys2)
+      if: ${{ inputs.buildtool == 'meson' && inputs.exec_type == 'msys2' }}
+      shell: msys2 {0}
+      timeout-minutes: 30
+      run: |
+        set -exv
+        MSVC_BIN_PATH="$(cygpath -u -p "$MSVC_PATH")"
+        PATH="$PWD/build-aux:$PWD/bin:$PATH:$MSVC_BIN_PATH"
+        ${{ inputs.setup_prefix }} meson setup builddir ${{ inputs.setup_options }}
+        meson compile -C builddir -v
+        meson ${{ inputs.check_target || 'test' }} -C builddir
+
+    - name: Build and test (Autotools, Cygwin)
+      if: ${{ inputs.buildtool == 'autotools' && inputs.exec_type == 'cygwin' }}
+      shell: C:\cygwin\bin\bash.exe -o igncr {0}
+      timeout-minutes: 15
+      run: |
+        set -exv
+        PATH="$PWD/build-aux:$PATH"
+        ${{ inputs.setup_prefix }} ./configure ${{ inputs.setup_options }}
+        ${{ inputs.make || 'make' }} V=1
+        if grep ^ac_cv_prog_ac_ct_CC=gcc$ config.log; then
+          ${{ inputs.make || 'make' }} ${{ inputs.check_target || 'check' }}
+        else
+          : # cross build: don't run test
+        fi
+
+    - name: Build and test (Meson, Cygwin)
+      if: ${{ inputs.buildtool == 'meson' && inputs.exec_type == 'cygwin' }}
+      shell: C:\cygwin\bin\bash.exe -o igncr {0}
+      timeout-minutes: 15
+      run: |
+        set -exv
+        PATH="$PWD/build-aux:$PATH"
+        ${{ inputs.setup_prefix }} meson setup builddir ${{ inputs.setup_options }}
+        meson compile -C builddir -v
+        if grep ^ac_cv_prog_ac_ct_CC=gcc$ config.log; then
+          meson ${{ inputs.check_target || 'test' }} -C builddir
+        else
+          : # cross build: don't run test
+        fi
+
+    - name: Build and test (Meson, Command Prompt)
+      if: ${{ inputs.buildtool == 'meson' && inputs.exec_type == 'cmd' }}
+      shell: cmd
+      run: |
+        setlocal ENABLEDELAYEDEXPANSION
+        python -m pip install --upgrade pip
+        if errorlevel 1 exit /b !errorlevel!
+        python -m pip install meson
+        if errorlevel 1 exit /b !errorlevel!
+        python -m mesonbuild.mesonmain setup builddir ${{ inputs.setup_options }}
+        if errorlevel 1 exit /b !errorlevel!
+        python -m mesonbuild.mesonmain compile -C builddir
+        if errorlevel 1 exit /b !errorlevel!
+        python -m mesonbuild.mesonmain ${{ inputs.check_target || 'test' }} -C builddir
+        if errorlevel 1 exit /b !errorlevel!
+        endlocal
+
+    - name: Build and test (Autotools, Alpine container)
+      if: ${{ inputs.buildtool == 'autotools' && inputs.exec_type == 'alpine' }}
+      shell: bash
+      timeout-minutes: 15
+      run: |
+        docker run --rm -v "$PWD":/src -w /src alpine:3.20 sh -euc '
+          set -xve
+          apk add --no-cache ${{ inputs.guest_packages }}
+          addgroup -g '"$(id -g)"' hostgrp 2>/dev/null || true
+          adduser  -D -u '"$(id -u)"' -G hostgrp hostusr 2>/dev/null || true
+          chown -R '"$(id -u):$(id -g)"' /src
+          su hostusr -c "
+            ./configure ${{ inputs.setup_options }}
+            ${{ inputs.make || 'make' }} V=1
+            ${{ inputs.make || 'make' }} ${{ inputs.check_target || 'check' }}
+          "
+        '
+
+    - name: Build and test (Meson, Alpine container)
+      if: ${{ inputs.buildtool == 'meson' && inputs.exec_type == 'alpine' }}
+      shell: bash
+      timeout-minutes: 15
+      run: |
+        docker run --rm -v "$PWD":/src -w /src alpine:3.20 sh -euc '
+          set -xve
+          apk add --no-cache ${{ inputs.guest_packages }}
+          addgroup -g '"$(id -g)"' hostgrp 2>/dev/null || true
+          adduser  -D -u '"$(id -u)"' -G hostgrp hostusr 2>/dev/null || true
+          chown -R '"$(id -u):$(id -g)"' /src
+          su hostusr -c "
+            ${{ inputs.setup_prefix }} meson setup builddir ${{ inputs.setup_options }}
+            meson compile -C builddir -v
+            meson test -C builddir
+          "
+        '
+
+    - name: Build and test (Autotools, FreeBSD/OpenBSD/NetBSD/Haiku)
+      if: ${{ inputs.buildtool == 'autotools' && inputs.exec_type == 'cross-platform-vms' }}
+      uses: cross-platform-actions/action@v0.30.0
+      timeout-minutes: 15
+      with:
+        operating_system: ${{ inputs.cp_os }}
+        architecture: ${{ inputs.cp_arch }}
+        version: ${{ inputs.cp_version }}
+        environment_variables: CI,GITHUB_WORKSPACE
+        run: |
+          set -xv
+          ${{ inputs.setup_prefix }} ./configure ${{ inputs.setup_options }}
+          ${{ inputs.make || 'make' }} V=1
+          ${{ inputs.make || 'make' }} ${{ inputs.check_target || 'check' }}
+
+    - name: Build and test (Meson, FreeBSD/OpenBSD/NetBSD/Haiku)
+      if: ${{ inputs.buildtool == 'meson' && inputs.exec_type == 'cross-platform-vms' }}
+      timeout-minutes: 15
+      uses: cross-platform-actions/action@v0.30.0
+      with:
+        operating_system: ${{ inputs.cp_os }}
+        architecture: ${{ inputs.cp_arch }}
+        version: ${{ inputs.cp_version }}
+        environment_variables: CI,GITHUB_WORKSPACE
+        run: |
+          set -xv
+          ${{ inputs.setup_prefix }} meson setup builddir ${{ inputs.setup_options }}
+          meson compile -C builddir -v
+          meson ${{ inputs.check_target || 'test' }} -C builddir
+
+    - name: Build and test (Autotools, DragonFlyBSD)
+      if: ${{ inputs.buildtool == 'autotools' && inputs.exec_type == 'dragonflybsd-vm' }}
+      timeout-minutes: 15
+      uses: vmactions/dragonflybsd-vm@v1
+      with:
+        release: ${{ inputs.version }}
+        sync-time: true
+        sync: nfs
+        prepare: |
+          #pkg update -f
+          pkg install -y ${{ inputs.extra_packages || 'gmake' }}
+        run: |
+          ${{ inputs.setup_prefix }} ./configure ${{ inputs.setup_options }}
+          gmake V=1
+          gmake ${{ inputs.check_target || 'check' }}
+
+    - name: Configure, build, and test (Meson, DragonFlyBSD)
+      if: ${{ inputs.buildtool == 'meson' && inputs.exec_type == 'dragonflybsd-vm' }}
+      timeout-minutes: 15
+      uses: vmactions/dragonflybsd-vm@v1
+      with:
+        release: ${{ inputs.version }}
+        sync-time: true
+        sync: rsync
+        prepare: |
+          #pkg update -f
+          pkg install -y ${{ inputs.extra_packages || 'meson' }}
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          ${{ inputs.setup_prefix }} meson setup builddir ${{ inputs.setup_options }}
+          meson compile -C builddir
+          meson ${{ inputs.check_target || 'test' }} -C builddir
+
+    - name: Build and test (Autotools, OpenIndiana)
+      if: ${{ inputs.buildtool == 'autotools' && inputs.exec_type == 'openindiana-vm' }}
+      timeout-minutes: 40
+      uses: vmactions/openindiana-vm@v1
+      with:
+        release: ${{ inputs.version }}
+        usesh: true
+        sync: rsync
+        prepare: |
+          pkg set-publisher -g http://pkg.openindiana.org/hipster/ openindiana.org
+          #pkg update -f
+          pkg install --accept --no-be ${{ inputs.extra_packages }}
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          ${{ inputs.setup_prefix }} ./configure ${{ inputs.setup_options }}
+          ${{ inputs.make || 'gmake' }} V=1
+          ${{ inputs.make || 'gmake' }} ${{ inputs.check_target || 'check' }}
+
+    - name: Configure, build, and test (Meson, OpenIndiana)
+      if: ${{ inputs.buildtool == 'meson' && inputs.exec_type == 'openindiana-vm' }}
+      timeout-minutes: 40
+      uses: vmactions/openindiana-vm@v1
+      with:
+        release: ${{ inputs.version }}
+        usesh: true
+        sync: rsync
+        prepare: |
+          pkg set-publisher -g http://pkg.openindiana.org/hipster/ openindiana.org
+          #pkg update -f
+          pkg install --accept --no-be ${{ inputs.extra_packages }}
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          ${{ inputs.setup_prefix }} meson setup builddir ${{ inputs.setup_options }}
+          meson compile -C builddir
+          meson ${{ inputs.check_target || 'test' }} -C builddir
+
+    - name: Build and test (Autotools, Solaris)
+      if: ${{ inputs.buildtool == 'autotools' && inputs.exec_type == 'solaris-vm' }}
+      timeout-minutes: 20
+      uses: vmactions/solaris-vm@v1
+      with:
+        release: ${{ inputs.version }}
+        sync-time: true
+        sync: nfs
+        prepare: |
+          #pkg update -f
+          pkg install --accept ${{ inputs.extra_packages || 'gnu-make gcc' }}
+        run: |
+          ${{ inputs.setup_prefix }} ./configure ${{ inputs.setup_options }}
+          ${{ inputs.make || 'gmake' }} V=1
+          ${{ inputs.make || 'gmake' }} ${{ inputs.check_target || 'check' }}
+
+    - name: Configure, build, and test (Meson, Solaris)
+      if: ${{ inputs.buildtool == 'meson' && inputs.exec_type == 'solaris-vm' }}
+      timeout-minutes: 20
+      uses: vmactions/solaris-vm@v1
+      with:
+        release: ${{ inputs.version }}
+        sync-time: true
+        sync: nfs
+        prepare: |
+          #pkg update -f
+          pkg install --accept ${{ inputs.extra_packages || 'gnu-make gcc meson ninja' }}
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          ${{ inputs.setup_prefix }} meson setup builddir ${{ inputs.setup_options }}
+          meson compile -C builddir
+          meson ${{ inputs.check_target || 'test' }} -C builddir
+
+    - name: Build and test (Autotools, OmniOS)
+      if: ${{ inputs.buildtool == 'autotools' && inputs.exec_type == 'omnios-vm' }}
+      timeout-minutes: 20
+      uses: vmactions/omnios-vm@v1
+      with:
+        release: ${{ inputs.version }}
+        usesh: true
+        sync: rsync
+        prepare: |
+          #pkg update -f
+          pkg install --accept ${{ inputs.extra_packages || 'developer/gcc13 developer/build/gnu-make' }}
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          ${{ inputs.setup_prefix }} ./configure ${{ inputs.setup_options }}
+          ${{ inputs.make || 'gmake' }} V=1
+          ${{ inputs.make || 'gmake' }} ${{ inputs.check_target || 'check' }}
+
+    - name: Configure, build, and test (Meson, OmniOS)
+      if: ${{ inputs.buildtool == 'meson' && inputs.exec_type == 'omnios-vm' }}
+      timeout-minutes: 20
+      uses: vmactions/omnios-vm@v1
+      with:
+        release: ${{ inputs.version }}
+        usesh: true
+        sync: rsync
+        prepare: |
+          #pkg update -f
+          pkg install --accept ${{ inputs.extra_packages || 'developer/build/gnu-make' }}
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          export PATH="$HOME/.local/bin:$PATH"
+          python3 -m pip install --user --upgrade pip meson ninja
+          ${{ inputs.setup_prefix }} meson setup builddir ${{ inputs.setup_options }}
+          meson compile -C builddir
+          meson ${{ inputs.check_target || 'test' }} -C builddir
+
+    - name: Capture coverage
+      if: ${{ always() && contains(fromJson('["--enable-gcov", "-Db_coverage"]'), inputs.setup_options) && inputs.exec_type == 'bash' }}
+      shell: bash
+      timeout-minutes: 5
+      run: |
+        if test -f coverage.info; then
+          echo "coverage.info already exists; skipping capture"
+          exit 0
+        fi
+        if command -v gcovr >/dev/null 2>&1; then
+          gcovr -r . --lcov -o coverage.info \
+            --gcov-executable gcov-14 || true
+        elif command -v lcov >/dev/null 2>&1; then
+          lcov -c \
+            -d "$PWD/src" \
+            -d "$PWD/src/.libs" \
+            -d "$PWD/converters" \
+            -d "$PWD/tests/cli" \
+            -d "$PWD/tests/loader" \
+            -d "$PWD/tests/filter" \
+            -d "$PWD/tests/probe" \
+            -d "$PWD/tests/palette" \
+            --rc branch_coverage=1 \
+            -o coverage.info || true
+        else
+          echo "No gcovr or lcov found; skipping coverage capture"
+        fi
+
+    - name: Capture coverage (Windows)
+      if: ${{ always() && contains(fromJson('["--enable-gcov", "-Db_coverage"]'), inputs.setup_options) && inputs.exec_type == 'msys2' }}
+      shell: msys2 {0}
+      timeout-minutes: 5
+      run: |
+        set -exv
+        if [ -e coverage.info ]; then
+          echo "coverage.info already exists; skipping capture"
+          exit 0
+        fi
+        if command -v gcovr >/dev/null 2>&1; then
+          gcovr -r . --lcov -o coverage.info
+          cat coverage.info
+        elif command -v lcov >/dev/null 2>&1; then
+          lcov -c \
+            -d "src/.libs" \
+            -d "converters" \
+            -d "tests/cli" \
+            -d "tests/loader" \
+            -d "tests/filter" \
+            -d "tests/probe" \
+            -d "tests/palette" \
+            --rc branch_coverage=1 \
+            -o coverage.info
+          sed -i "s#^SF:$PWD/#SF:#" coverage.info
+          cat coverage.info
+        else
+          echo "No gcovr or lcov found; skipping coverage capture"
+        fi
+
+    - name: Fetch BSD artifacts from VM
+      if: ${{ always() && inputs.exec_type == 'cross-platform-vms' }}
+      shell: bash
+      timeout-minutes: 5
+      run: |
+        if [ "${{ inputs.cp_os }}" = "haiku" ]; then
+          vm_workspace="/boot/home${GITHUB_WORKSPACE}"
+          user=user
+        else
+          vm_workspace="${GITHUB_WORKSPACE}"
+          user=runner
+        fi
+        ssh "${user}"@cross_platform_actions_host bash -c 'cd '"${vm_workspace}"' && find . -type f "(" -name "*.log" -o -name "*.trs" -o -name "*.info" ")" -exec tar cvzf /tmp/artifacts.tar.gz {} +' || true
+        scp "${user}"@cross_platform_actions_host:/tmp/artifacts.tar.gz . || true
+        tar xvzf artifacts.tar.gz || true
+
+    - name: Upload artifacts
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.label }}
+        path: |
+          **/test-suite.log
+          **/*.log
+          **/*.trs
+          **/_artifacts/**
+          coverage.info
+          pkg_install-err.log
+          **/artifacts.tar.gz
+          builddir/meson-dist/**
+          builddir/meson-logs/**
+          builddir/**/_artifacts/**
+          builddir/**/testlog.txt
+          builddir/**/*.log
+        if-no-files-found: warn
+        overwrite: true
+
+    - name: Upload to Coveralls (per-flag, parallel)
+      id: coveralls_upload
+      continue-on-error: true
+      uses: coverallsapp/github-action@v2
+      if: ${{ hashFiles('coverage.info') != '' }}
+      with:
+        github-token: ${{ inputs.github_token }}
+        path-to-lcov: coverage.info
+        flag-name: ${{ inputs.label }}
+        parallel: true
+
+    - name: Wait before Coveralls retry (per-flag)
+      if: ${{ hashFiles('coverage.info') != '' && steps.coveralls_upload.outcome == 'failure' }}
+      shell: bash
+      run: sleep 5
+
+    - name: Upload to Coveralls (per-flag, retry)
+      if: ${{ hashFiles('coverage.info') != '' && steps.coveralls_upload.outcome == 'failure' }}
+      continue-on-error: true
+      uses: coverallsapp/github-action@v2
+      with:
+        github-token: ${{ inputs.github_token }}
+        path-to-lcov: coverage.info
+        flag-name: ${{ inputs.label }}
+        parallel: true
