@@ -12,8 +12,10 @@ else
     top_builddir=${TOP_BUILDDIR:-${parent_dir}/..}
 fi
 
-runner="${top_builddir}/tests/test_runner"
-if [ ! -x "${runner}" ]; then
+. "${script_dir}/../../common/t/0001_converters_common.t"
+
+runner="${top_builddir}/tests/test_runner${SIXEL_BIN_EXT-}"
+if [ ! -x "${runner}" ] && [ -z "${SIXEL_RUNTIME-}" ]; then
     echo "Bail out! missing test binary: ${runner}" 1>&2
     exit 1
 fi
@@ -23,9 +25,14 @@ log_file=$(mktemp "${TMPDIR:-/tmp}/loader-${test_name}.XXXXXX")
 trap 'rm -f "${log_file}"' EXIT
 
 set +e
-"${runner}" "loader/${test_name}" >"${log_file}" 2>&1
+${SIXEL_RUNTIME-} "${runner}" "loader/${test_name}" >"${log_file}" 2>&1
 rc=$?
 set -e
+
+if grep "{cacaf262-9370-4615-a13b-9f5539da4c0a} not registered" "${log_file}" \
+    > /dev/null; then
+    skip_all "WIC is not available"
+fi
 
 echo "1..1"
 

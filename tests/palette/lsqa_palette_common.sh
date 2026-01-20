@@ -31,7 +31,7 @@ palette_lsqa_run() {
     : >"${stdout_path}"
     : >"${stderr_path}"
 
-    env LSQA_RANDOM_SEED="${LSQA_SEED}" "${LSQA_BIN}" \
+    env LSQA_RANDOM_SEED="${LSQA_SEED}" ${SIXEL_RUNTIME-} "${LSQA_BIN}" \
         "${ref_path}" "${out_path}" >"${stdout_path}" \
         2>"${stderr_path}" || status=$?
 
@@ -39,7 +39,7 @@ palette_lsqa_run() {
         : >"${stdout_path}"
         : >"${stderr_path}"
         env LSQA_RANDOM_SEED="${LSQA_SEED}" /bin/sh -c \
-            'exec "$0" "$1" "$2"' "${LSQA_BIN}" \
+            'exec "$0" "$1" "$2"' ${SIXEL_RUNTIME-} "${LSQA_BIN}" \
             "${ref_path}" "${out_path}" >"${stdout_path}" \
             2>"${stderr_path}" || status=$?
     fi

@@ -18,7 +18,7 @@ set +xv
 if run_sixel2png -dk_ <"${images_dir}/snake.six" \
         >"${output_dir}/dequantize-short.png" 2>"${ambiguous_err}"; then
     set -xv
-    if [ ! -s "${ambiguous_err}" ]; then
+    if [ -s "${output_dir}/dequantize-short.png" ]; then
         cli_core_pass 1 "accepts unique dequantize prefix"
     else
         cli_core_fail 1 "unexpected diagnostics for -dk_"

@@ -14,9 +14,9 @@ if [ -z "${TOP_BUILDDIR:-}" ]; then
     exit 1
 fi
 
-BIN="${TOP_BUILDDIR}/tests/test_runner"
+BIN="${TOP_BUILDDIR}/tests/test_runner${SIXEL_BIN_EXT-}"
 
-if [ ! -x "${BIN}" ]; then
+if [ ! -x "${BIN}" ] && [ -z "${SIXEL_RUNTIME-}" ]; then
     echo "Bail out! missing test binary: ${BIN}" 1>&2
     exit 1
 fi
@@ -26,7 +26,7 @@ log_file=$(mktemp "${TMPDIR:-/tmp}/${test_name}.XXXXXX")
 trap 'rm -f "${log_file}"' EXIT
 
 set +e
-"${BIN}" "filter/${test_name}" >"${log_file}" 2>&1
+${SIXEL_RUNTIME-} "${BIN}" "filter/${test_name}" >"${log_file}" 2>&1
 rc=$?
 set -e
 

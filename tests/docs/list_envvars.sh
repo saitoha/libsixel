@@ -22,7 +22,7 @@ Options:
 USAGE
 }
 
-img2sixel=${repo_root}/build/converters/img2sixel
+img2sixel=${repo_root}/build/converters/img2sixel${SIXEL_BIN_EXT-}
 source_root=${repo_root}
 check_only=0
 
@@ -103,7 +103,7 @@ list_source_vars() {
 # Extract the environment variable names from the img2sixel -H output by
 # reading the dedicated section.
 list_help_vars() {
-    "$img2sixel" -H 2>/dev/null |
+    ${SIXEL_RUNTIME-} "$img2sixel" -H 2>/dev/null |
         awk '
             /^Environment variables:/ {
                 in_env = 1

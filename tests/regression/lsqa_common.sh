@@ -65,9 +65,9 @@ lsqa_init() {
         fi
     else
         set -- \
-            "${build_root}/assessment/lsqa" \
-            "${build_root}/assessment/.libs/lsqa" \
-            "${build_root}/lsqa"
+            "${build_root}/assessment/lsqa${SIXEL_BIN_EXT-}" \
+            "${build_root}/assessment/.libs/lsqa${SIXEL_BIN_EXT-}" \
+            "${build_root}/lsqa${SIXEL_BIN_EXT-}"
         for candidate in "$@"; do
             if [ -x "${candidate}" ]; then
                 LSQA_BIN=${candidate}
@@ -76,9 +76,9 @@ lsqa_init() {
         done
         if [ -z "${LSQA_BIN-}" ]; then
             printf 'lsqa binary not found. looked for:%s%s%s\n' \
-                "\n  ${build_root}/assessment/lsqa" \
-                "\n  ${build_root}/assessment/.libs/lsqa" \
-                "\n  ${build_root}/lsqa" >&2
+                "\n  ${build_root}/assessment/lsqa${SIXEL_BIN_EXT-}" \
+                "\n  ${build_root}/assessment/.libs/lsqa${SIXEL_BIN_EXT-}" \
+                "\n  ${build_root}/lsqa${SIXEL_BIN_EXT-}" >&2
             return 1
         fi
     fi
@@ -164,7 +164,7 @@ lsqa_run() {
     : >"${lsqa_run_stdout_path}"
     : >"${lsqa_run_stderr_path}"
 
-    env LSQA_RANDOM_SEED="${LSQA_SEED}" "${LSQA_BIN}" "${lsqa_run_target}" \
+    env LSQA_RANDOM_SEED="${LSQA_SEED}" ${SIXEL_RUNTIME-} "${LSQA_BIN}" "${lsqa_run_target}" \
         "${lsqa_run_target}" >"${lsqa_run_stdout_path}" \
         2>"${lsqa_run_stderr_path}" || lsqa_run_status=$?
 
@@ -172,7 +172,7 @@ lsqa_run() {
         : >"${lsqa_run_stdout_path}"
         : >"${lsqa_run_stderr_path}"
         env LSQA_RANDOM_SEED="${LSQA_SEED}" /bin/sh -c \
-            'exec "$0" "$1" "$1"' "${LSQA_BIN}" "${lsqa_run_target}" \
+            'exec "$0" "$1" "$1"' ${SIXEL_RUNTIME-} "${LSQA_BIN}" "${lsqa_run_target}" \
             >"${lsqa_run_stdout_path}" 2>"${lsqa_run_stderr_path}" \
             || lsqa_run_status=$?
     fi
