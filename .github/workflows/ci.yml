@@ -371,7 +371,7 @@ jobs:
               wine
               gcc-mingw-w64-x86-64-win32
               make
-            make: SIXEL_RUNTIME=wine SIXEL_BIN_EXT=.exe make
+            make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine SIXEL_BIN_EXT=.exe make
             exec_type: bash
 
           - label: Autotools-ubuntu-x86_64-mingw-w64-x86_64-posix-wine64-static
@@ -388,7 +388,7 @@ jobs:
               wine
               gcc-mingw-w64-x86-64-posix
               make
-            make: SIXEL_RUNTIME=wine SIXEL_BIN_EXT=.exe make
+            make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine SIXEL_BIN_EXT=.exe make
             exec_type: bash
 
           - label: Autotools-ubuntu-24.04-aarch64-distcheck
@@ -770,7 +770,7 @@ jobs:
             extra_packages: >-
               wine@devel
               mingw-w64
-            make: SIXEL_RUNTIME=wine SIXEL_BIN_EXT=.exe make
+            make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine SIXEL_BIN_EXT=.exe make
             exec_type: bash
 
           - label: Autotools-msys2-mingw64-static-coverage
@@ -1467,39 +1467,39 @@ jobs:
               meson
             exec_type: dragonflybsd-vm
 
-    steps:
-      - name: Configure git EOL
-        if: ${{ matrix.exec_type == 'cygwin' }}
-        run: git config --global core.autocrlf false
+   steps:
+     - name: Configure git EOL
+       if: ${{ matrix.exec_type == 'cygwin' }}
+       run: git config --global core.autocrlf false
 
-      - uses: actions/checkout@v6
+     - uses: actions/checkout@v6
+       with:
+         fetch-depth: 1
+
+     - name: Normalize line endings (Windows)
+       if: runner.os == 'Windows'
+       shell: bash
+       run: |
+         git config core.autocrlf false
+         git reset --hard
+
+      - name: Start VM (DragonFlyBSD)
+        if: ${{ matrix.exec_type == 'dragonflybsd-vm' }}
+        timeout-minutes: 30
+        uses: vmactions/dragonflybsd-vm@v1
         with:
-          fetch-depth: 1
+          release: ${{ matrix.version }}
+          sync-time: true
+          sync: nfs
 
-      - name: Normalize line endings (Windows)
-        if: runner.os == 'Windows'
-        shell: bash
-        run: |
-          git config core.autocrlf false
-          git reset --hard
-
-#      - name: Start VM (DragonFlyBSD)
-#        if: ${{ matrix.exec_type == 'dragonflybsd-vm' }}
-#        timeout-minutes: 30
-#        uses: vmactions/dragonflybsd-vm@v1
-#        with:
-#          release: ${{ matrix.version }}
-#          sync-time: true
-#          sync: nfs
-#
-#      - name: Start VM (Solaris)
-#        if: ${{ matrix.exec_type == 'solaris-vm' }}
-#        timeout-minutes: 30
-#        uses: vmactions/solaris-vm@v1
-#        with:
-#          release: ${{ matrix.version }}
-#          sync-time: true
-#          sync: rsync
+      - name: Start VM (Solaris)
+        if: ${{ matrix.exec_type == 'solaris-vm' }}
+        timeout-minutes: 30
+        uses: vmactions/solaris-vm@v1
+        with:
+          release: ${{ matrix.version }}
+          sync-time: true
+          sync: rsync
 
       - name: Install extra packages (Linux)
         if: ${{ runner.os == 'Linux' && matrix.exec_type == 'bash' && (matrix.extra_packages || '') != '' }}
