@@ -7,7 +7,7 @@ if which cygpath; then
   SCRIPTDIR=$(cygpath -u "${SCRIPTDIR}")
 fi
 EMSDK=${SCRIPTDIR}/emsdk
-BUILDDIR="${SCRIPTDIR}"/build
+BUILDDIR="${SCRIPTDIR}"/build-emcc
 mkdir -p "${BUILDDIR}"
 SHEBANG_FILE="${BUILDDIR}"/emscripten-node-shebang
 printf '#!/usr/bin/env node\n' > "${SHEBANG_FILE}"
