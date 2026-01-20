@@ -1470,6 +1470,10 @@ jobs:
             exec_type: dragonflybsd-vm
 
     steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
       - name: Run CI steps
         uses: ./.github/actions/ci-steps
         with:
