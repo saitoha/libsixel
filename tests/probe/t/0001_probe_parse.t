@@ -17,15 +17,15 @@ else
     top_builddir=${TOP_BUILDDIR:-${parent_dir}}
 fi
 
-binary="${top_builddir}/tests/test_runner"
-if [ ! -x "${binary}" ]; then
+binary="${top_builddir}/tests/test_runner${SIXEL_BIN_EXT-}"
+if [ ! -x "${binary}" ] && [ -z "${SIXEL_RUNTIME-}" ]; then
     echo "harness not built" >&2
     exit 99
 fi
 
 log_file="${artifact_dir}/test.log"
 set +e
-"${binary}" "probe/0001_probe_parse" >"${log_file}" 2>&1
+${SIXEL_RUNTIME-} "${binary}" "probe/0001_probe_parse" >"${log_file}" 2>&1
 rc=$?
 set -e
 
