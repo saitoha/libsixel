@@ -6,7 +6,7 @@ SCRIPTDIR=$(cd $(dirname "${0}") && pwd)
 if which cygpath; then
   SCRIPTDIR=$(cygpath -u "${SCRIPTDIR}")
 fi
-BUILDDIR="${SCRIPTDIR}"/build
+BUILDDIR="${SCRIPTDIR}"/build-cosmopolitan
 mkdir -p "${BUILDDIR}"
 
 if ! which cosmocc; then
@@ -38,6 +38,5 @@ cd "${BUILDDIR}" && (
     --without-coregraphics \
     --disable-quicklook-extension \
     --disable-quicklook-preview
-  make -j V=1
-  make check -j
+  make check -j4
 )
