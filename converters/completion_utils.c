@@ -820,13 +820,29 @@ ensure_dir_p(const char *path, mode_t mode)
                         || (component_length == 2u
                             && component[0] == '.'
                             && component[1] == '.'))) {
-                    if (img2sixel_mkdir(tmp, mode) != 0 && errno != EEXIST) {
-                        int saved_errno;
+                    if (img2sixel_mkdir(tmp, mode) != 0) {
+                        if (errno != EEXIST) {
+                            int saved_errno;
 
-                        saved_errno = errno;
-                        free(tmp);
-                        errno = saved_errno;
-                        return -1;
+                            saved_errno = errno;
+                            free(tmp);
+                            errno = saved_errno;
+                            return -1;
+                        }
+                    } else {
+                        /*
+                         * Apply the requested permissions explicitly so the
+                         * directory remains writable even when the caller
+                         * inherits a restrictive umask.
+                         */
+                        if (chmod(tmp, mode) != 0) {
+                            int saved_errno;
+
+                            saved_errno = errno;
+                            free(tmp);
+                            errno = saved_errno;
+                            return -1;
+                        }
                     }
                 }
             }
@@ -834,13 +850,24 @@ ensure_dir_p(const char *path, mode_t mode)
         }
     }
 
-    if (img2sixel_mkdir(tmp, mode) != 0 && errno != EEXIST) {
-        int saved_errno;
+    if (img2sixel_mkdir(tmp, mode) != 0) {
+        if (errno != EEXIST) {
+            int saved_errno;
 
-        saved_errno = errno;
-        free(tmp);
-        errno = saved_errno;
-        return -1;
+            saved_errno = errno;
+            free(tmp);
+            errno = saved_errno;
+            return -1;
+        }
+    } else {
+        if (chmod(tmp, mode) != 0) {
+            int saved_errno;
+
+            saved_errno = errno;
+            free(tmp);
+            errno = saved_errno;
+            return -1;
+        }
     }
 
     free(tmp);

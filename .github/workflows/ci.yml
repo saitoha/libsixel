@@ -26,1180 +26,1180 @@ jobs:
     strategy:
       matrix:
         include:
-#          - label: Autotools-alpine-3.20-x86_64
-#            buildtool: autotools
-#            runner: ubuntu-latest
-#            guest_packages: >-
-#              build-base
-#              coreutils
-#              findutils
-#            exec_type: alpine
-#
-#          - label: Meson-alpine-3.20-x86_64
-#            buildtool: meson
-#            runner: ubuntu-latest
-#            guest_packages: >-
-#              build-base
-#              meson
-#            exec_type: alpine
-#
-#          - label: Autotools-ubuntu-x86_64-clang-ASan
-#            buildtool: autotools
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=clang
-#              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
-#              LDFLAGS="-fsanitize=address"
-#            setup_options: >-
-#              --without-png
-#              --without-jpeg
-#            extra_packages: >-
-#              clang
-#            exec_type: bash
-#
-#          - label: Meson-ubuntu-x86_64-clang-ASan
-#            buildtool: meson
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=clang
-#            setup_options: >-
-#              --buildtype=debug
-#              -Db_sanitize=address
-#              -Db_lundef=false
-#              -Dpng=disabled
-#              -Djpeg=disabled
-#            extra_packages: >-
-#              meson
-#              clang
-#            exec_type: bash
-#
-#          - label: Autotools-ubuntu-x86_64-clang-simd-avx2
-#            buildtool: autotools
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=clang
-#              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
-#              LDFLAGS="-fsanitize=address"
-#            setup_options: >-
-#              --enable-simd
-#              --enable-avx2
-#            extra_packages: >-
-#              clang
-#            exec_type: bash
-#
-#          - label: Meson-ubuntu-x86_64-clang-simd-avx2
-#            buildtool: meson
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=clang
-#            setup_options: >-
-#              -Dsimd=enabled
-#              -Davx2=true
-#            extra_packages: >-
-#              meson
-#              clang
-#            exec_type: bash
-#
-#          - label: Autotools-ubuntu-x86_64-clang-simd-avx512-buildonly
-#            buildtool: autotools
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=clang
-#              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
-#              LDFLAGS="-fsanitize=address"
-#            setup_options: >-
-#              --enable-simd
-#              --enable-avx512
-#            check_target: all
-#            extra_packages: >-
-#              clang
-#            exec_type: bash
-#
-#          - label: Meson-ubuntu-x86_64-clang-simd-avx512-buildonly
-#            buildtool: meson
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=clang
-#            setup_options: >-
-#              -Dsimd=enabled
-#              -Davx512=true
-#            check_target: compile
-#            extra_packages: >-
-#              meson
-#              clang
-#            exec_type: bash
-#
-#          - label: Autotools-ubuntu-x86_64-clang-ASan-png-jpeg
-#            buildtool: autotools
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=clang
-#              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
-#              LDFLAGS="-fsanitize=address"
-#            setup_options: >-
-#              --with-png
-#              --with-jpeg
-#            extra_packages: >-
-#              meson
-#              clang
-#              libpng-dev
-#              libjpeg-dev
-#            exec_type: bash
-#
-#          - label: Meson-ubuntu-x86_64-clang-ASan-png-jpeg
-#            buildtool: meson
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=clang
-#            setup_options: >-
-#              --buildtype=debug
-#              -Db_sanitize=address
-#              -Db_lundef=false
-#              -Dpng=enabled
-#              -Djpeg=enabled
-#            extra_packages: >-
-#              meson
-#              clang
-#              libpng-dev
-#              libjpeg-dev
-#            exec_type: bash
-#
-#          - label: Autotools-ubuntu-x86_64-ASan-gdk-pixbuf2
-#            buildtool: autotools
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=clang
-#              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
-#              LDFLAGS="-fsanitize=address"
-#            setup_options: >-
-#              --without-png
-#              --without-jpeg
-#              --with-gdk-pixbuf2
-#            extra_packages: >-
-#              clang
-#              libgdk-pixbuf2.0-dev
-#            exec_type: bash
-#
-#          - label: Meson-ubuntu-x86_64-ASan-gdk-pixbuf2
-#            buildtool: meson
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=clang
-#            setup_options: >-
-#              --buildtype=debug
-#              -Db_sanitize=address
-#              -Db_lundef=false
-#              -Dpng=disabled
-#              -Djpeg=disabled
-#              -Dgdk_pixbuf2=enabled
-#            extra_packages: >-
-#              meson
-#              clang
-#              libgdk-pixbuf2.0-dev
-#            exec_type: bash
-#
-#          - label: Autotools-ubuntu-x86_64-ASan-GD-no-aborttrace
-#            buildtool: autotools
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=clang
-#              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
-#              LDFLAGS="-fsanitize=address"
-#            setup_options: >-
-#              --without-png
-#              --without-jpeg
-#              --with-gd
-#              --disable-abort-trace
-#            extra_packages: >-
-#              clang
-#              libgd-dev
-#            exec_type: bash
-#
-#          - label: Meson-ubuntu-x86_64-ASan-GD-no-aborttrace
-#            buildtool: meson
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=clang
-#            setup_options: >-
-#              --buildtype=debug
-#              -Db_sanitize=address
-#              -Db_lundef=false
-#              -Dpng=disabled
-#              -Djpeg=disabled
-#              -Dgd=enabled
-#              -Dabort_trace=disabled
-#            extra_packages: >-
-#              meson
-#              clang
-#              libgd-dev
-#            exec_type: bash
-#
-#          - label: Autotools-ubuntu-x86_64-static-coverage
-#            buildtool: autotools
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=gcc-14
-#            setup_options: >-
-#              --enable-gcov
-#              --disable-shared
-#              --enable-static
-#            extra_packages: >-
-#              gcc-14
-#              gcovr
-#            exec_type: bash
-#
-#          - label: Meson-ubuntu-x86_64-static-coverage
-#            buildtool: meson
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=gcc-14
-#            setup_options: >-
-#              -Db_coverage=true
-#              -Db_staticpic=true
-#              -Ddefault_library=static
-#            extra_packages: >-
-#              meson
-#              gcc-14
-#              gcovr
-#            exec_type: bash
-#
-#          - label: Autotools-ubuntu-x86_64-no-simd-coverage
-#            buildtool: autotools
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=gcc-14
-#            setup_options: >-
-#              --enable-gcov
-#              --disable-simd
-#            extra_packages: >-
-#              gcc-14
-#            pip_packages: >-
-#              gcovr
-#            exec_type: bash
-#
-#          - label: Meson-ubuntu-x86_64-no-simd-coverage
-#            buildtool: meson
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=gcc-14
-#            setup_options: >-
-#              -Db_coverage=true
-#              -Dsimd=disabled
-#            extra_packages: >-
-#              meson
-#              gcc-14
-#            pip_packages: >-
-#              gcovr
-#            exec_type: bash
-#
-#          - label: Autotools-ubuntu-x86_64-no-tools
-#            buildtool: autotools
-#            runner: ubuntu-latest
-#            setup_options: >-
-#              --disable-img2sixel
-#              --disable-sixel2png
-#            exec_type: bash
-#
-#          - label: Meson-ubuntu-x86_64-no-tools
-#            buildtool: meson
-#            runner: ubuntu-latest
-#            setup_options: >-
-#              -Dimg2sixel=disabled
-#              -Dsixel2png=disabled
-#            extra_packages: >-
-#              meson
-#            exec_type: bash
-#
-#          - label: Autotools-ubuntu-x86_64-no-threads-coverage
-#            buildtool: autotools
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=gcc-14
-#            setup_options: >-
-#              --enable-gcov
-#              --disable-threads
-#            extra_packages: >-
-#              gcc-14
-#            pip_packages: >-
-#              gcovr
-#            exec_type: bash
-#
-#          - label: Meson-ubuntu-x86_64-no-threads-coverage
-#            buildtool: meson
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=gcc-14
-#            setup_options: >-
-#              -Db_coverage=true
-#              -Dthreads=disabled
-#            extra_packages: >-
-#              gcc-14
-#            pip_packages: >-
-#              meson
-#              gcovr
-#            exec_type: bash
-#
-#          - label: Autotools-ubuntu-x86_64-musl
-#            buildtool: autotools
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=musl-gcc
-#            extra_packages: >-
-#              musl-tools
-#            exec_type: bash
-#
-#          - label: Meson-ubuntu-x86_64-musl
-#            buildtool: meson
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=musl-gcc
-#            extra_packages: >-
-#              meson
-#              musl-tools
-#            exec_type: bash
-#
-#          - label: Autotools-ubuntu-24.04-aarch64-distcheck
-#            buildtool: autotools
-#            runner: ubuntu-24.04-arm
-#            check_target: distcheck
-#            exec_type: bash
-#
-#          - label: Meson-ubuntu-24.04-aarch64-distcheck
-#            buildtool: meson
-#            runner: ubuntu-24.04-arm
-#            check_target: dist
-#            extra_packages: >-
-#              meson
-#              ninja-build
-#            exec_type: bash
-#
-#          - label: Autotools-ubuntu-24.04-aarch64-amalgamated_lib
-#            buildtool: autotools
-#            runner: ubuntu-24.04-arm
-#            setup_prefix: >-
-#              CC=gcc-14
-#            setup_options: >-
-#              --enable-amalgamated-lib
-#            extra_packages: >-
-#              gcc-14
-#            exec_type: bash
-#
-#          - label: Meson-ubuntu-24.04-aarch64-amalgamated_lib
-#            buildtool: meson
-#            runner: ubuntu-24.04-arm
-#            setup_prefix: >-
-#              CC=gcc-14
-#            setup_options: >-
-#              -Damalgamated_lib=true
-#            extra_packages: >-
-#              meson
-#              gcc-14
-#            exec_type: bash
-#
-#          - label: Autotools-ubuntu-24.04-aarch64-amalgamated_tools
-#            buildtool: autotools
-#            runner: ubuntu-24.04-arm
-#            setup_prefix: >-
-#              CC=gcc-14
-#            setup_options: >-
-#              --enable-amalgamated-tools
-#            extra_packages: >-
-#              gcc-14
-#            exec_type: bash
-#
-#          - label: Meson-ubuntu-24.04-aarch64-amalgamated_tools
-#            buildtool: meson
-#            runner: ubuntu-24.04-arm
-#            setup_prefix: >-
-#              CC=gcc-14
-#            setup_options: >-
-#              -Damalgamated_tools=true
-#            extra_packages: >-
-#              meson
-#              gcc-14
-#            exec_type: bash
-#
-#          - label: Autotools-ubuntu-aarch64-cosmopolitan-static
-#            buildtool: autotools
-#            runner: ubuntu-24.04-arm
-#            setup_prefix: >-
-#              CC=cosmocc
-#              LD=cosmocc
-#              AR=cosmoar
-#              RANLIB=cosmoranlib
-#              INSTALL=cosmoinstall
-#            setup_options: >-
-#              --disable-shared
-#              --without-png
-#              --without-jpeg
-#              --without-libcurl
-#              --without-onnxruntime
-#            exec_type: bash
-#
-#          - label: Meson-ubuntu-aarch64-cosmopolitan-static
-#            buildtool: meson
-#            runner: ubuntu-24.04-arm
-#            setup_prefix: >-
-#              CC=cosmocc-meson
-#              LD=cosmocc-meson
-#              AR=cosmoar
-#              RANLIB=cosmoranlib
-#              INSTALL=cosmoinstall
-#            setup_options: >-
-#              -Ddefault_library=static
-#              -Dpng=disabled
-#              -Djpeg=disabled
-#              -Dcurl=disabled
-#              -Donnxruntime=disabled
-#            check_target:
-#              test --wrapper "$PWD"/build-aux/ape-wrapper
-#            extra_packages: >-
-#              meson
-#            exec_type: bash
-#
-#          - label: Autotools-ubuntu-aarch64-emscripten
-#            buildtool: autotools
-#            runner: ubuntu-24.04-arm
-#            setup_prefix: >-
-#              CFLAGS="-O3 -g0 -flto -msimd128 -fdata-sections -ffunction-sections"
-#              LDFLAGS="-sNODERAWFS=1 -sSTACK_SIZE=524288 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sUSE_PTHREADS=1 -sASSERTIONS=0"
-#              emconfigure
-#            setup_options: >-
-#              --host=wasm32-unknown-emscripten
-#              --with-shebang-file="$PWD/build-aux/shebang/node"
-#              --disable-shared
-#            extra_packages: >-
-#              nodejs
-#            exec_type: bash
-#
-#          - label: Meson-ubuntu-aarch64-emscripten
-#            buildtool: meson
-#            runner: ubuntu-24.04-arm
-#            setup_prefix: >-
-#              emconfigure
-#            setup_options: >-
-#              --cross-file build-aux/meson-cross/emscripten
-#              -Ddefault_library=static
-#            extra_packages: >-
-#              meson
-#              nodejs
-#            exec_type: bash
-#
-#          - label: Autotools-ubuntu-i686
-#            buildtool: autotools
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=gcc
-#              CFLAGS="-m32"
-#              LDFLAGS="-m32"
-#              PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
-#              PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
-#            extra_packages: >-
-#              gcc-multilib
-#            exec_type: bash
-#
-#          - label: Meson-ubuntu-i686-unity
-#            buildtool: meson
-#            runner: ubuntu-latest
-#            setup_prefix: >-
-#              CC=gcc
-#              CFLAGS="-m32"
-#              LDFLAGS="-m32"
-#              PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
-#              PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
-#            setup_options: >-
-#              -Dunity=on
-#            extra_packages: >-
-#              meson
-#              gcc-multilib
-#            exec_type: bash
-#
-#          - label: Autotools-macos-aarch64-distcheck
-#            buildtool: autotools
-#            runner: macos-latest
-#            check_target: distcheck
-#            exec_type: bash
-#
-#          - label: Meson-macos-aarch64-distcheck
-#            buildtool: meson
-#            runner: macos-latest
-#            check_target: dist
-#            extra_packages: >-
-#              meson
-#            exec_type: bash
-#
-#          - label: Autotools-macos-aarch64-ASan-gdk-pixbuf2
-#            buildtool: autotools
-#            runner: macos-latest
-#            setup_prefix: >-
-#              CC=clang
-#              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
-#              LDFLAGS="-fsanitize=address"
-#            setup_options: >-
-#              --without-png
-#              --without-jpeg
-#              --with-gdk-pixbuf2
-#            extra_packages: >-
-#              gdk-pixbuf
-#            exec_type: bash
-#
-#          - label: Meson-macos-aarch64-ASan-gdk-pixbuf2
-#            buildtool: meson
-#            runner: macos-latest
-#            setup_prefix: >-
-#              CC=clang
-#            setup_options: >-
-#              --buildtype=debug
-#              -Db_sanitize=address
-#              -Db_lundef=false
-#              -Dpng=disabled
-#              -Djpeg=disabled
-#              -Dgdk_pixbuf2=enabled
-#            extra_packages: >-
-#              meson
-#              gdk-pixbuf
-#            exec_type: bash
-#
-#          - label: Autotools-macos-aarch64-ASan-GD
-#            buildtool: autotools
-#            runner: macos-latest
-#            setup_prefix: >-
-#              CC=clang
-#              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
-#              LDFLAGS="-fsanitize=address"
-#            setup_options: >-
-#              --without-png
-#              --without-jpeg
-#              --with-gd
-#            extra_packages: >-
-#              gd
-#            exec_type: bash
-#
-#          - label: Meson-macos-aarch64-ASan-GD
-#            buildtool: meson
-#            runner: macos-latest
-#            setup_prefix: >-
-#              CC=clang
-#              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
-#              LDFLAGS="-fsanitize=address"
-#            setup_options: >-
-#              --buildtype=debug
-#              -Db_sanitize=address
-#              -Db_lundef=false
-#              -Dpng=disabled
-#              -Djpeg=disabled
-#              -Dgd=enabled
-#            extra_packages: >-
-#              meson
-#              gd
-#            exec_type: bash
-#
-#          - label: Autotools-macos-aarch64-amalgamated-lib-disable-appkit
-#            buildtool: autotools
-#            runner: macos-latest
-#            setup_options: >-
-#              --enable-amalgamated-lib
-#              --disable-appkit
-#            exec_type: bash
-#
-#          - label: Meson-macos-aarch64-amalgamated-lib-disable-appkit
-#            buildtool: meson
-#            runner: macos-latest
-#            setup_options: >-
-#              -Damalgamated_lib=true
-#              -Dappkit=disabled
-#            extra_packages: >-
-#              meson
-#            exec_type: bash
-#
-#          - label: Autotools-macos-x86_64-coverage
-#            buildtool: autotools
-#            runner: macos-15
-#            setup_options: >-
-#              --enable-gcov
-#            extra_packages: >-
-#              lcov
-#            exec_type: bash
-#
-#          - label: Meson-macos-x86_64-unity-coverage
-#            buildtool: meson
-#            runner: macos-15
-#            setup_options: >-
-#              -Db_coverage=true
-#              -Dunity=on
-#            extra_packages: >-
-#              meson
-#              lcov
-#            exec_type: bash
-#
-#          - label: Autotools-macos-x86_64-amalgamated_lib-amalgamated_tools
-#            buildtool: autotools
-#            runner: macos-15
-#            setup_options: >-
-#              --enable-amalgamated-lib
-#              --enable-amalgamated-tools
-#            exec_type: bash
-#
-#          - label: Meson-macos-x86_64-amalgamated_lib-amalgamated_tools
-#            buildtool: meson
-#            runner: macos-15
-#            setup_options: >-
-#              -Damalgamated_lib=true
-#              -Damalgamated_tools=true
-#            extra_packages: >-
-#              meson
-#            exec_type: bash
-#
-#          - label: Autotools-macos-aarch64-cosmopolitan-static
-#            buildtool: autotools
-#            runner: macos-latest
-#            setup_prefix: >-
-#              CC=cosmocc
-#              LD=cosmocc
-#              AR=cosmoar
-#              RANLIB=cosmoranlib
-#              INSTALL=cosmoinstall
-#            setup_options: >-
-#              --disable-shared
-#              --without-png
-#              --without-jpeg
-#              --without-libcurl
-#              --without-onnxruntime
-#              --without-coregraphics
-#              --disable-quicklook-extension
-#              --disable-quicklook-preview
-#              --disable-appkit
-#            exec_type: bash
-#
-#          - label: Meson-macos-aarch64-cosmopolitan-static
-#            buildtool: meson
-#            runner: macos-latest
-#            setup_prefix: >-
-#              CC=cosmocc-meson
-#              LD=cosmocc-meson
-#              AR=cosmoar
-#              RANLIB=cosmoranlib
-#              INSTALL=cosmoinstall
-#            setup_options: >-
-#              -Ddefault_library=static
-#              -Dpng=disabled
-#              -Djpeg=disabled
-#              -Dcurl=disabled
-#              -Donnxruntime=disabled
-#              -Dcoregraphics=disabled
-#              -Dquicklook_extension=disabled
-#              -Dquicklook_preview=disabled
-#              -Dappkit=disabled
-#            check_target:
-#              test --wrapper "$PWD"/build-aux/ape-wrapper
-#            extra_packages: >-
-#              meson
-#            exec_type: bash
-#
-#          - label: Autotools-macos-aarch64-emscripten
-#            buildtool: autotools
-#            runner: macos-latest
-#            setup_prefix: >-
-#              CFLAGS="-O3 -g0 -flto -msimd128 -fdata-sections -ffunction-sections"
-#              LDFLAGS="-sNODERAWFS=1 -sSTACK_SIZE=524288 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sUSE_PTHREADS=1 -sASSERTIONS=0"
-#              emconfigure
-#            setup_options: >-
-#              --host=wasm32-unknown-emscripten
-#              --with-shebang-file="$PWD/build-aux/shebang/node"
-#              --disable-shared
-#            extra_packages: >-
-#              node
-#            exec_type: bash
-#
-#          - label: Meson-macos-aarch64-emscripten
-#            buildtool: meson
-#            runner: macos-latest
-#            setup_prefix: >-
-#              emconfigure
-#            setup_options: >-
-#              --cross-file build-aux/meson-cross/emscripten
-#              -Ddefault_library=static
-#            extra_packages: >-
-#              meson
-#              node
-#            exec_type: bash
-#
-#          - label: Autotools-msys2-mingw64-static-coverage
-#            buildtool: autotools
-#            runner: windows-latest
-#            msystem: MINGW64
-#            setup_options: >-
-#              --disable-shared
-#              --enable-static
-#              --enable-gcov
-#            extra_packages: >-
-#              make
-#              mingw-w64-x86_64-toolchain
-#              mingw-w64-x86_64-lcov
-#            exec_type: msys2
-#
-#          - label: Autotools-msys2-mingw64-no-simd-coverage
-#            buildtool: autotools
-#            runner: windows-latest
-#            msystem: MINGW64
-#            setup_options: >-
-#              --enable-gcov
-#              --disable-simd
-#            extra_packages: >-
-#              make
-#              mingw-w64-x86_64-toolchain
-#              mingw-w64-x86_64-lcov
-#            exec_type: msys2
-#
-#          - label: Meson-msys2-mingw64-no-simd-coverage
-#            buildtool: meson
-#            runner: windows-latest
-#            msystem: MINGW64
-#            setup_options: >-
-#              -Db_coverage=true
-#              -Dsimd=disabled
-#            setup_prefix: >-
-#              CC=gcc
-#            extra_packages: >-
-#              mingw-w64-x86_64-meson
-#              mingw-w64-x86_64-toolchain
-#              mingw-w64-x86_64-lcov
-#            exec_type: msys2
-#
-#          - label: Autotools-msys2-mingw64-no-tools
-#            buildtool: autotools
-#            runner: windows-latest
-#            msystem: MINGW64
-#            setup_options: >-
-#              --disable-img2sixel
-#              --disable-sixel2png
-#            extra_packages: >-
-#              make
-#              mingw-w64-x86_64-toolchain
-#            exec_type: msys2
-#
-#          - label: Meson-msys2-mingw64-no-tools
-#            buildtool: meson
-#            runner: windows-latest
-#            msystem: MINGW64
-#            setup_prefix: >-
-#              CC=gcc
-#            setup_options: >-
-#              -Dimg2sixel=disabled
-#              -Dsixel2png=disabled
-#            extra_packages: >-
-#              mingw-w64-x86_64-meson
-#              mingw-w64-x86_64-toolchain
-#            exec_type: msys2
-#
-#          - label: Autotools-msys2-mingw64-no-threads-coverage
-#            buildtool: autotools
-#            runner: windows-latest
-#            msystem: MINGW64
-#            setup_options: >-
-#              --disable-threads
-#              --enable-gcov
-#            extra_packages: >-
-#              make
-#              mingw-w64-x86_64-toolchain
-#              mingw-w64-x86_64-lcov
-#            exec_type: msys2
-#
-#          - label: Meson-msys2-mingw64-no-threads-coverage
-#            buildtool: meson
-#            runner: windows-latest
-#            msystem: MINGW64
-#            setup_prefix: >-
-#              CC=gcc
-#            setup_options: >-
-#              -Dthreads=disabled
-#              -Db_coverage=true
-#            extra_packages: >-
-#              mingw-w64-x86_64-meson
-#              mingw-w64-x86_64-toolchain
-#              mingw-w64-x86_64-lcov
-#            exec_type: msys2
-#
-#          - label: Autotools-msys2-ucrt64-coverage
-#            buildtool: autotools
-#            runner: windows-latest
-#            msystem: UCRT64
-#            setup_options: >-
-#              --enable-gcov
-#            extra_packages: >-
-#              make
-#              mingw-w64-ucrt-x86_64-toolchain
-#              mingw-w64-ucrt-x86_64-lcov
-#            exec_type: msys2
-#
-#          - label: Meson-msys2-ucrt64-unity-coverage
-#            buildtool: meson
-#            runner: windows-latest
-#            msystem: UCRT64
-#            setup_prefix: >-
-#              CC=gcc
-#            setup_options: >-
-#              -Db_coverage=true
-#              -Dunity=on
-#            extra_packages: >-
-#              mingw-w64-ucrt-x86_64-meson
-#              mingw-w64-ucrt-x86_64-toolchain
-#              mingw-w64-ucrt-x86_64-lcov
-#            exec_type: msys2
-#
-#          - label: Autotools-msys2-ucrt64-amalgamated_lib
-#            buildtool: autotools
-#            runner: windows-latest
-#            msystem: UCRT64
-#            setup_options: >-
-#              --enable-amalgamated-lib
-#            extra_packages: >-
-#              make
-#              mingw-w64-ucrt-x86_64-toolchain
-#              mingw-w64-ucrt-x86_64-lcov
-#            exec_type: msys2
-#
-#          - label: Meson-msys2-ucrt64-amalgamated-lib-coverage
-#            buildtool: meson
-#            runner: windows-latest
-#            msystem: UCRT64
-#            setup_prefix: >-
-#              CC=gcc
-#            setup_options: >-
-#              -Db_coverage=true
-#              -Damalgamated_lib=true
-#            extra_packages: >-
-#              mingw-w64-ucrt-x86_64-meson
-#              mingw-w64-ucrt-x86_64-toolchain
-#              mingw-w64-ucrt-x86_64-lcov
-#            exec_type: msys2
-#
-#          - label: Autotools-msys2-clang64-coverage
-#            buildtool: autotools
-#            runner: windows-latest
-#            msystem: CLANG64
-#            setup_prefix: >-
-#              CC=clang
-#            setup_options: >-
-#              --enable-gcov
-#            extra_packages: >-
-#              make
-#              mingw-w64-clang-x86_64-toolchain
-#              mingw-w64-clang-x86_64-lcov
-#            exec_type: msys2
-#
-#          - label: Meson-msys2-clang64-coverage
-#            buildtool: meson
-#            runner: windows-latest
-#            msystem: CLANG64
-#            setup_prefix: >-
-#              CC=clang
-#            setup_options: >-
-#              -Db_coverage=true
-#            extra_packages: >-
-#              mingw-w64-clang-x86_64-meson
-#              mingw-w64-clang-x86_64-toolchain
-#              mingw-w64-clang-x86_64-lcov
-#            exec_type: msys2
-#
-#          - label: Autotools-msys2-clang64-ASan
-#            buildtool: autotools
-#            runner: windows-latest
-#            msystem: CLANG64
-#            setup_prefix: >-
-#              CC=clang
-#            setup_options: >-
-#              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
-#              LDFLAGS="-fsanitize=address"
-#            extra_packages: >-
-#              make
-#              mingw-w64-clang-x86_64-toolchain
-#            exec_type: msys2
-#
-#          - label: Meson-msys2-clang64-ASan
-#            buildtool: meson
-#            runner: windows-latest
-#            msystem: CLANG64
-#            setup_prefix: >-
-#              CC=clang
-#            setup_options: >-
-#              --buildtype=debug
-#              -Db_sanitize=address
-#              -Db_lundef=false
-#            extra_packages: >-
-#              mingw-w64-clang-x86_64-meson
-#              mingw-w64-clang-x86_64-toolchain
-#            exec_type: msys2
-#
-#          - label: Autotools-msys2-msys-vs_clangcl
-#            buildtool: autotools
-#            runner: windows-latest
-#            msystem: MSYS
-#            setup_prefix: >-
-#              CC=clang-cl
-#              LD=link
-#              AR="sh ar-lib lib"
-#              ARFLAGS=cr
-#              NM="dumpbin -symbols"
-#              STRIP=:
-#              RANLIB=:
-#            setup_options: >-
-#              --host=x86_64-pc-windows-msvc
-#            extra_packages: >-
-#              make
-#            exec_type: msys2
-#
-#          - label: Autotools-msys2-msys-msvc
-#            buildtool: autotools
-#            runner: windows-latest
-#            msystem: MSYS
-#            setup_prefix: >-
-#              CC=cl
-#              LD=link
-#              AR="sh ar-lib lib"
-#              ARFLAGS=cr
-#              NM="dumpbin -symbols"
-#              STRIP=:
-#              RANLIB=:
-#            setup_options: >-
-#              --host=x86_64-pc-windows-msvc
-#            extra_packages: >-
-#              make
-#            exec_type: msys2
-#
-#          - label: Autotools-msys2-x86_64-msvc-x86_64-amalgamated_lib
-#            buildtool: autotools
-#            runner: windows-latest
-#            msystem: MSYS
-#            setup_prefix: >-
-#              CC=cl
-#              LD=link
-#              AR="sh ar-lib lib"
-#              ARFLAGS=cr
-#              NM="dumpbin -symbols"
-#              STRIP=:
-#              RANLIB=:
-#            setup_options: >-
-#              --host=x86_64-pc-windows-msvc
-#              --enable-amalgamated-lib
-#            extra_packages: make
-#            exec_type: msys2
-#
-#          - label: Autotools-msys2-aarch64-msvc-aarch64-amalgamated_lib
-#            buildtool: autotools
-#            runner: windows-11-arm
-#            msystem: MSYS
-#            setup_prefix: >-
-#              CC=cl
-#              LD=link
-#              AR="sh ar-lib lib"
-#              ARFLAGS=cr
-#              NM="dumpbin -symbols"
-#              STRIP=:
-#              RANLIB=:
-#            setup_options: >-
-#              --host=aarch64-pc-windows-msvc
-#              --enable-amalgamated-lib
-#            extra_packages: make
-#            exec_type: msys2
-#
-#          - label: Autotools-msys2-msvc-vcpkg-libpng-libjpeg
-#            buildtool: autotools
-#            runner: windows-latest
-#            msystem: MSYS
-#            setup_prefix: >-
-#              CC=cl
-#              LD=link
-#              AR="sh ar-lib lib"
-#              ARFLAGS=cr
-#              NM="dumpbin -symbols"
-#              STRIP=:
-#              RANLIB=:
-#            setup_options: >-
-#              --host=x86_64-pc-windows-msvc
-#            extra_packages: make
-#            vcpkg_packages: >-
-#              libpng
-#              libjpeg-turbo
-#            exec_type: msys2
-#
-#          - label: Autotools-msys2-mingw32
-#            buildtool: autotools
-#            runner: windows-latest
-#            msystem: MINGW32
-#            extra_packages: >-
-#              make
-#              mingw-w64-i686-toolchain
-#            exec_type: msys2
-#
-#          - label: Meson-msys2-mingw32-unity
-#            buildtool: meson
-#            runner: windows-latest
-#            msystem: MINGW32
-#            setup_prefix: >-
-#              CC=gcc
-#            setup_options: >-
-#              -Dunity=on
-#            exec_type: msys2
-#            extra_packages: >-
-#              mingw-w64-i686-meson
-#              mingw-w64-i686-toolchain
-#
-#          - label: Autotools-msys2-msys-gcc-coverage
-#            buildtool: autotools
-#            runner: windows-latest
-#            msystem: MSYS
-#            setup_options: >-
-#              --enable-gcov
-#            extra_packages: >-
-#              make
-#              gcc
-#              lcov
-#            exec_type: msys2
-#
-#          - label: Meson-msys2-msys-gcc-coverage
-#            buildtool: meson
-#            runner: windows-latest
-#            msystem: MSYS
-#            setup_prefix: >-
-#              CC=gcc
-#            setup_options: >-
-#              -Db_coverage=true
-#            extra_packages: >-
-#              meson
-#              gcc
-#              lcov
-#            exec_type: msys2
-#
-#          - label: Autotools-msys2-msys-cosmopolitan-static
-#            buildtool: autotools
-#            runner: windows-latest
-#            msystem: MSYS
-#            setup_prefix: >-
-#              CC=cosmocc
-#              LD=cosmocc
-#              AR=cosmoar
-#              RANLIB=cosmoranlib
-#              INSTALL=cosmoinstall
-#            setup_options: >-
-#              --disable-shared
-#              --without-png
-#              --without-jpeg
-#              --without-libcurl
-#              --without-onnxruntime
-#              --disable-wiccodec
-#            extra_packages: >-
-#              unzip
-#              make
-#            exec_type: msys2
-#
-#          - label: Autotools-cygwin-gcc
-#            buildtool: autotools
-#            runner: windows-latest
-#            extra_packages: >-
-#              make
-#              gcc-core
-#            exec_type: cygwin
-#
-#          - label: Meson-cygwin-gcc-unity
-#            buildtool: meson
-#            runner: windows-latest
-#            setup_prefix: >-
-#              CC=gcc
-#            setup_options: >-
-#              -Dunity=on
-#            extra_packages: >-
-#              meson
-#              gcc-core
-#            exec_type: cygwin
-#
-#          - label: Autotools-cygwin-amalgamated_lib
-#            buildtool: autotools
-#            runner: windows-latest
-#            setup_options: >-
-#              --enable-amalgamated-lib
-#            extra_packages: >-
-#              gcc-core
-#              make
-#            exec_type: cygwin
-#
-#          - label: Meson-cygwin-amalgamated_lib
-#            buildtool: meson
-#            runner: windows-latest
-#            setup_prefix: >-
-#              CC=gcc
-#            setup_options: >-
-#              -Damalgamated_lib=true
-#            extra_packages: >-
-#              meson
-#              gcc-core
-#            exec_type: cygwin
-#
-#          - label: Autotools-cygwin-msvc-buildonly
-#            buildtool: autotools
-#            runner: windows-latest
-#            setup_prefix: >-
-#              CC=cl
-#              LD=link
-#              AR="sh ar-lib lib"
-#              ARFLAGS=cr
-#              NM="dumpbin -symbols"
-#              STRIP=:
-#              RANLIB=:
-#            setup_options: >-
-#              --host=x86_64-pc-windows-msvc
-#            extra_packages: >-
-#              make
-#            exec_type: cygwin
-#
-#          - label: Autotools-cygwin-clangcl-buildonly
-#            buildtool: autotools
-#            runner: windows-latest
-#            setup_prefix: >-
-#              CC=clang-cl
-#              LD=link
-#              AR="sh ar-lib lib"
-#              ARFLAGS=cr
-#              NM="dumpbin -symbols"
-#              STRIP=:
-#              RANLIB=:
-#            setup_options: >-
-#              --host=x86_64-pc-windows-msvc
-#            extra_packages: >-
-#              make
-#            exec_type: cygwin
-#
-#          - label: Autotools-cygwin-clang_msvc_abi-buildonly
-#            buildtool: autotools
-#            runner: windows-latest
-#            setup_prefix: >-
-#              CC=clang
-#              LD=link
-#              AR="sh ar-lib lib"
-#              ARFLAGS=cr
-#              NM="dumpbin -symbols"
-#              STRIP=:
-#              RANLIB=:
-#            setup_options: >-
-#              --host=x86_64-pc-windows-msvc
-#            extra_packages: >-
-#              make
-#            exec_type: cygwin
-#
-#          - label: Meson-x86_64-cmd-msvc-x86_64-unity
-#            buildtool: meson
-#            runner: windows-latest
-#            setup_options: >-
-#              -Dunity=on
-#            exec_type: cmd
-#
-#          - label: Meson-aarch64-cmd-msvc-aarch64-unity
-#            buildtool: meson
-#            runner: windows-11-arm
-#            setup_options: >-
-#              -Dunity=on
-#            exec_type: cmd
-#
+          - label: Autotools-alpine-3.20-x86_64
+            buildtool: autotools
+            runner: ubuntu-latest
+            guest_packages: >-
+              build-base
+              coreutils
+              findutils
+            exec_type: alpine
+
+          - label: Meson-alpine-3.20-x86_64
+            buildtool: meson
+            runner: ubuntu-latest
+            guest_packages: >-
+              build-base
+              meson
+            exec_type: alpine
+
+          - label: Autotools-ubuntu-x86_64-clang-ASan
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+              LDFLAGS="-fsanitize=address"
+            setup_options: >-
+              --without-png
+              --without-jpeg
+            extra_packages: >-
+              clang
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-clang-ASan
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debug
+              -Db_sanitize=address
+              -Db_lundef=false
+              -Dpng=disabled
+              -Djpeg=disabled
+            extra_packages: >-
+              meson
+              clang
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-clang-simd-avx2
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+              LDFLAGS="-fsanitize=address"
+            setup_options: >-
+              --enable-simd
+              --enable-avx2
+            extra_packages: >-
+              clang
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-clang-simd-avx2
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              -Dsimd=enabled
+              -Davx2=true
+            extra_packages: >-
+              meson
+              clang
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-clang-simd-avx512-buildonly
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+              LDFLAGS="-fsanitize=address"
+            setup_options: >-
+              --enable-simd
+              --enable-avx512
+            check_target: all
+            extra_packages: >-
+              clang
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-clang-simd-avx512-buildonly
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              -Dsimd=enabled
+              -Davx512=true
+            check_target: compile
+            extra_packages: >-
+              meson
+              clang
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-clang-ASan-png-jpeg
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+              LDFLAGS="-fsanitize=address"
+            setup_options: >-
+              --with-png
+              --with-jpeg
+            extra_packages: >-
+              meson
+              clang
+              libpng-dev
+              libjpeg-dev
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-clang-ASan-png-jpeg
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debug
+              -Db_sanitize=address
+              -Db_lundef=false
+              -Dpng=enabled
+              -Djpeg=enabled
+            extra_packages: >-
+              meson
+              clang
+              libpng-dev
+              libjpeg-dev
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-ASan-gdk-pixbuf2
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+              LDFLAGS="-fsanitize=address"
+            setup_options: >-
+              --without-png
+              --without-jpeg
+              --with-gdk-pixbuf2
+            extra_packages: >-
+              clang
+              libgdk-pixbuf2.0-dev
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-ASan-gdk-pixbuf2
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debug
+              -Db_sanitize=address
+              -Db_lundef=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dgdk_pixbuf2=enabled
+            extra_packages: >-
+              meson
+              clang
+              libgdk-pixbuf2.0-dev
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-ASan-GD-no-aborttrace
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+              LDFLAGS="-fsanitize=address"
+            setup_options: >-
+              --without-png
+              --without-jpeg
+              --with-gd
+              --disable-abort-trace
+            extra_packages: >-
+              clang
+              libgd-dev
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-ASan-GD-no-aborttrace
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debug
+              -Db_sanitize=address
+              -Db_lundef=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dgd=enabled
+              -Dabort_trace=disabled
+            extra_packages: >-
+              meson
+              clang
+              libgd-dev
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-static-coverage
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=gcc-14
+            setup_options: >-
+              --enable-gcov
+              --disable-shared
+              --enable-static
+            extra_packages: >-
+              gcc-14
+              gcovr
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-static-coverage
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=gcc-14
+            setup_options: >-
+              -Db_coverage=true
+              -Db_staticpic=true
+              -Ddefault_library=static
+            extra_packages: >-
+              meson
+              gcc-14
+              gcovr
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-no-simd-coverage
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=gcc-14
+            setup_options: >-
+              --enable-gcov
+              --disable-simd
+            extra_packages: >-
+              gcc-14
+            pip_packages: >-
+              gcovr
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-no-simd-coverage
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=gcc-14
+            setup_options: >-
+              -Db_coverage=true
+              -Dsimd=disabled
+            extra_packages: >-
+              meson
+              gcc-14
+            pip_packages: >-
+              gcovr
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-no-tools
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_options: >-
+              --disable-img2sixel
+              --disable-sixel2png
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-no-tools
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_options: >-
+              -Dimg2sixel=disabled
+              -Dsixel2png=disabled
+            extra_packages: >-
+              meson
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-no-threads-coverage
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=gcc-14
+            setup_options: >-
+              --enable-gcov
+              --disable-threads
+            extra_packages: >-
+              gcc-14
+            pip_packages: >-
+              gcovr
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-no-threads-coverage
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=gcc-14
+            setup_options: >-
+              -Db_coverage=true
+              -Dthreads=disabled
+            extra_packages: >-
+              gcc-14
+            pip_packages: >-
+              meson
+              gcovr
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-musl
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=musl-gcc
+            extra_packages: >-
+              musl-tools
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-musl
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=musl-gcc
+            extra_packages: >-
+              meson
+              musl-tools
+            exec_type: bash
+
+          - label: Autotools-ubuntu-24.04-aarch64-distcheck
+            buildtool: autotools
+            runner: ubuntu-24.04-arm
+            check_target: distcheck
+            exec_type: bash
+
+          - label: Meson-ubuntu-24.04-aarch64-distcheck
+            buildtool: meson
+            runner: ubuntu-24.04-arm
+            check_target: dist
+            extra_packages: >-
+              meson
+              ninja-build
+            exec_type: bash
+
+          - label: Autotools-ubuntu-24.04-aarch64-amalgamated_lib
+            buildtool: autotools
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CC=gcc-14
+            setup_options: >-
+              --enable-amalgamated-lib
+            extra_packages: >-
+              gcc-14
+            exec_type: bash
+
+          - label: Meson-ubuntu-24.04-aarch64-amalgamated_lib
+            buildtool: meson
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CC=gcc-14
+            setup_options: >-
+              -Damalgamated_lib=true
+            extra_packages: >-
+              meson
+              gcc-14
+            exec_type: bash
+
+          - label: Autotools-ubuntu-24.04-aarch64-amalgamated_tools
+            buildtool: autotools
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CC=gcc-14
+            setup_options: >-
+              --enable-amalgamated-tools
+            extra_packages: >-
+              gcc-14
+            exec_type: bash
+
+          - label: Meson-ubuntu-24.04-aarch64-amalgamated_tools
+            buildtool: meson
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CC=gcc-14
+            setup_options: >-
+              -Damalgamated_tools=true
+            extra_packages: >-
+              meson
+              gcc-14
+            exec_type: bash
+
+          - label: Autotools-ubuntu-aarch64-cosmopolitan-static
+            buildtool: autotools
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CC=cosmocc
+              LD=cosmocc
+              AR=cosmoar
+              RANLIB=cosmoranlib
+              INSTALL=cosmoinstall
+            setup_options: >-
+              --disable-shared
+              --without-png
+              --without-jpeg
+              --without-libcurl
+              --without-onnxruntime
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-cosmopolitan-static
+            buildtool: meson
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CC=cosmocc-meson
+              LD=cosmocc-meson
+              AR=cosmoar
+              RANLIB=cosmoranlib
+              INSTALL=cosmoinstall
+            setup_options: >-
+              -Ddefault_library=static
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dcurl=disabled
+              -Donnxruntime=disabled
+            check_target:
+              test --wrapper "$PWD"/build-aux/ape-wrapper
+            extra_packages: >-
+              meson
+            exec_type: bash
+
+          - label: Autotools-ubuntu-aarch64-emscripten
+            buildtool: autotools
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CFLAGS="-O3 -g0 -flto -msimd128 -fdata-sections -ffunction-sections"
+              LDFLAGS="-sNODERAWFS=1 -sSTACK_SIZE=524288 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sUSE_PTHREADS=1 -sASSERTIONS=0"
+              emconfigure
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+            extra_packages: >-
+              nodejs
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-emscripten
+            buildtool: meson
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              emconfigure
+            setup_options: >-
+              --cross-file build-aux/meson-cross/emscripten
+              -Ddefault_library=static
+            extra_packages: >-
+              meson
+              nodejs
+            exec_type: bash
+
+          - label: Autotools-ubuntu-i686
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=gcc
+              CFLAGS="-m32"
+              LDFLAGS="-m32"
+              PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
+              PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
+            extra_packages: >-
+              gcc-multilib
+            exec_type: bash
+
+          - label: Meson-ubuntu-i686-unity
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=gcc
+              CFLAGS="-m32"
+              LDFLAGS="-m32"
+              PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
+              PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
+            setup_options: >-
+              -Dunity=on
+            extra_packages: >-
+              meson
+              gcc-multilib
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-distcheck
+            buildtool: autotools
+            runner: macos-latest
+            check_target: distcheck
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-distcheck
+            buildtool: meson
+            runner: macos-latest
+            check_target: dist
+            extra_packages: >-
+              meson
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-ASan-gdk-pixbuf2
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+              LDFLAGS="-fsanitize=address"
+            setup_options: >-
+              --without-png
+              --without-jpeg
+              --with-gdk-pixbuf2
+            extra_packages: >-
+              gdk-pixbuf
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-ASan-gdk-pixbuf2
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debug
+              -Db_sanitize=address
+              -Db_lundef=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dgdk_pixbuf2=enabled
+            extra_packages: >-
+              meson
+              gdk-pixbuf
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-ASan-GD
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+              LDFLAGS="-fsanitize=address"
+            setup_options: >-
+              --without-png
+              --without-jpeg
+              --with-gd
+            extra_packages: >-
+              gd
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-ASan-GD
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+              LDFLAGS="-fsanitize=address"
+            setup_options: >-
+              --buildtype=debug
+              -Db_sanitize=address
+              -Db_lundef=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dgd=enabled
+            extra_packages: >-
+              meson
+              gd
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-amalgamated-lib-disable-appkit
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --enable-amalgamated-lib
+              --disable-appkit
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-amalgamated-lib-disable-appkit
+            buildtool: meson
+            runner: macos-latest
+            setup_options: >-
+              -Damalgamated_lib=true
+              -Dappkit=disabled
+            extra_packages: >-
+              meson
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-coverage
+            buildtool: autotools
+            runner: macos-15
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Meson-macos-x86_64-unity-coverage
+            buildtool: meson
+            runner: macos-15
+            setup_options: >-
+              -Db_coverage=true
+              -Dunity=on
+            extra_packages: >-
+              meson
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-x86_64-amalgamated_lib-amalgamated_tools
+            buildtool: autotools
+            runner: macos-15
+            setup_options: >-
+              --enable-amalgamated-lib
+              --enable-amalgamated-tools
+            exec_type: bash
+
+          - label: Meson-macos-x86_64-amalgamated_lib-amalgamated_tools
+            buildtool: meson
+            runner: macos-15
+            setup_options: >-
+              -Damalgamated_lib=true
+              -Damalgamated_tools=true
+            extra_packages: >-
+              meson
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-cosmopolitan-static
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CC=cosmocc
+              LD=cosmocc
+              AR=cosmoar
+              RANLIB=cosmoranlib
+              INSTALL=cosmoinstall
+            setup_options: >-
+              --disable-shared
+              --without-png
+              --without-jpeg
+              --without-libcurl
+              --without-onnxruntime
+              --without-coregraphics
+              --disable-quicklook-extension
+              --disable-quicklook-preview
+              --disable-appkit
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-cosmopolitan-static
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=cosmocc-meson
+              LD=cosmocc-meson
+              AR=cosmoar
+              RANLIB=cosmoranlib
+              INSTALL=cosmoinstall
+            setup_options: >-
+              -Ddefault_library=static
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dcurl=disabled
+              -Donnxruntime=disabled
+              -Dcoregraphics=disabled
+              -Dquicklook_extension=disabled
+              -Dquicklook_preview=disabled
+              -Dappkit=disabled
+            check_target:
+              test --wrapper "$PWD"/build-aux/ape-wrapper
+            extra_packages: >-
+              meson
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-emscripten
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CFLAGS="-O3 -g0 -flto -msimd128 -fdata-sections -ffunction-sections"
+              LDFLAGS="-sNODERAWFS=1 -sSTACK_SIZE=524288 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sUSE_PTHREADS=1 -sASSERTIONS=0"
+              emconfigure
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+            extra_packages: >-
+              node
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-emscripten
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              emconfigure
+            setup_options: >-
+              --cross-file build-aux/meson-cross/emscripten
+              -Ddefault_library=static
+            extra_packages: >-
+              meson
+              node
+            exec_type: bash
+
+          - label: Autotools-msys2-mingw64-static-coverage
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --disable-shared
+              --enable-static
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-no-simd-coverage
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --enable-gcov
+              --disable-simd
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-mingw64-no-simd-coverage
+            buildtool: meson
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              -Db_coverage=true
+              -Dsimd=disabled
+            setup_prefix: >-
+              CC=gcc
+            extra_packages: >-
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-no-tools
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --disable-img2sixel
+              --disable-sixel2png
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+            exec_type: msys2
+
+          - label: Meson-msys2-mingw64-no-tools
+            buildtool: meson
+            runner: windows-latest
+            msystem: MINGW64
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Dimg2sixel=disabled
+              -Dsixel2png=disabled
+            extra_packages: >-
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-toolchain
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw64-no-threads-coverage
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --disable-threads
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-mingw64-no-threads-coverage
+            buildtool: meson
+            runner: windows-latest
+            msystem: MINGW64
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Dthreads=disabled
+              -Db_coverage=true
+            extra_packages: >-
+              mingw-w64-x86_64-meson
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-ucrt64-coverage
+            buildtool: autotools
+            runner: windows-latest
+            msystem: UCRT64
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-ucrt64-unity-coverage
+            buildtool: meson
+            runner: windows-latest
+            msystem: UCRT64
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+              -Dunity=on
+            extra_packages: >-
+              mingw-w64-ucrt-x86_64-meson
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-ucrt64-amalgamated_lib
+            buildtool: autotools
+            runner: windows-latest
+            msystem: UCRT64
+            setup_options: >-
+              --enable-amalgamated-lib
+            extra_packages: >-
+              make
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-ucrt64-amalgamated-lib-coverage
+            buildtool: meson
+            runner: windows-latest
+            msystem: UCRT64
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+              -Damalgamated_lib=true
+            extra_packages: >-
+              mingw-w64-ucrt-x86_64-meson
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-clang64-coverage
+            buildtool: autotools
+            runner: windows-latest
+            msystem: CLANG64
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-clang-x86_64-toolchain
+              mingw-w64-clang-x86_64-lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-clang64-coverage
+            buildtool: meson
+            runner: windows-latest
+            msystem: CLANG64
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              mingw-w64-clang-x86_64-meson
+              mingw-w64-clang-x86_64-toolchain
+              mingw-w64-clang-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-clang64-ASan
+            buildtool: autotools
+            runner: windows-latest
+            msystem: CLANG64
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              CFLAGS="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+              LDFLAGS="-fsanitize=address"
+            extra_packages: >-
+              make
+              mingw-w64-clang-x86_64-toolchain
+            exec_type: msys2
+
+          - label: Meson-msys2-clang64-ASan
+            buildtool: meson
+            runner: windows-latest
+            msystem: CLANG64
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debug
+              -Db_sanitize=address
+              -Db_lundef=false
+            extra_packages: >-
+              mingw-w64-clang-x86_64-meson
+              mingw-w64-clang-x86_64-toolchain
+            exec_type: msys2
+
+          - label: Autotools-msys2-msys-vs_clangcl
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=clang-cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+            extra_packages: >-
+              make
+            exec_type: msys2
+
+          - label: Autotools-msys2-msys-msvc
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+            extra_packages: >-
+              make
+            exec_type: msys2
+
+          - label: Autotools-msys2-x86_64-msvc-x86_64-amalgamated_lib
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --enable-amalgamated-lib
+            extra_packages: make
+            exec_type: msys2
+
+          - label: Autotools-msys2-aarch64-msvc-aarch64-amalgamated_lib
+            buildtool: autotools
+            runner: windows-11-arm
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=aarch64-pc-windows-msvc
+              --enable-amalgamated-lib
+            extra_packages: make
+            exec_type: msys2
+
+          - label: Autotools-msys2-msvc-vcpkg-libpng-libjpeg
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+            extra_packages: make
+            vcpkg_packages: >-
+              libpng
+              libjpeg-turbo
+            exec_type: msys2
+
+          - label: Autotools-msys2-mingw32
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW32
+            extra_packages: >-
+              make
+              mingw-w64-i686-toolchain
+            exec_type: msys2
+
+          - label: Meson-msys2-mingw32-unity
+            buildtool: meson
+            runner: windows-latest
+            msystem: MINGW32
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Dunity=on
+            exec_type: msys2
+            extra_packages: >-
+              mingw-w64-i686-meson
+              mingw-w64-i686-toolchain
+
+          - label: Autotools-msys2-msys-gcc-coverage
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              gcc
+              lcov
+            exec_type: msys2
+
+          - label: Meson-msys2-msys-gcc-coverage
+            buildtool: meson
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Db_coverage=true
+            extra_packages: >-
+              meson
+              gcc
+              lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-msys-cosmopolitan-static
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_prefix: >-
+              CC=cosmocc
+              LD=cosmocc
+              AR=cosmoar
+              RANLIB=cosmoranlib
+              INSTALL=cosmoinstall
+            setup_options: >-
+              --disable-shared
+              --without-png
+              --without-jpeg
+              --without-libcurl
+              --without-onnxruntime
+              --disable-wiccodec
+            extra_packages: >-
+              unzip
+              make
+            exec_type: msys2
+
+          - label: Autotools-cygwin-gcc
+            buildtool: autotools
+            runner: windows-latest
+            extra_packages: >-
+              make
+              gcc-core
+            exec_type: cygwin
+
+          - label: Meson-cygwin-gcc-unity
+            buildtool: meson
+            runner: windows-latest
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Dunity=on
+            extra_packages: >-
+              meson
+              gcc-core
+            exec_type: cygwin
+
+          - label: Autotools-cygwin-amalgamated_lib
+            buildtool: autotools
+            runner: windows-latest
+            setup_options: >-
+              --enable-amalgamated-lib
+            extra_packages: >-
+              gcc-core
+              make
+            exec_type: cygwin
+
+          - label: Meson-cygwin-amalgamated_lib
+            buildtool: meson
+            runner: windows-latest
+            setup_prefix: >-
+              CC=gcc
+            setup_options: >-
+              -Damalgamated_lib=true
+            extra_packages: >-
+              meson
+              gcc-core
+            exec_type: cygwin
+
+          - label: Autotools-cygwin-msvc-buildonly
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+            extra_packages: >-
+              make
+            exec_type: cygwin
+
+          - label: Autotools-cygwin-clangcl-buildonly
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=clang-cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+            extra_packages: >-
+              make
+            exec_type: cygwin
+
+          - label: Autotools-cygwin-clang_msvc_abi-buildonly
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=clang
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+            extra_packages: >-
+              make
+            exec_type: cygwin
+
+          - label: Meson-x86_64-cmd-msvc-x86_64-unity
+            buildtool: meson
+            runner: windows-latest
+            setup_options: >-
+              -Dunity=on
+            exec_type: cmd
+
+          - label: Meson-aarch64-cmd-msvc-aarch64-unity
+            buildtool: meson
+            runner: windows-11-arm
+            setup_options: >-
+              -Dunity=on
+            exec_type: cmd
+
           - label: Autotools-freebsd-14.3-x86_64
             buildtool: autotools
             runner: ubuntu-latest
@@ -1790,10 +1790,6 @@ jobs:
           environment_variables: CI,GITHUB_WORKSPACE
           run: |
             set -xv
-            #umask 022
-            #mkdir -p tests/_artifacts
-            #chown -R "$(id -u)":"$(id -g)" tests/_artifacts || true
-            #chmod -R u+rwX,go+rX tests/_artifacts
             ${{ matrix.setup_prefix || '' }} ./configure ${{ matrix.setup_options || '' }}
             ${{ matrix.make || 'make' }} V=1
             ${{ matrix.make || 'make' }} ${{ matrix.check_target || 'check' }}
@@ -1826,10 +1822,6 @@ jobs:
             #pkg update -f
             pkg install -y ${{ matrix.extra_packages || 'gmake' }}
           run: |
-            #umask 022
-            #mkdir -p tests/_artifacts
-            #chown -R "$(id -u)":"$(id -g)" tests/_artifacts || true
-            #chmod -R u+rwX,go+rX tests/_artifacts
             ${{ matrix.setup_prefix || '' }} ./configure ${{ matrix.setup_options || '' }}
             gmake V=1
             gmake ${{ matrix.check_target || 'check' }}
