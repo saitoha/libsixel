@@ -85,7 +85,6 @@ done
 [ $# -ge 1 ] || { echo "lso-tap-driver.sh: missing TEST-SCRIPT" >&2; usage; }
 
 : "${AM_TAP_AWK:=awk}"
-: "${LSO_TAP_DATE_CMD:=@LSO_TAP_DATE_CMD@}"
 : "${LSO_TAP_TIMER_BIN:=@top_builddir@/tools/lso-timer@EXEEXT@}"
 : "${LSO_TAP_TIMER_SRC:=@top_srcdir@/tools/lso-timer@EXEEXT@}"
 : "${LSO_TAP_TIMER_BUILD:=@top_builddir@/tools/lso-timer@EXEEXT@}"
@@ -96,22 +95,16 @@ timeout_budget=${test_timeout:-90}
 kill_delay=10
 
 timestamp_millis() {
-  if [ -n "$LSO_TAP_DATE_CMD" ]; then
-    if $LSO_TAP_DATE_CMD 2>/dev/null; then
-      return
-    fi
-  fi
-
   if [ -x "$LSO_TAP_TIMER_BIN" ]; then
-    "$LSO_TAP_TIMER_BIN" && return
+    ${SIXEL_RUNTIME-} "$LSO_TAP_TIMER_BIN" && return
   fi
 
   if [ -x "$LSO_TAP_TIMER_BUILD" ]; then
-    "$LSO_TAP_TIMER_BUILD" && return
+    ${SIXEL_RUNTIME-} "$LSO_TAP_TIMER_BUILD" && return
   fi
 
   if [ -x "$LSO_TAP_TIMER_SRC" ]; then
-    "$LSO_TAP_TIMER_SRC" && return
+    ${SIXEL_RUNTIME-} "$LSO_TAP_TIMER_SRC" && return
   fi
 
   date +%s
@@ -124,6 +117,10 @@ select_timeout_bin() {
   fi
   if command -v gtimeout >/dev/null 2>&1; then
     echo "gtimeout"
+    return
+  fi
+  if [ -n "${SIXEL_RUNTIME-}" ]; then
+    echo ""
     return
   fi
   if [ -x "$LSO_TAP_TIMEOUT_BIN" ]; then
@@ -145,7 +142,7 @@ select_timeout_bin() {
 run_with_helper() {
   helper=$1
   shift
-  "$helper" -k "${kill_delay}s" "${timeout_budget}s" "$@"
+  ${helper} -k "${kill_delay}s" "${timeout_budget}s" "$@"
   status=$?
   if [ "$status" -eq 124 ] || [ "$status" -eq 137 ]; then
     echo "Bail out! timeout after ${timeout_budget}s" >&2
@@ -158,9 +155,6 @@ run_with_timeout() {
   helper_bin=$(select_timeout_bin)
 
   shift
-  if ! test -x "$bin"; then
-      bin=${bin%".exe"}
-  fi
 
   if [ $# -gt 0 ] && [ -f "$1" ] && [ ! -x "$1" ]; then
     set -- "$SHELL" "$@"
