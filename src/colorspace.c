@@ -984,12 +984,7 @@ sixel_colorspace_convert_avx512(unsigned char *pixels,
 
 #if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
 
-typedef struct sixel_colorspace_layout {
-    int step;
-    int index_r;
-    int index_g;
-    int index_b;
-} sixel_colorspace_layout_t;
+typedef sixel_pixelformat_layout_t sixel_colorspace_layout_t;
 
 static void
 sixel_colorspace_layout_pick(int pixelformat,
@@ -1246,7 +1241,7 @@ sixel_colorspace_yuv_to_rgb_block(__m256 y,
     *b = sixel_colorspace_clamp_unit_avx(*b);
 }
 
-static void
+static __attribute__((unused)) void
 sixel_colorspace_rgb_to_yuv_block(__m256 r,
                                   __m256 g,
                                   __m256 b,
@@ -1512,6 +1507,16 @@ sixel_convert_pixels_via_linear_avx2(unsigned char *pixels,
     if (colorspace_dst != SIXEL_COLORSPACE_GAMMA &&
             colorspace_dst != SIXEL_COLORSPACE_LINEAR &&
             colorspace_dst != SIXEL_COLORSPACE_OKLAB) {
+        return processed;
+    }
+    if (colorspace_src == SIXEL_COLORSPACE_OKLAB ||
+            colorspace_dst == SIXEL_COLORSPACE_OKLAB) {
+        /*
+         * OKLab byte conversions currently diverge from the scalar path in
+         * AVX2 builds. Disable the SIMD path for OKLab so output fidelity
+         * matches the reference implementation while the root cause is
+         * investigated.
+         */
         return processed;
     }
 
