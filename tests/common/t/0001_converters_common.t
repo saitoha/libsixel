@@ -44,11 +44,11 @@ fi
 images_dir="${top_srcdir}/images"
 
 if [ -z "${IMG2SIXEL_PATH:-}" ]; then
-    IMG2SIXEL_PATH="${top_builddir}/converters/img2sixel"
+    IMG2SIXEL_PATH="${top_builddir}/converters/img2sixel${SIXEL_BIN_EXT-}"
 fi
 
 if [ -z "${SIXEL2PNG_PATH:-}" ]; then
-    SIXEL2PNG_PATH="${top_builddir}/converters/sixel2png"
+    SIXEL2PNG_PATH="${top_builddir}/converters/sixel2png${SIXEL_BIN_EXT-}"
 fi
 
 check_autotools_option() {
@@ -207,8 +207,8 @@ ensure_network_backend_available() {
 }
 
 runtime_exec() {
-    if [ -n "${SIXEL_RUNTIME:-}" ]; then
-        "${SIXEL_RUNTIME}" "$@"
+    if [ -n "${SIXEL_RUNTIME-}" ]; then
+        "${SIXEL_RUNTIME-}" "$@"
     else
         "$@"
     fi
