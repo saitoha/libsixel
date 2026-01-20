@@ -1512,10 +1512,10 @@ sixel_convert_pixels_via_linear_avx2(unsigned char *pixels,
     if (colorspace_src == SIXEL_COLORSPACE_OKLAB ||
             colorspace_dst == SIXEL_COLORSPACE_OKLAB) {
         /*
-         * OKLab byte conversions currently diverge from the scalar path in
-         * AVX2 builds. Disable the SIMD path for OKLab so output fidelity
-         * matches the reference implementation while the root cause is
-         * investigated.
+         * AVX2 uses LUT-based gamma->linear conversion and float OKLab math,
+         * which still diverges from the scalar double-precision path. Keep
+         * OKLab on the scalar path until a bit-exact SIMD implementation is
+         * available.
          */
         return processed;
     }
