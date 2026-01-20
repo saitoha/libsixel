@@ -1217,7 +1217,8 @@ INPUT_FORMAT_FILES = data/inputs/formats/grayscale.jpg \
        data/inputs/formats/rgba.png \
        data/inputs/formats/stbi_minimal.hdr \
        data/inputs/formats/stbi_minimal.psd \
-       data/inputs/formats/stbi_minimal.pic
+       data/inputs/formats/stbi_minimal.pic \
+       data/inputs/snake_64.png
 
 RESOLUTION_IMAGES = data/resolutions/hd_landscape.png \
        data/resolutions/panorama_tall.png \
