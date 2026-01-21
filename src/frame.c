@@ -158,8 +158,13 @@ sixel_frame_new(
         }
     }
 
-    *ppframe = (sixel_frame_t *)sixel_allocator_malloc(
+    /*
+     * Zero-initialize the frame to avoid MSan reports when fields are read
+     * before explicit assignment in loader paths.
+     */
+    *ppframe = (sixel_frame_t *)sixel_allocator_calloc(
         allocator,
+        1,
         sizeof(sixel_frame_t));
     if (*ppframe == NULL) {
         sixel_helper_set_additional_message(

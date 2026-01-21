@@ -174,6 +174,7 @@ load_with_coregraphics(
          * is available.
          */
         frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
 
         if (frame->width > SIXEL_WIDTH_LIMIT) {
             sixel_helper_set_additional_message(
@@ -306,4 +307,3 @@ end:
  */
 typedef int loader_coregraphics_disabled;
 #endif
-
