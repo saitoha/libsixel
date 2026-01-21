@@ -692,6 +692,7 @@ sixel_palette_resize_entries(sixel_palette_t *palette,
 {
     SIXELSTATUS status = SIXEL_FALSE;
     size_t required;
+    size_t old_size;
     unsigned char *resized;
 
     if (palette == NULL || allocator == NULL) {
@@ -712,6 +713,7 @@ sixel_palette_resize_entries(sixel_palette_t *palette,
         return SIXEL_OK;
     }
 
+    old_size = palette->entries_size;
     if (palette->entries == NULL) {
         resized = (unsigned char *)sixel_allocator_malloc(allocator, required);
     } else {
@@ -723,6 +725,10 @@ sixel_palette_resize_entries(sixel_palette_t *palette,
         sixel_helper_set_additional_message(
             "sixel_palette_resize_entries: allocation failed.");
         return SIXEL_BAD_ALLOCATION;
+    }
+
+    if (required > old_size) {
+        memset(resized + old_size, 0, required - old_size);
     }
 
     palette->entries = resized;
@@ -741,6 +747,7 @@ sixel_palette_resize_entries_float32(sixel_palette_t *palette,
 {
     SIXELSTATUS status = SIXEL_FALSE;
     size_t required_bytes;
+    size_t old_bytes;
     float *resized;
 
     if (palette == NULL || allocator == NULL) {
@@ -762,6 +769,7 @@ sixel_palette_resize_entries_float32(sixel_palette_t *palette,
         return SIXEL_OK;
     }
 
+    old_bytes = palette->entries_float32_size;
     if (palette->entries_float32 == NULL) {
         resized = (float *)sixel_allocator_malloc(allocator,
                                                   required_bytes);
@@ -774,6 +782,12 @@ sixel_palette_resize_entries_float32(sixel_palette_t *palette,
         sixel_helper_set_additional_message(
             "sixel_palette_resize_entries_float32: allocation failed.");
         return SIXEL_BAD_ALLOCATION;
+    }
+
+    if (required_bytes > old_bytes) {
+        memset((unsigned char *)resized + old_bytes,
+               0,
+               required_bytes - old_bytes);
     }
 
     palette->entries_float32 = resized;
