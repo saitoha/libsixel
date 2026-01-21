@@ -94,6 +94,112 @@ typedef SIXELSTATUS (*sixel_palette_quant_dispatch_fn)(
     char const *engine_name,
     sixel_palette_telemetry_t *telemetry);
 
+/*
+ * Dispatch adapters keep the function pointer signatures uniform and avoid
+ * undefined behavior from casting between incompatible function types.
+ */
+static SIXELSTATUS
+sixel_palette_build_kmeans_dispatch(sixel_palette_t *palette,
+                                    void const *data,
+                                    unsigned int length,
+                                    int pixelformat,
+                                    sixel_allocator_t *allocator,
+                                    sixel_logger_t *logger,
+                                    int *job_seq,
+                                    char const *engine_name,
+                                    sixel_palette_telemetry_t *telemetry)
+{
+    unsigned char const *bytes;
+
+    bytes = (unsigned char const *)data;
+    return sixel_palette_build_kmeans(palette,
+                                      bytes,
+                                      length,
+                                      pixelformat,
+                                      allocator,
+                                      logger,
+                                      job_seq,
+                                      engine_name,
+                                      telemetry);
+}
+
+static SIXELSTATUS
+sixel_palette_build_kmeans_float32_dispatch(
+    sixel_palette_t *palette,
+    void const *data,
+    unsigned int length,
+    int pixelformat,
+    sixel_allocator_t *allocator,
+    sixel_logger_t *logger,
+    int *job_seq,
+    char const *engine_name,
+    sixel_palette_telemetry_t *telemetry)
+{
+    float const *samples;
+
+    samples = (float const *)data;
+    return sixel_palette_build_kmeans_float32(palette,
+                                              samples,
+                                              length,
+                                              pixelformat,
+                                              allocator,
+                                              logger,
+                                              job_seq,
+                                              engine_name,
+                                              telemetry);
+}
+
+static SIXELSTATUS
+sixel_palette_build_heckbert_dispatch(sixel_palette_t *palette,
+                                      void const *data,
+                                      unsigned int length,
+                                      int pixelformat,
+                                      sixel_allocator_t *allocator,
+                                      sixel_logger_t *logger,
+                                      int *job_seq,
+                                      char const *engine_name,
+                                      sixel_palette_telemetry_t *telemetry)
+{
+    unsigned char const *bytes;
+
+    bytes = (unsigned char const *)data;
+    return sixel_palette_build_heckbert(palette,
+                                        bytes,
+                                        length,
+                                        pixelformat,
+                                        allocator,
+                                        logger,
+                                        job_seq,
+                                        engine_name,
+                                        telemetry);
+}
+
+static SIXELSTATUS
+sixel_palette_build_heckbert_float32_dispatch(
+    sixel_palette_t *palette,
+    void const *data,
+    unsigned int length,
+    int pixelformat,
+    sixel_allocator_t *allocator,
+    sixel_logger_t *logger,
+    int *job_seq,
+    char const *engine_name,
+    sixel_palette_telemetry_t *telemetry)
+{
+    float const *samples;
+
+    samples = (float const *)data;
+    return sixel_palette_build_heckbert_float32(palette,
+                                                samples,
+                                                length,
+                                                pixelformat,
+                                                allocator,
+                                                logger,
+                                                job_seq,
+                                                engine_name,
+                                                telemetry);
+}
+
 typedef struct sixel_palette_quant_engine {
     char const *name;
     int quantize_model;
@@ -106,27 +212,25 @@ static sixel_palette_quant_engine_t const sixel_palette_quant_engines[] = {
         "kmeans-float32",
         SIXEL_QUANTIZE_MODEL_KMEANS,
         1,
-        (sixel_palette_quant_dispatch_fn)
-            sixel_palette_build_kmeans_float32,
+        sixel_palette_build_kmeans_float32_dispatch,
     },
     {
         "kmeans-legacy",
         SIXEL_QUANTIZE_MODEL_KMEANS,
         0,
-        (sixel_palette_quant_dispatch_fn)sixel_palette_build_kmeans,
+        sixel_palette_build_kmeans_dispatch,
     },
     {
         "heckbert-float32",
         SIXEL_QUANTIZE_MODEL_MEDIANCUT,
         1,
-        (sixel_palette_quant_dispatch_fn)
-            sixel_palette_build_heckbert_float32,
+        sixel_palette_build_heckbert_float32_dispatch,
     },
     {
         "heckbert-legacy",
         SIXEL_QUANTIZE_MODEL_MEDIANCUT,
         0,
-        (sixel_palette_quant_dispatch_fn)sixel_palette_build_heckbert,
+        sixel_palette_build_heckbert_dispatch,
     },
 };
 
