@@ -1206,13 +1206,12 @@ jobs:
           parallel-finished: true
 
   asan-ubsan-lsan:
-    needs: [core-meson]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
       matrix:
         include:
-          - label: Autotools-ubuntu-x86_64-clang-ASan
+          - label: Autotools-ubuntu-x86_64-clang-ASan-UBSan
             buildtool: autotools
             runner: ubuntu-latest
             setup_prefix: >-
@@ -1226,7 +1225,7 @@ jobs:
               clang
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-clang-ASan
+          - label: Meson-ubuntu-x86_64-clang-ASan-UBSan
             buildtool: meson
             runner: ubuntu-latest
             setup_prefix: >-
@@ -1243,7 +1242,7 @@ jobs:
               clang
             exec_type: bash
 
-          - label: Autotools-ubuntu-x86_64-clang-ASan-png-jpeg
+          - label: Autotools-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg
             buildtool: autotools
             runner: ubuntu-latest
             setup_prefix: >-
@@ -1260,7 +1259,7 @@ jobs:
               libjpeg-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-clang-ASan-png-jpeg
+          - label: Meson-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg
             buildtool: meson
             runner: ubuntu-latest
             setup_prefix: >-
@@ -1279,7 +1278,7 @@ jobs:
               libjpeg-dev
             exec_type: bash
 
-          - label: Autotools-ubuntu-x86_64-ASan-gdk-pixbuf2
+          - label: Autotools-ubuntu-x86_64-ASan-UBSan-gdk-pixbuf2
             buildtool: autotools
             runner: ubuntu-latest
             setup_prefix: >-
@@ -1295,7 +1294,7 @@ jobs:
               libgdk-pixbuf2.0-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-ASan-gdk-pixbuf2
+          - label: Meson-ubuntu-x86_64-ASan-UBSan-gdk-pixbuf2
             buildtool: meson
             runner: ubuntu-latest
             setup_prefix: >-
@@ -1314,7 +1313,7 @@ jobs:
               libgdk-pixbuf2.0-dev
             exec_type: bash
 
-          - label: Autotools-ubuntu-x86_64-ASan-GD-no-aborttrace
+          - label: Autotools-ubuntu-x86_64-ASan-UBSan-GD-no-aborttrace
             buildtool: autotools
             runner: ubuntu-latest
             setup_prefix: >-
@@ -1331,7 +1330,7 @@ jobs:
               libgd-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-ASan-GD-no-aborttrace
+          - label: Meson-ubuntu-x86_64-ASan-UBSan-GD-no-aborttrace
             buildtool: meson
             runner: ubuntu-latest
             setup_prefix: >-
@@ -1351,7 +1350,7 @@ jobs:
               libgd-dev
             exec_type: bash
 
-          - label: Autotools-macos-aarch64-ASan-gdk-pixbuf2
+          - label: Autotools-macos-aarch64-ASan-UBSan-gdk-pixbuf2
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
@@ -1366,7 +1365,7 @@ jobs:
               gdk-pixbuf
             exec_type: bash
 
-          - label: Meson-macos-aarch64-ASan-gdk-pixbuf2
+          - label: Meson-macos-aarch64-ASan-UBSan-gdk-pixbuf2
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
@@ -1384,7 +1383,7 @@ jobs:
               gdk-pixbuf
             exec_type: bash
 
-          - label: Autotools-macos-aarch64-ASan-GD
+          - label: Autotools-macos-aarch64-ASan-UBSan-GD
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
@@ -1399,7 +1398,7 @@ jobs:
               gd
             exec_type: bash
 
-          - label: Meson-macos-aarch64-ASan-GD
+          - label: Meson-macos-aarch64-ASan-UBSan-GD
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
@@ -1417,7 +1416,7 @@ jobs:
               gd
             exec_type: bash
 
-          - label: Autotools-msys2-clang64-ASan
+          - label: Autotools-msys2-clang64-ASan-UBSan
             buildtool: autotools
             runner: windows-latest
             msystem: CLANG64
@@ -1431,7 +1430,7 @@ jobs:
               mingw-w64-clang-x86_64-toolchain
             exec_type: msys2
 
-          - label: Meson-msys2-clang64-ASan
+          - label: Meson-msys2-clang64-ASan-UBSan
             buildtool: meson
             runner: windows-latest
             msystem: CLANG64
@@ -1483,8 +1482,79 @@ jobs:
 
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
+  msan:
+    needs: [asan-ubsan-lsan]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - label: Autotools-ubuntu-x86_64-clang-MSan
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+              CFLAGS="-fsanitize=memory -O1 -g -fno-omit-frame-pointer -fno-optimize-sibling-calls"
+              LDFLAGS="-fsanitize=memory"
+            extra_packages: >-
+              clang
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-clang-MSan
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Db_sanitize=memory
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+            extra_packages: >-
+              meson
+              clang
+            exec_type: bash
+
+    steps:
+      - name: Configure git EOL
+        if: ${{ matrix.exec_type == 'cygwin' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          label:          ${{ matrix.label }}
+          exec_type:      ${{ matrix.exec_type }}
+          buildtool:      ${{ matrix.buildtool }}
+
+          runner:         ${{ matrix.runner }}
+          cp_os:          ${{ matrix.cp_os || '' }}
+          cp_arch:        ${{ matrix.cp_arch || '' }}
+          cp_version:     ${{ matrix.cp_version || '' }}
+          version:        ${{ matrix.version || '' }}
+          msystem:        ${{ matrix.msystem || '' }}
+
+          extra_packages: ${{ matrix.extra_packages || '' }}
+          guest_packages: ${{ matrix.guest_packages || '' }}
+          vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
+          pip_packages:   ${{ matrix.pip_packages || '' }}
+
+          setup_prefix:   ${{ matrix.setup_prefix || '' }}
+          setup_options:  ${{ matrix.setup_options || '' }}
+          check_target:   ${{ matrix.check_target || '' }}
+          make:           ${{ matrix.make || '' }}
+
+          github_token:   ${{ secrets.GITHUB_TOKEN }}
+
   tsan:
-    needs: [core-meson]
+    needs: [asan-ubsan-lsan]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -1549,167 +1619,6 @@ jobs:
               meson
               gd
             exec_type: bash
-
-          - label: Autotools-msys2-clang64-TSan
-            buildtool: autotools
-            runner: windows-latest
-            msystem: CLANG64
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              CFLAGS="-fsanitize=thread -O1 -g -fno-omit-frame-pointer"
-              LDFLAGS="-fsanitize=thread"
-            extra_packages: >-
-              make
-              mingw-w64-clang-x86_64-toolchain
-            exec_type: msys2
-
-          - label: Meson-msys2-clang64-TSan
-            buildtool: meson
-            runner: windows-latest
-            msystem: CLANG64
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              --buildtype=debugoptimized
-              -Db_sanitize=thread
-              -Db_lundef=false
-              -Db_ndebug=false
-            extra_packages: >-
-              mingw-w64-clang-x86_64-meson
-              mingw-w64-clang-x86_64-toolchain
-            exec_type: msys2
-
-    steps:
-      - name: Configure git EOL
-        if: ${{ matrix.exec_type == 'cygwin' }}
-        shell: bash
-        run: git config --global core.autocrlf false
-
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-
-      - name: Run CI steps
-        uses: ./.github/actions/ci-steps
-        with:
-          label:          ${{ matrix.label }}
-          exec_type:      ${{ matrix.exec_type }}
-          buildtool:      ${{ matrix.buildtool }}
-
-          runner:         ${{ matrix.runner }}
-          cp_os:          ${{ matrix.cp_os || '' }}
-          cp_arch:        ${{ matrix.cp_arch || '' }}
-          cp_version:     ${{ matrix.cp_version || '' }}
-          version:        ${{ matrix.version || '' }}
-          msystem:        ${{ matrix.msystem || '' }}
-
-          extra_packages: ${{ matrix.extra_packages || '' }}
-          guest_packages: ${{ matrix.guest_packages || '' }}
-          vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
-          pip_packages:   ${{ matrix.pip_packages || '' }}
-
-          setup_prefix:   ${{ matrix.setup_prefix || '' }}
-          setup_options:  ${{ matrix.setup_options || '' }}
-          check_target:   ${{ matrix.check_target || '' }}
-          make:           ${{ matrix.make || '' }}
-
-          github_token:   ${{ secrets.GITHUB_TOKEN }}
-
-
-  msan:
-    needs: [core-meson]
-    name: ${{ matrix.label }}
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      matrix:
-        include:
-          - label: Autotools-ubuntu-x86_64-clang-MSan
-            buildtool: autotools
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-              CFLAGS="-fsanitize=memory -O1 -g -fno-omit-frame-pointer -fno-optimize-sibling-calls"
-              LDFLAGS="-fsanitize=memory"
-            extra_packages: >-
-              clang
-            exec_type: bash
-
-          - label: Meson-ubuntu-x86_64-clang-MSan
-            buildtool: meson
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              --buildtype=debugoptimized
-              -Db_sanitize=memory
-              -Db_lundef=false
-              -Db_ndebug=false
-              -Dpng=disabled
-              -Djpeg=disabled
-            extra_packages: >-
-              meson
-              clang
-            exec_type: bash
-
-          - label: Autotools-macos-aarch64-MSan
-            buildtool: autotools
-            runner: macos-latest
-            setup_prefix: >-
-              CC=clang
-              CFLAGS="-fsanitize=memory -O1 -g -fno-omit-frame-pointer"
-              LDFLAGS="-fsanitize=memory"
-            setup_options: >-
-              --without-png
-              --without-jpeg
-            exec_type: bash
-
-          - label: Meson-macos-aarch64-MSan
-            buildtool: meson
-            runner: macos-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              --buildtype=debugoptimized
-              -Db_sanitize=memory
-              -Db_lundef=false
-              -Db_ndebug=false
-              -Dpng=disabled
-              -Djpeg=disabled
-            extra_packages: >-
-              meson
-              gd
-            exec_type: bash
-
-          - label: Autotools-msys2-clang64-MSan
-            buildtool: autotools
-            runner: windows-latest
-            msystem: CLANG64
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              CFLAGS="-fsanitize=memory -O1 -g -fno-omit-frame-pointer"
-              LDFLAGS="-fsanitize=memory"
-            extra_packages: >-
-              make
-              mingw-w64-clang-x86_64-toolchain
-            exec_type: msys2
-
-          - label: Meson-msys2-clang64-MSan
-            buildtool: meson
-            runner: windows-latest
-            msystem: CLANG64
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              --buildtype=debugoptimized
-              -Db_sanitize=memory
-              -Db_lundef=false
-              -Db_ndebug=false
-            extra_packages: >-
-              mingw-w64-clang-x86_64-meson
-              mingw-w64-clang-x86_64-toolchain
-            exec_type: msys2
 
     steps:
       - name: Configure git EOL
