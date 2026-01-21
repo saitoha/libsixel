@@ -37,10 +37,8 @@ output_png="${output_dir}/${case_id}.png"
 require_file "${input_image}"
 
 if run_img2sixel -d sierra3 -y raster -W oklab \
-        -o "${output_sixel}" "${input_image}" \
-        2>>"${log_file}" && \
-        run_sixel2png -o "${output_png}" "${output_sixel}" \
-        2>>"${log_file}" && \
+        -o "${output_sixel}" "${input_image}" 2>>"${log_file}" && \
+        run_sixel2png -o "${output_png}" "${output_sixel}" 2>>"${log_file}" && \
         dither_lsqa_assert_quality "${input_image}" "${output_png}" \
         "${case_id}" "${artifact_dir}"; then
     pass 1 "fixed float32 Sierra-3 diffusion lsqa passed"

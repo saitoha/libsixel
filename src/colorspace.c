@@ -1093,16 +1093,28 @@ sixel_colorspace_pack_linear_bytes_avx(__m256 value)
 {
     __m256 scaled;
     __m256i wide;
-    __m256i packed16;
-    __m256i packed8;
+    __m128i wide_lo;
+    __m128i wide_hi;
+    __m128i packed16;
+    __m128i packed8;
+    __m256i packed;
 
     scaled = _mm256_mul_ps(value, _mm256_set1_ps(255.0f));
     wide = _mm256_cvtps_epi32(scaled);
 
-    packed16 = _mm256_packs_epi32(wide, wide);
-    packed8 = _mm256_packus_epi16(packed16, packed16);
+    /*
+     * Collapse two 128-bit lanes into a single 8-byte sequence so the low
+     * bytes map to r0..r7 in order. Using 128-bit packs avoids the AVX2
+     * lane duplication that would otherwise reorder the output.
+     */
+    wide_lo = _mm256_castsi256_si128(wide);
+    wide_hi = _mm256_extracti128_si256(wide, 1);
+    packed16 = _mm_packs_epi32(wide_lo, wide_hi);
+    packed8 = _mm_packus_epi16(packed16, packed16);
+    packed = _mm256_castsi128_si256(packed8);
+    packed = _mm256_inserti128_si256(packed, _mm_setzero_si128(), 1);
 
-    return packed8;
+    return packed;
 }
 
 static inline __m256i
