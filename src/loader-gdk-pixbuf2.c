@@ -274,9 +274,11 @@ load_with_gdkpixbuf(
         }
         if (gdk_pixbuf_get_has_alpha(pixbuf)) {
             frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
             depth = 4;
         } else {
             frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
             depth = 3;
         }
         p = gdk_pixbuf_get_pixels(pixbuf);
@@ -347,9 +349,11 @@ load_with_gdkpixbuf(
                 }
                 if (gdk_pixbuf_get_has_alpha(pixbuf)) {
                     frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+                    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
                     depth = 4;
                 } else {
                     frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+                    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
                     depth = 3;
                 }
                 p = gdk_pixbuf_get_pixels(pixbuf);
@@ -456,9 +460,11 @@ load_with_gdkpixbuf(
         }
         if (gdk_pixbuf_get_has_alpha(pixbuf)) {
             frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
             depth = 4;
         } else {
             frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
             depth = 3;
         }
         p = gdk_pixbuf_get_pixels(pixbuf);
@@ -525,9 +531,11 @@ load_with_gdkpixbuf(
                 }
                 if (gdk_pixbuf_get_has_alpha(pixbuf)) {
                     frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+                    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
                     depth = 4;
                 } else {
                     frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+                    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
                     depth = 3;
                 }
                 p = gdk_pixbuf_get_pixels(pixbuf);
@@ -641,4 +649,3 @@ end:
  */
 typedef int loader_gdkpixbuf2_disabled;
 #endif
-

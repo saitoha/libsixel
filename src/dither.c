@@ -1291,6 +1291,7 @@ sixel_dither_new(
 {
     SIXELSTATUS status = SIXEL_FALSE;
     size_t headsize;
+    size_t palette_bytes;
     int quality_mode;
     sixel_palette_t *palette;
 
@@ -1329,6 +1330,7 @@ sixel_dither_new(
         quality_mode = SIXEL_QUALITY_LOW;
     }
     headsize = sizeof(sixel_dither_t);
+    palette_bytes = 0U;
 
     *ppdither = (sixel_dither_t *)sixel_allocator_malloc(allocator, headsize);
     if (*ppdither == NULL) {
@@ -1400,6 +1402,14 @@ sixel_dither_new(
         sixel_allocator_free(allocator, *ppdither);
         *ppdither = NULL;
         goto end;
+    }
+    /*
+     * Ensure palette entries are fully initialized before any lookup
+     * path reads them under MSan instrumentation.
+     */
+    palette_bytes = palette->entries_size;
+    if (palette->entries != NULL && palette_bytes > 0U) {
+        memset(palette->entries, 0, palette_bytes);
     }
 
     status = SIXEL_OK;

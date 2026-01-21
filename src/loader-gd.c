@@ -194,6 +194,7 @@ load_with_gd(
     frame->width = gdImageSX(im);
     frame->height = gdImageSY(im);
     frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
     sixel_frame_set_pixels(frame,
                            sixel_allocator_malloc(
                                pchunk->allocator,
@@ -237,4 +238,3 @@ end:
  */
 typedef int loader_gd_disabled;
 #endif
-

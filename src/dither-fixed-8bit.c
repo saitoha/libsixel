@@ -575,12 +575,12 @@ sixel_dither_apply_fixed_impl(
                                        complexion);
             }
 
-                if (optimize_palette) {
-                    if (migration_map[color_index] == 0) {
-                        output_index = *ncolors;
-                        for (n = 0; n < depth; ++n) {
-                            new_palette[output_index * depth + n]
-                                = palette[color_index * depth + n];
+            if (optimize_palette) {
+                if (migration_map[color_index] == 0) {
+                    output_index = *ncolors;
+                    for (n = 0; n < depth; ++n) {
+                        new_palette[output_index * depth + n]
+                            = palette[color_index * depth + n];
                     }
                     if (palette_float != NULL
                             && new_palette_float != NULL
@@ -604,18 +604,16 @@ sixel_dither_apply_fixed_impl(
                 } else {
                     output_index = migration_map[color_index] - 1;
                 }
-                if (absolute_y >= output_start) {
-                    /*
-                     * Palette indices are bounded by SIXEL_PALETTE_MAX, which
-                     * fits in sixel_index_t (unsigned char).
-                     */
-                    result[pos] = (sixel_index_t)output_index;
-                }
             } else {
                 output_index = color_index;
-                if (absolute_y >= output_start) {
-                    result[pos] = (sixel_index_t)output_index;
-                }
+            }
+
+            if (absolute_y >= output_start) {
+                /*
+                 * Palette indices are bounded by SIXEL_PALETTE_MAX, which
+                 * fits in sixel_index_t (unsigned char).
+                 */
+                result[pos] = (sixel_index_t)output_index;
             }
 
             for (n = 0; n < depth; ++n) {
