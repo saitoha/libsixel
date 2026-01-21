@@ -557,6 +557,7 @@ load_with_builtin(
                 }
                 frame->ncolors = palette_colors;
                 frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
+                frame->colorspace = SIXEL_COLORSPACE_GAMMA;
                 sixel_frame_set_pixels(frame, pixels);
                 frame->loop_count = 1;
                 goto done;
@@ -624,6 +625,7 @@ load_with_builtin(
         case 3:
         case 4:
             frame->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
             break;
         default:
             nwrite = snprintf(message,

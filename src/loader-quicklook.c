@@ -277,6 +277,7 @@ load_with_quicklook(
     frame->width = (int)bounds.size.width;
     frame->height = (int)bounds.size.height;
     frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
     /*
      * QuickLook renders into a premultiplied RGBA buffer. Keep a four-byte
      * stride so the pixel format matches the bitmap context layout.
