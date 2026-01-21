@@ -175,6 +175,12 @@ sixel_frame_new(
     (*ppframe)->height = 0;
     (*ppframe)->ncolors = (-1);
     (*ppframe)->pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    /*
+     * Initialize colorspace metadata to match the default pixelformat so
+     * getters do not read uninitialized memory before initialization.
+     */
+    (*ppframe)->colorspace =
+        sixel_frame_colorspace_from_pixelformat((*ppframe)->pixelformat);
     (*ppframe)->delay = 0;
     (*ppframe)->frame_no = 0;
     (*ppframe)->loop_count = 0;
