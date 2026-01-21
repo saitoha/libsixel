@@ -1843,6 +1843,8 @@ scale_with_resampling_float32(
     double weight;
     double total;
     double offsets[8];
+    size_t tmp_bytes;
+    size_t dst_bytes;
     float *tmp;
 #if defined(SIXEL_USE_SSE2) || defined(SIXEL_USE_NEON)
     float vecbuf[4];
@@ -1871,12 +1873,19 @@ scale_with_resampling_float32(
     float32x4_t maxv_neon;
 #endif
 
-    tmp = (float *)sixel_allocator_malloc(
-        allocator,
-        (size_t)(dstw * srch * depth * (int)sizeof(float)));
+    tmp_bytes = (size_t)(dstw * srch * depth * (int)sizeof(float));
+    dst_bytes = (size_t)(dstw * dsth * depth * (int)sizeof(float));
+    tmp = (float *)sixel_allocator_malloc(allocator, tmp_bytes);
     if (tmp == NULL) {
         return;
     }
+    /*
+     * Initialize the intermediate and destination buffers so pixels without
+     * contributing samples still have deterministic values. This avoids
+     * propagating uninitialized floats into later normalization passes.
+     */
+    memset(tmp, 0, tmp_bytes);
+    memset(dst, 0, dst_bytes);
 
     simd_level = sixel_scale_simd_level();
 #if !defined(SIXEL_USE_AVX512) && !defined(SIXEL_USE_AVX2) && \
