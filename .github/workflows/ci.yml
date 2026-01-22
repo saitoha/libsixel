@@ -93,7 +93,7 @@ jobs:
 
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
-  coverage:
+  coverage-autotools:
     needs: [smoke]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
@@ -114,21 +114,6 @@ jobs:
               gcovr
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-static-coverage
-            buildtool: meson
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=gcc-14
-            setup_options: >-
-              -Db_coverage=true
-              -Db_staticpic=true
-              -Ddefault_library=static
-            extra_packages: >-
-              meson
-              gcc-14
-              gcovr
-            exec_type: bash
-
           - label: Autotools-ubuntu-x86_64-no-simd-coverage
             buildtool: autotools
             runner: ubuntu-latest
@@ -138,21 +123,6 @@ jobs:
               --enable-gcov
               --disable-simd
             extra_packages: >-
-              gcc-14
-            pip_packages: >-
-              gcovr
-            exec_type: bash
-
-          - label: Meson-ubuntu-x86_64-no-simd-coverage
-            buildtool: meson
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=gcc-14
-            setup_options: >-
-              -Db_coverage=true
-              -Dsimd=disabled
-            extra_packages: >-
-              meson
               gcc-14
             pip_packages: >-
               gcovr
@@ -172,38 +142,12 @@ jobs:
               gcovr
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-no-threads-coverage
-            buildtool: meson
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=gcc-14
-            setup_options: >-
-              -Db_coverage=true
-              -Dthreads=disabled
-            extra_packages: >-
-              gcc-14
-            pip_packages: >-
-              meson
-              gcovr
-            exec_type: bash
-
           - label: Autotools-macos-x86_64-coverage
             buildtool: autotools
             runner: macos-15
             setup_options: >-
               --enable-gcov
             extra_packages: >-
-              lcov
-            exec_type: bash
-
-          - label: Meson-macos-x86_64-unity-coverage
-            buildtool: meson
-            runner: macos-15
-            setup_options: >-
-              -Db_coverage=true
-              -Dunity=on
-            extra_packages: >-
-              meson
               lcov
             exec_type: bash
 
@@ -234,6 +178,120 @@ jobs:
               mingw-w64-x86_64-lcov
             exec_type: msys2
 
+          - label: Autotools-msys2-mingw64-no-threads-coverage
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW64
+            setup_options: >-
+              --disable-threads
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-x86_64-toolchain
+              mingw-w64-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-ucrt64-coverage
+            buildtool: autotools
+            runner: windows-latest
+            msystem: UCRT64
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-ucrt-x86_64-toolchain
+              mingw-w64-ucrt-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-clang64-coverage
+            buildtool: autotools
+            runner: windows-latest
+            msystem: CLANG64
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              mingw-w64-clang-x86_64-toolchain
+              mingw-w64-clang-x86_64-lcov
+            exec_type: msys2
+
+          - label: Autotools-msys2-msys-gcc-coverage
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MSYS
+            setup_options: >-
+              --enable-gcov
+            extra_packages: >-
+              make
+              gcc
+              lcov
+            exec_type: msys2
+
+  coverage-meson:
+    needs: [smoke]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - label: Meson-ubuntu-x86_64-static-coverage
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=gcc-14
+            setup_options: >-
+              -Db_coverage=true
+              -Db_staticpic=true
+              -Ddefault_library=static
+            extra_packages: >-
+              meson
+              gcc-14
+              gcovr
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-no-simd-coverage
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=gcc-14
+            setup_options: >-
+              -Db_coverage=true
+              -Dsimd=disabled
+            extra_packages: >-
+              meson
+              gcc-14
+            pip_packages: >-
+              gcovr
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-no-threads-coverage
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=gcc-14
+            setup_options: >-
+              -Db_coverage=true
+              -Dthreads=disabled
+            extra_packages: >-
+              gcc-14
+            pip_packages: >-
+              meson
+              gcovr
+            exec_type: bash
+
+          - label: Meson-macos-x86_64-unity-coverage
+            buildtool: meson
+            runner: macos-15
+            setup_options: >-
+              -Db_coverage=true
+              -Dunity=on
+            extra_packages: >-
+              meson
+              lcov
+            exec_type: bash
+
           - label: Meson-msys2-mingw64-no-simd-coverage
             buildtool: meson
             runner: windows-latest
@@ -245,19 +303,6 @@ jobs:
               CC=gcc
             extra_packages: >-
               mingw-w64-x86_64-meson
-              mingw-w64-x86_64-toolchain
-              mingw-w64-x86_64-lcov
-            exec_type: msys2
-
-          - label: Autotools-msys2-mingw64-no-threads-coverage
-            buildtool: autotools
-            runner: windows-latest
-            msystem: MINGW64
-            setup_options: >-
-              --disable-threads
-              --enable-gcov
-            extra_packages: >-
-              make
               mingw-w64-x86_64-toolchain
               mingw-w64-x86_64-lcov
             exec_type: msys2
@@ -275,18 +320,6 @@ jobs:
               mingw-w64-x86_64-meson
               mingw-w64-x86_64-toolchain
               mingw-w64-x86_64-lcov
-            exec_type: msys2
-
-          - label: Autotools-msys2-ucrt64-coverage
-            buildtool: autotools
-            runner: windows-latest
-            msystem: UCRT64
-            setup_options: >-
-              --enable-gcov
-            extra_packages: >-
-              make
-              mingw-w64-ucrt-x86_64-toolchain
-              mingw-w64-ucrt-x86_64-lcov
             exec_type: msys2
 
           - label: Meson-msys2-ucrt64-unity-coverage
@@ -319,20 +352,6 @@ jobs:
               mingw-w64-ucrt-x86_64-lcov
             exec_type: msys2
 
-          - label: Autotools-msys2-clang64-coverage
-            buildtool: autotools
-            runner: windows-latest
-            msystem: CLANG64
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              --enable-gcov
-            extra_packages: >-
-              make
-              mingw-w64-clang-x86_64-toolchain
-              mingw-w64-clang-x86_64-lcov
-            exec_type: msys2
-
           - label: Meson-msys2-clang64-coverage
             buildtool: meson
             runner: windows-latest
@@ -345,18 +364,6 @@ jobs:
               mingw-w64-clang-x86_64-meson
               mingw-w64-clang-x86_64-toolchain
               mingw-w64-clang-x86_64-lcov
-            exec_type: msys2
-
-          - label: Autotools-msys2-msys-gcc-coverage
-            buildtool: autotools
-            runner: windows-latest
-            msystem: MSYS
-            setup_options: >-
-              --enable-gcov
-            extra_packages: >-
-              make
-              gcc
-              lcov
             exec_type: msys2
 
           - label: Meson-msys2-msys-gcc-coverage
@@ -410,7 +417,7 @@ jobs:
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
   core-autotools:
-    needs: [coverage]
+    needs: [coverage-autotools]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -808,7 +815,7 @@ jobs:
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
   core-meson:
-    needs: [core-autotools]
+    needs: [coverage-meson]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -1657,7 +1664,7 @@ jobs:
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
   emscripten:
-    needs: [core-meson]
+    needs: [core-autotools]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -1756,7 +1763,7 @@ jobs:
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
   cosmopolitan:
-    needs: [core-meson]
+    needs: [core-autotools]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -1905,7 +1912,7 @@ jobs:
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
   winecheck:
-    needs: [core-meson]
+    needs: [coveralls]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -1997,7 +2004,7 @@ jobs:
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
   simd:
-    needs: [core-meson]
+    needs: [smoke]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -2092,7 +2099,7 @@ jobs:
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
   platforms:
-    needs: [core-meson]
+    needs: [coveralls]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
