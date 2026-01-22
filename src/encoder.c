@@ -257,6 +257,23 @@ static SIXELSTATUS sixel_encoder_filter_plan_run(
     sixel_allocator_t *allocator,
     sixel_logger_t *logger,
     sixel_assessment_t *assessment);
+static void sixel_debug_print_palette(sixel_dither_t *dither);
+static SIXELSTATUS sixel_encoder_output_without_macro(
+    sixel_frame_t *frame,
+    sixel_dither_t *dither,
+    sixel_output_t *output,
+    sixel_encoder_t *encoder);
+static SIXELSTATUS sixel_encoder_output_with_macro(
+    sixel_frame_t *frame,
+    sixel_dither_t *dither,
+    sixel_output_t *output,
+    sixel_encoder_t *encoder);
+static SIXELSTATUS sixel_encoder_emit_iso2022_chars(
+    sixel_encoder_t *encoder,
+    sixel_frame_t *frame);
+static SIXELSTATUS sixel_encoder_emit_drcsmmv2_chars(
+    sixel_encoder_t *encoder,
+    sixel_frame_t *frame);
 
 #if defined(_WIN32)
 # if !defined(UNICODE)
@@ -3527,6 +3544,651 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
             planner->pipeline_encode_threads);
 }
 
+typedef struct sixel_encode_dag_context {
+    sixel_encoder_t *encoder;
+    sixel_frame_t *frame;
+    sixel_output_t *output;
+    SIXELSTATUS status;
+    sixel_dither_t *dither;
+    int height;
+    int is_animation;
+    int nwrite;
+    int drcs_is_96cs_param;
+    char drcs_designate_str[4];
+    char buf[256];
+    sixel_write_function fn_write;
+    sixel_write_function write_callback;
+    sixel_write_function scroll_callback;
+    void *write_priv;
+    void *scroll_priv;
+    sixel_encoder_output_probe_t probe;
+    sixel_encoder_output_probe_t scroll_probe;
+    sixel_assessment_t *assessment;
+    int target_pixelformat;
+    sixel_palette_async_job_t palette_job;
+    sixel_dither_t *async_dither;
+    int palette_job_started;
+    int palette_job_initialized;
+    int palette_ready;
+    sixel_encoding_planner_t *planner;
+    int clip_active;
+    sixel_filter_plan_t pre_plan;
+    sixel_filter_plan_t post_plan;
+    sixel_filter_resize_config_t resize_config;
+    sixel_filter_clip_config_t clip_config;
+    sixel_filter_colors_config_t colors_config;
+    sixel_filter_dither_config_t dither_config;
+    int current_pixelformat;
+    int current_colorspace;
+} sixel_encode_dag_context_t;
+
+/*
+ * Simple DAG scheduler for the encode pipeline.
+ *
+ * Nodes declare dependencies with a bitmask; the runner executes ready nodes
+ * in dependency order and allows palette work to overlap with the pre-plan.
+ */
+typedef SIXELSTATUS (*sixel_encode_dag_run_fn)(
+    sixel_encode_dag_context_t *context);
+
+typedef struct sixel_encode_dag_node {
+    char const *label;
+    unsigned int deps;
+    unsigned int done;
+    sixel_encode_dag_run_fn run;
+} sixel_encode_dag_node_t;
+
+enum sixel_encode_dag_node_id {
+    SIXEL_DAG_NODE_LOAD = 0,
+    SIXEL_DAG_NODE_PALETTE_LAUNCH,
+    SIXEL_DAG_NODE_PREPLAN,
+    SIXEL_DAG_NODE_PALETTE_COLLECT,
+    SIXEL_DAG_NODE_DITHER_PLAN,
+    SIXEL_DAG_NODE_OUTPUT,
+    SIXEL_DAG_NODE_COUNT
+};
+
+static SIXELSTATUS
+sixel_encode_dag_run_nodes(sixel_encode_dag_context_t *context,
+                           sixel_encode_dag_node_t *nodes,
+                           int node_count)
+{
+    int index;
+    int remaining;
+    int progressed;
+    unsigned int completed;
+    unsigned int satisfied;
+    SIXELSTATUS status;
+
+    if (context == NULL || nodes == NULL || node_count <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    completed = 0u;
+    remaining = node_count;
+    status = SIXEL_OK;
+
+    while (remaining > 0) {
+        progressed = 0;
+        for (index = 0; index < node_count; ++index) {
+            if (nodes[index].done != 0) {
+                continue;
+            }
+            satisfied = (completed & nodes[index].deps);
+            if (satisfied != nodes[index].deps) {
+                continue;
+            }
+            status = nodes[index].run(context);
+            if (SIXEL_FAILED(status)) {
+                return status;
+            }
+            nodes[index].done = 1;
+            completed |= (1u << index);
+            progressed = 1;
+            --remaining;
+        }
+        if (progressed == 0) {
+            return SIXEL_LOGIC_ERROR;
+        }
+    }
+
+    return status;
+}
+
+static SIXELSTATUS
+sixel_encode_dag_node_load(sixel_encode_dag_context_t *context)
+{
+    if (context == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encode_dag_node_palette_launch(sixel_encode_dag_context_t *context)
+{
+    SIXELSTATUS status;
+
+    if (context == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (context->palette_ready == 0) {
+        return SIXEL_OK;
+    }
+
+    status = sixel_encoder_palette_job_init(&context->palette_job,
+                                            context->encoder->allocator);
+    if (SIXEL_SUCCEEDED(status)) {
+        context->palette_job_initialized = 1;
+        status = sixel_encoder_palette_job_launch(&context->palette_job,
+                                                  context->frame,
+                                                  context->target_pixelformat,
+                                                  context->encoder);
+        if (SIXEL_SUCCEEDED(status)) {
+            context->palette_job_started = 1;
+        } else {
+            sixel_encoder_palette_job_dispose(&context->palette_job);
+            context->palette_job_initialized = 0;
+        }
+    }
+
+    return status;
+}
+
+static SIXELSTATUS
+sixel_encode_dag_node_preplan(sixel_encode_dag_context_t *context)
+{
+    SIXELSTATUS status;
+    int height;
+
+    if (context == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    context->clip_config.clip_x = context->encoder->clipx;
+    context->clip_config.clip_y = context->encoder->clipy;
+    context->clip_config.clip_width = context->encoder->clipwidth;
+    context->clip_config.clip_height = context->encoder->clipheight;
+
+    context->resize_config.pixel_width = context->encoder->pixelwidth;
+    context->resize_config.pixel_height = context->encoder->pixelheight;
+    context->resize_config.percent_width = context->encoder->percentwidth;
+    context->resize_config.percent_height = context->encoder->percentheight;
+    context->resize_config.method_for_resampling =
+        context->encoder->method_for_resampling;
+    context->resize_config.prefer_float32 = context->encoder->prefer_float32;
+    if (context->planner != NULL) {
+        context->resize_config.planner_scale_pixelformat =
+            context->planner->scale_pixelformat;
+    } else {
+        context->resize_config.planner_scale_pixelformat =
+            sixel_encoder_pixelformat_for_colorspace(
+                context->encoder->working_colorspace,
+                context->encoder->prefer_float32);
+    }
+
+    context->colors_config.target_pixelformat = context->target_pixelformat;
+
+    height = sixel_frame_get_height(context->frame);
+    if (height < 0) {
+        height = 0;
+    }
+
+    if (context->encoder->clipfirst != 0 && context->clip_active != 0) {
+        status = sixel_encoder_filter_plan_append(
+            &context->pre_plan,
+            SIXEL_FILTER_KIND_CLIP,
+            &context->clip_config,
+            &context->frame,
+            context->current_pixelformat,
+            context->current_colorspace,
+            context->current_pixelformat,
+            context->current_colorspace,
+            height);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+
+    if (context->planner != NULL
+        && context->planner->colorspace_before_scale != 0) {
+        context->colors_config.target_pixelformat =
+            context->planner->scale_input_pixelformat;
+        status = sixel_encoder_filter_plan_append(
+            &context->pre_plan,
+            SIXEL_FILTER_KIND_COLORS,
+            &context->colors_config,
+            &context->frame,
+            context->current_pixelformat,
+            context->current_colorspace,
+            context->planner->scale_input_pixelformat,
+            SIXEL_COLORSPACE_LINEAR,
+            height);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        context->current_pixelformat =
+            context->planner->scale_input_pixelformat;
+        context->current_colorspace = SIXEL_COLORSPACE_LINEAR;
+    }
+
+    if (context->planner != NULL && context->planner->scale_active != 0) {
+        status = sixel_encoder_filter_plan_append(
+            &context->pre_plan,
+            SIXEL_FILTER_KIND_RESIZE,
+            &context->resize_config,
+            &context->frame,
+            context->current_pixelformat,
+            context->current_colorspace,
+            context->planner->scale_pixelformat,
+            context->current_colorspace,
+            height);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        context->current_pixelformat = context->planner->scale_pixelformat;
+    }
+
+    if (context->encoder->clipfirst == 0 && context->clip_active != 0) {
+        status = sixel_encoder_filter_plan_append(
+            &context->pre_plan,
+            SIXEL_FILTER_KIND_CLIP,
+            &context->clip_config,
+            &context->frame,
+            context->current_pixelformat,
+            context->current_colorspace,
+            context->current_pixelformat,
+            context->current_colorspace,
+            height);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+
+    if (context->planner != NULL
+        && context->planner->colorspace_after_scale != 0) {
+        context->colors_config.target_pixelformat =
+            context->planner->working_pixelformat;
+        status = sixel_encoder_filter_plan_append(
+            &context->pre_plan,
+            SIXEL_FILTER_KIND_COLORS,
+            &context->colors_config,
+            &context->frame,
+            context->current_pixelformat,
+            context->current_colorspace,
+            context->planner->working_pixelformat,
+            context->planner->working_colorspace_effective,
+            height);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        context->current_pixelformat = context->planner->working_pixelformat;
+        context->current_colorspace =
+            context->planner->working_colorspace_effective;
+    }
+
+    status = sixel_encoder_filter_plan_run(&context->pre_plan,
+                                           context->encoder->allocator,
+                                           context->encoder->logger,
+                                           context->assessment);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    context->current_pixelformat =
+        sixel_frame_get_pixelformat(context->frame);
+    context->current_colorspace = sixel_frame_get_colorspace(context->frame);
+
+    if (context->assessment != NULL) {
+        sixel_assessment_stage_transition(
+            context->assessment,
+            SIXEL_ASSESSMENT_STAGE_PALETTE_HISTOGRAM);
+    }
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
+{
+    SIXELSTATUS status;
+
+    if (context == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (context->palette_job_started != 0) {
+        status = sixel_encoder_palette_job_wait(&context->palette_job,
+                                                &context->async_dither);
+        sixel_encoder_palette_job_dispose(&context->palette_job);
+        context->palette_job_initialized = 0;
+        if (SIXEL_SUCCEEDED(status) && context->async_dither != NULL) {
+            context->dither = context->async_dither;
+        } else {
+            context->palette_job_started = 0;
+            context->async_dither = NULL;
+        }
+    }
+
+    if (context->palette_job_started == 0) {
+        status = sixel_encoder_apply_palette_filter(context->encoder,
+                                                    &context->frame,
+                                                    1,
+                                                    &context->dither);
+        if (status != SIXEL_OK) {
+            context->dither = NULL;
+            return status;
+        }
+        if (context->palette_job_initialized != 0) {
+            sixel_encoder_palette_job_dispose(&context->palette_job);
+            context->palette_job_initialized = 0;
+        }
+    }
+
+    if (context->encoder->dither_cache != NULL) {
+        context->encoder->dither_cache = context->dither;
+        sixel_dither_ref(context->dither);
+    }
+
+    if (context->encoder->fdrcs) {
+        status = sixel_encoder_ensure_cell_size(context->encoder);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+        if (context->encoder->fuse_macro
+            || context->encoder->macro_number >= 0) {
+            sixel_helper_set_additional_message(
+                "drcs option cannot be used together with macro output.");
+            return SIXEL_BAD_ARGUMENT;
+        }
+    }
+
+    if (context->encoder->verbose) {
+        if ((sixel_frame_get_pixelformat(context->frame)
+            & SIXEL_FORMATTYPE_PALETTE)) {
+            sixel_debug_print_palette(context->dither);
+        }
+    }
+
+    sixel_dither_set_diffusion_type(context->dither,
+                                    context->encoder->method_for_diffuse);
+    sixel_dither_set_diffusion_scan(context->dither,
+                                    context->encoder->method_for_scan);
+    sixel_dither_set_diffusion_carry(context->dither,
+                                     context->encoder->method_for_carry);
+
+    if (context->encoder->complexion > 1) {
+        sixel_dither_set_complexion_score(context->dither,
+                                          context->encoder->complexion);
+    }
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encode_dag_node_dither_plan(sixel_encode_dag_context_t *context)
+{
+    SIXELSTATUS status;
+    int height;
+
+    if (context == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    context->dither_config.dither = context->dither;
+    height = sixel_frame_get_height(context->frame);
+    if (height < 0) {
+        height = 0;
+    }
+
+    status = sixel_encoder_filter_plan_append(
+        &context->post_plan,
+        SIXEL_FILTER_KIND_DITHER,
+        &context->dither_config,
+        &context->frame,
+        context->current_pixelformat,
+        context->current_colorspace,
+        context->current_pixelformat,
+        context->current_colorspace,
+        height);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    status = sixel_encoder_filter_plan_run(&context->post_plan,
+                                           context->encoder->allocator,
+                                           context->encoder->logger,
+                                           context->assessment);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    return SIXEL_OK;
+}
+
+static SIXELSTATUS
+sixel_encode_dag_node_output(sixel_encode_dag_context_t *context)
+{
+    SIXELSTATUS status;
+    int height;
+    int drcs_is_96cs_param;
+    int nwrite;
+
+    if (context == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = SIXEL_OK;
+
+    if (context->output) {
+        sixel_output_ref(context->output);
+        if (context->encoder->assessment_observer != NULL) {
+            context->probe.encoder = context->encoder;
+            context->probe.base_write = context->fn_write;
+            context->probe.base_priv = &context->encoder->outfd;
+            context->write_callback = sixel_write_with_probe;
+            context->write_priv = &context->probe;
+        }
+    } else {
+        if (context->encoder->fuse_macro
+            || context->encoder->macro_number >= 0) {
+            context->fn_write = sixel_hex_write_callback;
+        } else {
+            context->fn_write = sixel_write_callback;
+        }
+        context->write_callback = context->fn_write;
+        context->write_priv = &context->encoder->outfd;
+        if (context->encoder->assessment_observer != NULL) {
+            context->probe.encoder = context->encoder;
+            context->probe.base_write = context->fn_write;
+            context->probe.base_priv = &context->encoder->outfd;
+            context->write_callback = sixel_write_with_probe;
+            context->write_priv = &context->probe;
+        }
+        status = sixel_output_new(&context->output,
+                                  context->write_callback,
+                                  context->write_priv,
+                                  context->encoder->allocator);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+    }
+
+    if (context->encoder->fdrcs) {
+        sixel_output_set_skip_dcs_envelope(context->output, 1);
+        sixel_output_set_skip_header(context->output, 1);
+    }
+
+    sixel_output_set_8bit_availability(context->output,
+                                       context->encoder->f8bit);
+    sixel_output_set_gri_arg_limit(context->output,
+                                   context->encoder->has_gri_arg_limit);
+    sixel_output_set_palette_type(context->output,
+                                  context->encoder->palette_type);
+    sixel_output_set_penetrate_multiplexer(
+        context->output, context->encoder->penetrate_multiplexer);
+    sixel_output_set_encode_policy(context->output,
+                                   context->encoder->encode_policy);
+    sixel_output_set_ormode(context->output, context->encoder->ormode);
+
+    if (sixel_frame_get_multiframe(context->frame)
+        && !context->encoder->fstatic) {
+        if (sixel_frame_get_loop_no(context->frame) != 0
+            || sixel_frame_get_frame_no(context->frame) != 0) {
+            context->is_animation = 1;
+        }
+        height = sixel_frame_get_height(context->frame);
+        if (context->encoder->assessment_observer != NULL) {
+            context->scroll_probe.encoder = context->encoder;
+            context->scroll_probe.base_write = sixel_write_callback;
+            context->scroll_probe.base_priv = &context->encoder->outfd;
+            context->scroll_callback = sixel_write_with_probe;
+            context->scroll_priv = &context->scroll_probe;
+        } else {
+            context->scroll_callback = sixel_write_callback;
+            context->scroll_priv = &context->encoder->outfd;
+        }
+        (void)sixel_tty_scroll(context->scroll_callback,
+                               context->scroll_priv,
+                               context->encoder->outfd,
+                               height,
+                               context->is_animation);
+    }
+
+    if (context->encoder->cancel_flag && *context->encoder->cancel_flag) {
+        return SIXEL_INTERRUPTED;
+    }
+
+    if (context->encoder->fdrcs) {
+        if (context->encoder->drcs_mmv == 0) {
+            drcs_is_96cs_param =
+                (context->encoder->drcs_charset_no > 63u) ? 1 : 0;
+            context->drcs_designate_str[1] =
+                (char)(((context->encoder->drcs_charset_no - 1u) % 63u)
+                       + 0x40u);
+            context->drcs_designate_str[2] = 0x00;
+        } else if (context->encoder->drcs_mmv == 1) {
+            drcs_is_96cs_param = 0;
+            context->drcs_designate_str[1] =
+                (char)(context->encoder->drcs_charset_no + 0x3fu);
+            context->drcs_designate_str[2] = 0x00;
+        } else if (context->encoder->drcs_mmv == 2) {
+            drcs_is_96cs_param =
+                (context->encoder->drcs_charset_no > 79u) ? 1 : 0;
+            context->drcs_designate_str[1] =
+                (char)(((context->encoder->drcs_charset_no - 1u) % 79u)
+                       + 0x30u);
+            context->drcs_designate_str[2] = 0x00;
+        } else {
+            drcs_is_96cs_param = 0;
+            context->drcs_designate_str[1] =
+                (char)(((context->encoder->drcs_charset_no - 1u) / 63u)
+                       + 0x20u);
+            context->drcs_designate_str[2] =
+                (char)(((context->encoder->drcs_charset_no - 1u) % 63u)
+                       + 0x40u);
+            context->drcs_designate_str[3] = 0x00;
+        }
+        context->drcs_is_96cs_param = drcs_is_96cs_param;
+        nwrite = sixel_compat_snprintf(
+            context->buf,
+            sizeof(context->buf),
+            "%s%sh%s1;0;0;%d;1;3;%d;%d{%s",
+            (context->encoder->drcs_mmv > 0) ? (
+                context->encoder->f8bit ? "\233?8800": "\033[?8800"
+            ): "",
+            (context->encoder->drcs_mmv >= 3) ? (
+                context->encoder->f8bit ? ";8801": ";8801"
+            ): "",
+            context->encoder->f8bit ? "\220": "\033P",
+            context->encoder->cell_width,
+            context->encoder->cell_height,
+            drcs_is_96cs_param,
+            context->drcs_designate_str);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "sixel_encoder_encode_frame: command format failed.");
+            return status;
+        }
+        nwrite = context->write_callback(context->buf, nwrite,
+                                         context->write_priv);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "sixel_encoder_encode_frame: write() failed.");
+            return status;
+        }
+    }
+
+    if (context->encoder->fuse_macro) {
+        status = sixel_encoder_output_with_macro(context->frame,
+                                                 context->dither,
+                                                 context->output,
+                                                 context->encoder);
+    } else if (context->encoder->macro_number >= 0) {
+        status = sixel_encoder_output_with_macro(context->frame,
+                                                 context->dither,
+                                                 context->output,
+                                                 context->encoder);
+    } else {
+        status = sixel_encoder_output_without_macro(context->frame,
+                                                    context->dither,
+                                                    context->output,
+                                                    context->encoder);
+    }
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    if (context->encoder->cancel_flag && *context->encoder->cancel_flag) {
+        nwrite = context->write_callback("\x18\033\\", 3,
+                                         context->write_priv);
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "sixel_encoder_encode_frame: write_callback() failed.");
+            return status;
+        }
+        return SIXEL_INTERRUPTED;
+    }
+
+    if (context->encoder->fdrcs) {
+        if (context->encoder->f8bit) {
+            nwrite = context->write_callback("\234", 1,
+                                             context->write_priv);
+        } else {
+            nwrite = context->write_callback("\033\\", 2,
+                                             context->write_priv);
+        }
+        if (nwrite < 0) {
+            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            sixel_helper_set_additional_message(
+                "sixel_encoder_encode_frame: write_callback() failed.");
+            return status;
+        }
+
+        if (context->encoder->tile_outfd >= 0) {
+            if (context->encoder->drcs_mmv == 0) {
+                status = sixel_encoder_emit_iso2022_chars(context->encoder,
+                                                          context->frame);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+            } else {
+                status = sixel_encoder_emit_drcsmmv2_chars(context->encoder,
+                                                          context->frame);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+            }
+        }
+    }
+
+    return SIXEL_OK;
+}
+
 
 static SIXELSTATUS
 sixel_encoder_copy_samples(sixel_encoder_t *encoder,
@@ -5038,64 +5700,56 @@ sixel_encoder_encode_frame(
     sixel_output_t  *output)
 {
     SIXELSTATUS status = SIXEL_FALSE;
-    sixel_dither_t *dither = NULL;
-    int height;
-    int is_animation = 0;
-    int nwrite;
-    int drcs_is_96cs_param;
-    char drcs_designate_str[4] = { 0x20, 0x20, 0x40, 0x00 };
-    char buf[256];
-    sixel_write_function fn_write;
-    sixel_write_function write_callback;
-    sixel_write_function scroll_callback;
-    void *write_priv;
-    void *scroll_priv;
-    sixel_encoder_output_probe_t probe;
-    sixel_encoder_output_probe_t scroll_probe;
-    sixel_assessment_t *assessment;
-    int target_pixelformat;
-    sixel_palette_async_job_t palette_job;
-    sixel_dither_t *async_dither;
-    int palette_job_started;
-    int palette_job_initialized;
-    int palette_ready;
+    sixel_encode_dag_context_t context;
+    sixel_encode_dag_node_t nodes[SIXEL_DAG_NODE_COUNT];
     sixel_encoding_planner_t *planner;
+    int target_pixelformat;
+    int palette_ready;
     int clip_active;
-    sixel_filter_plan_t pre_plan;
-    sixel_filter_plan_t post_plan;
-    sixel_filter_resize_config_t resize_config;
-    sixel_filter_clip_config_t clip_config;
-    sixel_filter_colors_config_t colors_config;
-    sixel_filter_dither_config_t dither_config;
     int current_pixelformat;
     int current_colorspace;
 
-    fn_write = sixel_write_callback;
-    write_callback = sixel_write_callback;
-    scroll_callback = sixel_write_callback;
-    write_priv = &encoder->outfd;
-    scroll_priv = &encoder->outfd;
-    probe.encoder = NULL;
-    probe.base_write = NULL;
-    probe.base_priv = NULL;
-    scroll_probe.encoder = NULL;
-    scroll_probe.base_write = NULL;
-    scroll_probe.base_priv = NULL;
-    assessment = NULL;
-    async_dither = NULL;
-    palette_job_started = 0;
-    palette_job_initialized = 0;
-    palette_ready = 0;
-    planner = NULL;
-    clip_active = 0;
-    sixel_encoder_filter_plan_init(&pre_plan);
-    sixel_encoder_filter_plan_init(&post_plan);
-    memset(&resize_config, 0, sizeof(resize_config));
-    memset(&clip_config, 0, sizeof(clip_config));
-    memset(&colors_config, 0, sizeof(colors_config));
-    memset(&dither_config, 0, sizeof(dither_config));
-    current_pixelformat = SIXEL_PIXELFORMAT_RGB888;
-    current_colorspace = SIXEL_COLORSPACE_GAMMA;
+    memset(&context, 0, sizeof(context));
+    context.encoder = encoder;
+    context.frame = frame;
+    context.output = output;
+    context.status = SIXEL_FALSE;
+    context.dither = NULL;
+    context.height = 0;
+    context.is_animation = 0;
+    context.nwrite = 0;
+    context.drcs_is_96cs_param = 0;
+    context.drcs_designate_str[0] = 0x20;
+    context.drcs_designate_str[1] = 0x20;
+    context.drcs_designate_str[2] = 0x40;
+    context.drcs_designate_str[3] = 0x00;
+    context.fn_write = sixel_write_callback;
+    context.write_callback = sixel_write_callback;
+    context.scroll_callback = sixel_write_callback;
+    context.write_priv = &encoder->outfd;
+    context.scroll_priv = &encoder->outfd;
+    context.probe.encoder = NULL;
+    context.probe.base_write = NULL;
+    context.probe.base_priv = NULL;
+    context.scroll_probe.encoder = NULL;
+    context.scroll_probe.base_write = NULL;
+    context.scroll_probe.base_priv = NULL;
+    context.assessment = NULL;
+    context.async_dither = NULL;
+    context.palette_job_started = 0;
+    context.palette_job_initialized = 0;
+    context.palette_ready = 0;
+    context.planner = NULL;
+    context.clip_active = 0;
+    sixel_encoder_filter_plan_init(&context.pre_plan);
+    sixel_encoder_filter_plan_init(&context.post_plan);
+    memset(&context.resize_config, 0, sizeof(context.resize_config));
+    memset(&context.clip_config, 0, sizeof(context.clip_config));
+    memset(&context.colors_config, 0, sizeof(context.colors_config));
+    memset(&context.dither_config, 0, sizeof(context.dither_config));
+    context.current_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    context.current_colorspace = SIXEL_COLORSPACE_GAMMA;
+
     if (encoder != NULL) {
         /*
          * Hold a reference while the planner and filters manipulate encoder
@@ -5106,20 +5760,21 @@ sixel_encoder_encode_frame(
         sixel_encoder_ref(encoder);
     }
     if (encoder != NULL) {
-        assessment = encoder->assessment_observer;
-        planner = &encoder->planner;
+        context.assessment = encoder->assessment_observer;
+        context.planner = &encoder->planner;
     }
+    planner = context.planner;
     if (planner != NULL) {
         sixel_encoding_planner_init(planner);
     }
-    if (assessment != NULL) {
+    if (context.assessment != NULL) {
         if (encoder->clipfirst) {
             sixel_assessment_stage_transition(
-                assessment,
+                context.assessment,
                 SIXEL_ASSESSMENT_STAGE_CROP);
         } else {
             sixel_assessment_stage_transition(
-                assessment,
+                context.assessment,
                 SIXEL_ASSESSMENT_STAGE_SCALE);
         }
     }
@@ -5130,9 +5785,7 @@ sixel_encoder_encode_frame(
      * work to do on the main path.
      */
     if (planner != NULL) {
-        sixel_encoding_planner_plan(planner,
-                                    encoder,
-                                    frame);
+        sixel_encoding_planner_plan(planner, encoder, frame);
         target_pixelformat = planner->working_pixelformat;
     } else {
         target_pixelformat = sixel_encoder_pixelformat_for_colorspace(
@@ -5143,9 +5796,7 @@ sixel_encoder_encode_frame(
     current_pixelformat = sixel_frame_get_pixelformat(frame);
     current_colorspace = sixel_frame_get_colorspace(frame);
 
-    palette_ready = sixel_encoding_palette_job_ready(encoder,
-                                                     planner,
-                                                     frame);
+    palette_ready = sixel_encoding_palette_job_ready(encoder, planner, frame);
     clip_active = (planner != NULL) ? planner->clip_active
         : (encoder->clipwidth > 0 && encoder->clipheight > 0);
     if (encoder->verbose) {
@@ -5155,463 +5806,83 @@ sixel_encoder_encode_frame(
                                     palette_ready);
     }
 
-    /*
-     * Launch a palette worker as soon as the frame is loaded. The worker uses
-     * a clipped, down-sampled copy so palette build overlaps
-     * resize/clip/colorspace conversion on the main thread.
-     */
-    if (palette_ready != 0) {
-        status = sixel_encoder_palette_job_init(&palette_job,
-                                                encoder->allocator);
-        if (SIXEL_SUCCEEDED(status)) {
-            palette_job_initialized = 1;
-            status = sixel_encoder_palette_job_launch(
-                &palette_job,
-                frame,
-                target_pixelformat,
-                encoder);
-            if (SIXEL_SUCCEEDED(status)) {
-                palette_job_started = 1;
-            } else {
-                sixel_encoder_palette_job_dispose(&palette_job);
-                palette_job_initialized = 0;
-            }
-        }
-    }
+    context.target_pixelformat = target_pixelformat;
+    context.palette_ready = palette_ready;
+    context.clip_active = clip_active;
+    context.current_pixelformat = current_pixelformat;
+    context.current_colorspace = current_colorspace;
 
     /*
-     * Build a filter plan for the geometry and colorspace path so the planner
-     * can describe the DAG once and the encoder executes filters in order.
+     * DAG layout:
+     *   load -> palette_launch -> palette_collect -> dither -> output
+     *     \\-> preplan --------^
      */
-    clip_config.clip_x = encoder->clipx;
-    clip_config.clip_y = encoder->clipy;
-    clip_config.clip_width = encoder->clipwidth;
-    clip_config.clip_height = encoder->clipheight;
+    nodes[SIXEL_DAG_NODE_LOAD].label = "load";
+    nodes[SIXEL_DAG_NODE_LOAD].deps = 0u;
+    nodes[SIXEL_DAG_NODE_LOAD].done = 0u;
+    nodes[SIXEL_DAG_NODE_LOAD].run = sixel_encode_dag_node_load;
 
-    resize_config.pixel_width = encoder->pixelwidth;
-    resize_config.pixel_height = encoder->pixelheight;
-    resize_config.percent_width = encoder->percentwidth;
-    resize_config.percent_height = encoder->percentheight;
-    resize_config.method_for_resampling = encoder->method_for_resampling;
-    resize_config.prefer_float32 = encoder->prefer_float32;
-    if (planner != NULL) {
-        resize_config.planner_scale_pixelformat = planner->scale_pixelformat;
-    } else {
-        resize_config.planner_scale_pixelformat =
-            sixel_encoder_pixelformat_for_colorspace(
-                encoder->working_colorspace,
-                encoder->prefer_float32);
-    }
+    nodes[SIXEL_DAG_NODE_PALETTE_LAUNCH].label = "palette_launch";
+    nodes[SIXEL_DAG_NODE_PALETTE_LAUNCH].deps =
+        (1u << SIXEL_DAG_NODE_LOAD);
+    nodes[SIXEL_DAG_NODE_PALETTE_LAUNCH].done = 0u;
+    nodes[SIXEL_DAG_NODE_PALETTE_LAUNCH].run =
+        sixel_encode_dag_node_palette_launch;
 
-    colors_config.target_pixelformat = target_pixelformat;
+    nodes[SIXEL_DAG_NODE_PREPLAN].label = "preplan";
+    nodes[SIXEL_DAG_NODE_PREPLAN].deps =
+        (1u << SIXEL_DAG_NODE_LOAD);
+    nodes[SIXEL_DAG_NODE_PREPLAN].done = 0u;
+    nodes[SIXEL_DAG_NODE_PREPLAN].run = sixel_encode_dag_node_preplan;
 
-    height = sixel_frame_get_height(frame);
-    if (height < 0) {
-        height = 0;
-    }
+    nodes[SIXEL_DAG_NODE_PALETTE_COLLECT].label = "palette_collect";
+    nodes[SIXEL_DAG_NODE_PALETTE_COLLECT].deps =
+        (1u << SIXEL_DAG_NODE_PALETTE_LAUNCH)
+        | (1u << SIXEL_DAG_NODE_PREPLAN);
+    nodes[SIXEL_DAG_NODE_PALETTE_COLLECT].done = 0u;
+    nodes[SIXEL_DAG_NODE_PALETTE_COLLECT].run =
+        sixel_encode_dag_node_palette_collect;
 
-    if (encoder->clipfirst != 0 && clip_active != 0) {
-        status = sixel_encoder_filter_plan_append(&pre_plan,
-                                                  SIXEL_FILTER_KIND_CLIP,
-                                                  &clip_config,
-                                                  &frame,
-                                                  current_pixelformat,
-                                                  current_colorspace,
-                                                  current_pixelformat,
-                                                  current_colorspace,
-                                                  height);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
+    nodes[SIXEL_DAG_NODE_DITHER_PLAN].label = "dither";
+    nodes[SIXEL_DAG_NODE_DITHER_PLAN].deps =
+        (1u << SIXEL_DAG_NODE_PALETTE_COLLECT);
+    nodes[SIXEL_DAG_NODE_DITHER_PLAN].done = 0u;
+    nodes[SIXEL_DAG_NODE_DITHER_PLAN].run = sixel_encode_dag_node_dither_plan;
 
-    if (planner != NULL && planner->colorspace_before_scale != 0) {
-        colors_config.target_pixelformat = planner->scale_input_pixelformat;
-        status = sixel_encoder_filter_plan_append(
-            &pre_plan,
-            SIXEL_FILTER_KIND_COLORS,
-            &colors_config,
-            &frame,
-            current_pixelformat,
-            current_colorspace,
-            planner->scale_input_pixelformat,
-            SIXEL_COLORSPACE_LINEAR,
-            height);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        current_pixelformat = planner->scale_input_pixelformat;
-        current_colorspace = SIXEL_COLORSPACE_LINEAR;
-    }
+    nodes[SIXEL_DAG_NODE_OUTPUT].label = "output";
+    nodes[SIXEL_DAG_NODE_OUTPUT].deps =
+        (1u << SIXEL_DAG_NODE_DITHER_PLAN);
+    nodes[SIXEL_DAG_NODE_OUTPUT].done = 0u;
+    nodes[SIXEL_DAG_NODE_OUTPUT].run = sixel_encode_dag_node_output;
 
-    if (planner != NULL && planner->scale_active != 0) {
-        status = sixel_encoder_filter_plan_append(&pre_plan,
-                                                  SIXEL_FILTER_KIND_RESIZE,
-                                                  &resize_config,
-                                                  &frame,
-                                                  current_pixelformat,
-                                                  current_colorspace,
-                                                  planner->scale_pixelformat,
-                                                  current_colorspace,
-                                                  height);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        current_pixelformat = planner->scale_pixelformat;
-    }
-
-    if (encoder->clipfirst == 0 && clip_active != 0) {
-        status = sixel_encoder_filter_plan_append(&pre_plan,
-                                                  SIXEL_FILTER_KIND_CLIP,
-                                                  &clip_config,
-                                                  &frame,
-                                                  current_pixelformat,
-                                                  current_colorspace,
-                                                  current_pixelformat,
-                                                  current_colorspace,
-                                                  height);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
-
-    if (planner != NULL && planner->colorspace_after_scale != 0) {
-        colors_config.target_pixelformat = planner->working_pixelformat;
-        status = sixel_encoder_filter_plan_append(
-            &pre_plan,
-            SIXEL_FILTER_KIND_COLORS,
-            &colors_config,
-            &frame,
-            current_pixelformat,
-            current_colorspace,
-            planner->working_pixelformat,
-            planner->working_colorspace_effective,
-            height);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        current_pixelformat = planner->working_pixelformat;
-        current_colorspace = planner->working_colorspace_effective;
-    }
-
-    status = sixel_encoder_filter_plan_run(&pre_plan,
-                                           encoder->allocator,
-                                           encoder->logger,
-                                           assessment);
+    status = sixel_encode_dag_run_nodes(&context,
+                                        nodes,
+                                        SIXEL_DAG_NODE_COUNT);
     if (SIXEL_FAILED(status)) {
         goto end;
-    }
-
-    current_pixelformat = sixel_frame_get_pixelformat(frame);
-    current_colorspace = sixel_frame_get_colorspace(frame);
-
-    if (assessment != NULL) {
-        sixel_assessment_stage_transition(
-            assessment,
-            SIXEL_ASSESSMENT_STAGE_PALETTE_HISTOGRAM);
-    }
-
-    if (palette_job_started != 0) {
-        status = sixel_encoder_palette_job_wait(&palette_job, &async_dither);
-        sixel_encoder_palette_job_dispose(&palette_job);
-        palette_job_initialized = 0;
-        if (SIXEL_SUCCEEDED(status) && async_dither != NULL) {
-            dither = async_dither;
-        } else {
-            palette_job_started = 0;
-            async_dither = NULL;
-        }
-    }
-
-    if (palette_job_started == 0) {
-        status = sixel_encoder_apply_palette_filter(encoder,
-                                                    &frame,
-                                                    1,
-                                                    &dither);
-        if (status != SIXEL_OK) {
-            dither = NULL;
-            goto end;
-        }
-        if (palette_job_initialized != 0) {
-            sixel_encoder_palette_job_dispose(&palette_job);
-            palette_job_initialized = 0;
-        }
-    }
-
-    if (encoder->dither_cache != NULL) {
-        encoder->dither_cache = dither;
-        sixel_dither_ref(dither);
-    }
-
-    if (encoder->fdrcs) {
-        status = sixel_encoder_ensure_cell_size(encoder);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-        if (encoder->fuse_macro || encoder->macro_number >= 0) {
-            sixel_helper_set_additional_message(
-                "drcs option cannot be used together with macro output.");
-            status = SIXEL_BAD_ARGUMENT;
-            goto end;
-        }
-    }
-
-    /* evaluate -v option: print palette */
-    if (encoder->verbose) {
-        if ((sixel_frame_get_pixelformat(frame) & SIXEL_FORMATTYPE_PALETTE)) {
-            sixel_debug_print_palette(dither);
-        }
-    }
-
-    /* evaluate -d option: set method for diffusion */
-    sixel_dither_set_diffusion_type(dither, encoder->method_for_diffuse);
-    sixel_dither_set_diffusion_scan(dither, encoder->method_for_scan);
-    sixel_dither_set_diffusion_carry(dither, encoder->method_for_carry);
-
-    /* evaluate -C option: set complexion score */
-    if (encoder->complexion > 1) {
-        sixel_dither_set_complexion_score(dither, encoder->complexion);
-    }
-
-    /*
-     * Run post-geometry filters through the shared plan so dither preparation
-     * and progress collection stay aligned with the earlier DAG description.
-     */
-    dither_config.dither = dither;
-    height = sixel_frame_get_height(frame);
-    if (height < 0) {
-        height = 0;
-    }
-
-    status = sixel_encoder_filter_plan_append(&post_plan,
-                                              SIXEL_FILTER_KIND_DITHER,
-                                              &dither_config,
-                                              &frame,
-                                              current_pixelformat,
-                                              current_colorspace,
-                                              current_pixelformat,
-                                              current_colorspace,
-                                              height);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
-    status = sixel_encoder_filter_plan_run(&post_plan,
-                                           encoder->allocator,
-                                           encoder->logger,
-                                           assessment);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
-    if (output) {
-        sixel_output_ref(output);
-        if (encoder->assessment_observer != NULL) {
-            probe.encoder = encoder;
-            probe.base_write = fn_write;
-            probe.base_priv = &encoder->outfd;
-            write_callback = sixel_write_with_probe;
-            write_priv = &probe;
-        }
-    } else {
-        /* create output context */
-        if (encoder->fuse_macro || encoder->macro_number >= 0) {
-            /* -u or -n option */
-            fn_write = sixel_hex_write_callback;
-        } else {
-            fn_write = sixel_write_callback;
-        }
-        write_callback = fn_write;
-        write_priv = &encoder->outfd;
-        if (encoder->assessment_observer != NULL) {
-            probe.encoder = encoder;
-            probe.base_write = fn_write;
-            probe.base_priv = &encoder->outfd;
-            write_callback = sixel_write_with_probe;
-            write_priv = &probe;
-        }
-        status = sixel_output_new(&output,
-                                  write_callback,
-                                  write_priv,
-                                  encoder->allocator);
-        if (SIXEL_FAILED(status)) {
-            goto end;
-        }
-    }
-
-    if (encoder->fdrcs) {
-        sixel_output_set_skip_dcs_envelope(output, 1);
-        sixel_output_set_skip_header(output, 1);
-    }
-
-    sixel_output_set_8bit_availability(output, encoder->f8bit);
-    sixel_output_set_gri_arg_limit(output, encoder->has_gri_arg_limit);
-    sixel_output_set_palette_type(output, encoder->palette_type);
-    sixel_output_set_penetrate_multiplexer(
-        output, encoder->penetrate_multiplexer);
-    sixel_output_set_encode_policy(output, encoder->encode_policy);
-    sixel_output_set_ormode(output, encoder->ormode);
-
-    if (sixel_frame_get_multiframe(frame) && !encoder->fstatic) {
-        if (sixel_frame_get_loop_no(frame) != 0 || sixel_frame_get_frame_no(frame) != 0) {
-            is_animation = 1;
-        }
-        height = sixel_frame_get_height(frame);
-        if (encoder->assessment_observer != NULL) {
-            scroll_probe.encoder = encoder;
-            scroll_probe.base_write = sixel_write_callback;
-            scroll_probe.base_priv = &encoder->outfd;
-            scroll_callback = sixel_write_with_probe;
-            scroll_priv = &scroll_probe;
-        } else {
-            scroll_callback = sixel_write_callback;
-            scroll_priv = &encoder->outfd;
-        }
-        (void) sixel_tty_scroll(scroll_callback,
-                                scroll_priv,
-                                encoder->outfd,
-                                height,
-                                is_animation);
-    }
-
-    if (encoder->cancel_flag && *encoder->cancel_flag) {
-        status = SIXEL_INTERRUPTED;
-        goto end;
-    }
-
-    if (encoder->fdrcs) {  /* -@ option */
-        if (encoder->drcs_mmv == 0) {
-            drcs_is_96cs_param =
-                (encoder->drcs_charset_no > 63u) ? 1 : 0;
-            drcs_designate_str[1] =
-                (char)(((encoder->drcs_charset_no - 1u) % 63u) + 0x40u);
-            drcs_designate_str[2] = 0x00;
-        } else if (encoder->drcs_mmv == 1) {
-            drcs_is_96cs_param = 0;
-            drcs_designate_str[1] =
-                (char)(encoder->drcs_charset_no + 0x3fu);
-            drcs_designate_str[2] = 0x00;
-        } else if (encoder->drcs_mmv == 2) {
-            drcs_is_96cs_param =
-                (encoder->drcs_charset_no > 79u) ? 1 : 0;
-            drcs_designate_str[1] =
-                (char)(((encoder->drcs_charset_no - 1u) % 79u) + 0x30u);
-            drcs_designate_str[2] = 0x00;
-        } else {
-            drcs_is_96cs_param = 0;
-            drcs_designate_str[1] =
-                (char)(((encoder->drcs_charset_no - 1u) / 63u) + 0x20u);
-            drcs_designate_str[2] =
-                (char)(((encoder->drcs_charset_no - 1u) % 63u) + 0x40u);
-            drcs_designate_str[3] = 0x00;
-        }
-        nwrite = sixel_compat_snprintf(
-            buf,
-            sizeof(buf),
-            "%s%sh%s1;0;0;%d;1;3;%d;%d{%s",
-            (encoder->drcs_mmv > 0) ? (
-                encoder->f8bit ? "\233?8800": "\033[?8800"
-            ): "",
-            (encoder->drcs_mmv >= 3) ? (
-                encoder->f8bit ? ";8801": ";8801"
-            ): "",
-            encoder->f8bit ? "\220": "\033P",
-            encoder->cell_width,
-            encoder->cell_height,
-            drcs_is_96cs_param,
-            drcs_designate_str);
-        if (nwrite < 0) {
-            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-            sixel_helper_set_additional_message(
-                "sixel_encoder_encode_frame: command format failed.");
-            goto end;
-        }
-        nwrite = write_callback(buf, nwrite, write_priv);
-        if (nwrite < 0) {
-            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-            sixel_helper_set_additional_message(
-                "sixel_encoder_encode_frame: write() failed.");
-            goto end;
-        }
-    }
-
-    /* output sixel: junction of multi-frame processing strategy */
-    if (encoder->fuse_macro) {  /* -u option */
-        /* use macro */
-        status = sixel_encoder_output_with_macro(frame, dither, output, encoder);
-    } else if (encoder->macro_number >= 0) { /* -n option */
-        /* use macro */
-        status = sixel_encoder_output_with_macro(frame, dither, output, encoder);
-    } else {
-        /* do not use macro */
-        status = sixel_encoder_output_without_macro(frame, dither, output, encoder);
-    }
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
-    if (encoder->cancel_flag && *encoder->cancel_flag) {
-        nwrite = write_callback("\x18\033\\", 3, write_priv);
-        if (nwrite < 0) {
-            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-            sixel_helper_set_additional_message(
-                "sixel_encoder_encode_frame: write_callback() failed.");
-            goto end;
-        }
-        status = SIXEL_INTERRUPTED;
-    }
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
-    if (encoder->fdrcs) {  /* -@ option */
-        if (encoder->f8bit) {
-            nwrite = write_callback("\234", 1, write_priv);
-        } else {
-            nwrite = write_callback("\033\\", 2, write_priv);
-        }
-        if (nwrite < 0) {
-            status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-            sixel_helper_set_additional_message(
-                "sixel_encoder_encode_frame: write_callback() failed.");
-            goto end;
-        }
-
-        if (encoder->tile_outfd >= 0) {
-            if (encoder->drcs_mmv == 0) {
-                status = sixel_encoder_emit_iso2022_chars(encoder, frame);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
-            } else {
-                status = sixel_encoder_emit_drcsmmv2_chars(encoder, frame);
-                if (SIXEL_FAILED(status)) {
-                    goto end;
-                }
-            }
-        }
     }
 
 
 end:
-    sixel_encoder_filter_plan_teardown(&pre_plan);
-    sixel_encoder_filter_plan_teardown(&post_plan);
-    if (palette_job_initialized != 0) {
-        if (palette_job_started != 0 && async_dither == NULL) {
-            (void)sixel_encoder_palette_job_wait(&palette_job,
-                                                 &async_dither);
+    sixel_encoder_filter_plan_teardown(&context.pre_plan);
+    sixel_encoder_filter_plan_teardown(&context.post_plan);
+    if (context.palette_job_initialized != 0) {
+        if (context.palette_job_started != 0
+            && context.async_dither == NULL) {
+            (void)sixel_encoder_palette_job_wait(&context.palette_job,
+                                                 &context.async_dither);
         }
-        if (async_dither != NULL && dither == NULL) {
-            sixel_dither_unref(async_dither);
-            async_dither = NULL;
+        if (context.async_dither != NULL && context.dither == NULL) {
+            sixel_dither_unref(context.async_dither);
+            context.async_dither = NULL;
         }
-        sixel_encoder_palette_job_dispose(&palette_job);
+        sixel_encoder_palette_job_dispose(&context.palette_job);
     }
-    if (output) {
-        sixel_output_unref(output);
+    if (context.output) {
+        sixel_output_unref(context.output);
     }
-    if (dither) {
-        sixel_dither_unref(dither);
+    if (context.dither) {
+        sixel_dither_unref(context.dither);
     }
     if (encoder) {
         sixel_encoder_unref(encoder);
