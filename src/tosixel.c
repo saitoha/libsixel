@@ -4779,6 +4779,8 @@ next:
     dirty = 0;
     mptr = marks;
     memset(palstate, 0, sizeof(palstate));
+    /* Clear palette hit counters for each pass to avoid stale data. */
+    memset(palhitcount, 0, sizeof(palhitcount));
     y = mod_y = 0;
 
     while (1) {

@@ -1459,6 +1459,14 @@ main(int argc, char *argv[])
     int input_count = 0;
     int assessment_enabled = 0;
 
+    n = 0;
+    completion_cli_result = 0;
+    completion_exit_status = 0;
+#if HAVE_GETOPT_LONG
+    long_opt = 0;
+    option_index = 0;
+#endif  /* HAVE_GETOPT_LONG */
+
     sixel_tty_init_output_device(STDERR_FILENO);
     sixel_aborttrace_install_if_unhandled();
 
