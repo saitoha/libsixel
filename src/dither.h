@@ -27,6 +27,7 @@
 
 #include <sixel.h>
 
+#include "sixel_atomic.h"
 #include "palette.h"
 
 typedef void (*sixel_dither_pipeline_row_fn)(void *priv, int row_index);
@@ -35,7 +36,7 @@ struct sixel_logger;
 
 /* dither context object */
 struct sixel_dither {
-    unsigned int ref;               /* reference counter */
+    sixel_atomic_u32_t ref;         /* reference counter */
     sixel_palette_t *palette;       /* palette definition */
     int reqcolors;                  /* requested colors */
     int force_palette;              /* keep palette size when non-zero */

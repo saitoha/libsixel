@@ -27,9 +27,11 @@
 
 #include <sixel.h>
 
+#include "sixel_atomic.h"
+
 /* frame object */
 struct sixel_frame {
-    unsigned int ref;               /* reference counter */
+    sixel_atomic_u32_t ref;         /* reference counter */
     union {
         unsigned char *u8ptr;       /* loaded pixel data (byte) */
         float *f32ptr;              /* loaded pixel data (float32) */

@@ -59,6 +59,7 @@
 #include "clipboard.h"
 #include "compat_stub.h"
 #include "options.h"
+#include "sixel_atomic.h"
 
 static void
 decoder_clipboard_select_format(char *dest,
@@ -380,7 +381,7 @@ sixel_decoder_new(
         goto end;
     }
 
-    (*ppdecoder)->ref          = 1;
+    (*ppdecoder)->ref          = 1U;
     (*ppdecoder)->output       = strdup_with_allocator("-", allocator);
     (*ppdecoder)->input        = strdup_with_allocator("-", allocator);
     (*ppdecoder)->allocator    = allocator;
@@ -444,21 +445,30 @@ sixel_decoder_destroy(sixel_decoder_t *decoder)
 }
 
 
-/* increase reference count of decoder object (thread-unsafe) */
+/* increase reference count of decoder object (thread-safe) */
 SIXELAPI void
 sixel_decoder_ref(sixel_decoder_t *decoder)
 {
-    /* TODO: be thread safe */
-    ++decoder->ref;
+    if (decoder == NULL) {
+        return;
+    }
+
+    (void)sixel_atomic_fetch_add_u32(&decoder->ref, 1U);
 }
 
 
-/* decrease reference count of decoder object (thread-unsafe) */
+/* decrease reference count of decoder object (thread-safe) */
 SIXELAPI void
 sixel_decoder_unref(sixel_decoder_t *decoder)
 {
-    /* TODO: be thread safe */
-    if (decoder != NULL && --decoder->ref == 0) {
+    unsigned int previous;
+
+    if (decoder == NULL) {
+        return;
+    }
+
+    previous = sixel_atomic_fetch_sub_u32(&decoder->ref, 1U);
+    if (previous == 1U) {
         sixel_decoder_destroy(decoder);
     }
 }

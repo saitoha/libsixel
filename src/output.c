@@ -38,6 +38,7 @@
 
 #include <sixel.h>
 #include "output.h"
+#include "sixel_atomic.h"
 
 
 /*
@@ -84,7 +85,7 @@ sixel_output_new(
         goto end;
     }
 
-    (*output)->ref = 1;
+    (*output)->ref = 1U;
     (*output)->has_8bit_control = 0;
     (*output)->has_sdm_glitch = 0;
     (*output)->has_gri_arg_limit = 1;
@@ -146,28 +147,31 @@ sixel_output_destroy(sixel_output_t *output)
 }
 
 
-/* increase reference count of output context object (thread-unsafe) */
+/* increase reference count of output context object (thread-safe) */
 SIXELAPI void
 sixel_output_ref(sixel_output_t *output)
 {
-    /* TODO: be thread-safe */
-    ++output->ref;
+    if (output == NULL) {
+        return;
+    }
+
+    (void)sixel_atomic_fetch_add_u32(&output->ref, 1U);
 }
 
 
-/* decrease reference count of output context object (thread-unsafe) */
+/* decrease reference count of output context object (thread-safe) */
 SIXELAPI void
 sixel_output_unref(sixel_output_t *output)
 {
-    /* TODO: be thread-safe */
-    if (output) {
-#if 0
-        assert(output->ref > 0);
-#endif
-        output->ref--;
-        if (output->ref == 0) {
-            sixel_output_destroy(output);
-        }
+    unsigned int previous;
+
+    if (output == NULL) {
+        return;
+    }
+
+    previous = sixel_atomic_fetch_sub_u32(&output->ref, 1U);
+    if (previous == 1U) {
+        sixel_output_destroy(output);
     }
 }
 

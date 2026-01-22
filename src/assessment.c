@@ -83,6 +83,7 @@
 #include "encoder.h"
 #include "compat_stub.h"
 #include "timer.h"
+#include "sixel_atomic.h"
 
 #if defined(_WIN32)
 #include <io.h>
@@ -4635,7 +4636,7 @@ sixel_assessment_new(sixel_assessment_t **ppassessment,
         return SIXEL_BAD_ALLOCATION;
     }
 
-    assessment->refcount = 1;
+    assessment->refcount = 1U;
     assessment->allocator = allocator;
     assessment->enable_lpips = 1;
     assessment->results_ready = 0;
@@ -4678,17 +4679,19 @@ sixel_assessment_ref(sixel_assessment_t *assessment)
     if (assessment == NULL) {
         return;
     }
-    assessment->refcount += 1;
+    (void)sixel_atomic_fetch_add_u32(&assessment->refcount, 1U);
 }
 
 void
 sixel_assessment_unref(sixel_assessment_t *assessment)
 {
+    unsigned int previous;
+
     if (assessment == NULL) {
         return;
     }
-    assessment->refcount -= 1;
-    if (assessment->refcount == 0) {
+    previous = sixel_atomic_fetch_sub_u32(&assessment->refcount, 1U);
+    if (previous == 1U) {
         sixel_allocator_t *allocator;
 
         allocator = assessment->allocator;
