@@ -115,6 +115,7 @@
 #include "assessment.h"
 #include "encoder.h"
 #include "logger.h"
+#include "sixel_atomic.h"
 
 /*
  * Internal loader state carried across backends.  The fields mirror the
@@ -122,7 +123,7 @@
  * ownership centralized while implementations move into per-backend files.
  */
 struct sixel_loader {
-    int ref;
+    sixel_atomic_u32_t ref;
     int fstatic;
     int fuse_palette;
     int reqcolors;
@@ -983,7 +984,7 @@ sixel_loader_new(
         goto end;
     }
 
-    loader->ref = 1;
+    loader->ref = 1U;
     loader->fstatic = 0;
     loader->fuse_palette = 0;
     loader->reqcolors = SIXEL_PALETTE_MAX;
@@ -1029,7 +1030,7 @@ sixel_loader_ref(
         return;
     }
 
-    ++loader->ref;
+    (void)sixel_atomic_fetch_add_u32(&loader->ref, 1U);
 }
 
 SIXELAPI void
@@ -1037,12 +1038,14 @@ sixel_loader_unref(
     sixel_loader_t /* in */ *loader)
 {
     sixel_allocator_t *allocator;
+    unsigned int previous;
 
     if (loader == NULL) {
         return;
     }
 
-    if (--loader->ref == 0) {
+    previous = sixel_atomic_fetch_sub_u32(&loader->ref, 1U);
+    if (previous == 1U) {
         allocator = loader->allocator;
         sixel_logger_close(&loader->logger);
         sixel_allocator_free(allocator, loader->loader_order);

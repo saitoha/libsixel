@@ -27,9 +27,11 @@
 
 #include <sixel.h>
 
+#include "sixel_atomic.h"
+
 /* encode settings object */
 struct sixel_decoder {
-    unsigned int ref;
+    sixel_atomic_u32_t ref;
     char *input;
     char *output;
     int dequantize_method;
