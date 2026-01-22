@@ -1365,7 +1365,9 @@ sixel_decode_raw(
         /* memory access range should be 0 <= 255 */
         alloc_size = SIXEL_PALETTE_MAX_DECODER;
     }
-    *palette = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(alloc_size * 3));
+    *palette = (unsigned char *)sixel_allocator_malloc(
+        allocator,
+        (size_t)(alloc_size * 3));
     if (palette == NULL) {
         sixel_allocator_free(allocator, image.pixels.p);
         sixel_helper_set_additional_message(
@@ -1373,7 +1375,11 @@ sixel_decode_raw(
         status = SIXEL_BAD_ALLOCATION;
         goto error;
     }
-    for (n = 0; n < *ncolors; ++n) {
+    /*
+     * Copy the full palette table so default entries remain initialized.
+     * This keeps unused slots valid when the image uses fewer colors.
+     */
+    for (n = 0; n < alloc_size; ++n) {
         (*palette)[n * 3 + 0] = image.palette[n] >> 16 & 0xff;
         (*palette)[n * 3 + 1] = image.palette[n] >> 8 & 0xff;
         (*palette)[n * 3 + 2] = image.palette[n] & 0xff;
@@ -1449,7 +1455,9 @@ sixel_decode_wide(
         /* memory access range should be 0 <= 255 */
         alloc_size = SIXEL_PALETTE_MAX_DECODER;
     }
-    *palette = (unsigned char *)sixel_allocator_malloc(allocator, (size_t)(alloc_size * 3));
+    *palette = (unsigned char *)sixel_allocator_malloc(
+        allocator,
+        (size_t)(alloc_size * 3));
     if (palette == NULL) {
         sixel_allocator_free(allocator, image.pixels.p);
         sixel_helper_set_additional_message(
@@ -1457,7 +1465,11 @@ sixel_decode_wide(
         status = SIXEL_BAD_ALLOCATION;
         goto error;
     }
-    for (n = 0; n < *ncolors; ++n) {
+    /*
+     * Copy the full palette table so default entries remain initialized.
+     * This keeps unused slots valid when the image uses fewer colors.
+     */
+    for (n = 0; n < alloc_size; ++n) {
         (*palette)[n * 3 + 0] = image.palette[n] >> 16 & 0xff;
         (*palette)[n * 3 + 1] = image.palette[n] >> 8 & 0xff;
         (*palette)[n * 3 + 2] = image.palette[n] & 0xff;
