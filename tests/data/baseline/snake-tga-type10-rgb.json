@@ -1,6 +1,6 @@
 {
   "quality": {
-    "MS-SSIM": 0.989800,
+    "MS-SSIM": 0.989000,
     "HighFreqRatio_out": 0.025643,
     "HighFreqRatio_ref": 0.014503,
     "HighFreqRatio_delta": 0.011140,
@@ -24,7 +24,7 @@
     "Δ Chroma_mean": 2.094172,
     "Δ E00_mean": 2.827259,
     "GMSD": 0.051118,
-    "PSNR_Y": 34.940000,
+    "PSNR_Y": 34.900000,
     "LPIPS(alex)": null
   }
 }
