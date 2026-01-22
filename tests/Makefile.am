@@ -538,6 +538,14 @@ BASELINE_JSON = data/baseline/grayscale.json \
        data/baseline/quarter_square.json \
        data/baseline/rgb.json \
        data/baseline/rgba.json \
+       data/baseline/snake-tga-type1-pal4.json \
+       data/baseline/snake-tga-type1-pal8.json \
+       data/baseline/snake-tga-type2-rgb.json \
+       data/baseline/snake-tga-type3-gray.json \
+       data/baseline/snake-tga-type9-pal4.json \
+       data/baseline/snake-tga-type9-pal8.json \
+       data/baseline/snake-tga-type10-rgb.json \
+       data/baseline/snake-tga-type11-gray.json \
        data/baseline/svga_landscape.json \
        data/baseline/tiny_square.json
 
@@ -545,6 +553,14 @@ INPUT_FORMAT_FILES = data/inputs/formats/grayscale.jpg \
        data/inputs/formats/palette.png \
        data/inputs/formats/rgb.png \
        data/inputs/formats/rgba.png \
+       data/inputs/formats/snake-tga-type1-pal4.tga \
+       data/inputs/formats/snake-tga-type1-pal8.tga \
+       data/inputs/formats/snake-tga-type2-rgb.tga \
+       data/inputs/formats/snake-tga-type3-gray.tga \
+       data/inputs/formats/snake-tga-type9-pal4.tga \
+       data/inputs/formats/snake-tga-type9-pal8.tga \
+       data/inputs/formats/snake-tga-type10-rgb.tga \
+       data/inputs/formats/snake-tga-type11-gray.tga \
        data/inputs/formats/stbi_minimal.hdr \
        data/inputs/formats/stbi_minimal.psd \
        data/inputs/formats/stbi_minimal.pic \
