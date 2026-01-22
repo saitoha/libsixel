@@ -318,12 +318,16 @@ chunk_is_pnm(sixel_chunk_t const *chunk)
 }
 
 /*
- * Convert PNG palette entries into RGB triplets while resolving tRNS alpha.
- * This matches the libpng backend by pre-blending against the background
- * color so PAL8 output stays opaque.
+ * Convert palette entries into RGB triplets while resolving alpha.
+ *
+ * Notes:
+ * - RGB/RGBA palettes keep channel order as-is.
+ * - Grayscale palettes (1 component) are expanded to RGB.
+ * - RGBA entries are pre-blended against the background color so PAL8
+ *   output stays opaque and matches the libpng backend.
  */
 static SIXELSTATUS
-convert_png_palette(
+convert_palette_to_rgb(
     unsigned char **ppalette_rgb,
     unsigned char *palette,
     int palette_colors,
@@ -337,6 +341,8 @@ convert_png_palette(
     int bg_r;
     int bg_g;
     int bg_b;
+    unsigned char gray;
+    int alpha;
 
     status = SIXEL_FALSE;
     rgb_palette = NULL;
@@ -344,11 +350,14 @@ convert_png_palette(
     bg_r = 0;
     bg_g = 0;
     bg_b = 0;
+    gray = 0;
+    alpha = 0;
 
     if (ppalette_rgb == NULL || palette == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    if (palette_colors <= 0 || (palette_comp != 3 && palette_comp != 4)) {
+    if (palette_colors <= 0 ||
+        (palette_comp != 1 && palette_comp != 3 && palette_comp != 4)) {
         return SIXEL_BAD_INPUT;
     }
 
@@ -356,7 +365,7 @@ convert_png_palette(
         sixel_allocator_malloc(allocator, (size_t)palette_colors * 3);
     if (rgb_palette == NULL) {
         sixel_helper_set_additional_message(
-            "convert_png_palette: sixel_allocator_malloc() failed.");
+            "convert_palette_to_rgb: sixel_allocator_malloc() failed.");
         return SIXEL_BAD_ALLOCATION;
     }
 
@@ -368,7 +377,7 @@ convert_png_palette(
 
     for (i = 0; i < palette_colors; ++i) {
         if (palette_comp == 4) {
-            int alpha = palette[i * 4 + 3];
+            alpha = palette[i * 4 + 3];
             /* Blend: out = ((1-a) * bg + a * fg) / 255. */
             rgb_palette[i * 3 + 0] =
                 (unsigned char)(((255 - alpha) * bg_r
@@ -379,10 +388,15 @@ convert_png_palette(
             rgb_palette[i * 3 + 2] =
                 (unsigned char)(((255 - alpha) * bg_b
                                  + alpha * palette[i * 4 + 2]) / 255);
-        } else {
+        } else if (palette_comp == 3) {
             rgb_palette[i * 3 + 0] = palette[i * 3 + 0];
             rgb_palette[i * 3 + 1] = palette[i * 3 + 1];
             rgb_palette[i * 3 + 2] = palette[i * 3 + 2];
+        } else {
+            gray = palette[i];
+            rgb_palette[i * 3 + 0] = gray;
+            rgb_palette[i * 3 + 1] = gray;
+            rgb_palette[i * 3 + 2] = gray;
         }
     }
 
@@ -530,12 +544,12 @@ load_with_builtin(
                                             &palette_colors,
                                             &ri);
             if (pixels != NULL && palette != NULL) {
-                status = convert_png_palette(&frame->palette,
-                                             palette,
-                                             palette_colors,
-                                             palette_comp,
-                                             bgcolor,
-                                             pchunk->allocator);
+                status = convert_palette_to_rgb(&frame->palette,
+                                                palette,
+                                                palette_colors,
+                                                palette_comp,
+                                                bgcolor,
+                                                pchunk->allocator);
                 if (SIXEL_FAILED(status)) {
                     stbi_free(palette);
                     sixel_allocator_free(pchunk->allocator, pixels);
@@ -549,6 +563,45 @@ load_with_builtin(
             }
             pixels = NULL;
             palette = NULL;
+        }
+        if (fuse_palette) {
+            /*
+             * Try indexed TGA next to keep PAL8 output. The TGA loader only
+             * supports 8-bit indices for this path and falls back to RGB
+             * otherwise.
+             */
+            stbi__start_mem(&stb_context,
+                            pchunk->buffer,
+                            (int)pchunk->size);
+            if (stbi__tga_test(&stb_context)) {
+                pixels = stbi__tga_load_palette(&stb_context,
+                                                &frame->width,
+                                                &frame->height,
+                                                &palette_comp,
+                                                &palette,
+                                                &palette_colors,
+                                                &ri);
+                if (pixels != NULL && palette != NULL) {
+                    status = convert_palette_to_rgb(&frame->palette,
+                                                    palette,
+                                                    palette_colors,
+                                                    palette_comp,
+                                                    bgcolor,
+                                                    pchunk->allocator);
+                    if (SIXEL_FAILED(status)) {
+                        stbi_free(palette);
+                        sixel_allocator_free(pchunk->allocator, pixels);
+                        goto end;
+                    }
+                    frame->ncolors = palette_colors;
+                    frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
+                    sixel_frame_set_pixels(frame, pixels);
+                    frame->loop_count = 1;
+                    goto done;
+                }
+                pixels = NULL;
+                palette = NULL;
+            }
         }
 
         stbi__start_mem(&stb_context,
