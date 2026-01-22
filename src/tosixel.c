@@ -924,13 +924,7 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
 
     threadpool_set_affinity(ctx->pool, ctx->pin_threads);
 
-    status = sixel_thread_create(&ctx->writer_thread,
-                                 sixel_parallel_writer_main,
-                                 ctx);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-    ctx->writer_started = 1;
+    /* Initialize writer-visible fields before the writer thread starts. */
     ctx->next_band_to_flush = 0;
     ctx->writer_should_stop = 0;
     ctx->writer_error = SIXEL_OK;
@@ -941,6 +935,14 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
         ctx->bands[i].ready = 0;
         ctx->bands[i].dispatched = 0;
     }
+
+    status = sixel_thread_create(&ctx->writer_thread,
+                                 sixel_parallel_writer_main,
+                                 ctx);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+    ctx->writer_started = 1;
 
     return SIXEL_OK;
 }
