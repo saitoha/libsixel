@@ -36,7 +36,9 @@ DIST_SUBDIRS = \
         tests
 
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.
-EXTRA_DIST = LICENSE build-aux/depcomp
+EXTRA_DIST = LICENSE build-aux/depcomp \
+	package.json.in.in \
+	build-aux/lso-tap-driver.sh.in
 
 
 
