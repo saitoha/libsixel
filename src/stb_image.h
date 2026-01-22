@@ -932,6 +932,9 @@ static int      stbi__bmp_info(stbi__context *s, int *x, int *y, int *comp);
 static int      stbi__tga_test(stbi__context *s);
 static void    *stbi__tga_load(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__result_info *ri);
 static int      stbi__tga_info(stbi__context *s, int *x, int *y, int *comp);
+static stbi_uc *stbi__tga_load_palette(stbi__context *s, int *x, int *y,
+                                       int *pal_comp, stbi_uc **palette,
+                                       int *pal_len, stbi__result_info *ri);
 #endif
 
 #ifndef STBI_NO_PSD
@@ -5966,6 +5969,251 @@ static void stbi__tga_read_rgb16(stbi__context *s, stbi_uc* out)
    // (possibly if an alpha-bit is set in the "image descriptor byte")
    // but that only made 16bit test images completely translucent..
    // so let's treat all 15 and 16bit TGAs as RGB with no alpha.
+}
+
+/*
+ * Load paletted TGA data without expanding indices. The caller receives:
+ * - palette: packed entries (pal_comp == 1, 3, or 4)
+ * - output: 8-bit indices referencing the palette
+ *
+ * This keeps indexed TGA input in PAL8 form for higher-fidelity palette
+ * handling in the caller.
+ */
+static stbi_uc *stbi__tga_load_palette(stbi__context *s, int *x, int *y,
+                                       int *pal_comp, stbi_uc **palette,
+                                       int *pal_len, stbi__result_info *ri)
+{
+   stbi_uc *result;
+   stbi_uc *packed_palette;
+   int tga_offset;
+   int tga_indexed;
+   int tga_image_type;
+   int tga_is_rle;
+   int tga_palette_start;
+   int tga_palette_len;
+   int tga_palette_bits;
+   int tga_x_origin;
+   int tga_y_origin;
+   int tga_width;
+   int tga_height;
+   int tga_bits_per_pixel;
+   int tga_inverted;
+   int palette_comp;
+   int palette_entry_bytes;
+   int pixel_count;
+   int i;
+   int j;
+   int rle_count;
+   int rle_repeating;
+   int read_next_pixel;
+   stbi_uc index_value;
+   stbi_uc b;
+   stbi_uc g;
+   stbi_uc r;
+   stbi_uc a;
+   stbi_uc temp;
+   int index1;
+   int index2;
+   int rle_cmd;
+
+   result = NULL;
+   packed_palette = NULL;
+   tga_offset = 0;
+   tga_indexed = 0;
+   tga_image_type = 0;
+   tga_is_rle = 0;
+   tga_palette_start = 0;
+   tga_palette_len = 0;
+   tga_palette_bits = 0;
+   tga_x_origin = 0;
+   tga_y_origin = 0;
+   tga_width = 0;
+   tga_height = 0;
+   tga_bits_per_pixel = 0;
+   tga_inverted = 0;
+   palette_comp = 0;
+   palette_entry_bytes = 0;
+   pixel_count = 0;
+   i = 0;
+   j = 0;
+   rle_count = 0;
+   rle_repeating = 0;
+   read_next_pixel = 1;
+   index_value = 0;
+   b = 0;
+   g = 0;
+   r = 0;
+   a = 0;
+   temp = 0;
+   index1 = 0;
+   index2 = 0;
+   rle_cmd = 0;
+
+   tga_offset = stbi__get8(s);
+   tga_indexed = stbi__get8(s);
+   tga_image_type = stbi__get8(s);
+   tga_palette_start = stbi__get16le(s);
+   tga_palette_len = stbi__get16le(s);
+   tga_palette_bits = stbi__get8(s);
+   tga_x_origin = stbi__get16le(s);
+   tga_y_origin = stbi__get16le(s);
+   tga_width = stbi__get16le(s);
+   tga_height = stbi__get16le(s);
+   tga_bits_per_pixel = stbi__get8(s);
+   tga_inverted = stbi__get8(s);
+
+   if (tga_indexed != 1) {
+      goto end;
+   }
+
+   if (tga_image_type >= 8) {
+      tga_image_type -= 8;
+      tga_is_rle = 1;
+   }
+
+   if (tga_image_type != 1) {
+      goto end;
+   }
+
+   if (tga_bits_per_pixel != 8) {
+      goto end;
+   }
+
+   if (tga_palette_len <= 0) {
+      goto end;
+   }
+
+   if (tga_palette_bits != 8 &&
+       tga_palette_bits != 15 &&
+       tga_palette_bits != 16 &&
+       tga_palette_bits != 24 &&
+       tga_palette_bits != 32) {
+      goto end;
+   }
+
+   if (tga_width < 1 || tga_height < 1) {
+      goto end;
+   }
+
+   if (tga_width > STBI_MAX_DIMENSIONS ||
+       tga_height > STBI_MAX_DIMENSIONS) {
+      stbi__err("too large", "Very large image (corrupt?)");
+      goto end;
+   }
+
+   if (tga_palette_bits == 32) {
+      palette_comp = 4;
+      palette_entry_bytes = 4;
+   } else if (tga_palette_bits == 8) {
+      palette_comp = 1;
+      palette_entry_bytes = 1;
+   } else if (tga_palette_bits == 15 || tga_palette_bits == 16) {
+      palette_comp = 3;
+      palette_entry_bytes = 2;
+   } else {
+      palette_comp = 3;
+      palette_entry_bytes = 3;
+   }
+
+   if (!stbi__mad2sizes_valid(tga_width, tga_height, 0)) {
+      stbi__err("too large", "Corrupt TGA");
+      goto end;
+   }
+
+   stbi__skip(s, tga_offset);
+   if (tga_palette_start > 0) {
+      stbi__skip(s, tga_palette_start * palette_entry_bytes);
+   }
+
+   packed_palette = (stbi_uc *) stbi__malloc_mad2(tga_palette_len,
+                                                  palette_comp, 0);
+   if (packed_palette == NULL) {
+      stbi__err("outofmem", "Out of memory");
+      goto end;
+   }
+
+   for (i = 0; i < tga_palette_len; ++i) {
+      if (tga_palette_bits == 8) {
+         packed_palette[i] = stbi__get8(s);
+      } else if (tga_palette_bits == 15 || tga_palette_bits == 16) {
+         stbi__tga_read_rgb16(s, packed_palette + i * 3);
+      } else if (tga_palette_bits == 24) {
+         b = stbi__get8(s);
+         g = stbi__get8(s);
+         r = stbi__get8(s);
+         packed_palette[i * 3 + 0] = r;
+         packed_palette[i * 3 + 1] = g;
+         packed_palette[i * 3 + 2] = b;
+      } else {
+         b = stbi__get8(s);
+         g = stbi__get8(s);
+         r = stbi__get8(s);
+         a = stbi__get8(s);
+         packed_palette[i * 4 + 0] = r;
+         packed_palette[i * 4 + 1] = g;
+         packed_palette[i * 4 + 2] = b;
+         packed_palette[i * 4 + 3] = a;
+      }
+   }
+
+   result = (stbi_uc *) stbi__malloc_mad2(tga_width, tga_height, 0);
+   if (result == NULL) {
+      stbi__err("outofmem", "Out of memory");
+      goto end;
+   }
+
+   pixel_count = tga_width * tga_height;
+   for (i = 0; i < pixel_count; ++i) {
+      if (tga_is_rle) {
+         if (rle_count == 0) {
+            rle_cmd = stbi__get8(s);
+            rle_count = 1 + (rle_cmd & 127);
+            rle_repeating = rle_cmd >> 7;
+            read_next_pixel = 1;
+         } else if (!rle_repeating) {
+            read_next_pixel = 1;
+         }
+      } else {
+         read_next_pixel = 1;
+      }
+
+      if (read_next_pixel) {
+         index_value = stbi__get8(s);
+         read_next_pixel = 0;
+      }
+
+      result[i] = index_value;
+      --rle_count;
+   }
+
+   tga_inverted = 1 - ((tga_inverted >> 5) & 1);
+   if (tga_inverted) {
+      for (j = 0; j * 2 < tga_height; ++j) {
+         index1 = j * tga_width;
+         index2 = (tga_height - 1 - j) * tga_width;
+         for (i = 0; i < tga_width; ++i) {
+            temp = result[index1 + i];
+            result[index1 + i] = result[index2 + i];
+            result[index2 + i] = temp;
+         }
+      }
+   }
+
+   if (x) *x = tga_width;
+   if (y) *y = tga_height;
+   if (pal_comp) *pal_comp = palette_comp;
+   if (pal_len) *pal_len = tga_palette_len;
+   if (palette) *palette = packed_palette;
+   if (ri) ri->bits_per_channel = 8;
+
+end:
+   STBI_NOTUSED(tga_x_origin);
+   STBI_NOTUSED(tga_y_origin);
+   if (result == NULL && packed_palette != NULL) {
+      STBI_FREE(packed_palette);
+   }
+
+   return result;
 }
 
 static void *stbi__tga_load(stbi__context *s, int *x, int *y, int *comp, int req_comp, stbi__result_info *ri)
