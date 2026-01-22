@@ -79,6 +79,7 @@ BEGIN {
 
         emit_bytes(bash_path, "img2sixel_bash_completion")
         emit_bytes(zsh_path, "img2sixel_zsh_completion")
+        print ""
 
         exit 0
 }
