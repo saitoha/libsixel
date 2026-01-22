@@ -137,6 +137,7 @@
 #include "filter-sample.h"
 #include "sleep.h"
 #include "threading.h"
+#include "sixel_atomic.h"
 
 #define SIXEL_ENCODER_PRECISION_ENVVAR "SIXEL_FLOAT32_DITHER"
 #define SIXEL_ENCODER_LUT_POLICY_ENVVAR "SIXEL_DITHER_LOOKUP_POLICY"
@@ -5938,7 +5939,7 @@ sixel_encoder_new(
         goto end;
     }
 
-    (*ppencoder)->ref                   = 1;
+    (*ppencoder)->ref                   = 1U;
     (*ppencoder)->reqcolors             = (-1);
     (*ppencoder)->palette_sample_target = 0u;
     (*ppencoder)->palette_sample_override = 0;
@@ -6175,21 +6176,30 @@ sixel_encoder_destroy(sixel_encoder_t *encoder)
 }
 
 
-/* increase reference count of encoder object (thread-unsafe) */
+/* increase reference count of encoder object (thread-safe) */
 SIXELAPI void
 sixel_encoder_ref(sixel_encoder_t *encoder)
 {
-    /* TODO: be thread safe */
-    ++encoder->ref;
+    if (encoder == NULL) {
+        return;
+    }
+
+    (void)sixel_atomic_fetch_add_u32(&encoder->ref, 1U);
 }
 
 
-/* decrease reference count of encoder object (thread-unsafe) */
+/* decrease reference count of encoder object (thread-safe) */
 SIXELAPI void
 sixel_encoder_unref(sixel_encoder_t *encoder)
 {
-    /* TODO: be thread safe */
-    if (encoder != NULL && --encoder->ref == 0) {
+    unsigned int previous;
+
+    if (encoder == NULL) {
+        return;
+    }
+
+    previous = sixel_atomic_fetch_sub_u32(&encoder->ref, 1U);
+    if (previous == 1U) {
         sixel_encoder_destroy(encoder);
     }
 }

@@ -45,6 +45,7 @@
 #include "pixelformat.h"
 #include "compat_stub.h"
 #include "scale.h"
+#include "sixel_atomic.h"
 
 static SIXELSTATUS
 sixel_frame_convert_to_rgb888(sixel_frame_t /*in */ *frame);
@@ -173,7 +174,7 @@ sixel_frame_new(
         goto end;
     }
 
-    (*ppframe)->ref = 1;
+    (*ppframe)->ref = 1U;
     (*ppframe)->pixels.u8ptr = NULL;
     (*ppframe)->palette = NULL;
     (*ppframe)->width = 0;
@@ -234,21 +235,30 @@ sixel_frame_destroy(sixel_frame_t /* in */ *frame)
 }
 
 
-/* increase reference count of frame object (thread-unsafe) */
+/* increase reference count of frame object (thread-safe) */
 SIXELAPI void
 sixel_frame_ref(sixel_frame_t *frame)
 {
-    /* TODO: be thread safe */
-    ++frame->ref;
+    if (frame == NULL) {
+        return;
+    }
+
+    (void)sixel_atomic_fetch_add_u32(&frame->ref, 1U);
 }
 
 
-/* decrease reference count of frame object (thread-unsafe) */
+/* decrease reference count of frame object (thread-safe) */
 SIXELAPI void
 sixel_frame_unref(sixel_frame_t *frame)
 {
-    /* TODO: be thread safe */
-    if (frame != NULL && --frame->ref == 0) {
+    unsigned int previous;
+
+    if (frame == NULL) {
+        return;
+    }
+
+    previous = sixel_atomic_fetch_sub_u32(&frame->ref, 1U);
+    if (previous == 1U) {
         sixel_frame_destroy(frame);
     }
 }

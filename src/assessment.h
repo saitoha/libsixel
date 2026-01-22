@@ -30,6 +30,8 @@
 
 #include <sixel.h>
 
+#include "sixel_atomic.h"
+
 #if !defined(PATH_MAX)
 #define PATH_MAX 4096
 #endif
@@ -73,7 +75,7 @@ typedef enum sixel_assessment_spool_mode {
 #endif  /* _MSC_VER */
 
 struct sixel_assessment {
-    int refcount;
+    sixel_atomic_u32_t refcount;
     sixel_allocator_t *allocator;
     int enable_lpips;
     int results_ready;

@@ -72,6 +72,7 @@
 #include "status.h"
 #include "compat_stub.h"
 #include "logger.h"
+#include "sixel_atomic.h"
 
 
 static int palette_default_lut_policy = SIXEL_LUT_POLICY_AUTO;
@@ -632,7 +633,7 @@ SIXELAPI sixel_palette_t *
 sixel_palette_ref(sixel_palette_t *palette)
 {
     if (palette != NULL) {
-        ++palette->ref;
+        (void)sixel_atomic_fetch_add_u32(&palette->ref, 1U);
     }
 
     return palette;
@@ -671,17 +672,17 @@ sixel_palette_dispose(sixel_palette_t *palette)
 SIXELAPI void
 sixel_palette_unref(sixel_palette_t *palette)
 {
+    unsigned int previous;
+
     if (palette == NULL) {
         return;
     }
 
-    if (palette->ref > 1U) {
-        --palette->ref;
-        return;
+    previous = sixel_atomic_fetch_sub_u32(&palette->ref, 1U);
+    if (previous == 1U) {
+        sixel_palette_dispose(palette);
+        sixel_allocator_free(palette->allocator, palette);
     }
-
-    sixel_palette_dispose(palette);
-    sixel_allocator_free(palette->allocator, palette);
 }
 
 static SIXELSTATUS

@@ -25,6 +25,8 @@
 #ifndef LIBSIXEL_OUTPUT_H
 #define LIBSIXEL_OUTPUT_H
 
+#include "sixel_atomic.h"
+
 #if defined(HAVE_CLOCK) || defined(HAVE_NANOSLEEP)
 # if HAVE_TIME_H
 #  include <time.h>
@@ -46,7 +48,7 @@ typedef struct sixel_node {
 
 struct sixel_output {
 
-    int ref;
+    sixel_atomic_u32_t ref;
     sixel_allocator_t *allocator;
 
     /* compatiblity flags */

@@ -27,6 +27,8 @@
 
 #include <sixel.h>
 
+#include "sixel_atomic.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -69,7 +71,7 @@ typedef struct sixel_palette_telemetry {
  * conversion pipeline.
  */
 struct sixel_palette {
-    unsigned int ref;               /* reference counter */
+    sixel_atomic_u32_t ref;         /* reference counter */
     sixel_allocator_t *allocator;   /* allocator associated with palette */
     unsigned char *entries;         /* palette entries, RGB triplets */
     size_t entries_size;            /* allocated length for entries */

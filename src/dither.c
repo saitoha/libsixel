@@ -62,6 +62,7 @@
 #include "filter-lookup.h"
 #include "logger.h"
 #include "pixelformat.h"
+#include "sixel_atomic.h"
 #if SIXEL_ENABLE_THREADS
 # include "threadpool.h"
 #endif
@@ -1462,8 +1463,11 @@ SIXELAPI void
 sixel_dither_ref(
     sixel_dither_t  /* in */ *dither)
 {
-    /* TODO: be thread safe */
-    ++dither->ref;
+    if (dither == NULL) {
+        return;
+    }
+
+    (void)sixel_atomic_fetch_add_u32(&dither->ref, 1U);
 }
 
 
@@ -1471,8 +1475,14 @@ SIXELAPI void
 sixel_dither_unref(
     sixel_dither_t  /* in */ *dither)
 {
-    /* TODO: be thread safe */
-    if (dither != NULL && --dither->ref == 0) {
+    unsigned int previous;
+
+    if (dither == NULL) {
+        return;
+    }
+
+    previous = sixel_atomic_fetch_sub_u32(&dither->ref, 1U);
+    if (previous == 1U) {
         sixel_dither_destroy(dither);
     }
 }

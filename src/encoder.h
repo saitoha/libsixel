@@ -28,6 +28,8 @@
 #include <stddef.h>
 #include <limits.h>
 
+#include "sixel_atomic.h"
+
 #if !defined(PATH_MAX)
 #define PATH_MAX 4096
 #endif
@@ -72,7 +74,7 @@ typedef struct sixel_encoding_planner {
 /* encoder object */
 struct sixel_encoder {
 
-    unsigned int ref;               /* reference counter */
+    sixel_atomic_u32_t ref;         /* reference counter */
     sixel_allocator_t *allocator;   /* allocator object */
     int reqcolors;
     size_t palette_sample_target;   /* target sample count for palette */
