@@ -9342,15 +9342,9 @@ sixel_encoder_encode_bytes(
 end:
     if (frame != NULL) {
         /*
-         * The caller owns the pixel and palette buffers, so clear the
-         * pointers before releasing the frame.  Destroying the frame then
-         * frees only the frame object and allocator reference without
-         * touching external memory.
+         * The encoder owns the buffers allocated above, so a single unref
+         * must release the frame and its heap allocations exactly once.
          */
-        if (owned_palette != NULL) {
-            frame->palette = owned_palette;
-        }
-        sixel_frame_unref(frame);
         sixel_frame_unref(frame);
     }
     return status;

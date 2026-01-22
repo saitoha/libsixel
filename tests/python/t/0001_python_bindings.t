@@ -107,7 +107,9 @@ try:
 
     encoder = Encoder()
     encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(output))
-    encoder.encode_bytes(pixels, 2, 2, SIXEL_PIXELFORMAT_RGB888, None)
+    # Exercise repeated encode paths to catch frame refcount regressions.
+    for _ in range(2):
+        encoder.encode_bytes(pixels, 2, 2, SIXEL_PIXELFORMAT_RGB888, None)
 
     if not output.exists():
         raise SystemExit("missing sixel output")
