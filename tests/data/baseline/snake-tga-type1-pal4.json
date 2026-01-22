@@ -1,0 +1,30 @@
+{
+  "quality": {
+    "MS-SSIM": 0.999937,
+    "HighFreqRatio_out": 0.098182,
+    "HighFreqRatio_ref": 0.097766,
+    "HighFreqRatio_delta": 0.000416,
+    "StripeScore_ref": 2.946571,
+    "StripeScore_out": 2.946530,
+    "StripeScore_rel": -0.000041,
+    "BandingIndex_rel": 0.000031,
+    "BandingIndex_grad_rel": -0.001778,
+    "ClipRate_L_ref": 0.000000,
+    "ClipRate_R_ref": 0.000000,
+    "ClipRate_G_ref": 0.000000,
+    "ClipRate_B_ref": 0.000000,
+    "ClipRate_L_out": 0.000000,
+    "ClipRate_R_out": 0.000000,
+    "ClipRate_G_out": 0.000000,
+    "ClipRate_B_out": 0.000000,
+    "ClipRate_L_rel": 0.000000,
+    "ClipRate_R_rel": 0.000000,
+    "ClipRate_G_rel": 0.000000,
+    "ClipRate_B_rel": 0.000000,
+    "Δ Chroma_mean": 0.340212,
+    "Δ E00_mean": 0.525259,
+    "GMSD": 0.000506,
+    "PSNR_Y": 54.626747,
+    "LPIPS(alex)": null
+  }
+}
