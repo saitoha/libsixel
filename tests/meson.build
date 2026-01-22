@@ -339,6 +339,17 @@ aborttrace_tests = [
   'aborttrace/t/0002_sixel2png_aborttrace.t',
 ]
 
+tga_lsqa_tests = [
+  'regression/t/0018_lsqa_format_tga_type1_pal4.t',
+  'regression/t/0019_lsqa_format_tga_type1_pal8.t',
+  'regression/t/0020_lsqa_format_tga_type2_rgb.t',
+  'regression/t/0021_lsqa_format_tga_type3_gray.t',
+  'regression/t/0022_lsqa_format_tga_type9_pal4.t',
+  'regression/t/0023_lsqa_format_tga_type9_pal8.t',
+  'regression/t/0024_lsqa_format_tga_type10_rgb.t',
+  'regression/t/0025_lsqa_format_tga_type11_gray.t',
+]
+
 cli_depends = {
   'regression/t/0005_lsqa_format_grayscale.t': [lsqa_bin],
   'regression/t/0006_lsqa_format_palette.t': [lsqa_bin],
@@ -353,14 +364,6 @@ cli_depends = {
   'regression/t/0015_lsqa_repeat_palette_variance.t': [lsqa_bin],
   'regression/t/0016_lsqa_corrupted_metadata_noise.t': [lsqa_bin],
   'regression/t/0017_lsqa_corrupted_truncated_png.t': [lsqa_bin],
-  'regression/t/0018_lsqa_format_tga_type1_pal4.t': [lsqa_bin, img2sixel_exe],
-  'regression/t/0019_lsqa_format_tga_type1_pal8.t': [lsqa_bin, img2sixel_exe],
-  'regression/t/0020_lsqa_format_tga_type2_rgb.t': [lsqa_bin, img2sixel_exe],
-  'regression/t/0021_lsqa_format_tga_type3_gray.t': [lsqa_bin, img2sixel_exe],
-  'regression/t/0022_lsqa_format_tga_type9_pal4.t': [lsqa_bin, img2sixel_exe],
-  'regression/t/0023_lsqa_format_tga_type9_pal8.t': [lsqa_bin, img2sixel_exe],
-  'regression/t/0024_lsqa_format_tga_type10_rgb.t': [lsqa_bin, img2sixel_exe],
-  'regression/t/0025_lsqa_format_tga_type11_gray.t': [lsqa_bin, img2sixel_exe],
   'palette/t/0026_merge_kmeans_float32_lsqa.t': [lsqa_bin],
   'palette/t/0027_merge_heckbert_float32_lsqa.t': [lsqa_bin],
   'palette/t/0028_merge_kmeans_8bit_lsqa.t': [lsqa_bin],
@@ -407,6 +410,13 @@ cli_depends = {
   'cli-argument-shift/t/0007_cli_guard_missing_argument.t':
     [test_runner_exe],
 }
+
+# Guard TGA regression tests because img2sixel is optional in no-tools builds.
+if get_option('img2sixel').enabled()
+  foreach test_name : tga_lsqa_tests
+    cli_depends += {test_name: [lsqa_bin, img2sixel_exe]}
+  endforeach
+endif
 
 core_depends = {
   'palette/t/0001_kmeans_init_default_unset.t':
