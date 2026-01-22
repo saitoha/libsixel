@@ -229,6 +229,43 @@ jobs:
               lcov
             exec_type: msys2
 
+    steps:
+      - name: Configure git EOL
+        if: ${{ matrix.exec_type == 'cygwin' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          label:          ${{ matrix.label }}
+          exec_type:      ${{ matrix.exec_type }}
+          buildtool:      ${{ matrix.buildtool }}
+
+          runner:         ${{ matrix.runner }}
+          cp_os:          ${{ matrix.cp_os || '' }}
+          cp_arch:        ${{ matrix.cp_arch || '' }}
+          cp_version:     ${{ matrix.cp_version || '' }}
+          version:        ${{ matrix.version || '' }}
+          msystem:        ${{ matrix.msystem || '' }}
+
+          extra_packages: ${{ matrix.extra_packages || '' }}
+          guest_packages: ${{ matrix.guest_packages || '' }}
+          vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
+          pip_packages:   ${{ matrix.pip_packages || '' }}
+
+          setup_prefix:   ${{ matrix.setup_prefix || '' }}
+          setup_options:  ${{ matrix.setup_options || '' }}
+          check_target:   ${{ matrix.check_target || '' }}
+          make:           ${{ matrix.make || '' }}
+
+          github_token:   ${{ secrets.GITHUB_TOKEN }}
+
+
   coverage-meson:
     needs: [smoke]
     name: ${{ matrix.label }}
@@ -1190,7 +1227,7 @@ jobs:
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
   coveralls:
-    needs: [coverage]
+    needs: [coverage-autotools, coverage-meson]
     runs-on: ubuntu-latest
     steps:
       - name: Finalize Coveralls

@@ -1734,6 +1734,7 @@ scale_with_resampling(
 {
     unsigned char *tmp;
     size_t tmp_size;
+    size_t dst_size;
 #if SIXEL_ENABLE_THREADS
     int rc;
     sixel_logger_t logger;
@@ -1748,6 +1749,7 @@ scale_with_resampling(
 #endif
 
     tmp_size = (size_t)dstw * (size_t)srch * (size_t)depth;
+    dst_size = (size_t)dstw * (size_t)dsth * (size_t)depth;
     tmp = (unsigned char *)sixel_allocator_malloc(allocator, tmp_size);
     if (tmp == NULL) {
 #if SIXEL_ENABLE_THREADS
@@ -1757,6 +1759,13 @@ scale_with_resampling(
 #endif
         return;
     }
+    /*
+     * Zero the intermediate and destination buffers so any resample taps
+     * that yield no contribution still emit deterministic pixels. This also
+     * prevents MSan from flagging reads of untouched output bytes.
+     */
+    memset(tmp, 0, tmp_size);
+    memset(dst, 0, dst_size);
 
 #if SIXEL_ENABLE_THREADS
     rc = scale_with_resampling_parallel(dst,
