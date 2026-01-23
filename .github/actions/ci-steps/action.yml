@@ -561,9 +561,9 @@ runs:
           gcovr -r . --lcov -o coverage.info \
             --gcov-executable gcov-14 || true
         elif command -v lcov >/dev/null 2>&1; then
+          # Keep src for static builds; avoid duplicate gcda from src/.libs.
           lcov -c \
             -d "$PWD/src" \
-            -d "$PWD/src/.libs" \
             -d "$PWD/converters" \
             -d "$PWD/tests/cli" \
             -d "$PWD/tests/loader" \
