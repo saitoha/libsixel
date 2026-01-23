@@ -42,6 +42,18 @@
 #include "lookup-float32.h"
 #include "lookup-common.h"
 
+#if SIXEL_ENABLE_THREADS
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) && \
+        !defined(WITH_WINPTHREAD)
+#  define SIXEL_LOOKUP_USE_WIN32_ONCE 1
+#  include <windows.h>
+static INIT_ONCE sixel_lookup_once = INIT_ONCE_STATIC_INIT;
+# else
+#  include <pthread.h>
+static pthread_once_t sixel_lookup_once = PTHREAD_ONCE_INIT;
+# endif
+#endif
+
 struct sixel_lut {
     int input_is_float;
     sixel_allocator_t *allocator;
@@ -53,6 +65,71 @@ static int sixel_lookup_parallel_active = 0;
 static int sixel_lookup_certlut_shared = -1;
 static int sixel_lookup_5bit_shared = -1;
 static int sixel_lookup_6bit_shared = -1;
+
+static int
+sixel_lookup_parse_flag(char const *text, int default_value);
+
+static void
+sixel_lookup_init_shared_flags(void)
+{
+    sixel_lookup_certlut_shared = sixel_lookup_parse_flag(
+        sixel_compat_getenv("SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE"),
+        0);
+    sixel_lookup_5bit_shared = sixel_lookup_parse_flag(
+        sixel_compat_getenv("SIXEL_LOOKUP_5BIT_SHARED_INSTANCE"),
+        1);
+    sixel_lookup_6bit_shared = sixel_lookup_parse_flag(
+        sixel_compat_getenv("SIXEL_LOOKUP_6BIT_SHARED_INSTANCE"),
+        1);
+}
+
+#if SIXEL_ENABLE_THREADS && defined(SIXEL_LOOKUP_USE_WIN32_ONCE)
+static BOOL CALLBACK
+sixel_lookup_init_shared_flags_once_cb(PINIT_ONCE init_once,
+                                       PVOID parameter,
+                                       PVOID *context)
+{
+    (void)init_once;
+    (void)parameter;
+    (void)context;
+
+    sixel_lookup_init_shared_flags();
+
+    return TRUE;
+}
+#endif
+
+static void
+sixel_lookup_init_shared_flags_once(void)
+{
+#if SIXEL_ENABLE_THREADS
+# if defined(SIXEL_LOOKUP_USE_WIN32_ONCE)
+    BOOL executed;
+
+    executed = InitOnceExecuteOnce(&sixel_lookup_once,
+                                   sixel_lookup_init_shared_flags_once_cb,
+                                   NULL,
+                                   NULL);
+    if (executed == FALSE) {
+        sixel_lookup_init_shared_flags();
+    }
+# else
+    int status;
+
+    status = pthread_once(&sixel_lookup_once,
+                          sixel_lookup_init_shared_flags);
+    if (status != 0) {
+        sixel_lookup_init_shared_flags();
+    }
+# endif
+#else
+    if (sixel_lookup_certlut_shared < 0
+            || sixel_lookup_5bit_shared < 0
+            || sixel_lookup_6bit_shared < 0) {
+        sixel_lookup_init_shared_flags();
+    }
+#endif
+}
 
 static int
 sixel_lookup_parse_flag(char const *text, int default_value)
@@ -74,37 +151,21 @@ sixel_lookup_parse_flag(char const *text, int default_value)
 SIXELAPI int
 sixel_lookup_env_shared_certlut(void)
 {
-    if (sixel_lookup_certlut_shared < 0) {
-        sixel_lookup_certlut_shared
-            = sixel_lookup_parse_flag(
-                sixel_compat_getenv("SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE"),
-                0);
-    }
-
+    sixel_lookup_init_shared_flags_once();
     return sixel_lookup_certlut_shared;
 }
 
 SIXELAPI int
 sixel_lookup_env_shared_5bit(void)
 {
-    if (sixel_lookup_5bit_shared < 0) {
-        sixel_lookup_5bit_shared = sixel_lookup_parse_flag(
-            sixel_compat_getenv("SIXEL_LOOKUP_5BIT_SHARED_INSTANCE"),
-            1);
-    }
-
+    sixel_lookup_init_shared_flags_once();
     return sixel_lookup_5bit_shared;
 }
 
 SIXELAPI int
 sixel_lookup_env_shared_6bit(void)
 {
-    if (sixel_lookup_6bit_shared < 0) {
-        sixel_lookup_6bit_shared = sixel_lookup_parse_flag(
-            sixel_compat_getenv("SIXEL_LOOKUP_6BIT_SHARED_INSTANCE"),
-            1);
-    }
-
+    sixel_lookup_init_shared_flags_once();
     return sixel_lookup_6bit_shared;
 }
 
