@@ -184,9 +184,11 @@ img2sixel_compat_strerror(int error_number,
     size_t copy_length;
 # endif
 #else
-# if defined(_GNU_SOURCE) && !defined(__APPLE__)
+# if defined(__GLIBC__) && defined(_GNU_SOURCE) && !defined(__APPLE__)
     char *message;
     size_t copy_length;
+# else
+    int status;
 # endif
 #endif
 
@@ -224,7 +226,8 @@ img2sixel_compat_strerror(int error_number,
     return buffer;
 # endif
 #else
-# if defined(_GNU_SOURCE) && !defined(__APPLE__)
+# if defined(__GLIBC__) && defined(_GNU_SOURCE) && !defined(__APPLE__)
+    /* GNU strerror_r returns the error message pointer. */
     message = strerror_r(error_number, buffer, buffer_size);
     if (message == NULL) {
         buffer[0] = '\0';
@@ -238,7 +241,9 @@ img2sixel_compat_strerror(int error_number,
     buffer[copy_length] = '\0';
     return buffer;
 # else
-    if (strerror_r(error_number, buffer, buffer_size) != 0) {
+    /* POSIX strerror_r returns 0 on success and non-zero on failure. */
+    status = strerror_r(error_number, buffer, buffer_size);
+    if (status != 0) {
         buffer[0] = '\0';
         return NULL;
     }
