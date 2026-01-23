@@ -53,6 +53,9 @@
 #if HAVE_STDINT_H
 # include <stdint.h>
 #endif  /* HAVE_STDINT_H */
+#if HAVE_STDIO_H
+# include <stdio.h>
+#endif  /* HAVE_STDIO_H */
 #if HAVE_STRING_H
 # include <string.h>
 #endif  /* HAVE_STRING_H */
@@ -360,6 +363,28 @@ sixel_aborttrace_env_enabled(void)
     return 1;
 }
 
+static int
+sixel_aborttrace_debug_enabled(void)
+{
+    char *value;
+    int enabled;
+
+    /* Debug logging for abort-trace install decisions. */
+    enabled = 0;
+    value = sixel_aborttrace_getenv_dup("SIXEL_ABORT_TRACE_DEBUG");
+    if (value != NULL) {
+        if (sixel_aborttrace_match_token(value, "1") ||
+            sixel_aborttrace_match_token(value, "true") ||
+            sixel_aborttrace_match_token(value, "on") ||
+            sixel_aborttrace_match_token(value, "yes")) {
+            enabled = 1;
+        }
+        free(value);
+    }
+
+    return enabled;
+}
+
 static void
 sixel_aborttrace_log_banner(void)
 {
@@ -610,19 +635,38 @@ sixel_aborttrace_install_platform(void)
 void
 sixel_aborttrace_install_if_unhandled(void)
 {
+    int debug_enabled;
+
+    debug_enabled = sixel_aborttrace_debug_enabled();
     if (g_aborttrace_installed != 0) {
+        if (debug_enabled != 0) {
+            fprintf(stderr,
+                    "libsixel: abort trace already installed\n");
+        }
         return;
     }
 
     if (!sixel_aborttrace_env_enabled()) {
+        if (debug_enabled != 0) {
+            fprintf(stderr,
+                    "libsixel: abort trace disabled by environment\n");
+        }
         return;
     }
 
     if (!sixel_aborttrace_sigabrt_is_default()) {
+        if (debug_enabled != 0) {
+            fprintf(stderr,
+                    "libsixel: abort trace skipped (SIGABRT handled)\n");
+        }
         return;
     }
 
     sixel_aborttrace_install_platform();
+    if ((debug_enabled != 0) && (g_aborttrace_installed != 0)) {
+        fprintf(stderr,
+                "libsixel: abort trace installed\n");
+    }
 }
 
 #else
