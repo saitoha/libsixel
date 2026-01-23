@@ -588,6 +588,13 @@ runs:
         else
           echo "No gcovr or lcov found; skipping coverage capture"
         fi
+        # Normalize absolute paths so Coveralls can map files to the repo tree.
+        # Meson may emit builddir paths, so strip builddir before the repo root.
+        if test -f coverage.info; then
+          sed "s#^SF:${PWD}/builddir/#SF:#; s#^SF:${PWD}/#SF:#" \
+            coverage.info > coverage.info.tmp
+          mv coverage.info.tmp coverage.info
+        fi
 
     - name: Capture coverage (Windows)
       if: >-
