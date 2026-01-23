@@ -549,8 +549,14 @@ sixel_lookup_8bit_lookup_fast(sixel_lookup_8bit_t *lut,
     }
 
     if (lut->dense_ready && lut->dense != NULL && result >= 0) {
-        if ((size_t)bucket < lut->dense_size) {
-            lut->dense[bucket] = result;
+        /*
+         * Avoid updating the shared dense cache while parallel dither is
+         * active to prevent data races between worker threads.
+         */
+        if (sixel_lookup_parallel_dither_active() == 0) {
+            if ((size_t)bucket < lut->dense_size) {
+                lut->dense[bucket] = result;
+            }
         }
     }
 
