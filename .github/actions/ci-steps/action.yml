@@ -83,7 +83,10 @@ runs:
         git reset --hard
 
     - name: Install extra packages (Linux)
-      if: ${{ runner.os == 'Linux' && inputs.exec_type == 'bash' && inputs.extra_packages != '' }}
+      if: >-
+        ${{ runner.os == 'Linux'
+            && inputs.exec_type == 'bash'
+            && inputs.extra_packages != '' }}
       shell: bash
       run: |
         sudo apt-get update
@@ -97,7 +100,10 @@ runs:
         brew install ${{ inputs.extra_packages }}
 
     - name: Install extra packages (FreeBSD)
-      if: ${{ inputs.exec_type == 'cross-platform-vms' && inputs.cp_os == 'freebsd' && inputs.extra_packages != '' }}
+      if: >-
+        ${{ inputs.exec_type == 'cross-platform-vms'
+            && inputs.cp_os == 'freebsd'
+            && inputs.extra_packages != '' }}
       uses: cross-platform-actions/action@v0.30.0
       with:
         operating_system: ${{ inputs.cp_os }}
@@ -110,7 +116,10 @@ runs:
           sudo pkg install -y ${{ inputs.extra_packages }}
 
     - name: Install extra packages (NetBSD)
-      if: ${{ inputs.exec_type == 'cross-platform-vms' && inputs.cp_os == 'netbsd' && inputs.extra_packages != '' }}
+      if: >-
+        ${{ inputs.exec_type == 'cross-platform-vms'
+            && inputs.cp_os == 'netbsd'
+            && inputs.extra_packages != '' }}
       uses: cross-platform-actions/action@v0.30.0
       with:
         operating_system: ${{ inputs.cp_os }}
@@ -126,7 +135,10 @@ runs:
           fi
 
     - name: Install extra packages (OpenBSD)
-      if: ${{ inputs.exec_type == 'cross-platform-vms' && inputs.cp_os == 'openbsd' && inputs.extra_packages != '' }}
+      if: >-
+        ${{ inputs.exec_type == 'cross-platform-vms'
+            && inputs.cp_os == 'openbsd'
+            && inputs.extra_packages != '' }}
       uses: cross-platform-actions/action@v0.30.0
       with:
         operating_system: ${{ inputs.cp_os }}
@@ -138,7 +150,10 @@ runs:
           sudo pkg_add ${{ inputs.extra_packages }}
 
     - name: Install extra packages (Haiku)
-      if: ${{ inputs.exec_type == 'cross-platform-vms' && inputs.cp_os == 'haiku' && inputs.extra_packages != '' }}
+      if: >-
+        ${{ inputs.exec_type == 'cross-platform-vms'
+            && inputs.cp_os == 'haiku'
+            && inputs.extra_packages != '' }}
       uses: cross-platform-actions/action@v0.30.0
       with:
         operating_system: ${{ inputs.cp_os }}
@@ -550,7 +565,11 @@ runs:
           meson ${{ inputs.check_target || 'test' }} -C builddir
 
     - name: Capture coverage
-      if: ${{ always() && contains(fromJson('["--enable-gcov", "-Db_coverage"]'), inputs.setup_options) && inputs.exec_type == 'bash' }}
+      if: >-
+        ${{ always()
+            && (contains(inputs.setup_options, '--enable-gcov')
+                || contains(inputs.setup_options, '-Db_coverage'))
+            && inputs.exec_type == 'bash' }}
       shell: bash
       run: |
         if test -f coverage.info; then
@@ -563,13 +582,7 @@ runs:
         elif command -v lcov >/dev/null 2>&1; then
           # Keep src for static builds; avoid duplicate gcda from src/.libs.
           lcov -c \
-            -d "$PWD/src" \
-            -d "$PWD/converters" \
-            -d "$PWD/tests/cli" \
-            -d "$PWD/tests/loader" \
-            -d "$PWD/tests/filter" \
-            -d "$PWD/tests/probe" \
-            -d "$PWD/tests/palette" \
+            $(find "$PWD" -name \*.gcda -exec dirname {} + | uniq | grep -v \\.libs | xargs -I{} echo "-d {}" | xargs) \
             --rc branch_coverage=1 \
             -o coverage.info || true
         else
@@ -577,7 +590,11 @@ runs:
         fi
 
     - name: Capture coverage (Windows)
-      if: ${{ always() && contains(fromJson('["--enable-gcov", "-Db_coverage"]'), inputs.setup_options) && inputs.exec_type == 'msys2' }}
+      if: >-
+        ${{ always()
+            && (contains(inputs.setup_options, '--enable-gcov')
+                || contains(inputs.setup_options, '-Db_coverage'))
+            && inputs.exec_type == 'msys2' }}
       shell: msys2 {0}
       run: |
         set -exv
@@ -590,13 +607,7 @@ runs:
           cat coverage.info
         elif command -v lcov >/dev/null 2>&1; then
           lcov -c \
-            -d "src/.libs" \
-            -d "converters" \
-            -d "tests/cli" \
-            -d "tests/loader" \
-            -d "tests/filter" \
-            -d "tests/probe" \
-            -d "tests/palette" \
+            $(find . -name \*.gcda -exec dirname {} + | uniq | grep -v \\.libs | xargs -I{} echo "-d {}" | xargs) \
             --rc branch_coverage=1 \
             -o coverage.info
           sed -i "s#^SF:$PWD/#SF:#" coverage.info

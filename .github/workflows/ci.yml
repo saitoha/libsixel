@@ -1703,7 +1703,7 @@ jobs:
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
   emscripten:
-    needs: [core-autotools]
+#    needs: [core-autotools]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
