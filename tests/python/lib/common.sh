@@ -86,6 +86,14 @@ python_skip_on_load_error() {
         return 0
     fi
 
+    # macOS TSan builds can emit an interceptor warning when the runtime is
+    # loaded too late (via dlopen). The error is printed to stderr, not raised
+    # as a Python exception, so detect it in the captured log and skip the
+    # Python binding tests to align with the intended policy.
+    if grep -q "Interceptors are not working" "${log_path}"; then
+        tap_skip_all "ThreadSanitizer interceptors not available"
+    fi
+
     marker=$(grep -m1 '^SKIP_LIBSIXEL_LOAD:' "${log_path}" || true)
     if [ -z "${marker}" ]; then
         printf 'python_skip_on_load_error: no load marker for status %s\n' \
