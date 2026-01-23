@@ -2185,6 +2185,15 @@ sixel_dither_apply_palette(
     }
 
     /*
+     * Force lookup shared flags to initialize before worker threads start.
+     * The env helpers use lazy initialization, so touching them here avoids
+     * thread sanitizer reports when parallel dither starts.
+     */
+    (void)sixel_lookup_env_shared_certlut();
+    (void)sixel_lookup_env_shared_5bit();
+    (void)sixel_lookup_env_shared_6bit();
+
+    /*
      * Inform lookup helpers whether concurrent palette application will run.
      * VPTE caches rely on this hint when TLS is unavailable so they can
      * disable shared caches during parallel dithering while remaining enabled
