@@ -285,6 +285,7 @@ jobs:
             extra_packages: >-
               meson
               gcc-14
+            pip_packages: >-
               gcovr
             exec_type: bash
 
