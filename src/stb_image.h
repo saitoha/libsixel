@@ -6180,6 +6180,15 @@ static stbi_uc *stbi__tga_load_palette(stbi__context *s, int *x, int *y,
       if (read_next_pixel) {
          index_value = stbi__get8(s);
          read_next_pixel = 0;
+         if (index_value >= tga_palette_len) {
+            /*
+             * Guard against invalid palette indices. Returning NULL lets
+             * the caller fall back to the non-paletted loader instead of
+             * dereferencing out-of-range palette memory.
+             */
+            stbi__err("bad index", "Corrupt TGA");
+            goto end;
+         }
       }
 
       result[i] = index_value;
