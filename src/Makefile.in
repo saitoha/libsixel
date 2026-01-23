@@ -858,7 +858,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_TRUE@libsixel_la_SOURCES = $(am__append_1) \
 @WANT_AMALGAMATED_LIB_TRUE@	$(am__append_2) $(am__append_3) \
 @WANT_AMALGAMATED_LIB_TRUE@	$(am__append_4)
-libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ $(AM_CPPFLAGS) \
+libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ -I$(top_srcdir) $(AM_CPPFLAGS) \
                 @THREAD_CPPFLAGS@ $(AMALGAMATION_CPPFLAGS)
 
 libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
