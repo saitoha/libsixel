@@ -57,6 +57,9 @@ lsqa_sixel_assert_quality() {
 
     lsqa_sixel_out_file="${lsqa_sixel_artifact_dir}/lsqa.json"
     lsqa_sixel_err_file="${lsqa_sixel_artifact_dir}/lsqa.err"
+    lsqa_sixel_history_dir="${lsqa_sixel_artifact_dir}/lsqa-history"
+    lsqa_sixel_stamp=""
+    lsqa_sixel_history_file=""
 
     lsqa_sixel_run_status=$(lsqa_sixel_run "${lsqa_sixel_ref_path}" \
         "${lsqa_sixel_out_file}" "${lsqa_sixel_err_file}")
@@ -66,6 +69,12 @@ lsqa_sixel_assert_quality() {
             "$(cat "${lsqa_sixel_err_file}")" >&2
         return 1
     fi
+
+    # Persist every lsqa.json run so flaky regressions can be diffed later.
+    lsqa_sixel_stamp=$(date -u +%Y%m%dT%H%M%SZ)
+    lsqa_sixel_history_file="${lsqa_sixel_history_dir}/lsqa.${lsqa_sixel_stamp}.$$".json
+    mkdir -p "${lsqa_sixel_history_dir}"
+    cp "${lsqa_sixel_out_file}" "${lsqa_sixel_history_file}"
 
     lsqa_sixel_ms_val=$(lsqa_parse_metric "MS-SSIM" \
         "${lsqa_sixel_out_file}")
