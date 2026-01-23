@@ -855,6 +855,7 @@ jobs:
     needs: [coverage-meson]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
+    timeout-minutes: ${{ matrix.timeout_minutes || 90 }}
     strategy:
       matrix:
         include:
@@ -1090,6 +1091,7 @@ jobs:
           - label: Meson-cmd-x86_64-msvc-x86_64-unity
             buildtool: meson
             runner: windows-latest
+            timeout_minutes: 60
             setup_options: >-
               -Dunity=on
             exec_type: cmd

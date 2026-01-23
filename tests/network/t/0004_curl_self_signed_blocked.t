@@ -18,6 +18,32 @@ port_file="${tmp_dir}/server.port"
 
 mkdir -p "${output_dir}" "${tmp_dir}"
 
+# Ensure the helper HTTPS server exits even when the test process gets
+# interrupted on CI. The helper uses a short timeout loop and logs to
+# curl.log so we can diagnose server teardown issues.
+stop_server() {
+    server_pid="$1"
+
+    if kill "${server_pid}" 2>/dev/null; then
+        wait_limit=5
+        waited=0
+
+        while kill -0 "${server_pid}" 2>/dev/null; do
+            if [ ${waited} -ge ${wait_limit} ]; then
+                echo "Server pid ${server_pid} did not exit; forcing kill." \
+                    >>"${log_file}"
+                kill -9 "${server_pid}" 2>/dev/null || :
+                break
+            fi
+
+            sleep 1
+            waited=$((waited + 1))
+        done
+
+        wait "${server_pid}" 2>/dev/null || :
+    fi
+}
+
 script_dir=${test_dir}
 . "${script_dir}/../../common/t/0001_converters_common.t"
 
@@ -126,9 +152,7 @@ for _ in 1 2 3 4 5; do
 done
 
 if [ -z "${server_port}" ]; then
-    if kill "${server_pid}" 2>/dev/null; then
-        wait "${server_pid}" 2>/dev/null || :
-    fi
+    stop_server "${server_pid}"
 
     printf 'ok 1 - self-signed fetch blocked # SKIP failed to start HTTPS server\n'
     exit 0
@@ -138,9 +162,7 @@ verify_output=$(make_temp_file "${tmp_dir}" "curl-verify")
 run_img2sixel "https://localhost:${server_port}/snake.sixel" \
     >"${verify_output}" 2>>"${log_file}" && command_status=$? || command_status=$?
 
-if kill "${server_pid}" 2>/dev/null; then
-    wait "${server_pid}" 2>/dev/null || :
-fi
+stop_server "${server_pid}"
 
 # The HTTPS request must fail TLS verification when -k is omitted.
 if [ ${command_status} -eq 0 ]; then
