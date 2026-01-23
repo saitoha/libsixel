@@ -6,6 +6,11 @@ env.set('TOP_SRCDIR', meson.project_source_root())
 env.set('TOP_BUILDDIR', meson.project_build_root())
 env.set('MESON_SOURCE_ROOT', meson.project_source_root())
 env.set('MESON_BUILD_ROOT', meson.project_build_root())
+cross_compiling = 'no'
+if meson.is_cross_build()
+  cross_compiling = 'yes'
+endif
+env.set('CROSS_COMPILING', cross_compiling)
 # Ensure Python TAP tests can locate the freshly built shared library when
 # Meson is invoked without a prior `meson compile`. The binding smoke test
 # relies on LIBSIXEL_LIBDIR to point at the build artifact directory.
@@ -339,17 +344,6 @@ aborttrace_tests = [
   'aborttrace/t/0002_sixel2png_aborttrace.t',
 ]
 
-tga_lsqa_tests = [
-  'regression/t/0018_lsqa_format_tga_type1_pal4.t',
-  'regression/t/0019_lsqa_format_tga_type1_pal8.t',
-  'regression/t/0020_lsqa_format_tga_type2_rgb.t',
-  'regression/t/0021_lsqa_format_tga_type3_gray.t',
-  'regression/t/0022_lsqa_format_tga_type9_pal4.t',
-  'regression/t/0023_lsqa_format_tga_type9_pal8.t',
-  'regression/t/0024_lsqa_format_tga_type10_rgb.t',
-  'regression/t/0025_lsqa_format_tga_type11_gray.t',
-]
-
 cli_depends = {
   'regression/t/0005_lsqa_format_grayscale.t': [lsqa_bin],
   'regression/t/0006_lsqa_format_palette.t': [lsqa_bin],
@@ -410,13 +404,6 @@ cli_depends = {
   'cli-argument-shift/t/0007_cli_guard_missing_argument.t':
     [test_runner_exe],
 }
-
-# Guard TGA regression tests because img2sixel is optional in no-tools builds.
-if get_option('img2sixel').enabled()
-  foreach test_name : tga_lsqa_tests
-    cli_depends += {test_name: [lsqa_bin, img2sixel_exe]}
-  endforeach
-endif
 
 core_depends = {
   'palette/t/0001_kmeans_init_default_unset.t':
@@ -513,60 +500,24 @@ foreach t : filter_tests
 endforeach
 
 
-loader_coregraphics_tests = []
-if conf.get('HAVE_COREGRAPHICS', 0) == 1
-  loader_coregraphics_tests += ['0008_loader_coregraphics_pixelformat']
-endif
-
-foreach test_name : loader_coregraphics_tests
-  test(test_name, sh,
-    args: [meson.current_source_dir()
-      / 'loader'
-      / 't'
-      / (test_name + '.t')],
-    env: env,
-    protocol: 'tap',
-    timeout: 120,
-    depends: [test_runner_exe],
-    suite: ['tap'])
-endforeach
-
-loader_pixelformat_tests = [
+# Register the loader tests unconditionally to mirror autotools.
+# Each .t script is responsible for skipping when a dependency is missing.
+loader_tests = [
+  '0008_loader_coregraphics_pixelformat',
+  '0009_loader_wic_pixelformat',
+  '0010_loader_gdk_pixbuf_pixelformat',
+  '0011_loader_gd_pixelformat',
+  '0012_loader_libpng_pixelformat',
+  '0013_loader_libjpeg_pixelformat',
   '0014_loader_builtin_pixelformat',
+  '0015_loader_quicklook_pixelformat',
+  '0016_loader_gnome_thumbnailer_pixelformat',
   '0017_loader_builtin_psd',
   '0018_loader_builtin_hdr',
   '0019_loader_builtin_pic',
 ]
 
-if conf.get('HAVE_WIC', 0) == 1
-  loader_pixelformat_tests += ['0009_loader_wic_pixelformat']
-endif
-
-if conf.has('HAVE_GDK_PIXBUF2')
-  loader_pixelformat_tests += ['0010_loader_gdk_pixbuf_pixelformat']
-endif
-
-if conf.get('HAVE_GD', 0) == 1
-  loader_pixelformat_tests += ['0011_loader_gd_pixelformat']
-endif
-
-if conf.get('HAVE_LIBPNG', 0) == 1
-  loader_pixelformat_tests += ['0012_loader_libpng_pixelformat']
-endif
-
-if conf.get('HAVE_JPEG', 0) == 1
-  loader_pixelformat_tests += ['0013_loader_libjpeg_pixelformat']
-endif
-
-if conf.get('HAVE_COREGRAPHICS', 0) == 1 and conf.get('HAVE_QUICKLOOK', 0) == 1
-  loader_pixelformat_tests += ['0015_loader_quicklook_pixelformat']
-endif
-
-if conf.has('HAVE_UNISTD_H') and conf.has('HAVE_SYS_WAIT_H') and conf.get('HAVE_FORK', 0) == 1
-  loader_pixelformat_tests += ['0016_loader_gnome_thumbnailer_pixelformat']
-endif
-
-foreach test_name : loader_pixelformat_tests
+foreach test_name : loader_tests
   test(test_name, sh,
     args: [meson.current_source_dir()
       / 'loader'
