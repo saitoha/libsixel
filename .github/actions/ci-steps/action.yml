@@ -299,7 +299,7 @@ runs:
         PATH="$PWD/build-aux:$PWD/bin:$PATH:$MSVC_BIN_PATH"
         ${{ inputs.setup_prefix }} ./configure ${{ inputs.setup_options }}
         ${{ inputs.make || 'make' }} V=1
-        ${{ inputs.make || 'make' }} ${{ inputs.check_target || 'check' }}
+        ${{ inputs.make || 'make' }} ${{ inputs.check_target || 'check' }} -j2
 
     - name: Build and test (Meson, msys2)
       if: ${{ inputs.buildtool == 'meson' && inputs.exec_type == 'msys2' }}
@@ -321,7 +321,7 @@ runs:
         ${{ inputs.setup_prefix }} ./configure ${{ inputs.setup_options }}
         ${{ inputs.make || 'make' }} V=1
         if grep ^ac_cv_prog_ac_ct_CC=gcc$ config.log; then
-          ${{ inputs.make || 'make' }} ${{ inputs.check_target || 'check' }}
+          ${{ inputs.make || 'make' }} ${{ inputs.check_target || 'check' }} -j2
         else
           : # cross build: don't run test
         fi

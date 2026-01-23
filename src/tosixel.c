@@ -1145,9 +1145,18 @@ sixel_parallel_worker_main(tp_job_t job, void *userdata, void *workspace)
     }
 
     band = &ctx->bands[band_index];
-    band->used = 0;
-    band->status = SIXEL_OK;
-    band->ready = 0;
+    if (ctx->mutex_ready) {
+        /* Synchronize band state reset with the writer thread. */
+        sixel_mutex_lock(&ctx->mutex);
+        band->used = 0;
+        band->status = SIXEL_OK;
+        band->ready = 0;
+        sixel_mutex_unlock(&ctx->mutex);
+    } else {
+        band->used = 0;
+        band->status = SIXEL_OK;
+        band->ready = 0;
+    }
 
     sixel_fence_acquire();
 
