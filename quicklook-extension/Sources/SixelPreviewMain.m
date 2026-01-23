@@ -30,12 +30,12 @@
 
 #import <Foundation/Foundation.h>
 
-extern int NSExtensionMain(int argc, const char * _Nonnull argv[]);
+extern int NSExtensionMain(int argc, const char * _Nonnull * _Nonnull argv);
 
 /*
  * Entry point for the preview extension. Simply delegates to NSExtensionMain.
  */
-int main(int argc, const char * _Nonnull argv[])
+int main(int argc, const char * _Nonnull * _Nonnull argv)
 {
     return NSExtensionMain(argc, argv);
 }
