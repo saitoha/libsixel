@@ -23,15 +23,17 @@ lsqa_sixel_init() {
 
 lsqa_sixel_run() {
     lsqa_sixel_ref_path=$1
-    lsqa_sixel_out_path=$2
-    lsqa_sixel_err_path=$3
+    lsqa_sixel_sixel_path=$2
+    lsqa_sixel_out_path=$3
+    lsqa_sixel_err_path=$4
     lsqa_sixel_status=0
 
     : >"${lsqa_sixel_out_path}"
     : >"${lsqa_sixel_err_path}"
 
-    if ! run_img2sixel -Lbuiltin "${lsqa_sixel_ref_path}" \
-        | runtime_exec "${LSQA_BIN}" "${lsqa_sixel_ref_path}" \
+    if ! run_img2sixel -Lbuiltin "${lsqa_sixel_ref_path}" > "${lsqa_sixel_sixel_path}"; then
+        lsqa_sixel_status=$?
+    elif ! runtime_exec "${LSQA_BIN}" "${lsqa_sixel_ref_path}" "${lsqa_sixel_sixel_path}" \
         >"${lsqa_sixel_out_path}" 2>"${lsqa_sixel_err_path}"; then
         lsqa_sixel_status=$?
     fi
@@ -55,6 +57,7 @@ lsqa_sixel_assert_quality() {
     lsqa_sixel_label=$2
     lsqa_sixel_artifact_dir=$3
 
+    lsqa_sixel_sixel_file="${lsqa_sixel_artifact_dir}/output.six"
     lsqa_sixel_out_file="${lsqa_sixel_artifact_dir}/lsqa.json"
     lsqa_sixel_err_file="${lsqa_sixel_artifact_dir}/lsqa.err"
     lsqa_sixel_history_dir="${lsqa_sixel_artifact_dir}/lsqa-history"
@@ -62,7 +65,7 @@ lsqa_sixel_assert_quality() {
     lsqa_sixel_history_file=""
 
     lsqa_sixel_run_status=$(lsqa_sixel_run "${lsqa_sixel_ref_path}" \
-        "${lsqa_sixel_out_file}" "${lsqa_sixel_err_file}")
+        "${lsqa_sixel_sixel_file}" "${lsqa_sixel_out_file}" "${lsqa_sixel_err_file}")
     if [ ${lsqa_sixel_run_status} -ne 0 ]; then
         printf '%s: assessment/lsqa returned %s: %s\n' \
             "${lsqa_sixel_label}" "${lsqa_sixel_run_status}" \
