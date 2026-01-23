@@ -582,7 +582,7 @@ runs:
         elif command -v lcov >/dev/null 2>&1; then
           # Keep src for static builds; avoid duplicate gcda from src/.libs.
           lcov -c \
-            $(find "$PWD" -name \*.gcda -exec dirname {} + | uniq | grep -v \\.libs | xargs -I{} echo "-d {}" | xargs) \
+            -d $PWD \
             --rc branch_coverage=1 \
             -o coverage.info || true
         else
@@ -607,7 +607,7 @@ runs:
           cat coverage.info
         elif command -v lcov >/dev/null 2>&1; then
           lcov -c \
-            $(find . -name \*.gcda -exec dirname {} + | uniq | grep -v \\.libs | xargs -I{} echo "-d {}" | xargs) \
+            -d . \
             --rc branch_coverage=1 \
             -o coverage.info
           sed -i "s#^SF:$PWD/#SF:#" coverage.info
