@@ -39,7 +39,7 @@
  * Private property that keeps the NSImageView used for preview rendering.
  */
 @interface SixelPreviewProvider ()
-@property (strong) NSImageView *imageView;
+@property (strong) NSImageView * _Nonnull imageView;
 @end
 
 @implementation SixelPreviewProvider
@@ -49,10 +49,12 @@
  */
 - (void)loadView
 {
-    NSView *container = [[NSView alloc] initWithFrame:NSMakeRect(0.0, 0.0, 640.0, 480.0)];
+    NSView *container =
+        [[NSView alloc] initWithFrame:NSMakeRect(0.0, 0.0, 640.0, 480.0)];
     container.wantsLayer = YES;
 
-    NSImageView *imageView = [[NSImageView alloc] initWithFrame:container.bounds];
+    NSImageView *imageView =
+        [[NSImageView alloc] initWithFrame:container.bounds];
     imageView.imageScaling = NSImageScaleProportionallyUpOrDown;
     imageView.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
     imageView.editable = NO;
@@ -67,7 +69,7 @@
 /*
  * Apply the decoded image to the UI and update the preferred content size.
  */
-- (void)updateViewWithImage:(NSImage *)image
+- (void)updateViewWithImage:(NSImage * _Nonnull)image
 {
     self.currentImage = image;
     self.imageView.image = image;
@@ -79,19 +81,27 @@
     }
 }
 
-- (void)providePreviewForFileRequest:(QLFilePreviewRequest *)request
-                    completionHandler:(void (^)(QLPreviewReply * _Nullable reply,
-                                                NSError * _Nullable error))handler
+- (void)providePreviewForFileRequest:(QLFilePreviewRequest * _Nonnull)request
+                    completionHandler:
+                        (void (^ _Nonnull)(QLPreviewReply * _Nullable reply,
+                                           NSError * _Nullable error))handler
 {
     NSURL *url = request.fileURL;
-    SixelQuickLookLog(OS_LOG_TYPE_DEFAULT, @"[preview] provide preview for %@", url.path);
+    SixelQuickLookLog(OS_LOG_TYPE_DEFAULT,
+                      @"[preview] provide preview for %@",
+                      url.path);
 
     BOOL scoped = [url startAccessingSecurityScopedResource];
 
     /*
      * Helper block that re-enters the main queue after background decoding.
      */
-    void (^deliver)(QLPreviewReply * _Nullable, NSError * _Nullable, NSImage * _Nullable) = ^(QLPreviewReply *reply, NSError *error, NSImage *image) {
+    void (^deliver)(QLPreviewReply * _Nullable,
+                    NSError * _Nullable,
+                    NSImage * _Nullable) =
+        ^(QLPreviewReply * _Nullable reply,
+          NSError * _Nullable error,
+          NSImage * _Nullable image) {
         dispatch_async(dispatch_get_main_queue(), ^{
             if (image != nil) {
                 [self updateViewWithImage:image];
@@ -111,17 +121,23 @@
         CGImageRef image = SixelQuickLookCreateImageFromURL(url, &decodeError);
         if (image == NULL) {
             if (decodeError != nil) {
-                SixelQuickLookLog(OS_LOG_TYPE_ERROR, @"[preview] decode failed: %@", decodeError.localizedDescription);
+                SixelQuickLookLog(OS_LOG_TYPE_ERROR,
+                                  @"[preview] decode failed: %@",
+                                  decodeError.localizedDescription);
             }
             deliver(nil, decodeError, nil);
             return;
         }
 
-        CGSize imageSize = CGSizeMake(CGImageGetWidth(image), CGImageGetHeight(image));
+        CGSize imageSize =
+            CGSizeMake(CGImageGetWidth(image), CGImageGetHeight(image));
         if (imageSize.width <= 0.0 || imageSize.height <= 0.0) {
             CGImageRelease(image);
-            NSError *error = SixelQuickLookMakeError(-3, @"Invalid SIXEL image dimensions");
-            SixelQuickLookLog(OS_LOG_TYPE_ERROR, @"[preview] invalid size for %@", url.path);
+            NSError *error = SixelQuickLookMakeError(
+                -3, @"Invalid SIXEL image dimensions");
+            SixelQuickLookLog(OS_LOG_TYPE_ERROR,
+                              @"[preview] invalid size for %@",
+                              url.path);
             deliver(nil, error, nil);
             return;
         }
@@ -133,7 +149,9 @@
 
         if (pngData == nil) {
             if (pngError != nil) {
-                SixelQuickLookLog(OS_LOG_TYPE_ERROR, @"[preview] PNG conversion failed: %@", pngError.localizedDescription);
+                SixelQuickLookLog(OS_LOG_TYPE_ERROR,
+                                  @"[preview] PNG conversion failed: %@",
+                                  pngError.localizedDescription);
             }
             deliver(nil, pngError, nil);
             return;
@@ -145,21 +163,30 @@
         }
 
         if (pngType == nil) {
-            NSError *typeError = SixelQuickLookMakeError(-10, @"Failed to resolve PNG content type");
-            SixelQuickLookLog(OS_LOG_TYPE_ERROR, @"[preview] failed to resolve PNG content type");
+            NSError *typeError = SixelQuickLookMakeError(
+                -10, @"Failed to resolve PNG content type");
+            SixelQuickLookLog(OS_LOG_TYPE_ERROR,
+                              @"[preview] failed to resolve PNG content type");
             deliver(nil, typeError, nil);
             return;
         }
 
-        QLPreviewReply *reply = [[QLPreviewReply alloc] initWithDataOfContentType:pngType
-                                                                      contentSize:imageSize
-                                                               dataCreationBlock:^NSData * _Nullable (QLPreviewReply * _Nonnull __unused replyObj,
-                                                                                                   NSError * _Nullable * _Nullable __unused errorPtr) {
+        QLPreviewReply *reply =
+            [[QLPreviewReply alloc] initWithDataOfContentType:pngType
+                                                  contentSize:imageSize
+                                           dataCreationBlock:
+                                               ^NSData * _Nullable(
+                                                   QLPreviewReply * _Nonnull
+                                                       __unused replyObj,
+                                                   NSError * _Nullable *
+                                                       _Nullable __unused
+                                                       errorPtr) {
             return [pngData copy];
         }];
 
         if (reply == nil) {
-            NSError *replyError = SixelQuickLookMakeError(-11, @"Failed to create Quick Look preview");
+            NSError *replyError = SixelQuickLookMakeError(
+                -11, @"Failed to create Quick Look preview");
             deliver(nil, replyError, nil);
             return;
         }
@@ -168,9 +195,13 @@
     });
 }
 
-- (void)preparePreviewOfFileAtURL:(NSURL *)url completionHandler:(void (^)(NSError * _Nullable))handler
+- (void)preparePreviewOfFileAtURL:(NSURL * _Nonnull)url
+                completionHandler:
+                    (void (^ _Nonnull)(NSError * _Nullable))handler
 {
-    SixelQuickLookLog(OS_LOG_TYPE_DEFAULT, @"[preview] prepare preview for %@", url.path);
+    SixelQuickLookLog(OS_LOG_TYPE_DEFAULT,
+                      @"[preview] prepare preview for %@",
+                      url.path);
 
     BOOL scoped = [url startAccessingSecurityScopedResource];
 
@@ -183,7 +214,9 @@
 
         if (image == NULL) {
             if (decodeError != nil) {
-                SixelQuickLookLog(OS_LOG_TYPE_ERROR, @"[preview] decode failed: %@", decodeError.localizedDescription);
+                SixelQuickLookLog(OS_LOG_TYPE_ERROR,
+                                  @"[preview] decode failed: %@",
+                                  decodeError.localizedDescription);
             }
             dispatch_async(dispatch_get_main_queue(), ^{
                 handler(decodeError);
@@ -202,7 +235,8 @@
                 [self updateViewWithImage:imageObj];
                 handler(nil);
             } else {
-                NSError *error = SixelQuickLookMakeError(-5, @"Failed to create NSImage");
+                NSError *error = SixelQuickLookMakeError(
+                    -5, @"Failed to create NSImage");
                 handler(error);
             }
             if (scoped) {

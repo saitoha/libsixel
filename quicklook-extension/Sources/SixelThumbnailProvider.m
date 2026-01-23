@@ -34,10 +34,12 @@
 
 @implementation SixelThumbnailProvider
 
-- (void)provideThumbnailForFileRequest:(QLFileThumbnailRequest *)request
+- (void)provideThumbnailForFileRequest:
+            (QLFileThumbnailRequest * _Nonnull)request
                      completionHandler:
-                         (void (^)(QLThumbnailReply * _Nullable reply,
-                                   NSError * _Nullable error))handler
+                         (void (^ _Nonnull)(
+                             QLThumbnailReply * _Nullable reply,
+                             NSError * _Nullable error))handler
 {
     NSURL *fileURL = request.fileURL;
     CGSize maximumSize = request.maximumSize;
@@ -50,8 +52,9 @@
     BOOL scoped = [fileURL startAccessingSecurityScopedResource];
     /* Forward results to Quick Look on the main queue once processing
      * finishes. */
-    void (^deliver)(QLThumbnailReply *_Nullable, NSError *_Nullable) =
-        ^(QLThumbnailReply *reply, NSError *error) {
+    void (^deliver)(QLThumbnailReply * _Nullable, NSError * _Nullable) =
+        ^(QLThumbnailReply * _Nullable reply,
+          NSError * _Nullable error) {
         dispatch_async(dispatch_get_main_queue(), ^{
             handler(reply, error);
         });
@@ -104,7 +107,8 @@
         CGImageRef imageForBlock = CGImageRetain(image);
         QLThumbnailReply *reply =
             [QLThumbnailReply replyWithContextSize:fitted
-                                     drawingBlock:^BOOL(CGContextRef context) {
+                                     drawingBlock:^BOOL(
+                                         CGContextRef _Nonnull context) {
                                          size_t width =
                                              CGBitmapContextGetWidth(context);
                                          size_t height =
