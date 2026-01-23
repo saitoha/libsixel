@@ -301,6 +301,36 @@ library_built_with_asan() {
     return 1
 }
 
+# Detect whether the shared library carries ThreadSanitizer instrumentation.
+# We use this to skip Python extension tests on macOS where the system
+# Python runtime is not built with TSan and triggers false positives.
+library_built_with_tsan() {
+    target=$1
+
+    if command -v nm >/dev/null 2>&1; then
+        if nm -an "${target}" 2>/dev/null | grep -q "__tsan_init"; then
+            if [ -n "${tap_log_file:-}" ]; then
+                printf 'tsan detected via nm in %s\n' "${target}" \
+                    >>"${tap_log_file}"
+            fi
+            return 0
+        fi
+    fi
+
+    if command -v strings >/dev/null 2>&1; then
+        if strings "${target}" 2>/dev/null | \
+           grep -qiE 'libclang_rt\.tsan|tsan\.dll|__tsan_init'; then
+            if [ -n "${tap_log_file:-}" ]; then
+                printf 'tsan detected via strings in %s\n' "${target}" \
+                    >>"${tap_log_file}"
+            fi
+            return 0
+        fi
+    fi
+
+    return 1
+}
+
 # Determine the Python interpreter bit width.
 detect_python_bits() {
     bin=$1
@@ -713,6 +743,13 @@ python_prepare() {
     if library_built_with_asan "${shared_lib}"; then
         tap_skip_all "libsixel built with AddressSanitizer"
     fi
+    case "$(uname -s)" in
+        Darwin)
+            if library_built_with_tsan "${shared_lib}"; then
+                tap_skip_all "macOS TSan run (python runtime is not sanitized)"
+            fi
+            ;;
+    esac
 
     lib_bits=$(detect_library_bits "${python_bin}" "${shared_lib}")
     lib_arch=$(detect_library_arch "${python_bin}" "${shared_lib}")
