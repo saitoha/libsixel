@@ -924,7 +924,11 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
 
     threadpool_set_affinity(ctx->pool, ctx->pin_threads);
 
-    /* Initialize writer-visible fields before the writer thread starts. */
+    /* Initialize writer-visible fields before the writer thread starts.
+     * Serialize initialization of writer-visible state so the writer thread
+     * cannot observe partially initialized fields on startup.
+     */
+    sixel_mutex_lock(&ctx->mutex);
     ctx->next_band_to_flush = 0;
     ctx->writer_should_stop = 0;
     ctx->writer_error = SIXEL_OK;
@@ -940,9 +944,11 @@ sixel_parallel_context_begin(sixel_parallel_context_t *ctx,
                                  sixel_parallel_writer_main,
                                  ctx);
     if (SIXEL_FAILED(status)) {
+        sixel_mutex_unlock(&ctx->mutex);
         return status;
     }
     ctx->writer_started = 1;
+    sixel_mutex_unlock(&ctx->mutex);
 
     return SIXEL_OK;
 }
