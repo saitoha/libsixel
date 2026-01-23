@@ -371,7 +371,7 @@ sixel_aborttrace_debug_enabled(void)
 
     /* Debug logging for abort-trace install decisions. */
     enabled = 0;
-    value = sixel_aborttrace_getenv_dup("SIXEL_ABORT_TRACE_DEBUG");
+    value = sixel_aborttrace_getenv_dup("ABORTTRACE_DEBUG");
     if (value != NULL) {
         if (sixel_aborttrace_match_token(value, "1") ||
             sixel_aborttrace_match_token(value, "true") ||
