@@ -63,35 +63,6 @@ sixel_lookup_float32_distance(sixel_lookup_float32_t const *lut,
 
 #define SIXEL_LOOKUP_EYTZINGER_WINDOW 6
 
-static float
-sixel_lookup_float32_component_range(int pixelformat, int component)
-{
-    float range;
-
-    range = 1.0f;
-    /*
-     * Range values mirror the float32 channel clamps in pixelformat.c so the
-     * LUT weights compensate for L/ab and YUV component scale differences.
-     */
-    if (pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32) {
-        range = 1.0f;
-    } else if (pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32) {
-        range = (component == 0) ? 1.0f : 3.0f;
-    } else if (pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32) {
-        range = (component == 0) ? 1.0f : 2.0f;
-    } else if (pixelformat == SIXEL_PIXELFORMAT_YUVFLOAT32) {
-        if (component == 0) {
-            range = 1.0f;
-        } else if (component == 1) {
-            range = 0.872f;
-        } else {
-            range = 1.23f;
-        }
-    }
-
-    return range;
-}
-
 #if defined(__GNUC__) || defined(__clang__)
 #define SIXEL_LOOKUP_EYTZINGER_PREFETCH(base, index, count) \
     do { \
@@ -1008,9 +979,6 @@ sixel_lookup_float32_prepare_kdtree(sixel_lookup_float32_t *lut)
 
 static SIXELSTATUS
 sixel_lookup_float32_configure_vpte(sixel_lookup_float32_t *lut,
-                                    int wcomp1,
-                                    int wcomp2,
-                                    int wcomp3,
                                     int pixelformat)
 {
     SIXELSTATUS status;
@@ -1041,10 +1009,11 @@ sixel_lookup_float32_configure_vpte(sixel_lookup_float32_t *lut,
                                                     lut->ncolors,
                                                     resolution,
                                                     refine,
-                                                    wcomp1,
-                                                    wcomp2,
-                                                    wcomp3,
-                                                    lut->depth);
+                                                    lut->weights[0],
+                                                    lut->weights[1],
+                                                    lut->weights[2],
+                                                    lut->depth,
+                                                    pixelformat);
 
     status = sixel_lookup_vpte_float32_configure(lut->vpte,
                                                  lut->palette,
@@ -1054,9 +1023,9 @@ sixel_lookup_float32_configure_vpte(sixel_lookup_float32_t *lut,
                                                  use_dist2,
                                                  use_cache,
                                                  shared_flag,
-                                                 wcomp1,
-                                                 wcomp2,
-                                                 wcomp3,
+                                                 lut->weights[0],
+                                                 lut->weights[1],
+                                                 lut->weights[2],
                                                  pixelformat);
     if (SIXEL_FAILED(status)) {
         lut->vpte_ready = 0;
@@ -1123,7 +1092,8 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
      */
     for (component = 0; component < SIXEL_LOOKUP_FLOAT_COMPONENTS;
             ++component) {
-        range = sixel_lookup_float32_component_range(pixelformat, component);
+        range = sixel_pixelformat_float_channel_range(pixelformat,
+                                                      component);
         if (range <= 0.0f) {
             range = 1.0f;
         }
@@ -1141,11 +1111,7 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
     }
 
     if (lut->policy == SIXEL_LUT_POLICY_VPTE) {
-        status = sixel_lookup_float32_configure_vpte(lut,
-                                                     wcomp1,
-                                                     wcomp2,
-                                                     wcomp3,
-                                                     pixelformat);
+        status = sixel_lookup_float32_configure_vpte(lut, pixelformat);
         if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
                 "sixel_lookup_float32_configure: VPTE failed; "

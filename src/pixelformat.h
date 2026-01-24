@@ -31,6 +31,18 @@ extern "C" {
 
 
 float
+sixel_pixelformat_float_channel_min(int pixelformat,
+                                    int channel);
+
+float
+sixel_pixelformat_float_channel_max(int pixelformat,
+                                    int channel);
+
+float
+sixel_pixelformat_float_channel_range(int pixelformat,
+                                      int channel);
+
+float
 sixel_pixelformat_float_channel_clamp(int pixelformat,
                                       int channel,
                                       float value);

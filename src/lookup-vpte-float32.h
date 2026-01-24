@@ -90,10 +90,10 @@ sixel_lookup_vpte_float32_configure(sixel_lookup_vpte_float32_t *vpte,
                                  int use_dist2,
                                  int use_cache,
                                  int shared,
-                                 int wcomp1,
-                                 int wcomp2,
-                                 int wcomp3,
-                                    int pixelformat);
+                                 float wcomp1,
+                                 float wcomp2,
+                                 float wcomp3,
+                                 int pixelformat);
 
 int
 sixel_lookup_vpte_float32_map(sixel_lookup_vpte_float32_t *vpte,
@@ -104,10 +104,11 @@ sixel_lookup_vpte_float32_signature(float const *palette,
                                     int ncolors,
                                     int resolution,
                                     int refine,
-                                    int wcomp1,
-                                    int wcomp2,
-                                    int wcomp3,
-                                    int depth);
+                                    float wcomp1,
+                                    float wcomp2,
+                                    float wcomp3,
+                                    int depth,
+                                    int pixelformat);
 
 uint32_t
 sixel_lookup_vpte_float32_shared_signature(

@@ -274,6 +274,14 @@ sixel_pixelformat_float_channel_min_internal(int pixelformat,
     return 0.0f;
 }
 
+float
+sixel_pixelformat_float_channel_min(int pixelformat,
+                                    int channel)
+{
+    return sixel_pixelformat_float_channel_min_internal(pixelformat,
+                                                        channel);
+}
+
 static float
 sixel_pixelformat_float_channel_max_internal(int pixelformat,
                                              int channel)
@@ -307,6 +315,33 @@ sixel_pixelformat_float_channel_max_internal(int pixelformat,
         return SIXEL_YUV_V_FLOAT_MAX;
     }
     return 1.0f;
+}
+
+float
+sixel_pixelformat_float_channel_max(int pixelformat,
+                                    int channel)
+{
+    return sixel_pixelformat_float_channel_max_internal(pixelformat,
+                                                        channel);
+}
+
+float
+sixel_pixelformat_float_channel_range(int pixelformat,
+                                      int channel)
+{
+    float minimum;
+    float maximum;
+    float range;
+
+    minimum = sixel_pixelformat_float_channel_min_internal(pixelformat,
+                                                           channel);
+    maximum = sixel_pixelformat_float_channel_max_internal(pixelformat,
+                                                           channel);
+    range = maximum - minimum;
+    if (range <= 0.0f) {
+        range = 1.0f;
+    }
+    return range;
 }
 
 float
