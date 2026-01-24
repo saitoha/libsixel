@@ -573,10 +573,12 @@ sixel_compat_getenv(const char *name)
     static struct sixel_env_cache *cache_head = NULL;
     struct sixel_env_cache *entry;
     struct sixel_env_cache *new_entry;
+    size_t name_length;
     char *value;
     char *name_copy;
     char *value_copy;
     size_t length;
+    int copy_result;
     errno_t status;
 
     if (name == NULL) {
@@ -631,13 +633,26 @@ sixel_compat_getenv(const char *name)
         return NULL;
     }
 
-    name_copy = (char *)malloc(strlen(name) + 1);
+    name_length = strlen(name);
+    name_copy = (char *)malloc(name_length + 1);
     if (name_copy == NULL) {
         free(value_copy);
         free(new_entry);
         return NULL;
     }
-    strcpy(name_copy, name);
+    /*
+     * Copy the variable name via the compat helper so MSVC uses
+     * strcpy_s() without emitting deprecation warnings.
+     */
+    copy_result = sixel_compat_strcpy(name_copy,
+                                      name_length + 1,
+                                      name);
+    if (copy_result < 0) {
+        free(name_copy);
+        free(value_copy);
+        free(new_entry);
+        return NULL;
+    }
 
     new_entry->name = name_copy;
     new_entry->value = value_copy;
