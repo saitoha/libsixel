@@ -75,6 +75,8 @@ srcs = [
   'filter-palette.h',
   'filter-vpte.c',
   'filter-vpte.h',
+  'filter-eytzinger.c',
+  'filter-eytzinger.h',
   'filter-clip.c',
   'filter-clip.h',
   'filter-resize.c',

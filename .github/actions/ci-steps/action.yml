@@ -582,7 +582,7 @@ runs:
         elif command -v lcov >/dev/null 2>&1; then
           # Keep src for static builds; avoid duplicate gcda from src/.libs.
           lcov -c \
-            -d $PWD \
+            -d "$PWD" \
             --rc branch_coverage=1 \
             -o coverage.info || true
         else
@@ -591,7 +591,7 @@ runs:
         # Normalize absolute paths so Coveralls can map files to the repo tree.
         # Meson may emit builddir paths, so strip builddir before the repo root.
         if test -f coverage.info; then
-          sed "s#^SF:${PWD}/builddir/#SF:#; s#^SF:${PWD}/#SF:#" \
+          sed "s#^SF:${PWD}/builddir/#SF:#; s#^SF:${PWD}/#SF:#; s#^SF:/#SF:#" \
             coverage.info > coverage.info.tmp
           mv coverage.info.tmp coverage.info
           cat coverage.info
@@ -615,10 +615,10 @@ runs:
           cat coverage.info
         elif command -v lcov >/dev/null 2>&1; then
           lcov -c \
-            -d . \
+            -d "${PWD}" \
             --rc branch_coverage=1 \
             -o coverage.info
-          sed "s#^SF:${PWD}\\\\builddir\\\\#SF:#; s#^SF:${PWD}\\\\#SF:#" \
+          sed "s#^SF:${PWD}\\\\builddir\\\\#SF:#; s#^SF:${PWD}\\\\#SF:#; s#^SF:\\\\#SF:#" \
             coverage.info > coverage.info.tmp
           mv coverage.info.tmp coverage.info
           cat coverage.info

@@ -195,7 +195,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/filter-encode.h $(srcdir)/filter-lookup.c \
 	$(srcdir)/filter-lookup.h $(srcdir)/filter-palette.c \
 	$(srcdir)/filter-palette.h $(srcdir)/filter-vpte.c \
-	$(srcdir)/filter-vpte.h $(srcdir)/filter-clip.c \
+	$(srcdir)/filter-vpte.h $(srcdir)/filter-eytzinger.c \
+	$(srcdir)/filter-eytzinger.h $(srcdir)/filter-clip.c \
 	$(srcdir)/filter-clip.h $(srcdir)/filter-resize.c \
 	$(srcdir)/filter-resize.h $(srcdir)/filter-sample.c \
 	$(srcdir)/filter-sample.h $(srcdir)/filter.c \
@@ -277,6 +278,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-lookup.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-palette.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-vpte.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-eytzinger.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-clip.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-resize.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-sample.lo \
@@ -376,6 +378,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-filter-load.Plo \
 	./$(DEPDIR)/libsixel_la-filter-lookup.Plo \
 	./$(DEPDIR)/libsixel_la-filter-palette.Plo \
+	./$(DEPDIR)/libsixel_la-filter-eytzinger.Plo \
 	./$(DEPDIR)/libsixel_la-filter-resize.Plo \
 	./$(DEPDIR)/libsixel_la-filter-sample.Plo \
 	./$(DEPDIR)/libsixel_la-filter-vpte.Plo \
@@ -778,6 +781,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-palette.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-vpte.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-vpte.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-eytzinger.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-eytzinger.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-clip.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-clip.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-resize.c \
@@ -1014,6 +1019,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-load.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-lookup.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-palette.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-eytzinger.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-resize.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-sample.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-vpte.Plo@am__quote@ # am--include-marker
@@ -1358,6 +1364,13 @@ libsixel_la-filter-vpte.lo: filter-vpte.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter-vpte.c' object='libsixel_la-filter-vpte.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-filter-vpte.lo `test -f 'filter-vpte.c' || echo '$(srcdir)/'`filter-vpte.c
+
+libsixel_la-filter-eytzinger.lo: filter-eytzinger.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-filter-eytzinger.lo -MD -MP -MF $(DEPDIR)/libsixel_la-filter-eytzinger.Tpo -c -o libsixel_la-filter-eytzinger.lo `test -f 'filter-eytzinger.c' || echo '$(srcdir)/'`filter-eytzinger.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-filter-eytzinger.Tpo $(DEPDIR)/libsixel_la-filter-eytzinger.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter-eytzinger.c' object='libsixel_la-filter-eytzinger.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-filter-eytzinger.lo `test -f 'filter-eytzinger.c' || echo '$(srcdir)/'`filter-eytzinger.c
 
 libsixel_la-filter-clip.lo: filter-clip.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-filter-clip.lo -MD -MP -MF $(DEPDIR)/libsixel_la-filter-clip.Tpo -c -o libsixel_la-filter-clip.lo `test -f 'filter-clip.c' || echo '$(srcdir)/'`filter-clip.c
@@ -1880,6 +1893,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-load.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-lookup.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-palette.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-eytzinger.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-resize.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-vpte.Plo
@@ -2003,6 +2017,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-load.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-lookup.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-palette.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-eytzinger.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-resize.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-vpte.Plo

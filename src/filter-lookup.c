@@ -86,12 +86,16 @@ sixel_filter_lookup_build(const sixel_filter_lookup_config_t *config,
     int wcomp1;
     int wcomp2;
     int wcomp3;
+    float const *palette_float;
+    int float_depth;
 
     status = SIXEL_FALSE;
     memset(&result, 0, sizeof(result));
     wcomp1 = 0;
     wcomp2 = 0;
     wcomp3 = 0;
+    palette_float = NULL;
+    float_depth = 0;
 
     if (config == NULL || result_out == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -112,9 +116,13 @@ sixel_filter_lookup_build(const sixel_filter_lookup_config_t *config,
         result.owned = 1;
     }
 
+    palette_float = config->palette_float;
+    float_depth = config->float_depth;
     status = sixel_lut_configure(result.lut,
                                  config->palette,
+                                 palette_float,
                                  config->depth,
+                                 float_depth,
                                  config->ncolors,
                                  config->complexion,
                                  wcomp1,
