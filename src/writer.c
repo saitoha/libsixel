@@ -43,9 +43,6 @@
 #if HAVE_LIBPNG
 # include <png.h>
 #else
-# if !defined(HAVE_MEMCPY)
-#  define memcpy(d, s, n) (bcopy ((s), (d), (n)))
-# endif
 /*
  * Silence warnings from the bundled stb_image_write header. The file is a
  * third-party dependency, so we prefer to guard the include site instead of

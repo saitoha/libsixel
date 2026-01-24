@@ -16186,6 +16186,22 @@ else
 fi
 
 
+# Enable warnings-as-errors only in CI so local builds stay flexible.
+if test "x$CI" != "x"
+then :
+
+  if test "x$using_cl" = "xyes"; then
+    CFLAGS="$CFLAGS /WX"
+    OBJCFLAGS="$OBJCFLAGS /WX"
+    CXXFLAGS="$CXXFLAGS /WX"
+  else
+    CFLAGS="$CFLAGS -Werror"
+    OBJCFLAGS="$OBJCFLAGS -Werror"
+    CXXFLAGS="$CXXFLAGS -Werror"
+  fi
+
+fi
+
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler can silence -Wtypedef-redefinition via pragmas" >&5
 printf %s "checking whether the compiler can silence -Wtypedef-redefinition via pragmas... " >&6; }
 if test ${ac_cv_have_diag_typedef_redef+y}

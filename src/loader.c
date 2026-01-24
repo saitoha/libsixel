@@ -91,10 +91,6 @@
 # include <dirent.h>
 #endif
 
-#if !defined(HAVE_MEMCPY)
-# define memcpy(d, s, n) (bcopy ((s), (d), (n)))
-#endif
-
 #include <sixel.h>
 #include "loader.h"
 #include "loader-builtin.h"

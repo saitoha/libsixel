@@ -1123,8 +1123,8 @@ img2sixel_report_invalid_argument(int short_opt,
                                   char const *value,
                                   char const *detail)
 {
-    char buffer[1024];
-    char detail_copy[1024];
+    char buffer[2048];
+    char detail_copy[2048];
     cli_option_help_t const *entry;
     char const *long_opt;
     char const *help_text;

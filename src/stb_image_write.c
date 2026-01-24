@@ -28,10 +28,6 @@
 
 #include "compat_stub.h"
 
-#if !defined(HAVE_MEMCPY)
-# define memcpy(d, s, n) (bcopy ((s), (d), (n)))
-#endif
-
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define STBIW_MEMMOVE(a, b, sz) sixel_compat_memmove((a), (b), (sz))
 
