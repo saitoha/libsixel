@@ -487,6 +487,8 @@ img2sixel_fsync(int fd)
 #elif HAVE_FSYNC
     return fsync(fd);
 #else
+    /* Keep an explicit no-op for environments without fsync support. */
+    (void)fd;
     return (0);
 #endif
 }
@@ -504,6 +506,9 @@ img2sixel_mkdir(const char *path, mode_t mode)
 #elif HAVE_MKDIR
     return mkdir(path, mode);
 #else
+    /* Silence unused arguments when mkdir is unavailable. */
+    (void)path;
+    (void)mode;
     return (-1);
 #endif
 }
