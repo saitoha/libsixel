@@ -64,6 +64,7 @@
 #include "compat_stub.h"
 #include "lookup-common.h"
 #include "lookup-vpte-float32.h"
+#include "pixelformat.h"
 #include "logger.h"
 #include "threading.h"
 #include "threadpool.h"
@@ -125,9 +126,12 @@ struct sixel_lookup_vpte_shared_float32 {
     int resolution;
     int refine;
     int use_dist2;
-    int weights[3];
+    float weights[3];
+    float channel_min[3];
+    float channel_scale[3];
     int ncolors;
     int depth;
+    int pixelformat;
     double safe_radius2;
     int use_u16;
     float *palette;
@@ -143,6 +147,62 @@ static int const sixel_lookup_vpte_resolution_min_float32 = 64;
 static int const sixel_lookup_vpte_resolution_max_float32 = 256;
 static int const sixel_lookup_vpte_tile_xy_default_float32 = 8;
 static int const sixel_lookup_vpte_tile_depth_default_float32 = 8;
+
+/*
+ * VPTE builds a unit lattice, so palette and sample components must be
+ * normalized to [0, 1].  For float32 working color spaces with asymmetric
+ * channel ranges (Lab/DIN99d/YUV), normalize using:
+ *
+ *   normalized = (clamp(value) - min) / (max - min)
+ *
+ * The clamped, unnormalized values are still stored for distance refinement.
+ */
+static float
+sixel_lookup_vpte_normalize_component_float32(
+    sixel_lookup_vpte_shared_float32_t const *shared,
+    float value,
+    int component)
+{
+    float clamped;
+    float normalized;
+
+    clamped = sixel_pixelformat_float_channel_clamp(shared->pixelformat,
+                                                    component,
+                                                    value);
+    normalized = (clamped - shared->channel_min[component])
+                 * shared->channel_scale[component];
+    if (normalized < 0.0f) {
+        normalized = 0.0f;
+    }
+    if (normalized > 1.0f) {
+        normalized = 1.0f;
+    }
+
+    return normalized;
+}
+
+static void
+sixel_lookup_vpte_prepare_ranges_float32(
+    sixel_lookup_vpte_shared_float32_t *shared,
+    int pixelformat)
+{
+    float minimum;
+    float range;
+    int component;
+
+    shared->pixelformat = pixelformat;
+    for (component = 0; component < 3; ++component) {
+        minimum = sixel_pixelformat_float_channel_min(pixelformat,
+                                                      component);
+        range = sixel_pixelformat_float_channel_range(pixelformat,
+                                                      component);
+        shared->channel_min[component] = minimum;
+        if (range <= 0.0f) {
+            range = 1.0f;
+        }
+        shared->channel_scale[component] = 1.0f / range;
+    }
+}
 
 /*
  * Choose VPTE tile defaults using palette diversity.  Highly varied palettes
@@ -743,35 +803,56 @@ sixel_lookup_vpte_float32_signature(float const *palette,
                                     int ncolors,
                                     int resolution,
                                     int refine,
-                                    int wcomp1,
-                                    int wcomp2,
-                                    int wcomp3,
-                                    int depth)
+                                    float wcomp1,
+                                    float wcomp2,
+                                    float wcomp3,
+                                    int depth,
+                                    int pixelformat)
 {
     uint32_t hash;
     uint32_t bits;
     size_t total;
     size_t index;
-    float clamped;
+    float normalized;
+    float minimum[3];
+    float range[3];
+    int component;
 
     hash = 0x811c9dc5U;
     hash = sixel_lookup_vpte_mix_u32_float32(hash, (uint32_t)resolution);
     hash = sixel_lookup_vpte_mix_u32_float32(hash, (uint32_t)refine);
     hash = sixel_lookup_vpte_mix_u32_float32(hash, (uint32_t)ncolors);
     hash = sixel_lookup_vpte_mix_u32_float32(hash, (uint32_t)depth);
-    hash = sixel_lookup_vpte_mix_u32_float32(hash, (uint32_t)wcomp1);
-    hash = sixel_lookup_vpte_mix_u32_float32(hash, (uint32_t)wcomp2);
-    hash = sixel_lookup_vpte_mix_u32_float32(hash, (uint32_t)wcomp3);
+    memcpy(&bits, &wcomp1, sizeof(bits));
+    hash = sixel_lookup_vpte_mix_u32_float32(hash, bits);
+    memcpy(&bits, &wcomp2, sizeof(bits));
+    hash = sixel_lookup_vpte_mix_u32_float32(hash, bits);
+    memcpy(&bits, &wcomp3, sizeof(bits));
+    hash = sixel_lookup_vpte_mix_u32_float32(hash, bits);
+
+    for (component = 0; component < 3; ++component) {
+        minimum[component] = sixel_pixelformat_float_channel_min(pixelformat,
+                                                                 component);
+        range[component] = sixel_pixelformat_float_channel_range(pixelformat,
+                                                                 component);
+        if (range[component] <= 0.0f) {
+            range[component] = 1.0f;
+        }
+    }
 
     total = (size_t)ncolors * (size_t)depth;
     for (index = 0U; index < total; ++index) {
-        clamped = palette[index];
-        if (clamped < 0.0f) {
-            clamped = 0.0f;
-        } else if (clamped > 1.0f) {
-            clamped = 1.0f;
+        component = (int)(index % (size_t)depth);
+        normalized = sixel_pixelformat_float_channel_clamp(pixelformat,
+                                                           component,
+                                                           palette[index]);
+        normalized = (normalized - minimum[component]) / range[component];
+        if (normalized < 0.0f) {
+            normalized = 0.0f;
+        } else if (normalized > 1.0f) {
+            normalized = 1.0f;
         }
-        memcpy(&bits, &clamped, sizeof(bits));
+        memcpy(&bits, &normalized, sizeof(bits));
         hash = sixel_lookup_vpte_mix_u32_float32(hash, bits);
     }
 
@@ -892,6 +973,7 @@ sixel_lookup_vpte_quantize_palette_float32(float const *palette,
     int index;
     int component;
     float sample;
+    float normalized;
     int quantized;
     int limit;
 
@@ -902,13 +984,11 @@ sixel_lookup_vpte_quantize_palette_float32(float const *palette,
                                    shared->depth,
                                    index,
                                    component)];
-            if (sample < 0.0f) {
-                sample = 0.0f;
-            }
-            if (sample > 1.0f) {
-                sample = 1.0f;
-            }
-            quantized = (int)lroundf(sample * (float)limit);
+            normalized = sixel_lookup_vpte_normalize_component_float32(
+                shared,
+                sample,
+                component);
+            quantized = (int)lroundf(normalized * (float)limit);
             if (quantized < 0) {
                 quantized = 0;
             }
@@ -924,7 +1004,10 @@ sixel_lookup_vpte_quantize_palette_float32(float const *palette,
                                      shared->depth,
                                      index,
                                      component)]
-                = sample;
+                = sixel_pixelformat_float_channel_clamp(
+                    shared->pixelformat,
+                    component,
+                    sample);
         }
     }
 }
@@ -2032,10 +2115,11 @@ sixel_lookup_vpte_float32_build(sixel_lookup_vpte_float32_t *vpte,
                                 int resolution,
                                 int refine,
                                 int use_dist2,
-                                int wcomp1,
-                                int wcomp2,
-                                int wcomp3,
-                                int depth)
+                                float wcomp1,
+                                float wcomp2,
+                                float wcomp3,
+                                int depth,
+                                int pixelformat)
 {
     sixel_lookup_vpte_shared_float32_t *shared;
     double *distances;
@@ -2069,6 +2153,7 @@ sixel_lookup_vpte_float32_build(sixel_lookup_vpte_float32_t *vpte,
     shared->weights[2] = wcomp3;
     shared->ncolors = ncolors;
     shared->depth = depth;
+    shared->pixelformat = pixelformat;
     shared->safe_radius2 = 0.0;
     shared->use_u16 = ncolors > 256 ? 1 : 0;
     shared->dist2 = NULL;
@@ -2092,6 +2177,7 @@ sixel_lookup_vpte_float32_build(sixel_lookup_vpte_float32_t *vpte,
         sixel_lookup_vpte_timeline_close_float32(&timeline);
         return SIXEL_BAD_ALLOCATION;
     }
+    sixel_lookup_vpte_prepare_ranges_float32(shared, pixelformat);
     sixel_lookup_vpte_quantize_palette_float32(palette, shared);
 
     threads = sixel_lookup_vpte_resolve_threads_float32();
@@ -2281,9 +2367,9 @@ sixel_lookup_vpte_float32_configure(sixel_lookup_vpte_float32_t *vpte,
                                     int use_dist2,
                                     int use_cache,
                                     int shared_flag,
-                                    int wcomp1,
-                                    int wcomp2,
-                                    int wcomp3,
+                                    float wcomp1,
+                                    float wcomp2,
+                                    float wcomp3,
                                     int pixelformat)
 {
     SIXELSTATUS status;
@@ -2313,7 +2399,8 @@ sixel_lookup_vpte_float32_configure(sixel_lookup_vpte_float32_t *vpte,
                                              wcomp1,
                                              wcomp2,
                                              wcomp3,
-                                             3);
+                                             3,
+                                             pixelformat);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -2408,9 +2495,9 @@ sixel_lookup_vpte_refine_candidates_float32(
     double dy;
     double dz;
     double distance;
-    int weight1;
-    int weight2;
-    int weight3;
+    double weight1;
+    double weight2;
+    double weight3;
     float p1;
     float p2;
     float p3;
@@ -2436,9 +2523,9 @@ sixel_lookup_vpte_refine_candidates_float32(
     }
 
     plane = (size_t)shared->resolution * (size_t)shared->resolution;
-    weight1 = shared->weights[0];
-    weight2 = shared->weights[1];
-    weight3 = shared->weights[2];
+    weight1 = (double)shared->weights[0];
+    weight2 = (double)shared->weights[1];
+    weight3 = (double)shared->weights[2];
     best_index = -1;
     best_distance = DBL_MAX;
     used_count = 0;
@@ -2477,9 +2564,9 @@ sixel_lookup_vpte_refine_candidates_float32(
                 dx = (double)(pixel[0] - p1);
                 dy = (double)(pixel[1] - p2);
                 dz = (double)(pixel[2] - p3);
-                distance = (double)weight1 * dx * dx
-                         + (double)weight2 * dy * dy
-                         + (double)weight3 * dz * dz;
+                distance = weight1 * dx * dx
+                         + weight2 * dy * dy
+                         + weight3 * dz * dz;
                 if (distance < best_distance) {
                     best_distance = distance;
                     best_index = candidate;
@@ -2512,26 +2599,26 @@ sixel_lookup_vpte_float32_map(sixel_lookup_vpte_float32_t *vpte,
     }
 
     limit = vpte->shared->resolution - 1;
-    scaled = pixel[0] * (float)limit;
-    if (scaled < 0.0f) {
-        scaled = 0.0f;
-    }
+    scaled = sixel_lookup_vpte_normalize_component_float32(vpte->shared,
+                                                           pixel[0],
+                                                           0)
+             * (float)limit;
     x = (int)lroundf(scaled);
     if (x > limit) {
         x = limit;
     }
-    scaled = pixel[1] * (float)limit;
-    if (scaled < 0.0f) {
-        scaled = 0.0f;
-    }
+    scaled = sixel_lookup_vpte_normalize_component_float32(vpte->shared,
+                                                           pixel[1],
+                                                           1)
+             * (float)limit;
     y = (int)lroundf(scaled);
     if (y > limit) {
         y = limit;
     }
-    scaled = pixel[2] * (float)limit;
-    if (scaled < 0.0f) {
-        scaled = 0.0f;
-    }
+    scaled = sixel_lookup_vpte_normalize_component_float32(vpte->shared,
+                                                           pixel[2],
+                                                           2)
+             * (float)limit;
     z = (int)lroundf(scaled);
     if (z > limit) {
         z = limit;
