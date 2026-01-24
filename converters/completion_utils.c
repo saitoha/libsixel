@@ -390,7 +390,8 @@ img2sixel_compat_strcpy(char *destination,
         errno = EINVAL;
         return (-1);
     }
-    return (int)strlen(destination);
+    length = strlen(destination);
+    return (int)length;
 #else
     length = strlen(source);
     if (length >= destination_size) {
