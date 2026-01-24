@@ -174,17 +174,18 @@ sixel_filter_factory_vpte_init(sixel_filter_t *filter, const void *config)
 }
 
 static SIXELSTATUS
-sixel_filter_factory_eytzinger_init(sixel_filter_t *filter, const void *config)
+sixel_filter_factory_1d_eytzinger_init(sixel_filter_t *filter,
+                                       const void *config)
 {
-    const sixel_filter_eytzinger_config_t *eytzinger_config;
+    const sixel_filter_1d_eytzinger_config_t *eytzinger_config;
 
     if (config == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    eytzinger_config = (const sixel_filter_eytzinger_config_t *)config;
+    eytzinger_config = (const sixel_filter_1d_eytzinger_config_t *)config;
 
-    return sixel_filter_eytzinger_init(filter, eytzinger_config);
+    return sixel_filter_1d_eytzinger_init(filter, eytzinger_config);
 }
 
 static SIXELSTATUS
@@ -247,9 +248,9 @@ static const sixel_filter_factory_entry_t
     {"lookup", SIXEL_FILTER_KIND_LOOKUP, sixel_filter_factory_lookup_init},
     {"palette", SIXEL_FILTER_KIND_PALETTE, sixel_filter_factory_palette_init},
     {"vpte", SIXEL_FILTER_KIND_VPTE, sixel_filter_factory_vpte_init},
-    {"eytzinger",
+    {"1d-eytzinger",
      SIXEL_FILTER_KIND_EYTZINGER,
-     sixel_filter_factory_eytzinger_init},
+     sixel_filter_factory_1d_eytzinger_init},
     {"resize", SIXEL_FILTER_KIND_RESIZE, sixel_filter_factory_resize_init},
     {"sample", SIXEL_FILTER_KIND_SAMPLE, sixel_filter_factory_sample_init},
 };

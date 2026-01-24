@@ -38,22 +38,22 @@
 #include "status.h"
 
 /*
- * Internal state retained by the Eytzinger filter. The filter uses the lookup
- * builder to assemble a Eytzinger-specific LUT and tracks ownership so dispose
+ * Internal state retained by the 1d Eytzinger filter. The filter uses the
+ * lookup builder to assemble a 1d-specific LUT and tracks ownership so dispose
  * can release it when the caller does not take over.
  */
-typedef struct sixel_filter_eytzinger_state {
-    sixel_filter_eytzinger_config_t config;
+typedef struct sixel_filter_1d_eytzinger_state {
+    sixel_filter_1d_eytzinger_config_t config;
     sixel_filter_lookup_result_t result;
-} sixel_filter_eytzinger_state_t;
+} sixel_filter_1d_eytzinger_state_t;
 
 static SIXELSTATUS
-sixel_filter_eytzinger_apply(sixel_filter_t *filter,
-                             sixel_allocator_t *allocator,
-                             sixel_logger_t *logger)
+sixel_filter_1d_eytzinger_apply(sixel_filter_t *filter,
+                                sixel_allocator_t *allocator,
+                                sixel_logger_t *logger)
 {
     SIXELSTATUS status;
-    sixel_filter_eytzinger_state_t *state;
+    sixel_filter_1d_eytzinger_state_t *state;
     sixel_filter_lookup_result_t *result_out;
 
     status = SIXEL_FALSE;
@@ -64,7 +64,7 @@ sixel_filter_eytzinger_apply(sixel_filter_t *filter,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    state = (sixel_filter_eytzinger_state_t *)filter->userdata;
+    state = (sixel_filter_1d_eytzinger_state_t *)filter->userdata;
     if (state == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
@@ -97,16 +97,16 @@ sixel_filter_eytzinger_apply(sixel_filter_t *filter,
 }
 
 static void
-sixel_filter_eytzinger_dispose(sixel_filter_t *filter)
+sixel_filter_1d_eytzinger_dispose(sixel_filter_t *filter)
 {
-    sixel_filter_eytzinger_state_t *state;
+    sixel_filter_1d_eytzinger_state_t *state;
 
     state = NULL;
     if (filter == NULL) {
         return;
     }
 
-    state = (sixel_filter_eytzinger_state_t *)filter->userdata;
+    state = (sixel_filter_1d_eytzinger_state_t *)filter->userdata;
     if (state != NULL) {
         if (state->result.owned != 0 && state->result.lut != NULL) {
             sixel_lut_unref(state->result.lut);
@@ -117,11 +117,11 @@ sixel_filter_eytzinger_dispose(sixel_filter_t *filter)
 }
 
 SIXELSTATUS
-sixel_filter_eytzinger_init(sixel_filter_t *filter,
-                            const sixel_filter_eytzinger_config_t *config)
+sixel_filter_1d_eytzinger_init(sixel_filter_t *filter,
+                               const sixel_filter_1d_eytzinger_config_t *config)
 {
     SIXELSTATUS status;
-    sixel_filter_eytzinger_state_t *state;
+    sixel_filter_1d_eytzinger_state_t *state;
 
     status = SIXEL_FALSE;
     state = NULL;
@@ -134,8 +134,8 @@ sixel_filter_eytzinger_init(sixel_filter_t *filter,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    state = (sixel_filter_eytzinger_state_t *)calloc(
-        1u, sizeof(sixel_filter_eytzinger_state_t));
+    state = (sixel_filter_1d_eytzinger_state_t *)calloc(
+        1u, sizeof(sixel_filter_1d_eytzinger_state_t));
     if (state == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
@@ -143,10 +143,10 @@ sixel_filter_eytzinger_init(sixel_filter_t *filter,
     state->config = *config;
 
     status = sixel_filter_init(filter,
-                               "eytzinger",
+                               "1d-eytzinger",
                                SIXEL_FILTER_KIND_EYTZINGER,
-                               sixel_filter_eytzinger_apply,
-                               sixel_filter_eytzinger_dispose,
+                               sixel_filter_1d_eytzinger_apply,
+                               sixel_filter_1d_eytzinger_dispose,
                                state);
     if (SIXEL_FAILED(status)) {
         free(state);
