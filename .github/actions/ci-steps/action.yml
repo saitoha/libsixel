@@ -594,6 +594,7 @@ runs:
           sed "s#^SF:${PWD}/builddir/#SF:#; s#^SF:${PWD}/#SF:#" \
             coverage.info > coverage.info.tmp
           mv coverage.info.tmp coverage.info
+          cat coverage.info
         fi
 
     - name: Capture coverage (Windows)
@@ -617,7 +618,9 @@ runs:
             -d . \
             --rc branch_coverage=1 \
             -o coverage.info
-          sed -i "s#^SF:$PWD/#SF:#" coverage.info
+          sed "s#^SF:${PWD}\\\\builddir\\\\#SF:#; s#^SF:${PWD}\\\\#SF:#" \
+            coverage.info > coverage.info.tmp
+          mv coverage.info.tmp coverage.info
           cat coverage.info
         else
           echo "No gcovr or lcov found; skipping coverage capture"
