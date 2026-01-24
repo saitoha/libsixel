@@ -158,6 +158,12 @@ static char *img2sixel_compat_strerror(int error_number,
                                        size_t buffer_size);
 static FILE *img2sixel_compat_fopen(const char *filename, const char *mode);
 static const char *img2sixel_compat_getenv(const char *name);
+#if defined(_MSC_VER)
+static int img2sixel_compat_strcpy(char *destination,
+                                   size_t destination_size,
+                                   const char *source);
+#endif
+static int img2sixel_compat_chmod(const char *path, mode_t mode);
 #if !defined(HAVE_MKSTEMP)
 static int img2sixel_compat_mktemp(char *templ, size_t buffer_size);
 static int img2sixel_compat_open(const char *path, int flags, ...);
@@ -287,6 +293,7 @@ img2sixel_compat_getenv(const char *name)
     char *value;
     char *name_copy;
     char *value_copy;
+    int copy_result;
     size_t length;
 
     if (name == NULL) {
@@ -340,7 +347,15 @@ img2sixel_compat_getenv(const char *name)
         free(new_entry);
         return NULL;
     }
-    strcpy(name_copy, name);
+    copy_result = img2sixel_compat_strcpy(name_copy,
+                                          strlen(name) + 1,
+                                          name);
+    if (copy_result < 0) {
+        free(value_copy);
+        free(new_entry);
+        free(name_copy);
+        return NULL;
+    }
 
     new_entry->name = name_copy;
     new_entry->value = value_copy;
@@ -350,6 +365,60 @@ img2sixel_compat_getenv(const char *name)
     return new_entry->value;
 #else
     return getenv(name);
+#endif
+}
+
+#if defined(_MSC_VER)
+/*
+ * Provide a local copy helper so MSVC builds can use strcpy_s()
+ * without sprinkling deprecation warnings through the code.
+ */
+static int
+img2sixel_compat_strcpy(char *destination,
+                        size_t destination_size,
+                        const char *source)
+{
+    size_t length;
+
+    if (destination == NULL || source == NULL || destination_size == 0) {
+        errno = EINVAL;
+        return (-1);
+    }
+
+#if defined(HAVE_STRCPY_S)
+    if (strcpy_s(destination, destination_size, source) != 0) {
+        errno = EINVAL;
+        return (-1);
+    }
+    return (int)strlen(destination);
+#else
+    length = strlen(source);
+    if (length >= destination_size) {
+        length = destination_size - 1;
+    }
+    memcpy(destination, source, length);
+    destination[length] = '\0';
+    return (int)length;
+#endif
+}
+#endif
+
+/*
+ * Use the platform-specific chmod entry point so MSVC does not warn
+ * about the POSIX spelling.
+ */
+static int
+img2sixel_compat_chmod(const char *path, mode_t mode)
+{
+#if defined(_MSC_VER) && defined(HAVE__CHMOD)
+    return _chmod(path, (int)mode);
+#elif defined(HAVE_CHMOD)
+    return chmod(path, mode);
+#else
+    (void)path;
+    (void)mode;
+    errno = ENOSYS;
+    return (-1);
 #endif
 }
 
@@ -845,7 +914,7 @@ ensure_dir_p(const char *path, mode_t mode)
                          * directory remains writable even when the caller
                          * inherits a restrictive umask.
                          */
-                        if (chmod(tmp, mode) != 0) {
+                        if (img2sixel_compat_chmod(tmp, mode) != 0) {
                             int saved_errno;
 
                             saved_errno = errno;
@@ -870,7 +939,7 @@ ensure_dir_p(const char *path, mode_t mode)
             return -1;
         }
     } else {
-        if (chmod(tmp, mode) != 0) {
+        if (img2sixel_compat_chmod(tmp, mode) != 0) {
             int saved_errno;
 
             saved_errno = errno;
