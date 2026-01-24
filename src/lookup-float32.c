@@ -43,6 +43,7 @@
 
 #include "allocator.h"
 #include "compat_stub.h"
+#include "logger.h"
 #include "lookup-common.h"
 #include "lookup-float32.h"
 #include "pixelformat.h"
@@ -55,6 +56,80 @@ struct sixel_lookup_float32_node {
     int axis;
 };
 
+static float
+sixel_lookup_float32_distance(sixel_lookup_float32_t const *lut,
+                              float const *sample,
+                              int palette_index);
+
+#define SIXEL_LOOKUP_EYTZINGER_WINDOW 6
+
+static float
+sixel_lookup_float32_component_range(int pixelformat, int component)
+{
+    float range;
+
+    range = 1.0f;
+    /*
+     * Range values mirror the float32 channel clamps in pixelformat.c so the
+     * LUT weights compensate for L/ab and YUV component scale differences.
+     */
+    if (pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32) {
+        range = 1.0f;
+    } else if (pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32) {
+        range = (component == 0) ? 1.0f : 3.0f;
+    } else if (pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32) {
+        range = (component == 0) ? 1.0f : 2.0f;
+    } else if (pixelformat == SIXEL_PIXELFORMAT_YUVFLOAT32) {
+        if (component == 0) {
+            range = 1.0f;
+        } else if (component == 1) {
+            range = 0.872f;
+        } else {
+            range = 1.23f;
+        }
+    }
+
+    return range;
+}
+
+#if defined(__GNUC__) || defined(__clang__)
+#define SIXEL_LOOKUP_EYTZINGER_PREFETCH(base, index, count) \
+    do { \
+        if ((index) <= (count)) { \
+            __builtin_prefetch((base) + (index), 0, 1); \
+        } \
+    } while (0)
+#else
+#define SIXEL_LOOKUP_EYTZINGER_PREFETCH(base, index, count) ((void)0)
+#endif
+
+typedef struct sixel_lookup_float32_eytzinger_pair {
+    float key;
+    int index;
+} sixel_lookup_float32_eytzinger_pair_t;
+
+static void
+sixel_lookup_float32_eytzinger_log_event(int ncolors,
+                                         char const *event)
+{
+    sixel_logger_t logger;
+    SIXELSTATUS status;
+
+    sixel_logger_init(&logger);
+    status = sixel_logger_prepare_env(&logger);
+    if (SIXEL_FAILED(status) || !logger.active) {
+        sixel_logger_close(&logger);
+        return;
+    }
+
+    sixel_logger_logf(&logger,
+                      "eytzinger",
+                      "eytzinger",
+                      event,
+                      ncolors);
+    sixel_logger_close(&logger);
+}
+
 static int
 sixel_lookup_float32_policy_normalize(int policy)
 {
@@ -66,6 +141,7 @@ sixel_lookup_float32_policy_normalize(int policy)
     } else if (normalized != SIXEL_LUT_POLICY_5BIT
                && normalized != SIXEL_LUT_POLICY_6BIT
                && normalized != SIXEL_LUT_POLICY_CERTLUT
+               && normalized != SIXEL_LUT_POLICY_EYTZINGER
                && normalized != SIXEL_LUT_POLICY_NONE
                && normalized != SIXEL_LUT_POLICY_VPTE) {
         normalized = SIXEL_LUT_POLICY_6BIT;
@@ -188,6 +264,381 @@ sixel_lookup_float32_component(float const *palette,
 }
 
 static void
+sixel_lookup_float32_eytzinger_release(sixel_lookup_float32_t *lut)
+{
+    sixel_lookup_float32_eytzinger_t *eytz;
+
+    if (lut == NULL) {
+        return;
+    }
+
+    eytz = &lut->eytz;
+    if (eytz->keys != NULL) {
+        sixel_allocator_free(lut->allocator, eytz->keys);
+    }
+    if (eytz->palette_index != NULL) {
+        sixel_allocator_free(lut->allocator, eytz->palette_index);
+    }
+    if (eytz->rank != NULL) {
+        sixel_allocator_free(lut->allocator, eytz->rank);
+    }
+    if (eytz->sorted_palette_index != NULL) {
+        sixel_allocator_free(lut->allocator, eytz->sorted_palette_index);
+    }
+    if (eytz->sorted_keys != NULL) {
+        sixel_allocator_free(lut->allocator, eytz->sorted_keys);
+    }
+
+    eytz->keys = NULL;
+    eytz->palette_index = NULL;
+    eytz->rank = NULL;
+    eytz->sorted_palette_index = NULL;
+    eytz->sorted_keys = NULL;
+    eytz->count = 0;
+    eytz->ready = 0;
+}
+
+static float
+sixel_lookup_float32_eytzinger_project_palette(
+    sixel_lookup_float32_t const *lut,
+    int palette_index)
+{
+    float comp0;
+    float comp1;
+    float comp2;
+    float key;
+
+    comp0 = sixel_lookup_float32_component(lut->palette,
+                                           lut->depth,
+                                           palette_index,
+                                           0);
+    comp1 = sixel_lookup_float32_component(lut->palette,
+                                           lut->depth,
+                                           palette_index,
+                                           1);
+    comp2 = sixel_lookup_float32_component(lut->palette,
+                                           lut->depth,
+                                           palette_index,
+                                           2);
+
+    key = lut->eytz.weights[0] * comp0
+        + lut->eytz.weights[1] * comp1
+        + lut->eytz.weights[2] * comp2;
+
+    return key;
+}
+
+static float
+sixel_lookup_float32_eytzinger_project_sample(
+    sixel_lookup_float32_t const *lut,
+    float const *sample)
+{
+    float comp0;
+    float comp1;
+    float comp2;
+    float key;
+    int depth;
+
+    depth = lut->depth;
+    comp0 = (depth > 0) ? sample[0] : 0.0f;
+    comp1 = (depth > 1) ? sample[1] : 0.0f;
+    comp2 = (depth > 2) ? sample[2] : 0.0f;
+
+    key = lut->eytz.weights[0] * comp0
+        + lut->eytz.weights[1] * comp1
+        + lut->eytz.weights[2] * comp2;
+
+    return key;
+}
+
+static int
+sixel_lookup_float32_eytzinger_compare(void const *left, void const *right)
+{
+    float diff;
+    sixel_lookup_float32_eytzinger_pair_t const *a;
+    sixel_lookup_float32_eytzinger_pair_t const *b;
+
+    a = (sixel_lookup_float32_eytzinger_pair_t const *)left;
+    b = (sixel_lookup_float32_eytzinger_pair_t const *)right;
+    diff = a->key - b->key;
+    if (diff < 0.0f) {
+        return -1;
+    }
+    if (diff > 0.0f) {
+        return 1;
+    }
+    return 0;
+}
+
+static void
+sixel_lookup_float32_eytzinger_fill(
+    sixel_lookup_float32_eytzinger_t *eytz,
+    sixel_lookup_float32_eytzinger_pair_t const *src,
+    int count,
+    int node,
+    int *rank)
+{
+    if (node > count) {
+        return;
+    }
+
+    sixel_lookup_float32_eytzinger_fill(eytz, src, count, node * 2, rank);
+    eytz->keys[node] = src[*rank].key;
+    eytz->palette_index[node] = src[*rank].index;
+    eytz->rank[node] = *rank;
+    (*rank)++;
+    sixel_lookup_float32_eytzinger_fill(eytz, src, count, node * 2 + 1, rank);
+}
+
+static SIXELSTATUS
+sixel_lookup_float32_configure_eytzinger(sixel_lookup_float32_t *lut)
+{
+    SIXELSTATUS status;
+    sixel_lookup_float32_eytzinger_t *eytz;
+    sixel_lookup_float32_eytzinger_pair_t *pairs;
+    size_t bytes;
+    int count;
+    int index;
+    int rank;
+    float weight_sum;
+    float weight_norm;
+
+    status = SIXEL_BAD_ALLOCATION;
+    eytz = &lut->eytz;
+    pairs = NULL;
+    weight_sum = 0.0f;
+    weight_norm = 1.0f;
+
+    sixel_lookup_float32_eytzinger_release(lut);
+    eytz->ready = 0;
+    eytz->count = 0;
+    eytz->window = SIXEL_LOOKUP_EYTZINGER_WINDOW;
+    /*
+     * Use a unit vector in the weighted space so key deltas bound the
+     * weighted distance. This keeps the neighbor scan consistent with the
+     * distance function.
+     */
+    weight_sum = lut->weights[0] + lut->weights[1] + lut->weights[2];
+    if (weight_sum > 0.0f) {
+        weight_norm = sqrtf(weight_sum);
+    }
+    eytz->weights[0] = sqrtf(lut->weights[0]) / weight_norm;
+    eytz->weights[1] = sqrtf(lut->weights[1]) / weight_norm;
+    eytz->weights[2] = sqrtf(lut->weights[2]) / weight_norm;
+
+    count = lut->ncolors;
+    if (count <= 0 || lut->palette == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    bytes = (size_t)count * sizeof(*pairs);
+    pairs = (sixel_lookup_float32_eytzinger_pair_t *)sixel_allocator_malloc(
+        lut->allocator,
+        bytes);
+    if (pairs == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_lookup_float32_configure: Eytzinger allocation failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    /*
+     * Eytzinger preparation steps:
+     *   1) Project palette entries onto a 1D key.
+     *   2) Sort the (key, palette index) pairs by key.
+     *   3) Reorder into an implicit binary tree while keeping ranks.
+     */
+    for (index = 0; index < count; ++index) {
+        pairs[index].index = index;
+        pairs[index].key = sixel_lookup_float32_eytzinger_project_palette(
+            lut,
+            index);
+    }
+
+    qsort(pairs, (size_t)count, sizeof(*pairs),
+          sixel_lookup_float32_eytzinger_compare);
+
+    sixel_lookup_float32_eytzinger_log_event(count, "builder-start");
+
+    eytz->keys = (float *)sixel_allocator_malloc(
+        lut->allocator,
+        (size_t)(count + 1) * sizeof(float));
+    eytz->palette_index = (int *)sixel_allocator_malloc(
+        lut->allocator,
+        (size_t)(count + 1) * sizeof(int));
+    eytz->rank = (int *)sixel_allocator_malloc(
+        lut->allocator,
+        (size_t)(count + 1) * sizeof(int));
+    eytz->sorted_palette_index = (int *)sixel_allocator_malloc(
+        lut->allocator,
+        (size_t)count * sizeof(int));
+    eytz->sorted_keys = (float *)sixel_allocator_malloc(
+        lut->allocator,
+        (size_t)count * sizeof(float));
+
+    if (eytz->keys == NULL || eytz->palette_index == NULL
+            || eytz->rank == NULL || eytz->sorted_palette_index == NULL
+            || eytz->sorted_keys == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_lookup_float32_configure: Eytzinger arrays missing.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto error;
+    }
+
+    for (index = 0; index < count; ++index) {
+        eytz->sorted_palette_index[index] = pairs[index].index;
+        eytz->sorted_keys[index] = pairs[index].key;
+    }
+
+    /*
+     * The Eytzinger layout stores a sorted array in an implicit binary tree.
+     * We keep the original rank so the lookup can scan neighbours around the
+     * lower-bound node.
+     */
+    rank = 0;
+    sixel_lookup_float32_eytzinger_fill(eytz, pairs, count, 1, &rank);
+
+    eytz->count = count;
+    eytz->ready = 1;
+    sixel_lookup_float32_eytzinger_log_event(count, "builder-end");
+    status = SIXEL_OK;
+
+error:
+    if (pairs != NULL) {
+        sixel_allocator_free(lut->allocator, pairs);
+    }
+    if (SIXEL_FAILED(status)) {
+        sixel_lookup_float32_eytzinger_release(lut);
+    }
+    return status;
+}
+
+static int
+sixel_lookup_float32_eytzinger_lower_bound(
+    sixel_lookup_float32_eytzinger_t const *eytz,
+    float key)
+{
+    int node;
+    int candidate;
+    int count;
+    int next;
+
+    count = eytz->count;
+    node = 1;
+    candidate = 0;
+    while (node <= count) {
+        if (key <= eytz->keys[node]) {
+            candidate = node;
+            next = node * 2;
+        } else {
+            next = node * 2 + 1;
+        }
+        node = next;
+        SIXEL_LOOKUP_EYTZINGER_PREFETCH(eytz->keys, node, count);
+        SIXEL_LOOKUP_EYTZINGER_PREFETCH(eytz->keys, node + 1, count);
+    }
+    return candidate;
+}
+
+static int
+sixel_lookup_float32_lookup_eytzinger(sixel_lookup_float32_t *lut,
+                                      float const *sample)
+{
+    sixel_lookup_float32_eytzinger_t const *eytz;
+    float key;
+    int count;
+    int node;
+    int rank;
+    int start;
+    int end;
+    int offset_left;
+    int offset_right;
+    int stop_left;
+    int stop_right;
+    int palette_index;
+    int best_index;
+    float best_distance;
+    float distance;
+    float key_diff;
+    float key_diff_sq;
+
+    eytz = &lut->eytz;
+    if (eytz->ready == 0 || eytz->count <= 0) {
+        return 0;
+    }
+
+    key = sixel_lookup_float32_eytzinger_project_sample(lut, sample);
+    node = sixel_lookup_float32_eytzinger_lower_bound(eytz, key);
+    count = eytz->count;
+    if (node == 0) {
+        rank = count - 1;
+    } else {
+        rank = eytz->rank[node];
+    }
+    start = 0;
+    end = count - 1;
+
+    best_index = eytz->sorted_palette_index[rank];
+    best_distance = sixel_lookup_float32_distance(lut,
+                                                  sample,
+                                                  best_index);
+    offset_left = rank - 1;
+    offset_right = rank + 1;
+    stop_left = 0;
+    stop_right = 0;
+    /*
+     * The key is a projection onto a unit vector in weighted space, so the
+     * squared key delta is a lower bound for the weighted distance.  This lets
+     * us expand outward until both sides cannot beat the current best.
+     */
+    while (stop_left == 0 || stop_right == 0) {
+        if (stop_left == 0) {
+            if (offset_left < start) {
+                stop_left = 1;
+            } else {
+                key_diff = key - eytz->sorted_keys[offset_left];
+                key_diff_sq = key_diff * key_diff;
+                if (key_diff_sq > best_distance) {
+                    stop_left = 1;
+                } else {
+                    palette_index = eytz->sorted_palette_index[offset_left];
+                    distance = sixel_lookup_float32_distance(lut,
+                                                             sample,
+                                                             palette_index);
+                    if (distance < best_distance) {
+                        best_distance = distance;
+                        best_index = palette_index;
+                    }
+                    offset_left--;
+                }
+            }
+        }
+        if (stop_right == 0) {
+            if (offset_right > end) {
+                stop_right = 1;
+            } else {
+                key_diff = key - eytz->sorted_keys[offset_right];
+                key_diff_sq = key_diff * key_diff;
+                if (key_diff_sq > best_distance) {
+                    stop_right = 1;
+                } else {
+                    palette_index = eytz->sorted_palette_index[offset_right];
+                    distance = sixel_lookup_float32_distance(lut,
+                                                             sample,
+                                                             palette_index);
+                    if (distance < best_distance) {
+                        best_distance = distance;
+                        best_index = palette_index;
+                    }
+                    offset_right++;
+                }
+            }
+        }
+    }
+
+    return best_index;
+}
+
+static void
 sixel_lookup_float32_sort_indices(float const *palette,
                                   int depth,
                                   int *indices,
@@ -283,7 +734,7 @@ sixel_lookup_float32_distance(sixel_lookup_float32_t const *lut,
                                               palette_index,
                                               component);
         diff *= diff;
-        diff *= (float)lut->weights[component];
+        diff *= lut->weights[component];
         distance += diff;
     }
 
@@ -334,7 +785,7 @@ sixel_lookup_float32_search_kdtree(sixel_lookup_float32_t const *lut,
         *best_index = node->index;
     }
 
-    plane_distance = diff * diff * (float)lut->weights[node->axis];
+    plane_distance = diff * diff * lut->weights[node->axis];
     if (plane_distance < *best_distance) {
         sixel_lookup_float32_search_kdtree(lut,
                                            other,
@@ -379,9 +830,9 @@ sixel_lookup_float32_init(sixel_lookup_float32_t *lut,
     lut->depth = 0;
     lut->ncolors = 0;
     lut->complexion = 1;
-    lut->weights[0] = 1;
-    lut->weights[1] = 1;
-    lut->weights[2] = 1;
+    lut->weights[0] = 1.0f;
+    lut->weights[1] = 1.0f;
+    lut->weights[2] = 1.0f;
     lut->palette = NULL;
     lut->kdnodes = NULL;
     lut->kdtree_root = -1;
@@ -389,6 +840,17 @@ sixel_lookup_float32_init(sixel_lookup_float32_t *lut,
     lut->allocator = allocator;
     lut->vpte = NULL;
     lut->vpte_ready = 0;
+    lut->eytz.count = 0;
+    lut->eytz.ready = 0;
+    lut->eytz.keys = NULL;
+    lut->eytz.palette_index = NULL;
+    lut->eytz.rank = NULL;
+    lut->eytz.sorted_palette_index = NULL;
+    lut->eytz.sorted_keys = NULL;
+    lut->eytz.window = SIXEL_LOOKUP_EYTZINGER_WINDOW;
+    lut->eytz.weights[0] = 1.0f;
+    lut->eytz.weights[1] = 1.0f;
+    lut->eytz.weights[2] = 1.0f;
     (void)sixel_lookup_vpte_float32_create(allocator, &lut->vpte);
 }
 
@@ -419,6 +881,7 @@ sixel_lookup_float32_clear(sixel_lookup_float32_t *lut)
 
     sixel_lookup_float32_release_palette(lut);
     sixel_lookup_float32_release_kdtree(lut);
+    sixel_lookup_float32_eytzinger_release(lut);
     if (lut->vpte != NULL) {
         sixel_lookup_vpte_float32_unref(lut->vpte);
         lut->vpte = NULL;
@@ -442,14 +905,20 @@ sixel_lookup_float32_finalize(sixel_lookup_float32_t *lut)
 static SIXELSTATUS
 sixel_lookup_float32_prepare_palette(sixel_lookup_float32_t *lut,
                                      unsigned char const *palette,
+                                     float const *palette_float,
+                                     int float_depth,
                                      int pixelformat)
 {
     size_t total;
+    size_t float_payload;
     int index;
     int component;
     float *cursor;
+    float const *float_cursor;
+    int expected_float_depth;
 
     total = (size_t)lut->ncolors * (size_t)lut->depth;
+    float_payload = 0U;
     sixel_lookup_float32_release_palette(lut);
     lut->palette = (float *)sixel_allocator_malloc(lut->allocator,
                                                    total * sizeof(float));
@@ -460,6 +929,28 @@ sixel_lookup_float32_prepare_palette(sixel_lookup_float32_t *lut,
     }
 
     cursor = lut->palette;
+    float_cursor = palette_float;
+    expected_float_depth = lut->depth * (int)sizeof(float);
+    /*
+     * If a float palette is supplied it already matches the working color
+     * space, so copy it verbatim.  Otherwise, convert the RGB888 bytes into
+     * float32 components using the pixelformat conversion helper.
+     */
+    if (float_cursor != NULL && float_depth > 0) {
+        if (float_depth < expected_float_depth) {
+            sixel_helper_set_additional_message(
+                "sixel_lookup_float32_prepare_palette: "
+                "float palette depth mismatch.");
+            sixel_lookup_float32_release_palette(lut);
+            return SIXEL_BAD_ARGUMENT;
+        }
+        float_payload = (size_t)lut->ncolors * (size_t)expected_float_depth;
+        if (float_payload > 0U) {
+            memcpy(cursor, float_cursor, float_payload);
+            return SIXEL_OK;
+        }
+    }
+
     for (index = 0; index < lut->ncolors; ++index) {
         for (component = 0; component < lut->depth; ++component) {
             *cursor = sixel_pixelformat_byte_to_float(pixelformat,
@@ -582,7 +1073,9 @@ sixel_lookup_float32_configure_vpte(sixel_lookup_float32_t *lut,
 SIXELSTATUS
 sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
                                unsigned char const *palette,
+                               float const *palette_float,
                                int depth,
+                               int float_depth,
                                int ncolors,
                                int complexion,
                                int wcomp1,
@@ -592,8 +1085,17 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
                                int pixelformat)
 {
     SIXELSTATUS status;
+    float base_weights[SIXEL_LOOKUP_FLOAT_COMPONENTS];
+    float range;
+    float scale;
+    int component;
 
-    (void)pixelformat;
+    base_weights[0] = 0.0f;
+    base_weights[1] = 0.0f;
+    base_weights[2] = 0.0f;
+    range = 1.0f;
+    scale = 1.0f;
+    component = 0;
 
     if (lut == NULL || palette == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -612,11 +1114,28 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
      * complexion factor to preserve existing luminance-driven defaults while
      * keeping the parameter names agnostic to the color space.
      */
-    lut->weights[0] = wcomp1 * complexion;
-    lut->weights[1] = wcomp2;
-    lut->weights[2] = wcomp3;
+    base_weights[0] = (float)wcomp1 * (float)complexion;
+    base_weights[1] = (float)wcomp2;
+    base_weights[2] = (float)wcomp3;
+    /*
+     * Normalize weights by the expected float32 channel ranges so L/ab/YUV
+     * scale asymmetry does not skew the distance function.
+     */
+    for (component = 0; component < SIXEL_LOOKUP_FLOAT_COMPONENTS;
+            ++component) {
+        range = sixel_lookup_float32_component_range(pixelformat, component);
+        if (range <= 0.0f) {
+            range = 1.0f;
+        }
+        scale = 1.0f / range;
+        lut->weights[component] = base_weights[component] * scale * scale;
+    }
 
-    status = sixel_lookup_float32_prepare_palette(lut, palette, pixelformat);
+    status = sixel_lookup_float32_prepare_palette(lut,
+                                                  palette,
+                                                  palette_float,
+                                                  float_depth,
+                                                  pixelformat);
     if (SIXEL_FAILED(status)) {
         return status;
     }
@@ -630,6 +1149,16 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
         if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
                 "sixel_lookup_float32_configure: VPTE failed; "
+                "falling back to CERTLUT.");
+            lut->policy = SIXEL_LUT_POLICY_CERTLUT;
+        } else {
+            return SIXEL_OK;
+        }
+    } else if (lut->policy == SIXEL_LUT_POLICY_EYTZINGER) {
+        status = sixel_lookup_float32_configure_eytzinger(lut);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "sixel_lookup_float32_configure: Eytzinger failed; "
                 "falling back to CERTLUT.");
             lut->policy = SIXEL_LUT_POLICY_CERTLUT;
         } else {
@@ -667,6 +1196,9 @@ sixel_lookup_float32_map_pixel(sixel_lookup_float32_t *lut,
             return sixel_lookup_vpte_float32_map(lut->vpte, sample);
         }
         return 0;
+    }
+    if (lut->policy == SIXEL_LUT_POLICY_EYTZINGER) {
+        return sixel_lookup_float32_lookup_eytzinger(lut, sample);
     }
     if (lut->policy == SIXEL_LUT_POLICY_CERTLUT) {
         best_index = 0;

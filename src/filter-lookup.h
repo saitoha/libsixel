@@ -23,7 +23,11 @@ extern "C" {
  */
 typedef struct sixel_filter_lookup_config {
     unsigned char const *palette;
+    /* Optional float palette already in the working color space. */
+    float const *palette_float;
     int depth;
+    /* Bytes per float palette entry when palette_float is present. */
+    int float_depth;
     int ncolors;
     int complexion;
     int method_for_largest;

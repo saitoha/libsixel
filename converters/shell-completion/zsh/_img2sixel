@@ -97,6 +97,7 @@ _lookuppolicy() {
     '6bit[force 6-bit buckets for RGB inputs]' \
     'none[disable LUT caching and scan directly]' \
     'certlut[certified hierarchical LUT with zero error]' \
+    'eytzinger[implicit binary tree lookup with neighbour scan]' \
     'vpte[Voronoi grid built via a 3D EDT with boundary refinement]'
 }
 
