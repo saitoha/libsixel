@@ -36,6 +36,9 @@
 /* Define to 1 if you have the 'calloc' function. */
 #undef HAVE_CALLOC
 
+/* Define to 1 if you have the 'chmod' function. */
+#undef HAVE_CHMOD
+
 /* Define to 1 if you have the 'clearerr' function. */
 #undef HAVE_CLEARERR
 
@@ -416,6 +419,12 @@
 /* Define to 1 if you have the 'strchr' function. */
 #undef HAVE_STRCHR
 
+/* Define to 1 if you have the 'strcpy' function. */
+#undef HAVE_STRCPY
+
+/* Define to 1 if you have the 'strcpy_s' function. */
+#undef HAVE_STRCPY_S
+
 /* Define to 1 if you have the 'strdup' function. */
 #undef HAVE_STRDUP
 
@@ -526,6 +535,9 @@
 
 /* Define to 1 if _xgetbv is available without extra flags */
 #undef HAVE_XGETBV_INTRIN
+
+/* Define to 1 if you have the '_chmod' function. */
+#undef HAVE__CHMOD
 
 /* Define to 1 if you have the '_close' function. */
 #undef HAVE__CLOSE

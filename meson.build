@@ -261,6 +261,8 @@ extra_funcs = [
   'strerror',
   'strerror_r',
   '_strerror_r',
+  'strcpy',
+  'strcpy_s',
   '_isatty',
   'isatty',
   '_sopen_s',
@@ -289,6 +291,8 @@ extra_funcs = [
   'usleep',
   'fork',
   'posix_spawnp',
+  '_chmod',
+  'chmod',
   'fchmod',
   'tmpnam',
   'gettimeofday'
