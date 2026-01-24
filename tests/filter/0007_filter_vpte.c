@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <sixel.h>
 
@@ -35,6 +36,8 @@ test_vpte_builds_owned_lut_and_transfers_result(void)
     status = SIXEL_FALSE;
     allocator = NULL;
     filter = NULL;
+    /* Zero-init config to avoid uninitialized optional lookup fields. */
+    memset(&config, 0, sizeof(config));
     result.lut = NULL;
     result.owned = 0;
     palette[0] = 0;
