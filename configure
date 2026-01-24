@@ -19198,6 +19198,18 @@ then :
   printf "%s\n" "#define HAVE_MKDIR 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "_chmod" "ac_cv_func__chmod"
+if test "x$ac_cv_func__chmod" = xyes
+then :
+  printf "%s\n" "#define HAVE__CHMOD 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "chmod" "ac_cv_func_chmod"
+if test "x$ac_cv_func_chmod" = xyes
+then :
+  printf "%s\n" "#define HAVE_CHMOD 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "signal" "ac_cv_func_signal"
 if test "x$ac_cv_func_signal" = xyes
 then :
@@ -19208,6 +19220,18 @@ ac_fn_c_check_func "$LINENO" "strdup" "ac_cv_func_strdup"
 if test "x$ac_cv_func_strdup" = xyes
 then :
   printf "%s\n" "#define HAVE_STRDUP 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "strcpy" "ac_cv_func_strcpy"
+if test "x$ac_cv_func_strcpy" = xyes
+then :
+  printf "%s\n" "#define HAVE_STRCPY 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "strcpy_s" "ac_cv_func_strcpy_s"
+if test "x$ac_cv_func_strcpy_s" = xyes
+then :
+  printf "%s\n" "#define HAVE_STRCPY_S 1" >>confdefs.h
 
 fi
 ac_fn_c_check_func "$LINENO" "strtoul" "ac_cv_func_strtoul"

@@ -994,8 +994,12 @@ AC_CHECK_FUNCS([assert \
                 _commit \
                 _mkdir \
                 mkdir \
+                _chmod \
+                chmod \
                 signal \
                 strdup \
+                strcpy \
+                strcpy_s \
                 strtoul \
                 calloc \
                 clearerr \
