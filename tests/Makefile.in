@@ -839,8 +839,8 @@ CLI_TESTS = cli-core/t/0001_help.t \
     palette/t/0031_snap_heckbert_float32_lsqa.t \
     palette/t/0032_snap_kmeans_8bit_lsqa.t \
     palette/t/0033_snap_heckbert_8bit_lsqa.t \
-       palette/t/0034_lookup_policy_eytzinger_8bit.t \
-       palette/t/0035_lookup_policy_eytzinger_float32.t \
+       palette/t/0034_lookup_policy_1d_eytzinger_8bit.t \
+       palette/t/0035_lookup_policy_1d_eytzinger_float32.t \
        dither/t/0001_roundtrip_dither_gamma.t \
     dither/t/0002_inspection_with_diffusion.t \
     dither/t/0003_ascii_ppm_inspection_diffusion.t \

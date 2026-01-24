@@ -516,9 +516,9 @@ typedef int SIXELSTATUS;
                                                                lookup tree
                                                                with zero
                                                                error
-                                                   eytzinger -> implicit
-                                                               binary tree
-                                                               lookup
+                                                   1d-eytzinger -> implicit
+                                                                  binary tree
+                                                                  lookup
                                                */
 #define SIXEL_OPTFLAG_WORKING_COLORSPACE ('W') /* -W WORKINGCOLORSPACE, --working-colorspace=WORKINGCOLORSPACE
                                                 select internal working color space
