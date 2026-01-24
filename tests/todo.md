@@ -12,7 +12,7 @@ This document tracks remaining TAP files that still bundle multiple test cases a
 - `tests/mapfile/t/` (palette import/export cases split with shared helper)
 - `tests/packaging/t/` (python wheel install and roundtrip split, shared helper)
 - `tests/cli-core/t/` (basic option handling, invalid argument/combination, option matching, and argument-shift suites split)
-- `tests/conversion/common.sh` (shared setup extracted for converter-focused TAP cases)
+- `tests/lib/sh/conversion/common.sh` (shared setup extracted for converter-focused TAP cases)
 
 ## Remaining work
 None. All previously bundled TAP files have been split.

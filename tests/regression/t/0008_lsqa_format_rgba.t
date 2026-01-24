@@ -20,7 +20,7 @@ fail() {
     status=1
 }
 
-. "${test_dir}/../lsqa_common.sh"
+. "${test_dir}/../../lib/sh/lsqa/lsqa_common.sh"
 
 status=0
 

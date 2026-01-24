@@ -2,10 +2,10 @@
 # Run lsqa quality checks for k-means final merge with 8-bit palettes.
 set -eux
 
-conversion_common_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/../conversion/common.sh
+conversion_common_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/../lib/sh/conversion/common.sh
 . "${conversion_common_path}"
 
-palette_lsqa_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/lsqa_palette_common.sh
+palette_lsqa_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/../lib/sh/lsqa/lsqa_palette_common.sh
 PALETTE_LSQA_HELPER_DIR=$(CDPATH=; cd "$(dirname "${palette_lsqa_path}")" && pwd)
 export PALETTE_LSQA_HELPER_DIR
 . "${palette_lsqa_path}"

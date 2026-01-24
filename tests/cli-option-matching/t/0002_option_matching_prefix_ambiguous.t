@@ -4,7 +4,8 @@
 set -euxv
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-. "${script_dir}/../../cli-core/t/cli_core_common.sh"
+CLI_CORE_HELPER_DIR="${script_dir}/../../lib/sh/cli-core"
+. "${CLI_CORE_HELPER_DIR}/cli_core_common.sh"
 cli_core_setup "img2sixel-option-matching"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
@@ -29,7 +30,7 @@ if grep -F 'ambiguous prefix "sie"' "${err_file}" >/dev/null 2>&1; then
     cli_core_pass 1 "ambiguous prefix reports diagnostic"
 else
     cli_core_fail 1 "missing diagnostic for ambiguous prefix"
-    printf '--- stderr ---\n' >>"${log_file}"
+    printf '%s\n' '--- stderr ---' >>"${log_file}"
     cat "${err_file}" >>"${log_file}" 2>/dev/null || :
 fi
 

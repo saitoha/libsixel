@@ -4,10 +4,13 @@
 set -eu
 
 lsqa_sixel_common_path=${lsqa_sixel_common_path:-"$0"}
-lsqa_sixel_root=$(CDPATH=; cd "$(dirname "${lsqa_sixel_common_path}")" && pwd)
+lsqa_sixel_root=${LSQA_SIXEL_HELPER_DIR-}
+if [ -z "${lsqa_sixel_root}" ]; then
+    lsqa_sixel_root=$(CDPATH=; cd "$(dirname "${lsqa_sixel_common_path}")" && pwd)
+fi
 
 . "${lsqa_sixel_root}/lsqa_common.sh"
-. "${lsqa_sixel_root}/../common/t/0001_converters_common.t"
+. "${lsqa_sixel_root}/../../../common/t/0001_converters_common.t"
 
 lsqa_sixel_init() {
     test_path=$1
