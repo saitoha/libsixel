@@ -1,0 +1,5 @@
+#!/bin/sh
+
+: ${top_srcdir:=$(dirname ${0})/../}
+"${top_srcdir}"/converters/img2sixel "${@}" -@2:2:- -o/dev/stderr |
+LESSUTFCHARDEF=100000-10ffff:p LESS=-S#4 less
