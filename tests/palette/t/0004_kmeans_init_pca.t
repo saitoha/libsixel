@@ -12,7 +12,7 @@ artifact_dir="${artifact_root}/${category_name}/${test_name}"
 mkdir -p "${artifact_dir}"
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-. "${script_dir}/kmeans_init_common.sh"
+. "${script_dir}/../../lib/sh/palette/kmeans_init_common.sh"
 
 echo "1..1"
 

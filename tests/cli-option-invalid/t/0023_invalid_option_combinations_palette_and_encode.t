@@ -4,7 +4,8 @@
 set -euxv
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-. "${script_dir}/../../cli-core/t/cli_core_common.sh"
+CLI_CORE_HELPER_DIR="${script_dir}/../../lib/sh/cli-core"
+. "${CLI_CORE_HELPER_DIR}/cli_core_common.sh"
 cli_core_setup "invalid-combinations"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"

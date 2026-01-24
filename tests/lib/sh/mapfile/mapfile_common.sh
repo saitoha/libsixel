@@ -3,6 +3,8 @@
 
 set -eu
 
+mapfile_common_path=${mapfile_common_path:-"$0"}
+
 # Initialize directories for artifacts and logs. The caller must pass the
 # current test name to keep outputs isolated between TAP files.
 setup_mapfile_dirs() {
@@ -23,8 +25,13 @@ setup_mapfile_dirs() {
 # for palette import/export tests.
 load_mapfile_prereqs() {
     script_dir=$1
+    helper_dir=${MAPFILE_HELPER_DIR-}
 
-    . "${script_dir}/../../common/t/0001_converters_common.t"
+    if [ -z "${helper_dir}" ]; then
+        helper_dir=$(CDPATH=; cd "$(dirname "${mapfile_common_path}")" && pwd)
+    fi
+
+    . "${helper_dir}/../../../common/t/0001_converters_common.t"
 
     status=0
     ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"

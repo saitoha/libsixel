@@ -2,7 +2,7 @@
 # Convert PPM with a 16-colour palette and scaling.
 set -eux
 
-conversion_common_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/../conversion/common.sh
+conversion_common_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/../lib/sh/conversion/common.sh
 . "${conversion_common_path}"
 
 test_name=$(basename "$0")
