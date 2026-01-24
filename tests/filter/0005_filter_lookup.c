@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <sixel.h>
 
@@ -32,6 +33,8 @@ test_lookup_build_allocates_owned_lut(void)
 
     status = SIXEL_FALSE;
     allocator = NULL;
+    /* Ensure optional fields start from a known state for MSan runs. */
+    memset(&config, 0, sizeof(config));
     result.lut = NULL;
     result.owned = 0;
     palette[0] = 0;

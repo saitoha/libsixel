@@ -117,7 +117,12 @@ sixel_filter_lookup_build(const sixel_filter_lookup_config_t *config,
     }
 
     palette_float = config->palette_float;
-    float_depth = config->float_depth;
+    /* Reset float_depth when palette_float is absent to avoid MSan noise. */
+    if (palette_float == NULL) {
+        float_depth = 0;
+    } else {
+        float_depth = config->float_depth;
+    }
     status = sixel_lut_configure(result.lut,
                                  config->palette,
                                  palette_float,
