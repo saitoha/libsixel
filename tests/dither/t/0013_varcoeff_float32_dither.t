@@ -2,7 +2,7 @@
 # TAP test ensuring LSO2 dither exercises the float32 variable-coefficient path.
 set -eux
 
-conversion_common_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/../conversion/common.sh
+conversion_common_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/../lib/sh/conversion/common.sh
 . "${conversion_common_path}"
 
 test_name=$(basename "$0")

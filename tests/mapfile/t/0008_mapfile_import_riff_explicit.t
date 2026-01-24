@@ -4,7 +4,8 @@
 set -euxv
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-. "${script_dir}/mapfile_common.sh"
+MAPFILE_HELPER_DIR="${script_dir}/../../lib/sh/mapfile"
+. "${MAPFILE_HELPER_DIR}/mapfile_common.sh"
 
 test_name=$(basename "$0")
 setup_mapfile_dirs "${test_name}"

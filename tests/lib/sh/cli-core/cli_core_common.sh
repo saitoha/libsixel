@@ -16,8 +16,13 @@ cli_core_setup() {
 
     mkdir -p "${output_dir}" "${tmp_dir}"
 
-    script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-    . "${script_dir}/../../common/t/0001_converters_common.t"
+    cli_core_common_path=${cli_core_common_path:-"$0"}
+    helper_dir=${CLI_CORE_HELPER_DIR-}
+    if [ -z "${helper_dir}" ]; then
+        helper_dir=$(CDPATH=; cd "$(dirname "${cli_core_common_path}")" && pwd)
+    fi
+
+    . "${helper_dir}/../../../common/t/0001_converters_common.t"
 
     status=0
 }

@@ -50,11 +50,16 @@ printf '1..1\n'
 
 if awk '
     /^\.[ \t]*B[ \t]/ {
-        field = $2
-        gsub(/\\/, "", field)
-        sub(/,.*/, "", field)
-        if (field ~ /^-/) {
-            print field
+        for (idx = 2; idx <= NF; idx++) {
+            field = $idx
+            gsub(/\\/, "", field)
+            gsub(/,/, "", field)
+            if (field ~ /^--/) {
+                sub(/=.*/, "", field)
+            }
+            if (field ~ /^-/ && field != "-") {
+                print field
+            }
         }
     }
 ' "${top_srcdir}/converters/img2sixel.1" >"${man_opts}"; then
@@ -69,10 +74,20 @@ else
     fail 1 "failed to sort manpage options"
 fi
 
-if grep ' --[0-9a-zA-Z_@=~%?]' \
-        "${top_srcdir}/converters/shell-completion/bash/img2sixel" \
-        | grep -v "' " \
-        | sed 's/.* \(-.\) .*/\1/' >"${bash_opts}"; then
+if awk '
+    function emit(opt) {
+        sub(/[ \t]+$/, "", opt)
+        sub(/\\$/, "", opt)
+        if (opt ~ /^-/) {
+            print opt
+        }
+    }
+    /^[ \t]*-[^ \t]+[ \t]+--/ {
+        emit($1)
+        emit($2)
+    }
+' "${top_srcdir}/converters/shell-completion/bash/img2sixel" \
+        | LC_ALL=C sort -u >"${bash_opts}"; then
     :
 else
     fail 1 "failed to parse bash completion"

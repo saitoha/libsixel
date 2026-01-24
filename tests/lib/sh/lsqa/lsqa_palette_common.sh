@@ -1,27 +1,29 @@
 #!/bin/sh
-# Shared lsqa helpers for dither quality TAP tests.
+# Shared lsqa helpers for palette quality TAP tests.
 #
-# These helpers focus on verifying that dithering output remains visually
-# similar to a 64x64 reference image while keeping the per-test scripts small.
+# The thresholds are intentionally lenient to catch obvious breakage such as
+# black frames while remaining stable across palette strategies.
 
 set -eu
 
-if [ -n "${DITHER_LSQA_HELPER_DIR-}" ]; then
-    helper_root=${DITHER_LSQA_HELPER_DIR}
+if [ -n "${PALETTE_LSQA_HELPER_DIR-}" ]; then
+    helper_root=${PALETTE_LSQA_HELPER_DIR}
+elif [ -n "${palette_lsqa_path-}" ]; then
+    helper_root=$(CDPATH=; cd "$(dirname "${palette_lsqa_path}")" && pwd)
 else
     helper_root=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 fi
-lsqa_common_path="${helper_root}/../regression/lsqa_common.sh"
+lsqa_common_path="${helper_root}/lsqa_common.sh"
 . "${lsqa_common_path}"
 
-DITHER_LSQA_MS_SSIM_FLOOR=${DITHER_LSQA_MS_SSIM_FLOOR:-0.6}
-DITHER_LSQA_PSNR_FLOOR=${DITHER_LSQA_PSNR_FLOOR:-20.0}
+PALETTE_LSQA_MS_SSIM_FLOOR=${PALETTE_LSQA_MS_SSIM_FLOOR:-0.6}
+PALETTE_LSQA_PSNR_FLOOR=${PALETTE_LSQA_PSNR_FLOOR:-20.0}
 
-dither_lsqa_init() {
+palette_lsqa_init() {
     lsqa_init "$1"
 }
 
-dither_lsqa_run() {
+palette_lsqa_run() {
     ref_path=$1
     out_path=$2
     stdout_path=$3
@@ -47,7 +49,7 @@ dither_lsqa_run() {
     printf '%s' "${status}"
 }
 
-dither_lsqa_assert_quality() {
+palette_lsqa_assert_quality() {
     ref_path=$1
     out_path=$2
     label=$3
@@ -55,7 +57,7 @@ dither_lsqa_assert_quality() {
 
     out_file="${artifact_dir}/lsqa.json"
     err_file="${artifact_dir}/lsqa.err"
-    run_status=$(dither_lsqa_run "${ref_path}" "${out_path}" \
+    run_status=$(palette_lsqa_run "${ref_path}" "${out_path}" \
         "${out_file}" "${err_file}")
     if [ ${run_status} -ne 0 ]; then
         printf '%s: assessment/lsqa returned %s: %s\n' \
@@ -66,14 +68,14 @@ dither_lsqa_assert_quality() {
     ms_val=$(lsqa_parse_metric "MS-SSIM" "${out_file}")
     psnr_val=$(lsqa_parse_metric "PSNR_Y" "${out_file}")
 
-    if lsqa_below_floor "${ms_val}" "${DITHER_LSQA_MS_SSIM_FLOOR}"; then
+    if lsqa_below_floor "${ms_val}" "${PALETTE_LSQA_MS_SSIM_FLOOR}"; then
         printf '%s: MS-SSIM %s below floor %s\n' \
-            "${label}" "${ms_val}" "${DITHER_LSQA_MS_SSIM_FLOOR}" >&2
+            "${label}" "${ms_val}" "${PALETTE_LSQA_MS_SSIM_FLOOR}" >&2
         return 1
     fi
-    if lsqa_below_floor "${psnr_val}" "${DITHER_LSQA_PSNR_FLOOR}"; then
+    if lsqa_below_floor "${psnr_val}" "${PALETTE_LSQA_PSNR_FLOOR}"; then
         printf '%s: PSNR_Y %s below floor %s\n' \
-            "${label}" "${psnr_val}" "${DITHER_LSQA_PSNR_FLOOR}" >&2
+            "${label}" "${psnr_val}" "${PALETTE_LSQA_PSNR_FLOOR}" >&2
         return 1
     fi
 

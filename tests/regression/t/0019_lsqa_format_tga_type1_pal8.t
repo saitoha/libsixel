@@ -20,8 +20,8 @@ fail() {
     status=1
 }
 
-lsqa_sixel_common_path="${test_dir}/../lsqa_sixel_common.sh"
-. "${test_dir}/../lsqa_sixel_common.sh"
+lsqa_sixel_common_path="${test_dir}/../../lib/sh/lsqa/lsqa_sixel_common.sh"
+. "${test_dir}/../../lib/sh/lsqa/lsqa_sixel_common.sh"
 
 status=0
 

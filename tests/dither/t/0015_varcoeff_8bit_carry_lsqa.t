@@ -8,8 +8,8 @@
 
 set -eux
 
-conversion_common_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/../conversion/common.sh
-dither_lsqa_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/lsqa_dither_common.sh
+conversion_common_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/../lib/sh/conversion/common.sh
+dither_lsqa_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/../lib/sh/lsqa/lsqa_dither_common.sh
 DITHER_LSQA_HELPER_DIR=$(CDPATH=; cd "$(dirname "${dither_lsqa_path}")" && pwd)
 . "${conversion_common_path}"
 . "${dither_lsqa_path}"

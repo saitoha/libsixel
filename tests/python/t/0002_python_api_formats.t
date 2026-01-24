@@ -6,7 +6,8 @@
 
 set -euxv
 
-. "$(dirname "$0")/../lib/common.sh"
+script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+. "${script_dir}/../../lib/sh/python/common.sh"
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)

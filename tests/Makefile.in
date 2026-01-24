@@ -1047,18 +1047,19 @@ COPY_TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) \
 
 TEST_EXTENSIONS = .t
 HELPER_FILES = common/t/0001_converters_common.t \
-       conversion/common.sh \
-       cli-core/t/cli_core_common.sh \
-       python/lib/common.sh \
-       palette/t/kmeans_init_common.sh \
-       palette/lsqa_palette_common.sh \
-       dither/lsqa_dither_common.sh \
-       pipeline/t/pipeline_planner_common.sh \
-       mapfile/t/mapfile_common.sh \
-       packaging/t/python_wheel_common.sh \
-       regression/lsqa_common.sh \
-       regression/lsqa_sixel_common.sh \
-       docs/list_envvars.sh
+       docs/list_envvars.sh \
+       lib/sh/conversion/common.sh \
+       lib/sh/cli-core/cli_core_common.sh \
+       lib/sh/mapfile/mapfile_common.sh \
+       lib/sh/pipeline/pipeline_planner_common.sh \
+       lib/sh/packaging/python_wheel_common.sh \
+       lib/sh/palette/kmeans_init_common.sh \
+       lib/sh/lsqa/lsqa_common.sh \
+       lib/sh/lsqa/lsqa_sixel_common.sh \
+       lib/sh/lsqa/lsqa_dither_common.sh \
+       lib/sh/lsqa/lsqa_palette_common.sh \
+       lib/sh/loader/pngsuite_common.sh \
+       lib/sh/python/common.sh
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
@@ -1262,8 +1263,7 @@ ISSUE_INPUTS = issue/166/poc \
 NETWORK_CERTS = network/certs/server.crt \
        network/certs/server.key
 
-EXTRA_DIST = $(TESTS) $(HELPER_FILES) tools/with-timeout.sh \
-             loader/pngsuite_common.sh \
+EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
              $(BASELINE_JSON) $(INPUT_FORMAT_FILES) \
              $(RESOLUTION_IMAGES) $(CORRUPTED_INPUTS) $(ISSUE_INPUTS) \
              $(NETWORK_CERTS) \

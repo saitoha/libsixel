@@ -49,10 +49,18 @@ printf '1..1\n'
 
 if run_img2sixel -H 2>>"${log_file}" | awk '
     /^[[:space:]]*\*?-/ {
-        line = $1
-        sub(/^[[:space:]]*\*?/, "", line)
-        split(line, parts, ",")
-        print parts[1]
+        for (idx = 1; idx <= NF; idx++) {
+            field = $idx
+            sub(/^[[:space:]]*\*?/, "", field)
+            gsub(/,/, "", field)
+            if (field ~ /^--/) {
+                sub(/\[.*/, "", field)
+                sub(/=.*/, "", field)
+            }
+            if (field ~ /^-/ && field != "-") {
+                print field
+            }
+        }
     }
 ' >"${help_opts}"; then
     :
@@ -68,11 +76,16 @@ fi
 
 if awk '
     /^\.[ \t]*B[ \t]/ {
-        field = $2
-        gsub(/\\/, "", field)
-        sub(/,.*/, "", field)
-        if (field ~ /^-/) {
-            print field
+        for (idx = 2; idx <= NF; idx++) {
+            field = $idx
+            gsub(/\\/, "", field)
+            gsub(/,/, "", field)
+            if (field ~ /^--/) {
+                sub(/=.*/, "", field)
+            }
+            if (field ~ /^-/ && field != "-") {
+                print field
+            }
         }
     }
 ' "${top_srcdir}/converters/img2sixel.1" >"${man_opts}"; then
