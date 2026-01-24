@@ -181,6 +181,29 @@ foreach f: wflags
   endif
 endforeach
 
+# Enable warnings-as-errors only in CI so local builds stay flexible.
+ci_probe = find_program('python3', 'python', required: true)
+ci_env = run_command(
+  ci_probe,
+  '-c',
+  'import os, sys; sys.stdout.write(os.getenv("CI", ""))',
+  check: false
+).stdout().strip()
+if ci_env != ''
+  werror_flags = []
+  if cc.get_id() == 'msvc' or cc.get_id() == 'clang-cl'
+    werror_flags = cc.get_supported_arguments(['/WX'])
+  else
+    werror_flags = cc.get_supported_arguments(['-Werror'])
+  endif
+  if werror_flags.length() > 0
+    add_project_arguments(werror_flags, language: 'c')
+    if have_objc
+      add_project_arguments(werror_flags, language: 'objc')
+    endif
+  endif
+endif
+
 # check common headers
 std_headers = [
     'assert.h',

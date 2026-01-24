@@ -92,10 +92,6 @@ sixel_winhttp_set_error_message(char const *context)
 }
 #endif
 
-#if !defined(HAVE_MEMCPY)
-# define memcpy(d, s, n) (bcopy ((s), (d), (n)))
-#endif
-
 /* for msvc */
 #ifndef STDIN_FILENO
 # define STDIN_FILENO 0
