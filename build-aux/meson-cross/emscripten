@@ -14,7 +14,8 @@ exe_wrapper = 'node'
 c_args = ['-O3', '-g0', '-msimd128', '-fdata-sections', '-ffunction-sections']
 c_link_args = ['-sNODERAWFS=1', '-sSTACK_SIZE=524288', '-sINITIAL_MEMORY=268435456',
                '-sSINGLE_FILE=1', '-sENVIRONMENT=node', '-sALLOW_MEMORY_GROWTH=1',
-               '-sWASM_BIGINT=1', '-sUSE_PTHREADS=1', '-sASSERTIONS=0']
+               '-sWASM_BIGINT=1', '-sUSE_PTHREADS=1', '-sASSERTIONS=0',
+               '-Wno-pthreads-mem-growth']
  
 [host_machine] 
 system = 'emscripten'
