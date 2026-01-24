@@ -815,10 +815,10 @@ scale_horizontal_row(
 
 #if defined(SIXEL_USE_AVX512)
         if (depth == 3 && simd_level >= SIXEL_SIMD_LEVEL_AVX512) {
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpsabi"
-#endif
+# if defined(__GNUC__) && !defined(__clang__)
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wpsabi"
+# endif
             acc512 = sixel_avx512_zero_ps();
 
             for (x = x_first; x <= x_last; x++) {
@@ -838,9 +838,9 @@ scale_horizontal_row(
                 pos = (y * dstw + w) * depth;
                 sixel_avx512_store_rgb_u8(&acc512, total, tmp + pos);
             }
-#if defined(__GNUC__) && !defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+# if defined(__GNUC__) && !defined(__clang__)
+#  pragma GCC diagnostic pop
+# endif
             continue;
         }
 #endif
@@ -1932,9 +1932,14 @@ scale_with_resampling_float32(
                 acc512 = sixel_avx512_zero_ps();
 
                 for (x = x_first; x <= x_last; x++) {
+                    /*
+                     * Match the byte-path downscale math: map source taps to
+                     * the destination grid so filter weights stay consistent
+                     * across precision modes.
+                     */
                     diff_x = (dstw >= srcw)
                                  ? (x + 0.5) - center_x
-                                 : (x + 0.5) * srcw / dstw - center_x;
+                                 : (x + 0.5) * dstw / srcw - center_x;
                     weight = f_resample(fabs(diff_x));
                     pos = (y * srcw + x) * depth;
                     pix512 = sixel_avx512_load_rgb_f32(src + pos);
@@ -1957,7 +1962,7 @@ scale_with_resampling_float32(
                 for (x = x_first; x <= x_last; x++) {
                     diff_x = (dstw >= srcw)
                                  ? (x + 0.5) - center_x
-                                 : (x + 0.5) * srcw / dstw - center_x;
+                                 : (x + 0.5) * dstw / srcw - center_x;
                     weight = f_resample(fabs(diff_x));
                     pos = (y * srcw + x) * depth;
                     acc256 = sixel_avx2_muladd_ps(
@@ -1979,7 +1984,7 @@ scale_with_resampling_float32(
                 for (x = x_first; x <= x_last; x++) {
                     diff_x = (dstw >= srcw)
                                  ? (x + 0.5) - center_x
-                                 : (x + 0.5) * srcw / dstw - center_x;
+                                 : (x + 0.5) * dstw / srcw - center_x;
                     weight = f_resample(fabs(diff_x));
                     pos = (y * srcw + x) * depth;
                     acc256 = sixel_avx_muladd_ps(
@@ -2014,7 +2019,7 @@ scale_with_resampling_float32(
                 for (x = x_first; x <= x_last; x++) {
                     diff_x = (dstw >= srcw)
                                  ? (x + 0.5) - center_x
-                                 : (x + 0.5) * srcw / dstw - center_x;
+                                 : (x + 0.5) * dstw / srcw - center_x;
                     weight = f_resample(fabs(diff_x));
                     pos = (y * srcw + x) * depth;
                     const float *psrc = src + pos;
@@ -2065,7 +2070,7 @@ scale_with_resampling_float32(
                 for (x = x_first; x <= x_last; x++) {
                     diff_x = (dstw >= srcw)
                                  ? (x + 0.5) - center_x
-                                 : (x + 0.5) * srcw / dstw - center_x;
+                                 : (x + 0.5) * dstw / srcw - center_x;
                     weight = f_resample(fabs(diff_x));
                     for (i = 0; i < depth; i++) {
                         pos = (y * srcw + x) * depth + i;
