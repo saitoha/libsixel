@@ -16,7 +16,7 @@ enum { SIXEL_LOOKUP_FLOAT_COMPONENTS = 3 };
 
 typedef struct sixel_lookup_float32_node sixel_lookup_float32_node_t;
 
-typedef struct sixel_lookup_float32_eytzinger {
+typedef struct sixel_lookup_float32_1d_eytzinger {
     int count;
     float weights[SIXEL_LOOKUP_FLOAT_COMPONENTS];
     int window;
@@ -26,7 +26,7 @@ typedef struct sixel_lookup_float32_eytzinger {
     int *sorted_palette_index;
     float *sorted_keys;
     int ready;
-} sixel_lookup_float32_eytzinger_t;
+} sixel_lookup_float32_1d_eytzinger_t;
 
 typedef struct sixel_lookup_float32 {
     int policy;
@@ -41,7 +41,7 @@ typedef struct sixel_lookup_float32 {
     sixel_allocator_t *allocator;
     sixel_lookup_vpte_float32_t *vpte;
     int vpte_ready;
-    sixel_lookup_float32_eytzinger_t eytz;
+    sixel_lookup_float32_1d_eytzinger_t eytz;
 } sixel_lookup_float32_t;
 
 void
