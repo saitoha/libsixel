@@ -373,12 +373,12 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-filter-colors.Plo \
 	./$(DEPDIR)/libsixel_la-filter-dither.Plo \
 	./$(DEPDIR)/libsixel_la-filter-encode.Plo \
+	./$(DEPDIR)/libsixel_la-filter-eytzinger.Plo \
 	./$(DEPDIR)/libsixel_la-filter-factory.Plo \
 	./$(DEPDIR)/libsixel_la-filter-final-merge.Plo \
 	./$(DEPDIR)/libsixel_la-filter-load.Plo \
 	./$(DEPDIR)/libsixel_la-filter-lookup.Plo \
 	./$(DEPDIR)/libsixel_la-filter-palette.Plo \
-	./$(DEPDIR)/libsixel_la-filter-eytzinger.Plo \
 	./$(DEPDIR)/libsixel_la-filter-resize.Plo \
 	./$(DEPDIR)/libsixel_la-filter-sample.Plo \
 	./$(DEPDIR)/libsixel_la-filter-vpte.Plo \
@@ -1014,12 +1014,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-colors.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-dither.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-encode.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-eytzinger.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-factory.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-final-merge.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-load.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-lookup.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-palette.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-eytzinger.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-resize.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-sample.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-vpte.Plo@am__quote@ # am--include-marker
@@ -1888,12 +1888,12 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-colors.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-encode.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-eytzinger.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-factory.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-final-merge.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-load.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-lookup.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-palette.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-filter-eytzinger.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-resize.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-vpte.Plo
@@ -2012,12 +2012,12 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-colors.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-dither.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-encode.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-eytzinger.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-factory.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-final-merge.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-load.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-lookup.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-palette.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-filter-eytzinger.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-resize.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-vpte.Plo
