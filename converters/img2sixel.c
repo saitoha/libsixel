@@ -1577,8 +1577,6 @@ main(int argc, char *argv[])
     if (SIXEL_FAILED(status)) {
         goto error;
     }
-#else
-    (void) signal_handler;
 #endif
     if (optind >= argc) {
         status = sixel_encoder_encode(encoder, NULL);
