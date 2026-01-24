@@ -1,0 +1,15 @@
+eval "$(
+  VCVARS="$(cygpath -w "$VSINSTALLDIR")\\VC\\Auxiliary\\Build\\vcvarsall.bat"
+  cmd //c call "${VCVARS}" x64 \>nul \&\& set |
+  grep '^\(Path\|INCLUDE\|LIB\|LIBPATH\)'  |
+  while IFS== read -r key val; do
+      case "$key" in Path)
+          echo PATH=\"$(echo "$val" | tr \; \\n | while read -r p; do cygpath "$p"; done | grep ^/ | tr \\n :)\"\;
+          ;;
+      *)
+          echo export "$key"=\""$val"\"\;
+          echo export "$key"
+          ;;
+      esac;
+  done
+")
