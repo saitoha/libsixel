@@ -16334,7 +16334,8 @@ case $host_os in #(
 then :
   as_fn_error $? "--enable-abort-trace is not supported on emscripten" "$LINENO" 5
 fi
-         enable_abort_trace="no" ;; #(
+         enable_abort_trace="no"
+                  LDFLAGS="$LDFLAGS -Wno-pthreads-mem-growth" ;; #(
   mingw*|*mingw*|*ucrt*|*win32*|*windows*) :
     if test "x$enable_abort_trace" = "xyes"
 then :

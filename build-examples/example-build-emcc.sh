@@ -81,6 +81,7 @@ emconfigure sh ../../configure \
     -sWASM_BIGINT=1 \
     -sUSE_PTHREADS=1 \
     -sASSERTIONS=0 \
+    -Wno-pthreads-mem-growth \
   "
 emmake make all -j
 emmake make check -j
