@@ -125,14 +125,15 @@ struct sixel_certlut {
     int lock_ready;
 };
 
-typedef struct sixel_lookup_8bit_eytzinger_pair {
+typedef struct sixel_lookup_8bit_1d_eytzinger_pair {
     float key;
     int index;
-} sixel_lookup_8bit_eytzinger_pair_t;
+} sixel_lookup_8bit_1d_eytzinger_pair_t;
 
 static void
-sixel_lookup_8bit_eytzinger_log_event(int ncolors,
-                                      char const *event)
+sixel_lookup_8bit_1d_eytzinger_log_event(
+    int ncolors,
+    char const *event)
 {
     sixel_logger_t logger;
     SIXELSTATUS status;
@@ -145,8 +146,8 @@ sixel_lookup_8bit_eytzinger_log_event(int ncolors,
     }
 
     sixel_logger_logf(&logger,
-                      "eytzinger",
-                      "eytzinger",
+                      "1d-eytzinger",
+                      "1d-eytzinger",
                       event,
                       ncolors);
     sixel_logger_close(&logger);
@@ -297,9 +298,9 @@ static int sixel_lookup_vpte_env_use_dist2_8bit(void);
 static int sixel_lookup_vpte_env_use_cache_8bit(void);
  
 static void
-sixel_lookup_8bit_eytzinger_release(sixel_lookup_8bit_t *lut)
+sixel_lookup_8bit_1d_eytzinger_release(sixel_lookup_8bit_t *lut)
 {
-    sixel_lookup_8bit_eytzinger_t *eytz;
+    sixel_lookup_8bit_1d_eytzinger_t *eytz;
 
     if (lut == NULL) {
         return;
@@ -328,8 +329,9 @@ sixel_lookup_8bit_eytzinger_release(sixel_lookup_8bit_t *lut)
 }
 
 static float
-sixel_lookup_8bit_eytzinger_project(sixel_lookup_8bit_t const *lut,
-                                    unsigned char const *pixel)
+sixel_lookup_8bit_1d_eytzinger_project(
+    sixel_lookup_8bit_t const *lut,
+    unsigned char const *pixel)
 {
     int depth;
     int comp0;
@@ -350,14 +352,14 @@ sixel_lookup_8bit_eytzinger_project(sixel_lookup_8bit_t const *lut,
 }
 
 static int
-sixel_lookup_8bit_eytzinger_compare(void const *left, void const *right)
+sixel_lookup_8bit_1d_eytzinger_compare(void const *left, void const *right)
 {
     float diff;
-    sixel_lookup_8bit_eytzinger_pair_t const *a;
-    sixel_lookup_8bit_eytzinger_pair_t const *b;
+    sixel_lookup_8bit_1d_eytzinger_pair_t const *a;
+    sixel_lookup_8bit_1d_eytzinger_pair_t const *b;
 
-    a = (sixel_lookup_8bit_eytzinger_pair_t const *)left;
-    b = (sixel_lookup_8bit_eytzinger_pair_t const *)right;
+    a = (sixel_lookup_8bit_1d_eytzinger_pair_t const *)left;
+    b = (sixel_lookup_8bit_1d_eytzinger_pair_t const *)right;
     diff = a->key - b->key;
     if (diff < 0.0f) {
         return -1;
@@ -369,35 +371,37 @@ sixel_lookup_8bit_eytzinger_compare(void const *left, void const *right)
 }
 
 static void
-sixel_lookup_8bit_eytzinger_fill(sixel_lookup_8bit_eytzinger_t *eytz,
-                                 sixel_lookup_8bit_eytzinger_pair_t const *src,
-                                 int count,
-                                 int node,
-                                 int *rank)
+sixel_lookup_8bit_1d_eytzinger_fill(
+    sixel_lookup_8bit_1d_eytzinger_t *eytz,
+    sixel_lookup_8bit_1d_eytzinger_pair_t const *src,
+    int count,
+    int node,
+    int *rank)
 {
     if (node > count) {
         return;
     }
 
-    sixel_lookup_8bit_eytzinger_fill(eytz, src, count, node * 2, rank);
+    sixel_lookup_8bit_1d_eytzinger_fill(eytz, src, count, node * 2, rank);
     eytz->keys[node] = src[*rank].key;
     eytz->palette_index[node] = src[*rank].index;
     eytz->rank[node] = *rank;
     (*rank)++;
-    sixel_lookup_8bit_eytzinger_fill(eytz, src, count, node * 2 + 1, rank);
+    sixel_lookup_8bit_1d_eytzinger_fill(eytz, src, count, node * 2 + 1, rank);
 }
 
 static SIXELSTATUS
-sixel_lookup_8bit_configure_eytzinger(sixel_lookup_8bit_t *lut,
-                                      unsigned char const *palette,
-                                      int ncolors,
-                                      int wcomp1,
-                                      int wcomp2,
-                                      int wcomp3)
+sixel_lookup_8bit_configure_1d_eytzinger(
+    sixel_lookup_8bit_t *lut,
+    unsigned char const *palette,
+    int ncolors,
+    int wcomp1,
+    int wcomp2,
+    int wcomp3)
 {
     SIXELSTATUS status;
-    sixel_lookup_8bit_eytzinger_t *eytz;
-    sixel_lookup_8bit_eytzinger_pair_t *pairs;
+    sixel_lookup_8bit_1d_eytzinger_t *eytz;
+    sixel_lookup_8bit_1d_eytzinger_pair_t *pairs;
     size_t bytes;
     int depth;
     int count;
@@ -408,7 +412,7 @@ sixel_lookup_8bit_configure_eytzinger(sixel_lookup_8bit_t *lut,
     eytz = &lut->eytz;
     pairs = NULL;
 
-    sixel_lookup_8bit_eytzinger_release(lut);
+    sixel_lookup_8bit_1d_eytzinger_release(lut);
     eytz->ready = 0;
     eytz->count = 0;
     eytz->window = SIXEL_LOOKUP_EYTZINGER_WINDOW;
@@ -423,7 +427,7 @@ sixel_lookup_8bit_configure_eytzinger(sixel_lookup_8bit_t *lut,
     depth = lut->depth;
     count = ncolors;
     bytes = (size_t)count * sizeof(*pairs);
-    pairs = (sixel_lookup_8bit_eytzinger_pair_t *)sixel_allocator_malloc(
+    pairs = (sixel_lookup_8bit_1d_eytzinger_pair_t *)sixel_allocator_malloc(
         lut->allocator,
         bytes);
     if (pairs == NULL) {
@@ -440,15 +444,15 @@ sixel_lookup_8bit_configure_eytzinger(sixel_lookup_8bit_t *lut,
      */
     for (index = 0; index < count; ++index) {
         pairs[index].index = index;
-        pairs[index].key = sixel_lookup_8bit_eytzinger_project(
+        pairs[index].key = sixel_lookup_8bit_1d_eytzinger_project(
             lut,
             palette + (size_t)index * (size_t)depth);
     }
 
     qsort(pairs, (size_t)count, sizeof(*pairs),
-          sixel_lookup_8bit_eytzinger_compare);
+          sixel_lookup_8bit_1d_eytzinger_compare);
 
-    sixel_lookup_8bit_eytzinger_log_event(count, "builder-start");
+    sixel_lookup_8bit_1d_eytzinger_log_event(count, "builder-start");
 
     eytz->keys = (float *)sixel_allocator_malloc(
         lut->allocator,
@@ -483,11 +487,11 @@ sixel_lookup_8bit_configure_eytzinger(sixel_lookup_8bit_t *lut,
      *   node: 4 2 5 1 6 3 7
      */
     rank = 0;
-    sixel_lookup_8bit_eytzinger_fill(eytz, pairs, count, 1, &rank);
+    sixel_lookup_8bit_1d_eytzinger_fill(eytz, pairs, count, 1, &rank);
 
     eytz->count = count;
     eytz->ready = 1;
-    sixel_lookup_8bit_eytzinger_log_event(count, "builder-end");
+    sixel_lookup_8bit_1d_eytzinger_log_event(count, "builder-end");
     status = SIXEL_OK;
 
 error:
@@ -495,14 +499,14 @@ error:
         sixel_allocator_free(lut->allocator, pairs);
     }
     if (SIXEL_FAILED(status)) {
-        sixel_lookup_8bit_eytzinger_release(lut);
+        sixel_lookup_8bit_1d_eytzinger_release(lut);
     }
     return status;
 }
 
 static int
-sixel_lookup_8bit_eytzinger_lower_bound(
-    sixel_lookup_8bit_eytzinger_t const *eytz,
+sixel_lookup_8bit_1d_eytzinger_lower_bound(
+    sixel_lookup_8bit_1d_eytzinger_t const *eytz,
     float key)
 {
     int node;
@@ -528,9 +532,10 @@ sixel_lookup_8bit_eytzinger_lower_bound(
 }
 
 static int
-sixel_lookup_8bit_eytzinger_distance(sixel_lookup_8bit_t const *lut,
-                                     unsigned char const *pixel,
-                                     int palette_index)
+sixel_lookup_8bit_1d_eytzinger_distance(
+    sixel_lookup_8bit_t const *lut,
+    unsigned char const *pixel,
+    int palette_index)
 {
     unsigned char const *entry;
     int depth;
@@ -563,10 +568,11 @@ sixel_lookup_8bit_eytzinger_distance(sixel_lookup_8bit_t const *lut,
 }
 
 static int
-sixel_lookup_8bit_lookup_eytzinger(sixel_lookup_8bit_t *lut,
-                                   unsigned char const *pixel)
+sixel_lookup_8bit_lookup_1d_eytzinger(
+    sixel_lookup_8bit_t *lut,
+    unsigned char const *pixel)
 {
-    sixel_lookup_8bit_eytzinger_t const *eytz;
+    sixel_lookup_8bit_1d_eytzinger_t const *eytz;
     float key;
     int count;
     int node;
@@ -585,8 +591,8 @@ sixel_lookup_8bit_lookup_eytzinger(sixel_lookup_8bit_t *lut,
         return 0;
     }
 
-    key = sixel_lookup_8bit_eytzinger_project(lut, pixel);
-    node = sixel_lookup_8bit_eytzinger_lower_bound(eytz, key);
+    key = sixel_lookup_8bit_1d_eytzinger_project(lut, pixel);
+    node = sixel_lookup_8bit_1d_eytzinger_lower_bound(eytz, key);
     count = eytz->count;
     if (node == 0) {
         rank = count - 1;
@@ -604,15 +610,15 @@ sixel_lookup_8bit_lookup_eytzinger(sixel_lookup_8bit_t *lut,
     }
 
     best_index = eytz->sorted_palette_index[rank];
-    best_distance = sixel_lookup_8bit_eytzinger_distance(lut,
-                                                         pixel,
-                                                         best_index);
+    best_distance = sixel_lookup_8bit_1d_eytzinger_distance(lut,
+                                                            pixel,
+                                                            best_index);
 
     for (offset = start; offset <= end; ++offset) {
         palette_index = eytz->sorted_palette_index[offset];
-        distance = sixel_lookup_8bit_eytzinger_distance(lut,
-                                                        pixel,
-                                                        palette_index);
+        distance = sixel_lookup_8bit_1d_eytzinger_distance(lut,
+                                                           pixel,
+                                                           palette_index);
         if (distance < best_distance) {
             best_distance = distance;
             best_index = palette_index;
@@ -2013,7 +2019,7 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
             return SIXEL_OK;
         }
     } else if (normalized == SIXEL_LUT_POLICY_EYTZINGER) {
-        status = sixel_lookup_8bit_configure_eytzinger(lut,
+        status = sixel_lookup_8bit_configure_1d_eytzinger(lut,
                                                        palette,
                                                        ncolors,
                                                        wcomp1,
@@ -2030,7 +2036,7 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
         }
     } else {
         lut->vpte_ready = 0;
-        sixel_lookup_8bit_eytzinger_release(lut);
+        sixel_lookup_8bit_1d_eytzinger_release(lut);
     }
 
     lut->policy = normalized;
@@ -2088,7 +2094,7 @@ sixel_lookup_8bit_map_pixel(sixel_lookup_8bit_t *lut,
         return 0;
     }
     if (lut->policy == SIXEL_LUT_POLICY_EYTZINGER) {
-        return sixel_lookup_8bit_lookup_eytzinger(lut, pixel);
+        return sixel_lookup_8bit_lookup_1d_eytzinger(lut, pixel);
     }
     if (lut->policy == SIXEL_LUT_POLICY_CERTLUT) {
         if (!lut->cert_ready) {
@@ -2120,7 +2126,7 @@ sixel_lookup_8bit_clear(sixel_lookup_8bit_t *lut)
         lut->vpte = NULL;
     }
     lut->vpte_ready = 0;
-    sixel_lookup_8bit_eytzinger_release(lut);
+    sixel_lookup_8bit_1d_eytzinger_release(lut);
     lut->palette = NULL;
     lut->depth = 0;
     lut->ncolors = 0;

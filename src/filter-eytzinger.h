@@ -17,19 +17,19 @@ extern "C" {
 #endif
 
 /*
- * Configuration for the Eytzinger filter. The filter builds an Eytzinger
- * lookup table from the merged palette and propagates the result to the
- * caller. The lookup configuration must request
- * `SIXEL_LUT_POLICY_EYTZINGER`.
+ * Configuration for the 1d Eytzinger filter. The filter builds a 1d lookup
+ * table from the merged palette and propagates the result to the caller. The
+ * lookup configuration must request `SIXEL_LUT_POLICY_EYTZINGER`.
  */
-typedef struct sixel_filter_eytzinger_config {
+typedef struct sixel_filter_1d_eytzinger_config {
     sixel_filter_lookup_config_t lookup_config;
     sixel_filter_lookup_result_t *result_out;
-} sixel_filter_eytzinger_config_t;
+} sixel_filter_1d_eytzinger_config_t;
 
 SIXELSTATUS
-sixel_filter_eytzinger_init(sixel_filter_t *filter,
-                            const sixel_filter_eytzinger_config_t *config);
+sixel_filter_1d_eytzinger_init(
+    sixel_filter_t *filter,
+    const sixel_filter_1d_eytzinger_config_t *config);
 
 #ifdef __cplusplus
 }
