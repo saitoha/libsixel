@@ -652,6 +652,8 @@ Options:
                                           palette directly
                              certlut   -> certified hierarchical LUT
                                           with zero approximation
+                             eytzinger -> implicit binary tree lookup with
+                                          a small neighbour scan
                              vpte      -> Voronoi grid built via a 3-pass
                                            3D EDT with optional boundary
                                            refinement
@@ -667,7 +669,7 @@ cell corners.  The following environment variables tune the grid (legacy
 `SIXEL_LOOKUP_*` forms):
 
 * `SIXEL_DITHER_LOOKUP_POLICY` sets the LUT policy (auto, 5bit, 6bit, none,
-  certlut, or vpte).
+  certlut, eytzinger, or vpte).
 * `SIXEL_LOOKUP_VPTE_RESOLUTION` sets the grid resolution (64, 128, 256;
   default 64).
 * `SIXEL_LOOKUP_VPTE_REFINE` enables corner refinement on boundary voxels

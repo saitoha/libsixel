@@ -124,6 +124,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/filter-palette.h \
                 $(srcdir)/filter-vpte.c \
                 $(srcdir)/filter-vpte.h \
+                $(srcdir)/filter-eytzinger.c \
+                $(srcdir)/filter-eytzinger.h \
                 $(srcdir)/filter-clip.c \
                 $(srcdir)/filter-clip.h \
                 $(srcdir)/filter-resize.c \

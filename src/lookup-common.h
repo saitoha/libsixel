@@ -67,7 +67,9 @@ sixel_lut_unref(sixel_lut_t *lut);
 SIXELAPI SIXELSTATUS
 sixel_lut_configure(sixel_lut_t *lut,
                     unsigned char const *palette,
+                    float const *palette_float,
                     int depth,
+                    int float_depth,
                     int ncolors,
                     int complexion,
                     int wcomp1,

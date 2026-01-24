@@ -133,6 +133,8 @@
 #include "filter-final-merge.h"
 #include "filter-factory.h"
 #include "filter-palette.h"
+#include "filter-vpte.h"
+#include "filter-eytzinger.h"
 #include "filter-resize.h"
 #include "filter-sample.h"
 #include "sleep.h"
@@ -167,6 +169,8 @@ static SIXELSTATUS clipboard_read_file(char const *path,
 static int sixel_encoder_threads_token_is_auto(char const *text);
 static int sixel_encoder_parse_threads_argument(char const *text,
                                                 int *value);
+static SIXELSTATUS sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
+                                                  sixel_dither_t *dither);
 
 typedef struct sixel_palette_async_job {
     sixel_thread_t thread;
@@ -430,6 +434,7 @@ static sixel_option_choice_t const g_option_choices_lut_policy[] = {
     { "6bit", SIXEL_LUT_POLICY_6BIT },
     { "none", SIXEL_LUT_POLICY_NONE },
     { "certlut", SIXEL_LUT_POLICY_CERTLUT },
+    { "eytzinger", SIXEL_LUT_POLICY_EYTZINGER },
     { "vpte", SIXEL_LUT_POLICY_VPTE }
 };
 
@@ -3430,11 +3435,14 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
     int clip_active;
     int clip_first;
     int vpte_active;
+    int eytzinger_active;
     int colorspace_before_scale;
     int colorspace_after_scale;
     FILE *stream;
     char const *ops[5];
     char const *node;
+    char const *lut_node;
+    char const *lut_edge;
     int count;
     int index;
 
@@ -3452,7 +3460,22 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
                    && encoder->lut_policy == SIXEL_LUT_POLICY_VPTE)
         ? 1
         : 0;
+    eytzinger_active = (palette_ready != 0
+                        && encoder->lut_policy
+                        == SIXEL_LUT_POLICY_EYTZINGER)
+        ? 1
+        : 0;
     count = 0;
+    lut_node = NULL;
+    lut_edge = "";
+
+    if (vpte_active != 0) {
+        lut_node = "vpte";
+        lut_edge = " -> vpte";
+    } else if (eytzinger_active != 0) {
+        lut_node = "eytzinger";
+        lut_edge = " -> eytzinger";
+    }
 
     fprintf(stream, "[planner] DAG (Directed Acyclic Graph)\n");
     fprintf(stream,
@@ -3479,8 +3502,8 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
     fprintf(stream, "    load\n");
     if (palette_ready != 0) {
         fprintf(stream, "    palette (async)\n");
-        if (vpte_active != 0) {
-            fprintf(stream, "    vpte\n");
+        if (lut_node != NULL) {
+            fprintf(stream, "    %s\n", lut_node);
         }
     }
     if (clip_first != 0 && clip_active != 0) {
@@ -3505,7 +3528,7 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
     if (palette_ready != 0) {
         fprintf(stream,
                 "    load -> palette%s -> dither\n",
-                vpte_active != 0 ? " -> vpte" : "");
+                lut_edge);
     }
     if (clip_first != 0 && clip_active != 0) {
         ops[count++] = "clip";
@@ -3885,6 +3908,12 @@ sixel_encode_dag_node_palette_collect(sixel_encode_dag_context_t *context)
             sixel_encoder_palette_job_dispose(&context->palette_job);
             context->palette_job_initialized = 0;
         }
+    }
+
+    status = sixel_encoder_apply_lut_filter(context->encoder,
+                                            context->dither);
+    if (SIXEL_FAILED(status)) {
+        return status;
     }
 
     if (context->encoder->dither_cache != NULL) {
@@ -4979,6 +5008,90 @@ sixel_encoder_apply_palette_filter(sixel_encoder_t *encoder,
     sixel_filter_set_progress(filter, NULL, NULL, height);
 
     status = sixel_filter_run(filter, encoder->allocator, encoder->logger);
+
+    sixel_filter_free(filter);
+
+    return status;
+}
+
+static SIXELSTATUS
+sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
+                               sixel_dither_t *dither)
+{
+    SIXELSTATUS status;
+    sixel_filter_lookup_result_t result;
+    sixel_filter_lookup_config_t lookup_config;
+    sixel_filter_vpte_config_t vpte_config;
+    sixel_filter_eytzinger_config_t eytzinger_config;
+    sixel_filter_t *filter;
+    sixel_palette_t *palette;
+    int policy;
+
+    status = SIXEL_FALSE;
+    filter = NULL;
+    palette = NULL;
+    policy = SIXEL_LUT_POLICY_AUTO;
+    memset(&result, 0, sizeof(result));
+    memset(&lookup_config, 0, sizeof(lookup_config));
+    memset(&vpte_config, 0, sizeof(vpte_config));
+    memset(&eytzinger_config, 0, sizeof(eytzinger_config));
+
+    if (encoder == NULL || dither == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    palette = dither->palette;
+    if (palette == NULL || palette->entries == NULL
+            || palette->depth <= 0 || palette->entry_count == 0U) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    policy = dither->lut_policy;
+    if (policy != SIXEL_LUT_POLICY_VPTE
+            && policy != SIXEL_LUT_POLICY_EYTZINGER) {
+        return SIXEL_OK;
+    }
+
+    lookup_config.palette = palette->entries;
+    lookup_config.palette_float = palette->entries_float32;
+    lookup_config.depth = palette->depth;
+    lookup_config.float_depth = palette->float_depth;
+    lookup_config.ncolors = (int)palette->entry_count;
+    lookup_config.complexion = dither->complexion;
+    lookup_config.method_for_largest = dither->method_for_largest;
+    lookup_config.lut_policy = policy;
+    lookup_config.pixelformat = dither->pixelformat;
+    lookup_config.reuse_lut = palette->lut;
+
+    if (policy == SIXEL_LUT_POLICY_VPTE) {
+        vpte_config.lookup_config = lookup_config;
+        vpte_config.result_out = &result;
+        status = sixel_filter_factory_create_by_kind(
+            SIXEL_FILTER_KIND_VPTE,
+            &vpte_config,
+            &filter);
+    } else {
+        eytzinger_config.lookup_config = lookup_config;
+        eytzinger_config.result_out = &result;
+        status = sixel_filter_factory_create_by_kind(
+            SIXEL_FILTER_KIND_EYTZINGER,
+            &eytzinger_config,
+            &filter);
+    }
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    sixel_filter_set_progress(filter, NULL, NULL, 1);
+    status = sixel_filter_run(filter,
+                              encoder->allocator,
+                              encoder->logger);
+    if (SIXEL_SUCCEEDED(status) && result.lut != NULL) {
+        if (palette->lut != NULL && palette->lut != result.lut) {
+            sixel_lut_unref(palette->lut);
+        }
+        palette->lut = result.lut;
+    }
 
     sixel_filter_free(filter);
 

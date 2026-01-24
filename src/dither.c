@@ -550,6 +550,8 @@ sixel_dither_map_pixels(
     int manage_lut;
     int policy;
     int shared_lut;
+    float const *palette_float;
+    int palette_float_depth;
     sixel_filter_lookup_config_t lookup_config;
     sixel_filter_lookup_result_t lookup_result;
 
@@ -561,6 +563,8 @@ sixel_dither_map_pixels(
 
     active_lut = NULL;
     manage_lut = 0;
+    palette_float = NULL;
+    palette_float_depth = 0;
     memset(&lookup_config, 0, sizeof(lookup_config));
     memset(&lookup_result, 0, sizeof(lookup_result));
 
@@ -611,6 +615,8 @@ sixel_dither_map_pixels(
                 context.palette_float = palette_object->entries_float32;
                 context.float_depth = float_components;
                 context.new_palette_float = new_palette_float;
+                palette_float = palette_object->entries_float32;
+                palette_float_depth = palette_object->float_depth;
             }
         }
     }
@@ -667,6 +673,7 @@ sixel_dither_map_pixels(
         if (policy != SIXEL_LUT_POLICY_CERTLUT
             && policy != SIXEL_LUT_POLICY_5BIT
             && policy != SIXEL_LUT_POLICY_6BIT
+            && policy != SIXEL_LUT_POLICY_EYTZINGER
             && policy != SIXEL_LUT_POLICY_VPTE) {
             policy = SIXEL_LUT_POLICY_6BIT;
         }
@@ -699,7 +706,9 @@ sixel_dither_map_pixels(
             manage_lut = 0;
         } else {
             lookup_config.palette = palette;
+            lookup_config.palette_float = palette_float;
             lookup_config.depth = depth;
+            lookup_config.float_depth = palette_float_depth;
             lookup_config.ncolors = reqcolor;
             lookup_config.complexion = complexion;
             lookup_config.method_for_largest = method_for_largest;
@@ -966,7 +975,9 @@ sixel_dither_parallel_worker(tp_job_t job,
             }
             status = sixel_lut_configure(state->lut,
                                          plan->palette->entries,
+                                         plan->palette->entries_float32,
                                          plan->palette->depth,
+                                         plan->palette->float_depth,
                                          (int)plan->palette->entry_count,
                                          plan->complexion,
                                          wcomp1,
@@ -1816,6 +1827,7 @@ sixel_dither_set_lut_policy(
     if (lut_policy == SIXEL_LUT_POLICY_5BIT
         || lut_policy == SIXEL_LUT_POLICY_6BIT
         || lut_policy == SIXEL_LUT_POLICY_CERTLUT
+        || lut_policy == SIXEL_LUT_POLICY_EYTZINGER
         || lut_policy == SIXEL_LUT_POLICY_NONE
         || lut_policy == SIXEL_LUT_POLICY_VPTE) {
         normalized = lut_policy;
@@ -2241,6 +2253,7 @@ sixel_dither_apply_palette(
             if (policy != SIXEL_LUT_POLICY_CERTLUT
                 && policy != SIXEL_LUT_POLICY_5BIT
                 && policy != SIXEL_LUT_POLICY_6BIT
+                && policy != SIXEL_LUT_POLICY_EYTZINGER
                 && policy != SIXEL_LUT_POLICY_VPTE) {
                 policy = SIXEL_LUT_POLICY_6BIT;
             }
@@ -2271,7 +2284,9 @@ sixel_dither_apply_palette(
             }
             status = sixel_lut_configure(palette->lut,
                                          palette->entries,
+                                         palette->entries_float32,
                                          palette->depth,
+                                         palette->float_depth,
                                          (int)palette->entry_count,
                                          dither->complexion,
                                          wcomp1,
@@ -2444,7 +2459,9 @@ sixel_dither_apply_palette(
             }
             status = sixel_lut_configure(plan.lut,
                                          plan.palette->entries,
+                                         plan.palette->entries_float32,
                                          plan.palette->depth,
+                                         plan.palette->float_depth,
                                          (int)plan.palette->entry_count,
                                          dither->complexion,
                                          wcomp1,

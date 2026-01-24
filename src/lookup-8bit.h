@@ -21,6 +21,17 @@ typedef struct sixel_lookup_8bit_quantization {
     unsigned int channel_mask;
 } sixel_lookup_8bit_quantization_t;
 
+typedef struct sixel_lookup_8bit_eytzinger {
+    int count;
+    int weights[3];
+    int window;
+    float *keys;
+    int *palette_index;
+    int *rank;
+    int *sorted_palette_index;
+    int ready;
+} sixel_lookup_8bit_eytzinger_t;
+
 typedef struct sixel_lookup_8bit {
     int policy;
     int depth;
@@ -36,6 +47,7 @@ typedef struct sixel_lookup_8bit {
     int cert_ready;
     sixel_lookup_vpte_8bit_t *vpte;
     int vpte_ready;
+    sixel_lookup_8bit_eytzinger_t eytz;
 } sixel_lookup_8bit_t;
 
 void
@@ -65,4 +77,3 @@ sixel_lookup_8bit_map_pixel(sixel_lookup_8bit_t *lut,
                             unsigned char const *pixel);
 
 #endif /* LIBSIXEL_LOOKUP_8BIT_H */
-

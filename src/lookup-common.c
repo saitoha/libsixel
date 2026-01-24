@@ -235,7 +235,9 @@ sixel_lut_new(sixel_lut_t **out,
 SIXELSTATUS
 sixel_lut_configure(sixel_lut_t *lut,
                     unsigned char const *palette,
+                    float const *palette_float,
                     int depth,
+                    int float_depth,
                     int ncolors,
                     int complexion,
                     int wcomp1,
@@ -244,15 +246,43 @@ sixel_lut_configure(sixel_lut_t *lut,
                     int policy,
                     int pixelformat)
 {
+    int palette_depth;
+    int float_components;
+
+    palette_depth = depth;
+    float_components = 0;
+
     if (lut == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
+    /*
+     * Prefer float palettes when the pipeline is float32 so the LUT is built
+     * in the working color space (e.g. OKLab/CIELab). This keeps lookups
+     * consistent with VPTE behavior and avoids reinterpreting RGB888 bytes as
+     * float32 components.
+     */
     lut->input_is_float = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat);
     if (lut->input_is_float) {
+        if (palette_float != NULL && float_depth > 0) {
+            if (float_depth % (int)sizeof(float) != 0) {
+                sixel_helper_set_additional_message(
+                    "sixel_lut_configure: float depth is invalid.");
+                return SIXEL_BAD_ARGUMENT;
+            }
+            float_components = float_depth / (int)sizeof(float);
+            if (float_components <= 0) {
+                sixel_helper_set_additional_message(
+                    "sixel_lut_configure: float depth has no components.");
+                return SIXEL_BAD_ARGUMENT;
+            }
+            palette_depth = float_components;
+        }
         return sixel_lookup_float32_configure(lut->lookup_float32,
                                               palette,
-                                              depth,
+                                              palette_float,
+                                              palette_depth,
+                                              float_depth,
                                               ncolors,
                                               complexion,
                                               wcomp1,
