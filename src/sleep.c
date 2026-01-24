@@ -29,11 +29,21 @@
 void
 sixel_sleep(unsigned int usec)
 {
+#if defined(HAVE_CLOCK) && !HAVE_NANOSLEEP && \
+    !defined(_WIN32) && !defined(HAVE_USLEEP)
+    clock_t start;
+    clock_t elapsed;
+    clock_t target_ticks;
+#endif
 #if HAVE_NANOSLEEP
     struct timespec request;
     time_t seconds;
     long nanoseconds;
+#elif defined(_WIN32)
+    DWORD millis;
+#endif
 
+#if HAVE_NANOSLEEP
     seconds = (time_t)(usec / 1000000u);
     nanoseconds = (long)((usec % 1000000u) * 1000u);
     request.tv_sec = seconds;
@@ -41,8 +51,6 @@ sixel_sleep(unsigned int usec)
 
     (void)nanosleep(&request, NULL);
 #elif defined(_WIN32)
-    DWORD millis;
-
     /*
      * Round up to the nearest millisecond because the Windows Sleep API
      * accepts millisecond values.  A zero microsecond request still waits
@@ -53,8 +61,37 @@ sixel_sleep(unsigned int usec)
         millis = 1;
     }
     Sleep(millis);
-#else
+#elif defined(HAVE_USLEEP)
     (void)usleep(usec);
+#elif defined(HAVE_CLOCK)
+    /*
+     * Emscripten does not expose usleep(), so fall back to clock().
+     * We spin on process CPU time using integer math to avoid
+     * floating point, with the following steps:
+     *
+     * - Convert microseconds to clock ticks with rounding up.
+     * - Capture the current clock value as the starting point.
+     * - Loop until the elapsed ticks reach the target delay.
+     */
+    target_ticks = (clock_t)((((unsigned long long)usec *
+                               (unsigned long long)CLOCKS_PER_SEC) +
+                              999999u) / 1000000u);
+    if (target_ticks <= 0) {
+        return;
+    }
+
+    start = clock();
+    if (start == (clock_t)-1) {
+        return;
+    }
+
+    elapsed = 0;
+    while (elapsed < target_ticks) {
+        elapsed = clock() - start;
+        if (elapsed < 0) {
+            break;
+        }
+    }
 #endif
 }
 

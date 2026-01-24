@@ -19541,6 +19541,12 @@ then :
   printf "%s\n" "#define HAVE_NANOSLEEP 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "usleep" "ac_cv_func_usleep"
+if test "x$ac_cv_func_usleep" = xyes
+then :
+  printf "%s\n" "#define HAVE_USLEEP 1" >>confdefs.h
+
+fi
 ac_fn_c_check_func "$LINENO" "fork" "ac_cv_func_fork"
 if test "x$ac_cv_func_fork" = xyes
 then :
