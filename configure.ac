@@ -1093,7 +1093,7 @@ case "${host_os}" in
   mingw*)
     ;;
   *)
-    AC_CHECK_FUNCS([clock nanosleep fork waitpid posix_spawnp])
+    AC_CHECK_FUNCS([clock nanosleep usleep fork waitpid posix_spawnp])
     ;;
 esac
 
