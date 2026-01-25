@@ -355,7 +355,6 @@ img2sixel_compat_getenv(const char *name)
         free(new_entry);
         return NULL;
     }
-#if 0
     copy_result = img2sixel_compat_strcpy(name_copy,
                                           name_length,
                                           name);
@@ -365,8 +364,6 @@ img2sixel_compat_getenv(const char *name)
         free(name_copy);
         return NULL;
     }
-#endif
-    strcpy(name_copy, name);
     new_entry->name = name_copy;
     new_entry->value = value_copy;
     new_entry->next = cache_head;
