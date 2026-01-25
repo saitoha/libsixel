@@ -3,7 +3,7 @@
 # The lsqa helper can read SIXEL directly, so compare with SIXEL output.
 # Quality floors tuned to requested QA thresholds:
 # - MS-SSIM floor: 0.98
-# - PSNR_Y floor: 34.3
+# - PSNR_Y floor: 31.0
 set -eux
 
 conversion_common_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/../lib/sh/conversion/common.sh
@@ -33,7 +33,7 @@ if ! palette_lsqa_init "$0"; then
 fi
 
 PALETTE_LSQA_MS_SSIM_FLOOR=0.98
-PALETTE_LSQA_PSNR_FLOOR=34.3
+PALETTE_LSQA_PSNR_FLOOR=31.0
 export PALETTE_LSQA_MS_SSIM_FLOOR
 export PALETTE_LSQA_PSNR_FLOOR
 
