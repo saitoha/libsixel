@@ -221,11 +221,22 @@ static int sixel_neon_tables_initialized = 0;
 static uint32_t sixel_avx_gamma_to_linear_lut32[SIXEL_COLORSPACE_LUT_SIZE];
 static uint32_t sixel_avx_linear_to_gamma_lut32[SIXEL_COLORSPACE_LUT_SIZE];
 static int sixel_avx_tables_initialized = 0;
+#endif
+
+/*
+ * The AVX512 entry point is declared only when the compiler advertises
+ * the ISA to avoid unused-function warnings in AVX2-only builds.
+ */
+#if defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
+        defined(__AVX512BW__)
 static SIXELSTATUS sixel_colorspace_convert_avx512(unsigned char *pixels,
                                                    size_t size,
                                                    int pixelformat,
                                                    int colorspace_src,
                                                    int colorspace_dst);
+#endif
+
+#if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
 static SIXELSTATUS sixel_colorspace_convert_avx2(unsigned char *pixels,
                                                  size_t size,
                                                  int pixelformat,
