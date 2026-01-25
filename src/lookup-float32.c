@@ -497,6 +497,7 @@ sixel_lookup_float32_1d_eytzinger_lower_bound(
     int candidate;
     int count;
     int next;
+    int prefetch;
 
     count = eytz->count;
     node = 1;
@@ -511,6 +512,17 @@ sixel_lookup_float32_1d_eytzinger_lower_bound(
         node = next;
         SIXEL_LOOKUP_EYTZINGER_PREFETCH(eytz->keys, node, count);
         SIXEL_LOOKUP_EYTZINGER_PREFETCH(eytz->keys, node + 1, count);
+        /*
+         * Prefetch ranks to reduce the latency of the post-loop lookup.
+         */
+        prefetch = node;
+        if (prefetch <= count) {
+            SIXEL_LOOKUP_EYTZINGER_PREFETCH(eytz->rank, prefetch, count);
+        }
+        prefetch = node + 1;
+        if (prefetch <= count) {
+            SIXEL_LOOKUP_EYTZINGER_PREFETCH(eytz->rank, prefetch, count);
+        }
     }
     return candidate;
 }
@@ -536,6 +548,8 @@ sixel_lookup_float32_lookup_1d_eytzinger(sixel_lookup_float32_t *lut,
     float distance;
     float key_diff;
     float key_diff_sq;
+    int prefetch;
+    int prefetch_limit;
 
     eytz = &lut->eytz;
     if (eytz->ready == 0 || eytz->count <= 0) {
@@ -561,6 +575,7 @@ sixel_lookup_float32_lookup_1d_eytzinger(sixel_lookup_float32_t *lut,
     offset_right = rank + 1;
     stop_left = 0;
     stop_right = 0;
+    prefetch_limit = count - 1;
     /*
      * The key is a projection onto a unit vector in weighted space, so the
      * squared key delta is a lower bound for the weighted distance.  This lets
@@ -571,6 +586,17 @@ sixel_lookup_float32_lookup_1d_eytzinger(sixel_lookup_float32_t *lut,
             if (offset_left < start) {
                 stop_left = 1;
             } else {
+                prefetch = offset_left - 1;
+                if (prefetch >= 0) {
+                    SIXEL_LOOKUP_EYTZINGER_PREFETCH(
+                        eytz->sorted_keys,
+                        prefetch,
+                        prefetch_limit);
+                    SIXEL_LOOKUP_EYTZINGER_PREFETCH(
+                        eytz->sorted_palette_index,
+                        prefetch,
+                        prefetch_limit);
+                }
                 key_diff = key - eytz->sorted_keys[offset_left];
                 key_diff_sq = key_diff * key_diff;
                 if (key_diff_sq > best_distance) {
@@ -592,6 +618,17 @@ sixel_lookup_float32_lookup_1d_eytzinger(sixel_lookup_float32_t *lut,
             if (offset_right > end) {
                 stop_right = 1;
             } else {
+                prefetch = offset_right + 1;
+                if (prefetch <= prefetch_limit) {
+                    SIXEL_LOOKUP_EYTZINGER_PREFETCH(
+                        eytz->sorted_keys,
+                        prefetch,
+                        prefetch_limit);
+                    SIXEL_LOOKUP_EYTZINGER_PREFETCH(
+                        eytz->sorted_palette_index,
+                        prefetch,
+                        prefetch_limit);
+                }
                 key_diff = key - eytz->sorted_keys[offset_right];
                 key_diff_sq = key_diff * key_diff;
                 if (key_diff_sq > best_distance) {
