@@ -46,8 +46,6 @@ sixel_filter_colors_target_colorspace(int pixelformat)
         return SIXEL_COLORSPACE_CIELAB;
     case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
         return SIXEL_COLORSPACE_DIN99D;
-    case SIXEL_PIXELFORMAT_YUVFLOAT32:
-        return SIXEL_COLORSPACE_YUV;
     default:
         return SIXEL_COLORSPACE_GAMMA;
     }

@@ -260,8 +260,6 @@ sixel_palette_determine_colorspace(int pixelformat)
         return SIXEL_COLORSPACE_CIELAB;
     case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
         return SIXEL_COLORSPACE_DIN99D;
-    case SIXEL_PIXELFORMAT_YUVFLOAT32:
-        return SIXEL_COLORSPACE_YUV;
     default:
         return SIXEL_COLORSPACE_GAMMA;
     }
@@ -505,8 +503,7 @@ sixel_palette_snap_float_triplet(float *components,
     channel_factor = 1.0;
     if (colorspace == SIXEL_COLORSPACE_OKLAB
         || colorspace == SIXEL_COLORSPACE_CIELAB
-        || colorspace == SIXEL_COLORSPACE_DIN99D
-        || colorspace == SIXEL_COLORSPACE_YUV) {
+        || colorspace == SIXEL_COLORSPACE_DIN99D) {
         channel_factor = sixel_palette_get_snap_channel_factor();
     }
     if (components == NULL) {
@@ -614,8 +611,7 @@ sixel_palette_snap_float_triplet(float *components,
                      */
                     if (colorspace == SIXEL_COLORSPACE_OKLAB
                         || colorspace == SIXEL_COLORSPACE_CIELAB
-                        || colorspace == SIXEL_COLORSPACE_DIN99D
-                        || colorspace == SIXEL_COLORSPACE_YUV) {
+                        || colorspace == SIXEL_COLORSPACE_DIN99D) {
                         double ldiff;
                         double adiff;
                         double bdiff;
