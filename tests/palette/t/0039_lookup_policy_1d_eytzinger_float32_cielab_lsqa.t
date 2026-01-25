@@ -1,8 +1,8 @@
 #!/bin/sh
 # Run lsqa checks for float32 1d-Eytzinger in the CIELAB colorspace.
-# Quality floors tuned for CIELAB output:
-# - MS-SSIM floor: 0.58
-# - PSNR_Y floor: 19.5
+# Quality floors tuned to 99% of the current lsqa metrics:
+# - MS-SSIM floor: 0.979487
+# - PSNR_Y floor: 39.873449
 set -eux
 
 conversion_common_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/../lib/sh/conversion/common.sh
@@ -34,13 +34,13 @@ if ! palette_lsqa_init "$0"; then
     exit "${status}"
 fi
 
-PALETTE_LSQA_MS_SSIM_FLOOR=0.58
-PALETTE_LSQA_PSNR_FLOOR=19.5
+PALETTE_LSQA_MS_SSIM_FLOOR=0.979487
+PALETTE_LSQA_PSNR_FLOOR=39.873449
 export PALETTE_LSQA_MS_SSIM_FLOOR
 export PALETTE_LSQA_PSNR_FLOOR
 
 if run_img2sixel --lookup-policy=1d-eytzinger --precision=float32 \
-        --working-colorspace=cielab -p 16 -d none \
+        --working-colorspace=cielab -d none \
         -o "${output_sixel}" "${input_image}" 2>>"${log_file}"; then
     :
 else
