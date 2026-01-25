@@ -43,7 +43,26 @@ CLI_TESTS = cli-core/t/0001_help.t \
     completion/t/0026_completion_uninstall_zsh.t \
     aborttrace/t/0001_img2sixel_aborttrace.t \
     aborttrace/t/0002_sixel2png_aborttrace.t \
-    cli-option-invalid/t/0001_invalid_option_arguments.t \
+    cli-option-invalid/t/0001a_invalid_option_arguments_unknown_dither.t \
+    cli-option-invalid/t/0001b_invalid_option_arguments_unknown_resize_filter.t \
+    cli-option-invalid/t/0001c_invalid_option_arguments_unknown_scaling_mode.t \
+    cli-option-invalid/t/0001d_invalid_option_arguments_unknown_tone_adjustment.t \
+    cli-option-invalid/t/0001e_invalid_option_arguments_invalid_width.t \
+    cli-option-invalid/t/0001f_invalid_option_arguments_invalid_height.t \
+    cli-option-invalid/t/0001g_invalid_option_arguments_invalid_format.t \
+    cli-option-invalid/t/0001h_invalid_option_arguments_invalid_quality.t \
+    cli-option-invalid/t/0001i_invalid_option_arguments_invalid_layout.t \
+    cli-option-invalid/t/0001j_invalid_option_arguments_invalid_bpp.t \
+    cli-option-invalid/t/0001k_invalid_option_arguments_invalid_encoder_tweak.t \
+    cli-option-invalid/t/0001l_invalid_option_arguments_invalid_background_colour.t \
+    cli-option-invalid/t/0001m_invalid_option_arguments_missing_background_component.t \
+    cli-option-invalid/t/0001n_invalid_option_arguments_overlong_background.t \
+    cli-option-invalid/t/0001o_invalid_option_arguments_malformed_hex_background.t \
+    cli-option-invalid/t/0001p_invalid_option_arguments_unknown_named_colour.t \
+    cli-option-invalid/t/0001q_invalid_option_arguments_incomplete_rgb_background.t \
+    cli-option-invalid/t/0001r_invalid_option_arguments_unsupported_legacy_width.t \
+    cli-option-invalid/t/0001s_invalid_option_arguments_missing_palette_file.t \
+    cli-option-invalid/t/0001t_invalid_option_arguments_invalid_colour_space_index.t \
     cli-option-invalid/t/0002_invalid_option_arguments_invalid_width.t \
     cli-option-invalid/t/0003_invalid_option_arguments_invalid_height.t \
     cli-option-invalid/t/0004_invalid_option_arguments_invalid_format.t \
@@ -64,7 +83,10 @@ CLI_TESTS = cli-core/t/0001_help.t \
     cli-option-invalid/t/0019_invalid_option_arguments_unknown_resize_filter.t \
     cli-option-invalid/t/0020_invalid_option_arguments_unknown_scaling_mode.t \
     cli-option-invalid/t/0021_invalid_option_arguments_unknown_tone_adjustment.t \
-    cli-option-invalid/t/0022_invalid_option_combinations.t \
+    cli-option-invalid/t/0022a_invalid_option_combinations_palette_and_encode.t \
+    cli-option-invalid/t/0022b_invalid_option_combinations_inspect_with_palette.t \
+    cli-option-invalid/t/0022c_invalid_option_combinations_palette_with_terminal_preset.t \
+    cli-option-invalid/t/0022d_invalid_option_combinations_eight_bit_with_palette_dump.t \
     cli-option-invalid/t/0023_invalid_option_combinations_palette_and_encode.t \
     cli-option-invalid/t/0024_invalid_option_combinations_inspect_with_palette.t \
     cli-option-invalid/t/0025_invalid_option_combinations_palette_with_terminal_preset.t \
@@ -348,7 +370,8 @@ HELPER_FILES = common/t/0001_converters_common.t \
        lib/sh/lsqa/lsqa_dither_common.sh \
        lib/sh/lsqa/lsqa_palette_common.sh \
        lib/sh/loader/pngsuite_common.sh \
-       lib/sh/python/common.sh
+       lib/sh/python/common.sh \
+       decoder/t/dcs_arguments_common.sh
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export ARTIFACT_ROOT;
