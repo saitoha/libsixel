@@ -26,11 +26,16 @@
 #include "config.h"
 #endif
 
+#include <ctype.h>
+#include <limits.h>
+#include <stdlib.h>
 #include <string.h>
 
+#include "compat_stub.h"
 #include "dither-positional-8bit.h"
 #include "dither-common-pipeline.h"
 #include "lookup-common.h"
+#include "bluenoise_64x64.h"
 
 static void
 sixel_dither_scanline_params_positional_8bit(int serpentine,
@@ -56,6 +61,257 @@ sixel_dither_scanline_params_positional_8bit(int serpentine,
 
 static float positional_mask_a_8bit(int x, int y, int c);
 static float positional_mask_x_8bit(int x, int y, int c);
+static float positional_mask_blue_8bit(int x, int y, int c);
+
+typedef struct {
+    float strength;
+    int ox;
+    int oy;
+    int per_channel;
+    int size;
+} sixel_bluenoise_conf_t;
+
+static sixel_bluenoise_conf_t g_sixel_bn_conf;
+static int g_sixel_bn_inited = 0;
+
+static int
+sixel_bn_parse_int(char const *text, int *out_value)
+{
+    char *endptr;
+    long value;
+
+    if (text == NULL || text[0] == '\0') {
+        return 0;
+    }
+
+    value = strtol(text, &endptr, 10);
+    if (endptr == text || *endptr != '\0') {
+        return 0;
+    }
+    if (value > INT_MAX || value < INT_MIN) {
+        return 0;
+    }
+
+    *out_value = (int)value;
+    return 1;
+}
+
+static int
+sixel_bn_parse_float(char const *text, float *out_value)
+{
+    char *endptr;
+    double value;
+
+    if (text == NULL || text[0] == '\0') {
+        return 0;
+    }
+
+    value = strtod(text, &endptr);
+    if (endptr == text || *endptr != '\0') {
+        return 0;
+    }
+
+    *out_value = (float)value;
+    return 1;
+}
+
+static int
+sixel_bn_parse_phase(char const *text, int *out_ox, int *out_oy)
+{
+    char *endptr;
+    char const *comma;
+    long ox;
+    long oy;
+
+    if (text == NULL || text[0] == '\0') {
+        return 0;
+    }
+
+    comma = strchr(text, ',');
+    if (comma == NULL) {
+        return 0;
+    }
+
+    ox = strtol(text, &endptr, 10);
+    if (endptr == text || endptr != comma) {
+        return 0;
+    }
+
+    oy = strtol(comma + 1, &endptr, 10);
+    if (endptr == comma + 1 || *endptr != '\0') {
+        return 0;
+    }
+    if (ox > INT_MAX || ox < INT_MIN || oy > INT_MAX || oy < INT_MIN) {
+        return 0;
+    }
+
+    *out_ox = (int)ox;
+    *out_oy = (int)oy;
+    return 1;
+}
+
+static unsigned int
+sixel_bn_hash32(unsigned int value)
+{
+    value += 0x9e3779b9U;
+    value ^= value >> 16;
+    value *= 0x85ebca6bU;
+    value ^= value >> 13;
+    value *= 0xc2b2ae35U;
+    value ^= value >> 16;
+    return value;
+}
+
+static int
+sixel_bn_str_equal_nocase(char const *left, char const *right)
+{
+    unsigned char lc;
+    unsigned char rc;
+
+    if (left == NULL || right == NULL) {
+        return 0;
+    }
+
+    while (*left != '\0' && *right != '\0') {
+        lc = (unsigned char)tolower((unsigned char)*left);
+        rc = (unsigned char)tolower((unsigned char)*right);
+        if (lc != rc) {
+            return 0;
+        }
+        ++left;
+        ++right;
+    }
+
+    return (*left == '\0' && *right == '\0');
+}
+
+/*
+ * Cache bluenoise configuration at first use so we do not hit getenv()
+ * inside pixel loops. Invalid values fall back to defaults.
+ */
+static void
+sixel_bluenoise_conf_init_from_env(void)
+{
+    char const *text;
+    float strength;
+    int size;
+    int ox;
+    int oy;
+    int seed;
+    int phase_set;
+    int parsed;
+    int per_channel;
+    unsigned int hash;
+
+    if (g_sixel_bn_inited != 0) {
+        return;
+    }
+
+    strength = 1.0f;
+    text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_STRENGTH");
+    if (text != NULL) {
+        parsed = sixel_bn_parse_float(text, &strength);
+        if (parsed == 0) {
+            strength = 1.0f;
+        }
+    } else {
+        text = sixel_compat_getenv("SIXEL_DITHER_STRENGTH");
+        if (text != NULL) {
+            parsed = sixel_bn_parse_float(text, &strength);
+            if (parsed == 0) {
+                strength = 1.0f;
+            }
+        }
+    }
+
+    ox = 0;
+    oy = 0;
+    phase_set = 0;
+    text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_PHASE");
+    if (text != NULL) {
+        phase_set = 1;
+        parsed = sixel_bn_parse_phase(text, &ox, &oy);
+        if (parsed == 0) {
+            ox = 0;
+            oy = 0;
+        }
+    }
+    if (phase_set == 0) {
+        text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_SEED");
+        if (text != NULL) {
+            parsed = sixel_bn_parse_int(text, &seed);
+            if (parsed != 0) {
+                hash = sixel_bn_hash32((unsigned int)seed);
+                ox = (int)(hash & 63U);
+                oy = (int)((hash >> 8) & 63U);
+            }
+        }
+    }
+
+    per_channel = 0;
+    text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_CHANNEL");
+    if (text != NULL) {
+        if (sixel_bn_str_equal_nocase(text, "rgb") != 0) {
+            per_channel = 1;
+        } else if (sixel_bn_str_equal_nocase(text, "mono") != 0) {
+            per_channel = 0;
+        }
+    }
+
+    size = SIXEL_BN_W;
+    text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_SIZE");
+    if (text != NULL) {
+        parsed = sixel_bn_parse_int(text, &size);
+        if (parsed == 0 || size != SIXEL_BN_W) {
+            size = SIXEL_BN_W;
+        }
+    }
+
+    g_sixel_bn_conf.strength = strength;
+    g_sixel_bn_conf.ox = ox;
+    g_sixel_bn_conf.oy = oy;
+    g_sixel_bn_conf.per_channel = per_channel;
+    g_sixel_bn_conf.size = size;
+    g_sixel_bn_inited = 1;
+}
+
+static float
+sixel_bluenoise_tri(int x, int y, int c)
+{
+    /* Triangular noise blends two samples from the same tile. */
+    static int const channel_offset_x[3] = { 17, 34, 51 };
+    static int const channel_offset_y[3] = { 31, 62, 93 };
+    int ox;
+    int oy;
+    int per_channel;
+    int channel_x;
+    int channel_y;
+    int ix0;
+    int iy0;
+    int ix1;
+    int iy1;
+    float u;
+    float v;
+
+    ox = g_sixel_bn_conf.ox;
+    oy = g_sixel_bn_conf.oy;
+    per_channel = g_sixel_bn_conf.per_channel;
+    channel_x = 0;
+    channel_y = 0;
+    if (per_channel != 0 && c >= 0 && c < 3) {
+        channel_x = channel_offset_x[c];
+        channel_y = channel_offset_y[c];
+    }
+
+    ix0 = x + ox + channel_x;
+    iy0 = y + oy + channel_y;
+    ix1 = ix0 + 13;
+    iy1 = iy0 + 29;
+    u = (sixel_bn_mask(ix0, iy0) + 1.0f) * 0.5f;
+    v = (sixel_bn_mask(ix1, iy1) + 1.0f) * 0.5f;
+
+    return (u + v) - 1.0f;
+}
 
 static float
 positional_mask_a_8bit(int x, int y, int c)
@@ -67,6 +323,13 @@ static float
 positional_mask_x_8bit(int x, int y, int c)
 {
     return ((((x + c * 29) ^ (y * 149)) * 1234) & 511) / 256.0f - 1.0f;
+}
+
+static float
+positional_mask_blue_8bit(int x, int y, int c)
+{
+    sixel_bluenoise_conf_init_from_env();
+    return sixel_bluenoise_tri(x, y, c) * g_sixel_bn_conf.strength;
 }
 
 SIXELSTATUS
@@ -103,6 +366,11 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
         f_mask = positional_mask_a_8bit;
         break;
     case SIXEL_DIFFUSE_X_DITHER:
+        f_mask = positional_mask_x_8bit;
+        break;
+    case SIXEL_DIFFUSE_BLUENOISE_DITHER:
+        f_mask = positional_mask_blue_8bit;
+        break;
     default:
         f_mask = positional_mask_x_8bit;
         break;

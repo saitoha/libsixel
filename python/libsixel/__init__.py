@@ -135,6 +135,7 @@ SIXEL_DIFFUSE_STUCKI       = 0x5  # diffuse with Stucki's method
 SIXEL_DIFFUSE_BURKES       = 0x6  # diffuse with Burkes' method
 SIXEL_DIFFUSE_A_DITHER     = 0x7  # positionally stable arithmetic dither
 SIXEL_DIFFUSE_X_DITHER     = 0x8  # positionally stable arithmetic xor based dither
+SIXEL_DIFFUSE_BLUENOISE_DITHER = 0x9  # positionally stable bluenoise dither
 SIXEL_DIFFUSE_LSO2         = 0xa  # libsixel method based on variable error
                                   # diffusion
 SIXEL_DIFFUSE_SIERRA1      = 0xc  # diffuse with Sierra Lite method
