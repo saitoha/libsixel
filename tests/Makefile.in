@@ -1083,9 +1083,6 @@ HELPER_FILES = common/t/0001_converters_common.t \
        lib/sh/packaging/python_wheel_common.sh \
        lib/sh/palette/kmeans_init_common.sh \
        lib/sh/lsqa/lsqa_common.sh \
-       lib/sh/lsqa/lsqa_sixel_common.sh \
-       lib/sh/lsqa/lsqa_dither_common.sh \
-       lib/sh/lsqa/lsqa_palette_common.sh \
        lib/sh/loader/pngsuite_common.sh \
        lib/sh/python/common.sh \
        decoder/t/dcs_arguments_common.sh

@@ -7,15 +7,17 @@ set -eux
 conversion_common_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/../lib/sh/conversion/common.sh
 . "${conversion_common_path}"
 
-palette_lsqa_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/../lib/sh/lsqa/lsqa_palette_common.sh
-PALETTE_LSQA_HELPER_DIR=$(CDPATH=; cd "$(dirname "${palette_lsqa_path}")" && pwd)
-export PALETTE_LSQA_HELPER_DIR
-. "${palette_lsqa_path}"
+lsqa_common_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/../lib/sh/lsqa/lsqa_common.sh
+LSQA_HELPER_DIR=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
+export LSQA_HELPER_DIR
+. "${lsqa_common_path}"
 
 test_name=$(basename "$0")
 setup_conversion_env "${test_name}"
 
 status=0
+
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.6}
 
 ensure_img2sixel_available
 ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
@@ -28,13 +30,13 @@ output_png="${output_dir}/1d-eytzinger-float32-linear.png"
 
 require_file "${input_image}"
 
-if ! palette_lsqa_init "$0"; then
+if ! lsqa_init "$0"; then
     fail 1 "lsqa binary missing"
     exit "${status}"
 fi
 
-PALETTE_LSQA_MS_SSIM_FLOOR=0.978230
-export PALETTE_LSQA_MS_SSIM_FLOOR
+LSQA_MS_SSIM_FLOOR=0.978230
+export LSQA_MS_SSIM_FLOOR
 
 if run_img2sixel --lookup-policy=1d-eytzinger --precision=float32 \
         --working-colorspace=linear -d none \
@@ -53,8 +55,8 @@ else
     exit "${status}"
 fi
 
-if palette_lsqa_assert_quality "${input_image}" "${output_png}" \
-        "1d-eytzinger-float32-linear" "${artifact_dir}"; then
+if lsqa_assert_quality "${input_image}" "${output_png}" \
+        "1d-eytzinger-float32-linear" "${artifact_dir}" "${lsqa_floor}"; then
     pass 1 "float32 1d-Eytzinger linear colorspace lsqa passed"
 else
     fail 1 "float32 1d-Eytzinger linear colorspace lsqa failed"

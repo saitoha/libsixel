@@ -20,7 +20,11 @@ fail() {
     status=1
 }
 
-. "${test_dir}/../../lib/sh/lsqa/lsqa_common.sh"
+lsqa_common_path="${test_dir}/../../lib/sh/lsqa/lsqa_common.sh"
+LSQA_HELPER_DIR=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
+export LSQA_HELPER_DIR
+. "${lsqa_common_path}"
+
 
 status=0
 
