@@ -1231,7 +1231,7 @@ sixel_lookup_vpte_edt1d_avx2_float32(double *line_dist,
     __m256d idx_vec;
     __m256d diff_vec;
     __m256d dist_vec;
-    __m256i src_vec;
+    __m128i src_vec;
     int lane;
 
     vbuf[0] = 0;
@@ -1288,7 +1288,7 @@ sixel_lookup_vpte_edt1d_avx2_float32(double *line_dist,
         base_src = line_src[base_index];
         base_dist_vec = _mm256_set1_pd(base_dist);
         base_index_vec = _mm256_set1_pd((double)base_index);
-        src_vec = _mm256_set1_epi32(base_src);
+        src_vec = _mm_set1_epi32(base_src);
 
         lane = i;
         while (lane + 4 <= segment_end) {
@@ -1301,7 +1301,11 @@ sixel_lookup_vpte_edt1d_avx2_float32(double *line_dist,
             dist_vec = _mm256_mul_pd(dist_vec, weight_vec);
             dist_vec = _mm256_add_pd(dist_vec, base_dist_vec);
             _mm256_storeu_pd(scratch + lane, dist_vec);
-            _mm256_storeu_si256((__m256i *)(line_src + lane), src_vec);
+            /*
+             * AVX2 processes four outputs here, so only write four indices.
+             * Writing eight would clobber the next segment and corrupt LUTs.
+             */
+            _mm_storeu_si128((__m128i *)(line_src + lane), src_vec);
             lane += 4;
         }
         for (; lane < segment_end; ++lane) {
