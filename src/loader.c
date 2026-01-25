@@ -171,7 +171,7 @@ loader_strdup(char const *text, sixel_allocator_t *allocator)
     }
 
 #if HAVE_STRCPY_S
-    (void)strcpy_s(copy, (rsize_t)(length - 1), text);
+    (void)strcpy_s(copy, (rsize_t)length, text);
 #else
     memcpy(copy, text, length);
 #endif
