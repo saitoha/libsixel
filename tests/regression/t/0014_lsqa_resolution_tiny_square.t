@@ -20,9 +20,15 @@ fail() {
     status=1
 }
 
-. "${test_dir}/../../lib/sh/lsqa/lsqa_common.sh"
+lsqa_common_path="${test_dir}/../../lib/sh/lsqa/lsqa_common.sh"
+LSQA_HELPER_DIR=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
+export LSQA_HELPER_DIR
+. "${lsqa_common_path}"
+
 
 status=0
+
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 if ! lsqa_init "$0"; then
     printf '1..1\n'
@@ -37,7 +43,7 @@ mkdir -p "${artifact_dir}"
 printf '1..1\n'
 
 image_path="${LSQA_INPUT_ROOT}/resolutions/tiny_square.png"
-if lsqa_assert_quality "${image_path}" "tiny_square.png" "${artifact_dir}"; then
+if lsqa_assert_quality "${image_path}" "${image_path}" "tiny_square.png" "${artifact_dir}" "${lsqa_floor}"; then
     pass 1 "tiny_square quality meets baseline"
 else
     fail 1 "tiny_square quality regressed"
