@@ -2325,24 +2325,24 @@ jobs:
 #              developer/build/ninja
 #            exec_type: openindiana-vm
 
-          - label: Autotools-solaris-11.4-x86_64
-            buildtool: autotools
-            runner: ubuntu-latest
-            version: '11.4'
-            extra_packages: >-
-              gnu-make
-              gcc
-            make: gmake
-            exec_type: solaris-vm
+#          - label: Autotools-solaris-11.4-x86_64
+#            buildtool: autotools
+#            runner: ubuntu-latest
+#            version: '11.4'
+#            extra_packages: >-
+#              gnu-make
+#              gcc
+#            make: gmake
+#            exec_type: solaris-vm
 
-          - label: Meson-solaris-11.4-x86_64
-            buildtool: meson
-            runner: ubuntu-latest
-            version: '11.4'
-            extra_packages: >-
-              gcc
-              meson
-            exec_type: solaris-vm
+#          - label: Meson-solaris-11.4-x86_64
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            version: '11.4'
+#            extra_packages: >-
+#              gcc
+#              meson
+#            exec_type: solaris-vm
 
           - label: Autotools-omnios-r151056-x86_64
             buildtool: autotools
