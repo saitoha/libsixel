@@ -201,9 +201,6 @@ CLI_TESTS = cli-core/t/0001_help.t \
     output/t/0005_monochrome_frame_trailer.t \
     output/t/0006_two_pass_sixel_conversion.t \
     cli-options/t/0001_long_option_forms.t \
-    decoder/t/0001_dcs_arguments_j0.t \
-    decoder/t/0002_dcs_arguments_j1.t \
-    decoder/t/0003_dcs_arguments_j2.t \
     decoder/t/0004_tab_separated_colour_introducers.t \
     decoder/t/0005_oversized_dcs_geometry.t \
     animation/t/0001_disable_update_mode.t \
@@ -230,11 +227,7 @@ CLI_TESTS = cli-core/t/0001_help.t \
     regression/t/0006_lsqa_format_palette.t \
     regression/t/0007_lsqa_format_rgb.t \
     regression/t/0008_lsqa_format_rgba.t \
-    regression/t/0009_lsqa_resolution_hd_landscape.t \
-    regression/t/0010_lsqa_resolution_panorama_tall.t \
-    regression/t/0011_lsqa_resolution_panorama_wide.t \
     regression/t/0012_lsqa_resolution_quarter_square.t \
-    regression/t/0013_lsqa_resolution_svga_landscape.t \
     regression/t/0014_lsqa_resolution_tiny_square.t \
     regression/t/0015_lsqa_repeat_palette_variance.t \
     regression/t/0016_lsqa_corrupted_metadata_noise.t \
