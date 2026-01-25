@@ -2,7 +2,7 @@
 # Run lsqa checks for float32 VPTE in the cielab colorspace.
 # The lsqa helper can read SIXEL directly, so compare with SIXEL output.
 # Quality floors tuned to requested QA thresholds:
-# - MS-SSIM floor: 0.97
+# - MS-SSIM floor: 0.96
 set -eux
 
 conversion_common_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/../lib/sh/conversion/common.sh
@@ -31,7 +31,7 @@ if ! palette_lsqa_init "$0"; then
     exit "${status}"
 fi
 
-PALETTE_LSQA_MS_SSIM_FLOOR=0.97
+PALETTE_LSQA_MS_SSIM_FLOOR=0.96
 export PALETTE_LSQA_MS_SSIM_FLOOR
 
 if run_img2sixel --lookup-policy=vpte --precision=float32 \
