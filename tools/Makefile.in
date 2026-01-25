@@ -92,7 +92,8 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 @WANT_THUMBNAILER_TRUE@am__append_1 = sixel-thumbnailer
-noinst_PROGRAMS = lso-timer$(EXEEXT) lso-timeout$(EXEEXT)
+noinst_PROGRAMS = lso-timer$(EXEEXT) $(am__EXEEXT_1)
+@BUILD_LSO_TIMEOUT_TRUE@am__append_2 = lso-timeout
 subdir = tools
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
@@ -109,11 +110,15 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES = libsixel-config
 CONFIG_CLEAN_VPATH_FILES =
+@BUILD_LSO_TIMEOUT_TRUE@am__EXEEXT_1 = lso-timeout$(EXEEXT)
 PROGRAMS = $(noinst_PROGRAMS)
-am_lso_timeout_OBJECTS = lso-timeout.$(OBJEXT)
+am__lso_timeout_SOURCES_DIST = lso-timeout.c
+@BUILD_LSO_TIMEOUT_TRUE@am_lso_timeout_OBJECTS =  \
+@BUILD_LSO_TIMEOUT_TRUE@	lso-timeout.$(OBJEXT)
 lso_timeout_OBJECTS = $(am_lso_timeout_OBJECTS)
 am__DEPENDENCIES_1 =
-lso_timeout_DEPENDENCIES = $(am__DEPENDENCIES_1)
+@BUILD_LSO_TIMEOUT_TRUE@lso_timeout_DEPENDENCIES =  \
+@BUILD_LSO_TIMEOUT_TRUE@	$(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -185,7 +190,7 @@ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(lso_timeout_SOURCES) $(lso_timer_SOURCES)
-DIST_SOURCES = $(lso_timeout_SOURCES) $(lso_timer_SOURCES)
+DIST_SOURCES = $(am__lso_timeout_SOURCES_DIST) $(lso_timer_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -427,9 +432,9 @@ EXTRA_DIST = libsixel-config.in \
              lso-timeout.c
 
 lso_timer_SOURCES = timer.c
-lso_timeout_SOURCES = lso-timeout.c
+@BUILD_LSO_TIMEOUT_TRUE@lso_timeout_SOURCES = lso-timeout.c
+@BUILD_LSO_TIMEOUT_TRUE@lso_timeout_LDADD = $(CLOCK_GETTIME_LIBS)
 lso_timer_LDADD = $(CLOCK_GETTIME_LIBS)
-lso_timeout_LDADD = $(CLOCK_GETTIME_LIBS)
 all: all-am
 
 .SUFFIXES:

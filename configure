@@ -789,6 +789,8 @@ WANT_IMG2SIXEL_FALSE
 WANT_IMG2SIXEL_TRUE
 USING_CL_FALSE
 USING_CL_TRUE
+BUILD_LSO_TIMEOUT_FALSE
+BUILD_LSO_TIMEOUT_TRUE
 BUILDING_ON_WINDOWS_FALSE
 BUILDING_ON_WINDOWS_TRUE
 LSO_TAP_DATE_CMD
@@ -16109,6 +16111,7 @@ esac
 fi
 
 
+# Emscripten cannot run lso-timeout, so skip building it there.
 case "$host_os" in
   mingw*|msys*|cygwin*)
       build_windows=yes
@@ -16123,6 +16126,23 @@ esac
 else
   BUILDING_ON_WINDOWS_TRUE='#'
   BUILDING_ON_WINDOWS_FALSE=
+fi
+
+
+case "$host_os" in
+  emscripten*)
+      build_lso_timeout=no
+      ;;
+  *)
+      build_lso_timeout=yes
+      ;;
+esac
+ if test "x$build_lso_timeout" = "xyes"; then
+  BUILD_LSO_TIMEOUT_TRUE=
+  BUILD_LSO_TIMEOUT_FALSE='#'
+else
+  BUILD_LSO_TIMEOUT_TRUE='#'
+  BUILD_LSO_TIMEOUT_FALSE=
 fi
 
 
@@ -19606,6 +19626,52 @@ then :
   printf "%s\n" "#define HAVE_POSIX_SPAWNP 1" >>confdefs.h
 
 fi
+ac_fn_c_check_func "$LINENO" "execvp" "ac_cv_func_execvp"
+if test "x$ac_cv_func_execvp" = xyes
+then :
+  printf "%s\n" "#define HAVE_EXECVP 1" >>confdefs.h
+
+fi
+
+    ;;
+  emscripten*)
+            ac_cv_func_fork=no
+    ac_fn_c_check_func "$LINENO" "clock" "ac_cv_func_clock"
+if test "x$ac_cv_func_clock" = xyes
+then :
+  printf "%s\n" "#define HAVE_CLOCK 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "nanosleep" "ac_cv_func_nanosleep"
+if test "x$ac_cv_func_nanosleep" = xyes
+then :
+  printf "%s\n" "#define HAVE_NANOSLEEP 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "usleep" "ac_cv_func_usleep"
+if test "x$ac_cv_func_usleep" = xyes
+then :
+  printf "%s\n" "#define HAVE_USLEEP 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "fork" "ac_cv_func_fork"
+if test "x$ac_cv_func_fork" = xyes
+then :
+  printf "%s\n" "#define HAVE_FORK 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "waitpid" "ac_cv_func_waitpid"
+if test "x$ac_cv_func_waitpid" = xyes
+then :
+  printf "%s\n" "#define HAVE_WAITPID 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "posix_spawnp" "ac_cv_func_posix_spawnp"
+if test "x$ac_cv_func_posix_spawnp" = xyes
+then :
+  printf "%s\n" "#define HAVE_POSIX_SPAWNP 1" >>confdefs.h
+
+fi
 
     ;;
   *)
@@ -19643,6 +19709,12 @@ ac_fn_c_check_func "$LINENO" "posix_spawnp" "ac_cv_func_posix_spawnp"
 if test "x$ac_cv_func_posix_spawnp" = xyes
 then :
   printf "%s\n" "#define HAVE_POSIX_SPAWNP 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "execvp" "ac_cv_func_execvp"
+if test "x$ac_cv_func_execvp" = xyes
+then :
+  printf "%s\n" "#define HAVE_EXECVP 1" >>confdefs.h
 
 fi
 
@@ -24673,6 +24745,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${BUILDING_ON_WINDOWS_TRUE}" && test -z "${BUILDING_ON_WINDOWS_FALSE}"; then
   as_fn_error $? "conditional \"BUILDING_ON_WINDOWS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${BUILD_LSO_TIMEOUT_TRUE}" && test -z "${BUILD_LSO_TIMEOUT_FALSE}"; then
+  as_fn_error $? "conditional \"BUILD_LSO_TIMEOUT\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${USING_CL_TRUE}" && test -z "${USING_CL_FALSE}"; then
