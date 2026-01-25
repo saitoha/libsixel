@@ -19552,6 +19552,46 @@ fi
 case "${host_os}" in
   mingw*)
     ;;
+  emscripten*)
+            ac_cv_func_fork=no
+    ac_fn_c_check_func "$LINENO" "clock" "ac_cv_func_clock"
+if test "x$ac_cv_func_clock" = xyes
+then :
+  printf "%s\n" "#define HAVE_CLOCK 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "nanosleep" "ac_cv_func_nanosleep"
+if test "x$ac_cv_func_nanosleep" = xyes
+then :
+  printf "%s\n" "#define HAVE_NANOSLEEP 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "usleep" "ac_cv_func_usleep"
+if test "x$ac_cv_func_usleep" = xyes
+then :
+  printf "%s\n" "#define HAVE_USLEEP 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "fork" "ac_cv_func_fork"
+if test "x$ac_cv_func_fork" = xyes
+then :
+  printf "%s\n" "#define HAVE_FORK 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "waitpid" "ac_cv_func_waitpid"
+if test "x$ac_cv_func_waitpid" = xyes
+then :
+  printf "%s\n" "#define HAVE_WAITPID 1" >>confdefs.h
+
+fi
+ac_fn_c_check_func "$LINENO" "posix_spawnp" "ac_cv_func_posix_spawnp"
+if test "x$ac_cv_func_posix_spawnp" = xyes
+then :
+  printf "%s\n" "#define HAVE_POSIX_SPAWNP 1" >>confdefs.h
+
+fi
+
+    ;;
   *)
     ac_fn_c_check_func "$LINENO" "clock" "ac_cv_func_clock"
 if test "x$ac_cv_func_clock" = xyes
