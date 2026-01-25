@@ -54,12 +54,6 @@
 #define SIXEL_DIN99D_L_FLOAT_MAX  (1.0f)
 #define SIXEL_DIN99D_AB_FLOAT_MIN (-1.0f)
 #define SIXEL_DIN99D_AB_FLOAT_MAX (1.0f)
-#define SIXEL_YUV_Y_FLOAT_MIN     (0.0f)
-#define SIXEL_YUV_Y_FLOAT_MAX     (1.0f)
-#define SIXEL_YUV_U_FLOAT_MIN     (-0.436f)
-#define SIXEL_YUV_U_FLOAT_MAX     (0.436f)
-#define SIXEL_YUV_V_FLOAT_MIN     (-0.615f)
-#define SIXEL_YUV_V_FLOAT_MAX     (0.615f)
 
 /*
  * Normalize a float32 channel stored in the 0.0-1.0 range and convert
@@ -208,37 +202,6 @@ sixel_pixelformat_din99d_ab_to_byte(float value)
     return (unsigned char)(encoded * 255.0f + 0.5f);
 }
 
-static unsigned char
-sixel_pixelformat_yuv_chroma_to_byte(float value, float range)
-{
-    float encoded;
-
-#if HAVE_MATH_H
-    if (!isfinite(value)) {
-        value = 0.0f;
-    }
-#endif  /* HAVE_MATH_H */
-
-    encoded = (value / (2.0f * range)) + 0.5f;
-    if (encoded <= 0.0f) {
-        return 0;
-    }
-    if (encoded >= 1.0f) {
-        return 255;
-    }
-
-    return (unsigned char)(encoded * 255.0f + 0.5f);
-}
-
-static float
-sixel_pixelformat_yuv_chroma_from_byte(unsigned char value, float range)
-{
-    float encoded;
-
-    encoded = (float)value / 255.0f;
-    return (encoded - 0.5f) * (2.0f * range);
-}
-
 static float
 sixel_pixelformat_float_channel_min_internal(int pixelformat,
                                              int channel)
@@ -261,15 +224,6 @@ sixel_pixelformat_float_channel_min_internal(int pixelformat,
             return SIXEL_DIN99D_L_FLOAT_MIN;
         }
         return SIXEL_DIN99D_AB_FLOAT_MIN;
-    }
-    if (pixelformat == SIXEL_PIXELFORMAT_YUVFLOAT32) {
-        if (channel == 0) {
-            return SIXEL_YUV_Y_FLOAT_MIN;
-        }
-        if (channel == 1) {
-            return SIXEL_YUV_U_FLOAT_MIN;
-        }
-        return SIXEL_YUV_V_FLOAT_MIN;
     }
     return 0.0f;
 }
@@ -304,15 +258,6 @@ sixel_pixelformat_float_channel_max_internal(int pixelformat,
             return SIXEL_DIN99D_L_FLOAT_MAX;
         }
         return SIXEL_DIN99D_AB_FLOAT_MAX;
-    }
-    if (pixelformat == SIXEL_PIXELFORMAT_YUVFLOAT32) {
-        if (channel == 0) {
-            return SIXEL_YUV_Y_FLOAT_MAX;
-        }
-        if (channel == 1) {
-            return SIXEL_YUV_U_FLOAT_MAX;
-        }
-        return SIXEL_YUV_V_FLOAT_MAX;
     }
     return 1.0f;
 }
@@ -400,19 +345,6 @@ sixel_pixelformat_float_channel_to_byte(int pixelformat,
         }
         return sixel_pixelformat_din99d_ab_to_byte(clamped);
     }
-    if (pixelformat == SIXEL_PIXELFORMAT_YUVFLOAT32) {
-        if (channel == 0) {
-            return sixel_pixelformat_float_to_byte(clamped);
-        }
-        if (channel == 1) {
-            return sixel_pixelformat_yuv_chroma_to_byte(
-                clamped,
-                SIXEL_YUV_U_FLOAT_MAX);
-        }
-        return sixel_pixelformat_yuv_chroma_to_byte(clamped,
-                                                    SIXEL_YUV_V_FLOAT_MAX);
-    }
-
     (void)channel;
     return sixel_pixelformat_float_to_byte(clamped);
 }
@@ -449,19 +381,6 @@ sixel_pixelformat_byte_to_float(int pixelformat,
                  * (2.0f * SIXEL_DIN99D_AB_FLOAT_MAX);
         return decoded;
     }
-    if (pixelformat == SIXEL_PIXELFORMAT_YUVFLOAT32) {
-        if (channel == 0) {
-            return (float)value / 255.0f;
-        }
-        if (channel == 1) {
-            return sixel_pixelformat_yuv_chroma_from_byte(
-                value,
-                SIXEL_YUV_U_FLOAT_MAX);
-        }
-        return sixel_pixelformat_yuv_chroma_from_byte(value,
-                                                      SIXEL_YUV_V_FLOAT_MAX);
-    }
-
     (void)channel;
     return (float)value / 255.0f;
 }
@@ -738,24 +657,6 @@ sixel_rgb_from_din99dfloat32(unsigned char const *data,
 
 
 static void
-sixel_rgb_from_yuvfloat32(unsigned char const *data,
-                          unsigned char *r,
-                          unsigned char *g,
-                          unsigned char *b)
-{
-    float const *fpixels;
-
-    fpixels = (float const *)(void const *)data;
-
-    *r = sixel_pixelformat_float_to_byte(fpixels[0]);
-    *g = sixel_pixelformat_yuv_chroma_to_byte(fpixels[1],
-                                              SIXEL_YUV_U_FLOAT_MAX);
-    *b = sixel_pixelformat_yuv_chroma_to_byte(fpixels[2],
-                                              SIXEL_YUV_V_FLOAT_MAX);
-}
-
-
-static void
 sixel_rgb_from_unknown(unsigned char const *data,
                        unsigned char *r,
                        unsigned char *g,
@@ -808,8 +709,6 @@ sixel_select_rgb_reader(int pixelformat)
         return sixel_rgb_from_cielabfloat32;
     case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
         return sixel_rgb_from_din99dfloat32;
-    case SIXEL_PIXELFORMAT_YUVFLOAT32:
-        return sixel_rgb_from_yuvfloat32;
     default:
         break;
     }
@@ -857,7 +756,6 @@ sixel_helper_compute_depth(int pixelformat)
     case SIXEL_PIXELFORMAT_OKLABFLOAT32:
     case SIXEL_PIXELFORMAT_CIELABFLOAT32:
     case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
-    case SIXEL_PIXELFORMAT_YUVFLOAT32:
         depth = (int)(sizeof(float) * 3);
         break;
     default:
