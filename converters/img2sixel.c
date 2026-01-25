@@ -772,7 +772,8 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_DITHER_BLUENOISE_STRENGTH",
         "scale bluenoise ordered dither strength when -d bluenoise is set.\n"
-        "Accepts 0.0-2.0; defaults to 1.0. Overrides SIXEL_DITHER_STRENGTH."
+        "Accepts 0.0-2.0; defaults to 0.055. Overrides\n"
+        "SIXEL_DITHER_STRENGTH."
     },
     {
         "SIXEL_DITHER_STRENGTH",

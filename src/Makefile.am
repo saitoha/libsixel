@@ -83,6 +83,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/dither.h \
                 $(srcdir)/dither-common-pipeline.c \
                 $(srcdir)/dither-common-pipeline.h \
+                $(srcdir)/bluenoise_64x64.h \
                 $(srcdir)/dither-positional-8bit.c \
                 $(srcdir)/dither-positional-8bit.h \
                 $(srcdir)/dither-positional-float32.c \

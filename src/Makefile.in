@@ -172,6 +172,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/palette.h $(srcdir)/dither.c $(srcdir)/dither.h \
 	$(srcdir)/dither-common-pipeline.c \
 	$(srcdir)/dither-common-pipeline.h \
+	$(srcdir)/bluenoise_64x64.h \
 	$(srcdir)/dither-positional-8bit.c \
 	$(srcdir)/dither-positional-8bit.h \
 	$(srcdir)/dither-positional-float32.c \
@@ -741,6 +742,7 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-common-pipeline.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-common-pipeline.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/bluenoise_64x64.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-positional-8bit.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-positional-8bit.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/dither-positional-float32.c \
