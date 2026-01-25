@@ -295,6 +295,7 @@ img2sixel_compat_getenv(const char *name)
     char *value_copy;
     int copy_result;
     size_t length;
+    size_t name_length;
 
     if (name == NULL) {
         return NULL;
@@ -341,14 +342,22 @@ img2sixel_compat_getenv(const char *name)
         return NULL;
     }
 
-    name_copy = (char *)malloc(strlen(name) + 1);
+    name_length = strlen(name) + 1;
+    if (name_length <= 1) {
+        free(value_copy);
+        free(new_entry);
+        return NULL;
+    }
+
+    name_copy = (char *)malloc(name_length);
     if (name_copy == NULL) {
         free(value_copy);
         free(new_entry);
         return NULL;
     }
+#if 0
     copy_result = img2sixel_compat_strcpy(name_copy,
-                                          strlen(name) + 1,
+                                          name_length,
                                           name);
     if (copy_result < 0) {
         free(value_copy);
@@ -356,7 +365,8 @@ img2sixel_compat_getenv(const char *name)
         free(name_copy);
         return NULL;
     }
-
+#endif
+    strcpy(name_copy, name);
     new_entry->name = name_copy;
     new_entry->value = value_copy;
     new_entry->next = cache_head;
@@ -379,6 +389,7 @@ img2sixel_compat_strcpy(char *destination,
                         const char *source)
 {
     size_t length;
+    size_t required_size;
 
     if (destination == NULL || source == NULL || destination_size == 0) {
         errno = EINVAL;
@@ -386,6 +397,7 @@ img2sixel_compat_strcpy(char *destination,
     }
 
 #if defined(HAVE_STRCPY_S)
+    (void) required_size;
     if (strcpy_s(destination, destination_size, source) != 0) {
         errno = EINVAL;
         return (-1);
@@ -394,11 +406,16 @@ img2sixel_compat_strcpy(char *destination,
     return (int)length;
 #else
     length = strlen(source);
-    if (length >= destination_size) {
-        length = destination_size - 1;
+    required_size = length + 1;
+    /*
+     * Mirror strcpy_s() semantics and fail on truncation so callers
+     * can distinguish a real copy from a clipped buffer.
+     */
+    if (required_size > destination_size) {
+        errno = ERANGE;
+        return (-1);
     }
-    memcpy(destination, source, length);
-    destination[length] = '\0';
+    memcpy(destination, source, required_size);
     return (int)length;
 #endif
 }
