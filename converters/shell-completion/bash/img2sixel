@@ -161,6 +161,7 @@ _img2sixel()
                                    sierra3 \
                                    a_dither \
                                    x_dither \
+                                   bluenoise \
                                    lso2' -- "$cur" ) )
         return 0
         ;;

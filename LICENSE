@@ -343,3 +343,13 @@ later, with the Autoconf exception that permits their distribution under the
 same terms as this package.  The exception allows these helper scripts to be
 included in this repository without imposing the GPL on the rest of the
 codebase.  Each script retains its own license header for full details.
+
+
+13) Blue-noise texture (CC0-1.0)
+
+The following file embeds a blue-noise texture from Moments in Graphics and is
+dedicated to the public domain under CC0 1.0:
+
+ - src/bluenoise_64x64.h
+
+Source: https://momentsingraphics.de/BlueNoise.html
