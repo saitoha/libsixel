@@ -11,7 +11,10 @@ if WANT_THUMBNAILER
 bin_SCRIPTS += sixel-thumbnailer
 endif
 
-noinst_PROGRAMS = lso-timer lso-timeout
+noinst_PROGRAMS = lso-timer
+if BUILD_LSO_TIMEOUT
+noinst_PROGRAMS += lso-timeout
+endif
 
 EXTRA_DIST = libsixel-config.in \
              quicklook-extension.bash \
@@ -26,9 +29,11 @@ EXTRA_DIST = libsixel-config.in \
              lso-timeout.c
 
 lso_timer_SOURCES = timer.c
+if BUILD_LSO_TIMEOUT
 lso_timeout_SOURCES = lso-timeout.c
-lso_timer_LDADD = $(CLOCK_GETTIME_LIBS)
 lso_timeout_LDADD = $(CLOCK_GETTIME_LIBS)
+endif
+lso_timer_LDADD = $(CLOCK_GETTIME_LIBS)
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 install-data-hook:

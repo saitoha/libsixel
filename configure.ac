@@ -68,6 +68,7 @@ AS_IF([test "x$ac_cv_lso_date_epoch_nsec" = "xyes"],
       [LSO_TAP_DATE_CMD=''])
 AC_SUBST([LSO_TAP_DATE_CMD])
 
+# Emscripten cannot run lso-timeout, so skip building it there.
 case "$host_os" in
   mingw*|msys*|cygwin*)
       build_windows=yes
@@ -78,6 +79,17 @@ case "$host_os" in
 esac
 AM_CONDITIONAL([BUILDING_ON_WINDOWS],
                [test "x$build_windows" = "xyes"])
+
+case "$host_os" in
+  emscripten*)
+      build_lso_timeout=no
+      ;;
+  *)
+      build_lso_timeout=yes
+      ;;
+esac
+AM_CONDITIONAL([BUILD_LSO_TIMEOUT],
+               [test "x$build_lso_timeout" = "xyes"])
 
 AS_CASE([$host_os],
         [darwin*],
@@ -1103,6 +1115,12 @@ case "${host_os}" in
     dnl Force fork off to keep test harnesses from failing at runtime.
     ac_cv_func_fork=no
     AC_CHECK_FUNCS([clock nanosleep usleep fork waitpid posix_spawnp execvp])
+    ;;
+  emscripten*)
+    dnl Emscripten does not implement fork(), but AC_CHECK_FUNCS only compiles.
+    dnl Override the cache to prevent a false positive and test failures.
+    ac_cv_func_fork=no
+    AC_CHECK_FUNCS([clock nanosleep usleep fork waitpid posix_spawnp])
     ;;
   *)
     AC_CHECK_FUNCS([clock nanosleep usleep fork waitpid posix_spawnp execvp])
