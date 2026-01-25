@@ -25,7 +25,7 @@ project('libsixel',
         meson_version: '>=0.59.0',
         license: 'MIT',
         default_options: [
-            'buildtype=release',
+            'buildtype=plain',
             'c_std=c99',
             'warning_level=3'
         ])
@@ -1056,7 +1056,7 @@ if (cpu == 'x86' or cpu == 'x86_64') and avx2_opt
   if cc.get_argument_syntax() == 'msvc'
     avx2_args = ['/arch:AVX2']
   else
-    avx2_args = ['-mavx2', '-mfma']
+    avx2_args = ['-O2', '-mavx2', '-mfma']
   endif
   if cc.has_multi_arguments(avx2_args) and cc.compiles('''
       #include <immintrin.h>
