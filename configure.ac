@@ -1085,6 +1085,12 @@ AS_IF([test "x$ac_cv_func_gettimeofday" = xyes], [
 case "${host_os}" in
   mingw*)
     ;;
+  emscripten*)
+    dnl Emscripten (emcc >=5.0.0) reports fork() at link time, but the runtime returns ENOSYS.
+    dnl Force fork off to keep test harnesses from failing at runtime.
+    ac_cv_func_fork=no
+    AC_CHECK_FUNCS([clock nanosleep usleep fork waitpid posix_spawnp])
+    ;;
   *)
     AC_CHECK_FUNCS([clock nanosleep usleep fork waitpid posix_spawnp])
     ;;
