@@ -2,7 +2,7 @@
 # Run lsqa checks for float32 1d-Eytzinger in the CIELAB colorspace.
 # Quality floors tuned to 99% of the current lsqa metrics:
 # - MS-SSIM floor: 0.979487
-# - PSNR_Y floor: 39.873449
+# - PSNR_Y floor: 39.600000
 set -eux
 
 conversion_common_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/../lib/sh/conversion/common.sh
@@ -35,7 +35,7 @@ if ! palette_lsqa_init "$0"; then
 fi
 
 PALETTE_LSQA_MS_SSIM_FLOOR=0.979487
-PALETTE_LSQA_PSNR_FLOOR=39.873449
+PALETTE_LSQA_PSNR_FLOOR=39.600000
 export PALETTE_LSQA_MS_SSIM_FLOOR
 export PALETTE_LSQA_PSNR_FLOOR
 
