@@ -20,10 +20,14 @@ fail() {
     status=1
 }
 
-lsqa_sixel_common_path="${test_dir}/../../lib/sh/lsqa/lsqa_sixel_common.sh"
-. "${test_dir}/../../lib/sh/lsqa/lsqa_sixel_common.sh"
+lsqa_common_path="${test_dir}/../../lib/sh/lsqa/lsqa_common.sh"
+LSQA_HELPER_DIR=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
+export LSQA_HELPER_DIR
+. "${lsqa_common_path}"
 
 status=0
+
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 if ! lsqa_sixel_init "$0"; then
     printf '1..1\n'
@@ -41,7 +45,7 @@ printf '1..1\n'
 
 image_path="${LSQA_INPUT_ROOT}/inputs/formats/snake-tga-type1-pal8.tga"
 if lsqa_sixel_assert_quality "${image_path}" "snake-tga-type1-pal8.tga" \
-    "${artifact_dir}"; then
+    "${artifact_dir}" "${lsqa_floor}"; then
     pass 1 "type 1 PAL8 TGA meets lsqa floor"
 else
     fail 1 "type 1 PAL8 TGA quality below floor"

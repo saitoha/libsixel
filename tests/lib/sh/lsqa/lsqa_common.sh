@@ -3,11 +3,23 @@
 #
 # Each test sources this file and calls one of the assertion helpers to keep
 # every TAP script focused on a single input case.
+#
+# Helper layout:
+# - Initialization discovers lsqa binaries and data directories.
+# - lsqa_run_compare executes lsqa and captures output.
+# - Assertions compare MS-SSIM to a caller-provided floor.
+# - Optional sixel helpers encode images through img2sixel before checking.
 
 set -eu
 
 MS_SSIM_FLOOR=${LSQA_MS_SSIM_FLOOR:-0.98}
 REPEAT_COUNT=5
+
+lsqa_common_path=${lsqa_common_path:-"$0"}
+lsqa_helper_root=${LSQA_HELPER_DIR-}
+if [ -z "${lsqa_helper_root}" ]; then
+    lsqa_helper_root=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
+fi
 
 lsqa_init() {
     test_path=$1
@@ -110,17 +122,18 @@ lsqa_above_ceiling() {
     awk -v a="${lhs}" -v b="${rhs}" 'BEGIN { exit (a > b + 1e-12) ? 0 : 1 }'
 }
 
-lsqa_run() {
-    lsqa_run_target=$1
-    lsqa_run_stdout_path=$2
-    lsqa_run_stderr_path=$3
+lsqa_run_compare() {
+    lsqa_run_ref_path=$1
+    lsqa_run_out_path=$2
+    lsqa_run_stdout_path=$3
+    lsqa_run_stderr_path=$4
     lsqa_run_status=0
 
     : >"${lsqa_run_stdout_path}"
     : >"${lsqa_run_stderr_path}"
 
     env LSQA_RANDOM_SEED="${LSQA_SEED}" ${SIXEL_RUNTIME-} "${LSQA_BIN}" \
-        -m MS-SSIM "${lsqa_run_target}" "${lsqa_run_target}" \
+        -m MS-SSIM "${lsqa_run_ref_path}" "${lsqa_run_out_path}" \
         >"${lsqa_run_stdout_path}" \
         2>"${lsqa_run_stderr_path}" || lsqa_run_status=$?
 
@@ -128,8 +141,9 @@ lsqa_run() {
         : >"${lsqa_run_stdout_path}"
         : >"${lsqa_run_stderr_path}"
         env LSQA_RANDOM_SEED="${LSQA_SEED}" /bin/sh -c \
-            'exec "$0" -m MS-SSIM "$1" "$1"' \
-            ${SIXEL_RUNTIME-} "${LSQA_BIN}" "${lsqa_run_target}" \
+            'exec "$0" -m MS-SSIM "$1" "$2"' \
+            ${SIXEL_RUNTIME-} "${LSQA_BIN}" "${lsqa_run_ref_path}" \
+            "${lsqa_run_out_path}" \
             >"${lsqa_run_stdout_path}" 2>"${lsqa_run_stderr_path}" \
             || lsqa_run_status=$?
     fi
@@ -137,16 +151,27 @@ lsqa_run() {
     printf '%s' "${lsqa_run_status}"
 }
 
+# Compare two images and enforce an MS-SSIM floor.
+#
+# Arguments:
+#  1) Reference image path (input)
+#  2) Output image path (candidate)
+#  3) Label used in diagnostics
+#  4) Artifact directory for lsqa.txt outputs
+#  5) Optional MS-SSIM floor override (default: MS_SSIM_FLOOR)
 lsqa_assert_quality() {
-    lsqa_quality_image_path=$1
-    lsqa_quality_label=$2
-    lsqa_quality_artifact_dir=$3
+    lsqa_quality_ref_path=$1
+    lsqa_quality_out_path=$2
+    lsqa_quality_label=$3
+    lsqa_quality_artifact_dir=$4
+    lsqa_quality_floor_ms=${5:-${MS_SSIM_FLOOR}}
 
     lsqa_quality_out_file="${lsqa_quality_artifact_dir}/lsqa.txt"
     lsqa_quality_err_file="${lsqa_quality_artifact_dir}/lsqa.err"
 
-    lsqa_quality_run_status=$(lsqa_run "${lsqa_quality_image_path}" \
-        "${lsqa_quality_out_file}" "${lsqa_quality_err_file}")
+    lsqa_quality_run_status=$(lsqa_run_compare "${lsqa_quality_ref_path}" \
+        "${lsqa_quality_out_path}" "${lsqa_quality_out_file}" \
+        "${lsqa_quality_err_file}")
     if [ ${lsqa_quality_run_status} -ne 0 ]; then
         printf '%s: assessment/lsqa returned %s: %s\n' \
             "${lsqa_quality_label}" "${lsqa_quality_run_status}" \
@@ -155,11 +180,6 @@ lsqa_assert_quality() {
     fi
 
     lsqa_quality_ms_val=$(lsqa_read_ms_ssim "${lsqa_quality_out_file}")
-
-    lsqa_quality_floor_ms=${MS_SSIM_FLOOR}
-    if [ "${lsqa_quality_label}" = "palette.png" ]; then
-        lsqa_quality_floor_ms=0.0
-    fi
 
     if lsqa_below_floor "${lsqa_quality_ms_val}" \
         "${lsqa_quality_floor_ms}"; then
@@ -174,6 +194,109 @@ lsqa_assert_quality() {
     return 0
 }
 
+lsqa_require_converter_common() {
+    if [ -n "${LSQA_CONVERTER_COMMON_LOADED-}" ]; then
+        return 0
+    fi
+
+    # Load converter helpers lazily to avoid altering unrelated tests.
+    . "${lsqa_helper_root}/../../../common/t/0001_converters_common.t"
+    LSQA_CONVERTER_COMMON_LOADED=1
+    return 0
+}
+
+lsqa_sixel_init() {
+    test_path=$1
+
+    if ! lsqa_init "${test_path}"; then
+        return 1
+    fi
+
+    lsqa_require_converter_common
+    ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
+
+    return 0
+}
+
+lsqa_sixel_run() {
+    lsqa_sixel_ref_path=$1
+    lsqa_sixel_sixel_path=$2
+    lsqa_sixel_out_path=$3
+    lsqa_sixel_err_path=$4
+    lsqa_sixel_status=0
+
+    lsqa_require_converter_common
+
+    : >"${lsqa_sixel_out_path}"
+    : >"${lsqa_sixel_err_path}"
+
+    if ! run_img2sixel -Lbuiltin "${lsqa_sixel_ref_path}" \
+            > "${lsqa_sixel_sixel_path}"; then
+        lsqa_sixel_status=$?
+    elif ! runtime_exec "${LSQA_BIN}" -m MS-SSIM \
+            "${lsqa_sixel_ref_path}" "${lsqa_sixel_sixel_path}" \
+            >"${lsqa_sixel_out_path}" 2>"${lsqa_sixel_err_path}"; then
+        lsqa_sixel_status=$?
+    fi
+
+    if [ ${lsqa_sixel_status} -eq 126 ]; then
+        : >"${lsqa_sixel_out_path}"
+        : >"${lsqa_sixel_err_path}"
+        if ! run_img2sixel -Lbuiltin "${lsqa_sixel_ref_path}" \
+            | /bin/sh -c 'exec "$0" -m MS-SSIM "$1"' \
+            ${SIXEL_RUNTIME-} "${LSQA_BIN}" "${lsqa_sixel_ref_path}" \
+            >"${lsqa_sixel_out_path}" 2>"${lsqa_sixel_err_path}"; then
+            lsqa_sixel_status=$?
+        fi
+    fi
+
+    printf '%s' "${lsqa_sixel_status}"
+}
+
+lsqa_sixel_assert_quality() {
+    lsqa_sixel_ref_path=$1
+    lsqa_sixel_label=$2
+    lsqa_sixel_artifact_dir=$3
+    lsqa_sixel_floor_ms=${4:-${MS_SSIM_FLOOR}}
+
+    lsqa_sixel_sixel_file="${lsqa_sixel_artifact_dir}/output.six"
+    lsqa_sixel_out_file="${lsqa_sixel_artifact_dir}/lsqa.txt"
+    lsqa_sixel_err_file="${lsqa_sixel_artifact_dir}/lsqa.err"
+    lsqa_sixel_history_dir="${lsqa_sixel_artifact_dir}/lsqa-history"
+    lsqa_sixel_stamp=""
+    lsqa_sixel_history_file=""
+
+    lsqa_sixel_run_status=$(lsqa_sixel_run "${lsqa_sixel_ref_path}" \
+        "${lsqa_sixel_sixel_file}" "${lsqa_sixel_out_file}" \
+        "${lsqa_sixel_err_file}")
+    if [ ${lsqa_sixel_run_status} -ne 0 ]; then
+        printf '%s: assessment/lsqa returned %s: %s\n' \
+            "${lsqa_sixel_label}" "${lsqa_sixel_run_status}" \
+            "$(cat "${lsqa_sixel_err_file}")" >&2
+        return 1
+    fi
+
+    # Persist every lsqa.txt run so flaky regressions can be diffed later.
+    lsqa_sixel_stamp=$(date -u +%Y%m%dT%H%M%SZ)
+    lsqa_sixel_history_file="${lsqa_sixel_history_dir}/lsqa.${lsqa_sixel_stamp}.$$".txt
+    mkdir -p "${lsqa_sixel_history_dir}"
+    cp "${lsqa_sixel_out_file}" "${lsqa_sixel_history_file}"
+
+    lsqa_sixel_ms_val=$(lsqa_read_ms_ssim "${lsqa_sixel_out_file}")
+
+    if lsqa_below_floor "${lsqa_sixel_ms_val}" \
+        "${lsqa_sixel_floor_ms}"; then
+        printf '%s: MS-SSIM %s below floor %s\n' \
+            "${lsqa_sixel_label}" "${lsqa_sixel_ms_val}" \
+            "${lsqa_sixel_floor_ms}" >&2
+        return 1
+    fi
+
+    printf 'MS-SSIM=%s\n' "${lsqa_sixel_ms_val}" \
+        >"${lsqa_sixel_artifact_dir}/lsqa_metrics.txt"
+    return 0
+}
+
 lsqa_expect_low_quality_or_fail() {
     lsqa_low_image_path=$1
     lsqa_low_label=$2
@@ -182,8 +305,9 @@ lsqa_expect_low_quality_or_fail() {
     lsqa_low_out_file="${lsqa_low_artifact_dir}/lsqa.txt"
     lsqa_low_err_file="${lsqa_low_artifact_dir}/lsqa.err"
 
-    lsqa_low_run_status=$(lsqa_run "${lsqa_low_image_path}" \
-        "${lsqa_low_out_file}" "${lsqa_low_err_file}")
+    lsqa_low_run_status=$(lsqa_run_compare "${lsqa_low_image_path}" \
+        "${lsqa_low_image_path}" "${lsqa_low_out_file}" \
+        "${lsqa_low_err_file}")
     if [ ${lsqa_low_run_status} -eq 0 ]; then
         lsqa_low_ms_val=$(lsqa_read_ms_ssim "${lsqa_low_out_file}")
         if lsqa_below_floor "${lsqa_low_ms_val}" "0.5"; then
@@ -216,8 +340,9 @@ lsqa_assert_repeat_stability() {
     while [ ${lsqa_repeat_i} -le ${REPEAT_COUNT} ]; do
         lsqa_repeat_out_file=$(mktemp)
         lsqa_repeat_err_file=$(mktemp)
-        lsqa_repeat_run_status=$(lsqa_run "${lsqa_repeat_image_path}" \
-            "${lsqa_repeat_out_file}" "${lsqa_repeat_err_file}")
+        lsqa_repeat_run_status=$(lsqa_run_compare "${lsqa_repeat_image_path}" \
+            "${lsqa_repeat_image_path}" "${lsqa_repeat_out_file}" \
+            "${lsqa_repeat_err_file}")
         if [ ${lsqa_repeat_run_status} -ne 0 ]; then
             printf '%s: repeat run %s failed (%s): %s\n' \
                 "${lsqa_repeat_label}" "${lsqa_repeat_i}" \
