@@ -195,6 +195,9 @@
 /* Define to 1 if you have the <execinfo.h> header file. */
 #undef HAVE_EXECINFO_H
 
+/* Define to 1 if you have the 'execvp' function. */
+#undef HAVE_EXECVP
+
 /* Define to 1 if you have the 'fchmod' function. */
 #undef HAVE_FCHMOD
 
