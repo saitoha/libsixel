@@ -28,6 +28,22 @@ typedef struct sixel_lookup_float32_1d_eytzinger {
     int ready;
 } sixel_lookup_float32_1d_eytzinger_t;
 
+typedef struct sixel_lookup_float32_2d_eytzinger_axis {
+    int count;
+    int window;
+    float weights[SIXEL_LOOKUP_FLOAT_COMPONENTS];
+    float *keys;
+    int *palette_index;
+    int *rank;
+    int *sorted_palette_index;
+    int ready;
+} sixel_lookup_float32_2d_eytzinger_axis_t;
+
+typedef struct sixel_lookup_float32_2d_eytzinger {
+    sixel_lookup_float32_2d_eytzinger_axis_t axes[2];
+    int ready;
+} sixel_lookup_float32_2d_eytzinger_t;
+
 typedef struct sixel_lookup_float32 {
     int policy;
     int depth;
@@ -42,6 +58,7 @@ typedef struct sixel_lookup_float32 {
     sixel_lookup_vpte_float32_t *vpte;
     int vpte_ready;
     sixel_lookup_float32_1d_eytzinger_t eytz;
+    sixel_lookup_float32_2d_eytzinger_t eytz2d;
 } sixel_lookup_float32_t;
 
 void

@@ -19,7 +19,8 @@ extern "C" {
 /*
  * Configuration for the 1d Eytzinger filter. The filter builds a 1d lookup
  * table from the merged palette and propagates the result to the caller. The
- * lookup configuration must request `SIXEL_LUT_POLICY_EYTZINGER`.
+ * lookup configuration must request `SIXEL_LUT_POLICY_1D_EYTZINGER` or
+ * `SIXEL_LUT_POLICY_2D_EYTZINGER`.
  */
 typedef struct sixel_filter_1d_eytzinger_config {
     sixel_filter_lookup_config_t lookup_config;

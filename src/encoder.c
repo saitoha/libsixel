@@ -431,7 +431,8 @@ static sixel_option_choice_t const g_option_choices_lut_policy[] = {
     { "6bit", SIXEL_LUT_POLICY_6BIT },
     { "none", SIXEL_LUT_POLICY_NONE },
     { "certlut", SIXEL_LUT_POLICY_CERTLUT },
-    { "1d-eytzinger", SIXEL_LUT_POLICY_EYTZINGER },
+    { "1d-eytzinger", SIXEL_LUT_POLICY_1D_EYTZINGER },
+    { "2d-eytzinger", SIXEL_LUT_POLICY_2D_EYTZINGER },
     { "vpte", SIXEL_LUT_POLICY_VPTE }
 };
 
@@ -3383,6 +3384,7 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
     int clip_first;
     int vpte_active;
     int eytzinger_active;
+    int eytzinger_2d_active;
     int colorspace_before_scale;
     int colorspace_after_scale;
     FILE *stream;
@@ -3409,7 +3411,12 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
         : 0;
     eytzinger_active = (palette_ready != 0
                         && encoder->lut_policy
-                        == SIXEL_LUT_POLICY_EYTZINGER)
+                        == SIXEL_LUT_POLICY_1D_EYTZINGER)
+        ? 1
+        : 0;
+    eytzinger_2d_active = (palette_ready != 0
+                           && encoder->lut_policy
+                           == SIXEL_LUT_POLICY_2D_EYTZINGER)
         ? 1
         : 0;
     count = 0;
@@ -3422,6 +3429,9 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
     } else if (eytzinger_active != 0) {
         lut_node = "1d-eytzinger";
         lut_edge = " -> 1d-eytzinger";
+    } else if (eytzinger_2d_active != 0) {
+        lut_node = "2d-eytzinger";
+        lut_edge = " -> 2d-eytzinger";
     }
 
     fprintf(stream, "[planner] DAG (Directed Acyclic Graph)\n");
@@ -4995,7 +5005,8 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
 
     policy = dither->lut_policy;
     if (policy != SIXEL_LUT_POLICY_VPTE
-            && policy != SIXEL_LUT_POLICY_EYTZINGER) {
+            && policy != SIXEL_LUT_POLICY_1D_EYTZINGER
+            && policy != SIXEL_LUT_POLICY_2D_EYTZINGER) {
         return SIXEL_OK;
     }
 

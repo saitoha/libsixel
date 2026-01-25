@@ -491,6 +491,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "                             1d-eytzinger -> implicit binary tree\n"
         "                                             lookup with local\n"
         "                                             neighbour scan\n"
+        "                             2d-eytzinger -> 2D projection lookup\n"
+        "                                             with axis intersection\n"
         "                             vpte      -> Voronoi grid built via\n"
         "                                          3D EDT with optional\n"
         "                                          boundary refinement\n"
@@ -887,7 +889,7 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_DITHER_LOOKUP_POLICY",
         "select palette lookup policy (auto, 5bit, 6bit, none, certlut,\n"
-        "1d-eytzinger, or vpte)."
+        "1d-eytzinger, 2d-eytzinger, or vpte)."
     },
     {
         "SIXEL_LOOKUP_VPTE_RESOLUTION",

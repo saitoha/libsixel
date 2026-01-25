@@ -32,6 +32,22 @@ typedef struct sixel_lookup_8bit_1d_eytzinger {
     int ready;
 } sixel_lookup_8bit_1d_eytzinger_t;
 
+typedef struct sixel_lookup_8bit_2d_eytzinger_axis {
+    int count;
+    int window;
+    float weights[3];
+    float *keys;
+    int *palette_index;
+    int *rank;
+    int *sorted_palette_index;
+    int ready;
+} sixel_lookup_8bit_2d_eytzinger_axis_t;
+
+typedef struct sixel_lookup_8bit_2d_eytzinger {
+    sixel_lookup_8bit_2d_eytzinger_axis_t axes[2];
+    int ready;
+} sixel_lookup_8bit_2d_eytzinger_t;
+
 typedef struct sixel_lookup_8bit {
     int policy;
     int depth;
@@ -48,6 +64,7 @@ typedef struct sixel_lookup_8bit {
     sixel_lookup_vpte_8bit_t *vpte;
     int vpte_ready;
     sixel_lookup_8bit_1d_eytzinger_t eytz;
+    sixel_lookup_8bit_2d_eytzinger_t eytz2d;
 } sixel_lookup_8bit_t;
 
 void

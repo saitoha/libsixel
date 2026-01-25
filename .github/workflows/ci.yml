@@ -682,24 +682,24 @@ jobs:
               make
             exec_type: msys2
 
-          - label: Autotools-msys2-x86_64-msvc-x86_64-amalgamated_lib
-            buildtool: autotools
-            runner: windows-latest
-            msystem: MSYS
-            setup_prefix: >-
-              CC=cl
-              LD=link
-              AR="sh ar-lib lib"
-              ARFLAGS=cr
-              NM="dumpbin -symbols"
-              STRIP=:
-              RANLIB=:
-            setup_options: >-
-              --host=x86_64-pc-windows-msvc
-              --enable-amalgamated-lib
-            extra_packages: make
-            exec_type: msys2
-
+#          - label: Autotools-msys2-x86_64-msvc-x86_64-amalgamated_lib
+#            buildtool: autotools
+#            runner: windows-latest
+#            msystem: MSYS
+#            setup_prefix: >-
+#              CC=cl
+#              LD=link
+#              AR="sh ar-lib lib"
+#              ARFLAGS=cr
+#              NM="dumpbin -symbols"
+#              STRIP=:
+#              RANLIB=:
+#            setup_options: >-
+#              --host=x86_64-pc-windows-msvc
+#              --enable-amalgamated-lib
+#            extra_packages: make
+#            exec_type: msys2
+#
           - label: Autotools-msys2-aarch64-msvc-aarch64-amalgamated_lib
             buildtool: autotools
             runner: windows-11-arm

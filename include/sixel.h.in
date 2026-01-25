@@ -128,13 +128,14 @@ typedef int SIXELSTATUS;
 #define SIXEL_QUALITY_HIGHCOLOR   0x4  /* high color */
 
 /* histogram bucket policy */
-#define SIXEL_LUT_POLICY_AUTO    0x0  /* choose LUT width automatically */
-#define SIXEL_LUT_POLICY_5BIT    0x1  /* use 5 bits per channel */
-#define SIXEL_LUT_POLICY_6BIT    0x2  /* use 6 bits per channel */
-#define SIXEL_LUT_POLICY_NONE    0x4  /* disable LUT acceleration */
-#define SIXEL_LUT_POLICY_CERTLUT 0x5  /* certified hierarchical LUT */
-#define SIXEL_LUT_POLICY_VPTE    0x6  /* Voronoi + EDT lookup */
-#define SIXEL_LUT_POLICY_EYTZINGER 0x7 /* Eytzinger lookup */
+#define SIXEL_LUT_POLICY_AUTO         0x0  /* choose LUT width automatically */
+#define SIXEL_LUT_POLICY_5BIT         0x1  /* use 5 bits per channel */
+#define SIXEL_LUT_POLICY_6BIT         0x2  /* use 6 bits per channel */
+#define SIXEL_LUT_POLICY_NONE         0x4  /* disable LUT acceleration */
+#define SIXEL_LUT_POLICY_CERTLUT      0x5  /* certified hierarchical LUT */
+#define SIXEL_LUT_POLICY_VPTE         0x6  /* Voronoi + EDT lookup */
+#define SIXEL_LUT_POLICY_1D_EYTZINGER 0x7  /* 1D Eytzinger lookup */
+#define SIXEL_LUT_POLICY_2D_EYTZINGER 0x8  /* 2D Eytzinger lookup */
 
 /* built-in dither */
 #define SIXEL_BUILTIN_MONO_DARK   0x0  /* monochrome terminal with dark background */
@@ -514,6 +515,9 @@ typedef int SIXELSTATUS;
                                                                error
                                                    1d-eytzinger -> implicit
                                                                   binary tree
+                                                                  lookup
+                                                   2d-eytzinger -> 2D
+                                                                  projection
                                                                   lookup
                                                */
 #define SIXEL_OPTFLAG_WORKING_COLORSPACE ('W') /* -W WORKINGCOLORSPACE, --working-colorspace=WORKINGCOLORSPACE

@@ -47,6 +47,16 @@ typedef struct sixel_filter_1d_eytzinger_state {
     sixel_filter_lookup_result_t result;
 } sixel_filter_1d_eytzinger_state_t;
 
+static int
+sixel_filter_eytzinger_policy_supported(int policy)
+{
+    if (policy == SIXEL_LUT_POLICY_1D_EYTZINGER
+            || policy == SIXEL_LUT_POLICY_2D_EYTZINGER) {
+        return 1;
+    }
+    return 0;
+}
+
 static SIXELSTATUS
 sixel_filter_1d_eytzinger_apply(sixel_filter_t *filter,
                                 sixel_allocator_t *allocator,
@@ -69,8 +79,8 @@ sixel_filter_1d_eytzinger_apply(sixel_filter_t *filter,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (state->config.lookup_config.lut_policy
-            != SIXEL_LUT_POLICY_EYTZINGER) {
+    if (!sixel_filter_eytzinger_policy_supported(
+            state->config.lookup_config.lut_policy)) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -122,16 +132,23 @@ sixel_filter_1d_eytzinger_init(sixel_filter_t *filter,
 {
     SIXELSTATUS status;
     sixel_filter_1d_eytzinger_state_t *state;
+    char const *filter_name;
 
     status = SIXEL_FALSE;
     state = NULL;
+    filter_name = "1d-eytzinger";
 
     if (filter == NULL || config == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (config->lookup_config.lut_policy != SIXEL_LUT_POLICY_EYTZINGER) {
+    if (!sixel_filter_eytzinger_policy_supported(
+            config->lookup_config.lut_policy)) {
         return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (config->lookup_config.lut_policy == SIXEL_LUT_POLICY_2D_EYTZINGER) {
+        filter_name = "2d-eytzinger";
     }
 
     state = (sixel_filter_1d_eytzinger_state_t *)calloc(
@@ -143,7 +160,7 @@ sixel_filter_1d_eytzinger_init(sixel_filter_t *filter,
     state->config = *config;
 
     status = sixel_filter_init(filter,
-                               "1d-eytzinger",
+                               filter_name,
                                SIXEL_FILTER_KIND_EYTZINGER,
                                sixel_filter_1d_eytzinger_apply,
                                sixel_filter_1d_eytzinger_dispose,

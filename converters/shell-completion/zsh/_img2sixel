@@ -98,6 +98,7 @@ _lookuppolicy() {
     'none[disable LUT caching and scan directly]' \
     'certlut[certified hierarchical LUT with zero error]' \
     '1d-eytzinger[implicit binary tree lookup with neighbour scan]' \
+    '2d-eytzinger[2D projection lookup with axis intersection]' \
     'vpte[Voronoi grid built via a 3D EDT with boundary refinement]'
 }
 

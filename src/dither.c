@@ -673,7 +673,8 @@ sixel_dither_map_pixels(
         if (policy != SIXEL_LUT_POLICY_CERTLUT
             && policy != SIXEL_LUT_POLICY_5BIT
             && policy != SIXEL_LUT_POLICY_6BIT
-            && policy != SIXEL_LUT_POLICY_EYTZINGER
+            && policy != SIXEL_LUT_POLICY_1D_EYTZINGER
+            && policy != SIXEL_LUT_POLICY_2D_EYTZINGER
             && policy != SIXEL_LUT_POLICY_VPTE) {
             policy = SIXEL_LUT_POLICY_6BIT;
         }
@@ -1826,7 +1827,8 @@ sixel_dither_set_lut_policy(
     if (lut_policy == SIXEL_LUT_POLICY_5BIT
         || lut_policy == SIXEL_LUT_POLICY_6BIT
         || lut_policy == SIXEL_LUT_POLICY_CERTLUT
-        || lut_policy == SIXEL_LUT_POLICY_EYTZINGER
+        || lut_policy == SIXEL_LUT_POLICY_1D_EYTZINGER
+        || lut_policy == SIXEL_LUT_POLICY_2D_EYTZINGER
         || lut_policy == SIXEL_LUT_POLICY_NONE
         || lut_policy == SIXEL_LUT_POLICY_VPTE) {
         normalized = lut_policy;
@@ -2252,7 +2254,8 @@ sixel_dither_apply_palette(
             if (policy != SIXEL_LUT_POLICY_CERTLUT
                 && policy != SIXEL_LUT_POLICY_5BIT
                 && policy != SIXEL_LUT_POLICY_6BIT
-                && policy != SIXEL_LUT_POLICY_EYTZINGER
+                && policy != SIXEL_LUT_POLICY_1D_EYTZINGER
+                && policy != SIXEL_LUT_POLICY_2D_EYTZINGER
                 && policy != SIXEL_LUT_POLICY_VPTE) {
                 policy = SIXEL_LUT_POLICY_6BIT;
             }
