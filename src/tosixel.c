@@ -3331,7 +3331,7 @@ sixel_encode_body(
     int logging_active;
     int job_index;
 
-#if !defined(SIXEL_ENABLE_THREADS)
+#if !SIXEL_ENABLE_THREADS
     (void) pin_threads;
 #endif
 
