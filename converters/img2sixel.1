@@ -353,6 +353,9 @@ The \fIvpte\fP grid honours the following environment variables:
 SIXEL_DITHER_LOOKUP_POLICY (auto, 5bit, 6bit, none, certlut, 1d-eytzinger,
 or vpte)
 .br
+SIXEL_LOOKUP_PACKING (linear or morton; default linear) selects dense LUT
+packing for 5bit/6bit lookups; other policies ignore it.
+.br
 SIXEL_LOOKUP_VPTE_RESOLUTION (64, 128, or 256; default 64)
 .br
 SIXEL_LOOKUP_VPTE_REFINE (0 or 1; default 1) enables corner refinement
@@ -837,6 +840,11 @@ unset or "0" keeps raw L.
 .br
 select palette lookup policy (auto, 5bit, 6bit, none, certlut,
 1d-eytzinger, or vpte).
+.TP 5
+.B SIXEL_LOOKUP_PACKING
+.br
+select dense LUT packing for 5bit/6bit lookup (linear or morton; default
+linear; other policies ignore it).
 .TP 5
 .B SIXEL_LOOKUP_VPTE_RESOLUTION
 .br

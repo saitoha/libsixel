@@ -670,6 +670,8 @@ cell corners.  The following environment variables tune the grid (legacy
 
 * `SIXEL_DITHER_LOOKUP_POLICY` sets the LUT policy (auto, 5bit, 6bit, none,
   certlut, 1d-eytzinger, or vpte).
+* `SIXEL_LOOKUP_PACKING` chooses the dense cache packing for 5bit/6bit
+  policies (`linear` or `morton`; default `linear`).
 * `SIXEL_LOOKUP_VPTE_RESOLUTION` sets the grid resolution (64, 128, 256;
   default 64).
 * `SIXEL_LOOKUP_VPTE_REFINE` enables corner refinement on boundary voxels

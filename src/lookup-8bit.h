@@ -38,6 +38,7 @@ typedef struct sixel_lookup_8bit {
     int depth;
     int ncolors;
     int complexion;
+    int packing;
     unsigned char const *palette;
     sixel_allocator_t *allocator;
     sixel_lookup_8bit_quantization_t quant;
