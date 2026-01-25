@@ -1,8 +1,8 @@
 #!/bin/sh
 # Run lsqa checks for float32 1d-Eytzinger in the gamma colorspace.
-# Quality floors tuned for gamma output:
-# - MS-SSIM floor: 0.60
-# - PSNR_Y floor: 20.0
+# Quality floors tuned to 99% of the current lsqa metrics:
+# - MS-SSIM floor: 0.976111
+# - PSNR_Y floor: 37.241541
 set -eux
 
 conversion_common_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/../lib/sh/conversion/common.sh
@@ -34,13 +34,13 @@ if ! palette_lsqa_init "$0"; then
     exit "${status}"
 fi
 
-PALETTE_LSQA_MS_SSIM_FLOOR=0.60
-PALETTE_LSQA_PSNR_FLOOR=20.0
+PALETTE_LSQA_MS_SSIM_FLOOR=0.976111
+PALETTE_LSQA_PSNR_FLOOR=37.241541
 export PALETTE_LSQA_MS_SSIM_FLOOR
 export PALETTE_LSQA_PSNR_FLOOR
 
 if run_img2sixel --lookup-policy=1d-eytzinger --precision=float32 \
-        --working-colorspace=gamma -p 16 -d none \
+        --working-colorspace=gamma -d none \
         -o "${output_sixel}" "${input_image}" 2>>"${log_file}"; then
     :
 else

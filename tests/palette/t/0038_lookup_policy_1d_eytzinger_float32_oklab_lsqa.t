@@ -1,8 +1,8 @@
 #!/bin/sh
 # Run lsqa checks for float32 1d-Eytzinger in the OKLab colorspace.
-# Quality floors tuned for OKLab output:
-# - MS-SSIM floor: 0.60
-# - PSNR_Y floor: 20.0
+# Quality floors tuned to 99% of the current lsqa metrics:
+# - MS-SSIM floor: 0.980447
+# - PSNR_Y floor: 40.076445
 set -eux
 
 conversion_common_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/../lib/sh/conversion/common.sh
@@ -34,13 +34,13 @@ if ! palette_lsqa_init "$0"; then
     exit "${status}"
 fi
 
-PALETTE_LSQA_MS_SSIM_FLOOR=0.60
-PALETTE_LSQA_PSNR_FLOOR=20.0
+PALETTE_LSQA_MS_SSIM_FLOOR=0.980447
+PALETTE_LSQA_PSNR_FLOOR=40.076445
 export PALETTE_LSQA_MS_SSIM_FLOOR
 export PALETTE_LSQA_PSNR_FLOOR
 
 if run_img2sixel --lookup-policy=1d-eytzinger --precision=float32 \
-        --working-colorspace=oklab -p 16 -d none \
+        --working-colorspace=oklab -d none \
         -o "${output_sixel}" "${input_image}" 2>>"${log_file}"; then
     :
 else
