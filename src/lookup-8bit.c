@@ -319,11 +319,15 @@ sixel_lookup_8bit_1d_eytzinger_release(sixel_lookup_8bit_t *lut)
     if (eytz->sorted_palette_index != NULL) {
         sixel_allocator_free(lut->allocator, eytz->sorted_palette_index);
     }
+    if (eytz->sorted_keys != NULL) {
+        sixel_allocator_free(lut->allocator, eytz->sorted_keys);
+    }
 
     eytz->keys = NULL;
     eytz->palette_index = NULL;
     eytz->rank = NULL;
     eytz->sorted_palette_index = NULL;
+    eytz->sorted_keys = NULL;
     eytz->count = 0;
     eytz->ready = 0;
 }
@@ -466,9 +470,13 @@ sixel_lookup_8bit_configure_1d_eytzinger(
     eytz->sorted_palette_index = (int *)sixel_allocator_malloc(
         lut->allocator,
         (size_t)count * sizeof(int));
+    eytz->sorted_keys = (float *)sixel_allocator_malloc(
+        lut->allocator,
+        (size_t)count * sizeof(float));
 
     if (eytz->keys == NULL || eytz->palette_index == NULL
-            || eytz->rank == NULL || eytz->sorted_palette_index == NULL) {
+            || eytz->rank == NULL || eytz->sorted_palette_index == NULL
+            || eytz->sorted_keys == NULL) {
         sixel_helper_set_additional_message(
             "sixel_lookup_8bit_configure: Eytzinger arrays missing.");
         status = SIXEL_BAD_ALLOCATION;
@@ -477,6 +485,7 @@ sixel_lookup_8bit_configure_1d_eytzinger(
 
     for (index = 0; index < count; ++index) {
         eytz->sorted_palette_index[index] = pairs[index].index;
+        eytz->sorted_keys[index] = pairs[index].key;
     }
 
     /*
@@ -525,8 +534,14 @@ sixel_lookup_8bit_1d_eytzinger_lower_bound(
             next = node * 2 + 1;
         }
         node = next;
+        /*
+         * Prefetch both the key array and the rank array so the next
+         * iteration and the post-loop rank lookup can overlap memory fetches.
+         */
         SIXEL_LOOKUP_EYTZINGER_PREFETCH(eytz->keys, node, count);
         SIXEL_LOOKUP_EYTZINGER_PREFETCH(eytz->keys, node + 1, count);
+        SIXEL_LOOKUP_EYTZINGER_PREFETCH(eytz->rank, node, count);
+        SIXEL_LOOKUP_EYTZINGER_PREFETCH(eytz->rank, node + 1, count);
     }
     return candidate;
 }
@@ -580,11 +595,17 @@ sixel_lookup_8bit_lookup_1d_eytzinger(
     int window;
     int start;
     int end;
-    int offset;
+    int offset_left;
+    int offset_right;
+    int stop_left;
+    int stop_right;
     int palette_index;
     int best_index;
     int best_distance;
     int distance;
+    float best_distance_f;
+    float key_diff;
+    float key_diff_sq;
 
     eytz = &lut->eytz;
     if (eytz->ready == 0 || eytz->count <= 0) {
@@ -613,15 +634,62 @@ sixel_lookup_8bit_lookup_1d_eytzinger(
     best_distance = sixel_lookup_8bit_1d_eytzinger_distance(lut,
                                                             pixel,
                                                             best_index);
-
-    for (offset = start; offset <= end; ++offset) {
-        palette_index = eytz->sorted_palette_index[offset];
-        distance = sixel_lookup_8bit_1d_eytzinger_distance(lut,
-                                                           pixel,
-                                                           palette_index);
-        if (distance < best_distance) {
-            best_distance = distance;
-            best_index = palette_index;
+    best_distance_f = (float)best_distance;
+    offset_left = rank - 1;
+    offset_right = rank + 1;
+    stop_left = 0;
+    stop_right = 0;
+    /*
+     * Use the key projection to short-circuit the neighbor scan. Within the
+     * fixed window, we can stop searching a side once the squared key delta
+     * exceeds the best distance found so far.
+     */
+    while (stop_left == 0 || stop_right == 0) {
+        if (stop_left == 0) {
+            if (offset_left < start) {
+                stop_left = 1;
+            } else {
+                key_diff = key - eytz->sorted_keys[offset_left];
+                key_diff_sq = key_diff * key_diff;
+                if (key_diff_sq > best_distance_f) {
+                    stop_left = 1;
+                } else {
+                    palette_index = eytz->sorted_palette_index[offset_left];
+                    distance = sixel_lookup_8bit_1d_eytzinger_distance(
+                        lut,
+                        pixel,
+                        palette_index);
+                    if (distance < best_distance) {
+                        best_distance = distance;
+                        best_distance_f = (float)best_distance;
+                        best_index = palette_index;
+                    }
+                    offset_left--;
+                }
+            }
+        }
+        if (stop_right == 0) {
+            if (offset_right > end) {
+                stop_right = 1;
+            } else {
+                key_diff = key - eytz->sorted_keys[offset_right];
+                key_diff_sq = key_diff * key_diff;
+                if (key_diff_sq > best_distance_f) {
+                    stop_right = 1;
+                } else {
+                    palette_index = eytz->sorted_palette_index[offset_right];
+                    distance = sixel_lookup_8bit_1d_eytzinger_distance(
+                        lut,
+                        pixel,
+                        palette_index);
+                    if (distance < best_distance) {
+                        best_distance = distance;
+                        best_distance_f = (float)best_distance;
+                        best_index = palette_index;
+                    }
+                    offset_right++;
+                }
+            }
         }
     }
 
@@ -1952,6 +2020,7 @@ sixel_lookup_8bit_init(sixel_lookup_8bit_t *lut, sixel_allocator_t *allocator)
     lut->eytz.palette_index = NULL;
     lut->eytz.rank = NULL;
     lut->eytz.sorted_palette_index = NULL;
+    lut->eytz.sorted_keys = NULL;
     lut->eytz.window = SIXEL_LOOKUP_EYTZINGER_WINDOW;
     lut->eytz.weights[0] = 1;
     lut->eytz.weights[1] = 1;
