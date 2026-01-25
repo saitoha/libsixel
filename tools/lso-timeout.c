@@ -446,7 +446,18 @@ main(int argc, char **argv)
 
   return wait_with_timeout_win(child, deadline, kill_deadline);
 #else
+# if defined(__EMSCRIPTEN__)
+  /*
+   * Emscripten lacks fork()/waitpid() but can still run the target
+   * command. Fall back to exec without enforcing a timeout so tests
+   * can proceed.
+   */
+  execvp(argv[argi], &argv[argi]);
+  perror("execvp");
+  return EXIT_FAILURE;
+# else
   fprintf(stderr, "lso-timeout: timeout support is disabled\n");
   return EXIT_FAILURE;
+# endif
 #endif
 }
