@@ -1,5 +1,6 @@
 #!/bin/sh
 # Run lsqa checks for 8-bit VPTE in the gamma colorspace.
+# The lsqa helper can read SIXEL directly, so compare with SIXEL output.
 # Quality floors tuned to requested QA thresholds:
 # - MS-SSIM floor: 0.98
 # - PSNR_Y floor: 34.3
@@ -19,13 +20,10 @@ setup_conversion_env "${test_name}"
 status=0
 
 ensure_img2sixel_available
-ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
-
 echo "1..1"
 
 input_image="${images_dir}/snake.png"
 output_sixel="${output_dir}/vpte-8bit-gamma.six"
-output_png="${output_dir}/vpte-8bit-gamma.png"
 
 require_file "${input_image}"
 
@@ -39,8 +37,8 @@ PALETTE_LSQA_PSNR_FLOOR=34.3
 export PALETTE_LSQA_MS_SSIM_FLOOR
 export PALETTE_LSQA_PSNR_FLOOR
 
-if run_img2sixel --lookup-policy=vpte --working-colorspace=gamma \
-        -d none -o "${output_sixel}" "${input_image}" \
+if run_img2sixel --lookup-policy=vpte -o "${output_sixel}" \
+        "${input_image}" \
         2>>"${log_file}"; then
     :
 else
@@ -48,15 +46,7 @@ else
     exit "${status}"
 fi
 
-if run_sixel2png -i "${output_sixel}" -o "${output_png}" \
-        2>>"${log_file}"; then
-    :
-else
-    fail 1 "sixel2png decode failed"
-    exit "${status}"
-fi
-
-if palette_lsqa_assert_quality "${input_image}" "${output_png}" \
+if palette_lsqa_assert_quality "${input_image}" "${output_sixel}" \
         "vpte-8bit-gamma" "${artifact_dir}"; then
     pass 1 "8-bit VPTE gamma colorspace lsqa passed"
 else
