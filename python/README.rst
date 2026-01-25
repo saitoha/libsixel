@@ -78,7 +78,6 @@ preserve float data end-to-end:
    * ``SIXEL_PIXELFORMAT_OKLABFLOAT32`` for working in OKLab.
    * ``SIXEL_PIXELFORMAT_CIELABFLOAT32`` for CIELAB intermediates.
    * ``SIXEL_PIXELFORMAT_DIN99DFLOAT32`` for DIN99d buffers.
-   * ``SIXEL_PIXELFORMAT_YUVFLOAT32`` for BT.601 YUV triplets.
 
    Passing any of these constants to ``encode_bytes`` avoids the
    implicit 8-bit conversion that older releases performed.
@@ -101,8 +100,8 @@ preserve float data end-to-end:
 
 5. Combine the precision flag with the working colorspace option
    (``-W`` in the CLI, ``SIXEL_OPTFLAG_WORKING_COLORSPACE`` in Python)
-   to convert into ``linear``, ``oklab``, ``cielab``, ``din99d``, or
-   ``yuv`` before quantization while the float buffers stay intact.
+   to convert into ``linear``, ``oklab``, ``cielab``, or ``din99d``
+   before quantization while the float buffers stay intact.
 
 
 License

@@ -151,7 +151,7 @@ static int const sixel_lookup_vpte_tile_depth_default_float32 = 8;
 /*
  * VPTE builds a unit lattice, so palette and sample components must be
  * normalized to [0, 1].  For float32 working color spaces with asymmetric
- * channel ranges (Lab/DIN99d/YUV), normalize using:
+ * channel ranges (Lab/DIN99d), normalize using:
  *
  *   normalized = (clamp(value) - min) / (max - min)
  *

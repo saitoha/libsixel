@@ -555,8 +555,7 @@ sixel_frame_set_pixelformat(
             || pixelformat == SIXEL_PIXELFORMAT_LINEARRGBFLOAT32
             || pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32
             || pixelformat == SIXEL_PIXELFORMAT_CIELABFLOAT32
-            || pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32
-            || pixelformat == SIXEL_PIXELFORMAT_YUVFLOAT32) {
+            || pixelformat == SIXEL_PIXELFORMAT_DIN99DFLOAT32) {
         if (working_pixelformat & SIXEL_FORMATTYPE_PALETTE) {
             status = sixel_frame_convert_to_rgb888(frame);
         }
@@ -1077,8 +1076,6 @@ sixel_frame_colorspace_from_pixelformat(int pixelformat)
         return SIXEL_COLORSPACE_CIELAB;
     case SIXEL_PIXELFORMAT_DIN99DFLOAT32:
         return SIXEL_COLORSPACE_DIN99D;
-    case SIXEL_PIXELFORMAT_YUVFLOAT32:
-        return SIXEL_COLORSPACE_YUV;
     default:
         return SIXEL_COLORSPACE_GAMMA;
     }
@@ -1115,8 +1112,6 @@ sixel_frame_float_pixelformat_for_colorspace(int colorspace)
         return SIXEL_PIXELFORMAT_CIELABFLOAT32;
     case SIXEL_COLORSPACE_DIN99D:
         return SIXEL_PIXELFORMAT_DIN99DFLOAT32;
-    case SIXEL_COLORSPACE_YUV:
-        return SIXEL_PIXELFORMAT_YUVFLOAT32;
     default:
         return SIXEL_PIXELFORMAT_RGBFLOAT32;
     }

@@ -456,8 +456,6 @@ assessment_colorspace_name(int colorspace)
         return "linear";
     case SIXEL_COLORSPACE_SMPTEC:
         return "smpte-c";
-    case SIXEL_COLORSPACE_YUV:
-        return "yuv";
     default:
         break;
     }
@@ -4333,8 +4331,6 @@ sixel_assessment_pixelformat_for_colorspace(int colorspace)
         return SIXEL_PIXELFORMAT_CIELABFLOAT32;
     case SIXEL_COLORSPACE_DIN99D:
         return SIXEL_PIXELFORMAT_DIN99DFLOAT32;
-    case SIXEL_COLORSPACE_YUV:
-        return SIXEL_PIXELFORMAT_YUVFLOAT32;
     default:
         return SIXEL_PIXELFORMAT_RGB888;
     }
