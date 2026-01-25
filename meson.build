@@ -314,6 +314,7 @@ extra_funcs = [
   'usleep',
   'fork',
   'posix_spawnp',
+  'execvp',
   '_chmod',
   'chmod',
   'fchmod',
