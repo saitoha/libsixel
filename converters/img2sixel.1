@@ -190,6 +190,8 @@ a_dither -> positionally stable arithmetic dither
 .br
 x_dither -> positionally stable arithmetic xor based dither
 .br
+bluenoise -> tileable bluenoise-noise ordered dither
+.br
 lso2     -> libsixel method based on variable error diffusion tables,
 .br
             optimized for size
@@ -723,6 +725,37 @@ a multiple of six scanlines.
 .br
 set overlap between adjacent dither bands to smooth seams. Accepts non-negative
 integers.
+.TP 5
+.B SIXEL_DITHER_BLUENOISE_STRENGTH
+.br
+scale bluenoise ordered dither strength when \fB\-d bluenoise\fP is set.
+Accepts 0.0-2.0; defaults to 1.0. Overrides
+\fBSIXEL_DITHER_STRENGTH\fP.
+.TP 5
+.B SIXEL_DITHER_STRENGTH
+.br
+default positional dither strength when \fB\-d bluenoise\fP is set and
+\fBSIXEL_DITHER_BLUENOISE_STRENGTH\fP is unset.
+.TP 5
+.B SIXEL_DITHER_BLUENOISE_PHASE
+.br
+phase offset for bluenoise tiles when \fB\-d bluenoise\fP is set. Format is
+\(dqox,oy\(dq with signed integers; defaults to 0,0.
+.TP 5
+.B SIXEL_DITHER_BLUENOISE_SEED
+.br
+seed used to derive a bluenoise phase when \fB\-d bluenoise\fP is set and
+\fBSIXEL_DITHER_BLUENOISE_PHASE\fP is unset.
+.TP 5
+.B SIXEL_DITHER_BLUENOISE_CHANNEL
+.br
+choose bluenoise channel mode when \fB\-d bluenoise\fP is set. Accepts mono
+(shared) or rgb (independent) samples; defaults mono.
+.TP 5
+.B SIXEL_DITHER_BLUENOISE_SIZE
+.br
+bluenoise tile size when \fB\-d bluenoise\fP is set. Only 64 is embedded;
+other values fall back to 64.
 .TP 5
 .B SIXEL_SCALE_PARALLEL_MIN_BYTES
 .br
