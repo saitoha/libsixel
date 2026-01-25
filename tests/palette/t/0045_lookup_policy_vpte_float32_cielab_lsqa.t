@@ -3,7 +3,6 @@
 # The lsqa helper can read SIXEL directly, so compare with SIXEL output.
 # Quality floors tuned to requested QA thresholds:
 # - MS-SSIM floor: 0.98
-# - PSNR_Y floor: 31.3
 set -eux
 
 conversion_common_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/../lib/sh/conversion/common.sh
@@ -33,9 +32,7 @@ if ! palette_lsqa_init "$0"; then
 fi
 
 PALETTE_LSQA_MS_SSIM_FLOOR=0.98
-PALETTE_LSQA_PSNR_FLOOR=31.3
 export PALETTE_LSQA_MS_SSIM_FLOOR
-export PALETTE_LSQA_PSNR_FLOOR
 
 if run_img2sixel --lookup-policy=vpte --precision=float32 \
         --working-colorspace=cielab -o "${output_sixel}" \

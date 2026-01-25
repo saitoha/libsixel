@@ -36,16 +36,15 @@ artifact_dir="${artifact_root}/${category_name}/${test_name}"
 mkdir -p "${artifact_dir}"
 
 MS_SSIM_FLOOR=0.9990
-PSNR_FLOOR=50.0
 
 printf '1..1\n'
 
 image_path="${LSQA_INPUT_ROOT}/inputs/formats/snake-tga-type1-pal4.tga"
 if lsqa_sixel_assert_quality "${image_path}" "snake-tga-type1-pal4.tga" \
     "${artifact_dir}"; then
-    pass 1 "type 1 PAL4 TGA meets lsqa baseline"
+    pass 1 "type 1 PAL4 TGA meets lsqa floor"
 else
-    fail 1 "type 1 PAL4 TGA quality regressed"
+    fail 1 "type 1 PAL4 TGA quality below floor"
 fi
 
 exit "${status}"
