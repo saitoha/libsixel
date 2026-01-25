@@ -1,8 +1,8 @@
 #!/bin/sh
 # Run lsqa checks for float32 1d-Eytzinger in the DIN99d colorspace.
-# Quality floors tuned for DIN99d output:
-# - MS-SSIM floor: 0.55
-# - PSNR_Y floor: 18.0
+# Quality floors tuned to 99% of the current lsqa metrics:
+# - MS-SSIM floor: 0.970762
+# - PSNR_Y floor: 35.682724
 set -eux
 
 conversion_common_path=$(CDPATH=; cd "$(dirname "$0")/.." && pwd)/../lib/sh/conversion/common.sh
@@ -34,13 +34,13 @@ if ! palette_lsqa_init "$0"; then
     exit "${status}"
 fi
 
-PALETTE_LSQA_MS_SSIM_FLOOR=0.55
-PALETTE_LSQA_PSNR_FLOOR=18.0
+PALETTE_LSQA_MS_SSIM_FLOOR=0.970762
+PALETTE_LSQA_PSNR_FLOOR=35.682724
 export PALETTE_LSQA_MS_SSIM_FLOOR
 export PALETTE_LSQA_PSNR_FLOOR
 
 if run_img2sixel --lookup-policy=1d-eytzinger --precision=float32 \
-        --working-colorspace=din99d -p 16 -d none \
+        --working-colorspace=din99d -d none \
         -o "${output_sixel}" "${input_image}" 2>>"${log_file}"; then
     :
 else
