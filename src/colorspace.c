@@ -1044,7 +1044,7 @@ sixel_colorspace_pack_gamma_bytes_avx(__m256 value)
 static void
 sixel_colorspace_store_block(unsigned char *pixels,
                              size_t offset,
-                             const sixel_colorspace_layout_t *layout,
+                             const sixel_pixelformat_layout_t *layout,
                              const unsigned char *rbuf,
                              const unsigned char *gbuf,
                              const unsigned char *bbuf)
@@ -1064,7 +1064,7 @@ sixel_colorspace_store_block(unsigned char *pixels,
 static void
 sixel_colorspace_load_block(const unsigned char *pixels,
                             size_t offset,
-                            const sixel_colorspace_layout_t *layout,
+                            const sixel_pixelformat_layout_t *layout,
                             int apply_gamma_lut,
                             __m256 *r,
                             __m256 *g,
