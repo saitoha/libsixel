@@ -121,6 +121,8 @@ test_lookup_filter_reuses_lut_and_reports_progress(void)
     progress.completed = 0;
     progress.aborted = 0;
     mapped = -1;
+    /* Zero-initialize optional fields to avoid MSan uninitialized reads. */
+    memset(&config, 0, sizeof(config));
 
     status = make_allocator(&allocator);
     if (SIXEL_FAILED(status)) {
