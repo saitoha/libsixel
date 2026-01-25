@@ -178,6 +178,7 @@ sixel_dither_method_supports_float_pipeline(sixel_dither_t const *dither)
         return 1;
     case SIXEL_DIFFUSE_A_DITHER:
     case SIXEL_DIFFUSE_X_DITHER:
+    case SIXEL_DIFFUSE_BLUENOISE_DITHER:
     case SIXEL_DIFFUSE_LSO2:
         return 1;
     default:
@@ -632,7 +633,8 @@ sixel_dither_map_pixels(
     use_varerr = (depth == 3
                   && methodForDiffuse == SIXEL_DIFFUSE_LSO2);
     use_positional = (methodForDiffuse == SIXEL_DIFFUSE_A_DITHER
-                      || methodForDiffuse == SIXEL_DIFFUSE_X_DITHER);
+                      || methodForDiffuse == SIXEL_DIFFUSE_X_DITHER
+                      || methodForDiffuse == SIXEL_DIFFUSE_BLUENOISE_DITHER);
     carry_mode = (methodForCarry == SIXEL_CARRY_ENABLE)
                ? SIXEL_CARRY_ENABLE
                : SIXEL_CARRY_DISABLE;
