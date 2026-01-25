@@ -1092,7 +1092,7 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
     base_weights[1] = (float)wcomp2;
     base_weights[2] = (float)wcomp3;
     /*
-     * Normalize weights by the expected float32 channel ranges so L/ab/YUV
+     * Normalize weights by the expected float32 channel ranges so L/ab
      * scale asymmetry does not skew the distance function.
      */
     for (component = 0; component < SIXEL_LOOKUP_FLOAT_COMPONENTS;
