@@ -29,6 +29,7 @@ typedef struct sixel_lookup_8bit_1d_eytzinger {
     int *palette_index;
     int *rank;
     int *sorted_palette_index;
+    float *sorted_keys;
     int ready;
 } sixel_lookup_8bit_1d_eytzinger_t;
 

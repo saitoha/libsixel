@@ -31,28 +31,30 @@ if ! palette_lsqa_init "$0"; then
     exit "${status}"
 fi
 
-if SIXEL_PALETTE_SNAP_TARGET_POLICY=reversible \
-        SIXEL_PALETTE_SNAP_TIMING_POLICY=all \
-        SIXEL_PALETTE_SNAP_APPROACH_RATE=0.7 \
-        SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L=0.7 \
-        run_img2sixel -Q heckbert -6 -p 16 \
-        -o "${output_sixel}" "${input_image}" 2>>"${log_file}"; then
+SIXEL_PALETTE_SNAP_TARGET_POLICY=reversible
+SIXEL_PALETTE_SNAP_TIMING_POLICY=all
+SIXEL_PALETTE_SNAP_APPROACH_RATE=0.7
+SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L=0.7
+export SIXEL_PALETTE_SNAP_TARGET_POLICY
+export SIXEL_PALETTE_SNAP_TIMING_POLICY
+export SIXEL_PALETTE_SNAP_APPROACH_RATE
+export SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L
+
+if run_img2sixel -Q heckbert -6 -o "${output_sixel}" "${input_image}" 2>>"${log_file}"; then
     :
 else
     fail 1 "img2sixel snap heckbert 8bit failed"
     exit "${status}"
 fi
 
-if run_sixel2png -i "${output_sixel}" -o "${output_png}" \
-        2>>"${log_file}"; then
+if run_sixel2png -i "${output_sixel}" -o "${output_png}" 2>>"${log_file}"; then
     :
 else
     fail 1 "sixel2png decode failed"
     exit "${status}"
 fi
 
-if palette_lsqa_assert_quality "${input_image}" "${output_png}" \
-        "snap-heckbert-8bit" "${artifact_dir}"; then
+if palette_lsqa_assert_quality "${input_image}" "${output_png}" "snap-heckbert-8bit" "${artifact_dir}"; then
     pass 1 "snap heckbert 8bit lsqa passed"
 else
     fail 1 "snap heckbert 8bit lsqa failed"
