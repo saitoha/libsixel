@@ -324,6 +324,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                         arithmetic dither\n"
         "                             x_dither -> positionally stable\n"
         "                                         arithmetic xor based dither\n"
+        "                             bluenoise -> tileable bluenoise-noise\n"
+        "                                         ordered dither\n"
         "                             lso2     -> libsixel method based on\n"
         "                                         variable error diffusion\n"
         "                                         tables, optimized for size\n"
@@ -766,6 +768,36 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_DITHER_PARALLEL_BAND_OVERWRAP",
         "set overlap between adjacent dither bands to smooth seams. Accepts\n"
         "non-negative integers."
+    },
+    {
+        "SIXEL_DITHER_BLUENOISE_STRENGTH",
+        "scale bluenoise ordered dither strength when -d bluenoise is set.\n"
+        "Accepts 0.0-2.0; defaults to 1.0. Overrides SIXEL_DITHER_STRENGTH."
+    },
+    {
+        "SIXEL_DITHER_STRENGTH",
+        "default positional dither strength when -d bluenoise is set and\n"
+        "SIXEL_DITHER_BLUENOISE_STRENGTH is unset."
+    },
+    {
+        "SIXEL_DITHER_BLUENOISE_PHASE",
+        "phase offset for bluenoise tiles when -d bluenoise is set.\n"
+        "Format is \"ox,oy\" with signed integers; defaults to 0,0."
+    },
+    {
+        "SIXEL_DITHER_BLUENOISE_SEED",
+        "seed used to derive a bluenoise phase when -d bluenoise is set and\n"
+        "SIXEL_DITHER_BLUENOISE_PHASE is unset."
+    },
+    {
+        "SIXEL_DITHER_BLUENOISE_CHANNEL",
+        "choose bluenoise channel mode when -d bluenoise is set.\n"
+        "Accepts mono (shared) or rgb (independent) samples; defaults mono."
+    },
+    {
+        "SIXEL_DITHER_BLUENOISE_SIZE",
+        "bluenoise tile size when -d bluenoise is set. Only 64 is embedded,\n"
+        "other values fall back to 64."
     },
     {
         "SIXEL_SCALE_PARALLEL_MIN_BYTES",
