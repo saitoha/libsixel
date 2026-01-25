@@ -890,6 +890,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "1d-eytzinger, or vpte)."
     },
     {
+        "SIXEL_LOOKUP_PACKING",
+        "choose dense LUT packing for 5bit/6bit policies\n"
+        "(`linear` or `morton`; default `linear`)."
+    },
+    {
         "SIXEL_LOOKUP_VPTE_RESOLUTION",
         "choose VPTE grid resolution (64, 128, or 256; default 64)."
     },

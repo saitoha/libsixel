@@ -83,6 +83,9 @@
 
 enum { SIXEL_CERTLUT_COMPONENTS = 3 };
 
+#define SIXEL_LOOKUP_PACK_LINEAR 0
+#define SIXEL_LOOKUP_PACK_MORTON 1
+
 #define SIXEL_LOOKUP_EYTZINGER_WINDOW 6
 
 #if defined(__GNUC__) || defined(__clang__)
@@ -190,6 +193,26 @@ sixel_lookup_8bit_quant_make(unsigned int depth, int policy)
     return quant;
 }
 
+static int
+sixel_lookup_8bit_env_packing(void)
+{
+    char const *env;
+
+    env = sixel_compat_getenv("SIXEL_LOOKUP_PACKING");
+    if (env == NULL || env[0] == '\0') {
+        return SIXEL_LOOKUP_PACK_LINEAR;
+    }
+
+    if (sixel_compat_strcasecmp(env, "linear") == 0) {
+        return SIXEL_LOOKUP_PACK_LINEAR;
+    }
+    if (sixel_compat_strcasecmp(env, "morton") == 0) {
+        return SIXEL_LOOKUP_PACK_MORTON;
+    }
+
+    return SIXEL_LOOKUP_PACK_LINEAR;
+}
+
 /*
  * Return the dense table size for the active quantization.  The loop saturates
  * at SIZE_MAX so the later allocation guard can emit a friendly error message
@@ -223,7 +246,7 @@ sixel_lookup_8bit_dense_size(
  * histogram_pack_color() implementation to keep cached answers stable.
  */
 static unsigned int
-sixel_lookup_8bit_pack_color(
+sixel_lookup_8bit_pack_color_linear(
     unsigned char const *pixel,
     unsigned int depth,
     sixel_lookup_8bit_quantization_t const *quant
@@ -256,6 +279,90 @@ sixel_lookup_8bit_pack_color(
     }
 
     return packed;
+}
+
+/*
+ * Morton packing interleaves quantized channel bits so nearby RGB samples map
+ * to nearby buckets.  The channel order mirrors the linear packing by using
+ * the same component ordering (last component is plane 0).
+ *
+ * Layout example for 3 channels (bit 0 is LSB of each component):
+ *   bit 0: C0(0) C1(0) C2(0)
+ *   bit 1: C0(1) C1(1) C2(1)
+ *   ...
+ */
+static unsigned int
+sixel_lookup_8bit_pack_color_morton(
+    unsigned char const *pixel,
+    unsigned int depth,
+    sixel_lookup_8bit_quantization_t const *quant
+)
+{
+    unsigned int packed;
+    unsigned int bits;
+    unsigned int shift;
+    unsigned int mask;
+    unsigned int component;
+    unsigned int rounded;
+    unsigned int plane;
+    unsigned int bit;
+    unsigned int bit_index;
+    unsigned int values[4];
+
+    packed = 0U;
+    bits = quant->channel_bits;
+    shift = quant->channel_shift;
+    mask = quant->channel_mask;
+
+    if (depth == 0U) {
+        return 0U;
+    }
+    if (depth > 4U || bits == 0U || bits * depth > 32U) {
+        return sixel_lookup_8bit_pack_color_linear(pixel, depth, quant);
+    }
+
+    for (plane = 0U; plane < depth; ++plane) {
+        component = (unsigned int)pixel[depth - 1U - plane];
+        if (shift > 0U) {
+            rounded = (component + (1U << (shift - 1U))) >> shift;
+            if (rounded > mask) {
+                rounded = mask;
+            }
+        } else {
+            rounded = component & mask;
+        }
+        values[plane] = rounded;
+    }
+
+    for (bit = 0U; bit < bits; ++bit) {
+        for (plane = 0U; plane < depth; ++plane) {
+            bit_index = bit * depth + plane;
+            packed |= ((values[plane] >> bit) & 1U) << bit_index;
+        }
+    }
+
+    return packed;
+}
+
+static unsigned int
+sixel_lookup_8bit_pack_color(
+    sixel_lookup_8bit_t const *lut,
+    unsigned char const *pixel
+)
+{
+    if (lut == NULL) {
+        return 0U;
+    }
+
+    if (lut->packing == SIXEL_LOOKUP_PACK_MORTON) {
+        return sixel_lookup_8bit_pack_color_morton(pixel,
+                                                   (unsigned int)lut->depth,
+                                                   &lut->quant);
+    }
+
+    return sixel_lookup_8bit_pack_color_linear(pixel,
+                                               (unsigned int)lut->depth,
+                                               &lut->quant);
 }
 
 static int
@@ -957,9 +1064,7 @@ sixel_lookup_8bit_lookup_fast(sixel_lookup_8bit_t *lut,
     bucket = 0U;
     cached = SIXEL_LUT_DENSE_EMPTY;
     if (lut->dense_ready && lut->dense != NULL) {
-        bucket = sixel_lookup_8bit_pack_color(pixel,
-                                      (unsigned int)lut->depth,
-                                      &lut->quant);
+        bucket = sixel_lookup_8bit_pack_color(lut, pixel);
         if ((size_t)bucket < lut->dense_size) {
             cached = lut->dense[bucket];
             if (cached >= 0) {
@@ -2004,6 +2109,7 @@ sixel_lookup_8bit_init(sixel_lookup_8bit_t *lut, sixel_allocator_t *allocator)
     lut->depth = 0;
     lut->ncolors = 0;
     lut->complexion = 1;
+    lut->packing = SIXEL_LOOKUP_PACK_LINEAR;
     lut->palette = NULL;
     lut->quant.channel_shift = 0U;
     lut->quant.channel_bits = 8U;
@@ -2063,6 +2169,7 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
     lut->depth = depth;
     lut->ncolors = ncolors;
     lut->complexion = complexion;
+    lut->packing = sixel_lookup_8bit_env_packing();
     normalized = sixel_lookup_8bit_policy_normalize(policy);
     lut->policy = normalized;
     lut->quant = sixel_lookup_8bit_quant_make((unsigned int)depth, normalized);
