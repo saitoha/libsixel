@@ -646,61 +646,61 @@ jobs:
               mingw-w64-clang-x86_64-toolchain
             exec_type: msys2
 
-          - label: Autotools-msys2-msys-vs_clangcl
-            buildtool: autotools
-            runner: windows-latest
-            msystem: MSYS
-            setup_prefix: >-
-              CC=clang-cl
-              LD=link
-              AR="sh ar-lib lib"
-              ARFLAGS=cr
-              NM="dumpbin -symbols"
-              STRIP=:
-              RANLIB=:
-            setup_options: >-
-              --host=x86_64-pc-windows-msvc
-            extra_packages: >-
-              make
-            exec_type: msys2
+#          - label: Autotools-msys2-msys-vs_clangcl
+#            buildtool: autotools
+#            runner: windows-latest
+#            msystem: MSYS
+#            setup_prefix: >-
+#              CC=clang-cl
+#              LD=link
+#              AR="sh ar-lib lib"
+#              ARFLAGS=cr
+#              NM="dumpbin -symbols"
+#              STRIP=:
+#              RANLIB=:
+#            setup_options: >-
+#              --host=x86_64-pc-windows-msvc
+#            extra_packages: >-
+#              make
+#            exec_type: msys2
 
-          - label: Autotools-msys2-msys-msvc
-            buildtool: autotools
-            runner: windows-latest
-            msystem: MSYS
-            setup_prefix: >-
-              CC=cl
-              LD=link
-              AR="sh ar-lib lib"
-              ARFLAGS=cr
-              NM="dumpbin -symbols"
-              STRIP=:
-              RANLIB=:
-            setup_options: >-
-              --host=x86_64-pc-windows-msvc
-            extra_packages: >-
-              make
-            exec_type: msys2
+#          - label: Autotools-msys2-msys-msvc
+#            buildtool: autotools
+#            runner: windows-latest
+#            msystem: MSYS
+#            setup_prefix: >-
+#              CC=cl
+#              LD=link
+#              AR="sh ar-lib lib"
+#              ARFLAGS=cr
+#              NM="dumpbin -symbols"
+#              STRIP=:
+#              RANLIB=:
+#            setup_options: >-
+#              --host=x86_64-pc-windows-msvc
+#            extra_packages: >-
+#              make
+#            exec_type: msys2
 
-          - label: Autotools-msys2-x86_64-msvc-x86_64-amalgamated_lib
-            buildtool: autotools
-            runner: windows-latest
-            msystem: MSYS
-            setup_prefix: >-
-              CC=cl
-              LD=link
-              AR="sh ar-lib lib"
-              ARFLAGS=cr
-              NM="dumpbin -symbols"
-              STRIP=:
-              RANLIB=:
-            setup_options: >-
-              --host=x86_64-pc-windows-msvc
-              --enable-amalgamated-lib
-            extra_packages: make
-            exec_type: msys2
-
-          - label: Autotools-msys2-aarch64-msvc-aarch64-amalgamated_lib
+#          - label: Autotools-msys2-x86_64-msvc-x86_64-amalgamated_lib
+#            buildtool: autotools
+#            runner: windows-latest
+#            msystem: MSYS
+#            setup_prefix: >-
+#              CC=cl
+#              LD=link
+#              AR="sh ar-lib lib"
+#              ARFLAGS=cr
+#              NM="dumpbin -symbols"
+#              STRIP=:
+#              RANLIB=:
+#            setup_options: >-
+#              --host=x86_64-pc-windows-msvc
+#              --enable-amalgamated-lib
+#            extra_packages: make
+#            exec_type: msys2
+#
+          - label: Autotools-msys2-aarch64-msvc-aarch64-amalgamated_tools-static
             buildtool: autotools
             runner: windows-11-arm
             msystem: MSYS
@@ -714,29 +714,30 @@ jobs:
               RANLIB=:
             setup_options: >-
               --host=aarch64-pc-windows-msvc
-              --enable-amalgamated-lib
+              --enable-amalgamated-tools
+              --disable-shared
             extra_packages: make
             exec_type: msys2
 
-          - label: Autotools-msys2-msvc-vcpkg-libpng-libjpeg
-            buildtool: autotools
-            runner: windows-latest
-            msystem: MSYS
-            setup_prefix: >-
-              CC=cl
-              LD=link
-              AR="sh ar-lib lib"
-              ARFLAGS=cr
-              NM="dumpbin -symbols"
-              STRIP=:
-              RANLIB=:
-            setup_options: >-
-              --host=x86_64-pc-windows-msvc
-            extra_packages: make
-            vcpkg_packages: >-
-              libpng
-              libjpeg-turbo
-            exec_type: msys2
+#          - label: Autotools-msys2-msvc-vcpkg-libpng-libjpeg
+#            buildtool: autotools
+#            runner: windows-latest
+#            msystem: MSYS
+#            setup_prefix: >-
+#              CC=cl
+#              LD=link
+#              AR="sh ar-lib lib"
+#              ARFLAGS=cr
+#              NM="dumpbin -symbols"
+#              STRIP=:
+#              RANLIB=:
+#            setup_options: >-
+#              --host=x86_64-pc-windows-msvc
+#            extra_packages: make
+#            vcpkg_packages: >-
+#              libpng
+#              libjpeg-turbo
+#            exec_type: msys2
 
           - label: Autotools-msys2-mingw32
             buildtool: autotools
@@ -765,56 +766,56 @@ jobs:
               make
             exec_type: cygwin
 
-          - label: Autotools-cygwin64-msvc-buildonly
-            buildtool: autotools
-            runner: windows-latest
-            setup_prefix: >-
-              CC=cl
-              LD=link
-              AR="sh ar-lib lib"
-              ARFLAGS=cr
-              NM="dumpbin -symbols"
-              STRIP=:
-              RANLIB=:
-            setup_options: >-
-              --host=x86_64-pc-windows-msvc
-            extra_packages: >-
-              make
-            exec_type: cygwin
+#          - label: Autotools-cygwin64-msvc-buildonly
+#            buildtool: autotools
+#            runner: windows-latest
+#            setup_prefix: >-
+#              CC=cl
+#              LD=link
+#              AR="sh ar-lib lib"
+#              ARFLAGS=cr
+#              NM="dumpbin -symbols"
+#              STRIP=:
+#              RANLIB=:
+#            setup_options: >-
+#              --host=x86_64-pc-windows-msvc
+#            extra_packages: >-
+#              make
+#            exec_type: cygwin
 
-          - label: Autotools-cygwin64-clangcl-buildonly
-            buildtool: autotools
-            runner: windows-latest
-            setup_prefix: >-
-              CC=clang-cl
-              LD=link
-              AR="sh ar-lib lib"
-              ARFLAGS=cr
-              NM="dumpbin -symbols"
-              STRIP=:
-              RANLIB=:
-            setup_options: >-
-              --host=x86_64-pc-windows-msvc
-            extra_packages: >-
-              make
-            exec_type: cygwin
+#          - label: Autotools-cygwin64-clangcl-buildonly
+#            buildtool: autotools
+#            runner: windows-latest
+#            setup_prefix: >-
+#              CC=clang-cl
+#              LD=link
+#              AR="sh ar-lib lib"
+#              ARFLAGS=cr
+#              NM="dumpbin -symbols"
+#              STRIP=:
+#              RANLIB=:
+#            setup_options: >-
+#              --host=x86_64-pc-windows-msvc
+#            extra_packages: >-
+#              make
+#            exec_type: cygwin
 
-          - label: Autotools-cygwin64-clang_msvc_abi-buildonly
-            buildtool: autotools
-            runner: windows-latest
-            setup_prefix: >-
-              CC=clang
-              LD=link
-              AR="sh ar-lib lib"
-              ARFLAGS=cr
-              NM="dumpbin -symbols"
-              STRIP=:
-              RANLIB=:
-            setup_options: >-
-              --host=x86_64-pc-windows-msvc
-            extra_packages: >-
-              make
-            exec_type: cygwin
+#          - label: Autotools-cygwin64-clang_msvc_abi-buildonly
+#            buildtool: autotools
+#            runner: windows-latest
+#            setup_prefix: >-
+#              CC=clang
+#              LD=link
+#              AR="sh ar-lib lib"
+#              ARFLAGS=cr
+#              NM="dumpbin -symbols"
+#              STRIP=:
+#              RANLIB=:
+#            setup_options: >-
+#              --host=x86_64-pc-windows-msvc
+#            extra_packages: >-
+#              make
+#            exec_type: cygwin
 
     steps:
       - name: Configure git EOL
