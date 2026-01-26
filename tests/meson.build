@@ -92,7 +92,7 @@ issue_inputs = files('issue/166/poc', 'issue/167/poc',
   'issue/200/POC_img2sixel_heap_buffer_overflow')
 meson.add_dist_script('sh', '-c', 'true', issue_inputs)
 
-cli_tests = ['cli-core/t/0001_help.t',
+tests = ['cli-core/t/0001_help.t',
              'cli-core/t/0002_version.t',
              'cli-core/t/0003_stdin.t',
              'cli-core/t/0004_basic_missing_input.t',
@@ -365,14 +365,49 @@ cli_tests = ['cli-core/t/0001_help.t',
              'sixel2png/t/0002_missing_args.t',
              'sixel2png/t/0003_unknown_option.t',
              'sixel2png/t/0004_invalid_decoder_value.t',
-             'sixel2png/t/0005_default_output.t']
+             'sixel2png/t/0005_default_output.t',
+             'probe/t/0001_probe_parse.t',
+             'palette/t/0001_kmeans_init_default_unset.t',
+             'palette/t/0002_kmeans_init_auto.t',
+             'palette/t/0003_kmeans_init_unknown.t',
+             'palette/t/0004_kmeans_init_pca.t',
+             'palette/t/0005_kmeans_init_cache.t',
+             'palette/t/0006_palette_fallback_conversion.t',
+             'palette/t/0007_palette_fallback_output.t',
+             'python/t/0001_python_bindings.t',
+             'python/t/0002_python_api_formats.t',
+             'python/t/0003_python_api_options.t',
+             'python/t/0004_python_api_errors.t',
+             'python/t/0005_python_resource_management.t',
+             'filter/t/0001_filter_clip.t',
+             'filter/t/0002_filter_sample.t',
+             'filter/t/0003_filter_resize.t',
+             'filter/t/0004_filter_colors.t',
+             'filter/t/0005_filter_lookup.t',
+             'filter/t/0006_filter_final_merge.t',
+             'filter/t/0007_filter_vpte.t',
+             'filter/t/0008_filter_load.t',
+             'filter/t/0009_filter_dither.t',
+             'filter/t/0010_filter_encode.t',
+             'loader/t/0008_loader_coregraphics_pixelformat.t',
+             'loader/t/0009_loader_wic_pixelformat.t',
+             'loader/t/0010_loader_gdk_pixbuf_pixelformat.t',
+             'loader/t/0011_loader_gd_pixelformat.t',
+             'loader/t/0012_loader_libpng_pixelformat.t',
+             'loader/t/0013_loader_libjpeg_pixelformat.t',
+             'loader/t/0014_loader_builtin_pixelformat.t',
+             'loader/t/0015_loader_quicklook_pixelformat.t',
+             'loader/t/0016_loader_gnome_thumbnailer_pixelformat.t',
+             'loader/t/0017_loader_builtin_psd.t',
+             'loader/t/0018_loader_builtin_hdr.t',
+             'loader/t/0019_loader_builtin_pic.t']
 
 aborttrace_tests = [
   'aborttrace/t/0001_img2sixel_aborttrace.t',
   'aborttrace/t/0002_sixel2png_aborttrace.t',
 ]
 
-cli_depends = {
+test_depends = {
   'regression/t/0005_lsqa_format_grayscale.t': [lsqa_bin],
   'regression/t/0006_lsqa_format_palette.t': [lsqa_bin],
   'regression/t/0007_lsqa_format_rgb.t': [lsqa_bin],
@@ -438,34 +473,86 @@ cli_depends = {
     [test_runner_exe],
   'cli-argument-shift/t/0007_cli_guard_missing_argument.t':
     [test_runner_exe],
+  'palette/t/0001_kmeans_init_default_unset.t': [test_runner_exe],
+  'palette/t/0002_kmeans_init_auto.t': [test_runner_exe],
+  'palette/t/0003_kmeans_init_unknown.t': [test_runner_exe],
+  'palette/t/0004_kmeans_init_pca.t': [test_runner_exe],
+  'palette/t/0005_kmeans_init_cache.t': [test_runner_exe],
+  'palette/t/0006_palette_fallback_conversion.t': [test_runner_exe],
+  'palette/t/0007_palette_fallback_output.t': [test_runner_exe],
+  'probe/t/0001_probe_parse.t': [test_runner_exe],
+  'python/t/0001_python_bindings.t': [libsixel],
+  'python/t/0002_python_api_formats.t': [libsixel],
+  'python/t/0003_python_api_options.t': [libsixel],
+  'python/t/0004_python_api_errors.t': [libsixel],
+  'python/t/0005_python_resource_management.t': [libsixel],
+  'filter/t/0001_filter_clip.t': [test_runner_exe],
+  'filter/t/0002_filter_sample.t': [test_runner_exe],
+  'filter/t/0003_filter_resize.t': [test_runner_exe],
+  'filter/t/0004_filter_colors.t': [test_runner_exe],
+  'filter/t/0005_filter_lookup.t': [test_runner_exe],
+  'filter/t/0006_filter_final_merge.t': [test_runner_exe],
+  'filter/t/0007_filter_vpte.t': [test_runner_exe],
+  'filter/t/0008_filter_load.t': [test_runner_exe],
+  'filter/t/0009_filter_dither.t': [test_runner_exe],
+  'filter/t/0010_filter_encode.t': [test_runner_exe],
+  'loader/t/0008_loader_coregraphics_pixelformat.t': [test_runner_exe],
+  'loader/t/0009_loader_wic_pixelformat.t': [test_runner_exe],
+  'loader/t/0010_loader_gdk_pixbuf_pixelformat.t': [test_runner_exe],
+  'loader/t/0011_loader_gd_pixelformat.t': [test_runner_exe],
+  'loader/t/0012_loader_libpng_pixelformat.t': [test_runner_exe],
+  'loader/t/0013_loader_libjpeg_pixelformat.t': [test_runner_exe],
+  'loader/t/0014_loader_builtin_pixelformat.t': [test_runner_exe],
+  'loader/t/0015_loader_quicklook_pixelformat.t': [test_runner_exe],
+  'loader/t/0016_loader_gnome_thumbnailer_pixelformat.t': [test_runner_exe],
+  'loader/t/0017_loader_builtin_psd.t': [test_runner_exe],
+  'loader/t/0018_loader_builtin_hdr.t': [test_runner_exe],
+  'loader/t/0019_loader_builtin_pic.t': [test_runner_exe],
 }
 
-core_depends = {
-  'palette/t/0001_kmeans_init_default_unset.t':
-    [test_runner_exe],
-  'palette/t/0002_kmeans_init_auto.t':
-    [test_runner_exe],
-  'palette/t/0003_kmeans_init_unknown.t':
-    [test_runner_exe],
-  'palette/t/0004_kmeans_init_pca.t':
-    [test_runner_exe],
-  'palette/t/0005_kmeans_init_cache.t':
-    [test_runner_exe],
-  'palette/t/0006_palette_fallback_conversion.t':
-    [test_runner_exe],
-  'palette/t/0007_palette_fallback_output.t':
-    [test_runner_exe],
-  'probe/t/0001_probe_parse.t': [test_runner_exe],
+timeout_by_test = {
+  'palette/t/0001_kmeans_init_default_unset.t': 120,
+  'palette/t/0002_kmeans_init_auto.t': 120,
+  'palette/t/0003_kmeans_init_unknown.t': 120,
+  'palette/t/0004_kmeans_init_pca.t': 120,
+  'palette/t/0005_kmeans_init_cache.t': 120,
+  'palette/t/0006_palette_fallback_conversion.t': 120,
+  'palette/t/0007_palette_fallback_output.t': 120,
+  'probe/t/0001_probe_parse.t': 120,
+  'filter/t/0001_filter_clip.t': 120,
+  'filter/t/0002_filter_sample.t': 120,
+  'filter/t/0003_filter_resize.t': 120,
+  'filter/t/0004_filter_colors.t': 120,
+  'filter/t/0005_filter_lookup.t': 120,
+  'filter/t/0006_filter_final_merge.t': 120,
+  'filter/t/0007_filter_vpte.t': 120,
+  'filter/t/0008_filter_load.t': 120,
+  'filter/t/0009_filter_dither.t': 120,
+  'filter/t/0010_filter_encode.t': 120,
+  'loader/t/0008_loader_coregraphics_pixelformat.t': 120,
+  'loader/t/0009_loader_wic_pixelformat.t': 120,
+  'loader/t/0010_loader_gdk_pixbuf_pixelformat.t': 120,
+  'loader/t/0011_loader_gd_pixelformat.t': 120,
+  'loader/t/0012_loader_libpng_pixelformat.t': 120,
+  'loader/t/0013_loader_libjpeg_pixelformat.t': 120,
+  'loader/t/0014_loader_builtin_pixelformat.t': 120,
+  'loader/t/0015_loader_quicklook_pixelformat.t': 120,
+  'loader/t/0016_loader_gnome_thumbnailer_pixelformat.t': 120,
+  'loader/t/0017_loader_builtin_psd.t': 120,
+  'loader/t/0018_loader_builtin_hdr.t': 120,
+  'loader/t/0019_loader_builtin_pic.t': 120,
 }
+
+default_timeout = 300
 
 # Match autotools TAP timeout to keep CI behavior consistent (seconds per file).
-foreach t : cli_tests
+foreach t : tests
   test(t, sh,
     args: [meson.current_source_dir() / t],
     protocol: 'tap',
     env: env,
-    depends: cli_depends.get(t, []),
-    timeout: 300,
+    depends: test_depends.get(t, []),
+    timeout: timeout_by_test.get(t, default_timeout),
     suite: ['tap'])
 endforeach
 
@@ -474,94 +561,9 @@ foreach t : aborttrace_tests
     args: [meson.current_source_dir() / t],
     protocol: 'tap',
     env: env,
-    depends: cli_depends.get(t, []),
+    depends: test_depends.get(t, []),
     is_parallel: false,
-    timeout: 300,
-    suite: ['tap'])
-endforeach
-
-foreach t : ['palette/t/0001_kmeans_init_default_unset.t',
-             'palette/t/0002_kmeans_init_auto.t',
-             'palette/t/0003_kmeans_init_unknown.t',
-             'palette/t/0004_kmeans_init_pca.t',
-             'palette/t/0005_kmeans_init_cache.t',
-             'palette/t/0006_palette_fallback_conversion.t',
-             'palette/t/0007_palette_fallback_output.t',
-             'probe/t/0001_probe_parse.t']
-  test(t, sh,
-    args: [meson.current_source_dir() / t],
-    protocol: 'tap',
-    env: env,
-    depends: core_depends.get(t, []),
-    timeout: 120,
-    suite: ['tap'])
-endforeach
-
-python_depends = [libsixel]
-
-foreach t : ['0001_python_bindings.t', '0002_python_api_formats.t',
-             '0003_python_api_options.t', '0004_python_api_errors.t',
-             '0005_python_resource_management.t']
-  test(t, sh,
-    args: [meson.current_source_dir() / 'python' / 't' / t],
-    protocol: 'tap',
-    env: env,
-    timeout: 300,
-    depends: python_depends,
-    suite: ['tap'])
-endforeach
-
-filter_tests = [
-  'filter/t/0001_filter_clip.t',
-  'filter/t/0002_filter_sample.t',
-  'filter/t/0003_filter_resize.t',
-  'filter/t/0004_filter_colors.t',
-  'filter/t/0005_filter_lookup.t',
-  'filter/t/0006_filter_final_merge.t',
-  'filter/t/0007_filter_vpte.t',
-  'filter/t/0008_filter_load.t',
-  'filter/t/0009_filter_dither.t',
-  'filter/t/0010_filter_encode.t',
-]
-
-foreach t : filter_tests
-  test(t, sh,
-    args: [meson.current_source_dir() / t],
-    protocol: 'tap',
-    env: env,
-    depends: [test_runner_exe],
-    timeout: 120,
-    suite: ['tap'])
-endforeach
-
-
-# Register the loader tests unconditionally to mirror autotools.
-# Each .t script is responsible for skipping when a dependency is missing.
-loader_tests = [
-  '0008_loader_coregraphics_pixelformat',
-  '0009_loader_wic_pixelformat',
-  '0010_loader_gdk_pixbuf_pixelformat',
-  '0011_loader_gd_pixelformat',
-  '0012_loader_libpng_pixelformat',
-  '0013_loader_libjpeg_pixelformat',
-  '0014_loader_builtin_pixelformat',
-  '0015_loader_quicklook_pixelformat',
-  '0016_loader_gnome_thumbnailer_pixelformat',
-  '0017_loader_builtin_psd',
-  '0018_loader_builtin_hdr',
-  '0019_loader_builtin_pic',
-]
-
-foreach test_name : loader_tests
-  test(test_name, sh,
-    args: [meson.current_source_dir()
-      / 'loader'
-      / 't'
-      / (test_name + '.t')],
-    env: env,
-    protocol: 'tap',
-    timeout: 120,
-    depends: [test_runner_exe],
+    timeout: default_timeout,
     suite: ['tap'])
 endforeach
 
