@@ -800,12 +800,20 @@ static inline __m256i
 sixel_colorspace_pack_linear_bytes_avx(__m256 value)
 {
     __m256 scaled;
+    __m256 zero;
+    __m256 one;
     __m256i wide;
     __m128i wide_lo;
     __m128i wide_hi;
     __m128i packed16;
     __m128i packed8;
     __m256i packed;
+
+    /* Clamp to [0, 1] so linear bytes match the scalar clamp path. */
+    zero = _mm256_set1_ps(0.0f);
+    one = _mm256_set1_ps(1.0f);
+    value = _mm256_max_ps(value, zero);
+    value = _mm256_min_ps(value, one);
 
     scaled = _mm256_mul_ps(value, _mm256_set1_ps(255.0f));
     wide = _mm256_cvtps_epi32(scaled);
