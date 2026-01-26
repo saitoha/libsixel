@@ -144,9 +144,9 @@ AM_CONDITIONAL([USING_CL], [test "x$using_cl" = "xyes"])
 # Enable warnings-as-errors only in CI so local builds stay flexible.
 AS_IF([test "x$CI" != "x"], [
   if test "x$using_cl" = "xyes"; then
-    CFLAGS="$CFLAGS /WX"
-    OBJCFLAGS="$OBJCFLAGS /WX"
-    CXXFLAGS="$CXXFLAGS /WX"
+    CFLAGS="$CFLAGS -WX"
+    OBJCFLAGS="$OBJCFLAGS -WX"
+    CXXFLAGS="$CXXFLAGS -WX"
   else
     CFLAGS="$CFLAGS -Werror"
     OBJCFLAGS="$OBJCFLAGS -Werror"
