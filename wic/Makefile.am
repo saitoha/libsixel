@@ -19,7 +19,8 @@ libwicsixel_la_SOURCES = $(srcdir)/wic.c \
                          $(top_builddir)/src/logger.c \
                          $(top_builddir)/src/status.c \
                          $(top_builddir)/src/probe.c \
-                         $(top_builddir)/src/compat_stub.c
+                         $(top_builddir)/src/compat_stub.c \
+                         $(top_builddir)/src/path.c
 
 if SIXEL_ENABLE_THREADS
 libwicsixel_la_SOURCES += \
