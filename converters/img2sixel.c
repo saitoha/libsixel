@@ -923,7 +923,7 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_LOOKUP_PACKING",
         "choose dense LUT packing for 5bit/6bit policies\n"
-        "(`linear` or `morton`; default `linear`)."
+        "(`linear`, `morton`, or `hilbert`; default `linear`)."
     },
     {
         "SIXEL_LOOKUP_VPTE_RESOLUTION",
