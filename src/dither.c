@@ -483,7 +483,7 @@ lookup_mono_lightbg(unsigned char const * const pixel,
     return distant < 128 * reqcolor ? 1: 0;
 }
 
-
+#define max_depth 4
 
 /*
  * Apply the palette into the supplied pixel buffer while coordinating the
@@ -524,11 +524,6 @@ sixel_dither_map_pixels(
     sixel_dither_t    /* in */  *dither,
     int               /* in */  pixelformat)
 {
-#if _MSC_VER
-    enum { max_depth = 4 };
-#else
-    const size_t max_depth = 4;
-#endif
     unsigned char copy[max_depth];
     float new_palette_float[SIXEL_PALETTE_MAX * max_depth];
     SIXELSTATUS status = SIXEL_FALSE;

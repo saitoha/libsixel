@@ -769,16 +769,12 @@ diffuse_sierra3_float(float *data,
     }
 }
 
+#define max_channels 4
 
 SIXELSTATUS
 sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
                                  sixel_dither_context_t *context)
 {
-#if _MSC_VER
-    enum { max_channels = 4 };
-#else
-    const int max_channels = 4;
-#endif
     SIXELSTATUS status;
     float *palette_float;
     float *new_palette_float;

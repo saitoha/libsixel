@@ -355,6 +355,8 @@ static void diffuse_sierra3_carry(int32_t *carry_curr,
                                   int direction,
                                   int channel);
 
+#define max_channels 4
+
 static SIXELSTATUS
 sixel_dither_apply_fixed_impl(
     sixel_index_t *result,
@@ -388,11 +390,6 @@ sixel_dither_apply_fixed_impl(
     int float_depth,
     sixel_dither_t *dither)
 {
-#if _MSC_VER
-    enum { max_channels = 4 };
-#else
-    const int max_channels = 4;
-#endif
     SIXELSTATUS status = SIXEL_FALSE;
     int serpentine;
     int y;
