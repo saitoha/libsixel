@@ -246,6 +246,10 @@ TESTS = cli-core/t/0001_help.t \
     poc/t/0003_issue166_width.t \
     poc/t/0004_issue200_heap_overflow.t \
     poc/t/0005_issue131_img2sixel_gif.t \
+    poc/t/0006_issue166_height.t \
+    poc/t/0007_issue167_height_option_first.t \
+    poc/t/0008_issue200_heap_overflow_reject.t \
+    poc/t/0009_issue207_resize_poc.t \
     regression/t/0005_lsqa_format_grayscale.t \
     regression/t/0006_lsqa_format_palette.t \
     regression/t/0007_lsqa_format_rgb.t \
@@ -575,6 +579,7 @@ CORRUPTED_INPUTS = data/corrupted/metadata_noise.jpg \
 ISSUE_INPUTS = issue/166/poc \
        issue/167/poc \
        issue/200/POC_img2sixel_heap_buffer_overflow \
+       issue/207/poc \
        issue/131/2020-01-30-img2sixel.gif \
        issue/136/poc
 NETWORK_CERTS = network/certs/server.crt \
