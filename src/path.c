@@ -199,7 +199,7 @@ sixel_path_emscripten_rawfs_enabled(void)
 #if !HAVE_EMSCRIPTEN_GET_COMPILER_SETTING
     return 1;
 #else
-    setting = emscripten_get_compiler_setting("NODERAWFS");
+    setting = (char const *)emscripten_get_compiler_setting("NODERAWFS");
     if (setting == NULL || setting[0] == '\0') {
         return 1;
     }
@@ -448,6 +448,9 @@ sixel_path_to_libc(char const *path,
     (void)prefix_len;
     rawfs_enabled = sixel_path_emscripten_rawfs_enabled();
     if (!rawfs_enabled) {
+        return path;
+    }
+    if (sixel_path_parse_drive_letter(path, &drive, &rest)) {
         return path;
     }
     if (sixel_path_parse_msys_drive(path, &drive, &rest)

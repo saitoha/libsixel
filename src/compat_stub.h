@@ -30,16 +30,6 @@
 #include <stdarg.h>
 #include <time.h>
 
-#if defined(__EMSCRIPTEN__)
-/*
- * Emscripten APIs like emscripten_get_compiler_setting() live in the
- * Emscripten headers.  Include them here so internal callers can rely
- * on a visible prototype and avoid implicit-int fallbacks that turn
- * into pointer/integer conversion errors under -Werror.
- */
-# include <emscripten/emscripten.h>
-#endif
-
 #if HAVE_SYS_TIME_H || HAVE_GETTIMEOFDAY
 # include <sys/time.h>
 #endif
