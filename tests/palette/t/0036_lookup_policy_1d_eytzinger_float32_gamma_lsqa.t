@@ -20,7 +20,6 @@ status=0
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 ensure_img2sixel_available
-ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 
 echo "1..1"
 
@@ -35,11 +34,8 @@ if ! lsqa_init "$0"; then
     exit "${status}"
 fi
 
-LSQA_MS_SSIM_FLOOR=0.976111
-export LSQA_MS_SSIM_FLOOR
-
 if run_img2sixel --lookup-policy=eytzinger --precision=float32 \
-        --working-colorspace=gamma -d none \
+        --working-colorspace=gamma \
         -o "${output_sixel}" "${input_image}" 2>>"${log_file}"; then
     :
 else

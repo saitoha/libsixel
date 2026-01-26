@@ -18,7 +18,7 @@ setup_conversion_env "${test_name}"
 
 status=0
 
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.6}
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 ensure_img2sixel_available
 echo "1..1"
@@ -33,10 +33,7 @@ if ! lsqa_init "$0"; then
     exit "${status}"
 fi
 
-LSQA_MS_SSIM_FLOOR=0.96
-export LSQA_MS_SSIM_FLOOR
-
-if run_img2sixel --lookup-policy=vpte --precision=float32 \
+if run_img2sixel --lookup-policy=vpte \
         --working-colorspace=cielab -o "${output_sixel}" \
         "${input_image}" \
         2>>"${log_file}"; then

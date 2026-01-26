@@ -18,7 +18,7 @@ setup_conversion_env "${test_name}"
 
 status=0
 
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.6}
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 ensure_img2sixel_available
 echo "1..1"
@@ -32,9 +32,6 @@ if ! lsqa_init "$0"; then
     fail 1 "lsqa binary missing"
     exit "${status}"
 fi
-
-LSQA_MS_SSIM_FLOOR=0.96
-export LSQA_MS_SSIM_FLOOR
 
 if run_img2sixel --lookup-policy=vpte --precision=float32 \
         --working-colorspace=oklab -o "${output_sixel}" \
