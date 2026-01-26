@@ -31,15 +31,17 @@
  * Convert a path to a libc-friendly representation for the current build.
  *
  * Overview (conversion only happens when the build expects a different path
- * style):
+ * style, while still accepting mixed inputs on Windows):
  *
  *   +----------------------+-------------------------+---------------------+
  *   | Build                | Input                   | Output              |
  *   +----------------------+-------------------------+---------------------+
  *   | MSVC / MinGW         | /c/...                  | c:/...              |
  *   | MSVC / MinGW         | /cygdrive/c/...          | c:/...              |
+ *   | MSYS (msys-1.0.dll)  | C:\\... or C:/...        | /c/...              |
+ *   | MSYS (msys-1.0.dll)  | /cygdrive/c/...          | /c/...              |
  *   | Cygwin               | C:\\... or C:/...        | /cygdrive/c/...     |
- *   | Cygwin               | /cygdrive/c/...          | /cygdrive/c/...     |
+ *   | Cygwin               | /c/...                  | /cygdrive/c/...     |
  *   | Any build            | ./a/b or a/b             | (unchanged)         |
  *   +----------------------+-------------------------+---------------------+
  *
