@@ -185,43 +185,33 @@ static void
 sixel_positional_strength_init_float32(void)
 {
     char const *text;
-    float strength_default;
     float strength_a;
     float strength_x;
     int parsed;
-    int common_set;
 
     if (g_sixel_pos_inited_float32 != 0) {
         return;
     }
 
-    strength_default = 0.100f;
-    common_set = 0;
-    text = sixel_compat_getenv("SIXEL_DITHER_STRENGTH");
-    if (text != NULL) {
-        parsed = sixel_bn_parse_float_float32(text, &strength_default);
-        if (parsed != 0) {
-            common_set = 1;
-        } else {
-            strength_default = 0.100f;
-        }
-    }
-
-    strength_a = common_set ? strength_default : 0.150f;
+    /*
+     * Default strengths are per-dither values. Environment overrides use
+     * the same parser for consistency and fall back to defaults on error.
+     */
+    strength_a = 0.150f;
     text = sixel_compat_getenv("SIXEL_DITHER_A_DITHER_STRENGTH");
     if (text != NULL) {
         parsed = sixel_bn_parse_float_float32(text, &strength_a);
         if (parsed == 0) {
-            strength_a = common_set ? strength_default : 0.150f;
+            strength_a = 0.150f;
         }
     }
 
-    strength_x = common_set ? strength_default : 0.100f;
+    strength_x = 0.100f;
     text = sixel_compat_getenv("SIXEL_DITHER_X_DITHER_STRENGTH");
     if (text != NULL) {
         parsed = sixel_bn_parse_float_float32(text, &strength_x);
         if (parsed == 0) {
-            strength_x = common_set ? strength_default : 0.100f;
+            strength_x = 0.100f;
         }
     }
 
@@ -287,20 +277,12 @@ sixel_bluenoise_conf_init_from_env_float32(void)
         return;
     }
 
-    strength = 0.100f;
+    strength = 0.055f;
     text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_STRENGTH");
     if (text != NULL) {
         parsed = sixel_bn_parse_float_float32(text, &strength);
         if (parsed == 0) {
-            strength = 0.100f;
-        }
-    } else {
-        text = sixel_compat_getenv("SIXEL_DITHER_STRENGTH");
-        if (text != NULL) {
-            parsed = sixel_bn_parse_float_float32(text, &strength);
-            if (parsed == 0) {
-                strength = 0.100f;
-            }
+            strength = 0.055f;
         }
     }
 

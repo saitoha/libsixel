@@ -723,24 +723,15 @@ integers.
 .B SIXEL_DITHER_BLUENOISE_STRENGTH
 .br
 scale bluenoise ordered dither strength when \fB\-d bluenoise\fP is set.
-Accepts 0.0-2.0; defaults to 0.055. Overrides
-\fBSIXEL_DITHER_STRENGTH\fP.
+Accepts 0.0-2.0; defaults to 0.055.
 .TP 5
 .B SIXEL_DITHER_A_DITHER_STRENGTH
 .br
-override positional a_dither strength. Defaults to 0.150 when unset and falls
-back to \fBSIXEL_DITHER_STRENGTH\fP when it is set.
+override positional a_dither strength. Defaults to 0.150 when unset.
 .TP 5
 .B SIXEL_DITHER_X_DITHER_STRENGTH
 .br
-override positional x_dither strength. Defaults to 0.100 when unset and falls
-back to \fBSIXEL_DITHER_STRENGTH\fP when it is set.
-.TP 5
-.B SIXEL_DITHER_STRENGTH
-.br
-default positional dither strength (0.100). Used for positional dithers unless
-overridden, and for \fB\-d bluenoise\fP when
-\fBSIXEL_DITHER_BLUENOISE_STRENGTH\fP is unset.
+override positional x_dither strength. Defaults to 0.100 when unset.
 .TP 5
 .B SIXEL_DITHER_BLUENOISE_PHASE
 .br
