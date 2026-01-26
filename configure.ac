@@ -1096,6 +1096,9 @@ case "${host_os}" in
   mingw*)
     ;;
   emscripten*)
+    AC_CHECK_HEADERS([emscripten.h])
+    AC_CHECK_FUNCS([emscripten_get_compiler_setting], [], [],
+                   [[#include <emscripten.h>]])
     dnl Emscripten (emcc >=5.0.0) reports fork() at link time, but the runtime returns ENOSYS.
     dnl Force fork off to keep test harnesses from failing at runtime.
     ac_cv_func_fork=no

@@ -19564,6 +19564,20 @@ case "${host_os}" in
   mingw*)
     ;;
   emscripten*)
+    ac_fn_c_check_header_compile "$LINENO" "emscripten.h" "ac_cv_header_emscripten_h" "$ac_includes_default"
+if test "x$ac_cv_header_emscripten_h" = xyes
+then :
+  printf "%s\n" "#define HAVE_EMSCRIPTEN_H 1" >>confdefs.h
+
+fi
+
+    ac_fn_c_check_func "$LINENO" "emscripten_get_compiler_setting" "ac_cv_func_emscripten_get_compiler_setting"
+if test "x$ac_cv_func_emscripten_get_compiler_setting" = xyes
+then :
+  printf "%s\n" "#define HAVE_EMSCRIPTEN_GET_COMPILER_SETTING 1" >>confdefs.h
+
+fi
+
             ac_cv_func_fork=no
     ac_fn_c_check_func "$LINENO" "clock" "ac_cv_func_clock"
 if test "x$ac_cv_func_clock" = xyes

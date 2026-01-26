@@ -72,6 +72,7 @@ emconfigure sh ../../configure \
     -ffunction-sections \
   " \
   LDFLAGS=" \
+    -sRETAIN_COMPILER_SETTINGS=1 \
     -sNODERAWFS=1 \
     -sSTACK_SIZE=524288 \
     -sINITIAL_MEMORY=268435456 \
