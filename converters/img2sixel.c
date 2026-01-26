@@ -776,8 +776,19 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_DITHER_STRENGTH."
     },
     {
+        "SIXEL_DITHER_A_DITHER_STRENGTH",
+        "override positional a_dither strength. Defaults to 0.150 when unset\n"
+        "and falls back to SIXEL_DITHER_STRENGTH when it is set."
+    },
+    {
+        "SIXEL_DITHER_X_DITHER_STRENGTH",
+        "override positional x_dither strength. Defaults to 0.100 when unset\n"
+        "and falls back to SIXEL_DITHER_STRENGTH when it is set."
+    },
+    {
         "SIXEL_DITHER_STRENGTH",
-        "default positional dither strength when -d bluenoise is set and\n"
+        "default positional dither strength (0.100). Used for positional\n"
+        "dithers unless overridden, and for -d bluenoise when\n"
         "SIXEL_DITHER_BLUENOISE_STRENGTH is unset."
     },
     {

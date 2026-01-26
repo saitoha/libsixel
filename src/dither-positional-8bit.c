@@ -64,6 +64,14 @@ static float positional_mask_x_8bit(int x, int y, int c);
 static float positional_mask_blue_8bit(int x, int y, int c);
 
 /*
+ * Cache SIXEL_DITHER_*_DITHER_STRENGTH for positional arithmetic dithers to
+ * avoid getenv() in inner loops. Invalid values fall back to defaults.
+ */
+static float g_sixel_pos_strength_a_8bit = 0.150f;
+static float g_sixel_pos_strength_x_8bit = 0.100f;
+static int g_sixel_pos_inited_8bit = 0;
+
+/*
  * Use per-file suffixes for static helpers so unity builds do not see
  * duplicate identifiers when combining this file with other dither sources.
  */
@@ -154,6 +162,55 @@ sixel_bn_parse_phase_8bit(char const *text, int *out_ox, int *out_oy)
     return 1;
 }
 
+static void
+sixel_positional_strength_init_8bit(void)
+{
+    char const *text;
+    float strength_default;
+    float strength_a;
+    float strength_x;
+    int parsed;
+    int common_set;
+
+    if (g_sixel_pos_inited_8bit != 0) {
+        return;
+    }
+
+    strength_default = 0.100f;
+    common_set = 0;
+    text = sixel_compat_getenv("SIXEL_DITHER_STRENGTH");
+    if (text != NULL) {
+        parsed = sixel_bn_parse_float_8bit(text, &strength_default);
+        if (parsed != 0) {
+            common_set = 1;
+        } else {
+            strength_default = 0.100f;
+        }
+    }
+
+    strength_a = common_set ? strength_default : 0.150f;
+    text = sixel_compat_getenv("SIXEL_DITHER_A_DITHER_STRENGTH");
+    if (text != NULL) {
+        parsed = sixel_bn_parse_float_8bit(text, &strength_a);
+        if (parsed == 0) {
+            strength_a = common_set ? strength_default : 0.150f;
+        }
+    }
+
+    strength_x = common_set ? strength_default : 0.100f;
+    text = sixel_compat_getenv("SIXEL_DITHER_X_DITHER_STRENGTH");
+    if (text != NULL) {
+        parsed = sixel_bn_parse_float_8bit(text, &strength_x);
+        if (parsed == 0) {
+            strength_x = common_set ? strength_default : 0.100f;
+        }
+    }
+
+    g_sixel_pos_strength_a_8bit = strength_a;
+    g_sixel_pos_strength_x_8bit = strength_x;
+    g_sixel_pos_inited_8bit = 1;
+}
+
 static unsigned int
 sixel_bn_hash32_8bit(unsigned int value)
 {
@@ -211,19 +268,19 @@ sixel_bluenoise_conf_init_from_env_8bit(void)
         return;
     }
 
-    strength = 1.0f;
+    strength = 0.100f;
     text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_STRENGTH");
     if (text != NULL) {
         parsed = sixel_bn_parse_float_8bit(text, &strength);
         if (parsed == 0) {
-            strength = 1.0f;
+            strength = 0.100f;
         }
     } else {
         text = sixel_compat_getenv("SIXEL_DITHER_STRENGTH");
         if (text != NULL) {
             parsed = sixel_bn_parse_float_8bit(text, &strength);
             if (parsed == 0) {
-                strength = 1.0f;
+                strength = 0.100f;
             }
         }
     }
@@ -320,13 +377,17 @@ sixel_bluenoise_tri_8bit(int x, int y, int c)
 static float
 positional_mask_a_8bit(int x, int y, int c)
 {
-    return ((((x + c * 67) + y * 236) * 119) & 255) / 128.0f - 1.0f;
+    sixel_positional_strength_init_8bit();
+    return (((((x + c * 67) + y * 236) * 119) & 255) / 128.0f
+            - 1.0f) * g_sixel_pos_strength_a_8bit;
 }
 
 static float
 positional_mask_x_8bit(int x, int y, int c)
 {
-    return ((((x + c * 29) ^ (y * 149)) * 1234) & 511) / 256.0f - 1.0f;
+    sixel_positional_strength_init_8bit();
+    return (((((x + c * 29) ^ (y * 149)) * 1234) & 511) / 256.0f
+            - 1.0f) * g_sixel_pos_strength_x_8bit;
 }
 
 static float
