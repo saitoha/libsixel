@@ -681,12 +681,6 @@ AC_ARG_ENABLE([avx2],
               [],
               [enable_avx2=no])
 
-AC_ARG_ENABLE([avx512],
-              [AS_HELP_STRING([--enable-avx512],
-                              [enable AVX-512 optimizations (default: no)])],
-              [],
-              [enable_avx512=no])
-
 AC_ARG_ENABLE([wiccodec],
               [AS_HELP_STRING([--enable-wiccodec],
                               [build WIC codec DLL (default: auto)])],
@@ -1170,7 +1164,6 @@ GDK_PIXBUF_QUERY_LOADERS=""
 have_sse2=no
 have_xgetbv_intrin=no
 have_avx2=no
-have_avx512=no
 have_neon=no
 
 REQUIRES_PRIVATE=""
@@ -2299,31 +2292,6 @@ else
                 AC_MSG_ERROR([AVX2 support requested but not available])
             fi
         fi
-        if test "x$enable_avx512" != xno; then
-            AC_MSG_CHECKING([whether the compiler supports AVX-512 flags and
-                             <immintrin.h>])
-            if test "x$using_cl" = xyes; then
-                avx512_flag="/arch:AVX512"
-            else
-                avx512_flag="-mavx512f -mavx512bw -mfma"
-            fi
-            saved_CFLAGS="$CFLAGS"
-            CFLAGS="$CFLAGS $avx512_flag"
-            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <immintrin.h>]],
-                                              [[__m512i v;
-                                                v = _mm512_setzero_si512();
-                                                (void)v;
-                                                return 0;]])],
-                              [have_avx512=yes],
-                              [have_avx512=no])
-            CFLAGS="$saved_CFLAGS"
-            AC_MSG_RESULT([$have_avx512])
-            if test "x$have_avx512" = xyes; then
-                AM_CFLAGS="$AM_CFLAGS $avx512_flag"
-            elif test "x$enable_avx512" = xyes; then
-                AC_MSG_ERROR([AVX-512 support requested but not available])
-            fi
-        fi
         ;;
 
     i*86)
@@ -2409,14 +2377,6 @@ elif test "x$have_xgetbv_intrin" = xyes; then
     message_xsave_probe=yes
 else
     message_xsave_probe=no
-fi
-
-if test "x$enable_avx512" = xno; then
-    message_avx512=no
-elif test "x$have_avx512" = xyes; then
-    message_avx512=yes
-else
-    message_avx512=no
 fi
 
 if test "x$enable_simd" = xyes; then
@@ -2679,7 +2639,6 @@ echo "       ruby bindings           : $message_ruby"
 echo "       simd                    : $message_simd"
 echo "       xsave probe             : $message_xsave_probe"
 echo "       avx2                    : $message_avx2"
-echo "       avx-512                 : $message_avx512"
 echo "       gcov                    : $enable_gcov"
 echo "       debugging               : $enable_debug"
 echo "       tests                   : $enable_tests"
