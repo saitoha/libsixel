@@ -148,6 +148,7 @@ int gettimeofday(struct timeval *tv, struct timezone *tz);
 #endif
 
 #include "compat_stub.h"
+#include "path.h"
 
 /*
  * MSVC deprecates POSIX getcwd(). Use the secure CRT spelling when
@@ -1205,11 +1206,96 @@ sixel_compat_set_binary(int fd)
 SIXEL_COMPAT_API int
 sixel_compat_access(const char *path, int mode)
 {
+    size_t buffer_size;
+    char *buffer;
+    char const *libc_path;
+    int result;
+
+    buffer_size = 0u;
+    buffer = NULL;
+    libc_path = NULL;
+    result = -1;
+    if (path == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    buffer_size = sixel_path_to_libc_buffer_size(path);
+    if (buffer_size > 0u) {
+        buffer = (char *)malloc(buffer_size);
+        if (buffer == NULL) {
+            errno = ENOMEM;
+            return -1;
+        }
+        libc_path = sixel_path_to_libc(path, buffer, buffer_size);
+        if (libc_path == NULL) {
+            free(buffer);
+            errno = EINVAL;
+            return -1;
+        }
+    } else {
+        libc_path = path;
+    }
+
 #if defined(_MSC_VER)
-    return _access(path, mode);
+    result = _access(libc_path, mode);
 #else
-    return access(path, mode);
+    result = access(libc_path, mode);
 #endif
+
+    if (buffer != NULL) {
+        free(buffer);
+    }
+
+    return result;
+}
+
+
+SIXEL_COMPAT_API int
+sixel_compat_stat(const char *path, struct stat *stat_buffer)
+{
+    size_t buffer_size;
+    char *buffer;
+    char const *libc_path;
+    int result;
+
+    buffer_size = 0u;
+    buffer = NULL;
+    libc_path = NULL;
+    result = -1;
+    if (path == NULL || stat_buffer == NULL) {
+        errno = EINVAL;
+        return -1;
+    }
+
+    buffer_size = sixel_path_to_libc_buffer_size(path);
+    if (buffer_size > 0u) {
+        buffer = (char *)malloc(buffer_size);
+        if (buffer == NULL) {
+            errno = ENOMEM;
+            return -1;
+        }
+        libc_path = sixel_path_to_libc(path, buffer, buffer_size);
+        if (libc_path == NULL) {
+            free(buffer);
+            errno = EINVAL;
+            return -1;
+        }
+    } else {
+        libc_path = path;
+    }
+
+#if defined(_MSC_VER)
+    result = _stat(libc_path, stat_buffer);
+#else
+    result = stat(libc_path, stat_buffer);
+#endif
+
+    if (buffer != NULL) {
+        free(buffer);
+    }
+
+    return result;
 }
 
 

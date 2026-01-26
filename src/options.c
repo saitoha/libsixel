@@ -1580,12 +1580,12 @@ sixel_option_validate_filesystem_path(
     if (stat_result == 0) {
         /*
          * Treat existing directories as invalid inputs because callers expect
-         * regular files.  Using stat() after a successful access() confines
-         * the potentially blocking probe to paths that already exist
-         * locally, keeping the earlier UNC avoidance intact.
+         * regular files.  Using the compat stat() helper after a successful
+         * access() confines the potentially blocking probe to paths that
+         * already exist locally, keeping the earlier UNC avoidance intact.
          */
         errno = 0;
-        stat_check = stat(resolved_path, &stat_buffer);
+        stat_check = sixel_compat_stat(resolved_path, &stat_buffer);
         error_value = errno;
         if (stat_check == 0 && S_ISDIR(stat_buffer.st_mode)) {
             sixel_helper_set_additional_message(

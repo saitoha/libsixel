@@ -56,6 +56,9 @@
 #if HAVE_SYS_TYPES_H
 # include <sys/types.h>
 #endif
+#if HAVE_SYS_STAT_H
+# include <sys/stat.h>
+#endif
 
 #if defined(_WIN32) && !defined(_SSIZE_T_DEFINED)
 # include <BaseTsd.h>
@@ -236,6 +239,9 @@ SIXEL_COMPAT_API int sixel_compat_unlink(const char *path);
 SIXEL_COMPAT_API int sixel_compat_set_binary(int fd);
 
 SIXEL_COMPAT_API int sixel_compat_access(const char *path, int mode);
+
+SIXEL_COMPAT_API int sixel_compat_stat(const char *path,
+                                       struct stat *stat_buffer);
 
 SIXEL_COMPAT_API ssize_t sixel_compat_write(int fd,
                                             const void *buffer,
