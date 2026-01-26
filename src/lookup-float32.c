@@ -95,8 +95,8 @@ sixel_lookup_float32_1d_eytzinger_log_event(
     }
 
     sixel_logger_logf(&logger,
-                      "1d-eytzinger",
-                      "1d-eytzinger",
+                      "eytzinger",
+                      "eytzinger",
                       event,
                       ncolors);
     sixel_logger_close(&logger);

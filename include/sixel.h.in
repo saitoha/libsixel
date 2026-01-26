@@ -513,7 +513,7 @@ typedef int SIXELSTATUS;
                                                                lookup tree
                                                                with zero
                                                                error
-                                                   1d-eytzinger -> implicit
+                                                   eytzinger -> implicit
                                                                   binary tree
                                                                   lookup
                                                */

@@ -248,7 +248,7 @@ static const sixel_filter_factory_entry_t
     {"lookup", SIXEL_FILTER_KIND_LOOKUP, sixel_filter_factory_lookup_init},
     {"palette", SIXEL_FILTER_KIND_PALETTE, sixel_filter_factory_palette_init},
     {"vpte", SIXEL_FILTER_KIND_VPTE, sixel_filter_factory_vpte_init},
-    {"1d-eytzinger",
+    {"eytzinger",
      SIXEL_FILTER_KIND_EYTZINGER,
      sixel_filter_factory_1d_eytzinger_init},
     {"resize", SIXEL_FILTER_KIND_RESIZE, sixel_filter_factory_resize_init},
