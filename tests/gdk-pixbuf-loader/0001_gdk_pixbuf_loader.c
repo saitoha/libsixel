@@ -8,6 +8,8 @@
 #include "config.h"
 #endif
 
+#if defined(HAVE_GDK_PIXBUF2)
+
 #include <glib.h>
 #include <gdk-pixbuf/gdk-pixbuf-io.h>
 #include <string.h>
@@ -279,3 +281,15 @@ test_gdk_pixbuf_loader_0001_gdk_pixbuf_loader(int argc, char **argv)
 
     return g_test_run();
 }
+#else
+
+int
+test_gdk_pixbuf_loader_0001_gdk_pixbuf_loader(int argc, char **argv)
+{
+    (void) argc;
+    (void) argv;
+    /* Skip when gdk-pixbuf loader support is unavailable. */
+    return 77;
+}
+
+#endif

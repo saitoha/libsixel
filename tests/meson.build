@@ -31,6 +31,7 @@ test_runner_sources = [
   'filter/0008_filter_load.c',
   'filter/0009_filter_dither.c',
   'filter/0010_filter_encode.c',
+  'filter/filter_test_common.h',
   'loader/0008_loader_coregraphics_pixelformat.c',
   'loader/0009_loader_wic_pixelformat.c',
   'loader/0010_loader_gdk_pixbuf_pixelformat.c',
@@ -40,29 +41,24 @@ test_runner_sources = [
   'loader/0014_loader_builtin_pixelformat.c',
   'loader/0015_loader_quicklook_pixelformat.c',
   'loader/0016_loader_gnome_thumbnailer_pixelformat.c',
+  'loader/pixelformat_test_common.h',
   'palette/0001_kmeans_init.c',
   'probe/0001_probe_parse.c',
+  'gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c',
+  'gdk-pixbuf-loader/0002_incremental_load.c',
+  'gdk-pixbuf-loader/0003_corrupt_data.c',
+  'gdk-pixbuf-loader/0004_propagate_error.c',
+  'gdk-pixbuf-loader/0005_context_free.c',
+  'gdk-pixbuf-loader/0006_loader_module.c',
+  'gdk-pixbuf-loader/0007_loader_plugin_integration.c',
+  '../gdk-pixbuf-loader/sixel-pixbuf-loader.c',
   '../converters/cli.c',
 ]
 test_runner_deps = [libsixel_dep]
-test_runner_c_args = []
-
-if gdk_pixbuf_loader_deps.length() > 0
-  test_runner_sources += [
-    'gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c',
-    'gdk-pixbuf-loader/0002_incremental_load.c',
-    'gdk-pixbuf-loader/0003_corrupt_data.c',
-    'gdk-pixbuf-loader/0004_propagate_error.c',
-    'gdk-pixbuf-loader/0005_context_free.c',
-    'gdk-pixbuf-loader/0006_loader_module.c',
-    'gdk-pixbuf-loader/0007_loader_plugin_integration.c',
-    '../gdk-pixbuf-loader/sixel-pixbuf-loader.c',
-  ]
-  test_runner_deps += gdk_pixbuf_loader_deps
-  test_runner_c_args += ['-DGDK_PIXBUF_ENABLE_BACKEND',
-                         '-DSIXEL_PIXBUF_LOADER_TESTING',
-                         '-DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS']
-endif
+test_runner_deps += gdk_pixbuf_loader_deps
+test_runner_c_args = ['-DGDK_PIXBUF_ENABLE_BACKEND',
+                      '-DSIXEL_PIXBUF_LOADER_TESTING',
+                      '-DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS']
 
 test_runner_inc = [
   project_inc,
@@ -570,33 +566,29 @@ foreach t : aborttrace_tests
     suite: ['tap'])
 endforeach
 
-if gdk_pixbuf_loader_deps.length() > 0
-  gdk_pixbuf_loader_tests = [
-    '0001_gdk_pixbuf_loader',
-    '0002_incremental_load',
-    '0003_corrupt_data',
-    '0004_propagate_error',
-    '0005_context_free',
-    '0006_loader_module',
-  ]
-  if conf.has('HAVE_GDK_PIXBUF2') and get_option('img2sixel').enabled()
-    gdk_pixbuf_loader_tests += ['0007_loader_plugin_integration']
+gdk_pixbuf_loader_tests = [
+  '0001_gdk_pixbuf_loader',
+  '0002_incremental_load',
+  '0003_corrupt_data',
+  '0004_propagate_error',
+  '0005_context_free',
+  '0006_loader_module',
+  '0007_loader_plugin_integration',
+]
+foreach test_name : gdk_pixbuf_loader_tests
+  deps = []
+  if test_name == '0007_loader_plugin_integration'
+    deps += [img2sixel_exe]
   endif
-  foreach test_name : gdk_pixbuf_loader_tests
-    deps = [pixbufloader_sixel]
-    if test_name == '0007_loader_plugin_integration'
-      deps += [img2sixel_exe]
-    endif
-    test(test_name, sh,
-      args: [meson.current_source_dir()
-        / 'gdk-pixbuf-loader'
-        / 't'
-        / (test_name + '.t')],
-      env: env,
-      protocol: 'tap',
-      suite: ['gdk-pixbuf-loader'],
-      depends: deps)
-  endforeach
-endif
+  test(test_name, sh,
+    args: [meson.current_source_dir()
+      / 'gdk-pixbuf-loader'
+      / 't'
+      / (test_name + '.t')],
+    env: env,
+    protocol: 'tap',
+    suite: ['gdk-pixbuf-loader'],
+    depends: deps)
+endforeach
 
 add_test_setup('ci', timeout_multiplier: 1)

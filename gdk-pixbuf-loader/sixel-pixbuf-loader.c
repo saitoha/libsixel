@@ -8,6 +8,8 @@
 #include "config.h"
 #endif
 
+#if defined(HAVE_GDK_PIXBUF2)
+
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -321,3 +323,26 @@ fill_info(GdkPixbufFormat *info)
     info->flags = GDK_PIXBUF_FORMAT_THREADSAFE;
     info->license = "MIT";
 }
+
+#else
+
+#ifndef G_MODULE_EXPORT
+#define G_MODULE_EXPORT
+#endif
+
+typedef struct _GdkPixbufModule GdkPixbufModule;
+typedef struct _GdkPixbufFormat GdkPixbufFormat;
+
+G_MODULE_EXPORT void
+fill_vtable(GdkPixbufModule *module)
+{
+    (void) module;
+}
+
+G_MODULE_EXPORT void
+fill_info(GdkPixbufFormat *info)
+{
+    (void) info;
+}
+
+#endif
