@@ -109,6 +109,7 @@ srcs = [
   'decoder-parallel.h',
   'decoder-image.h',
   'options.c',
+  'path.c',
   'writer.c',
   'stb_image_write.c',
   'status.c',
@@ -135,6 +136,7 @@ srcs = [
   'dither-varcoeff-8bit.h',
   'dither-varcoeff-float32.h',
   'options.h',
+  'path.h',
   'sixel_atomic.h',
 ]
 

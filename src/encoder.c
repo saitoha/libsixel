@@ -126,6 +126,7 @@
 #include "rgblookup.h"
 #include "clipboard.h"
 #include "compat_stub.h"
+#include "path.h"
 #include "filter.h"
 #include "filter-clip.h"
 #include "filter-colors.h"
@@ -6554,49 +6555,6 @@ png_target_payload_view(char const *argument)
     return argument;
 }
 
-static void
-encoder_normalise_windows_drive_path(char *path)
-{
-#if defined(_WIN32)
-    size_t length;
-
-    /*
-     * MSYS-like environments forward POSIX-looking absolute paths to native
-     * binaries.  When a user writes "/d/..." MSYS converts the command line to
-     * UTF-16 and preserves the literal bytes.  The Windows CRT, however,
-     * expects "d:/..." or "d:\...".  The tiny state machine below rewrites the
-     * leading token so the runtime resolves the drive correctly:
-     *
-     *   input     normalised
-     *   |         |
-     *   v         v
-     *   / d / ... d : / ...
-     *
-     * The body keeps the rest of the string intact so UNC paths ("//server")
-     * and relative references pass through untouched.
-     */
-
-    length = 0u;
-
-    if (path == NULL) {
-        return;
-    }
-
-    length = strlen(path);
-    if (length >= 3u
-            && path[0] == '/'
-            && ((path[1] >= 'A' && path[1] <= 'Z')
-                || (path[1] >= 'a' && path[1] <= 'z'))
-            && path[2] == '/') {
-        path[0] = path[1];
-        path[1] = ':';
-    }
-#else
-    (void)path;
-#endif
-}
-
-
 static int
 is_dev_null_path(char const *path)
 {
@@ -6804,13 +6762,18 @@ sixel_encoder_setopt(
     char const *png_path_view = NULL;
     char *mapfile_copy;
     char *mapfile_copy_view;
+    char *mapfile_normalized;
     size_t mapfile_offset;
     size_t mapfile_length;
     size_t png_path_length;
+    size_t libc_buffer_size;
     size_t cell_prefix_length;
     size_t cell_detail_length;
     char cell_message[256];
     char const *cell_detail;
+    char *libc_buffer;
+    char const *libc_path;
+    size_t mapfile_full_length;
     unsigned int path_flags;
     char const *mapfile_view;
     int path_check;
@@ -6901,7 +6864,39 @@ sixel_encoder_setopt(
                 } else {
                     encoder->png_output_path[0] = '\0';
                 }
-                encoder_normalise_windows_drive_path(encoder->png_output_path);
+                libc_buffer_size = sixel_path_to_libc_buffer_size(
+                    encoder->png_output_path);
+                if (libc_buffer_size > 0u) {
+                    libc_buffer = (char *)sixel_allocator_malloc(
+                        encoder->allocator, libc_buffer_size);
+                    if (libc_buffer == NULL) {
+                        sixel_helper_set_additional_message(
+                            "sixel_encoder_setopt: sixel_allocator_malloc() "
+                            "failed for PNG path buffer.");
+                        status = SIXEL_BAD_ALLOCATION;
+                        goto end;
+                    }
+                    libc_path = sixel_path_to_libc(
+                        encoder->png_output_path,
+                        libc_buffer,
+                        libc_buffer_size);
+                    if (libc_path == NULL) {
+                        sixel_helper_set_additional_message(
+                            "sixel_encoder_setopt: invalid PNG output path.");
+                        sixel_allocator_free(encoder->allocator, libc_buffer);
+                        status = SIXEL_BAD_ARGUMENT;
+                        goto end;
+                    }
+                    if (libc_path == libc_buffer) {
+                        sixel_allocator_free(encoder->allocator,
+                                             encoder->png_output_path);
+                        encoder->png_output_path = libc_buffer;
+                        libc_buffer = NULL;
+                    }
+                    if (libc_buffer != NULL) {
+                        sixel_allocator_free(encoder->allocator, libc_buffer);
+                    }
+                }
             }
         } else {
             encoder->output_is_png = 0;
@@ -7142,12 +7137,58 @@ sixel_encoder_setopt(
             mapfile_copy_view = mapfile_copy;
         }
         /*
-         * Normalise MSYS-style drive prefixes in the copied payload so native
-         * Windows binaries can resolve paths like "/d/..." passed via
-         * TYPE:/d/... arguments.  The original token is retained for
-         * diagnostics so users see the exact CLI input in error messages.
+         * Normalize only the filesystem path portion so the stored value is
+         * usable by the current libc while the original CLI token is kept for
+         * diagnostics. The path prefix (TYPE:) remains untouched.
          */
-        encoder_normalise_windows_drive_path(mapfile_copy_view);
+        libc_buffer_size = sixel_path_to_libc_buffer_size(mapfile_copy_view);
+        if (libc_buffer_size > 0u) {
+            libc_buffer = (char *)sixel_allocator_malloc(encoder->allocator,
+                                                         libc_buffer_size);
+            if (libc_buffer == NULL) {
+                sixel_helper_set_additional_message(
+                    "sixel_encoder_setopt: sixel_allocator_malloc() failed "
+                    "for mapfile path buffer.");
+                sixel_allocator_free(encoder->allocator, mapfile_copy);
+                mapfile_copy = NULL;
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+            libc_path = sixel_path_to_libc(mapfile_copy_view,
+                                           libc_buffer,
+                                           libc_buffer_size);
+            if (libc_path == NULL) {
+                sixel_helper_set_additional_message(
+                    "sixel_encoder_setopt: invalid mapfile path.");
+                sixel_allocator_free(encoder->allocator, libc_buffer);
+                sixel_allocator_free(encoder->allocator, mapfile_copy);
+                mapfile_copy = NULL;
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
+            mapfile_full_length = mapfile_offset + libc_buffer_size;
+            mapfile_normalized = (char *)sixel_allocator_malloc(
+                encoder->allocator, mapfile_full_length);
+            if (mapfile_normalized == NULL) {
+                sixel_helper_set_additional_message(
+                    "sixel_encoder_setopt: sixel_allocator_malloc() failed "
+                    "for mapfile normalization.");
+                sixel_allocator_free(encoder->allocator, libc_buffer);
+                sixel_allocator_free(encoder->allocator, mapfile_copy);
+                mapfile_copy = NULL;
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+            memcpy(mapfile_normalized, mapfile_copy, mapfile_offset);
+            memcpy(mapfile_normalized + mapfile_offset,
+                   libc_path,
+                   libc_buffer_size);
+            sixel_allocator_free(encoder->allocator, libc_buffer);
+            sixel_allocator_free(encoder->allocator, mapfile_copy);
+            mapfile_copy = mapfile_normalized;
+            mapfile_normalized = NULL;
+            mapfile_copy_view = mapfile_copy + mapfile_offset;
+        }
         path_flags = SIXEL_OPTION_PATH_ALLOW_STDIN |
             SIXEL_OPTION_PATH_ALLOW_CLIPBOARD |
             SIXEL_OPTION_PATH_ALLOW_REMOTE |
@@ -9916,10 +9957,9 @@ sixel_encoder_emit_palette_output(sixel_encoder_t *encoder)
     sixel_palette_format_t format_ext;
     sixel_palette_format_t format_final;
     char const *mode;
-#if defined(_WIN32)
-    char *path_copy;
-    size_t path_length;
-#endif
+    char *libc_buffer;
+    size_t libc_buffer_size;
+    char const *libc_path;
 
     status = SIXEL_OK;
     frame = NULL;
@@ -9932,10 +9972,9 @@ sixel_encoder_emit_palette_output(sixel_encoder_t *encoder)
     format_ext = SIXEL_PALETTE_FORMAT_NONE;
     format_final = SIXEL_PALETTE_FORMAT_NONE;
     mode = "wb";
-#if defined(_WIN32)
-    path_copy = NULL;
-    path_length = 0u;
-#endif
+    libc_buffer = NULL;
+    libc_buffer_size = 0u;
+    libc_path = NULL;
 
     if (encoder == NULL || encoder->palette_output == NULL) {
         return SIXEL_OK;
@@ -9991,21 +10030,29 @@ sixel_encoder_emit_palette_output(sixel_encoder_t *encoder)
         format_final = SIXEL_PALETTE_FORMAT_PAL_JASC;
     }
 
-#if defined(_WIN32)
-    path_length = strlen(path);
-    path_copy = (char *)sixel_allocator_malloc(encoder->allocator,
-                                               path_length + 1u);
-    if (path_copy == NULL) {
-        sixel_helper_set_additional_message(
-            "sixel_encoder_emit_palette_output: "
-            "sixel_allocator_malloc() failed.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto cleanup;
+    libc_buffer_size = sixel_path_to_libc_buffer_size(path);
+    if (libc_buffer_size > 0u) {
+        libc_buffer = (char *)sixel_allocator_malloc(encoder->allocator,
+                                                     libc_buffer_size);
+        if (libc_buffer == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_emit_palette_output: "
+                "sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
+        }
+        libc_path = sixel_path_to_libc(path, libc_buffer, libc_buffer_size);
+        if (libc_path == NULL) {
+            sixel_helper_set_additional_message(
+                "sixel_encoder_emit_palette_output: invalid path.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto cleanup;
+        }
+        if (libc_path == libc_buffer) {
+            path = libc_buffer;
+            libc_buffer = NULL;
+        }
     }
-    (void)sixel_compat_strcpy(path_copy, path_length + 1u, path);
-    encoder_normalise_windows_drive_path(path_copy);
-    path = path_copy;
-#endif
 
     if (strcmp(path, "-") == 0) {
         stream = stdout;
@@ -10090,14 +10137,13 @@ sixel_encoder_emit_palette_output(sixel_encoder_t *encoder)
     }
 
 cleanup:
+    if (libc_buffer != NULL) {
+        sixel_allocator_free(encoder->allocator, libc_buffer);
+        libc_buffer = NULL;
+    }
     if (close_stream && stream != NULL) {
         (void) fclose(stream);
     }
-#if defined(_WIN32)
-    if (path_copy != NULL) {
-        sixel_allocator_free(encoder->allocator, path_copy);
-    }
-#endif
     if (frame != NULL) {
         sixel_frame_unref(frame);
     }

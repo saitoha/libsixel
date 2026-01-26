@@ -58,6 +58,7 @@
 #include "decoder-parallel.h"
 #include "clipboard.h"
 #include "compat_stub.h"
+#include "path.h"
 #include "options.h"
 #include "sixel_atomic.h"
 
@@ -988,32 +989,6 @@ static sixel_option_choice_t const g_decoder_dequant_choices[] = {
     { "k_undither", 1 }
 };
 
-static void
-decoder_normalise_windows_drive_path(char *path)
-{
-#if defined(_WIN32)
-    size_t length;
-
-    length = 0u;
-
-    if (path == NULL) {
-        return;
-    }
-
-    length = strlen(path);
-    if (length >= 3u
-            && path[0] == '/'
-            && ((path[1] >= 'A' && path[1] <= 'Z')
-                || (path[1] >= 'a' && path[1] <= 'z'))
-            && path[2] == '/') {
-        path[0] = path[1];
-        path[1] = ':';
-    }
-#else
-    (void)path;
-#endif
-}
-
 /* set an option flag to decoder object */
 SIXELAPI SIXELSTATUS
 sixel_decoder_setopt(
@@ -1026,14 +1001,15 @@ sixel_decoder_setopt(
     unsigned int path_flags;
     int path_check;
     char const *payload = NULL;
-    size_t length;
     sixel_clipboard_spec_t clipboard_spec;
     int match_index;
     sixel_option_choice_result_t match_result;
     char match_detail[128];
     char match_message[256];
     char const *filename = NULL;
-    char *p = NULL;
+    size_t libc_buffer_size;
+    char *libc_buffer;
+    char const *libc_path;
     long bias;
     long parsed_value;
     char *endptr;
@@ -1041,6 +1017,9 @@ sixel_decoder_setopt(
     sixel_decoder_ref(decoder);
     path_flags = 0u;
     path_check = 0;
+    libc_buffer_size = 0u;
+    libc_buffer = NULL;
+    libc_path = NULL;
 
     switch(arg) {
     case SIXEL_OPTFLAG_INPUT:  /* i */
@@ -1093,15 +1072,28 @@ sixel_decoder_setopt(
                     "missing target after the \"png:\" prefix.");
                 return SIXEL_BAD_ARGUMENT;
             }
-            length = strlen(payload);
-            filename = p = malloc(length + 1U);
-            if (p == NULL) {
-                sixel_helper_set_additional_message(
-                    "sixel_decoder_setopt: malloc() failed for png path filename.");
-                return SIXEL_BAD_ALLOCATION;
+            libc_buffer_size = sixel_path_to_libc_buffer_size(payload);
+            if (libc_buffer_size > 0u) {
+                libc_buffer = (char *)malloc(libc_buffer_size);
+                if (libc_buffer == NULL) {
+                    sixel_helper_set_additional_message(
+                        "sixel_decoder_setopt: malloc() failed for png path "
+                        "buffer.");
+                    return SIXEL_BAD_ALLOCATION;
+                }
+                libc_path = sixel_path_to_libc(payload,
+                                               libc_buffer,
+                                               libc_buffer_size);
+                if (libc_path == NULL) {
+                    sixel_helper_set_additional_message(
+                        "sixel_decoder_setopt: invalid png output path.");
+                    free(libc_buffer);
+                    return SIXEL_BAD_ARGUMENT;
+                }
+                filename = libc_path;
+            } else {
+                filename = payload;
             }
-            memcpy(p, payload, length + 1U);
-            decoder_normalise_windows_drive_path(p);
         } else {
             filename = value;
         }
@@ -1121,7 +1113,10 @@ sixel_decoder_setopt(
         }
         free(decoder->output);
         decoder->output = strdup_with_allocator(filename, decoder->allocator);
-        free(p);
+        if (libc_buffer != NULL) {
+            free(libc_buffer);
+            libc_buffer = NULL;
+        }
         if (decoder->output == NULL) {
             sixel_helper_set_additional_message(
                 "sixel_decoder_setopt: strdup_with_allocator() failed.");
