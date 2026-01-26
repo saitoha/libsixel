@@ -142,12 +142,95 @@ jobs:
               gcovr
             exec_type: bash
 
+          - label: Autotools-ubuntu-x86_64-clang-png-jpeg-coverage
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-gcov
+              --with-png
+              --with-jpeg
+            extra_packages: >-
+              meson
+              clang
+              libpng-dev
+              libjpeg-dev
+            pip_packages: >-
+              gcovr
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-gdk-pixbuf2-coverage
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-gcov
+              --without-png
+              --without-jpeg
+              --with-gdk-pixbuf2
+            extra_packages: >-
+              clang
+              libgdk-pixbuf2.0-dev
+            pip_packages: >-
+              gcovr
+            exec_type: bash
+
+          - label: Autotools-ubuntu-x86_64-GD-no-aborttrace-coverage
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-gcov
+              --without-png
+              --without-jpeg
+              --with-gd
+              --disable-abort-trace
+            extra_packages: >-
+              clang
+              libgd-dev
+            pip_packages: >-
+              gcovr
+            exec_type: bash
+
           - label: Autotools-macos-x86_64-coverage
             buildtool: autotools
             runner: macos-15
             setup_options: >-
               --enable-gcov
             extra_packages: >-
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-gdk-pixbuf2-coverage
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-gcov
+              --without-png
+              --without-jpeg
+              --with-gdk-pixbuf2
+            extra_packages: >-
+              gdk-pixbuf
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-GD-coverage
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --enable-gcov
+              --without-png
+              --without-jpeg
+              --with-gd
+            extra_packages: >-
+              gd
               lcov
             exec_type: bash
 
@@ -319,12 +402,111 @@ jobs:
               gcovr
             exec_type: bash
 
+          - label: Meson-ubuntu-x86_64-clang-png-jpeg-coverage
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              -Db_coverage=true
+              -Dpng=enabled
+              -Djpeg=enabled
+            extra_packages: >-
+              meson
+              clang
+              libpng-dev
+              libjpeg-dev
+            pip_packages: >-
+              gcovr
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-gdk-pixbuf2-coverage
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              -Db_coverage=true
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dgdk_pixbuf2=enabled
+            extra_packages: >-
+              meson
+              clang
+              libgdk-pixbuf2.0-dev
+            pip_packages: >-
+              gcovr
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-GD-no-aborttrace-coverage
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              -Db_coverage=true
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dgd=enabled
+              -Dabort_trace=disabled
+            extra_packages: >-
+              meson
+              clang
+              libgd-dev
+            pip_packages: >-
+              gcovr
+            exec_type: bash
+
           - label: Meson-macos-x86_64-unity-coverage
             buildtool: meson
             runner: macos-15
             setup_options: >-
               -Db_coverage=true
               -Dunity=on
+            extra_packages: >-
+              meson
+              lcov
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-gdk-pixbuf2-coverage
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              -Db_coverage=true
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dgdk_pixbuf2=enabled
+            extra_packages: >-
+              meson
+              gdk-pixbuf
+              lcov
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-GD-coverage
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              -Db_coverage=true
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dgd=enabled
+            extra_packages: >-
+              meson
+              gd
+              lcov
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-amalgamated-lib-disable-appkit-coverage
+            buildtool: meson
+            runner: macos-latest
+            setup_options: >-
+              -Db_coverage=true
+              -Damalgamated_lib=true
+              -Dappkit=disabled
             extra_packages: >-
               meson
               lcov
@@ -473,50 +655,6 @@ jobs:
               clang
             exec_type: bash
 
-          - label: Autotools-ubuntu-x86_64-clang-png-jpeg
-            buildtool: autotools
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              --with-png
-              --with-jpeg
-            extra_packages: >-
-              meson
-              clang
-              libpng-dev
-              libjpeg-dev
-            exec_type: bash
-
-          - label: Autotools-ubuntu-x86_64-gdk-pixbuf2
-            buildtool: autotools
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              --without-png
-              --without-jpeg
-              --with-gdk-pixbuf2
-            extra_packages: >-
-              clang
-              libgdk-pixbuf2.0-dev
-            exec_type: bash
-
-          - label: Autotools-ubuntu-x86_64-GD-no-aborttrace
-            buildtool: autotools
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              --without-png
-              --without-jpeg
-              --with-gd
-              --disable-abort-trace
-            extra_packages: >-
-              clang
-              libgd-dev
-            exec_type: bash
-
           - label: Autotools-ubuntu-x86_64-no-tools
             buildtool: autotools
             runner: ubuntu-latest
@@ -567,32 +705,6 @@ jobs:
               PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
             extra_packages: >-
               gcc-multilib
-            exec_type: bash
-
-          - label: Autotools-macos-aarch64-gdk-pixbuf2
-            buildtool: autotools
-            runner: macos-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              --without-png
-              --without-jpeg
-              --with-gdk-pixbuf2
-            extra_packages: >-
-              gdk-pixbuf
-            exec_type: bash
-
-          - label: Autotools-macos-aarch64-GD
-            buildtool: autotools
-            runner: macos-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              --without-png
-              --without-jpeg
-              --with-gd
-            extra_packages: >-
-              gd
             exec_type: bash
 
           - label: Autotools-macos-aarch64-amalgamated-lib-disable-appkit
@@ -874,52 +986,6 @@ jobs:
               clang
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-clang-png-jpeg
-            buildtool: meson
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              -Dpng=enabled
-              -Djpeg=enabled
-            extra_packages: >-
-              meson
-              clang
-              libpng-dev
-              libjpeg-dev
-            exec_type: bash
-
-          - label: Meson-ubuntu-x86_64-gdk-pixbuf2
-            buildtool: meson
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              -Dpng=disabled
-              -Djpeg=disabled
-              -Dgdk_pixbuf2=enabled
-            extra_packages: >-
-              meson
-              clang
-              libgdk-pixbuf2.0-dev
-            exec_type: bash
-
-          - label: Meson-ubuntu-x86_64-GD-no-aborttrace
-            buildtool: meson
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              -Dpng=disabled
-              -Djpeg=disabled
-              -Dgd=enabled
-              -Dabort_trace=disabled
-            extra_packages: >-
-              meson
-              clang
-              libgd-dev
-            exec_type: bash
-
           - label: Meson-ubuntu-x86_64-no-tools
             buildtool: meson
             runner: ubuntu-latest
@@ -978,44 +1044,6 @@ jobs:
             extra_packages: >-
               meson
               gcc-multilib
-            exec_type: bash
-
-          - label: Meson-macos-aarch64-gdk-pixbuf2
-            buildtool: meson
-            runner: macos-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              -Dpng=disabled
-              -Djpeg=disabled
-              -Dgdk_pixbuf2=enabled
-            extra_packages: >-
-              meson
-              gdk-pixbuf
-            exec_type: bash
-
-          - label: Meson-macos-aarch64-GD
-            buildtool: meson
-            runner: macos-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              -Dpng=disabled
-              -Djpeg=disabled
-              -Dgd=enabled
-            extra_packages: >-
-              meson
-              gd
-            exec_type: bash
-
-          - label: Meson-macos-aarch64-amalgamated-lib-disable-appkit
-            buildtool: meson
-            runner: macos-latest
-            setup_options: >-
-              -Damalgamated_lib=true
-              -Dappkit=disabled
-            extra_packages: >-
-              meson
             exec_type: bash
 
           - label: Meson-macos-x86_64-amalgamated_lib-amalgamated_tools
