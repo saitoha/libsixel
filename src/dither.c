@@ -2116,7 +2116,7 @@ sixel_dither_apply_palette(
     unsigned char *normalized_pixels = NULL;
     unsigned char *input_pixels;
     float *float_pipeline_pixels = NULL;
-    int owns_float_pipeline;
+    int owns_float_pipeline = 0;
     int pipeline_pixelformat;
     int prefer_float_pipeline;
     int palette_probe_active;
@@ -2125,7 +2125,7 @@ sixel_dither_apply_palette(
     double palette_duration;
     sixel_palette_t *palette;
     int dest_owned;
-    int parallel_active;
+    int parallel_active = 0;
 #if SIXEL_ENABLE_THREADS
     int parallel_band_height = 0;
     int parallel_overlap = 0;
@@ -2137,12 +2137,8 @@ sixel_dither_apply_palette(
     int wcomp3;
 #if SIXEL_ENABLE_THREADS
     int shared_lut;
+    int lso2_min_overlap = 0;
 #endif  /* SIXEL_ENABLE_THREADS */
-    int lso2_min_overlap;
-
-    owns_float_pipeline = 0;
-    parallel_active = 0;
-    lso2_min_overlap = 0;
 
     /* ensure dither object is not null */
     if (dither == NULL) {
@@ -2360,6 +2356,7 @@ sixel_dither_apply_palette(
         method_for_carry = SIXEL_CARRY_DISABLE;
     }
 
+#if SIXEL_ENABLE_THREADS
     /*
      * LSO2 with OKLab L_r distance is sensitive to reset boundaries in
      * parallel dithering.  Ensure a minimal overlap so error diffusion
@@ -2370,6 +2367,7 @@ sixel_dither_apply_palette(
             && sixel_dither_env_use_l_r_distance() != 0) {
         lso2_min_overlap = 6;
     }
+#endif  /* SIXEL_ENABLE_THREADS */
 
     palette_probe_active = sixel_assessment_palette_probe_enabled();
     palette_started_at = 0.0;
@@ -2403,9 +2401,11 @@ sixel_dither_apply_palette(
         if ((adjusted_height % 6) != 0) {
             adjusted_height = ((adjusted_height + 5) / 6) * 6;
         }
+#if SIXEL_ENABLE_THREADS
         if (lso2_min_overlap > adjusted_overlap) {
             adjusted_overlap = lso2_min_overlap;
         }
+#endif  /* SIXEL_ENABLE_THREADS */
         if (adjusted_overlap > adjusted_height / 2) {
             adjusted_overlap = adjusted_height / 2;
         }
