@@ -15,7 +15,8 @@ $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
 endif
-TESTS = cli-core/t/0001_help.t \
+TESTS = \
+    cli-core/t/0001_help.t \
     cli-core/t/0002_version.t \
     cli-core/t/0003_stdin.t \
     cli-core/t/0004_basic_missing_input.t \
@@ -299,73 +300,70 @@ TESTS = cli-core/t/0001_help.t \
     sixel2png/t/0004_invalid_decoder_value.t \
     sixel2png/t/0005_default_output.t \
     probe/t/0001_probe_parse.t \
-    palette/t/0001_kmeans_init_default_unset.t \
-       palette/t/0002_kmeans_init_auto.t \
-       palette/t/0003_kmeans_init_unknown.t \
-       palette/t/0004_kmeans_init_pca.t \
-       palette/t/0005_kmeans_init_cache.t \
-       palette/t/0006_palette_fallback_conversion.t \
-       palette/t/0007_palette_fallback_output.t \
-       python/t/0001_python_bindings.t \
-       python/t/0002_python_api_formats.t \
-       python/t/0003_python_api_options.t \
-       python/t/0004_python_api_errors.t \
-       python/t/0005_python_resource_management.t \
-       filter/t/0001_filter_clip.t \
-       filter/t/0002_filter_sample.t \
-       filter/t/0003_filter_resize.t \
-       filter/t/0004_filter_colors.t \
-       filter/t/0005_filter_lookup.t \
-       filter/t/0006_filter_final_merge.t \
-       filter/t/0007_filter_vpte.t \
-       filter/t/0008_filter_load.t \
-       filter/t/0009_filter_dither.t \
-       filter/t/0010_filter_encode.t \
-       loader/t/0008_loader_coregraphics_pixelformat.t \
-       loader/t/0009_loader_wic_pixelformat.t \
-       loader/t/0010_loader_gdk_pixbuf_pixelformat.t \
-       loader/t/0011_loader_gd_pixelformat.t \
-       loader/t/0012_loader_libpng_pixelformat.t \
-       loader/t/0013_loader_libjpeg_pixelformat.t \
-       loader/t/0014_loader_builtin_pixelformat.t \
-       loader/t/0015_loader_quicklook_pixelformat.t \
-       loader/t/0016_loader_gnome_thumbnailer_pixelformat.t \
-       loader/t/0017_loader_builtin_psd.t \
-       loader/t/0018_loader_builtin_hdr.t \
-       loader/t/0019_loader_builtin_pic.t
-
-PROBE_TESTS_BINARIES = probe/0001_probe_parse
-
-SERIAL_TESTS = \
-       aborttrace/t/0001_img2sixel_aborttrace.t \
-       aborttrace/t/0002_sixel2png_aborttrace.t
-
-COPY_TESTS = $(TESTS)
-check_PROGRAMS = test_runner
-
-if ENABLE_GDK_PIXBUF_LOADER
-TESTS += gdk-pixbuf-loader/t/0001_gdk_pixbuf_loader.t \
+    gdk-pixbuf-loader/t/0001_gdk_pixbuf_loader.t \
     gdk-pixbuf-loader/t/0002_incremental_load.t \
     gdk-pixbuf-loader/t/0003_corrupt_data.t \
     gdk-pixbuf-loader/t/0004_propagate_error.t \
     gdk-pixbuf-loader/t/0005_context_free.t \
     gdk-pixbuf-loader/t/0006_loader_module.t \
-    gdk-pixbuf-loader/t/0007_loader_plugin_integration.t
-endif
+    gdk-pixbuf-loader/t/0007_loader_plugin_integration.t \
+    palette/t/0001_kmeans_init_default_unset.t \
+    palette/t/0002_kmeans_init_auto.t \
+    palette/t/0003_kmeans_init_unknown.t \
+    palette/t/0004_kmeans_init_pca.t \
+    palette/t/0005_kmeans_init_cache.t \
+    palette/t/0006_palette_fallback_conversion.t \
+    palette/t/0007_palette_fallback_output.t \
+    python/t/0001_python_bindings.t \
+    python/t/0002_python_api_formats.t \
+    python/t/0003_python_api_options.t \
+    python/t/0004_python_api_errors.t \
+    python/t/0005_python_resource_management.t \
+    filter/t/0001_filter_clip.t \
+    filter/t/0002_filter_sample.t \
+    filter/t/0003_filter_resize.t \
+    filter/t/0004_filter_colors.t \
+    filter/t/0005_filter_lookup.t \
+    filter/t/0006_filter_final_merge.t \
+    filter/t/0007_filter_vpte.t \
+    filter/t/0008_filter_load.t \
+    filter/t/0009_filter_dither.t \
+    filter/t/0010_filter_encode.t \
+    loader/t/0008_loader_coregraphics_pixelformat.t \
+    loader/t/0009_loader_wic_pixelformat.t \
+    loader/t/0010_loader_gdk_pixbuf_pixelformat.t \
+    loader/t/0011_loader_gd_pixelformat.t \
+    loader/t/0012_loader_libpng_pixelformat.t \
+    loader/t/0013_loader_libjpeg_pixelformat.t \
+    loader/t/0014_loader_builtin_pixelformat.t \
+    loader/t/0015_loader_quicklook_pixelformat.t \
+    loader/t/0016_loader_gnome_thumbnailer_pixelformat.t \
+    loader/t/0017_loader_builtin_psd.t \
+    loader/t/0018_loader_builtin_hdr.t \
+    loader/t/0019_loader_builtin_pic.t
+
+SERIAL_TESTS = \
+    aborttrace/t/0001_img2sixel_aborttrace.t \
+    aborttrace/t/0002_sixel2png_aborttrace.t
+
+COPY_TESTS = $(TESTS)
+check_PROGRAMS = test_runner
+
 TEST_EXTENSIONS = .t
 
-HELPER_FILES = common/t/0001_converters_common.t \
-       docs/list_envvars.sh \
-       lib/sh/conversion/common.sh \
-       lib/sh/cli-core/cli_core_common.sh \
-       lib/sh/mapfile/mapfile_common.sh \
-       lib/sh/pipeline/pipeline_planner_common.sh \
-       lib/sh/packaging/python_wheel_common.sh \
-       lib/sh/palette/kmeans_init_common.sh \
-       lib/sh/lsqa/lsqa_common.sh \
-       lib/sh/loader/pngsuite_common.sh \
-       lib/sh/python/common.sh \
-       decoder/t/dcs_arguments_common.sh
+HELPER_FILES = \
+    common/t/0001_converters_common.t \
+    docs/list_envvars.sh \
+    lib/sh/conversion/common.sh \
+    lib/sh/cli-core/cli_core_common.sh \
+    lib/sh/mapfile/mapfile_common.sh \
+    lib/sh/pipeline/pipeline_planner_common.sh \
+    lib/sh/packaging/python_wheel_common.sh \
+    lib/sh/palette/kmeans_init_common.sh \
+    lib/sh/lsqa/lsqa_common.sh \
+    lib/sh/loader/pngsuite_common.sh \
+    lib/sh/python/common.sh \
+    decoder/t/dcs_arguments_common.sh
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export ARTIFACT_ROOT;
@@ -466,9 +464,21 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0016_LOADER_GNOME_THUMBNAILER_PIXELFORMAT \
     -DBUILD_TEST_0001_KMEANS_INIT \
     -DBUILD_TEST_0001_PROBE_PARSE \
+    -DBUILD_TEST_0001_GDK_PIXBUF_LOADER \
+    -DBUILD_TEST_0002_INCREMENTAL_LOAD \
+    -DBUILD_TEST_0003_CORRUPT_DATA \
+    -DBUILD_TEST_0004_PROPAGATE_ERROR \
+    -DBUILD_TEST_0005_CONTEXT_FREE \
+    -DBUILD_TEST_0006_LOADER_MODULE \
+    -DBUILD_TEST_0007_LOADER_PLUGIN_INTEGRATION \
+    -DBUILD_SIXEL_PIXBUF_LOADER \
     -DBUILD_CLI
 test_runner_CPPFLAGS = $(TESTS_AMALGAMATION_CPPFLAGS_COMMON) \
-    $(TEST_RUNNER_AMALGAMATION_DEFINES)
+    $(TEST_RUNNER_AMALGAMATION_DEFINES) \
+    $(GDK_PIXBUF_CFLAGS) \
+    -DGDK_PIXBUF_ENABLE_BACKEND \
+    -DSIXEL_PIXBUF_LOADER_TESTING \
+    -DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS
 test_runner_CFLAGS = $(TESTS_AMALGAMATION_CFLAGS_COMMON)
 test_runner_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
 test_runner_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
@@ -487,6 +497,7 @@ test_runner_SOURCES = test_runner.c \
     filter/0008_filter_load.c \
     filter/0009_filter_dither.c \
     filter/0010_filter_encode.c \
+    filter/filter_test_common.h \
     loader/0008_loader_coregraphics_pixelformat.c \
     loader/0009_loader_wic_pixelformat.c \
     loader/0010_loader_gdk_pixbuf_pixelformat.c \
@@ -496,31 +507,9 @@ test_runner_SOURCES = test_runner.c \
     loader/0014_loader_builtin_pixelformat.c \
     loader/0015_loader_quicklook_pixelformat.c \
     loader/0016_loader_gnome_thumbnailer_pixelformat.c \
+    loader/pixelformat_test_common.h \
     palette/0001_kmeans_init.c \
     probe/0001_probe_parse.c \
-    $(top_srcdir)/converters/cli.c
-test_runner_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL)
-test_runner_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
-test_runner_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
-test_runner_LDADD = $(TESTS_COMMON_LDADD_VAL)
-endif
-
-if ENABLE_GDK_PIXBUF_LOADER
-if WANT_AMALGAMATED_TOOLS
-test_runner_CPPFLAGS += $(GDK_PIXBUF_CFLAGS) \
-    -DGDK_PIXBUF_ENABLE_BACKEND \
-    -DSIXEL_PIXBUF_LOADER_TESTING \
-    -DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS \
-    -DBUILD_TEST_0001_GDK_PIXBUF_LOADER \
-    -DBUILD_TEST_0002_INCREMENTAL_LOAD \
-    -DBUILD_TEST_0003_CORRUPT_DATA \
-    -DBUILD_TEST_0004_PROPAGATE_ERROR \
-    -DBUILD_TEST_0005_CONTEXT_FREE \
-    -DBUILD_TEST_0006_LOADER_MODULE \
-    -DBUILD_TEST_0007_LOADER_PLUGIN_INTEGRATION \
-    -DBUILD_SIXEL_PIXBUF_LOADER
-else
-test_runner_SOURCES += \
     gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
     gdk-pixbuf-loader/0002_incremental_load.c \
     gdk-pixbuf-loader/0003_corrupt_data.c \
@@ -528,13 +517,16 @@ test_runner_SOURCES += \
     gdk-pixbuf-loader/0005_context_free.c \
     gdk-pixbuf-loader/0006_loader_module.c \
     gdk-pixbuf-loader/0007_loader_plugin_integration.c \
-    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c
-test_runner_CPPFLAGS += $(GDK_PIXBUF_CFLAGS) \
+    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c \
+    $(top_srcdir)/converters/cli.c
+test_runner_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL) \
+    $(GDK_PIXBUF_CFLAGS) \
     -DGDK_PIXBUF_ENABLE_BACKEND \
     -DSIXEL_PIXBUF_LOADER_TESTING \
     -DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS
-endif
-test_runner_LDADD += $(GDK_PIXBUF_LIBS)
+test_runner_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
+test_runner_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
+test_runner_LDADD = $(TESTS_COMMON_LDADD_VAL) $(GDK_PIXBUF_LIBS)
 endif
 
 
@@ -551,55 +543,42 @@ AM_LOG_DRIVER_FLAGS = --timeout=$(AM_TEST_TIMEOUT)
 # LOG_COMPILE; the drivers consume timeout hints themselves.
 AM_LOG_FLAGS =
 
-INPUT_FORMAT_FILES = data/inputs/formats/grayscale.jpg \
-       data/inputs/formats/palette.png \
-       data/inputs/formats/rgb.png \
-       data/inputs/formats/rgba.png \
-       data/inputs/formats/snake-tga-type1-pal4.tga \
-       data/inputs/formats/snake-tga-type1-pal8.tga \
-       data/inputs/formats/snake-tga-type2-rgb.tga \
-       data/inputs/formats/snake-tga-type3-gray.tga \
-       data/inputs/formats/snake-tga-type9-pal4.tga \
-       data/inputs/formats/snake-tga-type9-pal8.tga \
-       data/inputs/formats/snake-tga-type10-rgb.tga \
-       data/inputs/formats/snake-tga-type11-gray.tga \
-       data/inputs/formats/stbi_minimal.hdr \
-       data/inputs/formats/stbi_minimal.psd \
-       data/inputs/formats/stbi_minimal.pic \
-       data/inputs/snake_64.png
-
-RESOLUTION_IMAGES = data/resolutions/hd_landscape.png \
-       data/resolutions/panorama_tall.png \
-       data/resolutions/panorama_wide.png \
-       data/resolutions/quarter_square.png \
-       data/resolutions/svga_landscape.png \
-       data/resolutions/tiny_square.png
-
-CORRUPTED_INPUTS = data/corrupted/metadata_noise.jpg \
-       data/corrupted/truncated.png
-
-ISSUE_INPUTS = issue/166/poc \
-       issue/167/poc \
-       issue/200/POC_img2sixel_heap_buffer_overflow \
-       issue/207/poc \
-       issue/libsixel-libsixel/51/stbi_1561_poc.bin \
-       issue/libsixel-libsixel/73/stbi_1561_poc.bin \
-       issue/131/2020-01-30-img2sixel.gif \
-       issue/136/poc
-NETWORK_CERTS = network/certs/server.crt \
-       network/certs/server.key
-
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
-             $(INPUT_FORMAT_FILES) \
-             $(RESOLUTION_IMAGES) $(CORRUPTED_INPUTS) $(ISSUE_INPUTS) \
-             $(NETWORK_CERTS) \
-             filter/0001_filter_clip.c filter/0002_filter_sample.c \
-             filter/0003_filter_resize.c filter/0004_filter_colors.c \
-             filter/0005_filter_lookup.c filter/0006_filter_final_merge.c \
-             filter/0007_filter_vpte.c filter/0008_filter_load.c \
-             filter/0009_filter_dither.c filter/0010_filter_encode.c \
-             filter/filter_test_common.h \
-             loader/pixelformat_test_common.h
+    data/inputs/formats/grayscale.jpg \
+    data/inputs/formats/palette.png \
+    data/inputs/formats/rgb.png \
+    data/inputs/formats/rgba.png \
+    data/inputs/formats/snake-tga-type1-pal4.tga \
+    data/inputs/formats/snake-tga-type1-pal8.tga \
+    data/inputs/formats/snake-tga-type2-rgb.tga \
+    data/inputs/formats/snake-tga-type3-gray.tga \
+    data/inputs/formats/snake-tga-type9-pal4.tga \
+    data/inputs/formats/snake-tga-type9-pal8.tga \
+    data/inputs/formats/snake-tga-type10-rgb.tga \
+    data/inputs/formats/snake-tga-type11-gray.tga \
+    data/inputs/formats/stbi_minimal.hdr \
+    data/inputs/formats/stbi_minimal.psd \
+    data/inputs/formats/stbi_minimal.pic \
+    data/inputs/snake_64.png \
+    data/resolutions/hd_landscape.png \
+    data/resolutions/panorama_tall.png \
+    data/resolutions/panorama_wide.png \
+    data/resolutions/quarter_square.png \
+    data/resolutions/svga_landscape.png \
+    data/resolutions/tiny_square.png \
+    data/corrupted/metadata_noise.jpg \
+    data/corrupted/truncated.png \
+    issue/166/poc \
+    issue/167/poc \
+    issue/200/POC_img2sixel_heap_buffer_overflow \
+    issue/207/poc \
+    issue/libsixel-libsixel/51/stbi_1561_poc.bin \
+    issue/libsixel-libsixel/73/stbi_1561_poc.bin \
+    issue/131/2020-01-30-img2sixel.gif \
+    issue/136/poc \
+    network/certs/server.crt \
+    network/certs/server.key
+
 # Avoid deleting the in-tree timeout wrapper when building in the source
 # directory. The wrapper is regenerated for out-of-tree builds, so remove it
 # only in that case to prevent accidental loss from "make clean".
