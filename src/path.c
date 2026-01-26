@@ -160,7 +160,21 @@ sixel_path_parse_nested_cygdrive(char const *path,
 }
 #endif
 
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__MSYS__)
+#if defined(__MSYS__)
+/*
+ * Keep the helper scoped to the platforms that consume it so
+ * -Wunused-function does not trigger in Windows-only builds.
+ */
+static size_t
+sixel_path_to_msys_needed(char const *rest)
+{
+    return strlen(rest) + 3u;
+}
+#elif defined(__CYGWIN__)
+/*
+ * Keep the helper scoped to the platforms that consume it so
+ * -Wunused-function does not trigger in Windows-only builds.
+ */
 static size_t
 sixel_path_to_cygdrive_needed(char const *rest)
 {
@@ -168,12 +182,6 @@ sixel_path_to_cygdrive_needed(char const *rest)
 
     prefix_len = strlen(SIXEL_CYGDRIVE_PREFIX);
     return prefix_len + strlen(rest) + 2u;
-}
-
-static size_t
-sixel_path_to_msys_needed(char const *rest)
-{
-    return strlen(rest) + 3u;
 }
 #endif
 
@@ -187,18 +195,7 @@ sixel_path_to_libc_buffer_size(char const *path)
         return 0u;
     }
 
-#if defined(__CYGWIN__)
-    if (sixel_path_parse_drive_letter(path, &drive, &rest)) {
-        return sixel_path_to_cygdrive_needed(rest);
-    }
-    if (sixel_path_parse_nested_cygdrive(path, &drive, &rest)) {
-        return sixel_path_to_cygdrive_needed(rest);
-    }
-    if (sixel_path_parse_msys_drive(path, &drive, &rest)) {
-        return sixel_path_to_cygdrive_needed(rest);
-    }
-    return 0u;
-#elif defined(__MSYS__)
+#if defined(__MSYS__)
     if (sixel_path_parse_nested_cygdrive(path, &drive, &rest)) {
         return sixel_path_to_msys_needed(rest);
     }
@@ -207,6 +204,17 @@ sixel_path_to_libc_buffer_size(char const *path)
     }
     if (sixel_path_parse_drive_letter(path, &drive, &rest)) {
         return sixel_path_to_msys_needed(rest);
+    }
+    return 0u;
+#elif defined(__CYGWIN__)
+    if (sixel_path_parse_drive_letter(path, &drive, &rest)) {
+        return sixel_path_to_cygdrive_needed(rest);
+    }
+    if (sixel_path_parse_nested_cygdrive(path, &drive, &rest)) {
+        return sixel_path_to_cygdrive_needed(rest);
+    }
+    if (sixel_path_parse_msys_drive(path, &drive, &rest)) {
+        return sixel_path_to_cygdrive_needed(rest);
     }
     return 0u;
 #elif defined(_WIN32)
@@ -254,17 +262,17 @@ sixel_path_to_libc(char const *path,
         return NULL;
     }
 
-#if defined(__CYGWIN__)
-    if (sixel_path_parse_cygdrive(path, &drive, &rest)) {
+#if defined(__MSYS__)
+    (void)prefix_len;
+    if (sixel_path_parse_msys_drive(path, &drive, &rest)) {
         return path;
     }
     if (sixel_path_parse_nested_cygdrive(path, &drive, &rest)
-        || sixel_path_parse_msys_drive(path, &drive, &rest)
+        || sixel_path_parse_cygdrive(path, &drive, &rest)
         || sixel_path_parse_drive_letter(path, &drive, &rest)) {
-        prefix_len = strlen(SIXEL_CYGDRIVE_PREFIX);
-        memcpy(buffer, SIXEL_CYGDRIVE_PREFIX, prefix_len);
-        buffer[prefix_len] = (char)tolower((unsigned char)drive);
-        out_index = prefix_len + 1u;
+        buffer[0] = '/';
+        buffer[1] = (char)tolower((unsigned char)drive);
+        out_index = 2u;
         for (index = 0u; rest[index] != '\0'; index++) {
             if (out_index + 1u >= buffer_size) {
                 return NULL;
@@ -276,17 +284,17 @@ sixel_path_to_libc(char const *path,
         return buffer;
     }
     return path;
-#elif defined(__MSYS__)
-    (void)prefix_len;
-    if (sixel_path_parse_msys_drive(path, &drive, &rest)) {
+#elif defined(__CYGWIN__)
+    if (sixel_path_parse_cygdrive(path, &drive, &rest)) {
         return path;
     }
     if (sixel_path_parse_nested_cygdrive(path, &drive, &rest)
-        || sixel_path_parse_cygdrive(path, &drive, &rest)
+        || sixel_path_parse_msys_drive(path, &drive, &rest)
         || sixel_path_parse_drive_letter(path, &drive, &rest)) {
-        buffer[0] = '/';
-        buffer[1] = (char)tolower((unsigned char)drive);
-        out_index = 2u;
+        prefix_len = strlen(SIXEL_CYGDRIVE_PREFIX);
+        memcpy(buffer, SIXEL_CYGDRIVE_PREFIX, prefix_len);
+        buffer[prefix_len] = (char)tolower((unsigned char)drive);
+        out_index = prefix_len + 1u;
         for (index = 0u; rest[index] != '\0'; index++) {
             if (out_index + 1u >= buffer_size) {
                 return NULL;
