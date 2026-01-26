@@ -324,7 +324,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                         arithmetic dither\n"
         "                             x_dither -> positionally stable\n"
         "                                         arithmetic xor based dither\n"
-        "                             bluenoise -> tileable bluenoise-noise\n"
+        "                             bluenoise -> tileable blue-noise\n"
         "                                         ordered dither\n"
         "                             lso2     -> libsixel method based on\n"
         "                                         variable error diffusion\n"
