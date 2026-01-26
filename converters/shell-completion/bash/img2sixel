@@ -218,7 +218,7 @@ _img2sixel()
                                    6bit \
                                    none \
                                    certlut \
-                                   1d-eytzinger \
+                                   eytzinger \
                                    vpte' -- "$cur" ) )
         return 0
         ;;

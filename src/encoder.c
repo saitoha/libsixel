@@ -435,7 +435,7 @@ static sixel_option_choice_t const g_option_choices_lut_policy[] = {
     { "6bit", SIXEL_LUT_POLICY_6BIT },
     { "none", SIXEL_LUT_POLICY_NONE },
     { "certlut", SIXEL_LUT_POLICY_CERTLUT },
-    { "1d-eytzinger", SIXEL_LUT_POLICY_EYTZINGER },
+    { "eytzinger", SIXEL_LUT_POLICY_EYTZINGER },
     { "vpte", SIXEL_LUT_POLICY_VPTE }
 };
 
@@ -3469,8 +3469,8 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
         lut_node = "vpte";
         lut_edge = " -> vpte";
     } else if (eytzinger_active != 0) {
-        lut_node = "1d-eytzinger";
-        lut_edge = " -> 1d-eytzinger";
+        lut_node = "eytzinger";
+        lut_edge = " -> eytzinger";
     }
 
     fprintf(stream, "[planner] DAG (Directed Acyclic Graph)\n");

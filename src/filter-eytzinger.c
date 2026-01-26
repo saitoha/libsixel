@@ -143,7 +143,7 @@ sixel_filter_1d_eytzinger_init(sixel_filter_t *filter,
     state->config = *config;
 
     status = sixel_filter_init(filter,
-                               "1d-eytzinger",
+                               "eytzinger",
                                SIXEL_FILTER_KIND_EYTZINGER,
                                sixel_filter_1d_eytzinger_apply,
                                sixel_filter_1d_eytzinger_dispose,
