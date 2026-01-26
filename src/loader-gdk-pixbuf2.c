@@ -100,6 +100,7 @@ load_with_gdkpixbuf(
     int stride;
     unsigned char *p;
     unsigned char *pixels;
+    unsigned char *frame_pixels;
     int i;
     int depth;
     int anim_loop_count = (-1);  /* (-1): infinite, >=0: finite loop count */
@@ -386,9 +387,16 @@ load_with_gdkpixbuf(
                 if (status != SIXEL_OK) {
                     goto end;
                 }
-                /* release scratch pixels before decoding the next frame */
-                sixel_allocator_free(pchunk->allocator, pixels);
-                sixel_frame_set_pixels(frame, NULL);
+                /*
+                 * Release the frame buffer only if it is still the one we
+                 * attached. Downstream filters may replace frame->pixels,
+                 * so always query the current pointer to avoid double free.
+                 */
+                frame_pixels = sixel_frame_get_pixels(frame);
+                if (frame_pixels != NULL) {
+                    sixel_allocator_free(pchunk->allocator, frame_pixels);
+                    sixel_frame_set_pixels(frame, NULL);
+                }
                 frame->frame_no++;
 
                 if (finished) {
@@ -568,9 +576,16 @@ load_with_gdkpixbuf(
                 if (status != SIXEL_OK) {
                     goto end;
                 }
-                /* release scratch pixels before decoding the next frame */
-                sixel_allocator_free(pchunk->allocator, pixels);
-                sixel_frame_set_pixels(frame, NULL);
+                /*
+                 * Release the frame buffer only if it is still the one we
+                 * attached. Downstream filters may replace frame->pixels,
+                 * so always query the current pointer to avoid double free.
+                 */
+                frame_pixels = sixel_frame_get_pixels(frame);
+                if (frame_pixels != NULL) {
+                    sixel_allocator_free(pchunk->allocator, frame_pixels);
+                    sixel_frame_set_pixels(frame, NULL);
+                }
                 frame->frame_no++;
 
                 if (finished) {
