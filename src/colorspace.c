@@ -3776,9 +3776,9 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
                                                      colorspace_dst);
     }
 
-#if defined(SIXEL_USE_AVX2) && defined(__AVX2__) && 0
+#if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
     if (simd_level >= SIXEL_SIMD_LEVEL_AVX2 &&
-            byte_format_supported && lut_pair_supported) {
+            byte_format_supported && lut_pair_supported && 0) {
         SIXELSTATUS avx_status;
 
         avx_status = sixel_colorspace_convert_avx2(pixels,
