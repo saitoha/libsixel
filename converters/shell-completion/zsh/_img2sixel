@@ -28,7 +28,7 @@ _diffusiontype() {
     'sierra3[Sierra-3 method]' \
     'a_dither[positionally stable arithmetic dither]' \
     'x_dither[positionally stable arithmetic xor based dither]' \
-    'bluenoise[tileable bluenoise-noise ordered dither]' \
+    'bluenoise[tileable blue-noise ordered dither]' \
     'lso2[libsixel method based on variable error diffusion]'
 }
 

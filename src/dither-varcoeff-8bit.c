@@ -367,15 +367,11 @@ diffuse_lso2_carry(int32_t *carry_curr,
     }
 }
 
+#define max_channels 4
 SIXELSTATUS
 sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
                                  sixel_dither_context_t *context)
 {
-#if _MSC_VER
-    enum { max_channels = 4 };
-#else
-    const int max_channels = 4;
-#endif
     SIXELSTATUS status;
     unsigned char *data;
     unsigned char *palette;

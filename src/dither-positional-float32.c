@@ -383,15 +383,11 @@ positional_mask_blue_float32(int x, int y, int c)
         * g_sixel_bn_conf_float32.strength;
 }
 
+#define max_channels 4
 SIXELSTATUS
 sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                                       sixel_dither_context_t *context)
 {
-#if _MSC_VER
-    enum { max_channels = 4 };
-#else
-    const int max_channels = 4;
-#endif
     int serpentine;
     int y;
     int absolute_y;
