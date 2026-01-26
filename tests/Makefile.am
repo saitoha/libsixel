@@ -15,7 +15,7 @@ $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
 	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
 endif
-CLI_TESTS = cli-core/t/0001_help.t \
+TESTS = cli-core/t/0001_help.t \
     cli-core/t/0002_version.t \
     cli-core/t/0003_stdin.t \
     cli-core/t/0004_basic_missing_input.t \
@@ -290,28 +290,21 @@ CLI_TESTS = cli-core/t/0001_help.t \
     sixel2png/t/0002_missing_args.t \
     sixel2png/t/0003_unknown_option.t \
     sixel2png/t/0004_invalid_decoder_value.t \
-    sixel2png/t/0005_default_output.t
-
-PROBE_TESTS = probe/t/0001_probe_parse.t
-
-PROBE_TESTS_BINARIES = probe/0001_probe_parse
-
-PALETTE_TESTS = palette/t/0001_kmeans_init_default_unset.t \
+    sixel2png/t/0005_default_output.t \
+    probe/t/0001_probe_parse.t \
+    palette/t/0001_kmeans_init_default_unset.t \
        palette/t/0002_kmeans_init_auto.t \
        palette/t/0003_kmeans_init_unknown.t \
        palette/t/0004_kmeans_init_pca.t \
        palette/t/0005_kmeans_init_cache.t \
        palette/t/0006_palette_fallback_conversion.t \
-       palette/t/0007_palette_fallback_output.t
-
-
-PYTHON_TESTS = python/t/0001_python_bindings.t \
+       palette/t/0007_palette_fallback_output.t \
+       python/t/0001_python_bindings.t \
        python/t/0002_python_api_formats.t \
        python/t/0003_python_api_options.t \
        python/t/0004_python_api_errors.t \
-       python/t/0005_python_resource_management.t
-
-FILTER_TESTS = filter/t/0001_filter_clip.t \
+       python/t/0005_python_resource_management.t \
+       filter/t/0001_filter_clip.t \
        filter/t/0002_filter_sample.t \
        filter/t/0003_filter_resize.t \
        filter/t/0004_filter_colors.t \
@@ -320,9 +313,7 @@ FILTER_TESTS = filter/t/0001_filter_clip.t \
        filter/t/0007_filter_vpte.t \
        filter/t/0008_filter_load.t \
        filter/t/0009_filter_dither.t \
-       filter/t/0010_filter_encode.t
-
-TESTS_COMMON_TESTS = \
+       filter/t/0010_filter_encode.t \
        loader/t/0008_loader_coregraphics_pixelformat.t \
        loader/t/0009_loader_wic_pixelformat.t \
        loader/t/0010_loader_gdk_pixbuf_pixelformat.t \
@@ -336,14 +327,13 @@ TESTS_COMMON_TESTS = \
        loader/t/0018_loader_builtin_hdr.t \
        loader/t/0019_loader_builtin_pic.t
 
+PROBE_TESTS_BINARIES = probe/0001_probe_parse
+
 SERIAL_TESTS = \
        aborttrace/t/0001_img2sixel_aborttrace.t \
        aborttrace/t/0002_sixel2png_aborttrace.t
 
-TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) \
-       $(FILTER_TESTS) $(TESTS_COMMON_TESTS)
-COPY_TESTS = $(CLI_TESTS) $(PROBE_TESTS) $(PALETTE_TESTS) $(PYTHON_TESTS) \
-       $(FILTER_TESTS)
+COPY_TESTS = $(TESTS)
 check_PROGRAMS = test_runner
 
 if ENABLE_GDK_PIXBUF_LOADER
