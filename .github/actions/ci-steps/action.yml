@@ -335,11 +335,7 @@ runs:
         PATH="$PWD/build-aux:$PATH"
         ${{ inputs.setup_prefix }} ./configure ${{ inputs.setup_options }}
         ${{ inputs.make || 'make' }} V=1 -j2
-        if grep ^ac_cv_prog_ac_ct_CC=gcc$ config.log; then
-          ${{ inputs.make || 'make' }} ${{ inputs.check_target || 'check' }} -j2
-        else
-          : # cross build: don't run test
-        fi
+        ${{ inputs.make || 'make' }} ${{ inputs.check_target || 'check' }} -j2
 
     - name: Build and test (Meson, Cygwin)
       if: ${{ inputs.buildtool == 'meson' && inputs.exec_type == 'cygwin' }}
