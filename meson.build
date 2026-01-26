@@ -394,6 +394,16 @@ foreach s : ['SIGINT', 'SIGTERM', 'SIGHUP']
   endif
 endforeach
 
+if host_system == 'emscripten'
+  if cc.has_header('emscripten.h')
+    conf.set('HAVE_EMSCRIPTEN_H', 1)
+    if cc.has_function('emscripten_get_compiler_setting',
+        prefix: '#include <emscripten.h>')
+      conf.set('HAVE_EMSCRIPTEN_GET_COMPILER_SETTING', 1)
+    endif
+  endif
+endif
+
 abort_trace_opt = get_option('abort_trace')
 abort_trace_enabled = not abort_trace_opt.disabled()
 if host_system == 'emscripten'
