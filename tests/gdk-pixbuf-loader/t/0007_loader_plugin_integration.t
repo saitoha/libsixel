@@ -6,6 +6,11 @@ set -eu
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 parent_dir=$(CDPATH=; cd "${script_dir}/../.." && pwd)
 
+. "${parent_dir}/common/t/0001_converters_common.t"
+
+ensure_feature_available "HAVE_GDK_PIXBUF2" "gdk_pixbuf_loader" \
+    "gdk-pixbuf loader"
+
 if [ -n "${MESON_BUILD_ROOT:-}" ]; then
     top_builddir=${TOP_BUILDDIR:-${MESON_BUILD_ROOT}}
 else
