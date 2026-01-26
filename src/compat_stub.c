@@ -1286,7 +1286,15 @@ sixel_compat_stat(const char *path, struct stat *stat_buffer)
     }
 
 #if defined(_MSC_VER)
-    result = _stat(libc_path, stat_buffer);
+    /*
+     * Use the MSVC-specific stat variant that matches the active time_t
+     * size to avoid warning-as-error mismatches under /WX.
+     */
+# if defined(_USE_32BIT_TIME_T)
+    result = _stat64i32(libc_path, (struct _stat64i32 *)stat_buffer);
+# else
+    result = _stat64(libc_path, (struct _stat64 *)stat_buffer);
+# endif
 #else
     result = stat(libc_path, stat_buffer);
 #endif
