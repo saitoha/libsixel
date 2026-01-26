@@ -19,7 +19,7 @@ setup_conversion_env "${test_name}"
 
 status=0
 
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.95}
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.96}
 
 ensure_img2sixel_available
 
