@@ -969,8 +969,7 @@ TESTS = cli-core/t/0001_help.t cli-core/t/0002_version.t \
 	network/t/0003_curl_file_scheme.t \
 	network/t/0004_curl_self_signed_blocked.t \
 	network/t/0005_curl_self_signed_with_k.t \
-	poc/t/0001_issue167_empty_bg.t \
-	poc/t/0002_issue167_height.t \
+	poc/t/0001_issue167_empty_bg.t poc/t/0002_issue167_height.t \
 	poc/t/0003_issue166_width.t \
 	poc/t/0004_issue200_heap_overflow.t \
 	poc/t/0005_issue131_img2sixel_gif.t \
@@ -1242,7 +1241,9 @@ CORRUPTED_INPUTS = data/corrupted/metadata_noise.jpg \
 
 ISSUE_INPUTS = issue/166/poc \
        issue/167/poc \
-       issue/200/POC_img2sixel_heap_buffer_overflow
+       issue/200/POC_img2sixel_heap_buffer_overflow \
+       issue/131/2020-01-30-img2sixel.gif \
+       issue/136/poc
 
 NETWORK_CERTS = network/certs/server.crt \
        network/certs/server.key

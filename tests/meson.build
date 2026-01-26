@@ -88,7 +88,9 @@ if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
   endforeach
 endif
 
-issue_inputs = files('issue/166/poc', 'issue/167/poc',
+
+issue_inputs = files('issue/131/2020-01-30-img2sixel.gif', 'issue/136/poc',
+  'issue/150/poc', 'issue/156/poc', 'issue/166/poc', 'issue/167/poc',
   'issue/200/POC_img2sixel_heap_buffer_overflow')
 meson.add_dist_script('sh', '-c', 'true', issue_inputs)
 

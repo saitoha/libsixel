@@ -574,7 +574,9 @@ CORRUPTED_INPUTS = data/corrupted/metadata_noise.jpg \
 
 ISSUE_INPUTS = issue/166/poc \
        issue/167/poc \
-       issue/200/POC_img2sixel_heap_buffer_overflow
+       issue/200/POC_img2sixel_heap_buffer_overflow \
+       issue/131/2020-01-30-img2sixel.gif \
+       issue/136/poc
 NETWORK_CERTS = network/certs/server.crt \
        network/certs/server.key
 
