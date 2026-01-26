@@ -392,7 +392,6 @@ TESTS_COMMON_CFLAGS_VAL = $(AM_CFLAGS) \
         $(COREGRAPHICS_CFLAGS) \
         $(QUICKLOOK_CFLAGS) \
         $(CLIPBOARD_CFLAGS) \
-        $(ONNXRUNTIME_CFLAGS) \
         @THREAD_CFLAGS@ \
         $(MAYBE_COVERAGE)
 else
@@ -413,7 +412,6 @@ TESTS_COMMON_LDADD_VAL = -lm \
         $(COREGRAPHICS_LIBS) \
         $(QUICKLOOK_LIBS) \
         $(CLIPBOARD_LIBS) \
-        $(ONNXRUNTIME_LIBS) \
         @THREAD_LIBS@
 else
 TESTS_COMMON_LDADD_VAL = $(top_builddir)/src/libsixel.la $(LIBS)
@@ -438,7 +436,6 @@ TESTS_AMALGAMATION_LDADD_COMMON = -lm \
         $(COREGRAPHICS_LIBS) \
         $(QUICKLOOK_LIBS) \
         $(CLIPBOARD_LIBS) \
-        $(ONNXRUNTIME_LIBS) \
         @THREAD_LIBS@
 else
 TESTS_AMALGAMATION_LDADD_COMMON = $(top_builddir)/src/libsixel.la $(LIBS)

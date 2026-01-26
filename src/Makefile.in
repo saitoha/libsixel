@@ -152,8 +152,7 @@ libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/timer.c $(srcdir)/assessment.c \
 	$(srcdir)/assessment.h $(srcdir)/timer.h $(srcdir)/sleep.c \
@@ -579,8 +578,6 @@ OBJCDEPMODE = @OBJCDEPMODE@
 OBJCFLAGS = @OBJCFLAGS@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
-ONNXRUNTIME_CFLAGS = @ONNXRUNTIME_CFLAGS@
-ONNXRUNTIME_LIBS = @ONNXRUNTIME_LIBS@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
@@ -878,7 +875,6 @@ libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(COREGRAPHICS_CFLAGS) \
                 $(QUICKLOOK_CFLAGS) \
                 $(CLIPBOARD_CFLAGS) \
-                $(ONNXRUNTIME_CFLAGS) \
                 @THREAD_CFLAGS@
 
 @BUILDING_ON_WINDOWS_FALSE@libsixel_la_LDFLAGS = -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE)
@@ -894,7 +890,6 @@ libsixel_la_LIBADD = -lm \
                 $(COREGRAPHICS_LIBS) \
                 $(QUICKLOOK_LIBS) \
                 $(CLIPBOARD_LIBS) \
-                $(ONNXRUNTIME_LIBS) \
                 @THREAD_LIBS@
 
 dist_man_MANS = $(srcdir)/sixel.5

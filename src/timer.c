@@ -24,7 +24,7 @@
  * High-resolution timer helpers used across libsixel.
  * This translation unit isolates the wall clock probe so that
  * lightweight frontends (Quick Look, WIC) can link the logger
- * without dragging in the full assessment pipeline or ONNX
+ * without dragging in the full assessment pipeline or heavyweight
  * dependencies.
  */
 
