@@ -13,6 +13,9 @@ status=0
 ensure_feature_available "SIXEL_ENABLE_ABORT_TRACE" "abort_trace" \
     "abort trace support"
 ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
+if [ "x${SIXEL_TSAN_BUILD:-no}" = "xyes" ]; then
+    skip_all "TSan builds can suppress abort trace output"
+fi
 
 echo "1..1"
 
