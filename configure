@@ -16209,9 +16209,9 @@ if test "x$CI" != "x"
 then :
 
   if test "x$using_cl" = "xyes"; then
-    CFLAGS="$CFLAGS /WX"
-    OBJCFLAGS="$OBJCFLAGS /WX"
-    CXXFLAGS="$CXXFLAGS /WX"
+    CFLAGS="$CFLAGS -WX"
+    OBJCFLAGS="$OBJCFLAGS -WX"
+    CXXFLAGS="$CXXFLAGS -WX"
   else
     CFLAGS="$CFLAGS -Werror"
     OBJCFLAGS="$OBJCFLAGS -Werror"
