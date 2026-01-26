@@ -764,7 +764,6 @@ ABORTTRACE_LIBS
 THREAD_LIBS
 THREAD_CFLAGS
 THREAD_CPPFLAGS
-modeldir
 WITH_SHEBANG_FILE_FALSE
 WITH_SHEBANG_FILE_TRUE
 SIXEL_SHEBANG_HELPER
@@ -945,7 +944,6 @@ enable_threads
 enable_amalgamated_lib
 enable_amalgamated_tools
 with_shebang_file
-with_modeldir
 enable_thumbnailer_command
 with_gdk_pixbuf2
 enable_gdk_pixbuf_loader
@@ -1702,8 +1700,6 @@ Optional Packages:
                           compiler's sysroot if not specified).
   --with-shebang-file=PATH
                           prepend PATH contents to generated executables
-  --with-modeldir=DIR     install assessment models under DIR
-                          [default=${pkgdatadir}/models]
   --with-gdk-pixbuf2      whether to build with gdk-pixbuf2 (default: no)
   --with-gd               whether to build with gd (default: no)
   --with-coregraphics     whether to build with CoreGraphics (default: auto)
@@ -16520,39 +16516,6 @@ else
   WITH_SHEBANG_FILE_TRUE='#'
   WITH_SHEBANG_FILE_FALSE=
 fi
-
-
-
-# Check whether --with-modeldir was given.
-if test ${with_modeldir+y}
-then :
-  withval=$with_modeldir;
-else case e in #(
-  e) with_modeldir=no ;;
-esac
-fi
-
-if test "x$with_modeldir" = xno || test "x$with_modeldir" = xyes; then
-  pkgdatadir="${datadir}/${PACKAGE_TARNAME}"
-  model_root='${pkgdatadir}/models'
-else
-  model_root=$with_modeldir
-fi
-modeldir="${model_root}"
-
-if test "x${prefix}" = xNONE; then
-    prefix="${ac_default_prefix}"
-    modeldir=`eval echo "${modeldir}"`
-    modeldir=`eval echo "${modeldir}"`
-    modeldir=`eval echo "${modeldir}"`
-    prefix=NONE
-else
-    modeldir=`eval echo "${modeldir}"`
-    modeldir=`eval echo "${modeldir}"`
-    modeldir=`eval echo "${modeldir}"`
-fi
-
-printf "%s\n" "#define SIXEL_MODEL_DIR \"${modeldir}\"" >>confdefs.h
 
 
 # Check whether --enable-thumbnailer-command was given.

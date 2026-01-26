@@ -612,9 +612,6 @@
 /* Define to 1 if internal threadpool support is enabled */
 #undef SIXEL_ENABLE_THREADS
 
-/* Base directory that holds libsixel assessment models */
-#undef SIXEL_MODEL_DIR
-
 /* Define to 1 if all of the C89 standard headers exist (not just the ones
    required in a freestanding environment). This macro is provided for
    backward compatibility; new code need not use it. */

@@ -305,35 +305,6 @@ AC_SUBST([SIXEL_SHEBANG_HELPER],
 AM_CONDITIONAL([WITH_SHEBANG_FILE],
                [test -n "$SIXEL_SHEBANG_FILE"])
 
-AC_ARG_WITH([modeldir],
-            [AS_HELP_STRING([--with-modeldir=DIR],
-                            [install assessment models under DIR
-                             @<:@default=${pkgdatadir}/models@:>@])],
-            [],
-            [with_modeldir=no])
-if test "x$with_modeldir" = xno || test "x$with_modeldir" = xyes; then
-  pkgdatadir="${datadir}/${PACKAGE_TARNAME}"
-  model_root='${pkgdatadir}/models'
-else
-  model_root=$with_modeldir
-fi
-modeldir="${model_root}"
-AC_SUBST(modeldir)
-if test "x${prefix}" = xNONE; then
-    prefix="${ac_default_prefix}"
-    modeldir=`eval echo "${modeldir}"`
-    modeldir=`eval echo "${modeldir}"`
-    modeldir=`eval echo "${modeldir}"`
-    prefix=NONE
-else
-    modeldir=`eval echo "${modeldir}"`
-    modeldir=`eval echo "${modeldir}"`
-    modeldir=`eval echo "${modeldir}"`
-fi
-AC_DEFINE_UNQUOTED([SIXEL_MODEL_DIR],
-                   ["${modeldir}"],
-                   [Base directory that holds libsixel assessment models])
-
 AC_ARG_ENABLE([thumbnailer-command],
               [AS_HELP_STRING([--enable-thumbnailer-command],
                               [install the sixel thumbnailer command (default: auto)])],
