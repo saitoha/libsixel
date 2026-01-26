@@ -33,6 +33,7 @@
 #include <string.h>
 #endif  /* HAVE_STRING_H */
 
+#include "compat_stub.h"
 #include "path.h"
 
 #define SIXEL_CYGDRIVE_PREFIX "/cygdrive/"
@@ -211,8 +212,8 @@ sixel_path_to_libc(char const *path,
         return buffer;
     }
     if (sixel_path_is_msys_drive(path)) {
-        strncpy(buffer, path, buffer_size - 1u);
-        buffer[buffer_size - 1u] = '\0';
+        /* Use the compat layer to avoid CRT warnings on Windows builds. */
+        (void)sixel_compat_strcpy(buffer, buffer_size, path);
         buffer[0] = buffer[1];
         buffer[1] = ':';
         return buffer;
