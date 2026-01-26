@@ -38,7 +38,7 @@
 
 #define SIXEL_CYGDRIVE_PREFIX "/cygdrive/"
 
-#if defined(_WIN32) || defined(__CYGWIN__)
+#if defined(_WIN32)
 static int
 sixel_path_is_unc(char const *path)
 {
@@ -83,9 +83,13 @@ sixel_path_is_cygdrive(char const *path)
         && ((path[prefix_len] >= 'A' && path[prefix_len] <= 'Z')
             || (path[prefix_len] >= 'a' && path[prefix_len] <= 'z'));
 }
+#endif
 
-/* These helpers are only referenced by the Cygwin-specific code paths. */
 #if defined(__CYGWIN__)
+/*
+ * These helpers are only referenced by the Cygwin-specific code paths, so
+ * keep them inside __CYGWIN__ to avoid unused-function warnings elsewhere.
+ */
 static int
 sixel_path_is_drive_letter(char const *path)
 {
@@ -113,7 +117,6 @@ sixel_path_to_cygdrive_size(char const *path)
 
     return length + extra - 3u;
 }
-#endif
 #endif
 
 size_t
