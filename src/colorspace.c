@@ -118,10 +118,7 @@ static pthread_once_t sixel_colorspace_once = PTHREAD_ONCE_INIT;
 # if defined(__GNUC__)
 #  if !defined(__clang__)
 #   define SIXEL_TARGET_AVX2 __attribute__((target("avx2")))
-#   define SIXEL_TARGET_AVX512 \
-        __attribute__((target("avx512f,avx512bw")))
 #   define SIXEL_USE_AVX2 1
-#   define SIXEL_USE_AVX512 1
 #  else
 /*
  * clang rejects returning AVX vectors when the translation unit target
@@ -130,22 +127,14 @@ static pthread_once_t sixel_colorspace_once = PTHREAD_ONCE_INIT;
  * warning-free while still using AVX when the compiler enables it.
  */
 #   define SIXEL_TARGET_AVX2
-#   define SIXEL_TARGET_AVX512
 #   if defined(__AVX2__)
 #    define SIXEL_USE_AVX2 1
-#   endif
-#   if defined(__AVX512F__) && defined(__AVX512BW__)
-#    define SIXEL_USE_AVX512 1
 #   endif
 #  endif
 # else
 #  define SIXEL_TARGET_AVX2
-#  define SIXEL_TARGET_AVX512
 #  if defined(__AVX2__)
 #   define SIXEL_USE_AVX2 1
-#  endif
-#  if defined(__AVX512F__) && defined(__AVX512BW__)
-#   define SIXEL_USE_AVX512 1
 #  endif
 # endif
 #endif
@@ -196,25 +185,10 @@ static uint8x16x4_t sixel_neon_linear_to_gamma[4];
 static int sixel_neon_tables_initialized = 0;
 #endif
 
-#if (defined(SIXEL_USE_AVX2) && defined(__AVX2__)) || \
-        (defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
-         defined(__AVX512BW__))
+#if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
 static uint32_t sixel_avx_gamma_to_linear_lut32[SIXEL_COLORSPACE_LUT_SIZE];
 static uint32_t sixel_avx_linear_to_gamma_lut32[SIXEL_COLORSPACE_LUT_SIZE];
 static int sixel_avx_tables_initialized = 0;
-#endif
-
-/*
- * The AVX512 entry point is declared only when the compiler advertises
- * the ISA to avoid unused-function warnings in AVX2-only builds.
- */
-#if defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
-        defined(__AVX512BW__)
-static SIXELSTATUS sixel_colorspace_convert_avx512(unsigned char *pixels,
-                                                   size_t size,
-                                                   int pixelformat,
-                                                   int colorspace_src,
-                                                   int colorspace_dst);
 #endif
 
 #if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
@@ -230,25 +204,6 @@ sixel_colorspace_convert_avx2(unsigned char *pixels,
                               int pixelformat,
                               int colorspace_src,
                               int colorspace_dst)
-{
-    (void)pixels;
-    (void)size;
-    (void)pixelformat;
-    (void)colorspace_src;
-    (void)colorspace_dst;
-
-    return SIXEL_BAD_INPUT;
-}
-#endif
-
-#if defined(SIXEL_USE_AVX512) && \
-        !(defined(__AVX512F__) && defined(__AVX512BW__))
-static __attribute__((unused)) SIXELSTATUS
-sixel_colorspace_convert_avx512(unsigned char *pixels,
-                                size_t size,
-                                int pixelformat,
-                                int colorspace_src,
-                                int colorspace_dst)
 {
     (void)pixels;
     (void)size;
@@ -643,9 +598,7 @@ sixel_colorspace_apply_neon(unsigned char *pixels,
  * compiled in to avoid -Werror=unused-function.
  */
 #if defined(SIXEL_USE_NEON) || defined(SIXEL_USE_SSE2) || \
-        (defined(SIXEL_USE_AVX2) && defined(__AVX2__)) || \
-        (defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
-         defined(__AVX512BW__))
+        (defined(SIXEL_USE_AVX2) && defined(__AVX2__))
 static const unsigned char *
 sixel_colorspace_select_lut(int colorspace_src, int colorspace_dst)
 {
@@ -663,9 +616,7 @@ sixel_colorspace_select_lut(int colorspace_src, int colorspace_dst)
 }
 #endif
 
-#if (defined(SIXEL_USE_AVX2) && defined(__AVX2__)) || \
-        (defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
-         defined(__AVX512BW__))
+#if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
 static inline const uint32_t *
 sixel_colorspace_select_lut32(int colorspace_src, int colorspace_dst)
 {
@@ -834,118 +785,6 @@ sixel_colorspace_convert_sse2(unsigned char *pixels,
             return SIXEL_BAD_INPUT;
         }
         sixel_colorspace_apply_sse2(pixels, size, pixelformat, lut);
-        return SIXEL_OK;
-    default:
-        break;
-    }
-
-    return SIXEL_BAD_INPUT;
-}
-#endif
-
-#if defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
-        defined(__AVX512BW__)
-/*
- * AVX512 path widens the LUT gather to 16 dword lanes, letting us reuse
- * the AVX2 tables while masking alpha bytes with SSE2 logic.
- */
-static SIXEL_TARGET_AVX512 void
-sixel_colorspace_apply_avx512(unsigned char *pixels,
-                              size_t size,
-                              int pixelformat,
-                              const unsigned char *lut,
-                              const uint32_t *lut32)
-{
-    __m128i mask128;
-    size_t offset;
-    size_t remaining;
-    uint8_t mask_buffer[16];
-
-    mask128 = sixel_colorspace_alpha_mask_sse2(pixelformat);
-    _mm_storeu_si128((__m128i *)mask_buffer, mask128);
-
-    offset = 0U;
-    remaining = size;
-    while (remaining >= 16U) {
-        __m128i input;
-        __m512i indices;
-        __m512i mapped32;
-        __m128i converted;
-        __m128i preserved;
-
-        input = _mm_loadu_si128((const __m128i *)(pixels + offset));
-        indices = _mm512_cvtepu8_epi32(input);
-        mapped32 = _mm512_i32gather_epi32(indices, (const int *)lut32, 4);
-        converted = _mm512_cvtepi32_epi8(mapped32);
-
-        preserved = _mm_or_si128(_mm_and_si128(mask128, input),
-                                 _mm_andnot_si128(mask128, converted));
-
-        _mm_storeu_si128((__m128i *)(pixels + offset), preserved);
-
-        offset += 16U;
-        remaining -= 16U;
-    }
-
-    while (remaining > 0U) {
-        unsigned char original;
-        unsigned char mapped;
-        size_t mask_index;
-
-        mask_index = offset % 16U;
-        original = pixels[offset];
-        mapped = lut[original];
-        if (mask_buffer[mask_index] == 0U) {
-            pixels[offset] = mapped;
-        }
-
-        ++offset;
-        --remaining;
-    }
-}
-
-static SIXEL_TARGET_AVX512 SIXELSTATUS
-sixel_colorspace_convert_avx512(unsigned char *pixels,
-                                size_t size,
-                                int pixelformat,
-                                int colorspace_src,
-                                int colorspace_dst)
-{
-    const unsigned char *lut;
-    const uint32_t *lut32;
-
-    lut = sixel_colorspace_select_lut(colorspace_src, colorspace_dst);
-    lut32 = sixel_colorspace_select_lut32(colorspace_src, colorspace_dst);
-    if (lut == NULL || lut32 == NULL) {
-        return SIXEL_BAD_INPUT;
-    }
-
-    switch (pixelformat) {
-    case SIXEL_PIXELFORMAT_RGB888:
-    case SIXEL_PIXELFORMAT_BGR888:
-        if (size % 3U != 0U) {
-            return SIXEL_BAD_INPUT;
-        }
-        sixel_colorspace_apply_avx512(pixels, size, pixelformat, lut, lut32);
-        return SIXEL_OK;
-    case SIXEL_PIXELFORMAT_RGBA8888:
-    case SIXEL_PIXELFORMAT_BGRA8888:
-    case SIXEL_PIXELFORMAT_ARGB8888:
-    case SIXEL_PIXELFORMAT_ABGR8888:
-        if (size % 4U != 0U) {
-            return SIXEL_BAD_INPUT;
-        }
-        sixel_colorspace_apply_avx512(pixels, size, pixelformat, lut, lut32);
-        return SIXEL_OK;
-    case SIXEL_PIXELFORMAT_G8:
-        sixel_colorspace_apply_avx512(pixels, size, pixelformat, lut, lut32);
-        return SIXEL_OK;
-    case SIXEL_PIXELFORMAT_GA88:
-    case SIXEL_PIXELFORMAT_AG88:
-        if (size % 2U != 0U) {
-            return SIXEL_BAD_INPUT;
-        }
-        sixel_colorspace_apply_avx512(pixels, size, pixelformat, lut, lut32);
         return SIXEL_OK;
     default:
         break;
@@ -2553,9 +2392,7 @@ sixel_colorspace_build_tables(void)
         sixel_cbrt_lut_double[i] = (double)sixel_cbrt_lut[i];
     }
 
-#if (defined(SIXEL_USE_AVX2) && defined(__AVX2__)) || \
-        (defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
-         defined(__AVX512BW__))
+#if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
     if (!sixel_avx_tables_initialized) {
         for (i = 0; i < SIXEL_COLORSPACE_LUT_SIZE; ++i) {
             sixel_avx_gamma_to_linear_lut32[i] =
@@ -3905,18 +3742,14 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
         sixel_colorspace_supports_byte_format(pixelformat);
     lut_pair_supported = sixel_colorspace_supports_lut_pair(colorspace_src,
                                                             colorspace_dst);
-#if (defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
-        defined(__AVX512BW__)) || \
-        (defined(SIXEL_USE_AVX2) && defined(__AVX2__)) || \
+#if (defined(SIXEL_USE_AVX2) && defined(__AVX2__)) || \
         defined(SIXEL_USE_SSE2) || defined(SIXEL_USE_NEON)
     simd_level = sixel_cpu_simd_level();
 #else
     simd_level = SIXEL_SIMD_LEVEL_SCALAR;
 #endif
 
-#if (!defined(SIXEL_USE_AVX512) || !defined(__AVX512F__) || \
-        !defined(__AVX512BW__)) && \
-        (!defined(SIXEL_USE_AVX2) || !defined(__AVX2__)) && \
+#if (!defined(SIXEL_USE_AVX2) || !defined(__AVX2__)) && \
         !defined(SIXEL_USE_SSE2) && !defined(SIXEL_USE_NEON)
     /*
      * Suppress unused warnings when all SIMD paths are disabled at
@@ -3934,23 +3767,6 @@ sixel_helper_convert_colorspace(unsigned char *pixels,
                                                      colorspace_src,
                                                      colorspace_dst);
     }
-
-#if defined(SIXEL_USE_AVX512) && defined(__AVX512F__) && \
-        defined(__AVX512BW__)
-    if (simd_level >= SIXEL_SIMD_LEVEL_AVX512 &&
-            byte_format_supported && lut_pair_supported) {
-        SIXELSTATUS avx512_status;
-
-        avx512_status = sixel_colorspace_convert_avx512(pixels,
-                                                        size,
-                                                        pixelformat,
-                                                        colorspace_src,
-                                                        colorspace_dst);
-        if (avx512_status == SIXEL_OK) {
-            return SIXEL_OK;
-        }
-    }
-#endif
 
 #if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
     if (simd_level >= SIXEL_SIMD_LEVEL_AVX2 &&

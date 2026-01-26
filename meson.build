@@ -1047,9 +1047,7 @@ else
 endif
 
 avx2_opt = get_option('avx2')
-avx512_opt = get_option('avx512')
 avx2_message = 'no'
-avx512_message = 'no'
 
 if (cpu == 'x86' or cpu == 'x86_64') and avx2_opt
   avx2_args = []
@@ -1072,29 +1070,6 @@ if (cpu == 'x86' or cpu == 'x86_64') and avx2_opt
   endif
 elif avx2_opt
   avx2_message = 'no (arch)'
-endif
-
-if (cpu == 'x86' or cpu == 'x86_64') and avx512_opt
-  avx512_args = []
-  if cc.get_argument_syntax() == 'msvc'
-    avx512_args = ['/arch:AVX512']
-  else
-    avx512_args = ['-mavx512f', '-mavx512bw', '-mfma']
-  endif
-  if cc.has_multi_arguments(avx512_args) and cc.compiles('''
-      #include <immintrin.h>
-      int main(void) {
-        __m512i v = _mm512_setzero_si512();
-        (void)v;
-        return 0;
-      }''', args: avx512_args)
-    avx512_message = 'yes'
-    add_project_arguments(avx512_args, language: 'c')
-  else
-    avx512_message = 'no (compiler)'
-  endif
-elif avx512_opt
-  avx512_message = 'no (arch)'
 endif
 
 config_h = configure_file(output: 'config.h', configuration: conf)
@@ -1544,7 +1519,6 @@ message('       Shebang template        : ' + shebang_message)
 message('       SIMD                    : ' + simd_message)
 message('       XGETBV probe            : ' + xsave_probe_message)
 message('       avx2                    : ' + avx2_message)
-message('       avx-512                 : ' + avx512_message)
 message('       gcov                    : ' + (get_option('gcov') ? 'yes' : 'no'))
 message('       debugging               : ' + (get_option('debug') ? 'yes' : 'no'))
 message('       tests                   : ' + (get_option('tests') ? 'yes' : 'no'))

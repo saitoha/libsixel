@@ -76,9 +76,6 @@ sixel_cpu_env_cap(void)
     if (sixel_compat_strcasecmp(env, "avx2") == 0) {
         return SIXEL_SIMD_LEVEL_AVX2;
     }
-    if (sixel_compat_strcasecmp(env, "avx512") == 0) {
-        return SIXEL_SIMD_LEVEL_AVX512;
-    }
     if (sixel_compat_strcasecmp(env, "neon") == 0) {
         return SIXEL_SIMD_LEVEL_NEON;
     }
@@ -135,9 +132,7 @@ sixel_cpu_detect_native(void)
      * __cpu_indicator_init). Skip the builtin path there and use the
      * intrinsics-based detection instead.
      */
-    if (__builtin_cpu_supports("avx512f")) {
-        level = SIXEL_SIMD_LEVEL_AVX512;
-    } else if (__builtin_cpu_supports("avx2")) {
+    if (__builtin_cpu_supports("avx2")) {
         level = SIXEL_SIMD_LEVEL_AVX2;
     } else if (__builtin_cpu_supports("avx")) {
         level = SIXEL_SIMD_LEVEL_AVX;
@@ -153,9 +148,7 @@ sixel_cpu_detect_native(void)
         xcr0 = _xgetbv(0);
         if ((xcr0 & 0x6) == 0x6) {
             __cpuidex(extended, 7, 0);
-            if ((extended[1] & (1 << 16)) != 0) {
-                level = SIXEL_SIMD_LEVEL_AVX512;
-            } else if ((extended[1] & (1 << 5)) != 0) {
+            if ((extended[1] & (1 << 5)) != 0) {
                 level = SIXEL_SIMD_LEVEL_AVX2;
             } else {
                 level = SIXEL_SIMD_LEVEL_AVX;
@@ -169,7 +162,7 @@ sixel_cpu_detect_native(void)
 # elif HAVE_CPUID_H
     if (__get_cpuid(1, &eax, &ebx, &ecx, &edx) != 0) {
         /*
-         * DragonFlyBSD kernels expose AVX/AVX2/AVX512 bits even when the
+         * DragonFlyBSD kernels expose AVX/AVX2 bits even when the
          * OS has not enabled XSAVE. Guard against executing AVX-class
          * instructions by checking OSXSAVE and XCR0 before raising the
          * SIMD level. Fall back to SSE2 when the OS cannot preserve the
@@ -192,9 +185,7 @@ sixel_cpu_detect_native(void)
                 if (__get_cpuid_max(0, NULL) >= 7 &&
                     __get_cpuid_count(7, 0, &eax, &ebx, &ecx,
                                       &edx) != 0) {
-                    if ((ebx & (1U << 16)) != 0) {
-                        level = SIXEL_SIMD_LEVEL_AVX512;
-                    } else if ((ebx & (1U << 5)) != 0) {
+                    if ((ebx & (1U << 5)) != 0) {
                         level = SIXEL_SIMD_LEVEL_AVX2;
                     } else {
                         level = SIXEL_SIMD_LEVEL_AVX;
