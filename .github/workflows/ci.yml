@@ -2076,33 +2076,6 @@ jobs:
               clang
             exec_type: bash
 
-          - label: Autotools-ubuntu-x86_64-clang-simd-avx512-buildonly
-            buildtool: autotools
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              --enable-simd
-              --enable-avx512
-            check_target: all
-            extra_packages: >-
-              clang
-            exec_type: bash
-
-          - label: Meson-ubuntu-x86_64-clang-simd-avx512-buildonly
-            buildtool: meson
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              -Dsimd=enabled
-              -Davx512=true
-            check_target: compile
-            extra_packages: >-
-              meson
-              clang
-            exec_type: bash
-
     steps:
       - name: Configure git EOL
         if: ${{ matrix.exec_type == 'cygwin' }}
