@@ -54,6 +54,7 @@ srcs = files(
   '../src/timer.c',
   '../src/logger.c',
   '../src/compat_stub.c',
+  '../src/path.c',
 )
 
 if conf.get('SIXEL_ENABLE_THREADS', 0) == 1
