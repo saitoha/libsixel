@@ -37,6 +37,20 @@
 #include "dither-common-pipeline.h"
 #include "logger.h"
 
+#if defined(__AVX2__)
+/*
+ * Keep the AVX2 fast path buildable on toolchains that enable AVX2 but do
+ * not advertise FMA, while still using fused multiply-add when available.
+ */
+#if defined(__FMA__)
+#define SIXEL_FMADD_PS256(a, b, c) \
+    _mm256_fmadd_ps((a), (b), (c))
+#else
+#define SIXEL_FMADD_PS256(a, b, c) \
+    _mm256_add_ps(_mm256_mul_ps((a), (b)), (c))
+#endif
+#endif
+
 /*
  * Notify the pipeline controller when a scanline completes PaletteApply.
  * The encoder installs a callback so the producer can release each band as
@@ -193,9 +207,9 @@ sixel_dither_lookup_palette_float32(float const *pixel,
             error_ps = _mm256_mul_ps(diff_l_ps, diff_l_ps);
             error_ps = _mm256_mul_ps(error_ps, complexion_ps);
             diff_r_ps = _mm256_sub_ps(sample_r_ps, palette_r_ps);
-            error_ps = _mm256_fmadd_ps(diff_r_ps, diff_r_ps, error_ps);
+            error_ps = SIXEL_FMADD_PS256(diff_r_ps, diff_r_ps, error_ps);
             diff_g_ps = _mm256_sub_ps(sample_g_ps, palette_g_ps);
-            error_ps = _mm256_fmadd_ps(diff_g_ps, diff_g_ps, error_ps);
+            error_ps = SIXEL_FMADD_PS256(diff_g_ps, diff_g_ps, error_ps);
             best_error_ps = _mm256_set1_ps((float)best_error);
             cmp_ps = _mm256_cmp_ps(error_ps, best_error_ps,
                                    _CMP_LT_OQ);
