@@ -314,6 +314,20 @@ library_built_with_asan() {
 # Python runtime is not built with TSan and triggers false positives.
 library_built_with_tsan() {
     target=$1
+    tsan_runtime_regex='libclang_rt\.tsan(_osx_dynamic)?'
+
+    # Prefer checking runtime dependencies on macOS to avoid missing symbols
+    # after stripping or LTO. This keeps TSan detection stable in CI.
+    if command -v otool >/dev/null 2>&1; then
+        if otool -L "${target}" 2>/dev/null | \
+           grep -qiE "${tsan_runtime_regex}"; then
+            if [ -n "${tap_log_file:-}" ]; then
+                printf 'tsan detected via otool in %s\n' "${target}" \
+                    >>"${tap_log_file}"
+            fi
+            return 0
+        fi
+    fi
 
     if command -v nm >/dev/null 2>&1; then
         if nm -an "${target}" 2>/dev/null | grep -q "__tsan_init"; then
@@ -327,7 +341,7 @@ library_built_with_tsan() {
 
     if command -v strings >/dev/null 2>&1; then
         if strings "${target}" 2>/dev/null | \
-           grep -qiE 'libclang_rt\.tsan|tsan\.dll|__tsan_init'; then
+           grep -qiE "${tsan_runtime_regex}|tsan\.dll|__tsan_init"; then
             if [ -n "${tap_log_file:-}" ]; then
                 printf 'tsan detected via strings in %s\n' "${target}" \
                     >>"${tap_log_file}"
