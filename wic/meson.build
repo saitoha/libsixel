@@ -34,6 +34,7 @@ wic_sources = files(
   '../src/logger.c',
   '../src/probe.c',
   '../src/compat_stub.c',
+  '../src/path.c',
 )
 
 if conf.get('SIXEL_ENABLE_THREADS', 0) == 1
