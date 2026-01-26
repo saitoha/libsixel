@@ -192,7 +192,7 @@ ci_env = run_command(
 if ci_env != ''
   werror_flags = []
   if cc.get_id() == 'msvc' or cc.get_id() == 'clang-cl'
-    werror_flags = cc.get_supported_arguments(['/WX'])
+    werror_flags = cc.get_supported_arguments(['-WX'])
   else
     werror_flags = cc.get_supported_arguments(['-Werror'])
   endif
