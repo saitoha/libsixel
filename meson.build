@@ -1395,7 +1395,6 @@ if amalgamated_sources_enabled
   subdir('amalgamation')
 endif
 
-onnxruntime_message = 'no'
 lsqa_bin = disabler()
 
 subdir('include')
@@ -1509,7 +1508,6 @@ message('       pkg-config dir          : ' + pkgconfig_dir)
 message('       Bash completion dir     : ' + bash_completion_message)
 message('       Zsh completion dir      : ' + zsh_completion_message)
 message('       QuickLook extension     : ' + quicklook_extension_message)
-message('       ONNX Runtime            : ' + onnxruntime_message)
 message('       WIC codec               : ' + wiccodec_message)
 message('       python bindings         : ' + python_message)
 message('       ruby bindings           : ' + ruby_message)

@@ -6,7 +6,6 @@ evaluate.py
 Beginner-friendly image quality evaluator tailored for
 quantization / error-diffusion artifacts (grain, stripes,
 banding, clipping, chroma loss) with plain Python + numpy + Pillow.
-Optional LPIPS if torch+lpips are available.
 
 PIPELINE OVERVIEW (split commands):
 
@@ -30,12 +29,10 @@ METRICS REPORTED:
 - ClipRate_L/R/G/B (0..1, lower is better): saturation/clipping at 0 or 255
 - Δ Chroma_mean (lower is better): average chroma loss in CIELAB
 - a_var_ratio / b_var_ratio (≈1 is neutral): chroma variance out/ref per LAB axis
-- (Optional) LPIPS (lower is better): learned perceptual distance if lpips is installed
 
 NOTES:
 - Everything runs on luma (Y) or RGB/LAB as noted.
 - Only dependency required: Pillow, numpy
-- LPIPS/FLIP are optional: install torch+lpips if you want them.
 """
 
 import argparse
@@ -494,40 +491,6 @@ def psnr_luma(ref_y: np.ndarray, out_y: np.ndarray) -> float:
 
 
 # ========================
-# Optional LPIPS/FLIP eval
-# ========================
-def try_lpips(ref_rgb: np.ndarray, out_rgb: np.ndarray, net: str) -> float:
-    # Suppress noisy prints & warnings from torchvision/lpips
-    import warnings, contextlib, os
-
-    try:
-        import torch
-
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", category=UserWarning)
-            warnings.filterwarnings("ignore", category=FutureWarning)
-            with open(os.devnull, "w") as fnull, contextlib.redirect_stdout(
-                fnull
-            ), contextlib.redirect_stderr(fnull):
-                import lpips  # pip install lpips
-
-                net = lpips.LPIPS(net=net)
-
-        # lpips expects [-1,1] normalized tensor (NCHW)
-        def to_tensor(x):
-            import torch as _torch
-
-            t = _torch.from_numpy(x.transpose(2, 0, 1)).float().unsqueeze(0) * 2.0 - 1.0
-            return t
-
-        with torch.no_grad():
-            d = net(to_tensor(ref_rgb), to_tensor(out_rgb))
-        return float(d.item())
-    except Exception as e:
-        return float("nan")
-
-
-# ========================
 # Evaluate
 # ========================
 
@@ -581,9 +544,6 @@ def evaluate_core(ref: np.ndarray, out: np.ndarray) -> Dict[str, float]:
     gmsd_val = gmsd(ref_y, out_y)
     psnr_y = psnr_luma(ref_y, out_y)
 
-    # LPIPS (alex)
-    lpips_alex = try_lpips(ref, out, "alex")
-
     result = {
         "MS-SSIM": ms,
         "HighFreqRatio_out": hfr_out,
@@ -614,7 +574,6 @@ def evaluate_core(ref: np.ndarray, out: np.ndarray) -> Dict[str, float]:
         "Δ E00_mean": de00_mean,
         "GMSD": gmsd_val,
         "PSNR_Y": psnr_y,
-        "LPIPS(alex)": lpips_alex,
     }
     return result
 

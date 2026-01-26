@@ -34,7 +34,6 @@ AMALGAMATION_LSQA_CPPFLAGS = $(AM_CPPFLAGS) \
         $(COREGRAPHICS_CFLAGS) \
         $(QUICKLOOK_CFLAGS) \
         $(CLIPBOARD_CFLAGS) \
-        $(ONNXRUNTIME_CFLAGS) \
         @THREAD_CFLAGS@
 if AMALGAMATION_NEEDS_OBJC
 AMALGAMATION_LSQA_CPPFLAGS += -x objective-c
@@ -51,7 +50,6 @@ AMALGAMATION_LSQA_LIBS = -lm \
         $(COREGRAPHICS_LIBS) \
         $(QUICKLOOK_LIBS) \
         $(CLIPBOARD_LIBS) \
-        $(ONNXRUNTIME_LIBS) \
         @THREAD_LIBS@
 
 bin_PROGRAMS = lsqa
@@ -72,13 +70,6 @@ lsqa_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
 lsqa_LDFLAGS = $(MAYBE_COVERAGE)
 lsqa_LDADD = $(top_builddir)/src/libsixel.la
 endif
-
-if HAVE_ONNXRUNTIME
-lpipsmodelsdir = @modeldir@/lpips
-dist_lpipsmodels_DATA = $(top_srcdir)/models/lpips/lpips_diff.onnx \
-                        $(top_srcdir)/models/lpips/lpips_feature.onnx
-endif
-
 
 if WITH_SHEBANG_FILE
 SIXEL_SHEBANG_TARGETS = $(bin_PROGRAMS)
