@@ -1418,11 +1418,38 @@ signal_handler(int sig)
 
 #endif
 
+static int
+img2sixel_exit_code(SIXELSTATUS status)
+{
+    /*
+     * Map SIXEL_STATUS to stable process exit codes.
+     *
+     * - 0: success.
+     * - 1: generic runtime failure.
+     * - 2: invalid arguments or usage.
+     * - 3: clipboard-related failures.
+     *
+     * This avoids returning -1, which yields platform-dependent exit
+     * codes (e.g., 255 on POSIX, 127 on Windows).
+     */
+    switch (status) {
+    case SIXEL_OK:
+        return 0;
+    case SIXEL_BAD_ARGUMENT:
+        return 2;
+    case SIXEL_BAD_CLIPBOARD:
+        return 3;
+    default:
+        return 1;
+    }
+}
+
 int
 main(int argc, char *argv[])
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int n;
+    int exit_code;
     sixel_encoder_t *encoder = NULL;
     int completion_cli_result;
     int completion_exit_status;
@@ -1643,7 +1670,6 @@ error:
         img2sixel_print_clipboard_hint();
         fprintf(stderr, "\n");
     }
-    status = (-1);
     goto end;
 
 unknown_option_error:
@@ -1667,7 +1693,8 @@ end:
     if (encoder != NULL) {
         sixel_encoder_unref(encoder);
     }
-    return status;
+    exit_code = img2sixel_exit_code(status);
+    return exit_code;
 }
 
 /* emacs Local Variables:      */
