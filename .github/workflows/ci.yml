@@ -878,56 +878,56 @@ jobs:
               make
             exec_type: cygwin
 
-#          - label: Autotools-cygwin64-msvc-buildonly
-#            buildtool: autotools
-#            runner: windows-latest
-#            setup_prefix: >-
-#              CC=cl
-#              LD=link
-#              AR="sh ar-lib lib"
-#              ARFLAGS=cr
-#              NM="dumpbin -symbols"
-#              STRIP=:
-#              RANLIB=:
-#            setup_options: >-
-#              --host=x86_64-pc-windows-msvc
-#            extra_packages: >-
-#              make
-#            exec_type: cygwin
+          - label: Autotools-cygwin64-msvc
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+            extra_packages: >-
+              make
+            exec_type: cygwin
 
-#          - label: Autotools-cygwin64-clangcl-buildonly
-#            buildtool: autotools
-#            runner: windows-latest
-#            setup_prefix: >-
-#              CC=clang-cl
-#              LD=link
-#              AR="sh ar-lib lib"
-#              ARFLAGS=cr
-#              NM="dumpbin -symbols"
-#              STRIP=:
-#              RANLIB=:
-#            setup_options: >-
-#              --host=x86_64-pc-windows-msvc
-#            extra_packages: >-
-#              make
-#            exec_type: cygwin
+          - label: Autotools-cygwin64-clangcl
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=clang-cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+            extra_packages: >-
+              make
+            exec_type: cygwin
 
-#          - label: Autotools-cygwin64-clang_msvc_abi-buildonly
-#            buildtool: autotools
-#            runner: windows-latest
-#            setup_prefix: >-
-#              CC=clang
-#              LD=link
-#              AR="sh ar-lib lib"
-#              ARFLAGS=cr
-#              NM="dumpbin -symbols"
-#              STRIP=:
-#              RANLIB=:
-#            setup_options: >-
-#              --host=x86_64-pc-windows-msvc
-#            extra_packages: >-
-#              make
-#            exec_type: cygwin
+          - label: Autotools-cygwin64-clang_msvc_abi
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=clang
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+            extra_packages: >-
+              make
+            exec_type: cygwin
 
     steps:
       - name: Configure git EOL
