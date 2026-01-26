@@ -769,8 +769,6 @@ diffuse_sierra3_float(float *data,
     }
 }
 
-#define max_channels 4
-
 SIXELSTATUS
 sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
                                  sixel_dither_context_t *context)
@@ -790,9 +788,9 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
     int pos;
     size_t base;
     float *source_pixel;
-    unsigned char quantized[max_channels];
-    float snapshot[max_channels];
-    float lookup_pixel_float[max_channels];
+    unsigned char quantized[SIXEL_MAX_CHANNELS];
+    float snapshot[SIXEL_MAX_CHANNELS];
+    float lookup_pixel_float[SIXEL_MAX_CHANNELS];
     int color_index;
     int output_index;
     int palette_value;
@@ -838,7 +836,7 @@ sixel_dither_apply_fixed_float32(sixel_dither_t *dither,
     palette_float = context->palette_float;
     new_palette_float = context->new_palette_float;
     float_depth = context->float_depth;
-    if (context->depth > max_channels || context->depth != 3) {
+    if (context->depth > SIXEL_MAX_CHANNELS || context->depth != 3) {
         return SIXEL_BAD_ARGUMENT;
     }
     if (context->reqcolor < 1) {

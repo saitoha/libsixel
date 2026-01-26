@@ -483,8 +483,6 @@ lookup_mono_lightbg(unsigned char const * const pixel,
     return distant < 128 * reqcolor ? 1: 0;
 }
 
-#define max_depth 4
-
 /*
  * Apply the palette into the supplied pixel buffer while coordinating the
  * dithering strategy.  The routine performs the following steps:
@@ -524,8 +522,8 @@ sixel_dither_map_pixels(
     sixel_dither_t    /* in */  *dither,
     int               /* in */  pixelformat)
 {
-    unsigned char copy[max_depth];
-    float new_palette_float[SIXEL_PALETTE_MAX * max_depth];
+    unsigned char copy[SIXEL_MAX_CHANNELS];
+    float new_palette_float[SIXEL_PALETTE_MAX * SIXEL_MAX_CHANNELS];
     SIXELSTATUS status = SIXEL_FALSE;
     int sum1;
     int sum2;
@@ -607,7 +605,7 @@ sixel_dither_map_pixels(
             float_components = palette_object->float_depth
                 / (int)sizeof(float);
             if (float_components > 0
-                    && (size_t)float_components <= max_depth) {
+                    && (size_t)float_components <= SIXEL_MAX_CHANNELS) {
                 context.palette_float = palette_object->entries_float32;
                 context.float_depth = float_components;
                 context.new_palette_float = new_palette_float;

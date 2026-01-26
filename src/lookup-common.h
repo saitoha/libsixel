@@ -36,6 +36,8 @@ extern "C" {
 
 typedef struct sixel_lut sixel_lut_t;
 
+#define SIXEL_MAX_CHANNELS 4
+
 SIXELAPI SIXELSTATUS
 sixel_lut_new(sixel_lut_t **out,
               int policy,
