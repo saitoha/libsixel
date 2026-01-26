@@ -794,12 +794,6 @@ sixel_colorspace_convert_sse2(unsigned char *pixels,
 }
 #endif
 
-/*
- * Temporarily disable gamma re-encoding after linear conversion to validate
- * palette behavior without the gamma LUT path.
- */
-#define SIXEL_DISABLE_LINEAR_GAMMA_REENCODE 1
-
 #if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
 
 static inline __m256i
@@ -842,9 +836,6 @@ sixel_colorspace_pack_linear_bytes_avx(__m256 value)
 static inline __m256i
 sixel_colorspace_pack_gamma_bytes_avx(__m256 value)
 {
-#if defined(SIXEL_DISABLE_LINEAR_GAMMA_REENCODE)
-    return sixel_colorspace_pack_linear_bytes_avx(value);
-#else
     __m256i linear_bytes;
     __m128i mapped_low;
     __m128i mapped_high;
@@ -895,7 +886,6 @@ sixel_colorspace_pack_gamma_bytes_avx(__m256 value)
     packed = _mm256_inserti128_si256(packed, mapped_high, 1);
 
     return packed;
-#endif
 }
 
 static void
@@ -2631,15 +2621,9 @@ sixel_encode_linear_to_colorspace(int colorspace,
 
     switch (colorspace) {
     case SIXEL_COLORSPACE_GAMMA:
-#if defined(SIXEL_DISABLE_LINEAR_GAMMA_REENCODE)
-        *r8 = sixel_linear_double_to_byte(r_lin);
-        *g8 = sixel_linear_double_to_byte(g_lin);
-        *b8 = sixel_linear_double_to_byte(b_lin);
-#else
         *r8 = sixel_linear_double_to_srgb(r_lin);
         *g8 = sixel_linear_double_to_srgb(g_lin);
         *b8 = sixel_linear_double_to_srgb(b_lin);
-#endif
         break;
     case SIXEL_COLORSPACE_LINEAR:
         *r8 = sixel_linear_double_to_byte(r_lin);
@@ -2701,15 +2685,9 @@ sixel_encode_linear_to_colorspace_float(int colorspace,
 
     switch (colorspace) {
     case SIXEL_COLORSPACE_GAMMA:
-#if defined(SIXEL_DISABLE_LINEAR_GAMMA_REENCODE)
-        r = sixel_clamp_unit(r_lin);
-        g = sixel_clamp_unit(g_lin);
-        b = sixel_clamp_unit(b_lin);
-#else
         r = sixel_linear_to_srgb_unit(r_lin);
         g = sixel_linear_to_srgb_unit(g_lin);
         b = sixel_linear_to_srgb_unit(b_lin);
-#endif
         break;
     case SIXEL_COLORSPACE_LINEAR:
         r = sixel_clamp_unit(r_lin);
@@ -2851,8 +2829,7 @@ sixel_convert_pixels_via_linear_chunk(unsigned char *pixels,
     double b_lin;
 
     processed = 0U;
-#if defined(SIXEL_USE_AVX2) && defined(__AVX2__) && \
-    !defined(SIXEL_DISABLE_LINEAR_AVX2)
+#if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
     {
         int simd_level;
 
