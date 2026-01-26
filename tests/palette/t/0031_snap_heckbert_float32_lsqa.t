@@ -15,14 +15,14 @@ setup_conversion_env "${test_name}"
 
 status=0
 
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.6}
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 ensure_img2sixel_available
 ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 
 echo "1..1"
 
-input_image="${top_srcdir}/tests/data/resolutions/tiny_square.png"
+input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${output_dir}/snap-heckbert-float32.six"
 output_png="${output_dir}/snap-heckbert-float32.png"
 
@@ -33,27 +33,13 @@ if ! lsqa_init "$0"; then
     exit "${status}"
 fi
 
-if SIXEL_PALETTE_SNAP_TARGET_POLICY=reversible \
-        SIXEL_PALETTE_SNAP_TIMING_POLICY=all \
-        SIXEL_PALETTE_SNAP_APPROACH_RATE=0.7 \
-        SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L=0.7 \
-        run_img2sixel -Q heckbert -6 -W oklab \
+if ! run_img2sixel -Q heckbert -6 -W oklab \
         -o "${output_sixel}" "${input_image}" 2>>"${log_file}"; then
-    :
-else
     fail 1 "img2sixel snap heckbert float32 failed"
     exit "${status}"
 fi
 
-if run_sixel2png -i "${output_sixel}" -o "${output_png}" \
-        2>>"${log_file}"; then
-    :
-else
-    fail 1 "sixel2png decode failed"
-    exit "${status}"
-fi
-
-if lsqa_assert_quality "${input_image}" "${output_png}" \
+if lsqa_assert_quality "${input_image}" "${output_sixel}" \
         "snap-heckbert-float32" "${artifact_dir}" "${lsqa_floor}"; then
     pass 1 "snap heckbert float32 lsqa passed"
 else
