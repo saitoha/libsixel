@@ -17,8 +17,9 @@ check_exit() {
     else
         rc=$?
     fi
+    # Accept success or mapped error exits (1/2/3) without crashing.
     case ${rc} in
-        0|127|255)
+        0|1|2|3)
             ;;
         *)
             printf 'Unexpected exit code %d for img2sixel %s\n' "${rc}" "$*" >&2
