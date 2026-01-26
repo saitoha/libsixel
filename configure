@@ -782,6 +782,7 @@ WANT_SIXEL2PNG_FALSE
 WANT_SIXEL2PNG_TRUE
 WANT_IMG2SIXEL_FALSE
 WANT_IMG2SIXEL_TRUE
+SIXEL_TSAN_BUILD
 USING_CL_FALSE
 USING_CL_TRUE
 BUILD_LSO_TIMEOUT_FALSE
@@ -16293,6 +16294,41 @@ printf "%s\n" "#define HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS 1" >>confdefs.h
 
 
 fi
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether ThreadSanitizer instrumentation is enabled" >&5
+printf %s "checking whether ThreadSanitizer instrumentation is enabled... " >&6; }
+if test ${ac_cv_sixel_tsan+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+   ac_save_CFLAGS="$CFLAGS"
+   CFLAGS="$CFLAGS -Werror"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+       #ifndef __SANITIZE_THREAD__
+       #error "TSan is not enabled"
+       #endif
+       int main(void) { return 0; }
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ac_cv_sixel_tsan=yes
+else case e in #(
+  e) ac_cv_sixel_tsan=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+   CFLAGS="$ac_save_CFLAGS"
+   ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sixel_tsan" >&5
+printf "%s\n" "$ac_cv_sixel_tsan" >&6; }
+SIXEL_TSAN_BUILD="$ac_cv_sixel_tsan"
+
 
 # Options
 # Check whether --enable-img2sixel was given.

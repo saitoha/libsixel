@@ -203,10 +203,30 @@ AC_CACHE_CHECK(
   ])
 
 AS_IF([test "x$ac_cv_have_diag_deprecated_declarations" = "xyes"], [
-  AC_DEFINE([HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS],
+AC_DEFINE([HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS],
             [1],
             [Define to 1 if the compiler can ignore -Wdeprecated-declarations via pragmas])
 ])
+
+AC_CACHE_CHECK(
+  [whether ThreadSanitizer instrumentation is enabled],
+  [ac_cv_sixel_tsan],
+  [
+   ac_save_CFLAGS="$CFLAGS"
+   CFLAGS="$CFLAGS -Werror"
+   AC_COMPILE_IFELSE(
+     [AC_LANG_SOURCE([[
+       #ifndef __SANITIZE_THREAD__
+       #error "TSan is not enabled"
+       #endif
+       int main(void) { return 0; }
+     ]])],
+     [ac_cv_sixel_tsan=yes],
+     [ac_cv_sixel_tsan=no])
+   CFLAGS="$ac_save_CFLAGS"
+  ])
+SIXEL_TSAN_BUILD="$ac_cv_sixel_tsan"
+AC_SUBST([SIXEL_TSAN_BUILD])
 
 # Options
 AC_ARG_ENABLE([img2sixel],
