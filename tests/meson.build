@@ -415,14 +415,13 @@ aborttrace_tests = [
     'aborttrace/t/0002_sixel2png_aborttrace.t',
 ]
 
-default_timeout = 90
-
 # Match autotools TAP timeout to keep CI behavior consistent (seconds per file).
 foreach t : tests
   test(t, sh,
     args: [meson.current_source_dir() / t],
     protocol: 'tap',
     env: env,
+    timeout: 90,
     suite: ['tap'])
 endforeach
 
@@ -432,7 +431,7 @@ foreach t : aborttrace_tests
     protocol: 'tap',
     env: env,
     is_parallel: false,
-    timeout: default_timeout,
+    timeout: 90,
     suite: ['tap'])
 endforeach
 
