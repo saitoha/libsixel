@@ -367,7 +367,6 @@ diffuse_lso2_carry(int32_t *carry_curr,
     }
 }
 
-#define max_channels 4
 SIXELSTATUS
 sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
                                  sixel_dither_context_t *context)
@@ -378,9 +377,9 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
     unsigned char *new_palette;
     unsigned char *source_pixel;
     unsigned char palette_value;
-    unsigned char corrected[max_channels];
-    int32_t sample_scaled[max_channels];
-    int32_t accum_scaled[max_channels];
+    unsigned char corrected[SIXEL_MAX_CHANNELS];
+    int32_t sample_scaled[SIXEL_MAX_CHANNELS];
+    int32_t accum_scaled[SIXEL_MAX_CHANNELS];
     int32_t target_scaled;
     int32_t error_scaled;
     int32_t *carry_curr;
@@ -462,7 +461,7 @@ sixel_dither_apply_varcoeff_8bit(sixel_dither_t *dither,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (depth <= 0 || depth > max_channels) {
+    if (depth <= 0 || depth > SIXEL_MAX_CHANNELS) {
         return SIXEL_BAD_ARGUMENT;
     }
 

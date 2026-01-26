@@ -451,8 +451,6 @@ diffuse_lso2_carry_float(float *carry_curr,
     }
 }
 
-#define max_channels 4
-
 SIXELSTATUS
 sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
                                     sixel_dither_context_t *context)
@@ -462,9 +460,9 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     unsigned char *palette;
     unsigned char *new_palette;
     float *source_pixel;
-    float corrected[max_channels];
+    float corrected[SIXEL_MAX_CHANNELS];
     float quantized_float;
-    unsigned char quantized[max_channels];
+    unsigned char quantized[SIXEL_MAX_CHANNELS];
     float *carry_curr = NULL;
     float *carry_next = NULL;
     float *carry_far = NULL;
@@ -514,7 +512,7 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     int float_depth;
     int float_index;
     float *palette_float_buffer;
-    float lookup_pixel_float[max_channels];
+    float lookup_pixel_float[SIXEL_MAX_CHANNELS];
     unsigned char const *lookup_pixel;
     int lookup_wants_float;
     int use_palette_float_lookup;
@@ -602,7 +600,7 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (depth <= 0 || depth > max_channels) {
+    if (depth <= 0 || depth > SIXEL_MAX_CHANNELS) {
         return SIXEL_BAD_ARGUMENT;
     }
 

@@ -355,8 +355,6 @@ static void diffuse_sierra3_carry(int32_t *carry_curr,
                                   int direction,
                                   int channel);
 
-#define max_channels 4
-
 static SIXELSTATUS
 sixel_dither_apply_fixed_impl(
     sixel_index_t *result,
@@ -407,8 +405,8 @@ sixel_dither_apply_fixed_impl(
     int32_t *carry_curr = NULL;
     int32_t *carry_next = NULL;
     int32_t *carry_far = NULL;
-    unsigned char corrected[max_channels];
-    int32_t accum_scaled[max_channels];
+    unsigned char corrected[SIXEL_MAX_CHANNELS];
+    int32_t accum_scaled[SIXEL_MAX_CHANNELS];
     int start;
     int end;
     int step;
@@ -431,7 +429,7 @@ sixel_dither_apply_fixed_impl(
     int float_index;
     int32_t *tmp;
 
-    if (depth > max_channels) {
+    if (depth > SIXEL_MAX_CHANNELS) {
         status = SIXEL_BAD_ARGUMENT;
         goto end;
     }
