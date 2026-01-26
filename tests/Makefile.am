@@ -250,6 +250,8 @@ TESTS = cli-core/t/0001_help.t \
     poc/t/0007_issue167_height_option_first.t \
     poc/t/0008_issue200_heap_overflow_reject.t \
     poc/t/0009_issue207_resize_poc.t \
+    poc/t/0010_issue51_stbi_1561_poc.t \
+    poc/t/0011_issue73_stbi_1561_poc.t \
     regression/t/0005_lsqa_format_grayscale.t \
     regression/t/0006_lsqa_format_palette.t \
     regression/t/0007_lsqa_format_rgb.t \
@@ -580,6 +582,8 @@ ISSUE_INPUTS = issue/166/poc \
        issue/167/poc \
        issue/200/POC_img2sixel_heap_buffer_overflow \
        issue/207/poc \
+       issue/libsixel-libsixel/51/stbi_1561_poc.bin \
+       issue/libsixel-libsixel/73/stbi_1561_poc.bin \
        issue/131/2020-01-30-img2sixel.gif \
        issue/136/poc
 NETWORK_CERTS = network/certs/server.crt \
