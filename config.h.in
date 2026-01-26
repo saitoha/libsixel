@@ -189,6 +189,12 @@
 /* Define to 1 if you have the <emmintrin.h> header file. */
 #undef HAVE_EMMINTRIN_H
 
+/* Define to 1 if you have the 'emscripten_get_compiler_setting' function. */
+#undef HAVE_EMSCRIPTEN_GET_COMPILER_SETTING
+
+/* Define to 1 if you have the <emscripten.h> header file. */
+#undef HAVE_EMSCRIPTEN_H
+
 /* Define to 1 if you have the <errno.h> header file. */
 #undef HAVE_ERRNO_H
 

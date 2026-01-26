@@ -33,11 +33,20 @@
 #include <string.h>
 #endif  /* HAVE_STRING_H */
 
+#if HAVE_EMSCRIPTEN_H
+#include <emscripten.h>
+#endif  /* HAVE_EMSCRIPTEN_H */
+
+#if defined(__COSMOPOLITAN__)
+#include <cosmo.h>
+#endif  /* __COSMOPOLITAN__ */
+
 #include "path.h"
 
 #define SIXEL_CYGDRIVE_PREFIX "/cygdrive/"
 
-#if defined(_WIN32) || defined(__CYGWIN__) || defined(__MSYS__)
+#if defined(_WIN32) || defined(__CYGWIN__) || defined(__MSYS__) \
+    || defined(__EMSCRIPTEN__) || defined(__COSMOPOLITAN__)
 static int
 sixel_path_is_unc(char const *path)
 {
@@ -160,6 +169,50 @@ sixel_path_parse_nested_cygdrive(char const *path,
 }
 #endif
 
+#if defined(__COSMOPOLITAN__)
+static int
+sixel_path_cosmo_is_windows(void)
+{
+    /*
+     * Cosmopolitan exposes the runtime OS via IsWindows(). Keep this helper
+     * so we can guard conversions without scattering the API across branches.
+     */
+    return IsWindows() ? 1 : 0;
+}
+#endif
+
+#if defined(__EMSCRIPTEN__)
+static int
+sixel_path_emscripten_rawfs_enabled(void)
+{
+    char const *setting;
+
+    /*
+     * Decide whether /c/... and /cygdrive/c/... paths should be treated as
+     * Windows-native. The logic is intentionally defensive:
+     *
+     * 1. If emscripten_get_compiler_setting is missing, assume enabled.
+     * 2. If the returned string is empty or NULL, assume enabled.
+     * 3. Treat "0"/"false" (case-insensitive) as disabled, everything else
+     *    as enabled.
+     */
+#if !HAVE_EMSCRIPTEN_GET_COMPILER_SETTING
+    return 1;
+#else
+    setting = emscripten_get_compiler_setting("NODERAWFS");
+    if (setting == NULL || setting[0] == '\0') {
+        return 1;
+    }
+    if (setting[0] == '0'
+        || setting[0] == 'f'
+        || setting[0] == 'F') {
+        return 0;
+    }
+    return 1;
+#endif
+}
+#endif
+
 #if defined(__MSYS__)
 /*
  * Keep the helper scoped to the platforms that consume it so
@@ -190,6 +243,9 @@ sixel_path_to_libc_buffer_size(char const *path)
 {
     char drive;
     char const *rest;
+#if defined(__EMSCRIPTEN__) || defined(__COSMOPOLITAN__)
+    int rawfs_enabled;
+#endif
 
     if (path == NULL) {
         return 0u;
@@ -231,6 +287,38 @@ sixel_path_to_libc_buffer_size(char const *path)
         return strlen(rest) + 3u;
     }
     return 0u;
+#elif defined(__COSMOPOLITAN__)
+    if (!sixel_path_cosmo_is_windows()) {
+        return 0u;
+    }
+    if (sixel_path_parse_drive_letter(path, &drive, &rest)) {
+        return 0u;
+    }
+    if (sixel_path_parse_nested_cygdrive(path, &drive, &rest)) {
+        return strlen(rest) + 3u;
+    }
+    if (sixel_path_parse_cygdrive(path, &drive, &rest)) {
+        return strlen(rest) + 3u;
+    }
+    if (sixel_path_parse_msys_drive(path, &drive, &rest)) {
+        return strlen(rest) + 3u;
+    }
+    return 0u;
+#elif defined(__EMSCRIPTEN__)
+    rawfs_enabled = sixel_path_emscripten_rawfs_enabled();
+    if (!rawfs_enabled) {
+        return 0u;
+    }
+    if (sixel_path_parse_msys_drive(path, &drive, &rest)) {
+        return strlen(rest) + 3u;
+    }
+    if (sixel_path_parse_cygdrive(path, &drive, &rest)) {
+        return strlen(rest) + 3u;
+    }
+    if (sixel_path_parse_nested_cygdrive(path, &drive, &rest)) {
+        return strlen(rest) + 3u;
+    }
+    return 0u;
 #else
     (void)drive;
     (void)rest;
@@ -249,6 +337,9 @@ sixel_path_to_libc(char const *path,
     char const *rest;
     size_t index;
     size_t out_index;
+#if defined(__EMSCRIPTEN__) || defined(__COSMOPOLITAN__)
+    int rawfs_enabled;
+#endif
 
     if (path == NULL) {
         return NULL;
@@ -328,6 +419,54 @@ sixel_path_to_libc(char const *path,
         return buffer;
     }
     return path;
+#elif defined(__COSMOPOLITAN__)
+    (void)prefix_len;
+    if (!sixel_path_cosmo_is_windows()) {
+        return path;
+    }
+    if (sixel_path_parse_drive_letter(path, &drive, &rest)) {
+        return path;
+    }
+    if (sixel_path_parse_nested_cygdrive(path, &drive, &rest)
+        || sixel_path_parse_cygdrive(path, &drive, &rest)
+        || sixel_path_parse_msys_drive(path, &drive, &rest)) {
+        buffer[0] = drive;
+        buffer[1] = ':';
+        out_index = 2u;
+        for (index = 0u; rest[index] != '\0'; index++) {
+            if (out_index + 1u >= buffer_size) {
+                return NULL;
+            }
+            buffer[out_index] = rest[index] == '\\' ? '/' : rest[index];
+            out_index++;
+        }
+        buffer[out_index] = '\0';
+        return buffer;
+    }
+    return path;
+#elif defined(__EMSCRIPTEN__)
+    (void)prefix_len;
+    rawfs_enabled = sixel_path_emscripten_rawfs_enabled();
+    if (!rawfs_enabled) {
+        return path;
+    }
+    if (sixel_path_parse_msys_drive(path, &drive, &rest)
+        || sixel_path_parse_cygdrive(path, &drive, &rest)
+        || sixel_path_parse_nested_cygdrive(path, &drive, &rest)) {
+        buffer[0] = drive;
+        buffer[1] = ':';
+        out_index = 2u;
+        for (index = 0u; rest[index] != '\0'; index++) {
+            if (out_index + 1u >= buffer_size) {
+                return NULL;
+            }
+            buffer[out_index] = rest[index] == '\\' ? '/' : rest[index];
+            out_index++;
+        }
+        buffer[out_index] = '\0';
+        return buffer;
+    }
+    return path;
 #else
     (void)buffer;
     (void)buffer_size;
@@ -336,6 +475,9 @@ sixel_path_to_libc(char const *path,
     (void)rest;
     (void)index;
     (void)out_index;
+#if defined(__EMSCRIPTEN__) || defined(__COSMOPOLITAN__)
+    (void)rawfs_enabled;
+#endif
     return path;
 #endif
 }
