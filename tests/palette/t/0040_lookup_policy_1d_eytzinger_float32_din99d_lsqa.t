@@ -47,15 +47,7 @@ else
     exit "${status}"
 fi
 
-if run_sixel2png -i "${output_sixel}" -o "${output_png}" \
-        2>>"${log_file}"; then
-    :
-else
-    fail 1 "sixel2png decode failed"
-    exit "${status}"
-fi
-
-if lsqa_assert_quality "${input_image}" "${output_png}" \
+if lsqa_assert_quality "${input_image}" "${output_sixel}" \
         "eytzinger-float32-din99d" "${artifact_dir}" "${lsqa_floor}"; then
     pass 1 "float32 Eytzinger DIN99d colorspace lsqa passed"
 else

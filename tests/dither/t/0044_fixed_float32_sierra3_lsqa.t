@@ -19,7 +19,7 @@ setup_conversion_env "${test_name}"
 
 status=0
 
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.6}
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 ensure_img2sixel_available
 ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
@@ -38,10 +38,8 @@ output_png="${output_dir}/${case_id}.png"
 
 require_file "${input_image}"
 
-if run_img2sixel -d sierra3 -y raster -W oklab \
-        -o "${output_sixel}" "${input_image}" 2>>"${log_file}" && \
-        run_sixel2png -o "${output_png}" "${output_sixel}" 2>>"${log_file}" && \
-        lsqa_assert_quality "${input_image}" "${output_png}" \
+if run_img2sixel -d sierra3 -y raster -W oklab -o "${output_sixel}" "${input_image}" 2>>"${log_file}" && \
+        lsqa_assert_quality "${input_image}" "${output_sixel}" \
         "${case_id}" "${artifact_dir}" "${lsqa_floor}"; then
     pass 1 "fixed float32 Sierra-3 diffusion lsqa passed"
 else

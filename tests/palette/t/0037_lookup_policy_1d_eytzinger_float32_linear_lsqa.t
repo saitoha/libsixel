@@ -17,7 +17,7 @@ setup_conversion_env "${test_name}"
 
 status=0
 
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.6}
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 ensure_img2sixel_available
 ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
@@ -47,15 +47,7 @@ else
     exit "${status}"
 fi
 
-if run_sixel2png -i "${output_sixel}" -o "${output_png}" \
-        2>>"${log_file}"; then
-    :
-else
-    fail 1 "sixel2png decode failed"
-    exit "${status}"
-fi
-
-if lsqa_assert_quality "${input_image}" "${output_png}" \
+if lsqa_assert_quality "${input_image}" "${output_sixel}" \
         "eytzinger-float32-linear" "${artifact_dir}" "${lsqa_floor}"; then
     pass 1 "float32 Eytzinger linear colorspace lsqa passed"
 else
