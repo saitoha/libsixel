@@ -77,18 +77,10 @@ typedef enum sixel_assessment_spool_mode {
 struct sixel_assessment {
     sixel_atomic_u32_t refcount;
     sixel_allocator_t *allocator;
-    int enable_lpips;
     int results_ready;
     SIXELSTATUS last_error;
     jmp_buf bailout;
     char error_message[256];
-    char binary_dir[PATH_MAX];
-    int binary_dir_state;
-    char model_dir[PATH_MAX];
-    int model_dir_state;
-    int lpips_models_ready;
-    char diff_model_path[PATH_MAX];
-    char feat_model_path[PATH_MAX];
     unsigned int results_valid_mask; /* valid bits for results[] */
     double results[SIXEL_ASSESSMENT_METRIC_COUNT];
     sixel_assessment_stage_t active_stage;

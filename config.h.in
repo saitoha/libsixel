@@ -291,9 +291,6 @@
 /* Define to 1 if you have the 'ole32' library (-lole32). */
 #undef HAVE_LIBOLE32
 
-/* Define to 1 if you have the 'onnxruntime' library (-lonnxruntime). */
-#undef HAVE_LIBONNXRUNTIME
-
 /* whether libpng is available */
 #undef HAVE_LIBPNG
 
@@ -345,9 +342,6 @@
 
 /* Define if NEON is available */
 #undef HAVE_NEON
-
-/* Define if ONNX Runtime is available */
-#undef HAVE_ONNXRUNTIME
 
 /* Define to 1 if you have the 'open' function. */
 #undef HAVE_OPEN

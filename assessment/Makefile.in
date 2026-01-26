@@ -14,7 +14,6 @@
 
 @SET_MAKE@
 
-
 VPATH = @srcdir@
 am__is_gnu_make = { \
   if test -z '$(MAKELEVEL)'; then \
@@ -106,13 +105,12 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
 	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-DIST_COMMON = $(srcdir)/Makefile.am $(am__dist_lpipsmodels_DATA_DIST) \
-	$(am__DIST_COMMON)
+DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(lpipsmodelsdir)"
+am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
 am__lsqa_SOURCES_DIST = $(srcdir)/lsqa.c
 @WANT_AMALGAMATED_TOOLS_FALSE@am_lsqa_OBJECTS = lsqa-lsqa.$(OBJEXT)
@@ -125,8 +123,7 @@ am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1)
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 @WANT_AMALGAMATED_TOOLS_FALSE@lsqa_DEPENDENCIES =  \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/src/libsixel.la
 @WANT_AMALGAMATED_TOOLS_TRUE@lsqa_DEPENDENCIES =  \
@@ -182,36 +179,6 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-am__dist_lpipsmodels_DATA_DIST =  \
-	$(top_srcdir)/models/lpips/lpips_diff.onnx \
-	$(top_srcdir)/models/lpips/lpips_feature.onnx
-am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
-am__vpath_adj = case $$p in \
-    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
-    *) f=$$p;; \
-  esac;
-am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
-am__install_max = 40
-am__nobase_strip_setup = \
-  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
-am__nobase_strip = \
-  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
-am__nobase_list = $(am__nobase_strip_setup); \
-  for p in $$list; do echo "$$p $$p"; done | \
-  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
-  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
-    if (++n[$$2] == $(am__install_max)) \
-      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
-    END { for (dir in files) print dir, files[dir] }'
-am__base_list = \
-  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
-  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__uninstall_files_from_dir = { \
-  { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
-  || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
-       $(am__cd) "$$dir" && echo $$files | $(am__xargs_n) 40 $(am__rm_f); }; \
-  }
-DATA = $(dist_lpipsmodels_DATA)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 # Read a list of newline-separated strings from the standard input,
 # and print each of them once, without duplicates.  Input order is
@@ -316,8 +283,6 @@ OBJCDEPMODE = @OBJCDEPMODE@
 OBJCFLAGS = @OBJCFLAGS@
 OBJDUMP = @OBJDUMP@
 OBJEXT = @OBJEXT@
-ONNXRUNTIME_CFLAGS = @ONNXRUNTIME_CFLAGS@
-ONNXRUNTIME_LIBS = @ONNXRUNTIME_LIBS@
 OTOOL = @OTOOL@
 OTOOL64 = @OTOOL64@
 PACKAGE = @PACKAGE@
@@ -441,7 +406,7 @@ AMALGAMATION_LSQA_CPPFLAGS = $(AM_CPPFLAGS) $(LIBCURL_CFLAGS) \
 	$(WINHTTP_CFLAGS) $(LIBPNG_CFLAGS) $(LIBJPEG_CFLAGS) \
 	$(GDK_PIXBUF_CFLAGS) $(GD_CFLAGS) $(WIC_CFLAGS) \
 	$(COREGRAPHICS_CFLAGS) $(QUICKLOOK_CFLAGS) $(CLIPBOARD_CFLAGS) \
-	$(ONNXRUNTIME_CFLAGS) @THREAD_CFLAGS@ $(am__append_2)
+	@THREAD_CFLAGS@ $(am__append_2)
 AMALGAMATION_LSQA_LIBS = -lm \
         $(LIBCURL_LIBS) \
         $(WINHTTP_LIBS) \
@@ -453,7 +418,6 @@ AMALGAMATION_LSQA_LIBS = -lm \
         $(COREGRAPHICS_LIBS) \
         $(QUICKLOOK_LIBS) \
         $(CLIPBOARD_LIBS) \
-        $(ONNXRUNTIME_LIBS) \
         @THREAD_LIBS@
 
 @WANT_AMALGAMATED_TOOLS_FALSE@lsqa_SOURCES = $(srcdir)/lsqa.c
@@ -470,10 +434,6 @@ AMALGAMATION_LSQA_LIBS = -lm \
 @WANT_AMALGAMATED_TOOLS_TRUE@lsqa_LDFLAGS = $(MAYBE_COVERAGE)
 @WANT_AMALGAMATED_TOOLS_FALSE@lsqa_LDADD = $(top_builddir)/src/libsixel.la
 @WANT_AMALGAMATED_TOOLS_TRUE@lsqa_LDADD = $(AMALGAMATION_LSQA_LIBS)
-@HAVE_ONNXRUNTIME_TRUE@lpipsmodelsdir = @modeldir@/lpips
-@HAVE_ONNXRUNTIME_TRUE@dist_lpipsmodels_DATA = $(top_srcdir)/models/lpips/lpips_diff.onnx \
-@HAVE_ONNXRUNTIME_TRUE@                        $(top_srcdir)/models/lpips/lpips_feature.onnx
-
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(bin_PROGRAMS)
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_STAMP = assessment-shebang.stamp
 all: $(BUILT_SOURCES)
@@ -641,27 +601,6 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
-install-dist_lpipsmodelsDATA: $(dist_lpipsmodels_DATA)
-	@$(NORMAL_INSTALL)
-	@list='$(dist_lpipsmodels_DATA)'; test -n "$(lpipsmodelsdir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(lpipsmodelsdir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(lpipsmodelsdir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
-	  echo "$$d$$p"; \
-	done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(lpipsmodelsdir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(lpipsmodelsdir)" || exit $$?; \
-	done
-
-uninstall-dist_lpipsmodelsDATA:
-	@$(NORMAL_UNINSTALL)
-	@list='$(dist_lpipsmodels_DATA)'; test -n "$(lpipsmodelsdir)" || list=; \
-	files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	dir='$(DESTDIR)$(lpipsmodelsdir)'; $(am__uninstall_files_from_dir)
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique
@@ -752,9 +691,9 @@ check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
 @WITH_SHEBANG_FILE_FALSE@all-local:
-all-am: Makefile $(PROGRAMS) $(DATA) all-local
+all-am: Makefile $(PROGRAMS) all-local
 installdirs:
-	for dir in "$(DESTDIR)$(bindir)" "$(DESTDIR)$(lpipsmodelsdir)"; do \
+	for dir in "$(DESTDIR)$(bindir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -816,7 +755,7 @@ info: info-am
 
 info-am:
 
-install-data-am: install-dist_lpipsmodelsDATA
+install-data-am:
 
 install-dvi: install-dvi-am
 
@@ -863,7 +802,7 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-binPROGRAMS uninstall-dist_lpipsmodelsDATA
+uninstall-am: uninstall-binPROGRAMS
 
 .MAKE: all check install install-am install-exec install-strip
 
@@ -872,16 +811,15 @@ uninstall-am: uninstall-binPROGRAMS uninstall-dist_lpipsmodelsDATA
 	cscopelist-am ctags ctags-am distclean distclean-compile \
 	distclean-generic distclean-libtool distclean-tags distdir dvi \
 	dvi-am html html-am info info-am install install-am \
-	install-binPROGRAMS install-data install-data-am \
-	install-dist_lpipsmodelsDATA install-dvi install-dvi-am \
-	install-exec install-exec-am install-html install-html-am \
-	install-info install-info-am install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-compile \
-	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
-	tags tags-am uninstall uninstall-am uninstall-binPROGRAMS \
-	uninstall-dist_lpipsmodelsDATA
+	install-binPROGRAMS install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am tags tags-am uninstall uninstall-am \
+	uninstall-binPROGRAMS
 
 .PRECIOUS: Makefile
 

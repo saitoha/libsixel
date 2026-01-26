@@ -234,7 +234,6 @@ libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(COREGRAPHICS_CFLAGS) \
                 $(QUICKLOOK_CFLAGS) \
                 $(CLIPBOARD_CFLAGS) \
-                $(ONNXRUNTIME_CFLAGS) \
                 @THREAD_CFLAGS@
 if BUILDING_ON_WINDOWS
 libsixel_la_LDFLAGS = -no-undefined -version-info $(LS_LTVERSION) $(MAYBE_COVERAGE)
@@ -252,7 +251,6 @@ libsixel_la_LIBADD = -lm \
                 $(COREGRAPHICS_LIBS) \
                 $(QUICKLOOK_LIBS) \
                 $(CLIPBOARD_LIBS) \
-                $(ONNXRUNTIME_LIBS) \
                 @THREAD_LIBS@
 
 dist_man_MANS = $(srcdir)/sixel.5

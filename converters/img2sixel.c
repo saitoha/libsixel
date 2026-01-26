@@ -1358,12 +1358,6 @@ void show_version(void)
 #else
            "no\n"
 #endif
-           "  ONNX Runtime: "
-#ifdef HAVE_ONNXRUNTIME
-           "yes\n"
-#else
-           "no\n"
-#endif
            "  CoreGraphics: "
 #ifdef HAVE_COREGRAPHICS
            "yes\n"

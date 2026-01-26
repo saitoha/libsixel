@@ -32,7 +32,6 @@ cd "${BUILDDIR}" && (
     --without-png \
     --without-jpeg \
     --without-libcurl \
-    --without-onnxruntime \
     --disable-wiccodec \
     --disable-appkit \
     --without-coregraphics \
