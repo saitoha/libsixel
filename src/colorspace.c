@@ -794,8 +794,15 @@ sixel_colorspace_convert_sse2(unsigned char *pixels,
 }
 #endif
 
+/*
+ * Temporarily disable AVX2 linear colorspace conversion to validate
+ * palette behavior without the vectorized path.
+ */
+#define SIXEL_DISABLE_LINEAR_AVX2 1
+
 #if defined(SIXEL_USE_AVX2) && defined(__AVX2__)
 
+#if !defined(SIXEL_DISABLE_LINEAR_AVX2)
 static inline __m256i
 sixel_colorspace_pack_linear_bytes_avx(__m256 value)
 {
@@ -1315,13 +1322,6 @@ sixel_colorspace_oklab_to_linear_block_pd(__m256d L,
         _mm256_mul_pd(b_s, s)), zero);
 }
 
-/*
- * Temporarily disable AVX2 linear colorspace conversion to validate
- * palette behavior without the vectorized path.
- */
-#define SIXEL_DISABLE_LINEAR_AVX2 1
-
-#if !defined(SIXEL_DISABLE_LINEAR_AVX2)
 static size_t
 sixel_convert_pixels_via_linear_avx2(unsigned char *pixels,
                                      size_t pixel_total,
