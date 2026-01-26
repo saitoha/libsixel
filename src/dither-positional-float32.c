@@ -383,7 +383,6 @@ positional_mask_blue_float32(int x, int y, int c)
         * g_sixel_bn_conf_float32.strength;
 }
 
-#define max_channels 4
 SIXELSTATUS
 sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                                       sixel_dither_context_t *context)
@@ -398,7 +397,7 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
     int float_depth;
     int float_index;
     unsigned char *quantized;
-    float lookup_pixel_float[max_channels];
+    float lookup_pixel_float[SIXEL_MAX_CHANNELS];
     unsigned char const *lookup_pixel;
     sixel_lut_t *fast_lut;
     int use_fast_lut;
