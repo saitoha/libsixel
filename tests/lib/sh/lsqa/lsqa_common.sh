@@ -8,7 +8,7 @@
 # - Initialization discovers lsqa binaries and data directories.
 # - _lsqa_run_compare executes lsqa and captures output.
 # - Assertions compare MS-SSIM to a caller-provided floor.
-# - Optional sixel helpers encode images through img2sixel before checking.
+# - Sixel checks are handled by callers before asserting quality.
 # - Each quality check stores lsqa.txt history for debugging flaky failures.
 
 set -eu
@@ -281,17 +281,6 @@ lsqa_sixel_init() {
     ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
     return 0
-}
-
-lsqa_sixel_assert_quality() {
-    lsqa_sixel_ref_path=$1
-    lsqa_sixel_label=$2
-    lsqa_sixel_artifact_dir=$3
-    lsqa_sixel_floor_ms=${4:-${MS_SSIM_FLOOR}}
-
-    _lsqa_assert_quality_common "sixel" "${lsqa_sixel_ref_path}" "" \
-        "${lsqa_sixel_label}" "${lsqa_sixel_artifact_dir}" \
-        "${lsqa_sixel_floor_ms}"
 }
 
 lsqa_expect_low_quality_or_fail() {
