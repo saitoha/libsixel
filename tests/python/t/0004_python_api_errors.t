@@ -19,7 +19,7 @@ tmp_dir="${artifact_dir}/tmp"
 
 # Resolve the fixture relative to the repository root so the Python preflight
 # checks see an absolute path even when Automake does not populate TOP_SRCDIR.
-source_image=$(cd "$(dirname "$0")/../../.." && pwd)/images/autumn.png
+source_image=$(cd "$(dirname "$0")/../../.." && pwd)/images/snake.png
 
 mkdir -p "${artifact_dir}" "${tmp_dir}"
 rm -f "${log_file}"

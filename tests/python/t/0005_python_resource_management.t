@@ -167,7 +167,7 @@ fi
 
 case_id=1
 
-source_image="${TOP_SRCDIR}/images/autumn.png"
+source_image="${TOP_SRCDIR}/images/snake.png"
 work_dir="${tmp_dir}/work"
 
 if [ "${use_wheel}" -eq 1 ]; then
