@@ -204,6 +204,36 @@ sixel_path_parse_nested_cygdrive(char const *path,
  * paths into POSIX form for the Cygwin/MSYS runtimes. We only use it to
  * convert to POSIX because libc on these platforms expects POSIX paths.
  */
+static int
+sixel_path_cygwin_conv_target(char const *path)
+{
+    static char const *clipboard_prefix = "clipboard:";
+    size_t prefix_len;
+
+    prefix_len = strlen(clipboard_prefix);
+    if (path == NULL) {
+        return 0;
+    }
+
+    if (path[0] == '\0') {
+        return 0;
+    }
+
+    /*
+     * Skip stdin/stdout sentinels and pseudo targets that are interpreted
+     * by the CLI layer instead of the filesystem.
+     */
+    if (strcmp(path, "-") == 0) {
+        return 0;
+    }
+
+    if (strncmp(path, clipboard_prefix, prefix_len) == 0) {
+        return 0;
+    }
+
+    return 1;
+}
+
 static size_t
 sixel_path_cygwin_conv_needed(char const *path)
 {
@@ -211,6 +241,9 @@ sixel_path_cygwin_conv_needed(char const *path)
 
     needed = 0;
     if (path == NULL) {
+        return 0u;
+    }
+    if (!sixel_path_cygwin_conv_target(path)) {
         return 0u;
     }
 
@@ -234,6 +267,9 @@ sixel_path_cygwin_conv_to_posix(char const *path,
     result = 0;
 
     if (path == NULL) {
+        return NULL;
+    }
+    if (!sixel_path_cygwin_conv_target(path)) {
         return NULL;
     }
 
