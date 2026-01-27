@@ -36,11 +36,11 @@ fail() {
     exit 1
 }
 
-require_file "${images_dir}/autumn.png"
+require_file "${images_dir}/snake.png"
 
 echo "1..1"
 
-sixel_src="${images_dir}/autumn.png"
+sixel_src="${images_dir}/snake.png"
 sixel_tmp="${artifact_dir}/clipboard-input.six"
 roundtrip_png="${artifact_dir}/clipboard-roundtrip.png"
 
