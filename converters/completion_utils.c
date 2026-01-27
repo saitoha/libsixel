@@ -776,13 +776,14 @@ img2sixel_compat_rename(const char *src_path, const char *dst_path)
         return (-1);
     }
 
-#if defined(_MSC_VER) && defined(HAVE__RENAME)
+#if defined(_MSC_VER)
+    /*
+     * Prefer the MSVC spelling to avoid deprecation warnings while keeping
+     * the POSIX fallback for other toolchains.
+     */
     result = _rename(libc_src, libc_dst);
-#elif defined(HAVE_RENAME)
-    result = rename(libc_src, libc_dst);
 #else
-    errno = ENOSYS;
-    result = (-1);
+    result = rename(libc_src, libc_dst);
 #endif
 
     if (src_buffer != NULL) {
@@ -1089,6 +1090,20 @@ write_atomic(const char *dst_path, const void *buf, size_t len, mode_t mode)
         int saved_errno_fsync;
 
         saved_errno_fsync = errno;
+        if (saved_errno_fsync == ENOSYS) {
+            /* Treat missing fsync support as a best-effort success. */
+            saved_errno_fsync = 0;
+        }
+        if (saved_errno_fsync == 0) {
+            if (img2sixel_compat_close(fd) != 0) {
+                saved_errno = errno;
+                (void)img2sixel_compat_unlink(tmp_path);
+                free(tmp_path);
+                errno = saved_errno;
+                return -1;
+            }
+            goto rename_stage;
+        }
         (void)img2sixel_compat_close(fd);
         (void)img2sixel_compat_unlink(tmp_path);
         free(tmp_path);
@@ -1104,6 +1119,7 @@ write_atomic(const char *dst_path, const void *buf, size_t len, mode_t mode)
         return -1;
     }
 
+rename_stage:
     if (img2sixel_compat_rename(tmp_path, dst_path) != 0) {
         saved_errno = errno;
         (void)img2sixel_compat_unlink(tmp_path);
