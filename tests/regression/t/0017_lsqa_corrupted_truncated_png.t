@@ -39,6 +39,7 @@ artifact_dir="${artifact_root}/${category_name}/${test_name}"
 mkdir -p "${artifact_dir}"
 
 printf '1..1\n'
+set -v
 
 image_path="${LSQA_INPUT_ROOT}/corrupted/truncated.png"
 if lsqa_expect_low_quality_or_fail "${image_path}" \

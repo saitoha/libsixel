@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test verifying bash completion output from img2sixel.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -34,6 +34,7 @@ completion_source="${completion_dir}/bash/img2sixel"
 require_file "${completion_source}"
 
 printf '1..1\n'
+set -v
 
 IMG2SIXEL_COMPLETION_DIR="${completion_dir}"
 export IMG2SIXEL_COMPLETION_DIR

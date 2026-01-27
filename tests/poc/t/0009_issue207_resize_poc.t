@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test for issue #207 resize handling on crafted input.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -53,6 +53,7 @@ issue207="${top_srcdir}/tests/issue/207/poc"
 require_file "${issue207}"
 
 printf '1..1\n'
+set -v
 
 if check_exit -h 50% -r lanczos3 -w 300px "${issue207}" \
         >"${output_dir}/issue207-resize.sixel"; then

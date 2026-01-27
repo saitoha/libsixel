@@ -13,6 +13,7 @@ status=0
 ensure_img2sixel_available
 
 echo "1..1"
+set -v
 
 snake_pgm="${images_dir}/snake.pgm"
 require_file "${snake_pgm}"

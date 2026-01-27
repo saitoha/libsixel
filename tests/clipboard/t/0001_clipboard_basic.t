@@ -2,7 +2,7 @@
 # TAP test verifying clipboard conversion round-trip when supported.
 
 # Enable strict mode with verbose tracing for diagnostics.
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -39,6 +39,7 @@ fail() {
 require_file "${images_dir}/snake.png"
 
 echo "1..1"
+set -v
 
 sixel_src="${images_dir}/snake.png"
 sixel_tmp="${artifact_dir}/clipboard-input.six"

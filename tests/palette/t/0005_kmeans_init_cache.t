@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test: cached k-means init type preserves PCA selection.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -15,6 +15,7 @@ script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${script_dir}/../../lib/sh/palette/kmeans_init_common.sh"
 
 echo "1..1"
+set -v
 
 cache_line=$(run_kmeans_init "pca" --cache)
 if [ "${cache_line}" = "pca pca" ]; then

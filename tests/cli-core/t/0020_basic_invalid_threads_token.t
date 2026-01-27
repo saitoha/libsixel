@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test ensuring sixel2png rejects invalid thread tokens.
 
-set -euxv
+set -eux
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 CLI_CORE_HELPER_DIR="${script_dir}/../../lib/sh/cli-core"
@@ -13,6 +13,7 @@ ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 require_file "${images_dir}/map64.six"
 
 echo "1..1"
+set -v
 
 threads_err=$(make_temp_file "${tmp_dir}" "sixel2png-threads-err")
 if run_sixel2png -= bogus <"${images_dir}/map64.six" \

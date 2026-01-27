@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test comparing img2sixel manpage with bash completion definitions.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -47,6 +47,7 @@ if ! command -v diff >/dev/null 2>&1; then
 fi
 
 printf '1..1\n'
+set -v
 
 if awk '
     /^\.[ \t]*B[ \t]/ {

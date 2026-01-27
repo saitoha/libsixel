@@ -2,7 +2,7 @@
 # TAP test checking tab-separated colour introducers are decoded successfully.
 
 # Enable strict mode with verbose tracing for diagnostics.
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -32,6 +32,7 @@ fail() {
 }
 
 echo "1..1"
+set -v
 
 snake_png="${images_dir}/snake.png"
 

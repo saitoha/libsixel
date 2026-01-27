@@ -13,6 +13,7 @@ status=0
 ensure_img2sixel_available
 
 echo "1..1"
+set -v
 
 check_dcs_crc 1 "-hauto -w12" \
     "automatic height with width scaling stays consistent"

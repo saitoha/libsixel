@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test: sequence splitting with Atkinson dithering.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -30,6 +30,7 @@ fail() {
 }
 
 echo "1..1"
+set -v
 
 seq_gif="${images_dir}/seq2gif.gif"
 

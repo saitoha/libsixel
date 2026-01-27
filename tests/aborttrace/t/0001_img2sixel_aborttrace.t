@@ -15,6 +15,7 @@ ensure_feature_available "SIXEL_ENABLE_ABORT_TRACE" "abort_trace" \
 ensure_img2sixel_available
 
 echo "1..1"
+set -v
 
 stderr_file="${output_dir}/img2sixel-aborttrace.err"
 output_file="${output_dir}/img2sixel-aborttrace.six"

@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test verifying sixel2png reports usage information.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -30,6 +30,7 @@ fail() {
 }
 
 echo "1..1"
+set -v
 
 help_output="${output_dir}/help.txt"
 if run_sixel2png -H 2>>"${log_file}" 1>"${help_output}"; then

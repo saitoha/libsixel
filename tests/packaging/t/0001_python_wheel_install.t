@@ -15,6 +15,7 @@ require_venv_support
 locate_wheel
 
 echo "1..1"
+set -v
 status=0
 case_id=1
 

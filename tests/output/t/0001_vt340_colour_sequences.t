@@ -13,6 +13,7 @@ status=0
 ensure_img2sixel_available
 
 echo "1..1"
+set -v
 
 snake_ppm="${images_dir}/snake.ppm"
 target_sixel="${output_dir}/vt340-colour.sixel"
