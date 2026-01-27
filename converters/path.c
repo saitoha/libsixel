@@ -677,6 +677,9 @@ img2sixel_path_to_libc_buffer_size(char const *path)
     }
 #endif
     if (img2sixel_path_parse_drive_letter(path, &drive, &rest)) {
+        if (strchr(path, '/') != NULL) {
+            return strlen(path) + 1u;
+        }
         return 0u;
     }
     if (img2sixel_path_parse_nested_cygdrive(path, &drive, &rest)) {
@@ -709,6 +712,9 @@ img2sixel_path_to_libc_buffer_size(char const *path)
     }
 #endif
     if (img2sixel_path_parse_drive_letter(path, &drive, &rest)) {
+        if (strchr(path, '/') != NULL) {
+            return strlen(path) + 1u;
+        }
         return 0u;
     }
     if (img2sixel_path_parse_nested_cygdrive(path, &drive, &rest)) {
@@ -799,8 +805,8 @@ img2sixel_path_to_libc(char const *path,
             out_index++;
         }
         buffer[out_index] = '\0';
-    return buffer;
-}
+        return buffer;
+    }
 
     return path;
 #elif defined(__CYGWIN__)
@@ -856,6 +862,22 @@ img2sixel_path_to_libc(char const *path,
     }
 #endif
     if (img2sixel_path_parse_drive_letter(path, &drive, &rest)) {
+        if (strchr(path, '/') != NULL) {
+            size_t path_len;
+
+            /* Normalize forward slashes for native Windows paths. */
+            path_len = strlen(path);
+            if (buffer_size <= path_len) {
+                return NULL;
+            }
+            memcpy(buffer, path, path_len + 1u);
+            for (index = 0u; buffer[index] != '\0'; index++) {
+                if (buffer[index] == '/') {
+                    buffer[index] = '\\';
+                }
+            }
+            return buffer;
+        }
         return path;
     }
     if (img2sixel_path_parse_nested_cygdrive(path, &drive, &rest)
@@ -899,6 +921,22 @@ img2sixel_path_to_libc(char const *path,
     }
 #endif
     if (img2sixel_path_parse_drive_letter(path, &drive, &rest)) {
+        if (strchr(path, '/') != NULL) {
+            size_t path_len;
+
+            /* Normalize forward slashes for native Windows paths. */
+            path_len = strlen(path);
+            if (buffer_size <= path_len) {
+                return NULL;
+            }
+            memcpy(buffer, path, path_len + 1u);
+            for (index = 0u; buffer[index] != '\0'; index++) {
+                if (buffer[index] == '/') {
+                    buffer[index] = '\\';
+                }
+            }
+            return buffer;
+        }
         return path;
     }
     if (img2sixel_path_parse_nested_cygdrive(path, &drive, &rest)
