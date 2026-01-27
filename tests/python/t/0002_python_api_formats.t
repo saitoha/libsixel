@@ -118,7 +118,7 @@ while IFS=: read -r label source_path; do
 
     case_id=$((case_id + 1))
 done <<EOF
-PNG:${TOP_SRCDIR}/images/autumn.png
+PNG:${TOP_SRCDIR}/images/snake.png
 JPEG:${TOP_SRCDIR}/images/egret.jpg
 GIF:${TOP_SRCDIR}/images/snake.gif
 BMP:${TOP_SRCDIR}/images/snake.bmp
