@@ -523,8 +523,7 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                         context->depth,
                         palette_float,
                         context->reqcolor,
-                        context->complexion,
-                        0);
+                        context->complexion);
                 } else {
                     lookup_pixel = quantized;
                     if (use_fast_lut) {
@@ -658,8 +657,7 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
                                 context->depth,
                                 palette_float,
                                 context->reqcolor,
-                                context->complexion,
-                                0);
+                                context->complexion);
                     } else {
                         lookup_pixel = quantized;
                         context->result[pos] = (sixel_index_t)

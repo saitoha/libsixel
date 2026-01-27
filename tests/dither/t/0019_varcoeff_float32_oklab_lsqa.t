@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test covering variable-coefficient LSO2 float32 with Oklab L/R diffusion.
+# TAP test covering variable-coefficient LSO2 float32 with OKLab diffusion.
 #
 # Flow:
 # - Convert the 64x64 snake reference with the target dithering options.
@@ -37,15 +37,12 @@ output_png="${output_dir}/${case_id}.png"
 
 require_file "${input_image}"
 
-SIXEL_PALETTE_DIFFUSE_USE_L_R=1 
-export SIXEL_PALETTE_DIFFUSE_USE_L_R
-
 if run_img2sixel -d lso2 -y raster -W oklab -o "${output_sixel}" "${input_image}" 2>>"${log_file}" && \
         lsqa_assert_quality "${input_image}" "${output_sixel}" \
         "${case_id}" "${artifact_dir}" "${lsqa_floor}"; then
-    pass 1 "variable-coefficient LSO2 float32 with Oklab L/R diffusion lsqa passed"
+    pass 1 "variable-coefficient LSO2 float32 with OKLab lsqa passed"
 else
-    fail 1 "variable-coefficient LSO2 float32 with Oklab L/R diffusion lsqa failed"
+    fail 1 "variable-coefficient LSO2 float32 with OKLab lsqa failed"
 fi
 
 exit "${status}"

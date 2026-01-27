@@ -910,12 +910,6 @@ static cli_env_help_t const g_env_help_table[] = {
         "initialisation."
     },
     {
-        "SIXEL_PALETTE_DIFFUSE_USE_L_R",
-        "Enable the Bottosson L_r toe curve for OKLab float LSO2 distance\n"
-        "when set. Non-empty values except '0' switch distance to L_r;\n"
-        "defaults to raw L."
-    },
-    {
         "SIXEL_DITHER_LOOKUP_POLICY",
         "select palette lookup policy (auto, 5bit, 6bit, none, certlut,\n"
         "eytzinger, or vpte)."

@@ -94,8 +94,7 @@ sixel_dither_lookup_palette_float32(float const *pixel,
                                     int depth,
                                     float const *palette,
                                     int reqcolor,
-                                    int complexion,
-                                    int use_l_r_distance)
+                                    int complexion)
 {
     double best_error;
     double error;
@@ -154,25 +153,13 @@ sixel_dither_lookup_palette_float32(float const *pixel,
     best_error = DBL_MAX;
     color_simd_end = 0;
     sample_l = (double)pixel[0];
-    if (use_l_r_distance != 0) {
-        /*
-         * Optional OKLab L_r remap keeps shadow distances stable without
-         * mutating the stored sample buffers.
-         */
-        const double k1 = 0.206;
-        const double k2 = 0.03;
-        const double k3 = (1.0 + k1) / (1.0 + k2);
-
-        sample_l = 0.5 * (((k3 * sample_l) / (sample_l + k1))
-                          + (sample_l / ((k2 * sample_l) + 1.0)));
-    }
 #if defined(__AVX2__)
     /*
-     * AVX2 fast path for depth==3 without L_r remap.  Eight palette entries
-     * are compared at once, keeping the scalar tail to handle any remainder
-     * or non-RGB layouts.
+     * AVX2 fast path for depth==3.  Eight palette entries are compared at
+     * once, keeping the scalar tail to handle any remainder or non-RGB
+     * layouts.
      */
-    if (depth == 3 && use_l_r_distance == 0) {
+    if (depth == 3) {
         sample_l_ps = _mm256_set1_ps(pixel[0]);
         sample_r_ps = _mm256_set1_ps(pixel[1]);
         sample_g_ps = _mm256_set1_ps(pixel[2]);
@@ -321,11 +308,11 @@ sixel_dither_lookup_palette_float32(float const *pixel,
 #endif
 #if defined(__wasm_simd128__)
     /*
-     * WASM SIMD fast path for depth==3 without L_r remap.  Palette entries
-     * are processed in groups of four to balance gather cost and register
-     * pressure; any remainder is handled by the scalar loop below.
+     * WASM SIMD fast path for depth==3.  Palette entries are processed in
+     * groups of four to balance gather cost and register pressure; any
+     * remainder is handled by the scalar loop below.
      */
-    if (color_simd_end == 0 && depth == 3 && use_l_r_distance == 0) {
+    if (color_simd_end == 0 && depth == 3) {
         sample_l_ps = wasm_f32x4_splat(pixel[0]);
         sample_r_ps = wasm_f32x4_splat(pixel[1]);
         sample_g_ps = wasm_f32x4_splat(pixel[2]);
@@ -384,14 +371,6 @@ sixel_dither_lookup_palette_float32(float const *pixel,
     for (color = color_simd_end; color < reqcolor; ++color) {
         palette_offset = color * depth;
         palette_l = (double)palette[palette_offset];
-        if (use_l_r_distance != 0) {
-            const double k1 = 0.206;
-            const double k2 = 0.03;
-            const double k3 = (1.0 + k1) / (1.0 + k2);
-
-            palette_l = 0.5 * (((k3 * palette_l) / (palette_l + k1))
-                                + (palette_l / ((k2 * palette_l) + 1.0)));
-        }
         delta = sample_l - palette_l;
         error = delta * delta * (double)complexion;
         for (channel = 1; channel < depth; ++channel) {

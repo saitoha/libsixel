@@ -162,7 +162,7 @@ TESTS = \
     dither/t/0016_varcoeff_8bit_carry_serpentine_lsqa.t \
     dither/t/0017_varcoeff_float32_carry_lsqa.t \
     dither/t/0018_varcoeff_float32_carry_serpentine_lsqa.t \
-    dither/t/0019_varcoeff_float32_oklab_use_lr_lsqa.t \
+    dither/t/0019_varcoeff_float32_oklab_lsqa.t \
     dither/t/0020_positional_8bit_x_dither_lsqa.t \
     dither/t/0021_positional_8bit_no_diffuse_lsqa.t \
     dither/t/0022_positional_float32_a_dither_lsqa.t \

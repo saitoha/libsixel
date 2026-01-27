@@ -44,17 +44,6 @@
 #include "lookup-common.h"
 #include "pixelformat.h"
 
-static float
-sixel_oklab_lightness_toe_float(float lightness)
-{
-    const float k1 = 0.206f;
-    const float k2 = 0.03f;
-    const float k3 = (1.0f + k1) / (1.0f + k2);
-
-    return 0.5f * (((k3 * lightness) / (lightness + k1))
-                   + (lightness / ((k2 * lightness) + 1.0f)));
-}
-
 static void
 sixel_dither_scanline_params_varcoeff_float32(int serpentine,
                              int index,
@@ -493,7 +482,6 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     int depth;
     int reqcolor;
     int n;
-    int palette_index;
     int color_index;
     int output_index;
     int diff;
@@ -511,7 +499,6 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     float *new_palette_float;
     int float_depth;
     int float_index;
-    float *palette_float_buffer;
     float lookup_pixel_float[SIXEL_MAX_CHANNELS];
     unsigned char const *lookup_pixel;
     int lookup_wants_float;
@@ -549,7 +536,6 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     if (lookup == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
-    palette_float_buffer = NULL;
     /*
      * Track float palette availability separately for the original palette
      * and the palette-optimization buffer so later loops can skip
@@ -559,32 +545,6 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
         have_palette_float = 1;
     } else {
         have_palette_float = 0;
-    }
-    if (context->use_l_r_distance != 0 && have_palette_float == 0) {
-        palette_float_buffer = (float *)malloc((size_t)reqcolor
-                                               * (size_t)depth
-                                               * sizeof(float));
-        if (palette_float_buffer == NULL) {
-            status = SIXEL_BAD_ALLOCATION;
-            goto end;
-        }
-        for (palette_index = 0; palette_index < reqcolor;
-                ++palette_index) {
-            for (n = 0; n < depth; ++n) {
-                palette_float_buffer[(size_t)palette_index
-                                      * (size_t)depth
-                                      + (size_t)n]
-                    = sixel_pixelformat_byte_to_float(
-                          context->pixelformat,
-                          n,
-                          palette[(size_t)palette_index
-                                  * (size_t)depth
-                                  + (size_t)n]);
-            }
-        }
-        palette_float = palette_float_buffer;
-        float_depth = depth;
-        have_palette_float = 1;
     }
     if (new_palette_float != NULL && float_depth >= depth) {
         have_new_palette_float = 1;
@@ -631,9 +591,7 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
     serpentine = (method_for_scan == SIXEL_SCAN_SERPENTINE);
     lookup_wants_float = (context->lookup_source_is_float != 0);
     use_palette_float_lookup = 0;
-    if (context->use_l_r_distance != 0 && have_palette_float != 0) {
-        use_palette_float_lookup = 1;
-    } else if (context->prefer_palette_float_lookup != 0
+    if (context->prefer_palette_float_lookup != 0
             && palette_float != NULL
             && float_depth >= depth) {
         use_palette_float_lookup = 1;
@@ -702,10 +660,6 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
                         quantized_float);
                 }
             }
-            if (context->use_l_r_distance != 0 && use_palette_float_lookup) {
-                lookup_pixel_float[0] = sixel_oklab_lightness_toe_float(
-                    lookup_pixel_float[0]);
-            }
             if (lookup_wants_float) {
                 lookup_pixel = (unsigned char const *)(void const *)
                     lookup_pixel_float;
@@ -726,8 +680,7 @@ sixel_dither_apply_varcoeff_float32(sixel_dither_t *dither,
                     depth,
                     palette_float,
                     reqcolor,
-                    context->complexion,
-                    context->use_l_r_distance);
+                    context->complexion);
             } else {
                 lookup_pixel = quantized;
                 if (use_fast_lut) {
@@ -895,7 +848,6 @@ end:
     free(carry_curr);
     free(carry_next);
     free(carry_far);
-    free(palette_float_buffer);
     return status;
 }
 
