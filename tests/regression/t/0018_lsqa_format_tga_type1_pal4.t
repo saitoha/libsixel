@@ -27,7 +27,7 @@ export LSQA_HELPER_DIR
 
 status=0
 
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.9990}
 
 if ! lsqa_sixel_init "$0"; then
     printf '1..1\n'
@@ -38,8 +38,6 @@ fi
 artifact_root=${LSQA_ARTIFACT_ROOT}
 artifact_dir="${artifact_root}/${category_name}/${test_name}"
 mkdir -p "${artifact_dir}"
-
-MS_SSIM_FLOOR=0.9990
 
 printf '1..1\n'
 
