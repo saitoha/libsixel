@@ -528,9 +528,9 @@ sixel_compat_strerror(int error_number,
 
 
 /*
- * Normalize incoming paths for the active CRT. This is required for
- * Cygwin/MSYS paths when running MSVC-ABI binaries under Cygwin, because
- * the CRT only understands Windows-style drive paths.
+ * Normalize incoming paths for the current platform. sixel_path_to_libc()
+ * decides whether conversion is required. If it returns NULL, the original
+ * path remains usable, so keep the caller on the original input.
  */
 static int
 sixel_compat_prepare_path(char const *path,
@@ -560,8 +560,8 @@ sixel_compat_prepare_path(char const *path,
         libc_path = sixel_path_to_libc(path, buffer, buffer_size);
         if (libc_path == NULL) {
             free(buffer);
-            errno = EINVAL;
-            return (-1);
+            buffer = NULL;
+            libc_path = path;
         }
     } else {
         libc_path = path;
@@ -588,13 +588,9 @@ sixel_compat_fopen(const char *filename, const char *mode)
         return NULL;
     }
 
-#if defined(_MSC_VER)
     if (sixel_compat_prepare_path(filename, &buffer, &libc_path) < 0) {
         return NULL;
     }
-#else
-    libc_path = filename;
-#endif
 
 #if defined(_MSC_VER)
     /*
@@ -1188,13 +1184,9 @@ sixel_compat_open(const char *path, int flags, ...)
     }
     va_end(args);
 
-#if defined(_MSC_VER)
     if (sixel_compat_prepare_path(path, &buffer, &libc_path) < 0) {
         return (-1);
     }
-#else
-    libc_path = path;
-#endif
 
 #if defined(_MSC_VER) && defined(HAVE__SOPEN_S) && HAVE__SOPEN_S
     /*
@@ -1259,13 +1251,9 @@ sixel_compat_unlink(const char *path)
         return (-1);
     }
 
-#if defined(_MSC_VER)
     if (sixel_compat_prepare_path(path, &buffer, &libc_path) < 0) {
         return (-1);
     }
-#else
-    libc_path = path;
-#endif
 
 #if defined(_MSC_VER)
     result = _unlink(libc_path);
