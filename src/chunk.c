@@ -277,11 +277,11 @@ open_binary_file(
     }
 
 #if HAVE_STAT
-    if (stat(filename, &sb) != 0) {
+    if (sixel_compat_stat(filename, &sb) != 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
         (void)sixel_compat_snprintf(message,
                                     sizeof(message),
-                                    "stat() for file '%s' failed.",
+                                    "sixel_compat_stat() for file '%s' failed.",
                                     filename);
         sixel_helper_set_additional_message(message);
         goto end;
@@ -296,7 +296,7 @@ open_binary_file(
     *f = sixel_compat_fopen(filename, "rb");
     if (! *f) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
-        sixel_helper_set_additional_message("fopen() failed.");
+        sixel_helper_set_additional_message("sixel_compat_fopen() failed.");
         goto end;
     }
 
