@@ -527,16 +527,74 @@ sixel_compat_strerror(int error_number,
 }
 
 
+/*
+ * Normalize incoming paths for the active CRT. This is required for
+ * Cygwin/MSYS paths when running MSVC-ABI binaries under Cygwin, because
+ * the CRT only understands Windows-style drive paths.
+ */
+static int
+sixel_compat_prepare_path(char const *path,
+                          char **buffer_out,
+                          char const **libc_path_out)
+{
+    size_t buffer_size;
+    char *buffer;
+    char const *libc_path;
+
+    buffer_size = 0u;
+    buffer = NULL;
+    libc_path = NULL;
+
+    if (path == NULL || buffer_out == NULL || libc_path_out == NULL) {
+        errno = EINVAL;
+        return (-1);
+    }
+
+    buffer_size = sixel_path_to_libc_buffer_size(path);
+    if (buffer_size > 0u) {
+        buffer = (char *)malloc(buffer_size);
+        if (buffer == NULL) {
+            errno = ENOMEM;
+            return (-1);
+        }
+        libc_path = sixel_path_to_libc(path, buffer, buffer_size);
+        if (libc_path == NULL) {
+            free(buffer);
+            errno = EINVAL;
+            return (-1);
+        }
+    } else {
+        libc_path = path;
+    }
+
+    *buffer_out = buffer;
+    *libc_path_out = libc_path;
+    return 0;
+}
+
+
 SIXEL_COMPAT_API FILE *
 sixel_compat_fopen(const char *filename, const char *mode)
 {
     FILE *handle;
+    char *buffer;
+    char const *libc_path;
 
     handle = NULL;
+    buffer = NULL;
+    libc_path = NULL;
     if (filename == NULL || mode == NULL) {
         errno = EINVAL;
         return NULL;
     }
+
+#if defined(_MSC_VER)
+    if (sixel_compat_prepare_path(filename, &buffer, &libc_path) < 0) {
+        return NULL;
+    }
+#else
+    libc_path = filename;
+#endif
 
 #if defined(_MSC_VER)
     /*
@@ -553,10 +611,14 @@ sixel_compat_fopen(const char *filename, const char *mode)
      * Both sides now share the handle without tripping over `_SH_DENYWR`
      * defaults, mirroring how Unix would allow the concurrent access.
      */
-    handle = _fsopen(filename, mode, _SH_DENYNO);
+    handle = _fsopen(libc_path, mode, _SH_DENYNO);
 #else
-    handle = fopen(filename, mode);
+    handle = fopen(libc_path, mode);
 #endif
+
+    if (buffer != NULL) {
+        free(buffer);
+    }
 
     return handle;
 }
@@ -1103,6 +1165,8 @@ sixel_compat_open(const char *path, int flags, ...)
     int fd;
     va_list args;
     int mode;
+    char *buffer;
+    char const *libc_path;
 #if defined(_MSC_VER) && defined(HAVE__SOPEN_S) && HAVE__SOPEN_S
     errno_t err;
     int share_flags;
@@ -1110,6 +1174,8 @@ sixel_compat_open(const char *path, int flags, ...)
 
     fd = (-1);
     mode = 0;
+    buffer = NULL;
+    libc_path = NULL;
 
     if (path == NULL) {
         errno = EINVAL;
@@ -1122,6 +1188,14 @@ sixel_compat_open(const char *path, int flags, ...)
     }
     va_end(args);
 
+#if defined(_MSC_VER)
+    if (sixel_compat_prepare_path(path, &buffer, &libc_path) < 0) {
+        return (-1);
+    }
+#else
+    libc_path = path;
+#endif
+
 #if defined(_MSC_VER) && defined(HAVE__SOPEN_S) && HAVE__SOPEN_S
     /*
      * Prefer the secure CRT entry point when available.  _sopen_s reports
@@ -1129,7 +1203,7 @@ sixel_compat_open(const char *path, int flags, ...)
      * the public API.
      */
     share_flags = _SH_DENYNO;
-    err = _sopen_s(&fd, path, flags, share_flags, mode);
+    err = _sopen_s(&fd, libc_path, flags, share_flags, mode);
     if (err != 0) {
         errno = (int)err;
         fd = (-1);
@@ -1137,18 +1211,22 @@ sixel_compat_open(const char *path, int flags, ...)
 #elif defined(_MSC_VER) && defined(HAVE__OPEN) && HAVE__OPEN
 # pragma warning(push)
 # pragma warning(disable : 4996)
-    fd = _open(path, flags, mode);
+    fd = _open(libc_path, flags, mode);
 # pragma warning(pop)
 #elif defined(HAVE_OPEN) && HAVE_OPEN
     if (flags & O_CREAT) {
-        fd = open(path, flags, (mode_t)mode);
+        fd = open(libc_path, flags, (mode_t)mode);
     } else {
-        fd = open(path, flags);
+        fd = open(libc_path, flags);
     }
 #else
     errno = ENOSYS;
     fd = (-1);
 #endif
+
+    if (buffer != NULL) {
+        free(buffer);
+    }
 
     return fd;
 }
@@ -1168,11 +1246,38 @@ sixel_compat_close(int fd)
 SIXEL_COMPAT_API int
 sixel_compat_unlink(const char *path)
 {
+    char *buffer;
+    char const *libc_path;
+    int result;
+
+    buffer = NULL;
+    libc_path = NULL;
+    result = (-1);
+
+    if (path == NULL) {
+        errno = EINVAL;
+        return (-1);
+    }
+
 #if defined(_MSC_VER)
-    return _unlink(path);
+    if (sixel_compat_prepare_path(path, &buffer, &libc_path) < 0) {
+        return (-1);
+    }
 #else
-    return unlink(path);
+    libc_path = path;
 #endif
+
+#if defined(_MSC_VER)
+    result = _unlink(libc_path);
+#else
+    result = unlink(libc_path);
+#endif
+
+    if (buffer != NULL) {
+        free(buffer);
+    }
+
+    return result;
 }
 
 
