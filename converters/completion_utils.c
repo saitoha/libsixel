@@ -776,15 +776,8 @@ img2sixel_compat_rename(const char *src_path, const char *dst_path)
         return (-1);
     }
 
-#if defined(_MSC_VER)
-    /*
-     * Prefer the MSVC spelling to avoid deprecation warnings while keeping
-     * the POSIX fallback for other toolchains.
-     */
-    result = _rename(libc_src, libc_dst);
-#else
+    /* rename is available on MSVC and avoids undefined _rename warnings. */
     result = rename(libc_src, libc_dst);
-#endif
 
     if (src_buffer != NULL) {
         free(src_buffer);
