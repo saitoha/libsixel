@@ -15,7 +15,7 @@
 G_MODULE_EXPORT void fill_info(GdkPixbufFormat *info);
 G_MODULE_EXPORT void fill_vtable(GdkPixbufModule *module);
 
-static const unsigned char tiny_sixel_data[] = {
+static const unsigned char incremental_sixel_data[] = {
     0x1b, 0x50, 0x71, 0x22, 0x31, 0x3b, 0x31, 0x3b, 0x32, 0x3b,
     0x38, 0x23, 0x30, 0x3b, 0x32, 0x3b, 0x31, 0x3b, 0x31, 0x3b,
     0x31, 0x23, 0x31, 0x3b, 0x32, 0x3b, 0x35, 0x3b, 0x39, 0x3b,
@@ -44,37 +44,37 @@ static const unsigned char tiny_sixel_data[] = {
     0x40, 0x23, 0x31, 0x32, 0x40, 0x1b, 0x5c
 };
 
-static const gsize tiny_sixel_size = sizeof(tiny_sixel_data);
+static const gsize incremental_sixel_size = sizeof(incremental_sixel_data);
 
-typedef struct PixbufCapture {
+typedef struct IncrementalPixbufCapture {
     GdkPixbuf *pixbuf;
     gboolean prepared_called;
     gboolean updated_called;
-} PixbufCapture;
+} IncrementalPixbufCapture;
 
 static void
-prepared_cb(GdkPixbuf *pixbuf,
-            GdkPixbufAnimation *animation,
-            gpointer user_data)
+incremental_prepared_cb(GdkPixbuf *pixbuf,
+                        GdkPixbufAnimation *animation,
+                        gpointer user_data)
 {
-    PixbufCapture *capture;
+    IncrementalPixbufCapture *capture;
 
     (void) animation;
 
-    capture = (PixbufCapture *)user_data;
+    capture = (IncrementalPixbufCapture *)user_data;
     capture->pixbuf = g_object_ref(pixbuf);
     capture->prepared_called = TRUE;
 }
 
 static void
-updated_cb(GdkPixbuf *pixbuf,
-           gint x,
-           gint y,
-           gint width,
-           gint height,
-           gpointer user_data)
+incremental_updated_cb(GdkPixbuf *pixbuf,
+                       gint x,
+                       gint y,
+                       gint width,
+                       gint height,
+                       gpointer user_data)
 {
-    PixbufCapture *capture;
+    IncrementalPixbufCapture *capture;
 
     (void) pixbuf;
     (void) x;
@@ -82,7 +82,7 @@ updated_cb(GdkPixbuf *pixbuf,
     (void) width;
     (void) height;
 
-    capture = (PixbufCapture *)user_data;
+    capture = (IncrementalPixbufCapture *)user_data;
     capture->updated_called = TRUE;
 }
 
@@ -92,7 +92,7 @@ assert_incremental_load(void)
     GdkPixbufModule module;
     GdkPixbufFormat format;
     gpointer context;
-    PixbufCapture capture;
+    IncrementalPixbufCapture capture;
     GError *error;
     gsize offset;
     gsize chunk;
@@ -107,22 +107,22 @@ assert_incremental_load(void)
     fill_vtable(&module);
 
     context = module.begin_load(NULL,
-                                prepared_cb,
-                                updated_cb,
+                                incremental_prepared_cb,
+                                incremental_updated_cb,
                                 &capture,
                                 &error);
     g_assert_nonnull(context);
     g_assert_no_error(error);
 
     offset = 0U;
-    while (offset < tiny_sixel_size) {
+    while (offset < incremental_sixel_size) {
         chunk = 32U;
-        if (offset + chunk > tiny_sixel_size) {
-            chunk = tiny_sixel_size - offset;
+        if (offset + chunk > incremental_sixel_size) {
+            chunk = incremental_sixel_size - offset;
         }
 
         ok = module.load_increment(context,
-                                   tiny_sixel_data + offset,
+                                   incremental_sixel_data + offset,
                                    (guint)chunk,
                                    &error);
         g_assert_true(ok);
