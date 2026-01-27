@@ -23,7 +23,6 @@ MS_SSIM_FLOOR=${LSQA_MS_SSIM_FLOOR:-0.98}
 INPUT_ROOT="$(dirname "$0")/data"
 ARTIFACT_ROOT="${ARTIFACT_ROOT:-$(pwd)/tests/_artifacts}"
 CSV_REPORT="${ARTIFACT_ROOT}/lsqa_resolutions.csv"
-SEED=${LSQA_SEED:-2024}
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 build_root=${TOP_BUILDDIR:-${script_dir}/..}
@@ -105,7 +104,7 @@ run_lsqa() {
     : >"${stdout_path}"
     : >"${stderr_path}"
 
-    env LSQA_RANDOM_SEED="${SEED}" "${LSQA_BIN}" -m MS-SSIM \
+    "${LSQA_BIN}" -m MS-SSIM \
         "${target}" "${target}" \
         >"${stdout_path}" 2>"${stderr_path}" || status=$?
     status=${status:-0}
@@ -113,7 +112,7 @@ run_lsqa() {
     if [ ${status} -eq 126 ]; then
         : >"${stdout_path}"
         : >"${stderr_path}"
-        env LSQA_RANDOM_SEED="${SEED}" /bin/sh -c \
+        /bin/sh -c \
             'exec "$0" -m MS-SSIM "$1" "$1"' "${LSQA_BIN}" "${target}" \
             >"${stdout_path}" 2>"${stderr_path}" || status=$?
         status=${status:-0}
