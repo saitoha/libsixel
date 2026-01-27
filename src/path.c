@@ -260,6 +260,25 @@ sixel_path_cygwin_conv_to_posix(char const *path,
  * reaches native Windows runtimes such as MinGW/MSVC. The helper executes
  * the tool in a small shell pipeline and captures the output.
  */
+static int
+sixel_path_cygpath_target(char const *path)
+{
+    if (path == NULL) {
+        return 0;
+    }
+
+    if (path[0] == '\0') {
+        return 0;
+    }
+
+    /*
+     * Use cygpath only for clear POSIX-like paths so native inputs and
+     * sentinels remain untouched. This keeps conversions scoped to paths
+     * expected to resolve via MSYS/Cygwin mount logic.
+     */
+    return path[0] == '/' || path[0] == '~';
+}
+
 static size_t
 sixel_path_shell_quote_needed(char const *path)
 {
@@ -413,6 +432,9 @@ sixel_path_cygpath_convert(char const *path)
     if (path == NULL) {
         return NULL;
     }
+    if (!sixel_path_cygpath_target(path)) {
+        return NULL;
+    }
 
     needed = strlen(path) + sixel_path_shell_quote_needed(path) + 32u;
     command = (char *)malloc(needed);
@@ -447,6 +469,10 @@ sixel_path_cygpath_needed(char const *path)
 
     converted = NULL;
     length = 0u;
+
+    if (!sixel_path_cygpath_target(path)) {
+        return 0u;
+    }
 
     converted = sixel_path_cygpath_convert(path);
     if (converted == NULL) {
