@@ -32,7 +32,15 @@
 #if HAVE_STRING_H
 #include <string.h>
 #endif  /* HAVE_STRING_H */
-
+#if HAVE_STDLIB_H
+#include <stdlib.h>
+#endif  /* HAVE_STDLIB_H */
+#if HAVE_STDIO_H
+#include <stdio.h>
+#endif  /* HAVE_STDIO_H */
+#if HAVE_UNISTD_H
+#include <unistd.h>
+#endif  /* HAVE_UNISTD_H */
 #if HAVE_EMSCRIPTEN_H
 #include <emscripten.h>
 #endif  /* HAVE_EMSCRIPTEN_H */
@@ -41,9 +49,30 @@
 #include <cosmo.h>
 #endif  /* __COSMOPOLITAN__ */
 
+#if defined(__CYGWIN__) || defined(__MSYS__)
+#include <sys/cygwin.h>
+#endif  /* __CYGWIN__ || __MSYS__ */
+
 #include "path.h"
+#include "compat_stub.h"
 
 #define SIXEL_CYGDRIVE_PREFIX "/cygdrive/"
+
+#if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__)
+#define SIXEL_PATH_USE_CYGPATH 1
+#elif defined(__COSMOPOLITAN__)
+#define SIXEL_PATH_USE_CYGPATH 1
+#endif
+
+#if defined(SIXEL_PATH_USE_CYGPATH)
+#if defined(_MSC_VER)
+#define sixel_path_popen _popen
+#define sixel_path_pclose _pclose
+#else
+#define sixel_path_popen popen
+#define sixel_path_pclose pclose
+#endif
+#endif
 
 #if defined(_WIN32) || defined(__CYGWIN__) || defined(__MSYS__) \
     || defined(__EMSCRIPTEN__) || defined(__COSMOPOLITAN__)
@@ -169,6 +198,267 @@ sixel_path_parse_nested_cygdrive(char const *path,
 }
 #endif
 
+#if defined(__CYGWIN__) || defined(__MSYS__)
+/*
+ * cygwin_conv_path() is the authoritative way to translate Windows-style
+ * paths into POSIX form for the Cygwin/MSYS runtimes. We only use it to
+ * convert to POSIX because libc on these platforms expects POSIX paths.
+ */
+static size_t
+sixel_path_cygwin_conv_needed(char const *path)
+{
+    ssize_t needed;
+
+    needed = 0;
+    if (path == NULL) {
+        return 0u;
+    }
+
+    needed = cygwin_conv_path(CCP_WIN_A_TO_POSIX, path, NULL, 0);
+    if (needed <= 0) {
+        return 0u;
+    }
+
+    return (size_t)needed;
+}
+
+static char const *
+sixel_path_cygwin_conv_to_posix(char const *path,
+                                char *buffer,
+                                size_t buffer_size)
+{
+    size_t needed;
+    int result;
+
+    needed = 0u;
+    result = 0;
+
+    if (path == NULL) {
+        return NULL;
+    }
+
+    needed = sixel_path_cygwin_conv_needed(path);
+    if (needed == 0u) {
+        return NULL;
+    }
+    if (buffer == NULL || buffer_size < needed) {
+        return NULL;
+    }
+
+    result = cygwin_conv_path(CCP_WIN_A_TO_POSIX, path, buffer, buffer_size);
+    if (result != 0) {
+        return NULL;
+    }
+
+    return buffer;
+}
+#endif
+
+#if defined(SIXEL_PATH_USE_CYGPATH)
+/*
+ * cygpath -wa provides the most accurate conversion when a POSIX-like path
+ * reaches native Windows runtimes such as MinGW/MSVC. The helper executes
+ * the tool in a small shell pipeline and captures the output.
+ */
+static size_t
+sixel_path_shell_quote_needed(char const *path)
+{
+    size_t needed;
+    size_t index;
+
+    needed = 2u;
+    if (path == NULL) {
+        return 0u;
+    }
+
+    for (index = 0u; path[index] != '\0'; index++) {
+        if (path[index] == '\'') {
+            needed += 4u;
+        } else {
+            needed += 1u;
+        }
+    }
+
+    return needed;
+}
+
+static int
+sixel_path_build_cygpath_command(char const *path,
+                                 char *buffer,
+                                 size_t buffer_size)
+{
+    static char const *prefix = "cygpath -wa -- ";
+    size_t prefix_len;
+    size_t quoted_len;
+    size_t index;
+    size_t out_index;
+
+    prefix_len = 0u;
+    quoted_len = 0u;
+    index = 0u;
+    out_index = 0u;
+
+    if (path == NULL || buffer == NULL) {
+        return 0;
+    }
+
+    prefix_len = strlen(prefix);
+    quoted_len = sixel_path_shell_quote_needed(path);
+    if (quoted_len == 0u) {
+        return 0;
+    }
+
+    if (buffer_size <= prefix_len + quoted_len) {
+        return 0;
+    }
+
+    memcpy(buffer, prefix, prefix_len);
+    out_index = prefix_len;
+    buffer[out_index] = '\'';
+    out_index++;
+    for (index = 0u; path[index] != '\0'; index++) {
+        if (path[index] == '\'') {
+            buffer[out_index] = '\'';
+            buffer[out_index + 1u] = '\\';
+            buffer[out_index + 2u] = '\'';
+            buffer[out_index + 3u] = '\'';
+            out_index += 4u;
+        } else {
+            buffer[out_index] = path[index];
+            out_index++;
+        }
+    }
+    buffer[out_index] = '\'';
+    out_index++;
+    buffer[out_index] = '\0';
+
+    return 1;
+}
+
+static char *
+sixel_path_read_command_output(FILE *pipe_handle)
+{
+    char *buffer;
+    char *next;
+    size_t length;
+    size_t capacity;
+    int ch;
+
+    buffer = NULL;
+    next = NULL;
+    length = 0u;
+    capacity = 128u;
+    ch = 0;
+
+    if (pipe_handle == NULL) {
+        return NULL;
+    }
+
+    buffer = (char *)malloc(capacity);
+    if (buffer == NULL) {
+        return NULL;
+    }
+
+    while ((ch = fgetc(pipe_handle)) != EOF) {
+        if (length + 1u >= capacity) {
+            capacity *= 2u;
+            next = (char *)realloc(buffer, capacity);
+            if (next == NULL) {
+                free(buffer);
+                return NULL;
+            }
+            buffer = next;
+        }
+        buffer[length] = (char)ch;
+        length++;
+    }
+
+    if (ferror(pipe_handle)) {
+        free(buffer);
+        return NULL;
+    }
+
+    while (length > 0u) {
+        if (buffer[length - 1u] != '\n'
+            && buffer[length - 1u] != '\r') {
+            break;
+        }
+        length--;
+    }
+
+    if (length == 0u) {
+        free(buffer);
+        return NULL;
+    }
+
+    buffer[length] = '\0';
+    return buffer;
+}
+
+static char *
+sixel_path_cygpath_convert(char const *path)
+{
+    char *command;
+    char *result;
+    FILE *pipe_handle;
+    size_t needed;
+    int status;
+
+    command = NULL;
+    result = NULL;
+    pipe_handle = NULL;
+    needed = 0u;
+    status = 0;
+
+    if (path == NULL) {
+        return NULL;
+    }
+
+    needed = strlen(path) + sixel_path_shell_quote_needed(path) + 32u;
+    command = (char *)malloc(needed);
+    if (command == NULL) {
+        return NULL;
+    }
+
+    if (!sixel_path_build_cygpath_command(path, command, needed)) {
+        free(command);
+        return NULL;
+    }
+
+    pipe_handle = sixel_path_popen(command, "r");
+    if (pipe_handle == NULL) {
+        free(command);
+        return NULL;
+    }
+
+    result = sixel_path_read_command_output(pipe_handle);
+    status = sixel_path_pclose(pipe_handle);
+    (void)status;
+    free(command);
+
+    return result;
+}
+
+static size_t
+sixel_path_cygpath_needed(char const *path)
+{
+    char *converted;
+    size_t length;
+
+    converted = NULL;
+    length = 0u;
+
+    converted = sixel_path_cygpath_convert(path);
+    if (converted == NULL) {
+        return 0u;
+    }
+
+    length = strlen(converted) + 1u;
+    free(converted);
+    return length;
+}
+#endif
+
 #if defined(__COSMOPOLITAN__)
 static int
 sixel_path_cosmo_is_windows(void)
@@ -252,6 +542,19 @@ sixel_path_to_libc_buffer_size(char const *path)
     }
 
 #if defined(__MSYS__)
+    /*
+     * Priority order for Windows-hosted environments:
+     * 1. Use cygwin_conv_path when available (authoritative).
+     * 2. Fall back to explicit drive/cygdrive parsing.
+     */
+    {
+        size_t cygwin_needed;
+
+        cygwin_needed = sixel_path_cygwin_conv_needed(path);
+        if (cygwin_needed > 0u) {
+            return cygwin_needed;
+        }
+    }
     if (sixel_path_parse_nested_cygdrive(path, &drive, &rest)) {
         return sixel_path_to_msys_needed(rest);
     }
@@ -263,6 +566,19 @@ sixel_path_to_libc_buffer_size(char const *path)
     }
     return 0u;
 #elif defined(__CYGWIN__)
+    /*
+     * Priority order for Windows-hosted environments:
+     * 1. Use cygwin_conv_path when available (authoritative).
+     * 2. Fall back to explicit drive/cygdrive parsing.
+     */
+    {
+        size_t cygwin_needed;
+
+        cygwin_needed = sixel_path_cygwin_conv_needed(path);
+        if (cygwin_needed > 0u) {
+            return cygwin_needed;
+        }
+    }
     if (sixel_path_parse_drive_letter(path, &drive, &rest)) {
         return sixel_path_to_cygdrive_needed(rest);
     }
@@ -274,6 +590,21 @@ sixel_path_to_libc_buffer_size(char const *path)
     }
     return 0u;
 #elif defined(_WIN32)
+    /*
+     * Priority order for Windows-hosted environments:
+     * 1. Use cygpath -wa if available on PATH.
+     * 2. Fall back to explicit drive/cygdrive parsing.
+     */
+#if defined(SIXEL_PATH_USE_CYGPATH)
+    {
+        size_t cygpath_needed;
+
+        cygpath_needed = sixel_path_cygpath_needed(path);
+        if (cygpath_needed > 0u) {
+            return cygpath_needed;
+        }
+    }
+#endif
     if (sixel_path_parse_drive_letter(path, &drive, &rest)) {
         return 0u;
     }
@@ -291,6 +622,21 @@ sixel_path_to_libc_buffer_size(char const *path)
     if (!sixel_path_cosmo_is_windows()) {
         return 0u;
     }
+    /*
+     * Priority order for Windows-hosted environments:
+     * 1. Use cygpath -wa if available on PATH.
+     * 2. Fall back to explicit drive/cygdrive parsing.
+     */
+#if defined(SIXEL_PATH_USE_CYGPATH)
+    {
+        size_t cygpath_needed;
+
+        cygpath_needed = sixel_path_cygpath_needed(path);
+        if (cygpath_needed > 0u) {
+            return cygpath_needed;
+        }
+    }
+#endif
     if (sixel_path_parse_drive_letter(path, &drive, &rest)) {
         return 0u;
     }
@@ -355,6 +701,16 @@ sixel_path_to_libc(char const *path,
 
 #if defined(__MSYS__)
     (void)prefix_len;
+    {
+        char const *converted;
+
+        converted = sixel_path_cygwin_conv_to_posix(path,
+                                                    buffer,
+                                                    buffer_size);
+        if (converted != NULL) {
+            return converted;
+        }
+    }
     if (sixel_path_parse_msys_drive(path, &drive, &rest)) {
         return path;
     }
@@ -376,6 +732,16 @@ sixel_path_to_libc(char const *path,
     }
     return path;
 #elif defined(__CYGWIN__)
+    {
+        char const *converted;
+
+        converted = sixel_path_cygwin_conv_to_posix(path,
+                                                    buffer,
+                                                    buffer_size);
+        if (converted != NULL) {
+            return converted;
+        }
+    }
     if (sixel_path_parse_cygdrive(path, &drive, &rest)) {
         return path;
     }
@@ -399,6 +765,24 @@ sixel_path_to_libc(char const *path,
     return path;
 #elif defined(_WIN32)
     (void)prefix_len;
+#if defined(SIXEL_PATH_USE_CYGPATH)
+    {
+        char *converted;
+        size_t length;
+
+        converted = sixel_path_cygpath_convert(path);
+        if (converted != NULL) {
+            length = strlen(converted) + 1u;
+            if (length > buffer_size) {
+                free(converted);
+                return NULL;
+            }
+            memcpy(buffer, converted, length);
+            free(converted);
+            return buffer;
+        }
+    }
+#endif
     if (sixel_path_parse_drive_letter(path, &drive, &rest)) {
         return path;
     }
@@ -424,6 +808,24 @@ sixel_path_to_libc(char const *path,
     if (!sixel_path_cosmo_is_windows()) {
         return path;
     }
+#if defined(SIXEL_PATH_USE_CYGPATH)
+    {
+        char *converted;
+        size_t length;
+
+        converted = sixel_path_cygpath_convert(path);
+        if (converted != NULL) {
+            length = strlen(converted) + 1u;
+            if (length > buffer_size) {
+                free(converted);
+                return NULL;
+            }
+            memcpy(buffer, converted, length);
+            free(converted);
+            return buffer;
+        }
+    }
+#endif
     if (sixel_path_parse_drive_letter(path, &drive, &rest)) {
         return path;
     }
