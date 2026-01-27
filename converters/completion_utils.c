@@ -29,6 +29,7 @@
 #include "config.h"
 #endif
 #include "completion_utils.h"
+#include "path.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -158,6 +159,9 @@ static char *img2sixel_compat_strerror(int error_number,
                                        size_t buffer_size);
 static FILE *img2sixel_compat_fopen(const char *filename, const char *mode);
 static const char *img2sixel_compat_getenv(const char *name);
+static int img2sixel_compat_prepare_path(char const *path,
+                                         char **buffer_out,
+                                         char const **libc_path_out);
 #if defined(_MSC_VER)
 static int img2sixel_compat_strcpy(char *destination,
                                    size_t destination_size,
@@ -258,22 +262,79 @@ img2sixel_compat_strerror(int error_number,
 #endif
 }
 
+/*
+ * Normalize incoming paths for the current platform. The converter builds
+ * cannot rely on src/path.c, so we keep a local copy of the logic and only
+ * use it when conversion is necessary.
+ */
+static int
+img2sixel_compat_prepare_path(char const *path,
+                              char **buffer_out,
+                              char const **libc_path_out)
+{
+    size_t buffer_size;
+    char *buffer;
+    char const *libc_path;
+
+    buffer_size = 0u;
+    buffer = NULL;
+    libc_path = NULL;
+
+    if (path == NULL || buffer_out == NULL || libc_path_out == NULL) {
+        errno = EINVAL;
+        return (-1);
+    }
+
+    buffer_size = img2sixel_path_to_libc_buffer_size(path);
+    if (buffer_size > 0u) {
+        buffer = (char *)malloc(buffer_size);
+        if (buffer == NULL) {
+            errno = ENOMEM;
+            return (-1);
+        }
+        libc_path = img2sixel_path_to_libc(path, buffer, buffer_size);
+        if (libc_path == NULL) {
+            free(buffer);
+            buffer = NULL;
+            libc_path = path;
+        }
+    } else {
+        libc_path = path;
+    }
+
+    *buffer_out = buffer;
+    *libc_path_out = libc_path;
+    return 0;
+}
+
 static FILE *
 img2sixel_compat_fopen(const char *filename, const char *mode)
 {
     FILE *handle;
+    char *buffer;
+    char const *libc_path;
 
     handle = NULL;
+    buffer = NULL;
+    libc_path = NULL;
     if (filename == NULL || mode == NULL) {
         errno = EINVAL;
         return NULL;
     }
 
+    if (img2sixel_compat_prepare_path(filename, &buffer, &libc_path) < 0) {
+        return NULL;
+    }
+
 #if defined(_MSC_VER)
-    handle = _fsopen(filename, mode, _SH_DENYNO);
+    handle = _fsopen(libc_path, mode, _SH_DENYNO);
 #else
-    handle = fopen(filename, mode);
+    handle = fopen(libc_path, mode);
 #endif
+
+    if (buffer != NULL) {
+        free(buffer);
+    }
 
     return handle;
 }
@@ -425,16 +486,44 @@ img2sixel_compat_strcpy(char *destination,
 static int
 img2sixel_compat_chmod(const char *path, mode_t mode)
 {
+    char *buffer;
+    char const *libc_path;
+
+    buffer = NULL;
+    libc_path = NULL;
+
+    if (img2sixel_compat_prepare_path(path, &buffer, &libc_path) < 0) {
+        return (-1);
+    }
+
 #if defined(_MSC_VER) && defined(HAVE__CHMOD)
-    return _chmod(path, (int)mode);
+    if (_chmod(libc_path, (int)mode) != 0) {
+        if (buffer != NULL) {
+            free(buffer);
+        }
+        return (-1);
+    }
 #elif defined(HAVE_CHMOD)
-    return chmod(path, mode);
+    if (chmod(libc_path, mode) != 0) {
+        if (buffer != NULL) {
+            free(buffer);
+        }
+        return (-1);
+    }
 #else
     (void)path;
     (void)mode;
     errno = ENOSYS;
+    if (buffer != NULL) {
+        free(buffer);
+    }
     return (-1);
 #endif
+
+    if (buffer != NULL) {
+        free(buffer);
+    }
+    return 0;
 }
 
 #if !defined(HAVE_MKSTEMP)
@@ -479,15 +568,23 @@ img2sixel_compat_open(const char *path, int flags, ...)
     int fd;
     va_list args;
     int mode;
+    char *buffer;
+    char const *libc_path;
 #if defined(_MSC_VER)
     errno_t error;
 #endif
 
     fd = (-1);
     mode = 0;
+    buffer = NULL;
+    libc_path = NULL;
 
     if (path == NULL) {
         errno = EINVAL;
+        return (-1);
+    }
+
+    if (img2sixel_compat_prepare_path(path, &buffer, &libc_path) < 0) {
         return (-1);
     }
 
@@ -503,17 +600,21 @@ img2sixel_compat_open(const char *path, int flags, ...)
      * default POSIX behaviour by allowing other processes to access the file
      * while keeping the rest of the flag set intact.
      */
-    error = _sopen_s(&fd, path, flags, _SH_DENYNO, mode);
+    error = _sopen_s(&fd, libc_path, flags, _SH_DENYNO, mode);
     if (error != 0) {
         fd = (-1);
     }
 #else
     if (flags & O_CREAT) {
-        fd = open(path, flags, (mode_t)mode);
+        fd = open(libc_path, flags, (mode_t)mode);
     } else {
-        fd = open(path, flags);
+        fd = open(libc_path, flags);
     }
 #endif
+
+    if (buffer != NULL) {
+        free(buffer);
+    }
 
     return fd;
 }
@@ -532,21 +633,69 @@ img2sixel_compat_close(int fd)
 static int
 img2sixel_compat_unlink(const char *path)
 {
+    char *buffer;
+    char const *libc_path;
+
+    buffer = NULL;
+    libc_path = NULL;
+
+    if (img2sixel_compat_prepare_path(path, &buffer, &libc_path) < 0) {
+        return (-1);
+    }
+
 #if defined(_MSC_VER)
-    return _unlink(path);
+    if (_unlink(libc_path) != 0) {
+        if (buffer != NULL) {
+            free(buffer);
+        }
+        return (-1);
+    }
 #else
-    return unlink(path);
+    if (unlink(libc_path) != 0) {
+        if (buffer != NULL) {
+            free(buffer);
+        }
+        return (-1);
+    }
 #endif
+    if (buffer != NULL) {
+        free(buffer);
+    }
+    return 0;
 }
 
 static int
 img2sixel_compat_access(const char *path, int mode)
 {
+    char *buffer;
+    char const *libc_path;
+
+    buffer = NULL;
+    libc_path = NULL;
+
+    if (img2sixel_compat_prepare_path(path, &buffer, &libc_path) < 0) {
+        return (-1);
+    }
+
 #if defined(_MSC_VER)
-    return _access(path, mode);
+    if (_access(libc_path, mode) != 0) {
+        if (buffer != NULL) {
+            free(buffer);
+        }
+        return (-1);
+    }
 #else
-    return access(path, mode);
+    if (access(libc_path, mode) != 0) {
+        if (buffer != NULL) {
+            free(buffer);
+        }
+        return (-1);
+    }
 #endif
+    if (buffer != NULL) {
+        free(buffer);
+    }
+    return 0;
 }
 
 static ssize_t
@@ -584,17 +733,45 @@ int _mkdir (const char *);
 static int
 img2sixel_mkdir(const char *path, mode_t mode)
 {
+    char *buffer;
+    char const *libc_path;
+
+    buffer = NULL;
+    libc_path = NULL;
+
+    if (img2sixel_compat_prepare_path(path, &buffer, &libc_path) < 0) {
+        return (-1);
+    }
+
 #if HAVE__MKDIR
     (void)mode;
-    return _mkdir(path);
+    if (_mkdir(libc_path) != 0) {
+        if (buffer != NULL) {
+            free(buffer);
+        }
+        return (-1);
+    }
 #elif HAVE_MKDIR
-    return mkdir(path, mode);
+    if (mkdir(libc_path, mode) != 0) {
+        if (buffer != NULL) {
+            free(buffer);
+        }
+        return (-1);
+    }
 #else
     /* Silence unused arguments when mkdir is unavailable. */
     (void)path;
     (void)mode;
+    if (buffer != NULL) {
+        free(buffer);
+    }
     return (-1);
 #endif
+
+    if (buffer != NULL) {
+        free(buffer);
+    }
+    return 0;
 }
 
 static void
