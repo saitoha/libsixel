@@ -3,7 +3,7 @@
 # output.
 
 # Enable strict mode with verbose tracing for diagnostics.
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -32,6 +32,7 @@ fail() {
 }
 
 echo "1..1"
+set -v
 
 output_file=$(make_temp_file "${tmp_dir}" "capture.stdin")
 

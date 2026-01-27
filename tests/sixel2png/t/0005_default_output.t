@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test verifying default output naming when -o/--output is omitted.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -45,6 +45,7 @@ head_bytes() {
 }
 
 echo "1..1"
+set -v
 
 input_path="${images_dir}/snake.six"
 require_file "${input_path}"

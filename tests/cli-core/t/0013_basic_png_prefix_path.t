@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test ensuring png: prefix writes to filesystem path.
 
-set -euxv
+set -eux
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 CLI_CORE_HELPER_DIR="${script_dir}/../../lib/sh/cli-core"
@@ -13,6 +13,7 @@ ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 require_file "${images_dir}/snake.six"
 
 echo "1..1"
+set -v
 
 prefixed_dir="${output_dir}/s2p-prefix"
 rm -rf "${prefixed_dir}"

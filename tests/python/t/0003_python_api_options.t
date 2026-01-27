@@ -5,7 +5,7 @@
 # outputs. Each scenario is run via a small helper in Python so the TAP cases
 # remain readable.
 
-set -euxv
+set -eux
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${script_dir}/../../lib/sh/python/common.sh"
@@ -24,6 +24,7 @@ rm -f "${log_file}"
 tap_log_file="${log_file}"
 
 python_prepare "${log_file}" "${tmp_dir}"
+set -v
 
 verify_script="${tmp_dir}/verify-options.py"
 cat >"${verify_script}" <<'PY'

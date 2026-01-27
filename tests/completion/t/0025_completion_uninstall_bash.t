@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test verifying bash completion removal from img2sixel.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -39,6 +39,7 @@ printf '# stub completion\n' >"${primary_path}"
 printf '# stub completion\n' >"${legacy_path}"
 
 printf '1..1\n'
+set -v
 
 IMG2SIXEL_COMPLETION_HOME="${completion_home}"
 export IMG2SIXEL_COMPLETION_HOME

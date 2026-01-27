@@ -13,6 +13,7 @@ status=0
 ensure_img2sixel_available
 
 echo "1..1"
+set -v
 
 snake_pbm="${images_dir}/snake.pbm"
 target_sixel="${output_dir}/xterm-override.sixel"

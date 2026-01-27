@@ -13,6 +13,7 @@ status=0
 ensure_img2sixel_available
 
 echo "1..1"
+set -v
 
 snake_gray_jpg="${images_dir}/snake-grayscale.jpg"
 target_txt="${output_dir}/gray-jpeg-inspection.txt"

@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test ensuring issue #131 PoC GIF is rejected without crashing.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -35,6 +35,7 @@ issue131="${top_srcdir}/tests/issue/131/2020-01-30-img2sixel.gif"
 require_file "${issue131}"
 
 printf '1..1\n'
+set -v
 
 if run_img2sixel --high-color "${issue131}" \
         >"${output_dir}/issue131-high-color.sixel" \

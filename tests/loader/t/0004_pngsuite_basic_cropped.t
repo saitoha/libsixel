@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test: PNGSuite basic samples cropped to 16x16 at +8+8.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -31,6 +31,7 @@ fail() {
 ensure_pngsuite_prereqs
 
 echo "1..1"
+set -v
 
 if convert_pngsuite_group "${pngsuite_basic}" "basic samples" "-c16x16+8+8" "${output_dir}" "${log_file}"; then
     pass 1 "basic samples cropped"

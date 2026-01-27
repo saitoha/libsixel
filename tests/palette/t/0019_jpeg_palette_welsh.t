@@ -13,6 +13,7 @@ status=0
 ensure_img2sixel_available
 
 echo "1..1"
+set -v
 
 egret_jpg="${images_dir}/egret.jpg"
 map8_png="${images_dir}/map8.png"

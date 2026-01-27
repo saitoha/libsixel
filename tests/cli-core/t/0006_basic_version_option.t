@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test verifying sixel2png prints version information.
 
-set -euxv
+set -eux
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 CLI_CORE_HELPER_DIR="${script_dir}/../../lib/sh/cli-core"
@@ -11,6 +11,7 @@ cli_core_setup "sixel2png-basic"
 ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 
 echo "1..1"
+set -v
 
 if run_sixel2png -V >"${output_dir}/version.txt" 2>>"${log_file}"; then
     cli_core_pass 1 "prints version"

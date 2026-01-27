@@ -22,6 +22,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 ensure_img2sixel_available
 echo "1..1"
+set -v
 
 input_image="${images_dir}/snake.png"
 output_sixel="${output_dir}/vpte-float32-cielab.six"

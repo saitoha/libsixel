@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test verifying distance-1 typo is corrected or rejected with expected message.
 
-set -euxv
+set -eux
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 CLI_CORE_HELPER_DIR="${script_dir}/../../lib/sh/cli-core"
@@ -13,6 +13,7 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 require_file "${images_dir}/snake.png"
 
 echo "1..1"
+set -v
 
 label="distance1_single"
 err_file="${artifact_dir}/${label}.err"

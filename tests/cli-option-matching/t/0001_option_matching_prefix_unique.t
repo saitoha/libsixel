@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test verifying unique option prefix is accepted without diagnostics.
 
-set -euxv
+set -eux
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 CLI_CORE_HELPER_DIR="${script_dir}/../../lib/sh/cli-core"
@@ -24,6 +24,7 @@ cleanup_files() {
 cleanup_files "${err_file}" "${out_file}" "${filtered_err}"
 
 echo "1..1"
+set -v
 
 if run_img2sixel -y ser "${images_dir}/snake.png" >"${out_file}" 2>"${err_file}"; then
     :

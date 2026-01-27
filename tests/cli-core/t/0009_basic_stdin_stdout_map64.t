@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test converting map64.six using explicit stdin/stdout arguments.
 
-set -euxv
+set -eux
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 CLI_CORE_HELPER_DIR="${script_dir}/../../lib/sh/cli-core"
@@ -13,6 +13,7 @@ ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 require_file "${images_dir}/map64.six"
 
 echo "1..1"
+set -v
 
 if run_sixel2png - - <"${images_dir}/map64.six" \
         >"${output_dir}/map64-stdin-stdout.png" 2>>"${log_file}"; then

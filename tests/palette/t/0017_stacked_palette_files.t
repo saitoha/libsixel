@@ -13,6 +13,7 @@ status=0
 ensure_img2sixel_available
 
 echo "1..1"
+set -v
 
 map8_six="${images_dir}/map8.six"
 snake_six="${images_dir}/snake.six"

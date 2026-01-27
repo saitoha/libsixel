@@ -13,6 +13,7 @@ status=0
 ensure_img2sixel_available
 
 echo "1..1"
+set -v
 
 snake_palette_png="${images_dir}/snake-palette.png"
 target_sixel="${output_dir}/indexed-scale.sixel"

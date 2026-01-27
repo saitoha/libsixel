@@ -2,7 +2,7 @@
 # TAP test verifying that img2sixel -H documents every environment variable
 # referenced in the sources.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -31,6 +31,7 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 require_file "${top_srcdir}/tests/docs/list_envvars.sh"
 
 printf '1..1\n'
+set -v
 
 if run_quiet "${top_srcdir}/tests/docs/list_envvars.sh" --check \
         --img2sixel "${IMG2SIXEL_PATH}" --source-root "${top_srcdir}" \

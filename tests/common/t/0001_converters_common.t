@@ -1,8 +1,8 @@
 #!/bin/sh
 # Common helpers for converter TAP tests executed with POSIX sh.
 
-# Enable strict mode with verbose tracing for diagnostics.
-set -uxv
+# Enable strict mode without verbose tracing for cleaner caller logs.
+set -ux
 
 # Disable shell tracing temporarily while running a command. This keeps
 # stderr clean for assertions that expect no diagnostics while preserving

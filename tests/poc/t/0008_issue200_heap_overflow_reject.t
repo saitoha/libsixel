@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test for issue #200 regression using the reported CLI flags.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -53,6 +53,7 @@ issue200="${top_srcdir}/tests/issue/200/POC_img2sixel_heap_buffer_overflow"
 require_file "${issue200}"
 
 printf '1..1\n'
+set -v
 
 if check_exit --7bit-mode -8 --invert --palette-type=auto --verbose \
         "${issue200}" -o /dev/null; then

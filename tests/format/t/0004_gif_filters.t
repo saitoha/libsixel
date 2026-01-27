@@ -13,6 +13,7 @@ status=0
 ensure_img2sixel_available
 
 echo "1..1"
+set -v
 
 snake_gif="${images_dir}/snake.gif"
 target_sixel="${tmp_dir}/snake-gif.sixel"

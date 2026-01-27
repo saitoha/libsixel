@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test: pipeline planner runs baseline case with verbose dump.
 
-set -euxv
+set -eux
 
 export SIXEL_THREADS=4
 
@@ -22,6 +22,7 @@ script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 echo "1..1"
+set -v
 
 create_small_ppm "${ppm_small}"
 

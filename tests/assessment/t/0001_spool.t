@@ -2,7 +2,7 @@
 # TAP test confirming assessment spool persists across multiple inputs.
 
 # Enable strict mode with verbose tracing for diagnostics.
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -34,6 +34,7 @@ fail() {
 }
 
 echo "1..1"
+set -v
 
 quality_err="${artifact_dir}/assessment-quality.err"
 quality_out="${artifact_dir}/assessment-quality.out"

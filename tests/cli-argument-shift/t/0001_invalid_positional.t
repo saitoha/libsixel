@@ -3,7 +3,7 @@
 # emitting stray output.
 
 # Enable strict mode with verbose tracing for diagnostics.
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -39,6 +39,7 @@ fail() {
 }
 
 echo "1..1"
+set -v
 
 missing_path="${tmp_dir}/invalid_filename"
 rm -f "${missing_path}"

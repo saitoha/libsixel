@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test: PAL1 input expands via fallback path when tables are disabled.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -21,6 +21,7 @@ script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 echo "1..1"
+set -v
 
 snake_ascii_pbm="${images_dir}/snake-ascii.pbm"
 require_file "${snake_ascii_pbm}"

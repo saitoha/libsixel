@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test verifying zsh completion installation from img2sixel.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -44,6 +44,7 @@ rm -rf "${completion_home}"
 mkdir -p "${completion_home}"
 
 printf '1..1\n'
+set -v
 
 IMG2SIXEL_COMPLETION_HOME="${completion_home}"
 IMG2SIXEL_COMPLETION_DIR="${completion_dir}"

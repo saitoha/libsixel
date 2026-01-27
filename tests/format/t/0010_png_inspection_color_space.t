@@ -13,6 +13,7 @@ status=0
 ensure_img2sixel_available
 
 echo "1..1"
+set -v
 
 snake_png="${images_dir}/snake.png"
 target_txt="${output_dir}/png-inspection.txt"

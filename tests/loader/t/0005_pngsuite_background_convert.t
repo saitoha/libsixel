@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test: PNGSuite background samples convert with defaults.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -31,6 +31,7 @@ fail() {
 ensure_pngsuite_prereqs
 
 echo "1..1"
+set -v
 
 if convert_pngsuite_group "${pngsuite_background}" "background samples" "" "${output_dir}" "${log_file}"; then
     pass 1 "background samples convert"

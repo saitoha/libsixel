@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test verifying invalid decoder arguments surface descriptive errors.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -30,6 +30,7 @@ fail() {
 }
 
 echo "1..1"
+set -v
 
 input_path="${images_dir}/snake.six"
 require_file "${input_path}"

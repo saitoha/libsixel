@@ -13,6 +13,7 @@ status=0
 ensure_img2sixel_available
 
 echo "1..1"
+set -v
 
 snake_ascii_pbm="${images_dir}/snake-ascii.pbm"
 target_txt="${output_dir}/ascii-pbm-inspection.txt"

@@ -2,7 +2,7 @@
 # TAP test ensuring img2sixel help command executes successfully.
 
 # Enable strict mode with verbose tracing for diagnostics.
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -30,6 +30,7 @@ fail() {
 }
 
 echo "1..1"
+set -v
 
 if run_img2sixel -H >"${artifact_dir}/help.txt" 2>>"${log_file}"; then
     pass 1 "help output available"

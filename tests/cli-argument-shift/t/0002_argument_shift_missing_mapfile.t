@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test verifying -m requires an argument and does not shift unexpectedly.
 
-set -euxv
+set -eux
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 CLI_CORE_HELPER_DIR="${script_dir}/../../lib/sh/cli-core"
@@ -22,6 +22,7 @@ image_path="${abs_top}/images/snake.jpg"
 require_file "${image_path}"
 
 echo "1..1"
+set -v
 
 err_file="${artifact_dir}/missing-map.err"
 out_file="${artifact_dir}/missing-map.out"

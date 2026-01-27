@@ -31,6 +31,7 @@ rc=$?
 set -e
 
 echo "1..1"
+set -v
 
 if [ "${rc}" -eq 0 ]; then
     echo "ok 1 - ${test_name}"

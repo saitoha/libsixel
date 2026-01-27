@@ -4,7 +4,7 @@
 # large dimension requests, and invalid option parameters so that regression in
 # error reporting can be caught early without generating temporary scripts.
 
-set -euxv
+set -eux
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${script_dir}/../../lib/sh/python/common.sh"
@@ -27,6 +27,7 @@ rm -f "${log_file}"
 tap_log_file="${log_file}"
 
 python_prepare "${log_file}" "${tmp_dir}"
+set -v
 
 printf 'source_image=%s\n' "${source_image}" >>"${log_file}"
 

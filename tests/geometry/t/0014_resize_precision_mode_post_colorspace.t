@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test: resize planner places colorspace conversion after scaling.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -22,6 +22,7 @@ script_dir=${test_dir}
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 echo "1..1"
+set -v
 
 cat <<'PPM' >"${ppm_file}"
 P3

@@ -20,6 +20,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 ensure_img2sixel_available
 
 echo "1..1"
+set -v
 
 input_image="${top_srcdir}/tests/data/resolutions/tiny_square.png"
 output_sixel="${output_dir}/merge-kmeans-float32.six"

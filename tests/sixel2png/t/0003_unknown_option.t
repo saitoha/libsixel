@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test verifying sixel2png rejects unknown options gracefully.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -30,6 +30,7 @@ fail() {
 }
 
 echo "1..1"
+set -v
 
 stderr_capture="${output_dir}/stderr.txt"
 if run_sixel2png --unknown 2>"${stderr_capture}" >"${output_dir}/stdout.txt"; then

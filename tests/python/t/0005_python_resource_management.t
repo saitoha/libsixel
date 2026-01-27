@@ -4,7 +4,7 @@
 # can be cleaned up on platforms like Windows where open handles block
 # deletion.
 
-set -euxv
+set -eux
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${script_dir}/../../lib/sh/python/common.sh"
@@ -23,6 +23,7 @@ rm -f "${log_file}"
 tap_log_file="${log_file}"
 
 python_prepare "${log_file}" "${tmp_dir}"
+set -v
 
 verify_script="${tmp_dir}/verify-resources.py"
 cat >"${verify_script}" <<'PY'

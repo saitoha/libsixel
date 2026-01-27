@@ -39,6 +39,7 @@ artifact_dir="${artifact_root}/${category_name}/${test_name}"
 mkdir -p "${artifact_dir}"
 
 printf '1..1\n'
+set -v
 
 image_path="${LSQA_INPUT_ROOT}/inputs/formats/palette.png"
 if lsqa_assert_repeat_stability "${image_path}" "palette.png" "${artifact_dir}"; then

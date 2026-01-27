@@ -13,6 +13,7 @@ status=0
 ensure_img2sixel_available
 
 echo "1..1"
+set -v
 
 snake_jpg="${images_dir}/snake.jpg"
 snake_dims="${tmp_dir}/snake-dims.sixel"

@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test: img2sixel fetches local files via the file scheme.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -23,6 +23,7 @@ fi
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 echo "1..1"
+set -v
 
 local_file="file://$(CDPATH=; cd "${top_srcdir}" && pwd)/images/snake.jpg"
 if run_img2sixel "${local_file}" \

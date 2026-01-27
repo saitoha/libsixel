@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test producing direct RGBA output with sixel2png.
 
-set -euxv
+set -eux
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 CLI_CORE_HELPER_DIR="${script_dir}/../../lib/sh/cli-core"
@@ -13,6 +13,7 @@ ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 require_file "${images_dir}/snake.six"
 
 echo "1..1"
+set -v
 
 direct_png="${output_dir}/snake-direct.png"
 if run_sixel2png -D <"${images_dir}/snake.six" \

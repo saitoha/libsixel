@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test: GPL palette input via type prefix converts image data.
 
-set -euxv
+set -eux
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 MAPFILE_HELPER_DIR="${script_dir}/../../lib/sh/mapfile"
@@ -12,6 +12,7 @@ setup_mapfile_dirs "${test_name}"
 load_mapfile_prereqs "${script_dir}"
 
 echo "1..1"
+set -v
 
 gpl_palette="${tmp_dir}/palette-gpl.dat"
 if ! run_img2sixel -M gpl:"${gpl_palette}" -o "${tmp_dir}/pal-gpl.six" \
