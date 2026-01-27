@@ -88,6 +88,7 @@ amalgamation_units = files(
   '../converters/aborttrace.c',
   '../converters/cli.c',
   '../converters/completion_utils.c',
+  '../converters/path.c',
   '../converters/img2sixel.c',
   '../converters/malloc_stub.c',
   '../converters/sixel2png.c',

@@ -111,6 +111,8 @@ else
 img2sixel_SOURCES = $(srcdir)/img2sixel.c \
                     $(srcdir)/completion_utils.c \
                     $(srcdir)/completion_utils.h \
+                    $(srcdir)/path.c \
+                    $(srcdir)/path.h \
                     $(srcdir)/cli.c \
                     $(srcdir)/cli.h \
                     $(srcdir)/malloc_stub.c \
