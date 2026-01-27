@@ -16,7 +16,7 @@
 #include <string.h>
 
 static gchar *
-find_query_loaders_path(GError **error)
+plugin_find_query_loaders_path(GError **error)
 {
     gboolean spawned;
     gchar *stdout_data;
@@ -84,7 +84,7 @@ find_query_loaders_path(GError **error)
 }
 
 static gchar *
-resolve_build_path(char const *suffix)
+plugin_resolve_build_path(char const *suffix)
 {
     gchar const *top_builddir;
     gchar *resolved;
@@ -100,7 +100,7 @@ resolve_build_path(char const *suffix)
 }
 
 static gchar *
-resolve_source_path(char const *suffix)
+plugin_resolve_source_path(char const *suffix)
 {
     gchar const *top_srcdir;
     gchar *resolved;
@@ -116,7 +116,7 @@ resolve_source_path(char const *suffix)
 }
 
 static gchar *
-prepend_path_env(char const *name, gchar const *first)
+plugin_prepend_path_env(char const *name, gchar const *first)
 {
     gchar const *current;
     gchar *joined;
@@ -138,9 +138,9 @@ prepend_path_env(char const *name, gchar const *first)
 }
 
 static gboolean
-write_loader_cache(char const *query_path,
-                   char const *cache_file,
-                   GError **error)
+plugin_write_loader_cache(char const *query_path,
+                          char const *cache_file,
+                          GError **error)
 {
     gboolean spawned;
     gchar *stdout_data;
@@ -189,7 +189,7 @@ write_loader_cache(char const *query_path,
 }
 
 static gchar *
-find_module_dir(gboolean *has_dylib)
+plugin_find_module_dir(gboolean *has_dylib)
 {
     gchar *module_dir;
     gchar *module_path;
@@ -197,7 +197,7 @@ find_module_dir(gboolean *has_dylib)
 
     *has_dylib = FALSE;
 
-    module_dir = resolve_build_path("gdk-pixbuf-loader");
+    module_dir = plugin_resolve_build_path("gdk-pixbuf-loader");
     module_path = g_build_filename(module_dir,
                                    "libpixbufloader-sixel.so",
                                    NULL);
@@ -215,7 +215,7 @@ find_module_dir(gboolean *has_dylib)
     *has_dylib = g_file_test(module_alt_path, G_FILE_TEST_IS_REGULAR);
 
     g_free(module_dir);
-    module_dir = resolve_build_path("gdk-pixbuf-loader/.libs");
+    module_dir = plugin_resolve_build_path("gdk-pixbuf-loader/.libs");
     g_free(module_path);
     module_path = g_build_filename(module_dir,
                                    "libpixbufloader-sixel.so",
@@ -267,7 +267,7 @@ run_loader_plugin_integration(void)
 
     error = NULL;
     has_dylib = FALSE;
-    module_dir = find_module_dir(&has_dylib);
+    module_dir = plugin_find_module_dir(&has_dylib);
     if (module_dir == NULL) {
         if (has_dylib) {
             g_test_skip("only .dylib module found; gdk-pixbuf expects .so");
@@ -277,7 +277,7 @@ run_loader_plugin_integration(void)
         return;
     }
 
-    query_path = find_query_loaders_path(&error);
+    query_path = plugin_find_query_loaders_path(&error);
     if (query_path == NULL) {
         g_test_skip("gdk-pixbuf-query-loaders is unavailable");
         g_clear_error(&error);
@@ -293,20 +293,20 @@ run_loader_plugin_integration(void)
                                          "loaders.cache",
                                          NULL);
 
-    ld_path = prepend_path_env("LD_LIBRARY_PATH", "src/.libs");
-    dyld_path = prepend_path_env("DYLD_LIBRARY_PATH", "src/.libs");
+    ld_path = plugin_prepend_path_env("LD_LIBRARY_PATH", "src/.libs");
+    dyld_path = plugin_prepend_path_env("DYLD_LIBRARY_PATH", "src/.libs");
 
     g_setenv("GDK_PIXBUF_MODULEDIR", module_dir, TRUE);
     g_setenv("GDK_PIXBUF_MODULE_FILE", module_cache_file, TRUE);
     g_setenv("LD_LIBRARY_PATH", ld_path, TRUE);
     g_setenv("DYLD_LIBRARY_PATH", dyld_path, TRUE);
 
-    ok = write_loader_cache(query_path, module_cache_file, &error);
+    ok = plugin_write_loader_cache(query_path, module_cache_file, &error);
     g_assert_true(ok);
     g_assert_no_error(error);
 
-    img2sixel_path = resolve_build_path("converters/img2sixel");
-    snake_path = resolve_source_path("images/snake.six");
+    img2sixel_path = plugin_resolve_build_path("converters/img2sixel");
+    snake_path = plugin_resolve_source_path("images/snake.six");
 
     argv = g_new0(gchar *, 6);
     argv[0] = img2sixel_path;
