@@ -55,6 +55,16 @@
 
 #include "path.h"
 
+#if defined(SIXEL_AMALGAMATION) && !defined(BUILD_IMG2SIXEL) \
+    && !defined(BUILD_SIXEL2PNG)
+/*
+ * Avoid duplicate path conversion symbols in amalgamation library builds.
+ * The converter tools define BUILD_IMG2SIXEL or BUILD_SIXEL2PNG when they
+ * need these helpers, but the core library already provides the
+ * sixel_path_* variants.
+ */
+#else
+
 #define IMG2SIXEL_CYGDRIVE_PREFIX "/cygdrive/"
 
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__)
@@ -789,8 +799,9 @@ img2sixel_path_to_libc(char const *path,
             out_index++;
         }
         buffer[out_index] = '\0';
-        return buffer;
-    }
+    return buffer;
+}
+
     return path;
 #elif defined(__CYGWIN__)
     {
@@ -947,3 +958,5 @@ img2sixel_path_to_libc(char const *path,
     return path;
 #endif
 }
+
+#endif  /* SIXEL_AMALGAMATION guard */

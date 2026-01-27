@@ -491,7 +491,7 @@ emit_all_headers() {
                         "defined(BUILD_IMG2SIXEL)"
                 fi
                 ;;
-            converters/cli.h|converters/completion_utils.h|converters/getopt_stub.h|converters/malloc_stub.h|converters/aborttrace.h)
+            converters/*.h)
                 emit_header_unit "${unit}" \
                     "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG)"
                 ;;
@@ -528,7 +528,7 @@ emit_all_units() {
             src/threadpool.c)
                 emit_unit "${unit}" "SIXEL_ENABLE_THREADS"
                 ;;
-            converters/cli.c|converters/completion_utils.c|converters/malloc_stub.c|converters/aborttrace.c)
+            converters/*.c)
                 guard=$(echo "${unit}" | sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
                 emit_unit "${unit}" \
                     "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_${guard})"

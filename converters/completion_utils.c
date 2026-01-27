@@ -175,6 +175,9 @@ static int img2sixel_compat_open(const char *path, int flags, ...);
 static int img2sixel_compat_close(int fd);
 static int img2sixel_compat_unlink(const char *path);
 static int img2sixel_compat_access(const char *path, int mode);
+static int img2sixel_compat_stat(const char *path, struct stat *stat_buffer);
+static int img2sixel_compat_rename(const char *src_path,
+                                   const char *dst_path);
 static ssize_t img2sixel_compat_write(int fd,
                                       const void *buffer,
                                       size_t count);
@@ -698,6 +701,100 @@ img2sixel_compat_access(const char *path, int mode)
     return 0;
 }
 
+static int
+img2sixel_compat_stat(const char *path, struct stat *stat_buffer)
+{
+    char *buffer;
+    char const *libc_path;
+    int result;
+
+    buffer = NULL;
+    libc_path = NULL;
+    result = (-1);
+
+    if (path == NULL || stat_buffer == NULL) {
+        errno = EINVAL;
+        return (-1);
+    }
+
+    if (img2sixel_compat_prepare_path(path, &buffer, &libc_path) < 0) {
+        return (-1);
+    }
+
+#if defined(_MSC_VER)
+    /*
+     * Mirror the library-side stat wrapper so /WX builds avoid
+     * mismatched time_t warnings.
+     */
+# if defined(_USE_32BIT_TIME_T)
+    result = _stat64i32(libc_path, (struct _stat64i32 *)stat_buffer);
+# else
+    result = _stat64(libc_path, (struct _stat64 *)stat_buffer);
+# endif
+#else
+    result = stat(libc_path, stat_buffer);
+#endif
+
+    if (buffer != NULL) {
+        free(buffer);
+    }
+
+    return result;
+}
+
+static int
+img2sixel_compat_rename(const char *src_path, const char *dst_path)
+{
+    char *src_buffer;
+    char const *libc_src;
+    char *dst_buffer;
+    char const *libc_dst;
+    int result;
+
+    src_buffer = NULL;
+    libc_src = NULL;
+    dst_buffer = NULL;
+    libc_dst = NULL;
+    result = (-1);
+
+    if (src_path == NULL || dst_path == NULL) {
+        errno = EINVAL;
+        return (-1);
+    }
+
+    if (img2sixel_compat_prepare_path(src_path,
+                                      &src_buffer,
+                                      &libc_src) < 0) {
+        return (-1);
+    }
+    if (img2sixel_compat_prepare_path(dst_path,
+                                      &dst_buffer,
+                                      &libc_dst) < 0) {
+        if (src_buffer != NULL) {
+            free(src_buffer);
+        }
+        return (-1);
+    }
+
+#if defined(_MSC_VER) && defined(HAVE__RENAME)
+    result = _rename(libc_src, libc_dst);
+#elif defined(HAVE_RENAME)
+    result = rename(libc_src, libc_dst);
+#else
+    errno = ENOSYS;
+    result = (-1);
+#endif
+
+    if (src_buffer != NULL) {
+        free(src_buffer);
+    }
+    if (dst_buffer != NULL) {
+        free(dst_buffer);
+    }
+
+    return result;
+}
+
 static ssize_t
 img2sixel_compat_write(int fd, const void *buffer, size_t count)
 {
@@ -866,7 +963,7 @@ read_entire_file(const char *path, char **buf, size_t *len)
     *buf = NULL;
     *len = 0;
 
-    if (stat(path, &st) != 0) {
+    if (img2sixel_compat_stat(path, &st) != 0) {
         return -1;
     }
 
@@ -1007,7 +1104,7 @@ write_atomic(const char *dst_path, const void *buf, size_t len, mode_t mode)
         return -1;
     }
 
-    if (rename(tmp_path, dst_path) != 0) {
+    if (img2sixel_compat_rename(tmp_path, dst_path) != 0) {
         saved_errno = errno;
         (void)img2sixel_compat_unlink(tmp_path);
         free(tmp_path);
