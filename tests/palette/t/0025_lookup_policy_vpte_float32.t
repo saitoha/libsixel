@@ -13,6 +13,7 @@ status=0
 ensure_img2sixel_available
 
 echo "1..1"
+set -v
 
 snake_png="${images_dir}/snake.png"
 output_sixel="${output_dir}/vpte-float32.six"

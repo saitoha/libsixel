@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test ensuring builtin loader handles PSD inputs without fallback.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -55,6 +55,7 @@ check_sixel_output() {
 }
 
 echo "1..1"
+set -v
 
 psd_input="${top_srcdir}/tests/data/inputs/formats/stbi_minimal.psd"
 target_sixel="${output_dir}/builtin-psd.sixel"

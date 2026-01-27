@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test: self-signed HTTPS fetch is blocked without -k.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -51,6 +51,7 @@ ensure_network_backend_available
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 echo "1..1"
+set -v
 
 if ! command -v python >/dev/null 2>&1; then
     printf 'ok 1 - self-signed fetch blocked # SKIP python missing\n'

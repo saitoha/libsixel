@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test verifying bash completion installation from img2sixel.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -61,6 +61,7 @@ target_path="${completion_home}/.local/share/bash-completion/completions/img2six
 legacy_path="${completion_home}/.bash_completion.d/img2sixel"
 
 printf '1..1\n'
+set -v
 
 IMG2SIXEL_COMPLETION_HOME="${completion_home}"
 IMG2SIXEL_COMPLETION_DIR="${completion_dir}"

@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test verifying output file named like an option is accepted.
 
-set -euxv
+set -eux
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 CLI_CORE_HELPER_DIR="${script_dir}/../../lib/sh/cli-core"
@@ -22,6 +22,7 @@ image_path="${abs_top}/images/snake.jpg"
 require_file "${image_path}"
 
 echo "1..1"
+set -v
 
 outfile_err="${artifact_dir}/outfile-option-name.err"
 rm -f "${outfile_err}" "${tmp_dir}/-p"

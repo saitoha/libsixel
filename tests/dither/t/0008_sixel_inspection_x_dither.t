@@ -13,6 +13,7 @@ status=0
 ensure_img2sixel_available
 
 echo "1..1"
+set -v
 
 snake_six="${images_dir}/snake.six"
 target_txt="${output_dir}/sixel-inspection-x-dither.txt"

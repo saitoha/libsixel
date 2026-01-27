@@ -13,6 +13,7 @@ status=0
 ensure_img2sixel_available
 
 echo "1..1"
+set -v
 
 snake_tga="${images_dir}/snake.tga"
 target_sixel="${output_dir}/gray4.sixel"

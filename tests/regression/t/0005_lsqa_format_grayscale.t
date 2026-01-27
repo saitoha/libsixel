@@ -41,6 +41,7 @@ artifact_dir="${artifact_root}/${category_name}/${test_name}"
 mkdir -p "${artifact_dir}"
 
 printf '1..1\n'
+set -v
 
 image_path="${LSQA_INPUT_ROOT}/inputs/formats/grayscale.jpg"
 if lsqa_assert_quality "${image_path}" "${image_path}" "grayscale.jpg" "${artifact_dir}" "${lsqa_floor}"; then

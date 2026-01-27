@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test for issue #166 crafted width input handling.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -53,6 +53,7 @@ issue166="${top_srcdir}/tests/issue/166/poc"
 require_file "${issue166}"
 
 printf '1..1\n'
+set -v
 
 if check_exit "${issue166}" -w128 >"${output_dir}/issue166-width.sixel"; then
     pass 1 "crafted width input handled"

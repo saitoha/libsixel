@@ -13,6 +13,7 @@ status=0
 ensure_img2sixel_available
 
 echo "1..1"
+set -v
 
 check_dcs_crc 1 "-h12 -w200%" \
     "combined absolute and percentage scaling consistent"

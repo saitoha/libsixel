@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test verifying sixel2png reports version and exits successfully.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -30,6 +30,7 @@ fail() {
 }
 
 echo "1..1"
+set -v
 
 version_output="${output_dir}/version.txt"
 if run_sixel2png -V >"${version_output}" 2>>"${log_file}"; then

@@ -18,6 +18,7 @@ if [ "x${SIXEL_TSAN_BUILD:-no}" = "xyes" ]; then
 fi
 
 echo "1..1"
+set -v
 
 stderr_file="${output_dir}/sixel2png-aborttrace.err"
 output_file="${output_dir}/sixel2png-aborttrace.png"

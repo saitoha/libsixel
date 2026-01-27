@@ -29,6 +29,7 @@ if ! lsqa_init "$0"; then
 fi
 
 echo "1..1"
+set -v
 
 input_image="${LSQA_INPUT_ROOT}/inputs/snake_64.png"
 case_id=${test_name%.t}

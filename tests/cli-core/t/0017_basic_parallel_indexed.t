@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test verifying parallel indexed conversion matches serial output.
 
-set -euxv
+set -eux
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 CLI_CORE_HELPER_DIR="${script_dir}/../../lib/sh/cli-core"
@@ -13,6 +13,7 @@ ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 require_file "${images_dir}/map64.six"
 
 echo "1..1"
+set -v
 
 cli_core_pick_comparator
 if [ -z "${comparator_cmd}" ]; then

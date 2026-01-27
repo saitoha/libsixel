@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test comparing img2sixel bash and zsh completion definitions.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -47,6 +47,7 @@ if ! command -v diff >/dev/null 2>&1; then
 fi
 
 printf '1..1\n'
+set -v
 
 if grep -E ' --[0-9a-zA-Z_@=~%?]' \
         "${top_srcdir}/converters/shell-completion/bash/img2sixel" \

@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test: default k-means init type when env is unset.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -15,6 +15,7 @@ script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${script_dir}/../../lib/sh/palette/kmeans_init_common.sh"
 
 echo "1..1"
+set -v
 
 output=$(run_kmeans_init "")
 if [ "${output}" = "none" ]; then

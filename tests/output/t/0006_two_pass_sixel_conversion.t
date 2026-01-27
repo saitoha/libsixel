@@ -13,6 +13,7 @@ status=0
 ensure_img2sixel_available
 
 echo "1..1"
+set -v
 
 snake_png="${images_dir}/snake.png"
 stage1="${output_dir}/two-pass-stage1.sixel"

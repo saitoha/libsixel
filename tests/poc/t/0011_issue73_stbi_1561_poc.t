@@ -2,7 +2,7 @@
 # TAP test for issue #73 stbi_1561_poc.bin regression.
 # Ensure the converter rejects the input without crashing, even under ASan.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -54,6 +54,7 @@ issue73="${top_srcdir}/tests/issue/libsixel-libsixel/73/stbi_1561_poc.bin"
 require_file "${issue73}"
 
 printf '1..1\n'
+set -v
 
 # Use the minimal invocation to exercise the decoder and ensure the
 # reported PoC is rejected safely.

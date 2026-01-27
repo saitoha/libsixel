@@ -35,6 +35,7 @@ if grep "{cacaf262-9370-4615-a13b-9f5539da4c0a} not registered" "${log_file}" \
 fi
 
 echo "1..1"
+set -v
 
 if [ "${rc}" -eq 0 ]; then
     echo "ok 1 - loader/${test_name}"

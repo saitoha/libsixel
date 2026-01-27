@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test covering cli_token_is_known_option with short/long tokens.
 
-set -euxv
+set -eux
 
 name=$(basename "$0")
 artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
@@ -30,6 +30,7 @@ rc=$?
 set -e
 
 echo "1..1"
+set -v
 
 if [ "${rc}" -eq 0 ]; then
     echo "ok 1 - cli_token_is_known_option"

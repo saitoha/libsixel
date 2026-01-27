@@ -13,6 +13,7 @@ status=0
 ensure_img2sixel_available
 
 echo "1..1"
+set -v
 
 snake_ppm="${images_dir}/snake.ppm"
 map16_png="${images_dir}/map16.png"

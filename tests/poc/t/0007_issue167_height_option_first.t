@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test for issue #167 with height option before the input file.
 
-set -euxv
+set -eux
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
@@ -53,6 +53,7 @@ issue167="${top_srcdir}/tests/issue/167/poc"
 require_file "${issue167}"
 
 printf '1..1\n'
+set -v
 
 if check_exit -h128 "${issue167}" \
         >"${output_dir}/issue167-height-option-first.sixel"; then

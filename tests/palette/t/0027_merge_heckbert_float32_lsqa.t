@@ -20,6 +20,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 ensure_img2sixel_available
 
 echo "1..1"
+set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${output_dir}/merge-heckbert-float32.six"

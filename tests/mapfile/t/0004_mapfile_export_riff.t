@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test: RIFF palette export honours type prefix.
 
-set -euxv
+set -eux
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 MAPFILE_HELPER_DIR="${script_dir}/../../lib/sh/mapfile"
@@ -12,6 +12,7 @@ setup_mapfile_dirs "${test_name}"
 load_mapfile_prereqs "${script_dir}"
 
 echo "1..1"
+set -v
 
 riff_palette="${tmp_dir}/palette-riff.pal"
 if run_img2sixel -M pal-riff:"${riff_palette}" \

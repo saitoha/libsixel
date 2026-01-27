@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP test: pipeline planner runs with override environment variables.
 
-set -euxv
+set -eux
 
 export SIXEL_THREADS=6
 
@@ -22,6 +22,7 @@ script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 echo "1..1"
+set -v
 
 create_tall_ppm "${ppm_tall}"
 
