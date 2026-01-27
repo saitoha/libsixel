@@ -70,26 +70,6 @@
 
 
 /*
- * Enable optional OKLab L_r distance for variable-coefficient diffusion when
- * the user requests it via environment flag.
- */
-static int
-sixel_dither_env_use_l_r_distance(void)
-{
-    char const *env;
-
-    env = sixel_compat_getenv("SIXEL_PALETTE_DIFFUSE_USE_L_R");
-    if (env == NULL || env[0] == '\0') {
-        return 0;
-    }
-    if (env[0] == '0') {
-        return 0;
-    }
-    return 1;
-}
-
-
-/*
  * Promote an RGB888 buffer to RGBFLOAT32 by normalising each channel to the
  * 0.0-1.0 range.  The helper is used when a float32 pipeline is requested via
  * the pixelformat but the incoming frame still relies on 8bit pixels.
@@ -584,15 +564,9 @@ sixel_dither_map_pixels(
     context.float_depth = 0;
     context.lookup_source_is_float = 0;
     context.prefer_palette_float_lookup = 0;
-    context.use_l_r_distance = 0;
     context.lut = NULL;
     if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
         context.pixels_float = (float *)(void *)data;
-    }
-    if (methodForDiffuse == SIXEL_DIFFUSE_LSO2
-            && pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32
-            && sixel_dither_env_use_l_r_distance() != 0) {
-        context.use_l_r_distance = 1;
     }
 
     if (dither != NULL && dither->palette != NULL) {
@@ -2135,7 +2109,6 @@ sixel_dither_apply_palette(
     int wcomp3;
 #if SIXEL_ENABLE_THREADS
     int shared_lut;
-    int lso2_min_overlap = 0;
 #endif  /* SIXEL_ENABLE_THREADS */
 
     /* ensure dither object is not null */
@@ -2354,19 +2327,6 @@ sixel_dither_apply_palette(
         method_for_carry = SIXEL_CARRY_DISABLE;
     }
 
-#if SIXEL_ENABLE_THREADS
-    /*
-     * LSO2 with OKLab L_r distance is sensitive to reset boundaries in
-     * parallel dithering.  Ensure a minimal overlap so error diffusion
-     * warm-up spans the band seams and avoids horizontal artifacts.
-     */
-    if (dither->method_for_diffuse == SIXEL_DIFFUSE_LSO2
-            && pipeline_pixelformat == SIXEL_PIXELFORMAT_OKLABFLOAT32
-            && sixel_dither_env_use_l_r_distance() != 0) {
-        lso2_min_overlap = 6;
-    }
-#endif  /* SIXEL_ENABLE_THREADS */
-
     palette_probe_active = sixel_assessment_palette_probe_enabled();
     palette_started_at = 0.0;
     palette_finished_at = 0.0;
@@ -2399,11 +2359,6 @@ sixel_dither_apply_palette(
         if ((adjusted_height % 6) != 0) {
             adjusted_height = ((adjusted_height + 5) / 6) * 6;
         }
-#if SIXEL_ENABLE_THREADS
-        if (lso2_min_overlap > adjusted_overlap) {
-            adjusted_overlap = lso2_min_overlap;
-        }
-#endif  /* SIXEL_ENABLE_THREADS */
         if (adjusted_overlap > adjusted_height / 2) {
             adjusted_overlap = adjusted_height / 2;
         }

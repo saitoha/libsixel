@@ -864,13 +864,6 @@ SIXEL_FLOAT32_DITHER       opt into the experimental RGBFLOAT32
                            `--precision=float32` set the variable for
                            the current process so callers do not need
                            to export it manually.
-SIXEL_PALETTE_DIFFUSE_USE_L_R
-                           enable the Bottosson `L_r` toe curve for
-                           OKLab float inputs when using `-d lso2`. Any
-                           non-empty value other than `0` switches the
-                           distance metric to `L_r`; unset or `0`
-                           keeps the raw `L` values.
-
 ```
 
 Use `--loaders` to reorder the loader chain. Provide a comma separated list of

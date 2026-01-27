@@ -39,8 +39,7 @@ sixel_dither_lookup_palette_float32(float const *pixel,
                                     int depth,
                                     float const *palette,
                                     int reqcolor,
-                                    int complexion,
-                                    int use_l_r_distance);
+                                    int complexion);
 
 #ifdef __cplusplus
 }

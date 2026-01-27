@@ -207,9 +207,9 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/img2sixel-aborttrace.Po \
 	./$(DEPDIR)/img2sixel-cli.Po \
 	./$(DEPDIR)/img2sixel-completion_utils.Po \
-	./$(DEPDIR)/img2sixel-path.Po \
 	./$(DEPDIR)/img2sixel-img2sixel.Po \
 	./$(DEPDIR)/img2sixel-malloc_stub.Po \
+	./$(DEPDIR)/img2sixel-path.Po \
 	./$(DEPDIR)/sixel2png-aborttrace.Po \
 	./$(DEPDIR)/sixel2png-cli.Po \
 	./$(DEPDIR)/sixel2png-malloc_stub.Po \
@@ -735,9 +735,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-cli.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-completion_utils.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-path.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-img2sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-malloc_stub.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-path.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png-aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png-cli.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png-malloc_stub.Po@am__quote@ # am--include-marker
@@ -1245,9 +1245,9 @@ distclean: distclean-recursive
 	-rm -f ./$(DEPDIR)/img2sixel-aborttrace.Po
 	-rm -f ./$(DEPDIR)/img2sixel-cli.Po
 	-rm -f ./$(DEPDIR)/img2sixel-completion_utils.Po
-	-rm -f ./$(DEPDIR)/img2sixel-path.Po
 	-rm -f ./$(DEPDIR)/img2sixel-img2sixel.Po
 	-rm -f ./$(DEPDIR)/img2sixel-malloc_stub.Po
+	-rm -f ./$(DEPDIR)/img2sixel-path.Po
 	-rm -f ./$(DEPDIR)/sixel2png-aborttrace.Po
 	-rm -f ./$(DEPDIR)/sixel2png-cli.Po
 	-rm -f ./$(DEPDIR)/sixel2png-malloc_stub.Po
@@ -1303,9 +1303,9 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f ./$(DEPDIR)/img2sixel-aborttrace.Po
 	-rm -f ./$(DEPDIR)/img2sixel-cli.Po
 	-rm -f ./$(DEPDIR)/img2sixel-completion_utils.Po
-	-rm -f ./$(DEPDIR)/img2sixel-path.Po
 	-rm -f ./$(DEPDIR)/img2sixel-img2sixel.Po
 	-rm -f ./$(DEPDIR)/img2sixel-malloc_stub.Po
+	-rm -f ./$(DEPDIR)/img2sixel-path.Po
 	-rm -f ./$(DEPDIR)/sixel2png-aborttrace.Po
 	-rm -f ./$(DEPDIR)/sixel2png-cli.Po
 	-rm -f ./$(DEPDIR)/sixel2png-malloc_stub.Po
