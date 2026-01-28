@@ -35,7 +35,6 @@
 #endif
 
 struct sixel_frame;
-struct sixel_assessment;
 struct sixel_logger;
 
 typedef struct sixel_encoding_planner {
@@ -148,9 +147,6 @@ struct sixel_encoder {
     int capture_ncolors;
     int capture_valid;
     struct sixel_frame *capture_source_frame;
-    unsigned int assessment_sections;
-    const char *assessment_json_path;
-    struct sixel_assessment *assessment_observer;
     char last_loader_name[64];
     char last_source_path[PATH_MAX];
     size_t last_input_bytes;

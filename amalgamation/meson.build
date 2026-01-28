@@ -102,6 +102,7 @@ amalgamation_headers = files(
   '../src/threading.h',
   '../src/threadpool.h',
   '../src/allocator.h',
+  '../src/assessment.h',
   '../src/logger.h',
   '../src/status.h',
   '../src/cpu.h',

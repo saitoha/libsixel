@@ -50,18 +50,6 @@ while \(dqpng:\fIpath\fP\(dq stores the PNG alongside the SIXEL
 output. Using \(dq\-o output.png\(dq writes the PNG directly to that
 path.
 .TP 5
-.B \-a \fILIST\fP, \-\-assessment=\fILIST\fP
-emit an assessment report as JSON.
-\fILIST\fP is a comma separated set of section names (\(dqbasic\(dq,
-\(dqperformance\(dq, \(dqsize\(dq, \(dqquality\(dq, \(dqquality@quantized\(dq, \(dqall\(dq).
-The \(dqquality@quantized\(dq view evaluates the palette-quantized
-frame before SIXEL encoding, while \(dqquality\(dq compares the
-generated SIXEL output via the built-in loader.
-.TP 5
-.B \-J \fIPATH\fP, \-\-assessment-file=\fIPATH\fP
-write the assessment JSON report to \fIPATH\fP.
-Use "-" to write to standard output.
-.TP 5
 .B \-= \fICOUNT\fP, \-\-threads=\fICOUNT\fP
 select the encoder thread count used for band parallelism.
 The special value \fBauto\fP matches the hardware thread count.

@@ -115,23 +115,6 @@ static cli_option_help_t const g_option_help_table[] = {
         "                           PNG directly to that path.\n"
     },
     {
-        'a',
-        "assessment",
-        "-a LIST, --assessment=LIST emit assessment JSON report.\n"
-        "                           LIST is a comma separated set of\n"
-        "                           sections (basic, performance, size,\n"
-        "                           quality, quality@quantized, all).\n"
-        "                           Unknown names are ignored so the\n"
-        "                           same command works across builds.\n"
-    },
-    {
-        'J',
-        "assessment-file",
-        "-J PATH, --assessment-file=PATH\n"
-        "                           write assessment JSON to PATH.\n"
-        "                           use '-' to write to stdout.\n"
-    },
-    {
         '=',
         "threads",
         "-= COUNT, --threads=COUNT|auto\n"
@@ -1016,7 +999,7 @@ img2sixel_option_help_count(void)
 }
 
 static char const g_img2sixel_optstring[] =
-    "o:a:J:"
+    "o:"
     "=:"
     ".:"
     "L:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:~:kil:t:ugvSn:PE:U:B:C:D@:"
@@ -1028,10 +1011,10 @@ img2sixel_option_allows_leading_dash(int short_opt)
     /*
      * The options below accept file paths and we must not treat values that
      * start with '-' as missing arguments.  Users legitimately pass
-     * "-p"-prefixed names through -o or -J when they want files that happen to
+     * "-p"-prefixed names through -o when they want files that happen to
      * look like short options.
      */
-    if (short_opt == 'o' || short_opt == 'J') {
+    if (short_opt == 'o') {
         return 1;
     }
 
@@ -1455,8 +1438,6 @@ main(int argc, char *argv[])
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
         {"outfile",            required_argument,  &long_opt, 'o'},
-        {"assessment",         required_argument,  &long_opt, 'a'},
-        {"assessment-file",    required_argument,  &long_opt, 'J'},
         {"threads",            required_argument,  &long_opt, '='},
         {"precision",          required_argument,  &long_opt, '.'},
         {"7bit-mode",          no_argument,        &long_opt, '7'},
@@ -1509,8 +1490,6 @@ main(int argc, char *argv[])
     char detail_buffer[2048];
     char const *detail_source = NULL;
     int detail_limit;
-    int input_count = 0;
-    int assessment_enabled = 0;
 
     n = 0;
     completion_cli_result = 0;
@@ -1605,9 +1584,6 @@ main(int argc, char *argv[])
                 }
                 goto error;
             }
-            if (n == 'a') {
-                assessment_enabled = 1;
-            }
             break;
         }
     }
@@ -1634,16 +1610,6 @@ main(int argc, char *argv[])
             goto error;
         }
     } else {
-        /* check multiple input files with assessment option */
-        if (assessment_enabled) {
-            input_count = argc - optind;
-            if (input_count > 1) {
-                sixel_helper_set_additional_message(
-                    "img2sixel: assessment mode accepts at most one input file.");
-                status = SIXEL_BAD_ARGUMENT;
-                goto error;
-            }
-        }
         for (n = optind; n < argc; n++) {
             status = sixel_encoder_encode(encoder, argv[n]);
             if (SIXEL_FAILED(status)) {
@@ -1671,12 +1637,12 @@ unknown_option_error:
             "\n"
             "usage: img2sixel [-78eIkiugvSPDOVH] [-= threads] [-. precision] [-p colors] [-m file]\n"
             "                 [-d diffusiontype] [-Q model] [-F mode]\n"
-            "                 [-y scantype] [-a assessmentlist] [-J assessmentfile]\n"
+            "                 [-y scantype]\n"
             "                 [-f findtype] [-s selecttype] [-c geometory] [-w width]\n"
             "                 [-h height] [-r resamplingtype] [-q quality]\n"
             "                 [-~ lookuppolicy] [-l loopmode]\n"
             "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
-            "                 [-E encodepolicy] [-L loaderlist] [-J jsonfile]\n"
+            "                 [-E encodepolicy] [-L loaderlist]\n"
             "                 [-@ mmv:charset:path] [-1 shell] [-2 shell]\n"
             "                 [-3 shell] [-W workingcolorspace] [-U outputcolorspace]\n"
             "                 [-B bgcolor] [-o outfile] [filename ...]\n\n"
