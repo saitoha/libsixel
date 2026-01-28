@@ -54,11 +54,6 @@ test_runner_sources = [
   '../gdk-pixbuf-loader/sixel-pixbuf-loader.c',
   '../converters/cli.c',
 ]
-test_runner_deps = [libsixel_dep]
-test_runner_deps += gdk_pixbuf_loader_deps
-test_runner_c_args = ['-DGDK_PIXBUF_ENABLE_BACKEND',
-                      '-DSIXEL_PIXBUF_LOADER_TESTING',
-                      '-DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS']
 
 test_runner_inc = [
   project_inc,
@@ -67,8 +62,10 @@ test_runner_inc = [
 
 test_runner_exe = executable('test_runner', test_runner_sources,
   include_directories: test_runner_inc,
-  dependencies: test_runner_deps,
-  c_args: test_runner_c_args,
+  dependencies: [libsixel_dep, gdk_pixbuf_loader_deps],
+  c_args: ['-DGDK_PIXBUF_ENABLE_BACKEND',
+           '-DSIXEL_PIXBUF_LOADER_TESTING',
+           '-DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS'],
   install: false)
 
 if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
@@ -170,7 +167,6 @@ tests = [
   'cli-option-matching/t/0005_option_matching_distance2.t',
   'cli-option-matching/t/0006_option_matching_distance3.t',
   'cli-options/t/0001_long_option_forms.t',
-  'clipboard/t/0001_clipboard_basic.t',
   'completion/t/0021_completion_show_bash.t',
   'completion/t/0022_completion_show_zsh.t',
   'completion/t/0023_completion_install_bash.t',
@@ -408,12 +404,14 @@ tests = [
   'sixel2png/t/0005_default_output.t',
 ]
 
-aborttrace_tests = [
-    'aborttrace/t/0001_img2sixel_aborttrace.t',
-    'aborttrace/t/0002_sixel2png_aborttrace.t',
+serial_tests = [
+  'clipboard/t/0001_clipboard_basic.t',
+  'aborttrace/t/0001_img2sixel_aborttrace.t',
+  'aborttrace/t/0002_sixel2png_aborttrace.t',
 ]
 
 # Match autotools TAP timeout to keep CI behavior consistent (seconds per file).
+# Ensure Meson builds the TAP helper binary before running shell-based tests.
 foreach t : tests
   test(t, sh,
     args: [meson.current_source_dir() / t],
@@ -423,7 +421,7 @@ foreach t : tests
     suite: ['tap'])
 endforeach
 
-foreach t : aborttrace_tests
+foreach t : serial_tests
   test(t, sh,
     args: [meson.current_source_dir() / t],
     protocol: 'tap',
