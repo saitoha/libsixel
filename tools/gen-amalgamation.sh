@@ -166,7 +166,7 @@ default_units=$(collect_units_from_dirs \
     \( -name '*.c' -o -name '*.m' \))
 
 header_units=$(collect_units_from_dirs \
-    "include src converters tests" \
+    "include src converters tests assessment" \
     \( -name '*.h' \))
 
 # Ensure generated headers that may not exist in the source tree are still
