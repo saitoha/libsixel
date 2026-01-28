@@ -254,7 +254,8 @@ libsixel_la_LIBADD = -lm \
                 @THREAD_LIBS@
 
 dist_man_MANS = $(srcdir)/sixel.5
-EXTRA_DIST = $(srcdir)/rgblookup.gperf
+EXTRA_DIST = $(srcdir)/rgblookup.gperf \
+             $(srcdir)/assessment.h
 
 GPERF_OPT=--ignore-case --language=ANSI-C
 

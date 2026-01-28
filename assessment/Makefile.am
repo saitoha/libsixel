@@ -1,6 +1,6 @@
 BUILT_SOURCES =
 
-CLEANFILES =
+CLEANFILES = $(DEPDIR)/lsqa-assessment.Po
 
 SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
 SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
