@@ -33,8 +33,7 @@ AMALGAMATION_LSQA_CPPFLAGS = $(AM_CPPFLAGS) \
         $(WIC_CFLAGS) \
         $(COREGRAPHICS_CFLAGS) \
         $(QUICKLOOK_CFLAGS) \
-        $(CLIPBOARD_CFLAGS) \
-        @THREAD_CFLAGS@
+        $(CLIPBOARD_CFLAGS)
 if AMALGAMATION_NEEDS_OBJC
 AMALGAMATION_LSQA_CPPFLAGS += -x objective-c
 endif
@@ -58,7 +57,8 @@ if WANT_AMALGAMATED_TOOLS
 lsqa_SOURCES =
 nodist_lsqa_SOURCES = $(AMALGAMATION_SIXEL)
 lsqa_CPPFLAGS = $(AMALGAMATION_LSQA_CPPFLAGS) -DBUILD_LSQA
-lsqa_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
+lsqa_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
+        $(THREAD_CFLAGS)
 lsqa_LDFLAGS = $(MAYBE_COVERAGE)
 lsqa_LDADD = $(AMALGAMATION_LSQA_LIBS)
 else
@@ -69,7 +69,8 @@ lsqa_CPPFLAGS = -I$(top_builddir)/include/ \
                 -I$(top_srcdir)/src \
                 -I$(top_srcdir)/assessment \
                 $(AM_CPPFLAGS)
-lsqa_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
+lsqa_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
+        $(THREAD_CFLAGS)
 lsqa_LDFLAGS = $(MAYBE_COVERAGE)
 lsqa_LDADD = $(top_builddir)/src/libsixel.la
 endif
