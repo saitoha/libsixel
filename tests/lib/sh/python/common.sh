@@ -39,6 +39,8 @@ python_wheel_trace_pythonpath=""
 python_lib_dir=""
 python_needs_windows_paths=0
 
+script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+
 # Load shared TAP helpers once per shell.
 python_common_path=${python_common_path:-"$0"}
 python_helper_dir=${PYTHON_HELPER_DIR-}
@@ -85,6 +87,45 @@ python_skip_on_load_error() {
     reason=${marker#SKIP_LIBSIXEL_LOAD:}
     reason=$(printf '%s' "${reason}" | sed 's/^ *//')
     tap_skip_all "libsixel failed to load: ${reason}"
+}
+
+# Return success if python bindings are enabled for the current build.
+python_bindings_enabled() {
+    python_exec=$1
+    build_root=$2
+
+    if [ -z "${build_root}" ]; then
+        return 1
+    fi
+
+    options_path="${build_root}/meson-info/intro-buildoptions.json"
+    if [ -f "${options_path}" ]; then
+        "${python_exec}" - "${options_path}" <<'PY'
+import json
+import sys
+
+path = sys.argv[1]
+
+with open(path, "r", encoding="utf-8") as fh:
+    data = json.load(fh)
+
+for entry in data:
+    if entry.get("name") == "python":
+        value = entry.get("value")
+        if value in ("enabled", True):
+            sys.exit(0)
+        sys.exit(1)
+
+sys.exit(1)
+PY
+        return $?
+    fi
+
+    if [ -f "${build_root}/python/Makefile" ]; then
+        return 0
+    fi
+
+    return 1
 }
 
 # Locate the build output directory that should contain the libsixel library.
@@ -708,6 +749,18 @@ python_prepare() {
     python_bin=$(command -v python3 || command -v python || true)
     if [ -z "${python_bin}" ]; then
         tap_skip_all "python is not available"
+    fi
+
+    if [ -n "${MESON_BUILD_ROOT:-}" ]; then
+        build_root="${MESON_BUILD_ROOT}"
+    elif [ -n "${TOP_BUILDDIR:-}" ]; then
+        build_root="${TOP_BUILDDIR}"
+    else
+        build_root=$(CDPATH=; cd "${script_dir}/../../.." && pwd)
+    fi
+
+    if ! python_bindings_enabled "${python_bin}" "${build_root}"; then
+        tap_skip_all "python bindings disabled in this build"
     fi
 
     python_bits=$(detect_python_bits "${python_bin}")

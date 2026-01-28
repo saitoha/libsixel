@@ -23,7 +23,6 @@ status=0
 
 require_file "${images_dir}/snake.png"
 
-echo "1..1"
 tap_plan 1
 set -v
 
