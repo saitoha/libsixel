@@ -52,8 +52,6 @@ libsixel_la_SOURCES = \
                 $(srcdir)/output.c \
                 $(srcdir)/output.h \
                 $(srcdir)/timer.c \
-                $(srcdir)/assessment.c \
-                $(srcdir)/assessment.h \
                 $(srcdir)/timer.h \
                 $(srcdir)/sleep.c \
                 $(srcdir)/sleep.h \

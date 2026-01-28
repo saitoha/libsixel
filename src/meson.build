@@ -24,7 +24,6 @@ srcs = [
   'fromsixel.c',
   'tosixel.c',
   'timer.c',
-  'assessment.c',
   'timer.h',
   'sleep.c',
   'sleep.h',

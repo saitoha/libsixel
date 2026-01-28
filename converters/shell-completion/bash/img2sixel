@@ -287,14 +287,6 @@ _img2sixel()
         _img2sixel_filedir
         return 0
         ;;
-    -a|--assessment)
-        COMPREPLY=( $( compgen -W 'all basic performance size quality quality@quantized' -- "$cur" ) )
-        return 0
-        ;;
-    -J|--assessment-file)
-        _img2sixel_filedir
-        return 0
-        ;;
     esac
 
     case "$cur" in
@@ -302,8 +294,6 @@ _img2sixel()
         # Keep this option list aligned with `img2sixel -H` output.
         COMPREPLY=( $( compgen -W '
                                    -o --outfile \
-                                   -a --assessment \
-                                   -J --assessment-file \
                                    -= --threads \
                                    -. --precision \
                                    -7 --7bit-mode \

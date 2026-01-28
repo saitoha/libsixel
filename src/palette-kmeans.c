@@ -1008,7 +1008,7 @@ build_palette_kmeans(unsigned char **result,
     job_merge = -1;
     job_export = -1;
     log_detail[0] = '\0';
-    wall_start = sixel_assessment_timer_now();
+    wall_start = sixel_timer_now();
     init_stop = wall_start;
     iterate_start = wall_start;
     iterate_stop = wall_start;
@@ -1306,7 +1306,7 @@ build_palette_kmeans(unsigned char **result,
             lloyd_threshold /= threshold_scale;
         }
     }
-    init_stop = sixel_assessment_timer_now();
+    init_stop = sixel_timer_now();
     iterate_start = init_stop;
     (void)snprintf(log_detail,
                    sizeof(log_detail),
@@ -1321,7 +1321,7 @@ build_palette_kmeans(unsigned char **result,
                                     "init",
                                     log_detail);
     for (iteration = 0U; iteration < max_iterations; ++iteration) {
-        iteration_wall_start = sixel_assessment_timer_now();
+        iteration_wall_start = sixel_timer_now();
         if (lloyd_iterations == 0U) {
             iterate_start = iteration_wall_start;
         }
@@ -1434,7 +1434,7 @@ build_palette_kmeans(unsigned char **result,
             }
         }
         if (delta <= lloyd_threshold) {
-            iteration_wall_stop = sixel_assessment_timer_now();
+            iteration_wall_stop = sixel_timer_now();
             iterate_stop = iteration_wall_stop;
             (void)snprintf(log_detail,
                            sizeof(log_detail),
@@ -1450,7 +1450,7 @@ build_palette_kmeans(unsigned char **result,
                                             log_detail);
             break;
         }
-        iteration_wall_stop = sixel_assessment_timer_now();
+        iteration_wall_stop = sixel_timer_now();
         iterate_stop = iteration_wall_stop;
         (void)snprintf(log_detail,
                        sizeof(log_detail),
@@ -1468,7 +1468,7 @@ build_palette_kmeans(unsigned char **result,
     merge_start = iterate_stop;
     merge_stop = iterate_stop;
     if (apply_merge && k > reqcolors) {
-        merge_start = sixel_assessment_timer_now();
+        merge_start = sixel_timer_now();
         job_merge = sixel_palette_kmeans_log_start(logger,
                                                    job_seq,
                                                    engine_name,
@@ -1653,7 +1653,7 @@ build_palette_kmeans(unsigned char **result,
         }
     }
 
-    merge_stop = sixel_assessment_timer_now();
+    merge_stop = sixel_timer_now();
     if (job_merge >= 0) {
         (void)snprintf(log_detail,
                        sizeof(log_detail),
@@ -1668,7 +1668,7 @@ build_palette_kmeans(unsigned char **result,
                                         "merge",
                                         log_detail);
     }
-    export_start = sixel_assessment_timer_now();
+    export_start = sixel_timer_now();
     job_export = sixel_palette_kmeans_log_start(logger,
                                                 job_seq,
                                                 engine_name,
@@ -1811,7 +1811,7 @@ build_palette_kmeans(unsigned char **result,
         *ncolors = k;
     }
 
-    export_stop = sixel_assessment_timer_now();
+    export_stop = sixel_timer_now();
     (void)snprintf(log_detail,
                    sizeof(log_detail),
                    "colors=%u merge=%d",
@@ -1832,7 +1832,7 @@ end:
         double merge_span;
         double export_span;
 
-        now = sixel_assessment_timer_now();
+        now = sixel_timer_now();
         if (init_stop < wall_start) {
             init_stop = now;
         }

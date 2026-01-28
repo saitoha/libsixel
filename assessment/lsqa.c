@@ -54,6 +54,8 @@
 
 #include <sixel.h>
 
+#include "assessment.h"
+
 #if defined(_WIN32)
 # if !defined(UNICODE)
 #  define UNICODE

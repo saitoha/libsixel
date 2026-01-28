@@ -470,7 +470,7 @@ sixel_assessment_stage_transition(sixel_assessment_t *assessment,
             stage >= SIXEL_ASSESSMENT_STAGE_COUNT) {
         return;
     }
-    now = sixel_assessment_timer_now();
+    now = sixel_timer_now();
     previous_stage = assessment->active_stage;
     if (assessment->stage_active &&
             previous_stage > SIXEL_ASSESSMENT_STAGE_NONE &&
@@ -552,7 +552,7 @@ sixel_assessment_stage_finish(sixel_assessment_t *assessment)
         assessment->encode_output_time_pending = 0.0;
         return;
     }
-    now = sixel_assessment_timer_now();
+    now = sixel_timer_now();
     elapsed = now - assessment->stage_started_at;
     finished_stage = assessment->active_stage;
     if (finished_stage != SIXEL_ASSESSMENT_STAGE_OUTPUT) {
@@ -928,10 +928,8 @@ SIXELAPI void
 sixel_assessment_attach_encoder(sixel_assessment_t *assessment,
                                 sixel_encoder_t *encoder)
 {
-    if (encoder == NULL) {
-        return;
-    }
-    encoder->assessment_observer = assessment;
+    (void)assessment;
+    (void)encoder;
 }
 
 static void align_frame_pixels(float **ref_pixels,
