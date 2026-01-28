@@ -495,6 +495,10 @@ emit_all_headers() {
                 emit_header_unit "${unit}" \
                     "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG)"
                 ;;
+            assessment/assessment.h)
+                guard=$(echo "${unit}" | sed 's/.*\///;s/.h$//' | tr a-z\- A-Z_)
+                emit_unit "${unit}" "defined(BUILD_LSQA) || defined(BUILD_${guard})"
+                ;;
             include/sixel.h)
                 public_header="${build_root}/include/sixel.h"
                 if [ -f "${public_header}" ]; then
@@ -532,6 +536,10 @@ emit_all_units() {
                 guard=$(echo "${unit}" | sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
                 emit_unit "${unit}" \
                     "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_${guard})"
+                ;;
+            assessment/assessment.c)
+                guard=$(echo "${unit}" | sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
+                emit_unit "${unit}" "defined(BUILD_LSQA) || defined(BUILD_${guard})"
                 ;;
             converters/img2sixel.c|converters/sixel2png.c|assessment/lsqa.c)
                 guard=$(echo "${unit}" | sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
