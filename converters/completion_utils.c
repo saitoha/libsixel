@@ -62,8 +62,23 @@
 # include <io.h>
 #endif  /* HAVE_IO_H */
 #if defined(_MSC_VER)
+# if !defined(WIN32_LEAN_AND_MEAN)
+#  define WIN32_LEAN_AND_MEAN
+# endif
+# include <windows.h>
 # include <share.h>
 #endif  /* _MSC_VER */
+
+/* for msvc */
+#ifndef STDIN_FILENO
+# define STDIN_FILENO 0
+#endif
+#ifndef STDOUT_FILENO
+# define STDOUT_FILENO 1
+#endif
+#ifndef STDERR_FILENO
+# define STDERR_FILENO 2
+#endif
 
 /* Provide ssize_t so MSVC matches POSIX I/O signatures. */
 #if defined(_MSC_VER) && !defined(_SSIZE_T_DEFINED)
@@ -181,6 +196,8 @@ static int img2sixel_compat_rename(const char *src_path,
 static ssize_t img2sixel_compat_write(int fd,
                                       const void *buffer,
                                       size_t count);
+static void img2sixel_compat_puts(const char *buf);
+static void img2sixel_log_errno(const char *fmt, ...);
 
 static char *
 img2sixel_compat_strerror(int error_number,
@@ -701,6 +718,117 @@ img2sixel_compat_access(const char *path, int mode)
     return 0;
 }
 
+#if defined(_MSC_VER)
+
+static int
+safe__win32_error_to_errno(DWORD e)
+{
+    switch (e) {
+    case ERROR_FILE_NOT_FOUND:
+    case ERROR_PATH_NOT_FOUND:
+    case ERROR_INVALID_DRIVE:
+    case ERROR_INVALID_NAME:
+    case ERROR_BAD_PATHNAME:
+        return ENOENT;
+    case ERROR_DIRECTORY:
+        return ENOTDIR;
+    case ERROR_ACCESS_DENIED:
+    case ERROR_SHARING_VIOLATION:
+    case ERROR_LOCK_VIOLATION:
+        return EACCES;
+    case ERROR_FILENAME_EXCED_RANGE:
+        return ENAMETOOLONG;
+    case ERROR_NOT_ENOUGH_MEMORY:
+    case ERROR_OUTOFMEMORY:
+        return ENOMEM;
+    case ERROR_INVALID_PARAMETER:
+        return EINVAL;
+    default:
+        break;
+    }
+    return EIO;
+}
+
+# ifndef SAFE_STAT64_CODEPAGE
+#  define SAFE_STAT64_CODEPAGE CP_UTF8
+# endif
+
+static int
+safe_stat64W(const wchar_t *path, struct stat *st)
+{
+    DWORD attr, ge;
+    int result;
+
+    if (!path || !st || !*path) {
+       errno = EINVAL;
+       return (-1);
+    }
+
+    attr = GetFileAttributesW(path);
+    if (attr == INVALID_FILE_ATTRIBUTES) {
+        errno = safe__win32_error_to_errno(GetLastError());
+        return (-1);
+    }
+
+    /*
+     * Mirror the library-side stat wrapper so /WX builds avoid
+     * mismatched time_t warnings.
+     */
+# if defined(_USE_32BIT_TIME_T)
+    result = _wstat64i32(path, (struct _stat64i32 *)st);
+# else
+    result = _wstat64(path, (struct _stat64 *)st);
+# endif
+    if (result == 0) {
+        return 0;
+    }
+
+    if (errno == 0) {
+        ge = GetLastError();
+        errno = ge ? safe__win32_error_to_errno(ge) : EIO;
+    }
+
+    return (-1);
+}
+
+static int
+safe_stat64A(const char *path, struct stat *st)
+{
+    int wlen;
+    int rc;
+    wchar_t *w;
+
+    if (! path) {
+        errno = EINVAL;
+        return (-1);
+    }
+
+    wlen = MultiByteToWideChar(SAFE_STAT64_CODEPAGE,
+                               MB_ERR_INVALID_CHARS,
+                               path, -1, NULL, 0);
+
+    if (wlen <= 0) {
+       errno = EINVAL;
+       return (-1);
+    }
+
+    w = (wchar_t*)malloc((size_t)wlen * sizeof(wchar_t));
+    if (! w) {
+        errno = ENOMEM;
+        return (-1);
+    }
+
+    (void)MultiByteToWideChar(SAFE_STAT64_CODEPAGE, MB_ERR_INVALID_CHARS,
+                              path, -1, w, wlen);
+
+    rc = safe_stat64W(w, st);
+    free(w);
+
+    return rc;
+}
+#endif  /* _MSC_VER */
+
+
 static int
 img2sixel_compat_stat(const char *path, struct stat *stat_buffer)
 {
@@ -722,15 +850,7 @@ img2sixel_compat_stat(const char *path, struct stat *stat_buffer)
     }
 
 #if defined(_MSC_VER)
-    /*
-     * Mirror the library-side stat wrapper so /WX builds avoid
-     * mismatched time_t warnings.
-     */
-# if defined(_USE_32BIT_TIME_T)
-    result = _stat64i32(libc_path, (struct _stat64i32 *)stat_buffer);
-# else
-    result = _stat64(libc_path, (struct _stat64 *)stat_buffer);
-# endif
+    result = safe_stat64A(libc_path, stat_buffer);
 #else
     result = stat(libc_path, stat_buffer);
 #endif
@@ -797,6 +917,12 @@ img2sixel_compat_write(int fd, const void *buffer, size_t count)
 #else
     return write(fd, buffer, count);
 #endif
+}
+
+static void
+img2sixel_compat_puts(const char *buf)
+{
+    img2sixel_compat_write(STDOUT_FILENO, buf, sizeof(buf));
 }
 
 /* ------------------------------------------------------------------------ */
@@ -958,23 +1084,23 @@ read_entire_file(const char *path, char **buf, size_t *len)
     *len = 0;
 
     if (img2sixel_compat_stat(path, &st) != 0) {
-        return -1;
+        return (-1);
     }
 
-    if (st.st_size < 0) {
+    if (st.st_size <= 0) {
         errno = EINVAL;
-        return -1;
+        return (-1);
     }
 
     fp = img2sixel_compat_fopen(path, "rb");
     if (fp == NULL) {
-        return -1;
+        return (-1);
     }
 
     tmp = (char *)malloc((size_t)st.st_size + 1);
     if (tmp == NULL) {
         fclose(fp);
-        return -1;
+        return (-1);
     }
 
     read_len = fread(tmp, 1, (size_t)st.st_size, fp);
@@ -982,12 +1108,15 @@ read_entire_file(const char *path, char **buf, size_t *len)
         free(tmp);
         fclose(fp);
         errno = EIO;
-        return -1;
+        return (-1);
     }
-
     if (fclose(fp) != 0) {
         free(tmp);
-        return -1;
+        return (-1);
+    }
+
+    if (read_len <= 0) {
+        return (-1);
     }
 
     tmp[st.st_size] = '\0';
@@ -1063,8 +1192,8 @@ write_atomic(const char *dst_path, const void *buf, size_t len, mode_t mode)
     total = 0;
     while (total < len) {
         written = img2sixel_compat_write(fd,
-                                     (const char *)buf + total,
-                                     len - total);
+                                         (const char *)buf + total,
+                                         len - total);
         if (written < 0) {
             if (errno == EINTR) {
                 continue;
@@ -1440,76 +1569,6 @@ img2sixel_join_path(const char *base, const char *suffix, char **out)
 }
 
 static int
-img2sixel_read_if_exists(const char *path, char **out, size_t *len)
-{
-    if (path == NULL) {
-        return -1;
-    }
-    if (img2sixel_compat_access(path, R_OK) != 0) {
-        return -1;
-    }
-    return read_entire_file(path, out, len);
-}
-
-static int
-img2sixel_try_env(const char *env_name, char **out, size_t *len)
-{
-    const char *path;
-
-    path = img2sixel_compat_getenv(env_name);
-    if (path == NULL || path[0] == '\0') {
-        return -1;
-    }
-
-    return img2sixel_read_if_exists(path, out, len);
-}
-
-static int
-img2sixel_try_env_dir(const char *env_name, const char *suffix,
-                      char **out, size_t *len)
-{
-    const char *dir;
-    char *candidate;
-    int ret;
-
-    dir = img2sixel_compat_getenv(env_name);
-    if (dir == NULL || dir[0] == '\0') {
-        return -1;
-    }
-
-    if (img2sixel_join_path(dir, suffix, &candidate) != 0) {
-        return -1;
-    }
-
-    ret = img2sixel_read_if_exists(candidate, out, len);
-    free(candidate);
-
-    return ret;
-}
-
-static int
-img2sixel_try_pkgdatadir(const char *suffix, char **out, size_t *len)
-{
-#if defined(PKGDATADIR)
-    char *candidate;
-    int ret;
-
-    if (img2sixel_join_path(PKGDATADIR, suffix, &candidate) != 0) {
-        return -1;
-    }
-
-    ret = img2sixel_read_if_exists(candidate, out, len);
-    free(candidate);
-    return ret;
-#else
-    (void)suffix;
-    (void)out;
-    (void)len;
-    return -1;
-#endif
-}
-
-static int
 img2sixel_try_embed(const char *shell, char **out, size_t *len)
 {
 #if defined(IMG2SIXEL_HAVE_COMPLETION_EMBED)
@@ -1548,13 +1607,8 @@ img2sixel_try_embed(const char *shell, char **out, size_t *len)
 }
 
 int
-get_completion_text(const char *shell, const char *from_override,
-                    char **out, size_t *len)
+get_completion_text(const char *shell, char **out, size_t *len)
 {
-    const char *env_single;
-    const char *env_dir_suffix;
-    int ret;
-
     if (shell == NULL || out == NULL || len == NULL) {
         errno = EINVAL;
         return -1;
@@ -1562,63 +1616,6 @@ get_completion_text(const char *shell, const char *from_override,
 
     *out = NULL;
     *len = 0;
-
-    if (from_override != NULL && from_override[0] != '\0') {
-        if (img2sixel_read_if_exists(from_override, out, len) == 0) {
-            return 0;
-        }
-    }
-
-    env_single = NULL;
-    env_dir_suffix = NULL;
-
-    if (strcmp(shell, "bash") == 0) {
-        env_single = "IMG2SIXEL_COMPLETION_BASH";
-        env_dir_suffix = "/bash/img2sixel";
-    } else if (strcmp(shell, "zsh") == 0) {
-        env_single = "IMG2SIXEL_COMPLETION_ZSH";
-        env_dir_suffix = "/zsh/_img2sixel";
-    } else {
-        errno = EINVAL;
-        return -1;
-    }
-
-    if (env_single != NULL) {
-        if (img2sixel_try_env(env_single, out, len) == 0) {
-            return 0;
-        }
-    }
-
-    if (env_dir_suffix != NULL) {
-        if (img2sixel_try_env_dir("IMG2SIXEL_COMPLETION_DIR",
-                                  env_dir_suffix, out, len) == 0) {
-            return 0;
-        }
-    }
-
-    if (strcmp(shell, "bash") == 0) {
-        ret = img2sixel_try_pkgdatadir(
-            "/converters/shell-completion/bash/img2sixel", out, len);
-        if (ret == 0) {
-            return 0;
-        }
-        ret = img2sixel_try_pkgdatadir(
-            "/bash-completion/completions/img2sixel", out, len);
-        if (ret == 0) {
-            return 0;
-        }
-    } else {
-        ret = img2sixel_try_pkgdatadir(
-            "/converters/shell-completion/zsh/_img2sixel", out, len);
-        if (ret == 0) {
-            return 0;
-        }
-        ret = img2sixel_try_pkgdatadir(
-            "/zsh/site-functions/_img2sixel", out, len);
-        if (ret == 0) {
-            return 0;
-        }
-    }
 
     if (img2sixel_try_embed(shell, out, len) == 0) {
         return 0;
@@ -1829,7 +1826,7 @@ img2sixel_handle_install(int mask)
     }
 
     if ((mask & IMG2SIXEL_COMPLETION_SHELL_BASH) != 0) {
-        if (get_completion_text("bash", NULL, &buf, &len) != 0) {
+        if (get_completion_text("bash", &buf, &len) != 0) {
             img2sixel_log_errno("failed to load bash completion data");
             return -1;
         }
@@ -1897,7 +1894,7 @@ img2sixel_handle_install(int mask)
     }
 
     if ((mask & IMG2SIXEL_COMPLETION_SHELL_ZSH) != 0) {
-        if (get_completion_text("zsh", NULL, &buf, &len) != 0) {
+        if (get_completion_text("zsh", &buf, &len) != 0) {
             img2sixel_log_errno("failed to load zsh completion data");
             return -1;
         }
@@ -1942,23 +1939,23 @@ img2sixel_handle_show(int mask)
 
     if ((mask & IMG2SIXEL_COMPLETION_SHELL_BASH) != 0
         && (mask & IMG2SIXEL_COMPLETION_SHELL_ZSH) != 0) {
-        if (get_completion_text("bash", NULL, &buf, &len) != 0) {
+        if (get_completion_text("bash", &buf, &len) != 0) {
             img2sixel_log_errno("failed to load bash completion data");
             return -1;
         }
-        printf("# ---- bash ----\n");
-        fwrite(buf, 1, len, stdout);
+        img2sixel_compat_puts("# ---- bash ----\n");
+        (void)img2sixel_compat_write(STDOUT_FILENO, buf, len);
         if (len == 0 || buf[len - 1] != '\n') {
             printf("\n");
         }
         free(buf);
 
-        if (get_completion_text("zsh", NULL, &buf, &len) != 0) {
+        if (get_completion_text("zsh", &buf, &len) != 0) {
             img2sixel_log_errno("failed to load zsh completion data");
             return -1;
         }
-        printf("# ---- zsh ----\n");
-        fwrite(buf, 1, len, stdout);
+        img2sixel_compat_puts("# ---- zsh ----\n");
+        (void)img2sixel_compat_write(STDOUT_FILENO, buf, len);
         if (len == 0 || buf[len - 1] != '\n') {
             printf("\n");
         }
@@ -1968,11 +1965,11 @@ img2sixel_handle_show(int mask)
     }
 
     if ((mask & IMG2SIXEL_COMPLETION_SHELL_BASH) != 0) {
-        if (get_completion_text("bash", NULL, &buf, &len) != 0) {
+        if (get_completion_text("bash", &buf, &len) != 0) {
             img2sixel_log_errno("failed to load bash completion data");
             return -1;
         }
-        fwrite(buf, 1, len, stdout);
+        (void)img2sixel_compat_write(STDOUT_FILENO, buf, len);
         if (len == 0 || buf[len - 1] != '\n') {
             printf("\n");
         }
@@ -1980,16 +1977,18 @@ img2sixel_handle_show(int mask)
     }
 
     if ((mask & IMG2SIXEL_COMPLETION_SHELL_ZSH) != 0) {
-        if (get_completion_text("zsh", NULL, &buf, &len) != 0) {
+        if (get_completion_text("zsh", &buf, &len) != 0) {
             img2sixel_log_errno("failed to load zsh completion data");
             return -1;
         }
-        fwrite(buf, 1, len, stdout);
+        (void)img2sixel_compat_write(STDOUT_FILENO, buf, len);
         if (len == 0 || buf[len - 1] != '\n') {
             printf("\n");
         }
         free(buf);
     }
+
+    (void) img2sixel_fsync(STDOUT_FILENO);
 
     return 0;
 }
@@ -2233,7 +2232,7 @@ img2sixel_handle_completion_cli(int argc, char **argv, int *exit_code)
         return 0;
     }
 
-    if (strcmp(action, "show") == 0) {
+    if (strncmp(action, "show", 5) == 0) {
         if (img2sixel_handle_show(mask) != 0) {
             *exit_code = EXIT_FAILURE;
             return -1;
@@ -2242,7 +2241,7 @@ img2sixel_handle_completion_cli(int argc, char **argv, int *exit_code)
         return 1;
     }
 
-    if (strcmp(action, "install") == 0) {
+    if (strncmp(action, "install", 8) == 0) {
         if (img2sixel_handle_install(mask) != 0) {
             *exit_code = EXIT_FAILURE;
             return -1;
@@ -2251,7 +2250,7 @@ img2sixel_handle_completion_cli(int argc, char **argv, int *exit_code)
         return 1;
     }
 
-    if (strcmp(action, "uninstall") == 0) {
+    if (strncmp(action, "uninstall", 10) == 0) {
         if (img2sixel_handle_uninstall(mask) != 0) {
             *exit_code = EXIT_FAILURE;
             return -1;
