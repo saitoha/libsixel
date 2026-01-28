@@ -5,7 +5,8 @@
 set -eu
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-. "${script_dir}/../../lib/sh/packaging/python_wheel_common.sh"
+WHEEL_HELPER_DIR="${script_dir}/../../lib/sh/packaging"
+. "${WHEEL_HELPER_DIR}/python_wheel_common.sh"
 
 test_name=$(basename "$0")
 setup_wheel_paths "${test_name}"

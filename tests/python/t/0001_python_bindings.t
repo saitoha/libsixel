@@ -6,7 +6,8 @@
 set -eux
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-. "${script_dir}/../../lib/sh/python/common.sh"
+PYTHON_HELPER_DIR="${script_dir}/../../lib/sh/python"
+. "${PYTHON_HELPER_DIR}/common.sh"
 
 test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)

@@ -21,6 +21,7 @@ lsqa_helper_root=${LSQA_HELPER_DIR-}
 if [ -z "${lsqa_helper_root}" ]; then
     lsqa_helper_root=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
 fi
+. "${lsqa_helper_root}/../common/tap.sh"
 
 lsqa_init() {
     test_path=$1

@@ -23,14 +23,7 @@ status=0
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-pass() {
-    printf 'ok %s - %s\n' "$1" "$2"
-}
 
-fail() {
-    printf 'not ok %s - %s\n' "$1" "$2"
-    status=1
-}
 
 completion_dir="${top_srcdir}/converters/shell-completion"
 completion_dir=$(printf '%s' "${completion_dir}" | tr '\\\\' '/')

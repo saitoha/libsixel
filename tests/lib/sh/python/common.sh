@@ -12,7 +12,6 @@ fi
 
 # TAP bookkeeping and shared state. The variables are initialized to safe
 # defaults so callers running with `set -u` do not trip on unbound names.
-tap_status=0
 tap_log_file=""
 python_bin=""
 run_python=""
@@ -40,31 +39,13 @@ python_wheel_trace_pythonpath=""
 python_lib_dir=""
 python_needs_windows_paths=0
 
-# Emit a TAP plan line.
-tap_plan() {
-    printf '1..%s\n' "$1"
-}
-
-# Mark a test case as passed.
-tap_pass() {
-    printf 'ok %s - %s\n' "$1" "$2"
-}
-
-# Mark a test case as failed and include the captured Python log when present.
-tap_fail() {
-    printf 'not ok %s - %s\n' "$1" "$2"
-    if [ -n "${tap_log_file:-}" ] && [ -f "${tap_log_file}" ]; then
-        printf '# python log follows\n'
-        sed 's/^/# /' "${tap_log_file}"
-    fi
-    tap_status=1
-}
-
-# Skip the entire TAP file with a reason.
-tap_skip_all() {
-    printf '1..0 # SKIP %s\n' "$1"
-    exit 0
-}
+# Load shared TAP helpers once per shell.
+python_common_path=${python_common_path:-"$0"}
+python_helper_dir=${PYTHON_HELPER_DIR-}
+if [ -z "${python_helper_dir}" ]; then
+    python_helper_dir=$(CDPATH=; cd "$(dirname "${python_common_path}")" && pwd)
+fi
+. "${python_helper_dir}/../common/tap.sh"
 
 # Skip all tests when a Python process failed because the dynamic loader could
 # not import the libsixel shared library. Python snippets emit the
