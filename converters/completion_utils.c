@@ -990,6 +990,10 @@ read_entire_file(const char *path, char **buf, size_t *len)
         return -1;
     }
 
+    if (read_len <= 0) {
+        return -1;
+    }
+
     tmp[st.st_size] = '\0';
     *buf = tmp;
     *len = (size_t)st.st_size;
@@ -1977,6 +1981,7 @@ img2sixel_handle_show(int mask)
             printf("\n");
         }
         free(buf);
+        img2sixel_log_errno("printed %d bytes", len);
     }
 
     if ((mask & IMG2SIXEL_COMPLETION_SHELL_ZSH) != 0) {
@@ -1989,6 +1994,7 @@ img2sixel_handle_show(int mask)
             printf("\n");
         }
         free(buf);
+        img2sixel_log_errno("printed %d bytes", len);
     }
 
     return 0;
