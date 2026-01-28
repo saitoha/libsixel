@@ -16,6 +16,7 @@ conversion_helper_dir=${CONVERSION_HELPER_DIR-}
 if [ -z "${conversion_helper_dir}" ]; then
     conversion_helper_dir=$(CDPATH=; cd "$(dirname "${conversion_common_path}")" && pwd)
 fi
+. "${conversion_helper_dir}/../common/tap.sh"
 . "${conversion_helper_dir}/../../../common/t/0001_converters_common.t"
 
 setup_conversion_env() {
@@ -30,15 +31,6 @@ setup_conversion_env() {
     output_dir="${artifact_dir}/outputs"
 
     mkdir -p "${artifact_dir}" "${tmp_dir}" "${output_dir}"
-}
-
-pass() {
-    printf 'ok %s - %s\n' "$1" "$2"
-}
-
-fail() {
-    printf 'not ok %s - %s\n' "$1" "$2"
-    status=1
 }
 
 ensure_img2sixel_available() {

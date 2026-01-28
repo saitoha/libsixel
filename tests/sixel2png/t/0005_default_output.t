@@ -20,14 +20,7 @@ status=0
 
 ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 
-pass() {
-    printf 'ok %s - %s\n' "$1" "$2"
-}
 
-fail() {
-    printf 'not ok %s - %s\n' "$1" "$2"
-    status=1
-}
 
 head_bytes() {
   n=$1; shift

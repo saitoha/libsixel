@@ -19,14 +19,7 @@ script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 
 status=0
 
-pass() {
-    printf 'ok %s - %s\n' "$1" "$2"
-}
 
-fail() {
-    printf 'not ok %s - %s\n' "$1" "$2"
-    status=1
-}
 
 ensure_pngsuite_prereqs
 
