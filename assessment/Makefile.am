@@ -63,9 +63,11 @@ lsqa_LDFLAGS = $(MAYBE_COVERAGE)
 lsqa_LDADD = $(AMALGAMATION_LSQA_LIBS)
 else
 lsqa_SOURCES = $(srcdir)/lsqa.c \
-               $(top_srcdir)/src/assessment.c
+               $(srcdir)/assessment.c \
+               $(srcdir)/assessment.h
 lsqa_CPPFLAGS = -I$(top_builddir)/include/ \
                 -I$(top_srcdir)/src \
+                -I$(top_srcdir)/assessment \
                 $(AM_CPPFLAGS)
 lsqa_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
 lsqa_LDFLAGS = $(MAYBE_COVERAGE)

@@ -6,7 +6,7 @@ endif
 lsqa_args = libsixel_posix_defs
 
 src_build_dir = join_paths(meson.project_build_root(), 'src')
-lsqa_sources = ['lsqa.c', '../src/assessment.c']
+lsqa_sources = ['lsqa.c', 'assessment.c', 'assessment.h']
 lsqa_dependencies = lsqa_deps
 lsqa_c_args = lsqa_args
 lsqa_objc_args = lsqa_c_args

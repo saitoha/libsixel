@@ -1098,7 +1098,6 @@ loader_helper_sources = files(
   'src/sleep.c',
   'src/sleep.h',
   'src/timer.c',
-  'src/assessment.c',
   'src/chunk.c',
   'src/colorspace.c',
   'src/dither-common-pipeline.c',
