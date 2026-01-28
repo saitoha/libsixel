@@ -711,6 +711,18 @@ zshcompletiondir = @zshcompletiondir@
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 @WANT_AMALGAMATED_TOOLS_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL)
 TESTS = \
+    aborttrace/t/0001_img2sixel_aborttrace.t \
+    aborttrace/t/0002_sixel2png_aborttrace.t \
+    animation/t/0001_disable_update_mode.t \
+    animation/t/0002_static_frame_render.t \
+    animation/t/0003_update_and_static_frame.t \
+    animation/t/0004_split_sequence_atkinson.t \
+    cli-argument-shift/t/0001_invalid_positional.t \
+    cli-argument-shift/t/0002_argument_shift_missing_mapfile.t \
+    cli-argument-shift/t/0003_argument_shift_outfile_named_like_option.t \
+    cli-argument-shift/t/0005_cli_token_is_known_option.t \
+    cli-argument-shift/t/0006_cli_option_requires_argument.t \
+    cli-argument-shift/t/0007_cli_guard_missing_argument.t \
     cli-core/t/0001_help.t \
     cli-core/t/0002_version.t \
     cli-core/t/0003_stdin.t \
@@ -731,14 +743,6 @@ TESTS = \
     cli-core/t/0018_basic_parallel_direct.t \
     cli-core/t/0019_basic_parallel_cli_override.t \
     cli-core/t/0020_basic_invalid_threads_token.t \
-    completion/t/0021_completion_show_bash.t \
-    completion/t/0022_completion_show_zsh.t \
-    completion/t/0023_completion_install_bash.t \
-    completion/t/0024_completion_install_zsh.t \
-    completion/t/0025_completion_uninstall_bash.t \
-    completion/t/0026_completion_uninstall_zsh.t \
-    aborttrace/t/0001_img2sixel_aborttrace.t \
-    aborttrace/t/0002_sixel2png_aborttrace.t \
     cli-option-invalid/t/0001a_invalid_option_arguments_unknown_dither.t \
     cli-option-invalid/t/0001b_invalid_option_arguments_unknown_resize_filter.t \
     cli-option-invalid/t/0001c_invalid_option_arguments_unknown_scaling_mode.t \
@@ -793,51 +797,16 @@ TESTS = \
     cli-option-matching/t/0004_option_matching_distance1_multi.t \
     cli-option-matching/t/0005_option_matching_distance2.t \
     cli-option-matching/t/0006_option_matching_distance3.t \
-    cli-argument-shift/t/0001_invalid_positional.t \
-    cli-argument-shift/t/0002_argument_shift_missing_mapfile.t \
-    cli-argument-shift/t/0003_argument_shift_outfile_named_like_option.t \
-    cli-argument-shift/t/0005_cli_token_is_known_option.t \
-    cli-argument-shift/t/0006_cli_option_requires_argument.t \
-    cli-argument-shift/t/0007_cli_guard_missing_argument.t \
-    palette/t/0008_select_color_ambiguous_prefix_rejected.t \
-    palette/t/0009_select_color_unique_prefix_accepted.t \
-    palette/t/0010_explicit_dimensions_with_palette.t \
-    palette/t/0011_fast_encoder_external_palette.t \
-    palette/t/0012_palette16_conversion.t \
-    palette/t/0013_xterm_palette_override_repetition.t \
-    palette/t/0014_tiff_palette_filters.t \
-    palette/t/0015_grayscale_png_with_palette.t \
-    palette/t/0016_apply_grayscale_palette_to_colour_png.t \
-    palette/t/0017_stacked_palette_files.t \
-    palette/t/0018_xterm16_palette_preset.t \
-    palette/t/0019_jpeg_palette_welsh.t \
-    palette/t/0020_ppm_palette16_conversion.t \
-    palette/t/0021_lanczos2_palette_limit.t \
-    palette/t/0022_lanczos3_two_colour_palette.t \
-    palette/t/0023_lanczos4_palette_dump.t \
-    palette/t/0024_interlaced_palette_dump.t \
-    palette/t/0025_lookup_policy_vpte_float32.t \
-    palette/t/0026_merge_kmeans_float32_lsqa.t \
-    palette/t/0027_merge_heckbert_float32_lsqa.t \
-    palette/t/0028_merge_kmeans_8bit_lsqa.t \
-    palette/t/0029_merge_heckbert_8bit_lsqa.t \
-    palette/t/0030_snap_kmeans_float32_lsqa.t \
-    palette/t/0031_snap_heckbert_float32_lsqa.t \
-    palette/t/0032_snap_kmeans_8bit_lsqa.t \
-    palette/t/0033_snap_heckbert_8bit_lsqa.t \
-    palette/t/0034_lookup_policy_1d_eytzinger_8bit.t \
-    palette/t/0035_lookup_policy_1d_eytzinger_float32.t \
-    palette/t/0036_lookup_policy_1d_eytzinger_float32_gamma_lsqa.t \
-    palette/t/0037_lookup_policy_1d_eytzinger_float32_linear_lsqa.t \
-    palette/t/0038_lookup_policy_1d_eytzinger_float32_oklab_lsqa.t \
-    palette/t/0039_lookup_policy_1d_eytzinger_float32_cielab_lsqa.t \
-    palette/t/0040_lookup_policy_1d_eytzinger_float32_din99d_lsqa.t \
-    palette/t/0041_lookup_policy_vpte_8bit_gamma_lsqa.t \
-    palette/t/0042_lookup_policy_vpte_float32_gamma_lsqa.t \
-    palette/t/0043_lookup_policy_vpte_float32_linear_lsqa.t \
-    palette/t/0044_lookup_policy_vpte_float32_oklab_lsqa.t \
-    palette/t/0045_lookup_policy_vpte_float32_cielab_lsqa.t \
-    palette/t/0046_lookup_policy_vpte_float32_din99d_lsqa.t \
+    cli-options/t/0001_long_option_forms.t \
+    clipboard/t/0001_clipboard_basic.t \
+    completion/t/0021_completion_show_bash.t \
+    completion/t/0022_completion_show_zsh.t \
+    completion/t/0023_completion_install_bash.t \
+    completion/t/0024_completion_install_zsh.t \
+    completion/t/0025_completion_uninstall_bash.t \
+    completion/t/0026_completion_uninstall_zsh.t \
+    decoder/t/0004_tab_separated_colour_introducers.t \
+    decoder/t/0005_oversized_dcs_geometry.t \
     dither/t/0001_roundtrip_dither_gamma.t \
     dither/t/0002_inspection_with_diffusion.t \
     dither/t/0003_ascii_ppm_inspection_diffusion.t \
@@ -882,20 +851,20 @@ TESTS = \
     dither/t/0042_fixed_float32_sierra1_lsqa.t \
     dither/t/0043_fixed_float32_sierra2_lsqa.t \
     dither/t/0044_fixed_float32_sierra3_lsqa.t \
-    geometry/t/0001_scaling_histogram_background.t \
-    geometry/t/0002_dcs_crc_width_scaling.t \
-    geometry/t/0003_dcs_crc_height_scaling.t \
-    geometry/t/0004_dcs_crc_height_scaling_auto_width.t \
-    geometry/t/0005_dcs_crc_height_auto_width_absolute.t \
-    geometry/t/0006_dcs_crc_height_absolute_width_percent.t \
-    geometry/t/0007_tga_scaling.t \
-    geometry/t/0008_indexed_png_scaling.t \
-    geometry/t/0009_sixel_resize_palette_limit.t \
-    geometry/t/0010_sixel_cropping_large_offsets.t \
-    geometry/t/0011_ppm_inspection_aggressive_scaling.t \
-    geometry/t/0012_resize_precision_mode_run.t \
-    geometry/t/0013_resize_precision_mode_scaler_input.t \
-    geometry/t/0014_resize_precision_mode_post_colorspace.t \
+    docs/t/0001_help_vs_man.t \
+    docs/t/0002_man_vs_bash_completion.t \
+    docs/t/0003_bash_vs_zsh_completion.t \
+    docs/t/0004_envvars_vs_help.t \
+    filter/t/0001_filter_clip.t \
+    filter/t/0002_filter_sample.t \
+    filter/t/0003_filter_resize.t \
+    filter/t/0004_filter_colors.t \
+    filter/t/0005_filter_lookup.t \
+    filter/t/0006_filter_final_merge.t \
+    filter/t/0007_filter_vpte.t \
+    filter/t/0008_filter_load.t \
+    filter/t/0009_filter_dither.t \
+    filter/t/0010_filter_encode.t \
     format/t/0001_prefixed_png_output_default.t \
     format/t/0002_prefixed_png_output_explicit_path.t \
     format/t/0003_filename_driven_png_header.t \
@@ -911,19 +880,27 @@ TESTS = \
     format/t/0013_grayscale_png_inspection.t \
     format/t/0014_grayscale_jpeg_inspection.t \
     format/t/0015_bmp_inspection_with_filters.t \
-    output/t/0001_vt340_colour_sequences.t \
-    output/t/0002_vt340_monochrome_sequences.t \
-    output/t/0003_direct_sixel_encode.t \
-    output/t/0004_sixel_metadata_inspection.t \
-    output/t/0005_monochrome_frame_trailer.t \
-    output/t/0006_two_pass_sixel_conversion.t \
-    cli-options/t/0001_long_option_forms.t \
-    decoder/t/0004_tab_separated_colour_introducers.t \
-    decoder/t/0005_oversized_dcs_geometry.t \
-    animation/t/0001_disable_update_mode.t \
-    animation/t/0002_static_frame_render.t \
-    animation/t/0003_update_and_static_frame.t \
-    animation/t/0004_split_sequence_atkinson.t \
+    gdk-pixbuf-loader/t/0001_gdk_pixbuf_loader.t \
+    gdk-pixbuf-loader/t/0002_incremental_load.t \
+    gdk-pixbuf-loader/t/0003_corrupt_data.t \
+    gdk-pixbuf-loader/t/0004_propagate_error.t \
+    gdk-pixbuf-loader/t/0005_context_free.t \
+    gdk-pixbuf-loader/t/0006_loader_module.t \
+    gdk-pixbuf-loader/t/0007_loader_plugin_integration.t \
+    geometry/t/0001_scaling_histogram_background.t \
+    geometry/t/0002_dcs_crc_width_scaling.t \
+    geometry/t/0003_dcs_crc_height_scaling.t \
+    geometry/t/0004_dcs_crc_height_scaling_auto_width.t \
+    geometry/t/0005_dcs_crc_height_auto_width_absolute.t \
+    geometry/t/0006_dcs_crc_height_absolute_width_percent.t \
+    geometry/t/0007_tga_scaling.t \
+    geometry/t/0008_indexed_png_scaling.t \
+    geometry/t/0009_sixel_resize_palette_limit.t \
+    geometry/t/0010_sixel_cropping_large_offsets.t \
+    geometry/t/0011_ppm_inspection_aggressive_scaling.t \
+    geometry/t/0012_resize_precision_mode_run.t \
+    geometry/t/0013_resize_precision_mode_scaler_input.t \
+    geometry/t/0014_resize_precision_mode_post_colorspace.t \
     loader/t/0001_progressive_jpeg.t \
     loader/t/0002_pngsuite_basic_convert.t \
     loader/t/0003_pngsuite_basic_width32.t \
@@ -931,11 +908,92 @@ TESTS = \
     loader/t/0005_pngsuite_background_convert.t \
     loader/t/0006_pngsuite_background_white.t \
     loader/t/0007_pngsuite_background_width32_white.t \
+    loader/t/0008_loader_coregraphics_pixelformat.t \
+    loader/t/0009_loader_wic_pixelformat.t \
+    loader/t/0010_loader_gdk_pixbuf_pixelformat.t \
+    loader/t/0011_loader_gd_pixelformat.t \
+    loader/t/0012_loader_libpng_pixelformat.t \
+    loader/t/0013_loader_libjpeg_pixelformat.t \
+    loader/t/0014_loader_builtin_pixelformat.t \
+    loader/t/0015_loader_quicklook_pixelformat.t \
+    loader/t/0016_loader_gnome_thumbnailer_pixelformat.t \
+    loader/t/0017_loader_builtin_psd.t \
+    loader/t/0018_loader_builtin_hdr.t \
+    loader/t/0019_loader_builtin_pic.t \
+    mapfile/t/0001_mapfile_export_act.t \
+    mapfile/t/0002_mapfile_export_pal_default.t \
+    mapfile/t/0003_mapfile_export_pal_stdout.t \
+    mapfile/t/0004_mapfile_export_riff.t \
+    mapfile/t/0005_mapfile_export_gpl.t \
+    mapfile/t/0006_mapfile_import_gpl_prefixed.t \
+    mapfile/t/0007_mapfile_import_act_extension.t \
+    mapfile/t/0008_mapfile_import_riff_explicit.t \
+    mapfile/t/0009_mapfile_import_stdin.t \
     network/t/0001_curl_invalid_file_url.t \
     network/t/0002_curl_invalid_https_url.t \
     network/t/0003_curl_file_scheme.t \
     network/t/0004_curl_self_signed_blocked.t \
     network/t/0005_curl_self_signed_with_k.t \
+    output/t/0001_vt340_colour_sequences.t \
+    output/t/0002_vt340_monochrome_sequences.t \
+    output/t/0003_direct_sixel_encode.t \
+    output/t/0004_sixel_metadata_inspection.t \
+    output/t/0005_monochrome_frame_trailer.t \
+    output/t/0006_two_pass_sixel_conversion.t \
+    packaging/t/0001_python_wheel_install.t \
+    packaging/t/0002_python_wheel_roundtrip.t \
+    palette/t/0001_kmeans_init_default_unset.t \
+    palette/t/0002_kmeans_init_auto.t \
+    palette/t/0003_kmeans_init_unknown.t \
+    palette/t/0004_kmeans_init_pca.t \
+    palette/t/0005_kmeans_init_cache.t \
+    palette/t/0006_palette_fallback_conversion.t \
+    palette/t/0007_palette_fallback_output.t \
+    palette/t/0008_select_color_ambiguous_prefix_rejected.t \
+    palette/t/0009_select_color_unique_prefix_accepted.t \
+    palette/t/0010_explicit_dimensions_with_palette.t \
+    palette/t/0011_fast_encoder_external_palette.t \
+    palette/t/0012_palette16_conversion.t \
+    palette/t/0013_xterm_palette_override_repetition.t \
+    palette/t/0014_tiff_palette_filters.t \
+    palette/t/0015_grayscale_png_with_palette.t \
+    palette/t/0016_apply_grayscale_palette_to_colour_png.t \
+    palette/t/0017_stacked_palette_files.t \
+    palette/t/0018_xterm16_palette_preset.t \
+    palette/t/0019_jpeg_palette_welsh.t \
+    palette/t/0020_ppm_palette16_conversion.t \
+    palette/t/0021_lanczos2_palette_limit.t \
+    palette/t/0022_lanczos3_two_colour_palette.t \
+    palette/t/0023_lanczos4_palette_dump.t \
+    palette/t/0024_interlaced_palette_dump.t \
+    palette/t/0025_lookup_policy_vpte_float32.t \
+    palette/t/0026_merge_kmeans_float32_lsqa.t \
+    palette/t/0027_merge_heckbert_float32_lsqa.t \
+    palette/t/0028_merge_kmeans_8bit_lsqa.t \
+    palette/t/0029_merge_heckbert_8bit_lsqa.t \
+    palette/t/0030_snap_kmeans_float32_lsqa.t \
+    palette/t/0031_snap_heckbert_float32_lsqa.t \
+    palette/t/0032_snap_kmeans_8bit_lsqa.t \
+    palette/t/0033_snap_heckbert_8bit_lsqa.t \
+    palette/t/0034_lookup_policy_1d_eytzinger_8bit.t \
+    palette/t/0035_lookup_policy_1d_eytzinger_float32.t \
+    palette/t/0036_lookup_policy_1d_eytzinger_float32_gamma_lsqa.t \
+    palette/t/0037_lookup_policy_1d_eytzinger_float32_linear_lsqa.t \
+    palette/t/0038_lookup_policy_1d_eytzinger_float32_oklab_lsqa.t \
+    palette/t/0039_lookup_policy_1d_eytzinger_float32_cielab_lsqa.t \
+    palette/t/0040_lookup_policy_1d_eytzinger_float32_din99d_lsqa.t \
+    palette/t/0041_lookup_policy_vpte_8bit_gamma_lsqa.t \
+    palette/t/0042_lookup_policy_vpte_float32_gamma_lsqa.t \
+    palette/t/0043_lookup_policy_vpte_float32_linear_lsqa.t \
+    palette/t/0044_lookup_policy_vpte_float32_oklab_lsqa.t \
+    palette/t/0045_lookup_policy_vpte_float32_cielab_lsqa.t \
+    palette/t/0046_lookup_policy_vpte_float32_din99d_lsqa.t \
+    pipeline/t/0001_pipeline_planner_baseline_run.t \
+    pipeline/t/0002_pipeline_planner_baseline_summary.t \
+    pipeline/t/0003_pipeline_planner_baseline_threads.t \
+    pipeline/t/0004_pipeline_planner_overrides_run.t \
+    pipeline/t/0005_pipeline_planner_overrides_summary.t \
+    pipeline/t/0006_pipeline_planner_overrides_threads.t \
     poc/t/0001_issue167_empty_bg.t \
     poc/t/0002_issue167_height.t \
     poc/t/0003_issue166_width.t \
@@ -947,6 +1005,12 @@ TESTS = \
     poc/t/0009_issue207_resize_poc.t \
     poc/t/0010_issue51_stbi_1561_poc.t \
     poc/t/0011_issue73_stbi_1561_poc.t \
+    probe/t/0001_probe_parse.t \
+    python/t/0001_python_bindings.t \
+    python/t/0002_python_api_formats.t \
+    python/t/0003_python_api_options.t \
+    python/t/0004_python_api_errors.t \
+    python/t/0005_python_resource_management.t \
     regression/t/0005_lsqa_format_grayscale.t \
     regression/t/0006_lsqa_format_palette.t \
     regression/t/0007_lsqa_format_rgb.t \
@@ -964,76 +1028,12 @@ TESTS = \
     regression/t/0023_lsqa_format_tga_type9_pal8.t \
     regression/t/0024_lsqa_format_tga_type10_rgb.t \
     regression/t/0025_lsqa_format_tga_type11_gray.t \
-    docs/t/0001_help_vs_man.t \
-    docs/t/0002_man_vs_bash_completion.t \
-    docs/t/0003_bash_vs_zsh_completion.t \
-    docs/t/0004_envvars_vs_help.t \
-    clipboard/t/0001_clipboard_basic.t \
-    packaging/t/0001_python_wheel_install.t \
-    packaging/t/0002_python_wheel_roundtrip.t \
-    mapfile/t/0001_mapfile_export_act.t \
-    mapfile/t/0002_mapfile_export_pal_default.t \
-    mapfile/t/0003_mapfile_export_pal_stdout.t \
-    mapfile/t/0004_mapfile_export_riff.t \
-    mapfile/t/0005_mapfile_export_gpl.t \
-    mapfile/t/0006_mapfile_import_gpl_prefixed.t \
-    mapfile/t/0007_mapfile_import_act_extension.t \
-    mapfile/t/0008_mapfile_import_riff_explicit.t \
-    mapfile/t/0009_mapfile_import_stdin.t \
-    pipeline/t/0001_pipeline_planner_baseline_run.t \
-    pipeline/t/0002_pipeline_planner_baseline_summary.t \
-    pipeline/t/0003_pipeline_planner_baseline_threads.t \
-    pipeline/t/0004_pipeline_planner_overrides_run.t \
-    pipeline/t/0005_pipeline_planner_overrides_summary.t \
-    pipeline/t/0006_pipeline_planner_overrides_threads.t \
     sixel2png/t/0001_version.t \
     sixel2png/t/0002_help.t \
     sixel2png/t/0002_missing_args.t \
     sixel2png/t/0003_unknown_option.t \
     sixel2png/t/0004_invalid_decoder_value.t \
-    sixel2png/t/0005_default_output.t \
-    probe/t/0001_probe_parse.t \
-    gdk-pixbuf-loader/t/0001_gdk_pixbuf_loader.t \
-    gdk-pixbuf-loader/t/0002_incremental_load.t \
-    gdk-pixbuf-loader/t/0003_corrupt_data.t \
-    gdk-pixbuf-loader/t/0004_propagate_error.t \
-    gdk-pixbuf-loader/t/0005_context_free.t \
-    gdk-pixbuf-loader/t/0006_loader_module.t \
-    gdk-pixbuf-loader/t/0007_loader_plugin_integration.t \
-    palette/t/0001_kmeans_init_default_unset.t \
-    palette/t/0002_kmeans_init_auto.t \
-    palette/t/0003_kmeans_init_unknown.t \
-    palette/t/0004_kmeans_init_pca.t \
-    palette/t/0005_kmeans_init_cache.t \
-    palette/t/0006_palette_fallback_conversion.t \
-    palette/t/0007_palette_fallback_output.t \
-    python/t/0001_python_bindings.t \
-    python/t/0002_python_api_formats.t \
-    python/t/0003_python_api_options.t \
-    python/t/0004_python_api_errors.t \
-    python/t/0005_python_resource_management.t \
-    filter/t/0001_filter_clip.t \
-    filter/t/0002_filter_sample.t \
-    filter/t/0003_filter_resize.t \
-    filter/t/0004_filter_colors.t \
-    filter/t/0005_filter_lookup.t \
-    filter/t/0006_filter_final_merge.t \
-    filter/t/0007_filter_vpte.t \
-    filter/t/0008_filter_load.t \
-    filter/t/0009_filter_dither.t \
-    filter/t/0010_filter_encode.t \
-    loader/t/0008_loader_coregraphics_pixelformat.t \
-    loader/t/0009_loader_wic_pixelformat.t \
-    loader/t/0010_loader_gdk_pixbuf_pixelformat.t \
-    loader/t/0011_loader_gd_pixelformat.t \
-    loader/t/0012_loader_libpng_pixelformat.t \
-    loader/t/0013_loader_libjpeg_pixelformat.t \
-    loader/t/0014_loader_builtin_pixelformat.t \
-    loader/t/0015_loader_quicklook_pixelformat.t \
-    loader/t/0016_loader_gnome_thumbnailer_pixelformat.t \
-    loader/t/0017_loader_builtin_psd.t \
-    loader/t/0018_loader_builtin_hdr.t \
-    loader/t/0019_loader_builtin_pic.t
+    sixel2png/t/0005_default_output.t
 
 SERIAL_TESTS = \
     aborttrace/t/0001_img2sixel_aborttrace.t \
@@ -1220,7 +1220,7 @@ AM_TEST_LOG_DRIVER_FLAGS = --comments
 
 # Default to soft errors so the harness continues after individual failures.
 DISABLE_HARD_ERRORS = yes
-AM_TEST_TIMEOUT = 300
+AM_TEST_TIMEOUT = 90
 AM_LOG_DRIVER_FLAGS = --timeout=$(AM_TEST_TIMEOUT)
 # Leave AM_LOG_FLAGS empty so Automake does not append timeout parameters to
 # LOG_COMPILE; the drivers consume timeout hints themselves.
