@@ -193,17 +193,6 @@ _completiontarget() {
     'zsh[operate on zsh completions only]'
 }
 
-_assessmentsections() {
-  _values -s ',' \
-    'ASSESSMENTSECTIONS' \
-    'all[emit every assessment section]' \
-    'basic[include basic metadata]' \
-    'performance[include stage timings]' \
-    'size[include output size metrics]' \
-    'quality[compare the encoded SIXEL output]' \
-    'quality@quantized[compare the palette-quantized frame]'
-}
-
 _threadcount() {
   _values \
     'THREADS' \
@@ -221,8 +210,6 @@ _precisionmode() {
 # Keep the following option order synchronized with `img2sixel -H`.
 _arguments -S -s -A "-*" -S \
   {-o,--outfile}'[specify output file (default: stdout)]':files:_files \
-  {-a,--assessment=}'[emit assessment report as JSON]':assessmentsections:_assessmentsections \
-  {-J,--assessment-file=}'[write assessment JSON to a file]':files:_files \
   {-=,--threads=}'[override encoder thread count (integer or auto)]':threadcount:_threadcount \
   {-.,--precision=}'[control quantization precision]':precisionmode:_precisionmode \
   {-7,--7bit-mode}'[generate a sixel image for 7bit terminals (default)]' \

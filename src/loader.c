@@ -108,7 +108,6 @@
 #include "frame.h"
 #include "chunk.h"
 #include "allocator.h"
-#include "assessment.h"
 #include "encoder.h"
 #include "logger.h"
 #include "sixel_atomic.h"
@@ -130,7 +129,6 @@ struct sixel_loader {
     int const *cancel_flag;
     void *context;
     sixel_logger_t logger;
-    sixel_assessment_t *assessment;
     char *loader_order;
     sixel_allocator_t *allocator;
     char last_loader_name[64];
@@ -999,7 +997,6 @@ sixel_loader_new(
      */
     sixel_logger_init(&loader->logger);
     (void)sixel_logger_prepare_env(&loader->logger);
-    loader->assessment = NULL;
     loader->loader_order = NULL;
     loader->allocator = local_allocator;
     loader->last_loader_name[0] = '\0';
@@ -1148,11 +1145,6 @@ sixel_loader_setopt(
         break;
     case SIXEL_LOADER_OPTION_CONTEXT:
         loader->context = (void *)value;
-        loader->assessment = NULL;
-        status = SIXEL_OK;
-        break;
-    case SIXEL_LOADER_OPTION_ASSESSMENT:
-        loader->assessment = (sixel_assessment_t *)value;
         status = SIXEL_OK;
         break;
     default:
@@ -1211,7 +1203,6 @@ sixel_loader_load_file(
     size_t plan_index;
     unsigned char *bgcolor;
     int reqcolors;
-    sixel_assessment_t *assessment;
     char const *order_override;
     char const *env_order;
     sixel_loader_callback_state_t callback_state;
@@ -1224,7 +1215,6 @@ sixel_loader_load_file(
     plan_index = 0;
     bgcolor = NULL;
     reqcolors = 0;
-    assessment = NULL;
     order_override = NULL;
     env_order = NULL;
 
@@ -1262,19 +1252,6 @@ sixel_loader_load_file(
         reqcolors = SIXEL_PALETTE_MAX;
     }
 
-    assessment = loader->assessment;
-
-    /*
-     *  Assessment pipeline sketch:
-     *
-     *      +-------------+        +--------------+
-     *      | chunk read  | -----> | image decode |
-     *      +-------------+        +--------------+
-     *
-     *  The loader owns the hand-off.  Chunk I/O ends before any decoder runs,
-     *  so we time the read span in the encoder and pivot to decode once the
-     *  chunk is populated.
-     */
     status = sixel_chunk_new(&pchunk,
                              filename,
                              loader->finsecure,
@@ -1306,11 +1283,6 @@ sixel_loader_load_file(
     }
 
     status = SIXEL_FALSE;
-    if (assessment != NULL) {
-        sixel_assessment_stage_transition(
-            assessment,
-            SIXEL_ASSESSMENT_STAGE_IMAGE_DECODE);
-    }
     order_override = loader->loader_order;
     /*
      * Honour SIXEL_LOADER_PRIORITY_LIST when callers do not supply

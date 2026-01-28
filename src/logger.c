@@ -131,7 +131,7 @@ sixel_logger_open(sixel_logger_t *logger, char const *path)
 #endif  /* SIXEL_ENABLE_THREADS */
     logger->mutex_ready = 1;
     logger->active = 1;
-    logger->started_at = sixel_assessment_timer_now();
+    logger->started_at = sixel_timer_now();
     /*
      * Use fully buffered output to avoid newline-triggered flushes.  VPTE
      * timeline logging can emit many events, and line buffering would force
@@ -211,7 +211,7 @@ sixel_logger_logf(sixel_logger_t *logger,
 #if SIXEL_ENABLE_THREADS
     sixel_mutex_lock(&target->mutex);
 #endif  /* SIXEL_ENABLE_THREADS */
-    timestamp = sixel_assessment_timer_now() - target->started_at;
+    timestamp = sixel_timer_now() - target->started_at;
     if (timestamp < 0.0) {
         timestamp = 0.0;
     }

@@ -458,11 +458,6 @@ Options:
                            SIXEL output. Supplying
                            "-o output.png" writes the PNG directly to
                            that file.
--a MODE, --assessment=MODE emit assessment JSON report.
-                           MODE: quantized | encoded
--J PATH, --assessment-file=PATH
-                           write assessment JSON to PATH.
-                           Use '-' to write to stdout.
 -7, --7bit-mode            generate a sixel image for 7bit
                            terminals or printers (default)
 -8, --8bit-mode            generate a sixel image for 8bit

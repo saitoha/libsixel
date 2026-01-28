@@ -49,7 +49,6 @@
 #include "palette.h"
 #include "compat_stub.h"
 #include "lookup-common.h"
-#include "assessment.h"
 #include "timer.h"
 #include "dither-common-pipeline.h"
 #include "dither-positional-8bit.h"
@@ -2091,10 +2090,6 @@ sixel_dither_apply_palette(
     int owns_float_pipeline = 0;
     int pipeline_pixelformat;
     int prefer_float_pipeline;
-    int palette_probe_active;
-    double palette_started_at;
-    double palette_finished_at;
-    double palette_duration;
     sixel_palette_t *palette;
     int dest_owned;
     int parallel_active = 0;
@@ -2327,18 +2322,6 @@ sixel_dither_apply_palette(
         method_for_carry = SIXEL_CARRY_DISABLE;
     }
 
-    palette_probe_active = sixel_assessment_palette_probe_enabled();
-    palette_started_at = 0.0;
-    palette_finished_at = 0.0;
-    palette_duration = 0.0;
-    if (palette_probe_active) {
-        /*
-         * Palette spans execute inside the encode stage.  We sample the
-         * duration here so the assessment can reassign the work to the
-         * PaletteApply bucket.
-         */
-        palette_started_at = sixel_assessment_timer_now();
-    }
     palette->lut_policy = dither->lut_policy;
     palette->method_for_largest = dither->method_for_largest;
 #if SIXEL_ENABLE_THREADS
@@ -2464,14 +2447,6 @@ sixel_dither_apply_palette(
                                               dither->allocator,
                                               dither,
                                               pipeline_pixelformat);
-    }
-    if (palette_probe_active) {
-        palette_finished_at = sixel_assessment_timer_now();
-        palette_duration = palette_finished_at - palette_started_at;
-        if (palette_duration < 0.0) {
-            palette_duration = 0.0;
-        }
-        sixel_assessment_record_palette_apply_span(palette_duration);
     }
     if (SIXEL_FAILED(status)) {
         if (dest != NULL && dest_owned) {

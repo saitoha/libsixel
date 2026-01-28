@@ -796,7 +796,6 @@ TESTS = \
     cli-argument-shift/t/0001_invalid_positional.t \
     cli-argument-shift/t/0002_argument_shift_missing_mapfile.t \
     cli-argument-shift/t/0003_argument_shift_outfile_named_like_option.t \
-    cli-argument-shift/t/0004_argument_shift_assessment_named_like_option.t \
     cli-argument-shift/t/0005_cli_token_is_known_option.t \
     cli-argument-shift/t/0006_cli_option_requires_argument.t \
     cli-argument-shift/t/0007_cli_guard_missing_argument.t \
@@ -969,7 +968,6 @@ TESTS = \
     docs/t/0002_man_vs_bash_completion.t \
     docs/t/0003_bash_vs_zsh_completion.t \
     docs/t/0004_envvars_vs_help.t \
-    assessment/t/0001_spool.t \
     clipboard/t/0001_clipboard_basic.t \
     packaging/t/0001_python_wheel_install.t \
     packaging/t/0002_python_wheel_roundtrip.t \

@@ -1772,7 +1772,7 @@ mediancut(tupletable2 const colorfreqtable,
     boxes = 1U;
     multicolorBoxesExist = (colorfreqtable.size > 1U);
     while (boxes < working_colors && multicolorBoxesExist) {
-        iteration_wall_start = sixel_assessment_timer_now();
+        iteration_wall_start = sixel_timer_now();
         boxes_before = boxes;
         job_iteration = sixel_palette_heckbert_log_start(logger,
                                                          job_seq,
@@ -1792,7 +1792,7 @@ mediancut(tupletable2 const colorfreqtable,
                               depth,
                               methodForLargest);
             if (SIXEL_FAILED(status)) {
-                iteration_wall_stop = sixel_assessment_timer_now();
+                iteration_wall_stop = sixel_timer_now();
                 if (iterate_ms != NULL) {
                     *iterate_ms += (iteration_wall_stop - iteration_wall_start)
                                    * 1000.0;
@@ -1814,7 +1814,7 @@ mediancut(tupletable2 const colorfreqtable,
                 goto end;
             }
         }
-        iteration_wall_stop = sixel_assessment_timer_now();
+        iteration_wall_stop = sixel_timer_now();
         boxes_after = boxes;
         if (iterate_ms != NULL) {
             *iterate_ms += (iteration_wall_stop - iteration_wall_start)
@@ -1870,7 +1870,7 @@ mediancut(tupletable2 const colorfreqtable,
                 }
             }
         }
-        merge_wall_start = sixel_assessment_timer_now();
+        merge_wall_start = sixel_timer_now();
         job_merge = sixel_palette_heckbert_log_start(logger,
                                                      job_seq,
                                                      engine_name,
@@ -1913,7 +1913,7 @@ mediancut(tupletable2 const colorfreqtable,
                                                           pixelformat,
                                                           colormapP,
                                                           allocator);
-        merge_wall_stop = sixel_assessment_timer_now();
+        merge_wall_stop = sixel_timer_now();
         if (merge_ms != NULL) {
             *merge_ms += (merge_wall_stop - merge_wall_start) * 1000.0;
         }
@@ -2142,7 +2142,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    wall_start = sixel_assessment_timer_now();
+    wall_start = sixel_timer_now();
     init_stop = wall_start;
     export_start = wall_start;
     export_stop = wall_start;
@@ -2211,7 +2211,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
                                              &merge_ms,
                                              &merge_iterate_count,
                                              &merge_mode);
-    init_stop = sixel_assessment_timer_now();
+    init_stop = sixel_timer_now();
     export_start = init_stop;
     if (SIXEL_FAILED(status)) {
         goto end;
@@ -2303,7 +2303,7 @@ sixel_palette_build_heckbert(sixel_palette_t *palette,
         status = drop_status;
         goto end;
     }
-    export_stop = sixel_assessment_timer_now();
+    export_stop = sixel_timer_now();
     (void)snprintf(log_detail,
                    sizeof(log_detail),
                    "colors=%u depth=%u",
@@ -2323,7 +2323,7 @@ end:
         double init_span;
         double export_span;
 
-        now = sixel_assessment_timer_now();
+        now = sixel_timer_now();
         if (init_stop < wall_start) {
             init_stop = now;
         }

@@ -154,8 +154,7 @@ libsixel_la_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
-	$(srcdir)/timer.c $(srcdir)/assessment.c \
-	$(srcdir)/assessment.h $(srcdir)/timer.h $(srcdir)/sleep.c \
+	$(srcdir)/timer.c $(srcdir)/timer.h $(srcdir)/sleep.c \
 	$(srcdir)/sleep.h $(srcdir)/fromsixel.c $(srcdir)/tosixel.c \
 	$(srcdir)/lookup-common.c $(srcdir)/lookup-8bit.c \
 	$(srcdir)/lookup-8bit.h $(srcdir)/lookup-float32.c \
@@ -241,7 +240,6 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@am_libsixel_la_OBJECTS =  \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-output.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-timer.lo \
-@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-assessment.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-sleep.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-fromsixel.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-tosixel.lo \
@@ -350,7 +348,6 @@ am__maybe_remake_depfiles = depfiles
 am__depfiles_remade =  \
 	$(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Plo \
 	./$(DEPDIR)/libsixel_la-allocator.Plo \
-	./$(DEPDIR)/libsixel_la-assessment.Plo \
 	./$(DEPDIR)/libsixel_la-chunk.Plo \
 	./$(DEPDIR)/libsixel_la-clipboard.Plo \
 	./$(DEPDIR)/libsixel_la-clipboard_carbon.Plo \
@@ -709,8 +706,6 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@libsixel_la_SOURCES = $(srcdir)/output.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/timer.c \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/assessment.c \
-@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/assessment.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/timer.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sleep.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/sleep.h \
@@ -990,7 +985,6 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-allocator.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-assessment.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-chunk.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-clipboard.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-clipboard_carbon.Plo@am__quote@ # am--include-marker
@@ -1112,13 +1106,6 @@ libsixel_la-timer.lo: timer.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='timer.c' object='libsixel_la-timer.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-timer.lo `test -f 'timer.c' || echo '$(srcdir)/'`timer.c
-
-libsixel_la-assessment.lo: assessment.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-assessment.lo -MD -MP -MF $(DEPDIR)/libsixel_la-assessment.Tpo -c -o libsixel_la-assessment.lo `test -f 'assessment.c' || echo '$(srcdir)/'`assessment.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-assessment.Tpo $(DEPDIR)/libsixel_la-assessment.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='assessment.c' object='libsixel_la-assessment.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-assessment.lo `test -f 'assessment.c' || echo '$(srcdir)/'`assessment.c
 
 libsixel_la-sleep.lo: sleep.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-sleep.lo -MD -MP -MF $(DEPDIR)/libsixel_la-sleep.Tpo -c -o libsixel_la-sleep.lo `test -f 'sleep.c' || echo '$(srcdir)/'`sleep.c
@@ -1872,7 +1859,6 @@ clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
 distclean: distclean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-allocator.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-assessment.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-chunk.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-clipboard.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-clipboard_carbon.Plo
@@ -1997,7 +1983,6 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/libsixel_la-sixel.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-allocator.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-assessment.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-chunk.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-clipboard.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-clipboard_carbon.Plo
