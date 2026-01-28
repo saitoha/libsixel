@@ -112,11 +112,11 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am__lsqa_SOURCES_DIST = $(srcdir)/lsqa.c \
-	$(top_srcdir)/src/assessment.c
-am__dirstamp = $(am__leading_dot)dirstamp
+am__lsqa_SOURCES_DIST = $(srcdir)/lsqa.c $(srcdir)/assessment.c \
+	$(srcdir)/assessment.h
 @WANT_AMALGAMATED_TOOLS_FALSE@am_lsqa_OBJECTS = lsqa-lsqa.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/src/lsqa-assessment.$(OBJEXT)
+@WANT_AMALGAMATED_TOOLS_FALSE@	lsqa-assessment.$(OBJEXT)
+am__dirstamp = $(am__leading_dot)dirstamp
 am__objects_1 = $(top_builddir)/amalgamation/lsqa-sixel.$(OBJEXT)
 @WANT_AMALGAMATED_TOOLS_TRUE@nodist_lsqa_OBJECTS = $(am__objects_1)
 lsqa_OBJECTS = $(am_lsqa_OBJECTS) $(nodist_lsqa_OBJECTS)
@@ -154,8 +154,7 @@ depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade =  \
 	$(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Po \
-	$(top_builddir)/src/$(DEPDIR)/lsqa-assessment.Po \
-	./$(DEPDIR)/lsqa-lsqa.Po
+	./$(DEPDIR)/lsqa-assessment.Po ./$(DEPDIR)/lsqa-lsqa.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -424,12 +423,14 @@ AMALGAMATION_LSQA_LIBS = -lm \
         @THREAD_LIBS@
 
 @WANT_AMALGAMATED_TOOLS_FALSE@lsqa_SOURCES = $(srcdir)/lsqa.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@               $(top_srcdir)/src/assessment.c
+@WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/assessment.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@               $(srcdir)/assessment.h
 
 @WANT_AMALGAMATED_TOOLS_TRUE@lsqa_SOURCES = 
 @WANT_AMALGAMATED_TOOLS_TRUE@nodist_lsqa_SOURCES = $(AMALGAMATION_SIXEL)
 @WANT_AMALGAMATED_TOOLS_FALSE@lsqa_CPPFLAGS = -I$(top_builddir)/include/ \
 @WANT_AMALGAMATED_TOOLS_FALSE@                -I$(top_srcdir)/src \
+@WANT_AMALGAMATED_TOOLS_FALSE@                -I$(top_srcdir)/assessment \
 @WANT_AMALGAMATED_TOOLS_FALSE@                $(AM_CPPFLAGS)
 
 @WANT_AMALGAMATED_TOOLS_TRUE@lsqa_CPPFLAGS = $(AMALGAMATION_LSQA_CPPFLAGS) -DBUILD_LSQA
@@ -519,15 +520,6 @@ uninstall-binPROGRAMS:
 clean-binPROGRAMS:
 	$(am__rm_f) $(bin_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(bin_PROGRAMS:$(EXEEXT)=)
-$(top_builddir)/src/$(am__dirstamp):
-	@$(MKDIR_P) $(top_builddir)/src
-	@: >>$(top_builddir)/src/$(am__dirstamp)
-$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) $(top_builddir)/src/$(DEPDIR)
-	@: >>$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
-$(top_builddir)/src/lsqa-assessment.$(OBJEXT):  \
-	$(top_builddir)/src/$(am__dirstamp) \
-	$(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/amalgamation/$(am__dirstamp):
 	@$(MKDIR_P) $(top_builddir)/amalgamation
 	@: >>$(top_builddir)/amalgamation/$(am__dirstamp)
@@ -545,13 +537,12 @@ lsqa$(EXEEXT): $(lsqa_OBJECTS) $(lsqa_DEPENDENCIES) $(EXTRA_lsqa_DEPENDENCIES)
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f $(top_builddir)/amalgamation/*.$(OBJEXT)
-	-rm -f $(top_builddir)/src/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/$(DEPDIR)/lsqa-assessment.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsqa-assessment.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lsqa-lsqa.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
@@ -598,19 +589,19 @@ lsqa-lsqa.obj: lsqa.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o lsqa-lsqa.obj `if test -f 'lsqa.c'; then $(CYGPATH_W) 'lsqa.c'; else $(CYGPATH_W) '$(srcdir)/lsqa.c'; fi`
 
-$(top_builddir)/src/lsqa-assessment.o: $(top_builddir)/src/assessment.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-assessment.o -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-assessment.Tpo -c -o $(top_builddir)/src/lsqa-assessment.o `test -f '$(top_builddir)/src/assessment.c' || echo '$(srcdir)/'`$(top_builddir)/src/assessment.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-assessment.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-assessment.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/assessment.c' object='$(top_builddir)/src/lsqa-assessment.o' libtool=no @AMDEPBACKSLASH@
+lsqa-assessment.o: assessment.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT lsqa-assessment.o -MD -MP -MF $(DEPDIR)/lsqa-assessment.Tpo -c -o lsqa-assessment.o `test -f 'assessment.c' || echo '$(srcdir)/'`assessment.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lsqa-assessment.Tpo $(DEPDIR)/lsqa-assessment.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='assessment.c' object='lsqa-assessment.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-assessment.o `test -f '$(top_builddir)/src/assessment.c' || echo '$(srcdir)/'`$(top_builddir)/src/assessment.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o lsqa-assessment.o `test -f 'assessment.c' || echo '$(srcdir)/'`assessment.c
 
-$(top_builddir)/src/lsqa-assessment.obj: $(top_builddir)/src/assessment.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/lsqa-assessment.obj -MD -MP -MF $(top_builddir)/src/$(DEPDIR)/lsqa-assessment.Tpo -c -o $(top_builddir)/src/lsqa-assessment.obj `if test -f '$(top_builddir)/src/assessment.c'; then $(CYGPATH_W) '$(top_builddir)/src/assessment.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/assessment.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/$(DEPDIR)/lsqa-assessment.Tpo $(top_builddir)/src/$(DEPDIR)/lsqa-assessment.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/assessment.c' object='$(top_builddir)/src/lsqa-assessment.obj' libtool=no @AMDEPBACKSLASH@
+lsqa-assessment.obj: assessment.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT lsqa-assessment.obj -MD -MP -MF $(DEPDIR)/lsqa-assessment.Tpo -c -o lsqa-assessment.obj `if test -f 'assessment.c'; then $(CYGPATH_W) 'assessment.c'; else $(CYGPATH_W) '$(srcdir)/assessment.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lsqa-assessment.Tpo $(DEPDIR)/lsqa-assessment.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='assessment.c' object='lsqa-assessment.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/lsqa-assessment.obj `if test -f '$(top_builddir)/src/assessment.c'; then $(CYGPATH_W) '$(top_builddir)/src/assessment.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/src/assessment.c'; fi`
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -c -o lsqa-assessment.obj `if test -f 'assessment.c'; then $(CYGPATH_W) 'assessment.c'; else $(CYGPATH_W) '$(srcdir)/assessment.c'; fi`
 
 $(top_builddir)/amalgamation/lsqa-sixel.o: $(top_builddir)/amalgamation/sixel.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(lsqa_CPPFLAGS) $(CPPFLAGS) $(lsqa_CFLAGS) $(CFLAGS) -MT $(top_builddir)/amalgamation/lsqa-sixel.o -MD -MP -MF $(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Tpo -c -o $(top_builddir)/amalgamation/lsqa-sixel.o `test -f '$(top_builddir)/amalgamation/sixel.c' || echo '$(srcdir)/'`$(top_builddir)/amalgamation/sixel.c
@@ -757,8 +748,6 @@ distclean-generic:
 	-test . = "$(srcdir)" || $(am__rm_f) $(CONFIG_CLEAN_VPATH_FILES)
 	-$(am__rm_f) $(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/amalgamation/$(am__dirstamp)
-	-$(am__rm_f) $(top_builddir)/src/$(DEPDIR)/$(am__dirstamp)
-	-$(am__rm_f) $(top_builddir)/src/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -770,7 +759,7 @@ clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
 
 distclean: distclean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Po
-	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-assessment.Po
+	-rm -f ./$(DEPDIR)/lsqa-assessment.Po
 	-rm -f ./$(DEPDIR)/lsqa-lsqa.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
@@ -818,7 +807,7 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/lsqa-sixel.Po
-	-rm -f $(top_builddir)/src/$(DEPDIR)/lsqa-assessment.Po
+	-rm -f ./$(DEPDIR)/lsqa-assessment.Po
 	-rm -f ./$(DEPDIR)/lsqa-lsqa.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
