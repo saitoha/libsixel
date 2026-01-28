@@ -11,14 +11,6 @@ test_name=$(basename "$0")
 test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 category_name=$(basename "$(dirname "${test_dir}")")
 
-pass() {
-    printf 'ok %s - %s\n' "$1" "$2"
-}
-
-fail() {
-    printf 'not ok %s - %s\n' "$1" "$2"
-    status=1
-}
 
 lsqa_common_path="${test_dir}/../../lib/sh/lsqa/lsqa_common.sh"
 LSQA_HELPER_DIR=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)

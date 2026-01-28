@@ -22,14 +22,7 @@ status=0
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-pass() {
-    printf 'ok %s - %s\n' "$1" "$2"
-}
 
-fail() {
-    printf 'not ok %s - %s\n' "$1" "$2"
-    status=1
-}
 
 issue200="${top_srcdir}/tests/issue/200/POC_img2sixel_heap_buffer_overflow"
 require_file "${issue200}"

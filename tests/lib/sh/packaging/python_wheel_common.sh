@@ -4,19 +4,12 @@
 
 set -eu
 
-pass() {
-    printf 'ok %s - %s\n' "$1" "$2"
-}
-
-fail() {
-    printf 'not ok %s - %s\n' "$1" "$2"
-    status=1
-}
-
-skip_all() {
-    printf '1..0 # SKIP %s\n' "$1"
-    exit 0
-}
+wheel_common_path=${wheel_common_path:-"$0"}
+wheel_helper_dir=${WHEEL_HELPER_DIR-}
+if [ -z "${wheel_helper_dir}" ]; then
+    wheel_helper_dir=$(CDPATH=; cd "$(dirname "${wheel_common_path}")" && pwd)
+fi
+. "${wheel_helper_dir}/../common/tap.sh"
 
 setup_wheel_paths() {
     test_name=$1
@@ -36,7 +29,7 @@ setup_wheel_paths() {
 require_python3() {
     python_bin=$(command -v python3 || true)
     if [ -z "${python_bin}" ]; then
-        skip_all "python3 is not available"
+        tap_skip_all "python3 is not available"
     fi
     export python_bin
 }
@@ -50,20 +43,20 @@ if missing:
 PY
         :
     else
-        skip_all "python3 lacks venv or ensurepip support"
+        tap_skip_all "python3 lacks venv or ensurepip support"
     fi
 }
 
 locate_wheel() {
     wheel_dir="${TOP_BUILDDIR}/python-wheel/dist"
     if [ ! -d "${wheel_dir}" ]; then
-        skip_all "python-wheel/dist artifacts are unavailable"
+        tap_skip_all "python-wheel/dist artifacts are unavailable"
     fi
 
     wheel_path=$(find "${wheel_dir}" -maxdepth 1 -type f -name 'libsixel-*.whl' \
         | head -n 1 || true)
     if [ -z "${wheel_path}" ]; then
-        skip_all "python wheel package is missing under python-wheel/dist"
+        tap_skip_all "python wheel package is missing under python-wheel/dist"
     fi
 
     export wheel_path

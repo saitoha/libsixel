@@ -1045,6 +1045,7 @@ HELPER_FILES = \
     common/t/0001_converters_common.t \
     docs/list_envvars.sh \
     lib/sh/conversion/common.sh \
+    lib/sh/common/tap.sh \
     lib/sh/cli-core/cli_core_common.sh \
     lib/sh/mapfile/mapfile_common.sh \
     lib/sh/pipeline/pipeline_planner_common.sh \

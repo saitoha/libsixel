@@ -4,6 +4,11 @@
 set -eu
 
 mapfile_common_path=${mapfile_common_path:-"$0"}
+mapfile_helper_dir=${MAPFILE_HELPER_DIR-}
+if [ -z "${mapfile_helper_dir}" ]; then
+    mapfile_helper_dir=$(CDPATH=; cd "$(dirname "${mapfile_common_path}")" && pwd)
+fi
+. "${mapfile_helper_dir}/../common/tap.sh"
 
 # Initialize directories for artifacts and logs. The caller must pass the
 # current test name to keep outputs isolated between TAP files.
@@ -25,11 +30,7 @@ setup_mapfile_dirs() {
 # for palette import/export tests.
 load_mapfile_prereqs() {
     script_dir=$1
-    helper_dir=${MAPFILE_HELPER_DIR-}
-
-    if [ -z "${helper_dir}" ]; then
-        helper_dir=$(CDPATH=; cd "$(dirname "${mapfile_common_path}")" && pwd)
-    fi
+    helper_dir=${mapfile_helper_dir}
 
     . "${helper_dir}/../../../common/t/0001_converters_common.t"
 
@@ -38,13 +39,4 @@ load_mapfile_prereqs() {
 
     snake_png="${images_dir}/snake.png"
     require_file "${snake_png}"
-}
-
-pass() {
-    printf 'ok 1 - %s\n' "$1"
-}
-
-fail() {
-    printf 'not ok 1 - %s\n' "$1"
-    status=1
 }

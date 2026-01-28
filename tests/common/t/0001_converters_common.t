@@ -28,6 +28,7 @@ run_quiet() {
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 parent_dir=$(CDPATH=; cd "${script_dir}/../../.." && pwd)
+. "${script_dir}/../../lib/sh/common/tap.sh"
 
 if [ -n "${MESON_SOURCE_ROOT:-}" ]; then
     top_srcdir=${TOP_SRCDIR:-${MESON_SOURCE_ROOT}}
