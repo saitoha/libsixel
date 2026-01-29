@@ -17,7 +17,7 @@ if [ -z "${conversion_helper_dir}" ]; then
     conversion_helper_dir=$(CDPATH=; cd "$(dirname "${conversion_common_path}")" && pwd)
 fi
 . "${conversion_helper_dir}/../common/tap.sh"
-. "${conversion_helper_dir}/../../../common/t/0001_converters_common.t"
+. "${conversion_helper_dir}/../../../_lib/sh/common.sh"
 
 setup_conversion_env() {
     test_name=$1

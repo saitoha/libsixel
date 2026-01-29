@@ -1,8 +1,8 @@
 # Auto-generated from sixel.h. Do not edit.
 module Libsixel
   module API
-    LIBSIXEL_VERSION = "1.8.7"
-    LIBSIXEL_ABI_VERSION = "1:6:0"
+    LIBSIXEL_VERSION = "1.11.0-pre"
+    LIBSIXEL_ABI_VERSION = "1:7:0"
     SIXEL_OUTPUT_PACKET_SIZE = 16384
     SIXEL_PALETTE_MIN = 2
     SIXEL_PALETTE_MAX = 256

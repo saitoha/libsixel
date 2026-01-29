@@ -45,7 +45,7 @@ stop_server() {
 }
 
 script_dir=${test_dir}
-. "${script_dir}/../../common/t/0001_converters_common.t"
+. "${script_dir}/../../_lib/sh/common.sh"
 
 ensure_network_backend_available
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"

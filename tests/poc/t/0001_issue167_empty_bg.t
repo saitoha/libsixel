@@ -16,7 +16,7 @@ tmp_dir="${artifact_dir}/tmp"
 mkdir -p "${output_dir}" "${tmp_dir}"
 
 script_dir=${test_dir}
-. "${script_dir}/../../common/t/0001_converters_common.t"
+. "${script_dir}/../../_lib/sh/common.sh"
 
 status=0
 

@@ -14,7 +14,7 @@ log_file="${artifact_dir}/information.log"
 mkdir -p "${artifact_dir}"
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-. "${script_dir}/../../common/t/0001_converters_common.t"
+. "${script_dir}/../../_lib/sh/common.sh"
 
 status=0
 
