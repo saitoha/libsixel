@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
+ * Copyright (c) 2026 libsixel developers. See `AUTHORS`.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -54,16 +54,6 @@
 #endif  /* __CYGWIN__ || __MSYS__ */
 
 #include "path.h"
-
-#if defined(SIXEL_AMALGAMATION) && !defined(BUILD_IMG2SIXEL) \
-    && !defined(BUILD_SIXEL2PNG)
-/*
- * Avoid duplicate path conversion symbols in amalgamation library builds.
- * The converter tools define BUILD_IMG2SIXEL or BUILD_SIXEL2PNG when they
- * need these helpers, but the core library already provides the
- * sixel_path_* variants.
- */
-#else
 
 #define IMG2SIXEL_CYGDRIVE_PREFIX "/cygdrive/"
 
@@ -557,9 +547,9 @@ img2sixel_path_emscripten_rawfs_enabled(void)
      * 3. Treat "0"/"false" (case-insensitive) as disabled, everything else
      *    as enabled.
      */
-#if !HAVE_EMSCRIPTEN_GET_COMPILER_SETTING
+# if !HAVE_EMSCRIPTEN_GET_COMPILER_SETTING
     return 1;
-#else
+# else
     setting = (char const *)emscripten_get_compiler_setting("NODERAWFS");
     if (setting == NULL || setting[0] == '\0') {
         return 1;
@@ -570,7 +560,7 @@ img2sixel_path_emscripten_rawfs_enabled(void)
         return 0;
     }
     return 1;
-#endif
+# endif
 }
 #endif
 
@@ -604,7 +594,7 @@ img2sixel_path_to_libc_buffer_size(char const *path)
 {
     char drive;
     char const *rest;
-#if defined(__EMSCRIPTEN__) || defined(__COSMOPOLITAN__)
+#if defined(__EMSCRIPTEN__)
     int rawfs_enabled;
 #endif
 
@@ -666,7 +656,7 @@ img2sixel_path_to_libc_buffer_size(char const *path)
      * 1. Use cygpath -wa if available on PATH.
      * 2. Fall back to explicit drive/cygdrive parsing.
      */
-#if defined(IMG2SIXEL_PATH_USE_CYGPATH)
+# if defined(IMG2SIXEL_PATH_USE_CYGPATH)
     {
         size_t cygpath_needed;
 
@@ -675,7 +665,7 @@ img2sixel_path_to_libc_buffer_size(char const *path)
             return cygpath_needed;
         }
     }
-#endif
+# endif
     if (img2sixel_path_parse_drive_letter(path, &drive, &rest)) {
         return 0u;
     }
@@ -698,7 +688,7 @@ img2sixel_path_to_libc_buffer_size(char const *path)
      * 1. Use cygpath -wa if available on PATH.
      * 2. Fall back to explicit drive/cygdrive parsing.
      */
-#if defined(IMG2SIXEL_PATH_USE_CYGPATH)
+# if defined(IMG2SIXEL_PATH_USE_CYGPATH)
     {
         size_t cygpath_needed;
 
@@ -707,7 +697,7 @@ img2sixel_path_to_libc_buffer_size(char const *path)
             return cygpath_needed;
         }
     }
-#endif
+# endif
     if (img2sixel_path_parse_drive_letter(path, &drive, &rest)) {
         return 0u;
     }
@@ -754,7 +744,7 @@ img2sixel_path_to_libc(char const *path,
     char const *rest;
     size_t index;
     size_t out_index;
-#if defined(__EMSCRIPTEN__) || defined(__COSMOPOLITAN__)
+#if defined(__EMSCRIPTEN__)
     int rawfs_enabled;
 #endif
 
@@ -799,8 +789,8 @@ img2sixel_path_to_libc(char const *path,
             out_index++;
         }
         buffer[out_index] = '\0';
-    return buffer;
-}
+        return buffer;
+    }
 
     return path;
 #elif defined(__CYGWIN__)
@@ -837,7 +827,7 @@ img2sixel_path_to_libc(char const *path,
     return path;
 #elif defined(_WIN32)
     (void)prefix_len;
-#if defined(IMG2SIXEL_PATH_USE_CYGPATH)
+# if defined(IMG2SIXEL_PATH_USE_CYGPATH)
     {
         char *converted;
         size_t length;
@@ -854,7 +844,7 @@ img2sixel_path_to_libc(char const *path,
             return buffer;
         }
     }
-#endif
+# endif
     if (img2sixel_path_parse_drive_letter(path, &drive, &rest)) {
         return path;
     }
@@ -880,7 +870,7 @@ img2sixel_path_to_libc(char const *path,
     if (!img2sixel_path_cosmo_is_windows()) {
         return path;
     }
-#if defined(IMG2SIXEL_PATH_USE_CYGPATH)
+# if defined(IMG2SIXEL_PATH_USE_CYGPATH)
     {
         char *converted;
         size_t length;
@@ -897,7 +887,7 @@ img2sixel_path_to_libc(char const *path,
             return buffer;
         }
     }
-#endif
+# endif
     if (img2sixel_path_parse_drive_letter(path, &drive, &rest)) {
         return path;
     }
@@ -952,11 +942,9 @@ img2sixel_path_to_libc(char const *path,
     (void)rest;
     (void)index;
     (void)out_index;
-#if defined(__EMSCRIPTEN__) || defined(__COSMOPOLITAN__)
+# if defined(__EMSCRIPTEN__)
     (void)rawfs_enabled;
-#endif
+# endif
     return path;
 #endif
 }
-
-#endif  /* SIXEL_AMALGAMATION guard */

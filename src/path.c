@@ -548,9 +548,9 @@ sixel_path_emscripten_rawfs_enabled(void)
      * 3. Treat "0"/"false" (case-insensitive) as disabled, everything else
      *    as enabled.
      */
-#if !HAVE_EMSCRIPTEN_GET_COMPILER_SETTING
+# if !HAVE_EMSCRIPTEN_GET_COMPILER_SETTING
     return 1;
-#else
+# else
     setting = (char const *)emscripten_get_compiler_setting("NODERAWFS");
     if (setting == NULL || setting[0] == '\0') {
         return 1;
@@ -561,7 +561,7 @@ sixel_path_emscripten_rawfs_enabled(void)
         return 0;
     }
     return 1;
-#endif
+# endif
 }
 #endif
 
@@ -792,6 +792,7 @@ sixel_path_to_libc(char const *path,
         buffer[out_index] = '\0';
         return buffer;
     }
+
     return path;
 #elif defined(__CYGWIN__)
     {
@@ -827,7 +828,7 @@ sixel_path_to_libc(char const *path,
     return path;
 #elif defined(_WIN32)
     (void)prefix_len;
-#if defined(SIXEL_PATH_USE_CYGPATH)
+# if defined(SIXEL_PATH_USE_CYGPATH)
     {
         char *converted;
         size_t length;
@@ -844,7 +845,7 @@ sixel_path_to_libc(char const *path,
             return buffer;
         }
     }
-#endif
+# endif
     if (sixel_path_parse_drive_letter(path, &drive, &rest)) {
         return path;
     }
@@ -870,7 +871,7 @@ sixel_path_to_libc(char const *path,
     if (!sixel_path_cosmo_is_windows()) {
         return path;
     }
-#if defined(SIXEL_PATH_USE_CYGPATH)
+# if defined(SIXEL_PATH_USE_CYGPATH)
     {
         char *converted;
         size_t length;
@@ -887,7 +888,7 @@ sixel_path_to_libc(char const *path,
             return buffer;
         }
     }
-#endif
+# endif
     if (sixel_path_parse_drive_letter(path, &drive, &rest)) {
         return path;
     }
@@ -942,9 +943,9 @@ sixel_path_to_libc(char const *path,
     (void)rest;
     (void)index;
     (void)out_index;
-#if defined(__EMSCRIPTEN__)
+# if defined(__EMSCRIPTEN__)
     (void)rawfs_enabled;
-#endif
+# endif
     return path;
 #endif
 }
