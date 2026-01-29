@@ -292,8 +292,8 @@ runs:
         set -exv
         export PATH="$PWD/build-aux:$PWD/bin:$PATH"
         ${{ inputs.setup_prefix }} ./configure ${{ inputs.setup_options }}
-        ${{ inputs.make || 'make' }} V=1 -j2
-        ${{ inputs.make || 'make' }} ${{ inputs.check_target || 'check' }} -j2
+        ${{ inputs.make || 'make' }} V=1
+        ${{ inputs.make || 'make' }} ${{ inputs.check_target || 'check' }}
 
     - name: Build and test (Meson, bash)
       if: ${{ inputs.buildtool == 'meson' && inputs.exec_type == 'bash' }}
@@ -313,8 +313,8 @@ runs:
         MSVC_BIN_PATH="$(cygpath -u -p "$MSVC_PATH")"
         PATH="$PWD/build-aux:$PWD/bin:$PATH:$MSVC_BIN_PATH"
         ${{ inputs.setup_prefix }} ./configure ${{ inputs.setup_options }}
-        ${{ inputs.make || 'make' }} V=1 -j2
-        ${{ inputs.make || 'make' }} ${{ inputs.check_target || 'check' }} -j2
+        ${{ inputs.make || 'make' }} V=1
+        ${{ inputs.make || 'make' }} ${{ inputs.check_target || 'check' }}
 
     - name: Build and test (Meson, msys2)
       if: ${{ inputs.buildtool == 'meson' && inputs.exec_type == 'msys2' }}
@@ -334,8 +334,8 @@ runs:
         set -exv
         PATH="$PWD/build-aux:$PATH"
         ${{ inputs.setup_prefix }} ./configure ${{ inputs.setup_options }}
-        ${{ inputs.make || 'make' }} V=1 -j2
-        ${{ inputs.make || 'make' }} ${{ inputs.check_target || 'check' }} -j2
+        ${{ inputs.make || 'make' }} V=1
+        ${{ inputs.make || 'make' }} ${{ inputs.check_target || 'check' }}
 
     - name: Build and test (Meson, Cygwin)
       if: ${{ inputs.buildtool == 'meson' && inputs.exec_type == 'cygwin' }}
@@ -380,8 +380,8 @@ runs:
           chown -R '"$(id -u):$(id -g)"' /src
           su hostusr -c "
             ./configure ${{ inputs.setup_options }}
-            ${{ inputs.make || 'make' }} V=1 -j2
-            ${{ inputs.make || 'make' }} ${{ inputs.check_target || 'check' }} -j2
+            ${{ inputs.make || 'make' }} V=1
+            ${{ inputs.make || 'make' }} ${{ inputs.check_target || 'check' }}
           "
         '
 
@@ -413,8 +413,8 @@ runs:
         run: |
           set -xv
           ${{ inputs.setup_prefix }} ./configure ${{ inputs.setup_options }}
-          ${{ inputs.make || 'make' }} V=1 -j2
-          ${{ inputs.make || 'make' }} ${{ inputs.check_target || 'check' }} -j2
+          ${{ inputs.make || 'make' }} V=1
+          ${{ inputs.make || 'make' }} ${{ inputs.check_target || 'check' }}
 
     - name: Build and test (Meson, FreeBSD/OpenBSD/NetBSD/Haiku)
       if: ${{ inputs.buildtool == 'meson' && inputs.exec_type == 'cross-platform-vms' }}
@@ -442,8 +442,8 @@ runs:
           pkg install -y ${{ inputs.extra_packages || 'gmake' }}
         run: |
           ${{ inputs.setup_prefix }} ./configure ${{ inputs.setup_options }}
-          gmake V=1 -j2
-          gmake ${{ inputs.check_target || 'check' }} -j2
+          gmake V=1
+          gmake ${{ inputs.check_target || 'check' }}
 
     - name: Configure, build, and test (Meson, DragonFlyBSD)
       if: ${{ inputs.buildtool == 'meson' && inputs.exec_type == 'dragonflybsd-vm' }}
@@ -475,8 +475,8 @@ runs:
         run: |
           cd "$GITHUB_WORKSPACE"
           ${{ inputs.setup_prefix }} ./configure ${{ inputs.setup_options }}
-          ${{ inputs.make || 'gmake' }} V=1 -j2
-          ${{ inputs.make || 'gmake' }} ${{ inputs.check_target || 'check' }} -j2
+          ${{ inputs.make || 'gmake' }} V=1
+          ${{ inputs.make || 'gmake' }} ${{ inputs.check_target || 'check' }}
 
     - name: Configure, build, and test (Meson, OpenIndiana)
       if: ${{ inputs.buildtool == 'meson' && inputs.exec_type == 'openindiana-vm' }}
@@ -507,8 +507,8 @@ runs:
           pkg install --accept ${{ inputs.extra_packages || 'gnu-make gcc' }}
         run: |
           ${{ inputs.setup_prefix }} ./configure ${{ inputs.setup_options }}
-          ${{ inputs.make || 'gmake' }} V=1 -j2
-          ${{ inputs.make || 'gmake' }} ${{ inputs.check_target || 'check' }} -j2
+          ${{ inputs.make || 'gmake' }} V=1
+          ${{ inputs.make || 'gmake' }} ${{ inputs.check_target || 'check' }}
 
     - name: Configure, build, and test (Meson, Solaris)
       if: ${{ inputs.buildtool == 'meson' && inputs.exec_type == 'solaris-vm' }}
@@ -539,8 +539,8 @@ runs:
         run: |
           cd "$GITHUB_WORKSPACE"
           ${{ inputs.setup_prefix }} ./configure ${{ inputs.setup_options }}
-          ${{ inputs.make || 'gmake' }} V=1 -j2
-          ${{ inputs.make || 'gmake' }} ${{ inputs.check_target || 'check' }} -j2
+          ${{ inputs.make || 'gmake' }} V=1
+          ${{ inputs.make || 'gmake' }} ${{ inputs.check_target || 'check' }}
 
     - name: Configure, build, and test (Meson, OmniOS)
       if: ${{ inputs.buildtool == 'meson' && inputs.exec_type == 'omnios-vm' }}

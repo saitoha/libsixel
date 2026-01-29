@@ -212,6 +212,32 @@ TESTS = \
     geometry/t/0012_resize_precision_mode_run.t \
     geometry/t/0013_resize_precision_mode_scaler_input.t \
     geometry/t/0014_resize_precision_mode_post_colorspace.t \
+    geometry/t/0015_resample_nearest_downscale_80pct_lsqa.t \
+    geometry/t/0016_resample_gaussian_downscale_80pct_lsqa.t \
+    geometry/t/0017_resample_hanning_downscale_80pct_lsqa.t \
+    geometry/t/0018_resample_hamming_downscale_80pct_lsqa.t \
+    geometry/t/0019_resample_bilinear_downscale_80pct_lsqa.t \
+    geometry/t/0020_resample_welsh_downscale_80pct_lsqa.t \
+    geometry/t/0021_resample_bicubic_downscale_80pct_lsqa.t \
+    geometry/t/0022_resample_lanczos2_downscale_80pct_lsqa.t \
+    geometry/t/0023_resample_lanczos3_downscale_80pct_lsqa.t \
+    geometry/t/0024_resample_lanczos4_downscale_80pct_lsqa.t \
+    geometry/t/0025_resample_nearest_upscale_120pct_lsqa.t \
+    geometry/t/0026_resample_gaussian_upscale_120pct_lsqa.t \
+    geometry/t/0027_resample_hanning_upscale_120pct_lsqa.t \
+    geometry/t/0028_resample_hamming_upscale_120pct_lsqa.t \
+    geometry/t/0029_resample_bilinear_upscale_120pct_lsqa.t \
+    geometry/t/0030_resample_welsh_upscale_120pct_lsqa.t \
+    geometry/t/0031_resample_bicubic_upscale_120pct_lsqa.t \
+    geometry/t/0032_resample_lanczos2_upscale_120pct_lsqa.t \
+    geometry/t/0033_resample_lanczos3_upscale_120pct_lsqa.t \
+    geometry/t/0034_resample_lanczos4_upscale_120pct_lsqa.t \
+    geometry/t/0035_resize_height_32_lsqa.t \
+    geometry/t/0036_resize_height_32px_lsqa.t \
+    geometry/t/0037_resize_height_80pct_lsqa.t \
+    geometry/t/0038_resize_height_100_lsqa.t \
+    geometry/t/0039_resize_height_100px_lsqa.t \
+    geometry/t/0040_resize_height_120pct_lsqa.t \
     loader/t/0001_progressive_jpeg.t \
     loader/t/0002_pngsuite_basic_convert.t \
     loader/t/0003_pngsuite_basic_width32.t \
@@ -567,6 +593,34 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/stbi_minimal.psd \
     data/inputs/formats/stbi_minimal.pic \
     data/inputs/snake_64.png \
+    data/inputs/scaling/snake_64_80pct.png \
+    data/inputs/scaling/snake_64_120pct.png \
+    data/inputs/scaling/snake_64_h32.png \
+    data/inputs/scaling/snake_64_h32px.png \
+    data/inputs/scaling/snake_64_h80pct.png \
+    data/inputs/scaling/snake_64_h100.png \
+    data/inputs/scaling/snake_64_h100px.png \
+    data/inputs/scaling/snake_64_h120pct.png \
+    data/inputs/scaling/snake_64_nearest_80pct.png \
+    data/inputs/scaling/snake_64_nearest_120pct.png \
+    data/inputs/scaling/snake_64_gaussian_80pct.png \
+    data/inputs/scaling/snake_64_gaussian_120pct.png \
+    data/inputs/scaling/snake_64_hanning_80pct.png \
+    data/inputs/scaling/snake_64_hanning_120pct.png \
+    data/inputs/scaling/snake_64_hamming_80pct.png \
+    data/inputs/scaling/snake_64_hamming_120pct.png \
+    data/inputs/scaling/snake_64_bilinear_80pct.png \
+    data/inputs/scaling/snake_64_bilinear_120pct.png \
+    data/inputs/scaling/snake_64_welsh_80pct.png \
+    data/inputs/scaling/snake_64_welsh_120pct.png \
+    data/inputs/scaling/snake_64_bicubic_80pct.png \
+    data/inputs/scaling/snake_64_bicubic_120pct.png \
+    data/inputs/scaling/snake_64_lanczos2_80pct.png \
+    data/inputs/scaling/snake_64_lanczos2_120pct.png \
+    data/inputs/scaling/snake_64_lanczos3_80pct.png \
+    data/inputs/scaling/snake_64_lanczos3_120pct.png \
+    data/inputs/scaling/snake_64_lanczos4_80pct.png \
+    data/inputs/scaling/snake_64_lanczos4_120pct.png \
     data/resolutions/hd_landscape.png \
     data/resolutions/panorama_tall.png \
     data/resolutions/panorama_wide.png \
