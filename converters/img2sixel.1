@@ -329,7 +329,8 @@ certlut -> certified hierarchical LUT with zero approximation
           the palette to certify the nearest and second nearest colours
           for every cell without scanning the full palette each time.
 .br
-eytzinger -> implicit binary tree lookup with a small neighbour scan.
+eytzinger -> implicit binary tree lookup with a small neighbour scan
+            (default).
 .br
 vpte    -> Voronoi grid built via a 3-pass 3D EDT with optional
            boundary refinement at cell corners.
@@ -341,7 +342,7 @@ comparison scans the palette directly.  This mirrors the behaviour that
 The \fIvpte\fP grid honours the following environment variables:
 .br
 SIXEL_DITHER_LOOKUP_POLICY (auto, 5bit, 6bit, none, certlut, eytzinger,
-or vpte)
+or vpte; default eytzinger)
 .br
 SIXEL_LOOKUP_PACKING (linear or morton; default linear) selects dense LUT
 packing for 5bit/6bit lookups; other policies ignore it.
