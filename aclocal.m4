@@ -1721,6 +1721,7 @@ AS_IF([test "$am_cv_xargs_n_works" = yes], [am__xargs_n='xargs -n'], [dnl
 AC_SUBST(am__xargs_n)
 ])
 
+m4_include([m4/ax_count_cpus.m4])
 m4_include([m4/ax_gcc_builtin.m4])
 m4_include([m4/ax_gcc_func_attribute.m4])
 m4_include([m4/ax_gcc_var_attribute.m4])
