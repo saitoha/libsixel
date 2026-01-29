@@ -23,6 +23,8 @@ srcs = [
   'output.c',
   'fromsixel.c',
   'tosixel.c',
+  'tosixel-highcolor.c',
+  'tosixel-highcolor.h',
   'timer.c',
   'timer.h',
   'sleep.c',
