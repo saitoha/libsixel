@@ -14,6 +14,7 @@ amalgamation_units = files(
   '../src/output.c',
   '../src/fromsixel.c',
   '../src/tosixel.c',
+  '../src/tosixel-highcolor.c',
   '../src/timer.c',
   '../assessment/assessment.c',
   '../src/sleep.c',

@@ -57,6 +57,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/sleep.h \
                 $(srcdir)/fromsixel.c \
                 $(srcdir)/tosixel.c \
+                $(srcdir)/tosixel-highcolor.c \
+                $(srcdir)/tosixel-highcolor.h \
                 $(srcdir)/lookup-common.c \
                 $(srcdir)/lookup-8bit.c \
                 $(srcdir)/lookup-8bit.h \
