@@ -16348,6 +16348,14 @@ else
   WANT_IMG2SIXEL_FALSE=
 fi
 
+if test "x$enable_img2sixel" != "xno"
+then :
+
+
+printf "%s\n" "#define HAVE_IMG2SIXEL 1" >>confdefs.h
+
+
+fi
 
 # Check whether --enable-sixel2png was given.
 if test ${enable_sixel2png+y}
@@ -16366,6 +16374,14 @@ else
   WANT_SIXEL2PNG_FALSE=
 fi
 
+if test "x$enable_sixel2png" != "xno"
+then :
+
+
+printf "%s\n" "#define HAVE_SIXEL2PNG 1" >>confdefs.h
+
+
+fi
 
 # Check whether --enable-abort-trace was given.
 if test ${enable_abort_trace+y}

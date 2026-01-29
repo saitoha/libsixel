@@ -235,6 +235,11 @@ AC_ARG_ENABLE([img2sixel],
               [],
               [enable_img2sixel=yes])
 AM_CONDITIONAL(WANT_IMG2SIXEL, test x$enable_img2sixel != xno)
+AS_IF([test "x$enable_img2sixel" != "xno"], [
+  AC_DEFINE([HAVE_IMG2SIXEL],
+            [1],
+            [Define to 1 if img2sixel is enabled])
+])
 
 AC_ARG_ENABLE([sixel2png],
               [AS_HELP_STRING([--disable-sixel2png],
@@ -242,6 +247,11 @@ AC_ARG_ENABLE([sixel2png],
               [],
               [enable_sixel2png=yes])
 AM_CONDITIONAL(WANT_SIXEL2PNG, test x$enable_sixel2png != xno)
+AS_IF([test "x$enable_sixel2png" != "xno"], [
+  AC_DEFINE([HAVE_SIXEL2PNG],
+            [1],
+            [Define to 1 if sixel2png is enabled])
+])
 
 AC_ARG_ENABLE([abort-trace],
               [AS_HELP_STRING([--enable-abort-trace],

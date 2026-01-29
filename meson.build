@@ -72,6 +72,16 @@ if get_option('tests')
   conf.set('HAVE_TESTS', 1)
 endif
 
+img2sixel_opt = get_option('img2sixel')
+if img2sixel_opt.enabled()
+  conf.set('HAVE_IMG2SIXEL', 1)
+endif
+
+sixel2png_opt = get_option('sixel2png')
+if sixel2png_opt.enabled()
+  conf.set('HAVE_SIXEL2PNG', 1)
+endif
+
 shebang_file = get_option('shebang_file')
 shebang_helper = join_paths(meson.project_source_root(),
                             'build-aux',

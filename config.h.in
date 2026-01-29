@@ -264,6 +264,9 @@
 /* gettimeofday timezone argument is void* */
 #undef HAVE_GETTIMEOFDAY_TZ_VOID
 
+/* Define to 1 if img2sixel is enabled */
+#undef HAVE_IMG2SIXEL
+
 /* Define to 1 if you have the <immintrin.h> header file. */
 #undef HAVE_IMMINTRIN_H
 
@@ -388,6 +391,9 @@
 
 /* Define to 1 if you have the <signal.h> header file. */
 #undef HAVE_SIGNAL_H
+
+/* Define to 1 if sixel2png is enabled */
+#undef HAVE_SIXEL2PNG
 
 /* Define to 1 if you have the <spawn.h> header file. */
 #undef HAVE_SPAWN_H
