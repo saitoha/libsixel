@@ -68,6 +68,8 @@ test_runner_exe = executable('test_runner', test_runner_sources,
            '-DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS'],
   install: false)
 
+test_deps = [test_runner_exe, lsqa_bin]
+
 if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
   # Ensure Windows-style runners (including MSYS2) locate the freshly built
   # DLLs when executing the converter TAP suite. Without these PATH entries
@@ -421,6 +423,7 @@ serial_tests = [
 foreach t : tests
   test(t, sh,
     args: [meson.current_source_dir() / t],
+    depends: test_deps,
     protocol: 'tap',
     env: env,
     timeout: 90,
@@ -430,6 +433,7 @@ endforeach
 foreach t : serial_tests
   test(t, sh,
     args: [meson.current_source_dir() / t],
+    depends: test_deps,
     protocol: 'tap',
     env: env,
     is_parallel: false,
