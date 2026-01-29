@@ -1852,7 +1852,6 @@ jobs:
               --without-png
               --without-jpeg
               --without-libcurl
-              --without-onnxruntime
             exec_type: bash
 
           - label: Meson-ubuntu-aarch64-cosmopolitan-static
@@ -1869,7 +1868,6 @@ jobs:
               -Dpng=disabled
               -Djpeg=disabled
               -Dcurl=disabled
-              -Donnxruntime=disabled
             check_target:
               test --wrapper "$PWD"/build-aux/ape-wrapper
             extra_packages: >-
@@ -1890,7 +1888,6 @@ jobs:
               --without-png
               --without-jpeg
               --without-libcurl
-              --without-onnxruntime
               --without-coregraphics
               --disable-quicklook-extension
               --disable-quicklook-preview
@@ -1911,7 +1908,6 @@ jobs:
               -Dpng=disabled
               -Djpeg=disabled
               -Dcurl=disabled
-              -Donnxruntime=disabled
               -Dcoregraphics=disabled
               -Dquicklook_extension=disabled
               -Dquicklook_preview=disabled
@@ -1937,7 +1933,6 @@ jobs:
               --without-png
               --without-jpeg
               --without-libcurl
-              --without-onnxruntime
               --disable-wiccodec
             extra_packages: >-
               unzip
