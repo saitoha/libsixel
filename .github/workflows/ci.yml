@@ -1832,7 +1832,7 @@ jobs:
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
   cosmopolitan:
-    needs: [core-autotools]
+#    needs: [core-autotools]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:

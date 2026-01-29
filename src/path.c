@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
+ * Copyright (c) 2026 libsixel developers. See `AUTHORS`.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -595,7 +595,7 @@ sixel_path_to_libc_buffer_size(char const *path)
 {
     char drive;
     char const *rest;
-#if defined(__EMSCRIPTEN__) || defined(__COSMOPOLITAN__)
+#if defined(__EMSCRIPTEN__)
     int rawfs_enabled;
 #endif
 
@@ -745,7 +745,7 @@ sixel_path_to_libc(char const *path,
     char const *rest;
     size_t index;
     size_t out_index;
-#if defined(__EMSCRIPTEN__) || defined(__COSMOPOLITAN__)
+#if defined(__EMSCRIPTEN__)
     int rawfs_enabled;
 #endif
 
@@ -942,7 +942,7 @@ sixel_path_to_libc(char const *path,
     (void)rest;
     (void)index;
     (void)out_index;
-#if defined(__EMSCRIPTEN__) || defined(__COSMOPOLITAN__)
+#if defined(__EMSCRIPTEN__)
     (void)rawfs_enabled;
 #endif
     return path;
