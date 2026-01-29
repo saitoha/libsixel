@@ -52,74 +52,7 @@ if [ -z "${SIXEL2PNG_PATH:-}" ]; then
     SIXEL2PNG_PATH="${top_builddir}/converters/sixel2png${SIXEL_BIN_EXT-}"
 fi
 
-check_autotools_option() {
-    program_name=$1
-
-    makefile_path="${top_builddir}/converters/Makefile"
-    if [ ! -f "${makefile_path}" ]; then
-        return 1
-    fi
-
-    if grep -Eq "[[:space:]]${program_name}\\$\\(EXEEXT\\)" \
-            "${makefile_path}"; then
-        return 0
-    fi
-
-    return 1
-}
-
-check_meson_option() {
-    option_name=$1
-
-    options_path="${top_builddir}/meson-info/intro-buildoptions.json"
-    if [ ! -f "${options_path}" ]; then
-        return 1
-    fi
-
-    # The Python helper returns 0 only when the option is explicitly
-    # enabled. A non-zero status (e.g., "disabled" or "auto") should be
-    # propagated to the caller so the test can skip gracefully instead of
-    # aborting the shell.
-    python3 - "$option_name" "$options_path" <<'PY'
-import json
-import sys
-
-option = sys.argv[1]
-path = sys.argv[2]
-
-with open(path, 'r', encoding='utf-8') as fh:
-    data = json.load(fh)
-
-for entry in data:
-    if entry.get('name') == option:
-        value = entry.get('value')
-        if value in ('enabled', True):
-            sys.exit(0)
-        break
-
-sys.exit(1)
-PY
-}
-
-converter_enabled() {
-    option_key=$1
-    meson_key=$(printf '%s' "${option_key#ENABLE_}" | tr 'A-Z' 'a-z')
-
-    if check_autotools_option "${meson_key}"; then
-        return 0
-    fi
-
-    if check_meson_option "${meson_key}"; then
-        return 0
-    fi
-
-    return 1
-}
-
-# Inspect autotools configuration header for a given feature macro. This is
-# used to verify optional dependencies, such as libcurl support, based on the
-# current build configuration instead of stale binaries.
-feature_defined_in_config() {
+config_macro_defined() {
     macro_name=$1
 
     config_header="${top_builddir}/config.h"
@@ -133,6 +66,38 @@ feature_defined_in_config() {
     fi
 
     return 1
+}
+
+converter_macro_name() {
+    case $1 in
+    IMG2SIXEL)
+        printf 'HAVE_IMG2SIXEL'
+        ;;
+    SIXEL2PNG)
+        printf 'HAVE_SIXEL2PNG'
+        ;;
+    *)
+        printf 'HAVE_%s' "$1"
+        ;;
+    esac
+}
+
+converter_enabled() {
+    option_key=$1
+    macro_name=$(converter_macro_name "${option_key}")
+
+    if config_macro_defined "${macro_name}"; then
+        return 0
+    fi
+
+    return 1
+}
+
+# Inspect configuration header for a given feature macro. This is used to
+# verify optional dependencies, such as libcurl support, based on the current
+# build configuration instead of stale binaries.
+feature_defined_in_config() {
+    config_macro_defined "$1"
 }
 
 skip_all() {
@@ -183,8 +148,8 @@ ensure_feature_available() {
         return 0
     fi
 
-    if check_meson_option "${meson_option}"; then
-        return 0
+    if [ -n "${meson_option}" ]; then
+        :
     fi
 
     skip_all "${description} is disabled in this build"
@@ -194,13 +159,11 @@ ensure_feature_available() {
 # either libcurl or WinHTTP to perform HTTP operations, so allow either backend
 # to satisfy the requirement before running the suite.
 ensure_network_backend_available() {
-    if feature_defined_in_config "HAVE_LIBCURL" || \
-            check_meson_option "curl"; then
+    if feature_defined_in_config "HAVE_LIBCURL"; then
         return 0
     fi
 
-    if feature_defined_in_config "HAVE_WINHTTP" || \
-            check_meson_option "winhttp"; then
+    if feature_defined_in_config "HAVE_WINHTTP"; then
         return 0
     fi
 
