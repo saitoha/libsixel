@@ -22,7 +22,7 @@ cli_core_setup() {
         helper_dir=$(CDPATH=; cd "$(dirname "${cli_core_common_path}")" && pwd)
     fi
 
-    . "${helper_dir}/../../../common/t/0001_converters_common.t"
+    . "${helper_dir}/../../../_lib/sh/common.sh"
 
     status=0
 }

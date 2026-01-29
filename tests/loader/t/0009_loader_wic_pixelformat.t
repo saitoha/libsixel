@@ -12,7 +12,7 @@ else
     top_builddir=${TOP_BUILDDIR:-${parent_dir}/..}
 fi
 
-. "${script_dir}/../../common/t/0001_converters_common.t"
+. "${script_dir}/../../_lib/sh/common.sh"
 
 runner="${top_builddir}/tests/test_runner${SIXEL_BIN_EXT-}"
 if [ ! -x "${runner}" ] && [ -z "${SIXEL_RUNTIME-}" ]; then

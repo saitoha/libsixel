@@ -14,7 +14,7 @@ output_dir="${artifact_dir}/outputs"
 mkdir -p "${output_dir}"
 
 script_dir=${test_dir}
-. "${script_dir}/../../common/t/0001_converters_common.t"
+. "${script_dir}/../../_lib/sh/common.sh"
 
 if ! feature_defined_in_config "HAVE_LIBCURL"; then
     skip_all "libcurl is required for file scheme access"
