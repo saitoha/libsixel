@@ -204,6 +204,16 @@ The repository vendors useful Autoconf macros:
    and this notice are preserved.  This file is offered as-is, without any
    warranty.
 
+ - ax_count_cpus.m4 (AX_COUNT_CPUS)
+   Copyright (c) 2014,2016 Karlson2k (Evgeny Grin)
+   Copyright (c) 2012 Brian Aker
+   Copyright (c) 2008 Michael Paul Bailey
+   Copyright (c) 2008 Christophe Tournayre
+   Copying and distribution of this file, with or without modification, are
+   permitted in any medium without royalty provided the copyright notice
+   and this notice are preserved.  This file is offered as-is, without any
+   warranty.
+
  - ax_ruby_ext.m4 (AX_RUBY_EXT)
    Copyright (c) 2011 Stanislav Sedov
    Licensed under the BSD-2-Clause terms included in the file header.

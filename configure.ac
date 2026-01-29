@@ -36,6 +36,22 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PATH_PROG([UPDATE_MIME_DATABASE], [update-mime-database])
 
+# Provide a conservative default parallelism for Makefiles when the caller
+# did not already set -j/--jobs. The logic is:
+# 1) Detect CPU_COUNT with AX_COUNT_CPUS.
+# 2) Leave MAKEFLAGS untouched when -j or --jobs is present.
+# 3) Otherwise, set LS_DEFAULT_MAKEFLAGS to "-j${CPU_COUNT}".
+AX_COUNT_CPUS
+LS_DEFAULT_MAKEFLAGS=""
+case " $MAKEFLAGS " in
+  *\ -j*|*\ --jobs*|*\ --jobs=* )
+    ;;
+  *)
+    LS_DEFAULT_MAKEFLAGS="-j${CPU_COUNT}"
+    ;;
+esac
+AC_SUBST([LS_DEFAULT_MAKEFLAGS])
+
 AC_CACHE_CHECK([for date +%s.%N with sub-second resolution],
                [ac_cv_lso_date_epoch_nsec],
                [ac_cv_lso_date_epoch_nsec=no

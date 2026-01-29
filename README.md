@@ -416,6 +416,11 @@ The bundled file is licensed under GPL-2.0-or-later with the "Autoconf Macro
 Special Exception", allowing the generated `configure` script (and projects
 using it) to remain under their original licenses.
 
+We also vendor `m4/ax_count_cpus.m4` from Autoconf Archive to detect CPU
+parallelism defaults. That macro is distributed under a permissive license
+that allows copying and modification with notice preservation, and it does
+not impose GPL requirements on this project.
+
 ## Usage of command line tools
 
 ### img2sixel

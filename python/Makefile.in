@@ -91,7 +91,8 @@ build_triplet = @build@
 host_triplet = @host@
 subdir = python
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_gcc_builtin.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_count_cpus.m4 \
+	$(top_srcdir)/m4/ax_gcc_builtin.m4 \
 	$(top_srcdir)/m4/ax_gcc_func_attribute.m4 \
 	$(top_srcdir)/m4/ax_gcc_var_attribute.m4 \
 	$(top_srcdir)/m4/ax_ruby_ext.m4 $(top_srcdir)/m4/libtool.m4 \
@@ -231,6 +232,7 @@ LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
 LSO_TAP_DATE_CMD = @LSO_TAP_DATE_CMD@
+LS_DEFAULT_MAKEFLAGS = @LS_DEFAULT_MAKEFLAGS@
 LS_LTVERSION = @LS_LTVERSION@
 LTLIBOBJS = @LTLIBOBJS@
 LT_SYS_LIBRARY_PATH = @LT_SYS_LIBRARY_PATH@

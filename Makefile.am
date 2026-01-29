@@ -37,9 +37,13 @@ DIST_SUBDIRS = \
 
 # Keep depcomp in the aux directory so "make dist" can stage it correctly.
 EXTRA_DIST = LICENSE build-aux/depcomp \
+	m4/ax_count_cpus.m4 \
 	package.json.in.in \
 	build-aux/lso-tap-driver.sh.in
 
+# Honor user-supplied MAKEFLAGS while providing a CPU-based default -j.
+# Only set this at the top-level to avoid forcing -j in sub-makes.
+MAKEFLAGS := $(if $(filter 0,$(MAKELEVEL)),@LS_DEFAULT_MAKEFLAGS@ $(MAKEFLAGS),$(MAKEFLAGS))
 
 
 .PHONY: install-quicklook-extension uninstall-quicklook-extension
