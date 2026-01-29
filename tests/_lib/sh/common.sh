@@ -52,18 +52,47 @@ if [ -z "${SIXEL2PNG_PATH:-}" ]; then
     SIXEL2PNG_PATH="${top_builddir}/converters/sixel2png${SIXEL_BIN_EXT-}"
 fi
 
+init_config_macro_cache() {
+    config_header="${top_builddir}/config.h"
+
+    if [ "${SIXEL_TEST_CONFIG_CACHE_READY:-0}" -eq 1 ]; then
+        return 0
+    fi
+
+    SIXEL_TEST_CONFIG_CACHE_READY=1
+    SIXEL_TEST_DEFINED_MACROS=""
+
+    if [ -f "${config_header}" ]; then
+        set -f
+        while IFS= read -r line; do
+            set -- ${line}
+            if [ "${1-}" = "#define" ] && [ "${3-}" = "1" ]; then
+                case "$2" in
+                HAVE_*)
+                    SIXEL_TEST_DEFINED_MACROS="${SIXEL_TEST_DEFINED_MACROS} $2"
+                    ;;
+                esac
+            fi
+        done < "${config_header}"
+        set +f
+    fi
+
+    SIXEL_TEST_DEFINED_MACROS=${SIXEL_TEST_DEFINED_MACROS# }
+    export SIXEL_TEST_CONFIG_CACHE_READY
+    export SIXEL_TEST_DEFINED_MACROS
+    return 0
+}
+
 config_macro_defined() {
     macro_name=$1
 
-    config_header="${top_builddir}/config.h"
-    if [ ! -f "${config_header}" ]; then
-        return 1
-    fi
+    init_config_macro_cache
 
-    if grep -Eq "^#define[[:space:]]+${macro_name}[[:space:]]+1" \
-            "${config_header}"; then
+    case " ${SIXEL_TEST_DEFINED_MACROS} " in
+    *" ${macro_name} "*)
         return 0
-    fi
+        ;;
+    esac
 
     return 1
 }
@@ -93,9 +122,8 @@ converter_enabled() {
     return 1
 }
 
-# Inspect configuration header for a given feature macro. This is used to
-# verify optional dependencies, such as libcurl support, based on the current
-# build configuration instead of stale binaries.
+# Inspect the cached config macros for a given feature. The cache is prepared
+# once at startup to reduce repeated file access.
 feature_defined_in_config() {
     config_macro_defined "$1"
 }
