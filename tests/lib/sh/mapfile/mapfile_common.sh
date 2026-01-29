@@ -32,7 +32,7 @@ load_mapfile_prereqs() {
     script_dir=$1
     helper_dir=${mapfile_helper_dir}
 
-    . "${helper_dir}/../../../common/t/0001_converters_common.t"
+    . "${helper_dir}/../../../_lib/sh/common.sh"
 
     status=0
     ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"

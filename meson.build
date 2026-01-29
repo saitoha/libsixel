@@ -21,7 +21,7 @@
 #
 project('libsixel',
         'c',
-        version: '1.8.7',
+        version: '1.11.0-pre',
         meson_version: '>=0.59.0',
         license: 'MIT',
         default_options: [
@@ -1180,12 +1180,6 @@ bash_completion_opt = get_option('bashcompletiondir')
 bash_completion_dir = ''
 if bash_completion_opt != 'disabled'
   if bash_completion_opt == '' or bash_completion_opt == 'auto'
-    # ------------------------------------------------------------------
-    # Directory probing strategy
-    #   +-----------+     +-----------+
-    #   | prefer v2 | --> | fallback  |
-    #   +-----------+     +-----------+
-    # ------------------------------------------------------------------
     prefix_dir = get_option('prefix')
     datadir_opt = get_option('datadir')
     sysconfdir_opt = get_option('sysconfdir')
@@ -1225,12 +1219,6 @@ zsh_completion_opt = get_option('zshcompletiondir')
 zsh_completion_dir = ''
 if zsh_completion_opt != 'disabled'
   if zsh_completion_opt == '' or zsh_completion_opt == 'auto'
-    # ------------------------------------------------------------------
-    # Directory probing strategy
-    #   +---------------------------+     +---------------------------+
-    #   | probe vendor completions  | --> | probe site-functions tree |
-    #   +---------------------------+     +---------------------------+
-    # ------------------------------------------------------------------
     prefix_dir = get_option('prefix')
     datadir_opt = get_option('datadir')
     zsh_vendor_candidates = [

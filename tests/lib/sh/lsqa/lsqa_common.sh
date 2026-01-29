@@ -266,7 +266,7 @@ _lsqa_require_converter_common() {
     fi
 
     # Load converter helpers lazily to avoid altering unrelated tests.
-    . "${lsqa_helper_root}/../../../common/t/0001_converters_common.t"
+    . "${lsqa_helper_root}/../../../_lib/sh/common.sh"
     LSQA_CONVERTER_COMMON_LOADED=1
     return 0
 }

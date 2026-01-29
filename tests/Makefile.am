@@ -350,7 +350,7 @@ check_PROGRAMS = test_runner
 TEST_EXTENSIONS = .t
 
 HELPER_FILES = \
-    common/t/0001_converters_common.t \
+    _lib/sh/common.sh \
     docs/list_envvars.sh \
     lib/sh/conversion/common.sh \
     lib/sh/common/tap.sh \
