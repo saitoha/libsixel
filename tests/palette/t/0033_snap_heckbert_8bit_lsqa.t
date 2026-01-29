@@ -22,7 +22,7 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-input_image="${top_srcdir}/tests/data/resolutions/tiny_square.png"
+input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${output_dir}/snap-heckbert-8bit.six"
 output_png="${output_dir}/snap-heckbert-8bit.png"
 
