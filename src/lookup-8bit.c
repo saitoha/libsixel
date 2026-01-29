@@ -89,15 +89,15 @@ enum { SIXEL_CERTLUT_COMPONENTS = 3 };
 
 #define SIXEL_LOOKUP_EYTZINGER_WINDOW 6
 
-#if defined(__GNUC__) || defined(__clang__)
-#define SIXEL_LOOKUP_EYTZINGER_PREFETCH(base, index, count) \
+#if HAVE_BUILTIN_PREFETCH
+# define SIXEL_LOOKUP_EYTZINGER_PREFETCH(base, index, count) \
     do { \
         if ((index) <= (count)) { \
             __builtin_prefetch((base) + (index), 0, 1); \
         } \
     } while (0)
 #else
-#define SIXEL_LOOKUP_EYTZINGER_PREFETCH(base, index, count) ((void)0)
+# define SIXEL_LOOKUP_EYTZINGER_PREFETCH(base, index, count) ((void)0)
 #endif
 
 typedef struct sixel_certlut_color {
