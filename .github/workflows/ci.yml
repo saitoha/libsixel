@@ -70,24 +70,8 @@ jobs:
       - name: Run CI steps
         uses: ./.github/actions/ci-steps
         with:
-          label:          ${{ matrix.label }}
-          exec_type:      ${{ matrix.exec_type }}
-          buildtool:      ${{ matrix.buildtool }}
-          runner:         ${{ matrix.runner }}
-          cp_os:          ${{ matrix.cp_os || '' }}
-          cp_arch:        ${{ matrix.cp_arch || '' }}
-          cp_version:     ${{ matrix.cp_version || '' }}
-          version:        ${{ matrix.version || '' }}
-          msystem:        ${{ matrix.msystem || '' }}
-          extra_packages: ${{ matrix.extra_packages || '' }}
-          guest_packages: ${{ matrix.guest_packages || '' }}
-          vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
-          pip_packages:   ${{ matrix.pip_packages || '' }}
-          setup_prefix:   ${{ matrix.setup_prefix || '' }}
-          setup_options:  ${{ matrix.setup_options || '' }}
-          check_target:   ${{ matrix.check_target || '' }}
-          make:           ${{ matrix.make || '' }}
-          github_token:   ${{ secrets.GITHUB_TOKEN }}
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   coverage-autotools:
     needs: [smoke]
@@ -321,24 +305,8 @@ jobs:
       - name: Run CI steps
         uses: ./.github/actions/ci-steps
         with:
-          label:          ${{ matrix.label }}
-          exec_type:      ${{ matrix.exec_type }}
-          buildtool:      ${{ matrix.buildtool }}
-          runner:         ${{ matrix.runner }}
-          cp_os:          ${{ matrix.cp_os || '' }}
-          cp_arch:        ${{ matrix.cp_arch || '' }}
-          cp_version:     ${{ matrix.cp_version || '' }}
-          version:        ${{ matrix.version || '' }}
-          msystem:        ${{ matrix.msystem || '' }}
-          extra_packages: ${{ matrix.extra_packages || '' }}
-          guest_packages: ${{ matrix.guest_packages || '' }}
-          vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
-          pip_packages:   ${{ matrix.pip_packages || '' }}
-          setup_prefix:   ${{ matrix.setup_prefix || '' }}
-          setup_options:  ${{ matrix.setup_options || '' }}
-          check_target:   ${{ matrix.check_target || '' }}
-          make:           ${{ matrix.make || '' }}
-          github_token:   ${{ secrets.GITHUB_TOKEN }}
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
 
   coverage-meson:
@@ -605,24 +573,8 @@ jobs:
       - name: Run CI steps
         uses: ./.github/actions/ci-steps
         with:
-          label:          ${{ matrix.label }}
-          exec_type:      ${{ matrix.exec_type }}
-          buildtool:      ${{ matrix.buildtool }}
-          runner:         ${{ matrix.runner }}
-          cp_os:          ${{ matrix.cp_os || '' }}
-          cp_arch:        ${{ matrix.cp_arch || '' }}
-          cp_version:     ${{ matrix.cp_version || '' }}
-          version:        ${{ matrix.version || '' }}
-          msystem:        ${{ matrix.msystem || '' }}
-          extra_packages: ${{ matrix.extra_packages || '' }}
-          guest_packages: ${{ matrix.guest_packages || '' }}
-          vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
-          pip_packages:   ${{ matrix.pip_packages || '' }}
-          setup_prefix:   ${{ matrix.setup_prefix || '' }}
-          setup_options:  ${{ matrix.setup_options || '' }}
-          check_target:   ${{ matrix.check_target || '' }}
-          make:           ${{ matrix.make || '' }}
-          github_token:   ${{ secrets.GITHUB_TOKEN }}
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   core-autotools:
     needs: [coverage-autotools]
@@ -930,24 +882,8 @@ jobs:
       - name: Run CI steps
         uses: ./.github/actions/ci-steps
         with:
-          label:          ${{ matrix.label }}
-          exec_type:      ${{ matrix.exec_type }}
-          buildtool:      ${{ matrix.buildtool }}
-          runner:         ${{ matrix.runner }}
-          cp_os:          ${{ matrix.cp_os || '' }}
-          cp_arch:        ${{ matrix.cp_arch || '' }}
-          cp_version:     ${{ matrix.cp_version || '' }}
-          version:        ${{ matrix.version || '' }}
-          msystem:        ${{ matrix.msystem || '' }}
-          extra_packages: ${{ matrix.extra_packages || '' }}
-          guest_packages: ${{ matrix.guest_packages || '' }}
-          vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
-          pip_packages:   ${{ matrix.pip_packages || '' }}
-          setup_prefix:   ${{ matrix.setup_prefix || '' }}
-          setup_options:  ${{ matrix.setup_options || '' }}
-          check_target:   ${{ matrix.check_target || '' }}
-          make:           ${{ matrix.make || '' }}
-          github_token:   ${{ secrets.GITHUB_TOKEN }}
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   core-meson:
     needs: [coverage-meson]
@@ -1130,24 +1066,8 @@ jobs:
       - name: Run CI steps
         uses: ./.github/actions/ci-steps
         with:
-          label:          ${{ matrix.label }}
-          exec_type:      ${{ matrix.exec_type }}
-          buildtool:      ${{ matrix.buildtool }}
-          runner:         ${{ matrix.runner }}
-          cp_os:          ${{ matrix.cp_os || '' }}
-          cp_arch:        ${{ matrix.cp_arch || '' }}
-          cp_version:     ${{ matrix.cp_version || '' }}
-          version:        ${{ matrix.version || '' }}
-          msystem:        ${{ matrix.msystem || '' }}
-          extra_packages: ${{ matrix.extra_packages || '' }}
-          guest_packages: ${{ matrix.guest_packages || '' }}
-          vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
-          pip_packages:   ${{ matrix.pip_packages || '' }}
-          setup_prefix:   ${{ matrix.setup_prefix || '' }}
-          setup_options:  ${{ matrix.setup_options || '' }}
-          check_target:   ${{ matrix.check_target || '' }}
-          make:           ${{ matrix.make || '' }}
-          github_token:   ${{ secrets.GITHUB_TOKEN }}
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   distcheck:
     name: ${{ matrix.label }}
@@ -1215,24 +1135,8 @@ jobs:
       - name: Run CI steps
         uses: ./.github/actions/ci-steps
         with:
-          label:          ${{ matrix.label }}
-          exec_type:      ${{ matrix.exec_type }}
-          buildtool:      ${{ matrix.buildtool }}
-          runner:         ${{ matrix.runner }}
-          cp_os:          ${{ matrix.cp_os || '' }}
-          cp_arch:        ${{ matrix.cp_arch || '' }}
-          cp_version:     ${{ matrix.cp_version || '' }}
-          version:        ${{ matrix.version || '' }}
-          msystem:        ${{ matrix.msystem || '' }}
-          extra_packages: ${{ matrix.extra_packages || '' }}
-          guest_packages: ${{ matrix.guest_packages || '' }}
-          vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
-          pip_packages:   ${{ matrix.pip_packages || '' }}
-          setup_prefix:   ${{ matrix.setup_prefix || '' }}
-          setup_options:  ${{ matrix.setup_options || '' }}
-          check_target:   ${{ matrix.check_target || '' }}
-          make:           ${{ matrix.make || '' }}
-          github_token:   ${{ secrets.GITHUB_TOKEN }}
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   coveralls:
     needs: [coverage-autotools, coverage-meson]
@@ -1511,24 +1415,8 @@ jobs:
       - name: Run CI steps
         uses: ./.github/actions/ci-steps
         with:
-          label:          ${{ matrix.label }}
-          exec_type:      ${{ matrix.exec_type }}
-          buildtool:      ${{ matrix.buildtool }}
-          runner:         ${{ matrix.runner }}
-          cp_os:          ${{ matrix.cp_os || '' }}
-          cp_arch:        ${{ matrix.cp_arch || '' }}
-          cp_version:     ${{ matrix.cp_version || '' }}
-          version:        ${{ matrix.version || '' }}
-          msystem:        ${{ matrix.msystem || '' }}
-          extra_packages: ${{ matrix.extra_packages || '' }}
-          guest_packages: ${{ matrix.guest_packages || '' }}
-          vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
-          pip_packages:   ${{ matrix.pip_packages || '' }}
-          setup_prefix:   ${{ matrix.setup_prefix || '' }}
-          setup_options:  ${{ matrix.setup_options || '' }}
-          check_target:   ${{ matrix.check_target || '' }}
-          make:           ${{ matrix.make || '' }}
-          github_token:   ${{ secrets.GITHUB_TOKEN }}
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   msan:
     needs: [asan-ubsan-lsan]
@@ -1578,24 +1466,8 @@ jobs:
       - name: Run CI steps
         uses: ./.github/actions/ci-steps
         with:
-          label:          ${{ matrix.label }}
-          exec_type:      ${{ matrix.exec_type }}
-          buildtool:      ${{ matrix.buildtool }}
-          runner:         ${{ matrix.runner }}
-          cp_os:          ${{ matrix.cp_os || '' }}
-          cp_arch:        ${{ matrix.cp_arch || '' }}
-          cp_version:     ${{ matrix.cp_version || '' }}
-          version:        ${{ matrix.version || '' }}
-          msystem:        ${{ matrix.msystem || '' }}
-          extra_packages: ${{ matrix.extra_packages || '' }}
-          guest_packages: ${{ matrix.guest_packages || '' }}
-          vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
-          pip_packages:   ${{ matrix.pip_packages || '' }}
-          setup_prefix:   ${{ matrix.setup_prefix || '' }}
-          setup_options:  ${{ matrix.setup_options || '' }}
-          check_target:   ${{ matrix.check_target || '' }}
-          make:           ${{ matrix.make || '' }}
-          github_token:   ${{ secrets.GITHUB_TOKEN }}
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   tsan:
     needs: [asan-ubsan-lsan]
@@ -1677,24 +1549,8 @@ jobs:
       - name: Run CI steps
         uses: ./.github/actions/ci-steps
         with:
-          label:          ${{ matrix.label }}
-          exec_type:      ${{ matrix.exec_type }}
-          buildtool:      ${{ matrix.buildtool }}
-          runner:         ${{ matrix.runner }}
-          cp_os:          ${{ matrix.cp_os || '' }}
-          cp_arch:        ${{ matrix.cp_arch || '' }}
-          cp_version:     ${{ matrix.cp_version || '' }}
-          version:        ${{ matrix.version || '' }}
-          msystem:        ${{ matrix.msystem || '' }}
-          extra_packages: ${{ matrix.extra_packages || '' }}
-          guest_packages: ${{ matrix.guest_packages || '' }}
-          vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
-          pip_packages:   ${{ matrix.pip_packages || '' }}
-          setup_prefix:   ${{ matrix.setup_prefix || '' }}
-          setup_options:  ${{ matrix.setup_options || '' }}
-          check_target:   ${{ matrix.check_target || '' }}
-          make:           ${{ matrix.make || '' }}
-          github_token:   ${{ secrets.GITHUB_TOKEN }}
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   emscripten:
 #    needs: [core-autotools]
@@ -1772,24 +1628,8 @@ jobs:
       - name: Run CI steps
         uses: ./.github/actions/ci-steps
         with:
-          label:          ${{ matrix.label }}
-          exec_type:      ${{ matrix.exec_type }}
-          buildtool:      ${{ matrix.buildtool }}
-          runner:         ${{ matrix.runner }}
-          cp_os:          ${{ matrix.cp_os || '' }}
-          cp_arch:        ${{ matrix.cp_arch || '' }}
-          cp_version:     ${{ matrix.cp_version || '' }}
-          version:        ${{ matrix.version || '' }}
-          msystem:        ${{ matrix.msystem || '' }}
-          extra_packages: ${{ matrix.extra_packages || '' }}
-          guest_packages: ${{ matrix.guest_packages || '' }}
-          vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
-          pip_packages:   ${{ matrix.pip_packages || '' }}
-          setup_prefix:   ${{ matrix.setup_prefix || '' }}
-          setup_options:  ${{ matrix.setup_options || '' }}
-          check_target:   ${{ matrix.check_target || '' }}
-          make:           ${{ matrix.make || '' }}
-          github_token:   ${{ secrets.GITHUB_TOKEN }}
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   cosmopolitan:
 #    needs: [core-autotools]
@@ -1912,24 +1752,8 @@ jobs:
       - name: Run CI steps
         uses: ./.github/actions/ci-steps
         with:
-          label:          ${{ matrix.label }}
-          exec_type:      ${{ matrix.exec_type }}
-          buildtool:      ${{ matrix.buildtool }}
-          runner:         ${{ matrix.runner }}
-          cp_os:          ${{ matrix.cp_os || '' }}
-          cp_arch:        ${{ matrix.cp_arch || '' }}
-          cp_version:     ${{ matrix.cp_version || '' }}
-          version:        ${{ matrix.version || '' }}
-          msystem:        ${{ matrix.msystem || '' }}
-          extra_packages: ${{ matrix.extra_packages || '' }}
-          guest_packages: ${{ matrix.guest_packages || '' }}
-          vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
-          pip_packages:   ${{ matrix.pip_packages || '' }}
-          setup_prefix:   ${{ matrix.setup_prefix || '' }}
-          setup_options:  ${{ matrix.setup_options || '' }}
-          check_target:   ${{ matrix.check_target || '' }}
-          make:           ${{ matrix.make || '' }}
-          github_token:   ${{ secrets.GITHUB_TOKEN }}
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   winecheck:
     needs: [coveralls]
@@ -2000,24 +1824,8 @@ jobs:
       - name: Run CI steps
         uses: ./.github/actions/ci-steps
         with:
-          label:          ${{ matrix.label }}
-          exec_type:      ${{ matrix.exec_type }}
-          buildtool:      ${{ matrix.buildtool }}
-          runner:         ${{ matrix.runner }}
-          cp_os:          ${{ matrix.cp_os || '' }}
-          cp_arch:        ${{ matrix.cp_arch || '' }}
-          cp_version:     ${{ matrix.cp_version || '' }}
-          version:        ${{ matrix.version || '' }}
-          msystem:        ${{ matrix.msystem || '' }}
-          extra_packages: ${{ matrix.extra_packages || '' }}
-          guest_packages: ${{ matrix.guest_packages || '' }}
-          vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
-          pip_packages:   ${{ matrix.pip_packages || '' }}
-          setup_prefix:   ${{ matrix.setup_prefix || '' }}
-          setup_options:  ${{ matrix.setup_options || '' }}
-          check_target:   ${{ matrix.check_target || '' }}
-          make:           ${{ matrix.make || '' }}
-          github_token:   ${{ secrets.GITHUB_TOKEN }}
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
   platforms:
     needs: [coveralls]
@@ -2274,24 +2082,8 @@ jobs:
       - name: Run CI steps
         uses: ./.github/actions/ci-steps
         with:
-          label:          ${{ matrix.label }}
-          exec_type:      ${{ matrix.exec_type }}
-          buildtool:      ${{ matrix.buildtool }}
-          runner:         ${{ matrix.runner }}
-          cp_os:          ${{ matrix.cp_os || '' }}
-          cp_arch:        ${{ matrix.cp_arch || '' }}
-          cp_version:     ${{ matrix.cp_version || '' }}
-          version:        ${{ matrix.version || '' }}
-          msystem:        ${{ matrix.msystem || '' }}
-          extra_packages: ${{ matrix.extra_packages || '' }}
-          guest_packages: ${{ matrix.guest_packages || '' }}
-          vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
-          pip_packages:   ${{ matrix.pip_packages || '' }}
-          setup_prefix:   ${{ matrix.setup_prefix || '' }}
-          setup_options:  ${{ matrix.setup_options || '' }}
-          check_target:   ${{ matrix.check_target || '' }}
-          make:           ${{ matrix.make || '' }}
-          github_token:   ${{ secrets.GITHUB_TOKEN }}
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
 # emacs Local Variables:
 # emacs mode: c
