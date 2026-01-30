@@ -1066,32 +1066,6 @@ else
   simd_message = 'no'
 endif
 
-avx2_opt = get_option('avx2')
-avx2_message = 'no'
-
-if (cpu == 'x86' or cpu == 'x86_64') and avx2_opt
-  avx2_args = []
-  if cc.get_argument_syntax() == 'msvc'
-    avx2_args = ['/arch:AVX2']
-  else
-    avx2_args = ['-O2', '-mavx2', '-mfma']
-  endif
-  if cc.has_multi_arguments(avx2_args) and cc.compiles('''
-      #include <immintrin.h>
-      int main(void) {
-        __m256i v = _mm256_setzero_si256();
-        (void)v;
-        return 0;
-      }''', args: avx2_args)
-    avx2_message = 'yes'
-    add_project_arguments(avx2_args, language: 'c')
-  else
-    avx2_message = 'no (compiler)'
-  endif
-elif avx2_opt
-  avx2_message = 'no (arch)'
-endif
-
 config_h = configure_file(output: 'config.h', configuration: conf)
 project_inc = include_directories('.', 'include', 'src')
 
@@ -1523,7 +1497,6 @@ message('       Thumbnailer command     : ' + thumbnailer_message)
 message('       Shebang template        : ' + shebang_message)
 message('       SIMD                    : ' + simd_message)
 message('       XGETBV probe            : ' + xsave_probe_message)
-message('       avx2                    : ' + avx2_message)
 message('       gcov                    : ' + (get_option('gcov') ? 'yes' : 'no'))
 message('       debugging               : ' + (get_option('debug') ? 'yes' : 'no'))
 message('       tests                   : ' + (get_option('tests') ? 'yes' : 'no'))

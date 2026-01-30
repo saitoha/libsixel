@@ -692,12 +692,6 @@ AC_ARG_ENABLE([xsave-probe],
               [],
               [enable_xsave_probe=auto])
 
-AC_ARG_ENABLE([avx2],
-              [AS_HELP_STRING([--enable-avx2],
-                              [enable AVX2 optimizations (default: no)])],
-              [],
-              [enable_avx2=no])
-
 AC_ARG_ENABLE([wiccodec],
               [AS_HELP_STRING([--enable-wiccodec],
                               [build WIC codec DLL (default: auto)])],
@@ -1183,7 +1177,6 @@ have_gdk_pixbuf_loader="no"
 GDK_PIXBUF_QUERY_LOADERS=""
 have_sse2=no
 have_xgetbv_intrin=no
-have_avx2=no
 have_neon=no
 
 REQUIRES_PRIVATE=""
@@ -2228,31 +2221,6 @@ else
     case "${host_cpu}" in
     x86_64|amd64)
         have_sse2=yes
-        if test "x$enable_avx2" != xno; then
-            AC_MSG_CHECKING([whether the compiler supports AVX2 flags and
-                             <immintrin.h>])
-            if test "x$using_cl" = xyes; then
-                avx2_flag="/arch:AVX2"
-            else
-                avx2_flag="-mavx2 -mfma"
-            fi
-            saved_CFLAGS="$CFLAGS"
-            CFLAGS="$CFLAGS $avx2_flag"
-            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <immintrin.h>]],
-                                              [[__m256i v;
-                                                v = _mm256_setzero_si256();
-                                                (void)v;
-                                                return 0;]])],
-                              [have_avx2=yes],
-                              [have_avx2=no])
-            CFLAGS="$saved_CFLAGS"
-            AC_MSG_RESULT([$have_avx2])
-            if test "x$have_avx2" = xyes; then
-                AM_CFLAGS="$AM_CFLAGS $avx2_flag"
-            elif test "x$enable_avx2" = xyes; then
-                AC_MSG_ERROR([AVX2 support requested but not available])
-            fi
-        fi
         ;;
 
     i*86)
@@ -2322,14 +2290,6 @@ fi
 if test "x$have_neon" = xyes; then
     AC_DEFINE([HAVE_NEON], [1], [Define if NEON is available])
     message_simd=neon
-fi
-
-if test "x$enable_avx2" = xno; then
-    message_avx2=no
-elif test "x$have_avx2" = xyes; then
-    message_avx2=yes
-else
-    message_avx2=no
 fi
 
 if test "x$enable_xsave_probe" = xno; then
@@ -2595,7 +2555,6 @@ echo "       python bindings         : $message_python"
 echo "       ruby bindings           : $message_ruby"
 echo "       simd                    : $message_simd"
 echo "       xsave probe             : $message_xsave_probe"
-echo "       avx2                    : $message_avx2"
 echo "       gcov                    : $enable_gcov"
 echo "       debugging               : $enable_debug"
 echo "       tests                   : $enable_tests"

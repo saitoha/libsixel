@@ -805,8 +805,8 @@ static cli_env_help_t const g_env_help_table[] = {
     },
     {
         "SIXEL_SIMD_LEVEL",
-        "force SIMD selection. Accepts auto, none/scalar, sse2, avx, avx2,\n"
-        "or neon."
+        "force SIMD selection. Accepts auto, none/scalar, sse2, avx, or\n"
+        "neon."
     },
     {
         "SIXEL_THUMBNAILER_HINT_SIZE",
