@@ -936,6 +936,153 @@ lsqa_set_parse_error(char const *message)
 }
 
 static int
+lsqa_build_reordered_argv(int argc,
+                          char **argv,
+                          char ***out_argv,
+                          int *out_argc)
+{
+    char **reordered;
+    char **options;
+    char **positionals;
+    int opt_count;
+    int pos_count;
+    int end_of_options;
+    int i;
+    int short_opt;
+    int needs_arg;
+    int known;
+    int new_argc;
+    char *token;
+    char *next_token;
+    char *equals;
+    size_t token_len;
+
+    reordered = NULL;
+    options = NULL;
+    positionals = NULL;
+    opt_count = 0;
+    pos_count = 0;
+    end_of_options = 0;
+    new_argc = 0;
+
+    if (out_argv != NULL) {
+        *out_argv = NULL;
+    }
+    if (out_argc != NULL) {
+        *out_argc = 0;
+    }
+
+    if (argc <= 0 || argv == NULL) {
+        return -1;
+    }
+
+    reordered = (char **)calloc((size_t)argc + 1u, sizeof(char *));
+    options = (char **)calloc((size_t)argc, sizeof(char *));
+    positionals = (char **)calloc((size_t)argc, sizeof(char *));
+    if (reordered == NULL || options == NULL || positionals == NULL) {
+        free(reordered);
+        free(options);
+        free(positionals);
+        lsqa_set_parse_error("lsqa: out of memory while parsing args.");
+        return -1;
+    }
+
+    for (i = 1; i < argc; ++i) {
+        token = argv[i];
+        if (token == NULL) {
+            continue;
+        }
+        if (end_of_options != 0) {
+            positionals[pos_count++] = token;
+            continue;
+        }
+        if (strcmp(token, "--") == 0) {
+            end_of_options = 1;
+            continue;
+        }
+        if (token[0] == '-' && token[1] != '\0') {
+            short_opt = 0;
+            known = cli_token_is_known_option(g_option_help_table,
+                                              lsqa_option_help_count(),
+                                              token,
+                                              &short_opt);
+            if (known == 0) {
+                lsqa_report_unrecognized_option(0, token);
+                goto error;
+            }
+            needs_arg = cli_option_requires_argument(g_lsqa_optstring,
+                                                     short_opt);
+            if (needs_arg != 0) {
+                token_len = strlen(token);
+                equals = strchr(token, '=');
+                if (token[1] == (char)short_opt && token_len > 2u) {
+                    options[opt_count++] = token;
+                    continue;
+                }
+                if (equals != NULL) {
+                    options[opt_count++] = token;
+                    continue;
+                }
+                if (i + 1 >= argc) {
+                    lsqa_report_missing_argument(short_opt);
+                    goto error;
+                }
+                next_token = argv[i + 1];
+                if (next_token == NULL) {
+                    lsqa_report_missing_argument(short_opt);
+                    goto error;
+                }
+                if (next_token[0] == '-' && next_token[1] != '\0') {
+                    known = cli_token_is_known_option(
+                        g_option_help_table,
+                        lsqa_option_help_count(),
+                        next_token,
+                        NULL);
+                    if (known != 0) {
+                        lsqa_report_missing_argument(short_opt);
+                        goto error;
+                    }
+                }
+                options[opt_count++] = token;
+                options[opt_count++] = next_token;
+                i += 1;
+                continue;
+            }
+            options[opt_count++] = token;
+            continue;
+        }
+        positionals[pos_count++] = token;
+    }
+
+    new_argc = 1 + opt_count + pos_count;
+    reordered[0] = argv[0];
+    for (i = 0; i < opt_count; ++i) {
+        reordered[1 + i] = options[i];
+    }
+    for (i = 0; i < pos_count; ++i) {
+        reordered[1 + opt_count + i] = positionals[i];
+    }
+    reordered[new_argc] = NULL;
+
+    if (out_argv != NULL) {
+        *out_argv = reordered;
+    }
+    if (out_argc != NULL) {
+        *out_argc = new_argc;
+    }
+
+    free(options);
+    free(positionals);
+    return 0;
+
+error:
+    free(reordered);
+    free(options);
+    free(positionals);
+    return -1;
+}
+
+static int
 parse_args(int argc, char **argv, Options *opts)
 {
     const char *ref_arg;
@@ -953,6 +1100,9 @@ parse_args(int argc, char **argv, Options *opts)
     size_t prefix_len;
     int status;
     int argi;
+    int parse_status;
+    char **scan_argv;
+    int scan_argc;
     int opt;
 #if HAVE_GETOPT_LONG
     int long_opt;
@@ -970,11 +1120,22 @@ parse_args(int argc, char **argv, Options *opts)
     opts->prefix_buffer[0] = '\0';
 
     argi = 1;
+    parse_status = 0;
+    scan_argv = NULL;
+    scan_argc = 0;
     opt = 0;
 #if HAVE_GETOPT_LONG
     long_opt = 0;
     option_index = 0;
 #endif
+
+    if (lsqa_build_reordered_argv(argc, argv,
+                                  &scan_argv,
+                                  &scan_argc) != 0) {
+        return -1;
+    }
+
+    optind = 1;
 
     for (;;) {
 #if HAVE_GETOPT_LONG
@@ -984,10 +1145,10 @@ parse_args(int argc, char **argv, Options *opts)
             {0, 0, 0, 0}
         };
 
-        opt = getopt_long(argc, argv, g_lsqa_optstring,
+        opt = getopt_long(scan_argc, scan_argv, g_lsqa_optstring,
                           long_options, &option_index);
 #else
-        opt = getopt(argc, argv, g_lsqa_optstring);
+        opt = getopt(scan_argc, scan_argv, g_lsqa_optstring);
 #endif
         if (opt == -1) {
             break;
@@ -1007,7 +1168,8 @@ parse_args(int argc, char **argv, Options *opts)
         switch (opt) {
         case 'H':
         case 'h':
-            return 1;
+            parse_status = 1;
+            goto cleanup;
         case 'm':
             metrics_arg = optarg;
             metric_spec = metric_spec_from_name(metrics_arg);
@@ -1015,12 +1177,14 @@ parse_args(int argc, char **argv, Options *opts)
                 lsqa_report_invalid_argument('m',
                                              metrics_arg,
                                              "Unknown metric name.");
-                return -1;
+                parse_status = -1;
+                goto cleanup;
             }
             if (opts->metric_spec != NULL) {
                 lsqa_set_parse_error(
                     "lsqa: metric already specified.");
-                return -1;
+                parse_status = -1;
+                goto cleanup;
             }
             opts->metric_spec = metric_spec;
             opts->metric_key = metric_spec->json_key;
@@ -1030,28 +1194,31 @@ parse_args(int argc, char **argv, Options *opts)
             break;
         case '?':
             lsqa_handle_getopt_error(optopt,
-                                     (optind > 0 && optind <= argc)
-                                         ? argv[optind - 1]
+                                     (optind > 0 && optind <= scan_argc)
+                                         ? scan_argv[optind - 1]
                                          : NULL);
-            return -1;
+            parse_status = -1;
+            goto cleanup;
         default:
             lsqa_report_unrecognized_option(opt, NULL);
-            return -1;
+            parse_status = -1;
+            goto cleanup;
         }
     }
 
     argi = optind;
-    if (argc - argi < 1 || argc - argi > 2) {
+    if (scan_argc - argi < 1 || scan_argc - argi > 2) {
         lsqa_set_parse_error("lsqa: invalid number of arguments.");
-        return -1;
+        parse_status = -1;
+        goto cleanup;
     }
 
-    ref_arg = argv[argi];
+    ref_arg = scan_argv[argi];
     opts->ref_path = ref_arg;
     argi += 1;
 
-    if (argc - argi >= 1) {
-        out_arg = argv[argi];
+    if (scan_argc - argi >= 1) {
+        out_arg = scan_argv[argi];
         if (strcmp(out_arg, "-") == 0) {
             opts->out_path = "-";
         } else {
@@ -1119,7 +1286,11 @@ parse_args(int argc, char **argv, Options *opts)
     free(prefix_env);
     free(verbose_env);
 
-    return 0;
+    parse_status = 0;
+
+cleanup:
+    free(scan_argv);
+    return parse_status;
 }
 
 int
