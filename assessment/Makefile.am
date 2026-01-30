@@ -56,7 +56,9 @@ bin_PROGRAMS = lsqa
 if WANT_AMALGAMATED_TOOLS
 lsqa_SOURCES =
 nodist_lsqa_SOURCES = $(AMALGAMATION_SIXEL)
-lsqa_CPPFLAGS = $(AMALGAMATION_LSQA_CPPFLAGS) -DBUILD_LSQA
+lsqa_CPPFLAGS = $(AMALGAMATION_LSQA_CPPFLAGS) \
+        -I$(top_srcdir)/converters \
+        -DBUILD_LSQA
 lsqa_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
         $(THREAD_CFLAGS)
 lsqa_LDFLAGS = $(MAYBE_COVERAGE)
@@ -64,10 +66,12 @@ lsqa_LDADD = $(AMALGAMATION_LSQA_LIBS)
 else
 lsqa_SOURCES = $(srcdir)/lsqa.c \
                $(srcdir)/assessment.c \
-               $(srcdir)/assessment.h
+               $(srcdir)/assessment.h \
+               $(top_srcdir)/converters/cli.c
 lsqa_CPPFLAGS = -I$(top_builddir)/include/ \
                 -I$(top_srcdir)/src \
                 -I$(top_srcdir)/assessment \
+                -I$(top_srcdir)/converters \
                 $(AM_CPPFLAGS)
 lsqa_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
         $(THREAD_CFLAGS)
