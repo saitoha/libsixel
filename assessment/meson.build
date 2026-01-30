@@ -1,4 +1,5 @@
-lsqa_inc = [project_inc]
+lsqa_local_inc = include_directories('../converters')
+lsqa_inc = [project_inc, lsqa_local_inc]
 lsqa_deps = [libsixel_dep]
 if m_dep.found()
   lsqa_deps += m_dep
@@ -6,7 +7,10 @@ endif
 lsqa_args = libsixel_posix_defs
 
 src_build_dir = join_paths(meson.project_build_root(), 'src')
-lsqa_sources = ['lsqa.c', 'assessment.c', 'assessment.h']
+lsqa_sources = ['lsqa.c',
+                'assessment.c',
+                'assessment.h',
+                '../converters/cli.c']
 lsqa_dependencies = lsqa_deps
 lsqa_c_args = lsqa_args
 lsqa_objc_args = lsqa_c_args
