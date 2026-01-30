@@ -60,7 +60,6 @@ or provide the desired directory path explicitly.
 | `--with-bashcompletiondir[=DIR]` | `no` (disabled) | Install the bash completion script (`auto` selects the system default path). |
 | `--with-zshcompletiondir[=DIR]` | `no` (disabled) | Install the zsh completion script (`auto` selects the system default path). |
 | `--enable-simd` / `--disable-simd` | `auto` | Control SSE2/NEON SIMD acceleration detection; `auto` enables when supported. |
-| `--enable-avx2` | `no` | Enable AVX2-specific optimizations (adds compiler flags when available). |
 | `--enable-wiccodec` / `--disable-wiccodec` | `auto` | Build the Windows WIC codec DLL. |
 | `--enable-register-dll` | `no` | Call `regsvr32` during `make install` to register the WIC codec DLL (requires admin rights). |
 | `--enable-python` | `no` | Build and install the Python bindings. |

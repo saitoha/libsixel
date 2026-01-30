@@ -50,13 +50,6 @@
 #if HAVE_STDINT_H
 # include <stdint.h>
 #endif  /* HAVE_STDINT_H */
-#if defined(HAVE_IMMINTRIN_H) && \
-    (defined(__x86_64__) || defined(_M_X64) || defined(__i386) || \
-     defined(_M_IX86))
-# define SIXEL_VPTE_HAS_X86_INTRIN 1
-# include <immintrin.h>
-#endif
-
 #include <sixel.h>
 
 #include "cpu.h"
@@ -70,25 +63,6 @@
 #include "threadpool.h"
 #include "sixel_atomic.h"
 #include "status.h"
-
-#if defined(SIXEL_VPTE_HAS_X86_INTRIN)
-# if defined(__GNUC__)
-#  if !defined(__clang__)
-#   define SIXEL_VPTE_TARGET_AVX2 __attribute__((target("avx2")))
-#   define SIXEL_VPTE_USE_AVX2 1
-#  else
-#   define SIXEL_VPTE_TARGET_AVX2
-#   if defined(__AVX2__)
-#    define SIXEL_VPTE_USE_AVX2 1
-#   endif
-#  endif
-# elif defined(_MSC_VER)
-#  define SIXEL_VPTE_TARGET_AVX2
-#  if defined(__AVX2__) || defined(_M_AVX2)
-#   define SIXEL_VPTE_USE_AVX2 1
-#  endif
-# endif
-#endif
 
 #ifndef SIXEL_VPTE_TLS
 # if defined(SIXEL_ENABLE_THREADS)
@@ -1189,131 +1163,6 @@ sixel_lookup_vpte_edt1d_scalar_float32(double *line_dist,
     }
 }
 
-#if defined(SIXEL_VPTE_USE_AVX2)
-/*
- * AVX2-accelerated evaluation of the second FH pass.  The envelope remains
- * scalar because of its control flow, while the quadratic evaluation benefits
- * from processing multiple output points that share the same k.
- */
-static SIXEL_VPTE_TARGET_AVX2 void
-sixel_lookup_vpte_edt1d_avx2_float32(double *line_dist,
-                             int *line_src,
-                             int length,
-                             double weight)
-{
-    double zbuf[257];
-    int vbuf[256];
-    double scratch[256];
-    int k;
-    int q;
-    int i;
-    double s;
-    double candidate;
-    double denom;
-    int segment_end;
-    double limit;
-    int base_index;
-    double base_dist;
-    int base_src;
-    __m256d weight_vec;
-    __m256d base_dist_vec;
-    __m256d base_index_vec;
-    __m256d idx_vec;
-    __m256d diff_vec;
-    __m256d dist_vec;
-    __m128i src_vec;
-    int lane;
-
-    vbuf[0] = 0;
-    zbuf[0] = -DBL_MAX;
-    zbuf[1] = DBL_MAX;
-    k = 0;
-
-    for (q = 1; q < length; ++q) {
-        denom = 2.0 * weight * (double)(q - vbuf[k]);
-        if (denom == 0.0) {
-            denom = 1.0;
-        }
-        candidate = (line_dist[q] + weight * (double)(q * q))
-                  - (line_dist[vbuf[k]]
-                     + weight * (double)(vbuf[k] * vbuf[k]));
-        s = candidate / denom;
-        while (s <= zbuf[k]) {
-            --k;
-            denom = 2.0 * weight * (double)(q - vbuf[k]);
-            if (denom == 0.0) {
-                denom = 1.0;
-            }
-            candidate = (line_dist[q] + weight * (double)(q * q))
-                      - (line_dist[vbuf[k]]
-                         + weight * (double)(vbuf[k] * vbuf[k]));
-            s = candidate / denom;
-        }
-        ++k;
-        vbuf[k] = q;
-        zbuf[k] = s;
-        zbuf[k + 1] = DBL_MAX;
-    }
-
-    k = 0;
-    weight_vec = _mm256_set1_pd(weight);
-    for (i = 0; i < length;) {
-        while (zbuf[k + 1] < (double)i) {
-            ++k;
-        }
-        limit = zbuf[k + 1];
-        segment_end = length;
-        if (limit < (double)length) {
-            segment_end = (int)floor(limit + 1.0);
-            if (segment_end > length) {
-                segment_end = length;
-            }
-        }
-        if (segment_end <= i) {
-            segment_end = i + 1;
-        }
-
-        base_index = vbuf[k];
-        base_dist = line_dist[base_index];
-        base_src = line_src[base_index];
-        base_dist_vec = _mm256_set1_pd(base_dist);
-        base_index_vec = _mm256_set1_pd((double)base_index);
-        src_vec = _mm_set1_epi32(base_src);
-
-        lane = i;
-        while (lane + 4 <= segment_end) {
-            idx_vec = _mm256_setr_pd((double)lane,
-                                     (double)(lane + 1),
-                                     (double)(lane + 2),
-                                     (double)(lane + 3));
-            diff_vec = _mm256_sub_pd(idx_vec, base_index_vec);
-            dist_vec = _mm256_mul_pd(diff_vec, diff_vec);
-            dist_vec = _mm256_mul_pd(dist_vec, weight_vec);
-            dist_vec = _mm256_add_pd(dist_vec, base_dist_vec);
-            _mm256_storeu_pd(scratch + lane, dist_vec);
-            /*
-             * AVX2 processes four outputs here, so only write four indices.
-             * Writing eight would clobber the next segment and corrupt LUTs.
-             */
-            _mm_storeu_si128((__m128i *)(line_src + lane), src_vec);
-            lane += 4;
-        }
-        for (; lane < segment_end; ++lane) {
-            double diff;
-
-            diff = (double)(lane - base_index);
-            scratch[lane] = base_dist + weight * diff * diff;
-            line_src[lane] = base_src;
-        }
-        i = segment_end;
-    }
-
-    for (i = 0; i < length; ++i) {
-        line_dist[i] = scratch[i];
-    }
-}
-#endif  /* SIXEL_VPTE_USE_AVX2 */
-
 static sixel_lookup_vpte_edt1d_float32_fn
 sixel_lookup_vpte_edt1d_resolve_float32(void)
 {
@@ -1322,25 +1171,6 @@ sixel_lookup_vpte_edt1d_resolve_float32(void)
     if (selected != NULL) {
         return selected;
     }
-#if defined(SIXEL_VPTE_HAS_X86_INTRIN)
-    if (selected == NULL) {
-        /*
-         * Guard the CPU query so builds without AVX backends do not trigger
-         * unused-but-set warnings when AVX is disabled at configure time.
-         */
-# if defined(SIXEL_VPTE_USE_AVX2)
-        int simd_level;
-
-        simd_level = sixel_cpu_simd_level();
-#  if defined(SIXEL_VPTE_USE_AVX2)
-        if (simd_level >= SIXEL_SIMD_LEVEL_AVX2) {
-            selected = sixel_lookup_vpte_edt1d_avx2_float32;
-            return selected;
-        }
-#  endif
-# endif
-    }
-#endif
     selected = sixel_lookup_vpte_edt1d_scalar_float32;
 
     return selected;

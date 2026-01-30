@@ -27,9 +27,6 @@
 #endif
 
 #include <float.h>
-#if defined(__AVX2__)
-#include <immintrin.h>
-#endif
 #if defined(__wasm_simd128__)
 #include <wasm_simd128.h>
 #endif
@@ -37,19 +34,6 @@
 #include "dither-common-pipeline.h"
 #include "logger.h"
 
-#if defined(__AVX2__)
-/*
- * Keep the AVX2 fast path buildable on toolchains that enable AVX2 but do
- * not advertise FMA, while still using fused multiply-add when available.
- */
-#if defined(__FMA__)
-#define SIXEL_FMADD_PS256(a, b, c) \
-    _mm256_fmadd_ps((a), (b), (c))
-#else
-#define SIXEL_FMADD_PS256(a, b, c) \
-    _mm256_add_ps(_mm256_mul_ps((a), (b)), (c))
-#endif
-#endif
 
 /*
  * Notify the pipeline controller when a scanline completes PaletteApply.
@@ -106,24 +90,6 @@ sixel_dither_lookup_palette_float32(float const *pixel,
     int color_simd_end;
     int channel;
     int palette_offset;
-#if defined(__AVX2__)
-    __m256 sample_l_ps;
-    __m256 sample_r_ps;
-    __m256 sample_g_ps;
-    __m256 complexion_ps;
-    __m256 palette_l_ps;
-    __m256 palette_r_ps;
-    __m256 palette_g_ps;
-    __m256 diff_l_ps;
-    __m256 diff_r_ps;
-    __m256 diff_g_ps;
-    __m256 error_ps;
-    __m256 best_error_ps;
-    __m256 cmp_ps;
-    __m128 error_lo_ps;
-    __m128 error_hi_ps;
-    int cmp_mask;
-#endif
 #if defined(__wasm_simd128__)
     v128_t sample_l_ps;
     v128_t sample_r_ps;
@@ -153,159 +119,6 @@ sixel_dither_lookup_palette_float32(float const *pixel,
     best_error = DBL_MAX;
     color_simd_end = 0;
     sample_l = (double)pixel[0];
-#if defined(__AVX2__)
-    /*
-     * AVX2 fast path for depth==3.  Eight palette entries are compared at
-     * once, keeping the scalar tail to handle any remainder or non-RGB
-     * layouts.
-     */
-    if (depth == 3) {
-        sample_l_ps = _mm256_set1_ps(pixel[0]);
-        sample_r_ps = _mm256_set1_ps(pixel[1]);
-        sample_g_ps = _mm256_set1_ps(pixel[2]);
-        complexion_ps = _mm256_set1_ps((float)complexion);
-        color_simd_end = reqcolor & ~7;
-        for (color = 0; color < color_simd_end; color += 8) {
-            palette_l_ps = _mm256_set_ps(palette[(color + 7) * 3],
-                                         palette[(color + 6) * 3],
-                                         palette[(color + 5) * 3],
-                                         palette[(color + 4) * 3],
-                                         palette[(color + 3) * 3],
-                                         palette[(color + 2) * 3],
-                                         palette[(color + 1) * 3],
-                                         palette[color * 3]);
-            palette_r_ps = _mm256_set_ps(palette[(color + 7) * 3 + 1],
-                                         palette[(color + 6) * 3 + 1],
-                                         palette[(color + 5) * 3 + 1],
-                                         palette[(color + 4) * 3 + 1],
-                                         palette[(color + 3) * 3 + 1],
-                                         palette[(color + 2) * 3 + 1],
-                                         palette[(color + 1) * 3 + 1],
-                                         palette[color * 3 + 1]);
-            palette_g_ps = _mm256_set_ps(palette[(color + 7) * 3 + 2],
-                                         palette[(color + 6) * 3 + 2],
-                                         palette[(color + 5) * 3 + 2],
-                                         palette[(color + 4) * 3 + 2],
-                                         palette[(color + 3) * 3 + 2],
-                                         palette[(color + 2) * 3 + 2],
-                                         palette[(color + 1) * 3 + 2],
-                                         palette[color * 3 + 2]);
-            diff_l_ps = _mm256_sub_ps(sample_l_ps, palette_l_ps);
-            error_ps = _mm256_mul_ps(diff_l_ps, diff_l_ps);
-            error_ps = _mm256_mul_ps(error_ps, complexion_ps);
-            diff_r_ps = _mm256_sub_ps(sample_r_ps, palette_r_ps);
-            error_ps = SIXEL_FMADD_PS256(diff_r_ps, diff_r_ps, error_ps);
-            diff_g_ps = _mm256_sub_ps(sample_g_ps, palette_g_ps);
-            error_ps = SIXEL_FMADD_PS256(diff_g_ps, diff_g_ps, error_ps);
-            best_error_ps = _mm256_set1_ps((float)best_error);
-            cmp_ps = _mm256_cmp_ps(error_ps, best_error_ps,
-                                   _CMP_LT_OQ);
-            cmp_mask = _mm256_movemask_ps(cmp_ps);
-            if (cmp_mask != 0) {
-                /*
-                 * Update best_index directly from the active lanes to avoid
-                 * spilling the vector to a temporary buffer.
-                 */
-                error_lo_ps = _mm256_castps256_ps128(error_ps);
-                if ((cmp_mask & 0x01) != 0
-                        && _mm_cvtss_f32(error_lo_ps) < best_error) {
-                    best_error = (double)_mm_cvtss_f32(error_lo_ps);
-                    best_index = color;
-                }
-                if ((cmp_mask & 0x02) != 0
-                        && _mm_cvtss_f32(_mm_shuffle_ps(error_lo_ps,
-                                                        error_lo_ps,
-                                                        _MM_SHUFFLE(1,
-                                                                    1,
-                                                                    1,
-                                                                    1)))
-                            < best_error) {
-                    best_error = (double)_mm_cvtss_f32(
-                            _mm_shuffle_ps(error_lo_ps,
-                                           error_lo_ps,
-                                           _MM_SHUFFLE(1, 1, 1, 1)));
-                    best_index = color + 1;
-                }
-                if ((cmp_mask & 0x04) != 0
-                        && _mm_cvtss_f32(_mm_shuffle_ps(error_lo_ps,
-                                                        error_lo_ps,
-                                                        _MM_SHUFFLE(2,
-                                                                    2,
-                                                                    2,
-                                                                    2)))
-                            < best_error) {
-                    best_error = (double)_mm_cvtss_f32(
-                            _mm_shuffle_ps(error_lo_ps,
-                                           error_lo_ps,
-                                           _MM_SHUFFLE(2, 2, 2, 2)));
-                    best_index = color + 2;
-                }
-                if ((cmp_mask & 0x08) != 0
-                        && _mm_cvtss_f32(_mm_shuffle_ps(error_lo_ps,
-                                                        error_lo_ps,
-                                                        _MM_SHUFFLE(3,
-                                                                    3,
-                                                                    3,
-                                                                    3)))
-                            < best_error) {
-                    best_error = (double)_mm_cvtss_f32(
-                            _mm_shuffle_ps(error_lo_ps,
-                                           error_lo_ps,
-                                           _MM_SHUFFLE(3, 3, 3, 3)));
-                    best_index = color + 3;
-                }
-                error_hi_ps = _mm256_extractf128_ps(error_ps, 1);
-                if ((cmp_mask & 0x10) != 0
-                        && _mm_cvtss_f32(error_hi_ps) < best_error) {
-                    best_error = (double)_mm_cvtss_f32(error_hi_ps);
-                    best_index = color + 4;
-                }
-                if ((cmp_mask & 0x20) != 0
-                        && _mm_cvtss_f32(_mm_shuffle_ps(error_hi_ps,
-                                                        error_hi_ps,
-                                                        _MM_SHUFFLE(1,
-                                                                    1,
-                                                                    1,
-                                                                    1)))
-                            < best_error) {
-                    best_error = (double)_mm_cvtss_f32(
-                            _mm_shuffle_ps(error_hi_ps,
-                                           error_hi_ps,
-                                           _MM_SHUFFLE(1, 1, 1, 1)));
-                    best_index = color + 5;
-                }
-                if ((cmp_mask & 0x40) != 0
-                        && _mm_cvtss_f32(_mm_shuffle_ps(error_hi_ps,
-                                                        error_hi_ps,
-                                                        _MM_SHUFFLE(2,
-                                                                    2,
-                                                                    2,
-                                                                    2)))
-                            < best_error) {
-                    best_error = (double)_mm_cvtss_f32(
-                            _mm_shuffle_ps(error_hi_ps,
-                                           error_hi_ps,
-                                           _MM_SHUFFLE(2, 2, 2, 2)));
-                    best_index = color + 6;
-                }
-                if ((cmp_mask & 0x80) != 0
-                        && _mm_cvtss_f32(_mm_shuffle_ps(error_hi_ps,
-                                                        error_hi_ps,
-                                                        _MM_SHUFFLE(3,
-                                                                    3,
-                                                                    3,
-                                                                    3)))
-                            < best_error) {
-                    best_error = (double)_mm_cvtss_f32(
-                            _mm_shuffle_ps(error_hi_ps,
-                                           error_hi_ps,
-                                           _MM_SHUFFLE(3, 3, 3, 3)));
-                    best_index = color + 7;
-                }
-            }
-        }
-    }
-#endif
 #if defined(__wasm_simd128__)
     /*
      * WASM SIMD fast path for depth==3.  Palette entries are processed in
