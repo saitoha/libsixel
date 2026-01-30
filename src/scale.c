@@ -906,13 +906,16 @@ scale_with_resampling_serial(
     int const depth,
     resample_fn_t const f_resample,
     double const n,
-    unsigned char *tmp)
+    unsigned char *tmp,
+    sixel_logger_t *logger)
 {
     int y;
     int h;
     int simd_level;
+    int logger_ready;
 
     simd_level = sixel_scale_simd_level();
+    logger_ready = logger != NULL && logger->active;
 #if !defined(SIXEL_USE_AVX) && !defined(SIXEL_USE_SSE2) && \
     !defined(SIXEL_USE_NEON)
     /*
@@ -922,6 +925,19 @@ scale_with_resampling_serial(
      */
     (void)simd_level;
 #endif
+
+    if (logger_ready) {
+        sixel_logger_logf(logger,
+                          "controller",
+                          "scale",
+                          "start",
+                          -1);
+        sixel_logger_logf(logger,
+                          "controller",
+                          "scale",
+                          "pass_start",
+                          -1);
+    }
 
     for (y = 0; y < srch; y++) {
         scale_horizontal_row(tmp,
@@ -935,6 +951,19 @@ scale_with_resampling_serial(
                              simd_level);
     }
 
+    if (logger_ready) {
+        sixel_logger_logf(logger,
+                          "controller",
+                          "scale",
+                          "pass_finish",
+                          -1);
+        sixel_logger_logf(logger,
+                          "controller",
+                          "scale",
+                          "pass_start",
+                          -1);
+    }
+
     for (h = 0; h < dsth; h++) {
         scale_vertical_row(dst,
                            tmp,
@@ -946,6 +975,19 @@ scale_with_resampling_serial(
                            f_resample,
                            n,
                            simd_level);
+    }
+
+    if (logger_ready) {
+        sixel_logger_logf(logger,
+                          "controller",
+                          "scale",
+                          "pass_finish",
+                          -1);
+        sixel_logger_logf(logger,
+                          "controller",
+                          "scale",
+                          "finish",
+                          -1);
     }
 }
 
@@ -1387,28 +1429,24 @@ scale_with_resampling(
     unsigned char *tmp;
     size_t tmp_size;
     size_t dst_size;
-#if SIXEL_ENABLE_THREADS
-    int rc;
     sixel_logger_t logger;
     int logger_prepared;
+#if SIXEL_ENABLE_THREADS
+    int rc;
 #endif
 
-#if SIXEL_ENABLE_THREADS
     sixel_logger_init(&logger);
     logger_prepared = 0;
     (void)sixel_logger_prepare_env(&logger);
     logger_prepared = logger.active;
-#endif
 
     tmp_size = (size_t)dstw * (size_t)srch * (size_t)depth;
     dst_size = (size_t)dstw * (size_t)dsth * (size_t)depth;
     tmp = (unsigned char *)sixel_allocator_malloc(allocator, tmp_size);
     if (tmp == NULL) {
-#if SIXEL_ENABLE_THREADS
         if (logger_prepared) {
             sixel_logger_close(&logger);
         }
-#endif
         return;
     }
     /*
@@ -1459,14 +1497,13 @@ scale_with_resampling(
                                  depth,
                                  f_resample,
                                  n,
-                                 tmp);
+                                 tmp,
+                                 logger_prepared ? &logger : NULL);
 
     sixel_allocator_free(allocator, tmp);
-#if SIXEL_ENABLE_THREADS
     if (logger_prepared) {
         sixel_logger_close(&logger);
     }
-#endif
 }
 
 /*
