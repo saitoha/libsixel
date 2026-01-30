@@ -325,6 +325,9 @@ TESTS = \
     palette/t/0044_lookup_policy_vpte_float32_oklab_lsqa.t \
     palette/t/0045_lookup_policy_vpte_float32_cielab_lsqa.t \
     palette/t/0046_lookup_policy_vpte_float32_din99d_lsqa.t \
+    palette/t/0047_colorspace_rgb_cielab_lsqa.t \
+    palette/t/0048_colorspace_hls_oklab_lsqa.t \
+    palette/t/0049_colorspace_hls_vs_rgb_lsqa.t \
     pipeline/t/0001_pipeline_planner_baseline_run.t \
     pipeline/t/0002_pipeline_planner_baseline_summary.t \
     pipeline/t/0003_pipeline_planner_baseline_threads.t \
