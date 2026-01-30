@@ -182,4 +182,7 @@ libsixel_dep = declare_dependency(link_with: libsixel,
                                   include_directories: project_inc,
                                   dependencies: deps)
 
+# Export the library target for other subdirectories (e.g. wheel builds).
+set_variable('libsixel_library', libsixel)
+
 # vim: set et ts=2:

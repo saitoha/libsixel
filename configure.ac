@@ -1221,6 +1221,15 @@ AC_ARG_ENABLE([python],
                               [Python interface (default: no)])],
               [],
               [enable_python=no])
+AC_ARG_ENABLE([python-wheel],
+              [AS_HELP_STRING([--enable-python-wheel],
+                              [Python wheel with bundled libsixel (default: no)])],
+              [],
+              [enable_python_wheel=no])
+
+AS_IF([test "x$enable_python_wheel" != xno], [
+  enable_python=yes
+])
 
 # Ruby bindings option
 AC_ARG_ENABLE([ruby],
@@ -2918,10 +2927,29 @@ if test x$enable_python != xno; then
         AC_MSG_ERROR([python is not available])
     fi
 fi
+have_python_wheel=no
+if test x$enable_python_wheel != xno; then
+    if test x$have_python = xno; then
+        AC_MSG_ERROR([python wheel requires python to be available])
+    fi
+    AC_MSG_CHECKING([for Python build module])
+    if $PYTHON -c "import build" >/dev/null 2>&1; then
+        have_python_wheel=yes
+        AC_MSG_RESULT([yes])
+    else
+        AC_MSG_RESULT([no])
+        AC_MSG_ERROR([python build module was not found])
+    fi
+fi
 if test x$have_python = xyes; then
     message_python="$have_python: $pythondir"
 else
     message_python=$have_python
+fi
+if test x$have_python_wheel = xyes; then
+    message_python_wheel="$have_python_wheel: libsixel-wheel"
+else
+    message_python_wheel=$have_python_wheel
 fi
 
 message_ruby=no
@@ -2979,6 +3007,8 @@ AM_CONDITIONAL([HAVE_PNG], [test x$have_png = xyes])
 AM_CONDITIONAL([HAVE_WIC], [test x$have_wic = xyes])
 AM_CONDITIONAL([HAVE_WICCODEC], [test x$have_wiccodec = xyes])
 AM_CONDITIONAL([HAVE_PYTHON], [test x$have_python = xyes])
+AM_CONDITIONAL([HAVE_PYTHON_WHEEL],
+               [test x$have_python_wheel = xyes])
 
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
@@ -3065,6 +3095,7 @@ echo "       Register WIC DLL        : $message_register_dll"
 echo "       gdk-pixbuf SIXEL loader : $message_gdk_pixbuf_loader"
 echo "       Thumbnailer command     : $message_thumbnailer"
 echo "       python bindings         : $message_python"
+echo "       python wheel            : $message_python_wheel"
 echo "       ruby bindings           : $message_ruby"
 echo "       simd                    : $message_simd"
 echo "       xsave probe             : $message_xsave_probe"

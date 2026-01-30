@@ -126,7 +126,8 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-am__libsixel_PYTHON_DIST = libsixel/__init__.py libsixel/encoder.py \
+am__libsixel_PYTHON_DIST = libsixel/__init__.py \
+	libsixel/_libs/__init__.py libsixel/encoder.py \
 	libsixel/decoder.py
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -365,11 +366,13 @@ CLEANFILES = libsixel/*.pyc
 @HAVE_PYTHON_TRUE@libsixeldir = $(pythondir)/libsixel
 @HAVE_PYTHON_TRUE@libsixel_PYTHON = \
 @HAVE_PYTHON_TRUE@    libsixel/__init__.py \
+@HAVE_PYTHON_TRUE@    libsixel/_libs/__init__.py \
 @HAVE_PYTHON_TRUE@    libsixel/encoder.py \
 @HAVE_PYTHON_TRUE@    libsixel/decoder.py
 
 EXTRA_DIST = \
-    setup.py
+    setup.py \
+    wheel_builder.py
 
 all: all-am
 
@@ -492,7 +495,8 @@ distdir-am: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile
+@HAVE_PYTHON_WHEEL_FALSE@all-local:
+all-am: Makefile all-local
 installdirs:
 	for dir in "$(DESTDIR)$(libsixeldir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
@@ -596,15 +600,15 @@ uninstall-am: uninstall-libsixelPYTHON
 
 .MAKE: install-am install-strip
 
-.PHONY: all all-am check check-am clean clean-generic clean-libtool \
-	clean-local cscopelist-am ctags-am distclean distclean-generic \
-	distclean-libtool distdir dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am \
-	install-libsixelPYTHON install-man install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip installcheck \
-	installcheck-am installdirs maintainer-clean \
+.PHONY: all all-am all-local check check-am clean clean-generic \
+	clean-libtool clean-local cscopelist-am ctags-am distclean \
+	distclean-generic distclean-libtool distdir dvi dvi-am html \
+	html-am info info-am install install-am install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-libsixelPYTHON install-man install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	installcheck installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-generic \
 	mostlyclean-libtool pdf pdf-am ps ps-am tags-am uninstall \
 	uninstall-am uninstall-libsixelPYTHON
@@ -613,7 +617,14 @@ uninstall-am: uninstall-libsixelPYTHON
 
 
 clean-local:
-	rm -rf libsixel_python.egg-info build dist
+	rm -rf libsixel_python.egg-info build dist libsixel/_libs
+
+@HAVE_PYTHON_WHEEL_TRUE@wheel-local:
+@HAVE_PYTHON_WHEEL_TRUE@	$(AM_V_GEN) $(PYTHON) $(srcdir)/wheel_builder.py \
+@HAVE_PYTHON_WHEEL_TRUE@		--libdir "$(top_builddir)/src/.libs" \
+@HAVE_PYTHON_WHEEL_TRUE@		--distdir "$(abs_top_builddir)/python/dist"
+
+@HAVE_PYTHON_WHEEL_TRUE@all-local: wheel-local
 
 check: check-am
 
