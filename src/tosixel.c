@@ -3464,6 +3464,7 @@ sixel_encode_dither(
     int pipeline_nbands;
     sixel_parallel_dither_config_t dither_parallel;
     char const *band_env_text;
+    int ormode_enabled;
 #if SIXEL_ENABLE_THREADS
     sixel_logger_t serial_logger;
     int logger_owned = 0;
@@ -3491,6 +3492,7 @@ sixel_encode_dither(
     dither_parallel.overlap = 0;
     dither_parallel.dither_threads = 0;
     dither_parallel.encode_threads = 0;
+    ormode_enabled = output != NULL && output->ormode != 0;
     /*
      * Normalize the planner-provided pinning request so both palette and
      * encode workers see the same 0/1 flag.
@@ -3545,7 +3547,18 @@ sixel_encode_dither(
             pipeline_threads = sixel_threads_normalize(0);
         }
         pipeline_nbands = (height + 5) / 6;
-        if (pipeline_threads > 1 && pipeline_nbands > 1) {
+        /*
+         * Ormode encoding expects a palette-index buffer in a single,
+         * contiguous memory block. The palette-apply pipeline emits
+         * six-line jobs and leaves input_pixels unset until the encode
+         * stage pulls from the job queue, so forcing it on would leave a
+         * NULL input buffer and can crash when multiple encode threads
+         * run. Disable the pipeline when ormode is active to keep the
+         * data flow deterministic and thread-safe.
+         */
+        if (!ormode_enabled
+                && pipeline_threads > 1
+                && pipeline_nbands > 1) {
             pipeline_active = 1;
             input_pixels = NULL;
         } else {
