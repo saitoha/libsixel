@@ -1798,6 +1798,16 @@ sixel_convert_pixels_via_linear_chunk(unsigned char *pixels,
     return SIXEL_OK;
 }
 
+static int
+sixel_colorspace_log_clamp(size_t value)
+{
+    if (value > (size_t)INT_MAX) {
+        return INT_MAX;
+    }
+
+    return (int)value;
+}
+
 #if SIXEL_ENABLE_THREADS
 typedef struct sixel_colorspace_parallel_context {
     float *pixels;
@@ -1818,16 +1828,6 @@ typedef struct sixel_colorspace_parallel_byte_context {
     int colorspace_dst;
     sixel_logger_t *logger;
 } sixel_colorspace_parallel_byte_context_t;
-
-static int
-sixel_colorspace_log_clamp(size_t value)
-{
-    if (value > (size_t)INT_MAX) {
-        return INT_MAX;
-    }
-
-    return (int)value;
-}
 
 /*
  * Allow deployments to defer thread fan-out on tiny buffers via
@@ -2199,7 +2199,9 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
                           "serial status=%d", status);
     }
 
+#if SIXEL_ENABLE_THREADS
 end:
+#endif
     sixel_logger_close(&logger);
 
     return status;
@@ -2590,7 +2592,9 @@ sixel_convert_pixels_via_linear_float(float *pixels,
                           "serial status=%d", status);
     }
 
+#if SIXEL_ENABLE_THREADS
 end:
+#endif
     sixel_logger_close(&logger);
 
     return status;
