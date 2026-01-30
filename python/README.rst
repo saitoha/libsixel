@@ -27,6 +27,26 @@ Example 2. Install into only current active python ::
     $ cd python
     $ python setup.py install  # install python module
 
+Example 3. Build a self-contained wheel with bundled libsixel ::
+
+    $ git clone https://github.com/saitoha/libsixel.git
+    $ cd libsixel
+    $ ./configure --enable-python-wheel
+    $ make
+    $ ls python/dist/libsixel_wheel-*.whl
+
+Meson users can request the same wheel build with
+``-Dpython_wheel=enabled``.
+
+Note: the wheel build requires the Python ``build`` module to be
+available in the build environment.
+
+The wheel is published as ``libsixel-wheel`` so that existing
+``libsixel-python`` users can stay on the original distribution name.
+Install it with pip without pre-installing libsixel:
+
+    $ python -m pip install python/dist/libsixel_wheel-*.whl
+
 
 Code Example
 ------------

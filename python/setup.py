@@ -12,16 +12,21 @@ filename = inspect.getfile(inspect.currentframe())
 dirpath = os.path.abspath(os.path.dirname(filename))
 long_description = open(os.path.join(dirpath, "README.rst")).read()
 
-setup(name                  = 'libsixel-python',
+# Wheel mode builds a separate distribution name that bundles libsixel.
+# This keeps the traditional "libsixel-python" package unchanged while
+# allowing a self-contained wheel named "libsixel-wheel".
+wheel_mode = os.environ.get("LIBSIXEL_WHEEL") == "1"
+package_name = "libsixel-wheel" if wheel_mode else "libsixel-python"
+package_data = {"libsixel": ["_libs/*"]} if wheel_mode else {}
+
+setup(name                  = package_name,
       version               = __version__,
       description           = 'libsixel binding for Python',
       long_description      = long_description,
-      py_modules            = ['libsixel'],
       classifiers           = ['Development Status :: 4 - Production/Stable',
                                'Topic :: Terminals',
                                'Environment :: Console',
                                'Intended Audience :: End Users/Desktop',
-                               'License :: OSI Approved :: MIT License',
                                'Programming Language :: Python'
                                ],
       keywords              = 'sixel libsixel terminal codec',
@@ -30,7 +35,8 @@ setup(name                  = 'libsixel-python',
       url                   = 'https://github.com/saitoha/libsixel',
       license               = __license__,
       packages              = find_packages(exclude=[]),
+      package_data          = package_data,
       zip_safe              = False,
-      include_package_data  = False,
+      include_package_data  = wheel_mode,
       install_requires      = []
       )
