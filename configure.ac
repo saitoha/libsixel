@@ -27,6 +27,36 @@ AC_CONFIG_SRCDIR([src/fromsixel.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 
+# Run config.status with explicit parallelism based on AX_COUNT_CPUS.
+# The flow is:
+# 1) Save the caller's --no-create choice.
+# 2) Prevent AC_OUTPUT from running config.status itself.
+# 3) Re-run config.status with --jobs=$CPU_COUNT when allowed.
+AC_DEFUN([AC_OUTPUT_PARALLEL], [
+  AC_REQUIRE([AX_COUNT_CPUS])
+  ls_saved_no_create=$no_create
+  no_create=yes
+  AC_OUTPUT
+  AS_IF([test "x$ls_saved_no_create" != xyes], [
+    AS_IF([test "x$CPU_COUNT" = x || test "$CPU_COUNT" -lt 1 2>/dev/null], [
+      CPU_COUNT=1
+    ])
+    AS_IF([test "$CPU_COUNT" -gt 1 2>/dev/null], [
+      if $SHELL $CONFIG_STATUS --help 2>/dev/null | \
+          $EGREP -q -- '--jobs'; then
+        ac_config_status_jobs="--jobs=$CPU_COUNT"
+      else
+        ac_config_status_jobs=""
+      fi
+    ], [
+      ac_config_status_jobs=""
+    ])
+    $SHELL $CONFIG_STATUS $ac_config_status_jobs $ac_config_status_args \
+      || as_fn_exit $?
+  ])
+  no_create=$ls_saved_no_create
+])
+
 AC_PROG_AWK
 AC_PROG_CC
 AC_PROG_OBJC
@@ -2519,7 +2549,7 @@ AS_IF([test x$have_quicklook_extension = xyes], [
   ])
 ])
 
-AC_OUTPUT
+AC_OUTPUT_PARALLEL
 
 if test x$have_wiccodec = xyes; then
     message_register_dll=$enable_register_dll
