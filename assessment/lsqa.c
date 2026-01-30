@@ -51,10 +51,15 @@
 #if HAVE_MATH_H
 # include <math.h>
 #endif
+#if HAVE_GETOPT_H
+# include <getopt.h>
+#endif
 
 #include <sixel.h>
 
 #include "assessment.h"
+#include "getopt_stub.h"
+#include "cli.h"
 
 #if defined(_WIN32)
 # if !defined(UNICODE)
@@ -693,6 +698,201 @@ typedef struct Options {
     int verbose;
 } Options;
 
+/*
+ * Per-option help text for --help output and contextual errors.
+ * The layout mirrors converter CLI tables to keep behavior consistent.
+ */
+static cli_option_help_t const g_option_help_table[] = {
+    {
+        'm',
+        "metrics",
+        "-m NAME, --metrics=NAME    limit computation to NAME and print\n"
+        "                           only that value.\n"
+    },
+    {
+        'H',
+        "help",
+        "-H, --help                 show this help.\n"
+    }
+};
+
+static char const g_option_help_fallback[] =
+    "    Refer to \"lsqa -H\" for more details.\n";
+
+static size_t
+lsqa_option_help_count(void)
+{
+    return sizeof(g_option_help_table) /
+        sizeof(g_option_help_table[0]);
+}
+
+static char const g_lsqa_optstring[] = "m:Hh";
+
+static void
+lsqa_print_option_help(FILE *stream)
+{
+    cli_print_option_help(stream,
+                          g_option_help_table,
+                          lsqa_option_help_count());
+}
+
+static void
+lsqa_report_missing_argument(int short_opt)
+{
+    cli_report_missing_argument("lsqa",
+                                g_option_help_fallback,
+                                g_option_help_table,
+                                lsqa_option_help_count(),
+                                short_opt);
+}
+
+static void
+lsqa_report_missing_argument_callback(int short_opt, void *user_data)
+{
+    (void)user_data;
+
+    lsqa_report_missing_argument(short_opt);
+}
+
+static void
+lsqa_report_unrecognized_option(int short_opt, char const *token)
+{
+    cli_report_unrecognized_option("lsqa", short_opt, token);
+}
+
+static void
+lsqa_handle_getopt_error(int short_opt, char const *token)
+{
+    cli_option_help_t const *entry;
+    cli_option_help_t const *long_entry;
+    char const *long_name;
+
+    entry = NULL;
+    long_entry = NULL;
+    long_name = NULL;
+
+    if (short_opt > 0) {
+        entry = cli_find_option_help(g_option_help_table,
+                                     lsqa_option_help_count(),
+                                     short_opt);
+        if (entry != NULL) {
+            lsqa_report_missing_argument(short_opt);
+            return;
+        }
+    }
+
+    if (token != NULL && token[0] != '\0') {
+        if (strncmp(token, "--", 2) == 0) {
+            long_name = token + 2;
+        } else if (token[0] == '-') {
+            long_name = token + 1;
+        }
+        if (long_name != NULL && long_name[0] != '\0') {
+            long_entry = cli_find_option_help_by_long_name(
+                g_option_help_table,
+                lsqa_option_help_count(),
+                long_name);
+            if (long_entry != NULL) {
+                lsqa_report_missing_argument(long_entry->short_opt);
+                return;
+            }
+        }
+    }
+
+    lsqa_report_unrecognized_option(short_opt, token);
+}
+
+static int
+lsqa_guard_missing_argument(int short_opt, char *const *argv)
+{
+    return cli_guard_missing_argument(short_opt,
+                                      argv,
+                                      optarg,
+                                      &optind,
+                                      g_lsqa_optstring,
+                                      g_option_help_table,
+                                      lsqa_option_help_count(),
+                                      NULL,
+                                      NULL,
+                                      lsqa_report_missing_argument_callback,
+                                      NULL);
+}
+
+static void
+lsqa_report_invalid_argument(int short_opt,
+                             char const *value,
+                             char const *detail)
+{
+    char buffer[1024];
+    char detail_copy[1024];
+    cli_option_help_t const *entry;
+    char const *long_opt;
+    char const *help_text;
+    char const *argument;
+    size_t offset;
+    int written;
+
+    memset(buffer, 0, sizeof(buffer));
+    memset(detail_copy, 0, sizeof(detail_copy));
+    entry = cli_find_option_help(g_option_help_table,
+                                 lsqa_option_help_count(),
+                                 short_opt);
+    long_opt = (entry != NULL && entry->long_opt != NULL)
+        ? entry->long_opt : "?";
+    help_text = (entry != NULL && entry->help != NULL)
+        ? entry->help : g_option_help_fallback;
+    argument = (value != NULL && value[0] != '\0')
+        ? value : "(missing)";
+    offset = 0u;
+
+    written = snprintf(buffer,
+                       sizeof(buffer),
+                       "\\fW'%s'\\fP is invalid argument for "
+                       "\\fB-%c\\fP,\\fB--%s\\fP option:\n\n",
+                       argument,
+                       (char)short_opt,
+                       long_opt);
+    if (written < 0) {
+        written = 0;
+    }
+    if ((size_t)written >= sizeof(buffer)) {
+        offset = sizeof(buffer) - 1u;
+    } else {
+        offset = (size_t)written;
+    }
+
+    if (detail != NULL && detail[0] != '\0' && offset < sizeof(buffer) - 1u) {
+        (void) snprintf(detail_copy,
+                        sizeof(detail_copy),
+                        "%s\n",
+                        detail);
+        written = snprintf(buffer + offset,
+                           sizeof(buffer) - offset,
+                           "%s",
+                           detail_copy);
+        if (written < 0) {
+            written = 0;
+        }
+        if ((size_t)written >= sizeof(buffer) - offset) {
+            offset = sizeof(buffer) - 1u;
+        } else {
+            offset += (size_t)written;
+        }
+    }
+
+    if (offset < sizeof(buffer) - 1u) {
+        written = snprintf(buffer + offset,
+                           sizeof(buffer) - offset,
+                           "%s",
+                           help_text);
+        if (written < 0) {
+            written = 0;
+        }
+    }
+
+    sixel_helper_set_additional_message(buffer);
+}
+
 static void
 print_usage(const char *prog)
 {
@@ -709,6 +909,30 @@ print_usage(const char *prog)
             "  -m, --metrics NAME  limit computation to a single metric\n");
     fprintf(stderr,
             "                        and print only that value\n");
+}
+
+static void
+show_help(void)
+{
+    /*
+     * Help text must go to stdout to match converter tools and allow piping.
+     */
+    fprintf(stdout,
+            "Usage: lsqa [-m NAME] <reference> [output]\n"
+            "       lsqa [-m NAME] <reference> < output\n"
+            "       lsqa [-m NAME] <reference> - < output\n"
+            "\n"
+            "Options:\n");
+    lsqa_print_option_help(stdout);
+}
+
+static void
+lsqa_set_parse_error(char const *message)
+{
+    if (message == NULL || message[0] == '\0') {
+        return;
+    }
+    sixel_helper_set_additional_message(message);
 }
 
 static int
@@ -729,6 +953,11 @@ parse_args(int argc, char **argv, Options *opts)
     size_t prefix_len;
     int status;
     int argi;
+    int opt;
+#if HAVE_GETOPT_LONG
+    int long_opt;
+    int option_index;
+#endif
 
     opts->ref_path = NULL;
     opts->out_path = "-";
@@ -741,23 +970,56 @@ parse_args(int argc, char **argv, Options *opts)
     opts->prefix_buffer[0] = '\0';
 
     argi = 1;
-    while (argi < argc && argv[argi][0] == '-' && argv[argi][1] != '\0') {
-        const char *arg;
+    opt = 0;
+#if HAVE_GETOPT_LONG
+    long_opt = 0;
+    option_index = 0;
+#endif
 
-        arg = argv[argi];
-        if (strcmp(arg, "-m") == 0 || strcmp(arg, "--metrics") == 0) {
-            if (argi + 1 >= argc) {
-                fprintf(stderr, "-m requires a metric name\n");
+    for (;;) {
+#if HAVE_GETOPT_LONG
+        struct option long_options[] = {
+            {"metrics", required_argument, &long_opt, 'm'},
+            {"help", no_argument, &long_opt, 'H'},
+            {0, 0, 0, 0}
+        };
+
+        opt = getopt_long(argc, argv, g_lsqa_optstring,
+                          long_options, &option_index);
+#else
+        opt = getopt(argc, argv, g_lsqa_optstring);
+#endif
+        if (opt == -1) {
+            break;
+        }
+#if HAVE_GETOPT_LONG
+        if (opt == 0) {
+            opt = long_opt;
+        }
+#endif
+
+        if (opt > 0) {
+            if (lsqa_guard_missing_argument(opt, argv) != 0) {
                 return -1;
             }
-            metrics_arg = argv[argi + 1];
+        }
+
+        switch (opt) {
+        case 'H':
+        case 'h':
+            return 1;
+        case 'm':
+            metrics_arg = optarg;
             metric_spec = metric_spec_from_name(metrics_arg);
             if (metric_spec == NULL) {
-                fprintf(stderr, "Unknown metric: %s\n", metrics_arg);
+                lsqa_report_invalid_argument('m',
+                                             metrics_arg,
+                                             "Unknown metric name.");
                 return -1;
             }
             if (opts->metric_spec != NULL) {
-                fprintf(stderr, "Metric already specified\n");
+                lsqa_set_parse_error(
+                    "lsqa: metric already specified.");
                 return -1;
             }
             opts->metric_spec = metric_spec;
@@ -765,17 +1027,22 @@ parse_args(int argc, char **argv, Options *opts)
             opts->metric_mask = SIXEL_ASSESSMENT_METRIC_MASK(
                 metric_spec->metric_id);
             opts->metrics_filtered = 1;
-            argi += 2;
-            continue;
-        }
-        if (strcmp(arg, "-h") == 0 || strcmp(arg, "--help") == 0) {
+            break;
+        case '?':
+            lsqa_handle_getopt_error(optopt,
+                                     (optind > 0 && optind <= argc)
+                                         ? argv[optind - 1]
+                                         : NULL);
+            return -1;
+        default:
+            lsqa_report_unrecognized_option(opt, NULL);
             return -1;
         }
-        break;
     }
 
+    argi = optind;
     if (argc - argi < 1 || argc - argi > 2) {
-        fprintf(stderr, "Invalid number of arguments\n");
+        lsqa_set_parse_error("lsqa: invalid number of arguments.");
         return -1;
     }
 
@@ -872,6 +1139,8 @@ main(int argc, char **argv)
     int exit_code;
     int metric_status;
     float metric_value;
+    char const *parse_message;
+    int parse_status;
 
     allocator = NULL;
     assessment = NULL;
@@ -882,8 +1151,19 @@ main(int argc, char **argv)
     exit_code = EXIT_FAILURE;
     metric_status = 0;
     metric_value = 0.0f;
+    parse_message = NULL;
+    parse_status = 0;
 
-    if (parse_args(argc, argv, &opts) != 0) {
+    parse_status = parse_args(argc, argv, &opts);
+    if (parse_status != 0) {
+        if (parse_status > 0) {
+            show_help();
+            return EXIT_SUCCESS;
+        }
+        parse_message = sixel_helper_get_additional_message();
+        if (parse_message != NULL && parse_message[0] != '\0') {
+            fprintf(stderr, "%s\n", parse_message);
+        }
         print_usage(argv[0]);
         return EXIT_FAILURE;
     }
