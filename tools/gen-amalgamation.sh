@@ -493,7 +493,7 @@ emit_all_headers() {
                 ;;
             converters/cli.h|converters/completion_utils.h|converters/path.h|converters/getopt_stub.h|converters/malloc_stub.h|converters/aborttrace.h)
                 emit_header_unit "${unit}" \
-                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG)"
+                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_LSQA)"
                 ;;
             assessment/assessment.h)
                 guard=$(echo "${unit}" | sed 's/.*\///;s/.h$//' | tr a-z\- A-Z_)
@@ -535,7 +535,7 @@ emit_all_units() {
             converters/cli.c|converters/completion_utils.c|converters/path.c|converters/malloc_stub.c|converters/aborttrace.c)
                 guard=$(echo "${unit}" | sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
                 emit_unit "${unit}" \
-                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_${guard})"
+                    "defined(BUILD_IMG2SIXEL) || defined(BUILD_SIXEL2PNG) || defined(BUILD_LSQA) || defined(BUILD_${guard})"
                 ;;
             assessment/assessment.c)
                 guard=$(echo "${unit}" | sed 's/.*\///;s/.c$//' | tr a-z\- A-Z_)
