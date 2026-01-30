@@ -73,24 +73,20 @@ jobs:
           label:          ${{ matrix.label }}
           exec_type:      ${{ matrix.exec_type }}
           buildtool:      ${{ matrix.buildtool }}
-
           runner:         ${{ matrix.runner }}
           cp_os:          ${{ matrix.cp_os || '' }}
           cp_arch:        ${{ matrix.cp_arch || '' }}
           cp_version:     ${{ matrix.cp_version || '' }}
           version:        ${{ matrix.version || '' }}
           msystem:        ${{ matrix.msystem || '' }}
-
           extra_packages: ${{ matrix.extra_packages || '' }}
           guest_packages: ${{ matrix.guest_packages || '' }}
           vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
           pip_packages:   ${{ matrix.pip_packages || '' }}
-
           setup_prefix:   ${{ matrix.setup_prefix || '' }}
           setup_options:  ${{ matrix.setup_options || '' }}
           check_target:   ${{ matrix.check_target || '' }}
           make:           ${{ matrix.make || '' }}
-
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
   coverage-autotools:
@@ -328,24 +324,20 @@ jobs:
           label:          ${{ matrix.label }}
           exec_type:      ${{ matrix.exec_type }}
           buildtool:      ${{ matrix.buildtool }}
-
           runner:         ${{ matrix.runner }}
           cp_os:          ${{ matrix.cp_os || '' }}
           cp_arch:        ${{ matrix.cp_arch || '' }}
           cp_version:     ${{ matrix.cp_version || '' }}
           version:        ${{ matrix.version || '' }}
           msystem:        ${{ matrix.msystem || '' }}
-
           extra_packages: ${{ matrix.extra_packages || '' }}
           guest_packages: ${{ matrix.guest_packages || '' }}
           vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
           pip_packages:   ${{ matrix.pip_packages || '' }}
-
           setup_prefix:   ${{ matrix.setup_prefix || '' }}
           setup_options:  ${{ matrix.setup_options || '' }}
           check_target:   ${{ matrix.check_target || '' }}
           make:           ${{ matrix.make || '' }}
-
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
 
@@ -616,24 +608,20 @@ jobs:
           label:          ${{ matrix.label }}
           exec_type:      ${{ matrix.exec_type }}
           buildtool:      ${{ matrix.buildtool }}
-
           runner:         ${{ matrix.runner }}
           cp_os:          ${{ matrix.cp_os || '' }}
           cp_arch:        ${{ matrix.cp_arch || '' }}
           cp_version:     ${{ matrix.cp_version || '' }}
           version:        ${{ matrix.version || '' }}
           msystem:        ${{ matrix.msystem || '' }}
-
           extra_packages: ${{ matrix.extra_packages || '' }}
           guest_packages: ${{ matrix.guest_packages || '' }}
           vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
           pip_packages:   ${{ matrix.pip_packages || '' }}
-
           setup_prefix:   ${{ matrix.setup_prefix || '' }}
           setup_options:  ${{ matrix.setup_options || '' }}
           check_target:   ${{ matrix.check_target || '' }}
           make:           ${{ matrix.make || '' }}
-
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
   core-autotools:
@@ -945,24 +933,20 @@ jobs:
           label:          ${{ matrix.label }}
           exec_type:      ${{ matrix.exec_type }}
           buildtool:      ${{ matrix.buildtool }}
-
           runner:         ${{ matrix.runner }}
           cp_os:          ${{ matrix.cp_os || '' }}
           cp_arch:        ${{ matrix.cp_arch || '' }}
           cp_version:     ${{ matrix.cp_version || '' }}
           version:        ${{ matrix.version || '' }}
           msystem:        ${{ matrix.msystem || '' }}
-
           extra_packages: ${{ matrix.extra_packages || '' }}
           guest_packages: ${{ matrix.guest_packages || '' }}
           vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
           pip_packages:   ${{ matrix.pip_packages || '' }}
-
           setup_prefix:   ${{ matrix.setup_prefix || '' }}
           setup_options:  ${{ matrix.setup_options || '' }}
           check_target:   ${{ matrix.check_target || '' }}
           make:           ${{ matrix.make || '' }}
-
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
   core-meson:
@@ -1149,24 +1133,20 @@ jobs:
           label:          ${{ matrix.label }}
           exec_type:      ${{ matrix.exec_type }}
           buildtool:      ${{ matrix.buildtool }}
-
           runner:         ${{ matrix.runner }}
           cp_os:          ${{ matrix.cp_os || '' }}
           cp_arch:        ${{ matrix.cp_arch || '' }}
           cp_version:     ${{ matrix.cp_version || '' }}
           version:        ${{ matrix.version || '' }}
           msystem:        ${{ matrix.msystem || '' }}
-
           extra_packages: ${{ matrix.extra_packages || '' }}
           guest_packages: ${{ matrix.guest_packages || '' }}
           vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
           pip_packages:   ${{ matrix.pip_packages || '' }}
-
           setup_prefix:   ${{ matrix.setup_prefix || '' }}
           setup_options:  ${{ matrix.setup_options || '' }}
           check_target:   ${{ matrix.check_target || '' }}
           make:           ${{ matrix.make || '' }}
-
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
   distcheck:
@@ -1238,24 +1218,20 @@ jobs:
           label:          ${{ matrix.label }}
           exec_type:      ${{ matrix.exec_type }}
           buildtool:      ${{ matrix.buildtool }}
-
           runner:         ${{ matrix.runner }}
           cp_os:          ${{ matrix.cp_os || '' }}
           cp_arch:        ${{ matrix.cp_arch || '' }}
           cp_version:     ${{ matrix.cp_version || '' }}
           version:        ${{ matrix.version || '' }}
           msystem:        ${{ matrix.msystem || '' }}
-
           extra_packages: ${{ matrix.extra_packages || '' }}
           guest_packages: ${{ matrix.guest_packages || '' }}
           vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
           pip_packages:   ${{ matrix.pip_packages || '' }}
-
           setup_prefix:   ${{ matrix.setup_prefix || '' }}
           setup_options:  ${{ matrix.setup_options || '' }}
           check_target:   ${{ matrix.check_target || '' }}
           make:           ${{ matrix.make || '' }}
-
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
   coveralls:
@@ -1538,24 +1514,20 @@ jobs:
           label:          ${{ matrix.label }}
           exec_type:      ${{ matrix.exec_type }}
           buildtool:      ${{ matrix.buildtool }}
-
           runner:         ${{ matrix.runner }}
           cp_os:          ${{ matrix.cp_os || '' }}
           cp_arch:        ${{ matrix.cp_arch || '' }}
           cp_version:     ${{ matrix.cp_version || '' }}
           version:        ${{ matrix.version || '' }}
           msystem:        ${{ matrix.msystem || '' }}
-
           extra_packages: ${{ matrix.extra_packages || '' }}
           guest_packages: ${{ matrix.guest_packages || '' }}
           vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
           pip_packages:   ${{ matrix.pip_packages || '' }}
-
           setup_prefix:   ${{ matrix.setup_prefix || '' }}
           setup_options:  ${{ matrix.setup_options || '' }}
           check_target:   ${{ matrix.check_target || '' }}
           make:           ${{ matrix.make || '' }}
-
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
   msan:
@@ -1609,24 +1581,20 @@ jobs:
           label:          ${{ matrix.label }}
           exec_type:      ${{ matrix.exec_type }}
           buildtool:      ${{ matrix.buildtool }}
-
           runner:         ${{ matrix.runner }}
           cp_os:          ${{ matrix.cp_os || '' }}
           cp_arch:        ${{ matrix.cp_arch || '' }}
           cp_version:     ${{ matrix.cp_version || '' }}
           version:        ${{ matrix.version || '' }}
           msystem:        ${{ matrix.msystem || '' }}
-
           extra_packages: ${{ matrix.extra_packages || '' }}
           guest_packages: ${{ matrix.guest_packages || '' }}
           vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
           pip_packages:   ${{ matrix.pip_packages || '' }}
-
           setup_prefix:   ${{ matrix.setup_prefix || '' }}
           setup_options:  ${{ matrix.setup_options || '' }}
           check_target:   ${{ matrix.check_target || '' }}
           make:           ${{ matrix.make || '' }}
-
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
   tsan:
@@ -1712,24 +1680,20 @@ jobs:
           label:          ${{ matrix.label }}
           exec_type:      ${{ matrix.exec_type }}
           buildtool:      ${{ matrix.buildtool }}
-
           runner:         ${{ matrix.runner }}
           cp_os:          ${{ matrix.cp_os || '' }}
           cp_arch:        ${{ matrix.cp_arch || '' }}
           cp_version:     ${{ matrix.cp_version || '' }}
           version:        ${{ matrix.version || '' }}
           msystem:        ${{ matrix.msystem || '' }}
-
           extra_packages: ${{ matrix.extra_packages || '' }}
           guest_packages: ${{ matrix.guest_packages || '' }}
           vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
           pip_packages:   ${{ matrix.pip_packages || '' }}
-
           setup_prefix:   ${{ matrix.setup_prefix || '' }}
           setup_options:  ${{ matrix.setup_options || '' }}
           check_target:   ${{ matrix.check_target || '' }}
           make:           ${{ matrix.make || '' }}
-
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
   emscripten:
@@ -1811,24 +1775,20 @@ jobs:
           label:          ${{ matrix.label }}
           exec_type:      ${{ matrix.exec_type }}
           buildtool:      ${{ matrix.buildtool }}
-
           runner:         ${{ matrix.runner }}
           cp_os:          ${{ matrix.cp_os || '' }}
           cp_arch:        ${{ matrix.cp_arch || '' }}
           cp_version:     ${{ matrix.cp_version || '' }}
           version:        ${{ matrix.version || '' }}
           msystem:        ${{ matrix.msystem || '' }}
-
           extra_packages: ${{ matrix.extra_packages || '' }}
           guest_packages: ${{ matrix.guest_packages || '' }}
           vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
           pip_packages:   ${{ matrix.pip_packages || '' }}
-
           setup_prefix:   ${{ matrix.setup_prefix || '' }}
           setup_options:  ${{ matrix.setup_options || '' }}
           check_target:   ${{ matrix.check_target || '' }}
           make:           ${{ matrix.make || '' }}
-
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
   cosmopolitan:
@@ -1955,24 +1915,20 @@ jobs:
           label:          ${{ matrix.label }}
           exec_type:      ${{ matrix.exec_type }}
           buildtool:      ${{ matrix.buildtool }}
-
           runner:         ${{ matrix.runner }}
           cp_os:          ${{ matrix.cp_os || '' }}
           cp_arch:        ${{ matrix.cp_arch || '' }}
           cp_version:     ${{ matrix.cp_version || '' }}
           version:        ${{ matrix.version || '' }}
           msystem:        ${{ matrix.msystem || '' }}
-
           extra_packages: ${{ matrix.extra_packages || '' }}
           guest_packages: ${{ matrix.guest_packages || '' }}
           vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
           pip_packages:   ${{ matrix.pip_packages || '' }}
-
           setup_prefix:   ${{ matrix.setup_prefix || '' }}
           setup_options:  ${{ matrix.setup_options || '' }}
           check_target:   ${{ matrix.check_target || '' }}
           make:           ${{ matrix.make || '' }}
-
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
   winecheck:
@@ -2047,92 +2003,20 @@ jobs:
           label:          ${{ matrix.label }}
           exec_type:      ${{ matrix.exec_type }}
           buildtool:      ${{ matrix.buildtool }}
-
           runner:         ${{ matrix.runner }}
           cp_os:          ${{ matrix.cp_os || '' }}
           cp_arch:        ${{ matrix.cp_arch || '' }}
           cp_version:     ${{ matrix.cp_version || '' }}
           version:        ${{ matrix.version || '' }}
           msystem:        ${{ matrix.msystem || '' }}
-
           extra_packages: ${{ matrix.extra_packages || '' }}
           guest_packages: ${{ matrix.guest_packages || '' }}
           vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
           pip_packages:   ${{ matrix.pip_packages || '' }}
-
           setup_prefix:   ${{ matrix.setup_prefix || '' }}
           setup_options:  ${{ matrix.setup_options || '' }}
           check_target:   ${{ matrix.check_target || '' }}
           make:           ${{ matrix.make || '' }}
-
-          github_token:   ${{ secrets.GITHUB_TOKEN }}
-
-  simd:
-    needs: [smoke]
-    name: ${{ matrix.label }}
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      matrix:
-        include:
-          - label: Autotools-ubuntu-x86_64-clang-simd-avx2
-            buildtool: autotools
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              --enable-simd
-              --enable-avx2
-            extra_packages: >-
-              clang
-            exec_type: bash
-
-          - label: Meson-ubuntu-x86_64-clang-simd-avx2
-            buildtool: meson
-            runner: ubuntu-latest
-            setup_prefix: >-
-              CC=clang
-            setup_options: >-
-              -Dsimd=enabled
-              -Davx2=true
-            extra_packages: >-
-              meson
-              clang
-            exec_type: bash
-
-    steps:
-      - name: Configure git EOL
-        if: ${{ matrix.exec_type == 'cygwin' }}
-        shell: bash
-        run: git config --global core.autocrlf false
-
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-
-      - name: Run CI steps
-        uses: ./.github/actions/ci-steps
-        with:
-          label:          ${{ matrix.label }}
-          exec_type:      ${{ matrix.exec_type }}
-          buildtool:      ${{ matrix.buildtool }}
-
-          runner:         ${{ matrix.runner }}
-          cp_os:          ${{ matrix.cp_os || '' }}
-          cp_arch:        ${{ matrix.cp_arch || '' }}
-          cp_version:     ${{ matrix.cp_version || '' }}
-          version:        ${{ matrix.version || '' }}
-          msystem:        ${{ matrix.msystem || '' }}
-
-          extra_packages: ${{ matrix.extra_packages || '' }}
-          guest_packages: ${{ matrix.guest_packages || '' }}
-          vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
-          pip_packages:   ${{ matrix.pip_packages || '' }}
-
-          setup_prefix:   ${{ matrix.setup_prefix || '' }}
-          setup_options:  ${{ matrix.setup_options || '' }}
-          check_target:   ${{ matrix.check_target || '' }}
-          make:           ${{ matrix.make || '' }}
-
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
   platforms:
@@ -2393,24 +2277,20 @@ jobs:
           label:          ${{ matrix.label }}
           exec_type:      ${{ matrix.exec_type }}
           buildtool:      ${{ matrix.buildtool }}
-
           runner:         ${{ matrix.runner }}
           cp_os:          ${{ matrix.cp_os || '' }}
           cp_arch:        ${{ matrix.cp_arch || '' }}
           cp_version:     ${{ matrix.cp_version || '' }}
           version:        ${{ matrix.version || '' }}
           msystem:        ${{ matrix.msystem || '' }}
-
           extra_packages: ${{ matrix.extra_packages || '' }}
           guest_packages: ${{ matrix.guest_packages || '' }}
           vcpkg_packages: ${{ matrix.vcpkg_packages || '' }}
           pip_packages:   ${{ matrix.pip_packages || '' }}
-
           setup_prefix:   ${{ matrix.setup_prefix || '' }}
           setup_options:  ${{ matrix.setup_options || '' }}
           check_target:   ${{ matrix.check_target || '' }}
           make:           ${{ matrix.make || '' }}
-
           github_token:   ${{ secrets.GITHUB_TOKEN }}
 
 # emacs Local Variables:
