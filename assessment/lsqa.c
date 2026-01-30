@@ -90,6 +90,18 @@
 #endif
 
 /*
+ * Exit codes distinguish usage errors, runtime failures, and quality
+ * regressions so automated callers can react deterministically.
+ */
+enum {
+    LSQA_EXIT_SUCCESS = 0,
+    LSQA_EXIT_BAD_ARGS = 2,
+    LSQA_EXIT_LOAD_FAILED = 3,
+    LSQA_EXIT_RUNTIME_FAILED = 4,
+    LSQA_EXIT_BASELINE_FAILED = 5
+};
+
+/*
  * Local safety shims avoid MSVC secure CRT warnings without pulling in the
  * libsixel-wide compat layer. Each helper mirrors a single libc routine and
  * falls back to a bounded copy where secure variants are unavailable.
@@ -693,9 +705,14 @@ typedef struct Options {
     char prefix_buffer[PATH_MAX];
     const MetricSpec *metric_spec;
     const char *metric_key;
+    const MetricSpec *baseline_spec;
+    const char *baseline_key;
+    float baseline_value;
     unsigned int metric_mask;
     int metrics_filtered;
+    int baseline_enabled;
     int verbose;
+    char baseline_name[64];
 } Options;
 
 /*
@@ -708,6 +725,12 @@ static cli_option_help_t const g_option_help_table[] = {
         "metrics",
         "-m NAME, --metrics=NAME    limit computation to NAME and print\n"
         "                           only that value.\n"
+    },
+    {
+        'b',
+        "baseline",
+        "-b METRIC:VALUE, --baseline=METRIC:VALUE\n"
+        "                           fail when METRIC is below VALUE.\n"
     },
     {
         'H',
@@ -726,7 +749,7 @@ lsqa_option_help_count(void)
         sizeof(g_option_help_table[0]);
 }
 
-static char const g_lsqa_optstring[] = "m:Hh";
+static char const g_lsqa_optstring[] = "m:b:Hh";
 
 static void
 lsqa_print_option_help(FILE *stream)
@@ -897,18 +920,22 @@ static void
 print_usage(const char *prog)
 {
     fprintf(stderr,
-            "Usage: %s [-m NAME] <reference> [output]\n",
+            "Usage: %s [-m NAME] [-b METRIC:VALUE] <reference> [output]\n",
             prog);
     fprintf(stderr,
-            "       %s [-m NAME] <reference> < output\n",
+            "       %s [-m NAME] [-b METRIC:VALUE] <reference> < output\n",
             prog);
     fprintf(stderr,
-            "       %s [-m NAME] <reference> - < output\n",
+            "       %s [-m NAME] [-b METRIC:VALUE] <reference> - < output\n",
             prog);
     fprintf(stderr,
-            "  -m, --metrics NAME  limit computation to a single metric\n");
+    "  -m, --metrics NAME  limit computation to a single metric\n");
     fprintf(stderr,
             "                        and print only that value\n");
+    fprintf(stderr,
+            "  -b, --baseline METRIC:VALUE\n");
+    fprintf(stderr,
+            "                        exit nonzero if METRIC is below VALUE\n");
 }
 
 static void
@@ -918,12 +945,20 @@ show_help(void)
      * Help text must go to stdout to match converter tools and allow piping.
      */
     fprintf(stdout,
-            "Usage: lsqa [-m NAME] <reference> [output]\n"
-            "       lsqa [-m NAME] <reference> < output\n"
-            "       lsqa [-m NAME] <reference> - < output\n"
+            "Usage: lsqa [-m NAME] [-b METRIC:VALUE] <reference> [output]\n"
+            "       lsqa [-m NAME] [-b METRIC:VALUE] <reference> < output\n"
+            "       lsqa [-m NAME] [-b METRIC:VALUE] <reference> - < output\n"
             "\n"
             "Options:\n");
     lsqa_print_option_help(stdout);
+    fprintf(stdout,
+            "\n"
+            "Exit codes:\n"
+            "  0  success\n"
+            "  2  invalid arguments\n"
+            "  3  failed to load input images\n"
+            "  4  assessment or output failure\n"
+            "  5  baseline metric below threshold\n");
 }
 
 static void
@@ -933,6 +968,116 @@ lsqa_set_parse_error(char const *message)
         return;
     }
     sixel_helper_set_additional_message(message);
+}
+
+static int
+lsqa_parse_baseline(const char *arg, Options *opts)
+{
+    const char *colon;
+    size_t name_len;
+    const MetricSpec *spec;
+    const char *value_text;
+    char *tail;
+    double value;
+
+    if (arg == NULL || arg[0] == '\0') {
+        lsqa_report_invalid_argument('b', arg,
+                                     "Missing METRIC:VALUE baseline.");
+        return -1;
+    }
+
+    colon = strchr(arg, ':');
+    if (colon == NULL) {
+        lsqa_report_invalid_argument('b', arg,
+                                     "Expected METRIC:VALUE format.");
+        return -1;
+    }
+
+    name_len = (size_t)(colon - arg);
+    if (name_len == 0u) {
+        lsqa_report_invalid_argument('b', arg,
+                                     "Metric name is empty.");
+        return -1;
+    }
+    if (name_len >= sizeof(opts->baseline_name)) {
+        lsqa_report_invalid_argument('b', arg,
+                                     "Metric name is too long.");
+        return -1;
+    }
+
+    memcpy(opts->baseline_name, arg, name_len);
+    opts->baseline_name[name_len] = '\0';
+    spec = metric_spec_from_name(opts->baseline_name);
+    if (spec == NULL) {
+        lsqa_report_invalid_argument('b', arg,
+                                     "Unknown metric name.");
+        return -1;
+    }
+
+    value_text = colon + 1;
+    if (value_text[0] == '\0') {
+        lsqa_report_invalid_argument('b', arg,
+                                     "Baseline value is empty.");
+        return -1;
+    }
+
+    value = strtod(value_text, &tail);
+    if (tail == value_text) {
+        lsqa_report_invalid_argument('b', arg,
+                                     "Baseline value is not a number.");
+        return -1;
+    }
+    while (*tail == ' ' || *tail == '\t') {
+        tail += 1;
+    }
+    if (*tail != '\0') {
+        lsqa_report_invalid_argument('b', arg,
+                                     "Unexpected characters in value.");
+        return -1;
+    }
+    if (!isfinite(value)) {
+        lsqa_report_invalid_argument('b', arg,
+                                     "Baseline value is not finite.");
+        return -1;
+    }
+
+    opts->baseline_spec = spec;
+    opts->baseline_key = spec->json_key;
+    opts->baseline_value = (float)value;
+    opts->baseline_enabled = 1;
+    return 0;
+}
+
+static int
+lsqa_check_baseline(const Options *opts,
+                    const Metrics *metrics,
+                    float *out_value)
+{
+    int metric_status;
+    float metric_value;
+
+    if (opts == NULL || metrics == NULL || out_value == NULL) {
+        return -1;
+    }
+    if (!opts->baseline_enabled) {
+        return 0;
+    }
+
+    metric_value = 0.0f;
+    metric_status = metrics_get_value(metrics,
+                                      opts->baseline_key,
+                                      &metric_value);
+    if (metric_status < 0) {
+        return -1;
+    }
+    if (metric_status > 0) {
+        return 2;
+    }
+    *out_value = metric_value;
+    if (metric_value < opts->baseline_value) {
+        return 1;
+    }
+    return 0;
 }
 
 static int
@@ -1096,6 +1241,7 @@ parse_args(int argc, char **argv, Options *opts)
     char *verbose_env;
     char *prefix_env;
     const char *metrics_arg;
+    const char *baseline_arg;
     const MetricSpec *metric_spec;
     size_t prefix_len;
     int status;
@@ -1114,10 +1260,15 @@ parse_args(int argc, char **argv, Options *opts)
     opts->prefix = "report";
     opts->metric_spec = NULL;
     opts->metric_key = NULL;
+    opts->baseline_spec = NULL;
+    opts->baseline_key = NULL;
+    opts->baseline_value = 0.0f;
     opts->metric_mask = SIXEL_ASSESSMENT_METRIC_MASK_ALL;
     opts->metrics_filtered = 0;
+    opts->baseline_enabled = 0;
     opts->verbose = 0;
     opts->prefix_buffer[0] = '\0';
+    opts->baseline_name[0] = '\0';
 
     argi = 1;
     parse_status = 0;
@@ -1141,6 +1292,7 @@ parse_args(int argc, char **argv, Options *opts)
 #if HAVE_GETOPT_LONG
         struct option long_options[] = {
             {"metrics", required_argument, &long_opt, 'm'},
+            {"baseline", required_argument, &long_opt, 'b'},
             {"help", no_argument, &long_opt, 'H'},
             {0, 0, 0, 0}
         };
@@ -1170,6 +1322,26 @@ parse_args(int argc, char **argv, Options *opts)
         case 'h':
             parse_status = 1;
             goto cleanup;
+        case 'b':
+            if (opts->baseline_enabled) {
+                lsqa_set_parse_error(
+                    "lsqa: baseline already specified.");
+                parse_status = -1;
+                goto cleanup;
+            }
+            baseline_arg = optarg;
+            if (lsqa_parse_baseline(baseline_arg, opts) != 0) {
+                parse_status = -1;
+                goto cleanup;
+            }
+            if (opts->metric_spec != NULL &&
+                    opts->metric_spec != opts->baseline_spec) {
+                lsqa_set_parse_error(
+                    "lsqa: baseline metric must match -m.");
+                parse_status = -1;
+                goto cleanup;
+            }
+            break;
         case 'm':
             metrics_arg = optarg;
             metric_spec = metric_spec_from_name(metrics_arg);
@@ -1191,6 +1363,13 @@ parse_args(int argc, char **argv, Options *opts)
             opts->metric_mask = SIXEL_ASSESSMENT_METRIC_MASK(
                 metric_spec->metric_id);
             opts->metrics_filtered = 1;
+            if (opts->baseline_spec != NULL &&
+                    opts->baseline_spec != opts->metric_spec) {
+                lsqa_set_parse_error(
+                    "lsqa: baseline metric must match -m.");
+                parse_status = -1;
+                goto cleanup;
+            }
             break;
         case '?':
             lsqa_handle_getopt_error(optopt,
@@ -1310,6 +1489,8 @@ main(int argc, char **argv)
     int exit_code;
     int metric_status;
     float metric_value;
+    int baseline_status;
+    float baseline_value;
     char const *parse_message;
     int parse_status;
 
@@ -1319,9 +1500,11 @@ main(int argc, char **argv)
     out_frame = NULL;
     fp = NULL;
     json_path = NULL;
-    exit_code = EXIT_FAILURE;
+    exit_code = LSQA_EXIT_RUNTIME_FAILED;
     metric_status = 0;
     metric_value = 0.0f;
+    baseline_status = 0;
+    baseline_value = 0.0f;
     parse_message = NULL;
     parse_status = 0;
 
@@ -1329,14 +1512,14 @@ main(int argc, char **argv)
     if (parse_status != 0) {
         if (parse_status > 0) {
             show_help();
-            return EXIT_SUCCESS;
+            return LSQA_EXIT_SUCCESS;
         }
         parse_message = sixel_helper_get_additional_message();
         if (parse_message != NULL && parse_message[0] != '\0') {
             fprintf(stderr, "%s\n", parse_message);
         }
         print_usage(argv[0]);
-        return EXIT_FAILURE;
+        return LSQA_EXIT_BAD_ARGS;
     }
 
     status = sixel_allocator_new(&allocator,
@@ -1348,17 +1531,17 @@ main(int argc, char **argv)
         fprintf(stderr,
                 "Failed to allocate loader: %s\n",
                 sixel_helper_format_error(status));
-        return EXIT_FAILURE;
+        return LSQA_EXIT_RUNTIME_FAILED;
     }
 
     if (load_frame(opts.ref_path, allocator, &ref_frame) != 0) {
         sixel_allocator_unref(allocator);
-        return EXIT_FAILURE;
+        return LSQA_EXIT_LOAD_FAILED;
     }
     if (load_frame(opts.out_path, allocator, &out_frame) != 0) {
         sixel_frame_unref(ref_frame);
         sixel_allocator_unref(allocator);
-        return EXIT_FAILURE;
+        return LSQA_EXIT_LOAD_FAILED;
     }
 
     status = sixel_assessment_new(&assessment, allocator);
@@ -1369,7 +1552,7 @@ main(int argc, char **argv)
         sixel_frame_unref(ref_frame);
         sixel_frame_unref(out_frame);
         sixel_allocator_unref(allocator);
-        return EXIT_FAILURE;
+        return LSQA_EXIT_RUNTIME_FAILED;
     }
 
     sixel_assessment_select_sections(assessment,
@@ -1386,7 +1569,7 @@ main(int argc, char **argv)
         sixel_frame_unref(ref_frame);
         sixel_frame_unref(out_frame);
         sixel_allocator_unref(allocator);
-        return EXIT_FAILURE;
+        return LSQA_EXIT_RUNTIME_FAILED;
     }
 
     metrics_init(&metrics);
@@ -1406,7 +1589,7 @@ main(int argc, char **argv)
             sixel_frame_unref(ref_frame);
             sixel_frame_unref(out_frame);
             sixel_allocator_unref(allocator);
-            return EXIT_FAILURE;
+            return LSQA_EXIT_RUNTIME_FAILED;
         }
         metric_status = metrics_get_value(&metrics,
                                           opts.metric_key,
@@ -1419,7 +1602,7 @@ main(int argc, char **argv)
             sixel_frame_unref(ref_frame);
             sixel_frame_unref(out_frame);
             sixel_allocator_unref(allocator);
-            return EXIT_FAILURE;
+            return LSQA_EXIT_RUNTIME_FAILED;
         }
         if (metric_status > 0) {
             fprintf(stdout, "nan\n");
@@ -1429,11 +1612,36 @@ main(int argc, char **argv)
         if (opts.verbose) {
             verbose_print(&metrics);
         }
+        baseline_status = lsqa_check_baseline(&opts,
+                                              &metrics,
+                                              &baseline_value);
+        if (baseline_status != 0) {
+            if (baseline_status < 0) {
+                fprintf(stderr,
+                        "Baseline metric unavailable: %s\n",
+                        opts.baseline_key);
+                exit_code = LSQA_EXIT_RUNTIME_FAILED;
+            } else if (baseline_status == 2) {
+                fprintf(stderr,
+                        "Baseline metric %s is NaN\n",
+                        opts.baseline_key);
+                exit_code = LSQA_EXIT_BASELINE_FAILED;
+            } else {
+                fprintf(stderr,
+                        "Baseline %s %.6f is below %.6f\n",
+                        opts.baseline_key,
+                        baseline_value,
+                        opts.baseline_value);
+                exit_code = LSQA_EXIT_BASELINE_FAILED;
+            }
+        } else {
+            exit_code = LSQA_EXIT_SUCCESS;
+        }
         sixel_assessment_unref(assessment);
         sixel_frame_unref(ref_frame);
         sixel_frame_unref(out_frame);
         sixel_allocator_unref(allocator);
-        return EXIT_SUCCESS;
+        return exit_code;
     }
 
     path_len = strlen(opts.prefix) + strlen("_metrics.json") + 1u;
@@ -1444,7 +1652,7 @@ main(int argc, char **argv)
         sixel_frame_unref(ref_frame);
         sixel_frame_unref(out_frame);
         sixel_allocator_unref(allocator);
-        return EXIT_FAILURE;
+        return LSQA_EXIT_RUNTIME_FAILED;
     }
     snprintf(json_path, path_len, "%s_metrics.json", opts.prefix);
 
@@ -1461,7 +1669,7 @@ main(int argc, char **argv)
         sixel_frame_unref(ref_frame);
         sixel_frame_unref(out_frame);
         sixel_allocator_unref(allocator);
-        return EXIT_FAILURE;
+        return LSQA_EXIT_RUNTIME_FAILED;
     }
 
     collector.stream = fp;
@@ -1479,7 +1687,7 @@ main(int argc, char **argv)
         sixel_frame_unref(ref_frame);
         sixel_frame_unref(out_frame);
         sixel_allocator_unref(allocator);
-        return EXIT_FAILURE;
+        return LSQA_EXIT_RUNTIME_FAILED;
     }
 
     collector.stream = stdout;
@@ -1497,7 +1705,7 @@ main(int argc, char **argv)
         sixel_frame_unref(ref_frame);
         sixel_frame_unref(out_frame);
         sixel_allocator_unref(allocator);
-        return EXIT_FAILURE;
+        return LSQA_EXIT_RUNTIME_FAILED;
     }
 
     if (opts.verbose) {
@@ -1505,11 +1713,34 @@ main(int argc, char **argv)
         fprintf(stderr, "\nWrote: %s\n", json_path);
     }
 
+    baseline_status = lsqa_check_baseline(&opts, &metrics, &baseline_value);
+    if (baseline_status != 0) {
+        if (baseline_status < 0) {
+            fprintf(stderr,
+                    "Baseline metric unavailable: %s\n",
+                    opts.baseline_key);
+            exit_code = LSQA_EXIT_RUNTIME_FAILED;
+        } else if (baseline_status == 2) {
+            fprintf(stderr,
+                    "Baseline metric %s is NaN\n",
+                    opts.baseline_key);
+            exit_code = LSQA_EXIT_BASELINE_FAILED;
+        } else {
+            fprintf(stderr,
+                    "Baseline %s %.6f is below %.6f\n",
+                    opts.baseline_key,
+                    baseline_value,
+                    opts.baseline_value);
+            exit_code = LSQA_EXIT_BASELINE_FAILED;
+        }
+    } else {
+        exit_code = LSQA_EXIT_SUCCESS;
+    }
+
     free(json_path);
     sixel_assessment_unref(assessment);
     sixel_frame_unref(ref_frame);
     sixel_frame_unref(out_frame);
     sixel_allocator_unref(allocator);
-    exit_code = EXIT_SUCCESS;
     return exit_code;
 }
