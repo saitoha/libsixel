@@ -14419,6 +14419,13 @@ ac_config_headers="$ac_config_headers config.h"
 
 
 
+# Run config.status with explicit parallelism based on AX_COUNT_CPUS.
+# The flow is:
+# 1) Save the caller's --no-create choice.
+# 2) Prevent AC_OUTPUT from running config.status itself.
+# 3) Re-run config.status with --jobs=$CPU_COUNT when allowed.
+
+
 for ac_prog in gawk mawk nawk awk
 do
   # Extract the first word of "$ac_prog", so it can be a program name with args.
@@ -24393,7 +24400,11 @@ then :
 
 fi
 
-cat >confcache <<\_ACEOF
+
+
+  ls_saved_no_create=$no_create
+  no_create=yes
+  cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
 # scripts and configure runs, see configure's option --config-cache.
@@ -26888,6 +26899,37 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: unrecognized options: $ac_unrecognized_opts" >&5
 printf "%s\n" "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
+
+  if test "x$ls_saved_no_create" != xyes
+then :
+
+    if test "x$CPU_COUNT" = x || test "$CPU_COUNT" -lt 1 2>/dev/null
+then :
+
+      CPU_COUNT=1
+
+fi
+    if test "$CPU_COUNT" -gt 1 2>/dev/null
+then :
+
+      if $SHELL $CONFIG_STATUS --help 2>/dev/null | \
+          $EGREP -q -- '--jobs'; then
+        ac_config_status_jobs="--jobs=$CPU_COUNT"
+      else
+        ac_config_status_jobs=""
+      fi
+
+else case e in #(
+  e)
+      ac_config_status_jobs=""
+     ;;
+esac
+fi
+    $SHELL $CONFIG_STATUS $ac_config_status_jobs $ac_config_status_args \
+      || as_fn_exit $?
+
+fi
+  no_create=$ls_saved_no_create
 
 
 if test x$have_wiccodec = xyes; then
