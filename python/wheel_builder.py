@@ -1,0 +1,147 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+#
+# Copyright (c) 2014-2025 Hayaki Saito
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy of
+# this software and associated documentation files (the "Software"), to deal in
+# the Software without restriction, including without limitation the rights to
+# use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+# the Software, and to permit persons to whom the Software is furnished to do so,
+# subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+# FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+# COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+# IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+# CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+#
+"""Build a wheel that bundles the libsixel shared library.
+
+This helper is executed from Autotools or Meson builds. The workflow is:
+
+1. Locate the built shared library from either:
+   - --libpath (explicit file), or
+   - --libdir (directory scan)
+2. Copy the library into libsixel/_libs/.
+3. Run `setup.py bdist_wheel` with the wheel mode flag enabled.
+4. Clean the temporary copy after the wheel is created.
+"""
+
+from __future__ import annotations
+
+import argparse
+import os
+import pathlib
+import shutil
+import subprocess
+import sys
+
+_SIXEL_NAMES = (
+    "sixel",
+    "libsixel",
+    "sixel-1",
+    "libsixel-1",
+    "msys-sixel",
+    "cygsixel",
+)
+
+_SUFFIXES = (".so", ".dylib", ".dll")
+
+
+def _find_library_in_dir(libdir: pathlib.Path) -> pathlib.Path | None:
+    """Return the first matching libsixel shared library from libdir."""
+
+    prefixes = ("lib", "")
+    candidates: list[pathlib.Path] = []
+
+    for name in _SIXEL_NAMES:
+        for prefix in prefixes:
+            for suffix in _SUFFIXES:
+                if suffix == ".so":
+                    patterns = (
+                        f"{prefix}{name}*{suffix}",
+                        f"{prefix}{name}*{suffix}.*",
+                    )
+                else:
+                    patterns = (f"{prefix}{name}*{suffix}",)
+
+                for pattern in patterns:
+                    candidates.extend(libdir.glob(pattern))
+
+    filtered = []
+    for candidate in sorted(set(candidates)):
+        if candidate.name.endswith((".dll.a", ".dll.def")):
+            continue
+        filtered.append(candidate)
+
+    if filtered:
+        return filtered[0]
+
+    return None
+
+
+def _copy_library(libpath: pathlib.Path, libs_dir: pathlib.Path) -> pathlib.Path:
+    """Copy the shared library into libsixel/_libs/ and return the new path."""
+
+    libs_dir.mkdir(parents=True, exist_ok=True)
+    target = libs_dir / libpath.name
+    shutil.copy2(libpath, target)
+    return target
+
+
+def _run_wheel_build(root_dir: pathlib.Path, distdir: pathlib.Path) -> None:
+    """Invoke the PEP 517 build frontend in wheel mode."""
+
+    env = os.environ.copy()
+    env["LIBSIXEL_WHEEL"] = "1"
+
+    distdir.mkdir(parents=True, exist_ok=True)
+    build_dir = root_dir / "build"
+    if build_dir.exists():
+        shutil.rmtree(build_dir)
+    subprocess.check_call(
+        [sys.executable, "-m", "build", "--wheel", "--outdir", str(distdir)],
+        cwd=root_dir,
+        env=env,
+    )
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(
+        description="Build a libsixel wheel that bundles the shared library.",
+    )
+    parser.add_argument("--libpath", type=pathlib.Path)
+    parser.add_argument("--libdir", type=pathlib.Path)
+    parser.add_argument("--distdir", type=pathlib.Path, required=True)
+    args = parser.parse_args()
+
+    libpath = args.libpath
+    if libpath is None:
+        if args.libdir is None:
+            raise SystemExit("Either --libpath or --libdir must be specified.")
+        libpath = _find_library_in_dir(args.libdir)
+        if libpath is None:
+            raise SystemExit(f"libsixel shared library not found in {args.libdir}")
+
+    root_dir = pathlib.Path(__file__).resolve().parent
+    libs_dir = root_dir / "libsixel" / "_libs"
+    copied = _copy_library(libpath, libs_dir)
+
+    try:
+        _run_wheel_build(root_dir, args.distdir)
+    finally:
+        if copied.exists():
+            copied.unlink()
+        if libs_dir.exists() and not any(libs_dir.iterdir()):
+            libs_dir.rmdir()
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
