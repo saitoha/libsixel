@@ -1575,7 +1575,7 @@ main(int argc, char **argv)
     metrics_init(&metrics);
     collector.metrics = &metrics;
 
-    if (opts.metrics_filtered) {
+    if (opts.metrics_filtered || opts.baseline_enabled) {
         collector.stream = NULL;
         status = sixel_assessment_get_json(assessment,
                                            SIXEL_ASSESSMENT_SECTION_QUALITY,
@@ -1591,44 +1591,49 @@ main(int argc, char **argv)
             sixel_allocator_unref(allocator);
             return LSQA_EXIT_RUNTIME_FAILED;
         }
-        metric_status = metrics_get_value(&metrics,
-                                          opts.metric_key,
-                                          &metric_value);
-        if (metric_status < 0) {
-            fprintf(stderr,
-                    "Requested metric not found in output: %s\n",
-                    opts.metric_key);
-            sixel_assessment_unref(assessment);
-            sixel_frame_unref(ref_frame);
-            sixel_frame_unref(out_frame);
-            sixel_allocator_unref(allocator);
-            return LSQA_EXIT_RUNTIME_FAILED;
+
+        if (opts.metrics_filtered) {
+            metric_status = metrics_get_value(&metrics,
+                                              opts.metric_key,
+                                              &metric_value);
+            if (metric_status < 0) {
+                fprintf(stderr,
+                        "Requested metric not found in output: %s\n",
+                        opts.metric_key);
+                sixel_assessment_unref(assessment);
+                sixel_frame_unref(ref_frame);
+                sixel_frame_unref(out_frame);
+                sixel_allocator_unref(allocator);
+                return LSQA_EXIT_RUNTIME_FAILED;
+            }
+            if (metric_status > 0) {
+                fprintf(stdout, "nan\n");
+            } else {
+                fprintf(stdout, "%.6f\n", metric_value);
+            }
         }
-        if (metric_status > 0) {
-            fprintf(stdout, "nan\n");
-        } else {
-            fprintf(stdout, "%.6f\n", metric_value);
-        }
+
         if (opts.verbose) {
             verbose_print(&metrics);
         }
+
         baseline_status = lsqa_check_baseline(&opts,
                                               &metrics,
                                               &baseline_value);
         if (baseline_status != 0) {
             if (baseline_status < 0) {
                 fprintf(stderr,
-                        "Baseline metric unavailable: %s\n",
+                        "Metric %s is unavailable\n",
                         opts.baseline_key);
                 exit_code = LSQA_EXIT_RUNTIME_FAILED;
             } else if (baseline_status == 2) {
                 fprintf(stderr,
-                        "Baseline metric %s is NaN\n",
+                        "Metric %s is NaN\n",
                         opts.baseline_key);
                 exit_code = LSQA_EXIT_BASELINE_FAILED;
             } else {
                 fprintf(stderr,
-                        "Baseline %s %.6f is below %.6f\n",
+                        "%s %.6f is below baseline %.6f\n",
                         opts.baseline_key,
                         baseline_value,
                         opts.baseline_value);
@@ -1717,17 +1722,17 @@ main(int argc, char **argv)
     if (baseline_status != 0) {
         if (baseline_status < 0) {
             fprintf(stderr,
-                    "Baseline metric unavailable: %s\n",
+                    "Metric %s is unavailable\n",
                     opts.baseline_key);
             exit_code = LSQA_EXIT_RUNTIME_FAILED;
         } else if (baseline_status == 2) {
             fprintf(stderr,
-                    "Baseline metric %s is NaN\n",
+                    "Metric %s is NaN\n",
                     opts.baseline_key);
             exit_code = LSQA_EXIT_BASELINE_FAILED;
         } else {
             fprintf(stderr,
-                    "Baseline %s %.6f is below %.6f\n",
+                    "%s %.6f is below baseline %.6f\n",
                     opts.baseline_key,
                     baseline_value,
                     opts.baseline_value);
