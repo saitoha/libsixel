@@ -63,6 +63,7 @@ or provide the desired directory path explicitly.
 | `--enable-wiccodec` / `--disable-wiccodec` | `auto` | Build the Windows WIC codec DLL. |
 | `--enable-register-dll` | `no` | Call `regsvr32` during `make install` to register the WIC codec DLL (requires admin rights). |
 | `--enable-python` | `no` | Build and install the Python bindings. |
+| `--enable-python-wheel` | `no` | Build a Python wheel that bundles the libsixel shared library. |
 | `--enable-ruby` | `no` | Build and install the Ruby bindings. |
 | `--enable-debug` | `no` | Enable debug macros and apply extra diagnostic compiler flags. |
 | `--enable-gcov` | `no` | Compile with gcov coverage instrumentation. |
@@ -202,6 +203,7 @@ meson setup builddir
 | `-Dzshcompletiondir=` | string, `disabled` | Install the zsh completion script (`auto` selects the system default path). |
 | `-Dsimd=` | feature, `enabled` | Control SIMD acceleration; `auto` defers to detection, `disabled` forces off. |
 | `-Dpython=` | feature, `disabled` | Build and install the Python bindings. |
+| `-Dpython_wheel=` | feature, `disabled` | Build a Python wheel that bundles the libsixel shared library. |
 | `-Druby=` | feature, `disabled` | Build and install the Ruby bindings. |
 | `-Dtests=` | boolean, `false` | Build the test suites. |
 | `-Dshebang_file=` | string, empty | Prepend the file contents to generated executables (skips files that already start with a shebang) and mark them executable. |
