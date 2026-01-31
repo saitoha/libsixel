@@ -45,26 +45,14 @@ else
     exit "${status}"
 fi
 
-if {
-    lsqa_err_file=$(mktemp)
-    lsqa_run_status=0
-    if ! run_lsqa -b "MS-SSIM:${lsqa_floor}" \
-        "${input_image}" "${output_sixel}" > /dev/null \
-        2>"${lsqa_err_file}"; then
-        lsqa_run_status=$?
-        printf '# %s: assessment/lsqa returned %s\n' \
-            "snap-heckbert-8bit" "${lsqa_run_status}"
-        if [ -s "${lsqa_err_file}" ]; then
-            printf '# lsqa stderr follows\n'
-            sed 's/^/# /' "${lsqa_err_file}"
-        else
-            printf '# %s: lsqa produced no diagnostics\n' \
-                "snap-heckbert-8bit"
-        fi
-    fi
-    rm -f "${lsqa_err_file}"
-    [ ${lsqa_run_status} -eq 0 ]; }; then
+lsqa_err=$(
+    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
+) || lsqa_run_status=$?
+
+if [ -z "${lsqa_run_status-}" ]; then
     pass 1 "snap heckbert 8bit lsqa passed"
+elif [ "${lsqa_run_status}" -eq 5 ]; then
+    fail 1 "${lsqa_err}"
 else
     fail 1 "snap heckbert 8bit lsqa failed"
 fi
