@@ -40,6 +40,7 @@ run_img2sixel -=1 --gri-limit -o "${output_limited}" "${input_image}" 2>>"${log_
     fail 1 "img2sixel failed"
 }
 lsqa_err=$(
+    set +xv
     run_lsqa -b "MS-SSIM:${lsqa_floor}" "${output_plain}" "${output_limited}" 2>&1
 ) || lsqa_run_status=$?
 

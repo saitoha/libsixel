@@ -36,6 +36,7 @@ if ! run_img2sixel -Q heckbert -6 -W oklab \
 fi
 
 lsqa_err=$(
+    set +xv
     run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
