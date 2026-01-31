@@ -24,6 +24,7 @@ endif
 
 EXTRA_DIST = \
     setup.py \
-    wheel_builder.py
+    wheel_builder.py \
+    libsixel/_wheel_ext.c
 
 check: check-am
