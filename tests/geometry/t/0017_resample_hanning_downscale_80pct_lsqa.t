@@ -42,10 +42,6 @@ set -v
 require_file "${input_image}"
 require_file "${reference_image}"
 
-if ! lsqa_init "$0"; then
-    fail 1 "lsqa binary missing"
-    exit "${status}"
-fi
 
 if run_img2sixel -r hanning -w 80%         \
         -o "${output_sixel}" \
@@ -57,7 +53,25 @@ else
     exit "${status}"
 fi
 
-if lsqa_run_benchmark "${reference_image}" "${output_sixel}"         "hanning-downscale_80pct" "${artifact_dir}" "${lsqa_floor}"; then
+if {
+    lsqa_err_file=$(mktemp)
+    lsqa_run_status=0
+    if ! run_lsqa -b "MS-SSIM:${lsqa_floor}" \
+        "${reference_image}" "${output_sixel}" > /dev/null \
+        2>"${lsqa_err_file}"; then
+        lsqa_run_status=$?
+        printf '# %s: assessment/lsqa returned %s\n' \
+            "hanning-downscale_80pct" "${lsqa_run_status}"
+        if [ -s "${lsqa_err_file}" ]; then
+            printf '# lsqa stderr follows\n'
+            sed 's/^/# /' "${lsqa_err_file}"
+        else
+            printf '# %s: lsqa produced no diagnostics\n' \
+                "hanning-downscale_80pct"
+        fi
+    fi
+    rm -f "${lsqa_err_file}"
+    [ ${lsqa_run_status} -eq 0 ]; }; then
     pass 1 "hanning downscale 80pct lsqa passed"
 else
     fail 1 "hanning downscale 80pct lsqa failed"

@@ -31,10 +31,6 @@ output_rgb="${artifact_dir}/rgb.six"
 
 require_file "${input_image}"
 
-if ! lsqa_init "$0"; then
-    fail 1 "lsqa binary missing"
-    exit "${status}"
-fi
 
 if run_img2sixel -t hls -o "${output_hls}" "${input_image}" \
         2>>"${log_file}"; then
@@ -52,8 +48,25 @@ else
     exit "${status}"
 fi
 
-if lsqa_run_benchmark "${output_rgb}" "${output_hls}" \
-        "hls-vs-rgb" "${artifact_dir}" "${lsqa_floor}"; then
+if {
+    lsqa_err_file=$(mktemp)
+    lsqa_run_status=0
+    if ! run_lsqa -b "MS-SSIM:${lsqa_floor}" \
+        "${output_rgb}" "${output_hls}" > /dev/null \
+        2>"${lsqa_err_file}"; then
+        lsqa_run_status=$?
+        printf '# %s: assessment/lsqa returned %s\n' \
+            "hls-vs-rgb" "${lsqa_run_status}"
+        if [ -s "${lsqa_err_file}" ]; then
+            printf '# lsqa stderr follows\n'
+            sed 's/^/# /' "${lsqa_err_file}"
+        else
+            printf '# %s: lsqa produced no diagnostics\n' \
+                "hls-vs-rgb"
+        fi
+    fi
+    rm -f "${lsqa_err_file}"
+    [ ${lsqa_run_status} -eq 0 ]; }; then
     pass 1 "hls vs rgb lsqa passed"
 else
     fail 1 "hls vs rgb lsqa failed"

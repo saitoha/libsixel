@@ -20,20 +20,15 @@ export LSQA_HELPER_DIR
 
 status=0
 
-if ! lsqa_init "$0"; then
-    printf '1..1\n'
-    fail 1 "lsqa binary missing"
-    exit "${status}"
-fi
 
-artifact_root=${LSQA_ARTIFACT_ROOT}
+artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
 artifact_dir="${artifact_root}/${category_name}/${test_name}"
 mkdir -p "${artifact_dir}"
 
 printf '1..1\n'
 set -v
 
-image_path="${LSQA_INPUT_ROOT}/corrupted/metadata_noise.jpg"
+image_path="${top_srcdir}/tests/data/corrupted/metadata_noise.jpg"
 if lsqa_expect_low_quality_or_fail "${image_path}" \
     "metadata_noise.jpg" "${artifact_dir}"; then
     pass 1 "metadata noise rejected or scored low"

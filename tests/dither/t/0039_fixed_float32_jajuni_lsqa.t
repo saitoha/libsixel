@@ -23,15 +23,11 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 ensure_img2sixel_available
 
-if ! lsqa_init "$0"; then
-    fail 1 "lsqa binary missing"
-    exit "${status}"
-fi
 
 echo "1..1"
 set -v
 
-input_image="${LSQA_INPUT_ROOT}/inputs/snake_64.png"
+input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 case_id=${test_name%.t}
 output_sixel="${artifact_dir}/${case_id}.six"
 output_png="${output_dir}/${case_id}.png"
@@ -39,8 +35,25 @@ output_png="${output_dir}/${case_id}.png"
 require_file "${input_image}"
 
 if run_img2sixel -d jajuni -y raster -W oklab -o "${output_sixel}" "${input_image}" 2>>"${log_file}" && \
-        lsqa_run_benchmark "${input_image}" "${output_sixel}" \
-        "${case_id}" "${artifact_dir}" "${lsqa_floor}"; then
+        {
+            lsqa_err_file=$(mktemp)
+            lsqa_run_status=0
+            if ! run_lsqa -b "MS-SSIM:${lsqa_floor}" \
+                "${input_image}" "${output_sixel}" > /dev/null \
+                2>"${lsqa_err_file}"; then
+                lsqa_run_status=$?
+                printf '# %s: assessment/lsqa returned %s\n' \
+                    "${case_id}" "${lsqa_run_status}"
+                if [ -s "${lsqa_err_file}" ]; then
+                    printf '# lsqa stderr follows\n'
+                    sed 's/^/# /' "${lsqa_err_file}"
+                else
+                    printf '# %s: lsqa produced no diagnostics\n' \
+                        "${case_id}"
+                fi
+            fi
+            rm -f "${lsqa_err_file}"
+            [ ${lsqa_run_status} -eq 0 ]; }; then
     pass 1 "fixed float32 Jajuni diffusion lsqa passed"
 else
     fail 1 "fixed float32 Jajuni diffusion lsqa failed"

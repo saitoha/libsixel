@@ -5,10 +5,8 @@
 # every TAP script focused on a single input case.
 #
 # Helper layout:
-# - Initialization discovers lsqa binaries and data directories.
-# - Assertions compare MS-SSIM to a caller-provided floor.
-# - Sixel checks are handled by callers before asserting quality.
-# - Baseline checks rely on lsqa exit codes.
+# - Assertions compare MS-SSIM values to caller-provided floors.
+# - Repeat checks evaluate variance from lsqa output.
 
 set -eu
 
@@ -21,93 +19,8 @@ if [ -z "${lsqa_helper_root}" ]; then
     lsqa_helper_root=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
 fi
 . "${lsqa_helper_root}/../common/tap.sh"
+. "${lsqa_helper_root}/../../../_lib/sh/common.sh"
 
-_lsqa_require_converter_common() {
-    if [ -n "${LSQA_CONVERTER_COMMON_LOADED-}" ]; then
-        return 0
-    fi
-
-    # Load converter helpers lazily to avoid altering unrelated tests.
-    . "${lsqa_helper_root}/../../../_lib/sh/common.sh"
-    LSQA_CONVERTER_COMMON_LOADED=1
-    return 0
-}
-
-lsqa_init() {
-    test_path=$1
-    test_dir=$(CDPATH=; cd "$(dirname "${test_path}")" && pwd)
-    regression_root=$(CDPATH=; cd "${test_dir}/.." && pwd)
-    repo_root=$(CDPATH=; cd "${regression_root}/.." && pwd)
-
-    LSQA_ARTIFACT_ROOT=${ARTIFACT_ROOT:-"${repo_root}/tests/_artifacts"}
-    LSQA_INPUT_ROOT=${LSQA_INPUT_ROOT-}
-    build_root=${TOP_BUILDDIR:-${repo_root}}
-
-    # Search for test assets in the build or source trees; prefer an explicit
-    # LSQA_DATA_ROOT override when provided.
-    set --
-    if [ -n "${LSQA_DATA_ROOT-}" ]; then
-        set -- "$@" "${LSQA_DATA_ROOT}"
-    fi
-    set -- "$@" \
-        "${test_dir}/../data" \
-        "${repo_root}/tests/data" \
-        "${build_root}/tests/data"
-    if [ -n "${TOP_SRCDIR-}" ]; then
-        set -- "$@" "${TOP_SRCDIR}/tests/data"
-    fi
-
-    found_data_root=""
-    for candidate in "$@"; do
-        if [ -d "${candidate}/inputs" ]; then
-            found_data_root=${candidate}
-            break
-        fi
-    done
-
-    if [ -z "${found_data_root}" ]; then
-        printf 'lsqa data directory not found. looked for:%s\n' \
-            "\n  $(printf '%s\n  ' "$@" | sed '/^ *$/d')" >&2
-        return 1
-    fi
-
-    LSQA_DATA_ROOT=${found_data_root}
-    LSQA_INPUT_ROOT=${LSQA_INPUT_ROOT:-"${LSQA_DATA_ROOT}"}
-    lsqa_bin_env=${LSQA_BIN-}
-    if [ -n "${lsqa_bin_env}" ]; then
-        if [ -x "${lsqa_bin_env}" ]; then
-            LSQA_BIN=${lsqa_bin_env}
-            LSQA_PATH=${lsqa_bin_env}
-        else
-            printf 'LSQA_BIN points to a missing or non-executable path: %s\n' \
-                "${lsqa_bin_env}" >&2
-            return 1
-        fi
-    else
-        set -- \
-            "${build_root}/assessment/lsqa${SIXEL_BIN_EXT-}" \
-            "${build_root}/assessment/.libs/lsqa${SIXEL_BIN_EXT-}" \
-            "${build_root}/lsqa${SIXEL_BIN_EXT-}"
-        for candidate in "$@"; do
-            if [ -x "${candidate}" ]; then
-                LSQA_BIN=${candidate}
-                LSQA_PATH=${candidate}
-                break
-            fi
-        done
-        if [ -z "${LSQA_BIN-}" ]; then
-            printf 'lsqa binary not found. looked for:%s%s%s\n' \
-                "\n  ${build_root}/assessment/lsqa${SIXEL_BIN_EXT-}" \
-                "\n  ${build_root}/assessment/.libs/lsqa${SIXEL_BIN_EXT-}" \
-                "\n  ${build_root}/lsqa${SIXEL_BIN_EXT-}" >&2
-            return 1
-        fi
-    fi
-
-    _lsqa_require_converter_common
-
-    return 0
-}
 
 _lsqa_read_ms_ssim() {
     output_path=$1
@@ -147,58 +60,6 @@ _lsqa_run_compare() {
     printf '%s' "${lsqa_run_status}"
 }
 
-# Compare two images and enforce an MS-SSIM floor.
-#
-# Arguments:
-#  1) Reference image path (input)
-#  2) Output image path (candidate)
-#  3) Label used in diagnostics
-#  4) Artifact directory (kept for call-site compatibility)
-#  5) Optional MS-SSIM floor override (default: MS_SSIM_FLOOR)
-lsqa_run_benchmark() {
-    lsqa_quality_ref_path=$1
-    lsqa_quality_out_path=$2
-    lsqa_quality_label=$3
-    lsqa_quality_artifact_dir=$4
-    lsqa_quality_floor_ms=${5:-${MS_SSIM_FLOOR}}
-
-    lsqa_quality_err_file=$(mktemp)
-    lsqa_quality_run_status=0
-
-    if ! run_lsqa -b "MS-SSIM:${lsqa_quality_floor_ms}" \
-        "${lsqa_quality_ref_path}" "${lsqa_quality_out_path}" \
-        > /dev/null 2>"${lsqa_quality_err_file}"; then
-        lsqa_quality_run_status=$?
-    fi
-
-    if [ ${lsqa_quality_run_status} -ne 0 ]; then
-        printf '# %s: assessment/lsqa returned %s\n' \
-            "${lsqa_quality_label}" "${lsqa_quality_run_status}"
-        if [ -s "${lsqa_quality_err_file}" ]; then
-            printf '# lsqa stderr follows\n'
-            sed 's/^/# /' "${lsqa_quality_err_file}"
-        else
-            printf '# %s: lsqa produced no diagnostics\n' \
-                "${lsqa_quality_label}"
-        fi
-    fi
-
-    rm -f "${lsqa_quality_err_file}"
-    return ${lsqa_quality_run_status}
-}
-
-lsqa_sixel_init() {
-    test_path=$1
-
-    if ! lsqa_init "${test_path}"; then
-        return 1
-    fi
-
-    _lsqa_require_converter_common
-    ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
-
-    return 0
-}
 
 lsqa_expect_low_quality_or_fail() {
     lsqa_low_image_path=$1

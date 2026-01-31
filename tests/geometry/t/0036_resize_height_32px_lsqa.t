@@ -42,10 +42,6 @@ set -v
 require_file "${input_image}"
 require_file "${reference_image}"
 
-if ! lsqa_init "$0"; then
-    fail 1 "lsqa binary missing"
-    exit "${status}"
-fi
 
 if run_img2sixel -h 32px -o "${output_sixel}"         "${input_image}" \
         2>>"${log_file}"; then
@@ -55,7 +51,25 @@ else
     exit "${status}"
 fi
 
-if lsqa_run_benchmark "${reference_image}" "${output_sixel}"         "height-32px" "${artifact_dir}" "${lsqa_floor}"; then
+if {
+    lsqa_err_file=$(mktemp)
+    lsqa_run_status=0
+    if ! run_lsqa -b "MS-SSIM:${lsqa_floor}" \
+        "${reference_image}" "${output_sixel}" > /dev/null \
+        2>"${lsqa_err_file}"; then
+        lsqa_run_status=$?
+        printf '# %s: assessment/lsqa returned %s\n' \
+            "height-32px" "${lsqa_run_status}"
+        if [ -s "${lsqa_err_file}" ]; then
+            printf '# lsqa stderr follows\n'
+            sed 's/^/# /' "${lsqa_err_file}"
+        else
+            printf '# %s: lsqa produced no diagnostics\n' \
+                "height-32px"
+        fi
+    fi
+    rm -f "${lsqa_err_file}"
+    [ ${lsqa_run_status} -eq 0 ]; }; then
     pass 1 "height scaling -h 32px lsqa passed"
 else
     fail 1 "height scaling -h 32px lsqa failed"
