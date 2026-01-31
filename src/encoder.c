@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: MIT AND BSD-3-Clause
  *
- * Copyright (c) 2021-2025 libsixel developers. See `AUTHORS`.
+ * Copyright (c) 2021-2026 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2019 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -121,6 +121,7 @@
 #include "logger.h"
 #include "options.h"
 #include "dither.h"
+#include "pixelformat.h"
 #include "rgblookup.h"
 #include "clipboard.h"
 #include "compat_stub.h"
@@ -498,6 +499,260 @@ arg_strdup(
     return p;
 }
 
+/*
+ * Duplicate frame metadata and pixels so palette construction can shift
+ * colorspaces without mutating the live frame used for encoding.
+ */
+static SIXELSTATUS
+sixel_encoder_clone_frame(sixel_frame_t *frame,
+                          sixel_allocator_t *allocator,
+                          sixel_frame_t **frame_out)
+{
+    SIXELSTATUS status;
+    sixel_frame_t *clone;
+    unsigned char *pixels;
+    int depth_result;
+    size_t depth;
+    size_t pixel_total;
+    size_t pixel_bytes;
+
+    status = SIXEL_BAD_ARGUMENT;
+    clone = NULL;
+    pixels = NULL;
+    depth_result = 0;
+    depth = 0U;
+    pixel_total = 0U;
+    pixel_bytes = 0U;
+
+    if (frame == NULL || frame_out == NULL) {
+        return status;
+    }
+
+    status = sixel_frame_new(&clone, allocator);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    clone->width = frame->width;
+    clone->height = frame->height;
+    clone->pixelformat = frame->pixelformat;
+    clone->colorspace = frame->colorspace;
+    clone->ncolors = frame->ncolors;
+    clone->transparent = frame->transparent;
+
+    if (frame->width < 0 || frame->height < 0) {
+        status = SIXEL_BAD_INPUT;
+        goto error;
+    }
+
+    if (frame->width > 0 && frame->height > 0) {
+        depth_result = sixel_helper_compute_depth(frame->pixelformat);
+        if (depth_result <= 0) {
+            status = SIXEL_BAD_INPUT;
+            goto error;
+        }
+        depth = (size_t)depth_result;
+        pixel_total = (size_t)frame->width * (size_t)frame->height;
+        if (pixel_total / (size_t)frame->width
+                != (size_t)frame->height) {
+            status = SIXEL_BAD_INPUT;
+            goto error;
+        }
+        if (pixel_total > SIZE_MAX / depth) {
+            status = SIXEL_BAD_INPUT;
+            goto error;
+        }
+        pixel_bytes = pixel_total * depth;
+        if (pixel_bytes > 0U) {
+            pixels = (unsigned char *)sixel_allocator_malloc(
+                clone->allocator,
+                pixel_bytes);
+            if (pixels == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto error;
+            }
+            memcpy(pixels, sixel_frame_get_pixels(frame), pixel_bytes);
+            clone->pixels.u8ptr = pixels;
+        }
+    }
+
+    *frame_out = clone;
+    return SIXEL_OK;
+
+error:
+    if (pixels != NULL) {
+        sixel_allocator_free(clone->allocator, pixels);
+        clone->pixels.u8ptr = NULL;
+    }
+    sixel_frame_unref(clone);
+    return status;
+}
+
+/*
+ * Convert frame pixels into the requested colorspace without changing
+ * the current pixelformat.
+ */
+static SIXELSTATUS
+sixel_encoder_convert_frame_colorspace(sixel_frame_t *frame,
+                                       int target_colorspace)
+{
+    SIXELSTATUS status;
+    int source_colorspace;
+    int pixelformat;
+    int depth;
+    int width;
+    int height;
+    size_t pixel_total;
+    size_t pixel_bytes;
+    unsigned char *pixels;
+
+    status = SIXEL_BAD_ARGUMENT;
+    source_colorspace = SIXEL_COLORSPACE_GAMMA;
+    pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    depth = 0;
+    width = 0;
+    height = 0;
+    pixel_total = 0U;
+    pixel_bytes = 0U;
+    pixels = NULL;
+
+    if (frame == NULL) {
+        return status;
+    }
+
+    source_colorspace = sixel_frame_get_colorspace(frame);
+    if (source_colorspace == target_colorspace) {
+        return SIXEL_OK;
+    }
+
+    width = sixel_frame_get_width(frame);
+    height = sixel_frame_get_height(frame);
+    if (width <= 0 || height <= 0) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    pixelformat = sixel_frame_get_pixelformat(frame);
+    depth = sixel_helper_compute_depth(pixelformat);
+    if (depth <= 0) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    pixel_total = (size_t)width * (size_t)height;
+    if (pixel_total / (size_t)width != (size_t)height) {
+        return SIXEL_BAD_INPUT;
+    }
+    if (pixel_total > SIZE_MAX / (size_t)depth) {
+        return SIXEL_BAD_INPUT;
+    }
+    pixel_bytes = pixel_total * (size_t)depth;
+
+    if (SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat)) {
+        pixels = (unsigned char *)sixel_frame_get_pixels_float32(frame);
+    } else {
+        pixels = sixel_frame_get_pixels(frame);
+    }
+
+    status = sixel_helper_convert_colorspace(pixels,
+                                             pixel_bytes,
+                                             pixelformat,
+                                             source_colorspace,
+                                             target_colorspace);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    sixel_frame_set_colorspace(frame, target_colorspace);
+    return SIXEL_OK;
+}
+
+/*
+ * Recolor the generated palette into the working colorspace so dithering,
+ * LUT builders, and palette emission share the same color interpretation.
+ */
+static SIXELSTATUS
+sixel_encoder_convert_palette_colorspace(sixel_palette_t *palette,
+                                         int source_colorspace,
+                                         int target_colorspace)
+{
+    SIXELSTATUS status;
+    size_t palette_count;
+    size_t palette_channels;
+    size_t palette_bytes;
+    size_t palette_float_bytes;
+    size_t index;
+    int channel;
+    int float_pixelformat;
+    int source_pixelformat;
+
+    if (palette == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (source_colorspace == target_colorspace) {
+        return SIXEL_OK;
+    }
+
+    palette_count = palette->entry_count;
+    if (palette_count == 0U) {
+        return SIXEL_OK;
+    }
+
+    palette_channels = palette_count * 3U;
+    if (palette_channels / 3U != palette_count) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    if (palette->entries_float32 != NULL && palette->float_depth > 0) {
+        palette_float_bytes =
+            palette_count * (size_t)palette->float_depth;
+        if ((size_t)palette->float_depth == 0U
+                || palette_float_bytes / (size_t)palette->float_depth
+                    != palette_count) {
+            return SIXEL_BAD_INPUT;
+        }
+        source_pixelformat =
+            sixel_encoder_pixelformat_for_colorspace(source_colorspace, 1);
+        status = sixel_helper_convert_colorspace(
+            (unsigned char *)palette->entries_float32,
+            palette_float_bytes,
+            source_pixelformat,
+            source_colorspace,
+            target_colorspace);
+        if (SIXEL_FAILED(status)) {
+            return status;
+        }
+
+        if (palette->entries == NULL) {
+            return SIXEL_OK;
+        }
+
+        float_pixelformat =
+            sixel_encoder_pixelformat_for_colorspace(target_colorspace, 1);
+        for (index = 0U; index < palette_channels; ++index) {
+            channel = (int)(index % 3U);
+            palette->entries[index] =
+                sixel_pixelformat_float_channel_to_byte(
+                    float_pixelformat,
+                    channel,
+                    palette->entries_float32[index]);
+        }
+
+        return SIXEL_OK;
+    }
+
+    if (palette->entries == NULL) {
+        return SIXEL_OK;
+    }
+
+    palette_bytes = palette_channels;
+    status = sixel_helper_convert_colorspace(palette->entries,
+                                             palette_bytes,
+                                             SIXEL_PIXELFORMAT_RGB888,
+                                             source_colorspace,
+                                             target_colorspace);
+    return status;
+}
+
 static int
 sixel_encoder_env_prefers_float32(char const *text)
 {
@@ -531,6 +786,9 @@ sixel_encoder_apply_precision_override(
     int prefer_float32;
 
     prefer_float32 = encoder->prefer_float32;
+    if (encoder->force_float32_colorspace != 0) {
+        prefer_float32 = 1;
+    }
 
     if (mode == SIXEL_ENCODER_PRECISION_MODE_AUTO) {
         return SIXEL_OK;
@@ -539,7 +797,11 @@ sixel_encoder_apply_precision_override(
     if (mode == SIXEL_ENCODER_PRECISION_MODE_FLOAT32) {
         prefer_float32 = 1;
     } else if (mode == SIXEL_ENCODER_PRECISION_MODE_8BIT) {
-        prefer_float32 = 0;
+        if (encoder->force_float32_colorspace != 0) {
+            prefer_float32 = 1;
+        } else {
+            prefer_float32 = 0;
+        }
     } else {
         sixel_helper_set_additional_message(
             "sixel_encoder_setopt: invalid precision override.");
@@ -3640,6 +3902,7 @@ static SIXELSTATUS
 sixel_encode_dag_node_palette_launch(sixel_encode_dag_context_t *context)
 {
     SIXELSTATUS status;
+    int clustering_pixelformat;
 
     if (context == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -3653,9 +3916,13 @@ sixel_encode_dag_node_palette_launch(sixel_encode_dag_context_t *context)
                                             context->encoder->allocator);
     if (SIXEL_SUCCEEDED(status)) {
         context->palette_job_initialized = 1;
+        clustering_pixelformat =
+            sixel_encoder_pixelformat_for_colorspace(
+                context->encoder->clustering_colorspace,
+                context->encoder->prefer_float32);
         status = sixel_encoder_palette_job_launch(&context->palette_job,
                                                   context->frame,
-                                                  context->target_pixelformat,
+                                                  clustering_pixelformat,
                                                   context->encoder);
         if (SIXEL_SUCCEEDED(status)) {
             context->palette_job_started = 1;
@@ -4694,9 +4961,25 @@ sixel_encoder_prepare_palette(
     sixel_filter_final_merge_config_t merge_config;
     sixel_logger_t *target_logger;
     int cache_allowed;
+    sixel_frame_t *palette_frame;
+    sixel_frame_t *cluster_frame;
+    unsigned char *palette_pixels;
+    int palette_pixelformat;
+    int palette_target_pixelformat;
+    int clustering_colorspace;
+    int working_colorspace;
+    int prefer_float32;
 
     target_logger = logger;
     cache_allowed = allow_cache != 0;
+    palette_frame = frame;
+    cluster_frame = NULL;
+    palette_pixels = NULL;
+    palette_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    palette_target_pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    clustering_colorspace = SIXEL_COLORSPACE_GAMMA;
+    working_colorspace = SIXEL_COLORSPACE_GAMMA;
+    prefer_float32 = 0;
     if (encoder != NULL) {
         if (target_logger == NULL) {
             target_logger = encoder->logger;
@@ -4798,6 +5081,42 @@ sixel_encoder_prepare_palette(
         goto end;
     }
 
+    clustering_colorspace = encoder->clustering_colorspace;
+    working_colorspace = encoder->working_colorspace;
+    prefer_float32 = encoder->prefer_float32;
+    palette_target_pixelformat =
+        sixel_encoder_pixelformat_for_colorspace(clustering_colorspace,
+                                                 prefer_float32);
+
+    if (sixel_frame_get_pixelformat(frame) != palette_target_pixelformat
+            || sixel_frame_get_colorspace(frame)
+                != clustering_colorspace) {
+        status = sixel_encoder_clone_frame(frame,
+                                           encoder->allocator,
+                                           &cluster_frame);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        palette_frame = cluster_frame;
+        if (sixel_frame_get_pixelformat(palette_frame)
+                != palette_target_pixelformat) {
+            status = sixel_frame_set_pixelformat(palette_frame,
+                                                 palette_target_pixelformat);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
+        if (sixel_frame_get_colorspace(palette_frame)
+                != clustering_colorspace) {
+            status = sixel_encoder_convert_frame_colorspace(
+                palette_frame,
+                clustering_colorspace);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
+    }
+
     sixel_dither_set_lut_policy(*dither, encoder->lut_policy);
     sixel_dither_set_sixel_reversible(*dither,
                                       encoder->sixel_reversible);
@@ -4811,17 +5130,30 @@ sixel_encoder_prepare_palette(
     }
     (*dither)->quantize_model = encoder->quantize_model;
 
+    palette_pixels = sixel_frame_get_pixels(palette_frame);
+    palette_pixelformat = sixel_frame_get_pixelformat(palette_frame);
     status = sixel_dither_initialize(*dither,
-                                     sixel_frame_get_pixels(frame),
-                                     sixel_frame_get_width(frame),
-                                     sixel_frame_get_height(frame),
-                                     sixel_frame_get_pixelformat(frame),
+                                     palette_pixels,
+                                     sixel_frame_get_width(palette_frame),
+                                     sixel_frame_get_height(palette_frame),
+                                     palette_pixelformat,
                                      encoder->method_for_largest,
                                      encoder->method_for_rep,
                                      encoder->quality_mode);
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(*dither);
         goto end;
+    }
+
+    if (clustering_colorspace != working_colorspace) {
+        status = sixel_encoder_convert_palette_colorspace(
+            (*dither)->palette,
+            clustering_colorspace,
+            working_colorspace);
+        if (SIXEL_FAILED(status)) {
+            sixel_dither_unref(*dither);
+            goto end;
+        }
     }
 
     histogram_colors = sixel_dither_get_num_of_histogram_colors(*dither);
@@ -4833,6 +5165,10 @@ sixel_encoder_prepare_palette(
     status = SIXEL_OK;
 
 end:
+    if (cluster_frame != NULL) {
+        sixel_frame_unref(cluster_frame);
+        cluster_frame = NULL;
+    }
     if (SIXEL_SUCCEEDED(status) && dither != NULL && *dither != NULL) {
         sixel_dither_set_lut_policy(*dither, encoder->lut_policy);
         /* pass down the user's demand for an exact palette size */
@@ -5896,7 +6232,11 @@ sixel_encoder_new(
     (*ppencoder)->verbose               = 0;
     (*ppencoder)->penetrate_multiplexer = 0;
     (*ppencoder)->encode_policy         = SIXEL_ENCODEPOLICY_AUTO;
+    (*ppencoder)->clustering_colorspace = SIXEL_COLORSPACE_GAMMA;
     (*ppencoder)->working_colorspace    = SIXEL_COLORSPACE_GAMMA;
+    (*ppencoder)->working_colorspace_set = 0;
+    (*ppencoder)->clustering_colorspace_set = 0;
+    (*ppencoder)->force_float32_colorspace = 0;
     (*ppencoder)->output_colorspace     = SIXEL_COLORSPACE_GAMMA;
     (*ppencoder)->prefer_float32        = 0;
     (*ppencoder)->ormode                = 0;
@@ -7704,6 +8044,57 @@ sixel_encoder_setopt(
                                         encoder->lut_policy);
         }
         break;
+    case SIXEL_OPTFLAG_CLUSTERING_COLORSPACE:  /* X */
+        if (value == NULL) {
+            sixel_helper_set_additional_message(
+                "clustering-colorspace requires an argument.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        } else {
+            len = strlen(value);
+
+            if (len >= sizeof(lowered)) {
+                sixel_helper_set_additional_message(
+                    "specified clustering colorspace name is too long.");
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
+            for (i = 0; i < len; ++i) {
+                lowered[i] = (char)tolower((unsigned char)value[i]);
+            }
+            lowered[len] = '\0';
+
+            match_result = sixel_option_match_choice(
+                lowered,
+                g_option_choices_working_colorspace,
+                sizeof(g_option_choices_working_colorspace) /
+                sizeof(g_option_choices_working_colorspace[0]),
+                &match_value,
+                match_detail,
+                sizeof(match_detail));
+            if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
+                encoder->clustering_colorspace = match_value;
+                encoder->clustering_colorspace_set = 1;
+                encoder->force_float32_colorspace = 1;
+                encoder->prefer_float32 = 1;
+            } else {
+                if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+                    sixel_option_report_ambiguous_prefix(value,
+                        match_detail,
+                        match_message,
+                        sizeof(match_message));
+                } else {
+                    sixel_option_report_invalid_choice(
+                        "unsupported clustering colorspace specified.",
+                        match_detail,
+                        match_message,
+                        sizeof(match_message));
+                }
+                status = SIXEL_BAD_ARGUMENT;
+                goto end;
+            }
+        }
+        break;
     case SIXEL_OPTFLAG_WORKING_COLORSPACE:  /* W */
         if (value == NULL) {
             sixel_helper_set_additional_message(
@@ -7734,6 +8125,12 @@ sixel_encoder_setopt(
                 sizeof(match_detail));
             if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
                 encoder->working_colorspace = match_value;
+                encoder->working_colorspace_set = 1;
+                if (encoder->clustering_colorspace_set == 0) {
+                    encoder->clustering_colorspace = match_value;
+                }
+                encoder->force_float32_colorspace = 1;
+                encoder->prefer_float32 = 1;
             } else {
                 if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
                     sixel_option_report_ambiguous_prefix(value,

@@ -38,7 +38,7 @@ run_img2sixel -v -W oklab -w 99% \
     -o "${out_file}" "${ppm_file}" \
     >"${artifact_dir}/stdout.log" 2>"${log_file}" || true
 
-if grep -q "resize: mode=.*input=rgb888" "${log_file}"; then
+if grep -q "resize: mode=.*input=linear-f32" "${log_file}"; then
     printf 'ok 1 - planner reports scaler input pixelformat\n'
 else
     printf 'not ok 1 - missing scaler input declaration\n'

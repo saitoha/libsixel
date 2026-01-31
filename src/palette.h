@@ -75,7 +75,7 @@ struct sixel_palette {
     sixel_allocator_t *allocator;   /* allocator associated with palette */
     unsigned char *entries;         /* palette entries, RGB triplets */
     size_t entries_size;            /* allocated length for entries */
-    float *entries_float32;         /* optional RGBFLOAT32 entries */
+    float *entries_float32;         /* float entries in dither colorspace */
     size_t entries_float32_size;    /* allocated length for float entries */
     unsigned int entry_count;       /* number of active palette entries */
     unsigned int requested_colors;  /* requested palette size */

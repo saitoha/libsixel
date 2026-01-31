@@ -261,6 +261,14 @@ _img2sixel()
                                    wic' -- "$cur" ) )
         return 0
         ;;
+    -X|--clustering-colorspace)
+        COMPREPLY=( $( compgen -W 'gamma \
+                                   linear \
+                                   oklab \
+                                   cielab \
+                                   din99d' -- "$cur" ) )
+        return 0
+        ;;
     -W|--working-colorspace)
         COMPREPLY=( $( compgen -W 'gamma \
                                    linear \
@@ -336,6 +344,7 @@ _img2sixel()
                                    -L --loaders \
                                    -@ --drcs \
                                    -O --ormode \
+                                   -X --clustering-colorspace \
                                    -W --working-colorspace \
                                    -U --output-colorspace \
                                    -1 --show-completion \

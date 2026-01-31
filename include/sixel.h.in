@@ -514,19 +514,31 @@ typedef int SIXELSTATUS;
                                                                   binary tree
                                                                   lookup
                                                */
-#define SIXEL_OPTFLAG_WORKING_COLORSPACE ('W') /* -W WORKINGCOLORSPACE, --working-colorspace=WORKINGCOLORSPACE
-                                                select internal working color space
-                                                  gamma  -> keep gamma encoded pixels (default)
-                                                  linear -> convert to linear RGB for processing
-                                                  oklab  -> operate in OKLab color space
-                                                  cielab -> operate in CIELAB color space
-                                                */
-#define SIXEL_OPTFLAG_OUTPUT_COLORSPACE  ('U') /* -U OUTPUTCOLORSPACE, --output-colorspace=OUTPUTCOLORSPACE
-                                                  select output buffer color space
-                                                    gamma   -> sRGB gamma encoded (default)
-                                                    linear  -> linear RGB
-                                                    smpte-c -> SMPTE-C gamma encoded RGB
-                                                */
+#define SIXEL_OPTFLAG_CLUSTERING_COLORSPACE ('X')
+    /* -X COLORSPACE */
+    /* --clustering-colorspace=COLORSPACE */
+    /* select palette clustering space */
+    /*   gamma  -> keep gamma encoded pixels */
+    /*   linear -> convert to linear RGB */
+    /*   oklab  -> OKLab color space */
+    /*   cielab -> CIELAB color space */
+    /*   din99d -> DIN99d color space */
+#define SIXEL_OPTFLAG_WORKING_COLORSPACE    ('W')
+    /* -W COLORSPACE */
+    /* --working-colorspace=COLORSPACE */
+    /* select internal working space */
+    /*   gamma  -> keep gamma encoded pixels */
+    /*   linear -> convert to linear RGB */
+    /*   oklab  -> OKLab color space */
+    /*   cielab -> CIELAB color space */
+    /*   din99d -> DIN99d color space */
+#define SIXEL_OPTFLAG_OUTPUT_COLORSPACE     ('U')
+    /* -U COLORSPACE */
+    /* --output-colorspace=COLORSPACE */
+    /* select output buffer color space */
+    /*   gamma   -> sRGB gamma encoded */
+    /*   linear  -> linear RGB */
+    /*   smpte-c -> SMPTE-C gamma encoded RGB */
 #define SIXEL_OPTFLAG_ORMODE            ('O')  /* -O, --ormode:
                                                   output ormode sixel image
                                                 */

@@ -118,7 +118,11 @@ struct sixel_encoder {
     int macro_number;
     int penetrate_multiplexer;
     int encode_policy;
+    int clustering_colorspace;
     int working_colorspace;
+    int working_colorspace_set;
+    int clustering_colorspace_set;
+    int force_float32_colorspace;
     int output_colorspace;
     int prefer_float32;
     int ormode;

@@ -339,6 +339,36 @@ TESTS = \
     palette/t/0056_palette_map_png_g2.t \
     palette/t/0057_palette_map_png_g4.t \
     palette/t/0058_palette_map_png_g8.t \
+    palette/t/0059_clustering_colorspace_gamma_lsqa.t \
+    palette/t/0060_clustering_colorspace_linear_lsqa.t \
+    palette/t/0061_clustering_colorspace_oklab_lsqa.t \
+    palette/t/0062_clustering_colorspace_cielab_lsqa.t \
+    palette/t/0063_clustering_colorspace_din99d_lsqa.t \
+    palette/t/0064_clustering_gamma_working_gamma_lsqa.t \
+    palette/t/0065_clustering_gamma_working_linear_lsqa.t \
+    palette/t/0066_clustering_gamma_working_oklab_lsqa.t \
+    palette/t/0067_clustering_gamma_working_cielab_lsqa.t \
+    palette/t/0068_clustering_gamma_working_din99d_lsqa.t \
+    palette/t/0069_clustering_linear_working_gamma_lsqa.t \
+    palette/t/0070_clustering_linear_working_linear_lsqa.t \
+    palette/t/0071_clustering_linear_working_oklab_lsqa.t \
+    palette/t/0072_clustering_linear_working_cielab_lsqa.t \
+    palette/t/0073_clustering_linear_working_din99d_lsqa.t \
+    palette/t/0074_clustering_oklab_working_gamma_lsqa.t \
+    palette/t/0075_clustering_oklab_working_linear_lsqa.t \
+    palette/t/0076_clustering_oklab_working_oklab_lsqa.t \
+    palette/t/0077_clustering_oklab_working_cielab_lsqa.t \
+    palette/t/0078_clustering_oklab_working_din99d_lsqa.t \
+    palette/t/0079_clustering_cielab_working_gamma_lsqa.t \
+    palette/t/0080_clustering_cielab_working_linear_lsqa.t \
+    palette/t/0081_clustering_cielab_working_oklab_lsqa.t \
+    palette/t/0082_clustering_cielab_working_cielab_lsqa.t \
+    palette/t/0083_clustering_cielab_working_din99d_lsqa.t \
+    palette/t/0084_clustering_din99d_working_gamma_lsqa.t \
+    palette/t/0085_clustering_din99d_working_linear_lsqa.t \
+    palette/t/0086_clustering_din99d_working_oklab_lsqa.t \
+    palette/t/0087_clustering_din99d_working_cielab_lsqa.t \
+    palette/t/0088_clustering_din99d_working_din99d_lsqa.t \
     pipeline/t/0001_pipeline_planner_baseline_run.t \
     pipeline/t/0002_pipeline_planner_baseline_summary.t \
     pipeline/t/0003_pipeline_planner_baseline_threads.t \
