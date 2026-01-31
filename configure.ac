@@ -189,6 +189,199 @@ $ac_check_funcs_parallel_batch_pids; do
   AC_LANG_POP([C])
 ])
 
+# Check once whether the compiler accepts the builtin mismatch pragma.
+AC_DEFUN([AC_CHECK_GCC_DIAG_WBUILTIN_DECL_MISMATCH], [
+  AC_REQUIRE([AC_PROG_CC])
+  AC_LANG_PUSH([C])
+  AC_CACHE_CHECK([whether compiler accepts -Wbuiltin-declaration-mismatch pragma],
+                 [ac_cv_c_pragma_wbuiltin_decl_mismatch],
+                 [AC_COMPILE_IFELSE(
+                    [AC_LANG_PROGRAM([[
+#if defined(__clang__) || defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wbuiltin-declaration-mismatch"
+#endif
+                    ]], [[return 0;]])],
+                    [ac_cv_c_pragma_wbuiltin_decl_mismatch=yes],
+                    [ac_cv_c_pragma_wbuiltin_decl_mismatch=no])])
+  AC_LANG_POP([C])
+])
+
+# Run AC_CHECK_FUNCS checks in parallel using per-function directories.
+# This mirrors AC_CHECK_FUNCS behavior while reducing overall configure time
+# on systems with multiple CPUs.
+AC_DEFUN([AC_CHECK_FUNCS_PARALLEL], [
+  AC_REQUIRE([AC_CHECK_GCC_DIAG_WBUILTIN_DECL_MISMATCH])
+  AC_REQUIRE([AC_PROG_CC])
+  AC_LANG_PUSH([C])
+  m4_foreach_w([ac_check_func], [$1], [
+    AH_TEMPLATE([HAVE_]AS_TR_CPP([ac_check_func]),
+                [Define to 1 if you have the `]ac_check_func[' function.])
+  ])
+  m4_ifval([$4], [ac_check_funcs_parallel_includes="$4"],
+           [ac_check_funcs_parallel_includes=""])
+  AC_CACHE_CHECK([for -fno-builtin],
+                 [ac_cv_c_no_builtin],
+                 [ac_check_funcs_parallel_save_CFLAGS=$CFLAGS
+                  CFLAGS="$CFLAGS -fno-builtin"
+                  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([], [])],
+                                    [ac_cv_c_no_builtin=yes],
+                                    [ac_cv_c_no_builtin=no])
+                  CFLAGS=$ac_check_funcs_parallel_save_CFLAGS])
+  ac_check_funcs_parallel_cflags=""
+  if test "x$ac_cv_c_no_builtin" = "xyes"; then
+    ac_check_funcs_parallel_cflags="-fno-builtin"
+  fi
+  ac_check_funcs_parallel_dir="ac-check-funcs.$$"
+  ac_check_funcs_parallel_confdefs="$ac_pwd/confdefs.h"
+  ac_check_funcs_parallel_list="$1"
+  ac_check_funcs_parallel_todo=""
+  ac_check_funcs_parallel_cached=""
+  ac_check_funcs_parallel_active=0
+  ac_check_funcs_parallel_max="$CPU_COUNT"
+  ac_check_funcs_parallel_batch_pids=""
+  ac_check_funcs_parallel_diag_mismatch_pragma=""
+  ac_check_funcs_parallel_diag_mismatch_pragma_end=""
+
+  # Only emit the pragma when the compiler supports it.
+  if test "x$ac_cv_c_pragma_wbuiltin_decl_mismatch" = "xyes"; then
+    ac_check_funcs_parallel_diag_mismatch_pragma='
+#if defined(__clang__) || defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wbuiltin-declaration-mismatch"
+#endif
+'
+    ac_check_funcs_parallel_diag_mismatch_pragma_end='
+#if defined(__clang__) || defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+'
+  fi
+
+  # Limit parallelism by CPU_COUNT, falling back to 1 on invalid values.
+  case "$ac_check_funcs_parallel_max" in
+    ''|*[!0123456789]*)
+      ac_check_funcs_parallel_max=1
+      ;;
+    0)
+      ac_check_funcs_parallel_max=1
+      ;;
+  esac
+
+  # Split cached and non-cached functions to avoid needless checks.
+  for ac_func in $ac_check_funcs_parallel_list; do
+    eval "ac_check_funcs_parallel_has_cache=\${ac_cv_func_$ac_func+set}"
+    if test "x$ac_check_funcs_parallel_has_cache" = "xset"; then
+      ac_check_funcs_parallel_cached="$ac_check_funcs_parallel_cached $ac_func"
+    else
+      ac_check_funcs_parallel_todo="$ac_check_funcs_parallel_todo $ac_func"
+    fi
+  done
+
+  ac_check_funcs_parallel_save_CFLAGS=$CFLAGS
+  if test "x$ac_check_funcs_parallel_cflags" != "x"; then
+    CFLAGS="$CFLAGS $ac_check_funcs_parallel_cflags"
+  fi
+
+  # Run link tests in parallel in per-function directories to avoid
+  # collisions on conftest files and logs.
+  if test "x$ac_check_funcs_parallel_todo" != "x"; then
+    AS_MKDIR_P(["$ac_check_funcs_parallel_dir"])
+    for ac_func in $ac_check_funcs_parallel_todo; do
+      ac_check_funcs_parallel_subdir=\
+"$ac_check_funcs_parallel_dir/$ac_func"
+      AS_MKDIR_P(["$ac_check_funcs_parallel_subdir"])
+      (
+        cd "$ac_check_funcs_parallel_subdir" || exit 1
+        cat "$ac_check_funcs_parallel_confdefs" - <<_ACEOF \
+> conftest.$ac_ext
+/* end confdefs.h.  */
+/* Define $ac_func to an innocuous variant, in case headers declare it. */
+#define $ac_func innocuous_$ac_func
+
+/* System header to define __stub macros and avoid conflicts. */
+#include <limits.h>
+$ac_check_funcs_parallel_includes
+#undef $ac_func
+
+/* Override any GCC internal prototype to avoid argument mismatch. */
+#ifdef __cplusplus
+extern "C"
+#endif
+$ac_check_funcs_parallel_diag_mismatch_pragma
+char $ac_func (void);
+$ac_check_funcs_parallel_diag_mismatch_pragma_end
+/* The GNU C library defines this for functions which it implements to
+   always fail with ENOSYS. */
+#if defined __stub_$ac_func || defined __stub___$ac_func
+choke me
+#endif
+
+int
+main (void)
+{
+  return $ac_func ();
+}
+_ACEOF
+        if ac_fn_c_try_link "$LINENO"; then
+          printf '%s\n' yes > conftest.out
+        else
+          printf '%s\n' no > conftest.out
+        fi
+      ) &
+      ac_check_funcs_parallel_batch_pids=\
+"$ac_check_funcs_parallel_batch_pids $!"
+      ac_check_funcs_parallel_active=\
+`expr "$ac_check_funcs_parallel_active" + 1`
+      if test "$ac_check_funcs_parallel_active" -ge \
+              "$ac_check_funcs_parallel_max"; then
+        for ac_check_funcs_parallel_pid in \
+$ac_check_funcs_parallel_batch_pids; do
+          wait "$ac_check_funcs_parallel_pid"
+        done
+        ac_check_funcs_parallel_batch_pids=""
+        ac_check_funcs_parallel_active=0
+      fi
+    done
+  fi
+
+  for ac_check_funcs_parallel_pid in \
+$ac_check_funcs_parallel_batch_pids; do
+    wait "$ac_check_funcs_parallel_pid"
+  done
+
+  # Report results and update cache/defines serially for stable output.
+  for ac_func in $ac_check_funcs_parallel_list; do
+    AC_MSG_CHECKING([for $ac_func])
+    eval "ac_check_funcs_parallel_result=\${ac_cv_func_$ac_func-no}"
+    if test "x$ac_check_funcs_parallel_result" = "xno"; then
+      ac_check_funcs_parallel_subdir=\
+"$ac_check_funcs_parallel_dir/$ac_func"
+      if test -f "$ac_check_funcs_parallel_subdir/conftest.out"; then
+        ac_check_funcs_parallel_result=\
+`cat "$ac_check_funcs_parallel_subdir/conftest.out"`
+      fi
+    fi
+    AC_MSG_RESULT([$ac_check_funcs_parallel_result])
+    AS_VAR_SET([ac_cv_func_$ac_func], [$ac_check_funcs_parallel_result])
+    if test "x$ac_check_funcs_parallel_result" = "xyes"; then
+      ac_check_funcs_parallel_define=\
+`printf '%s\n' "$ac_func" | $as_tr_cpp`
+      AC_DEFINE_UNQUOTED([HAVE_$ac_check_funcs_parallel_define], [1],
+                         [Define to 1 if you have the `$ac_func' function.])
+      m4_ifval([$2], [$2], [:])
+    else
+      m4_ifval([$3], [$3], [:])
+    fi
+  done
+
+  CFLAGS=$ac_check_funcs_parallel_save_CFLAGS
+  if test -d "$ac_check_funcs_parallel_dir"; then
+    rm -rf "$ac_check_funcs_parallel_dir"
+  fi
+  AC_LANG_POP([C])
+])
+
 # Run config.status with explicit parallelism based on AX_COUNT_CPUS.
 # The flow is:
 # 1) Save the caller's --no-create choice.
