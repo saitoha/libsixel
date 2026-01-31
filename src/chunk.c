@@ -264,8 +264,8 @@ open_binary_file(
     SIXELSTATUS status = SIXEL_FALSE;
 #if HAVE_STAT
     struct stat sb;
-#endif  /* HAVE_STAT */
     char message[2048];
+#endif  /* HAVE_STAT */
 
     if (filename == NULL || strcmp(filename, "-") == 0) {
         /* for windows */
