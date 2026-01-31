@@ -33,7 +33,7 @@ Example 3. Build a self-contained wheel with bundled libsixel ::
     $ cd libsixel
     $ ./configure --enable-python-wheel
     $ make
-    $ ls python/dist/libsixel_wheel-*.whl
+    $ ls python/dist/libsixel_python-*.whl
 
 Meson users can request the same wheel build with
 ``-Dpython_wheel=enabled``.
@@ -41,11 +41,12 @@ Meson users can request the same wheel build with
 Note: the wheel build requires the Python ``build`` module to be
 available in the build environment.
 
-The wheel is published as ``libsixel-wheel`` so that existing
-``libsixel-python`` users can stay on the original distribution name.
+The wheel now ships with a minimal C extension so the resulting filename
+includes a platform tag (for example, ``macosx`` on macOS).
+
 Install it with pip without pre-installing libsixel:
 
-    $ python -m pip install python/dist/libsixel_wheel-*.whl
+    $ python -m pip install python/dist/libsixel_python-*.whl
 
 
 Code Example
