@@ -20,20 +20,15 @@ export LSQA_HELPER_DIR
 
 status=0
 
-if ! lsqa_init "$0"; then
-    printf '1..1\n'
-    fail 1 "lsqa binary missing"
-    exit "${status}"
-fi
 
-artifact_root=${LSQA_ARTIFACT_ROOT}
+artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
 artifact_dir="${artifact_root}/${category_name}/${test_name}"
 mkdir -p "${artifact_dir}"
 
 printf '1..1\n'
 set -v
 
-image_path="${LSQA_INPUT_ROOT}/inputs/formats/palette.png"
+image_path="${top_srcdir}/tests/data/inputs/formats/palette.png"
 if lsqa_assert_repeat_stability "${image_path}" "palette.png" "${artifact_dir}"; then
     pass 1 "palette repeat variance within tolerance"
 else

@@ -28,10 +28,6 @@ output_png="${output_dir}/merge-heckbert-float32.png"
 
 require_file "${input_image}"
 
-if ! lsqa_init "$0"; then
-    fail 1 "lsqa binary missing"
-    exit "${status}"
-fi
 
 if SIXEL_PALETTE_OVERSPLIT_FACTOR=2.2 \
         SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT=2 \
@@ -48,8 +44,25 @@ else
     exit "${status}"
 fi
 
-if lsqa_run_benchmark "${input_image}" "${output_sixel}" \
-        "merge-heckbert-float32" "${artifact_dir}" "${lsqa_floor}"; then
+if {
+    lsqa_err_file=$(mktemp)
+    lsqa_run_status=0
+    if ! run_lsqa -b "MS-SSIM:${lsqa_floor}" \
+        "${input_image}" "${output_sixel}" > /dev/null \
+        2>"${lsqa_err_file}"; then
+        lsqa_run_status=$?
+        printf '# %s: assessment/lsqa returned %s\n' \
+            "merge-heckbert-float32" "${lsqa_run_status}"
+        if [ -s "${lsqa_err_file}" ]; then
+            printf '# lsqa stderr follows\n'
+            sed 's/^/# /' "${lsqa_err_file}"
+        else
+            printf '# %s: lsqa produced no diagnostics\n' \
+                "merge-heckbert-float32"
+        fi
+    fi
+    rm -f "${lsqa_err_file}"
+    [ ${lsqa_run_status} -eq 0 ]; }; then
     pass 1 "merge heckbert float32 lsqa passed"
 else
     fail 1 "merge heckbert float32 lsqa failed"

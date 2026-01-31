@@ -28,10 +28,6 @@ output_png="${output_dir}/snap-heckbert-8bit.png"
 
 require_file "${input_image}"
 
-if ! lsqa_init "$0"; then
-    fail 1 "lsqa binary missing"
-    exit "${status}"
-fi
 
 SIXEL_PALETTE_SNAP_TARGET_POLICY=reversible
 SIXEL_PALETTE_SNAP_TIMING_POLICY=all
@@ -49,7 +45,25 @@ else
     exit "${status}"
 fi
 
-if lsqa_run_benchmark "${input_image}" "${output_sixel}" "snap-heckbert-8bit" "${artifact_dir}" "${lsqa_floor}"; then
+if {
+    lsqa_err_file=$(mktemp)
+    lsqa_run_status=0
+    if ! run_lsqa -b "MS-SSIM:${lsqa_floor}" \
+        "${input_image}" "${output_sixel}" > /dev/null \
+        2>"${lsqa_err_file}"; then
+        lsqa_run_status=$?
+        printf '# %s: assessment/lsqa returned %s\n' \
+            "snap-heckbert-8bit" "${lsqa_run_status}"
+        if [ -s "${lsqa_err_file}" ]; then
+            printf '# lsqa stderr follows\n'
+            sed 's/^/# /' "${lsqa_err_file}"
+        else
+            printf '# %s: lsqa produced no diagnostics\n' \
+                "snap-heckbert-8bit"
+        fi
+    fi
+    rm -f "${lsqa_err_file}"
+    [ ${lsqa_run_status} -eq 0 ]; }; then
     pass 1 "snap heckbert 8bit lsqa passed"
 else
     fail 1 "snap heckbert 8bit lsqa failed"
