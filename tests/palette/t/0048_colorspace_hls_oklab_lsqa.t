@@ -26,27 +26,28 @@ echo "1..1"
 set -v
 
 input_image="${images_dir}/snake.png"
-output_sixel="${output_dir}/hls-oklab.six"
+output_sixel="${artifact_dir}/hls-oklab.six"
 
 require_file "${input_image}"
 
-if ! lsqa_init "$0"; then
-    fail 1 "lsqa binary missing"
-    exit "${status}"
-fi
 
 if run_img2sixel -t hls -W oklab -o "${output_sixel}" \
-        "${input_image}" \
-        2>>"${log_file}"; then
+    "${input_image}" \
+    2>>"${log_file}"; then
     :
 else
     fail 1 "img2sixel hls+oklab conversion failed"
     exit "${status}"
 fi
 
-if lsqa_assert_quality "${input_image}" "${output_sixel}" \
-        "hls-oklab" "${artifact_dir}" "${lsqa_floor}"; then
+lsqa_err=$(
+    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
+) || lsqa_run_status=$?
+
+if [ -z "${lsqa_run_status-}" ]; then
     pass 1 "hls+oklab lsqa passed"
+elif [ "${lsqa_run_status}" -eq 5 ]; then
+    fail 1 "${lsqa_err}"
 else
     fail 1 "hls+oklab lsqa failed"
 fi

@@ -32,7 +32,7 @@ TOP_SRCDIR="${top_srcdir}"
 export TOP_BUILDDIR TOP_SRCDIR
 input_image="${data_root}/snake_64.png"
 reference_image="${data_root}/scaling/snake_64_bicubic_120pct.png"
-output_sixel="${output_dir}/bicubic-upscale_120pct.six"
+output_sixel="${artifact_dir}/bicubic-upscale_120pct.six"
 
 ensure_img2sixel_available
 
@@ -42,23 +42,25 @@ set -v
 require_file "${input_image}"
 require_file "${reference_image}"
 
-if ! lsqa_init "$0"; then
-    fail 1 "lsqa binary missing"
-    exit "${status}"
-fi
 
-if run_img2sixel -r bicubic -w 120%         \
-        -o "${output_sixel}" \
-        "${input_image}"         \
-        2>>"${log_file}"; then
+if run_img2sixel -r bicubic -w 120% \
+    -o "${output_sixel}" \
+    "${input_image}" \
+    2>>"${log_file}"; then
     :
 else
     fail 1 "bicubic upscale 120pct scaling failed"
     exit "${status}"
 fi
 
-if lsqa_assert_quality "${reference_image}" "${output_sixel}"         "bicubic-upscale_120pct" "${artifact_dir}" "${lsqa_floor}"; then
+lsqa_err=$(
+    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${reference_image}" "${output_sixel}" 2>&1
+) || lsqa_run_status=$?
+
+if [ -z "${lsqa_run_status-}" ]; then
     pass 1 "bicubic upscale 120pct lsqa passed"
+elif [ "${lsqa_run_status}" -eq 5 ]; then
+    fail 1 "${lsqa_err}"
 else
     fail 1 "bicubic upscale 120pct lsqa failed"
 fi

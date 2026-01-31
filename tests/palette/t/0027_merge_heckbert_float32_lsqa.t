@@ -23,15 +23,11 @@ echo "1..1"
 set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
-output_sixel="${output_dir}/merge-heckbert-float32.six"
+output_sixel="${artifact_dir}/merge-heckbert-float32.six"
 output_png="${output_dir}/merge-heckbert-float32.png"
 
 require_file "${input_image}"
 
-if ! lsqa_init "$0"; then
-    fail 1 "lsqa binary missing"
-    exit "${status}"
-fi
 
 if SIXEL_PALETTE_OVERSPLIT_FACTOR=2.2 \
         SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT=2 \
@@ -41,16 +37,21 @@ if SIXEL_PALETTE_OVERSPLIT_FACTOR=2.2 \
         SIXEL_PALETTE_LUMIN_FACTOR_G=0.4 \
         SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L=0.6 \
         run_img2sixel -Q heckbert -F ward -W oklab \
-        -o "${output_sixel}" "${input_image}" 2>>"${log_file}"; then
+    -o "${output_sixel}" "${input_image}" 2>>"${log_file}"; then
     :
 else
     fail 1 "img2sixel merge heckbert float32 failed"
     exit "${status}"
 fi
 
-if lsqa_assert_quality "${input_image}" "${output_sixel}" \
-        "merge-heckbert-float32" "${artifact_dir}" "${lsqa_floor}"; then
+lsqa_err=$(
+    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
+) || lsqa_run_status=$?
+
+if [ -z "${lsqa_run_status-}" ]; then
     pass 1 "merge heckbert float32 lsqa passed"
+elif [ "${lsqa_run_status}" -eq 5 ]; then
+    fail 1 "${lsqa_err}"
 else
     fail 1 "merge heckbert float32 lsqa failed"
 fi

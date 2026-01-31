@@ -26,18 +26,14 @@ echo "1..1"
 set -v
 
 input_image="${images_dir}/snake.png"
-output_hls="${output_dir}/hls.six"
-output_rgb="${output_dir}/rgb.six"
+output_hls="${artifact_dir}/hls.six"
+output_rgb="${artifact_dir}/rgb.six"
 
 require_file "${input_image}"
 
-if ! lsqa_init "$0"; then
-    fail 1 "lsqa binary missing"
-    exit "${status}"
-fi
 
 if run_img2sixel -t hls -o "${output_hls}" "${input_image}" \
-        2>>"${log_file}"; then
+    2>>"${log_file}"; then
     :
 else
     fail 1 "img2sixel hls conversion failed"
@@ -45,16 +41,21 @@ else
 fi
 
 if run_img2sixel -t rgb -o "${output_rgb}" "${input_image}" \
-        2>>"${log_file}"; then
+    2>>"${log_file}"; then
     :
 else
     fail 1 "img2sixel rgb conversion failed"
     exit "${status}"
 fi
 
-if lsqa_assert_quality "${output_rgb}" "${output_hls}" \
-        "hls-vs-rgb" "${artifact_dir}" "${lsqa_floor}"; then
+lsqa_err=$(
+    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${output_rgb}" "${output_hls}" 2>&1
+) || lsqa_run_status=$?
+
+if [ -z "${lsqa_run_status-}" ]; then
     pass 1 "hls vs rgb lsqa passed"
+elif [ "${lsqa_run_status}" -eq 5 ]; then
+    fail 1 "${lsqa_err}"
 else
     fail 1 "hls vs rgb lsqa failed"
 fi

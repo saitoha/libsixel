@@ -23,25 +23,26 @@ echo "1..1"
 set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
-output_sixel="${output_dir}/snap-heckbert-float32.six"
+output_sixel="${artifact_dir}/snap-heckbert-float32.six"
 output_png="${output_dir}/snap-heckbert-float32.png"
 
 require_file "${input_image}"
 
-if ! lsqa_init "$0"; then
-    fail 1 "lsqa binary missing"
-    exit "${status}"
-fi
 
 if ! run_img2sixel -Q heckbert -6 -W oklab \
-        -o "${output_sixel}" "${input_image}" 2>>"${log_file}"; then
+    -o "${output_sixel}" "${input_image}" 2>>"${log_file}"; then
     fail 1 "img2sixel snap heckbert float32 failed"
     exit "${status}"
 fi
 
-if lsqa_assert_quality "${input_image}" "${output_sixel}" \
-        "snap-heckbert-float32" "${artifact_dir}" "${lsqa_floor}"; then
+lsqa_err=$(
+    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
+) || lsqa_run_status=$?
+
+if [ -z "${lsqa_run_status-}" ]; then
     pass 1 "snap heckbert float32 lsqa passed"
+elif [ "${lsqa_run_status}" -eq 5 ]; then
+    fail 1 "${lsqa_err}"
 else
     fail 1 "snap heckbert float32 lsqa failed"
 fi

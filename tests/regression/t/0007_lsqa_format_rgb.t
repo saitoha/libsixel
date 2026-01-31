@@ -22,21 +22,38 @@ status=0
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
-if ! lsqa_init "$0"; then
-    printf '1..1\n'
-    fail 1 "lsqa binary missing"
-    exit "${status}"
-fi
+ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-artifact_root=${LSQA_ARTIFACT_ROOT}
+
+artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
 artifact_dir="${artifact_root}/${category_name}/${test_name}"
 mkdir -p "${artifact_dir}"
 
 printf '1..1\n'
 set -v
 
-image_path="${LSQA_INPUT_ROOT}/inputs/formats/rgb.png"
-if lsqa_assert_quality "${image_path}" "${image_path}" "rgb.png" "${artifact_dir}" "${lsqa_floor}"; then
+image_path="${top_srcdir}/tests/data/inputs/formats/rgb.png"
+output_sixel="${artifact_dir}/rgb.six"
+if run_img2sixel -Lbuiltin "${image_path}" >"${output_sixel}" && \
+    {
+        lsqa_err_file=$(mktemp)
+        lsqa_run_status=0
+        if ! run_lsqa -b "MS-SSIM:${lsqa_floor}" \
+            "${image_path}" "${output_sixel}" > /dev/null \
+            2>"${lsqa_err_file}"; then
+            lsqa_run_status=$?
+            printf '# %s: assessment/lsqa returned %s\n' \
+                "rgb.png" "${lsqa_run_status}"
+            if [ -s "${lsqa_err_file}" ]; then
+                printf '# lsqa stderr follows\n'
+                sed 's/^/# /' "${lsqa_err_file}"
+            else
+                printf '# %s: lsqa produced no diagnostics\n' \
+                    "rgb.png"
+            fi
+        fi
+        rm -f "${lsqa_err_file}"
+        [ ${lsqa_run_status} -eq 0 ]; }; then
     pass 1 "rgb quality meets baseline"
 else
     fail 1 "rgb quality regressed"

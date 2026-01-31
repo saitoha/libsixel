@@ -23,15 +23,11 @@ echo "1..1"
 set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
-output_sixel="${output_dir}/snap-heckbert-8bit.six"
+output_sixel="${artifact_dir}/snap-heckbert-8bit.six"
 output_png="${output_dir}/snap-heckbert-8bit.png"
 
 require_file "${input_image}"
 
-if ! lsqa_init "$0"; then
-    fail 1 "lsqa binary missing"
-    exit "${status}"
-fi
 
 SIXEL_PALETTE_SNAP_TARGET_POLICY=reversible
 SIXEL_PALETTE_SNAP_TIMING_POLICY=all
@@ -49,8 +45,14 @@ else
     exit "${status}"
 fi
 
-if lsqa_assert_quality "${input_image}" "${output_sixel}" "snap-heckbert-8bit" "${artifact_dir}" "${lsqa_floor}"; then
+lsqa_err=$(
+    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
+) || lsqa_run_status=$?
+
+if [ -z "${lsqa_run_status-}" ]; then
     pass 1 "snap heckbert 8bit lsqa passed"
+elif [ "${lsqa_run_status}" -eq 5 ]; then
+    fail 1 "${lsqa_err}"
 else
     fail 1 "snap heckbert 8bit lsqa failed"
 fi
