@@ -19424,60 +19424,60 @@ printf "%s\n" "$ac_cv_c_no_builtin" >&6; }
   ac_check_funcs_parallel_dir="ac-check-funcs.$$"
   ac_check_funcs_parallel_confdefs="$ac_pwd/confdefs.h"
   ac_check_funcs_parallel_list="assert \
-                setmode \
-                _setmode \
-                fileno \
-                _fileno \
-                _mktemp \
-                mkstemp \
-                mktemp \
-                fopen_s \
-                fsync \
-                _commit \
-                _mkdir \
-                mkdir \
-                _chmod \
-                chmod \
-                signal \
-                strdup \
-                strcpy \
-                strcpy_s \
-                strtoul \
-                calloc \
-                clearerr \
-                stat \
-                setjmp \
-                longjmp \
-                strerror \
-                strerror_r \
-                _strerror_r \
-                _isatty \
-                isatty \
-                clock_gettime \
-                _sopen_s \
-                _open \
-                _write \
-                _close \
-                open \
-                sscanf_s \
-                strncmp \
-                ldiv \
-                floor \
-                pow \
-                select \
-                _fullpath \
-                _realpath \
-                _dupenv_s \
-                realpath \
-                sqrt \
-                strchr \
-                strerror \
-                strstr \
-                fchmod \
-                strtol \
-                tmpnam \
-                gettimeofday \
-               "
+                         setmode \
+                         _setmode \
+                         fileno \
+                         _fileno \
+                         _mktemp \
+                         mkstemp \
+                         mktemp \
+                         fopen_s \
+                         fsync \
+                         _commit \
+                         _mkdir \
+                         mkdir \
+                         _chmod \
+                         chmod \
+                         signal \
+                         strdup \
+                         strcpy \
+                         strcpy_s \
+                         strtoul \
+                         calloc \
+                         clearerr \
+                         stat \
+                         setjmp \
+                         longjmp \
+                         strerror \
+                         strerror_r \
+                         _strerror_r \
+                         _isatty \
+                         isatty \
+                         clock_gettime \
+                         _sopen_s \
+                         _open \
+                         _write \
+                         _close \
+                         open \
+                         sscanf_s \
+                         strncmp \
+                         ldiv \
+                         floor \
+                         pow \
+                         select \
+                         _fullpath \
+                         _realpath \
+                         _dupenv_s \
+                         realpath \
+                         sqrt \
+                         strchr \
+                         strerror \
+                         strstr \
+                         fchmod \
+                         strtol \
+                         tmpnam \
+                         gettimeofday \
+                        "
   ac_check_funcs_parallel_todo=""
   ac_check_funcs_parallel_cached=""
   ac_check_funcs_parallel_active=0
@@ -24345,14 +24345,14 @@ else
 fi
 
 
-
-
-          touch -c aclocal.m4 Makefile.in configure config.h.in \
-                   converters/Makefile.in include/Makefile.in \
-                   python/Makefile.in src/Makefile.in tools/Makefile.in \
-                   assessment/Makefile.in wic/Makefile.in \
-                   tests/Makefile.in quicklook-extension/Makefile.in
-
+#AC_DEFUN([LS_UPDATE_TIMESTAMP], [
+#          touch -c aclocal.m4 Makefile.in configure config.h.in \
+#                   converters/Makefile.in include/Makefile.in \
+#                   python/Makefile.in src/Makefile.in tools/Makefile.in \
+#                   assessment/Makefile.in wic/Makefile.in \
+#                   tests/Makefile.in quicklook-extension/Makefile.in
+#          ])
+#LS_UPDATE_TIMESTAMP
 
  if test x$have_curl = xyes; then
   HAVE_CURL_TRUE=
