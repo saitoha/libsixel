@@ -34,33 +34,21 @@ if SIXEL_PALETTE_SNAP_TARGET_POLICY=nearest \
         SIXEL_PALETTE_SNAP_APPROACH_RATE=0.7 \
         SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L=0.7 \
         run_img2sixel -Q kmeans -6 \
-        -o "${output_sixel}" "${input_image}" 2>>"${log_file}"; then
+    -o "${output_sixel}" "${input_image}" 2>>"${log_file}"; then
     :
 else
     fail 1 "img2sixel snap kmeans 8bit failed"
     exit "${status}"
 fi
 
-if {
-    lsqa_err_file=$(mktemp)
-    lsqa_run_status=0
-    if ! run_lsqa -b "MS-SSIM:${lsqa_floor}" \
-        "${input_image}" "${output_sixel}" > /dev/null \
-        2>"${lsqa_err_file}"; then
-        lsqa_run_status=$?
-        printf '# %s: assessment/lsqa returned %s\n' \
-            "snap-kmeans-8bit" "${lsqa_run_status}"
-        if [ -s "${lsqa_err_file}" ]; then
-            printf '# lsqa stderr follows\n'
-            sed 's/^/# /' "${lsqa_err_file}"
-        else
-            printf '# %s: lsqa produced no diagnostics\n' \
-                "snap-kmeans-8bit"
-        fi
-    fi
-    rm -f "${lsqa_err_file}"
-    [ ${lsqa_run_status} -eq 0 ]; }; then
+lsqa_err=$(
+    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
+) || lsqa_run_status=$?
+
+if [ -z "${lsqa_run_status-}" ]; then
     pass 1 "snap kmeans 8bit lsqa passed"
+elif [ "${lsqa_run_status}" -eq 5 ]; then
+    fail 1 "${lsqa_err}"
 else
     fail 1 "snap kmeans 8bit lsqa failed"
 fi
