@@ -118,7 +118,9 @@ read_palette(png_structp png_ptr,
     }
 }
 
+#if HAVE_SETJMP && HAVE_LONGJMP
 static jmp_buf jmpbuf;
+#endif  /* HAVE_SETJMP && HAVE_LONGJMP */
 
 /* libpng error handler */
 static void
