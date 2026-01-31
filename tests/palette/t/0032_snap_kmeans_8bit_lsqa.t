@@ -23,7 +23,7 @@ echo "1..1"
 set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
-output_sixel="${output_dir}/snap-kmeans-8bit.six"
+output_sixel="${artifact_dir}/snap-kmeans-8bit.six"
 output_png="${output_dir}/snap-kmeans-8bit.png"
 
 require_file "${input_image}"
@@ -45,7 +45,7 @@ else
     exit "${status}"
 fi
 
-if lsqa_assert_quality "${input_image}" "${output_sixel}" \
+if lsqa_run_benchmark "${input_image}" "${output_sixel}" \
         "snap-kmeans-8bit" "${artifact_dir}" "${lsqa_floor}"; then
     pass 1 "snap kmeans 8bit lsqa passed"
 else

@@ -23,7 +23,7 @@ echo "1..1"
 set -v
 
 input_image="${top_srcdir}/tests/data/resolutions/tiny_square.png"
-output_sixel="${output_dir}/merge-kmeans-float32.six"
+output_sixel="${artifact_dir}/merge-kmeans-float32.six"
 output_png="${output_dir}/merge-kmeans-float32.png"
 
 require_file "${input_image}"
@@ -56,7 +56,7 @@ else
     exit "${status}"
 fi
 
-if lsqa_assert_quality "${input_image}" "${output_sixel}" \
+if lsqa_run_benchmark "${input_image}" "${output_sixel}" \
         "merge-kmeans-float32" "${artifact_dir}" "${lsqa_floor}"; then
     pass 1 "merge kmeans float32 lsqa passed"
 else

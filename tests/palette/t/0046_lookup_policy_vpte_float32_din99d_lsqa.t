@@ -25,7 +25,7 @@ echo "1..1"
 set -v
 
 input_image="${images_dir}/snake.png"
-output_sixel="${output_dir}/vpte-float32-din99d.six"
+output_sixel="${artifact_dir}/vpte-float32-din99d.six"
 
 require_file "${input_image}"
 
@@ -44,7 +44,7 @@ else
     exit "${status}"
 fi
 
-if lsqa_assert_quality "${input_image}" "${output_sixel}" \
+if lsqa_run_benchmark "${input_image}" "${output_sixel}" \
         "vpte-float32-din99d" "${artifact_dir}" "${lsqa_floor}"; then
     pass 1 "float32 VPTE din99d colorspace lsqa passed"
 else

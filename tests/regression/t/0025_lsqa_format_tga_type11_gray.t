@@ -37,7 +37,7 @@ set -v
 image_path="${LSQA_INPUT_ROOT}/inputs/formats/snake-tga-type11-gray.tga"
 output_sixel="${artifact_dir}/output.six"
 if run_img2sixel -Lbuiltin "${image_path}" >"${output_sixel}" && \
-    lsqa_assert_quality "${image_path}" "${output_sixel}" \
+    lsqa_run_benchmark "${image_path}" "${output_sixel}" \
         "snake-tga-type11-gray.tga" "${artifact_dir}" "${lsqa_floor}"; then
     pass 1 "type 11 gray TGA meets lsqa floor"
 else
