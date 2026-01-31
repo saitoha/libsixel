@@ -1502,27 +1502,20 @@ AS_IF([test "x$CLOCK_GETTIME_LIBS" != "x" && \
        test "x$CLOCK_GETTIME_LIBS" != "xno"],
       [LIBS="$LIBS $CLOCK_GETTIME_LIBS"])
 
-AC_CHECK_FUNC([getopt_long],
-              [AC_DEFINE(HAVE_GETOPT_LONG, 1, [whether getopt_long is avilable])
-               have_getopt_long=1],
-              [AC_CHECK_FUNC([getopt],
-                             [AC_DEFINE(HAVE_GETOPT, 1, [whether getopt is avilable])],
-                             [])])
-
 if test "x$using_cl" = "xyes"; then
-    AC_DEFINE([HAVE_MEMCPY], [1])
-    AC_DEFINE([HAVE_MEMMOVE], [1])
-    AC_DEFINE([HAVE_MEMSET], [1])
-else
-    AC_CHECK_FUNCS([memcpy \
-                    memmove \
-                    memset \
-                   ])
+    ac_cv_func_memcpy=yes
+    ac_cv_func_memmove=yes
+    ac_cv_func_memset=yes
 fi
 
 AC_CHECK_FUNCS_PARALLEL([assert \
                          setmode \
                          _setmode \
+                         memcpy \
+                         memmove \
+                         memset \
+                         getopt \
+                         getopt_long \
                          fileno \
                          _fileno \
                          _mktemp \
@@ -1631,36 +1624,47 @@ case "${host_os}" in
     dnl Emscripten (emcc >=5.0.0) reports fork() at link time, but the runtime returns ENOSYS.
     dnl Force fork off to keep test harnesses from failing at runtime.
     ac_cv_func_fork=no
-    AC_CHECK_FUNCS([clock nanosleep usleep fork waitpid posix_spawnp execvp])
-    ;;
-  emscripten*)
-    dnl Emscripten does not implement fork(), but AC_CHECK_FUNCS only compiles.
-    dnl Override the cache to prevent a false positive and test failures.
-    ac_cv_func_fork=no
-    AC_CHECK_FUNCS([clock nanosleep usleep fork waitpid posix_spawnp])
+    AC_CHECK_FUNCS_PARALLEL([ \
+        clock \
+        nanosleep \
+        usleep \
+        fork \
+        waitpid \
+        posix_spawnp \
+        execvp \
+    ])
     ;;
   *)
-    AC_CHECK_FUNCS([clock nanosleep usleep fork waitpid posix_spawnp execvp])
+    AC_CHECK_FUNCS_PARALLEL([ \
+        clock \
+        nanosleep \
+        usleep \
+        fork \
+        waitpid \
+        posix_spawnp \
+        execvp \
+    ])
     ;;
 esac
 
-AC_CHECK_HEADERS_PARALLEL([windows.h])
-AC_CHECK_FUNCS([CreateProcessA \
-                TerminateProcess \
-                WaitForSingleObject \
-                CloseHandle \
-                GetExitCodeProcess],
-               [],
-               [],
-               [[#include <windows.h>]])
-AS_IF([test "x$ac_cv_header_windows_h" = xyes && \
-      test "x$ac_cv_func_CreateProcessA" = xyes && \
-      test "x$ac_cv_func_TerminateProcess" = xyes && \
-      test "x$ac_cv_func_WaitForSingleObject" = xyes && \
-      test "x$ac_cv_func_CloseHandle" = xyes && \
-      test "x$ac_cv_func_GetExitCodeProcess" = xyes],
-      [AC_DEFINE([HAVE_WINDOWS_PROC], [1],
-                 [Define to 1 if Win32 process APIs are available.])])
+if test x$ac_cv_header_windows_h = xyes; then
+    AC_CHECK_FUNCS([CreateProcessA \
+                    TerminateProcess \
+                    WaitForSingleObject \
+                    CloseHandle \
+                    GetExitCodeProcess],
+                   [],
+                   [],
+                   [[#include <windows.h>]])
+    AS_IF([test "x$ac_cv_header_windows_h" = xyes && \
+           test "x$ac_cv_func_CreateProcessA" = xyes && \
+           test "x$ac_cv_func_TerminateProcess" = xyes && \
+           test "x$ac_cv_func_WaitForSingleObject" = xyes && \
+           test "x$ac_cv_func_CloseHandle" = xyes && \
+           test "x$ac_cv_func_GetExitCodeProcess" = xyes],
+           [AC_DEFINE([HAVE_WINDOWS_PROC], [1],
+                      [Define to 1 if Win32 process APIs are available.])])
+fi
 
 AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
                [
