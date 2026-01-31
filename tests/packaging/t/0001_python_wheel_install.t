@@ -22,7 +22,7 @@ case_id=1
 
 if create_virtualenv "${run_venv}" && \
    install_wheel "${run_venv}"; then
-    pass ${case_id} "installs wheel from python-wheel/dist"
+    pass ${case_id} "installs wheel from python/dist"
 else
     fail ${case_id} "wheel installation failed"
 fi

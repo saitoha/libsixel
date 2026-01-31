@@ -48,15 +48,15 @@ PY
 }
 
 locate_wheel() {
-    wheel_dir="${TOP_BUILDDIR}/python-wheel/dist"
+    wheel_dir="${TOP_BUILDDIR}/python/dist"
     if [ ! -d "${wheel_dir}" ]; then
-        tap_skip_all "python-wheel/dist artifacts are unavailable"
+        tap_skip_all "python/dist artifacts are unavailable"
     fi
 
-    wheel_path=$(find "${wheel_dir}" -maxdepth 1 -type f -name 'libsixel-*.whl' \
+    wheel_path=$(find "${wheel_dir}" -maxdepth 1 -type f -name 'libsixel_python-*.whl' \
         | head -n 1 || true)
     if [ -z "${wheel_path}" ]; then
-        tap_skip_all "python wheel package is missing under python-wheel/dist"
+        tap_skip_all "python wheel package is missing under python/dist"
     fi
 
     export wheel_path
