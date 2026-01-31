@@ -45,7 +45,7 @@ if python_wheel_opt.enabled()
   custom_target(
     'libsixel-python-wheel',
     input: libsixel_library,
-    output: 'libsixel-wheel.stamp',
+    output: 'libsixel-python-wheel.stamp',
     command: [
       py, wheel_script,
       '--libpath', '@INPUT@',
