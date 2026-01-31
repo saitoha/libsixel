@@ -537,7 +537,9 @@ sixel_path_cosmo_is_windows(void)
 static int
 sixel_path_emscripten_rawfs_enabled(void)
 {
+# if HAVE_EMSCRIPTEN_GET_COMPILER_SETTING
     char const *setting;
+# endif
 
     /*
      * Decide whether /c/... and /cygdrive/c/... paths should be treated as
