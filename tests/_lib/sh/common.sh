@@ -52,6 +52,10 @@ if [ -z "${SIXEL2PNG_PATH:-}" ]; then
     SIXEL2PNG_PATH="${top_builddir}/converters/sixel2png${SIXEL_BIN_EXT-}"
 fi
 
+if [ -z "${LSQA_PATH:-}" ]; then
+    LSQA_PATH="${top_builddir}/assessment/lsqa${SIXEL_BIN_EXT-}"
+fi
+
 init_config_macro_cache() {
     config_header="${top_builddir}/config.h"
 
@@ -212,6 +216,26 @@ run_img2sixel() {
 
 run_sixel2png() {
     runtime_exec "${SIXEL2PNG_PATH}" "$@"
+}
+
+run_lsqa() {
+    lsqa_path=${LSQA_PATH-}
+    lsqa_status=0
+
+    if [ -z "${lsqa_path}" ]; then
+        lsqa_path=${LSQA_BIN-}
+    fi
+    if [ -z "${lsqa_path}" ]; then
+        printf 'lsqa path is not set\n' >&2
+        return 127
+    fi
+
+    runtime_exec "${lsqa_path}" "$@" || lsqa_status=$?
+    if [ ${lsqa_status} -eq 126 ]; then
+        /bin/sh -c 'exec "$0" "$@"' \
+            ${SIXEL_RUNTIME-} "${lsqa_path}" "$@" || lsqa_status=$?
+    fi
+    return ${lsqa_status}
 }
 
 make_temp_file() {
