@@ -33,28 +33,20 @@ output_limited="${output_dir}/${case_id}-limited.six"
 
 require_file "${input_image}"
 
-if run_img2sixel -=1 -o "${output_plain}" "${input_image}" 2>>"${log_file}" && \
-        run_img2sixel -=1 --gri-limit -o "${output_limited}" \
-        "${input_image}" 2>>"${log_file}" && \
-        {
-            lsqa_err_file=$(mktemp)
-            lsqa_run_status=0
-            if ! run_lsqa -b "MS-SSIM:${lsqa_floor}" \
-                "${input_image}" "${output_sixel}" > /dev/null \
-                2>"${lsqa_err_file}"; then
-                printf '# %s: assessment/lsqa returned %s\n' \
-                    "${case_id}" "${lsqa_run_status}"
-                if [ -s "${lsqa_err_file}" ]; then
-                    printf '# lsqa stderr follows\n'
-                    sed 's/^/# /' "${lsqa_err_file}"
-                else
-                    printf '# %s: lsqa produced no diagnostics\n' \
-                        "${case_id}"
-                fi
-            fi
-            rm -f "${lsqa_err_file}"
-            [ ${lsqa_run_status} -eq 0 ]; }; then
+run_img2sixel -=1 -o "${output_plain}" "${input_image}" 2>>"${log_file}" || {
+    fail 1 "img2sixel failed"
+}
+run_img2sixel -=1 --gri-limit -o "${output_limited}" "${input_image}" 2>>"${log_file}" || {
+    fail 1 "img2sixel failed"
+}
+lsqa_err=$(
+    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${output_plain}" "${output_limited}" 2>&1
+) || lsqa_run_status=$?
+
+if [ -z "${lsqa_run_status-}" ]; then
     pass 1 "gri-limit deterministic output matches"
+elif [ "${lsqa_run_status}" -eq 5 ]; then
+    fail 1 "${lsqa_err}"
 else
     fail 1 "gri-limit deterministic output mismatch"
 fi

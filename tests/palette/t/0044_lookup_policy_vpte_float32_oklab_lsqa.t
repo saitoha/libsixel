@@ -32,34 +32,22 @@ require_file "${input_image}"
 
 if run_img2sixel --lookup-policy=vpte --precision=float32 \
         --working-colorspace=oklab -o "${output_sixel}" \
-        "${input_image}" \
-        2>>"${log_file}"; then
+    "${input_image}" \
+    2>>"${log_file}"; then
     :
 else
     fail 1 "float32 VPTE oklab colorspace conversion failed"
     exit "${status}"
 fi
 
-if {
-    lsqa_err_file=$(mktemp)
-    lsqa_run_status=0
-    if ! run_lsqa -b "MS-SSIM:${lsqa_floor}" \
-        "${input_image}" "${output_sixel}" > /dev/null \
-        2>"${lsqa_err_file}"; then
-        lsqa_run_status=$?
-        printf '# %s: assessment/lsqa returned %s\n' \
-            "vpte-float32-oklab" "${lsqa_run_status}"
-        if [ -s "${lsqa_err_file}" ]; then
-            printf '# lsqa stderr follows\n'
-            sed 's/^/# /' "${lsqa_err_file}"
-        else
-            printf '# %s: lsqa produced no diagnostics\n' \
-                "vpte-float32-oklab"
-        fi
-    fi
-    rm -f "${lsqa_err_file}"
-    [ ${lsqa_run_status} -eq 0 ]; }; then
+lsqa_err=$(
+    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
+) || lsqa_run_status=$?
+
+if [ -z "${lsqa_run_status-}" ]; then
     pass 1 "float32 VPTE oklab colorspace lsqa passed"
+elif [ "${lsqa_run_status}" -eq 5 ]; then
+    fail 1 "${lsqa_err}"
 else
     fail 1 "float32 VPTE oklab colorspace lsqa failed"
 fi
