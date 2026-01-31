@@ -207,6 +207,132 @@ AC_DEFUN([AC_CHECK_GCC_DIAG_WBUILTIN_DECL_MISMATCH], [
   AC_LANG_POP([C])
 ])
 
+# Run AC_CHECK_HEADERS checks in parallel using per-header directories.
+# This mirrors AC_CHECK_HEADERS behavior while reducing overall configure time
+# on systems with multiple CPUs.
+AC_DEFUN([AC_CHECK_HEADERS_PARALLEL], [
+  AC_REQUIRE([AX_COUNT_CPUS])
+  AC_REQUIRE([AC_PROG_CC])
+  AC_LANG_PUSH([C])
+  m4_foreach_w([ac_check_header], [$1], [
+    AH_TEMPLATE([HAVE_]AS_TR_CPP([ac_check_header]),
+                [Define to 1 if you have the <]ac_check_header[> header file.])
+  ])
+  m4_ifval([$4], [ac_check_headers_parallel_includes="$4"],
+           [ac_check_headers_parallel_includes=""])
+  ac_check_headers_parallel_dir="ac-check-headers.$$"
+  ac_check_headers_parallel_confdefs="$ac_pwd/confdefs.h"
+  ac_check_headers_parallel_list="$1"
+  ac_check_headers_parallel_todo=""
+  ac_check_headers_parallel_cached=""
+  ac_check_headers_parallel_active=0
+  ac_check_headers_parallel_max="$CPU_COUNT"
+  ac_check_headers_parallel_batch_pids=""
+
+  # Limit parallelism by CPU_COUNT, falling back to 1 on invalid values.
+  case "$ac_check_headers_parallel_max" in
+    ''|*[!0123456789]*)
+      ac_check_headers_parallel_max=1
+      ;;
+    0)
+      ac_check_headers_parallel_max=1
+      ;;
+  esac
+
+  # Split cached and non-cached headers to avoid needless checks.
+  for ac_check_header in $ac_check_headers_parallel_list; do
+    ac_check_headers_parallel_cache=\
+`printf '%s\n' "$ac_check_header" | $as_tr_sh`
+    eval "ac_check_headers_parallel_has_cache=\
+\${ac_cv_header_$ac_check_headers_parallel_cache+set}"
+    if test "x$ac_check_headers_parallel_has_cache" = "xset"; then
+      ac_check_headers_parallel_cached=\
+"$ac_check_headers_parallel_cached $ac_check_header"
+    else
+      ac_check_headers_parallel_todo=\
+"$ac_check_headers_parallel_todo $ac_check_header"
+    fi
+  done
+
+  # Run preprocessor tests in parallel in per-header directories to avoid
+  # collisions on conftest files and logs.
+  if test "x$ac_check_headers_parallel_todo" != "x"; then
+    AS_MKDIR_P(["$ac_check_headers_parallel_dir"])
+    for ac_check_header in $ac_check_headers_parallel_todo; do
+      ac_check_headers_parallel_subdir=\
+"$ac_check_headers_parallel_dir/$ac_check_header"
+      AS_MKDIR_P(["$ac_check_headers_parallel_subdir"])
+      (
+        cd "$ac_check_headers_parallel_subdir" || exit 1
+        cat "$ac_check_headers_parallel_confdefs" - <<_ACEOF \
+> conftest.$ac_ext
+/* end confdefs.h.  */
+$ac_check_headers_parallel_includes
+#include <$ac_check_header>
+_ACEOF
+        if ac_fn_c_try_cpp "$LINENO"; then
+          printf '%s\n' yes > conftest.out
+        else
+          printf '%s\n' no > conftest.out
+        fi
+      ) &
+      ac_check_headers_parallel_batch_pids=\
+"$ac_check_headers_parallel_batch_pids $!"
+      ac_check_headers_parallel_active=\
+`expr "$ac_check_headers_parallel_active" + 1`
+      if test "$ac_check_headers_parallel_active" -ge \
+              "$ac_check_headers_parallel_max"; then
+        for ac_check_headers_parallel_pid in \
+$ac_check_headers_parallel_batch_pids; do
+          wait "$ac_check_headers_parallel_pid"
+        done
+        ac_check_headers_parallel_batch_pids=""
+        ac_check_headers_parallel_active=0
+      fi
+    done
+  fi
+
+  for ac_check_headers_parallel_pid in \
+$ac_check_headers_parallel_batch_pids; do
+    wait "$ac_check_headers_parallel_pid"
+  done
+
+  # Report results and update cache/defines serially for stable output.
+  for ac_check_header in $ac_check_headers_parallel_list; do
+    AC_MSG_CHECKING([for $ac_check_header])
+    ac_check_headers_parallel_cache=\
+`printf '%s\n' "$ac_check_header" | $as_tr_sh`
+    eval "ac_check_headers_parallel_result=\
+\${ac_cv_header_$ac_check_headers_parallel_cache-no}"
+    if test "x$ac_check_headers_parallel_result" = "xno"; then
+      ac_check_headers_parallel_subdir=\
+"$ac_check_headers_parallel_dir/$ac_check_header"
+      if test -f "$ac_check_headers_parallel_subdir/conftest.out"; then
+        ac_check_headers_parallel_result=\
+`cat "$ac_check_headers_parallel_subdir/conftest.out"`
+      fi
+    fi
+    AC_MSG_RESULT([$ac_check_headers_parallel_result])
+    AS_VAR_SET([ac_cv_header_$ac_check_headers_parallel_cache],
+               [$ac_check_headers_parallel_result])
+    if test "x$ac_check_headers_parallel_result" = "xyes"; then
+      ac_check_headers_parallel_define=\
+`printf '%s\n' "$ac_check_header" | $as_tr_cpp`
+      AC_DEFINE_UNQUOTED([HAVE_$ac_check_headers_parallel_define], [1],
+                         [Define to 1 if you have the <$ac_check_header> \
+header file.])
+      m4_ifval([$2], [$2], [:])
+    else
+      m4_ifval([$3], [$3], [:])
+    fi
+  done
+
+  if test -d "$ac_check_headers_parallel_dir"; then
+    rm -rf "$ac_check_headers_parallel_dir"
+  fi
+  AC_LANG_POP([C])
+])
+
 # Run AC_CHECK_FUNCS checks in parallel using per-function directories.
 # This mirrors AC_CHECK_FUNCS behavior while reducing overall configure time
 # on systems with multiple CPUs.
@@ -1268,54 +1394,51 @@ else
 fi
 AC_SUBST([AM_CFLAGS])
 
-# For test
-AC_CHECK_PROGS(MD5SUM, [md5sum md5])
-AC_SUBST(MD5SUM)
-
 # Check math library
 AC_CHECK_LIB([m], [floor])
 
 # Checks for header files.
-AC_CHECK_HEADERS([assert.h \
-                  math.h \
-                  ctype.h \
-                  memory.h \
-                  unistd.h \
-                  stdint.h \
-                  stddef.h \
-                  stdarg.h \
-                  sys/unistd.h \
-                  getopt.h \
-                  sys/types.h \
-                  sys/stat.h \
-                  fcntl.h \
-                  io.h \
-                  errno.h \
-                  limits.h \
-                  sys/time.h \
-                  time.h \
-                  signal.h \
-                  sys/select.h \
-                  sys/signal.h \
-                  termios.h \
-                  sys/ioctl.h \
-                  sys/ttycom.h \
-                  sys/wait.h \
-                  spawn.h \
-                  strings.h \
-                  inttypes.h \
-                  strings.h \
-                  intrin.h \
-                  emmintrin.h \
-                  immintrin.h \
-                  cpuid.h \
-                  arm_neon.h \
-                  dirent.h \
-                  sys/sysctl.h \
-                  float.h \
-                  process.h \
-                  execinfo.h \
-                 ])
+AC_CHECK_HEADERS_PARALLEL([assert.h \
+                           math.h \
+                           ctype.h \
+                           memory.h \
+                           unistd.h \
+                           stdint.h \
+                           stddef.h \
+                           stdarg.h \
+                           sys/unistd.h \
+                           getopt.h \
+                           sys/types.h \
+                           sys/stat.h \
+                           fcntl.h \
+                           io.h \
+                           errno.h \
+                           limits.h \
+                           sys/time.h \
+                           time.h \
+                           signal.h \
+                           sys/select.h \
+                           sys/signal.h \
+                           termios.h \
+                           sys/ioctl.h \
+                           sys/ttycom.h \
+                           sys/wait.h \
+                           spawn.h \
+                           strings.h \
+                           inttypes.h \
+                           strings.h \
+                           intrin.h \
+                           emmintrin.h \
+                           immintrin.h \
+                           cpuid.h \
+                           arm_neon.h \
+                           dirent.h \
+                           sys/sysctl.h \
+                           float.h \
+                           process.h \
+                           execinfo.h \
+                           windows.h \
+                          ])
 
 AC_MSG_CHECKING([for __builtin_cpu_supports])
 AC_COMPILE_IFELSE([
@@ -1502,7 +1625,7 @@ case "${host_os}" in
   mingw*)
     ;;
   emscripten*)
-    AC_CHECK_HEADERS([emscripten.h])
+    AC_CHECK_HEADERS_PARALLEL([emscripten.h])
     AC_CHECK_FUNCS([emscripten_get_compiler_setting], [], [],
                    [[#include <emscripten.h>]])
     dnl Emscripten (emcc >=5.0.0) reports fork() at link time, but the runtime returns ENOSYS.
@@ -1521,7 +1644,7 @@ case "${host_os}" in
     ;;
 esac
 
-AC_CHECK_HEADERS([windows.h])
+AC_CHECK_HEADERS_PARALLEL([windows.h])
 AC_CHECK_FUNCS([CreateProcessA \
                 TerminateProcess \
                 WaitForSingleObject \
@@ -2565,7 +2688,7 @@ uuid.lib"
                 [],
                 [have_wic=no])
         else
-            AC_CHECK_HEADERS([windows.h wincodec.h],
+            AC_CHECK_HEADERS_PARALLEL([windows.h wincodec.h],
                              [AC_CHECK_LIB([ole32],
                                            [main],
                                            [],
@@ -2739,7 +2862,7 @@ else
             fi
             CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
             LIBS="${LIBS} ${ADDED_LIBS}"
-            AC_CHECK_HEADERS([windows.h wincodec.h wincodecsdk.h],
+            AC_CHECK_HEADERS_PARALLEL([windows.h wincodec.h wincodecsdk.h],
                              [AC_CHECK_LIB([ole32],
                                            [main],
                                            [],

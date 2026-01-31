@@ -740,7 +740,6 @@ GDK_PIXBUF_LIBS
 GDK_PIXBUF_CFLAGS
 CLOCK_GETTIME_LIBS
 LIBOBJS
-MD5SUM
 AM_CFLAGS
 attr_func_deprecated
 attr_var_deprecated
@@ -14427,6 +14426,11 @@ ac_config_headers="$ac_config_headers config.h"
 # Check once whether the compiler accepts the builtin mismatch pragma.
 
 
+# Run AC_CHECK_HEADERS checks in parallel using per-header directories.
+# This mirrors AC_CHECK_HEADERS behavior while reducing overall configure time
+# on systems with multiple CPUs.
+
+
 # Run AC_CHECK_FUNCS checks in parallel using per-function directories.
 # This mirrors AC_CHECK_FUNCS behavior while reducing overall configure time
 # on systems with multiple CPUs.
@@ -18474,57 +18478,6 @@ fi
 fi
 
 
-# For test
-for ac_prog in md5sum md5
-do
-  # Extract the first word of "$ac_prog", so it can be a program name with args.
-set dummy $ac_prog; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_prog_MD5SUM+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) if test -n "$MD5SUM"; then
-  ac_cv_prog_MD5SUM="$MD5SUM" # Let the user override the test.
-else
-as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_prog_MD5SUM="$ac_prog"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-fi ;;
-esac
-fi
-MD5SUM=$ac_cv_prog_MD5SUM
-if test -n "$MD5SUM"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $MD5SUM" >&5
-printf "%s\n" "$MD5SUM" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-
-  test -n "$MD5SUM" && break
-done
-
-
-
 # Check math library
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for floor in -lm" >&5
 printf %s "checking for floor in -lm... " >&6; }
@@ -18579,234 +18532,254 @@ fi
 
 
 # Checks for header files.
-ac_fn_c_check_header_compile "$LINENO" "assert.h" "ac_cv_header_assert_h" "$ac_includes_default"
-if test "x$ac_cv_header_assert_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_ASSERT_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "math.h" "ac_cv_header_math_h" "$ac_includes_default"
-if test "x$ac_cv_header_math_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_MATH_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "ctype.h" "ac_cv_header_ctype_h" "$ac_includes_default"
-if test "x$ac_cv_header_ctype_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_CTYPE_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "memory.h" "ac_cv_header_memory_h" "$ac_includes_default"
-if test "x$ac_cv_header_memory_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_MEMORY_H 1" >>confdefs.h
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "unistd.h" "ac_cv_header_unistd_h" "$ac_includes_default"
-if test "x$ac_cv_header_unistd_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_UNISTD_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "stdint.h" "ac_cv_header_stdint_h" "$ac_includes_default"
-if test "x$ac_cv_header_stdint_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_STDINT_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "stddef.h" "ac_cv_header_stddef_h" "$ac_includes_default"
-if test "x$ac_cv_header_stddef_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_STDDEF_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "stdarg.h" "ac_cv_header_stdarg_h" "$ac_includes_default"
-if test "x$ac_cv_header_stdarg_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_STDARG_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "sys/unistd.h" "ac_cv_header_sys_unistd_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_unistd_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_SYS_UNISTD_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "getopt.h" "ac_cv_header_getopt_h" "$ac_includes_default"
-if test "x$ac_cv_header_getopt_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_GETOPT_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "sys/types.h" "ac_cv_header_sys_types_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_types_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_SYS_TYPES_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "sys/stat.h" "ac_cv_header_sys_stat_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_stat_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_SYS_STAT_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "fcntl.h" "ac_cv_header_fcntl_h" "$ac_includes_default"
-if test "x$ac_cv_header_fcntl_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_FCNTL_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "io.h" "ac_cv_header_io_h" "$ac_includes_default"
-if test "x$ac_cv_header_io_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_IO_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "errno.h" "ac_cv_header_errno_h" "$ac_includes_default"
-if test "x$ac_cv_header_errno_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_ERRNO_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "limits.h" "ac_cv_header_limits_h" "$ac_includes_default"
-if test "x$ac_cv_header_limits_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_LIMITS_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "sys/time.h" "ac_cv_header_sys_time_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_time_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_SYS_TIME_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "time.h" "ac_cv_header_time_h" "$ac_includes_default"
-if test "x$ac_cv_header_time_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_TIME_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "signal.h" "ac_cv_header_signal_h" "$ac_includes_default"
-if test "x$ac_cv_header_signal_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_SIGNAL_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "sys/select.h" "ac_cv_header_sys_select_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_select_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_SYS_SELECT_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "sys/signal.h" "ac_cv_header_sys_signal_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_signal_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_SYS_SIGNAL_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "termios.h" "ac_cv_header_termios_h" "$ac_includes_default"
-if test "x$ac_cv_header_termios_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_TERMIOS_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "sys/ioctl.h" "ac_cv_header_sys_ioctl_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_ioctl_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_SYS_IOCTL_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "sys/ttycom.h" "ac_cv_header_sys_ttycom_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_ttycom_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_SYS_TTYCOM_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "sys/wait.h" "ac_cv_header_sys_wait_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_wait_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_SYS_WAIT_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "spawn.h" "ac_cv_header_spawn_h" "$ac_includes_default"
-if test "x$ac_cv_header_spawn_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_SPAWN_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "inttypes.h" "ac_cv_header_inttypes_h" "$ac_includes_default"
-if test "x$ac_cv_header_inttypes_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_INTTYPES_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "strings.h" "ac_cv_header_strings_h" "$ac_includes_default"
-if test "x$ac_cv_header_strings_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_STRINGS_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "intrin.h" "ac_cv_header_intrin_h" "$ac_includes_default"
-if test "x$ac_cv_header_intrin_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_INTRIN_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "emmintrin.h" "ac_cv_header_emmintrin_h" "$ac_includes_default"
-if test "x$ac_cv_header_emmintrin_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_EMMINTRIN_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "immintrin.h" "ac_cv_header_immintrin_h" "$ac_includes_default"
-if test "x$ac_cv_header_immintrin_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_IMMINTRIN_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "cpuid.h" "ac_cv_header_cpuid_h" "$ac_includes_default"
-if test "x$ac_cv_header_cpuid_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_CPUID_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "arm_neon.h" "ac_cv_header_arm_neon_h" "$ac_includes_default"
-if test "x$ac_cv_header_arm_neon_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_ARM_NEON_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "dirent.h" "ac_cv_header_dirent_h" "$ac_includes_default"
-if test "x$ac_cv_header_dirent_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_DIRENT_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "sys/sysctl.h" "ac_cv_header_sys_sysctl_h" "$ac_includes_default"
-if test "x$ac_cv_header_sys_sysctl_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_SYS_SYSCTL_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "float.h" "ac_cv_header_float_h" "$ac_includes_default"
-if test "x$ac_cv_header_float_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_FLOAT_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "process.h" "ac_cv_header_process_h" "$ac_includes_default"
-if test "x$ac_cv_header_process_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_PROCESS_H 1" >>confdefs.h
 
-fi
-ac_fn_c_check_header_compile "$LINENO" "execinfo.h" "ac_cv_header_execinfo_h" "$ac_includes_default"
-if test "x$ac_cv_header_execinfo_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_EXECINFO_H 1" >>confdefs.h
 
-fi
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  ac_check_headers_parallel_includes=""
+  ac_check_headers_parallel_dir="ac-check-headers.$$"
+  ac_check_headers_parallel_confdefs="$ac_pwd/confdefs.h"
+  ac_check_headers_parallel_list="assert.h \
+                           math.h \
+                           ctype.h \
+                           memory.h \
+                           unistd.h \
+                           stdint.h \
+                           stddef.h \
+                           stdarg.h \
+                           sys/unistd.h \
+                           getopt.h \
+                           sys/types.h \
+                           sys/stat.h \
+                           fcntl.h \
+                           io.h \
+                           errno.h \
+                           limits.h \
+                           sys/time.h \
+                           time.h \
+                           signal.h \
+                           sys/select.h \
+                           sys/signal.h \
+                           termios.h \
+                           sys/ioctl.h \
+                           sys/ttycom.h \
+                           sys/wait.h \
+                           spawn.h \
+                           strings.h \
+                           inttypes.h \
+                           strings.h \
+                           intrin.h \
+                           emmintrin.h \
+                           immintrin.h \
+                           cpuid.h \
+                           arm_neon.h \
+                           dirent.h \
+                           sys/sysctl.h \
+                           float.h \
+                           process.h \
+                           execinfo.h \
+                           windows.h \
+                          "
+  ac_check_headers_parallel_todo=""
+  ac_check_headers_parallel_cached=""
+  ac_check_headers_parallel_active=0
+  ac_check_headers_parallel_max="$CPU_COUNT"
+  ac_check_headers_parallel_batch_pids=""
+
+  # Limit parallelism by CPU_COUNT, falling back to 1 on invalid values.
+  case "$ac_check_headers_parallel_max" in
+    ''|*!0123456789*)
+      ac_check_headers_parallel_max=1
+      ;;
+    0)
+      ac_check_headers_parallel_max=1
+      ;;
+  esac
+
+  # Split cached and non-cached headers to avoid needless checks.
+  for ac_check_header in $ac_check_headers_parallel_list; do
+    ac_check_headers_parallel_cache=\
+`printf '%s\n' "$ac_check_header" | $as_tr_sh`
+    eval "ac_check_headers_parallel_has_cache=\
+\${ac_cv_header_$ac_check_headers_parallel_cache+set}"
+    if test "x$ac_check_headers_parallel_has_cache" = "xset"; then
+      ac_check_headers_parallel_cached=\
+"$ac_check_headers_parallel_cached $ac_check_header"
+    else
+      ac_check_headers_parallel_todo=\
+"$ac_check_headers_parallel_todo $ac_check_header"
+    fi
+  done
+
+  # Run preprocessor tests in parallel in per-header directories to avoid
+  # collisions on conftest files and logs.
+  if test "x$ac_check_headers_parallel_todo" != "x"; then
+    as_dir="$ac_check_headers_parallel_dir"; as_fn_mkdir_p
+    for ac_check_header in $ac_check_headers_parallel_todo; do
+      ac_check_headers_parallel_subdir=\
+"$ac_check_headers_parallel_dir/$ac_check_header"
+      as_dir="$ac_check_headers_parallel_subdir"; as_fn_mkdir_p
+      (
+        cd "$ac_check_headers_parallel_subdir" || exit 1
+        cat "$ac_check_headers_parallel_confdefs" - <<_ACEOF \
+> conftest.$ac_ext
+/* end confdefs.h.  */
+$ac_check_headers_parallel_includes
+#include <$ac_check_header>
+_ACEOF
+        if ac_fn_c_try_cpp "$LINENO"; then
+          printf '%s\n' yes > conftest.out
+        else
+          printf '%s\n' no > conftest.out
+        fi
+      ) &
+      ac_check_headers_parallel_batch_pids=\
+"$ac_check_headers_parallel_batch_pids $!"
+      ac_check_headers_parallel_active=\
+`expr "$ac_check_headers_parallel_active" + 1`
+      if test "$ac_check_headers_parallel_active" -ge \
+              "$ac_check_headers_parallel_max"; then
+        for ac_check_headers_parallel_pid in \
+$ac_check_headers_parallel_batch_pids; do
+          wait "$ac_check_headers_parallel_pid"
+        done
+        ac_check_headers_parallel_batch_pids=""
+        ac_check_headers_parallel_active=0
+      fi
+    done
+  fi
+
+  for ac_check_headers_parallel_pid in \
+$ac_check_headers_parallel_batch_pids; do
+    wait "$ac_check_headers_parallel_pid"
+  done
+
+  # Report results and update cache/defines serially for stable output.
+  for ac_check_header in $ac_check_headers_parallel_list; do
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_check_header" >&5
+printf %s "checking for $ac_check_header... " >&6; }
+    ac_check_headers_parallel_cache=\
+`printf '%s\n' "$ac_check_header" | $as_tr_sh`
+    eval "ac_check_headers_parallel_result=\
+\${ac_cv_header_$ac_check_headers_parallel_cache-no}"
+    if test "x$ac_check_headers_parallel_result" = "xno"; then
+      ac_check_headers_parallel_subdir=\
+"$ac_check_headers_parallel_dir/$ac_check_header"
+      if test -f "$ac_check_headers_parallel_subdir/conftest.out"; then
+        ac_check_headers_parallel_result=\
+`cat "$ac_check_headers_parallel_subdir/conftest.out"`
+      fi
+    fi
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_check_headers_parallel_result" >&5
+printf "%s\n" "$ac_check_headers_parallel_result" >&6; }
+    eval "ac_cv_header_$ac_check_headers_parallel_cache=\$ac_check_headers_parallel_result"
+    if test "x$ac_check_headers_parallel_result" = "xyes"; then
+      ac_check_headers_parallel_define=\
+`printf '%s\n' "$ac_check_header" | $as_tr_cpp`
+
+printf "%s\n" "#define HAVE_$ac_check_headers_parallel_define 1" >>confdefs.h
+
+      :
+    else
+      :
+    fi
+  done
+
+  if test -d "$ac_check_headers_parallel_dir"; then
+    rm -rf "$ac_check_headers_parallel_dir"
+  fi
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
 
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for __builtin_cpu_supports" >&5
@@ -19799,12 +19772,136 @@ case "${host_os}" in
   mingw*)
     ;;
   emscripten*)
-    ac_fn_c_check_header_compile "$LINENO" "emscripten.h" "ac_cv_header_emscripten_h" "$ac_includes_default"
-if test "x$ac_cv_header_emscripten_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_EMSCRIPTEN_H 1" >>confdefs.h
 
-fi
+
+
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+
+  ac_check_headers_parallel_includes=""
+  ac_check_headers_parallel_dir="ac-check-headers.$$"
+  ac_check_headers_parallel_confdefs="$ac_pwd/confdefs.h"
+  ac_check_headers_parallel_list="emscripten.h"
+  ac_check_headers_parallel_todo=""
+  ac_check_headers_parallel_cached=""
+  ac_check_headers_parallel_active=0
+  ac_check_headers_parallel_max="$CPU_COUNT"
+  ac_check_headers_parallel_batch_pids=""
+
+  # Limit parallelism by CPU_COUNT, falling back to 1 on invalid values.
+  case "$ac_check_headers_parallel_max" in
+    ''|*!0123456789*)
+      ac_check_headers_parallel_max=1
+      ;;
+    0)
+      ac_check_headers_parallel_max=1
+      ;;
+  esac
+
+  # Split cached and non-cached headers to avoid needless checks.
+  for ac_check_header in $ac_check_headers_parallel_list; do
+    ac_check_headers_parallel_cache=\
+`printf '%s\n' "$ac_check_header" | $as_tr_sh`
+    eval "ac_check_headers_parallel_has_cache=\
+\${ac_cv_header_$ac_check_headers_parallel_cache+set}"
+    if test "x$ac_check_headers_parallel_has_cache" = "xset"; then
+      ac_check_headers_parallel_cached=\
+"$ac_check_headers_parallel_cached $ac_check_header"
+    else
+      ac_check_headers_parallel_todo=\
+"$ac_check_headers_parallel_todo $ac_check_header"
+    fi
+  done
+
+  # Run preprocessor tests in parallel in per-header directories to avoid
+  # collisions on conftest files and logs.
+  if test "x$ac_check_headers_parallel_todo" != "x"; then
+    as_dir="$ac_check_headers_parallel_dir"; as_fn_mkdir_p
+    for ac_check_header in $ac_check_headers_parallel_todo; do
+      ac_check_headers_parallel_subdir=\
+"$ac_check_headers_parallel_dir/$ac_check_header"
+      as_dir="$ac_check_headers_parallel_subdir"; as_fn_mkdir_p
+      (
+        cd "$ac_check_headers_parallel_subdir" || exit 1
+        cat "$ac_check_headers_parallel_confdefs" - <<_ACEOF \
+> conftest.$ac_ext
+/* end confdefs.h.  */
+$ac_check_headers_parallel_includes
+#include <$ac_check_header>
+_ACEOF
+        if ac_fn_c_try_cpp "$LINENO"; then
+          printf '%s\n' yes > conftest.out
+        else
+          printf '%s\n' no > conftest.out
+        fi
+      ) &
+      ac_check_headers_parallel_batch_pids=\
+"$ac_check_headers_parallel_batch_pids $!"
+      ac_check_headers_parallel_active=\
+`expr "$ac_check_headers_parallel_active" + 1`
+      if test "$ac_check_headers_parallel_active" -ge \
+              "$ac_check_headers_parallel_max"; then
+        for ac_check_headers_parallel_pid in \
+$ac_check_headers_parallel_batch_pids; do
+          wait "$ac_check_headers_parallel_pid"
+        done
+        ac_check_headers_parallel_batch_pids=""
+        ac_check_headers_parallel_active=0
+      fi
+    done
+  fi
+
+  for ac_check_headers_parallel_pid in \
+$ac_check_headers_parallel_batch_pids; do
+    wait "$ac_check_headers_parallel_pid"
+  done
+
+  # Report results and update cache/defines serially for stable output.
+  for ac_check_header in $ac_check_headers_parallel_list; do
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_check_header" >&5
+printf %s "checking for $ac_check_header... " >&6; }
+    ac_check_headers_parallel_cache=\
+`printf '%s\n' "$ac_check_header" | $as_tr_sh`
+    eval "ac_check_headers_parallel_result=\
+\${ac_cv_header_$ac_check_headers_parallel_cache-no}"
+    if test "x$ac_check_headers_parallel_result" = "xno"; then
+      ac_check_headers_parallel_subdir=\
+"$ac_check_headers_parallel_dir/$ac_check_header"
+      if test -f "$ac_check_headers_parallel_subdir/conftest.out"; then
+        ac_check_headers_parallel_result=\
+`cat "$ac_check_headers_parallel_subdir/conftest.out"`
+      fi
+    fi
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_check_headers_parallel_result" >&5
+printf "%s\n" "$ac_check_headers_parallel_result" >&6; }
+    eval "ac_cv_header_$ac_check_headers_parallel_cache=\$ac_check_headers_parallel_result"
+    if test "x$ac_check_headers_parallel_result" = "xyes"; then
+      ac_check_headers_parallel_define=\
+`printf '%s\n' "$ac_check_header" | $as_tr_cpp`
+
+printf "%s\n" "#define HAVE_$ac_check_headers_parallel_define 1" >>confdefs.h
+
+      :
+    else
+      :
+    fi
+  done
+
+  if test -d "$ac_check_headers_parallel_dir"; then
+    rm -rf "$ac_check_headers_parallel_dir"
+  fi
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
 
     ac_fn_c_check_func "$LINENO" "emscripten_get_compiler_setting" "ac_cv_func_emscripten_get_compiler_setting"
 if test "x$ac_cv_func_emscripten_get_compiler_setting" = xyes
@@ -19945,12 +20042,136 @@ fi
     ;;
 esac
 
-ac_fn_c_check_header_compile "$LINENO" "windows.h" "ac_cv_header_windows_h" "$ac_includes_default"
-if test "x$ac_cv_header_windows_h" = xyes
-then :
-  printf "%s\n" "#define HAVE_WINDOWS_H 1" >>confdefs.h
 
-fi
+
+
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+
+  ac_check_headers_parallel_includes=""
+  ac_check_headers_parallel_dir="ac-check-headers.$$"
+  ac_check_headers_parallel_confdefs="$ac_pwd/confdefs.h"
+  ac_check_headers_parallel_list="windows.h"
+  ac_check_headers_parallel_todo=""
+  ac_check_headers_parallel_cached=""
+  ac_check_headers_parallel_active=0
+  ac_check_headers_parallel_max="$CPU_COUNT"
+  ac_check_headers_parallel_batch_pids=""
+
+  # Limit parallelism by CPU_COUNT, falling back to 1 on invalid values.
+  case "$ac_check_headers_parallel_max" in
+    ''|*!0123456789*)
+      ac_check_headers_parallel_max=1
+      ;;
+    0)
+      ac_check_headers_parallel_max=1
+      ;;
+  esac
+
+  # Split cached and non-cached headers to avoid needless checks.
+  for ac_check_header in $ac_check_headers_parallel_list; do
+    ac_check_headers_parallel_cache=\
+`printf '%s\n' "$ac_check_header" | $as_tr_sh`
+    eval "ac_check_headers_parallel_has_cache=\
+\${ac_cv_header_$ac_check_headers_parallel_cache+set}"
+    if test "x$ac_check_headers_parallel_has_cache" = "xset"; then
+      ac_check_headers_parallel_cached=\
+"$ac_check_headers_parallel_cached $ac_check_header"
+    else
+      ac_check_headers_parallel_todo=\
+"$ac_check_headers_parallel_todo $ac_check_header"
+    fi
+  done
+
+  # Run preprocessor tests in parallel in per-header directories to avoid
+  # collisions on conftest files and logs.
+  if test "x$ac_check_headers_parallel_todo" != "x"; then
+    as_dir="$ac_check_headers_parallel_dir"; as_fn_mkdir_p
+    for ac_check_header in $ac_check_headers_parallel_todo; do
+      ac_check_headers_parallel_subdir=\
+"$ac_check_headers_parallel_dir/$ac_check_header"
+      as_dir="$ac_check_headers_parallel_subdir"; as_fn_mkdir_p
+      (
+        cd "$ac_check_headers_parallel_subdir" || exit 1
+        cat "$ac_check_headers_parallel_confdefs" - <<_ACEOF \
+> conftest.$ac_ext
+/* end confdefs.h.  */
+$ac_check_headers_parallel_includes
+#include <$ac_check_header>
+_ACEOF
+        if ac_fn_c_try_cpp "$LINENO"; then
+          printf '%s\n' yes > conftest.out
+        else
+          printf '%s\n' no > conftest.out
+        fi
+      ) &
+      ac_check_headers_parallel_batch_pids=\
+"$ac_check_headers_parallel_batch_pids $!"
+      ac_check_headers_parallel_active=\
+`expr "$ac_check_headers_parallel_active" + 1`
+      if test "$ac_check_headers_parallel_active" -ge \
+              "$ac_check_headers_parallel_max"; then
+        for ac_check_headers_parallel_pid in \
+$ac_check_headers_parallel_batch_pids; do
+          wait "$ac_check_headers_parallel_pid"
+        done
+        ac_check_headers_parallel_batch_pids=""
+        ac_check_headers_parallel_active=0
+      fi
+    done
+  fi
+
+  for ac_check_headers_parallel_pid in \
+$ac_check_headers_parallel_batch_pids; do
+    wait "$ac_check_headers_parallel_pid"
+  done
+
+  # Report results and update cache/defines serially for stable output.
+  for ac_check_header in $ac_check_headers_parallel_list; do
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_check_header" >&5
+printf %s "checking for $ac_check_header... " >&6; }
+    ac_check_headers_parallel_cache=\
+`printf '%s\n' "$ac_check_header" | $as_tr_sh`
+    eval "ac_check_headers_parallel_result=\
+\${ac_cv_header_$ac_check_headers_parallel_cache-no}"
+    if test "x$ac_check_headers_parallel_result" = "xno"; then
+      ac_check_headers_parallel_subdir=\
+"$ac_check_headers_parallel_dir/$ac_check_header"
+      if test -f "$ac_check_headers_parallel_subdir/conftest.out"; then
+        ac_check_headers_parallel_result=\
+`cat "$ac_check_headers_parallel_subdir/conftest.out"`
+      fi
+    fi
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_check_headers_parallel_result" >&5
+printf "%s\n" "$ac_check_headers_parallel_result" >&6; }
+    eval "ac_cv_header_$ac_check_headers_parallel_cache=\$ac_check_headers_parallel_result"
+    if test "x$ac_check_headers_parallel_result" = "xyes"; then
+      ac_check_headers_parallel_define=\
+`printf '%s\n' "$ac_check_header" | $as_tr_cpp`
+
+printf "%s\n" "#define HAVE_$ac_check_headers_parallel_define 1" >>confdefs.h
+
+      :
+    else
+      :
+    fi
+  done
+
+  if test -d "$ac_check_headers_parallel_dir"; then
+    rm -rf "$ac_check_headers_parallel_dir"
+  fi
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
 
 ac_fn_c_check_func "$LINENO" "CreateProcessA" "ac_cv_func_CreateProcessA"
 if test "x$ac_cv_func_CreateProcessA" = xyes
@@ -23178,16 +23399,124 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.beam \
     conftest$ac_exeext conftest.$ac_ext
         else
-                   for ac_header in windows.h wincodec.h
-do :
-  as_ac_Header=`printf "%s\n" "ac_cv_header_$ac_header" | sed "$as_sed_sh"`
-ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"
-then :
-  cat >>confdefs.h <<_ACEOF
-#define `printf "%s\n" "HAVE_$ac_header" | sed "$as_sed_cpp"` 1
+
+
+
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+
+
+
+  ac_check_headers_parallel_includes=""
+  ac_check_headers_parallel_dir="ac-check-headers.$$"
+  ac_check_headers_parallel_confdefs="$ac_pwd/confdefs.h"
+  ac_check_headers_parallel_list="windows.h wincodec.h"
+  ac_check_headers_parallel_todo=""
+  ac_check_headers_parallel_cached=""
+  ac_check_headers_parallel_active=0
+  ac_check_headers_parallel_max="$CPU_COUNT"
+  ac_check_headers_parallel_batch_pids=""
+
+  # Limit parallelism by CPU_COUNT, falling back to 1 on invalid values.
+  case "$ac_check_headers_parallel_max" in
+    ''|*!0123456789*)
+      ac_check_headers_parallel_max=1
+      ;;
+    0)
+      ac_check_headers_parallel_max=1
+      ;;
+  esac
+
+  # Split cached and non-cached headers to avoid needless checks.
+  for ac_check_header in $ac_check_headers_parallel_list; do
+    ac_check_headers_parallel_cache=\
+`printf '%s\n' "$ac_check_header" | $as_tr_sh`
+    eval "ac_check_headers_parallel_has_cache=\
+\${ac_cv_header_$ac_check_headers_parallel_cache+set}"
+    if test "x$ac_check_headers_parallel_has_cache" = "xset"; then
+      ac_check_headers_parallel_cached=\
+"$ac_check_headers_parallel_cached $ac_check_header"
+    else
+      ac_check_headers_parallel_todo=\
+"$ac_check_headers_parallel_todo $ac_check_header"
+    fi
+  done
+
+  # Run preprocessor tests in parallel in per-header directories to avoid
+  # collisions on conftest files and logs.
+  if test "x$ac_check_headers_parallel_todo" != "x"; then
+    as_dir="$ac_check_headers_parallel_dir"; as_fn_mkdir_p
+    for ac_check_header in $ac_check_headers_parallel_todo; do
+      ac_check_headers_parallel_subdir=\
+"$ac_check_headers_parallel_dir/$ac_check_header"
+      as_dir="$ac_check_headers_parallel_subdir"; as_fn_mkdir_p
+      (
+        cd "$ac_check_headers_parallel_subdir" || exit 1
+        cat "$ac_check_headers_parallel_confdefs" - <<_ACEOF \
+> conftest.$ac_ext
+/* end confdefs.h.  */
+$ac_check_headers_parallel_includes
+#include <$ac_check_header>
 _ACEOF
- { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for main in -lole32" >&5
+        if ac_fn_c_try_cpp "$LINENO"; then
+          printf '%s\n' yes > conftest.out
+        else
+          printf '%s\n' no > conftest.out
+        fi
+      ) &
+      ac_check_headers_parallel_batch_pids=\
+"$ac_check_headers_parallel_batch_pids $!"
+      ac_check_headers_parallel_active=\
+`expr "$ac_check_headers_parallel_active" + 1`
+      if test "$ac_check_headers_parallel_active" -ge \
+              "$ac_check_headers_parallel_max"; then
+        for ac_check_headers_parallel_pid in \
+$ac_check_headers_parallel_batch_pids; do
+          wait "$ac_check_headers_parallel_pid"
+        done
+        ac_check_headers_parallel_batch_pids=""
+        ac_check_headers_parallel_active=0
+      fi
+    done
+  fi
+
+  for ac_check_headers_parallel_pid in \
+$ac_check_headers_parallel_batch_pids; do
+    wait "$ac_check_headers_parallel_pid"
+  done
+
+  # Report results and update cache/defines serially for stable output.
+  for ac_check_header in $ac_check_headers_parallel_list; do
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_check_header" >&5
+printf %s "checking for $ac_check_header... " >&6; }
+    ac_check_headers_parallel_cache=\
+`printf '%s\n' "$ac_check_header" | $as_tr_sh`
+    eval "ac_check_headers_parallel_result=\
+\${ac_cv_header_$ac_check_headers_parallel_cache-no}"
+    if test "x$ac_check_headers_parallel_result" = "xno"; then
+      ac_check_headers_parallel_subdir=\
+"$ac_check_headers_parallel_dir/$ac_check_header"
+      if test -f "$ac_check_headers_parallel_subdir/conftest.out"; then
+        ac_check_headers_parallel_result=\
+`cat "$ac_check_headers_parallel_subdir/conftest.out"`
+      fi
+    fi
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_check_headers_parallel_result" >&5
+printf "%s\n" "$ac_check_headers_parallel_result" >&6; }
+    eval "ac_cv_header_$ac_check_headers_parallel_cache=\$ac_check_headers_parallel_result"
+    if test "x$ac_check_headers_parallel_result" = "xyes"; then
+      ac_check_headers_parallel_define=\
+`printf '%s\n' "$ac_check_header" | $as_tr_cpp`
+
+printf "%s\n" "#define HAVE_$ac_check_headers_parallel_define 1" >>confdefs.h
+
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for main in -lole32" >&5
 printf %s "checking for main in -lole32... " >&6; }
 if test ${ac_cv_lib_ole32_main+y}
 then :
@@ -23277,12 +23606,21 @@ else case e in #(
 esac
 fi
 
-else case e in #(
-  e) have_wic=no ;;
-esac
-fi
+    else
+      have_wic=no
+    fi
+  done
 
-done
+  if test -d "$ac_check_headers_parallel_dir"; then
+    rm -rf "$ac_check_headers_parallel_dir"
+  fi
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
         fi
         if test "x$have_wic" = "xyes"
 then :
@@ -23502,16 +23840,126 @@ printf "%s\n" "$as_me: checking for Windows Imaging Component (WIC)" >&6;}
             fi
             CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
             LIBS="${LIBS} ${ADDED_LIBS}"
-                   for ac_header in windows.h wincodec.h wincodecsdk.h
-do :
-  as_ac_Header=`printf "%s\n" "ac_cv_header_$ac_header" | sed "$as_sed_sh"`
-ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"
-then :
-  cat >>confdefs.h <<_ACEOF
-#define `printf "%s\n" "HAVE_$ac_header" | sed "$as_sed_cpp"` 1
+
+
+
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+
+
+
+
+
+  ac_check_headers_parallel_includes=""
+  ac_check_headers_parallel_dir="ac-check-headers.$$"
+  ac_check_headers_parallel_confdefs="$ac_pwd/confdefs.h"
+  ac_check_headers_parallel_list="windows.h wincodec.h wincodecsdk.h"
+  ac_check_headers_parallel_todo=""
+  ac_check_headers_parallel_cached=""
+  ac_check_headers_parallel_active=0
+  ac_check_headers_parallel_max="$CPU_COUNT"
+  ac_check_headers_parallel_batch_pids=""
+
+  # Limit parallelism by CPU_COUNT, falling back to 1 on invalid values.
+  case "$ac_check_headers_parallel_max" in
+    ''|*!0123456789*)
+      ac_check_headers_parallel_max=1
+      ;;
+    0)
+      ac_check_headers_parallel_max=1
+      ;;
+  esac
+
+  # Split cached and non-cached headers to avoid needless checks.
+  for ac_check_header in $ac_check_headers_parallel_list; do
+    ac_check_headers_parallel_cache=\
+`printf '%s\n' "$ac_check_header" | $as_tr_sh`
+    eval "ac_check_headers_parallel_has_cache=\
+\${ac_cv_header_$ac_check_headers_parallel_cache+set}"
+    if test "x$ac_check_headers_parallel_has_cache" = "xset"; then
+      ac_check_headers_parallel_cached=\
+"$ac_check_headers_parallel_cached $ac_check_header"
+    else
+      ac_check_headers_parallel_todo=\
+"$ac_check_headers_parallel_todo $ac_check_header"
+    fi
+  done
+
+  # Run preprocessor tests in parallel in per-header directories to avoid
+  # collisions on conftest files and logs.
+  if test "x$ac_check_headers_parallel_todo" != "x"; then
+    as_dir="$ac_check_headers_parallel_dir"; as_fn_mkdir_p
+    for ac_check_header in $ac_check_headers_parallel_todo; do
+      ac_check_headers_parallel_subdir=\
+"$ac_check_headers_parallel_dir/$ac_check_header"
+      as_dir="$ac_check_headers_parallel_subdir"; as_fn_mkdir_p
+      (
+        cd "$ac_check_headers_parallel_subdir" || exit 1
+        cat "$ac_check_headers_parallel_confdefs" - <<_ACEOF \
+> conftest.$ac_ext
+/* end confdefs.h.  */
+$ac_check_headers_parallel_includes
+#include <$ac_check_header>
 _ACEOF
- { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for main in -lole32" >&5
+        if ac_fn_c_try_cpp "$LINENO"; then
+          printf '%s\n' yes > conftest.out
+        else
+          printf '%s\n' no > conftest.out
+        fi
+      ) &
+      ac_check_headers_parallel_batch_pids=\
+"$ac_check_headers_parallel_batch_pids $!"
+      ac_check_headers_parallel_active=\
+`expr "$ac_check_headers_parallel_active" + 1`
+      if test "$ac_check_headers_parallel_active" -ge \
+              "$ac_check_headers_parallel_max"; then
+        for ac_check_headers_parallel_pid in \
+$ac_check_headers_parallel_batch_pids; do
+          wait "$ac_check_headers_parallel_pid"
+        done
+        ac_check_headers_parallel_batch_pids=""
+        ac_check_headers_parallel_active=0
+      fi
+    done
+  fi
+
+  for ac_check_headers_parallel_pid in \
+$ac_check_headers_parallel_batch_pids; do
+    wait "$ac_check_headers_parallel_pid"
+  done
+
+  # Report results and update cache/defines serially for stable output.
+  for ac_check_header in $ac_check_headers_parallel_list; do
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_check_header" >&5
+printf %s "checking for $ac_check_header... " >&6; }
+    ac_check_headers_parallel_cache=\
+`printf '%s\n' "$ac_check_header" | $as_tr_sh`
+    eval "ac_check_headers_parallel_result=\
+\${ac_cv_header_$ac_check_headers_parallel_cache-no}"
+    if test "x$ac_check_headers_parallel_result" = "xno"; then
+      ac_check_headers_parallel_subdir=\
+"$ac_check_headers_parallel_dir/$ac_check_header"
+      if test -f "$ac_check_headers_parallel_subdir/conftest.out"; then
+        ac_check_headers_parallel_result=\
+`cat "$ac_check_headers_parallel_subdir/conftest.out"`
+      fi
+    fi
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_check_headers_parallel_result" >&5
+printf "%s\n" "$ac_check_headers_parallel_result" >&6; }
+    eval "ac_cv_header_$ac_check_headers_parallel_cache=\$ac_check_headers_parallel_result"
+    if test "x$ac_check_headers_parallel_result" = "xyes"; then
+      ac_check_headers_parallel_define=\
+`printf '%s\n' "$ac_check_header" | $as_tr_cpp`
+
+printf "%s\n" "#define HAVE_$ac_check_headers_parallel_define 1" >>confdefs.h
+
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for main in -lole32" >&5
 printf %s "checking for main in -lole32... " >&6; }
 if test ${ac_cv_lib_ole32_main+y}
 then :
@@ -23603,13 +24051,22 @@ else case e in #(
 esac
 fi
 
-else case e in #(
-  e) message_wiccodec=no
-                              have_wiccodec=no ;;
-esac
-fi
+    else
+      message_wiccodec=no
+                              have_wiccodec=no
+    fi
+  done
 
-done
+  if test -d "$ac_check_headers_parallel_dir"; then
+    rm -rf "$ac_check_headers_parallel_dir"
+  fi
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
             WICCODEC_CFLAGS="$ADDED_CFLAGS"
             WICCODEC_LIBS="$ADDED_LIBS"
             CFLAGS=$CFLAGS_BACKUP
