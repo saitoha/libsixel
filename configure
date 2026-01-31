@@ -14424,6 +14424,14 @@ ac_config_headers="$ac_config_headers config.h"
 # on systems with multiple CPUs.
 
 
+# Check once whether the compiler accepts the builtin mismatch pragma.
+
+
+# Run AC_CHECK_FUNCS checks in parallel using per-function directories.
+# This mirrors AC_CHECK_FUNCS behavior while reducing overall configure time
+# on systems with multiple CPUs.
+
+
 # Run config.status with explicit parallelism based on AX_COUNT_CPUS.
 # The flow is:
 # 1) Save the caller's --no-create choice.
@@ -19275,6 +19283,56 @@ ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether compiler accepts -Wbuiltin-declaration-mismatch pragma" >&5
+printf %s "checking whether compiler accepts -Wbuiltin-declaration-mismatch pragma... " >&6; }
+if test ${ac_cv_c_pragma_wbuiltin_decl_mismatch+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#if defined(__clang__) || defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wbuiltin-declaration-mismatch"
+#endif
+
+int
+main (void)
+{
+return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ac_cv_c_pragma_wbuiltin_decl_mismatch=yes
+else case e in #(
+  e) ac_cv_c_pragma_wbuiltin_decl_mismatch=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_c_pragma_wbuiltin_decl_mismatch" >&5
+printf "%s\n" "$ac_cv_c_pragma_wbuiltin_decl_mismatch" >&6; }
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+
+
+
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
 
 
 
@@ -19483,6 +19541,23 @@ printf "%s\n" "$ac_cv_c_no_builtin" >&6; }
   ac_check_funcs_parallel_active=0
   ac_check_funcs_parallel_max="$CPU_COUNT"
   ac_check_funcs_parallel_batch_pids=""
+  ac_check_funcs_parallel_diag_mismatch_pragma=""
+  ac_check_funcs_parallel_diag_mismatch_pragma_end=""
+
+  # Only emit the pragma when the compiler supports it.
+  if test "x$ac_cv_c_pragma_wbuiltin_decl_mismatch" = "xyes"; then
+    ac_check_funcs_parallel_diag_mismatch_pragma='
+#if defined(__clang__) || defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wbuiltin-declaration-mismatch"
+#endif
+'
+    ac_check_funcs_parallel_diag_mismatch_pragma_end='
+#if defined(__clang__) || defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+'
+  fi
 
   # Limit parallelism by CPU_COUNT, falling back to 1 on invalid values.
   case "$ac_check_funcs_parallel_max" in
@@ -19534,14 +19609,9 @@ $ac_check_funcs_parallel_includes
 #ifdef __cplusplus
 extern "C"
 #endif
-#if defined(__clang__) || defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wbuiltin-declaration-mismatch"
-#endif
+$ac_check_funcs_parallel_diag_mismatch_pragma
 char $ac_func (void);
-#if defined(__clang__) || defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif
+$ac_check_funcs_parallel_diag_mismatch_pragma_end
 /* The GNU C library defines this for functions which it implements to
    always fail with ENOSYS. */
 #if defined __stub_$ac_func || defined __stub___$ac_func
