@@ -1204,60 +1204,60 @@ else
 fi
 
 AC_CHECK_FUNCS_PARALLEL([assert \
-                setmode \
-                _setmode \
-                fileno \
-                _fileno \
-                _mktemp \
-                mkstemp \
-                mktemp \
-                fopen_s \
-                fsync \
-                _commit \
-                _mkdir \
-                mkdir \
-                _chmod \
-                chmod \
-                signal \
-                strdup \
-                strcpy \
-                strcpy_s \
-                strtoul \
-                calloc \
-                clearerr \
-                stat \
-                setjmp \
-                longjmp \
-                strerror \
-                strerror_r \
-                _strerror_r \
-                _isatty \
-                isatty \
-                clock_gettime \
-                _sopen_s \
-                _open \
-                _write \
-                _close \
-                open \
-                sscanf_s \
-                strncmp \
-                ldiv \
-                floor \
-                pow \
-                select \
-                _fullpath \
-                _realpath \
-                _dupenv_s \
-                realpath \
-                sqrt \
-                strchr \
-                strerror \
-                strstr \
-                fchmod \
-                strtol \
-                tmpnam \
-                gettimeofday \
-               ])
+                         setmode \
+                         _setmode \
+                         fileno \
+                         _fileno \
+                         _mktemp \
+                         mkstemp \
+                         mktemp \
+                         fopen_s \
+                         fsync \
+                         _commit \
+                         _mkdir \
+                         mkdir \
+                         _chmod \
+                         chmod \
+                         signal \
+                         strdup \
+                         strcpy \
+                         strcpy_s \
+                         strtoul \
+                         calloc \
+                         clearerr \
+                         stat \
+                         setjmp \
+                         longjmp \
+                         strerror \
+                         strerror_r \
+                         _strerror_r \
+                         _isatty \
+                         isatty \
+                         clock_gettime \
+                         _sopen_s \
+                         _open \
+                         _write \
+                         _close \
+                         open \
+                         sscanf_s \
+                         strncmp \
+                         ldiv \
+                         floor \
+                         pow \
+                         select \
+                         _fullpath \
+                         _realpath \
+                         _dupenv_s \
+                         realpath \
+                         sqrt \
+                         strchr \
+                         strerror \
+                         strstr \
+                         fchmod \
+                         strtol \
+                         tmpnam \
+                         gettimeofday \
+                        ])
 LIBS=$LS_SAVED_LIBS
 AC_SUBST([CLOCK_GETTIME_LIBS])
 AC_CHECK_FUNCS([_sopen_s], [], [], [[#include <io.h>
@@ -2642,14 +2642,14 @@ AS_IF([test "x$BASH" = x -o "x$BASH" = xno], [
 ])
 AM_CONDITIONAL([HAVE_BASH], [test "x$BASH" != x -a "x$BASH" != xno])
 
-AC_DEFUN([LS_UPDATE_TIMESTAMP], [
-          touch -c aclocal.m4 Makefile.in configure config.h.in \
-                   converters/Makefile.in include/Makefile.in \
-                   python/Makefile.in src/Makefile.in tools/Makefile.in \
-                   assessment/Makefile.in wic/Makefile.in \
-                   tests/Makefile.in quicklook-extension/Makefile.in
-          ])
-LS_UPDATE_TIMESTAMP
+#AC_DEFUN([LS_UPDATE_TIMESTAMP], [
+#          touch -c aclocal.m4 Makefile.in configure config.h.in \
+#                   converters/Makefile.in include/Makefile.in \
+#                   python/Makefile.in src/Makefile.in tools/Makefile.in \
+#                   assessment/Makefile.in wic/Makefile.in \
+#                   tests/Makefile.in quicklook-extension/Makefile.in
+#          ])
+#LS_UPDATE_TIMESTAMP
 
 AM_CONDITIONAL([HAVE_CURL], [test x$have_curl = xyes])
 AM_CONDITIONAL([HAVE_WINHTTP], [test x$have_winhttp = xyes])

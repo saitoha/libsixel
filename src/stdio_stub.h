@@ -56,7 +56,9 @@ int fileno(FILE *);
 static int
 sixel_fileno_stub(FILE *fp)
 {
-    return -1;
+    (void)fp;
+
+    return (-1);
 }
 
 # define sixel_fileno(stream) sixel_fileno_stub(stream)
