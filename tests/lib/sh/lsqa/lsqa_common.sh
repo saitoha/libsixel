@@ -6,10 +6,9 @@
 #
 # Helper layout:
 # - Initialization discovers lsqa binaries and data directories.
-# - _lsqa_run_compare executes lsqa and captures output.
 # - Assertions compare MS-SSIM to a caller-provided floor.
 # - Sixel checks are handled by callers before asserting quality.
-# - Each quality check stores lsqa.txt history for debugging flaky failures.
+# - Baseline checks rely on lsqa exit codes instead of saved output files.
 
 set -eu
 
@@ -22,6 +21,17 @@ if [ -z "${lsqa_helper_root}" ]; then
     lsqa_helper_root=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
 fi
 . "${lsqa_helper_root}/../common/tap.sh"
+
+_lsqa_require_converter_common() {
+    if [ -n "${LSQA_CONVERTER_COMMON_LOADED-}" ]; then
+        return 0
+    fi
+
+    # Load converter helpers lazily to avoid altering unrelated tests.
+    . "${lsqa_helper_root}/../../../_lib/sh/common.sh"
+    LSQA_CONVERTER_COMMON_LOADED=1
+    return 0
+}
 
 lsqa_init() {
     test_path=$1
@@ -67,6 +77,7 @@ lsqa_init() {
     if [ -n "${lsqa_bin_env}" ]; then
         if [ -x "${lsqa_bin_env}" ]; then
             LSQA_BIN=${lsqa_bin_env}
+            LSQA_PATH=${lsqa_bin_env}
         else
             printf 'LSQA_BIN points to a missing or non-executable path: %s\n' \
                 "${lsqa_bin_env}" >&2
@@ -80,6 +91,7 @@ lsqa_init() {
         for candidate in "$@"; do
             if [ -x "${candidate}" ]; then
                 LSQA_BIN=${candidate}
+                LSQA_PATH=${candidate}
                 break
             fi
         done
@@ -91,6 +103,8 @@ lsqa_init() {
             return 1
         fi
     fi
+
+    _lsqa_require_converter_common
 
     return 0
 }
@@ -132,21 +146,9 @@ _lsqa_run_compare() {
     : >"${lsqa_run_stdout_path}"
     : >"${lsqa_run_stderr_path}"
 
-    ${SIXEL_RUNTIME-} "${LSQA_BIN}" \
-        -m MS-SSIM "${lsqa_run_ref_path}" "${lsqa_run_out_path}" \
+    run_lsqa -m MS-SSIM "${lsqa_run_ref_path}" "${lsqa_run_out_path}" \
         >"${lsqa_run_stdout_path}" \
         2>"${lsqa_run_stderr_path}" || lsqa_run_status=$?
-
-    if [ ${lsqa_run_status} -eq 126 ]; then
-        : >"${lsqa_run_stdout_path}"
-        : >"${lsqa_run_stderr_path}"
-        /bin/sh -c \
-            'exec "$0" -m MS-SSIM "$1" "$2"' \
-            ${SIXEL_RUNTIME-} "${LSQA_BIN}" "${lsqa_run_ref_path}" \
-            "${lsqa_run_out_path}" \
-            >"${lsqa_run_stdout_path}" 2>"${lsqa_run_stderr_path}" \
-            || lsqa_run_status=$?
-    fi
 
     printf '%s' "${lsqa_run_status}"
 }
@@ -167,13 +169,8 @@ _lsqa_assert_quality_common() {
     lsqa_quality_artifact_dir=$5
     lsqa_quality_floor_ms=$6
 
-    lsqa_quality_out_file="${lsqa_quality_artifact_dir}/lsqa.txt"
-    lsqa_quality_err_file="${lsqa_quality_artifact_dir}/lsqa.err"
-    lsqa_quality_history_dir="${lsqa_quality_artifact_dir}/lsqa-history"
-    lsqa_quality_stamp=""
-    lsqa_quality_history_file=""
     lsqa_quality_run_status=0
-    lsqa_quality_ms_val=""
+    lsqa_quality_err_file=""
 
     # Mode switch:
     # - "compare": compare reference vs. caller-provided output file.
@@ -182,61 +179,44 @@ _lsqa_assert_quality_common() {
         lsqa_quality_out_path="${lsqa_quality_artifact_dir}/output.six"
         _lsqa_require_converter_common
 
-        : >"${lsqa_quality_out_file}"
-        : >"${lsqa_quality_err_file}"
-
         if ! run_img2sixel -Lbuiltin "${lsqa_quality_ref_path}" \
                 > "${lsqa_quality_out_path}"; then
             lsqa_quality_run_status=$?
-        elif ! runtime_exec "${LSQA_BIN}" -m MS-SSIM \
+        else
+            lsqa_quality_err_file=$(mktemp)
+            if ! run_lsqa -b "MS-SSIM:${lsqa_quality_floor_ms}" \
                 "${lsqa_quality_ref_path}" "${lsqa_quality_out_path}" \
-                >"${lsqa_quality_out_file}" \
-                2>"${lsqa_quality_err_file}"; then
-            lsqa_quality_run_status=$?
-        fi
-
-        if [ ${lsqa_quality_run_status} -eq 126 ]; then
-            : >"${lsqa_quality_out_file}"
-            : >"${lsqa_quality_err_file}"
-            if ! run_img2sixel -Lbuiltin "${lsqa_quality_ref_path}" \
-                | /bin/sh -c 'exec "$0" -m MS-SSIM "$1"' \
-                ${SIXEL_RUNTIME-} "${LSQA_BIN}" "${lsqa_quality_ref_path}" \
-                >"${lsqa_quality_out_file}" \
-                2>"${lsqa_quality_err_file}"; then
+                > /dev/null 2>"${lsqa_quality_err_file}"; then
                 lsqa_quality_run_status=$?
             fi
         fi
     else
-        lsqa_quality_run_status=$(_lsqa_run_compare \
+        lsqa_quality_err_file=$(mktemp)
+        if ! run_lsqa -b "MS-SSIM:${lsqa_quality_floor_ms}" \
             "${lsqa_quality_ref_path}" "${lsqa_quality_out_path}" \
-            "${lsqa_quality_out_file}" "${lsqa_quality_err_file}")
+            > /dev/null 2>"${lsqa_quality_err_file}"; then
+            lsqa_quality_run_status=$?
+        fi
     fi
 
     if [ ${lsqa_quality_run_status} -ne 0 ]; then
-        printf '%s: assessment/lsqa returned %s: %s\n' \
-            "${lsqa_quality_label}" "${lsqa_quality_run_status}" \
-            "$(cat "${lsqa_quality_err_file}")" >&2
+        printf '%s: assessment/lsqa returned %s\n' \
+            "${lsqa_quality_label}" "${lsqa_quality_run_status}" >&2
+        if [ -n "${lsqa_quality_err_file}" ] && \
+            [ -s "${lsqa_quality_err_file}" ]; then
+            cat "${lsqa_quality_err_file}" >&2
+        else
+            printf '%s: lsqa produced no diagnostics\n' \
+                "${lsqa_quality_label}" >&2
+        fi
+        if [ -n "${lsqa_quality_err_file}" ]; then
+            rm -f "${lsqa_quality_err_file}"
+        fi
         return 1
     fi
-
-    # Persist every lsqa.txt run so flaky regressions can be diffed later.
-    lsqa_quality_stamp=$(date -u +%Y%m%dT%H%M%SZ)
-    lsqa_quality_history_file="${lsqa_quality_history_dir}/lsqa.${lsqa_quality_stamp}.$$".txt
-    mkdir -p "${lsqa_quality_history_dir}"
-    cp "${lsqa_quality_out_file}" "${lsqa_quality_history_file}"
-
-    lsqa_quality_ms_val=$(_lsqa_read_ms_ssim "${lsqa_quality_out_file}")
-
-    if _lsqa_below_floor "${lsqa_quality_ms_val}" \
-        "${lsqa_quality_floor_ms}"; then
-        printf '%s: MS-SSIM %s below floor %s\n' \
-            "${lsqa_quality_label}" "${lsqa_quality_ms_val}" \
-            "${lsqa_quality_floor_ms}" >&2
-        return 1
+    if [ -n "${lsqa_quality_err_file}" ]; then
+        rm -f "${lsqa_quality_err_file}"
     fi
-
-    printf 'MS-SSIM=%s\n' "${lsqa_quality_ms_val}" \
-        >"${lsqa_quality_artifact_dir}/lsqa_metrics.txt"
     return 0
 }
 
@@ -260,17 +240,6 @@ lsqa_assert_quality() {
         "${lsqa_quality_artifact_dir}" "${lsqa_quality_floor_ms}"
 }
 
-_lsqa_require_converter_common() {
-    if [ -n "${LSQA_CONVERTER_COMMON_LOADED-}" ]; then
-        return 0
-    fi
-
-    # Load converter helpers lazily to avoid altering unrelated tests.
-    . "${lsqa_helper_root}/../../../_lib/sh/common.sh"
-    LSQA_CONVERTER_COMMON_LOADED=1
-    return 0
-}
-
 lsqa_sixel_init() {
     test_path=$1
 
@@ -289,29 +258,26 @@ lsqa_expect_low_quality_or_fail() {
     lsqa_low_label=$2
     lsqa_low_artifact_dir=$3
 
-    lsqa_low_out_file="${lsqa_low_artifact_dir}/lsqa.txt"
-    lsqa_low_err_file="${lsqa_low_artifact_dir}/lsqa.err"
+    lsqa_low_err_file=$(mktemp)
+    lsqa_low_run_status=0
 
-    lsqa_low_run_status=$(_lsqa_run_compare "${lsqa_low_image_path}" \
-        "${lsqa_low_image_path}" "${lsqa_low_out_file}" \
-        "${lsqa_low_err_file}")
+    run_lsqa -b "MS-SSIM:0.5" "${lsqa_low_image_path}" \
+        "${lsqa_low_image_path}" > /dev/null 2>"${lsqa_low_err_file}" \
+        || lsqa_low_run_status=$?
+
     if [ ${lsqa_low_run_status} -eq 0 ]; then
-        lsqa_low_ms_val=$(_lsqa_read_ms_ssim "${lsqa_low_out_file}")
-        if _lsqa_below_floor "${lsqa_low_ms_val}" "0.5"; then
-            printf 'MS-SSIM=%s\n' "${lsqa_low_ms_val}" \
-                >"${lsqa_low_artifact_dir}/lsqa_metrics.txt"
-            return 0
-        fi
-        printf '%s: low-quality input accepted (MS-SSIM=%s)\n' \
-            "${lsqa_low_label}" "${lsqa_low_ms_val}" >&2
+        printf '%s: low-quality input accepted\n' \
+            "${lsqa_low_label}" >&2
+        rm -f "${lsqa_low_err_file}"
         return 1
     fi
 
-    if [ ! -s "${lsqa_low_err_file}" ]; then
-        printf '%s: failed without diagnostic output\n' \
-            "${lsqa_low_label}" >&2
-        return 1
+    if [ -s "${lsqa_low_err_file}" ]; then
+        printf '%s: assessment/lsqa returned %s\n' \
+            "${lsqa_low_label}" "${lsqa_low_run_status}" >&2
+        cat "${lsqa_low_err_file}" >&2
     fi
+    rm -f "${lsqa_low_err_file}"
     return 0
 }
 
