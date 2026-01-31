@@ -172,7 +172,7 @@ sixel_logger_prepare_env(sixel_logger_t *logger)
     }
 
     sixel_logger_init(logger);
-    path = sixel_compat_getenv("SIXEL_PARALLEL_LOG_PATH");
+    path = sixel_compat_getenv("SIXEL_LOG_PATH");
     if (path == NULL || path[0] == '\0') {
         return SIXEL_OK;
     }
