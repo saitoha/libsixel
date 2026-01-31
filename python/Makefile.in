@@ -618,7 +618,7 @@ uninstall-am: uninstall-libsixelPYTHON
 
 
 clean-local:
-	rm -rf libsixel_python.egg-info build dist libsixel/_libs
+	rm -rf libsixel_wheel.egg-info build dist libsixel/_libs
 
 @HAVE_PYTHON_WHEEL_TRUE@wheel-local:
 @HAVE_PYTHON_WHEEL_TRUE@	$(AM_V_GEN) $(PYTHON) $(srcdir)/wheel_builder.py \

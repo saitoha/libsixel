@@ -124,7 +124,7 @@ Furthermore some information of SIXEL-ready SDL applications are reported.
 
 ### Langage Bindings
 
-#### [libsixel-python](https://pypi.python.org/pypi/libsixel-python/0.4.0)
+#### [libsixel-wheel](https://pypi.python.org/pypi/libsixel-wheel/0.4.0)
 
   [converter.py](https://github.com/saitoha/libsixel/blob/master/examples/python/converter.py) example depends on it.
 
@@ -1337,7 +1337,7 @@ $ python setup.py install  # install python module
 or
 
 ```
-$ easy_install libsixel-python
+$ easy_install libsixel-wheel
 ```
 
 ## PHP interface

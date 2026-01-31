@@ -21,7 +21,7 @@
  */
 
 /*
- * Minimal C extension for libsixel-python wheels.
+ * Minimal C extension for libsixel_wheel wheels.
  *
  * This module exists to ensure the wheel is tagged as a platform build. It
  * exposes the linked libsixel version to confirm the shared library link.

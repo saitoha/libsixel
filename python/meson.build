@@ -43,9 +43,9 @@ if python_wheel_opt.enabled()
   wheel_script = files('wheel_builder.py')
   wheel_distdir = join_paths(meson.current_build_dir(), 'dist')
   custom_target(
-    'libsixel-python-wheel',
+    'libsixel-wheel',
     input: libsixel_library,
-    output: 'libsixel-python-wheel.stamp',
+    output: 'libsixel-wheel.stamp',
     command: [
       py, wheel_script,
       '--libpath', '@INPUT@',

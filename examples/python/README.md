@@ -7,7 +7,7 @@ This example suggests how to convert PIL images into SIXEL using libsixel python
 Requirements
 ------------
 
-- libsixel-python
+- libsixel-wheel
 - PIL (Python Imaging Library) or its compatible library
 
 
