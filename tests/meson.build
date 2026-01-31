@@ -170,6 +170,7 @@ tests = [
   'cli-option-matching/t/0006_option_matching_distance3.t',
   'cli-options/t/0001_long_option_forms.t',
   'cli-options/t/0002_ormode_option_runs.t',
+  'cli-options/t/0003_gri_limit_lsqa.t',
   'completion/t/0021_completion_show_bash.t',
   'completion/t/0022_completion_show_zsh.t',
   'completion/t/0023_completion_install_bash.t',
