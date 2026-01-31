@@ -9,7 +9,7 @@
 /* Define to 1 if you have the <arm_neon.h> header file. */
 #undef HAVE_ARM_NEON_H
 
-/* Define to 1 if you have the 'assert' function. */
+/* Define to 1 if you have the `assert' function. */
 #undef HAVE_ASSERT
 
 /* Define to 1 if you have the <assert.h> header file. */
@@ -33,13 +33,13 @@
 /* Define if __builtin_prefetch is available */
 #undef HAVE_BUILTIN_PREFETCH
 
-/* Define to 1 if you have the 'calloc' function. */
+/* Define to 1 if you have the `calloc' function. */
 #undef HAVE_CALLOC
 
-/* Define to 1 if you have the 'chmod' function. */
+/* Define to 1 if you have the `chmod' function. */
 #undef HAVE_CHMOD
 
-/* Define to 1 if you have the 'clearerr' function. */
+/* Define to 1 if you have the `clearerr' function. */
 #undef HAVE_CLEARERR
 
 /* whether Linux clipboard backend is available */
@@ -54,7 +54,7 @@
 /* Define if clock exists */
 #undef HAVE_CLOCK
 
-/* Define to 1 if you have the 'clock_gettime' function. */
+/* Define to 1 if you have the `clock_gettime' function. */
 #undef HAVE_CLOCK_GETTIME
 
 /* Define to 1 if you have the 'CloseHandle' function. */
@@ -204,31 +204,31 @@
 /* Define to 1 if you have the 'execvp' function. */
 #undef HAVE_EXECVP
 
-/* Define to 1 if you have the 'fchmod' function. */
+/* Define to 1 if you have the `fchmod' function. */
 #undef HAVE_FCHMOD
 
 /* Define to 1 if you have the <fcntl.h> header file. */
 #undef HAVE_FCNTL_H
 
-/* Define to 1 if you have the 'fileno' function. */
+/* Define to 1 if you have the `fileno' function. */
 #undef HAVE_FILENO
 
 /* Define to 1 if you have the <float.h> header file. */
 #undef HAVE_FLOAT_H
 
-/* Define to 1 if you have the 'floor' function. */
+/* Define to 1 if you have the `floor' function. */
 #undef HAVE_FLOOR
 
 /* define 1 if GCC supports -fno-emulated-tls */
 #undef HAVE_FNO_EMULATED_TLS
 
-/* Define to 1 if you have the 'fopen_s' function. */
+/* Define to 1 if you have the `fopen_s' function. */
 #undef HAVE_FOPEN_S
 
 /* Define to 1 if you have the 'fork' function. */
 #undef HAVE_FORK
 
-/* Define to 1 if you have the 'fsync' function. */
+/* Define to 1 if you have the `fsync' function. */
 #undef HAVE_FSYNC
 
 /* Define to 1 if the system has the `deprecated' function attribute */
@@ -255,7 +255,7 @@
 /* whether getopt_long is avilable */
 #undef HAVE_GETOPT_LONG
 
-/* Define to 1 if you have the 'gettimeofday' function. */
+/* Define to 1 if you have the `gettimeofday' function. */
 #undef HAVE_GETTIMEOFDAY
 
 /* gettimeofday timezone argument is struct timezone* */
@@ -279,13 +279,13 @@
 /* Define to 1 if you have the <io.h> header file. */
 #undef HAVE_IO_H
 
-/* Define to 1 if you have the 'isatty' function. */
+/* Define to 1 if you have the `isatty' function. */
 #undef HAVE_ISATTY
 
 /* whether jpeg codec library is available */
 #undef HAVE_JPEG
 
-/* Define to 1 if you have the 'ldiv' function. */
+/* Define to 1 if you have the `ldiv' function. */
 #undef HAVE_LDIV
 
 /* whether libcurl is available */
@@ -312,7 +312,7 @@
 /* Define to 1 if you have the <limits.h> header file. */
 #undef HAVE_LIMITS_H
 
-/* Define to 1 if you have the 'longjmp' function. */
+/* Define to 1 if you have the `longjmp' function. */
 #undef HAVE_LONGJMP
 
 /* Define to 1 if your system has a GNU libc compatible 'malloc' function, and
@@ -334,13 +334,13 @@
 /* Define to 1 if you have the 'memset' function. */
 #undef HAVE_MEMSET
 
-/* Define to 1 if you have the 'mkdir' function. */
+/* Define to 1 if you have the `mkdir' function. */
 #undef HAVE_MKDIR
 
-/* Define to 1 if you have the 'mkstemp' function. */
+/* Define to 1 if you have the `mkstemp' function. */
 #undef HAVE_MKSTEMP
 
-/* Define to 1 if you have the 'mktemp' function. */
+/* Define to 1 if you have the `mktemp' function. */
 #undef HAVE_MKTEMP
 
 /* Define if building with MSVC */
@@ -358,7 +358,7 @@
 /* Define to 1 if you have the 'posix_spawnp' function. */
 #undef HAVE_POSIX_SPAWNP
 
-/* Define to 1 if you have the 'pow' function. */
+/* Define to 1 if you have the `pow' function. */
 #undef HAVE_POW
 
 /* Define to 1 if you have the <process.h> header file. */
@@ -374,19 +374,19 @@
    and to 0 otherwise. */
 #undef HAVE_REALLOC
 
-/* Define to 1 if you have the 'realpath' function. */
+/* Define to 1 if you have the `realpath' function. */
 #undef HAVE_REALPATH
 
-/* Define to 1 if you have the 'select' function. */
+/* Define to 1 if you have the `select' function. */
 #undef HAVE_SELECT
 
-/* Define to 1 if you have the 'setjmp' function. */
+/* Define to 1 if you have the `setjmp' function. */
 #undef HAVE_SETJMP
 
-/* Define to 1 if you have the 'setmode' function. */
+/* Define to 1 if you have the `setmode' function. */
 #undef HAVE_SETMODE
 
-/* Define to 1 if you have the 'signal' function. */
+/* Define to 1 if you have the `signal' function. */
 #undef HAVE_SIGNAL
 
 /* Define to 1 if you have the <signal.h> header file. */
@@ -398,16 +398,16 @@
 /* Define to 1 if you have the <spawn.h> header file. */
 #undef HAVE_SPAWN_H
 
-/* Define to 1 if you have the 'sqrt' function. */
+/* Define to 1 if you have the `sqrt' function. */
 #undef HAVE_SQRT
 
-/* Define to 1 if you have the 'sscanf_s' function. */
+/* Define to 1 if you have the `sscanf_s' function. */
 #undef HAVE_SSCANF_S
 
 /* Define if SSE2 is available */
 #undef HAVE_SSE2
 
-/* Define to 1 if you have the 'stat' function. */
+/* Define to 1 if you have the `stat' function. */
 #undef HAVE_STAT
 
 /* Define to 1 if you have the <stdarg.h> header file. */
@@ -425,22 +425,22 @@
 /* Define to 1 if you have the <stdlib.h> header file. */
 #undef HAVE_STDLIB_H
 
-/* Define to 1 if you have the 'strchr' function. */
+/* Define to 1 if you have the `strchr' function. */
 #undef HAVE_STRCHR
 
-/* Define to 1 if you have the 'strcpy' function. */
+/* Define to 1 if you have the `strcpy' function. */
 #undef HAVE_STRCPY
 
-/* Define to 1 if you have the 'strcpy_s' function. */
+/* Define to 1 if you have the `strcpy_s' function. */
 #undef HAVE_STRCPY_S
 
-/* Define to 1 if you have the 'strdup' function. */
+/* Define to 1 if you have the `strdup' function. */
 #undef HAVE_STRDUP
 
-/* Define to 1 if you have the 'strerror' function. */
+/* Define to 1 if you have the `strerror' function. */
 #undef HAVE_STRERROR
 
-/* Define to 1 if you have the 'strerror_r' function. */
+/* Define to 1 if you have the `strerror_r' function. */
 #undef HAVE_STRERROR_R
 
 /* Define to 1 if you have the <strings.h> header file. */
@@ -449,16 +449,16 @@
 /* Define to 1 if you have the <string.h> header file. */
 #undef HAVE_STRING_H
 
-/* Define to 1 if you have the 'strncmp' function. */
+/* Define to 1 if you have the `strncmp' function. */
 #undef HAVE_STRNCMP
 
-/* Define to 1 if you have the 'strstr' function. */
+/* Define to 1 if you have the `strstr' function. */
 #undef HAVE_STRSTR
 
-/* Define to 1 if you have the 'strtol' function. */
+/* Define to 1 if you have the `strtol' function. */
 #undef HAVE_STRTOL
 
-/* Define to 1 if you have the 'strtoul' function. */
+/* Define to 1 if you have the `strtoul' function. */
 #undef HAVE_STRTOUL
 
 /* Define to 1 if you have the <sys/ioctl.h> header file. */
@@ -503,7 +503,7 @@
 /* Define to 1 if you have the <time.h> header file. */
 #undef HAVE_TIME_H
 
-/* Define to 1 if you have the 'tmpnam' function. */
+/* Define to 1 if you have the `tmpnam' function. */
 #undef HAVE_TMPNAM
 
 /* Define to 1 if you have the <unistd.h> header file. */
@@ -545,49 +545,49 @@
 /* Define to 1 if _xgetbv is available without extra flags */
 #undef HAVE_XGETBV_INTRIN
 
-/* Define to 1 if you have the '_chmod' function. */
+/* Define to 1 if you have the `_chmod' function. */
 #undef HAVE__CHMOD
 
-/* Define to 1 if you have the '_close' function. */
+/* Define to 1 if you have the `_close' function. */
 #undef HAVE__CLOSE
 
-/* Define to 1 if you have the '_commit' function. */
+/* Define to 1 if you have the `_commit' function. */
 #undef HAVE__COMMIT
 
-/* Define to 1 if you have the '_dupenv_s' function. */
+/* Define to 1 if you have the `_dupenv_s' function. */
 #undef HAVE__DUPENV_S
 
-/* Define to 1 if you have the '_fileno' function. */
+/* Define to 1 if you have the `_fileno' function. */
 #undef HAVE__FILENO
 
-/* Define to 1 if you have the '_fullpath' function. */
+/* Define to 1 if you have the `_fullpath' function. */
 #undef HAVE__FULLPATH
 
-/* Define to 1 if you have the '_isatty' function. */
+/* Define to 1 if you have the `_isatty' function. */
 #undef HAVE__ISATTY
 
-/* Define to 1 if you have the '_mkdir' function. */
+/* Define to 1 if you have the `_mkdir' function. */
 #undef HAVE__MKDIR
 
-/* Define to 1 if you have the '_mktemp' function. */
+/* Define to 1 if you have the `_mktemp' function. */
 #undef HAVE__MKTEMP
 
-/* Define to 1 if you have the '_open' function. */
+/* Define to 1 if you have the `_open' function. */
 #undef HAVE__OPEN
 
-/* Define to 1 if you have the '_realpath' function. */
+/* Define to 1 if you have the `_realpath' function. */
 #undef HAVE__REALPATH
 
-/* Define to 1 if you have the '_setmode' function. */
+/* Define to 1 if you have the `_setmode' function. */
 #undef HAVE__SETMODE
 
 /* Define to 1 if you have the '_sopen_s' function. */
 #undef HAVE__SOPEN_S
 
-/* Define to 1 if you have the '_strerror_r' function. */
+/* Define to 1 if you have the `_strerror_r' function. */
 #undef HAVE__STRERROR_R
 
-/* Define to 1 if you have the '_write' function. */
+/* Define to 1 if you have the `_write' function. */
 #undef HAVE__WRITE
 
 /* Define to 1 if the system has the `__builtin_unreachable' built-in function

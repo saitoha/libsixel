@@ -14419,6 +14419,11 @@ ac_config_headers="$ac_config_headers config.h"
 
 
 
+# Run AC_CHECK_FUNCS checks in parallel using per-function directories.
+# This mirrors AC_CHECK_FUNCS behavior while reducing overall configure time
+# on systems with multiple CPUs.
+
+
 # Run config.status with explicit parallelism based on AX_COUNT_CPUS.
 # The flow is:
 # 1) Save the caller's --no-create choice.
@@ -19262,330 +19267,358 @@ fi
 
 fi
 
-ac_fn_c_check_func "$LINENO" "assert" "ac_cv_func_assert"
-if test "x$ac_cv_func_assert" = xyes
-then :
-  printf "%s\n" "#define HAVE_ASSERT 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "setmode" "ac_cv_func_setmode"
-if test "x$ac_cv_func_setmode" = xyes
-then :
-  printf "%s\n" "#define HAVE_SETMODE 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "_setmode" "ac_cv_func__setmode"
-if test "x$ac_cv_func__setmode" = xyes
-then :
-  printf "%s\n" "#define HAVE__SETMODE 1" >>confdefs.h
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
-fi
-ac_fn_c_check_func "$LINENO" "fileno" "ac_cv_func_fileno"
-if test "x$ac_cv_func_fileno" = xyes
-then :
-  printf "%s\n" "#define HAVE_FILENO 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "_fileno" "ac_cv_func__fileno"
-if test "x$ac_cv_func__fileno" = xyes
-then :
-  printf "%s\n" "#define HAVE__FILENO 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "_mktemp" "ac_cv_func__mktemp"
-if test "x$ac_cv_func__mktemp" = xyes
-then :
-  printf "%s\n" "#define HAVE__MKTEMP 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "mkstemp" "ac_cv_func_mkstemp"
-if test "x$ac_cv_func_mkstemp" = xyes
-then :
-  printf "%s\n" "#define HAVE_MKSTEMP 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "mktemp" "ac_cv_func_mktemp"
-if test "x$ac_cv_func_mktemp" = xyes
-then :
-  printf "%s\n" "#define HAVE_MKTEMP 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "fopen_s" "ac_cv_func_fopen_s"
-if test "x$ac_cv_func_fopen_s" = xyes
-then :
-  printf "%s\n" "#define HAVE_FOPEN_S 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "fsync" "ac_cv_func_fsync"
-if test "x$ac_cv_func_fsync" = xyes
-then :
-  printf "%s\n" "#define HAVE_FSYNC 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "_commit" "ac_cv_func__commit"
-if test "x$ac_cv_func__commit" = xyes
-then :
-  printf "%s\n" "#define HAVE__COMMIT 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "_mkdir" "ac_cv_func__mkdir"
-if test "x$ac_cv_func__mkdir" = xyes
-then :
-  printf "%s\n" "#define HAVE__MKDIR 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "mkdir" "ac_cv_func_mkdir"
-if test "x$ac_cv_func_mkdir" = xyes
-then :
-  printf "%s\n" "#define HAVE_MKDIR 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "_chmod" "ac_cv_func__chmod"
-if test "x$ac_cv_func__chmod" = xyes
-then :
-  printf "%s\n" "#define HAVE__CHMOD 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "chmod" "ac_cv_func_chmod"
-if test "x$ac_cv_func_chmod" = xyes
-then :
-  printf "%s\n" "#define HAVE_CHMOD 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "signal" "ac_cv_func_signal"
-if test "x$ac_cv_func_signal" = xyes
-then :
-  printf "%s\n" "#define HAVE_SIGNAL 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "strdup" "ac_cv_func_strdup"
-if test "x$ac_cv_func_strdup" = xyes
-then :
-  printf "%s\n" "#define HAVE_STRDUP 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "strcpy" "ac_cv_func_strcpy"
-if test "x$ac_cv_func_strcpy" = xyes
-then :
-  printf "%s\n" "#define HAVE_STRCPY 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "strcpy_s" "ac_cv_func_strcpy_s"
-if test "x$ac_cv_func_strcpy_s" = xyes
-then :
-  printf "%s\n" "#define HAVE_STRCPY_S 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "strtoul" "ac_cv_func_strtoul"
-if test "x$ac_cv_func_strtoul" = xyes
-then :
-  printf "%s\n" "#define HAVE_STRTOUL 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "calloc" "ac_cv_func_calloc"
-if test "x$ac_cv_func_calloc" = xyes
-then :
-  printf "%s\n" "#define HAVE_CALLOC 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "clearerr" "ac_cv_func_clearerr"
-if test "x$ac_cv_func_clearerr" = xyes
-then :
-  printf "%s\n" "#define HAVE_CLEARERR 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "stat" "ac_cv_func_stat"
-if test "x$ac_cv_func_stat" = xyes
-then :
-  printf "%s\n" "#define HAVE_STAT 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "setjmp" "ac_cv_func_setjmp"
-if test "x$ac_cv_func_setjmp" = xyes
-then :
-  printf "%s\n" "#define HAVE_SETJMP 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "longjmp" "ac_cv_func_longjmp"
-if test "x$ac_cv_func_longjmp" = xyes
-then :
-  printf "%s\n" "#define HAVE_LONGJMP 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "strerror" "ac_cv_func_strerror"
-if test "x$ac_cv_func_strerror" = xyes
-then :
-  printf "%s\n" "#define HAVE_STRERROR 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "strerror_r" "ac_cv_func_strerror_r"
-if test "x$ac_cv_func_strerror_r" = xyes
-then :
-  printf "%s\n" "#define HAVE_STRERROR_R 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "_strerror_r" "ac_cv_func__strerror_r"
-if test "x$ac_cv_func__strerror_r" = xyes
-then :
-  printf "%s\n" "#define HAVE__STRERROR_R 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "_isatty" "ac_cv_func__isatty"
-if test "x$ac_cv_func__isatty" = xyes
-then :
-  printf "%s\n" "#define HAVE__ISATTY 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "isatty" "ac_cv_func_isatty"
-if test "x$ac_cv_func_isatty" = xyes
-then :
-  printf "%s\n" "#define HAVE_ISATTY 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "clock_gettime" "ac_cv_func_clock_gettime"
-if test "x$ac_cv_func_clock_gettime" = xyes
-then :
-  printf "%s\n" "#define HAVE_CLOCK_GETTIME 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "_sopen_s" "ac_cv_func__sopen_s"
-if test "x$ac_cv_func__sopen_s" = xyes
-then :
-  printf "%s\n" "#define HAVE__SOPEN_S 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "_open" "ac_cv_func__open"
-if test "x$ac_cv_func__open" = xyes
-then :
-  printf "%s\n" "#define HAVE__OPEN 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "_write" "ac_cv_func__write"
-if test "x$ac_cv_func__write" = xyes
-then :
-  printf "%s\n" "#define HAVE__WRITE 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "_close" "ac_cv_func__close"
-if test "x$ac_cv_func__close" = xyes
-then :
-  printf "%s\n" "#define HAVE__CLOSE 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "open" "ac_cv_func_open"
-if test "x$ac_cv_func_open" = xyes
-then :
-  printf "%s\n" "#define HAVE_OPEN 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "sscanf_s" "ac_cv_func_sscanf_s"
-if test "x$ac_cv_func_sscanf_s" = xyes
-then :
-  printf "%s\n" "#define HAVE_SSCANF_S 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "strncmp" "ac_cv_func_strncmp"
-if test "x$ac_cv_func_strncmp" = xyes
-then :
-  printf "%s\n" "#define HAVE_STRNCMP 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "ldiv" "ac_cv_func_ldiv"
-if test "x$ac_cv_func_ldiv" = xyes
-then :
-  printf "%s\n" "#define HAVE_LDIV 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "floor" "ac_cv_func_floor"
-if test "x$ac_cv_func_floor" = xyes
-then :
-  printf "%s\n" "#define HAVE_FLOOR 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "pow" "ac_cv_func_pow"
-if test "x$ac_cv_func_pow" = xyes
-then :
-  printf "%s\n" "#define HAVE_POW 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "select" "ac_cv_func_select"
-if test "x$ac_cv_func_select" = xyes
-then :
-  printf "%s\n" "#define HAVE_SELECT 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "_fullpath" "ac_cv_func__fullpath"
-if test "x$ac_cv_func__fullpath" = xyes
-then :
-  printf "%s\n" "#define HAVE__FULLPATH 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "_realpath" "ac_cv_func__realpath"
-if test "x$ac_cv_func__realpath" = xyes
-then :
-  printf "%s\n" "#define HAVE__REALPATH 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "_dupenv_s" "ac_cv_func__dupenv_s"
-if test "x$ac_cv_func__dupenv_s" = xyes
-then :
-  printf "%s\n" "#define HAVE__DUPENV_S 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "realpath" "ac_cv_func_realpath"
-if test "x$ac_cv_func_realpath" = xyes
-then :
-  printf "%s\n" "#define HAVE_REALPATH 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "sqrt" "ac_cv_func_sqrt"
-if test "x$ac_cv_func_sqrt" = xyes
-then :
-  printf "%s\n" "#define HAVE_SQRT 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "strchr" "ac_cv_func_strchr"
-if test "x$ac_cv_func_strchr" = xyes
-then :
-  printf "%s\n" "#define HAVE_STRCHR 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "strerror" "ac_cv_func_strerror"
-if test "x$ac_cv_func_strerror" = xyes
-then :
-  printf "%s\n" "#define HAVE_STRERROR 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "strstr" "ac_cv_func_strstr"
-if test "x$ac_cv_func_strstr" = xyes
-then :
-  printf "%s\n" "#define HAVE_STRSTR 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "fchmod" "ac_cv_func_fchmod"
-if test "x$ac_cv_func_fchmod" = xyes
-then :
-  printf "%s\n" "#define HAVE_FCHMOD 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "strtol" "ac_cv_func_strtol"
-if test "x$ac_cv_func_strtol" = xyes
-then :
-  printf "%s\n" "#define HAVE_STRTOL 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "tmpnam" "ac_cv_func_tmpnam"
-if test "x$ac_cv_func_tmpnam" = xyes
-then :
-  printf "%s\n" "#define HAVE_TMPNAM 1" >>confdefs.h
 
-fi
-ac_fn_c_check_func "$LINENO" "gettimeofday" "ac_cv_func_gettimeofday"
-if test "x$ac_cv_func_gettimeofday" = xyes
-then :
-  printf "%s\n" "#define HAVE_GETTIMEOFDAY 1" >>confdefs.h
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  ac_check_funcs_parallel_includes=""
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for -fno-builtin" >&5
+printf %s "checking for -fno-builtin... " >&6; }
+if test ${ac_cv_c_no_builtin+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_funcs_parallel_save_CFLAGS=$CFLAGS
+                  CFLAGS="$CFLAGS -fno-builtin"
+                  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ac_cv_c_no_builtin=yes
+else case e in #(
+  e) ac_cv_c_no_builtin=no ;;
+esac
 fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+                  CFLAGS=$ac_check_funcs_parallel_save_CFLAGS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_c_no_builtin" >&5
+printf "%s\n" "$ac_cv_c_no_builtin" >&6; }
+  ac_check_funcs_parallel_cflags=""
+  if test "x$ac_cv_c_no_builtin" = "xyes"; then
+    ac_check_funcs_parallel_cflags="-fno-builtin"
+  fi
+  ac_check_funcs_parallel_dir="ac-check-funcs.$$"
+  ac_check_funcs_parallel_confdefs="$ac_pwd/confdefs.h"
+  ac_check_funcs_parallel_list="assert \
+                setmode \
+                _setmode \
+                fileno \
+                _fileno \
+                _mktemp \
+                mkstemp \
+                mktemp \
+                fopen_s \
+                fsync \
+                _commit \
+                _mkdir \
+                mkdir \
+                _chmod \
+                chmod \
+                signal \
+                strdup \
+                strcpy \
+                strcpy_s \
+                strtoul \
+                calloc \
+                clearerr \
+                stat \
+                setjmp \
+                longjmp \
+                strerror \
+                strerror_r \
+                _strerror_r \
+                _isatty \
+                isatty \
+                clock_gettime \
+                _sopen_s \
+                _open \
+                _write \
+                _close \
+                open \
+                sscanf_s \
+                strncmp \
+                ldiv \
+                floor \
+                pow \
+                select \
+                _fullpath \
+                _realpath \
+                _dupenv_s \
+                realpath \
+                sqrt \
+                strchr \
+                strerror \
+                strstr \
+                fchmod \
+                strtol \
+                tmpnam \
+                gettimeofday \
+               "
+  ac_check_funcs_parallel_todo=""
+  ac_check_funcs_parallel_cached=""
+  ac_check_funcs_parallel_active=0
+  ac_check_funcs_parallel_max="$CPU_COUNT"
+  ac_check_funcs_parallel_batch_pids=""
+
+  # Limit parallelism by CPU_COUNT, falling back to 1 on invalid values.
+  case "$ac_check_funcs_parallel_max" in
+    ''|*!0123456789*)
+      ac_check_funcs_parallel_max=1
+      ;;
+    0)
+      ac_check_funcs_parallel_max=1
+      ;;
+  esac
+
+  # Split cached and non-cached functions to avoid needless checks.
+  for ac_func in $ac_check_funcs_parallel_list; do
+    eval "ac_check_funcs_parallel_has_cache=\${ac_cv_func_$ac_func+set}"
+    if test "x$ac_check_funcs_parallel_has_cache" = "xset"; then
+      ac_check_funcs_parallel_cached="$ac_check_funcs_parallel_cached $ac_func"
+    else
+      ac_check_funcs_parallel_todo="$ac_check_funcs_parallel_todo $ac_func"
+    fi
+  done
+
+  ac_check_funcs_parallel_save_CFLAGS=$CFLAGS
+  if test "x$ac_check_funcs_parallel_cflags" != "x"; then
+    CFLAGS="$CFLAGS $ac_check_funcs_parallel_cflags"
+  fi
+
+  # Run link tests in parallel in per-function directories to avoid
+  # collisions on conftest files and logs.
+  if test "x$ac_check_funcs_parallel_todo" != "x"; then
+    as_dir="$ac_check_funcs_parallel_dir"; as_fn_mkdir_p
+    for ac_func in $ac_check_funcs_parallel_todo; do
+      ac_check_funcs_parallel_subdir=\
+"$ac_check_funcs_parallel_dir/$ac_func"
+      as_dir="$ac_check_funcs_parallel_subdir"; as_fn_mkdir_p
+      (
+        cd "$ac_check_funcs_parallel_subdir" || exit 1
+        cat "$ac_check_funcs_parallel_confdefs" - <<_ACEOF \
+> conftest.$ac_ext
+/* end confdefs.h.  */
+/* Define $ac_func to an innocuous variant, in case headers declare it. */
+#define $ac_func innocuous_$ac_func
+
+/* System header to define __stub macros and avoid conflicts. */
+#include <limits.h>
+$ac_check_funcs_parallel_includes
+#undef $ac_func
+
+/* Override any GCC internal prototype to avoid argument mismatch. */
+#ifdef __cplusplus
+extern "C"
+#endif
+#if defined(__clang__) || defined(__GNUC__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wbuiltin-declaration-mismatch"
+#endif
+char $ac_func (void);
+#if defined(__clang__) || defined(__GNUC__)
+#pragma GCC diagnostic pop
+#endif
+/* The GNU C library defines this for functions which it implements to
+   always fail with ENOSYS. */
+#if defined __stub_$ac_func || defined __stub___$ac_func
+choke me
+#endif
+
+int
+main (void)
+{
+  return $ac_func ();
+}
+_ACEOF
+        if ac_fn_c_try_link "$LINENO"; then
+          printf '%s\n' yes > conftest.out
+        else
+          printf '%s\n' no > conftest.out
+        fi
+      ) &
+      ac_check_funcs_parallel_batch_pids=\
+"$ac_check_funcs_parallel_batch_pids $!"
+      ac_check_funcs_parallel_active=\
+`expr "$ac_check_funcs_parallel_active" + 1`
+      if test "$ac_check_funcs_parallel_active" -ge \
+              "$ac_check_funcs_parallel_max"; then
+        for ac_check_funcs_parallel_pid in \
+$ac_check_funcs_parallel_batch_pids; do
+          wait "$ac_check_funcs_parallel_pid"
+        done
+        ac_check_funcs_parallel_batch_pids=""
+        ac_check_funcs_parallel_active=0
+      fi
+    done
+  fi
+
+  for ac_check_funcs_parallel_pid in \
+$ac_check_funcs_parallel_batch_pids; do
+    wait "$ac_check_funcs_parallel_pid"
+  done
+
+  # Report results and update cache/defines serially for stable output.
+  for ac_func in $ac_check_funcs_parallel_list; do
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_func" >&5
+printf %s "checking for $ac_func... " >&6; }
+    eval "ac_check_funcs_parallel_result=\${ac_cv_func_$ac_func-no}"
+    if test "x$ac_check_funcs_parallel_result" = "xno"; then
+      ac_check_funcs_parallel_subdir=\
+"$ac_check_funcs_parallel_dir/$ac_func"
+      if test -f "$ac_check_funcs_parallel_subdir/conftest.out"; then
+        ac_check_funcs_parallel_result=\
+`cat "$ac_check_funcs_parallel_subdir/conftest.out"`
+      fi
+    fi
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_check_funcs_parallel_result" >&5
+printf "%s\n" "$ac_check_funcs_parallel_result" >&6; }
+    eval "ac_cv_func_$ac_func=\$ac_check_funcs_parallel_result"
+    if test "x$ac_check_funcs_parallel_result" = "xyes"; then
+      ac_check_funcs_parallel_define=\
+`printf '%s\n' "$ac_func" | $as_tr_cpp`
+
+printf "%s\n" "#define HAVE_$ac_check_funcs_parallel_define 1" >>confdefs.h
+
+      :
+    else
+      :
+    fi
+  done
+
+  CFLAGS=$ac_check_funcs_parallel_save_CFLAGS
+  if test -d "$ac_check_funcs_parallel_dir"; then
+    rm -rf "$ac_check_funcs_parallel_dir"
+  fi
+  ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
 
 LIBS=$LS_SAVED_LIBS
 
