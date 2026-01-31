@@ -33,13 +33,13 @@ set -v
 
 input_image="${LSQA_INPUT_ROOT}/inputs/snake_64.png"
 case_id=${test_name%.t}
-output_sixel="${output_dir}/${case_id}.six"
+output_sixel="${artifact_dir}/${case_id}.six"
 output_png="${output_dir}/${case_id}.png"
 
 require_file "${input_image}"
 
 if run_img2sixel -d stucki -y raster -W oklab -o "${output_sixel}" "${input_image}" 2>>"${log_file}" && \
-        lsqa_assert_quality "${input_image}" "${output_sixel}" \
+        lsqa_run_benchmark "${input_image}" "${output_sixel}" \
         "${case_id}" "${artifact_dir}" "${lsqa_floor}"; then
     pass 1 "fixed float32 Stucki diffusion lsqa passed"
 else

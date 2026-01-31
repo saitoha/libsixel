@@ -8,7 +8,7 @@
 # - Initialization discovers lsqa binaries and data directories.
 # - Assertions compare MS-SSIM to a caller-provided floor.
 # - Sixel checks are handled by callers before asserting quality.
-# - Baseline checks rely on lsqa exit codes instead of saved output files.
+# - Baseline checks rely on lsqa exit codes.
 
 set -eu
 
@@ -124,12 +124,6 @@ _lsqa_read_ms_ssim() {
     printf '%s' "${value}"
 }
 
-_lsqa_below_floor() {
-    lhs=$1
-    rhs=$2
-    awk -v a="${lhs}" -v b="${rhs}" 'BEGIN { exit (a + 1e-6 < b) ? 0 : 1 }'
-}
-
 _lsqa_above_ceiling() {
     lhs=$1
     rhs=$2
@@ -159,85 +153,38 @@ _lsqa_run_compare() {
 #  1) Reference image path (input)
 #  2) Output image path (candidate)
 #  3) Label used in diagnostics
-#  4) Artifact directory for lsqa.txt outputs
+#  4) Artifact directory (kept for call-site compatibility)
 #  5) Optional MS-SSIM floor override (default: MS_SSIM_FLOOR)
-_lsqa_assert_quality_common() {
-    lsqa_mode=$1
-    lsqa_quality_ref_path=$2
-    lsqa_quality_out_path=$3
-    lsqa_quality_label=$4
-    lsqa_quality_artifact_dir=$5
-    lsqa_quality_floor_ms=$6
-
-    lsqa_quality_run_status=0
-    lsqa_quality_err_file=""
-
-    # Mode switch:
-    # - "compare": compare reference vs. caller-provided output file.
-    # - "sixel": encode reference to sixel before running lsqa.
-    if [ "${lsqa_mode}" = "sixel" ]; then
-        lsqa_quality_out_path="${lsqa_quality_artifact_dir}/output.six"
-        _lsqa_require_converter_common
-
-        if ! run_img2sixel -Lbuiltin "${lsqa_quality_ref_path}" \
-                > "${lsqa_quality_out_path}"; then
-            lsqa_quality_run_status=$?
-        else
-            lsqa_quality_err_file=$(mktemp)
-            if ! run_lsqa -b "MS-SSIM:${lsqa_quality_floor_ms}" \
-                "${lsqa_quality_ref_path}" "${lsqa_quality_out_path}" \
-                > /dev/null 2>"${lsqa_quality_err_file}"; then
-                lsqa_quality_run_status=$?
-            fi
-        fi
-    else
-        lsqa_quality_err_file=$(mktemp)
-        if ! run_lsqa -b "MS-SSIM:${lsqa_quality_floor_ms}" \
-            "${lsqa_quality_ref_path}" "${lsqa_quality_out_path}" \
-            > /dev/null 2>"${lsqa_quality_err_file}"; then
-            lsqa_quality_run_status=$?
-        fi
-    fi
-
-    if [ ${lsqa_quality_run_status} -ne 0 ]; then
-        printf '%s: assessment/lsqa returned %s\n' \
-            "${lsqa_quality_label}" "${lsqa_quality_run_status}" >&2
-        if [ -n "${lsqa_quality_err_file}" ] && \
-            [ -s "${lsqa_quality_err_file}" ]; then
-            cat "${lsqa_quality_err_file}" >&2
-        else
-            printf '%s: lsqa produced no diagnostics\n' \
-                "${lsqa_quality_label}" >&2
-        fi
-        if [ -n "${lsqa_quality_err_file}" ]; then
-            rm -f "${lsqa_quality_err_file}"
-        fi
-        return 1
-    fi
-    if [ -n "${lsqa_quality_err_file}" ]; then
-        rm -f "${lsqa_quality_err_file}"
-    fi
-    return 0
-}
-
-# Compare two images and enforce an MS-SSIM floor.
-#
-# Arguments:
-#  1) Reference image path (input)
-#  2) Output image path (candidate)
-#  3) Label used in diagnostics
-#  4) Artifact directory for lsqa.txt outputs
-#  5) Optional MS-SSIM floor override (default: MS_SSIM_FLOOR)
-lsqa_assert_quality() {
+lsqa_run_benchmark() {
     lsqa_quality_ref_path=$1
     lsqa_quality_out_path=$2
     lsqa_quality_label=$3
     lsqa_quality_artifact_dir=$4
     lsqa_quality_floor_ms=${5:-${MS_SSIM_FLOOR}}
 
-    _lsqa_assert_quality_common "compare" "${lsqa_quality_ref_path}" \
-        "${lsqa_quality_out_path}" "${lsqa_quality_label}" \
-        "${lsqa_quality_artifact_dir}" "${lsqa_quality_floor_ms}"
+    lsqa_quality_err_file=$(mktemp)
+    lsqa_quality_run_status=0
+
+    if ! run_lsqa -b "MS-SSIM:${lsqa_quality_floor_ms}" \
+        "${lsqa_quality_ref_path}" "${lsqa_quality_out_path}" \
+        > /dev/null 2>"${lsqa_quality_err_file}"; then
+        lsqa_quality_run_status=$?
+    fi
+
+    if [ ${lsqa_quality_run_status} -ne 0 ]; then
+        printf '# %s: assessment/lsqa returned %s\n' \
+            "${lsqa_quality_label}" "${lsqa_quality_run_status}"
+        if [ -s "${lsqa_quality_err_file}" ]; then
+            printf '# lsqa stderr follows\n'
+            sed 's/^/# /' "${lsqa_quality_err_file}"
+        else
+            printf '# %s: lsqa produced no diagnostics\n' \
+                "${lsqa_quality_label}"
+        fi
+    fi
+
+    rm -f "${lsqa_quality_err_file}"
+    return ${lsqa_quality_run_status}
 }
 
 lsqa_sixel_init() {
@@ -266,16 +213,20 @@ lsqa_expect_low_quality_or_fail() {
         || lsqa_low_run_status=$?
 
     if [ ${lsqa_low_run_status} -eq 0 ]; then
-        printf '%s: low-quality input accepted\n' \
-            "${lsqa_low_label}" >&2
+        printf '# %s: low-quality input accepted\n' \
+            "${lsqa_low_label}"
         rm -f "${lsqa_low_err_file}"
         return 1
     fi
 
     if [ -s "${lsqa_low_err_file}" ]; then
-        printf '%s: assessment/lsqa returned %s\n' \
-            "${lsqa_low_label}" "${lsqa_low_run_status}" >&2
-        cat "${lsqa_low_err_file}" >&2
+        printf '# %s: assessment/lsqa returned %s\n' \
+            "${lsqa_low_label}" "${lsqa_low_run_status}"
+        printf '# lsqa stderr follows\n'
+        sed 's/^/# /' "${lsqa_low_err_file}"
+    else
+        printf '# %s: lsqa produced no diagnostics\n' \
+            "${lsqa_low_label}"
     fi
     rm -f "${lsqa_low_err_file}"
     return 0

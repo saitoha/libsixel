@@ -41,7 +41,7 @@ require_file "${input_image}"
 if run_img2sixel -=1 -o "${output_plain}" "${input_image}" 2>>"${log_file}" && \
         run_img2sixel -=1 --gri-limit -o "${output_limited}" \
         "${input_image}" 2>>"${log_file}" && \
-        lsqa_assert_quality "${output_plain}" "${output_limited}" \
+        lsqa_run_benchmark "${output_plain}" "${output_limited}" \
         "${case_id}" "${artifact_dir}" "${lsqa_floor}"; then
     pass 1 "gri-limit deterministic output matches"
 else

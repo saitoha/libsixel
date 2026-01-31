@@ -25,7 +25,7 @@ echo "1..1"
 set -v
 
 input_image="${images_dir}/snake.png"
-output_sixel="${output_dir}/eytzinger-float32-linear.six"
+output_sixel="${artifact_dir}/eytzinger-float32-linear.six"
 output_png="${output_dir}/eytzinger-float32-linear.png"
 
 require_file "${input_image}"
@@ -44,7 +44,7 @@ else
     exit "${status}"
 fi
 
-if lsqa_assert_quality "${input_image}" "${output_sixel}" \
+if lsqa_run_benchmark "${input_image}" "${output_sixel}" \
         "eytzinger-float32-linear" "${artifact_dir}" "${lsqa_floor}"; then
     pass 1 "float32 Eytzinger linear colorspace lsqa passed"
 else

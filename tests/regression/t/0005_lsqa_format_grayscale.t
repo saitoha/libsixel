@@ -22,9 +22,9 @@ status=0
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
-if ! lsqa_init "$0"; then
+if ! lsqa_sixel_init "$0"; then
     printf '1..1\n'
-    fail 1 "lsqa binary missing"
+    fail 1 "lsqa or img2sixel missing"
     exit "${status}"
 fi
 
@@ -36,7 +36,10 @@ printf '1..1\n'
 set -v
 
 image_path="${LSQA_INPUT_ROOT}/inputs/formats/grayscale.jpg"
-if lsqa_assert_quality "${image_path}" "${image_path}" "grayscale.jpg" "${artifact_dir}" "${lsqa_floor}"; then
+output_sixel="${artifact_dir}/grayscale.six"
+if run_img2sixel -Lbuiltin "${image_path}" >"${output_sixel}" && \
+    lsqa_run_benchmark "${image_path}" "${output_sixel}" \
+        "grayscale.jpg" "${artifact_dir}" "${lsqa_floor}"; then
     pass 1 "grayscale quality meets baseline"
 else
     fail 1 "grayscale quality regressed"
