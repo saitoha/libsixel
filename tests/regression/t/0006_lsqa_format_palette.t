@@ -34,27 +34,22 @@ set -v
 
 image_path="${top_srcdir}/tests/data/inputs/formats/palette.png"
 output_sixel="${artifact_dir}/palette.six"
-if run_img2sixel -Lbuiltin "${image_path}" >"${output_sixel}" && \
-    {
-        lsqa_err_file=$(mktemp)
-        lsqa_run_status=0
-        if ! run_lsqa -b "MS-SSIM:${lsqa_floor}" \
-            "${image_path}" "${output_sixel}" > /dev/null \
-            2>"${lsqa_err_file}"; then
-            lsqa_run_status=$?
-            printf '# %s: assessment/lsqa returned %s\n' \
-                "palette.png" "${lsqa_run_status}"
-            if [ -s "${lsqa_err_file}" ]; then
-                printf '# lsqa stderr follows\n'
-                sed 's/^/# /' "${lsqa_err_file}"
-            else
-                printf '# %s: lsqa produced no diagnostics\n' \
-                    "palette.png"
-            fi
-        fi
-        rm -f "${lsqa_err_file}"
-        [ ${lsqa_run_status} -eq 0 ]; }; then
+if run_img2sixel -Lbuiltin "${image_path}" >"${output_sixel}"; then
+    :
+else
+    fail 1 "palette quality regressed"
+    exit "${status}"
+fi
+
+lsqa_err=$(
+    set +xv
+    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${image_path}" "${output_sixel}" 2>&1
+) || lsqa_run_status=$?
+
+if [ -z "${lsqa_run_status-}" ]; then
     pass 1 "palette quality meets baseline"
+elif [ "${lsqa_run_status}" -eq 5 ]; then
+    fail 1 "${lsqa_err}"
 else
     fail 1 "palette quality regressed"
 fi

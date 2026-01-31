@@ -34,27 +34,22 @@ output_png="${output_dir}/${case_id}.png"
 
 require_file "${input_image}"
 
-if run_img2sixel -d sierra2 -y raster -o "${output_sixel}" "${input_image}" 2>>"${log_file}" && \
-        {
-            lsqa_err_file=$(mktemp)
-            lsqa_run_status=0
-            if ! run_lsqa -b "MS-SSIM:${lsqa_floor}" \
-                "${input_image}" "${output_sixel}" > /dev/null \
-                2>"${lsqa_err_file}"; then
-                lsqa_run_status=$?
-                printf '# %s: assessment/lsqa returned %s\n' \
-                    "${case_id}" "${lsqa_run_status}"
-                if [ -s "${lsqa_err_file}" ]; then
-                    printf '# lsqa stderr follows\n'
-                    sed 's/^/# /' "${lsqa_err_file}"
-                else
-                    printf '# %s: lsqa produced no diagnostics\n' \
-                        "${case_id}"
-                fi
-            fi
-            rm -f "${lsqa_err_file}"
-            [ ${lsqa_run_status} -eq 0 ]; }; then
+if run_img2sixel -d sierra2 -y raster -o "${output_sixel}" "${input_image}" 2>>"${log_file}"; then
+    :
+else
+    fail 1 "fixed 8-bit Sierra-2 diffusion lsqa failed"
+    exit "${status}"
+fi
+
+lsqa_err=$(
+    set +xv
+    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
+) || lsqa_run_status=$?
+
+if [ -z "${lsqa_run_status-}" ]; then
     pass 1 "fixed 8-bit Sierra-2 diffusion lsqa passed"
+elif [ "${lsqa_run_status}" -eq 5 ]; then
+    fail 1 "${lsqa_err}"
 else
     fail 1 "fixed 8-bit Sierra-2 diffusion lsqa failed"
 fi

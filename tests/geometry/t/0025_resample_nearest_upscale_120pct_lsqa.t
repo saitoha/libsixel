@@ -55,6 +55,7 @@ else
 fi
 
 lsqa_err=$(
+    set +xv
     run_lsqa -b "MS-SSIM:${lsqa_floor}" "${reference_image}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
