@@ -201,7 +201,7 @@
 /* Define to 1 if you have the <execinfo.h> header file. */
 #undef HAVE_EXECINFO_H
 
-/* Define to 1 if you have the 'execvp' function. */
+/* Define to 1 if you have the `execvp' function. */
 #undef HAVE_EXECVP
 
 /* Define to 1 if you have the `fchmod' function. */
@@ -225,7 +225,7 @@
 /* Define to 1 if you have the `fopen_s' function. */
 #undef HAVE_FOPEN_S
 
-/* Define to 1 if you have the 'fork' function. */
+/* Define to 1 if you have the `fork' function. */
 #undef HAVE_FORK
 
 /* Define to 1 if you have the `fsync' function. */
@@ -246,13 +246,13 @@
 /* Define to 1 if you have the 'GetExitCodeProcess' function. */
 #undef HAVE_GETEXITCODEPROCESS
 
-/* whether getopt is avilable */
+/* Define to 1 if you have the `getopt' function. */
 #undef HAVE_GETOPT
 
 /* Define to 1 if you have the <getopt.h> header file. */
 #undef HAVE_GETOPT_H
 
-/* whether getopt_long is avilable */
+/* Define to 1 if you have the `getopt_long' function. */
 #undef HAVE_GETOPT_LONG
 
 /* Define to 1 if you have the `gettimeofday' function. */
@@ -322,16 +322,16 @@
 /* Define to 1 if you have the <math.h> header file. */
 #undef HAVE_MATH_H
 
-/* Define to 1 if you have the 'memcpy' function. */
+/* Define to 1 if you have the `memcpy' function. */
 #undef HAVE_MEMCPY
 
-/* Define to 1 if you have the 'memmove' function. */
+/* Define to 1 if you have the `memmove' function. */
 #undef HAVE_MEMMOVE
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
-/* Define to 1 if you have the 'memset' function. */
+/* Define to 1 if you have the `memset' function. */
 #undef HAVE_MEMSET
 
 /* Define to 1 if you have the `mkdir' function. */
@@ -355,7 +355,7 @@
 /* Define to 1 if you have the 'open' function. */
 #undef HAVE_OPEN
 
-/* Define to 1 if you have the 'posix_spawnp' function. */
+/* Define to 1 if you have the `posix_spawnp' function. */
 #undef HAVE_POSIX_SPAWNP
 
 /* Define to 1 if you have the `pow' function. */
@@ -509,7 +509,7 @@
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
-/* Define to 1 if you have the 'usleep' function. */
+/* Define to 1 if you have the `usleep' function. */
 #undef HAVE_USLEEP
 
 /* Define to 1 if the system has the `deprecated' variable attribute */
@@ -518,7 +518,7 @@
 /* Define to 1 if you have the 'WaitForSingleObject' function. */
 #undef HAVE_WAITFORSINGLEOBJECT
 
-/* Define to 1 if you have the 'waitpid' function. */
+/* Define to 1 if you have the `waitpid' function. */
 #undef HAVE_WAITPID
 
 /* whether Windows Imaging Component (WIC) is available */
