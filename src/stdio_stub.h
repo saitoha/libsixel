@@ -26,6 +26,18 @@
 
 #include <stdio.h>
 
+#if defined(__clang__)
+# if __has_attribute(unused)
+#  define SIXEL_STDIO_STUB_UNUSED __attribute__((unused))
+# else
+#  define SIXEL_STDIO_STUB_UNUSED
+# endif
+#elif defined(__GNUC__)
+# define SIXEL_STDIO_STUB_UNUSED __attribute__((unused))
+#else
+# define SIXEL_STDIO_STUB_UNUSED
+#endif
+
 #if defined(_WIN32)
 /*
  * The Windows CRT already exports _fileno with the correct dllimport
@@ -53,7 +65,7 @@ int fileno(FILE *);
  */
 # define sixel_fileno(stream) _fileno(stream)
 #else
-static int
+SIXEL_STDIO_STUB_UNUSED static int
 sixel_fileno_stub(FILE *fp)
 {
     (void)fp;
