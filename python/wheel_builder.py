@@ -28,7 +28,7 @@ This helper is executed from Autotools or Meson builds. The workflow is:
    - --libpath (explicit file), or
    - --libdir (directory scan)
 2. Copy the library into libsixel/_libs/.
-3. Run `setup.py bdist_wheel` with the wheel mode flag enabled.
+3. Run `python -m build --wheel` for the standard package.
 4. Clean the temporary copy after the wheel is created.
 """
 
@@ -94,11 +94,15 @@ def _copy_library(libpath: pathlib.Path, libs_dir: pathlib.Path) -> pathlib.Path
     return target
 
 
-def _run_wheel_build(root_dir: pathlib.Path, distdir: pathlib.Path) -> None:
-    """Invoke the PEP 517 build frontend in wheel mode."""
+def _run_wheel_build(
+    root_dir: pathlib.Path,
+    distdir: pathlib.Path,
+    libdir: pathlib.Path,
+) -> None:
+    """Invoke the PEP 517 build frontend for the bundled wheel."""
 
     env = os.environ.copy()
-    env["LIBSIXEL_WHEEL"] = "1"
+    env["LIBSIXEL_LIBDIR"] = str(libdir)
 
     distdir.mkdir(parents=True, exist_ok=True)
     build_dir = root_dir / "build"
@@ -133,7 +137,7 @@ def main() -> int:
     copied = _copy_library(libpath, libs_dir)
 
     try:
-        _run_wheel_build(root_dir, args.distdir)
+        _run_wheel_build(root_dir, args.distdir, libpath.parent)
     finally:
         if copied.exists():
             copied.unlink()

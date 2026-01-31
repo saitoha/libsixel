@@ -1,23 +1,47 @@
 # -*- coding: utf-8 -*-
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Extension
 __version__ = '0.5.1'
 __license__ = 'MIT'
 __author__ = 'Hayaki Saito'
 
 import inspect
 import os
+import sys
 
 filename = inspect.getfile(inspect.currentframe())
 dirpath = os.path.abspath(os.path.dirname(filename))
 long_description = open(os.path.join(dirpath, "README.rst")).read()
 
-# Wheel mode builds a separate distribution name that bundles libsixel.
-# This keeps the traditional "libsixel-python" package unchanged while
-# allowing a self-contained wheel named "libsixel-wheel".
-wheel_mode = os.environ.get("LIBSIXEL_WHEEL") == "1"
-package_name = "libsixel-wheel" if wheel_mode else "libsixel-python"
-package_data = {"libsixel": ["_libs/*"]} if wheel_mode else {}
+bundle_libdir = os.environ.get("LIBSIXEL_LIBDIR")
+bundle_mode = bundle_libdir is not None
+package_name = "libsixel-python"
+package_data = {"libsixel": ["_libs/*"]} if bundle_mode else {}
+wheel_ext_modules = []
+
+if bundle_mode:
+    libdir = bundle_libdir
+
+    include_dir = os.path.abspath(os.path.join(dirpath, "..", "include"))
+    runtime_dirs = []
+    extra_link_args = []
+
+    if sys.platform == "darwin":
+        extra_link_args = ["-Wl,-rpath,@loader_path/_libs"]
+    elif os.name == "posix":
+        runtime_dirs = ["$ORIGIN/_libs"]
+
+    wheel_ext_modules = [
+        Extension(
+            "libsixel._wheel_ext",
+            sources=[os.path.join("libsixel", "_wheel_ext.c")],
+            include_dirs=[include_dir],
+            libraries=["sixel"],
+            library_dirs=[libdir],
+            runtime_library_dirs=runtime_dirs,
+            extra_link_args=extra_link_args,
+        )
+    ]
 
 setup(name                  = package_name,
       version               = __version__,
@@ -36,7 +60,8 @@ setup(name                  = package_name,
       license               = __license__,
       packages              = find_packages(exclude=[]),
       package_data          = package_data,
+      ext_modules           = wheel_ext_modules,
       zip_safe              = False,
-      include_package_data  = wheel_mode,
+      include_package_data  = bundle_mode,
       install_requires      = []
       )
