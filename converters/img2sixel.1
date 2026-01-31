@@ -499,10 +499,26 @@ client \fIsayaka\fP. It decomposes palette indices into bitplanes and
 represents the index by overlaying planes via repaints, with the goal of
 reducing output size.
 .TP 5
-.B \-W \fIWORKING_COLORSPACE\fP, \-\-working\-colorspace=\fIWORKING_COLORSPACE\fP
+.B \-X \fICOLORSPACE\fP, \-\-clustering\-colorspace=\fICOLORSPACE\fP
+select palette clustering color space
+.br
+\fICOLORSPACE\fP is one of them:
+.br
+gamma  -> keep gamma encoded pixels (default)
+.br
+linear -> convert to linear RGB for clustering
+.br
+oklab -> cluster in OKLab uniform color space
+.br
+cielab -> cluster in CIELAB uniform color space
+.br
+din99d -> cluster in DIN99d uniform color space
+.br
+.TP 5
+.B \-W \fICOLORSPACE\fP, \-\-working\-colorspace=\fICOLORSPACE\fP
 select internal working color space
 .br
-\fIWORKING_COLORSPACE\fP is one of them:
+\fICOLORSPACE\fP is one of them:
 .br
 gamma  -> keep gamma encoded pixels (default)
 .br
@@ -515,10 +531,10 @@ cielab -> operate in CIELAB uniform color space for palette decisions
 din99d -> operate in DIN99d uniform color space for palette decisions
 .br
 .TP 5
-.B \-U \fIOUTPUT_COLORSPACE\fP, \-\-output\-colorspace=\fIOUTPUT_COLORSPACE\fP
+.B \-U \fICOLORSPACE\fP, \-\-output\-colorspace=\fICOLORSPACE\fP
 select output color space
 .br
-\fIOUTPUT_COLORSPACE\fP is one of them:
+\fICOLORSPACE\fP is one of them:
 .br
 gamma   -> sRGB gamma encoded output (default)
 .br

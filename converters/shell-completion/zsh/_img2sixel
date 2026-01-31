@@ -151,6 +151,16 @@ _loaders() {
     'wic[Windows Imaging Component loader]'
 }
 
+_clusteringcolorspace() {
+  _values \
+    'COLORSPACE' \
+    'gamma[keep gamma encoded pixels (default)]' \
+    'linear[use linear RGB for palette clustering]' \
+    'oklab[cluster in OKLab uniform color space]' \
+    'cielab[cluster in CIELAB uniform color space]' \
+    'din99d[cluster in DIN99d uniform color space]'
+}
+
 _workingcolorspace() {
   _values \
     'WORKINGCOLORSPACE' \
@@ -252,6 +262,7 @@ _arguments -S -s -A "-*" -S \
   {-L,--loaders=}'[override loader priority order]':loaders:_loaders \
   {-@,--drcs}'[emit DRCS tiles via MMV:CHARSET:PATH (defaults 2:1:, "-" keeps stdout)]' \
   {-O,--ormode}'[output ormode sixel image]' \
+  {-X,--clustering-colorspace=}'[select palette clustering color space]':colorspace:_clusteringcolorspace \
   {-W,--working-colorspace=}'[select internal working color space]':workingcolorspace:_workingcolorspace \
   {-U,--output-colorspace=}'[select output color space]':outputcolorspace:_outputcolorspace \
   {-1,--show-completion=}'[print shell completion script]':target:_completiontarget \

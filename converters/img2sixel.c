@@ -586,6 +586,17 @@ static cli_option_help_t const g_option_help_table[] = {
         "-O, --ormode               enables sixel output in \"ormode\"\n"
     },
     {
+        'X',
+        "clustering-colorspace",
+        "-X COLORSPACE, --clustering-colorspace=COLORSPACE\n"
+        "                           choose palette clustering color space\n"
+        "                             gamma  -> sRGB gamma(default)\n"
+        "                             linear -> linear RGB color space\n"
+        "                             oklab  -> OKLab color space\n"
+        "                             cielab -> CIELAB color space\n"
+        "                             din99d -> DIN99d color space\n"
+    },
+    {
         'W',
         "working-colorspace",
         "-W WORKING_COLORSPACE, --working-colorspace=WORKING_COLORSPACE\n"
@@ -1004,7 +1015,7 @@ static char const g_img2sixel_optstring[] =
     "=:"
     ".:"
     "L:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:~:kil:t:ugvSn:PE:U:B:C:D@:"
-    "OVW:HY:y:";
+    "OVX:W:HY:y:";
 
 static int
 img2sixel_option_allows_leading_dash(int short_opt)
@@ -1438,53 +1449,54 @@ main(int argc, char *argv[])
     char const *optstring;
 #if HAVE_GETOPT_LONG
     struct option long_options[] = {
-        {"outfile",            required_argument,  &long_opt, 'o'},
-        {"threads",            required_argument,  &long_opt, '='},
-        {"precision",          required_argument,  &long_opt, '.'},
-        {"7bit-mode",          no_argument,        &long_opt, '7'},
-        {"8bit-mode",          no_argument,        &long_opt, '8'},
-        {"gri-limit",          no_argument,        &long_opt, 'R'},
-        {"6reversible",        no_argument,        &long_opt, '6'},
-        {"colors",             required_argument,  &long_opt, 'p'},
-        {"quantize-model",     required_argument,  &long_opt, 'Q'},
-        {"final-merge",        required_argument,  &long_opt, 'F'},
-        {"mapfile",            required_argument,  &long_opt, 'm'},
-        {"mapfile-output",     required_argument,  &long_opt, 'M'},
-        {"monochrome",         no_argument,        &long_opt, 'e'},
-        {"high-color",         no_argument,        &long_opt, 'I'},
-        {"builtin-palette",    required_argument,  &long_opt, 'b'},
-        {"diffusion",          required_argument,  &long_opt, 'd'},
-        {"diffusion-scan",     required_argument,  &long_opt, 'y'},
-        {"diffusion-carry",    required_argument,  &long_opt, 'Y'},
-        {"find-largest",       required_argument,  &long_opt, 'f'},
-        {"select-color",       required_argument,  &long_opt, 's'},
-        {"crop",               required_argument,  &long_opt, 'c'},
-        {"width",              required_argument,  &long_opt, 'w'},
-        {"height",             required_argument,  &long_opt, 'h'},
-        {"resampling",         required_argument,  &long_opt, 'r'},
-        {"quality",            required_argument,  &long_opt, 'q'},
-        {"lookup-policy",      required_argument,  &long_opt, '~'},
-        {"palette-type",       required_argument,  &long_opt, 't'},
-        {"insecure",           no_argument,        &long_opt, 'k'},
-        {"invert",             no_argument,        &long_opt, 'i'},
-        {"loop-control",       required_argument,  &long_opt, 'l'},
-        {"use-macro",          no_argument,        &long_opt, 'u'},
-        {"ignore-delay",       no_argument,        &long_opt, 'g'},
-        {"verbose",            no_argument,        &long_opt, 'v'},
-        {"loaders",            required_argument,  &long_opt, 'L'},
-        {"static",             no_argument,        &long_opt, 'S'},
-        {"macro-number",       required_argument,  &long_opt, 'n'},
-        {"penetrate",          no_argument,        &long_opt, 'P'}, /* deprecated */
-        {"encode-policy",      required_argument,  &long_opt, 'E'},
-        {"output-colorspace",  required_argument,  &long_opt, 'U'},
-        {"working-colorspace", required_argument,  &long_opt, 'W'},
-        {"bgcolor",            required_argument,  &long_opt, 'B'},
-        {"complexion-score",   required_argument,  &long_opt, 'C'}, /* deprecated */
-        {"pipe-mode",          no_argument,        &long_opt, 'D'}, /* deprecated */
-        {"drcs",               required_argument,  &long_opt, '@'},
-        {"ormode",             no_argument,        &long_opt, 'O'},
-        {"version",            no_argument,        &long_opt, 'V'},
-        {"help",               no_argument,        &long_opt, 'H'},
+        {"outfile",               required_argument,  &long_opt, 'o'},
+        {"threads",               required_argument,  &long_opt, '='},
+        {"precision",             required_argument,  &long_opt, '.'},
+        {"7bit-mode",             no_argument,        &long_opt, '7'},
+        {"8bit-mode",             no_argument,        &long_opt, '8'},
+        {"gri-limit",             no_argument,        &long_opt, 'R'},
+        {"6reversible",           no_argument,        &long_opt, '6'},
+        {"colors",                required_argument,  &long_opt, 'p'},
+        {"quantize-model",        required_argument,  &long_opt, 'Q'},
+        {"final-merge",           required_argument,  &long_opt, 'F'},
+        {"mapfile",               required_argument,  &long_opt, 'm'},
+        {"mapfile-output",        required_argument,  &long_opt, 'M'},
+        {"monochrome",            no_argument,        &long_opt, 'e'},
+        {"high-color",            no_argument,        &long_opt, 'I'},
+        {"builtin-palette",       required_argument,  &long_opt, 'b'},
+        {"diffusion",             required_argument,  &long_opt, 'd'},
+        {"diffusion-scan",        required_argument,  &long_opt, 'y'},
+        {"diffusion-carry",       required_argument,  &long_opt, 'Y'},
+        {"find-largest",          required_argument,  &long_opt, 'f'},
+        {"select-color",          required_argument,  &long_opt, 's'},
+        {"crop",                  required_argument,  &long_opt, 'c'},
+        {"width",                 required_argument,  &long_opt, 'w'},
+        {"height",                required_argument,  &long_opt, 'h'},
+        {"resampling",            required_argument,  &long_opt, 'r'},
+        {"quality",               required_argument,  &long_opt, 'q'},
+        {"lookup-policy",         required_argument,  &long_opt, '~'},
+        {"palette-type",          required_argument,  &long_opt, 't'},
+        {"insecure",              no_argument,        &long_opt, 'k'},
+        {"invert",                no_argument,        &long_opt, 'i'},
+        {"loop-control",          required_argument,  &long_opt, 'l'},
+        {"use-macro",             no_argument,        &long_opt, 'u'},
+        {"ignore-delay",          no_argument,        &long_opt, 'g'},
+        {"verbose",               no_argument,        &long_opt, 'v'},
+        {"loaders",               required_argument,  &long_opt, 'L'},
+        {"static",                no_argument,        &long_opt, 'S'},
+        {"macro-number",          required_argument,  &long_opt, 'n'},
+        {"penetrate",             no_argument,        &long_opt, 'P'}, /* deprecated */
+        {"encode-policy",         required_argument,  &long_opt, 'E'},
+        {"output-colorspace",     required_argument,  &long_opt, 'U'},
+        {"clustering-colorspace", required_argument,  &long_opt, 'X'},
+        {"working-colorspace",    required_argument,  &long_opt, 'W'},
+        {"bgcolor",               required_argument,  &long_opt, 'B'},
+        {"complexion-score",      required_argument,  &long_opt, 'C'}, /* deprecated */
+        {"pipe-mode",             no_argument,        &long_opt, 'D'}, /* deprecated */
+        {"drcs",                  required_argument,  &long_opt, '@'},
+        {"ormode",                no_argument,        &long_opt, 'O'},
+        {"version",               no_argument,        &long_opt, 'V'},
+        {"help",                  no_argument,        &long_opt, 'H'},
         {0, 0, 0, 0}
     };
 #endif  /* HAVE_GETOPT_LONG */
@@ -1645,7 +1657,8 @@ unknown_option_error:
             "                 [-t palettetype] [-n macronumber] [-C score] [-b palette]\n"
             "                 [-E encodepolicy] [-L loaderlist]\n"
             "                 [-@ mmv:charset:path] [-1 shell] [-2 shell]\n"
-            "                 [-3 shell] [-W workingcolorspace] [-U outputcolorspace]\n"
+            "                 [-3 shell] [-X clusteringcolorspace]\n"
+            "                 [-W workingcolorspace] [-U outputcolorspace]\n"
             "                 [-B bgcolor] [-o outfile] [filename ...]\n\n"
             "for more details, type: 'img2sixel -H'.\n\n");
     goto end;
