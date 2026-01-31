@@ -347,6 +347,12 @@ or vpte; default eytzinger)
 SIXEL_LOOKUP_PACKING (linear or morton; default linear) selects dense LUT
 packing for 5bit/6bit lookups; other policies ignore it.
 .br
+SIXEL_LOOKUP_EYTZINGER_SAFE_RADIUS_STRICT (0 or 1; default 1) requires
+strict inequality for the eytzinger safe-radius early commit.
+.br
+SIXEL_LOOKUP_EYTZINGER_SAFE_RADIUS_STATS (0 or 1; default 0) emits
+safe-radius hit statistics when lookups finish.
+.br
 SIXEL_LOOKUP_VPTE_RESOLUTION (64, 128, or 256; default 64)
 .br
 SIXEL_LOOKUP_VPTE_REFINE (0 or 1; default 1) enables corner refinement
@@ -856,6 +862,15 @@ eytzinger, or vpte).
 .br
 select dense LUT packing for 5bit/6bit lookup (linear or morton; default
 linear; other policies ignore it).
+.TP 5
+.B SIXEL_LOOKUP_EYTZINGER_SAFE_RADIUS_STRICT
+.br
+use strict inequality for the eytzinger safe-radius early commit (0 or 1;
+default 1).
+.TP 5
+.B SIXEL_LOOKUP_EYTZINGER_SAFE_RADIUS_STATS
+.br
+emit safe-radius hit statistics when lookups finish (0 or 1; default 0).
 .TP 5
 .B SIXEL_LOOKUP_VPTE_RESOLUTION
 .br

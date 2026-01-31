@@ -904,6 +904,16 @@ static cli_env_help_t const g_env_help_table[] = {
         "(`linear`, `morton`, or `hilbert`; default `linear`)."
     },
     {
+        "SIXEL_LOOKUP_EYTZINGER_SAFE_RADIUS_STRICT",
+        "require strict inequality for the eytzinger safe-radius early\n"
+        "commit (0 or 1; default 1)."
+    },
+    {
+        "SIXEL_LOOKUP_EYTZINGER_SAFE_RADIUS_STATS",
+        "emit safe-radius hit statistics at lookup shutdown\n"
+        "(0 or 1; default 0)."
+    },
+    {
         "SIXEL_LOOKUP_VPTE_RESOLUTION",
         "choose VPTE grid resolution (64, 128, or 256; default 64)."
     },

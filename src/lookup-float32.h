@@ -11,6 +11,7 @@
 #include <sixel.h>
 
 #include <stddef.h>
+#include <stdint.h>
 
 enum { SIXEL_LOOKUP_FLOAT_COMPONENTS = 3 };
 
@@ -25,6 +26,9 @@ typedef struct sixel_lookup_float32_1d_eytzinger {
     int *rank;
     int *sorted_palette_index;
     float *sorted_keys;
+    float *safe_radius_sq;
+    uint64_t stats_lookups;
+    uint64_t stats_hits;
     int ready;
 } sixel_lookup_float32_1d_eytzinger_t;
 

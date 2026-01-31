@@ -672,6 +672,10 @@ cell corners.  The following environment variables tune the grid (legacy
   certlut, eytzinger, or vpte; default is eytzinger).
 * `SIXEL_LOOKUP_PACKING` chooses the dense cache packing for 5bit/6bit
   policies (`linear`, `morton`, or `hilbert`; default `linear`).
+* `SIXEL_LOOKUP_EYTZINGER_SAFE_RADIUS_STRICT` controls whether the eytzinger
+  safe-radius early commit requires a strict inequality (0 or 1; default 1).
+* `SIXEL_LOOKUP_EYTZINGER_SAFE_RADIUS_STATS` emits safe-radius hit statistics
+  when lookups finish (0 or 1; default 0).
 * `SIXEL_LOOKUP_VPTE_RESOLUTION` sets the grid resolution (64, 128, 256;
   default 64).
 * `SIXEL_LOOKUP_VPTE_REFINE` enables corner refinement on boundary voxels

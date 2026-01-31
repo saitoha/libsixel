@@ -58,6 +58,12 @@ sixel_lookup_env_shared_5bit(void);
 SIXELAPI int
 sixel_lookup_env_shared_6bit(void);
 
+SIXELAPI int
+sixel_lookup_env_eytzinger_safe_radius_strict(void);
+
+SIXELAPI int
+sixel_lookup_env_eytzinger_safe_radius_stats(void);
+
 SIXELAPI void
 sixel_lut_unref(sixel_lut_t *lut);
 

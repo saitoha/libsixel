@@ -65,6 +65,8 @@ static int sixel_lookup_parallel_active = 0;
 static int sixel_lookup_certlut_shared = -1;
 static int sixel_lookup_5bit_shared = -1;
 static int sixel_lookup_6bit_shared = -1;
+static int sixel_lookup_eytzinger_safe_radius_strict = -1;
+static int sixel_lookup_eytzinger_safe_radius_stats = -1;
 
 static int
 sixel_lookup_parse_flag(char const *text, int default_value);
@@ -167,6 +169,29 @@ sixel_lookup_env_shared_6bit(void)
 {
     sixel_lookup_init_shared_flags_once();
     return sixel_lookup_6bit_shared;
+}
+
+SIXELAPI int
+sixel_lookup_env_eytzinger_safe_radius_strict(void)
+{
+    if (sixel_lookup_eytzinger_safe_radius_strict < 0) {
+        sixel_lookup_eytzinger_safe_radius_strict = sixel_lookup_parse_flag(
+            sixel_compat_getenv(
+                "SIXEL_LOOKUP_EYTZINGER_SAFE_RADIUS_STRICT"),
+            1);
+    }
+    return sixel_lookup_eytzinger_safe_radius_strict;
+}
+
+SIXELAPI int
+sixel_lookup_env_eytzinger_safe_radius_stats(void)
+{
+    if (sixel_lookup_eytzinger_safe_radius_stats < 0) {
+        sixel_lookup_eytzinger_safe_radius_stats = sixel_lookup_parse_flag(
+            sixel_compat_getenv("SIXEL_LOOKUP_EYTZINGER_SAFE_RADIUS_STATS"),
+            0);
+    }
+    return sixel_lookup_eytzinger_safe_radius_stats;
 }
 
 SIXELAPI void

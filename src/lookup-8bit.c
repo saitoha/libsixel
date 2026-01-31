@@ -55,6 +55,7 @@
 
 #include <errno.h>
 #include <limits.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -156,6 +157,29 @@ sixel_lookup_8bit_1d_eytzinger_log_event(
                       ncolors);
     sixel_logger_close(&logger);
 }
+
+static void
+sixel_lookup_8bit_1d_eytzinger_logf(char const *format, ...)
+{
+    va_list args;
+
+    va_start(args, format);
+    sixel_compat_vfprintf(stderr, format, args);
+    va_end(args);
+}
+
+static void
+sixel_lookup_8bit_1d_eytzinger_prepare_safe_radius(sixel_lookup_8bit_t *lut);
+
+static int
+sixel_lookup_8bit_1d_eytzinger_safe_radius_hit(
+    float distance,
+    float const *safe_radius_sq,
+    int palette_index,
+    int strict);
+
+static void
+sixel_lookup_8bit_1d_eytzinger_log_stats(sixel_lookup_8bit_t *lut);
 
 /* Sentinel value used to detect empty dense LUT slots. */
 #define SIXEL_LUT_DENSE_EMPTY (-1)
@@ -513,6 +537,7 @@ sixel_lookup_8bit_1d_eytzinger_release(sixel_lookup_8bit_t *lut)
     }
 
     eytz = &lut->eytz;
+    sixel_lookup_8bit_1d_eytzinger_log_stats(lut);
     if (eytz->keys != NULL) {
         sixel_allocator_free(lut->allocator, eytz->keys);
     }
@@ -528,12 +553,18 @@ sixel_lookup_8bit_1d_eytzinger_release(sixel_lookup_8bit_t *lut)
     if (eytz->sorted_keys != NULL) {
         sixel_allocator_free(lut->allocator, eytz->sorted_keys);
     }
+    if (eytz->safe_radius_sq != NULL) {
+        sixel_allocator_free(lut->allocator, eytz->safe_radius_sq);
+    }
 
     eytz->keys = NULL;
     eytz->palette_index = NULL;
     eytz->rank = NULL;
     eytz->sorted_palette_index = NULL;
     eytz->sorted_keys = NULL;
+    eytz->safe_radius_sq = NULL;
+    eytz->stats_lookups = 0;
+    eytz->stats_hits = 0;
     eytz->count = 0;
     eytz->ready = 0;
 }
@@ -629,6 +660,8 @@ sixel_lookup_8bit_configure_1d_eytzinger(
     eytz->weights[0] = wcomp1;
     eytz->weights[1] = wcomp2;
     eytz->weights[2] = wcomp3;
+    eytz->stats_lookups = 0;
+    eytz->stats_hits = 0;
 
     if (palette == NULL || ncolors <= 0) {
         return SIXEL_BAD_ARGUMENT;
@@ -679,10 +712,13 @@ sixel_lookup_8bit_configure_1d_eytzinger(
     eytz->sorted_keys = (float *)sixel_allocator_malloc(
         lut->allocator,
         (size_t)count * sizeof(float));
+    eytz->safe_radius_sq = (float *)sixel_allocator_malloc(
+        lut->allocator,
+        (size_t)count * sizeof(float));
 
     if (eytz->keys == NULL || eytz->palette_index == NULL
             || eytz->rank == NULL || eytz->sorted_palette_index == NULL
-            || eytz->sorted_keys == NULL) {
+            || eytz->sorted_keys == NULL || eytz->safe_radius_sq == NULL) {
         sixel_helper_set_additional_message(
             "sixel_lookup_8bit_configure: Eytzinger arrays missing.");
         status = SIXEL_BAD_ALLOCATION;
@@ -694,6 +730,9 @@ sixel_lookup_8bit_configure_1d_eytzinger(
         eytz->sorted_keys[index] = pairs[index].key;
     }
 
+    eytz->count = count;
+    sixel_lookup_8bit_1d_eytzinger_prepare_safe_radius(lut);
+
     /*
      * Eytzinger layout in BFS order uses an inorder fill of the sorted array.
      * The table below shows how ranks map to nodes for n=7:
@@ -704,7 +743,6 @@ sixel_lookup_8bit_configure_1d_eytzinger(
     rank = 0;
     sixel_lookup_8bit_1d_eytzinger_fill(eytz, pairs, count, 1, &rank);
 
-    eytz->count = count;
     eytz->ready = 1;
     sixel_lookup_8bit_1d_eytzinger_log_event(count, "builder-end");
     status = SIXEL_OK;
@@ -789,11 +827,202 @@ sixel_lookup_8bit_1d_eytzinger_distance(
 }
 
 static int
+sixel_lookup_8bit_1d_eytzinger_distance_palette(
+    sixel_lookup_8bit_t const *lut,
+    int palette_index,
+    int neighbor_index)
+{
+    unsigned char const *pixel;
+
+    pixel = lut->palette + (size_t)palette_index * (size_t)lut->depth;
+    return sixel_lookup_8bit_1d_eytzinger_distance(lut,
+                                                   pixel,
+                                                   neighbor_index);
+}
+
+static void
+sixel_lookup_8bit_1d_eytzinger_prepare_safe_radius(sixel_lookup_8bit_t *lut)
+{
+    sixel_lookup_8bit_1d_eytzinger_t *eytz;
+    int count;
+    int rank;
+    int palette_index;
+    int neighbor_index;
+    int offset_left;
+    int offset_right;
+    int stop_left;
+    int stop_right;
+    int best_distance;
+    int distance;
+    float best_distance_f;
+    float key;
+    float key_diff;
+    float key_diff_sq;
+
+    eytz = &lut->eytz;
+    count = eytz->count;
+
+    if (count <= 1) {
+        if (count == 1) {
+            eytz->safe_radius_sq[0] = 0.0f;
+        }
+        return;
+    }
+
+    /*
+     * Safe radius computation (per palette entry):
+     *   - Let d_min be the distance to the nearest *other* palette entry.
+     *   - The safe radius is d_min / 2, stored as (d_min / 2)^2.
+     *
+     * Use the 1D key order as a lower bound on distance to stop the scan:
+     *   key_diff^2 > best_distance  =>  no closer entry remains on that side.
+     *
+     *            key order:  ... L2 L1 [P] R1 R2 ...
+     *   search radius:       <----|    |---->
+     */
+    for (rank = 0; rank < count; ++rank) {
+        palette_index = eytz->sorted_palette_index[rank];
+        key = eytz->sorted_keys[rank];
+        best_distance = INT_MAX;
+        best_distance_f = (float)best_distance;
+
+        offset_left = rank - 1;
+        offset_right = rank + 1;
+        if (offset_left >= 0) {
+            neighbor_index = eytz->sorted_palette_index[offset_left];
+            best_distance = sixel_lookup_8bit_1d_eytzinger_distance_palette(
+                lut,
+                palette_index,
+                neighbor_index);
+            best_distance_f = (float)best_distance;
+            offset_left--;
+        }
+        if (offset_right < count) {
+            neighbor_index = eytz->sorted_palette_index[offset_right];
+            distance = sixel_lookup_8bit_1d_eytzinger_distance_palette(
+                lut,
+                palette_index,
+                neighbor_index);
+            if (distance < (int)best_distance_f) {
+                best_distance = distance;
+                best_distance_f = (float)best_distance;
+            }
+            offset_right++;
+        }
+
+        stop_left = 0;
+        stop_right = 0;
+        while (stop_left == 0 || stop_right == 0) {
+            if (stop_left == 0) {
+                if (offset_left < 0) {
+                    stop_left = 1;
+                } else {
+                    key_diff = key - eytz->sorted_keys[offset_left];
+                    key_diff_sq = key_diff * key_diff;
+                    if (key_diff_sq > best_distance_f) {
+                        stop_left = 1;
+                    } else {
+                        neighbor_index =
+                            eytz->sorted_palette_index[offset_left];
+                        distance =
+                            sixel_lookup_8bit_1d_eytzinger_distance_palette(
+                                lut,
+                                palette_index,
+                                neighbor_index);
+                        if (distance < (int)best_distance_f) {
+                            best_distance = distance;
+                            best_distance_f = (float)best_distance;
+                        }
+                        offset_left--;
+                    }
+                }
+            }
+            if (stop_right == 0) {
+                if (offset_right >= count) {
+                    stop_right = 1;
+                } else {
+                    key_diff = key - eytz->sorted_keys[offset_right];
+                    key_diff_sq = key_diff * key_diff;
+                    if (key_diff_sq > best_distance_f) {
+                        stop_right = 1;
+                    } else {
+                        neighbor_index =
+                            eytz->sorted_palette_index[offset_right];
+                        distance =
+                            sixel_lookup_8bit_1d_eytzinger_distance_palette(
+                                lut,
+                                palette_index,
+                                neighbor_index);
+                        if (distance < (int)best_distance_f) {
+                            best_distance = distance;
+                            best_distance_f = (float)best_distance;
+                        }
+                        offset_right++;
+                    }
+                }
+            }
+        }
+
+        eytz->safe_radius_sq[palette_index] = best_distance_f * 0.25f;
+    }
+}
+
+static int
+sixel_lookup_8bit_1d_eytzinger_safe_radius_hit(
+    float distance,
+    float const *safe_radius_sq,
+    int palette_index,
+    int strict)
+{
+    if (safe_radius_sq == NULL) {
+        return 0;
+    }
+    if (strict != 0) {
+        return distance < safe_radius_sq[palette_index];
+    }
+    return distance <= safe_radius_sq[palette_index];
+}
+
+/*
+ * Emit safe-radius stats once per lookup-table shutdown:
+ *   - hits: early-commit successes
+ *   - total: total lookups observed
+ *   - ratio: hit percentage
+ */
+static void
+sixel_lookup_8bit_1d_eytzinger_log_stats(sixel_lookup_8bit_t *lut)
+{
+    sixel_lookup_8bit_1d_eytzinger_t *eytz;
+    uint64_t total;
+    uint64_t hits;
+    double ratio;
+
+    if (sixel_lookup_env_eytzinger_safe_radius_stats() == 0) {
+        return;
+    }
+
+    eytz = &lut->eytz;
+    total = eytz->stats_lookups;
+    hits = eytz->stats_hits;
+    if (total == 0) {
+        return;
+    }
+
+    ratio = (double)hits * 100.0 / (double)total;
+    sixel_lookup_8bit_1d_eytzinger_logf(
+        "eytzinger-safe-radius-stats: 8bit hits=%llu total=%llu "
+        "ratio=%.2f%%\n",
+        (unsigned long long)hits,
+        (unsigned long long)total,
+        ratio);
+}
+
+static int
 sixel_lookup_8bit_lookup_1d_eytzinger(
     sixel_lookup_8bit_t *lut,
     unsigned char const *pixel)
 {
-    sixel_lookup_8bit_1d_eytzinger_t const *eytz;
+    sixel_lookup_8bit_1d_eytzinger_t *eytz;
     float key;
     int count;
     int node;
@@ -809,6 +1038,8 @@ sixel_lookup_8bit_lookup_1d_eytzinger(
     int best_index;
     int best_distance;
     int distance;
+    int strict_safe_radius;
+    int stats_enabled;
     float best_distance_f;
     float key_diff;
     float key_diff_sq;
@@ -816,6 +1047,19 @@ sixel_lookup_8bit_lookup_1d_eytzinger(
     eytz = &lut->eytz;
     if (eytz->ready == 0 || eytz->count <= 0) {
         return 0;
+    }
+
+    /*
+     * Safe-radius stats:
+     *   - stats_lookups counts lookups when enabled.
+     *   - stats_hits counts early-commit hits.
+     *
+     * The counters are intentionally unsynchronized so they do not
+     * interfere with the performance characteristics being measured.
+     */
+    stats_enabled = sixel_lookup_env_eytzinger_safe_radius_stats();
+    if (stats_enabled != 0) {
+        eytz->stats_lookups++;
     }
 
     key = sixel_lookup_8bit_1d_eytzinger_project(lut, pixel);
@@ -841,6 +1085,23 @@ sixel_lookup_8bit_lookup_1d_eytzinger(
                                                             pixel,
                                                             best_index);
     best_distance_f = (float)best_distance;
+    strict_safe_radius = sixel_lookup_env_eytzinger_safe_radius_strict();
+    /*
+     * Early-commit rule:
+     *   - If the current best distance is within the palette's safe radius,
+     *     no other palette entry can beat it.
+     *   - The strict flag controls whether equality is accepted.
+     */
+    if (sixel_lookup_8bit_1d_eytzinger_safe_radius_hit(
+            best_distance_f,
+            eytz->safe_radius_sq,
+            best_index,
+            strict_safe_radius)) {
+        if (stats_enabled != 0) {
+            eytz->stats_hits++;
+        }
+        return best_index;
+    }
     offset_left = rank - 1;
     offset_right = rank + 1;
     stop_left = 0;
@@ -869,6 +1130,16 @@ sixel_lookup_8bit_lookup_1d_eytzinger(
                         best_distance = distance;
                         best_distance_f = (float)best_distance;
                         best_index = palette_index;
+                        if (sixel_lookup_8bit_1d_eytzinger_safe_radius_hit(
+                                best_distance_f,
+                                eytz->safe_radius_sq,
+                                best_index,
+                                strict_safe_radius)) {
+                            if (stats_enabled != 0) {
+                                eytz->stats_hits++;
+                            }
+                            return best_index;
+                        }
                     }
                     offset_left--;
                 }
@@ -892,6 +1163,16 @@ sixel_lookup_8bit_lookup_1d_eytzinger(
                         best_distance = distance;
                         best_distance_f = (float)best_distance;
                         best_index = palette_index;
+                        if (sixel_lookup_8bit_1d_eytzinger_safe_radius_hit(
+                                best_distance_f,
+                                eytz->safe_radius_sq,
+                                best_index,
+                                strict_safe_radius)) {
+                            if (stats_enabled != 0) {
+                                eytz->stats_hits++;
+                            }
+                            return best_index;
+                        }
                     }
                     offset_right++;
                 }
@@ -2226,6 +2507,9 @@ sixel_lookup_8bit_init(sixel_lookup_8bit_t *lut, sixel_allocator_t *allocator)
     lut->eytz.rank = NULL;
     lut->eytz.sorted_palette_index = NULL;
     lut->eytz.sorted_keys = NULL;
+    lut->eytz.safe_radius_sq = NULL;
+    lut->eytz.stats_lookups = 0;
+    lut->eytz.stats_hits = 0;
     lut->eytz.window = SIXEL_LOOKUP_EYTZINGER_WINDOW;
     lut->eytz.weights[0] = 1;
     lut->eytz.weights[1] = 1;
