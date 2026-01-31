@@ -2947,7 +2947,7 @@ else
     message_python=$have_python
 fi
 if test x$have_python_wheel = xyes; then
-    message_python_wheel="$have_python_wheel: libsixel-python"
+    message_python_wheel="$have_python_wheel: libsixel_wheel"
 else
     message_python_wheel=$have_python_wheel
 fi

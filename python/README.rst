@@ -1,5 +1,5 @@
-libsixel-python
-===============
+libsixel_wheel
+==============
 
 What is this?
 -------------
@@ -33,7 +33,7 @@ Example 3. Build a self-contained wheel with bundled libsixel ::
     $ cd libsixel
     $ ./configure --enable-python-wheel
     $ make
-    $ ls python/dist/libsixel_python-*.whl
+    $ ls python/dist/libsixel_wheel-*.whl
 
 Meson users can request the same wheel build with
 ``-Dpython_wheel=enabled``.
@@ -46,7 +46,7 @@ includes a platform tag (for example, ``macosx`` on macOS).
 
 Install it with pip without pre-installing libsixel:
 
-    $ python -m pip install python/dist/libsixel_python-*.whl
+    $ python -m pip install python/dist/libsixel_wheel-*.whl
 
 
 Code Example
