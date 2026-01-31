@@ -43,8 +43,6 @@ jobs:
           - label: Autotools-macos-aarch64-gcc
             buildtool: autotools
             runner: macos-latest
-            setup_prefix: >-
-              CONFIG_SHELL=dash
             exec_type: bash
 
           - label: Meson-macos-aarch64-gcc
@@ -180,8 +178,6 @@ jobs:
           - label: Autotools-macos-x86_64-coverage
             buildtool: autotools
             runner: macos-15
-            setup_prefix: >-
-              CONFIG_SHELL=dash
             setup_options: >-
               --enable-gcov
             extra_packages: >-
@@ -192,7 +188,6 @@ jobs:
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
-              CONFIG_SHELL=dash
               CC=clang
             setup_options: >-
               --enable-gcov
@@ -208,7 +203,6 @@ jobs:
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
-              CONFIG_SHELL=dash
               CC=clang
             setup_options: >-
               --enable-gcov
@@ -656,8 +650,6 @@ jobs:
           - label: Autotools-macos-aarch64-amalgamated-lib-disable-appkit
             buildtool: autotools
             runner: macos-latest
-            setup_prefix: >-
-              CONFIG_SHELL=dash
             setup_options: >-
               --enable-amalgamated-lib
               --disable-appkit
@@ -666,8 +658,6 @@ jobs:
           - label: Autotools-macos-x86_64-amalgamated_lib-amalgamated_tools
             buildtool: autotools
             runner: macos-15
-            setup_prefix: >-
-              CONFIG_SHELL=dash
             setup_options: >-
               --enable-amalgamated-lib
               --enable-amalgamated-tools
@@ -1103,8 +1093,6 @@ jobs:
           - label: Autotools-macos-aarch64-distcheck
             buildtool: autotools
             runner: macos-latest
-            setup_prefix: >-
-              CONFIG_SHELL=dash
             check_target: distcheck
             exec_type: bash
 
@@ -1322,7 +1310,6 @@ jobs:
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
-              CONFIG_SHELL=dash
               CC=clang
               CFLAGS="-fsanitize=address,undefined -O1 -g -fno-omit-frame-pointer"
               LDFLAGS="-fsanitize=address,undefined"
@@ -1356,7 +1343,6 @@ jobs:
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
-              CONFIG_SHELL=dash
               CC=clang
               CFLAGS="-fsanitize=address,undefined -O1 -g -fno-omit-frame-pointer"
               LDFLAGS="-fsanitize=address,undefined"
@@ -1525,7 +1511,6 @@ jobs:
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
-              CONFIG_SHELL=dash
               CC=clang
               CFLAGS="-fsanitize=thread -O1 -g -fno-omit-frame-pointer"
               LDFLAGS="-fsanitize=thread"
@@ -1606,7 +1591,6 @@ jobs:
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
-              CONFIG_SHELL=dash
               CFLAGS="-O3 -g0 -flto -msimd128 -fdata-sections -ffunction-sections"
               LDFLAGS="-sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=524288 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sUSE_PTHREADS=1 -sASSERTIONS=0"
               emconfigure
@@ -1694,7 +1678,6 @@ jobs:
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
-              CONFIG_SHELL=dash
               CC=cosmocc
               LD=cosmocc
               AR=cosmoar
@@ -1816,7 +1799,6 @@ jobs:
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
-              CONFIG_SHELL=dash
               wineboot -u;
               cp "$(find /opt/homebrew/Cellar/mingw-w64 -name toolchain-x86_64)"/x86_64-w64-mingw32/bin/libwinpthread-1.dll ~/.wine/drive_c/windows/system32/;
               CC=x86_64-w64-mingw32-gcc
