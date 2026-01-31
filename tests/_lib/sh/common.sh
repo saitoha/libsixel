@@ -219,23 +219,7 @@ run_sixel2png() {
 }
 
 run_lsqa() {
-    lsqa_path=${LSQA_PATH-}
-    lsqa_status=0
-
-    if [ -z "${lsqa_path}" ]; then
-        lsqa_path=${LSQA_BIN-}
-    fi
-    if [ -z "${lsqa_path}" ]; then
-        printf 'lsqa path is not set\n' >&2
-        return 127
-    fi
-
-    runtime_exec "${lsqa_path}" "$@" || lsqa_status=$?
-    if [ ${lsqa_status} -eq 126 ]; then
-        /bin/sh -c 'exec "$0" "$@"' \
-            ${SIXEL_RUNTIME-} "${lsqa_path}" "$@" || lsqa_status=$?
-    fi
-    return ${lsqa_status}
+    runtime_exec "${LSQA_PATH}" "$@"
 }
 
 make_temp_file() {
