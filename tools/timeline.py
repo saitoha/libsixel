@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a timeline chart from SIXEL_PARALLEL_LOG_PATH output.
+"""Build a timeline chart from SIXEL_LOG_PATH output.
 
 The logger writes JSON lines like:
 {"ts":0.001,"thread":1234,"worker":"dither","event":"start",...}
@@ -310,7 +310,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "logfile",
-        help="Path to SIXEL_PARALLEL_LOG_PATH output",
+        help="Path to SIXEL_LOG_PATH output",
     )
     parser.add_argument(
         "--output",

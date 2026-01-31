@@ -2001,7 +2001,7 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
     /*
      * Keep byte and float conversions aligned: respect the same
      * SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS threshold and emit logger events
-     * when SIXEL_PARALLEL_LOG_PATH is configured so traces show which path a
+     * when SIXEL_LOG_PATH is configured so traces show which path a
      * frame took even when threading is disabled.
      */
     sixel_logger_init(&logger);
@@ -2390,7 +2390,7 @@ sixel_convert_pixels_via_linear_float(float *pixels,
 #endif
     logger_ref = NULL;
     /*
-     * Enable the timeline logger when SIXEL_PARALLEL_LOG_PATH points to a
+     * Enable the timeline logger when SIXEL_LOG_PATH points to a
      * writable sink. The controller emits a configure event even if the
      * call later falls back to the serial path so the timeline remains
      * continuous, including non-threaded builds.
