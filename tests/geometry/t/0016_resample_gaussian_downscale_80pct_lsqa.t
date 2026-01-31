@@ -32,7 +32,7 @@ TOP_SRCDIR="${top_srcdir}"
 export TOP_BUILDDIR TOP_SRCDIR
 input_image="${data_root}/snake_64.png"
 reference_image="${data_root}/scaling/snake_64_gaussian_80pct.png"
-output_sixel="${output_dir}/gaussian-downscale_80pct.six"
+output_sixel="${artifact_dir}/gaussian-downscale_80pct.six"
 
 ensure_img2sixel_available
 
@@ -57,7 +57,7 @@ else
     exit "${status}"
 fi
 
-if lsqa_assert_quality "${reference_image}" "${output_sixel}"         "gaussian-downscale_80pct" "${artifact_dir}" "${lsqa_floor}"; then
+if lsqa_run_benchmark "${reference_image}" "${output_sixel}"         "gaussian-downscale_80pct" "${artifact_dir}" "${lsqa_floor}"; then
     pass 1 "gaussian downscale 80pct lsqa passed"
 else
     fail 1 "gaussian downscale 80pct lsqa failed"

@@ -26,8 +26,8 @@ echo "1..1"
 set -v
 
 input_image="${images_dir}/snake.png"
-output_hls="${output_dir}/hls.six"
-output_rgb="${output_dir}/rgb.six"
+output_hls="${artifact_dir}/hls.six"
+output_rgb="${artifact_dir}/rgb.six"
 
 require_file "${input_image}"
 
@@ -52,7 +52,7 @@ else
     exit "${status}"
 fi
 
-if lsqa_assert_quality "${output_rgb}" "${output_hls}" \
+if lsqa_run_benchmark "${output_rgb}" "${output_hls}" \
         "hls-vs-rgb" "${artifact_dir}" "${lsqa_floor}"; then
     pass 1 "hls vs rgb lsqa passed"
 else

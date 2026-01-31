@@ -32,7 +32,7 @@ TOP_SRCDIR="${top_srcdir}"
 export TOP_BUILDDIR TOP_SRCDIR
 input_image="${data_root}/snake_64.png"
 reference_image="${data_root}/scaling/snake_64_lanczos3_120pct.png"
-output_sixel="${output_dir}/lanczos3-upscale_120pct.six"
+output_sixel="${artifact_dir}/lanczos3-upscale_120pct.six"
 
 ensure_img2sixel_available
 
@@ -57,7 +57,7 @@ else
     exit "${status}"
 fi
 
-if lsqa_assert_quality "${reference_image}" "${output_sixel}"         "lanczos3-upscale_120pct" "${artifact_dir}" "${lsqa_floor}"; then
+if lsqa_run_benchmark "${reference_image}" "${output_sixel}"         "lanczos3-upscale_120pct" "${artifact_dir}" "${lsqa_floor}"; then
     pass 1 "lanczos3 upscale 120pct lsqa passed"
 else
     fail 1 "lanczos3 upscale 120pct lsqa failed"
