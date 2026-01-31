@@ -628,13 +628,15 @@ _sixel_names = [
     "cygsixel",
 ]
 
+def _match_library_in_dir(libdir, lib_names):
+    """Return the first matching shared library in the given directory.
 
-def _prefer_env_library(lib_names):
-    """Locate libsixel under LIBSIXEL_LIBDIR when running from a build tree."""
+    The selection logic is intentionally aligned with the build helper:
 
-    libdir = os.environ.get("LIBSIXEL_LIBDIR")
-    if libdir is None:
-        return None
+    - Accept both "lib" prefixed and prefixless names.
+    - Accept .so, .dylib, or .dll (including versioned .so.* files).
+    - Skip import archives like *.dll.a or *.dll.def.
+    """
 
     prefixes = ["lib", ""]
     suffixes = [".so", ".dylib", ".dll"]
@@ -674,7 +676,32 @@ def _prefer_env_library(lib_names):
     return None
 
 
-_lib_path = _prefer_env_library(_sixel_names)
+def _prefer_bundled_library(lib_names):
+    """Locate a bundled shared library shipped inside the wheel package.
+
+    Wheel builds copy the shared library into libsixel/_libs so that imports
+    succeed even when libsixel is not installed system-wide.
+    """
+
+    bundle_dir = pathlib.Path(__file__).resolve().parent / "_libs"
+    if not bundle_dir.is_dir():
+        return None
+    return _match_library_in_dir(str(bundle_dir), lib_names)
+
+
+def _prefer_env_library(lib_names):
+    """Locate libsixel under LIBSIXEL_LIBDIR when running from a build tree."""
+
+    libdir = os.environ.get("LIBSIXEL_LIBDIR")
+    if libdir is None:
+        return None
+    return _match_library_in_dir(libdir, lib_names)
+
+
+_lib_path = _prefer_bundled_library(_sixel_names)
+
+if _lib_path is None:
+    _lib_path = _prefer_env_library(_sixel_names)
 
 if _lib_path is None:
     _lib_path = next(
