@@ -980,11 +980,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "behaviour and defaults."
     },
     {
-        "SIXEL_PARALLEL_LOG_PATH",
+        "SIXEL_LOG_PATH",
         "write a JSON timeline for VPTE or LUT builds when set."
     },
     {
-        "SIXEL_PARALLEL_LOG_LINES",
+        "SIXEL_LOG_LINES",
         "log every Nth line in the timeline; 0 disables line events."
     }
 };

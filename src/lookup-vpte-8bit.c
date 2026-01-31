@@ -551,7 +551,7 @@ sixel_lookup_vpte_timeline_open_8bit(
     (void)sixel_logger_prepare_env(&timeline->logger);
     timeline->log_lines = 0;
     timeline->line_stride = 1;
-    line_env = sixel_compat_getenv("SIXEL_PARALLEL_LOG_LINES");
+    line_env = sixel_compat_getenv("SIXEL_LOG_LINES");
     if (line_env != NULL && line_env[0] != '\0') {
         stride = strtol(line_env, NULL, 10);
         if (stride < 1L) {

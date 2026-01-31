@@ -710,10 +710,10 @@ cell corners.  The following environment variables tune the grid (legacy
   The planner applies the same preference to both palette workers and the
   encoder-side band workers (including the non-pipeline parallel encoder);
   set this to 0 to allow the OS to migrate those jobs.
-* `SIXEL_PARALLEL_LOG_PATH` writes a JSON timeline log that can be consumed
+* `SIXEL_LOG_PATH` writes a JSON timeline log that can be consumed
   by `tools/timeline.py`; the log is silent when unset.
-* `SIXEL_PARALLEL_LOG_LINES` controls per-line logging when
-  `SIXEL_PARALLEL_LOG_PATH` is set.  Use 0 to suppress line events, or a
+* `SIXEL_LOG_LINES` controls per-line logging when
+  `SIXEL_LOG_PATH` is set.  Use 0 to suppress line events, or a
   positive integer to log every Nth line (unset logs every line and may be
   heavy).
 
