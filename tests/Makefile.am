@@ -22,6 +22,16 @@ TESTS = \
     animation/t/0002_static_frame_render.t \
     animation/t/0003_update_and_static_frame.t \
     animation/t/0004_split_sequence_atkinson.t \
+    api/t/0001_write_image_g1.t \
+    api/t/0002_write_image_g2.t \
+    api/t/0003_write_image_g4.t \
+    api/t/0004_write_image_g8.t \
+    api/t/0005_write_image_pal1.t \
+    api/t/0006_write_image_pal2.t \
+    api/t/0007_write_image_pal4.t \
+    api/t/0008_write_image_pal8.t \
+    api/t/0009_write_image_rgb.t \
+    api/t/0010_write_image_rgba.t \
     cli-argument-shift/t/0001_invalid_positional.t \
     cli-argument-shift/t/0002_argument_shift_missing_mapfile.t \
     cli-argument-shift/t/0003_argument_shift_outfile_named_like_option.t \
@@ -559,6 +569,17 @@ test_runner_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
 test_runner_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 else
 test_runner_SOURCES = test_runner.c \
+    api/0001_write_image_g1.c \
+    api/0002_write_image_g2.c \
+    api/0003_write_image_g4.c \
+    api/0004_write_image_g8.c \
+    api/0005_write_image_pal1.c \
+    api/0006_write_image_pal2.c \
+    api/0007_write_image_pal4.c \
+    api/0008_write_image_pal8.c \
+    api/0009_write_image_rgb.c \
+    api/0010_write_image_rgba.c \
+    api/api_test_common.h \
     cli/0029_cli_token_is_known_option.c \
     cli/0030_cli_option_requires_argument.c \
     cli/0031_cli_guard_missing_argument.c \

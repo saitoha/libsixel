@@ -43,6 +43,17 @@ int test_loader_0015_loader_quicklook_pixelformat(int argc, char **argv);
 int test_loader_0016_loader_gnome_thumbnailer_pixelformat(int argc,
                                                           char **argv);
 
+int test_api_0001_write_image_g1(int argc, char **argv);
+int test_api_0002_write_image_g2(int argc, char **argv);
+int test_api_0003_write_image_g4(int argc, char **argv);
+int test_api_0004_write_image_g8(int argc, char **argv);
+int test_api_0005_write_image_pal1(int argc, char **argv);
+int test_api_0006_write_image_pal2(int argc, char **argv);
+int test_api_0007_write_image_pal4(int argc, char **argv);
+int test_api_0008_write_image_pal8(int argc, char **argv);
+int test_api_0009_write_image_rgb(int argc, char **argv);
+int test_api_0010_write_image_rgba(int argc, char **argv);
+
 #if defined(SIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS)
 int test_gdk_pixbuf_loader_0001_gdk_pixbuf_loader(int argc, char **argv);
 int test_gdk_pixbuf_loader_0002_incremental_load(int argc, char **argv);
@@ -98,6 +109,16 @@ static test_entry_t const test_entries[] = {
       test_loader_0015_loader_quicklook_pixelformat },
     { "loader/0016_loader_gnome_thumbnailer_pixelformat",
       test_loader_0016_loader_gnome_thumbnailer_pixelformat },
+    { "api/0001_write_image_g1", test_api_0001_write_image_g1 },
+    { "api/0002_write_image_g2", test_api_0002_write_image_g2 },
+    { "api/0003_write_image_g4", test_api_0003_write_image_g4 },
+    { "api/0004_write_image_g8", test_api_0004_write_image_g8 },
+    { "api/0005_write_image_pal1", test_api_0005_write_image_pal1 },
+    { "api/0006_write_image_pal2", test_api_0006_write_image_pal2 },
+    { "api/0007_write_image_pal4", test_api_0007_write_image_pal4 },
+    { "api/0008_write_image_pal8", test_api_0008_write_image_pal8 },
+    { "api/0009_write_image_rgb", test_api_0009_write_image_rgb },
+    { "api/0010_write_image_rgba", test_api_0010_write_image_rgba },
 #if defined(SIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS)
     { "gdk-pixbuf-loader/0001_gdk_pixbuf_loader",
       test_gdk_pixbuf_loader_0001_gdk_pixbuf_loader },

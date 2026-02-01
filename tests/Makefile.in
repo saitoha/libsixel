@@ -108,7 +108,12 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__test_runner_SOURCES_DIST = test_runner.c \
+am__test_runner_SOURCES_DIST = test_runner.c api/0001_write_image_g1.c \
+	api/0002_write_image_g2.c api/0003_write_image_g4.c \
+	api/0004_write_image_g8.c api/0005_write_image_pal1.c \
+	api/0006_write_image_pal2.c api/0007_write_image_pal4.c \
+	api/0008_write_image_pal8.c api/0009_write_image_rgb.c \
+	api/0010_write_image_rgba.c api/api_test_common.h \
 	cli/0029_cli_token_is_known_option.c \
 	cli/0030_cli_option_requires_argument.c \
 	cli/0031_cli_guard_missing_argument.c \
@@ -140,6 +145,16 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	$(top_srcdir)/converters/cli.c
 am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	api/test_runner-0001_write_image_g1.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	api/test_runner-0002_write_image_g2.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	api/test_runner-0003_write_image_g4.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	api/test_runner-0004_write_image_g8.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	api/test_runner-0005_write_image_pal1.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	api/test_runner-0006_write_image_pal2.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	api/test_runner-0007_write_image_pal4.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	api/test_runner-0008_write_image_pal8.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	api/test_runner-0009_write_image_rgb.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	api/test_runner-0010_write_image_rgba.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0029_cli_token_is_known_option.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0030_cli_option_requires_argument.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0031_cli_guard_missing_argument.$(OBJEXT) \
@@ -227,6 +242,16 @@ am__depfiles_remade =  \
 	$(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po \
 	$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po \
 	./$(DEPDIR)/test_runner-test_runner.Po \
+	api/$(DEPDIR)/test_runner-0001_write_image_g1.Po \
+	api/$(DEPDIR)/test_runner-0002_write_image_g2.Po \
+	api/$(DEPDIR)/test_runner-0003_write_image_g4.Po \
+	api/$(DEPDIR)/test_runner-0004_write_image_g8.Po \
+	api/$(DEPDIR)/test_runner-0005_write_image_pal1.Po \
+	api/$(DEPDIR)/test_runner-0006_write_image_pal2.Po \
+	api/$(DEPDIR)/test_runner-0007_write_image_pal4.Po \
+	api/$(DEPDIR)/test_runner-0008_write_image_pal8.Po \
+	api/$(DEPDIR)/test_runner-0009_write_image_rgb.Po \
+	api/$(DEPDIR)/test_runner-0010_write_image_rgba.Po \
 	cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po \
 	cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po \
 	cli/$(DEPDIR)/test_runner-0031_cli_guard_missing_argument.Po \
@@ -718,6 +743,16 @@ TESTS = \
     animation/t/0002_static_frame_render.t \
     animation/t/0003_update_and_static_frame.t \
     animation/t/0004_split_sequence_atkinson.t \
+    api/t/0001_write_image_g1.t \
+    api/t/0002_write_image_g2.t \
+    api/t/0003_write_image_g4.t \
+    api/t/0004_write_image_g8.t \
+    api/t/0005_write_image_pal1.t \
+    api/t/0006_write_image_pal2.t \
+    api/t/0007_write_image_pal4.t \
+    api/t/0008_write_image_pal8.t \
+    api/t/0009_write_image_rgb.t \
+    api/t/0010_write_image_rgba.t \
     cli-argument-shift/t/0001_invalid_positional.t \
     cli-argument-shift/t/0002_argument_shift_missing_mapfile.t \
     cli-argument-shift/t/0003_argument_shift_outfile_named_like_option.t \
@@ -1252,6 +1287,17 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_LDADD = $(TESTS_COMMON_LDADD_VAL) $(GDK_PIXBUF_LIBS)
 @WANT_AMALGAMATED_TOOLS_TRUE@test_runner_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    api/0001_write_image_g1.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    api/0002_write_image_g2.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    api/0003_write_image_g4.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    api/0004_write_image_g8.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    api/0005_write_image_pal1.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    api/0006_write_image_pal2.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    api/0007_write_image_pal4.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    api/0008_write_image_pal8.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    api/0009_write_image_rgb.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    api/0010_write_image_rgba.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    api/api_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0029_cli_token_is_known_option.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0030_cli_option_requires_argument.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0031_cli_guard_missing_argument.c \
@@ -1408,6 +1454,32 @@ $(am__aclocal_m4_deps):
 clean-checkPROGRAMS:
 	$(am__rm_f) $(check_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(check_PROGRAMS:$(EXEEXT)=)
+api/$(am__dirstamp):
+	@$(MKDIR_P) api
+	@: >>api/$(am__dirstamp)
+api/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) api/$(DEPDIR)
+	@: >>api/$(DEPDIR)/$(am__dirstamp)
+api/test_runner-0001_write_image_g1.$(OBJEXT): api/$(am__dirstamp) \
+	api/$(DEPDIR)/$(am__dirstamp)
+api/test_runner-0002_write_image_g2.$(OBJEXT): api/$(am__dirstamp) \
+	api/$(DEPDIR)/$(am__dirstamp)
+api/test_runner-0003_write_image_g4.$(OBJEXT): api/$(am__dirstamp) \
+	api/$(DEPDIR)/$(am__dirstamp)
+api/test_runner-0004_write_image_g8.$(OBJEXT): api/$(am__dirstamp) \
+	api/$(DEPDIR)/$(am__dirstamp)
+api/test_runner-0005_write_image_pal1.$(OBJEXT): api/$(am__dirstamp) \
+	api/$(DEPDIR)/$(am__dirstamp)
+api/test_runner-0006_write_image_pal2.$(OBJEXT): api/$(am__dirstamp) \
+	api/$(DEPDIR)/$(am__dirstamp)
+api/test_runner-0007_write_image_pal4.$(OBJEXT): api/$(am__dirstamp) \
+	api/$(DEPDIR)/$(am__dirstamp)
+api/test_runner-0008_write_image_pal8.$(OBJEXT): api/$(am__dirstamp) \
+	api/$(DEPDIR)/$(am__dirstamp)
+api/test_runner-0009_write_image_rgb.$(OBJEXT): api/$(am__dirstamp) \
+	api/$(DEPDIR)/$(am__dirstamp)
+api/test_runner-0010_write_image_rgba.$(OBJEXT): api/$(am__dirstamp) \
+	api/$(DEPDIR)/$(am__dirstamp)
 cli/$(am__dirstamp):
 	@$(MKDIR_P) cli
 	@: >>cli/$(am__dirstamp)
@@ -1550,6 +1622,7 @@ mostlyclean-compile:
 	-rm -f $(top_builddir)/amalgamation/*.$(OBJEXT)
 	-rm -f $(top_builddir)/converters/*.$(OBJEXT)
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/*.$(OBJEXT)
+	-rm -f api/*.$(OBJEXT)
 	-rm -f cli/*.$(OBJEXT)
 	-rm -f filter/*.$(OBJEXT)
 	-rm -f gdk-pixbuf-loader/*.$(OBJEXT)
@@ -1564,6 +1637,16 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_runner-test_runner.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@api/$(DEPDIR)/test_runner-0001_write_image_g1.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@api/$(DEPDIR)/test_runner-0002_write_image_g2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@api/$(DEPDIR)/test_runner-0003_write_image_g4.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@api/$(DEPDIR)/test_runner-0004_write_image_g8.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@api/$(DEPDIR)/test_runner-0005_write_image_pal1.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@api/$(DEPDIR)/test_runner-0006_write_image_pal2.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@api/$(DEPDIR)/test_runner-0007_write_image_pal4.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@api/$(DEPDIR)/test_runner-0008_write_image_pal8.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@api/$(DEPDIR)/test_runner-0009_write_image_rgb.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@api/$(DEPDIR)/test_runner-0010_write_image_rgba.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0031_cli_guard_missing_argument.Po@am__quote@ # am--include-marker
@@ -1639,6 +1722,146 @@ test_runner-test_runner.obj: test_runner.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_runner.c' object='test_runner-test_runner.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o test_runner-test_runner.obj `if test -f 'test_runner.c'; then $(CYGPATH_W) 'test_runner.c'; else $(CYGPATH_W) '$(srcdir)/test_runner.c'; fi`
+
+api/test_runner-0001_write_image_g1.o: api/0001_write_image_g1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT api/test_runner-0001_write_image_g1.o -MD -MP -MF api/$(DEPDIR)/test_runner-0001_write_image_g1.Tpo -c -o api/test_runner-0001_write_image_g1.o `test -f 'api/0001_write_image_g1.c' || echo '$(srcdir)/'`api/0001_write_image_g1.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) api/$(DEPDIR)/test_runner-0001_write_image_g1.Tpo api/$(DEPDIR)/test_runner-0001_write_image_g1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='api/0001_write_image_g1.c' object='api/test_runner-0001_write_image_g1.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o api/test_runner-0001_write_image_g1.o `test -f 'api/0001_write_image_g1.c' || echo '$(srcdir)/'`api/0001_write_image_g1.c
+
+api/test_runner-0001_write_image_g1.obj: api/0001_write_image_g1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT api/test_runner-0001_write_image_g1.obj -MD -MP -MF api/$(DEPDIR)/test_runner-0001_write_image_g1.Tpo -c -o api/test_runner-0001_write_image_g1.obj `if test -f 'api/0001_write_image_g1.c'; then $(CYGPATH_W) 'api/0001_write_image_g1.c'; else $(CYGPATH_W) '$(srcdir)/api/0001_write_image_g1.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) api/$(DEPDIR)/test_runner-0001_write_image_g1.Tpo api/$(DEPDIR)/test_runner-0001_write_image_g1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='api/0001_write_image_g1.c' object='api/test_runner-0001_write_image_g1.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o api/test_runner-0001_write_image_g1.obj `if test -f 'api/0001_write_image_g1.c'; then $(CYGPATH_W) 'api/0001_write_image_g1.c'; else $(CYGPATH_W) '$(srcdir)/api/0001_write_image_g1.c'; fi`
+
+api/test_runner-0002_write_image_g2.o: api/0002_write_image_g2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT api/test_runner-0002_write_image_g2.o -MD -MP -MF api/$(DEPDIR)/test_runner-0002_write_image_g2.Tpo -c -o api/test_runner-0002_write_image_g2.o `test -f 'api/0002_write_image_g2.c' || echo '$(srcdir)/'`api/0002_write_image_g2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) api/$(DEPDIR)/test_runner-0002_write_image_g2.Tpo api/$(DEPDIR)/test_runner-0002_write_image_g2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='api/0002_write_image_g2.c' object='api/test_runner-0002_write_image_g2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o api/test_runner-0002_write_image_g2.o `test -f 'api/0002_write_image_g2.c' || echo '$(srcdir)/'`api/0002_write_image_g2.c
+
+api/test_runner-0002_write_image_g2.obj: api/0002_write_image_g2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT api/test_runner-0002_write_image_g2.obj -MD -MP -MF api/$(DEPDIR)/test_runner-0002_write_image_g2.Tpo -c -o api/test_runner-0002_write_image_g2.obj `if test -f 'api/0002_write_image_g2.c'; then $(CYGPATH_W) 'api/0002_write_image_g2.c'; else $(CYGPATH_W) '$(srcdir)/api/0002_write_image_g2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) api/$(DEPDIR)/test_runner-0002_write_image_g2.Tpo api/$(DEPDIR)/test_runner-0002_write_image_g2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='api/0002_write_image_g2.c' object='api/test_runner-0002_write_image_g2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o api/test_runner-0002_write_image_g2.obj `if test -f 'api/0002_write_image_g2.c'; then $(CYGPATH_W) 'api/0002_write_image_g2.c'; else $(CYGPATH_W) '$(srcdir)/api/0002_write_image_g2.c'; fi`
+
+api/test_runner-0003_write_image_g4.o: api/0003_write_image_g4.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT api/test_runner-0003_write_image_g4.o -MD -MP -MF api/$(DEPDIR)/test_runner-0003_write_image_g4.Tpo -c -o api/test_runner-0003_write_image_g4.o `test -f 'api/0003_write_image_g4.c' || echo '$(srcdir)/'`api/0003_write_image_g4.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) api/$(DEPDIR)/test_runner-0003_write_image_g4.Tpo api/$(DEPDIR)/test_runner-0003_write_image_g4.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='api/0003_write_image_g4.c' object='api/test_runner-0003_write_image_g4.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o api/test_runner-0003_write_image_g4.o `test -f 'api/0003_write_image_g4.c' || echo '$(srcdir)/'`api/0003_write_image_g4.c
+
+api/test_runner-0003_write_image_g4.obj: api/0003_write_image_g4.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT api/test_runner-0003_write_image_g4.obj -MD -MP -MF api/$(DEPDIR)/test_runner-0003_write_image_g4.Tpo -c -o api/test_runner-0003_write_image_g4.obj `if test -f 'api/0003_write_image_g4.c'; then $(CYGPATH_W) 'api/0003_write_image_g4.c'; else $(CYGPATH_W) '$(srcdir)/api/0003_write_image_g4.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) api/$(DEPDIR)/test_runner-0003_write_image_g4.Tpo api/$(DEPDIR)/test_runner-0003_write_image_g4.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='api/0003_write_image_g4.c' object='api/test_runner-0003_write_image_g4.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o api/test_runner-0003_write_image_g4.obj `if test -f 'api/0003_write_image_g4.c'; then $(CYGPATH_W) 'api/0003_write_image_g4.c'; else $(CYGPATH_W) '$(srcdir)/api/0003_write_image_g4.c'; fi`
+
+api/test_runner-0004_write_image_g8.o: api/0004_write_image_g8.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT api/test_runner-0004_write_image_g8.o -MD -MP -MF api/$(DEPDIR)/test_runner-0004_write_image_g8.Tpo -c -o api/test_runner-0004_write_image_g8.o `test -f 'api/0004_write_image_g8.c' || echo '$(srcdir)/'`api/0004_write_image_g8.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) api/$(DEPDIR)/test_runner-0004_write_image_g8.Tpo api/$(DEPDIR)/test_runner-0004_write_image_g8.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='api/0004_write_image_g8.c' object='api/test_runner-0004_write_image_g8.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o api/test_runner-0004_write_image_g8.o `test -f 'api/0004_write_image_g8.c' || echo '$(srcdir)/'`api/0004_write_image_g8.c
+
+api/test_runner-0004_write_image_g8.obj: api/0004_write_image_g8.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT api/test_runner-0004_write_image_g8.obj -MD -MP -MF api/$(DEPDIR)/test_runner-0004_write_image_g8.Tpo -c -o api/test_runner-0004_write_image_g8.obj `if test -f 'api/0004_write_image_g8.c'; then $(CYGPATH_W) 'api/0004_write_image_g8.c'; else $(CYGPATH_W) '$(srcdir)/api/0004_write_image_g8.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) api/$(DEPDIR)/test_runner-0004_write_image_g8.Tpo api/$(DEPDIR)/test_runner-0004_write_image_g8.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='api/0004_write_image_g8.c' object='api/test_runner-0004_write_image_g8.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o api/test_runner-0004_write_image_g8.obj `if test -f 'api/0004_write_image_g8.c'; then $(CYGPATH_W) 'api/0004_write_image_g8.c'; else $(CYGPATH_W) '$(srcdir)/api/0004_write_image_g8.c'; fi`
+
+api/test_runner-0005_write_image_pal1.o: api/0005_write_image_pal1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT api/test_runner-0005_write_image_pal1.o -MD -MP -MF api/$(DEPDIR)/test_runner-0005_write_image_pal1.Tpo -c -o api/test_runner-0005_write_image_pal1.o `test -f 'api/0005_write_image_pal1.c' || echo '$(srcdir)/'`api/0005_write_image_pal1.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) api/$(DEPDIR)/test_runner-0005_write_image_pal1.Tpo api/$(DEPDIR)/test_runner-0005_write_image_pal1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='api/0005_write_image_pal1.c' object='api/test_runner-0005_write_image_pal1.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o api/test_runner-0005_write_image_pal1.o `test -f 'api/0005_write_image_pal1.c' || echo '$(srcdir)/'`api/0005_write_image_pal1.c
+
+api/test_runner-0005_write_image_pal1.obj: api/0005_write_image_pal1.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT api/test_runner-0005_write_image_pal1.obj -MD -MP -MF api/$(DEPDIR)/test_runner-0005_write_image_pal1.Tpo -c -o api/test_runner-0005_write_image_pal1.obj `if test -f 'api/0005_write_image_pal1.c'; then $(CYGPATH_W) 'api/0005_write_image_pal1.c'; else $(CYGPATH_W) '$(srcdir)/api/0005_write_image_pal1.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) api/$(DEPDIR)/test_runner-0005_write_image_pal1.Tpo api/$(DEPDIR)/test_runner-0005_write_image_pal1.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='api/0005_write_image_pal1.c' object='api/test_runner-0005_write_image_pal1.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o api/test_runner-0005_write_image_pal1.obj `if test -f 'api/0005_write_image_pal1.c'; then $(CYGPATH_W) 'api/0005_write_image_pal1.c'; else $(CYGPATH_W) '$(srcdir)/api/0005_write_image_pal1.c'; fi`
+
+api/test_runner-0006_write_image_pal2.o: api/0006_write_image_pal2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT api/test_runner-0006_write_image_pal2.o -MD -MP -MF api/$(DEPDIR)/test_runner-0006_write_image_pal2.Tpo -c -o api/test_runner-0006_write_image_pal2.o `test -f 'api/0006_write_image_pal2.c' || echo '$(srcdir)/'`api/0006_write_image_pal2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) api/$(DEPDIR)/test_runner-0006_write_image_pal2.Tpo api/$(DEPDIR)/test_runner-0006_write_image_pal2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='api/0006_write_image_pal2.c' object='api/test_runner-0006_write_image_pal2.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o api/test_runner-0006_write_image_pal2.o `test -f 'api/0006_write_image_pal2.c' || echo '$(srcdir)/'`api/0006_write_image_pal2.c
+
+api/test_runner-0006_write_image_pal2.obj: api/0006_write_image_pal2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT api/test_runner-0006_write_image_pal2.obj -MD -MP -MF api/$(DEPDIR)/test_runner-0006_write_image_pal2.Tpo -c -o api/test_runner-0006_write_image_pal2.obj `if test -f 'api/0006_write_image_pal2.c'; then $(CYGPATH_W) 'api/0006_write_image_pal2.c'; else $(CYGPATH_W) '$(srcdir)/api/0006_write_image_pal2.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) api/$(DEPDIR)/test_runner-0006_write_image_pal2.Tpo api/$(DEPDIR)/test_runner-0006_write_image_pal2.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='api/0006_write_image_pal2.c' object='api/test_runner-0006_write_image_pal2.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o api/test_runner-0006_write_image_pal2.obj `if test -f 'api/0006_write_image_pal2.c'; then $(CYGPATH_W) 'api/0006_write_image_pal2.c'; else $(CYGPATH_W) '$(srcdir)/api/0006_write_image_pal2.c'; fi`
+
+api/test_runner-0007_write_image_pal4.o: api/0007_write_image_pal4.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT api/test_runner-0007_write_image_pal4.o -MD -MP -MF api/$(DEPDIR)/test_runner-0007_write_image_pal4.Tpo -c -o api/test_runner-0007_write_image_pal4.o `test -f 'api/0007_write_image_pal4.c' || echo '$(srcdir)/'`api/0007_write_image_pal4.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) api/$(DEPDIR)/test_runner-0007_write_image_pal4.Tpo api/$(DEPDIR)/test_runner-0007_write_image_pal4.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='api/0007_write_image_pal4.c' object='api/test_runner-0007_write_image_pal4.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o api/test_runner-0007_write_image_pal4.o `test -f 'api/0007_write_image_pal4.c' || echo '$(srcdir)/'`api/0007_write_image_pal4.c
+
+api/test_runner-0007_write_image_pal4.obj: api/0007_write_image_pal4.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT api/test_runner-0007_write_image_pal4.obj -MD -MP -MF api/$(DEPDIR)/test_runner-0007_write_image_pal4.Tpo -c -o api/test_runner-0007_write_image_pal4.obj `if test -f 'api/0007_write_image_pal4.c'; then $(CYGPATH_W) 'api/0007_write_image_pal4.c'; else $(CYGPATH_W) '$(srcdir)/api/0007_write_image_pal4.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) api/$(DEPDIR)/test_runner-0007_write_image_pal4.Tpo api/$(DEPDIR)/test_runner-0007_write_image_pal4.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='api/0007_write_image_pal4.c' object='api/test_runner-0007_write_image_pal4.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o api/test_runner-0007_write_image_pal4.obj `if test -f 'api/0007_write_image_pal4.c'; then $(CYGPATH_W) 'api/0007_write_image_pal4.c'; else $(CYGPATH_W) '$(srcdir)/api/0007_write_image_pal4.c'; fi`
+
+api/test_runner-0008_write_image_pal8.o: api/0008_write_image_pal8.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT api/test_runner-0008_write_image_pal8.o -MD -MP -MF api/$(DEPDIR)/test_runner-0008_write_image_pal8.Tpo -c -o api/test_runner-0008_write_image_pal8.o `test -f 'api/0008_write_image_pal8.c' || echo '$(srcdir)/'`api/0008_write_image_pal8.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) api/$(DEPDIR)/test_runner-0008_write_image_pal8.Tpo api/$(DEPDIR)/test_runner-0008_write_image_pal8.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='api/0008_write_image_pal8.c' object='api/test_runner-0008_write_image_pal8.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o api/test_runner-0008_write_image_pal8.o `test -f 'api/0008_write_image_pal8.c' || echo '$(srcdir)/'`api/0008_write_image_pal8.c
+
+api/test_runner-0008_write_image_pal8.obj: api/0008_write_image_pal8.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT api/test_runner-0008_write_image_pal8.obj -MD -MP -MF api/$(DEPDIR)/test_runner-0008_write_image_pal8.Tpo -c -o api/test_runner-0008_write_image_pal8.obj `if test -f 'api/0008_write_image_pal8.c'; then $(CYGPATH_W) 'api/0008_write_image_pal8.c'; else $(CYGPATH_W) '$(srcdir)/api/0008_write_image_pal8.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) api/$(DEPDIR)/test_runner-0008_write_image_pal8.Tpo api/$(DEPDIR)/test_runner-0008_write_image_pal8.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='api/0008_write_image_pal8.c' object='api/test_runner-0008_write_image_pal8.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o api/test_runner-0008_write_image_pal8.obj `if test -f 'api/0008_write_image_pal8.c'; then $(CYGPATH_W) 'api/0008_write_image_pal8.c'; else $(CYGPATH_W) '$(srcdir)/api/0008_write_image_pal8.c'; fi`
+
+api/test_runner-0009_write_image_rgb.o: api/0009_write_image_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT api/test_runner-0009_write_image_rgb.o -MD -MP -MF api/$(DEPDIR)/test_runner-0009_write_image_rgb.Tpo -c -o api/test_runner-0009_write_image_rgb.o `test -f 'api/0009_write_image_rgb.c' || echo '$(srcdir)/'`api/0009_write_image_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) api/$(DEPDIR)/test_runner-0009_write_image_rgb.Tpo api/$(DEPDIR)/test_runner-0009_write_image_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='api/0009_write_image_rgb.c' object='api/test_runner-0009_write_image_rgb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o api/test_runner-0009_write_image_rgb.o `test -f 'api/0009_write_image_rgb.c' || echo '$(srcdir)/'`api/0009_write_image_rgb.c
+
+api/test_runner-0009_write_image_rgb.obj: api/0009_write_image_rgb.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT api/test_runner-0009_write_image_rgb.obj -MD -MP -MF api/$(DEPDIR)/test_runner-0009_write_image_rgb.Tpo -c -o api/test_runner-0009_write_image_rgb.obj `if test -f 'api/0009_write_image_rgb.c'; then $(CYGPATH_W) 'api/0009_write_image_rgb.c'; else $(CYGPATH_W) '$(srcdir)/api/0009_write_image_rgb.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) api/$(DEPDIR)/test_runner-0009_write_image_rgb.Tpo api/$(DEPDIR)/test_runner-0009_write_image_rgb.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='api/0009_write_image_rgb.c' object='api/test_runner-0009_write_image_rgb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o api/test_runner-0009_write_image_rgb.obj `if test -f 'api/0009_write_image_rgb.c'; then $(CYGPATH_W) 'api/0009_write_image_rgb.c'; else $(CYGPATH_W) '$(srcdir)/api/0009_write_image_rgb.c'; fi`
+
+api/test_runner-0010_write_image_rgba.o: api/0010_write_image_rgba.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT api/test_runner-0010_write_image_rgba.o -MD -MP -MF api/$(DEPDIR)/test_runner-0010_write_image_rgba.Tpo -c -o api/test_runner-0010_write_image_rgba.o `test -f 'api/0010_write_image_rgba.c' || echo '$(srcdir)/'`api/0010_write_image_rgba.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) api/$(DEPDIR)/test_runner-0010_write_image_rgba.Tpo api/$(DEPDIR)/test_runner-0010_write_image_rgba.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='api/0010_write_image_rgba.c' object='api/test_runner-0010_write_image_rgba.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o api/test_runner-0010_write_image_rgba.o `test -f 'api/0010_write_image_rgba.c' || echo '$(srcdir)/'`api/0010_write_image_rgba.c
+
+api/test_runner-0010_write_image_rgba.obj: api/0010_write_image_rgba.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT api/test_runner-0010_write_image_rgba.obj -MD -MP -MF api/$(DEPDIR)/test_runner-0010_write_image_rgba.Tpo -c -o api/test_runner-0010_write_image_rgba.obj `if test -f 'api/0010_write_image_rgba.c'; then $(CYGPATH_W) 'api/0010_write_image_rgba.c'; else $(CYGPATH_W) '$(srcdir)/api/0010_write_image_rgba.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) api/$(DEPDIR)/test_runner-0010_write_image_rgba.Tpo api/$(DEPDIR)/test_runner-0010_write_image_rgba.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='api/0010_write_image_rgba.c' object='api/test_runner-0010_write_image_rgba.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o api/test_runner-0010_write_image_rgba.obj `if test -f 'api/0010_write_image_rgba.c'; then $(CYGPATH_W) 'api/0010_write_image_rgba.c'; else $(CYGPATH_W) '$(srcdir)/api/0010_write_image_rgba.c'; fi`
 
 cli/test_runner-0029_cli_token_is_known_option.o: cli/0029_cli_token_is_known_option.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT cli/test_runner-0029_cli_token_is_known_option.o -MD -MP -MF cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Tpo -c -o cli/test_runner-0029_cli_token_is_known_option.o `test -f 'cli/0029_cli_token_is_known_option.c' || echo '$(srcdir)/'`cli/0029_cli_token_is_known_option.c
@@ -2423,6 +2646,8 @@ distclean-generic:
 	-$(am__rm_f) $(top_builddir)/converters/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/gdk-pixbuf-loader/$(am__dirstamp)
+	-$(am__rm_f) api/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) api/$(am__dirstamp)
 	-$(am__rm_f) cli/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) cli/$(am__dirstamp)
 	-$(am__rm_f) filter/$(DEPDIR)/$(am__dirstamp)
@@ -2450,6 +2675,16 @@ distclean: distclean-am
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po
 	-rm -f ./$(DEPDIR)/test_runner-test_runner.Po
+	-rm -f api/$(DEPDIR)/test_runner-0001_write_image_g1.Po
+	-rm -f api/$(DEPDIR)/test_runner-0002_write_image_g2.Po
+	-rm -f api/$(DEPDIR)/test_runner-0003_write_image_g4.Po
+	-rm -f api/$(DEPDIR)/test_runner-0004_write_image_g8.Po
+	-rm -f api/$(DEPDIR)/test_runner-0005_write_image_pal1.Po
+	-rm -f api/$(DEPDIR)/test_runner-0006_write_image_pal2.Po
+	-rm -f api/$(DEPDIR)/test_runner-0007_write_image_pal4.Po
+	-rm -f api/$(DEPDIR)/test_runner-0008_write_image_pal8.Po
+	-rm -f api/$(DEPDIR)/test_runner-0009_write_image_rgb.Po
+	-rm -f api/$(DEPDIR)/test_runner-0010_write_image_rgba.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0031_cli_guard_missing_argument.Po
@@ -2530,6 +2765,16 @@ maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po
 	-rm -f ./$(DEPDIR)/test_runner-test_runner.Po
+	-rm -f api/$(DEPDIR)/test_runner-0001_write_image_g1.Po
+	-rm -f api/$(DEPDIR)/test_runner-0002_write_image_g2.Po
+	-rm -f api/$(DEPDIR)/test_runner-0003_write_image_g4.Po
+	-rm -f api/$(DEPDIR)/test_runner-0004_write_image_g8.Po
+	-rm -f api/$(DEPDIR)/test_runner-0005_write_image_pal1.Po
+	-rm -f api/$(DEPDIR)/test_runner-0006_write_image_pal2.Po
+	-rm -f api/$(DEPDIR)/test_runner-0007_write_image_pal4.Po
+	-rm -f api/$(DEPDIR)/test_runner-0008_write_image_pal8.Po
+	-rm -f api/$(DEPDIR)/test_runner-0009_write_image_rgb.Po
+	-rm -f api/$(DEPDIR)/test_runner-0010_write_image_rgba.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0031_cli_guard_missing_argument.Po
