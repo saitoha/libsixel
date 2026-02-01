@@ -53,7 +53,7 @@ locate_wheel() {
         tap_skip_all "python/dist artifacts are unavailable"
     fi
 
-    wheel_path=$(find "${wheel_dir}" -maxdepth 1 -type f -name 'libsixel_python-*.whl' \
+    wheel_path=$(find "${wheel_dir}" -maxdepth 1 -type f -name 'libsixel_wheel-*.whl' \
         | head -n 1 || true)
     if [ -z "${wheel_path}" ]; then
         tap_skip_all "python wheel package is missing under python/dist"
