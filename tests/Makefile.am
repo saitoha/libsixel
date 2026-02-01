@@ -618,6 +618,21 @@ AM_LOG_DRIVER_FLAGS = --timeout=$(AM_TEST_TIMEOUT)
 # LOG_COMPILE; the drivers consume timeout hints themselves.
 AM_LOG_FLAGS =
 
+# Override check-TESTS to avoid nested single quotes in automake helpers.
+check-TESTS: $(check_PROGRAMS)
+	@$(am__rm_f) $(RECHECK_LOGS)
+	@$(am__rm_f) $(RECHECK_LOGS:.log=.trs)
+	@$(am__rm_f) $(TEST_SUITE_LOG)
+	@set +e; \
+	log_list=""; \
+	for i in $(TEST_LOGS); do \
+	    log_list="$$log_list $$i"; \
+	done; \
+	log_list=`echo $$log_list`; \
+	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) \
+	    TEST_LOGS="$$log_list"; \
+	exit $$?;
+
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/grayscale.jpg \
     data/inputs/formats/palette.png \

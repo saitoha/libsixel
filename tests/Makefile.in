@@ -2319,16 +2319,6 @@ echo "information.  Thanks.";                                                \
 	  echo "$$col$$br$$std";					\
 	fi;								\
 	$$success || exit 1
-
-check-TESTS: $(check_PROGRAMS)
-	@$(am__rm_f) $(RECHECK_LOGS)
-	@$(am__rm_f) $(RECHECK_LOGS:.log=.trs)
-	@$(am__rm_f) $(TEST_SUITE_LOG)
-	@set +e; $(am__set_TESTS_bases); \
-	log_list=`for i in $$bases; do echo $$i.log; done`; \
-	log_list=`echo $$log_list`; \
-	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) TEST_LOGS="$$log_list"; \
-	exit $$?;
 recheck: all $(check_PROGRAMS)
 	@$(am__rm_f) $(TEST_SUITE_LOG)
 	@set +e; $(am__set_TESTS_bases); \
@@ -2614,6 +2604,21 @@ uninstall-am:
 @WANT_AMALGAMATED_TOOLS_TRUE@$(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/converters completion_embed.h
 @WANT_AMALGAMATED_TOOLS_TRUE@	$(AM_V_GEN)$(MAKE) -C $(top_builddir)/amalgamation sixel.c
+
+# Override check-TESTS to avoid nested single quotes in automake helpers.
+check-TESTS: $(check_PROGRAMS)
+	@$(am__rm_f) $(RECHECK_LOGS)
+	@$(am__rm_f) $(RECHECK_LOGS:.log=.trs)
+	@$(am__rm_f) $(TEST_SUITE_LOG)
+	@set +e; \
+	log_list=""; \
+	for i in $(TEST_LOGS); do \
+	    log_list="$$log_list $$i"; \
+	done; \
+	log_list=`echo $$log_list`; \
+	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) \
+	    TEST_LOGS="$$log_list"; \
+	exit $$?;
 
 # Avoid deleting in-tree test scripts when "make clean" is invoked.
 # Only remove copied test files in an out-of-tree build so that the
