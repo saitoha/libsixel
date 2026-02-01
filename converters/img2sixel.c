@@ -1439,8 +1439,13 @@ img2sixel_exit_code(SIXELSTATUS status)
     }
 }
 
+/*
+ * img2sixel_main lets other binaries reuse the CLI parser and execution
+ * flow. The usual main() remains available unless IMG2SIXEL_NO_MAIN is
+ * defined for specialized harness builds.
+ */
 int
-main(int argc, char *argv[])
+img2sixel_main(int argc, char *argv[])
 {
     SIXELSTATUS status = SIXEL_FALSE;
     int n;
@@ -1676,6 +1681,15 @@ end:
     exit_code = img2sixel_exit_code(status);
     return exit_code;
 }
+
+#ifndef IMG2SIXEL_NO_MAIN
+/* Keep the normal CLI entry point for standard builds. */
+int
+main(int argc, char *argv[])
+{
+    return img2sixel_main(argc, argv);
+}
+#endif
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

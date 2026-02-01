@@ -103,6 +103,7 @@ completion_embed.h: \
 
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
+noinst_PROGRAMS += img2sixel-options-fuzz
 if WANT_AMALGAMATED_TOOLS
 img2sixel_SOURCES =
 nodist_img2sixel_SOURCES = $(AMALGAMATION_SIXEL)
@@ -140,6 +141,36 @@ endif
 dist_man_MANS += $(srcdir)/img2sixel.1
 dist_bashcompletion_DATA += $(srcdir)/shell-completion/bash/img2sixel
 dist_zshcompletion_DATA += $(srcdir)/shell-completion/zsh/_img2sixel
+img2sixel_options_fuzz_SOURCES = $(srcdir)/img2sixel-options-fuzz.c \
+                    $(srcdir)/img2sixel.c \
+                    $(srcdir)/completion_utils.c \
+                    $(srcdir)/completion_utils.h \
+                    $(srcdir)/path.c \
+                    $(srcdir)/path.h \
+                    $(srcdir)/cli.c \
+                    $(srcdir)/cli.h \
+                    $(srcdir)/malloc_stub.c \
+                    $(srcdir)/malloc_stub.h \
+                    $(srcdir)/getopt_stub.h \
+                    $(srcdir)/aborttrace.c \
+                    $(srcdir)/aborttrace.h
+nodist_img2sixel_options_fuzz_SOURCES = completion_embed.h
+img2sixel_options_fuzz_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
+img2sixel_options_fuzz_LDFLAGS = $(MAYBE_COVERAGE)
+if WANT_AMALGAMATED_TOOLS
+img2sixel_options_fuzz_CPPFLAGS = $(AMALGAMATION_TOOL_CPPFLAGS) \
+        -DBUILD_IMG2SIXEL -DHAVE_COMPLETION_EMBED_H -DIMG2SIXEL_NO_MAIN \
+        -I$(top_builddir)/include/
+else
+img2sixel_options_fuzz_CPPFLAGS = -DBUILD_IMG2SIXEL \
+        -DHAVE_COMPLETION_EMBED_H -DIMG2SIXEL_NO_MAIN \
+        -I$(top_builddir)/include/ \
+        $(AM_CPPFLAGS)
+endif
+img2sixel_options_fuzz_LDADD = $(top_builddir)/src/libsixel.la
+if HAVE_ABORT_TRACE
+img2sixel_options_fuzz_LDADD += $(ABORTTRACE_LIBS)
+endif
 endif
 
 if WANT_SIXEL2PNG

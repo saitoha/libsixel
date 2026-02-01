@@ -92,18 +92,20 @@ build_triplet = @build@
 host_triplet = @host@
 @WANT_AMALGAMATED_TOOLS_TRUE@am__append_1 = $(AMALGAMATION_SIXEL)
 bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
+noinst_PROGRAMS = $(am__EXEEXT_3)
 @AMALGAMATION_NEEDS_OBJC_TRUE@am__append_2 = -x objective-c
 @WANT_IMG2SIXEL_TRUE@am__append_3 = img2sixel
 @HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@am__append_4 = $(ABORTTRACE_LIBS)
 @WANT_IMG2SIXEL_TRUE@am__append_5 = $(srcdir)/img2sixel.1
 @WANT_IMG2SIXEL_TRUE@am__append_6 = $(srcdir)/shell-completion/bash/img2sixel
 @WANT_IMG2SIXEL_TRUE@am__append_7 = $(srcdir)/shell-completion/zsh/_img2sixel
-@WANT_SIXEL2PNG_TRUE@am__append_8 = sixel2png
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_9 = $(AMALGAMATION_TOOL_CPPFLAGS) -DBUILD_SIXEL2PNG
-@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_10 = -DBUILD_SIXEL2PNG -I$(top_builddir)/include/
-@HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_11 = $(ABORTTRACE_LIBS)
-@WANT_SIXEL2PNG_TRUE@am__append_12 = $(srcdir)/sixel2png.1
-@WITH_SHEBANG_FILE_TRUE@am__append_13 = $(SIXEL_SHEBANG_STAMP)
+@HAVE_ABORT_TRACE_TRUE@@WANT_IMG2SIXEL_TRUE@am__append_8 = $(ABORTTRACE_LIBS)
+@WANT_SIXEL2PNG_TRUE@am__append_9 = sixel2png
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@am__append_10 = $(AMALGAMATION_TOOL_CPPFLAGS) -DBUILD_SIXEL2PNG
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_11 = -DBUILD_SIXEL2PNG -I$(top_builddir)/include/
+@HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__append_12 = $(ABORTTRACE_LIBS)
+@WANT_SIXEL2PNG_TRUE@am__append_13 = $(srcdir)/sixel2png.1
+@WITH_SHEBANG_FILE_TRUE@am__append_14 = $(SIXEL_SHEBANG_STAMP)
 subdir = converters
 SUBDIRS =
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -126,10 +128,11 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 @WANT_IMG2SIXEL_TRUE@am__EXEEXT_1 = img2sixel$(EXEEXT)
 @WANT_SIXEL2PNG_TRUE@am__EXEEXT_2 = sixel2png$(EXEEXT)
+@WANT_IMG2SIXEL_TRUE@am__EXEEXT_3 = img2sixel-options-fuzz$(EXEEXT)
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" \
 	"$(DESTDIR)$(bashcompletiondir)" \
 	"$(DESTDIR)$(zshcompletiondir)"
-PROGRAMS = $(bin_PROGRAMS)
+PROGRAMS = $(bin_PROGRAMS) $(noinst_PROGRAMS)
 am__img2sixel_SOURCES_DIST = $(srcdir)/img2sixel.c \
 	$(srcdir)/completion_utils.c $(srcdir)/completion_utils.h \
 	$(srcdir)/path.c $(srcdir)/path.h $(srcdir)/cli.c \
@@ -167,6 +170,31 @@ am__v_lt_1 =
 img2sixel_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(img2sixel_CFLAGS) \
 	$(CFLAGS) $(img2sixel_LDFLAGS) $(LDFLAGS) -o $@
+am__img2sixel_options_fuzz_SOURCES_DIST =  \
+	$(srcdir)/img2sixel-options-fuzz.c $(srcdir)/img2sixel.c \
+	$(srcdir)/completion_utils.c $(srcdir)/completion_utils.h \
+	$(srcdir)/path.c $(srcdir)/path.h $(srcdir)/cli.c \
+	$(srcdir)/cli.h $(srcdir)/malloc_stub.c \
+	$(srcdir)/malloc_stub.h $(srcdir)/getopt_stub.h \
+	$(srcdir)/aborttrace.c $(srcdir)/aborttrace.h
+@WANT_IMG2SIXEL_TRUE@am_img2sixel_options_fuzz_OBJECTS = img2sixel_options_fuzz-img2sixel-options-fuzz.$(OBJEXT) \
+@WANT_IMG2SIXEL_TRUE@	img2sixel_options_fuzz-img2sixel.$(OBJEXT) \
+@WANT_IMG2SIXEL_TRUE@	img2sixel_options_fuzz-completion_utils.$(OBJEXT) \
+@WANT_IMG2SIXEL_TRUE@	img2sixel_options_fuzz-path.$(OBJEXT) \
+@WANT_IMG2SIXEL_TRUE@	img2sixel_options_fuzz-cli.$(OBJEXT) \
+@WANT_IMG2SIXEL_TRUE@	img2sixel_options_fuzz-malloc_stub.$(OBJEXT) \
+@WANT_IMG2SIXEL_TRUE@	img2sixel_options_fuzz-aborttrace.$(OBJEXT)
+nodist_img2sixel_options_fuzz_OBJECTS =
+img2sixel_options_fuzz_OBJECTS = $(am_img2sixel_options_fuzz_OBJECTS) \
+	$(nodist_img2sixel_options_fuzz_OBJECTS)
+@HAVE_ABORT_TRACE_TRUE@@WANT_IMG2SIXEL_TRUE@am__DEPENDENCIES_4 = $(am__DEPENDENCIES_1)
+@WANT_IMG2SIXEL_TRUE@img2sixel_options_fuzz_DEPENDENCIES =  \
+@WANT_IMG2SIXEL_TRUE@	$(top_builddir)/src/libsixel.la \
+@WANT_IMG2SIXEL_TRUE@	$(am__DEPENDENCIES_4)
+img2sixel_options_fuzz_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) \
+	$(img2sixel_options_fuzz_LDFLAGS) $(LDFLAGS) -o $@
 am__sixel2png_SOURCES_DIST = $(srcdir)/sixel2png.c $(srcdir)/cli.c \
 	$(srcdir)/cli.h $(srcdir)/malloc_stub.c \
 	$(srcdir)/malloc_stub.h $(srcdir)/getopt_stub.h \
@@ -180,11 +208,11 @@ am__objects_2 =  \
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@nodist_sixel2png_OBJECTS = $(am__objects_2)
 sixel2png_OBJECTS = $(am_sixel2png_OBJECTS) \
 	$(nodist_sixel2png_OBJECTS)
-@HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__DEPENDENCIES_4 = $(am__DEPENDENCIES_1)
+@HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@am__DEPENDENCIES_5 = $(am__DEPENDENCIES_1)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@sixel2png_DEPENDENCIES = $(top_builddir)/src/libsixel.la \
-@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(am__DEPENDENCIES_4)
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(am__DEPENDENCIES_5)
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@sixel2png_DEPENDENCIES = $(am__DEPENDENCIES_3) \
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@	$(am__DEPENDENCIES_4)
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@	$(am__DEPENDENCIES_5)
 sixel2png_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(sixel2png_CFLAGS) \
 	$(CFLAGS) $(sixel2png_LDFLAGS) $(LDFLAGS) -o $@
@@ -212,6 +240,13 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/img2sixel-img2sixel.Po \
 	./$(DEPDIR)/img2sixel-malloc_stub.Po \
 	./$(DEPDIR)/img2sixel-path.Po \
+	./$(DEPDIR)/img2sixel_options_fuzz-aborttrace.Po \
+	./$(DEPDIR)/img2sixel_options_fuzz-cli.Po \
+	./$(DEPDIR)/img2sixel_options_fuzz-completion_utils.Po \
+	./$(DEPDIR)/img2sixel_options_fuzz-img2sixel-options-fuzz.Po \
+	./$(DEPDIR)/img2sixel_options_fuzz-img2sixel.Po \
+	./$(DEPDIR)/img2sixel_options_fuzz-malloc_stub.Po \
+	./$(DEPDIR)/img2sixel_options_fuzz-path.Po \
 	./$(DEPDIR)/sixel2png-aborttrace.Po \
 	./$(DEPDIR)/sixel2png-cli.Po \
 	./$(DEPDIR)/sixel2png-malloc_stub.Po \
@@ -236,8 +271,11 @@ am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
 SOURCES = $(img2sixel_SOURCES) $(nodist_img2sixel_SOURCES) \
-	$(sixel2png_SOURCES) $(nodist_sixel2png_SOURCES)
+	$(img2sixel_options_fuzz_SOURCES) \
+	$(nodist_img2sixel_options_fuzz_SOURCES) $(sixel2png_SOURCES) \
+	$(nodist_sixel2png_SOURCES)
 DIST_SOURCES = $(am__img2sixel_SOURCES_DIST) \
+	$(am__img2sixel_options_fuzz_SOURCES_DIST) \
 	$(am__sixel2png_SOURCES_DIST)
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
 	ctags-recursive dvi-recursive html-recursive info-recursive \
@@ -546,7 +584,7 @@ DIST_SUBDIRS = $(SUBDIRS)
 BUILT_SOURCES = completion_embed.h $(am__append_1)
 AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 EXTRA_DIST = $(srcdir)/aborttrace.c $(srcdir)/aborttrace.h
-dist_man_MANS = $(am__append_5) $(am__append_12)
+dist_man_MANS = $(am__append_5) $(am__append_13)
 dist_bashcompletion_DATA = $(am__append_6)
 dist_zshcompletion_DATA = $(am__append_7)
 @CFLAGS_HAVE_COVERAGE_TRUE@MAYBE_COVERAGE = --coverage
@@ -576,7 +614,7 @@ CLEANFILES = *.gcno *.gcda *.gcov $(builddir)/tmp/*.png \
 	$(builddir)/tmp/*.sixel $(builddir)/tmp/*.txt \
 	$(builddir)/tmp/*.pipe $(builddir)/tmp/server.py \
 	$(builddir)/tmp/server.key $(builddir)/tmp/server.crt \
-	$(builddir)/tmp/testfile completion_embed.h $(am__append_13)
+	$(builddir)/tmp/testfile completion_embed.h $(am__append_14)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = $(srcdir)/img2sixel.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/completion_utils.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/completion_utils.h \
@@ -610,8 +648,38 @@ CLEANFILES = *.gcno *.gcda *.gcov $(builddir)/tmp/*.png \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@	$(am__append_4)
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@img2sixel_LDADD = $(AMALGAMATION_TOOL_LIBS) \
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@	$(am__append_4)
+@WANT_IMG2SIXEL_TRUE@img2sixel_options_fuzz_SOURCES = $(srcdir)/img2sixel-options-fuzz.c \
+@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/img2sixel.c \
+@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/completion_utils.c \
+@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/completion_utils.h \
+@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/path.c \
+@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/path.h \
+@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/cli.c \
+@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/cli.h \
+@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/malloc_stub.c \
+@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/malloc_stub.h \
+@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/getopt_stub.h \
+@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/aborttrace.c \
+@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/aborttrace.h
+
+@WANT_IMG2SIXEL_TRUE@nodist_img2sixel_options_fuzz_SOURCES = completion_embed.h
+@WANT_IMG2SIXEL_TRUE@img2sixel_options_fuzz_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
+@WANT_IMG2SIXEL_TRUE@img2sixel_options_fuzz_LDFLAGS = $(MAYBE_COVERAGE)
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@img2sixel_options_fuzz_CPPFLAGS = -DBUILD_IMG2SIXEL \
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@        -DHAVE_COMPLETION_EMBED_H -DIMG2SIXEL_NO_MAIN \
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@        -I$(top_builddir)/include/ \
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@        $(AM_CPPFLAGS)
+
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@img2sixel_options_fuzz_CPPFLAGS = $(AMALGAMATION_TOOL_CPPFLAGS) \
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@        -DBUILD_IMG2SIXEL -DHAVE_COMPLETION_EMBED_H \
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@        -DIMG2SIXEL_NO_MAIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@        -I$(top_builddir)/include/
+
+@WANT_IMG2SIXEL_TRUE@img2sixel_options_fuzz_LDADD =  \
+@WANT_IMG2SIXEL_TRUE@	$(top_builddir)/src/libsixel.la \
+@WANT_IMG2SIXEL_TRUE@	$(am__append_8)
 @WANT_SIXEL2PNG_TRUE@sixel2png_CPPFLAGS = $(AM_CPPFLAGS) \
-@WANT_SIXEL2PNG_TRUE@	$(am__append_9) $(am__append_10)
+@WANT_SIXEL2PNG_TRUE@	$(am__append_10) $(am__append_11)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@sixel2png_SOURCES = $(srcdir)/sixel2png.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@                    $(srcdir)/cli.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@                    $(srcdir)/cli.h \
@@ -628,9 +696,9 @@ CLEANFILES = *.gcno *.gcda *.gcov $(builddir)/tmp/*.png \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@sixel2png_LDFLAGS = $(MAYBE_COVERAGE)
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@sixel2png_LDFLAGS = $(MAYBE_COVERAGE)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(top_builddir)/src/libsixel.la \
-@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(am__append_11)
+@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_SIXEL2PNG_TRUE@	$(am__append_12)
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@sixel2png_LDADD = $(AMALGAMATION_TOOL_LIBS) \
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@	$(am__append_11)
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_SIXEL2PNG_TRUE@	$(am__append_12)
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_TARGETS = $(bin_PROGRAMS)
 @WITH_SHEBANG_FILE_TRUE@SIXEL_SHEBANG_STAMP = converters-shebang.stamp
 all: $(BUILT_SOURCES)
@@ -724,6 +792,10 @@ $(top_builddir)/amalgamation/img2sixel-sixel.$(OBJEXT):  \
 img2sixel$(EXEEXT): $(img2sixel_OBJECTS) $(img2sixel_DEPENDENCIES) $(EXTRA_img2sixel_DEPENDENCIES) 
 	@rm -f img2sixel$(EXEEXT)
 	$(AM_V_CCLD)$(img2sixel_LINK) $(img2sixel_OBJECTS) $(img2sixel_LDADD) $(LIBS)
+
+img2sixel-options-fuzz$(EXEEXT): $(img2sixel_options_fuzz_OBJECTS) $(img2sixel_options_fuzz_DEPENDENCIES) $(EXTRA_img2sixel_options_fuzz_DEPENDENCIES) 
+	@rm -f img2sixel-options-fuzz$(EXEEXT)
+	$(AM_V_CCLD)$(img2sixel_options_fuzz_LINK) $(img2sixel_options_fuzz_OBJECTS) $(img2sixel_options_fuzz_LDADD) $(LIBS)
 $(top_builddir)/amalgamation/sixel2png-sixel.$(OBJEXT):  \
 	$(top_builddir)/amalgamation/$(am__dirstamp) \
 	$(top_builddir)/amalgamation/$(DEPDIR)/$(am__dirstamp)
@@ -747,6 +819,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-img2sixel.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-malloc_stub.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel-path.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel_options_fuzz-aborttrace.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel_options_fuzz-cli.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel_options_fuzz-completion_utils.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel_options_fuzz-img2sixel-options-fuzz.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel_options_fuzz-img2sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel_options_fuzz-malloc_stub.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/img2sixel_options_fuzz-path.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png-aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png-cli.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sixel2png-malloc_stub.Po@am__quote@ # am--include-marker
@@ -879,6 +958,104 @@ $(top_builddir)/amalgamation/img2sixel-sixel.obj: $(top_builddir)/amalgamation/s
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/amalgamation/sixel.c' object='$(top_builddir)/amalgamation/img2sixel-sixel.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_CPPFLAGS) $(CPPFLAGS) $(img2sixel_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/amalgamation/img2sixel-sixel.obj `if test -f '$(top_builddir)/amalgamation/sixel.c'; then $(CYGPATH_W) '$(top_builddir)/amalgamation/sixel.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/amalgamation/sixel.c'; fi`
+
+img2sixel_options_fuzz-img2sixel-options-fuzz.o: img2sixel-options-fuzz.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -MT img2sixel_options_fuzz-img2sixel-options-fuzz.o -MD -MP -MF $(DEPDIR)/img2sixel_options_fuzz-img2sixel-options-fuzz.Tpo -c -o img2sixel_options_fuzz-img2sixel-options-fuzz.o `test -f 'img2sixel-options-fuzz.c' || echo '$(srcdir)/'`img2sixel-options-fuzz.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel_options_fuzz-img2sixel-options-fuzz.Tpo $(DEPDIR)/img2sixel_options_fuzz-img2sixel-options-fuzz.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='img2sixel-options-fuzz.c' object='img2sixel_options_fuzz-img2sixel-options-fuzz.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -c -o img2sixel_options_fuzz-img2sixel-options-fuzz.o `test -f 'img2sixel-options-fuzz.c' || echo '$(srcdir)/'`img2sixel-options-fuzz.c
+
+img2sixel_options_fuzz-img2sixel-options-fuzz.obj: img2sixel-options-fuzz.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -MT img2sixel_options_fuzz-img2sixel-options-fuzz.obj -MD -MP -MF $(DEPDIR)/img2sixel_options_fuzz-img2sixel-options-fuzz.Tpo -c -o img2sixel_options_fuzz-img2sixel-options-fuzz.obj `if test -f 'img2sixel-options-fuzz.c'; then $(CYGPATH_W) 'img2sixel-options-fuzz.c'; else $(CYGPATH_W) '$(srcdir)/img2sixel-options-fuzz.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel_options_fuzz-img2sixel-options-fuzz.Tpo $(DEPDIR)/img2sixel_options_fuzz-img2sixel-options-fuzz.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='img2sixel-options-fuzz.c' object='img2sixel_options_fuzz-img2sixel-options-fuzz.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -c -o img2sixel_options_fuzz-img2sixel-options-fuzz.obj `if test -f 'img2sixel-options-fuzz.c'; then $(CYGPATH_W) 'img2sixel-options-fuzz.c'; else $(CYGPATH_W) '$(srcdir)/img2sixel-options-fuzz.c'; fi`
+
+img2sixel_options_fuzz-img2sixel.o: img2sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -MT img2sixel_options_fuzz-img2sixel.o -MD -MP -MF $(DEPDIR)/img2sixel_options_fuzz-img2sixel.Tpo -c -o img2sixel_options_fuzz-img2sixel.o `test -f 'img2sixel.c' || echo '$(srcdir)/'`img2sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel_options_fuzz-img2sixel.Tpo $(DEPDIR)/img2sixel_options_fuzz-img2sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='img2sixel.c' object='img2sixel_options_fuzz-img2sixel.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -c -o img2sixel_options_fuzz-img2sixel.o `test -f 'img2sixel.c' || echo '$(srcdir)/'`img2sixel.c
+
+img2sixel_options_fuzz-img2sixel.obj: img2sixel.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -MT img2sixel_options_fuzz-img2sixel.obj -MD -MP -MF $(DEPDIR)/img2sixel_options_fuzz-img2sixel.Tpo -c -o img2sixel_options_fuzz-img2sixel.obj `if test -f 'img2sixel.c'; then $(CYGPATH_W) 'img2sixel.c'; else $(CYGPATH_W) '$(srcdir)/img2sixel.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel_options_fuzz-img2sixel.Tpo $(DEPDIR)/img2sixel_options_fuzz-img2sixel.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='img2sixel.c' object='img2sixel_options_fuzz-img2sixel.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -c -o img2sixel_options_fuzz-img2sixel.obj `if test -f 'img2sixel.c'; then $(CYGPATH_W) 'img2sixel.c'; else $(CYGPATH_W) '$(srcdir)/img2sixel.c'; fi`
+
+img2sixel_options_fuzz-completion_utils.o: completion_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -MT img2sixel_options_fuzz-completion_utils.o -MD -MP -MF $(DEPDIR)/img2sixel_options_fuzz-completion_utils.Tpo -c -o img2sixel_options_fuzz-completion_utils.o `test -f 'completion_utils.c' || echo '$(srcdir)/'`completion_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel_options_fuzz-completion_utils.Tpo $(DEPDIR)/img2sixel_options_fuzz-completion_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='completion_utils.c' object='img2sixel_options_fuzz-completion_utils.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -c -o img2sixel_options_fuzz-completion_utils.o `test -f 'completion_utils.c' || echo '$(srcdir)/'`completion_utils.c
+
+img2sixel_options_fuzz-completion_utils.obj: completion_utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -MT img2sixel_options_fuzz-completion_utils.obj -MD -MP -MF $(DEPDIR)/img2sixel_options_fuzz-completion_utils.Tpo -c -o img2sixel_options_fuzz-completion_utils.obj `if test -f 'completion_utils.c'; then $(CYGPATH_W) 'completion_utils.c'; else $(CYGPATH_W) '$(srcdir)/completion_utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel_options_fuzz-completion_utils.Tpo $(DEPDIR)/img2sixel_options_fuzz-completion_utils.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='completion_utils.c' object='img2sixel_options_fuzz-completion_utils.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -c -o img2sixel_options_fuzz-completion_utils.obj `if test -f 'completion_utils.c'; then $(CYGPATH_W) 'completion_utils.c'; else $(CYGPATH_W) '$(srcdir)/completion_utils.c'; fi`
+
+img2sixel_options_fuzz-path.o: path.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -MT img2sixel_options_fuzz-path.o -MD -MP -MF $(DEPDIR)/img2sixel_options_fuzz-path.Tpo -c -o img2sixel_options_fuzz-path.o `test -f 'path.c' || echo '$(srcdir)/'`path.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel_options_fuzz-path.Tpo $(DEPDIR)/img2sixel_options_fuzz-path.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='path.c' object='img2sixel_options_fuzz-path.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -c -o img2sixel_options_fuzz-path.o `test -f 'path.c' || echo '$(srcdir)/'`path.c
+
+img2sixel_options_fuzz-path.obj: path.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -MT img2sixel_options_fuzz-path.obj -MD -MP -MF $(DEPDIR)/img2sixel_options_fuzz-path.Tpo -c -o img2sixel_options_fuzz-path.obj `if test -f 'path.c'; then $(CYGPATH_W) 'path.c'; else $(CYGPATH_W) '$(srcdir)/path.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel_options_fuzz-path.Tpo $(DEPDIR)/img2sixel_options_fuzz-path.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='path.c' object='img2sixel_options_fuzz-path.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -c -o img2sixel_options_fuzz-path.obj `if test -f 'path.c'; then $(CYGPATH_W) 'path.c'; else $(CYGPATH_W) '$(srcdir)/path.c'; fi`
+
+img2sixel_options_fuzz-cli.o: cli.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -MT img2sixel_options_fuzz-cli.o -MD -MP -MF $(DEPDIR)/img2sixel_options_fuzz-cli.Tpo -c -o img2sixel_options_fuzz-cli.o `test -f 'cli.c' || echo '$(srcdir)/'`cli.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel_options_fuzz-cli.Tpo $(DEPDIR)/img2sixel_options_fuzz-cli.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli.c' object='img2sixel_options_fuzz-cli.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -c -o img2sixel_options_fuzz-cli.o `test -f 'cli.c' || echo '$(srcdir)/'`cli.c
+
+img2sixel_options_fuzz-cli.obj: cli.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -MT img2sixel_options_fuzz-cli.obj -MD -MP -MF $(DEPDIR)/img2sixel_options_fuzz-cli.Tpo -c -o img2sixel_options_fuzz-cli.obj `if test -f 'cli.c'; then $(CYGPATH_W) 'cli.c'; else $(CYGPATH_W) '$(srcdir)/cli.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel_options_fuzz-cli.Tpo $(DEPDIR)/img2sixel_options_fuzz-cli.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='cli.c' object='img2sixel_options_fuzz-cli.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -c -o img2sixel_options_fuzz-cli.obj `if test -f 'cli.c'; then $(CYGPATH_W) 'cli.c'; else $(CYGPATH_W) '$(srcdir)/cli.c'; fi`
+
+img2sixel_options_fuzz-malloc_stub.o: malloc_stub.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -MT img2sixel_options_fuzz-malloc_stub.o -MD -MP -MF $(DEPDIR)/img2sixel_options_fuzz-malloc_stub.Tpo -c -o img2sixel_options_fuzz-malloc_stub.o `test -f 'malloc_stub.c' || echo '$(srcdir)/'`malloc_stub.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel_options_fuzz-malloc_stub.Tpo $(DEPDIR)/img2sixel_options_fuzz-malloc_stub.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='malloc_stub.c' object='img2sixel_options_fuzz-malloc_stub.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -c -o img2sixel_options_fuzz-malloc_stub.o `test -f 'malloc_stub.c' || echo '$(srcdir)/'`malloc_stub.c
+
+img2sixel_options_fuzz-malloc_stub.obj: malloc_stub.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -MT img2sixel_options_fuzz-malloc_stub.obj -MD -MP -MF $(DEPDIR)/img2sixel_options_fuzz-malloc_stub.Tpo -c -o img2sixel_options_fuzz-malloc_stub.obj `if test -f 'malloc_stub.c'; then $(CYGPATH_W) 'malloc_stub.c'; else $(CYGPATH_W) '$(srcdir)/malloc_stub.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel_options_fuzz-malloc_stub.Tpo $(DEPDIR)/img2sixel_options_fuzz-malloc_stub.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='malloc_stub.c' object='img2sixel_options_fuzz-malloc_stub.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -c -o img2sixel_options_fuzz-malloc_stub.obj `if test -f 'malloc_stub.c'; then $(CYGPATH_W) 'malloc_stub.c'; else $(CYGPATH_W) '$(srcdir)/malloc_stub.c'; fi`
+
+img2sixel_options_fuzz-aborttrace.o: aborttrace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -MT img2sixel_options_fuzz-aborttrace.o -MD -MP -MF $(DEPDIR)/img2sixel_options_fuzz-aborttrace.Tpo -c -o img2sixel_options_fuzz-aborttrace.o `test -f 'aborttrace.c' || echo '$(srcdir)/'`aborttrace.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel_options_fuzz-aborttrace.Tpo $(DEPDIR)/img2sixel_options_fuzz-aborttrace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='aborttrace.c' object='img2sixel_options_fuzz-aborttrace.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -c -o img2sixel_options_fuzz-aborttrace.o `test -f 'aborttrace.c' || echo '$(srcdir)/'`aborttrace.c
+
+img2sixel_options_fuzz-aborttrace.obj: aborttrace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -MT img2sixel_options_fuzz-aborttrace.obj -MD -MP -MF $(DEPDIR)/img2sixel_options_fuzz-aborttrace.Tpo -c -o img2sixel_options_fuzz-aborttrace.obj `if test -f 'aborttrace.c'; then $(CYGPATH_W) 'aborttrace.c'; else $(CYGPATH_W) '$(srcdir)/aborttrace.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/img2sixel_options_fuzz-aborttrace.Tpo $(DEPDIR)/img2sixel_options_fuzz-aborttrace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='aborttrace.c' object='img2sixel_options_fuzz-aborttrace.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(img2sixel_options_fuzz_CPPFLAGS) $(CPPFLAGS) $(img2sixel_options_fuzz_CFLAGS) $(CFLAGS) -c -o img2sixel_options_fuzz-aborttrace.obj `if test -f 'aborttrace.c'; then $(CYGPATH_W) 'aborttrace.c'; else $(CYGPATH_W) '$(srcdir)/aborttrace.c'; fi`
 
 sixel2png-sixel2png.o: sixel2png.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(sixel2png_CPPFLAGS) $(CPPFLAGS) $(sixel2png_CFLAGS) $(CFLAGS) -MT sixel2png-sixel2png.o -MD -MP -MF $(DEPDIR)/sixel2png-sixel2png.Tpo -c -o sixel2png-sixel2png.o `test -f 'sixel2png.c' || echo '$(srcdir)/'`sixel2png.c
@@ -1257,6 +1434,13 @@ distclean: distclean-recursive
 	-rm -f ./$(DEPDIR)/img2sixel-img2sixel.Po
 	-rm -f ./$(DEPDIR)/img2sixel-malloc_stub.Po
 	-rm -f ./$(DEPDIR)/img2sixel-path.Po
+	-rm -f ./$(DEPDIR)/img2sixel_options_fuzz-aborttrace.Po
+	-rm -f ./$(DEPDIR)/img2sixel_options_fuzz-cli.Po
+	-rm -f ./$(DEPDIR)/img2sixel_options_fuzz-completion_utils.Po
+	-rm -f ./$(DEPDIR)/img2sixel_options_fuzz-img2sixel-options-fuzz.Po
+	-rm -f ./$(DEPDIR)/img2sixel_options_fuzz-img2sixel.Po
+	-rm -f ./$(DEPDIR)/img2sixel_options_fuzz-malloc_stub.Po
+	-rm -f ./$(DEPDIR)/img2sixel_options_fuzz-path.Po
 	-rm -f ./$(DEPDIR)/sixel2png-aborttrace.Po
 	-rm -f ./$(DEPDIR)/sixel2png-cli.Po
 	-rm -f ./$(DEPDIR)/sixel2png-malloc_stub.Po
@@ -1315,6 +1499,13 @@ maintainer-clean: maintainer-clean-recursive
 	-rm -f ./$(DEPDIR)/img2sixel-img2sixel.Po
 	-rm -f ./$(DEPDIR)/img2sixel-malloc_stub.Po
 	-rm -f ./$(DEPDIR)/img2sixel-path.Po
+	-rm -f ./$(DEPDIR)/img2sixel_options_fuzz-aborttrace.Po
+	-rm -f ./$(DEPDIR)/img2sixel_options_fuzz-cli.Po
+	-rm -f ./$(DEPDIR)/img2sixel_options_fuzz-completion_utils.Po
+	-rm -f ./$(DEPDIR)/img2sixel_options_fuzz-img2sixel-options-fuzz.Po
+	-rm -f ./$(DEPDIR)/img2sixel_options_fuzz-img2sixel.Po
+	-rm -f ./$(DEPDIR)/img2sixel_options_fuzz-malloc_stub.Po
+	-rm -f ./$(DEPDIR)/img2sixel_options_fuzz-path.Po
 	-rm -f ./$(DEPDIR)/sixel2png-aborttrace.Po
 	-rm -f ./$(DEPDIR)/sixel2png-cli.Po
 	-rm -f ./$(DEPDIR)/sixel2png-malloc_stub.Po

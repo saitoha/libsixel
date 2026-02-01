@@ -59,6 +59,19 @@ if img2sixel_opt.enabled()
       build_rpath: src_build_dir,
       install: true)
   endif
+  img2sixel_options_fuzz_exe = executable('img2sixel-options-fuzz',
+    ['img2sixel-options-fuzz.c', 'img2sixel.c', 'completion_utils.c',
+     'path.c', completion_embed] + sources_common + aborttrace_sources,
+    c_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
+                                   '-DHAVE_COMPLETION_EMBED_H',
+                                   '-DIMG2SIXEL_NO_MAIN'],
+    objc_args: libsixel_posix_defs + ['-DBUILD_IMG2SIXEL',
+                                      '-DHAVE_COMPLETION_EMBED_H',
+                                      '-DIMG2SIXEL_NO_MAIN'],
+    dependencies: [libsixel_dep] + aborttrace_deps_local,
+    include_directories: [project_inc, local_inc],
+    build_rpath: src_build_dir,
+    install: false)
   img2sixel_deps = [img2sixel_exe]
   if shebang_enabled
     shebang_targets += [custom_target('img2sixel_shebang',

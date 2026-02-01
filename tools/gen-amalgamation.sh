@@ -164,6 +164,8 @@ END {
 default_units=$(collect_units_from_dirs \
     "src tests converters assessment gdk-pixbuf-loader" \
     \( -name '*.c' -o -name '*.m' \))
+default_units=$(printf "%s\n" "${default_units}" | \
+    grep -v '^converters/img2sixel-options-fuzz\.c$')
 
 header_units=$(collect_units_from_dirs \
     "include src converters tests assessment" \
