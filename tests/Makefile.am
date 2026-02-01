@@ -631,11 +631,25 @@ AM_LOG_DRIVER_FLAGS = --timeout=$(AM_TEST_TIMEOUT)
 AM_LOG_FLAGS =
 
 # Override check-TESTS to avoid nested single quotes in automake helpers.
+# Export config.h feature toggles once so tests can rely on environment
+# variables instead of repeatedly reading the header.
 check-TESTS: $(check_PROGRAMS)
 	@$(am__rm_f) $(RECHECK_LOGS)
 	@$(am__rm_f) $(RECHECK_LOGS:.log=.trs)
 	@$(am__rm_f) $(TEST_SUITE_LOG)
 	@set +e; \
+	config_header="$(top_builddir)/config.h"; \
+	\
+	if [ -f "$$config_header" ]; then \
+	    for feature in `awk '/^#define[[:space:]]+[A-Z0-9_]+[[:space:]]+1$$/ {print $$2}' "$$config_header"`; do \
+	        eval "$$feature=1"; \
+	        export $$feature; \
+	    done; \
+	    for feature in `awk '/^#undef[[:space:]]+[A-Z0-9_]+/ {print $$2}' "$$config_header"`; do \
+	        eval "$$feature=0"; \
+	        export $$feature; \
+	    done; \
+	fi; \
 	log_list=""; \
 	for i in $(TEST_LOGS); do \
 	    log_list="$$log_list $$i"; \
