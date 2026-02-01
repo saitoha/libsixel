@@ -471,6 +471,7 @@ tests = [
   'regression/t/0023_lsqa_format_tga_type9_pal8.t',
   'regression/t/0024_lsqa_format_tga_type10_rgb.t',
   'regression/t/0025_lsqa_format_tga_type11_gray.t',
+  'regression/t/0026_lsqa_roundtrip_rgba_small.t',
   'sixel2png/t/0001_version.t',
   'sixel2png/t/0002_help.t',
   'sixel2png/t/0002_missing_args.t',

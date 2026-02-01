@@ -3030,8 +3030,14 @@ sixel_band_emit(sixel_encode_work_t *work,
     sixel_node_t *np;
     sixel_node_t *next;
     int x;
+    int emit_next_line;
 
-    if (last_row_index != 5) {
+    emit_next_line = (last_row_index >= 6);
+    if (emit_next_line) {
+        /*
+         * Emit DECGNL only after the first band. The first band starts at the
+         * origin, so leading DECGNL would shift short images down by 6 rows.
+         */
         output->buffer[output->pos] = '-';
         sixel_advance(output, 1);
     }
