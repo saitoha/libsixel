@@ -73,6 +73,55 @@ jobs:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
+  python-wheels:
+    name: Python wheels (${{ matrix.platform }})
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - platform: linux
+            runner: ubuntu-latest
+          - platform: macos
+            runner: macos-latest
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Set up build Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install cibuildwheel
+        run: python -m pip install --upgrade pip cibuildwheel
+
+      - name: Build wheels with Autotools
+        env:
+          CIBW_PLATFORM: ${{ matrix.platform }}
+          CIBW_BUILD: "cp38-* cp39-* cp310-* cp311-* cp312-*"
+          CIBW_SKIP: "pp*"
+          CIBW_BEFORE_BUILD: >-
+            ./configure --prefix=/usr/local --without-png --without-jpeg && \
+            make && \
+            make install && \
+            cp -vpi /usr/local/lib/libsixel.* python/libsixel/_libs/ || true
+          CIBW_ENVIRONMENT: "LIBSIXEL_LIBDIR=./src/.libs"
+          CIBW_ENVIRONMENT: >-
+            LIBSIXEL_LIBDIR=../src/.libs
+            LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+          CIBW_BUILD_VERBOSITY: "1"
+        run: >-
+          python -m cibuildwheel python --output-dir python/dist
+
+      - name: Upload wheel artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-wheels-${{ matrix.platform }}
+          path: python/dist/*.whl
+          if-no-files-found: error
+
   coverage-autotools:
     needs: [smoke]
     name: ${{ matrix.label }}
