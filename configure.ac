@@ -1450,7 +1450,7 @@ AC_CHECK_HEADERS_PARALLEL([assert.h \
                           ])
 
 AC_MSG_CHECKING([for __builtin_cpu_supports])
-AC_COMPILE_IFELSE([
+AC_LINK_IFELSE([
     AC_LANG_PROGRAM([], [[
         #if !defined(__GNUC__) && !defined(__clang__)
         # error
@@ -1463,7 +1463,7 @@ AC_COMPILE_IFELSE([
     [AC_MSG_RESULT([no])])
 
 AC_MSG_CHECKING([for __builtin_cpu_init])
-AC_COMPILE_IFELSE([
+AC_LINK_IFELSE([
     AC_LANG_PROGRAM([], [[
         #if !defined(__GNUC__) && !defined(__clang__)
         # error

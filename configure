@@ -18821,7 +18821,7 @@ main (void)
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_compile "$LINENO"
+if ac_fn_c_try_link "$LINENO"
 then :
 
 printf "%s\n" "#define HAVE_BUILTIN_CPU_SUPPORTS 1" >>confdefs.h
@@ -18833,7 +18833,8 @@ else case e in #(
 printf "%s\n" "no" >&6; } ;;
 esac
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for __builtin_cpu_init" >&5
 printf %s "checking for __builtin_cpu_init... " >&6; }
@@ -18854,7 +18855,7 @@ main (void)
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_compile "$LINENO"
+if ac_fn_c_try_link "$LINENO"
 then :
 
 printf "%s\n" "#define HAVE_BUILTIN_CPU_INIT 1" >>confdefs.h
@@ -18866,7 +18867,8 @@ else case e in #(
 printf "%s\n" "no" >&6; } ;;
 esac
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
 
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for __builtin_prefetch" >&5
 printf %s "checking for __builtin_prefetch... " >&6; }
