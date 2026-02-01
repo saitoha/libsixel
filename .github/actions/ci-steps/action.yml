@@ -29,14 +29,13 @@ runs:
       shell: bash
       run: |
         sudo apt-get update
-        sudo apt-get install -y --no-install-recommends ${{ fromJSON(inputs.matrix_json).extra_packages || '' }}
+        sudo apt-get install -y --no-install-recommends ${{ fromJSON(inputs.matrix_json).extra_packages }}
 
     - name: Install extra packages (macOS)
       if: ${{ runner.os == 'macOS' && fromJSON(inputs.matrix_json).extra_packages != '' }}
       shell: bash
       run: |
-        #brew update
-        brew install ${{ fromJSON(inputs.matrix_json).extra_packages || '' }}
+        brew install ${{ fromJSON(inputs.matrix_json).extra_packages }}
 
     - name: Install extra packages (FreeBSD)
       if: >-
@@ -211,6 +210,12 @@ runs:
         sh emsdk/emsdk activate latest
         echo "$PWD/emsdk/upstream/emscripten" >> "$GITHUB_PATH"
 
+    - name: Prepare Zig toolchain
+      if: ${{ contains(fromJSON(inputs.matrix_json).label, 'zig') }}
+      uses: goto-bus-stop/setup-zig@v2
+      with:
+        version: 0.13.0
+
     - name: Install pip packages
       if: ${{ fromJSON(inputs.matrix_json).pip_packages != '' }}
       shell: bash
@@ -284,11 +289,17 @@ runs:
         PATH="$PWD/build-aux:$PATH"
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         meson compile -C builddir -v
-        if grep ^ac_cv_prog_ac_ct_CC=gcc$ config.log; then
-          meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
-        else
-          : # cross build: don't run test
-        fi
+        meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
+
+    - name: Build and test (Autotools, GitBash)
+      if: ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools' && fromJSON(inputs.matrix_json).exec_type == 'gitbash' }}
+      shell: C:\GitBash\bin\bash.exe {0}
+      run: |
+        set -exv
+        PATH="$PWD/build-aux:$PATH"
+        ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ./configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+        ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
+        ${{ fromJSON(inputs.matrix_json).make || 'make' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
     - name: Build and test (Meson, Command Prompt)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'meson' && fromJSON(inputs.matrix_json).exec_type == 'cmd' }}

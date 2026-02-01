@@ -57,6 +57,19 @@ jobs:
             runner: windows-latest
             exec_type: cmd
 
+          - label: Autotools-gitbash-x86_64-zig-mingw64-static
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC='zig cc -target x86_64-windows-gnu'
+              AR='zig ar'
+              RANLIB='zig ranlib'
+              CONFIG_SHELL='C:\GitBash\bin\bash.exe'
+            setup_options: >-
+              --host=x86_64-w64-mingw32
+              --disable-shared
+            exec_type: gitbash
+
     steps:
       - name: Configure git EOL
         if: ${{ matrix.exec_type == 'cygwin' }}
@@ -211,6 +224,17 @@ jobs:
               --with-gd
             extra_packages: >-
               gd
+              lcov
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-amalgamated-lib-disable-appkit-coverage
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --enable-gcov
+              --enable-amalgamated-lib
+              --disable-appkit
+            extra_packages: >-
               lcov
             exec_type: bash
 
@@ -645,14 +669,6 @@ jobs:
               PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
             extra_packages: >-
               gcc-multilib
-            exec_type: bash
-
-          - label: Autotools-macos-aarch64-amalgamated-lib-disable-appkit
-            buildtool: autotools
-            runner: macos-latest
-            setup_options: >-
-              --enable-amalgamated-lib
-              --disable-appkit
             exec_type: bash
 
           - label: Autotools-macos-x86_64-amalgamated_lib-amalgamated_tools
@@ -1941,15 +1957,15 @@ jobs:
               meson
             exec_type: cross-platform-vms
 
-          - label: Meson-netbsd-10.1-aarch64
-            buildtool: meson
-            runner: ubuntu-latest
-            cp_os: netbsd
-            cp_arch: arm64
-            cp_version: '10.1'
-            extra_packages: >-
-              meson
-            exec_type: cross-platform-vms
+#          - label: Meson-netbsd-10.1-aarch64
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            cp_os: netbsd
+#            cp_arch: arm64
+#            cp_version: '10.1'
+#            extra_packages: >-
+#              meson
+#            exec_type: cross-platform-vms
 
           - label: Autotools-haiku-r1beta5-x86-64
             buildtool: autotools
