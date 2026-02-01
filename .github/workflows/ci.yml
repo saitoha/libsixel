@@ -112,18 +112,83 @@ jobs:
           while [ "$(date +%s)" -lt "$((start_time + 600))" ]; do
             seed="${i}"
             input_path="artifacts/corpus/input_${i}.bin"
-            python3 - <<'PY' "${seed}" "${input_path}"
-import random
-import sys
+            python3 - <<'__EOF__' "${seed}" "${input_path}"
+          import random
+          import sys
+          
+          seed = int(sys.argv[1])
+          path = sys.argv[2]
+          random.seed(seed)
+          size = random.randint(1, 4096)
+          data = bytearray(random.getrandbits(8) for _ in range(size))
+          with open(path, "wb") as handle:
+              handle.write(data)
+          __EOF__
+            echo "${seed}" >> "${seed_path}"
+            if ! ./converters/img2sixel-options-fuzz < "${input_path}" \
+              >> "${log_path}" 2>&1; then
+              cp "${input_path}" "artifacts/repro/crash_${i}.bin"
+              echo "Crash seed: ${seed}" >> "${log_path}"
+              exit 1
+            fi
+            i=$((i + 1))
+          done
+          tail -n 200 "${log_path}" > artifacts/fuzz.tail.log
 
-seed = int(sys.argv[1])
-path = sys.argv[2]
-random.seed(seed)
-size = random.randint(1, 4096)
-data = bytearray(random.getrandbits(8) for _ in range(size))
-with open(path, "wb") as handle:
-    handle.write(data)
-PY
+      - name: Upload fuzz artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: img2sixel-options-fuzz-${{ github.sha }}
+          path: artifacts
+          if-no-files-found: error
+
+  fuzz-img2sixel-options:
+    name: Fuzz img2sixel options (10 min)
+    if: ${{ github.event_name == 'push' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            build-essential \
+            autoconf \
+            automake \
+            libtool \
+            pkg-config
+
+      - name: Configure and build fuzz harness
+        run: |
+          ./configure \
+            --without-bashcompletiondir \
+            --without-zshcompletiondir
+          make -j"$(getconf _NPROCESSORS_ONLN)" img2sixel-options-fuzz
+
+      - name: Run fuzz loop (10 minutes)
+        run: |
+          set -euo pipefail
+          mkdir -p artifacts/corpus artifacts/repro
+          log_path="artifacts/fuzz.log"
+          seed_path="artifacts/seeds.txt"
+          : > "${log_path}"
+          : > "${seed_path}"
+          start_time="$(date +%s)"
+          i=0
+          while [ "$(date +%s)" -lt "$((start_time + 600))" ]; do
+            seed="${i}"
+            input_path="artifacts/corpus/input_${i}.bin"
+            python3 - <<'__EOF__' "${seed}" "${input_path}"
+          import random, sys
+          seed=int(sys.argv[1]); path=sys.argv[2];
+          random.seed(seed); size=random.randint(1, 4096);
+          data=bytearray(random.getrandbits(8) for _ in range(size));
+          open(path, 'wb').write(data)
+          EOF__
             echo "${seed}" >> "${seed_path}"
             if ! ./converters/img2sixel-options-fuzz < "${input_path}" \
               >> "${log_path}" 2>&1; then
