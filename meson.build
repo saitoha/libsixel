@@ -961,12 +961,22 @@ if cc.has_header('strings.h')
   conf.set('HAVE_STRINGS_H', 1)
 endif
 if cpu == 'x86' or cpu == 'x86_64'
-  if cc.has_function('__builtin_cpu_supports',
-      prefix: '#include <immintrin.h>')
+  if cc.links('''#include <immintrin.h>
+int main(void) {
+  if (__builtin_cpu_supports("sse2")) {
+    return 0;
+  }
+  return 0;
+}
+''', name: '__builtin_cpu_supports')
     conf.set('HAVE_BUILTIN_CPU_SUPPORTS', 1)
   endif
-  if cc.has_function('__builtin_cpu_init',
-      prefix: '#include <immintrin.h>')
+  if cc.links('''#include <immintrin.h>
+int main(void) {
+  __builtin_cpu_init();
+  return 0;
+}
+''', name: '__builtin_cpu_init')
     conf.set('HAVE_BUILTIN_CPU_INIT', 1)
   endif
 endif
