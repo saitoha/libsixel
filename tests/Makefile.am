@@ -450,9 +450,16 @@ HELPER_FILES = \
     decoder/t/dcs_arguments_common.sh
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
-AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export ARTIFACT_ROOT;
-AM_TESTS_ENVIRONMENT += TOP_SRCDIR='$(abs_top_srcdir)'; export TOP_SRCDIR;
-AM_TESTS_ENVIRONMENT += TOP_BUILDDIR='$(abs_top_builddir)'; export TOP_BUILDDIR;
+# Normalize paths for shells that struggle with backslash escapes in quotes.
+TESTS_ENV_ARTIFACT_ROOT = $(subst \,/,$(ARTIFACT_ROOT))
+TESTS_ENV_TOP_SRCDIR = $(subst \,/,$(abs_top_srcdir))
+TESTS_ENV_TOP_BUILDDIR = $(subst \,/,$(abs_top_builddir))
+AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT="$(TESTS_ENV_ARTIFACT_ROOT)"; \
+       export ARTIFACT_ROOT;
+AM_TESTS_ENVIRONMENT += TOP_SRCDIR="$(TESTS_ENV_TOP_SRCDIR)"; \
+       export TOP_SRCDIR;
+AM_TESTS_ENVIRONMENT += TOP_BUILDDIR="$(TESTS_ENV_TOP_BUILDDIR)"; \
+       export TOP_BUILDDIR;
 AM_TESTS_ENVIRONMENT += SIXEL_TSAN_BUILD='@SIXEL_TSAN_BUILD@'; \
        export SIXEL_TSAN_BUILD;
 AM_TESTS_ENVIRONMENT += CROSS_COMPILING='@cross_compiling@'; \
