@@ -89,6 +89,18 @@ init_config_macro_cache() {
 
 config_macro_defined() {
     macro_name=$1
+    macro_value=""
+
+    # Prefer environment-provided feature toggles to avoid file access when
+    # the test harness exports config.h-derived values. This keeps direct
+    # invocations working because the fallback reads config.h only once.
+    eval "macro_value=\${${macro_name}-}"
+    if [ -n "${macro_value}" ]; then
+        if [ "${macro_value}" -eq 1 ] 2>/dev/null; then
+            return 0
+        fi
+        return 1
+    fi
 
     init_config_macro_cache
 
