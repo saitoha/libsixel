@@ -2,7 +2,11 @@
 CLEANFILES=libsixel/*.pyc
 
 clean-local:
-	rm -rf libsixel_wheel.egg-info build dist libsixel/_libs
+	rm -rf libsixel_wheel.egg-info build dist
+	if test -d "$(builddir)/libsixel/_libs"; then \
+		find "$(builddir)/libsixel/_libs" -type f \
+			! -name '__init__.py' -exec rm -f {} +; \
+	fi
 
 if HAVE_PYTHON
 libsixeldir = $(pythondir)/libsixel
