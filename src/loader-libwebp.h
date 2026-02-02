@@ -1,8 +1,7 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Copyright (c) 2021-2025 libsixel developers. See `AUTHORS`.
- * Copyright (c) 2014-2019 Hayaki Saito
+ * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to
@@ -19,40 +18,40 @@
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
- * FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- *
- * Shared loader helpers accessed by backend-specific implementations.  The
- * declarations here keep cross-module dependencies small while allowing
- * backends to reuse detection and thumbnailing utilities.
  */
 
-#ifndef LIBSIXEL_LOADER_COMMON_H
-#define LIBSIXEL_LOADER_COMMON_H
+#ifndef LIBSIXEL_LOADER_LIBWEBP_H
+#define LIBSIXEL_LOADER_LIBWEBP_H
 
 #include <sixel.h>
 
 #include "chunk.h"
 
-#define SIXEL_THUMBNAILER_DEFAULT_SIZE 512
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-void loader_thumbnailer_initialize_size_hint(void);
-int loader_thumbnailer_get_size_hint(void);
-int loader_thumbnailer_get_default_size_hint(void);
-void sixel_helper_set_thumbnail_size_hint(int size);
-void sixel_helper_set_loader_trace(int enable);
-void loader_trace_try(char const *name);
-void loader_trace_result(char const *name, SIXELSTATUS status);
-int loader_trace_is_enabled(void);
-void loader_trace_message(char const *format, ...);
+SIXELAPI SIXELSTATUS
+load_with_libwebp(
+    sixel_chunk_t const       /* in */     *pchunk,
+    int                       /* in */     fstatic,
+    int                       /* in */     fuse_palette,
+    int                       /* in */     reqcolors,
+    unsigned char             /* in */     *bgcolor,
+    int                       /* in */     loop_control,
+    sixel_load_image_function /* in */     fn_load,
+    void                      /* in/out */ *context);
 
-int chunk_is_png(sixel_chunk_t const *chunk);
-int chunk_is_jpeg(sixel_chunk_t const *chunk);
-int chunk_is_webp(sixel_chunk_t const *chunk);
-int chunk_is_bmp(sixel_chunk_t const *chunk);
-int chunk_is_gif(sixel_chunk_t const *chunk);
+SIXELAPI int
+loader_can_try_libwebp(sixel_chunk_t const *chunk);
 
-#endif /* LIBSIXEL_LOADER_COMMON_H */
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* LIBSIXEL_LOADER_LIBWEBP_H */
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

@@ -148,6 +148,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/loader-gd.c \
                 $(srcdir)/loader-libpng.c \
                 $(srcdir)/loader-libjpeg.c \
+                $(srcdir)/loader-libwebp.c \
                 $(srcdir)/loader-builtin.c \
                 $(srcdir)/loader-common.c \
                 $(srcdir)/loader-registry.c \
@@ -160,6 +161,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/loader-gnome-thumbnailer.h \
                 $(srcdir)/loader-libjpeg.h \
                 $(srcdir)/loader-libpng.h \
+                $(srcdir)/loader-libwebp.h \
                 $(srcdir)/loader-quicklook.h \
                 $(srcdir)/loader-registry.h \
                 $(srcdir)/loader-wic.h \
@@ -230,6 +232,7 @@ libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(WINHTTP_CFLAGS) \
                 $(LIBPNG_CFLAGS) \
                 $(LIBJPEG_CFLAGS) \
+                $(LIBWEBP_CFLAGS) \
                 $(GDK_PIXBUF_CFLAGS) \
                 $(GD_CFLAGS) \
                 $(WIC_CFLAGS) \
@@ -247,6 +250,7 @@ libsixel_la_LIBADD = -lm \
                 $(WINHTTP_LIBS) \
                 $(LIBPNG_LIBS) \
                 $(LIBJPEG_LIBS) \
+                $(LIBWEBP_LIBS) \
                 $(GDK_PIXBUF_LIBS) \
                 $(GD_LIBS) \
                 $(WIC_LIBS) \

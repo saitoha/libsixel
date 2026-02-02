@@ -223,6 +223,31 @@ chunk_is_jpeg(sixel_chunk_t const *chunk)
 }
 
 int
+chunk_is_webp(sixel_chunk_t const *chunk)
+{
+    if (chunk == NULL || chunk->size < 12) {
+        return 0;
+    }
+
+    /*
+     * WebP files use a RIFF container.  The stream starts with \"RIFF\",
+     * followed by a 32-bit size field, and then the literal \"WEBP\" tag.
+     */
+    if (chunk->buffer[0] == 'R' &&
+        chunk->buffer[1] == 'I' &&
+        chunk->buffer[2] == 'F' &&
+        chunk->buffer[3] == 'F' &&
+        chunk->buffer[8] == 'W' &&
+        chunk->buffer[9] == 'E' &&
+        chunk->buffer[10] == 'B' &&
+        chunk->buffer[11] == 'P') {
+        return 1;
+    }
+
+    return 0;
+}
+
+int
 chunk_is_bmp(sixel_chunk_t const *chunk)
 {
     if (chunk == NULL || chunk->size < 2) {

@@ -1090,6 +1090,12 @@ AC_ARG_WITH([png],
             [],
             [with_png=auto])
 
+AC_ARG_WITH([webp],
+            [AS_HELP_STRING([--with-webp],
+                            [whether to build with libwebp (default: auto)])],
+            [],
+            [with_webp=auto])
+
 AC_ARG_WITH([winpthread],
             [AS_HELP_STRING([--with-winpthread],
                             [whether to build with libwinpthread, windows only (default: no)])],
@@ -1688,6 +1694,8 @@ loaders="stb_image"
 have_curl="no"
 have_jpeg="no"
 LIBJPEG_PKG_NAME=""
+have_webp="no"
+LIBWEBP_PKG_NAME=""
 have_png="no"
 have_winpthread="no"
 have_wic="no"
@@ -2591,6 +2599,69 @@ if test x$with_png != xno; then
 fi
 AC_SUBST(LIBPNG_CFLAGS)
 AC_SUBST(LIBPNG_LIBS)
+
+if test x$with_webp != xno; then
+    if test x$build = x$host; then
+        AC_MSG_NOTICE([checking for webp])
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_webp != xyes -a x$with_webp != xauto; then
+            if test ! -d "$with_webp"; then
+                AC_MSG_ERROR(["${with_webp}" is not directory])
+            fi
+            ADDED_CFLAGS="-I${with_webp}/include"
+            ADDED_LIBS="-L${with_webp}/lib -lwebp"
+        else
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lwebp"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lwebp"
+            fi
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
+        AC_CHECK_HEADER([webp/decode.h],
+                        [AC_CHECK_LIB([webp],
+                                      [WebPGetInfo],
+                                      [have_webp=yes
+                                       LIBWEBP_CFLAGS=$ADDED_CFLAGS
+                                       LIBWEBP_LIBS=$ADDED_LIBS],
+                                      [have_webp=no])],
+                        [have_webp=no])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        if test x$have_webp != xyes -a ! -d "$with_webp"; then
+            if test x${PKG_CONFIG} != x; then
+                PKG_CHECK_MODULES(LIBWEBP,
+                                  [libwebp],
+                                  [have_webp=yes
+                                   LIBWEBP_PKG_NAME=libwebp],
+                                  [have_webp=no])
+            fi
+        fi
+    fi
+    if test x$have_webp = xyes; then
+        AC_DEFINE(HAVE_WEBP, 1, [whether libwebp is available])
+        loaders="${loaders} webp"
+        if test x$LIBWEBP_PKG_NAME != x; then
+            REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBWEBP_PKG_NAME"
+        else
+            REQUIRES_PRIVATE="$REQUIRES_PRIVATE libwebp"
+        fi
+        LIBS_PRIVATE="$LIBS_PRIVATE $LIBWEBP_LIBS"
+        AC_MSG_NOTICE([libwebp cflags is ${LIBWEBP_CFLAGS}])
+        AC_MSG_NOTICE([libwebp libs is ${LIBWEBP_LIBS}])
+    else
+        if test x$with_webp != xauto; then
+            AC_MSG_ERROR([unable to find libwebp])
+        fi
+        AC_MSG_NOTICE([libwebp is not available])
+    fi
+fi
+AC_SUBST(LIBWEBP_CFLAGS)
+AC_SUBST(LIBWEBP_LIBS)
 
 if test x$with_winpthread != xno && test "x$using_cl" != "xyes"; then
     if test x$build = x$host; then
