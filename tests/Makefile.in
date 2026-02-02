@@ -109,6 +109,7 @@ CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__test_runner_SOURCES_DIST = test_runner.c \
+	aborttrace/0001_img2sixel_aborttrace.c \
 	cli/0029_cli_token_is_known_option.c \
 	cli/0030_cli_option_requires_argument.c \
 	cli/0031_cli_guard_missing_argument.c \
@@ -137,9 +138,11 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	gdk-pixbuf-loader/0006_loader_module.c \
 	gdk-pixbuf-loader/0007_loader_plugin_integration.c \
 	$(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c \
+	$(top_srcdir)/converters/aborttrace.c \
 	$(top_srcdir)/converters/cli.c
 am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@am_test_runner_OBJECTS = test_runner-test_runner.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	aborttrace/test_runner-0001_img2sixel_aborttrace.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0029_cli_token_is_known_option.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0030_cli_option_requires_argument.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	cli/test_runner-0031_cli_guard_missing_argument.$(OBJEXT) \
@@ -172,6 +175,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	gdk-pixbuf-loader/test_runner-0006_loader_module.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	gdk-pixbuf-loader/test_runner-0007_loader_plugin_integration.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/gdk-pixbuf-loader/test_runner-sixel-pixbuf-loader.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-aborttrace.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	$(top_builddir)/converters/test_runner-cli.$(OBJEXT)
 am__objects_1 =  \
 	$(top_builddir)/amalgamation/test_runner-sixel.$(OBJEXT)
@@ -224,9 +228,11 @@ depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
 am__depfiles_remade =  \
 	$(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po \
+	$(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po \
 	$(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po \
 	$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po \
 	./$(DEPDIR)/test_runner-test_runner.Po \
+	aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po \
 	cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po \
 	cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po \
 	cli/$(DEPDIR)/test_runner-0031_cli_guard_missing_argument.Po \
@@ -713,7 +719,6 @@ AMALGAMATION_SIXEL = $(top_builddir)/amalgamation/sixel.c
 @WANT_AMALGAMATED_TOOLS_TRUE@BUILT_SOURCES = $(AMALGAMATION_SIXEL)
 TESTS = \
     aborttrace/t/0001_img2sixel_aborttrace.t \
-    aborttrace/t/0002_sixel2png_aborttrace.t \
     animation/t/0001_disable_update_mode.t \
     animation/t/0002_static_frame_render.t \
     animation/t/0003_update_and_static_frame.t \
@@ -1123,8 +1128,7 @@ TESTS = \
     sixel2png/t/0005_default_output.t
 
 SERIAL_TESTS = \
-    aborttrace/t/0001_img2sixel_aborttrace.t \
-    aborttrace/t/0002_sixel2png_aborttrace.t
+    aborttrace/t/0001_img2sixel_aborttrace.t
 
 COPY_TESTS = $(TESTS)
 TEST_EXTENSIONS = .t
@@ -1264,6 +1268,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_LDADD = $(TESTS_COMMON_LDADD_VAL) $(GDK_PIXBUF_LIBS)
 @WANT_AMALGAMATED_TOOLS_TRUE@test_runner_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 @WANT_AMALGAMATED_TOOLS_FALSE@test_runner_SOURCES = test_runner.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    aborttrace/0001_img2sixel_aborttrace.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0029_cli_token_is_known_option.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0030_cli_option_requires_argument.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    cli/0031_cli_guard_missing_argument.c \
@@ -1298,6 +1303,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    gdk-pixbuf-loader/0006_loader_module.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    gdk-pixbuf-loader/0007_loader_plugin_integration.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/converters/aborttrace.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    $(top_srcdir)/converters/cli.c
 
 LOG_DRIVER = $(T_LOG_DRIVER)
@@ -1420,6 +1426,15 @@ $(am__aclocal_m4_deps):
 clean-checkPROGRAMS:
 	$(am__rm_f) $(check_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(check_PROGRAMS:$(EXEEXT)=)
+aborttrace/$(am__dirstamp):
+	@$(MKDIR_P) aborttrace
+	@: >>aborttrace/$(am__dirstamp)
+aborttrace/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) aborttrace/$(DEPDIR)
+	@: >>aborttrace/$(DEPDIR)/$(am__dirstamp)
+aborttrace/test_runner-0001_img2sixel_aborttrace.$(OBJEXT):  \
+	aborttrace/$(am__dirstamp) \
+	aborttrace/$(DEPDIR)/$(am__dirstamp)
 cli/$(am__dirstamp):
 	@$(MKDIR_P) cli
 	@: >>cli/$(am__dirstamp)
@@ -1540,6 +1555,9 @@ $(top_builddir)/converters/$(am__dirstamp):
 $(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) $(top_builddir)/converters/$(DEPDIR)
 	@: >>$(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/converters/test_runner-aborttrace.$(OBJEXT):  \
+	$(top_builddir)/converters/$(am__dirstamp) \
+	$(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
 $(top_builddir)/converters/test_runner-cli.$(OBJEXT):  \
 	$(top_builddir)/converters/$(am__dirstamp) \
 	$(top_builddir)/converters/$(DEPDIR)/$(am__dirstamp)
@@ -1562,6 +1580,7 @@ mostlyclean-compile:
 	-rm -f $(top_builddir)/amalgamation/*.$(OBJEXT)
 	-rm -f $(top_builddir)/converters/*.$(OBJEXT)
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/*.$(OBJEXT)
+	-rm -f aborttrace/*.$(OBJEXT)
 	-rm -f cli/*.$(OBJEXT)
 	-rm -f filter/*.$(OBJEXT)
 	-rm -f gdk-pixbuf-loader/*.$(OBJEXT)
@@ -1573,9 +1592,11 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_runner-test_runner.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@cli/$(DEPDIR)/test_runner-0031_cli_guard_missing_argument.Po@am__quote@ # am--include-marker
@@ -1651,6 +1672,20 @@ test_runner-test_runner.obj: test_runner.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test_runner.c' object='test_runner-test_runner.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o test_runner-test_runner.obj `if test -f 'test_runner.c'; then $(CYGPATH_W) 'test_runner.c'; else $(CYGPATH_W) '$(srcdir)/test_runner.c'; fi`
+
+aborttrace/test_runner-0001_img2sixel_aborttrace.o: aborttrace/0001_img2sixel_aborttrace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT aborttrace/test_runner-0001_img2sixel_aborttrace.o -MD -MP -MF aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Tpo -c -o aborttrace/test_runner-0001_img2sixel_aborttrace.o `test -f 'aborttrace/0001_img2sixel_aborttrace.c' || echo '$(srcdir)/'`aborttrace/0001_img2sixel_aborttrace.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Tpo aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='aborttrace/0001_img2sixel_aborttrace.c' object='aborttrace/test_runner-0001_img2sixel_aborttrace.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o aborttrace/test_runner-0001_img2sixel_aborttrace.o `test -f 'aborttrace/0001_img2sixel_aborttrace.c' || echo '$(srcdir)/'`aborttrace/0001_img2sixel_aborttrace.c
+
+aborttrace/test_runner-0001_img2sixel_aborttrace.obj: aborttrace/0001_img2sixel_aborttrace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT aborttrace/test_runner-0001_img2sixel_aborttrace.obj -MD -MP -MF aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Tpo -c -o aborttrace/test_runner-0001_img2sixel_aborttrace.obj `if test -f 'aborttrace/0001_img2sixel_aborttrace.c'; then $(CYGPATH_W) 'aborttrace/0001_img2sixel_aborttrace.c'; else $(CYGPATH_W) '$(srcdir)/aborttrace/0001_img2sixel_aborttrace.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Tpo aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='aborttrace/0001_img2sixel_aborttrace.c' object='aborttrace/test_runner-0001_img2sixel_aborttrace.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o aborttrace/test_runner-0001_img2sixel_aborttrace.obj `if test -f 'aborttrace/0001_img2sixel_aborttrace.c'; then $(CYGPATH_W) 'aborttrace/0001_img2sixel_aborttrace.c'; else $(CYGPATH_W) '$(srcdir)/aborttrace/0001_img2sixel_aborttrace.c'; fi`
 
 cli/test_runner-0029_cli_token_is_known_option.o: cli/0029_cli_token_is_known_option.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT cli/test_runner-0029_cli_token_is_known_option.o -MD -MP -MF cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Tpo -c -o cli/test_runner-0029_cli_token_is_known_option.o `test -f 'cli/0029_cli_token_is_known_option.c' || echo '$(srcdir)/'`cli/0029_cli_token_is_known_option.c
@@ -2100,6 +2135,20 @@ $(top_builddir)/gdk-pixbuf-loader/test_runner-sixel-pixbuf-loader.obj: $(top_bui
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/gdk-pixbuf-loader/test_runner-sixel-pixbuf-loader.obj `if test -f '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; then $(CYGPATH_W) '$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c'; fi`
 
+$(top_builddir)/converters/test_runner-aborttrace.o: $(top_builddir)/converters/aborttrace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/converters/test_runner-aborttrace.o -MD -MP -MF $(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Tpo -c -o $(top_builddir)/converters/test_runner-aborttrace.o `test -f '$(top_builddir)/converters/aborttrace.c' || echo '$(srcdir)/'`$(top_builddir)/converters/aborttrace.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Tpo $(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/converters/aborttrace.c' object='$(top_builddir)/converters/test_runner-aborttrace.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/converters/test_runner-aborttrace.o `test -f '$(top_builddir)/converters/aborttrace.c' || echo '$(srcdir)/'`$(top_builddir)/converters/aborttrace.c
+
+$(top_builddir)/converters/test_runner-aborttrace.obj: $(top_builddir)/converters/aborttrace.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/converters/test_runner-aborttrace.obj -MD -MP -MF $(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Tpo -c -o $(top_builddir)/converters/test_runner-aborttrace.obj `if test -f '$(top_builddir)/converters/aborttrace.c'; then $(CYGPATH_W) '$(top_builddir)/converters/aborttrace.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/converters/aborttrace.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Tpo $(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/converters/aborttrace.c' object='$(top_builddir)/converters/test_runner-aborttrace.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/converters/test_runner-aborttrace.obj `if test -f '$(top_builddir)/converters/aborttrace.c'; then $(CYGPATH_W) '$(top_builddir)/converters/aborttrace.c'; else $(CYGPATH_W) '$(srcdir)/$(top_builddir)/converters/aborttrace.c'; fi`
+
 $(top_builddir)/converters/test_runner-cli.o: $(top_builddir)/converters/cli.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT $(top_builddir)/converters/test_runner-cli.o -MD -MP -MF $(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Tpo -c -o $(top_builddir)/converters/test_runner-cli.o `test -f '$(top_builddir)/converters/cli.c' || echo '$(srcdir)/'`$(top_builddir)/converters/cli.c
 @am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Tpo $(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po
@@ -2435,6 +2484,8 @@ distclean-generic:
 	-$(am__rm_f) $(top_builddir)/converters/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) $(top_builddir)/gdk-pixbuf-loader/$(am__dirstamp)
+	-$(am__rm_f) aborttrace/$(DEPDIR)/$(am__dirstamp)
+	-$(am__rm_f) aborttrace/$(am__dirstamp)
 	-$(am__rm_f) cli/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) cli/$(am__dirstamp)
 	-$(am__rm_f) filter/$(DEPDIR)/$(am__dirstamp)
@@ -2459,9 +2510,11 @@ clean-am: clean-checkPROGRAMS clean-generic clean-libtool clean-local \
 
 distclean: distclean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po
+	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po
 	-rm -f ./$(DEPDIR)/test_runner-test_runner.Po
+	-rm -f aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0031_cli_guard_missing_argument.Po
@@ -2539,9 +2592,11 @@ installcheck-am:
 
 maintainer-clean: maintainer-clean-am
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/test_runner-sixel.Po
+	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-aborttrace.Po
 	-rm -f $(top_builddir)/converters/$(DEPDIR)/test_runner-cli.Po
 	-rm -f $(top_builddir)/gdk-pixbuf-loader/$(DEPDIR)/test_runner-sixel-pixbuf-loader.Po
 	-rm -f ./$(DEPDIR)/test_runner-test_runner.Po
+	-rm -f aborttrace/$(DEPDIR)/test_runner-0001_img2sixel_aborttrace.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0029_cli_token_is_known_option.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0030_cli_option_requires_argument.Po
 	-rm -f cli/$(DEPDIR)/test_runner-0031_cli_guard_missing_argument.Po

@@ -17,7 +17,6 @@ $(AMALGAMATION_SIXEL): $(top_builddir)/amalgamation/Makefile
 endif
 TESTS = \
     aborttrace/t/0001_img2sixel_aborttrace.t \
-    aborttrace/t/0002_sixel2png_aborttrace.t \
     animation/t/0001_disable_update_mode.t \
     animation/t/0002_static_frame_render.t \
     animation/t/0003_update_and_static_frame.t \
@@ -427,8 +426,7 @@ TESTS = \
     sixel2png/t/0005_default_output.t
 
 SERIAL_TESTS = \
-    aborttrace/t/0001_img2sixel_aborttrace.t \
-    aborttrace/t/0002_sixel2png_aborttrace.t
+    aborttrace/t/0001_img2sixel_aborttrace.t
 
 COPY_TESTS = $(TESTS)
 check_PROGRAMS = test_runner
@@ -571,6 +569,7 @@ test_runner_LDFLAGS = $(TESTS_AMALGAMATION_LDFLAGS_COMMON)
 test_runner_LDADD = $(TESTS_AMALGAMATION_LDADD_COMMON)
 else
 test_runner_SOURCES = test_runner.c \
+    aborttrace/0001_img2sixel_aborttrace.c \
     cli/0029_cli_token_is_known_option.c \
     cli/0030_cli_option_requires_argument.c \
     cli/0031_cli_guard_missing_argument.c \
@@ -605,6 +604,7 @@ test_runner_SOURCES = test_runner.c \
     gdk-pixbuf-loader/0006_loader_module.c \
     gdk-pixbuf-loader/0007_loader_plugin_integration.c \
     $(top_srcdir)/gdk-pixbuf-loader/sixel-pixbuf-loader.c \
+    $(top_srcdir)/converters/aborttrace.c \
     $(top_srcdir)/converters/cli.c
 test_runner_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL) \
     $(GDK_PIXBUF_CFLAGS) \

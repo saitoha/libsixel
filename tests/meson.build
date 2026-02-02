@@ -18,6 +18,7 @@ env.set('LIBSIXEL_LIBDIR', meson.project_build_root() / 'src')
 
 test_runner_sources = [
   'test_runner.c',
+  'aborttrace/0001_img2sixel_aborttrace.c',
   'cli/0029_cli_token_is_known_option.c',
   'cli/0030_cli_option_requires_argument.c',
   'cli/0031_cli_guard_missing_argument.c',
@@ -52,6 +53,7 @@ test_runner_sources = [
   'gdk-pixbuf-loader/0006_loader_module.c',
   'gdk-pixbuf-loader/0007_loader_plugin_integration.c',
   '../gdk-pixbuf-loader/sixel-pixbuf-loader.c',
+  '../converters/aborttrace.c',
   '../converters/cli.c',
 ]
 
@@ -84,6 +86,7 @@ if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
 endif
 
 tests = [
+  'aborttrace/t/0001_img2sixel_aborttrace.t',
   'animation/t/0001_disable_update_mode.t',
   'animation/t/0002_static_frame_render.t',
   'animation/t/0003_update_and_static_frame.t',
@@ -171,6 +174,7 @@ tests = [
   'cli-options/t/0001_long_option_forms.t',
   'cli-options/t/0002_ormode_option_runs.t',
   'cli-options/t/0003_gri_limit_lsqa.t',
+  'clipboard/t/0001_clipboard_basic.t',
   'completion/t/0021_completion_show_bash.t',
   'completion/t/0022_completion_show_zsh.t',
   'completion/t/0023_completion_install_bash.t',
@@ -492,12 +496,6 @@ tests = [
   'sixel2png/t/0005_default_output.t',
 ]
 
-serial_tests = [
-  'clipboard/t/0001_clipboard_basic.t',
-  'aborttrace/t/0001_img2sixel_aborttrace.t',
-  'aborttrace/t/0002_sixel2png_aborttrace.t',
-]
-
 # Match autotools TAP timeout to keep CI behavior consistent (seconds per file).
 # Ensure Meson builds the TAP helper binary before running shell-based tests.
 foreach t : tests
@@ -506,17 +504,6 @@ foreach t : tests
     depends: test_deps,
     protocol: 'tap',
     env: env,
-    timeout: 90,
-    suite: ['tap'])
-endforeach
-
-foreach t : serial_tests
-  test(t, sh,
-    args: [meson.current_source_dir() / t],
-    depends: test_deps,
-    protocol: 'tap',
-    env: env,
-    is_parallel: false,
     timeout: 90,
     suite: ['tap'])
 endforeach
