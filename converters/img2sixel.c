@@ -1316,6 +1316,12 @@ void show_version(void)
 #else
            "no\n"
 #endif
+           "  libwebp: "
+#ifdef HAVE_WEBP
+           "yes\n"
+#else
+           "no\n"
+#endif
            "  gdk-pixbuf2: "
 #ifdef HAVE_GDK_PIXBUF2
            "yes\n"

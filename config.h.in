@@ -521,6 +521,9 @@
 /* Define to 1 if you have the `waitpid' function. */
 #undef HAVE_WAITPID
 
+/* whether libwebp is available */
+#undef HAVE_WEBP
+
 /* whether Windows Imaging Component (WIC) is available */
 #undef HAVE_WIC
 

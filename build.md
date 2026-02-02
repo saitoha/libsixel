@@ -51,6 +51,7 @@ or provide the desired directory path explicitly.
 | `--with-libcurl[=auto]` | `auto` | Link against libcurl to enable network transfers. |
 | `--with-jpeg[=auto]` | `auto` | Link against libjpeg to decode JPEG input. |
 | `--with-png[=auto]` | `auto` | Link against libpng to decode PNG input. |
+| `--with-webp[=auto]` | `auto` | Link against libwebp to decode WebP input. |
 | `--with-gdk-pixbuf2` | `no` | Build the optional gdk-pixbuf2 loader module. |
 | `--with-gd` | `no` | Enable helpers that use the GD image library. |
 | `--with-winpthread` | `no` | Link against `libwinpthread` (Windows targets only). |
@@ -188,6 +189,7 @@ meson setup builddir
 | --- | --- | --- |
 | `-Dpng=` | feature, `auto` | Link against libpng for PNG decoding. |
 | `-Djpeg=` | feature, `auto` | Link against libjpeg for JPEG decoding. |
+| `-Dwebp=` | feature, `auto` | Link against libwebp for WebP decoding. |
 | `-Dcurl=` | feature, `auto` | Link against libcurl for network transfers. |
 | `-Dgdk_pixbuf2=` | feature, `disabled` | Build the gdk-pixbuf2 loader module. |
 | `-Dgd=` | feature, `disabled` | Enable helpers based on the GD image library. |

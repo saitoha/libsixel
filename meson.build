@@ -536,6 +536,26 @@ if jpeg_dep.found()
   loaders += 'jpeg'
 endif
 
+webp_opt = get_option('webp')
+webp_dep = disabler()
+
+if not webp_opt.disabled()
+  webp_dep = dependency('libwebp', required: false, method: 'pkg-config')
+  if not webp_dep.found()
+    webp_dep = cc.find_library('webp', required: webp_opt.enabled())
+  endif
+  if not webp_dep.found() and webp_opt.enabled()
+    error('webp=enabled requires libwebp')
+  endif
+endif
+
+if webp_dep.found()
+  deps += webp_dep
+  reqs += webp_dep
+  conf.set('HAVE_WEBP', 1)
+  loaders += 'webp'
+endif
+
 curl_dep = dependency('libcurl', required: get_option('curl'))
 if curl_dep.found()
   deps += curl_dep
@@ -1145,6 +1165,10 @@ if jpeg_dep.found()
   loader_helper_sources += files('src/loader-libjpeg.c')
 endif
 
+if webp_dep.found()
+  loader_helper_sources += files('src/loader-libwebp.c')
+endif
+
 if have_threads
   loader_helper_sources += [
     'src/threadpool.c',
@@ -1498,6 +1522,8 @@ if shebang_file != ''
   shebang_message = shebang_file
 endif
 
+webp_message = webp_dep.found() ? 'yes' : 'no'
+
 message('')
 message('libsixel was configured as follows')
 message('')
@@ -1515,6 +1541,7 @@ message('       python wheel            : ' + python_wheel_message)
 message('       ruby bindings           : ' + ruby_message)
 message('       gdk-pixbuf SIXEL loader : ' + gdk_pixbuf_loader_message)
 message('       Thumbnailer command     : ' + thumbnailer_message)
+message('       libwebp                 : ' + webp_message)
 message('       Shebang template        : ' + shebang_message)
 message('       SIMD                    : ' + simd_message)
 message('       XGETBV probe            : ' + xsave_probe_message)

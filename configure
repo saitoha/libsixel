@@ -701,6 +701,8 @@ LIBS_PRIVATE
 REQUIRES_PRIVATE
 WIC_LIBS
 WIC_CFLAGS
+LIBWEBP_LIBS
+LIBWEBP_CFLAGS
 LIBPNG_LIBS
 LIBPNG_CFLAGS
 LIBJPEG_LIBS
@@ -958,6 +960,7 @@ enable_quicklook_preview
 with_libcurl
 with_jpeg
 with_png
+with_webp
 with_winpthread
 with_wic
 with_winhttp
@@ -1006,6 +1009,8 @@ LIBJPEG_CFLAGS
 LIBJPEG_LIBS
 LIBPNG_CFLAGS
 LIBPNG_LIBS
+LIBWEBP_CFLAGS
+LIBWEBP_LIBS
 PYTHON
 RUBY_EXT_INC
 RUBY_EXT_LIB
@@ -1709,6 +1714,7 @@ Optional Packages:
   --with-libcurl          whether to build with libcurl (default: auto)
   --with-jpeg             whether to build with libjpeg (default: auto)
   --with-png              whether to build with libpng (default: auto)
+  --with-webp             whether to build with libwebp (default: auto)
   --with-winpthread       whether to build with libwinpthread, windows only
                           (default: no)
   --with-wic              whether to build with Windows Imaging Component
@@ -1771,6 +1777,10 @@ Some influential environment variables:
   LIBPNG_CFLAGS
               C compiler flags for LIBPNG, overriding pkg-config
   LIBPNG_LIBS linker flags for LIBPNG, overriding pkg-config
+  LIBWEBP_CFLAGS
+              C compiler flags for LIBWEBP, overriding pkg-config
+  LIBWEBP_LIBS
+              linker flags for LIBWEBP, overriding pkg-config
   PYTHON      the Python interpreter
   RUBY_EXT_INC
               Directory to include ruby headers from
@@ -17163,6 +17173,17 @@ fi
 
 
 
+# Check whether --with-webp was given.
+if test ${with_webp+y}
+then :
+  withval=$with_webp;
+else case e in #(
+  e) with_webp=auto ;;
+esac
+fi
+
+
+
 # Check whether --with-winpthread was given.
 if test ${with_winpthread+y}
 then :
@@ -20546,6 +20567,8 @@ loaders="stb_image"
 have_curl="no"
 have_jpeg="no"
 LIBJPEG_PKG_NAME=""
+have_webp="no"
+LIBWEBP_PKG_NAME=""
 have_png="no"
 have_winpthread="no"
 have_wic="no"
@@ -23387,6 +23410,195 @@ printf "%s\n" "$as_me: libpng libs is ${LIBPNG_LIBS}" >&6;}
         fi
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libpng is not available" >&5
 printf "%s\n" "$as_me: libpng is not available" >&6;}
+    fi
+fi
+
+
+
+if test x$with_webp != xno; then
+    if test x$build = x$host; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for webp" >&5
+printf "%s\n" "$as_me: checking for webp" >&6;}
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_webp != xyes -a x$with_webp != xauto; then
+            if test ! -d "$with_webp"; then
+                as_fn_error $? "\"${with_webp}\" is not directory" "$LINENO" 5
+            fi
+            ADDED_CFLAGS="-I${with_webp}/include"
+            ADDED_LIBS="-L${with_webp}/lib -lwebp"
+        else
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -lwebp"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -lwebp"
+            fi
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
+        ac_fn_c_check_header_compile "$LINENO" "webp/decode.h" "ac_cv_header_webp_decode_h" "$ac_includes_default"
+if test "x$ac_cv_header_webp_decode_h" = xyes
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for WebPGetInfo in -lwebp" >&5
+printf %s "checking for WebPGetInfo in -lwebp... " >&6; }
+if test ${ac_cv_lib_webp_WebPGetInfo+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-lwebp  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.
+   The 'extern "C"' is for builds by C++ compilers;
+   although this is not generally supported in C code supporting it here
+   has little cost and some practical benefit (sr 110532).  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char WebPGetInfo (void);
+int
+main (void)
+{
+return WebPGetInfo ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_webp_WebPGetInfo=yes
+else case e in #(
+  e) ac_cv_lib_webp_WebPGetInfo=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_webp_WebPGetInfo" >&5
+printf "%s\n" "$ac_cv_lib_webp_WebPGetInfo" >&6; }
+if test "x$ac_cv_lib_webp_WebPGetInfo" = xyes
+then :
+  have_webp=yes
+                                       LIBWEBP_CFLAGS=$ADDED_CFLAGS
+                                       LIBWEBP_LIBS=$ADDED_LIBS
+else case e in #(
+  e) have_webp=no ;;
+esac
+fi
+
+else case e in #(
+  e) have_webp=no ;;
+esac
+fi
+
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        if test x$have_webp != xyes -a ! -d "$with_webp"; then
+            if test x${PKG_CONFIG} != x; then
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libwebp" >&5
+printf %s "checking for libwebp... " >&6; }
+
+if test -n "$LIBWEBP_CFLAGS"; then
+    pkg_cv_LIBWEBP_CFLAGS="$LIBWEBP_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libwebp\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libwebp") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBWEBP_CFLAGS=`$PKG_CONFIG --cflags "libwebp" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$LIBWEBP_LIBS"; then
+    pkg_cv_LIBWEBP_LIBS="$LIBWEBP_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libwebp\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libwebp") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBWEBP_LIBS=`$PKG_CONFIG --libs "libwebp" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+                LIBWEBP_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libwebp" 2>&1`
+        else
+                LIBWEBP_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libwebp" 2>&1`
+        fi
+        # Put the nasty error message in config.log where it belongs
+        echo "$LIBWEBP_PKG_ERRORS" >&5
+
+        have_webp=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        have_webp=no
+else
+        LIBWEBP_CFLAGS=$pkg_cv_LIBWEBP_CFLAGS
+        LIBWEBP_LIBS=$pkg_cv_LIBWEBP_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        have_webp=yes
+                                   LIBWEBP_PKG_NAME=libwebp
+fi
+            fi
+        fi
+    fi
+    if test x$have_webp = xyes; then
+
+printf "%s\n" "#define HAVE_WEBP 1" >>confdefs.h
+
+        loaders="${loaders} webp"
+        if test x$LIBWEBP_PKG_NAME != x; then
+            REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBWEBP_PKG_NAME"
+        else
+            REQUIRES_PRIVATE="$REQUIRES_PRIVATE libwebp"
+        fi
+        LIBS_PRIVATE="$LIBS_PRIVATE $LIBWEBP_LIBS"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libwebp cflags is ${LIBWEBP_CFLAGS}" >&5
+printf "%s\n" "$as_me: libwebp cflags is ${LIBWEBP_CFLAGS}" >&6;}
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libwebp libs is ${LIBWEBP_LIBS}" >&5
+printf "%s\n" "$as_me: libwebp libs is ${LIBWEBP_LIBS}" >&6;}
+    else
+        if test x$with_webp != xauto; then
+            as_fn_error $? "unable to find libwebp" "$LINENO" 5
+        fi
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libwebp is not available" >&5
+printf "%s\n" "$as_me: libwebp is not available" >&6;}
     fi
 fi
 
