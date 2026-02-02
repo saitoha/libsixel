@@ -2628,11 +2628,11 @@ check-TESTS: $(check_PROGRAMS)
 	config_header="$(top_builddir)/config.h"; \
 	\
 	if [ -f "$$config_header" ]; then \
-	    for feature in `awk '/^#define[[:space:]]+[A-Z0-9_]+[[:space:]]+1$$/ {print $$2}' "$$config_header"`; do \
+	    for feature in `awk '/^#define [A-Z0-9_]+ 1$$/ {print $$2}' "$$config_header"`; do \
 	        eval "$$feature=1"; \
 	        export $$feature; \
 	    done; \
-	    for feature in `awk '/^#undef[[:space:]]+[A-Z0-9_]+/ {print $$2}' "$$config_header"`; do \
+	    for feature in `awk '/^\/\* #undef [A-Z0-9_]+/ {print $$3}' "$$config_header"`; do \
 	        eval "$$feature=0"; \
 	        export $$feature; \
 	    done; \
