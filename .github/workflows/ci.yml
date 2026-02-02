@@ -57,6 +57,50 @@ jobs:
             runner: windows-latest
             exec_type: cmd
 
+    steps:
+      - name: Configure git EOL
+        if: ${{ matrix.exec_type == 'cygwin' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  zig:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - label: Autotools-ubuntu-x86_64-zig-x86_64-static
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              CC='zig cc -target x86_64-linux-gnu'
+              AR='zig ar'
+              RANLIB='zig ranlib'
+            setup_options: >-
+              --disable-shared
+            exec_type: bash
+
+          - label: Autotools-ubuntu-aarch64-zig-aarch64-musl-static
+            buildtool: autotools
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CC='zig cc -target aarch64-linux-musl'
+              AR='zig ar'
+              RANLIB='zig ranlib'
+            setup_options: >-
+              --disable-shared
+            exec_type: bash
+
           - label: Autotools-gitbash-x86_64-zig-mingw64-static
             buildtool: autotools
             runner: windows-latest
