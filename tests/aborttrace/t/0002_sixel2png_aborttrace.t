@@ -41,7 +41,7 @@ set -x
 
 exec 3>"${fifo_path}"
 
-sleep 1
+sleep 0.5
 kill -ABRT "${pid}" || true
 
 set +e
