@@ -267,9 +267,10 @@ TESTS = \
     loader/t/0014_loader_builtin_pixelformat.t \
     loader/t/0015_loader_quicklook_pixelformat.t \
     loader/t/0016_loader_gnome_thumbnailer_pixelformat.t \
-    loader/t/0017_loader_builtin_psd.t \
-    loader/t/0018_loader_builtin_hdr.t \
-    loader/t/0019_loader_builtin_pic.t \
+    loader/t/0017_loader_libwebp_pixelformat.t \
+    loader/t/0018_loader_builtin_psd.t \
+    loader/t/0019_loader_builtin_hdr.t \
+    loader/t/0020_loader_builtin_pic.t \
     mapfile/t/0001_mapfile_export_act.t \
     mapfile/t/0002_mapfile_export_pal_default.t \
     mapfile/t/0003_mapfile_export_pal_stdout.t \
@@ -547,6 +548,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0014_LOADER_BUILTIN_PIXELFORMAT \
     -DBUILD_TEST_0015_LOADER_QUICKLOOK_PIXELFORMAT \
     -DBUILD_TEST_0016_LOADER_GNOME_THUMBNAILER_PIXELFORMAT \
+    -DBUILD_TEST_0017_LOADER_LIBWEBP_PIXELFORMAT \
     -DBUILD_TEST_0001_KMEANS_INIT \
     -DBUILD_TEST_0001_PROBE_PARSE \
     -DBUILD_TEST_0001_GDK_PIXBUF_LOADER \
@@ -593,6 +595,7 @@ test_runner_SOURCES = test_runner.c \
     loader/0014_loader_builtin_pixelformat.c \
     loader/0015_loader_quicklook_pixelformat.c \
     loader/0016_loader_gnome_thumbnailer_pixelformat.c \
+    loader/0017_loader_libwebp_pixelformat.c \
     loader/pixelformat_test_common.h \
     palette/0001_kmeans_init.c \
     probe/0001_probe_parse.c \
@@ -676,6 +679,7 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/stbi_minimal.psd \
     data/inputs/formats/stbi_minimal.pic \
     data/inputs/snake_64.png \
+    data/inputs/snake_64.webp \
     data/inputs/scaling/snake_64_80pct.png \
     data/inputs/scaling/snake_64_120pct.png \
     data/inputs/scaling/snake_64_h32.png \

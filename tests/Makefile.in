@@ -128,6 +128,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	loader/0014_loader_builtin_pixelformat.c \
 	loader/0015_loader_quicklook_pixelformat.c \
 	loader/0016_loader_gnome_thumbnailer_pixelformat.c \
+	loader/0017_loader_libwebp_pixelformat.c \
 	loader/pixelformat_test_common.h palette/0001_kmeans_init.c \
 	probe/0001_probe_parse.c \
 	gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
@@ -165,6 +166,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0014_loader_builtin_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0015_loader_quicklook_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	loader/test_runner-0017_loader_libwebp_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	palette/test_runner-0001_kmeans_init.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.$(OBJEXT) \
@@ -262,6 +264,7 @@ am__depfiles_remade =  \
 	loader/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po \
 	loader/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po \
 	loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po \
+	loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po \
 	palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po \
 	probe/$(DEPDIR)/test_runner-0001_probe_parse.Po
 am__mv = mv -f
@@ -971,9 +974,10 @@ TESTS = \
     loader/t/0014_loader_builtin_pixelformat.t \
     loader/t/0015_loader_quicklook_pixelformat.t \
     loader/t/0016_loader_gnome_thumbnailer_pixelformat.t \
-    loader/t/0017_loader_builtin_psd.t \
-    loader/t/0018_loader_builtin_hdr.t \
-    loader/t/0019_loader_builtin_pic.t \
+    loader/t/0017_loader_libwebp_pixelformat.t \
+    loader/t/0018_loader_builtin_psd.t \
+    loader/t/0019_loader_builtin_hdr.t \
+    loader/t/0020_loader_builtin_pic.t \
     mapfile/t/0001_mapfile_export_act.t \
     mapfile/t/0002_mapfile_export_pal_default.t \
     mapfile/t/0003_mapfile_export_pal_stdout.t \
@@ -1238,6 +1242,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0014_LOADER_BUILTIN_PIXELFORMAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0015_LOADER_QUICKLOOK_PIXELFORMAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0016_LOADER_GNOME_THUMBNAILER_PIXELFORMAT \
+@WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0017_LOADER_LIBWEBP_PIXELFORMAT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_KMEANS_INIT \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_PROBE_PARSE \
 @WANT_AMALGAMATED_TOOLS_TRUE@    -DBUILD_TEST_0001_GDK_PIXBUF_LOADER \
@@ -1294,6 +1299,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0014_loader_builtin_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0015_loader_quicklook_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/0016_loader_gnome_thumbnailer_pixelformat.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    loader/0017_loader_libwebp_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    loader/pixelformat_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    palette/0001_kmeans_init.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    probe/0001_probe_parse.c \
@@ -1337,6 +1343,7 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/stbi_minimal.psd \
     data/inputs/formats/stbi_minimal.pic \
     data/inputs/snake_64.png \
+    data/inputs/snake_64.webp \
     data/inputs/scaling/snake_64_80pct.png \
     data/inputs/scaling/snake_64_120pct.png \
     data/inputs/scaling/snake_64_h32.png \
@@ -1499,6 +1506,8 @@ loader/test_runner-0015_loader_quicklook_pixelformat.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
 loader/test_runner-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT):  \
 	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
+loader/test_runner-0017_loader_libwebp_pixelformat.$(OBJEXT):  \
+	loader/$(am__dirstamp) loader/$(DEPDIR)/$(am__dirstamp)
 palette/$(am__dirstamp):
 	@$(MKDIR_P) palette
 	@: >>palette/$(am__dirstamp)
@@ -1628,6 +1637,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@probe/$(DEPDIR)/test_runner-0001_probe_parse.Po@am__quote@ # am--include-marker
 
@@ -1996,6 +2006,20 @@ loader/test_runner-0016_loader_gnome_thumbnailer_pixelformat.obj: loader/0016_lo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0016_loader_gnome_thumbnailer_pixelformat.c' object='loader/test_runner-0016_loader_gnome_thumbnailer_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0016_loader_gnome_thumbnailer_pixelformat.obj `if test -f 'loader/0016_loader_gnome_thumbnailer_pixelformat.c'; then $(CYGPATH_W) 'loader/0016_loader_gnome_thumbnailer_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0016_loader_gnome_thumbnailer_pixelformat.c'; fi`
+
+loader/test_runner-0017_loader_libwebp_pixelformat.o: loader/0017_loader_libwebp_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0017_loader_libwebp_pixelformat.o -MD -MP -MF loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Tpo -c -o loader/test_runner-0017_loader_libwebp_pixelformat.o `test -f 'loader/0017_loader_libwebp_pixelformat.c' || echo '$(srcdir)/'`loader/0017_loader_libwebp_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Tpo loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0017_loader_libwebp_pixelformat.c' object='loader/test_runner-0017_loader_libwebp_pixelformat.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0017_loader_libwebp_pixelformat.o `test -f 'loader/0017_loader_libwebp_pixelformat.c' || echo '$(srcdir)/'`loader/0017_loader_libwebp_pixelformat.c
+
+loader/test_runner-0017_loader_libwebp_pixelformat.obj: loader/0017_loader_libwebp_pixelformat.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT loader/test_runner-0017_loader_libwebp_pixelformat.obj -MD -MP -MF loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Tpo -c -o loader/test_runner-0017_loader_libwebp_pixelformat.obj `if test -f 'loader/0017_loader_libwebp_pixelformat.c'; then $(CYGPATH_W) 'loader/0017_loader_libwebp_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0017_loader_libwebp_pixelformat.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Tpo loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='loader/0017_loader_libwebp_pixelformat.c' object='loader/test_runner-0017_loader_libwebp_pixelformat.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o loader/test_runner-0017_loader_libwebp_pixelformat.obj `if test -f 'loader/0017_loader_libwebp_pixelformat.c'; then $(CYGPATH_W) 'loader/0017_loader_libwebp_pixelformat.c'; else $(CYGPATH_W) '$(srcdir)/loader/0017_loader_libwebp_pixelformat.c'; fi`
 
 palette/test_runner-0001_kmeans_init.o: palette/0001_kmeans_init.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT palette/test_runner-0001_kmeans_init.o -MD -MP -MF palette/$(DEPDIR)/test_runner-0001_kmeans_init.Tpo -c -o palette/test_runner-0001_kmeans_init.o `test -f 'palette/0001_kmeans_init.c' || echo '$(srcdir)/'`palette/0001_kmeans_init.c
@@ -2546,6 +2570,7 @@ distclean: distclean-am
 	-rm -f loader/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
 	-rm -f palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po
 	-rm -f probe/$(DEPDIR)/test_runner-0001_probe_parse.Po
 	-rm -f Makefile
@@ -2628,6 +2653,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f loader/$(DEPDIR)/test_runner-0014_loader_builtin_pixelformat.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
 	-rm -f loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po
+	-rm -f loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
 	-rm -f palette/$(DEPDIR)/test_runner-0001_kmeans_init.Po
 	-rm -f probe/$(DEPDIR)/test_runner-0001_probe_parse.Po
 	-rm -f Makefile

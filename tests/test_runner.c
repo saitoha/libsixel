@@ -43,6 +43,7 @@ int test_loader_0015_loader_quicklook_pixelformat(int argc, char **argv);
 int test_loader_0016_loader_gnome_thumbnailer_pixelformat(int argc,
                                                           char **argv);
 int test_aborttrace_0001_img2sixel_aborttrace(int argc, char **argv);
+int test_loader_0017_loader_libwebp_pixelformat(int argc, char **argv);
 
 #if defined(SIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS)
 int test_gdk_pixbuf_loader_0001_gdk_pixbuf_loader(int argc, char **argv);
@@ -101,6 +102,8 @@ static test_entry_t const test_entries[] = {
       test_loader_0016_loader_gnome_thumbnailer_pixelformat },
     { "aborttrace/0001_img2sixel_aborttrace",
       test_aborttrace_0001_img2sixel_aborttrace },
+    { "loader/0017_loader_libwebp_pixelformat",
+      test_loader_0017_loader_libwebp_pixelformat },
 #if defined(SIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS)
     { "gdk-pixbuf-loader/0001_gdk_pixbuf_loader",
       test_gdk_pixbuf_loader_0001_gdk_pixbuf_loader },
