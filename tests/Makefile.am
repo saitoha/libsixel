@@ -495,6 +495,7 @@ TESTS_COMMON_LDADD_VAL = -lm \
         $(COREGRAPHICS_LIBS) \
         $(QUICKLOOK_LIBS) \
         $(CLIPBOARD_LIBS) \
+        $(ABORTTRACE_LIBS) \
         @THREAD_LIBS@
 else
 TESTS_COMMON_LDADD_VAL = $(top_builddir)/src/libsixel.la $(LIBS)
@@ -520,6 +521,7 @@ TESTS_AMALGAMATION_LDADD_COMMON = -lm \
         $(COREGRAPHICS_LIBS) \
         $(QUICKLOOK_LIBS) \
         $(CLIPBOARD_LIBS) \
+        $(ABORTTRACE_LIBS) \
         @THREAD_LIBS@
 else
 TESTS_AMALGAMATION_LDADD_COMMON = $(top_builddir)/src/libsixel.la $(LIBS)
