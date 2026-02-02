@@ -46,6 +46,7 @@ AMALGAMATION_TOOL_CPPFLAGS = $(AM_CPPFLAGS) \
         $(WINHTTP_CFLAGS) \
         $(LIBPNG_CFLAGS) \
         $(LIBJPEG_CFLAGS) \
+        $(LIBWEBP_CFLAGS) \
         $(GDK_PIXBUF_CFLAGS) \
         $(GD_CFLAGS) \
         $(WIC_CFLAGS) \
@@ -62,6 +63,7 @@ AMALGAMATION_TOOL_LIBS = -lm \
         $(WINHTTP_LIBS) \
         $(LIBPNG_LIBS) \
         $(LIBJPEG_LIBS) \
+        $(LIBWEBP_LIBS) \
         $(GDK_PIXBUF_LIBS) \
         $(GD_LIBS) \
         $(WIC_LIBS) \
