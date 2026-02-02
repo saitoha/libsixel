@@ -37,6 +37,7 @@ EXTRA_DIST = .gitattributes \
     snake.pbm \
     snake.pgm \
     snake.png \
+    snake.webp \
     snake.ppm \
     snake.six \
     snake.tga \
