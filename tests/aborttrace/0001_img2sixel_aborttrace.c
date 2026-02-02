@@ -29,11 +29,11 @@ test_aborttrace_0001_img2sixel_aborttrace(int argc, char **argv)
 #if !defined(SIXEL_ENABLE_ABORT_TRACE)
     fprintf(stderr, "abort trace disabled at build time\n");
     return 77;
-#endif
-
+#else
     fprintf(stderr, "aborttrace: runner triggered\n");
     sixel_aborttrace_install_if_unhandled();
     abort();
 
     return EXIT_FAILURE;
+#endif
 }
