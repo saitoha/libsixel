@@ -656,24 +656,14 @@ check-TESTS: $(check_PROGRAMS)
 	@$(am__rm_f) $(TEST_SUITE_LOG)
 	@set +e; \
 	config_header="$(top_builddir)/config.h"; \
-	\
-	if [ -f "$$config_header" ]; then \
-	    for feature in $$(awk '/^#define [A-Z0-9_]+ 1$$/ {print $$2}' "$$config_header"); do \
-	        eval "$$feature=1"; \
-	        export $$feature; \
-	    done; \
-	    for feature in $$(awk '/^\/\* #undef [A-Z0-9_]+/ {print $$3}' "$$config_header"); do \
-	        eval "$$feature=0"; \
-	        export $$feature; \
-	    done; \
-	fi; \
+	eval "`awk ' \
+	    /define[[:space:]]+[A-Z0-9_]+[[:space:]]+1$$/ { print $$2 "=1; export " $$2 ";"; } \
+	    /undef[[:space:]]+[A-Z0-9_]+/ { print $$3 "=0; export " $$3 ";"; } \
+	' "$$config_header"`"; \
 	log_list=""; \
-	for i in $(TEST_LOGS); do \
-	    log_list="$$log_list $$i"; \
-	done; \
+	for i in $(TEST_LOGS); do log_list="$$log_list $$i"; done; \
 	log_list=`echo $$log_list`; \
-	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) \
-	    TEST_LOGS="$$log_list"; \
+	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) TEST_LOGS="$$log_list"; \
 	exit $$?;
 
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
