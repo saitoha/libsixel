@@ -39,6 +39,8 @@
     "/tests/data/inputs/formats/rgba.png"
 #define JPEG_IMAGE_PATH \
     "/tests/data/inputs/formats/grayscale.jpg"
+#define WEBP_IMAGE_PATH \
+    "/tests/data/inputs/snake_64.webp"
 
 typedef struct loader_probe_context {
     int callback_count;
