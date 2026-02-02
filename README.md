@@ -122,7 +122,7 @@ Furthermore some information of SIXEL-ready SDL applications are reported.
   ([movie](https://www.youtube.com/watch?v=XubH2W39Xtc))
 
 
-### Langage Bindings
+### Language Bindings
 
 #### [libsixel-wheel](https://pypi.python.org/pypi/libsixel-wheel/0.4.0)
 
