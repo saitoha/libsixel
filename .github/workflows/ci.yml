@@ -122,7 +122,7 @@ jobs:
               gcovr
             exec_type: bash
 
-          - label: Autotools-ubuntu-x86_64-clang-png-jpeg-coverage
+          - label: Autotools-ubuntu-x86_64-clang-png-jpeg-tiff-coverage
             buildtool: autotools
             runner: ubuntu-latest
             setup_prefix: >-
@@ -131,11 +131,13 @@ jobs:
               --enable-gcov
               --with-png
               --with-jpeg
+              --with-tiff
             extra_packages: >-
               meson
               clang
               libpng-dev
               libjpeg-dev
+              libtiff-dev
             pip_packages: >-
               gcovr
             exec_type: bash
@@ -149,6 +151,7 @@ jobs:
               --enable-gcov
               --without-png
               --without-jpeg
+              --without-tiff
               --with-gdk-pixbuf2
             extra_packages: >-
               clang
@@ -166,6 +169,7 @@ jobs:
               --enable-gcov
               --without-png
               --without-jpeg
+              --without-tiff
               --with-gd
               --disable-abort-trace
             extra_packages: >-
@@ -184,6 +188,21 @@ jobs:
               lcov
             exec_type: bash
 
+          - label: Autotools-macos-aarch64-png-jpegturbo-tiff-coverage
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --enable-gcov
+              --with-png
+              --with-jpeg
+              --with-tiff
+            extra_packages: >-
+              libpng
+              jpeg-turbo
+              libtiff
+              lcov
+            exec_type: bash
+
           - label: Autotools-macos-aarch64-gdk-pixbuf2-coverage
             buildtool: autotools
             runner: macos-latest
@@ -193,6 +212,7 @@ jobs:
               --enable-gcov
               --without-png
               --without-jpeg
+              --without-tiff
               --with-gdk-pixbuf2
             extra_packages: >-
               gdk-pixbuf
@@ -208,6 +228,7 @@ jobs:
               --enable-gcov
               --without-png
               --without-jpeg
+              --without-tiff
               --with-gd
             extra_packages: >-
               gd
@@ -362,7 +383,7 @@ jobs:
               gcovr
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-clang-png-jpeg-coverage
+          - label: Meson-ubuntu-x86_64-clang-png-jpeg-tiff-coverage
             buildtool: meson
             runner: ubuntu-latest
             setup_prefix: >-
@@ -371,11 +392,13 @@ jobs:
               -Db_coverage=true
               -Dpng=enabled
               -Djpeg=enabled
+              -Dtiff=enabled
             extra_packages: >-
               meson
               clang
               libpng-dev
               libjpeg-dev
+              libtiff-dev
             pip_packages: >-
               gcovr
             exec_type: bash
@@ -389,6 +412,7 @@ jobs:
               -Db_coverage=true
               -Dpng=disabled
               -Djpeg=disabled
+              -Dtiff=disabled
               -Dgdk_pixbuf2=enabled
             extra_packages: >-
               meson
@@ -407,6 +431,7 @@ jobs:
               -Db_coverage=true
               -Dpng=disabled
               -Djpeg=disabled
+              -Dtiff=disabled
               -Dgd=enabled
               -Dabort_trace=disabled
             extra_packages: >-
@@ -437,6 +462,7 @@ jobs:
               -Db_coverage=true
               -Dpng=disabled
               -Djpeg=disabled
+              -Dtiff=disabled
               -Dgdk_pixbuf2=enabled
             extra_packages: >-
               meson
@@ -453,6 +479,7 @@ jobs:
               -Db_coverage=true
               -Dpng=disabled
               -Djpeg=disabled
+              -Dtiff=disabled
               -Dgd=enabled
             extra_packages: >-
               meson
@@ -591,6 +618,7 @@ jobs:
             setup_options: >-
               --without-png
               --without-jpeg
+              --without-tiff
             extra_packages: >-
               clang
             exec_type: bash
@@ -901,6 +929,7 @@ jobs:
             setup_options: >-
               -Dpng=disabled
               -Djpeg=disabled
+              -Dtiff=disabled
             extra_packages: >-
               meson
               clang
@@ -1177,6 +1206,7 @@ jobs:
             setup_options: >-
               --without-png
               --without-jpeg
+              --without-tiff
             extra_packages: >-
               clang
             exec_type: bash
@@ -1193,12 +1223,13 @@ jobs:
               -Db_ndebug=false
               -Dpng=disabled
               -Djpeg=disabled
+              -Dtiff=disabled
             extra_packages: >-
               meson
               clang
             exec_type: bash
 
-          - label: Autotools-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg
+          - label: Autotools-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg-tiff
             buildtool: autotools
             runner: ubuntu-latest
             setup_prefix: >-
@@ -1208,14 +1239,16 @@ jobs:
             setup_options: >-
               --with-png
               --with-jpeg
+              --with-tiff
             extra_packages: >-
               meson
               clang
               libpng-dev
               libjpeg-dev
+              libtiff-dev
             exec_type: bash
 
-          - label: Meson-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg
+          - label: Meson-ubuntu-x86_64-clang-ASan-UBSan-png-jpeg-tiff
             buildtool: meson
             runner: ubuntu-latest
             setup_prefix: >-
@@ -1227,11 +1260,13 @@ jobs:
               -Db_ndebug=false
               -Dpng=enabled
               -Djpeg=enabled
+              -Dtiff=enabled
             extra_packages: >-
               meson
               clang
               libpng-dev
               libjpeg-dev
+              libtiff-dev
             exec_type: bash
 
           - label: Autotools-ubuntu-x86_64-ASan-UBSan-gdk-pixbuf2
@@ -1244,6 +1279,7 @@ jobs:
             setup_options: >-
               --without-png
               --without-jpeg
+              --without-tiff
               --with-gdk-pixbuf2
             extra_packages: >-
               clang
@@ -1262,6 +1298,7 @@ jobs:
               -Db_ndebug=false
               -Dpng=disabled
               -Djpeg=disabled
+              -Dtiff=disabled
               -Dgdk_pixbuf2=enabled
             extra_packages: >-
               meson
@@ -1279,6 +1316,7 @@ jobs:
             setup_options: >-
               --without-png
               --without-jpeg
+              --without-tiff
               --with-gd
               --disable-abort-trace
             extra_packages: >-
@@ -1298,6 +1336,7 @@ jobs:
               -Db_ndebug=false
               -Dpng=disabled
               -Djpeg=disabled
+              -Dtiff=disabled
               -Dgd=enabled
               -Dabort_trace=disabled
             extra_packages: >-
@@ -1316,6 +1355,7 @@ jobs:
             setup_options: >-
               --without-png
               --without-jpeg
+              --without-tiff
               --with-gdk-pixbuf2
             extra_packages: >-
               gdk-pixbuf
@@ -1333,6 +1373,7 @@ jobs:
               -Db_ndebug=false
               -Dpng=disabled
               -Djpeg=disabled
+              -Dtiff=disabled
               -Dgdk_pixbuf2=enabled
             extra_packages: >-
               meson
@@ -1349,6 +1390,7 @@ jobs:
             setup_options: >-
               --without-png
               --without-jpeg
+              --without-tiff
               --with-gd
             extra_packages: >-
               gd
@@ -1366,6 +1408,7 @@ jobs:
               -Db_ndebug=false
               -Dpng=disabled
               -Djpeg=disabled
+              -Dtiff=disabled
               -Dgd=enabled
             extra_packages: >-
               meson
@@ -1448,6 +1491,7 @@ jobs:
               -Db_ndebug=false
               -Dpng=disabled
               -Djpeg=disabled
+              -Dtiff=disabled
             extra_packages: >-
               meson
               clang
@@ -1486,6 +1530,7 @@ jobs:
             setup_options: >-
               --without-png
               --without-jpeg
+              --without-tiff
             extra_packages: >-
               clang
             exec_type: bash
@@ -1502,6 +1547,7 @@ jobs:
               -Db_ndebug=false
               -Dpng=disabled
               -Djpeg=disabled
+              -Dtiff=disabled
             extra_packages: >-
               meson
               clang
@@ -1517,6 +1563,7 @@ jobs:
             setup_options: >-
               --without-png
               --without-jpeg
+              --without-tiff
             exec_type: bash
 
           - label: Meson-macos-aarch64-TSan
@@ -1531,6 +1578,7 @@ jobs:
               -Db_ndebug=false
               -Dpng=disabled
               -Djpeg=disabled
+              -Dtiff=disabled
             extra_packages: >-
               meson
               gd
@@ -1651,6 +1699,7 @@ jobs:
               --disable-shared
               --without-png
               --without-jpeg
+              --without-tiff
               --without-libcurl
             exec_type: bash
 
@@ -1667,6 +1716,7 @@ jobs:
               -Ddefault_library=static
               -Dpng=disabled
               -Djpeg=disabled
+              -Dtiff=disabled
               -Dcurl=disabled
             check_target:
               test --wrapper "$PWD"/build-aux/ape-wrapper
@@ -1687,6 +1737,7 @@ jobs:
               --disable-shared
               --without-png
               --without-jpeg
+              --without-tiff
               --without-libcurl
               --without-coregraphics
               --disable-quicklook-extension
@@ -1707,6 +1758,7 @@ jobs:
               -Ddefault_library=static
               -Dpng=disabled
               -Djpeg=disabled
+              -Dtiff=disabled
               -Dcurl=disabled
               -Dcoregraphics=disabled
               -Dquicklook_extension=disabled
@@ -1732,6 +1784,7 @@ jobs:
               --disable-shared
               --without-png
               --without-jpeg
+              --without-tiff
               --without-libcurl
               --disable-wiccodec
             extra_packages: >-
