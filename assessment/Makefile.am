@@ -27,6 +27,7 @@ AMALGAMATION_LSQA_CPPFLAGS = $(AM_CPPFLAGS) \
         $(LIBCURL_CFLAGS) \
         $(WINHTTP_CFLAGS) \
         $(LIBPNG_CFLAGS) \
+        $(LIBTIFF_CFLAGS) \
         $(LIBJPEG_CFLAGS) \
         $(LIBWEBP_CFLAGS) \
         $(GDK_PIXBUF_CFLAGS) \
@@ -43,6 +44,7 @@ AMALGAMATION_LSQA_LIBS = -lm \
         $(LIBCURL_LIBS) \
         $(WINHTTP_LIBS) \
         $(LIBPNG_LIBS) \
+        $(LIBTIFF_LIBS) \
         $(LIBJPEG_LIBS) \
         $(LIBWEBP_LIBS) \
         $(GDK_PIXBUF_LIBS) \

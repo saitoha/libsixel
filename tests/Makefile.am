@@ -419,6 +419,12 @@ TESTS = \
     regression/t/0024_lsqa_format_tga_type10_rgb.t \
     regression/t/0025_lsqa_format_tga_type11_gray.t \
     regression/t/0026_lsqa_roundtrip_rgba_small.t \
+    regression/t/0027_lsqa_format_tiff_rgb_small.t \
+    regression/t/0028_lsqa_format_tiff_palette_small.t \
+    regression/t/0029_lsqa_format_tiff_grayscale.t \
+    regression/t/0030_lsqa_format_tiff_rgba.t \
+    regression/t/0031_lsqa_format_tiff_lzw.t \
+    regression/t/0032_lsqa_format_tiff_tiled.t \
     sixel2png/t/0001_version.t \
     sixel2png/t/0002_help.t \
     sixel2png/t/0002_missing_args.t \
@@ -671,9 +677,13 @@ check-TESTS: $(check_PROGRAMS)
 
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/grayscale.jpg \
+    data/inputs/formats/grayscale.tiff \
     data/inputs/formats/palette.png \
     data/inputs/formats/rgb.png \
+    data/inputs/formats/rgb-lzw.tiff \
+    data/inputs/formats/rgb-tiled.tiff \
     data/inputs/formats/rgba.png \
+    data/inputs/formats/rgba.tiff \
     data/inputs/formats/snake-tga-type1-pal4.tga \
     data/inputs/formats/snake-tga-type1-pal8.tga \
     data/inputs/formats/snake-tga-type2-rgb.tga \
@@ -686,6 +696,8 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/stbi_minimal.psd \
     data/inputs/formats/stbi_minimal.pic \
     data/inputs/snake_64.png \
+    data/inputs/snake_64.tiff \
+    data/inputs/snake_64-indexed.tiff \
     data/inputs/snake_64.webp \
     data/inputs/scaling/snake_64_80pct.png \
     data/inputs/scaling/snake_64_120pct.png \

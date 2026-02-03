@@ -1,0 +1,438 @@
+/*
+ * SPDX-License-Identifier: MIT
+ *
+ * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
+ * Copyright (c) 2014-2019 Hayaki Saito
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ *
+ * libtiff-backed loader helpers. The implementation stays close to other
+ * loader backends so the rest of libsixel continues to operate on decoded
+ * RGBA buffers and consistent metadata.
+ */
+
+#if defined(HAVE_CONFIG_H)
+#include "config.h"
+#endif
+
+#if HAVE_LIBTIFF
+
+#include <stdio.h>
+
+#if HAVE_STRING_H
+# include <string.h>
+#endif
+#if HAVE_ERRNO_H
+# include <errno.h>
+#endif
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif
+#if HAVE_STDINT_H
+# include <stdint.h>
+#endif
+
+#include <tiffio.h>
+
+#include <sixel.h>
+
+#include "allocator.h"
+#include "chunk.h"
+#include "frame.h"
+#include "loader-common.h"
+#include "loader-libtiff.h"
+#include "logger.h"
+
+typedef struct tiff_memory_chunk {
+    unsigned char const *buffer;
+    toff_t size;
+    toff_t offset;
+} tiff_memory_chunk_t;
+
+static tsize_t
+tiff_memory_read(thandle_t handle, tdata_t data, tsize_t length)
+{
+    tiff_memory_chunk_t *chunk;
+    tsize_t to_copy;
+    toff_t available;
+
+    chunk = (tiff_memory_chunk_t *)handle;
+    if (chunk->offset >= chunk->size) {
+        return 0;
+    }
+
+    available = chunk->size - chunk->offset;
+    to_copy = length;
+    if ((toff_t)to_copy > available) {
+        to_copy = (tsize_t)available;
+    }
+
+    if (to_copy > 0) {
+        memcpy(data, chunk->buffer + chunk->offset, to_copy);
+        chunk->offset += (toff_t)to_copy;
+    }
+
+    return to_copy;
+}
+
+static tsize_t
+tiff_memory_write(thandle_t handle, tdata_t data, tsize_t length)
+{
+    (void)handle;
+    (void)data;
+    (void)length;
+
+    return 0;
+}
+
+static toff_t
+tiff_memory_seek(thandle_t handle, toff_t offset, int whence)
+{
+    tiff_memory_chunk_t *chunk;
+    toff_t new_offset;
+
+    chunk = (tiff_memory_chunk_t *)handle;
+    switch (whence) {
+    case SEEK_SET:
+        new_offset = offset;
+        break;
+    case SEEK_CUR:
+        if (offset > chunk->size - chunk->offset) {
+            new_offset = chunk->size;
+        } else {
+            new_offset = chunk->offset + offset;
+        }
+        break;
+    case SEEK_END:
+        if (offset > chunk->size) {
+            new_offset = 0;
+        } else {
+            new_offset = chunk->size - offset;
+        }
+        break;
+    default:
+        return (toff_t)-1;
+    }
+
+    if (new_offset > chunk->size) {
+        new_offset = chunk->size;
+    }
+
+    chunk->offset = new_offset;
+    return chunk->offset;
+}
+
+static int
+tiff_memory_close(thandle_t handle)
+{
+    (void)handle;
+    return 0;
+}
+
+static toff_t
+tiff_memory_size(thandle_t handle)
+{
+    tiff_memory_chunk_t *chunk;
+
+    chunk = (tiff_memory_chunk_t *)handle;
+    return chunk->size;
+}
+
+static int
+tiff_memory_map(thandle_t handle, tdata_t *data, toff_t *size)
+{
+    (void)handle;
+    (void)data;
+    (void)size;
+
+    return 0;
+}
+
+static void
+tiff_memory_unmap(thandle_t handle, tdata_t data, toff_t size)
+{
+    (void)handle;
+    (void)data;
+    (void)size;
+}
+
+/*
+ * Decode a TIFF stream into an RGBA buffer.
+ *
+ * The memory-backed TIFF client uses the following flow:
+ *
+ *    +-----------+     +-----------------+     +--------------------+
+ *    | TIFF data | --> | libtiff decode | --> | RGBA pixel buffer  |
+ *    +-----------+     +-----------------+     +--------------------+
+ */
+static SIXELSTATUS
+load_tiff(unsigned char      /* out */ **result,
+          unsigned char      /* in */  *buffer,
+          size_t             /* in */  size,
+          int                /* out */ *pwidth,
+          int                /* out */ *pheight,
+          int                /* out */ *ppixelformat,
+          sixel_allocator_t  /* in */  *allocator)
+{
+    SIXELSTATUS status;
+    TIFF *tif;
+    tiff_memory_chunk_t chunk;
+    uint32_t width;
+    uint32_t height;
+    uint32_t *raster;
+    size_t pixel_count;
+    size_t pixel_bytes;
+    size_t index;
+    unsigned char *pixels;
+    uint32_t pixel;
+    size_t offset;
+
+    status = SIXEL_TIFF_ERROR;
+    tif = NULL;
+    raster = NULL;
+    pixels = NULL;
+    width = 0;
+    height = 0;
+    pixel_count = 0;
+    pixel_bytes = 0;
+
+    chunk.buffer = buffer;
+    chunk.size = (toff_t)size;
+    chunk.offset = 0;
+
+    tif = TIFFClientOpen("sixel-memory",
+                         "r",
+                         (thandle_t)&chunk,
+                         tiff_memory_read,
+                         tiff_memory_write,
+                         tiff_memory_seek,
+                         tiff_memory_close,
+                         tiff_memory_size,
+                         tiff_memory_map,
+                         tiff_memory_unmap);
+    if (tif == NULL) {
+        sixel_helper_set_additional_message(
+            "load_tiff: TIFFClientOpen() failed.");
+        goto cleanup;
+    }
+
+    if (!TIFFGetField(tif, TIFFTAG_IMAGEWIDTH, &width) ||
+        !TIFFGetField(tif, TIFFTAG_IMAGELENGTH, &height)) {
+        sixel_helper_set_additional_message(
+            "load_tiff: missing image dimensions.");
+        goto cleanup;
+    }
+
+    if (width == 0 || height == 0) {
+        sixel_helper_set_additional_message(
+            "load_tiff: invalid image dimensions.");
+        goto cleanup;
+    }
+
+    if (width > INT_MAX || height > INT_MAX) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto cleanup;
+    }
+
+    if ((size_t)width > SIZE_MAX / (size_t)height) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto cleanup;
+    }
+    pixel_count = (size_t)width * (size_t)height;
+
+    if (pixel_count > SIZE_MAX / sizeof(uint32_t)) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto cleanup;
+    }
+
+    raster = (uint32_t *)sixel_allocator_malloc(
+        allocator,
+        pixel_count * sizeof(uint32_t));
+    if (raster == NULL) {
+        sixel_helper_set_additional_message(
+            "load_tiff: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto cleanup;
+    }
+
+    if (!TIFFReadRGBAImageOriented(
+            tif, width, height, raster, ORIENTATION_TOPLEFT, 0)) {
+        sixel_helper_set_additional_message(
+            "load_tiff: TIFFReadRGBAImageOriented() failed.");
+        goto cleanup;
+    }
+
+    if (pixel_count > SIZE_MAX / 4) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto cleanup;
+    }
+    pixel_bytes = pixel_count * 4;
+
+    pixels = (unsigned char *)sixel_allocator_malloc(allocator, pixel_bytes);
+    if (pixels == NULL) {
+        sixel_helper_set_additional_message(
+            "load_tiff: sixel_allocator_malloc() failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto cleanup;
+    }
+
+    for (index = 0; index < pixel_count; ++index) {
+        pixel = raster[index];
+        offset = index * 4;
+        pixels[offset + 0] = TIFFGetR(pixel);
+        pixels[offset + 1] = TIFFGetG(pixel);
+        pixels[offset + 2] = TIFFGetB(pixel);
+        pixels[offset + 3] = TIFFGetA(pixel);
+    }
+
+    *result = pixels;
+    *pwidth = (int)width;
+    *pheight = (int)height;
+    *ppixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+    status = SIXEL_OK;
+
+cleanup:
+    if (raster != NULL) {
+        sixel_allocator_free(allocator, raster);
+    }
+    if (status != SIXEL_OK && pixels != NULL) {
+        sixel_allocator_free(allocator, pixels);
+        pixels = NULL;
+        *result = NULL;
+    }
+    if (tif != NULL) {
+        TIFFClose(tif);
+    }
+
+    return status;
+}
+
+/*
+ * Dedicated libtiff loader wiring for the common loader callbacks.
+ */
+SIXELSTATUS
+load_with_libtiff(
+    sixel_chunk_t const       /* in */     *pchunk,
+    int                       /* in */     fstatic,
+    int                       /* in */     fuse_palette,
+    int                       /* in */     reqcolors,
+    unsigned char             /* in */     *bgcolor,
+    int                       /* in */     loop_control,
+    sixel_load_image_function /* in */     fn_load,
+    void                      /* in/out */ *context)
+{
+    SIXELSTATUS status;
+    sixel_frame_t *frame;
+    unsigned char *pixels;
+
+    status = SIXEL_FALSE;
+    frame = NULL;
+    pixels = NULL;
+
+    (void)fstatic;
+    (void)fuse_palette;
+    (void)reqcolors;
+    (void)loop_control;
+
+    status = sixel_frame_new(&frame, pchunk->allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = load_tiff(&pixels,
+                       pchunk->buffer,
+                       pchunk->size,
+                       &frame->width,
+                       &frame->height,
+                       &frame->pixelformat,
+                       pchunk->allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    sixel_frame_set_pixels(frame, pixels);
+
+    status = sixel_frame_strip_alpha(frame, bgcolor);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = fn_load(frame, context);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    sixel_frame_unref(frame);
+
+    return status;
+}
+
+int
+loader_can_try_libtiff(sixel_chunk_t const *chunk)
+{
+    if (chunk == NULL) {
+        return 0;
+    }
+
+    return chunk_is_tiff(chunk);
+}
+
+#else  /* !HAVE_LIBTIFF */
+
+/*
+ * Provide a dummy symbol so that pedantic compilers do not flag the unit as
+ * empty when libtiff support is disabled at configure time.
+ */
+enum { sixel_loader_libtiff_placeholder = 0 };
+
+#if defined(__GNUC__) || defined(__clang__)
+# define SIXEL_LIBTIFF_PLACEHOLDER_UNUSED __attribute__((unused))
+#else
+# define SIXEL_LIBTIFF_PLACEHOLDER_UNUSED
+#endif
+
+static void
+sixel_loader_libtiff_placeholder_function(void)
+    SIXEL_LIBTIFF_PLACEHOLDER_UNUSED;
+
+static void
+sixel_loader_libtiff_placeholder_function(void)
+{
+    /*
+     * Tie the placeholder enum to a symbol so MSVC does not warn about an
+     * empty translation unit when libtiff is disabled.
+     */
+    (void)sixel_loader_libtiff_placeholder;
+}
+
+#undef SIXEL_LIBTIFF_PLACEHOLDER_UNUSED
+
+#endif  /* HAVE_LIBTIFF */
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
+/* EOF */

@@ -1090,6 +1090,12 @@ AC_ARG_WITH([png],
             [],
             [with_png=auto])
 
+AC_ARG_WITH([tiff],
+            [AS_HELP_STRING([--with-tiff],
+                            [whether to build with libtiff (default: auto)])],
+            [],
+            [with_tiff=auto])
+
 AC_ARG_WITH([webp],
             [AS_HELP_STRING([--with-webp],
                             [whether to build with libwebp (default: auto)])],
@@ -1697,6 +1703,8 @@ LIBJPEG_PKG_NAME=""
 have_webp="no"
 LIBWEBP_PKG_NAME=""
 have_png="no"
+have_tiff="no"
+LIBTIFF_PKG_NAME=""
 have_winpthread="no"
 have_wic="no"
 have_coregraphics="no"
@@ -2599,6 +2607,69 @@ if test x$with_png != xno; then
 fi
 AC_SUBST(LIBPNG_CFLAGS)
 AC_SUBST(LIBPNG_LIBS)
+
+if test x$with_tiff != xno; then
+    if test x$build = x$host; then
+        AC_MSG_NOTICE([checking for tiff])
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_tiff != xyes -a x$with_tiff != xauto; then
+            if test ! -d "$with_tiff"; then
+                AC_MSG_ERROR(["${with_tiff}" is not directory])
+            fi
+            ADDED_CFLAGS="-I${with_tiff}/include"
+            ADDED_LIBS="-L${with_tiff}/lib -ltiff"
+        else
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -ltiff"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -ltiff"
+            fi
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
+        AC_CHECK_HEADER([tiffio.h],
+                        [AC_CHECK_LIB([tiff],
+                                      [TIFFOpen],
+                                      [have_tiff=yes
+                                       LIBTIFF_CFLAGS=$ADDED_CFLAGS
+                                       LIBTIFF_LIBS=$ADDED_LIBS],
+                                      [have_tiff=no])],
+                        [have_tiff=no])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        if test x$have_tiff != xyes -a ! -d "$with_tiff"; then
+            if test x${PKG_CONFIG} != x; then
+                PKG_CHECK_MODULES(LIBTIFF,
+                                  [libtiff-4],
+                                  [have_tiff=yes
+                                   LIBTIFF_PKG_NAME=libtiff-4],
+                                  [have_tiff=no])
+            fi
+        fi
+    fi
+    if test x$have_tiff = xyes; then
+        AC_DEFINE(HAVE_LIBTIFF, 1, [whether libtiff is available])
+        loaders="${loaders} tiff"
+        if test x$LIBTIFF_PKG_NAME != x; then
+            REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBTIFF_PKG_NAME"
+        else
+            REQUIRES_PRIVATE="$REQUIRES_PRIVATE libtiff-4"
+        fi
+        LIBS_PRIVATE="$LIBS_PRIVATE $LIBTIFF_LIBS"
+        AC_MSG_NOTICE([libtiff cflags is ${LIBTIFF_CFLAGS}])
+        AC_MSG_NOTICE([libtiff libs is ${LIBTIFF_LIBS}])
+    else
+        if test x$with_tiff != xauto; then
+            AC_MSG_ERROR([unable to find libtiff])
+        fi
+        AC_MSG_NOTICE([libtiff is not available])
+    fi
+fi
+AC_SUBST(LIBTIFF_CFLAGS)
+AC_SUBST(LIBTIFF_LIBS)
 
 if test x$with_webp != xno; then
     if test x$build = x$host; then

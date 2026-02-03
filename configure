@@ -703,6 +703,8 @@ WIC_LIBS
 WIC_CFLAGS
 LIBWEBP_LIBS
 LIBWEBP_CFLAGS
+LIBTIFF_LIBS
+LIBTIFF_CFLAGS
 LIBPNG_LIBS
 LIBPNG_CFLAGS
 LIBJPEG_LIBS
@@ -960,6 +962,7 @@ enable_quicklook_preview
 with_libcurl
 with_jpeg
 with_png
+with_tiff
 with_webp
 with_winpthread
 with_wic
@@ -1009,6 +1012,8 @@ LIBJPEG_CFLAGS
 LIBJPEG_LIBS
 LIBPNG_CFLAGS
 LIBPNG_LIBS
+LIBTIFF_CFLAGS
+LIBTIFF_LIBS
 LIBWEBP_CFLAGS
 LIBWEBP_LIBS
 PYTHON
@@ -1714,6 +1719,7 @@ Optional Packages:
   --with-libcurl          whether to build with libcurl (default: auto)
   --with-jpeg             whether to build with libjpeg (default: auto)
   --with-png              whether to build with libpng (default: auto)
+  --with-tiff             whether to build with libtiff (default: auto)
   --with-webp             whether to build with libwebp (default: auto)
   --with-winpthread       whether to build with libwinpthread, windows only
                           (default: no)
@@ -1777,6 +1783,10 @@ Some influential environment variables:
   LIBPNG_CFLAGS
               C compiler flags for LIBPNG, overriding pkg-config
   LIBPNG_LIBS linker flags for LIBPNG, overriding pkg-config
+  LIBTIFF_CFLAGS
+              C compiler flags for LIBTIFF, overriding pkg-config
+  LIBTIFF_LIBS
+              linker flags for LIBTIFF, overriding pkg-config
   LIBWEBP_CFLAGS
               C compiler flags for LIBWEBP, overriding pkg-config
   LIBWEBP_LIBS
@@ -17173,6 +17183,17 @@ fi
 
 
 
+# Check whether --with-tiff was given.
+if test ${with_tiff+y}
+then :
+  withval=$with_tiff;
+else case e in #(
+  e) with_tiff=auto ;;
+esac
+fi
+
+
+
 # Check whether --with-webp was given.
 if test ${with_webp+y}
 then :
@@ -20570,6 +20591,8 @@ LIBJPEG_PKG_NAME=""
 have_webp="no"
 LIBWEBP_PKG_NAME=""
 have_png="no"
+have_tiff="no"
+LIBTIFF_PKG_NAME=""
 have_winpthread="no"
 have_wic="no"
 have_coregraphics="no"
@@ -23410,6 +23433,195 @@ printf "%s\n" "$as_me: libpng libs is ${LIBPNG_LIBS}" >&6;}
         fi
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libpng is not available" >&5
 printf "%s\n" "$as_me: libpng is not available" >&6;}
+    fi
+fi
+
+
+
+if test x$with_tiff != xno; then
+    if test x$build = x$host; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for tiff" >&5
+printf "%s\n" "$as_me: checking for tiff" >&6;}
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        if test x$with_tiff != xyes -a x$with_tiff != xauto; then
+            if test ! -d "$with_tiff"; then
+                as_fn_error $? "\"${with_tiff}\" is not directory" "$LINENO" 5
+            fi
+            ADDED_CFLAGS="-I${with_tiff}/include"
+            ADDED_LIBS="-L${with_tiff}/lib -ltiff"
+        else
+            if test x${prefix} != x -a x${prefix} != xNONE; then
+                ADDED_CFLAGS="-I${prefix}/include"
+                ADDED_LIBS="-L${prefix}/lib -ltiff"
+            else
+                ADDED_CFLAGS="-I/usr/local/include"
+                ADDED_LIBS="-L/usr/local/lib -ltiff"
+            fi
+        fi
+        CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
+        LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
+        ac_fn_c_check_header_compile "$LINENO" "tiffio.h" "ac_cv_header_tiffio_h" "$ac_includes_default"
+if test "x$ac_cv_header_tiffio_h" = xyes
+then :
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for TIFFOpen in -ltiff" >&5
+printf %s "checking for TIFFOpen in -ltiff... " >&6; }
+if test ${ac_cv_lib_tiff_TIFFOpen+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_check_lib_save_LIBS=$LIBS
+LIBS="-ltiff  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.
+   The 'extern "C"' is for builds by C++ compilers;
+   although this is not generally supported in C code supporting it here
+   has little cost and some practical benefit (sr 110532).  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char TIFFOpen (void);
+int
+main (void)
+{
+return TIFFOpen ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  ac_cv_lib_tiff_TIFFOpen=yes
+else case e in #(
+  e) ac_cv_lib_tiff_TIFFOpen=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_tiff_TIFFOpen" >&5
+printf "%s\n" "$ac_cv_lib_tiff_TIFFOpen" >&6; }
+if test "x$ac_cv_lib_tiff_TIFFOpen" = xyes
+then :
+  have_tiff=yes
+                                       LIBTIFF_CFLAGS=$ADDED_CFLAGS
+                                       LIBTIFF_LIBS=$ADDED_LIBS
+else case e in #(
+  e) have_tiff=no ;;
+esac
+fi
+
+else case e in #(
+  e) have_tiff=no ;;
+esac
+fi
+
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        if test x$have_tiff != xyes -a ! -d "$with_tiff"; then
+            if test x${PKG_CONFIG} != x; then
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for libtiff-4" >&5
+printf %s "checking for libtiff-4... " >&6; }
+
+if test -n "$LIBTIFF_CFLAGS"; then
+    pkg_cv_LIBTIFF_CFLAGS="$LIBTIFF_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libtiff-4\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libtiff-4") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBTIFF_CFLAGS=`$PKG_CONFIG --cflags "libtiff-4" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$LIBTIFF_LIBS"; then
+    pkg_cv_LIBTIFF_LIBS="$LIBTIFF_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"libtiff-4\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "libtiff-4") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBTIFF_LIBS=`$PKG_CONFIG --libs "libtiff-4" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+                LIBTIFF_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "libtiff-4" 2>&1`
+        else
+                LIBTIFF_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "libtiff-4" 2>&1`
+        fi
+        # Put the nasty error message in config.log where it belongs
+        echo "$LIBTIFF_PKG_ERRORS" >&5
+
+        have_tiff=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        have_tiff=no
+else
+        LIBTIFF_CFLAGS=$pkg_cv_LIBTIFF_CFLAGS
+        LIBTIFF_LIBS=$pkg_cv_LIBTIFF_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        have_tiff=yes
+                                   LIBTIFF_PKG_NAME=libtiff-4
+fi
+            fi
+        fi
+    fi
+    if test x$have_tiff = xyes; then
+
+printf "%s\n" "#define HAVE_LIBTIFF 1" >>confdefs.h
+
+        loaders="${loaders} tiff"
+        if test x$LIBTIFF_PKG_NAME != x; then
+            REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBTIFF_PKG_NAME"
+        else
+            REQUIRES_PRIVATE="$REQUIRES_PRIVATE libtiff-4"
+        fi
+        LIBS_PRIVATE="$LIBS_PRIVATE $LIBTIFF_LIBS"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libtiff cflags is ${LIBTIFF_CFLAGS}" >&5
+printf "%s\n" "$as_me: libtiff cflags is ${LIBTIFF_CFLAGS}" >&6;}
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libtiff libs is ${LIBTIFF_LIBS}" >&5
+printf "%s\n" "$as_me: libtiff libs is ${LIBTIFF_LIBS}" >&6;}
+    else
+        if test x$with_tiff != xauto; then
+            as_fn_error $? "unable to find libtiff" "$LINENO" 5
+        fi
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libtiff is not available" >&5
+printf "%s\n" "$as_me: libtiff is not available" >&6;}
     fi
 fi
 

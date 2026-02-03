@@ -502,6 +502,26 @@ if png_dep.found()
                              dependencies: png_dep))
 endif
 
+tiff_opt = get_option('tiff')
+tiff_dep = disabler()
+
+if not tiff_opt.disabled()
+  tiff_dep = dependency('libtiff-4', required: false, method: 'pkg-config')
+  if not tiff_dep.found()
+    tiff_dep = cc.find_library('tiff', required: tiff_opt.enabled())
+  endif
+  if not tiff_dep.found() and tiff_opt.enabled()
+    error('tiff=enabled requires libtiff')
+  endif
+endif
+
+if tiff_dep.found()
+  deps += tiff_dep
+  reqs += tiff_dep
+  conf.set('HAVE_LIBTIFF', 1)
+  loaders += 'tiff'
+endif
+
 jpeg_opt = get_option('jpeg')
 jpeg_dep = disabler()
 
@@ -1136,6 +1156,7 @@ loader_helper_sources = files(
   'src/loader-wic.c',
   'src/loader-gd.c',
   'src/loader-libpng.c',
+  'src/loader-libtiff.c',
   'src/loader-builtin.c',
   'src/loader-common.c',
   'src/loader-registry.c',
@@ -1523,6 +1544,7 @@ if shebang_file != ''
 endif
 
 webp_message = webp_dep.found() ? 'yes' : 'no'
+tiff_message = tiff_dep.found() ? 'yes' : 'no'
 
 message('')
 message('libsixel was configured as follows')
@@ -1541,6 +1563,7 @@ message('       python wheel            : ' + python_wheel_message)
 message('       ruby bindings           : ' + ruby_message)
 message('       gdk-pixbuf SIXEL loader : ' + gdk_pixbuf_loader_message)
 message('       Thumbnailer command     : ' + thumbnailer_message)
+message('       libtiff                 : ' + tiff_message)
 message('       libwebp                 : ' + webp_message)
 message('       Shebang template        : ' + shebang_message)
 message('       SIMD                    : ' + simd_message)

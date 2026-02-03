@@ -97,6 +97,7 @@ srcs = [
   'loader-wic.c',
   'loader-gd.c',
   'loader-libpng.c',
+  'loader-libtiff.c',
   'loader-libjpeg.c',
   'loader-libwebp.c',
   'loader-builtin.c',

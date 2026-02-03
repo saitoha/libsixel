@@ -303,6 +303,9 @@
 /* whether libpng is available */
 #undef HAVE_LIBPNG
 
+/* whether libtiff is available */
+#undef HAVE_LIBTIFF
+
 /* Define to 1 if you have the 'windowscodecs' library (-lwindowscodecs). */
 #undef HAVE_LIBWINDOWSCODECS
 

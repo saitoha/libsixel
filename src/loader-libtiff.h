@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * Copyright (c) 2021-2025 libsixel developers. See `AUTHORS`.
+ * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
  * Copyright (c) 2014-2019 Hayaki Saito
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -22,38 +22,31 @@
  * FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  *
- * Shared loader helpers accessed by backend-specific implementations.  The
- * declarations here keep cross-module dependencies small while allowing
- * backends to reuse detection and thumbnailing utilities.
+ * Prototypes for the libtiff-backed loader.
  */
 
-#ifndef LIBSIXEL_LOADER_COMMON_H
-#define LIBSIXEL_LOADER_COMMON_H
+#ifndef LIBSIXEL_LOADER_LIBTIFF_H
+#define LIBSIXEL_LOADER_LIBTIFF_H
 
 #include <sixel.h>
 
 #include "chunk.h"
 
-#define SIXEL_THUMBNAILER_DEFAULT_SIZE 512
+#if HAVE_LIBTIFF
+SIXELSTATUS load_with_libtiff(
+    sixel_chunk_t const       *pchunk,
+    int                        fstatic,
+    int                        fuse_palette,
+    int                        reqcolors,
+    unsigned char             *bgcolor,
+    int                        loop_control,
+    sixel_load_image_function  fn_load,
+    void                      *context);
 
-void loader_thumbnailer_initialize_size_hint(void);
-int loader_thumbnailer_get_size_hint(void);
-int loader_thumbnailer_get_default_size_hint(void);
-void sixel_helper_set_thumbnail_size_hint(int size);
-void sixel_helper_set_loader_trace(int enable);
-void loader_trace_try(char const *name);
-void loader_trace_result(char const *name, SIXELSTATUS status);
-int loader_trace_is_enabled(void);
-void loader_trace_message(char const *format, ...);
+int loader_can_try_libtiff(sixel_chunk_t const *chunk);
+#endif
 
-int chunk_is_png(sixel_chunk_t const *chunk);
-int chunk_is_jpeg(sixel_chunk_t const *chunk);
-int chunk_is_webp(sixel_chunk_t const *chunk);
-int chunk_is_bmp(sixel_chunk_t const *chunk);
-int chunk_is_gif(sixel_chunk_t const *chunk);
-int chunk_is_tiff(sixel_chunk_t const *chunk);
-
-#endif /* LIBSIXEL_LOADER_COMMON_H */
+#endif /* LIBSIXEL_LOADER_LIBTIFF_H */
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

@@ -20,6 +20,7 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 option('png', type: 'feature', value: 'auto', description: 'Use libpng for PNG support')
+option('tiff', type: 'feature', value: 'auto', description: 'Use libtiff for TIFF support')
 option('jpeg', type: 'feature', value: 'auto', description: 'Use libjpeg for JPEG support')
 option('webp', type: 'feature', value: 'auto', description: 'Use libwebp for WebP support')
 option('curl', type: 'feature', value: 'auto', description: 'Use libcurl for network access')
