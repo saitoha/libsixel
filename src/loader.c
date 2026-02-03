@@ -356,6 +356,9 @@ loader_lookup_token(char const *token,
  * runtime loader chain.  Tokens are matched case-insensitively.  Unknown names
  * are ignored so that new builds remain forward compatible.
  *
+ * When the input ends with "!", the default fallback list is suppressed so
+ * only the explicit tokens are tried.
+ *
  *    user input "gd,coregraphics"
  *                |
  *                v
@@ -380,23 +383,43 @@ loader_build_plan(char const *order,
     char const *cursor;
     char const *token_start;
     char const *token_end;
+    char const *order_end;
     size_t token_length;
     sixel_loader_entry_t const *entry;
     size_t limit;
+    int allow_fallback;
 
     plan_length = 0;
     index = 0;
     cursor = order;
     token_start = order;
     token_end = order;
+    order_end = NULL;
     token_length = 0;
     entry = NULL;
     limit = plan_capacity;
+    allow_fallback = 1;
+
+    if (order != NULL) {
+        order_end = order + strlen(order);
+        while (order_end > order &&
+               isspace((unsigned char)order_end[-1])) {
+            --order_end;
+        }
+        if (order_end > order && order_end[-1] == '!') {
+            allow_fallback = 0;
+            --order_end;
+            while (order_end > order &&
+                   isspace((unsigned char)order_end[-1])) {
+                --order_end;
+            }
+        }
+    }
 
     if (order != NULL && plan != NULL && plan_capacity > 0) {
         token_start = order;
         cursor = order;
-        while (*cursor != '\0') {
+        while (cursor < order_end) {
             if (*cursor == ',') {
                 token_end = cursor;
                 while (token_start < token_end &&
@@ -427,7 +450,7 @@ loader_build_plan(char const *order,
             ++cursor;
         }
 
-        token_end = cursor;
+        token_end = order_end;
         while (token_start < token_end &&
                isspace((unsigned char)*token_start)) {
             ++token_start;
@@ -451,14 +474,16 @@ loader_build_plan(char const *order,
         }
     }
 
-    for (index = 0; index < entry_count && plan_length < limit; ++index) {
-        entry = &entries[index];
-        if (!entry->default_enabled) {
-            continue;
-        }
-        if (!loader_plan_contains(plan, plan_length, entry)) {
-            plan[plan_length] = entry;
-            ++plan_length;
+    if (allow_fallback) {
+        for (index = 0; index < entry_count && plan_length < limit; ++index) {
+            entry = &entries[index];
+            if (!entry->default_enabled) {
+                continue;
+            }
+            if (!loader_plan_contains(plan, plan_length, entry)) {
+                plan[plan_length] = entry;
+                ++plan_length;
+            }
         }
     }
 
@@ -882,7 +907,7 @@ loader_publish_diagnostic(sixel_chunk_t const *pchunk,
                             sizeof(message),
                             &offset,
                             "    - QuickLook rendered a preview during "
-                            "the probe; try -j quicklook.\n");
+                            "the probe; try -L quicklook.\n");
         suggestions += 1;
     }
 #endif
@@ -898,7 +923,7 @@ loader_publish_diagnostic(sixel_chunk_t const *pchunk,
                                 sizeof(message),
                                 &offset,
                                 "    - GNOME thumbnailer definitions match "
-                                "this MIME type; try -j gnome-thumbnailer.\n"
+                                "this MIME type; try -L gnome-thumbnailer.\n"
                                 );
             suggestions += 1;
         }
@@ -921,7 +946,7 @@ loader_publish_diagnostic(sixel_chunk_t const *pchunk,
                             sizeof(message),
                             &offset,
                             "  hint       : Enable one of the suggested "
-                            "loaders with -j.\n");
+                            "loaders with -L.\n");
     } else {
         loader_append_chunk(message,
                             sizeof(message),

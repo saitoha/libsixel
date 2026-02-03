@@ -8,6 +8,7 @@ _img2sixel()
     local opt_short_show opt_short_install opt_short_uninstall
     local opt_threads opt_short_threads
     local opt_precision opt_short_precision
+    local loader_prefix loader_cur
 
     COMPREPLY=()
 
@@ -252,14 +253,24 @@ _img2sixel()
         return 0
         ;;
     -L|--loaders)
-        COMPREPLY=( $( compgen -W 'builtin \
-                                   coregraphics \
-                                   gd \
-                                   gdk-pixbuf2 \
-                                   gnome-thumbnailer \
+        loader_prefix=${cur%,*}
+        loader_cur=${cur##*,}
+        COMPREPLY=( $( compgen -W 'libpng \
+                                   libjpeg \
+                                   libwebp \
                                    libtiff \
+                                   builtin \
+                                   wic \
+                                   coregraphics \
+                                   gdk-pixbuf2 \
+                                   gd \
                                    quicklook \
-                                   wic' -- "$cur" ) )
+                                   gnome-thumbnailer' -- "$loader_cur" ) )
+        if [[ $cur == *,* ]]; then
+            for i in "${!COMPREPLY[@]}"; do
+                COMPREPLY[$i]="${loader_prefix},${COMPREPLY[$i]}"
+            done
+        fi
         return 0
         ;;
     -X|--clustering-colorspace)

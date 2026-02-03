@@ -565,8 +565,10 @@ static cli_option_help_t const g_option_help_table[] = {
         'L',
         "loaders",
         "-L LIST, --loaders=LIST    choose loader priority order\n"
-        "                           LIST is a comma separated set of\n"
-        "                           loader names like 'gd,builtin'\n"
+        "                           LIST is a comma separated list of\n"
+        "                           loader names (prefixes accepted).\n"
+        "                           Append \"!\" to disable fallbacks.\n"
+        "                           Use -H to list available loaders.\n"
     },
     {
         '@',
@@ -642,7 +644,7 @@ static cli_option_help_t const g_option_help_table[] = {
     {
         'H',
         "help",
-        "-H, --help                 show this help\n"
+        "-H, --help                 show this help and available loaders\n"
     }
 };
 
@@ -1277,9 +1279,9 @@ img2sixel_handle_getopt_error(int short_opt, char const *token)
 
 
 
-/* output version info to STDOUT */
+/* output available loader names to the target stream */
 static
-void show_version(void)
+void img2sixel_print_available_loaders(FILE *stream)
 {
     size_t loader_count;
     char const **loader_names;
@@ -1289,6 +1291,40 @@ void show_version(void)
     loader_names = NULL;
     loader_index = 0;
 
+    loader_count = sixel_helper_get_available_loader_names(NULL, 0);
+    if (loader_count > 0) {
+        loader_names = (char const **)malloc(loader_count *
+                                             sizeof(char const *));
+        if (loader_names != NULL) {
+            if (sixel_helper_get_available_loader_names(loader_names,
+                                                        loader_count)
+                != loader_count) {
+                free(loader_names);
+                loader_names = NULL;
+                loader_count = 0;
+            }
+        }
+    }
+
+    fprintf(stream, "available loaders:\n");
+    if (loader_names != NULL && loader_count > 0) {
+        for (loader_index = 0; loader_index < loader_count;
+             ++loader_index) {
+            fprintf(stream, "  %s\n", loader_names[loader_index]);
+        }
+    } else if (loader_count > 0) {
+        fprintf(stream, "  (enumeration failed)\n");
+    } else {
+        fprintf(stream, "  (none)\n");
+    }
+    free(loader_names);
+    fprintf(stream, "\n");
+}
+
+/* output version info to STDOUT */
+static
+void show_version(void)
+{
     printf("img2sixel " PACKAGE_VERSION "\n"
            "\n"
            "configured with:\n"
@@ -1349,34 +1385,7 @@ void show_version(void)
            "\n"
           );
 
-    loader_count = sixel_helper_get_available_loader_names(NULL, 0);
-    if (loader_count > 0) {
-        loader_names = (char const **)malloc(loader_count *
-                                             sizeof(char const *));
-        if (loader_names != NULL) {
-            if (sixel_helper_get_available_loader_names(loader_names,
-                                                        loader_count)
-                != loader_count) {
-                free(loader_names);
-                loader_names = NULL;
-                loader_count = 0;
-            }
-        }
-    }
-
-    printf("available loaders:\n");
-    if (loader_names != NULL && loader_count > 0) {
-        for (loader_index = 0; loader_index < loader_count;
-             ++loader_index) {
-            printf("  %s\n", loader_names[loader_index]);
-        }
-    } else if (loader_count > 0) {
-        printf("  (enumeration failed)\n");
-    } else {
-        printf("  (none)\n");
-    }
-    free(loader_names);
-    printf("\n");
+    img2sixel_print_available_loaders(stdout);
 }
 
 
@@ -1398,6 +1407,8 @@ void show_help(void)
             "                         request image snapshots.\n"
             "\n");
     img2sixel_print_env_help(stdout);
+    fprintf(stdout, "\n");
+    img2sixel_print_available_loaders(stdout);
 }
 
 

@@ -478,9 +478,34 @@ show debugging info and print the planner DAG (Directed Acyclic Graph).
 .TP 5
 .B \-L \fILIST\fP, \-\-loaders=\fILIST\fP
 choose the loader priority order. \fILIST\fP is a comma separated
-sequence of loader names such as \fBlibtiff\fP, \fBgd\fP,
-\fBcoregraphics\fP, or \fBbuiltin\fP. Unknown names are ignored so you can reuse the same
-command line across different builds.
+sequence of loader names. Each entry may be abbreviated by a unique prefix,
+and a trailing "!" disables fallback loaders.
+.br
+Recognized loader names (availability depends on the build):
+.RS
+.IP \(bu 2
+libpng
+.IP \(bu 2
+libjpeg
+.IP \(bu 2
+libwebp
+.IP \(bu 2
+libtiff
+.IP \(bu 2
+builtin
+.IP \(bu 2
+wic
+.IP \(bu 2
+coregraphics
+.IP \(bu 2
+gdk-pixbuf2
+.IP \(bu 2
+gd
+.IP \(bu 2
+quicklook
+.IP \(bu 2
+gnome-thumbnailer
+.RE
 .TP 5
 .B \-@, \-\-drcs
 emit extended DRCS tiles instead of a regular SIXEL image (experimental).
@@ -597,7 +622,7 @@ show version and license info.
 The output also lists the loader backends available in the current build.
 .TP 5
 .B \-H, \-\-help
-print help.
+print help and list available loaders.
 
 
 .SH "ENVIRONMENT VARIABLES"
@@ -790,8 +815,9 @@ integers; defaults to the built-in hint.
 .B SIXEL_LOADER_PRIORITY_LIST
 .br
 override the default loader priority. Accepts the same comma separated
-names recognised by \fB-L\fP/\fB--loaders\fP. The environment setting
-is ignored when the command-line option is present.
+names recognised by \fB-L\fP/\fB--loaders\fP, including prefix matches and
+the trailing "!" suffix. The environment setting is ignored when the
+command-line option is present.
 .TP 5
 .B SIXEL_PALETTE_SAMPLE_TARGET
 .br
