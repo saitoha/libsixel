@@ -502,7 +502,6 @@ TESTS_COMMON_LDADD_VAL = -lm \
         $(COREGRAPHICS_LIBS) \
         $(QUICKLOOK_LIBS) \
         $(CLIPBOARD_LIBS) \
-        $(ABORTTRACE_LIBS) \
         @THREAD_LIBS@
 else
 TESTS_COMMON_LDADD_VAL = $(top_builddir)/src/libsixel.la $(LIBS)
@@ -528,7 +527,6 @@ TESTS_AMALGAMATION_LDADD_COMMON = -lm \
         $(COREGRAPHICS_LIBS) \
         $(QUICKLOOK_LIBS) \
         $(CLIPBOARD_LIBS) \
-        $(ABORTTRACE_LIBS) \
         @THREAD_LIBS@
 else
 TESTS_AMALGAMATION_LDADD_COMMON = $(top_builddir)/src/libsixel.la $(LIBS)
@@ -632,7 +630,9 @@ test_runner_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
 test_runner_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
 test_runner_LDADD = $(TESTS_COMMON_LDADD_VAL) $(GDK_PIXBUF_LIBS)
 endif
-
+if HAVE_ABORT_TRACE
+test_runner_LDADD += $(ABORTTRACE_LIBS)
+endif
 
 LOG_DRIVER = $(T_LOG_DRIVER)
 LOG_DRIVER_FLAGS = $(AM_TEST_LOG_DRIVER_FLAGS)
