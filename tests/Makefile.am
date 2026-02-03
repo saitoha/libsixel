@@ -654,17 +654,7 @@ check-TESTS: $(check_PROGRAMS)
 	@$(am__rm_f) $(RECHECK_LOGS)
 	@$(am__rm_f) $(RECHECK_LOGS:.log=.trs)
 	@$(am__rm_f) $(TEST_SUITE_LOG)
-	@set +e; \
-	config_header="$(top_builddir)/config.h"; \
-	eval "`awk ' \
-	    /define[[:space:]]+[A-Z0-9_]+[[:space:]]+1$$/ { print $$2 "=1; export " $$2 ";"; } \
-	    /undef[[:space:]]+[A-Z0-9_]+/ { print $$3 "=0; export " $$3 ";"; } \
-	' "$$config_header"`"; \
-	log_list=""; \
-	for i in $(TEST_LOGS); do log_list="$$log_list $$i"; done; \
-	log_list=`echo $$log_list`; \
-	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) TEST_LOGS="$$log_list"; \
-	exit $$?;
+	@set +e; $(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG); exit $$?;
 
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/grayscale.jpg \
