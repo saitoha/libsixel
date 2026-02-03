@@ -263,6 +263,36 @@ chunk_is_bmp(sixel_chunk_t const *chunk)
 }
 
 int
+chunk_is_tiff(sixel_chunk_t const *chunk)
+{
+    if (chunk == NULL || chunk->size < 4) {
+        return 0;
+    }
+
+    /*
+     * TIFF headers begin with either "II*\0", "MM\0*", or the BigTIFF
+     * variants "II+\0"/"MM\0+". Checking the first four bytes is enough to
+     * decide whether the stream can be probed by libtiff.
+     */
+    if ((chunk->buffer[0] == 'I' && chunk->buffer[1] == 'I' &&
+         chunk->buffer[2] == (unsigned char)0x2a &&
+         chunk->buffer[3] == (unsigned char)0x00) ||
+        (chunk->buffer[0] == 'M' && chunk->buffer[1] == 'M' &&
+         chunk->buffer[2] == (unsigned char)0x00 &&
+         chunk->buffer[3] == (unsigned char)0x2a) ||
+        (chunk->buffer[0] == 'I' && chunk->buffer[1] == 'I' &&
+         chunk->buffer[2] == (unsigned char)0x2b &&
+         chunk->buffer[3] == (unsigned char)0x00) ||
+        (chunk->buffer[0] == 'M' && chunk->buffer[1] == 'M' &&
+         chunk->buffer[2] == (unsigned char)0x00 &&
+         chunk->buffer[3] == (unsigned char)0x2b)) {
+        return 1;
+    }
+
+    return 0;
+}
+
+int
 chunk_is_gif(sixel_chunk_t const *chunk)
 {
     if (chunk->size < 6) {

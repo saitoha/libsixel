@@ -41,6 +41,7 @@
 #include "loader-gnome-thumbnailer.h"
 #include "loader-libjpeg.h"
 #include "loader-libpng.h"
+#include "loader-libtiff.h"
 #include "loader-libwebp.h"
 #include "loader-quicklook.h"
 #include "loader-registry.h"
@@ -50,7 +51,8 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
     /*
      * Fast loaders take precedence so probing prefers native decoders.
      *
-     * 1. libpng   2. libjpeg   3. libwebp   4. builtin   5+. remaining loaders
+     * 1. libpng   2. libjpeg   3. libwebp   4. libtiff   5. builtin
+     * 6+. remaining loaders
      */
 #if HAVE_LIBPNG
     { "libpng", load_with_libpng, loader_can_try_libpng, 1 },
@@ -60,6 +62,9 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
 #endif
 #if HAVE_WEBP
     { "libwebp", load_with_libwebp, loader_can_try_libwebp, 1 },
+#endif
+#if HAVE_LIBTIFF
+    { "libtiff", load_with_libtiff, loader_can_try_libtiff, 1 },
 #endif
     { "builtin", load_with_builtin, NULL, 1 },
 #if HAVE_WIC
