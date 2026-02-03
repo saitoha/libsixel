@@ -178,7 +178,7 @@ runs:
 
     - name: Setup Cygwin
       if: ${{ fromJSON(inputs.matrix_json).exec_type == 'cygwin' }}
-      uses: cygwin/cygwin-install-action@v4
+      uses: cygwin/cygwin-install-action@v6
       with:
         packages: ${{ fromJSON(inputs.matrix_json).extra_packages || 'make' }}
 
