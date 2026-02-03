@@ -180,6 +180,8 @@ runs:
       if: ${{ fromJSON(inputs.matrix_json).exec_type == 'cygwin' }}
       uses: cygwin/cygwin-install-action@v6
       with:
+        check-hash: 'false'
+        check-installer-sig: 'false'
         packages: ${{ fromJSON(inputs.matrix_json).extra_packages || 'make' }}
 
     - name: Cache Cosmopolitan toolchain
