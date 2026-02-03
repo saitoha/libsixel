@@ -140,16 +140,19 @@ _encodepolicy() {
 }
 
 _loaders() {
-  _values \
+  _values -s , \
     'LOADER' \
+    'libpng[libpng based loader]' \
+    'libjpeg[libjpeg based loader]' \
+    'libwebp[libwebp based loader]' \
+    'libtiff[libtiff based loader]' \
     'builtin[libsixel builtin decoder]' \
+    'wic[Windows Imaging Component loader]' \
     'coregraphics[macOS CoreGraphics loader]' \
     'gd[libgd based loader]' \
     'gdk-pixbuf2[gdk-pixbuf2 image loader]' \
     'gnome-thumbnailer[external thumbnailer helper]' \
-    'libtiff[libtiff based loader]' \
-    'quicklook[macOS Quick Look integration]' \
-    'wic[Windows Imaging Component loader]'
+    'quicklook[macOS Quick Look integration]'
 }
 
 _clusteringcolorspace() {
