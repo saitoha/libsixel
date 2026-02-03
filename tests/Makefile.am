@@ -472,6 +472,7 @@ TESTS_COMMON_CFLAGS_VAL = $(AM_CFLAGS) \
         $(LIBCURL_CFLAGS) \
         $(WINHTTP_CFLAGS) \
         $(LIBPNG_CFLAGS) \
+        $(LIBTIFF_CFLAGS) \
         $(LIBJPEG_CFLAGS) \
         $(LIBWEBP_CFLAGS) \
         $(GDK_PIXBUF_CFLAGS) \
@@ -493,6 +494,7 @@ TESTS_COMMON_LDADD_VAL = -lm \
         $(LIBCURL_LIBS) \
         $(WINHTTP_LIBS) \
         $(LIBPNG_LIBS) \
+        $(LIBTIFF_LIBS) \
         $(LIBJPEG_LIBS) \
         $(LIBWEBP_LIBS) \
         $(GDK_PIXBUF_LIBS) \
@@ -519,6 +521,7 @@ TESTS_AMALGAMATION_LDADD_COMMON = -lm \
         $(LIBCURL_LIBS) \
         $(WINHTTP_LIBS) \
         $(LIBPNG_LIBS) \
+        $(LIBTIFF_LIBS) \
         $(LIBJPEG_LIBS) \
         $(LIBWEBP_LIBS) \
         $(GDK_PIXBUF_LIBS) \
