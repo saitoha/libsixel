@@ -431,6 +431,7 @@ EXTRA_DIST = libsixel-config.in \
              sixel.xml \
              gen_completion_embed.awk \
              gen-amalgamation.sh \
+             fuzz_seed_input.py \
              timer.c \
              lso-timeout.c
 

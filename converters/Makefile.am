@@ -83,7 +83,8 @@ CLEANFILES = *.gcno *.gcda *.gcov \
   $(builddir)/tmp/server.key \
   $(builddir)/tmp/server.crt \
   $(builddir)/tmp/testfile \
-  completion_embed.h
+  completion_embed.h \
+  img2sixel-options-fuzz
 
 # +--------------------------------------------------------------+
 # | Embedded completion header generation pipeline (ASCII view). |
@@ -103,7 +104,7 @@ completion_embed.h: \
 
 if WANT_IMG2SIXEL
 bin_PROGRAMS += img2sixel
-noinst_PROGRAMS += img2sixel-options-fuzz
+noinst_PROGRAMS = img2sixel-options-fuzz
 if WANT_AMALGAMATED_TOOLS
 img2sixel_SOURCES =
 nodist_img2sixel_SOURCES = $(AMALGAMATION_SIXEL)

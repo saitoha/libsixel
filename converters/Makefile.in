@@ -92,9 +92,10 @@ build_triplet = @build@
 host_triplet = @host@
 @WANT_AMALGAMATED_TOOLS_TRUE@am__append_1 = $(AMALGAMATION_SIXEL)
 bin_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
-noinst_PROGRAMS = $(am__EXEEXT_3)
 @AMALGAMATION_NEEDS_OBJC_TRUE@am__append_2 = -x objective-c
 @WANT_IMG2SIXEL_TRUE@am__append_3 = img2sixel
+@WANT_IMG2SIXEL_TRUE@noinst_PROGRAMS =  \
+@WANT_IMG2SIXEL_TRUE@	img2sixel-options-fuzz$(EXEEXT)
 @HAVE_ABORT_TRACE_TRUE@@WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@am__append_4 = $(ABORTTRACE_LIBS)
 @WANT_IMG2SIXEL_TRUE@am__append_5 = $(srcdir)/img2sixel.1
 @WANT_IMG2SIXEL_TRUE@am__append_6 = $(srcdir)/shell-completion/bash/img2sixel
@@ -128,7 +129,6 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 @WANT_IMG2SIXEL_TRUE@am__EXEEXT_1 = img2sixel$(EXEEXT)
 @WANT_SIXEL2PNG_TRUE@am__EXEEXT_2 = sixel2png$(EXEEXT)
-@WANT_IMG2SIXEL_TRUE@am__EXEEXT_3 = img2sixel-options-fuzz$(EXEEXT)
 am__installdirs = "$(DESTDIR)$(bindir)" "$(DESTDIR)$(man1dir)" \
 	"$(DESTDIR)$(bashcompletiondir)" \
 	"$(DESTDIR)$(zshcompletiondir)"
@@ -614,7 +614,8 @@ CLEANFILES = *.gcno *.gcda *.gcov $(builddir)/tmp/*.png \
 	$(builddir)/tmp/*.sixel $(builddir)/tmp/*.txt \
 	$(builddir)/tmp/*.pipe $(builddir)/tmp/server.py \
 	$(builddir)/tmp/server.key $(builddir)/tmp/server.crt \
-	$(builddir)/tmp/testfile completion_embed.h $(am__append_14)
+	$(builddir)/tmp/testfile completion_embed.h \
+	img2sixel-options-fuzz $(am__append_14)
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@img2sixel_SOURCES = $(srcdir)/img2sixel.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/completion_utils.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@                    $(srcdir)/completion_utils.h \
@@ -671,8 +672,7 @@ CLEANFILES = *.gcno *.gcda *.gcov $(builddir)/tmp/*.png \
 @WANT_AMALGAMATED_TOOLS_FALSE@@WANT_IMG2SIXEL_TRUE@        $(AM_CPPFLAGS)
 
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@img2sixel_options_fuzz_CPPFLAGS = $(AMALGAMATION_TOOL_CPPFLAGS) \
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@        -DBUILD_IMG2SIXEL -DHAVE_COMPLETION_EMBED_H \
-@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@        -DIMG2SIXEL_NO_MAIN \
+@WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@        -DBUILD_IMG2SIXEL -DHAVE_COMPLETION_EMBED_H -DIMG2SIXEL_NO_MAIN \
 @WANT_AMALGAMATED_TOOLS_TRUE@@WANT_IMG2SIXEL_TRUE@        -I$(top_builddir)/include/
 
 @WANT_IMG2SIXEL_TRUE@img2sixel_options_fuzz_LDADD =  \
@@ -779,6 +779,10 @@ uninstall-binPROGRAMS:
 clean-binPROGRAMS:
 	$(am__rm_f) $(bin_PROGRAMS)
 	test -z "$(EXEEXT)" || $(am__rm_f) $(bin_PROGRAMS:$(EXEEXT)=)
+
+clean-noinstPROGRAMS:
+	$(am__rm_f) $(noinst_PROGRAMS)
+	test -z "$(EXEEXT)" || $(am__rm_f) $(noinst_PROGRAMS:$(EXEEXT)=)
 $(top_builddir)/amalgamation/$(am__dirstamp):
 	@$(MKDIR_P) $(top_builddir)/amalgamation
 	@: >>$(top_builddir)/amalgamation/$(am__dirstamp)
@@ -1423,7 +1427,8 @@ maintainer-clean-generic:
 	-$(am__rm_f) $(BUILT_SOURCES)
 clean: clean-recursive
 
-clean-am: clean-binPROGRAMS clean-generic clean-libtool mostlyclean-am
+clean-am: clean-binPROGRAMS clean-generic clean-libtool \
+	clean-noinstPROGRAMS mostlyclean-am
 
 distclean: distclean-recursive
 	-rm -f $(top_builddir)/amalgamation/$(DEPDIR)/img2sixel-sixel.Po
@@ -1536,8 +1541,8 @@ uninstall-man: uninstall-man1
 
 .PHONY: $(am__recursive_targets) CTAGS GTAGS TAGS all all-am all-local \
 	am--depfiles check check-am clean clean-binPROGRAMS \
-	clean-generic clean-libtool cscopelist-am ctags ctags-am \
-	distclean distclean-compile distclean-generic \
+	clean-generic clean-libtool clean-noinstPROGRAMS cscopelist-am \
+	ctags ctags-am distclean distclean-compile distclean-generic \
 	distclean-libtool distclean-tags distdir dvi dvi-am html \
 	html-am info info-am install install-am install-binPROGRAMS \
 	install-data install-data-am install-dist_bashcompletionDATA \
