@@ -478,8 +478,8 @@ show debugging info and print the planner DAG (Directed Acyclic Graph).
 .TP 5
 .B \-L \fILIST\fP, \-\-loaders=\fILIST\fP
 choose the loader priority order. \fILIST\fP is a comma separated
-sequence of loader names such as \fBgd\fP, \fBcoregraphics\fP, or
-\fBbuiltin\fP. Unknown names are ignored so you can reuse the same
+sequence of loader names such as \fBlibtiff\fP, \fBgd\fP,
+\fBcoregraphics\fP, or \fBbuiltin\fP. Unknown names are ignored so you can reuse the same
 command line across different builds.
 .TP 5
 .B \-@, \-\-drcs
@@ -990,6 +990,11 @@ It can decode almost all images. but a few images can not be decoded by its limi
 .B libjpeg
 
    If \fIlibjpeg\fP library is linked at compile time, \fIimg2sixel\fP uses it for decoding JPEG image.
+
+.TP 5
+.B libtiff
+
+   If \fIlibtiff\fP library is linked at compile time, \fIimg2sixel\fP uses it for decoding TIFF image.
 
 .TP 5
 .B gdk-pixbuf2

@@ -147,6 +147,7 @@ _loaders() {
     'gd[libgd based loader]' \
     'gdk-pixbuf2[gdk-pixbuf2 image loader]' \
     'gnome-thumbnailer[external thumbnailer helper]' \
+    'libtiff[libtiff based loader]' \
     'quicklook[macOS Quick Look integration]' \
     'wic[Windows Imaging Component loader]'
 }

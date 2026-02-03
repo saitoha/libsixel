@@ -257,6 +257,7 @@ _img2sixel()
                                    gd \
                                    gdk-pixbuf2 \
                                    gnome-thumbnailer \
+                                   libtiff \
                                    quicklook \
                                    wic' -- "$cur" ) )
         return 0

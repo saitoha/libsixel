@@ -88,6 +88,7 @@
 #define SIXEL_MESSAGE_STBIW_ERROR           ("stb_image_write error")
 #define SIXEL_MESSAGE_JPEG_ERROR            ("libjpeg error")
 #define SIXEL_MESSAGE_PNG_ERROR             ("libpng error")
+#define SIXEL_MESSAGE_TIFF_ERROR            ("libtiff error")
 #define SIXEL_MESSAGE_GDK_ERROR             ("GDK error")
 #define SIXEL_MESSAGE_GD_ERROR              ("GD error")
 
@@ -628,6 +629,11 @@ sixel_helper_format_error(
 #ifdef HAVE_LIBPNG
         case SIXEL_PNG_ERROR:
             error_string = SIXEL_MESSAGE_PNG_ERROR;
+            break;
+#endif
+#ifdef HAVE_LIBTIFF
+        case SIXEL_TIFF_ERROR:
+            error_string = SIXEL_MESSAGE_TIFF_ERROR;
             break;
 #endif
 #ifdef HAVE_GDK_PIXBUF2
