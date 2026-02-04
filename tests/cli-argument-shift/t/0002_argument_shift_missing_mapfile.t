@@ -10,15 +10,7 @@ cli_core_setup "img2sixel-argument-shift"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-abs_top=""
-if abs_top=$(cd "${top_srcdir}" && pwd); then
-    :
-else
-    echo "failed to resolve source root" >&2
-    exit 1
-fi
-
-image_path="${abs_top}/images/snake.jpg"
+image_path="${top_srcdir}/tests/data/inputs/snake_64.jpg"
 require_file "${image_path}"
 
 echo "1..1"
