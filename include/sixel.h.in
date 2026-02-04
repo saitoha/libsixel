@@ -138,6 +138,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_LUT_POLICY_CERTLUT 0x5  /* certified hierarchical LUT */
 #define SIXEL_LUT_POLICY_VPTE    0x6  /* Voronoi + EDT lookup */
 #define SIXEL_LUT_POLICY_EYTZINGER 0x7 /* Eytzinger lookup */
+#define SIXEL_LUT_POLICY_VPTREE  0x8  /* VP-tree lookup */
 
 /* built-in dither */
 #define SIXEL_BUILTIN_MONO_DARK   0x0  /* monochrome terminal with dark background */

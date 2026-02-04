@@ -657,6 +657,8 @@ Options:
                              vpte      -> Voronoi grid built via a 3-pass
                                            3D EDT with optional boundary
                                            refinement
+                             vptree    -> VP-tree lookup built from palette
+                                          entries with safe-distance pruning
 
 The *none* policy skips every lookup acceleration structure so each
 pixel comparison scans the palette directly.  This matches the legacy
@@ -668,8 +670,14 @@ cell corners.  The following environment variables tune the grid (legacy
 `SIXEL_VPTE_*` names are still honored for compatibility, but prefer the
 `SIXEL_LOOKUP_*` forms):
 
+The *vptree* policy builds a VP-tree from palette entries.  Each palette
+color precomputes a safe squared distance (nearest neighbor distance / 4)
+to allow early confirmation.  The lookup also caches the previous pixel's
+palette index and short-circuits when that cached palette falls within the
+safe distance.
+
 * `SIXEL_DITHER_LOOKUP_POLICY` sets the LUT policy (auto, 5bit, 6bit, none,
-  certlut, eytzinger, or vpte; default is eytzinger).
+  certlut, eytzinger, vpte, or vptree; default is eytzinger).
 * `SIXEL_LOOKUP_PACKING` chooses the dense cache packing for 5bit/6bit
   policies (`linear`, `morton`, or `hilbert`; default `linear`).
 * `SIXEL_LOOKUP_VPTE_RESOLUTION` sets the grid resolution (64, 128, 256;

@@ -306,6 +306,7 @@ SIXEL_LUT_POLICY_NONE      = 0x4  # disable LUT acceleration
 SIXEL_LUT_POLICY_CERTLUT   = 0x5  # certified hierarchical LUT
 SIXEL_LUT_POLICY_VPTE      = 0x6  # Voronoi LUT with 3D EDT refinement
 SIXEL_LUT_POLICY_EYTZINGER = 0x7  # Eytzinger implicit binary tree LUT
+SIXEL_LUT_POLICY_VPTREE    = 0x8  # VP-tree palette lookup
 
 # method for re-sampling
 SIXEL_RES_NEAREST          = 0   # Use nearest neighbor method

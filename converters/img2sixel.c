@@ -480,6 +480,8 @@ static cli_option_help_t const g_option_help_table[] = {
         "                             vpte      -> Voronoi grid built via\n"
         "                                          3D EDT with optional\n"
         "                                          boundary refinement\n"
+        "                             vptree    -> VP-tree lookup built\n"
+        "                                          from palette entries\n"
     },
     {
         'l',
@@ -909,7 +911,7 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_DITHER_LOOKUP_POLICY",
         "select palette lookup policy (auto, 5bit, 6bit, none, certlut,\n"
-        "eytzinger, or vpte; default is eytzinger)."
+        "eytzinger, vpte, or vptree; default is eytzinger)."
     },
     {
         "SIXEL_LOOKUP_PACKING",

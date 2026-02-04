@@ -163,7 +163,10 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/lookup-8bit.h $(srcdir)/lookup-float32.c \
 	$(srcdir)/lookup-float32.h $(srcdir)/lookup-vpte-8bit.c \
 	$(srcdir)/lookup-vpte-8bit.h $(srcdir)/lookup-vpte-float32.c \
-	$(srcdir)/lookup-vpte-float32.h $(srcdir)/lookup-common.h \
+	$(srcdir)/lookup-vpte-float32.h $(srcdir)/lookup-vptree-8bit.c \
+	$(srcdir)/lookup-vptree-8bit.h \
+	$(srcdir)/lookup-vptree-float32.c \
+	$(srcdir)/lookup-vptree-float32.h $(srcdir)/lookup-common.h \
 	$(srcdir)/palette-heckbert.c $(srcdir)/palette-heckbert.h \
 	$(srcdir)/palette-common-merge.c \
 	$(srcdir)/palette-common-merge.h \
@@ -196,7 +199,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/filter-encode.h $(srcdir)/filter-lookup.c \
 	$(srcdir)/filter-lookup.h $(srcdir)/filter-palette.c \
 	$(srcdir)/filter-palette.h $(srcdir)/filter-vpte.c \
-	$(srcdir)/filter-vpte.h $(srcdir)/filter-eytzinger.c \
+	$(srcdir)/filter-vpte.h $(srcdir)/filter-vptree.c \
+	$(srcdir)/filter-vptree.h $(srcdir)/filter-eytzinger.c \
 	$(srcdir)/filter-eytzinger.h $(srcdir)/filter-clip.c \
 	$(srcdir)/filter-clip.h $(srcdir)/filter-resize.c \
 	$(srcdir)/filter-resize.h $(srcdir)/filter-sample.c \
@@ -254,6 +258,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-float32.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-vpte-8bit.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-vpte-float32.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-vptree-8bit.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-lookup-vptree-float32.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-heckbert.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-common-merge.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-palette-common-snap.lo \
@@ -281,6 +287,7 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-lookup.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-palette.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-vpte.lo \
+@WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-vptree.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-eytzinger.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-clip.lo \
 @WANT_AMALGAMATED_LIB_FALSE@	libsixel_la-filter-resize.lo \
@@ -387,6 +394,7 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-filter-resize.Plo \
 	./$(DEPDIR)/libsixel_la-filter-sample.Plo \
 	./$(DEPDIR)/libsixel_la-filter-vpte.Plo \
+	./$(DEPDIR)/libsixel_la-filter-vptree.Plo \
 	./$(DEPDIR)/libsixel_la-filter.Plo \
 	./$(DEPDIR)/libsixel_la-frame.Plo \
 	./$(DEPDIR)/libsixel_la-fromgif.Plo \
@@ -412,6 +420,8 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-lookup-float32.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-vpte-8bit.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-vpte-float32.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-vptree-8bit.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo \
 	./$(DEPDIR)/libsixel_la-malloc_stub.Plo \
 	./$(DEPDIR)/libsixel_la-options.Plo \
 	./$(DEPDIR)/libsixel_la-output.Plo \
@@ -737,6 +747,10 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vpte-8bit.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vpte-float32.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vpte-float32.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vptree-8bit.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vptree-8bit.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vptree-float32.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-vptree-float32.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/lookup-common.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-heckbert.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/palette-heckbert.h \
@@ -793,6 +807,8 @@ lib_LTLIBRARIES = libsixel.la
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-palette.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-vpte.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-vpte.h \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-vptree.c \
+@WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-vptree.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-eytzinger.c \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-eytzinger.h \
 @WANT_AMALGAMATED_LIB_FALSE@	$(srcdir)/filter-clip.c \
@@ -1041,6 +1057,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-resize.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-sample.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-vpte.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-vptree.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frame.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-fromgif.Plo@am__quote@ # am--include-marker
@@ -1066,6 +1083,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-float32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-vpte-8bit.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-vpte-float32.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-vptree-8bit.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-malloc_stub.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-options.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-output.Plo@am__quote@ # am--include-marker
@@ -1197,6 +1216,20 @@ libsixel_la-lookup-vpte-float32.lo: lookup-vpte-float32.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-vpte-float32.c' object='libsixel_la-lookup-vpte-float32.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-vpte-float32.lo `test -f 'lookup-vpte-float32.c' || echo '$(srcdir)/'`lookup-vpte-float32.c
+
+libsixel_la-lookup-vptree-8bit.lo: lookup-vptree-8bit.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-vptree-8bit.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-vptree-8bit.Tpo -c -o libsixel_la-lookup-vptree-8bit.lo `test -f 'lookup-vptree-8bit.c' || echo '$(srcdir)/'`lookup-vptree-8bit.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-vptree-8bit.Tpo $(DEPDIR)/libsixel_la-lookup-vptree-8bit.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-vptree-8bit.c' object='libsixel_la-lookup-vptree-8bit.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-vptree-8bit.lo `test -f 'lookup-vptree-8bit.c' || echo '$(srcdir)/'`lookup-vptree-8bit.c
+
+libsixel_la-lookup-vptree-float32.lo: lookup-vptree-float32.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-lookup-vptree-float32.lo -MD -MP -MF $(DEPDIR)/libsixel_la-lookup-vptree-float32.Tpo -c -o libsixel_la-lookup-vptree-float32.lo `test -f 'lookup-vptree-float32.c' || echo '$(srcdir)/'`lookup-vptree-float32.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-lookup-vptree-float32.Tpo $(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lookup-vptree-float32.c' object='libsixel_la-lookup-vptree-float32.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-lookup-vptree-float32.lo `test -f 'lookup-vptree-float32.c' || echo '$(srcdir)/'`lookup-vptree-float32.c
 
 libsixel_la-palette-heckbert.lo: palette-heckbert.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-palette-heckbert.lo -MD -MP -MF $(DEPDIR)/libsixel_la-palette-heckbert.Tpo -c -o libsixel_la-palette-heckbert.lo `test -f 'palette-heckbert.c' || echo '$(srcdir)/'`palette-heckbert.c
@@ -1386,6 +1419,13 @@ libsixel_la-filter-vpte.lo: filter-vpte.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter-vpte.c' object='libsixel_la-filter-vpte.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-filter-vpte.lo `test -f 'filter-vpte.c' || echo '$(srcdir)/'`filter-vpte.c
+
+libsixel_la-filter-vptree.lo: filter-vptree.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-filter-vptree.lo -MD -MP -MF $(DEPDIR)/libsixel_la-filter-vptree.Tpo -c -o libsixel_la-filter-vptree.lo `test -f 'filter-vptree.c' || echo '$(srcdir)/'`filter-vptree.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libsixel_la-filter-vptree.Tpo $(DEPDIR)/libsixel_la-filter-vptree.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='filter-vptree.c' object='libsixel_la-filter-vptree.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -c -o libsixel_la-filter-vptree.lo `test -f 'filter-vptree.c' || echo '$(srcdir)/'`filter-vptree.c
 
 libsixel_la-filter-eytzinger.lo: filter-eytzinger.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(libsixel_la_CPPFLAGS) $(CPPFLAGS) $(libsixel_la_CFLAGS) $(CFLAGS) -MT libsixel_la-filter-eytzinger.lo -MD -MP -MF $(DEPDIR)/libsixel_la-filter-eytzinger.Tpo -c -o libsixel_la-filter-eytzinger.lo `test -f 'filter-eytzinger.c' || echo '$(srcdir)/'`filter-eytzinger.c
@@ -1939,6 +1979,7 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-resize.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-vpte.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-vptree.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frame.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromgif.Plo
@@ -1964,6 +2005,8 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vpte-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vpte-float32.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-8bit.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-malloc_stub.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-options.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo
@@ -2066,6 +2109,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-resize.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-vpte.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-vptree.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frame.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-fromgif.Plo
@@ -2091,6 +2135,8 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vpte-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vpte-float32.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-8bit.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-malloc_stub.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-options.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-output.Plo

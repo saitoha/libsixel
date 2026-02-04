@@ -220,7 +220,8 @@ _img2sixel()
                                    none \
                                    certlut \
                                    eytzinger \
-                                   vpte' -- "$cur" ) )
+                                   vpte \
+                                   vptree' -- "$cur" ) )
         return 0
         ;;
     -l|--loop-control)

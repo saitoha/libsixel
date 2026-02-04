@@ -99,7 +99,8 @@ _lookuppolicy() {
     'none[disable LUT caching and scan directly]' \
     'certlut[certified hierarchical LUT with zero error]' \
     'eytzinger[implicit binary tree lookup with neighbour scan]' \
-    'vpte[Voronoi grid built via a 3D EDT with boundary refinement]'
+    'vpte[Voronoi grid built via a 3D EDT with boundary refinement]' \
+    'vptree[VP-tree lookup built from palette entries]'
 }
 
 _looptype() {

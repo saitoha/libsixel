@@ -334,6 +334,9 @@ eytzinger -> implicit binary tree lookup with a small neighbour scan
 .br
 vpte    -> Voronoi grid built via a 3-pass 3D EDT with optional
            boundary refinement at cell corners.
+.br
+vptree  -> VP-tree lookup built from palette entries with safe-distance
+           pruning.
 .PP
 The \fInone\fP policy skips the lookup caches entirely so each pixel
 comparison scans the palette directly.  This mirrors the behaviour that
@@ -342,7 +345,7 @@ comparison scans the palette directly.  This mirrors the behaviour that
 The \fIvpte\fP grid honours the following environment variables:
 .br
 SIXEL_DITHER_LOOKUP_POLICY (auto, 5bit, 6bit, none, certlut, eytzinger,
-or vpte; default eytzinger)
+vpte, or vptree; default eytzinger)
 .br
 SIXEL_LOOKUP_PACKING (linear or morton; default linear) selects dense LUT
 packing for 5bit/6bit lookups; other policies ignore it.
@@ -892,7 +895,7 @@ Accepts 0.0-1.0, default 0.85.
 .B SIXEL_DITHER_LOOKUP_POLICY
 .br
 select palette lookup policy (auto, 5bit, 6bit, none, certlut,
-eytzinger, or vpte).
+eytzinger, vpte, or vptree).
 .TP 5
 .B SIXEL_LOOKUP_PACKING
 .br

@@ -134,6 +134,7 @@
 #include "filter-factory.h"
 #include "filter-palette.h"
 #include "filter-vpte.h"
+#include "filter-vptree.h"
 #include "filter-eytzinger.h"
 #include "filter-resize.h"
 #include "filter-sample.h"
@@ -435,7 +436,8 @@ static sixel_option_choice_t const g_option_choices_lut_policy[] = {
     { "none", SIXEL_LUT_POLICY_NONE },
     { "certlut", SIXEL_LUT_POLICY_CERTLUT },
     { "eytzinger", SIXEL_LUT_POLICY_EYTZINGER },
-    { "vpte", SIXEL_LUT_POLICY_VPTE }
+    { "vpte", SIXEL_LUT_POLICY_VPTE },
+    { "vptree", SIXEL_LUT_POLICY_VPTREE }
 };
 
 static sixel_option_choice_t const g_option_choices_working_colorspace[] = {
@@ -3957,6 +3959,7 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
     int clip_active;
     int clip_first;
     int vpte_active;
+    int vptree_active;
     int eytzinger_active;
     int colorspace_before_scale;
     int colorspace_after_scale;
@@ -3982,6 +3985,10 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
                    && encoder->lut_policy == SIXEL_LUT_POLICY_VPTE)
         ? 1
         : 0;
+    vptree_active = (palette_ready != 0
+                     && encoder->lut_policy == SIXEL_LUT_POLICY_VPTREE)
+        ? 1
+        : 0;
     eytzinger_active = (palette_ready != 0
                         && encoder->lut_policy
                         == SIXEL_LUT_POLICY_EYTZINGER)
@@ -3994,6 +4001,9 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
     if (vpte_active != 0) {
         lut_node = "vpte";
         lut_edge = " -> vpte";
+    } else if (vptree_active != 0) {
+        lut_node = "vptree";
+        lut_edge = " -> vptree";
     } else if (eytzinger_active != 0) {
         lut_node = "eytzinger";
         lut_edge = " -> eytzinger";
@@ -5572,6 +5582,7 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
     sixel_filter_lookup_result_t result;
     sixel_filter_lookup_config_t lookup_config;
     sixel_filter_vpte_config_t vpte_config;
+    sixel_filter_vptree_config_t vptree_config;
     sixel_filter_1d_eytzinger_config_t eytzinger_config;
     sixel_filter_t *filter;
     sixel_palette_t *palette;
@@ -5584,6 +5595,7 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
     memset(&result, 0, sizeof(result));
     memset(&lookup_config, 0, sizeof(lookup_config));
     memset(&vpte_config, 0, sizeof(vpte_config));
+    memset(&vptree_config, 0, sizeof(vptree_config));
     memset(&eytzinger_config, 0, sizeof(eytzinger_config));
 
     if (encoder == NULL || dither == NULL) {
@@ -5598,6 +5610,7 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
 
     policy = dither->lut_policy;
     if (policy != SIXEL_LUT_POLICY_VPTE
+            && policy != SIXEL_LUT_POLICY_VPTREE
             && policy != SIXEL_LUT_POLICY_EYTZINGER) {
         return SIXEL_OK;
     }
@@ -5619,6 +5632,13 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
         status = sixel_filter_factory_create_by_kind(
             SIXEL_FILTER_KIND_VPTE,
             &vpte_config,
+            &filter);
+    } else if (policy == SIXEL_LUT_POLICY_VPTREE) {
+        vptree_config.lookup_config = lookup_config;
+        vptree_config.result_out = &result;
+        status = sixel_filter_factory_create_by_kind(
+            SIXEL_FILTER_KIND_VPTREE,
+            &vptree_config,
             &filter);
     } else {
         eytzinger_config.lookup_config = lookup_config;

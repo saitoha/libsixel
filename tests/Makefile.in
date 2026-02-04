@@ -1094,6 +1094,8 @@ TESTS = \
     palette/t/0086_clustering_din99d_working_oklab_lsqa.t \
     palette/t/0087_clustering_din99d_working_cielab_lsqa.t \
     palette/t/0088_clustering_din99d_working_din99d_lsqa.t \
+    palette/t/0089_lookup_policy_vptree_8bit.t \
+    palette/t/0090_lookup_policy_vptree_float32.t \
     pipeline/t/0001_pipeline_planner_baseline_run.t \
     pipeline/t/0002_pipeline_planner_baseline_summary.t \
     pipeline/t/0003_pipeline_planner_baseline_threads.t \

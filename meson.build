@@ -1175,6 +1175,8 @@ loader_helper_sources = files(
   'src/lookup-float32.c',
   'src/lookup-vpte-8bit.c',
   'src/lookup-vpte-float32.c',
+  'src/lookup-vptree-8bit.c',
+  'src/lookup-vptree-float32.c',
   'src/dither-common-pipeline.h',
   'src/scale.c',
   'src/status.c',
