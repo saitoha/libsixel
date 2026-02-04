@@ -19,7 +19,7 @@ if [ -z "${lsqa_helper_root}" ]; then
     lsqa_helper_root=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
 fi
 . "${lsqa_helper_root}/../common/tap.sh"
-. "${lsqa_helper_root}/../../../_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 
 _lsqa_read_ms_ssim() {
