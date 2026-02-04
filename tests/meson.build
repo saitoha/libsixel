@@ -65,7 +65,7 @@ test_runner_inc = [
 
 test_runner_exe = executable('test_runner', test_runner_sources,
   include_directories: test_runner_inc,
-  dependencies: [libsixel_dep, gdk_pixbuf_loader_deps],
+  dependencies: [libsixel_dep, gdk_pixbuf_loader_deps, abort_trace_deps],
   c_args: ['-DGDK_PIXBUF_ENABLE_BACKEND',
            '-DSIXEL_PIXBUF_LOADER_TESTING',
            '-DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS'],
