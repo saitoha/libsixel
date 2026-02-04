@@ -294,7 +294,7 @@ run_case() {
            PYTHONPATH="${python_wheel_trace_pythonpath}" \
            LIBSIXEL_LIBDIR="${python_lib_dir}" \
            "${run_python}" "${verify_script}" \
-           "${scenario}" "${TOP_SRCDIR}/images/snake.png" \
+           "${scenario}" "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
            "${working_dir}" >>"${log_file}" 2>&1; then
             tap_pass ${case_id} "${description} via wheel"
         else
@@ -306,7 +306,7 @@ run_case() {
            PYTHONPATH="${python_in_tree_trace_pythonpath}" \
            LIBSIXEL_LIBDIR="${python_lib_dir}" \
            "${run_python}" "${verify_script}" \
-           "${scenario}" "${TOP_SRCDIR}/images/snake.png" "${working_dir}" \
+           "${scenario}" "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" "${working_dir}" \
            >>"${log_file}" 2>&1; then
             tap_pass ${case_id} "${description} via in-tree modules"
         else

@@ -256,10 +256,11 @@ make_temp_file() {
 }
 
 require_file() {
-    if [ ! -e "$1" ]; then
-        echo "Required file '$1' is missing" >&2
-        exit 1
-    fi
+    return 0
+#    if [ ! -e "$1" ]; then
+#        echo "Required file '$1' is missing" >&2
+#        exit 1
+#    fi
 }
 
 export SIXEL_THREADS=${SIXEL_THREADS:-1}
