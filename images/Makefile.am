@@ -22,7 +22,6 @@ EXTRA_DIST = .gitattributes \
     map8-palette.png \
     map8.png \
     map8.six \
-    seq2gif.gif \
     snake-ascii.pbm \
     snake-ascii.pgm \
     snake-ascii.ppm \

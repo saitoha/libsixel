@@ -137,7 +137,6 @@ server_pid_file=$(make_temp_file "${tmp_dir}" "curl-server-pid")
 )
 server_pid=$(cat "${server_pid_file}")
 rm -f "${server_pid_file}"
-sleep 1
 
 server_port=""
 for _ in 1 2 3 4 5; do
@@ -150,7 +149,7 @@ for _ in 1 2 3 4 5; do
         break
     fi
 
-    sleep 1
+    sleep 0.1
 done
 
 if [ -z "${server_port}" ]; then
