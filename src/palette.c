@@ -523,7 +523,8 @@ sixel_palette_set_lut_policy(int lut_policy)
         || lut_policy == SIXEL_LUT_POLICY_CERTLUT
         || lut_policy == SIXEL_LUT_POLICY_EYTZINGER
         || lut_policy == SIXEL_LUT_POLICY_NONE
-        || lut_policy == SIXEL_LUT_POLICY_VPTE) {
+        || lut_policy == SIXEL_LUT_POLICY_VPTE
+        || lut_policy == SIXEL_LUT_POLICY_VPTREE) {
         normalized = lut_policy;
     }
 

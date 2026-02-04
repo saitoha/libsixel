@@ -7,6 +7,7 @@
 
 #include "allocator.h"
 #include "lookup-vpte-8bit.h"
+#include "lookup-vptree-8bit.h"
 
 #include <sixel.h>
 
@@ -49,6 +50,8 @@ typedef struct sixel_lookup_8bit {
     int cert_ready;
     sixel_lookup_vpte_8bit_t *vpte;
     int vpte_ready;
+    sixel_lookup_vptree_8bit_t *vptree;
+    int vptree_ready;
     sixel_lookup_8bit_1d_eytzinger_t eytz;
 } sixel_lookup_8bit_t;
 
