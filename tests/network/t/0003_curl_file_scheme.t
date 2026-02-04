@@ -25,7 +25,7 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 echo "1..1"
 set -v
 
-local_file="file://$(CDPATH=; cd "${top_srcdir}" && pwd)/images/snake.jpg"
+local_file="file://$(CDPATH=; cd "${top_srcdir}" && pwd)/tests/data/inputs/snake_64.jpg"
 if run_img2sixel "${local_file}" \
         >"${output_dir}/local-file.sixel" 2>>"${log_file}"; then
     printf 'ok 1 - fetches local file via file scheme\n'

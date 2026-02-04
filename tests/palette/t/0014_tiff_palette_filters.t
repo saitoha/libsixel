@@ -19,7 +19,7 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-snake_tiff="${images_dir}/snake.tiff"
+snake_tiff="${top_srcdir}/tests/data/inputs/snake_64.tiff"
 require_file "${snake_tiff}"
 
 target_sixel="${tmp_dir}/snake-tiff.sixel"

@@ -15,13 +15,12 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-snake_six="${images_dir}/snake.six"
+snake_six="${top_srcdir}/tests/data/inputs/snake_64.six"
 target_sixel="${output_dir}/sixel-xterm16.sixel"
 
 require_file "${snake_six}"
 
-if run_img2sixel -bxterm16 "${snake_six}" \
-        >"${target_sixel}" 2>>"${log_file}"; then
+if run_img2sixel -bxterm16 "${snake_six}" >"${target_sixel}" 2>>"${log_file}"; then
     pass 1 "xterm16 preset re-encodes Sixel"
 else
     fail 1 "xterm16 preset failed"

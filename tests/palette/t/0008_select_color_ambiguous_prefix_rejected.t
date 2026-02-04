@@ -15,7 +15,7 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-snake_jpg="${images_dir}/snake.jpg"
+snake_jpg="${top_srcdir}/tests/data/inputs/snake_64.jpg"
 require_file "${snake_jpg}"
 
 if run_img2sixel -sa "${snake_jpg}" >/dev/null 2>>"${log_file}"; then

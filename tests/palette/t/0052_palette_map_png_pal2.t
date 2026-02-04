@@ -21,7 +21,7 @@ echo "1..1"
 set -v
 
 palette_png="${images_dir}/pngsuite/basic/basn3p02.png"
-input_png="${images_dir}/snake.png"
+input_png="${top_srcdir}/tests/data/inputs/snake_64.png"
 target_sixel="${output_dir}/mapfile-pal2.sixel"
 
 require_file "${palette_png}"

@@ -306,7 +306,7 @@ run_loader_plugin_integration(void)
     g_assert_no_error(error);
 
     img2sixel_path = plugin_resolve_build_path("converters/img2sixel");
-    snake_path = plugin_resolve_source_path("images/snake.six");
+    snake_path = plugin_resolve_source_path("tests/data/inputs/snake_64.six");
 
     argv = g_new0(gchar *, 6);
     argv[0] = img2sixel_path;

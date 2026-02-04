@@ -15,7 +15,7 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-snake_png="${images_dir}/snake.png"
+snake_png="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${output_dir}/eytzinger-float32.six"
 
 require_file "${snake_png}"
