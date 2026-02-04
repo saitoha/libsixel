@@ -26,9 +26,15 @@ run_quiet() {
 # (particularly during Meson dist checks), so prefer Meson-provided
 # locations when available to read the right config headers.
 
-script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-parent_dir=$(CDPATH=; cd "${script_dir}/../../.." && pwd)
-. "${script_dir}/../../lib/sh/common/tap.sh"
+if [ -n "${TOP_SRCDIR:-}" ]; then
+    tests_root="${TOP_SRCDIR}/tests"
+else
+    script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+    tests_root=$(CDPATH=; cd "${script_dir}/../../.." && pwd)
+fi
+
+parent_dir=$(CDPATH=; cd "${tests_root}/.." && pwd)
+. "${tests_root}/lib/sh/common/tap.sh"
 
 if [ -n "${MESON_SOURCE_ROOT:-}" ]; then
     top_srcdir=${TOP_SRCDIR:-${MESON_SOURCE_ROOT}}

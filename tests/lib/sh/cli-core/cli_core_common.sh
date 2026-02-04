@@ -9,7 +9,8 @@ cli_core_setup() {
     test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
     category_name=$(basename "$(dirname "${test_dir}")")
     artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-    artifact_dir="${artifact_root}/${category_name}/${test_name}"
+    artifact_test_dir=$(dirname "$0")
+    artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
     log_file="${artifact_dir}/${log_basename}.log"
     output_dir="${artifact_dir}/outputs"
     tmp_dir="${artifact_dir}/tmp"
@@ -22,7 +23,7 @@ cli_core_setup() {
         helper_dir=$(CDPATH=; cd "$(dirname "${cli_core_common_path}")" && pwd)
     fi
 
-    . "${helper_dir}/../../../_lib/sh/common.sh"
+    . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
     status=0
 }

@@ -1,0 +1,27 @@
+#!/bin/sh
+# TAP test: unknown k-means init type falls back to none.
+
+set -eux
+
+test_name=$(basename "$0")
+test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+category_name=$(basename "$(dirname "${test_dir}")")
+artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
+artifact_test_dir=$(dirname "$0")
+artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
+
+mkdir -p "${artifact_dir}"
+
+script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+. "${TOP_SRCDIR}/tests/lib/sh/palette/kmeans_init_common.sh"
+
+echo "1..1"
+set -v
+
+output=$(run_kmeans_init "unknown")
+if [ "${output}" = "none" ]; then
+    printf 'ok 1 - unknown value falls back to none\n'
+else
+    printf 'not ok 1 - unknown value produced %s\n' "${output}"
+    exit 1
+fi
