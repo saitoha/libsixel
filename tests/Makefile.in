@@ -841,6 +841,10 @@ TESTS = \
     processing/dither/general/0007_sixel_inspection_alternate_dither.t \
     processing/dither/x-dither/0008_sixel_inspection_x_dither.t \
     processing/dither/general/0009_lanczos2_without_diffusion.t \
+    processing/dither/general/0010_inspection_high_color_sierra1.t \
+    processing/dither/general/0011_inspection_high_color_sierra2.t \
+    processing/dither/general/0012_inspection_high_color_sierra3.t \
+    processing/dither/general/0013_inspection_high_color_rgba_input.t \
     processing/dither/positional/0010_positional_8bit_dither.t \
     processing/dither/positional/0011_positional_float32_dither.t \
     processing/dither/varcoeff/0012_varcoeff_8bit_dither.t \
