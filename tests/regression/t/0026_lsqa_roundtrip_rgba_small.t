@@ -40,7 +40,7 @@ output_sixel="${artifact_dir}/rgba_roundtrip.six"
 output_png="${artifact_dir}/rgba_roundtrip.png"
 require_file "${image_path}"
 
-if run_img2sixel -Lbuiltin "${image_path}" >"${output_sixel}"; then
+if run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}"; then
     :
 else
     fail 1 "rgba roundtrip encode failed"

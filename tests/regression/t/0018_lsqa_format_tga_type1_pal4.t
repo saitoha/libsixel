@@ -33,7 +33,7 @@ set -v
 
 image_path="${top_srcdir}/tests/data/inputs/formats/snake-tga-type1-pal4.tga"
 output_sixel="${artifact_dir}/output.six"
-if run_img2sixel -Lbuiltin "${image_path}" >"${output_sixel}"; then
+if run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}"; then
     :
 else
     fail 1 "type 1 PAL4 TGA quality below floor"

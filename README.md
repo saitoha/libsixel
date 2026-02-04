@@ -774,9 +774,11 @@ steps.
 -v, --verbose              show debugging info
 -L LIST, --loaders=LIST    override loader priority order
                            LIST is a comma separated sequence of
-                           loader names such as 'gd,builtin'
-                           Unknown names are ignored so the same
-                           command works across builds.
+                           loader names such as 'gd,builtin'.
+                           Unique prefixes are accepted, so
+                           'core,b' expands to 'coregraphics,builtin'.
+                           Append "!" to disable fallback loaders.
+                           Unknown or ambiguous names are rejected.
 -@ MMV:CHARSET:PATH, --drcs=MMV:CHARSET:PATH
                            emit DRCS tiles instead of regular SIXEL output.
                            MMV selects the mapping revision (0..2, default 2).
@@ -799,7 +801,7 @@ steps.
                              smpte-c -> SMPTE-C gamma color space
 -V, --version              show version and license info
                            also lists available image loaders
--H, --help                 show this help
+-H, --help                 show this help and available loaders
 
 Environment variables:
 SIXEL_BGCOLOR              specify background color.
@@ -825,9 +827,10 @@ SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS
                            avoid splitting tiny images unless the
                            threshold is overridden.
 SIXEL_LOADER_PRIORITY_LIST override default loader search order.
-                           Accepts the same comma separated
-                           names as the -L/--loaders option and
-                           is ignored when that option is set.
+                           Accepts the same comma separated names
+                           as the -L/--loaders option (including
+                           prefixes and the trailing "!") and is
+                           ignored when that option is set.
 SIXEL_FLOAT32_DITHER       opt into the experimental RGBFLOAT32
                            quantizer backend.  Set to `0`,
                            `off`, `false`, or `no` to keep the
@@ -867,10 +870,24 @@ SIXEL_FLOAT32_DITHER       opt into the experimental RGBFLOAT32
 ```
 
 Use `--loaders` to reorder the loader chain. Provide a comma separated list of
-loader names such as `gd,builtin`. libsixel tries the listed loaders first and
-then falls back to any remaining backends in their default order. Unknown names
-are ignored, making it safe to reuse the same preference string across
-platforms.
+loader names such as `gd,builtin`. Unique prefixes are accepted, so `core,b`
+expands to `coregraphics,builtin`. libsixel tries the listed loaders first and
+then falls back to any remaining backends in their default order. Append `!` to
+disable the fallback list entirely.
+
+Recognized loader names (availability depends on the build; use `-H` to see
+what is available):
+- `libpng`
+- `libjpeg`
+- `libwebp`
+- `libtiff`
+- `builtin`
+- `wic`
+- `coregraphics`
+- `gdk-pixbuf2`
+- `gd`
+- `quicklook`
+- `gnome-thumbnailer`
 
 When running under GNOME or other desktops that implement the FreeDesktop.org
 Thumbnail Managing Standard (including Cinnamon, MATE, and Xfce via Tumbler),

@@ -35,7 +35,7 @@ set -v
 
 image_path="${top_srcdir}/tests/data/inputs/formats/rgb-lzw.tiff"
 output_sixel="${artifact_dir}/rgb_lzw.six"
-if run_img2sixel -Llibtiff "${image_path}" >"${output_sixel}"; then
+if run_img2sixel -Llibtiff! "${image_path}" >"${output_sixel}"; then
     :
 else
     fail 1 "tiff lzw conversion failed"
