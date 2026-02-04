@@ -1370,7 +1370,15 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/stbi_minimal.hdr \
     data/inputs/formats/stbi_minimal.psd \
     data/inputs/formats/stbi_minimal.pic \
+    data/inputs/snake_64.bmp \
+    data/inputs/snake_64.gif \
+    data/inputs/snake_64.jpg \
+    data/inputs/snake_64.pbm \
+    data/inputs/snake_64.pgm \
     data/inputs/snake_64.png \
+    data/inputs/snake_64.ppm \
+    data/inputs/snake_64.six \
+    data/inputs/snake_64.tga \
     data/inputs/snake_64.tiff \
     data/inputs/snake_64-indexed.tiff \
     data/inputs/snake_64.webp \
