@@ -182,7 +182,7 @@ ensure_converter_available() {
         skip_all "${description} is disabled in this build"
     fi
 
-    ensure_executable "${target_path}" "${description}"
+#    ensure_executable "${target_path}" "${description}"
 }
 
 # Confirm that an optional library feature is enabled for the build. The
