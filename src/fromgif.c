@@ -702,72 +702,79 @@ gif_load_next(
         case 0x21:  /* Comment Extension. */
             switch (gif_get8(s)) {
             case 0x01:  /* Plain Text Extension */
-                break;
-            case 0x21:  /* Comment Extension */
-                break;
-            case 0xF9:  /* Graphic Control Extension */
-                len = gif_get8(s); /* block size */
-                if (len == 4) {
-                    g->eflags = gif_get8(s);
-                    g->delay = gif_get16le(s); /* delay */
-                    g->transparent = gif_get8(s);
-                    if ((g->eflags & 0x01) == 0) {
-                        g->transparent = (-1);
-                    }
-                } else {
+                while ((len = gif_get8(s))) {  /* block size */
                     if (s->img_buffer + len > s->img_buffer_end) {
                         status = SIXEL_RUNTIME_ERROR;
                         goto end;
                     }
                     s->img_buffer += len;
-                    break;
+                }
+                break;
+            case 0x21:  /* Comment Extension */
+                while ((len = gif_get8(s))) { /* block size */
+                    if (s->img_buffer + len > s->img_buffer_end) {
+                        status = SIXEL_RUNTIME_ERROR;
+                        goto end;
+                    }
+                    s->img_buffer += len;
+                }
+                break;
+            case 0xF9:  /* Graphic Control Extension */
+                while ((len = gif_get8(s))) {  /* block size */
+                    if (len == 4) {
+                        g->eflags = gif_get8(s);
+                        g->delay = gif_get16le(s); /* delay */
+                        g->transparent = gif_get8(s);
+                        if ((g->eflags & 0x01) == 0) {
+                            g->transparent = (-1);
+                        }
+                    } else {
+                        if (s->img_buffer + len > s->img_buffer_end) {
+                            status = SIXEL_RUNTIME_ERROR;
+                            goto end;
+                        }
+                        s->img_buffer += len;
+                        break;
+                    }
                 }
                 break;
             case 0xFF:  /* Application Extension */
-                len = gif_get8(s);  /* block size */
-                if (s->img_buffer + len > s->img_buffer_end) {
-                    status = SIXEL_RUNTIME_ERROR;
-                    goto end;
-                }
-                memcpy(buffer, s->img_buffer, (size_t)len);
-                s->img_buffer += len;
-                buffer[len] = 0;
-                if (len == 11 && strcmp((char *)buffer, "NETSCAPE2.0") == 0) {
-                    if (gif_get8(s) == 0x03) {
-                        /* loop count */
-                        switch (gif_get8(s)) {
-                        case 0x00:
-                            g->loop_count = 1;
-                            break;
-                        case 0x01:
-                            g->loop_count = gif_get16le(s);
-                            break;
-                        default:
-                            g->loop_count = 1;
-                            break;
+                while ((len = gif_get8(s))) {   /* block size */
+                    if (s->img_buffer + len > s->img_buffer_end) {
+                        status = SIXEL_RUNTIME_ERROR;
+                        goto end;
+                    }
+                    memcpy(buffer, s->img_buffer, (size_t)len);
+                    s->img_buffer += len;
+                    buffer[len] = 0;
+                    if (len == 11 && strcmp((char *)buffer, "NETSCAPE2.0") == 0) {
+                        if (gif_get8(s) == 0x03) {
+                            /* loop count */
+                            switch (gif_get8(s)) {
+                            case 0x00:
+                                g->loop_count = 1;
+                                break;
+                            case 0x01:
+                                g->loop_count = gif_get16le(s);
+                                break;
+                            default:
+                                g->loop_count = 1;
+                                break;
+                            }
                         }
                     }
                 }
                 break;
             default:
-                len = gif_get8(s);  /* block size */
-                if (s->img_buffer + len > s->img_buffer_end) {
-                    status = SIXEL_RUNTIME_ERROR;
-                    goto end;
+                while ((len = gif_get8(s))) {   /* block size */
+                    if (s->img_buffer + len > s->img_buffer_end) {
+                        status = SIXEL_RUNTIME_ERROR;
+                        goto end;
+                    }
+                    memcpy(buffer, s->img_buffer, (size_t)len);
+                    s->img_buffer += len;
                 }
-                memcpy(buffer, s->img_buffer, (size_t)len);
-                s->img_buffer += len;
                 break;
-            }
-            if ((c = gif_get8(s)) != 0x00) {
-                sixel_compat_snprintf(
-                    (char *)buffer,
-                    sizeof(buffer),
-                    "missing valid block terminator (unknown code %02x).",
-                    c);
-                sixel_helper_set_additional_message((char *)buffer);
-                status = SIXEL_RUNTIME_ERROR;
-                goto end;
             }
             break;
 
