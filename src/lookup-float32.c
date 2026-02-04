@@ -115,7 +115,8 @@ sixel_lookup_float32_policy_normalize(int policy)
                && normalized != SIXEL_LUT_POLICY_CERTLUT
                && normalized != SIXEL_LUT_POLICY_EYTZINGER
                && normalized != SIXEL_LUT_POLICY_NONE
-               && normalized != SIXEL_LUT_POLICY_VPTE) {
+               && normalized != SIXEL_LUT_POLICY_VPTE
+               && normalized != SIXEL_LUT_POLICY_VPTREE) {
         normalized = SIXEL_LUT_POLICY_6BIT;
     }
 
@@ -853,6 +854,8 @@ sixel_lookup_float32_init(sixel_lookup_float32_t *lut,
     lut->allocator = allocator;
     lut->vpte = NULL;
     lut->vpte_ready = 0;
+    lut->vptree = NULL;
+    lut->vptree_ready = 0;
     lut->eytz.count = 0;
     lut->eytz.ready = 0;
     lut->eytz.keys = NULL;
@@ -865,6 +868,7 @@ sixel_lookup_float32_init(sixel_lookup_float32_t *lut,
     lut->eytz.weights[1] = 1.0f;
     lut->eytz.weights[2] = 1.0f;
     (void)sixel_lookup_vpte_float32_create(allocator, &lut->vpte);
+    (void)sixel_lookup_vptree_float32_create(allocator, &lut->vptree);
 }
 
 static void
@@ -900,6 +904,11 @@ sixel_lookup_float32_clear(sixel_lookup_float32_t *lut)
         lut->vpte = NULL;
     }
     lut->vpte_ready = 0;
+    if (lut->vptree != NULL) {
+        sixel_lookup_vptree_float32_unref(lut->vptree);
+        lut->vptree = NULL;
+    }
+    lut->vptree_ready = 0;
     lut->ncolors = 0;
     lut->depth = 0;
 }
@@ -1152,6 +1161,7 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
         return status;
     }
 
+    lut->vptree_ready = 0;
     if (lut->policy == SIXEL_LUT_POLICY_VPTE) {
         status = sixel_lookup_float32_configure_vpte(lut, pixelformat);
         if (SIXEL_FAILED(status)) {
@@ -1161,6 +1171,33 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
             lut->policy = SIXEL_LUT_POLICY_CERTLUT;
         } else {
             return SIXEL_OK;
+        }
+    } else if (lut->policy == SIXEL_LUT_POLICY_VPTREE) {
+        if (lut->vptree == NULL) {
+            status = sixel_lookup_vptree_float32_create(lut->allocator,
+                                                        &lut->vptree);
+            if (SIXEL_FAILED(status)) {
+                sixel_helper_set_additional_message(
+                    "sixel_lookup_float32_configure: VP-tree allocation "
+                    "failed.");
+                lut->policy = SIXEL_LUT_POLICY_CERTLUT;
+            }
+        }
+        if (lut->policy == SIXEL_LUT_POLICY_VPTREE) {
+            status = sixel_lookup_vptree_float32_configure(lut->vptree,
+                                                           lut->palette,
+                                                           lut->ncolors,
+                                                           lut->depth,
+                                                           lut->weights);
+            if (SIXEL_FAILED(status)) {
+                sixel_helper_set_additional_message(
+                    "sixel_lookup_float32_configure: VP-tree failed; "
+                    "falling back to CERTLUT.");
+                lut->policy = SIXEL_LUT_POLICY_CERTLUT;
+            } else {
+                lut->vptree_ready = 1;
+                return SIXEL_OK;
+            }
         }
     } else if (lut->policy == SIXEL_LUT_POLICY_EYTZINGER) {
         status = sixel_lookup_float32_configure_1d_eytzinger(lut);
@@ -1174,6 +1211,7 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
         }
     } else {
         lut->vpte_ready = 0;
+        lut->vptree_ready = 0;
     }
 
     if (lut->policy == SIXEL_LUT_POLICY_CERTLUT) {
@@ -1202,6 +1240,12 @@ sixel_lookup_float32_map_pixel(sixel_lookup_float32_t *lut,
     if (lut->policy == SIXEL_LUT_POLICY_VPTE) {
         if (lut->vpte_ready && lut->vpte != NULL) {
             return sixel_lookup_vpte_float32_map(lut->vpte, sample);
+        }
+        return 0;
+    }
+    if (lut->policy == SIXEL_LUT_POLICY_VPTREE) {
+        if (lut->vptree_ready && lut->vptree != NULL) {
+            return sixel_lookup_vptree_float32_map(lut->vptree, sample);
         }
         return 0;
     }
