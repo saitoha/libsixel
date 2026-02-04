@@ -477,7 +477,8 @@ sixel_lookup_8bit_policy_normalize(int policy)
                && normalized != SIXEL_LUT_POLICY_CERTLUT
                && normalized != SIXEL_LUT_POLICY_EYTZINGER
                && normalized != SIXEL_LUT_POLICY_NONE
-               && normalized != SIXEL_LUT_POLICY_VPTE) {
+               && normalized != SIXEL_LUT_POLICY_VPTE
+               && normalized != SIXEL_LUT_POLICY_VPTREE) {
         normalized = SIXEL_LUT_POLICY_6BIT;
     }
 
@@ -490,7 +491,8 @@ sixel_lookup_8bit_policy_uses_cache(int policy)
     if (policy == SIXEL_LUT_POLICY_CERTLUT
         || policy == SIXEL_LUT_POLICY_EYTZINGER
         || policy == SIXEL_LUT_POLICY_NONE
-        || policy == SIXEL_LUT_POLICY_VPTE) {
+        || policy == SIXEL_LUT_POLICY_VPTE
+        || policy == SIXEL_LUT_POLICY_VPTREE) {
         return 0;
     }
 
@@ -2219,6 +2221,8 @@ sixel_lookup_8bit_init(sixel_lookup_8bit_t *lut, sixel_allocator_t *allocator)
     lut->cert_ready = 0;
     lut->vpte = NULL;
     lut->vpte_ready = 0;
+    lut->vptree = NULL;
+    lut->vptree_ready = 0;
     lut->eytz.count = 0;
     lut->eytz.ready = 0;
     lut->eytz.keys = NULL;
@@ -2235,6 +2239,7 @@ sixel_lookup_8bit_init(sixel_lookup_8bit_t *lut, sixel_allocator_t *allocator)
         sixel_certlut_init(lut->cert);
     }
     (void)sixel_lookup_vpte_8bit_create(allocator, &lut->vpte);
+    (void)sixel_lookup_vptree_8bit_create(allocator, &lut->vptree);
 }
 
 SIXELSTATUS
@@ -2275,6 +2280,7 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
     lut->dense_ready = 0;
     lut->cert_ready = 0;
     lut->eytz.ready = 0;
+    lut->vptree_ready = 0;
 
     if (normalized == SIXEL_LUT_POLICY_VPTE) {
         status = sixel_lookup_8bit_configure_vpte(lut,
@@ -2292,6 +2298,32 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
             normalized = SIXEL_LUT_POLICY_CERTLUT;
         } else {
             return SIXEL_OK;
+        }
+    } else if (normalized == SIXEL_LUT_POLICY_VPTREE) {
+        if (lut->vptree == NULL) {
+            status = sixel_lookup_vptree_8bit_create(lut->allocator,
+                                                     &lut->vptree);
+            if (SIXEL_FAILED(status)) {
+                sixel_helper_set_additional_message(
+                    "sixel_lookup_8bit_configure: VP-tree allocation failed.");
+                normalized = SIXEL_LUT_POLICY_CERTLUT;
+            }
+        }
+        if (normalized == SIXEL_LUT_POLICY_VPTREE) {
+            status = sixel_lookup_vptree_8bit_configure(lut->vptree,
+                                                        palette,
+                                                        ncolors,
+                                                        depth,
+                                                        complexion);
+            if (SIXEL_FAILED(status)) {
+                sixel_helper_set_additional_message(
+                    "sixel_lookup_8bit_configure: VP-tree failed; "
+                    "falling back to CERTLUT.");
+                normalized = SIXEL_LUT_POLICY_CERTLUT;
+            } else {
+                lut->vptree_ready = 1;
+                return SIXEL_OK;
+            }
         }
     } else if (normalized == SIXEL_LUT_POLICY_EYTZINGER) {
         status = sixel_lookup_8bit_configure_1d_eytzinger(lut,
@@ -2368,6 +2400,12 @@ sixel_lookup_8bit_map_pixel(sixel_lookup_8bit_t *lut,
         }
         return 0;
     }
+    if (lut->policy == SIXEL_LUT_POLICY_VPTREE) {
+        if (lut->vptree_ready && lut->vptree != NULL) {
+            return sixel_lookup_vptree_8bit_map(lut->vptree, pixel);
+        }
+        return 0;
+    }
     if (lut->policy == SIXEL_LUT_POLICY_EYTZINGER) {
         return sixel_lookup_8bit_lookup_1d_eytzinger(lut, pixel);
     }
@@ -2401,6 +2439,11 @@ sixel_lookup_8bit_clear(sixel_lookup_8bit_t *lut)
         lut->vpte = NULL;
     }
     lut->vpte_ready = 0;
+    if (lut->vptree != NULL) {
+        sixel_lookup_vptree_8bit_unref(lut->vptree);
+        lut->vptree = NULL;
+    }
+    lut->vptree_ready = 0;
     sixel_lookup_8bit_1d_eytzinger_release(lut);
     lut->palette = NULL;
     lut->depth = 0;
