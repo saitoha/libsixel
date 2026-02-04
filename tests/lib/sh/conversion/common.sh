@@ -17,7 +17,7 @@ if [ -z "${conversion_helper_dir}" ]; then
     conversion_helper_dir=$(CDPATH=; cd "$(dirname "${conversion_common_path}")" && pwd)
 fi
 . "${conversion_helper_dir}/../common/tap.sh"
-. "${conversion_helper_dir}/../../../_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 setup_conversion_env() {
     test_name=$1
@@ -25,7 +25,8 @@ setup_conversion_env() {
     category_name=$(basename "$(dirname "${test_dir}")")
 
     artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-    artifact_dir="${artifact_root}/${category_name}/${test_name}"
+    artifact_test_dir=$(dirname "$0")
+    artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
     log_file="${artifact_dir}/conversion.log"
     tmp_dir="${artifact_dir}/tmp"
     output_dir="${artifact_dir}/outputs"

@@ -16,7 +16,8 @@ setup_wheel_paths() {
     test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
     category_name=$(basename "$(dirname "${test_dir}")")
     artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-    artifact_dir="${artifact_root}/${category_name}/${test_name}"
+    artifact_test_dir=$(dirname "$0")
+    artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
     log_file="${artifact_dir}/wheel.log"
     tmp_dir="${artifact_dir}/tmp"
     run_venv="${tmp_dir}/venv"

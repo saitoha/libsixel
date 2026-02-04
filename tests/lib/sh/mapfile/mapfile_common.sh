@@ -18,7 +18,8 @@ setup_mapfile_dirs() {
     category_name=$(basename "$(dirname "${test_dir}")")
 
     artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-    artifact_dir="${artifact_root}/${category_name}/${test_name}"
+    artifact_test_dir=$(dirname "$0")
+    artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
     log_file="${artifact_dir}/mapfile.log"
     output_dir="${artifact_dir}/outputs"
     tmp_dir="${artifact_dir}/tmp"
@@ -32,7 +33,7 @@ load_mapfile_prereqs() {
     script_dir=$1
     helper_dir=${mapfile_helper_dir}
 
-    . "${helper_dir}/../../../_lib/sh/common.sh"
+    . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
     status=0
     ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"

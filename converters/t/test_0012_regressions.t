@@ -7,9 +7,9 @@ source "${SCRIPT_DIR}/common.t"
 
 echo '[test13] regression test'
 
-require_file "${TOP_SRCDIR}/tests/issue/167/poc"
-require_file "${TOP_SRCDIR}/tests/issue/166/poc"
-require_file "${TOP_SRCDIR}/tests/issue/200/POC_img2sixel_heap_buffer_overflow"
+require_file "${TOP_SRCDIR}/tests/security/issue/data/167/poc"
+require_file "${TOP_SRCDIR}/tests/security/issue/data/166/poc"
+require_file "${TOP_SRCDIR}/tests/security/issue/data/200/POC_img2sixel_heap_buffer_overflow"
 
 check_exit() {
     if run_img2sixel "$@"; then
@@ -31,9 +31,9 @@ check_exit() {
 # Regression 167: tolerate empty background strings.
 check_exit -B '#000' -B ''
 # Regression 167: handle crafted input with specific height.
-check_exit "${TOP_SRCDIR}/tests/issue/167/poc" -h128
+check_exit "${TOP_SRCDIR}/tests/security/issue/data/167/poc" -h128
 # Regression 166: handle crafted input with specific width.
-check_exit "${TOP_SRCDIR}/tests/issue/166/poc" -w128
+check_exit "${TOP_SRCDIR}/tests/security/issue/data/166/poc" -w128
 # Regression 200: ensure complex flag mix avoids heap overflow.
 run_img2sixel --7bit-mode -8 --invert --palette-type=auto --verbose \
-    "${TOP_SRCDIR}/tests/issue/200/POC_img2sixel_heap_buffer_overflow" -o /dev/null
+    "${TOP_SRCDIR}/tests/security/issue/data/200/POC_img2sixel_heap_buffer_overflow" -o /dev/null
