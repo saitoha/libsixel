@@ -34,7 +34,7 @@ set -v
 
 image_path="${top_srcdir}/tests/data/inputs/formats/grayscale.jpg"
 output_sixel="${artifact_dir}/grayscale.six"
-if run_img2sixel -Lbuiltin "${image_path}" >"${output_sixel}"; then
+if run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}"; then
     :
 else
     fail 1 "grayscale quality regressed"

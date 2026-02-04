@@ -35,7 +35,7 @@ set -v
 
 image_path="${top_srcdir}/tests/data/inputs/snake_64-indexed.tiff"
 output_sixel="${artifact_dir}/snake_64_indexed.six"
-if run_img2sixel -Llibtiff "${image_path}" >"${output_sixel}"; then
+if run_img2sixel -Llibtiff! "${image_path}" >"${output_sixel}"; then
     :
 else
     fail 1 "tiff palette conversion failed"

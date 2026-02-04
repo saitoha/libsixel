@@ -35,7 +35,7 @@ set -v
 
 image_path="${top_srcdir}/tests/data/inputs/formats/rgba.tiff"
 output_sixel="${artifact_dir}/rgba.six"
-if run_img2sixel -Llibtiff "${image_path}" >"${output_sixel}"; then
+if run_img2sixel -Llibtiff! "${image_path}" >"${output_sixel}"; then
     :
 else
     fail 1 "tiff rgba conversion failed"
