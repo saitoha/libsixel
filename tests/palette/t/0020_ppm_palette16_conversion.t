@@ -15,7 +15,7 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-snake_ppm="${images_dir}/snake.ppm"
+snake_ppm="${top_srcdir}/tests/data/inputs/snake_64.ppm"
 map16_png="${images_dir}/map16.png"
 target_sixel="${output_dir}/ppm-palette16.sixel"
 

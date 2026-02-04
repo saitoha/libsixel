@@ -16,7 +16,7 @@ echo "1..1"
 set -v
 
 map8_six="${images_dir}/map8.six"
-snake_six="${images_dir}/snake.six"
+snake_six="${top_srcdir}/tests/data/inputs/snake_64.six"
 target_sixel="${output_dir}/stacked-palettes.sixel"
 
 require_file "${map8_six}"

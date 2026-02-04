@@ -15,7 +15,7 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-snake_jpg="${images_dir}/snake.jpg"
+snake_jpg="${top_srcdir}/tests/data/inputs/snake_64.jpg"
 map16_palette="${images_dir}/map16-palette.png"
 target_sixel="${output_dir}/palette16.sixel"
 

@@ -25,7 +25,7 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-input_image="${images_dir}/snake.png"
+input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_hls="${artifact_dir}/hls.six"
 output_rgb="${artifact_dir}/rgb.six"
 

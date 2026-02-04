@@ -15,7 +15,7 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-snake_pbm="${images_dir}/snake.pbm"
+snake_pbm="${top_srcdir}/tests/data/inputs/snake_64.pbm"
 target_sixel="${output_dir}/xterm-override.sixel"
 
 require_file "${snake_pbm}"

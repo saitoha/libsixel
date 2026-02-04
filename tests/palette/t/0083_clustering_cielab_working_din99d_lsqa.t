@@ -25,7 +25,7 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-input_image="${images_dir}/snake.png"
+input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${artifact_dir}/cluster-cielab-work-din99d.six"
 
 require_file "${input_image}"

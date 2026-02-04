@@ -16,7 +16,7 @@ echo "1..1"
 set -v
 
 snake_gray_png="${images_dir}/snake-grayscale.png"
-snake_png="${images_dir}/snake.png"
+snake_png="${top_srcdir}/tests/data/inputs/snake_64.png"
 target_sixel="${output_dir}/gray-palette-colour.sixel"
 
 require_file "${snake_gray_png}"

@@ -26,6 +26,7 @@ echo "1..1"
 set -v
 
 input_image="${images_dir}/snake.png"
+input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${artifact_dir}/cluster-gamma.six"
 
 require_file "${input_image}"
