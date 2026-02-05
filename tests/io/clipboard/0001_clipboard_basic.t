@@ -6,7 +6,7 @@ set -eux
 
 
 
-script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"

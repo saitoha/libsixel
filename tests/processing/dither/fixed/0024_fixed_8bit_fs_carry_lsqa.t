@@ -10,7 +10,6 @@ set -eux
 
 conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
 lsqa_common_path="${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-LSQA_HELPER_DIR=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
 . "${conversion_common_path}"
 . "${lsqa_common_path}"
 

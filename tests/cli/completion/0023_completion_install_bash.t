@@ -3,9 +3,6 @@
 
 set -eux
 
-
-
-script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 if ! command -v bash >/dev/null; then
@@ -55,7 +52,7 @@ export IMG2SIXEL_COMPLETION_HOME
 export IMG2SIXEL_COMPLETION_DIR
 export BASH_VERSION
 
-if run_img2sixel -2 bash; then
+if run_img2sixel -2 bash > "${ARTIFACT_LOCAL_DIR}/output.txt"; then
     if [ -f "${target_path}" ] && \
             grep -F '# bash completion for img2sixel' \
             "${target_path}" >/dev/null 2>&1; then

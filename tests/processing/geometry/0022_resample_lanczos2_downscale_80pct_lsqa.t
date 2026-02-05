@@ -14,8 +14,6 @@ conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
 . "${conversion_common_path}"
 
 lsqa_common_path="${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-LSQA_HELPER_DIR=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
-export LSQA_HELPER_DIR
 . "${lsqa_common_path}"
 
 setup_conversion_env "${test_name}"

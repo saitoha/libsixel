@@ -9,7 +9,7 @@ bash_sorted="${ARTIFACT_LOCAL_DIR}/options-bash-sorted.txt"
 zsh_sorted="${ARTIFACT_LOCAL_DIR}/options-zsh-sorted.txt"
 
 
-script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 status=0

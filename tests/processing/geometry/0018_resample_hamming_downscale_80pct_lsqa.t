@@ -14,8 +14,6 @@ conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
 . "${conversion_common_path}"
 
 lsqa_common_path="${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-LSQA_HELPER_DIR=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
-export LSQA_HELPER_DIR
 . "${lsqa_common_path}"
 
 setup_conversion_env "${test_name}"
@@ -24,11 +22,6 @@ status=0
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 data_root="${top_srcdir}/tests/data/inputs"
-LSQA_DATA_ROOT="${top_srcdir}/tests/data"
-export LSQA_DATA_ROOT
-TOP_BUILDDIR="${top_builddir}"
-TOP_SRCDIR="${top_srcdir}"
-export TOP_BUILDDIR TOP_SRCDIR
 input_image="${data_root}/snake_64.png"
 reference_image="${data_root}/scaling/snake_64_hamming_80pct.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/hamming-downscale_80pct.six"
