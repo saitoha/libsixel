@@ -49,6 +49,15 @@ if [ -z "${python_helper_dir}" ]; then
 fi
 . "${python_helper_dir}/../common/tap.sh"
 
+if [ "x${SIXEL_TSAN_BUILD}" = xyes ];
+    tap_skip_all "python extension does not works with TSan build"
+fi
+
+if [ "x${SIXEL_MSAN_BUILD}" = xyes ];
+    tap_skip_all "python extension does not works with MSan build"
+fi
+
+
 # Skip all tests when a Python process failed because the dynamic loader could
 # not import the libsixel shared library. Python snippets emit the
 # SKIP_LIBSIXEL_LOAD marker on OSError so shell callers can detect the
