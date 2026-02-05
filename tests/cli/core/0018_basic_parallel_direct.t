@@ -25,10 +25,10 @@ parallel_direct_1="${output_dir}/parallel-direct-1.png"
 parallel_direct_4="${output_dir}/parallel-direct-4.png"
 SIXEL_THREADS=1 run_sixel2png -D \
     <"${images_dir}/map64.six" \
-    >"${parallel_direct_1}" 2>>"${log_file}"
+    >"${parallel_direct_1}"
 SIXEL_THREADS=4 run_sixel2png -D \
     <"${images_dir}/map64.six" \
-    >"${parallel_direct_4}" 2>>"${log_file}"
+    >"${parallel_direct_4}"
 
 if cli_core_files_identical "${parallel_direct_1}" "${parallel_direct_4}"; then
     cli_core_pass 1 "parallel direct matches serial"

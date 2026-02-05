@@ -10,7 +10,6 @@ LSQA_HELPER_DIR=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
 export LSQA_HELPER_DIR
 . "${lsqa_common_path}"
 
-test_name=$(basename "$0")
 setup_conversion_env "${test_name}"
 
 status=0
@@ -23,7 +22,7 @@ echo "1..1"
 set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
-output_sixel="${artifact_dir}/snap-heckbert-8bit.six"
+output_sixel="${ARTIFACT_LOCAL_DIR}/snap-heckbert-8bit.six"
 output_png="${output_dir}/snap-heckbert-8bit.png"
 
 require_file "${input_image}"
@@ -38,7 +37,7 @@ export SIXEL_PALETTE_SNAP_TIMING_POLICY
 export SIXEL_PALETTE_SNAP_APPROACH_RATE
 export SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L
 
-if run_img2sixel -Q heckbert -6 -o "${output_sixel}" "${input_image}" 2>>"${log_file}"; then
+if run_img2sixel -Q heckbert -6 -o "${output_sixel}" "${input_image}"; then
     :
 else
     fail 1 "img2sixel snap heckbert 8bit failed"

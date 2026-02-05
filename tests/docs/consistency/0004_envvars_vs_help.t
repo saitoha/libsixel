@@ -4,16 +4,8 @@
 
 set -eux
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 repo_root=$(CDPATH=; cd "${test_dir}/../../.." && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/documentation.log"
 
-mkdir -p "${artifact_dir}"
 
 if [ -z "${TOP_SRCDIR:-}" ]; then
     TOP_SRCDIR=${repo_root}
@@ -36,11 +28,10 @@ set -v
 
 if run_quiet "${top_srcdir}/tests/docs/consistency/list_envvars.sh" --check \
         --img2sixel "${IMG2SIXEL_PATH}" --source-root "${top_srcdir}" \
-        >"${log_file}" 2>&1; then
+; then
     printf 'ok 1 - environment variables match between sources and -H\n'
 else
-    printf 'not ok 1 - mismatch between sources and -H (see %s)\n' \
-        "${log_file}"
+    printf 'not ok 1 - mismatch between sources and -H\n'
     status=1
 fi
 

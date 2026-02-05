@@ -3,19 +3,11 @@
 
 set -eux
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/documentation.log"
-man_opts="${artifact_dir}/options-man.txt"
-bash_opts="${artifact_dir}/options-bash.txt"
-man_sorted="${artifact_dir}/options-man-sorted.txt"
-bash_sorted="${artifact_dir}/options-bash-sorted.txt"
+man_opts="${ARTIFACT_LOCAL_DIR}/options-man.txt"
+bash_opts="${ARTIFACT_LOCAL_DIR}/options-bash.txt"
+man_sorted="${ARTIFACT_LOCAL_DIR}/options-man-sorted.txt"
+bash_sorted="${ARTIFACT_LOCAL_DIR}/options-bash-sorted.txt"
 
-mkdir -p "${artifact_dir}"
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -94,7 +86,7 @@ else
     fail 1 "failed to sort bash completion"
 fi
 
-if diff -u "${man_sorted}" "${bash_sorted}" >>"${log_file}" 2>&1; then
+if diff -u "${man_sorted}" "${bash_sorted}"; then
     pass 1 "manpage matches bash completion"
 else
     fail 1 "manpage diverges from bash completion"

@@ -84,6 +84,7 @@ done
 [ -n "${trs_file}" ]  || { echo "lso-tap-driver.sh: missing --trs-file" >&2; usage; }
 [ $# -ge 1 ] || { echo "lso-tap-driver.sh: missing TEST-SCRIPT" >&2; usage; }
 
+: "${TOP_SRCDIR:=@top_srcdir@}"
 : "${AM_TAP_AWK:=awk}"
 : "${LSO_TAP_TIMER_BIN:=@top_builddir@/tools/lso-timer@EXEEXT@}"
 : "${LSO_TAP_TIMER_SRC:=@top_srcdir@/tools/lso-timer@EXEEXT@}"
@@ -93,6 +94,22 @@ done
 : "${LSO_TAP_TIMEOUT_BUILD:=@top_builddir@/tools/lso-timeout@EXEEXT@}"
 timeout_budget=${test_timeout:-90}
 kill_delay=10
+
+test_script=$1
+test_name_base=${test_name##*[/\\]}
+test_name=${test_name_base%.t}
+test_dir=${test_script%[/\\]*}
+if [ "${test_dir}" = "${test_script}" ]; then
+  test_dir=.
+fi
+category_name=${test_dir#*tests/}
+artifact_root="${TOP_SRCDIR}/tests/_artifacts"
+ARTIFACT_LOCAL_DIR="${artifact_root}/${category_name}/${test_name_base}"
+export test_name
+export test_dir
+export category_name
+export ARTIFACT_LOCAL_DIR
+mkdir -p "${ARTIFACT_LOCAL_DIR}"
 
 timestamp_millis() {
   if [ -x "$LSO_TAP_TIMER_BIN" ]; then

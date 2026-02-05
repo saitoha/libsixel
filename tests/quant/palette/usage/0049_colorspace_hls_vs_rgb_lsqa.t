@@ -15,7 +15,6 @@ LSQA_HELPER_DIR=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
 export LSQA_HELPER_DIR
 . "${lsqa_common_path}"
 
-test_name=$(basename "$0")
 setup_conversion_env "${test_name}"
 
 status=0
@@ -26,14 +25,14 @@ echo "1..1"
 set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
-output_hls="${artifact_dir}/hls.six"
-output_rgb="${artifact_dir}/rgb.six"
+output_hls="${ARTIFACT_LOCAL_DIR}/hls.six"
+output_rgb="${ARTIFACT_LOCAL_DIR}/rgb.six"
 
 require_file "${input_image}"
 
 
 if run_img2sixel -t hls -o "${output_hls}" "${input_image}" \
-    2>>"${log_file}"; then
+; then
     :
 else
     fail 1 "img2sixel hls conversion failed"
@@ -41,7 +40,7 @@ else
 fi
 
 if run_img2sixel -t rgb -o "${output_rgb}" "${input_image}" \
-    2>>"${log_file}"; then
+; then
     :
 else
     fail 1 "img2sixel rgb conversion failed"

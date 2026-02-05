@@ -18,7 +18,6 @@ LSQA_HELPER_DIR=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
 export LSQA_HELPER_DIR
 . "${lsqa_common_path}"
 
-test_name=$(basename "$0")
 setup_conversion_env "${test_name}"
 
 status=0
@@ -32,7 +31,7 @@ TOP_SRCDIR="${top_srcdir}"
 export TOP_BUILDDIR TOP_SRCDIR
 input_image="${data_root}/snake_64.png"
 reference_image="${data_root}/scaling/snake_64_h80pct.png"
-output_sixel="${artifact_dir}/height_80pct.six"
+output_sixel="${ARTIFACT_LOCAL_DIR}/height_80pct.six"
 
 ensure_img2sixel_available
 
@@ -44,7 +43,7 @@ require_file "${reference_image}"
 
 
 if run_img2sixel -h 80% -o "${output_sixel}"         "${input_image}" \
-    2>>"${log_file}"; then
+; then
     :
 else
     fail 1 "height scaling with -h 80% failed"

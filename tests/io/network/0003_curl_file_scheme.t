@@ -3,16 +3,8 @@
 
 set -eux
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/curl.log"
-output_dir="${artifact_dir}/outputs"
+output_dir="${ARTIFACT_LOCAL_DIR}"
 
-mkdir -p "${output_dir}"
 
 script_dir=${test_dir}
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -28,7 +20,7 @@ set -v
 
 local_file="file://$(CDPATH=; cd "${top_srcdir}" && pwd)/tests/data/inputs/snake_64.jpg"
 if run_img2sixel "${local_file}" \
-        >"${output_dir}/local-file.sixel" 2>>"${log_file}"; then
+        >"${output_dir}/local-file.sixel"; then
     printf 'ok 1 - fetches local file via file scheme\n'
 else
     printf 'not ok 1 - local file fetch via file scheme failed\n'

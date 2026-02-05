@@ -16,8 +16,8 @@ require_file "${image_path}"
 echo "1..1"
 set -v
 
-err_file="${artifact_dir}/missing-map.err"
-out_file="${artifact_dir}/missing-map.out"
+err_file="${ARTIFACT_LOCAL_DIR}/missing-map.err"
+out_file="${ARTIFACT_LOCAL_DIR}/missing-map.out"
 
 rm -f "${err_file}" "${out_file}"
 
@@ -30,8 +30,8 @@ else
         cli_core_pass 1 "reports missing mapfile argument"
     else
         cli_core_fail 1 "no diagnostic for missing -m argument"
-        printf '%s\n' '--- stderr ---' >>"${log_file}"
-        cat "${err_file}" >>"${log_file}" 2>/dev/null || :
+        printf '%s\n' '--- stderr ---' >&2
+        cat "${err_file}" >&2 2>/dev/null || :
     fi
 fi
 

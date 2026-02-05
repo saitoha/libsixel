@@ -7,9 +7,6 @@ if [ "${VERBOSE:-0}" -eq 1 ]; then
     set -x
 fi
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
 
 
 lsqa_common_path="${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
@@ -28,17 +25,13 @@ ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 ensure_executable "${LSQA_PATH}" "lsqa"
 
 
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-mkdir -p "${artifact_dir}"
 
 printf '1..1\n'
 set -v
 
 image_path="${top_srcdir}/tests/data/inputs/formats/rgba.png"
-output_sixel="${artifact_dir}/rgba_roundtrip.six"
-output_png="${artifact_dir}/rgba_roundtrip.png"
+output_sixel="${ARTIFACT_LOCAL_DIR}/rgba_roundtrip.six"
+output_png="${ARTIFACT_LOCAL_DIR}/rgba_roundtrip.png"
 require_file "${image_path}"
 
 if run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}"; then

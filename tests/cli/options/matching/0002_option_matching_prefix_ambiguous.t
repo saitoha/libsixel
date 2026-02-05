@@ -16,8 +16,8 @@ echo "1..1"
 set -v
 
 label="prefix_ambiguous"
-err_file="${artifact_dir}/${label}.err"
-out_file="${artifact_dir}/${label}.sixel"
+err_file="${ARTIFACT_LOCAL_DIR}/${label}.err"
+out_file="${ARTIFACT_LOCAL_DIR}/${label}.sixel"
 
 rm -f "${err_file}" "${out_file}"
 
@@ -31,8 +31,8 @@ if grep -F 'ambiguous prefix "sie"' "${err_file}" >/dev/null 2>&1; then
     cli_core_pass 1 "ambiguous prefix reports diagnostic"
 else
     cli_core_fail 1 "missing diagnostic for ambiguous prefix"
-    printf '%s\n' '--- stderr ---' >>"${log_file}"
-    cat "${err_file}" >>"${log_file}" 2>/dev/null || :
+    printf '%s\n' '--- stderr ---' >&2
+    cat "${err_file}" >&2 2>/dev/null || :
 fi
 
 exit "${status}"

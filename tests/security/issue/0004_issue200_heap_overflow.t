@@ -3,18 +3,10 @@
 
 set -eux
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/regression.log"
-output_dir="${artifact_dir}/outputs"
+output_dir="${ARTIFACT_LOCAL_DIR}"
 
-tmp_dir="${artifact_dir}/tmp"
+tmp_dir="${ARTIFACT_LOCAL_DIR}"
 
-mkdir -p "${output_dir}" "${tmp_dir}"
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -32,7 +24,7 @@ printf '1..1\n'
 set -v
 
 if run_img2sixel --7bit-mode -8 --invert --palette-type=auto --verbose \
-        "${issue200}" -o /dev/null 2>>"${log_file}"; then
+        "${issue200}" -o /dev/null; then
     pass 1 "heap overflow regression avoided"
 else
     fail 1 "heap overflow regression triggered"
