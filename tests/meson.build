@@ -238,6 +238,7 @@ tests = [
   'processing/dither/fixed/0042_fixed_float32_sierra1_lsqa.t',
   'processing/dither/fixed/0043_fixed_float32_sierra2_lsqa.t',
   'processing/dither/fixed/0044_fixed_float32_sierra3_lsqa.t',
+  'processing/dither/fixed/0045_fixed_float32_lookup_none_lsqa.t',
   'processing/dither/bluenoise/0045_positional_8bit_bluenoise_gamma_lsqa.t',
   'processing/dither/bluenoise/0046_positional_float32_bluenoise_gamma_lsqa.t',
   'processing/dither/bluenoise/0047_positional_float32_bluenoise_oklab_lsqa.t',
