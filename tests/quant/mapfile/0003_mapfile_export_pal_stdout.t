@@ -3,15 +3,19 @@
 
 set -eux
 
-MAPFILE_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/mapfile"
-. "${MAPFILE_HELPER_DIR}/mapfile_common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-load_mapfile_prereqs
+ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
+
+status=0
 
 echo "1..1"
 set -v
 
+snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 pal_stdout="${ARTIFACT_LOCAL_DIR}/palette-stdout.pal"
+
 if run_img2sixel -M pal:- -o "${ARTIFACT_LOCAL_DIR}/pal-stdout.six" \
         "${snake_png}" >"${pal_stdout}"; then
     if head -n 1 "${pal_stdout}" | grep -q "JASC-PAL"; then
