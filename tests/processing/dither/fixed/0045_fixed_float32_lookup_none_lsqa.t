@@ -12,9 +12,6 @@ lsqa_common_path="${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
 . "${conversion_common_path}"
 . "${lsqa_common_path}"
 
-test_name="${0##*[/\\]}"
-setup_conversion_env "${test_name}"
-
 status=0
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
@@ -25,10 +22,7 @@ echo "1..1"
 set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
-case_id=${test_name%.t}
-output_sixel="${ARTIFACT_LOCAL_DIR}/${case_id}.six"
-
-
+output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
 if run_img2sixel --precision=float32 --lookup-policy=none -o "${output_sixel}" "${input_image}"; then
     :

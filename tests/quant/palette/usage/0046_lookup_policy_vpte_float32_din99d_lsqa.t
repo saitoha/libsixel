@@ -1,5 +1,3 @@
-#!/bin/sh
-# Run lsqa checks for float32 VPTE in the din99d colorspace.
 # The lsqa helper can read SIXEL directly, so compare with SIXEL output.
 # Quality floors tuned to requested QA thresholds:
 # - MS-SSIM floor: 0.97
@@ -10,8 +8,6 @@ conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
 
 lsqa_common_path="${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
 . "${lsqa_common_path}"
-
-setup_conversion_env "${test_name}"
 
 status=0
 

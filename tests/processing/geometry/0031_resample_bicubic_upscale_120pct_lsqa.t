@@ -16,8 +16,6 @@ conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
 lsqa_common_path="${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
 . "${lsqa_common_path}"
 
-setup_conversion_env "${test_name}"
-
 status=0
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
@@ -31,14 +29,7 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-
-
-
-
-if run_img2sixel -r bicubic -w 120% \
-    -o "${output_sixel}" \
-    "${input_image}" \
-; then
+if run_img2sixel -r bicubic -w 120% -o "${output_sixel}" "${input_image}"; then
     :
 else
     fail 1 "bicubic upscale 120pct scaling failed"
