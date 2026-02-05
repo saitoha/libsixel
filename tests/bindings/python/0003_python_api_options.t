@@ -7,7 +7,6 @@
 
 set -eux
 
-script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 PYTHON_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/python"
 . "${PYTHON_HELPER_DIR}/common.sh"
 

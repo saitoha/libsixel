@@ -7,11 +7,7 @@ if [ "${VERBOSE:-0}" -eq 1 ]; then
     set -x
 fi
 
-
-
 lsqa_common_path="${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-LSQA_HELPER_DIR=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
-export LSQA_HELPER_DIR
 . "${lsqa_common_path}"
 
 
@@ -20,8 +16,6 @@ status=0
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
-
-
 
 printf '1..1\n'
 set -v

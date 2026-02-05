@@ -9,7 +9,7 @@ help_sorted="${ARTIFACT_LOCAL_DIR}/options-help-sorted.txt"
 man_sorted="${ARTIFACT_LOCAL_DIR}/options-man-sorted.txt"
 
 
-script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 status=0

@@ -103,7 +103,7 @@ if [ "${test_dir}" = "${test_script}" ]; then
   test_dir=.
 fi
 category_name=${test_dir#*tests/}
-artifact_root="${TOP_SRCDIR}/tests/_artifacts"
+artifact_root="${TOP_BUILDDIR}/tests/_artifacts"
 ARTIFACT_LOCAL_DIR="${artifact_root}/${category_name}/${test_name_base}"
 export test_name
 export test_dir
@@ -178,7 +178,7 @@ run_with_timeout() {
   fi
 
   if [ -n "$helper_bin" ]; then
-    run_with_helper "$helper_bin" "$bin" "$@"
+    run_with_helper "$helper_bin" "$SHELL" "$bin" "$@"
     return $?
   fi
 
@@ -189,10 +189,17 @@ run_with_timeout() {
 # Run the test script, capture all output in .log (format free). :contentReference[oaicite:3]{index=3}
 # We don't stream to console; Automake shows progress separately.
 # If you want streaming, do it in the test itself (or add tee here).
-time_begin=$(timestamp_millis)
-run_with_timeout "$@" >"$log_file" 2>&1
-rc=$?
-time_end=$(timestamp_millis)
+if test "$(command -v time)" = time; then
+    # use builtin time
+    time_begin=0
+    time_end=$( TIMEFORMAT='%R'; { time run_with_timeout "$@" >"$log_file" 2>&1; } 2>&1 )
+    rc=$?
+else
+    time_begin=$(timestamp_millis)
+    run_with_timeout "$@" >"$log_file" 2>&1
+    rc=$?
+    time_end=$(timestamp_millis)
+fi
 
 # Generate .trs (reStructuredText fields), at minimum :test-result: fields. :contentReference[oaicite:4]{index=4}
 # Also write :global-test-result:, :recheck:, :copy-in-global-log: for convenience

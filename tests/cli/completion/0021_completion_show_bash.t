@@ -6,7 +6,6 @@ set -eux
 output_file="${ARTIFACT_LOCAL_DIR}/completion.sh"
 
 
-script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 status=0

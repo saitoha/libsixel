@@ -3,7 +3,7 @@
 
 set -eu
 
-script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 parent_dir=$(CDPATH=; cd "${script_dir}/../.." && pwd)
 
 if [ -n "${MESON_BUILD_ROOT:-}" ]; then

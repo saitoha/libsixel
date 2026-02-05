@@ -8,7 +8,7 @@ output_dir="${ARTIFACT_LOCAL_DIR}"
 tmp_dir="${ARTIFACT_LOCAL_DIR}"
 
 
-script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 status=0

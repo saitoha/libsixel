@@ -4,7 +4,7 @@
 
 set -eu
 
-script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 WHEEL_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/packaging"
 . "${WHEEL_HELPER_DIR}/python_wheel_common.sh"
 

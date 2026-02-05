@@ -13,12 +13,7 @@ set -eu
 MS_SSIM_FLOOR=${LSQA_MS_SSIM_FLOOR:-0.98}
 REPEAT_COUNT=5
 
-lsqa_common_path=${lsqa_common_path:-"$0"}
-lsqa_helper_root=${LSQA_HELPER_DIR-}
-if [ -z "${lsqa_helper_root}" ]; then
-    lsqa_helper_root=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
-fi
-. "${lsqa_helper_root}/../common/tap.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 

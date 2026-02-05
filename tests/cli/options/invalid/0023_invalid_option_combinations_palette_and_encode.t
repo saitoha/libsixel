@@ -3,7 +3,6 @@
 
 set -eux
 
-script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 CLI_CORE_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/cli-core"
 . "${CLI_CORE_HELPER_DIR}/cli_core_common.sh"
 cli_core_setup "invalid-combinations"
