@@ -17,7 +17,7 @@ echo "1..1"
 set -v
 
 snake_ascii_pbm="${images_dir}/snake-ascii.pbm"
-require_file "${snake_ascii_pbm}"
+
 
 SIXEL_PALETTE_DISABLE_TABLES=1 \
     run_img2sixel "${snake_ascii_pbm}" \

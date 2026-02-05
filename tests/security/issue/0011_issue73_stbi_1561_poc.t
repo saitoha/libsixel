@@ -37,7 +37,6 @@ check_exit() {
 }
 
 issue73="${top_srcdir}/tests/security/issue/data/libsixel-libsixel/73/stbi_1561_poc.bin"
-require_file "${issue73}"
 
 printf '1..1\n'
 set -v

@@ -17,7 +17,7 @@ set -v
 snake_jpg="${images_dir}/snake.jpg"
 filename_png="${tmp_dir}/snake-filename.png"
 
-require_file "${snake_jpg}"
+
 
 if run_img2sixel -o "${filename_png}" "${snake_jpg}"; then
     header=$(od -An -tx1 -N8 "${filename_png}" | tr -d ' \n')

@@ -17,7 +17,7 @@ set -v
 snake_six="${images_dir}/snake.six"
 target_sixel="${output_dir}/sixel-crop-offsets.sixel"
 
-require_file "${snake_six}"
+
 
 if run_img2sixel -c200x200+2000+2000 "${snake_six}" \
         >"${target_sixel}"; then

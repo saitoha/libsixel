@@ -25,7 +25,7 @@ die_skip() {
     exit 0
 }
 
-require_file "${top_srcdir}/converters/img2sixel.1"
+
 
 if ! command -v diff >/dev/null 2>&1; then
     die_skip "diff not available"

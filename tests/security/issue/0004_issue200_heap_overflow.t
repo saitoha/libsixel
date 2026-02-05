@@ -18,7 +18,6 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 
 issue200="${top_srcdir}/tests/security/issue/data/200/POC_img2sixel_heap_buffer_overflow"
-require_file "${issue200}"
 
 printf '1..1\n'
 set -v

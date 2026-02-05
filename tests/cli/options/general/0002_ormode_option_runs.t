@@ -17,7 +17,7 @@ set -v
 snake_jpg="${images_dir}/snake.jpg"
 output_sixel="${tmp_dir}/snake-ormode.sixel"
 
-require_file "${snake_jpg}"
+
 
 # LSQA cannot read ormode sixel output, so only check for a clean exit.
 if run_img2sixel -O --outfile="${output_sixel}" <"${snake_jpg}" \

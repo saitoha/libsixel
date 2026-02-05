@@ -18,8 +18,8 @@ map8_six="${images_dir}/map8.six"
 snake_six="${top_srcdir}/tests/data/inputs/snake_64.six"
 target_sixel="${output_dir}/stacked-palettes.sixel"
 
-require_file "${map8_six}"
-require_file "${snake_six}"
+
+
 
 if run_img2sixel -m "${map8_six}" -m "${map8_six}" "${snake_six}" \
         >"${target_sixel}"; then

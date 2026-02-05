@@ -17,7 +17,7 @@ set -v
 snake_jpg="${images_dir}/snake.jpg"
 longopt_sixel="${tmp_dir}/snake-longopt.sixel"
 
-require_file "${snake_jpg}"
+
 
 if run_img2sixel --height=100 --diffusion=atkinson \
     --outfile="${longopt_sixel}" <"${snake_jpg}"; then

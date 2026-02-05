@@ -10,7 +10,7 @@ cli_core_setup "img2sixel-option-matching"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-require_file "${images_dir}/snake.png"
+
 
 label="prefix_unique"
 err_file="${ARTIFACT_LOCAL_DIR}/${label}.err"

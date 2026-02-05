@@ -16,7 +16,7 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 completion_dir="${top_srcdir}/converters/shell-completion"
 completion_source="${completion_dir}/bash/img2sixel"
-require_file "${completion_source}"
+
 
 printf '1..1\n'
 set -v

@@ -17,7 +17,7 @@ set -v
 snake_six="${images_dir}/snake.six"
 target_sixel="${output_dir}/sixel-resize.sixel"
 
-require_file "${snake_six}"
+
 
 if run_img2sixel -w200 -p8 "${snake_six}" \
         >"${target_sixel}"; then

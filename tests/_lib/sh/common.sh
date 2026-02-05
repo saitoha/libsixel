@@ -29,8 +29,7 @@ run_quiet() {
 if [ -n "${TOP_SRCDIR:-}" ]; then
     tests_root="${TOP_SRCDIR}/tests"
 else
-    script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-    tests_root=$(CDPATH=; cd "${script_dir}/../../.." && pwd)
+    tests_root=$(CDPATH=; cd "${0##*[/\\]}/../../.." && pwd)
 fi
 
 parent_dir=$(CDPATH=; cd "${tests_root}/.." && pwd)
@@ -244,23 +243,10 @@ make_temp_file() {
     dir_path=$1
     prefix=$2
 
-    if command -v mktemp >/dev/null 2>&1; then
-        mktemp "${dir_path}/${prefix}.XXXXXX"
-        return 0
-    fi
-
     candidate="${dir_path}/${prefix}.$$"
     : >"${candidate}"
     echo "${candidate}"
     return 0
-}
-
-require_file() {
-    return 0
-#    if [ ! -e "$1" ]; then
-#        echo "Required file '$1' is missing" >&2
-#        exit 1
-#    fi
 }
 
 export SIXEL_THREADS=${SIXEL_THREADS:-1}

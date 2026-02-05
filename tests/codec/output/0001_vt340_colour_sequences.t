@@ -17,7 +17,7 @@ set -v
 snake_ppm="${images_dir}/snake.ppm"
 target_sixel="${output_dir}/vt340-colour.sixel"
 
-require_file "${snake_ppm}"
+
 
 if run_img2sixel -bvt340color "${snake_ppm}" \
         >"${target_sixel}"; then

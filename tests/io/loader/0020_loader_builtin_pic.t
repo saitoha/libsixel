@@ -20,7 +20,7 @@ echo "1..1"
 set -v
 
 input_pic="${top_srcdir}/tests/data/inputs/formats/stbi_minimal.pic"
-require_file "${input_pic}"
+
 
 if run_img2sixel "${input_pic}" \
         >"${output_dir}/stbi_minimal_pic.sixel"; then

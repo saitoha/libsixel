@@ -18,7 +18,6 @@ dcs_arguments_run() {
     echo "1..1"
 
     map8_png="${images_dir}/map8.png"
-    require_file "${map8_png}"
 
     stage_file="${output_dir}/stage-${i}-${j}.sixel"
     output_file="${output_dir}/dcs-${i}-${j}.sixel"
