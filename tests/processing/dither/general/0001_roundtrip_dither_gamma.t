@@ -14,10 +14,8 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-snake_jpg="${images_dir}/snake.jpg"
-snake_roundtrip="${tmp_dir}/snake-roundtrip.sixel"
-
-
+snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
+snake_roundtrip="${ARTIFACT_LOCAL_DIR}/snake-roundtrip.sixel"
 
 if run_img2sixel "${snake_jpg}" -datkinson -flum -save \
     | run_img2sixel | tee "${snake_roundtrip}" >/dev/null; then

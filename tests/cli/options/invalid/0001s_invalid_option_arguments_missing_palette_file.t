@@ -9,11 +9,11 @@ cli_core_setup "invalid-option-arguments"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-
-
 echo "1..1"
 set -v
 
-cli_core_expect_img2sixel_rejection 1 "missing palette file" -m "${tmp_dir}/invalid_filename" "${images_dir}/snake.jpg"
+cli_core_expect_img2sixel_rejection 1 "missing palette file" \
+    -m "${ARTIFACT_LOCAL_DIR}/invalid_filename" \
+    "${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 
 exit "${status}"

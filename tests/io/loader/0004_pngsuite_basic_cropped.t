@@ -3,23 +3,17 @@
 
 set -eux
 
-output_dir="${ARTIFACT_LOCAL_DIR}"
-
-
-script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 . "${TOP_SRCDIR}/tests/lib/sh/loader/pngsuite_common.sh"
 
 status=0
-
-
 
 ensure_pngsuite_prereqs
 
 echo "1..1"
 set -v
 
-if convert_pngsuite_group "${pngsuite_basic}" "basic samples" "-c16x16+8+8" "${output_dir}" ""; then
+if convert_pngsuite_group "${pngsuite_basic}" "basic samples" "-c16x16+8+8" "${ARTIFACT_LOCAL_DIR}" ""; then
     pass 1 "basic samples cropped"
 else
     fail 1 "basic samples cropped"

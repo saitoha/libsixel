@@ -14,10 +14,8 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-snake_jpg="${images_dir}/snake.jpg"
-output_sixel="${tmp_dir}/snake-ormode.sixel"
-
-
+snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
+output_sixel="${ARTIFACT_LOCAL_DIR}/snake-ormode.sixel"
 
 # LSQA cannot read ormode sixel output, so only check for a clean exit.
 if run_img2sixel -O --outfile="${output_sixel}" <"${snake_jpg}" \

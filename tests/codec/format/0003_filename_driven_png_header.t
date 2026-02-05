@@ -14,10 +14,8 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-snake_jpg="${images_dir}/snake.jpg"
-filename_png="${tmp_dir}/snake-filename.png"
-
-
+snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
+filename_png="${ARTIFACT_LOCAL_DIR}/snake-filename.png"
 
 if run_img2sixel -o "${filename_png}" "${snake_jpg}"; then
     header=$(od -An -tx1 -N8 "${filename_png}" | tr -d ' \n')

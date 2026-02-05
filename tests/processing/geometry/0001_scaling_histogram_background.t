@@ -14,10 +14,8 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-snake_jpg="${images_dir}/snake.jpg"
-snake_scaling="${tmp_dir}/snake-scaling.sixel"
-
-
+snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
+snake_scaling="${ARTIFACT_LOCAL_DIR}/snake-scaling.sixel"
 
 if run_img2sixel -w50% -h150% -dfs -Bblue -thls -shist <"${snake_jpg}" \
     | tee "${snake_scaling}" >/dev/null; then

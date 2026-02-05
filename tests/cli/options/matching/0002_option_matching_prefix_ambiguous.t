@@ -10,8 +10,6 @@ cli_core_setup "img2sixel-option-matching"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-
-
 echo "1..1"
 set -v
 
@@ -21,7 +19,7 @@ out_file="${ARTIFACT_LOCAL_DIR}/${label}.sixel"
 
 rm -f "${err_file}" "${out_file}"
 
-if run_img2sixel -d sie "${images_dir}/snake.png" \
+if run_img2sixel -d sie "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
         >"${out_file}" 2>"${err_file}"; then
     cli_core_fail 1 "ambiguous prefix unexpectedly succeeded"
     exit "${status}"
