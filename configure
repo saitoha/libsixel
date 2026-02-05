@@ -787,6 +787,7 @@ WANT_SIXEL2PNG_FALSE
 WANT_SIXEL2PNG_TRUE
 WANT_IMG2SIXEL_FALSE
 WANT_IMG2SIXEL_TRUE
+SIXEL_MSAN_BUILD
 SIXEL_TSAN_BUILD
 USING_CL_FALSE
 USING_CL_TRUE
@@ -16494,6 +16495,45 @@ fi
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sixel_tsan" >&5
 printf "%s\n" "$ac_cv_sixel_tsan" >&6; }
 SIXEL_TSAN_BUILD="$ac_cv_sixel_tsan"
+
+
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether MemorySanitizer instrumentation is enabled" >&5
+printf %s "checking whether MemorySanitizer instrumentation is enabled... " >&6; }
+if test ${ac_cv_sixel_msan+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e)
+   ac_save_CFLAGS="$CFLAGS"
+   CFLAGS="$CFLAGS -Werror"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+       #if defined(__has_feature)
+       #if !__has_feature(memory_sanitizer)
+       #error "MSan is not enabled"
+       #endif
+       #elif !defined(__SANITIZE_MEMORY__)
+       #error "MSan is not enabled"
+       #endif
+       int main(void) { return 0; }
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ac_cv_sixel_msan=yes
+else case e in #(
+  e) ac_cv_sixel_msan=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+   CFLAGS="$ac_save_CFLAGS"
+   ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_sixel_msan" >&5
+printf "%s\n" "$ac_cv_sixel_msan" >&6; }
+SIXEL_MSAN_BUILD="$ac_cv_sixel_msan"
 
 
 # Options

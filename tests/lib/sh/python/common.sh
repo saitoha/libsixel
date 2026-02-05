@@ -49,11 +49,11 @@ if [ -z "${python_helper_dir}" ]; then
 fi
 . "${python_helper_dir}/../common/tap.sh"
 
-if [ "x${SIXEL_TSAN_BUILD}" = xyes ];
+if [ "x${SIXEL_TSAN_BUILD}" = xyes ]; then
     tap_skip_all "python extension does not works with TSan build"
 fi
 
-if [ "x${SIXEL_MSAN_BUILD}" = xyes ];
+if [ "x${SIXEL_MSAN_BUILD}" = xyes ]; then
     tap_skip_all "python extension does not works with MSan build"
 fi
 

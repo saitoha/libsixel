@@ -650,6 +650,7 @@ RUBY_VERSION = @RUBY_VERSION@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SIXEL_MSAN_BUILD = @SIXEL_MSAN_BUILD@
 SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
 SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
 SIXEL_TSAN_BUILD = @SIXEL_TSAN_BUILD@
@@ -1183,8 +1184,9 @@ AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	ARTIFACT_ROOT; TOP_SRCDIR='$(abs_top_srcdir)'; export \
 	TOP_SRCDIR; TOP_BUILDDIR='$(abs_top_builddir)'; export \
 	TOP_BUILDDIR; SIXEL_TSAN_BUILD='@SIXEL_TSAN_BUILD@'; export \
-	SIXEL_TSAN_BUILD; CROSS_COMPILING='@cross_compiling@'; export \
-	CROSS_COMPILING;
+	SIXEL_TSAN_BUILD; SIXEL_MSAN_BUILD='@SIXEL_MSAN_BUILD@'; \
+	export SIXEL_MSAN_BUILD; CROSS_COMPILING='@cross_compiling@'; \
+	export CROSS_COMPILING;
 TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_builddir) -I$(top_builddir)/include \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \
