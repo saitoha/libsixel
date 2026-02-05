@@ -65,8 +65,7 @@ VPATH = @srcdir@
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = $(builddir)/libsixel.pc
 
-CLEANFILES = $(builddir)/valgrind.log $(builddir)/test.log $(builddir)/unittest.log \
-    $(builddir)/package.json
+CLEANFILES = $(builddir)/package.json
 
 all-am:
 	cp $(builddir)/package.json.in $(builddir)/package.json
