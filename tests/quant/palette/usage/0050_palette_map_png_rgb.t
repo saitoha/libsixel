@@ -23,8 +23,8 @@ palette_png="${images_dir}/pngsuite/basic/basn2c08.png"
 input_png="${top_srcdir}/tests/data/inputs/snake_64.png"
 target_sixel="${output_dir}/mapfile-rgb.sixel"
 
-require_file "${palette_png}"
-require_file "${input_png}"
+
+
 
 if run_img2sixel -m "${palette_png}" "${input_png}" \
         >"${target_sixel}"; then

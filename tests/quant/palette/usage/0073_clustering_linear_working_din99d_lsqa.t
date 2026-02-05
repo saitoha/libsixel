@@ -25,11 +25,7 @@ set -v
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/cluster-linear-work-din99d.six"
 
-require_file "${input_image}"
-
-if run_img2sixel -t rgb -X linear -W din99d -o "${output_sixel}"     "${input_image}"; then
-    :
-else
+if ! run_img2sixel -t rgb -X linear -W din99d -o "${output_sixel}" "${input_image}"; then
     fail 1 "img2sixel clustering linear working din99d conversion failed"
     exit "${status}"
 fi

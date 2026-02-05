@@ -17,7 +17,7 @@ set -v
 snake_six="${images_dir}/snake.six"
 target_sixel="${output_dir}/sixel-direct.sixel"
 
-require_file "${snake_six}"
+
 
 if run_img2sixel -e "${snake_six}" >"${target_sixel}"; then
     pass 1 "direct Sixel encode emits data"

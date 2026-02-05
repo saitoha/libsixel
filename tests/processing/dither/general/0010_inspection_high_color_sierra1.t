@@ -21,7 +21,7 @@ echo "1..1"
 set -v
 
 input_image="${images_dir}/snake.png"
-require_file "${input_image}"
+
 
 target_txt="${output_dir}/inspection.txt"
 

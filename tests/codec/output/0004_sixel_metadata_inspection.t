@@ -17,7 +17,7 @@ set -v
 snake_six="${images_dir}/snake.six"
 target_txt="${output_dir}/sixel-inspection.txt"
 
-require_file "${snake_six}"
+
 
 if run_img2sixel -I "${snake_six}" >"${target_txt}"; then
     pass 1 "Sixel metadata inspection succeeds"

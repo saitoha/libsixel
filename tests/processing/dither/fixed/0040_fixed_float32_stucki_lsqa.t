@@ -30,7 +30,7 @@ case_id=${test_name%.t}
 output_sixel="${ARTIFACT_LOCAL_DIR}/${case_id}.six"
 output_png="${output_dir}/${case_id}.png"
 
-require_file "${input_image}"
+
 
 if run_img2sixel -d stucki -y raster -W oklab -o "${output_sixel}" "${input_image}"; then
     :

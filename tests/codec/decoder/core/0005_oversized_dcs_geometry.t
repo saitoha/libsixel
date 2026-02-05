@@ -22,7 +22,7 @@ set -v
 
 snake_png="${images_dir}/snake.png"
 
-require_file "${snake_png}"
+
 
 if run_img2sixel "${snake_png}" >"${output_dir}/case02-stage.sixel" \
  && \

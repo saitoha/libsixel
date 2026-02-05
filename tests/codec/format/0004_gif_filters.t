@@ -17,7 +17,7 @@ set -v
 snake_gif="${images_dir}/snake.gif"
 target_sixel="${tmp_dir}/snake-gif.sixel"
 
-require_file "${snake_gif}"
+
 
 if run_img2sixel -w105% -h100 -B"#000000000" -rne <"${snake_gif}" \
     >"${target_sixel}"; then

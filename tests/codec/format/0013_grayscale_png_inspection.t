@@ -17,7 +17,7 @@ set -v
 snake_gray_png="${images_dir}/snake-grayscale.png"
 target_txt="${output_dir}/gray-png-inspection.txt"
 
-require_file "${snake_gray_png}"
+
 
 if run_img2sixel -I "${snake_gray_png}" >"${target_txt}"; then
     pass 1 "grayscale PNG inspection succeeds"

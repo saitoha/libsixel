@@ -27,7 +27,7 @@ set -v
 image_path="${top_srcdir}/tests/data/inputs/formats/rgba.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/rgba_roundtrip.six"
 output_png="${ARTIFACT_LOCAL_DIR}/rgba_roundtrip.png"
-require_file "${image_path}"
+
 
 if run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}"; then
     :

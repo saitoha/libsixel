@@ -18,8 +18,8 @@ snake_gray_png="${images_dir}/snake-grayscale.png"
 snake_png="${top_srcdir}/tests/data/inputs/snake_64.png"
 target_sixel="${output_dir}/gray-palette-colour.sixel"
 
-require_file "${snake_gray_png}"
-require_file "${snake_png}"
+
+
 
 if run_img2sixel -m "${snake_gray_png}" "${snake_png}" \
         >"${target_sixel}"; then

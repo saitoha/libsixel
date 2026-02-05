@@ -17,7 +17,7 @@ set -v
 snake_png="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${output_dir}/vpte-float32.six"
 
-require_file "${snake_png}"
+
 
 if run_img2sixel --lookup-policy=vpte --precision=float32 -p 16 -d none \
         -o "${output_sixel}" "${snake_png}"; then

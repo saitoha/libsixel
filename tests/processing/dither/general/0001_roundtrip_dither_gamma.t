@@ -17,7 +17,7 @@ set -v
 snake_jpg="${images_dir}/snake.jpg"
 snake_roundtrip="${tmp_dir}/snake-roundtrip.sixel"
 
-require_file "${snake_jpg}"
+
 
 if run_img2sixel "${snake_jpg}" -datkinson -flum -save \
     | run_img2sixel | tee "${snake_roundtrip}" >/dev/null; then

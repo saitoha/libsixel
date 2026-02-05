@@ -9,7 +9,7 @@ cli_core_setup "sixel2png-basic"
 
 ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 
-require_file "${images_dir}/map8.six"
+
 
 echo "1..1"
 set -v

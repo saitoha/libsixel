@@ -36,7 +36,6 @@ check_exit() {
 }
 
 issue167="${top_srcdir}/tests/security/issue/data/167/poc"
-require_file "${issue167}"
 
 printf '1..1\n'
 set -v

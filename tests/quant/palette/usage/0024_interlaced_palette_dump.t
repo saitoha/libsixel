@@ -17,7 +17,7 @@ set -v
 snake_jpg="${top_srcdir}/tests/data/inputs/snake_64.jpg"
 target_sixel="${output_dir}/interlaced-palette-dump.sixel"
 
-require_file "${snake_jpg}"
+
 
 if run_img2sixel -e -i -P "${snake_jpg}" >"${target_sixel}" \
 ; then

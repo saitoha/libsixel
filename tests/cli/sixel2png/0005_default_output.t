@@ -33,7 +33,7 @@ echo "1..1"
 set -v
 
 input_path="${images_dir}/snake.six"
-require_file "${input_path}"
+
 
 stdout_path="${output_dir}/stdout.png"
 stderr_path="${output_dir}/stderr.txt"

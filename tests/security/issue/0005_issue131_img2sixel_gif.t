@@ -18,7 +18,6 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 
 issue131="${top_srcdir}/tests/security/issue/data/131/2020-01-30-img2sixel.gif"
-require_file "${issue131}"
 
 printf '1..1\n'
 set -v

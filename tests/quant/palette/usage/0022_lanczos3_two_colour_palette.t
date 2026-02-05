@@ -17,7 +17,7 @@ set -v
 snake_jpg="${top_srcdir}/tests/data/inputs/snake_64.jpg"
 target_sixel="${output_dir}/lanczos3-two-colour.sixel"
 
-require_file "${snake_jpg}"
+
 
 if run_img2sixel -p 2 -h100 -wauto -rlanczos3 "${snake_jpg}" \
         >"${target_sixel}"; then

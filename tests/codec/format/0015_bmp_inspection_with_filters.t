@@ -17,7 +17,7 @@ set -v
 snake_bmp="${images_dir}/snake.bmp"
 target_txt="${output_dir}/bmp-inspection.txt"
 
-require_file "${snake_bmp}"
+
 
 if run_img2sixel -I -v -w200 -hauto -c100x1000+40+20 -qlow -dnone \
         -rhamming -thls "${snake_bmp}" >"${target_txt}"; then

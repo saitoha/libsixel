@@ -23,7 +23,7 @@ input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snap-heckbert-float32.six"
 output_png="${output_dir}/snap-heckbert-float32.png"
 
-require_file "${input_image}"
+
 
 
 if ! run_img2sixel -Q heckbert -6 -W oklab \

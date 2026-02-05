@@ -18,8 +18,8 @@ egret_jpg="${images_dir}/egret.jpg"
 map8_png="${images_dir}/map8.png"
 target_sixel="${output_dir}/jpeg-welsh.sixel"
 
-require_file "${egret_jpg}"
-require_file "${map8_png}"
+
+
 
 if run_img2sixel -m "${map8_png}" -w200 -fau -rwelsh "${egret_jpg}" \
         >"${target_sixel}"; then

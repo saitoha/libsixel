@@ -23,7 +23,7 @@ input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snap-heckbert-8bit.six"
 output_png="${output_dir}/snap-heckbert-8bit.png"
 
-require_file "${input_image}"
+
 
 
 SIXEL_PALETTE_SNAP_TARGET_POLICY=reversible

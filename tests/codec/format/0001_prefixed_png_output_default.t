@@ -17,7 +17,7 @@ set -v
 snake_jpg="${images_dir}/snake.jpg"
 prefixed_png="${tmp_dir}/snake-prefixed.png"
 
-require_file "${snake_jpg}"
+
 
 if run_img2sixel -o "png:${prefixed_png}" "${snake_jpg}"; then
     if [ -s "${prefixed_png}" ]; then

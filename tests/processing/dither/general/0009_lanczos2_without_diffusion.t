@@ -17,7 +17,7 @@ set -v
 snake_jpg="${images_dir}/snake.jpg"
 target_sixel="${output_dir}/lanczos2-no-diffusion.sixel"
 
-require_file "${snake_jpg}"
+
 
 if run_img2sixel -v -p 8 -h200 -fnorm -rlanczos2 -dnone \
         "${snake_jpg}" >"${target_sixel}"; then

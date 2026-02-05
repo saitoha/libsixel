@@ -18,7 +18,7 @@ snake_png="${images_dir}/snake.png"
 stage1="${output_dir}/two-pass-stage1.sixel"
 stage2="${output_dir}/two-pass-stage2.sixel"
 
-require_file "${snake_png}"
+
 
 if run_img2sixel -w204 -h204 "${snake_png}" \
         >"${stage1}" && \

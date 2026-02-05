@@ -18,8 +18,8 @@ snake_ppm="${top_srcdir}/tests/data/inputs/snake_64.ppm"
 map16_png="${images_dir}/map16.png"
 target_sixel="${output_dir}/ppm-palette16.sixel"
 
-require_file "${snake_ppm}"
-require_file "${map16_png}"
+
+
 
 if run_img2sixel -m "${map16_png}" -w100 -hauto -rbicubic -dauto \
         "${snake_ppm}" >"${target_sixel}"; then

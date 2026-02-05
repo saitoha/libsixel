@@ -17,8 +17,8 @@ set -v
 snake_ppm="${top_srcdir}/tests/data/inputs/snake_64.ppm"
 map8_palette="${images_dir}/map8-palette.png"
 
-require_file "${snake_ppm}"
-require_file "${map8_palette}"
+
+
 
 if run_img2sixel -8 -m "${map8_palette}" -Esize "${snake_ppm}" \
         -o/dev/null; then

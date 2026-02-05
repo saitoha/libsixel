@@ -25,18 +25,14 @@ set -v
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/cluster-linear-work-cielab.six"
 
-require_file "${input_image}"
-
-if run_img2sixel -t rgb -X linear -W cielab -o "${output_sixel}"     "${input_image}"; then
-    :
-else
+if ! run_img2sixel -t rgb -X linear -W cielab -o "${output_sixel}" "${input_image}"; then
     fail 1 "img2sixel clustering linear working cielab conversion failed"
     exit "${status}"
 fi
 
 lsqa_err=$(
     set +xv
-    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}"         "${output_sixel}" 2>&1
+    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
 if [ -z "${lsqa_run_status-}" ]; then

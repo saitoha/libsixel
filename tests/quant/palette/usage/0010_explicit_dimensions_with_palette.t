@@ -17,7 +17,7 @@ set -v
 snake_jpg="${top_srcdir}/tests/data/inputs/snake_64.jpg"
 snake_dims="${tmp_dir}/snake-dims.sixel"
 
-require_file "${snake_jpg}"
+
 
 if run_img2sixel -w210 -h210 -djajuni -bxterm256 -o "${snake_dims}" \
     <"${snake_jpg}"; then

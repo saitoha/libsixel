@@ -30,7 +30,7 @@ case_id=${test_name%.t}
 output_sixel="${ARTIFACT_LOCAL_DIR}/${case_id}.six"
 output_png="${output_dir}/${case_id}.png"
 
-require_file "${input_image}"
+
 
 run_img2sixel -d bluenoise -y raster -W oklab -o "${output_sixel}" "${input_image}" || {
     fail 1 "positional float32 bluenoise oklab lsqa failed"

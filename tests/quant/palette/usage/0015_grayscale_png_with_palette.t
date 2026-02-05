@@ -18,8 +18,8 @@ snake_gray_png="${images_dir}/snake-grayscale.png"
 map8_palette="${images_dir}/map8-palette.png"
 target_sixel="${output_dir}/gray-png-palette.sixel"
 
-require_file "${snake_gray_png}"
-require_file "${map8_palette}"
+
+
 
 if run_img2sixel -m "${map8_palette}" "${snake_gray_png}" \
         >"${target_sixel}"; then

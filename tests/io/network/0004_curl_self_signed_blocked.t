@@ -51,12 +51,12 @@ if ! command -v python >/dev/null 2>&1; then
     exit 0
 fi
 
-require_file "${images_dir}/snake.six"
+
 cp "${images_dir}/snake.six" "${tmp_dir}/snake.sixel"
 
 cert_dir="${script_dir}/certs"
-require_file "${cert_dir}/server.crt"
-require_file "${cert_dir}/server.key"
+
+
 # Use a pre-generated localhost certificate to avoid depending on openssl
 # during test execution on platforms without it.
 cp "${cert_dir}/server.crt" "${tmp_dir}/server.crt"

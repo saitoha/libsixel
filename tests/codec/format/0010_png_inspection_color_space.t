@@ -17,7 +17,7 @@ set -v
 snake_png="${images_dir}/snake.png"
 target_txt="${output_dir}/png-inspection.txt"
 
-require_file "${snake_png}"
+
 
 if run_img2sixel -I -C10 -djajuni "${snake_png}" \
         >"${target_txt}"; then

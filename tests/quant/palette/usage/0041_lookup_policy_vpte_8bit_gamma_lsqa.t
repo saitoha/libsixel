@@ -24,7 +24,7 @@ set -v
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/vpte-8bit-gamma.six"
 
-require_file "${input_image}"
+
 
 
 if run_img2sixel --lookup-policy=vpte -o "${output_sixel}" \

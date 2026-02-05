@@ -25,8 +25,6 @@ set -v
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/cluster-din99d-work-gamma.six"
 
-require_file "${input_image}"
-
 if run_img2sixel -t rgb -X din99d -W gamma -o "${output_sixel}"     "${input_image}"; then
     :
 else

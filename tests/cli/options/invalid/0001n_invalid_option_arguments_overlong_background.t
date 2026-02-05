@@ -10,7 +10,7 @@ cli_core_setup "invalid-option-arguments"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-require_file "${images_dir}/map8.png"
+
 
 echo "1..1"
 set -v

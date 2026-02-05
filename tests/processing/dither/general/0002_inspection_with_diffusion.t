@@ -15,7 +15,7 @@ echo "1..1"
 set -v
 
 snake_ppm="${images_dir}/snake.ppm"
-require_file "${snake_ppm}"
+
 
 target_txt="${output_dir}/inspection.txt"
 

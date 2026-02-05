@@ -28,7 +28,7 @@ input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 case_id=${test_name%.t}
 output_sixel="${ARTIFACT_LOCAL_DIR}/${case_id}.six"
 
-require_file "${input_image}"
+
 
 if run_img2sixel --precision=float32 --lookup-policy=none -o "${output_sixel}" "${input_image}"; then
     :

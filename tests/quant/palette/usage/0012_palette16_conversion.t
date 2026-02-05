@@ -18,8 +18,8 @@ snake_jpg="${top_srcdir}/tests/data/inputs/snake_64.jpg"
 map16_palette="${images_dir}/map16-palette.png"
 target_sixel="${output_dir}/palette16.sixel"
 
-require_file "${snake_jpg}"
-require_file "${map16_palette}"
+
+
 
 if run_img2sixel -7 -m "${map16_palette}" -Efast "${snake_jpg}" \
         >"${target_sixel}"; then

@@ -9,7 +9,7 @@ cli_core_setup "invalid-combinations"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-require_file "${images_dir}/snake.png"
+
 
 echo "1..1"
 set -v

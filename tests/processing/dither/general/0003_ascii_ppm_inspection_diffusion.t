@@ -17,7 +17,7 @@ set -v
 snake_ascii_ppm="${images_dir}/snake-ascii.ppm"
 target_txt="${output_dir}/ascii-ppm-inspection.txt"
 
-require_file "${snake_ascii_ppm}"
+
 
 if run_img2sixel -I -8 -dburkes -B"#ffffffffffff" "${snake_ascii_ppm}" \
         >"${target_txt}"; then

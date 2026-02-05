@@ -25,7 +25,7 @@ set -v
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/cluster-linear.six"
 
-require_file "${input_image}"
+
 
 if run_img2sixel -t rgb -X linear -o "${output_sixel}"     "${input_image}"; then
     :

@@ -15,7 +15,7 @@ echo "1..1"
 set -v
 
 snake_jpg="${top_srcdir}/tests/data/inputs/snake_64.jpg"
-require_file "${snake_jpg}"
+
 
 if run_img2sixel -shist "${snake_jpg}" >/dev/null; then
     pass 1 "unique select-color prefix accepted"

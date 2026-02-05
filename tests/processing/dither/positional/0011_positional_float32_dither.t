@@ -17,7 +17,7 @@ set -v
 snake_png="${images_dir}/snake.png"
 output_sixel="${output_dir}/positional-float32.six"
 
-require_file "${snake_png}"
+
 
 if run_img2sixel -d x_dither -y serpentine --precision=float32 -p 16 \
         -o "${output_sixel}" "${snake_png}"; then

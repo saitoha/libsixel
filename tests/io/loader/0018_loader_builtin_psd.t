@@ -20,7 +20,7 @@ echo "1..1"
 set -v
 
 input_psd="${top_srcdir}/tests/data/inputs/formats/stbi_minimal.psd"
-require_file "${input_psd}"
+
 
 if run_img2sixel "${input_psd}" \
         >"${output_dir}/stbi_minimal_psd.sixel"; then

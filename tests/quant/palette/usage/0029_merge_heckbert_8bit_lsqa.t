@@ -23,7 +23,7 @@ input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/merge-heckbert-8bit.six"
 output_png="${output_dir}/merge-heckbert-8bit.png"
 
-require_file "${input_image}"
+
 
 
 if SIXEL_PALETTE_OVERSPLIT_FACTOR=2.2 \

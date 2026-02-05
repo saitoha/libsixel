@@ -17,7 +17,7 @@ set -v
 snake_jpg="${images_dir}/snake.jpg"
 snake_scaling="${tmp_dir}/snake-scaling.sixel"
 
-require_file "${snake_jpg}"
+
 
 if run_img2sixel -w50% -h150% -dfs -Bblue -thls -shist <"${snake_jpg}" \
     | tee "${snake_scaling}" >/dev/null; then

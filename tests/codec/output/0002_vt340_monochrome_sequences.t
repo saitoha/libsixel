@@ -17,7 +17,7 @@ set -v
 snake_tga="${images_dir}/snake.tga"
 target_sixel="${output_dir}/vt340-mono.sixel"
 
-require_file "${snake_tga}"
+
 
 if run_img2sixel -bvt340mono "${snake_tga}" \
         >"${target_sixel}"; then
