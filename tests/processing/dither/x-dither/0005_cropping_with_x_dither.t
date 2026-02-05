@@ -15,15 +15,12 @@ echo "1..1"
 set -v
 
 snake_gray_png="${images_dir}/snake-grayscale.png"
-target_sixel="${output_dir}/crop-x-dither.sixel"
+target_sixel="${ARTIFACT_LOCAL_DIR}/crop-x-dither.sixel"
 
-
-
-if run_img2sixel -c200x200+100+100 -dx_dither "${snake_gray_png}" \
-        >"${target_sixel}"; then
-    pass 1 "cropping with X ordered dither succeeds"
-else
+run_img2sixel -c200x200+100+100 -dx_dither "${snake_gray_png}" >"${target_sixel}" || {
     fail 1 "cropping with X ordered dither fails"
-fi
+    exit "${status}"
+}
 
+pass 1 "cropping with X ordered dither succeeds"
 exit "${status}"

@@ -3,9 +3,6 @@
 
 set -eux
 
-output_dir="${ARTIFACT_LOCAL_DIR}"
-
-
 script_dir=${test_dir}
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
@@ -20,7 +17,7 @@ set -v
 
 local_file="file://$(CDPATH=; cd "${top_srcdir}" && pwd)/tests/data/inputs/snake_64.jpg"
 if run_img2sixel "${local_file}" \
-        >"${output_dir}/local-file.sixel"; then
+        >"${ARTIFACT_LOCAL_DIR}/local-file.sixel"; then
     printf 'ok 1 - fetches local file via file scheme\n'
 else
     printf 'not ok 1 - local file fetch via file scheme failed\n'

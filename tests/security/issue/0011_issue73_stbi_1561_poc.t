@@ -4,19 +4,13 @@
 
 set -eux
 
-output_dir="${ARTIFACT_LOCAL_DIR}"
-
-tmp_dir="${ARTIFACT_LOCAL_DIR}"
-
-
 script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+
 
 status=0
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
-
-
 
 check_exit() {
     if run_img2sixel "$@"; then
@@ -36,7 +30,7 @@ check_exit() {
     esac
 }
 
-issue73="${top_srcdir}/tests/security/issue/data/libsixel-libsixel/73/stbi_1561_poc.bin"
+issue73="${TOP_SRCDIR}/tests/security/issue/data/libsixel-libsixel/73/stbi_1561_poc.bin"
 
 printf '1..1\n'
 set -v

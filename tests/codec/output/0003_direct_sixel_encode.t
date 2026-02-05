@@ -15,7 +15,7 @@ echo "1..1"
 set -v
 
 snake_six="${images_dir}/snake.six"
-target_sixel="${output_dir}/sixel-direct.sixel"
+target_sixel="${ARTIFACT_LOCAL_DIR}/sixel-direct.sixel"
 
 
 

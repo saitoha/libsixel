@@ -26,8 +26,8 @@ set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 case_id=${test_name%.t}
-output_plain="${output_dir}/${case_id}-plain.six"
-output_limited="${output_dir}/${case_id}-limited.six"
+output_plain="${ARTIFACT_LOCAL_DIR}/${case_id}-plain.six"
+output_limited="${ARTIFACT_LOCAL_DIR}/${case_id}-limited.six"
 
 
 

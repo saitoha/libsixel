@@ -4,8 +4,6 @@
 # Enable strict mode with verbose tracing for diagnostics.
 set -eux
 
-output_dir="${ARTIFACT_LOCAL_DIR}"
-
 script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
@@ -18,9 +16,9 @@ set -v
 
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 
-if run_img2sixel "${snake_png}" >"${output_dir}/case01-stage.sixel" && \
-        sed 's/C/C:/g' "${output_dir}/case01-stage.sixel" | tr ':' '\t' | \
-        run_img2sixel >"${output_dir}/case01.sixel"; then
+if run_img2sixel "${snake_png}" >"${ARTIFACT_LOCAL_DIR}/case01-stage.sixel" && \
+        sed 's/C/C:/g' "${ARTIFACT_LOCAL_DIR}/case01-stage.sixel" | tr ':' '\t' | \
+        run_img2sixel >"${ARTIFACT_LOCAL_DIR}/case01.sixel"; then
     pass 1 "tab-separated colour introducers handled"
 else
     fail 1 "tab-separated colour introducers rejected"

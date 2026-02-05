@@ -15,9 +15,7 @@ echo "1..1"
 set -v
 
 snake_six="${images_dir}/snake.six"
-target_sixel="${output_dir}/sixel-resize.sixel"
-
-
+target_sixel="${ARTIFACT_LOCAL_DIR}/sixel-resize.sixel"
 
 if run_img2sixel -w200 -p8 "${snake_six}" \
         >"${target_sixel}"; then

@@ -16,13 +16,9 @@ set -v
 
 snake_gray_png="${images_dir}/snake-grayscale.png"
 snake_png="${top_srcdir}/tests/data/inputs/snake_64.png"
-target_sixel="${output_dir}/gray-palette-colour.sixel"
+target_sixel="${ARTIFACT_LOCAL_DIR}/gray-palette-colour.sixel"
 
-
-
-
-if run_img2sixel -m "${snake_gray_png}" "${snake_png}" \
-        >"${target_sixel}"; then
+if run_img2sixel -m "${snake_gray_png}" "${snake_png}" >"${target_sixel}"; then
     pass 1 "grayscale palette applied to colour PNG"
 else
     fail 1 "grayscale palette application fails"

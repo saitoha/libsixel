@@ -3,12 +3,6 @@
 
 set -eux
 
-output_dir="${ARTIFACT_LOCAL_DIR}"
-
-tmp_dir="${ARTIFACT_LOCAL_DIR}"
-
-
-script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 status=0
@@ -40,7 +34,7 @@ issue167="${top_srcdir}/tests/security/issue/data/167/poc"
 printf '1..1\n'
 set -v
 
-if check_exit "${issue167}" -h128 >"${output_dir}/issue167-height.sixel"; then
+if check_exit "${issue167}" -h128 >"${ARTIFACT_LOCAL_DIR}/issue167-height.sixel"; then
     pass 1 "crafted height input handled"
 else
     fail 1 "crafted height input failed"

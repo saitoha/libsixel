@@ -14,9 +14,9 @@ ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 echo "1..1"
 set -v
 
-threads_err=$(make_temp_file "${tmp_dir}" "sixel2png-threads-err")
+threads_err=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "sixel2png-threads-err")
 if run_sixel2png -= bogus <"${images_dir}/map64.six" \
-        >"${tmp_dir}/capture.$$" 2>"${threads_err}"; then
+        >"${ARTIFACT_LOCAL_DIR}/capture.$$" 2>"${threads_err}"; then
     cli_core_fail 1 "accepts invalid thread token"
 else
     if grep -F "threads must be a positive integer or 'auto'" \
@@ -26,6 +26,6 @@ else
         cli_core_fail 1 "missing invalid thread diagnostic"
     fi
 fi
-rm -f "${threads_err}" "${tmp_dir}/capture.$$"
+rm -f "${threads_err}" "${ARTIFACT_LOCAL_DIR}/capture.$$"
 
 exit "${status}"

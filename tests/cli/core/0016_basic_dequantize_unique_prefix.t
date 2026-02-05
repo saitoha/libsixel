@@ -14,12 +14,12 @@ ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 echo "1..1"
 set -v
 
-ambiguous_err=$(make_temp_file "${tmp_dir}" "sixel2png-ambiguous")
+ambiguous_err=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "sixel2png-ambiguous")
 set +xv
 if run_sixel2png -dk_ <"${images_dir}/snake.six" \
-        >"${output_dir}/dequantize-short.png" 2>"${ambiguous_err}"; then
+        >"${ARTIFACT_LOCAL_DIR}/dequantize-short.png" 2>"${ambiguous_err}"; then
     set -xv
-    if [ -s "${output_dir}/dequantize-short.png" ]; then
+    if [ -s "${ARTIFACT_LOCAL_DIR}/dequantize-short.png" ]; then
         cli_core_pass 1 "accepts unique dequantize prefix"
     else
         cli_core_fail 1 "unexpected diagnostics for -dk_"

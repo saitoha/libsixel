@@ -20,11 +20,8 @@ echo "1..1"
 set -v
 
 palette_png="${images_dir}/pngsuite/basic/basn3p02.png"
-input_png="${top_srcdir}/tests/data/inputs/snake_64.png"
-target_sixel="${output_dir}/mapfile-pal2.sixel"
-
-
-
+input_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+target_sixel="${ARTIFACT_LOCAL_DIR}/mapfile-pal2.sixel"
 
 if run_img2sixel -m "${palette_png}" "${input_png}" \
         >"${target_sixel}"; then

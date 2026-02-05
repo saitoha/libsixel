@@ -12,7 +12,7 @@ ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 echo "1..1"
 set -v
 
-direct_png="${output_dir}/snake-direct.png"
+direct_png="${ARTIFACT_LOCAL_DIR}/snake-direct.png"
 if run_sixel2png -D <"${images_dir}/snake.six" >"${direct_png}"; then
     cli_core_pass 1 "produces direct RGBA output"
 else

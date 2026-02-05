@@ -4,9 +4,6 @@
 # Enable strict mode with verbose tracing for diagnostics.
 set -eux
 
-output_dir="${ARTIFACT_LOCAL_DIR}"
-
-
 script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
@@ -23,7 +20,7 @@ input_pic="${top_srcdir}/tests/data/inputs/formats/stbi_minimal.pic"
 
 
 if run_img2sixel "${input_pic}" \
-        >"${output_dir}/stbi_minimal_pic.sixel"; then
+        >"${ARTIFACT_LOCAL_DIR}/stbi_minimal_pic.sixel"; then
     pass ${case_id} "builtin loader decodes PIC"
 else
     fail ${case_id} "builtin loader failed to decode PIC"

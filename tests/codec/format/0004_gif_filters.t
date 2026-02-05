@@ -15,7 +15,7 @@ echo "1..1"
 set -v
 
 snake_gif="${images_dir}/snake.gif"
-target_sixel="${tmp_dir}/snake-gif.sixel"
+target_sixel="${ARTIFACT_LOCAL_DIR}/snake-gif.sixel"
 
 
 

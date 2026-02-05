@@ -13,9 +13,8 @@ load_mapfile_prereqs "${script_dir}"
 echo "1..1"
 set -v
 
-gpl_palette="${tmp_dir}/palette-gpl.dat"
-if run_img2sixel -M gpl:"${gpl_palette}" -o "${tmp_dir}/pal-gpl.six" \
-        "${snake_png}"; then
+gpl_palette="${ARTIFACT_LOCAL_DIR}/palette-gpl.dat"
+if run_img2sixel -M gpl:"${gpl_palette}" -o "${ARTIFACT_LOCAL_DIR}/pal-gpl.six" "${snake_png}"; then
     if head -n 1 "${gpl_palette}" | grep -q "GIMP Palette"; then
         pass "GPL palette export writes header"
     else

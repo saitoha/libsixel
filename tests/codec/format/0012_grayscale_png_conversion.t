@@ -15,7 +15,7 @@ echo "1..1"
 set -v
 
 snake_gray_png="${images_dir}/snake-grayscale.png"
-target_sixel="${output_dir}/gray-png.sixel"
+target_sixel="${ARTIFACT_LOCAL_DIR}/gray-png.sixel"
 
 
 

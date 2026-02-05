@@ -15,9 +15,7 @@ echo "1..1"
 set -v
 
 snake_ppm="${images_dir}/snake.ppm"
-target_txt="${output_dir}/ppm-inspection.txt"
-
-
+target_txt="${ARTIFACT_LOCAL_DIR}/ppm-inspection.txt"
 
 if run_img2sixel -I -c2000x100+40+20 -wauto -h200 -qhigh -dfs \
         -rbilinear -trgb "${snake_ppm}" >"${target_txt}"; then

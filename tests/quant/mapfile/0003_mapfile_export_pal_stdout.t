@@ -13,8 +13,8 @@ load_mapfile_prereqs "${script_dir}"
 echo "1..1"
 set -v
 
-pal_stdout="${output_dir}/palette-stdout.pal"
-if run_img2sixel -M pal:- -o "${tmp_dir}/pal-stdout.six" \
+pal_stdout="${ARTIFACT_LOCAL_DIR}/palette-stdout.pal"
+if run_img2sixel -M pal:- -o "${ARTIFACT_LOCAL_DIR}/pal-stdout.six" \
         "${snake_png}" >"${pal_stdout}"; then
     if head -n 1 "${pal_stdout}" | grep -q "JASC-PAL"; then
         pass "PAL export supports type-prefixed stdout"

@@ -15,7 +15,7 @@ echo "1..1"
 set -v
 
 snake_ascii_pgm="${images_dir}/snake-ascii.pgm"
-target_txt="${output_dir}/ascii-pgm-inspection.txt"
+target_txt="${ARTIFACT_LOCAL_DIR}/ascii-pgm-inspection.txt"
 
 
 

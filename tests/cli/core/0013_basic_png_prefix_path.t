@@ -14,7 +14,7 @@ ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 echo "1..1"
 set -v
 
-prefixed_dir="${output_dir}"
+prefixed_dir="${ARTIFACT_LOCAL_DIR}"
 rm -f "${prefixed_dir}/out.png"
 if run_sixel2png -o "png:${prefixed_dir}/out.png" \
         <"${images_dir}/snake.six"; then

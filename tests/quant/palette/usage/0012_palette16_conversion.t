@@ -14,11 +14,9 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-snake_jpg="${top_srcdir}/tests/data/inputs/snake_64.jpg"
+snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 map16_palette="${images_dir}/map16-palette.png"
-target_sixel="${output_dir}/palette16.sixel"
-
-
+target_sixel="${ARTIFACT_LOCAL_DIR}/palette16.sixel"
 
 
 if run_img2sixel -7 -m "${map16_palette}" -Efast "${snake_jpg}" \

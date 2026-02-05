@@ -3,11 +3,6 @@
 
 set -eux
 
-output_dir="${ARTIFACT_LOCAL_DIR}"
-
-tmp_dir="${ARTIFACT_LOCAL_DIR}"
-
-
 script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
@@ -23,7 +18,7 @@ printf '1..1\n'
 set -v
 
 if run_img2sixel --high-color "${issue131}" \
-        >"${output_dir}/issue131-high-color.sixel" \
+        >"${ARTIFACT_LOCAL_DIR}/issue131-high-color.sixel" \
 ; then
     rc=0
 else

@@ -21,16 +21,13 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 ensure_img2sixel_available
 
-
 echo "1..1"
 set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 case_id=${test_name%.t}
 output_sixel="${ARTIFACT_LOCAL_DIR}/${case_id}.six"
-output_png="${output_dir}/${case_id}.png"
-
-
+output_png="${ARTIFACT_LOCAL_DIR}/${case_id}.png"
 
 run_img2sixel -d bluenoise -y raster -W linear -o "${output_sixel}" "${input_image}" || {
     fail 1 "positional float32 bluenoise linear lsqa failed"

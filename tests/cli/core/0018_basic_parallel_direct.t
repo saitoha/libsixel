@@ -20,8 +20,8 @@ if [ -z "${comparator_cmd}" ]; then
     exit 0
 fi
 
-parallel_direct_1="${output_dir}/parallel-direct-1.png"
-parallel_direct_4="${output_dir}/parallel-direct-4.png"
+parallel_direct_1="${ARTIFACT_LOCAL_DIR}/parallel-direct-1.png"
+parallel_direct_4="${ARTIFACT_LOCAL_DIR}/parallel-direct-4.png"
 SIXEL_THREADS=1 run_sixel2png -D \
     <"${images_dir}/map64.six" \
     >"${parallel_direct_1}"

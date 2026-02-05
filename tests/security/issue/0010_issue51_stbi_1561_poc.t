@@ -4,11 +4,6 @@
 
 set -eux
 
-output_dir="${ARTIFACT_LOCAL_DIR}"
-
-tmp_dir="${ARTIFACT_LOCAL_DIR}"
-
-
 script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
@@ -36,7 +31,7 @@ check_exit() {
     esac
 }
 
-issue51="${top_srcdir}/tests/security/issue/data/libsixel-libsixel/51/stbi_1561_poc.bin"
+issue51="${TOP_SRCDIR}/tests/security/issue/data/libsixel-libsixel/51/stbi_1561_poc.bin"
 
 printf '1..1\n'
 set -v

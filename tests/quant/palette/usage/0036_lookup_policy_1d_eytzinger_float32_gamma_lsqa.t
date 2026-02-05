@@ -21,16 +21,12 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/eytzinger-float32-gamma.six"
-output_png="${output_dir}/eytzinger-float32-gamma.png"
-
-
-
+output_png="${ARTIFACT_LOCAL_DIR}/eytzinger-float32-gamma.png"
 
 if run_img2sixel --lookup-policy=eytzinger --precision=float32 \
-        --working-colorspace=gamma \
-    -o "${output_sixel}" "${input_image}"; then
+        --working-colorspace=gamma -o "${output_sixel}" "${input_image}"; then
     :
 else
     fail 1 "float32 Eytzinger gamma colorspace conversion failed"

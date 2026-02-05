@@ -14,9 +14,9 @@ ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 echo "1..1"
 set -v
 
-png_err=$(make_temp_file "${tmp_dir}" "sixel2png-png-err")
+png_err=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "sixel2png-png-err")
 if run_sixel2png -o "png:" <"${images_dir}/snake.six" \
-        >"${tmp_dir}/capture.$$" 2>"${png_err}"; then
+        >"${ARTIFACT_LOCAL_DIR}/capture.$$" 2>"${png_err}"; then
     cli_core_fail 1 "accepts empty png: prefix"
 else
     if grep -F 'missing target after the "png:" prefix' "${png_err}" >/dev/null; then
@@ -25,6 +25,6 @@ else
         cli_core_fail 1 "missing png prefix diagnostic"
     fi
 fi
-rm -f "${png_err}" "${tmp_dir}/capture.$$"
+rm -f "${png_err}" "${ARTIFACT_LOCAL_DIR}/capture.$$"
 
 exit "${status}"

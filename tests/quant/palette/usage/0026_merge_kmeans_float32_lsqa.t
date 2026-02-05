@@ -19,12 +19,9 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-input_image="${top_srcdir}/tests/data/resolutions/tiny_square.png"
+input_image="${TOP_SRCDIR}/tests/data/resolutions/tiny_square.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/merge-kmeans-float32.six"
-output_png="${output_dir}/merge-kmeans-float32.png"
-
-
-
+output_png="${ARTIFACT_LOCAL_DIR}/merge-kmeans-float32.png"
 
 SIXEL_PALETTE_OVERSPLIT_FACTOR=2.2
 SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT=2

@@ -12,7 +12,7 @@ ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 echo "1..1"
 set -v
 
-if run_sixel2png -V >"${output_dir}/version.txt"; then
+if run_sixel2png -V >"${ARTIFACT_LOCAL_DIR}/version.txt"; then
     cli_core_pass 1 "prints version"
 else
     cli_core_fail 1 "version option failed"

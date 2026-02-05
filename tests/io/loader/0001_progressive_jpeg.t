@@ -4,9 +4,6 @@
 # Enable strict mode with verbose tracing for diagnostics.
 set -eux
 
-output_dir="${ARTIFACT_LOCAL_DIR}"
-
-
 script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
@@ -15,8 +12,6 @@ case_id=1
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-
-
 echo "1..1"
 set -v
 
@@ -24,7 +19,7 @@ progressive_jpeg="${images_dir}/snake-progressive.jpg"
 
 
 if run_img2sixel "${progressive_jpeg}" \
-        >"${output_dir}/progressive.sixel"; then
+        >"${ARTIFACT_LOCAL_DIR}/progressive.sixel"; then
     pass ${case_id} "progressive JPEG converts"
 else
     fail ${case_id} "progressive JPEG conversion failed"

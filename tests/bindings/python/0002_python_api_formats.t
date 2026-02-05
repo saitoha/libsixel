@@ -9,11 +9,10 @@ set -eux
 PYTHON_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/python"
 . "${PYTHON_HELPER_DIR}/common.sh"
 
-tmp_dir="${ARTIFACT_LOCAL_DIR}"
-python_prepare "${tmp_dir}"
+python_prepare "${ARTIFACT_LOCAL_DIR}"
 set -v
 
-verify_script="${tmp_dir}/verify-format.py"
+verify_script="${ARTIFACT_LOCAL_DIR}/verify-format.py"
 cat >"${verify_script}" <<'PY'
 import pathlib
 import sys
@@ -69,7 +68,7 @@ PY
 # Install the wheel into a venv when available so the API is exercised through
 # the packaged module instead of the in-tree sources.
 if [ "${use_wheel}" -eq 1 ]; then
-    run_venv="${tmp_dir}/venv"
+    run_venv="${ARTIFACT_LOCAL_DIR}/venv"
     if ! python_install_wheel "${run_venv}" "${wheel_path}"; then
         tap_skip_all "wheel installation failed"
     fi
@@ -79,7 +78,7 @@ formats_count=4
 case_id=1
 
 while IFS=: read -r label source_path; do
-    output_path="${tmp_dir}/${label}.six"
+    output_path="${ARTIFACT_LOCAL_DIR}/${label}.six"
 
     if [ "${use_wheel}" -eq 1 ]; then
         python_output=$(env ${python_wheel_loader_env} \

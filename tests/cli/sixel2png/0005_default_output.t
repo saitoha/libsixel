@@ -3,16 +3,11 @@
 
 set -eux
 
-output_dir="${ARTIFACT_LOCAL_DIR}"
-
-
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 status=0
 
 ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
-
-
 
 head_bytes() {
   n=$1; shift
@@ -35,8 +30,8 @@ set -v
 input_path="${images_dir}/snake.six"
 
 
-stdout_path="${output_dir}/stdout.png"
-stderr_path="${output_dir}/stderr.txt"
+stdout_path="${ARTIFACT_LOCAL_DIR}/stdout.png"
+stderr_path="${ARTIFACT_LOCAL_DIR}/stderr.txt"
 rm -f "${stdout_path}" "${stderr_path}"
 
 if run_sixel2png -i "${input_path}" >"${stdout_path}" 2>"${stderr_path}"; then

@@ -3,11 +3,6 @@
 
 set -eux
 
-output_dir="${ARTIFACT_LOCAL_DIR}"
-
-tmp_dir="${ARTIFACT_LOCAL_DIR}"
-
-
 script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
@@ -41,7 +36,7 @@ printf '1..1\n'
 set -v
 
 if check_exit -h 50% -r lanczos3 -w 300px "${issue207}" \
-        >"${output_dir}/issue207-resize.sixel"; then
+        >"${ARTIFACT_LOCAL_DIR}/issue207-resize.sixel"; then
     pass 1 "resize path handled"
 else
     fail 1 "resize path failed"
