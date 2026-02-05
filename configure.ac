@@ -744,7 +744,11 @@ AC_CACHE_CHECK(
    CFLAGS="$CFLAGS -Werror"
    AC_COMPILE_IFELSE(
      [AC_LANG_SOURCE([[
-       #ifndef __SANITIZE_THREAD__
+       #if defined(__has_feature)
+       #if !__has_feature(thread_sanitizer)
+       #error "TSan is not enabled"
+       #endif
+       #elif !defined(__SANITIZE_THREAD__)
        #error "TSan is not enabled"
        #endif
        int main(void) { return 0; }
