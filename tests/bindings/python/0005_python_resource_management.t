@@ -9,11 +9,10 @@ set -eux
 PYTHON_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/python"
 . "${PYTHON_HELPER_DIR}/common.sh"
 
-tmp_dir="${ARTIFACT_LOCAL_DIR}"
-python_prepare "${tmp_dir}"
+python_prepare "${ARTIFACT_LOCAL_DIR}"
 set -v
 
-verify_script="${tmp_dir}/verify-resources.py"
+verify_script="${ARTIFACT_LOCAL_DIR}/verify-resources.py"
 cat >"${verify_script}" <<'PY'
 """Ensure libsixel frees resources after large image processing.
 
@@ -148,7 +147,7 @@ if __name__ == "__main__":
 PY
 
 if [ "${use_wheel}" -eq 1 ]; then
-    run_venv="${tmp_dir}/venv"
+    run_venv="${ARTIFACT_LOCAL_DIR}/venv"
     if ! python_install_wheel "${run_venv}" "${wheel_path}"; then
         tap_skip_all "wheel installation failed"
     fi
@@ -157,7 +156,7 @@ fi
 case_id=1
 
 source_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
-work_dir="${tmp_dir}/work"
+work_dir="${ARTIFACT_LOCAL_DIR}/work"
 
 if [ "${use_wheel}" -eq 1 ]; then
     python_output=$(env ${python_wheel_loader_env} \

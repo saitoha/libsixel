@@ -3,21 +3,16 @@
 
 set -eux
 
-output_dir="${ARTIFACT_LOCAL_DIR}"
-
-
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 status=0
 
 ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 
-
-
 echo "1..1"
 set -v
 
-help_output="${output_dir}/help.txt"
+help_output="${ARTIFACT_LOCAL_DIR}/help.txt"
 if run_sixel2png -H 1>"${help_output}"; then
     if grep -Eq '^Usage: sixel2png' "${help_output}"; then
         pass 1 "-H prints usage"

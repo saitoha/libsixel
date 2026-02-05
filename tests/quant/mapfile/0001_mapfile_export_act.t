@@ -13,9 +13,8 @@ load_mapfile_prereqs "${script_dir}"
 echo "1..1"
 set -v
 
-act_palette="${tmp_dir}/palette.act"
-if run_img2sixel -M "${act_palette}" -o "${tmp_dir}/act.six" \
-        "${snake_png}"; then
+act_palette="${ARTIFACT_LOCAL_DIR}/palette.act"
+if run_img2sixel -M "${act_palette}" -o "${ARTIFACT_LOCAL_DIR}/act.six" "${snake_png}"; then
     act_size=$(wc -c <"${act_palette}")
     if [ "${act_size}" -eq 772 ]; then
         pass "ACT palette exported with correct length"

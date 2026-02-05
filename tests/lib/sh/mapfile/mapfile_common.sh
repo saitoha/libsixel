@@ -13,8 +13,7 @@ fi
 # Initialize directories for artifacts and logs. The caller must pass the
 # current test name to keep outputs isolated between TAP files.
 setup_mapfile_dirs() {
-    output_dir="${ARTIFACT_LOCAL_DIR}"
-    tmp_dir="${ARTIFACT_LOCAL_DIR}"
+:
 }
 
 # Load shared converter helpers and ensure the img2sixel binary is available

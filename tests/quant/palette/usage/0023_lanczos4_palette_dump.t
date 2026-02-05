@@ -14,10 +14,8 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-snake_jpg="${top_srcdir}/tests/data/inputs/snake_64.jpg"
-target_sixel="${output_dir}/lanczos4-palette-dump.sixel"
-
-
+snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
+target_sixel="${ARTIFACT_LOCAL_DIR}/lanczos4-palette-dump.sixel"
 
 if run_img2sixel -e -h140 -rlanczos4 -P "${snake_jpg}" \
         >"${target_sixel}"; then

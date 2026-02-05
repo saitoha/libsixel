@@ -5,9 +5,6 @@
 # Enable strict mode with verbose tracing for diagnostics.
 set -eux
 
-tmp_dir="${ARTIFACT_LOCAL_DIR}"
-
-
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 status=0
@@ -19,7 +16,7 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 echo "1..1"
 set -v
 
-output_file=$(make_temp_file "${tmp_dir}" "capture.stdin")
+output_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "capture.stdin")
 
 if echo a | run_img2sixel >"${output_file}"; then
     :

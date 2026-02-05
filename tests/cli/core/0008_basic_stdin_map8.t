@@ -15,7 +15,7 @@ echo "1..1"
 set -v
 
 if run_sixel2png <"${images_dir}/map8.six" \
-        >"${output_dir}/map8-stdin.png"; then
+        >"${ARTIFACT_LOCAL_DIR}/map8-stdin.png"; then
     cli_core_pass 1 "converts map8 from stdin"
 else
     cli_core_fail 1 "map8 stdin conversion failed"

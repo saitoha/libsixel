@@ -13,18 +13,18 @@ load_mapfile_prereqs "${script_dir}"
 echo "1..1"
 set -v
 
-riff_palette="${tmp_dir}/palette-riff.pal"
+riff_palette="${ARTIFACT_LOCAL_DIR}/palette-riff.pal"
 if ! run_img2sixel -M pal-riff:"${riff_palette}" \
-        -o "${tmp_dir}/pal-riff.six" "${snake_png}"; then
+        -o "${ARTIFACT_LOCAL_DIR}/pal-riff.six" "${snake_png}"; then
     fail "Preparing RIFF palette for import failed"
     exit "${status}"
 fi
 
-riff_alias="${tmp_dir}/palette-riff-noext"
+riff_alias="${ARTIFACT_LOCAL_DIR}/palette-riff-noext"
 cp "${riff_palette}" "${riff_alias}"
 if run_img2sixel -m pal-riff:"${riff_alias}" \
-        -o "${output_dir}/from-riff.six" "${snake_png}"; then
-    if [ -s "${output_dir}/from-riff.six" ]; then
+        -o "${ARTIFACT_LOCAL_DIR}/from-riff.six" "${snake_png}"; then
+    if [ -s "${ARTIFACT_LOCAL_DIR}/from-riff.six" ]; then
         pass "RIFF palette parsed with explicit type"
     else
         fail "RIFF palette conversion produced no data"

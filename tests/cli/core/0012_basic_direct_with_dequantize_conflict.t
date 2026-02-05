@@ -14,9 +14,9 @@ ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 echo "1..1"
 set -v
 
-direct_err=$(make_temp_file "${tmp_dir}" "sixel2png-direct-err")
+direct_err=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "sixel2png-direct-err")
 if run_sixel2png -D -dk_undither <"${images_dir}/snake.six" \
-        >"${tmp_dir}/capture.$$" 2>"${direct_err}"; then
+        >"${ARTIFACT_LOCAL_DIR}/capture.$$" 2>"${direct_err}"; then
     cli_core_fail 1 "accepts conflicting direct/dequantize flags"
 else
     if grep -F "cannot be combined" "${direct_err}" >/dev/null; then
@@ -25,6 +25,6 @@ else
         cli_core_fail 1 "missing direct/dequantize diagnostic"
     fi
 fi
-rm -f "${direct_err}" "${tmp_dir}/capture.$$"
+rm -f "${direct_err}" "${ARTIFACT_LOCAL_DIR}/capture.$$"
 
 exit "${status}"

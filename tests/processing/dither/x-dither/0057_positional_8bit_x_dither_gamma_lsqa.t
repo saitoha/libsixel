@@ -21,27 +21,22 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 ensure_img2sixel_available
 
-
 echo "1..1"
 set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 case_id=${test_name%.t}
 output_sixel="${ARTIFACT_LOCAL_DIR}/${case_id}.six"
-output_png="${output_dir}/${case_id}.png"
+output_png="${ARTIFACT_LOCAL_DIR}/${case_id}.png"
 
-
-
-run_img2sixel -d x_dither -y raster -W gamma -o "${output_sixel}" \
-    "${input_image}" || {
+run_img2sixel -d x_dither -y raster -W gamma -o "${output_sixel}" "${input_image}" || {
     fail 1 "positional 8-bit x_dither gamma lsqa failed"
     exit "${status}"
 }
 
 lsqa_err=$(
     set +xv
-    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" \
-        "${output_sixel}" 2>&1
+    run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
 if [ -z "${lsqa_run_status-}" ]; then

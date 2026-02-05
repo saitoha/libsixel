@@ -19,14 +19,12 @@ ensure_img2sixel_available
 
 input_image="${images_dir}/pngsuite/basic/basn6a08.png"
 
-
 echo "1..1"
 set -v
 
-target_txt="${output_dir}/inspection.txt"
+target_txt="${ARTIFACT_LOCAL_DIR}/inspection.txt"
 
-if run_img2sixel -I "${input_image}" \
-        >"${target_txt}"; then
+if run_img2sixel -I "${input_image}" >"${target_txt}"; then
     pass 1 "inspection with high color and RGBA input exits cleanly"
 else
     fail 1 "inspection with high color and RGBA input failed"

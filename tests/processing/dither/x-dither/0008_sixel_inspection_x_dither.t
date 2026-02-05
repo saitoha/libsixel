@@ -15,15 +15,12 @@ echo "1..1"
 set -v
 
 snake_six="${images_dir}/snake.six"
-target_txt="${output_dir}/sixel-inspection-x-dither.txt"
+target_txt="${ARTIFACT_LOCAL_DIR}/sixel-inspection-x-dither.txt"
 
-
-
-if run_img2sixel -I -dx_dither -h100 "${snake_six}" \
-        >"${target_txt}"; then
-    pass 1 "X ordered dither inspection works"
-else
+run_img2sixel -I -dx_dither -h100 "${snake_six}" >"${target_txt}" || {
     fail 1 "X ordered dither inspection fails"
-fi
+    exit "${status}"
+}
 
+pass 1 "X ordered dither inspection works"
 exit "${status}"

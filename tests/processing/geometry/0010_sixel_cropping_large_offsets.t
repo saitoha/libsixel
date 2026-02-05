@@ -15,12 +15,9 @@ echo "1..1"
 set -v
 
 snake_six="${images_dir}/snake.six"
-target_sixel="${output_dir}/sixel-crop-offsets.sixel"
+target_sixel="${ARTIFACT_LOCAL_DIR}/sixel-crop-offsets.sixel"
 
-
-
-if run_img2sixel -c200x200+2000+2000 "${snake_six}" \
-        >"${target_sixel}"; then
+if run_img2sixel -c200x200+2000+2000 "${snake_six}" >"${target_sixel}"; then
     pass 1 "Sixel cropping tolerates large offsets"
 else
     fail 1 "Sixel cropping with large offsets fails"

@@ -3,13 +3,10 @@
 
 set -eux
 
-output_dir="${ARTIFACT_LOCAL_DIR}"
-tmp_dir="${ARTIFACT_LOCAL_DIR}"
 server_port_base=4443
 max_port_attempts=5
-port_file="${tmp_dir}/server.port"
+port_file="${ARTIFACT_LOCAL_DIR}/server.port"
 # Use nearby ports so the HTTPS server can start when the default is busy.
-
 
 # Ensure the helper HTTPS server exits even when the test process gets
 # interrupted on CI. The helper uses a short timeout loop and logs to
@@ -52,17 +49,17 @@ if ! command -v python >/dev/null 2>&1; then
 fi
 
 
-cp "${images_dir}/snake.six" "${tmp_dir}/snake.sixel"
+cp "${images_dir}/snake.six" "${ARTIFACT_LOCAL_DIR}/snake.sixel"
 
 cert_dir="${script_dir}/certs"
 
 
 # Use a pre-generated localhost certificate to avoid depending on openssl
 # during test execution on platforms without it.
-cp "${cert_dir}/server.crt" "${tmp_dir}/server.crt"
-cp "${cert_dir}/server.key" "${tmp_dir}/server.key"
+cp "${cert_dir}/server.crt" "${ARTIFACT_LOCAL_DIR}/server.crt"
+cp "${cert_dir}/server.key" "${ARTIFACT_LOCAL_DIR}/server.key"
 
-cat >"${tmp_dir}/server.py" <<PY
+cat >"${ARTIFACT_LOCAL_DIR}/server.py" <<PY
 try:
     from http.server import SimpleHTTPRequestHandler
     from socketserver import TCPServer
@@ -121,9 +118,9 @@ if __name__ == '__main__':
     sys.exit(main())
 PY
 
-server_pid_file=$(make_temp_file "${tmp_dir}" "curl-server-pid")
+server_pid_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "curl-server-pid")
 (
-    cd "${tmp_dir}" || exit 1
+    cd "${ARTIFACT_LOCAL_DIR}" || exit 1
     python server.py &
     echo $! >"${server_pid_file}"
 )
@@ -151,7 +148,7 @@ if [ -z "${server_port}" ]; then
     exit 0
 fi
 
-verify_output=$(make_temp_file "${tmp_dir}" "curl-verify")
+verify_output=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "curl-verify")
 run_img2sixel "https://localhost:${server_port}/snake.sixel" \
     >"${verify_output}" && command_status=$? || command_status=$?
 

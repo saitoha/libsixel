@@ -21,12 +21,9 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/eytzinger-float32-linear.six"
-output_png="${output_dir}/eytzinger-float32-linear.png"
-
-
-
+output_png="${ARTIFACT_LOCAL_DIR}/eytzinger-float32-linear.png"
 
 if run_img2sixel --lookup-policy=eytzinger --precision=float32 \
         --working-colorspace=linear \

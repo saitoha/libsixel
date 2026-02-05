@@ -21,16 +21,13 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 ensure_img2sixel_available
 
-
 echo "1..1"
 set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 case_id=${test_name%.t}
 output_sixel="${ARTIFACT_LOCAL_DIR}/${case_id}.six"
-output_png="${output_dir}/${case_id}.png"
-
-
+output_png="${ARTIFACT_LOCAL_DIR}/${case_id}.png"
 
 run_img2sixel -d a_dither -y raster -W din99d -o "${output_sixel}" \
     "${input_image}" || {

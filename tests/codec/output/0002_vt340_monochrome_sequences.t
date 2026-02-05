@@ -15,7 +15,7 @@ echo "1..1"
 set -v
 
 snake_tga="${images_dir}/snake.tga"
-target_sixel="${output_dir}/vt340-mono.sixel"
+target_sixel="${ARTIFACT_LOCAL_DIR}/vt340-mono.sixel"
 
 
 

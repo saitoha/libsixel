@@ -15,7 +15,7 @@ echo "1..1"
 set -v
 
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
-output_sixel="${output_dir}/vptree-8bit.six"
+output_sixel="${ARTIFACT_LOCAL_DIR}/vptree-8bit.six"
 
 if run_img2sixel --lookup-policy=vptree -p 16 -d none \
         -o "${output_sixel}" "${snake_png}"; then

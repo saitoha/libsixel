@@ -14,9 +14,9 @@ ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 echo "1..1"
 set -v
 
-missing_capture=$(make_temp_file "${tmp_dir}" "sixel2png-missing")
-missing_err=$(make_temp_file "${tmp_dir}" "sixel2png-missing-err")
-if run_sixel2png -i "${tmp_dir}/unknown.six" \
+missing_capture=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "sixel2png-missing")
+missing_err=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "sixel2png-missing-err")
+if run_sixel2png -i "${ARTIFACT_LOCAL_DIR}/unknown.six" \
         >"${missing_capture}" 2>"${missing_err}"; then
     cli_core_fail 1 "accepts missing input path"
 else

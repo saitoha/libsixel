@@ -15,7 +15,7 @@ echo "1..1"
 set -v
 
 snake_gray_png="${images_dir}/snake-grayscale.png"
-target_txt="${output_dir}/gray-png-inspection.txt"
+target_txt="${ARTIFACT_LOCAL_DIR}/gray-png-inspection.txt"
 
 
 

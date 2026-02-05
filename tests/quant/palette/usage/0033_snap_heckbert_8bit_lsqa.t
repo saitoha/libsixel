@@ -19,12 +19,9 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snap-heckbert-8bit.six"
-output_png="${output_dir}/snap-heckbert-8bit.png"
-
-
-
+output_png="${ARTIFACT_LOCAL_DIR}/snap-heckbert-8bit.png"
 
 SIXEL_PALETTE_SNAP_TARGET_POLICY=reversible
 SIXEL_PALETTE_SNAP_TIMING_POLICY=all

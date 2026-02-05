@@ -13,16 +13,16 @@ load_mapfile_prereqs "${script_dir}"
 echo "1..1"
 set -v
 
-act_palette="${tmp_dir}/palette.act"
-if ! run_img2sixel -M "${act_palette}" -o "${tmp_dir}/act.six" \
+act_palette="${ARTIFACT_LOCAL_DIR}/palette.act"
+if ! run_img2sixel -M "${act_palette}" -o "${ARTIFACT_LOCAL_DIR}/act.six" \
         "${snake_png}"; then
     fail "Preparing ACT palette for import failed"
     exit "${status}"
 fi
 
-if run_img2sixel -m "${act_palette}" -o "${output_dir}/from-act.six" \
+if run_img2sixel -m "${act_palette}" -o "${ARTIFACT_LOCAL_DIR}/from-act.six" \
         "${snake_png}"; then
-    if [ -s "${output_dir}/from-act.six" ]; then
+    if [ -s "${ARTIFACT_LOCAL_DIR}/from-act.six" ]; then
         pass "ACT palette input detected by extension"
     else
         fail "ACT palette conversion produced no data"

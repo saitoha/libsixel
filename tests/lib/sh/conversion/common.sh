@@ -20,8 +20,7 @@ fi
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 setup_conversion_env() {
-    output_dir="${ARTIFACT_LOCAL_DIR}"
-    tmp_dir="${ARTIFACT_LOCAL_DIR}"
+:
 }
 
 ensure_img2sixel_available() {

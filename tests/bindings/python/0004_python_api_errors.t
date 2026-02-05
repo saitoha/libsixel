@@ -9,17 +9,15 @@ set -eux
 PYTHON_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/python"
 . "${PYTHON_HELPER_DIR}/common.sh"
 
-tmp_dir="${ARTIFACT_LOCAL_DIR}"
-
 source_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 
-python_prepare "${tmp_dir}"
+python_prepare "${ARTIFACT_LOCAL_DIR}"
 set -v
 
 # Install the wheel into a venv when available so the API is exercised through
 # the packaged module instead of the in-tree sources.
 if [ "${use_wheel}" -eq 1 ]; then
-    run_venv="${tmp_dir}/venv"
+    run_venv="${ARTIFACT_LOCAL_DIR}/venv"
     if ! python_install_wheel "${run_venv}" "${wheel_path}"; then
         tap_skip_all "wheel installation failed"
     fi
@@ -31,7 +29,7 @@ run_case() {
     scenario=$1
     description=$2
 
-    working_dir="${tmp_dir}/${scenario}"
+    working_dir="${ARTIFACT_LOCAL_DIR}/${scenario}"
 
 
     run_python_scenarios() {

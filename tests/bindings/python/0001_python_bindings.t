@@ -8,14 +8,13 @@ set -eux
 PYTHON_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/python"
 . "${PYTHON_HELPER_DIR}/common.sh"
 
-tmp_dir="${ARTIFACT_LOCAL_DIR}"
-python_prepare "${tmp_dir}"
+python_prepare "${ARTIFACT_LOCAL_DIR}"
 set -v
 
 case_id=1
 
 if [ "${use_wheel}" -eq 1 ]; then
-    run_venv="${tmp_dir}/venv"
+    run_venv="${ARTIFACT_LOCAL_DIR}/venv"
     if python_install_wheel "${run_venv}" "${wheel_path}"; then
         tap_pass ${case_id} "installs wheel from python-wheel/dist"
     else
@@ -48,7 +47,7 @@ PY
 fi
 
 case_id=$((case_id + 1))
-verify_script="${tmp_dir}/verify-bindings.py"
+verify_script="${ARTIFACT_LOCAL_DIR}/verify-bindings.py"
 cat >"${verify_script}" <<'PY'
 import ctypes.util
 import glob
