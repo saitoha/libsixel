@@ -28,9 +28,7 @@ set -v
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 case_id=${test_name%.t}
 output_sixel="${ARTIFACT_LOCAL_DIR}/${case_id}.six"
-output_png="${output_dir}/${case_id}.png"
-
-
+output_png="${ARTIFACT_LOCAL_DIR}/${case_id}.png"
 
 run_img2sixel -d a_dither -y raster -W oklab -o "${output_sixel}" \
     "${input_image}" || {

@@ -18,10 +18,8 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-snake_tiff="${top_srcdir}/tests/data/inputs/snake_64.tiff"
-
-
-target_sixel="${tmp_dir}/snake-tiff.sixel"
+snake_tiff="${TOP_SRCDIR}/tests/data/inputs/snake_64.tiff"
+target_sixel="${ARTIFACT_LOCAL_DIR}/snake-tiff.sixel"
 
 if run_img2sixel -Llibtiff! -p200 -8 -scenter -Brgb:0/f/A -h100 -qfull -rhan -dstucki \
     -thls "${snake_tiff}" -o/dev/null; then

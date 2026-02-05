@@ -3,22 +3,17 @@
 
 set -eux
 
-output_dir="${ARTIFACT_LOCAL_DIR}"
-
-
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 status=0
 
 ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 
-
-
 echo "1..1"
 set -v
 
-stderr_capture="${output_dir}/stderr.txt"
-if run_sixel2png -i 2>"${stderr_capture}" >"${output_dir}/stdout.txt"; then
+stderr_capture="${ARTIFACT_LOCAL_DIR}/stderr.txt"
+if run_sixel2png -i 2>"${stderr_capture}" >"${ARTIFACT_LOCAL_DIR}/stdout.txt"; then
     fail 1 "-i without value should fail"
 else
     if grep -qi -- "missing" "${stderr_capture}" \

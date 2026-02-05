@@ -3,23 +3,18 @@
 
 set -eux
 
-output_dir="${ARTIFACT_LOCAL_DIR}"
-
-
 script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 . "${TOP_SRCDIR}/tests/lib/sh/loader/pngsuite_common.sh"
 
 status=0
 
-
-
 ensure_pngsuite_prereqs
 
 echo "1..1"
 set -v
 
-if convert_pngsuite_group "${pngsuite_background}" "background samples" "-w32 -B#fff" "${output_dir}" ""; then
+if convert_pngsuite_group "${pngsuite_background}" "background samples" "-w32 -B#fff" "${ARTIFACT_LOCAL_DIR}" ""; then
     pass 1 "background samples width 32 with white background"
 else
     fail 1 "background samples width 32 with white background"

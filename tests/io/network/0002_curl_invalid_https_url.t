@@ -3,9 +3,6 @@
 
 set -eux
 
-tmp_dir="${ARTIFACT_LOCAL_DIR}"
-
-
 script_dir=${test_dir}
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
@@ -15,7 +12,7 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 echo "1..1"
 set -v
 
-capture_file=$(make_temp_file "${tmp_dir}" "curl-capture")
+capture_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "curl-capture")
 run_img2sixel 'https:///test' >"${capture_file}" || true
 
 if [ -s "${capture_file}" ]; then

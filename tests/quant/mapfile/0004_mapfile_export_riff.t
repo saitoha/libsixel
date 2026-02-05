@@ -13,9 +13,9 @@ load_mapfile_prereqs "${script_dir}"
 echo "1..1"
 set -v
 
-riff_palette="${tmp_dir}/palette-riff.pal"
+riff_palette="${ARTIFACT_LOCAL_DIR}/palette-riff.pal"
 if run_img2sixel -M pal-riff:"${riff_palette}" \
-        -o "${tmp_dir}/pal-riff.six" "${snake_png}"; then
+        -o "${ARTIFACT_LOCAL_DIR}/pal-riff.six" "${snake_png}"; then
     riff_header=$(dd if="${riff_palette}" bs=1 count=4 2>/dev/null |
         LC_ALL=C od -An -tx1 | tr -d ' \n')
     if [ "${riff_header}" = "52494646" ]; then

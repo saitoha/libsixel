@@ -19,12 +19,9 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/merge-kmeans-8bit.six"
-output_png="${output_dir}/merge-kmeans-8bit.png"
-
-
-
+output_png="${ARTIFACT_LOCAL_DIR}/merge-kmeans-8bit.png"
 
 if SIXEL_PALETTE_OVERSPLIT_FACTOR=2.2 \
         SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT=2 \

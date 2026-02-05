@@ -15,13 +15,12 @@ echo "1..1"
 set -v
 
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
-output_sixel="${output_dir}/positional-float32.six"
+output_sixel="${ARTIFACT_LOCAL_DIR}/positional-float32.six"
 
-if run_img2sixel -d x_dither -y serpentine --precision=float32 -p 16 \
-        -o "${output_sixel}" "${snake_png}"; then
-    pass 1 "positional float32 dither completes"
-else
+run_img2sixel -d x_dither -y serpentine --precision=float32 -p 16 -o "${output_sixel}" "${snake_png}" || {
     fail 1 "positional float32 dither failed"
-fi
+    exit "${status}"
+}
 
+pass 1 "positional float32 dither completes"
 exit "${status}"

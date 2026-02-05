@@ -15,9 +15,7 @@ echo "1..1"
 set -v
 
 snake_ascii_pbm="${images_dir}/snake-ascii.pbm"
-target_txt="${output_dir}/ascii-pbm-inspection.txt"
-
-
+target_txt="${ARTIFACT_LOCAL_DIR}/ascii-pbm-inspection.txt"
 
 if run_img2sixel -I -datkinson "${snake_ascii_pbm}" \
         >"${target_txt}"; then

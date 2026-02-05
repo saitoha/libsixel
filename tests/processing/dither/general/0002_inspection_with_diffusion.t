@@ -16,14 +16,12 @@ set -v
 
 snake_ppm="${images_dir}/snake.ppm"
 
+target_txt="${ARTIFACT_LOCAL_DIR}/inspection.txt"
 
-target_txt="${output_dir}/inspection.txt"
-
-if run_img2sixel -I -dstucki -thls -B"#a0B030" "${snake_ppm}" \
-        >"${target_txt}"; then
-    pass 1 "inspection with diffusion and background works"
-else
+if ! run_img2sixel -I -dstucki -thls -B"#a0B030" "${snake_ppm}" >"${target_txt}"; then
     fail 1 "inspection with diffusion failed"
+    exit "${status}"
 fi
 
+pass 1 "inspection with diffusion and background works"
 exit "${status}"

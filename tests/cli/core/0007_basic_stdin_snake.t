@@ -15,7 +15,7 @@ echo "1..1"
 set -v
 
 if run_sixel2png <"${images_dir}/snake.six" \
-        >"${output_dir}/snake-stdin.png"; then
+        >"${ARTIFACT_LOCAL_DIR}/snake-stdin.png"; then
     cli_core_pass 1 "converts snake from stdin"
 else
     cli_core_fail 1 "snake stdin conversion failed"

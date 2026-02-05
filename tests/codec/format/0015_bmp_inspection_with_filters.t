@@ -15,7 +15,7 @@ echo "1..1"
 set -v
 
 snake_bmp="${images_dir}/snake.bmp"
-target_txt="${output_dir}/bmp-inspection.txt"
+target_txt="${ARTIFACT_LOCAL_DIR}/bmp-inspection.txt"
 
 
 

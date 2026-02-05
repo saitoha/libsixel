@@ -13,16 +13,16 @@ load_mapfile_prereqs "${script_dir}"
 echo "1..1"
 set -v
 
-gpl_palette="${tmp_dir}/palette-gpl.dat"
-if ! run_img2sixel -M gpl:"${gpl_palette}" -o "${tmp_dir}/pal-gpl.six" \
+gpl_palette="${ARTIFACT_LOCAL_DIR}/palette-gpl.dat"
+if ! run_img2sixel -M gpl:"${gpl_palette}" -o "${ARTIFACT_LOCAL_DIR}/pal-gpl.six" \
         "${snake_png}"; then
     fail "Preparing GPL palette for stdin import failed"
     exit "${status}"
 fi
 
 if cat "${gpl_palette}" | run_img2sixel -m gpl:- \
-        -o "${output_dir}/from-stdin.six" "${snake_png}"; then
-    if [ -s "${output_dir}/from-stdin.six" ]; then
+        -o "${ARTIFACT_LOCAL_DIR}/from-stdin.six" "${snake_png}"; then
+    if [ -s "${ARTIFACT_LOCAL_DIR}/from-stdin.six" ]; then
         pass "Palette input accepted from stdin"
     else
         fail "stdin palette conversion produced no data"

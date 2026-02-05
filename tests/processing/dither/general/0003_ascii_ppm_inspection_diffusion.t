@@ -15,15 +15,12 @@ echo "1..1"
 set -v
 
 snake_ascii_ppm="${images_dir}/snake-ascii.ppm"
-target_txt="${output_dir}/ascii-ppm-inspection.txt"
+target_txt="${ARTIFACT_LOCAL_DIR}/ascii-ppm-inspection.txt"
 
-
-
-if run_img2sixel -I -8 -dburkes -B"#ffffffffffff" "${snake_ascii_ppm}" \
-        >"${target_txt}"; then
-    pass 1 "ASCII PPM inspection honours diffusion"
-else
+if ! run_img2sixel -I -8 -dburkes -B"#ffffffffffff" "${snake_ascii_ppm}" >"${target_txt}"; then
     fail 1 "ASCII PPM inspection failed"
+    exit "${status}"
 fi
 
+pass 1 "ASCII PPM inspection honours diffusion"
 exit "${status}"

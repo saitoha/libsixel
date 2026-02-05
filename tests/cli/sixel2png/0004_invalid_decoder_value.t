@@ -3,16 +3,11 @@
 
 set -eux
 
-output_dir="${ARTIFACT_LOCAL_DIR}"
-
-
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 status=0
 
 ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
-
-
 
 echo "1..1"
 set -v
@@ -20,9 +15,9 @@ set -v
 input_path="${images_dir}/snake.six"
 
 
-stderr_capture="${output_dir}/stderr.txt"
+stderr_capture="${ARTIFACT_LOCAL_DIR}/stderr.txt"
 if run_sixel2png --similarity=invalid "${input_path}" \
-        >"${output_dir}/stdout.txt" 2>"${stderr_capture}"; then
+        >"${ARTIFACT_LOCAL_DIR}/stdout.txt" 2>"${stderr_capture}"; then
     fail 1 "invalid similarity should fail"
 else
     if grep -qi -- "similarity" "${stderr_capture}" \

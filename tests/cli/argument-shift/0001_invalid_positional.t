@@ -5,9 +5,6 @@
 # Enable strict mode with verbose tracing for diagnostics.
 set -eux
 
-tmp_dir="${ARTIFACT_LOCAL_DIR}"
-
-
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 # Skip temporarily on Windows environments while addressing
@@ -24,9 +21,9 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 echo "1..1"
 set -v
 
-missing_path="${tmp_dir}/invalid_filename"
+missing_path="${ARTIFACT_LOCAL_DIR}/invalid_filename"
 rm -f "${missing_path}"
-missing_output=$(make_temp_file "${tmp_dir}" "capture.invalid")
+missing_output=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "capture.invalid")
 if run_img2sixel -v "${missing_path}" >"${missing_output}"; then
     fail 1 "img2sixel accepted missing input"
 elif [ -s "${missing_output}" ]; then
@@ -36,7 +33,7 @@ else
 fi
 rm -f "${missing_output}" "${missing_path}"
 
-#invalid_output=$(make_temp_file "${tmp_dir}" "capture.invalid")
+#invalid_output=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "capture.invalid")
 #if run_img2sixel -v "." >"${invalid_output}"; then
 #    fail 2 "img2sixel accepted directory input"
 #elif [ -s "${invalid_output}" ]; then

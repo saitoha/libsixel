@@ -17,7 +17,7 @@ echo "1..1"
 set -v
 status=0
 case_id=1
-verify_script="${tmp_dir}/verify-bindings.py"
+verify_script="${ARTIFACT_LOCAL_DIR}/verify-bindings.py"
 
 if create_virtualenv "${run_venv}" && \
    install_wheel "${run_venv}" && \

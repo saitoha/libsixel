@@ -5,9 +5,6 @@
 cli_core_setup() {
     log_basename=$1
 
-    output_dir="${ARTIFACT_LOCAL_DIR}"
-    tmp_dir="${ARTIFACT_LOCAL_DIR}"
-
     cli_core_common_path=${cli_core_common_path:-"$0"}
     helper_dir=${CLI_CORE_HELPER_DIR-}
     if [ -z "${helper_dir}" ]; then
@@ -42,7 +39,7 @@ cli_core_expect_img2sixel_rejection() {
     description=$2
     shift 2
 
-    output_file=$(make_temp_file "${tmp_dir}" "capture.invalid")
+    output_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "capture.invalid")
     if run_img2sixel "$@" </dev/null >"${output_file}"; then
         cmd_status=0
     else

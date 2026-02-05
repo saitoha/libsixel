@@ -15,9 +15,7 @@ echo "1..1"
 set -v
 
 snake_palette_png="${images_dir}/snake-palette.png"
-target_sixel="${output_dir}/indexed-scale.sixel"
-
-
+target_sixel="${ARTIFACT_LOCAL_DIR}/indexed-scale.sixel"
 
 if run_img2sixel -7 -w300 "${snake_palette_png}" \
         >"${target_sixel}"; then

@@ -3,12 +3,6 @@
 
 set -eux
 
-output_dir="${ARTIFACT_LOCAL_DIR}"
-
-tmp_dir="${ARTIFACT_LOCAL_DIR}"
-
-
-script_dir=${test_dir}
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 status=0
@@ -40,7 +34,7 @@ issue167="${top_srcdir}/tests/security/issue/data/167/poc"
 printf '1..1\n'
 set -v
 
-if check_exit -B '#000' -B '' >"${output_dir}/issue167-empty-bg.sixel"; then
+if check_exit -B '#000' -B '' >"${ARTIFACT_LOCAL_DIR}/issue167-empty-bg.sixel"; then
     pass 1 "empty background tolerated"
 else
     fail 1 "empty background rejected"
