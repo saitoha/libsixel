@@ -5,8 +5,6 @@ set -eux
 conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
 . "${conversion_common_path}"
 
-setup_conversion_env "${test_name}"
-
 status=0
 
 ensure_img2sixel_available
@@ -16,8 +14,6 @@ set -v
 
 snake_bmp="${images_dir}/snake.bmp"
 target_txt="${ARTIFACT_LOCAL_DIR}/bmp-inspection.txt"
-
-
 
 if run_img2sixel -I -v -w200 -hauto -c100x1000+40+20 -qlow -dnone \
         -rhamming -thls "${snake_bmp}" >"${target_txt}"; then
