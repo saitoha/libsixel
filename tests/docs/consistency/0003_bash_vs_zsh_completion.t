@@ -3,19 +3,11 @@
 
 set -eux
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/documentation.log"
-bash_opts="${artifact_dir}/options-bash.txt"
-zsh_opts="${artifact_dir}/options-zsh.txt"
-bash_sorted="${artifact_dir}/options-bash-sorted.txt"
-zsh_sorted="${artifact_dir}/options-zsh-sorted.txt"
+bash_opts="${ARTIFACT_LOCAL_DIR}/options-bash.txt"
+zsh_opts="${ARTIFACT_LOCAL_DIR}/options-zsh.txt"
+bash_sorted="${ARTIFACT_LOCAL_DIR}/options-bash-sorted.txt"
+zsh_sorted="${ARTIFACT_LOCAL_DIR}/options-zsh-sorted.txt"
 
-mkdir -p "${artifact_dir}"
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -72,7 +64,7 @@ else
     fail 1 "failed to sort zsh completion"
 fi
 
-if diff -u "${bash_sorted}" "${zsh_sorted}" >>"${log_file}" 2>&1; then
+if diff -u "${bash_sorted}" "${zsh_sorted}"; then
     pass 1 "bash completion matches zsh completion"
 else
     fail 1 "bash completion diverges from zsh completion"

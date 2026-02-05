@@ -20,17 +20,15 @@ if [ ! -x "${runner}" ] && [ -z "${SIXEL_RUNTIME-}" ]; then
     exit 1
 fi
 
-test_name=$(basename "$0" .t)
-log_file=$(mktemp "${TMPDIR:-/tmp}/loader-${test_name}.XXXXXX")
-trap 'rm -f "${log_file}"' EXIT
-
 set +e
-${SIXEL_RUNTIME-} "${runner}" "loader/${test_name}" >"${log_file}" 2>&1
+loader_output=$(${SIXEL_RUNTIME-} "${runner}" "loader/${test_name}" 2>&1)
 rc=$?
 set -e
+printf '%s' "${loader_output}" >&2
 
-if grep "{cacaf262-9370-4615-a13b-9f5539da4c0a} not registered" "${log_file}" \
-    > /dev/null; then
+if printf '%s' "${loader_output}" \
+    | grep "{cacaf262-9370-4615-a13b-9f5539da4c0a} not registered" \
+        >/dev/null; then
     skip_all "WIC is not available"
 fi
 
@@ -43,6 +41,5 @@ elif [ "${rc}" -eq 77 ]; then
     echo "ok 1 - loader/${test_name} # SKIP unavailable"
 else
     echo "not ok 1 - loader/${test_name}"
-    sed 's/^/# /' "${log_file}"
     exit 1
 fi

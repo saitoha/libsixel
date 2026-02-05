@@ -17,7 +17,7 @@ set -v
 
 png_stdout="${output_dir}/png-stdout.png"
 if run_sixel2png -o "png:-" <"${images_dir}/snake.six" \
-        >"${png_stdout}" 2>>"${log_file}"; then
+        >"${png_stdout}"; then
     if [ -s "${png_stdout}" ]; then
         cli_core_pass 1 "png:- writes to stdout"
     else

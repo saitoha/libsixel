@@ -3,19 +3,11 @@
 
 set -eux
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/documentation.log"
-help_opts="${artifact_dir}/options-help.txt"
-man_opts="${artifact_dir}/options-man.txt"
-help_sorted="${artifact_dir}/options-help-sorted.txt"
-man_sorted="${artifact_dir}/options-man-sorted.txt"
+help_opts="${ARTIFACT_LOCAL_DIR}/options-help.txt"
+man_opts="${ARTIFACT_LOCAL_DIR}/options-man.txt"
+help_sorted="${ARTIFACT_LOCAL_DIR}/options-help-sorted.txt"
+man_sorted="${ARTIFACT_LOCAL_DIR}/options-man-sorted.txt"
 
-mkdir -p "${artifact_dir}"
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -42,7 +34,7 @@ fi
 printf '1..1\n'
 set -v
 
-if run_img2sixel -H 2>>"${log_file}" | awk '
+if run_img2sixel -H | awk '
     /^[[:space:]]*\*?-/ {
         for (idx = 1; idx <= NF; idx++) {
             field = $idx
@@ -95,7 +87,7 @@ else
     fail 1 "failed to sort manpage options"
 fi
 
-if diff -u "${help_sorted}" "${man_sorted}" >>"${log_file}" 2>&1; then
+if diff -u "${help_sorted}" "${man_sorted}"; then
     pass 1 "--help matches manpage"
 else
     fail 1 "--help diverges from manpage"

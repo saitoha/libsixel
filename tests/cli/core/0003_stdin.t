@@ -5,16 +5,8 @@
 # Enable strict mode with verbose tracing for diagnostics.
 set -eux
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/stdin.log"
-tmp_dir="${artifact_dir}/tmp"
+tmp_dir="${ARTIFACT_LOCAL_DIR}"
 
-mkdir -p "${tmp_dir}"
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -30,7 +22,7 @@ set -v
 
 output_file=$(make_temp_file "${tmp_dir}" "capture.stdin")
 
-if echo a | run_img2sixel >"${output_file}" 2>>"${log_file}"; then
+if echo a | run_img2sixel >"${output_file}"; then
     :
 fi
 

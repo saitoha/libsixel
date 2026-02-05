@@ -5,7 +5,6 @@ set -eux
 conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
 . "${conversion_common_path}"
 
-test_name=$(basename "$0")
 setup_conversion_env "${test_name}"
 
 status=0
@@ -21,7 +20,7 @@ longopt_sixel="${tmp_dir}/snake-longopt.sixel"
 require_file "${snake_jpg}"
 
 if run_img2sixel --height=100 --diffusion=atkinson \
-    --outfile="${longopt_sixel}" <"${snake_jpg}" 2>>"${log_file}"; then
+    --outfile="${longopt_sixel}" <"${snake_jpg}"; then
     pass 1 "long option forms accepted"
 else
     fail 1 "long option forms failed"

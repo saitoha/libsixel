@@ -3,15 +3,7 @@
 
 set -eux
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/completion.log"
 
-mkdir -p "${artifact_dir}"
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -38,8 +30,7 @@ completion_home=""
 if command -v mktemp >/dev/null 2>&1; then
     completion_home=$(mktemp -d "${TMPDIR:-/tmp}/img2sixel-home.XXXXXX")
 else
-    completion_home="${artifact_dir}/home.$$"
-    mkdir -p "${completion_home}"
+    completion_home="${ARTIFACT_LOCAL_DIR}/home.$$"
 fi
 if [ -z "${completion_home}" ]; then
     echo "Failed to create a temporary home directory" >&2
@@ -64,7 +55,7 @@ export IMG2SIXEL_COMPLETION_HOME
 export IMG2SIXEL_COMPLETION_DIR
 export BASH_VERSION
 
-if run_img2sixel -2 bash >"${log_file}" 2>&1; then
+if run_img2sixel -2 bash; then
     if [ -f "${target_path}" ] && \
             grep -F '# bash completion for img2sixel' \
             "${target_path}" >/dev/null 2>&1; then

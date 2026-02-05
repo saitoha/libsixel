@@ -6,16 +6,7 @@ dcs_arguments_run() {
     i=$1
     j=$2
 
-    test_name=$(basename "$0")
-    test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-    category_name=$(basename "$(dirname "${test_dir}")")
-    artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-    artifact_test_dir=$(dirname "$0")
-    artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-    log_file="${artifact_dir}/dcs-arguments.log"
-    output_dir="${artifact_dir}/outputs"
-
-    mkdir -p "${output_dir}"
+    output_dir="${ARTIFACT_LOCAL_DIR}"
 
     script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
     . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -32,10 +23,9 @@ dcs_arguments_run() {
     stage_file="${output_dir}/stage-${i}-${j}.sixel"
     output_file="${output_dir}/dcs-${i}-${j}.sixel"
 
-    if run_img2sixel "${map8_png}" >"${stage_file}" \
-            2>>"${log_file}" && \
+    if run_img2sixel "${map8_png}" >"${stage_file}" && \
             sed "s/Pq/P${i};;${j}q/" "${stage_file}" | \
-            run_img2sixel >"${output_file}" 2>>"${log_file}"; then
+            run_img2sixel >"${output_file}"; then
         printf 'ok 1 - DCS prefix %s;%s accepted\n' "${i}" "${j}"
     else
         printf 'not ok 1 - DCS prefix %s;%s rejected\n' "${i}" "${j}"

@@ -14,7 +14,6 @@ LSQA_HELPER_DIR=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
 . "${conversion_common_path}"
 . "${lsqa_common_path}"
 
-test_name=$(basename "$0")
 setup_conversion_env "${test_name}"
 
 status=0
@@ -29,12 +28,12 @@ set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 case_id=${test_name%.t}
-output_sixel="${artifact_dir}/${case_id}.six"
+output_sixel="${ARTIFACT_LOCAL_DIR}/${case_id}.six"
 output_png="${output_dir}/${case_id}.png"
 
 require_file "${input_image}"
 
-if run_img2sixel -d fs -Y carry -y serpentine -o "${output_sixel}" "${input_image}" 2>>"${log_file}"; then
+if run_img2sixel -d fs -Y carry -y serpentine -o "${output_sixel}" "${input_image}"; then
     :
 else
     fail 1 "fixed 8-bit Floyd-Steinberg with carry + serpentine scan lsqa failed"

@@ -3,21 +3,13 @@
 
 set -eux
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/curl.log"
-output_dir="${artifact_dir}/outputs"
-tmp_dir="${artifact_dir}/tmp"
+output_dir="${ARTIFACT_LOCAL_DIR}"
+tmp_dir="${ARTIFACT_LOCAL_DIR}"
 server_port_base=4444
 max_port_attempts=5
 port_file="${tmp_dir}/server.port"
 # Use nearby ports so the HTTPS server can start when the default is busy.
 
-mkdir -p "${output_dir}" "${tmp_dir}"
 
 script_dir=${test_dir}
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -106,7 +98,7 @@ PY
 server_pid_file=$(make_temp_file "${tmp_dir}" "curl-server-pid")
 (
     cd "${tmp_dir}" || exit 1
-    python server.py >"${log_file}" 2>&1 &
+    python server.py &
     echo $! >"${server_pid_file}"
 )
 server_pid=$(cat "${server_pid_file}")
@@ -140,7 +132,7 @@ server_ok=1
 
 for attempt in 1 2 3; do
     if run_img2sixel -k "https://localhost:${server_port}/snake.sixel" \
-            >"${verify_output}" 2>>"${log_file}"; then
+            >"${verify_output}"; then
         server_ok=0
         break
     fi

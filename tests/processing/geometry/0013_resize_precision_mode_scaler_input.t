@@ -3,17 +3,9 @@
 
 set -eux
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/resize.log"
-out_file="${artifact_dir}/resize.six"
-ppm_file="${artifact_dir}/resize.ppm"
+out_file="${ARTIFACT_LOCAL_DIR}/resize.six"
+ppm_file="${ARTIFACT_LOCAL_DIR}/resize.ppm"
 
-mkdir -p "${artifact_dir}"
 
 export SIXEL_THREADS=1
 
@@ -35,11 +27,12 @@ P3
 255 0 0   0 255 0   0 0 255   255 255 0
 PPM
 
-run_img2sixel -v -W oklab -w 99% \
-    -o "${out_file}" "${ppm_file}" \
-    >"${artifact_dir}/stdout.log" 2>"${log_file}" || true
+resize_log=$(run_img2sixel -v -W oklab -w 99% \
+    -o "${out_file}" "${ppm_file}" 2>&1 || true)
+printf '%s' "${resize_log}" >&2
 
-if grep -q "resize: mode=.*input=linear-f32" "${log_file}"; then
+if printf '%s' "${resize_log}" \
+        | grep -q "resize: mode=.*input=linear-f32"; then
     printf 'ok 1 - planner reports scaler input pixelformat\n'
 else
     printf 'not ok 1 - missing scaler input declaration\n'

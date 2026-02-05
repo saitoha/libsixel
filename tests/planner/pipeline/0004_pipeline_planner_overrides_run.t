@@ -5,16 +5,8 @@ set -eux
 
 export SIXEL_THREADS=6
 
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/pipeline.log"
-ppm_tall="${artifact_dir}/grid_tall.ppm"
+ppm_tall="${ARTIFACT_LOCAL_DIR}/grid_tall.ppm"
 
-mkdir -p "${artifact_dir}"
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -30,8 +22,8 @@ create_tall_ppm "${ppm_tall}"
 if SIXEL_DITHER_PARALLEL_THREADS_MAX=1 \
         SIXEL_DITHER_PARALLEL_BAND_WIDTH=9 \
         SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=4 \
-        run_img2sixel -v -o "${artifact_dir}/tall.six" "${ppm_tall}" \
-        >"${artifact_dir}/tall.out" 2>"${log_file}"; then
+        run_img2sixel -v -o "${ARTIFACT_LOCAL_DIR}/tall.six" "${ppm_tall}" \
+        >"${ARTIFACT_LOCAL_DIR}/tall.out"; then
     printf 'ok 1 - pipeline run succeeded (overrides)\n'
 else
     printf 'not ok 1 - pipeline run failed (overrides)\n'

@@ -5,7 +5,6 @@ set -eux
 conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
 . "${conversion_common_path}"
 
-test_name=$(basename "$0")
 setup_conversion_env "${test_name}"
 
 status=0
@@ -21,7 +20,7 @@ target_sixel="${tmp_dir}/snake-gif.sixel"
 require_file "${snake_gif}"
 
 if run_img2sixel -w105% -h100 -B"#000000000" -rne <"${snake_gif}" \
-    >"${target_sixel}" 2>>"${log_file}"; then
+    >"${target_sixel}"; then
     pass 1 "GIF conversion with filters succeeded"
 else
     fail 1 "GIF conversion with filters failed"

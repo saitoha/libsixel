@@ -20,18 +20,8 @@ fi
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 setup_conversion_env() {
-    test_name=$1
-    test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-    category_name=$(basename "$(dirname "${test_dir}")")
-
-    artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-    artifact_test_dir=$(dirname "$0")
-    artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-    log_file="${artifact_dir}/conversion.log"
-    tmp_dir="${artifact_dir}/tmp"
-    output_dir="${artifact_dir}/outputs"
-
-    mkdir -p "${artifact_dir}" "${tmp_dir}" "${output_dir}"
+    output_dir="${ARTIFACT_LOCAL_DIR}"
+    tmp_dir="${ARTIFACT_LOCAL_DIR}"
 }
 
 ensure_img2sixel_available() {
@@ -44,7 +34,7 @@ conversion_dcs_checksum() {
     scale_args=$1
 
     checksum=$(printf '\033Pq"1;1;1;1!6~\033\\' \
-        | run_img2sixel -rne ${scale_args} 2>>"${log_file}" \
+        | run_img2sixel -rne ${scale_args} \
         | tr '#' '\n' | tail -n +3 \
         | od -An -tx1 | tr -d ' \n') || checksum=""
 

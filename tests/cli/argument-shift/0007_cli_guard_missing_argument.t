@@ -3,11 +3,7 @@
 
 set -eux
 
-name=$(basename "$0")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${name}"
-mkdir -p "${artifact_dir}"
+name=${0##*[/\\]}
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 parent_dir=$(CDPATH=; cd "${script_dir}/../.." && pwd)
@@ -24,11 +20,12 @@ if [ ! -x "${binary}" ]; then
     exit 99
 fi
 
-log_file="${artifact_dir}/test.log"
 set +e
-${SIXEL_RUNTIME-} "${binary}" "cli/0031_cli_guard_missing_argument" >"${log_file}" 2>&1
+cli_output=$(${SIXEL_RUNTIME-} "${binary}" "cli/0031_cli_guard_missing_argument" \
+    2>&1)
 rc=$?
 set -e
+printf '%s' "${cli_output}" >&2
 
 echo "1..1"
 set -v
@@ -37,6 +34,5 @@ if [ "${rc}" -eq 0 ]; then
     echo "ok 1 - cli_guard_missing_argument"
 else
     echo "not ok 1 - cli_guard_missing_argument"
-    sed 's/^/# /' "${log_file}"
     exit 1
 fi

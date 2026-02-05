@@ -13,9 +13,9 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 require_file "${images_dir}/snake.png"
 
 label="prefix_unique"
-err_file="${artifact_dir}/${label}.err"
-out_file="${artifact_dir}/${label}.sixel"
-filtered_err="${artifact_dir}/${label}.filtered.err"
+err_file="${ARTIFACT_LOCAL_DIR}/${label}.err"
+out_file="${ARTIFACT_LOCAL_DIR}/${label}.sixel"
+filtered_err="${ARTIFACT_LOCAL_DIR}/${label}.filtered.err"
 
 cleanup_files() {
     rm -f "$@" || :
@@ -41,8 +41,8 @@ if [ -s "${err_file}" ]; then
             >"${filtered_err}"; then
         if [ -s "${filtered_err}" ]; then
             cli_core_fail 1 "unique prefix emitted diagnostics"
-            printf '%s\n' '--- stderr ---' >>"${log_file}"
-            cat "${err_file}" >>"${log_file}" 2>/dev/null || :
+            printf '%s\n' '--- stderr ---' >&2
+            cat "${err_file}" >&2 2>/dev/null || :
             cleanup_files "${filtered_err}"
             exit "${status}"
         fi

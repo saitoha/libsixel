@@ -12,7 +12,7 @@ fi
 
 # TAP bookkeeping and shared state. The variables are initialized to safe
 # defaults so callers running with `set -u` do not trip on unbound names.
-tap_log_file=""
+tap_log_file="/dev/stderr"
 python_bin=""
 run_python=""
 lib_dir=""
@@ -57,27 +57,29 @@ fi
 # `set -e` do not abort before emitting TAP results.
 python_skip_on_load_error() {
     status=$1
-    log_path=$2
+    log_data=$2
+    log_text=""
 
     if [ "${status}" -eq 0 ]; then
         return 0
     fi
 
-    if [ -z "${log_path}" ] || [ ! -f "${log_path}" ]; then
-        printf 'python_skip_on_load_error: missing log file for status %s\n' \
-            "${status}" >&2
-        return 0
+    if [ -n "${log_data}" ] && [ -f "${log_data}" ]; then
+        log_text=$(cat "${log_data}")
+    else
+        log_text=${log_data}
     fi
 
     # macOS TSan builds can emit an interceptor warning when the runtime is
     # loaded too late (via dlopen). The error is printed to stderr, not raised
     # as a Python exception, so detect it in the captured log and skip the
     # Python binding tests to align with the intended policy.
-    if grep -q "Interceptors are not working" "${log_path}"; then
+    if printf '%s' "${log_text}" | grep -q "Interceptors are not working"; then
         tap_skip_all "ThreadSanitizer interceptors not available"
     fi
 
-    marker=$(grep -m1 '^SKIP_LIBSIXEL_LOAD:' "${log_path}" || true)
+    marker=$(printf '%s' "${log_text}" | grep -m1 '^SKIP_LIBSIXEL_LOAD:' \
+        || true)
     if [ -z "${marker}" ]; then
         printf 'python_skip_on_load_error: no load marker for status %s\n' \
             "${status}" >&2
@@ -743,8 +745,8 @@ python_install_wheel() {
 # Populate interpreter/library paths and architecture guards. The function
 # sets shared globals so callers can re-use them without recalculating.
 python_prepare() {
-    tap_log_file=$1
-    tmp_dir=$2
+    tmp_dir=$1
+    tap_log_file="/dev/stderr"
 
     python_bin=$(command -v python3 || command -v python || true)
     if [ -z "${python_bin}" ]; then
@@ -813,11 +815,9 @@ python_prepare() {
     lib_libc=$(detect_library_libc "${python_bin}" "${shared_lib}")
     lib_libc=$(printf '%s' "${lib_libc}" | tr 'A-Z' 'a-z')
 
-    python_trace_dir="${tmp_dir}/trace"
+    python_trace_dir="${tmp_dir}"
     python_trace_pythonpath="${python_trace_dir}"
     python_trace_prefixes="${TOP_SRCDIR}${python_pathsep}${tmp_dir}"
-
-    mkdir -p "${python_trace_dir}"
     cat >"${python_trace_dir}/sitecustomize.py" <<'PY'
 """Install a scoped tracer for Python TAP tests.
 

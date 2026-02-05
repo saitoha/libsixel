@@ -16,7 +16,7 @@ echo "1..1"
 set -v
 
 if run_sixel2png - - <"${images_dir}/map64.six" \
-        >"${output_dir}/map64-stdin-stdout.png" 2>>"${log_file}"; then
+        >"${output_dir}/map64-stdin-stdout.png"; then
     cli_core_pass 1 "converts map64 with explicit stdin/stdout"
 else
     cli_core_fail 1 "map64 stdin/stdout conversion failed"

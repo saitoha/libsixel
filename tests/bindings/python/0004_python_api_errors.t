@@ -10,26 +10,12 @@ script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 PYTHON_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/python"
 . "${PYTHON_HELPER_DIR}/common.sh"
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/python.log"
-tmp_dir="${artifact_dir}/tmp"
+tmp_dir="${ARTIFACT_LOCAL_DIR}"
 
 source_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 
-mkdir -p "${artifact_dir}" "${tmp_dir}"
-rm -f "${log_file}"
-
-tap_log_file="${log_file}"
-
-python_prepare "${log_file}" "${tmp_dir}"
+python_prepare "${tmp_dir}"
 set -v
-
-printf 'source_image=%s\n' "${source_image}" >>"${log_file}"
 
 # Install the wheel into a venv when available so the API is exercised through
 # the packaged module instead of the in-tree sources.
@@ -48,7 +34,6 @@ run_case() {
 
     working_dir="${tmp_dir}/${scenario}"
 
-    mkdir -p "${working_dir}" "${working_dir}/wheel" "${working_dir}/tree"
 
     run_python_scenarios() {
         loader_env=$1
@@ -246,15 +231,14 @@ def exercise_invalid_option(workdir: pathlib.Path, valid_source: pathlib.Path) -
 
 
 def main() -> None:
-    if len(sys.argv) != 5:
+    if len(sys.argv) != 4:
         raise SystemExit(
-            "usage: <scenario> <source-image> <workdir> <log-file>"
+            "usage: <scenario> <source-image> <workdir>"
         )
 
     scenario = sys.argv[1]
     source = pathlib.Path(sys.argv[2])
     workdir = pathlib.Path(sys.argv[3])
-    log_path = pathlib.Path(sys.argv[4])
 
     workdir.mkdir(parents=True, exist_ok=True)
 
@@ -270,9 +254,6 @@ def main() -> None:
         raise SystemExit(f"unknown scenario: {scenario}")
 
     result = dispatch[scenario]()
-    log_path.parent.mkdir(parents=True, exist_ok=True)
-    with log_path.open("a", encoding="utf-8") as handle:
-        handle.write(f"{result}\n")
     print(result)
 
 
@@ -282,23 +263,29 @@ PY
     }
 
     if [ "${use_wheel}" -eq 1 ]; then
-        if run_python_scenarios "${python_wheel_loader_env}" \
+        python_output=$(run_python_scenarios "${python_wheel_loader_env}" \
             "${python_wheel_trace_pythonpath}" \
             "${scenario}" "${source_image}" \
-            "${working_dir}/wheel" "${log_file}" >>"${log_file}" 2>&1; then
+            "${working_dir}/wheel" 2>&1)
+        python_status=$?
+        printf '%s' "${python_output}" >&2
+        if [ "${python_status}" -eq 0 ]; then
             tap_pass ${case_id} "${description} via wheel"
         else
-            python_skip_on_load_error $? "${log_file}"
+            python_skip_on_load_error "${python_status}" "${python_output}"
             tap_fail ${case_id} "${description} via wheel failed"
         fi
     else
-        if run_python_scenarios "${python_in_tree_loader_env}" \
+        python_output=$(run_python_scenarios "${python_in_tree_loader_env}" \
             "${python_in_tree_trace_pythonpath}" \
             "${scenario}" "${source_image}" \
-            "${working_dir}/tree" "${log_file}" >>"${log_file}" 2>&1; then
+            "${working_dir}/tree" 2>&1)
+        python_status=$?
+        printf '%s' "${python_output}" >&2
+        if [ "${python_status}" -eq 0 ]; then
             tap_pass ${case_id} "${description} via in-tree modules"
         else
-            python_skip_on_load_error $? "${log_file}"
+            python_skip_on_load_error "${python_status}" "${python_output}"
             tap_fail ${case_id} "${description} via in-tree modules failed"
         fi
     fi

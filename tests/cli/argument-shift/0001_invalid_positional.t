@@ -5,16 +5,8 @@
 # Enable strict mode with verbose tracing for diagnostics.
 set -eux
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/invalid-positional.log"
-tmp_dir="${artifact_dir}/tmp"
+tmp_dir="${ARTIFACT_LOCAL_DIR}"
 
-mkdir -p "${tmp_dir}"
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -38,7 +30,7 @@ set -v
 missing_path="${tmp_dir}/invalid_filename"
 rm -f "${missing_path}"
 missing_output=$(make_temp_file "${tmp_dir}" "capture.invalid")
-if run_img2sixel -v "${missing_path}" >"${missing_output}" 2>>"${log_file}"; then
+if run_img2sixel -v "${missing_path}" >"${missing_output}"; then
     fail 1 "img2sixel accepted missing input"
 elif [ -s "${missing_output}" ]; then
     fail 1 "img2sixel produced output for missing input"
@@ -48,7 +40,7 @@ fi
 rm -f "${missing_output}" "${missing_path}"
 
 #invalid_output=$(make_temp_file "${tmp_dir}" "capture.invalid")
-#if run_img2sixel -v "." >"${invalid_output}" 2>>"${log_file}"; then
+#if run_img2sixel -v "." >"${invalid_output}"; then
 #    fail 2 "img2sixel accepted directory input"
 #elif [ -s "${invalid_output}" ]; then
 #    fail 2 "img2sixel produced output for directory input"

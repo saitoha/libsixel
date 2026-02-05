@@ -5,7 +5,6 @@ set -eux
 conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
 . "${conversion_common_path}"
 
-test_name=$(basename "$0")
 setup_conversion_env "${test_name}"
 
 status=0
@@ -22,7 +21,7 @@ require_file "${snake_jpg}"
 
 # LSQA cannot read ormode sixel output, so only check for a clean exit.
 if run_img2sixel -O --outfile="${output_sixel}" <"${snake_jpg}" \
-    2>>"${log_file}"; then
+; then
     pass 1 "ormode option exits successfully"
 else
     fail 1 "ormode option failed to run"

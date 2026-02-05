@@ -13,7 +13,7 @@ ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
 echo "1..1"
 set -v
 
-if run_sixel2png -H >"${output_dir}/help.txt" 2>>"${log_file}"; then
+if run_sixel2png -H >"${output_dir}/help.txt"; then
     cli_core_pass 1 "prints help"
 else
     cli_core_fail 1 "help option failed"

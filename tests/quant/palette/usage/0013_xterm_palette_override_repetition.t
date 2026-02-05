@@ -5,7 +5,6 @@ set -eux
 conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
 . "${conversion_common_path}"
 
-test_name=$(basename "$0")
 setup_conversion_env "${test_name}"
 
 status=0
@@ -21,7 +20,7 @@ target_sixel="${output_dir}/xterm-override.sixel"
 require_file "${snake_pbm}"
 
 if run_img2sixel -7 -w100 -h100 -bxterm16 -B"#aB3" -B"#aB3" \
-        "${snake_pbm}" >"${target_sixel}" 2>>"${log_file}"; then
+        "${snake_pbm}" >"${target_sixel}"; then
     pass 1 "xterm palette overrides repeat"
 else
     fail 1 "xterm palette overrides fail"

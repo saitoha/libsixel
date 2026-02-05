@@ -5,7 +5,6 @@ set -eux
 conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
 . "${conversion_common_path}"
 
-test_name=$(basename "$0")
 setup_conversion_env "${test_name}"
 
 status=0
@@ -21,7 +20,7 @@ output_sixel="${output_dir}/vpte-float32.six"
 require_file "${snake_png}"
 
 if run_img2sixel --lookup-policy=vpte --precision=float32 -p 16 -d none \
-        -o "${output_sixel}" "${snake_png}" 2>>"${log_file}"; then
+        -o "${output_sixel}" "${snake_png}"; then
     pass 1 "float32 VPTE lookup policy completes"
 else
     fail 1 "float32 VPTE lookup policy failed"
