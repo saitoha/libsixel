@@ -3,21 +3,13 @@
 
 set -eux
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/curl.log"
-output_dir="${artifact_dir}/outputs"
-tmp_dir="${artifact_dir}/tmp"
+output_dir="${ARTIFACT_LOCAL_DIR}"
+tmp_dir="${ARTIFACT_LOCAL_DIR}"
 server_port_base=4443
 max_port_attempts=5
 port_file="${tmp_dir}/server.port"
 # Use nearby ports so the HTTPS server can start when the default is busy.
 
-mkdir -p "${output_dir}" "${tmp_dir}"
 
 # Ensure the helper HTTPS server exits even when the test process gets
 # interrupted on CI. The helper uses a short timeout loop and logs to
@@ -32,7 +24,7 @@ stop_server() {
         while kill -0 "${server_pid}" 2>/dev/null; do
             if [ ${waited} -ge ${wait_limit} ]; then
                 echo "Server pid ${server_pid} did not exit; forcing kill." \
-                    >>"${log_file}"
+                    >&2
                 kill -9 "${server_pid}" 2>/dev/null || :
                 break
             fi
@@ -132,7 +124,7 @@ PY
 server_pid_file=$(make_temp_file "${tmp_dir}" "curl-server-pid")
 (
     cd "${tmp_dir}" || exit 1
-    python server.py >"${log_file}" 2>&1 &
+    python server.py &
     echo $! >"${server_pid_file}"
 )
 server_pid=$(cat "${server_pid_file}")
@@ -161,7 +153,7 @@ fi
 
 verify_output=$(make_temp_file "${tmp_dir}" "curl-verify")
 run_img2sixel "https://localhost:${server_port}/snake.sixel" \
-    >"${verify_output}" 2>>"${log_file}" && command_status=$? || command_status=$?
+    >"${verify_output}" && command_status=$? || command_status=$?
 
 stop_server "${server_pid}"
 

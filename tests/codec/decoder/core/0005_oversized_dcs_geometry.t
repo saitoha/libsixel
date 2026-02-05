@@ -4,16 +4,8 @@
 # Enable strict mode with verbose tracing for diagnostics.
 set -eux
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/dcs-variations.log"
-output_dir="${artifact_dir}/outputs"
+output_dir="${ARTIFACT_LOCAL_DIR}"
 
-mkdir -p "${output_dir}"
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -33,10 +25,10 @@ snake_png="${images_dir}/snake.png"
 require_file "${snake_png}"
 
 if run_img2sixel "${snake_png}" >"${output_dir}/case02-stage.sixel" \
-        2>>"${log_file}" && \
+ && \
         sed 's/"1;1;600;450/"1;1;700;500/' \
         "${output_dir}/case02-stage.sixel" | \
-        run_img2sixel >"${output_dir}/case02.sixel" 2>>"${log_file}"; then
+        run_img2sixel >"${output_dir}/case02.sixel"; then
     pass ${case_id} "oversized DCS geometry tolerated"
 else
     fail ${case_id} "oversized DCS geometry rejected"

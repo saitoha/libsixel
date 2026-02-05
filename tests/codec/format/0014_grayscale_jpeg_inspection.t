@@ -5,7 +5,6 @@ set -eux
 conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
 . "${conversion_common_path}"
 
-test_name=$(basename "$0")
 setup_conversion_env "${test_name}"
 
 status=0
@@ -20,7 +19,7 @@ target_txt="${output_dir}/gray-jpeg-inspection.txt"
 
 require_file "${snake_gray_jpg}"
 
-if run_img2sixel -I "${snake_gray_jpg}" >"${target_txt}" 2>>"${log_file}"; then
+if run_img2sixel -I "${snake_gray_jpg}" >"${target_txt}"; then
     pass 1 "grayscale JPEG inspection succeeds"
 else
     fail 1 "grayscale JPEG inspection fails"

@@ -5,16 +5,8 @@ set -eux
 
 export SIXEL_THREADS=4
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/pipeline.log"
-ppm_small="${artifact_dir}/grid_small.ppm"
+ppm_small="${ARTIFACT_LOCAL_DIR}/grid_small.ppm"
 
-mkdir -p "${artifact_dir}"
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -26,10 +18,11 @@ echo "1..1"
 set -v
 
 create_small_ppm "${ppm_small}"
-run_img2sixel -v -o "${artifact_dir}/small.six" "${ppm_small}" \
-    >"${artifact_dir}/small.out" 2>"${log_file}" || true
+pipeline_log=$(run_img2sixel -v -o "${ARTIFACT_LOCAL_DIR}/small.six" \
+    "${ppm_small}" 2>&1 || true)
+printf '%s' "${pipeline_log}" >&2
 
-summary=$(grep "bands=" "${log_file}" | head -n 1 || true)
+summary=$(printf '%s' "${pipeline_log}" | grep "bands=" | head -n 1 || true)
 case "${summary}" in
 "    bands=2 queue=2 mode=pipeline")
     printf 'ok 1 - baseline bands/queue/mode\n'

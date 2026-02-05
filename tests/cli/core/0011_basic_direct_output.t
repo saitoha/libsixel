@@ -17,7 +17,7 @@ set -v
 
 direct_png="${output_dir}/snake-direct.png"
 if run_sixel2png -D <"${images_dir}/snake.six" \
-        >"${direct_png}" 2>>"${log_file}"; then
+        >"${direct_png}"; then
     cli_core_pass 1 "produces direct RGBA output"
 else
     cli_core_fail 1 "direct RGBA conversion failed"

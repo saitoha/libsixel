@@ -7,9 +7,6 @@ if [ "${VERBOSE:-0}" -eq 1 ]; then
     set -x
 fi
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
 
 
 lsqa_common_path="${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
@@ -21,17 +18,13 @@ export LSQA_HELPER_DIR
 status=0
 
 
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-mkdir -p "${artifact_dir}"
 
 printf '1..1\n'
 set -v
 
 image_path="${top_srcdir}/tests/data/corrupted/metadata_noise.jpg"
 if lsqa_expect_low_quality_or_fail "${image_path}" \
-    "metadata_noise.jpg" "${artifact_dir}"; then
+    "metadata_noise.jpg" "${ARTIFACT_LOCAL_DIR}"; then
     pass 1 "metadata noise rejected or scored low"
 else
     fail 1 "metadata noise unexpectedly accepted"

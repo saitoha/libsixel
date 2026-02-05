@@ -3,16 +3,8 @@
 
 set -eux
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/completion.log"
-output_file="${artifact_dir}/completion.sh"
+output_file="${ARTIFACT_LOCAL_DIR}/completion.sh"
 
-mkdir -p "${artifact_dir}"
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -33,7 +25,7 @@ set -v
 IMG2SIXEL_COMPLETION_DIR="${completion_dir}"
 export IMG2SIXEL_COMPLETION_DIR
 
-if run_img2sixel -1 bash >"${output_file}" 2>>"${log_file}"; then
+if run_img2sixel -1 bash >"${output_file}"; then
     if grep -F '# bash completion for img2sixel' \
             "${output_file}" >/dev/null 2>&1; then
         pass 1 "bash completion output available"

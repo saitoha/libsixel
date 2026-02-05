@@ -5,7 +5,6 @@ set -eux
 conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
 . "${conversion_common_path}"
 
-test_name=$(basename "$0")
 setup_conversion_env "${test_name}"
 
 status=0
@@ -22,8 +21,8 @@ stage2="${output_dir}/two-pass-stage2.sixel"
 require_file "${snake_png}"
 
 if run_img2sixel -w204 -h204 "${snake_png}" \
-        >"${stage1}" 2>>"${log_file}" && \
-        run_img2sixel <"${stage1}" >"${stage2}" 2>>"${log_file}"; then
+        >"${stage1}" && \
+        run_img2sixel <"${stage1}" >"${stage2}"; then
     pass 1 "two-pass Sixel conversion succeeds"
 else
     fail 1 "two-pass Sixel conversion fails"

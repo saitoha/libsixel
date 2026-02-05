@@ -3,17 +3,9 @@
 
 set -eux
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/resize.log"
-out_file="${artifact_dir}/resize.six"
-ppm_file="${artifact_dir}/resize.ppm"
+out_file="${ARTIFACT_LOCAL_DIR}/resize.six"
+ppm_file="${ARTIFACT_LOCAL_DIR}/resize.ppm"
 
-mkdir -p "${artifact_dir}"
 
 export SIXEL_THREADS=1
 
@@ -37,7 +29,7 @@ PPM
 
 if run_img2sixel -v -W oklab -w 99% \
         -o "${out_file}" "${ppm_file}" \
-        >"${artifact_dir}/stdout.log" 2>"${log_file}"; then
+        >"${ARTIFACT_LOCAL_DIR}/stdout.log"; then
     printf 'ok 1 - img2sixel completed with verbose dump\n'
 else
     printf 'not ok 1 - img2sixel failed with verbose dump\n'

@@ -16,7 +16,7 @@ echo "1..1"
 set -v
 
 if run_sixel2png -i "${images_dir}/snake.six" \
-        -o "${output_dir}/snake-file.png" 2>>"${log_file}"; then
+        -o "${output_dir}/snake-file.png"; then
     cli_core_pass 1 "converts snake with file arguments"
 else
     cli_core_fail 1 "snake file conversion failed"

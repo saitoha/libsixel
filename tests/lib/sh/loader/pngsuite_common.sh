@@ -44,12 +44,10 @@ convert_pngsuite_group() {
     output_dir=$4
     log_file=$5
 
-    mkdir -p "${output_dir}"
-
     for rel in ${files}; do
-        base=$(basename "${rel}")
+        base=${rel##*/}
         if run_img2sixel ${mode} "${images_dir}/pngsuite/${rel}" \
-                >"${output_dir}/${base}.sixel" 2>>"${log_file}"; then
+                >"${output_dir}/${base}.sixel"; then
             :
         else
             return 1

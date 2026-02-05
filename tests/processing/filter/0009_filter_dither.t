@@ -21,14 +21,12 @@ if [ ! -x "${BIN}" ] && [ -z "${SIXEL_RUNTIME-}" ]; then
     exit 1
 fi
 
-test_name=$(basename "$0" .t)
-log_file=$(mktemp "${TMPDIR:-/tmp}/${test_name}.XXXXXX")
-trap 'rm -f "${log_file}"' EXIT
 
 set +e
-${SIXEL_RUNTIME-} "${BIN}" "filter/${test_name}" >"${log_file}" 2>&1
+filter_output=$(${SIXEL_RUNTIME-} "${BIN}" "filter/${test_name}" 2>&1)
 rc=$?
 set -e
+printf '%s' "${filter_output}" >&2
 
 echo "1..1"
 set -v
@@ -39,6 +37,5 @@ elif [ "${rc}" -eq 77 ]; then
     echo "ok 1 - ${test_name} # SKIP unavailable"
 else
     echo "not ok 1 - ${test_name}"
-    sed 's/^/# /' "${log_file}"
     exit 1
 fi

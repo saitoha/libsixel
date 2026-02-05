@@ -3,18 +3,10 @@
 
 set -eux
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/regression.log"
-output_dir="${artifact_dir}/outputs"
+output_dir="${ARTIFACT_LOCAL_DIR}"
 
-tmp_dir="${artifact_dir}/tmp"
+tmp_dir="${ARTIFACT_LOCAL_DIR}"
 
-mkdir -p "${output_dir}" "${tmp_dir}"
 
 script_dir=${test_dir}
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -26,7 +18,7 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 
 check_exit() {
-    if run_img2sixel "$@" 2>>"${log_file}"; then
+    if run_img2sixel "$@"; then
         rc=0
     else
         rc=$?

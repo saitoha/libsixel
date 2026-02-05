@@ -5,16 +5,8 @@ set -eux
 
 export SIXEL_THREADS=4
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/pipeline.log"
-ppm_small="${artifact_dir}/grid_small.ppm"
+ppm_small="${ARTIFACT_LOCAL_DIR}/grid_small.ppm"
 
-mkdir -p "${artifact_dir}"
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -26,10 +18,12 @@ echo "1..1"
 set -v
 
 create_small_ppm "${ppm_small}"
-run_img2sixel -v -o "${artifact_dir}/small.six" "${ppm_small}" \
-    >"${artifact_dir}/small.out" 2>"${log_file}" || true
+pipeline_log=$(run_img2sixel -v -o "${ARTIFACT_LOCAL_DIR}/small.six" \
+    "${ppm_small}" 2>&1 || true)
+printf '%s' "${pipeline_log}" >&2
 
-threads_line=$(grep "band_height=" "${log_file}" | head -n 1 || true)
+threads_line=$(printf '%s' "${pipeline_log}" | grep "band_height=" \
+    | head -n 1 || true)
 case "${threads_line}" in
 "    band_height=12 overlap=0 threads: dither=1 encode=2")
     printf 'ok 1 - baseline thread split (palette reserve)\n'

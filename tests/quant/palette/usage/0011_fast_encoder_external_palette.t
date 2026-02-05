@@ -5,7 +5,6 @@ set -eux
 conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
 . "${conversion_common_path}"
 
-test_name=$(basename "$0")
 setup_conversion_env "${test_name}"
 
 status=0
@@ -22,7 +21,7 @@ require_file "${snake_ppm}"
 require_file "${map8_palette}"
 
 if run_img2sixel -8 -m "${map8_palette}" -Esize "${snake_ppm}" \
-        -o/dev/null 2>>"${log_file}"; then
+        -o/dev/null; then
     pass 1 "fast encoder with palette succeeds"
 else
     fail 1 "fast encoder with palette fails"

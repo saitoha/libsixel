@@ -5,7 +5,6 @@ set -eux
 conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
 . "${conversion_common_path}"
 
-test_name=$(basename "$0")
 setup_conversion_env "${test_name}"
 
 status=0
@@ -25,7 +24,7 @@ require_file "${snake_tiff}"
 target_sixel="${tmp_dir}/snake-tiff.sixel"
 
 if run_img2sixel -Llibtiff! -p200 -8 -scenter -Brgb:0/f/A -h100 -qfull -rhan -dstucki \
-    -thls "${snake_tiff}" -o/dev/null 2>>"${log_file}"; then
+    -thls "${snake_tiff}" -o/dev/null; then
     pass 1 "TIFF conversion with palette controls succeeded"
 else
     fail 1 "TIFF conversion with palette controls failed"

@@ -1,20 +1,25 @@
 sh = find_program('sh')
 artifact_root = meson.current_build_dir() / '_artifacts'
-env = environment()
-env.set('ARTIFACT_ROOT', artifact_root)
-env.set('TOP_SRCDIR', meson.project_source_root())
-env.set('TOP_BUILDDIR', meson.project_build_root())
-env.set('MESON_SOURCE_ROOT', meson.project_source_root())
-env.set('MESON_BUILD_ROOT', meson.project_build_root())
 cross_compiling = 'no'
 if meson.is_cross_build()
   cross_compiling = 'yes'
 endif
-env.set('CROSS_COMPILING', cross_compiling)
-# Ensure Python TAP tests can locate the freshly built shared library when
-# Meson is invoked without a prior `meson compile`. The binding smoke test
-# relies on LIBSIXEL_LIBDIR to point at the build artifact directory.
-env.set('LIBSIXEL_LIBDIR', meson.project_build_root() / 'src')
+base_env_settings = [
+  ['ARTIFACT_ROOT', artifact_root],
+  ['TOP_SRCDIR', meson.project_source_root()],
+  ['TOP_BUILDDIR', meson.project_build_root()],
+  ['MESON_SOURCE_ROOT', meson.project_source_root()],
+  ['MESON_BUILD_ROOT', meson.project_build_root()],
+  ['CROSS_COMPILING', cross_compiling],
+  # Ensure Python TAP tests can locate the freshly built shared library when
+  # Meson is invoked without a prior `meson compile`. The binding smoke test
+  # relies on LIBSIXEL_LIBDIR to point at the build artifact directory.
+  ['LIBSIXEL_LIBDIR', meson.project_build_root() / 'src'],
+]
+env = environment()
+foreach setting : base_env_settings
+  env.set(setting[0], setting[1])
+endforeach
 
 test_runner_sources = [
   'test_runner.c',
@@ -71,9 +76,10 @@ test_runner_exe = executable('test_runner', test_runner_sources,
            '-DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS'],
   install: false)
 
-test_deps = [test_runner_exe, lsqa_bin]
+test_deps = [test_runner_exe, lsqa_bin] + img2sixel_deps + sixel2png_deps
 
-if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
+is_windows = host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
+if is_windows
   # Ensure Windows-style runners (including MSYS2) locate the freshly built
   # DLLs when executing the converter TAP suite. Without these PATH entries
   # the tests fail with "cannot open shared object file" errors because
@@ -513,11 +519,46 @@ tests = [
 # Match autotools TAP timeout to keep CI behavior consistent (seconds per file).
 # Ensure Meson builds the TAP helper binary before running shell-based tests.
 foreach t : tests
+  parts = t.split('/')
+  test_base = parts[parts.length() - 1]
+  test_category = ''
+  if parts.length() > 1
+    foreach idx : range(0, parts.length() - 1)
+      if test_category == ''
+        test_category = parts[idx]
+      else
+        test_category = test_category + '/' + parts[idx]
+      endif
+    endforeach
+  endif
+  if test_category == ''
+    test_category = '.'
+  endif
+  test_name = test_base.replace('.t', '')
+  test_dir = meson.current_source_dir()
+  if test_category != '.'
+    test_dir = test_dir / test_category
+  endif
+  test_artifact_dir = artifact_root / test_category / test_base
+  test_env = environment()
+  foreach setting : base_env_settings
+    test_env.set(setting[0], setting[1])
+  endforeach
+  if is_windows
+    foreach dll_path : dll_paths
+      test_env.prepend('PATH', dll_path)
+    endforeach
+  endif
+  test_env.set('test_name', test_name)
+  test_env.set('test_dir', test_dir)
+  test_env.set('category_name', test_category)
+  test_env.set('ARTIFACT_LOCAL_DIR', test_artifact_dir)
   test(t, sh,
-    args: [meson.current_source_dir() / t],
+    args: ['-c', 'mkdir -p "$ARTIFACT_LOCAL_DIR" && exec "$@"',
+           'sh', meson.current_source_dir() / t],
     depends: test_deps,
     protocol: 'tap',
-    env: env,
+    env: test_env,
     timeout: 90,
     suite: ['tap'])
 endforeach

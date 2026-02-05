@@ -16,8 +16,8 @@ echo "1..1"
 set -v
 
 label="distance3"
-err_file="${artifact_dir}/${label}.err"
-out_file="${artifact_dir}/${label}.sixel"
+err_file="${ARTIFACT_LOCAL_DIR}/${label}.err"
+out_file="${ARTIFACT_LOCAL_DIR}/${label}.sixel"
 
 rm -f "${err_file}" "${out_file}"
 
@@ -32,8 +32,8 @@ if grep -F 'specified desampling method is not supported.' "${err_file}" \
     cli_core_pass 1 "distance-3 typo reports diagnostic"
 else
     cli_core_fail 1 "missing diagnostic for distance-3 typo"
-    printf '%s\n' '--- stderr ---' >>"${log_file}"
-    cat "${err_file}" >>"${log_file}" 2>/dev/null || :
+    printf '%s\n' '--- stderr ---' >&2
+    cat "${err_file}" >&2 2>/dev/null || :
 fi
 
 exit "${status}"

@@ -16,7 +16,7 @@ require_file "${image_path}"
 echo "1..1"
 set -v
 
-outfile_err="${artifact_dir}/outfile-option-name.err"
+outfile_err="${ARTIFACT_LOCAL_DIR}/outfile-option-name.err"
 rm -f "${outfile_err}" "${tmp_dir}/-p"
 
 if (cd "${tmp_dir}" && run_img2sixel -o -p "${image_path}" >/dev/null 2>"${outfile_err}"); then
@@ -27,8 +27,8 @@ if (cd "${tmp_dir}" && run_img2sixel -o -p "${image_path}" >/dev/null 2>"${outfi
     fi
 else
     cli_core_fail 1 "outfile named like option rejected"
-    printf '%s\n' '--- stderr ---' >>"${log_file}"
-    cat "${outfile_err}" >>"${log_file}" 2>/dev/null || :
+    printf '%s\n' '--- stderr ---' >&2
+    cat "${outfile_err}" >&2 2>/dev/null || :
 fi
 
 rm -f "${tmp_dir}/-p"

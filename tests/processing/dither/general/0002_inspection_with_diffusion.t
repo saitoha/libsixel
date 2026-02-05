@@ -5,7 +5,6 @@ set -eux
 conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
 . "${conversion_common_path}"
 
-test_name=$(basename "$0")
 setup_conversion_env "${test_name}"
 
 status=0
@@ -21,7 +20,7 @@ require_file "${snake_ppm}"
 target_txt="${output_dir}/inspection.txt"
 
 if run_img2sixel -I -dstucki -thls -B"#a0B030" "${snake_ppm}" \
-        >"${target_txt}" 2>>"${log_file}"; then
+        >"${target_txt}"; then
     pass 1 "inspection with diffusion and background works"
 else
     fail 1 "inspection with diffusion failed"

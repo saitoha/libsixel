@@ -15,7 +15,6 @@ LSQA_HELPER_DIR=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
 export LSQA_HELPER_DIR
 . "${lsqa_common_path}"
 
-test_name=$(basename "$0")
 setup_conversion_env "${test_name}"
 
 status=0
@@ -26,11 +25,11 @@ echo "1..1"
 set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
-output_sixel="${artifact_dir}/cluster-din99d-work-cielab.six"
+output_sixel="${ARTIFACT_LOCAL_DIR}/cluster-din99d-work-cielab.six"
 
 require_file "${input_image}"
 
-if run_img2sixel -t rgb -X din99d -W cielab -o "${output_sixel}"     "${input_image}"     2>>"${log_file}"; then
+if run_img2sixel -t rgb -X din99d -W cielab -o "${output_sixel}"     "${input_image}"; then
     :
 else
     fail 1 "img2sixel clustering din99d working cielab conversion failed"

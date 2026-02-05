@@ -9,7 +9,6 @@ script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 WHEEL_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/packaging"
 . "${WHEEL_HELPER_DIR}/python_wheel_common.sh"
 
-test_name=$(basename "$0")
 setup_wheel_paths "${test_name}"
 require_python3
 require_venv_support

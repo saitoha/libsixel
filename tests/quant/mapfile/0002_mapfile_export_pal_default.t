@@ -7,7 +7,6 @@ script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 MAPFILE_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/mapfile"
 . "${MAPFILE_HELPER_DIR}/mapfile_common.sh"
 
-test_name=$(basename "$0")
 setup_mapfile_dirs "${test_name}"
 load_mapfile_prereqs "${script_dir}"
 
@@ -16,7 +15,7 @@ set -v
 
 pal_default="${tmp_dir}/palette-default.pal"
 if run_img2sixel -M "${pal_default}" -o "${tmp_dir}/pal-default.six" \
-        "${snake_png}" 2>>"${log_file}"; then
+        "${snake_png}"; then
     if head -n 1 "${pal_default}" | grep -q "JASC-PAL"; then
         pass "PAL export defaults to JASC header"
     else

@@ -12,19 +12,10 @@ fi
 . "${wheel_helper_dir}/../common/tap.sh"
 
 setup_wheel_paths() {
-    test_name=$1
-    test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-    category_name=$(basename "$(dirname "${test_dir}")")
-    artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-    artifact_test_dir=$(dirname "$0")
-    artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-    log_file="${artifact_dir}/wheel.log"
-    tmp_dir="${artifact_dir}/tmp"
-    run_venv="${tmp_dir}/venv"
+    run_venv="${ARTIFACT_LOCAL_DIR}/venv"
     run_python="${run_venv}/bin/python"
 
-    export artifact_dir log_file tmp_dir run_venv run_python
-    mkdir -p "${artifact_dir}" "${tmp_dir}"
+    export ARTIFACT_LOCAL_DIR run_venv run_python
 }
 
 require_python3() {
@@ -36,7 +27,7 @@ require_python3() {
 }
 
 require_venv_support() {
-    if "${python_bin}" - <<'PY' >>"${log_file}" 2>&1; then
+    if "${python_bin}" - <<'PY'; then
 import importlib.util
 missing = [m for m in ("venv", "ensurepip") if importlib.util.find_spec(m) is None]
 if missing:
@@ -64,13 +55,12 @@ locate_wheel() {
 }
 
 create_virtualenv() {
-    "${python_bin}" -m venv "$1" >>"${log_file}" 2>&1
+    "${python_bin}" -m venv "$1"
 }
 
 install_wheel() {
     venv_path=$1
-    "${venv_path}/bin/python" -m pip install --no-deps "${wheel_path}" \
-        >>"${log_file}" 2>&1
+    "${venv_path}/bin/python" -m pip install --no-deps "${wheel_path}"
 }
 
 write_roundtrip_script() {

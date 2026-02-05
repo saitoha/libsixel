@@ -14,7 +14,6 @@ LSQA_HELPER_DIR=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
 . "${conversion_common_path}"
 . "${lsqa_common_path}"
 
-test_name=$(basename "$0")
 setup_conversion_env "${test_name}"
 
 status=0
@@ -33,10 +32,10 @@ output_limited="${output_dir}/${case_id}-limited.six"
 
 require_file "${input_image}"
 
-run_img2sixel -=1 -o "${output_plain}" "${input_image}" 2>>"${log_file}" || {
+run_img2sixel -=1 -o "${output_plain}" "${input_image}" || {
     fail 1 "img2sixel failed"
 }
-run_img2sixel -=1 --gri-limit -o "${output_limited}" "${input_image}" 2>>"${log_file}" || {
+run_img2sixel -=1 --gri-limit -o "${output_limited}" "${input_image}" || {
     fail 1 "img2sixel failed"
 }
 lsqa_err=$(

@@ -13,18 +13,8 @@ fi
 # Initialize directories for artifacts and logs. The caller must pass the
 # current test name to keep outputs isolated between TAP files.
 setup_mapfile_dirs() {
-    test_name=$1
-    test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-    category_name=$(basename "$(dirname "${test_dir}")")
-
-    artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-    artifact_test_dir=$(dirname "$0")
-    artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-    log_file="${artifact_dir}/mapfile.log"
-    output_dir="${artifact_dir}/outputs"
-    tmp_dir="${artifact_dir}/tmp"
-
-    mkdir -p "${output_dir}" "${tmp_dir}"
+    output_dir="${ARTIFACT_LOCAL_DIR}"
+    tmp_dir="${ARTIFACT_LOCAL_DIR}"
 }
 
 # Load shared converter helpers and ensure the img2sixel binary is available

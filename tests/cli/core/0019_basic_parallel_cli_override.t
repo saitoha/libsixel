@@ -25,10 +25,10 @@ parallel_direct_4="${output_dir}/parallel-direct-4.png"
 parallel_direct_cli="${output_dir}/parallel-direct-cli.png"
 SIXEL_THREADS=4 run_sixel2png -D \
     <"${images_dir}/map64.six" \
-    >"${parallel_direct_4}" 2>>"${log_file}"
+    >"${parallel_direct_4}"
 SIXEL_THREADS=1 run_sixel2png -D \
     <"${images_dir}/map64.six" \
-    >"${parallel_direct_cli}" 2>>"${log_file}"
+    >"${parallel_direct_cli}"
 
 if cli_core_files_identical "${parallel_direct_cli}" "${parallel_direct_4}"; then
     cli_core_pass 1 "CLI thread override matches env"

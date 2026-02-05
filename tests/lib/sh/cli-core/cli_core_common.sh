@@ -5,17 +5,8 @@
 cli_core_setup() {
     log_basename=$1
 
-    test_name=$(basename "$0")
-    test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-    category_name=$(basename "$(dirname "${test_dir}")")
-    artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-    artifact_test_dir=$(dirname "$0")
-    artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-    log_file="${artifact_dir}/${log_basename}.log"
-    output_dir="${artifact_dir}/outputs"
-    tmp_dir="${artifact_dir}/tmp"
-
-    mkdir -p "${output_dir}" "${tmp_dir}"
+    output_dir="${ARTIFACT_LOCAL_DIR}"
+    tmp_dir="${ARTIFACT_LOCAL_DIR}"
 
     cli_core_common_path=${cli_core_common_path:-"$0"}
     helper_dir=${CLI_CORE_HELPER_DIR-}
@@ -52,7 +43,7 @@ cli_core_expect_img2sixel_rejection() {
     shift 2
 
     output_file=$(make_temp_file "${tmp_dir}" "capture.invalid")
-    if run_img2sixel "$@" </dev/null >"${output_file}" 2>>"${log_file}"; then
+    if run_img2sixel "$@" </dev/null >"${output_file}"; then
         cmd_status=0
     else
         cmd_status=$?

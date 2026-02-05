@@ -15,11 +15,10 @@ require_file "${images_dir}/snake.six"
 echo "1..1"
 set -v
 
-prefixed_dir="${output_dir}/s2p-prefix"
-rm -rf "${prefixed_dir}"
-mkdir -p "${prefixed_dir}"
+prefixed_dir="${output_dir}"
+rm -f "${prefixed_dir}/out.png"
 if run_sixel2png -o "png:${prefixed_dir}/out.png" \
-        <"${images_dir}/snake.six" 2>>"${log_file}"; then
+        <"${images_dir}/snake.six"; then
     if [ -s "${prefixed_dir}/out.png" ]; then
         cli_core_pass 1 "prefixed output trims scheme"
     else

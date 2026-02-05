@@ -3,18 +3,10 @@
 
 set -eux
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/palette-fallback.log"
-output_dir="${artifact_dir}/outputs"
+output_dir="${ARTIFACT_LOCAL_DIR}"
 
-tmp_dir="${artifact_dir}/tmp"
+tmp_dir="${ARTIFACT_LOCAL_DIR}"
 
-mkdir -p "${output_dir}" "${tmp_dir}"
 
 script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -30,7 +22,7 @@ require_file "${snake_ascii_pbm}"
 SIXEL_PALETTE_DISABLE_TABLES=1 \
     run_img2sixel "${snake_ascii_pbm}" \
     -o "${output_dir}/snake-fallback.sixel" \
-    >"${log_file}" 2>&1 || true
+ || true
 
 if [ -s "${output_dir}/snake-fallback.sixel" ]; then
     printf 'ok 1 - fallback output produced data\n'

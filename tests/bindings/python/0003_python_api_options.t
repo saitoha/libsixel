@@ -11,21 +11,8 @@ script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
 PYTHON_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/python"
 . "${PYTHON_HELPER_DIR}/common.sh"
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-log_file="${artifact_dir}/python.log"
-tmp_dir="${artifact_dir}/tmp"
-
-mkdir -p "${artifact_dir}" "${tmp_dir}"
-rm -f "${log_file}"
-
-tap_log_file="${log_file}"
-
-python_prepare "${log_file}" "${tmp_dir}"
+tmp_dir="${ARTIFACT_LOCAL_DIR}"
+python_prepare "${tmp_dir}"
 set -v
 
 verify_script="${tmp_dir}/verify-options.py"
@@ -287,30 +274,34 @@ run_case() {
 
     working_dir="${tmp_dir}/${scenario}"
 
-    mkdir -p "${working_dir}"
-
     if [ "${use_wheel}" -eq 1 ]; then
-        if env ${python_wheel_loader_env} \
+        python_output=$(env ${python_wheel_loader_env} \
            PYTHONPATH="${python_wheel_trace_pythonpath}" \
            LIBSIXEL_LIBDIR="${python_lib_dir}" \
            "${run_python}" "${verify_script}" \
            "${scenario}" "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
-           "${working_dir}" >>"${log_file}" 2>&1; then
+           "${working_dir}" 2>&1)
+        python_status=$?
+        printf '%s' "${python_output}" >&2
+        if [ "${python_status}" -eq 0 ]; then
             tap_pass ${case_id} "${description} via wheel"
         else
-            python_skip_on_load_error $? "${log_file}"
+            python_skip_on_load_error "${python_status}" "${python_output}"
             tap_fail ${case_id} "${description} via wheel failed"
         fi
     else
-        if env ${python_in_tree_loader_env} \
+        python_output=$(env ${python_in_tree_loader_env} \
            PYTHONPATH="${python_in_tree_trace_pythonpath}" \
            LIBSIXEL_LIBDIR="${python_lib_dir}" \
            "${run_python}" "${verify_script}" \
-           "${scenario}" "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" "${working_dir}" \
-           >>"${log_file}" 2>&1; then
+           "${scenario}" "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
+           "${working_dir}" 2>&1)
+        python_status=$?
+        printf '%s' "${python_output}" >&2
+        if [ "${python_status}" -eq 0 ]; then
             tap_pass ${case_id} "${description} via in-tree modules"
         else
-            python_skip_on_load_error $? "${log_file}"
+            python_skip_on_load_error "${python_status}" "${python_output}"
             tap_fail ${case_id} "${description} via in-tree modules failed"
         fi
     fi

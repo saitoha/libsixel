@@ -7,9 +7,6 @@ if [ "${VERBOSE:-0}" -eq 1 ]; then
     set -x
 fi
 
-test_name=$(basename "$0")
-test_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
-category_name=$(basename "$(dirname "${test_dir}")")
 
 lsqa_common_path="${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
 LSQA_HELPER_DIR=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
@@ -26,16 +23,12 @@ if ! feature_defined_in_config "HAVE_LIBTIFF"; then
     skip_all "libtiff support is disabled in this build"
 fi
 
-artifact_root=${ARTIFACT_ROOT:-"$(pwd)/_artifacts"}
-artifact_test_dir=$(dirname "$0")
-artifact_dir="${artifact_root}/${artifact_test_dir}/${test_name}"
-mkdir -p "${artifact_dir}"
 
 printf '1..1\n'
 set -v
 
 image_path="${top_srcdir}/tests/data/inputs/formats/rgba.tiff"
-output_sixel="${artifact_dir}/rgba.six"
+output_sixel="${ARTIFACT_LOCAL_DIR}/rgba.six"
 if run_img2sixel -Llibtiff! "${image_path}" >"${output_sixel}"; then
     :
 else

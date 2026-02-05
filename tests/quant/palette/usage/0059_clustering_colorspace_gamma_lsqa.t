@@ -15,7 +15,6 @@ LSQA_HELPER_DIR=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
 export LSQA_HELPER_DIR
 . "${lsqa_common_path}"
 
-test_name=$(basename "$0")
 setup_conversion_env "${test_name}"
 
 status=0
@@ -27,11 +26,11 @@ set -v
 
 input_image="${images_dir}/snake.png"
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
-output_sixel="${artifact_dir}/cluster-gamma.six"
+output_sixel="${ARTIFACT_LOCAL_DIR}/cluster-gamma.six"
 
 require_file "${input_image}"
 
-if run_img2sixel -t rgb -X gamma -o "${output_sixel}"     "${input_image}"     2>>"${log_file}"; then
+if run_img2sixel -t rgb -X gamma -o "${output_sixel}"     "${input_image}"; then
     :
 else
     fail 1 "img2sixel clustering gamma conversion failed"
