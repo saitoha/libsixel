@@ -756,6 +756,30 @@ AC_CACHE_CHECK(
 SIXEL_TSAN_BUILD="$ac_cv_sixel_tsan"
 AC_SUBST([SIXEL_TSAN_BUILD])
 
+AC_CACHE_CHECK(
+  [whether MemorySanitizer instrumentation is enabled],
+  [ac_cv_sixel_msan],
+  [
+   ac_save_CFLAGS="$CFLAGS"
+   CFLAGS="$CFLAGS -Werror"
+   AC_COMPILE_IFELSE(
+     [AC_LANG_SOURCE([[
+       #if defined(__has_feature)
+       #if !__has_feature(memory_sanitizer)
+       #error "MSan is not enabled"
+       #endif
+       #elif !defined(__SANITIZE_MEMORY__)
+       #error "MSan is not enabled"
+       #endif
+       int main(void) { return 0; }
+     ]])],
+     [ac_cv_sixel_msan=yes],
+     [ac_cv_sixel_msan=no])
+   CFLAGS="$ac_save_CFLAGS"
+  ])
+SIXEL_MSAN_BUILD="$ac_cv_sixel_msan"
+AC_SUBST([SIXEL_MSAN_BUILD])
+
 # Options
 AC_ARG_ENABLE([img2sixel],
               [AS_HELP_STRING([--disable-img2sixel],

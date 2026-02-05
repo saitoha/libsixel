@@ -4,6 +4,17 @@ cross_compiling = 'no'
 if meson.is_cross_build()
   cross_compiling = 'yes'
 endif
+
+sanitize_opt = get_option('b_sanitize')
+sixel_tsan_build = 'no'
+sixel_msan_build = 'no'
+if sanitize_opt.contains('thread')
+  sixel_tsan_build = 'yes'
+endif
+if sanitize_opt.contains('memory')
+  sixel_msan_build = 'yes'
+endif
+
 base_env_settings = [
   ['ARTIFACT_ROOT', artifact_root],
   ['TOP_SRCDIR', meson.project_source_root()],
@@ -11,6 +22,8 @@ base_env_settings = [
   ['MESON_SOURCE_ROOT', meson.project_source_root()],
   ['MESON_BUILD_ROOT', meson.project_build_root()],
   ['CROSS_COMPILING', cross_compiling],
+  ['SIXEL_TSAN_BUILD', sixel_tsan_build],
+  ['SIXEL_MSAN_BUILD', sixel_msan_build],
   # Ensure Python TAP tests can locate the freshly built shared library when
   # Meson is invoked without a prior `meson compile`. The binding smoke test
   # relies on LIBSIXEL_LIBDIR to point at the build artifact directory.
