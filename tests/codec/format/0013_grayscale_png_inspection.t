@@ -5,8 +5,6 @@ set -eux
 conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
 . "${conversion_common_path}"
 
-setup_conversion_env "${test_name}"
-
 status=0
 
 ensure_img2sixel_available
@@ -16,8 +14,6 @@ set -v
 
 snake_gray_png="${images_dir}/snake-grayscale.png"
 target_txt="${ARTIFACT_LOCAL_DIR}/gray-png-inspection.txt"
-
-
 
 if run_img2sixel -I "${snake_gray_png}" >"${target_txt}"; then
     pass 1 "grayscale PNG inspection succeeds"

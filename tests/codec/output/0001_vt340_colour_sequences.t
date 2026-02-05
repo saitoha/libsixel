@@ -5,8 +5,6 @@ set -eux
 conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
 . "${conversion_common_path}"
 
-setup_conversion_env "${test_name}"
-
 status=0
 
 ensure_img2sixel_available
@@ -16,8 +14,6 @@ set -v
 
 snake_ppm="${images_dir}/snake.ppm"
 target_sixel="${ARTIFACT_LOCAL_DIR}/vt340-colour.sixel"
-
-
 
 if run_img2sixel -bvt340color "${snake_ppm}" \
         >"${target_sixel}"; then

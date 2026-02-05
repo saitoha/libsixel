@@ -19,10 +19,6 @@ fi
 . "${conversion_helper_dir}/../common/tap.sh"
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-setup_conversion_env() {
-:
-}
-
 ensure_img2sixel_available() {
     ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 }
