@@ -14,11 +14,9 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-snake_jpg="${images_dir}/snake.jpg"
-target_sixel="${output_dir}/monochrome-frame.sixel"
-trailer_txt="${output_dir}/monochrome-frame-trailer.txt"
-
-
+snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
+target_sixel="${ARTIFACT_LOCAL_DIR}/monochrome-frame.sixel"
+trailer_txt="${ARTIFACT_LOCAL_DIR}/monochrome-frame-trailer.txt"
 
 if run_img2sixel -p 1 -h100 -n1 "${snake_jpg}" \
         >"${target_sixel}"; then

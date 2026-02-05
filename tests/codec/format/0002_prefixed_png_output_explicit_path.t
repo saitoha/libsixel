@@ -14,10 +14,8 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-snake_jpg="${images_dir}/snake.jpg"
-target_png="${tmp_dir}/snake-explicit.png"
-
-
+snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
+target_png="${ARTIFACT_LOCAL_DIR}/snake-explicit.png"
 
 if run_img2sixel -o "png:${target_png}" "${snake_jpg}"; then
     if [ -s "${target_png}" ]; then

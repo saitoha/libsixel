@@ -10,8 +10,6 @@ cli_core_setup "img2sixel-option-matching"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-
-
 echo "1..1"
 set -v
 
@@ -21,8 +19,7 @@ out_file="${ARTIFACT_LOCAL_DIR}/${label}.sixel"
 
 rm -f "${err_file}" "${out_file}"
 
-if run_img2sixel -d burkez "${images_dir}/snake.png" \
-        >"${out_file}" 2>"${err_file}"; then
+if run_img2sixel -d burkez "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" >"${out_file}" 2>"${err_file}"; then
     if grep -F 'corrected --diffusion value "burkez" -> "burkes".' \
             "${err_file}" >/dev/null 2>&1; then
         cli_core_pass 1 "distance-1 typo is corrected"

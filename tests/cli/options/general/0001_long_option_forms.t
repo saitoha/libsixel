@@ -14,10 +14,8 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-snake_jpg="${images_dir}/snake.jpg"
-longopt_sixel="${tmp_dir}/snake-longopt.sixel"
-
-
+snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
+longopt_sixel="${ARTIFACT_LOCAL_DIR}/snake-longopt.sixel"
 
 if run_img2sixel --height=100 --diffusion=atkinson \
     --outfile="${longopt_sixel}" <"${snake_jpg}"; then

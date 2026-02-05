@@ -21,7 +21,7 @@ out_file="${ARTIFACT_LOCAL_DIR}/${label}.sixel"
 
 rm -f "${err_file}" "${out_file}"
 
-if run_img2sixel -r zzzzz "${images_dir}/snake.png" \
+if run_img2sixel -r zzzzz "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
         >"${out_file}" 2>"${err_file}"; then
     cli_core_fail 1 "distance-3 typo unexpectedly succeeded"
     exit "${status}"
