@@ -3,12 +3,10 @@
 
 set -eux
 
-script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 MAPFILE_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/mapfile"
 . "${MAPFILE_HELPER_DIR}/mapfile_common.sh"
 
-setup_mapfile_dirs "${test_name}"
-load_mapfile_prereqs "${script_dir}"
+load_mapfile_prereqs
 
 echo "1..1"
 set -v
