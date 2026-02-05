@@ -14,10 +14,8 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-snake_jpg="${images_dir}/snake.jpg"
-target_sixel="${output_dir}/lanczos2-no-diffusion.sixel"
-
-
+snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
+target_sixel="${ARTIFACT_LOCAL_DIR}/lanczos2-no-diffusion.sixel"
 
 if run_img2sixel -v -p 8 -h200 -fnorm -rlanczos2 -dnone \
         "${snake_jpg}" >"${target_sixel}"; then

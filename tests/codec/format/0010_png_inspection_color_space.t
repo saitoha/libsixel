@@ -14,13 +14,10 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-snake_png="${images_dir}/snake.png"
-target_txt="${output_dir}/png-inspection.txt"
+snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+target_txt="${ARTIFACT_LOCAL_DIR}/png-inspection.txt"
 
-
-
-if run_img2sixel -I -C10 -djajuni "${snake_png}" \
-        >"${target_txt}"; then
+if run_img2sixel -I -C10 -djajuni "${snake_png}" >"${target_txt}"; then
     pass 1 "PNG inspection sets colour space"
 else
     fail 1 "PNG inspection colour space failed"

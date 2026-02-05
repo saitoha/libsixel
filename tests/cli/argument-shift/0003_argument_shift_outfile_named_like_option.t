@@ -3,33 +3,31 @@
 
 set -eux
 
-CLI_CORE_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/cli-core"
-. "${CLI_CORE_HELPER_DIR}/cli_core_common.sh"
-cli_core_setup "img2sixel-argument-shift"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
-
-image_path="${top_srcdir}/tests/data/inputs/snake_64.jpg"
-
 
 echo "1..1"
 set -v
 
+image_path="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 outfile_err="${ARTIFACT_LOCAL_DIR}/outfile-option-name.err"
-rm -f "${outfile_err}" "${tmp_dir}/-p"
+rm -f "${outfile_err}" "${ARTIFACT_LOCAL_DIR}/-p"
 
-if (cd "${tmp_dir}" && run_img2sixel -o -p "${image_path}" >/dev/null 2>"${outfile_err}"); then
-    if [ -s "${tmp_dir}/-p" ]; then
-        cli_core_pass 1 "outfile named like option is supported"
-    else
-        cli_core_fail 1 "outfile named like option missing"
+cd "${ARTIFACT_LOCAL_DIR}" && {
+    if ! run_img2sixel -o -p "${image_path}" >/dev/null 2>"${outfile_err}"; then
+        printf 'not ok 1 %s\n' "outfile named like option rejected"
+        printf '%s\n' '--- stderr ---' >&2
+        cat "${outfile_err}" >&2 2>/dev/null || :
+        exit 0
     fi
-else
-    cli_core_fail 1 "outfile named like option rejected"
-    printf '%s\n' '--- stderr ---' >&2
-    cat "${outfile_err}" >&2 2>/dev/null || :
+}
+
+if test ! -s "${ARTIFACT_LOCAL_DIR}/-p"; then
+    printf 'not ok 1 %s\n' "outfile named like option missing"
+    exit 0
 fi
 
-rm -f "${tmp_dir}/-p"
+printf 'ok 1 %s\n' "outfile named like option is supported"
 
-exit "${status}"
+exit 0

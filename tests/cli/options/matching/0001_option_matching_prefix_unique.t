@@ -10,8 +10,6 @@ cli_core_setup "img2sixel-option-matching"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-
-
 label="prefix_unique"
 err_file="${ARTIFACT_LOCAL_DIR}/${label}.err"
 out_file="${ARTIFACT_LOCAL_DIR}/${label}.sixel"
@@ -26,7 +24,7 @@ cleanup_files "${err_file}" "${out_file}" "${filtered_err}"
 echo "1..1"
 set -v
 
-if run_img2sixel -y ser "${images_dir}/snake.png" >"${out_file}" 2>"${err_file}"; then
+if run_img2sixel -y ser "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" >"${out_file}" 2>"${err_file}"; then
     :
 else
     cli_core_fail 1 "unique prefix was rejected"

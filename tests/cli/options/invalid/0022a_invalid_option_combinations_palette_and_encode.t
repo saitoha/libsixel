@@ -10,11 +10,10 @@ cli_core_setup "invalid-option-combinations"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-
-
 echo "1..1"
 set -v
 
-cli_core_expect_img2sixel_rejection 1 "palette and encode flags conflict" -p16 -e "${images_dir}/snake.jpg"
+cli_core_expect_img2sixel_rejection 1 "palette and encode flags conflict" \
+    -p16 -e "${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 
 exit "${status}"

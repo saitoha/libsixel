@@ -9,11 +9,10 @@ cli_core_setup "invalid-option-arguments"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-
-
 echo "1..1"
 set -v
 
-cli_core_expect_img2sixel_rejection 1 "invalid colour space index" -I -C0 "${images_dir}/snake.png"
+cli_core_expect_img2sixel_rejection 1 "invalid colour space index" \
+    -I -C0 "${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 
 exit "${status}"

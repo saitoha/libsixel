@@ -20,10 +20,8 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-input_image="${images_dir}/snake.png"
-
-
-target_txt="${output_dir}/inspection.txt"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+target_txt="${ARTIFACT_LOCAL_DIR}/inspection.txt"
 
 if run_img2sixel -I -d sierra3 "${input_image}" \
         >"${target_txt}"; then

@@ -15,6 +15,7 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 echo "1..1"
 set -v
 
-cli_core_expect_img2sixel_rejection 1 "inspect and palette options conflict" -I -p8 "${images_dir}/snake.png"
+cli_core_expect_img2sixel_rejection 1 "inspect and palette options conflict" \
+    -I -p8 "${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 
 exit "${status}"
