@@ -20,7 +20,7 @@ set -v
 
 image_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
-require_file "${image_gif}"
+
 
 if run_img2sixel -S -datkinson "${image_gif}" >"${output_file}"; then
     pass 1 "sequence splitting with Atkinson works"

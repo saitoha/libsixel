@@ -18,7 +18,7 @@ echo "1..1"
 set -v
 
 input_path="${images_dir}/snake.six"
-require_file "${input_path}"
+
 
 stderr_capture="${output_dir}/stderr.txt"
 if run_sixel2png --similarity=invalid "${input_path}" \

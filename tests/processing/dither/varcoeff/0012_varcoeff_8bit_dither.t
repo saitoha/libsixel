@@ -17,7 +17,7 @@ set -v
 snake_png="${images_dir}/snake.png"
 output_sixel="${output_dir}/varcoeff-8bit.six"
 
-require_file "${snake_png}"
+
 
 if run_img2sixel -d lso2 -y raster --precision=8bit -p 16 \
         -o "${output_sixel}" "${snake_png}"; then

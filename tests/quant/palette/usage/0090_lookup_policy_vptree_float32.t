@@ -17,8 +17,6 @@ set -v
 snake_png="${images_dir}/snake.png"
 output_sixel="${output_dir}/vptree-float32.six"
 
-require_file "${snake_png}"
-
 if run_img2sixel --lookup-policy=vptree --precision=float32 -p 16 -d none \
         -o "${output_sixel}" "${snake_png}"; then
     pass 1 "float32 VP-tree lookup policy completes"

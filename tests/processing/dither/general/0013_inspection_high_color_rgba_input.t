@@ -18,7 +18,7 @@ status=0
 ensure_img2sixel_available
 
 input_image="${images_dir}/pngsuite/basic/basn6a08.png"
-require_file "${input_image}"
+
 
 echo "1..1"
 set -v

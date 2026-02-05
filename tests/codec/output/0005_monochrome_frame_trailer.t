@@ -18,7 +18,7 @@ snake_jpg="${images_dir}/snake.jpg"
 target_sixel="${output_dir}/monochrome-frame.sixel"
 trailer_txt="${output_dir}/monochrome-frame-trailer.txt"
 
-require_file "${snake_jpg}"
+
 
 if run_img2sixel -p 1 -h100 -n1 "${snake_jpg}" \
         >"${target_sixel}"; then

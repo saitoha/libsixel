@@ -10,7 +10,7 @@ cli_core_setup "img2sixel-argument-shift"
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 image_path="${top_srcdir}/tests/data/inputs/snake_64.jpg"
-require_file "${image_path}"
+
 
 echo "1..1"
 set -v

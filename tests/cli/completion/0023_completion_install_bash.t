@@ -19,7 +19,7 @@ completion_dir="${top_srcdir}/converters/shell-completion"
 completion_dir=$(printf '%s' "${completion_dir}" | tr '\\\\' '/')
 completion_source="${completion_dir}/bash/img2sixel"
 
-require_file "${completion_source}"
+
 
 # Use a writable temporary home to avoid permission issues on shared
 # workspaces while still keeping logs under tests/_artifacts.

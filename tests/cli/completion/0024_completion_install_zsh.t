@@ -22,7 +22,7 @@ completion_home="${ARTIFACT_LOCAL_DIR}/home"
 target_path="${completion_home}/.zfunc/_img2sixel"
 rc_path="${completion_home}/.zshrc"
 
-require_file "${completion_source}"
+
 rm -rf "${completion_home}"
 
 printf '1..1\n'

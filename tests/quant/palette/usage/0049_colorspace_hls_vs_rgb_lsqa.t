@@ -26,7 +26,7 @@ input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_hls="${ARTIFACT_LOCAL_DIR}/hls.six"
 output_rgb="${ARTIFACT_LOCAL_DIR}/rgb.six"
 
-require_file "${input_image}"
+
 
 
 if run_img2sixel -t hls -o "${output_hls}" "${input_image}" \

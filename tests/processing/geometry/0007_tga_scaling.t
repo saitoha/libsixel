@@ -17,7 +17,7 @@ set -v
 snake_tga="${images_dir}/snake.tga"
 target_sixel="${tmp_dir}/snake-tga.sixel"
 
-require_file "${snake_tga}"
+
 
 if run_img2sixel -7 -sauto -w100 -rga -qauto -dburkes -tauto \
     "${snake_tga}" >"${target_sixel}"; then

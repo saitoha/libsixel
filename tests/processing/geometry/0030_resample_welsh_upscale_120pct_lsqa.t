@@ -31,8 +31,8 @@ ensure_img2sixel_available
 echo "1..1"
 set -v
 
-require_file "${input_image}"
-require_file "${reference_image}"
+
+
 
 
 if run_img2sixel -r welsh -w 120% \

@@ -21,7 +21,7 @@ script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 status=0
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
-require_file "${top_srcdir}/tests/docs/consistency/list_envvars.sh"
+
 
 printf '1..1\n'
 set -v

@@ -17,8 +17,6 @@ set -v
 snake_png="${images_dir}/snake.png"
 output_sixel="${output_dir}/vptree-8bit.six"
 
-require_file "${snake_png}"
-
 if run_img2sixel --lookup-policy=vptree -p 16 -d none \
         -o "${output_sixel}" "${snake_png}"; then
     pass 1 "8-bit VP-tree lookup policy completes"

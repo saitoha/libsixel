@@ -17,7 +17,7 @@ set -v
 snake_ascii_pgm="${images_dir}/snake-ascii.pgm"
 target_txt="${output_dir}/ascii-pgm-inspection.txt"
 
-require_file "${snake_ascii_pgm}"
+
 
 if run_img2sixel -I -Eauto "${snake_ascii_pgm}" \
         >"${target_txt}"; then

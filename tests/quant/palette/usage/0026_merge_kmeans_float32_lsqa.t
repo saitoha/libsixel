@@ -23,7 +23,7 @@ input_image="${top_srcdir}/tests/data/resolutions/tiny_square.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/merge-kmeans-float32.six"
 output_png="${output_dir}/merge-kmeans-float32.png"
 
-require_file "${input_image}"
+
 
 
 SIXEL_PALETTE_OVERSPLIT_FACTOR=2.2

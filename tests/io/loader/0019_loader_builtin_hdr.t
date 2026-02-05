@@ -20,7 +20,7 @@ echo "1..1"
 set -v
 
 input_hdr="${top_srcdir}/tests/data/inputs/formats/stbi_minimal.hdr"
-require_file "${input_hdr}"
+
 
 if run_img2sixel "${input_hdr}" \
         >"${output_dir}/stbi_minimal_hdr.sixel"; then

@@ -17,7 +17,7 @@ set -v
 snake_gray_png="${images_dir}/snake-grayscale.png"
 target_sixel="${output_dir}/crop-alt-dither.sixel"
 
-require_file "${snake_gray_png}"
+
 
 if run_img2sixel -c200x200+100+100 -w400 -da_dither \
         "${snake_gray_png}" >"${target_sixel}"; then

@@ -25,7 +25,7 @@ input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/eytzinger-float32-cielab.six"
 output_png="${output_dir}/eytzinger-float32-cielab.png"
 
-require_file "${input_image}"
+
 
 
 if run_img2sixel --lookup-policy=eytzinger \

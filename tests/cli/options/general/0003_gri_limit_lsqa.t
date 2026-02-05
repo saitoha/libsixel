@@ -29,7 +29,7 @@ case_id=${test_name%.t}
 output_plain="${output_dir}/${case_id}-plain.six"
 output_limited="${output_dir}/${case_id}-limited.six"
 
-require_file "${input_image}"
+
 
 run_img2sixel -=1 -o "${output_plain}" "${input_image}" || {
     fail 1 "img2sixel failed"

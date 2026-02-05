@@ -17,7 +17,7 @@ set -v
 snake_six="${top_srcdir}/tests/data/inputs/snake_64.six"
 target_sixel="${output_dir}/sixel-xterm16.sixel"
 
-require_file "${snake_six}"
+
 
 if run_img2sixel -bxterm16 "${snake_six}" >"${target_sixel}"; then
     pass 1 "xterm16 preset re-encodes Sixel"

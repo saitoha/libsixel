@@ -15,7 +15,7 @@ echo "1..1"
 set -v
 
 snake_pgm="${images_dir}/snake.pgm"
-require_file "${snake_pgm}"
+
 
 if run_img2sixel -8 -qauto -thls -e "${snake_pgm}" -o/dev/null \
 ; then

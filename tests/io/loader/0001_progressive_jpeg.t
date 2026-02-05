@@ -21,7 +21,7 @@ echo "1..1"
 set -v
 
 progressive_jpeg="${images_dir}/snake-progressive.jpg"
-require_file "${progressive_jpeg}"
+
 
 if run_img2sixel "${progressive_jpeg}" \
         >"${output_dir}/progressive.sixel"; then
