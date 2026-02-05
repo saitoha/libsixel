@@ -8,7 +8,7 @@ export SIXEL_THREADS=6
 ppm_tall="${ARTIFACT_LOCAL_DIR}/grid_tall.ppm"
 
 
-script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 . "${TOP_SRCDIR}/tests/lib/sh/pipeline/pipeline_planner_common.sh"
 

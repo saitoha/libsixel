@@ -7,11 +7,7 @@ if [ "${VERBOSE:-0}" -eq 1 ]; then
     set -x
 fi
 
-
-
 lsqa_common_path="${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-LSQA_HELPER_DIR=$(CDPATH=; cd "$(dirname "${lsqa_common_path}")" && pwd)
-export LSQA_HELPER_DIR
 . "${lsqa_common_path}"
 
 status=0
@@ -20,16 +16,13 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-
-
 printf '1..1\n'
 set -v
 
 image_path="${top_srcdir}/tests/data/inputs/formats/snake-tga-type2-rgb.tga"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
-if run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}"; then
-    :
-else
+
+if ! run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}"; then
     fail 1 "type 2 RGB TGA quality below floor"
     exit "${status}"
 fi

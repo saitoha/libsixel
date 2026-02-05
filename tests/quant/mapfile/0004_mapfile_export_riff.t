@@ -3,7 +3,7 @@
 
 set -eux
 
-script_dir=$(CDPATH=; cd "$(dirname "$0")" && pwd)
+script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 MAPFILE_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/mapfile"
 . "${MAPFILE_HELPER_DIR}/mapfile_common.sh"
 
