@@ -715,6 +715,7 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/snake_64.png \
     data/inputs/snake_64.ppm \
     data/inputs/snake_64.six \
+    data/inputs/snake_64-oversized.six \
     data/inputs/snake_64.tga \
     data/inputs/snake_64.tiff \
     data/inputs/snake_64-indexed.tiff \
