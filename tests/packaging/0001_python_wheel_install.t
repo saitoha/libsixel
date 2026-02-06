@@ -5,9 +5,8 @@
 
 set -eu
 
-script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
-WHEEL_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/packaging"
-. "${WHEEL_HELPER_DIR}/python_wheel_common.sh"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/packaging/python_wheel_common.sh"
 
 setup_wheel_paths "${test_name}"
 require_python3

@@ -5,8 +5,8 @@
 
 set -eux
 
-PYTHON_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/python"
-. "${PYTHON_HELPER_DIR}/common.sh"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/python/common.sh"
 
 python_prepare "${ARTIFACT_LOCAL_DIR}"
 set -v

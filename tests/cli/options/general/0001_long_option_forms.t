@@ -2,7 +2,6 @@
 # Verify long option forms are accepted.
 set -eux
 
-. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 status=0
