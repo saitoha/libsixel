@@ -1,17 +1,20 @@
 #!/bin/sh
-# TAP test ensuring img2sixel rejects invalid encoder tweak arguments.
+# TAP test ensuring img2sixel rejects invalid encoder encode policy.
 
 set -eux
 
-CLI_CORE_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/cli-core"
-. "${CLI_CORE_HELPER_DIR}/cli_core_common.sh"
-cli_core_setup "invalid-option-arguments"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 
-ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
+config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 
 echo "1..1"
 set -v
 
-cli_core_expect_img2sixel_rejection 1 "invalid encoder tweak" -E invalid_option
+if run_img2sixel -E "" </dev/null >/dev/null ; then
+    fail 1 "unexpected success: invalid encode policy"
+    exit 0
+fi
 
-exit "${status}"
+pass 1 "invalid option rejected"
+exit 0

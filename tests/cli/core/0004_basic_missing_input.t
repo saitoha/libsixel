@@ -3,25 +3,20 @@
 
 set -eux
 
-CLI_CORE_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/cli-core"
-. "${CLI_CORE_HELPER_DIR}/cli_core_common.sh"
-cli_core_setup "sixel2png-basic"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 
-ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
-
-
+config_macro_defined HAVE_SIXEL2PNG || skip_all "sixel2png is disabled in this build"
 
 echo "1..1"
 set -v
 
-missing_capture=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "sixel2png-missing")
-missing_err=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "sixel2png-missing-err")
-if run_sixel2png -i "${ARTIFACT_LOCAL_DIR}/unknown.six" \
-        >"${missing_capture}" 2>"${missing_err}"; then
-    cli_core_fail 1 "accepts missing input path"
-else
-    cli_core_pass 1 "rejects missing input path"
-fi
-rm -f "${missing_capture}" "${missing_err}"
+run_sixel2png -i "${ARTIFACT_LOCAL_DIR}/unknown.six" \
+    >"${ARTIFACT_LOCAL_DIR}/output.txt" \
+    2>"${ARTIFACT_LOCAL_DIR}/err.txt" && {
+    fail 1 "accepts missing input path"
+    exit 0
+}
 
-exit "${status}"
+pass 1 "rejects missing input path"
+exit 0

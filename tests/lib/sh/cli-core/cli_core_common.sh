@@ -39,7 +39,7 @@ cli_core_expect_img2sixel_rejection() {
     description=$2
     shift 2
 
-    output_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "capture.invalid")
+    output_file="${ARTIFACT_LOCAL_DIR}/output.txt"
     if run_img2sixel "$@" </dev/null >"${output_file}"; then
         cmd_status=0
     else

@@ -3,28 +3,26 @@
 
 set -eux
 
-CLI_CORE_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/cli-core"
-. "${CLI_CORE_HELPER_DIR}/cli_core_common.sh"
-cli_core_setup "sixel2png-basic"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 
-ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
-
-
+config_macro_defined HAVE_SIXEL2PNG || skip_all "sixel2png is disabled in this build"
 
 echo "1..1"
 set -v
 
 png_err=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "sixel2png-png-err")
-if run_sixel2png -o "png:" <"${images_dir}/snake.six" \
-        >"${ARTIFACT_LOCAL_DIR}/capture.$$" 2>"${png_err}"; then
-    cli_core_fail 1 "accepts empty png: prefix"
-else
-    if grep -F 'missing target after the "png:" prefix' "${png_err}" >/dev/null; then
-        cli_core_pass 1 "rejects empty png prefix"
-    else
-        cli_core_fail 1 "missing png prefix diagnostic"
-    fi
-fi
-rm -f "${png_err}" "${ARTIFACT_LOCAL_DIR}/capture.$$"
 
-exit "${status}"
+run_sixel2png -o "png:" <"${images_dir}/snake.six" \
+        >"${ARTIFACT_LOCAL_DIR}/capture.$$" 2>"${png_err}" && {
+    fail 1 "accepts empty png: prefix"
+    exit 0
+}
+
+grep -F 'missing target after the "png:" prefix' "${png_err}" >/dev/null || {
+    fail 1 "missing png prefix diagnostic"
+    exit 0
+}
+
+pass 1 "rejects empty png prefix"
+exit 0

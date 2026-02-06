@@ -3,36 +3,33 @@
 
 set -eux
 
-CLI_CORE_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/cli-core"
-. "${CLI_CORE_HELPER_DIR}/cli_core_common.sh"
-cli_core_setup "sixel2png-basic"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 
-ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
-
-
+config_macro_defined HAVE_SIXEL2PNG || skip_all "sixel2png is disabled in this build"
 
 echo "1..1"
 set -v
 
-cli_core_pick_comparator
-if [ -z "${comparator_cmd}" ]; then
-    cli_core_skip 1 "CLI thread override matches env" "cmp/diff unavailable"
+comparator_cmd=""
+if command -v cmp >/dev/null 2>&1; then
+    comparator_cmd="cmp -s"
+elif command -v diff >/dev/null 2>&1; then
+    comparator_cmd="diff -q"
+else
+    skip_all "parallel indexed matches serial" "cmp/diff unavailable"
     exit 0
 fi
 
 parallel_direct_4="${ARTIFACT_LOCAL_DIR}/parallel-direct-4.png"
 parallel_direct_cli="${ARTIFACT_LOCAL_DIR}/parallel-direct-cli.png"
-SIXEL_THREADS=4 run_sixel2png -D \
-    <"${images_dir}/map64.six" \
-    >"${parallel_direct_4}"
-SIXEL_THREADS=1 run_sixel2png -D \
-    <"${images_dir}/map64.six" \
-    >"${parallel_direct_cli}"
+SIXEL_THREADS=4 run_sixel2png -D <"${images_dir}/map64.six" >"${parallel_direct_4}"
+SIXEL_THREADS=1 run_sixel2png -D <"${images_dir}/map64.six" >"${parallel_direct_cli}"
 
-if cli_core_files_identical "${parallel_direct_cli}" "${parallel_direct_4}"; then
-    cli_core_pass 1 "CLI thread override matches env"
-else
-    cli_core_fail 1 "CLI thread override diverges"
-fi
+${comparator_cmd} "${parallel_direct_cli}" "${parallel_direct_4}" || {
+    fail 1 "CLI thread override diverges"
+    exit 0
+}
 
-exit "${status}"
+pass 1 "CLI thread override matches env"
+exit 0

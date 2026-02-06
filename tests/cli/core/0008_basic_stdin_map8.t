@@ -3,22 +3,18 @@
 
 set -eux
 
-CLI_CORE_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/cli-core"
-. "${CLI_CORE_HELPER_DIR}/cli_core_common.sh"
-cli_core_setup "sixel2png-basic"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 
-ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
-
-
+config_macro_defined HAVE_SIXEL2PNG || skip_all "sixel2png is disabled in this build"
 
 echo "1..1"
 set -v
 
-if run_sixel2png <"${images_dir}/map8.six" \
-        >"${ARTIFACT_LOCAL_DIR}/map8-stdin.png"; then
-    cli_core_pass 1 "converts map8 from stdin"
-else
-    cli_core_fail 1 "map8 stdin conversion failed"
-fi
+run_sixel2png <"${images_dir}/map8.six" >"${ARTIFACT_LOCAL_DIR}/map8-stdin.png" || {
+    fail 1 "map8 stdin conversion failed"
+    exit 0
+}
 
-exit "${status}"
+pass 1 "converts map8 from stdin"
+exit 0
