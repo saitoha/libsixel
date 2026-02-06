@@ -154,6 +154,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/loader-gd.c \
                 $(srcdir)/loader-libpng.c \
                 $(srcdir)/loader-libtiff.c \
+                $(srcdir)/loader-librsvg.c \
                 $(srcdir)/loader-libjpeg.c \
                 $(srcdir)/loader-libwebp.c \
                 $(srcdir)/loader-builtin.c \
@@ -169,6 +170,7 @@ libsixel_la_SOURCES = \
                 $(srcdir)/loader-libjpeg.h \
                 $(srcdir)/loader-libpng.h \
                 $(srcdir)/loader-libtiff.h \
+                $(srcdir)/loader-librsvg.h \
                 $(srcdir)/loader-libwebp.h \
                 $(srcdir)/loader-quicklook.h \
                 $(srcdir)/loader-registry.h \
@@ -242,6 +244,7 @@ libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(LIBTIFF_CFLAGS) \
                 $(LIBJPEG_CFLAGS) \
                 $(LIBWEBP_CFLAGS) \
+                $(LIBRSVG_CFLAGS) \
                 $(GDK_PIXBUF_CFLAGS) \
                 $(GD_CFLAGS) \
                 $(WIC_CFLAGS) \
@@ -261,6 +264,7 @@ libsixel_la_LIBADD = -lm \
                 $(LIBTIFF_LIBS) \
                 $(LIBJPEG_LIBS) \
                 $(LIBWEBP_LIBS) \
+                $(LIBRSVG_LIBS) \
                 $(GDK_PIXBUF_LIBS) \
                 $(GD_LIBS) \
                 $(WIC_LIBS) \

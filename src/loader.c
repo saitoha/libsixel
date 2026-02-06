@@ -101,6 +101,7 @@
 #include "loader-gnome-thumbnailer.h"
 #include "loader-libjpeg.h"
 #include "loader-libpng.h"
+#include "loader-librsvg.h"
 #include "loader-quicklook.h"
 #include "loader-registry.h"
 #include "loader-wic.h"

@@ -1146,6 +1146,12 @@ AC_ARG_WITH([webp],
             [],
             [with_webp=auto])
 
+AC_ARG_WITH([librsvg],
+            [AS_HELP_STRING([--with-librsvg],
+                            [whether to build with librsvg and cairo (default: auto)])],
+            [],
+            [with_librsvg=auto])
+
 AC_ARG_WITH([winpthread],
             [AS_HELP_STRING([--with-winpthread],
                             [whether to build with libwinpthread, windows only (default: no)])],
@@ -1756,6 +1762,7 @@ have_gdk_pixbuf2="no"
 have_gdk_pixbuf_244="no"
 have_gdk_pixbuf_pkg="no"
 have_gdk_pixbuf_loader="no"
+have_librsvg="no"
 GDK_PIXBUF_QUERY_LOADERS=""
 have_sse2=no
 have_xgetbv_intrin=no
@@ -2777,6 +2784,36 @@ if test x$with_webp != xno; then
 fi
 AC_SUBST(LIBWEBP_CFLAGS)
 AC_SUBST(LIBWEBP_LIBS)
+
+
+if test x$with_librsvg != xno; then
+    AC_MSG_NOTICE([checking for librsvg + cairo])
+    if test x${PKG_CONFIG} != x; then
+        PKG_CHECK_MODULES([LIBRSVG],
+                          [librsvg-2.0 >= 2.46 cairo],
+                          [have_librsvg=yes],
+                          [have_librsvg=no])
+    else
+        have_librsvg=no
+    fi
+
+    if test x$have_librsvg = xyes; then
+        AC_DEFINE([HAVE_LIBRSVG], [1],
+                  [whether librsvg and cairo are available])
+        loaders="${loaders} librsvg"
+        REQUIRES_PRIVATE="$REQUIRES_PRIVATE librsvg-2.0 cairo"
+        LIBS_PRIVATE="$LIBS_PRIVATE $LIBRSVG_LIBS"
+        AC_MSG_NOTICE([librsvg cflags is ${LIBRSVG_CFLAGS}])
+        AC_MSG_NOTICE([librsvg libs is ${LIBRSVG_LIBS}])
+    else
+        if test x$with_librsvg != xauto; then
+            AC_MSG_ERROR([unable to find librsvg and cairo])
+        fi
+        AC_MSG_NOTICE([librsvg is not available])
+    fi
+fi
+AC_SUBST(LIBRSVG_CFLAGS)
+AC_SUBST(LIBRSVG_LIBS)
 
 if test x$with_winpthread != xno && test "x$using_cl" != "xyes"; then
     if test x$build = x$host; then
