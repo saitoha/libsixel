@@ -3,31 +3,25 @@
 
 set -eux
 
-CLI_CORE_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/cli-core"
-. "${CLI_CORE_HELPER_DIR}/cli_core_common.sh"
-cli_core_setup "sixel2png-basic"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 
-ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
-
-
+config_macro_defined HAVE_SIXEL2PNG || skip_all "sixel2png is disabled in this build"
 
 echo "1..1"
 set -v
 
-ambiguous_err=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "sixel2png-ambiguous")
-set +xv
-if run_sixel2png -dk_ <"${images_dir}/snake.six" \
-        >"${ARTIFACT_LOCAL_DIR}/dequantize-short.png" 2>"${ambiguous_err}"; then
-    set -xv
-    if [ -s "${ARTIFACT_LOCAL_DIR}/dequantize-short.png" ]; then
-        cli_core_pass 1 "accepts unique dequantize prefix"
-    else
-        cli_core_fail 1 "unexpected diagnostics for -dk_"
-    fi
-else
-    set -xv
-    cli_core_fail 1 "unique dequantize prefix rejected"
-fi
-rm -f "${ambiguous_err}"
+run_sixel2png -dk_ <"${images_dir}/snake.six" \
+        >"${ARTIFACT_LOCAL_DIR}/dequantize-short.png" \
+       2>"${ARTIFACT_LOCAL_DIR}/err.txt" || {
+    fail 1 "unique dequantize prefix rejected"
+    exit 0
+}
 
-exit "${status}"
+test -s "${ARTIFACT_LOCAL_DIR}/dequantize-short.png" || {
+    fail 1 "unexpected diagnostics for -dk_"
+    exit 0
+}
+
+pass 1 "accepts unique dequantize prefix"
+exit 0

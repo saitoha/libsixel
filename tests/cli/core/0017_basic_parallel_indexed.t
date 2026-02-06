@@ -3,36 +3,33 @@
 
 set -eux
 
-CLI_CORE_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/cli-core"
-. "${CLI_CORE_HELPER_DIR}/cli_core_common.sh"
-cli_core_setup "sixel2png-basic"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 
-ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
+config_macro_defined HAVE_SIXEL2PNG || skip_all "sixel2png is disabled in this build"
 
-
+comparator_cmd=""
+if command -v cmp >/dev/null 2>&1; then
+    comparator_cmd="cmp -s"
+elif command -v diff >/dev/null 2>&1; then
+    comparator_cmd="diff -q"
+else
+    skip_all "parallel indexed matches serial" "cmp/diff unavailable"
+    exit 0
+fi
 
 echo "1..1"
 set -v
 
-cli_core_pick_comparator
-if [ -z "${comparator_cmd}" ]; then
-    cli_core_skip 1 "parallel indexed matches serial" "cmp/diff unavailable"
-    exit 0
-fi
-
 parallel_indexed_1="${ARTIFACT_LOCAL_DIR}/parallel-indexed-1.png"
 parallel_indexed_4="${ARTIFACT_LOCAL_DIR}/parallel-indexed-4.png"
-SIXEL_THREADS=1 run_sixel2png \
-    <"${images_dir}/map64.six" \
-    >"${parallel_indexed_1}"
-SIXEL_THREADS=4 run_sixel2png \
-    <"${images_dir}/map64.six" \
-    >"${parallel_indexed_4}"
+SIXEL_THREADS=1 run_sixel2png <"${images_dir}/map64.six" >"${parallel_indexed_1}"
+SIXEL_THREADS=4 run_sixel2png <"${images_dir}/map64.six" >"${parallel_indexed_4}"
 
-if cli_core_files_identical "${parallel_indexed_1}" "${parallel_indexed_4}"; then
-    cli_core_pass 1 "parallel indexed matches serial"
-else
-    cli_core_fail 1 "parallel indexed diverges"
-fi
+${comparator_cmd} "${parallel_indexed_1}" "${parallel_indexed_4}" >/dev/null || {
+    fail 1 "parallel indexed diverges"
+    exit 0
+}
 
-exit "${status}"
+pass 1 "parallel indexed matches serial"
+exit 0

@@ -450,7 +450,6 @@ TEST_EXTENSIONS = .t
 HELPER_FILES = \
     _lib/sh/common.sh \
     docs/consistency/list_envvars.sh \
-    lib/sh/conversion/common.sh \
     lib/sh/common/tap.sh \
     lib/sh/cli-core/cli_core_common.sh \
     lib/sh/mapfile/mapfile_common.sh \
@@ -459,8 +458,7 @@ HELPER_FILES = \
     lib/sh/palette/kmeans_init_common.sh \
     lib/sh/lsqa/lsqa_common.sh \
     lib/sh/loader/pngsuite_common.sh \
-    lib/sh/python/common.sh \
-    codec/decoder/core/dcs_arguments_common.sh
+    lib/sh/python/common.sh
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export ARTIFACT_ROOT;

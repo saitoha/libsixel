@@ -3,12 +3,10 @@
 
 set -eux
 
-script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
-CLI_CORE_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/cli-core"
-. "${CLI_CORE_HELPER_DIR}/cli_core_common.sh"
-cli_core_setup "img2sixel-option-matching"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 
-ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
+config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 
 label="prefix_unique"
 err_file="${ARTIFACT_LOCAL_DIR}/${label}.err"
@@ -27,8 +25,8 @@ set -v
 if run_img2sixel -y ser "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" >"${out_file}" 2>"${err_file}"; then
     :
 else
-    cli_core_fail 1 "unique prefix was rejected"
-    exit "${status}"
+    fail 1 "unique prefix was rejected"
+    exit 0
 fi
 
 if [ -s "${err_file}" ]; then
@@ -42,11 +40,11 @@ if [ -s "${err_file}" ]; then
             printf '%s\n' '--- stderr ---' >&2
             cat "${err_file}" >&2 2>/dev/null || :
             cleanup_files "${filtered_err}"
-            exit "${status}"
+            exit 0
         fi
     fi
     cleanup_files "${filtered_err}"
 fi
 
-cli_core_pass 1 "unique prefix is accepted"
-exit "${status}"
+pass 1 "unique prefix is accepted"
+exit 0
