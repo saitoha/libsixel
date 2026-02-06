@@ -3,25 +3,22 @@
 
 set -eu
 
-if [ "${VERBOSE:-0}" -eq 1 ]; then
-    set -x
-fi
-
-lsqa_common_path="${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-. "${lsqa_common_path}"
-
-
-status=0
+. "${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
 
 printf '1..1\n'
 set -v
 
-image_path="${top_srcdir}/tests/data/corrupted/truncated.png"
-if lsqa_expect_low_quality_or_fail "${image_path}" \
-    "truncated.png" "${ARTIFACT_LOCAL_DIR}"; then
-    pass 1 "truncated input rejected or scored low"
-else
-    fail 1 "truncated input unexpectedly accepted"
-fi
+input_image="${top_srcdir}/tests/data/corrupted/truncated.png"
 
-exit "${status}"
+lsqa_err=$(
+    set +xv
+    run_lsqa -b "MS-SSIM:0.5" "${input_image}" "${input_image}"
+) || lsqa_run_status=$?
+
+test -z "${lsqa_run_status-}" || {
+    pass 1 "truncated input rejected or scored low"
+    exit 0
+}
+
+fail 1 "truncated input unexpectedly accepted"
+exit 0
