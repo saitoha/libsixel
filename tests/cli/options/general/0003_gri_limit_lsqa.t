@@ -8,16 +8,15 @@
 
 set -eux
 
-conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
-lsqa_common_path="${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-. "${conversion_common_path}"
-. "${lsqa_common_path}"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
 
 status=0
 
 lsqa_floor=1.0
 
-ensure_img2sixel_available
+config_macro_defined HAVE_IMG2SIXEL || skip_all
 
 echo "1..1"
 set -v
@@ -26,8 +25,6 @@ input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 case_id=${test_name%.t}
 output_plain="${ARTIFACT_LOCAL_DIR}/${case_id}-plain.six"
 output_limited="${ARTIFACT_LOCAL_DIR}/${case_id}-limited.six"
-
-
 
 run_img2sixel -=1 -o "${output_plain}" "${input_image}" || {
     fail 1 "img2sixel failed"

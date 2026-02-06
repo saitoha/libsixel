@@ -7,41 +7,30 @@
 # - Compare both outputs and enforce MS-SSIM >= 0.99.
 set -eux
 
-conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
-. "${conversion_common_path}"
-
-lsqa_common_path="${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-. "${lsqa_common_path}"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
 
 status=0
 lsqa_floor=0.99
 
-ensure_img2sixel_available
+config_macro_defined HAVE_IMG2SIXEL || skip_all
 echo "1..1"
 set -v
 
-input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_hls="${ARTIFACT_LOCAL_DIR}/hls.six"
 output_rgb="${ARTIFACT_LOCAL_DIR}/rgb.six"
 
-
-
-
-if run_img2sixel -t hls -o "${output_hls}" "${input_image}" \
-; then
-    :
-else
+run_img2sixel -t hls -o "${output_hls}" "${input_image}" || {
     fail 1 "img2sixel hls conversion failed"
     exit "${status}"
-fi
+}
 
-if run_img2sixel -t rgb -o "${output_rgb}" "${input_image}" \
-; then
-    :
-else
+run_img2sixel -t rgb -o "${output_rgb}" "${input_image}" || {
     fail 1 "img2sixel rgb conversion failed"
     exit "${status}"
-fi
+}
 
 lsqa_err=$(
     set +xv
