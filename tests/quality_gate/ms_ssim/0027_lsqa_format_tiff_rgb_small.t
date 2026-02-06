@@ -1,20 +1,14 @@
 #!/bin/sh
 # Confirm small RGB TIFF quality meets the MS-SSIM baseline.
 
-set -eu
+set -eux
 
-if [ "${VERBOSE:-0}" -eq 1 ]; then
-    set -x
-fi
-
-lsqa_common_path="${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-. "${lsqa_common_path}"
-
-status=0
-
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
+
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 if ! feature_defined_in_config "HAVE_LIBTIFF"; then
     skip_all "libtiff support is disabled in this build"
@@ -25,12 +19,10 @@ set -v
 
 image_path="${top_srcdir}/tests/data/inputs/snake_64.tiff"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snake_64.six"
-if run_img2sixel -Llibtiff! "${image_path}" >"${output_sixel}"; then
-    :
-else
+run_img2sixel -Llibtiff! "${image_path}" >"${output_sixel}" || {
     fail 1 "tiff rgb conversion failed"
-    exit "${status}"
-fi
+    exit 0
+}
 
 lsqa_err=$(
     set +xv
@@ -45,4 +37,4 @@ else
     fail 1 "tiff rgb quality regressed"
 fi
 
-exit "${status}"
+exit 0

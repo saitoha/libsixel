@@ -7,30 +7,21 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 . "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
-. "${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
 
-status=0
+config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.97}
 
-config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 echo "1..1"
 set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/vpte-8bit-gamma.six"
 
-
-
-
-if run_img2sixel --lookup-policy=vpte -o "${output_sixel}" \
-    "${input_image}" \
-; then
-    :
-else
+run_img2sixel --lookup-policy=vpte -o "${output_sixel}" "${input_image}" || {
     fail 1 "8-bit VPTE gamma colorspace conversion failed"
-    exit "${status}"
-fi
+    exit 0
+}
 
 lsqa_err=$(
     set +xv
@@ -45,4 +36,4 @@ else
     fail 1 "8-bit VPTE gamma colorspace lsqa failed"
 fi
 
-exit "${status}"
+exit 0

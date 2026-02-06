@@ -4,9 +4,6 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 . "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
-. "${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-
-status=0
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
@@ -19,11 +16,10 @@ input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snap-heckbert-float32.six"
 output_png="${ARTIFACT_LOCAL_DIR}/snap-heckbert-float32.png"
 
-if ! run_img2sixel -Q heckbert -6 -W oklab \
-    -o "${output_sixel}" "${input_image}"; then
+run_img2sixel -Q heckbert -6 -W oklab -o "${output_sixel}" "${input_image}" || {
     fail 1 "img2sixel snap heckbert float32 failed"
-    exit "${status}"
-fi
+    exit 0
+}
 
 lsqa_err=$(
     set +xv
@@ -38,4 +34,4 @@ else
     fail 1 "snap heckbert float32 lsqa failed"
 fi
 
-exit "${status}"
+exit 0

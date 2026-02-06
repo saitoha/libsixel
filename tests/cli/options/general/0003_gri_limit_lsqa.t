@@ -10,13 +10,10 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 . "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
-. "${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-
-status=0
-
-lsqa_floor=1.0
 
 config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
+
+lsqa_floor=1.0
 
 echo "1..1"
 set -v
@@ -45,4 +42,4 @@ else
     fail 1 "gri-limit deterministic output mismatch"
 fi
 
-exit "${status}"
+exit 0

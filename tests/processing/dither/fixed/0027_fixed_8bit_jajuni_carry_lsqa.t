@@ -10,25 +10,21 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 . "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
-. "${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-
-status=0
-
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
+
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 echo "1..1"
 set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
-case_id=${test_name%.t}
-output_sixel="${ARTIFACT_LOCAL_DIR}/${case_id}.six"
-output_png="${ARTIFACT_LOCAL_DIR}/${case_id}.png"
+output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
+output_png="${ARTIFACT_LOCAL_DIR}/output.png"
 
 run_img2sixel -d jajuni -Y carry -y raster -o "${output_sixel}" "${input_image}" || {
     fail 1 "fixed 8-bit Jajuni with carry propagation lsqa failed"
-    exit "${status}"
+    exit 0
 }
 
 lsqa_err=$(
@@ -44,4 +40,4 @@ else
     fail 1 "fixed 8-bit Jajuni with carry propagation lsqa failed"
 fi
 
-exit "${status}"
+exit 0

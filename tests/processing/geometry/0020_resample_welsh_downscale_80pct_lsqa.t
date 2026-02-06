@@ -12,9 +12,7 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 . "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
-. "${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
 
-status=0
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 data_root="${top_srcdir}/tests/data/inputs"
@@ -34,7 +32,7 @@ set -v
 
 run_img2sixel -r welsh -w 80% -o "${output_sixel}" "${input_image}" || {
     fail 1 "welsh downscale 80pct scaling failed"
-    exit "${status}"
+    exit 0
 }
 
 lsqa_err=$(
@@ -50,4 +48,4 @@ else
     fail 1 "welsh downscale 80pct lsqa failed"
 fi
 
-exit "${status}"
+exit 0

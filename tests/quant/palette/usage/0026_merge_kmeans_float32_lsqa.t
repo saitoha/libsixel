@@ -4,9 +4,6 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 . "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
-. "${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-
-status=0
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
@@ -34,13 +31,10 @@ export SIXEL_PALETTE_LUMIN_FACTOR_R
 export SIXEL_PALETTE_LUMIN_FACTOR_G
 export SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L
 
-if run_img2sixel -Q kmeans -F ward -W oklab \
-    -o "${output_sixel}" "${input_image}"; then
-    :
-else
+run_img2sixel -Q kmeans -F ward -W oklab -o "${output_sixel}" "${input_image}" || {
     fail 1 "img2sixel merge kmeans float32 failed"
-    exit "${status}"
-fi
+    exit 0
+}
 
 lsqa_err=$(
     set +xv
@@ -55,4 +49,4 @@ else
     fail 1 "merge kmeans float32 lsqa failed"
 fi
 
-exit "${status}"
+exit 0

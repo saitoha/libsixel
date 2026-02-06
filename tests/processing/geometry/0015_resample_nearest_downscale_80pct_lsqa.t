@@ -13,23 +13,21 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 . "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
-. "${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
 
-status=0
+config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
+
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.90}
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 reference_image="${TOP_SRCDIR}/tests/data/inputs/scaling/snake_64_nearest_80pct.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/nearest-downscale_80pct.six"
 
-config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
-
 echo "1..1"
 set -v
 
 run_img2sixel -r nearest -w 80% -o "${output_sixel}" "${input_image}" || {
     fail 1 "nearest downscale 80pct scaling failed"
-    exit "${status}"
+    exit 0
 }
 
 lsqa_err=$(
@@ -45,4 +43,4 @@ else
     fail 1 "nearest downscale 80pct lsqa failed"
 fi
 
-exit "${status}"
+exit 0

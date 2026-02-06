@@ -12,9 +12,9 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 . "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
-. "${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
 
-status=0
+config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
+
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 data_root="${top_srcdir}/tests/data/inputs"
@@ -22,14 +22,12 @@ input_image="${data_root}/snake_64.png"
 reference_image="${data_root}/scaling/snake_64_hanning_80pct.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/hanning-downscale_80pct.six"
 
-config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
-
 echo "1..1"
 set -v
 
 run_img2sixel -r hanning -w 80% -o "${output_sixel}" "${input_image}" || {
     fail 1 "hanning downscale 80pct scaling failed"
-    exit "${status}"
+    exit 0
 }
 
 lsqa_err=$(
@@ -45,4 +43,4 @@ else
     fail 1 "hanning downscale 80pct lsqa failed"
 fi
 
-exit "${status}"
+exit 0
