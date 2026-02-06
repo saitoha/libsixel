@@ -223,11 +223,54 @@ ensure_network_backend_available() {
 }
 
 runtime_exec() {
-    if [ -n "${SIXEL_RUNTIME-}" ]; then
-        "${SIXEL_RUNTIME-}" "$@"
-    else
-        "$@"
-    fi
+    runtime_libdir="${top_builddir}/src/.libs"
+    runtime_var="LD_LIBRARY_PATH"
+    runtime_sep=":"
+
+    case "$(uname -s 2>/dev/null || echo unknown)" in
+    Darwin*)
+        runtime_var="DYLD_LIBRARY_PATH"
+        ;;
+    CYGWIN* | MINGW* | MSYS*)
+        runtime_var="PATH"
+        runtime_sep=";"
+        ;;
+    esac
+
+    (
+        case "${runtime_var}" in
+        LD_LIBRARY_PATH)
+            if [ -n "${LD_LIBRARY_PATH-}" ]; then
+                LD_LIBRARY_PATH="${runtime_libdir}${runtime_sep}${LD_LIBRARY_PATH}"
+            else
+                LD_LIBRARY_PATH="${runtime_libdir}"
+            fi
+            export LD_LIBRARY_PATH
+            ;;
+        DYLD_LIBRARY_PATH)
+            if [ -n "${DYLD_LIBRARY_PATH-}" ]; then
+                DYLD_LIBRARY_PATH="${runtime_libdir}${runtime_sep}${DYLD_LIBRARY_PATH}"
+            else
+                DYLD_LIBRARY_PATH="${runtime_libdir}"
+            fi
+            export DYLD_LIBRARY_PATH
+            ;;
+        PATH)
+            if [ -n "${PATH-}" ]; then
+                PATH="${runtime_libdir}${runtime_sep}${PATH}"
+            else
+                PATH="${runtime_libdir}"
+            fi
+            export PATH
+            ;;
+        esac
+
+        if [ -n "${SIXEL_RUNTIME-}" ]; then
+            "${SIXEL_RUNTIME-}" "$@"
+        else
+            "$@"
+        fi
+    )
 }
 
 run_img2sixel() {
