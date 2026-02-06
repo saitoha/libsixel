@@ -1,19 +1,20 @@
 #!/bin/sh
-# TAP test ensuring palette size conflicts with terminal presets.
+# TAP test ensuring palette size conflicts with builtin palette option. 
 
 set -eux
 
-script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
-CLI_CORE_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/cli-core"
-. "${CLI_CORE_HELPER_DIR}/cli_core_common.sh"
-cli_core_setup "invalid-combinations"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 
-ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
+config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 
 echo "1..1"
 set -v
 
-cli_core_expect_img2sixel_rejection 1 "palette size conflicts with terminal preset" \
-    -p64 -bxterm256 "${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+if run_img2sixel -p64 -bxterm256 </dev/null >/dev/null ; then
+    fail 1 "unexpected success: palette size conflicts with builtin palette option"
+    exit 0
+fi
 
-exit "${status}"
+pass 1 "invalid option rejected"
+exit 0

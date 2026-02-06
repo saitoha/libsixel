@@ -3,28 +3,26 @@
 
 set -eux
 
-CLI_CORE_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/cli-core"
-. "${CLI_CORE_HELPER_DIR}/cli_core_common.sh"
-cli_core_setup "sixel2png-basic"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 
-ensure_converter_available "SIXEL2PNG" "${SIXEL2PNG_PATH}" "sixel2png"
-
-
+config_macro_defined HAVE_SIXEL2PNG || skip_all "sixel2png is disabled in this build"
 
 echo "1..1"
 set -v
 
-direct_err=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "sixel2png-direct-err")
-if run_sixel2png -D -dk_undither <"${images_dir}/snake.six" \
-        >"${ARTIFACT_LOCAL_DIR}/capture.$$" 2>"${direct_err}"; then
-    cli_core_fail 1 "accepts conflicting direct/dequantize flags"
-else
-    if grep -F "cannot be combined" "${direct_err}" >/dev/null; then
-        cli_core_pass 1 "rejects direct/dequantize mix"
-    else
-        cli_core_fail 1 "missing direct/dequantize diagnostic"
-    fi
-fi
-rm -f "${direct_err}" "${ARTIFACT_LOCAL_DIR}/capture.$$"
+direct_err="${ARTIFACT_LOCAL_DIR}/err.txt"
 
-exit "${status}"
+run_sixel2png -D -dk_undither <"${TOP_SRCDIR}/tests/data/inputs/snake_64.six" \
+        >"${ARTIFACT_LOCAL_DIR}/output.txt" 2>"${direct_err}" && {
+    fail 1 "accepts conflicting direct/dequantize flags"
+    exit 0
+}
+
+grep -F "cannot be combined" "${direct_err}" >/dev/null || {
+    fail 1 "missing direct/dequantize diagnostic"
+    exit 0
+}
+
+pass 1 "rejects direct/dequantize mix"
+exit 0
