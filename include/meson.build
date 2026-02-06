@@ -26,6 +26,8 @@ ls_lt_version = '@0@:@1@:@2@'.format(ls_lt_current, ls_lt_revision, ls_lt_age)
 inc_conf = configuration_data()
 inc_conf.set('PACKAGE_VERSION', meson.project_version())
 inc_conf.set('LS_LTVERSION', ls_lt_version)
+inc_conf.set('attr_func_deprecated', '')
+inc_conf.set('attr_var_deprecated', '')
 
 if has_func_attr_deprecated
   inc_conf.set('attr_func_deprecated', '__attribute__((deprecated))')
