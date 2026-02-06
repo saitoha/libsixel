@@ -576,6 +576,32 @@ if webp_dep.found()
   loaders += 'webp'
 endif
 
+librsvg_opt = get_option('librsvg')
+librsvg_dep = disabler()
+if not librsvg_opt.disabled()
+  librsvg_dep = dependency('librsvg-2.0',
+                           version: '>=2.46',
+                           required: false,
+                           method: 'pkg-config')
+  cairo_dep = dependency('cairo', required: false, method: 'pkg-config')
+  if librsvg_dep.found() and cairo_dep.found()
+    librsvg_dep = declare_dependency(
+      dependencies: [librsvg_dep, cairo_dep])
+  else
+    librsvg_dep = disabler()
+  endif
+  if not librsvg_dep.found() and librsvg_opt.enabled()
+    error('librsvg=enabled requires librsvg-2.0 >= 2.46 and cairo')
+  endif
+endif
+
+if librsvg_dep.found()
+  deps += librsvg_dep
+  reqs += librsvg_dep
+  conf.set('HAVE_LIBRSVG', 1)
+  loaders += 'librsvg'
+endif
+
 curl_dep = dependency('libcurl', required: get_option('curl'))
 if curl_dep.found()
   deps += curl_dep

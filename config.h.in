@@ -303,6 +303,9 @@
 /* whether libpng is available */
 #undef HAVE_LIBPNG
 
+/* whether librsvg and cairo are available */
+#undef HAVE_LIBRSVG
+
 /* whether libtiff is available */
 #undef HAVE_LIBTIFF
 

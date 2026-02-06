@@ -42,6 +42,7 @@
 #include "loader-libjpeg.h"
 #include "loader-libpng.h"
 #include "loader-libtiff.h"
+#include "loader-librsvg.h"
 #include "loader-libwebp.h"
 #include "loader-quicklook.h"
 #include "loader-registry.h"
@@ -65,6 +66,9 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
 #endif
 #if HAVE_LIBTIFF
     { "libtiff", load_with_libtiff, loader_can_try_libtiff, 1 },
+#endif
+#if HAVE_LIBRSVG
+    { "librsvg", load_with_librsvg, loader_can_try_librsvg, 1 },
 #endif
     { "builtin", load_with_builtin, NULL, 1 },
 #if HAVE_WIC
