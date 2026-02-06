@@ -103,6 +103,48 @@ list_source_vars() {
 # Extract the environment variable names from the img2sixel -H output by
 # reading the dedicated section.
 list_help_vars() {
+    img2sixel_dir=$(CDPATH=; cd -- "$(dirname "$img2sixel")" && pwd)
+    if [ "$(basename "$img2sixel_dir")" = ".libs" ]; then
+        build_root=$(CDPATH=; cd -- "$img2sixel_dir/../.." && pwd)
+    else
+        build_root=$(CDPATH=; cd -- "$img2sixel_dir/.." && pwd)
+    fi
+    runtime_libdir="$build_root/src/.libs"
+    runtime_os=$(uname -s 2>/dev/null || echo unknown)
+
+    case "$runtime_os" in
+        Darwin*)
+            if [ -d "$runtime_libdir" ]; then
+                if [ -n "${DYLD_LIBRARY_PATH:-}" ]; then
+                    DYLD_LIBRARY_PATH="$runtime_libdir:$DYLD_LIBRARY_PATH"
+                else
+                    DYLD_LIBRARY_PATH="$runtime_libdir"
+                fi
+                export DYLD_LIBRARY_PATH
+            fi
+            ;;
+        CYGWIN*|MINGW*|MSYS*)
+            if [ -d "$runtime_libdir" ]; then
+                if [ -n "${PATH:-}" ]; then
+                    PATH="$runtime_libdir;$PATH"
+                else
+                    PATH="$runtime_libdir"
+                fi
+                export PATH
+            fi
+            ;;
+        *)
+            if [ -d "$runtime_libdir" ]; then
+                if [ -n "${LD_LIBRARY_PATH:-}" ]; then
+                    LD_LIBRARY_PATH="$runtime_libdir:$LD_LIBRARY_PATH"
+                else
+                    LD_LIBRARY_PATH="$runtime_libdir"
+                fi
+                export LD_LIBRARY_PATH
+            fi
+            ;;
+    esac
+
     ${SIXEL_RUNTIME-} "$img2sixel" -H 2>/dev/null |
         awk '
             /^Environment variables:/ {
