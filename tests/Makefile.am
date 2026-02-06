@@ -451,9 +451,7 @@ HELPER_FILES = \
     _lib/sh/common.sh \
     docs/consistency/list_envvars.sh \
     lib/sh/mapfile/mapfile_common.sh \
-    lib/sh/pipeline/pipeline_planner_common.sh \
     lib/sh/packaging/python_wheel_common.sh \
-    lib/sh/palette/kmeans_init_common.sh \
     lib/sh/loader/pngsuite_common.sh \
     lib/sh/python/common.sh
 

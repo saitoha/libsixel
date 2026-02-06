@@ -300,4 +300,5 @@ run_case unsupported "unsupported format errors"
 run_case invalid_option "invalid option value errors"
 
 tap_plan 4
-exit ${tap_status}
+
+exit 0

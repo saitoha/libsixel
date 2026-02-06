@@ -54,7 +54,7 @@ EOF
 while [ $# -gt 0 ]; do
   case "$1" in
     --help) usage ;;
-    --test-name) test_name=${2-}; shift ;;
+    --test-name) arg_test_name=${2-}; shift ;;
     --log-file)  log_file=${2-}; shift ;;
     --trs-file)  trs_file=${2-}; shift ;;
     --ignore-exit) ignore_exit=yes ;;
@@ -79,7 +79,7 @@ while [ $# -gt 0 ]; do
   shift
 done
 
-[ -n "${test_name}" ] || { echo "lso-tap-driver.sh: missing --test-name" >&2; usage; }
+[ -n "${arg_test_name}" ] || { echo "lso-tap-driver.sh: missing --test-name" >&2; usage; }
 [ -n "${log_file}" ]  || { echo "lso-tap-driver.sh: missing --log-file" >&2; usage; }
 [ -n "${trs_file}" ]  || { echo "lso-tap-driver.sh: missing --trs-file" >&2; usage; }
 [ $# -ge 1 ] || { echo "lso-tap-driver.sh: missing TEST-SCRIPT" >&2; usage; }
@@ -96,7 +96,7 @@ timeout_budget=${test_timeout:-90}
 kill_delay=10
 
 test_script=$1
-test_name_base=${test_name##*[/\\]}
+test_name_base=${arg_test_name##*[/\\]}
 test_name=${test_name_base%.t}
 test_dir=${test_script%[/\\]*}
 if [ "${test_dir}" = "${test_script}" ]; then
@@ -205,7 +205,7 @@ fi
 # Also write :global-test-result:, :recheck:, :copy-in-global-log: for convenience
 # (Automake recognizes these fields). :contentReference[oaicite:5]{index=5}
 "$AM_TAP_AWK" < "$log_file" \
-  -v test_name="$test_name" \
+  -v test_name="$arg_test_name" \
   -v rc="$rc" \
   -v ignore_exit="$ignore_exit" \
   -v comments="$comments" \
