@@ -11,7 +11,7 @@ if ! feature_defined_in_config "HAVE_LIBTIFF"; then
     skip_all "libtiff support is disabled in this build"
 fi
 
-config_macro_defined HAVE_IMG2SIXEL || skip_all
+config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 
 echo "1..1"
 set -v

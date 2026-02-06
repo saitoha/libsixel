@@ -27,7 +27,7 @@ input_image="${data_root}/snake_64.png"
 reference_image="${data_root}/scaling/snake_64_welsh_80pct.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/welsh-downscale_80pct.six"
 
-config_macro_defined HAVE_IMG2SIXEL || skip_all
+config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 
 echo "1..1"
 set -v
