@@ -9,8 +9,6 @@ set -eux
 config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 config_macro_defined HAVE_SIXEL2PNG || skip_all "sixel2png is disabled in this build"
 
-status=0
-
 tap_plan 1
 set -v
 
@@ -19,7 +17,7 @@ sixel_tmp="${ARTIFACT_LOCAL_DIR}/clipboard-input.six"
 roundtrip_png="${ARTIFACT_LOCAL_DIR}/clipboard-roundtrip.png"
 
 if ! run_img2sixel "${sixel_src}" >"${sixel_tmp}"; then
-    fail "failed to prepare sixel input"
+    fail 1 "failed to prepare sixel input"
 fi
 
 if ! run_sixel2png -i "${sixel_tmp}" -o png:clipboard: ; then
@@ -38,7 +36,7 @@ if ! run_sixel2png -i clipboard: -o "${roundtrip_png}"; then
 fi
 
 if [ -s "${roundtrip_png}" ]; then
-    pass "clipboard round-trip succeeded"
+    pass 1 "clipboard round-trip succeeded"
 else
-    fail "round-trip PNG missing"
+    fail 1 "round-trip PNG missing"
 fi

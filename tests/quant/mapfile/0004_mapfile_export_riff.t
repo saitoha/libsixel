@@ -3,12 +3,9 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
-
-status=0
 
 echo "1..1"
 set -v
@@ -21,12 +18,12 @@ if run_img2sixel -M pal-riff:"${riff_palette}" \
     riff_header=$(dd if="${riff_palette}" bs=1 count=4 2>/dev/null |
         LC_ALL=C od -An -tx1 | tr -d ' \n')
     if [ "${riff_header}" = "52494646" ]; then
-        pass "RIFF palette export honours type prefix"
+        pass 1 "RIFF palette export honours type prefix"
     else
-        fail "RIFF palette header incorrect (${riff_header})"
+        fail 1 "RIFF palette header incorrect (${riff_header})"
     fi
 else
-    fail "RIFF palette export failed"
+    fail 1 "RIFF palette export failed"
 fi
 
-exit "${status}"
+exit 0

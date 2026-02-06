@@ -450,7 +450,6 @@ TEST_EXTENSIONS = .t
 HELPER_FILES = \
     _lib/sh/common.sh \
     docs/consistency/list_envvars.sh \
-    lib/sh/common/tap.sh \
     lib/sh/mapfile/mapfile_common.sh \
     lib/sh/pipeline/pipeline_planner_common.sh \
     lib/sh/packaging/python_wheel_common.sh \

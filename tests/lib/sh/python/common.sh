@@ -47,7 +47,6 @@ python_helper_dir=${PYTHON_HELPER_DIR-}
 if [ -z "${python_helper_dir}" ]; then
     python_helper_dir=$(CDPATH=; cd "$(dirname "${python_common_path}")" && pwd)
 fi
-. "${python_helper_dir}/../common/tap.sh"
 
 if [ "x${SIXEL_TSAN_BUILD}" = xyes ]; then
     tap_skip_all "python extension does not works with TSan build"

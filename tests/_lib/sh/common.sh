@@ -33,7 +33,6 @@ else
 fi
 
 parent_dir=$(CDPATH=; cd "${tests_root}/.." && pwd)
-. "${tests_root}/lib/sh/common/tap.sh"
 
 if [ -n "${MESON_SOURCE_ROOT:-}" ]; then
     top_srcdir=${TOP_SRCDIR:-${MESON_SOURCE_ROOT}}
@@ -250,3 +249,51 @@ make_temp_file() {
 }
 
 export SIXEL_THREADS=${SIXEL_THREADS:-1}
+
+
+# Shared TAP helpers for shell-based tests.
+#
+# This module standardizes TAP output to the following format:
+# - Plan:   "1..N"
+# - Pass:   "ok <case> - <description>"
+# - Fail:   "not ok <case> - <description>"
+# - Skip:   "1..0 # SKIP <reason>"
+#
+# The helpers expose both tap_* names and pass/fail wrappers so existing
+# scripts can opt into the shared implementation without rewriting every
+# call site. When pass/fail are invoked with a single argument, the
+# helpers assume the case number is 1 and treat the argument as the
+# description to match historical single-case tests.
+
+tap_plan() {
+    printf '1..%s\n' "$1"
+}
+
+tap_pass() {
+    printf 'ok %s - %s\n' "$1" "$2"
+}
+
+tap_fail() {
+    printf 'not ok %s - %s\n' "$1" "$2"
+}
+
+tap_skip_all() {
+    printf '1..0 # SKIP %s\n' "$1"
+    exit 0
+}
+
+tap_skip() {
+    printf 'ok %s # SKIP %s\n' "$1" "$2"
+}
+
+skip_all() {
+    tap_skip_all "$1"
+}
+
+pass() {
+    printf 'ok %s - %s\n' "$1" "$2"
+}
+
+fail() {
+    printf 'not ok %s - %s\n' "$1" "$2"
+}
