@@ -7,28 +7,24 @@
 # - Enforce MS-SSIM >= 0.98 via lsqa.
 set -eux
 
-conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
-. "${conversion_common_path}"
-
-lsqa_common_path="${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-. "${lsqa_common_path}"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
 
 status=0
 lsqa_floor=0.98
 
-config_macro_defined HAVE_IMG2SIXEL || skip_all
+config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 echo "1..1"
 set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/cluster-cielab-work-linear.six"
 
-if run_img2sixel -t rgb -X cielab -W linear -o "${output_sixel}"     "${input_image}"; then
-    :
-else
+run_img2sixel -t rgb -X cielab -W linear -o "${output_sixel}" "${input_image}" || {
     fail 1 "img2sixel clustering cielab working linear conversion failed"
     exit "${status}"
-fi
+}
 
 lsqa_err=$(
     set +xv

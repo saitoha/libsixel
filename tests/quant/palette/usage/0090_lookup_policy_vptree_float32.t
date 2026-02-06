@@ -2,12 +2,12 @@
 # Exercise the float32 VP-tree lookup policy through img2sixel options.
 set -eux
 
-conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
-. "${conversion_common_path}"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 
 status=0
 
-config_macro_defined HAVE_IMG2SIXEL || skip_all
+config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 
 echo "1..1"
 set -v
