@@ -12,9 +12,7 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 . "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
-. "${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
 
-status=0
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 data_root="${top_srcdir}/tests/data/inputs"
@@ -29,7 +27,7 @@ set -v
 
 run_img2sixel -h 32px -o "${output_sixel}" "${input_image}" || {
     fail 1 "height scaling with -h 32px failed"
-    exit "${status}"
+    exit 0
 }
 
 lsqa_err=$(
@@ -45,4 +43,4 @@ else
     fail 1 "height scaling -h 32px lsqa failed"
 fi
 
-exit "${status}"
+exit 0

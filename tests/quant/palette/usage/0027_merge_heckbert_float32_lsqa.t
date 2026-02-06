@@ -4,13 +4,10 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 . "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
-. "${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-
-status=0
-
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
+
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 echo "1..1"
 set -v
@@ -19,7 +16,7 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/merge-heckbert-float32.six"
 output_png="${ARTIFACT_LOCAL_DIR}/merge-heckbert-float32.png"
 
-if SIXEL_PALETTE_OVERSPLIT_FACTOR=2.2 \
+SIXEL_PALETTE_OVERSPLIT_FACTOR=2.2 \
         SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT=2 \
         SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX=5 \
         SIXEL_PALETTE_KMEANS_THRESHOLD=0.1 \
@@ -27,12 +24,10 @@ if SIXEL_PALETTE_OVERSPLIT_FACTOR=2.2 \
         SIXEL_PALETTE_LUMIN_FACTOR_G=0.4 \
         SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L=0.6 \
         run_img2sixel -Q heckbert -F ward -W oklab \
-    -o "${output_sixel}" "${input_image}"; then
-    :
-else
+    -o "${output_sixel}" "${input_image}" || {
     fail 1 "img2sixel merge heckbert float32 failed"
-    exit "${status}"
-fi
+    exit 0
+}
 
 lsqa_err=$(
     set +xv
@@ -47,4 +42,4 @@ else
     fail 1 "merge heckbert float32 lsqa failed"
 fi
 
-exit "${status}"
+exit 0

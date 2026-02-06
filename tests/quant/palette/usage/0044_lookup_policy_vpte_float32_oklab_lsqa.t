@@ -7,13 +7,11 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 . "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
-. "${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
 
-status=0
+config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
-config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 echo "1..1"
 set -v
 
@@ -27,7 +25,7 @@ if run_img2sixel --lookup-policy=vpte --precision=float32 \
     :
 else
     fail 1 "float32 VPTE oklab colorspace conversion failed"
-    exit "${status}"
+    exit 0
 fi
 
 lsqa_err=$(
@@ -43,4 +41,4 @@ else
     fail 1 "float32 VPTE oklab colorspace lsqa failed"
 fi
 
-exit "${status}"
+exit 0
