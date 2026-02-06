@@ -3,15 +3,15 @@
 
 set -eux
 
-
-
-script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
-. "${TOP_SRCDIR}/tests/lib/sh/palette/kmeans_init_common.sh"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-output=$(run_kmeans_init "pca")
+output=$(
+   SIXEL_PALETTE_KMEANS_INITTYPE=pca run_test_runner "palette/0001_kmeans_init" | tr -d '\r'
+) || status=$
+
 if [ "${output}" = "pca" ]; then
     printf 'ok 1 - pca init type accepted\n'
 else
