@@ -15,7 +15,7 @@ long_description = open(os.path.join(dirpath, "README.rst")).read()
 
 bundle_libdir = os.environ.get("LIBSIXEL_LIBDIR")
 bundle_mode = bundle_libdir is not None
-package_name = "libsixel_wheel"
+package_name = "libsixel_wheel" if bundle_mode else "libsixel-python"
 package_data = {"libsixel": ["_libs/*"]} if bundle_mode else {}
 wheel_ext_modules = []
 
