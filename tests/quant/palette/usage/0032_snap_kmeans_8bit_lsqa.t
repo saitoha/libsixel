@@ -4,9 +4,6 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 . "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
-. "${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-
-status=0
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
@@ -19,17 +16,15 @@ input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snap-kmeans-8bit.six"
 output_png="${ARTIFACT_LOCAL_DIR}/snap-kmeans-8bit.png"
 
-if SIXEL_PALETTE_SNAP_TARGET_POLICY=nearest \
+SIXEL_PALETTE_SNAP_TARGET_POLICY=nearest \
         SIXEL_PALETTE_SNAP_TIMING_POLICY=all \
         SIXEL_PALETTE_SNAP_APPROACH_RATE=0.7 \
         SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L=0.7 \
         run_img2sixel -Q kmeans -6 \
-    -o "${output_sixel}" "${input_image}"; then
-    :
-else
+    -o "${output_sixel}" "${input_image}" || {
     fail 1 "img2sixel snap kmeans 8bit failed"
-    exit "${status}"
-fi
+    exit 0
+}
 
 lsqa_err=$(
     set +xv
@@ -44,4 +39,4 @@ else
     fail 1 "snap kmeans 8bit lsqa failed"
 fi
 
-exit "${status}"
+exit 0

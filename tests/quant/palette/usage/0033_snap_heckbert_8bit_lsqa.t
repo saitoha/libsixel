@@ -4,13 +4,10 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 . "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
-. "${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-
-status=0
-
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
+
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 echo "1..1"
 set -v
@@ -28,12 +25,10 @@ export SIXEL_PALETTE_SNAP_TIMING_POLICY
 export SIXEL_PALETTE_SNAP_APPROACH_RATE
 export SIXEL_PALETTE_SNAP_CHANNEL_FACTOR_L
 
-if run_img2sixel -Q heckbert -6 -o "${output_sixel}" "${input_image}"; then
-    :
-else
+run_img2sixel -Q heckbert -6 -o "${output_sixel}" "${input_image}" || {
     fail 1 "img2sixel snap heckbert 8bit failed"
-    exit "${status}"
-fi
+    exit 0
+}
 
 lsqa_err=$(
     set +xv
@@ -48,4 +43,4 @@ else
     fail 1 "snap heckbert 8bit lsqa failed"
 fi
 
-exit "${status}"
+exit 0

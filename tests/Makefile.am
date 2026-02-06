@@ -455,7 +455,6 @@ HELPER_FILES = \
     lib/sh/pipeline/pipeline_planner_common.sh \
     lib/sh/packaging/python_wheel_common.sh \
     lib/sh/palette/kmeans_init_common.sh \
-    lib/sh/lsqa/lsqa_common.sh \
     lib/sh/loader/pngsuite_common.sh \
     lib/sh/python/common.sh
 

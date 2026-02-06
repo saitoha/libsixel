@@ -3,14 +3,8 @@
 
 set -eu
 
-if [ "${VERBOSE:-0}" -eq 1 ]; then
-    set -x
-fi
-
-lsqa_common_path="${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-. "${lsqa_common_path}"
-
-status=0
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 
 printf '1..1\n'
 set -v

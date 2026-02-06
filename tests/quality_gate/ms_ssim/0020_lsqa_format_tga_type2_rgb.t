@@ -1,16 +1,10 @@
 #!/bin/sh
 # Verify TGA type 2 (uncompressed RGB) quality against lsqa baselines.
 
-set -eu
+set -eux
 
-if [ "${VERBOSE:-0}" -eq 1 ]; then
-    set -x
-fi
-
-lsqa_common_path="${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-. "${lsqa_common_path}"
-
-status=0
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
@@ -24,7 +18,7 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
 if ! run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}"; then
     fail 1 "type 2 RGB TGA quality below floor"
-    exit "${status}"
+    exit 0
 fi
 
 lsqa_err=$(
@@ -40,4 +34,4 @@ else
     fail 1 "type 2 RGB TGA quality below floor"
 fi
 
-exit "${status}"
+exit 0

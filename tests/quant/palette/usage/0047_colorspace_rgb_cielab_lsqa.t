@@ -9,12 +9,11 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 . "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
-. "${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-
-status=0
-lsqa_floor=0.99
 
 config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
+
+lsqa_floor=0.99
+
 echo "1..1"
 set -v
 
@@ -23,7 +22,7 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/rgb-cielab.six"
 
 run_img2sixel -t rgb -W cielab -o "${output_sixel}" "${input_image}" || {
     fail 1 "img2sixel rgb+cielab conversion failed"
-    exit "${status}"
+    exit 0
 }
 
 lsqa_err=$(
@@ -39,4 +38,4 @@ else
     fail 1 "rgb+cielab lsqa failed"
 fi
 
-exit "${status}"
+exit 0

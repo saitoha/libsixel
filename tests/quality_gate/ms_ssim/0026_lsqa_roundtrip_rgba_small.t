@@ -4,15 +4,14 @@
 set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-. "${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 
-status=0
+config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
+config_macro_defined HAVE_SIXEL2PNG || skip_all "sixel2png is disabled in this build"
 
 # Baseline MS-SSIM measured from the current roundtrip output.
 lsqa_floor=0.9
 
-config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
-config_macro_defined HAVE_SIXEL2PNG || skip_all "sixel2png is disabled in this build"
 ensure_executable "${LSQA_PATH}" "lsqa"
 
 printf '1..1\n'
@@ -24,12 +23,12 @@ output_png="${ARTIFACT_LOCAL_DIR}/rgba_roundtrip.png"
 
 run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}" || {
     fail 1 "rgba roundtrip encode failed"
-    exit "${status}"
+    exit 0
 }
 
 run_sixel2png -i "${output_sixel}" -o "${output_png}" || {
     fail 1 "rgba roundtrip decode failed"
-    exit "${status}"
+    exit 0
 }
 
 lsqa_err=$(
@@ -45,4 +44,4 @@ else
     fail 1 "rgba roundtrip ms-ssim regressed"
 fi
 
-exit "${status}"
+exit 0

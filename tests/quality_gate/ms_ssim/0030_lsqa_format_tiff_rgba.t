@@ -1,24 +1,16 @@
 #!/bin/sh
 # Confirm RGBA TIFF quality meets the MS-SSIM baseline.
 
-set -eu
+set -eux
 
-if [ "${VERBOSE:-0}" -eq 1 ]; then
-    set -x
-fi
-
-lsqa_common_path="${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-. "${lsqa_common_path}"
-
-status=0
-
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-if ! feature_defined_in_config "HAVE_LIBTIFF"; then
-    skip_all "libtiff support is disabled in this build"
-fi
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
+
+feature_defined_in_config "HAVE_LIBTIFF" || skip_all "libtiff support is disabled in this build"
 
 printf '1..1\n'
 set -v
@@ -29,7 +21,7 @@ if run_img2sixel -Llibtiff! "${image_path}" >"${output_sixel}"; then
     :
 else
     fail 1 "tiff rgba conversion failed"
-    exit "${status}"
+    exit 0
 fi
 
 lsqa_err=$(
@@ -45,4 +37,4 @@ else
     fail 1 "tiff rgba quality regressed"
 fi
 
-exit "${status}"
+exit 0
