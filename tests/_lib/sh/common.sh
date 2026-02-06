@@ -60,6 +60,10 @@ if [ -z "${LSQA_PATH:-}" ]; then
     LSQA_PATH="${top_builddir}/assessment/lsqa${SIXEL_BIN_EXT-}"
 fi
 
+if [ -z "${TEST_RUNNER_PATH:-}" ]; then
+    TEST_RUNNER_PATH="${top_builddir}/tests/test_runner${SIXEL_BIN_EXT-}"
+fi
+
 init_config_macro_cache() {
     config_header="${top_builddir}/config.h"
 
@@ -236,6 +240,10 @@ run_sixel2png() {
 
 run_lsqa() {
     runtime_exec "${LSQA_PATH}" "$@"
+}
+
+run_test_runner() {
+    runtime_exec "${TEST_RUNNER_PATH}" "$@"
 }
 
 make_temp_file() {

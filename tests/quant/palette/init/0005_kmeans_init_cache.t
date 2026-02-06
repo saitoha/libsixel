@@ -3,16 +3,16 @@
 
 set -eux
 
-
-
-script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
-. "${TOP_SRCDIR}/tests/lib/sh/palette/kmeans_init_common.sh"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
 
-cache_line=$(run_kmeans_init "pca" --cache)
-if [ "${cache_line}" = "pca pca" ]; then
+output=$(
+   SIXEL_PALETTE_KMEANS_INITTYPE=pca run_test_runner "palette/0001_kmeans_init" --cache | tr -d '\r'
+) || status=$
+
+if [ "${output}" = "pca pca" ]; then
     printf 'ok 1 - cache preserves initial value\n'
 else
     printf 'not ok 1 - cache check returned %s\n' "${cache_line}"
