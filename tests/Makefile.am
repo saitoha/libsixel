@@ -450,7 +450,6 @@ TEST_EXTENSIONS = .t
 HELPER_FILES = \
     _lib/sh/common.sh \
     docs/consistency/list_envvars.sh \
-    lib/sh/mapfile/mapfile_common.sh \
     lib/sh/packaging/python_wheel_common.sh \
     lib/sh/loader/pngsuite_common.sh \
     lib/sh/python/common.sh
@@ -714,6 +713,8 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/stbi_minimal.hdr \
     data/inputs/formats/stbi_minimal.psd \
     data/inputs/formats/stbi_minimal.pic \
+    data/inputs/small.ppm \
+    data/inputs/tall.ppm \
     data/inputs/small.gif \
     data/inputs/snake_64.bmp \
     data/inputs/snake_64.gif \
