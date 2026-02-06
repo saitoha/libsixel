@@ -2,12 +2,12 @@
 # Verify that img2sixel exits successfully when -O/--ormode is used.
 set -eux
 
-conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
-. "${conversion_common_path}"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 status=0
 
-ensure_img2sixel_available
+config_macro_defined HAVE_IMG2SIXEL || skip_all
 
 echo "1..1"
 set -v

@@ -16,7 +16,7 @@ lsqa_common_path="${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
 status=0
 lsqa_floor=0.975
 
-ensure_img2sixel_available
+config_macro_defined HAVE_IMG2SIXEL || skip_all
 echo "1..1"
 set -v
 

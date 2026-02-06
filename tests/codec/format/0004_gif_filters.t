@@ -2,20 +2,18 @@
 # Validate GIF conversion with scaling and filters.
 set -eux
 
-conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
-. "${conversion_common_path}"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 
 status=0
 
-ensure_img2sixel_available
+config_macro_defined HAVE_IMG2SIXEL || skip_all
 
 echo "1..1"
 set -v
 
 snake_gif="${images_dir}/snake.gif"
 target_sixel="${ARTIFACT_LOCAL_DIR}/snake-gif.sixel"
-
-
 
 if run_img2sixel -w105% -h100 -B"#000000000" -rne <"${snake_gif}" \
     >"${target_sixel}"; then
