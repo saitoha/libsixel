@@ -81,7 +81,6 @@
 
 #include "assessment.h"
 #include "encoder.h"
-#include "compat_stub.h"
 #include "timer.h"
 #include "sixel_atomic.h"
 
@@ -290,6 +289,33 @@ assessment_reset_stage_bookkeeping(sixel_assessment_t *assessment)
     assessment->encode_output_time_pending = 0.0;
 }
 
+/*
+ * Local bounded string copy helper for LSQA.
+ *
+ * assessment/ must not depend on src/compat_stub.h because that header is
+ * intended for private core sources under src/.  Keep a tiny local helper so
+ * this translation unit can safely copy short labels without crossing layers.
+ */
+static int
+lsqa_compat_strcpy(char *destination,
+                   size_t destination_size,
+                   char const *source)
+{
+    size_t length;
+
+    if (destination == NULL || source == NULL || destination_size == 0) {
+        return (-1);
+    }
+
+    length = strlen(source);
+    if (length >= destination_size) {
+        length = destination_size - 1;
+    }
+    memcpy(destination, source, length);
+    destination[length] = '\0';
+    return (int)length;
+}
+
 static void
 assessment_guess_format(sixel_assessment_t *assessment)
 {
@@ -307,24 +333,24 @@ assessment_guess_format(sixel_assessment_t *assessment)
     loader = assessment->loader_name;
     if (loader[0] != '\0') {
         if (strcmp(loader, "libpng") == 0) {
-            (void)sixel_compat_strcpy(assessment->format_name,
-                                      sizeof(assessment->format_name),
-                                      "png");
+            (void)lsqa_compat_strcpy(assessment->format_name,
+                                     sizeof(assessment->format_name),
+                                     "png");
             return;
         } else if (strcmp(loader, "libjpeg") == 0) {
-            (void)sixel_compat_strcpy(assessment->format_name,
-                                      sizeof(assessment->format_name),
-                                      "jpeg");
+            (void)lsqa_compat_strcpy(assessment->format_name,
+                                     sizeof(assessment->format_name),
+                                     "jpeg");
             return;
         } else if (strcmp(loader, "wic") == 0) {
-            (void)sixel_compat_strcpy(assessment->format_name,
-                                      sizeof(assessment->format_name),
-                                      "wic");
+            (void)lsqa_compat_strcpy(assessment->format_name,
+                                     sizeof(assessment->format_name),
+                                     "wic");
             return;
         } else if (strcmp(loader, "builtin") == 0) {
-            (void)sixel_compat_strcpy(assessment->format_name,
-                                      sizeof(assessment->format_name),
-                                      "builtin");
+            (void)lsqa_compat_strcpy(assessment->format_name,
+                                     sizeof(assessment->format_name),
+                                     "builtin");
             return;
         }
     }
@@ -340,9 +366,9 @@ assessment_guess_format(sixel_assessment_t *assessment)
         }
         assessment->format_name[len] = '\0';
     } else {
-        (void)sixel_compat_strcpy(assessment->format_name,
-                                  sizeof(assessment->format_name),
-                                  "unknown");
+        (void)lsqa_compat_strcpy(assessment->format_name,
+                                 sizeof(assessment->format_name),
+                                 "unknown");
     }
 }
 
