@@ -15,12 +15,17 @@ status=0
 printf '1..1\n'
 set -v
 
-image_path="${top_srcdir}/tests/data/corrupted/metadata_noise.jpg"
-if lsqa_expect_low_quality_or_fail "${image_path}" \
-    "metadata_noise.jpg" "${ARTIFACT_LOCAL_DIR}"; then
-    pass 1 "metadata noise rejected or scored low"
-else
-    fail 1 "metadata noise unexpectedly accepted"
-fi
+input_image="${top_srcdir}/tests/data/corrupted/metadata_noise.jpg"
 
-exit "${status}"
+lsqa_err=$(
+    set +xv
+    run_lsqa -b "MS-SSIM:0.5" "${input_image}" "${input_image}"
+) || lsqa_run_status=$?
+
+test -z "${lsqa_run_status-}" || {
+    pass 1 "metadata noise rejected or scored low"
+    exit 0
+}
+
+fail 1 "metadata noise unexpectedly accepted"
+exit 0

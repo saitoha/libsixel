@@ -55,39 +55,6 @@ _lsqa_run_compare() {
     printf '%s' "${lsqa_run_status}"
 }
 
-
-lsqa_expect_low_quality_or_fail() {
-    lsqa_low_image_path=$1
-    lsqa_low_label=$2
-    lsqa_low_artifact_dir=$3
-
-    lsqa_low_err_file=$(mktemp)
-    lsqa_low_run_status=0
-
-    run_lsqa -b "MS-SSIM:0.5" "${lsqa_low_image_path}" \
-        "${lsqa_low_image_path}" > /dev/null 2>"${lsqa_low_err_file}" \
-        || lsqa_low_run_status=$?
-
-    if [ ${lsqa_low_run_status} -eq 0 ]; then
-        printf '# %s: low-quality input accepted\n' \
-            "${lsqa_low_label}"
-        rm -f "${lsqa_low_err_file}"
-        return 1
-    fi
-
-    if [ -s "${lsqa_low_err_file}" ]; then
-        printf '# %s: assessment/lsqa returned %s\n' \
-            "${lsqa_low_label}" "${lsqa_low_run_status}"
-        printf '# lsqa stderr follows\n'
-        sed 's/^/# /' "${lsqa_low_err_file}"
-    else
-        printf '# %s: lsqa produced no diagnostics\n' \
-            "${lsqa_low_label}"
-    fi
-    rm -f "${lsqa_low_err_file}"
-    return 0
-}
-
 lsqa_assert_repeat_stability() {
     lsqa_repeat_image_path=$1
     lsqa_repeat_label=$2
