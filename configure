@@ -805,6 +805,10 @@ OBJCDEPMODE
 ac_ct_OBJC
 OBJCFLAGS
 OBJC
+SIXEL_LIBTOOL_PATH_SEPARATOR
+SIXEL_LIBTOOL_BUILD_LIBS
+SIXEL_LIBTOOL_SHLIBPATH_VAR
+SIXEL_LIBTOOL_OBJDIR
 LT_SYS_LIBRARY_PATH
 OTOOL64
 OTOOL
@@ -14436,6 +14440,25 @@ CC=$lt_save_CC
 
 
 # Only expand once:
+
+
+
+# Expose libtool runtime metadata to test environments so shell tests can
+# execute the real binaries directly without probing stale build artifacts.
+SIXEL_LIBTOOL_OBJDIR=$objdir
+
+SIXEL_LIBTOOL_SHLIBPATH_VAR=$shlibpath_var
+
+SIXEL_LIBTOOL_BUILD_LIBS=$enable_shared
+
+case "$host_os" in
+  mingw* | cygwin* | msys*)
+    SIXEL_LIBTOOL_PATH_SEPARATOR=';'
+    ;;
+  *)
+    SIXEL_LIBTOOL_PATH_SEPARATOR=':'
+    ;;
+esac
 
 
 

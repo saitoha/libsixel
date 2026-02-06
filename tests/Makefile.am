@@ -465,6 +465,43 @@ AM_TESTS_ENVIRONMENT += SIXEL_MSAN_BUILD='@SIXEL_MSAN_BUILD@'; \
        export SIXEL_MSAN_BUILD;
 AM_TESTS_ENVIRONMENT += CROSS_COMPILING='@cross_compiling@'; \
        export CROSS_COMPILING;
+AM_TESTS_ENVIRONMENT += if test "x@SIXEL_LIBTOOL_BUILD_LIBS@" = "xyes"; then \
+       IMG2SIXEL_PATH='$(abs_top_builddir)/converters/@SIXEL_LIBTOOL_OBJDIR@/img2sixel@EXEEXT@'; \
+       SIXEL2PNG_PATH='$(abs_top_builddir)/converters/@SIXEL_LIBTOOL_OBJDIR@/sixel2png@EXEEXT@'; \
+       LSQA_PATH='$(abs_top_builddir)/assessment/@SIXEL_LIBTOOL_OBJDIR@/lsqa@EXEEXT@'; \
+       TEST_RUNNER_PATH='$(abs_top_builddir)/tests/@SIXEL_LIBTOOL_OBJDIR@/test_runner@EXEEXT@'; \
+else \
+       IMG2SIXEL_PATH='$(abs_top_builddir)/converters/img2sixel@EXEEXT@'; \
+       SIXEL2PNG_PATH='$(abs_top_builddir)/converters/sixel2png@EXEEXT@'; \
+       LSQA_PATH='$(abs_top_builddir)/assessment/lsqa@EXEEXT@'; \
+       TEST_RUNNER_PATH='$(abs_top_builddir)/tests/test_runner@EXEEXT@'; \
+fi; \
+export IMG2SIXEL_PATH; export SIXEL2PNG_PATH; \
+export LSQA_PATH; export TEST_RUNNER_PATH;
+AM_TESTS_ENVIRONMENT += SIXEL_LIBTOOL_RPATH='$(abs_top_builddir)/src/@SIXEL_LIBTOOL_OBJDIR@'; \
+       export SIXEL_LIBTOOL_RPATH;
+AM_TESTS_ENVIRONMENT += if test "x@SIXEL_LIBTOOL_SHLIBPATH_VAR@" = "xLD_LIBRARY_PATH"; then \
+       if test -n "$$LD_LIBRARY_PATH"; then \
+              LD_LIBRARY_PATH="$$SIXEL_LIBTOOL_RPATH@SIXEL_LIBTOOL_PATH_SEPARATOR@$$LD_LIBRARY_PATH"; \
+       else \
+              LD_LIBRARY_PATH="$$SIXEL_LIBTOOL_RPATH"; \
+       fi; \
+       export LD_LIBRARY_PATH; \
+elif test "x@SIXEL_LIBTOOL_SHLIBPATH_VAR@" = "xDYLD_LIBRARY_PATH"; then \
+       if test -n "$$DYLD_LIBRARY_PATH"; then \
+              DYLD_LIBRARY_PATH="$$SIXEL_LIBTOOL_RPATH@SIXEL_LIBTOOL_PATH_SEPARATOR@$$DYLD_LIBRARY_PATH"; \
+       else \
+              DYLD_LIBRARY_PATH="$$SIXEL_LIBTOOL_RPATH"; \
+       fi; \
+       export DYLD_LIBRARY_PATH; \
+elif test "x@SIXEL_LIBTOOL_SHLIBPATH_VAR@" = "xPATH"; then \
+       if test -n "$$PATH"; then \
+              PATH="$$SIXEL_LIBTOOL_RPATH@SIXEL_LIBTOOL_PATH_SEPARATOR@$$PATH"; \
+       else \
+              PATH="$$SIXEL_LIBTOOL_RPATH"; \
+       fi; \
+       export PATH; \
+fi;
 TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_builddir) -I$(top_builddir)/include \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \
