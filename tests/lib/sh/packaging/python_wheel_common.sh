@@ -9,7 +9,6 @@ wheel_helper_dir=${WHEEL_HELPER_DIR-}
 if [ -z "${wheel_helper_dir}" ]; then
     wheel_helper_dir=$(CDPATH=; cd "$(dirname "${wheel_common_path}")" && pwd)
 fi
-. "${wheel_helper_dir}/../common/tap.sh"
 
 setup_wheel_paths() {
     run_venv="${ARTIFACT_LOCAL_DIR}/venv"

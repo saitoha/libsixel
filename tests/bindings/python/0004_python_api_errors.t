@@ -6,8 +6,8 @@
 
 set -eux
 
-PYTHON_HELPER_DIR="${TOP_SRCDIR}/tests/lib/sh/python"
-. "${PYTHON_HELPER_DIR}/common.sh"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/python/common.sh"
 
 source_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 

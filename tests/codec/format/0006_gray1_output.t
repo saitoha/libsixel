@@ -3,7 +3,6 @@
 set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 
 status=0
 

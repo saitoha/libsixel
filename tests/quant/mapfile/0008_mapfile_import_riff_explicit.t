@@ -3,12 +3,9 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
-
-status=0
 
 echo "1..1"
 set -v
@@ -27,12 +24,12 @@ cp "${riff_palette}" "${riff_alias}"
 if run_img2sixel -m pal-riff:"${riff_alias}" \
         -o "${ARTIFACT_LOCAL_DIR}/from-riff.six" "${snake_png}"; then
     if [ -s "${ARTIFACT_LOCAL_DIR}/from-riff.six" ]; then
-        pass "RIFF palette parsed with explicit type"
+        pass 1 "RIFF palette parsed with explicit type"
     else
-        fail "RIFF palette conversion produced no data"
+        fail 1 "RIFF palette conversion produced no data"
     fi
 else
-    fail "RIFF palette conversion failed"
+    fail 1 "RIFF palette conversion failed"
 fi
 
-exit "${status}"
+exit 0

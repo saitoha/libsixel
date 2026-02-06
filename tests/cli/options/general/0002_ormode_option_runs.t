@@ -2,7 +2,6 @@
 # Verify that img2sixel exits successfully when -O/--ormode is used.
 set -eux
 
-. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 status=0
