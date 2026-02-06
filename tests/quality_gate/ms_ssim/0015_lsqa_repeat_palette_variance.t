@@ -11,9 +11,9 @@ set -v
 image1="${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp"
 image2="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
 
-value0=$(run_lsqa -m ms-ssim "${image1}" "${image2}")
-value1=$(run_lsqa -m ms-ssim "${image1}" "${image2}")
-value2=$(run_lsqa -m ms-ssim "${image1}" "${image2}")
+value0=$(run_lsqa -m MS-SSIM "${image1}" "${image2}")
+value1=$(run_lsqa -m MS-SSIM "${image1}" "${image2}")
+value2=$(run_lsqa -m MS-SSIM "${image1}" "${image2}")
 
 if "${value0}" != "${value1}" || test "${value1}" != "${value2}"; then
     fail 1 "palette repeat variance exceeded tolerance"
