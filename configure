@@ -701,6 +701,8 @@ LIBS_PRIVATE
 REQUIRES_PRIVATE
 WIC_LIBS
 WIC_CFLAGS
+LIBRSVG_LIBS
+LIBRSVG_CFLAGS
 LIBWEBP_LIBS
 LIBWEBP_CFLAGS
 LIBTIFF_LIBS
@@ -969,6 +971,7 @@ with_jpeg
 with_png
 with_tiff
 with_webp
+with_librsvg
 with_winpthread
 with_wic
 with_winhttp
@@ -1021,6 +1024,8 @@ LIBTIFF_CFLAGS
 LIBTIFF_LIBS
 LIBWEBP_CFLAGS
 LIBWEBP_LIBS
+LIBRSVG_CFLAGS
+LIBRSVG_LIBS
 PYTHON
 RUBY_EXT_INC
 RUBY_EXT_LIB
@@ -1726,6 +1731,8 @@ Optional Packages:
   --with-png              whether to build with libpng (default: auto)
   --with-tiff             whether to build with libtiff (default: auto)
   --with-webp             whether to build with libwebp (default: auto)
+  --with-librsvg          whether to build with librsvg and cairo (default:
+                          auto)
   --with-winpthread       whether to build with libwinpthread, windows only
                           (default: no)
   --with-wic              whether to build with Windows Imaging Component
@@ -1796,6 +1803,10 @@ Some influential environment variables:
               C compiler flags for LIBWEBP, overriding pkg-config
   LIBWEBP_LIBS
               linker flags for LIBWEBP, overriding pkg-config
+  LIBRSVG_CFLAGS
+              C compiler flags for LIBRSVG, overriding pkg-config
+  LIBRSVG_LIBS
+              linker flags for LIBRSVG, overriding pkg-config
   PYTHON      the Python interpreter
   RUBY_EXT_INC
               Directory to include ruby headers from
@@ -17272,6 +17283,17 @@ fi
 
 
 
+# Check whether --with-librsvg was given.
+if test ${with_librsvg+y}
+then :
+  withval=$with_librsvg;
+else case e in #(
+  e) with_librsvg=auto ;;
+esac
+fi
+
+
+
 # Check whether --with-winpthread was given.
 if test ${with_winpthread+y}
 then :
@@ -20667,6 +20689,7 @@ have_gdk_pixbuf2="no"
 have_gdk_pixbuf_244="no"
 have_gdk_pixbuf_pkg="no"
 have_gdk_pixbuf_loader="no"
+have_librsvg="no"
 GDK_PIXBUF_QUERY_LOADERS=""
 have_sse2=no
 have_xgetbv_intrin=no
@@ -23878,6 +23901,108 @@ printf "%s\n" "$as_me: libwebp libs is ${LIBWEBP_LIBS}" >&6;}
         fi
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: libwebp is not available" >&5
 printf "%s\n" "$as_me: libwebp is not available" >&6;}
+    fi
+fi
+
+
+
+
+if test x$with_librsvg != xno; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for librsvg + cairo" >&5
+printf "%s\n" "$as_me: checking for librsvg + cairo" >&6;}
+    if test x${PKG_CONFIG} != x; then
+
+pkg_failed=no
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for librsvg-2.0 >= 2.46 cairo" >&5
+printf %s "checking for librsvg-2.0 >= 2.46 cairo... " >&6; }
+
+if test -n "$LIBRSVG_CFLAGS"; then
+    pkg_cv_LIBRSVG_CFLAGS="$LIBRSVG_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"librsvg-2.0 >= 2.46 cairo\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "librsvg-2.0 >= 2.46 cairo") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBRSVG_CFLAGS=`$PKG_CONFIG --cflags "librsvg-2.0 >= 2.46 cairo" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$LIBRSVG_LIBS"; then
+    pkg_cv_LIBRSVG_LIBS="$LIBRSVG_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"librsvg-2.0 >= 2.46 cairo\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "librsvg-2.0 >= 2.46 cairo") 2>&5
+  ac_status=$?
+  printf "%s\n" "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_LIBRSVG_LIBS=`$PKG_CONFIG --libs "librsvg-2.0 >= 2.46 cairo" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+                LIBRSVG_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "librsvg-2.0 >= 2.46 cairo" 2>&1`
+        else
+                LIBRSVG_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "librsvg-2.0 >= 2.46 cairo" 2>&1`
+        fi
+        # Put the nasty error message in config.log where it belongs
+        echo "$LIBRSVG_PKG_ERRORS" >&5
+
+        have_librsvg=no
+elif test $pkg_failed = untried; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+        have_librsvg=no
+else
+        LIBRSVG_CFLAGS=$pkg_cv_LIBRSVG_CFLAGS
+        LIBRSVG_LIBS=$pkg_cv_LIBRSVG_LIBS
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+printf "%s\n" "yes" >&6; }
+        have_librsvg=yes
+fi
+    else
+        have_librsvg=no
+    fi
+
+    if test x$have_librsvg = xyes; then
+
+printf "%s\n" "#define HAVE_LIBRSVG 1" >>confdefs.h
+
+        loaders="${loaders} librsvg"
+        REQUIRES_PRIVATE="$REQUIRES_PRIVATE librsvg-2.0 cairo"
+        LIBS_PRIVATE="$LIBS_PRIVATE $LIBRSVG_LIBS"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: librsvg cflags is ${LIBRSVG_CFLAGS}" >&5
+printf "%s\n" "$as_me: librsvg cflags is ${LIBRSVG_CFLAGS}" >&6;}
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: librsvg libs is ${LIBRSVG_LIBS}" >&5
+printf "%s\n" "$as_me: librsvg libs is ${LIBRSVG_LIBS}" >&6;}
+    else
+        if test x$with_librsvg != xauto; then
+            as_fn_error $? "unable to find librsvg and cairo" "$LINENO" 5
+        fi
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: librsvg is not available" >&5
+printf "%s\n" "$as_me: librsvg is not available" >&6;}
     fi
 fi
 

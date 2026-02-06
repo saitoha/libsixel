@@ -889,6 +889,7 @@ what is available):
 - `libjpeg`
 - `libwebp`
 - `libtiff`
+- `librsvg`
 - `builtin`
 - `wic`
 - `coregraphics`

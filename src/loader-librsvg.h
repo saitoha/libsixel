@@ -1,0 +1,63 @@
+/*
+ * SPDX-License-Identifier: MIT
+ *
+ * Copyright (c) 2025 libsixel developers. See `AUTHORS`.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+ * DEALINGS IN THE SOFTWARE.
+ */
+
+#ifndef LIBSIXEL_LOADER_LIBRSVG_H
+#define LIBSIXEL_LOADER_LIBRSVG_H
+
+#include <sixel.h>
+
+#include "chunk.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+SIXELAPI SIXELSTATUS
+load_with_librsvg(
+    sixel_chunk_t const       /* in */     *pchunk,
+    int                       /* in */     fstatic,
+    int                       /* in */     fuse_palette,
+    int                       /* in */     reqcolors,
+    unsigned char             /* in */     *bgcolor,
+    int                       /* in */     loop_control,
+    sixel_load_image_function /* in */     fn_load,
+    void                      /* in/out */ *context);
+
+SIXELAPI int
+loader_can_try_librsvg(sixel_chunk_t const *chunk);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* LIBSIXEL_LOADER_LIBRSVG_H */
+
+/* emacs Local Variables:      */
+/* emacs mode: c               */
+/* emacs tab-width: 4          */
+/* emacs indent-tabs-mode: nil */
+/* emacs c-basic-offset: 4     */
+/* emacs End:                  */
+/* vim: set expandtab ts=4 sts=4 sw=4 : */
+/* EOF */

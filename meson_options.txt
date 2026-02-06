@@ -23,6 +23,7 @@ option('png', type: 'feature', value: 'auto', description: 'Use libpng for PNG s
 option('tiff', type: 'feature', value: 'auto', description: 'Use libtiff for TIFF support')
 option('jpeg', type: 'feature', value: 'auto', description: 'Use libjpeg for JPEG support')
 option('webp', type: 'feature', value: 'auto', description: 'Use libwebp for WebP support')
+option('librsvg', type: 'feature', value: 'auto', description: 'Use librsvg+cairo for SVG support')
 option('curl', type: 'feature', value: 'auto', description: 'Use libcurl for network access')
 option('gdk_pixbuf2', type: 'feature', value: 'disabled', description: 'Use gdk-pixbuf2 loader')
 option('gdk_pixbuf_loader', type: 'feature', value: 'disabled',
