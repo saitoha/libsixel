@@ -7,7 +7,7 @@ conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
 
 status=0
 
-ensure_img2sixel_available
+config_macro_defined HAVE_IMG2SIXEL || skip_all
 
 echo "1..1"
 set -v

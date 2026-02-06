@@ -2,18 +2,17 @@
 # Confirm unique select-color prefix is accepted.
 set -eux
 
-conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
-. "${conversion_common_path}"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 
 status=0
 
-ensure_img2sixel_available
+config_macro_defined HAVE_IMG2SIXEL || skip_all
 
 echo "1..1"
 set -v
 
 snake_jpg="${top_srcdir}/tests/data/inputs/snake_64.jpg"
-
 
 if run_img2sixel -shist "${snake_jpg}" >/dev/null; then
     pass 1 "unique select-color prefix accepted"

@@ -2,12 +2,12 @@
 # Convert with a 16-colour palette using the fast encoder.
 set -eux
 
-conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
-. "${conversion_common_path}"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 
 status=0
 
-ensure_img2sixel_available
+config_macro_defined HAVE_IMG2SIXEL || skip_all
 
 echo "1..1"
 set -v
@@ -16,9 +16,7 @@ snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 map16_palette="${images_dir}/map16-palette.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/palette16.sixel"
 
-
-if run_img2sixel -7 -m "${map16_palette}" -Efast "${snake_jpg}" \
-        >"${target_sixel}"; then
+if run_img2sixel -7 -m "${map16_palette}" -Efast "${snake_jpg}" >"${target_sixel}"; then
     pass 1 "16-colour palette conversion succeeds"
 else
     fail 1 "16-colour palette conversion fails"

@@ -2,8 +2,8 @@
 # Validate TIFF conversion with palette and filter options.
 set -eux
 
-conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
-. "${conversion_common_path}"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
 
 status=0
 
@@ -11,7 +11,7 @@ if ! feature_defined_in_config "HAVE_LIBTIFF"; then
     skip_all "libtiff support is disabled in this build"
 fi
 
-ensure_img2sixel_available
+config_macro_defined HAVE_IMG2SIXEL || skip_all
 
 echo "1..1"
 set -v

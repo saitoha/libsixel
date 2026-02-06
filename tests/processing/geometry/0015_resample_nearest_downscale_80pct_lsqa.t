@@ -11,43 +11,26 @@
 # scaling preserves hard edges that amplify palette quantization artifacts.
 set -eux
 
-conversion_common_path="${TOP_SRCDIR}/tests/lib/sh/conversion/common.sh"
-. "${conversion_common_path}"
-
-lsqa_common_path="${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
-. "${lsqa_common_path}"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/common/tap.sh"
+. "${TOP_SRCDIR}/tests/lib/sh/lsqa/lsqa_common.sh"
 
 status=0
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.90}
 
-data_root="${top_srcdir}/tests/data/inputs"
-LSQA_DATA_ROOT="${top_srcdir}/tests/data"
-export LSQA_DATA_ROOT
-TOP_BUILDDIR="${top_builddir}"
-TOP_SRCDIR="${top_srcdir}"
-export TOP_BUILDDIR TOP_SRCDIR
-input_image="${data_root}/snake_64.png"
-reference_image="${data_root}/scaling/snake_64_nearest_80pct.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+reference_image="${TOP_SRCDIR}/tests/data/inputs/scaling/snake_64_nearest_80pct.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/nearest-downscale_80pct.six"
 
-ensure_img2sixel_available
+config_macro_defined HAVE_IMG2SIXEL || skip_all
 
 echo "1..1"
 set -v
 
-
-
-
-
-if run_img2sixel -r nearest -w 80% \
-    -o "${output_sixel}" \
-    "${input_image}" \
-; then
-    :
-else
+run_img2sixel -r nearest -w 80% -o "${output_sixel}" "${input_image}" || {
     fail 1 "nearest downscale 80pct scaling failed"
     exit "${status}"
-fi
+}
 
 lsqa_err=$(
     set +xv

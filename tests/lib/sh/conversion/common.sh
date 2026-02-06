@@ -18,39 +18,3 @@ if [ -z "${conversion_helper_dir}" ]; then
 fi
 . "${conversion_helper_dir}/../common/tap.sh"
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
-ensure_img2sixel_available() {
-    ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
-}
-
-expected_dcs_crc="302131327e2d2131327e1b5c"
-
-conversion_dcs_checksum() {
-    scale_args=$1
-
-    checksum=$(printf '\033Pq"1;1;1;1!6~\033\\' \
-        | run_img2sixel -rne ${scale_args} \
-        | tr '#' '\n' | tail -n +3 \
-        | od -An -tx1 | tr -d ' \n') || checksum=""
-
-    printf '%s' "${checksum}"
-}
-
-check_dcs_crc() {
-    case_no=$1
-    scale_args=$2
-    description=$3
-
-    digest=$(conversion_dcs_checksum "${scale_args}")
-
-    if [ -z "${digest}" ]; then
-        fail "${case_no}" "${description} (no checksum produced)"
-        return
-    fi
-
-    if [ "x${digest}" = "x${expected_dcs_crc}" ]; then
-        pass "${case_no}" "${description}"
-    else
-        fail "${case_no}" "${description}"
-    fi
-}
