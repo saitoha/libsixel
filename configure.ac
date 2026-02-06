@@ -23,6 +23,22 @@ AC_REQUIRE_AUX_FILE([ar-lib])
 AM_MAINTAINER_MODE([disable])
 AM_SILENT_RULES([yes])
 LT_INIT
+
+# Expose libtool runtime metadata to test environments so shell tests can
+# execute the real binaries directly without probing stale build artifacts.
+AC_SUBST([SIXEL_LIBTOOL_OBJDIR], [$objdir])
+AC_SUBST([SIXEL_LIBTOOL_SHLIBPATH_VAR], [$shlibpath_var])
+AC_SUBST([SIXEL_LIBTOOL_BUILD_LIBS], [$enable_shared])
+case "$host_os" in
+  mingw* | cygwin* | msys*)
+    SIXEL_LIBTOOL_PATH_SEPARATOR=';'
+    ;;
+  *)
+    SIXEL_LIBTOOL_PATH_SEPARATOR=':'
+    ;;
+esac
+AC_SUBST([SIXEL_LIBTOOL_PATH_SEPARATOR])
+
 AC_CONFIG_SRCDIR([src/fromsixel.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
