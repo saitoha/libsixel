@@ -1171,7 +1171,6 @@ TEST_EXTENSIONS = .t
 HELPER_FILES = \
     _lib/sh/common.sh \
     docs/consistency/list_envvars.sh \
-    lib/sh/mapfile/mapfile_common.sh \
     lib/sh/packaging/python_wheel_common.sh \
     lib/sh/loader/pngsuite_common.sh \
     lib/sh/python/common.sh
@@ -1183,8 +1182,10 @@ AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	TOP_BUILDDIR; SIXEL_TSAN_BUILD='@SIXEL_TSAN_BUILD@'; export \
 	SIXEL_TSAN_BUILD; SIXEL_MSAN_BUILD='@SIXEL_MSAN_BUILD@'; \
 	export SIXEL_MSAN_BUILD; CROSS_COMPILING='@cross_compiling@'; \
-	export CROSS_COMPILING; if test "x@SIXEL_LIBTOOL_BUILD_LIBS@" \
-	= "xyes"; then \
+	export CROSS_COMPILING; \
+	RUNTIME_SHLIBPATH_VAR='@SIXEL_LIBTOOL_SHLIBPATH_VAR@'; export \
+	RUNTIME_SHLIBPATH_VAR; if test "x@SIXEL_LIBTOOL_BUILD_LIBS@" = \
+	"xyes"; then \
 	IMG2SIXEL_PATH='$(abs_top_builddir)/converters/@SIXEL_LIBTOOL_OBJDIR@/img2sixel@EXEEXT@'; \
 	SIXEL2PNG_PATH='$(abs_top_builddir)/converters/@SIXEL_LIBTOOL_OBJDIR@/sixel2png@EXEEXT@'; \
 	LSQA_PATH='$(abs_top_builddir)/assessment/@SIXEL_LIBTOOL_OBJDIR@/lsqa@EXEEXT@'; \
@@ -1392,6 +1393,8 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/stbi_minimal.hdr \
     data/inputs/formats/stbi_minimal.psd \
     data/inputs/formats/stbi_minimal.pic \
+    data/inputs/small.ppm \
+    data/inputs/tall.ppm \
     data/inputs/small.gif \
     data/inputs/snake_64.bmp \
     data/inputs/snake_64.gif \
