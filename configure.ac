@@ -490,8 +490,10 @@ case "$CC" in
   *clang-cl*)
     using_cl=yes
     using_clangcl=yes
-    CFLAGS=`echo "$CFLAGS" | sed s/-g//g`
-    CFLAGS="$CFLAGS -O2"
+    for w in $CFLAGS; do
+        test "$w" = "-g" ] || new_CFLAGS="$new $w"
+    done
+    CFLAGS="$new_CFLAGS -O2"
     LDFLAGS="$LDFLAGS -DEBUG"
     PKG_CONFIG=
     LD=link
@@ -507,8 +509,10 @@ case "$CC" in
   *cl|*cl.exe)
     using_cl=yes
     using_clangcl=no
-    CFLAGS=`echo "$CFLAGS" | sed s/-g//g`
-    CFLAGS="$CFLAGS -O2"
+    for w in $CFLAGS; do
+        test "$w" = "-g" ] || new_CFLAGS="$new $w"
+    done
+    CFLAGS="$new_CFLAGS -O2"
     LDFLAGS="$LDFLAGS -DEBUG"
     PKG_CONFIG=
     LD=link
@@ -533,11 +537,9 @@ AS_IF([test "x$CI" != "x"], [
   if test "x$using_cl" = "xyes"; then
     CFLAGS="$CFLAGS -WX"
     OBJCFLAGS="$OBJCFLAGS -WX"
-    CXXFLAGS="$CXXFLAGS -WX"
   else
     CFLAGS="$CFLAGS -Werror"
     OBJCFLAGS="$OBJCFLAGS -Werror"
-    CXXFLAGS="$CXXFLAGS -Werror"
   fi
 ])
 
@@ -869,33 +871,6 @@ if test x$enable_thumbnailer_command = xauto; then
     enable_thumbnailer_command=no
   fi
 fi
-AS_IF([test "x$enable_abort_trace" != "xno"], [
-  AC_DEFINE([SIXEL_ENABLE_ABORT_TRACE],
-            [1],
-            [Define to 1 if CLI abort tracing is enabled])
-  AC_CHECK_LIB([execinfo],
-               [backtrace],
-               [ABORTTRACE_LIBS="$ABORTTRACE_LIBS -lexecinfo"],
-               [],
-               [])
-  ac_save_LIBS="$LIBS"
-  LIBS="$LIBS $ABORTTRACE_LIBS"
-  AC_CHECK_FUNCS([backtrace backtrace_symbols_fd],
-                 [],
-                 [],
-                 [[#include <execinfo.h>]])
-  LIBS="$ac_save_LIBS"
-  AC_CHECK_LIB([dbghelp],
-               [SymInitialize],
-               [ABORTTRACE_LIBS="$ABORTTRACE_LIBS -ldbghelp"
-                AC_DEFINE([HAVE_DBGHELP],
-                          [1],
-                          [Define to 1 if dbghelp is available])],
-               [],
-               [])
-])
-AC_SUBST([ABORTTRACE_LIBS])
-
 if test x$message_thumbnailer = xno; then
   if test x$enable_thumbnailer_command = xyes; then
     if test x$thumbnailer_command_mode = xauto; then
@@ -1562,22 +1537,8 @@ case "${host_os}" in
 esac
 
 if test x$ac_cv_header_windows_h = xyes; then
-    AC_CHECK_FUNCS([CreateProcessA \
-                    TerminateProcess \
-                    WaitForSingleObject \
-                    CloseHandle \
-                    GetExitCodeProcess],
-                   [],
-                   [],
-                   [[#include <windows.h>]])
-    AS_IF([test "x$ac_cv_header_windows_h" = xyes && \
-           test "x$ac_cv_func_CreateProcessA" = xyes && \
-           test "x$ac_cv_func_TerminateProcess" = xyes && \
-           test "x$ac_cv_func_WaitForSingleObject" = xyes && \
-           test "x$ac_cv_func_CloseHandle" = xyes && \
-           test "x$ac_cv_func_GetExitCodeProcess" = xyes],
-           [AC_DEFINE([HAVE_WINDOWS_PROC], [1],
-                      [Define to 1 if Win32 process APIs are available.])])
+    AC_DEFINE([HAVE_WINDOWS_PROC], [1],
+              [Define to 1 if Win32 process APIs are available.])
 fi
 
 AC_CHECK_DECLS([SIGINT, SIGTERM, SIGHUP],,,
@@ -1613,6 +1574,34 @@ have_neon=no
 
 REQUIRES_PRIVATE=""
 LIBS_PRIVATE="$LIBS"
+
+AS_IF([test "x$enable_abort_trace" != "xno"], [
+  AC_DEFINE([SIXEL_ENABLE_ABORT_TRACE],
+            [1],
+            [Define to 1 if CLI abort tracing is enabled])
+  AC_CHECK_LIB([execinfo],
+               [backtrace],
+               [ABORTTRACE_LIBS="$ABORTTRACE_LIBS -lexecinfo"],
+               [],
+               [])
+  ac_save_LIBS="$LIBS"
+  LIBS="$LIBS $ABORTTRACE_LIBS"
+  AC_CHECK_FUNCS([backtrace backtrace_symbols_fd],
+                 [],
+                 [],
+                 [[#include <execinfo.h>]])
+  LIBS="$ac_save_LIBS"
+  AC_CHECK_LIB([dbghelp],
+               [SymInitialize],
+               [ABORTTRACE_LIBS="$ABORTTRACE_LIBS -ldbghelp"
+                AC_DEFINE([HAVE_DBGHELP],
+                          [1],
+                          [Define to 1 if dbghelp is available])],
+               [],
+               [])
+])
+AC_SUBST([ABORTTRACE_LIBS])
+
 
 if test "x$THREAD_LIBS" != x; then
     LIBS_PRIVATE="$LIBS_PRIVATE $THREAD_LIBS"

@@ -104,46 +104,25 @@ list_source_vars() {
 # reading the dedicated section.
 list_help_vars() {
     img2sixel_dir=$(CDPATH=; cd -- "$(dirname "$img2sixel")" && pwd)
+    runtime_var="${RUNTIME_SHLIBPATH_VAR:-LD_LIBRARY_PATH}"
+    runtime_sep="${RUNTIME_SHLIBPATH_SEP:-:}"
+    runtime_current=""
     if [ "$(basename "$img2sixel_dir")" = ".libs" ]; then
         build_root=$(CDPATH=; cd -- "$img2sixel_dir/../.." && pwd)
     else
         build_root=$(CDPATH=; cd -- "$img2sixel_dir/.." && pwd)
     fi
     runtime_libdir="$build_root/src/.libs"
-    runtime_os=$(uname -s 2>/dev/null || echo unknown)
-
-    case "$runtime_os" in
-        Darwin*)
-            if [ -d "$runtime_libdir" ]; then
-                if [ -n "${DYLD_LIBRARY_PATH:-}" ]; then
-                    DYLD_LIBRARY_PATH="$runtime_libdir:$DYLD_LIBRARY_PATH"
-                else
-                    DYLD_LIBRARY_PATH="$runtime_libdir"
-                fi
-                export DYLD_LIBRARY_PATH
-            fi
-            ;;
-        CYGWIN*|MINGW*|MSYS*)
-            if [ -d "$runtime_libdir" ]; then
-                if [ -n "${PATH:-}" ]; then
-                    PATH="$runtime_libdir;$PATH"
-                else
-                    PATH="$runtime_libdir"
-                fi
-                export PATH
-            fi
-            ;;
-        *)
-            if [ -d "$runtime_libdir" ]; then
-                if [ -n "${LD_LIBRARY_PATH:-}" ]; then
-                    LD_LIBRARY_PATH="$runtime_libdir:$LD_LIBRARY_PATH"
-                else
-                    LD_LIBRARY_PATH="$runtime_libdir"
-                fi
-                export LD_LIBRARY_PATH
-            fi
-            ;;
-    esac
+    if [ -d "$runtime_libdir" ]; then
+        eval "runtime_current=\${${runtime_var}:-}"
+        if [ -n "$runtime_current" ]; then
+            runtime_value="$runtime_libdir$runtime_sep$runtime_current"
+        else
+            runtime_value="$runtime_libdir"
+        fi
+        eval "${runtime_var}=\${runtime_value}"
+        eval "export ${runtime_var}"
+    fi
 
     ${SIXEL_RUNTIME-} "$img2sixel" -H 2>/dev/null |
         awk '
