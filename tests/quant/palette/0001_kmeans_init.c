@@ -7,8 +7,30 @@
 #include <string.h>
 
 #include "config.h"
-#include "src/compat_stub.h"
 #include "src/palette-kmeans.h"
+
+/*
+ * Keep this test independent from src/compat_stub.h.
+ *
+ * The compat layer is private to src/ and should not be used from tests.
+ * This helper keeps the test portable across compilers: use _putenv_s on
+ * MSVC and setenv on other platforms.
+ */
+static int
+test_setenv(char const *name, char const *value)
+{
+#if defined(_MSC_VER)
+    return _putenv_s(name, value);
+#else
+    extern int setenv(char const *name, char const *value, int overwrite);
+
+    if (name == NULL || value == NULL) {
+        return -1;
+    }
+
+    return setenv(name, value, 1);
+#endif
+}
 
 static char const *
 test_sixel_kmeans_init_type_to_string(sixel_kmeans_init_type init_type)
@@ -43,8 +65,7 @@ test_palette_0001_kmeans_init(int argc, char **argv)
         return 0;
     }
 
-    if (sixel_compat_setenv("SIXEL_PALETTE_KMEANS_INITTYPE", "none")
-            != 0) {
+    if (test_setenv("SIXEL_PALETTE_KMEANS_INITTYPE", "none") != 0) {
         fprintf(stderr, "failed to set environment override\n");
 
         return 1;
