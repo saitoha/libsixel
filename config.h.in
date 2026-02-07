@@ -57,17 +57,11 @@
 /* Define to 1 if you have the `clock_gettime' function. */
 #undef HAVE_CLOCK_GETTIME
 
-/* Define to 1 if you have the 'CloseHandle' function. */
-#undef HAVE_CLOSEHANDLE
-
 /* whether CoreGraphics is available */
 #undef HAVE_COREGRAPHICS
 
 /* Define to 1 if you have the <cpuid.h> header file. */
 #undef HAVE_CPUID_H
-
-/* Define to 1 if you have the 'CreateProcessA' function. */
-#undef HAVE_CREATEPROCESSA
 
 /* Define to 1 if you have the <ctype.h> header file. */
 #undef HAVE_CTYPE_H
@@ -242,9 +236,6 @@
 
 /* whether gdk-pixbuf2 2.44 or later is available */
 #undef HAVE_GDK_PIXBUF_244
-
-/* Define to 1 if you have the 'GetExitCodeProcess' function. */
-#undef HAVE_GETEXITCODEPROCESS
 
 /* Define to 1 if you have the `getopt' function. */
 #undef HAVE_GETOPT
@@ -497,9 +488,6 @@
 /* Define to 1 if you have the <sys/wait.h> header file. */
 #undef HAVE_SYS_WAIT_H
 
-/* Define to 1 if you have the 'TerminateProcess' function. */
-#undef HAVE_TERMINATEPROCESS
-
 /* Define to 1 if you have the <termios.h> header file. */
 #undef HAVE_TERMIOS_H
 
@@ -520,9 +508,6 @@
 
 /* Define to 1 if the system has the `deprecated' variable attribute */
 #undef HAVE_VAR_ATTRIBUTE_DEPRECATED
-
-/* Define to 1 if you have the 'WaitForSingleObject' function. */
-#undef HAVE_WAITFORSINGLEOBJECT
 
 /* Define to 1 if you have the `waitpid' function. */
 #undef HAVE_WAITPID
