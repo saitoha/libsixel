@@ -684,6 +684,8 @@ RUBY_EXT_LIB
 RUBY_EXT_INC
 RUBY_VERSION
 RUBY
+ENABLE_PYTHON_WHEEL
+ENABLE_PYTHON
 pkgpyexecdir
 pyexecdir
 pkgpythondir
@@ -25327,6 +25329,20 @@ printf "%s\n" "no" >&6; }
         as_fn_error $? "python build module was not found" "$LINENO" 5
     fi
 fi
+
+ENABLE_PYTHON=0
+if test x$enable_python != xno; then
+    ENABLE_PYTHON=1
+fi
+
+ENABLE_PYTHON_WHEEL=0
+if test x$enable_python_wheel != xno; then
+    ENABLE_PYTHON_WHEEL=1
+fi
+
+
+
+
 if test x$have_python = xyes; then
     message_python="$have_python: $pythondir"
 else
