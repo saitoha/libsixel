@@ -24,6 +24,8 @@ base_env_settings = [
   ['CROSS_COMPILING', cross_compiling],
   ['SIXEL_TSAN_BUILD', sixel_tsan_build],
   ['SIXEL_MSAN_BUILD', sixel_msan_build],
+  ['ENABLE_PYTHON', (get_option('python').disabled() ? '0' : '1')],
+  ['ENABLE_PYTHON_WHEEL', (get_option('python_wheel').disabled() ? '0' : '1')],
   # Ensure Python TAP tests can locate the freshly built shared library when
   # Meson is invoked without a prior `meson compile`. The binding smoke test
   # relies on LIBSIXEL_LIBDIR to point at the build artifact directory.

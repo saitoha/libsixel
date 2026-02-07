@@ -6,7 +6,14 @@
 set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+
+# Skip immediately when Python bindings are disabled in this build.
+if [ "${ENABLE_PYTHON:-0}" != "1" ]; then
+    skip_all "python bindings are disabled in this build"
+fi
+
 . "${TOP_SRCDIR}/tests/lib/sh/python/common.sh"
+
 
 python_prepare "${ARTIFACT_LOCAL_DIR}"
 set -v

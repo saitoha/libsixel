@@ -3000,6 +3000,20 @@ if test x$enable_python_wheel != xno; then
         AC_MSG_ERROR([python build module was not found])
     fi
 fi
+
+ENABLE_PYTHON=0
+if test x$enable_python != xno; then
+    ENABLE_PYTHON=1
+fi
+
+ENABLE_PYTHON_WHEEL=0
+if test x$enable_python_wheel != xno; then
+    ENABLE_PYTHON_WHEEL=1
+fi
+
+AC_SUBST([ENABLE_PYTHON])
+AC_SUBST([ENABLE_PYTHON_WHEEL])
+
 if test x$have_python = xyes; then
     message_python="$have_python: $pythondir"
 else

@@ -7,7 +7,14 @@
 set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+
+# Skip immediately when Python bindings are disabled in this build.
+if [ "${ENABLE_PYTHON:-0}" != "1" ]; then
+    skip_all "python bindings are disabled in this build"
+fi
+
 . "${TOP_SRCDIR}/tests/lib/sh/python/common.sh"
+
 
 source_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 
