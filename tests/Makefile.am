@@ -447,73 +447,10 @@ AM_TESTS_ENVIRONMENT += RUNTIME_SHLIBPATH_VAR='@SIXEL_LIBTOOL_SHLIBPATH_VAR@'; \
        export RUNTIME_SHLIBPATH_VAR;
 AM_TESTS_ENVIRONMENT += RUNTIME_SHLIBPATH_SEP='@SIXEL_LIBTOOL_PATH_SEPARATOR@'; \
        export RUNTIME_SHLIBPATH_SEP;
-# Resolve test tool paths once at make(1) parse time. If the top-level file
-# starts with shebang (#!), it is a libtool wrapper script and tests should
-# execute the corresponding binary under @SIXEL_LIBTOOL_OBJDIR@.
-IMG2SIXEL_TEST_PATH = $(shell sh -c '\
-    top="$(abs_top_builddir)/converters/img2sixel@EXEEXT@"; \
-    real="$(abs_top_builddir)/converters/@SIXEL_LIBTOOL_OBJDIR@/img2sixel@EXEEXT@"; \
-    if test -f "$$top"; then \
-        set -- $$(dd if="$$top" bs=1 count=2 2>/dev/null | od -An -tx1); \
-        if test "x$${1-}$${2-}" = x2321 && test -f "$$real"; then \
-            printf %s "$$real"; \
-        else \
-            printf %s "$$top"; \
-        fi; \
-    elif test -f "$$real"; then \
-        printf %s "$$real"; \
-    else \
-        printf %s "$$top"; \
-    fi')
-SIXEL2PNG_TEST_PATH = $(shell sh -c '\
-    top="$(abs_top_builddir)/converters/sixel2png@EXEEXT@"; \
-    real="$(abs_top_builddir)/converters/@SIXEL_LIBTOOL_OBJDIR@/sixel2png@EXEEXT@"; \
-    if test -f "$$top"; then \
-        set -- $$(dd if="$$top" bs=1 count=2 2>/dev/null | od -An -tx1); \
-        if test "x$${1-}$${2-}" = x2321 && test -f "$$real"; then \
-            printf %s "$$real"; \
-        else \
-            printf %s "$$top"; \
-        fi; \
-    elif test -f "$$real"; then \
-        printf %s "$$real"; \
-    else \
-        printf %s "$$top"; \
-    fi')
-LSQA_TEST_PATH = $(shell sh -c '\
-    top="$(abs_top_builddir)/assessment/lsqa@EXEEXT@"; \
-    real="$(abs_top_builddir)/assessment/@SIXEL_LIBTOOL_OBJDIR@/lsqa@EXEEXT@"; \
-    if test -f "$$top"; then \
-        set -- $$(dd if="$$top" bs=1 count=2 2>/dev/null | od -An -tx1); \
-        if test "x$${1-}$${2-}" = x2321 && test -f "$$real"; then \
-            printf %s "$$real"; \
-        else \
-            printf %s "$$top"; \
-        fi; \
-    elif test -f "$$real"; then \
-        printf %s "$$real"; \
-    else \
-        printf %s "$$top"; \
-    fi')
-TEST_RUNNER_TEST_PATH = $(shell sh -c '\
-    top="$(abs_top_builddir)/tests/test_runner@EXEEXT@"; \
-    real="$(abs_top_builddir)/tests/@SIXEL_LIBTOOL_OBJDIR@/test_runner@EXEEXT@"; \
-    if test -f "$$top"; then \
-        set -- $$(dd if="$$top" bs=1 count=2 2>/dev/null | od -An -tx1); \
-        if test "x$${1-}$${2-}" = x2321 && test -f "$$real"; then \
-            printf %s "$$real"; \
-        else \
-            printf %s "$$top"; \
-        fi; \
-    elif test -f "$$real"; then \
-        printf %s "$$real"; \
-    else \
-        printf %s "$$top"; \
-    fi')
-AM_TESTS_ENVIRONMENT += IMG2SIXEL_PATH='$(IMG2SIXEL_TEST_PATH)'; \
-       SIXEL2PNG_PATH='$(SIXEL2PNG_TEST_PATH)'; \
-       LSQA_PATH='$(LSQA_TEST_PATH)'; \
-       TEST_RUNNER_PATH='$(TEST_RUNNER_TEST_PATH)'; \
+AM_TESTS_ENVIRONMENT += IMG2SIXEL_PATH='$(abs_top_builddir)/converters/img2sixel@EXEEXT@'; \
+       SIXEL2PNG_PATH='$(abs_top_builddir)/converters/sixel2png@EXEEXT@'; \
+       LSQA_PATH='$(abs_top_builddir)/assessment/lsqa@EXEEXT@'; \
+       TEST_RUNNER_PATH='$(abs_top_builddir)/tests/test_runner@EXEEXT@'; \
 export IMG2SIXEL_PATH; export SIXEL2PNG_PATH; \
 export LSQA_PATH; export TEST_RUNNER_PATH;
 TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
@@ -710,6 +647,41 @@ check-TESTS: $(check_PROGRAMS)
 	@$(am__rm_f) $(TEST_SUITE_LOG)
 	@set +e; \
 	config_header="$(top_builddir)/config.h"; \
+	resolve_test_tool_path() { \
+	    top_path=$$1; \
+	    real_path=$$2; \
+	    magic=""; \
+	    if [ -f "$$top_path" ]; then \
+	        set -- $$(dd if="$$top_path" bs=1 count=2 2>/dev/null | \
+	                 od -An -tx1); \
+	        magic="$${1-}$${2-}"; \
+	        if [ "x$$magic" = "x2321" ] && [ -f "$$real_path" ]; then \
+	            printf '%s\n' "$$real_path"; \
+	        else \
+	            printf '%s\n' "$$top_path"; \
+	        fi; \
+	        return 0; \
+	    fi; \
+	    if [ -f "$$real_path" ]; then \
+	        printf '%s\n' "$$real_path"; \
+	    else \
+	        printf '%s\n' "$$top_path"; \
+	    fi; \
+	    return 0; \
+	}; \
+	IMG2SIXEL_PATH=$$(resolve_test_tool_path \
+	    "$(abs_top_builddir)/converters/img2sixel@EXEEXT@" \
+	    "$(abs_top_builddir)/converters/@SIXEL_LIBTOOL_OBJDIR@/img2sixel@EXEEXT@"); \
+	SIXEL2PNG_PATH=$$(resolve_test_tool_path \
+	    "$(abs_top_builddir)/converters/sixel2png@EXEEXT@" \
+	    "$(abs_top_builddir)/converters/@SIXEL_LIBTOOL_OBJDIR@/sixel2png@EXEEXT@"); \
+	LSQA_PATH=$$(resolve_test_tool_path \
+	    "$(abs_top_builddir)/assessment/lsqa@EXEEXT@" \
+	    "$(abs_top_builddir)/assessment/@SIXEL_LIBTOOL_OBJDIR@/lsqa@EXEEXT@"); \
+	TEST_RUNNER_PATH=$$(resolve_test_tool_path \
+	    "$(abs_top_builddir)/tests/test_runner@EXEEXT@" \
+	    "$(abs_top_builddir)/tests/@SIXEL_LIBTOOL_OBJDIR@/test_runner@EXEEXT@"); \
+	export IMG2SIXEL_PATH SIXEL2PNG_PATH LSQA_PATH TEST_RUNNER_PATH; \
 	\
 	if [ -f "$$config_header" ]; then \
 	    for feature in `awk '/^#define [A-Z0-9_]+ 1$$/ {print $$2}' "$$config_header"`; do \
