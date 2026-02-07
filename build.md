@@ -305,6 +305,10 @@ so deregistration must be performed manually or through a custom script.
 - For Meson, inspect `builddir/meson-logs/meson-log.txt` if configuration or
   compilation fails.
 - Use `meson configure builddir` to review active options.
+- In POSIX `sh`, environment assignments written before a shell function
+  call (for example `VAR=value run_test_runner ...`) are not reliably exported
+  to child processes across all shells. Prefer `env VAR=value command ...` or
+  an explicit `export VAR` before invoking helper functions in TAP scripts.
 
 For additional details, see the project README and the `.github/workflows`
 directory for platform-specific build recipes.
