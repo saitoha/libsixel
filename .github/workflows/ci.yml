@@ -1828,7 +1828,7 @@ jobs:
               wine
               gcc-mingw-w64-x86-64-win32
               make
-            make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine SIXEL_BIN_EXT=.exe make
+            make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine make
             exec_type: bash
 
           - label: Autotools-ubuntu-x86_64-mingw-w64-x86_64-posix-wine64-static
@@ -1845,7 +1845,7 @@ jobs:
               wine
               gcc-mingw-w64-x86-64-posix
               make
-            make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine SIXEL_BIN_EXT=.exe make
+            make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine make
             exec_type: bash
 
           - label: Autotools-macos-x86_64-mingw-w64-x86_64-wine64-rosetta-static
@@ -1861,7 +1861,7 @@ jobs:
             extra_packages: >-
               wine@devel
               mingw-w64
-            make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine SIXEL_BIN_EXT=.exe make
+            make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine make
             exec_type: bash
 
     steps:
