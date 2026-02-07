@@ -49,11 +49,11 @@ TESTS = \
     cli/core/0020_basic_invalid_threads_token.t \
     cli/options/invalid/0001_invalid_option_arguments_invalid_width.t \
     cli/options/invalid/0002_invalid_option_arguments_invalid_height.t \
-    cli/options/invalid/0003_invalid_option_arguments_invalid_format.t \
+    cli/options/invalid/0003_invalid_option_arguments_invalid_findtype.t \
     cli/options/invalid/0004_invalid_option_arguments_invalid_quality.t \
-    cli/options/invalid/0005_invalid_option_arguments_invalid_layout.t \
-    cli/options/invalid/0006_invalid_option_arguments_invalid_bpp.t \
-    cli/options/invalid/0007_invalid_option_arguments_invalid_encoder_tweak.t \
+    cli/options/invalid/0005_invalid_option_arguments_invalid_loop_mode.t \
+    cli/options/invalid/0006_invalid_option_arguments_invalid_builtin_palette.t \
+    cli/options/invalid/0007_invalid_option_arguments_invalid_encode_policy.t \
     cli/options/invalid/0008_invalid_option_arguments_invalid_background_colour.t \
     cli/options/invalid/0009_invalid_option_arguments_missing_background_component.t \
     cli/options/invalid/0010_invalid_option_arguments_overlong_background.t \
@@ -62,15 +62,15 @@ TESTS = \
     cli/options/invalid/0013_invalid_option_arguments_incomplete_rgb_background.t \
     cli/options/invalid/0014_invalid_option_arguments_unsupported_legacy_width.t \
     cli/options/invalid/0015_invalid_option_arguments_missing_palette_file.t \
-    cli/options/invalid/0016_invalid_option_arguments_invalid_colour_space_index.t \
+    cli/options/invalid/0016_invalid_option_arguments_invalid_complexion_score.t \
     cli/options/invalid/0017_invalid_option_arguments_unknown_dither.t \
-    cli/options/invalid/0018_invalid_option_arguments_unknown_resize_filter.t \
-    cli/options/invalid/0019_invalid_option_arguments_unknown_scaling_mode.t \
-    cli/options/invalid/0020_invalid_option_arguments_unknown_tone_adjustment.t \
+    cli/options/invalid/0018_invalid_option_arguments_unknown_resampling_option.t \
+    cli/options/invalid/0019_invalid_option_arguments_unknown_select_type_mode.t \
+    cli/options/invalid/0020_invalid_option_arguments_unknown_palette_type.t \
     cli/options/invalid/0021_invalid_option_combinations_palette_and_encode.t \
-    cli/options/invalid/0022_invalid_option_combinations_inspect_with_palette.t \
+    cli/options/invalid/0022_invalid_option_combinations_high_color_with_palette.t \
     cli/options/invalid/0023_invalid_option_combinations_palette_with_terminal_preset.t \
-    cli/options/invalid/0024_invalid_option_combinations_eight_bit_with_palette_dump.t \
+    cli/options/invalid/0024_invalid_option_combinations_eight_bit_with_pipe_mode.t \
     cli/options/matching/0001_option_matching_prefix_unique.t \
     cli/options/matching/0002_option_matching_prefix_ambiguous.t \
     cli/options/matching/0003_option_matching_diffusion_correction.t \
