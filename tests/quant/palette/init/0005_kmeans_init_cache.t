@@ -9,12 +9,12 @@ echo "1..1"
 set -v
 
 output=$(
-   SIXEL_PALETTE_KMEANS_INITTYPE=pca run_test_runner "palette/0001_kmeans_init" --cache | tr -d '\r'
-) || status=$
+   run_test_runner --env SIXEL_PALETTE_KMEANS_INITTYPE=pca "palette/0001_kmeans_init" --cache | tr -d '\r'
+) || status=$?
 
 if [ "${output}" = "pca pca" ]; then
     printf 'ok 1 - cache preserves initial value\n'
 else
-    printf 'not ok 1 - cache check returned %s\n' "${cache_line}"
+    printf 'not ok 1 - cache check returned %s\n' "${output}"
     exit 1
 fi
