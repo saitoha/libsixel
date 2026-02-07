@@ -91,5 +91,11 @@ dist-windows: dist-zip
 	mkdir -p @PACKAGE_NAME@-@PACKAGE_VERSION@/bin-windows
 	cp converters/*.exe @PACKAGE_NAME@-@PACKAGE_VERSION@/bin-windows/
 	zip -u @PACKAGE_NAME@-@PACKAGE_VERSION@.zip @PACKAGE_NAME@-@PACKAGE_VERSION@/bin-windows/*.exe
+	@host_triplet=''; \
+	for confopt in $$(./config.status --config); do \
+	  case "$$confopt" in \
+	    --host=*) host_triplet=$${confopt#--host=} ;; \
+	  esac; \
+	done; \
 	mv -v @PACKAGE_NAME@-@PACKAGE_VERSION@.zip \
-	    @PACKAGE_NAME@-@PACKAGE_VERSION@-$$(./config.status --config|tr \  \\n|grep ^--host|cut -f2 -d=).zip
+	  @PACKAGE_NAME@-@PACKAGE_VERSION@-$$host_triplet.zip
