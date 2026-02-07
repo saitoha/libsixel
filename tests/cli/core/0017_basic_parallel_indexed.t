@@ -22,8 +22,8 @@ set -v
 
 parallel_indexed_1="${ARTIFACT_LOCAL_DIR}/parallel-indexed-1.png"
 parallel_indexed_4="${ARTIFACT_LOCAL_DIR}/parallel-indexed-4.png"
-SIXEL_THREADS=1 run_sixel2png <"${images_dir}/map64.six" >"${parallel_indexed_1}"
-SIXEL_THREADS=4 run_sixel2png <"${images_dir}/map64.six" >"${parallel_indexed_4}"
+run_sixel2png --env SIXEL_THREADS=1 <"${images_dir}/map64.six" >"${parallel_indexed_1}"
+run_sixel2png --env SIXEL_THREADS=4 <"${images_dir}/map64.six" >"${parallel_indexed_4}"
 
 ${comparator_cmd} "${parallel_indexed_1}" "${parallel_indexed_4}" >/dev/null || {
     fail 1 "parallel indexed diverges"

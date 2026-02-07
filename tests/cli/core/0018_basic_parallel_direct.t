@@ -23,8 +23,8 @@ fi
 parallel_direct_1="${ARTIFACT_LOCAL_DIR}/parallel-direct-1.png"
 parallel_direct_4="${ARTIFACT_LOCAL_DIR}/parallel-direct-4.png"
 
-SIXEL_THREADS=1 run_sixel2png -D <"${images_dir}/map64.six" >"${parallel_direct_1}"
-SIXEL_THREADS=4 run_sixel2png -D <"${images_dir}/map64.six" >"${parallel_direct_4}"
+run_sixel2png --env SIXEL_THREADS=1 -D <"${images_dir}/map64.six" >"${parallel_direct_1}"
+run_sixel2png --env SIXEL_THREADS=4 -D <"${images_dir}/map64.six" >"${parallel_direct_4}"
 
 ${comparator_cmd} "${parallel_direct_1}" "${parallel_direct_4}" || {
     fail 1 "parallel direct diverges"

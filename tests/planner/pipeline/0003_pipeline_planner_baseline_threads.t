@@ -12,7 +12,7 @@ set -v
 
 ppm_small="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 
-pipeline_log=$(SIXEL_THREADS=4 run_img2sixel -v -o "${ARTIFACT_LOCAL_DIR}/small.six" "${ppm_small}" 2>&1 || true)
+pipeline_log=$(run_img2sixel --env SIXEL_THREADS=4 -v -o "${ARTIFACT_LOCAL_DIR}/small.six" "${ppm_small}" 2>&1 || true)
 printf '%s' "${pipeline_log}" >&2
 
 threads_line=$(printf '%s' "${pipeline_log}" | grep "band_height=" | head -n 1 || true)
