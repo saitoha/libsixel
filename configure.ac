@@ -724,6 +724,12 @@ AC_ARG_ENABLE([amalgamated-tools],
 AM_CONDITIONAL([WANT_AMALGAMATED_TOOLS],
                [test "x$enable_amalgamated_tools" = "xyes"])
 
+# This condition isolates "amalgamated tools only" builds so top-level make
+# can serialize one-time amalgamation generation before phase2 starts.
+AM_CONDITIONAL([WANT_AMALGAMATED_TOOLS_ONLY],
+               [test "x$enable_amalgamated_tools" = "xyes" \
+                && test "x$enable_amalgamated_lib" != "xyes"])
+
 if test "x$enable_amalgamated_lib" = "xyes" \
    || test "x$enable_amalgamated_tools" = "xyes"; then
   want_amalgamated_sources=yes

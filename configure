@@ -779,6 +779,8 @@ SIXEL_SHEBANG_HELPER
 SIXEL_SHEBANG_FILE
 WANT_AMALGAMATED_SOURCES_FALSE
 WANT_AMALGAMATED_SOURCES_TRUE
+WANT_AMALGAMATED_TOOLS_ONLY_FALSE
+WANT_AMALGAMATED_TOOLS_ONLY_TRUE
 WANT_AMALGAMATED_TOOLS_FALSE
 WANT_AMALGAMATED_TOOLS_TRUE
 WANT_AMALGAMATED_LIB_FALSE
@@ -16725,6 +16727,18 @@ else
 fi
 
 
+# This condition isolates "amalgamated tools only" builds so top-level make
+# can serialize one-time amalgamation generation before phase2 starts.
+ if test "x$enable_amalgamated_tools" = "xyes" \
+                && test "x$enable_amalgamated_lib" != "xyes"; then
+  WANT_AMALGAMATED_TOOLS_ONLY_TRUE=
+  WANT_AMALGAMATED_TOOLS_ONLY_FALSE='#'
+else
+  WANT_AMALGAMATED_TOOLS_ONLY_TRUE='#'
+  WANT_AMALGAMATED_TOOLS_ONLY_FALSE=
+fi
+
+
 if test "x$enable_amalgamated_lib" = "xyes" \
    || test "x$enable_amalgamated_tools" = "xyes"; then
   want_amalgamated_sources=yes
@@ -25967,6 +25981,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WANT_AMALGAMATED_TOOLS_TRUE}" && test -z "${WANT_AMALGAMATED_TOOLS_FALSE}"; then
   as_fn_error $? "conditional \"WANT_AMALGAMATED_TOOLS\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${WANT_AMALGAMATED_TOOLS_ONLY_TRUE}" && test -z "${WANT_AMALGAMATED_TOOLS_ONLY_FALSE}"; then
+  as_fn_error $? "conditional \"WANT_AMALGAMATED_TOOLS_ONLY\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${WANT_AMALGAMATED_SOURCES_TRUE}" && test -z "${WANT_AMALGAMATED_SOURCES_FALSE}"; then
