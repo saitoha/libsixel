@@ -44,9 +44,19 @@ echo "1..1"
 set -v
 
 if ! command -v python >/dev/null 2>&1; then
-    printf 'ok 1 - self-signed fetch blocked # SKIP python missing\n'
-    exit 0
+    if command -v python3 >/dev/null 2>&1; then
+        PYTHON=python3
+    else
+        printf 'ok 1 - self-signed fetch blocked # SKIP python missing\n'
+        exit 0
+    fi
+else
+    PYTHON=python
 fi
+
+# Keep a single Python command path for portability across environments
+# where only `python3` exists.
+export PYTHON
 
 
 cp "${images_dir}/snake.six" "${ARTIFACT_LOCAL_DIR}/snake.sixel"
@@ -121,7 +131,7 @@ PY
 server_pid_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "curl-server-pid")
 (
     cd "${ARTIFACT_LOCAL_DIR}" || exit 1
-    python server.py &
+    "${PYTHON}" server.py &
     echo $! >"${server_pid_file}"
 )
 server_pid=$(cat "${server_pid_file}")
@@ -138,7 +148,7 @@ for _ in 1 2 3 4 5; do
         break
     fi
 
-    sleep 0.1
+    "${PYTHON}" -c "import time; time.sleep(0.1)"
 done
 
 if [ -z "${server_port}" ]; then
