@@ -29,9 +29,13 @@ LT_INIT
 AC_SUBST([SIXEL_LIBTOOL_OBJDIR], [$objdir])
 AC_SUBST([SIXEL_LIBTOOL_SHLIBPATH_VAR], [$shlibpath_var])
 AC_SUBST([SIXEL_LIBTOOL_BUILD_LIBS], [$enable_shared])
-case "$host_os" in
-  mingw* | cygwin* | msys*)
-    SIXEL_LIBTOOL_PATH_SEPARATOR=';'
+# The test harness prepends libtool output directories to the runtime search
+# variable.  When libtool requests PATH, we are executing under a shell
+# environment where PATH itself remains colon-separated (including MSYS2), so
+# use ':' to keep the path list parseable by child processes.
+case "$shlibpath_var" in
+  PATH)
+    SIXEL_LIBTOOL_PATH_SEPARATOR=':'
     ;;
   *)
     SIXEL_LIBTOOL_PATH_SEPARATOR=':'
