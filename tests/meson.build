@@ -29,6 +29,14 @@ base_env_settings = [
   # relies on LIBSIXEL_LIBDIR to point at the build artifact directory.
   ['LIBSIXEL_LIBDIR', meson.project_build_root() / 'src'],
 ]
+
+if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
+  # Most TAP shell wrappers reference built tools via ${SIXEL_BIN_EXT}.
+  # Meson does not export this automatically, so Windows jobs otherwise look
+  # up extension-less paths and mark many tests as skipped.
+  base_env_settings += [['SIXEL_BIN_EXT', '.exe']]
+endif
+
 env = environment()
 foreach setting : base_env_settings
   env.set(setting[0], setting[1])
