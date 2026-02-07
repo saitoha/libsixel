@@ -14477,11 +14477,6 @@ ac_config_headers="$ac_config_headers config.h"
 
 
 
-# Run AC_CHECK_FUNCS checks in parallel using per-function directories.
-# This mirrors AC_CHECK_FUNCS behavior while reducing overall configure time
-# on systems with multiple CPUs.
-
-
 # Check once whether the compiler accepts the builtin mismatch pragma.
 
 
@@ -18872,8 +18867,7 @@ _ACEOF
       ) &
       ac_check_headers_parallel_batch_pids=\
 "$ac_check_headers_parallel_batch_pids $!"
-      ac_check_headers_parallel_active=\
-`expr "$ac_check_headers_parallel_active" + 1`
+      ac_check_headers_parallel_active=$((ac_check_headers_parallel_active + 1))
       if test "$ac_check_headers_parallel_active" -ge \
               "$ac_check_headers_parallel_max"; then
         for ac_check_headers_parallel_pid in \
@@ -18903,8 +18897,8 @@ printf %s "checking for $ac_check_header... " >&6; }
       ac_check_headers_parallel_subdir=\
 "$ac_check_headers_parallel_dir/$ac_check_header"
       if test -f "$ac_check_headers_parallel_subdir/conftest.out"; then
-        ac_check_headers_parallel_result=\
-`cat "$ac_check_headers_parallel_subdir/conftest.out"`
+        IFS= read -r ac_check_headers_parallel_result \
+          < "$ac_check_headers_parallel_subdir/conftest.out"
       fi
     fi
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_check_headers_parallel_result" >&5
@@ -19731,8 +19725,7 @@ _ACEOF
       ) &
       ac_check_funcs_parallel_batch_pids=\
 "$ac_check_funcs_parallel_batch_pids $!"
-      ac_check_funcs_parallel_active=\
-`expr "$ac_check_funcs_parallel_active" + 1`
+      ac_check_funcs_parallel_active=$((ac_check_funcs_parallel_active + 1))
       if test "$ac_check_funcs_parallel_active" -ge \
               "$ac_check_funcs_parallel_max"; then
         for ac_check_funcs_parallel_pid in \
@@ -19759,8 +19752,8 @@ printf %s "checking for $ac_func... " >&6; }
       ac_check_funcs_parallel_subdir=\
 "$ac_check_funcs_parallel_dir/$ac_func"
       if test -f "$ac_check_funcs_parallel_subdir/conftest.out"; then
-        ac_check_funcs_parallel_result=\
-`cat "$ac_check_funcs_parallel_subdir/conftest.out"`
+        IFS= read -r ac_check_funcs_parallel_result \
+          < "$ac_check_funcs_parallel_subdir/conftest.out"
       fi
     fi
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_check_funcs_parallel_result" >&5
@@ -19968,8 +19961,7 @@ _ACEOF
       ) &
       ac_check_headers_parallel_batch_pids=\
 "$ac_check_headers_parallel_batch_pids $!"
-      ac_check_headers_parallel_active=\
-`expr "$ac_check_headers_parallel_active" + 1`
+      ac_check_headers_parallel_active=$((ac_check_headers_parallel_active + 1))
       if test "$ac_check_headers_parallel_active" -ge \
               "$ac_check_headers_parallel_max"; then
         for ac_check_headers_parallel_pid in \
@@ -19999,8 +19991,8 @@ printf %s "checking for $ac_check_header... " >&6; }
       ac_check_headers_parallel_subdir=\
 "$ac_check_headers_parallel_dir/$ac_check_header"
       if test -f "$ac_check_headers_parallel_subdir/conftest.out"; then
-        ac_check_headers_parallel_result=\
-`cat "$ac_check_headers_parallel_subdir/conftest.out"`
+        IFS= read -r ac_check_headers_parallel_result \
+          < "$ac_check_headers_parallel_subdir/conftest.out"
       fi
     fi
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_check_headers_parallel_result" >&5
@@ -20205,8 +20197,7 @@ _ACEOF
       ) &
       ac_check_funcs_parallel_batch_pids=\
 "$ac_check_funcs_parallel_batch_pids $!"
-      ac_check_funcs_parallel_active=\
-`expr "$ac_check_funcs_parallel_active" + 1`
+      ac_check_funcs_parallel_active=$((ac_check_funcs_parallel_active + 1))
       if test "$ac_check_funcs_parallel_active" -ge \
               "$ac_check_funcs_parallel_max"; then
         for ac_check_funcs_parallel_pid in \
@@ -20233,8 +20224,8 @@ printf %s "checking for $ac_func... " >&6; }
       ac_check_funcs_parallel_subdir=\
 "$ac_check_funcs_parallel_dir/$ac_func"
       if test -f "$ac_check_funcs_parallel_subdir/conftest.out"; then
-        ac_check_funcs_parallel_result=\
-`cat "$ac_check_funcs_parallel_subdir/conftest.out"`
+        IFS= read -r ac_check_funcs_parallel_result \
+          < "$ac_check_funcs_parallel_subdir/conftest.out"
       fi
     fi
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_check_funcs_parallel_result" >&5
@@ -20434,8 +20425,7 @@ _ACEOF
       ) &
       ac_check_funcs_parallel_batch_pids=\
 "$ac_check_funcs_parallel_batch_pids $!"
-      ac_check_funcs_parallel_active=\
-`expr "$ac_check_funcs_parallel_active" + 1`
+      ac_check_funcs_parallel_active=$((ac_check_funcs_parallel_active + 1))
       if test "$ac_check_funcs_parallel_active" -ge \
               "$ac_check_funcs_parallel_max"; then
         for ac_check_funcs_parallel_pid in \
@@ -20462,8 +20452,8 @@ printf %s "checking for $ac_func... " >&6; }
       ac_check_funcs_parallel_subdir=\
 "$ac_check_funcs_parallel_dir/$ac_func"
       if test -f "$ac_check_funcs_parallel_subdir/conftest.out"; then
-        ac_check_funcs_parallel_result=\
-`cat "$ac_check_funcs_parallel_subdir/conftest.out"`
+        IFS= read -r ac_check_funcs_parallel_result \
+          < "$ac_check_funcs_parallel_subdir/conftest.out"
       fi
     fi
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_check_funcs_parallel_result" >&5
@@ -24281,8 +24271,7 @@ _ACEOF
       ) &
       ac_check_headers_parallel_batch_pids=\
 "$ac_check_headers_parallel_batch_pids $!"
-      ac_check_headers_parallel_active=\
-`expr "$ac_check_headers_parallel_active" + 1`
+      ac_check_headers_parallel_active=$((ac_check_headers_parallel_active + 1))
       if test "$ac_check_headers_parallel_active" -ge \
               "$ac_check_headers_parallel_max"; then
         for ac_check_headers_parallel_pid in \
@@ -24312,8 +24301,8 @@ printf %s "checking for $ac_check_header... " >&6; }
       ac_check_headers_parallel_subdir=\
 "$ac_check_headers_parallel_dir/$ac_check_header"
       if test -f "$ac_check_headers_parallel_subdir/conftest.out"; then
-        ac_check_headers_parallel_result=\
-`cat "$ac_check_headers_parallel_subdir/conftest.out"`
+        IFS= read -r ac_check_headers_parallel_result \
+          < "$ac_check_headers_parallel_subdir/conftest.out"
       fi
     fi
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_check_headers_parallel_result" >&5
@@ -24724,8 +24713,7 @@ _ACEOF
       ) &
       ac_check_headers_parallel_batch_pids=\
 "$ac_check_headers_parallel_batch_pids $!"
-      ac_check_headers_parallel_active=\
-`expr "$ac_check_headers_parallel_active" + 1`
+      ac_check_headers_parallel_active=$((ac_check_headers_parallel_active + 1))
       if test "$ac_check_headers_parallel_active" -ge \
               "$ac_check_headers_parallel_max"; then
         for ac_check_headers_parallel_pid in \
@@ -24755,8 +24743,8 @@ printf %s "checking for $ac_check_header... " >&6; }
       ac_check_headers_parallel_subdir=\
 "$ac_check_headers_parallel_dir/$ac_check_header"
       if test -f "$ac_check_headers_parallel_subdir/conftest.out"; then
-        ac_check_headers_parallel_result=\
-`cat "$ac_check_headers_parallel_subdir/conftest.out"`
+        IFS= read -r ac_check_headers_parallel_result \
+          < "$ac_check_headers_parallel_subdir/conftest.out"
       fi
     fi
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_check_headers_parallel_result" >&5
@@ -28305,12 +28293,31 @@ fi
     if test "$CPU_COUNT" -gt 1 2>/dev/null
 then :
 
-      if $SHELL $CONFIG_STATUS --help 2>/dev/null | \
-          $EGREP -q -- '--jobs'; then
-        ac_config_status_jobs="--jobs=$CPU_COUNT"
-      else
-        ac_config_status_jobs=""
-      fi
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether config.status supports --jobs" >&5
+printf %s "checking whether config.status supports --jobs... " >&6; }
+if test ${ac_cv_config_status_jobs+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_cv_config_status_jobs=no
+                      ac_config_status_help=`$SHELL $CONFIG_STATUS --help \
+                        2>/dev/null`
+                      case " $ac_config_status_help " in
+                        *" --jobs"*|*" --jobs="*)
+                          ac_cv_config_status_jobs=yes
+                          ;;
+                      esac ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_config_status_jobs" >&5
+printf "%s\n" "$ac_cv_config_status_jobs" >&6; }
+      if test "x$ac_cv_config_status_jobs" = "xyes"
+then :
+  ac_config_status_jobs="--jobs=$CPU_COUNT"
+else case e in #(
+  e) ac_config_status_jobs="" ;;
+esac
+fi
 
 else case e in #(
   e)
