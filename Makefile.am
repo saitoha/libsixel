@@ -1,7 +1,7 @@
 #
 # @configure_input@
 #
-SUBDIRS = include src converters assessment tools python examples images
+SUBDIRS = include src . converters assessment tools python examples images
 if WANT_AMALGAMATED_SOURCES
 SUBDIRS += amalgamation
 endif
@@ -67,7 +67,69 @@ pkgconfig_DATA = $(builddir)/libsixel.pc
 
 CLEANFILES = $(builddir)/package.json
 
-all-am:
+# Build a selected group of subdirectories in parallel after src has completed.
+#
+# Execution flow for recursive all/check with SUBDIRS containing '.':
+#   1) include -> src -> .
+#   2) At '.', run phase2-all from all-am (this Makefile).
+#   3) Remaining subdirs are still visited for compatibility, but most become no-op
+#      because their all targets are already up-to-date.
+.PHONY: \
+	phase2-all \
+	all-converters \
+	all-tools \
+	all-assessment \
+	all-gdk-pixbuf-loader \
+	all-quicklook-extension \
+	all-wic \
+	all-ruby \
+	all-python
+
+PHASE2_ALL_TARGETS = \
+	all-converters \
+	all-tools \
+	all-assessment \
+	all-python
+if ENABLE_GDK_PIXBUF_LOADER
+PHASE2_ALL_TARGETS += all-gdk-pixbuf-loader
+endif
+if HAVE_APPLE_QUICKLOOK_EXTENSION
+PHASE2_ALL_TARGETS += all-quicklook-extension
+endif
+if HAVE_WICCODEC
+PHASE2_ALL_TARGETS += all-wic
+endif
+if HAVE_RUBY
+PHASE2_ALL_TARGETS += all-ruby
+endif
+
+phase2-all: $(PHASE2_ALL_TARGETS)
+
+all-converters:
+	$(MAKE) -C converters $(AM_MAKEFLAGS) all
+
+all-tools:
+	$(MAKE) -C tools $(AM_MAKEFLAGS) all
+
+all-assessment:
+	$(MAKE) -C assessment $(AM_MAKEFLAGS) all
+
+all-gdk-pixbuf-loader:
+	$(MAKE) -C gdk-pixbuf-loader $(AM_MAKEFLAGS) all
+
+all-quicklook-extension:
+	$(MAKE) -C quicklook-extension $(AM_MAKEFLAGS) all
+
+all-wic:
+	$(MAKE) -C wic $(AM_MAKEFLAGS) all
+
+all-ruby:
+	$(MAKE) -C ruby $(AM_MAKEFLAGS) all
+
+all-python:
+	$(MAKE) -C python $(AM_MAKEFLAGS) all
+
+all-am: phase2-all
 	cp $(builddir)/package.json.in $(builddir)/package.json
 
 check-am:

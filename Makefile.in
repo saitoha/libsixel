@@ -94,6 +94,10 @@ host_triplet = @host@
 @HAVE_RUBY_TRUE@am__append_3 = ruby
 @HAVE_WICCODEC_TRUE@am__append_4 = wic
 @HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_5 = quicklook-extension
+@ENABLE_GDK_PIXBUF_LOADER_TRUE@am__append_6 = all-gdk-pixbuf-loader
+@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@am__append_7 = all-quicklook-extension
+@HAVE_WICCODEC_TRUE@am__append_8 = all-wic
+@HAVE_RUBY_TRUE@am__append_9 = all-ruby
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/ax_count_cpus.m4 \
@@ -216,7 +220,7 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/quicklook-extension/Resources/Thumbnail-Info.plist.in \
 	$(top_srcdir)/ruby/lib/libsixel/version_runtime.rb.in AUTHORS \
 	ChangeLog NEWS README.md build-aux/ar-lib build-aux/compile \
-	build-aux/config.guess build-aux/config.sub build-aux/depcomp \
+	build-aux/config.guess build-aux/config.sub \
 	build-aux/install-sh build-aux/ltmain.sh build-aux/missing \
 	build-aux/py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -481,7 +485,7 @@ zshcompletiondir = @zshcompletiondir@
 #
 # @configure_input@
 #
-SUBDIRS = include src converters assessment tools python examples \
+SUBDIRS = include src . converters assessment tools python examples \
 	images $(am__append_1) $(am__append_2) $(am__append_3) \
 	$(am__append_4) $(am__append_5) tests
 DIST_SUBDIRS = \
@@ -514,6 +518,9 @@ MAKEFLAGS := $(if $(filter 0,$(MAKELEVEL)),@LS_DEFAULT_MAKEFLAGS@ $(MAKEFLAGS),$
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = $(builddir)/libsixel.pc
 CLEANFILES = $(builddir)/package.json
+PHASE2_ALL_TARGETS = all-converters all-tools all-assessment \
+	all-python $(am__append_6) $(am__append_7) $(am__append_8) \
+	$(am__append_9)
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -1064,7 +1071,51 @@ uninstall-quicklook-extension:
 	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension uninstall-quicklook-extension
 	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@{ echo "Quick Look extension is not enabled in this build" >&2; exit 1; }
 
-all-am:
+# Build a selected group of subdirectories in parallel after src has completed.
+#
+# Execution flow for recursive all/check with SUBDIRS containing '.':
+#   1) include -> src -> .
+#   2) At '.', run phase2-all from all-am (this Makefile).
+#   3) Remaining subdirs are still visited for compatibility, but most become no-op
+#      because their all targets are already up-to-date.
+.PHONY: \
+	phase2-all \
+	all-converters \
+	all-tools \
+	all-assessment \
+	all-gdk-pixbuf-loader \
+	all-quicklook-extension \
+	all-wic \
+	all-ruby \
+	all-python
+
+phase2-all: $(PHASE2_ALL_TARGETS)
+
+all-converters:
+	$(MAKE) -C converters $(AM_MAKEFLAGS) all
+
+all-tools:
+	$(MAKE) -C tools $(AM_MAKEFLAGS) all
+
+all-assessment:
+	$(MAKE) -C assessment $(AM_MAKEFLAGS) all
+
+all-gdk-pixbuf-loader:
+	$(MAKE) -C gdk-pixbuf-loader $(AM_MAKEFLAGS) all
+
+all-quicklook-extension:
+	$(MAKE) -C quicklook-extension $(AM_MAKEFLAGS) all
+
+all-wic:
+	$(MAKE) -C wic $(AM_MAKEFLAGS) all
+
+all-ruby:
+	$(MAKE) -C ruby $(AM_MAKEFLAGS) all
+
+all-python:
+	$(MAKE) -C python $(AM_MAKEFLAGS) all
+
+all-am: phase2-all
 	cp $(builddir)/package.json.in $(builddir)/package.json
 
 check-am:
