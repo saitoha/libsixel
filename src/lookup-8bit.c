@@ -2278,6 +2278,15 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
     lut->policy = normalized;
     lut->quant = sixel_lookup_8bit_quant_make((unsigned int)depth, normalized);
     lut->dense_ready = 0;
+
+    /*
+     * Reconfiguration may switch policies or rebuild CERTLUT with a different
+     * palette.  Release previous CERTLUT allocations unconditionally so stale
+     * data cannot survive when cert_ready is reset for the new configuration.
+     */
+    if (lut->cert != NULL) {
+        sixel_certlut_free(lut->cert);
+    }
     lut->cert_ready = 0;
     lut->eytz.ready = 0;
     lut->vptree_ready = 0;
@@ -2430,10 +2439,10 @@ sixel_lookup_8bit_clear(sixel_lookup_8bit_t *lut)
     }
 
     sixel_lookup_8bit_release_cache(lut);
-    if (lut->cert_ready && lut->cert != NULL) {
+    if (lut->cert != NULL) {
         sixel_certlut_free(lut->cert);
-        lut->cert_ready = 0;
     }
+    lut->cert_ready = 0;
     if (lut->vpte != NULL) {
         sixel_lookup_vpte_8bit_unref(lut->vpte);
         lut->vpte = NULL;
