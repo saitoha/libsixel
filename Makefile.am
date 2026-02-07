@@ -74,8 +74,16 @@ CLEANFILES = $(builddir)/package.json
 #   2) At '.', run phase2-all from all-am (this Makefile).
 #   3) Remaining subdirs are still visited for compatibility, but most become no-op
 #      because their all targets are already up-to-date.
+#
+# For "--enable-amalgamated-tools --disable-amalgamated-lib", run one-time
+# amalgamation preparation before launching parallel phase2 members. This avoids
+# races where multiple directories try to generate amalgamation/sixel.c.
 .PHONY: \
+	prepare-amalgamation-all \
+	prepare-amalgamation-check \
+	phase1-all \
 	phase2-all \
+	phase2-members-all \
 	all-converters \
 	all-tools \
 	all-assessment \
@@ -103,7 +111,20 @@ if HAVE_RUBY
 PHASE2_ALL_TARGETS += all-ruby
 endif
 
-phase2-all: $(PHASE2_ALL_TARGETS)
+prepare-amalgamation-all:
+if WANT_AMALGAMATED_TOOLS_ONLY
+	$(MAKE) -C converters $(AM_MAKEFLAGS) completion_embed.h
+	$(MAKE) -C amalgamation $(AM_MAKEFLAGS) sixel.c
+endif
+
+prepare-amalgamation-check: prepare-amalgamation-all
+
+phase1-all: prepare-amalgamation-all
+
+phase2-members-all: $(PHASE2_ALL_TARGETS)
+
+phase2-all: phase1-all
+	$(MAKE) $(AM_MAKEFLAGS) phase2-members-all
 
 all-converters:
 	$(MAKE) -C converters $(AM_MAKEFLAGS) all
@@ -132,7 +153,7 @@ all-python:
 all-am: phase2-all
 	cp $(builddir)/package.json.in $(builddir)/package.json
 
-check-am:
+check-am: prepare-amalgamation-check
 	@:
 
 install-data-local:

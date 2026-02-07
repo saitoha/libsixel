@@ -220,7 +220,7 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/quicklook-extension/Resources/Thumbnail-Info.plist.in \
 	$(top_srcdir)/ruby/lib/libsixel/version_runtime.rb.in AUTHORS \
 	ChangeLog NEWS README.md build-aux/ar-lib build-aux/compile \
-	build-aux/config.guess build-aux/config.sub build-aux/depcomp \
+	build-aux/config.guess build-aux/config.sub \
 	build-aux/install-sh build-aux/ltmain.sh build-aux/missing \
 	build-aux/py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -1080,8 +1080,16 @@ uninstall-quicklook-extension:
 #   2) At '.', run phase2-all from all-am (this Makefile).
 #   3) Remaining subdirs are still visited for compatibility, but most become no-op
 #      because their all targets are already up-to-date.
+#
+# For "--enable-amalgamated-tools --disable-amalgamated-lib", run one-time
+# amalgamation preparation before launching parallel phase2 members. This avoids
+# races where multiple directories try to generate amalgamation/sixel.c.
 .PHONY: \
+	prepare-amalgamation-all \
+	prepare-amalgamation-check \
+	phase1-all \
 	phase2-all \
+	phase2-members-all \
 	all-converters \
 	all-tools \
 	all-assessment \
@@ -1091,7 +1099,18 @@ uninstall-quicklook-extension:
 	all-ruby \
 	all-python
 
-phase2-all: $(PHASE2_ALL_TARGETS)
+prepare-amalgamation-all:
+@WANT_AMALGAMATED_TOOLS_ONLY_TRUE@	$(MAKE) -C converters $(AM_MAKEFLAGS) completion_embed.h
+@WANT_AMALGAMATED_TOOLS_ONLY_TRUE@	$(MAKE) -C amalgamation $(AM_MAKEFLAGS) sixel.c
+
+prepare-amalgamation-check: prepare-amalgamation-all
+
+phase1-all: prepare-amalgamation-all
+
+phase2-members-all: $(PHASE2_ALL_TARGETS)
+
+phase2-all: phase1-all
+	$(MAKE) $(AM_MAKEFLAGS) phase2-members-all
 
 all-converters:
 	$(MAKE) -C converters $(AM_MAKEFLAGS) all
@@ -1120,7 +1139,7 @@ all-python:
 all-am: phase2-all
 	cp $(builddir)/package.json.in $(builddir)/package.json
 
-check-am:
+check-am: prepare-amalgamation-check
 	@:
 
 install-data-local:
