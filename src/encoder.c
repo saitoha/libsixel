@@ -6535,7 +6535,7 @@ sixel_encoder_new(
     (*ppencoder)->quality_mode          = SIXEL_QUALITY_AUTO;
     (*ppencoder)->quantize_model        = SIXEL_QUANTIZE_MODEL_AUTO;
     (*ppencoder)->final_merge_mode      = SIXEL_FINAL_MERGE_AUTO;
-    (*ppencoder)->lut_policy            = SIXEL_LUT_POLICY_EYTZINGER;
+    (*ppencoder)->lut_policy            = SIXEL_LUT_POLICY_CERTLUT;
     (*ppencoder)->sixel_reversible      = 0;
     (*ppencoder)->method_for_resampling = SIXEL_RES_BILINEAR;
     (*ppencoder)->loop_mode             = SIXEL_LOOP_AUTO;
