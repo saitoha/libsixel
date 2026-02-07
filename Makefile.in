@@ -216,7 +216,7 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/quicklook-extension/Resources/Thumbnail-Info.plist.in \
 	$(top_srcdir)/ruby/lib/libsixel/version_runtime.rb.in AUTHORS \
 	ChangeLog NEWS README.md build-aux/ar-lib build-aux/compile \
-	build-aux/config.guess build-aux/config.sub build-aux/depcomp \
+	build-aux/config.guess build-aux/config.sub \
 	build-aux/install-sh build-aux/ltmain.sh build-aux/missing \
 	build-aux/py-compile
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -1088,8 +1088,14 @@ dist-windows: dist-zip
 	mkdir -p @PACKAGE_NAME@-@PACKAGE_VERSION@/bin-windows
 	cp converters/*.exe @PACKAGE_NAME@-@PACKAGE_VERSION@/bin-windows/
 	zip -u @PACKAGE_NAME@-@PACKAGE_VERSION@.zip @PACKAGE_NAME@-@PACKAGE_VERSION@/bin-windows/*.exe
+	@host_triplet=''; \
+	for confopt in $$(./config.status --config); do \
+	  case "$$confopt" in \
+	    --host=*) host_triplet=$${confopt#--host=} ;; \
+	  esac; \
+	done; \
 	mv -v @PACKAGE_NAME@-@PACKAGE_VERSION@.zip \
-	    @PACKAGE_NAME@-@PACKAGE_VERSION@-$$(./config.status --config|tr \  \\n|grep ^--host|cut -f2 -d=).zip
+	  @PACKAGE_NAME@-@PACKAGE_VERSION@-$$host_triplet.zip
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
