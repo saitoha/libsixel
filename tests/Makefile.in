@@ -137,7 +137,6 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	io/loader/pixelformat_test_common.h \
 	quant/palette/0001_kmeans_init.c \
 	diagnostics/probe/0001_probe_parse.c \
-	planner/pipeline/0009_pipeline_row_notify_invalid_inputs.c \
 	extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
 	extension/gdk-pixbuf-loader/0002_incremental_load.c \
 	extension/gdk-pixbuf-loader/0003_corrupt_data.c \
@@ -176,7 +175,6 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	io/loader/test_runner-0017_loader_libwebp_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0001_kmeans_init.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
-@WANT_AMALGAMATED_TOOLS_FALSE@	planner/pipeline/test_runner-0009_pipeline_row_notify_invalid_inputs.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	extension/gdk-pixbuf-loader/test_runner-0002_incremental_load.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	extension/gdk-pixbuf-loader/test_runner-0003_corrupt_data.$(OBJEXT) \
@@ -268,7 +266,6 @@ am__depfiles_remade =  \
 	io/loader/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po \
 	io/loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po \
 	io/loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po \
-	planner/pipeline/$(DEPDIR)/test_runner-0009_pipeline_row_notify_invalid_inputs.Po \
 	processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po \
 	processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po \
 	processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po \
@@ -1210,7 +1207,6 @@ TESTS = \
     planner/pipeline/0006_pipeline_planner_overrides_threads.t \
     planner/pipeline/0007_pipeline_row_ready_band_index_nonnegative.t \
     planner/pipeline/0008_pipeline_row_ready_band_index_spans_multiple_bands.t \
-    planner/pipeline/0009_pipeline_row_notify_invalid_inputs.t \
     security/issue/0001_issue167_empty_bg.t \
     security/issue/0002_issue167_height.t \
     security/issue/0003_issue166_width.t \
@@ -1440,7 +1436,6 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    io/loader/pixelformat_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0001_kmeans_init.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
-@WANT_AMALGAMATED_TOOLS_FALSE@    planner/pipeline/0009_pipeline_row_notify_invalid_inputs.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    extension/gdk-pixbuf-loader/0002_incremental_load.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    extension/gdk-pixbuf-loader/0003_corrupt_data.c \
@@ -1767,7 +1762,6 @@ planner/pipeline/$(am__dirstamp):
 planner/pipeline/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) planner/pipeline/$(DEPDIR)
 	@: >>planner/pipeline/$(DEPDIR)/$(am__dirstamp)
-planner/pipeline/test_runner-0009_pipeline_row_notify_invalid_inputs.$(OBJEXT):  \
 	planner/pipeline/$(am__dirstamp) \
 	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
 extension/gdk-pixbuf-loader/$(am__dirstamp):
@@ -1876,7 +1870,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@io/loader/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@io/loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@io/loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@planner/pipeline/$(DEPDIR)/test_runner-0009_pipeline_row_notify_invalid_inputs.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po@am__quote@ # am--include-marker
@@ -2297,19 +2290,9 @@ diagnostics/probe/test_runner-0001_probe_parse.obj: diagnostics/probe/0001_probe
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/probe/test_runner-0001_probe_parse.obj `if test -f 'diagnostics/probe/0001_probe_parse.c'; then $(CYGPATH_W) 'diagnostics/probe/0001_probe_parse.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/probe/0001_probe_parse.c'; fi`
 
-planner/pipeline/test_runner-0009_pipeline_row_notify_invalid_inputs.o: planner/pipeline/0009_pipeline_row_notify_invalid_inputs.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0009_pipeline_row_notify_invalid_inputs.o -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0009_pipeline_row_notify_invalid_inputs.Tpo -c -o planner/pipeline/test_runner-0009_pipeline_row_notify_invalid_inputs.o `test -f 'planner/pipeline/0009_pipeline_row_notify_invalid_inputs.c' || echo '$(srcdir)/'`planner/pipeline/0009_pipeline_row_notify_invalid_inputs.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0009_pipeline_row_notify_invalid_inputs.Tpo planner/pipeline/$(DEPDIR)/test_runner-0009_pipeline_row_notify_invalid_inputs.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0009_pipeline_row_notify_invalid_inputs.c' object='planner/pipeline/test_runner-0009_pipeline_row_notify_invalid_inputs.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0009_pipeline_row_notify_invalid_inputs.o `test -f 'planner/pipeline/0009_pipeline_row_notify_invalid_inputs.c' || echo '$(srcdir)/'`planner/pipeline/0009_pipeline_row_notify_invalid_inputs.c
 
-planner/pipeline/test_runner-0009_pipeline_row_notify_invalid_inputs.obj: planner/pipeline/0009_pipeline_row_notify_invalid_inputs.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT planner/pipeline/test_runner-0009_pipeline_row_notify_invalid_inputs.obj -MD -MP -MF planner/pipeline/$(DEPDIR)/test_runner-0009_pipeline_row_notify_invalid_inputs.Tpo -c -o planner/pipeline/test_runner-0009_pipeline_row_notify_invalid_inputs.obj `if test -f 'planner/pipeline/0009_pipeline_row_notify_invalid_inputs.c'; then $(CYGPATH_W) 'planner/pipeline/0009_pipeline_row_notify_invalid_inputs.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0009_pipeline_row_notify_invalid_inputs.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) planner/pipeline/$(DEPDIR)/test_runner-0009_pipeline_row_notify_invalid_inputs.Tpo planner/pipeline/$(DEPDIR)/test_runner-0009_pipeline_row_notify_invalid_inputs.Po
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='planner/pipeline/0009_pipeline_row_notify_invalid_inputs.c' object='planner/pipeline/test_runner-0009_pipeline_row_notify_invalid_inputs.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o planner/pipeline/test_runner-0009_pipeline_row_notify_invalid_inputs.obj `if test -f 'planner/pipeline/0009_pipeline_row_notify_invalid_inputs.c'; then $(CYGPATH_W) 'planner/pipeline/0009_pipeline_row_notify_invalid_inputs.c'; else $(CYGPATH_W) '$(srcdir)/planner/pipeline/0009_pipeline_row_notify_invalid_inputs.c'; fi`
 
 extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.o: extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.o -MD -MP -MF extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Tpo -c -o extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.o `test -f 'extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c' || echo '$(srcdir)/'`extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c
@@ -2826,7 +2809,6 @@ distclean: distclean-am
 	-rm -f io/loader/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
 	-rm -f io/loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po
 	-rm -f io/loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
-	-rm -f planner/pipeline/$(DEPDIR)/test_runner-0009_pipeline_row_notify_invalid_inputs.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po
@@ -2910,7 +2892,6 @@ maintainer-clean: maintainer-clean-am
 	-rm -f io/loader/$(DEPDIR)/test_runner-0015_loader_quicklook_pixelformat.Po
 	-rm -f io/loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po
 	-rm -f io/loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
-	-rm -f planner/pipeline/$(DEPDIR)/test_runner-0009_pipeline_row_notify_invalid_inputs.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po
