@@ -514,15 +514,15 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	build-aux/lso-tap-driver.sh.in
 
 
-# Honor user-supplied MAKEFLAGS while providing a CPU-based default -j.
-# Only set this at the top-level to avoid forcing -j in sub-makes.
+# Honor user-supplied make parallel flags while providing a CPU-based default.
 #
-# The configure-time detection cannot see future command-line flags, so we must
-# re-check job flags at make runtime. If the caller provided -j/--jobs
-# (via MFLAGS/MAKEFLAGS), keep MAKEFLAGS unchanged so that setting wins
-# over LS_DEFAULT_MAKEFLAGS.
-LS_USER_JOBS := $(filter -j% --jobs --jobs=%,$(MFLAGS) $(MAKEFLAGS))
-MAKEFLAGS := $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),$(MAKEFLAGS),@LS_DEFAULT_MAKEFLAGS@ $(MAKEFLAGS)),$(MAKEFLAGS))
+# Do not rewrite MAKEFLAGS in the Makefile. GNU make computes runtime parallel
+# behavior before variable expansion, so mutating MAKEFLAGS here can produce
+# inconsistent results. Instead, append the default via AM_MAKEFLAGS only when
+# no user-provided job control is visible in MFLAGS/MAKEFLAGS.
+# Accept both explicit jobs options and GNU make jobserver tokens.
+LS_USER_JOBS = $(filter -j% --jobs --jobs=% --jobserver-auth=% --jobserver-fds=% --jobserver-style=%,$(MFLAGS) $(MAKEFLAGS))
+AM_MAKEFLAGS = $(if $(LS_USER_JOBS),,@LS_DEFAULT_MAKEFLAGS@)
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = $(builddir)/libsixel.pc
 CLEANFILES = $(builddir)/package.json
