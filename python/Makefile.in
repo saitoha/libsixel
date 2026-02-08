@@ -101,8 +101,7 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/ax_count_cpus.m4 \
 	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
-DIST_COMMON = $(srcdir)/Makefile.am $(am__libsixel_PYTHON_DIST) \
-	$(am__DIST_COMMON)
+DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
 mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
@@ -126,43 +125,8 @@ am__can_run_installinfo = \
     n|no|NO) false;; \
     *) (install-info --version) >/dev/null 2>&1;; \
   esac
-am__libsixel_PYTHON_DIST = libsixel/__init__.py \
-	libsixel/_libs/__init__.py libsixel/encoder.py \
-	libsixel/decoder.py
-am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
-am__vpath_adj = case $$p in \
-    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
-    *) f=$$p;; \
-  esac;
-am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
-am__install_max = 40
-am__nobase_strip_setup = \
-  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
-am__nobase_strip = \
-  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
-am__nobase_list = $(am__nobase_strip_setup); \
-  for p in $$list; do echo "$$p $$p"; done | \
-  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
-  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
-    if (++n[$$2] == $(am__install_max)) \
-      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
-    END { for (dir in files) print dir, files[dir] }'
-am__base_list = \
-  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
-  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__uninstall_files_from_dir = { \
-  { test ! -d "$$dir" && test ! -f "$$dir" && test ! -r "$$dir"; } \
-  || { echo " ( cd '$$dir' && rm -f" $$files ")"; \
-       $(am__cd) "$$dir" && echo $$files | $(am__xargs_n) 40 $(am__rm_f); }; \
-  }
-am__py_compile = PYTHON=$(PYTHON) $(SHELL) $(py_compile)
-am__installdirs = "$(DESTDIR)$(libsixeldir)"
-am__pep3147_tweak = \
-  sed -e 's|\.py$$||' -e 's|[^/]*$$|__pycache__/&.*.pyc __pycache__/&.*.pyo|'
-py_compile = $(top_srcdir)/build-aux/py-compile
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
-am__DIST_COMMON = $(srcdir)/Makefile.in \
-	$(top_srcdir)/build-aux/py-compile
+am__DIST_COMMON = $(srcdir)/Makefile.in
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ABORTTRACE_LIBS = @ABORTTRACE_LIBS@
 ACLOCAL = @ACLOCAL@
@@ -202,7 +166,6 @@ ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 ENABLE_PYTHON = @ENABLE_PYTHON@
-ENABLE_PYTHON_WHEEL = @ENABLE_PYTHON_WHEEL@
 ETAGS = @ETAGS@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
@@ -297,7 +260,6 @@ SIXEL_LIBTOOL_SHLIBPATH_VAR = @SIXEL_LIBTOOL_SHLIBPATH_VAR@
 SIXEL_MSAN_BUILD = @SIXEL_MSAN_BUILD@
 SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
 SIXEL_SHEBANG_HELPER = @SIXEL_SHEBANG_HELPER@
-SIXEL_SHLIBPATH_OVERRIDES_RUNPATH = @SIXEL_SHLIBPATH_OVERRIDES_RUNPATH@
 SIXEL_TEST_SHELL = @SIXEL_TEST_SHELL@
 SIXEL_TSAN_BUILD = @SIXEL_TSAN_BUILD@
 STRIP = @STRIP@
@@ -378,13 +340,6 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
 CLEANFILES = libsixel/*.pyc
-@HAVE_PYTHON_TRUE@libsixeldir = $(pythondir)/libsixel
-@HAVE_PYTHON_TRUE@libsixel_PYTHON = \
-@HAVE_PYTHON_TRUE@    libsixel/__init__.py \
-@HAVE_PYTHON_TRUE@    libsixel/_libs/__init__.py \
-@HAVE_PYTHON_TRUE@    libsixel/encoder.py \
-@HAVE_PYTHON_TRUE@    libsixel/decoder.py
-
 EXTRA_DIST = \
     setup.py \
     wheel_builder.py \
@@ -428,47 +383,6 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
-install-libsixelPYTHON: $(libsixel_PYTHON)
-	@$(NORMAL_INSTALL)
-	@list='$(libsixel_PYTHON)'; dlist=; list2=; test -n "$(libsixeldir)" || list=; \
-	if test -n "$$list"; then \
-	  echo " $(MKDIR_P) '$(DESTDIR)$(libsixeldir)'"; \
-	  $(MKDIR_P) "$(DESTDIR)$(libsixeldir)" || exit 1; \
-	fi; \
-	for p in $$list; do \
-	  if test -f "$$p"; then b=; else b="$(srcdir)/"; fi; \
-	  if test -f $$b$$p; then \
-	    $(am__strip_dir) \
-	    dlist="$$dlist $$f"; \
-	    list2="$$list2 $$b$$p"; \
-	  else :; fi; \
-	done; \
-	for file in $$list2; do echo $$file; done | $(am__base_list) | \
-	while read files; do \
-	  echo " $(INSTALL_DATA) $$files '$(DESTDIR)$(libsixeldir)'"; \
-	  $(INSTALL_DATA) $$files "$(DESTDIR)$(libsixeldir)" || exit $$?; \
-	done || exit $$?; \
-	if test -n "$$dlist"; then \
-	  $(am__py_compile) --destdir "$(DESTDIR)" \
-	                    --basedir "$(libsixeldir)" $$dlist; \
-	else :; fi
-
-uninstall-libsixelPYTHON:
-	@$(NORMAL_UNINSTALL)
-	@list='$(libsixel_PYTHON)'; test -n "$(libsixeldir)" || list=; \
-	py_files=`for p in $$list; do echo $$p; done | sed -e 's|^.*/||'`; \
-	test -n "$$py_files" || exit 0; \
-	dir='$(DESTDIR)$(libsixeldir)'; \
-	pyc_files=`echo "$$py_files" | sed 's|$$|c|'`; \
-	pyo_files=`echo "$$py_files" | sed 's|$$|o|'`; \
-	st=0; \
-	for files in "$$py_files" "$$pyc_files" "$$pyo_files"; do \
-	  $(am__uninstall_files_from_dir) || st=$$?; \
-	done; \
-	dir='$(DESTDIR)$(libsixeldir)'; \
-	files=`echo "$$py_files" | $(am__pep3147_tweak)`; \
-	$(am__uninstall_files_from_dir) || st=$$?; \
-	exit $$st
 tags TAGS:
 
 ctags CTAGS:
@@ -511,12 +425,9 @@ distdir-am: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-@HAVE_PYTHON_WHEEL_FALSE@all-local:
+@HAVE_PYTHON_FALSE@all-local:
 all-am: Makefile all-local
 installdirs:
-	for dir in "$(DESTDIR)$(libsixeldir)"; do \
-	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
-	done
 install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
@@ -548,6 +459,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+@HAVE_PYTHON_FALSE@install-exec-local:
 clean: clean-am
 
 clean-am: clean-generic clean-libtool clean-local mostlyclean-am
@@ -568,13 +480,13 @@ info: info-am
 
 info-am:
 
-install-data-am: install-libsixelPYTHON
+install-data-am:
 
 install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am:
+install-exec-am: install-exec-local
 
 install-html: install-html-am
 
@@ -612,7 +524,7 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-libsixelPYTHON
+uninstall-am:
 
 .MAKE: install-am install-strip
 
@@ -621,30 +533,35 @@ uninstall-am: uninstall-libsixelPYTHON
 	distclean-generic distclean-libtool distdir dvi dvi-am html \
 	html-am info info-am install install-am install-data \
 	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-libsixelPYTHON install-man install-pdf \
-	install-pdf-am install-ps install-ps-am install-strip \
-	installcheck installcheck-am installdirs maintainer-clean \
-	maintainer-clean-generic mostlyclean mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags-am uninstall \
-	uninstall-am uninstall-libsixelPYTHON
+	install-exec-am install-exec-local install-html \
+	install-html-am install-info install-info-am install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags-am uninstall uninstall-am
 
 .PRECIOUS: Makefile
 
 
 clean-local:
-	rm -rf libsixel_wheel.egg-info libsixel_python.egg-info build dist
+	rm -rf libsixel_wheel.egg-info build dist
 	if test -d "$(builddir)/libsixel/_libs"; then \
 		find "$(builddir)/libsixel/_libs" -type f \
 			! -name '__init__.py' -exec rm -f {} +; \
 	fi
 
-@HAVE_PYTHON_WHEEL_TRUE@wheel-local:
-@HAVE_PYTHON_WHEEL_TRUE@	$(AM_V_GEN) $(PYTHON) $(srcdir)/wheel_builder.py \
-@HAVE_PYTHON_WHEEL_TRUE@		--libdir "$(top_builddir)/src/.libs" \
-@HAVE_PYTHON_WHEEL_TRUE@		--distdir "$(abs_top_builddir)/python/dist"
+@HAVE_PYTHON_TRUE@wheel-local:
+@HAVE_PYTHON_TRUE@	$(AM_V_at) $(MAKE) -C "$(top_builddir)/src" all
+@HAVE_PYTHON_TRUE@	$(AM_V_GEN) $(PYTHON) $(srcdir)/wheel_builder.py \
+@HAVE_PYTHON_TRUE@		--libdir "$(top_builddir)/src/.libs" \
+@HAVE_PYTHON_TRUE@		--distdir "$(abs_top_builddir)/python/dist"
 
-@HAVE_PYTHON_WHEEL_TRUE@all-local: wheel-local
+@HAVE_PYTHON_TRUE@all-local: wheel-local
+
+@HAVE_PYTHON_TRUE@install-exec-local:
+@HAVE_PYTHON_TRUE@	@echo "Python package install is not performed by make install."
+@HAVE_PYTHON_TRUE@	@echo "Run: python -m pip install python/dist/libsixel_wheel-*.whl"
 
 check: check-am
 

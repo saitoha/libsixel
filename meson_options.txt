@@ -43,9 +43,7 @@ option('threads', type: 'feature', value: 'auto', description: 'Enable internal 
 option('bashcompletiondir', type: 'string', value: 'disabled', description: 'Directory for bash completion files (set to auto for default path)')
 option('zshcompletiondir', type: 'string', value: 'disabled', description: 'Directory for zsh completion files (set to auto for default path)')
 option('simd', type: 'feature', value: 'enabled', description: 'Use SIMD')
-option('python', type: 'feature', value: 'disabled', description: 'Install Python bindings')
-option('python_wheel', type: 'feature', value: 'disabled',
-       description: 'Build Python wheel with bundled libsixel')
+option('python', type: 'feature', value: 'disabled', description: 'Build libsixel_wheel Python package')
 option('ruby', type: 'feature', value: 'disabled', description: 'Install Ruby bindings')
 option('tests', type: 'boolean', value: true, description: 'Build tests')
 option('amalgamated_lib', type: 'boolean', value: false,

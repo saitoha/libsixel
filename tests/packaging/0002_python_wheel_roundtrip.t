@@ -6,11 +6,6 @@ set -eu
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-# Skip immediately when Python wheel packaging is disabled in this build.
-if [ "${ENABLE_PYTHON_WHEEL:-0}" != "1" ]; then
-    skip_all "python wheel support is disabled in this build"
-fi
-
 . "${TOP_SRCDIR}/tests/lib/sh/packaging/python_wheel_common.sh"
 
 setup_wheel_paths "${test_name}"
