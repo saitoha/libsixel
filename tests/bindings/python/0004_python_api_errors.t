@@ -54,14 +54,14 @@ import sys
 from typing import Iterable
 
 try:
-    from libsixel import (
+    from libsixel_wheel import (
         SIXEL_OPTFLAG_COLORS,
         SIXEL_OPTFLAG_HEIGHT,
         SIXEL_OPTFLAG_INPUT,
         SIXEL_OPTFLAG_OUTPUT,
         SIXEL_OPTFLAG_WIDTH,
     )
-    from libsixel.encoder import Encoder
+    from libsixel_wheel.encoder import Encoder
 except OSError as exc:
     print(f"SKIP_LIBSIXEL_LOAD:{exc}")
     raise SystemExit(2)

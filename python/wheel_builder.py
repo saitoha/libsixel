@@ -97,12 +97,13 @@ def _copy_library(libpath: pathlib.Path, libs_dir: pathlib.Path) -> pathlib.Path
 def _run_wheel_build(
     root_dir: pathlib.Path,
     distdir: pathlib.Path,
-    libdir: pathlib.Path,
+    libpath: pathlib.Path,
 ) -> None:
     """Invoke the PEP 517 build frontend for the bundled wheel."""
 
     env = os.environ.copy()
-    env["LIBSIXEL_LIBDIR"] = str(libdir)
+    env["LIBSIXEL_LIBDIR"] = str(libpath.parent)
+    env["LIBSIXEL_LIBPATH"] = str(libpath)
 
     distdir.mkdir(parents=True, exist_ok=True)
     build_dir = root_dir / "build"
@@ -132,12 +133,14 @@ def main() -> int:
         if libpath is None:
             raise SystemExit(f"libsixel shared library not found in {args.libdir}")
 
+    libpath = libpath.resolve()
+
     root_dir = pathlib.Path(__file__).resolve().parent
     libs_dir = root_dir / "libsixel" / "_libs"
     copied = _copy_library(libpath, libs_dir)
 
     try:
-        _run_wheel_build(root_dir, args.distdir, libpath.parent)
+        _run_wheel_build(root_dir, args.distdir, libpath)
     finally:
         if copied.exists():
             copied.unlink()
