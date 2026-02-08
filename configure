@@ -19427,6 +19427,10 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+
+
+
+
   ac_check_funcs_parallel_includes=""
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for -fno-builtin" >&5
 printf %s "checking for -fno-builtin... " >&6; }
@@ -19516,6 +19520,8 @@ printf "%s\n" "$ac_cv_c_no_builtin" >&6; }
                          _fullpath \
                          _realpath \
                          _dupenv_s \
+                         _putenv_s \
+                         setenv \
                          realpath \
                          sqrt \
                          strchr \
