@@ -25,8 +25,8 @@ import pathlib
 import sys
 
 try:
-    from libsixel import SIXEL_OPTFLAG_INPUT
-    from libsixel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
+    from libsixel_wheel import SIXEL_OPTFLAG_INPUT
+    from libsixel_wheel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
 
     def ensure_sixel_signature(path: pathlib.Path) -> int:
         data = path.read_bytes()

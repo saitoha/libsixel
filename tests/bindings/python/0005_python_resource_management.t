@@ -34,14 +34,14 @@ import warnings
 from typing import Optional, Tuple
 
 try:
-    from libsixel import (
+    from libsixel_wheel import (
         SIXEL_OPTFLAG_INPUT,
         SIXEL_OPTFLAG_OUTPUT,
         SIXEL_OPTFLAG_WIDTH,
         SIXEL_OPTFLAG_HEIGHT,
     )
-    from libsixel.encoder import Encoder
-    from libsixel.decoder import Decoder
+    from libsixel_wheel.encoder import Encoder
+    from libsixel_wheel.decoder import Decoder
 except OSError as exc:
     print(f"SKIP_LIBSIXEL_LOAD:{exc}")
     raise SystemExit(2)

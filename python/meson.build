@@ -20,26 +20,9 @@
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 python_opt = get_option('python')
-python_wheel_opt = get_option('python_wheel')
-if not python_opt.disabled()
+if python_opt.enabled()
   py_mod = import('python')
-  py = py_mod.find_installation(
-    required: python_opt.enabled() or python_wheel_opt.enabled()
-  )
-  if py.found()
-    python_sources = files(
-        'libsixel/__init__.py',
-        'libsixel/_libs/__init__.py',
-        'libsixel/encoder.py',
-        'libsixel/decoder.py'
-    )
-    py.install_sources(python_sources, subdir: 'libsixel')
-  endif
-elif python_opt.enabled()
-  error('Python support requires an interpreter')
-endif
-
-if python_wheel_opt.enabled()
+  py = py_mod.find_installation(required: true)
   wheel_script = files('wheel_builder.py')
   wheel_distdir = join_paths(meson.current_build_dir(), 'dist')
   custom_target(

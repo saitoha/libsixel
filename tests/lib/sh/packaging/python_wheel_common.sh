@@ -66,9 +66,9 @@ write_roundtrip_script() {
     script_path=$1
     cat >"${script_path}" <<'PY'
 import pathlib
-from libsixel import SIXEL_PIXELFORMAT_RGB888
-from libsixel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
-from libsixel.decoder import Decoder, SIXEL_OPTFLAG_INPUT, SIXEL_OPTFLAG_OUTPUT
+from libsixel_wheel import SIXEL_PIXELFORMAT_RGB888
+from libsixel_wheel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
+from libsixel_wheel.decoder import Decoder, SIXEL_OPTFLAG_INPUT, SIXEL_OPTFLAG_OUTPUT
 
 root = pathlib.Path(__file__).parent
 encoded = root / "sample.six"

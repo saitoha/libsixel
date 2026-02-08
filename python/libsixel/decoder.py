@@ -21,7 +21,7 @@
 #
 
 from . import _sixel
-from libsixel import *
+from libsixel_wheel import *
 
 class Decoder(object):
 
