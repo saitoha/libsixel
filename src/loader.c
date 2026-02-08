@@ -169,11 +169,8 @@ loader_strdup(char const *text, sixel_allocator_t *allocator)
         return NULL;
     }
 
-#if HAVE_STRCPY_S
-    (void)strcpy_s(copy, (rsize_t)length, text);
-#else
+    /* Copy the terminating NUL byte as part of length. */
     memcpy(copy, text, length);
-#endif
 
     return copy;
 }
