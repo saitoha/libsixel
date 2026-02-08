@@ -1381,9 +1381,8 @@ else
 endif
 
 py_opt = get_option('python')
-python_wheel_opt = get_option('python_wheel')
 py_mod = import('python')
-py_required = py_opt.enabled() or python_wheel_opt.enabled()
+py_required = py_opt.enabled()
 py = py_mod.find_installation(required: py_required)
 if py.found()
   have_python = true
@@ -1396,16 +1395,12 @@ if py_opt.enabled() and not have_python
   error('Python support requires an interpreter')
 endif
 
-python_wheel_message = 'no'
-if python_wheel_opt.enabled()
-  if not have_python
-    error('Python wheel support requires the Python bindings')
-  endif
+if py_opt.enabled()
   py_check = run_command(ci_probe, '-c', 'import build', check: false)
   if py_check.returncode() != 0
-    error('Python wheel support requires the build module')
+    error('Python package support requires the build module')
   endif
-  python_wheel_message = 'yes'
+  python_message = 'yes: libsixel_wheel'
 endif
 
 ruby_message = 'no'
@@ -1588,8 +1583,7 @@ message('       Bash completion dir     : ' + bash_completion_message)
 message('       Zsh completion dir      : ' + zsh_completion_message)
 message('       QuickLook extension     : ' + quicklook_extension_message)
 message('       WIC codec               : ' + wiccodec_message)
-message('       python bindings         : ' + python_message)
-message('       python wheel            : ' + python_wheel_message)
+message('       python package          : ' + python_message)
 message('       ruby bindings           : ' + ruby_message)
 message('       gdk-pixbuf SIXEL loader : ' + gdk_pixbuf_loader_message)
 message('       Thumbnailer command     : ' + thumbnailer_message)

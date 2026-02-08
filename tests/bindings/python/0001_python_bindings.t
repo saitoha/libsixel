@@ -1,6 +1,6 @@
 #!/bin/sh
 # TAP smoke test for Python bindings. The test prefers the prebuilt wheel
-# under python-wheel/dist when available and falls back to the in-tree Python
+# under python/dist when available and falls back to the in-tree Python
 # sources otherwise.
 
 set -eux
@@ -25,7 +25,7 @@ skip_reason=""
 if [ "${use_wheel}" -eq 1 ]; then
     run_venv="${ARTIFACT_LOCAL_DIR}/venv"
     if python_install_wheel "${run_venv}" "${wheel_path}"; then
-        tap_pass ${case_id} "installs wheel from python-wheel/dist"
+        tap_pass ${case_id} "installs wheel from python/dist"
     else
         tap_fail ${case_id} "wheel installation failed"
     fi
@@ -35,8 +35,8 @@ else
        LIBSIXEL_LIBDIR="${python_lib_dir}" \
        "${run_python}" - 2>&1 <<'PY'
 try:
-    import libsixel
-    from libsixel import encoder, decoder
+    import libsixel_wheel
+    from libsixel_wheel import encoder, decoder
 
     encoder.Encoder
     decoder.Decoder
@@ -92,8 +92,8 @@ def main():
     )
 
 try:
-    from libsixel import SIXEL_PIXELFORMAT_RGB888
-    from libsixel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
+    from libsixel_wheel import SIXEL_PIXELFORMAT_RGB888
+    from libsixel_wheel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
 
     root = pathlib.Path(__file__).parent
     output = root / "sample.six"

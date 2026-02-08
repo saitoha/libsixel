@@ -34,7 +34,7 @@ import sys
 from typing import Iterable, Set, Tuple
 
 try:
-    from libsixel import (
+    from libsixel_wheel import (
         SIXEL_OPTFLAG_BGCOLOR,
         SIXEL_OPTFLAG_COLORS,
         SIXEL_OPTFLAG_DIFFUSION,
@@ -46,8 +46,8 @@ try:
         SIXEL_OPTFLAG_RESAMPLING,
         SIXEL_OPTFLAG_WIDTH,
     )
-    from libsixel.decoder import Decoder
-    from libsixel.encoder import Encoder
+    from libsixel_wheel.decoder import Decoder
+    from libsixel_wheel.encoder import Encoder
 except OSError as exc:
     print(f"SKIP_LIBSIXEL_LOAD:{exc}")
     raise SystemExit(2)

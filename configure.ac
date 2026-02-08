@@ -1110,18 +1110,9 @@ AC_ARG_ENABLE([register-dll],
 
 AC_ARG_ENABLE([python],
               [AS_HELP_STRING([--enable-python],
-                              [Python interface (default: no)])],
+                              [Python wheel package (default: no)])],
               [],
               [enable_python=no])
-AC_ARG_ENABLE([python-wheel],
-              [AS_HELP_STRING([--enable-python-wheel],
-                              [Python wheel with bundled libsixel (default: no)])],
-              [],
-              [enable_python_wheel=no])
-
-AS_IF([test "x$enable_python_wheel" != xno], [
-  enable_python=yes
-])
 
 # Ruby bindings option
 AC_ARG_ENABLE([ruby],
@@ -2996,14 +2987,9 @@ if test x$enable_python != xno; then
         AC_MSG_ERROR([python is not available])
     fi
 fi
-have_python_wheel=no
-if test x$enable_python_wheel != xno; then
-    if test x$have_python = xno; then
-        AC_MSG_ERROR([python wheel requires python to be available])
-    fi
+if test x$enable_python != xno; then
     AC_MSG_CHECKING([for Python build module])
     if $PYTHON -c "import build" >/dev/null 2>&1; then
-        have_python_wheel=yes
         AC_MSG_RESULT([yes])
     else
         AC_MSG_RESULT([no])
@@ -3016,23 +3002,12 @@ if test x$enable_python != xno; then
     ENABLE_PYTHON=1
 fi
 
-ENABLE_PYTHON_WHEEL=0
-if test x$enable_python_wheel != xno; then
-    ENABLE_PYTHON_WHEEL=1
-fi
-
 AC_SUBST([ENABLE_PYTHON])
-AC_SUBST([ENABLE_PYTHON_WHEEL])
 
 if test x$have_python = xyes; then
-    message_python="$have_python: $pythondir"
+    message_python="$have_python: libsixel_wheel"
 else
     message_python=$have_python
-fi
-if test x$have_python_wheel = xyes; then
-    message_python_wheel="$have_python_wheel: libsixel_wheel"
-else
-    message_python_wheel=$have_python_wheel
 fi
 
 message_ruby=no
@@ -3100,8 +3075,6 @@ AM_CONDITIONAL([HAVE_PNG], [test x$have_png = xyes])
 AM_CONDITIONAL([HAVE_WIC], [test x$have_wic = xyes])
 AM_CONDITIONAL([HAVE_WICCODEC], [test x$have_wiccodec = xyes])
 AM_CONDITIONAL([HAVE_PYTHON], [test x$have_python = xyes])
-AM_CONDITIONAL([HAVE_PYTHON_WHEEL],
-               [test x$have_python_wheel = xyes])
 
 AC_CONFIG_FILES([Makefile
                  libsixel.pc
@@ -3187,8 +3160,7 @@ echo "       WIC codec               : $message_wiccodec"
 echo "       Register WIC DLL        : $message_register_dll"
 echo "       gdk-pixbuf SIXEL loader : $message_gdk_pixbuf_loader"
 echo "       Thumbnailer command     : $message_thumbnailer"
-echo "       python bindings         : $message_python"
-echo "       python wheel            : $message_python_wheel"
+echo "       python package          : $message_python"
 echo "       ruby bindings           : $message_ruby"
 echo "       simd                    : $message_simd"
 echo "       xsave probe             : $message_xsave_probe"

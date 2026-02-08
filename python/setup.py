@@ -14,9 +14,10 @@ dirpath = os.path.abspath(os.path.dirname(filename))
 long_description = open(os.path.join(dirpath, "README.rst")).read()
 
 bundle_libdir = os.environ.get("LIBSIXEL_LIBDIR")
+bundle_libpath = os.environ.get("LIBSIXEL_LIBPATH")
 bundle_mode = bundle_libdir is not None
-package_name = "libsixel_wheel" if bundle_mode else "libsixel-python"
-package_data = {"libsixel": ["_libs/*"]} if bundle_mode else {}
+package_name = "libsixel_wheel"
+package_data = {"libsixel_wheel": ["_libs/*"]} if bundle_mode else {}
 wheel_ext_modules = []
 
 if bundle_mode:
@@ -33,11 +34,12 @@ if bundle_mode:
 
     wheel_ext_modules = [
         Extension(
-            "libsixel._wheel_ext",
+            "libsixel_wheel._wheel_ext",
             sources=[os.path.join("libsixel", "_wheel_ext.c")],
             include_dirs=[include_dir],
-            libraries=["sixel"],
-            library_dirs=[libdir],
+            libraries=[] if bundle_libpath else ["sixel"],
+            library_dirs=[] if bundle_libpath else [libdir],
+            extra_objects=[bundle_libpath] if bundle_libpath else [],
             runtime_library_dirs=runtime_dirs,
             extra_link_args=extra_link_args,
         )
@@ -58,7 +60,8 @@ setup(name                  = package_name,
       author_email          = 'saitoha@me.com',
       url                   = 'https://github.com/saitoha/libsixel',
       license               = __license__,
-      packages              = find_packages(exclude=[]),
+      packages              = ["libsixel_wheel", "libsixel_wheel._libs"],
+      package_dir           = {"libsixel_wheel": "libsixel"},
       package_data          = package_data,
       ext_modules           = wheel_ext_modules,
       zip_safe              = False,

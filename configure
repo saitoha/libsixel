@@ -655,8 +655,6 @@ ac_unique_file="src/fromsixel.c"
 ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
-HAVE_PYTHON_WHEEL_FALSE
-HAVE_PYTHON_WHEEL_TRUE
 HAVE_PYTHON_FALSE
 HAVE_PYTHON_TRUE
 HAVE_WICCODEC_FALSE
@@ -685,7 +683,6 @@ RUBY_EXT_LIB
 RUBY_EXT_INC
 RUBY_VERSION
 RUBY
-ENABLE_PYTHON_WHEEL
 ENABLE_PYTHON
 pkgpyexecdir
 pyexecdir
@@ -989,7 +986,6 @@ enable_xsave_probe
 enable_wiccodec
 enable_register_dll
 enable_python
-enable_python_wheel
 enable_ruby
 enable_debug
 enable_gcov
@@ -1715,8 +1711,7 @@ Optional Features:
   --enable-wiccodec       build WIC codec DLL (default: auto)
   --enable-register-dll   register WIC codec DLL during install (default: no,
                           admin rights required)
-  --enable-python         Python interface (default: no)
-  --enable-python-wheel   Python wheel with bundled libsixel (default: no)
+  --enable-python         Python wheel package (default: no)
   --enable-ruby           Ruby interface (default: no)
   --enable-debug          Use debug macro and specific CFLAGS
   --enable-gcov           Use gcov
@@ -17388,22 +17383,6 @@ else case e in #(
 esac
 fi
 
-# Check whether --enable-python-wheel was given.
-if test ${enable_python_wheel+y}
-then :
-  enableval=$enable_python_wheel;
-else case e in #(
-  e) enable_python_wheel=no ;;
-esac
-fi
-
-
-if test "x$enable_python_wheel" != xno
-then :
-
-  enable_python=yes
-
-fi
 
 # Ruby bindings option
 # Check whether --enable-ruby was given.
@@ -25340,15 +25319,10 @@ printf "%s\n" "$am_cv_python_pyexecdir" >&6; }
         as_fn_error $? "python is not available" "$LINENO" 5
     fi
 fi
-have_python_wheel=no
-if test x$enable_python_wheel != xno; then
-    if test x$have_python = xno; then
-        as_fn_error $? "python wheel requires python to be available" "$LINENO" 5
-    fi
+if test x$enable_python != xno; then
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for Python build module" >&5
 printf %s "checking for Python build module... " >&6; }
     if $PYTHON -c "import build" >/dev/null 2>&1; then
-        have_python_wheel=yes
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 printf "%s\n" "yes" >&6; }
     else
@@ -25363,23 +25337,12 @@ if test x$enable_python != xno; then
     ENABLE_PYTHON=1
 fi
 
-ENABLE_PYTHON_WHEEL=0
-if test x$enable_python_wheel != xno; then
-    ENABLE_PYTHON_WHEEL=1
-fi
-
-
 
 
 if test x$have_python = xyes; then
-    message_python="$have_python: $pythondir"
+    message_python="$have_python: libsixel_wheel"
 else
     message_python=$have_python
-fi
-if test x$have_python_wheel = xyes; then
-    message_python_wheel="$have_python_wheel: libsixel_wheel"
-else
-    message_python_wheel=$have_python_wheel
 fi
 
 message_ruby=no
@@ -25830,14 +25793,6 @@ else
   HAVE_PYTHON_FALSE=
 fi
 
- if test x$have_python_wheel = xyes; then
-  HAVE_PYTHON_WHEEL_TRUE=
-  HAVE_PYTHON_WHEEL_FALSE='#'
-else
-  HAVE_PYTHON_WHEEL_TRUE='#'
-  HAVE_PYTHON_WHEEL_FALSE=
-fi
-
 
 ac_config_files="$ac_config_files Makefile libsixel.pc package.json.in include/sixel.h src/Makefile include/Makefile converters/Makefile assessment/Makefile tools/Makefile tools/libsixel-config build-aux/lso-tap-driver.sh:build-aux/lso-tap-driver.sh.in examples/Makefile examples/drawing/Makefile examples/opengl/Makefile examples/python/Makefile examples/ruby/Makefile examples/windows/Makefile images/Makefile tests/Makefile python/Makefile ruby/Makefile ruby/lib/libsixel/version_runtime.rb gdk-pixbuf-loader/Makefile quicklook-extension/Makefile wic/Makefile"
 
@@ -26156,10 +26111,6 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_PYTHON_TRUE}" && test -z "${HAVE_PYTHON_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_PYTHON\" was never defined.
-Usually this means the macro was only invoked conditionally." "$LINENO" 5
-fi
-if test -z "${HAVE_PYTHON_WHEEL_TRUE}" && test -z "${HAVE_PYTHON_WHEEL_FALSE}"; then
-  as_fn_error $? "conditional \"HAVE_PYTHON_WHEEL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
@@ -28447,8 +28398,7 @@ echo "       WIC codec               : $message_wiccodec"
 echo "       Register WIC DLL        : $message_register_dll"
 echo "       gdk-pixbuf SIXEL loader : $message_gdk_pixbuf_loader"
 echo "       Thumbnailer command     : $message_thumbnailer"
-echo "       python bindings         : $message_python"
-echo "       python wheel            : $message_python_wheel"
+echo "       python package          : $message_python"
 echo "       ruby bindings           : $message_ruby"
 echo "       simd                    : $message_simd"
 echo "       xsave probe             : $message_xsave_probe"

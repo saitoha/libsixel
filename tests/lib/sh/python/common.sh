@@ -702,16 +702,16 @@ if __name__ == "__main__":
 PY
 }
 
-# Return the first wheel path under python-wheel/dist if it exists.
+# Return the first wheel path under python/dist if it exists.
 select_wheel() {
     build_root=$1
-    wheel_dir="${build_root}/python-wheel/dist"
+    wheel_dir="${build_root}/python/dist"
 
     if [ ! -d "${wheel_dir}" ]; then
         return 1
     fi
 
-    find "${wheel_dir}" -maxdepth 1 -type f -name 'libsixel-*.whl' \
+    find "${wheel_dir}" -maxdepth 1 -type f -name 'libsixel_wheel-*.whl' \
         | head -n 1 || true
 }
 

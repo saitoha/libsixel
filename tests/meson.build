@@ -30,7 +30,6 @@ base_env_settings = [
   ['SIXEL_TSAN_BUILD', sixel_tsan_build],
   ['SIXEL_MSAN_BUILD', sixel_msan_build],
   ['ENABLE_PYTHON', (get_option('python').disabled() ? '0' : '1')],
-  ['ENABLE_PYTHON_WHEEL', (get_option('python_wheel').disabled() ? '0' : '1')],
   # Mirror autotools check-TESTS metadata so TAP helper scripts can share
   # one execution path across build systems.
   ['RUNTIME_SHLIBPATH_SEP', ':'],
