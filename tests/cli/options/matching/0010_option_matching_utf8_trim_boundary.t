@@ -18,7 +18,7 @@ rm -f "${err_file}" "${out_file}"
 
 long_utf8=$(python3 - <<'PY'
 import sys
-sys.stdout.write("あ" * 1800)
+sys.stdout.buffer.write(("あ" * 1800).encode("utf-8"))
 PY
 )
 
