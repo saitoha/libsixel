@@ -377,6 +377,9 @@
 /* Define to 1 if you have the `select' function. */
 #undef HAVE_SELECT
 
+/* Define to 1 if you have the `setenv' function. */
+#undef HAVE_SETENV
+
 /* Define to 1 if you have the `setjmp' function. */
 #undef HAVE_SETJMP
 
@@ -568,6 +571,9 @@
 
 /* Define to 1 if you have the `_open' function. */
 #undef HAVE__OPEN
+
+/* Define to 1 if you have the `_putenv_s' function. */
+#undef HAVE__PUTENV_S
 
 /* Define to 1 if you have the `_realpath' function. */
 #undef HAVE__REALPATH

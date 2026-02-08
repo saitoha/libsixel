@@ -1457,6 +1457,8 @@ AC_CHECK_FUNCS_PARALLEL([assert \
                          _fullpath \
                          _realpath \
                          _dupenv_s \
+                         _putenv_s \
+                         setenv \
                          realpath \
                          sqrt \
                          strchr \
