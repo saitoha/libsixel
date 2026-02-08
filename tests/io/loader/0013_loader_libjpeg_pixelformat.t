@@ -12,14 +12,16 @@ else
     top_builddir=${TOP_BUILDDIR:-${parent_dir}/..}
 fi
 
-runner="${top_builddir}/tests/test_runner${SIXEL_BIN_EXT-}"
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+
+runner="${TEST_RUNNER_PATH}"
 if [ ! -x "${runner}" ] && [ -z "${SIXEL_RUNTIME-}" ]; then
     echo "Bail out! missing test binary: ${runner}" 1>&2
     exit 1
 fi
 
 set +e
-loader_output=$(${SIXEL_RUNTIME-} "${runner}" "loader/${test_name}" 2>&1)
+loader_output=$(run_test_runner "loader/${test_name}" 2>&1)
 rc=$?
 set -e
 printf '%s' "${loader_output}" >&2
