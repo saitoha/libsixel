@@ -35,6 +35,63 @@ typedef struct row_notify_spy {
     int row_index;
 } row_notify_spy_t;
 
+/*
+ * Keep CRT compatibility handling local to this test source so tests do not
+ * need to include src/compat_stub.h.
+ */
+static FILE *
+test_fopen_read(char const *path)
+{
+    FILE *file;
+
+    file = NULL;
+#if defined(_MSC_VER)
+    if (fopen_s(&file, path, "r") != 0) {
+        file = NULL;
+    }
+#else
+    file = fopen(path, "r");
+#endif
+    return file;
+}
+
+/*
+ * Return a heap-allocated environment value on MSVC to avoid C4996.
+ * The caller must release the returned pointer via test_free_env_value().
+ */
+static char *
+test_getenv_dup(char const *name)
+{
+    char *value;
+    char const *src;
+    size_t length;
+
+    value = NULL;
+    src = NULL;
+    length = 0;
+#if defined(_MSC_VER)
+    if (_dupenv_s(&value, &length, name) != 0) {
+        value = NULL;
+    }
+#else
+    src = getenv(name);
+    if (src != NULL) {
+        length = strlen(src);
+        value = (char *)malloc(length + 1);
+        if (value != NULL) {
+            memcpy(value, src, length + 1);
+        }
+    }
+#endif
+    return value;
+}
+
+static void
+test_free_env_value(char *value)
+{
+    free(value);
+}
+
 static void
 row_notify_callback(void *priv, int row_index)
 {
@@ -56,7 +113,7 @@ file_contains(char const *path, char const *needle)
 
     file = NULL;
 
-    file = fopen(path, "r");
+    file = test_fopen_read(path);
     if (file == NULL) {
         return 0;
     }
@@ -143,14 +200,14 @@ run_case(char const *artifact_dir,
 int
 test_pipeline_0009_pipeline_row_notify_invalid_inputs(int argc, char **argv)
 {
-    char const *artifact_dir;
+    char *artifact_dir;
     int success;
 
     (void)argc;
     (void)argv;
 
     success = 1;
-    artifact_dir = getenv("ARTIFACT_LOCAL_DIR");
+    artifact_dir = test_getenv_dup("ARTIFACT_LOCAL_DIR");
 
     if (!run_case(artifact_dir,
                   "row_negative",
@@ -167,6 +224,8 @@ test_pipeline_0009_pipeline_row_notify_invalid_inputs(int argc, char **argv)
                   "\"event\":\"row_ready\",\"job\":-1")) {
         success = 0;
     }
+
+    test_free_env_value(artifact_dir);
 
     return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
