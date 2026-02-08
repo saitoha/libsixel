@@ -12,7 +12,7 @@ printf '1..1\n'
 set -v
 
 "${top_srcdir}/tests/docs/consistency/list_envvars.sh" --check \
-        --img2sixel "${TOP_BUILDDIR}/converters/img2sixel" --source-root "${top_srcdir}" > "${ARTIFACT_LOCAL_DIR}/output.txt" || {
+        --img2sixel "${IMG2SIXEL_PATH}" --source-root "${top_srcdir}" > "${ARTIFACT_LOCAL_DIR}/output.txt" || {
     printf 'not ok 1 - mismatch between sources and -H\n'
     exit 0
 }
