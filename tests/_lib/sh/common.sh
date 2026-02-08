@@ -227,16 +227,20 @@ runtime_exec() {
     runtime_var="${RUNTIME_SHLIBPATH_VAR:-LD_LIBRARY_PATH}"
     runtime_sep="${RUNTIME_SHLIBPATH_SEP:-:}"
     runtime_current=""
+    runtime_value=""
+    shlibpath_overrides_runpath="${SIXEL_SHLIBPATH_OVERRIDES_RUNPATH:-yes}"
 
-    eval "runtime_current=\${${runtime_var}:-}"
+    if [ "${shlibpath_overrides_runpath}" = "yes" ]; then
+        eval "runtime_current=\${${runtime_var}:-}"
 
-    if [ -n "${runtime_current}" ]; then
-        runtime_value="${runtime_libdir}${runtime_sep}${runtime_current}"
-    else
-        runtime_value="${runtime_libdir}"
+        if [ -n "${runtime_current}" ]; then
+            runtime_value="${runtime_libdir}${runtime_sep}${runtime_current}"
+        else
+            runtime_value="${runtime_libdir}"
+        fi
+        eval "${runtime_var}=\${runtime_value}"
+        eval "export ${runtime_var}"
     fi
-    eval "${runtime_var}=\${runtime_value}"
-    eval "export ${runtime_var}"
 
     if [ -n "${SIXEL_RUNTIME-}" ]; then
         "${SIXEL_RUNTIME-}" "$@"
