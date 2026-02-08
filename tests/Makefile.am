@@ -450,12 +450,6 @@ AM_TESTS_ENVIRONMENT += RUNTIME_SHLIBPATH_VAR='@SIXEL_LIBTOOL_SHLIBPATH_VAR@'; \
        export RUNTIME_SHLIBPATH_VAR;
 AM_TESTS_ENVIRONMENT += RUNTIME_SHLIBPATH_SEP='@SIXEL_LIBTOOL_PATH_SEPARATOR@'; \
        export RUNTIME_SHLIBPATH_SEP;
-AM_TESTS_ENVIRONMENT += IMG2SIXEL_PATH='$(abs_top_builddir)/converters/img2sixel@EXEEXT@'; \
-       SIXEL2PNG_PATH='$(abs_top_builddir)/converters/sixel2png@EXEEXT@'; \
-       LSQA_PATH='$(abs_top_builddir)/assessment/lsqa@EXEEXT@'; \
-       TEST_RUNNER_PATH='$(abs_top_builddir)/tests/test_runner@EXEEXT@'; \
-export IMG2SIXEL_PATH; export SIXEL2PNG_PATH; \
-export LSQA_PATH; export TEST_RUNNER_PATH;
 TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_builddir) -I$(top_builddir)/include \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \
