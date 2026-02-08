@@ -1244,11 +1244,20 @@ sixel_certlut_init(sixel_certlut_t *lut)
     lut->kdnodes = NULL;
     lut->kdnodes_count = 0;
     lut->kdtree_root = -1;
+
+#if SIXEL_ENABLE_THREADS
     status = sixel_mutex_init(&lut->lock);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
     lut->lock_ready = 1;
+#endif
+
+    /*
+     * Single-threaded builds intentionally skip mutex initialization.
+     * CERTLUT still works because lock/unlock helpers already guard on
+     * lock_ready and become no-ops when synchronization is unnecessary.
+     */
     status = SIXEL_OK;
 
 end:
