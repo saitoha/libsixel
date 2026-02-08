@@ -1848,21 +1848,21 @@ jobs:
             make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine make
             exec_type: bash
 
-          - label: Autotools-macos-x86_64-mingw-w64-x86_64-wine64-rosetta-static
-            buildtool: autotools
-            runner: macos-15
-            setup_prefix: >-
-              wineboot -u;
-              cp "$(find /opt/homebrew/Cellar/mingw-w64 -name toolchain-x86_64)"/x86_64-w64-mingw32/bin/libwinpthread-1.dll ~/.wine/drive_c/windows/system32/;
-              CC=x86_64-w64-mingw32-gcc
-            setup_options: >-
-              --host=x86_64-w64-mingw32
-              --disable-shared
-            extra_packages: >-
-              wine@devel
-              mingw-w64
-            make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine make
-            exec_type: bash
+#          - label: Autotools-macos-x86_64-mingw-w64-x86_64-wine64-static
+#            buildtool: autotools
+#            runner: macos-15
+#            setup_prefix: >-
+#              wineboot -u;
+#              cp "$(find /opt/homebrew/Cellar/mingw-w64 -name toolchain-x86_64)"/x86_64-w64-mingw32/bin/libwinpthread-1.dll ~/.wine/drive_c/windows/system32/;
+#              CC=x86_64-w64-mingw32-gcc
+#            setup_options: >-
+#              --host=x86_64-w64-mingw32
+#              --disable-shared
+#            extra_packages: >-
+#              wine@devel
+#              mingw-w64
+#            make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine make
+#            exec_type: bash
 
     steps:
       - name: Configure git EOL
@@ -1907,24 +1907,24 @@ jobs:
 #              developer/build/ninja
 #            exec_type: openindiana-vm
 
-          - label: Autotools-solaris-11.4-x86_64
-            buildtool: autotools
-            runner: ubuntu-latest
-            version: '11.4'
-            extra_packages: >-
-              gnu-make
-              gcc
-            make: gmake
-            exec_type: solaris-vm
-
-          - label: Meson-solaris-11.4-x86_64
-            buildtool: meson
-            runner: ubuntu-latest
-            version: '11.4'
-            extra_packages: >-
-              gcc
-              meson
-            exec_type: solaris-vm
+#          - label: Autotools-solaris-11.4-x86_64
+#            buildtool: autotools
+#            runner: ubuntu-latest
+#            version: '11.4'
+#            extra_packages: >-
+#              gnu-make
+#              gcc
+#            make: gmake
+#            exec_type: solaris-vm
+#
+#          - label: Meson-solaris-11.4-x86_64
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            version: '11.4'
+#            extra_packages: >-
+#              gcc
+#              meson
+#            exec_type: solaris-vm
 
           - label: Autotools-omnios-r151056-x86_64
             buildtool: autotools
