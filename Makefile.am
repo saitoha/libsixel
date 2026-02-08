@@ -52,7 +52,14 @@ LS_USER_JOBS = $(filter -j% --jobs --jobs=% --jobserver-auth=% --jobserver-fds=%
 AM_MAKEFLAGS = $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),,@LS_DEFAULT_MAKEFLAGS@),)
 
 
-.PHONY: install-quicklook-extension uninstall-quicklook-extension
+.PHONY: install-quicklook-extension uninstall-quicklook-extension \
+	fuzz-cli-img2sixel
+
+FUZZ_AFL ?= afl-fuzz
+FUZZ_TIMEOUT ?= 0
+FUZZ_INPUT_DIR ?= $(top_srcdir)/images
+FUZZ_OUTPUT_DIR ?= $(abs_top_builddir)/afl-out/img2sixel
+FUZZ_IMG2SIXEL ?= $(abs_top_builddir)/converters/img2sixel$(EXEEXT)
 
 install-quicklook-extension:
 	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension install-quicklook-extension
@@ -61,6 +68,37 @@ install-quicklook-extension:
 uninstall-quicklook-extension:
 	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension uninstall-quicklook-extension
 	@HAVE_APPLE_QUICKLOOK_EXTENSION_FALSE@{ echo "Quick Look extension is not enabled in this build" >&2; exit 1; }
+
+fuzz-cli-img2sixel: all
+	@set -eu; \
+	if ! command -v "$(FUZZ_AFL)" >/dev/null 2>&1; then \
+		echo "error: $(FUZZ_AFL) is not installed" >&2; \
+		exit 1; \
+	fi; \
+	if [ ! -x "$(FUZZ_IMG2SIXEL)" ]; then \
+		echo "error: img2sixel binary was not found: $(FUZZ_IMG2SIXEL)" >&2; \
+		exit 1; \
+	fi; \
+	mkdir -p "$(FUZZ_OUTPUT_DIR)"; \
+	fuzz_cmd='"$(FUZZ_AFL)" -i "$(FUZZ_INPUT_DIR)" -o "$(FUZZ_OUTPUT_DIR)" -- "$(FUZZ_IMG2SIXEL)" --fast --quality=full --palette-type=rgb --diffusion=none --ignore-delay --loop-control=auto --center --pipe-mode @@'; \
+	if [ "$(FUZZ_TIMEOUT)" -gt 0 ]; then \
+		if ! command -v timeout >/dev/null 2>&1; then \
+			echo "error: timeout command is required when FUZZ_TIMEOUT > 0" >&2; \
+			exit 1; \
+		fi; \
+		echo "Running img2sixel fuzzing for $(FUZZ_TIMEOUT)s"; \
+		set +e; \
+		timeout "$(FUZZ_TIMEOUT)" sh -c "$$fuzz_cmd"; \
+		rc=$$?; \
+		set -e; \
+		if [ $$rc -eq 124 ]; then \
+			echo "fuzz-cli-img2sixel: reached FUZZ_TIMEOUT=$(FUZZ_TIMEOUT)s"; \
+			exit 0; \
+		fi; \
+		exit $$rc; \
+	fi; \
+	echo "Running img2sixel fuzzing without timeout"; \
+	sh -c "$$fuzz_cmd"
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 

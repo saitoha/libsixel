@@ -1764,14 +1764,6 @@ diagnostics/probe/$(DEPDIR)/$(am__dirstamp):
 diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT):  \
 	diagnostics/probe/$(am__dirstamp) \
 	diagnostics/probe/$(DEPDIR)/$(am__dirstamp)
-planner/pipeline/$(am__dirstamp):
-	@$(MKDIR_P) planner/pipeline
-	@: >>planner/pipeline/$(am__dirstamp)
-planner/pipeline/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) planner/pipeline/$(DEPDIR)
-	@: >>planner/pipeline/$(DEPDIR)/$(am__dirstamp)
-	planner/pipeline/$(am__dirstamp) \
-	planner/pipeline/$(DEPDIR)/$(am__dirstamp)
 extension/gdk-pixbuf-loader/$(am__dirstamp):
 	@$(MKDIR_P) extension/gdk-pixbuf-loader
 	@: >>extension/gdk-pixbuf-loader/$(am__dirstamp)
@@ -1844,7 +1836,6 @@ mostlyclean-compile:
 	-rm -f diagnostics/probe/*.$(OBJEXT)
 	-rm -f extension/gdk-pixbuf-loader/*.$(OBJEXT)
 	-rm -f io/loader/*.$(OBJEXT)
-	-rm -f planner/pipeline/*.$(OBJEXT)
 	-rm -f processing/filter/*.$(OBJEXT)
 	-rm -f quant/palette/*.$(OBJEXT)
 
@@ -2297,10 +2288,6 @@ diagnostics/probe/test_runner-0001_probe_parse.obj: diagnostics/probe/0001_probe
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='diagnostics/probe/0001_probe_parse.c' object='diagnostics/probe/test_runner-0001_probe_parse.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o diagnostics/probe/test_runner-0001_probe_parse.obj `if test -f 'diagnostics/probe/0001_probe_parse.c'; then $(CYGPATH_W) 'diagnostics/probe/0001_probe_parse.c'; else $(CYGPATH_W) '$(srcdir)/diagnostics/probe/0001_probe_parse.c'; fi`
-
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 
 extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.o: extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.o -MD -MP -MF extension/gdk-pixbuf-loader/$(DEPDIR)/test_runner-0001_gdk_pixbuf_loader.Tpo -c -o extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.o `test -f 'extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c' || echo '$(srcdir)/'`extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c
@@ -2773,8 +2760,6 @@ distclean-generic:
 	-$(am__rm_f) extension/gdk-pixbuf-loader/$(am__dirstamp)
 	-$(am__rm_f) io/loader/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) io/loader/$(am__dirstamp)
-	-$(am__rm_f) planner/pipeline/$(DEPDIR)/$(am__dirstamp)
-	-$(am__rm_f) planner/pipeline/$(am__dirstamp)
 	-$(am__rm_f) processing/filter/$(DEPDIR)/$(am__dirstamp)
 	-$(am__rm_f) processing/filter/$(am__dirstamp)
 	-$(am__rm_f) quant/palette/$(DEPDIR)/$(am__dirstamp)
