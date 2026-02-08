@@ -31,12 +31,12 @@ Example 3. Build a self-contained wheel with bundled libsixel ::
 
     $ git clone https://github.com/saitoha/libsixel.git
     $ cd libsixel
-    $ ./configure --enable-python-wheel
+    $ ./configure --enable-python
     $ make
     $ ls python/dist/libsixel_wheel-*.whl
 
-Meson users can request the same wheel build with
-``-Dpython_wheel=enabled``.
+Meson users can request the same package build with
+``-Dpython=enabled``.
 
 Note: the wheel build requires the Python ``build`` module to be
 available in the build environment.
@@ -54,7 +54,7 @@ Code Example
 
 encoder ::
 
-    from libsixel.encoder import Encoder, SIXEL_OPTFLAG_WIDTH, SIXEL_OPTFLAG_COLORS
+    from libsixel_wheel.encoder import Encoder, SIXEL_OPTFLAG_WIDTH, SIXEL_OPTFLAG_COLORS
 
     encoder = Encoder()
     encoder.setopt(SIXEL_OPTFLAG_WIDTH, "300")
@@ -64,7 +64,7 @@ encoder ::
 
 decoder ::
 
-    from libsixel.decoder import Decoder, SIXEL_OPTFLAG_INPUT, SIXEL_OPTFLAG_OUTPUT
+    from libsixel_wheel.decoder import Decoder, SIXEL_OPTFLAG_INPUT, SIXEL_OPTFLAG_OUTPUT
 
     decoder = Decoder()
     decoder.setopt(SIXEL_OPTFLAG_INPUT, "test.six")
@@ -109,8 +109,8 @@ preserve float data end-to-end:
    ::
 
        import os
-       from libsixel.encoder import Encoder
-       from libsixel import SIXEL_OPTFLAG_PRECISION
+       from libsixel_wheel.encoder import Encoder
+       from libsixel_wheel import SIXEL_OPTFLAG_PRECISION
 
        os.environ["SIXEL_FLOAT32_DITHER"] = "1"
 
