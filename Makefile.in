@@ -516,7 +516,13 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 
 # Honor user-supplied MAKEFLAGS while providing a CPU-based default -j.
 # Only set this at the top-level to avoid forcing -j in sub-makes.
-MAKEFLAGS := $(if $(filter 0,$(MAKELEVEL)),@LS_DEFAULT_MAKEFLAGS@ $(MAKEFLAGS),$(MAKEFLAGS))
+#
+# The configure-time detection cannot see future command-line flags, so we must
+# re-check job flags at make runtime. If the caller provided -j/--jobs
+# (via MFLAGS/MAKEFLAGS), keep MAKEFLAGS unchanged so that setting wins
+# over LS_DEFAULT_MAKEFLAGS.
+LS_USER_JOBS := $(filter -j% --jobs --jobs=%,$(MFLAGS) $(MAKEFLAGS))
+MAKEFLAGS := $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),$(MAKEFLAGS),@LS_DEFAULT_MAKEFLAGS@ $(MAKEFLAGS)),$(MAKEFLAGS))
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 pkgconfig_DATA = $(builddir)/libsixel.pc
 CLEANFILES = $(builddir)/package.json
