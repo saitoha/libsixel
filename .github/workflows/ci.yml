@@ -1880,7 +1880,89 @@ jobs:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-  platforms:
+  solaris-variants:
+    needs: [coveralls]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+#          - label: Autotools-openindiana-202510-x86_64
+#            buildtool: autotools
+#            runner: ubuntu-latest
+#            version: '202510'
+#            extra_packages: >-
+#              developer/build/gnu-make
+#              developer/gcc-13
+#            make: gmake
+#            exec_type: openindiana-vm
+#
+#          - label: Meson-openindiana-202510-x86_64
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            version: '202510'
+#            extra_packages: >-
+#              developer/gcc-13
+#              developer/build/meson
+#              developer/build/ninja
+#            exec_type: openindiana-vm
+
+          - label: Autotools-solaris-11.4-x86_64
+            buildtool: autotools
+            runner: ubuntu-latest
+            version: '11.4'
+            extra_packages: >-
+              gnu-make
+              gcc
+            make: gmake
+            exec_type: solaris-vm
+
+          - label: Meson-solaris-11.4-x86_64
+            buildtool: meson
+            runner: ubuntu-latest
+            version: '11.4'
+            extra_packages: >-
+              gcc
+              meson
+            exec_type: solaris-vm
+
+          - label: Autotools-omnios-r151056-x86_64
+            buildtool: autotools
+            runner: ubuntu-latest
+            version: r151056
+            extra_packages: >-
+              developer/gcc13
+              developer/build/gnu-make
+            make: gmake
+            exec_type: omnios-vm
+
+#          - label: Meson-omnios-r151056-x86_64
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            version: r151056
+#            extra_packages: >-
+#              developer/gcc13
+#              runtime/python-313
+#              library/python-3/pip-313
+#            exec_type: omnios-vm
+
+    steps:
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  docker:
     needs: [coveralls]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
@@ -1904,6 +1986,103 @@ jobs:
               meson
             exec_type: alpine
 
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  haiku:
+    needs: [coveralls]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - label: Autotools-haiku-r1beta5-x86-64
+            buildtool: autotools
+            runner: ubuntu-latest
+            cp_os: haiku
+            cp_arch: x86-64
+            cp_version: r1beta5
+            extra_packages: >-
+              make
+            make: make
+            exec_type: cross-platform-vms
+
+          - label: Meson-haiku-r1beta5-x86-64
+            buildtool: meson
+            runner: ubuntu-latest
+            cp_os: haiku
+            cp_arch: x86-64
+            cp_version: r1beta5
+            extra_packages: >-
+              meson
+            exec_type: cross-platform-vms
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+
+  openbsd:
+    needs: [coveralls]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - label: Autotools-openbsd-7.8-x86-64
+            buildtool: autotools
+            runner: ubuntu-latest
+            cp_os: openbsd
+            cp_arch: x86-64
+            cp_version: '7.8'
+            extra_packages: >-
+              gmake
+            make: gmake
+            exec_type: cross-platform-vms
+
+          - label: Meson-openbsd-7.8-x86-64
+            buildtool: meson
+            runner: ubuntu-latest
+            cp_os: openbsd
+            cp_arch: x86-64
+            cp_version: '7.8'
+            extra_packages: >-
+              meson
+            exec_type: cross-platform-vms
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  freebsd:
+    needs: [coveralls]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
           - label: Autotools-freebsd-14.3-x86_64
             buildtool: autotools
             runner: ubuntu-latest
@@ -1973,6 +2152,25 @@ jobs:
 #              meson
 #            exec_type: cross-platform-vms
 
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+
+  netbsd:
+    needs: [coveralls]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
           - label: Autotools-netbsd-10.1-x86_64
             buildtool: autotools
             runner: ubuntu-latest
@@ -2004,107 +2202,24 @@ jobs:
 #              meson
 #            exec_type: cross-platform-vms
 
-          - label: Autotools-haiku-r1beta5-x86-64
-            buildtool: autotools
-            runner: ubuntu-latest
-            cp_os: haiku
-            cp_arch: x86-64
-            cp_version: r1beta5
-            extra_packages: >-
-              make
-            make: make
-            exec_type: cross-platform-vms
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
 
-          - label: Meson-haiku-r1beta5-x86-64
-            buildtool: meson
-            runner: ubuntu-latest
-            cp_os: haiku
-            cp_arch: x86-64
-            cp_version: r1beta5
-            extra_packages: >-
-              meson
-            exec_type: cross-platform-vms
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
-          - label: Autotools-openbsd-7.8-x86-64
-            buildtool: autotools
-            runner: ubuntu-latest
-            cp_os: openbsd
-            cp_arch: x86-64
-            cp_version: '7.8'
-            extra_packages: >-
-              gmake
-            make: gmake
-            exec_type: cross-platform-vms
-
-          - label: Meson-openbsd-7.8-x86-64
-            buildtool: meson
-            runner: ubuntu-latest
-            cp_os: openbsd
-            cp_arch: x86-64
-            cp_version: '7.8'
-            extra_packages: >-
-              meson
-            exec_type: cross-platform-vms
-
-#          - label: Autotools-openindiana-202510-x86_64
-#            buildtool: autotools
-#            runner: ubuntu-latest
-#            version: '202510'
-#            extra_packages: >-
-#              developer/build/gnu-make
-#              developer/gcc-13
-#            make: gmake
-#            exec_type: openindiana-vm
-#
-#          - label: Meson-openindiana-202510-x86_64
-#            buildtool: meson
-#            runner: ubuntu-latest
-#            version: '202510'
-#            extra_packages: >-
-#              developer/gcc-13
-#              developer/build/meson
-#              developer/build/ninja
-#            exec_type: openindiana-vm
-
-#          - label: Autotools-solaris-11.4-x86_64
-#            buildtool: autotools
-#            runner: ubuntu-latest
-#            version: '11.4'
-#            extra_packages: >-
-#              gnu-make
-#              gcc
-#            make: gmake
-#            exec_type: solaris-vm
-
-#          - label: Meson-solaris-11.4-x86_64
-#            buildtool: meson
-#            runner: ubuntu-latest
-#            version: '11.4'
-#            extra_packages: >-
-#              gcc
-#              meson
-#            exec_type: solaris-vm
-
-          - label: Autotools-omnios-r151056-x86_64
-            buildtool: autotools
-            runner: ubuntu-latest
-            version: r151056
-            extra_packages: >-
-              developer/gcc13
-              developer/build/gnu-make
-            make: gmake
-            exec_type: omnios-vm
-
-#          - label: Meson-omnios-r151056-x86_64
-#            buildtool: meson
-#            runner: ubuntu-latest
-#            version: r151056
-#            extra_packages: >-
-#              developer/gcc13
-#              runtime/python-313
-#              library/python-3/pip-313
-#            exec_type: omnios-vm
-
+  dragonflybsd:
+    needs: [coveralls]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
           - label: Autotools-dragonflybsd-6.4.2-x86-64
             buildtool: autotools
             runner: ubuntu-latest
@@ -2123,11 +2238,6 @@ jobs:
             exec_type: dragonflybsd-vm
 
     steps:
-      - name: Configure git EOL
-        if: ${{ runner.os == 'Windows' }}
-        shell: bash
-        run: git config --global core.autocrlf false
-
       - uses: actions/checkout@v6
         with:
           fetch-depth: 1
