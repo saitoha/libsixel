@@ -3072,6 +3072,16 @@ AS_IF([test "x$BASH" = x -o "x$BASH" = xno], [
 ])
 AM_CONDITIONAL([HAVE_BASH], [test "x$BASH" != x -a "x$BASH" != xno])
 
+dnl Choose a fast POSIX shell for TAP tests and keep /bin/sh as fallback.
+AC_ARG_VAR([SIXEL_TEST_SHELL],
+           [Shell path used to run TAP test scripts (default: detect dash, fallback /bin/sh)])
+AS_IF([test "x$SIXEL_TEST_SHELL" = x], [
+  AC_PATH_PROG([SIXEL_TEST_SHELL], [dash], [/bin/sh])
+], [
+  AC_MSG_NOTICE([SIXEL_TEST_SHELL preset to ${SIXEL_TEST_SHELL}])
+])
+AC_SUBST([SIXEL_TEST_SHELL])
+
 #AC_DEFUN([LS_UPDATE_TIMESTAMP], [
 #          touch -c aclocal.m4 Makefile.in configure config.h.in \
 #                   converters/Makefile.in include/Makefile.in \

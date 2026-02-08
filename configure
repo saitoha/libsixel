@@ -671,6 +671,7 @@ HAVE_WINHTTP_FALSE
 HAVE_WINHTTP_TRUE
 HAVE_CURL_FALSE
 HAVE_CURL_TRUE
+SIXEL_TEST_SHELL
 HAVE_BASH_FALSE
 HAVE_BASH_TRUE
 BASH
@@ -1036,7 +1037,8 @@ RUBY_EXT_LIB
 RUBY_EXT_CPPFLAGS
 RUBY_EXT_LDFLAGS
 RUBY_EXT_DLEXT
-BASH'
+BASH
+SIXEL_TEST_SHELL'
 
 
 # Initialize some variables set by options.
@@ -1823,6 +1825,9 @@ Some influential environment variables:
   RUBY_EXT_DLEXT
               Ruby dynamic library extension
   BASH        Path to the Bash shell for converter tests
+  SIXEL_TEST_SHELL
+              Shell path used to run TAP test scripts (default: detect dash,
+              fallback /bin/sh)
 
 Use these variables to override the choices made by 'configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -25693,6 +25698,67 @@ fi
 else
   HAVE_BASH_TRUE='#'
   HAVE_BASH_FALSE=
+fi
+
+
+
+if test "x$SIXEL_TEST_SHELL" = x
+then :
+
+  # Extract the first word of "dash", so it can be a program name with args.
+set dummy dash; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_SIXEL_TEST_SHELL+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $SIXEL_TEST_SHELL in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_SIXEL_TEST_SHELL="$SIXEL_TEST_SHELL" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_SIXEL_TEST_SHELL="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_path_SIXEL_TEST_SHELL" && ac_cv_path_SIXEL_TEST_SHELL="/bin/sh"
+  ;;
+esac ;;
+esac
+fi
+SIXEL_TEST_SHELL=$ac_cv_path_SIXEL_TEST_SHELL
+if test -n "$SIXEL_TEST_SHELL"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $SIXEL_TEST_SHELL" >&5
+printf "%s\n" "$SIXEL_TEST_SHELL" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+
+else case e in #(
+  e)
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: SIXEL_TEST_SHELL preset to ${SIXEL_TEST_SHELL}" >&5
+printf "%s\n" "$as_me: SIXEL_TEST_SHELL preset to ${SIXEL_TEST_SHELL}" >&6;}
+ ;;
+esac
 fi
 
 
