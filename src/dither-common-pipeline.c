@@ -125,7 +125,7 @@ sixel_dither_lookup_palette_float32(float const *pixel,
      * groups of four to balance gather cost and register pressure; any
      * remainder is handled by the scalar loop below.
      */
-    if (color_simd_end == 0 && depth == 3) {
+    if (depth == 3) {
         sample_l_ps = wasm_f32x4_splat(pixel[0]);
         sample_r_ps = wasm_f32x4_splat(pixel[1]);
         sample_g_ps = wasm_f32x4_splat(pixel[2]);
