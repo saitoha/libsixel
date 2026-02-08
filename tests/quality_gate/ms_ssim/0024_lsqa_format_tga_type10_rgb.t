@@ -3,7 +3,9 @@
 # Reproduction commands (ImageMagick):
 #   convert images/snake.png -resize 64x64\! -compress RLE tests/data/inputs/formats/snake-tga-type10-rgb.tga
 #   convert images/snake.png -resize 64x64\! tests/data/inputs/formats/snake-64-reference-rgb.png
+#   convert tests/data/inputs/formats/snake-64-reference-rgb.png -flip tests/data/inputs/formats/snake-64-reference-rgb-flip.png
 #   convert images/snake.png -resize 64x64\! -colorspace Gray tests/data/inputs/formats/snake-64-reference-gray.png
+#   convert tests/data/inputs/formats/snake-64-reference-gray.png -flip tests/data/inputs/formats/snake-64-reference-gray-flip.png
 #   convert images/snake.png -resize 64x64\! -alpha set -channel A -evaluate set 100% +channel tests/data/inputs/formats/snake-64-reference-rgba.png
 
 set -eux
@@ -18,7 +20,7 @@ printf '1..1\n'
 set -v
 
 image_path="${top_srcdir}/tests/data/inputs/formats/snake-tga-type10-rgb.tga"
-reference_path="${top_srcdir}/tests/data/inputs/formats/snake-64-reference-rgb.png"
+reference_path="${top_srcdir}/tests/data/inputs/formats/snake-64-reference-rgb-flip.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}" || {
     fail 1 "type 10 RGB TGA quality below floor"
