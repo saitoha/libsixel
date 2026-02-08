@@ -1382,17 +1382,19 @@ thumbnailer_build_command(char const *template_command,
         return NULL;
     }
 
-    if (size > 0) {
-        written = sixel_compat_snprintf(size_text,
-                                        sizeof(size_text),
-                                        "%d",
-                                        size);
-        if (written < 0) {
-            goto error;
-        }
-        if ((size_t)written >= sizeof(size_text)) {
-            size_text[sizeof(size_text) - 1u] = '\0';
-        }
+    /*
+     * load_with_gnome_thumbnailer() normalizes the hint size to a positive
+     * value, so command templates can always substitute a concrete %s token.
+     */
+    written = sixel_compat_snprintf(size_text,
+                                    sizeof(size_text),
+                                    "%d",
+                                    size);
+    if (written < 0) {
+        goto error;
+    }
+    if ((size_t)written >= sizeof(size_text)) {
+        size_text[sizeof(size_text) - 1u] = '\0';
     }
 
     while (ptr != NULL && ptr[0] != '\0') {
