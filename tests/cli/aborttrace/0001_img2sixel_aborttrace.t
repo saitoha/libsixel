@@ -3,19 +3,21 @@
 
 set -eux
 
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+
 if [ "x${SIXEL_TSAN_BUILD:-no}" = "xyes" ]; then
     echo "1..0 # SKIP TSan builds can suppress abort trace output"
     exit 0
 fi
 
-binary="${TOP_BUILDDIR}/tests/test_runner${SIXEL_BIN_EXT-}"
+binary="${TEST_RUNNER_PATH}"
 if [ ! -x "${binary}" ] && [ -z "${SIXEL_RUNTIME-}" ]; then
     echo "harness not built" >&2
     exit 99
 fi
 
 set +e
-abort_output=$(SIXEL_ABORT_TRACE=1 ${SIXEL_RUNTIME-} "${binary}" \
+abort_output=$(run_test_runner --env SIXEL_ABORT_TRACE=1 -- \
     "aborttrace/0001_img2sixel_aborttrace" 2>&1)
 rc=$?
 set -e
