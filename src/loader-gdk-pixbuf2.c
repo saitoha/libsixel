@@ -103,7 +103,6 @@ load_with_gdkpixbuf(
     unsigned char *frame_pixels;
     int i;
     int depth;
-    int anim_loop_count = (-1);  /* (-1): infinite, >=0: finite loop count */
     int delay_ms;
     gboolean use_animation = FALSE;
     gboolean is_sixel = FALSE;
@@ -415,17 +414,12 @@ load_with_gdkpixbuf(
             if (loop_control == SIXEL_LOOP_DISABLE || frame->frame_no == 1) {
                 break;
             }
-            if (loop_control == SIXEL_LOOP_AUTO) {
-                /* obey header-provided loop count when AUTO */
-                if (anim_loop_count >= 0 &&
-                    frame->loop_count >= anim_loop_count) {
-                    break;
-                }
-            } else if (loop_control != SIXEL_LOOP_FORCE &&
-                       anim_loop_count > 0 &&
-                       frame->loop_count >= anim_loop_count) {
-                break;
-            }
+            /*
+             * GdkPixbufAnimation does not expose a finite loop counter.
+             * Loop handling therefore depends on loop_control only:
+             *   - DISABLE: stop after one logical loop.
+             *   - AUTO/FORCE: keep replaying until outer processing stops.
+             */
 
             /* restart iteration from the beginning for the next pass */
             g_object_unref(it);
@@ -604,17 +598,12 @@ load_with_gdkpixbuf(
             if (loop_control == SIXEL_LOOP_DISABLE || frame->frame_no == 1) {
                 break;
             }
-            if (loop_control == SIXEL_LOOP_AUTO) {
-                /* obey header-provided loop count when AUTO */
-                if (anim_loop_count >= 0 &&
-                    frame->loop_count >= anim_loop_count) {
-                    break;
-                }
-            } else if (loop_control != SIXEL_LOOP_FORCE &&
-                       anim_loop_count > 0 &&
-                       frame->loop_count >= anim_loop_count) {
-                break;
-            }
+            /*
+             * GdkPixbufAnimation does not expose a finite loop counter.
+             * Loop handling therefore depends on loop_control only:
+             *   - DISABLE: stop after one logical loop.
+             *   - AUTO/FORCE: keep replaying until outer processing stops.
+             */
 
             /* restart iteration from the beginning for the next pass */
             g_object_unref(it);

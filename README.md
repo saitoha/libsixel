@@ -740,6 +740,10 @@ steps.
                                         GIF header (default)
                              force   -> always enable loop
                              disable -> always disable loop
+                           Note: when decoding through gdk-pixbuf2,
+                           finite loop counts are not exposed by the
+                           backend API. In that path, auto and force
+                           therefore behave the same.
 -t PALETTETYPE, --palette-type=PALETTETYPE
                            select palette color space type
                              auto -> choose palette type
