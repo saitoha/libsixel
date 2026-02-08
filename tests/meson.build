@@ -15,6 +15,11 @@ if sanitize_opt.contains('memory')
   sixel_msan_build = 'yes'
 endif
 
+bin_ext = ''
+if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
+  bin_ext = '.exe'
+endif
+
 base_env_settings = [
   ['ARTIFACT_ROOT', artifact_root],
   ['TOP_SRCDIR', meson.project_source_root()],
@@ -26,11 +31,65 @@ base_env_settings = [
   ['SIXEL_MSAN_BUILD', sixel_msan_build],
   ['ENABLE_PYTHON', (get_option('python').disabled() ? '0' : '1')],
   ['ENABLE_PYTHON_WHEEL', (get_option('python_wheel').disabled() ? '0' : '1')],
+  # Mirror autotools check-TESTS metadata so TAP helper scripts can share
+  # one execution path across build systems.
+  ['RUNTIME_SHLIBPATH_SEP', ':'],
   # Ensure Python TAP tests can locate the freshly built shared library when
   # Meson is invoked without a prior `meson compile`. The binding smoke test
   # relies on LIBSIXEL_LIBDIR to point at the build artifact directory.
   ['LIBSIXEL_LIBDIR', meson.project_build_root() / 'src'],
+  ['IMG2SIXEL_PATH', meson.project_build_root() / 'converters' /
+   ('img2sixel' + bin_ext)],
+  ['SIXEL2PNG_PATH', meson.project_build_root() / 'converters' /
+   ('sixel2png' + bin_ext)],
+  ['LSQA_PATH', meson.project_build_root() / 'assessment' /
+   ('lsqa' + bin_ext)],
+  ['TEST_RUNNER_PATH', meson.project_build_root() / 'tests' /
+   ('test_runner' + bin_ext)],
 ]
+
+runtime_shlibpath_var = 'LD_LIBRARY_PATH'
+if host_machine.system() == 'darwin'
+  runtime_shlibpath_var = 'DYLD_LIBRARY_PATH'
+elif host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
+  runtime_shlibpath_var = 'PATH'
+endif
+base_env_settings += [['RUNTIME_SHLIBPATH_VAR', runtime_shlibpath_var]]
+
+# Keep feature toggle exports in sync with autotools check-TESTS.
+config_macro_env_settings = []
+config_macro_env_text = run_command(
+  python3,
+  '-c',
+  '''import pathlib
+import re
+import sys
+
+config_h = pathlib.Path(sys.argv[1])
+if not config_h.exists():
+    raise SystemExit(0)
+
+for line in config_h.read_text(encoding="utf-8", errors="ignore").splitlines():
+    m_define = re.match(r"^#define ([A-Z0-9_]+) 1$", line)
+    if m_define:
+        print(f"{m_define.group(1)}=1")
+        continue
+    m_undef = re.match(r"^/\\* #undef ([A-Z0-9_]+) \\*/$", line)
+    if m_undef:
+        print(f"{m_undef.group(1)}=0")
+''',
+  meson.project_build_root() / 'config.h',
+  check: true,
+).stdout().strip()
+if config_macro_env_text != ''
+  foreach macro_line : config_macro_env_text.split('\n')
+    macro_pair = macro_line.split('=')
+    if macro_pair.length() == 2
+      config_macro_env_settings += [[macro_pair[0], macro_pair[1]]]
+    endif
+  endforeach
+endif
+base_env_settings += config_macro_env_settings
 
 if host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
   # Most TAP shell wrappers reference built tools via ${SIXEL_BIN_EXT}.
