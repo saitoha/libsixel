@@ -73,6 +73,72 @@ jobs:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
+  python:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - label: Autotools-ubuntu-x86_64-gcc
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_options: >-
+              --enable-python
+            extra_packages: >-
+              clang
+            exec_type: bash
+
+          - label: Meson-ubuntu-x86_64-gcc
+            buildtool: meson
+            runner: ubuntu-latest
+            setup_options: >-
+              --Dpython=enabled
+            extra_packages: >-
+              meson
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-gcc
+            buildtool: autotools
+            runner: macos-latest
+            setup_options: >-
+              --Dpython=enabled
+            setup_options: >-
+              --enable-python
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-gcc
+            buildtool: meson
+            runner: macos-latest
+            setup_options: >-
+              --Dpython=enabled
+            extra_packages: >-
+              meson
+            exec_type: bash
+
+          - label: Meson-cmd-x86_64-msvc-x86_64
+            buildtool: meson
+            runner: windows-latest
+            setup_options: >-
+              --Dpython=enabled
+            exec_type: cmd
+
+    steps:
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+
   coverage-autotools:
     needs: [smoke]
     name: ${{ matrix.label }}
