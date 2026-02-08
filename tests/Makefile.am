@@ -252,12 +252,69 @@ TESTS = \
     processing/geometry/0039_resize_height_100px_lsqa.t \
     processing/geometry/0040_resize_height_120pct_lsqa.t \
     io/loader/0001_progressive_jpeg.t \
-    io/loader/0002_pngsuite_basic_convert.t \
-    io/loader/0003_pngsuite_basic_width32.t \
-    io/loader/0004_pngsuite_basic_cropped.t \
-    io/loader/0005_pngsuite_background_convert.t \
-    io/loader/0006_pngsuite_background_white.t \
-    io/loader/0007_pngsuite_background_width32_white.t \
+    io/loader/0021_pngsuite_basic_default_basn0g01_msssim.t \
+    io/loader/0022_pngsuite_basic_default_basn0g02_msssim.t \
+    io/loader/0023_pngsuite_basic_default_basn0g04_msssim.t \
+    io/loader/0024_pngsuite_basic_default_basn0g08_msssim.t \
+    io/loader/0025_pngsuite_basic_default_basn0g16_msssim.t \
+    io/loader/0026_pngsuite_basic_default_basn3p01_msssim.t \
+    io/loader/0027_pngsuite_basic_default_basn3p02_msssim.t \
+    io/loader/0028_pngsuite_basic_default_basn3p04_msssim.t \
+    io/loader/0029_pngsuite_basic_default_basn3p08_msssim.t \
+    io/loader/0030_pngsuite_basic_default_basn4a08_msssim.t \
+    io/loader/0031_pngsuite_basic_default_basn4a16_msssim.t \
+    io/loader/0032_pngsuite_basic_default_basn6a08_msssim.t \
+    io/loader/0033_pngsuite_basic_default_basn6a16_msssim.t \
+    io/loader/0034_pngsuite_basic_width32_basn0g01_msssim.t \
+    io/loader/0035_pngsuite_basic_width32_basn0g02_msssim.t \
+    io/loader/0036_pngsuite_basic_width32_basn0g04_msssim.t \
+    io/loader/0037_pngsuite_basic_width32_basn0g08_msssim.t \
+    io/loader/0038_pngsuite_basic_width32_basn0g16_msssim.t \
+    io/loader/0039_pngsuite_basic_width32_basn3p01_msssim.t \
+    io/loader/0040_pngsuite_basic_width32_basn3p02_msssim.t \
+    io/loader/0041_pngsuite_basic_width32_basn3p04_msssim.t \
+    io/loader/0042_pngsuite_basic_width32_basn3p08_msssim.t \
+    io/loader/0043_pngsuite_basic_width32_basn4a08_msssim.t \
+    io/loader/0044_pngsuite_basic_width32_basn4a16_msssim.t \
+    io/loader/0045_pngsuite_basic_width32_basn6a08_msssim.t \
+    io/loader/0046_pngsuite_basic_width32_basn6a16_msssim.t \
+    io/loader/0047_pngsuite_basic_cropped_basn0g01_msssim.t \
+    io/loader/0048_pngsuite_basic_cropped_basn0g02_msssim.t \
+    io/loader/0049_pngsuite_basic_cropped_basn0g04_msssim.t \
+    io/loader/0050_pngsuite_basic_cropped_basn0g08_msssim.t \
+    io/loader/0051_pngsuite_basic_cropped_basn0g16_msssim.t \
+    io/loader/0052_pngsuite_basic_cropped_basn3p01_msssim.t \
+    io/loader/0053_pngsuite_basic_cropped_basn3p02_msssim.t \
+    io/loader/0054_pngsuite_basic_cropped_basn3p04_msssim.t \
+    io/loader/0055_pngsuite_basic_cropped_basn3p08_msssim.t \
+    io/loader/0056_pngsuite_basic_cropped_basn4a08_msssim.t \
+    io/loader/0057_pngsuite_basic_cropped_basn4a16_msssim.t \
+    io/loader/0058_pngsuite_basic_cropped_basn6a08_msssim.t \
+    io/loader/0059_pngsuite_basic_cropped_basn6a16_msssim.t \
+    io/loader/0060_pngsuite_background_default_bgai4a08_msssim.t \
+    io/loader/0061_pngsuite_background_default_bgai4a16_msssim.t \
+    io/loader/0062_pngsuite_background_default_bgan6a08_msssim.t \
+    io/loader/0063_pngsuite_background_default_bgan6a16_msssim.t \
+    io/loader/0064_pngsuite_background_default_bgbn4a08_msssim.t \
+    io/loader/0065_pngsuite_background_default_bggn4a16_msssim.t \
+    io/loader/0066_pngsuite_background_default_bgwn6a08_msssim.t \
+    io/loader/0067_pngsuite_background_default_bgyn6a16_msssim.t \
+    io/loader/0068_pngsuite_background_white_bgai4a08_msssim.t \
+    io/loader/0069_pngsuite_background_white_bgai4a16_msssim.t \
+    io/loader/0070_pngsuite_background_white_bgan6a08_msssim.t \
+    io/loader/0071_pngsuite_background_white_bgan6a16_msssim.t \
+    io/loader/0072_pngsuite_background_white_bgbn4a08_msssim.t \
+    io/loader/0073_pngsuite_background_white_bggn4a16_msssim.t \
+    io/loader/0074_pngsuite_background_white_bgwn6a08_msssim.t \
+    io/loader/0075_pngsuite_background_white_bgyn6a16_msssim.t \
+    io/loader/0076_pngsuite_background_width32_white_bgai4a08_msssim.t \
+    io/loader/0077_pngsuite_background_width32_white_bgai4a16_msssim.t \
+    io/loader/0078_pngsuite_background_width32_white_bgan6a08_msssim.t \
+    io/loader/0079_pngsuite_background_width32_white_bgan6a16_msssim.t \
+    io/loader/0080_pngsuite_background_width32_white_bgbn4a08_msssim.t \
+    io/loader/0081_pngsuite_background_width32_white_bggn4a16_msssim.t \
+    io/loader/0082_pngsuite_background_width32_white_bgwn6a08_msssim.t \
+    io/loader/0083_pngsuite_background_width32_white_bgyn6a16_msssim.t \
     io/loader/0008_loader_coregraphics_pixelformat.t \
     io/loader/0009_loader_wic_pixelformat.t \
     io/loader/0010_loader_gdk_pixbuf_pixelformat.t \
@@ -824,6 +881,69 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     security/issue/data/libsixel-libsixel/73/stbi_1561_poc.bin \
     security/issue/data/131/2020-01-30-img2sixel.gif \
     security/issue/data/136/poc \
+    data/loader/pngsuite_expected/0021_pngsuite_basic_default_basn0g01_msssim.ppm \
+    data/loader/pngsuite_expected/0022_pngsuite_basic_default_basn0g02_msssim.ppm \
+    data/loader/pngsuite_expected/0023_pngsuite_basic_default_basn0g04_msssim.ppm \
+    data/loader/pngsuite_expected/0024_pngsuite_basic_default_basn0g08_msssim.ppm \
+    data/loader/pngsuite_expected/0025_pngsuite_basic_default_basn0g16_msssim.ppm \
+    data/loader/pngsuite_expected/0026_pngsuite_basic_default_basn3p01_msssim.ppm \
+    data/loader/pngsuite_expected/0027_pngsuite_basic_default_basn3p02_msssim.ppm \
+    data/loader/pngsuite_expected/0028_pngsuite_basic_default_basn3p04_msssim.ppm \
+    data/loader/pngsuite_expected/0029_pngsuite_basic_default_basn3p08_msssim.ppm \
+    data/loader/pngsuite_expected/0030_pngsuite_basic_default_basn4a08_msssim.ppm \
+    data/loader/pngsuite_expected/0031_pngsuite_basic_default_basn4a16_msssim.ppm \
+    data/loader/pngsuite_expected/0032_pngsuite_basic_default_basn6a08_msssim.ppm \
+    data/loader/pngsuite_expected/0033_pngsuite_basic_default_basn6a16_msssim.ppm \
+    data/loader/pngsuite_expected/0034_pngsuite_basic_width32_basn0g01_msssim.ppm \
+    data/loader/pngsuite_expected/0035_pngsuite_basic_width32_basn0g02_msssim.ppm \
+    data/loader/pngsuite_expected/0036_pngsuite_basic_width32_basn0g04_msssim.ppm \
+    data/loader/pngsuite_expected/0037_pngsuite_basic_width32_basn0g08_msssim.ppm \
+    data/loader/pngsuite_expected/0038_pngsuite_basic_width32_basn0g16_msssim.ppm \
+    data/loader/pngsuite_expected/0039_pngsuite_basic_width32_basn3p01_msssim.ppm \
+    data/loader/pngsuite_expected/0040_pngsuite_basic_width32_basn3p02_msssim.ppm \
+    data/loader/pngsuite_expected/0041_pngsuite_basic_width32_basn3p04_msssim.ppm \
+    data/loader/pngsuite_expected/0042_pngsuite_basic_width32_basn3p08_msssim.ppm \
+    data/loader/pngsuite_expected/0043_pngsuite_basic_width32_basn4a08_msssim.ppm \
+    data/loader/pngsuite_expected/0044_pngsuite_basic_width32_basn4a16_msssim.ppm \
+    data/loader/pngsuite_expected/0045_pngsuite_basic_width32_basn6a08_msssim.ppm \
+    data/loader/pngsuite_expected/0046_pngsuite_basic_width32_basn6a16_msssim.ppm \
+    data/loader/pngsuite_expected/0047_pngsuite_basic_cropped_basn0g01_msssim.ppm \
+    data/loader/pngsuite_expected/0048_pngsuite_basic_cropped_basn0g02_msssim.ppm \
+    data/loader/pngsuite_expected/0049_pngsuite_basic_cropped_basn0g04_msssim.ppm \
+    data/loader/pngsuite_expected/0050_pngsuite_basic_cropped_basn0g08_msssim.ppm \
+    data/loader/pngsuite_expected/0051_pngsuite_basic_cropped_basn0g16_msssim.ppm \
+    data/loader/pngsuite_expected/0052_pngsuite_basic_cropped_basn3p01_msssim.ppm \
+    data/loader/pngsuite_expected/0053_pngsuite_basic_cropped_basn3p02_msssim.ppm \
+    data/loader/pngsuite_expected/0054_pngsuite_basic_cropped_basn3p04_msssim.ppm \
+    data/loader/pngsuite_expected/0055_pngsuite_basic_cropped_basn3p08_msssim.ppm \
+    data/loader/pngsuite_expected/0056_pngsuite_basic_cropped_basn4a08_msssim.ppm \
+    data/loader/pngsuite_expected/0057_pngsuite_basic_cropped_basn4a16_msssim.ppm \
+    data/loader/pngsuite_expected/0058_pngsuite_basic_cropped_basn6a08_msssim.ppm \
+    data/loader/pngsuite_expected/0059_pngsuite_basic_cropped_basn6a16_msssim.ppm \
+    data/loader/pngsuite_expected/0060_pngsuite_background_default_bgai4a08_msssim.ppm \
+    data/loader/pngsuite_expected/0061_pngsuite_background_default_bgai4a16_msssim.ppm \
+    data/loader/pngsuite_expected/0062_pngsuite_background_default_bgan6a08_msssim.ppm \
+    data/loader/pngsuite_expected/0063_pngsuite_background_default_bgan6a16_msssim.ppm \
+    data/loader/pngsuite_expected/0064_pngsuite_background_default_bgbn4a08_msssim.ppm \
+    data/loader/pngsuite_expected/0065_pngsuite_background_default_bggn4a16_msssim.ppm \
+    data/loader/pngsuite_expected/0066_pngsuite_background_default_bgwn6a08_msssim.ppm \
+    data/loader/pngsuite_expected/0067_pngsuite_background_default_bgyn6a16_msssim.ppm \
+    data/loader/pngsuite_expected/0068_pngsuite_background_white_bgai4a08_msssim.ppm \
+    data/loader/pngsuite_expected/0069_pngsuite_background_white_bgai4a16_msssim.ppm \
+    data/loader/pngsuite_expected/0070_pngsuite_background_white_bgan6a08_msssim.ppm \
+    data/loader/pngsuite_expected/0071_pngsuite_background_white_bgan6a16_msssim.ppm \
+    data/loader/pngsuite_expected/0072_pngsuite_background_white_bgbn4a08_msssim.ppm \
+    data/loader/pngsuite_expected/0073_pngsuite_background_white_bggn4a16_msssim.ppm \
+    data/loader/pngsuite_expected/0074_pngsuite_background_white_bgwn6a08_msssim.ppm \
+    data/loader/pngsuite_expected/0075_pngsuite_background_white_bgyn6a16_msssim.ppm \
+    data/loader/pngsuite_expected/0076_pngsuite_background_width32_white_bgai4a08_msssim.ppm \
+    data/loader/pngsuite_expected/0077_pngsuite_background_width32_white_bgai4a16_msssim.ppm \
+    data/loader/pngsuite_expected/0078_pngsuite_background_width32_white_bgan6a08_msssim.ppm \
+    data/loader/pngsuite_expected/0079_pngsuite_background_width32_white_bgan6a16_msssim.ppm \
+    data/loader/pngsuite_expected/0080_pngsuite_background_width32_white_bgbn4a08_msssim.ppm \
+    data/loader/pngsuite_expected/0081_pngsuite_background_width32_white_bggn4a16_msssim.ppm \
+    data/loader/pngsuite_expected/0082_pngsuite_background_width32_white_bgwn6a08_msssim.ppm \
+    data/loader/pngsuite_expected/0083_pngsuite_background_width32_white_bgyn6a16_msssim.ppm \
     io/network/certs/server.crt \
     io/network/certs/server.key
 

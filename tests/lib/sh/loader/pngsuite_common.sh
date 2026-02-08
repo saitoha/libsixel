@@ -33,26 +33,11 @@ ensure_pngsuite_samples_present() {
 
 ensure_pngsuite_prereqs() {
     ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
+
+    if [ ! -x "${LSQA_PATH}" ]; then
+        skip_all "lsqa is required for PNGSuite tests"
+    fi
+
     ensure_feature_available "HAVE_LIBPNG" "png" "libpng support"
     ensure_pngsuite_samples_present
-}
-
-convert_pngsuite_group() {
-    files=$1
-    description=$2
-    mode=$3
-    output_dir=$4
-    log_file=$5
-
-    for rel in ${files}; do
-        base=${rel##*/}
-        if run_img2sixel ${mode} "${images_dir}/pngsuite/${rel}" \
-                >"${output_dir}/${base}.sixel"; then
-            :
-        else
-            return 1
-        fi
-    done
-
-    return 0
 }
