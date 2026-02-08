@@ -28,6 +28,8 @@ LT_INIT
 # execute the real binaries directly without probing stale build artifacts.
 AC_SUBST([SIXEL_LIBTOOL_OBJDIR], [$objdir])
 AC_SUBST([SIXEL_LIBTOOL_SHLIBPATH_VAR], [$shlibpath_var])
+AC_SUBST([SIXEL_SHLIBPATH_OVERRIDES_RUNPATH],
+         [$shlibpath_overrides_runpath])
 AC_SUBST([SIXEL_LIBTOOL_BUILD_LIBS], [$enable_shared])
 # The test harness prepends libtool output directories to the runtime search
 # variable.  When libtool requests PATH, we are executing under a shell

@@ -661,6 +661,8 @@ SIXEL_LIBTOOL_SHLIBPATH_VAR = @SIXEL_LIBTOOL_SHLIBPATH_VAR@
 SIXEL_MSAN_BUILD = @SIXEL_MSAN_BUILD@
 SIXEL_SHEBANG_FILE = @SIXEL_SHEBANG_FILE@
 SIXEL_SHEBANG_HELPER = $(top_srcdir)/build-aux/sixel-apply-shebang.sh
+SIXEL_SHLIBPATH_OVERRIDES_RUNPATH = @SIXEL_SHLIBPATH_OVERRIDES_RUNPATH@
+SIXEL_TEST_SHELL = @SIXEL_TEST_SHELL@
 SIXEL_TSAN_BUILD = @SIXEL_TSAN_BUILD@
 STRIP = @STRIP@
 THREAD_CFLAGS = @THREAD_CFLAGS@
@@ -1056,6 +1058,11 @@ TESTS = \
     io/loader/0018_loader_builtin_psd.t \
     io/loader/0019_loader_builtin_hdr.t \
     io/loader/0020_loader_builtin_pic.t \
+    io/loader/0021_loader_gdk_pixbuf2_forced_png.t \
+    io/loader/0022_loader_gdk_pixbuf2_static_gif.t \
+    io/loader/0023_loader_gdk_pixbuf2_loop_disable_gif.t \
+    io/loader/0024_loader_gdk_pixbuf2_forced_sixel_input.t \
+    io/loader/0025_loader_gdk_pixbuf2_corrupted_png.t \
     quant/mapfile/0001_mapfile_export_act.t \
     quant/mapfile/0002_mapfile_export_pal_default.t \
     quant/mapfile/0003_mapfile_export_pal_stdout.t \
@@ -1248,7 +1255,9 @@ AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export \
 	RUNTIME_SHLIBPATH_VAR='@SIXEL_LIBTOOL_SHLIBPATH_VAR@'; export \
 	RUNTIME_SHLIBPATH_VAR; \
 	RUNTIME_SHLIBPATH_SEP='@SIXEL_LIBTOOL_PATH_SEPARATOR@'; export \
-	RUNTIME_SHLIBPATH_SEP;
+	RUNTIME_SHLIBPATH_SEP; \
+	SIXEL_SHLIBPATH_OVERRIDES_RUNPATH='@SIXEL_SHLIBPATH_OVERRIDES_RUNPATH@'; \
+	export SIXEL_SHLIBPATH_OVERRIDES_RUNPATH;
 TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_builddir) -I$(top_builddir)/include \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \
