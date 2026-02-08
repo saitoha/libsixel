@@ -1067,6 +1067,24 @@ TESTS = \
     io/loader/0023_loader_gdk_pixbuf2_loop_disable_gif.t \
     io/loader/0024_loader_gdk_pixbuf2_forced_sixel_input.t \
     io/loader/0025_loader_gdk_pixbuf2_corrupted_png.t \
+    io/loader/0026_loader_gnome_thumbnailer_forced_priority.t \
+    io/loader/0027_loader_gnome_thumbnailer_mime_wildcard.t \
+    io/loader/0028_loader_gnome_thumbnailer_exec_placeholders.t \
+    io/loader/0029_loader_gnome_thumbnailer_tryexec_skip_fallback.t \
+    io/loader/0030_loader_gnome_thumbnailer_env_priority_list.t \
+    io/loader/0031_loader_gnome_thumbnailer_cli_overrides_env.t \
+    io/loader/0032_loader_gnome_thumbnailer_hint_size_invalid_env.t \
+    io/loader/0033_loader_gnome_thumbnailer_evince_stdout_workaround.t \
+    io/loader/0034_loader_gnome_thumbnailer_unknown_placeholder_literal.t \
+    io/loader/0035_loader_gnome_thumbnailer_exec_missing_skip.t \
+    io/loader/0036_loader_gnome_thumbnailer_tryexec_path_search_order.t \
+    io/loader/0037_loader_gnome_thumbnailer_hint_size_zero_env.t \
+    io/loader/0038_loader_gnome_thumbnailer_exec_quoting_escape.t \
+    io/loader/0039_loader_gnome_thumbnailer_tryexec_absolute_path.t \
+    io/loader/0040_loader_gnome_thumbnailer_tryexec_absolute_missing_skip.t \
+    io/loader/0041_loader_gnome_thumbnailer_tryexec_empty_allowed.t \
+    io/loader/0042_loader_gnome_thumbnailer_mimetype_last_assignment_wins.t \
+    io/loader/0043_loader_gnome_thumbnailer_group_scope.t \
     quant/mapfile/0001_mapfile_export_act.t \
     quant/mapfile/0002_mapfile_export_pal_default.t \
     quant/mapfile/0003_mapfile_export_pal_stdout.t \
