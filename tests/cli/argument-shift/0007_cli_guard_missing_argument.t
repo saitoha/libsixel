@@ -3,17 +3,18 @@
 
 set -eux
 
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+
 name=${0##*[/\\]}
 
-binary="${TOP_BUILDDIR}/tests/test_runner${SIXEL_BIN_EXT-}"
-if [ ! -x "${binary}" ]; then
+binary="${TEST_RUNNER_PATH}"
+if [ ! -x "${binary}" ] && [ -z "${SIXEL_RUNTIME-}" ]; then
     echo "harness not built" >&2
     exit 99
 fi
 
 set +e
-cli_output=$(${SIXEL_RUNTIME-} "${binary}" "cli/0031_cli_guard_missing_argument" \
-    2>&1)
+cli_output=$(run_test_runner "cli/0031_cli_guard_missing_argument" 2>&1)
 rc=$?
 set -e
 printf '%s' "${cli_output}" >&2

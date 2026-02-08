@@ -4,6 +4,8 @@
 
 set -eu
 
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+
 if [ "${CROSS_COMPILING:-no}" = "yes" ]; then
     echo "1..0 # SKIP cross compiling"
     exit 0
@@ -14,7 +16,7 @@ if [ -z "${TOP_BUILDDIR:-}" ]; then
     exit 1
 fi
 
-BIN="${TOP_BUILDDIR}/tests/test_runner${SIXEL_BIN_EXT-}"
+BIN="${TEST_RUNNER_PATH}"
 
 if [ ! -x "${BIN}" ] && [ -z "${SIXEL_RUNTIME-}" ]; then
     echo "Bail out! missing test binary: ${BIN}" 1>&2
@@ -23,7 +25,7 @@ fi
 
 
 set +e
-filter_output=$(${SIXEL_RUNTIME-} "${BIN}" "filter/${test_name}" 2>&1)
+filter_output=$(run_test_runner "filter/${test_name}" 2>&1)
 rc=$?
 set -e
 printf '%s' "${filter_output}" >&2
