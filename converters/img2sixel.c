@@ -676,6 +676,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "Set to '1' to explain failures or '0' (default) to suppress them."
     },
     {
+        "SIXEL_STATUS_FORCE_COLORS",
+        "force ANSI colorized diagnostics from status markup output.\n"
+        "Set to '1' to emit color sequences without TTY detection."
+    },
+    {
         "IMG2SIXEL_COMPLETION_BASH",
         "override the bash completion source path. When set, completion\n"
         "commands load this file before packaged defaults."

@@ -651,6 +651,11 @@ resolved. Set to "1" to show the guidance, or "0" (the default) to suppress
 it. The converter frontends keep the default disabled; library embedders must
 opt in explicitly.
 .TP 5
+.B SIXEL_STATUS_FORCE_COLORS
+.br
+force ANSI colorized diagnostics from status markup output. Set to "1" to
+emit color sequences without relying on TTY detection.
+.TP 5
 .B IMG2SIXEL_COMPLETION_BASH
 .br
 override the bash completion source path. When set, the completion commands

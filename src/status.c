@@ -169,6 +169,9 @@ sixel_status_render_markup(const char *source,
                            char *destination,
                            size_t destination_size);
 
+static int
+sixel_status_force_colors_enabled(void);
+
 /*
  * Markup overview
  * +---------+------------------------------+-----------------------------+
@@ -367,6 +370,7 @@ sixel_status_render_markup(const char *source,
     char token;
     const char *start_sequence;
     enum sixel_status_markup_attr target_attr;
+    int force_colors;
 
     index = 0;
 
@@ -379,9 +383,16 @@ sixel_status_render_markup(const char *source,
     use_sequences = 0;
     have_bold = 0;
     have_color = 0;
+    force_colors = sixel_status_force_colors_enabled();
+
+    if (force_colors != 0) {
+        use_sequences = 1;
+        have_bold = 1;
+        have_color = 1;
+    }
 
 #if SIXEL_STATUS_HAVE_TTY_HELPERS
-    {
+    if (force_colors == 0) {
         const struct sixel_tty_output_state *tty;
 
         tty = sixel_tty_get_output_state();
@@ -544,6 +555,27 @@ sixel_status_render_markup(const char *source,
     }
 
     return index;
+}
+
+static int
+sixel_status_force_colors_enabled(void)
+{
+    const char *value;
+
+    value = sixel_compat_getenv("SIXEL_STATUS_FORCE_COLORS");
+    if (value == NULL) {
+        return 0;
+    }
+
+    /*
+     * Keep the override intentionally strict so test environments can opt in
+     * without changing behavior for unrelated values.
+     */
+    if (strcmp(value, "1") == 0) {
+        return 1;
+    }
+
+    return 0;
 }
 
 
