@@ -112,6 +112,8 @@ TESTS = \
     processing/dither/varcoeff/0017_varcoeff_float32_carry_lsqa.t \
     processing/dither/varcoeff/0018_varcoeff_float32_carry_serpentine_lsqa.t \
     processing/dither/varcoeff/0019_varcoeff_float32_oklab_lsqa.t \
+    processing/dither/varcoeff/0020_varcoeff_float32_lookup_none_lsqa.t \
+    processing/dither/varcoeff/0021_varcoeff_float32_lookup_none_raster_lsqa.t \
     processing/dither/x-dither/0020_positional_8bit_x_dither_lsqa.t \
     processing/dither/positional/0021_positional_8bit_no_diffuse_lsqa.t \
     processing/dither/a-dither/0022_positional_float32_a_dither_lsqa.t \
@@ -157,6 +159,7 @@ TESTS = \
 	processing/dither/fixed/0043_fixed_float32_sierra2_lsqa.t \
 	processing/dither/fixed/0044_fixed_float32_sierra3_lsqa.t \
 	processing/dither/fixed/0045_fixed_float32_lookup_none_lsqa.t \
+    processing/dither/fixed/0046_fixed_float32_lookup_none_complexion_lsqa.t \
     processing/dither/bluenoise/0045_positional_8bit_bluenoise_gamma_lsqa.t \
     processing/dither/bluenoise/0046_positional_float32_bluenoise_gamma_lsqa.t \
     processing/dither/bluenoise/0047_positional_float32_bluenoise_oklab_lsqa.t \
@@ -451,6 +454,9 @@ TESTS = \
     planner/pipeline/0004_pipeline_planner_overrides_run.t \
     planner/pipeline/0005_pipeline_planner_overrides_summary.t \
     planner/pipeline/0006_pipeline_planner_overrides_threads.t \
+    planner/pipeline/0007_pipeline_row_ready_band_index_nonnegative.t \
+    planner/pipeline/0008_pipeline_row_ready_band_index_spans_multiple_bands.t \
+    planner/pipeline/0009_pipeline_row_notify_invalid_inputs.t \
     security/issue/0001_issue167_empty_bg.t \
     security/issue/0002_issue167_height.t \
     security/issue/0003_issue166_width.t \
@@ -630,6 +636,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0008_LOADER_COREGRAPHICS_PIXELFORMAT \
     -DBUILD_TEST_0009_FILTER_DITHER \
     -DBUILD_TEST_0009_LOADER_WIC_PIXELFORMAT \
+    -DBUILD_TEST_0009_PIPELINE_ROW_NOTIFY_INVALID_INPUTS \
     -DBUILD_TEST_0010_FILTER_ENCODE \
     -DBUILD_TEST_0010_LOADER_GDK_PIXBUF_PIXELFORMAT \
     -DBUILD_TEST_0011_LOADER_GD_PIXELFORMAT \
@@ -683,6 +690,7 @@ test_runner_SOURCES = test_runner.c \
     io/loader/pixelformat_test_common.h \
     quant/palette/0001_kmeans_init.c \
     diagnostics/probe/0001_probe_parse.c \
+    planner/pipeline/0009_pipeline_row_notify_invalid_inputs.c \
     extension/gdk-pixbuf-loader/0001_gdk_pixbuf_loader.c \
     extension/gdk-pixbuf-loader/0002_incremental_load.c \
     extension/gdk-pixbuf-loader/0003_corrupt_data.c \
