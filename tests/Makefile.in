@@ -1362,9 +1362,12 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/rgb.png \
     data/inputs/formats/rgb-lzw.tiff \
     data/inputs/formats/rgb-tiled.tiff \
+    data/inputs/formats/snake-64-reference-rgb-flip.png \
     data/inputs/formats/snake-64-reference-rgb.png \
+    data/inputs/formats/snake-64-reference-gray-flip.png \
     data/inputs/formats/snake-64-reference-gray.png \
     data/inputs/formats/snake-64-reference-rgba.png \
+    data/inputs/formats/snake-64-grayscale.jpg \
     data/inputs/formats/rgba.png \
     data/inputs/formats/rgba.tiff \
     data/inputs/formats/snake-tga-type1-pal4.tga \
