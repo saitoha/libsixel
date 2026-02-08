@@ -1151,6 +1151,61 @@ img2sixel_print_clipboard_hint(void)
             "\"tiff:\" to request image snapshots.\n");
 }
 
+static size_t
+img2sixel_utf8_expected_length(unsigned char byte)
+{
+    size_t length;
+
+    length = 1u;
+
+    if ((byte & 0x80u) == 0u) {
+        length = 1u;
+    } else if ((byte & 0xE0u) == 0xC0u) {
+        length = 2u;
+    } else if ((byte & 0xF0u) == 0xE0u) {
+        length = 3u;
+    } else if ((byte & 0xF8u) == 0xF0u) {
+        length = 4u;
+    }
+
+    return length;
+}
+
+/*
+ * Trim a byte length to a UTF-8 boundary so diagnostics never keep
+ * half of a multibyte sequence when a preview is clipped.
+ */
+static size_t
+img2sixel_utf8_trim_length(char const *text, size_t length)
+{
+    size_t index;
+    size_t available;
+    size_t required;
+    unsigned char byte;
+
+    index = length;
+    available = 0u;
+    required = 0u;
+    byte = 0u;
+
+    while (index > 0u) {
+        byte = (unsigned char)text[index - 1u];
+        if ((byte & 0xC0u) != 0x80u) {
+            required = img2sixel_utf8_expected_length(byte);
+            available = length - (index - 1u);
+            if (available >= required) {
+                return length;
+            }
+            length = index - 1u;
+            index = length;
+            continue;
+        }
+        --index;
+    }
+
+    return length;
+}
+
 static void
 img2sixel_report_invalid_argument(int short_opt,
                                   char const *value,
@@ -1158,15 +1213,19 @@ img2sixel_report_invalid_argument(int short_opt,
 {
     char buffer[2048];
     char detail_copy[2048];
+    char argument_copy[1024];
     cli_option_help_t const *entry;
     char const *long_opt;
     char const *help_text;
     char const *argument;
+    size_t argument_length;
+    size_t argument_copy_length;
     size_t offset;
     int written;
 
     memset(buffer, 0, sizeof(buffer));
     memset(detail_copy, 0, sizeof(detail_copy));
+    memset(argument_copy, 0, sizeof(argument_copy));
     entry = cli_find_option_help(g_option_help_table,
                                  img2sixel_option_help_count(),
                                  short_opt);
@@ -1176,13 +1235,22 @@ img2sixel_report_invalid_argument(int short_opt,
         ? entry->help : g_option_help_fallback;
     argument = (value != NULL && value[0] != '\0')
         ? value : "(missing)";
+    argument_length = strlen(argument);
+    argument_copy_length = argument_length;
+    if (argument_copy_length >= sizeof(argument_copy)) {
+        argument_copy_length = sizeof(argument_copy) - 1u;
+        argument_copy_length = img2sixel_utf8_trim_length(argument,
+                                                          argument_copy_length);
+    }
+    memcpy(argument_copy, argument, argument_copy_length);
+    argument_copy[argument_copy_length] = '\0';
     offset = 0u;
 
     written = snprintf(buffer,
                        sizeof(buffer),
                        "\\fW'%s'\\fP is invalid argument for "
                        "\\fB-%c\\fP,\\fB--%s\\fP option:\n\n",
-                       argument,
+                       argument_copy,
                        (char)short_opt,
                        long_opt);
     if (written < 0) {
