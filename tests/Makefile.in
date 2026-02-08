@@ -1100,7 +1100,7 @@ TESTS = \
     io/network/0003_curl_file_scheme.t \
     io/network/0004_curl_self_signed_blocked.t \
     io/network/0005_curl_self_signed_with_k.t \
-    io/network/0006_curl_invalid_https_error_message.t \
+    io/network/0006_invalid_https_error_message.t \
     codec/output/0001_vt340_colour_sequences.t \
     codec/output/0002_vt340_monochrome_sequences.t \
     codec/output/0003_direct_sixel_encode.t \

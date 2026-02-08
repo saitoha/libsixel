@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: malformed HTTPS URL reports a formatted loader failure status.
+# TAP test: malformed HTTPS URL reports a formatted network failure status.
 
 set -eux
 
@@ -11,8 +11,8 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 echo "1..1"
 set -v
 
-err_file="${ARTIFACT_LOCAL_DIR}/curl-invalid-https.err"
-out_file="${ARTIFACT_LOCAL_DIR}/curl-invalid-https.six"
+err_file="${ARTIFACT_LOCAL_DIR}/invalid-https.err"
+out_file="${ARTIFACT_LOCAL_DIR}/invalid-https.six"
 
 rm -f "${err_file}" "${out_file}"
 
@@ -24,6 +24,8 @@ fi
 
 if [ -n "$(sed -n '1p' "${err_file}")" ] \
         && (grep -F 'curl_easy_perform() failed.' "${err_file}" >/dev/null 2>&1 \
+            || grep -F 'WinHttpCrackUrl failed.' "${err_file}" \
+                >/dev/null 2>&1 \
             || grep -F 'runtime error: unable to decode input with available loaders' \
                 "${err_file}" >/dev/null 2>&1); then
     pass 1 "malformed HTTPS URL reports formatted network failure"
