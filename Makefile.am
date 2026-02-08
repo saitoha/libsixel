@@ -49,7 +49,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 # no user-provided job control is visible in MFLAGS/MAKEFLAGS.
 # Accept both explicit jobs options and GNU make jobserver tokens.
 LS_USER_JOBS = $(filter -j% --jobs --jobs=% --jobserver-auth=% --jobserver-fds=% --jobserver-style=%,$(MFLAGS) $(MAKEFLAGS))
-AM_MAKEFLAGS = $(if $(LS_USER_JOBS),,@LS_DEFAULT_MAKEFLAGS@)
+AM_MAKEFLAGS = $(if $(filter 0,$(MAKELEVEL)),$(if $(LS_USER_JOBS),,@LS_DEFAULT_MAKEFLAGS@),)
 
 
 .PHONY: install-quicklook-extension uninstall-quicklook-extension
