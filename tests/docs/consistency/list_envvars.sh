@@ -107,13 +107,15 @@ list_help_vars() {
     runtime_var="${RUNTIME_SHLIBPATH_VAR:-LD_LIBRARY_PATH}"
     runtime_sep="${RUNTIME_SHLIBPATH_SEP:-:}"
     runtime_current=""
+    shlibpath_overrides_runpath="${SIXEL_SHLIBPATH_OVERRIDES_RUNPATH:-yes}"
     if [ "$(basename "$img2sixel_dir")" = ".libs" ]; then
         build_root=$(CDPATH=; cd -- "$img2sixel_dir/../.." && pwd)
     else
         build_root=$(CDPATH=; cd -- "$img2sixel_dir/.." && pwd)
     fi
     runtime_libdir="$build_root/src/.libs"
-    if [ -d "$runtime_libdir" ]; then
+    if [ -d "$runtime_libdir" ] &&
+            [ "$shlibpath_overrides_runpath" = "yes" ]; then
         eval "runtime_current=\${${runtime_var}:-}"
         if [ -n "$runtime_current" ]; then
             runtime_value="$runtime_libdir$runtime_sep$runtime_current"
