@@ -15,7 +15,7 @@ stop_server() {
     server_pid="$1"
 
     if kill "${server_pid}" 2>/dev/null; then
-        wait_limit=5
+        wait_limit=10
         waited=0
 
         while kill -0 "${server_pid}" 2>/dev/null; do
@@ -26,7 +26,7 @@ stop_server() {
                 break
             fi
 
-            sleep 1
+            "${PYTHON}" -c "import time; time.sleep(0.1)"
             waited=$((waited + 1))
         done
 
