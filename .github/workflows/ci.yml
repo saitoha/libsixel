@@ -59,7 +59,7 @@ jobs:
 
     steps:
       - name: Configure git EOL
-        if: ${{ matrix.exec_type == 'cygwin' }}
+        if: ${{ runner.os == 'Windows' }}
         shell: bash
         run: git config --global core.autocrlf false
 
@@ -315,7 +315,7 @@ jobs:
 
     steps:
       - name: Configure git EOL
-        if: ${{ matrix.exec_type == 'cygwin' }}
+        if: ${{ runner.os == 'Windows' }}
         shell: bash
         run: git config --global core.autocrlf false
 
@@ -589,7 +589,7 @@ jobs:
 
     steps:
       - name: Configure git EOL
-        if: ${{ matrix.exec_type == 'cygwin' }}
+        if: ${{ runner.os == 'Windows' }}
         shell: bash
         run: git config --global core.autocrlf false
 
@@ -899,7 +899,7 @@ jobs:
 
     steps:
       - name: Configure git EOL
-        if: ${{ matrix.exec_type == 'cygwin' }}
+        if: ${{ runner.os == 'Windows' }}
         shell: bash
         run: git config --global core.autocrlf false
 
@@ -1084,7 +1084,7 @@ jobs:
 
     steps:
       - name: Configure git EOL
-        if: ${{ matrix.exec_type == 'cygwin' }}
+        if: ${{ runner.os == 'Windows' }}
         shell: bash
         run: git config --global core.autocrlf false
 
@@ -1153,7 +1153,7 @@ jobs:
 
     steps:
       - name: Configure git EOL
-        if: ${{ matrix.exec_type == 'cygwin' }}
+        if: ${{ runner.os == 'Windows' }}
         shell: bash
         run: git config --global core.autocrlf false
 
@@ -1447,7 +1447,7 @@ jobs:
 
     steps:
       - name: Configure git EOL
-        if: ${{ matrix.exec_type == 'cygwin' }}
+        if: ${{ runner.os == 'Windows' }}
         shell: bash
         run: git config --global core.autocrlf false
 
@@ -1499,7 +1499,7 @@ jobs:
 
     steps:
       - name: Configure git EOL
-        if: ${{ matrix.exec_type == 'cygwin' }}
+        if: ${{ runner.os == 'Windows' }}
         shell: bash
         run: git config --global core.autocrlf false
 
@@ -1586,7 +1586,7 @@ jobs:
 
     steps:
       - name: Configure git EOL
-        if: ${{ matrix.exec_type == 'cygwin' }}
+        if: ${{ runner.os == 'Windows' }}
         shell: bash
         run: git config --global core.autocrlf false
 
@@ -1665,7 +1665,7 @@ jobs:
 
     steps:
       - name: Configure git EOL
-        if: ${{ matrix.exec_type == 'cygwin' }}
+        if: ${{ runner.os == 'Windows' }}
         shell: bash
         run: git config --global core.autocrlf false
 
@@ -1794,7 +1794,7 @@ jobs:
 
     steps:
       - name: Configure git EOL
-        if: ${{ matrix.exec_type == 'cygwin' }}
+        if: ${{ runner.os == 'Windows' }}
         shell: bash
         run: git config --global core.autocrlf false
 
@@ -1866,7 +1866,7 @@ jobs:
 
     steps:
       - name: Configure git EOL
-        if: ${{ matrix.exec_type == 'cygwin' }}
+        if: ${{ runner.os == 'Windows' }}
         shell: bash
         run: git config --global core.autocrlf false
 
@@ -2124,7 +2124,7 @@ jobs:
 
     steps:
       - name: Configure git EOL
-        if: ${{ matrix.exec_type == 'cygwin' }}
+        if: ${{ runner.os == 'Windows' }}
         shell: bash
         run: git config --global core.autocrlf false
 
