@@ -101,8 +101,6 @@ jobs:
             buildtool: autotools
             runner: macos-latest
             setup_options: >-
-              --Dpython=enabled
-            setup_options: >-
               --enable-python
             exec_type: bash
 
