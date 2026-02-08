@@ -13,7 +13,8 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 if ! feature_defined_in_config "HAVE_UNISTD_H" || \
         ! feature_defined_in_config "HAVE_SYS_WAIT_H" || \
-        ! feature_defined_in_config "HAVE_FORK"; then
+        ! feature_defined_in_config "HAVE_FORK" || \
+        feature_defined_in_config "HAVE_EMSCRIPTEN_H"; then
     skip_all "gnome-thumbnailer loader is unavailable on this platform"
 fi
 
