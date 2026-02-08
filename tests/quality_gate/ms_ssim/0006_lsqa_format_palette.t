@@ -5,7 +5,7 @@ set -eu
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.0}
+lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.99}
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 

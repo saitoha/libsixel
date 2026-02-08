@@ -312,6 +312,8 @@ extra_funcs = [
   '_fullpath',
   '_realpath',
   '_dupenv_s',
+  '_putenv_s',
+  'setenv',
   'realpath',
   'sqrt',
   'strchr',

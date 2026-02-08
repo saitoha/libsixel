@@ -22,12 +22,11 @@ set -v
 image_path="${top_srcdir}/tests/data/inputs/formats/snake-tga-type1-pal4.tga"
 reference_path="${top_srcdir}/tests/data/inputs/formats/snake-64-reference-rgb-flip.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
-if run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}"; then
-    :
-else
+
+run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}" || {
     fail 1 "type 1 PAL4 TGA quality below floor"
     exit 0
-fi
+}
 
 lsqa_err=$(
     set +xv

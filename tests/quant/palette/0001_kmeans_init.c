@@ -13,22 +13,22 @@
  * Keep this test independent from src/compat_stub.h.
  *
  * The compat layer is private to src/ and should not be used from tests.
- * This helper keeps the test portable across compilers: use _putenv_s on
- * MSVC and setenv on other platforms.
+ * Pick an environment setter based on configure/meson feature detection.
  */
 static int
 test_setenv(char const *name, char const *value)
 {
-#if defined(_MSC_VER)
+#if defined(HAVE__PUTENV_S)
     return _putenv_s(name, value);
-#else
+#elif defined(HAVE_SETENV)
     extern int setenv(char const *name, char const *value, int overwrite);
 
-    if (name == NULL || value == NULL) {
-        return -1;
-    }
-
     return setenv(name, value, 1);
+#else
+    (void)name;
+    (void)value;
+
+    return -1;
 #endif
 }
 
