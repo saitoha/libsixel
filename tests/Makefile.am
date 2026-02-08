@@ -668,16 +668,27 @@ check-TESTS: $(check_PROGRAMS)
 	@$(am__rm_f) $(TEST_SUITE_LOG)
 	@set +e; \
 	config_header="$(top_builddir)/config.h"; \
+	shlibpath_overrides_runpath=`awk -F= '/^shlibpath_overrides_runpath=/{gsub(/\047/, "", $$2); print $$2; exit}' "$(top_builddir)/libtool" 2>/dev/null`; \
+	prefer_wrapper=no; \
+	: "When the runtime search path cannot be overridden by the environment, run tests through libtool wrappers so per-platform loader setup is preserved."; \
+	if [ "x$$shlibpath_overrides_runpath" != "xyes" ]; then \
+	    prefer_wrapper=yes; \
+	fi; \
 	resolve_test_tool_path() { \
 	    top_path=$$1; \
 	    real_path=$$2; \
+	    prefer_wrapper_path=$$3; \
 	    magic=""; \
 	    if [ -f "$$top_path" ]; then \
 	        set -- $$(dd if="$$top_path" bs=1 count=2 2>/dev/null | \
 	                 od -An -tx1); \
 	        magic="$${1-}$${2-}"; \
 	        if [ "x$$magic" = "x2321" ] && [ -f "$$real_path" ]; then \
-	            printf '%s\n' "$$real_path"; \
+	            if [ "x$$prefer_wrapper_path" = "xyes" ]; then \
+	                printf '%s\n' "$$top_path"; \
+	            else \
+	                printf '%s\n' "$$real_path"; \
+	            fi; \
 	        else \
 	            printf '%s\n' "$$top_path"; \
 	        fi; \
@@ -692,16 +703,20 @@ check-TESTS: $(check_PROGRAMS)
 	}; \
 	IMG2SIXEL_PATH=$$(resolve_test_tool_path \
 	    "$(abs_top_builddir)/converters/img2sixel@EXEEXT@" \
-	    "$(abs_top_builddir)/converters/@SIXEL_LIBTOOL_OBJDIR@/img2sixel@EXEEXT@"); \
+	    "$(abs_top_builddir)/converters/@SIXEL_LIBTOOL_OBJDIR@/img2sixel@EXEEXT@" \
+	    "$$prefer_wrapper"); \
 	SIXEL2PNG_PATH=$$(resolve_test_tool_path \
 	    "$(abs_top_builddir)/converters/sixel2png@EXEEXT@" \
-	    "$(abs_top_builddir)/converters/@SIXEL_LIBTOOL_OBJDIR@/sixel2png@EXEEXT@"); \
+	    "$(abs_top_builddir)/converters/@SIXEL_LIBTOOL_OBJDIR@/sixel2png@EXEEXT@" \
+	    "$$prefer_wrapper"); \
 	LSQA_PATH=$$(resolve_test_tool_path \
 	    "$(abs_top_builddir)/assessment/lsqa@EXEEXT@" \
-	    "$(abs_top_builddir)/assessment/@SIXEL_LIBTOOL_OBJDIR@/lsqa@EXEEXT@"); \
+	    "$(abs_top_builddir)/assessment/@SIXEL_LIBTOOL_OBJDIR@/lsqa@EXEEXT@" \
+	    "$$prefer_wrapper"); \
 	TEST_RUNNER_PATH=$$(resolve_test_tool_path \
 	    "$(abs_top_builddir)/tests/test_runner@EXEEXT@" \
-	    "$(abs_top_builddir)/tests/@SIXEL_LIBTOOL_OBJDIR@/test_runner@EXEEXT@"); \
+	    "$(abs_top_builddir)/tests/@SIXEL_LIBTOOL_OBJDIR@/test_runner@EXEEXT@" \
+	    "$$prefer_wrapper"); \
 	export IMG2SIXEL_PATH SIXEL2PNG_PATH LSQA_PATH TEST_RUNNER_PATH; \
 	\
 	if [ -f "$$config_header" ]; then \
