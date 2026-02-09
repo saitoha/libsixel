@@ -146,6 +146,39 @@ jobs:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
+  autotools-out_of_tree:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - label: Autotools-ubuntu-x86_64-gcc
+            buildtool: autotools
+            runner: ubuntu-latest
+            setup_prefix: >-
+              mkdir build;
+              cd build;
+              rel=..;
+            extra_packages: >-
+              clang
+            exec_type: bash
+
+    steps:
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
 
   coverage-autotools:
     needs: [smoke]
