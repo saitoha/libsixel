@@ -99,7 +99,7 @@ extern char **environ;
 #include "logger.h"
 #include "sleep.h"
 
-#if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
+#if HAVE_FREEDESKTOP_THUMBNAILING
 
 # if defined(HAVE_MKSTEMP)
 int mkstemp(char *);
@@ -2877,7 +2877,7 @@ end:
     return status;
 }
 
-#endif  /* HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK */
+#endif  /* HAVE_FREEDESKTOP_THUMBNAILING */
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */

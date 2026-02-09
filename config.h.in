@@ -222,6 +222,10 @@
 /* Define to 1 if you have the `fork' function. */
 #undef HAVE_FORK
 
+/* Define to 1 when freedesktop thumbnailing loader prerequisites are
+   available. */
+#undef HAVE_FREEDESKTOP_THUMBNAILING
+
 /* Define to 1 if you have the `fsync' function. */
 #undef HAVE_FSYNC
 

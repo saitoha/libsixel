@@ -1541,6 +1541,14 @@ case "${host_os}" in
     ;;
 esac
 
+AS_IF([test "x$ac_cv_header_unistd_h" = "xyes" &&
+       test "x$ac_cv_header_sys_wait_h" = "xyes" &&
+       test "x$ac_cv_func_fork" = "xyes" &&
+       test "x$ac_cv_header_emscripten_h" != "xyes"],
+      [AC_DEFINE([HAVE_FREEDESKTOP_THUMBNAILING], [1],
+                 [Define to 1 when freedesktop thumbnailing loader
+                  prerequisites are available.])])
+
 if test x$ac_cv_header_windows_h = xyes; then
     AC_DEFINE([HAVE_WINDOWS_PROC], [1],
               [Define to 1 if Win32 process APIs are available.])

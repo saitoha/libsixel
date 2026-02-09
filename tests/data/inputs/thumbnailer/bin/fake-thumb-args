@@ -1,0 +1,5 @@
+#!/bin/sh
+# Thumbnailer stub that records parsed Exec arguments for assertions.
+set -eu
+cp "$1" "$2"
+printf 'a3=%s\na4=%s\na5=%s\n' "$3" "$4" "$5" >"${THUMB_LOG:?}"

@@ -11,10 +11,7 @@ case_id=1
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-if ! feature_defined_in_config "HAVE_UNISTD_H" || \
-        ! feature_defined_in_config "HAVE_SYS_WAIT_H" || \
-        ! feature_defined_in_config "HAVE_FORK" || \
-        feature_defined_in_config "HAVE_EMSCRIPTEN_H"; then
+if ! feature_defined_in_config "HAVE_FREEDESKTOP_THUMBNAILING"; then
     skip_all "gnome-thumbnailer loader is unavailable on this platform"
 fi
 
@@ -29,24 +26,15 @@ log_file="${work_dir}/args.log"
 xdg_data_home="${work_dir}/xdg"
 bin_dir="${work_dir}/bin"
 thumb_dir="${xdg_data_home}/thumbnailers"
+template_root="${top_srcdir}/tests/data/inputs/thumbnailer"
 
 rm -rf "${work_dir}"
 mkdir -p "${bin_dir}" "${thumb_dir}"
 
-cat >"${bin_dir}/fake-thumb" <<'EOS2'
-#!/bin/sh
-set -eu
-cp "$1" "$2"
-printf 'a3=%s\na4=%s\na5=%s\n' "$3" "$4" "$5" >"${THUMB_LOG:?}"
-EOS2
-chmod +x "${bin_dir}/fake-thumb"
+cp "${template_root}/bin/fake-thumb-args" "${bin_dir}/fake-thumb-args"
+chmod +x "${bin_dir}/fake-thumb-args"
 
-cat >"${thumb_dir}/exec-quoting.thumbnailer" <<'EOS2'
-[Thumbnailer Entry]
-TryExec=fake-thumb
-Exec=fake-thumb "%i" "%o" "value with space" escaped\ token %%
-MimeType=image/png;
-EOS2
+cp "${template_root}/thumbnailers/exec-quoting.thumbnailer" "${thumb_dir}/exec-quoting.thumbnailer"
 
 if run_img2sixel \
         --env "XDG_DATA_DIRS=${xdg_data_home}" \

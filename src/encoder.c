@@ -525,7 +525,7 @@ static sixel_option_choice_t const g_option_choices_loaders[] = {
 #if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
     { "quicklook", SIXEL_LOADER_CHOICE_QUICKLOOK },
 #endif
-#if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
+#if HAVE_FREEDESKTOP_THUMBNAILING
     { "gnome-thumbnailer", SIXEL_LOADER_CHOICE_GNOME_THUMBNAILER },
 #endif
 };
