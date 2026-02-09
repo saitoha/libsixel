@@ -563,9 +563,7 @@ TEST_EXTENSIONS = .t
 HELPER_FILES = \
     _lib/sh/common.sh \
     docs/consistency/list_envvars.sh \
-    lib/sh/packaging/python_wheel_common.sh \
-    lib/sh/loader/pngsuite_common.sh \
-    lib/sh/python/common.sh
+    lib/sh/loader/pngsuite_common.sh
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 AM_TESTS_ENVIRONMENT = ARTIFACT_ROOT='$(ARTIFACT_ROOT)'; export ARTIFACT_ROOT;
