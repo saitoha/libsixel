@@ -57,9 +57,10 @@ Exec=fake-thumb %i %o
 MimeType=image/png;
 EOS
 
+# Keep original PATH entries so runtime DLL lookup remains valid.
 if run_img2sixel \
         --env "XDG_DATA_DIRS=${xdg_data_home}" \
-        --env "PATH=${bin_dir}:/usr/bin:/bin" \
+        --env "PATH=${bin_dir}:${PATH}" \
         --env "SKIP_MARKER=${skip_marker}" \
         --env "FALLBACK_MARKER=${fallback_marker}" \
         -L gnome-thumbnailer! "${input_png}" \

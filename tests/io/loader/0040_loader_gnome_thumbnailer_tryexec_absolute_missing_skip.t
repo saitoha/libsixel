@@ -59,7 +59,7 @@ EOS2
 
 if run_img2sixel \
         --env "XDG_DATA_DIRS=${xdg_data_home}" \
-        --env "PATH=/usr/bin:/bin" \
+        --env "PATH=${PATH}" \
         --env "VALID_MARKER=${marker_file}" \
         -L gnome-thumbnailer! "${input_png}" \
         >"${output_sixel}" 2>"${error_log}" && \

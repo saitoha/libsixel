@@ -51,7 +51,7 @@ EOS
 
 if run_img2sixel \
         --env "XDG_DATA_DIRS=${xdg_data_home}" \
-        --env "PATH=${bin_dir_1}:${bin_dir_2}:/usr/bin:/bin" \
+        --env "PATH=${bin_dir_1}:${bin_dir_2}:${PATH}" \
         --env "PATH_MARKER=${marker_file}" \
         -L gnome-thumbnailer! "${input_png}" \
         >"${output_sixel}" 2>"${error_log}" && \
