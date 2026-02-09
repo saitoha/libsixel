@@ -22,12 +22,13 @@ if run_img2sixel --env LC_ALL=C -- 'https:///test' \
     exit 0
 fi
 
-if [ -n "$(sed -n '1p' "${err_file}")" ] \
-        && (grep -F 'curl_easy_perform() failed.' "${err_file}" >/dev/null 2>&1 \
-            || grep -F 'WinHttpCrackUrl failed.' "${err_file}" \
-                >/dev/null 2>&1 \
-            || grep -F 'runtime error: unable to decode input with available loaders' \
-                "${err_file}" >/dev/null 2>&1); then
+# OpenBSD's resolver backend can emit a leading blank line before the
+# backend-specific message body.  Accept that format and only require that
+# stderr contains one of the canonical network failure messages.
+if grep -F 'curl_easy_perform() failed.' "${err_file}" >/dev/null 2>&1 \
+        || grep -F 'WinHttpCrackUrl failed.' "${err_file}" >/dev/null 2>&1 \
+        || grep -F 'runtime error: unable to decode input with available loaders' \
+            "${err_file}" >/dev/null 2>&1; then
     pass 1 "malformed HTTPS URL reports formatted network failure"
 else
     fail 1 "missing formatted network failure message"
