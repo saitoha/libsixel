@@ -136,8 +136,12 @@ sixel_logger_open(sixel_logger_t *logger, char const *path)
      * Use fully buffered output to avoid newline-triggered flushes.  VPTE
      * timeline logging can emit many events, and line buffering would force
      * frequent kernel writes even without explicit fflush() calls.
+     *
+     * Some CRT implementations reject _IOFBF when the buffer size is zero.
+     * Request a portable default size and keep logging active even if the
+     * buffering hint is ignored.
      */
-    setvbuf(logger->file, NULL, _IOFBF, 0);
+    (void)setvbuf(logger->file, NULL, _IOFBF, BUFSIZ);
     sixel_logger_active = logger;
     sixel_logger_refcount = 1;
     return SIXEL_OK;
