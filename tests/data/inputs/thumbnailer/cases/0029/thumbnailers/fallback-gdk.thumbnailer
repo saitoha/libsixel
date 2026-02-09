@@ -1,0 +1,3 @@
+[GdkPixbuf Thumbnailer]
+Exec=gdk-pixbuf-thumbnailer %i %o %s
+MimeType=image/png;

@@ -1,0 +1,4 @@
+[Thumbnailer Entry]
+TryExec=
+Exec=fake-thumb %i %o
+MimeType=image/png;
