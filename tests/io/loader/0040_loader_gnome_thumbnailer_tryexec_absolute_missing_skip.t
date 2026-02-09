@@ -26,6 +26,7 @@ xdg_data_home="${template_root}/cases/0040"
 
 if run_img2sixel \
         --env "XDG_DATA_DIRS=${xdg_data_home}" \
+        --env "HOME=${ARTIFACT_LOCAL_DIR}" \
         --env "PATH=${PATH}" \
         -L gnome-thumbnailer! "${input_png}" \
         >"${output_sixel}" 2>"${error_log}" && \
