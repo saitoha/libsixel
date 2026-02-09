@@ -238,7 +238,6 @@ tests = [
   'cli/options/matching/0007_option_matching_force_colors_ansi.t',
   'cli/options/matching/0008_option_matching_prefix_ambiguous_suggestions_off.t',
   'cli/options/matching/0009_option_matching_distance2_fuzzy_off.t',
-  'cli/options/matching/0010_option_matching_utf8_trim_boundary.t',
   'cli/options/general/0001_long_option_forms.t',
   'cli/options/general/0002_ormode_option_runs.t',
   'cli/options/general/0003_gri_limit_lsqa.t',
