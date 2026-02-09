@@ -12,7 +12,7 @@ config_macro_defined HAVE_SIXEL2PNG || skip_all "sixel2png is disabled in this b
 echo "1..1"
 set -v
 
-input_path="${images_dir}/snake.six"
+input_path="${images_dir}/map8.six"
 
 
 stderr_capture="${ARTIFACT_LOCAL_DIR}/stderr.txt"

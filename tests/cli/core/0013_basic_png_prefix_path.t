@@ -12,7 +12,7 @@ set -v
 
 rm -f "${ARTIFACT_LOCAL_DIR}/out.png"
 
-run_sixel2png -o "png:${ARTIFACT_LOCAL_DIR}/out.png" <"${images_dir}/snake.six" || {
+run_sixel2png -o "png:${ARTIFACT_LOCAL_DIR}/out.png" <"${images_dir}/map8.six" || {
     fail 1 "prefixed output command failed"
     exit 0
 }
