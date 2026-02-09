@@ -92,7 +92,17 @@ create_virtualenv() {
 
 install_wheel() {
     venv_path=$1
+
     venv_python=$(resolve_venv_python "${venv_path}") || return 1
+
+    if [ -n "${SIXEL_TEST_PYTHON_VENV:-}" ] \
+       && [ "${venv_path}" = "${SIXEL_TEST_PYTHON_VENV}" ] \
+       && "${venv_python}" -c \
+          'import importlib.util,sys; sys.exit(0 if importlib.util.find_spec("libsixel_wheel") else 1)' \
+          >/dev/null 2>&1; then
+        return 0
+    fi
+
     "${venv_python}" -m pip install --no-deps "${wheel_path}"
 }
 
