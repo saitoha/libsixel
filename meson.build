@@ -416,6 +416,10 @@ if host_system == 'emscripten'
   endif
 endif
 
+if conf.has('HAVE_UNISTD_H') and conf.has('HAVE_SYS_WAIT_H') and conf.has('HAVE_FORK') and not conf.has('HAVE_EMSCRIPTEN_H')
+  conf.set('HAVE_FREEDESKTOP_THUMBNAILING', 1)
+endif
+
 abort_trace_opt = get_option('abort_trace')
 abort_trace_enabled = not abort_trace_opt.disabled()
 if host_system == 'emscripten'

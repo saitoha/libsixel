@@ -1,0 +1,4 @@
+[Thumbnailer Entry]
+TryExec=fake-thumb-args
+Exec=fake-thumb-args "%i" "%o" "value with space" escaped\ token %%
+MimeType=image/png;

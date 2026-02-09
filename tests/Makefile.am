@@ -883,6 +883,11 @@ check-TESTS: $(check_PROGRAMS)
 	exit $$?;
 
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
+    data/inputs/thumbnailer/bin/evince-thumbnailer \
+    data/inputs/thumbnailer/bin/fake-thumb \
+    data/inputs/thumbnailer/bin/fake-thumb-args \
+    data/inputs/thumbnailer/bin/fake-thumb-size \
+    data/inputs/thumbnailer/bin/gdk-pixbuf-thumbnailer \
     data/inputs/formats/grayscale.jpg \
     data/inputs/formats/grayscale.tiff \
     data/inputs/formats/palette.png \
@@ -952,6 +957,27 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/scaling/snake_64_lanczos3_120pct.png \
     data/inputs/scaling/snake_64_lanczos4_80pct.png \
     data/inputs/scaling/snake_64_lanczos4_120pct.png \
+    data/inputs/thumbnailer/thumbnailers/absolute-tryexec.thumbnailer \
+    data/inputs/thumbnailer/thumbnailers/empty-tryexec.thumbnailer \
+    data/inputs/thumbnailer/thumbnailers/entry-missing-exec.thumbnailer \
+    data/inputs/thumbnailer/thumbnailers/entry-valid.thumbnailer \
+    data/inputs/thumbnailer/thumbnailers/env-priority.thumbnailer \
+    data/inputs/thumbnailer/thumbnailers/evince.thumbnailer \
+    data/inputs/thumbnailer/thumbnailers/exec-quoting.thumbnailer \
+    data/inputs/thumbnailer/thumbnailers/fake.thumbnailer \
+    data/inputs/thumbnailer/thumbnailers/fallback-gdk.thumbnailer \
+    data/inputs/thumbnailer/thumbnailers/group-scope.thumbnailer \
+    data/inputs/thumbnailer/thumbnailers/hint-size-zero.thumbnailer \
+    data/inputs/thumbnailer/thumbnailers/hint-size.thumbnailer \
+    data/inputs/thumbnailer/thumbnailers/mime-overwrite.thumbnailer \
+    data/inputs/thumbnailer/thumbnailers/missing-absolute.thumbnailer \
+    data/inputs/thumbnailer/thumbnailers/override-env.thumbnailer \
+    data/inputs/thumbnailer/thumbnailers/path-order.thumbnailer \
+    data/inputs/thumbnailer/thumbnailers/placeholders.thumbnailer \
+    data/inputs/thumbnailer/thumbnailers/tryexec-missing.thumbnailer \
+    data/inputs/thumbnailer/thumbnailers/unknown-placeholder.thumbnailer \
+    data/inputs/thumbnailer/thumbnailers/valid-absolute.thumbnailer \
+    data/inputs/thumbnailer/thumbnailers/wildcard.thumbnailer \
     data/resolutions/hd_landscape.png \
     data/resolutions/panorama_tall.png \
     data/resolutions/panorama_wide.png \

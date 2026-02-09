@@ -710,7 +710,7 @@ loader_publish_diagnostic(sixel_chunk_t const *pchunk,
 
     loader_extract_extension(path, extension, sizeof(extension));
 
-#if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
+#if HAVE_FREEDESKTOP_THUMBNAILING
     if (metadata_path != NULL) {
         /*
          * Collect MIME metadata via file(1) when fork() and friends are
@@ -910,7 +910,7 @@ loader_publish_diagnostic(sixel_chunk_t const *pchunk,
     }
 #endif
 
-#if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
+#if HAVE_FREEDESKTOP_THUMBNAILING
     gnome_available = loader_registry_entry_available("gnome-thumbnailer");
     if (gnome_available) {
         loader_probe_gnome_thumbnailers(mime_string,

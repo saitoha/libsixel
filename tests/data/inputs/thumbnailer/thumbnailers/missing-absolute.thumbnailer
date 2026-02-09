@@ -1,0 +1,4 @@
+[Thumbnailer Entry]
+TryExec=@MISSING_TRYEXEC@
+Exec=fake-thumb %i %o
+MimeType=image/png;

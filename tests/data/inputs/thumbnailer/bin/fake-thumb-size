@@ -1,0 +1,5 @@
+#!/bin/sh
+# Thumbnailer stub that records the third argument, typically %s or literal.
+set -eu
+cp "$1" "$2"
+printf '%s\n' "$3" >"${THUMB_LOG:?}"

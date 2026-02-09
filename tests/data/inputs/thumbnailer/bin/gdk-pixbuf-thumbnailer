@@ -1,0 +1,4 @@
+#!/bin/sh
+# Minimal fallback thumbnailer matching gdk-pixbuf-thumbnailer argument order.
+set -eu
+cp "$2" "$3"

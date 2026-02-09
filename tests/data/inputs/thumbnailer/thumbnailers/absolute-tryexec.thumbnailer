@@ -1,0 +1,4 @@
+[Thumbnailer Entry]
+TryExec=@TRYEXEC_PATH@
+Exec=@TRYEXEC_PATH@ %i %o
+MimeType=image/png;

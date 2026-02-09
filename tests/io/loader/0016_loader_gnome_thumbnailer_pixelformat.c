@@ -6,7 +6,7 @@
 
 #include "src/loader-gnome-thumbnailer.h"
 
-#if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
+#if HAVE_FREEDESKTOP_THUMBNAILING
 static int
 thumbnailer_available(void)
 {
@@ -52,7 +52,7 @@ test_loader_0016_loader_gnome_thumbnailer_pixelformat(int argc, char **argv)
     (void) argc;
     (void) argv;
 
-#if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
+#if HAVE_FREEDESKTOP_THUMBNAILING
     if (thumbnailer_available() == 0) {
         fprintf(stderr,
                 "GNOME thumbnailer unavailable: "

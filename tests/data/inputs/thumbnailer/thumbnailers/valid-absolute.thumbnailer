@@ -1,0 +1,4 @@
+[Thumbnailer Entry]
+TryExec=@VALID_EXEC@
+Exec=@VALID_EXEC@ %i %o
+MimeType=image/png;

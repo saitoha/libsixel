@@ -1,0 +1,4 @@
+#!/bin/sh
+# Emulate evince-thumbnailer by writing output image bytes to stdout.
+set -eu
+cat "$3"

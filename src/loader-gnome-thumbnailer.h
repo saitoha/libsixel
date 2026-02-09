@@ -30,7 +30,7 @@
 
 #include <sixel.h>
 
-#if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
+#if HAVE_FREEDESKTOP_THUMBNAILING
 SIXELSTATUS load_with_gnome_thumbnailer(
     sixel_chunk_t const       *pchunk,
     int                        fstatic,
