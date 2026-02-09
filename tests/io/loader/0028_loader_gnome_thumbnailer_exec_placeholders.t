@@ -21,20 +21,13 @@ set -v
 input_png="${top_srcdir}/tests/data/inputs/formats/rgba.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/gnome_exec_placeholders.sixel"
 error_log="${ARTIFACT_LOCAL_DIR}/gnome_exec_placeholders.err"
-work_dir="${ARTIFACT_LOCAL_DIR}/gnome_exec_placeholders"
-log_file="${work_dir}/exec.log"
-xdg_data_home="${work_dir}/xdg"
-bin_dir="${work_dir}/bin"
-thumb_dir="${xdg_data_home}/thumbnailers"
+log_file="${ARTIFACT_LOCAL_DIR}/gnome_exec_placeholders.log"
 template_root="${top_srcdir}/tests/data/inputs/thumbnailer"
+xdg_data_home="${template_root}/cases/0028"
+bin_dir="${template_root}/bin"
 
-rm -rf "${work_dir}"
-mkdir -p "${bin_dir}" "${thumb_dir}"
 
-cp "${template_root}/bin/fake-thumb" "${bin_dir}/fake-thumb"
-chmod +x "${bin_dir}/fake-thumb"
 
-cp "${template_root}/thumbnailers/placeholders.thumbnailer" "${thumb_dir}/placeholders.thumbnailer"
 
 if run_img2sixel \
         --env "XDG_DATA_DIRS=${xdg_data_home}" \
