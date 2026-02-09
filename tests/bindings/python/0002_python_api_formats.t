@@ -1,26 +1,51 @@
 #!/bin/sh
-# Verify Python bindings can encode multiple image formats and emit well-formed
-# SIXEL streams. The test exercises PNG, JPEG, GIF, and BMP inputs and checks
-# that the generated output begins with the DCS introducer and terminates with
-# the expected ST sequence.
+# Verify Python bindings can encode multiple image formats and emit
+# well-formed SIXEL streams.
 
 set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-# Skip immediately when Python bindings are disabled in this build.
 if [ "${ENABLE_PYTHON:-0}" != "1" ]; then
     skip_all "python bindings are disabled in this build"
 fi
 
-. "${TOP_SRCDIR}/tests/lib/sh/python/common.sh"
+if [ -z "${SIXEL_TEST_PYTHON_VENV:-}" ] \
+   || [ ! -x "${SIXEL_TEST_PYTHON_VENV}/bin/python" ]; then
+    skip_all "python wheel test environment is unavailable"
+fi
 
+run_python="${SIXEL_TEST_PYTHON_VENV}/bin/python"
+libdir="${LIBSIXEL_LIBDIR:-${TOP_BUILDDIR}/src/.libs}"
+if [ ! -d "${libdir}" ]; then
+    libdir="${TOP_BUILDDIR}/src"
+fi
 
-python_prepare "${ARTIFACT_LOCAL_DIR}"
-set -v
+python_skip_on_load_error() {
+    status=$1
+    log_text=$2
 
-verify_script="${ARTIFACT_LOCAL_DIR}/verify-format.py"
-cat >"${verify_script}" <<'PY'
+    if [ "${status}" -eq 0 ]; then
+        return 0
+    fi
+
+    marker=$(printf '%s' "${log_text}" | grep -m1 '^SKIP_LIBSIXEL_LOAD:' || true)
+    if [ -n "${marker}" ]; then
+        tap_skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}"
+    fi
+}
+
+formats_count=4
+case_id=1
+
+while IFS=: read -r label source_path; do
+    output_path="${ARTIFACT_LOCAL_DIR}/${label}.six"
+
+    python_output=$(env \
+        LIBSIXEL_LIBDIR="${libdir}" \
+        LD_LIBRARY_PATH="${libdir}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
+        DYLD_LIBRARY_PATH="${libdir}${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}" \
+        "${run_python}" - "${source_path}" "${output_path}" 2>&1 <<'PY'
 import pathlib
 import sys
 
@@ -32,99 +57,44 @@ try:
         data = path.read_bytes()
         if not data.startswith(b"\x1bPq"):
             raise SystemExit("missing sixel DCS introducer")
-
-        stripped = data.rstrip(b"\r\n")
-        if not stripped.endswith(b"\x1b\\"):
+        if not data.rstrip(b"\r\n").endswith(b"\x1b\\"):
             raise SystemExit("missing sixel ST terminator")
-
         return len(data)
 
+    source = pathlib.Path(sys.argv[1])
+    target = pathlib.Path(sys.argv[2])
 
-    def encode_image(src: pathlib.Path, dest: pathlib.Path) -> int:
-        encoder = Encoder()
-        encoder.setopt(SIXEL_OPTFLAG_INPUT, str(src))
-        encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(dest))
-        encoder.encode(str(src))
+    encoder = Encoder()
+    encoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
+    encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(target))
+    encoder.encode(str(source))
 
-        if not dest.exists():
-            raise SystemExit("missing sixel output")
-        if dest.stat().st_size == 0:
-            raise SystemExit("empty sixel output")
+    if not target.exists() or target.stat().st_size == 0:
+        raise SystemExit("missing or empty sixel output")
 
-        return ensure_sixel_signature(dest)
-
-
-    def main() -> None:
-        if len(sys.argv) != 3:
-            raise SystemExit("usage: verify-format.py <input> <output>")
-
-        source = pathlib.Path(sys.argv[1])
-        target = pathlib.Path(sys.argv[2])
-
-        size = encode_image(source, target)
-        print(f"encoded {source.name} -> {target.name} ({size} bytes)")
-
-
-    if __name__ == "__main__":
-        main()
+    size = ensure_sixel_signature(target)
+    print(f"encoded {source.name} -> {target.name} ({size} bytes)")
 except OSError as exc:
     print(f"SKIP_LIBSIXEL_LOAD:{exc}")
     raise SystemExit(2)
 PY
-
-# Install the wheel into a venv when available so the API is exercised through
-# the packaged module instead of the in-tree sources.
-if [ "${use_wheel}" -eq 1 ]; then
-    run_venv="${ARTIFACT_LOCAL_DIR}/venv"
-    if ! python_install_wheel "${run_venv}" "${wheel_path}"; then
-        tap_skip_all "wheel installation failed"
-    fi
-fi
-
-formats_count=4
-case_id=1
-
-while IFS=: read -r label source_path; do
-    output_path="${ARTIFACT_LOCAL_DIR}/${label}.six"
-
-    if [ "${use_wheel}" -eq 1 ]; then
-        python_output=$(env ${python_wheel_loader_env} \
-           PYTHONPATH="${python_wheel_trace_pythonpath}" \
-           LIBSIXEL_LIBDIR="${python_lib_dir}" \
-           "${run_python}" "${verify_script}" \
-           "${source_path}" "${output_path}" 2>&1)
-        python_status=$?
-        printf '%s' "${python_output}" >&2
-        if [ "${python_status}" -eq 0 ]; then
-            tap_pass ${case_id} "encodes ${label} via wheel (DCS/ST ok)"
-        else
-            python_skip_on_load_error "${python_status}" "${python_output}"
-            tap_fail ${case_id} "${label} encoding via wheel failed"
-        fi
+)
+    python_status=$?
+    printf '%s' "${python_output}" >&2
+    if [ "${python_status}" -eq 0 ]; then
+        tap_pass ${case_id} "encodes ${label} via wheel (DCS/ST ok)"
     else
-        python_output=$(env ${python_in_tree_loader_env} \
-           PYTHONPATH="${python_in_tree_trace_pythonpath}" \
-           LIBSIXEL_LIBDIR="${python_lib_dir}" \
-           "${run_python}" "${verify_script}" \
-           "${source_path}" "${output_path}" 2>&1)
-        python_status=$?
-        printf '%s' "${python_output}" >&2
-        if [ "${python_status}" -eq 0 ]; then
-            tap_pass ${case_id} "encodes ${label} via in-tree modules (DCS/ST ok)"
-        else
-            python_skip_on_load_error "${python_status}" "${python_output}"
-            tap_fail ${case_id} "${label} encoding via in-tree modules failed"
-        fi
+        python_skip_on_load_error "${python_status}" "${python_output}"
+        tap_fail ${case_id} "${label} encoding via wheel failed"
     fi
 
     case_id=$((case_id + 1))
-done <<EOF
+done <<EOF2
 PNG:${TOP_SRCDIR}/tests/data/inputs/snake_64.png
 JPEG:${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg
 GIF:${TOP_SRCDIR}/tests/data/inputs/snake_64.gif
 BMP:${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp
-EOF
+EOF2
 
 tap_plan ${formats_count}
-
 exit 0
