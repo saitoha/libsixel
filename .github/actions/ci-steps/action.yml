@@ -239,7 +239,7 @@ runs:
       run: |
         set -exv
         export PATH="$PWD/build-aux:$PWD/bin:$PATH"
-        ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ./configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+        ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
@@ -260,7 +260,7 @@ runs:
         set -exv
         MSVC_BIN_PATH="$(cygpath -u -p "$MSVC_PATH")"
         PATH="$PWD/build-aux:$PWD/bin:$PATH:$MSVC_BIN_PATH"
-        ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ./configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+        ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
@@ -281,7 +281,7 @@ runs:
       run: |
         set -exv
         PATH="$PWD/build-aux:$PATH"
-        ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ./configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+        ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
@@ -327,7 +327,7 @@ runs:
           adduser  -D -u '"$(id -u)"' -G hostgrp hostusr 2>/dev/null || true
           chown -R '"$(id -u):$(id -g)"' /src
           su hostusr -c "
-            ./configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+            ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
             ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
             ${{ fromJSON(inputs.matrix_json).make || 'make' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
           "
@@ -360,7 +360,7 @@ runs:
         environment_variables: CI,GITHUB_WORKSPACE
         run: |
           set -xv
-          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ./configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
           ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
           ${{ fromJSON(inputs.matrix_json).make || 'make' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
@@ -389,7 +389,7 @@ runs:
           #pkg update -f
           pkg install -y ${{ fromJSON(inputs.matrix_json).extra_packages || 'gmake' }}
         run: |
-          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ./configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
           gmake V=1
           gmake ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
@@ -422,7 +422,7 @@ runs:
           pkg install --accept --no-be ${{ fromJSON(inputs.matrix_json).extra_packages || '' }}
         run: |
           cd "$GITHUB_WORKSPACE"
-          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ./configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
           ${{ fromJSON(inputs.matrix_json).make || 'gmake' }} V=1
           ${{ fromJSON(inputs.matrix_json).make || 'gmake' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
@@ -454,7 +454,7 @@ runs:
           #pkg update -f
           pkg install --accept ${{ fromJSON(inputs.matrix_json).extra_packages || 'gnu-make gcc' }}
         run: |
-          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ./configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
           ${{ fromJSON(inputs.matrix_json).make || 'gmake' }} V=1
           ${{ fromJSON(inputs.matrix_json).make || 'gmake' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
@@ -486,7 +486,7 @@ runs:
           pkg install --accept ${{ fromJSON(inputs.matrix_json).extra_packages || 'developer/gcc13 developer/build/gnu-make' }}
         run: |
           cd "$GITHUB_WORKSPACE"
-          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ./configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+          ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
           ${{ fromJSON(inputs.matrix_json).make || 'gmake' }} V=1
           ${{ fromJSON(inputs.matrix_json).make || 'gmake' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
