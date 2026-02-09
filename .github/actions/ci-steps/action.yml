@@ -482,7 +482,7 @@ runs:
         usesh: true
         sync: rsync
         prepare: |
-          #pkg update -f
+          pkg update -f
           pkg install --accept ${{ fromJSON(inputs.matrix_json).extra_packages || 'developer/gcc13 developer/build/gnu-make' }}
         run: |
           cd "$GITHUB_WORKSPACE"
