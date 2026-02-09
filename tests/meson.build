@@ -32,7 +32,6 @@ base_env_settings = [
   ['ENABLE_PYTHON', (get_option('python').disabled() ? '0' : '1')],
   # Mirror autotools check-TESTS metadata so TAP helper scripts can share
   # one execution path across build systems.
-  ['RUNTIME_SHLIBPATH_SEP', ':'],
   # Ensure Python TAP tests can locate the freshly built shared library when
   # Meson is invoked without a prior `meson compile`. The binding smoke test
   # relies on LIBSIXEL_LIBDIR to point at the build artifact directory.
@@ -47,13 +46,9 @@ base_env_settings = [
    ('test_runner' + bin_ext)],
 ]
 
-runtime_shlibpath_var = 'LD_LIBRARY_PATH'
-if host_machine.system() == 'darwin'
-  runtime_shlibpath_var = 'DYLD_LIBRARY_PATH'
-elif host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
-  runtime_shlibpath_var = 'PATH'
-endif
-base_env_settings += [['RUNTIME_SHLIBPATH_VAR', runtime_shlibpath_var]]
+# Meson sets runtime library lookup via rpath/runpath, so test wrappers must
+# not override PATH/LD_LIBRARY_PATH/DYLD_LIBRARY_PATH in this execution path.
+base_env_settings += [['SIXEL_SHLIBPATH_OVERRIDES_RUNPATH', 'no']]
 
 # Keep feature toggle exports in sync with autotools check-TESTS.
 config_macro_env_settings = []
