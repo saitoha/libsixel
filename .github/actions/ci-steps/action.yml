@@ -217,13 +217,20 @@ runs:
       if: ${{ fromJSON(inputs.matrix_json).pip_packages != '' }}
       shell: bash
       run: |
+        set -exv
+        VENV_PYTHON=".venv/bin/python"
+        VENV_BIN_DIR="$PWD/.venv/bin"
         python3 -m venv .venv
-        . .venv/bin/activate
-        pip install -U pip ${{ fromJSON(inputs.matrix_json).pip_packages || '' }}
-        if command -v cygpath; then
-          echo "$(cygpath -w "$PWD/.venv/bin")" >> "$GITHUB_PATH"
+        if [ -x .venv/Scripts/python.exe ]; then
+          VENV_PYTHON=".venv/Scripts/python.exe"
+          VENV_BIN_DIR="$PWD/.venv/Scripts"
+        fi
+        "$VENV_PYTHON" -m pip install -U pip \
+          ${{ fromJSON(inputs.matrix_json).pip_packages || '' }}
+        if command -v cygpath >/dev/null 2>&1; then
+          echo "$(cygpath -w "$VENV_BIN_DIR")" >> "$GITHUB_PATH"
         else
-          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+          echo "$VENV_BIN_DIR" >> "$GITHUB_PATH"
         fi
 
     - name: Build and test (Autotools, bash)
