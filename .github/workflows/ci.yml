@@ -86,6 +86,8 @@ jobs:
               --enable-python
             extra_packages: >-
               clang
+            pip_packages: >-
+              build
             exec_type: bash
 
           - label: Meson-ubuntu-x86_64-gcc-python
@@ -102,6 +104,8 @@ jobs:
             runner: macos-latest
             setup_options: >-
               --enable-python
+            pip_packages: >-
+              build
             exec_type: bash
 
           - label: Meson-macos-aarch64-gcc-python
