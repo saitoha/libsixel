@@ -298,23 +298,21 @@ run_with_optional_env() {
         return $?
     fi
 
-    (
-        old_ifs=$IFS
-        IFS=,
-        for env_chunk in ${env_items}; do
-            case "${env_chunk}" in
-            *=*)
-                export "${env_chunk}"
-                ;;
-            *)
-                printf '%s\n' "run helper: invalid env assignment: ${env_chunk}" >&2
-                exit 2
-                ;;
-            esac
-        done
-        IFS=${old_ifs}
-        runtime_exec "${tool_path}" "$@"
-    )
+    old_ifs=$IFS
+    IFS=,
+    for env_chunk in ${env_items}; do
+        case "${env_chunk}" in
+        *=*)
+            export "${env_chunk}"
+            ;;
+        *)
+            printf '%s\n' "run helper: invalid env assignment: ${env_chunk}" >&2
+            exit 2
+            ;;
+        esac
+    done
+    IFS=${old_ifs}
+    runtime_exec "${tool_path}" "$@"
 }
 
 run_img2sixel() {
