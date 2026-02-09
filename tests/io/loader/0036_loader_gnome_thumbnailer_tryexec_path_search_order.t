@@ -21,20 +21,13 @@ set -v
 input_png="${top_srcdir}/tests/data/inputs/formats/rgba.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/gnome_tryexec_path_order.sixel"
 error_log="${ARTIFACT_LOCAL_DIR}/gnome_tryexec_path_order.err"
-work_dir="${ARTIFACT_LOCAL_DIR}/gnome_tryexec_path_order"
-xdg_data_home="${work_dir}/xdg"
-bin_dir_1="${work_dir}/bin1"
-bin_dir_2="${work_dir}/bin2"
-thumb_dir="${xdg_data_home}/thumbnailers"
 template_root="${top_srcdir}/tests/data/inputs/thumbnailer"
+xdg_data_home="${template_root}/cases/0036"
+bin_dir_1="${template_root}/bin-empty"
+bin_dir_2="${template_root}/bin"
 
-rm -rf "${work_dir}"
-mkdir -p "${bin_dir_1}" "${bin_dir_2}" "${thumb_dir}"
 
-cp "${template_root}/bin/fake-thumb" "${bin_dir_2}/fake-thumb"
-chmod +x "${bin_dir_2}/fake-thumb"
 
-cp "${template_root}/thumbnailers/path-order.thumbnailer" "${thumb_dir}/path-order.thumbnailer"
 
 if run_img2sixel \
         --env "XDG_DATA_DIRS=${xdg_data_home}" \

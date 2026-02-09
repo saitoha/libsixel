@@ -1,4 +1,4 @@
 [Thumbnailer Entry]
-TryExec=@VALID_EXEC@
-Exec=@VALID_EXEC@ %i %o
+TryExec=/bin/sh
+Exec=/bin/sh -c "cat \"$1\" >\"$2\"" -- %i %o
 MimeType=image/png;

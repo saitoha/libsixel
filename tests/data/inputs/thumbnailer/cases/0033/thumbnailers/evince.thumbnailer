@@ -1,0 +1,4 @@
+[Thumbnailer Entry]
+TryExec=evince-thumbnailer
+Exec=evince-thumbnailer %i %o
+MimeType=image/png;

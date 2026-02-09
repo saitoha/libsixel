@@ -1,0 +1,9 @@
+[Thumbnailer Entry]
+TryExec=missing-command
+Exec=missing-command %i %o
+MimeType=image/png;
+
+[Thumbnailer Entry]
+TryExec=fake-thumb
+Exec=fake-thumb %i %o
+MimeType=image/png;

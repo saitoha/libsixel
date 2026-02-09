@@ -21,19 +21,12 @@ set -v
 input_png="${top_srcdir}/tests/data/inputs/formats/rgba.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/gnome_evince_stdout.sixel"
 error_log="${ARTIFACT_LOCAL_DIR}/gnome_evince_stdout.err"
-work_dir="${ARTIFACT_LOCAL_DIR}/gnome_evince_stdout"
-xdg_data_home="${work_dir}/xdg"
-bin_dir="${work_dir}/bin"
-thumb_dir="${xdg_data_home}/thumbnailers"
 template_root="${top_srcdir}/tests/data/inputs/thumbnailer"
+xdg_data_home="${template_root}/cases/0033"
+bin_dir="${template_root}/bin"
 
-rm -rf "${work_dir}"
-mkdir -p "${bin_dir}" "${thumb_dir}"
 
-cp "${template_root}/bin/evince-thumbnailer" "${bin_dir}/evince-thumbnailer"
-chmod +x "${bin_dir}/evince-thumbnailer"
 
-cp "${template_root}/thumbnailers/evince.thumbnailer" "${thumb_dir}/evince.thumbnailer"
 
 if run_img2sixel \
         --env "XDG_DATA_DIRS=${xdg_data_home}" \

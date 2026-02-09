@@ -21,23 +21,13 @@ set -v
 input_png="${top_srcdir}/tests/data/inputs/formats/rgba.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/gnome_hint_zero_env.sixel"
 error_log="${ARTIFACT_LOCAL_DIR}/gnome_hint_zero_env.err"
-work_dir="${ARTIFACT_LOCAL_DIR}/gnome_hint_zero_env"
-xdg_data_home="${work_dir}/xdg"
-bin_dir="${work_dir}/bin"
-thumb_dir="${xdg_data_home}/thumbnailers"
 template_root="${top_srcdir}/tests/data/inputs/thumbnailer"
-default_log="${work_dir}/size_default.log"
-zero_log="${work_dir}/size_zero.log"
+xdg_data_home="${template_root}/cases/0037"
+bin_dir="${xdg_data_home}/bin:${template_root}/bin"
+default_log="${ARTIFACT_LOCAL_DIR}/gnome_hint_zero_default.log"
+zero_log="${ARTIFACT_LOCAL_DIR}/gnome_hint_zero_zero.log"
 default_size=""
 zero_size=""
-
-rm -rf "${work_dir}"
-mkdir -p "${bin_dir}" "${thumb_dir}"
-
-cp "${template_root}/bin/fake-thumb-size" "${bin_dir}/fake-thumb"
-chmod +x "${bin_dir}/fake-thumb"
-
-cp "${template_root}/thumbnailers/hint-size-zero.thumbnailer" "${thumb_dir}/hint-size-zero.thumbnailer"
 
 run_img2sixel \
     --env "XDG_DATA_DIRS=${xdg_data_home}" \
