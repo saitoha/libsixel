@@ -10,9 +10,32 @@ if [ "${TRACE_SHELL:-1}" -eq 1 ]; then
     set -xv
 fi
 
+# Resolve a writable TAP log destination that works across POSIX and
+# MSYS/MinGW shells. Some Windows runners do not expose /dev/stderr, so
+# prefer descriptor aliases when available and fall back to a regular file.
+resolve_tap_log_file() {
+    candidate=""
+    fallback=""
+
+    for candidate in /dev/stderr /proc/self/fd/2 /dev/fd/2; do
+        if [ -e "${candidate}" ] && (: >>"${candidate}") 2>/dev/null; then
+            printf '%s' "${candidate}"
+            return 0
+        fi
+    done
+
+    fallback="${TMPDIR:-/tmp}/libsixel-python-tap-$$.log"
+    if (: >"${fallback}") 2>/dev/null; then
+        printf '%s' "${fallback}"
+        return 0
+    fi
+
+    printf '%s' "./libsixel-python-tap-$$.log"
+}
+
 # TAP bookkeeping and shared state. The variables are initialized to safe
 # defaults so callers running with `set -u` do not trip on unbound names.
-tap_log_file="/dev/stderr"
+tap_log_file="$(resolve_tap_log_file)"
 python_bin=""
 run_python=""
 lib_dir=""
@@ -754,7 +777,7 @@ python_install_wheel() {
 # sets shared globals so callers can re-use them without recalculating.
 python_prepare() {
     tmp_dir=$1
-    tap_log_file="/dev/stderr"
+    tap_log_file="$(resolve_tap_log_file)"
 
     python_bin=$(command -v python3 || command -v python || true)
     if [ -z "${python_bin}" ]; then
