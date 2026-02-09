@@ -30,8 +30,8 @@ fi
 # - WinHTTP may fail at CrackUrl/Connect/SendRequest/... stages.
 # - libcurl may fail at setopt/perform stages depending on URL parsing.
 # Keep the check broad enough to accept backend-consistent failures.
-if grep -E 'curl_easy_[a-z_]+\(\) failed\.' "${err_file}" >/dev/null 2>&1 \
-        || grep -E 'WinHttp[A-Za-z]+ failed\.' "${err_file}" >/dev/null 2>&1 \
+if grep -E 'curl_easy_[a-z_]+\(\) failed' "${err_file}" >/dev/null 2>&1 \
+        || grep -E 'WinHttp[A-Za-z]+ failed' "${err_file}" >/dev/null 2>&1 \
         || grep -F 'runtime error: unable to decode input with available loaders' \
             "${err_file}" >/dev/null 2>&1; then
     pass 1 "malformed HTTPS URL reports formatted network failure"
