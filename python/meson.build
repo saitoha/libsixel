@@ -34,6 +34,7 @@ if python_opt.enabled()
     command: [
       py, wheel_script,
       '--libpath', '@INPUT@',
+      '--includedir', meson.project_build_root() / 'include',
       '--distdir', wheel_distdir
     ],
     build_by_default: true,
