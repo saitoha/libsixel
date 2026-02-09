@@ -11,7 +11,12 @@ if [ -z "${wheel_helper_dir}" ]; then
 fi
 
 setup_wheel_paths() {
-    run_venv="${ARTIFACT_LOCAL_DIR}/venv"
+    if [ -n "${SIXEL_TEST_PYTHON_VENV:-}" ] \
+       && [ -x "${SIXEL_TEST_PYTHON_VENV}/bin/python" ]; then
+        run_venv="${SIXEL_TEST_PYTHON_VENV}"
+    else
+        run_venv="${ARTIFACT_LOCAL_DIR}/venv"
+    fi
     run_python="${run_venv}/bin/python"
 
     export ARTIFACT_LOCAL_DIR run_venv run_python
@@ -54,6 +59,11 @@ locate_wheel() {
 }
 
 create_virtualenv() {
+    if [ -n "${SIXEL_TEST_PYTHON_VENV:-}" ] \
+       && [ "$1" = "${SIXEL_TEST_PYTHON_VENV}" ] \
+       && [ -x "${SIXEL_TEST_PYTHON_VENV}/bin/python" ]; then
+        return 0
+    fi
     "${python_bin}" -m venv "$1"
 }
 
