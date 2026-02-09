@@ -13,6 +13,7 @@ wheel-local:
 	$(AM_V_at) $(MAKE) -C "$(top_builddir)/src" all
 	$(AM_V_GEN) $(PYTHON) $(srcdir)/wheel_builder.py \
 		--libdir "$(top_builddir)/src/.libs" \
+		--includedir "$(top_builddir)/include" \
 		--distdir "$(abs_top_builddir)/python/dist"
 
 all-local: wheel-local

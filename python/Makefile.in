@@ -555,6 +555,7 @@ clean-local:
 @HAVE_PYTHON_TRUE@	$(AM_V_at) $(MAKE) -C "$(top_builddir)/src" all
 @HAVE_PYTHON_TRUE@	$(AM_V_GEN) $(PYTHON) $(srcdir)/wheel_builder.py \
 @HAVE_PYTHON_TRUE@		--libdir "$(top_builddir)/src/.libs" \
+@HAVE_PYTHON_TRUE@		--includedir "$(top_builddir)/include" \
 @HAVE_PYTHON_TRUE@		--distdir "$(abs_top_builddir)/python/dist"
 
 @HAVE_PYTHON_TRUE@all-local: wheel-local
