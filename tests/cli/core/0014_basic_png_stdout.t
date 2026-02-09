@@ -12,7 +12,7 @@ set -v
 
 png_stdout="${ARTIFACT_LOCAL_DIR}/png-stdout.png"
 
-run_sixel2png -o "png:-" <"${images_dir}/snake.six" >"${png_stdout}" || {
+run_sixel2png -o "png:-" <"${images_dir}/map8.six" >"${png_stdout}" || {
     fail 1 "png:- command failed"
     exit 0
 }

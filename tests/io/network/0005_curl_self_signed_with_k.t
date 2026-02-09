@@ -32,16 +32,9 @@ fi
 # where only `python3` exists.
 export PYTHON
 
-
-cp "${images_dir}/snake.six" "${ARTIFACT_LOCAL_DIR}/snake.sixel"
-
 cert_dir="${script_dir}/certs"
+server_root="${top_srcdir}"
 
-
-# Use a pre-generated localhost certificate to avoid depending on openssl
-# during test execution on platforms without it.
-cp "${cert_dir}/server.crt" "${ARTIFACT_LOCAL_DIR}/server.crt"
-cp "${cert_dir}/server.key" "${ARTIFACT_LOCAL_DIR}/server.key"
 
 cat >"${ARTIFACT_LOCAL_DIR}/server.py" <<PY
 try:
@@ -60,12 +53,13 @@ class TLSHTTPServer(TCPServer):
 def configure_socket(sock):
     if hasattr(ssl, 'SSLContext'):
         context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-        context.load_cert_chain('server.crt', 'server.key')
+        context.load_cert_chain('${cert_dir}/server.crt',
+                                '${cert_dir}/server.key')
         return context.wrap_socket(sock, server_side=True)
     return ssl.wrap_socket(
         sock,
-        certfile='server.crt',
-        keyfile='server.key',
+        certfile='${cert_dir}/server.crt',
+        keyfile='${cert_dir}/server.key',
         server_side=True,
     )
 
@@ -73,7 +67,7 @@ def serve_requests(port):
     with TLSHTTPServer(('localhost', port), SimpleHTTPRequestHandler) as httpd:
         httpd.socket = configure_socket(httpd.socket)
         httpd.timeout = 5
-        with open('server.port', 'w', encoding='ascii') as port_fp:
+        with open('${port_file}', 'w', encoding='ascii') as port_fp:
             port_fp.write(str(port))
 
         for _ in range(5):
@@ -104,8 +98,8 @@ PY
 
 server_pid_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "curl-server-pid")
 (
-    cd "${ARTIFACT_LOCAL_DIR}" || exit 1
-    "${PYTHON}" server.py &
+    cd "${server_root}" || exit 1
+    "${PYTHON}" "${ARTIFACT_LOCAL_DIR}/server.py" &
     echo $! >"${server_pid_file}"
 )
 server_pid=$(cat "${server_pid_file}")
@@ -138,7 +132,7 @@ verify_output="${ARTIFACT_LOCAL_DIR}/https.sixel"
 server_ok=1
 
 for attempt in 1 2 3; do
-    if run_img2sixel -k "https://localhost:${server_port}/snake.sixel" \
+    if run_img2sixel -k "https://localhost:${server_port}/images/map8.six" \
             >"${verify_output}"; then
         server_ok=0
         break

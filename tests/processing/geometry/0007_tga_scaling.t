@@ -11,7 +11,7 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-snake_tga="${images_dir}/snake.tga"
+snake_tga="${top_srcdir}/tests/data/inputs/snake_64.tga"
 target_sixel="${ARTIFACT_LOCAL_DIR}/snake-tga.sixel"
 
 if run_img2sixel -7 -sauto -w100 -rga -qauto -dburkes -tauto \

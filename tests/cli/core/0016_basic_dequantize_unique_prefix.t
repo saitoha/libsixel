@@ -10,7 +10,7 @@ config_macro_defined HAVE_SIXEL2PNG || skip_all "sixel2png is disabled in this b
 echo "1..1"
 set -v
 
-run_sixel2png -dk_ <"${images_dir}/snake.six" \
+run_sixel2png -dk_ <"${images_dir}/map8.six" \
         >"${ARTIFACT_LOCAL_DIR}/dequantize-short.png" \
        2>"${ARTIFACT_LOCAL_DIR}/err.txt" || {
     fail 1 "unique dequantize prefix rejected"

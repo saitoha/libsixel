@@ -11,7 +11,7 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-snake_ppm="${images_dir}/snake.ppm"
+snake_ppm="${top_srcdir}/tests/data/inputs/small.ppm"
 target_txt="${ARTIFACT_LOCAL_DIR}/ppm-inspection.txt"
 
 if run_img2sixel -I -c2000x100+40+20 -wauto -h200 -qhigh -dfs \

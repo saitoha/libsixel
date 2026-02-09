@@ -12,7 +12,7 @@ set -v
 
 png_err=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "sixel2png-png-err")
 
-run_sixel2png -o "png:" <"${images_dir}/snake.six" \
+run_sixel2png -o "png:" <"${images_dir}/map8.six" \
         >"${ARTIFACT_LOCAL_DIR}/capture.$$" 2>"${png_err}" && {
     fail 1 "accepts empty png: prefix"
     exit 0
