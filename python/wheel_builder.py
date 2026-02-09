@@ -101,9 +101,24 @@ def _run_wheel_build(
 ) -> None:
     """Invoke the PEP 517 build frontend for the bundled wheel."""
 
+    # Prefer the generated header directory that lives next to the build tree.
+    # Meson generates builddir/include/sixel.h while Autotools can generate
+    # source-tree include/sixel.h, so probe both and export the first match.
+    include_candidates = (
+        libpath.parent.parent / "include",
+        root_dir.parent / "include",
+    )
+    include_dir = None
+    for candidate in include_candidates:
+        if (candidate / "sixel.h").exists():
+            include_dir = candidate
+            break
+
     env = os.environ.copy()
     env["LIBSIXEL_LIBDIR"] = str(libpath.parent)
     env["LIBSIXEL_LIBPATH"] = str(libpath)
+    if include_dir is not None:
+        env["LIBSIXEL_INCLUDEDIR"] = str(include_dir)
 
     distdir.mkdir(parents=True, exist_ok=True)
     build_dir = root_dir / "build"

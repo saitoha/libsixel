@@ -23,7 +23,9 @@ wheel_ext_modules = []
 if bundle_mode:
     libdir = bundle_libdir
 
-    include_dir = os.path.abspath(os.path.join(dirpath, "..", "include"))
+    include_dir = os.environ.get("LIBSIXEL_INCLUDEDIR")
+    if include_dir is None:
+        include_dir = os.path.abspath(os.path.join(dirpath, "..", "include"))
     runtime_dirs = []
     extra_link_args = []
 
