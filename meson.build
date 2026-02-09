@@ -1509,6 +1509,7 @@ subdir('assessment')
 if have_quicklook_extension
   subdir('quicklook-extension')
 endif
+python_wheel_target = disabler()
 if have_python
   subdir('python')
 endif

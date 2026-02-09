@@ -153,6 +153,9 @@ test_runner_exe = executable('test_runner', test_runner_sources,
   install: false)
 
 test_deps = [test_runner_exe, lsqa_bin] + img2sixel_deps + sixel2png_deps
+if not get_option('python').disabled()
+  test_deps += [python_wheel_target]
+endif
 
 is_windows = host_machine.system() == 'windows' or host_machine.system() == 'cygwin'
 if is_windows
@@ -743,9 +746,37 @@ foreach t : tests
   test_env.set('test_dir', test_dir)
   test_env.set('category_name', test_category)
   test_env.set('ARTIFACT_LOCAL_DIR', test_artifact_dir)
+  test_env.set('SIXEL_TEST_PYTHON_VENV', meson.project_build_root() /
+    'tests/.python-test-venv')
   test(t, sh,
-    args: ['-c', 'mkdir -p "$ARTIFACT_LOCAL_DIR" && exec "$@"',
-           'sh', meson.current_source_dir() / t],
+    args: ['-c', '''
+mkdir -p "$ARTIFACT_LOCAL_DIR"
+
+if [ "x${ENABLE_PYTHON:-0}" = "x1" ]; then
+  shared_python_venv="${SIXEL_TEST_PYTHON_VENV}"
+  python_bin=$(command -v python3 || command -v python || true)
+  wheel_path=$(find "${MESON_BUILD_ROOT}/python/dist" -maxdepth 1 \
+    -type f -name 'libsixel_wheel-*.whl' 2>/dev/null | head -n 1)
+  if [ -n "$python_bin" ] && [ -n "$wheel_path" ]; then
+    if "$python_bin" -c 'import importlib.util,sys; missing=[m for m in ("venv","ensurepip") if importlib.util.find_spec(m) is None]; sys.exit(0 if not missing else 1)' >/dev/null 2>&1; then
+      if [ ! -x "$shared_python_venv/bin/python" ]; then
+        rm -rf "$shared_python_venv"
+        "$python_bin" -m venv "$shared_python_venv" >/dev/null 2>&1 || true
+      fi
+      if [ -x "$shared_python_venv/bin/python" ]; then
+        if ! "$shared_python_venv/bin/python" -c 'import importlib.util,sys; sys.exit(0 if importlib.util.find_spec("libsixel_wheel") else 1)' >/dev/null 2>&1; then
+          "$shared_python_venv/bin/python" -m pip install --no-deps "$wheel_path" >/dev/null 2>&1 || true
+        fi
+        if ! "$shared_python_venv/bin/python" -c 'import importlib.util,sys; sys.exit(0 if importlib.util.find_spec("libsixel_wheel") else 1)' >/dev/null 2>&1; then
+          export SIXEL_TEST_PYTHON_VENV=
+        fi
+      fi
+    fi
+  fi
+fi
+
+exec "$@"
+''', 'sh', meson.current_source_dir() / t],
     depends: test_deps,
     protocol: 'tap',
     env: test_env,
