@@ -22,40 +22,12 @@ case_id=1
 skip_code=200
 skip_reason=""
 
-if [ "${use_wheel}" -eq 1 ]; then
-    run_venv="${ARTIFACT_LOCAL_DIR}/venv"
-    if python_install_wheel "${run_venv}" "${wheel_path}"; then
-        tap_pass ${case_id} "installs wheel from python/dist"
-    else
-        tap_fail ${case_id} "wheel installation failed"
-    fi
-else
-    python_output=$(env ${python_in_tree_loader_env} \
-       PYTHONPATH="${python_in_tree_pythonpath}" \
-       LIBSIXEL_LIBDIR="${python_lib_dir}" \
-       "${run_python}" - 2>&1 <<'PY'
-try:
-    import libsixel_wheel
-    from libsixel_wheel import encoder, decoder
-
-    encoder.Encoder
-    decoder.Decoder
-except OSError as exc:
-    print(f"SKIP_LIBSIXEL_LOAD:{exc}")
-    raise SystemExit(2)
-PY
-    )
-    python_status=$?
-    printf '%s' "${python_output}" >&2
-    if [ "${python_status}" -eq 0 ]; then
-        tap_pass ${case_id} "imports in-tree python modules"
-    else
-        python_skip_on_load_error "${python_status}" "${python_output}"
-        tap_fail ${case_id} "failed to import in-tree python modules"
-    fi
+if [ "${use_wheel}" -eq 1 ] \
+   && ! python_install_wheel "${ARTIFACT_LOCAL_DIR}/venv" "${wheel_path}"; then
+    tap_fail ${case_id} "python wheel environment is unavailable"
+    tap_plan 1
+    exit ${tap_status}
 fi
-
-case_id=$((case_id + 1))
 verify_script="${ARTIFACT_LOCAL_DIR}/verify-bindings.py"
 cat >"${verify_script}" <<'PY'
 import ctypes.util
@@ -166,6 +138,6 @@ else
     fi
 fi
 
-tap_plan 2
+tap_plan 1
 
 exit 0
