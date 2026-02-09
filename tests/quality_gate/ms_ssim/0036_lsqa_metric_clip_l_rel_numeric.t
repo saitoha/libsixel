@@ -11,7 +11,7 @@ set -v
 
 image_ref="${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp"
 image_out="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
-value=$(run_lsqa -m CLIP_L_REL "${image_ref}" "${image_out}") || {
+value=$(run_lsqa -m CLIP_L_REL "${image_ref}" "${image_out}" | tr -d '\r') || {
     fail 1 "lsqa CLIP_L_REL execution failed"
     exit 0
 }
