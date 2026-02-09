@@ -27,7 +27,7 @@ if python_opt.enabled()
   py = py_mod.find_installation('python3', required: true)
   wheel_script = files('wheel_builder.py')
   wheel_distdir = join_paths(meson.current_build_dir(), 'dist')
-  custom_target(
+  python_wheel_target = custom_target(
     'libsixel-wheel',
     input: libsixel_library,
     output: 'libsixel-wheel.stamp',
