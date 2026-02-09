@@ -94,6 +94,30 @@ def _copy_library(libpath: pathlib.Path, libs_dir: pathlib.Path) -> pathlib.Path
     return target
 
 
+def _resolve_windows_implib(libpath: pathlib.Path) -> pathlib.Path | None:
+    """Return a matching MSVC import library for the bundled DLL.
+
+    Windows extension modules are linked against import libraries (*.lib),
+    not against the DLL binary itself. We probe typical naming variants so
+    Meson/Autotools output layouts work without additional configuration.
+    """
+
+    if libpath.suffix.lower() != ".dll":
+        return None
+
+    candidates = [
+        libpath.with_suffix(".lib"),
+        libpath.parent / "libsixel.lib",
+        libpath.parent / "sixel.lib",
+        libpath.parent / "sixel-1.lib",
+    ]
+    for candidate in candidates:
+        if candidate.exists():
+            return candidate
+
+    return None
+
+
 def _run_wheel_build(
     root_dir: pathlib.Path,
     distdir: pathlib.Path,
@@ -119,6 +143,14 @@ def _run_wheel_build(
 
     env["LIBSIXEL_LIBDIR"] = str(libpath.parent)
     env["LIBSIXEL_LIBPATH"] = str(libpath)
+    if os.name == "nt":
+        implib = _resolve_windows_implib(libpath)
+        if implib is None:
+            raise SystemExit(
+                "MSVC import library (*.lib) was not found for "
+                f"{libpath.name}. Expected alongside the DLL."
+            )
+        env["LIBSIXEL_IMPLIB"] = str(implib)
     if includedir is not None:
         env["LIBSIXEL_INCLUDEDIR"] = str(includedir)
 

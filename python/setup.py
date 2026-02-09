@@ -15,6 +15,7 @@ long_description = open(os.path.join(dirpath, "README.rst")).read()
 
 bundle_libdir = os.environ.get("LIBSIXEL_LIBDIR")
 bundle_libpath = os.environ.get("LIBSIXEL_LIBPATH")
+bundle_implib = os.environ.get("LIBSIXEL_IMPLIB")
 bundle_mode = bundle_libdir is not None
 package_name = "libsixel_wheel"
 package_data = {"libsixel_wheel": ["_libs/*"]} if bundle_mode else {}
@@ -41,7 +42,11 @@ if bundle_mode:
             include_dirs=[include_dir],
             libraries=[] if bundle_libpath else ["sixel"],
             library_dirs=[] if bundle_libpath else [libdir],
-            extra_objects=[bundle_libpath] if bundle_libpath else [],
+            extra_objects=(
+                [bundle_implib]
+                if (os.name == "nt" and bundle_implib)
+                else ([bundle_libpath] if bundle_libpath else [])
+            ),
             runtime_library_dirs=runtime_dirs,
             extra_link_args=extra_link_args,
         )
