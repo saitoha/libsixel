@@ -14,9 +14,9 @@ set -v
 input_image="${TOP_SRCDIR}/tests/data/resolutions/tiny_square.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
-run_img2sixel --env SIXEL_PALETTE_OVERSPLIT_FACTOR=2.2 \
+run_img2sixel --env SIXEL_PALETTE_OVERSPLIT_FACTOR=1.2 \
               --env SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT=2 \
-              --env SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX=5 \
+              --env SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX=3 \
               --env SIXEL_PALETTE_KMEANS_THRESHOLD=0.1 \
               --env SIXEL_PALETTE_LUMIN_FACTOR_R=0.3 \
               --env SIXEL_PALETTE_LUMIN_FACTOR_G=0.4 \
@@ -31,7 +31,7 @@ lsqa_err=$(
     run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
-test "${lsqa_run_status-}" -eq 5 && {
+test "${lsqa_run_status-}" = 5 && {
     fail 1 "${lsqa_err}"
     exit 0
 }
