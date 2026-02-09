@@ -340,6 +340,12 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 zshcompletiondir = @zshcompletiondir@
 CLEANFILES = libsixel/*.pyc
+
+# Keep wheel generation incremental by using an explicit stamp target.
+# This avoids rebuilding the wheel when make is re-run without changes,
+# and it also prevents duplicate work when recursive make visits python/
+# more than once during the same top-level invocation.
+@HAVE_PYTHON_TRUE@WHEEL_STAMP = $(abs_top_builddir)/python/dist/.wheel-stamp
 EXTRA_DIST = \
     setup.py \
     wheel_builder.py \
@@ -546,17 +552,23 @@ uninstall-am:
 
 clean-local:
 	rm -rf libsixel_wheel.egg-info build dist
+	rm -f $(abs_top_builddir)/python/dist/.wheel-stamp
 	if test -d "$(builddir)/libsixel/_libs"; then \
 		find "$(builddir)/libsixel/_libs" -type f \
 			! -name '__init__.py' -exec rm -f {} +; \
 	fi
 
-@HAVE_PYTHON_TRUE@wheel-local:
+@HAVE_PYTHON_TRUE@$(WHEEL_STAMP): $(srcdir)/wheel_builder.py $(srcdir)/setup.py \
+@HAVE_PYTHON_TRUE@		$(srcdir)/libsixel/_wheel_ext.c
 @HAVE_PYTHON_TRUE@	$(AM_V_at) $(MAKE) -C "$(top_builddir)/src" all
+@HAVE_PYTHON_TRUE@	$(AM_V_at) mkdir -p "$(abs_top_builddir)/python/dist"
 @HAVE_PYTHON_TRUE@	$(AM_V_GEN) $(PYTHON) $(srcdir)/wheel_builder.py \
 @HAVE_PYTHON_TRUE@		--libdir "$(top_builddir)/src/.libs" \
 @HAVE_PYTHON_TRUE@		--includedir "$(top_builddir)/include" \
 @HAVE_PYTHON_TRUE@		--distdir "$(abs_top_builddir)/python/dist"
+@HAVE_PYTHON_TRUE@	$(AM_V_at) touch "$@"
+
+@HAVE_PYTHON_TRUE@wheel-local: $(WHEEL_STAMP)
 
 @HAVE_PYTHON_TRUE@all-local: wheel-local
 
