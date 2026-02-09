@@ -25,8 +25,13 @@ fi
 # OpenBSD's resolver backend can emit a leading blank line before the
 # backend-specific message body.  Accept that format and only require that
 # stderr contains one of the canonical network failure messages.
-if grep -F 'curl_easy_perform() failed.' "${err_file}" >/dev/null 2>&1 \
-        || grep -F 'WinHttpCrackUrl failed.' "${err_file}" >/dev/null 2>&1 \
+#
+# The concrete failure point can vary by backend and runtime environment:
+# - WinHTTP may fail at CrackUrl/Connect/SendRequest/... stages.
+# - libcurl may fail at setopt/perform stages depending on URL parsing.
+# Keep the check broad enough to accept backend-consistent failures.
+if grep -E 'curl_easy_[a-z_]+\(\) failed\.' "${err_file}" >/dev/null 2>&1 \
+        || grep -E 'WinHttp[A-Za-z]+ failed\.' "${err_file}" >/dev/null 2>&1 \
         || grep -F 'runtime error: unable to decode input with available loaders' \
             "${err_file}" >/dev/null 2>&1; then
     pass 1 "malformed HTTPS URL reports formatted network failure"
