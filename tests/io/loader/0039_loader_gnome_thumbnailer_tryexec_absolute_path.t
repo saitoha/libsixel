@@ -27,6 +27,7 @@ bin_dir="${work_dir}/bin"
 thumb_dir="${xdg_data_home}/thumbnailers"
 template_root="${top_srcdir}/tests/data/inputs/thumbnailer"
 tryexec_path="${bin_dir}/fake-thumb"
+template_file="${thumb_dir}/absolute-tryexec.thumbnailer"
 
 rm -rf "${work_dir}"
 mkdir -p "${bin_dir}" "${thumb_dir}"
@@ -34,9 +35,19 @@ mkdir -p "${bin_dir}" "${thumb_dir}"
 cp "${template_root}/bin/fake-thumb" "${tryexec_path}"
 chmod +x "${tryexec_path}"
 cp "${template_root}/thumbnailers/absolute-tryexec.thumbnailer" \
-        "${thumb_dir}/absolute-tryexec.thumbnailer"
-sed -i "s|@TRYEXEC_PATH@|${tryexec_path}|g" \
-        "${thumb_dir}/absolute-tryexec.thumbnailer"
+        "${template_file}"
+
+# Avoid sed -i because BSD sed and GNU sed parse -i arguments differently.
+# Replace placeholders with Python so paths containing '/' work everywhere.
+python3 - "${template_file}" "${tryexec_path}" <<'PY'
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+tryexec = sys.argv[2]
+text = path.read_text(encoding="utf-8")
+path.write_text(text.replace("@TRYEXEC_PATH@", tryexec), encoding="utf-8")
+PY
 
 if run_img2sixel \
         --env "XDG_DATA_DIRS=${xdg_data_home}" \
