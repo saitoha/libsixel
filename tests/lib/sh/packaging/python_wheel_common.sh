@@ -18,8 +18,31 @@ setup_wheel_paths() {
         run_venv="${ARTIFACT_LOCAL_DIR}/venv"
     fi
     run_python="${run_venv}/bin/python"
+    run_python=$(resolve_venv_python "${run_venv}")
 
     export ARTIFACT_LOCAL_DIR run_venv run_python
+}
+
+# Resolve the virtualenv interpreter path across POSIX and Windows layouts.
+resolve_venv_python() {
+    venv_path=$1
+
+    if [ -x "${venv_path}/bin/python" ]; then
+        printf '%s\n' "${venv_path}/bin/python"
+        return 0
+    fi
+
+    if [ -x "${venv_path}/Scripts/python.exe" ]; then
+        printf '%s\n' "${venv_path}/Scripts/python.exe"
+        return 0
+    fi
+
+    if [ -x "${venv_path}/Scripts/python" ]; then
+        printf '%s\n' "${venv_path}/Scripts/python"
+        return 0
+    fi
+
+    return 1
 }
 
 require_python3() {
@@ -69,7 +92,8 @@ create_virtualenv() {
 
 install_wheel() {
     venv_path=$1
-    "${venv_path}/bin/python" -m pip install --no-deps "${wheel_path}"
+    venv_python=$(resolve_venv_python "${venv_path}") || return 1
+    "${venv_python}" -m pip install --no-deps "${wheel_path}"
 }
 
 write_roundtrip_script() {
