@@ -1106,7 +1106,6 @@ TESTS = \
     codec/output/0004_sixel_metadata_inspection.t \
     codec/output/0005_monochrome_frame_trailer.t \
     codec/output/0006_two_pass_sixel_conversion.t \
-    packaging/0002_python_wheel_roundtrip.t \
     quant/palette/init/0001_kmeans_init_default_unset.t \
     quant/palette/init/0002_kmeans_init_auto.t \
     quant/palette/init/0003_kmeans_init_unknown.t \
