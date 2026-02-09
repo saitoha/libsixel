@@ -97,6 +97,8 @@ jobs:
               -Dpython=enabled
             extra_packages: >-
               meson
+            pip_packages: >-
+              build
             exec_type: bash
 
           - label: Autotools-macos-aarch64-gcc-python
@@ -115,6 +117,8 @@ jobs:
               -Dpython=enabled
             extra_packages: >-
               meson
+            pip_packages: >-
+              build
             exec_type: bash
 
           - label: Meson-cmd-x86_64-msvc-x86_64-python
@@ -122,6 +126,8 @@ jobs:
             runner: windows-latest
             setup_options: >-
               -Dpython=enabled
+            pip_packages: >-
+              build
             exec_type: cmd
 
     steps:
