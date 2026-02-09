@@ -1,0 +1,4 @@
+#!/bin/sh
+# Minimal fake thumbnailer used by TAP tests.
+set -eu
+cp "$1" "$2"

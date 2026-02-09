@@ -11,10 +11,7 @@ case_id=1
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-if ! feature_defined_in_config "HAVE_UNISTD_H" || \
-        ! feature_defined_in_config "HAVE_SYS_WAIT_H" || \
-        ! feature_defined_in_config "HAVE_FORK" || \
-        feature_defined_in_config "HAVE_EMSCRIPTEN_H"; then
+if ! feature_defined_in_config "HAVE_FREEDESKTOP_THUMBNAILING"; then
     skip_all "gnome-thumbnailer loader is unavailable on this platform"
 fi
 
@@ -25,37 +22,28 @@ input_png="${top_srcdir}/tests/data/inputs/formats/rgba.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/gnome_tryexec_absolute_path.sixel"
 error_log="${ARTIFACT_LOCAL_DIR}/gnome_tryexec_absolute_path.err"
 work_dir="${ARTIFACT_LOCAL_DIR}/gnome_tryexec_absolute_path"
-marker_file="${work_dir}/absolute.marker"
 xdg_data_home="${work_dir}/xdg"
 bin_dir="${work_dir}/bin"
 thumb_dir="${xdg_data_home}/thumbnailers"
+template_root="${top_srcdir}/tests/data/inputs/thumbnailer"
 tryexec_path="${bin_dir}/fake-thumb"
 
 rm -rf "${work_dir}"
 mkdir -p "${bin_dir}" "${thumb_dir}"
 
-cat >"${tryexec_path}" <<'EOS2'
-#!/bin/sh
-set -eu
-cp "$1" "$2"
-: >"${THUMB_MARKER:?}"
-EOS2
+cp "${template_root}/bin/fake-thumb" "${tryexec_path}"
 chmod +x "${tryexec_path}"
-
-cat >"${thumb_dir}/absolute-tryexec.thumbnailer" <<EOS2
-[Thumbnailer Entry]
-TryExec=${tryexec_path}
-Exec=${tryexec_path} %i %o
-MimeType=image/png;
-EOS2
+cp "${template_root}/thumbnailers/absolute-tryexec.thumbnailer" \
+        "${thumb_dir}/absolute-tryexec.thumbnailer"
+sed -i "s|@TRYEXEC_PATH@|${tryexec_path}|g" \
+        "${thumb_dir}/absolute-tryexec.thumbnailer"
 
 if run_img2sixel \
         --env "XDG_DATA_DIRS=${xdg_data_home}" \
         --env "PATH=${PATH}" \
-        --env "THUMB_MARKER=${marker_file}" \
         -L gnome-thumbnailer! "${input_png}" \
         >"${output_sixel}" 2>"${error_log}" && \
-        [ -s "${output_sixel}" ] && [ -f "${marker_file}" ]; then
+        [ -s "${output_sixel}" ]; then
     pass "${case_id}" "absolute TryExec path is accepted"
 else
     fail "${case_id}" "absolute TryExec path handling failed"

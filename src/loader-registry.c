@@ -86,7 +86,7 @@ static sixel_loader_entry_t const sixel_loader_entries[] = {
 #if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
     { "quicklook", load_with_quicklook, loader_quicklook_can_decode_chunk, 1 },
 #endif
-#if HAVE_UNISTD_H && HAVE_SYS_WAIT_H && HAVE_FORK
+#if HAVE_FREEDESKTOP_THUMBNAILING
     { "gnome-thumbnailer", load_with_gnome_thumbnailer, NULL, 0 },
 #endif
 };
