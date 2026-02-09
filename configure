@@ -24892,13 +24892,13 @@ if test x$enable_python != xno; then
 
         if test -n "$PYTHON"; then
       # If the user set $PYTHON, use it and don't search something else.
-      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether $PYTHON version is >= 2.3" >&5
-printf %s "checking whether $PYTHON version is >= 2.3... " >&6; }
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether $PYTHON version is >= 3.0" >&5
+printf %s "checking whether $PYTHON version is >= 3.0... " >&6; }
       prog="import sys
 # split strings by '.' and convert to numeric.  Append some zeros
 # because we need at least 4 digits for the hex conversion.
 # map returns an iterator in Python 3.0 and a list in 2.x
-minver = list(map(int, '2.3'.split('.'))) + [0, 0, 0]
+minver = list(map(int, '3.0'.split('.'))) + [0, 0, 0]
 minverhex = 0
 # xrange is not present in Python 3.0 and range returns an iterator
 for i in list(range(0, 4)): minverhex = (minverhex << 8) + minver[i]
@@ -24921,8 +24921,8 @@ fi
     else
       # Otherwise, try each interpreter until we find one that satisfies
       # VERSION.
-      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for a Python interpreter with version >= 2.3" >&5
-printf %s "checking for a Python interpreter with version >= 2.3... " >&6; }
+      { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for a Python interpreter with version >= 3.0" >&5
+printf %s "checking for a Python interpreter with version >= 3.0... " >&6; }
 if test ${am_cv_pathless_PYTHON+y}
 then :
   printf %s "(cached) " >&6
@@ -24934,7 +24934,7 @@ else case e in #(
 # split strings by '.' and convert to numeric.  Append some zeros
 # because we need at least 4 digits for the hex conversion.
 # map returns an iterator in Python 3.0 and a list in 2.x
-minver = list(map(int, '2.3'.split('.'))) + [0, 0, 0]
+minver = list(map(int, '3.0'.split('.'))) + [0, 0, 0]
 minverhex = 0
 # xrange is not present in Python 3.0 and range returns an iterator
 for i in list(range(0, 4)): minverhex = (minverhex << 8) + minver[i]
