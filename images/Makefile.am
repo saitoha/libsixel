@@ -29,6 +29,7 @@ EXTRA_DIST = .gitattributes \
     snake-grayscale.png \
     snake-monochrome.png \
     snake-palette.png \
+    snake-progressive-16x16.jpg \
     snake-progressive.jpg \
     snake.bmp \
     snake.gif \

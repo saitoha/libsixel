@@ -15,7 +15,7 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 echo "1..1"
 set -v
 
-progressive_jpeg="${images_dir}/snake-progressive.jpg"
+progressive_jpeg="${images_dir}/snake-progressive-16x16.jpg"
 
 
 if run_img2sixel "${progressive_jpeg}" \
