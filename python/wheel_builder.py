@@ -40,6 +40,7 @@ import pathlib
 import shutil
 import subprocess
 import sys
+import sysconfig
 
 _SIXEL_NAMES = (
     "sixel",
@@ -94,24 +95,68 @@ def _copy_library(libpath: pathlib.Path, libs_dir: pathlib.Path) -> pathlib.Path
     return target
 
 
-def _resolve_windows_implib(libpath: pathlib.Path) -> pathlib.Path | None:
-    """Return a matching MSVC import library for the bundled DLL.
+def _toolchain_prefers_msvc_import_lib() -> bool:
+    """Return True when the active Python build toolchain is MSVC-like.
 
-    Windows extension modules are linked against import libraries (*.lib),
-    not against the DLL binary itself. We probe typical naming variants so
-    Meson/Autotools output layouts work without additional configuration.
+    This handles native Windows shells and mixed environments such as Cygwin
+    where the Python process is POSIX but extension modules are still linked
+    by MSVC-compatible drivers (cl.exe, clang-cl, lld-link).
     """
 
-    if libpath.suffix.lower() != ".dll":
-        return None
+    probe_text = " ".join(
+        filter(
+            None,
+            [
+                os.environ.get("CC"),
+                os.environ.get("CXX"),
+                os.environ.get("LDSHARED"),
+                os.environ.get("LDFLAGS"),
+                sysconfig.get_config_var("CC"),
+                sysconfig.get_config_var("LDSHARED"),
+            ],
+        )
+    ).lower()
 
-    candidates = [
-        libpath.with_suffix(".lib"),
-        libpath.parent / "libsixel.lib",
-        libpath.parent / "sixel.lib",
-        libpath.parent / "sixel-1.lib",
+    msvc_markers = (
+        "cl.exe",
+        " clang-cl",
+        " lld-link",
+        " link.exe",
+        "-windows-msvc",
+    )
+    return any(marker in probe_text for marker in msvc_markers)
+
+
+def _resolve_windows_implib(libpath: pathlib.Path) -> pathlib.Path | None:
+    """Return a matching import library for the bundled DLL.
+
+    MSVC-style linkers require *.lib while GNU-based Windows toolchains
+    usually emit *.dll.a. The selected ordering follows the active compiler
+    family so cl.exe/clang-cl pick *.lib first and MinGW/Cygwin prefer
+    *.dll.a first.
+    """
+
+    stem = libpath.stem
+    base_names = [
+        stem,
+        "libsixel",
+        "sixel",
+        "sixel-1",
     ]
-    for candidate in candidates:
+    msvc_candidates = [libpath.with_suffix(".lib")]
+    msvc_candidates.extend(libpath.parent / f"{name}.lib" for name in base_names)
+    gnu_candidates = [libpath.with_name(f"{libpath.name}.a")]
+    gnu_candidates.extend(
+        libpath.parent / f"lib{name}.dll.a" for name in base_names
+    )
+    gnu_candidates.extend(libpath.parent / f"{name}.dll.a" for name in base_names)
+
+    if _toolchain_prefers_msvc_import_lib():
+        ordered = msvc_candidates + gnu_candidates
+    else:
+        ordered = gnu_candidates + msvc_candidates
+
+    for candidate in ordered:
         if candidate.exists():
             return candidate
 
@@ -143,11 +188,11 @@ def _run_wheel_build(
 
     env["LIBSIXEL_LIBDIR"] = str(libpath.parent)
     env["LIBSIXEL_LIBPATH"] = str(libpath)
-    if os.name == "nt":
+    if libpath.suffix.lower() == ".dll":
         implib = _resolve_windows_implib(libpath)
         if implib is None:
             raise SystemExit(
-                "MSVC import library (*.lib) was not found for "
+                "Import library (*.lib or *.dll.a) was not found for "
                 f"{libpath.name}. Expected alongside the DLL."
             )
         env["LIBSIXEL_IMPLIB"] = str(implib)

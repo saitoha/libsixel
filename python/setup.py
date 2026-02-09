@@ -44,7 +44,7 @@ if bundle_mode:
             library_dirs=[] if bundle_libpath else [libdir],
             extra_objects=(
                 [bundle_implib]
-                if (os.name == "nt" and bundle_implib)
+                if bundle_implib
                 else ([bundle_libpath] if bundle_libpath else [])
             ),
             runtime_library_dirs=runtime_dirs,
