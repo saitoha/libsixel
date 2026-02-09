@@ -11,7 +11,7 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-snake_six="${images_dir}/snake.six"
+snake_six="${images_dir}/map8.six"
 target_txt="${ARTIFACT_LOCAL_DIR}/sixel-inspection-x-dither.txt"
 
 run_img2sixel -I -dx_dither -h100 "${snake_six}" >"${target_txt}" || {

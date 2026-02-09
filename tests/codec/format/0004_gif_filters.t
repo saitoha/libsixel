@@ -11,7 +11,7 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-snake_gif="${images_dir}/snake.gif"
+snake_gif="${top_srcdir}/tests/data/inputs/small.gif"
 target_sixel="${ARTIFACT_LOCAL_DIR}/snake-gif.sixel"
 
 if run_img2sixel -w105% -h100 -B"#000000000" -rne <"${snake_gif}" \

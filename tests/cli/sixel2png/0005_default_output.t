@@ -27,7 +27,7 @@ head_bytes() {
 echo "1..1"
 set -v
 
-input_path="${images_dir}/snake.six"
+input_path="${images_dir}/map8.six"
 
 
 stdout_path="${ARTIFACT_LOCAL_DIR}/stdout.png"
