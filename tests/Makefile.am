@@ -844,11 +844,39 @@ check-TESTS: $(check_PROGRAMS)
 	        eval "$$feature=0"; \
 	        export $$feature; \
 	    done; \
-	fi; \
-	log_list=""; \
-	for i in $(TEST_LOGS); do \
-	    log_list="$$log_list $$i"; \
-	done; \
+		fi; \
+		log_list=""; \
+		shared_python_venv="$(abs_top_builddir)/tests/.python-test-venv"; \
+		SIXEL_TEST_PYTHON_VENV=""; \
+		if [ "x$${ENABLE_PYTHON:-0}" = "x1" ]; then \
+		    python_bin=$$(command -v python3 || command -v python || true); \
+		    wheel_path=$$(find "$(abs_top_builddir)/python/dist" -maxdepth 1 \
+		        -type f -name 'libsixel_wheel-*.whl' 2>/dev/null | head -n 1); \
+		    if [ -n "$$python_bin" ] && [ -n "$$wheel_path" ]; then \
+		        if "$$python_bin" -c 'import importlib.util,sys; missing=[m for m in ("venv","ensurepip") if importlib.util.find_spec(m) is None]; sys.exit(0 if not missing else 1)' >/dev/null 2>&1; then \
+		            if [ ! -x "$$shared_python_venv/bin/python" ]; then \
+		                rm -rf "$$shared_python_venv"; \
+		                "$$python_bin" -m venv "$$shared_python_venv" \
+		                    >/dev/null 2>&1 || true; \
+		            fi; \
+		            if [ -x "$$shared_python_venv/bin/python" ]; then \
+		                if ! "$$shared_python_venv/bin/python" -c \
+		                    'import importlib.util,sys; sys.exit(0 if importlib.util.find_spec("libsixel_wheel") else 1)' >/dev/null 2>&1; then \
+		                    "$$shared_python_venv/bin/python" -m pip install \
+		                        --no-deps "$$wheel_path" >/dev/null 2>&1 || true; \
+		                fi; \
+		                if "$$shared_python_venv/bin/python" -c \
+		                    'import importlib.util,sys; sys.exit(0 if importlib.util.find_spec("libsixel_wheel") else 1)' >/dev/null 2>&1; then \
+		                    SIXEL_TEST_PYTHON_VENV="$$shared_python_venv"; \
+		                fi; \
+		            fi; \
+		        fi; \
+		    fi; \
+		fi; \
+		export SIXEL_TEST_PYTHON_VENV; \
+		for i in $(TEST_LOGS); do \
+		    log_list="$$log_list $$i"; \
+		done; \
 	log_list=`echo $$log_list`; \
 	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) \
 	    TEST_LOGS="$$log_list"; \
@@ -1021,6 +1049,7 @@ clean-local:
 	rm -f $(LOG_COMPILER) $(COPY_TESTS) $(HELPER_FILES); \
 	fi
 	rm -rf $(ARTIFACT_ROOT)
+	rm -rf $(abs_top_builddir)/tests/.python-test-venv
 	rm -f $(builddir)/*_metrics.json
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.

@@ -758,6 +758,12 @@ python_install_wheel() {
     venv_path=$1
     target_wheel=$2
 
+    if [ -n "${SIXEL_TEST_PYTHON_VENV:-}" ] \
+       && [ -x "${SIXEL_TEST_PYTHON_VENV}/bin/python" ]; then
+        run_python="${SIXEL_TEST_PYTHON_VENV}/bin/python"
+        return 0
+    fi
+
     if ! python_require_venv; then
         return 1
     fi
