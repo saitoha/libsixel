@@ -22,7 +22,9 @@
 python_opt = get_option('python')
 if python_opt.enabled()
   py_mod = import('python')
-  py = py_mod.find_installation(required: true)
+  # Resolve python3 from PATH so CI virtualenv and wheel build use
+  # the same interpreter instance.
+  py = py_mod.find_installation('python3', required: true)
   wheel_script = files('wheel_builder.py')
   wheel_distdir = join_paths(meson.current_build_dir(), 'dist')
   custom_target(

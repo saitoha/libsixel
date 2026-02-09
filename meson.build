@@ -1383,7 +1383,7 @@ endif
 py_opt = get_option('python')
 py_mod = import('python')
 py_required = py_opt.enabled()
-py = py_mod.find_installation(required: py_required)
+py = py_mod.find_installation('python3', required: py_required)
 if py.found()
   have_python = true
   python_message = 'yes: ' + py.get_install_dir()
@@ -1396,7 +1396,9 @@ if py_opt.enabled() and not have_python
 endif
 
 if py_opt.enabled()
-  py_check = run_command(ci_probe, '-c', 'import build', check: false)
+  # Keep the Python module check on the same interpreter that will
+  # execute wheel_builder.py later to avoid interpreter drift.
+  py_check = run_command(py, '-c', 'import build', check: false)
   if py_check.returncode() != 0
     error('Python package support requires the build module')
   endif

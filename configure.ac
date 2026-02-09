@@ -2982,7 +2982,7 @@ AM_CONDITIONAL([REGISTER_DLL], [test x$enable_register_dll = xyes])
 
 have_python=no
 if test x$enable_python != xno; then
-    AM_PATH_PYTHON([2.3], [have_python=yes], [have_python=no])
+    AM_PATH_PYTHON([3.0], [have_python=yes], [have_python=no])
     if test x$enable_python = xyes -a x$have_python = xno; then
         AC_MSG_ERROR([python is not available])
     fi
