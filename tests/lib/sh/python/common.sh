@@ -17,12 +17,23 @@ resolve_tap_log_file() {
     candidate=""
     fallback=""
 
-    for candidate in /dev/stderr /proc/self/fd/2 /dev/fd/2; do
-        if [ -e "${candidate}" ] && (: >>"${candidate}") 2>/dev/null; then
-            printf '%s' "${candidate}"
-            return 0
-        fi
-    done
+    # cmd.exe-launched Git Bash can report /dev/stderr as present even when
+    # later append redirections fail with "No such file or directory".
+    # Prefer a regular file on Windows-like shells to keep logging reliable.
+    case "$(uname -s)" in
+        MINGW*|MSYS*|CYGWIN*)
+            candidate=""
+            ;;
+        *)
+            for candidate in /dev/stderr /proc/self/fd/2 /dev/fd/2; do
+                if [ -e "${candidate}" ] \
+                   && (: >>"${candidate}") 2>/dev/null; then
+                    printf '%s' "${candidate}"
+                    return 0
+                fi
+            done
+            ;;
+    esac
 
     fallback="${TMPDIR:-/tmp}/libsixel-python-tap-$$.log"
     if (: >"${fallback}") 2>/dev/null; then

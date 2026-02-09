@@ -12,25 +12,16 @@ echo "1..1"
 set -v
 
 input_image="${TOP_SRCDIR}/tests/data/resolutions/tiny_square.png"
-output_sixel="${ARTIFACT_LOCAL_DIR}/merge-kmeans-float32.six"
-output_png="${ARTIFACT_LOCAL_DIR}/merge-kmeans-float32.png"
+output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
-SIXEL_PALETTE_OVERSPLIT_FACTOR=2.2
-SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT=2
-SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX=5
-SIXEL_PALETTE_KMEANS_THRESHOLD=0.1
-SIXEL_PALETTE_LUMIN_FACTOR_R=0.3
-SIXEL_PALETTE_LUMIN_FACTOR_G=0.4
-SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L=0.6
-export SIXEL_PALETTE_OVERSPLIT_FACTOR
-export SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT
-export SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX
-export SIXEL_PALETTE_KMEANS_THRESHOLD
-export SIXEL_PALETTE_LUMIN_FACTOR_R
-export SIXEL_PALETTE_LUMIN_FACTOR_G
-export SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L
-
-run_img2sixel -Q kmeans -F ward -W oklab -o "${output_sixel}" "${input_image}" || {
+run_img2sixel --env SIXEL_PALETTE_OVERSPLIT_FACTOR=2.2 \
+              --env SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT=2 \
+              --env SIXEL_PALETTE_KMEANS_ITER_COUNT_MAX=5 \
+              --env SIXEL_PALETTE_KMEANS_THRESHOLD=0.1 \
+              --env SIXEL_PALETTE_LUMIN_FACTOR_R=0.3 \
+              --env SIXEL_PALETTE_LUMIN_FACTOR_G=0.4 \
+              --env SIXEL_PALETTE_MERGE_CHANNEL_FACTOR_L=0.6 \
+              -Q kmeans -F ward -W oklab -o "${output_sixel}" "${input_image}" || {
     fail 1 "img2sixel merge kmeans float32 failed"
     exit 0
 }
@@ -40,12 +31,15 @@ lsqa_err=$(
     run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
-if [ -z "${lsqa_run_status-}" ]; then
-    pass 1 "merge kmeans float32 lsqa passed"
-elif [ "${lsqa_run_status}" -eq 5 ]; then
+test "${lsqa_run_status-}" -eq 5 && {
     fail 1 "${lsqa_err}"
-else
-    fail 1 "merge kmeans float32 lsqa failed"
-fi
+    exit 0
+}
 
+test -n "${lsqa_run_status-}" && {
+    fail 1 "merge kmeans float32 lsqa failed (${lsqa_run_status-})"
+    exit 0
+}
+
+pass 1 "merge kmeans float32 lsqa passed"
 exit 0
