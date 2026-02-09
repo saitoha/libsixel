@@ -976,6 +976,31 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/thumbnailer/thumbnailers/unknown-placeholder.thumbnailer \
     data/inputs/thumbnailer/thumbnailers/valid-absolute.thumbnailer \
     data/inputs/thumbnailer/thumbnailers/wildcard.thumbnailer \
+    data/inputs/thumbnailer/cases/0026/thumbnailers/fake.thumbnailer \
+    data/inputs/thumbnailer/cases/0027/thumbnailers/wildcard.thumbnailer \
+    data/inputs/thumbnailer/cases/0028/thumbnailers/placeholders.thumbnailer \
+    data/inputs/thumbnailer/cases/0029/thumbnailers/fallback-gdk.thumbnailer \
+    data/inputs/thumbnailer/cases/0029/thumbnailers/fallback.thumbnailer \
+    data/inputs/thumbnailer/cases/0029/thumbnailers/tryexec-missing.thumbnailer \
+    data/inputs/thumbnailer/cases/0030/thumbnailers/env-priority.thumbnailer \
+    data/inputs/thumbnailer/cases/0031/thumbnailers/override-env.thumbnailer \
+    data/inputs/thumbnailer/cases/0032/bin/fake-thumb \
+    data/inputs/thumbnailer/cases/0032/thumbnailers/hint-size.thumbnailer \
+    data/inputs/thumbnailer/cases/0033/thumbnailers/evince.thumbnailer \
+    data/inputs/thumbnailer/cases/0034/bin/fake-thumb \
+    data/inputs/thumbnailer/cases/0034/thumbnailers/unknown-placeholder.thumbnailer \
+    data/inputs/thumbnailer/cases/0035/thumbnailers/entry-missing-exec.thumbnailer \
+    data/inputs/thumbnailer/cases/0035/thumbnailers/entry-valid.thumbnailer \
+    data/inputs/thumbnailer/cases/0036/thumbnailers/path-order.thumbnailer \
+    data/inputs/thumbnailer/cases/0037/bin/fake-thumb \
+    data/inputs/thumbnailer/cases/0037/thumbnailers/hint-size-zero.thumbnailer \
+    data/inputs/thumbnailer/cases/0038/thumbnailers/exec-quoting.thumbnailer \
+    data/inputs/thumbnailer/cases/0039/thumbnailers/absolute-tryexec.thumbnailer \
+    data/inputs/thumbnailer/cases/0040/thumbnailers/missing-absolute.thumbnailer \
+    data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer \
+    data/inputs/thumbnailer/cases/0041/thumbnailers/empty-tryexec.thumbnailer \
+    data/inputs/thumbnailer/cases/0042/thumbnailers/mime-overwrite.thumbnailer \
+    data/inputs/thumbnailer/cases/0043/thumbnailers/group-scope.thumbnailer \
     data/resolutions/hd_landscape.png \
     data/resolutions/panorama_tall.png \
     data/resolutions/panorama_wide.png \
