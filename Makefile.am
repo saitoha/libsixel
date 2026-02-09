@@ -39,7 +39,8 @@ DIST_SUBDIRS = \
 EXTRA_DIST = LICENSE build-aux/depcomp \
 	m4/ax_count_cpus.m4 \
 	package.json.in.in \
-	build-aux/lso-tap-driver.sh.in
+	build-aux/lso-tap-driver.sh.in \
+	tools/fuzz-img2sixel-cli.sh
 
 # Honor user-supplied make parallel flags while providing a CPU-based default.
 #
@@ -60,6 +61,7 @@ FUZZ_TIMEOUT ?= 0
 FUZZ_INPUT_DIR ?= $(top_srcdir)/images
 FUZZ_OUTPUT_DIR ?= $(abs_top_builddir)/afl-out/img2sixel
 FUZZ_IMG2SIXEL ?= $(abs_top_builddir)/converters/img2sixel$(EXEEXT)
+FUZZ_IMG2SIXEL_BASE_ARGS ?=
 
 install-quicklook-extension:
 	@HAVE_APPLE_QUICKLOOK_EXTENSION_TRUE@$(MAKE) -C quicklook-extension install-quicklook-extension
@@ -79,8 +81,12 @@ fuzz-cli-img2sixel: all
 		echo "error: img2sixel binary was not found: $(FUZZ_IMG2SIXEL)" >&2; \
 		exit 1; \
 	fi; \
+	if [ ! -r "$(top_srcdir)/tools/fuzz-img2sixel-cli.sh" ]; then \
+		echo "error: fuzz wrapper is missing: tools/fuzz-img2sixel-cli.sh" >&2; \
+		exit 1; \
+	fi; \
 	mkdir -p "$(FUZZ_OUTPUT_DIR)"; \
-	fuzz_cmd='"$(FUZZ_AFL)" -i "$(FUZZ_INPUT_DIR)" -o "$(FUZZ_OUTPUT_DIR)" -- "$(FUZZ_IMG2SIXEL)" --fast --quality=full --palette-type=rgb --diffusion=none --ignore-delay --loop-control=auto --center --pipe-mode @@'; \
+	echo "fuzz-cli-img2sixel: base args='$(FUZZ_IMG2SIXEL_BASE_ARGS)'"; \
 	if [ "$(FUZZ_TIMEOUT)" -gt 0 ]; then \
 		if ! command -v timeout >/dev/null 2>&1; then \
 			echo "error: timeout command is required when FUZZ_TIMEOUT > 0" >&2; \
@@ -88,7 +94,14 @@ fuzz-cli-img2sixel: all
 		fi; \
 		echo "Running img2sixel fuzzing for $(FUZZ_TIMEOUT)s"; \
 		set +e; \
-		timeout "$(FUZZ_TIMEOUT)" sh -c "$$fuzz_cmd"; \
+		timeout "$(FUZZ_TIMEOUT)" "$(FUZZ_AFL)" \
+			-i "$(FUZZ_INPUT_DIR)" \
+			-o "$(FUZZ_OUTPUT_DIR)" \
+			-- \
+			env \
+			FUZZ_IMG2SIXEL="$(FUZZ_IMG2SIXEL)" \
+			FUZZ_IMG2SIXEL_BASE_ARGS="$(FUZZ_IMG2SIXEL_BASE_ARGS)" \
+			"$(SHELL)" "$(top_srcdir)/tools/fuzz-img2sixel-cli.sh" @@; \
 		rc=$$?; \
 		set -e; \
 		if [ $$rc -eq 124 ]; then \
@@ -98,7 +111,14 @@ fuzz-cli-img2sixel: all
 		exit $$rc; \
 	fi; \
 	echo "Running img2sixel fuzzing without timeout"; \
-	sh -c "$$fuzz_cmd"
+	"$(FUZZ_AFL)" \
+		-i "$(FUZZ_INPUT_DIR)" \
+		-o "$(FUZZ_OUTPUT_DIR)" \
+		-- \
+		env \
+		FUZZ_IMG2SIXEL="$(FUZZ_IMG2SIXEL)" \
+		FUZZ_IMG2SIXEL_BASE_ARGS="$(FUZZ_IMG2SIXEL_BASE_ARGS)" \
+		"$(SHELL)" "$(top_srcdir)/tools/fuzz-img2sixel-cli.sh" @@
 
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
