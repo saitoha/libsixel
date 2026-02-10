@@ -591,18 +591,19 @@ runs:
       with:
         name: ${{ fromJSON(inputs.matrix_json).label || '' }}
         path: |
-          **/test-suite.log
           **/*.log
           **/*.trs
           **/_artifacts/**
           coverage.info
           pkg_install-err.log
-          **/artifacts.tar.gz
           builddir/meson-dist/**
           builddir/meson-logs/**
           builddir/**/_artifacts/**
           builddir/**/testlog.txt
           builddir/**/*.log
+          libsixel-*/_build/sub/**/*.log
+          libsixel-*/_build/sub/**/*.trs
+          libsixel-*/_build/sub/**/_artifacts/**
         if-no-files-found: warn
         overwrite: true
 
