@@ -1,0 +1,6 @@
+#!/bin/sh
+# Thumbnailer stub that records placeholder-expanded Exec arguments.
+set -eu
+cp "$1" "$2"
+printf 'uri=%s\nsize=%s\nmime=%s\npercent=%s\n' \
+    "$3" "$4" "$5" "$6" >"${THUMB_LOG:?}"

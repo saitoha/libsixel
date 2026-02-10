@@ -1,4 +1,4 @@
 [Thumbnailer Entry]
-TryExec=fake-thumb-args
-Exec=fake-thumb-args %u %o %s %%
+TryExec=fake-thumb-placeholders
+Exec=fake-thumb-placeholders %u %s %i %%
 MimeType=image/png;
