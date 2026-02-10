@@ -3,11 +3,7 @@
 
 set -eux
 
-script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
-status=0
-case_id=1
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
@@ -25,19 +21,15 @@ template_root="${top_srcdir}/tests/data/inputs/thumbnailer"
 xdg_data_home="${template_root}/cases/0030"
 bin_dir="${template_root}/bin"
 
-
-
-
 if run_img2sixel \
         --env "XDG_DATA_DIRS=${xdg_data_home}" \
         --env "PATH=${bin_dir}:${PATH}" \
         --env "SIXEL_LOADER_PRIORITY_LIST=gnome-thumbnailer!" \
         "${input_png}" >"${output_sixel}" 2>"${error_log}" && \
         [ -s "${output_sixel}" ]; then
-    pass "${case_id}" "env priority list enables gnome-thumbnailer"
+    pass 1 "env priority list enables gnome-thumbnailer"
 else
-    fail "${case_id}" "env priority list test failed"
-    status=1
+    fail 1 "env priority list test failed"
 fi
 
-exit "${status}"
+exit 0
