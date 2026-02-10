@@ -4,7 +4,6 @@
 # Enable strict mode with verbose tracing for diagnostics.
 set -eux
 
-script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 status=0

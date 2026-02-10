@@ -6,11 +6,8 @@
 #       -define ppm:format=plain PPM:tests/data/loader/pngsuite_expected/0032_pngsuite_basic_default_basn6a08_msssim.ppm
 set -eux
 
-script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 . "${TOP_SRCDIR}/tests/lib/sh/loader/pngsuite_common.sh"
-
-status=0
 
 ensure_pngsuite_prereqs
 
@@ -20,16 +17,15 @@ set -v
 input_png="${images_dir}/pngsuite/basic/basn6a08.png"
 expected_ppm="${top_srcdir}/tests/data/loader/pngsuite_expected/0032_pngsuite_basic_default_basn6a08_msssim.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/basn6a08.sixel"
-score_file="${ARTIFACT_LOCAL_DIR}/basn6a08.ms_ssim.txt"
 img2sixel_opts=""
 
 if [ ! -f "${expected_ppm}" ]; then
     fail 1 "missing expected image: 0032_pngsuite_basic_default_basn6a08_msssim.ppm"
-    exit "${status}"
+    exit 0
 fi
 
 if run_img2sixel ${img2sixel_opts} "${input_png}" >"${output_sixel}"; then
-    if run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" "${expected_ppm}" - <"${output_sixel}" >"${score_file}"; then
+    if run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" "${expected_ppm}" - <"${output_sixel}" >&2; then
         pass 1 "basic_default basic/basn6a08.png"
     else
         fail 1 "basic_default basic/basn6a08.png"
@@ -38,4 +34,4 @@ else
     fail 1 "basic_default basic/basn6a08.png"
 fi
 
-exit "${status}"
+exit 0

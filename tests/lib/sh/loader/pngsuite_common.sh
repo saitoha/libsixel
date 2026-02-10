@@ -32,12 +32,6 @@ ensure_pngsuite_samples_present() {
 }
 
 ensure_pngsuite_prereqs() {
-    ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
-
-    if [ ! -x "${LSQA_PATH}" ]; then
-        skip_all "lsqa is required for PNGSuite tests"
-    fi
-
     ensure_feature_available "HAVE_LIBPNG" "png" "libpng support"
-    ensure_pngsuite_samples_present
+    ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 }
