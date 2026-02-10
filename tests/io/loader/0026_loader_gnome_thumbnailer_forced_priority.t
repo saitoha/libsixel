@@ -3,11 +3,7 @@
 
 set -eux
 
-script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
-status=0
-case_id=1
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
@@ -25,24 +21,19 @@ template_root="${top_srcdir}/tests/data/inputs/thumbnailer"
 xdg_data_home="${template_root}/cases/0026"
 bin_dir="${template_root}/bin"
 
-
-
-
 if run_img2sixel \
         --env "XDG_DATA_DIRS=${xdg_data_home}" \
         --env "PATH=${bin_dir}:${PATH}" \
-        -L gnome-thumbnailer! "${input_png}" \
-        >"${output_sixel}" 2>"${error_log}" && \
+        -L gnome-thumbnailer! "${input_png}" >"${output_sixel}" 2>"${error_log}" && \
         [ -s "${output_sixel}" ]; then
-    pass "${case_id}" "forced gnome-thumbnailer loader path succeeds"
+    pass 1 "forced gnome-thumbnailer loader path succeeds"
 else
     if grep -E "gnome-thumbnailer|thumbnailer" "${error_log}" \
             >/dev/null 2>&1; then
-        tap_skip "${case_id}" "gnome-thumbnailer runtime is unavailable"
+        tap_skip 1 "gnome-thumbnailer runtime is unavailable"
     else
-        fail "${case_id}" "forced gnome-thumbnailer loader path failed"
-        status=1
+        fail 1 "forced gnome-thumbnailer loader path failed"
     fi
 fi
 
-exit "${status}"
+exit 0

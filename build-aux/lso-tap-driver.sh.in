@@ -213,6 +213,7 @@ fi
   -v time_begin="$time_begin" \
   -v time_end="$time_end" \
   -v color_tests="$color_tests" \
+  -v hard_errors="$hard_errors" \
   'BEGIN{
      plan=0; saw_plan=0; saw_tap=0;
      pass=0; fail=0; skip=0; xfail=0; xpass=0; error=0;
@@ -313,16 +314,11 @@ fi
      if (global != "PASS" && desc != "") {
        printf("             > %s\n", desc)
      }
+     # Exit code: default to success so the harness can complete even with FAIL.
+     # When --enable-hard-errors[=yes] is specified, keep the conventional
+     # non-zero exit on FAIL/ERROR to preserve the legacy stop-on-first-failure
+     # behaviour for callers that explicitly request it.
+     if (hard_errors == "yes" && global ~ /^(FAIL|ERROR)$/) {
+       exit 1;
+     }
    }'
-
-# Exit code: default to success so the harness can complete even with FAIL.
-# When --enable-hard-errors[=yes] is specified, keep the conventional
-# non-zero exit on FAIL/ERROR to preserve the legacy stop-on-first-failure
-# behaviour for callers that explicitly request it.
-if [ "$hard_errors" = "yes" ]; then
-  if grep -q '^:global-test-result: FAIL\|^:global-test-result: ERROR' \
-      "$trs_file"; then
-    exit 1
-  fi
-fi
-exit 0

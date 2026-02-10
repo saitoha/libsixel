@@ -1,14 +1,9 @@
 #!/bin/sh
 # TAP test confirming the builtin loader can decode PSD inputs.
 
-# Enable strict mode with verbose tracing for diagnostics.
 set -eux
 
-script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
-status=0
-case_id=1
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
@@ -17,12 +12,10 @@ set -v
 
 input_psd="${top_srcdir}/tests/data/inputs/formats/stbi_minimal.psd"
 
+run_img2sixel "${input_psd}" >/dev/null || {
+    fail 1 "builtin loader failed to decode PSD"
+    exit 0
+}
 
-if run_img2sixel "${input_psd}" \
-        >"${ARTIFACT_LOCAL_DIR}/stbi_minimal_psd.sixel"; then
-    pass ${case_id} "builtin loader decodes PSD"
-else
-    fail ${case_id} "builtin loader failed to decode PSD"
-fi
-
-exit "${status}"
+pass 1 "builtin loader decodes PSD"
+exit 0

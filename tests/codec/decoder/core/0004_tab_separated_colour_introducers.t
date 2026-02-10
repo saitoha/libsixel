@@ -1,13 +1,9 @@
 #!/bin/sh
 # TAP test checking tab-separated colour introducers are decoded successfully.
 
-# Enable strict mode with verbose tracing for diagnostics.
 set -eux
 
-script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
-status=0
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
@@ -24,4 +20,4 @@ else
     fail 1 "tab-separated colour introducers rejected"
 fi
 
-exit "${status}"
+exit 0

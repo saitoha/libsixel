@@ -3,11 +3,7 @@
 
 set -eux
 
-script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
-status=0
-case_id=1
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
@@ -20,28 +16,21 @@ set -v
 
 input_png="${top_srcdir}/tests/data/inputs/formats/rgba.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/gnome_mime_wildcard.sixel"
-error_log="${ARTIFACT_LOCAL_DIR}/gnome_mime_wildcard.err"
 template_root="${top_srcdir}/tests/data/inputs/thumbnailer"
 xdg_data_home="${template_root}/cases/0027"
 bin_dir="${template_root}/bin"
 
+run_img2sixel --env "XDG_DATA_DIRS=${xdg_data_home}" \
+              --env "PATH=${bin_dir}:${PATH}" \
+              -L gnome-thumbnailer! "${input_png}" >"${output_sixel}" || {
+    fail 1 "img2sixel failed"
+    exit 0
+}
 
+test -s "${output_sixel}" || {
+    fail 1 "empty output"
+    exit 0
+}
 
-
-if run_img2sixel \
-        --env "XDG_DATA_DIRS=${xdg_data_home}" \
-        --env "PATH=${bin_dir}:${PATH}" \
-        -L gnome-thumbnailer! "${input_png}" \
-        >"${output_sixel}" 2>"${error_log}" && [ -s "${output_sixel}" ]; then
-    pass "${case_id}" "gnome-thumbnailer wildcard MIME entry matches PNG"
-else
-    if grep -E "gnome-thumbnailer|thumbnailer" "${error_log}" \
-            >/dev/null 2>&1; then
-        tap_skip "${case_id}" "gnome-thumbnailer runtime is unavailable"
-    else
-        fail "${case_id}" "gnome-thumbnailer wildcard MIME test failed"
-        status=1
-    fi
-fi
-
-exit "${status}"
+pass 1 "gnome-thumbnailer wildcard MIME entry matches PNG"
+exit 0

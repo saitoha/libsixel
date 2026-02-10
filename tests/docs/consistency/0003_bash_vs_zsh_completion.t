@@ -8,15 +8,9 @@ zsh_opts="${ARTIFACT_LOCAL_DIR}/options-zsh.txt"
 bash_sorted="${ARTIFACT_LOCAL_DIR}/options-bash-sorted.txt"
 zsh_sorted="${ARTIFACT_LOCAL_DIR}/options-zsh-sorted.txt"
 
-
-script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-status=0
-
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
-
-
 
 die_skip() {
     reason=$1
@@ -24,9 +18,6 @@ die_skip() {
     echo "ok 1 - skip ${reason}"
     exit 0
 }
-
-
-
 
 if ! command -v diff >/dev/null 2>&1; then
     die_skip "diff not available"
@@ -70,4 +61,4 @@ else
     fail 1 "bash completion diverges from zsh completion"
 fi
 
-exit "${status}"
+exit 0

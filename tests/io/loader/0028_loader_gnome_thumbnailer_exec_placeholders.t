@@ -3,11 +3,7 @@
 
 set -eux
 
-script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
-status=0
-case_id=1
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
@@ -26,9 +22,6 @@ template_root="${top_srcdir}/tests/data/inputs/thumbnailer"
 xdg_data_home="${template_root}/cases/0028"
 bin_dir="${template_root}/bin"
 
-
-
-
 if run_img2sixel \
         --env "XDG_DATA_DIRS=${xdg_data_home}" \
         --env "PATH=${bin_dir}:${PATH}" \
@@ -41,15 +34,14 @@ if run_img2sixel \
         grep '^size=123$' "${log_file}" >/dev/null 2>&1 && \
         grep '^mime=image/png$' "${log_file}" >/dev/null 2>&1 && \
         grep '^percent=%$' "${log_file}" >/dev/null 2>&1; then
-    pass "${case_id}" "gnome-thumbnailer Exec placeholders are expanded"
+    pass 1 "gnome-thumbnailer Exec placeholders are expanded"
 else
     if grep -E "gnome-thumbnailer|thumbnailer" "${error_log}" \
             >/dev/null 2>&1; then
-        tap_skip "${case_id}" "gnome-thumbnailer runtime is unavailable"
+        tap_skip 1 "gnome-thumbnailer runtime is unavailable"
     else
-        fail "${case_id}" "gnome-thumbnailer Exec placeholder test failed"
-        status=1
+        fail 1 "gnome-thumbnailer Exec placeholder test failed"
     fi
 fi
 
-exit "${status}"
+exit 0
