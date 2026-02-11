@@ -186,7 +186,7 @@ tests = [
   'cli/core/0001_help.t',
   'cli/core/0002_version.t',
   'cli/core/0003_stdin.t',
-  'cli/core/0004_basic_missing_input.t',
+  'cli/core/0004_missing_input_path_suggestions.t',
   'cli/core/0005_basic_help_option.t',
   'cli/core/0006_basic_version_option.t',
   'cli/core/0007_basic_stdin_snake.t',
@@ -711,7 +711,7 @@ tests = [
   'cli/sixel2png/0002_missing_args.t',
   'cli/sixel2png/0003_unknown_option.t',
   'cli/sixel2png/0004_invalid_decoder_value.t',
-  'cli/sixel2png/0005_default_output.t',
+  'cli/sixel2png/0005_stdin_default_output.t',
 ]
 
 # Match autotools TAP timeout to keep CI behavior consistent (seconds per file).
