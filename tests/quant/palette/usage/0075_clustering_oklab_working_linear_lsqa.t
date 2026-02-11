@@ -1,4 +1,5 @@
-#
+#!/bin/sh
+
 # Flow summary:
 # - Convert the input image with -X oklab -W linear.
 # - Compare the output against the original image.

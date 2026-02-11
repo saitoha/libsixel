@@ -1,4 +1,4 @@
-!/bin/sh
+#!/bin/sh
 # Inspect Sixel metadata successfully.
 set -eux
 
