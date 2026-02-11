@@ -1275,7 +1275,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   coveralls:
-    needs: [coverage-autotools, coverage-meson]
+    needs: [coverage-autotools, coverage-meson, emscripten-coverage]
     runs-on: ubuntu-latest
     steps:
       - name: Finalize Coveralls
@@ -1786,8 +1786,91 @@ jobs:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
+  emscripten-asan-ubusan:
+    needs: [emscripten]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - label: Autotools-ubuntu-aarch64-emscripten-asan-ubsan
+            buildtool: autotools
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CFLAGS="-O1 -g3 -fno-omit-frame-pointer -fsanitize=address,undefined -msimd128 -fdata-sections -ffunction-sections"
+              LDFLAGS="-fsanitize=address,undefined -sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=524288 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sUSE_PTHREADS=1 -sASSERTIONS=1"
+              emconfigure
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+            extra_packages: >-
+              nodejs
+            exec_type: bash
+
+          - label: Meson-ubuntu-aarch64-emscripten-asan-ubsan
+            buildtool: meson
+            runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              emconfigure
+            setup_options: >-
+              --cross-file build-aux/meson-cross/emscripten
+              -Ddefault_library=static
+              -Db_sanitize=address,undefined
+              -Db_ndebug=false
+            extra_packages: >-
+              meson
+              nodejs
+            exec_type: bash
+
+          - label: Autotools-macos-aarch64-emscripten-asan-ubsan
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CFLAGS="-O1 -g3 -fno-omit-frame-pointer -fsanitize=address,undefined -msimd128 -fdata-sections -ffunction-sections"
+              LDFLAGS="-fsanitize=address,undefined -sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=524288 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sUSE_PTHREADS=1 -sASSERTIONS=1"
+              emconfigure
+            setup_options: >-
+              --host=wasm32-unknown-emscripten
+              --with-shebang-file="$PWD/build-aux/shebang/node"
+              --disable-shared
+            extra_packages: >-
+              node
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-emscripten-asan-ubsan
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              emconfigure
+            setup_options: >-
+              --cross-file build-aux/meson-cross/emscripten
+              -Ddefault_library=static
+              -Db_sanitize=address,undefined
+              -Db_ndebug=false
+            extra_packages: >-
+              meson
+              node
+            exec_type: bash
+
+    steps:
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
   emscripten-coverage:
-#    needs: [emscripten]
+    needs: [emscripten]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
