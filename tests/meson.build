@@ -737,7 +737,6 @@ foreach t : tests
   if test_category == ''
     test_category = '.'
   endif
-  test_name = test_base.replace('.t', '')
   test_dir = meson.current_source_dir()
   if test_category != '.'
     test_dir = test_dir / test_category
@@ -752,7 +751,6 @@ foreach t : tests
       test_env.prepend('PATH', dll_path)
     endforeach
   endif
-  test_env.set('test_name', test_name)
   test_env.set('test_dir', test_dir)
   test_env.set('category_name', test_category)
   test_env.set('ARTIFACT_LOCAL_DIR', test_artifact_dir)

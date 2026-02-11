@@ -1,0 +1,4 @@
+#!/bin/sh
+# Thumbnailer stub that records the third argument, typically %s or literal.
+set -eu
+cat "$1" >"$2"

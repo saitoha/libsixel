@@ -34,7 +34,7 @@ stop_server() {
     fi
 }
 
-script_dir=${test_dir}
+script_dir=${0%[/\\]*}
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 ensure_network_backend_available

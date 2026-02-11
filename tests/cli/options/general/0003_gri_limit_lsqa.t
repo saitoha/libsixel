@@ -18,9 +18,8 @@ echo "1..1"
 set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
-case_id=${test_name%.t}
-output_plain="${ARTIFACT_LOCAL_DIR}/${case_id}-plain.six"
-output_limited="${ARTIFACT_LOCAL_DIR}/${case_id}-limited.six"
+output_plain="${ARTIFACT_LOCAL_DIR}/plain.six"
+output_limited="${ARTIFACT_LOCAL_DIR}/limited.six"
 
 run_img2sixel -=1 -o "${output_plain}" "${input_image}" || {
     fail 1 "img2sixel failed"
