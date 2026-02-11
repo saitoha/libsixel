@@ -487,10 +487,20 @@ metric_name_matches(const char *input, const char *target)
     if (input == NULL || target == NULL) {
         return 0;
     }
-#if HAVE_STRINGS_H
+#if HAVE__STRCASECMP
+    if (_stricmp(input, target) == 0) {
+        return 1;
+    }
+#elif HAVE__STRCMPI
+    if (_strcmpi(input, target) == 0) {
+        return 1;
+    }
+#elif HAVE_STRCASECMP
     if (strcasecmp(input, target) == 0) {
         return 1;
     }
+#else
+# error "_stricmp(), _strcmpi() or strcasecmp() is required"
 #endif
     if (strcmp(input, target) == 0) {
         return 1;

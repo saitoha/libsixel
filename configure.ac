@@ -1318,7 +1318,6 @@ AC_CHECK_HEADERS_PARALLEL([assert.h \
                            spawn.h \
                            strings.h \
                            inttypes.h \
-                           strings.h \
                            intrin.h \
                            emmintrin.h \
                            immintrin.h \
@@ -1443,6 +1442,9 @@ AC_CHECK_FUNCS_PARALLEL([assert \
                          open \
                          sscanf_s \
                          strncmp \
+                         _stricmp \
+                         _strcmpi \
+                         strcasecmp \
                          ldiv \
                          floor \
                          pow \
