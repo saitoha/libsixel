@@ -1,3 +1,4 @@
+#!/bin/sh
 # The lsqa helper can read SIXEL directly, so compare with SIXEL output.
 # Quality floors tuned to requested QA thresholds:
 # - MS-SSIM floor: 0.97
