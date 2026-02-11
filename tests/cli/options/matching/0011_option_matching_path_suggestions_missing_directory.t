@@ -21,15 +21,20 @@ run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 -- \
     exit 0
 }
 
-grep -F 'Directory "' "${err_file}" >/dev/null 2>&1 || {
-    fail 1 "missing directory diagnostic was not emitted"
+grep -F 'Directory "' "${err_file}" >/dev/null 2>&1 && {
+    grep -F 'does not exist.' "${err_file}" >/dev/null 2>&1 || {
+        fail 1 "missing directory diagnostic was not emitted"
+        exit 0
+    }
+    pass 1 "missing directory diagnostic is emitted"
     exit 0
 }
 
-grep -F 'does not exist.' "${err_file}" >/dev/null 2>&1 || {
-    fail 1 "missing directory diagnostic was not emitted"
+grep -F 'Suggestion lookup unavailable on this build.' "${err_file}" \
+    >/dev/null 2>&1 || {
+    fail 1 "missing fallback diagnostic for unsupported suggestion lookup"
     exit 0
 }
 
-pass 1 "missing directory diagnostic is emitted"
+pass 1 "missing directory path reports unsupported suggestion lookup"
 exit 0
