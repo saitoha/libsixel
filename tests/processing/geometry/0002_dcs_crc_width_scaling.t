@@ -18,7 +18,7 @@ check_dcs_crc() {
     expected_dcs_crc="302131327e2d2131327e1b5c"
 
     digest=$(printf '\033Pq"1;1;1;1!6~\033\\' \
-        | run_img2sixel -rne ${scale_args} \
+        | run_img2sixel -=1 -rne ${scale_args} \
         | tr '#' '\n' | tail -n +3 \
         | od -An -tx1 | tr -d ' \n') || digest=""
 
