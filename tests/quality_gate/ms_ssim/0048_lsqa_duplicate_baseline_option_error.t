@@ -12,14 +12,21 @@ image_ref="${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp"
 image_out="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
 err_file="${ARTIFACT_LOCAL_DIR}/lsqa_duplicate_baseline.err"
 
-run_lsqa -b "MS-SSIM:0.0" -b "MS-SSIM:0.0" "${image_ref}" "${image_out}" \
-    >"/dev/null" 2>"${err_file}" || status=$?
+set +e
+run_lsqa -b "MS-SSIM:0.0" -b "MS-SSIM:0.0" "${image_ref}" "${image_out}" >"/dev/null" 2>"${err_file}"
+status=$?
+set -e
 
-if [ "${status-0}" -eq 2 ] &&
-        grep -F "baseline already specified" "${err_file}" >/dev/null; then
-    pass 1 "duplicate -b option was rejected"
-else
+test "${status}" -eq 2 || {
     fail 1 "duplicate -b option was not rejected as expected"
-fi
+    exit 0
+}
+
+grep -F "baseline already specified" "${err_file}" >/dev/null || {
+    fail 1 "duplicate -b option was not rejected as expected"
+    exit 0
+}
+
+pass 1 "duplicate -b option was rejected"
 
 exit 0

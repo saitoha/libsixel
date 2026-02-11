@@ -5,7 +5,8 @@ set -eu
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-printf '1..1\n'
+printf '1..1
+'
 set -v
 
 image1="${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp"
@@ -15,10 +16,15 @@ value0=$(run_lsqa -m MS-SSIM "${image1}" "${image2}")
 value1=$(run_lsqa -m MS-SSIM "${image1}" "${image2}")
 value2=$(run_lsqa -m MS-SSIM "${image1}" "${image2}")
 
-if "${value0}" != "${value1}" || test "${value1}" != "${value2}"; then
+test "${value0}" = "${value1}" || {
     fail 1 "palette repeat variance exceeded tolerance"
     exit 0
-fi
+}
+
+test "${value1}" = "${value2}" || {
+    fail 1 "palette repeat variance exceeded tolerance"
+    exit 0
+}
 
 pass 1 "palette repeat variance within tolerance"
 exit 0
