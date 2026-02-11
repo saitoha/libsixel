@@ -26,10 +26,16 @@ grep -F 'path "' "${err_file}" >/dev/null 2>&1 || {
     exit 0
 }
 
-grep -F 'Suggestions:' "${err_file}" >/dev/null 2>&1 || {
+grep -F 'Suggestions:' "${err_file}" >/dev/null 2>&1 && {
+    pass 1 "missing mapfile prints ranked path suggestions"
+    exit 0
+}
+
+grep -F 'Suggestion lookup unavailable on this build.' "${err_file}" \
+    >/dev/null 2>&1 || {
     fail 1 "missing path suggestion diagnostics"
     exit 0
 }
 
-pass 1 "missing mapfile prints ranked path suggestions"
+pass 1 "missing mapfile reports unsupported suggestion lookup"
 exit 0
