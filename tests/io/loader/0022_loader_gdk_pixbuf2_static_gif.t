@@ -6,7 +6,6 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-status=0
 case_id=1
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
@@ -18,10 +17,11 @@ set -v
 input_gif="${top_srcdir}/tests/data/inputs/small.gif"
 output_sixel="${ARTIFACT_LOCAL_DIR}/gdk_static_gif.sixel"
 
-if run_img2sixel -L gdk-pixbuf2! -S "${input_gif}" >"${output_sixel}"; then
-    pass ${case_id} "gdk-pixbuf2 static GIF decode succeeds"
-else
+run_img2sixel -L gdk-pixbuf2! -S "${input_gif}" >"${output_sixel}" || {
     fail ${case_id} "gdk-pixbuf2 static GIF decode failed"
-fi
+    exit 0
+}
 
-exit "${status}"
+pass ${case_id} "gdk-pixbuf2 static GIF decode succeeds"
+
+exit 0

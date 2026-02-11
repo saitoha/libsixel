@@ -17,10 +17,9 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 echo "1..1"
 set -v
 
-input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
-case_id=${test_name%.t}
-output_sixel="${ARTIFACT_LOCAL_DIR}/${case_id}.six"
-output_png="${ARTIFACT_LOCAL_DIR}/${case_id}.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
+output_png="${ARTIFACT_LOCAL_DIR}/output.png"
 
 run_img2sixel -d bluenoise -y raster -W gamma -o "${output_sixel}" "${input_image}" || {
     fail 1 "positional 8-bit bluenoise gamma lsqa failed"

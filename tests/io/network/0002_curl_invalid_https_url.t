@@ -3,7 +3,6 @@
 
 set -eux
 
-script_dir=${test_dir}
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 ensure_network_backend_available
@@ -12,14 +11,14 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 echo "1..1"
 set -v
 
-capture_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "curl-capture")
-run_img2sixel 'https:///test' >"${capture_file}" || true
+set +e
+capture_output=$(run_img2sixel 'https:///test' 2>/dev/null)
+set -e
 
-if [ -s "${capture_file}" ]; then
-    printf 'not ok 1 - malformed HTTPS URL produced output\n'
-    rm -f "${capture_file}"
-    exit 1
-fi
+[ -z "${capture_output}" ] || {
+    fail 1 "malformed HTTPS URL produced output"
+    exit 0
+}
 
-rm -f "${capture_file}"
-printf 'ok 1 - rejects malformed HTTPS URL\n'
+pass 1 "rejects malformed HTTPS URL"
+exit 0
