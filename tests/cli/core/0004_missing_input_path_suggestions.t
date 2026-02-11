@@ -10,13 +10,12 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-missing_input="${images_dir}/snake.jpp"
+missing_input="${TOP_SRCDIR}/xxxxx.xxx"
 stderr_capture="${ARTIFACT_LOCAL_DIR}/err.txt"
 
 run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 \
-    -i "${missing_input}" \
-    >"${ARTIFACT_LOCAL_DIR}/output.txt" \
-    2>"${stderr_capture}" && {
+              -=1 \
+              "${missing_input}" >"${ARTIFACT_LOCAL_DIR}/output.txt" 2>"${stderr_capture}" && {
     fail 1 "accepts missing input path"
     exit 0
 }
@@ -26,8 +25,7 @@ grep -q "Suggestions:" "${stderr_capture}" >/dev/null 2>&1 &&
     has_suggestions=0
 
 has_fallback=1
-grep -q "Suggestion lookup unavailable on this build." "${stderr_capture}" \
-    >/dev/null 2>&1 && has_fallback=0
+grep -q "Suggestion lookup unavailable on this build." "${stderr_capture}" >/dev/null 2>&1 && has_fallback=0
 
 [ "${has_suggestions}" -eq 0 ] || [ "${has_fallback}" -eq 0 ] || {
     fail 1 "missing path suggestion diagnostics"
