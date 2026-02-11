@@ -20,6 +20,7 @@ xdg_data_home="${TOP_SRCDIR}/tests/data/inputs/thumbnailer/cases/0040"
 
 run_img2sixel --env "XDG_DATA_DIRS=${xdg_data_home}" \
               --env "HOME=${ARTIFACT_LOCAL_DIR}" \
+              -v \
               -L gnome-thumbnailer! "${input_png}" >"${output_sixel}" || {
     fail 1 "img2sixel failed"
     exit 0
