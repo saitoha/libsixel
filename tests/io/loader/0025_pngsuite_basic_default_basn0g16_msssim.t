@@ -7,9 +7,9 @@
 set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-. "${TOP_SRCDIR}/tests/lib/sh/loader/pngsuite_common.sh"
 
-ensure_pngsuite_prereqs
+ensure_feature_available "HAVE_LIBPNG" "png" "libpng support"
+ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 echo "1..1"
 set -v
@@ -17,22 +17,17 @@ set -v
 input_png="${images_dir}/pngsuite/basic/basn0g16.png"
 expected_ppm="${top_srcdir}/tests/data/loader/pngsuite_expected/0025_pngsuite_basic_default_basn0g16_msssim.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/basn0g16.sixel"
-score_file="${ARTIFACT_LOCAL_DIR}/basn0g16.ms_ssim.txt"
 img2sixel_opts=""
 
-if [ ! -f "${expected_ppm}" ]; then
-    fail 1 "missing expected image: 0025_pngsuite_basic_default_basn0g16_msssim.ppm"
+run_img2sixel ${img2sixel_opts} "${input_png}" >"${output_sixel}" || {
+    fail 1 "img2sixel failed"
     exit 0
-fi
+}
 
-if run_img2sixel ${img2sixel_opts} "${input_png}" >"${output_sixel}"; then
-    if run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" "${expected_ppm}" - <"${output_sixel}" >"${score_file}"; then
-        pass 1 "basic_default basic/basn0g16.png"
-    else
-        fail 1 "basic_default basic/basn0g16.png"
-    fi
-else
-    fail 1 "basic_default basic/basn0g16.png"
-fi
+lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" "${expected_ppm}" - <"${output_sixel}" >&2) || {
+    fail 1 "$lsqa_msg"
+    exit 0
+}
 
+pass 1 "basic_default basic/basn0g16.png"
 exit 0
