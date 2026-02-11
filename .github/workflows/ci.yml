@@ -152,7 +152,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - label: Autotools-ubuntu-x86_64-gcc
+          - label: Autotools-ubuntu-x86_64-gcc-vpath_build
             buildtool: autotools
             runner: ubuntu-latest
             setup_prefix: >-
