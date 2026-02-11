@@ -4,8 +4,6 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-status=0
-
 config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 
 echo "1..1"
@@ -13,10 +11,11 @@ set -v
 
 snake_jpg="${top_srcdir}/tests/data/inputs/snake_64.jpg"
 
-if run_img2sixel -sa "${snake_jpg}" >/dev/null; then
+run_img2sixel -sa "${snake_jpg}" >/dev/null && {
     fail 1 "ambiguous select-color prefix accepted"
-else
-    pass 1 "ambiguous select-color prefix rejected"
-fi
+    exit 0
+}
 
-exit "${status}"
+pass 1 "ambiguous select-color prefix rejected"
+
+exit 0
