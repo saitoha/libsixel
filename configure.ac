@@ -1397,7 +1397,38 @@ if test "x$using_cl" = "xyes"; then
     ac_cv_func_memcpy=yes
     ac_cv_func_memmove=yes
     ac_cv_func_memset=yes
+
+    # Seed secure CRT symbols for cl/clang-cl builds where these APIs are
+    # guaranteed by the Microsoft CRT family. This avoids redundant probes
+    # while keeping MinGW/MSYS/Cygwin builds on the regular detection path.
+    #
+    # Seed policy table:
+    #   +----------------+--------------------+
+    #   | Cache variable | Seed value         |
+    #   +----------------+--------------------+
+    #   | ac_cv_func__*  | yes (MS CRT API)  |
+    #   +----------------+--------------------+
+    ac_cv_func__setmode=yes
+    ac_cv_func__fileno=yes
+    ac_cv_func__isatty=yes
+    ac_cv_func__open=yes
+    ac_cv_func__write=yes
+    ac_cv_func__close=yes
+    ac_cv_func__sopen_s=yes
 fi
+
+# Seed cache entries that are effectively fixed by host ABI families.
+#
+# Rationale:
+# 1) fork() is unavailable on native Windows CRT environments.
+# 2) Emscripten may expose fork() at link time in some SDK versions, but the
+#    runtime path is ENOSYS, so shell/test flows must treat it as unavailable.
+#
+# Keeping this decision here avoids paying repeated probe costs while keeping
+# behavior aligned with the existing platform policy below.
+AS_CASE([$host_os],
+        [*emscripten*|mingw*|*mingw*|*ucrt*|*win32*|*windows*],
+        [ac_cv_func_fork=no])
 
 AC_CHECK_FUNCS_PARALLEL([assert \
                          setmode \
@@ -1517,9 +1548,7 @@ case "${host_os}" in
     AC_CHECK_HEADERS_PARALLEL([emscripten.h])
     AC_CHECK_FUNCS([emscripten_get_compiler_setting], [], [],
                    [[#include <emscripten.h>]])
-    dnl Emscripten (emcc >=5.0.0) reports fork() at link time, but the runtime returns ENOSYS.
-    dnl Force fork off to keep test harnesses from failing at runtime.
-    ac_cv_func_fork=no
+    dnl fork() cache is pre-seeded above for emscripten hosts.
     AC_CHECK_FUNCS_PARALLEL([ \
         clock \
         nanosleep \
