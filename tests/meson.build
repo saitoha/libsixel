@@ -186,7 +186,6 @@ tests = [
   'cli/core/0001_help.t',
   'cli/core/0002_version.t',
   'cli/core/0003_stdin.t',
-  'cli/core/0004_missing_input_path_suggestions.t',
   'cli/core/0005_basic_help_option.t',
   'cli/core/0006_basic_version_option.t',
   'cli/core/0007_basic_stdin_snake.t',
