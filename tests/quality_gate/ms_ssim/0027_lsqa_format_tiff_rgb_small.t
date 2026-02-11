@@ -14,11 +14,11 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
-if ! feature_defined_in_config "HAVE_LIBTIFF"; then
+feature_defined_in_config "HAVE_LIBTIFF" ||
     skip_all "libtiff support is disabled in this build"
-fi
 
-printf '1..1\n'
+printf '1..1
+'
 set -v
 
 image_path="${top_srcdir}/tests/data/inputs/snake_64.tiff"
@@ -34,12 +34,17 @@ lsqa_err=$(
     run_lsqa -b "MS-SSIM:${lsqa_floor}" "${reference_path}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
-if [ -z "${lsqa_run_status-}" ]; then
-    pass 1 "tiff rgb quality meets baseline"
-elif [ "${lsqa_run_status}" -eq 5 ]; then
-    fail 1 "${lsqa_err}"
-else
-    fail 1 "tiff rgb quality regressed"
-fi
+lsqa_status=${lsqa_run_status-0}
 
+test "${lsqa_status}" -ne 5 || {
+    fail 1 "${lsqa_err}"
+    exit 0
+}
+
+test "${lsqa_status}" -eq 0 || {
+    fail 1 "tiff rgb quality regressed"
+    exit 0
+}
+
+pass 1 "tiff rgb quality meets baseline"
 exit 0
