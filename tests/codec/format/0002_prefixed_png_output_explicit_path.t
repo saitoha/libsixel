@@ -4,8 +4,6 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-status=0
-
 config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 
 echo "1..1"
@@ -14,14 +12,16 @@ set -v
 snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 target_png="${ARTIFACT_LOCAL_DIR}/snake-explicit.png"
 
-if run_img2sixel -o "png:${target_png}" "${snake_jpg}"; then
-    if [ -s "${target_png}" ]; then
-        pass 1 "prefixed PNG writes to explicit path"
-    else
-        fail 1 "prefixed PNG did not produce file"
-    fi
-else
+run_img2sixel -o "png:${target_png}" "${snake_jpg}" || {
     fail 1 "prefixed PNG conversion failed"
-fi
+    exit 0
+}
 
-exit "${status}"
+[ -s "${target_png}" ] || {
+    fail 1 "prefixed PNG did not produce file"
+    exit 0
+}
+
+pass 1 "prefixed PNG writes to explicit path"
+
+exit 0

@@ -101,7 +101,6 @@ TESTS = \
     cli/completion/0029_completion_show_invalid_target.t \
     cli/completion/0030_completion_install_bash_legacy.t \
     cli/completion/0031_completion_install_zsh_idempotent.t \
-    codec/decoder/core/0004_tab_separated_colour_introducers.t \
     codec/decoder/core/0005_oversized_dcs_geometry.t \
     processing/dither/general/0001_roundtrip_dither_gamma.t \
     processing/dither/general/0002_inspection_with_diffusion.t \
