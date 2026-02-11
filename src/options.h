@@ -64,6 +64,9 @@ typedef enum sixel_option_choice_result {
 #define SIXEL_OPTION_PATH_ALLOW_REMOTE      (1u << 2)
 #define SIXEL_OPTION_PATH_ALLOW_EMPTY       (1u << 3)
 
+void
+sixel_option_apply_cli_suggestion_defaults(void);
+
 int
 sixel_option_validate_filesystem_path(
     char const *argument,
