@@ -5,6 +5,10 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
+if ! command -v zsh >/dev/null; then
+    skip_all "zsh is not found"
+fi
+
 status=0
 completion_home=""
 rc_path=""
