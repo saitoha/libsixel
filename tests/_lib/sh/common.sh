@@ -341,9 +341,6 @@ make_temp_file() {
     return 0
 }
 
-export SIXEL_THREADS=${SIXEL_THREADS:-1}
-
-
 # Shared TAP helpers for shell-based tests.
 #
 # This module standardizes TAP output to the following format:
