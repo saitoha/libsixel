@@ -29,7 +29,7 @@ has_fallback=1
 grep -q "Suggestion lookup unavailable on this build." "${stderr_capture}" \
     >/dev/null 2>&1 && has_fallback=0
 
-[ "${has_suggestions}" -eq 0 ] || [ "${has_fallback}" -eq 0 || {
+[ "${has_suggestions}" -eq 0 ] || [ "${has_fallback}" -eq 0 ] || {
     fail 1 "missing path suggestion diagnostics"
     exit 0
 }
