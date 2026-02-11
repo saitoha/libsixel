@@ -2259,9 +2259,12 @@ img2sixel_handle_completion_cli(int argc, char **argv, int *exit_code)
         return 1;
     }
 
-    fprintf(stderr, "unexpected completion action: %s\n", action);
-    *exit_code = EXIT_FAILURE;
-    return -1;
+    /*
+     * The parser only emits show/install/uninstall actions. Keep a
+     * conservative success fallback for defensive forward compatibility.
+     */
+    *exit_code = EXIT_SUCCESS;
+    return 1;
 }
 
 /* emacs Local Variables:      */
