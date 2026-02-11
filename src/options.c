@@ -1087,6 +1087,60 @@ sixel_option_path_looks_remote(char const *path)
 }
 
 /*
+ * Append the shared diagnostic for a missing directory while preserving
+ * the caller's output buffer layout logic.
+ */
+static SIXEL_OPTION_UNUSED void
+sixel_option_append_missing_directory_message(
+    char *buffer,
+    size_t buffer_size,
+    size_t offset,
+    char const *directory)
+{
+    int written;
+
+    written = 0;
+
+    if (buffer == NULL || buffer_size == 0u || offset >= buffer_size - 1u) {
+        return;
+    }
+
+    written = snprintf(buffer + offset,
+                       buffer_size - offset,
+                       "Directory \"%s\" does not exist.\n",
+                       directory != NULL ? directory : "(null)");
+    if (written < 0) {
+        written = 0;
+    }
+}
+
+/*
+ * Append the shared fallback message when suggestion lookup is unavailable
+ * for platform or allocation reasons.
+ */
+static SIXEL_OPTION_UNUSED void
+sixel_option_append_unavailable_suggestions_message(
+    char *buffer,
+    size_t buffer_size,
+    size_t offset)
+{
+    int written;
+
+    written = 0;
+
+    if (buffer == NULL || buffer_size == 0u || offset >= buffer_size - 1u) {
+        return;
+    }
+
+    written = snprintf(buffer + offset,
+                       buffer_size - offset,
+                       "Suggestion lookup unavailable on this build.\n");
+    if (written < 0) {
+        written = 0;
+    }
+}
+
+/*
  * Compose a multi-line diagnostic highlighting the missing path along with
  * nearby suggestions.  The first line reports the original token supplied by
  * the caller so CLI wrappers can relay the exact argument the user typed.
@@ -1216,17 +1270,10 @@ sixel_option_build_missing_path_message(
     attributes = GetFileAttributesA(directory_copy);
     if (attributes == INVALID_FILE_ATTRIBUTES ||
             (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0u) {
-        if (offset < buffer_size - 1u) {
-            written = snprintf(buffer + offset,
-                               buffer_size - offset,
-                               "Directory \"%s\" does not exist.\n",
-                               directory_copy != NULL
-                                   ? directory_copy
-                                   : "(null)");
-            if (written < 0) {
-                written = 0;
-            }
-        }
+        sixel_option_append_missing_directory_message(buffer,
+                                                      buffer_size,
+                                                      offset,
+                                                      directory_copy);
         free(directory_copy);
         return result;
     }
@@ -1240,15 +1287,9 @@ sixel_option_build_missing_path_message(
     pattern_length = directory_length + (size_t)needs_separator + 2u;
     pattern = (char *)malloc(pattern_length);
     if (pattern == NULL) {
-        if (offset < buffer_size - 1u) {
-            written = snprintf(buffer + offset,
-                               buffer_size - offset,
-                               "Suggestion lookup unavailable "
-                               "on this build.\n");
-            if (written < 0) {
-                written = 0;
-            }
-        }
+        sixel_option_append_unavailable_suggestions_message(buffer,
+                                                            buffer_size,
+                                                            offset);
         free(directory_copy);
         return 0;
     }
@@ -1265,17 +1306,10 @@ sixel_option_build_missing_path_message(
     free(pattern);
     pattern = NULL;
     if (directory_handle == INVALID_HANDLE_VALUE) {
-        if (offset < buffer_size - 1u) {
-            written = snprintf(buffer + offset,
-                               buffer_size - offset,
-                               "Directory \"%s\" does not exist.\n",
-                               directory_copy != NULL
-                                   ? directory_copy
-                                   : "(null)");
-            if (written < 0) {
-                written = 0;
-            }
-        }
+        sixel_option_append_missing_directory_message(buffer,
+                                                      buffer_size,
+                                                      offset,
+                                                      directory_copy);
         free(directory_copy);
         return result;
     }
@@ -1449,14 +1483,9 @@ sixel_option_build_missing_path_message(
 
     return result;
 #else
-    if (offset < buffer_size - 1u) {
-        written = snprintf(buffer + offset,
-                           buffer_size - offset,
-                           "Suggestion lookup unavailable on this build.\n");
-        if (written < 0) {
-            written = 0;
-        }
-    }
+    sixel_option_append_unavailable_suggestions_message(buffer,
+                                                        buffer_size,
+                                                        offset);
     free(directory_copy);
     return 0;
 #endif
