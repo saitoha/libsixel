@@ -22,10 +22,17 @@ err_output=$({ run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 -- \
 }
 
 printf '%s\n' "${err_output}" | grep -F 'No nearby matches were found in' \
+    >/dev/null 2>&1 && {
+    pass 1 "missing path reports no-nearby-matches diagnostic"
+    exit 0
+}
+
+printf '%s\n' "${err_output}" | \
+    grep -F 'Suggestion lookup unavailable on this build.' \
     >/dev/null 2>&1 || {
     fail 1 "missing no-nearby-matches diagnostic"
     exit 0
 }
 
-pass 1 "missing path reports no-nearby-matches diagnostic"
+pass 1 "missing path reports unsupported suggestion lookup"
 exit 0

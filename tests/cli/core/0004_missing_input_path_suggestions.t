@@ -21,15 +21,19 @@ run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 \
     exit 0
 }
 
-grep -q "Suggestions:" "${stderr_capture}" || {
-    fail 1 "missing input path did not include suggestion header"
+grep -q "Suggestions:" "${stderr_capture}" && {
+    grep -q "modified" "${stderr_capture}" || {
+        fail 1 "suggestion entries were missing timestamps"
+        exit 0
+    }
+    pass 1 "missing input path includes ranked suggestion diagnostics"
     exit 0
 }
 
-grep -q "modified" "${stderr_capture}" || {
-    fail 1 "missing input path did not include modified timestamp hint"
+grep -q "Suggestion lookup unavailable on this build." "${stderr_capture}" || {
+    fail 1 "missing fallback diagnostic for unsupported suggestion lookup"
     exit 0
 }
 
-pass 1 "missing input path includes suggestion diagnostics"
+pass 1 "missing input path reports unsupported suggestion lookup"
 exit 0

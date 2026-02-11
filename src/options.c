@@ -47,6 +47,9 @@
 #if HAVE_SYS_STAT_H
 # include <sys/stat.h>
 #endif
+#if defined(_WIN32) && HAVE_WINDOWS_H
+# include <windows.h>
+#endif
 
 #include <sixel.h>
 #include "compat_stub.h"
@@ -867,7 +870,8 @@ sixel_option_duplicate_directory(char const *path)
     return copy;
 }
 
-#if HAVE_DIRENT_H && HAVE_SYS_STAT_H
+#if HAVE_DIRENT_H && HAVE_SYS_STAT_H || \
+    (defined(_WIN32) && HAVE_WINDOWS_H)
 static char *
 sixel_option_join_directory_entry(
     char const *directory,
@@ -1013,7 +1017,7 @@ sixel_option_strerror(
 
     return message;
 }
-#endif /* HAVE_DIRENT_H && HAVE_SYS_STAT_H */
+#endif /* HAVE_DIRENT_H && HAVE_SYS_STAT_H || windows */
 
 static int
 sixel_option_path_is_clipboard(char const *argument)
@@ -1121,7 +1125,33 @@ sixel_option_build_missing_path_message(
     int error_code;
     char error_buffer[128];
 #else
+#if defined(_WIN32) && HAVE_WINDOWS_H
+    char const *target_name;
+    int result;
+    sixel_option_path_candidate_t *candidates;
+    sixel_option_path_candidate_t *grown;
+    size_t candidate_count;
+    size_t candidate_capacity;
+    size_t index;
+    size_t new_capacity;
+    char *pattern;
+    size_t directory_length;
+    int needs_separator;
+    size_t pattern_length;
+    HANDLE directory_handle;
+    WIN32_FIND_DATAA find_data;
+    DWORD attributes;
+    ULARGE_INTEGER mtime_utc;
+    ULONGLONG unix_seconds;
+    time_t min_mtime;
+    time_t max_mtime;
+    double recency_range;
+    double percent_double;
+    int percent_int;
+    char time_buffer[64];
+#else
     (void)resolved_path;
+#endif
 #endif
 
     directory_copy = sixel_option_duplicate_directory(resolved_path);
@@ -1155,7 +1185,271 @@ sixel_option_build_missing_path_message(
 #if !(HAVE_DIRENT_H && HAVE_SYS_STAT_H)
     suggestions_enabled = sixel_option_environment_is_enabled(
         SIXEL_OPTION_ENV_PATH_SUGGESTIONS);
-    if (suggestions_enabled && offset < buffer_size - 1u) {
+    if (!suggestions_enabled) {
+        free(directory_copy);
+        return 0;
+    }
+#if defined(_WIN32) && HAVE_WINDOWS_H
+    target_name = sixel_option_basename_view(resolved_path);
+    result = 0;
+    candidates = NULL;
+    grown = NULL;
+    candidate_count = 0u;
+    candidate_capacity = 0u;
+    index = 0u;
+    new_capacity = 0u;
+    pattern = NULL;
+    directory_length = 0u;
+    needs_separator = 0;
+    pattern_length = 0u;
+    directory_handle = INVALID_HANDLE_VALUE;
+    memset(&find_data, 0, sizeof(find_data));
+    attributes = 0u;
+    memset(&mtime_utc, 0, sizeof(mtime_utc));
+    unix_seconds = 0u;
+    min_mtime = 0;
+    max_mtime = 0;
+    recency_range = 0.0;
+    percent_double = 0.0;
+    percent_int = 0;
+    memset(time_buffer, 0, sizeof(time_buffer));
+    attributes = GetFileAttributesA(directory_copy);
+    if (attributes == INVALID_FILE_ATTRIBUTES ||
+            (attributes & FILE_ATTRIBUTE_DIRECTORY) == 0u) {
+        if (offset < buffer_size - 1u) {
+            written = snprintf(buffer + offset,
+                               buffer_size - offset,
+                               "Directory \"%s\" does not exist.\n",
+                               directory_copy != NULL
+                                   ? directory_copy
+                                   : "(null)");
+            if (written < 0) {
+                written = 0;
+            }
+        }
+        free(directory_copy);
+        return result;
+    }
+
+    directory_length = strlen(directory_copy);
+    if (directory_length > 0u &&
+            directory_copy[directory_length - 1u] != '/' &&
+            directory_copy[directory_length - 1u] != '\\') {
+        needs_separator = 1;
+    }
+    pattern_length = directory_length + (size_t)needs_separator + 2u;
+    pattern = (char *)malloc(pattern_length);
+    if (pattern == NULL) {
+        if (offset < buffer_size - 1u) {
+            written = snprintf(buffer + offset,
+                               buffer_size - offset,
+                               "Suggestion lookup unavailable "
+                               "on this build.\n");
+            if (written < 0) {
+                written = 0;
+            }
+        }
+        free(directory_copy);
+        return 0;
+    }
+    if (directory_length > 0u) {
+        memcpy(pattern, directory_copy, directory_length);
+    }
+    if (needs_separator) {
+        pattern[directory_length] = '\\';
+    }
+    pattern[directory_length + (size_t)needs_separator] = '*';
+    pattern[directory_length + (size_t)needs_separator + 1u] = '\0';
+
+    directory_handle = FindFirstFileA(pattern, &find_data);
+    free(pattern);
+    pattern = NULL;
+    if (directory_handle == INVALID_HANDLE_VALUE) {
+        if (offset < buffer_size - 1u) {
+            written = snprintf(buffer + offset,
+                               buffer_size - offset,
+                               "Directory \"%s\" does not exist.\n",
+                               directory_copy != NULL
+                                   ? directory_copy
+                                   : "(null)");
+            if (written < 0) {
+                written = 0;
+            }
+        }
+        free(directory_copy);
+        return result;
+    }
+
+    do {
+        if (find_data.cFileName[0] == '.' &&
+                (find_data.cFileName[1] == '\0' ||
+                 (find_data.cFileName[1] == '.' &&
+                  find_data.cFileName[2] == '\0'))) {
+            continue;
+        }
+        if ((find_data.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0u) {
+            continue;
+        }
+        if (candidate_count == candidate_capacity) {
+            new_capacity = (candidate_capacity == 0u)
+                ? 8u
+                : candidate_capacity * 2u;
+            grown = (sixel_option_path_candidate_t *)realloc(
+                candidates,
+                new_capacity * sizeof(sixel_option_path_candidate_t));
+            if (grown == NULL) {
+                break;
+            }
+            candidates = grown;
+            candidate_capacity = new_capacity;
+        }
+        candidates[candidate_count].path = sixel_option_join_directory_entry(
+            directory_copy,
+            find_data.cFileName);
+        if (candidates[candidate_count].path == NULL) {
+            continue;
+        }
+        mtime_utc.LowPart = find_data.ftLastWriteTime.dwLowDateTime;
+        mtime_utc.HighPart = find_data.ftLastWriteTime.dwHighDateTime;
+        if (mtime_utc.QuadPart >= 116444736000000000ULL) {
+            unix_seconds =
+                (mtime_utc.QuadPart - 116444736000000000ULL) / 10000000ULL;
+        } else {
+            unix_seconds = 0ULL;
+        }
+        candidates[candidate_count].name =
+            sixel_option_basename_view(candidates[candidate_count].path);
+        candidates[candidate_count].mtime = (time_t)unix_seconds;
+        candidates[candidate_count].name_score = 0.0;
+        candidates[candidate_count].extension_score = 0.0;
+        candidates[candidate_count].recency_score = 0.0;
+        candidates[candidate_count].total_score = 0.0;
+        ++candidate_count;
+    } while (FindNextFileA(directory_handle, &find_data) != 0);
+
+    if (directory_handle != INVALID_HANDLE_VALUE) {
+        (void)FindClose(directory_handle);
+        directory_handle = INVALID_HANDLE_VALUE;
+    }
+
+    if (candidate_count == 0u) {
+        if (offset < buffer_size - 1u) {
+            written = snprintf(buffer + offset,
+                               buffer_size - offset,
+                               "No nearby matches were found in \"%s\".\n",
+                               directory_copy != NULL
+                                   ? directory_copy
+                                   : "(null)");
+            if (written < 0) {
+                written = 0;
+            }
+        }
+        free(directory_copy);
+        return 0;
+    }
+
+    min_mtime = candidates[0].mtime;
+    max_mtime = candidates[0].mtime;
+    for (index = 0u; index < candidate_count; ++index) {
+        candidates[index].name_score =
+            sixel_option_normalized_levenshtein(target_name,
+                                                candidates[index].name,
+                                                NULL);
+        candidates[index].extension_score =
+            sixel_option_extension_similarity(target_name,
+                                              candidates[index].name);
+        if (index == 0u || candidates[index].mtime < min_mtime) {
+            min_mtime = candidates[index].mtime;
+        }
+        if (index == 0u || candidates[index].mtime > max_mtime) {
+            max_mtime = candidates[index].mtime;
+        }
+    }
+
+    recency_range = (double)(max_mtime - min_mtime);
+    for (index = 0u; index < candidate_count; ++index) {
+        if (recency_range <= 0.0) {
+            candidates[index].recency_score = 1.0;
+        } else {
+            candidates[index].recency_score =
+                (double)(candidates[index].mtime - min_mtime) /
+                recency_range;
+        }
+        candidates[index].total_score =
+            SIXEL_OPTION_SUGGESTION_NAME_WEIGHT *
+                candidates[index].name_score +
+            SIXEL_OPTION_SUGGESTION_EXTENSION_WEIGHT *
+                candidates[index].extension_score +
+            SIXEL_OPTION_SUGGESTION_RECENCY_WEIGHT *
+                candidates[index].recency_score;
+    }
+
+    qsort(candidates,
+          candidate_count,
+          sizeof(sixel_option_path_candidate_t),
+          sixel_option_candidate_compare);
+
+    if (offset < buffer_size - 1u) {
+        written = snprintf(buffer + offset,
+                           buffer_size - offset,
+                           "Suggestions:\n");
+        if (written < 0) {
+            written = 0;
+        }
+        if ((size_t)written >= buffer_size - offset) {
+            offset = buffer_size - 1u;
+        } else {
+            offset += (size_t)written;
+        }
+    }
+
+    for (index = 0u; index < candidate_count &&
+            index < SIXEL_OPTION_SUGGESTION_LIMIT; ++index) {
+        percent_double = candidates[index].total_score * 100.0;
+        if (percent_double < 0.0) {
+            percent_double = 0.0;
+        }
+        if (percent_double > 100.0) {
+            percent_double = 100.0;
+        }
+        percent_int = (int)(percent_double + 0.5);
+        sixel_option_format_timestamp(candidates[index].mtime,
+                                      time_buffer,
+                                      sizeof(time_buffer));
+        if (offset < buffer_size - 1u) {
+            written = snprintf(buffer + offset,
+                               buffer_size - offset,
+                               "  * %s (similarity score %d%%, "
+                               "modified %s)\n",
+                               candidates[index].path != NULL
+                                   ? candidates[index].path
+                                   : "(unknown)",
+                               percent_int,
+                               time_buffer);
+            if (written < 0) {
+                written = 0;
+            }
+            if ((size_t)written >= buffer_size - offset) {
+                offset = buffer_size - 1u;
+            } else {
+                offset += (size_t)written;
+            }
+        }
+    }
+
+    if (candidates != NULL) {
+        for (index = 0u; index < candidate_count; ++index) {
+            free(candidates[index].path);
+            candidates[index].path = NULL;
+        }
+        free(candidates);
+        candidates = NULL;
+    }
+    free(directory_copy);
+
+    return result;
+#else
+    if (offset < buffer_size - 1u) {
         written = snprintf(buffer + offset,
                            buffer_size - offset,
                            "Suggestion lookup unavailable on this build.\n");
@@ -1165,6 +1459,7 @@ sixel_option_build_missing_path_message(
     }
     free(directory_copy);
     return 0;
+#endif
 #else
     suggestions_enabled = sixel_option_environment_is_enabled(
         SIXEL_OPTION_ENV_PATH_SUGGESTIONS);
@@ -1190,9 +1485,6 @@ sixel_option_build_missing_path_message(
     percent_double = 0.0;
     percent_int = 0;
     memset(time_buffer, 0, sizeof(time_buffer));
-    error_code = 0;
-    memset(error_buffer, 0, sizeof(error_buffer));
-
     directory_stream = opendir(directory_copy);
     if (directory_stream == NULL) {
         error_code = errno;
