@@ -1,4 +1,3 @@
-#!/bin/sh
 # TAP test covering positional float32 bluenoise seed-based phase derivation.
 
 set -eux
@@ -11,8 +10,7 @@ echo "1..1"
 set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
-case_id=${test_name%.t}
-output_sixel="${ARTIFACT_LOCAL_DIR}/${case_id}.six"
+output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
 if run_img2sixel --env SIXEL_DITHER_BLUENOISE_SEED=123 \
         -d bluenoise -y raster --precision=float32 -p 16 \

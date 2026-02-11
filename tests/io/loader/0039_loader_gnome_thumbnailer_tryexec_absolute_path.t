@@ -7,9 +7,9 @@ set -eux
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-if ! feature_defined_in_config "HAVE_FREEDESKTOP_THUMBNAILING"; then
+feature_defined_in_config "HAVE_FREEDESKTOP_THUMBNAILING" || {
     skip_all "gnome-thumbnailer loader is unavailable on this platform"
-fi
+}
 
 echo "1..1"
 set -v
@@ -19,9 +19,7 @@ template_root="${top_srcdir}/tests/data/inputs/thumbnailer"
 xdg_data_home="${template_root}/cases/0039"
 bin_dir="${template_root}/bin"
 
-run_img2sixel --env "XDG_DATA_DIRS=${xdg_data_home}" \
-              --env "PATH=${bin_dir}:${PATH}" \
-              -L gnome-thumbnailer! "${input_png}" >/dev/null || {
+run_img2sixel --env "XDG_DATA_DIRS=${xdg_data_home}"               --env "PATH=${bin_dir}:${PATH}"               -L gnome-thumbnailer! "${input_png}" >/dev/null || {
     fail 1 "absolute TryExec path handling failed"
     exit 0
 }

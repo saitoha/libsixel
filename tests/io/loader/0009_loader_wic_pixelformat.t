@@ -5,8 +5,13 @@ set -eu
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
+feature_defined_in_config "HAVE_WIC" || {
+    skip_all "wic loader is unavailable"
+    exit 0
+}
+
 set +e
-loader_output=$(run_test_runner "loader/${test_name}" 2>&1)
+loader_output=$(run_test_runner "loader/0009_loader_wic_pixelformat" 2>&1)
 rc=$?
 set -e
 printf '%s' "${loader_output}" >&2
@@ -21,9 +26,7 @@ echo "1..1"
 set -v
 
 if [ "${rc}" -eq 0 ]; then
-    echo "ok 1 - loader/${test_name}"
-elif [ "${rc}" -eq 77 ]; then
-    echo "ok 1 - loader/${test_name} # SKIP unavailable"
+    echo "ok 1 - loader/0009_loader_wic_pixelformat"
 else
-    echo "not ok 1 - loader/${test_name}"
+    echo "not ok 1 - loader/0009_loader_wic_pixelformat"
 fi

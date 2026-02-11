@@ -3,31 +3,20 @@
 
 set -eux
 
-script_dir=$(CDPATH=; cd "${0%[/\\]*}" && pwd)
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
-status=0
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 
 
 check_exit() {
-    if run_img2sixel "$@"; then
-        rc=0
-    else
-        rc=$?
-    fi
+    set +e
+    run_img2sixel "$@"
+    rc=$?
+    set -e
 
     # Accept success or mapped error exits (1/2/3) without crashing.
-    case ${rc} in
-        0|1|2|3)
-            return 0
-            ;;
-        *)
-            return 1
-            ;;
-    esac
+    [ "${rc}" -le 3 ]
 }
 
 issue166="${top_srcdir}/tests/security/issue/data/166/poc"
@@ -35,10 +24,11 @@ issue166="${top_srcdir}/tests/security/issue/data/166/poc"
 printf '1..1\n'
 set -v
 
-if check_exit "${issue166}" -w128 >"${ARTIFACT_LOCAL_DIR}/issue166-width.sixel"; then
-    pass 1 "crafted width input handled"
-else
+check_exit "${issue166}" -w128 >"${ARTIFACT_LOCAL_DIR}/issue166-width.sixel" || {
     fail 1 "crafted width input failed"
-fi
+    exit 0
+}
 
-exit "${status}"
+pass 1 "crafted width input handled"
+
+exit 0

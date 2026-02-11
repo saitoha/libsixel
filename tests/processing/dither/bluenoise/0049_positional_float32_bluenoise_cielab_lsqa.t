@@ -18,9 +18,8 @@ echo "1..1"
 set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
-case_id=${test_name%.t}
-output_sixel="${ARTIFACT_LOCAL_DIR}/${case_id}.six"
-output_png="${ARTIFACT_LOCAL_DIR}/${case_id}.png"
+output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
+output_png="${ARTIFACT_LOCAL_DIR}/output.png"
 
 run_img2sixel -d bluenoise -y raster -W cielab -o "${output_sixel}" "${input_image}" || {
     fail 1 "positional float32 bluenoise cielab lsqa failed"

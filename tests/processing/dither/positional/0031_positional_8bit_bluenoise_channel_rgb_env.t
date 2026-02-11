@@ -11,8 +11,7 @@ echo "1..1"
 set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
-case_id=${test_name%.t}
-output_sixel="${ARTIFACT_LOCAL_DIR}/${case_id}.six"
+output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
 if run_img2sixel --env SIXEL_DITHER_BLUENOISE_CHANNEL=rgb \
         -d bluenoise -y raster --precision=8bit -p 16 \

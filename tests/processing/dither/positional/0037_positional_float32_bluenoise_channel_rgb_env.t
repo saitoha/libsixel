@@ -10,9 +10,8 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
-case_id=${test_name%.t}
-output_sixel="${ARTIFACT_LOCAL_DIR}/${case_id}.six"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
 if run_img2sixel --env SIXEL_DITHER_BLUENOISE_CHANNEL=rgb \
         -d bluenoise -y raster --precision=float32 -p 16 \
