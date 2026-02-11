@@ -998,7 +998,7 @@ sixel_option_candidate_compare(void const *lhs, void const *rhs)
     return strcmp(left->path, right->path);
 }
 
-static char *
+static SIXEL_OPTION_UNUSED char *
 sixel_option_strerror(
     int error_number,
     char *buffer,
