@@ -18650,8 +18650,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
-
-
   ac_check_headers_parallel_includes=""
   ac_check_headers_parallel_dir="ac-check-headers.$$"
   ac_check_headers_parallel_confdefs="$ac_pwd/confdefs.h"
@@ -18683,7 +18681,6 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
                            spawn.h \
                            strings.h \
                            inttypes.h \
-                           strings.h \
                            intrin.h \
                            emmintrin.h \
                            immintrin.h \
@@ -19418,6 +19415,12 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
+
+
+
+
+
+
   ac_check_funcs_parallel_includes=""
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for -fno-builtin" >&5
 printf %s "checking for -fno-builtin... " >&6; }
@@ -19500,6 +19503,9 @@ printf "%s\n" "$ac_cv_c_no_builtin" >&6; }
                          open \
                          sscanf_s \
                          strncmp \
+                         _stricmp \
+                         _strcmpi \
+                         strcasecmp \
                          ldiv \
                          floor \
                          pow \

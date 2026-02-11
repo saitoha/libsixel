@@ -320,10 +320,14 @@ sixel_compat_strcasecmp(char const *lhs, char const *rhs)
         return (lhs == NULL) ? -1 : 1;
     }
 
-#if defined(_WIN32)
+#if HAVE__STRCASECMP
     result = _stricmp(lhs, rhs);
-#else
+#elif HAVE__STRCMPI
+    result = _strcmpi(lhs, rhs);
+#elif HAVE_STRCASECMP
     result = strcasecmp(lhs, rhs);
+#else
+# error "_stricmp(), _strcmpi() or strcasecmp() is required"
 #endif
 
     return result;
