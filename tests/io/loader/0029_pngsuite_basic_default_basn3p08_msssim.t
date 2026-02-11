@@ -24,7 +24,7 @@ run_img2sixel ${img2sixel_opts} "${input_png}" >"${output_sixel}" || {
     exit 0
 }
 
-lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:0.95" "${expected_ppm}" - <"${output_sixel}" >&2) || {
+lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:0.95" "${expected_ppm}" - <"${output_sixel}" 2>&1) || {
     fail 1 "$lsqa_msg"
     exit 0
 }

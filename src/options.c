@@ -1157,28 +1157,6 @@ sixel_option_build_missing_path_message(
     size_t offset;
     int written;
     int suggestions_enabled;
-#if HAVE_DIRENT_H && HAVE_SYS_STAT_H
-    char const *target_name;
-    int result;
-    DIR *directory_stream;
-    struct dirent *entry;
-    sixel_option_path_candidate_t *candidates;
-    sixel_option_path_candidate_t *grown;
-    size_t candidate_count;
-    size_t candidate_capacity;
-    size_t index;
-    size_t new_capacity;
-    struct stat entry_stat;
-    char *candidate_path;
-    time_t min_mtime;
-    time_t max_mtime;
-    double recency_range;
-    double percent_double;
-    int percent_int;
-    char time_buffer[64];
-    int error_code;
-    char error_buffer[128];
-#else
 #if defined(_WIN32) && HAVE_WINDOWS_H
     char const *target_name;
     int result;
@@ -1203,9 +1181,29 @@ sixel_option_build_missing_path_message(
     double percent_double;
     int percent_int;
     char time_buffer[64];
+#elif HAVE_DIRENT_H && HAVE_SYS_STAT_H
+    char const *target_name;
+    int result;
+    DIR *directory_stream;
+    struct dirent *entry;
+    sixel_option_path_candidate_t *candidates;
+    sixel_option_path_candidate_t *grown;
+    size_t candidate_count;
+    size_t candidate_capacity;
+    size_t index;
+    size_t new_capacity;
+    struct stat entry_stat;
+    char *candidate_path;
+    time_t min_mtime;
+    time_t max_mtime;
+    double recency_range;
+    double percent_double;
+    int percent_int;
+    char time_buffer[64];
+    int error_code;
+    char error_buffer[128];
 #else
     (void)resolved_path;
-#endif
 #endif
 
     directory_copy = sixel_option_duplicate_directory(resolved_path);
@@ -1236,14 +1234,18 @@ sixel_option_build_missing_path_message(
         offset = (size_t)written;
     }
 
-#if !(HAVE_DIRENT_H && HAVE_SYS_STAT_H)
+    /*
+     * Prefer Win32 enumeration on Windows builds.  MSYS variants can expose
+     * dirent/stat wrappers, but those wrappers may still trigger expensive
+     * path translation for missing files.
+     */
+#if defined(_WIN32) && HAVE_WINDOWS_H
     suggestions_enabled = sixel_option_environment_is_enabled(
         SIXEL_OPTION_ENV_PATH_SUGGESTIONS);
     if (!suggestions_enabled) {
         free(directory_copy);
         return 0;
     }
-#if defined(_WIN32) && HAVE_WINDOWS_H
     target_name = sixel_option_basename_view(resolved_path);
     result = 0;
     candidates = NULL;
@@ -1482,14 +1484,7 @@ sixel_option_build_missing_path_message(
     free(directory_copy);
 
     return result;
-#else
-    sixel_option_append_unavailable_suggestions_message(buffer,
-                                                        buffer_size,
-                                                        offset);
-    free(directory_copy);
-    return 0;
-#endif
-#else
+#elif HAVE_DIRENT_H && HAVE_SYS_STAT_H
     suggestions_enabled = sixel_option_environment_is_enabled(
         SIXEL_OPTION_ENV_PATH_SUGGESTIONS);
     if (!suggestions_enabled) {
@@ -1735,6 +1730,12 @@ sixel_option_build_missing_path_message(
     free(directory_copy);
 
     return result;
+#else
+    sixel_option_append_unavailable_suggestions_message(buffer,
+                                                        buffer_size,
+                                                        offset);
+    free(directory_copy);
+    return 0;
 #endif
 }
 

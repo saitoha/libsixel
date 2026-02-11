@@ -30,7 +30,7 @@ printf '%s\n' "${err_output}" | \
     grep -F 'Suggestion lookup unavailable on this build.' \
     >/dev/null 2>&1 && has_fallback=0
 
-[ "${has_no_nearby}" -eq 0 ] || [ "${has_fallback}" -eq 0 || {
+[ "${has_no_nearby}" -eq 0 ] || [ "${has_fallback}" -eq 0 ] || {
     fail 1 "missing no-nearby-matches diagnostic"
     exit 0
 }
