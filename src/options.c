@@ -1595,17 +1595,16 @@ sixel_option_validate_filesystem_path(
         return 0;
     }
 
-    if (loader_trace_is_enabled()) {
-        sixel_option_trace_path_probe_end(argument,
-                                          resolved_path,
-                                          flags,
-                                          stat_result,
-                                          error_value,
-                                          elapsed_seconds);
-    }
-
     error_value = errno;
     if (error_value != ENOENT && error_value != ENOTDIR) {
+        if (loader_trace_is_enabled()) {
+            sixel_option_trace_path_probe_end(argument,
+                                              resolved_path,
+                                              flags,
+                                              stat_result,
+                                              error_value,
+                                              elapsed_seconds);
+        }
         return 0;
     }
 
