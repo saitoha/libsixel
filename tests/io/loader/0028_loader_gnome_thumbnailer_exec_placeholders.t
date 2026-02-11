@@ -22,25 +22,25 @@ template_root="${top_srcdir}/tests/data/inputs/thumbnailer"
 xdg_data_home="${template_root}/cases/0028"
 bin_dir="${template_root}/bin"
 
-if run_img2sixel \
-        --env "XDG_DATA_DIRS=${xdg_data_home}" \
-        --env "PATH=${bin_dir}:${PATH}" \
-        --env "THUMB_LOG=${log_file}" \
-        --env "SIXEL_THUMBNAILER_HINT_SIZE=123" \
-        -v \
-        -L gnome-thumbnailer! "${input_png}" && \
-        grep '^uri=file://' "${log_file}" >/dev/null 2>&1 && \
-        grep '^size=123$' "${log_file}" >/dev/null 2>&1 && \
-        grep '^mime=image/png$' "${log_file}" >/dev/null 2>&1 && \
-        grep '^percent=%$' "${log_file}" >/dev/null 2>&1; then
-    pass 1 "gnome-thumbnailer Exec placeholders are expanded"
-else
-    if grep -E "gnome-thumbnailer|thumbnailer" "${error_log}" \
-            >/dev/null 2>&1; then
-        tap_skip 1 "gnome-thumbnailer runtime is unavailable"
-    else
-        fail 1 "gnome-thumbnailer Exec placeholder test failed"
-    fi
-fi
+run_img2sixel --env "XDG_DATA_DIRS=${xdg_data_home}" \
+              --env "PATH=${bin_dir}:${PATH}" \
+              --env "THUMB_LOG=${log_file}" \
+              --env "SIXEL_THUMBNAILER_HINT_SIZE=123" \
+              -L gnome-thumbnailer! "${input_png}" -o/dev/null || {
+    fail 1 "img2sixel failed"
+    exit 0
+}
 
+awk '
+    /^uri=file:\/\// { ++cnt; }
+    /^size=123$/ { ++cnt; }
+    /^mime=image\/png$/ { ++cnt; }
+    /^percent=%$/ { ++cnt; }
+    END { if (cnt != 4) exit 1; }
+' "${log_file}" || {
+    fail 1 "gnome-thumbnailer Exec placeholder test failed"
+    exit 0
+}
+
+pass 1 "gnome-thumbnailer Exec placeholders are expanded"
 exit 0

@@ -818,6 +818,11 @@ TESTS = \
     cli/completion/0024_completion_install_zsh.t \
     cli/completion/0025_completion_uninstall_bash.t \
     cli/completion/0026_completion_uninstall_zsh.t \
+    cli/completion/0027_completion_show_all.t \
+    cli/completion/0028_completion_install_missing_target.t \
+    cli/completion/0029_completion_show_invalid_target.t \
+    cli/completion/0030_completion_install_bash_legacy.t \
+    cli/completion/0031_completion_install_zsh_idempotent.t \
     codec/decoder/core/0004_tab_separated_colour_introducers.t \
     codec/decoder/core/0005_oversized_dcs_geometry.t \
     processing/dither/general/0001_roundtrip_dither_gamma.t \
@@ -1287,8 +1292,7 @@ COPY_TESTS = $(TESTS)
 TEST_EXTENSIONS = .t
 HELPER_FILES = \
     _lib/sh/common.sh \
-    docs/consistency/list_envvars.sh \
-    lib/sh/loader/pngsuite_common.sh
+    docs/consistency/list_envvars.sh
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
 # Keep executable suffix in sync with the configured target so TAP
