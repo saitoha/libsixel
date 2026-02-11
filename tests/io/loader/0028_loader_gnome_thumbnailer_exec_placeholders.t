@@ -27,9 +27,8 @@ if run_img2sixel \
         --env "PATH=${bin_dir}:${PATH}" \
         --env "THUMB_LOG=${log_file}" \
         --env "SIXEL_THUMBNAILER_HINT_SIZE=123" \
-        -L gnome-thumbnailer! "${input_png}" \
-        >"${output_sixel}" 2>"${error_log}" && \
-        [ -s "${output_sixel}" ] && \
+        -v \
+        -L gnome-thumbnailer! "${input_png}" && \
         grep '^uri=file://' "${log_file}" >/dev/null 2>&1 && \
         grep '^size=123$' "${log_file}" >/dev/null 2>&1 && \
         grep '^mime=image/png$' "${log_file}" >/dev/null 2>&1 && \
