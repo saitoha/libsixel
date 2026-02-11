@@ -5,7 +5,6 @@ set -eu
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-
 printf '1..1\n'
 set -v
 
@@ -16,10 +15,12 @@ value=$(run_lsqa -m DELTA_E00 "${image_ref}" "${image_out}" | tr -d '\r') || {
     exit 0
 }
 
-if printf '%s\n' "${value}" | awk '/^[+-]?[0-9]+([.][0-9]+)?([eE][+-]?[0-9]+)?$/{ok=1} END{exit ok?0:1}'; then
-    pass 1 "DELTA_E00 returned a finite value"
-else
+printf '%s\n' "${value}" |
+    awk '/^[+-]?[0-9]+([.][0-9]+)?([eE][+-]?[0-9]+)?$/{ok=1} END{exit ok?0:1}' || {
     fail 1 "DELTA_E00 returned non-numeric output: ${value}"
-fi
+    exit 0
+}
+
+pass 1 "DELTA_E00 returned a finite value"
 
 exit 0

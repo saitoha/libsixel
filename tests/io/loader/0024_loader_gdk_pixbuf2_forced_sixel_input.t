@@ -15,15 +15,21 @@ set -v
 input_sixel="${top_srcdir}/tests/data/inputs/snake_64.six"
 error_log="${ARTIFACT_LOCAL_DIR}/gdk_forced_sixel_input.err"
 
-if run_img2sixel -L gdk-pixbuf2! "${input_sixel}" >/dev/null \
-        2>"${error_log}"; then
-    pass 1 "gdk-pixbuf2 forced SIXEL input decoding succeeds"
-else
-    if grep -E "gdk|pixbuf|sixel|loader" "${error_log}" >/dev/null 2>&1; then
-        tap_skip 1 "runtime gdk-pixbuf2 SIXEL subtype is unavailable"
-    else
-        fail 1 "forced gdk-pixbuf2 SIXEL input decoding failed"
-    fi
-fi
+set +e
+run_img2sixel -L gdk-pixbuf2! "${input_sixel}" >/dev/null 2>"${error_log}"
+status=$?
+set -e
+
+[ "${status}" -eq 0 ] || grep -E "gdk|pixbuf|sixel|loader" "${error_log}"         >/dev/null 2>&1 || {
+    fail 1 "forced gdk-pixbuf2 SIXEL input decoding failed"
+    exit 0
+}
+
+[ "${status}" -eq 0 ] || {
+    tap_skip 1 "runtime gdk-pixbuf2 SIXEL subtype is unavailable"
+    exit 0
+}
+
+pass 1 "gdk-pixbuf2 forced SIXEL input decoding succeeds"
 
 exit 0

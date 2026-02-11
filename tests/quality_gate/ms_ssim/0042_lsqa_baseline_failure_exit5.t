@@ -17,12 +17,17 @@ metric=$(run_lsqa -m MS-SSIM "${image_ref}" "${image_out}") || {
 baseline=$(printf '%s\n' "${metric}" |
     awk 'BEGIN{b=0} {b=$1+0.0001; if (b > 1.1) b=1.1; printf "%.6f", b}')
 
+set +e
 run_lsqa -m MS-SSIM -b "MS-SSIM:${baseline}" \
-    "${image_ref}" "${image_out}" >/dev/null 2>&1 || status=$?
-if [ "${status-0}" -eq 5 ]; then
-    pass 1 "baseline above metric returned exit code 5"
-else
-    fail 1 "expected exit code 5, got ${status-0}"
-fi
+    "${image_ref}" "${image_out}" >/dev/null 2>&1
+status=$?
+set -e
+
+test "${status}" -eq 5 || {
+    fail 1 "expected exit code 5, got ${status}"
+    exit 0
+}
+
+pass 1 "baseline above metric returned exit code 5"
 
 exit 0

@@ -7,9 +7,10 @@ set -eux
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-if ! feature_defined_in_config "HAVE_FREEDESKTOP_THUMBNAILING"; then
+feature_defined_in_config "HAVE_FREEDESKTOP_THUMBNAILING" || {
     skip_all "gnome-thumbnailer loader is unavailable on this platform"
-fi
+    exit 0
+}
 
 echo "1..1"
 set -v
@@ -21,19 +22,30 @@ template_root="${top_srcdir}/tests/data/inputs/thumbnailer"
 xdg_data_home="${template_root}/cases/0026"
 bin_dir="${template_root}/bin"
 
-if run_img2sixel \
+set +e
+run_img2sixel \
         --env "XDG_DATA_DIRS=${xdg_data_home}" \
         --env "PATH=${bin_dir}:${PATH}" \
-        -L gnome-thumbnailer! "${input_png}" >"${output_sixel}" 2>"${error_log}" && \
-        [ -s "${output_sixel}" ]; then
-    pass 1 "forced gnome-thumbnailer loader path succeeds"
-else
-    if grep -E "gnome-thumbnailer|thumbnailer" "${error_log}" \
-            >/dev/null 2>&1; then
-        tap_skip 1 "gnome-thumbnailer runtime is unavailable"
-    else
-        fail 1 "forced gnome-thumbnailer loader path failed"
-    fi
-fi
+        -L gnome-thumbnailer! "${input_png}" >"${output_sixel}" 2>"${error_log}"
+status=$?
+set -e
+
+[ "${status}" -eq 0 ] || grep -E "gnome-thumbnailer|thumbnailer" \
+        "${error_log}" >/dev/null 2>&1 || {
+    fail 1 "forced gnome-thumbnailer loader path failed"
+    exit 0
+}
+
+[ "${status}" -eq 0 ] || {
+    fail 1 "gnome-thumbnailer runtime should be available"
+    exit 0
+}
+
+test -s "${output_sixel}" || {
+    fail 1 "forced gnome-thumbnailer loader path failed"
+    exit 0
+}
+
+pass 1 "forced gnome-thumbnailer loader path succeeds"
 
 exit 0

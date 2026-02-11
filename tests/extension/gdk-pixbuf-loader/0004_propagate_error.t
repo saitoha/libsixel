@@ -8,18 +8,6 @@ set -eu
 ensure_feature_available "HAVE_GDK_PIXBUF2" "gdk_pixbuf_loader" \
     "gdk-pixbuf loader"
 
-if [ -n "${MESON_BUILD_ROOT:-}" ]; then
-    top_builddir=${TOP_BUILDDIR:-${MESON_BUILD_ROOT}}
-else
-    top_builddir=${TOP_BUILDDIR-}
-fi
-
-runner="${TEST_RUNNER_PATH}"
-if [ ! -x "${runner}" ] && [ -z "${SIXEL_RUNTIME-}" ]; then
-    echo "Bail out! missing test binary: ${runner}" 1>&2
-    exit 1
-fi
-
 set +e
 loader_output=$(run_test_runner "gdk-pixbuf-loader/${test_name}" 2>&1)
 rc=$?
@@ -29,10 +17,15 @@ printf '%s' "${loader_output}" >&2
 echo "1..1"
 set -v
 
-if [ "${rc}" -eq 0 ]; then
-    echo "ok 1 - gdk-pixbuf-loader/${test_name}"
-elif [ "${rc}" -eq 77 ]; then
+test "${rc}" -ne 77 || {
     echo "ok 1 - gdk-pixbuf-loader/${test_name} # SKIP unavailable"
-else
+    exit 0
+}
+
+test "${rc}" -eq 0 || {
     echo "not ok 1 - gdk-pixbuf-loader/${test_name}"
-fi
+    exit 0
+}
+
+echo "ok 1 - gdk-pixbuf-loader/${test_name}"
+exit 0

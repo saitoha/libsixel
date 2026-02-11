@@ -6,9 +6,6 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-status=0
-case_id=1
-
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 ensure_feature_available "HAVE_GDK_PIXBUF2" "" "gdk-pixbuf2 loader"
 
@@ -18,10 +15,11 @@ set -v
 input_gif="${top_srcdir}/tests/data/inputs/small.gif"
 output_sixel="${ARTIFACT_LOCAL_DIR}/gdk_loop_disable_gif.sixel"
 
-if run_img2sixel -L gdk-pixbuf2! -ldisable "${input_gif}" >"${output_sixel}"; then
-    pass ${case_id} "gdk-pixbuf2 GIF decode respects loop disable"
-else
-    fail ${case_id} "gdk-pixbuf2 GIF decode with loop disable failed"
-fi
+run_img2sixel -L gdk-pixbuf2! -ldisable "${input_gif}" >"${output_sixel}" || {
+    fail 1 "gdk-pixbuf2 GIF decode with loop disable failed"
+    exit 0
+}
 
-exit "${status}"
+pass 1 "gdk-pixbuf2 GIF decode respects loop disable"
+
+exit 0

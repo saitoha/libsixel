@@ -14,10 +14,14 @@ printf '%s' "${loader_output}" >&2
 echo "1..1"
 set -v
 
-if [ "${rc}" -eq 0 ]; then
-    echo "ok 1 - loader/${test_name}"
-elif [ "${rc}" -eq 77 ]; then
-    echo "ok 1 - loader/${test_name} # SKIP unavailable"
-else
+[ "${rc}" -eq 0 ] || [ "${rc}" -eq 77 ] || {
     echo "not ok 1 - loader/${test_name}"
-fi
+    exit 0
+}
+
+[ "${rc}" -ne 77 ] || {
+    echo "ok 1 - loader/${test_name} # SKIP unavailable"
+    exit 0
+}
+
+echo "ok 1 - loader/${test_name}"
