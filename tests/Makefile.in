@@ -891,10 +891,10 @@ TESTS = \
     processing/dither/fixed/0039_fixed_float32_jajuni_lsqa.t \
     processing/dither/fixed/0040_fixed_float32_stucki_lsqa.t \
     processing/dither/fixed/0041_fixed_float32_burkes_lsqa.t \
-	processing/dither/fixed/0042_fixed_float32_sierra1_lsqa.t \
-	processing/dither/fixed/0043_fixed_float32_sierra2_lsqa.t \
-	processing/dither/fixed/0044_fixed_float32_sierra3_lsqa.t \
-	processing/dither/fixed/0045_fixed_float32_lookup_none_lsqa.t \
+    processing/dither/fixed/0042_fixed_float32_sierra1_lsqa.t \
+    processing/dither/fixed/0043_fixed_float32_sierra2_lsqa.t \
+    processing/dither/fixed/0044_fixed_float32_sierra3_lsqa.t \
+    processing/dither/fixed/0045_fixed_float32_lookup_none_lsqa.t \
     processing/dither/fixed/0046_fixed_float32_lookup_none_complexion_lsqa.t \
     processing/dither/bluenoise/0045_positional_8bit_bluenoise_gamma_lsqa.t \
     processing/dither/bluenoise/0046_positional_float32_bluenoise_gamma_lsqa.t \
@@ -1496,6 +1496,7 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/thumbnailer/bin/fake-thumb \
     data/inputs/thumbnailer/bin/fake-thumb-args \
     data/inputs/thumbnailer/bin/fake-thumb-size \
+    data/inputs/thumbnailer/bin/fake-thumb-placeholders \
     data/inputs/thumbnailer/bin/gdk-pixbuf-thumbnailer \
     data/inputs/formats/grayscale.jpg \
     data/inputs/formats/grayscale.tiff \
