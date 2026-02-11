@@ -3,11 +3,11 @@
 
 set -eux
 
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+
 if ! command -v zsh >/dev/null; then
     skip_all "zsh is not found"
 fi
-
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 completion_home="${ARTIFACT_LOCAL_DIR}"
 rc_path="${completion_home}/.zshrc"
@@ -34,12 +34,12 @@ run_img2sixel --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
 fpath_count=$(grep -c '^fpath+=("\$HOME/.zfunc")$' "${rc_path}")
 compinit_count=$(grep -c '^autoload -Uz compinit && compinit -u$' "${rc_path}")
 
-[ "${fpath_count}" -eq 1 ] || {
+test "${fpath_count}" -eq 1 || {
     fail 1 "zsh fpath line was duplicated"
     exit 0
 }
 
-[ "${compinit_count}" -eq 1 ] || {
+test "${compinit_count}" -eq 1 || {
     fail 1 "zsh compinit line was duplicated"
     exit 0
 }
