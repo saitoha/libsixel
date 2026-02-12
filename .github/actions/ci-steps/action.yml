@@ -194,13 +194,70 @@ runs:
         'C:\GitBash\bin'     | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
         'C:\GitBash\usr\bin' | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
 
-    - name: Setup Cygwin
+    - name: Setup Cygwin (primary mirror)
+      id: cygwin_setup_primary
       if: ${{ fromJSON(inputs.matrix_json).exec_type == 'cygwin' }}
+      continue-on-error: true
       uses: cygwin/cygwin-install-action@v6
       with:
         check-hash: 'false'
         check-installer-sig: 'false'
+        site: https://mirror.fcix.net/cygwin/
         packages: ${{ fromJSON(inputs.matrix_json).extra_packages || 'make' }}
+
+    - name: Wait before Cygwin mirror fallback
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).exec_type == 'cygwin'
+            && steps.cygwin_setup_primary.outcome == 'failure' }}
+      shell: pwsh
+      run: |
+        Start-Sleep -Seconds 180
+
+    - name: Setup Cygwin (mirror fallback #1)
+      id: cygwin_setup_fallback_1
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).exec_type == 'cygwin'
+            && steps.cygwin_setup_primary.outcome == 'failure' }}
+      continue-on-error: true
+      uses: cygwin/cygwin-install-action@v6
+      with:
+        check-hash: 'false'
+        check-installer-sig: 'false'
+        site: https://ftp.iij.ad.jp/pub/cygwin/
+        packages: ${{ fromJSON(inputs.matrix_json).extra_packages || 'make' }}
+
+    - name: Wait before Cygwin mirror fallback #2
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).exec_type == 'cygwin'
+            && steps.cygwin_setup_primary.outcome == 'failure'
+            && steps.cygwin_setup_fallback_1.outcome == 'failure' }}
+      shell: pwsh
+      run: |
+        Start-Sleep -Seconds 180
+
+    - name: Setup Cygwin (mirror fallback #2)
+      id: cygwin_setup_fallback_2
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).exec_type == 'cygwin'
+            && steps.cygwin_setup_primary.outcome == 'failure'
+            && steps.cygwin_setup_fallback_1.outcome == 'failure' }}
+      continue-on-error: true
+      uses: cygwin/cygwin-install-action@v6
+      with:
+        check-hash: 'false'
+        check-installer-sig: 'false'
+        site: https://mirrors.kernel.org/sourceware/cygwin/
+        packages: ${{ fromJSON(inputs.matrix_json).extra_packages || 'make' }}
+
+    - name: Validate Cygwin setup result
+      if: >-
+        ${{ fromJSON(inputs.matrix_json).exec_type == 'cygwin'
+            && steps.cygwin_setup_primary.outcome == 'failure'
+            && steps.cygwin_setup_fallback_1.outcome == 'failure'
+            && steps.cygwin_setup_fallback_2.outcome == 'failure' }}
+      shell: pwsh
+      run: |
+        Write-Error 'Cygwin setup failed on all configured mirrors.'
 
     - name: Cache Cosmopolitan toolchain
       if: ${{ contains(fromJSON(inputs.matrix_json).setup_prefix, 'CC=cosmocc') }}
