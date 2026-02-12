@@ -29,12 +29,11 @@ grep -q '"event":"row_ready"' "${log_file}" || {
     exit 0
 }
 
-max_job=$(grep '"event":"row_ready"' "${log_file}" | sed -E 's/.*"job":(-?[0-9]+).*/\001/' | sort -n | tail -n 1)
-test "${max_job}" -ge 1 || {
+dither_threads=$(awk '/"worker":"dither"/ {gsub(/.*"job":/, ""); v[$0]} END {print length(v)}' "${log_file}")
+test "${dither_threads}" -ge 1 || {
     fail 1 "row_ready spans multiple bands"
     exit 0
 }
 
 pass 1 "row_ready spans multiple bands"
-
 exit 0
