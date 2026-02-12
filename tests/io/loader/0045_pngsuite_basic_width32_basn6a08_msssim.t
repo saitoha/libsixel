@@ -17,7 +17,7 @@ set -v
 input_png="${images_dir}/pngsuite/basic/basn6a08.png"
 expected_ppm="${TOP_SRCDIR}/tests/data/loader/pngsuite_expected/0045_pngsuite_basic_width32_basn6a08_msssim.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/basn6a08.sixel"
-img2sixel_opts="-w32"
+img2sixel_opts="-w32 -Llibpng!"
 
 run_img2sixel ${img2sixel_opts} "${input_png}" >"${output_sixel}" || {
     fail 1 "basic_width32 basic/basn6a08.png"
