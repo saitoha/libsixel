@@ -86,9 +86,13 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
 #  define SIXEL_COLORSPACE_USE_WIN32_ONCE 1
 #  include <windows.h>
 static INIT_ONCE sixel_colorspace_once = INIT_ONCE_STATIC_INIT;
+static INIT_ONCE sixel_colorspace_parallel_min_pixels_once =
+    INIT_ONCE_STATIC_INIT;
 # else
 #  include <pthread.h>
 static pthread_once_t sixel_colorspace_once = PTHREAD_ONCE_INIT;
+static pthread_once_t sixel_colorspace_parallel_min_pixels_once =
+    PTHREAD_ONCE_INIT;
 # endif
 #endif
 
@@ -1838,25 +1842,26 @@ typedef struct sixel_colorspace_parallel_byte_context {
 static size_t
 sixel_colorspace_parallel_min_pixels(void)
 {
-    static int initialized = 0;
     static size_t threshold = 65537;
+    static int initialized = 0;
     char const *text;
     char *endptr;
     unsigned long long parsed;
 
-    if (initialized) {
+    if (initialized != 0) {
         return threshold;
     }
 
-    initialized = 1;
     text = sixel_compat_getenv("SIXEL_COLORSPACE_PARALLEL_MIN_PIXELS");
     if (text == NULL || text[0] == '\0') {
+        initialized = 1;
         return threshold;
     }
 
     errno = 0;
     parsed = strtoull(text, &endptr, 10);
     if (endptr == text || *endptr != '\0' || errno == ERANGE) {
+        initialized = 1;
         return threshold;
     }
 
@@ -1866,8 +1871,66 @@ sixel_colorspace_parallel_min_pixels(void)
         threshold = (size_t)parsed;
     }
 
+    initialized = 1;
     return threshold;
 }
+
+static void
+sixel_colorspace_parallel_min_pixels_init_once(void)
+{
+    (void)sixel_colorspace_parallel_min_pixels();
+}
+
+#if SIXEL_ENABLE_THREADS
+# if defined(SIXEL_COLORSPACE_USE_WIN32_ONCE)
+static BOOL CALLBACK
+sixel_colorspace_parallel_min_pixels_once_cb(PINIT_ONCE init_once,
+                                             PVOID parameter,
+                                             PVOID *context)
+{
+    (void)init_once;
+    (void)parameter;
+    (void)context;
+
+    sixel_colorspace_parallel_min_pixels_init_once();
+
+    return TRUE;
+}
+# endif
+
+static size_t
+sixel_colorspace_parallel_min_pixels_cached(void)
+{
+# if defined(SIXEL_COLORSPACE_USE_WIN32_ONCE)
+    BOOL executed;
+
+    executed = InitOnceExecuteOnce(
+        &sixel_colorspace_parallel_min_pixels_once,
+        sixel_colorspace_parallel_min_pixels_once_cb,
+        NULL,
+        NULL);
+    if (executed == FALSE) {
+        sixel_colorspace_parallel_min_pixels_init_once();
+    }
+# else
+    int status;
+
+    status = pthread_once(&sixel_colorspace_parallel_min_pixels_once,
+                          sixel_colorspace_parallel_min_pixels_init_once);
+    if (status != 0) {
+        sixel_colorspace_parallel_min_pixels_init_once();
+    }
+# endif
+
+    return sixel_colorspace_parallel_min_pixels();
+}
+#else
+static size_t
+sixel_colorspace_parallel_min_pixels_cached(void)
+{
+    return sixel_colorspace_parallel_min_pixels();
+}
+#endif
 
 static int
 sixel_colorspace_parallel_worker_bytes(tp_job_t job,
@@ -2022,7 +2085,7 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
     }
 
 #if SIXEL_ENABLE_THREADS
-    if (pixel_total >= sixel_colorspace_parallel_min_pixels()) {
+    if (pixel_total >= sixel_colorspace_parallel_min_pixels_cached()) {
         threads = sixel_threads_resolve();
         if (threads > 1) {
             chunk_pixels = (pixel_total + (size_t)threads - 1U)
@@ -2139,7 +2202,7 @@ sixel_convert_pixels_via_linear(unsigned char *pixels,
                           0,
                           sixel_colorspace_log_clamp(pixel_total),
                           "below threshold=%zu",
-                          sixel_colorspace_parallel_min_pixels());
+                          sixel_colorspace_parallel_min_pixels_cached());
     }
 #endif
 
@@ -2415,7 +2478,7 @@ sixel_convert_pixels_via_linear_float(float *pixels,
     }
 
 #if SIXEL_ENABLE_THREADS
-    if (pixel_total >= sixel_colorspace_parallel_min_pixels()) {
+    if (pixel_total >= sixel_colorspace_parallel_min_pixels_cached()) {
         threads = sixel_threads_resolve();
         if (threads > 1) {
             chunk_pixels = (pixel_total + (size_t)threads - 1U)
@@ -2532,7 +2595,7 @@ sixel_convert_pixels_via_linear_float(float *pixels,
                           0,
                           sixel_colorspace_log_clamp(pixel_total),
                           "below threshold=%zu",
-                          sixel_colorspace_parallel_min_pixels());
+                          sixel_colorspace_parallel_min_pixels_cached());
     }
 #endif
 

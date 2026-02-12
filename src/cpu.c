@@ -49,7 +49,41 @@
 #include "cpu.h"
 #include "compat_stub.h"
 
+/*
+ * The SIMD cache is read on hot paths, so keep the fast path lock-free.
+ *
+ * States:
+ * - >=0: resolved SIMD level
+ * - -1: unresolved, compute and publish
+ */
 static int simd_cached = -1;
+
+#if defined(__GNUC__) || defined(__clang__)
+# define SIXEL_CPU_CACHE_LOAD() \
+    __atomic_load_n(&simd_cached, __ATOMIC_ACQUIRE)
+# define SIXEL_CPU_CACHE_CAS(expected_ptr, desired) \
+    __atomic_compare_exchange_n(&simd_cached, (expected_ptr), (desired), \
+                                0, __ATOMIC_ACQ_REL, __ATOMIC_ACQUIRE)
+# define SIXEL_CPU_CACHE_STORE(value) \
+    __atomic_store_n(&simd_cached, (value), __ATOMIC_RELEASE)
+#elif defined(_MSC_VER)
+# define SIXEL_CPU_CACHE_LOAD() \
+    ((int)_InterlockedCompareExchange((volatile long *)&simd_cached, 0L, 0L))
+# define SIXEL_CPU_CACHE_CAS(expected_ptr, desired) \
+    (_InterlockedCompareExchange((volatile long *)&simd_cached, \
+                                 (long)(desired), \
+                                 (long)(*(expected_ptr))) \
+     == (long)(*(expected_ptr)))
+# define SIXEL_CPU_CACHE_STORE(value) \
+    (void)_InterlockedExchange((volatile long *)&simd_cached, (long)(value))
+#else
+# define SIXEL_CPU_CACHE_LOAD() (simd_cached)
+# define SIXEL_CPU_CACHE_CAS(expected_ptr, desired) \
+    ((simd_cached == *(expected_ptr)) \
+         ? ((simd_cached = (desired)), 1) \
+         : 0)
+# define SIXEL_CPU_CACHE_STORE(value) do { simd_cached = (value); } while (0)
+#endif
 
 static enum sixel_simd_level
 sixel_cpu_env_cap(void)
@@ -200,23 +234,38 @@ sixel_cpu_min(enum sixel_simd_level lhs, enum sixel_simd_level rhs)
 int
 sixel_cpu_simd_level(void)
 {
+    int cached;
+    int expected;
+    int resolved;
     enum sixel_simd_level env_cap;
     enum sixel_simd_level native;
 
-    if (simd_cached >= 0) {
-        return simd_cached;
+    cached = SIXEL_CPU_CACHE_LOAD();
+    if (cached >= 0) {
+        return cached;
     }
 
     env_cap = sixel_cpu_env_cap();
     native = sixel_cpu_detect_native();
-    simd_cached = (int)sixel_cpu_min(env_cap, native);
-    return simd_cached;
+    resolved = (int)sixel_cpu_min(env_cap, native);
+    expected = -1;
+    if (SIXEL_CPU_CACHE_CAS(&expected, resolved)) {
+        return resolved;
+    }
+
+    cached = SIXEL_CPU_CACHE_LOAD();
+    if (cached >= 0) {
+        return cached;
+    }
+
+    SIXEL_CPU_CACHE_STORE(resolved);
+    return resolved;
 }
 
 void
 sixel_cpu_reset_simd_cache(void)
 {
-    simd_cached = -1;
+    SIXEL_CPU_CACHE_STORE(-1);
 }
 
 /* emacs Local Variables:      */
