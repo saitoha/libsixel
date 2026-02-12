@@ -61,7 +61,7 @@
 # include <sys/select.h>
 #endif  /* HAVE_SYS_SELECT_H */
 
-#if HAVE_WINHTTP && HAVE_WINDOWS_H
+#if HAVE_WINHTTP
 # if !defined(UNICODE)
 #  define UNICODE
 # endif
@@ -73,17 +73,17 @@
 # endif
 #endif
 
-#if defined(_WIN32) && HAVE_WINDOWS_H
+#if HAVE_WINDOWS_H
 # include <windows.h>
 #endif
 
-#if HAVE_WINHTTP && HAVE_WINDOWS_H
+#if HAVE_WINHTTP
 # include <winhttp.h>
 #endif
 
 #include <sixel.h>
 
-#if HAVE_WINHTTP && HAVE_WINDOWS_H
+#if HAVE_WINHTTP
 static void
 sixel_winhttp_set_error_message(char const *context)
 {
@@ -255,8 +255,7 @@ wait_file(int fd, int usec)
 # endif
 #endif
 
-#if defined(_WIN32) && HAVE_WINDOWS_H
-
+#if HAVE_WINHTTP
 static wchar_t *
 utf8_to_wide(char const *s) {
     wchar_t *w;
@@ -277,8 +276,10 @@ utf8_to_wide(char const *s) {
 
     return w;
 }
+#endif  /* HAVE_WINHTTP */
 
-
+#if 0
+#if HAVE_WINDOWS_H
 static SIXELSTATUS
 sixel_check_input_path_windows(char const *filename)
 {
@@ -330,7 +331,8 @@ end:
     }
     return status;
 }
-#endif  /* defined(_WIN32) && HAVE_WINDOWS_H */
+#endif  /* HAVE_WINDOWS_H */
+#endif
 
 
 static int
@@ -362,7 +364,8 @@ open_binary_file(
         goto end;
     }
 
-#if defined(_WIN32) && HAVE_WINDOWS_H
+#if 0
+#if HAVE_WINDOWS_H
     /*
      * Use WinAPI metadata lookup before fopen() so missing paths are
      * rejected without relying on CRT stat-family behavior.
@@ -371,6 +374,7 @@ open_binary_file(
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+#endif
 #endif
 
 #if 0
