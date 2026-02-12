@@ -58,7 +58,12 @@ EOF
 fi
  
 cd "${BUILDDIR}" && (
-emconfigure sh ../../configure \
+../../configure \
+  CC=emcc \
+  LD=emcc \
+  AR=emar \
+  RANLIB=emranlib \
+  NM=llvm-nm \
   --host=wasm32-unknown-emscripten \
   --disable-shared \
   --with-shebang-file="${SHEBANG_FILE}" \
@@ -72,6 +77,7 @@ emconfigure sh ../../configure \
     -ffunction-sections \
   " \
   LDFLAGS=" \
+    -flto \
     -sRETAIN_COMPILER_SETTINGS=1 \
     -sNODERAWFS=1 \
     -sSTACK_SIZE=524288 \
@@ -84,6 +90,6 @@ emconfigure sh ../../configure \
     -sASSERTIONS=0 \
     -Wno-pthreads-mem-growth \
   "
-emmake make all -j
-emmake make check -j
+make all
+make check
 )
