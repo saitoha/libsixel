@@ -518,6 +518,8 @@ img2sixel_compat_chmod(const char *path, mode_t mode)
 
 #if defined(_MSC_VER) && defined(HAVE__CHMOD)
     if (_chmod(libc_path, (int)mode) != 0) {
+        img2sixel_log_errno("chmod failed path=%s libc_path=%s",
+                            path, libc_path);
         if (buffer != NULL) {
             free(buffer);
         }
@@ -525,6 +527,8 @@ img2sixel_compat_chmod(const char *path, mode_t mode)
     }
 #elif defined(HAVE_CHMOD)
     if (chmod(libc_path, mode) != 0) {
+        img2sixel_log_errno("chmod failed path=%s libc_path=%s",
+                            path, libc_path);
         if (buffer != NULL) {
             free(buffer);
         }
@@ -963,6 +967,8 @@ img2sixel_mkdir(const char *path, mode_t mode)
 #if HAVE__MKDIR
     (void)mode;
     if (_mkdir(libc_path) != 0) {
+        img2sixel_log_errno("mkdir failed path=%s libc_path=%s",
+                            path, libc_path);
         if (buffer != NULL) {
             free(buffer);
         }
@@ -970,6 +976,8 @@ img2sixel_mkdir(const char *path, mode_t mode)
     }
 #elif HAVE_MKDIR
     if (mkdir(libc_path, mode) != 0) {
+        img2sixel_log_errno("mkdir failed path=%s libc_path=%s",
+                            path, libc_path);
         if (buffer != NULL) {
             free(buffer);
         }
@@ -1330,6 +1338,9 @@ ensure_dir_p(const char *path, mode_t mode)
                         if (errno != EEXIST) {
                             int saved_errno;
 
+                            img2sixel_log_errno(
+                                "ensure_dir_p mkdir stage failed path=%s",
+                                tmp);
                             saved_errno = errno;
                             free(tmp);
                             errno = saved_errno;
@@ -1344,6 +1355,9 @@ ensure_dir_p(const char *path, mode_t mode)
                         if (img2sixel_compat_chmod(tmp, mode) != 0) {
                             int saved_errno;
 
+                            img2sixel_log_errno(
+                                "ensure_dir_p chmod stage failed path=%s",
+                                tmp);
                             saved_errno = errno;
                             free(tmp);
                             errno = saved_errno;
@@ -1360,6 +1374,8 @@ ensure_dir_p(const char *path, mode_t mode)
         if (errno != EEXIST) {
             int saved_errno;
 
+            img2sixel_log_errno(
+                "ensure_dir_p final mkdir stage failed path=%s", tmp);
             saved_errno = errno;
             free(tmp);
             errno = saved_errno;
@@ -1369,6 +1385,8 @@ ensure_dir_p(const char *path, mode_t mode)
         if (img2sixel_compat_chmod(tmp, mode) != 0) {
             int saved_errno;
 
+            img2sixel_log_errno(
+                "ensure_dir_p final chmod stage failed path=%s", tmp);
             saved_errno = errno;
             free(tmp);
             errno = saved_errno;
