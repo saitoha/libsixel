@@ -63,6 +63,9 @@
 #if HAVE_TIME_H
 # include <time.h>
 #endif
+#if HAVE_CTYPE_H
+# include <ctype.h>
+#endif
 #if HAVE_STRING_H
 # include <string.h>
 #endif
@@ -331,16 +334,28 @@ sixel_compat_strcasecmp(char const *lhs, char const *rhs)
 #elif HAVE_STRCASECMP
     result = strcasecmp(lhs, rhs);
 #else
+    /*
+     * ASCII-only lower conversion fallback used when CRT tolower() is not
+     * available in the current toolchain headers.
+     */
+# if HAVE_TOLOWER
+#  define SIXEL_COMPAT_TOLOWER(c) tolower(c)
+# else
+#  define SIXEL_COMPAT_TOLOWER(c) \
+    (((c) >= 'A' && (c) <= 'Z') ? ((c) + ('a' - 'A')) : (c))
+# endif
     do {
         lhs_char = (unsigned char)*lhs;
         rhs_char = (unsigned char)*rhs;
-        result = tolower(lhs_char) - tolower(rhs_char);
+        result = SIXEL_COMPAT_TOLOWER(lhs_char) -
+                 SIXEL_COMPAT_TOLOWER(rhs_char);
         if (result != 0 || lhs_char == '\0' || rhs_char == '\0') {
             break;
         }
         ++lhs;
         ++rhs;
     } while (1);
+# undef SIXEL_COMPAT_TOLOWER
 #endif
 
     return result;

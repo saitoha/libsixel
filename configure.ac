@@ -1473,6 +1473,7 @@ AC_CHECK_FUNCS_PARALLEL([assert \
                          open \
                          sscanf_s \
                          strncmp \
+                         tolower \
                          _stricmp \
                          _strcmpi \
                          strcasecmp \

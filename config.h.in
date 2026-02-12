@@ -510,6 +510,9 @@
 /* Define to 1 if you have the `tmpnam' function. */
 #undef HAVE_TMPNAM
 
+/* Define to 1 if you have the `tolower' function. */
+#undef HAVE_TOLOWER
+
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
 
