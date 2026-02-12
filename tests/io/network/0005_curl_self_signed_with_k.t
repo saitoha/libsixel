@@ -8,7 +8,7 @@ max_port_attempts=5
 port_file="${ARTIFACT_LOCAL_DIR}/server.port"
 # Use nearby ports so the HTTPS server can start when the default is busy.
 
-script_dir=${test_dir}
+script_dir=${0%[/\\]*}
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 ensure_network_backend_available
@@ -131,7 +131,7 @@ fi
 verify_output="${ARTIFACT_LOCAL_DIR}/https.sixel"
 server_ok=1
 
-for attempt in 1 2 3; do
+for _ in 1 2 3; do
     if run_img2sixel -k "https://localhost:${server_port}/images/map8.six" \
             >"${verify_output}"; then
         server_ok=0

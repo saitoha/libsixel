@@ -1,10 +1,5 @@
 #!/bin/sh
 # TAP test: pipeline row_ready events span more than one band.
-#
-# Flow:
-# - Enable pipeline logging with deterministic thread/band settings.
-# - Convert a tall image so row_ready events include multiple band ids.
-# - Assert the maximum job id is at least 1 when pipeline mode is active.
 
 set -eux
 
@@ -18,45 +13,28 @@ set -v
 ppm_tall="${TOP_SRCDIR}/tests/data/inputs/tall.ppm"
 log_file="${ARTIFACT_LOCAL_DIR}/pipeline-row-ready-span.log"
 out_file="${ARTIFACT_LOCAL_DIR}/tall-row-ready-span.six"
-max_job=-1
 
-if SIXEL_LOG_PATH="${log_file}" \
-        SIXEL_THREADS=6 \
-        SIXEL_DITHER_PARALLEL_THREADS_MAX=1 \
-        SIXEL_DITHER_PARALLEL_BAND_WIDTH=9 \
-        SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=4 \
-        run_img2sixel -v -o "${out_file}" "${ppm_tall}"; then
-    :
-else
-    printf 'not ok 1 - row_ready span conversion failed\n'
+run_img2sixel --env SIXEL_LOG_PATH="${log_file}" \
+              --env SIXEL_THREADS=6 \
+              --env SIXEL_DITHER_PARALLEL_THREADS_MAX=1 \
+              --env SIXEL_DITHER_PARALLEL_BAND_WIDTH=9 \
+              --env SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=4 \
+              -v -o "${out_file}" "${ppm_tall}" || {
+    fail 1 "row_ready span conversion failed"
     exit 0
-fi
+}
 
-if grep -q '"event":"row_ready"' "${log_file}"; then
-    max_job=$(grep '"event":"row_ready"' "${log_file}" \
-        | sed -E 's/.*"job":(-?[0-9]+).*/\1/' \
-        | sort -n | tail -n 1)
-    if [ "${max_job}" -ge 1 ]; then
-        printf 'ok 1 - row_ready spans multiple bands\n'
-    else
-        printf 'not ok 1 - row_ready spans multiple bands\n'
-    fi
-else
-    summary=$(grep '"worker":"pipeline"' "${log_file}" \
-        | head -n 1 || true)
-    case "${summary}" in
-    *'"worker":"pipeline"'*)
-        printf 'ok 1 - row_ready span unavailable in serial environment\n'
-        ;;
-    '')
-        # --disable-threads builds do not emit pipeline worker records.
-        # In this mode, missing row_ready events are expected.
-        printf 'ok 1 - row_ready span unavailable without pipeline worker\n'
-        ;;
-    *)
-        printf 'not ok 1 - row_ready span unavailable\n'
-        ;;
-    esac
-fi
+grep -q '"event":"row_ready"' "${log_file}" || {
+    pass 1 "row_ready span unavailable in serial environment"
+    exit 0
+}
+
+max_job=$(grep '"event":"row_ready"' "${log_file}" | sed -E 's/.*"job":(-?[0-9]+).*/\001/' | sort -n | tail -n 1)
+test "${max_job}" -ge 1 || {
+    fail 1 "row_ready spans multiple bands"
+    exit 0
+}
+
+pass 1 "row_ready spans multiple bands"
 
 exit 0

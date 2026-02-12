@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: palette input accepted from stdin.
+# TAP test: GPL palette import from stdin converts image data.
 
 set -eux
 
@@ -11,23 +11,23 @@ echo "1..1"
 set -v
 
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
-gpl_palette="${ARTIFACT_LOCAL_DIR}/palette-gpl.dat"
+gpl_palette="${ARTIFACT_LOCAL_DIR}/palette-stdin.gpl"
 
-if ! run_img2sixel -M gpl:"${gpl_palette}" -o "${ARTIFACT_LOCAL_DIR}/pal-gpl.six" \
-        "${snake_png}"; then
-    fail "Preparing GPL palette for stdin import failed"
+run_img2sixel -M gpl:"${gpl_palette}" -o "${ARTIFACT_LOCAL_DIR}/pal-gpl.six"         "${snake_png}" || {
+    fail 1 "Preparing GPL palette for stdin import failed"
     exit 0
-fi
+}
 
-if cat "${gpl_palette}" | run_img2sixel -m gpl:- \
-        -o "${ARTIFACT_LOCAL_DIR}/from-stdin.six" "${snake_png}"; then
-    if [ -s "${ARTIFACT_LOCAL_DIR}/from-stdin.six" ]; then
-        pass 1 "Palette input accepted from stdin"
-    else
-        fail 1 "stdin palette conversion produced no data"
-    fi
-else
-    fail "stdin palette conversion failed"
-fi
+cat "${gpl_palette}" | run_img2sixel -m gpl:-         -o "${ARTIFACT_LOCAL_DIR}/from-stdin.six" "${snake_png}" || {
+    fail 1 "GPL stdin palette conversion failed"
+    exit 0
+}
+
+[ -s "${ARTIFACT_LOCAL_DIR}/from-stdin.six" ] || {
+    fail 1 "GPL stdin palette conversion produced no data"
+    exit 0
+}
+
+pass 1 "GPL palette import from stdin works"
 
 exit 0

@@ -1,30 +1,26 @@
 #!/bin/sh
-# TAP test for cli_guard_missing_argument handling of missing/leading-dash.
+# TAP test for cli_guard_missing_argument handling of missing and leading dash.
 
 set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-name=${0##*[/\\]}
+test -x "${TEST_RUNNER_PATH}" || [ -n "${SIXEL_RUNTIME-}" ] ||     skip_all "harness not built"
 
-binary="${TEST_RUNNER_PATH}"
-if [ ! -x "${binary}" ] && [ -z "${SIXEL_RUNTIME-}" ]; then
-    echo "harness not built" >&2
-    exit 99
-fi
+rc=0
+cli_output_file="${ARTIFACT_LOCAL_DIR}/cli_guard_missing_argument.out"
 
-set +e
-cli_output=$(run_test_runner "cli/0031_cli_guard_missing_argument" 2>&1)
-rc=$?
-set -e
-printf '%s' "${cli_output}" >&2
+: >"${cli_output_file}"
+run_test_runner "cli/0031_cli_guard_missing_argument" >"${cli_output_file}" 2>&1 || rc=$?
+cat "${cli_output_file}" >&2 2>/dev/null || :
 
 echo "1..1"
 set -v
 
-if [ "${rc}" -eq 0 ]; then
-    echo "ok 1 - cli_guard_missing_argument"
-else
-    echo "not ok 1 - cli_guard_missing_argument"
-    exit 1
-fi
+test "${rc}" -eq 0 || {
+    fail 1 "cli_guard_missing_argument"
+    exit 0
+}
+
+pass 1 "cli_guard_missing_argument"
+exit 0

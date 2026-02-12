@@ -14,21 +14,22 @@ label="distance1_multi"
 err_file="${ARTIFACT_LOCAL_DIR}/${label}.err"
 out_file="${ARTIFACT_LOCAL_DIR}/${label}.sixel"
 
-rm -f "${err_file}" "${out_file}"
+: >"${err_file}"
+: >"${out_file}"
 
-if run_img2sixel -r hamning "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
-        >"${out_file}" 2>"${err_file}"; then
+run_img2sixel -r hamning "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
+    >"${out_file}" 2>"${err_file}" && {
     fail 1 "distance-1 multi-match unexpectedly succeeded"
     exit 0
-fi
+}
 
-if grep -F 'specified desampling method is not supported.' "${err_file}" \
-        >/dev/null 2>&1; then
-    pass 1 "distance-1 multi-match reports diagnostic"
-else
+grep -F 'specified desampling method is not supported.' "${err_file}" \
+    >/dev/null 2>&1 || {
     fail 1 "missing diagnostic for distance-1 multi-match"
     printf '%s\n' '--- stderr ---' >&2
     cat "${err_file}" >&2 2>/dev/null || :
-fi
+    exit 0
+}
 
+pass 1 "distance-1 multi-match reports diagnostic"
 exit 0

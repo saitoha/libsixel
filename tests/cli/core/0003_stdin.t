@@ -1,33 +1,23 @@
 #!/bin/sh
-# TAP test verifying img2sixel rejects non-image stdin data without producing
-# output.
+# TAP test verifying img2sixel rejects non-image stdin data without output.
 
-# Enable strict mode with verbose tracing for diagnostics.
 set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-status=0
-
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
-
-
 
 echo "1..1"
 set -v
 
 output_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "capture.stdin")
 
-if echo a | run_img2sixel >"${output_file}"; then
-    :
-fi
+echo a | run_img2sixel >"${output_file}" && :
 
-if [ -s "${output_file}" ]; then
+test ! -s "${output_file}" || {
     fail 1 "img2sixel produced output for invalid stdin"
-else
-    pass 1 "invalid stdin rejected without output"
-fi
+    exit 0
+}
 
-rm -f "${output_file}"
-
-exit "${status}"
+pass 1 "invalid stdin rejected without output"
+exit 0

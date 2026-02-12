@@ -13,12 +13,13 @@ set -v
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
-if run_img2sixel --env SIXEL_DITHER_A_DITHER_STRENGTH=abc \
+run_img2sixel --env SIXEL_DITHER_A_DITHER_STRENGTH=abc \
         -d a_dither -y raster --precision=8bit -p 16 \
-        -o "${output_sixel}" "${input_image}"; then
-    pass 1 "positional 8-bit a_dither invalid strength env passed"
-else
+        -o "${output_sixel}" "${input_image}" || {
     fail 1 "positional 8-bit a_dither invalid strength env failed"
-fi
+    exit 0
+}
+
+pass 1 "positional 8-bit a_dither invalid strength env passed"
 
 exit 0

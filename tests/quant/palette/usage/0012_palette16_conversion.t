@@ -4,8 +4,6 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-status=0
-
 config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 
 echo "1..1"
@@ -15,10 +13,11 @@ snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 map16_palette="${images_dir}/map16-palette.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/palette16.sixel"
 
-if run_img2sixel -7 -m "${map16_palette}" -Efast "${snake_jpg}" >"${target_sixel}"; then
-    pass 1 "16-colour palette conversion succeeds"
-else
+run_img2sixel -7 -m "${map16_palette}" -Efast "${snake_jpg}" >"${target_sixel}" || {
     fail 1 "16-colour palette conversion fails"
-fi
+    exit 0
+}
 
-exit "${status}"
+pass 1 "16-colour palette conversion succeeds"
+
+exit 0

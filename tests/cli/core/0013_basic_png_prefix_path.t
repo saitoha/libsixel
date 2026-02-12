@@ -10,14 +10,15 @@ config_macro_defined HAVE_SIXEL2PNG || skip_all "sixel2png is disabled in this b
 echo "1..1"
 set -v
 
-rm -f "${ARTIFACT_LOCAL_DIR}/out.png"
+out_path="${ARTIFACT_LOCAL_DIR}/out.png"
+: >"${out_path}"
 
-run_sixel2png -o "png:${ARTIFACT_LOCAL_DIR}/out.png" <"${images_dir}/map8.six" || {
+run_sixel2png -o "png:${out_path}" <"${images_dir}/map8.six" || {
     fail 1 "prefixed output command failed"
     exit 0
 }
 
-test -s "${ARTIFACT_LOCAL_DIR}/out.png" || {
+test -s "${out_path}" || {
     fail 1 "prefixed output missing"
     exit 0
 }

@@ -19,12 +19,10 @@ set -v
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
-if run_img2sixel --precision=float32 --lookup-policy=none -o "${output_sixel}" "${input_image}"; then
-    :
-else
+run_img2sixel --precision=float32 --lookup-policy=none -o "${output_sixel}" "${input_image}" || {
     fail 1 "float32 lookup policy none lsqa failed"
     exit 0
-fi
+}
 
 lsqa_err=$(
     set +xv
@@ -32,12 +30,16 @@ lsqa_err=$(
         "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
-if [ -z "${lsqa_run_status-}" ]; then
+[ "${lsqa_run_status:-0}" -eq 0 ] && {
     pass 1 "float32 lookup policy none lsqa passed"
-elif [ "${lsqa_run_status}" -eq 5 ]; then
+    exit 0
+}
+
+[ "${lsqa_run_status}" -eq 5 ] && {
     fail 1 "${lsqa_err}"
-else
-    fail 1 "float32 lookup policy none lsqa failed"
-fi
+    exit 0
+}
+
+fail 1 "float32 lookup policy none lsqa failed"
 
 exit 0

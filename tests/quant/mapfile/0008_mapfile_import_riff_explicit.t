@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: RIFF palette parsed with explicit type prefix despite missing extension.
+# TAP test: RIFF palette import by explicit type converts image data.
 
 set -eux
 
@@ -12,24 +12,25 @@ set -v
 
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 riff_palette="${ARTIFACT_LOCAL_DIR}/palette-riff.pal"
+riff_alias="${ARTIFACT_LOCAL_DIR}/palette-riff.alias"
 
-if ! run_img2sixel -M pal-riff:"${riff_palette}" \
-        -o "${ARTIFACT_LOCAL_DIR}/pal-riff.six" "${snake_png}"; then
-    fail "Preparing RIFF palette for import failed"
-    exit "${status}"
-fi
+run_img2sixel -M pal-riff:"${riff_palette}"         -o "${ARTIFACT_LOCAL_DIR}/pal-riff.six" "${snake_png}" || {
+    fail 1 "Preparing RIFF palette for import failed"
+    exit 0
+}
 
-riff_alias="${ARTIFACT_LOCAL_DIR}/palette-riff-noext"
-cp "${riff_palette}" "${riff_alias}"
-if run_img2sixel -m pal-riff:"${riff_alias}" \
-        -o "${ARTIFACT_LOCAL_DIR}/from-riff.six" "${snake_png}"; then
-    if [ -s "${ARTIFACT_LOCAL_DIR}/from-riff.six" ]; then
-        pass 1 "RIFF palette parsed with explicit type"
-    else
-        fail 1 "RIFF palette conversion produced no data"
-    fi
-else
+cat "${riff_palette}" >"${riff_alias}"
+
+run_img2sixel -m pal-riff:"${riff_alias}"         -o "${ARTIFACT_LOCAL_DIR}/from-riff.six" "${snake_png}" || {
     fail 1 "RIFF palette conversion failed"
-fi
+    exit 0
+}
+
+[ -s "${ARTIFACT_LOCAL_DIR}/from-riff.six" ] || {
+    fail 1 "RIFF palette conversion produced no data"
+    exit 0
+}
+
+pass 1 "RIFF palette import using explicit type works"
 
 exit 0

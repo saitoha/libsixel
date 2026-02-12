@@ -22,24 +22,26 @@ set -v
 image_path="${top_srcdir}/tests/data/inputs/formats/rgb-tiled.tiff"
 reference_path="${top_srcdir}/tests/data/inputs/formats/snake-64-reference-rgb.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/rgb_tiled.six"
-if run_img2sixel -Llibtiff! "${image_path}" >"${output_sixel}"; then
-    :
-else
+run_img2sixel -Llibtiff! "${image_path}" >"${output_sixel}" || {
     fail 1 "tiff tiled conversion failed"
     exit 0
-fi
+}
 
 lsqa_err=$(
     set +xv
     run_lsqa -b "MS-SSIM:${lsqa_floor}" "${reference_path}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
-if [ -z "${lsqa_run_status-}" ]; then
+[ "${lsqa_run_status:-0}" -eq 0 ] && {
     pass 1 "tiff tiled quality meets baseline"
-elif [ "${lsqa_run_status}" -eq 5 ]; then
+    exit 0
+}
+
+[ "${lsqa_run_status}" -eq 5 ] && {
     fail 1 "${lsqa_err}"
-else
-    fail 1 "tiff tiled quality regressed"
-fi
+    exit 0
+}
+
+fail 1 "tiff tiled quality regressed"
 
 exit 0

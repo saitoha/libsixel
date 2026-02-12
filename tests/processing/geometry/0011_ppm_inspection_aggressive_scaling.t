@@ -4,8 +4,6 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-status=0
-
 config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 
 echo "1..1"
@@ -14,11 +12,12 @@ set -v
 snake_ppm="${top_srcdir}/tests/data/inputs/small.ppm"
 target_txt="${ARTIFACT_LOCAL_DIR}/ppm-inspection.txt"
 
-if run_img2sixel -I -c2000x100+40+20 -wauto -h200 -qhigh -dfs \
-        -rbilinear -trgb "${snake_ppm}" >"${target_txt}"; then
-    pass 1 "PPM inspection tolerates aggressive scaling"
-else
+run_img2sixel -I -c2000x100+40+20 -wauto -h200 -qhigh -dfs \
+        -rbilinear -trgb "${snake_ppm}" >"${target_txt}" || {
     fail 1 "PPM inspection with scaling fails"
-fi
+    exit 0
+}
 
-exit "${status}"
+pass 1 "PPM inspection tolerates aggressive scaling"
+
+exit 0
