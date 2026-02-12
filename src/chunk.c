@@ -255,6 +255,84 @@ wait_file(int fd, int usec)
 # endif
 #endif
 
+#if defined(_WIN32) && HAVE_WINDOWS_H
+
+static wchar_t *
+utf8_to_wide(char const *s) {
+    wchar_t *w;
+    int n;
+
+    n = MultiByteToWideChar(CP_UTF8, 0, s, -1, NULL, 0);
+    if (n <= 0) {
+        return NULL;
+    }
+    w = (wchar_t*) malloc(sizeof(wchar_t) * n);
+    if (!w) {
+        return NULL;
+    }
+    if (!MultiByteToWideChar(CP_UTF8, 0, s, -1, w, n)) {
+         free(w);
+         return NULL;
+    }
+
+    return w;
+}
+
+
+static SIXELSTATUS
+sixel_check_input_path_windows(char const *filename)
+{
+    SIXELSTATUS status;
+    wchar_t *wfilename;
+    DWORD attrs;
+    DWORD last_error;
+    char message[2048];
+
+    status = SIXEL_FALSE;
+    wfilename = NULL;
+    attrs = INVALID_FILE_ATTRIBUTES;
+    last_error = 0;
+
+    wfilename = utf8_to_wide(filename);
+    if (wfilename == NULL) {
+        sixel_helper_set_additional_message(
+            "utf8_to_wide(input path) failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    attrs = GetFileAttributesW(wfilename);
+    if (attrs == INVALID_FILE_ATTRIBUTES) {
+        last_error = GetLastError();
+        (void)sixel_compat_snprintf(message,
+                                    sizeof(message),
+                                    "GetFileAttributesW() for file '%s' "
+                                    "failed (GetLastError=%lu).",
+                                    filename,
+                                    (unsigned long)last_error);
+        sixel_helper_set_additional_message(message);
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    if ((attrs & FILE_ATTRIBUTE_DIRECTORY) != 0) {
+        sixel_helper_set_additional_message("specified path is directory.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    if (wfilename != NULL) {
+        free(wfilename);
+        wfilename = NULL;
+    }
+    return status;
+}
+#endif  /* defined(_WIN32) && HAVE_WINDOWS_H */
+
+
 static int
 sixel_fd_is_console(int fd)
 {
@@ -398,83 +476,6 @@ sixel_chunk_from_file(
 end:
     return status;
 }
-
-#if defined(_WIN32) && HAVE_WINDOWS_H
-
-static wchar_t *
-utf8_to_wide(char const *s) {
-    wchar_t *w;
-    int n;
-
-    n = MultiByteToWideChar(CP_UTF8, 0, s, -1, NULL, 0);
-    if (n <= 0) {
-        return NULL;
-    }
-    w = (wchar_t*) malloc(sizeof(wchar_t) * n);
-    if (!w) {
-        return NULL;
-    }
-    if (!MultiByteToWideChar(CP_UTF8, 0, s, -1, w, n)) {
-         free(w);
-         return NULL;
-    }
-
-    return w;
-}
-
-
-static SIXELSTATUS
-sixel_check_input_path_windows(char const *filename)
-{
-    SIXELSTATUS status;
-    wchar_t *wfilename;
-    DWORD attrs;
-    DWORD last_error;
-    char message[2048];
-
-    status = SIXEL_FALSE;
-    wfilename = NULL;
-    attrs = INVALID_FILE_ATTRIBUTES;
-    last_error = 0;
-
-    wfilename = utf8_to_wide(filename);
-    if (wfilename == NULL) {
-        sixel_helper_set_additional_message(
-            "utf8_to_wide(input path) failed.");
-        status = SIXEL_BAD_ALLOCATION;
-        goto end;
-    }
-
-    attrs = GetFileAttributesW(wfilename);
-    if (attrs == INVALID_FILE_ATTRIBUTES) {
-        last_error = GetLastError();
-        (void)sixel_compat_snprintf(message,
-                                    sizeof(message),
-                                    "GetFileAttributesW() for file '%s' "
-                                    "failed (GetLastError=%lu).",
-                                    filename,
-                                    (unsigned long)last_error);
-        sixel_helper_set_additional_message(message);
-        status = SIXEL_BAD_INPUT;
-        goto end;
-    }
-
-    if ((attrs & FILE_ATTRIBUTE_DIRECTORY) != 0) {
-        sixel_helper_set_additional_message("specified path is directory.");
-        status = SIXEL_BAD_INPUT;
-        goto end;
-    }
-
-    status = SIXEL_OK;
-
-end:
-    if (wfilename != NULL) {
-        free(wfilename);
-        wfilename = NULL;
-    }
-    return status;
-}
-#endif  /* defined(_WIN32) && HAVE_WINDOWS_H */
 
 #if HAVE_WINHTTP
 static SIXELSTATUS
