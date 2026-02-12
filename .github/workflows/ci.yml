@@ -1714,7 +1714,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - label: Autotools-ubuntu-aarch64-emscripten
+          - label: Autotools-ubuntu-aarch64-emscripten-static
             buildtool: autotools
             runner: ubuntu-24.04-arm
             setup_prefix: >-
@@ -1729,7 +1729,7 @@ jobs:
               nodejs
             exec_type: bash
 
-          - label: Meson-ubuntu-aarch64-emscripten
+          - label: Meson-ubuntu-aarch64-emscripten-static
             buildtool: meson
             runner: ubuntu-24.04-arm
             setup_prefix: >-
@@ -1742,7 +1742,7 @@ jobs:
               nodejs
             exec_type: bash
 
-          - label: Autotools-macos-aarch64-emscripten
+          - label: Autotools-macos-aarch64-emscripten-static
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
@@ -1757,7 +1757,7 @@ jobs:
               node
             exec_type: bash
 
-          - label: Meson-macos-aarch64-emscripten
+          - label: Meson-macos-aarch64-emscripten-static
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
@@ -1793,7 +1793,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - label: Autotools-ubuntu-aarch64-emscripten-asan-ubsan
+          - label: Autotools-ubuntu-aarch64-emscripten-asan-ubsan-static
             buildtool: autotools
             runner: ubuntu-24.04-arm
             setup_prefix: >-
@@ -1808,7 +1808,7 @@ jobs:
               nodejs
             exec_type: bash
 
-          - label: Meson-ubuntu-aarch64-emscripten-asan-ubsan
+          - label: Meson-ubuntu-aarch64-emscripten-asan-ubsan-static
             buildtool: meson
             runner: ubuntu-24.04-arm
             setup_prefix: >-
@@ -1823,7 +1823,7 @@ jobs:
               nodejs
             exec_type: bash
 
-          - label: Autotools-macos-aarch64-emscripten-asan-ubsan
+          - label: Autotools-macos-aarch64-emscripten-asan-ubsan-static
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
@@ -1838,7 +1838,7 @@ jobs:
               node
             exec_type: bash
 
-          - label: Meson-macos-aarch64-emscripten-asan-ubsan
+          - label: Meson-macos-aarch64-emscripten-asan-ubsan-static
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
@@ -1880,7 +1880,7 @@ jobs:
             buildtool: autotools
             runner: ubuntu-24.04-arm
             setup_prefix: >-
-              CFLAGS="-O3 -g0 -flto -msimd128 -fdata-sections -ffunction-sections"
+              CFLAGS="-O2 -g -flto -msimd128 -fdata-sections -ffunction-sections"
               LDFLAGS="-sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=524288 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sUSE_PTHREADS=1 -sASSERTIONS=0"
               emconfigure
             setup_options: >-
@@ -1890,8 +1890,7 @@ jobs:
               --enable-gcov
             extra_packages: >-
               nodejs
-            pip_packages: >-
-              gcovr
+              lcov
             exec_type: bash
 
           - label: Meson-ubuntu-aarch64-emscripten-coverage
@@ -1906,15 +1905,14 @@ jobs:
             extra_packages: >-
               meson
               nodejs
-            pip_packages: >-
-              gcovr
+              lcov
             exec_type: bash
 
           - label: Autotools-macos-aarch64-emscripten-coverage
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
-              CFLAGS="-O3 -g0 -flto -msimd128 -fdata-sections -ffunction-sections"
+              CFLAGS="-O2 -g -flto -msimd128 -fdata-sections -ffunction-sections"
               LDFLAGS="-sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=524288 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sUSE_PTHREADS=1 -sASSERTIONS=0"
               emconfigure
             setup_options: >-
@@ -1924,7 +1922,6 @@ jobs:
               --enable-gcov
             extra_packages: >-
               node
-            pip_packages: >-
               gcovr
             exec_type: bash
 
@@ -1940,7 +1937,6 @@ jobs:
             extra_packages: >-
               meson
               node
-            pip_packages: >-
               gcovr
             exec_type: bash
 
