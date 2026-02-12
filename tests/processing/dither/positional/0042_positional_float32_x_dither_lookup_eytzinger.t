@@ -13,12 +13,13 @@ set -v
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
-if run_img2sixel -d x_dither -y raster --precision=float32 \
+run_img2sixel -d x_dither -y raster --precision=float32 \
         --lookup-policy=eytzinger -p 16 \
-        -o "${output_sixel}" "${input_image}"; then
-    pass 1 "positional float32 x_dither lookup eytzinger passed"
-else
+        -o "${output_sixel}" "${input_image}" || {
     fail 1 "positional float32 x_dither lookup eytzinger failed"
-fi
+    exit 0
+}
+
+pass 1 "positional float32 x_dither lookup eytzinger passed"
 
 exit 0

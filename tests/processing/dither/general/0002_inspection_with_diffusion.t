@@ -4,8 +4,6 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-status=0
-
 config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 
 echo "1..1"
@@ -15,10 +13,10 @@ snake_ppm="${top_srcdir}/tests/data/inputs/small.ppm"
 
 target_txt="${ARTIFACT_LOCAL_DIR}/inspection.txt"
 
-if ! run_img2sixel -I -dstucki -thls -B"#a0B030" "${snake_ppm}" >"${target_txt}"; then
+run_img2sixel -I -dstucki -thls -B"#a0B030" "${snake_ppm}" >"${target_txt}" || {
     fail 1 "inspection with diffusion failed"
-    exit "${status}"
-fi
+    exit 0
+}
 
 pass 1 "inspection with diffusion and background works"
-exit "${status}"
+exit 0

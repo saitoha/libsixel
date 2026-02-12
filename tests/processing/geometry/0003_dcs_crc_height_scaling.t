@@ -1,39 +1,27 @@
 #!/bin/sh
-# Check DCS coordinates when scaling height.
+# Check DCS coordinates for geometry scaling combinations.
 set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
-status=0
 
 config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 
 echo "1..1"
 set -v
 
-check_dcs_crc() {
-    case_no=$1
-    scale_args=$2
-    description=$3
-    expected_dcs_crc="302131327e2d2131327e1b5c"
+expected_dcs_crc="302131327e2d2131327e1b5c"
+digest=$(printf 'Pq"1;1;1;1!6~\'     | run_img2sixel -=1 -rne -h200%     | tr '#' '\n' | tail -n +3     | od -An -tx1 | tr -d ' \n') || digest=""
 
-    digest=$(printf '\033Pq"1;1;1;1!6~\033\\' \
-        | run_img2sixel -=1 -rne ${scale_args} \
-        | tr '#' '\n' | tail -n +3 \
-        | od -An -tx1 | tr -d ' \n') || digest=""
-
-    if [ -z "${digest}" ]; then
-        fail "${case_no}" "${description} (no checksum produced)"
-        return
-    fi
-
-    if [ "x${digest}" = "x${expected_dcs_crc}" ]; then
-        pass "${case_no}" "${description}"
-    else
-        fail "${case_no}" "${description}"
-    fi
+[ -n "${digest}" ] || {
+    fail 1 "height scaling preserves DCS coordinates (no checksum produced)"
+    exit 0
 }
 
-check_dcs_crc 1 "-h200%" "height scaling preserves DCS coordinates"
+[ "x${digest}" = "x${expected_dcs_crc}" ] && {
+    pass 1 "height scaling preserves DCS coordinates"
+    exit 0
+}
 
-exit "${status}"
+fail 1 "height scaling preserves DCS coordinates"
+
+exit 0

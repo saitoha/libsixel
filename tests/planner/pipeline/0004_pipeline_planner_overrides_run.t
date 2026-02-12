@@ -12,13 +12,11 @@ set -v
 
 ppm_tall="${TOP_SRCDIR}/tests/data/inputs/tall.ppm"
 
-if SIXEL_DITHER_PARALLEL_THREADS_MAX=1 \
-        SIXEL_DITHER_PARALLEL_BAND_WIDTH=9 \
-        SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=4 \
-        SIXEL_THREADS=6 \
-        run_img2sixel -v -o "${ARTIFACT_LOCAL_DIR}/tall.six" "${ppm_tall}" >"${ARTIFACT_LOCAL_DIR}/tall.out"; then
-    printf 'ok 1 - pipeline run succeeded (overrides)\n'
-else
-    printf 'not ok 1 - pipeline run failed (overrides)\n'
-    exit 1
-fi
+SIXEL_DITHER_PARALLEL_THREADS_MAX=1         SIXEL_DITHER_PARALLEL_BAND_WIDTH=9         SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=4         SIXEL_THREADS=6         run_img2sixel -v -o "${ARTIFACT_LOCAL_DIR}/tall.six" "${ppm_tall}" >"${ARTIFACT_LOCAL_DIR}/tall.out" || {
+    fail 1 "pipeline run failed (overrides)"
+    exit 0
+}
+
+pass 1 "pipeline run succeeded (overrides)"
+
+exit 0

@@ -159,7 +159,7 @@ run_img2sixel "https://localhost:${server_port}/images/map8.six" \
 stop_server "${server_pid}"
 
 # The HTTPS request must fail TLS verification when -k is omitted.
-if [ ${command_status} -eq 0 ]; then
+if [ "${command_status}" -eq 0 ]; then
     rm -f "${verify_output}"
     printf 'not ok 1 - self-signed fetch unexpectedly succeeded without -k\n'
     exit 1

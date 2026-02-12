@@ -21,9 +21,10 @@ img2sixel_opts="-c16x16+8+8"
 
 if [ ! -f "${expected_ppm}" ]; then
     fail 1 "missing expected image: 0047_pngsuite_basic_cropped_basn0g01_msssim.ppm"
-    exit "${status}"
+    exit 0
 fi
 
+# shellcheck disable=SC2086
 run_img2sixel ${img2sixel_opts} "${input_png}" >"${output_sixel}" || {
     fail 1 "img2sixel failed"
     exit 0
