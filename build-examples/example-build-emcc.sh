@@ -71,13 +71,14 @@ cd "${BUILDDIR}" && (
   CFLAGS=" \
     -O3 \
     -g0 \
-    -pthread \
+    -pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 \
     -flto \
     -msimd128 \
     -fdata-sections \
     -ffunction-sections \
   " \
   LDFLAGS=" \
+    -pthread -sSHARED_MEMORY=1 \
     -flto \
     -sRETAIN_COMPILER_SETTINGS=1 \
     -sNODERAWFS=1 \
