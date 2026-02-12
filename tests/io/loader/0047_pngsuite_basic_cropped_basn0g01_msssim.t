@@ -17,7 +17,7 @@ set -v
 input_png="${images_dir}/pngsuite/basic/basn0g01.png"
 expected_ppm="${top_srcdir}/tests/data/loader/pngsuite_expected/0047_pngsuite_basic_cropped_basn0g01_msssim.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/basn0g01.sixel"
-img2sixel_opts="-c16x16+8+8"
+img2sixel_opts="-c16x16+8+8 -Llibpng!"
 
 if [ ! -f "${expected_ppm}" ]; then
     fail 1 "missing expected image: 0047_pngsuite_basic_cropped_basn0g01_msssim.ppm"
