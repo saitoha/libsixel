@@ -262,10 +262,12 @@ open_binary_file(
     char const  /* in */    *filename)
 {
     SIXELSTATUS status = SIXEL_FALSE;
+#if 0
 #if HAVE_STAT
     struct stat sb;
     char message[2048];
 #endif  /* HAVE_STAT */
+#endif
 
     if (filename == NULL || strcmp(filename, "-") == 0) {
         /* for windows */
@@ -276,6 +278,7 @@ open_binary_file(
         goto end;
     }
 
+#if 0
 #if HAVE_STAT
     if (sixel_compat_stat(filename, &sb) != 0) {
         status = (SIXEL_LIBC_ERROR | (errno & 0xff));
@@ -292,6 +295,7 @@ open_binary_file(
         goto end;
     }
 #endif  /* HAVE_STAT */
+#endif
 
     *f = sixel_compat_fopen(filename, "rb");
     if (! *f) {
