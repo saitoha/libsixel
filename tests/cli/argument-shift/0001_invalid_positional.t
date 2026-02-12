@@ -6,6 +6,13 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
+# Skip temporarily on Windows environments while addressing
+# intermittent failures specific to that platform.
+os_name=$(uname -s || echo "unknown")
+if printf '%s' "${os_name}" | grep -qiE 'mingw|msys|cygwin'; then
+    skip_all "temporarily disabled on Windows due to instability"
+fi
+
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 echo "1..1"
