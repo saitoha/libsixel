@@ -71,6 +71,7 @@ cd "${BUILDDIR}" && (
   CFLAGS=" \
     -O3 \
     -g0 \
+    -pthread \
     -flto \
     -msimd128 \
     -fdata-sections \
