@@ -306,6 +306,7 @@ extra_funcs = [
   'open',
   'sscanf_s',
   'strncmp',
+  'tolower',
   '_stricmp',
   '_strcmpi',
   'strcasecmp',
