@@ -41,6 +41,20 @@
 #include "lookup-common.h"
 #include "bluenoise_64x64.h"
 
+#if SIXEL_ENABLE_THREADS
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) && \
+        !defined(WITH_WINPTHREAD)
+#  define SIXEL_POS_FLOAT32_USE_WIN32_ONCE 1
+#  include <windows.h>
+static INIT_ONCE g_sixel_pos_strength_once_float32 = INIT_ONCE_STATIC_INIT;
+static INIT_ONCE g_sixel_bn_conf_once_float32 = INIT_ONCE_STATIC_INIT;
+# else
+#  include <pthread.h>
+static pthread_once_t g_sixel_pos_strength_once_float32 = PTHREAD_ONCE_INIT;
+static pthread_once_t g_sixel_bn_conf_once_float32 = PTHREAD_ONCE_INIT;
+# endif
+#endif
+
 static void
 sixel_dither_scanline_params_positional_float32(int serpentine,
                              int index,
@@ -73,11 +87,11 @@ static int g_sixel_pos_inited_float32 = 0;
 
 static void sixel_positional_strength_init_float32(void);
 static float positional_mask_blue_float32(int x, int y, int c);
+static void sixel_bluenoise_conf_init_from_env_float32(void);
 
 static float
 positional_mask_a_float32(int x, int y, int c)
 {
-    sixel_positional_strength_init_float32();
     return (((((x + c * 67) + y * 236) * 119) & 255) / 128.0f
             - 1.0f) * g_sixel_pos_strength_a_float32;
 }
@@ -85,7 +99,6 @@ positional_mask_a_float32(int x, int y, int c)
 static float
 positional_mask_x_float32(int x, int y, int c)
 {
-    sixel_positional_strength_init_float32();
     return (((((x + c * 29) ^ (y * 149)) * 1234) & 511) / 256.0f
             - 1.0f) * g_sixel_pos_strength_x_float32;
 }
@@ -182,16 +195,12 @@ sixel_bn_parse_phase_float32(char const *text, int *out_ox, int *out_oy)
 }
 
 static void
-sixel_positional_strength_init_float32(void)
+sixel_positional_strength_init_body_float32(void)
 {
     char const *text;
     float strength_a;
     float strength_x;
     int parsed;
-
-    if (g_sixel_pos_inited_float32 != 0) {
-        return;
-    }
 
     /*
      * Default strengths are per-dither values. Environment overrides use
@@ -218,6 +227,50 @@ sixel_positional_strength_init_float32(void)
     g_sixel_pos_strength_a_float32 = strength_a;
     g_sixel_pos_strength_x_float32 = strength_x;
     g_sixel_pos_inited_float32 = 1;
+}
+
+#if SIXEL_ENABLE_THREADS && defined(SIXEL_POS_FLOAT32_USE_WIN32_ONCE)
+static BOOL CALLBACK
+sixel_positional_strength_once_cb_float32(PINIT_ONCE init_once,
+                                          PVOID parameter,
+                                          PVOID *context)
+{
+    (void)init_once;
+    (void)parameter;
+    (void)context;
+    sixel_positional_strength_init_body_float32();
+    return TRUE;
+}
+#endif
+
+static void
+sixel_positional_strength_init_float32(void)
+{
+#if SIXEL_ENABLE_THREADS
+# if defined(SIXEL_POS_FLOAT32_USE_WIN32_ONCE)
+    BOOL executed;
+
+    executed = InitOnceExecuteOnce(&g_sixel_pos_strength_once_float32,
+                                   sixel_positional_strength_once_cb_float32,
+                                   NULL,
+                                   NULL);
+    if (executed == FALSE) {
+        sixel_positional_strength_init_body_float32();
+    }
+# else
+    int status;
+
+    status = pthread_once(&g_sixel_pos_strength_once_float32,
+                          sixel_positional_strength_init_body_float32);
+    if (status != 0) {
+        sixel_positional_strength_init_body_float32();
+    }
+# endif
+#else
+    if (g_sixel_pos_inited_float32 == 0) {
+        sixel_positional_strength_init_body_float32();
+    }
+#endif
 }
 
 static unsigned int
@@ -260,7 +313,7 @@ sixel_bn_str_equal_nocase_float32(char const *left, char const *right)
  * inside pixel loops. Invalid values fall back to defaults.
  */
 static void
-sixel_bluenoise_conf_init_from_env_float32(void)
+sixel_bluenoise_conf_init_from_env_body_float32(void)
 {
     char const *text;
     float strength;
@@ -272,10 +325,6 @@ sixel_bluenoise_conf_init_from_env_float32(void)
     int parsed;
     int per_channel;
     unsigned int hash;
-
-    if (g_sixel_bn_inited_float32 != 0) {
-        return;
-    }
 
     strength = 0.055f;
     text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_STRENGTH");
@@ -337,6 +386,50 @@ sixel_bluenoise_conf_init_from_env_float32(void)
     g_sixel_bn_inited_float32 = 1;
 }
 
+#if SIXEL_ENABLE_THREADS && defined(SIXEL_POS_FLOAT32_USE_WIN32_ONCE)
+static BOOL CALLBACK
+sixel_bluenoise_conf_once_cb_float32(PINIT_ONCE init_once,
+                                     PVOID parameter,
+                                     PVOID *context)
+{
+    (void)init_once;
+    (void)parameter;
+    (void)context;
+    sixel_bluenoise_conf_init_from_env_body_float32();
+    return TRUE;
+}
+#endif
+
+static void
+sixel_bluenoise_conf_init_from_env_float32(void)
+{
+#if SIXEL_ENABLE_THREADS
+# if defined(SIXEL_POS_FLOAT32_USE_WIN32_ONCE)
+    BOOL executed;
+
+    executed = InitOnceExecuteOnce(&g_sixel_bn_conf_once_float32,
+                                   sixel_bluenoise_conf_once_cb_float32,
+                                   NULL,
+                                   NULL);
+    if (executed == FALSE) {
+        sixel_bluenoise_conf_init_from_env_body_float32();
+    }
+# else
+    int status;
+
+    status = pthread_once(&g_sixel_bn_conf_once_float32,
+                          sixel_bluenoise_conf_init_from_env_body_float32);
+    if (status != 0) {
+        sixel_bluenoise_conf_init_from_env_body_float32();
+    }
+# endif
+#else
+    if (g_sixel_bn_inited_float32 == 0) {
+        sixel_bluenoise_conf_init_from_env_body_float32();
+    }
+#endif
+}
+
 static float
 sixel_bluenoise_tri_float32(int x, int y, int c)
 {
@@ -378,7 +471,6 @@ sixel_bluenoise_tri_float32(int x, int y, int c)
 static float
 positional_mask_blue_float32(int x, int y, int c)
 {
-    sixel_bluenoise_conf_init_from_env_float32();
     return sixel_bluenoise_tri_float32(x, y, c)
         * g_sixel_bn_conf_float32.strength;
 }
@@ -423,15 +515,19 @@ sixel_dither_apply_positional_float32(sixel_dither_t *dither,
 
     switch (context->method_for_diffuse) {
     case SIXEL_DIFFUSE_A_DITHER:
+        sixel_positional_strength_init_float32();
         f_mask = positional_mask_a_float32;
         break;
     case SIXEL_DIFFUSE_X_DITHER:
+        sixel_positional_strength_init_float32();
         f_mask = positional_mask_x_float32;
         break;
     case SIXEL_DIFFUSE_BLUENOISE_DITHER:
+        sixel_bluenoise_conf_init_from_env_float32();
         f_mask = positional_mask_blue_float32;
         break;
     default:
+        sixel_positional_strength_init_float32();
         f_mask = positional_mask_x_float32;
         break;
     }
