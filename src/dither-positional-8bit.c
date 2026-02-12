@@ -37,6 +37,20 @@
 #include "lookup-common.h"
 #include "bluenoise_64x64.h"
 
+#if SIXEL_ENABLE_THREADS
+# if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__) && \
+        !defined(WITH_WINPTHREAD)
+#  define SIXEL_POS_8BIT_USE_WIN32_ONCE 1
+#  include <windows.h>
+static INIT_ONCE g_sixel_pos_strength_once_8bit = INIT_ONCE_STATIC_INIT;
+static INIT_ONCE g_sixel_bn_conf_once_8bit = INIT_ONCE_STATIC_INIT;
+# else
+#  include <pthread.h>
+static pthread_once_t g_sixel_pos_strength_once_8bit = PTHREAD_ONCE_INIT;
+static pthread_once_t g_sixel_bn_conf_once_8bit = PTHREAD_ONCE_INIT;
+# endif
+#endif
+
 static void
 sixel_dither_scanline_params_positional_8bit(int serpentine,
                              int index,
@@ -85,6 +99,9 @@ typedef struct {
 
 static sixel_bluenoise_conf_8bit_t g_sixel_bn_conf_8bit;
 static int g_sixel_bn_inited_8bit = 0;
+
+static void sixel_positional_strength_init_8bit(void);
+static void sixel_bluenoise_conf_init_from_env_8bit(void);
 
 static int
 sixel_bn_parse_int_8bit(char const *text, int *out_value)
@@ -163,16 +180,12 @@ sixel_bn_parse_phase_8bit(char const *text, int *out_ox, int *out_oy)
 }
 
 static void
-sixel_positional_strength_init_8bit(void)
+sixel_positional_strength_init_body_8bit(void)
 {
     char const *text;
     float strength_a;
     float strength_x;
     int parsed;
-
-    if (g_sixel_pos_inited_8bit != 0) {
-        return;
-    }
 
     /*
      * Default strengths are per-dither values. Environment overrides use
@@ -199,6 +212,50 @@ sixel_positional_strength_init_8bit(void)
     g_sixel_pos_strength_a_8bit = strength_a;
     g_sixel_pos_strength_x_8bit = strength_x;
     g_sixel_pos_inited_8bit = 1;
+}
+
+#if SIXEL_ENABLE_THREADS && defined(SIXEL_POS_8BIT_USE_WIN32_ONCE)
+static BOOL CALLBACK
+sixel_positional_strength_once_cb_8bit(PINIT_ONCE init_once,
+                                       PVOID parameter,
+                                       PVOID *context)
+{
+    (void)init_once;
+    (void)parameter;
+    (void)context;
+    sixel_positional_strength_init_body_8bit();
+    return TRUE;
+}
+#endif
+
+static void
+sixel_positional_strength_init_8bit(void)
+{
+#if SIXEL_ENABLE_THREADS
+# if defined(SIXEL_POS_8BIT_USE_WIN32_ONCE)
+    BOOL executed;
+
+    executed = InitOnceExecuteOnce(&g_sixel_pos_strength_once_8bit,
+                                   sixel_positional_strength_once_cb_8bit,
+                                   NULL,
+                                   NULL);
+    if (executed == FALSE) {
+        sixel_positional_strength_init_body_8bit();
+    }
+# else
+    int status;
+
+    status = pthread_once(&g_sixel_pos_strength_once_8bit,
+                          sixel_positional_strength_init_body_8bit);
+    if (status != 0) {
+        sixel_positional_strength_init_body_8bit();
+    }
+# endif
+#else
+    if (g_sixel_pos_inited_8bit == 0) {
+        sixel_positional_strength_init_body_8bit();
+    }
+#endif
 }
 
 static unsigned int
@@ -241,7 +298,7 @@ sixel_bn_str_equal_nocase_8bit(char const *left, char const *right)
  * inside pixel loops. Invalid values fall back to defaults.
  */
 static void
-sixel_bluenoise_conf_init_from_env_8bit(void)
+sixel_bluenoise_conf_init_from_env_body_8bit(void)
 {
     char const *text;
     float strength;
@@ -253,10 +310,6 @@ sixel_bluenoise_conf_init_from_env_8bit(void)
     int parsed;
     int per_channel;
     unsigned int hash;
-
-    if (g_sixel_bn_inited_8bit != 0) {
-        return;
-    }
 
     strength = 0.055f;
     text = sixel_compat_getenv("SIXEL_DITHER_BLUENOISE_STRENGTH");
@@ -318,6 +371,50 @@ sixel_bluenoise_conf_init_from_env_8bit(void)
     g_sixel_bn_inited_8bit = 1;
 }
 
+#if SIXEL_ENABLE_THREADS && defined(SIXEL_POS_8BIT_USE_WIN32_ONCE)
+static BOOL CALLBACK
+sixel_bluenoise_conf_once_cb_8bit(PINIT_ONCE init_once,
+                                  PVOID parameter,
+                                  PVOID *context)
+{
+    (void)init_once;
+    (void)parameter;
+    (void)context;
+    sixel_bluenoise_conf_init_from_env_body_8bit();
+    return TRUE;
+}
+#endif
+
+static void
+sixel_bluenoise_conf_init_from_env_8bit(void)
+{
+#if SIXEL_ENABLE_THREADS
+# if defined(SIXEL_POS_8BIT_USE_WIN32_ONCE)
+    BOOL executed;
+
+    executed = InitOnceExecuteOnce(&g_sixel_bn_conf_once_8bit,
+                                   sixel_bluenoise_conf_once_cb_8bit,
+                                   NULL,
+                                   NULL);
+    if (executed == FALSE) {
+        sixel_bluenoise_conf_init_from_env_body_8bit();
+    }
+# else
+    int status;
+
+    status = pthread_once(&g_sixel_bn_conf_once_8bit,
+                          sixel_bluenoise_conf_init_from_env_body_8bit);
+    if (status != 0) {
+        sixel_bluenoise_conf_init_from_env_body_8bit();
+    }
+# endif
+#else
+    if (g_sixel_bn_inited_8bit == 0) {
+        sixel_bluenoise_conf_init_from_env_body_8bit();
+    }
+#endif
+}
+
 static float
 sixel_bluenoise_tri_8bit(int x, int y, int c)
 {
@@ -359,7 +456,6 @@ sixel_bluenoise_tri_8bit(int x, int y, int c)
 static float
 positional_mask_a_8bit(int x, int y, int c)
 {
-    sixel_positional_strength_init_8bit();
     return (((((x + c * 67) + y * 236) * 119) & 255) / 128.0f
             - 1.0f) * g_sixel_pos_strength_a_8bit;
 }
@@ -367,7 +463,6 @@ positional_mask_a_8bit(int x, int y, int c)
 static float
 positional_mask_x_8bit(int x, int y, int c)
 {
-    sixel_positional_strength_init_8bit();
     return (((((x + c * 29) ^ (y * 149)) * 1234) & 511) / 256.0f
             - 1.0f) * g_sixel_pos_strength_x_8bit;
 }
@@ -375,7 +470,6 @@ positional_mask_x_8bit(int x, int y, int c)
 static float
 positional_mask_blue_8bit(int x, int y, int c)
 {
-    sixel_bluenoise_conf_init_from_env_8bit();
     return sixel_bluenoise_tri_8bit(x, y, c)
         * g_sixel_bn_conf_8bit.strength;
 }
@@ -411,15 +505,19 @@ sixel_dither_apply_positional_8bit(sixel_dither_t *dither,
 
     switch (context->method_for_diffuse) {
     case SIXEL_DIFFUSE_A_DITHER:
+        sixel_positional_strength_init_8bit();
         f_mask = positional_mask_a_8bit;
         break;
     case SIXEL_DIFFUSE_X_DITHER:
+        sixel_positional_strength_init_8bit();
         f_mask = positional_mask_x_8bit;
         break;
     case SIXEL_DIFFUSE_BLUENOISE_DITHER:
+        sixel_bluenoise_conf_init_from_env_8bit();
         f_mask = positional_mask_blue_8bit;
         break;
     default:
+        sixel_positional_strength_init_8bit();
         f_mask = positional_mask_x_8bit;
         break;
     }
