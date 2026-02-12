@@ -15,7 +15,6 @@ set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/eytzinger-float32-linear.six"
-output_png="${ARTIFACT_LOCAL_DIR}/eytzinger-float32-linear.png"
 
 run_img2sixel --lookup-policy=eytzinger --precision=float32 --working-colorspace=linear -o "${output_sixel}" "${input_image}" || {
     fail 1 "float32 Eytzinger linear colorspace conversion failed"

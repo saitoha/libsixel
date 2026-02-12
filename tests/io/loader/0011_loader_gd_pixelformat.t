@@ -7,7 +7,6 @@ set -eu
 
 feature_defined_in_config "HAVE_GD" || {
     skip_all "GD loader is unavailable"
-    exit 0
 }
 
 echo "1..1"

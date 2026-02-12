@@ -17,9 +17,8 @@ set -v
 input_png="${images_dir}/pngsuite/background/bgan6a16.png"
 expected_ppm="${top_srcdir}/tests/data/loader/pngsuite_expected/0071_pngsuite_background_white_bgan6a16_msssim.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/bgan6a16.sixel"
-img2sixel_opts="-B#fff -Llibpng!"
 
-run_img2sixel ${img2sixel_opts} "${input_png}" >"${output_sixel}" || {
+run_img2sixel -B#fff -Llibpng! "${input_png}" >"${output_sixel}" || {
     fail 1 "img2sixel failed"
     exit 0
 }

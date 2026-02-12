@@ -5,7 +5,7 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-[ "x${SIXEL_TSAN_BUILD:-no}" = "xyes" ] && skip_all "TSan builds can suppress abort trace output"
+[ "${SIXEL_TSAN_BUILD:-no}" = "yes" ] && skip_all "TSan builds can suppress abort trace output"
 
 binary="${TEST_RUNNER_PATH}"
 [ -x "${binary}" ] || [ -n "${SIXEL_RUNTIME-}" ] || skip_all "harness not built"

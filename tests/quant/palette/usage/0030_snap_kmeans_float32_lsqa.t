@@ -13,7 +13,6 @@ set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snap-kmeans-float32.six"
-output_png="${ARTIFACT_LOCAL_DIR}/snap-kmeans-float32.png"
 
 SIXEL_PALETTE_SNAP_TARGET_POLICY=nearest \
         SIXEL_PALETTE_SNAP_TIMING_POLICY=all \

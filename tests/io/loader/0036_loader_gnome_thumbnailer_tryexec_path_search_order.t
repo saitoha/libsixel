@@ -9,7 +9,6 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 feature_defined_in_config "HAVE_FREEDESKTOP_THUMBNAILING" || {
     skip_all "gnome-thumbnailer loader is unavailable on this platform"
-    exit 0
 }
 
 echo "1..1"
