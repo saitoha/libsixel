@@ -26,6 +26,12 @@ runs:
       run: |
         Stop-Service WSearch
 
+    - name: Disable Spotlight (macOS)
+      if: runner.os == 'macOS'
+      shell: bash
+      run: |
+        sudo mdutil -a -i off
+
     - name: Normalize line endings (Windows)
       if: runner.os == 'Windows'
       shell: bash
