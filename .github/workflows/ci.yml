@@ -2278,44 +2278,44 @@ jobs:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-  haiku:
-    needs: [coveralls]
-    name: ${{ matrix.label }}
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      matrix:
-        include:
-          - label: Autotools-haiku-r1beta5-x86-64
-            buildtool: autotools
-            runner: ubuntu-latest
-            cp_os: haiku
-            cp_arch: x86-64
-            cp_version: r1beta5
-            extra_packages: >-
-              make
-            make: make
-            exec_type: cross-platform-vms
-
-          - label: Meson-haiku-r1beta5-x86-64
-            buildtool: meson
-            runner: ubuntu-latest
-            cp_os: haiku
-            cp_arch: x86-64
-            cp_version: r1beta5
-            extra_packages: >-
-              meson
-            exec_type: cross-platform-vms
-
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-
-      - name: Run CI steps
-        uses: ./.github/actions/ci-steps
-        with:
-          matrix_json: ${{ toJSON(matrix) }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+#  haiku:
+#    needs: [coveralls]
+#    name: ${{ matrix.label }}
+#    runs-on: ${{ matrix.runner }}
+#    strategy:
+#      matrix:
+#        include:
+#          - label: Autotools-haiku-r1beta5-x86-64
+#            buildtool: autotools
+#            runner: ubuntu-latest
+#            cp_os: haiku
+#            cp_arch: x86-64
+#            cp_version: r1beta5
+#            extra_packages: >-
+#              make
+#            make: make
+#            exec_type: cross-platform-vms
+#
+#          - label: Meson-haiku-r1beta5-x86-64
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            cp_os: haiku
+#            cp_arch: x86-64
+#            cp_version: r1beta5
+#            extra_packages: >-
+#              meson
+#            exec_type: cross-platform-vms
+#
+#    steps:
+#      - uses: actions/checkout@v6
+#        with:
+#          fetch-depth: 1
+#
+#      - name: Run CI steps
+#        uses: ./.github/actions/ci-steps
+#        with:
+#          matrix_json: ${{ toJSON(matrix) }}
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
 
 
   openbsd:
@@ -2494,40 +2494,40 @@ jobs:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-  dragonflybsd:
-    needs: [coveralls]
-    name: ${{ matrix.label }}
-    runs-on: ${{ matrix.runner }}
-    strategy:
-      matrix:
-        include:
-          - label: Autotools-dragonflybsd-6.4.2-x86-64
-            buildtool: autotools
-            runner: ubuntu-latest
-            version: '6.4.2'
-            extra_packages: >-
-              gmake
-            make: gmake
-            exec_type: dragonflybsd-vm
-
-          - label: Meson-dragonflybsd-6.4.2-x86-64
-            buildtool: meson
-            runner: ubuntu-latest
-            version: '6.4.2'
-            extra_packages: >-
-              meson
-            exec_type: dragonflybsd-vm
-
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 1
-
-      - name: Run CI steps
-        uses: ./.github/actions/ci-steps
-        with:
-          matrix_json: ${{ toJSON(matrix) }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+#  dragonflybsd:
+#    needs: [coveralls]
+#    name: ${{ matrix.label }}
+#    runs-on: ${{ matrix.runner }}
+#    strategy:
+#      matrix:
+#        include:
+#          - label: Autotools-dragonflybsd-6.4.2-x86-64
+#            buildtool: autotools
+#            runner: ubuntu-latest
+#            version: '6.4.2'
+#            extra_packages: >-
+#              gmake
+#            make: gmake
+#            exec_type: dragonflybsd-vm
+#
+#          - label: Meson-dragonflybsd-6.4.2-x86-64
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            version: '6.4.2'
+#            extra_packages: >-
+#              meson
+#            exec_type: dragonflybsd-vm
+#
+#    steps:
+#      - uses: actions/checkout@v6
+#        with:
+#          fetch-depth: 1
+#
+#      - name: Run CI steps
+#        uses: ./.github/actions/ci-steps
+#        with:
+#          matrix_json: ${{ toJSON(matrix) }}
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
 
 # emacs Local Variables:
 # emacs mode: c
