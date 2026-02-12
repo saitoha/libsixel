@@ -71,7 +71,13 @@
 # if !defined(WIN32_LEAN_AND_MEAN)
 #  define WIN32_LEAN_AND_MEAN
 # endif
+#endif
+
+#if defined(_WIN32) && HAVE_WINDOWS_H
 # include <windows.h>
+#endif
+
+#if HAVE_WINHTTP && HAVE_WINDOWS_H
 # include <winhttp.h>
 #endif
 
@@ -278,6 +284,17 @@ open_binary_file(
         goto end;
     }
 
+#if defined(_WIN32) && HAVE_WINDOWS_H
+    /*
+     * Use WinAPI metadata lookup before fopen() so missing paths are
+     * rejected without relying on CRT stat-family behavior.
+     */
+    status = sixel_check_input_path_windows(filename);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+#endif
+
 #if 0
 #if HAVE_STAT
     if (sixel_compat_stat(filename, &sb) != 0) {
@@ -382,7 +399,7 @@ end:
     return status;
 }
 
-#if HAVE_WINHTTP
+#if defined(_WIN32) && HAVE_WINDOWS_H
 
 static wchar_t *
 utf8_to_wide(char const *s) {
@@ -404,7 +421,60 @@ utf8_to_wide(char const *s) {
 
     return w;
 }
-#endif  /* HAVE_WINHTTP */
+
+
+static SIXELSTATUS
+sixel_check_input_path_windows(char const *filename)
+{
+    SIXELSTATUS status;
+    wchar_t *wfilename;
+    DWORD attrs;
+    DWORD last_error;
+    char message[2048];
+
+    status = SIXEL_FALSE;
+    wfilename = NULL;
+    attrs = INVALID_FILE_ATTRIBUTES;
+    last_error = 0;
+
+    wfilename = utf8_to_wide(filename);
+    if (wfilename == NULL) {
+        sixel_helper_set_additional_message(
+            "utf8_to_wide(input path) failed.");
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+
+    attrs = GetFileAttributesW(wfilename);
+    if (attrs == INVALID_FILE_ATTRIBUTES) {
+        last_error = GetLastError();
+        (void)sixel_compat_snprintf(message,
+                                    sizeof(message),
+                                    "GetFileAttributesW() for file '%s' "
+                                    "failed (GetLastError=%lu).",
+                                    filename,
+                                    (unsigned long)last_error);
+        sixel_helper_set_additional_message(message);
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    if ((attrs & FILE_ATTRIBUTE_DIRECTORY) != 0) {
+        sixel_helper_set_additional_message("specified path is directory.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    status = SIXEL_OK;
+
+end:
+    if (wfilename != NULL) {
+        free(wfilename);
+        wfilename = NULL;
+    }
+    return status;
+}
+#endif  /* defined(_WIN32) && HAVE_WINDOWS_H */
 
 #if HAVE_WINHTTP
 static SIXELSTATUS
