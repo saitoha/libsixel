@@ -61,6 +61,13 @@ sixel_lookup_float32_distance(sixel_lookup_float32_t const *lut,
                               float const *sample,
                               int palette_index);
 
+static int
+sixel_lookup_float32_linear_search(sixel_lookup_float32_t const *lut,
+                                   float const *sample);
+
+static void
+sixel_lookup_float32_rbc_clear(sixel_lookup_float32_t *lut);
+
 #define SIXEL_LOOKUP_EYTZINGER_WINDOW 6
 
 #if HAVE_BUILTIN_PREFETCH
@@ -78,6 +85,8 @@ typedef struct sixel_lookup_float32_1d_eytzinger_pair {
     float key;
     int index;
 } sixel_lookup_float32_1d_eytzinger_pair_t;
+
+#define SIXEL_LOOKUP_RBC_PIVOTS 16
 
 static void
 sixel_lookup_float32_1d_eytzinger_log_event(
@@ -116,7 +125,9 @@ sixel_lookup_float32_policy_normalize(int policy)
                && normalized != SIXEL_LUT_POLICY_EYTZINGER
                && normalized != SIXEL_LUT_POLICY_NONE
                && normalized != SIXEL_LUT_POLICY_VPTE
-               && normalized != SIXEL_LUT_POLICY_VPTREE) {
+               && normalized != SIXEL_LUT_POLICY_VPTREE
+               && normalized != SIXEL_LUT_POLICY_RBC
+               && normalized != SIXEL_LUT_POLICY_MAHALANOBIS) {
         normalized = SIXEL_LUT_POLICY_6BIT;
     }
 
@@ -755,6 +766,318 @@ sixel_lookup_float32_distance(sixel_lookup_float32_t const *lut,
     return distance;
 }
 
+static float
+sixel_lookup_float32_weighted_component(
+    sixel_lookup_float32_t const *lut,
+    float value,
+    int component)
+{
+    float weight;
+
+    weight = lut->weights[component];
+    if (weight <= 0.0f) {
+        return 0.0f;
+    }
+
+    return value * sqrtf(weight);
+}
+
+static float
+sixel_lookup_float32_quadratic3(float const *m,
+                                float const *v)
+{
+    float x0;
+    float x1;
+    float x2;
+
+    x0 = m[0] * v[0] + m[1] * v[1] + m[2] * v[2];
+    x1 = m[3] * v[0] + m[4] * v[1] + m[5] * v[2];
+    x2 = m[6] * v[0] + m[7] * v[1] + m[8] * v[2];
+    return v[0] * x0 + v[1] * x1 + v[2] * x2;
+}
+
+static int
+sixel_lookup_float32_inverse3(float const *src,
+                              float *dst)
+{
+    float det;
+
+    det = src[0] * (src[4] * src[8] - src[5] * src[7])
+        - src[1] * (src[3] * src[8] - src[5] * src[6])
+        + src[2] * (src[3] * src[7] - src[4] * src[6]);
+    if (fabsf(det) < 1.0e-12f) {
+        return 0;
+    }
+
+    dst[0] = (src[4] * src[8] - src[5] * src[7]) / det;
+    dst[1] = (src[2] * src[7] - src[1] * src[8]) / det;
+    dst[2] = (src[1] * src[5] - src[2] * src[4]) / det;
+    dst[3] = (src[5] * src[6] - src[3] * src[8]) / det;
+    dst[4] = (src[0] * src[8] - src[2] * src[6]) / det;
+    dst[5] = (src[2] * src[3] - src[0] * src[5]) / det;
+    dst[6] = (src[3] * src[7] - src[4] * src[6]) / det;
+    dst[7] = (src[1] * src[6] - src[0] * src[7]) / det;
+    dst[8] = (src[0] * src[4] - src[1] * src[3]) / det;
+    return 1;
+}
+
+static SIXELSTATUS
+sixel_lookup_float32_configure_rbc(sixel_lookup_float32_t *lut,
+                                   int mahalanobis)
+{
+    int pivots;
+    int i;
+    int j;
+    int k;
+    int c;
+    int best_pivot;
+    float best_distance;
+    float distance;
+    float d0;
+    float d1;
+    float d2;
+    float cov[9];
+    float mean0;
+    float mean1;
+    float mean2;
+
+    sixel_lookup_float32_rbc_clear(lut);
+    pivots = lut->ncolors;
+    if (pivots > SIXEL_LOOKUP_RBC_PIVOTS) {
+        pivots = SIXEL_LOOKUP_RBC_PIVOTS;
+    }
+    if (pivots <= 0) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    lut->rbc.pivots = (int *)calloc((size_t)pivots, sizeof(int));
+    lut->rbc.radius = (float *)calloc((size_t)pivots, sizeof(float));
+    lut->rbc.member_offset = (int *)calloc((size_t)pivots + 1u, sizeof(int));
+    lut->rbc.member_index = (int *)calloc((size_t)lut->ncolors, sizeof(int));
+    lut->rbc.mean = (float *)calloc((size_t)pivots * 3u, sizeof(float));
+    lut->rbc.inv_cov = (float *)calloc((size_t)pivots * 9u, sizeof(float));
+    if (lut->rbc.pivots == NULL || lut->rbc.radius == NULL
+        || lut->rbc.member_offset == NULL || lut->rbc.member_index == NULL
+        || lut->rbc.mean == NULL || lut->rbc.inv_cov == NULL) {
+        sixel_lookup_float32_rbc_clear(lut);
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    for (j = 0; j < pivots; ++j) {
+        lut->rbc.pivots[j] = (j * lut->ncolors) / pivots;
+    }
+    for (i = 0; i < lut->ncolors; ++i) {
+        best_pivot = 0;
+        best_distance = FLT_MAX;
+        for (j = 0; j < pivots; ++j) {
+            distance = sixel_lookup_float32_distance(lut,
+                                                     lut->palette
+                                                     + (size_t)i * 3u,
+                                                     lut->rbc.pivots[j]);
+            if (distance < best_distance) {
+                best_distance = distance;
+                best_pivot = j;
+            }
+        }
+        lut->rbc.member_offset[best_pivot + 1]++;
+    }
+    for (j = 0; j < pivots; ++j) {
+        lut->rbc.member_offset[j + 1] += lut->rbc.member_offset[j];
+    }
+    for (j = 0; j < pivots; ++j) {
+        lut->rbc.radius[j] = 0.0f;
+    }
+    for (i = 0; i < lut->ncolors; ++i) {
+        best_pivot = 0;
+        best_distance = FLT_MAX;
+        for (j = 0; j < pivots; ++j) {
+            distance = sixel_lookup_float32_distance(lut,
+                                                     lut->palette
+                                                     + (size_t)i * 3u,
+                                                     lut->rbc.pivots[j]);
+            if (distance < best_distance) {
+                best_distance = distance;
+                best_pivot = j;
+            }
+        }
+        c = lut->rbc.member_offset[best_pivot]++;
+        lut->rbc.member_index[c] = i;
+        distance = sqrtf(best_distance);
+        if (distance > lut->rbc.radius[best_pivot]) {
+            lut->rbc.radius[best_pivot] = distance;
+        }
+    }
+    for (j = pivots; j > 0; --j) {
+        lut->rbc.member_offset[j] = lut->rbc.member_offset[j - 1];
+    }
+    lut->rbc.member_offset[0] = 0;
+
+    for (j = 0; j < pivots; ++j) {
+        i = lut->rbc.member_offset[j + 1] - lut->rbc.member_offset[j];
+        mean0 = 0.0f;
+        mean1 = 0.0f;
+        mean2 = 0.0f;
+        lut->rbc.inv_cov[j * 9 + 0] = 1.0f;
+        lut->rbc.inv_cov[j * 9 + 4] = 1.0f;
+        lut->rbc.inv_cov[j * 9 + 8] = 1.0f;
+        if (i <= 0) {
+            continue;
+        }
+        for (k = lut->rbc.member_offset[j];
+             k < lut->rbc.member_offset[j + 1];
+             ++k) {
+            c = lut->rbc.member_index[k];
+            mean0 += lut->palette[c * 3 + 0];
+            mean1 += lut->palette[c * 3 + 1];
+            mean2 += lut->palette[c * 3 + 2];
+        }
+        mean0 /= (float)i;
+        mean1 /= (float)i;
+        mean2 /= (float)i;
+        if (mahalanobis) {
+            /*
+             * Mahalanobis pruning must live in the same weighted metric
+             * space as the nearest-neighbour objective.
+             */
+            lut->rbc.mean[j * 3 + 0] =
+                sixel_lookup_float32_weighted_component(lut, mean0, 0);
+            lut->rbc.mean[j * 3 + 1] =
+                sixel_lookup_float32_weighted_component(lut, mean1, 1);
+            lut->rbc.mean[j * 3 + 2] =
+                sixel_lookup_float32_weighted_component(lut, mean2, 2);
+        } else {
+            lut->rbc.mean[j * 3 + 0] = mean0;
+            lut->rbc.mean[j * 3 + 1] = mean1;
+            lut->rbc.mean[j * 3 + 2] = mean2;
+        }
+        if (!mahalanobis || i < 2) {
+            continue;
+        }
+        memset(cov, 0, sizeof(cov));
+        for (k = lut->rbc.member_offset[j];
+             k < lut->rbc.member_offset[j + 1];
+             ++k) {
+            c = lut->rbc.member_index[k];
+            d0 = sixel_lookup_float32_weighted_component(
+                lut,
+                lut->palette[c * 3 + 0],
+                0) - lut->rbc.mean[j * 3 + 0];
+            d1 = sixel_lookup_float32_weighted_component(
+                lut,
+                lut->palette[c * 3 + 1],
+                1) - lut->rbc.mean[j * 3 + 1];
+            d2 = sixel_lookup_float32_weighted_component(
+                lut,
+                lut->palette[c * 3 + 2],
+                2) - lut->rbc.mean[j * 3 + 2];
+            cov[0] += d0 * d0;
+            cov[1] += d0 * d1;
+            cov[2] += d0 * d2;
+            cov[4] += d1 * d1;
+            cov[5] += d1 * d2;
+            cov[8] += d2 * d2;
+        }
+        cov[0] /= (float)(i - 1);
+        cov[1] /= (float)(i - 1);
+        cov[2] /= (float)(i - 1);
+        cov[3] = cov[1];
+        cov[4] /= (float)(i - 1);
+        cov[5] /= (float)(i - 1);
+        cov[6] = cov[2];
+        cov[7] = cov[5];
+        cov[8] /= (float)(i - 1);
+        cov[0] += 1.0e-6f;
+        cov[4] += 1.0e-6f;
+        cov[8] += 1.0e-6f;
+        if (!sixel_lookup_float32_inverse3(cov,
+                                           lut->rbc.inv_cov + j * 9)) {
+            lut->rbc.inv_cov[j * 9 + 0] = 1.0f;
+            lut->rbc.inv_cov[j * 9 + 1] = 0.0f;
+            lut->rbc.inv_cov[j * 9 + 2] = 0.0f;
+            lut->rbc.inv_cov[j * 9 + 3] = 0.0f;
+            lut->rbc.inv_cov[j * 9 + 4] = 1.0f;
+            lut->rbc.inv_cov[j * 9 + 5] = 0.0f;
+            lut->rbc.inv_cov[j * 9 + 6] = 0.0f;
+            lut->rbc.inv_cov[j * 9 + 7] = 0.0f;
+            lut->rbc.inv_cov[j * 9 + 8] = 1.0f;
+        }
+    }
+
+    lut->rbc.pivot_count = pivots;
+    lut->rbc.ready = 1;
+    return SIXEL_OK;
+}
+
+static int
+sixel_lookup_float32_rbc_search(sixel_lookup_float32_t const *lut,
+                                float const *sample,
+                                int mahalanobis)
+{
+    int j;
+    int k;
+    int start;
+    int end;
+    int idx;
+    int best_index;
+    float best2;
+    float dist2;
+    float lb2;
+    float lb;
+    float diff[3];
+
+    if (lut->rbc.ready == 0) {
+        return sixel_lookup_float32_linear_search(lut, sample);
+    }
+    best2 = FLT_MAX;
+    best_index = 0;
+    for (j = 0; j < lut->rbc.pivot_count; ++j) {
+        if (mahalanobis) {
+            diff[0] = sixel_lookup_float32_weighted_component(
+                lut,
+                sample[0],
+                0) - lut->rbc.mean[j * 3 + 0];
+            diff[1] = sixel_lookup_float32_weighted_component(
+                lut,
+                sample[1],
+                1) - lut->rbc.mean[j * 3 + 1];
+            diff[2] = sixel_lookup_float32_weighted_component(
+                lut,
+                sample[2],
+                2) - lut->rbc.mean[j * 3 + 2];
+            lb2 = sixel_lookup_float32_quadratic3(lut->rbc.inv_cov + j * 9,
+                                                  diff);
+        } else {
+            dist2 = sixel_lookup_float32_distance(lut,
+                                                  sample,
+                                                  lut->rbc.pivots[j]);
+            lb = sqrtf(dist2) - lut->rbc.radius[j];
+            if (lb < 0.0f) {
+                lb = 0.0f;
+            }
+            lb2 = lb * lb;
+        }
+        /*
+         * Spherical RBC uses a strict triangle-inequality lower bound, so
+         * cluster-level pruning is safe. Mahalanobis scores are used only for
+         * ordering because they are not strict lower bounds for this metric.
+         */
+        if (!mahalanobis && lb2 >= best2) {
+            continue;
+        }
+        start = lut->rbc.member_offset[j];
+        end = lut->rbc.member_offset[j + 1];
+        for (k = start; k < end; ++k) {
+            idx = lut->rbc.member_index[k];
+            dist2 = sixel_lookup_float32_distance(lut, sample, idx);
+            if (dist2 < best2) {
+                best2 = dist2;
+                best_index = idx;
+            }
+        }
+    }
+    return best_index;
+}
+
 static void
 sixel_lookup_float32_search_kdtree(sixel_lookup_float32_t const *lut,
                                    int node_index,
@@ -831,6 +1154,25 @@ sixel_lookup_float32_linear_search(sixel_lookup_float32_t const *lut,
     return best_index;
 }
 
+static void
+sixel_lookup_float32_rbc_clear(sixel_lookup_float32_t *lut)
+{
+    free(lut->rbc.pivots);
+    free(lut->rbc.radius);
+    free(lut->rbc.member_offset);
+    free(lut->rbc.member_index);
+    free(lut->rbc.mean);
+    free(lut->rbc.inv_cov);
+    lut->rbc.pivots = NULL;
+    lut->rbc.radius = NULL;
+    lut->rbc.member_offset = NULL;
+    lut->rbc.member_index = NULL;
+    lut->rbc.mean = NULL;
+    lut->rbc.inv_cov = NULL;
+    lut->rbc.pivot_count = 0;
+    lut->rbc.ready = 0;
+}
+
 void
 sixel_lookup_float32_init(sixel_lookup_float32_t *lut,
                           sixel_allocator_t *allocator)
@@ -867,6 +1209,14 @@ sixel_lookup_float32_init(sixel_lookup_float32_t *lut,
     lut->eytz.weights[0] = 1.0f;
     lut->eytz.weights[1] = 1.0f;
     lut->eytz.weights[2] = 1.0f;
+    lut->rbc.pivot_count = 0;
+    lut->rbc.pivots = NULL;
+    lut->rbc.radius = NULL;
+    lut->rbc.member_offset = NULL;
+    lut->rbc.member_index = NULL;
+    lut->rbc.mean = NULL;
+    lut->rbc.inv_cov = NULL;
+    lut->rbc.ready = 0;
     (void)sixel_lookup_vpte_float32_create(allocator, &lut->vpte);
     (void)sixel_lookup_vptree_float32_create(allocator, &lut->vptree);
 }
@@ -898,6 +1248,7 @@ sixel_lookup_float32_clear(sixel_lookup_float32_t *lut)
 
     sixel_lookup_float32_release_palette(lut);
     sixel_lookup_float32_release_kdtree(lut);
+    sixel_lookup_float32_rbc_clear(lut);
     sixel_lookup_float32_1d_eytzinger_release(lut);
     if (lut->vpte != NULL) {
         sixel_lookup_vpte_float32_unref(lut->vpte);
@@ -1162,6 +1513,20 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
     }
 
     lut->vptree_ready = 0;
+    if (lut->policy == SIXEL_LUT_POLICY_RBC
+        || lut->policy == SIXEL_LUT_POLICY_MAHALANOBIS) {
+        status = sixel_lookup_float32_configure_rbc(
+            lut,
+            lut->policy == SIXEL_LUT_POLICY_MAHALANOBIS);
+        if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "sixel_lookup_float32_configure: RBC failed; "
+                "falling back to CERTLUT.");
+            lut->policy = SIXEL_LUT_POLICY_CERTLUT;
+        } else {
+            return SIXEL_OK;
+        }
+    }
     if (lut->policy == SIXEL_LUT_POLICY_VPTE) {
         status = sixel_lookup_float32_configure_vpte(lut, pixelformat);
         if (SIXEL_FAILED(status)) {
@@ -1251,6 +1616,12 @@ sixel_lookup_float32_map_pixel(sixel_lookup_float32_t *lut,
     }
     if (lut->policy == SIXEL_LUT_POLICY_EYTZINGER) {
         return sixel_lookup_float32_lookup_1d_eytzinger(lut, sample);
+    }
+    if (lut->policy == SIXEL_LUT_POLICY_RBC) {
+        return sixel_lookup_float32_rbc_search(lut, sample, 0);
+    }
+    if (lut->policy == SIXEL_LUT_POLICY_MAHALANOBIS) {
+        return sixel_lookup_float32_rbc_search(lut, sample, 1);
     }
     if (lut->policy == SIXEL_LUT_POLICY_CERTLUT) {
         best_index = 0;
