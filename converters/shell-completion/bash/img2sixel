@@ -221,7 +221,9 @@ _img2sixel()
                                    certlut \
                                    eytzinger \
                                    vpte \
-                                   vptree' -- "$cur" ) )
+                                   vptree \
+                                   rbc \
+                                   mahalanobis' -- "$cur" ) )
         return 0
         ;;
     -l|--loop-control)

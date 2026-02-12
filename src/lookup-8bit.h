@@ -53,6 +53,16 @@ typedef struct sixel_lookup_8bit {
     sixel_lookup_vptree_8bit_t *vptree;
     int vptree_ready;
     sixel_lookup_8bit_1d_eytzinger_t eytz;
+    struct {
+        int pivot_count;
+        int *pivots;
+        float *radius;
+        int *member_offset;
+        int *member_index;
+        float *mean;
+        float *inv_cov;
+        int ready;
+    } rbc;
 } sixel_lookup_8bit_t;
 
 void

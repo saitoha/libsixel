@@ -482,6 +482,11 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                          boundary refinement\n"
         "                             vptree    -> VP-tree lookup built\n"
         "                                          from palette entries\n"
+        "                             rbc       -> Random Ball Cover\n"
+        "                                          cluster pruning\n"
+        "                             mahalanobis -> RBC clusters with\n"
+        "                                            Mahalanobis lower\n"
+        "                                            bounds\n"
     },
     {
         'l',
@@ -916,7 +921,7 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_DITHER_LOOKUP_POLICY",
         "select palette lookup policy (auto, 5bit, 6bit, none, certlut,\n"
-        "eytzinger, vpte, or vptree; default is certlut)."
+        "eytzinger, vpte, vptree, rbc, or mahalanobis; default is certlut)."
     },
     {
         "SIXEL_LOOKUP_PACKING",

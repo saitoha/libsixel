@@ -45,6 +45,16 @@ typedef struct sixel_lookup_float32 {
     sixel_lookup_vptree_float32_t *vptree;
     int vptree_ready;
     sixel_lookup_float32_1d_eytzinger_t eytz;
+    struct {
+        int pivot_count;
+        int *pivots;
+        float *radius;
+        int *member_offset;
+        int *member_index;
+        float *mean;
+        float *inv_cov;
+        int ready;
+    } rbc;
 } sixel_lookup_float32_t;
 
 void
