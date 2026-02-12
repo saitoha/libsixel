@@ -253,6 +253,7 @@ std_headers = [
     'sys/sysctl.h',
     'intrin.h',
     'float.h',
+    'windows.h',
 ]
 foreach h : std_headers
   if cc.has_header(h)
