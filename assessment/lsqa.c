@@ -481,6 +481,43 @@ metrics_set_value(Metrics *metrics,
     }
 }
 
+#if !(HAVE__STRCASECMP || HAVE__STRCMPI || HAVE_STRCASECMP)
+static int
+lsqa_ascii_tolower(int ch)
+{
+    if (ch >= 'A' && ch <= 'Z') {
+        return ch + ('a' - 'A');
+    }
+
+    return ch;
+}
+
+
+static int
+lsqa_ascii_strcasecmp(const char *lhs, const char *rhs)
+{
+    int result;
+    unsigned char lhs_char;
+    unsigned char rhs_char;
+
+    result = 0;
+    do {
+        lhs_char = (unsigned char)*lhs;
+        rhs_char = (unsigned char)*rhs;
+        result = lsqa_ascii_tolower((int)lhs_char) -
+                 lsqa_ascii_tolower((int)rhs_char);
+        if (result != 0 || lhs_char == '\0' || rhs_char == '\0') {
+            break;
+        }
+        ++lhs;
+        ++rhs;
+    } while (1);
+
+    return result;
+}
+#endif
+
+
 static int
 metric_name_matches(const char *input, const char *target)
 {
@@ -500,11 +537,10 @@ metric_name_matches(const char *input, const char *target)
         return 1;
     }
 #else
-# error "_stricmp(), _strcmpi() or strcasecmp() is required"
-#endif
-    if (strcmp(input, target) == 0) {
+    if (lsqa_ascii_strcasecmp(input, target) == 0) {
         return 1;
     }
+#endif
     return 0;
 }
 
