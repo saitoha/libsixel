@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: override thread split respects palette worker reservation.
+# TAP test: override thread split is emitted.
 
 set -eux
 
@@ -12,24 +12,18 @@ set -v
 
 ppm_tall="${TOP_SRCDIR}/tests/data/inputs/tall.ppm"
 
-pipeline_log=$(SIXEL_DITHER_PARALLEL_THREADS_MAX=1 \
-    SIXEL_DITHER_PARALLEL_BAND_WIDTH=9 \
-    SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=4 \
-    SIXEL_THREADS=6 \
-    run_img2sixel -v -o "${ARTIFACT_LOCAL_DIR}/tall.six" "${ppm_tall}" \
-    2>&1 || true)
+pipeline_log=$(SIXEL_DITHER_PARALLEL_THREADS_MAX=1 SIXEL_DITHER_PARALLEL_BAND_WIDTH=9 SIXEL_DITHER_PARALLEL_BAND_OVERWRAP=4 SIXEL_THREADS=6 run_img2sixel -v -o "${ARTIFACT_LOCAL_DIR}/tall.six" "${ppm_tall}" 2>&1) || {
+    fail 1 "override thread split run failed"
+    exit 0
+}
 printf '%s' "${pipeline_log}" >&2
 
-threads_line=$(printf '%s' "${pipeline_log}" | grep "band_height=" | head -n 1 || true)
-case "${threads_line}" in
-"    band_height=12 overlap=4 threads: dither=1 encode=4")
-    printf 'ok 1 - override thread split (palette reserve)\n'
-    ;;
-"    band_height="*)
-    printf 'ok 1 - override thread split (serial environment)\n'
-    ;;
-*)
-    printf 'not ok 1 - override thread split (palette reserve)\n'
-    exit 1
-    ;;
-esac
+threads_line=$(printf '%s' "${pipeline_log}" | grep "band_height=" | head -n 1) || threads_line=""
+printf '%s' "${threads_line}" | grep -q '^[[:space:]]*band_height=' || {
+    fail 1 "override thread split"
+    exit 0
+}
+
+pass 1 "override thread split"
+
+exit 0

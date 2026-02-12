@@ -5,24 +5,22 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-binary="${TEST_RUNNER_PATH}"
-if [ ! -x "${binary}" ] && [ -z "${SIXEL_RUNTIME-}" ]; then
-    echo "harness not built" >&2
-    exit 99
-fi
+test -x "${TEST_RUNNER_PATH}" || [ -n "${SIXEL_RUNTIME-}" ] ||     skip_all "harness not built"
 
-set +e
-cli_output=$(run_test_runner "cli/0030_cli_option_requires_argument" 2>&1)
-rc=$?
-set -e
-printf '%s' "${cli_output}" >&2
+rc=0
+cli_output_file="${ARTIFACT_LOCAL_DIR}/cli_option_requires_argument.out"
+
+: >"${cli_output_file}"
+run_test_runner "cli/0030_cli_option_requires_argument" >"${cli_output_file}" 2>&1 || rc=$?
+cat "${cli_output_file}" >&2 2>/dev/null || :
 
 echo "1..1"
 set -v
 
-if [ "${rc}" -eq 0 ]; then
-    echo "ok 1 - cli_option_requires_argument"
-else
-    echo "not ok 1 - cli_option_requires_argument"
-    exit 1
-fi
+test "${rc}" -eq 0 || {
+    fail 1 "cli_option_requires_argument"
+    exit 0
+}
+
+pass 1 "cli_option_requires_argument"
+exit 0

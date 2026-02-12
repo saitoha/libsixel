@@ -21,7 +21,7 @@ output_sixel="${ARTIFACT_LOCAL_DIR}/cluster-linear.six"
 
 run_img2sixel -t rgb -X linear -o "${output_sixel}" "${input_image}" || {
     fail 1 "img2sixel clustering linear conversion failed"
-    exit "${status}"
+    exit 0
 }
 
 lsqa_err=$(
@@ -29,12 +29,16 @@ lsqa_err=$(
     run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}"         "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
-if [ -z "${lsqa_run_status-}" ]; then
+[ "${lsqa_run_status:-0}" -eq 0 ] && {
     pass 1 "clustering linear lsqa passed"
-elif [ "${lsqa_run_status}" -eq 5 ]; then
-    fail 1 "${lsqa_err}"
-else
-    fail 1 "clustering linear lsqa failed"
-fi
+    exit 0
+}
 
-exit "${status}"
+[ "${lsqa_run_status}" -eq 5 ] && {
+    fail 1 "${lsqa_err}"
+    exit 0
+}
+
+fail 1 "clustering linear lsqa failed"
+
+exit 0

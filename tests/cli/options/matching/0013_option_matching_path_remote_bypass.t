@@ -13,14 +13,12 @@ set -v
 err_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "path-remote-bypass.err")
 out_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "path-remote-bypass.out")
 
-run_sixel2png -i "https://example.invalid/test.six" \
-    -o "${out_file}" >/dev/null 2>"${err_file}" && {
+run_sixel2png -i "https://example.invalid/test.six"     -o "${out_file}" >/dev/null 2>"${err_file}" && {
     fail 1 "remote input unexpectedly succeeded"
     exit 0
 }
 
-grep -F 'path "https://example.invalid/test.six" not found.' \
-    "${err_file}" >/dev/null 2>&1 && {
+grep -F 'path "https://example.invalid/test.six" not found.'     "${err_file}" >/dev/null 2>&1 && {
     fail 1 "remote path was validated as a local filesystem path"
     exit 0
 }

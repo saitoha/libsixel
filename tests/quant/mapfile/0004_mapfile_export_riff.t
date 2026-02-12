@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: RIFF palette export honours type prefix.
+# TAP test: RIFF palette export writes RIFF header bytes.
 
 set -eux
 
@@ -13,17 +13,18 @@ set -v
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 riff_palette="${ARTIFACT_LOCAL_DIR}/palette-riff.pal"
 
-if run_img2sixel -M pal-riff:"${riff_palette}" \
-        -o "${ARTIFACT_LOCAL_DIR}/pal-riff.six" "${snake_png}"; then
-    riff_header=$(dd if="${riff_palette}" bs=1 count=4 2>/dev/null |
-        LC_ALL=C od -An -tx1 | tr -d ' \n')
-    if [ "${riff_header}" = "52494646" ]; then
-        pass 1 "RIFF palette export honours type prefix"
-    else
-        fail 1 "RIFF palette header incorrect (${riff_header})"
-    fi
-else
+run_img2sixel -M pal-riff:"${riff_palette}"     -o "${ARTIFACT_LOCAL_DIR}/pal-riff.six" "${snake_png}" || {
     fail 1 "RIFF palette export failed"
-fi
+    exit 0
+}
+
+riff_header=$(od -An -tx1 -N4 "${riff_palette}" | tr -d ' 
+')
+[ "${riff_header}" = "52494646" ] || {
+    fail 1 "RIFF palette export missing RIFF header"
+    exit 0
+}
+
+pass 1 "RIFF palette export has RIFF header"
 
 exit 0

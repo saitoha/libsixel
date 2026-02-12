@@ -12,38 +12,36 @@ err_file="${ARTIFACT_LOCAL_DIR}/${label}.err"
 out_file="${ARTIFACT_LOCAL_DIR}/${label}.sixel"
 filtered_err="${ARTIFACT_LOCAL_DIR}/${label}.filtered.err"
 
-cleanup_files() {
-    rm -f "$@" || :
-}
-
-cleanup_files "${err_file}" "${out_file}" "${filtered_err}"
+: >"${err_file}"
+: >"${out_file}"
+: >"${filtered_err}"
 
 echo "1..1"
 set -v
 
-if run_img2sixel -y ser "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" >"${out_file}" 2>"${err_file}"; then
-    :
-else
+run_img2sixel -y ser "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
+    >"${out_file}" 2>"${err_file}" || {
     fail 1 "unique prefix was rejected"
     exit 0
-fi
+}
 
-if [ -s "${err_file}" ]; then
-    if sed '1d' "${err_file}" \
-            | grep -v '^+' \
-            | grep -v 'img2sixel' \
-            | grep -Ei 'error|warning|failed' \
-            >"${filtered_err}"; then
-        if [ -s "${filtered_err}" ]; then
-            cli_core_fail 1 "unique prefix emitted diagnostics"
-            printf '%s\n' '--- stderr ---' >&2
-            cat "${err_file}" >&2 2>/dev/null || :
-            cleanup_files "${filtered_err}"
-            exit 0
-        fi
-    fi
-    cleanup_files "${filtered_err}"
-fi
+test ! -s "${err_file}" && {
+    pass 1 "unique prefix is accepted"
+    exit 0
+}
 
-pass 1 "unique prefix is accepted"
+sed '1d' "${err_file}" \
+    | grep -v '^+' \
+    | grep -v 'img2sixel' \
+    | grep -Ei 'error|warning|failed' \
+    >"${filtered_err}" || :
+
+test ! -s "${filtered_err}" && {
+    pass 1 "unique prefix is accepted"
+    exit 0
+}
+
+cli_core_fail 1 "unique prefix emitted diagnostics"
+printf '%s\n' '--- stderr ---' >&2
+cat "${err_file}" >&2 2>/dev/null || :
 exit 0

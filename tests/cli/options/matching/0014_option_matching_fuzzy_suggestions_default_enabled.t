@@ -10,19 +10,15 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-err_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" \
-    "fuzzy-suggestions-default-enabled.err")
-out_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" \
-    "fuzzy-suggestions-default-enabled.sixel")
+err_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}"     "fuzzy-suggestions-default-enabled.err")
+out_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}"     "fuzzy-suggestions-default-enabled.sixel")
 
-run_img2sixel -r hamnimg "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
-    >"${out_file}" 2>"${err_file}" && {
+run_img2sixel -r hamnimg "${TOP_SRCDIR}/tests/data/inputs/snake_64.png"     >"${out_file}" 2>"${err_file}" && {
     fail 1 "distance-2 typo unexpectedly succeeded"
     exit 0
 }
 
-grep -F 'specified desampling method is not supported.' "${err_file}" \
-    >/dev/null 2>&1 || {
+grep -F 'specified desampling method is not supported.' "${err_file}"     >/dev/null 2>&1 || {
     fail 1 "default CLI setup did not emit fuzzy suggestion"
     exit 0
 }

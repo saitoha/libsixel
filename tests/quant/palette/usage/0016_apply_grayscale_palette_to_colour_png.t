@@ -4,8 +4,6 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-status=0
-
 config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 
 echo "1..1"
@@ -15,10 +13,11 @@ snake_gray_png="${images_dir}/snake-grayscale.png"
 snake_png="${top_srcdir}/tests/data/inputs/snake_64.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/gray-palette-colour.sixel"
 
-if run_img2sixel -m "${snake_gray_png}" "${snake_png}" >"${target_sixel}"; then
-    pass 1 "grayscale palette applied to colour PNG"
-else
+run_img2sixel -m "${snake_gray_png}" "${snake_png}" >"${target_sixel}" || {
     fail 1 "grayscale palette application fails"
-fi
+    exit 0
+}
 
-exit "${status}"
+pass 1 "grayscale palette applied to colour PNG"
+
+exit 0

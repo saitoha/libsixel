@@ -10,8 +10,6 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-status=0
-
 config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 
 input_image="${images_dir}/pngsuite/basic/basn6a08.png"
@@ -21,10 +19,11 @@ set -v
 
 target_txt="${ARTIFACT_LOCAL_DIR}/inspection.txt"
 
-if run_img2sixel -I "${input_image}" >"${target_txt}"; then
-    pass 1 "inspection with high color and RGBA input exits cleanly"
-else
+run_img2sixel -I "${input_image}" >"${target_txt}" || {
     fail 1 "inspection with high color and RGBA input failed"
-fi
+    exit 0
+}
 
-exit "${status}"
+pass 1 "inspection with high color and RGBA input exits cleanly"
+
+exit 0

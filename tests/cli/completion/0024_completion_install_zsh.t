@@ -16,8 +16,6 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 
 completion_dir="${top_srcdir}/converters/shell-completion"
-completion_dir=$(printf '%s' "${completion_dir}" | tr '\\\\' '/')
-completion_source="${completion_dir}/zsh/_img2sixel"
 completion_home="${ARTIFACT_LOCAL_DIR}/home"
 target_path="${completion_home}/.zfunc/_img2sixel"
 rc_path="${completion_home}/.zshrc"
@@ -39,7 +37,7 @@ fi
 
 if [ -f "${target_path}" ] && \
         grep -F '#compdef img2sixel' "${target_path}" >/dev/null 2>&1 && \
-        grep -F 'fpath+=("$HOME/.zfunc")' "${rc_path}" >/dev/null 2>&1 && \
+        grep -F "fpath+=(\"\$HOME/.zfunc\")" "${rc_path}" >/dev/null 2>&1 && \
         grep -F 'autoload -Uz compinit && compinit -u' "${rc_path}" >/dev/null 2>&1; then
     pass 1 "zsh completion installed"
 else

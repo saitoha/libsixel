@@ -16,8 +16,6 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 
 completion_dir="${top_srcdir}/converters/shell-completion"
-completion_dir=$(printf '%s' "${completion_dir}" | tr '\\\\' '/')
-completion_source="${completion_dir}/bash/img2sixel"
 
 
 
@@ -35,6 +33,7 @@ if [ -z "${completion_home}" ]; then
 fi
 
 cleanup_home() {
+    # shellcheck disable=SC2317
     rm -rf "${completion_home}"
 }
 trap cleanup_home EXIT INT TERM

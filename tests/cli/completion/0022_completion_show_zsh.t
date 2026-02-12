@@ -15,7 +15,6 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 
 completion_dir="${top_srcdir}/converters/shell-completion"
-completion_source="${completion_dir}/zsh/_img2sixel"
 
 
 printf '1..1\n'

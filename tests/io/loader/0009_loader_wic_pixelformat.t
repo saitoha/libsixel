@@ -7,7 +7,6 @@ set -eu
 
 feature_defined_in_config "HAVE_WIC" || {
     skip_all "wic loader is unavailable"
-    exit 0
 }
 
 set +e

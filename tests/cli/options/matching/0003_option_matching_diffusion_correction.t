@@ -13,27 +13,33 @@ set -v
 label="distance1_single"
 err_file="${ARTIFACT_LOCAL_DIR}/${label}.err"
 out_file="${ARTIFACT_LOCAL_DIR}/${label}.sixel"
+status=0
 
-rm -f "${err_file}" "${out_file}"
+: >"${err_file}"
+: >"${out_file}"
 
-if run_img2sixel -d burkez "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" >"${out_file}" 2>"${err_file}"; then
-    if grep -F 'corrected --diffusion value "burkez" -> "burkes".' \
-            "${err_file}" >/dev/null 2>&1; then
-        pass 1 "distance-1 typo is corrected"
-    else
+run_img2sixel -d burkez "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
+    >"${out_file}" 2>"${err_file}" || status=$?
+
+test "${status}" -eq 0 && {
+    grep -F 'corrected --diffusion value "burkez" -> "burkes".' \
+        "${err_file}" >/dev/null 2>&1 || {
         fail 1 "missing correction notice"
         printf '%s\n' '--- stderr ---' >&2
         cat "${err_file}" >&2 2>/dev/null || :
-    fi
-else
-    if grep -F 'specified diffusion method is not supported.' \
-            "${err_file}" >/dev/null 2>&1; then
-        pass 1 "distance-1 typo rejected with diagnostic"
-    else
-        fail 1 "unexpected rejection without diagnostic"
-        printf '%s\n' '--- stderr ---' >&2
-        cat "${err_file}" >&2 2>/dev/null || :
-    fi
-fi
+        exit 0
+    }
+    pass 1 "distance-1 typo is corrected"
+    exit 0
+}
 
+grep -F 'specified diffusion method is not supported.' "${err_file}" \
+    >/dev/null 2>&1 || {
+    fail 1 "unexpected rejection without diagnostic"
+    printf '%s\n' '--- stderr ---' >&2
+    cat "${err_file}" >&2 2>/dev/null || :
+    exit 0
+}
+
+pass 1 "distance-1 typo rejected with diagnostic"
 exit 0

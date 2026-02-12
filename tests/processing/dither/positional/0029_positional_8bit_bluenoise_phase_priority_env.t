@@ -17,12 +17,13 @@ set -v
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 
-if run_img2sixel --env SIXEL_DITHER_BLUENOISE_PHASE=10 \
+run_img2sixel --env SIXEL_DITHER_BLUENOISE_PHASE=10 \
         --env SIXEL_DITHER_BLUENOISE_SEED=123 -d bluenoise -y raster \
-        --precision=8bit -p 16 -o "${output_sixel}" "${input_image}"; then
-    pass 1 "positional 8-bit bluenoise phase priority env passed"
-else
+        --precision=8bit -p 16 -o "${output_sixel}" "${input_image}" || {
     fail 1 "positional 8-bit bluenoise phase priority env failed"
-fi
+    exit 0
+}
+
+pass 1 "positional 8-bit bluenoise phase priority env passed"
 
 exit 0

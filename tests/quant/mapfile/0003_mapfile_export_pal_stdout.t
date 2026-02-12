@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: PAL export supports stdout via type prefix.
+# TAP test: PAL export to stdout retains JASC-PAL header.
 
 set -eux
 
@@ -13,15 +13,16 @@ set -v
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 pal_stdout="${ARTIFACT_LOCAL_DIR}/palette-stdout.pal"
 
-if run_img2sixel -M pal:- -o "${ARTIFACT_LOCAL_DIR}/pal-stdout.six" \
-        "${snake_png}" >"${pal_stdout}"; then
-    if head -n 1 "${pal_stdout}" | grep -q "JASC-PAL"; then
-        pass 1 "PAL export supports type-prefixed stdout"
-    else
-        fail 1 "PAL stdout header missing"
-    fi
-else
+run_img2sixel -M pal:- -o "${ARTIFACT_LOCAL_DIR}/pal-stdout.six"     "${snake_png}" >"${pal_stdout}" || {
     fail 1 "PAL stdout export failed"
-fi
+    exit 0
+}
+
+head -n 1 "${pal_stdout}" | grep -q "JASC-PAL" || {
+    fail 1 "PAL stdout export missing JASC-PAL header"
+    exit 0
+}
+
+pass 1 "PAL stdout export emitted JASC-PAL header"
 
 exit 0

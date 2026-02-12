@@ -13,10 +13,7 @@ set -v
 err_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "path-suggestions-enabled.err")
 out_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "path-suggestions-enabled.out")
 
-run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 -- \
-    -m "${TOP_SRCDIR}/tests/data/inputs/snake_64.pgn" \
-    "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
-    >"${out_file}" 2>"${err_file}" && {
+run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 --     -m "${TOP_SRCDIR}/tests/data/inputs/snake_64.pgn"     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png"     >"${out_file}" 2>"${err_file}" && {
     fail 1 "missing mapfile unexpectedly succeeded"
     exit 0
 }
@@ -27,12 +24,10 @@ grep -F 'path "' "${err_file}" >/dev/null 2>&1 || {
 }
 
 has_suggestions=1
-grep -F 'Suggestions:' "${err_file}" >/dev/null 2>&1 &&
-    has_suggestions=0
+grep -F 'Suggestions:' "${err_file}" >/dev/null 2>&1 && has_suggestions=0
 
 has_fallback=1
-grep -F 'Suggestion lookup unavailable on this build.' "${err_file}" \
-    >/dev/null 2>&1 && has_fallback=0
+grep -F 'Suggestion lookup unavailable on this build.' "${err_file}"     >/dev/null 2>&1 && has_fallback=0
 
 [ "${has_suggestions}" -eq 0 ] || [ "${has_fallback}" -eq 0 ] || {
     fail 1 "missing path suggestion diagnostics"

@@ -5,38 +5,32 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-if [ "x${SIXEL_TSAN_BUILD:-no}" = "xyes" ]; then
-    echo "1..0 # SKIP TSan builds can suppress abort trace output"
-    exit 0
-fi
+[ "x${SIXEL_TSAN_BUILD:-no}" = "xyes" ] && skip_all "TSan builds can suppress abort trace output"
 
 binary="${TEST_RUNNER_PATH}"
-if [ ! -x "${binary}" ] && [ -z "${SIXEL_RUNTIME-}" ]; then
-    echo "harness not built" >&2
-    exit 99
-fi
+[ -x "${binary}" ] || [ -n "${SIXEL_RUNTIME-}" ] || skip_all "harness not built"
 
-set +e
 abort_output=$(run_test_runner --env SIXEL_ABORT_TRACE=1 -- \
-    "aborttrace/0001_img2sixel_aborttrace" 2>&1)
-rc=$?
-set -e
+    "aborttrace/0001_img2sixel_aborttrace" 2>&1) || rc=$?
 printf '%s' "${abort_output}" >&2
 
 echo "1..1"
 set -v
 
-if [ "${rc}" -eq 77 ]; then
-    echo "ok 1 - abort trace # SKIP abort trace disabled"
+[ "${rc:-0}" -eq 77 ] && {
+    pass 1 "abort trace # SKIP abort trace disabled"
     exit 0
-fi
+}
 
-if printf '%s' "${abort_output}" | grep -F "libsixel: abort() detected" \
-        >/dev/null \
-        && printf '%s' "${abort_output}" \
-            | grep -F "libsixel: abort trace complete" >/dev/null; then
-    echo "ok 1 - abort trace emitted"
-else
-    echo "not ok 1 - abort trace missing"
-    exit 1
-fi
+printf '%s' "${abort_output}" | grep -F "libsixel: abort() detected" >/dev/null || {
+    fail 1 "abort trace missing"
+    exit 0
+}
+printf '%s' "${abort_output}" | grep -F "libsixel: abort trace complete" >/dev/null || {
+    fail 1 "abort trace missing"
+    exit 0
+}
+
+pass 1 "abort trace emitted"
+
+exit 0

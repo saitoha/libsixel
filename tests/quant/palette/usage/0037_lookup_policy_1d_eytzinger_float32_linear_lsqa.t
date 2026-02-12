@@ -27,12 +27,15 @@ lsqa_err=$(
     run_lsqa -b "MS-SSIM:${lsqa_floor}" "${input_image}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
-if [ -z "${lsqa_run_status-}" ]; then
+[ "${lsqa_run_status:-0}" -eq 0 ] && {
     pass 1 "float32 Eytzinger linear colorspace lsqa passed"
-elif [ "${lsqa_run_status}" -eq 5 ]; then
-    fail 1 "${lsqa_err}"
-else
-    fail 1 "float32 Eytzinger linear colorspace lsqa failed"
-fi
+    exit 0
+}
 
+[ "${lsqa_run_status}" -eq 5 ] && {
+    fail 1 "${lsqa_err}"
+    exit 0
+}
+
+fail 1 "float32 Eytzinger linear colorspace lsqa failed"
 exit 0

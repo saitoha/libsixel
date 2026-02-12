@@ -12,22 +12,31 @@ set -v
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 outfile_err="${ARTIFACT_LOCAL_DIR}/outfile-option-name.err"
-rm -f "${outfile_err}" "${ARTIFACT_LOCAL_DIR}/-p"
+out_file="${ARTIFACT_LOCAL_DIR}/-p"
 
-cd "${ARTIFACT_LOCAL_DIR}" && {
-    if ! run_img2sixel -o -p "${image_path}" >/dev/null 2>"${outfile_err}"; then
-        printf 'not ok 1 %s\n' "outfile named like option rejected"
-        printf '%s\n' '--- stderr ---' >&2
-        cat "${outfile_err}" >&2 2>/dev/null || :
-        exit 0
-    fi
+: >"${outfile_err}"
+: >"${out_file}"
+
+cd "${ARTIFACT_LOCAL_DIR}" || {
+    fail 1 "failed to enter artifact directory"
+    exit 0
+}
+run_img2sixel -o -p "${image_path}" >/dev/null 2>"${outfile_err}" || {
+    fail 1 "outfile named like option rejected"
+    printf '%s\n' '--- stderr ---' >&2
+    cat "${outfile_err}" >&2 2>/dev/null || :
+    exit 0
 }
 
-if test ! -s "${ARTIFACT_LOCAL_DIR}/-p"; then
-    printf 'not ok 1 %s\n' "outfile named like option missing"
+cd "${TOP_SRCDIR}" || {
+    fail 1 "failed to return to source directory"
     exit 0
-fi
+}
 
-printf 'ok 1 %s\n' "outfile named like option is supported"
+test -s "${out_file}" || {
+    fail 1 "outfile named like option missing"
+    exit 0
+}
 
+pass 1 "outfile named like option is supported"
 exit 0

@@ -12,11 +12,12 @@ set -v
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/vptree-8bit.six"
 
-if run_img2sixel --lookup-policy=vptree -p 16 -d none \
-        -o "${output_sixel}" "${snake_png}"; then
-    pass 1 "8-bit VP-tree lookup policy completes"
-else
+run_img2sixel --lookup-policy=vptree -p 16 -d none \
+        -o "${output_sixel}" "${snake_png}" || {
     fail 1 "8-bit VP-tree lookup policy failed"
-fi
+    exit 0
+}
+
+pass 1 "8-bit VP-tree lookup policy completes"
 
 exit 0

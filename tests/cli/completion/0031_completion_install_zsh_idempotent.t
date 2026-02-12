@@ -31,7 +31,7 @@ run_img2sixel --env IMG2SIXEL_COMPLETION_HOME="${completion_home}" \
     exit 0
 }
 
-fpath_count=$(grep -c '^fpath+=("\$HOME/.zfunc")$' "${rc_path}")
+fpath_count=$(grep -c "^fpath+=(\"\$HOME/.zfunc\")$" "${rc_path}")
 compinit_count=$(grep -c '^autoload -Uz compinit && compinit -u$' "${rc_path}")
 
 test "${fpath_count}" -eq 1 || {
