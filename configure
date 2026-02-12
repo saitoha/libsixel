@@ -18376,7 +18376,13 @@ else case e in #(
 esac
 fi
 
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Bsymbolic" >&5
+  if test "x$host_os" != "xopenbsd"
+then :
+
+    # Align Autotools with Meson: OpenBSD links shared objects with
+    # --no-allow-shlib-undefined, and enabling -fno-emulated-tls can leave
+    # __tls_get_addr unresolved when final tools link against libsixel.
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Bsymbolic" >&5
 printf %s "checking if $CC supports -Bsymbolic... " >&6; }
 if test ${ac_cv_cc_flag_bsymbolic+y}
 then :
@@ -18419,7 +18425,7 @@ else case e in #(
 esac
 fi
 
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -fno-emulated-tls" >&5
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -fno-emulated-tls" >&5
 printf %s "checking if $CC supports -fno-emulated-tls... " >&6; }
 if test ${ac_cv_cc_flag_fno_emulated_tls+y}
 then :
@@ -18462,6 +18468,8 @@ else case e in #(
 esac
 fi
 
+
+fi
   if test x$enable_debug = xyes
 then :
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking if $CC supports -Werror" >&5
