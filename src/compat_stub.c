@@ -310,6 +310,10 @@ SIXEL_COMPAT_API int
 sixel_compat_strcasecmp(char const *lhs, char const *rhs)
 {
     int result;
+#if !(HAVE__STRCASECMP || HAVE__STRCMPI || HAVE_STRCASECMP)
+    unsigned char lhs_char;
+    unsigned char rhs_char;
+#endif
 
     result = 0;
 
@@ -327,7 +331,16 @@ sixel_compat_strcasecmp(char const *lhs, char const *rhs)
 #elif HAVE_STRCASECMP
     result = strcasecmp(lhs, rhs);
 #else
-# error "_stricmp(), _strcmpi() or strcasecmp() is required"
+    do {
+        lhs_char = (unsigned char)*lhs;
+        rhs_char = (unsigned char)*rhs;
+        result = tolower(lhs_char) - tolower(rhs_char);
+        if (result != 0 || lhs_char == '\0' || rhs_char == '\0') {
+            break;
+        }
+        ++lhs;
+        ++rhs;
+    } while (1);
 #endif
 
     return result;

@@ -1275,7 +1275,7 @@ else
                  [],
                  [bsymbolic])
   LS_CHECK_CFLAG([-fno-emulated-tls],
-                 [AM_CFLAGS="$AM_CFLAGS -Bfno-emulated-tls"
+                 [AM_CFLAGS="$AM_CFLAGS -fno-emulated-tls"
                   AC_DEFINE(HAVE_FNO_EMULATED_TLS,
                             [1],
                             [define 1 if GCC supports -fno-emulated-tls])],

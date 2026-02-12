@@ -18453,7 +18453,7 @@ fi
 printf "%s\n" "$ac_cv_cc_flag_fno_emulated_tls" >&6; }
           if eval test \"x\$ac_cv_cc_flag_fno_emulated_tls\" = xyes
 then :
-  AM_CFLAGS="$AM_CFLAGS -Bfno-emulated-tls"
+  AM_CFLAGS="$AM_CFLAGS -fno-emulated-tls"
 
 printf "%s\n" "#define HAVE_FNO_EMULATED_TLS 1" >>confdefs.h
 
