@@ -478,7 +478,9 @@ sixel_lookup_8bit_policy_normalize(int policy)
                && normalized != SIXEL_LUT_POLICY_EYTZINGER
                && normalized != SIXEL_LUT_POLICY_NONE
                && normalized != SIXEL_LUT_POLICY_VPTE
-               && normalized != SIXEL_LUT_POLICY_VPTREE) {
+               && normalized != SIXEL_LUT_POLICY_VPTREE
+               && normalized != SIXEL_LUT_POLICY_RBC
+               && normalized != SIXEL_LUT_POLICY_MAHALANOBIS) {
         normalized = SIXEL_LUT_POLICY_6BIT;
     }
 
@@ -492,7 +494,9 @@ sixel_lookup_8bit_policy_uses_cache(int policy)
         || policy == SIXEL_LUT_POLICY_EYTZINGER
         || policy == SIXEL_LUT_POLICY_NONE
         || policy == SIXEL_LUT_POLICY_VPTE
-        || policy == SIXEL_LUT_POLICY_VPTREE) {
+        || policy == SIXEL_LUT_POLICY_VPTREE
+        || policy == SIXEL_LUT_POLICY_RBC
+        || policy == SIXEL_LUT_POLICY_MAHALANOBIS) {
         return 0;
     }
 

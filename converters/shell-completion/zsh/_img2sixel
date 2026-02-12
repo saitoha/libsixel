@@ -100,7 +100,9 @@ _lookuppolicy() {
     'certlut[certified hierarchical LUT with zero error]' \
     'eytzinger[implicit binary tree lookup with neighbour scan]' \
     'vpte[Voronoi grid built via a 3D EDT with boundary refinement]' \
-    'vptree[VP-tree lookup built from palette entries]'
+    'vptree[VP-tree lookup built from palette entries]' \
+    'rbc[Random Ball Cover cluster pruning]' \
+    'mahalanobis[RBC pruning with Mahalanobis lower bounds]'
 }
 
 _looptype() {

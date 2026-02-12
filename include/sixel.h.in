@@ -139,6 +139,8 @@ typedef int SIXELSTATUS;
 #define SIXEL_LUT_POLICY_VPTE    0x6  /* Voronoi + EDT lookup */
 #define SIXEL_LUT_POLICY_EYTZINGER 0x7 /* Eytzinger lookup */
 #define SIXEL_LUT_POLICY_VPTREE  0x8  /* VP-tree lookup */
+#define SIXEL_LUT_POLICY_RBC     0x9  /* Random Ball Cover lookup */
+#define SIXEL_LUT_POLICY_MAHALANOBIS 0xa /* RBC + Mahalanobis pruning */
 
 /* built-in dither */
 #define SIXEL_BUILTIN_MONO_DARK   0x0  /* monochrome terminal with dark background */

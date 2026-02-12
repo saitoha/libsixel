@@ -437,7 +437,9 @@ static sixel_option_choice_t const g_option_choices_lut_policy[] = {
     { "certlut", SIXEL_LUT_POLICY_CERTLUT },
     { "eytzinger", SIXEL_LUT_POLICY_EYTZINGER },
     { "vpte", SIXEL_LUT_POLICY_VPTE },
-    { "vptree", SIXEL_LUT_POLICY_VPTREE }
+    { "vptree", SIXEL_LUT_POLICY_VPTREE },
+    { "rbc", SIXEL_LUT_POLICY_RBC },
+    { "mahalanobis", SIXEL_LUT_POLICY_MAHALANOBIS }
 };
 
 static sixel_option_choice_t const g_option_choices_working_colorspace[] = {
