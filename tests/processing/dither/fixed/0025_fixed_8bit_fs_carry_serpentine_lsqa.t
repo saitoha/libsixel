@@ -19,7 +19,6 @@ set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
-output_png="${ARTIFACT_LOCAL_DIR}/output.png"
 
 run_img2sixel -d fs -Y carry -y serpentine -o "${output_sixel}" "${input_image}" || {
     fail 1 "fixed 8-bit Floyd-Steinberg with carry + serpentine scan lsqa failed"

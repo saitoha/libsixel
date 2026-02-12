@@ -12,7 +12,6 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-status=0
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
 data_root="${top_srcdir}/tests/data/inputs"

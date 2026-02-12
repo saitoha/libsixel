@@ -13,7 +13,6 @@ set -v
 
 input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snap-heckbert-float32.six"
-output_png="${ARTIFACT_LOCAL_DIR}/snap-heckbert-float32.png"
 
 run_img2sixel -Q heckbert -6 -W oklab -o "${output_sixel}" "${input_image}" || {
     fail 1 "img2sixel snap heckbert float32 failed"

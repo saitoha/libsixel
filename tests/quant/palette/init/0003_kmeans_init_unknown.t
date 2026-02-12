@@ -9,7 +9,7 @@ echo "1..1"
 set -v
 
 output=$(
-   run_test_runner --env SIXEL_PALETTE_KMEANS_INITTYPE="unknown" "palette/0001_kmeans_init" | tr -d ''
+   run_test_runner --env SIXEL_PALETTE_KMEANS_INITTYPE="unknown" "palette/0001_kmeans_init" | tr -d '\r'
 ) || output=""
 
 [ "${output}" = "none" ] || {

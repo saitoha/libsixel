@@ -5,20 +5,15 @@ set -eu
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-printf '1..1
-'
+printf '1..1\n'
 set -v
 
 input_image="${top_srcdir}/tests/data/corrupted/metadata_noise.jpg"
+lsqa_run_status=0
 
-lsqa_err=$(
-    set +xv
-    run_lsqa -b "MS-SSIM:0.5" "${input_image}" "${input_image}"
-) || lsqa_run_status=$?
+run_quiet run_lsqa -b "MS-SSIM:0.5" "${input_image}" "${input_image}" || lsqa_run_status=$?
 
-lsqa_status=${lsqa_run_status-0}
-
-test "${lsqa_status}" -ne 0 || {
+test "${lsqa_run_status}" -ne 0 || {
     fail 1 "metadata noise unexpectedly accepted"
     exit 0
 }
