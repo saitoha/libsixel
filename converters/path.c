@@ -57,6 +57,14 @@
 
 #define IMG2SIXEL_CYGDRIVE_PREFIX "/cygdrive/"
 
+#if HAVE_TOLOWER
+#define IMG2SIXEL_PATH_TOLOWER(ch) tolower(ch)
+#else
+#define IMG2SIXEL_PATH_TOLOWER(ch) \
+    (((ch) >= 'A' && (ch) <= 'Z') \
+     ? ((ch) + ('a' - 'A')) : (ch))
+#endif
+
 #if defined(_WIN32) && !defined(__CYGWIN__) && !defined(__MSYS__)
 #define IMG2SIXEL_PATH_USE_CYGPATH 1
 #elif defined(__COSMOPOLITAN__)
@@ -536,8 +544,6 @@ img2sixel_path_cosmo_is_windows(void)
 static int
 img2sixel_path_emscripten_rawfs_enabled(void)
 {
-    char const *setting;
-
     /*
      * Decide whether /c/... and /cygdrive/c/... paths should be treated as
      * Windows-native. The logic is intentionally defensive:
@@ -550,6 +556,8 @@ img2sixel_path_emscripten_rawfs_enabled(void)
 # if !HAVE_EMSCRIPTEN_GET_COMPILER_SETTING
     return 1;
 # else
+    char const *setting;
+
     setting = (char const *)emscripten_get_compiler_setting("NODERAWFS");
     if (setting == NULL || setting[0] == '\0') {
         return 1;
@@ -779,7 +787,8 @@ img2sixel_path_to_libc(char const *path,
         || img2sixel_path_parse_cygdrive(path, &drive, &rest)
         || img2sixel_path_parse_drive_letter(path, &drive, &rest)) {
         buffer[0] = '/';
-        buffer[1] = (char)tolower((unsigned char)drive);
+        buffer[1] = (char)IMG2SIXEL_PATH_TOLOWER(
+                (int)(unsigned char)drive);
         out_index = 2u;
         for (index = 0u; rest[index] != '\0'; index++) {
             if (out_index + 1u >= buffer_size) {
@@ -812,7 +821,9 @@ img2sixel_path_to_libc(char const *path,
         || img2sixel_path_parse_drive_letter(path, &drive, &rest)) {
         prefix_len = strlen(IMG2SIXEL_CYGDRIVE_PREFIX);
         memcpy(buffer, IMG2SIXEL_CYGDRIVE_PREFIX, prefix_len);
-        buffer[prefix_len] = (char)tolower((unsigned char)drive);
+        buffer[prefix_len] =
+                (char)IMG2SIXEL_PATH_TOLOWER(
+                (int)(unsigned char)drive);
         out_index = prefix_len + 1u;
         for (index = 0u; rest[index] != '\0'; index++) {
             if (out_index + 1u >= buffer_size) {
