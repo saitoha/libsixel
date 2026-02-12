@@ -1267,20 +1267,25 @@ else
                             [define 1 if GCC supports -Wformat-nonliteral])],
                  [],
                  [wformat_nonliteral])
-  LS_CHECK_CFLAG([-Bsymbolic],
-                 [AM_CFLAGS="$AM_CFLAGS -Bsymbolic"
-                  AC_DEFINE(HAVE_BSYMBOLIC,
-                            [1],
-                            [define 1 if GCC supports -Bsymbolic])],
-                 [],
-                 [bsymbolic])
-  LS_CHECK_CFLAG([-fno-emulated-tls],
-                 [AM_CFLAGS="$AM_CFLAGS -fno-emulated-tls"
-                  AC_DEFINE(HAVE_FNO_EMULATED_TLS,
-                            [1],
-                            [define 1 if GCC supports -fno-emulated-tls])],
-                 [],
-                 [fno_emulated_tls])
+  AS_IF([test "x$host_os" != "xopenbsd"], [
+    # Align Autotools with Meson: OpenBSD links shared objects with
+    # --no-allow-shlib-undefined, and enabling -fno-emulated-tls can leave
+    # __tls_get_addr unresolved when final tools link against libsixel.
+    LS_CHECK_CFLAG([-Bsymbolic],
+                   [AM_CFLAGS="$AM_CFLAGS -Bsymbolic"
+                    AC_DEFINE(HAVE_BSYMBOLIC,
+                              [1],
+                              [define 1 if GCC supports -Bsymbolic])],
+                   [],
+                   [bsymbolic])
+    LS_CHECK_CFLAG([-fno-emulated-tls],
+                   [AM_CFLAGS="$AM_CFLAGS -fno-emulated-tls"
+                    AC_DEFINE(HAVE_FNO_EMULATED_TLS,
+                              [1],
+                              [define 1 if GCC supports -fno-emulated-tls])],
+                   [],
+                   [fno_emulated_tls])
+  ])
   AS_IF([test x$enable_debug = xyes],
         [LS_CHECK_CFLAG([-Werror], [AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
 fi
