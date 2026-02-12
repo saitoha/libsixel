@@ -18,7 +18,7 @@ run_img2sixel -M gpl:"${gpl_palette}" -o "${ARTIFACT_LOCAL_DIR}/pal-gpl.six"    
     exit 0
 }
 
-cat "${gpl_palette}" | run_img2sixel -m gpl:-         -o "${ARTIFACT_LOCAL_DIR}/from-stdin.six" "${snake_png}" || {
+run_img2sixel -m gpl:-         -o "${ARTIFACT_LOCAL_DIR}/from-stdin.six" "${snake_png}" <"${gpl_palette}" || {
     fail 1 "GPL stdin palette conversion failed"
     exit 0
 }

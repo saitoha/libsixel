@@ -19,7 +19,6 @@ set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
-output_png="${ARTIFACT_LOCAL_DIR}/output.png"
 
 run_img2sixel -d lso2 -y serpentine -o "${output_sixel}" "${input_image}" || {
     fail 1 "variable-coefficient LSO2 8-bit with serpentine scan lsqa failed"

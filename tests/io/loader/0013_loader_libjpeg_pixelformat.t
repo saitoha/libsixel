@@ -7,7 +7,6 @@ set -eu
 
 feature_defined_in_config "HAVE_JPEG" || {
     skip_all "libjpeg loader is unavailable"
-    exit 0
 }
 
 echo "1..1"

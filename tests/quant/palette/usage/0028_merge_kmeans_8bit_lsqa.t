@@ -13,7 +13,6 @@ set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/merge-kmeans-8bit.six"
-output_png="${ARTIFACT_LOCAL_DIR}/merge-kmeans-8bit.png"
 
 SIXEL_PALETTE_OVERSPLIT_FACTOR=1.2 \
         SIXEL_PALETTE_FINAL_MERGE_ADDITIONAL_LLOYD_ITER_COUNT=2 \

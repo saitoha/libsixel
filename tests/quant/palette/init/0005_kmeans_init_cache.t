@@ -10,7 +10,7 @@ set -v
 
 output=$(
    run_test_runner --env SIXEL_PALETTE_KMEANS_INITTYPE=pca "palette/0001_kmeans_init" --cache | tr -d '\r'
-) || status=$?
+)
 
 if [ "${output}" = "pca pca" ]; then
     printf 'ok 1 - cache preserves initial value\n'

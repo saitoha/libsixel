@@ -7,7 +7,6 @@ set -eu
 
 feature_defined_in_config "HAVE_GDK_PIXBUF2" || {
     skip_all "gdk-pixbuf2 loader is unavailable"
-    exit 0
 }
 
 echo "1..1"

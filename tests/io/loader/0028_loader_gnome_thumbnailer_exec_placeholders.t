@@ -9,15 +9,12 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 feature_defined_in_config "HAVE_FREEDESKTOP_THUMBNAILING" || {
     skip_all "gnome-thumbnailer loader is unavailable on this platform"
-    exit 0
 }
 
 echo "1..1"
 set -v
 
 input_png="${top_srcdir}/tests/data/inputs/formats/rgba.png"
-output_sixel="${ARTIFACT_LOCAL_DIR}/gnome_exec_placeholders.sixel"
-error_log="${ARTIFACT_LOCAL_DIR}/gnome_exec_placeholders.err"
 log_file="${ARTIFACT_LOCAL_DIR}/gnome_exec_placeholders.log"
 template_root="${top_srcdir}/tests/data/inputs/thumbnailer"
 xdg_data_home="${template_root}/cases/0028"

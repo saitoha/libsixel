@@ -12,7 +12,6 @@ echo "1..1"
 set -v
 
 snake_tiff="${TOP_SRCDIR}/tests/data/inputs/snake_64.tiff"
-target_sixel="${ARTIFACT_LOCAL_DIR}/snake-tiff.sixel"
 
 run_img2sixel -Llibtiff! -p200 -8 -scenter -Brgb:0/f/A -h100 -qfull -rhan -dstucki \
     -thls "${snake_tiff}" -o/dev/null || {

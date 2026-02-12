@@ -12,7 +12,7 @@ set -v
 
 output_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "capture.stdin")
 
-echo a | run_img2sixel >"${output_file}" && :
+echo a | run_img2sixel - >"${output_file}" && :
 
 test ! -s "${output_file}" || {
     fail 1 "img2sixel produced output for invalid stdin"

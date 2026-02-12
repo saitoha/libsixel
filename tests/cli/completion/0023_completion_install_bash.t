@@ -32,11 +32,7 @@ if [ -z "${completion_home}" ]; then
     exit 1
 fi
 
-cleanup_home() {
-    # shellcheck disable=SC2317
-    rm -rf "${completion_home}"
-}
-trap cleanup_home EXIT INT TERM
+trap 'rm -rf "${completion_home}"' EXIT INT TERM
 
 target_path="${completion_home}/.local/share/bash-completion/completions/img2sixel"
 legacy_path="${completion_home}/.bash_completion.d/img2sixel"
