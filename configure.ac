@@ -3133,11 +3133,20 @@ AM_CONDITIONAL([HAVE_BASH], [test "x$BASH" != x -a "x$BASH" != xno])
 
 dnl Choose a fast POSIX shell for TAP tests and keep /bin/sh as fallback.
 AC_ARG_VAR([SIXEL_TEST_SHELL],
-           [Shell path used to run TAP test scripts (default: detect dash, fallback /bin/sh)])
+           [Shell path used to run TAP test scripts (default: detect dash, sh, then fallback /bin/sh)])
 AS_IF([test "x$SIXEL_TEST_SHELL" = x], [
-  AC_PATH_PROG([SIXEL_TEST_SHELL], [dash], [no])
-  AS_IF([test "x$SIXEL_TEST_SHELL" = x -o "x$SIXEL_TEST_SHELL" = xno], [
-    AC_PATH_PROG([SIXEL_TEST_SHELL], [sh], [/bin/sh])
+  dnl Use separate cache variables for each lookup to avoid keeping
+  dnl an earlier "no" result when probing the next candidate.
+  AC_PATH_PROG([LS_DASH_PATH], [dash], [no])
+  AS_IF([test "x$LS_DASH_PATH" != x -a "x$LS_DASH_PATH" != xno], [
+    SIXEL_TEST_SHELL="$LS_DASH_PATH"
+  ], [
+    AC_PATH_PROG([LS_SH_PATH], [sh], [no])
+    AS_IF([test "x$LS_SH_PATH" != x -a "x$LS_SH_PATH" != xno], [
+      SIXEL_TEST_SHELL="$LS_SH_PATH"
+    ], [
+      SIXEL_TEST_SHELL="/bin/sh"
+    ])
   ])
 ], [
   AC_MSG_NOTICE([SIXEL_TEST_SHELL preset to ${SIXEL_TEST_SHELL}])
