@@ -130,7 +130,7 @@ nodist_img2sixel_SOURCES = completion_embed.h
 img2sixel_CPPFLAGS = -DBUILD_IMG2SIXEL -DHAVE_COMPLETION_EMBED_H \
         -I$(top_builddir)/include/ \
         $(AM_CPPFLAGS)
-img2sixel_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
+img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 img2sixel_LDFLAGS = $(MAYBE_COVERAGE)
 img2sixel_LDADD = $(top_builddir)/src/libsixel.la
 if HAVE_ABORT_TRACE
@@ -162,7 +162,7 @@ sixel2png_SOURCES = $(srcdir)/sixel2png.c \
                     $(srcdir)/aborttrace.c \
                     $(srcdir)/aborttrace.h
 sixel2png_CPPFLAGS += -DBUILD_SIXEL2PNG -I$(top_builddir)/include/
-sixel2png_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE)
+sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 sixel2png_LDFLAGS = $(MAYBE_COVERAGE)
 sixel2png_LDADD = $(top_builddir)/src/libsixel.la
 if HAVE_ABORT_TRACE

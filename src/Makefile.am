@@ -237,7 +237,7 @@ endif
 endif
 libsixel_la_CPPFLAGS = -I$(top_builddir)/include/ -I$(top_srcdir) $(AM_CPPFLAGS) \
                 @THREAD_CPPFLAGS@ $(AMALGAMATION_CPPFLAGS)
-libsixel_la_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
+libsixel_la_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
                 $(LIBCURL_CFLAGS) \
                 $(WINHTTP_CFLAGS) \
                 $(LIBPNG_CFLAGS) \
