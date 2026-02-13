@@ -773,6 +773,7 @@ THREAD_CFLAGS
 THREAD_CPPFLAGS
 WITH_SHEBANG_FILE_FALSE
 WITH_SHEBANG_FILE_TRUE
+SIXEL_CHECK_TESTS
 SIXEL_SHEBANG_HELPER
 SIXEL_SHEBANG_FILE
 WANT_AMALGAMATED_SOURCES_FALSE
@@ -16824,6 +16825,8 @@ fi
 
 
 SIXEL_SHEBANG_HELPER="${top_srcdir}/build-aux/sixel-apply-shebang.sh"
+
+SIXEL_CHECK_TESTS=`$SHELL "$srcdir/tests/_lib/sh/read-check-test-list.sh"     tests "$srcdir/tests/check-tests.list"`
 
  if test -n "$SIXEL_SHEBANG_FILE"; then
   WITH_SHEBANG_FILE_TRUE=
