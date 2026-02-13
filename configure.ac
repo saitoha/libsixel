@@ -3102,7 +3102,10 @@ dnl Choose a fast POSIX shell for TAP tests and keep /bin/sh as fallback.
 AC_ARG_VAR([SIXEL_TEST_SHELL],
            [Shell path used to run TAP test scripts (default: detect dash, fallback /bin/sh)])
 AS_IF([test "x$SIXEL_TEST_SHELL" = x], [
-  AC_PATH_PROG([SIXEL_TEST_SHELL], [dash], [/bin/sh])
+  AC_PATH_PROG([SIXEL_TEST_SHELL], [dash], [no])
+  AS_IF([test "x$SIXEL_TEST_SHELL" = x -o "x$SIXEL_TEST_SHELL" = xno], [
+    AC_PATH_PROG([SIXEL_TEST_SHELL], [sh], [/bin/sh])
+  ])
 ], [
   AC_MSG_NOTICE([SIXEL_TEST_SHELL preset to ${SIXEL_TEST_SHELL}])
 ])

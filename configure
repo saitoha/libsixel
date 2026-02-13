@@ -25764,6 +25764,56 @@ done
   done
 IFS=$as_save_IFS
 
+  test -z "$ac_cv_path_SIXEL_TEST_SHELL" && ac_cv_path_SIXEL_TEST_SHELL="no"
+  ;;
+esac ;;
+esac
+fi
+SIXEL_TEST_SHELL=$ac_cv_path_SIXEL_TEST_SHELL
+if test -n "$SIXEL_TEST_SHELL"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $SIXEL_TEST_SHELL" >&5
+printf "%s\n" "$SIXEL_TEST_SHELL" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+  if test "x$SIXEL_TEST_SHELL" = x -o "x$SIXEL_TEST_SHELL" = xno
+then :
+
+    # Extract the first word of "sh", so it can be a program name with args.
+set dummy sh; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_SIXEL_TEST_SHELL+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $SIXEL_TEST_SHELL in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_SIXEL_TEST_SHELL="$SIXEL_TEST_SHELL" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_SIXEL_TEST_SHELL="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
   test -z "$ac_cv_path_SIXEL_TEST_SHELL" && ac_cv_path_SIXEL_TEST_SHELL="/bin/sh"
   ;;
 esac ;;
@@ -25779,6 +25829,8 @@ printf "%s\n" "no" >&6; }
 fi
 
 
+
+fi
 
 else case e in #(
   e)
