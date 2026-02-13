@@ -782,6 +782,28 @@ THREAD_CFLAGS=""
 THREAD_LIBS=""
 ABORTTRACE_LIBS=""
 have_threads="no"
+
+# Emscripten may emit a post-link optimization warning when debug
+# information is enabled. In CI we globally enable -Werror, so downgrade
+# this specific diagnostic to keep capability checks deterministic.
+EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT=""
+case "$host_os" in
+  emscripten*)
+    AC_CACHE_CHECK([
+      whether $CC supports -Wno-error=limited-postlink-optimizations
+    ],
+    [ac_cv_cc_wno_error_limited_postlink_optimizations],
+    [ac_save_CFLAGS="$CFLAGS"
+     CFLAGS="$CFLAGS -Werror -Wno-error=limited-postlink-optimizations"
+     AC_COMPILE_IFELSE([AC_LANG_PROGRAM([],[])],
+                       [ac_cv_cc_wno_error_limited_postlink_optimizations=yes],
+                       [ac_cv_cc_wno_error_limited_postlink_optimizations=no])
+     CFLAGS="$ac_save_CFLAGS"])
+    AS_IF([test "x$ac_cv_cc_wno_error_limited_postlink_optimizations" = xyes],
+          [EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT="-Wno-error=limited-postlink-optimizations"])
+    ;;
+esac
+
 if test "x$enable_threads" != "xno"; then
   AC_DEFINE([SIXEL_ENABLE_THREADS],
             [1],
@@ -793,7 +815,10 @@ if test "x$enable_threads" != "xno"; then
     AC_MSG_CHECKING([for pthreads])
     save_CFLAGS="$CFLAGS"
     save_LIBS="$LIBS"
-    CFLAGS="$CFLAGS -pthread"
+    pthread_check_cflags="$CFLAGS -pthread"
+    AS_IF([test -n "$EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT"],
+          [pthread_check_cflags="$pthread_check_cflags $EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT"])
+    CFLAGS="$pthread_check_cflags"
     LIBS="$LIBS -pthread"
     AC_LINK_IFELSE(
       [AC_LANG_PROGRAM([[#include <pthread.h>
