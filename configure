@@ -18574,6 +18574,14 @@ fi
 fi
 fi
 
+# In CI, CFLAGS includes -Werror. Keep emcc post-link optimization warnings
+# non-fatal in normal build compilation as well as feature checks.
+if test -n "$EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT" -a -n "$CI"
+then :
+  AM_CFLAGS="$AM_CFLAGS $EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT"
+fi
+
+
 
 # Check math library
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for floor in -lm" >&5
