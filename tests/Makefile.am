@@ -300,7 +300,7 @@ check-TESTS: $(check_PROGRAMS)
 	    LIBSIXEL_LIBDIR="$(abs_top_builddir)/src"; \
 	fi; \
 	test_export_vars=`$(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
-	    exports "$(srcdir)/check-test-exports.list"`; \
+	    tests "$(srcdir)/check-test-exports.list"`; \
 	export $$test_export_vars; \
 	\
 	if [ -f "$$config_header" ]; then \
