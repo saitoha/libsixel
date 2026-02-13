@@ -41,6 +41,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	package.json.in.in \
 	build-aux/lso-tap-driver.sh.in \
 	build-aux/read-check-test-list.sh \
+	build-aux/export-key-value-list.sh \
 	tools/fuzz-img2sixel-cli.sh
 
 # Honor user-supplied make parallel flags while providing a CPU-based default.
