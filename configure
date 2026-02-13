@@ -16859,6 +16859,56 @@ THREAD_CFLAGS=""
 THREAD_LIBS=""
 ABORTTRACE_LIBS=""
 have_threads="no"
+
+# Emscripten may emit a post-link optimization warning when debug
+# information is enabled. In CI we globally enable -Werror, so downgrade
+# this specific diagnostic to keep capability checks deterministic.
+EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT=""
+case "$host_os" in
+  emscripten*)
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking
+      whether $CC supports -Wno-error=limited-postlink-optimizations
+    " >&5
+printf %s "checking
+      whether $CC supports -Wno-error=limited-postlink-optimizations
+    ... " >&6; }
+if test ${ac_cv_cc_wno_error_limited_postlink_optimizations+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) ac_save_CFLAGS="$CFLAGS"
+     CFLAGS="$CFLAGS -Werror -Wno-error=limited-postlink-optimizations"
+     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  ac_cv_cc_wno_error_limited_postlink_optimizations=yes
+else case e in #(
+  e) ac_cv_cc_wno_error_limited_postlink_optimizations=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+     CFLAGS="$ac_save_CFLAGS" ;;
+esac
+fi
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_cc_wno_error_limited_postlink_optimizations" >&5
+printf "%s\n" "$ac_cv_cc_wno_error_limited_postlink_optimizations" >&6; }
+    if test "x$ac_cv_cc_wno_error_limited_postlink_optimizations" = xyes
+then :
+  EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT="-Wno-error=limited-postlink-optimizations"
+fi
+    ;;
+esac
+
 if test "x$enable_threads" != "xno"; then
 
 printf "%s\n" "#define SIXEL_ENABLE_THREADS 1" >>confdefs.h
@@ -16871,7 +16921,12 @@ printf "%s\n" "#define SIXEL_ENABLE_THREADS 1" >>confdefs.h
 printf %s "checking for pthreads... " >&6; }
     save_CFLAGS="$CFLAGS"
     save_LIBS="$LIBS"
-    CFLAGS="$CFLAGS -pthread"
+    pthread_check_cflags="$CFLAGS -pthread"
+    if test -n "$EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT"
+then :
+  pthread_check_cflags="$pthread_check_cflags $EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT"
+fi
+    CFLAGS="$pthread_check_cflags"
     LIBS="$LIBS -pthread"
     cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
