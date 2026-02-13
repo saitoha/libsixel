@@ -78,7 +78,7 @@ lsqa_CPPFLAGS = -I$(top_builddir)/include/ \
                 -I$(top_srcdir)/assessment \
                 -I$(top_srcdir)/converters \
                 $(AM_CPPFLAGS)
-lsqa_CFLAGS = $(AM_CFLAGS) $(MAYBE_COVERAGE) \
+lsqa_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
         $(THREAD_CFLAGS)
 lsqa_LDFLAGS = $(MAYBE_COVERAGE)
 lsqa_LDADD = $(top_builddir)/src/libsixel.la
