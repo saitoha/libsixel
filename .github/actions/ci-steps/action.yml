@@ -326,7 +326,7 @@ runs:
         export PATH="$PWD/build-aux:$PWD/bin:$PATH"
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} meson setup builddir ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         meson compile -C builddir -v
-        meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
+        LLVM_PROFILE_FILE="$PWD/coverage-%p-%m.profraw" meson ${{ fromJSON(inputs.matrix_json).check_target || 'test' }} -C builddir
 
     - name: Build and test (Autotools, msys2)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'autotools' && fromJSON(inputs.matrix_json).exec_type == 'msys2' }}
@@ -587,7 +587,8 @@ runs:
       if: >-
         ${{ always()
             && (contains(fromJSON(inputs.matrix_json).setup_options, '--enable-gcov')
-                || contains(fromJSON(inputs.matrix_json).setup_options, '-Db_coverage'))
+                || contains(fromJSON(inputs.matrix_json).setup_options, '-Db_coverage')
+                || contains(fromJSON(inputs.matrix_json).label, 'emscripten-coverage'))
             && fromJSON(inputs.matrix_json).exec_type == 'bash' }}
       shell: bash
       run: |
@@ -595,7 +596,29 @@ runs:
           echo "coverage.info already exists; skipping capture"
           exit 0
         fi
-        if command -v gcovr >/dev/null 2>&1; then
+        if [[ "${{ fromJSON(inputs.matrix_json).label || '' }}" == *"emscripten-coverage"* ]]; then
+          if ! command -v llvm-profdata >/dev/null 2>&1 \
+              || ! command -v llvm-cov >/dev/null 2>&1; then
+            echo "llvm-profdata/llvm-cov are missing; skipping coverage capture"
+            exit 0
+          fi
+          mapfile -t PROFRAW_FILES < <(find . -type f -name '*.profraw')
+          if [ "${#PROFRAW_FILES[@]}" -eq 0 ]; then
+            echo "No .profraw files found; skipping coverage capture"
+            exit 0
+          fi
+          rm -f coverage.profdata
+          llvm-profdata merge -sparse "${PROFRAW_FILES[@]}" -o coverage.profdata || true
+          mapfile -t COV_OBJECTS < <(find . -type f \
+            \( -name '*.wasm' -o -name '*.so' -o -name '*.a' \))
+          if [ "${#COV_OBJECTS[@]}" -eq 0 ]; then
+            echo "No coverage objects found for llvm-cov; skipping coverage capture"
+            exit 0
+          fi
+          llvm-cov export -format=lcov \
+            -instr-profile=coverage.profdata \
+            "${COV_OBJECTS[@]}" > coverage.info || true
+        elif command -v gcovr >/dev/null 2>&1; then
           gcovr -r . --lcov -o coverage.info \
             --gcov-executable gcov-14 || true
         elif command -v lcov >/dev/null 2>&1; then
@@ -605,7 +628,7 @@ runs:
             --rc branch_coverage=1 \
             -o coverage.info || true
         else
-          echo "No gcovr or lcov found; skipping coverage capture"
+          echo "No gcovr, lcov, or llvm-cov found; skipping coverage capture"
         fi
         # Normalize absolute paths so Coveralls can map files to the repo tree.
         # Meson may emit builddir paths, so strip builddir before the repo root.
