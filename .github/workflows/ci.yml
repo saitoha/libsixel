@@ -1716,14 +1716,15 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-aarch64-emscripten-static
             buildtool: autotools
             runner: ubuntu-24.04-arm
             setup_prefix: >-
-              CFLAGS="-O3 -g0 -pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -flto -msimd128 -fdata-sections -ffunction-sections"
-              LDFLAGS="-pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=524288 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sASSERTIONS=0"
+              CFLAGS="-O3 -g0 -pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -msimd128 -fdata-sections -ffunction-sections"
+              LDFLAGS="-pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=786432 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sASSERTIONS=0"
               emconfigure
             setup_options: >-
               --host=wasm32-unknown-emscripten
@@ -1750,8 +1751,8 @@ jobs:
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
-              CFLAGS="-O3 -g0 -pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -flto -msimd128 -fdata-sections -ffunction-sections"
-              LDFLAGS="-pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=524288 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sASSERTIONS=0"
+              CFLAGS="-O3 -g0 -pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -msimd128 -fdata-sections -ffunction-sections"
+              LDFLAGS="-pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=786432 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sASSERTIONS=0"
               emconfigure
             setup_options: >-
               --host=wasm32-unknown-emscripten
@@ -1795,14 +1796,15 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-aarch64-emscripten-asan-ubsan-static
             buildtool: autotools
             runner: ubuntu-24.04-arm
             setup_prefix: >-
-              CFLAGS="-O1 -g3 -pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -fno-omit-frame-pointer -fsanitize=address,undefined -msimd128 -fdata-sections -ffunction-sections"
-              LDFLAGS="-pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -fsanitize=address,undefined -sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=524288 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sUSE_PTHREADS=1 -sASSERTIONS=1"
+              CFLAGS="-O1 -g0 -fno-omit-frame-pointer -fsanitize=address,undefined -msimd128 -fdata-sections -ffunction-sections"
+              LDFLAGS="-fsanitize=address,undefined -sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=786432 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1"
               emconfigure
             setup_options: >-
               --host=wasm32-unknown-emscripten
@@ -1831,8 +1833,8 @@ jobs:
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
-              CFLAGS="-O1 -g3 -pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -fno-omit-frame-pointer -fsanitize=address,undefined -msimd128 -fdata-sections -ffunction-sections"
-              LDFLAGS="-pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -fsanitize=address,undefined -sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=524288 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sUSE_PTHREADS=1 -sASSERTIONS=1"
+              CFLAGS="-O1 -g0 -fno-omit-frame-pointer -fsanitize=address,undefined -msimd128 -fdata-sections -ffunction-sections"
+              LDFLAGS="-fsanitize=address,undefined -sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=786432 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1"
               emconfigure
             setup_options: >-
               --host=wasm32-unknown-emscripten
@@ -1878,14 +1880,15 @@ jobs:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-ubuntu-aarch64-emscripten-coverage
             buildtool: autotools
             runner: ubuntu-24.04-arm
             setup_prefix: >-
-              CFLAGS="-O2 -g -pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -flto -msimd128 -fdata-sections -ffunction-sections"
-              LDFLAGS="-pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=524288 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sASSERTIONS=0"
+              CFLAGS="-O2 -g0 -pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -msimd128 -fdata-sections -ffunction-sections"
+              LDFLAGS="-pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=786432 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sASSERTIONS=0"
               emconfigure
             setup_options: >-
               --host=wasm32-unknown-emscripten
@@ -1916,8 +1919,8 @@ jobs:
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
-              CFLAGS="-O2 -g -pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -flto -msimd128 -fdata-sections -ffunction-sections"
-              LDFLAGS="-pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=524288 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sASSERTIONS=0"
+              CFLAGS="-O2 -g0 -pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -msimd128 -fdata-sections -ffunction-sections"
+              LDFLAGS="-pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=786432 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sASSERTIONS=0"
               emconfigure
             setup_options: >-
               --host=wasm32-unknown-emscripten
