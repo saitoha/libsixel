@@ -1262,6 +1262,53 @@ rename_stage:
     return 0;
 }
 
+static int
+img2sixel_is_drive_root_path(const char *path)
+{
+    size_t len;
+    int is_letter;
+
+    if (path == NULL) {
+        return 0;
+    }
+
+    len = strlen(path);
+    if (len == 0u) {
+        return 0;
+    }
+
+    /* Match /cygdrive/<letter> and /cygdrive/<letter>/. */
+    if ((len == 11u || len == 12u)
+            && strncmp(path, "/cygdrive/", 10) == 0) {
+        is_letter = ((path[10] >= 'A' && path[10] <= 'Z')
+                     || (path[10] >= 'a' && path[10] <= 'z'));
+        if (is_letter != 0 && (len == 11u || path[11] == '/')) {
+            return 1;
+        }
+    }
+
+    /* Match /<letter> and /<letter>/. */
+    if ((len == 2u || len == 3u) && path[0] == '/') {
+        is_letter = ((path[1] >= 'A' && path[1] <= 'Z')
+                     || (path[1] >= 'a' && path[1] <= 'z'));
+        if (is_letter != 0 && (len == 2u || path[2] == '/')) {
+            return 1;
+        }
+    }
+
+    /* Match <letter>:, <letter>:/ and <letter>:\\ . */
+    if ((len == 2u || len == 3u) && path[1] == ':') {
+        is_letter = ((path[0] >= 'A' && path[0] <= 'Z')
+                     || (path[0] >= 'a' && path[0] <= 'z'));
+        if (is_letter != 0
+                && (len == 2u || path[2] == '/' || path[2] == '\\')) {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 int
 ensure_dir_p(const char *path, mode_t mode)
 {
@@ -1308,6 +1355,15 @@ ensure_dir_p(const char *path, mode_t mode)
                         && ((tmp[0] >= 'A' && tmp[0] <= 'Z')
                             || (tmp[0] >= 'a' && tmp[0] <= 'z'))
                         && tmp[1] == ':') {
+                    tmp[i] = saved;
+                    continue;
+                }
+                /*
+                 * Treat drive roots as immutable mount points.  We skip
+                 * /cygdrive/<letter>, /<letter>, and <letter>: forms so the
+                 * step-wise mkdir loop never targets pseudo roots.
+                 */
+                if (img2sixel_is_drive_root_path(tmp) != 0) {
                     tmp[i] = saved;
                     continue;
                 }
@@ -1368,6 +1424,11 @@ ensure_dir_p(const char *path, mode_t mode)
             }
             tmp[i] = saved;
         }
+    }
+
+    if (img2sixel_is_drive_root_path(tmp) != 0) {
+        free(tmp);
+        return 0;
     }
 
     if (img2sixel_mkdir(tmp, mode) != 0) {
