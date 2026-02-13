@@ -1320,6 +1320,12 @@ else
   AS_IF([test x$enable_debug = xyes],
         [LS_CHECK_CFLAG([-Werror], [AM_CFLAGS="$AM_CFLAGS -Werror"], [])])
 fi
+
+# In CI, CFLAGS includes -Werror. Keep emcc post-link optimization warnings
+# non-fatal in normal build compilation as well as feature checks.
+AS_IF([test -n "$EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT" -a -n "$CI"],
+      [AM_CFLAGS="$AM_CFLAGS $EMCC_WNO_ERROR_LIMITED_POSTLINK_OPT"])
+
 AC_SUBST([AM_CFLAGS])
 
 # Check math library
