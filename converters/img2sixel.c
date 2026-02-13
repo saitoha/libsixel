@@ -706,6 +706,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "test workflows in sandboxed locations."
     },
     {
+        "IMG2SIXEL_BASH_VERSION_OVERRIDE",
+        "override bash version parsing used by completion installers.\n"
+        "mainly intended for tests that need deterministic legacy behavior."
+    },
+    {
         "SIXEL_ABORT_TRACE",
         "dump abort backtraces when img2sixel terminates abnormally.\n"
         "Defaults to auto (enabled). Set to 0/false/off to disable explicit\n"

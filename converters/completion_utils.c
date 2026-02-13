@@ -1759,6 +1759,7 @@ static int
 img2sixel_prefer_legacy_bash_path(void)
 {
     const char *version;
+    const char *override_version;
     int major;
 
     /* ------------------------------------------------------------------ */
@@ -1783,7 +1784,19 @@ img2sixel_prefer_legacy_bash_path(void)
     /*   +----------------------------+                                   */
     /*                                                                    */
     /* ------------------------------------------------------------------ */
-    version = img2sixel_compat_getenv("BASH_VERSION");
+    /*
+     * Test shells such as bash may expose a read-only BASH_VERSION
+     * variable that cannot be overridden from the environment. Prefer an
+     * explicit IMG2SIXEL_BASH_VERSION_OVERRIDE knob so tests can request
+     * legacy completion behavior deterministically.
+     */
+    override_version = img2sixel_compat_getenv(
+        "IMG2SIXEL_BASH_VERSION_OVERRIDE");
+    if (override_version != NULL && override_version[0] != '\0') {
+        version = override_version;
+    } else {
+        version = img2sixel_compat_getenv("BASH_VERSION");
+    }
     if (version == NULL) {
         return 0;
     }
