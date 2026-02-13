@@ -27,7 +27,6 @@ TEST_EXTENSIONS = .t
 
 HELPER_FILES = \
     _lib/sh/common.sh \
-    _lib/sh/read-check-test-list.sh \
     docs/consistency/list_envvars.sh
 
 ARTIFACT_ROOT = $(abs_builddir)/_artifacts
@@ -300,7 +299,7 @@ check-TESTS: $(check_PROGRAMS)
 	if [ ! -d "$$LIBSIXEL_LIBDIR" ]; then \
 	    LIBSIXEL_LIBDIR="$(abs_top_builddir)/src"; \
 	fi; \
-	test_export_vars=`$(SHELL) "$(srcdir)/_lib/sh/read-check-test-list.sh" \
+	test_export_vars=`$(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
 	    exports "$(srcdir)/check-test-exports.list"`; \
 	export $$test_export_vars; \
 	\

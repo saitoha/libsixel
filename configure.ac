@@ -761,7 +761,7 @@ fi
 AC_SUBST([SIXEL_SHEBANG_FILE])
 AC_SUBST([SIXEL_SHEBANG_HELPER],
          ["${top_srcdir}/build-aux/sixel-apply-shebang.sh"])
-SIXEL_CHECK_TESTS=`$SHELL "$srcdir/tests/_lib/sh/read-check-test-list.sh"     tests "$srcdir/tests/check-tests.list"`
+SIXEL_CHECK_TESTS=`$SHELL "$srcdir/build-aux/read-check-test-list.sh"     tests "$srcdir/tests/check-tests.list"`
 AC_SUBST([SIXEL_CHECK_TESTS])
 AM_CONDITIONAL([WITH_SHEBANG_FILE],
                [test -n "$SIXEL_SHEBANG_FILE"])
