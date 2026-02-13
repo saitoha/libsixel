@@ -669,6 +669,8 @@ HAVE_WINHTTP_FALSE
 HAVE_WINHTTP_TRUE
 HAVE_CURL_FALSE
 HAVE_CURL_TRUE
+LS_SH_PATH
+LS_DASH_PATH
 SIXEL_TEST_SHELL
 HAVE_BASH_FALSE
 HAVE_BASH_TRUE
@@ -1824,7 +1826,7 @@ Some influential environment variables:
   BASH        Path to the Bash shell for converter tests
   SIXEL_TEST_SHELL
               Shell path used to run TAP test scripts (default: detect dash,
-              fallback /bin/sh)
+              sh, then fallback /bin/sh)
 
 Use these variables to override the choices made by 'configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -25798,17 +25800,17 @@ fi
 if test "x$SIXEL_TEST_SHELL" = x
 then :
 
-  # Extract the first word of "dash", so it can be a program name with args.
+      # Extract the first word of "dash", so it can be a program name with args.
 set dummy dash; ac_word=$2
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_path_SIXEL_TEST_SHELL+y}
+if test ${ac_cv_path_LS_DASH_PATH+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
-  e) case $SIXEL_TEST_SHELL in
+  e) case $LS_DASH_PATH in
   [\\/]* | ?:[\\/]*)
-  ac_cv_path_SIXEL_TEST_SHELL="$SIXEL_TEST_SHELL" # Let the user override the test with a path.
+  ac_cv_path_LS_DASH_PATH="$LS_DASH_PATH" # Let the user override the test with a path.
   ;;
   *)
   as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
@@ -25822,7 +25824,7 @@ do
   esac
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_path_SIXEL_TEST_SHELL="$as_dir$ac_word$ac_exec_ext"
+    ac_cv_path_LS_DASH_PATH="$as_dir$ac_word$ac_exec_ext"
     printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -25830,35 +25832,39 @@ done
   done
 IFS=$as_save_IFS
 
-  test -z "$ac_cv_path_SIXEL_TEST_SHELL" && ac_cv_path_SIXEL_TEST_SHELL="no"
+  test -z "$ac_cv_path_LS_DASH_PATH" && ac_cv_path_LS_DASH_PATH="no"
   ;;
 esac ;;
 esac
 fi
-SIXEL_TEST_SHELL=$ac_cv_path_SIXEL_TEST_SHELL
-if test -n "$SIXEL_TEST_SHELL"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $SIXEL_TEST_SHELL" >&5
-printf "%s\n" "$SIXEL_TEST_SHELL" >&6; }
+LS_DASH_PATH=$ac_cv_path_LS_DASH_PATH
+if test -n "$LS_DASH_PATH"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $LS_DASH_PATH" >&5
+printf "%s\n" "$LS_DASH_PATH" >&6; }
 else
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 fi
 
 
-  if test "x$SIXEL_TEST_SHELL" = x -o "x$SIXEL_TEST_SHELL" = xno
+  if test "x$LS_DASH_PATH" != x -a "x$LS_DASH_PATH" != xno
 then :
 
+    SIXEL_TEST_SHELL="$LS_DASH_PATH"
+
+else case e in #(
+  e)
     # Extract the first word of "sh", so it can be a program name with args.
 set dummy sh; ac_word=$2
 { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_path_SIXEL_TEST_SHELL+y}
+if test ${ac_cv_path_LS_SH_PATH+y}
 then :
   printf %s "(cached) " >&6
 else case e in #(
-  e) case $SIXEL_TEST_SHELL in
+  e) case $LS_SH_PATH in
   [\\/]* | ?:[\\/]*)
-  ac_cv_path_SIXEL_TEST_SHELL="$SIXEL_TEST_SHELL" # Let the user override the test with a path.
+  ac_cv_path_LS_SH_PATH="$LS_SH_PATH" # Let the user override the test with a path.
   ;;
   *)
   as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
@@ -25872,7 +25878,7 @@ do
   esac
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_path_SIXEL_TEST_SHELL="$as_dir$ac_word$ac_exec_ext"
+    ac_cv_path_LS_SH_PATH="$as_dir$ac_word$ac_exec_ext"
     printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -25880,22 +25886,34 @@ done
   done
 IFS=$as_save_IFS
 
-  test -z "$ac_cv_path_SIXEL_TEST_SHELL" && ac_cv_path_SIXEL_TEST_SHELL="/bin/sh"
+  test -z "$ac_cv_path_LS_SH_PATH" && ac_cv_path_LS_SH_PATH="no"
   ;;
 esac ;;
 esac
 fi
-SIXEL_TEST_SHELL=$ac_cv_path_SIXEL_TEST_SHELL
-if test -n "$SIXEL_TEST_SHELL"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $SIXEL_TEST_SHELL" >&5
-printf "%s\n" "$SIXEL_TEST_SHELL" >&6; }
+LS_SH_PATH=$ac_cv_path_LS_SH_PATH
+if test -n "$LS_SH_PATH"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $LS_SH_PATH" >&5
+printf "%s\n" "$LS_SH_PATH" >&6; }
 else
   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
 printf "%s\n" "no" >&6; }
 fi
 
 
+    if test "x$LS_SH_PATH" != x -a "x$LS_SH_PATH" != xno
+then :
 
+      SIXEL_TEST_SHELL="$LS_SH_PATH"
+
+else case e in #(
+  e)
+      SIXEL_TEST_SHELL="/bin/sh"
+     ;;
+esac
+fi
+   ;;
+esac
 fi
 
 else case e in #(
