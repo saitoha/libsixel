@@ -1,13 +1,12 @@
 #!/bin/sh
 # Convert plain newline-delimited metadata files into space-delimited strings.
-# Supported modes:
-#   tests   -> list of TAP test file paths
-#   exports -> list of environment variable names to export
+# Supported mode:
+#   tests -> list of TAP test file paths
 
 set -eu
 
 if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 <tests|exports> <file>" >&2
+    echo "Usage: $0 <tests> <file>" >&2
     exit 1
 fi
 
@@ -20,7 +19,7 @@ if [ ! -f "$list_file" ]; then
 fi
 
 case "$mode" in
-    tests|exports)
+    tests)
         ;;
     *)
         echo "Unknown mode: $mode" >&2

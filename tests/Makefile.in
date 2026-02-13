@@ -2542,9 +2542,9 @@ check-TESTS: $(check_PROGRAMS)
 	if [ ! -d "$$LIBSIXEL_LIBDIR" ]; then \
 	    LIBSIXEL_LIBDIR="$(abs_top_builddir)/src"; \
 	fi; \
-	test_export_vars=`$(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
-	    exports "$(srcdir)/check-test-exports.list"`; \
-	export $$test_export_vars; \
+	test_export_pairs=`$(SHELL) "$(top_srcdir)/build-aux/export-key-value-list.sh" \
+	    "$(srcdir)/check-test-exports.list"`; \
+	eval "export $$test_export_pairs"; \
 	\
 	if [ -f "$$config_header" ]; then \
 	    for feature in `awk '/^#define [A-Z0-9_]+ 1$$/ {print $$2}' "$$config_header"`; do \
