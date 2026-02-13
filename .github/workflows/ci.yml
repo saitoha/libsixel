@@ -1820,7 +1820,7 @@ jobs:
             setup_prefix: >-
               emconfigure
             setup_options: >-
-              --cross-file build-aux/meson-cross/emscripten
+              --cross-file build-aux/meson-cross/emscripten-no-threads
               -Ddefault_library=static
               -Db_sanitize=address,undefined
               -Db_ndebug=false
@@ -1850,7 +1850,7 @@ jobs:
             setup_prefix: >-
               emconfigure
             setup_options: >-
-              --cross-file build-aux/meson-cross/emscripten
+              --cross-file build-aux/meson-cross/emscripten-no-threads
               -Ddefault_library=static
               -Db_sanitize=address,undefined
               -Db_ndebug=false
@@ -1887,8 +1887,8 @@ jobs:
             buildtool: autotools
             runner: ubuntu-24.04-arm
             setup_prefix: >-
-              CFLAGS="-O2 -g0 -pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -msimd128 -fdata-sections -ffunction-sections"
-              LDFLAGS="-pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=786432 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sASSERTIONS=0"
+              CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping -pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -msimd128 -fdata-sections -ffunction-sections"
+              LDFLAGS="-fprofile-instr-generate -pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=786432 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sASSERTIONS=0"
               emconfigure
             setup_options: >-
               --host=wasm32-unknown-emscripten
@@ -1898,12 +1898,16 @@ jobs:
             extra_packages: >-
               nodejs
               lcov
+              llvm
             exec_type: bash
 
           - label: Meson-ubuntu-aarch64-emscripten-coverage
             buildtool: meson
             runner: ubuntu-24.04-arm
             setup_prefix: >-
+              CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping"
+              CXXFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping"
+              LDFLAGS="-fprofile-instr-generate"
               emconfigure
             setup_options: >-
               --cross-file build-aux/meson-cross/emscripten
@@ -1913,14 +1917,15 @@ jobs:
               meson
               nodejs
               lcov
+              llvm
             exec_type: bash
 
           - label: Autotools-macos-aarch64-emscripten-coverage
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
-              CFLAGS="-O2 -g0 -pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -msimd128 -fdata-sections -ffunction-sections"
-              LDFLAGS="-pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=786432 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sASSERTIONS=0"
+              CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping -pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -msimd128 -fdata-sections -ffunction-sections"
+              LDFLAGS="-fprofile-instr-generate -pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 -sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=786432 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1 -sASSERTIONS=0"
               emconfigure
             setup_options: >-
               --host=wasm32-unknown-emscripten
@@ -1936,6 +1941,9 @@ jobs:
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
+              CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping"
+              CXXFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping"
+              LDFLAGS="-fprofile-instr-generate"
               emconfigure
             setup_options: >-
               --cross-file build-aux/meson-cross/emscripten

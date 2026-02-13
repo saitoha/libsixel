@@ -11,7 +11,7 @@ needs_exe_wrapper = true
 exe_wrapper = 'node'
 
 [built-in options]
-c_args = ['-O3', '-g0', '-pthread', '-sUSE_PTHREADS=1', '-sSHARED_MEMORY=1', '-msimd128', '-fdata-sections', '-ffunction-sections']
+c_args = ['-O3', '-g0', '-msimd128', '-fdata-sections', '-ffunction-sections']
 c_link_args = ['-pthread', '-sUSE_PTHREADS=1', '-sSHARED_MEMORY=1',
                '-sRETAIN_COMPILER_SETTINGS=1', '-sNODERAWFS=1',
                '-sSTACK_SIZE=786432', '-sINITIAL_MEMORY=268435456',
