@@ -513,6 +513,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	m4/ax_count_cpus.m4 \
 	package.json.in.in \
 	build-aux/lso-tap-driver.sh.in \
+	build-aux/read-check-test-list.sh \
 	tools/fuzz-img2sixel-cli.sh
 
 
