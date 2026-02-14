@@ -617,14 +617,20 @@ runs:
           fi
           echo "Using llvm-profdata: $LLVM_PROFDATA"
           echo "Using llvm-cov: $LLVM_COV"
-          mapfile -t PROFRAW_FILES < <(find . -type f -name '*.profraw')
+          PROFRAW_FILES=()
+          while IFS= read -r profraw_file; do
+            PROFRAW_FILES+=("$profraw_file")
+          done < <(find . -type f -name '*.profraw')
           if [ "${#PROFRAW_FILES[@]}" -eq 0 ]; then
             echo "No .profraw files found; skipping coverage capture"
             exit 0
           fi
           rm -f coverage.profdata
           "$LLVM_PROFDATA" merge -sparse "${PROFRAW_FILES[@]}" -o coverage.profdata || true
-          mapfile -t COV_OBJECTS < <(find . -type f \
+          COV_OBJECTS=()
+          while IFS= read -r cov_object; do
+            COV_OBJECTS+=("$cov_object")
+          done < <(find . -type f \
             \( -name '*.wasm' -o -name '*.so' -o -name '*.a' \))
           if [ "${#COV_OBJECTS[@]}" -eq 0 ]; then
             echo "No coverage objects found for llvm-cov; skipping coverage capture"
