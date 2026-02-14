@@ -18,12 +18,14 @@ run_sixel2png -i 2>"${stderr_capture}" >"${stdout_capture}" && {
     exit 0
 }
 
-grep -qi "missing" "${stderr_capture}" >/dev/null 2>&1 || {
+awk 'index(tolower($0), "missing") { found = 1; exit }
+    END { exit found ? 0 : 1 }' "${stderr_capture}" >/dev/null 2>&1 || {
     fail 1 "error message did not mention missing input"
     exit 0
 }
 
-grep -qi "--input" "${stderr_capture}" >/dev/null 2>&1 || {
+awk 'index($0, "--input") { found = 1; exit }
+    END { exit found ? 0 : 1 }' "${stderr_capture}" >/dev/null 2>&1 || {
     fail 1 "error message did not mention missing input"
     exit 0
 }
