@@ -67,6 +67,9 @@ cli/options/matching/0012_option_matching_path_rejects_directory_input.t
 cli/options/matching/0013_option_matching_path_remote_bypass.t
 cli/options/matching/0014_option_matching_fuzzy_suggestions_default_enabled.t
 cli/options/matching/0015_option_matching_path_suggestions_no_nearby_matches.t
+cli/options/matching/0016_option_matching_quantize_suboption_success.t
+cli/options/matching/0017_option_matching_quantize_suboption_unknown_key.t
+cli/options/matching/0018_option_matching_quantize_suboption_unknown_value.t
 cli/options/general/0001_long_option_forms.t
 cli/options/general/0002_ormode_option_runs.t
 cli/options/general/0003_gri_limit_lsqa.t
