@@ -26,7 +26,7 @@ fi
 printf '1..1\n'
 set -v
 
-if grep -E ' --[0-9a-zA-Z_@=~%?]' \
+if grep ' --[0-9a-zA-Z_@=~%?]' \
         "${top_srcdir}/converters/shell-completion/bash/img2sixel" \
         | grep -v "' " \
         | sed 's/.* \(-.\) .*/\1/' >"${bash_opts}"; then
@@ -41,7 +41,7 @@ else
     fail 1 "failed to sort bash completion"
 fi
 
-if grep -F '{-' "${top_srcdir}/converters/shell-completion/zsh/_img2sixel" \
+if grep '{-' "${top_srcdir}/converters/shell-completion/zsh/_img2sixel" \
         | cut -f1 -d, \
         | cut -f2 -d'{' >"${zsh_opts}"; then
     :

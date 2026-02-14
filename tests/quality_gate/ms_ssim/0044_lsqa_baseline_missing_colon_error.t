@@ -22,7 +22,7 @@ test "${status}" -eq 2 || {
     exit 0
 }
 
-grep -F "Expected METRIC:VALUE format" "${err_file}" >/dev/null || {
+grep "Expected METRIC:VALUE format" "${err_file}" >/dev/null || {
     fail 1 "baseline without colon was not rejected as expected"
     exit 0
 }

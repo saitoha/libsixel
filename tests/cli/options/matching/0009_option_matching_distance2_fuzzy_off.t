@@ -24,7 +24,7 @@ run_img2sixel --env SIXEL_OPTION_FUZZY_SUGGESTIONS=0 -- \
     exit 0
 }
 
-grep -F 'specified desampling method is not supported.' "${err_file}" \
+grep 'specified desampling method is not supported.' "${err_file}" \
     >/dev/null 2>&1 || {
     fail 1 "invalid choice still reports fuzzy suggestion"
     printf '%s\n' '--- stderr ---' >&2
@@ -32,7 +32,7 @@ grep -F 'specified desampling method is not supported.' "${err_file}" \
     exit 0
 }
 
-grep -F 'Did you mean:' "${err_file}" >/dev/null 2>&1 && {
+grep 'Did you mean:' "${err_file}" >/dev/null 2>&1 && {
     fail 1 "invalid choice still reports fuzzy suggestion"
     printf '%s\n' '--- stderr ---' >&2
     cat "${err_file}" >&2 2>/dev/null || :

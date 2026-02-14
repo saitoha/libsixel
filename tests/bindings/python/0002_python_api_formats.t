@@ -29,7 +29,7 @@ python_skip_on_load_error() {
         return 0
     fi
 
-    marker=$(printf '%s' "${log_text}" | grep -m1 '^SKIP_LIBSIXEL_LOAD:' || true)
+    marker=$(printf '%s' "${log_text}" | awk '/^SKIP_LIBSIXEL_LOAD:/{print; exit}')
     if [ -n "${marker}" ]; then
         tap_skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}"
     fi

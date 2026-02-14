@@ -17,7 +17,7 @@ run_sixel2png -H 1>"${help_output}" || {
     exit 0
 }
 
-grep -Eq '^Usage: sixel2png' "${help_output}" || {
+grep -q '^Usage: sixel2png' "${help_output}" || {
     fail 1 "help usage header missing"
     exit 0
 }

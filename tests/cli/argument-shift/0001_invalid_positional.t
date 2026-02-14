@@ -9,7 +9,7 @@ set -eux
 # Skip temporarily on Windows environments while addressing
 # intermittent failures specific to that platform.
 os_name=$(uname -s || echo "unknown")
-if printf '%s' "${os_name}" | grep -qiE 'mingw|msys|cygwin'; then
+if printf '%s' "${os_name}" | grep -qi 'mingw\|msys\|cygwin'; then
     skip_all "temporarily disabled on Windows due to instability"
 fi
 

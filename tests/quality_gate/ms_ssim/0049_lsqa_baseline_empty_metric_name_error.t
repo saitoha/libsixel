@@ -22,7 +22,7 @@ test "${status}" -eq 2 || {
     exit 0
 }
 
-grep -F "Metric name is empty" "${err_file}" >/dev/null || {
+grep "Metric name is empty" "${err_file}" >/dev/null || {
     fail 1 "empty baseline metric name was not rejected as expected"
     exit 0
 }

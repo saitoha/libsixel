@@ -18,12 +18,12 @@ run_sixel2png -i 2>"${stderr_capture}" >"${stdout_capture}" && {
     exit 0
 }
 
-grep -qi -- "missing" "${stderr_capture}" >/dev/null 2>&1 || {
+grep -qi "missing" "${stderr_capture}" >/dev/null 2>&1 || {
     fail 1 "error message did not mention missing input"
     exit 0
 }
 
-grep -qi -- "--input" "${stderr_capture}" >/dev/null 2>&1 || {
+grep -qi "--input" "${stderr_capture}" >/dev/null 2>&1 || {
     fail 1 "error message did not mention missing input"
     exit 0
 }

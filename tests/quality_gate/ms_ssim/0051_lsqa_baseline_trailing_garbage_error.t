@@ -22,7 +22,7 @@ test "${status}" -eq 2 || {
     exit 0
 }
 
-grep -F "Unexpected characters in value" "${err_file}" >/dev/null || {
+grep "Unexpected characters in value" "${err_file}" >/dev/null || {
     fail 1 "baseline trailing garbage was not rejected as expected"
     exit 0
 }
