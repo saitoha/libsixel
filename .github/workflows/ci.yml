@@ -1832,6 +1832,7 @@ jobs:
             setup_options: >-
               --cross-file build-aux/meson-cross/emscripten-no-threads
               -Ddefault_library=static
+              -Doptimization=1
               -Db_sanitize=address,undefined
               -Db_ndebug=false
             extra_packages: >-
@@ -1862,6 +1863,7 @@ jobs:
             setup_options: >-
               --cross-file build-aux/meson-cross/emscripten-no-threads
               -Ddefault_library=static
+              -Doptimization=1
               -Db_sanitize=address,undefined
               -Db_ndebug=false
             extra_packages: >-
