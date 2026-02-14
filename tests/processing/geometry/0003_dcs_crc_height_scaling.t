@@ -10,7 +10,7 @@ echo "1..1"
 set -v
 
 expected_dcs_crc="302131327e2d2131327e1b5c"
-digest=$(printf '%b' "\033Pq\"1;1;1;1!6~\033\\"     | run_img2sixel -=1 -rne -h200%     | tr '#' '\n' | tail -n +3     | od -An -tx1 | tr -d ' \n') || digest=""
+digest=$(printf '%b' "\033Pq\"1;1;1;1!6~\033\\"     | run_img2sixel -=1 -rne -h200%     | tr '#' '\n' | tail -n +3     | od -An -tx1 | awk '{gsub(/[[:space:]]/, ""); printf "%s", $0} END {print ""}') || digest=""
 
 [ -n "${digest}" ] || {
     fail 1 "height scaling preserves DCS coordinates (no checksum produced)"
