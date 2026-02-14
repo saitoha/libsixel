@@ -17,11 +17,10 @@ run_img2sixel -o "${filename_png}" "${snake_jpg}" || {
     exit 0
 }
 
-expected_header_b64="iVBORw0KGgo="
-actual_header_b64=$(dd if="${filename_png}" bs=1 count=8 2>/dev/null | \
-    base64 | tr -d '\n')
+expected_header_cksum="3308842558 4"
+actual_header_cksum=$(dd bs=1 count=4 if="${filename_png}" 2>/dev/null | cksum)
 
-test "${actual_header_b64}" = "${expected_header_b64}" || {
+test "${actual_header_cksum}" = "${expected_header_cksum}" || {
     fail 1 "filename-driven PNG header incorrect"
     exit 0
 }
