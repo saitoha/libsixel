@@ -100,6 +100,43 @@ _img2sixel()
         cur=${cur#*=}
     fi
 
+    _img2sixel_complete_quantize_model()
+    {
+        local quant_base quant_tail quant_item quant_key quant_value
+        local quant_prefix quant_candidate
+
+        quant_base="${cur%%:*}"
+        quant_tail="${cur#*:}"
+        quant_item="${quant_tail##*:}"
+
+        if [[ ${cur} == *:* && ${quant_base} == k* ]]; then
+            if [[ ${quant_item} == *=* ]]; then
+                quant_key="${quant_item%%=*}"
+                quant_value="${quant_item#*=}"
+                quant_prefix="${cur%${quant_value}}"
+                if [[ ${quant_key} == i || ${quant_key} == inittype ]]; then
+                    for quant_candidate in auto none pca; do
+                        [[ ${quant_candidate} == ${quant_value}* ]] || continue
+                        COMPREPLY+=("${quant_prefix}${quant_candidate}")
+                    done
+                fi
+                return 0
+            fi
+
+            quant_prefix="${cur%${quant_item}}"
+            for quant_candidate in i= inittype= t= threshold=; do
+                [[ ${quant_candidate} == ${quant_item}* ]] || continue
+                COMPREPLY+=("${quant_prefix}${quant_candidate}")
+            done
+            return 0
+        fi
+
+        COMPREPLY=( $( compgen -W 'auto \
+                                   heckbert \
+                                   kmeans' -- "$cur" ) )
+        return 0
+    }
+
     case "$prev" in
     -1|--show-completion|-2|--install-completion|-3|--uninstall-completion)
         COMPREPLY=( $( compgen -W 'all bash zsh' -- "$cur" ) )
@@ -125,9 +162,7 @@ _img2sixel()
         return 0
         ;;
     -Q|--quantize-model)
-        COMPREPLY=( $( compgen -W 'auto \
-                                   heckbert \
-                                   kmeans' -- "$cur" ) )
+        _img2sixel_complete_quantize_model
         return 0
         ;;
     -F|--final-merge)

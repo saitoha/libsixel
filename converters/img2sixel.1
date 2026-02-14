@@ -96,6 +96,15 @@ specify number of colors to reduce the image to (default=256).
 select the palette solver. \fIMODEL\fP accepts \fBauto\fP,
 \fBheckbert\fP, or \fBkmeans\fP. The \fBauto\fP setting preserves
 the historical Heckbert median\-cut behaviour.
+.br
+The \fBkmeans\fP base value accepts suboptions using
+\fBkmeans:key=value[:key=value...]\fP.
+.br
+Supported k-means suboptions:
+.br
+\fBinittype\fP (or short key \fBi\fP): \fBauto\fP, \fBnone\fP, \fBpca\fP.
+.br
+\fBthreshold\fP (or short key \fBt\fP): floating value in 0.0-0.5.
 .TP 5
 .B \-F \fIMODE\fP, \-\-final\-merge=\fIMODE\fP
 control the post\-merge stage after palette construction. \fIMODE\fP accepts
