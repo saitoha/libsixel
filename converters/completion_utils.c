@@ -936,7 +936,19 @@ img2sixel_compat_puts(const char *buf)
 static int
 img2sixel_fsync(int fd)
 {
-#if HAVE__COMMIT
+#if defined(__EMSCRIPTEN__)
+    /*
+     * Emscripten's Node.js backend can expose stdout/stderr streams without
+     * stream.node metadata when the descriptor is redirected to a pipe.
+     * Calling fsync() in that case raises a JavaScript TypeError during test
+     * execution, even though completion output has already been written.
+     *
+     * Keep completion output deterministic by treating fsync as a no-op on
+     * emscripten targets.
+     */
+    (void)fd;
+    return (0);
+#elif HAVE__COMMIT
     return _commit(fd);
 #elif HAVE_FSYNC
     return fsync(fd);
