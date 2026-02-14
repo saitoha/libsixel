@@ -55,6 +55,56 @@ typedef enum sixel_option_choice_result {
 } sixel_option_choice_result_t;
 
 /*
+ * Suboption values may either be matched against a fixed choice table or
+ * accepted as free-form text validated by caller-specific logic.
+ */
+typedef enum sixel_suboption_value_kind {
+    SIXEL_SUBOPTION_VALUE_FREE = 0,
+    SIXEL_SUBOPTION_VALUE_CHOICE = 1
+} sixel_suboption_value_kind_t;
+
+typedef struct sixel_suboption_choice {
+    char const *name;
+    int value;
+} sixel_suboption_choice_t;
+
+typedef struct sixel_suboption_key {
+    char const *name;
+    char const *short_name;
+    char const *env_name;
+    sixel_suboption_value_kind_t value_kind;
+    sixel_suboption_choice_t const *choices;
+    size_t choice_count;
+} sixel_suboption_key_t;
+
+typedef struct sixel_option_value_schema {
+    char const *name;
+    int value;
+    sixel_suboption_key_t const *subkeys;
+    size_t subkey_count;
+} sixel_option_value_schema_t;
+
+typedef struct sixel_option_argument_schema {
+    int optflag;
+    char const *option_name;
+    sixel_option_value_schema_t const *values;
+    size_t value_count;
+} sixel_option_argument_schema_t;
+
+typedef struct sixel_suboption_assignment {
+    sixel_suboption_key_t const *key_def;
+    char const *resolved_key_name;
+    char *resolved_value_text;
+} sixel_suboption_assignment_t;
+
+typedef struct sixel_option_argument_resolution {
+    int resolved_base_value;
+    sixel_option_value_schema_t const *base_def;
+    sixel_suboption_assignment_t *assignments;
+    size_t assignment_count;
+} sixel_option_argument_resolution_t;
+
+/*
  * The filesystem validator accepts caller-defined flags controlling special
  * pseudo paths.  Remote URLs, clipboard pseudo paths, and standard input may
  * bypass the on-disk existence check when the corresponding bit is present.
@@ -95,6 +145,18 @@ sixel_option_report_invalid_choice(
     char const *suggestions,
     char *buffer,
     size_t buffer_size);
+
+SIXELSTATUS
+sixel_option_parse_argument_with_suboptions(
+    char const *argument,
+    sixel_option_argument_schema_t const *schema,
+    sixel_option_argument_resolution_t *resolution,
+    char *diagnostic,
+    size_t diagnostic_size);
+
+void
+sixel_option_free_argument_resolution(
+    sixel_option_argument_resolution_t *resolution);
 
 #endif /* !defined(LIBSIXEL_OPTIONS_H) */
 
