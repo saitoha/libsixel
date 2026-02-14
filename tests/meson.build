@@ -52,32 +52,16 @@ base_env_settings += [['SIXEL_SHLIBPATH_OVERRIDES_RUNPATH', 'no']]
 
 # Keep feature toggle exports in sync with autotools check-TESTS.
 config_macro_env_settings = []
-config_macro_env_text = run_command(
-  python3,
-  '-c',
-  '''import pathlib
-import re
-import sys
-
-config_h = pathlib.Path(sys.argv[1])
-if not config_h.exists():
-    raise SystemExit(0)
-
-for line in config_h.read_text(encoding="utf-8", errors="ignore").splitlines():
-    m_define = re.match(r"^#define ([A-Z0-9_]+) 1$", line)
-    if m_define:
-        print(f"{m_define.group(1)}=1")
-        continue
-    m_undef = re.match(r"^/\\* #undef ([A-Z0-9_]+) \\*/$", line)
-    if m_undef:
-        print(f"{m_undef.group(1)}=0")
-''',
+config_macro_pairs = run_command(
+  sh,
+  meson.project_source_root() / 'build-aux/resolve-config-h-exports.sh',
   meson.project_build_root() / 'config.h',
+  'pairs',
   check: true,
 ).stdout().strip()
-if config_macro_env_text != ''
-  foreach macro_line : config_macro_env_text.split('\n')
-    macro_pair = macro_line.split('=')
+if config_macro_pairs != ''
+  foreach macro_line : config_macro_pairs.split('\n')
+    macro_pair = macro_line.split('\t')
     if macro_pair.length() == 2
       config_macro_env_settings += [[macro_pair[0], macro_pair[1]]]
     endif
@@ -218,34 +202,16 @@ foreach t : tests
   test_env.set('test_dir', test_dir)
   test_env.set('category_name', test_category)
   test_env.set('ARTIFACT_LOCAL_DIR', test_artifact_dir)
-  test_env.set('SIXEL_TEST_PYTHON_VENV', meson.project_build_root() /
-    'tests/.python-test-venv')
   test(t, sh,
     args: ['-c', '''
 mkdir -p "$ARTIFACT_LOCAL_DIR"
 
-if [ "x${ENABLE_PYTHON:-0}" = "x1" ]; then
-  shared_python_venv="${SIXEL_TEST_PYTHON_VENV}"
-  python_bin=$(command -v python3 || command -v python || true)
-  wheel_path=$(find "${MESON_BUILD_ROOT}/python/dist" -maxdepth 1 \
-    -type f -name 'libsixel_wheel-*.whl' 2>/dev/null | head -n 1)
-  if [ -n "$python_bin" ] && [ -n "$wheel_path" ]; then
-    if "$python_bin" -c 'import importlib.util,sys; missing=[m for m in ("venv","ensurepip") if importlib.util.find_spec(m) is None]; sys.exit(0 if not missing else 1)' >/dev/null 2>&1; then
-      if [ ! -x "$shared_python_venv/bin/python" ]; then
-        rm -rf "$shared_python_venv"
-        "$python_bin" -m venv "$shared_python_venv" >/dev/null 2>&1 || true
-      fi
-      if [ -x "$shared_python_venv/bin/python" ]; then
-        if ! "$shared_python_venv/bin/python" -c 'import importlib.util,sys; sys.exit(0 if importlib.util.find_spec("libsixel_wheel") else 1)' >/dev/null 2>&1; then
-          "$shared_python_venv/bin/python" -m pip install --no-deps "$wheel_path" >/dev/null 2>&1 || true
-        fi
-        if ! "$shared_python_venv/bin/python" -c 'import importlib.util,sys; sys.exit(0 if importlib.util.find_spec("libsixel_wheel") else 1)' >/dev/null 2>&1; then
-          export SIXEL_TEST_PYTHON_VENV=
-        fi
-      fi
-    fi
-  fi
-fi
+python_venv_exports=$(
+  "${MESON_SOURCE_ROOT}/build-aux/resolve-python-test-venv.sh" \
+    "${ENABLE_PYTHON:-0}" "" "${MESON_BUILD_ROOT}/python/dist" \
+    "${MESON_BUILD_ROOT}/tests/.python-test-venv"
+)
+eval "$python_venv_exports"
 
 exec "$@"
 ''', 'sh', meson.current_source_dir() / t],
