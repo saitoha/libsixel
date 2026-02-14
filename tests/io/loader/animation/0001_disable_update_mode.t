@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: animation disabled with update mode flags.
+# TAP test: animation disabled with macro mode flags (builtin loader).
 
 set -eux
 
@@ -12,7 +12,7 @@ set -v
 
 image_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
-run_img2sixel -ldisable -dnone -u -lauto "${image_gif}" -o/dev/null || {
+run_img2sixel -Lbuiltin! -ldisable -dnone -u -lauto "${image_gif}" -o/dev/null || {
     fail 1 "animation disable with update failed"
     exit 0
 }

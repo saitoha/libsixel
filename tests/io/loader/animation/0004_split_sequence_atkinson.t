@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: sequence splitting with Atkinson dithering.
+# TAP test: static frame with Atkinson dithering from animated GIF (builtin loader).
 
 set -eux
 
@@ -12,7 +12,7 @@ set -v
 
 image_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
-run_img2sixel -S -datkinson "${image_gif}" >/dev/null || {
+run_img2sixel -Lbuiltin! -S -datkinson "${image_gif}" >/dev/null || {
     fail 1 "sequence splitting with Atkinson fails"
     exit 0
 }
