@@ -1752,15 +1752,54 @@ thumbnailer_build_file_uri(char const *path)
 }
 
 /*
+ * thumbnailer_extract_mime_token
+ *
+ * Normalize file(1) output into a plain MIME identifier.
+ *
+ * GNU file with --mime-type may return:
+ *     image/png
+ * Solaris file with -i may return:
+ *     /path/to/image.png: image/png; charset=binary
+ *
+ * This helper strips the optional "path:" prefix and any trailing
+ * "; charset=..." suffix in-place.
+ */
+static char *
+thumbnailer_extract_mime_token(char *text)
+{
+    char *token;
+    char *scan;
+
+    token = text;
+    scan = text;
+
+    while (*scan != '\0') {
+        if (*scan == ':') {
+            token = scan + 1;
+            break;
+        }
+        ++scan;
+    }
+
+    token = thumbnailer_trim_left(token);
+    scan = token;
+    while (*scan != '\0' && *scan != ';' && !isspace((unsigned char)*scan)) {
+        ++scan;
+    }
+    *scan = '\0';
+
+    return token;
+}
+
+/*
  * thumbnailer_run_file
  *
- * Invoke the file(1) utility to collect metadata about the input path.
+ * Invoke file(1) and capture a single trimmed line of output.
  *
  * Arguments:
  *     path   - filesystem path forwarded to file(1).
- *     option - optional argument appended after "-b".  Pass NULL to obtain
- *              the human readable description and "--mime-type" for the
- *              MIME identifier.
+ *     option - optional file(1) mode hint.  "--mime-type" selects portable
+ *              MIME probing via "file -i" while preserving legacy callers.
  * Returns:
  *     Newly allocated string trimmed of trailing whitespace or NULL on
  *     failure.
@@ -1776,6 +1815,7 @@ thumbnailer_run_file(char const *path, char const *option)
     int status;
     char *result;
     char *trimmed;
+    int mime_mode;
 
     pipefd[0] = -1;
     pipefd[1] = -1;
@@ -1785,9 +1825,14 @@ thumbnailer_run_file(char const *path, char const *option)
     status = 0;
     result = NULL;
     trimmed = NULL;
+    mime_mode = 0;
 
     if (path == NULL) {
         return NULL;
+    }
+
+    if (option != NULL && strcmp(option, "--mime-type") == 0) {
+        mime_mode = 1;
     }
 
     if (pipe(pipefd) < 0) {
@@ -1812,9 +1857,13 @@ thumbnailer_run_file(char const *path, char const *option)
         sixel_compat_close(pipefd[1]);
         arg_index = 0u;
         argv[arg_index++] = "file";
-        argv[arg_index++] = "-b";
-        if (option != NULL) {
-            argv[arg_index++] = option;
+        if (mime_mode) {
+            argv[arg_index++] = "-i";
+        } else {
+            argv[arg_index++] = "-b";
+            if (option != NULL) {
+                argv[arg_index++] = option;
+            }
         }
         argv[arg_index++] = path;
         argv[arg_index] = NULL;
@@ -1846,6 +1895,9 @@ thumbnailer_run_file(char const *path, char const *option)
 
     trimmed = thumbnailer_trim_left(buffer);
     thumbnailer_trim_right(trimmed);
+    if (mime_mode) {
+        trimmed = thumbnailer_extract_mime_token(trimmed);
+    }
     if (trimmed[0] == '\0') {
         return NULL;
     }

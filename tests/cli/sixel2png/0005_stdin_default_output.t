@@ -27,7 +27,7 @@ test -s "${stdout_path}" || {
 }
 
 signature_hex="$(dd if="${stdout_path}" bs=1 count=5 2>/dev/null | \
-    LC_ALL=C od -An -tx1 | tr -d ' \n')"
+    LC_ALL=C od -An -tx1 | awk '{gsub(/[[:space:]]/, ""); printf "%s", $0} END {print ""}')"
 
 test "${signature_hex}" = "89504e470d" || {
     fail 1 "stdout png signature is invalid"
