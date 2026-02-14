@@ -16,7 +16,7 @@ stderr_path="${ARTIFACT_LOCAL_DIR}/stderr.txt"
 : >"${stdout_path}"
 : >"${stderr_path}"
 
-run_sixel2png -i - <"${images_dir}/map8.six" >"${stdout_path}" 2>"${stderr_path}" || {
+run_sixel2png -i - <"${TOP_SRCDIR}/images/map8.six" >"${stdout_path}" 2>"${stderr_path}" || {
     fail 1 "sixel2png without -o failed"
     exit 0
 }
@@ -26,10 +26,10 @@ test -s "${stdout_path}" || {
     exit 0
 }
 
-signature_hex="$(dd if="${stdout_path}" bs=1 count=5 2>/dev/null | \
-    LC_ALL=C od -An -tx1 | awk '{gsub(/[[:space:]]/, ""); printf "%s", $0} END {print ""}')"
+expected_signature=$(printf '%b' "\211PNG\r")
+actual_signature=$(dd if="${stdout_path}" bs=1 count=5 2>/dev/null     | awk 'BEGIN { RS = "\0"; ORS = "" } { print $0 }')
 
-test "${signature_hex}" = "89504e470d" || {
+[ "${actual_signature}" = "${expected_signature}" ] || {
     fail 1 "stdout png signature is invalid"
     exit 0
 }

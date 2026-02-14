@@ -13,13 +13,25 @@ set -v
 snake_png="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 riff_palette="${ARTIFACT_LOCAL_DIR}/palette-riff.pal"
 
-run_img2sixel -M pal-riff:"${riff_palette}"     -o "${ARTIFACT_LOCAL_DIR}/pal-riff.six" "${snake_png}" || {
+run_img2sixel -M pal-riff:"${riff_palette}" \
+    -o "${ARTIFACT_LOCAL_DIR}/pal-riff.six" "${snake_png}" || {
     fail 1 "RIFF palette export failed"
     exit 0
 }
 
-riff_header=$(od -An -tx1 -N4 "${riff_palette}" | awk '{gsub(/[[:space:]]/, ""); printf "%s", $0} END {print ""}')
-[ "${riff_header}" = "52494646" ] || {
+dd if="${riff_palette}" bs=1 count=4 2>/dev/null | awk '
+    BEGIN {
+        ORS = ""
+    }
+    {
+        header = header $0
+    }
+    END {
+        if (header != "RIFF") {
+            exit 1
+        }
+    }
+' || {
     fail 1 "RIFF palette export missing RIFF header"
     exit 0
 }

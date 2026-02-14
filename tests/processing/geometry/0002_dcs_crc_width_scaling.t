@@ -9,15 +9,27 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-expected_dcs_crc="302131327e2d2131327e1b5c"
-digest=$(printf '%b' "\033Pq\"1;1;1;1!6~\033\\"     | run_img2sixel -=1 -rne -w200%     | tr '#' '\n' | tail -n +3     | od -An -tx1 | awk '{gsub(/[[:space:]]/, ""); printf "%s", $0} END {print ""}') || digest=""
+expected_dcs_payload=$(printf '%b' "0!12~-!12~\033\\")
+digest=$(printf '%b' "\033Pq\"1;1;1;1!6~\033\\" \
+    | run_img2sixel -=1 -rne -w200% \
+    | awk -F'#' '
+        {
+            for (idx = 3; idx <= NF; ++idx) {
+                payload = payload "#" $idx
+            }
+        }
+        END {
+            sub(/^#/, "", payload)
+            printf "%s", payload
+        }
+    ')
 
 [ -n "${digest}" ] || {
-    fail 1 "width scaling preserves DCS coordinates (no checksum produced)"
+    fail 1 "width scaling preserves DCS coordinates (no payload produced)"
     exit 0
 }
 
-[ "${digest}" = "${expected_dcs_crc}" ] && {
+[ "${digest}" = "${expected_dcs_payload}" ] && {
     pass 1 "width scaling preserves DCS coordinates"
     exit 0
 }
