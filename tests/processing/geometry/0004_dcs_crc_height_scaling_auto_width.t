@@ -9,29 +9,18 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-expected_dcs_payload=$(printf '%b' "0!12~-!12~\033\\")
-digest=$(printf '%b' "\033Pq\"1;1;1;1!6~\033\\"     | run_img2sixel -=1 -rne -h200% -wauto     | awk -F'#' '
-        {
-            for (idx = 3; idx <= NF; ++idx) {
-                payload = payload "#" $idx
-            }
-        }
-        END {
-            sub(/^#/, "", payload)
-            printf "%s", payload
-        }
-    ')
+expected="3871514854 39"
+sum=$(printf '%b' '\033Pq"1;1;1;1!6~\033\\' | run_img2sixel -=1 -rne -h200% -wauto | cksum)
 
-[ -n "${digest}" ] || {
+test -n "${sum}" || {
     fail 1 "DCS coordinates stayed consistent (no payload produced)"
     exit 0
 }
 
-[ "${digest}" = "${expected_dcs_payload}" ] && {
-    pass 1 "DCS coordinates stayed consistent"
+test "${sum}" = "${expected}" || {
+    fail 1 "DCS coordinates stayed consistent"
     exit 0
 }
 
-fail 1 "DCS coordinates stayed consistent"
-
+pass 1 "DCS coordinates stayed consistent"
 exit 0
