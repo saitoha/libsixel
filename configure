@@ -749,6 +749,7 @@ GDK_PIXBUF_BINARY_VERSION
 GDK_PIXBUF_LIBS
 GDK_PIXBUF_CFLAGS
 ABORTTRACE_LIBS
+FILE_CMD
 CLOCK_GETTIME_LIBS
 LIBOBJS
 AM_CFLAGS
@@ -20537,6 +20538,74 @@ then :
 printf "%s\n" "#define HAVE_FREEDESKTOP_THUMBNAILING 1" >>confdefs.h
 
 fi
+
+# Extract the first word of "file", so it can be a program name with args.
+set dummy file; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_FILE_CMD+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $FILE_CMD in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_FILE_CMD="$FILE_CMD" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_FILE_CMD="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac ;;
+esac
+fi
+FILE_CMD=$ac_cv_path_FILE_CMD
+if test -n "$FILE_CMD"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $FILE_CMD" >&5
+printf "%s\n" "$FILE_CMD" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+sixel_file_mime_option='-i'
+if test -n "$FILE_CMD"; then
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for file(1) MIME option" >&5
+printf %s "checking for file(1) MIME option... " >&6; }
+    sixel_file_mime_fixture="${srcdir}/tests/data/inputs/formats/rgba.png"
+    for sixel_candidate in '--mime-type' '-I' '-i'; do
+        sixel_file_mime_output=`"$FILE_CMD" "$sixel_candidate" \
+            "$sixel_file_mime_fixture" 2>/dev/null | tr -d '\r'`
+        case "$sixel_file_mime_output" in
+            *image/png*)
+                sixel_file_mime_option="$sixel_candidate"
+                break
+                ;;
+        esac
+    done
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_file_mime_option" >&5
+printf "%s\n" "$sixel_file_mime_option" >&6; }
+fi
+
+printf "%s\n" "#define SIXEL_FILE_MIME_OPTION \"$sixel_file_mime_option\"" >>confdefs.h
+
 
 if test x$ac_cv_header_windows_h = xyes; then
 

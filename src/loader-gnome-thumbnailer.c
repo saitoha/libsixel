@@ -1798,8 +1798,9 @@ thumbnailer_extract_mime_token(char *text)
  *
  * Arguments:
  *     path   - filesystem path forwarded to file(1).
- *     option - optional file(1) mode hint.  "--mime-type" selects portable
- *              MIME probing via "file -i" while preserving legacy callers.
+ *     option - optional file(1) mode hint.  "--mime-type" selects
+ *              build-time detected MIME probing while preserving legacy
+ *              callers.
  * Returns:
  *     Newly allocated string trimmed of trailing whitespace or NULL on
  *     failure.
@@ -1816,6 +1817,7 @@ thumbnailer_run_file(char const *path, char const *option)
     char *result;
     char *trimmed;
     int mime_mode;
+    char const *mime_option;
 
     pipefd[0] = -1;
     pipefd[1] = -1;
@@ -1826,6 +1828,7 @@ thumbnailer_run_file(char const *path, char const *option)
     result = NULL;
     trimmed = NULL;
     mime_mode = 0;
+    mime_option = SIXEL_FILE_MIME_OPTION;
 
     if (path == NULL) {
         return NULL;
@@ -1833,6 +1836,10 @@ thumbnailer_run_file(char const *path, char const *option)
 
     if (option != NULL && strcmp(option, "--mime-type") == 0) {
         mime_mode = 1;
+    }
+
+    if (mime_option == NULL || mime_option[0] == '\0') {
+        mime_option = "-i";
     }
 
     if (pipe(pipefd) < 0) {
@@ -1858,7 +1865,7 @@ thumbnailer_run_file(char const *path, char const *option)
         arg_index = 0u;
         argv[arg_index++] = "file";
         if (mime_mode) {
-            argv[arg_index++] = "-i";
+            argv[arg_index++] = mime_option;
         } else {
             argv[arg_index++] = "-b";
             if (option != NULL) {
