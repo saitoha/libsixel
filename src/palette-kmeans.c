@@ -64,6 +64,23 @@
 #include "status.h"
 #include "timer.h"
 
+
+#if defined(_MSC_VER)
+# define SIXEL_TLS __declspec(thread)
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+# define SIXEL_TLS _Thread_local
+#elif defined(__GNUC__) || defined(__clang__)
+# define SIXEL_TLS __thread
+#else
+# define SIXEL_TLS
+#endif
+
+static SIXEL_TLS int sixel_kmeans_init_type_override_enabled = 0;
+static SIXEL_TLS sixel_kmeans_init_type sixel_kmeans_init_type_override_value
+    = SIXEL_PALETTE_KMEANS_INIT_AUTO;
+
+#undef SIXEL_TLS
+
 typedef struct sixel_kmeans_projection_entry {
     double projection;
     double weight;
@@ -161,6 +178,14 @@ sixel_kmeans_resolve_init_type(sixel_kmeans_init_type init_type)
     return SIXEL_PALETTE_KMEANS_INIT_NONE;
 }
 
+void
+sixel_set_kmeans_init_type_override(int enabled,
+                                    sixel_kmeans_init_type init_type)
+{
+    sixel_kmeans_init_type_override_enabled = enabled ? 1 : 0;
+    sixel_kmeans_init_type_override_value = init_type;
+}
+
 SIXELAPI sixel_kmeans_init_type
 sixel_get_kmeans_init_type(void)
 {
@@ -174,6 +199,10 @@ sixel_get_kmeans_init_type(void)
     parsed = SIXEL_PALETTE_KMEANS_INIT_AUTO;
     resolved = SIXEL_PALETTE_KMEANS_INIT_PCA;
     env_value = NULL;
+    if (sixel_kmeans_init_type_override_enabled) {
+        return sixel_kmeans_resolve_init_type(
+            sixel_kmeans_init_type_override_value);
+    }
     if (init_loaded) {
         return cached_value;
     }

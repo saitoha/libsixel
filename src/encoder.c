@@ -121,6 +121,8 @@
 #include "logger.h"
 #include "options.h"
 #include "dither.h"
+#include "palette-kmeans.h"
+#include "palette-common-merge.h"
 #include "pixelformat.h"
 #include "rgblookup.h"
 #include "clipboard.h"
@@ -379,10 +381,60 @@ static sixel_option_choice_t const g_option_choices_select_color[] = {
     { "histgram", SIXEL_REP_AVERAGE_PIXELS }
 };
 
-static sixel_option_choice_t const g_option_choices_quantize_model[] = {
-    { "auto", SIXEL_QUANTIZE_MODEL_AUTO },
-    { "heckbert", SIXEL_QUANTIZE_MODEL_MEDIANCUT },
-    { "kmeans", SIXEL_QUANTIZE_MODEL_KMEANS }
+static sixel_suboption_choice_t const g_option_choices_kmeans_init_type[] = {
+    { "auto", SIXEL_PALETTE_KMEANS_INIT_AUTO },
+    { "none", SIXEL_PALETTE_KMEANS_INIT_NONE },
+    { "pca", SIXEL_PALETTE_KMEANS_INIT_PCA }
+};
+
+static sixel_suboption_key_t const g_subkeys_quantize_model_kmeans[] = {
+    {
+        "inittype",
+        "i",
+        "SIXEL_PALETTE_KMEANS_INITTYPE",
+        SIXEL_SUBOPTION_VALUE_CHOICE,
+        g_option_choices_kmeans_init_type,
+        sizeof(g_option_choices_kmeans_init_type)
+        / sizeof(g_option_choices_kmeans_init_type[0])
+    },
+    {
+        "threshold",
+        "t",
+        "SIXEL_PALETTE_KMEANS_THRESHOLD",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    }
+};
+
+static sixel_option_value_schema_t const g_schema_quantize_model_values[] = {
+    {
+        "auto",
+        SIXEL_QUANTIZE_MODEL_AUTO,
+        NULL,
+        0u
+    },
+    {
+        "heckbert",
+        SIXEL_QUANTIZE_MODEL_MEDIANCUT,
+        NULL,
+        0u
+    },
+    {
+        "kmeans",
+        SIXEL_QUANTIZE_MODEL_KMEANS,
+        g_subkeys_quantize_model_kmeans,
+        sizeof(g_subkeys_quantize_model_kmeans)
+        / sizeof(g_subkeys_quantize_model_kmeans[0])
+    }
+};
+
+static sixel_option_argument_schema_t const g_schema_quantize_model = {
+    SIXEL_OPTFLAG_QUANTIZE_MODEL,
+    "--quantize-model",
+    g_schema_quantize_model_values,
+    sizeof(g_schema_quantize_model_values)
+    / sizeof(g_schema_quantize_model_values[0])
 };
 
 static sixel_option_choice_t const g_option_choices_final_merge[] = {
@@ -5455,6 +5507,12 @@ sixel_encoder_prepare_palette(
 
     palette_pixels = sixel_frame_get_pixels(palette_frame);
     palette_pixelformat = sixel_frame_get_pixelformat(palette_frame);
+    sixel_set_kmeans_init_type_override(
+        encoder->quantize_model_kmeans_init_override,
+        (sixel_kmeans_init_type)encoder->quantize_model_kmeans_init_type);
+    sixel_set_kmeans_threshold_override(
+        encoder->quantize_model_kmeans_threshold_override,
+        encoder->quantize_model_kmeans_threshold);
     status = sixel_dither_initialize(*dither,
                                      palette_pixels,
                                      sixel_frame_get_width(palette_frame),
@@ -5463,6 +5521,8 @@ sixel_encoder_prepare_palette(
                                      encoder->method_for_largest,
                                      encoder->method_for_rep,
                                      encoder->quality_mode);
+    sixel_set_kmeans_init_type_override(0, SIXEL_PALETTE_KMEANS_INIT_AUTO);
+    sixel_set_kmeans_threshold_override(0, 0.125);
     if (SIXEL_FAILED(status)) {
         sixel_dither_unref(*dither);
         goto end;
@@ -6536,6 +6596,10 @@ sixel_encoder_new(
     (*ppencoder)->method_for_rep        = SIXEL_REP_AUTO;
     (*ppencoder)->quality_mode          = SIXEL_QUALITY_AUTO;
     (*ppencoder)->quantize_model        = SIXEL_QUANTIZE_MODEL_AUTO;
+    (*ppencoder)->quantize_model_kmeans_init_override = 0;
+    (*ppencoder)->quantize_model_kmeans_init_type = SIXEL_PALETTE_KMEANS_INIT_AUTO;
+    (*ppencoder)->quantize_model_kmeans_threshold_override = 0;
+    (*ppencoder)->quantize_model_kmeans_threshold = 0.125;
     (*ppencoder)->final_merge_mode      = SIXEL_FINAL_MERGE_AUTO;
     (*ppencoder)->lut_policy            = SIXEL_LUT_POLICY_CERTLUT;
     (*ppencoder)->sixel_reversible      = 0;
@@ -7057,6 +7121,12 @@ sixel_encoder_setopt(
     unsigned int drcs_charset_limit;
     sixel_option_choice_result_t match_result;
     int match_value;
+    sixel_option_argument_resolution_t q_resolution;
+    size_t q_index;
+    double q_threshold;
+    char *q_endptr;
+    sixel_suboption_assignment_t const *q_assignment;
+    char const *q_key;
     char match_detail[128];
     char match_message[256];
     int png_argument_has_prefix = 0;
@@ -7091,6 +7161,15 @@ sixel_encoder_setopt(
     parsed_value = 0L;
     suffix = NULL;
     geometry_ok = 0;
+    q_resolution.resolved_base_value = 0;
+    q_resolution.base_def = NULL;
+    q_resolution.assignments = NULL;
+    q_resolution.assignment_count = 0u;
+    q_index = 0u;
+    q_threshold = 0.0;
+    q_endptr = NULL;
+    q_assignment = NULL;
+    q_key = NULL;
 
     switch(arg) {
     case SIXEL_OPTFLAG_OUTFILE:  /* o */
@@ -7700,31 +7779,61 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_QUANTIZE_MODEL:  /* Q */
-        match_result = sixel_option_match_choice(
+        status = sixel_option_parse_argument_with_suboptions(
             value,
-            g_option_choices_quantize_model,
-            sizeof(g_option_choices_quantize_model) /
-            sizeof(g_option_choices_quantize_model[0]),
-            &match_value,
+            &g_schema_quantize_model,
+            &q_resolution,
             match_detail,
             sizeof(match_detail));
-        if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
-            encoder->quantize_model = match_value;
-        } else {
-            if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
-                sixel_option_report_ambiguous_prefix(value,
-                                              match_detail,
-                                              match_message,
-                                              sizeof(match_message));
-            } else {
-                sixel_option_report_invalid_choice(
-                    "sixel_encoder_setopt: unsupported quantize model.",
-                    match_detail,
-                    match_message,
-                    sizeof(match_message));
-            }
-            status = SIXEL_BAD_ARGUMENT;
+        if (SIXEL_FAILED(status)) {
             goto end;
+        }
+
+        encoder->quantize_model = q_resolution.resolved_base_value;
+        encoder->quantize_model_kmeans_init_override = 0;
+        encoder->quantize_model_kmeans_threshold_override = 0;
+
+        q_index = 0u;
+        while (q_index < q_resolution.assignment_count) {
+            q_assignment = q_resolution.assignments + q_index;
+            q_key = q_assignment->resolved_key_name;
+            if (q_key != NULL && strcmp(q_key, "inittype") == 0) {
+                match_result = sixel_option_match_choice(
+                    q_assignment->resolved_value_text,
+                    (sixel_option_choice_t const *)
+                    g_option_choices_kmeans_init_type,
+                    sizeof(g_option_choices_kmeans_init_type)
+                    / sizeof(g_option_choices_kmeans_init_type[0]),
+                    &match_value,
+                    match_detail,
+                    sizeof(match_detail));
+                if (match_result != SIXEL_OPTION_CHOICE_MATCH) {
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kmeans_init_override = 1;
+                encoder->quantize_model_kmeans_init_type = match_value;
+            } else if (q_key != NULL
+                    && strcmp(q_key, "threshold") == 0) {
+                errno = 0;
+                q_endptr = NULL;
+                q_threshold = strtod(q_assignment->resolved_value_text,
+                                     &q_endptr);
+                if (q_endptr == q_assignment->resolved_value_text
+                        || q_endptr == NULL
+                        || q_endptr[0] != '\0'
+                        || errno != 0
+                        || q_threshold < 0.0
+                        || q_threshold > 0.5) {
+                    sixel_helper_set_additional_message(
+                        "-Q threshold must be in range 0.0-0.5.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto end;
+                }
+                encoder->quantize_model_kmeans_threshold_override = 1;
+                encoder->quantize_model_kmeans_threshold = q_threshold;
+            }
+            ++q_index;
         }
         break;
     case SIXEL_OPTFLAG_FINAL_MERGE:  /* F */
@@ -8593,6 +8702,7 @@ sixel_encoder_setopt(
     status = SIXEL_OK;
 
 end:
+    sixel_option_free_argument_resolution(&q_resolution);
     if (opt_copy != NULL) {
         sixel_allocator_free(encoder->allocator, opt_copy);
     }
