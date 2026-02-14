@@ -18,8 +18,7 @@ pipeline_log=$(SIXEL_DITHER_PARALLEL_THREADS_MAX=1 SIXEL_DITHER_PARALLEL_BAND_WI
 }
 printf '%s' "${pipeline_log}" >&2
 
-summary=$(printf '%s' "${pipeline_log}" | grep "bands=" | head -n 1) || summary=""
-printf '%s' "${summary}" | grep -q '^[[:space:]]*bands=' || {
+printf '%s\n' "${pipeline_log}" | awk '/^[[:space:]]*bands=/{ found = 1; exit } END{ if (!found) exit 1 }' || {
     fail 1 "override bands/queue/mode"
     exit 0
 }

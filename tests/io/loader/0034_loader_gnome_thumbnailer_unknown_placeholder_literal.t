@@ -28,7 +28,7 @@ run_img2sixel --env "XDG_DATA_DIRS=${xdg_data_home}" \
     exit 0
 }
 
-grep '^%x$' "${log_file}" >/dev/null 2>&1 || {
+awk -v expected="%x" '$0 == expected { found = 1; exit } END { if (!found) exit 1 }' "${log_file}" || {
     fail 1 "unknown placeholder handling failed"
     exit 0
 }
