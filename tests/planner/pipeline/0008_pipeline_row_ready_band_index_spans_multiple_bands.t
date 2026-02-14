@@ -29,7 +29,14 @@ grep -q '"event":"row_ready"' "${log_file}" || {
     exit 0
 }
 
-dither_threads=$(awk '/"worker":"dither"/ {gsub(/.*"job":/, ""); v[$0]} END {print length(v)}' "${log_file}")
+dither_threads=$(awk '/"worker":"dither"/ {
+    key = $0
+    sub(/.*"job":/, "", key)
+    if (!(key in v)) {
+        v[key] = 1
+        ++count
+    }
+} END {print count + 0}' "${log_file}")
 test "${dither_threads}" -ge 1 || {
     fail 1 "row_ready spans multiple bands"
     exit 0

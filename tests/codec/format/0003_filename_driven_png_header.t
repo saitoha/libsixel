@@ -17,7 +17,7 @@ run_img2sixel -o "${filename_png}" "${snake_jpg}" || {
     exit 0
 }
 
-header=$(od -An -tx1 -N8 "${filename_png}" | tr -d ' \\n')
+header=$(od -An -tx1 -N8 "${filename_png}" | awk '{gsub(/[[:space:]]/, ""); printf "%s", $0} END {print ""}')
 [ "${header}" = "89504e470d0a1a0a" ] || {
     fail 1 "filename-driven PNG header incorrect"
     exit 0
