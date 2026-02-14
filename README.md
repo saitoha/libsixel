@@ -481,6 +481,10 @@ Options:
                            choose the palette solver. MODEL accepts
                            auto, heckbert, or kmeans. auto preserves the
                            historical Heckbert median-cut behaviour.
+                           kmeans accepts suboptions using
+                           kmeans:key=value[:key=value...].
+                             inittype (or i)  -> auto, none, or pca
+                             threshold (or t) -> float in 0.0-0.5
 -m FILE, --mapfile=FILE    transform image colors to match this
                            set of colors. Accepts image files and
                            palette files in Adobe Color Table (*.act),

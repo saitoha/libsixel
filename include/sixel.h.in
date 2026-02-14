@@ -385,6 +385,13 @@ typedef int SIXELSTATUS;
                                                                 (default, Heckbert)
                                                     heckbert -> median-cut solver
                                                     kmeans   -> k-means solver
+                                                  kmeans accepts suboptions in:
+                                                    kmeans:key=value[:key=value...]
+                                                  supported suboptions:
+                                                    inittype (or i):
+                                                      auto, none, pca
+                                                    threshold (or t):
+                                                      float in 0.0-0.5
                                                 */
 #define SIXEL_OPTFLAG_FINAL_MERGE       ('F')  /* -F MODE, --final-merge=MODE:
                                                   final merge policy.

@@ -464,6 +464,13 @@ SIXEL_OPTFLAG_QUANTIZE_MODEL   = 'Q'  # -Q MODEL, --quantize-model=MODEL:
                                       #          heckbert -> Heckbert median-cut
                                       #          kmeans   -> k-means palette
                                       #                      clustering
+                                      #        kmeans accepts suboptions in:
+                                      #          kmeans:key=value[:key=value...]
+                                      #        supported suboptions:
+                                      #          inittype (or i):
+                                      #            auto, none, pca
+                                      #          threshold (or t):
+                                      #            float in 0.0-0.5
 SIXEL_OPTFLAG_FINAL_MERGE     = 'F'  # -F MODE, --final-merge=MODE: final merge policy
 
 SIXEL_OPTFLAG_CROP             = 'c'  # -c REGION, --crop=REGION:
