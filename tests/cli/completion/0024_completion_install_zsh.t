@@ -36,9 +36,9 @@ if ! run_img2sixel -2 zsh > "${ARTIFACT_LOCAL_DIR}/output.txt"; then
 fi
 
 if [ -f "${target_path}" ] && \
-        grep -F '#compdef img2sixel' "${target_path}" >/dev/null 2>&1 && \
-        grep -F "fpath+=(\"\$HOME/.zfunc\")" "${rc_path}" >/dev/null 2>&1 && \
-        grep -F 'autoload -Uz compinit && compinit -u' "${rc_path}" >/dev/null 2>&1; then
+        grep '#compdef img2sixel' "${target_path}" >/dev/null 2>&1 && \
+        grep "fpath+=(\"\$HOME/.zfunc\")" "${rc_path}" >/dev/null 2>&1 && \
+        grep 'autoload -Uz compinit && compinit -u' "${rc_path}" >/dev/null 2>&1; then
     pass 1 "zsh completion installed"
 else
     fail 1 "zsh completion not installed"

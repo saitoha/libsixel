@@ -17,7 +17,7 @@ run_sixel2png -V >"${version_output}" || {
     exit 0
 }
 
-grep -Eq '^sixel2png ' "${version_output}" || {
+grep -q '^sixel2png ' "${version_output}" || {
     fail 1 "version header missing"
     exit 0
 }

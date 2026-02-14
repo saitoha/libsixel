@@ -24,14 +24,14 @@ run_img2sixel --env SIXEL_OPTION_PREFIX_SUGGESTIONS=0 -- \
     exit 0
 }
 
-grep -F 'ambiguous prefix "sie".' "${err_file}" >/dev/null 2>&1 || {
+grep 'ambiguous prefix "sie".' "${err_file}" >/dev/null 2>&1 || {
     fail 1 "ambiguity diagnostic still contains candidate list"
     printf '%s\n' '--- stderr ---' >&2
     cat "${err_file}" >&2 2>/dev/null || :
     exit 0
 }
 
-grep -F '(matches:' "${err_file}" >/dev/null 2>&1 && {
+grep '(matches:' "${err_file}" >/dev/null 2>&1 && {
     fail 1 "ambiguity diagnostic still contains candidate list"
     printf '%s\n' '--- stderr ---' >&2
     cat "${err_file}" >&2 2>/dev/null || :

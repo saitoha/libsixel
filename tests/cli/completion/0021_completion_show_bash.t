@@ -24,7 +24,7 @@ IMG2SIXEL_COMPLETION_DIR="${completion_dir}"
 export IMG2SIXEL_COMPLETION_DIR
 
 if run_img2sixel -1 bash >"${output_file}"; then
-    if grep -F '# bash completion for img2sixel' \
+    if grep '# bash completion for img2sixel' \
             "${output_file}" >/dev/null 2>&1; then
         pass 1 "bash completion output available"
     else

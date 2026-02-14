@@ -23,7 +23,7 @@ run_img2sixel -d sie "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     exit 0
 }
 
-grep -F 'ambiguous prefix "sie"' "${err_file}" >/dev/null 2>&1 || {
+grep 'ambiguous prefix "sie"' "${err_file}" >/dev/null 2>&1 || {
     fail 1 "missing diagnostic for ambiguous prefix"
     printf '%s\n' '--- stderr ---' >&2
     cat "${err_file}" >&2 2>/dev/null || :

@@ -19,13 +19,13 @@ run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 --     -m "${ARTIFACT_LOCAL_
 }
 
 has_missing_directory=1
-grep -F 'Directory "' "${err_file}" >/dev/null 2>&1 && has_missing_directory=0
+grep 'Directory "' "${err_file}" >/dev/null 2>&1 && has_missing_directory=0
 
 has_missing_directory_text=1
-grep -F 'does not exist.' "${err_file}" >/dev/null 2>&1 &&     has_missing_directory_text=0
+grep 'does not exist.' "${err_file}" >/dev/null 2>&1 &&     has_missing_directory_text=0
 
 has_fallback=1
-grep -F 'Suggestion lookup unavailable on this build.' "${err_file}"     >/dev/null 2>&1 && has_fallback=0
+grep 'Suggestion lookup unavailable on this build.' "${err_file}"     >/dev/null 2>&1 && has_fallback=0
 
 [ "${has_missing_directory}" -eq 0 ] || [ "${has_fallback}" -eq 0 ] || {
     fail 1 "missing directory diagnostics were not emitted"

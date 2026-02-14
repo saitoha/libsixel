@@ -18,12 +18,12 @@ run_img2sixel -r hamnimg "${TOP_SRCDIR}/tests/data/inputs/snake_64.png"     >"${
     exit 0
 }
 
-grep -F 'specified desampling method is not supported.' "${err_file}"     >/dev/null 2>&1 || {
+grep 'specified desampling method is not supported.' "${err_file}"     >/dev/null 2>&1 || {
     fail 1 "default CLI setup did not emit fuzzy suggestion"
     exit 0
 }
 
-grep -F 'Did you mean:' "${err_file}" >/dev/null 2>&1 || {
+grep 'Did you mean:' "${err_file}" >/dev/null 2>&1 || {
     fail 1 "default CLI setup did not emit fuzzy suggestion"
     exit 0
 }
