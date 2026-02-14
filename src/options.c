@@ -189,6 +189,34 @@ sixel_option_choice_prefix_accepts(
     char const *name,
     size_t prefix_length);
 
+static void
+sixel_option_reset_argument_resolution(
+    sixel_option_argument_resolution_t *resolution);
+
+static int
+sixel_option_append_suboption_assignment(
+    sixel_option_argument_resolution_t *resolution,
+    sixel_suboption_key_t const *key_def,
+    char const *resolved_value_text);
+
+static sixel_option_choice_result_t
+sixel_option_match_suboption_key(
+    char const *token,
+    sixel_suboption_key_t const *keys,
+    size_t key_count,
+    int *matched_index,
+    char *diagnostic,
+    size_t diagnostic_size);
+
+static sixel_option_choice_result_t
+sixel_option_match_schema_value(
+    char const *token,
+    sixel_option_value_schema_t const *values,
+    size_t value_count,
+    int *matched_index,
+    char *diagnostic,
+    size_t diagnostic_size);
+
 sixel_option_choice_result_t
 sixel_option_match_choice(
     char const *value,
@@ -345,6 +373,420 @@ sixel_option_report_invalid_choice(
     }
 
     sixel_helper_set_additional_message(base_message);
+}
+
+SIXELSTATUS
+sixel_option_parse_argument_with_suboptions(
+    char const *argument,
+    sixel_option_argument_schema_t const *schema,
+    sixel_option_argument_resolution_t *resolution,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    SIXELSTATUS status;
+    char *work;
+    char *base_token;
+    char *cursor;
+    char *entry_end;
+    char *equal_pos;
+    int value_index;
+    int key_index;
+    int value_choice;
+    size_t index;
+    sixel_option_choice_result_t match_result;
+    sixel_suboption_key_t const *key_def;
+    char const *value_text;
+    char const *resolved_text;
+    char match_message[256];
+
+    status = SIXEL_OK;
+    work = NULL;
+    base_token = NULL;
+    cursor = NULL;
+    entry_end = NULL;
+    equal_pos = NULL;
+    value_index = 0;
+    key_index = 0;
+    value_choice = 0;
+    index = 0u;
+    match_result = SIXEL_OPTION_CHOICE_NONE;
+    key_def = NULL;
+    value_text = NULL;
+    resolved_text = NULL;
+    match_message[0] = '\0';
+
+    if (diagnostic != NULL && diagnostic_size > 0u) {
+        diagnostic[0] = '\0';
+    }
+    if (resolution == NULL || schema == NULL || argument == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    sixel_option_reset_argument_resolution(resolution);
+
+    work = (char *)malloc(strlen(argument) + 1u);
+    if (work == NULL) {
+        sixel_helper_set_additional_message(
+            "sixel_option_parse_argument_with_suboptions: malloc failed.");
+        return SIXEL_BAD_ALLOCATION;
+    }
+    (void)sixel_compat_strcpy(work, strlen(argument) + 1u, argument);
+
+    base_token = work;
+    cursor = strchr(work, ':');
+    if (cursor != NULL) {
+        *cursor = '\0';
+        ++cursor;
+    }
+
+    match_result = sixel_option_match_schema_value(
+        base_token,
+        schema->values,
+        schema->value_count,
+        &value_index,
+        diagnostic,
+        diagnostic_size);
+    if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+        sixel_option_report_ambiguous_prefix(base_token,
+                                             diagnostic,
+                                             match_message,
+                                             sizeof(match_message));
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+    if (match_result != SIXEL_OPTION_CHOICE_MATCH) {
+        sixel_option_report_invalid_choice(
+            "cannot parse option base value.",
+            diagnostic,
+            match_message,
+            sizeof(match_message));
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
+    }
+
+    resolution->resolved_base_value = schema->values[value_index].value;
+    resolution->base_def = schema->values + value_index;
+
+    while (cursor != NULL && *cursor != '\0') {
+        entry_end = strchr(cursor, ':');
+        if (entry_end != NULL) {
+            *entry_end = '\0';
+        }
+        equal_pos = strchr(cursor, '=');
+        if (equal_pos == NULL || equal_pos == cursor || equal_pos[1] == '\0') {
+            sixel_helper_set_additional_message(
+                "suboption must be written as key=value.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto cleanup;
+        }
+        *equal_pos = '\0';
+        value_text = equal_pos + 1;
+
+        match_result = sixel_option_match_suboption_key(
+            cursor,
+            resolution->base_def->subkeys,
+            resolution->base_def->subkey_count,
+            &key_index,
+            diagnostic,
+            diagnostic_size);
+        if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+            sixel_option_report_ambiguous_prefix(cursor,
+                                                 diagnostic,
+                                                 match_message,
+                                                 sizeof(match_message));
+            status = SIXEL_BAD_ARGUMENT;
+            goto cleanup;
+        }
+        if (match_result != SIXEL_OPTION_CHOICE_MATCH) {
+            sixel_option_report_invalid_choice(
+                "unknown suboption key.",
+                diagnostic,
+                match_message,
+                sizeof(match_message));
+            status = SIXEL_BAD_ARGUMENT;
+            goto cleanup;
+        }
+
+        key_def = resolution->base_def->subkeys + key_index;
+        resolved_text = value_text;
+        if (key_def->value_kind == SIXEL_SUBOPTION_VALUE_CHOICE) {
+            match_result = sixel_option_match_choice(
+                value_text,
+                (sixel_option_choice_t const *)key_def->choices,
+                key_def->choice_count,
+                &value_choice,
+                diagnostic,
+                diagnostic_size);
+            if (match_result == SIXEL_OPTION_CHOICE_AMBIGUOUS) {
+                sixel_option_report_ambiguous_prefix(value_text,
+                                                     diagnostic,
+                                                     match_message,
+                                                     sizeof(match_message));
+                status = SIXEL_BAD_ARGUMENT;
+                goto cleanup;
+            }
+            if (match_result != SIXEL_OPTION_CHOICE_MATCH) {
+                sixel_option_report_invalid_choice(
+                    "unknown suboption value.",
+                    diagnostic,
+                    match_message,
+                    sizeof(match_message));
+                status = SIXEL_BAD_ARGUMENT;
+                goto cleanup;
+            }
+            index = 0u;
+            while (index < key_def->choice_count) {
+                if (key_def->choices[index].value == value_choice) {
+                    resolved_text = key_def->choices[index].name;
+                    break;
+                }
+                ++index;
+            }
+        }
+
+        if (!sixel_option_append_suboption_assignment(
+                resolution,
+                key_def,
+                resolved_text)) {
+            sixel_helper_set_additional_message(
+                "failed to store parsed suboption assignment.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto cleanup;
+        }
+
+        if (entry_end == NULL) {
+            cursor = NULL;
+        } else {
+            cursor = entry_end + 1;
+        }
+    }
+
+cleanup:
+    free(work);
+    if (SIXEL_FAILED(status)) {
+        sixel_option_free_argument_resolution(resolution);
+    }
+    return status;
+}
+
+void
+sixel_option_free_argument_resolution(
+    sixel_option_argument_resolution_t *resolution)
+{
+    size_t index;
+
+    index = 0u;
+    if (resolution == NULL) {
+        return;
+    }
+
+    while (index < resolution->assignment_count) {
+        free(resolution->assignments[index].resolved_value_text);
+        resolution->assignments[index].resolved_value_text = NULL;
+        ++index;
+    }
+    free(resolution->assignments);
+    sixel_option_reset_argument_resolution(resolution);
+}
+
+static void
+sixel_option_reset_argument_resolution(
+    sixel_option_argument_resolution_t *resolution)
+{
+    if (resolution == NULL) {
+        return;
+    }
+    resolution->resolved_base_value = 0;
+    resolution->base_def = NULL;
+    resolution->assignments = NULL;
+    resolution->assignment_count = 0u;
+}
+
+static int
+sixel_option_append_suboption_assignment(
+    sixel_option_argument_resolution_t *resolution,
+    sixel_suboption_key_t const *key_def,
+    char const *resolved_value_text)
+{
+    size_t index;
+    char *value_copy;
+    sixel_suboption_assignment_t *grown;
+
+    index = 0u;
+    value_copy = NULL;
+    grown = NULL;
+
+    if (resolution == NULL || key_def == NULL || resolved_value_text == NULL) {
+        return 0;
+    }
+
+    while (index < resolution->assignment_count) {
+        if (resolution->assignments[index].key_def == key_def) {
+            value_copy = (char *)malloc(strlen(resolved_value_text) + 1u);
+            if (value_copy == NULL) {
+                return 0;
+            }
+            (void)sixel_compat_strcpy(value_copy,
+                                      strlen(resolved_value_text) + 1u,
+                                      resolved_value_text);
+            free(resolution->assignments[index].resolved_value_text);
+            resolution->assignments[index].resolved_value_text = value_copy;
+            return 1;
+        }
+        ++index;
+    }
+
+    grown = (sixel_suboption_assignment_t *)realloc(
+        resolution->assignments,
+        (resolution->assignment_count + 1u)
+        * sizeof(sixel_suboption_assignment_t));
+    if (grown == NULL) {
+        return 0;
+    }
+    resolution->assignments = grown;
+
+    value_copy = (char *)malloc(strlen(resolved_value_text) + 1u);
+    if (value_copy == NULL) {
+        return 0;
+    }
+    (void)sixel_compat_strcpy(value_copy,
+                              strlen(resolved_value_text) + 1u,
+                              resolved_value_text);
+
+    resolution->assignments[resolution->assignment_count].key_def = key_def;
+    resolution->assignments[resolution->assignment_count].resolved_key_name =
+        key_def->name;
+    resolution->assignments[resolution->assignment_count].resolved_value_text =
+        value_copy;
+    resolution->assignment_count += 1u;
+
+    return 1;
+}
+
+static sixel_option_choice_result_t
+sixel_option_match_schema_value(
+    char const *token,
+    sixel_option_value_schema_t const *values,
+    size_t value_count,
+    int *matched_index,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    size_t index;
+    sixel_option_choice_t *choices;
+    sixel_option_choice_result_t result;
+    int matched_value;
+
+    index = 0u;
+    choices = NULL;
+    result = SIXEL_OPTION_CHOICE_NONE;
+    matched_value = 0;
+
+    if (matched_index != NULL) {
+        *matched_index = 0;
+    }
+    if (values == NULL || value_count == 0u) {
+        return SIXEL_OPTION_CHOICE_NONE;
+    }
+
+    choices = (sixel_option_choice_t *)malloc(
+        value_count * sizeof(sixel_option_choice_t));
+    if (choices == NULL) {
+        return SIXEL_OPTION_CHOICE_NONE;
+    }
+
+    while (index < value_count) {
+        choices[index].name = values[index].name;
+        choices[index].value = (int)index;
+        ++index;
+    }
+
+    result = sixel_option_match_choice(token,
+                                       choices,
+                                       value_count,
+                                       &matched_value,
+                                       diagnostic,
+                                       diagnostic_size);
+    free(choices);
+
+    if (result == SIXEL_OPTION_CHOICE_MATCH && matched_index != NULL) {
+        *matched_index = matched_value;
+    }
+
+    return result;
+}
+
+static sixel_option_choice_result_t
+sixel_option_match_suboption_key(
+    char const *token,
+    sixel_suboption_key_t const *keys,
+    size_t key_count,
+    int *matched_index,
+    char *diagnostic,
+    size_t diagnostic_size)
+{
+    size_t index;
+    size_t choice_count;
+    sixel_option_choice_t *choices;
+    sixel_option_choice_result_t result;
+    int matched_value;
+
+    index = 0u;
+    choice_count = 0u;
+    choices = NULL;
+    result = SIXEL_OPTION_CHOICE_NONE;
+    matched_value = 0;
+
+    if (matched_index != NULL) {
+        *matched_index = 0;
+    }
+    if (keys == NULL || key_count == 0u) {
+        return SIXEL_OPTION_CHOICE_NONE;
+    }
+
+    while (index < key_count) {
+        choice_count += 1u;
+        if (keys[index].short_name != NULL &&
+                keys[index].short_name[0] != '\0') {
+            choice_count += 1u;
+        }
+        ++index;
+    }
+
+    choices = (sixel_option_choice_t *)malloc(
+        choice_count * sizeof(sixel_option_choice_t));
+    if (choices == NULL) {
+        return SIXEL_OPTION_CHOICE_NONE;
+    }
+
+    choice_count = 0u;
+    index = 0u;
+    while (index < key_count) {
+        choices[choice_count].name = keys[index].name;
+        choices[choice_count].value = (int)index;
+        choice_count += 1u;
+        if (keys[index].short_name != NULL &&
+                keys[index].short_name[0] != '\0') {
+            choices[choice_count].name = keys[index].short_name;
+            choices[choice_count].value = (int)index;
+            choice_count += 1u;
+        }
+        ++index;
+    }
+
+    result = sixel_option_match_choice(token,
+                                       choices,
+                                       choice_count,
+                                       &matched_value,
+                                       diagnostic,
+                                       diagnostic_size);
+    free(choices);
+
+    if (result == SIXEL_OPTION_CHOICE_MATCH && matched_index != NULL) {
+        *matched_index = matched_value;
+    }
+
+    return result;
 }
 
 static int
