@@ -252,62 +252,18 @@ check-TESTS: $(check_PROGRAMS)
 	test_export_vars=`$(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
 	    tests "$(srcdir)/check-test-exports.list"`; \
 	export $$test_export_vars; \
-	\
-	if [ -f "$$config_header" ]; then \
-	    for feature in `awk '/^#define [A-Z0-9_]+ 1$$/ {print $$2}' "$$config_header"`; do \
-	        eval "$$feature=1"; \
-	        export $$feature; \
-	    done; \
-	    for feature in `awk '/^\/\* #undef [A-Z0-9_]+/ {print $$3}' "$$config_header"`; do \
-	        eval "$$feature=0"; \
-	        export $$feature; \
-	    done; \
-		fi; \
-		log_list=""; \
-		shared_python_venv="$(abs_top_builddir)/tests/.python-test-venv"; \
-		SIXEL_TEST_PYTHON_VENV=""; \
-		if [ "x@ENABLE_PYTHON@" = "x1" ]; then \
-		    python_bin="$(PYTHON)"; \
-		    if [ -z "$$python_bin" ]; then \
-		        python_bin=$$(command -v python3 || command -v python || true); \
-		    fi; \
-		    wheel_path=$$(find "$(abs_top_builddir)/python/dist" -maxdepth 1 \
-		        -type f -name 'libsixel_wheel-*.whl' 2>/dev/null | head -n 1); \
-		    if [ -n "$$python_bin" ] && [ -n "$$wheel_path" ]; then \
-		        if "$$python_bin" -c 'import importlib.util,sys; missing=[m for m in ("venv","ensurepip") if importlib.util.find_spec(m) is None]; sys.exit(0 if not missing else 1)' >/dev/null 2>&1; then \
-		            if [ ! -x "$$shared_python_venv/bin/python" ]; then \
-		                rm -rf "$$shared_python_venv"; \
-		                "$$python_bin" -m venv "$$shared_python_venv" \
-		                    >/dev/null 2>&1 || true; \
-		            fi; \
-		            if [ -x "$$shared_python_venv/bin/python" ]; then \
-		                if ! "$$shared_python_venv/bin/python" -c \
-		                    'import importlib.util,sys; sys.exit(0 if importlib.util.find_spec("libsixel_wheel") else 1)' >/dev/null 2>&1; then \
-		                    "$$shared_python_venv/bin/python" -m pip install \
-		                        --no-deps "$$wheel_path" >/dev/null 2>&1 || true; \
-		                fi; \
-		                if ! "$$shared_python_venv/bin/python" -c \
-		                    'import importlib.util,sys; sys.exit(0 if importlib.util.find_spec("libsixel_wheel") else 1)' >/dev/null 2>&1; then \
-		                    rm -rf "$$shared_python_venv"; \
-		                    "$$python_bin" -m venv "$$shared_python_venv" \
-		                        >/dev/null 2>&1 || true; \
-		                    if [ -x "$$shared_python_venv/bin/python" ]; then \
-		                        "$$shared_python_venv/bin/python" -m pip install \
-		                            --no-deps "$$wheel_path" >/dev/null 2>&1 || true; \
-		                    fi; \
-		                fi; \
-		                if "$$shared_python_venv/bin/python" -c \
-		                    'import importlib.util,sys; sys.exit(0 if importlib.util.find_spec("libsixel_wheel") else 1)' >/dev/null 2>&1; then \
-		                    SIXEL_TEST_PYTHON_VENV="$$shared_python_venv"; \
-		                fi; \
-		            fi; \
-		        fi; \
-		    fi; \
-		fi; \
-		export SIXEL_TEST_PYTHON_VENV; \
-		for i in $(TEST_LOGS); do \
-		    log_list="$$log_list $$i"; \
-		done; \
+	config_macro_exports=`$(SHELL) "$(top_srcdir)/build-aux/resolve-config-h-exports.sh" \
+	    "$$config_header"`; \
+	eval "$$config_macro_exports"; \
+	python_venv_exports=`$(SHELL) "$(top_srcdir)/build-aux/resolve-python-test-venv.sh" \
+	    "@ENABLE_PYTHON@" "$(PYTHON)" "$(abs_top_builddir)/python/dist" \
+	    "$(abs_top_builddir)/tests/.python-test-venv"`; \
+	eval "$$python_venv_exports"; \
+	export SIXEL_TEST_PYTHON_VENV; \
+	log_list=""; \
+	for i in $(TEST_LOGS); do \
+	    log_list="$$log_list $$i"; \
+	done; \
 	log_list=`echo $$log_list`; \
 	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) \
 	    TEST_LOGS="$$log_list" \
