@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: static frame rendering succeeds without updates.
+# TAP test: animation without loop and delay succeeds (builtin loader).
 
 set -eux
 
@@ -12,7 +12,7 @@ set -v
 
 image_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
-run_img2sixel -ldisable -dnone -g "${image_gif}" >/dev/null || {
+run_img2sixel -Lbuiltin! -ldisable -dnone -g "${image_gif}" >/dev/null || {
     fail 1 "static frame rendering fails"
     exit 0
 }
