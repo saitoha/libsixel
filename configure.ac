@@ -3181,6 +3181,7 @@ AC_CONFIG_FILES([Makefile
                  tools/Makefile
                  tools/libsixel-config
                  build-aux/lso-tap-driver.sh:build-aux/lso-tap-driver.sh.in
+                 build-aux/resolve-test-tool-paths.sh:build-aux/resolve-test-tool-paths.sh.in
                  examples/Makefile
                  examples/drawing/Makefile
                  examples/opengl/Makefile
