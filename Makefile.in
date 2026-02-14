@@ -118,6 +118,7 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = config.h
 CONFIG_CLEAN_FILES = libsixel.pc package.json.in \
 	build-aux/lso-tap-driver.sh \
+	build-aux/resolve-test-tool-paths.sh \
 	ruby/lib/libsixel/version_runtime.rb \
 	quicklook-extension/generated-resources/Host-Info.plist \
 	quicklook-extension/generated-resources/Preview-Info.plist \
@@ -214,6 +215,7 @@ am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/config.h.in \
 	$(top_srcdir)/build-aux/lso-tap-driver.sh.in \
 	$(top_srcdir)/build-aux/ltmain.sh \
 	$(top_srcdir)/build-aux/missing \
+	$(top_srcdir)/build-aux/resolve-test-tool-paths.sh.in \
 	$(top_srcdir)/quicklook-extension/Resources/Bridge-Info.plist.in \
 	$(top_srcdir)/quicklook-extension/Resources/Host-Info.plist.in \
 	$(top_srcdir)/quicklook-extension/Resources/Preview-Info.plist.in \
@@ -514,7 +516,7 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	package.json.in.in \
 	build-aux/lso-tap-driver.sh.in \
 	build-aux/read-check-test-list.sh \
-	build-aux/export-key-value-list.sh \
+	build-aux/resolve-test-tool-paths.sh.in \
 	tools/fuzz-img2sixel-cli.sh
 
 
@@ -590,6 +592,8 @@ libsixel.pc: $(top_builddir)/config.status $(srcdir)/libsixel.pc.in
 package.json.in: $(top_builddir)/config.status $(srcdir)/package.json.in.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 build-aux/lso-tap-driver.sh: $(top_builddir)/config.status $(top_srcdir)/build-aux/lso-tap-driver.sh.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
+build-aux/resolve-test-tool-paths.sh: $(top_builddir)/config.status $(top_srcdir)/build-aux/resolve-test-tool-paths.sh.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 ruby/lib/libsixel/version_runtime.rb: $(top_builddir)/config.status $(top_srcdir)/ruby/lib/libsixel/version_runtime.rb.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
