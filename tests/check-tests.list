@@ -467,6 +467,10 @@ quant/palette/usage/0095_lookup_policy_certlut_timeline_lines_invalid_token.t
 quant/palette/usage/0096_lookup_policy_certlut_timeline_lines_negative.t
 quant/palette/usage/0097_lookup_policy_certlut_timeline_path_overwrite.t
 quant/palette/usage/0098_lookup_policy_certlut_timeline_empty_path.t
+quant/palette/usage/0099_lookup_policy_rbc_8bit.t
+quant/palette/usage/0100_lookup_policy_rbc_float32.t
+quant/palette/usage/0101_lookup_policy_mahalanobis_8bit.t
+quant/palette/usage/0102_lookup_policy_mahalanobis_float32.t
 planner/pipeline/0001_pipeline_planner_baseline_run.t
 planner/pipeline/0002_pipeline_planner_baseline_summary.t
 planner/pipeline/0003_pipeline_planner_baseline_threads.t
