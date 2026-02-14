@@ -187,12 +187,38 @@ _outputcolorspace() {
 }
 
 _quantizemodel() {
+  local current base segment key prefix
+
+  current=${words[CURRENT]}
+  if [[ ${current} == *:* ]]; then
+    base=${current%%:*}
+    segment=${current##*:}
+    if [[ ${base} == k* ]]; then
+      if [[ ${segment} == *=* ]]; then
+        key=${segment%%=*}
+        prefix=${current%${segment}}
+        if [[ ${key} == i || ${key} == inittype ]]; then
+          compadd -- "${prefix}${key}=auto" \
+                     "${prefix}${key}=none" \
+                     "${prefix}${key}=pca"
+          return 0
+        fi
+      else
+        prefix=${current%${segment}}
+        compadd -- "${prefix}i=" "${prefix}inittype=" \
+                   "${prefix}t=" "${prefix}threshold="
+        return 0
+      fi
+    fi
+  fi
+
   _values \
     'MODEL' \
     'auto[select solver automatically]' \
     'heckbert[Heckbert median-cut solver]' \
     'kmeans[k-means palette solver]'
 }
+
 
 _finalmerge() {
   _values \

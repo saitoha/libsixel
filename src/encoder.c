@@ -7779,6 +7779,11 @@ sixel_encoder_setopt(
         }
         break;
     case SIXEL_OPTFLAG_QUANTIZE_MODEL:  /* Q */
+        /*
+         * Parse MODEL[:KEY=VALUE]... in one pass so base value matching,
+         * suboption key matching, and value suggestion diagnostics stay
+         * consistent with the shared option matcher.
+         */
         status = sixel_option_parse_argument_with_suboptions(
             value,
             &g_schema_quantize_model,
