@@ -26,10 +26,11 @@ test -s "${stdout_path}" || {
     exit 0
 }
 
-expected_signature=$(printf '%b' "\211PNG")
-actual_signature=$(dd if="${stdout_path}" bs=1 count=4 2>/dev/null | awk 'BEGIN { RS = "\0"; ORS = "" } { print $0 }')
+expected_header_b64="iVBORw0KGgo="
+actual_header_b64=$(dd if="${stdout_path}" bs=1 count=8 2>/dev/null | \
+    base64 | tr -d '\n')
 
-[ "${actual_signature}" = "${expected_signature}" ] || {
+test "${actual_header_b64}" = "${expected_header_b64}" || {
     fail 1 "stdout png signature is invalid"
     exit 0
 }
