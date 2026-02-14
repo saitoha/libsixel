@@ -286,7 +286,9 @@ runs:
         git clone --depth 1 https://github.com/emscripten-core/emsdk.git
         sh emsdk/emsdk install latest
         sh emsdk/emsdk activate latest
+        # Add both emscripten frontend tools and bundled LLVM utilities.
         echo "$PWD/emsdk/upstream/emscripten" >> "$GITHUB_PATH"
+        echo "$PWD/emsdk/upstream/bin" >> "$GITHUB_PATH"
 
     - name: Install pip packages
       if: ${{ fromJSON(inputs.matrix_json).pip_packages != '' }}
@@ -597,25 +599,38 @@ runs:
           exit 0
         fi
         if [[ "${{ fromJSON(inputs.matrix_json).label || '' }}" == *"emscripten-coverage"* ]]; then
-          if ! command -v llvm-profdata >/dev/null 2>&1 \
-              || ! command -v llvm-cov >/dev/null 2>&1; then
+          LLVM_PROFDATA=""
+          LLVM_COV=""
+          for tool_dir in "" "$PWD/emsdk/upstream/bin" "$HOME/emsdk/upstream/bin"; do
+            [ -n "$LLVM_PROFDATA" ] || LLVM_PROFDATA="${tool_dir:+$tool_dir/}llvm-profdata"
+            [ -x "$LLVM_PROFDATA" ] || LLVM_PROFDATA=""
+            [ -n "$LLVM_COV" ] || LLVM_COV="${tool_dir:+$tool_dir/}llvm-cov"
+            [ -x "$LLVM_COV" ] || LLVM_COV=""
+          done
+          [ -n "$LLVM_PROFDATA" ] || LLVM_PROFDATA="$(command -v llvm-profdata || true)"
+          [ -n "$LLVM_COV" ] || LLVM_COV="$(command -v llvm-cov || true)"
+          [ -n "$LLVM_PROFDATA" ] || LLVM_PROFDATA="$(xcrun --find llvm-profdata 2>/dev/null || true)"
+          [ -n "$LLVM_COV" ] || LLVM_COV="$(xcrun --find llvm-cov 2>/dev/null || true)"
+          if [ -z "$LLVM_PROFDATA" ] || [ -z "$LLVM_COV" ]; then
             echo "llvm-profdata/llvm-cov are missing; skipping coverage capture"
             exit 0
           fi
+          echo "Using llvm-profdata: $LLVM_PROFDATA"
+          echo "Using llvm-cov: $LLVM_COV"
           mapfile -t PROFRAW_FILES < <(find . -type f -name '*.profraw')
           if [ "${#PROFRAW_FILES[@]}" -eq 0 ]; then
             echo "No .profraw files found; skipping coverage capture"
             exit 0
           fi
           rm -f coverage.profdata
-          llvm-profdata merge -sparse "${PROFRAW_FILES[@]}" -o coverage.profdata || true
+          "$LLVM_PROFDATA" merge -sparse "${PROFRAW_FILES[@]}" -o coverage.profdata || true
           mapfile -t COV_OBJECTS < <(find . -type f \
             \( -name '*.wasm' -o -name '*.so' -o -name '*.a' \))
           if [ "${#COV_OBJECTS[@]}" -eq 0 ]; then
             echo "No coverage objects found for llvm-cov; skipping coverage capture"
             exit 0
           fi
-          llvm-cov export -format=lcov \
+          "$LLVM_COV" export -format=lcov \
             -instr-profile=coverage.profdata \
             "${COV_OBJECTS[@]}" > coverage.info || true
         elif command -v gcovr >/dev/null 2>&1; then
