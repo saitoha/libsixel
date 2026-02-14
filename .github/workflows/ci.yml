@@ -147,6 +147,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   autotools-out_of_tree:
+    needs: [smoke]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
