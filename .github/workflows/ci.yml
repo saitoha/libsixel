@@ -2094,7 +2094,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   cosmopolitan:
-#    needs: [core-autotools]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -2340,7 +2339,7 @@ jobs:
 
 
   omnios:
-    needs: [haiku]
+    needs: [freebsd]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -2386,7 +2385,7 @@ jobs:
 
 
   openindiana:
-    needs: [haiku]
+    needs: [dragonflybsd]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -2605,26 +2604,26 @@ jobs:
               meson
             exec_type: cross-platform-vms
 
-#          - label: Autotools-freebsd-14.3-aarch64
-#            buildtool: autotools
-#            runner: ubuntu-latest
-#            cp_os: freebsd
-#            cp_arch: arm64
-#            cp_version: '14.3'
-#            extra_packages: >-
-#              gmake
-#            make: gmake
-#            exec_type: cross-platform-vms
-#
-#          - label: Meson-freebsd-14.3-aarch64
-#            buildtool: meson
-#            runner: ubuntu-latest
-#            cp_os: freebsd
-#            cp_arch: arm64
-#            cp_version: '14.3'
-#            extra_packages: >-
-#              meson
-#            exec_type: cross-platform-vms
+          - label: Autotools-freebsd-14.3-aarch64
+            buildtool: autotools
+            runner: ubuntu-latest
+            cp_os: freebsd
+            cp_arch: arm64
+            cp_version: '14.3'
+            extra_packages: >-
+              gmake
+            make: gmake
+            exec_type: cross-platform-vms
+
+          - label: Meson-freebsd-14.3-aarch64
+            buildtool: meson
+            runner: ubuntu-latest
+            cp_os: freebsd
+            cp_arch: arm64
+            cp_version: '14.3'
+            extra_packages: >-
+              meson
+            exec_type: cross-platform-vms
 
     steps:
       - uses: actions/checkout@v6
@@ -2668,15 +2667,15 @@ jobs:
               meson
             exec_type: cross-platform-vms
 
-#          - label: Meson-netbsd-10.1-aarch64
-#            buildtool: meson
-#            runner: ubuntu-latest
-#            cp_os: netbsd
-#            cp_arch: arm64
-#            cp_version: '10.1'
-#            extra_packages: >-
-#              meson
-#            exec_type: cross-platform-vms
+          - label: Meson-netbsd-10.1-aarch64
+            buildtool: meson
+            runner: ubuntu-latest
+            cp_os: netbsd
+            cp_arch: arm64
+            cp_version: '10.1'
+            extra_packages: >-
+              meson
+            exec_type: cross-platform-vms
 
     steps:
       - uses: actions/checkout@v6
@@ -2690,7 +2689,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   dragonflybsd:
-#    needs: [coveralls]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
