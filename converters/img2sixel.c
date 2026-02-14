@@ -180,6 +180,13 @@ static cli_option_help_t const g_option_help_table[] = {
         "                             heckbert -> traditional Heckbert\n"
         "                                         median-cut implementation.\n"
         "                             kmeans   -> k-means++ clustering.\n"
+        "                               sub-option:\n"
+        "                                 :inittype=TYPE (:i=TYPE)\n"
+        "                                   choose k-means seed mode:\n"
+        "                                     auto|none|pca\n"
+        "                                 :threshold=VALUE (:t=VALUE)\n"
+        "                                   stop refinement when delta\n"
+        "                                   reaches VALUE (0.0-0.5).\n"
     },
     {
         'F',
