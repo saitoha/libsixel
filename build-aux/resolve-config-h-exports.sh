@@ -35,7 +35,7 @@ awk -v output_mode="$mode" '
         if (output_mode == "pairs") {
             printf "%s\t%s\n", key, value
         } else {
-            printf "%s=%c%s%c\n", key, 39, value, 39
+            printf "%s=%s ", key, value
         }
         next
     }
@@ -45,7 +45,7 @@ awk -v output_mode="$mode" '
         if (output_mode == "pairs") {
             printf "%s\t%s\n", key, value
         } else {
-            printf "%s=%c%s%c\n", key, 39, value, 39
+            printf "%s=%s ", key, value
         }
     }
 ' "$config_header"
