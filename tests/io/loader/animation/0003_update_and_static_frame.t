@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: combined update and static frame handling.
+# TAP test: animation with disable loop, macro mode, ignore delay flags (builtin loader).
 
 set -eux
 
@@ -12,7 +12,7 @@ set -v
 
 image_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 
-run_img2sixel -ldisable -dnone -u -g "${image_gif}" >/dev/null || {
+run_img2sixel -Lbuiltin! -ldisable -dnone -u -g "${image_gif}" >/dev/null || {
     fail 1 "combined update and static frame fails"
     exit 0
 }

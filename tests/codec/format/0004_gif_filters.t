@@ -1,5 +1,5 @@
 #!/bin/sh
-# Validate GIF conversion with scaling and filters.
+# Validate GIF conversion with scaling and background.
 set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -12,7 +12,7 @@ set -v
 snake_gif="${top_srcdir}/tests/data/inputs/small.gif"
 target_sixel="${ARTIFACT_LOCAL_DIR}/snake-gif.sixel"
 
-run_img2sixel -w105% -h100 -B"#000000000" -rne <"${snake_gif}"     >"${target_sixel}" || {
+run_img2sixel -Lbuiltin! -w105% -h100 -B"#000000000" -rne <"${snake_gif}" >"${target_sixel}" || {
     fail 1 "GIF conversion with filters failed"
     exit 0
 }
