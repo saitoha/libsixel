@@ -841,6 +841,85 @@ jobs:
               mingw-w64-clang-x86_64-toolchain
             exec_type: msys2
 
+          - label: Autotools-msys2-mingw32
+            buildtool: autotools
+            runner: windows-latest
+            msystem: MINGW32
+            extra_packages: >-
+              make
+              mingw-w64-i686-toolchain
+            exec_type: msys2
+
+    steps:
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+
+  core-autotools-cygwin:
+    needs: [coverage-autotools]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
+          - label: Autotools-cygwin64-gcc
+            buildtool: autotools
+            runner: windows-latest
+            extra_packages: >-
+              make
+              gcc-core
+            exec_type: cygwin
+
+          - label: Autotools-cygwin64-gcc-amalgamated_lib
+            buildtool: autotools
+            runner: windows-latest
+            setup_options: >-
+              --enable-amalgamated-lib
+            extra_packages: >-
+              gcc-core
+              make
+            exec_type: cygwin
+
+    steps:
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+
+  core-autotools-msvc_abi:
+    needs: [core-autotools]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
           - label: Autotools-msys2-msys-vs_clangcl
             buildtool: autotools
             runner: windows-latest
@@ -934,33 +1013,6 @@ jobs:
               libjpeg-turbo
             exec_type: msys2
 
-          - label: Autotools-msys2-mingw32
-            buildtool: autotools
-            runner: windows-latest
-            msystem: MINGW32
-            extra_packages: >-
-              make
-              mingw-w64-i686-toolchain
-            exec_type: msys2
-
-          - label: Autotools-cygwin64-gcc
-            buildtool: autotools
-            runner: windows-latest
-            extra_packages: >-
-              make
-              gcc-core
-            exec_type: cygwin
-
-          - label: Autotools-cygwin64-amalgamated_lib
-            buildtool: autotools
-            runner: windows-latest
-            setup_options: >-
-              --enable-amalgamated-lib
-            extra_packages: >-
-              gcc-core
-              make
-            exec_type: cygwin
-
           - label: Autotools-cygwin64-msvc
             buildtool: autotools
             runner: windows-latest
@@ -1027,6 +1079,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+
 
   core-meson:
     needs: [coverage-meson]
@@ -1160,6 +1213,32 @@ jobs:
               mingw-w64-i686-meson
               mingw-w64-i686-toolchain
 
+    steps:
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  core-meson-cygwin:
+    needs: [coverage-meson]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: ${{ matrix.timeout_minutes || 90 }}
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
           - label: Meson-cygwin64-gcc-unity
             buildtool: meson
             runner: windows-latest
@@ -1172,7 +1251,7 @@ jobs:
               gcc-core
             exec_type: cygwin
 
-          - label: Meson-cygwin64-amalgamated_lib
+          - label: Meson-cygwin64-gcc-amalgamated_lib
             buildtool: meson
             runner: windows-latest
             setup_prefix: >-
@@ -1184,6 +1263,33 @@ jobs:
               gcc-core
             exec_type: cygwin
 
+    steps:
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+
+  core-meson-msvc_abi:
+    needs: [coverage-meson]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: ${{ matrix.timeout_minutes || 90 }}
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
           - label: Meson-cmd-x86_64-msvc-x86_64-unity
             buildtool: meson
             runner: windows-latest
@@ -1214,6 +1320,7 @@ jobs:
         with:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
+
 
   distcheck:
     name: ${{ matrix.label }}
@@ -2113,7 +2220,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   winecheck:
-    needs: [coveralls]
+    needs: [smoke]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -2152,21 +2259,21 @@ jobs:
             make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine make
             exec_type: bash
 
-#          - label: Autotools-macos-x86_64-mingw-w64-x86_64-wine64-static
-#            buildtool: autotools
-#            runner: macos-15
-#            setup_prefix: >-
-#              wineboot -u;
-#              cp "$(find /opt/homebrew/Cellar/mingw-w64 -name toolchain-x86_64)"/x86_64-w64-mingw32/bin/libwinpthread-1.dll ~/.wine/drive_c/windows/system32/;
-#              CC=x86_64-w64-mingw32-gcc
-#            setup_options: >-
-#              --host=x86_64-w64-mingw32
-#              --disable-shared
-#            extra_packages: >-
-#              wine@devel
-#              mingw-w64
-#            make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine make
-#            exec_type: bash
+          - label: Autotools-macos-x86_64-mingw-w64-x86_64-wine64-static
+            buildtool: autotools
+            runner: macos-15
+            setup_prefix: >-
+              wineboot -u;
+              cp "$(find /opt/homebrew/Cellar/mingw-w64 -name toolchain-x86_64)"/x86_64-w64-mingw32/bin/libwinpthread-1.dll ~/.wine/drive_c/windows/system32/;
+              CC=x86_64-w64-mingw32-gcc
+            setup_options: >-
+              --host=x86_64-w64-mingw32
+              --disable-shared
+            extra_packages: >-
+              wine@devel
+              mingw-w64
+            make: MVK_CONFIG_LOG_LEVEL=0 WINEDEBUG=-all SIXEL_RUNTIME=wine make
+            exec_type: bash
 
     steps:
       - name: Configure git EOL
@@ -2184,7 +2291,98 @@ jobs:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-  solaris-variants:
+  solaris:
+    needs: [openbsd]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
+          - label: Autotools-solaris-11.4-x86_64
+            buildtool: autotools
+            runner: ubuntu-latest
+            version: '11.4'
+            extra_packages: >-
+              gnu-make
+              gcc
+            make: gmake
+            exec_type: solaris-vm
+
+          - label: Meson-solaris-11.4-x86_64
+            buildtool: meson
+            runner: ubuntu-latest
+            version: '11.4'
+            extra_packages: >-
+              gcc
+              meson
+            exec_type: solaris-vm
+
+    steps:
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+
+  omnios:
+    needs: [haiku]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
+          - label: Autotools-omnios-r151056-x86_64
+            buildtool: autotools
+            runner: ubuntu-latest
+            version: r151056
+            extra_packages: >-
+              developer/gcc13
+              developer/build/gnu-make
+            make: gmake
+            exec_type: omnios-vm
+
+          - label: Meson-omnios-r151056-x86_64
+            buildtool: meson
+            runner: ubuntu-latest
+            version: r151056
+            extra_packages: >-
+              developer/gcc13
+              runtime/python-313
+              library/python-3/pip-313
+            exec_type: omnios-vm
+
+    steps:
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+
+  openindiana:
     needs: [haiku]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
@@ -2212,45 +2410,6 @@ jobs:
               developer/build/meson
               developer/build/ninja
             exec_type: openindiana-vm
-
-          - label: Autotools-solaris-11.4-x86_64
-            buildtool: autotools
-            runner: ubuntu-latest
-            version: '11.4'
-            extra_packages: >-
-              gnu-make
-              gcc
-            make: gmake
-            exec_type: solaris-vm
-
-          - label: Meson-solaris-11.4-x86_64
-            buildtool: meson
-            runner: ubuntu-latest
-            version: '11.4'
-            extra_packages: >-
-              gcc
-              meson
-            exec_type: solaris-vm
-
-          - label: Autotools-omnios-r151056-x86_64
-            buildtool: autotools
-            runner: ubuntu-latest
-            version: r151056
-            extra_packages: >-
-              developer/gcc13
-              developer/build/gnu-make
-            make: gmake
-            exec_type: omnios-vm
-
-#          - label: Meson-omnios-r151056-x86_64
-#            buildtool: meson
-#            runner: ubuntu-latest
-#            version: r151056
-#            extra_packages: >-
-#              developer/gcc13
-#              runtime/python-313
-#              library/python-3/pip-313
-#            exec_type: omnios-vm
 
     steps:
       - name: Configure git EOL
@@ -2346,7 +2505,7 @@ jobs:
 
 
   openbsd:
-    needs: [freebsd]
+    needs: [netbsd]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
