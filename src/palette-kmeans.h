@@ -72,8 +72,16 @@ sixel_palette_kmeans_iter_max(void);
 double
 sixel_palette_kmeans_threshold(void);
 
+void
+sixel_set_kmeans_threshold_override(int enabled,
+                                   double threshold);
+
 SIXELAPI sixel_kmeans_init_type
 sixel_get_kmeans_init_type(void);
+
+void
+sixel_set_kmeans_init_type_override(int enabled,
+                                    sixel_kmeans_init_type init_type);
 
 SIXELSTATUS
 sixel_kmeans_choose_initial_centroids(double *centers,
