@@ -49,11 +49,11 @@ export BASH_VERSION
 
 if run_img2sixel -2 bash > "${ARTIFACT_LOCAL_DIR}/output.txt"; then
     if [ -f "${target_path}" ] && \
-            grep -F '# bash completion for img2sixel' \
+            grep '# bash completion for img2sixel' \
             "${target_path}" >/dev/null 2>&1; then
         pass 1 "bash completion installed"
     elif [ -f "${legacy_path}" ] && \
-            grep -F '# bash completion for img2sixel' \
+            grep '# bash completion for img2sixel' \
             "${legacy_path}" >/dev/null 2>&1; then
         pass 1 "bash completion installed"
     else

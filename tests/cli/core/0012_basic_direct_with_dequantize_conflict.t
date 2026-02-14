@@ -18,7 +18,7 @@ run_sixel2png -D -dk_undither <"${TOP_SRCDIR}/tests/data/inputs/snake_64.six" \
     exit 0
 }
 
-grep -F "cannot be combined" "${direct_err}" >/dev/null || {
+grep "cannot be combined" "${direct_err}" >/dev/null || {
     fail 1 "missing direct/dequantize diagnostic"
     exit 0
 }

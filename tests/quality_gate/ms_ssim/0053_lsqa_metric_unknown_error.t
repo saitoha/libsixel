@@ -22,7 +22,7 @@ test "${status}" -eq 2 || {
     exit 0
 }
 
-grep -F "Unknown metric name" "${err_file}" >/dev/null || {
+grep "Unknown metric name" "${err_file}" >/dev/null || {
     fail 1 "unknown -m metric was not rejected as expected"
     exit 0
 }

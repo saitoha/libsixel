@@ -25,21 +25,21 @@ run_img2sixel --env SIXEL_STATUS_FORCE_COLORS=1 -- \
     exit 0
 }
 
-grep -F "${esc_char}[33m" "${err_file}" >/dev/null 2>&1 || {
+grep "${esc_char}[33m" "${err_file}" >/dev/null 2>&1 || {
     fail 1 "force colors did not inject ANSI markers"
     printf '%s\n' '--- stderr ---' >&2
     cat "${err_file}" >&2 2>/dev/null || :
     exit 0
 }
 
-grep -F "${esc_char}[1m" "${err_file}" >/dev/null 2>&1 || {
+grep "${esc_char}[1m" "${err_file}" >/dev/null 2>&1 || {
     fail 1 "force colors did not inject ANSI markers"
     printf '%s\n' '--- stderr ---' >&2
     cat "${err_file}" >&2 2>/dev/null || :
     exit 0
 }
 
-grep -F "${esc_char}[0m" "${err_file}" >/dev/null 2>&1 || {
+grep "${esc_char}[0m" "${err_file}" >/dev/null 2>&1 || {
     fail 1 "force colors did not inject ANSI markers"
     printf '%s\n' '--- stderr ---' >&2
     cat "${err_file}" >&2 2>/dev/null || :

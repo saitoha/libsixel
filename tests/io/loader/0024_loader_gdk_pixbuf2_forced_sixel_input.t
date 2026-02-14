@@ -20,7 +20,7 @@ run_img2sixel -L gdk-pixbuf2! "${input_sixel}" >/dev/null 2>"${error_log}"
 status=$?
 set -e
 
-[ "${status}" -eq 0 ] || grep -E "gdk|pixbuf|sixel|loader" "${error_log}"         >/dev/null 2>&1 || {
+[ "${status}" -eq 0 ] || grep "gdk\|pixbuf\|sixel\|loader" "${error_log}"         >/dev/null 2>&1 || {
     fail 1 "forced gdk-pixbuf2 SIXEL input decoding failed"
     exit 0
 }

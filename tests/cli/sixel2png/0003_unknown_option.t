@@ -18,7 +18,7 @@ run_sixel2png --unknown 2>"${stderr_capture}" >"${stdout_capture}" && {
     exit 0
 }
 
-grep -qi -- "unrecognized option" "${stderr_capture}" >/dev/null 2>&1 || {
+grep -qi "unrecognized option" "${stderr_capture}" >/dev/null 2>&1 || {
     fail 1 "error message did not mention unknown option"
     exit 0
 }

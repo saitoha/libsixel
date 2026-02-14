@@ -24,7 +24,7 @@ grep -q '"event":"row_ready"' "${log_file}" || {
     exit 0
 }
 
-grep -Eq '"event":"row_ready".*"job":[0-9]+' "${log_file}" || {
+grep -q '"event":"row_ready".*"job":[0-9][0-9]*' "${log_file}" || {
     fail 1 "row_ready jobs are non-negative"
     exit 0
 }

@@ -22,11 +22,11 @@ set -v
     exit 0
 }
 
-printf '%s' "${abort_output}" | grep -F "libsixel: abort() detected" >/dev/null || {
+printf '%s' "${abort_output}" | grep "libsixel: abort() detected" >/dev/null || {
     fail 1 "abort trace missing"
     exit 0
 }
-printf '%s' "${abort_output}" | grep -F "libsixel: abort trace complete" >/dev/null || {
+printf '%s' "${abort_output}" | grep "libsixel: abort trace complete" >/dev/null || {
     fail 1 "abort trace missing"
     exit 0
 }

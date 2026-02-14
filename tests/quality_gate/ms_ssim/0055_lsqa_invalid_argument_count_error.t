@@ -23,7 +23,7 @@ set -e
     exit 0
 }
 
-grep -F "invalid number of arguments" "${err_file}" >/dev/null || {
+grep "invalid number of arguments" "${err_file}" >/dev/null || {
     fail 1 "invalid positional argument count was not rejected as expected"
     exit 0
 }

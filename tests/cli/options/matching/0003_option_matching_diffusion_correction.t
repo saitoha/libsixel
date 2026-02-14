@@ -22,7 +22,7 @@ run_img2sixel -d burkez "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     >"${out_file}" 2>"${err_file}" || status=$?
 
 test "${status}" -eq 0 && {
-    grep -F 'corrected --diffusion value "burkez" -> "burkes".' \
+    grep 'corrected --diffusion value "burkez" -> "burkes".' \
         "${err_file}" >/dev/null 2>&1 || {
         fail 1 "missing correction notice"
         printf '%s\n' '--- stderr ---' >&2
@@ -33,7 +33,7 @@ test "${status}" -eq 0 && {
     exit 0
 }
 
-grep -F 'specified diffusion method is not supported.' "${err_file}" \
+grep 'specified diffusion method is not supported.' "${err_file}" \
     >/dev/null 2>&1 || {
     fail 1 "unexpected rejection without diagnostic"
     printf '%s\n' '--- stderr ---' >&2

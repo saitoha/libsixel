@@ -29,7 +29,7 @@ run_img2sixel \
 status=$?
 set -e
 
-[ "${status}" -eq 0 ] || grep -E "gnome-thumbnailer|thumbnailer" \
+[ "${status}" -eq 0 ] || grep "gnome-thumbnailer\|thumbnailer" \
         "${error_log}" >/dev/null 2>&1 || {
     fail 1 "forced gnome-thumbnailer loader path failed"
     exit 0

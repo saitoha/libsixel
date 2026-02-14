@@ -27,7 +27,7 @@ run_img2sixel --env LC_ALL=C -- 'https:///test'         >"${out_file}" 2>"${err_
 # - WinHTTP may fail at CrackUrl/Connect/SendRequest/... stages.
 # - libcurl may fail at setopt/perform stages depending on URL parsing.
 # Keep the check broad enough to accept backend-consistent failures.
-grep -E 'curl_easy_[a-z_]+\(\) failed' "${err_file}" >/dev/null 2>&1 || grep -E 'WinHttp[A-Za-z]+ failed' "${err_file}" >/dev/null 2>&1 || grep -F 'runtime error: unable to decode input with available loaders'     "${err_file}" >/dev/null 2>&1 || {
+grep 'curl_easy_[a-z_][a-z_]*() failed' "${err_file}" >/dev/null 2>&1 || grep 'WinHttp[A-Za-z][A-Za-z]* failed' "${err_file}" >/dev/null 2>&1 || grep 'runtime error: unable to decode input with available loaders'     "${err_file}" >/dev/null 2>&1 || {
     fail 1 "missing formatted network failure message"
     printf '%s\n' '--- stderr ---' >&2
     cat "${err_file}" >&2

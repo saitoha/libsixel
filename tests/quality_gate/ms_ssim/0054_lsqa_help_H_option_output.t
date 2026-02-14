@@ -16,12 +16,12 @@ run_lsqa -H >"${out_file}" 2>"${err_file}" || {
     exit 0
 }
 
-grep -F "Usage: lsqa" "${out_file}" >/dev/null || {
+grep "Usage: lsqa" "${out_file}" >/dev/null || {
     fail 1 "lsqa -H did not print expected help output"
     exit 0
 }
 
-grep -F "Options:" "${out_file}" >/dev/null || {
+grep "Options:" "${out_file}" >/dev/null || {
     fail 1 "lsqa -H did not print expected help output"
     exit 0
 }

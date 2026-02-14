@@ -18,7 +18,7 @@ run_sixel2png -o "png:" <"${images_dir}/map8.six" \
     exit 0
 }
 
-grep -F 'missing target after the "png:" prefix' "${png_err}" >/dev/null || {
+grep 'missing target after the "png:" prefix' "${png_err}" >/dev/null || {
     fail 1 "missing png prefix diagnostic"
     exit 0
 }

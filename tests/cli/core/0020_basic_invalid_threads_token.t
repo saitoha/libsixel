@@ -18,7 +18,7 @@ run_sixel2png -= bogus <"${images_dir}/map64.six" \
     exit 0
 }
 
-grep -F "threads must be a positive integer or 'auto'" "${threads_err}" >/dev/null || {
+grep "threads must be a positive integer or 'auto'" "${threads_err}" >/dev/null || {
     fail 1 "missing invalid thread diagnostic"
     exit 0
 }

@@ -22,7 +22,7 @@ test "${status}" -eq 2 || {
     exit 0
 }
 
-grep -F "baseline already specified" "${err_file}" >/dev/null || {
+grep "baseline already specified" "${err_file}" >/dev/null || {
     fail 1 "duplicate -b option was not rejected as expected"
     exit 0
 }

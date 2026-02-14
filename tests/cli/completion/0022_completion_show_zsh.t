@@ -24,7 +24,7 @@ IMG2SIXEL_COMPLETION_DIR="${completion_dir}"
 export IMG2SIXEL_COMPLETION_DIR
 
 if run_img2sixel -1 zsh >"${output_file}"; then
-    if grep -F '#compdef img2sixel' "${output_file}" >/dev/null 2>&1; then
+    if grep '#compdef img2sixel' "${output_file}" >/dev/null 2>&1; then
         pass 1 "zsh completion output available"
     else
         fail 1 "missing zsh completion header"

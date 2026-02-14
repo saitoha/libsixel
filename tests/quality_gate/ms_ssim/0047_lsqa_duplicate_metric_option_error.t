@@ -22,7 +22,7 @@ test "${status}" -eq 2 || {
     exit 0
 }
 
-grep -F "metric already specified" "${err_file}" >/dev/null || {
+grep "metric already specified" "${err_file}" >/dev/null || {
     fail 1 "duplicate -m option was not rejected as expected"
     exit 0
 }

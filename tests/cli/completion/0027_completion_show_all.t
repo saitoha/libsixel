@@ -17,12 +17,12 @@ run_img2sixel -1 all >"${output_file}" || {
     exit 0
 }
 
-grep -F '# bash completion for img2sixel' "${output_file}" >/dev/null || {
+grep '# bash completion for img2sixel' "${output_file}" >/dev/null || {
     fail 1 "missing bash completion header in combined output"
     exit 0
 }
 
-grep -F '#compdef img2sixel' "${output_file}" >/dev/null || {
+grep '#compdef img2sixel' "${output_file}" >/dev/null || {
     fail 1 "missing zsh completion header in combined output"
     exit 0
 }

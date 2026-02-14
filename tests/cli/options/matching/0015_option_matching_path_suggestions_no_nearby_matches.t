@@ -20,10 +20,10 @@ run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 --     -m "${missing_path}" 
 }
 
 has_no_nearby=1
-grep -F 'No nearby matches were found in' "${err_file}" >/dev/null 2>&1 &&     has_no_nearby=0
+grep 'No nearby matches were found in' "${err_file}" >/dev/null 2>&1 &&     has_no_nearby=0
 
 has_fallback=1
-grep -F 'Suggestion lookup unavailable on this build.' "${err_file}"     >/dev/null 2>&1 && has_fallback=0
+grep 'Suggestion lookup unavailable on this build.' "${err_file}"     >/dev/null 2>&1 && has_fallback=0
 
 [ "${has_no_nearby}" -eq 0 ] || [ "${has_fallback}" -eq 0 ] || {
     fail 1 "missing no-nearby-matches diagnostic"

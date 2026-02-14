@@ -33,7 +33,7 @@ test ! -s "${err_file}" && {
 sed '1d' "${err_file}" \
     | grep -v '^+' \
     | grep -v 'img2sixel' \
-    | grep -Ei 'error|warning|failed' \
+    | grep -i 'error\|warning\|failed' \
     >"${filtered_err}" || :
 
 test ! -s "${filtered_err}" && {

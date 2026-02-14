@@ -22,7 +22,7 @@ test "${status}" -eq 2 || {
     exit 0
 }
 
-grep -F "Baseline value is empty" "${err_file}" >/dev/null || {
+grep "Baseline value is empty" "${err_file}" >/dev/null || {
     fail 1 "empty baseline value was not rejected as expected"
     exit 0
 }

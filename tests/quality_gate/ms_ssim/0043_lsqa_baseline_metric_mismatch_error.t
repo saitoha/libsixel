@@ -22,7 +22,7 @@ test "${status}" -eq 2 || {
     exit 0
 }
 
-grep -F "baseline metric must match -m" "${err_file}" >/dev/null || {
+grep "baseline metric must match -m" "${err_file}" >/dev/null || {
     fail 1 "mismatched baseline metric was not rejected as expected"
     exit 0
 }

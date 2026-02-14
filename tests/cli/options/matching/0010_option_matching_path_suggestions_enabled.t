@@ -18,16 +18,16 @@ run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 --     -m "${TOP_SRCDIR}/tes
     exit 0
 }
 
-grep -F 'path "' "${err_file}" >/dev/null 2>&1 || {
+grep 'path "' "${err_file}" >/dev/null 2>&1 || {
     fail 1 "missing path suggestion diagnostics"
     exit 0
 }
 
 has_suggestions=1
-grep -F 'Suggestions:' "${err_file}" >/dev/null 2>&1 && has_suggestions=0
+grep 'Suggestions:' "${err_file}" >/dev/null 2>&1 && has_suggestions=0
 
 has_fallback=1
-grep -F 'Suggestion lookup unavailable on this build.' "${err_file}"     >/dev/null 2>&1 && has_fallback=0
+grep 'Suggestion lookup unavailable on this build.' "${err_file}"     >/dev/null 2>&1 && has_fallback=0
 
 [ "${has_suggestions}" -eq 0 ] || [ "${has_fallback}" -eq 0 ] || {
     fail 1 "missing path suggestion diagnostics"
