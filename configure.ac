@@ -1647,6 +1647,27 @@ AS_IF([test "x$ac_cv_header_unistd_h" = "xyes" &&
                  [Define to 1 when freedesktop thumbnailing loader
                   prerequisites are available.])])
 
+AC_PATH_PROG([FILE_CMD], [file])
+sixel_file_mime_option='-i'
+if test -n "$FILE_CMD"; then
+    AC_MSG_CHECKING([for file(1) MIME option])
+    sixel_file_mime_fixture="${srcdir}/tests/data/inputs/formats/rgba.png"
+    for sixel_candidate in '--mime-type' '-I' '-i'; do
+        sixel_file_mime_output=`"$FILE_CMD" "$sixel_candidate" \
+            "$sixel_file_mime_fixture" 2>/dev/null | tr -d '\r'`
+        case "$sixel_file_mime_output" in
+            *image/png*)
+                sixel_file_mime_option="$sixel_candidate"
+                break
+                ;;
+        esac
+    done
+    AC_MSG_RESULT([$sixel_file_mime_option])
+fi
+AC_DEFINE_UNQUOTED([SIXEL_FILE_MIME_OPTION], ["$sixel_file_mime_option"],
+                   [file(1) option used to obtain MIME type in thumbnailer
+                    loader.])
+
 if test x$ac_cv_header_windows_h = xyes; then
     AC_DEFINE([HAVE_WINDOWS_PROC], [1],
               [Define to 1 if Win32 process APIs are available.])

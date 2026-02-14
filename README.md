@@ -4,6 +4,13 @@ libsixel
 [![libsixel CI (build & test)](https://github.com/saitoha/libsixel/actions/workflows/ci.yml/badge.svg)](https://github.com/saitoha/libsixel/actions/workflows/ci.yml)
 [![Coverage Status](https://coveralls.io/repos/github/saitoha/libsixel/badge.svg?branch=master)](https://coveralls.io/github/saitoha/libsixel?branch=master)
 
+## CI troubleshooting note (macOS gnome-thumbnailer tests)
+
+On macOS, `file -i <path>` may return a generic token such as
+`regular file` instead of a MIME type. This can break gnome-thumbnailer MIME
+matching in loader tests. A robust probe order is: `file --mime-type`, then
+BSD/macOS `file -I`, then `file -i` as the final fallback.
+
 ## What is this?
 
 This package provides encoder/decoder implementation for DEC SIXEL graphics, and
