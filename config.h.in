@@ -640,6 +640,9 @@
 /* Define to 1 if internal threadpool support is enabled */
 #undef SIXEL_ENABLE_THREADS
 
+/* file(1) option used to obtain MIME type in thumbnailer loader. */
+#undef SIXEL_FILE_MIME_OPTION
+
 /* Define to 1 if all of the C89 standard headers exist (not just the ones
    required in a freestanding environment). This macro is provided for
    backward compatibility; new code need not use it. */

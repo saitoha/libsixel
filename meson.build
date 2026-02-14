@@ -425,6 +425,26 @@ if conf.has('HAVE_UNISTD_H') and conf.has('HAVE_SYS_WAIT_H') and conf.has('HAVE_
   conf.set('HAVE_FREEDESKTOP_THUMBNAILING', 1)
 endif
 
+file_mime_option = '-i'
+file_prog = find_program('file', required: false)
+mime_fixture = join_paths(meson.project_source_root(),
+                          'tests/data/inputs/formats/rgba.png')
+if file_prog.found()
+  foreach candidate : ['--mime-type', '-I', '-i']
+    mime_probe = run_command(file_prog, candidate, mime_fixture,
+                             check: false)
+    if mime_probe.returncode() == 0
+      mime_text = mime_probe.stdout().strip()
+      if 'image/png' in mime_text
+        file_mime_option = candidate
+        break
+      endif
+    endif
+  endforeach
+endif
+conf.set_quoted('SIXEL_FILE_MIME_OPTION', file_mime_option,
+                description: 'file(1) option used for MIME probing')
+
 abort_trace_opt = get_option('abort_trace')
 abort_trace_enabled = not abort_trace_opt.disabled()
 if host_system == 'emscripten'
