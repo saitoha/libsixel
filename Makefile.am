@@ -41,6 +41,8 @@ EXTRA_DIST = LICENSE build-aux/depcomp \
 	package.json.in.in \
 	build-aux/lso-tap-driver.sh.in \
 	build-aux/read-check-test-list.sh \
+	build-aux/resolve-config-h-exports.sh \
+	build-aux/resolve-python-test-venv.sh \
 	build-aux/resolve-test-tool-paths.sh.in \
 	tools/fuzz-img2sixel-cli.sh
 
