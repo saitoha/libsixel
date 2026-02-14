@@ -1920,12 +1920,13 @@ jobs:
             buildtool: autotools
             runner: ubuntu-24.04-arm
             setup_prefix: >-
-              CFLAGS="-O1 -g0 -fno-omit-frame-pointer -fsanitize=address,undefined -msimd128 -fdata-sections -ffunction-sections"
-              LDFLAGS="-fsanitize=address,undefined -sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=786432 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1"
+              CFLAGS="-g0 -msimd128 -fdata-sections -ffunction-sections"
+              LDFLAGS="-sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=786432 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1"
               emconfigure
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
+              --enable-sanitizer=address,undefined
               --disable-shared
             extra_packages: >-
               nodejs
@@ -1951,12 +1952,13 @@ jobs:
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
-              CFLAGS="-O1 -g0 -fno-omit-frame-pointer -fsanitize=address,undefined -msimd128 -fdata-sections -ffunction-sections"
-              LDFLAGS="-fsanitize=address,undefined -sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=786432 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1"
+              CFLAGS="-g0 -msimd128 -fdata-sections -ffunction-sections"
+              LDFLAGS="-sRETAIN_COMPILER_SETTINGS=1 -sNODERAWFS=1 -sSTACK_SIZE=786432 -sINITIAL_MEMORY=268435456 -sSINGLE_FILE=1 -sENVIRONMENT=node -sALLOW_MEMORY_GROWTH=1 -sWASM_BIGINT=1"
               emconfigure
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
+              --enable-sanitizer=address,undefined
               --disable-shared
             extra_packages: >-
               node

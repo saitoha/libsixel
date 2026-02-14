@@ -603,6 +603,30 @@ AC_DEFINE([HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS],
             [Define to 1 if the compiler can ignore -Wdeprecated-declarations via pragmas])
 ])
 
+AC_ARG_ENABLE([sanitizer],
+              [AS_HELP_STRING([--enable-sanitizer=@<:@no|address,undefined|memory|thread@:>@],
+                              [enable sanitizer instrumentation and add
+                               recommended compile/link flags
+                               (default: no)])],
+              [enable_sanitizer="$enableval"],
+              [enable_sanitizer=no])
+AS_CASE([$enable_sanitizer],
+        [no],
+        [sixel_sanitizer_cflags=""
+         sixel_sanitizer_ldflags=""],
+        [address,undefined],
+        [sixel_sanitizer_cflags="-fsanitize=address,undefined -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=address,undefined"],
+        [memory],
+        [sixel_sanitizer_cflags="-fsanitize=memory -O1 -g -fno-omit-frame-pointer -fno-optimize-sibling-calls"
+         sixel_sanitizer_ldflags="-fsanitize=memory"],
+        [thread],
+        [sixel_sanitizer_cflags="-fsanitize=thread -O1 -g -fno-omit-frame-pointer -fno-optimize-sibling-calls"
+         sixel_sanitizer_ldflags="-fsanitize=thread"],
+        [AC_MSG_ERROR([invalid value for --enable-sanitizer: $enable_sanitizer])])
+AC_MSG_CHECKING([which sanitizer profile is enabled])
+AC_MSG_RESULT([$enable_sanitizer])
+
 AC_CACHE_CHECK(
   [whether ThreadSanitizer instrumentation is enabled],
   [ac_cv_sixel_tsan],
@@ -3161,6 +3185,14 @@ AC_SUBST([SIXEL_TEST_SHELL])
 #                   tests/Makefile.in quicklook-extension/Makefile.in
 #          ])
 #LS_UPDATE_TIMESTAMP
+
+AS_IF([test "x$enable_sanitizer" != "xno"], [
+  dnl Apply sanitizer flags after configure probes complete.
+  dnl This avoids polluting capability checks with sanitizer runtime
+  dnl requirements that are unrelated to feature detection.
+  CFLAGS="$CFLAGS $sixel_sanitizer_cflags"
+  LDFLAGS="$LDFLAGS $sixel_sanitizer_ldflags"
+])
 
 AM_CONDITIONAL([HAVE_CURL], [test x$have_curl = xyes])
 AM_CONDITIONAL([HAVE_WINHTTP], [test x$have_winhttp = xyes])
