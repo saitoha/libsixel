@@ -47,6 +47,22 @@
 #include "palette-kmeans.h"
 #include "status.h"
 
+
+#if defined(_MSC_VER)
+# define SIXEL_TLS __declspec(thread)
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
+# define SIXEL_TLS _Thread_local
+#elif defined(__GNUC__) || defined(__clang__)
+# define SIXEL_TLS __thread
+#else
+# define SIXEL_TLS
+#endif
+
+static SIXEL_TLS int sixel_kmeans_threshold_override_enabled = 0;
+static SIXEL_TLS double sixel_kmeans_threshold_override_value = 0.125;
+
+#undef SIXEL_TLS
+
 static float env_final_merge_target_factor = 1.81f;
 static unsigned int env_final_merge_additional_lloyd = 3U;
 static unsigned int env_kmeans_iter_max = 20U;
@@ -303,9 +319,21 @@ sixel_palette_kmeans_iter_max(void)
     return env_kmeans_iter_max;
 }
 
+void
+sixel_set_kmeans_threshold_override(int enabled,
+                                   double threshold)
+{
+    sixel_kmeans_threshold_override_enabled = enabled ? 1 : 0;
+    sixel_kmeans_threshold_override_value = threshold;
+}
+
 double
 sixel_palette_kmeans_threshold(void)
 {
+    if (sixel_kmeans_threshold_override_enabled) {
+        return sixel_kmeans_threshold_override_value;
+    }
+
     sixel_final_merge_load_env();
 
     return env_kmeans_threshold;

@@ -91,6 +91,10 @@ struct sixel_encoder {
     int method_for_rep;
     int quality_mode;
     int quantize_model;
+    int quantize_model_kmeans_init_override;
+    int quantize_model_kmeans_init_type;
+    int quantize_model_kmeans_threshold_override;
+    double quantize_model_kmeans_threshold;
     int final_merge_mode;
     int lut_policy;
     int sixel_reversible;
