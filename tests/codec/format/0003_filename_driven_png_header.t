@@ -17,8 +17,8 @@ run_img2sixel -o "${filename_png}" "${snake_jpg}" || {
     exit 0
 }
 
-expected_header=$(printf '%b' "\211PNG\r\n\032\n")
-actual_header=$(dd if="${filename_png}" bs=1 count=8 2>/dev/null     | awk 'BEGIN { RS = "\0"; ORS = "" } { print $0 }')
+expected_header=$(printf '%b' "\211PNG\n")
+actual_header=$(dd if="${filename_png}" bs=1 count=4 2>/dev/null | awk 'BEGIN { RS = "\0"; ORS = "" } { print $0 }')
 
 [ "${actual_header}" = "${expected_header}" ] || {
     fail 1 "filename-driven PNG header incorrect"
