@@ -1787,6 +1787,7 @@ AS_IF([test "x$ac_cv_header_unistd_h" = "xyes" &&
                   prerequisites are available.])])
 
 AC_PATH_PROG([FILE_CMD], [file])
+AC_PATH_PROG([CP_CMD], [cp])
 sixel_file_mime_option='-i'
 if test -n "$FILE_CMD"; then
     AC_MSG_CHECKING([for file(1) MIME option])

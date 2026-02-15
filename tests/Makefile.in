@@ -553,6 +553,7 @@ COREGRAPHICS_CFLAGS = @COREGRAPHICS_CFLAGS@
 COREGRAPHICS_LIBS = @COREGRAPHICS_LIBS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
+CP_CMD = @CP_CMD@
 CSCOPE = @CSCOPE@
 CTAGS = @CTAGS@
 CYGPATH_W = @CYGPATH_W@
@@ -2505,6 +2506,18 @@ check-TESTS: $(check_PROGRAMS)
 	    "$(abs_top_builddir)/tests/.python-test-venv"`; \
 	eval "$$python_venv_exports"; \
 	export SIXEL_TEST_PYTHON_VENV; \
+	thumbnailer_case_dir="$(abs_top_builddir)/tests/_generated/thumbnailer/cases/0040/thumbnailers"; \
+	thumbnailer_case_src="$(srcdir)/data/inputs/thumbnailer/cases/0040/thumbnailers"; \
+	mkdir -p "$$thumbnailer_case_dir"; \
+	sed 's|@SIXEL_TEST_CP_CMD@|@CP_CMD@|g' \
+	    "$$thumbnailer_case_src/valid-absolute.thumbnailer" \
+	    >"$$thumbnailer_case_dir/valid-absolute.thumbnailer.tmp"; \
+	mv -f "$$thumbnailer_case_dir/valid-absolute.thumbnailer.tmp" \
+	      "$$thumbnailer_case_dir/valid-absolute.thumbnailer"; \
+	cat "$$thumbnailer_case_src/missing-absolute.thumbnailer" \
+	    >"$$thumbnailer_case_dir/missing-absolute.thumbnailer.tmp"; \
+	mv -f "$$thumbnailer_case_dir/missing-absolute.thumbnailer.tmp" \
+	      "$$thumbnailer_case_dir/missing-absolute.thumbnailer"; \
 	log_list=""; \
 	for i in $(TEST_LOGS); do \
 	    log_list="$$log_list $$i"; \

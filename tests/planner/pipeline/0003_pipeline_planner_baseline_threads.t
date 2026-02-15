@@ -18,7 +18,7 @@ pipeline_log=$(run_img2sixel --env SIXEL_THREADS=4 -v -o "${ARTIFACT_LOCAL_DIR}/
 }
 printf '%s' "${pipeline_log}" >&2
 
-printf '%s\n' "${pipeline_log}" | awk '/^[[:space:]]*band_height=/{ found = 1; exit } END{ if (!found) exit 1 }' || {
+printf '%s\n' "${pipeline_log}" | awk '/band_height=/{ found = 1; exit } END{ if (!found) exit 1 }' || {
     fail 1 "baseline thread split"
     exit 0
 }

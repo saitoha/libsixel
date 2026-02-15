@@ -11,12 +11,8 @@ echo "1..1"
 set -v
 
 stdout_path="${ARTIFACT_LOCAL_DIR}/stdout.png"
-stderr_path="${ARTIFACT_LOCAL_DIR}/stderr.txt"
 
-: >"${stdout_path}"
-: >"${stderr_path}"
-
-run_sixel2png -i - <"${TOP_SRCDIR}/images/map8.six" >"${stdout_path}" 2>"${stderr_path}" || {
+run_sixel2png -i - <"${TOP_SRCDIR}/images/map8.six" >"${stdout_path}" || {
     fail 1 "sixel2png without -o failed"
     exit 0
 }
