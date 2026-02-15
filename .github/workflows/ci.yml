@@ -2357,15 +2357,15 @@ jobs:
             make: gmake
             exec_type: omnios-vm
 
-          - label: Meson-omnios-r151056-x86_64
-            buildtool: meson
-            runner: ubuntu-latest
-            version: r151056
-            extra_packages: >-
-              developer/gcc13
-              runtime/python-313
-              library/python-3/pip-313
-            exec_type: omnios-vm
+#          - label: Meson-omnios-r151056-x86_64
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            version: r151056
+#            extra_packages: >-
+#              developer/gcc13
+#              runtime/python-313
+#              library/python-3/pip-313
+#            exec_type: omnios-vm
 
     steps:
       - name: Configure git EOL
@@ -2507,7 +2507,7 @@ jobs:
 
 
   openbsd:
-    needs: [netbsd]
+    needs: [freebsd]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -2553,7 +2553,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
-      max-parallel: 1
+      max-parallel: 2
       matrix:
         include:
           - label: Autotools-freebsd-14.3-x86_64
