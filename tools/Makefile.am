@@ -29,11 +29,13 @@ EXTRA_DIST = libsixel-config.in \
              lso-timeout.c
 
 lso_timer_SOURCES = timer.c
+lso_timer_LDADD = $(CLOCK_GETTIME_LIBS)
+lso_timer_CFLAGS = $(AM_CFLAGS)
 if BUILD_LSO_TIMEOUT
 lso_timeout_SOURCES = lso-timeout.c
 lso_timeout_LDADD = $(CLOCK_GETTIME_LIBS)
+lso_timeout_CFLAGS = $(AM_CFLAGS)
 endif
-lso_timer_LDADD = $(CLOCK_GETTIME_LIBS)
 
 # Keep this recipe tab-indented; GNU make requires tabs for commands.
 install-data-hook:

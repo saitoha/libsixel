@@ -1912,6 +1912,7 @@ jobs:
             buildtool: autotools
             runner: ubuntu-24.04-arm
             setup_prefix: >-
+              CC=emcc
               CFLAGS="-O1 -g"
             setup_options: >-
               --host=wasm32-unknown-emscripten
@@ -1992,6 +1993,7 @@ jobs:
             buildtool: autotools
             runner: ubuntu-24.04-arm
             setup_prefix: >-
+              CC=emcc
               CFLAGS="-O1 -fprofile-instr-generate -fcoverage-mapping"
               LDFLAGS="-fprofile-instr-generate"
             setup_options: >-
