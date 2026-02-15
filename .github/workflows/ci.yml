@@ -2646,16 +2646,6 @@ jobs:
               meson
             exec_type: cross-platform-vms
 
-          - label: Meson-netbsd-10.1-aarch64
-            buildtool: meson
-            runner: ubuntu-latest
-            cp_os: netbsd
-            cp_arch: arm64
-            cp_version: '10.1'
-            extra_packages: >-
-              meson
-            exec_type: cross-platform-vms
-
     steps:
       - uses: actions/checkout@v6
         with:
