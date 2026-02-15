@@ -405,16 +405,9 @@ AC_DEFUN([AC_OUTPUT_PARALLEL], [
 ])
 
 AC_PROG_AWK
-AC_PROG_CC
-AC_PROG_OBJC
-AC_PROG_CPP
-AC_PROG_INSTALL
-AC_PROG_LN_S
-AC_PROG_MAKE_SET
-AC_PATH_PROG([UPDATE_MIME_DATABASE], [update-mime-database])
 
-# Detect emscripten toolchain intent from either host triple or CC, then
-# populate companion binutils when they are not explicitly provided.
+# Detect emscripten toolchain intent from either host triple or CC early.
+# This must run before AC_PROG_CC so config.log records CC=emcc directly.
 sixel_emcc_basename=`AS_BASENAME(["$CC"])`
 sixel_emscripten_mode=no
 case "$host_os" in
@@ -440,13 +433,25 @@ if test "x$sixel_emscripten_mode" = "xyes" &&
   host="$host_cpu-$host_vendor-$host_os"
   AC_MSG_NOTICE([forcing host triplet to $host from emscripten toolchain hints])
 fi
-if test "x$sixel_emscripten_mode" = "xyes"; then
-  if test "x$ac_env_CC_set" != "xset"; then
-    AC_PATH_PROG([SIXEL_EMSCRIPTEN_CC], [emcc])
-    if test -n "$SIXEL_EMSCRIPTEN_CC"; then
-      CC="$SIXEL_EMSCRIPTEN_CC"
-    fi
+if test "x$sixel_emscripten_mode" = "xyes" &&
+   test "x$ac_env_CC_set" != "xset"; then
+  CC=emcc
+  AC_PATH_PROG([SIXEL_EMSCRIPTEN_CC], [emcc])
+  if test -n "$SIXEL_EMSCRIPTEN_CC"; then
+    CC="$SIXEL_EMSCRIPTEN_CC"
   fi
+fi
+
+AC_PROG_CC
+AC_PROG_OBJC
+AC_PROG_CPP
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+AC_PATH_PROG([UPDATE_MIME_DATABASE], [update-mime-database])
+
+# Populate companion emscripten binutils when they are not explicitly provided.
+if test "x$sixel_emscripten_mode" = "xyes"; then
   if test "x$ac_env_RANLIB_set" != "xset"; then
     AC_PATH_PROG([RANLIB], [emranlib], [ranlib])
   fi
