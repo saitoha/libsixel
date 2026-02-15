@@ -12,69 +12,20 @@ man_sorted="${ARTIFACT_LOCAL_DIR}/options-man-sorted.txt"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-die_skip() {
-    reason=$1
-    echo "1..1"
-    echo "ok 1 - skip ${reason}"
-    exit 0
-}
-
-if ! command -v diff >/dev/null 2>&1; then
-    die_skip "diff not available"
-fi
-
 printf '1..1\n'
 set -v
 
-run_img2sixel -H | awk '
-    /^[[:space:]]*\*?-/ {
-        for (idx = 1; idx <= NF; idx++) {
-            field = $idx
-            sub(/^[[:space:]]*\*?/, "", field)
-            gsub(/,/, "", field)
-            if (field ~ /^--/) {
-                sub(/\[.*/, "", field)
-                sub(/=.*/, "", field)
-            }
-            if (field ~ /^-/ && field != "-") {
-                print field
-            }
-        }
-    }
-' >"${help_opts}" || {
-    fail 1 "failed to capture --help output"
-    exit 0
-}
+sum1=$(run_img2sixel -H | awk '
+/^-[A-Za-z0-9], --[A-Za-z0-9_\-]+/ {print $1, $2; }
+/^-[A-Za-z0-9] [A-Z_]+?, --[A-Za-z0-9_\-]+=[A-Z_]+/ {print $1, $2, $3; }
+' | cksum)
 
-LC_ALL=C sort "${help_opts}" >"${help_sorted}" || {
-    fail 1 "failed to sort --help output"
-}
+sum2=$(awk '
+/^\.B \\-\\?[A-Za-z0-9],/ {gsub(/\\/, ""); print $2, $3; }
+/^\.B \\-\\?[A-Za-z0-9] / { gsub(/\\fP|\\fI|\\/, ""); print $2, $3, $4; }
+' "${TOP_SRCDIR}/converters/img2sixel.1" | cksum)
 
-awk '
-    /^\.[ \t]*B[ \t]/ {
-        for (idx = 2; idx <= NF; idx++) {
-            field = $idx
-            gsub(/\\/, "", field)
-            gsub(/,/, "", field)
-            if (field ~ /^--/) {
-                sub(/=.*/, "", field)
-            }
-            if (field ~ /^-/ && field != "-") {
-                print field
-            }
-        }
-    }
-' "${top_srcdir}/converters/img2sixel.1" >"${man_opts}" || {
-    fail 1 "failed to parse manpage"
-    exit 0
-}
-
-LC_ALL=C sort "${man_opts}" >"${man_sorted}" || {
-    fail 1 "failed to sort manpage options"
-    exit 0
-}
-
-test "$(cksum < "${help_sorted}")" = "$(cksum < "${man_sorted}")" || {
+test "${sum1}" = "${sum2}" || {
     fail 1 "--help diverges from manpage"
     exit 0
 }

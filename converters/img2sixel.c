@@ -615,7 +615,7 @@ static cli_option_help_t const g_option_help_table[] = {
     {
         'W',
         "working-colorspace",
-        "-W WORKING_COLORSPACE, --working-colorspace=WORKING_COLORSPACE\n"
+        "-W COLORSPACE, --working-colorspace=COLORSPACE\n"
         "                           choose internal working color space\n"
         "                             gamma  -> sRGB gamma(default)\n"
         "                             linear -> linear RGB color space\n"
@@ -626,7 +626,7 @@ static cli_option_help_t const g_option_help_table[] = {
     {
         'U',
         "output-colorspace",
-        "-U OUTPUT_COLORSPACE, --output-colorspace=OUTPUT_COLORSPACE\n"
+        "-U COLORSPACE, --output-colorspace=COLORSPACE\n"
         "                           choose output color space\n"
         "                             gamma   -> sRGB gamma(default)\n"
         "                             linear  -> linear RGB color space\n"
@@ -635,20 +635,23 @@ static cli_option_help_t const g_option_help_table[] = {
     {
         '1',
         "show-completion",
-        "-1, --show-completion[=bash|zsh|all]\n"
+        "-1 TARGET, --show-completion=TARGET\n"
         "                           print shell completion script\n"
+        "                           TARGET is one of [bash, zsh, all]\n"
     },
     {
         '2',
         "install-completion",
-        "-2, --install-completion[=bash|zsh|all]\n"
+        "-2 TARGET, --install-completion=TARGET\n"
         "                           install shell completion script\n"
+        "                           TARGET is one of [bash, zsh, all]\n"
     },
     {
         '3',
         "uninstall-completion",
-        "-3, --uninstall-completion[=bash|zsh|all]\n"
+        "-3 TARGET, --uninstall-completion=TARGET\n"
         "                           uninstall shell completion script\n"
+        "                           TARGET is one of [bash, zsh, all]\n"
     },
     {
         'V',
