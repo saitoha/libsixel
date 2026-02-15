@@ -10,7 +10,7 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 printf '1..1\n'
 set -v
 
-sum1=$(run_img2sixel -H | awk '/^-[A-Za-z0-9],/ { print $1, $2; } /^-[A-Za-z0-9] / { print $1, $2, $3; }' | cksum)
+sum1=$(run_img2sixel -H | awk '/^-[A-Za-z0-9],/ { print $1, $2; } /^-[A-Za-z0-9] / { print $1, $2, $3; }' | tr -d \\r | cksum)
 
 sum2=$(awk '
 /^\.B \\-\\?[A-Za-z0-9],/ { gsub(/\\/, ""); print $2, $3; }
