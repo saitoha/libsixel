@@ -12,7 +12,7 @@ set -v
 
 sum1=$(awk '
 /^\.B \\-\\?[A-Za-z0-9],/ { gsub(/[\\,]/, ""); print $2, $3; }
-/^\.B \\-\\?[A-Za-z0-9] / { gsub(/=\\fI[A-Z][A-Z]*\\fP|\\/, ""); print $2, $4; }
+/^\.B \\-\\?[A-Za-z0-9] / { gsub(/\\/, "");  gsub("=", " "); print $2, $4; }
 ' "${TOP_SRCDIR}/converters/img2sixel.1" | cksum)
 
 sum2=$(awk '
