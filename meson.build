@@ -462,11 +462,14 @@ if host_system == 'emscripten'
   endif
 endif
 
-if conf.has('HAVE_UNISTD_H') and conf.has('HAVE_SYS_WAIT_H') and conf.has('HAVE_FORK') and not conf.has('HAVE_EMSCRIPTEN_H')
-  conf.set('HAVE_FREEDESKTOP_THUMBNAILING', 1)
-endif
+have_freedesktop_thumbnailing_prereqs = (
+  conf.has('HAVE_UNISTD_H') and
+  conf.has('HAVE_SYS_WAIT_H') and
+  conf.has('HAVE_FORK') and
+  not conf.has('HAVE_EMSCRIPTEN_H')
+)
 
-file_mime_option = '-i'
+file_mime_option = ''
 file_prog = find_program('file', required: false)
 mime_fixture = join_paths(meson.project_source_root(),
                           'tests/data/inputs/formats/rgba.png')
@@ -476,13 +479,18 @@ if file_prog.found()
                              check: false)
     if mime_probe.returncode() == 0
       mime_text = mime_probe.stdout().strip()
-      if 'image/png' in mime_text
+      if mime_text.startswith('image/') or ': image/' in mime_text or ' image/' in mime_text
         file_mime_option = candidate
         break
       endif
     endif
   endforeach
 endif
+
+if have_freedesktop_thumbnailing_prereqs and file_mime_option != ''
+  conf.set('HAVE_FREEDESKTOP_THUMBNAILING', 1)
+endif
+
 conf.set_quoted('SIXEL_FILE_MIME_OPTION', file_mime_option,
                 description: 'file(1) option used for MIME probing')
 
