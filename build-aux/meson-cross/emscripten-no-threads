@@ -11,11 +11,6 @@ needs_exe_wrapper = true
 exe_wrapper = 'node'
 
 [built-in options]
-c_args = ['-msimd128', '-fdata-sections', '-ffunction-sections']
-c_link_args = ['-sRETAIN_COMPILER_SETTINGS=1', '-sNODERAWFS=1',
-               '-sSTACK_SIZE=786432', '-sINITIAL_MEMORY=268435456',
-               '-sSINGLE_FILE=1', '-sENVIRONMENT=node', '-sALLOW_MEMORY_GROWTH=1',
-               '-Wno-pthreads-mem-growth']
 
 [host_machine]
 system = 'emscripten'
