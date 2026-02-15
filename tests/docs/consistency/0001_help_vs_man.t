@@ -3,11 +3,6 @@
 
 set -eux
 
-help_opts="${ARTIFACT_LOCAL_DIR}/options-help.txt"
-man_opts="${ARTIFACT_LOCAL_DIR}/options-man.txt"
-help_sorted="${ARTIFACT_LOCAL_DIR}/options-help-sorted.txt"
-man_sorted="${ARTIFACT_LOCAL_DIR}/options-man-sorted.txt"
-
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
@@ -15,13 +10,10 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 printf '1..1\n'
 set -v
 
-sum1=$(run_img2sixel -H | awk '
-/^-[A-Za-z0-9], --[A-Za-z0-9_\-]+/ {print $1, $2; }
-/^-[A-Za-z0-9] [A-Z_]+?, --[A-Za-z0-9_\-]+=[A-Z_]+/ {print $1, $2, $3; }
-' | cksum)
+sum1=$(run_img2sixel -H | awk '/^-[A-Za-z0-9],/ { print $1, $2; } /^-[A-Za-z0-9] / { print $1, $2, $3; }' | cksum)
 
 sum2=$(awk '
-/^\.B \\-\\?[A-Za-z0-9],/ {gsub(/\\/, ""); print $2, $3; }
+/^\.B \\-\\?[A-Za-z0-9],/ { gsub(/\\/, ""); print $2, $3; }
 /^\.B \\-\\?[A-Za-z0-9] / { gsub(/\\fP|\\fI|\\/, ""); print $2, $3, $4; }
 ' "${TOP_SRCDIR}/converters/img2sixel.1" | cksum)
 

@@ -10,7 +10,7 @@ echo "1..1"
 set -v
 
 expected="3871514854 39"
-sum=$(printf '%b' '\033Pq"1;1;1;1!6~\033\\' | run_img2sixel -=1 -rne -h200% -wauto | cksum)
+sum=$(printf '%b' '\033Pq"1;1;1;1!6~\033\057' | run_img2sixel -=1 -rne -h200% -wauto | cksum)
 
 test -n "${sum}" || {
     fail 1 "DCS coordinates stayed consistent (no payload produced)"
