@@ -115,7 +115,7 @@ CONFIG_CLEAN_VPATH_FILES =
 PROGRAMS = $(noinst_PROGRAMS)
 am__lso_timeout_SOURCES_DIST = lso-timeout.c
 @BUILD_LSO_TIMEOUT_TRUE@am_lso_timeout_OBJECTS =  \
-@BUILD_LSO_TIMEOUT_TRUE@	lso-timeout.$(OBJEXT)
+@BUILD_LSO_TIMEOUT_TRUE@	lso_timeout-lso-timeout.$(OBJEXT)
 lso_timeout_OBJECTS = $(am_lso_timeout_OBJECTS)
 am__DEPENDENCIES_1 =
 @BUILD_LSO_TIMEOUT_TRUE@lso_timeout_DEPENDENCIES =  \
@@ -124,9 +124,15 @@ AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
 am__v_lt_1 = 
-am_lso_timer_OBJECTS = timer.$(OBJEXT)
+lso_timeout_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(lso_timeout_CFLAGS) \
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
+am_lso_timer_OBJECTS = lso_timer-timer.$(OBJEXT)
 lso_timer_OBJECTS = $(am_lso_timer_OBJECTS)
 lso_timer_DEPENDENCIES = $(am__DEPENDENCIES_1)
+lso_timer_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(lso_timer_CFLAGS) \
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -170,7 +176,8 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/build-aux/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/lso-timeout.Po ./$(DEPDIR)/timer.Po
+am__depfiles_remade = ./$(DEPDIR)/lso_timeout-lso-timeout.Po \
+	./$(DEPDIR)/lso_timer-timer.Po
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -450,9 +457,11 @@ EXTRA_DIST = libsixel-config.in \
              lso-timeout.c
 
 lso_timer_SOURCES = timer.c
+lso_timer_LDADD = $(CLOCK_GETTIME_LIBS)
+lso_timer_CFLAGS = $(AM_CFLAGS)
 @BUILD_LSO_TIMEOUT_TRUE@lso_timeout_SOURCES = lso-timeout.c
 @BUILD_LSO_TIMEOUT_TRUE@lso_timeout_LDADD = $(CLOCK_GETTIME_LIBS)
-lso_timer_LDADD = $(CLOCK_GETTIME_LIBS)
+@BUILD_LSO_TIMEOUT_TRUE@lso_timeout_CFLAGS = $(AM_CFLAGS)
 all: all-am
 
 .SUFFIXES:
@@ -495,11 +504,11 @@ clean-noinstPROGRAMS:
 
 lso-timeout$(EXEEXT): $(lso_timeout_OBJECTS) $(lso_timeout_DEPENDENCIES) $(EXTRA_lso_timeout_DEPENDENCIES) 
 	@rm -f lso-timeout$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(lso_timeout_OBJECTS) $(lso_timeout_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(lso_timeout_LINK) $(lso_timeout_OBJECTS) $(lso_timeout_LDADD) $(LIBS)
 
 lso-timer$(EXEEXT): $(lso_timer_OBJECTS) $(lso_timer_DEPENDENCIES) $(EXTRA_lso_timer_DEPENDENCIES) 
 	@rm -f lso-timer$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(lso_timer_OBJECTS) $(lso_timer_LDADD) $(LIBS)
+	$(AM_V_CCLD)$(lso_timer_LINK) $(lso_timer_OBJECTS) $(lso_timer_LDADD) $(LIBS)
 install-binSCRIPTS: $(bin_SCRIPTS)
 	@$(NORMAL_INSTALL)
 	@list='$(bin_SCRIPTS)'; test -n "$(bindir)" || list=; \
@@ -542,8 +551,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lso-timeout.Po@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/timer.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lso_timeout-lso-timeout.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/lso_timer-timer.Po@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -574,6 +583,34 @@ am--depfiles: $(am__depfiles_remade)
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+lso_timeout-lso-timeout.o: lso-timeout.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lso_timeout_CFLAGS) $(CFLAGS) -MT lso_timeout-lso-timeout.o -MD -MP -MF $(DEPDIR)/lso_timeout-lso-timeout.Tpo -c -o lso_timeout-lso-timeout.o `test -f 'lso-timeout.c' || echo '$(srcdir)/'`lso-timeout.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lso_timeout-lso-timeout.Tpo $(DEPDIR)/lso_timeout-lso-timeout.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lso-timeout.c' object='lso_timeout-lso-timeout.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lso_timeout_CFLAGS) $(CFLAGS) -c -o lso_timeout-lso-timeout.o `test -f 'lso-timeout.c' || echo '$(srcdir)/'`lso-timeout.c
+
+lso_timeout-lso-timeout.obj: lso-timeout.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lso_timeout_CFLAGS) $(CFLAGS) -MT lso_timeout-lso-timeout.obj -MD -MP -MF $(DEPDIR)/lso_timeout-lso-timeout.Tpo -c -o lso_timeout-lso-timeout.obj `if test -f 'lso-timeout.c'; then $(CYGPATH_W) 'lso-timeout.c'; else $(CYGPATH_W) '$(srcdir)/lso-timeout.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lso_timeout-lso-timeout.Tpo $(DEPDIR)/lso_timeout-lso-timeout.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='lso-timeout.c' object='lso_timeout-lso-timeout.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lso_timeout_CFLAGS) $(CFLAGS) -c -o lso_timeout-lso-timeout.obj `if test -f 'lso-timeout.c'; then $(CYGPATH_W) 'lso-timeout.c'; else $(CYGPATH_W) '$(srcdir)/lso-timeout.c'; fi`
+
+lso_timer-timer.o: timer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lso_timer_CFLAGS) $(CFLAGS) -MT lso_timer-timer.o -MD -MP -MF $(DEPDIR)/lso_timer-timer.Tpo -c -o lso_timer-timer.o `test -f 'timer.c' || echo '$(srcdir)/'`timer.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lso_timer-timer.Tpo $(DEPDIR)/lso_timer-timer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='timer.c' object='lso_timer-timer.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lso_timer_CFLAGS) $(CFLAGS) -c -o lso_timer-timer.o `test -f 'timer.c' || echo '$(srcdir)/'`timer.c
+
+lso_timer-timer.obj: timer.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lso_timer_CFLAGS) $(CFLAGS) -MT lso_timer-timer.obj -MD -MP -MF $(DEPDIR)/lso_timer-timer.Tpo -c -o lso_timer-timer.obj `if test -f 'timer.c'; then $(CYGPATH_W) 'timer.c'; else $(CYGPATH_W) '$(srcdir)/timer.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/lso_timer-timer.Tpo $(DEPDIR)/lso_timer-timer.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='timer.c' object='lso_timer-timer.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(lso_timer_CFLAGS) $(CFLAGS) -c -o lso_timer-timer.obj `if test -f 'timer.c'; then $(CYGPATH_W) 'timer.c'; else $(CYGPATH_W) '$(srcdir)/timer.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -709,8 +746,8 @@ clean-am: clean-generic clean-libtool clean-noinstPROGRAMS \
 	mostlyclean-am
 
 distclean: distclean-am
-	-rm -f ./$(DEPDIR)/lso-timeout.Po
-	-rm -f ./$(DEPDIR)/timer.Po
+	-rm -f ./$(DEPDIR)/lso_timeout-lso-timeout.Po
+	-rm -f ./$(DEPDIR)/lso_timer-timer.Po
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -757,8 +794,8 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -f ./$(DEPDIR)/lso-timeout.Po
-	-rm -f ./$(DEPDIR)/timer.Po
+	-rm -f ./$(DEPDIR)/lso_timeout-lso-timeout.Po
+	-rm -f ./$(DEPDIR)/lso_timer-timer.Po
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

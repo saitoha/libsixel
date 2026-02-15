@@ -58,40 +58,12 @@ EOF
 fi
  
 cd "${BUILDDIR}" && (
+CC=emcc \
 ../../configure \
-  CC=emcc \
-  LD=emcc \
-  AR=emar \
-  RANLIB=emranlib \
-  NM=llvm-nm \
   --host=wasm32-unknown-emscripten \
   --disable-shared \
   --with-shebang-file="${SHEBANG_FILE}" \
-  --disable-dependency-tracking \
-  CFLAGS=" \
-    -O3 \
-    -g0 \
-    -pthread -sUSE_PTHREADS=1 -sSHARED_MEMORY=1 \
-    -flto \
-    -msimd128 \
-    -fdata-sections \
-    -ffunction-sections \
-  " \
-  LDFLAGS=" \
-    -pthread -sSHARED_MEMORY=1 \
-    -flto \
-    -sRETAIN_COMPILER_SETTINGS=1 \
-    -sNODERAWFS=1 \
-    -sSTACK_SIZE=786432 \
-    -sINITIAL_MEMORY=268435456 \
-    -sSINGLE_FILE=1 \
-    -sENVIRONMENT=node \
-    -sALLOW_MEMORY_GROWTH=1 \
-    -sWASM_BIGINT=1 \
-    -sUSE_PTHREADS=1 \
-    -sASSERTIONS=0 \
-    -Wno-pthreads-mem-growth \
-  "
+  --disable-dependency-tracking
 make all
 make check
 )
