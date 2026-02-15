@@ -92,6 +92,11 @@ if host_system == 'emscripten'
     '-sINITIAL_MEMORY=@0@'.format(emscripten_initial_memory)
   ]
 
+  emscripten_environment = get_option('emscripten_environment')
+  if emscripten_environment != ''
+    emscripten_ldflags += ['-sENVIRONMENT=@0@'.format(emscripten_environment)]
+  endif
+
   if get_option('emscripten_allow_memory_growth')
     emscripten_ldflags += ['-sALLOW_MEMORY_GROWTH=1']
   endif
@@ -1143,6 +1148,24 @@ endif
 simd_opt = get_option('simd')
 if simd_opt.disabled()
   simd_message = 'no'
+elif host_system == 'emscripten'
+  if cc.has_header('emmintrin.h')
+    conf.set('HAVE_EMMINTRIN_H', 1)
+    simd_args = ['-msimd128']
+    if cc.has_multi_arguments(simd_args) and cc.compiles('''
+        #include <emmintrin.h>
+        int main(void){
+          __m128i a = _mm_setzero_si128(); (void)a; return 0;
+        }''', args: simd_args)
+      conf.set('HAVE_SSE2', 1)
+      simd_message = 'sse2'
+      add_project_arguments(simd_args, language: 'c')
+    else
+      simd_message = 'no'
+    endif
+  else
+    simd_message = 'no'
+  endif
 elif cpu == 'x86_64'
   if cc.has_header('emmintrin.h')
     conf.set('HAVE_EMMINTRIN_H', 1)

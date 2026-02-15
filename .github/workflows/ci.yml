@@ -1840,11 +1840,6 @@ jobs:
           - label: Autotools-ubuntu-aarch64-emscripten-static
             buildtool: autotools
             runner: ubuntu-24.04-arm
-            setup_prefix: >-
-              CC=emcc LD=emcc RANLIB=emranlib AR=emar NM=llvm-nm
-              CFLAGS="-O3 -g0 -msimd128"
-              LDFLAGS="-sENVIRONMENT=node"
-              emconfigure
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
@@ -1867,10 +1862,6 @@ jobs:
           - label: Autotools-macos-aarch64-emscripten-static
             buildtool: autotools
             runner: macos-latest
-            setup_prefix: >-
-              CFLAGS="-O3 -g0 -msimd128"
-              LDFLAGS="-sENVIRONMENT=node"
-              emconfigure
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
@@ -1917,10 +1908,6 @@ jobs:
           - label: Autotools-ubuntu-aarch64-emscripten-ubsan-static
             buildtool: autotools
             runner: ubuntu-24.04-arm
-            setup_prefix: >-
-              CFLAGS="-g0 -msimd128"
-              LDFLAGS="-sENVIRONMENT=node"
-              emconfigure
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
@@ -1947,10 +1934,6 @@ jobs:
           - label: Autotools-macos-aarch64-emscripten-ubsan-static
             buildtool: autotools
             runner: macos-latest
-            setup_prefix: >-
-              CFLAGS="-g0 -msimd128"
-              LDFLAGS="-sENVIRONMENT=node"
-              emconfigure
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
@@ -2002,9 +1985,8 @@ jobs:
             buildtool: autotools
             runner: ubuntu-24.04-arm
             setup_prefix: >-
-              CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping -msimd128"
-              LDFLAGS="-fprofile-instr-generate -sENVIRONMENT=node"
-              emconfigure
+              CFLAGS="-fprofile-instr-generate -fcoverage-mapping"
+              LDFLAGS="-fprofile-instr-generate"
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
@@ -2020,7 +2002,7 @@ jobs:
             buildtool: meson
             runner: ubuntu-24.04-arm
             setup_prefix: >-
-              CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping"
+              CFLAGS="-fprofile-instr-generate -fcoverage-mapping"
               LDFLAGS="-fprofile-instr-generate"
             setup_options: >-
               --cross-file build-aux/meson-cross/emscripten
@@ -2037,9 +2019,8 @@ jobs:
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
-              CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping -msimd128"
-              LDFLAGS="-fprofile-instr-generate -sENVIRONMENT=node"
-              emconfigure
+              CFLAGS="-fprofile-instr-generate -fcoverage-mapping"
+              LDFLAGS="-fprofile-instr-generate"
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
@@ -2054,9 +2035,8 @@ jobs:
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
-              CFLAGS="-O0 -g -fprofile-instr-generate -fcoverage-mapping"
+              CFLAGS="-fprofile-instr-generate -fcoverage-mapping"
               LDFLAGS="-fprofile-instr-generate"
-              emconfigure
             setup_options: >-
               --cross-file build-aux/meson-cross/emscripten
               -Ddefault_library=static

@@ -67,6 +67,8 @@ option('emscripten_stack_size', type: 'integer', value: 786432,
        description: 'Set -sSTACK_SIZE for emscripten builds')
 option('emscripten_initial_memory', type: 'integer', value: 268435456,
        description: 'Set -sINITIAL_MEMORY for emscripten builds')
+option('emscripten_environment', type: 'string', value: '',
+       description: 'Set -sENVIRONMENT for emscripten builds')
 option('emscripten_allow_memory_growth', type: 'boolean', value: true,
        description: 'Add -sALLOW_MEMORY_GROWTH=1 for emscripten builds')
 option('emscripten_single_file', type: 'boolean', value: false,

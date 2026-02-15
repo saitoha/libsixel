@@ -966,6 +966,7 @@ enable_emscripten_retain_compiler_settings
 enable_emscripten_noderawfs
 with_emscripten_stack_size
 with_emscripten_initial_memory
+with_emscripten_environment
 enable_emscripten_allow_memory_growth
 enable_emscripten_single_file
 enable_emscripten_wasm_bigint
@@ -1761,6 +1762,8 @@ Optional Packages:
                           set emscripten stack size (default: 786432)
   --with-emscripten-initial_memory=SIZE
                           set emscripten initial memory (default: 268435456)
+  --with-emscripten-environment=LIST
+                          set emscripten ENVIRONMENT list
   --with-shebang-file=PATH
                           prepend PATH contents to generated executables
   --with-gdk-pixbuf2      whether to build with gdk-pixbuf2 (default: no)
@@ -16792,6 +16795,17 @@ esac
 fi
 
 
+
+# Check whether --with-emscripten-environment was given.
+if test ${with_emscripten_environment+y}
+then :
+  withval=$with_emscripten_environment; with_emscripten_environment="$withval"
+else case e in #(
+  e) with_emscripten_environment="" ;;
+esac
+fi
+
+
 # Check whether --enable-emscripten-allow_memory_growth was given.
 if test ${enable_emscripten_allow_memory_growth+y}
 then :
@@ -16850,6 +16864,10 @@ fi
          if test -n "$with_emscripten_initial_memory"
 then :
   EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sINITIAL_MEMORY=$with_emscripten_initial_memory"
+fi
+         if test -n "$with_emscripten_environment"
+then :
+  EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sENVIRONMENT=$with_emscripten_environment"
 fi
          if test "x$enable_emscripten_allow_memory_growth" = "xyes"
 then :
@@ -24825,6 +24843,50 @@ fi
 if test "x${enable_simd}" = xno; then
     message_simd=no
 else
+    case "${host_os}" in
+    emscripten*)
+        if x$ac_cv_header_emmintrin_h = xyes; then
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether the compiler supports -msimd128 and
+                             <emmintrin.h>" >&5
+printf %s "checking whether the compiler supports -msimd128 and
+                             <emmintrin.h>... " >&6; }
+            saved_CFLAGS="$CFLAGS"
+            simd_flag="-msimd128"
+            CFLAGS="$CFLAGS $simd_flag"
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+                                #include <emmintrin.h>
+
+int
+main (void)
+{
+
+                                __m128i a = _mm_setzero_si128();
+                                (void)a;
+                                return 0;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"
+then :
+  have_sse2=yes
+else case e in #(
+  e) have_sse2=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam conftest.$ac_ext
+            CFLAGS="$saved_CFLAGS"
+            { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $have_sse2" >&5
+printf "%s\n" "$have_sse2" >&6; }
+            if test "x$have_sse2" = xyes; then
+                AM_CFLAGS="$AM_CFLAGS $simd_flag"
+            fi
+        fi
+        ;;
+    *)
     case "${host_cpu}" in
     x86_64|amd64)
         have_sse2=yes
@@ -24924,6 +24986,8 @@ printf "%s\n" "$have_neon" >&6; }
     *)
         ;;
 
+    esac
+    ;;
     esac
 fi
 
