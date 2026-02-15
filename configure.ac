@@ -413,6 +413,55 @@ AC_PROG_LN_S
 AC_PROG_MAKE_SET
 AC_PATH_PROG([UPDATE_MIME_DATABASE], [update-mime-database])
 
+# Detect emscripten toolchain intent from either host triple or CC, then
+# populate companion binutils when they are not explicitly provided.
+sixel_emcc_basename=`AS_BASENAME(["$CC"])`
+sixel_emscripten_mode=no
+case "$host_os" in
+  emscripten*)
+    sixel_emscripten_mode=yes
+    ;;
+esac
+case "$host" in
+  wasm32*-*-*emscripten*)
+    sixel_emscripten_mode=yes
+    ;;
+esac
+case "$sixel_emcc_basename" in
+  emcc|emcc.py|emcc.bat)
+    sixel_emscripten_mode=yes
+    ;;
+esac
+if test "x$sixel_emscripten_mode" = "xyes" &&
+   test "x$host_os" != "xemscripten"; then
+  host_cpu=wasm32
+  host_vendor=unknown
+  host_os=emscripten
+  host="$host_cpu-$host_vendor-$host_os"
+  AC_MSG_NOTICE([forcing host triplet to $host from emscripten toolchain hints])
+fi
+if test "x$sixel_emscripten_mode" = "xyes"; then
+  if test "x$ac_env_CC_set" != "xset"; then
+    AC_PATH_PROG([SIXEL_EMSCRIPTEN_CC], [emcc])
+    if test -n "$SIXEL_EMSCRIPTEN_CC"; then
+      CC="$SIXEL_EMSCRIPTEN_CC"
+    fi
+  fi
+  if test "x$ac_env_RANLIB_set" != "xset"; then
+    AC_PATH_PROG([RANLIB], [emranlib], [ranlib])
+  fi
+  if test "x$ac_env_AR_set" != "xset"; then
+    dnl emar is the canonical archiver wrapper; keep emer as compatibility fallback.
+    AC_PATH_PROGS([AR], [emar emer], [ar])
+  fi
+  if test "x$ac_env_NM_set" != "xset"; then
+    AC_PATH_PROGS([NM], [llvm-nm emnm], [nm])
+  fi
+  if test "x$ac_env_STRIP_set" != "xset"; then
+    AC_PATH_PROG([STRIP], [emstrip], [strip])
+  fi
+fi
+
 # Provide a conservative default parallelism for Makefiles when the caller
 # did not already set -j/--jobs. The logic is:
 # 1) Detect CPU_COUNT with AX_COUNT_CPUS.
@@ -3014,7 +3063,7 @@ if test "x${enable_simd}" = xno; then
 else
     case "${host_os}" in
     emscripten*)
-        if x$ac_cv_header_emmintrin_h = xyes; then
+        if test x$ac_cv_header_emmintrin_h = xyes; then
             AC_MSG_CHECKING([whether the compiler supports -msimd128 and
                              <emmintrin.h>])
             saved_CFLAGS="$CFLAGS"
@@ -3043,7 +3092,7 @@ else
         ;;
 
     i*86)
-        if x$ac_cv_header_emmintrin_h = xyes; then
+        if test x$ac_cv_header_emmintrin_h = xyes; then
             AC_MSG_CHECKING([whether the compiler supports SSE2 flags and
                              <emmintrin.h>])
             saved_CFLAGS="$CFLAGS"
