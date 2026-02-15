@@ -1,4 +1,0 @@
-[Thumbnailer Entry]
-TryExec=@SIXEL_TEST_CP_CMD@
-Exec=@SIXEL_TEST_CP_CMD@ %i %o
-MimeType=image/png;
