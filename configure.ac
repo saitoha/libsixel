@@ -778,29 +778,28 @@ AC_ARG_ENABLE([emscripten-assertions],
               [],
               [enable_emscripten_assertions=yes])
 
-EMSCRIPTEN_EXTRA_FLAGS=""
+EMSCRIPTEN_LDFLAGS=""
 AS_CASE([$host_os],
         [emscripten*],
         [AS_IF([test "x$enable_emscripten_retain_compiler_settings" = "xyes"],
-               [EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sRETAIN_COMPILER_SETTINGS=1"])
+               [EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sRETAIN_COMPILER_SETTINGS=1"])
          AS_IF([test "x$enable_emscripten_noderawfs" = "xyes"],
-               [EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sNODERAWFS=1"])
+               [EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sNODERAWFS=1"])
          AS_IF([test -n "$with_emscripten_stack_size"],
-               [EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sSTACK_SIZE=$with_emscripten_stack_size"])
+               [EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sSTACK_SIZE=$with_emscripten_stack_size"])
          AS_IF([test -n "$with_emscripten_initial_memory"],
-               [EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sINITIAL_MEMORY=$with_emscripten_initial_memory"])
+               [EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sINITIAL_MEMORY=$with_emscripten_initial_memory"])
          AS_IF([test "x$enable_emscripten_allow_memory_growth" = "xyes"],
-               [EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sALLOW_MEMORY_GROWTH=1"])
+               [EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sALLOW_MEMORY_GROWTH=1"])
          dnl These toggles intentionally follow the user-requested disable syntax.
          AS_IF([test "x$enable_emscripten_single_file" = "xno"],
-               [EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sSINGLE_FILE=1"])
+               [EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sSINGLE_FILE=1"])
          AS_IF([test "x$enable_emscripten_wasm_bigint" = "xno"],
-               [EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sWASM_BIGINT=1"])
+               [EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sWASM_BIGINT=1"])
          AS_IF([test "x$enable_emscripten_assertions" = "xno"],
-               [EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sASSERTIONS=0"])
-         AS_IF([test -n "$EMSCRIPTEN_EXTRA_FLAGS"],
-               [CFLAGS="$CFLAGS $EMSCRIPTEN_EXTRA_FLAGS"
-                LDFLAGS="$LDFLAGS $EMSCRIPTEN_EXTRA_FLAGS"])])
+               [EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sASSERTIONS=0"])
+         AS_IF([test -n "$EMSCRIPTEN_LDFLAGS"],
+               [LDFLAGS="$LDFLAGS $EMSCRIPTEN_LDFLAGS"])])
 
 AC_ARG_ENABLE([threads],
               [AS_HELP_STRING([--disable-threads],
