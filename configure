@@ -805,7 +805,6 @@ BUILDING_ON_WINDOWS_FALSE
 BUILDING_ON_WINDOWS_TRUE
 LSO_TAP_DATE_CMD
 LS_DEFAULT_MAKEFLAGS
-SIXEL_EMSCRIPTEN_CC
 UPDATE_MIME_DATABASE
 CPP
 am__fastdepOBJC_FALSE
@@ -814,6 +813,7 @@ OBJCDEPMODE
 ac_ct_OBJC
 OBJCFLAGS
 OBJC
+SIXEL_EMSCRIPTEN_CC
 SIXEL_LIBTOOL_PATH_SEPARATOR
 SIXEL_LIBTOOL_BUILD_LIBS
 SIXEL_SHLIBPATH_OVERRIDES_RUNPATH
@@ -14598,6 +14598,106 @@ fi
   test -n "$AWK" && break
 done
 
+
+# Detect emscripten toolchain intent from either host triple or CC early.
+# This must run before AC_PROG_CC so config.log records CC=emcc directly.
+sixel_emcc_basename=`$as_basename -- "$CC" ||
+$as_expr X/"$CC" : '.*/\([^/][^/]*\)/*$' \| \
+	 X"$CC" : 'X\(//\)$' \| \
+	 X"$CC" : 'X\(/\)' \| . 2>/dev/null ||
+printf "%s\n" X/"$CC" |
+    sed '/^.*\/\([^/][^/]*\)\/*$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\/\(\/\/\)$/{
+	    s//\1/
+	    q
+	  }
+	  /^X\/\(\/\).*/{
+	    s//\1/
+	    q
+	  }
+	  s/.*/./; q'`
+sixel_emscripten_mode=no
+case "$host_os" in
+  emscripten*)
+    sixel_emscripten_mode=yes
+    ;;
+esac
+case "$host" in
+  wasm32*-*-*emscripten*)
+    sixel_emscripten_mode=yes
+    ;;
+esac
+case "$sixel_emcc_basename" in
+  emcc|emcc.py|emcc.bat)
+    sixel_emscripten_mode=yes
+    ;;
+esac
+if test "x$sixel_emscripten_mode" = "xyes" &&
+   test "x$host_os" != "xemscripten"; then
+  host_cpu=wasm32
+  host_vendor=unknown
+  host_os=emscripten
+  host="$host_cpu-$host_vendor-$host_os"
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: forcing host triplet to $host from emscripten toolchain hints" >&5
+printf "%s\n" "$as_me: forcing host triplet to $host from emscripten toolchain hints" >&6;}
+fi
+if test "x$sixel_emscripten_mode" = "xyes" &&
+   test "x$ac_env_CC_set" != "xset"; then
+  CC=emcc
+  # Extract the first word of "emcc", so it can be a program name with args.
+set dummy emcc; ac_word=$2
+{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+printf %s "checking for $ac_word... " >&6; }
+if test ${ac_cv_path_SIXEL_EMSCRIPTEN_CC+y}
+then :
+  printf %s "(cached) " >&6
+else case e in #(
+  e) case $SIXEL_EMSCRIPTEN_CC in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_SIXEL_EMSCRIPTEN_CC="$SIXEL_EMSCRIPTEN_CC" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  case $as_dir in #(((
+    '') as_dir=./ ;;
+    */) ;;
+    *) as_dir=$as_dir/ ;;
+  esac
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
+    ac_cv_path_SIXEL_EMSCRIPTEN_CC="$as_dir$ac_word$ac_exec_ext"
+    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  ;;
+esac ;;
+esac
+fi
+SIXEL_EMSCRIPTEN_CC=$ac_cv_path_SIXEL_EMSCRIPTEN_CC
+if test -n "$SIXEL_EMSCRIPTEN_CC"; then
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $SIXEL_EMSCRIPTEN_CC" >&5
+printf "%s\n" "$SIXEL_EMSCRIPTEN_CC" >&6; }
+else
+  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
+printf "%s\n" "no" >&6; }
+fi
+
+
+  if test -n "$SIXEL_EMSCRIPTEN_CC"; then
+    CC="$SIXEL_EMSCRIPTEN_CC"
+  fi
+fi
+
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
@@ -16180,103 +16280,8 @@ fi
 
 
 
-# Detect emscripten toolchain intent from either host triple or CC, then
-# populate companion binutils when they are not explicitly provided.
-sixel_emcc_basename=`$as_basename -- "$CC" ||
-$as_expr X/"$CC" : '.*/\([^/][^/]*\)/*$' \| \
-	 X"$CC" : 'X\(//\)$' \| \
-	 X"$CC" : 'X\(/\)' \| . 2>/dev/null ||
-printf "%s\n" X/"$CC" |
-    sed '/^.*\/\([^/][^/]*\)\/*$/{
-	    s//\1/
-	    q
-	  }
-	  /^X\/\(\/\/\)$/{
-	    s//\1/
-	    q
-	  }
-	  /^X\/\(\/\).*/{
-	    s//\1/
-	    q
-	  }
-	  s/.*/./; q'`
-sixel_emscripten_mode=no
-case "$host_os" in
-  emscripten*)
-    sixel_emscripten_mode=yes
-    ;;
-esac
-case "$host" in
-  wasm32*-*-*emscripten*)
-    sixel_emscripten_mode=yes
-    ;;
-esac
-case "$sixel_emcc_basename" in
-  emcc|emcc.py|emcc.bat)
-    sixel_emscripten_mode=yes
-    ;;
-esac
-if test "x$sixel_emscripten_mode" = "xyes" &&
-   test "x$host_os" != "xemscripten"; then
-  host_cpu=wasm32
-  host_vendor=unknown
-  host_os=emscripten
-  host="$host_cpu-$host_vendor-$host_os"
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: forcing host triplet to $host from emscripten toolchain hints" >&5
-printf "%s\n" "$as_me: forcing host triplet to $host from emscripten toolchain hints" >&6;}
-fi
+# Populate companion emscripten binutils when they are not explicitly provided.
 if test "x$sixel_emscripten_mode" = "xyes"; then
-  if test "x$ac_env_CC_set" != "xset"; then
-    # Extract the first word of "emcc", so it can be a program name with args.
-set dummy emcc; ac_word=$2
-{ printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
-printf %s "checking for $ac_word... " >&6; }
-if test ${ac_cv_path_SIXEL_EMSCRIPTEN_CC+y}
-then :
-  printf %s "(cached) " >&6
-else case e in #(
-  e) case $SIXEL_EMSCRIPTEN_CC in
-  [\\/]* | ?:[\\/]*)
-  ac_cv_path_SIXEL_EMSCRIPTEN_CC="$SIXEL_EMSCRIPTEN_CC" # Let the user override the test with a path.
-  ;;
-  *)
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH
-do
-  IFS=$as_save_IFS
-  case $as_dir in #(((
-    '') as_dir=./ ;;
-    */) ;;
-    *) as_dir=$as_dir/ ;;
-  esac
-    for ac_exec_ext in '' $ac_executable_extensions; do
-  if as_fn_executable_p "$as_dir$ac_word$ac_exec_ext"; then
-    ac_cv_path_SIXEL_EMSCRIPTEN_CC="$as_dir$ac_word$ac_exec_ext"
-    printf "%s\n" "$as_me:${as_lineno-$LINENO}: found $as_dir$ac_word$ac_exec_ext" >&5
-    break 2
-  fi
-done
-  done
-IFS=$as_save_IFS
-
-  ;;
-esac ;;
-esac
-fi
-SIXEL_EMSCRIPTEN_CC=$ac_cv_path_SIXEL_EMSCRIPTEN_CC
-if test -n "$SIXEL_EMSCRIPTEN_CC"; then
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $SIXEL_EMSCRIPTEN_CC" >&5
-printf "%s\n" "$SIXEL_EMSCRIPTEN_CC" >&6; }
-else
-  { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: no" >&5
-printf "%s\n" "no" >&6; }
-fi
-
-
-    if test -n "$SIXEL_EMSCRIPTEN_CC"; then
-      CC="$SIXEL_EMSCRIPTEN_CC"
-    fi
-  fi
   if test "x$ac_env_RANLIB_set" != "xset"; then
     # Extract the first word of "emranlib", so it can be a program name with args.
 set dummy emranlib; ac_word=$2
