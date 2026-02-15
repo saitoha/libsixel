@@ -1830,7 +1830,6 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   emscripten:
-#    needs: [core-autotools]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -1840,6 +1839,8 @@ jobs:
           - label: Autotools-ubuntu-aarch64-emscripten-static
             buildtool: autotools
             runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CFLAGS="-O1 -g"
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
@@ -1862,6 +1863,8 @@ jobs:
           - label: Autotools-macos-aarch64-emscripten-static
             buildtool: autotools
             runner: macos-latest
+            setup_prefix: >-
+              CFLAGS="-O1 -g"
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
@@ -1908,6 +1911,8 @@ jobs:
           - label: Autotools-ubuntu-aarch64-emscripten-ubsan-static
             buildtool: autotools
             runner: ubuntu-24.04-arm
+            setup_prefix: >-
+              CFLAGS="-O1 -g"
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
@@ -1934,6 +1939,8 @@ jobs:
           - label: Autotools-macos-aarch64-emscripten-ubsan-static
             buildtool: autotools
             runner: macos-latest
+            setup_prefix: >-
+              CFLAGS="-O1 -g"
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
@@ -1985,7 +1992,7 @@ jobs:
             buildtool: autotools
             runner: ubuntu-24.04-arm
             setup_prefix: >-
-              CFLAGS="-fprofile-instr-generate -fcoverage-mapping"
+              CFLAGS="-O1 -fprofile-instr-generate -fcoverage-mapping"
               LDFLAGS="-fprofile-instr-generate"
             setup_options: >-
               --host=wasm32-unknown-emscripten
@@ -2019,7 +2026,7 @@ jobs:
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
-              CFLAGS="-fprofile-instr-generate -fcoverage-mapping"
+              CFLAGS="-O1 -fprofile-instr-generate -fcoverage-mapping"
               LDFLAGS="-fprofile-instr-generate"
             setup_options: >-
               --host=wasm32-unknown-emscripten
