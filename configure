@@ -962,6 +962,14 @@ enable_sanitizer
 enable_img2sixel
 enable_sixel2png
 enable_abort_trace
+enable_emscripten_retain_compiler_settings
+enable_emscripten_noderawfs
+with_emscripten_stack_size
+with_emscripten_initial_memory
+enable_emscripten_allow_memory_growth
+enable_emscripten_single_file
+enable_emscripten_wasm_bigint
+enable_emscripten_assertions
 enable_threads
 enable_amalgamated_lib
 enable_amalgamated_tools
@@ -1694,6 +1702,24 @@ Optional Features:
   --disable-sixel2png     disable building the sixel2png utility (default: no)
   --enable-abort-trace    enable abort stack trace support for CLI tools
                           (default: auto)
+  --disable-emscripten-retain_compiler_settings
+                          disable -sRETAIN_COMPILER_SETTINGS=1 on emscripten
+                          builds (default: enabled)
+  --disable-emscripten-noderawfs
+                          disable -sNODERAWFS=1 on emscripten builds (default:
+                          enabled)
+  --disable-emscripten-allow_memory_growth
+                          disable -sALLOW_MEMORY_GROWTH=1 on emscripten builds
+                          (default: enabled)
+  --disable-emscripten-single_file
+                          enable -sSINGLE_FILE=1 on emscripten builds
+                          (default: disabled)
+  --disable-emscripten-wasm_bigint
+                          enable -sWASM_BIGINT=1 on emscripten builds
+                          (default: disabled)
+  --disable-emscripten-assertions
+                          add -sASSERTIONS=0 on emscripten builds (default:
+                          disabled)
   --disable-threads       disable internal threadpool support (default: auto)
   --enable-amalgamated-lib
                           build libsixel from the amalgamated source (default:
@@ -1731,6 +1757,10 @@ Optional Packages:
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
   --with-sysroot[=DIR]    Search for dependent libraries within DIR (or the
                           compiler's sysroot if not specified).
+  --with-emscripten-stack_size=SIZE
+                          set emscripten stack size (default: 786432)
+  --with-emscripten-initial_memory=SIZE
+                          set emscripten initial memory (default: 268435456)
   --with-shebang-file=PATH
                           prepend PATH contents to generated executables
   --with-gdk-pixbuf2      whether to build with gdk-pixbuf2 (default: no)
@@ -16719,6 +16749,132 @@ else
   HAVE_ABORT_TRACE_FALSE=
 fi
 
+
+# Check whether --enable-emscripten-retain_compiler_settings was given.
+if test ${enable_emscripten_retain_compiler_settings+y}
+then :
+  enableval=$enable_emscripten_retain_compiler_settings;
+else case e in #(
+  e) enable_emscripten_retain_compiler_settings=yes ;;
+esac
+fi
+
+
+# Check whether --enable-emscripten-noderawfs was given.
+if test ${enable_emscripten_noderawfs+y}
+then :
+  enableval=$enable_emscripten_noderawfs;
+else case e in #(
+  e) enable_emscripten_noderawfs=yes ;;
+esac
+fi
+
+
+
+# Check whether --with-emscripten-stack_size was given.
+if test ${with_emscripten_stack_size+y}
+then :
+  withval=$with_emscripten_stack_size; with_emscripten_stack_size="$withval"
+else case e in #(
+  e) with_emscripten_stack_size="786432" ;;
+esac
+fi
+
+
+
+# Check whether --with-emscripten-initial_memory was given.
+if test ${with_emscripten_initial_memory+y}
+then :
+  withval=$with_emscripten_initial_memory; with_emscripten_initial_memory="$withval"
+else case e in #(
+  e) with_emscripten_initial_memory="268435456" ;;
+esac
+fi
+
+
+# Check whether --enable-emscripten-allow_memory_growth was given.
+if test ${enable_emscripten_allow_memory_growth+y}
+then :
+  enableval=$enable_emscripten_allow_memory_growth;
+else case e in #(
+  e) enable_emscripten_allow_memory_growth=yes ;;
+esac
+fi
+
+
+# Check whether --enable-emscripten-single_file was given.
+if test ${enable_emscripten_single_file+y}
+then :
+  enableval=$enable_emscripten_single_file;
+else case e in #(
+  e) enable_emscripten_single_file=yes ;;
+esac
+fi
+
+
+# Check whether --enable-emscripten-wasm_bigint was given.
+if test ${enable_emscripten_wasm_bigint+y}
+then :
+  enableval=$enable_emscripten_wasm_bigint;
+else case e in #(
+  e) enable_emscripten_wasm_bigint=yes ;;
+esac
+fi
+
+
+# Check whether --enable-emscripten-assertions was given.
+if test ${enable_emscripten_assertions+y}
+then :
+  enableval=$enable_emscripten_assertions;
+else case e in #(
+  e) enable_emscripten_assertions=yes ;;
+esac
+fi
+
+
+EMSCRIPTEN_EXTRA_FLAGS=""
+case $host_os in #(
+  emscripten*) :
+    if test "x$enable_emscripten_retain_compiler_settings" = "xyes"
+then :
+  EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sRETAIN_COMPILER_SETTINGS=1"
+fi
+         if test "x$enable_emscripten_noderawfs" = "xyes"
+then :
+  EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sNODERAWFS=1"
+fi
+         if test -n "$with_emscripten_stack_size"
+then :
+  EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sSTACK_SIZE=$with_emscripten_stack_size"
+fi
+         if test -n "$with_emscripten_initial_memory"
+then :
+  EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sINITIAL_MEMORY=$with_emscripten_initial_memory"
+fi
+         if test "x$enable_emscripten_allow_memory_growth" = "xyes"
+then :
+  EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sALLOW_MEMORY_GROWTH=1"
+fi
+                  if test "x$enable_emscripten_single_file" = "xno"
+then :
+  EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sSINGLE_FILE=1"
+fi
+         if test "x$enable_emscripten_wasm_bigint" = "xno"
+then :
+  EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sWASM_BIGINT=1"
+fi
+         if test "x$enable_emscripten_assertions" = "xno"
+then :
+  EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sASSERTIONS=0"
+fi
+         if test -n "$EMSCRIPTEN_EXTRA_FLAGS"
+then :
+  CFLAGS="$CFLAGS $EMSCRIPTEN_EXTRA_FLAGS"
+                LDFLAGS="$LDFLAGS $EMSCRIPTEN_EXTRA_FLAGS"
+fi ;; #(
+  *) :
+     ;;
+esac
 
 # Check whether --enable-threads was given.
 if test ${enable_threads+y}

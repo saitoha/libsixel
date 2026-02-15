@@ -730,6 +730,78 @@ AS_CASE([$host_os],
 AM_CONDITIONAL([HAVE_ABORT_TRACE],
                [test "x$enable_abort_trace" != "xno"])
 
+AC_ARG_ENABLE([emscripten-retain_compiler_settings],
+              [AS_HELP_STRING([--disable-emscripten-retain_compiler_settings],
+                              [disable -sRETAIN_COMPILER_SETTINGS=1 on emscripten builds (default: enabled)])],
+              [],
+              [enable_emscripten_retain_compiler_settings=yes])
+
+AC_ARG_ENABLE([emscripten-noderawfs],
+              [AS_HELP_STRING([--disable-emscripten-noderawfs],
+                              [disable -sNODERAWFS=1 on emscripten builds (default: enabled)])],
+              [],
+              [enable_emscripten_noderawfs=yes])
+
+AC_ARG_WITH([emscripten-stack_size],
+            [AS_HELP_STRING([--with-emscripten-stack_size=SIZE],
+                            [set emscripten stack size (default: 786432)])],
+            [with_emscripten_stack_size="$withval"],
+            [with_emscripten_stack_size="786432"])
+
+AC_ARG_WITH([emscripten-initial_memory],
+            [AS_HELP_STRING([--with-emscripten-initial_memory=SIZE],
+                            [set emscripten initial memory (default: 268435456)])],
+            [with_emscripten_initial_memory="$withval"],
+            [with_emscripten_initial_memory="268435456"])
+
+AC_ARG_ENABLE([emscripten-allow_memory_growth],
+              [AS_HELP_STRING([--disable-emscripten-allow_memory_growth],
+                              [disable -sALLOW_MEMORY_GROWTH=1 on emscripten builds (default: enabled)])],
+              [],
+              [enable_emscripten_allow_memory_growth=yes])
+
+AC_ARG_ENABLE([emscripten-single_file],
+              [AS_HELP_STRING([--disable-emscripten-single_file],
+                              [enable -sSINGLE_FILE=1 on emscripten builds (default: disabled)])],
+              [],
+              [enable_emscripten_single_file=yes])
+
+AC_ARG_ENABLE([emscripten-wasm_bigint],
+              [AS_HELP_STRING([--disable-emscripten-wasm_bigint],
+                              [enable -sWASM_BIGINT=1 on emscripten builds (default: disabled)])],
+              [],
+              [enable_emscripten_wasm_bigint=yes])
+
+AC_ARG_ENABLE([emscripten-assertions],
+              [AS_HELP_STRING([--disable-emscripten-assertions],
+                              [add -sASSERTIONS=0 on emscripten builds (default: disabled)])],
+              [],
+              [enable_emscripten_assertions=yes])
+
+EMSCRIPTEN_EXTRA_FLAGS=""
+AS_CASE([$host_os],
+        [emscripten*],
+        [AS_IF([test "x$enable_emscripten_retain_compiler_settings" = "xyes"],
+               [EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sRETAIN_COMPILER_SETTINGS=1"])
+         AS_IF([test "x$enable_emscripten_noderawfs" = "xyes"],
+               [EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sNODERAWFS=1"])
+         AS_IF([test -n "$with_emscripten_stack_size"],
+               [EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sSTACK_SIZE=$with_emscripten_stack_size"])
+         AS_IF([test -n "$with_emscripten_initial_memory"],
+               [EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sINITIAL_MEMORY=$with_emscripten_initial_memory"])
+         AS_IF([test "x$enable_emscripten_allow_memory_growth" = "xyes"],
+               [EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sALLOW_MEMORY_GROWTH=1"])
+         dnl These toggles intentionally follow the user-requested disable syntax.
+         AS_IF([test "x$enable_emscripten_single_file" = "xno"],
+               [EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sSINGLE_FILE=1"])
+         AS_IF([test "x$enable_emscripten_wasm_bigint" = "xno"],
+               [EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sWASM_BIGINT=1"])
+         AS_IF([test "x$enable_emscripten_assertions" = "xno"],
+               [EMSCRIPTEN_EXTRA_FLAGS="$EMSCRIPTEN_EXTRA_FLAGS -sASSERTIONS=0"])
+         AS_IF([test -n "$EMSCRIPTEN_EXTRA_FLAGS"],
+               [CFLAGS="$CFLAGS $EMSCRIPTEN_EXTRA_FLAGS"
+                LDFLAGS="$LDFLAGS $EMSCRIPTEN_EXTRA_FLAGS"])])
+
 AC_ARG_ENABLE([threads],
               [AS_HELP_STRING([--disable-threads],
                               [disable internal threadpool support (default: auto)])],
