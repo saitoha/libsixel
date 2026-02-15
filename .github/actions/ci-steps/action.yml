@@ -640,8 +640,22 @@ runs:
             -instr-profile=coverage.profdata \
             "${COV_OBJECTS[@]}" > coverage.info || true
         elif command -v gcovr >/dev/null 2>&1; then
-          gcovr -r . --lcov -o coverage.info \
-            --gcov-executable gcov-14 || true
+          GCOV_TOOL=""
+          # Prefer llvm-cov for clang coverage so gcovr can read
+          # llvm-generated profiling data correctly.
+          if command -v llvm-cov >/dev/null 2>&1; then
+            GCOV_TOOL="llvm-cov gcov"
+          elif command -v gcov-14 >/dev/null 2>&1; then
+            # Keep gcc-14 compatibility where gcov-14 is available.
+            GCOV_TOOL="gcov-14"
+          fi
+
+          if [ -n "$GCOV_TOOL" ]; then
+            gcovr -r . --lcov -o coverage.info \
+              --gcov-executable "$GCOV_TOOL" || true
+          else
+            gcovr -r . --lcov -o coverage.info || true
+          fi
         elif command -v lcov >/dev/null 2>&1; then
           # Keep src for static builds; avoid duplicate gcda from src/.libs.
           lcov -c \
