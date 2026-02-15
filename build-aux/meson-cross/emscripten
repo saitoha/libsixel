@@ -11,7 +11,6 @@ needs_exe_wrapper = true
 exe_wrapper = 'node'
 
 [built-in options]
-c_args = ['-O3', '-g0', '-msimd128']
 
 [host_machine]
 system = 'emscripten'

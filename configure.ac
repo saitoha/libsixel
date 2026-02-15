@@ -754,6 +754,12 @@ AC_ARG_WITH([emscripten-initial_memory],
             [with_emscripten_initial_memory="$withval"],
             [with_emscripten_initial_memory="268435456"])
 
+AC_ARG_WITH([emscripten-environment],
+            [AS_HELP_STRING([--with-emscripten-environment=LIST],
+                            [set emscripten ENVIRONMENT list])],
+            [with_emscripten_environment="$withval"],
+            [with_emscripten_environment=""])
+
 AC_ARG_ENABLE([emscripten-allow_memory_growth],
               [AS_HELP_STRING([--disable-emscripten-allow_memory_growth],
                               [disable -sALLOW_MEMORY_GROWTH=1 on emscripten builds (default: enabled)])],
@@ -789,6 +795,8 @@ AS_CASE([$host_os],
                [EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sSTACK_SIZE=$with_emscripten_stack_size"])
          AS_IF([test -n "$with_emscripten_initial_memory"],
                [EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sINITIAL_MEMORY=$with_emscripten_initial_memory"])
+         AS_IF([test -n "$with_emscripten_environment"],
+               [EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sENVIRONMENT=$with_emscripten_environment"])
          AS_IF([test "x$enable_emscripten_allow_memory_growth" = "xyes"],
                [EMSCRIPTEN_LDFLAGS="$EMSCRIPTEN_LDFLAGS -sALLOW_MEMORY_GROWTH=1"])
          dnl These toggles intentionally follow the user-requested disable syntax.
@@ -3004,6 +3012,31 @@ AC_SUBST(LIBS_PRIVATE)
 if test "x${enable_simd}" = xno; then
     message_simd=no
 else
+    case "${host_os}" in
+    emscripten*)
+        if x$ac_cv_header_emmintrin_h = xyes; then
+            AC_MSG_CHECKING([whether the compiler supports -msimd128 and
+                             <emmintrin.h>])
+            saved_CFLAGS="$CFLAGS"
+            simd_flag="-msimd128"
+            CFLAGS="$CFLAGS $simd_flag"
+            AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+                                #include <emmintrin.h>
+                              ]], [[
+                                __m128i a = _mm_setzero_si128();
+                                (void)a;
+                                return 0;
+                              ]])],
+                              [have_sse2=yes],
+                              [have_sse2=no])
+            CFLAGS="$saved_CFLAGS"
+            AC_MSG_RESULT([$have_sse2])
+            if test "x$have_sse2" = xyes; then
+                AM_CFLAGS="$AM_CFLAGS $simd_flag"
+            fi
+        fi
+        ;;
+    *)
     case "${host_cpu}" in
     x86_64|amd64)
         have_sse2=yes
@@ -3066,6 +3099,8 @@ else
     *)
         ;;
 
+    esac
+    ;;
     esac
 fi
 
