@@ -3,11 +3,6 @@
 
 set -eux
 
-man_opts="${ARTIFACT_LOCAL_DIR}/options-man.txt"
-bash_opts="${ARTIFACT_LOCAL_DIR}/options-bash.txt"
-man_sorted="${ARTIFACT_LOCAL_DIR}/options-man-sorted.txt"
-bash_sorted="${ARTIFACT_LOCAL_DIR}/options-bash-sorted.txt"
-
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
