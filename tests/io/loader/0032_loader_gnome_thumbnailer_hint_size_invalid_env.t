@@ -38,10 +38,15 @@ run_img2sixel \
 
 invalid_size=$(cat "${invalid_log}")
 
-if [ -n "${default_size}" ] && [ "${default_size}" = "${invalid_size}" ]; then
-    pass 1 "invalid size env falls back to default hint"
-else
+test -n "${default_size}" || {
     fail 1 "invalid size env fallback check failed"
-fi
+    exit 0
+}
 
+test "${default_size}" = "${invalid_size}" || {
+    fail 1 "invalid size env fallback check failed"
+    exit 0
+}
+
+pass 1 "invalid size env falls back to default hint"
 exit 0
