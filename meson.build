@@ -72,6 +72,52 @@ if get_option('tests')
   conf.set('HAVE_TESTS', 1)
 endif
 
+if host_system == 'emscripten'
+  emscripten_cflags = []
+  emscripten_ldflags = ['-Wno-pthreads-mem-growth']
+
+  if get_option('emscripten_retain_compiler_settings')
+    emscripten_cflags += ['-sRETAIN_COMPILER_SETTINGS=1']
+    emscripten_ldflags += ['-sRETAIN_COMPILER_SETTINGS=1']
+  endif
+  if get_option('emscripten_noderawfs')
+    emscripten_cflags += ['-sNODERAWFS=1']
+    emscripten_ldflags += ['-sNODERAWFS=1']
+  endif
+
+  emscripten_stack_size = get_option('emscripten_stack_size')
+  emscripten_cflags += ['-sSTACK_SIZE=@0@'.format(emscripten_stack_size)]
+  emscripten_ldflags += ['-sSTACK_SIZE=@0@'.format(emscripten_stack_size)]
+
+  emscripten_initial_memory = get_option('emscripten_initial_memory')
+  emscripten_cflags += [
+    '-sINITIAL_MEMORY=@0@'.format(emscripten_initial_memory)
+  ]
+  emscripten_ldflags += [
+    '-sINITIAL_MEMORY=@0@'.format(emscripten_initial_memory)
+  ]
+
+  if get_option('emscripten_allow_memory_growth')
+    emscripten_cflags += ['-sALLOW_MEMORY_GROWTH=1']
+    emscripten_ldflags += ['-sALLOW_MEMORY_GROWTH=1']
+  endif
+  if get_option('emscripten_single_file')
+    emscripten_cflags += ['-sSINGLE_FILE=1']
+    emscripten_ldflags += ['-sSINGLE_FILE=1']
+  endif
+  if get_option('emscripten_wasm_bigint')
+    emscripten_cflags += ['-sWASM_BIGINT=1']
+    emscripten_ldflags += ['-sWASM_BIGINT=1']
+  endif
+  if not get_option('emscripten_assertions')
+    emscripten_cflags += ['-sASSERTIONS=0']
+    emscripten_ldflags += ['-sASSERTIONS=0']
+  endif
+
+  add_project_arguments(emscripten_cflags, language: 'c')
+  add_project_link_arguments(emscripten_ldflags, language: 'c')
+endif
+
 img2sixel_opt = get_option('img2sixel')
 if img2sixel_opt.enabled()
   conf.set('HAVE_IMG2SIXEL', 1)

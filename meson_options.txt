@@ -59,4 +59,20 @@ option('shebang_file', type: 'string', value: '',
        description: 'Path to a shebang template file for built executables')
 option('xsave_probe', type: 'feature', value: 'auto',
        description: 'Probe XGETBV during AVX capability detection')
+option('emscripten_retain_compiler_settings', type: 'boolean', value: true,
+       description: 'Add -sRETAIN_COMPILER_SETTINGS=1 for emscripten builds')
+option('emscripten_noderawfs', type: 'boolean', value: true,
+       description: 'Add -sNODERAWFS=1 for emscripten builds')
+option('emscripten_stack_size', type: 'integer', value: 786432,
+       description: 'Set -sSTACK_SIZE for emscripten builds')
+option('emscripten_initial_memory', type: 'integer', value: 268435456,
+       description: 'Set -sINITIAL_MEMORY for emscripten builds')
+option('emscripten_allow_memory_growth', type: 'boolean', value: true,
+       description: 'Add -sALLOW_MEMORY_GROWTH=1 for emscripten builds')
+option('emscripten_single_file', type: 'boolean', value: false,
+       description: 'Add -sSINGLE_FILE=1 for emscripten builds')
+option('emscripten_wasm_bigint', type: 'boolean', value: false,
+       description: 'Add -sWASM_BIGINT=1 for emscripten builds')
+option('emscripten_assertions', type: 'boolean', value: true,
+       description: 'Keep ASSERTIONS enabled for emscripten builds')
 # vim: set et ts=2:
