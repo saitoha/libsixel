@@ -45,8 +45,32 @@ base_env_settings = [
    ('lsqa' + bin_ext)],
   ['TEST_RUNNER_PATH', meson.project_build_root() / 'tests' /
    ('test_runner' + bin_ext)],
-  ['SIXEL_TEST_CP_CMD', cp_cmd.full_path()],
 ]
+
+thumbnailer_case_dir = join_paths(
+  meson.current_build_dir(),
+  'data/inputs/thumbnailer/cases/0040/thumbnailers',
+)
+thumbnailer_case_src = join_paths(
+  meson.current_source_dir(),
+  'data/inputs/thumbnailer/cases/0040/thumbnailers',
+)
+run_command(
+  sh,
+  '-c',
+  'set -eu; out_dir="$1"; cp_cmd="$2"; src_dir="$3"; ' +
+  'mkdir -p "$out_dir"; ' +
+  'sed "s|@CP_CMD@|${cp_cmd}|g" ' +
+  '"$src_dir/valid-absolute.thumbnailer.in" ' +
+  '>"$out_dir/valid-absolute.thumbnailer"; ' +
+  'cat "$src_dir/missing-absolute.thumbnailer.in" ' +
+  '>"$out_dir/missing-absolute.thumbnailer"',
+  'meson-thumbnailer-gen',
+  thumbnailer_case_dir,
+  cp_cmd.full_path(),
+  thumbnailer_case_src,
+  check: true,
+)
 
 # Meson sets runtime library lookup via rpath/runpath, so test wrappers must
 # not override PATH/LD_LIBRARY_PATH/DYLD_LIBRARY_PATH in this execution path.
@@ -207,15 +231,6 @@ foreach t : tests
   test(t, sh,
     args: ['-c', '''
 mkdir -p "$ARTIFACT_LOCAL_DIR"
-
-thumbnailer_case_dir="${TOP_BUILDDIR}/tests/_generated/thumbnailer/cases/0040/thumbnailers"
-thumbnailer_case_src="${TOP_SRCDIR}/tests/data/inputs/thumbnailer/cases/0040/thumbnailers"
-mkdir -p "$thumbnailer_case_dir"
-sed "s|@SIXEL_TEST_CP_CMD@|${SIXEL_TEST_CP_CMD}|g" \
-  "$thumbnailer_case_src/valid-absolute.thumbnailer" \
-  >"$thumbnailer_case_dir/valid-absolute.thumbnailer"
-cat "$thumbnailer_case_src/missing-absolute.thumbnailer" \
-  >"$thumbnailer_case_dir/missing-absolute.thumbnailer"
 
 python_venv_exports=$(
   "${MESON_SOURCE_ROOT}/build-aux/resolve-python-test-venv.sh" \
