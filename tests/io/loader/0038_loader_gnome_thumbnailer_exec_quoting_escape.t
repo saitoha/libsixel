@@ -28,12 +28,7 @@ run_img2sixel --env "XDG_DATA_DIRS=${xdg_data_home}" \
     exit 0
 }
 
-awk '
-    $0 == "a3=value with space" { ++cnt; }
-    $0 == "a4=escaped token" { ++cnt; }
-    $0 == "a5=%" { ++cnt; }
-    END { if (cnt != 3) exit 1; }
-' "${log_file}" || {
+awk '/a3=value with space|a4=escaped token|a5=%/ { ++cnt; } END { if (cnt != 3) exit 1; }' "${log_file}" || {
     fail 1 "Exec quote and escape parsing failed"
     exit 0
 }

@@ -26,7 +26,7 @@ fi
 printf '1..1\n'
 set -v
 
-if run_img2sixel -H | awk '
+run_img2sixel -H | awk '
     /^[[:space:]]*\*?-/ {
         for (idx = 1; idx <= NF; idx++) {
             field = $idx
@@ -41,19 +41,16 @@ if run_img2sixel -H | awk '
             }
         }
     }
-' >"${help_opts}"; then
-    :
-else
+' >"${help_opts}" || {
     fail 1 "failed to capture --help output"
-fi
+    exit 0
+}
 
-if LC_ALL=C sort "${help_opts}" >"${help_sorted}"; then
-    :
-else
+LC_ALL=C sort "${help_opts}" >"${help_sorted}" || {
     fail 1 "failed to sort --help output"
-fi
+}
 
-if awk '
+awk '
     /^\.[ \t]*B[ \t]/ {
         for (idx = 2; idx <= NF; idx++) {
             field = $idx
@@ -67,22 +64,20 @@ if awk '
             }
         }
     }
-' "${top_srcdir}/converters/img2sixel.1" >"${man_opts}"; then
-    :
-else
+' "${top_srcdir}/converters/img2sixel.1" >"${man_opts}" || {
     fail 1 "failed to parse manpage"
-fi
+    exit 0
+}
 
-if LC_ALL=C sort "${man_opts}" >"${man_sorted}"; then
-    :
-else
+LC_ALL=C sort "${man_opts}" >"${man_sorted}" || {
     fail 1 "failed to sort manpage options"
-fi
+    exit 0
+}
 
-if diff -u "${help_sorted}" "${man_sorted}"; then
-    pass 1 "--help matches manpage"
-else
+test "$(cksum < "${help_sorted}")" = "$(cksum < "${man_sorted}")" || {
     fail 1 "--help diverges from manpage"
-fi
+    exit 0
+}
 
+pass 1 "--help matches manpage"
 exit 0

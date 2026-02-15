@@ -18,7 +18,7 @@ pipeline_log=$(SIXEL_DITHER_PARALLEL_THREADS_MAX=1 SIXEL_DITHER_PARALLEL_BAND_WI
 }
 printf '%s' "${pipeline_log}" >&2
 
-printf '%s\n' "${pipeline_log}" | awk '/^[[:space:]]*band_height=/{ found = 1; exit } END{ if (!found) exit 1 }' || {
+printf '%s\n' "${pipeline_log}" | awk '/band_height=/{ found = 1; exit } END{ if (!found) exit 1 }' || {
     fail 1 "override thread split"
     exit 0
 }

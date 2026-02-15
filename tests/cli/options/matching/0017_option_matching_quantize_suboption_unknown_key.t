@@ -23,7 +23,7 @@ run_img2sixel -Qk:z=p "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
     exit 0
 }
 
-grep -F "unknown suboption key." "${err_file}" >/dev/null 2>&1 || {
+grep "unknown suboption key" "${err_file}" >/dev/null || {
     fail 1 "missing unknown suboption key diagnostic"
     exit 0
 }

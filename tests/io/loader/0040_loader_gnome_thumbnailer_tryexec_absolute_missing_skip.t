@@ -16,7 +16,7 @@ set -v
 
 input_png="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/gnome_tryexec_absolute_missing_skip.sixel"
-xdg_data_home="${TOP_SRCDIR}/tests/data/inputs/thumbnailer/cases/0040"
+xdg_data_home="${TOP_BUILDDIR}/tests/_generated/thumbnailer/cases/0040"
 
 run_img2sixel --env "XDG_DATA_DIRS=${xdg_data_home}" \
               --env "HOME=${ARTIFACT_LOCAL_DIR}" \
