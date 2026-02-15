@@ -1,4 +1,5 @@
 sh = find_program('sh')
+cp_cmd = find_program('cp', required: true)
 artifact_root = meson.current_build_dir() / '_artifacts'
 cross_compiling = 'no'
 if meson.is_cross_build()
@@ -44,6 +45,7 @@ base_env_settings = [
    ('lsqa' + bin_ext)],
   ['TEST_RUNNER_PATH', meson.project_build_root() / 'tests' /
    ('test_runner' + bin_ext)],
+  ['SIXEL_TEST_CP_CMD', cp_cmd.full_path()],
 ]
 
 # Meson sets runtime library lookup via rpath/runpath, so test wrappers must
@@ -205,6 +207,15 @@ foreach t : tests
   test(t, sh,
     args: ['-c', '''
 mkdir -p "$ARTIFACT_LOCAL_DIR"
+
+thumbnailer_case_dir="${TOP_BUILDDIR}/tests/_generated/thumbnailer/cases/0040/thumbnailers"
+thumbnailer_case_src="${TOP_SRCDIR}/tests/data/inputs/thumbnailer/cases/0040/thumbnailers"
+mkdir -p "$thumbnailer_case_dir"
+sed "s|@SIXEL_TEST_CP_CMD@|${SIXEL_TEST_CP_CMD}|g" \
+  "$thumbnailer_case_src/valid-absolute.thumbnailer" \
+  >"$thumbnailer_case_dir/valid-absolute.thumbnailer"
+cat "$thumbnailer_case_src/missing-absolute.thumbnailer" \
+  >"$thumbnailer_case_dir/missing-absolute.thumbnailer"
 
 python_venv_exports=$(
   "${MESON_SOURCE_ROOT}/build-aux/resolve-python-test-venv.sh" \

@@ -29,13 +29,7 @@ run_img2sixel --env "XDG_DATA_DIRS=${xdg_data_home}" \
     exit 0
 }
 
-awk '
-    /^uri=file:\/\// { ++cnt; }
-    /^size=123$/ { ++cnt; }
-    /^mime=image\/png$/ { ++cnt; }
-    /^percent=%$/ { ++cnt; }
-    END { if (cnt != 4) exit 1; }
-' "${log_file}" || {
+awk '/^uri=file:\/\/|^size=123$|^mime=image\/png$|^percent=%$/ { ++cnt; } END { if (cnt != 4) exit 1; } ' "${log_file}" || {
     fail 1 "gnome-thumbnailer Exec placeholder test failed"
     exit 0
 }

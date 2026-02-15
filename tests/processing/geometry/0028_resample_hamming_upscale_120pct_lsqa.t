@@ -34,16 +34,15 @@ lsqa_err=$(
     run_lsqa -b "MS-SSIM:${lsqa_floor}" "${reference_image}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
-[ "${lsqa_run_status:-0}" -eq 0 ] && {
-    pass 1 "hamming upscale 120pct lsqa passed"
-    exit 0
-}
-
-[ "${lsqa_run_status}" -eq 5 ] && {
+test "${lsqa_run_status-}" = 5 && {
     fail 1 "${lsqa_err}"
     exit 0
 }
 
-fail 1 "hamming upscale 120pct lsqa failed"
+test "${lsqa_run_status:-}" = "" || {
+    fail 1 "hamming upscale 120pct lsqa failed"
+    exit 0
+}
 
+pass 1 "hamming upscale 120pct lsqa passed"
 exit 0

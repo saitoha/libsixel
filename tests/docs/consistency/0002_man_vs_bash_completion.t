@@ -26,7 +26,7 @@ fi
 printf '1..1\n'
 set -v
 
-if awk '
+awk '
     /^\.[ \t]*B[ \t]/ {
         for (idx = 2; idx <= NF; idx++) {
             field = $idx
@@ -40,19 +40,17 @@ if awk '
             }
         }
     }
-' "${top_srcdir}/converters/img2sixel.1" >"${man_opts}"; then
-    :
-else
+' "${top_srcdir}/converters/img2sixel.1" >"${man_opts}" || {
     fail 1 "failed to parse manpage"
-fi
+    exit 0
+}
 
-if LC_ALL=C sort "${man_opts}" >"${man_sorted}"; then
-    :
-else
+LC_ALL=C sort "${man_opts}" >"${man_sorted}" || {
     fail 1 "failed to sort manpage options"
-fi
+    exit 0
+}
 
-if awk '
+awk '
     function emit(opt) {
         sub(/[ \t]+$/, "", opt)
         sub(/\\$/, "", opt)
@@ -65,22 +63,20 @@ if awk '
         emit($2)
     }
 ' "${top_srcdir}/converters/shell-completion/bash/img2sixel" \
-        | LC_ALL=C sort -u >"${bash_opts}"; then
-    :
-else
+        | LC_ALL=C sort -u >"${bash_opts}" || {
     fail 1 "failed to parse bash completion"
-fi
+    exit 0
+}
 
-if LC_ALL=C sort "${bash_opts}" >"${bash_sorted}"; then
-    :
-else
+LC_ALL=C sort "${bash_opts}" >"${bash_sorted}" || {
     fail 1 "failed to sort bash completion"
-fi
+    exit 0
+}
 
-if diff -u "${man_sorted}" "${bash_sorted}"; then
-    pass 1 "manpage matches bash completion"
-else
+test "$(cksum < "${man_sorted}")" = "$(cksum < "${bash_sorted}")" || {
     fail 1 "manpage diverges from bash completion"
-fi
+    exit 0
+}
 
+pass 1 "manpage matches bash completion"
 exit 0
