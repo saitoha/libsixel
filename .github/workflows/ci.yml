@@ -717,13 +717,12 @@ jobs:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-  core-autotools:
+  core-autotools-ubuntu:
     needs: [coverage-autotools]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
-      max-parallel: 4
       matrix:
         include:
           - label: Autotools-ubuntu-x86_64-clang
@@ -791,6 +790,31 @@ jobs:
               gcc-multilib
             exec_type: bash
 
+    steps:
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+
+  core-autotools-macos:
+    needs: [core-autotools-ubuntu]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
           - label: Autotools-macos-aarch64-amalgamated-lib-disable-appkit
             buildtool: autotools
             runner: macos-latest
@@ -807,6 +831,32 @@ jobs:
               --enable-amalgamated-tools
             exec_type: bash
 
+    steps:
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+
+  core-autotools-msys2-variants:
+    needs: [coverage-autotools]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
           - label: Autotools-msys2-mingw64-no-tools
             buildtool: autotools
             runner: windows-latest
@@ -874,7 +924,7 @@ jobs:
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
-      max-parallel: 4
+      max-parallel: 2
       matrix:
         include:
           - label: Autotools-cygwin64-gcc
@@ -913,12 +963,12 @@ jobs:
 
 
   core-autotools-msvc_abi:
-    needs: [core-autotools]
+    needs: [core-autotools-msys2-variants]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
-      max-parallel: 4
+      max-parallel: 2
       matrix:
         include:
           - label: Autotools-msys2-msys-vs_clangcl
@@ -1415,7 +1465,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           parallel-finished: true
 
-  asan-ubsan-lsan:
+  asan-ubsan-lsan-ubuntu:
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -1609,6 +1659,64 @@ jobs:
               gdk-pixbuf
             exec_type: bash
 
+    steps:
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+
+  asan-ubsan-lsan-macos:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - label: Autotools-macos-aarch64-ASan-UBSan-gdk-pixbuf2
+            buildtool: autotools
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+              CFLAGS="-fsanitize=address,undefined -O1 -g -fno-omit-frame-pointer"
+              LDFLAGS="-fsanitize=address,undefined"
+            setup_options: >-
+              --without-png
+              --without-jpeg
+              --without-tiff
+              --with-gdk-pixbuf2
+            extra_packages: >-
+              gdk-pixbuf
+            exec_type: bash
+
+          - label: Meson-macos-aarch64-ASan-UBSan-gdk-pixbuf2
+            buildtool: meson
+            runner: macos-latest
+            setup_prefix: >-
+              CC=clang
+            setup_options: >-
+              --buildtype=debugoptimized
+              -Db_sanitize=address,undefined
+              -Db_lundef=false
+              -Db_ndebug=false
+              -Dpng=disabled
+              -Djpeg=disabled
+              -Dtiff=disabled
+              -Dgdk_pixbuf2=enabled
+            extra_packages: >-
+              meson
+              gdk-pixbuf
+            exec_type: bash
+
           - label: Autotools-macos-aarch64-ASan-UBSan-GD
             buildtool: autotools
             runner: macos-latest
@@ -1644,6 +1752,29 @@ jobs:
               gd
             exec_type: bash
 
+    steps:
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+
+  asan-ubsan-lsan-msys2-clang64:
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
           - label: Autotools-msys2-clang64-ASan-UBSan
             buildtool: autotools
             runner: windows-latest
@@ -1691,7 +1822,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   msan:
-    needs: [asan-ubsan-lsan]
+    needs: [asan-ubsan-lsan-ubuntu, asan-ubsan-lsan-macos, asan-ubsan-lsan-msys2-clang64]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
@@ -1743,7 +1874,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   tsan:
-    needs: [asan-ubsan-lsan]
+    needs: [asan-ubsan-lsan-ubuntu, asan-ubsan-lsan-macos, asan-ubsan-lsan-msys2-clang64]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:

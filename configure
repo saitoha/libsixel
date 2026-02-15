@@ -21020,14 +21020,13 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
     ;;
 esac
 
+have_freedesktop_thumbnailing_prereqs=no
 if test "x$ac_cv_header_unistd_h" = "xyes" &&
        test "x$ac_cv_header_sys_wait_h" = "xyes" &&
        test "x$ac_cv_func_fork" = "xyes" &&
        test "x$ac_cv_header_emscripten_h" != "xyes"
 then :
-
-printf "%s\n" "#define HAVE_FREEDESKTOP_THUMBNAILING 1" >>confdefs.h
-
+  have_freedesktop_thumbnailing_prereqs=yes
 fi
 
 # Extract the first word of "file", so it can be a program name with args.
@@ -21122,7 +21121,7 @@ printf "%s\n" "no" >&6; }
 fi
 
 
-sixel_file_mime_option='-i'
+sixel_file_mime_option=''
 if test -n "$FILE_CMD"; then
     { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for file(1) MIME option" >&5
 printf %s "checking for file(1) MIME option... " >&6; }
@@ -21131,18 +21130,31 @@ printf %s "checking for file(1) MIME option... " >&6; }
         sixel_file_mime_output=`"$FILE_CMD" "$sixel_candidate" \
             "$sixel_file_mime_fixture" 2>/dev/null | tr -d '\r'`
         case "$sixel_file_mime_output" in
-            *image/png*)
+            image/*|*:[:space:]image/*|*" image/"*)
                 sixel_file_mime_option="$sixel_candidate"
                 break
                 ;;
         esac
     done
-    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_file_mime_option" >&5
+    if test -n "$sixel_file_mime_option"; then
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_file_mime_option" >&5
 printf "%s\n" "$sixel_file_mime_option" >&6; }
+    else
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: none" >&5
+printf "%s\n" "none" >&6; }
+    fi
 fi
 
 printf "%s\n" "#define SIXEL_FILE_MIME_OPTION \"$sixel_file_mime_option\"" >>confdefs.h
 
+
+if test "x$have_freedesktop_thumbnailing_prereqs" = "xyes" &&
+       test -n "$sixel_file_mime_option"
+then :
+
+printf "%s\n" "#define HAVE_FREEDESKTOP_THUMBNAILING 1" >>confdefs.h
+
+fi
 
 if test x$ac_cv_header_windows_h = xyes; then
 
