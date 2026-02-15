@@ -12,68 +12,19 @@ bash_sorted="${ARTIFACT_LOCAL_DIR}/options-bash-sorted.txt"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-die_skip() {
-    reason=$1
-    echo "1..1"
-    echo "ok 1 - skip ${reason}"
-    exit 0
-}
-
-if ! command -v diff >/dev/null 2>&1; then
-    die_skip "diff not available"
-fi
-
 printf '1..1\n'
 set -v
 
-awk '
-    /^\.[ \t]*B[ \t]/ {
-        for (idx = 2; idx <= NF; idx++) {
-            field = $idx
-            gsub(/\\/, "", field)
-            gsub(/,/, "", field)
-            if (field ~ /^--/) {
-                sub(/=.*/, "", field)
-            }
-            if (field ~ /^-/ && field != "-") {
-                print field
-            }
-        }
-    }
-' "${top_srcdir}/converters/img2sixel.1" >"${man_opts}" || {
-    fail 1 "failed to parse manpage"
-    exit 0
-}
+sum1=$(awk '
+/^\.B \\-\\?[A-Za-z0-9],/ { gsub(/\\|,/, ""); print $2, $3; }
+/^\.B \\-\\?[A-Za-z0-9] / { gsub(/=?\\fI[A-Z]+\\fP|\\/, ""); print $2, $4; }
+' "${TOP_SRCDIR}/converters/img2sixel.1" | cksum)
 
-LC_ALL=C sort "${man_opts}" >"${man_sorted}" || {
-    fail 1 "failed to sort manpage options"
-    exit 0
-}
+sum2=$(awk '
+/^ +-[0-9A-Za-z] --.*\\$/ { print $1, $2; }
+' "${TOP_SRCDIR}/converters/shell-completion/bash/img2sixel" | cksum)
 
-awk '
-    function emit(opt) {
-        sub(/[ \t]+$/, "", opt)
-        sub(/\\$/, "", opt)
-        if (opt ~ /^-/) {
-            print opt
-        }
-    }
-    /^[ \t]*-[^ \t]+[ \t]+--/ {
-        emit($1)
-        emit($2)
-    }
-' "${top_srcdir}/converters/shell-completion/bash/img2sixel" \
-        | LC_ALL=C sort -u >"${bash_opts}" || {
-    fail 1 "failed to parse bash completion"
-    exit 0
-}
-
-LC_ALL=C sort "${bash_opts}" >"${bash_sorted}" || {
-    fail 1 "failed to sort bash completion"
-    exit 0
-}
-
-test "$(cksum < "${man_sorted}")" = "$(cksum < "${bash_sorted}")" || {
+test "${sum1}" = "${sum2}" || {
     fail 1 "manpage diverges from bash completion"
     exit 0
 }
