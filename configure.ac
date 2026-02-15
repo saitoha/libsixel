@@ -3410,6 +3410,8 @@ AC_CONFIG_FILES([Makefile
                  examples/windows/Makefile
                  images/Makefile
                  tests/Makefile
+                 tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer:tests/data/inputs/thumbnailer/cases/0040/thumbnailers/valid-absolute.thumbnailer.in
+                 tests/data/inputs/thumbnailer/cases/0040/thumbnailers/missing-absolute.thumbnailer:tests/data/inputs/thumbnailer/cases/0040/thumbnailers/missing-absolute.thumbnailer.in
                  python/Makefile
                  ruby/Makefile
                  ruby/lib/libsixel/version_runtime.rb

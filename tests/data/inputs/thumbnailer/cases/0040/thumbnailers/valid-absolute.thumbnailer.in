@@ -1,0 +1,4 @@
+[Thumbnailer Entry]
+TryExec=@CP_CMD@
+Exec=@CP_CMD@ %i %o
+MimeType=image/png;
