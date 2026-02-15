@@ -604,7 +604,7 @@ AC_DEFINE([HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS],
 ])
 
 AC_ARG_ENABLE([sanitizer],
-              [AS_HELP_STRING([--enable-sanitizer=@<:@no|address,undefined|memory|thread@:>@],
+              [AS_HELP_STRING([--enable-sanitizer=@<:@no|address|undefined|address,undefined|memory|thread@:>@],
                               [enable sanitizer instrumentation and add
                                recommended compile/link flags
                                (default: no)])],
@@ -614,6 +614,12 @@ AS_CASE([$enable_sanitizer],
         [no],
         [sixel_sanitizer_cflags=""
          sixel_sanitizer_ldflags=""],
+        [address],
+        [sixel_sanitizer_cflags="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=address"],
+        [undefined],
+        [sixel_sanitizer_cflags="-fsanitize=undefined -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=undefined"],
         [address,undefined],
         [sixel_sanitizer_cflags="-fsanitize=address,undefined -O1 -g -fno-omit-frame-pointer"
          sixel_sanitizer_ldflags="-fsanitize=address,undefined"],

@@ -1687,7 +1687,7 @@ Optional Features:
   --disable-dependency-tracking
                           speeds up one-time build
   --disable-libtool-lock  avoid locking (might break parallel builds)
-  --enable-sanitizer=[no|address,undefined|memory|thread]
+  --enable-sanitizer=[no|address|undefined|address,undefined|memory|thread]
                           enable sanitizer instrumentation and add recommended
                           compile/link flags (default: no)
   --disable-img2sixel     disable building the img2sixel utility (default: no)
@@ -16525,6 +16525,12 @@ case $enable_sanitizer in #(
   no) :
     sixel_sanitizer_cflags=""
          sixel_sanitizer_ldflags="" ;; #(
+  address) :
+    sixel_sanitizer_cflags="-fsanitize=address -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=address" ;; #(
+  undefined) :
+    sixel_sanitizer_cflags="-fsanitize=undefined -O1 -g -fno-omit-frame-pointer"
+         sixel_sanitizer_ldflags="-fsanitize=undefined" ;; #(
   address,undefined) :
     sixel_sanitizer_cflags="-fsanitize=address,undefined -O1 -g -fno-omit-frame-pointer"
          sixel_sanitizer_ldflags="-fsanitize=address,undefined" ;; #(

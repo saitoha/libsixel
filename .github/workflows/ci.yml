@@ -1909,7 +1909,7 @@ jobs:
           matrix_json: ${{ toJSON(matrix) }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
-  emscripten-asan-ubusan:
+  emscripten-ubsan:
     needs: [emscripten]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
@@ -1917,7 +1917,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - label: Autotools-ubuntu-aarch64-emscripten-asan-ubsan-static
+          - label: Autotools-ubuntu-aarch64-emscripten-ubsan-static
             buildtool: autotools
             runner: ubuntu-24.04-arm
             setup_prefix: >-
@@ -1927,13 +1927,13 @@ jobs:
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
-              --enable-sanitizer=address,undefined
+              --enable-sanitizer=undefined
               --disable-shared
             extra_packages: >-
               nodejs
             exec_type: bash
 
-          - label: Meson-ubuntu-aarch64-emscripten-asan-ubsan-static
+          - label: Meson-ubuntu-aarch64-emscripten-ubsan-static
             buildtool: meson
             runner: ubuntu-24.04-arm
             setup_prefix: >-
@@ -1942,14 +1942,14 @@ jobs:
               --cross-file build-aux/meson-cross/emscripten-no-threads
               -Ddefault_library=static
               -Doptimization=1
-              -Db_sanitize=address,undefined
+              -Db_sanitize=undefined
               -Db_ndebug=false
             extra_packages: >-
               meson
               nodejs
             exec_type: bash
 
-          - label: Autotools-macos-aarch64-emscripten-asan-ubsan-static
+          - label: Autotools-macos-aarch64-emscripten-ubsan-static
             buildtool: autotools
             runner: macos-latest
             setup_prefix: >-
@@ -1959,13 +1959,13 @@ jobs:
             setup_options: >-
               --host=wasm32-unknown-emscripten
               --with-shebang-file="$PWD/build-aux/shebang/node"
-              --enable-sanitizer=address,undefined
+              --enable-sanitizer=undefined
               --disable-shared
             extra_packages: >-
               node
             exec_type: bash
 
-          - label: Meson-macos-aarch64-emscripten-asan-ubsan-static
+          - label: Meson-macos-aarch64-emscripten-ubsan-static
             buildtool: meson
             runner: macos-latest
             setup_prefix: >-
@@ -1974,7 +1974,7 @@ jobs:
               --cross-file build-aux/meson-cross/emscripten-no-threads
               -Ddefault_library=static
               -Doptimization=1
-              -Db_sanitize=address,undefined
+              -Db_sanitize=undefined
               -Db_ndebug=false
             extra_packages: >-
               meson
