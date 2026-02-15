@@ -1778,17 +1778,16 @@ case "${host_os}" in
     ;;
 esac
 
+have_freedesktop_thumbnailing_prereqs=no
 AS_IF([test "x$ac_cv_header_unistd_h" = "xyes" &&
        test "x$ac_cv_header_sys_wait_h" = "xyes" &&
        test "x$ac_cv_func_fork" = "xyes" &&
        test "x$ac_cv_header_emscripten_h" != "xyes"],
-      [AC_DEFINE([HAVE_FREEDESKTOP_THUMBNAILING], [1],
-                 [Define to 1 when freedesktop thumbnailing loader
-                  prerequisites are available.])])
+      [have_freedesktop_thumbnailing_prereqs=yes])
 
 AC_PATH_PROG([FILE_CMD], [file])
 AC_PATH_PROG([CP_CMD], [cp])
-sixel_file_mime_option='-i'
+sixel_file_mime_option=''
 if test -n "$FILE_CMD"; then
     AC_MSG_CHECKING([for file(1) MIME option])
     sixel_file_mime_fixture="${srcdir}/tests/data/inputs/formats/rgba.png"
@@ -1796,17 +1795,27 @@ if test -n "$FILE_CMD"; then
         sixel_file_mime_output=`"$FILE_CMD" "$sixel_candidate" \
             "$sixel_file_mime_fixture" 2>/dev/null | tr -d '\r'`
         case "$sixel_file_mime_output" in
-            *image/png*)
+            image/*|*:[[:space:]]image/*|*" image/"*)
                 sixel_file_mime_option="$sixel_candidate"
                 break
                 ;;
         esac
     done
-    AC_MSG_RESULT([$sixel_file_mime_option])
+    if test -n "$sixel_file_mime_option"; then
+        AC_MSG_RESULT([$sixel_file_mime_option])
+    else
+        AC_MSG_RESULT([none])
+    fi
 fi
 AC_DEFINE_UNQUOTED([SIXEL_FILE_MIME_OPTION], ["$sixel_file_mime_option"],
                    [file(1) option used to obtain MIME type in thumbnailer
                     loader.])
+
+AS_IF([test "x$have_freedesktop_thumbnailing_prereqs" = "xyes" &&
+       test -n "$sixel_file_mime_option"],
+      [AC_DEFINE([HAVE_FREEDESKTOP_THUMBNAILING], [1],
+                 [Define to 1 when freedesktop thumbnailing loader
+                  prerequisites are available.])])
 
 if test x$ac_cv_header_windows_h = xyes; then
     AC_DEFINE([HAVE_WINDOWS_PROC], [1],
