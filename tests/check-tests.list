@@ -444,6 +444,16 @@ quality_gate/ms_ssim/0069_lsqa_wic_format_ico_palette.t
 quality_gate/ms_ssim/0070_lsqa_wic_format_ico_rgba.t
 quality_gate/ms_ssim/0071_lsqa_wic_format_dds_dxt1.t
 quality_gate/ms_ssim/0072_lsqa_wic_format_dds_dxt5.t
+quality_gate/ms_ssim/0073_lsqa_wic_format_bmp3_rle8.t
+quality_gate/ms_ssim/0074_lsqa_wic_format_jpeg_progressive_420.t
+quality_gate/ms_ssim/0075_lsqa_wic_format_jpeg_444.t
+quality_gate/ms_ssim/0076_lsqa_wic_format_png_gray16.t
+quality_gate/ms_ssim/0077_lsqa_wic_format_png_adam7_rgb.t
+quality_gate/ms_ssim/0078_lsqa_wic_format_png_palette_trns.t
+quality_gate/ms_ssim/0079_lsqa_wic_format_tiff_zip_rgb.t
+quality_gate/ms_ssim/0080_lsqa_wic_format_tiff_rle_rgb.t
+quality_gate/ms_ssim/0081_lsqa_wic_format_ico_multisize.t
+quality_gate/ms_ssim/0082_lsqa_wic_format_dds_dxt3.t
 quant/mapfile/0001_mapfile_export_act.t
 quant/mapfile/0002_mapfile_export_pal_default.t
 quant/mapfile/0003_mapfile_export_pal_stdout.t
