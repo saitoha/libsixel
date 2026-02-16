@@ -33,9 +33,6 @@ test -n "${PYTHON}" || {
     exit 0
 }
 
-# Keep a single Python command path for portability across environments.
-export PYTHON
-
 cert_dir="${script_dir}/certs"
 server_root="${TOP_SRCDIR}"
 
@@ -100,14 +97,12 @@ if __name__ == '__main__':
 PY
 
 server_pid_file="${ARTIFACT_LOCAL_DIR}/curl-server-pid"
-cd "${server_root}" || exit 1
-"${PYTHON}" "${ARTIFACT_LOCAL_DIR}/server.py" &
+cd "${server_root}" && "${PYTHON}" "${ARTIFACT_LOCAL_DIR}/server.py" &
 echo $! >"${server_pid_file}"
 server_pid=$(cat "${server_pid_file}")
-rm -f "${server_pid_file}"
 
 server_port=""
-for _ in 1 2 3 4 5 6 7 8 9 10; do
+for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
     test -s "${port_file}" && {
         server_port=$(cat "${port_file}")
         break
@@ -115,7 +110,7 @@ for _ in 1 2 3 4 5 6 7 8 9 10; do
 
     kill -0 "${server_pid}" 2>/dev/null || break
 
-    "${PYTHON}" -c "import time; time.sleep(0.001)"
+    "${PYTHON}" -c "import time; time.sleep(0.01)"
 done
 
 test -n "${server_port}" || {
@@ -135,7 +130,7 @@ for _ in 1 2 3; do
         break
     }
 
-    "${PYTHON}" -c "import time; time.sleep(0.001)"
+    "${PYTHON}" -c "import time; time.sleep(0.01)"
 done
 
 kill "${server_pid}" 2>/dev/null || :
