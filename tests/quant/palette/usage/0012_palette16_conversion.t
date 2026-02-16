@@ -10,7 +10,7 @@ echo "1..1"
 set -v
 
 snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
-map16_palette="${images_dir}/map16-palette.png"
+map16_palette="${TOP_SRCDIR}/images/map16-palette.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/palette16.sixel"
 
 run_img2sixel -7 -m "${map16_palette}" -Efast "${snake_jpg}" >"${target_sixel}" || {

@@ -10,9 +10,9 @@ config_macro_defined HAVE_SIXEL2PNG || skip_all "sixel2png is disabled in this b
 echo "1..1"
 set -v
 
-png_err=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "sixel2png-png-err")
+png_err="${ARTIFACT_LOCAL_DIR}/sixel2png-png-err"
 
-run_sixel2png -o "png:" <"${images_dir}/map8.six" \
+run_sixel2png -o "png:" <"${TOP_SRCDIR}/images/map8.six" \
         >"${ARTIFACT_LOCAL_DIR}/capture.$$" 2>"${png_err}" && {
     fail 1 "accepts empty png: prefix"
     exit 0

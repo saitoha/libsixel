@@ -9,7 +9,7 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-snake_ppm="${top_srcdir}/tests/data/inputs/small.ppm"
+snake_ppm="${TOP_SRCDIR}/tests/data/inputs/small.ppm"
 target_sixel="${ARTIFACT_LOCAL_DIR}/vt340-colour.sixel"
 
 run_img2sixel -bvt340color "${snake_ppm}" >"${target_sixel}" || {

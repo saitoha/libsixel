@@ -8,7 +8,7 @@ set -eux
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 
-issue167="${top_srcdir}/tests/security/issue/data/167/poc"
+issue167="${TOP_SRCDIR}/tests/security/issue/data/167/poc"
 
 printf '1..1\n'
 set -v

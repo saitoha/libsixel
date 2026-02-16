@@ -12,19 +12,14 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
+config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
+
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
-data_root="${top_srcdir}/tests/data/inputs"
-LSQA_DATA_ROOT="${top_srcdir}/tests/data"
-export LSQA_DATA_ROOT
-TOP_BUILDDIR="${top_builddir}"
-TOP_SRCDIR="${top_srcdir}"
-export TOP_BUILDDIR TOP_SRCDIR
+data_root="${TOP_SRCDIR}/tests/data/inputs"
 input_image="${data_root}/snake_64.png"
 reference_image="${data_root}/scaling/snake_64_welsh_80pct.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/welsh-downscale_80pct.six"
-
-config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 
 echo "1..1"
 set -v
@@ -39,16 +34,15 @@ lsqa_err=$(
     run_lsqa -b "MS-SSIM:${lsqa_floor}" "${reference_image}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
-test "${lsqa_run_status:-0}" -eq 0 && {
-    pass 1 "welsh downscale 80pct lsqa passed"
-    exit 0
-}
-
-test "${lsqa_run_status}" -eq 5 && {
+test "${lsqa_run_status-}" = 5 && {
     fail 1 "${lsqa_err}"
     exit 0
 }
 
-fail 1 "welsh downscale 80pct lsqa failed"
+test "${lsqa_run_status-0}" = 0 || {
+    fail 1 "welsh downscale 80pct lsqa failed, status code: ${lsqa_run_status}"
+    exit 0
+}
 
+pass 1 "welsh downscale 80pct lsqa passed"
 exit 0

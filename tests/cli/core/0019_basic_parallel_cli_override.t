@@ -14,8 +14,8 @@ set -v
 
 parallel_direct_4="${ARTIFACT_LOCAL_DIR}/parallel-direct-4.png"
 parallel_direct_cli="${ARTIFACT_LOCAL_DIR}/parallel-direct-cli.png"
-run_sixel2png --env SIXEL_THREADS=4 -D <"${images_dir}/map64.six" >"${parallel_direct_4}"
-run_sixel2png --env SIXEL_THREADS=1 -D <"${images_dir}/map64.six" >"${parallel_direct_cli}"
+run_sixel2png --env SIXEL_THREADS=4 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_4}"
+run_sixel2png --env SIXEL_THREADS=1 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_cli}"
 
 cmp -s "${parallel_direct_cli}" "${parallel_direct_4}" || {
     fail 1 "CLI thread override diverges"

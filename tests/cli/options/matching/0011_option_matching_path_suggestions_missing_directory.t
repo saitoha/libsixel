@@ -10,35 +10,29 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-err_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "path-suggestions-missing-dir.err")
-out_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "path-suggestions-missing-dir.out")
+err_file="${ARTIFACT_LOCAL_DIR}/path-suggestions-missing-dir.err"
 
-run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 --     -m "${ARTIFACT_LOCAL_DIR}/not-there/map.gpl"     "${TOP_SRCDIR}/tests/data/inputs/snake_64.png"     >"${out_file}" 2>"${err_file}" && {
+run_img2sixel --env SIXEL_OPTION_PATH_SUGGESTIONS=1 -- \
+              -m "${ARTIFACT_LOCAL_DIR}/not-there/map.gpl" \
+              "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
+              -o/dev/null 2>"${err_file}" && {
     fail 1 "missing directory unexpectedly succeeded"
     exit 0
 }
 
 has_missing_directory=1
-grep 'Directory "' "${err_file}" >/dev/null 2>&1 && has_missing_directory=0
+grep 'Directory "' "${err_file}" >/dev/null 2>&1 || has_missing_directory=0
 
 has_missing_directory_text=1
-grep 'does not exist.' "${err_file}" >/dev/null 2>&1 &&     has_missing_directory_text=0
+grep 'does not exist.' "${err_file}" >/dev/null 2>&1 || has_missing_directory_text=0
 
-has_fallback=1
-grep 'Suggestion lookup unavailable on this build.' "${err_file}"     >/dev/null 2>&1 && has_fallback=0
-
-test "${has_missing_directory}" -eq 0 || [ "${has_fallback}" -eq 0 ] || {
+test "${has_missing_directory}" -eq 1 || {
     fail 1 "missing directory diagnostics were not emitted"
     exit 0
 }
 
-test "${has_missing_directory}" -ne 0 || [ "${has_missing_directory_text}" -eq 0 ] || {
-    fail 1 "missing directory diagnostic was not emitted"
-    exit 0
-}
-
-test "${has_missing_directory}" -eq 0 || {
-    pass 1 "missing directory path reports unsupported suggestion lookup"
+test "${has_missing_directory_text}" -eq 1 || {
+    fail 1 "missing directory path reports unsupported suggestion lookup"
     exit 0
 }
 

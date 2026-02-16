@@ -10,7 +10,7 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 echo "1..1"
 set -v
 
-image_path="${top_srcdir}/tests/data/inputs/snake_64.jpg"
+image_path="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 err_file="${ARTIFACT_LOCAL_DIR}/missing-map.err"
 out_file="${ARTIFACT_LOCAL_DIR}/missing-map.out"
 

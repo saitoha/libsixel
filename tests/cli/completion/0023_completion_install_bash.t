@@ -9,7 +9,7 @@ command -v bash >/dev/null || skip_all "bash is not found"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-completion_dir="${top_srcdir}/converters/shell-completion"
+completion_dir="${TOP_SRCDIR}/converters/shell-completion"
 
 # Use a writable temporary home to avoid permission issues on shared
 # workspaces while still keeping logs under tests/_artifacts.

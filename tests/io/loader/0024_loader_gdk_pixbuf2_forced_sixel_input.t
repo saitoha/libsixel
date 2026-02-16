@@ -12,7 +12,7 @@ ensure_feature_available "HAVE_GDK_PIXBUF2" "" "gdk-pixbuf2 loader"
 echo "1..1"
 set -v
 
-input_sixel="${top_srcdir}/tests/data/inputs/snake_64.six"
+input_sixel="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
 error_log="${ARTIFACT_LOCAL_DIR}/gdk_forced_sixel_input.err"
 
 set +e

@@ -10,7 +10,7 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 echo "1..1"
 set -v
 
-output_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "capture.stdin")
+output_file="${ARTIFACT_LOCAL_DIR}/capture.stdin"
 
 echo a | run_img2sixel - >"${output_file}" && :
 

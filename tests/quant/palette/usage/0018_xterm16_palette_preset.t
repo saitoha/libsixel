@@ -9,7 +9,7 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-snake_six="${top_srcdir}/tests/data/inputs/snake_64.six"
+snake_six="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
 target_sixel="${ARTIFACT_LOCAL_DIR}/sixel-xterm16.sixel"
 
 run_img2sixel -bxterm16 "${snake_six}" >"${target_sixel}" || {

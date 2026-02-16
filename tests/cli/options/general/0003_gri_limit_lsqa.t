@@ -13,7 +13,7 @@ lsqa_run_status=0
 echo "1..1"
 set -v
 
-input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_plain="${ARTIFACT_LOCAL_DIR}/plain.six"
 output_limited="${ARTIFACT_LOCAL_DIR}/limited.six"
 lsqa_err_file="${ARTIFACT_LOCAL_DIR}/gri-limit-lsqa.err"

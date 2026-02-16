@@ -9,7 +9,7 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-snake_six="${images_dir}/map8.six"
+snake_six="${TOP_SRCDIR}/images/map8.six"
 target_sixel="${ARTIFACT_LOCAL_DIR}/sixel-resize.sixel"
 
 run_img2sixel -w200 -p8 "${snake_six}" \

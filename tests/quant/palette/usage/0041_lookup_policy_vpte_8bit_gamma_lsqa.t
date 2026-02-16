@@ -14,7 +14,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.97}
 echo "1..1"
 set -v
 
-input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/vpte-8bit-gamma.six"
 
 run_img2sixel --lookup-policy=vpte -o "${output_sixel}" "${input_image}" || {

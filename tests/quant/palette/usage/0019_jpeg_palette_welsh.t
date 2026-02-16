@@ -9,8 +9,8 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-egret_jpg="${images_dir}/egret.jpg"
-map8_png="${images_dir}/map8.png"
+egret_jpg="${TOP_SRCDIR}/images/egret.jpg"
+map8_png="${TOP_SRCDIR}/images/map8.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/jpeg-welsh.sixel"
 
 run_img2sixel -m "${map8_png}" -w200 -fau -rwelsh "${egret_jpg}" >"${target_sixel}" || {

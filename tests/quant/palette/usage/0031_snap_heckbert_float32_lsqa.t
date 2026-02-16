@@ -11,7 +11,7 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snap-heckbert-float32.six"
 
 run_img2sixel -Q heckbert -6 -W oklab -o "${output_sixel}" "${input_image}" || {

@@ -9,7 +9,7 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-snake_ascii_ppm="${images_dir}/snake-ascii.ppm"
+snake_ascii_ppm="${TOP_SRCDIR}/images/snake-ascii.ppm"
 target_txt="${ARTIFACT_LOCAL_DIR}/ascii-ppm-inspection.txt"
 
 run_img2sixel -I -8 -dburkes -B"#ffffffffffff" "${snake_ascii_ppm}" >"${target_txt}" || {

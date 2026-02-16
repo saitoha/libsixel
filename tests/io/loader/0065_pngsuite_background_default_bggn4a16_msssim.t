@@ -14,8 +14,8 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 echo "1..1"
 set -v
 
-input_png="${images_dir}/pngsuite/background/bggn4a16.png"
-expected_ppm="${top_srcdir}/tests/data/loader/pngsuite_expected/0065_pngsuite_background_default_bggn4a16_msssim.ppm"
+input_png="${TOP_SRCDIR}/images/pngsuite/background/bggn4a16.png"
+expected_ppm="${TOP_SRCDIR}/tests/data/loader/pngsuite_expected/0065_pngsuite_background_default_bggn4a16_msssim.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/bggn4a16.sixel"
 
 run_img2sixel -Llibpng! "${input_png}" >"${output_sixel}" || {

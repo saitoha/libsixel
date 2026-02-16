@@ -18,7 +18,7 @@ printf '1..1\n'
 set -v
 
 grep ' --[0-9a-zA-Z_@=~%?]' \
-    "${top_srcdir}/converters/shell-completion/bash/img2sixel" \
+    "${TOP_SRCDIR}/converters/shell-completion/bash/img2sixel" \
     | grep -v "' " \
     | sed 's/.* \(-.\) .*/\1/' >"${bash_opts}" || {
     fail 1 "failed to parse bash completion"
@@ -30,7 +30,7 @@ LC_ALL=C sort "${bash_opts}" >"${bash_sorted}" || {
     exit 0
 }
 
-grep '{-' "${top_srcdir}/converters/shell-completion/zsh/_img2sixel" \
+grep '{-' "${TOP_SRCDIR}/converters/shell-completion/zsh/_img2sixel" \
     | cut -f1 -d, \
     | cut -f2 -d'{' >"${zsh_opts}" || {
     fail 1 "failed to parse zsh completion"

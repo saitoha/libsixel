@@ -3,16 +3,20 @@
 
 set -eux
 
-server_port_base=4444
-max_port_attempts=5
-port_file="${ARTIFACT_LOCAL_DIR}/server.port"
-# Use nearby ports so the HTTPS server can start when the default is busy.
-
-script_dir=${0%[/\\]*}
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-ensure_network_backend_available
+feature_defined_in_config "HAVE_LIBCURL" || feature_defined_in_config "HAVE_WINHTTP" || {
+    skip_all "libcurl or WinHTTP support is disabled in this build"
+    return 0
+}
+
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
+
+server_port_base=4444
+max_port_attempts=5
+# Use nearby ports so the HTTPS server can start when the default is busy.
+port_file="${ARTIFACT_LOCAL_DIR}/server.port"
+script_dir=${0%[/\\]*}
 
 echo "1..1"
 set -v
@@ -33,7 +37,7 @@ test -n "${PYTHON}" || {
 export PYTHON
 
 cert_dir="${script_dir}/certs"
-server_root="${top_srcdir}"
+server_root="${TOP_SRCDIR}"
 
 cat >"${ARTIFACT_LOCAL_DIR}/server.py" <<PY
 try:
@@ -95,17 +99,15 @@ if __name__ == '__main__':
     sys.exit(main())
 PY
 
-server_pid_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "curl-server-pid")
-(
-    cd "${server_root}" || exit 1
-    "${PYTHON}" "${ARTIFACT_LOCAL_DIR}/server.py" &
-    echo $! >"${server_pid_file}"
-)
+server_pid_file="${ARTIFACT_LOCAL_DIR}/curl-server-pid"
+cd "${server_root}" || exit 1
+"${PYTHON}" "${ARTIFACT_LOCAL_DIR}/server.py" &
+echo $! >"${server_pid_file}"
 server_pid=$(cat "${server_pid_file}")
 rm -f "${server_pid_file}"
 
 server_port=""
-for _ in 1 2 3 4 5; do
+for _ in 1 2 3 4 5 6 7 8 9 10; do
     test -s "${port_file}" && {
         server_port=$(cat "${port_file}")
         break
@@ -113,7 +115,7 @@ for _ in 1 2 3 4 5; do
 
     kill -0 "${server_pid}" 2>/dev/null || break
 
-    "${PYTHON}" -c "import time; time.sleep(0.1)"
+    "${PYTHON}" -c "import time; time.sleep(0.001)"
 done
 
 test -n "${server_port}" || {
@@ -133,7 +135,7 @@ for _ in 1 2 3; do
         break
     }
 
-    "${PYTHON}" -c "import time; time.sleep(0.1)"
+    "${PYTHON}" -c "import time; time.sleep(0.001)"
 done
 
 kill "${server_pid}" 2>/dev/null || :

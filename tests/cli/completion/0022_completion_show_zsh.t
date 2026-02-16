@@ -12,7 +12,7 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 
 
-completion_dir="${top_srcdir}/converters/shell-completion"
+completion_dir="${TOP_SRCDIR}/converters/shell-completion"
 
 
 printf '1..1\n'

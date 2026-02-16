@@ -11,8 +11,8 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 printf '1..1\n'
 set -v
 
-"${top_srcdir}/tests/docs/consistency/list_envvars.sh" --check \
-        --img2sixel "${IMG2SIXEL_PATH}" --source-root "${top_srcdir}" > "${ARTIFACT_LOCAL_DIR}/output.txt" || {
+"${TOP_SRCDIR}/tests/docs/consistency/list_envvars.sh" --check \
+        --img2sixel "${IMG2SIXEL_PATH}" --source-root "${TOP_SRCDIR}" > "${ARTIFACT_LOCAL_DIR}/output.txt" || {
     printf 'not ok 1 - mismatch between sources and -H\n'
     exit 0
 }

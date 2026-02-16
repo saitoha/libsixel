@@ -12,7 +12,7 @@ ensure_feature_available "HAVE_GDK_PIXBUF2" "" "gdk-pixbuf2 loader"
 echo "1..1"
 set -v
 
-input_gif="${top_srcdir}/tests/data/inputs/small.gif"
+input_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 output_sixel="${ARTIFACT_LOCAL_DIR}/gdk_loop_disable_gif.sixel"
 
 run_img2sixel -L gdk-pixbuf2! -ldisable "${input_gif}" >"${output_sixel}" || {

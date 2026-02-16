@@ -12,7 +12,7 @@ set -v
 
 threads_err="${ARTIFACT_LOCAL_DIR}/err.txt"
 
-run_sixel2png -= bogus <"${images_dir}/map64.six" \
+run_sixel2png -= bogus <"${TOP_SRCDIR}/images/map64.six" \
         >"${ARTIFACT_LOCAL_DIR}/capture.$$" 2> "${threads_err}" && {
     fail 1 "accepts invalid thread token"
     exit 0
