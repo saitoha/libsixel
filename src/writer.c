@@ -59,6 +59,7 @@
 #  pragma GCC diagnostic ignored "-Wextra"
 #  pragma GCC diagnostic ignored "-Wpedantic"
 # endif
+# define STBI_WRITE_NO_STDIO 1
 # define STBIW_MEMMOVE(a, b, sz) sixel_compat_memmove((a), (b), (sz))
 # include "stb_image_write.h"
 # if defined(__clang__)
