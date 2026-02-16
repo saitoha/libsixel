@@ -249,3 +249,8 @@ exec "$@"
 endforeach
 
 add_test_setup('ci', timeout_multiplier: 1)
+
+run_target('staticcheck',
+  command: [sh,
+            meson.current_source_dir() / '_static/sh/shellcheck.sh',
+            meson.project_source_root()])

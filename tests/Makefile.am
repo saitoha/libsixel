@@ -237,6 +237,11 @@ AM_LOG_DRIVER_FLAGS = --timeout=$(AM_TEST_TIMEOUT)
 # LOG_COMPILE; the drivers consume timeout hints themselves.
 AM_LOG_FLAGS =
 
+.PHONY: staticcheck
+
+staticcheck:
+	@$(SHELL) "$(top_srcdir)/tests/_static/sh/shellcheck.sh" "$(abs_top_srcdir)"
+
 # Override check-TESTS to avoid nested single quotes in automake helpers.
 # Export config.h feature toggles once so tests can rely on environment
 # variables instead of repeatedly reading the header.
@@ -269,6 +274,7 @@ check-TESTS: $(check_PROGRAMS)
 	exit $$?;
 
 EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
+    _static/sh/shellcheck.sh \
     check-tests.list \
     check-test-exports.list \
     data/inputs/thumbnailer/bin/evince-thumbnailer \
@@ -291,6 +297,23 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/snake-64-grayscale.jpg \
     data/inputs/formats/rgba.png \
     data/inputs/formats/rgba.tiff \
+    data/inputs/formats/snake-bmp2-pal8.bmp \
+    data/inputs/formats/snake-bmp3-rgb.bmp \
+    data/inputs/formats/snake-bmp3-rle8.bmp \
+    data/inputs/formats/snake-dds-dxt1.dds \
+    data/inputs/formats/snake-dds-dxt3.dds \
+    data/inputs/formats/snake-dds-dxt5.dds \
+    data/inputs/formats/snake-gif-interlaced.gif \
+    data/inputs/formats/snake-ico-multisize.ico \
+    data/inputs/formats/snake-ico-pal8.ico \
+    data/inputs/formats/snake-ico-rgba.ico \
+    data/inputs/formats/snake-jpeg-444.jpg \
+    data/inputs/formats/snake-jpeg-progressive-420.jpg \
+    data/inputs/formats/snake-png-adam7-rgb.png \
+    data/inputs/formats/snake-png-gray16.png \
+    data/inputs/formats/snake-png-pal8-trns.png \
+    data/inputs/formats/snake-tiff-rle-rgb.tiff \
+    data/inputs/formats/snake-tiff-zip-rgb.tiff \
     data/inputs/formats/snake-tga-type1-pal4.tga \
     data/inputs/formats/snake-tga-type1-pal8.tga \
     data/inputs/formats/snake-tga-type2-rgb.tga \
