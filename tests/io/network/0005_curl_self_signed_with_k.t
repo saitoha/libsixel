@@ -39,7 +39,7 @@ export PYTHON
 cert_dir="${script_dir}/certs"
 server_root="${TOP_SRCDIR}"
 
-cat >"${ARTIFACT_LOCAL_DIR}/server.py" <<PY
+cat >"${ARTIFACT_LOCAL_DIR}/server.py" <<PY &
 try:
     from http.server import SimpleHTTPRequestHandler
     from socketserver import TCPServer
