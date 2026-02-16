@@ -226,6 +226,12 @@ io/loader/0080_pngsuite_background_width32_white_bgbn4a08_msssim.t
 io/loader/0081_pngsuite_background_width32_white_bggn4a16_msssim.t
 io/loader/0082_pngsuite_background_width32_white_bgwn6a08_msssim.t
 io/loader/0083_pngsuite_background_width32_white_bgyn6a16_msssim.t
+io/loader/0084_loader_builtin_palette_png_path.t
+io/loader/0085_loader_builtin_rgb_png_fallback.t
+io/loader/0086_loader_builtin_palette_tga_path.t
+io/loader/0087_loader_builtin_rgb_tga_fallback.t
+io/loader/0088_loader_builtin_palette_disabled_by_scale.t
+io/loader/0089_loader_builtin_palette_disabled_by_highcolor.t
 io/loader/animation/0001_disable_update_mode.t
 io/loader/animation/0002_static_frame_render.t
 io/loader/animation/0003_update_and_static_frame.t
