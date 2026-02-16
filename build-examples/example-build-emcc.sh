@@ -6,8 +6,9 @@ SCRIPTDIR=$(cd $(dirname "${0}") && pwd)
 if which cygpath; then
   SCRIPTDIR=$(cygpath -u "${SCRIPTDIR}")
 fi
-EMSDK=${SCRIPTDIR}/emsdk
+EMSDK=${SCRIPTDIR}/emsdk-$(uname -s)-$(uname -m)
 BUILDDIR="${SCRIPTDIR}"/build-emcc
+rm -rf "${BUILDDIR}"
 mkdir -p "${BUILDDIR}"
 SHEBANG_FILE="${BUILDDIR}"/emscripten-node-shebang
 printf '#!/usr/bin/env node\n' > "${SHEBANG_FILE}"
@@ -61,9 +62,8 @@ cd "${BUILDDIR}" && (
 CC=emcc \
 ../../configure \
   --host=wasm32-unknown-emscripten \
-  --disable-shared \
   --with-shebang-file="${SHEBANG_FILE}" \
-  --disable-dependency-tracking
+  --disable-shared
 make all
 make check
 )
