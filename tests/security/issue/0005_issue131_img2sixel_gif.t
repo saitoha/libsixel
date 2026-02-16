@@ -9,7 +9,7 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 
 
-issue131="${top_srcdir}/tests/security/issue/data/131/2020-01-30-img2sixel.gif"
+issue131="${TOP_SRCDIR}/tests/security/issue/data/131/2020-01-30-img2sixel.gif"
 
 printf '1..1\n'
 set -v

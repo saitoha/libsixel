@@ -8,7 +8,7 @@ set -eux
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 
-issue200="${top_srcdir}/tests/security/issue/data/200/POC_img2sixel_heap_buffer_overflow"
+issue200="${TOP_SRCDIR}/tests/security/issue/data/200/POC_img2sixel_heap_buffer_overflow"
 
 printf '1..1\n'
 set -v

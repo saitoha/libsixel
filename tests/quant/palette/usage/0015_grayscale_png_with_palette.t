@@ -9,8 +9,8 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-snake_gray_png="${images_dir}/snake-grayscale.png"
-map8_palette="${images_dir}/map8-palette.png"
+snake_gray_png="${TOP_SRCDIR}/images/snake-grayscale.png"
+map8_palette="${TOP_SRCDIR}/images/map8-palette.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/gray-png-palette.sixel"
 
 run_img2sixel -m "${map8_palette}" "${snake_gray_png}" >"${target_sixel}" || {

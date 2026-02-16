@@ -11,7 +11,7 @@ echo "1..1"
 set -v
 
 direct_png="${ARTIFACT_LOCAL_DIR}/output.png"
-run_sixel2png -D <"${images_dir}/map8.six" >"${direct_png}" || {
+run_sixel2png -D <"${TOP_SRCDIR}/images/map8.six" >"${direct_png}" || {
     fail 1 "direct RGBA conversion failed"
     exit 0
 }

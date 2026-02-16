@@ -9,7 +9,7 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-snake_palette_png="${images_dir}/snake-palette.png"
+snake_palette_png="${TOP_SRCDIR}/images/snake-palette.png"
 target_sixel="${ARTIFACT_LOCAL_DIR}/indexed-scale.sixel"
 
 run_img2sixel -7 -w300 "${snake_palette_png}" \

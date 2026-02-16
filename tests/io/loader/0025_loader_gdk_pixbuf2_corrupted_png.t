@@ -12,7 +12,7 @@ ensure_feature_available "HAVE_GDK_PIXBUF2" "" "gdk-pixbuf2 loader"
 echo "1..1"
 set -v
 
-input_png="${top_srcdir}/tests/data/corrupted/truncated.png"
+input_png="${TOP_SRCDIR}/tests/data/corrupted/truncated.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/gdk_corrupted_png.sixel"
 
 run_img2sixel -L gdk-pixbuf2! "${input_png}" >"${output_sixel}" && {

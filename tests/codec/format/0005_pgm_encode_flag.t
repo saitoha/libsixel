@@ -9,7 +9,7 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-snake_pgm="${top_srcdir}/tests/data/inputs/snake_64.pgm"
+snake_pgm="${TOP_SRCDIR}/tests/data/inputs/snake_64.pgm"
 
 run_img2sixel -8 -qauto -thls -e "${snake_pgm}" -o/dev/null || {
     fail 1 "PGM encode flag failed"

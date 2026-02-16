@@ -14,8 +14,8 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 echo "1..1"
 set -v
 
-input_png="${images_dir}/pngsuite/basic/basn4a08.png"
-expected_ppm="${top_srcdir}/tests/data/loader/pngsuite_expected/0056_pngsuite_basic_cropped_basn4a08_msssim.ppm"
+input_png="${TOP_SRCDIR}/images/pngsuite/basic/basn4a08.png"
+expected_ppm="${TOP_SRCDIR}/tests/data/loader/pngsuite_expected/0056_pngsuite_basic_cropped_basn4a08_msssim.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/basn4a08.sixel"
 
 run_img2sixel -c16x16+8+8 -Llibpng! "${input_png}" >"${output_sixel}" || {

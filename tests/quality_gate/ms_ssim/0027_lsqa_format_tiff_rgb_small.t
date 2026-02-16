@@ -21,8 +21,8 @@ printf '1..1
 '
 set -v
 
-image_path="${top_srcdir}/tests/data/inputs/snake_64.tiff"
-reference_path="${top_srcdir}/tests/data/inputs/formats/snake-64-reference-rgb.png"
+image_path="${TOP_SRCDIR}/tests/data/inputs/snake_64.tiff"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/snake_64.six"
 run_img2sixel -Llibtiff! "${image_path}" >"${output_sixel}" || {
     fail 1 "tiff rgb conversion failed"

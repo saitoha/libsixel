@@ -3,16 +3,20 @@
 
 set -eux
 
-server_port_base=4443
-max_port_attempts=5
-port_file="${ARTIFACT_LOCAL_DIR}/server.port"
-# Use nearby ports so the HTTPS server can start when the default is busy.
-
-script_dir=${0%[/\\]*}
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-ensure_network_backend_available
+feature_defined_in_config "HAVE_LIBCURL" || feature_defined_in_config "HAVE_WINHTTP" || {
+    skip_all "libcurl or WinHTTP support is disabled in this build"
+    return 0
+}
+
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
+
+server_port_base=4443
+max_port_attempts=5
+# Use nearby ports so the HTTPS server can start when the default is busy.
+port_file="${ARTIFACT_LOCAL_DIR}/server.port"
+script_dir=${0%[/\\]*}
 
 echo "1..1"
 set -v
@@ -33,9 +37,11 @@ test -n "${PYTHON}" || {
 export PYTHON
 
 cert_dir="${script_dir}/certs"
-server_root="${top_srcdir}"
+server_root="${TOP_SRCDIR}"
 
-cat >"${ARTIFACT_LOCAL_DIR}/server.py" <<PY
+server_pid_file="${ARTIFACT_LOCAL_DIR}/curl-server-pid"
+
+cd "${server_root}" && "${PYTHON}" & <<PY
 try:
     from http.server import SimpleHTTPRequestHandler
     from socketserver import TCPServer
@@ -95,17 +101,13 @@ if __name__ == '__main__':
     sys.exit(main())
 PY
 
-server_pid_file=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "curl-server-pid")
-(
-    cd "${server_root}" || exit 1
-    "${PYTHON}" "${ARTIFACT_LOCAL_DIR}/server.py" &
-    echo $! >"${server_pid_file}"
-)
+echo $! >"${server_pid_file}"
+
 server_pid=$(cat "${server_pid_file}")
 rm -f "${server_pid_file}"
 
 server_port=""
-for _ in 1 2 3 4 5; do
+for _ in 1 2 3 4 5 6 7 8 9 10; do
     test -s "${port_file}" && {
         server_port=$(cat "${port_file}")
         break
@@ -113,7 +115,7 @@ for _ in 1 2 3 4 5; do
 
     kill -0 "${server_pid}" 2>/dev/null || break
 
-    "${PYTHON}" -c "import time; time.sleep(0.1)"
+    "${PYTHON}" -c "import time; time.sleep(0.001)"
 done
 
 test -n "${server_port}" || {
@@ -127,7 +129,7 @@ while kill -0 "${server_pid}" 2>/dev/null; do
         break
     }
 
-    "${PYTHON}" -c "import time; time.sleep(0.1)"
+    "${PYTHON}" -c "import time; time.sleep(0.001)"
     waited=$((waited + 1))
 done
 wait "${server_pid}" 2>/dev/null || :
@@ -135,9 +137,9 @@ wait "${server_pid}" 2>/dev/null || :
     exit 0
 }
 
-verify_output=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "curl-verify")
+verify_output="${ARTIFACT_LOCAL_DIR}/curl-verify"
 run_img2sixel "https://localhost:${server_port}/images/map8.six" \
-    >"${verify_output}" && command_status=0 || command_status=$?
+    >"${verify_output}" && command_status=$?
 
 wait_limit=10
 waited=0
@@ -155,7 +157,7 @@ done
 wait "${server_pid}" 2>/dev/null || :
 
 # The HTTPS request must fail TLS verification when -k is omitted.
-test "${command_status}" -ne 0 || {
+test "${command_status-0}" -ne 0 || {
     rm -f "${verify_output}"
     fail 1 "self-signed fetch unexpectedly succeeded without -k"
     exit 0
@@ -167,5 +169,5 @@ test ! -s "${verify_output}" || {
     exit 0
 }
 
-rm -f "${verify_output}"
 pass 1 "self-signed fetch blocked without -k"
+exit 0

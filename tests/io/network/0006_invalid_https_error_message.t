@@ -5,16 +5,19 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-ensure_network_backend_available
+feature_defined_in_config "HAVE_LIBCURL" || feature_defined_in_config "HAVE_WINHTTP" || {
+    skip_all "libcurl or WinHTTP support is disabled in this build"
+    return 0
+}
+
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 echo "1..1"
 set -v
 
 err_file="${ARTIFACT_LOCAL_DIR}/invalid-https.err"
-out_file="${ARTIFACT_LOCAL_DIR}/invalid-https.six"
 
-run_img2sixel --env LC_ALL=C -- 'https:///test'         >"${out_file}" 2>"${err_file}" && {
+run_img2sixel --env LC_ALL=C -- 'https:///test' >/dev/null 2>"${err_file}" && {
     fail 1 "malformed HTTPS URL unexpectedly succeeded"
     exit 0
 }
@@ -27,7 +30,7 @@ run_img2sixel --env LC_ALL=C -- 'https:///test'         >"${out_file}" 2>"${err_
 # - WinHTTP may fail at CrackUrl/Connect/SendRequest/... stages.
 # - libcurl may fail at setopt/perform stages depending on URL parsing.
 # Keep the check broad enough to accept backend-consistent failures.
-grep 'curl_easy_[a-z_][a-z_]*() failed' "${err_file}" >/dev/null 2>&1 || grep 'WinHttp[A-Za-z][A-Za-z]* failed' "${err_file}" >/dev/null 2>&1 || grep 'runtime error: unable to decode input with available loaders'     "${err_file}" >/dev/null 2>&1 || {
+awk '/^curl_easy_/ { ++m } /^WinHttp/ { ++m } /runtime error: unable/ { ++m } END { if (!m) exit 1; }' "${err_file}" || {
     fail 1 "missing formatted network failure message"
     printf '%s\n' '--- stderr ---' >&2
     cat "${err_file}" >&2

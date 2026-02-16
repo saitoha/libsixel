@@ -10,7 +10,7 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 echo "1..1"
 set -v
 
-input_pic="${top_srcdir}/tests/data/inputs/formats/stbi_minimal.pic"
+input_pic="${TOP_SRCDIR}/tests/data/inputs/formats/stbi_minimal.pic"
 
 run_img2sixel "${input_pic}" >/dev/null || {
     fail 1 "builtin loader failed to decode PIC"

@@ -14,7 +14,7 @@ set -eux
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
-data_root="${top_srcdir}/tests/data/inputs"
+data_root="${TOP_SRCDIR}/tests/data/inputs"
 input_image="${data_root}/snake_64.png"
 reference_image="${data_root}/scaling/snake_64_h100px.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/height_100px.six"

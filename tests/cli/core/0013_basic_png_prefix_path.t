@@ -13,7 +13,7 @@ set -v
 out_path="${ARTIFACT_LOCAL_DIR}/out.png"
 : >"${out_path}"
 
-run_sixel2png -o "png:${out_path}" <"${images_dir}/map8.six" || {
+run_sixel2png -o "png:${out_path}" <"${TOP_SRCDIR}/images/map8.six" || {
     fail 1 "prefixed output command failed"
     exit 0
 }

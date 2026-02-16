@@ -10,7 +10,7 @@ config_macro_defined HAVE_SIXEL2PNG || skip_all "sixel2png is disabled in this b
 echo "1..1"
 set -v
 
-run_sixel2png - - <"${images_dir}/map64.six" \
+run_sixel2png - - <"${TOP_SRCDIR}/images/map64.six" \
         >"${ARTIFACT_LOCAL_DIR}/map64-stdin-stdout.png" || {
     fail 1 "map64 stdin/stdout conversion failed"
     exit 0

@@ -16,8 +16,8 @@ printf '1..1
 '
 set -v
 
-image_path="${top_srcdir}/tests/data/inputs/snake_64.png"
-reference_path="${top_srcdir}/tests/data/inputs/formats/snake-64-reference-rgb.png"
+image_path="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/rgb.six"
 run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}" || {
     fail 1 "rgb quality regressed"

@@ -16,7 +16,7 @@ lsqa_floor=0.98
 echo "1..1"
 set -v
 
-input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/cluster-din99d.six"
 
 run_img2sixel -t rgb -X din99d -o "${output_sixel}" "${input_image}" || {

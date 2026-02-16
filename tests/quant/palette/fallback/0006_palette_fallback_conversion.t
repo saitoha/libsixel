@@ -10,7 +10,7 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 echo "1..1"
 set -v
 
-snake_ascii_pbm="${images_dir}/snake-ascii.pbm"
+snake_ascii_pbm="${TOP_SRCDIR}/images/snake-ascii.pbm"
 
 SIXEL_PALETTE_DISABLE_TABLES=1
 export SIXEL_PALETTE_DISABLE_TABLES

@@ -14,8 +14,8 @@ feature_defined_in_config "HAVE_FREEDESKTOP_THUMBNAILING" || {
 echo "1..1"
 set -v
 
-input_png="${top_srcdir}/tests/data/inputs/formats/rgba.png"
-template_root="${top_srcdir}/tests/data/inputs/thumbnailer"
+input_png="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png"
+template_root="${TOP_SRCDIR}/tests/data/inputs/thumbnailer"
 xdg_data_home="${template_root}/cases/0039"
 bin_dir="${template_root}/bin"
 

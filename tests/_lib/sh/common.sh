@@ -1,22 +1,6 @@
 #!/bin/sh
 # Common helpers for converter TAP tests executed with POSIX sh.
 
-# Enable strict mode without verbose tracing for cleaner caller logs.
-set -ux
-
-# Disable shell tracing temporarily while running a command. This keeps
-# stderr clean for assertions that expect no diagnostics while preserving
-# verbose logging before and after the call.
-run_quiet() {
-    status_quiet=0
-
-    set +xv
-    "$@" || status_quiet=$?
-    set -xv
-
-    return ${status_quiet}
-}
-
 # Detect converter enablement using build metadata rather than leftover
 # binaries. Stale executables from a previous configuration can linger
 # even when converters are disabled, so we rely on the current build
@@ -32,40 +16,24 @@ else
     tests_root=$(CDPATH=; cd "${0##*[/\\]}/../../.." && pwd)
 fi
 
-parent_dir=$(CDPATH=; cd "${tests_root}/.." && pwd)
-
-if [ -n "${MESON_SOURCE_ROOT:-}" ]; then
-    top_srcdir=${TOP_SRCDIR:-${MESON_SOURCE_ROOT}}
-else
-    top_srcdir=${TOP_SRCDIR:-${parent_dir}}
-fi
-
-if [ -n "${MESON_BUILD_ROOT:-}" ]; then
-    top_builddir=${TOP_BUILDDIR:-${MESON_BUILD_ROOT}}
-else
-    top_builddir=${TOP_BUILDDIR:-${parent_dir}}
-fi
-
-images_dir="${top_srcdir}/images"
-
 if [ -z "${IMG2SIXEL_PATH:-}" ]; then
-    IMG2SIXEL_PATH="${top_builddir}/converters/img2sixel${SIXEL_BIN_EXT-}"
+    IMG2SIXEL_PATH="${TOP_BUILDDIR}/converters/img2sixel${SIXEL_BIN_EXT-}"
 fi
 
 if [ -z "${SIXEL2PNG_PATH:-}" ]; then
-    SIXEL2PNG_PATH="${top_builddir}/converters/sixel2png${SIXEL_BIN_EXT-}"
+    SIXEL2PNG_PATH="${TOP_BUILDDIR}/converters/sixel2png${SIXEL_BIN_EXT-}"
 fi
 
 if [ -z "${LSQA_PATH:-}" ]; then
-    LSQA_PATH="${top_builddir}/assessment/lsqa${SIXEL_BIN_EXT-}"
+    LSQA_PATH="${TOP_BUILDDIR}/assessment/lsqa${SIXEL_BIN_EXT-}"
 fi
 
 if [ -z "${TEST_RUNNER_PATH:-}" ]; then
-    TEST_RUNNER_PATH="${top_builddir}/tests/test_runner${SIXEL_BIN_EXT-}"
+    TEST_RUNNER_PATH="${TOP_BUILDDIR}/tests/test_runner${SIXEL_BIN_EXT-}"
 fi
 
 init_config_macro_cache() {
-    config_header="${top_builddir}/config.h"
+    config_header="${TOP_BUILDDIR}/config.h"
 
     if [ "${SIXEL_TEST_CONFIG_CACHE_READY:-0}" -eq 1 ]; then
         return 0
@@ -157,21 +125,6 @@ skip_all() {
     exit 0
 }
 
-ensure_executable() {
-    target_path=$1
-    description=$2
-
-    if [ -x "${target_path}" ]; then
-        return 0
-    fi
-
-    if [ -e "${target_path}" ]; then
-        skip_all "${description} is not executable"
-    fi
-
-    skip_all "${description} is not available (not built)"
-}
-
 # Confirm converter availability using build metadata and skip gracefully
 # when the tool is disabled or missing. This keeps stale binaries from a
 # previous configuration from influencing the decision.
@@ -183,8 +136,6 @@ ensure_converter_available() {
     if ! converter_enabled "${option_key}"; then
         skip_all "${description} is disabled in this build"
     fi
-
-#    ensure_executable "${target_path}" "${description}"
 }
 
 # Confirm that an optional library feature is enabled for the build. The
@@ -207,23 +158,8 @@ ensure_feature_available() {
     skip_all "${description} is disabled in this build"
 }
 
-# Confirm that at least one network backend is enabled. Network tests rely on
-# either libcurl or WinHTTP to perform HTTP operations, so allow either backend
-# to satisfy the requirement before running the suite.
-ensure_network_backend_available() {
-    if feature_defined_in_config "HAVE_LIBCURL"; then
-        return 0
-    fi
-
-    if feature_defined_in_config "HAVE_WINHTTP"; then
-        return 0
-    fi
-
-    skip_all "libcurl or WinHTTP support is disabled in this build"
-}
-
 runtime_exec() {
-    runtime_libdir="${top_builddir}/src/.libs"
+    runtime_libdir="${TOP_BUILDDIR}/src/.libs"
     runtime_var="${RUNTIME_SHLIBPATH_VAR:-LD_LIBRARY_PATH}"
     runtime_sep="${RUNTIME_SHLIBPATH_SEP:-:}"
     runtime_current=""
@@ -329,16 +265,6 @@ run_lsqa() {
 
 run_test_runner() {
     run_with_optional_env "${TEST_RUNNER_PATH}" "$@"
-}
-
-make_temp_file() {
-    dir_path=$1
-    prefix=$2
-
-    candidate="${dir_path}/${prefix}.$$"
-    : >"${candidate}"
-    echo "${candidate}"
-    return 0
 }
 
 # Shared TAP helpers for shell-based tests.

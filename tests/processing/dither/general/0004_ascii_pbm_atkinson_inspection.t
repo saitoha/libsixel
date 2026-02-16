@@ -9,7 +9,7 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-snake_ascii_pbm="${images_dir}/snake-ascii.pbm"
+snake_ascii_pbm="${TOP_SRCDIR}/images/snake-ascii.pbm"
 target_txt="${ARTIFACT_LOCAL_DIR}/ascii-pbm-inspection.txt"
 
 run_img2sixel -I -datkinson "${snake_ascii_pbm}" \

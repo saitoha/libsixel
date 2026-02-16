@@ -9,7 +9,7 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-snake_gray_jpg="${images_dir}/snake-grayscale.jpg"
+snake_gray_jpg="${TOP_SRCDIR}/images/snake-grayscale.jpg"
 target_txt="${ARTIFACT_LOCAL_DIR}/gray-jpeg-inspection.txt"
 
 run_img2sixel -I "${snake_gray_jpg}" >"${target_txt}" || {
