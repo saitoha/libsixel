@@ -1183,7 +1183,8 @@ fuzz-cli-img2sixel: all
 	all-quicklook-extension \
 	all-wic \
 	all-ruby \
-	all-python
+	all-python \
+	staticcheck
 
 prepare-amalgamation-all:
 @WANT_AMALGAMATED_TOOLS_ONLY_TRUE@	$(MAKE) -C converters $(AM_MAKEFLAGS) completion_embed.h
@@ -1227,6 +1228,9 @@ all-am: phase2-all
 
 check-am: prepare-amalgamation-check
 	@:
+
+staticcheck:
+	$(MAKE) -C tests $(AM_MAKEFLAGS) staticcheck
 
 install-data-local:
 	@:

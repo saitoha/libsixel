@@ -159,7 +159,8 @@ CLEANFILES = $(builddir)/package.json
 	all-quicklook-extension \
 	all-wic \
 	all-ruby \
-	all-python
+	all-python \
+	staticcheck
 
 PHASE2_ALL_TARGETS = \
 	all-converters \
@@ -221,8 +222,12 @@ all-python:
 all-am: phase2-all
 	cp $(builddir)/package.json.in $(builddir)/package.json
 
+
 check-am: prepare-amalgamation-check
 	@:
+
+staticcheck:
+	$(MAKE) -C tests $(AM_MAKEFLAGS) staticcheck
 
 install-data-local:
 	@:
