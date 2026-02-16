@@ -41,7 +41,7 @@ server_root="${TOP_SRCDIR}"
 
 server_pid_file="${ARTIFACT_LOCAL_DIR}/curl-server-pid"
 
-cd "${server_root}" && "${PYTHON}" & <<PY
+cd "${server_root}" && "${PYTHON}" <<PY &
 try:
     from http.server import SimpleHTTPRequestHandler
     from socketserver import TCPServer
