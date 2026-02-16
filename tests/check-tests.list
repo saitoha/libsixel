@@ -186,11 +186,8 @@ io/loader/0042_loader_gnome_thumbnailer_mimetype_last_assignment_wins.t
 io/loader/0042_pngsuite_basic_width32_basn3p08_msssim.t
 io/loader/0043_loader_gnome_thumbnailer_group_scope.t
 io/loader/0043_pngsuite_basic_width32_basn4a08_msssim.t
-io/loader/0044_loader_wic_forced_png.t
 io/loader/0044_pngsuite_basic_width32_basn4a16_msssim.t
-io/loader/0045_loader_wic_rejects_gif_no_fallback.t
 io/loader/0045_pngsuite_basic_width32_basn6a08_msssim.t
-io/loader/0046_loader_wic_gif_fallback_builtin.t
 io/loader/0046_pngsuite_basic_width32_basn6a16_msssim.t
 io/loader/0047_pngsuite_basic_cropped_basn0g01_msssim.t
 io/loader/0048_pngsuite_basic_cropped_basn0g02_msssim.t
@@ -440,6 +437,13 @@ quality_gate/ms_ssim/0062_lsqa_wic_format_png_rgba.t
 quality_gate/ms_ssim/0063_lsqa_wic_format_tiff_rgb.t
 quality_gate/ms_ssim/0064_lsqa_wic_format_tiff_palette.t
 quality_gate/ms_ssim/0065_lsqa_wic_format_tiff_rgba.t
+quality_gate/ms_ssim/0066_lsqa_wic_format_bmp2_palette.t
+quality_gate/ms_ssim/0067_lsqa_wic_format_bmp3_rgb.t
+quality_gate/ms_ssim/0068_lsqa_wic_format_gif_interlaced.t
+quality_gate/ms_ssim/0069_lsqa_wic_format_ico_palette.t
+quality_gate/ms_ssim/0070_lsqa_wic_format_ico_rgba.t
+quality_gate/ms_ssim/0071_lsqa_wic_format_dds_dxt1.t
+quality_gate/ms_ssim/0072_lsqa_wic_format_dds_dxt5.t
 quant/mapfile/0001_mapfile_export_act.t
 quant/mapfile/0002_mapfile_export_pal_default.t
 quant/mapfile/0003_mapfile_export_pal_stdout.t
