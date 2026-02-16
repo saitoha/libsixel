@@ -1132,7 +1132,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
 
-  core-meson:
+  core-meson-ubuntu:
     needs: [coverage-meson]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
@@ -1216,6 +1216,31 @@ jobs:
               gcc-multilib
             exec_type: bash
 
+    steps:
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  core-meson-macos:
+    needs: [core-meson-ubuntu]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: ${{ matrix.timeout_minutes || 90 }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
           - label: Meson-macos-x86_64-amalgamated_lib-amalgamated_tools
             buildtool: meson
             runner: macos-15
@@ -1226,6 +1251,32 @@ jobs:
               meson
             exec_type: bash
 
+    steps:
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  core-meson-msys2-variants:
+    needs: [core-meson-ubuntu]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: ${{ matrix.timeout_minutes || 90 }}
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
           - label: Meson-msys2-mingw64-no-tools
             buildtool: meson
             runner: windows-latest
@@ -1287,7 +1338,7 @@ jobs:
     timeout-minutes: ${{ matrix.timeout_minutes || 90 }}
     strategy:
       fail-fast: false
-      max-parallel: 4
+      max-parallel: 1
       matrix:
         include:
           - label: Meson-cygwin64-gcc-unity
