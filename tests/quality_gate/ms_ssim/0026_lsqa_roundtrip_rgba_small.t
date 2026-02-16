@@ -8,15 +8,13 @@ set -eux
 config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 config_macro_defined HAVE_SIXEL2PNG || skip_all "sixel2png is disabled in this build"
 
-# Baseline MS-SSIM measured from the current roundtrip output.
-lsqa_floor=0.9
-
-ensure_executable "${LSQA_PATH}" "lsqa"
-
 printf '1..1\n'
 set -v
 
-image_path="${top_srcdir}/tests/data/inputs/formats/rgba.png"
+# Baseline MS-SSIM measured from the current roundtrip output.
+lsqa_floor=0.9
+
+image_path="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/rgba_roundtrip.six"
 output_png="${ARTIFACT_LOCAL_DIR}/rgba_roundtrip.png"
 

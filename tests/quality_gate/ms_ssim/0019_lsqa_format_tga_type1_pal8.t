@@ -19,8 +19,8 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 printf '1..1\n'
 set -v
 
-image_path="${top_srcdir}/tests/data/inputs/formats/snake-tga-type1-pal8.tga"
-reference_path="${top_srcdir}/tests/data/inputs/formats/snake-64-reference-rgb-flip.png"
+image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-tga-type1-pal8.tga"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb-flip.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}" || {
     fail 1 "type 1 PAL8 TGA quality below floor"

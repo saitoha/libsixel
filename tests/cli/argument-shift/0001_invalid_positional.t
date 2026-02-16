@@ -6,6 +6,8 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
+ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
+
 # Skip temporarily on Windows environments while addressing
 # intermittent failures specific to that platform.
 os_name=$(uname -s || echo "unknown")
@@ -13,13 +15,11 @@ printf '%s' "${os_name}" | grep -qi 'mingw\|msys\|cygwin' && {
     skip_all "temporarily disabled on Windows due to instability"
 }
 
-ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
-
 echo "1..1"
 set -v
 
 missing_path="${ARTIFACT_LOCAL_DIR}/invalid_filename"
-missing_output=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "capture.invalid")
+missing_output="${ARTIFACT_LOCAL_DIR}/capture.invalid"
 
 run_img2sixel -v "${missing_path}" >"${missing_output}" && {
     fail 1 "img2sixel accepted missing input"

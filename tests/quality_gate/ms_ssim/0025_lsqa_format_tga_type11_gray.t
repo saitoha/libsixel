@@ -19,8 +19,8 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.18}
 printf '1..1\n'
 set -v
 
-image_path="${top_srcdir}/tests/data/inputs/formats/snake-tga-type11-gray.tga"
-reference_path="${top_srcdir}/tests/data/inputs/formats/snake-64-reference-gray-flip.png"
+image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-tga-type11-gray.tga"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-gray-flip.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/output.six"
 run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}" || {
     fail 1 "type 11 gray TGA quality below floor"

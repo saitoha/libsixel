@@ -12,7 +12,7 @@ set -eux
 
 config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
 
-input_image="${images_dir}/pngsuite/basic/basn6a08.png"
+input_image="${TOP_SRCDIR}/images/pngsuite/basic/basn6a08.png"
 
 echo "1..1"
 set -v

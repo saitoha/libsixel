@@ -22,7 +22,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.96}
 echo "1..1"
 set -v
 
-input_image="${top_srcdir}/tests/data/inputs/snake_64.png"
+input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/varcoeff-float32-lookup-none.six"
 
 run_img2sixel -d lso2 -y serpentine --precision=float32 \

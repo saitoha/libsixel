@@ -14,9 +14,9 @@ feature_defined_in_config "HAVE_FREEDESKTOP_THUMBNAILING" || {
 echo "1..1"
 set -v
 
-input_png="${top_srcdir}/tests/data/inputs/formats/rgba.png"
+input_png="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png"
 log_file="${ARTIFACT_LOCAL_DIR}/gnome_exec_quoting_args.log"
-template_root="${top_srcdir}/tests/data/inputs/thumbnailer"
+template_root="${TOP_SRCDIR}/tests/data/inputs/thumbnailer"
 xdg_data_home="${template_root}/cases/0038"
 bin_dir="${template_root}/bin"
 

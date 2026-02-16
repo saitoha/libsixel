@@ -15,8 +15,8 @@ set -v
 parallel_direct_1="${ARTIFACT_LOCAL_DIR}/parallel-direct-1.png"
 parallel_direct_4="${ARTIFACT_LOCAL_DIR}/parallel-direct-4.png"
 
-run_sixel2png --env SIXEL_THREADS=1 -D <"${images_dir}/map64.six" >"${parallel_direct_1}"
-run_sixel2png --env SIXEL_THREADS=4 -D <"${images_dir}/map64.six" >"${parallel_direct_4}"
+run_sixel2png --env SIXEL_THREADS=1 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_1}"
+run_sixel2png --env SIXEL_THREADS=4 -D <"${TOP_SRCDIR}/images/map64.six" >"${parallel_direct_4}"
 
 cmp -s "${parallel_direct_1}" "${parallel_direct_4}" || {
     fail 1 "parallel direct diverges"

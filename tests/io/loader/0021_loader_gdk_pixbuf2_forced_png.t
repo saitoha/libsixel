@@ -12,7 +12,7 @@ ensure_feature_available "HAVE_GDK_PIXBUF2" "" "gdk-pixbuf2 loader"
 echo "1..1"
 set -v
 
-input_png="${top_srcdir}/tests/data/inputs/formats/rgba.png"
+input_png="${TOP_SRCDIR}/tests/data/inputs/formats/rgba.png"
 
 run_img2sixel -L gdk-pixbuf2! "${input_png}" >/dev/null || {
     fail 1 "gdk-pixbuf2 forced PNG decoding failed"

@@ -9,7 +9,7 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-snake_tga="${top_srcdir}/tests/data/inputs/snake_64.tga"
+snake_tga="${TOP_SRCDIR}/tests/data/inputs/snake_64.tga"
 target_sixel="${ARTIFACT_LOCAL_DIR}/vt340-mono.sixel"
 
 run_img2sixel -bvt340mono "${snake_tga}" >"${target_sixel}" || {

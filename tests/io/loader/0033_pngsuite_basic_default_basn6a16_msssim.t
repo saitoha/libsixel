@@ -14,7 +14,7 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 echo "1..1"
 set -v
 
-input_png="${images_dir}/pngsuite/basic/basn6a16.png"
+input_png="${TOP_SRCDIR}/images/pngsuite/basic/basn6a16.png"
 expected_ppm="${TOP_SRCDIR}/tests/data/loader/pngsuite_expected/0033_pngsuite_basic_default_basn6a16_msssim.ppm"
 output_sixel="${ARTIFACT_LOCAL_DIR}/basn6a16.sixel"
 
