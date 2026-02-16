@@ -5,34 +5,18 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-if [ "${ENABLE_PYTHON:-0}" != "1" ]; then
+test "${ENABLE_PYTHON:-0}" = "1" || \
     skip_all "python bindings are disabled in this build"
-fi
 
-if [ -z "${SIXEL_TEST_PYTHON_VENV:-}" ] \
-   || [ ! -x "${SIXEL_TEST_PYTHON_VENV}/bin/python" ]; then
+test -n "${SIXEL_TEST_PYTHON_VENV:-}" || \
     skip_all "python wheel test environment is unavailable"
-fi
+
+test -x "${SIXEL_TEST_PYTHON_VENV}/bin/python" || \
+    skip_all "python wheel test environment is unavailable"
 
 run_python="${SIXEL_TEST_PYTHON_VENV}/bin/python"
 libdir="${LIBSIXEL_LIBDIR:-${TOP_BUILDDIR}/src/.libs}"
-if [ ! -d "${libdir}" ]; then
-    libdir="${TOP_BUILDDIR}/src"
-fi
-
-python_skip_on_load_error() {
-    status=$1
-    log_text=$2
-
-    if [ "${status}" -eq 0 ]; then
-        return 0
-    fi
-
-    marker=$(printf '%s' "${log_text}" | awk '/^SKIP_LIBSIXEL_LOAD:/{print; exit}')
-    if [ -n "${marker}" ]; then
-        tap_skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}"
-    fi
-}
+test -d "${libdir}" || libdir="${TOP_BUILDDIR}/src"
 
 case_id=1
 source_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
@@ -129,12 +113,16 @@ PY
 )
 python_status=$?
 printf '%s' "${python_output}" >&2
-if [ "${python_status}" -eq 0 ]; then
+test "${python_status}" -eq 0 && {
     tap_pass ${case_id} "large image roundtrip via wheel frees resources"
-else
-    python_skip_on_load_error "${python_status}" "${python_output}"
-    tap_fail ${case_id} "resource test via wheel failed"
-fi
+    tap_plan 1
+    exit 0
+}
+
+marker=$(printf '%s' "${python_output}" | awk '/^SKIP_LIBSIXEL_LOAD:/{print; exit}')
+test -n "${marker}" &&     tap_skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}"
+
+tap_fail ${case_id} "resource test via wheel failed"
 
 tap_plan 1
 exit 0

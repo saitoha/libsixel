@@ -25,12 +25,12 @@ grep 'No nearby matches were found in' "${err_file}" >/dev/null 2>&1 &&     has_
 has_fallback=1
 grep 'Suggestion lookup unavailable on this build.' "${err_file}"     >/dev/null 2>&1 && has_fallback=0
 
-[ "${has_no_nearby}" -eq 0 ] || [ "${has_fallback}" -eq 0 ] || {
+test "${has_no_nearby}" -eq 0 || [ "${has_fallback}" -eq 0 ] || {
     fail 1 "missing no-nearby-matches diagnostic"
     exit 0
 }
 
-[ "${has_no_nearby}" -eq 0 ] || {
+test "${has_no_nearby}" -eq 0 || {
     pass 1 "missing path reports unsupported suggestion lookup"
     exit 0
 }

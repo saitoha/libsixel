@@ -17,24 +17,23 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 echo "1..1"
 set -v
 
-if ! command -v python >/dev/null 2>&1; then
-    if command -v python3 >/dev/null 2>&1; then
-        PYTHON=python3
-    else
-        printf 'ok 1 - self-signed fetch with -k # SKIP python missing\n'
-        exit 0
-    fi
-else
-    PYTHON=python
-fi
+PYTHON=""
+command -v python >/dev/null 2>&1 && PYTHON=python
 
-# Keep a single Python command path for portability across environments
-# where only `python3` exists.
+test -n "${PYTHON}" || {
+    command -v python3 >/dev/null 2>&1 && PYTHON=python3
+}
+
+test -n "${PYTHON}" || {
+    printf 'ok 1 - self-signed fetch with -k # SKIP python missing\n'
+    exit 0
+}
+
+# Keep a single Python command path for portability across environments.
 export PYTHON
 
 cert_dir="${script_dir}/certs"
 server_root="${top_srcdir}"
-
 
 cat >"${ARTIFACT_LOCAL_DIR}/server.py" <<PY
 try:
@@ -107,47 +106,47 @@ rm -f "${server_pid_file}"
 
 server_port=""
 for _ in 1 2 3 4 5; do
-    if [ -s "${port_file}" ]; then
+    test -s "${port_file}" && {
         server_port=$(cat "${port_file}")
         break
-    fi
+    }
 
-    if ! kill -0 "${server_pid}" 2>/dev/null; then
-        break
-    fi
+    kill -0 "${server_pid}" 2>/dev/null || break
 
     "${PYTHON}" -c "import time; time.sleep(0.1)"
 done
 
-if [ -z "${server_port}" ]; then
-    if kill "${server_pid}" 2>/dev/null; then
-        wait "${server_pid}" 2>/dev/null || :
-    fi
-
+test -n "${server_port}" || {
+    kill "${server_pid}" 2>/dev/null || :
+    wait "${server_pid}" 2>/dev/null || :
     printf 'ok 1 - self-signed fetch with -k # SKIP failed to start HTTPS server\n'
     exit 0
-fi
+}
 
 verify_output="${ARTIFACT_LOCAL_DIR}/https.sixel"
 server_ok=1
 
 for _ in 1 2 3; do
-    if run_img2sixel -k "https://localhost:${server_port}/images/map8.six" \
-            >"${verify_output}"; then
+    run_img2sixel -k "https://localhost:${server_port}/images/map8.six" \
+        >"${verify_output}" && {
         server_ok=0
         break
-    fi
+    }
 
     "${PYTHON}" -c "import time; time.sleep(0.1)"
 done
 
-if kill "${server_pid}" 2>/dev/null; then
-    wait "${server_pid}" 2>/dev/null || :
-fi
+kill "${server_pid}" 2>/dev/null || :
+wait "${server_pid}" 2>/dev/null || :
 
-if [ ${server_ok} -ne 0 ] || [ ! -s "${verify_output}" ]; then
-    printf 'not ok 1 - self-signed fetch with -k failed\n'
-    exit 1
-fi
+test ${server_ok} -eq 0 || {
+    fail 1 "self-signed fetch with -k failed"
+    exit 0
+}
 
-printf 'ok 1 - self-signed fetch succeeds with -k\n'
+test -s "${verify_output}" || {
+    fail 1 "self-signed fetch with -k failed"
+    exit 0
+}
+
+pass 1 "self-signed fetch succeeds with -k"

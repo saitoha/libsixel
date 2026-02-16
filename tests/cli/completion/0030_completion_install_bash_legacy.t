@@ -19,7 +19,7 @@ run_img2sixel --env IMG2SIXEL_COMPLETION_HOME="${completion_home}",IMG2SIXEL_BAS
     exit 0
 }
 
-[ -f "${legacy_path}" ] || {
+test -f "${legacy_path}" || {
     fail 1 "legacy bash completion path is not created"
     exit 0
 }

@@ -7,9 +7,9 @@ set -eux
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-if ! feature_defined_in_config "HAVE_FREEDESKTOP_THUMBNAILING"; then
+feature_defined_in_config "HAVE_FREEDESKTOP_THUMBNAILING" || {
     skip_all "gnome-thumbnailer loader is unavailable on this platform"
-fi
+}
 
 echo "1..1"
 set -v
