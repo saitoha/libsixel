@@ -24,7 +24,7 @@ lsqa_floor=${LSQA_MS_SSIM_FLOOR_WIC_PNG_PALETTE:-0.99}
 printf '1..1\n'
 set -v
 
-image_path="${TOP_SRCDIR}/tests/data/inputs/formats/palette.png"
+image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-png-pal8.png"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_png_palette.six"
 run_img2sixel -Lwic! "${image_path}" >"${output_sixel}" || {

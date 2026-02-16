@@ -27,7 +27,7 @@ printf '%s' "${probe_output}"     | grep "{cacaf262-9370-4615-a13b-9f5539da4c0a}
 
 test "${probe_status}" -eq 0 || skip_all "wic dds dxt1 codec is unavailable"
 
-lsqa_floor=${LSQA_MS_SSIM_FLOOR_WIC_DDS_DXT1:-0.84}
+lsqa_floor=${LSQA_MS_SSIM_FLOOR_WIC_DDS_DXT1:-0.95}
 
 printf '1..1
 '
