@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify WIC DDS DXT3 decoding quality with an MS-SSIM baseline.
 # Reproduction command (ImageMagick):
-#   convert tests/data/inputs/formats/rgba.png -define dds:compression=dxt3 DDS:tests/data/inputs/formats/snake-dds-dxt3.dds
+#   convert tests/data/inputs/formats/snake-64-reference-rgba.png -define dds:compression=dxt3 DDS:tests/data/inputs/formats/snake-dds-dxt3.dds
 
 set -eu
 
@@ -21,13 +21,13 @@ printf '%s' "${probe_output}"     | grep "{cacaf262-9370-4615-a13b-9f5539da4c0a}
 
 test "${probe_status}" -eq 0 || skip_all "wic dds dxt3 codec is unavailable"
 
-lsqa_floor=${LSQA_MS_SSIM_FLOOR_WIC_DDS_DXT3:-0.84}
+lsqa_floor=${LSQA_MS_SSIM_FLOOR_WIC_DDS_DXT3:-0.95}
 
 printf '1..1
 '
 set -v
 
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgba.png"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_dds_dxt3.six"
 run_img2sixel -Lwic! "${image_path}" >"${output_sixel}" || {
     fail 1 "wic dds dxt3 conversion failed"

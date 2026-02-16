@@ -7,7 +7,7 @@
 #   convert tests/data/inputs/snake_64.png -colors 256 tests/data/inputs/formats/snake-ico-pal8.ico
 #   convert tests/data/inputs/formats/rgba.png tests/data/inputs/formats/snake-ico-rgba.ico
 #   convert tests/data/inputs/snake_64.png DXT1:tests/data/inputs/formats/snake-dds-dxt1.dds
-#   convert tests/data/inputs/formats/rgba.png DXT5:tests/data/inputs/formats/snake-dds-dxt5.dds
+#   convert tests/data/inputs/formats/snake-64-reference-rgba.png -define dds:compression=dxt5 DDS:tests/data/inputs/formats/snake-dds-dxt5.dds
 
 set -eu
 
@@ -27,13 +27,13 @@ printf '%s' "${probe_output}"     | grep "{cacaf262-9370-4615-a13b-9f5539da4c0a}
 
 test "${probe_status}" -eq 0 || skip_all "wic dds dxt5 codec is unavailable"
 
-lsqa_floor=${LSQA_MS_SSIM_FLOOR_WIC_DDS_DXT5:-0.84}
+lsqa_floor=${LSQA_MS_SSIM_FLOOR_WIC_DDS_DXT5:-0.95}
 
 printf '1..1
 '
 set -v
 
-reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgba.png"
+reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_dds_dxt5.six"
 run_img2sixel -Lwic! "${image_path}" >"${output_sixel}" || {
     fail 1 "wic dds dxt5 conversion failed"

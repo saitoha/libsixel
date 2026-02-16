@@ -21,7 +21,7 @@ printf '%s' "${probe_output}"     | grep "{cacaf262-9370-4615-a13b-9f5539da4c0a}
 
 test "${probe_status}" -eq 0 || skip_all "wic jpeg progressive 420 codec is unavailable"
 
-lsqa_floor=${LSQA_MS_SSIM_FLOOR_WIC_JPEG_PROGRESSIVE_420:-0.94}
+lsqa_floor=${LSQA_MS_SSIM_FLOOR_WIC_JPEG_PROGRESSIVE_420:-0.95}
 
 printf '1..1
 '

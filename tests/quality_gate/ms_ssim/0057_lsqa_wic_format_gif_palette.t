@@ -19,6 +19,20 @@ printf '%s' "${probe_output}" \
 
 test "${probe_status}" -eq 0 || skip_all "WIC probe failed"
 
+set +e
+snake_gif_probe_output=$(run_img2sixel -Lwic! "${TOP_SRCDIR}/tests/data/inputs/snake_64.gif" >/dev/null 2>&1)
+snake_gif_probe_status=$?
+run_img2sixel -Lwic! "${TOP_SRCDIR}/tests/data/inputs/formats/snake-gif-interlaced.gif" >/dev/null 2>&1
+interlaced_gif_probe_status=$?
+set -e
+
+printf '%s' "${snake_gif_probe_output}" \
+    | grep "type      : unknown content" \
+    >/dev/null \
+    && test "${snake_gif_probe_status}" -ne 0 \
+    && test "${interlaced_gif_probe_status}" -eq 0 \
+    && skip_all "WIC rejected snake_64.gif as unknown content"
+
 lsqa_floor=${LSQA_MS_SSIM_FLOOR_WIC_GIF_PALETTE:-0.98}
 
 printf '1..1\n'
