@@ -16,27 +16,29 @@ sixel_src="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 sixel_tmp="${ARTIFACT_LOCAL_DIR}/clipboard-input.six"
 roundtrip_png="${ARTIFACT_LOCAL_DIR}/clipboard-roundtrip.png"
 
-if ! run_img2sixel "${sixel_src}" >"${sixel_tmp}"; then
+run_img2sixel "${sixel_src}" >"${sixel_tmp}" || {
     fail 1 "failed to prepare sixel input"
-fi
+    exit 0
+}
 
-if ! run_sixel2png -i "${sixel_tmp}" -o png:clipboard: ; then
+run_sixel2png -i "${sixel_tmp}" -o png:clipboard: || {
     tap_skip 1 "clipboard backend unavailable"
     exit 0
-fi
+}
 
-if ! run_img2sixel clipboard: -o clipboard:; then
+run_img2sixel clipboard: -o clipboard: || {
     tap_skip 1 "clipboard backend unavailable"
     exit 0
-fi
+}
 
-if ! run_sixel2png -i clipboard: -o "${roundtrip_png}"; then
+run_sixel2png -i clipboard: -o "${roundtrip_png}" || {
     tap_skip 1 "clipboard backend unavailable"
     exit 0
-fi
+}
 
-if [ -s "${roundtrip_png}" ]; then
-    pass 1 "clipboard round-trip succeeded"
-else
+test -s "${roundtrip_png}" || {
     fail 1 "round-trip PNG missing"
-fi
+    exit 0
+}
+
+pass 1 "clipboard round-trip succeeded"

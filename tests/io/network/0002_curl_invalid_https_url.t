@@ -15,7 +15,7 @@ set +e
 capture_output=$(run_img2sixel 'https:///test' 2>/dev/null)
 set -e
 
-[ -z "${capture_output}" ] || {
+test -z "${capture_output}" || {
     fail 1 "malformed HTTPS URL produced output"
     exit 0
 }

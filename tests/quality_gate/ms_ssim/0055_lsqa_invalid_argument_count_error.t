@@ -18,7 +18,7 @@ run_lsqa "${image_ref}" "${image_out}" "${extra_arg}"     >/dev/null 2>"${err_fi
 status=$?
 set -e
 
-[ "${status}" -eq 2 ] || {
+test "${status}" -eq 2 || {
     fail 1 "invalid positional argument count was not rejected as expected"
     exit 0
 }

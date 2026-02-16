@@ -26,7 +26,7 @@ run_img2sixel -m pal-riff:"${riff_alias}"         -o "${ARTIFACT_LOCAL_DIR}/from
     exit 0
 }
 
-[ -s "${ARTIFACT_LOCAL_DIR}/from-riff.six" ] || {
+test -s "${ARTIFACT_LOCAL_DIR}/from-riff.six" || {
     fail 1 "RIFF palette conversion produced no data"
     exit 0
 }

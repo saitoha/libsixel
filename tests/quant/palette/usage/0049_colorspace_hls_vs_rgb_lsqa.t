@@ -35,12 +35,12 @@ lsqa_err=$(
     run_lsqa -b "MS-SSIM:${lsqa_floor}" "${output_rgb}" "${output_hls}" 2>&1
 ) || lsqa_run_status=$?
 
-[ "${lsqa_run_status:-0}" -eq 0 ] && {
+test "${lsqa_run_status:-0}" -eq 0 && {
     pass 1 "hls vs rgb lsqa passed"
     exit 0
 }
 
-[ "${lsqa_run_status}" -eq 5 ] && {
+test "${lsqa_run_status}" -eq 5 && {
     fail 1 "${lsqa_err}"
     exit 0
 }

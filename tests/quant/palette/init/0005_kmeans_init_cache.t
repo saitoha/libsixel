@@ -12,9 +12,10 @@ output=$(
    run_test_runner --env SIXEL_PALETTE_KMEANS_INITTYPE=pca "palette/0001_kmeans_init" --cache | tr -d '\r'
 )
 
-if [ "${output}" = "pca pca" ]; then
-    printf 'ok 1 - cache preserves initial value\n'
-else
-    printf 'not ok 1 - cache check returned %s\n' "${output}"
-    exit 1
-fi
+test "${output}" = "pca pca" || {
+    fail 1 "cache check returned ${output}"
+    exit 0
+}
+
+pass 1 "cache preserves initial value"
+exit 0

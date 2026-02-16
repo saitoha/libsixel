@@ -23,7 +23,7 @@ run_img2sixel -m "${act_palette}" -o "${ARTIFACT_LOCAL_DIR}/from-act.six"       
     exit 0
 }
 
-[ -s "${ARTIFACT_LOCAL_DIR}/from-act.six" ] || {
+test -s "${ARTIFACT_LOCAL_DIR}/from-act.six" || {
     fail 1 "ACT palette conversion produced no data"
     exit 0
 }

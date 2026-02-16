@@ -5,49 +5,30 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-if [ "${ENABLE_PYTHON:-0}" != "1" ]; then
+test "${ENABLE_PYTHON:-0}" = "1" || \
     skip_all "python bindings are disabled in this build"
-fi
 
-if [ -z "${SIXEL_TEST_PYTHON_VENV:-}" ] \
-   || [ ! -x "${SIXEL_TEST_PYTHON_VENV}/bin/python" ]; then
+test -n "${SIXEL_TEST_PYTHON_VENV:-}" || \
     skip_all "python wheel test environment is unavailable"
-fi
+
+test -x "${SIXEL_TEST_PYTHON_VENV}/bin/python" || \
+    skip_all "python wheel test environment is unavailable"
 
 run_python="${SIXEL_TEST_PYTHON_VENV}/bin/python"
 libdir="${LIBSIXEL_LIBDIR:-${TOP_BUILDDIR}/src/.libs}"
-if [ ! -d "${libdir}" ]; then
-    libdir="${TOP_BUILDDIR}/src"
-fi
+test -d "${libdir}" || libdir="${TOP_BUILDDIR}/src"
 
-python_skip_on_load_error() {
-    status=$1
-    log_text=$2
-
-    if [ "${status}" -eq 0 ]; then
-        return 0
-    fi
-
-    marker=$(printf '%s' "${log_text}" | awk '/^SKIP_LIBSIXEL_LOAD:/{print; exit}')
-    if [ -n "${marker}" ]; then
-        tap_skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}"
-    fi
-}
-
-source_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
+printf '1..4\n'
 case_id=1
 
-run_case() {
-    scenario=$1
-    description=$2
-    working_dir="${ARTIFACT_LOCAL_DIR}/${scenario}"
-
+while IFS='|' read -r scenario description; do
     python_output=$(env \
         LIBSIXEL_LIBDIR="${libdir}" \
         LD_LIBRARY_PATH="${libdir}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
         DYLD_LIBRARY_PATH="${libdir}${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}" \
-        "${run_python}" - "${scenario}" "${source_image}" \
-        "${working_dir}" 2>&1 <<'PY'
+        "${run_python}" - "${scenario}" \
+        "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
+        "${ARTIFACT_LOCAL_DIR}/${scenario}" 2>&1 <<'PY'
 import pathlib
 import sys
 from typing import Iterable
@@ -184,20 +165,24 @@ PY
 )
     python_status=$?
     printf '%s' "${python_output}" >&2
-    if [ "${python_status}" -eq 0 ]; then
+
+    test "${python_status}" -eq 0 && \
         tap_pass ${case_id} "${description} via wheel"
-    else
-        python_skip_on_load_error "${python_status}" "${python_output}"
+
+    marker=""
+    test "${python_status}" -ne 0 && marker=$(printf '%s' "${python_output}" | awk '/^SKIP_LIBSIXEL_LOAD:/{print; exit}')
+    test -n "${marker}" && \
+        tap_skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}"
+
+    test "${python_status}" -ne 0 && test -z "${marker}" && \
         tap_fail ${case_id} "${description} via wheel failed"
-    fi
 
     case_id=$((case_id + 1))
-}
+done <<'CASES'
+missing|missing input path errors
+corrupt|corrupted image errors
+unsupported|unsupported format errors
+invalid_option|invalid option value errors
+CASES
 
-run_case missing "missing input path errors"
-run_case corrupt "corrupted image errors"
-run_case unsupported "unsupported format errors"
-run_case invalid_option "invalid option value errors"
-
-tap_plan 4
 exit 0

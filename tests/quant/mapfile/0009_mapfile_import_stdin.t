@@ -23,7 +23,7 @@ run_img2sixel -m gpl:-         -o "${ARTIFACT_LOCAL_DIR}/from-stdin.six" "${snak
     exit 0
 }
 
-[ -s "${ARTIFACT_LOCAL_DIR}/from-stdin.six" ] || {
+test -s "${ARTIFACT_LOCAL_DIR}/from-stdin.six" || {
     fail 1 "GPL stdin palette conversion produced no data"
     exit 0
 }
