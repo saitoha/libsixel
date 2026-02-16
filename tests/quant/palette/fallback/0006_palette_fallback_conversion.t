@@ -12,9 +12,7 @@ set -v
 
 snake_ascii_pbm="${TOP_SRCDIR}/images/snake-ascii.pbm"
 
-SIXEL_PALETTE_DISABLE_TABLES=1
-export SIXEL_PALETTE_DISABLE_TABLES
-run_img2sixel "${snake_ascii_pbm}" -o "${ARTIFACT_LOCAL_DIR}/snake-fallback.sixel" || {
+run_img2sixel --env SIXEL_PALETTE_DISABLE_TABLES=1 "${snake_ascii_pbm}" -o "${ARTIFACT_LOCAL_DIR}/snake-fallback.sixel" || {
     printf 'not ok 1 - fallback expansion failed\n'
     exit 0
 }

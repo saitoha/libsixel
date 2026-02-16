@@ -3,20 +3,14 @@
 
 set -eux
 
-export SIXEL_THREADS=1
-
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
-artifact_dir="${ARTIFACT_LOCAL_DIR:-/tmp}"
-out_file="${artifact_dir}/resize.six"
-ppm_file="${artifact_dir}/resize.ppm"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 echo "1..1"
 set -v
 
-cat <<'PPM' >"${ppm_file}"
+run_img2sixel -v -=1 -W oklab -w 99% -o/dev/null << 'PPM' || {
 P3
 4 4
 255
@@ -25,8 +19,6 @@ P3
 255 0 0   0 255 0   0 0 255   255 255 0
 255 0 0   0 255 0   0 0 255   255 255 0
 PPM
-
-run_img2sixel -v -W oklab -w 99%         -o "${out_file}" "${ppm_file}"         >"${artifact_dir}/stdout.log" || {
     fail 1 "img2sixel failed with verbose dump"
     exit 0
 }
