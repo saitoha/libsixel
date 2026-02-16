@@ -310,6 +310,7 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/snake-jpeg-444.jpg \
     data/inputs/formats/snake-jpeg-progressive-420.jpg \
     data/inputs/formats/snake-png-adam7-rgb.png \
+    data/inputs/formats/snake-png-pal8.png \
     data/inputs/formats/snake-png-gray16.png \
     data/inputs/formats/snake-png-pal8-trns.png \
     data/inputs/formats/snake-tiff-rle-rgb.tiff \
