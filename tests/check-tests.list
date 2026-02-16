@@ -186,8 +186,11 @@ io/loader/0042_loader_gnome_thumbnailer_mimetype_last_assignment_wins.t
 io/loader/0042_pngsuite_basic_width32_basn3p08_msssim.t
 io/loader/0043_loader_gnome_thumbnailer_group_scope.t
 io/loader/0043_pngsuite_basic_width32_basn4a08_msssim.t
+io/loader/0044_loader_wic_forced_png.t
 io/loader/0044_pngsuite_basic_width32_basn4a16_msssim.t
+io/loader/0045_loader_wic_rejects_gif_no_fallback.t
 io/loader/0045_pngsuite_basic_width32_basn6a08_msssim.t
+io/loader/0046_loader_wic_gif_fallback_builtin.t
 io/loader/0046_pngsuite_basic_width32_basn6a16_msssim.t
 io/loader/0047_pngsuite_basic_cropped_basn0g01_msssim.t
 io/loader/0048_pngsuite_basic_cropped_basn0g02_msssim.t
