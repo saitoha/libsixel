@@ -12,7 +12,7 @@ output=$(
    run_test_runner --env SIXEL_PALETTE_KMEANS_INITTYPE= "palette/0001_kmeans_init" | tr -d '\r'
 ) || output=""
 
-[ "${output}" = "none" ] || {
+test "${output}" = "none" || {
     fail 1 "unexpected kmeans init output: ${output}"
     exit 0
 }

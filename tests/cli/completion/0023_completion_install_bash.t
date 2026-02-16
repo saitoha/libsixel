@@ -5,32 +5,22 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-if ! command -v bash >/dev/null; then
-    skip_all "bash is not found"
-fi
-
-status=0
+command -v bash >/dev/null || skip_all "bash is not found"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-
-
 completion_dir="${top_srcdir}/converters/shell-completion"
-
-
 
 # Use a writable temporary home to avoid permission issues on shared
 # workspaces while still keeping logs under tests/_artifacts.
 completion_home=""
-if command -v mktemp >/dev/null 2>&1; then
+command -v mktemp >/dev/null 2>&1 && \
     completion_home=$(mktemp -d "${TMPDIR:-/tmp}/img2sixel-home.XXXXXX")
-else
-    completion_home="${ARTIFACT_LOCAL_DIR}/home.$$"
-fi
-if [ -z "${completion_home}" ]; then
-    echo "Failed to create a temporary home directory" >&2
-    exit 1
-fi
+
+test -n "${completion_home}" || {
+    fail 1 "failed to create a temporary home directory"
+    exit 0
+}
 
 trap 'rm -rf "${completion_home}"' EXIT INT TERM
 
@@ -47,20 +37,23 @@ export IMG2SIXEL_COMPLETION_HOME
 export IMG2SIXEL_COMPLETION_DIR
 export BASH_VERSION
 
-if run_img2sixel -2 bash > "${ARTIFACT_LOCAL_DIR}/output.txt"; then
-    if [ -f "${target_path}" ] && \
-            grep '# bash completion for img2sixel' \
-            "${target_path}" >/dev/null 2>&1; then
-        pass 1 "bash completion installed"
-    elif [ -f "${legacy_path}" ] && \
-            grep '# bash completion for img2sixel' \
-            "${legacy_path}" >/dev/null 2>&1; then
-        pass 1 "bash completion installed"
-    else
-        fail 1 "bash completion not installed"
-    fi
-else
+run_img2sixel -2 bash >/dev/null || {
     fail 1 "bash completion install failed"
-fi
+    exit 0
+}
 
-exit "${status}"
+test -f "${target_path}" && \
+    grep '# bash completion for img2sixel' "${target_path}" >/dev/null 2>&1 && {
+    pass 1 "bash completion installed"
+    exit 0
+}
+
+test -f "${legacy_path}" && \
+    grep '# bash completion for img2sixel' "${legacy_path}" >/dev/null 2>&1 && {
+    pass 1 "bash completion installed"
+    exit 0
+}
+
+fail 1 "bash completion not installed"
+
+exit 0

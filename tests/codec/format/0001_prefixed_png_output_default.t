@@ -17,7 +17,7 @@ run_img2sixel -o "png:${prefixed_png}" "${snake_jpg}" || {
     exit 0
 }
 
-[ -s "${prefixed_png}" ] || {
+test -s "${prefixed_png}" || {
     fail 1 "prefixed PNG output missing"
     exit 0
 }

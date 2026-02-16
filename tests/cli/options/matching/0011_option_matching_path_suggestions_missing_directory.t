@@ -27,17 +27,17 @@ grep 'does not exist.' "${err_file}" >/dev/null 2>&1 &&     has_missing_director
 has_fallback=1
 grep 'Suggestion lookup unavailable on this build.' "${err_file}"     >/dev/null 2>&1 && has_fallback=0
 
-[ "${has_missing_directory}" -eq 0 ] || [ "${has_fallback}" -eq 0 ] || {
+test "${has_missing_directory}" -eq 0 || [ "${has_fallback}" -eq 0 ] || {
     fail 1 "missing directory diagnostics were not emitted"
     exit 0
 }
 
-[ "${has_missing_directory}" -ne 0 ] || [ "${has_missing_directory_text}" -eq 0 ] || {
+test "${has_missing_directory}" -ne 0 || [ "${has_missing_directory_text}" -eq 0 ] || {
     fail 1 "missing directory diagnostic was not emitted"
     exit 0
 }
 
-[ "${has_missing_directory}" -eq 0 ] || {
+test "${has_missing_directory}" -eq 0 || {
     pass 1 "missing directory path reports unsupported suggestion lookup"
     exit 0
 }

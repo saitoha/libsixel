@@ -5,9 +5,7 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-if ! command -v zsh >/dev/null; then
-    skip_all "zsh is not found"
-fi
+command -v zsh >/dev/null || skip_all "zsh is not found"
 
 completion_home="${ARTIFACT_LOCAL_DIR}"
 rc_path="${completion_home}/.zshrc"

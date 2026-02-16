@@ -15,17 +15,19 @@ rc=$?
 set -e
 printf '%s' "${loader_output}" >&2
 
-if printf '%s' "${loader_output}" \
+printf '%s' "${loader_output}" \
     | grep "{cacaf262-9370-4615-a13b-9f5539da4c0a} not registered" \
-        >/dev/null; then
+    >/dev/null && {
     skip_all "WIC is not available"
-fi
+}
 
 echo "1..1"
 set -v
 
-if [ "${rc}" -eq 0 ]; then
-    echo "ok 1 - loader/0009_loader_wic_pixelformat"
-else
-    echo "not ok 1 - loader/0009_loader_wic_pixelformat"
-fi
+test "${rc}" -eq 0 || {
+    fail 1 "loader/0009_loader_wic_pixelformat"
+    exit 0
+}
+
+pass 1 "loader/0009_loader_wic_pixelformat"
+exit 0

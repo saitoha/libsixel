@@ -23,12 +23,12 @@ value_alias2=$(run_lsqa -m SSIM "${image_ref}" "${image_out}") || {
     exit 0
 }
 
-[ "${value_canonical}" = "${value_alias1}" ] || {
+test "${value_canonical}" = "${value_alias1}" || {
     fail 1 "MS-SSIM canonical and MS_SSIM differ"
     exit 0
 }
 
-[ "${value_canonical}" = "${value_alias2}" ] || {
+test "${value_canonical}" = "${value_alias2}" || {
     fail 1 "MS-SSIM canonical and SSIM differ"
     exit 0
 }

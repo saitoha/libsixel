@@ -32,12 +32,12 @@ lsqa_err=$(
         "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
-[ "${lsqa_run_status:-0}" -eq 0 ] && {
+test "${lsqa_run_status:-0}" -eq 0 && {
     pass 1 "positional float32 a_dither oklab lsqa passed"
     exit 0
 }
 
-[ "${lsqa_run_status}" -eq 5 ] && {
+test "${lsqa_run_status}" -eq 5 && {
     fail 1 "${lsqa_err}"
     exit 0
 }

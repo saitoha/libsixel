@@ -9,17 +9,6 @@ set -eux
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
 
-
-check_exit() {
-    set +e
-    run_img2sixel "$@"
-    rc=$?
-    set -e
-
-    # Accept success or mapped error exits (1/2/3) without crashing.
-    [ "${rc}" -le 3 ]
-}
-
 issue51="${TOP_SRCDIR}/tests/security/issue/data/libsixel-libsixel/51/stbi_1561_poc.bin"
 
 printf '1..1\n'
@@ -27,7 +16,13 @@ set -v
 
 # Use the minimal invocation to exercise the decoder and ensure the
 # reported PoC is rejected safely.
-check_exit "${issue51}" -o /dev/null || {
+set +e
+run_img2sixel "${issue51}" -o /dev/null
+command_status=$?
+set -e
+
+# Accept success or mapped error exits (1/2/3) without crashing.
+test "${command_status}" -le 3 || {
     fail 1 "issue #51 PoC handling failed"
     exit 0
 }

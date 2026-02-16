@@ -8,32 +8,6 @@ max_port_attempts=5
 port_file="${ARTIFACT_LOCAL_DIR}/server.port"
 # Use nearby ports so the HTTPS server can start when the default is busy.
 
-# Ensure the helper HTTPS server exits even when the test process gets
-# interrupted on CI. The helper uses a short timeout loop and logs to
-# curl.log so we can diagnose server teardown issues.
-stop_server() {
-    server_pid="$1"
-
-    if kill "${server_pid}" 2>/dev/null; then
-        wait_limit=10
-        waited=0
-
-        while kill -0 "${server_pid}" 2>/dev/null; do
-            if [ ${waited} -ge ${wait_limit} ]; then
-                echo "Server pid ${server_pid} did not exit; forcing kill." \
-                    >&2
-                kill -9 "${server_pid}" 2>/dev/null || :
-                break
-            fi
-
-            "${PYTHON}" -c "import time; time.sleep(0.1)"
-            waited=$((waited + 1))
-        done
-
-        wait "${server_pid}" 2>/dev/null || :
-    fi
-}
-
 script_dir=${0%[/\\]*}
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
@@ -43,24 +17,23 @@ ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 echo "1..1"
 set -v
 
-if ! command -v python >/dev/null 2>&1; then
-    if command -v python3 >/dev/null 2>&1; then
-        PYTHON=python3
-    else
-        printf 'ok 1 - self-signed fetch blocked # SKIP python missing\n'
-        exit 0
-    fi
-else
-    PYTHON=python
-fi
+PYTHON=""
+command -v python >/dev/null 2>&1 && PYTHON=python
 
-# Keep a single Python command path for portability across environments
-# where only `python3` exists.
+test -n "${PYTHON}" || {
+    command -v python3 >/dev/null 2>&1 && PYTHON=python3
+}
+
+test -n "${PYTHON}" || {
+    printf 'ok 1 - self-signed fetch blocked # SKIP python missing\n'
+    exit 0
+}
+
+# Keep a single Python command path for portability across environments.
 export PYTHON
 
 cert_dir="${script_dir}/certs"
 server_root="${top_srcdir}"
-
 
 cat >"${ARTIFACT_LOCAL_DIR}/server.py" <<PY
 try:
@@ -133,43 +106,66 @@ rm -f "${server_pid_file}"
 
 server_port=""
 for _ in 1 2 3 4 5; do
-    if [ -s "${port_file}" ]; then
+    test -s "${port_file}" && {
         server_port=$(cat "${port_file}")
         break
-    fi
+    }
 
-    if ! kill -0 "${server_pid}" 2>/dev/null; then
-        break
-    fi
+    kill -0 "${server_pid}" 2>/dev/null || break
 
     "${PYTHON}" -c "import time; time.sleep(0.1)"
 done
 
-if [ -z "${server_port}" ]; then
-    stop_server "${server_pid}"
+test -n "${server_port}" || {
+wait_limit=10
+waited=0
+kill "${server_pid}" 2>/dev/null || :
+while kill -0 "${server_pid}" 2>/dev/null; do
+    test ${waited} -lt ${wait_limit} || {
+        echo "Server pid ${server_pid} did not exit; forcing kill." >&2
+        kill -9 "${server_pid}" 2>/dev/null || :
+        break
+    }
 
+    "${PYTHON}" -c "import time; time.sleep(0.1)"
+    waited=$((waited + 1))
+done
+wait "${server_pid}" 2>/dev/null || :
     printf 'ok 1 - self-signed fetch blocked # SKIP failed to start HTTPS server\n'
     exit 0
-fi
+}
 
 verify_output=$(make_temp_file "${ARTIFACT_LOCAL_DIR}" "curl-verify")
 run_img2sixel "https://localhost:${server_port}/images/map8.six" \
-    >"${verify_output}" && command_status=$? || command_status=$?
+    >"${verify_output}" && command_status=0 || command_status=$?
 
-stop_server "${server_pid}"
+wait_limit=10
+waited=0
+kill "${server_pid}" 2>/dev/null || :
+while kill -0 "${server_pid}" 2>/dev/null; do
+    test ${waited} -lt ${wait_limit} || {
+        echo "Server pid ${server_pid} did not exit; forcing kill." >&2
+        kill -9 "${server_pid}" 2>/dev/null || :
+        break
+    }
+
+    "${PYTHON}" -c "import time; time.sleep(0.1)"
+    waited=$((waited + 1))
+done
+wait "${server_pid}" 2>/dev/null || :
 
 # The HTTPS request must fail TLS verification when -k is omitted.
-if [ "${command_status}" -eq 0 ]; then
+test "${command_status}" -ne 0 || {
     rm -f "${verify_output}"
-    printf 'not ok 1 - self-signed fetch unexpectedly succeeded without -k\n'
-    exit 1
-fi
+    fail 1 "self-signed fetch unexpectedly succeeded without -k"
+    exit 0
+}
 
-if [ -s "${verify_output}" ]; then
+test ! -s "${verify_output}" || {
     rm -f "${verify_output}"
-    printf 'not ok 1 - self-signed fetch produced output without -k\n'
-    exit 1
-fi
+    fail 1 "self-signed fetch produced output without -k"
+    exit 0
+}
 
 rm -f "${verify_output}"
-printf 'ok 1 - self-signed fetch blocked without -k\n'
+pass 1 "self-signed fetch blocked without -k"

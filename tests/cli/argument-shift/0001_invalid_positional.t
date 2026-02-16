@@ -9,9 +9,9 @@ set -eux
 # Skip temporarily on Windows environments while addressing
 # intermittent failures specific to that platform.
 os_name=$(uname -s || echo "unknown")
-if printf '%s' "${os_name}" | grep -qi 'mingw\|msys\|cygwin'; then
+printf '%s' "${os_name}" | grep -qi 'mingw\|msys\|cygwin' && {
     skip_all "temporarily disabled on Windows due to instability"
-fi
+}
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 

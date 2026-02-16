@@ -19,7 +19,7 @@ run_img2sixel -M "${act_palette}" -o "${ARTIFACT_LOCAL_DIR}/act.six" "${snake_pn
 }
 
 act_size=$(wc -c <"${act_palette}")
-[ "${act_size}" -eq 772 ] || {
+test "${act_size}" -eq 772 || {
     fail 1 "ACT palette length mismatch (${act_size})"
     exit 0
 }

@@ -12,53 +12,40 @@ zsh_sorted="${ARTIFACT_LOCAL_DIR}/options-zsh-sorted.txt"
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
 
-die_skip() {
-    reason=$1
-    echo "1..1"
-    echo "ok 1 - skip ${reason}"
-    exit 0
-}
-
-if ! command -v diff >/dev/null 2>&1; then
-    die_skip "diff not available"
-fi
+command -v diff >/dev/null 2>&1 || skip_all "diff not available"
 
 printf '1..1\n'
 set -v
 
-if grep ' --[0-9a-zA-Z_@=~%?]' \
-        "${top_srcdir}/converters/shell-completion/bash/img2sixel" \
-        | grep -v "' " \
-        | sed 's/.* \(-.\) .*/\1/' >"${bash_opts}"; then
-    :
-else
+grep ' --[0-9a-zA-Z_@=~%?]' \
+    "${top_srcdir}/converters/shell-completion/bash/img2sixel" \
+    | grep -v "' " \
+    | sed 's/.* \(-.\) .*/\1/' >"${bash_opts}" || {
     fail 1 "failed to parse bash completion"
-fi
+    exit 0
+}
 
-if LC_ALL=C sort "${bash_opts}" >"${bash_sorted}"; then
-    :
-else
+LC_ALL=C sort "${bash_opts}" >"${bash_sorted}" || {
     fail 1 "failed to sort bash completion"
-fi
+    exit 0
+}
 
-if grep '{-' "${top_srcdir}/converters/shell-completion/zsh/_img2sixel" \
-        | cut -f1 -d, \
-        | cut -f2 -d'{' >"${zsh_opts}"; then
-    :
-else
+grep '{-' "${top_srcdir}/converters/shell-completion/zsh/_img2sixel" \
+    | cut -f1 -d, \
+    | cut -f2 -d'{' >"${zsh_opts}" || {
     fail 1 "failed to parse zsh completion"
-fi
+    exit 0
+}
 
-if LC_ALL=C sort "${zsh_opts}" >"${zsh_sorted}"; then
-    :
-else
+LC_ALL=C sort "${zsh_opts}" >"${zsh_sorted}" || {
     fail 1 "failed to sort zsh completion"
-fi
+    exit 0
+}
 
-if diff -u "${bash_sorted}" "${zsh_sorted}"; then
-    pass 1 "bash completion matches zsh completion"
-else
+diff -u "${bash_sorted}" "${zsh_sorted}" || {
     fail 1 "bash completion diverges from zsh completion"
-fi
+    exit 0
+}
 
+pass 1 "bash completion matches zsh completion"
 exit 0

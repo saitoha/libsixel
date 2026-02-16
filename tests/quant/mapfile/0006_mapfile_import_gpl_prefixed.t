@@ -23,7 +23,7 @@ run_img2sixel -m gpl:"${gpl_palette}"         -o "${ARTIFACT_LOCAL_DIR}/from-gpl
     exit 0
 }
 
-[ -s "${ARTIFACT_LOCAL_DIR}/from-gpl.six" ] || {
+test -s "${ARTIFACT_LOCAL_DIR}/from-gpl.six" || {
     fail 1 "GPL palette conversion produced no data"
     exit 0
 }

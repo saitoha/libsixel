@@ -30,12 +30,12 @@ run_img2sixel -=1 --gri-limit -o "${output_limited}" "${input_image}" || {
 : >"${lsqa_err_file}"
 run_lsqa -b "MS-SSIM:${lsqa_floor}" "${output_plain}" "${output_limited}"     > /dev/null 2>"${lsqa_err_file}" || lsqa_run_status=$?
 
-[ "${lsqa_run_status}" -eq 0 ] && {
+test "${lsqa_run_status}" -eq 0 && {
     pass 1 "gri-limit deterministic output matches"
     exit 0
 }
 
-[ "${lsqa_run_status}" -eq 5 ] && {
+test "${lsqa_run_status}" -eq 5 && {
     fail 1 "$(cat "${lsqa_err_file}")"
     exit 0
 }

@@ -27,18 +27,18 @@ grep -q "Suggestions:" "${stderr_capture}" >/dev/null 2>&1 &&
 has_fallback=1
 grep -q "Suggestion lookup unavailable on this build." "${stderr_capture}" >/dev/null 2>&1 && has_fallback=0
 
-[ "${has_suggestions}" -eq 0 ] || [ "${has_fallback}" -eq 0 ] || {
+test "${has_suggestions}" -eq 0 || [ "${has_fallback}" -eq 0 ] || {
     fail 1 "missing path suggestion diagnostics"
     exit 0
 }
 
-[ "${has_suggestions}" -ne 0 ] ||
+test "${has_suggestions}" -ne 0 ||
     grep -q "modified" "${stderr_capture}" >/dev/null 2>&1 || {
     fail 1 "suggestion entries were missing timestamps"
     exit 0
 }
 
-[ "${has_suggestions}" -eq 0 ] || {
+test "${has_suggestions}" -eq 0 || {
     pass 1 "missing input path reports unsupported suggestion lookup"
     exit 0
 }
