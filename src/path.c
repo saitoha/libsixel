@@ -299,10 +299,9 @@ sixel_path_cygwin_conv_to_posix(char const *path,
 static int
 sixel_path_is_running_under_wine(void)
 {
-    typedef const char *(__cdecl *wine_get_version_t)(void);
     static int cached = -1;
     HMODULE ntdll;
-    wine_get_version_t wine_get_version;
+    FARPROC wine_get_version;
 
     ntdll = NULL;
     wine_get_version = NULL;
@@ -317,8 +316,12 @@ sixel_path_is_running_under_wine(void)
         return cached;
     }
 
-    wine_get_version =
-        (wine_get_version_t)GetProcAddress(ntdll, "wine_get_version");
+    /*
+     * We only need symbol existence here.
+     * Keep the FARPROC type to avoid incompatible function pointer casts on
+     * MinGW when -Wcast-function-type and -Werror are enabled.
+     */
+    wine_get_version = GetProcAddress(ntdll, "wine_get_version");
     if (wine_get_version == NULL) {
         cached = 0;
         return cached;
