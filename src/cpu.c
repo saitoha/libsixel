@@ -262,11 +262,6 @@ sixel_cpu_simd_level(void)
     return resolved;
 }
 
-void
-sixel_cpu_reset_simd_cache(void)
-{
-    SIXEL_CPU_CACHE_STORE(-1);
-}
 
 /* emacs Local Variables:      */
 /* emacs mode: c               */
