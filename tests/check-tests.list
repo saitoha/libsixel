@@ -85,6 +85,7 @@ cli/options/matching/0015_option_matching_path_suggestions_no_nearby_matches.t
 cli/options/matching/0016_option_matching_quantize_suboption_success.t
 cli/options/matching/0017_option_matching_quantize_suboption_unknown_key.t
 cli/options/matching/0018_option_matching_quantize_suboption_unknown_value.t
+cli/options/matching/0019_option_matching_loader_suboption_success.t
 cli/sixel2png/0001_version.t
 cli/sixel2png/0002_help.t
 cli/sixel2png/0002_missing_args.t
