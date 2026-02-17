@@ -58,6 +58,25 @@ jobs:
             exec_type: cmd
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -131,6 +150,25 @@ jobs:
             exec_type: cmd
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -165,6 +203,25 @@ jobs:
             exec_type: bash
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -426,6 +483,25 @@ jobs:
             exec_type: msys2
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -702,6 +778,25 @@ jobs:
             exec_type: msys2
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -791,6 +886,25 @@ jobs:
             exec_type: bash
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -832,6 +946,25 @@ jobs:
             exec_type: bash
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -902,6 +1035,25 @@ jobs:
             exec_type: msys2
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -946,6 +1098,25 @@ jobs:
             exec_type: cygwin
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -1116,6 +1287,25 @@ jobs:
             exec_type: cygwin
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -1217,6 +1407,25 @@ jobs:
             exec_type: bash
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -1252,6 +1461,25 @@ jobs:
             exec_type: bash
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -1316,6 +1544,25 @@ jobs:
               mingw-w64-i686-toolchain
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -1366,6 +1613,25 @@ jobs:
             exec_type: cygwin
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -1408,6 +1674,25 @@ jobs:
             exec_type: cmd
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -1478,6 +1763,25 @@ jobs:
             exec_type: cmd
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -1711,6 +2015,25 @@ jobs:
             exec_type: bash
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -1804,6 +2127,25 @@ jobs:
             exec_type: bash
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -1857,6 +2199,25 @@ jobs:
             exec_type: msys2
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -1909,6 +2270,25 @@ jobs:
             exec_type: bash
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -1996,6 +2376,25 @@ jobs:
             exec_type: bash
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -2067,6 +2466,25 @@ jobs:
             exec_type: bash
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -2148,6 +2566,25 @@ jobs:
             exec_type: bash
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -2239,6 +2676,25 @@ jobs:
             exec_type: bash
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -2367,6 +2823,25 @@ jobs:
             exec_type: msys2
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -2439,6 +2914,25 @@ jobs:
             exec_type: bash
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -2483,6 +2977,25 @@ jobs:
             exec_type: solaris-vm
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -2529,6 +3042,25 @@ jobs:
 #            exec_type: omnios-vm
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -2575,6 +3107,25 @@ jobs:
             exec_type: openindiana-vm
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - name: Configure git EOL
         if: ${{ runner.os == 'Windows' }}
         shell: bash
@@ -2615,6 +3166,25 @@ jobs:
             exec_type: alpine
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: 1
@@ -2656,6 +3226,25 @@ jobs:
             exec_type: cross-platform-vms
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: 1
@@ -2698,6 +3287,25 @@ jobs:
             exec_type: cross-platform-vms
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: 1
@@ -2787,6 +3395,25 @@ jobs:
             exec_type: cross-platform-vms
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: 1
@@ -2829,6 +3456,25 @@ jobs:
             exec_type: cross-platform-vms
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: 1
@@ -2865,6 +3511,25 @@ jobs:
             exec_type: dragonflybsd-vm
 
     steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: 1

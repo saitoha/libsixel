@@ -14,24 +14,6 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Set Windows Defender ExclusionPath (Windows)
-      if: runner.os == 'Windows'
-      shell: pwsh
-      run: |
-        Add-MpPreference -ExclusionPath "C:\a"
-
-    - name: Disable Windows Search Indexer (Windows)
-      if: runner.os == 'Windows'
-      shell: pwsh
-      run: |
-        Stop-Service WSearch
-
-    - name: Disable Spotlight (macOS)
-      if: runner.os == 'macOS'
-      shell: bash
-      run: |
-        sudo mdutil -a -i off
-
     - name: Normalize line endings (Windows)
       if: runner.os == 'Windows'
       shell: bash
