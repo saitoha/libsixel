@@ -94,6 +94,8 @@ SIXEL_GDK_ERROR            = (SIXEL_FALSE         | 0x0800)  # errors occures in
 SIXEL_GD_ERROR             = (SIXEL_FALSE         | 0x0900)  # errors occures in gd functions
 SIXEL_STBI_ERROR           = (SIXEL_FALSE         | 0x0a00)  # errors occures in stb_image functions
 SIXEL_STBIW_ERROR          = (SIXEL_FALSE         | 0x0b00)  # errors occures in stb_image_write functions
+SIXEL_COM_ERROR            = (SIXEL_FALSE         | 0x0c00)  # errors occures in COM functions
+SIXEL_WIC_ERROR            = (SIXEL_FALSE         | 0x0d00)  # errors occures in WIC functions
 
 SIXEL_INTERRUPTED          = (SIXEL_OK            | 0x0001)  # interrupted by a signal
 
