@@ -7,7 +7,6 @@ set -eux
 
 feature_defined_in_config "HAVE_LIBCURL" || {
     skip_all "libcurl support is disabled in this build"
-    return 0
 }
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
