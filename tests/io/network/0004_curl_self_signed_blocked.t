@@ -7,7 +7,6 @@ set -eux
 
 feature_defined_in_config "HAVE_LIBCURL" || feature_defined_in_config "HAVE_WINHTTP" || {
     skip_all "libcurl or WinHTTP support is disabled in this build"
-    return 0
 }
 
 ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
@@ -16,7 +15,7 @@ server_port_base=4443
 max_port_attempts=5
 # Use nearby ports so the HTTPS server can start when the default is busy.
 port_file="${ARTIFACT_LOCAL_DIR}/server.port"
-script_dir=$(CDPATH=; cd ${0%[/\\]*}; pwd)
+script_dir=$(CDPATH=; cd "${0%[/\\]*}"; pwd)
 
 echo "1..1"
 set -v
