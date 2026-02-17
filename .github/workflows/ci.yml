@@ -1136,7 +1136,7 @@ jobs:
     needs: [coverage-meson]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: ${{ matrix.timeout_minutes || 90 }}
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       max-parallel: 4
@@ -1236,7 +1236,7 @@ jobs:
     needs: [core-meson-ubuntu]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: ${{ matrix.timeout_minutes || 90 }}
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       matrix:
@@ -1271,7 +1271,7 @@ jobs:
     needs: [core-meson-ubuntu]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: ${{ matrix.timeout_minutes || 90 }}
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       max-parallel: 1
@@ -1335,7 +1335,7 @@ jobs:
     needs: [coverage-meson]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: ${{ matrix.timeout_minutes || 90 }}
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       max-parallel: 1
@@ -1386,7 +1386,7 @@ jobs:
     needs: [coverage-meson]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: ${{ matrix.timeout_minutes || 90 }}
+    timeout-minutes: 90
     strategy:
       fail-fast: false
       max-parallel: 4
@@ -1395,7 +1395,7 @@ jobs:
           - label: Meson-cmd-x86_64-msvc-x86_64-unity
             buildtool: meson
             runner: windows-latest
-            timeout_minutes: 60
+            timeout_minutes: 90
             setup_options: >-
               -Dunity=on
             exec_type: cmd
