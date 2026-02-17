@@ -578,7 +578,8 @@ typedef int SIXELSTATUS;
 #define SIXEL_OPTFLAG_PIPE_MODE         ('D')  /* -D, --pipe-mode: (deprecated)
                                                   read source images from stdin continuously */
 #define SIXEL_OPTFLAG_VERBOSE           ('v')  /* -v, --verbose: show debugging info */
-#define SIXEL_OPTFLAG_LOADERS           ('L')  /* -L LIST, --loaders=LIST: override loader order */
+#define SIXEL_OPTFLAG_LOADERS           ('L')  /* -L LIST, --loaders=LIST: override loader order
+                                                  (WIC accepts :ico_minsize=SIZE) */
 #define SIXEL_OPTFLAG_VERSION           ('V')  /* -V, --version: show version and license info */
 #define SIXEL_OPTFLAG_HELP              ('H')  /* -H, --help: show this help */
 
