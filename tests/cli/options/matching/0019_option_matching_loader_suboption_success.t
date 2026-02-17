@@ -21,7 +21,7 @@ printf '%s' "${probe_output}" | grep -q "invalid argument for -L,--loaders optio
     exit 0
 }
 
-test "${probe_status}" -ne 2 || {
+test "${probe_status-}" = "" || {
     fail 1 "-L wic suboptions were rejected by option parser"
     exit 0
 }
