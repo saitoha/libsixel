@@ -45,6 +45,10 @@
 #include <emscripten.h>
 #endif  /* HAVE_EMSCRIPTEN_H */
 
+#if defined(_WIN32)
+#include <windows.h>
+#endif  /* _WIN32 */
+
 #if defined(__COSMOPOLITAN__)
 #include <cosmo.h>
 #endif  /* __COSMOPOLITAN__ */
@@ -298,6 +302,46 @@ img2sixel_path_cygwin_conv_to_posix(char const *path,
 #endif
 
 #if defined(IMG2SIXEL_PATH_USE_CYGPATH)
+#if defined(_WIN32)
+static int
+img2sixel_path_is_running_under_wine(void)
+{
+    typedef const char *(__cdecl *wine_get_version_t)(void);
+    static int cached = -1;
+    HMODULE ntdll;
+    wine_get_version_t wine_get_version;
+
+    ntdll = NULL;
+    wine_get_version = NULL;
+
+    if (cached >= 0) {
+        return cached;
+    }
+
+    ntdll = GetModuleHandleA("ntdll.dll");
+    if (ntdll == NULL) {
+        cached = 0;
+        return cached;
+    }
+
+    wine_get_version =
+        (wine_get_version_t)GetProcAddress(ntdll, "wine_get_version");
+    if (wine_get_version == NULL) {
+        cached = 0;
+        return cached;
+    }
+
+    cached = 1;
+    return cached;
+}
+#else
+static int
+img2sixel_path_is_running_under_wine(void)
+{
+    return 0;
+}
+#endif
+
 /*
  * cygpath -wa provides the most accurate conversion when a POSIX-like path
  * reaches native Windows runtimes such as MinGW/MSVC. The helper executes
@@ -311,6 +355,14 @@ img2sixel_path_cygpath_target(char const *path)
     }
 
     if (path[0] == '\0') {
+        return 0;
+    }
+
+    /*
+     * Wine does not ship cygpath. Skip shelling out in that runtime so we
+     * can continue with the remaining path normalization logic.
+     */
+    if (img2sixel_path_is_running_under_wine()) {
         return 0;
     }
 
