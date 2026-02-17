@@ -23672,11 +23672,45 @@ fi
 
 
 if test x$with_jpeg != xno; then
-    if test x$host_os = xemscripten -a x$with_jpeg = xyes; then
-                have_jpeg=yes
-        LIBJPEG_CFLAGS="-sUSE_LIBJPEG=1"
-        LIBJPEG_LIBS="-sUSE_LIBJPEG=1"
-        LIBJPEG_PKG_NAME=libjpeg
+    if test x$host_os = xemscripten -a x$with_jpeg != xno; then
+                CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        CFLAGS="$CFLAGS -sUSE_LIBJPEG=1"
+        LDFLAGS="$LDFLAGS -sUSE_LIBJPEG=1"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether emscripten accepts -sUSE_LIBJPEG=1" >&5
+printf %s "checking whether emscripten accepts -sUSE_LIBJPEG=1... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  sixel_emscripten_use_libjpeg=yes
+else case e in #(
+  e) sixel_emscripten_use_libjpeg=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_emscripten_use_libjpeg" >&5
+printf "%s\n" "$sixel_emscripten_use_libjpeg" >&6; }
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        if test x$sixel_emscripten_use_libjpeg = xyes; then
+            have_jpeg=yes
+            LIBJPEG_CFLAGS="-sUSE_LIBJPEG=1"
+            LIBJPEG_LIBS="-sUSE_LIBJPEG=1"
+            LIBJPEG_PKG_NAME=libjpeg
+        elif test x$with_jpeg = xyes; then
+            as_fn_error $? "-sUSE_LIBJPEG=1 is not supported by this emscripten" "$LINENO" 5
+        fi
     fi
     if test x$build = x$host; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for jpeg" >&5
@@ -23941,11 +23975,45 @@ fi
 
 
 if test x$with_png != xno; then
-    if test x$host_os = xemscripten -a x$with_png = xyes; then
-                have_png=yes
-        LIBPNG_CFLAGS="-sUSE_LIBPNG=1"
-        LIBPNG_LIBS="-sUSE_LIBPNG=1"
-        LIBPNG_PKG_NAME=libpng
+    if test x$host_os = xemscripten -a x$with_png != xno; then
+                CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        CFLAGS="$CFLAGS -sUSE_LIBPNG=1"
+        LDFLAGS="$LDFLAGS -sUSE_LIBPNG=1"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether emscripten accepts -sUSE_LIBPNG=1" >&5
+printf %s "checking whether emscripten accepts -sUSE_LIBPNG=1... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  sixel_emscripten_use_libpng=yes
+else case e in #(
+  e) sixel_emscripten_use_libpng=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_emscripten_use_libpng" >&5
+printf "%s\n" "$sixel_emscripten_use_libpng" >&6; }
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        if test x$sixel_emscripten_use_libpng = xyes; then
+            have_png=yes
+            LIBPNG_CFLAGS="-sUSE_LIBPNG=1"
+            LIBPNG_LIBS="-sUSE_LIBPNG=1"
+            LIBPNG_PKG_NAME=libpng
+        elif test x$with_png = xyes; then
+            as_fn_error $? "-sUSE_LIBPNG=1 is not supported by this emscripten" "$LINENO" 5
+        fi
     fi
     if test x$build = x$host; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for png" >&5
@@ -24289,11 +24357,45 @@ fi
 
 
 if test x$with_tiff != xno; then
-    if test x$host_os = xemscripten -a x$with_tiff = xyes; then
-                have_tiff=yes
-        LIBTIFF_CFLAGS="-sUSE_LIBTIFF=1"
-        LIBTIFF_LIBS="-sUSE_LIBTIFF=1"
-        LIBTIFF_PKG_NAME=libtiff-4
+    if test x$host_os = xemscripten -a x$with_tiff != xno; then
+                CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        CFLAGS="$CFLAGS -sUSE_LIBTIFF=1"
+        LDFLAGS="$LDFLAGS -sUSE_LIBTIFF=1"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether emscripten accepts -sUSE_LIBTIFF=1" >&5
+printf %s "checking whether emscripten accepts -sUSE_LIBTIFF=1... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  sixel_emscripten_use_libtiff=yes
+else case e in #(
+  e) sixel_emscripten_use_libtiff=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_emscripten_use_libtiff" >&5
+printf "%s\n" "$sixel_emscripten_use_libtiff" >&6; }
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        if test x$sixel_emscripten_use_libtiff = xyes; then
+            have_tiff=yes
+            LIBTIFF_CFLAGS="-sUSE_LIBTIFF=1"
+            LIBTIFF_LIBS="-sUSE_LIBTIFF=1"
+            LIBTIFF_PKG_NAME=libtiff-4
+        elif test x$with_tiff = xyes; then
+            as_fn_error $? "-sUSE_LIBTIFF=1 is not supported by this emscripten" "$LINENO" 5
+        fi
     fi
     if test x$build = x$host; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for tiff" >&5
@@ -24484,11 +24586,45 @@ fi
 
 
 if test x$with_webp != xno; then
-    if test x$host_os = xemscripten -a x$with_webp = xyes; then
-                have_webp=yes
-        LIBWEBP_CFLAGS="-sUSE_LIBWEBP=1"
-        LIBWEBP_LIBS="-sUSE_LIBWEBP=1"
-        LIBWEBP_PKG_NAME=libwebp
+    if test x$host_os = xemscripten -a x$with_webp != xno; then
+                CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        CFLAGS="$CFLAGS -sUSE_LIBWEBP=1"
+        LDFLAGS="$LDFLAGS -sUSE_LIBWEBP=1"
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking whether emscripten accepts -sUSE_LIBWEBP=1" >&5
+printf %s "checking whether emscripten accepts -sUSE_LIBWEBP=1... " >&6; }
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main (void)
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"
+then :
+  sixel_emscripten_use_libwebp=yes
+else case e in #(
+  e) sixel_emscripten_use_libwebp=no ;;
+esac
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.beam \
+    conftest$ac_exeext conftest.$ac_ext
+        { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $sixel_emscripten_use_libwebp" >&5
+printf "%s\n" "$sixel_emscripten_use_libwebp" >&6; }
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        if test x$sixel_emscripten_use_libwebp = xyes; then
+            have_webp=yes
+            LIBWEBP_CFLAGS="-sUSE_LIBWEBP=1"
+            LIBWEBP_LIBS="-sUSE_LIBWEBP=1"
+            LIBWEBP_PKG_NAME=libwebp
+        elif test x$with_webp = xyes; then
+            as_fn_error $? "-sUSE_LIBWEBP=1 is not supported by this emscripten" "$LINENO" 5
+        fi
     fi
     if test x$build = x$host; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for webp" >&5
