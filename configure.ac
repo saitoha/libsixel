@@ -2618,6 +2618,13 @@ AC_SUBST(WINHTTP_CFLAGS)
 AC_SUBST(WINHTTP_LIBS)
 
 if test x$with_jpeg != xno; then
+    if test x$host_os = xemscripten -a x$with_jpeg = xyes; then
+        dnl Emscripten enables bundled jpeg support via a linker flag.
+        have_jpeg=yes
+        LIBJPEG_CFLAGS="-sUSE_LIBJPEG=1"
+        LIBJPEG_LIBS="-sUSE_LIBJPEG=1"
+        LIBJPEG_PKG_NAME=libjpeg
+    fi
     if test x$build = x$host; then
         AC_MSG_NOTICE([checking for jpeg])
         CFLAGS_BACKUP=$CFLAGS
@@ -2688,6 +2695,13 @@ AC_SUBST(LIBJPEG_CFLAGS)
 AC_SUBST(LIBJPEG_LIBS)
 
 if test x$with_png != xno; then
+    if test x$host_os = xemscripten -a x$with_png = xyes; then
+        dnl Emscripten enables bundled png support via a linker flag.
+        have_png=yes
+        LIBPNG_CFLAGS="-sUSE_LIBPNG=1"
+        LIBPNG_LIBS="-sUSE_LIBPNG=1"
+        LIBPNG_PKG_NAME=libpng
+    fi
     if test x$build = x$host; then
         AC_MSG_NOTICE([checking for png])
         CFLAGS_BACKUP=$CFLAGS
@@ -2773,6 +2787,13 @@ AC_SUBST(LIBPNG_CFLAGS)
 AC_SUBST(LIBPNG_LIBS)
 
 if test x$with_tiff != xno; then
+    if test x$host_os = xemscripten -a x$with_tiff = xyes; then
+        dnl Emscripten enables bundled tiff support via a linker flag.
+        have_tiff=yes
+        LIBTIFF_CFLAGS="-sUSE_LIBTIFF=1"
+        LIBTIFF_LIBS="-sUSE_LIBTIFF=1"
+        LIBTIFF_PKG_NAME=libtiff-4
+    fi
     if test x$build = x$host; then
         AC_MSG_NOTICE([checking for tiff])
         CFLAGS_BACKUP=$CFLAGS
@@ -2836,6 +2857,13 @@ AC_SUBST(LIBTIFF_CFLAGS)
 AC_SUBST(LIBTIFF_LIBS)
 
 if test x$with_webp != xno; then
+    if test x$host_os = xemscripten -a x$with_webp = xyes; then
+        dnl Emscripten enables bundled webp support via a linker flag.
+        have_webp=yes
+        LIBWEBP_CFLAGS="-sUSE_LIBWEBP=1"
+        LIBWEBP_LIBS="-sUSE_LIBWEBP=1"
+        LIBWEBP_PKG_NAME=libwebp
+    fi
     if test x$build = x$host; then
         AC_MSG_NOTICE([checking for webp])
         CFLAGS_BACKUP=$CFLAGS
