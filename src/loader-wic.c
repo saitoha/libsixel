@@ -523,9 +523,7 @@ loader_can_try_wic(sixel_chunk_t const *chunk)
     if (chunk == NULL) {
         return 0;
     }
-    if (chunk_is_gif(chunk)) {
-        return 0;
-    }
+
     return 1;
 }
 
