@@ -20,10 +20,8 @@ set -e
 
 printf '%s' "${loader_output}" >&2
 
-printf '%s' "${loader_output}" \
-    | grep "{cacaf262-9370-4615-a13b-9f5539da4c0a} not registered" \
-    >/dev/null && {
-    skip_all "WIC is not available"
+test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && {
+    skip_all "WIC is unavailable under wine"
 }
 
 echo "1..1"
