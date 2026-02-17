@@ -13,11 +13,12 @@ feature_defined_in_config "HAVE_WIC" || skip_all "wic loader is unavailable"
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-png-adam7-rgb.png"
 
 set +e
-probe_output=$(run_img2sixel -Lwic! "${image_path}" >/dev/null 2>&1)
+probe_output=$(run_img2sixel -Lwic! "${image_path}" -o/dev/null 2>&1)
 probe_status=$?
 set -e
 
-printf '%s' "${probe_output}"     | grep "{cacaf262-9370-4615-a13b-9f5539da4c0a} not registered"     >/dev/null && skip_all "WIC is not available"
+printf '%s' "${probe_output}" |
+grep -q "{cacaf262-9370-4615-a13b-9f5539da4c0a} not registered" && skip_all "WIC is not available"
 
 test "${probe_status}" -eq 0 || skip_all "wic png adam7 rgb codec is unavailable"
 

@@ -304,6 +304,181 @@ loader_plan_contains(sixel_loader_entry_t const **plan,
     return 0;
 }
 
+
+static int
+loader_token_matches(char const *token,
+                     size_t token_length,
+                     char const *name);
+
+static size_t
+loader_token_name_length(char const *token, size_t token_length)
+{
+    size_t index;
+
+    index = 0;
+    while (index < token_length) {
+        if (token[index] == ':') {
+            break;
+        }
+        ++index;
+    }
+
+    return index;
+}
+
+static int
+loader_parse_positive_int(char const *text, size_t length, int *value_out)
+{
+    size_t index;
+    int value;
+    unsigned char digit;
+
+    if (text == NULL || value_out == NULL || length == 0) {
+        return 0;
+    }
+
+    value = 0;
+    index = 0;
+    while (index < length) {
+        digit = (unsigned char)text[index];
+        if (digit < (unsigned char)'0' || digit > (unsigned char)'9') {
+            return 0;
+        }
+        if (value > (INT_MAX - 9) / 10) {
+            return 0;
+        }
+        value = value * 10 + (digit - (unsigned char)'0');
+        ++index;
+    }
+
+    if (value <= 0) {
+        return 0;
+    }
+
+    *value_out = value;
+    return 1;
+}
+
+static void
+loader_apply_wic_suboptions(char const *token,
+                            size_t token_length)
+{
+    size_t name_length;
+    size_t option_offset;
+    char const *option_text;
+    size_t option_length;
+    size_t key_length;
+    int parsed_value;
+
+    name_length = 0;
+    option_offset = 0;
+    option_text = NULL;
+    option_length = 0;
+    key_length = 0;
+    parsed_value = 0;
+
+    if (token == NULL || token_length == 0) {
+        return;
+    }
+
+    name_length = loader_token_name_length(token, token_length);
+    if (name_length == 0 || name_length >= token_length) {
+        return;
+    }
+    if (!loader_token_matches(token, name_length, "wic")) {
+        return;
+    }
+
+    option_offset = name_length + 1;
+    if (option_offset >= token_length) {
+        return;
+    }
+
+    option_text = token + option_offset;
+    option_length = token_length - option_offset;
+    key_length = strlen("ico_minsize=");
+    if (option_length <= key_length) {
+        return;
+    }
+    if (strncmp(option_text, "ico_minsize=", key_length) != 0) {
+        return;
+    }
+
+    if (!loader_parse_positive_int(option_text + key_length,
+                                   option_length - key_length,
+                                   &parsed_value)) {
+        return;
+    }
+
+    sixel_helper_set_wic_ico_minsize(parsed_value);
+}
+
+static void
+loader_apply_loader_suboptions(char const *order)
+{
+    char const *cursor;
+    char const *token_start;
+    char const *token_end;
+    char const *order_end;
+    size_t token_length;
+
+    cursor = order;
+    token_start = order;
+    token_end = order;
+    order_end = NULL;
+    token_length = 0;
+
+    sixel_helper_set_wic_ico_minsize(0);
+
+    if (order == NULL || order[0] == '\0') {
+        return;
+    }
+
+    order_end = order + strlen(order);
+    while (order_end > order && isspace((unsigned char)order_end[-1])) {
+        --order_end;
+    }
+    if (order_end > order && order_end[-1] == '!') {
+        --order_end;
+    }
+
+    token_start = order;
+    cursor = order;
+    while (cursor < order_end) {
+        if (*cursor == ',') {
+            token_end = cursor;
+            while (token_start < token_end &&
+                   isspace((unsigned char)*token_start)) {
+                ++token_start;
+            }
+            while (token_end > token_start &&
+                   isspace((unsigned char)token_end[-1])) {
+                --token_end;
+            }
+            token_length = (size_t)(token_end - token_start);
+            if (token_length > 0) {
+                loader_apply_wic_suboptions(token_start, token_length);
+            }
+            token_start = cursor + 1;
+        }
+        ++cursor;
+    }
+
+    token_end = order_end;
+    while (token_start < token_end &&
+           isspace((unsigned char)*token_start)) {
+        ++token_start;
+    }
+    while (token_end > token_start &&
+           isspace((unsigned char)token_end[-1])) {
+        --token_end;
+    }
+    token_length = (size_t)(token_end - token_start);
+    if (token_length > 0) {
+        loader_apply_wic_suboptions(token_start, token_length);
+    }
+}
+
 static int
 loader_token_matches(char const *token,
                      size_t token_length,
@@ -431,7 +606,9 @@ loader_build_plan(char const *order,
                 token_length = (size_t)(token_end - token_start);
                 if (token_length > 0) {
                     entry = loader_lookup_token(token_start,
-                                                token_length,
+                                                loader_token_name_length(
+                                                    token_start,
+                                                    token_length),
                                                 entries,
                                                 entry_count);
                     if (entry != NULL &&
@@ -460,7 +637,9 @@ loader_build_plan(char const *order,
         token_length = (size_t)(token_end - token_start);
         if (token_length > 0) {
             entry = loader_lookup_token(token_start,
-                                        token_length,
+                                        loader_token_name_length(
+                                            token_start,
+                                            token_length),
                                         entries,
                                         entry_count);
             if (entry != NULL &&
@@ -1317,6 +1496,8 @@ sixel_loader_load_file(
             order_override = env_order;
         }
     }
+
+    loader_apply_loader_suboptions(order_override);
 
     plan = sixel_allocator_malloc(loader->allocator,
                                   entry_count * sizeof(*plan));

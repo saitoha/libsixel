@@ -108,6 +108,17 @@ load_with_wic(
     PROPVARIANT             prop;
     UINT                    frame_count;
     UINT                    i;
+    UINT                    selected_frame_index;
+    UINT                    candidate_width;
+    UINT                    candidate_height;
+    UINT                    candidate_metric;
+    UINT                    selected_metric;
+    UINT                    fallback_frame_index;
+    UINT                    fallback_metric;
+    IWICBitmapFrameDecode  *candidate_frame;
+    GUID                    container_format;
+    int                     is_ico_container;
+    int                     ico_minsize;
     unsigned char          *pixels;
     ULONG                   decoded_frames;
     PROPVARIANT             lp;
@@ -115,6 +126,17 @@ load_with_wic(
     int                     set_palette;
 
     set_palette = 0;
+    selected_frame_index = 0;
+    candidate_width = 0;
+    candidate_height = 0;
+    candidate_metric = 0;
+    selected_metric = 0;
+    fallback_frame_index = 0;
+    fallback_metric = 0;
+    candidate_frame = NULL;
+    memset(&container_format, 0, sizeof(container_format));
+    is_ico_container = 0;
+    ico_minsize = 0;
 
     (void) fstatic;
     (void) reqcolors;
@@ -159,7 +181,62 @@ load_with_wic(
         goto end;
     }
 
-    hr = decoder->lpVtbl->GetFrame(decoder, 0, &wicframe);
+    hr = decoder->lpVtbl->GetFrameCount(decoder, &frame_count);
+    if (FAILED(hr)) {
+        goto end;
+    }
+
+    hr = decoder->lpVtbl->GetContainerFormat(decoder, &container_format);
+    if (SUCCEEDED(hr)) {
+        if (IsEqualGUID(&container_format, &GUID_ContainerFormatIco)) {
+            is_ico_container = 1;
+        }
+    }
+
+    ico_minsize = loader_wic_get_ico_minsize();
+    if (is_ico_container && ico_minsize > 0) {
+        for (i = 0; i < frame_count; ++i) {
+            hr = decoder->lpVtbl->GetFrame(decoder, i, &candidate_frame);
+            if (FAILED(hr)) {
+                goto end;
+            }
+
+            hr = candidate_frame->lpVtbl->GetSize(candidate_frame,
+                                                  &candidate_width,
+                                                  &candidate_height);
+            if (FAILED(hr)) {
+                goto end;
+            }
+
+            if (candidate_width > candidate_height) {
+                candidate_metric = candidate_width;
+            } else {
+                candidate_metric = candidate_height;
+            }
+
+            if (candidate_metric >= (UINT)ico_minsize) {
+                if (selected_metric == 0 ||
+                    candidate_metric < selected_metric) {
+                    selected_metric = candidate_metric;
+                    selected_frame_index = i;
+                }
+            } else if (candidate_metric > fallback_metric) {
+                fallback_metric = candidate_metric;
+                fallback_frame_index = i;
+            }
+
+            candidate_frame->lpVtbl->Release(candidate_frame);
+            candidate_frame = NULL;
+        }
+
+        if (selected_metric == 0 && fallback_metric > 0) {
+            selected_frame_index = fallback_frame_index;
+        }
+    }
+
+    hr = decoder->lpVtbl->GetFrame(decoder,
+                                   selected_frame_index,
+                                   &wicframe);
     if (FAILED(hr)) {
         goto end;
     }
@@ -202,25 +279,20 @@ load_with_wic(
         }
     }
 
-    hr = decoder->lpVtbl->GetFrameCount(decoder, &frame_count);
-    if (FAILED(hr)) {
-        goto end;
-    }
-
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
         hr = E_FAIL;
         goto end;
     }
 
-    decoded_frames = 0;
+    decoded_frames = selected_frame_index;
     while (decoded_frames < frame_count) {
         hr = decoder->lpVtbl->GetFrame(decoder, decoded_frames, &wicframe);
         if (FAILED(hr)) {
             goto end;
         }
 
-        if (decoded_frames == 0 && set_palette) {
+        if (decoded_frames == selected_frame_index && set_palette) {
             hr = factory->lpVtbl->CreatePalette(factory, &wicpalette);
             if (SUCCEEDED(hr)) {
                 hr = wicpalette->lpVtbl->InitializeFromBitmap(
@@ -415,6 +487,9 @@ end:
     }
     if (wiccolors) {
          sixel_allocator_free(pchunk->allocator, wiccolors);
+    }
+    if (candidate_frame) {
+         candidate_frame->lpVtbl->Release(candidate_frame);
     }
     if (wicframe) {
          wicframe->lpVtbl->Release(wicframe);

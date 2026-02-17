@@ -13,11 +13,12 @@ feature_defined_in_config "HAVE_WIC" || skip_all "wic loader is unavailable"
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-dds-dxt3.dds"
 
 set +e
-probe_output=$(run_img2sixel -Lwic! "${image_path}" >/dev/null 2>&1)
+probe_output=$(run_img2sixel -Lwic! "${image_path}" -o/dev/null 2>&1)
 probe_status=$?
 set -e
 
-printf '%s' "${probe_output}"     | grep "{cacaf262-9370-4615-a13b-9f5539da4c0a} not registered"     >/dev/null && skip_all "WIC is not available"
+printf '%s' "${probe_output}" |
+grep -q "{cacaf262-9370-4615-a13b-9f5539da4c0a} not registered" && skip_all "WIC is not available"
 
 test "${probe_status}" -eq 0 || skip_all "wic dds dxt3 codec is unavailable"
 
@@ -35,7 +36,6 @@ run_img2sixel -Lwic! "${image_path}" >"${output_sixel}" || {
 }
 
 lsqa_err=$(
-    set +xv
     run_lsqa -b "MS-SSIM:${lsqa_floor}" "${reference_path}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 
@@ -50,5 +50,4 @@ test "${lsqa_run_status}" -eq 5 && {
 }
 
 fail 1 "wic dds dxt3 quality regressed"
-
 exit 0

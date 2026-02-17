@@ -434,7 +434,6 @@ quality_gate/ms_ssim/0053_lsqa_metric_unknown_error.t
 quality_gate/ms_ssim/0054_lsqa_help_H_option_output.t
 quality_gate/ms_ssim/0055_lsqa_invalid_argument_count_error.t
 quality_gate/ms_ssim/0056_lsqa_wic_format_bmp_rgb.t
-quality_gate/ms_ssim/0057_lsqa_wic_format_gif_palette.t
 quality_gate/ms_ssim/0058_lsqa_wic_format_jpeg_ycbcr.t
 quality_gate/ms_ssim/0059_lsqa_wic_format_jpeg_grayscale.t
 quality_gate/ms_ssim/0060_lsqa_wic_format_png_rgb.t

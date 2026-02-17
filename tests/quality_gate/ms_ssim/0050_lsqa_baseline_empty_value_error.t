@@ -9,11 +9,10 @@ printf '1..1\n'
 set -v
 
 image_ref="${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp"
-image_out="${TOP_SRCDIR}/tests/data/inputs/snake_64.six"
 err_file="${ARTIFACT_LOCAL_DIR}/lsqa_baseline_empty_value.err"
 
 set +e
-run_lsqa -b "MS-SSIM:" "${image_ref}" "${image_out}" >"/dev/null" 2>"${err_file}"
+run_lsqa -b "MS-SSIM:" "${image_ref}" >/dev/null 2>"${err_file}"
 status=$?
 set -e
 
@@ -22,7 +21,7 @@ test "${status}" -eq 2 || {
     exit 0
 }
 
-grep "Baseline value is empty" "${err_file}" >/dev/null || {
+grep -q "Baseline value is empty" "${err_file}" || {
     fail 1 "empty baseline value was not rejected as expected"
     exit 0
 }
