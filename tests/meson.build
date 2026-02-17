@@ -251,6 +251,14 @@ endforeach
 add_test_setup('ci', timeout_multiplier: 1)
 
 run_target('staticcheck',
-  command: [sh,
+  command: [sh, '-c', '''
+set -e
+
+"$1" "$2"
+
+cd "$2"
+find src tests -type f '(' -name '*.[ch]' -o -name '*.md' -o -name '*.1' -o -name '*.in' -o -name '*.am' -o -name '*.build' -o -name '*.t' -o -name 'LICENSE' -o -name '*.py' -o -name '*.rb' -o -name '*.thumbnailer' -o -name '*.sh' ')' -exec codespell {} +
+''',
+            'sh',
             meson.current_source_dir() / '_static/sh/shellcheck.sh',
             meson.project_source_root()])
