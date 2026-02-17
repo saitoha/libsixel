@@ -25,7 +25,6 @@ python_output=$(env \
     "${run_python}" - "${ARTIFACT_LOCAL_DIR}/unsupported" 2>&1 <<'PY'
 import pathlib
 import sys
-from typing import Iterable
 
 try:
     from libsixel_wheel import (
@@ -38,53 +37,37 @@ except OSError as exc:
     print(f"SKIP_LIBSIXEL_LOAD:{exc}")
     raise SystemExit(2)
 
-
-class Expectation:
-    def __init__(self, label: str, exc_type: type[BaseException], keywords: Iterable[str]):
-        self.label = label
-        self.exc_type = exc_type
-        self.keywords = [kw.lower() for kw in keywords]
-
-
-def expect_exception(expectation: Expectation, func) -> str:
-    try:
-        func()
-    except Exception as exc:  # noqa: BLE001
-        if not isinstance(exc, expectation.exc_type):
-            raise SystemExit(
-                f"{expectation.label}: expected {expectation.exc_type.__name__}, "
-                f"got {type(exc).__name__}"
-            )
-        message = str(exc) or "<empty message>"
-        if expectation.keywords and not any(
-            key in message.lower() for key in expectation.keywords
-        ):
-            raise SystemExit(f"{expectation.label}: missing expected keywords")
-        return f"{expectation.label}: {expectation.exc_type.__name__} ({message})"
-    raise SystemExit(f"{expectation.label}: expected exception but call succeeded")
-
-
 workdir = pathlib.Path(sys.argv[1])
 workdir.mkdir(parents=True, exist_ok=True)
 text_file = workdir / "note.xxx"
 text_file.write_text("this is not an image")
 target = workdir / "note.six"
 
-
-def invoke_unsupported() -> None:
+message = ""
+try:
     encoder = Encoder()
     encoder.setopt(SIXEL_OPTFLAG_LOADERS, "builtin!")
     encoder.setopt(SIXEL_OPTFLAG_INPUT, str(text_file))
     encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(target))
     encoder.encode(str(text_file))
+except Exception as exc:  # noqa: BLE001
+    if not isinstance(exc, RuntimeError):
+        raise SystemExit(
+            f"unsupported format: expected RuntimeError, got {type(exc).__name__}"
+        )
+    message = str(exc) or "<empty message>"
 
+if not message:
+    raise SystemExit("unsupported format: expected exception but call succeeded")
 
-print(expect_exception(
-    Expectation("unsupported format", RuntimeError,
-                ("unsupported", "decode", "format", "cannot", "failed",
-                 "bad argument", "error", "stb_image")),
-    invoke_unsupported,
-))
+keywords = (
+    "unsupported", "decode", "format", "cannot", "failed",
+    "bad argument", "error", "stb_image"
+)
+if not any(keyword in message.lower() for keyword in keywords):
+    raise SystemExit("unsupported format: missing expected keywords")
+
+print(f"unsupported format: RuntimeError ({message})")
 PY
 )
 python_status=$?

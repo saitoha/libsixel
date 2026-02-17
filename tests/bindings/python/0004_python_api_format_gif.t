@@ -31,14 +31,6 @@ try:
     from libsixel_wheel import SIXEL_OPTFLAG_INPUT
     from libsixel_wheel.encoder import Encoder, SIXEL_OPTFLAG_OUTPUT
 
-    def ensure_sixel_signature(path: pathlib.Path) -> int:
-        data = path.read_bytes()
-        if not data.startswith(b"\x1bPq"):
-            raise SystemExit("missing sixel DCS introducer")
-        if not data.rstrip(b"\r\n").endswith(b"\x1b\\"):
-            raise SystemExit("missing sixel ST terminator")
-        return len(data)
-
     source = pathlib.Path(sys.argv[1])
     target = pathlib.Path(sys.argv[2])
 
@@ -50,8 +42,13 @@ try:
     if not target.exists() or target.stat().st_size == 0:
         raise SystemExit("missing or empty sixel output")
 
-    size = ensure_sixel_signature(target)
-    print(f"encoded {source.name} -> {target.name} ({size} bytes)")
+    data = target.read_bytes()
+    if not data.startswith(b"\x1bPq"):
+        raise SystemExit("missing sixel DCS introducer")
+    if not data.rstrip(b"\r\n").endswith(b"\x1b\\"):
+        raise SystemExit("missing sixel ST terminator")
+
+    print(f"encoded {source.name} -> {target.name} ({len(data)} bytes)")
 except OSError as exc:
     print(f"SKIP_LIBSIXEL_LOAD:{exc}")
     raise SystemExit(2)

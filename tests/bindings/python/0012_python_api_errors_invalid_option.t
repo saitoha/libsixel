@@ -25,7 +25,6 @@ python_output=$(env \
     "${run_python}" - "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" "${ARTIFACT_LOCAL_DIR}/invalid_option" 2>&1 <<'PY'
 import pathlib
 import sys
-from typing import Iterable
 
 try:
     from libsixel_wheel import (
@@ -39,53 +38,37 @@ except OSError as exc:
     print(f"SKIP_LIBSIXEL_LOAD:{exc}")
     raise SystemExit(2)
 
-
-class Expectation:
-    def __init__(self, label: str, exc_type: type[BaseException], keywords: Iterable[str]):
-        self.label = label
-        self.exc_type = exc_type
-        self.keywords = [kw.lower() for kw in keywords]
-
-
-def expect_exception(expectation: Expectation, func) -> str:
-    try:
-        func()
-    except Exception as exc:  # noqa: BLE001
-        if not isinstance(exc, expectation.exc_type):
-            raise SystemExit(
-                f"{expectation.label}: expected {expectation.exc_type.__name__}, "
-                f"got {type(exc).__name__}"
-            )
-        message = str(exc) or "<empty message>"
-        if expectation.keywords and not any(
-            key in message.lower() for key in expectation.keywords
-        ):
-            raise SystemExit(f"{expectation.label}: missing expected keywords")
-        return f"{expectation.label}: {expectation.exc_type.__name__} ({message})"
-    raise SystemExit(f"{expectation.label}: expected exception but call succeeded")
-
-
 source = pathlib.Path(sys.argv[1])
 workdir = pathlib.Path(sys.argv[2])
 workdir.mkdir(parents=True, exist_ok=True)
 target = workdir / "invalid-option.six"
 
-
-def invoke_invalid_option() -> None:
+message = ""
+try:
     encoder = Encoder()
     encoder.setopt(SIXEL_OPTFLAG_LOADERS, "builtin!")
     encoder.setopt(SIXEL_OPTFLAG_COLORS, "-1")
     encoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
     encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(target))
     encoder.encode(str(source))
+except Exception as exc:  # noqa: BLE001
+    if not isinstance(exc, RuntimeError):
+        raise SystemExit(
+            f"invalid option value: expected RuntimeError, got {type(exc).__name__}"
+        )
+    message = str(exc) or "<empty message>"
 
+if not message:
+    raise SystemExit("invalid option value: expected exception but call succeeded")
 
-print(expect_exception(
-    Expectation("invalid option value", RuntimeError,
-                ("invalid", "colors", "range", "parameter", "option",
-                 "bad argument", "value", "must")),
-    invoke_invalid_option,
-))
+keywords = (
+    "invalid", "colors", "range", "parameter", "option",
+    "bad argument", "value", "must"
+)
+if not any(keyword in message.lower() for keyword in keywords):
+    raise SystemExit("invalid option value: missing expected keywords")
+
+print(f"invalid option value: RuntimeError ({message})")
 PY
 )
 python_status=$?

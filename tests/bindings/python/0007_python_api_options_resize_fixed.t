@@ -28,7 +28,6 @@ python_output=$(env \
 import pathlib
 import re
 import sys
-from typing import Iterable, Tuple
 
 try:
     from libsixel_wheel import (
@@ -45,70 +44,51 @@ except OSError as exc:
     print(f"SKIP_LIBSIXEL_LOAD:{exc}")
     raise SystemExit(2)
 
-
-def ensure_sixel_signature(data: bytes) -> None:
-    if not data.startswith(b"\x1bPq"):
-        raise SystemExit("missing sixel DCS introducer")
-    if not data.rstrip(b"\r\n").endswith(b"\x1b\\"):
-        raise SystemExit("missing sixel ST terminator")
-
-
-def extract_raster_size(data: bytes) -> Tuple[int, int] | None:
-    match = re.search(rb'"(\d+);(\d+);(\d+);(\d+)', data)
-    if match:
-        return int(match.group(1)), int(match.group(2))
-    return None
-
-
-def read_png_dimensions(path: pathlib.Path) -> Tuple[int, int]:
-    header = path.read_bytes()
-    if len(header) < 24 or header[:8] != b"\x89PNG\r\n\x1a\n":
-        raise SystemExit("output is not a PNG")
-    return int.from_bytes(header[16:20], "big"), int.from_bytes(header[20:24], "big")
-
-
-def encode_with_options(source: pathlib.Path, target: pathlib.Path,
-                        options: Iterable[tuple[int, str]]):
-    encoder = Encoder()
-    encoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
-    encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(target))
-    for flag, value in options:
-        encoder.setopt(flag, value)
-    encoder.encode(str(source))
-    if not target.exists() or target.stat().st_size == 0:
-        raise SystemExit("missing or empty sixel output")
-    data = target.read_bytes()
-    ensure_sixel_signature(data)
-    return extract_raster_size(data)
-
-
-def decode_to_png(source: pathlib.Path, target: pathlib.Path):
-    decoder = Decoder()
-    decoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
-    decoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(target))
-    decoder.decode(str(source))
-    if not target.exists() or target.stat().st_size == 0:
-        raise SystemExit("decoder did not write output")
-    return read_png_dimensions(target)
-
-
 source = pathlib.Path(sys.argv[1])
 workdir = pathlib.Path(sys.argv[2])
 workdir.mkdir(parents=True, exist_ok=True)
 output = workdir / "resize_fixed.six"
 png = workdir / "resize_fixed.png"
-raster = encode_with_options(source, output, [
-    (SIXEL_OPTFLAG_WIDTH, "64"),
-    (SIXEL_OPTFLAG_HEIGHT, "32"),
-    (SIXEL_OPTFLAG_RESAMPLING, "bilinear"),
-    (SIXEL_OPTFLAG_QUALITY, "full"),
-])
-width, height = decode_to_png(output, png)
+
+encoder = Encoder()
+encoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
+encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(output))
+encoder.setopt(SIXEL_OPTFLAG_WIDTH, "64")
+encoder.setopt(SIXEL_OPTFLAG_HEIGHT, "32")
+encoder.setopt(SIXEL_OPTFLAG_RESAMPLING, "bilinear")
+encoder.setopt(SIXEL_OPTFLAG_QUALITY, "full")
+encoder.encode(str(source))
+
+if not output.exists() or output.stat().st_size == 0:
+    raise SystemExit("missing or empty sixel output")
+
+data = output.read_bytes()
+if not data.startswith(b"\x1bPq"):
+    raise SystemExit("missing sixel DCS introducer")
+if not data.rstrip(b"\r\n").endswith(b"\x1b\\"):
+    raise SystemExit("missing sixel ST terminator")
+
+raster = re.search(rb'"(\d+);(\d+);(\d+);(\d+)', data)
+
+decoder = Decoder()
+decoder.setopt(SIXEL_OPTFLAG_INPUT, str(output))
+decoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(png))
+decoder.decode(str(output))
+if not png.exists() or png.stat().st_size == 0:
+    raise SystemExit("decoder did not write output")
+
+header = png.read_bytes()
+if len(header) < 24 or header[:8] != b"\x89PNG\r\n\x1a\n":
+    raise SystemExit("output is not a PNG")
+width = int.from_bytes(header[16:20], "big")
+height = int.from_bytes(header[20:24], "big")
+
 if (width, height) != (64, 32):
     raise SystemExit(f"expected 64x32, got {width}x{height}")
-if raster and (raster[0] > 1 or raster[1] > 1):
-    if (raster[0], raster[1]) != (64, 32):
+if raster and (int(raster.group(1)) > 1 or int(raster.group(2)) > 1):
+    if (int(raster.group(1)), int(raster.group(2))) != (64, 32):
         raise SystemExit("raster attribute mismatch")
+
 print("resize to 64x32 preserved in decode and raster")
 PY
 )

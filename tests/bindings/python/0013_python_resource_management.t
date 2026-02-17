@@ -32,7 +32,6 @@ import pathlib
 import sys
 import time
 import warnings
-from typing import Tuple
 
 try:
     from libsixel_wheel import (
@@ -47,47 +46,6 @@ except OSError as exc:
     print(f"SKIP_LIBSIXEL_LOAD:{exc}")
     raise SystemExit(2)
 
-
-def encode_large(source: pathlib.Path, target: pathlib.Path) -> int:
-    with Encoder() as encoder:
-        encoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
-        encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(target))
-        encoder.setopt(SIXEL_OPTFLAG_WIDTH, "800")
-        encoder.setopt(SIXEL_OPTFLAG_HEIGHT, "600")
-        encoder.encode(str(source))
-    if not target.exists() or target.stat().st_size == 0:
-        raise SystemExit("encoder output missing or empty")
-    return target.stat().st_size
-
-
-def decode_large(source: pathlib.Path, target: pathlib.Path) -> Tuple[int, int]:
-    with Decoder() as decoder:
-        decoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
-        decoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(target))
-        decoder.decode(str(source))
-    if not target.exists() or target.stat().st_size == 0:
-        raise SystemExit("decoder output missing or empty")
-    header = target.read_bytes()[:24]
-    if len(header) < 24:
-        raise SystemExit("decoded PNG header too small")
-    return int.from_bytes(header[16:20], "big"), int.from_bytes(header[20:24], "big")
-
-
-def remove_path(path: pathlib.Path, deadline: float = 15.0) -> None:
-    limit = time.monotonic() + deadline
-    while True:
-        gc.collect()
-        try:
-            path.unlink()
-            return
-        except FileNotFoundError:
-            return
-        except PermissionError:
-            if time.monotonic() >= limit:
-                raise SystemExit(f"failed to remove {path.name}")
-            time.sleep(0.2)
-
-
 source = pathlib.Path(sys.argv[1])
 workdir = pathlib.Path(sys.argv[2])
 workdir.mkdir(parents=True, exist_ok=True)
@@ -97,13 +55,56 @@ decoded_png = workdir / "roundtrip.png"
 
 with warnings.catch_warnings():
     warnings.simplefilter("error", ResourceWarning)
-    size = encode_large(source, sixel_path)
-    width, height = decode_large(sixel_path, decoded_png)
 
-gc.collect()
-time.sleep(0.5)
-remove_path(sixel_path)
-remove_path(decoded_png)
+    with Encoder() as encoder:
+        encoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
+        encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(sixel_path))
+        encoder.setopt(SIXEL_OPTFLAG_WIDTH, "800")
+        encoder.setopt(SIXEL_OPTFLAG_HEIGHT, "600")
+        encoder.encode(str(source))
+
+    if not sixel_path.exists() or sixel_path.stat().st_size == 0:
+        raise SystemExit("encoder output missing or empty")
+    size = sixel_path.stat().st_size
+
+    with Decoder() as decoder:
+        decoder.setopt(SIXEL_OPTFLAG_INPUT, str(sixel_path))
+        decoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(decoded_png))
+        decoder.decode(str(sixel_path))
+
+    if not decoded_png.exists() or decoded_png.stat().st_size == 0:
+        raise SystemExit("decoder output missing or empty")
+    header = decoded_png.read_bytes()[:24]
+    if len(header) < 24:
+        raise SystemExit("decoded PNG header too small")
+    width = int.from_bytes(header[16:20], "big")
+    height = int.from_bytes(header[20:24], "big")
+
+limit = time.monotonic() + 15.0
+while True:
+    gc.collect()
+    try:
+        sixel_path.unlink()
+        break
+    except FileNotFoundError:
+        break
+    except PermissionError:
+        if time.monotonic() >= limit:
+            raise SystemExit(f"failed to remove {sixel_path.name}")
+        time.sleep(0.2)
+
+limit = time.monotonic() + 15.0
+while True:
+    gc.collect()
+    try:
+        decoded_png.unlink()
+        break
+    except FileNotFoundError:
+        break
+    except PermissionError:
+        if time.monotonic() >= limit:
+            raise SystemExit(f"failed to remove {decoded_png.name}")
+        time.sleep(0.2)
 
 if sixel_path.exists() or decoded_png.exists():
     raise SystemExit("output files persist after deletion")
@@ -120,7 +121,7 @@ test "${python_status}" -eq 0 && {
 }
 
 marker=$(printf '%s' "${python_output}" | awk '/^SKIP_LIBSIXEL_LOAD:/{print; exit}')
-test -n "${marker}" &&     tap_skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}"
+test -n "${marker}" && tap_skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}"
 
 tap_fail ${case_id} "resource test via wheel failed"
 

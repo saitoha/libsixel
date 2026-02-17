@@ -25,7 +25,6 @@ python_output=$(env \
     "${run_python}" - "${ARTIFACT_LOCAL_DIR}/corrupt" 2>&1 <<'PY'
 import pathlib
 import sys
-from typing import Iterable
 
 try:
     from libsixel_wheel import (
@@ -38,51 +37,28 @@ except OSError as exc:
     print(f"SKIP_LIBSIXEL_LOAD:{exc}")
     raise SystemExit(2)
 
-
-class Expectation:
-    def __init__(self, label: str, exc_type: type[BaseException], keywords: Iterable[str]):
-        self.label = label
-        self.exc_type = exc_type
-        self.keywords = [kw.lower() for kw in keywords]
-
-
-def expect_exception(expectation: Expectation, func) -> str:
-    try:
-        func()
-    except Exception as exc:  # noqa: BLE001
-        if not isinstance(exc, expectation.exc_type):
-            raise SystemExit(
-                f"{expectation.label}: expected {expectation.exc_type.__name__}, "
-                f"got {type(exc).__name__}"
-            )
-        message = str(exc) or "<empty message>"
-        if expectation.keywords and not any(
-            key in message.lower() for key in expectation.keywords
-        ):
-            raise SystemExit(f"{expectation.label}: missing expected keywords")
-        return f"{expectation.label}: {expectation.exc_type.__name__} ({message})"
-    raise SystemExit(f"{expectation.label}: expected exception but call succeeded")
-
-
 workdir = pathlib.Path(sys.argv[1])
 workdir.mkdir(parents=True, exist_ok=True)
 broken_bmp = workdir / "broken.bmp"
 broken_bmp.write_bytes(b"BM\x00\x00")
 target = workdir / "broken.six"
 
-
-def invoke_corrupt() -> None:
+message = ""
+try:
     encoder = Encoder()
     encoder.setopt(SIXEL_OPTFLAG_LOADERS, "builtin!")
     encoder.setopt(SIXEL_OPTFLAG_INPUT, str(broken_bmp))
     encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(target))
     encoder.encode(str(broken_bmp))
+except Exception as exc:  # noqa: BLE001
+    if not isinstance(exc, RuntimeError):
+        raise SystemExit(f"corrupted bmp: expected RuntimeError, got {type(exc).__name__}")
+    message = str(exc) or "<empty message>"
 
+if not message:
+    raise SystemExit("corrupted bmp: expected exception but call succeeded")
 
-print(expect_exception(
-    Expectation("corrupted bmp", RuntimeError, ()),
-    invoke_corrupt,
-))
+print(f"corrupted bmp: RuntimeError ({message})")
 PY
 )
 python_status=$?
