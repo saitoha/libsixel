@@ -10,12 +10,6 @@
 # (particularly during Meson dist checks), so prefer Meson-provided
 # locations when available to read the right config headers.
 
-if [ -n "${TOP_SRCDIR:-}" ]; then
-    tests_root="${TOP_SRCDIR}/tests"
-else
-    tests_root=$(CDPATH=; cd "${0##*[/\\]}/../../.." && pwd)
-fi
-
 if [ -z "${IMG2SIXEL_PATH:-}" ]; then
     IMG2SIXEL_PATH="${TOP_BUILDDIR}/converters/img2sixel${SIXEL_BIN_EXT-}"
 fi
@@ -45,6 +39,7 @@ init_config_macro_cache() {
     if [ -f "${config_header}" ]; then
         set -f
         while IFS= read -r line; do
+            # shellcheck disable=SC2086
             set -- ${line}
             if [ "${1-}" = "#define" ] && [ "${3-}" = "1" ]; then
                 case "$2" in
@@ -120,17 +115,11 @@ feature_defined_in_config() {
     config_macro_defined "$1"
 }
 
-skip_all() {
-    echo "1..0 # SKIP $1"
-    exit 0
-}
-
 # Confirm converter availability using build metadata and skip gracefully
 # when the tool is disabled or missing. This keeps stale binaries from a
 # previous configuration from influencing the decision.
 ensure_converter_available() {
     option_key=$1
-    target_path=$2
     description=$3
 
     if ! converter_enabled "${option_key}"; then
@@ -172,6 +161,7 @@ runtime_exec() {
         if [ -n "${runtime_current}" ]; then
             runtime_value="${runtime_libdir}${runtime_sep}${runtime_current}"
         else
+            # shellcheck disable=SC2034
             runtime_value="${runtime_libdir}"
         fi
         eval "${runtime_var}=\${runtime_value}"
@@ -183,6 +173,39 @@ runtime_exec() {
     else
         "$@"
     fi
+}
+
+# Probe Wine runtime once for the whole test run and cache the result in the
+# shared artifact root. WIC tests can then skip quickly via environment
+# variables instead of parsing runtime-specific diagnostics.
+cache_runtime_environment() {
+    runtime_env_cache_file="${ARTIFACT_ROOT}/runtime_env_cache.sh"
+    runtime_env_is_wine=0
+
+    test "${HAVE_WIC-0}" -eq 1 2>/dev/null || return 0
+
+    if [ -n "${RUNTIME_ENV_IS_WINE-}" ]; then
+        return 0
+    fi
+
+    if [ -f "${runtime_env_cache_file}" ]; then
+        # shellcheck disable=SC1090
+        . "${runtime_env_cache_file}"
+        export RUNTIME_ENV_IS_WINE
+        return 0
+    fi
+
+    if runtime_exec "${TEST_RUNNER_PATH}" --is-running-under-wine >/dev/null 2>&1; then
+        runtime_env_is_wine=1
+    fi
+
+    RUNTIME_ENV_IS_WINE=${runtime_env_is_wine}
+    export RUNTIME_ENV_IS_WINE
+
+    {
+        printf 'RUNTIME_ENV_IS_WINE=%s\n' "${RUNTIME_ENV_IS_WINE}"
+        printf 'export RUNTIME_ENV_IS_WINE\n'
+    } >"${runtime_env_cache_file}" 2>/dev/null || :
 }
 
 # Execute a helper command and optionally export extra environment values
@@ -239,6 +262,7 @@ run_with_optional_env() {
     for env_chunk in ${env_items}; do
         case "${env_chunk}" in
         *=*)
+            # shellcheck disable=SC2163
             export "${env_chunk}"
             ;;
         *)
@@ -266,6 +290,8 @@ run_lsqa() {
 run_test_runner() {
     run_with_optional_env "${TEST_RUNNER_PATH}" "$@"
 }
+
+cache_runtime_environment
 
 # Shared TAP helpers for shell-based tests.
 #

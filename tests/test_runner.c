@@ -13,6 +13,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#if defined(_WIN32)
+# include <windows.h>
+#endif
+
 int test_filter_0001_filter_clip(int argc, char **argv);
 int test_filter_0002_filter_sample(int argc, char **argv);
 int test_filter_0003_filter_resize(int argc, char **argv);
@@ -130,11 +134,40 @@ print_usage(char const *program)
 
     fprintf(stderr, "usage: %s <test-name> [args...]\n", program);
     fprintf(stderr, "       %s --list\n", program);
+    fprintf(stderr, "       %s --is-running-under-wine\n", program);
     fprintf(stderr, "\n");
     fprintf(stderr, "available tests:\n");
     for (index = 0u; test_entries[index].name != NULL; index++) {
         fprintf(stderr, "  %s\n", test_entries[index].name);
     }
+}
+
+static int
+test_runner_is_running_under_wine(void)
+{
+#if defined(_WIN32)
+    typedef const char *(__cdecl *wine_get_version_t)(void);
+    HMODULE ntdll;
+    wine_get_version_t wine_get_version;
+
+    ntdll = NULL;
+    wine_get_version = NULL;
+
+    ntdll = GetModuleHandleA("ntdll.dll");
+    if (ntdll == NULL) {
+        return 0;
+    }
+
+    wine_get_version =
+        (wine_get_version_t)GetProcAddress(ntdll, "wine_get_version");
+    if (wine_get_version == NULL) {
+        return 0;
+    }
+
+    return 1;
+#else
+    return 0;
+#endif
 }
 
 int
@@ -153,6 +186,11 @@ main(int argc, char **argv)
             printf("%s\n", test_entries[index].name);
         }
         return EXIT_SUCCESS;
+    }
+
+    if (strcmp(argv[1], "--is-running-under-wine") == 0) {
+        return test_runner_is_running_under_wine() ? EXIT_SUCCESS
+                                                   : EXIT_FAILURE;
     }
 
     requested = argv[1];
