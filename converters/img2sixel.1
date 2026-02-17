@@ -491,7 +491,9 @@ show debugging info and print the planner DAG (Directed Acyclic Graph).
 .B \-L \fILIST\fP, \-\-loaders=\fILIST\fP
 choose the loader priority order. \fILIST\fP is a comma separated
 sequence of loader names. Each entry may be abbreviated by a unique prefix,
-and a trailing "!" disables fallback loaders.
+and a trailing "!" disables fallback loaders. The WIC loader also accepts
+suboptions such as \fBwic:ico_minsize=SIZE\fP to pick the smallest ICO frame
+whose edge is at least SIZE.
 .br
 Recognized loader names (availability depends on the build):
 .RS
@@ -835,6 +837,11 @@ override the default loader priority. Accepts the same comma separated
 names recognised by \fB-L\fP/\fB--loaders\fP, including prefix matches and
 the trailing "!" suffix. The environment setting is ignored when the
 command-line option is present.
+.TP 5
+.B SIXEL_LODER_WIC_ICO_MINSIZE
+.br
+default minimum edge used by \fBwic:ico_minsize\fP when no suboption is
+provided. Positive integers are accepted.
 .TP 5
 .B SIXEL_PALETTE_SAMPLE_TARGET
 .br

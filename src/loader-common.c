@@ -57,7 +57,69 @@ static int loader_trace_enabled;
 static int thumbnailer_default_size_hint = SIXEL_THUMBNAILER_DEFAULT_SIZE;
 static int thumbnailer_size_hint = SIXEL_THUMBNAILER_DEFAULT_SIZE;
 static int thumbnailer_size_hint_initialized;
+static int wic_ico_minsize_default;
+static int wic_ico_minsize;
+static int wic_ico_minsize_initialized;
 
+
+static void
+loader_wic_initialize_ico_minsize(void)
+{
+    char const *env_value;
+    char *endptr;
+    long parsed;
+
+    if (wic_ico_minsize_initialized) {
+        return;
+    }
+
+    wic_ico_minsize_initialized = 1;
+    wic_ico_minsize_default = 0;
+    wic_ico_minsize = 0;
+
+    env_value = sixel_compat_getenv("SIXEL_LODER_WIC_ICO_MINSIZE");
+    if (env_value == NULL || env_value[0] == '\0') {
+        return;
+    }
+
+    errno = 0;
+    parsed = strtol(env_value, &endptr, 10);
+    if (errno != 0) {
+        return;
+    }
+    if (endptr == env_value || *endptr != '\0') {
+        return;
+    }
+    if (parsed <= 0) {
+        return;
+    }
+    if (parsed > (long)INT_MAX) {
+        parsed = (long)INT_MAX;
+    }
+
+    wic_ico_minsize_default = (int)parsed;
+    wic_ico_minsize = wic_ico_minsize_default;
+}
+
+int
+loader_wic_get_ico_minsize(void)
+{
+    loader_wic_initialize_ico_minsize();
+
+    return wic_ico_minsize;
+}
+
+void
+sixel_helper_set_wic_ico_minsize(int size)
+{
+    loader_wic_initialize_ico_minsize();
+
+    if (size > 0) {
+        wic_ico_minsize = size;
+    } else {
+        wic_ico_minsize = wic_ico_minsize_default;
+    }
+}
 void
 loader_thumbnailer_initialize_size_hint(void)
 {

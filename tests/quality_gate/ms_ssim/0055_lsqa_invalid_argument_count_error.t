@@ -14,7 +14,7 @@ extra_arg="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 err_file="${ARTIFACT_LOCAL_DIR}/lsqa_invalid_arg_count.err"
 
 set +e
-run_lsqa "${image_ref}" "${image_out}" "${extra_arg}"     >/dev/null 2>"${err_file}"
+run_lsqa "${image_ref}" "${image_out}" "${extra_arg}" >/dev/null 2>"${err_file}"
 status=$?
 set -e
 
@@ -29,5 +29,4 @@ grep "invalid number of arguments" "${err_file}" >/dev/null || {
 }
 
 pass 1 "invalid positional argument count was rejected"
-
 exit 0
