@@ -16,7 +16,7 @@ server_port_base=4443
 max_port_attempts=5
 # Use nearby ports so the HTTPS server can start when the default is busy.
 port_file="${ARTIFACT_LOCAL_DIR}/server.port"
-script_dir=${0%[/\\]*}
+script_dir=$(CDPATH=; cd ${0%[/\\]*}; pwd)
 
 echo "1..1"
 set -v
@@ -36,6 +36,66 @@ test -n "${PYTHON}" || {
 cert_dir="${script_dir}/certs"
 server_root="${TOP_SRCDIR}"
 
+cat >"${ARTIFACT_LOCAL_DIR}/server.py" <<PY
+try:
+    from http.server import SimpleHTTPRequestHandler
+    from socketserver import TCPServer
+except ImportError:
+    from SimpleHTTPServer import SimpleHTTPRequestHandler  # type: ignore
+    from SocketServer import TCPServer  # type: ignore
+import ssl
+import sys
+
+class TLSHTTPServer(TCPServer):
+    allow_reuse_address = True
+
+
+def configure_socket(sock):
+    if hasattr(ssl, 'SSLContext'):
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.load_cert_chain('${cert_dir}/server.crt',
+                                '${cert_dir}/server.key')
+        return context.wrap_socket(sock, server_side=True)
+    return ssl.wrap_socket(
+        sock,
+        certfile='${cert_dir}/server.crt',
+        keyfile='${cert_dir}/server.key',
+        server_side=True,
+    )
+
+def serve_requests(port):
+    with TLSHTTPServer(('localhost', port), SimpleHTTPRequestHandler) as httpd:
+        httpd.socket = configure_socket(httpd.socket)
+        httpd.timeout = 5
+        with open('${port_file}', 'w', encoding='ascii') as port_fp:
+            port_fp.write(str(port))
+
+        for _ in range(5):
+            httpd.handle_request()
+
+
+def main():
+    last_error = None
+
+    for offset in range(${max_port_attempts}):
+        port = ${server_port_base} + offset
+        try:
+            serve_requests(port)
+            return 0
+        except OSError as exc:
+            last_error = exc
+            continue
+
+    sys.stderr.write(
+        f"Failed to bind after ${max_port_attempts} attempts: {last_error}\n",
+    )
+    return 75
+
+
+if __name__ == '__main__':
+    sys.exit(main())
+PY
+
 server_pid_file="${ARTIFACT_LOCAL_DIR}/curl-server-pid"
 (
     cd "${server_root}" || exit 1
@@ -50,8 +110,6 @@ for _ in 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20; do
         server_port=$(cat "${port_file}")
         break
     }
-
-    kill -0 "${server_pid}" 2>/dev/null || break
 
     "${PYTHON}" -c "import time; time.sleep(0.1)"
 done
