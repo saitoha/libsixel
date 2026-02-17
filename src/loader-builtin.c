@@ -92,8 +92,10 @@ stbi_free(void *p)
 #define STBI_NO_PNM
 #if HAVE_NEON && HAVE_ARM_NEON_H
 # define STBI_NEON 1
-#endif
-#if !defined(HAVE_EMMINTRIN_H)
+# define STBI_NO_SIMD 1
+#elif !defined(HAVE_SSE2)
+# define STBI_NO_SIMD 1
+#elif !defined(HAVE_EMMINTRIN_H)
 # define STBI_NO_SIMD 1
 #endif
 
