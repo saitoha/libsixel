@@ -90,8 +90,11 @@ stbi_free(void *p)
 #endif
 #define STBI_NO_GIF
 #define STBI_NO_PNM
+#if HAVE_NEON && HAVE_ARM_NEON_H
+# define STBI_NEON 1
+#endif
 #if !defined(HAVE_EMMINTRIN_H)
-# define STBI_NO_SIMD
+# define STBI_NO_SIMD 1
 #endif
 
 #if HAVE_DIAGNOSTIC_SIGN_CONVERSION
