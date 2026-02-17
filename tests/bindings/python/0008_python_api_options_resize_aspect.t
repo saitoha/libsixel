@@ -29,7 +29,6 @@ import math
 import pathlib
 import re
 import sys
-from typing import Iterable, Tuple
 
 try:
     from libsixel_wheel import (
@@ -45,73 +44,59 @@ except OSError as exc:
     print(f"SKIP_LIBSIXEL_LOAD:{exc}")
     raise SystemExit(2)
 
-
-def ensure_sixel_signature(data: bytes) -> None:
-    if not data.startswith(b"\x1bPq"):
-        raise SystemExit("missing sixel DCS introducer")
-    if not data.rstrip(b"\r\n").endswith(b"\x1b\\"):
-        raise SystemExit("missing sixel ST terminator")
-
-
-def extract_raster_size(data: bytes) -> Tuple[int, int] | None:
-    match = re.search(rb'"(\d+);(\d+);(\d+);(\d+)', data)
-    if match:
-        return int(match.group(1)), int(match.group(2))
-    return None
-
-
-def read_png_dimensions(path: pathlib.Path) -> Tuple[int, int]:
-    header = path.read_bytes()
-    if len(header) < 24 or header[:8] != b"\x89PNG\r\n\x1a\n":
-        raise SystemExit("output is not a PNG")
-    return int.from_bytes(header[16:20], "big"), int.from_bytes(header[20:24], "big")
-
-
-def encode_with_options(source: pathlib.Path, target: pathlib.Path,
-                        options: Iterable[tuple[int, str]]):
-    encoder = Encoder()
-    encoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
-    encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(target))
-    for flag, value in options:
-        encoder.setopt(flag, value)
-    encoder.encode(str(source))
-    if not target.exists() or target.stat().st_size == 0:
-        raise SystemExit("missing or empty sixel output")
-    data = target.read_bytes()
-    ensure_sixel_signature(data)
-    return extract_raster_size(data)
-
-
-def decode_to_png(source: pathlib.Path, target: pathlib.Path):
-    decoder = Decoder()
-    decoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
-    decoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(target))
-    decoder.decode(str(source))
-    if not target.exists() or target.stat().st_size == 0:
-        raise SystemExit("decoder did not write output")
-    return read_png_dimensions(target)
-
-
 source = pathlib.Path(sys.argv[1])
 workdir = pathlib.Path(sys.argv[2])
 workdir.mkdir(parents=True, exist_ok=True)
 output = workdir / "resize_aspect.six"
 png = workdir / "resize_aspect.png"
-raster = encode_with_options(source, output, [
-    (SIXEL_OPTFLAG_WIDTH, "48"),
-    (SIXEL_OPTFLAG_RESAMPLING, "lanczos3"),
-    (SIXEL_OPTFLAG_QUALITY, "auto"),
-])
-source_size = read_png_dimensions(source)
-width, height = decode_to_png(output, png)
+
+source_header = source.read_bytes()
+if len(source_header) < 24 or source_header[:8] != b"\x89PNG\r\n\x1a\n":
+    raise SystemExit("source is not a PNG")
+source_width = int.from_bytes(source_header[16:20], "big")
+source_height = int.from_bytes(source_header[20:24], "big")
+
+encoder = Encoder()
+encoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
+encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(output))
+encoder.setopt(SIXEL_OPTFLAG_WIDTH, "48")
+encoder.setopt(SIXEL_OPTFLAG_RESAMPLING, "lanczos3")
+encoder.setopt(SIXEL_OPTFLAG_QUALITY, "auto")
+encoder.encode(str(source))
+
+if not output.exists() or output.stat().st_size == 0:
+    raise SystemExit("missing or empty sixel output")
+
+data = output.read_bytes()
+if not data.startswith(b"\x1bPq"):
+    raise SystemExit("missing sixel DCS introducer")
+if not data.rstrip(b"\r\n").endswith(b"\x1b\\"):
+    raise SystemExit("missing sixel ST terminator")
+
+raster = re.search(rb'"(\d+);(\d+);(\d+);(\d+)', data)
+
+decoder = Decoder()
+decoder.setopt(SIXEL_OPTFLAG_INPUT, str(output))
+decoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(png))
+decoder.decode(str(output))
+if not png.exists() or png.stat().st_size == 0:
+    raise SystemExit("decoder did not write output")
+
+header = png.read_bytes()
+if len(header) < 24 or header[:8] != b"\x89PNG\r\n\x1a\n":
+    raise SystemExit("output is not a PNG")
+width = int.from_bytes(header[16:20], "big")
+height = int.from_bytes(header[20:24], "big")
+
 if width != 48:
     raise SystemExit(f"expected width 48, got {width}")
-if not math.isclose(source_size[0] / source_size[1], width / height,
+if not math.isclose(source_width / source_height, width / height,
                     rel_tol=0.05, abs_tol=0.01):
     raise SystemExit("aspect ratio changed")
-if raster and (raster[0] > 1 or raster[1] > 1):
-    if raster[0] != 48:
+if raster and (int(raster.group(1)) > 1 or int(raster.group(2)) > 1):
+    if int(raster.group(1)) != 48:
         raise SystemExit("raster width mismatch")
+
 print(f"aspect preserved at 48px width (decoded {width}x{height})")
 PY
 )
