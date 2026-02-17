@@ -91,6 +91,8 @@
 #define SIXEL_MESSAGE_TIFF_ERROR            ("libtiff error")
 #define SIXEL_MESSAGE_GDK_ERROR             ("GDK error")
 #define SIXEL_MESSAGE_GD_ERROR              ("GD error")
+#define SIXEL_MESSAGE_COM_ERROR             ("COM error")
+#define SIXEL_MESSAGE_WIC_ERROR             ("WIC error")
 
 void
 sixel_debugf(char const *fmt, ...)
@@ -683,6 +685,12 @@ sixel_helper_format_error(
             break;
         case SIXEL_STBIW_ERROR:
             error_string = SIXEL_MESSAGE_STBIW_ERROR;
+            break;
+        case SIXEL_COM_ERROR:
+            error_string = SIXEL_MESSAGE_COM_ERROR;
+            break;
+        case SIXEL_WIC_ERROR:
+            error_string = SIXEL_MESSAGE_WIC_ERROR;
             break;
         case SIXEL_FALSE:
             error_string = SIXEL_MESSAGE_FALSE;

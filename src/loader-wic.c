@@ -72,6 +72,28 @@ typedef BYTE *WICInProcPointer;
 #include "loader-common.h"
 #include "loader-wic.h"
 
+
+#ifndef FACILITY_WINCODEC_ERR
+# define FACILITY_WINCODEC_ERR 0x898
+#endif
+
+/*
+ * Classify HRESULT values into libsixel-specific status buckets so callers
+ * can distinguish COM bootstrap issues from codec pipeline failures.
+ */
+static SIXELSTATUS
+loader_wic_status_from_hresult(HRESULT hr)
+{
+    if (FAILED(hr)) {
+        if ((unsigned int)HRESULT_FACILITY(hr) == FACILITY_WINCODEC_ERR) {
+            return SIXEL_WIC_ERROR;
+        }
+        return SIXEL_COM_ERROR;
+    }
+
+    return SIXEL_OK;
+}
+
 SIXELAPI SIXELSTATUS
 load_with_wic(
     sixel_chunk_t const       /* in */     *pchunk,      /* image data */
@@ -521,7 +543,7 @@ load_with_wic(
         CoUninitialize();
 
         if (FAILED(hr)) {
-            return SIXEL_FALSE;
+            return loader_wic_status_from_hresult(hr);
         }
 
         return SIXEL_OK;
@@ -564,7 +586,7 @@ end:
             sixel_helper_set_additional_message(
                 "load_with_wic: unexpected WIC backend failure.");
         }
-        return SIXEL_FALSE;
+        return loader_wic_status_from_hresult(hr);
     }
 
     return SIXEL_OK;
