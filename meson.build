@@ -557,15 +557,21 @@ png_opt = get_option('png')
 png_dep = disabler()
 
 if not png_opt.disabled()
-  png_dep = dependency('libpng', required: false, method: 'pkg-config')
-  if not png_dep.found()
-    png_dep = dependency('libpng16', required: false, method: 'pkg-config')
-  endif
-  if not png_dep.found()
-    png_dep = dependency('PNG', required: png_opt.enabled(), method: 'cmake')
-  endif
-  if not png_dep.found() and png_opt.enabled()
-    error('png=enabled requires libpng/libpng16 or CMake PNG package')
+  if host_system == 'emscripten' and png_opt.enabled()
+    # Emscripten ports are enabled by link options instead of pkg-config.
+    png_dep = declare_dependency(compile_args: ['-sUSE_LIBPNG=1'],
+                                 link_args: ['-sUSE_LIBPNG=1'])
+  else
+    png_dep = dependency('libpng', required: false, method: 'pkg-config')
+    if not png_dep.found()
+      png_dep = dependency('libpng16', required: false, method: 'pkg-config')
+    endif
+    if not png_dep.found()
+      png_dep = dependency('PNG', required: png_opt.enabled(), method: 'cmake')
+    endif
+    if not png_dep.found() and png_opt.enabled()
+      error('png=enabled requires libpng/libpng16 or CMake PNG package')
+    endif
   endif
 endif
 
@@ -586,12 +592,18 @@ tiff_opt = get_option('tiff')
 tiff_dep = disabler()
 
 if not tiff_opt.disabled()
-  tiff_dep = dependency('libtiff-4', required: false, method: 'pkg-config')
-  if not tiff_dep.found()
-    tiff_dep = cc.find_library('tiff', required: tiff_opt.enabled())
-  endif
-  if not tiff_dep.found() and tiff_opt.enabled()
-    error('tiff=enabled requires libtiff')
+  if host_system == 'emscripten' and tiff_opt.enabled()
+    # Emscripten ports are enabled by link options instead of pkg-config.
+    tiff_dep = declare_dependency(compile_args: ['-sUSE_LIBTIFF=1'],
+                                  link_args: ['-sUSE_LIBTIFF=1'])
+  else
+    tiff_dep = dependency('libtiff-4', required: false, method: 'pkg-config')
+    if not tiff_dep.found()
+      tiff_dep = cc.find_library('tiff', required: tiff_opt.enabled())
+    endif
+    if not tiff_dep.found() and tiff_opt.enabled()
+      error('tiff=enabled requires libtiff')
+    endif
   endif
 endif
 
@@ -606,26 +618,32 @@ jpeg_opt = get_option('jpeg')
 jpeg_dep = disabler()
 
 if not jpeg_opt.disabled()
-  jpeg_dep = dependency('libjpeg',
-                        required: false,
-                        method: 'pkg-config')
-  if not jpeg_dep.found()
-    jpeg_dep = dependency('libjpeg-turbo',
+  if host_system == 'emscripten' and jpeg_opt.enabled()
+    # Emscripten ports are enabled by link options instead of pkg-config.
+    jpeg_dep = declare_dependency(compile_args: ['-sUSE_LIBJPEG=1'],
+                                  link_args: ['-sUSE_LIBJPEG=1'])
+  else
+    jpeg_dep = dependency('libjpeg',
                           required: false,
                           method: 'pkg-config')
-  endif
-  if not jpeg_dep.found()
-    jpeg_dep = dependency('JPEG',
-                          required: jpeg_opt.enabled(),
-                          method: 'cmake')
-  endif
-  if not jpeg_dep.found()
-    jpeg_dep = cc.find_library('jpeg',
-                               required: jpeg_opt.enabled())
-  endif
-  if not jpeg_dep.found() and jpeg_opt.enabled()
-    error('jpeg=enabled requires libjpeg, libjpeg-turbo, ' +
-          'CMake JPEG package, or a jpeg library')
+    if not jpeg_dep.found()
+      jpeg_dep = dependency('libjpeg-turbo',
+                            required: false,
+                            method: 'pkg-config')
+    endif
+    if not jpeg_dep.found()
+      jpeg_dep = dependency('JPEG',
+                            required: jpeg_opt.enabled(),
+                            method: 'cmake')
+    endif
+    if not jpeg_dep.found()
+      jpeg_dep = cc.find_library('jpeg',
+                                 required: jpeg_opt.enabled())
+    endif
+    if not jpeg_dep.found() and jpeg_opt.enabled()
+      error('jpeg=enabled requires libjpeg, libjpeg-turbo, ' +
+            'CMake JPEG package, or a jpeg library')
+    endif
   endif
 endif
 
@@ -640,12 +658,18 @@ webp_opt = get_option('webp')
 webp_dep = disabler()
 
 if not webp_opt.disabled()
-  webp_dep = dependency('libwebp', required: false, method: 'pkg-config')
-  if not webp_dep.found()
-    webp_dep = cc.find_library('webp', required: webp_opt.enabled())
-  endif
-  if not webp_dep.found() and webp_opt.enabled()
-    error('webp=enabled requires libwebp')
+  if host_system == 'emscripten' and webp_opt.enabled()
+    # Emscripten ports are enabled by link options instead of pkg-config.
+    webp_dep = declare_dependency(compile_args: ['-sUSE_LIBWEBP=1'],
+                                  link_args: ['-sUSE_LIBWEBP=1'])
+  else
+    webp_dep = dependency('libwebp', required: false, method: 'pkg-config')
+    if not webp_dep.found()
+      webp_dep = cc.find_library('webp', required: webp_opt.enabled())
+    endif
+    if not webp_dep.found() and webp_opt.enabled()
+      error('webp=enabled requires libwebp')
+    endif
   endif
 endif
 

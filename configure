@@ -23672,6 +23672,12 @@ fi
 
 
 if test x$with_jpeg != xno; then
+    if test x$host_os = xemscripten -a x$with_jpeg = xyes; then
+                have_jpeg=yes
+        LIBJPEG_CFLAGS="-sUSE_LIBJPEG=1"
+        LIBJPEG_LIBS="-sUSE_LIBJPEG=1"
+        LIBJPEG_PKG_NAME=libjpeg
+    fi
     if test x$build = x$host; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for jpeg" >&5
 printf "%s\n" "$as_me: checking for jpeg" >&6;}
@@ -23935,6 +23941,12 @@ fi
 
 
 if test x$with_png != xno; then
+    if test x$host_os = xemscripten -a x$with_png = xyes; then
+                have_png=yes
+        LIBPNG_CFLAGS="-sUSE_LIBPNG=1"
+        LIBPNG_LIBS="-sUSE_LIBPNG=1"
+        LIBPNG_PKG_NAME=libpng
+    fi
     if test x$build = x$host; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for png" >&5
 printf "%s\n" "$as_me: checking for png" >&6;}
@@ -24277,6 +24289,12 @@ fi
 
 
 if test x$with_tiff != xno; then
+    if test x$host_os = xemscripten -a x$with_tiff = xyes; then
+                have_tiff=yes
+        LIBTIFF_CFLAGS="-sUSE_LIBTIFF=1"
+        LIBTIFF_LIBS="-sUSE_LIBTIFF=1"
+        LIBTIFF_PKG_NAME=libtiff-4
+    fi
     if test x$build = x$host; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for tiff" >&5
 printf "%s\n" "$as_me: checking for tiff" >&6;}
@@ -24466,6 +24484,12 @@ fi
 
 
 if test x$with_webp != xno; then
+    if test x$host_os = xemscripten -a x$with_webp = xyes; then
+                have_webp=yes
+        LIBWEBP_CFLAGS="-sUSE_LIBWEBP=1"
+        LIBWEBP_LIBS="-sUSE_LIBWEBP=1"
+        LIBWEBP_PKG_NAME=libwebp
+    fi
     if test x$build = x$host; then
         { printf "%s\n" "$as_me:${as_lineno-$LINENO}: checking for webp" >&5
 printf "%s\n" "$as_me: checking for webp" >&6;}
