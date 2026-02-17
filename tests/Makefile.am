@@ -241,6 +241,12 @@ AM_LOG_FLAGS =
 
 staticcheck:
 	@$(SHELL) "$(top_srcdir)/tests/_static/sh/shellcheck.sh" "$(abs_top_srcdir)"
+	@cd "$(abs_top_srcdir)" && \
+	find src tests -type f \( -name '*.[ch]' -o -name '*.md' -o \
+	-name '*.1' -o -name '*.in' -o -name '*.am' -o -name '*.build' \
+	-o -name '*.t' -o -name 'LICENSE' -o -name '*.py' -o \
+	-name '*.rb' -o -name '*.thumbnailer' -o -name '*.sh' \) \
+	-exec codespell {} +
 
 # Override check-TESTS to avoid nested single quotes in automake helpers.
 # Export config.h feature toggles once so tests can rely on environment
