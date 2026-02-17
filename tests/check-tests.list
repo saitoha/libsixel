@@ -583,3 +583,10 @@ security/issue/0008_issue200_heap_overflow_reject.t
 security/issue/0009_issue207_resize_poc.t
 security/issue/0010_issue51_stbi_1561_poc.t
 security/issue/0011_issue73_stbi_1561_poc.t
+processing/simd/0001_simd_level_auto_lsqa.t
+processing/simd/0002_simd_level_none_lsqa.t
+processing/simd/0003_simd_level_scalar_lsqa.t
+processing/simd/0004_simd_level_sse2_lsqa.t
+processing/simd/0005_simd_level_avx_lsqa.t
+processing/simd/0006_simd_level_neon_lsqa.t
+processing/simd/0007_simd_level_invalid_lsqa.t

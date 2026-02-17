@@ -21,8 +21,6 @@ enum sixel_simd_level {
 int
 sixel_cpu_simd_level(void);
 
-void
-sixel_cpu_reset_simd_cache(void);
 
 #ifdef __cplusplus
 }
