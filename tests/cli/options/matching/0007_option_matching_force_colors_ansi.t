@@ -10,17 +10,12 @@ config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this b
 echo "1..1"
 set -v
 
-label="force_colors_ansi"
-err_file="${ARTIFACT_LOCAL_DIR}/${label}.err"
-out_file="${ARTIFACT_LOCAL_DIR}/${label}.sixel"
+err_file="${ARTIFACT_LOCAL_DIR}/error.txt"
 esc_char=$(printf '\033')
-
-: >"${err_file}"
-: >"${out_file}"
 
 run_img2sixel --env SIXEL_STATUS_FORCE_COLORS=1 -- \
     -d sie "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" \
-    >"${out_file}" 2>"${err_file}" && {
+    -o/dev/null 2>"${err_file}" && {
     fail 1 "force colors diagnostic unexpectedly succeeded"
     exit 0
 }
