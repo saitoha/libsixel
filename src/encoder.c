@@ -629,8 +629,109 @@ sixel_encoder_find_loader_choice_name(int match_value)
  * The steps are:
  *  1. Trim trailing whitespace and detect the optional "!" suffix.
  *  2. Match each token against the loader choice list (prefix-friendly).
- *  3. Emit the canonical loader order string for the loader registry.
+ *  3. Preserve loader suboptions while canonicalizing loader names.
+ *  4. Emit the canonical loader order string for the loader registry.
  */
+static size_t
+sixel_loader_token_name_length(char const *token, size_t token_length)
+{
+    size_t index;
+
+    index = 0u;
+    while (index < token_length) {
+        if (token[index] == ':') {
+            break;
+        }
+        ++index;
+    }
+
+    return index;
+}
+
+static int
+sixel_loader_parse_positive_int(char const *text,
+                                size_t length,
+                                int *value_out)
+{
+    size_t index;
+    int value;
+    unsigned char digit;
+
+    index = 0u;
+    value = 0;
+
+    if (text == NULL || value_out == NULL || length == 0u) {
+        return 0;
+    }
+
+    while (index < length) {
+        digit = (unsigned char)text[index];
+        if (digit < (unsigned char)'0' || digit > (unsigned char)'9') {
+            return 0;
+        }
+        if (value > (INT_MAX - 9) / 10) {
+            return 0;
+        }
+        value = value * 10 + (digit - (unsigned char)'0');
+        ++index;
+    }
+
+    if (value <= 0) {
+        return 0;
+    }
+
+    *value_out = value;
+    return 1;
+}
+
+static SIXELSTATUS
+sixel_encoder_validate_loader_suboptions(char const *loader_name,
+                                         char const *token_start,
+                                         size_t token_length,
+                                         size_t name_length)
+{
+    char const *suffix;
+    size_t suffix_length;
+    size_t key_length;
+    int parsed_value;
+
+    suffix = NULL;
+    suffix_length = 0u;
+    key_length = 0u;
+    parsed_value = 0;
+
+    if (name_length >= token_length) {
+        return SIXEL_OK;
+    }
+
+    suffix = token_start + name_length;
+    suffix_length = token_length - name_length;
+    if (suffix[0] != ':') {
+        sixel_helper_set_additional_message(
+            "loader suboptions must follow ':'.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    if (strcmp(loader_name, "wic") != 0) {
+        sixel_helper_set_additional_message(
+            "specified loader does not support suboptions.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    key_length = strlen(":ico_minsize=");
+    if (suffix_length <= key_length ||
+        strncmp(suffix, ":ico_minsize=", key_length) != 0 ||
+        !sixel_loader_parse_positive_int(suffix + key_length,
+                                         suffix_length - key_length,
+                                         &parsed_value)) {
+        sixel_helper_set_additional_message(
+            "invalid wic suboption; expected :ico_minsize=SIZE.");
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    return SIXEL_OK;
+}
+
 static SIXELSTATUS
 sixel_encoder_parse_loader_order(
     sixel_allocator_t /* in */ *allocator,
@@ -643,6 +744,8 @@ sixel_encoder_parse_loader_order(
     char const *token_end;
     char const *order_end;
     size_t token_length;
+    size_t token_name_length;
+    size_t token_suffix_length;
     size_t output_length;
     size_t output_used;
     int fallback_disabled;
@@ -663,6 +766,8 @@ sixel_encoder_parse_loader_order(
     token_end = NULL;
     order_end = NULL;
     token_length = 0u;
+    token_name_length = 0u;
+    token_suffix_length = 0u;
     output_length = 0u;
     output_used = 0u;
     fallback_disabled = 0;
@@ -728,13 +833,17 @@ sixel_encoder_parse_loader_order(
             }
             token_length = (size_t)(token_end - token_start);
             if (token_length > 0u) {
-                if (token_length >= sizeof(token_buffer)) {
+                token_name_length = sixel_loader_token_name_length(
+                    token_start,
+                    token_length);
+                if (token_name_length == 0u ||
+                    token_name_length >= sizeof(token_buffer)) {
                     sixel_helper_set_additional_message(
                         "loader name is too long.");
                     return SIXEL_BAD_ARGUMENT;
                 }
-                memcpy(token_buffer, token_start, token_length);
-                token_buffer[token_length] = '\0';
+                memcpy(token_buffer, token_start, token_name_length);
+                token_buffer[token_name_length] = '\0';
                 match_result = sixel_option_match_choice(
                     token_buffer,
                     g_option_choices_loaders,
@@ -742,21 +851,7 @@ sixel_encoder_parse_loader_order(
                     &match_value,
                     match_detail,
                     sizeof(match_detail));
-                if (match_result == SIXEL_OPTION_CHOICE_MATCH) {
-                    choice_name =
-                        sixel_encoder_find_loader_choice_name(match_value);
-                    if (choice_name == NULL) {
-                        sixel_helper_set_additional_message(
-                            "loader choice resolution failed.");
-                        return SIXEL_BAD_ARGUMENT;
-                    }
-                    choice_name_length = strlen(choice_name);
-                    if (saw_token) {
-                        output_length += 1u;
-                    }
-                    output_length += choice_name_length;
-                    saw_token = 1;
-                } else {
+                if (match_result != SIXEL_OPTION_CHOICE_MATCH) {
                     sixel_option_report_invalid_choice(
                         "specified loader is not supported.",
                         match_detail,
@@ -764,6 +859,28 @@ sixel_encoder_parse_loader_order(
                         sizeof(match_message));
                     return SIXEL_BAD_ARGUMENT;
                 }
+                choice_name =
+                    sixel_encoder_find_loader_choice_name(match_value);
+                if (choice_name == NULL) {
+                    sixel_helper_set_additional_message(
+                        "loader choice resolution failed.");
+                    return SIXEL_BAD_ARGUMENT;
+                }
+                status = sixel_encoder_validate_loader_suboptions(
+                    choice_name,
+                    token_start,
+                    token_length,
+                    token_name_length);
+                if (SIXEL_FAILED(status)) {
+                    return status;
+                }
+                token_suffix_length = token_length - token_name_length;
+                choice_name_length = strlen(choice_name);
+                if (saw_token) {
+                    output_length += 1u;
+                }
+                output_length += choice_name_length + token_suffix_length;
+                saw_token = 1;
             }
             token_start = cursor + 1;
         }
@@ -805,8 +922,11 @@ sixel_encoder_parse_loader_order(
             }
             token_length = (size_t)(token_end - token_start);
             if (token_length > 0u) {
-                memcpy(token_buffer, token_start, token_length);
-                token_buffer[token_length] = '\0';
+                token_name_length = sixel_loader_token_name_length(
+                    token_start,
+                    token_length);
+                memcpy(token_buffer, token_start, token_name_length);
+                token_buffer[token_name_length] = '\0';
                 match_result = sixel_option_match_choice(
                     token_buffer,
                     g_option_choices_loaders,
@@ -831,6 +951,7 @@ sixel_encoder_parse_loader_order(
                     status = SIXEL_BAD_ARGUMENT;
                     goto cleanup;
                 }
+                token_suffix_length = token_length - token_name_length;
                 if (saw_token) {
                     output[output_used] = ',';
                     ++output_used;
@@ -840,6 +961,12 @@ sixel_encoder_parse_loader_order(
                        choice_name,
                        choice_name_length);
                 output_used += choice_name_length;
+                if (token_suffix_length > 0u) {
+                    memcpy(output + output_used,
+                           token_start + token_name_length,
+                           token_suffix_length);
+                    output_used += token_suffix_length;
+                }
                 saw_token = 1;
             }
             token_start = cursor + 1;
