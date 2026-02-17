@@ -12,15 +12,9 @@ feature_defined_in_config "HAVE_WIC" || skip_all "wic loader is unavailable"
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-png-pal8-trns.png"
 
-set +e
-probe_output=$(run_img2sixel -Lwic! "${image_path}" -o/dev/null 2>&1)
-probe_status=$?
-set -e
 
-printf '%s' "${probe_output}" |
-grep -q "{cacaf262-9370-4615-a13b-9f5539da4c0a} not registered" && skip_all "WIC is not available"
+test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && skip_all "WIC is unavailable under wine"
 
-test "${probe_status}" -eq 0 || skip_all "wic png palette trns codec is unavailable"
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR_WIC_PNG_PALETTE_TRNS:-0.98}
 
