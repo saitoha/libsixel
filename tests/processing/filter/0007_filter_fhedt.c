@@ -1,7 +1,7 @@
 /*
  * SPDX-License-Identifier: MIT
  *
- * VPTE filter tests. These confirm VPTE-only LUT builds, ownership handoff,
+ * FHEDT filter tests. These confirm FHEDT-only LUT builds, ownership handoff,
  * and progress reporting through the filter facade.
  */
 
@@ -16,17 +16,17 @@
 #include <sixel.h>
 
 #include "src/filter-factory.h"
-#include "src/filter-vpte.h"
+#include "src/filter-fhedt.h"
 #include "src/filter.h"
 #include "tests/processing/filter/filter_test_common.h"
 
 static int
-test_vpte_builds_owned_lut_and_transfers_result(void)
+test_fhedt_builds_owned_lut_and_transfers_result(void)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
     sixel_filter_t *filter;
-    sixel_filter_vpte_config_t config;
+    sixel_filter_fhedt_config_t config;
     sixel_filter_lookup_result_t result;
     unsigned char palette[6];
     unsigned char pixel[3];
@@ -64,13 +64,13 @@ test_vpte_builds_owned_lut_and_transfers_result(void)
     config.lookup_config.depth = 3;
     config.lookup_config.ncolors = 2;
     config.lookup_config.complexion = 1;
-    config.lookup_config.lut_policy = SIXEL_LUT_POLICY_VPTE;
+    config.lookup_config.lut_policy = SIXEL_LUT_POLICY_FHEDT;
     config.lookup_config.pixelformat = SIXEL_PIXELFORMAT_RGB888;
     config.lookup_config.reuse_lut = NULL;
     config.lookup_config.method_for_largest = SIXEL_LARGE_AUTO;
     config.result_out = &result;
 
-    status = sixel_filter_factory_create_by_kind(SIXEL_FILTER_KIND_VPTE,
+    status = sixel_filter_factory_create_by_kind(SIXEL_FILTER_KIND_FHEDT,
                                                  &config,
                                                  &filter);
     if (SIXEL_FAILED(status)) {
@@ -112,11 +112,11 @@ cleanup:
 }
 
 static int
-test_vpte_init_rejects_non_vpte_policy(void)
+test_fhedt_init_rejects_non_fhedt_policy(void)
 {
     SIXELSTATUS status;
     sixel_filter_t *filter;
-    sixel_filter_vpte_config_t config;
+    sixel_filter_fhedt_config_t config;
 
     status = SIXEL_FALSE;
     filter = NULL;
@@ -131,7 +131,7 @@ test_vpte_init_rejects_non_vpte_policy(void)
     config.lookup_config.reuse_lut = NULL;
     config.result_out = NULL;
 
-    status = sixel_filter_factory_create_by_kind(SIXEL_FILTER_KIND_VPTE,
+    status = sixel_filter_factory_create_by_kind(SIXEL_FILTER_KIND_FHEDT,
                                                  &config,
                                                  &filter);
     if (status != SIXEL_BAD_ARGUMENT) {
@@ -144,7 +144,7 @@ test_vpte_init_rejects_non_vpte_policy(void)
 }
 
 int
-test_filter_0007_filter_vpte(int argc, char **argv)
+test_filter_0007_filter_fhedt(int argc, char **argv)
 {
     int success;
 
@@ -153,13 +153,13 @@ test_filter_0007_filter_vpte(int argc, char **argv)
 
     success = 1;
 
-    if (!test_vpte_builds_owned_lut_and_transfers_result()) {
-        fprintf(stderr, "vpte filter builds lut and reports progress failed\n");
+    if (!test_fhedt_builds_owned_lut_and_transfers_result()) {
+        fprintf(stderr, "fhedt filter builds lut and reports progress failed\n");
         success = 0;
     }
 
-    if (!test_vpte_init_rejects_non_vpte_policy()) {
-        fprintf(stderr, "vpte init rejects non-vpte policy failed\n");
+    if (!test_fhedt_init_rejects_non_fhedt_policy()) {
+        fprintf(stderr, "fhedt init rejects non-fhedt policy failed\n");
         success = 0;
     }
 

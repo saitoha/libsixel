@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify setting SIXEL_LOG_PATH does not break non-VPTE conversion.
+# Verify setting SIXEL_LOG_PATH does not break non-FHEDT conversion.
 set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -24,5 +24,5 @@ test -s "${output_sixel}" || {
     exit 0
 }
 
-pass 1 "SIXEL_LOG_PATH works with non-VPTE conversion"
+pass 1 "SIXEL_LOG_PATH works with non-FHEDT conversion"
 exit 0

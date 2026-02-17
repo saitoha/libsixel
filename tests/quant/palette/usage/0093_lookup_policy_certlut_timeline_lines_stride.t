@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify different SIXEL_LOG_LINES values work without VPTE.
+# Verify different SIXEL_LOG_LINES values work without FHEDT.
 set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -37,5 +37,5 @@ test -s "${output_stride3}" || {
     exit 0
 }
 
-pass 1 "SIXEL_LOG_LINES values are accepted without VPTE"
+pass 1 "SIXEL_LOG_LINES values are accepted without FHEDT"
 exit 0

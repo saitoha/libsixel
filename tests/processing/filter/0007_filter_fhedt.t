@@ -9,10 +9,10 @@ set -eu
 echo "1..1"
 set -v
 
-run_test_runner "filter/0007_filter_vpte" || {
-    echo "not ok 1 - 0007_filter_vpte"
+run_test_runner "filter/0007_filter_fhedt" || {
+    echo "not ok 1 - 0007_filter_fhedt"
     exit 0
 }
 
-echo "ok 1 - 0007_filter_vpte"
+echo "ok 1 - 0007_filter_fhedt"
 exit 0

@@ -23,7 +23,7 @@ int test_filter_0003_filter_resize(int argc, char **argv);
 int test_filter_0004_filter_colors(int argc, char **argv);
 int test_filter_0005_filter_lookup(int argc, char **argv);
 int test_filter_0006_filter_final_merge(int argc, char **argv);
-int test_filter_0007_filter_vpte(int argc, char **argv);
+int test_filter_0007_filter_fhedt(int argc, char **argv);
 int test_filter_0008_filter_load(int argc, char **argv);
 int test_filter_0009_filter_dither(int argc, char **argv);
 int test_filter_0010_filter_encode(int argc, char **argv);
@@ -74,7 +74,7 @@ static test_entry_t const test_entries[] = {
     { "filter/0004_filter_colors", test_filter_0004_filter_colors },
     { "filter/0005_filter_lookup", test_filter_0005_filter_lookup },
     { "filter/0006_filter_final_merge", test_filter_0006_filter_final_merge },
-    { "filter/0007_filter_vpte", test_filter_0007_filter_vpte },
+    { "filter/0007_filter_fhedt", test_filter_0007_filter_fhedt },
     { "filter/0008_filter_load", test_filter_0008_filter_load },
     { "filter/0009_filter_dither", test_filter_0009_filter_dither },
     { "filter/0010_filter_encode", test_filter_0010_filter_encode },

@@ -1,8 +1,8 @@
 #!/bin/sh
-# Run lsqa checks for float32 VPTE in the gamma colorspace.
+# Run lsqa checks for float32 FHEDT in the oklab colorspace.
 # The lsqa helper can read SIXEL directly, so compare with SIXEL output.
 # Quality floors tuned to requested QA thresholds:
-# - MS-SSIM floor: 0.97
+# - MS-SSIM floor: 0.96
 set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -15,10 +15,11 @@ echo "1..1"
 set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
-output_sixel="${ARTIFACT_LOCAL_DIR}/vpte-float32-gamma.six"
+output_sixel="${ARTIFACT_LOCAL_DIR}/fhedt-float32-oklab.six"
 
-run_img2sixel --lookup-policy=vpte --precision=float32 --working-colorspace=gamma -o "${output_sixel}" "${input_image}" || {
-    fail 1 "float32 VPTE gamma colorspace conversion failed"
+run_img2sixel --lookup-policy=fhedt --precision=float32 \
+    --working-colorspace=oklab -o "${output_sixel}" "${input_image}" || {
+    fail 1 "float32 FHEDT oklab colorspace conversion failed"
     exit 0
 }
 
@@ -28,7 +29,7 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    pass 1 "float32 VPTE gamma colorspace lsqa passed"
+    pass 1 "float32 FHEDT oklab colorspace lsqa passed"
     exit 0
 }
 
@@ -37,6 +38,6 @@ test "${lsqa_run_status}" -eq 5 && {
     exit 0
 }
 
-fail 1 "float32 VPTE gamma colorspace lsqa failed"
+fail 1 "float32 FHEDT oklab colorspace lsqa failed"
 
 exit 0

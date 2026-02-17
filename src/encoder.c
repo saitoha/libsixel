@@ -135,7 +135,7 @@
 #include "filter-final-merge.h"
 #include "filter-factory.h"
 #include "filter-palette.h"
-#include "filter-vpte.h"
+#include "filter-fhedt.h"
 #include "filter-vptree.h"
 #include "filter-eytzinger.h"
 #include "filter-resize.h"
@@ -488,7 +488,7 @@ static sixel_option_choice_t const g_option_choices_lut_policy[] = {
     { "none", SIXEL_LUT_POLICY_NONE },
     { "certlut", SIXEL_LUT_POLICY_CERTLUT },
     { "eytzinger", SIXEL_LUT_POLICY_EYTZINGER },
-    { "vpte", SIXEL_LUT_POLICY_VPTE },
+    { "fhedt", SIXEL_LUT_POLICY_FHEDT },
     { "vptree", SIXEL_LUT_POLICY_VPTREE },
     { "rbc", SIXEL_LUT_POLICY_RBC },
     { "mahalanobis", SIXEL_LUT_POLICY_MAHALANOBIS }
@@ -4139,7 +4139,7 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
     int scale_active;
     int clip_active;
     int clip_first;
-    int vpte_active;
+    int fhedt_active;
     int vptree_active;
     int eytzinger_active;
     int colorspace_before_scale;
@@ -4162,8 +4162,8 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
     clip_first = encoder->clipfirst ? 1 : 0;
     colorspace_before_scale = planner->colorspace_before_scale;
     colorspace_after_scale = planner->colorspace_after_scale;
-    vpte_active = (palette_ready != 0
-                   && encoder->lut_policy == SIXEL_LUT_POLICY_VPTE)
+    fhedt_active = (palette_ready != 0
+                   && encoder->lut_policy == SIXEL_LUT_POLICY_FHEDT)
         ? 1
         : 0;
     vptree_active = (palette_ready != 0
@@ -4179,9 +4179,9 @@ sixel_encoding_planner_dump(sixel_encoding_planner_t *planner,
     lut_node = NULL;
     lut_edge = "";
 
-    if (vpte_active != 0) {
-        lut_node = "vpte";
-        lut_edge = " -> vpte";
+    if (fhedt_active != 0) {
+        lut_node = "fhedt";
+        lut_edge = " -> fhedt";
     } else if (vptree_active != 0) {
         lut_node = "vptree";
         lut_edge = " -> vptree";
@@ -5770,7 +5770,7 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
     SIXELSTATUS status;
     sixel_filter_lookup_result_t result;
     sixel_filter_lookup_config_t lookup_config;
-    sixel_filter_vpte_config_t vpte_config;
+    sixel_filter_fhedt_config_t fhedt_config;
     sixel_filter_vptree_config_t vptree_config;
     sixel_filter_1d_eytzinger_config_t eytzinger_config;
     sixel_filter_t *filter;
@@ -5783,7 +5783,7 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
     policy = SIXEL_LUT_POLICY_AUTO;
     memset(&result, 0, sizeof(result));
     memset(&lookup_config, 0, sizeof(lookup_config));
-    memset(&vpte_config, 0, sizeof(vpte_config));
+    memset(&fhedt_config, 0, sizeof(fhedt_config));
     memset(&vptree_config, 0, sizeof(vptree_config));
     memset(&eytzinger_config, 0, sizeof(eytzinger_config));
 
@@ -5798,7 +5798,7 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
     }
 
     policy = dither->lut_policy;
-    if (policy != SIXEL_LUT_POLICY_VPTE
+    if (policy != SIXEL_LUT_POLICY_FHEDT
             && policy != SIXEL_LUT_POLICY_VPTREE
             && policy != SIXEL_LUT_POLICY_EYTZINGER) {
         return SIXEL_OK;
@@ -5815,12 +5815,12 @@ sixel_encoder_apply_lut_filter(sixel_encoder_t *encoder,
     lookup_config.pixelformat = dither->pixelformat;
     lookup_config.reuse_lut = palette->lut;
 
-    if (policy == SIXEL_LUT_POLICY_VPTE) {
-        vpte_config.lookup_config = lookup_config;
-        vpte_config.result_out = &result;
+    if (policy == SIXEL_LUT_POLICY_FHEDT) {
+        fhedt_config.lookup_config = lookup_config;
+        fhedt_config.result_out = &result;
         status = sixel_filter_factory_create_by_kind(
-            SIXEL_FILTER_KIND_VPTE,
-            &vpte_config,
+            SIXEL_FILTER_KIND_FHEDT,
+            &fhedt_config,
             &filter);
     } else if (policy == SIXEL_LUT_POLICY_VPTREE) {
         vptree_config.lookup_config = lookup_config;

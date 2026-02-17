@@ -642,7 +642,7 @@ sixel_dither_map_pixels(
             && policy != SIXEL_LUT_POLICY_5BIT
             && policy != SIXEL_LUT_POLICY_6BIT
             && policy != SIXEL_LUT_POLICY_EYTZINGER
-            && policy != SIXEL_LUT_POLICY_VPTE
+            && policy != SIXEL_LUT_POLICY_FHEDT
             && policy != SIXEL_LUT_POLICY_VPTREE
             && policy != SIXEL_LUT_POLICY_RBC
             && policy != SIXEL_LUT_POLICY_MAHALANOBIS) {
@@ -669,7 +669,7 @@ sixel_dither_map_pixels(
                 && shared_lut != 0) {
             /*
              * Parallel palette application reuses the preconfigured LUT to
-             * avoid rebuilding VPTE inside each worker.  The shared LUT is
+             * avoid rebuilding FHEDT inside each worker.  The shared LUT is
              * immutable after setup, so workers only need a read-only handle
              * here.
              */
@@ -1799,7 +1799,7 @@ sixel_dither_set_lut_policy(
         || lut_policy == SIXEL_LUT_POLICY_CERTLUT
         || lut_policy == SIXEL_LUT_POLICY_EYTZINGER
         || lut_policy == SIXEL_LUT_POLICY_NONE
-        || lut_policy == SIXEL_LUT_POLICY_VPTE
+        || lut_policy == SIXEL_LUT_POLICY_FHEDT
         || lut_policy == SIXEL_LUT_POLICY_VPTREE
         || lut_policy == SIXEL_LUT_POLICY_RBC
         || lut_policy == SIXEL_LUT_POLICY_MAHALANOBIS) {
@@ -2173,7 +2173,7 @@ sixel_dither_apply_palette(
 
     /*
      * Inform lookup helpers whether concurrent palette application will run.
-     * VPTE caches rely on this hint when TLS is unavailable so they can
+     * FHEDT caches rely on this hint when TLS is unavailable so they can
      * disable shared caches during parallel dithering while remaining enabled
      * for serial passes.
      */
@@ -2220,7 +2220,7 @@ sixel_dither_apply_palette(
                 && policy != SIXEL_LUT_POLICY_5BIT
                 && policy != SIXEL_LUT_POLICY_6BIT
                 && policy != SIXEL_LUT_POLICY_EYTZINGER
-                && policy != SIXEL_LUT_POLICY_VPTE
+                && policy != SIXEL_LUT_POLICY_FHEDT
                 && policy != SIXEL_LUT_POLICY_VPTREE
                 && policy != SIXEL_LUT_POLICY_RBC
                 && policy != SIXEL_LUT_POLICY_MAHALANOBIS) {

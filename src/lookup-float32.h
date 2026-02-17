@@ -6,7 +6,7 @@
 #define LIBSIXEL_LOOKUP_FLOAT32_H
 
 #include "allocator.h"
-#include "lookup-vpte-float32.h"
+#include "lookup-fhedt-float32.h"
 #include "lookup-vptree-float32.h"
 
 #include <sixel.h>
@@ -40,8 +40,8 @@ typedef struct sixel_lookup_float32 {
     int kdtree_root;
     int kdnodes_count;
     sixel_allocator_t *allocator;
-    sixel_lookup_vpte_float32_t *vpte;
-    int vpte_ready;
+    sixel_lookup_fhedt_float32_t *fhedt;
+    int fhedt_ready;
     sixel_lookup_vptree_float32_t *vptree;
     int vptree_ready;
     sixel_lookup_float32_1d_eytzinger_t eytz;

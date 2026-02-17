@@ -255,7 +255,7 @@ _img2sixel()
                                    none \
                                    certlut \
                                    eytzinger \
-                                   vpte \
+                                   fhedt \
                                    vptree \
                                    rbc \
                                    mahalanobis' -- "$cur" ) )

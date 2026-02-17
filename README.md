@@ -665,7 +665,7 @@ Options:
                                              with zero approximation
                              eytzinger -> implicit binary tree lookup with
                                              a small neighbour scan (default)
-                             vpte      -> Voronoi grid built via a 3-pass
+                             fhedt      -> Voronoi grid built via a 3-pass
                                            3D EDT with optional boundary
                                            refinement
                              vptree    -> VP-tree lookup built from palette
@@ -675,10 +675,10 @@ The *none* policy skips every lookup acceleration structure so each
 pixel comparison scans the palette directly.  This matches the legacy
 behaviour that was previously enabled implicitly by `-q full`.
 
-The *vpte* policy builds a Voronoi grid using a 3D exact distance
+The *fhedt* policy builds a Voronoi grid using a 3D exact distance
 transform.  Boundary voxels optionally refine the result by checking the
 cell corners.  The following environment variables tune the grid (legacy
-`SIXEL_VPTE_*` names are still honored for compatibility, but prefer the
+`SIXEL_FHEDT_*` names are still honored for compatibility, but prefer the
 `SIXEL_LOOKUP_*` forms):
 
 The *vptree* policy builds a VP-tree from palette entries.  Each palette
@@ -688,20 +688,20 @@ palette index and short-circuits when that cached palette falls within the
 safe distance.
 
 * `SIXEL_DITHER_LOOKUP_POLICY` sets the LUT policy (auto, 5bit, 6bit, none,
-  certlut, eytzinger, vpte, or vptree; default is eytzinger).
+  certlut, eytzinger, fhedt, or vptree; default is eytzinger).
 * `SIXEL_LOOKUP_PACKING` chooses the dense cache packing for 5bit/6bit
   policies (`linear`, `morton`, or `hilbert`; default `linear`).
-* `SIXEL_LOOKUP_VPTE_RESOLUTION` sets the grid resolution (64, 128, 256;
+* `SIXEL_LOOKUP_FHEDT_RESOLUTION` sets the grid resolution (64, 128, 256;
   default 64).
-* `SIXEL_LOOKUP_VPTE_REFINE` enables corner refinement on boundary voxels
+* `SIXEL_LOOKUP_FHEDT_REFINE` enables corner refinement on boundary voxels
   (0 or 1; default 1).
-* `SIXEL_LOOKUP_VPTE_USE_DIST2` controls whether boundary safety checks rely
+* `SIXEL_LOOKUP_FHEDT_USE_DIST2` controls whether boundary safety checks rely
   on the EDT distance field to skip unnecessary refinement (0 or 1; default
   0 because recent measurements have not confirmed a win).
-* `SIXEL_LOOKUP_VPTE_USE_CACHE` enables a small per-thread VPTE lookup cache
+* `SIXEL_LOOKUP_FHEDT_USE_CACHE` enables a small per-thread FHEDT lookup cache
   keyed by voxel coordinates (0 or 1; default 0 because the benefit was
   negligible in recent tests; enable explicitly if you want to retry it).
-* `SIXEL_LOOKUP_VPTE_SHARED` controls whether the prebuilt grid is shared
+* `SIXEL_LOOKUP_FHEDT_SHARED` controls whether the prebuilt grid is shared
   across threads (0 or 1; default 1).
 * `SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE` selects whether CERTLUT caches are
   shared across worker threads or rebuilt per worker (0 or 1; default 0 so
@@ -710,18 +710,18 @@ safe distance.
   shared across workers (0 or 1; default 1 to reuse the cache without locks).
 * `SIXEL_LOOKUP_6BIT_SHARED_INSTANCE` controls whether the 6bit dense LUT is
   shared across workers (0 or 1; default 1 to reuse the cache without locks).
-* `SIXEL_LOOKUP_VPTE_TILE_XY` sets the tile width/height used by the
+* `SIXEL_LOOKUP_FHEDT_TILE_XY` sets the tile width/height used by the
   parallel EDT passes (defaults now adapt to palette complexity; values are
   clamped to the image size and fall back to the adaptive choice on invalid
   input).
-* `SIXEL_LOOKUP_VPTE_TILE_DEPTH` sets the tile depth (z span) for the EDT
-  passes (defaults track the adaptive `SIXEL_LOOKUP_VPTE_TILE_XY` decision
+* `SIXEL_LOOKUP_FHEDT_TILE_DEPTH` sets the tile depth (z span) for the EDT
+  passes (defaults track the adaptive `SIXEL_LOOKUP_FHEDT_TILE_XY` decision
   and are clamped the same way).
-* `SIXEL_LOOKUP_VPTE_FIRST_TOUCH` enables tile-wise zeroing of the VPTE
+* `SIXEL_LOOKUP_FHEDT_FIRST_TOUCH` enables tile-wise zeroing of the FHEDT
   grid before the EDT so that NUMA systems can place pages on the thread
   that will use them (0 or 1; default 0 so behaviour is unchanged unless
   opted in).
-* `SIXEL_LOOKUP_VPTE_PIN_THREADS` pins the VPTE worker threads once at
+* `SIXEL_LOOKUP_FHEDT_PIN_THREADS` pins the FHEDT worker threads once at
   startup to reduce migration on NUMA systems (0 or 1; default 0; failures
   are ignored so portability is preserved).
 * `SIXEL_DITHER_PIN_THREADS` pins PaletteApply and encode pipeline workers

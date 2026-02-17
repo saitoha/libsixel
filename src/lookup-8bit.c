@@ -70,7 +70,7 @@
 
 #include "status.h"
 #include "lookup-common.h"
-#include "lookup-vpte-8bit.h"
+#include "lookup-fhedt-8bit.h"
 #include "logger.h"
 #include "sixel_atomic.h"
 #include "threading.h"
@@ -477,7 +477,7 @@ sixel_lookup_8bit_policy_normalize(int policy)
                && normalized != SIXEL_LUT_POLICY_CERTLUT
                && normalized != SIXEL_LUT_POLICY_EYTZINGER
                && normalized != SIXEL_LUT_POLICY_NONE
-               && normalized != SIXEL_LUT_POLICY_VPTE
+               && normalized != SIXEL_LUT_POLICY_FHEDT
                && normalized != SIXEL_LUT_POLICY_VPTREE
                && normalized != SIXEL_LUT_POLICY_RBC
                && normalized != SIXEL_LUT_POLICY_MAHALANOBIS) {
@@ -493,7 +493,7 @@ sixel_lookup_8bit_policy_uses_cache(int policy)
     if (policy == SIXEL_LUT_POLICY_CERTLUT
         || policy == SIXEL_LUT_POLICY_EYTZINGER
         || policy == SIXEL_LUT_POLICY_NONE
-        || policy == SIXEL_LUT_POLICY_VPTE
+        || policy == SIXEL_LUT_POLICY_FHEDT
         || policy == SIXEL_LUT_POLICY_VPTREE
         || policy == SIXEL_LUT_POLICY_RBC
         || policy == SIXEL_LUT_POLICY_MAHALANOBIS) {
@@ -503,11 +503,11 @@ sixel_lookup_8bit_policy_uses_cache(int policy)
     return 1;
 }
 
-static int sixel_lookup_vpte_env_resolution_8bit(void);
-static int sixel_lookup_vpte_env_refine_8bit(void);
-static int sixel_lookup_vpte_env_shared_8bit(void);
-static int sixel_lookup_vpte_env_use_dist2_8bit(void);
-static int sixel_lookup_vpte_env_use_cache_8bit(void);
+static int sixel_lookup_fhedt_env_resolution_8bit(void);
+static int sixel_lookup_fhedt_env_refine_8bit(void);
+static int sixel_lookup_fhedt_env_shared_8bit(void);
+static int sixel_lookup_fhedt_env_use_dist2_8bit(void);
+static int sixel_lookup_fhedt_env_use_cache_8bit(void);
  
 static void
 sixel_lookup_8bit_1d_eytzinger_release(sixel_lookup_8bit_t *lut)
@@ -909,7 +909,7 @@ sixel_lookup_8bit_lookup_1d_eytzinger(
 }
 
 static SIXELSTATUS
-sixel_lookup_8bit_configure_vpte(sixel_lookup_8bit_t *lut,
+sixel_lookup_8bit_configure_fhedt(sixel_lookup_8bit_t *lut,
                                  unsigned char const *palette,
                                  int ncolors,
                                  int complexion,
@@ -928,22 +928,22 @@ sixel_lookup_8bit_configure_vpte(sixel_lookup_8bit_t *lut,
 
     (void)complexion;
 
-    resolution = sixel_lookup_vpte_env_resolution_8bit();
-    refine = sixel_lookup_vpte_env_refine_8bit();
-    shared_flag = sixel_lookup_vpte_env_shared_8bit();
-    use_dist2 = sixel_lookup_vpte_env_use_dist2_8bit();
-    use_cache = sixel_lookup_vpte_env_use_cache_8bit();
+    resolution = sixel_lookup_fhedt_env_resolution_8bit();
+    refine = sixel_lookup_fhedt_env_refine_8bit();
+    shared_flag = sixel_lookup_fhedt_env_shared_8bit();
+    use_dist2 = sixel_lookup_fhedt_env_use_dist2_8bit();
+    use_cache = sixel_lookup_fhedt_env_use_cache_8bit();
  
-    if (lut->vpte == NULL) {
-        status = sixel_lookup_vpte_8bit_create(lut->allocator, &lut->vpte);
+    if (lut->fhedt == NULL) {
+        status = sixel_lookup_fhedt_8bit_create(lut->allocator, &lut->fhedt);
         if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
-                "sixel_lookup_8bit_configure: VPTE handle allocation failed.");
+                "sixel_lookup_8bit_configure: FHEDT handle allocation failed.");
             return status;
         }
     }
 
-    signature = sixel_lookup_vpte_8bit_signature(palette,
+    signature = sixel_lookup_fhedt_8bit_signature(palette,
                                                  ncolors,
                                                  resolution,
                                                  refine,
@@ -952,7 +952,7 @@ sixel_lookup_8bit_configure_vpte(sixel_lookup_8bit_t *lut,
                                                  wcomp3,
                                                  lut->depth);
 
-    status = sixel_lookup_vpte_8bit_configure(lut->vpte,
+    status = sixel_lookup_fhedt_8bit_configure(lut->fhedt,
                                               palette,
                                               ncolors,
                                               resolution,
@@ -966,19 +966,19 @@ sixel_lookup_8bit_configure_vpte(sixel_lookup_8bit_t *lut,
                                               pixelformat,
                                               lut->depth);
     if (SIXEL_FAILED(status)) {
-        lut->vpte_ready = 0;
+        lut->fhedt_ready = 0;
         return status;
     }
 
-    sixel_lookup_vpte_8bit_shared_set_signature(lut->vpte->shared,
+    sixel_lookup_fhedt_8bit_shared_set_signature(lut->fhedt->shared,
                                                 signature);
-    lut->vpte_ready = 1;
+    lut->fhedt_ready = 1;
 
     return SIXEL_OK;
 }
 
 static int
-sixel_lookup_vpte_parse_flag_8bit(char const *text, int default_value)
+sixel_lookup_fhedt_parse_flag_8bit(char const *text, int default_value)
 {
     long parsed;
     char *endptr;
@@ -1005,13 +1005,13 @@ sixel_lookup_vpte_parse_flag_8bit(char const *text, int default_value)
 }
 
 static int
-sixel_lookup_vpte_env_resolution_8bit(void)
+sixel_lookup_fhedt_env_resolution_8bit(void)
 {
     char const *env;
     long parsed;
     char *endptr;
 
-    env = sixel_compat_getenv("SIXEL_LOOKUP_VPTE_RESOLUTION");
+    env = sixel_compat_getenv("SIXEL_LOOKUP_FHEDT_RESOLUTION");
     if (env == NULL || env[0] == '\0') {
         return 64;
     }
@@ -1031,44 +1031,44 @@ sixel_lookup_vpte_env_resolution_8bit(void)
 }
 
 static int
-sixel_lookup_vpte_env_refine_8bit(void)
+sixel_lookup_fhedt_env_refine_8bit(void)
 {
-    return sixel_lookup_vpte_parse_flag_8bit(
-        sixel_compat_getenv("SIXEL_LOOKUP_VPTE_REFINE"),
+    return sixel_lookup_fhedt_parse_flag_8bit(
+        sixel_compat_getenv("SIXEL_LOOKUP_FHEDT_REFINE"),
         1);
 }
 
 static int
-sixel_lookup_vpte_env_shared_8bit(void)
+sixel_lookup_fhedt_env_shared_8bit(void)
 {
-    return sixel_lookup_vpte_parse_flag_8bit(
-        sixel_compat_getenv("SIXEL_LOOKUP_VPTE_SHARED"),
+    return sixel_lookup_fhedt_parse_flag_8bit(
+        sixel_compat_getenv("SIXEL_LOOKUP_FHEDT_SHARED"),
         1);
 }
 
 static int
-sixel_lookup_vpte_env_use_dist2_8bit(void)
+sixel_lookup_fhedt_env_use_dist2_8bit(void)
 {
     /*
      * Dist2 is disabled by default because measurements have not shown
      * consistent wins.  Enable explicitly when experimenting with boundary
      * refinement short-circuiting.
      */
-    return sixel_lookup_vpte_parse_flag_8bit(
-        sixel_compat_getenv("SIXEL_LOOKUP_VPTE_USE_DIST2"),
+    return sixel_lookup_fhedt_parse_flag_8bit(
+        sixel_compat_getenv("SIXEL_LOOKUP_FHEDT_USE_DIST2"),
         0);
 }
 
 static int
-sixel_lookup_vpte_env_use_cache_8bit(void)
+sixel_lookup_fhedt_env_use_cache_8bit(void)
 {
     /*
      * The cache is disabled by default because its benefit has not been
      * demonstrated.  Callers can opt in for experiments without impacting
      * parallel TLS availability checks.
      */
-    return sixel_lookup_vpte_parse_flag_8bit(
-        sixel_compat_getenv("SIXEL_LOOKUP_VPTE_USE_CACHE"),
+    return sixel_lookup_fhedt_parse_flag_8bit(
+        sixel_compat_getenv("SIXEL_LOOKUP_FHEDT_USE_CACHE"),
         0);
 }
 
@@ -2232,8 +2232,8 @@ sixel_lookup_8bit_init(sixel_lookup_8bit_t *lut, sixel_allocator_t *allocator)
     lut->dense_size = 0U;
     lut->dense_ready = 0;
     lut->cert_ready = 0;
-    lut->vpte = NULL;
-    lut->vpte_ready = 0;
+    lut->fhedt = NULL;
+    lut->fhedt_ready = 0;
     lut->vptree = NULL;
     lut->vptree_ready = 0;
     lut->eytz.count = 0;
@@ -2251,7 +2251,7 @@ sixel_lookup_8bit_init(sixel_lookup_8bit_t *lut, sixel_allocator_t *allocator)
     if (lut->cert != NULL) {
         sixel_certlut_init(lut->cert);
     }
-    (void)sixel_lookup_vpte_8bit_create(allocator, &lut->vpte);
+    (void)sixel_lookup_fhedt_8bit_create(allocator, &lut->fhedt);
     (void)sixel_lookup_vptree_8bit_create(allocator, &lut->vptree);
 }
 
@@ -2304,8 +2304,8 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
     lut->eytz.ready = 0;
     lut->vptree_ready = 0;
 
-    if (normalized == SIXEL_LUT_POLICY_VPTE) {
-        status = sixel_lookup_8bit_configure_vpte(lut,
+    if (normalized == SIXEL_LUT_POLICY_FHEDT) {
+        status = sixel_lookup_8bit_configure_fhedt(lut,
                                                   palette,
                                                   ncolors,
                                                   complexion,
@@ -2315,7 +2315,7 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
                                                   pixelformat);
         if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
-                "sixel_lookup_8bit_configure: VPTE failed; "
+                "sixel_lookup_8bit_configure: FHEDT failed; "
                 "falling back to CERTLUT.");
             normalized = SIXEL_LUT_POLICY_CERTLUT;
         } else {
@@ -2364,7 +2364,7 @@ sixel_lookup_8bit_configure(sixel_lookup_8bit_t *lut,
             return SIXEL_OK;
         }
     } else {
-        lut->vpte_ready = 0;
+        lut->fhedt_ready = 0;
         sixel_lookup_8bit_1d_eytzinger_release(lut);
     }
 
@@ -2416,9 +2416,9 @@ sixel_lookup_8bit_map_pixel(sixel_lookup_8bit_t *lut,
     if (lut == NULL || pixel == NULL) {
         return 0;
     }
-    if (lut->policy == SIXEL_LUT_POLICY_VPTE) {
-        if (lut->vpte_ready && lut->vpte != NULL) {
-            return sixel_lookup_vpte_8bit_map(lut->vpte, pixel);
+    if (lut->policy == SIXEL_LUT_POLICY_FHEDT) {
+        if (lut->fhedt_ready && lut->fhedt != NULL) {
+            return sixel_lookup_fhedt_8bit_map(lut->fhedt, pixel);
         }
         return 0;
     }
@@ -2456,11 +2456,11 @@ sixel_lookup_8bit_clear(sixel_lookup_8bit_t *lut)
         sixel_certlut_free(lut->cert);
     }
     lut->cert_ready = 0;
-    if (lut->vpte != NULL) {
-        sixel_lookup_vpte_8bit_unref(lut->vpte);
-        lut->vpte = NULL;
+    if (lut->fhedt != NULL) {
+        sixel_lookup_fhedt_8bit_unref(lut->fhedt);
+        lut->fhedt = NULL;
     }
-    lut->vpte_ready = 0;
+    lut->fhedt_ready = 0;
     if (lut->vptree != NULL) {
         sixel_lookup_vptree_8bit_unref(lut->vptree);
         lut->vptree = NULL;

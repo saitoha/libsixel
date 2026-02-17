@@ -133,7 +133,7 @@ sixel_logger_open(sixel_logger_t *logger, char const *path)
     logger->active = 1;
     logger->started_at = sixel_timer_now();
     /*
-     * Use fully buffered output to avoid newline-triggered flushes.  VPTE
+     * Use fully buffered output to avoid newline-triggered flushes.  FHEDT
      * timeline logging can emit many events, and line buffering would force
      * frequent kernel writes even without explicit fflush() calls.
      *

@@ -119,7 +119,7 @@ test_runner_sources = [
   'processing/filter/0004_filter_colors.c',
   'processing/filter/0005_filter_lookup.c',
   'processing/filter/0006_filter_final_merge.c',
-  'processing/filter/0007_filter_vpte.c',
+  'processing/filter/0007_filter_fhedt.c',
   'processing/filter/0008_filter_load.c',
   'processing/filter/0009_filter_dither.c',
   'processing/filter/0010_filter_encode.c',

@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify negative SIXEL_LOG_LINES values do not break non-VPTE conversion.
+# Verify negative SIXEL_LOG_LINES values do not break non-FHEDT conversion.
 set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"

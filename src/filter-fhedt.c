@@ -32,27 +32,27 @@
 #include <sixel.h>
 
 #include "filter-lookup.h"
-#include "filter-vpte.h"
+#include "filter-fhedt.h"
 #include "filter.h"
 #include "status.h"
 
 /*
- * Internal state retained by the VPTE filter. The filter uses the lookup
- * builder to assemble a VPTE-specific LUT and tracks ownership so dispose can
+ * Internal state retained by the FHEDT filter. The filter uses the lookup
+ * builder to assemble a FHEDT-specific LUT and tracks ownership so dispose can
  * release it when the caller does not take over.
  */
-typedef struct sixel_filter_vpte_state {
-    sixel_filter_vpte_config_t config;
+typedef struct sixel_filter_fhedt_state {
+    sixel_filter_fhedt_config_t config;
     sixel_filter_lookup_result_t result;
-} sixel_filter_vpte_state_t;
+} sixel_filter_fhedt_state_t;
 
 static SIXELSTATUS
-sixel_filter_vpte_apply(sixel_filter_t *filter,
+sixel_filter_fhedt_apply(sixel_filter_t *filter,
                         sixel_allocator_t *allocator,
                         sixel_logger_t *logger)
 {
     SIXELSTATUS status;
-    sixel_filter_vpte_state_t *state;
+    sixel_filter_fhedt_state_t *state;
     sixel_filter_lookup_result_t *result_out;
 
     status = SIXEL_FALSE;
@@ -63,12 +63,12 @@ sixel_filter_vpte_apply(sixel_filter_t *filter,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    state = (sixel_filter_vpte_state_t *)filter->userdata;
+    state = (sixel_filter_fhedt_state_t *)filter->userdata;
     if (state == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (state->config.lookup_config.lut_policy != SIXEL_LUT_POLICY_VPTE) {
+    if (state->config.lookup_config.lut_policy != SIXEL_LUT_POLICY_FHEDT) {
         return SIXEL_BAD_ARGUMENT;
     }
 
@@ -95,16 +95,16 @@ sixel_filter_vpte_apply(sixel_filter_t *filter,
 }
 
 static void
-sixel_filter_vpte_dispose(sixel_filter_t *filter)
+sixel_filter_fhedt_dispose(sixel_filter_t *filter)
 {
-    sixel_filter_vpte_state_t *state;
+    sixel_filter_fhedt_state_t *state;
 
     state = NULL;
     if (filter == NULL) {
         return;
     }
 
-    state = (sixel_filter_vpte_state_t *)filter->userdata;
+    state = (sixel_filter_fhedt_state_t *)filter->userdata;
     if (state != NULL) {
         if (state->result.owned != 0 && state->result.lut != NULL) {
             sixel_lut_unref(state->result.lut);
@@ -115,11 +115,11 @@ sixel_filter_vpte_dispose(sixel_filter_t *filter)
 }
 
 SIXELSTATUS
-sixel_filter_vpte_init(sixel_filter_t *filter,
-                       const sixel_filter_vpte_config_t *config)
+sixel_filter_fhedt_init(sixel_filter_t *filter,
+                       const sixel_filter_fhedt_config_t *config)
 {
     SIXELSTATUS status;
-    sixel_filter_vpte_state_t *state;
+    sixel_filter_fhedt_state_t *state;
 
     status = SIXEL_FALSE;
     state = NULL;
@@ -128,12 +128,12 @@ sixel_filter_vpte_init(sixel_filter_t *filter,
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (config->lookup_config.lut_policy != SIXEL_LUT_POLICY_VPTE) {
+    if (config->lookup_config.lut_policy != SIXEL_LUT_POLICY_FHEDT) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    state = (sixel_filter_vpte_state_t *)calloc(
-        1u, sizeof(sixel_filter_vpte_state_t));
+    state = (sixel_filter_fhedt_state_t *)calloc(
+        1u, sizeof(sixel_filter_fhedt_state_t));
     if (state == NULL) {
         return SIXEL_BAD_ALLOCATION;
     }
@@ -141,10 +141,10 @@ sixel_filter_vpte_init(sixel_filter_t *filter,
     state->config = *config;
 
     status = sixel_filter_init(filter,
-                               "vpte",
-                               SIXEL_FILTER_KIND_VPTE,
-                               sixel_filter_vpte_apply,
-                               sixel_filter_vpte_dispose,
+                               "fhedt",
+                               SIXEL_FILTER_KIND_FHEDT,
+                               sixel_filter_fhedt_apply,
+                               sixel_filter_fhedt_dispose,
                                state);
     if (SIXEL_FAILED(status)) {
         free(state);

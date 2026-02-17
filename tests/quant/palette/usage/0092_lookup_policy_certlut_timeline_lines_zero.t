@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify SIXEL_LOG_LINES=0 does not break non-VPTE conversion.
+# Verify SIXEL_LOG_LINES=0 does not break non-FHEDT conversion.
 set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -24,5 +24,5 @@ test -s "${output_sixel}" || {
     exit 0
 }
 
-pass 1 "SIXEL_LOG_LINES=0 keeps non-VPTE conversion stable"
+pass 1 "SIXEL_LOG_LINES=0 keeps non-FHEDT conversion stable"
 exit 0
