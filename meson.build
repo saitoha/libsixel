@@ -557,10 +557,17 @@ png_opt = get_option('png')
 png_dep = disabler()
 
 if not png_opt.disabled()
-  if host_system == 'emscripten' and png_opt.enabled()
-    # Emscripten ports are enabled by link options instead of pkg-config.
-    png_dep = declare_dependency(compile_args: ['-sUSE_LIBPNG=1'],
-                                 link_args: ['-sUSE_LIBPNG=1'])
+  if host_system == 'emscripten'
+    emscripten_png_flag = '-sUSE_LIBPNG=1'
+    emscripten_png_supported = cc.links('int main(void){return 0;}',
+                                         args: [emscripten_png_flag],
+                                         name: 'emscripten use libpng')
+    if emscripten_png_supported
+      png_dep = declare_dependency(compile_args: [emscripten_png_flag],
+                                   link_args: [emscripten_png_flag])
+    elif png_opt.enabled()
+      error('png=enabled requires Emscripten support for -sUSE_LIBPNG=1')
+    endif
   else
     png_dep = dependency('libpng', required: false, method: 'pkg-config')
     if not png_dep.found()
@@ -592,10 +599,17 @@ tiff_opt = get_option('tiff')
 tiff_dep = disabler()
 
 if not tiff_opt.disabled()
-  if host_system == 'emscripten' and tiff_opt.enabled()
-    # Emscripten ports are enabled by link options instead of pkg-config.
-    tiff_dep = declare_dependency(compile_args: ['-sUSE_LIBTIFF=1'],
-                                  link_args: ['-sUSE_LIBTIFF=1'])
+  if host_system == 'emscripten'
+    emscripten_tiff_flag = '-sUSE_LIBTIFF=1'
+    emscripten_tiff_supported = cc.links('int main(void){return 0;}',
+                                          args: [emscripten_tiff_flag],
+                                          name: 'emscripten use libtiff')
+    if emscripten_tiff_supported
+      tiff_dep = declare_dependency(compile_args: [emscripten_tiff_flag],
+                                    link_args: [emscripten_tiff_flag])
+    elif tiff_opt.enabled()
+      error('tiff=enabled requires Emscripten support for -sUSE_LIBTIFF=1')
+    endif
   else
     tiff_dep = dependency('libtiff-4', required: false, method: 'pkg-config')
     if not tiff_dep.found()
@@ -618,10 +632,17 @@ jpeg_opt = get_option('jpeg')
 jpeg_dep = disabler()
 
 if not jpeg_opt.disabled()
-  if host_system == 'emscripten' and jpeg_opt.enabled()
-    # Emscripten ports are enabled by link options instead of pkg-config.
-    jpeg_dep = declare_dependency(compile_args: ['-sUSE_LIBJPEG=1'],
-                                  link_args: ['-sUSE_LIBJPEG=1'])
+  if host_system == 'emscripten'
+    emscripten_jpeg_flag = '-sUSE_LIBJPEG=1'
+    emscripten_jpeg_supported = cc.links('int main(void){return 0;}',
+                                          args: [emscripten_jpeg_flag],
+                                          name: 'emscripten use libjpeg')
+    if emscripten_jpeg_supported
+      jpeg_dep = declare_dependency(compile_args: [emscripten_jpeg_flag],
+                                    link_args: [emscripten_jpeg_flag])
+    elif jpeg_opt.enabled()
+      error('jpeg=enabled requires Emscripten support for -sUSE_LIBJPEG=1')
+    endif
   else
     jpeg_dep = dependency('libjpeg',
                           required: false,
@@ -658,10 +679,17 @@ webp_opt = get_option('webp')
 webp_dep = disabler()
 
 if not webp_opt.disabled()
-  if host_system == 'emscripten' and webp_opt.enabled()
-    # Emscripten ports are enabled by link options instead of pkg-config.
-    webp_dep = declare_dependency(compile_args: ['-sUSE_LIBWEBP=1'],
-                                  link_args: ['-sUSE_LIBWEBP=1'])
+  if host_system == 'emscripten'
+    emscripten_webp_flag = '-sUSE_LIBWEBP=1'
+    emscripten_webp_supported = cc.links('int main(void){return 0;}',
+                                          args: [emscripten_webp_flag],
+                                          name: 'emscripten use libwebp')
+    if emscripten_webp_supported
+      webp_dep = declare_dependency(compile_args: [emscripten_webp_flag],
+                                    link_args: [emscripten_webp_flag])
+    elif webp_opt.enabled()
+      error('webp=enabled requires Emscripten support for -sUSE_LIBWEBP=1')
+    endif
   else
     webp_dep = dependency('libwebp', required: false, method: 'pkg-config')
     if not webp_dep.found()

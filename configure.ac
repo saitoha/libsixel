@@ -2618,12 +2618,27 @@ AC_SUBST(WINHTTP_CFLAGS)
 AC_SUBST(WINHTTP_LIBS)
 
 if test x$with_jpeg != xno; then
-    if test x$host_os = xemscripten -a x$with_jpeg = xyes; then
-        dnl Emscripten enables bundled jpeg support via a linker flag.
-        have_jpeg=yes
-        LIBJPEG_CFLAGS="-sUSE_LIBJPEG=1"
-        LIBJPEG_LIBS="-sUSE_LIBJPEG=1"
-        LIBJPEG_PKG_NAME=libjpeg
+    if test x$host_os = xemscripten -a x$with_jpeg != xno; then
+        dnl Validate Emscripten codec flag support before enabling jpeg.
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        CFLAGS="$CFLAGS -sUSE_LIBJPEG=1"
+        LDFLAGS="$LDFLAGS -sUSE_LIBJPEG=1"
+        AC_MSG_CHECKING([whether emscripten accepts -sUSE_LIBJPEG=1])
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
+                       [sixel_emscripten_use_libjpeg=yes],
+                       [sixel_emscripten_use_libjpeg=no])
+        AC_MSG_RESULT([$sixel_emscripten_use_libjpeg])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        if test x$sixel_emscripten_use_libjpeg = xyes; then
+            have_jpeg=yes
+            LIBJPEG_CFLAGS="-sUSE_LIBJPEG=1"
+            LIBJPEG_LIBS="-sUSE_LIBJPEG=1"
+            LIBJPEG_PKG_NAME=libjpeg
+        elif test x$with_jpeg = xyes; then
+            AC_MSG_ERROR([-sUSE_LIBJPEG=1 is not supported by this emscripten])
+        fi
     fi
     if test x$build = x$host; then
         AC_MSG_NOTICE([checking for jpeg])
@@ -2695,12 +2710,27 @@ AC_SUBST(LIBJPEG_CFLAGS)
 AC_SUBST(LIBJPEG_LIBS)
 
 if test x$with_png != xno; then
-    if test x$host_os = xemscripten -a x$with_png = xyes; then
-        dnl Emscripten enables bundled png support via a linker flag.
-        have_png=yes
-        LIBPNG_CFLAGS="-sUSE_LIBPNG=1"
-        LIBPNG_LIBS="-sUSE_LIBPNG=1"
-        LIBPNG_PKG_NAME=libpng
+    if test x$host_os = xemscripten -a x$with_png != xno; then
+        dnl Validate Emscripten codec flag support before enabling png.
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        CFLAGS="$CFLAGS -sUSE_LIBPNG=1"
+        LDFLAGS="$LDFLAGS -sUSE_LIBPNG=1"
+        AC_MSG_CHECKING([whether emscripten accepts -sUSE_LIBPNG=1])
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
+                       [sixel_emscripten_use_libpng=yes],
+                       [sixel_emscripten_use_libpng=no])
+        AC_MSG_RESULT([$sixel_emscripten_use_libpng])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        if test x$sixel_emscripten_use_libpng = xyes; then
+            have_png=yes
+            LIBPNG_CFLAGS="-sUSE_LIBPNG=1"
+            LIBPNG_LIBS="-sUSE_LIBPNG=1"
+            LIBPNG_PKG_NAME=libpng
+        elif test x$with_png = xyes; then
+            AC_MSG_ERROR([-sUSE_LIBPNG=1 is not supported by this emscripten])
+        fi
     fi
     if test x$build = x$host; then
         AC_MSG_NOTICE([checking for png])
@@ -2787,12 +2817,27 @@ AC_SUBST(LIBPNG_CFLAGS)
 AC_SUBST(LIBPNG_LIBS)
 
 if test x$with_tiff != xno; then
-    if test x$host_os = xemscripten -a x$with_tiff = xyes; then
-        dnl Emscripten enables bundled tiff support via a linker flag.
-        have_tiff=yes
-        LIBTIFF_CFLAGS="-sUSE_LIBTIFF=1"
-        LIBTIFF_LIBS="-sUSE_LIBTIFF=1"
-        LIBTIFF_PKG_NAME=libtiff-4
+    if test x$host_os = xemscripten -a x$with_tiff != xno; then
+        dnl Validate Emscripten codec flag support before enabling tiff.
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        CFLAGS="$CFLAGS -sUSE_LIBTIFF=1"
+        LDFLAGS="$LDFLAGS -sUSE_LIBTIFF=1"
+        AC_MSG_CHECKING([whether emscripten accepts -sUSE_LIBTIFF=1])
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
+                       [sixel_emscripten_use_libtiff=yes],
+                       [sixel_emscripten_use_libtiff=no])
+        AC_MSG_RESULT([$sixel_emscripten_use_libtiff])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        if test x$sixel_emscripten_use_libtiff = xyes; then
+            have_tiff=yes
+            LIBTIFF_CFLAGS="-sUSE_LIBTIFF=1"
+            LIBTIFF_LIBS="-sUSE_LIBTIFF=1"
+            LIBTIFF_PKG_NAME=libtiff-4
+        elif test x$with_tiff = xyes; then
+            AC_MSG_ERROR([-sUSE_LIBTIFF=1 is not supported by this emscripten])
+        fi
     fi
     if test x$build = x$host; then
         AC_MSG_NOTICE([checking for tiff])
@@ -2857,12 +2902,27 @@ AC_SUBST(LIBTIFF_CFLAGS)
 AC_SUBST(LIBTIFF_LIBS)
 
 if test x$with_webp != xno; then
-    if test x$host_os = xemscripten -a x$with_webp = xyes; then
-        dnl Emscripten enables bundled webp support via a linker flag.
-        have_webp=yes
-        LIBWEBP_CFLAGS="-sUSE_LIBWEBP=1"
-        LIBWEBP_LIBS="-sUSE_LIBWEBP=1"
-        LIBWEBP_PKG_NAME=libwebp
+    if test x$host_os = xemscripten -a x$with_webp != xno; then
+        dnl Validate Emscripten codec flag support before enabling webp.
+        CFLAGS_BACKUP=$CFLAGS
+        LDFLAGS_BACKUP=$LDFLAGS
+        CFLAGS="$CFLAGS -sUSE_LIBWEBP=1"
+        LDFLAGS="$LDFLAGS -sUSE_LIBWEBP=1"
+        AC_MSG_CHECKING([whether emscripten accepts -sUSE_LIBWEBP=1])
+        AC_LINK_IFELSE([AC_LANG_PROGRAM([], [])],
+                       [sixel_emscripten_use_libwebp=yes],
+                       [sixel_emscripten_use_libwebp=no])
+        AC_MSG_RESULT([$sixel_emscripten_use_libwebp])
+        CFLAGS=$CFLAGS_BACKUP
+        LDFLAGS=$LDFLAGS_BACKUP
+        if test x$sixel_emscripten_use_libwebp = xyes; then
+            have_webp=yes
+            LIBWEBP_CFLAGS="-sUSE_LIBWEBP=1"
+            LIBWEBP_LIBS="-sUSE_LIBWEBP=1"
+            LIBWEBP_PKG_NAME=libwebp
+        elif test x$with_webp = xyes; then
+            AC_MSG_ERROR([-sUSE_LIBWEBP=1 is not supported by this emscripten])
+        fi
     fi
     if test x$build = x$host; then
         AC_MSG_NOTICE([checking for webp])
