@@ -38,6 +38,7 @@ try:
         SIXEL_OPTFLAG_COLORS,
         SIXEL_OPTFLAG_HEIGHT,
         SIXEL_OPTFLAG_INPUT,
+        SIXEL_OPTFLAG_LOADERS,
         SIXEL_OPTFLAG_OUTPUT,
         SIXEL_OPTFLAG_WIDTH,
     )
@@ -73,11 +74,14 @@ def expect_exception(expectation: Expectation, func) -> str:
 
 
 def exercise_missing_path(workdir: pathlib.Path) -> str:
+    # Force the built-in decoder path so message expectations stay stable
+    # across platforms and optional external loader backends.
     missing = workdir / "does-not-exist.png"
     target = workdir / "missing.six"
 
     def _invoke() -> None:
         encoder = Encoder()
+        encoder.setopt(SIXEL_OPTFLAG_LOADERS, "builtin!")
         encoder.setopt(SIXEL_OPTFLAG_INPUT, str(missing))
         encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(target))
         encoder.encode(str(missing))
@@ -97,6 +101,7 @@ def exercise_corrupted_image(workdir: pathlib.Path) -> str:
 
     def _invoke() -> None:
         encoder = Encoder()
+        encoder.setopt(SIXEL_OPTFLAG_LOADERS, "builtin!")
         encoder.setopt(SIXEL_OPTFLAG_INPUT, str(broken_bmp))
         encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(target))
         encoder.encode(str(broken_bmp))
@@ -117,6 +122,7 @@ def exercise_unsupported_format(workdir: pathlib.Path) -> str:
 
     def _invoke() -> None:
         encoder = Encoder()
+        encoder.setopt(SIXEL_OPTFLAG_LOADERS, "builtin!")
         encoder.setopt(SIXEL_OPTFLAG_INPUT, str(text_file))
         encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(target))
         encoder.encode(str(text_file))
@@ -124,7 +130,7 @@ def exercise_unsupported_format(workdir: pathlib.Path) -> str:
     return expect_exception(
         Expectation("unsupported format", RuntimeError,
                     ("unsupported", "decode", "format", "cannot", "failed",
-                     "bad argument")),
+                     "bad argument", "error", "stb_image")),
         _invoke,
     )
 
@@ -134,6 +140,7 @@ def exercise_invalid_option(workdir: pathlib.Path, valid_source: pathlib.Path) -
 
     def _invoke() -> None:
         encoder = Encoder()
+        encoder.setopt(SIXEL_OPTFLAG_LOADERS, "builtin!")
         encoder.setopt(SIXEL_OPTFLAG_COLORS, "-1")
         encoder.setopt(SIXEL_OPTFLAG_INPUT, str(valid_source))
         encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(target))
@@ -142,7 +149,7 @@ def exercise_invalid_option(workdir: pathlib.Path, valid_source: pathlib.Path) -
     return expect_exception(
         Expectation("invalid option value", RuntimeError,
                     ("invalid", "colors", "range", "parameter", "option",
-                     "bad argument")),
+                     "bad argument", "value", "must")),
         _invoke,
     )
 
