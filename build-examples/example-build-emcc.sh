@@ -63,7 +63,11 @@ CC=emcc \
 ../../configure \
   --host=wasm32-unknown-emscripten \
   --with-shebang-file="${SHEBANG_FILE}" \
-  --disable-shared
+  --disable-shared \
+  --with-png \
+  --with-jpeg \
+  --with-webp \
+  --with-tiff
 make all
 make check
 )
