@@ -1,0 +1,104 @@
+#!/bin/sh
+# Validate Python encoder error handling for invalid option values.
+
+set -eux
+
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+
+test "${ENABLE_PYTHON:-0}" = "1" || \
+    skip_all "python bindings are disabled in this build"
+
+test -n "${SIXEL_TEST_PYTHON_VENV:-}" || \
+    skip_all "python wheel test environment is unavailable"
+
+test -x "${SIXEL_TEST_PYTHON_VENV}/bin/python" || \
+    skip_all "python wheel test environment is unavailable"
+
+run_python="${SIXEL_TEST_PYTHON_VENV}/bin/python"
+libdir="${LIBSIXEL_LIBDIR:-${TOP_BUILDDIR}/src/.libs}"
+test -d "${libdir}" || libdir="${TOP_BUILDDIR}/src"
+
+python_output=$(env \
+    LIBSIXEL_LIBDIR="${libdir}" \
+    LD_LIBRARY_PATH="${libdir}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
+    DYLD_LIBRARY_PATH="${libdir}${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}" \
+    "${run_python}" - "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" "${ARTIFACT_LOCAL_DIR}/invalid_option" 2>&1 <<'PY'
+import pathlib
+import sys
+from typing import Iterable
+
+try:
+    from libsixel_wheel import (
+        SIXEL_OPTFLAG_COLORS,
+        SIXEL_OPTFLAG_INPUT,
+        SIXEL_OPTFLAG_LOADERS,
+        SIXEL_OPTFLAG_OUTPUT,
+    )
+    from libsixel_wheel.encoder import Encoder
+except OSError as exc:
+    print(f"SKIP_LIBSIXEL_LOAD:{exc}")
+    raise SystemExit(2)
+
+
+class Expectation:
+    def __init__(self, label: str, exc_type: type[BaseException], keywords: Iterable[str]):
+        self.label = label
+        self.exc_type = exc_type
+        self.keywords = [kw.lower() for kw in keywords]
+
+
+def expect_exception(expectation: Expectation, func) -> str:
+    try:
+        func()
+    except Exception as exc:  # noqa: BLE001
+        if not isinstance(exc, expectation.exc_type):
+            raise SystemExit(
+                f"{expectation.label}: expected {expectation.exc_type.__name__}, "
+                f"got {type(exc).__name__}"
+            )
+        message = str(exc) or "<empty message>"
+        if expectation.keywords and not any(
+            key in message.lower() for key in expectation.keywords
+        ):
+            raise SystemExit(f"{expectation.label}: missing expected keywords")
+        return f"{expectation.label}: {expectation.exc_type.__name__} ({message})"
+    raise SystemExit(f"{expectation.label}: expected exception but call succeeded")
+
+
+source = pathlib.Path(sys.argv[1])
+workdir = pathlib.Path(sys.argv[2])
+workdir.mkdir(parents=True, exist_ok=True)
+target = workdir / "invalid-option.six"
+
+
+def invoke_invalid_option() -> None:
+    encoder = Encoder()
+    encoder.setopt(SIXEL_OPTFLAG_LOADERS, "builtin!")
+    encoder.setopt(SIXEL_OPTFLAG_COLORS, "-1")
+    encoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
+    encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(target))
+    encoder.encode(str(source))
+
+
+print(expect_exception(
+    Expectation("invalid option value", RuntimeError,
+                ("invalid", "colors", "range", "parameter", "option",
+                 "bad argument", "value", "must")),
+    invoke_invalid_option,
+))
+PY
+)
+python_status=$?
+printf '%s' "${python_output}" >&2
+test "${python_status}" -eq 0 && {
+    tap_pass 1 "invalid option value errors via wheel"
+    tap_plan 1
+    exit 0
+}
+
+marker=$(printf '%s' "${python_output}" | awk '/^SKIP_LIBSIXEL_LOAD:/{print; exit}')
+test -n "${marker}" && tap_skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}"
+
+tap_fail 1 "invalid option value errors via wheel failed"
+tap_plan 1
+exit 0
