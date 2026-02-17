@@ -581,6 +581,9 @@ static cli_option_help_t const g_option_help_table[] = {
         "-L LIST, --loaders=LIST    choose loader priority order\n"
         "                           LIST is a comma separated list of\n"
         "                           loader names (prefixes accepted).\n"
+        "                           WIC supports :ico_minsize=SIZE to\n"
+        "                           choose the smallest ICO frame\n"
+        "                           with edge >= SIZE.\n"
         "                           Append \"!\" to disable fallbacks.\n"
         "                           Use -H to list available loaders.\n"
     },
@@ -857,6 +860,11 @@ static cli_env_help_t const g_env_help_table[] = {
         "SIXEL_LOADER_PRIORITY_LIST",
         "Override default loader search order. Accepts the same comma\n"
         "separated names as -L. Ignored when -L/--loaders is provided."
+    },
+    {
+        "SIXEL_LODER_WIC_ICO_MINSIZE",
+        "default minimum edge size used by wic:ico_minsize when no\n"
+        "suboption is provided. Accepts positive integers."
     },
     {
         "SIXEL_PALETTE_SAMPLE_TARGET",
