@@ -146,9 +146,8 @@ static int
 test_runner_is_running_under_wine(void)
 {
 #if defined(_WIN32)
-    typedef const char *(__cdecl *wine_get_version_t)(void);
     HMODULE ntdll;
-    wine_get_version_t wine_get_version;
+    FARPROC wine_get_version;
 
     ntdll = NULL;
     wine_get_version = NULL;
@@ -158,8 +157,7 @@ test_runner_is_running_under_wine(void)
         return 0;
     }
 
-    wine_get_version =
-        (wine_get_version_t)GetProcAddress(ntdll, "wine_get_version");
+    wine_get_version = GetProcAddress(ntdll, "wine_get_version");
     if (wine_get_version == NULL) {
         return 0;
     }
