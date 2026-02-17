@@ -306,7 +306,7 @@ SIXEL_LUT_POLICY_5BIT      = 0x1  # use legacy 5-bit buckets
 SIXEL_LUT_POLICY_6BIT      = 0x2  # use 6-bit RGB buckets
 SIXEL_LUT_POLICY_NONE      = 0x4  # disable LUT acceleration
 SIXEL_LUT_POLICY_CERTLUT   = 0x5  # certified hierarchical LUT
-SIXEL_LUT_POLICY_VPTE      = 0x6  # Voronoi LUT with 3D EDT refinement
+SIXEL_LUT_POLICY_FHEDT      = 0x6  # Voronoi LUT with 3D EDT refinement
 SIXEL_LUT_POLICY_EYTZINGER = 0x7  # Eytzinger implicit binary tree LUT
 SIXEL_LUT_POLICY_VPTREE    = 0x8  # VP-tree palette lookup
 
@@ -584,7 +584,7 @@ SIXEL_OPTFLAG_LUT_POLICY        = '~'  # -~ LOOKUPPOLICY,
                                       #          certlut -> certified
                                       #                     hierarchical LUT
                                       #                     with zero error
-                                      #          vpte    -> Voronoi grid built
+                                      #          fhedt    -> Voronoi grid built
                                       #                     via 3D EDT with
                                       #                     optional
                                       #                     refinement

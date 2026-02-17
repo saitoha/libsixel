@@ -64,10 +64,10 @@ libsixel_la_SOURCES = \
                 $(srcdir)/lookup-8bit.h \
                 $(srcdir)/lookup-float32.c \
                 $(srcdir)/lookup-float32.h \
-                $(srcdir)/lookup-vpte-8bit.c \
-                $(srcdir)/lookup-vpte-8bit.h \
-                $(srcdir)/lookup-vpte-float32.c \
-                $(srcdir)/lookup-vpte-float32.h \
+                $(srcdir)/lookup-fhedt-8bit.c \
+                $(srcdir)/lookup-fhedt-8bit.h \
+                $(srcdir)/lookup-fhedt-float32.c \
+                $(srcdir)/lookup-fhedt-float32.h \
                 $(srcdir)/lookup-vptree-8bit.c \
                 $(srcdir)/lookup-vptree-8bit.h \
                 $(srcdir)/lookup-vptree-float32.c \
@@ -127,8 +127,8 @@ libsixel_la_SOURCES = \
                 $(srcdir)/filter-lookup.h \
                 $(srcdir)/filter-palette.c \
                 $(srcdir)/filter-palette.h \
-                $(srcdir)/filter-vpte.c \
-                $(srcdir)/filter-vpte.h \
+                $(srcdir)/filter-fhedt.c \
+                $(srcdir)/filter-fhedt.h \
                 $(srcdir)/filter-vptree.c \
                 $(srcdir)/filter-vptree.h \
                 $(srcdir)/filter-eytzinger.c \

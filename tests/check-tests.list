@@ -346,7 +346,7 @@ processing/filter/0003_filter_resize.t
 processing/filter/0004_filter_colors.t
 processing/filter/0005_filter_lookup.t
 processing/filter/0006_filter_final_merge.t
-processing/filter/0007_filter_vpte.t
+processing/filter/0007_filter_fhedt.t
 processing/filter/0008_filter_load.t
 processing/filter/0009_filter_dither.t
 processing/filter/0010_filter_encode.t
@@ -494,7 +494,7 @@ quant/palette/usage/0021_lanczos2_palette_limit.t
 quant/palette/usage/0022_lanczos3_two_colour_palette.t
 quant/palette/usage/0023_lanczos4_palette_dump.t
 quant/palette/usage/0024_interlaced_palette_dump.t
-quant/palette/usage/0025_lookup_policy_vpte_float32.t
+quant/palette/usage/0025_lookup_policy_fhedt_float32.t
 quant/palette/usage/0026_merge_kmeans_float32_lsqa.t
 quant/palette/usage/0027_merge_heckbert_float32_lsqa.t
 quant/palette/usage/0028_merge_kmeans_8bit_lsqa.t
@@ -510,12 +510,12 @@ quant/palette/usage/0037_lookup_policy_1d_eytzinger_float32_linear_lsqa.t
 quant/palette/usage/0038_lookup_policy_1d_eytzinger_float32_oklab_lsqa.t
 quant/palette/usage/0039_lookup_policy_1d_eytzinger_float32_cielab_lsqa.t
 quant/palette/usage/0040_lookup_policy_1d_eytzinger_float32_din99d_lsqa.t
-quant/palette/usage/0041_lookup_policy_vpte_8bit_gamma_lsqa.t
-quant/palette/usage/0042_lookup_policy_vpte_float32_gamma_lsqa.t
-quant/palette/usage/0043_lookup_policy_vpte_float32_linear_lsqa.t
-quant/palette/usage/0044_lookup_policy_vpte_float32_oklab_lsqa.t
-quant/palette/usage/0045_lookup_policy_vpte_float32_cielab_lsqa.t
-quant/palette/usage/0046_lookup_policy_vpte_float32_din99d_lsqa.t
+quant/palette/usage/0041_lookup_policy_fhedt_8bit_gamma_lsqa.t
+quant/palette/usage/0042_lookup_policy_fhedt_float32_gamma_lsqa.t
+quant/palette/usage/0043_lookup_policy_fhedt_float32_linear_lsqa.t
+quant/palette/usage/0044_lookup_policy_fhedt_float32_oklab_lsqa.t
+quant/palette/usage/0045_lookup_policy_fhedt_float32_cielab_lsqa.t
+quant/palette/usage/0046_lookup_policy_fhedt_float32_din99d_lsqa.t
 quant/palette/usage/0047_colorspace_rgb_cielab_lsqa.t
 quant/palette/usage/0048_colorspace_hls_oklab_lsqa.t
 quant/palette/usage/0049_colorspace_hls_vs_rgb_lsqa.t

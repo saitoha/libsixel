@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify pre-existing log files do not break non-VPTE conversion.
+# Verify pre-existing log files do not break non-FHEDT conversion.
 set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"

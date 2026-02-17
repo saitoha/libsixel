@@ -138,7 +138,7 @@ typedef int SIXELSTATUS;
 #define SIXEL_LUT_POLICY_6BIT    0x2  /* use 6 bits per channel */
 #define SIXEL_LUT_POLICY_NONE    0x4  /* disable LUT acceleration */
 #define SIXEL_LUT_POLICY_CERTLUT 0x5  /* certified hierarchical LUT */
-#define SIXEL_LUT_POLICY_VPTE    0x6  /* Voronoi + EDT lookup */
+#define SIXEL_LUT_POLICY_FHEDT    0x6  /* Voronoi + EDT lookup */
 #define SIXEL_LUT_POLICY_EYTZINGER 0x7 /* Eytzinger lookup */
 #define SIXEL_LUT_POLICY_VPTREE  0x8  /* VP-tree lookup */
 #define SIXEL_LUT_POLICY_RBC     0x9  /* Random Ball Cover lookup */

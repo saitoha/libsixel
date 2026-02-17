@@ -1,5 +1,5 @@
 #!/bin/sh
-# Run lsqa checks for 8-bit VPTE in the gamma colorspace.
+# Run lsqa checks for 8-bit FHEDT in the gamma colorspace.
 # The lsqa helper can read SIXEL directly, so compare with SIXEL output.
 # Quality floors tuned to requested QA thresholds:
 # - MS-SSIM floor: 0.97
@@ -15,10 +15,10 @@ echo "1..1"
 set -v
 
 input_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
-output_sixel="${ARTIFACT_LOCAL_DIR}/vpte-8bit-gamma.six"
+output_sixel="${ARTIFACT_LOCAL_DIR}/fhedt-8bit-gamma.six"
 
-run_img2sixel --lookup-policy=vpte -o "${output_sixel}" "${input_image}" || {
-    fail 1 "8-bit VPTE gamma colorspace conversion failed"
+run_img2sixel --lookup-policy=fhedt -o "${output_sixel}" "${input_image}" || {
+    fail 1 "8-bit FHEDT gamma colorspace conversion failed"
     exit 0
 }
 
@@ -28,7 +28,7 @@ lsqa_err=$(
 ) || lsqa_run_status=$?
 
 test "${lsqa_run_status:-0}" -eq 0 && {
-    pass 1 "8-bit VPTE gamma colorspace lsqa passed"
+    pass 1 "8-bit FHEDT gamma colorspace lsqa passed"
     exit 0
 }
 
@@ -37,6 +37,6 @@ test "${lsqa_run_status}" -eq 5 && {
     exit 0
 }
 
-fail 1 "8-bit VPTE gamma colorspace lsqa failed"
+fail 1 "8-bit FHEDT gamma colorspace lsqa failed"
 
 exit 0

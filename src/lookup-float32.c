@@ -124,7 +124,7 @@ sixel_lookup_float32_policy_normalize(int policy)
                && normalized != SIXEL_LUT_POLICY_CERTLUT
                && normalized != SIXEL_LUT_POLICY_EYTZINGER
                && normalized != SIXEL_LUT_POLICY_NONE
-               && normalized != SIXEL_LUT_POLICY_VPTE
+               && normalized != SIXEL_LUT_POLICY_FHEDT
                && normalized != SIXEL_LUT_POLICY_VPTREE
                && normalized != SIXEL_LUT_POLICY_RBC
                && normalized != SIXEL_LUT_POLICY_MAHALANOBIS) {
@@ -135,7 +135,7 @@ sixel_lookup_float32_policy_normalize(int policy)
 }
 
 static int
-sixel_lookup_vpte_parse_flag_float32(char const *text, int default_value)
+sixel_lookup_fhedt_parse_flag_float32(char const *text, int default_value)
 {
     long parsed;
     char *endptr;
@@ -162,13 +162,13 @@ sixel_lookup_vpte_parse_flag_float32(char const *text, int default_value)
 }
 
 static int
-sixel_lookup_vpte_env_resolution_float32(void)
+sixel_lookup_fhedt_env_resolution_float32(void)
 {
     char const *env;
     long parsed;
     char *endptr;
 
-    env = sixel_compat_getenv("SIXEL_LOOKUP_VPTE_RESOLUTION");
+    env = sixel_compat_getenv("SIXEL_LOOKUP_FHEDT_RESOLUTION");
     if (env == NULL || env[0] == '\0') {
         return 64;
     }
@@ -188,44 +188,44 @@ sixel_lookup_vpte_env_resolution_float32(void)
 }
 
 static int
-sixel_lookup_vpte_env_refine_float32(void)
+sixel_lookup_fhedt_env_refine_float32(void)
 {
-    return sixel_lookup_vpte_parse_flag_float32(
-        sixel_compat_getenv("SIXEL_LOOKUP_VPTE_REFINE"),
+    return sixel_lookup_fhedt_parse_flag_float32(
+        sixel_compat_getenv("SIXEL_LOOKUP_FHEDT_REFINE"),
         1);
 }
 
 static int
-sixel_lookup_vpte_env_shared_float32(void)
+sixel_lookup_fhedt_env_shared_float32(void)
 {
-    return sixel_lookup_vpte_parse_flag_float32(
-        sixel_compat_getenv("SIXEL_LOOKUP_VPTE_SHARED"),
+    return sixel_lookup_fhedt_parse_flag_float32(
+        sixel_compat_getenv("SIXEL_LOOKUP_FHEDT_SHARED"),
         1);
 }
 
 static int
-sixel_lookup_vpte_env_use_dist2_float32(void)
+sixel_lookup_fhedt_env_use_dist2_float32(void)
 {
     /*
      * Dist2 is disabled by default because measurements have not shown
      * consistent wins.  Enable explicitly when experimenting with boundary
      * refinement short-circuiting.
      */
-    return sixel_lookup_vpte_parse_flag_float32(
-        sixel_compat_getenv("SIXEL_LOOKUP_VPTE_USE_DIST2"),
+    return sixel_lookup_fhedt_parse_flag_float32(
+        sixel_compat_getenv("SIXEL_LOOKUP_FHEDT_USE_DIST2"),
         0);
 }
 
 static int
-sixel_lookup_vpte_env_use_cache_float32(void)
+sixel_lookup_fhedt_env_use_cache_float32(void)
 {
     /*
      * The cache is disabled by default because its benefit has not been
      * demonstrated.  Callers can opt in for experiments without impacting
      * parallel TLS availability checks.
      */
-    return sixel_lookup_vpte_parse_flag_float32(
-        sixel_compat_getenv("SIXEL_LOOKUP_VPTE_USE_CACHE"),
+    return sixel_lookup_fhedt_parse_flag_float32(
+        sixel_compat_getenv("SIXEL_LOOKUP_FHEDT_USE_CACHE"),
         0);
 }
 
@@ -1194,8 +1194,8 @@ sixel_lookup_float32_init(sixel_lookup_float32_t *lut,
     lut->kdtree_root = -1;
     lut->kdnodes_count = 0;
     lut->allocator = allocator;
-    lut->vpte = NULL;
-    lut->vpte_ready = 0;
+    lut->fhedt = NULL;
+    lut->fhedt_ready = 0;
     lut->vptree = NULL;
     lut->vptree_ready = 0;
     lut->eytz.count = 0;
@@ -1217,7 +1217,7 @@ sixel_lookup_float32_init(sixel_lookup_float32_t *lut,
     lut->rbc.mean = NULL;
     lut->rbc.inv_cov = NULL;
     lut->rbc.ready = 0;
-    (void)sixel_lookup_vpte_float32_create(allocator, &lut->vpte);
+    (void)sixel_lookup_fhedt_float32_create(allocator, &lut->fhedt);
     (void)sixel_lookup_vptree_float32_create(allocator, &lut->vptree);
 }
 
@@ -1250,11 +1250,11 @@ sixel_lookup_float32_clear(sixel_lookup_float32_t *lut)
     sixel_lookup_float32_release_kdtree(lut);
     sixel_lookup_float32_rbc_clear(lut);
     sixel_lookup_float32_1d_eytzinger_release(lut);
-    if (lut->vpte != NULL) {
-        sixel_lookup_vpte_float32_unref(lut->vpte);
-        lut->vpte = NULL;
+    if (lut->fhedt != NULL) {
+        sixel_lookup_fhedt_float32_unref(lut->fhedt);
+        lut->fhedt = NULL;
     }
-    lut->vpte_ready = 0;
+    lut->fhedt_ready = 0;
     if (lut->vptree != NULL) {
         sixel_lookup_vptree_float32_unref(lut->vptree);
         lut->vptree = NULL;
@@ -1380,7 +1380,7 @@ sixel_lookup_float32_prepare_kdtree(sixel_lookup_float32_t *lut)
 }
 
 static SIXELSTATUS
-sixel_lookup_float32_configure_vpte(sixel_lookup_float32_t *lut,
+sixel_lookup_float32_configure_fhedt(sixel_lookup_float32_t *lut,
                                     int pixelformat)
 {
     SIXELSTATUS status;
@@ -1391,23 +1391,23 @@ sixel_lookup_float32_configure_vpte(sixel_lookup_float32_t *lut,
     int use_cache;
     uint32_t signature;
 
-    resolution = sixel_lookup_vpte_env_resolution_float32();
-    refine = sixel_lookup_vpte_env_refine_float32();
-    shared_flag = sixel_lookup_vpte_env_shared_float32();
-    use_dist2 = sixel_lookup_vpte_env_use_dist2_float32();
-    use_cache = sixel_lookup_vpte_env_use_cache_float32();
+    resolution = sixel_lookup_fhedt_env_resolution_float32();
+    refine = sixel_lookup_fhedt_env_refine_float32();
+    shared_flag = sixel_lookup_fhedt_env_shared_float32();
+    use_dist2 = sixel_lookup_fhedt_env_use_dist2_float32();
+    use_cache = sixel_lookup_fhedt_env_use_cache_float32();
 
-    if (lut->vpte == NULL) {
-        status = sixel_lookup_vpte_float32_create(lut->allocator, &lut->vpte);
+    if (lut->fhedt == NULL) {
+        status = sixel_lookup_fhedt_float32_create(lut->allocator, &lut->fhedt);
         if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
-                "sixel_lookup_float32_configure: VPTE handle allocation "
+                "sixel_lookup_float32_configure: FHEDT handle allocation "
                 "failed.");
             return status;
         }
     }
 
-    signature = sixel_lookup_vpte_float32_signature(lut->palette,
+    signature = sixel_lookup_fhedt_float32_signature(lut->palette,
                                                     lut->ncolors,
                                                     resolution,
                                                     refine,
@@ -1417,7 +1417,7 @@ sixel_lookup_float32_configure_vpte(sixel_lookup_float32_t *lut,
                                                     lut->depth,
                                                     pixelformat);
 
-    status = sixel_lookup_vpte_float32_configure(lut->vpte,
+    status = sixel_lookup_fhedt_float32_configure(lut->fhedt,
                                                  lut->palette,
                                                  lut->ncolors,
                                                  resolution,
@@ -1430,13 +1430,13 @@ sixel_lookup_float32_configure_vpte(sixel_lookup_float32_t *lut,
                                                  lut->weights[2],
                                                  pixelformat);
     if (SIXEL_FAILED(status)) {
-        lut->vpte_ready = 0;
+        lut->fhedt_ready = 0;
         return status;
     }
 
-    sixel_lookup_vpte_float32_shared_set_signature(lut->vpte->shared,
+    sixel_lookup_fhedt_float32_shared_set_signature(lut->fhedt->shared,
                                                    signature);
-    lut->vpte_ready = 1;
+    lut->fhedt_ready = 1;
 
     return SIXEL_OK;
 }
@@ -1527,11 +1527,11 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
             return SIXEL_OK;
         }
     }
-    if (lut->policy == SIXEL_LUT_POLICY_VPTE) {
-        status = sixel_lookup_float32_configure_vpte(lut, pixelformat);
+    if (lut->policy == SIXEL_LUT_POLICY_FHEDT) {
+        status = sixel_lookup_float32_configure_fhedt(lut, pixelformat);
         if (SIXEL_FAILED(status)) {
             sixel_helper_set_additional_message(
-                "sixel_lookup_float32_configure: VPTE failed; "
+                "sixel_lookup_float32_configure: FHEDT failed; "
                 "falling back to CERTLUT.");
             lut->policy = SIXEL_LUT_POLICY_CERTLUT;
         } else {
@@ -1575,7 +1575,7 @@ sixel_lookup_float32_configure(sixel_lookup_float32_t *lut,
             return SIXEL_OK;
         }
     } else {
-        lut->vpte_ready = 0;
+        lut->fhedt_ready = 0;
         lut->vptree_ready = 0;
     }
 
@@ -1602,9 +1602,9 @@ sixel_lookup_float32_map_pixel(sixel_lookup_float32_t *lut,
     }
 
     sample = (float const *)(void const *)pixel;
-    if (lut->policy == SIXEL_LUT_POLICY_VPTE) {
-        if (lut->vpte_ready && lut->vpte != NULL) {
-            return sixel_lookup_vpte_float32_map(lut->vpte, sample);
+    if (lut->policy == SIXEL_LUT_POLICY_FHEDT) {
+        if (lut->fhedt_ready && lut->fhedt != NULL) {
+            return sixel_lookup_fhedt_float32_map(lut->fhedt, sample);
         }
         return 0;
     }

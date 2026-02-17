@@ -259,7 +259,7 @@ sixel_lut_configure(sixel_lut_t *lut,
     /*
      * Prefer float palettes when the pipeline is float32 so the LUT is built
      * in the working color space (e.g. OKLab/CIELab). This keeps lookups
-     * consistent with VPTE behavior and avoids reinterpreting RGB888 bytes as
+     * consistent with FHEDT behavior and avoids reinterpreting RGB888 bytes as
      * float32 components.
      */
     lut->input_is_float = SIXEL_PIXELFORMAT_IS_FLOAT32(pixelformat);

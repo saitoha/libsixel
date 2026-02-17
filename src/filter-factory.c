@@ -39,7 +39,7 @@
 #include "filter-load.h"
 #include "filter-lookup.h"
 #include "filter-palette.h"
-#include "filter-vpte.h"
+#include "filter-fhedt.h"
 #include "filter-vptree.h"
 #include "filter-eytzinger.h"
 #include "filter-encode.h"
@@ -161,17 +161,17 @@ sixel_filter_factory_palette_init(sixel_filter_t *filter,
 }
 
 static SIXELSTATUS
-sixel_filter_factory_vpte_init(sixel_filter_t *filter, const void *config)
+sixel_filter_factory_fhedt_init(sixel_filter_t *filter, const void *config)
 {
-    const sixel_filter_vpte_config_t *vpte_config;
+    const sixel_filter_fhedt_config_t *fhedt_config;
 
     if (config == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    vpte_config = (const sixel_filter_vpte_config_t *)config;
+    fhedt_config = (const sixel_filter_fhedt_config_t *)config;
 
-    return sixel_filter_vpte_init(filter, vpte_config);
+    return sixel_filter_fhedt_init(filter, fhedt_config);
 }
 
 static SIXELSTATUS
@@ -262,7 +262,7 @@ static const sixel_filter_factory_entry_t
     {"encode", SIXEL_FILTER_KIND_ENCODE, sixel_filter_factory_encode_init},
     {"lookup", SIXEL_FILTER_KIND_LOOKUP, sixel_filter_factory_lookup_init},
     {"palette", SIXEL_FILTER_KIND_PALETTE, sixel_filter_factory_palette_init},
-    {"vpte", SIXEL_FILTER_KIND_VPTE, sixel_filter_factory_vpte_init},
+    {"fhedt", SIXEL_FILTER_KIND_FHEDT, sixel_filter_factory_fhedt_init},
     {"vptree", SIXEL_FILTER_KIND_VPTREE, sixel_filter_factory_vptree_init},
     {"eytzinger",
      SIXEL_FILTER_KIND_EYTZINGER,
