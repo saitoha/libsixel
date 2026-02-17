@@ -23,7 +23,7 @@ set -v
 
 reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_ico_multisize.six"
-run_img2sixel -Lwic:ico_minsize=40! "${image_path}" >"${output_sixel}" || {
+run_img2sixel -Lwic:ico_minsize=30! "${image_path}" >"${output_sixel}" || {
     fail 1 "wic ico multisize conversion failed"
     exit 0
 }
