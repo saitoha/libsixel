@@ -800,6 +800,9 @@ steps.
                            loader names such as 'gd,builtin'.
                            Unique prefixes are accepted, so
                            'core,b' expands to 'coregraphics,builtin'.
+                           WIC accepts :ico_minsize=SIZE to select
+                           the smallest ICO frame whose edge is
+                           greater than or equal to SIZE.
                            Append "!" to disable fallback loaders.
                            Unknown or ambiguous names are rejected.
 -@ MMV:CHARSET:PATH, --drcs=MMV:CHARSET:PATH
@@ -854,6 +857,9 @@ SIXEL_LOADER_PRIORITY_LIST override default loader search order.
                            as the -L/--loaders option (including
                            prefixes and the trailing "!") and is
                            ignored when that option is set.
+SIXEL_LODER_WIC_ICO_MINSIZE default minimum edge for
+                           wic:ico_minsize when no -L suboption
+                           is provided. Accepts positive integers.
 SIXEL_FLOAT32_DITHER       opt into the experimental RGBFLOAT32
                            quantizer backend.  Set to `0`,
                            `off`, `false`, or `no` to keep the
@@ -897,6 +903,11 @@ loader names such as `gd,builtin`. Unique prefixes are accepted, so `core,b`
 expands to `coregraphics,builtin`. libsixel tries the listed loaders first and
 then falls back to any remaining backends in their default order. Append `!` to
 disable the fallback list entirely.
+
+For the WIC loader, you can add a suboption such as
+`wic:ico_minsize=40` to require a minimum ICO edge length. With a
+multi-size icon containing 16/32/48/64 frames, that value selects the 48x48
+frame (the smallest frame whose edge is >= 40).
 
 Recognized loader names (availability depends on the build; use `-H` to see
 what is available):
