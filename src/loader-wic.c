@@ -121,6 +121,7 @@ load_with_wic(
     int                     ico_minsize;
     unsigned char          *pixels;
     ULONG                   decoded_frames;
+    ULONG                   decoded_frames_end;
     PROPVARIANT             lp;
     WICColor                c;
     int                     set_palette;
@@ -137,6 +138,7 @@ load_with_wic(
     memset(&container_format, 0, sizeof(container_format));
     is_ico_container = 0;
     ico_minsize = 0;
+    decoded_frames_end = 0;
 
     (void) fstatic;
     (void) reqcolors;
@@ -286,7 +288,14 @@ load_with_wic(
     }
 
     decoded_frames = selected_frame_index;
-    while (decoded_frames < frame_count) {
+    /* ICO is not animation content for this pipeline. */
+    /* Decode only the selected frame to avoid size mismatch paths. */
+    decoded_frames_end = (ULONG)frame_count;
+    if (is_ico_container) {
+        decoded_frames_end = decoded_frames + 1u;
+    }
+
+    while (decoded_frames < decoded_frames_end) {
         hr = decoder->lpVtbl->GetFrame(decoder, decoded_frames, &wicframe);
         if (FAILED(hr)) {
             goto end;
