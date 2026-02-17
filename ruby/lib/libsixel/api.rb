@@ -47,6 +47,8 @@ module Libsixel
 
     # Basic constants and status helpers
     SIXEL_FALSE = 0x1000 unless const_defined?(:SIXEL_FALSE)
+    SIXEL_COM_ERROR = (SIXEL_FALSE | 0x0c00) unless const_defined?(:SIXEL_COM_ERROR)
+    SIXEL_WIC_ERROR = (SIXEL_FALSE | 0x0d00) unless const_defined?(:SIXEL_WIC_ERROR)
     # DRCS option layout quick map:
     #   MMV : CHARSET : PATH
     #     |      |        +-> optional tile sink ("-" keeps stdout,
