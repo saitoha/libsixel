@@ -1,5 +1,5 @@
 #!/bin/sh
-# Verify empty SIXEL_LOG_PATH keeps non-VPTE conversion working.
+# Verify empty SIXEL_LOG_PATH keeps non-FHEDT conversion working.
 set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"

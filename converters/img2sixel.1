@@ -341,7 +341,7 @@ certlut -> certified hierarchical LUT with zero approximation
 eytzinger -> implicit binary tree lookup with a small neighbour scan
             (default).
 .br
-vpte    -> Voronoi grid built via a 3-pass 3D EDT with optional
+fhedt    -> Voronoi grid built via a 3-pass 3D EDT with optional
            boundary refinement at cell corners.
 .br
 vptree  -> VP-tree lookup built from palette entries with safe-distance
@@ -351,28 +351,28 @@ The \fInone\fP policy skips the lookup caches entirely so each pixel
 comparison scans the palette directly.  This mirrors the behaviour that
 `-q full` previously forced implicitly.
 .PP
-The \fIvpte\fP grid honours the following environment variables:
+The \fIfhedt\fP grid honours the following environment variables:
 .br
 SIXEL_DITHER_LOOKUP_POLICY (auto, 5bit, 6bit, none, certlut, eytzinger,
-vpte, or vptree; default certlut)
+fhedt, or vptree; default certlut)
 .br
 SIXEL_LOOKUP_PACKING (linear or morton; default linear) selects dense LUT
 packing for 5bit/6bit lookups; other policies ignore it.
 .br
-SIXEL_LOOKUP_VPTE_RESOLUTION (64, 128, or 256; default 64)
+SIXEL_LOOKUP_FHEDT_RESOLUTION (64, 128, or 256; default 64)
 .br
-SIXEL_LOOKUP_VPTE_REFINE (0 or 1; default 1) enables corner refinement
+SIXEL_LOOKUP_FHEDT_REFINE (0 or 1; default 1) enables corner refinement
 for boundary cells.
 .br
-SIXEL_LOOKUP_VPTE_USE_DIST2 (0 or 1; default 0 because recent measurements did
+SIXEL_LOOKUP_FHEDT_USE_DIST2 (0 or 1; default 0 because recent measurements did
 not show a consistent win) keeps per-voxel EDT distances so boundary voxels can
 skip refinement when the center is already safely inside the Voronoi region.
 .br
-SIXEL_LOOKUP_VPTE_USE_CACHE (0 or 1; default 0 because the measured gain was
+SIXEL_LOOKUP_FHEDT_USE_CACHE (0 or 1; default 0 because the measured gain was
 negligible; enable explicitly to re-evaluate) enables a small per-thread cache
 keyed by voxel coordinates to speed up repeated lookups.
 .br
-SIXEL_LOOKUP_VPTE_SHARED (0 or 1; default 1) builds the grid once
+SIXEL_LOOKUP_FHEDT_SHARED (0 or 1; default 1) builds the grid once
 before worker threads run and shares it read-only.
 .br
 SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE (0 or 1; default 0) toggles whether
@@ -384,25 +384,25 @@ SIXEL_LOOKUP_5BIT_SHARED_INSTANCE (0 or 1; default 1) controls whether the
 SIXEL_LOOKUP_6BIT_SHARED_INSTANCE (0 or 1; default 1) controls whether the
 6bit dense LUT is shared across workers without locks.
 .br
-SIXEL_LOOKUP_VPTE_TILE_XY (adaptive default; clamped to the image size and
+SIXEL_LOOKUP_FHEDT_TILE_XY (adaptive default; clamped to the image size and
 falling back to the adaptive choice on invalid input) sets the tile
 width/height for the EDT passes.  The adaptive default shrinks tiles for
 diverse palettes and grows them when the palette is biased to reduce
-scheduling overhead.  Legacy SIXEL_VPTE_TILE_XY remains accepted for
+scheduling overhead.  Legacy SIXEL_FHEDT_TILE_XY remains accepted for
 compatibility.
 .br
-SIXEL_LOOKUP_VPTE_TILE_DEPTH (adaptive default; same clamping as
-SIXEL_LOOKUP_VPTE_TILE_XY) sets the tile depth for the EDT passes and follows
-the same adaptive policy.  Legacy SIXEL_VPTE_TILE_DEPTH remains accepted for
+SIXEL_LOOKUP_FHEDT_TILE_DEPTH (adaptive default; same clamping as
+SIXEL_LOOKUP_FHEDT_TILE_XY) sets the tile depth for the EDT passes and follows
+the same adaptive policy.  Legacy SIXEL_FHEDT_TILE_DEPTH remains accepted for
 compatibility.
 .br
-SIXEL_LOOKUP_VPTE_FIRST_TOUCH (0 or 1; default 0) zeroes VPTE tiles in
+SIXEL_LOOKUP_FHEDT_FIRST_TOUCH (0 or 1; default 0) zeroes FHEDT tiles in
 parallel before the EDT to let NUMA systems place pages on the worker that will
-use them.  Legacy SIXEL_VPTE_FIRST_TOUCH remains accepted for compatibility.
+use them.  Legacy SIXEL_FHEDT_FIRST_TOUCH remains accepted for compatibility.
 .br
-SIXEL_LOOKUP_VPTE_PIN_THREADS (0 or 1; default 0) pins VPTE worker threads
+SIXEL_LOOKUP_FHEDT_PIN_THREADS (0 or 1; default 0) pins FHEDT worker threads
 once at startup to reduce migration; errors are ignored so portability is
-preserved.  Legacy SIXEL_VPTE_PIN_THREADS remains accepted for compatibility.
+preserved.  Legacy SIXEL_FHEDT_PIN_THREADS remains accepted for compatibility.
 .br
 SIXEL_LOG_PATH writes a JSON timeline log consumed by tools/timeline.py
 when set; unset leaves logging disabled.
@@ -916,33 +916,33 @@ Accepts 0.0-1.0, default 0.85.
 .B SIXEL_DITHER_LOOKUP_POLICY
 .br
 select palette lookup policy (auto, 5bit, 6bit, none, certlut,
-eytzinger, vpte, or vptree).
+eytzinger, fhedt, or vptree).
 .TP 5
 .B SIXEL_LOOKUP_PACKING
 .br
 select dense LUT packing for 5bit/6bit lookup (linear or morton; default
 linear; other policies ignore it).
 .TP 5
-.B SIXEL_LOOKUP_VPTE_RESOLUTION
+.B SIXEL_LOOKUP_FHEDT_RESOLUTION
 .br
-choose VPTE grid resolution (64, 128, or 256; default 64).
+choose FHEDT grid resolution (64, 128, or 256; default 64).
 .TP 5
-.B SIXEL_LOOKUP_VPTE_REFINE
+.B SIXEL_LOOKUP_FHEDT_REFINE
 .br
-enable corner refinement on VPTE boundary cells (0 or 1; default 1).
+enable corner refinement on FHEDT boundary cells (0 or 1; default 1).
 .TP 5
-.B SIXEL_LOOKUP_VPTE_USE_DIST2
+.B SIXEL_LOOKUP_FHEDT_USE_DIST2
 .br
 reuse EDT distances to skip corner refinement (0 or 1; default 0).
 .TP 5
-.B SIXEL_LOOKUP_VPTE_USE_CACHE
+.B SIXEL_LOOKUP_FHEDT_USE_CACHE
 .br
-enable a small VPTE lookup cache keyed by voxel coordinates (0 or 1; default
+enable a small FHEDT lookup cache keyed by voxel coordinates (0 or 1; default
 0).
 .TP 5
-.B SIXEL_LOOKUP_VPTE_SHARED
+.B SIXEL_LOOKUP_FHEDT_SHARED
 .br
-share the VPTE grid between workers after building it once (0 or 1; default
+share the FHEDT grid between workers after building it once (0 or 1; default
 1).
 .TP 5
 .B SIXEL_LOOKUP_CERTLUT_SHARED_INSTANCE
@@ -957,48 +957,48 @@ share the 5bit LUT across threads without locks (0 or 1; default 1).
 .br
 share the 6bit LUT across threads without locks (0 or 1; default 1).
 .TP 5
-.B SIXEL_LOOKUP_VPTE_TILE_XY
+.B SIXEL_LOOKUP_FHEDT_TILE_XY
 .br
-set VPTE tile width/height; adaptive defaults shrink tiles for diverse
+set FHEDT tile width/height; adaptive defaults shrink tiles for diverse
 palettes and grow them for skewed palettes.
 .TP 5
-.B SIXEL_LOOKUP_VPTE_TILE_DEPTH
+.B SIXEL_LOOKUP_FHEDT_TILE_DEPTH
 .br
-set VPTE tile depth; follows the same adaptive policy as
-\fISIXEL_LOOKUP_VPTE_TILE_XY\fP.
+set FHEDT tile depth; follows the same adaptive policy as
+\fISIXEL_LOOKUP_FHEDT_TILE_XY\fP.
 .TP 5
-.B SIXEL_LOOKUP_VPTE_FIRST_TOUCH
+.B SIXEL_LOOKUP_FHEDT_FIRST_TOUCH
 .br
-zero VPTE tiles before the EDT so NUMA systems can place pages on the worker
+zero FHEDT tiles before the EDT so NUMA systems can place pages on the worker
 that will consume them (0 or 1; default 0).
 .TP 5
-.B SIXEL_LOOKUP_VPTE_PIN_THREADS
+.B SIXEL_LOOKUP_FHEDT_PIN_THREADS
 .br
-pin VPTE worker threads at startup to reduce migration (0 or 1; default 0).
+pin FHEDT worker threads at startup to reduce migration (0 or 1; default 0).
 .TP 5
-.B SIXEL_VPTE_TILE_XY
+.B SIXEL_FHEDT_TILE_XY
 .br
-compatibility alias for \fBSIXEL_LOOKUP_VPTE_TILE_XY\fP with identical
+compatibility alias for \fBSIXEL_LOOKUP_FHEDT_TILE_XY\fP with identical
 behaviour and adaptive defaults.
 .TP 5
-.B SIXEL_VPTE_TILE_DEPTH
+.B SIXEL_FHEDT_TILE_DEPTH
 .br
-compatibility alias for \fBSIXEL_LOOKUP_VPTE_TILE_DEPTH\fP with identical
+compatibility alias for \fBSIXEL_LOOKUP_FHEDT_TILE_DEPTH\fP with identical
 behaviour and adaptive defaults.
 .TP 5
-.B SIXEL_VPTE_FIRST_TOUCH
+.B SIXEL_FHEDT_FIRST_TOUCH
 .br
-compatibility alias for \fBSIXEL_LOOKUP_VPTE_FIRST_TOUCH\fP with identical
+compatibility alias for \fBSIXEL_LOOKUP_FHEDT_FIRST_TOUCH\fP with identical
 behaviour and defaults.
 .TP 5
-.B SIXEL_VPTE_PIN_THREADS
+.B SIXEL_FHEDT_PIN_THREADS
 .br
-compatibility alias for \fBSIXEL_LOOKUP_VPTE_PIN_THREADS\fP with identical
+compatibility alias for \fBSIXEL_LOOKUP_FHEDT_PIN_THREADS\fP with identical
 behaviour and defaults.
 .TP 5
 .B SIXEL_LOG_PATH
 .br
-write a JSON timeline for VPTE or LUT builds when set.
+write a JSON timeline for FHEDT or LUT builds when set.
 .TP 5
 .B SIXEL_LOG_LINES
 .br

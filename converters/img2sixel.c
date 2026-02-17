@@ -484,7 +484,7 @@ static cli_option_help_t const g_option_help_table[] = {
         "                                             lookup with local\n"
         "                                             neighbour scan\n"
         "                                             (default)\n"
-        "                             vpte      -> Voronoi grid built via\n"
+        "                             fhedt      -> Voronoi grid built via\n"
         "                                          3D EDT with optional\n"
         "                                          boundary refinement\n"
         "                             vptree    -> VP-tree lookup built\n"
@@ -944,7 +944,7 @@ static cli_env_help_t const g_env_help_table[] = {
     {
         "SIXEL_DITHER_LOOKUP_POLICY",
         "select palette lookup policy (auto, 5bit, 6bit, none, certlut,\n"
-        "eytzinger, vpte, vptree, rbc, or mahalanobis; default is certlut)."
+        "eytzinger, fhedt, vptree, rbc, or mahalanobis; default is certlut)."
     },
     {
         "SIXEL_LOOKUP_PACKING",
@@ -952,25 +952,25 @@ static cli_env_help_t const g_env_help_table[] = {
         "(`linear`, `morton`, or `hilbert`; default `linear`)."
     },
     {
-        "SIXEL_LOOKUP_VPTE_RESOLUTION",
-        "choose VPTE grid resolution (64, 128, or 256; default 64)."
+        "SIXEL_LOOKUP_FHEDT_RESOLUTION",
+        "choose FHEDT grid resolution (64, 128, or 256; default 64)."
     },
     {
-        "SIXEL_LOOKUP_VPTE_REFINE",
-        "enable corner refinement on VPTE boundary cells (0 or 1; default 1)."
+        "SIXEL_LOOKUP_FHEDT_REFINE",
+        "enable corner refinement on FHEDT boundary cells (0 or 1; default 1)."
     },
     {
-        "SIXEL_LOOKUP_VPTE_USE_DIST2",
+        "SIXEL_LOOKUP_FHEDT_USE_DIST2",
         "reuse EDT distances to skip corner refinement (0 or 1; default 0)."
     },
     {
-        "SIXEL_LOOKUP_VPTE_USE_CACHE",
-        "enable a small VPTE lookup cache keyed by voxel coordinates\n"
+        "SIXEL_LOOKUP_FHEDT_USE_CACHE",
+        "enable a small FHEDT lookup cache keyed by voxel coordinates\n"
         "(0 or 1; default 0)."
     },
     {
-        "SIXEL_LOOKUP_VPTE_SHARED",
-        "share the VPTE grid between workers after building it once\n"
+        "SIXEL_LOOKUP_FHEDT_SHARED",
+        "share the FHEDT grid between workers after building it once\n"
         "(0 or 1; default 1)."
     },
     {
@@ -988,48 +988,48 @@ static cli_env_help_t const g_env_help_table[] = {
         "(0 or 1; default 1)."
     },
     {
-        "SIXEL_LOOKUP_VPTE_TILE_XY",
-        "set VPTE tile width/height; adaptive defaults shrink tiles for\n"
+        "SIXEL_LOOKUP_FHEDT_TILE_XY",
+        "set FHEDT tile width/height; adaptive defaults shrink tiles for\n"
         "diverse palettes and grow them for skewed palettes."
     },
     {
-        "SIXEL_LOOKUP_VPTE_TILE_DEPTH",
-        "set VPTE tile depth; follows the same adaptive policy as\n"
-        "SIXEL_LOOKUP_VPTE_TILE_XY."
+        "SIXEL_LOOKUP_FHEDT_TILE_DEPTH",
+        "set FHEDT tile depth; follows the same adaptive policy as\n"
+        "SIXEL_LOOKUP_FHEDT_TILE_XY."
     },
     {
-        "SIXEL_LOOKUP_VPTE_FIRST_TOUCH",
-        "zero VPTE tiles before the EDT so NUMA systems can place pages on\n"
+        "SIXEL_LOOKUP_FHEDT_FIRST_TOUCH",
+        "zero FHEDT tiles before the EDT so NUMA systems can place pages on\n"
         "the worker that will consume them (0 or 1; default 0)."
     },
     {
-        "SIXEL_LOOKUP_VPTE_PIN_THREADS",
-        "pin VPTE worker threads at startup to reduce migration\n"
+        "SIXEL_LOOKUP_FHEDT_PIN_THREADS",
+        "pin FHEDT worker threads at startup to reduce migration\n"
         "(0 or 1; default 0)."
     },
     {
-        "SIXEL_VPTE_TILE_XY",
-        "compatibility alias for SIXEL_LOOKUP_VPTE_TILE_XY. Shares the same\n"
+        "SIXEL_FHEDT_TILE_XY",
+        "compatibility alias for SIXEL_LOOKUP_FHEDT_TILE_XY. Shares the same\n"
         "semantics and adaptive defaults."
     },
     {
-        "SIXEL_VPTE_TILE_DEPTH",
-        "compatibility alias for SIXEL_LOOKUP_VPTE_TILE_DEPTH. Shares the\n"
+        "SIXEL_FHEDT_TILE_DEPTH",
+        "compatibility alias for SIXEL_LOOKUP_FHEDT_TILE_DEPTH. Shares the\n"
         "same semantics and adaptive defaults."
     },
     {
-        "SIXEL_VPTE_FIRST_TOUCH",
-        "compatibility alias for SIXEL_LOOKUP_VPTE_FIRST_TOUCH. Same\n"
+        "SIXEL_FHEDT_FIRST_TOUCH",
+        "compatibility alias for SIXEL_LOOKUP_FHEDT_FIRST_TOUCH. Same\n"
         "behaviour and defaults."
     },
     {
-        "SIXEL_VPTE_PIN_THREADS",
-        "compatibility alias for SIXEL_LOOKUP_VPTE_PIN_THREADS. Same\n"
+        "SIXEL_FHEDT_PIN_THREADS",
+        "compatibility alias for SIXEL_LOOKUP_FHEDT_PIN_THREADS. Same\n"
         "behaviour and defaults."
     },
     {
         "SIXEL_LOG_PATH",
-        "write a JSON timeline for VPTE or LUT builds when set."
+        "write a JSON timeline for FHEDT or LUT builds when set."
     },
     {
         "SIXEL_LOG_LINES",
