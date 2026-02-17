@@ -1511,6 +1511,19 @@ sixel_loader_load_file(
                                     entry_count,
                                     plan,
                                     entry_count);
+    if (plan_length == 0u) {
+        if (order_override != NULL && order_override[0] != '\0') {
+            sixel_helper_set_additional_message(
+                "sixel_loader_load_file: no supported loader in loader "
+                "order.");
+            status = SIXEL_BAD_ARGUMENT;
+        } else {
+            sixel_helper_set_additional_message(
+                "sixel_loader_load_file: no available loader backend.");
+            status = SIXEL_LOADER_FAILED;
+        }
+        goto end;
+    }
 
     for (plan_index = 0; plan_index < plan_length; ++plan_index) {
         if (plan[plan_index] == NULL) {
@@ -1545,12 +1558,18 @@ sixel_loader_load_file(
     }
 
     if (SIXEL_FAILED(status)) {
-        if (!loader->callback_failed &&
-                plan_length > 0u &&
-                plan_index >= plan_length &&
-                pchunk != NULL) {
-            status = SIXEL_LOADER_FAILED;
-            loader_publish_diagnostic(pchunk, filename);
+        if (status == SIXEL_FALSE) {
+            if (!loader->callback_failed &&
+                    plan_index >= plan_length &&
+                    pchunk != NULL) {
+                status = SIXEL_LOADER_FAILED;
+                loader_publish_diagnostic(pchunk, filename);
+            } else {
+                sixel_helper_set_additional_message(
+                    "sixel_loader_load_file: loader returned "
+                    "unspecified failure.");
+                status = SIXEL_LOADER_FAILED;
+            }
         }
         goto end;
     }
