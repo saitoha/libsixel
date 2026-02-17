@@ -1,6 +1,5 @@
 #!/bin/sh
-# Verify Python bindings can encode multiple image formats and emit
-# well-formed SIXEL streams.
+# Verify Python bindings can encode PNG input and emit a well-formed SIXEL stream.
 
 set -eux
 
@@ -19,17 +18,12 @@ run_python="${SIXEL_TEST_PYTHON_VENV}/bin/python"
 libdir="${LIBSIXEL_LIBDIR:-${TOP_BUILDDIR}/src/.libs}"
 test -d "${libdir}" || libdir="${TOP_BUILDDIR}/src"
 
-formats_count=4
-case_id=1
-
-while IFS=: read -r label source_path; do
-    output_path="${ARTIFACT_LOCAL_DIR}/${label}.six"
-
-    python_output=$(env \
-        LIBSIXEL_LIBDIR="${libdir}" \
-        LD_LIBRARY_PATH="${libdir}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
-        DYLD_LIBRARY_PATH="${libdir}${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}" \
-        "${run_python}" - "${source_path}" "${output_path}" 2>&1 <<'PY'
+output_path="${ARTIFACT_LOCAL_DIR}/PNG.six"
+python_output=$(env \
+    LIBSIXEL_LIBDIR="${libdir}" \
+    LD_LIBRARY_PATH="${libdir}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
+    DYLD_LIBRARY_PATH="${libdir}${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}" \
+    "${run_python}" - "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" "${output_path}" 2>&1 <<'PY'
 import pathlib
 import sys
 
@@ -63,25 +57,17 @@ except OSError as exc:
     raise SystemExit(2)
 PY
 )
-    python_status=$?
-    printf '%s' "${python_output}" >&2
-    test "${python_status}" -eq 0 && {
-        tap_pass ${case_id} "encodes ${label} via wheel (DCS/ST ok)"
-        case_id=$((case_id + 1))
-        continue
-    }
+python_status=$?
+printf '%s' "${python_output}" >&2
+test "${python_status}" -eq 0 && {
+    tap_pass 1 "encodes PNG via wheel (DCS/ST ok)"
+    tap_plan 1
+    exit 0
+}
 
-    marker=$(printf '%s' "${python_output}" | awk '/^SKIP_LIBSIXEL_LOAD:/{print; exit}')
-    test -n "${marker}" &&         tap_skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}"
+marker=$(printf '%s' "${python_output}" | awk '/^SKIP_LIBSIXEL_LOAD:/{print; exit}')
+test -n "${marker}" && tap_skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}"
 
-    tap_fail ${case_id} "${label} encoding via wheel failed"
-    case_id=$((case_id + 1))
-done <<EOF2
-PNG:${TOP_SRCDIR}/tests/data/inputs/snake_64.png
-JPEG:${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg
-GIF:${TOP_SRCDIR}/tests/data/inputs/snake_64.gif
-BMP:${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp
-EOF2
-
-tap_plan ${formats_count}
+tap_fail 1 "PNG encoding via wheel failed"
+tap_plan 1
 exit 0

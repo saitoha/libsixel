@@ -164,8 +164,8 @@ am__libsixel_la_SOURCES_DIST = $(srcdir)/output.c $(srcdir)/output.h \
 	$(srcdir)/lookup-8bit.h $(srcdir)/lookup-float32.c \
 	$(srcdir)/lookup-float32.h $(srcdir)/lookup-fhedt-8bit.c \
 	$(srcdir)/lookup-fhedt-8bit.h $(srcdir)/lookup-fhedt-float32.c \
-	$(srcdir)/lookup-fhedt-float32.h $(srcdir)/lookup-vptree-8bit.c \
-	$(srcdir)/lookup-vptree-8bit.h \
+	$(srcdir)/lookup-fhedt-float32.h \
+	$(srcdir)/lookup-vptree-8bit.c $(srcdir)/lookup-vptree-8bit.h \
 	$(srcdir)/lookup-vptree-float32.c \
 	$(srcdir)/lookup-vptree-float32.h $(srcdir)/lookup-common.h \
 	$(srcdir)/palette-heckbert.c $(srcdir)/palette-heckbert.h \
@@ -390,13 +390,13 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-filter-encode.Plo \
 	./$(DEPDIR)/libsixel_la-filter-eytzinger.Plo \
 	./$(DEPDIR)/libsixel_la-filter-factory.Plo \
+	./$(DEPDIR)/libsixel_la-filter-fhedt.Plo \
 	./$(DEPDIR)/libsixel_la-filter-final-merge.Plo \
 	./$(DEPDIR)/libsixel_la-filter-load.Plo \
 	./$(DEPDIR)/libsixel_la-filter-lookup.Plo \
 	./$(DEPDIR)/libsixel_la-filter-palette.Plo \
 	./$(DEPDIR)/libsixel_la-filter-resize.Plo \
 	./$(DEPDIR)/libsixel_la-filter-sample.Plo \
-	./$(DEPDIR)/libsixel_la-filter-fhedt.Plo \
 	./$(DEPDIR)/libsixel_la-filter-vptree.Plo \
 	./$(DEPDIR)/libsixel_la-filter.Plo \
 	./$(DEPDIR)/libsixel_la-frame.Plo \
@@ -421,9 +421,9 @@ am__depfiles_remade =  \
 	./$(DEPDIR)/libsixel_la-logger.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-8bit.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-common.Plo \
-	./$(DEPDIR)/libsixel_la-lookup-float32.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-fhedt-8bit.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-fhedt-float32.Plo \
+	./$(DEPDIR)/libsixel_la-lookup-float32.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-vptree-8bit.Plo \
 	./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo \
 	./$(DEPDIR)/libsixel_la-malloc_stub.Plo \
@@ -1073,13 +1073,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-encode.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-eytzinger.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-factory.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-fhedt.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-final-merge.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-load.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-lookup.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-palette.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-resize.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-sample.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-fhedt.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter-vptree.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-filter.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-frame.Plo@am__quote@ # am--include-marker
@@ -1104,9 +1104,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-logger.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-8bit.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-common.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-float32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-fhedt-8bit.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-fhedt-float32.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-float32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-vptree-8bit.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libsixel_la-malloc_stub.Plo@am__quote@ # am--include-marker
@@ -2003,13 +2003,13 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-encode.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-eytzinger.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-factory.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-fhedt.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-final-merge.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-load.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-lookup.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-resize.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-filter-fhedt.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-vptree.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frame.Plo
@@ -2034,9 +2034,9 @@ distclean: distclean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-logger.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-common.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-lookup-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-fhedt-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-fhedt-float32.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-malloc_stub.Plo
@@ -2134,13 +2134,13 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-encode.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-eytzinger.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-factory.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-filter-fhedt.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-final-merge.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-load.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-lookup.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-palette.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-resize.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-sample.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-filter-fhedt.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter-vptree.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-filter.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-frame.Plo
@@ -2165,9 +2165,9 @@ maintainer-clean: maintainer-clean-am
 	-rm -f ./$(DEPDIR)/libsixel_la-logger.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-common.Plo
-	-rm -f ./$(DEPDIR)/libsixel_la-lookup-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-fhedt-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-fhedt-float32.Plo
+	-rm -f ./$(DEPDIR)/libsixel_la-lookup-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-8bit.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-lookup-vptree-float32.Plo
 	-rm -f ./$(DEPDIR)/libsixel_la-malloc_stub.Plo
