@@ -150,6 +150,8 @@ load_with_wic(
 
     hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_SPEED_OVER_MEMORY);
     if (FAILED(hr)) {
+        sixel_helper_set_additional_message(
+            "load_with_wic: CoInitializeEx() failed.");
         goto end;
     }
 
@@ -159,11 +161,15 @@ load_with_wic(
                           &IID_IWICImagingFactory,
                           (LPVOID)&factory);
     if (FAILED(hr)) {
+        sixel_helper_set_additional_message(
+            "load_with_wic: CoCreateInstance(IWICImagingFactory) failed.");
         goto end;
     }
 
     hr = factory->lpVtbl->CreateStream(factory, &stream);
     if (FAILED(hr)) {
+        sixel_helper_set_additional_message(
+            "load_with_wic: IWICImagingFactory::CreateStream() failed.");
         goto end;
     }
 
@@ -171,6 +177,8 @@ load_with_wic(
                                               (WICInProcPointer)pchunk->buffer,
                                               (DWORD)pchunk->size);
     if (FAILED(hr)) {
+        sixel_helper_set_additional_message(
+            "load_with_wic: IWICStream::InitializeFromMemory() failed.");
         goto end;
     }
 
@@ -180,11 +188,16 @@ load_with_wic(
                                                   WICDecodeMetadataCacheOnLoad,
                                                   &decoder);
     if (FAILED(hr)) {
+        sixel_helper_set_additional_message(
+            "load_with_wic: IWICImagingFactory::"
+            "CreateDecoderFromStream() failed.");
         goto end;
     }
 
     hr = decoder->lpVtbl->GetFrameCount(decoder, &frame_count);
     if (FAILED(hr)) {
+        sixel_helper_set_additional_message(
+            "load_with_wic: IWICBitmapDecoder::GetFrameCount() failed.");
         goto end;
     }
 
@@ -200,6 +213,9 @@ load_with_wic(
         for (i = 0; i < frame_count; ++i) {
             hr = decoder->lpVtbl->GetFrame(decoder, i, &candidate_frame);
             if (FAILED(hr)) {
+                sixel_helper_set_additional_message(
+                    "load_with_wic: IWICBitmapDecoder::GetFrame() failed "
+                    "during ICO frame selection.");
                 goto end;
             }
 
@@ -207,6 +223,9 @@ load_with_wic(
                                                   &candidate_width,
                                                   &candidate_height);
             if (FAILED(hr)) {
+                sixel_helper_set_additional_message(
+                    "load_with_wic: IWICBitmapFrameDecode::GetSize() failed "
+                    "during ICO frame selection.");
                 goto end;
             }
 
@@ -240,6 +259,8 @@ load_with_wic(
                                    selected_frame_index,
                                    &wicframe);
     if (FAILED(hr)) {
+        sixel_helper_set_additional_message(
+            "load_with_wic: IWICBitmapDecoder::GetFrame() failed.");
         goto end;
     }
     hr = wicframe->lpVtbl->GetMetadataQueryReader(wicframe, &qframe);
@@ -252,6 +273,9 @@ load_with_wic(
         }
         hr = qframe->lpVtbl->GetContainerFormat(qframe, (GUID *)&format);
         if (FAILED(hr)) {
+            sixel_helper_set_additional_message(
+                "load_with_wic: IWICMetadataQueryReader::GetContainerFormat() "
+                "failed.");
             goto end;
         }
 
@@ -283,6 +307,8 @@ load_with_wic(
 
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
+        sixel_helper_set_additional_message(
+            "load_with_wic: sixel_frame_new() failed.");
         hr = E_FAIL;
         goto end;
     }
@@ -298,6 +324,9 @@ load_with_wic(
     while (decoded_frames < decoded_frames_end) {
         hr = decoder->lpVtbl->GetFrame(decoder, decoded_frames, &wicframe);
         if (FAILED(hr)) {
+            sixel_helper_set_additional_message(
+                "load_with_wic: IWICBitmapDecoder::GetFrame() failed while "
+                "decoding.");
             goto end;
         }
 
@@ -366,6 +395,9 @@ load_with_wic(
         if (src == NULL) {
             hr = factory->lpVtbl->CreateFormatConverter(factory, &conv);
             if (FAILED(hr)) {
+                sixel_helper_set_additional_message(
+                    "load_with_wic: IWICImagingFactory::"
+                    "CreateFormatConverter() failed.");
                 goto end;
             }
 
@@ -374,6 +406,8 @@ load_with_wic(
                                           WICBitmapDitherTypeNone, NULL, 0.0,
                                           WICBitmapPaletteTypeCustom);
             if (FAILED(hr)) {
+                sixel_helper_set_additional_message(
+                    "load_with_wic: IWICFormatConverter::Initialize() failed.");
                 goto end;
             }
 
@@ -386,6 +420,8 @@ load_with_wic(
         hr = src->lpVtbl->GetSize(
             src, (UINT *)&frame->width, (UINT *)&frame->height);
         if (FAILED(hr)) {
+            sixel_helper_set_additional_message(
+                "load_with_wic: IWICBitmapSource::GetSize() failed.");
             goto end;
         }
 
@@ -399,7 +435,7 @@ load_with_wic(
         }
         if (frame->height <= 0) {
             sixel_helper_set_additional_message(
-                "load_with_wic: an invalid width parameter detected.");
+                "load_with_wic: an invalid height parameter detected.");
             status = SIXEL_BAD_INPUT;
             hr = E_FAIL;
             goto end;
@@ -441,12 +477,16 @@ load_with_wic(
                 (UINT)frame->width * frame->height * comp,  /* cbBufferSize */
                 pixels);                                    /* pbBuffer */
             if (FAILED(hr)) {
+                sixel_helper_set_additional_message(
+                    "load_with_wic: IWICBitmapSource::CopyPixels() failed.");
                 goto end;
             }
         }
 
         status = fn_load(frame, context);
         if (SIXEL_FAILED(status)) {
+            sixel_helper_set_additional_message(
+                "load_with_wic: frame callback returned failure.");
             hr = E_FAIL;
             goto end;
         }
@@ -520,6 +560,10 @@ end:
     CoUninitialize();
 
     if (FAILED(hr)) {
+        if (sixel_helper_get_additional_message() == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_wic: unexpected WIC backend failure.");
+        }
         return SIXEL_FALSE;
     }
 
