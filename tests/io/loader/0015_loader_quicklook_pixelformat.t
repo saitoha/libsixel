@@ -1,13 +1,13 @@
 #!/bin/sh
 # TAP wrapper that dispatches to the unified C test runner.
 
-set -eu
-
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+set -eux
 
 test "${HAVE_QUICKLOOK-}" = 1 || {
     skip_all "quicklook loader is unavailable"
 }
+
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v

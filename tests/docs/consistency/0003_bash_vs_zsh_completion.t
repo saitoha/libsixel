@@ -10,9 +10,15 @@ zsh_sorted="${ARTIFACT_LOCAL_DIR}/options-zsh-sorted.txt"
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-test "${HAVE_IMG2SIXEL-}" = 1 || skip_all "img2sixel is disabled in this build"
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build";
+    exit 0
+}
 
-command -v diff >/dev/null 2>&1 || skip_all "diff not available"
+command -v diff >/dev/null 2>&1 || {
+    printf "1..0 # SKIP diff not available";
+    exit 0
+}
 
 printf '1..1\n'
 set -v

@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify parse error when baseline metric does not match -m metric.
 
-set -eu
+set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 # Expect noisy JPEG headers to be rejected or graded as low quality.
 
-set -eu
+set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 

@@ -3,16 +3,16 @@
 
 set -eux
 
+test "${ENABLE_PYTHON:-0}" = "1" || {
+    printf "1..0 # SKIP python bindings are disabled in this build"
+    exit 0
+}
+test -n "${SIXEL_TEST_PYTHON_VENV:-}" || {
+    printf "1..0 # SKIP python wheel test environment is unavailable"
+    exit 0
+}
+
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
-test "${ENABLE_PYTHON:-0}" = "1" || \
-    skip_all "python bindings are disabled in this build"
-
-test -n "${SIXEL_TEST_PYTHON_VENV:-}" || \
-    skip_all "python wheel test environment is unavailable"
-
-test -x "${SIXEL_TEST_PYTHON_VENV}/bin/python" || \
-    skip_all "python wheel test environment is unavailable"
 
 run_python="${SIXEL_TEST_PYTHON_VENV}/bin/python"
 libdir="${LIBSIXEL_LIBDIR:-${TOP_BUILDDIR}/src/.libs}"
@@ -70,7 +70,10 @@ test "${python_status}" -eq 0 && {
 }
 
 marker=$(printf '%s' "${python_output}" | awk '/^SKIP_LIBSIXEL_LOAD:/{print; exit}')
-test -n "${marker}" && skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}"
+test -n "${marker}" && skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}"&& skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}" {
+    printf "1..0 # SKIP libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}";
+    exit 0
+}
 
 fail 1 "corrupted image errors via wheel failed"
 tap_plan 1

@@ -1,13 +1,14 @@
 #!/bin/sh
 # TAP wrapper that dispatches to the unified C test runner.
 
-set -eu
-
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+set -eux
 
 test "${HAVE_GD-}" = 1 || {
-    skip_all "GD loader is unavailable"
+    printf "1..0 # SKIP GD loader is unavailable"
+    exit 0
 }
+
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v

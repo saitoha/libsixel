@@ -1,13 +1,13 @@
 #!/bin/sh
 # TAP wrapper that dispatches to the unified C test runner.
 
-set -eu
-
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+set -eux
 
 test "${HAVE_FREEDESKTOP_THUMBNAILING-}" = 1 || {
     skip_all "gnome-thumbnailer loader is unavailable on this platform"
 }
+
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 xdg_data_home="${TOP_SRCDIR}/tests/data/inputs/thumbnailer/cases/loader"
 bin_dir="${TOP_SRCDIR}/tests/data/inputs/thumbnailer/cases/loader/bin"

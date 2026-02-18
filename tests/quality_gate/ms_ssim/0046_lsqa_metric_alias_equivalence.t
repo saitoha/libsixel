@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify MS-SSIM aliases return identical single-metric output.
 
-set -eu
+set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 

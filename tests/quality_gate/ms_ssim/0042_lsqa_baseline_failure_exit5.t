@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify that lsqa exits with code 5 when baseline is above measured value.
 
-set -eu
+set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 

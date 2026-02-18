@@ -5,7 +5,10 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-test "${HAVE_SIXEL2PNG-}" = 1 || skip_all "sixel2png is disabled in this build"
+test "${HAVE_SIXEL2PNG-}" = 1 || {
+    printf "1..0 # SKIP sixel2png is disabled in this build";
+    exit 0
+}
 
 echo "1..1"
 set -v

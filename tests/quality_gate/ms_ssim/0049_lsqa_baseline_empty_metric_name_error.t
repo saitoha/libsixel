@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify parse error when baseline metric name is empty.
 
-set -eu
+set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 

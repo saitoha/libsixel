@@ -19,7 +19,10 @@ input_image="${data_root}/snake_64.png"
 reference_image="${data_root}/scaling/snake_64_h32.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/height_32.six"
 
-test "${HAVE_IMG2SIXEL-}" = 1 || skip_all "img2sixel is disabled in this build"
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build";
+    exit 0
+}
 
 echo "1..1"
 set -v
