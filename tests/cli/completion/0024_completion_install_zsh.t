@@ -7,7 +7,7 @@ set -eux
 
 command -v zsh >/dev/null || skip_all "zsh is not found"
 
-ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
+test "${HAVE_IMG2SIXEL-}" = 1 || skip_all "img2sixel is disabled in this build"
 
 completion_dir="${TOP_SRCDIR}/converters/shell-completion"
 completion_home="${ARTIFACT_LOCAL_DIR}/home"

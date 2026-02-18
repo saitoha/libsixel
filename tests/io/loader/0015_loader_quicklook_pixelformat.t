@@ -5,7 +5,7 @@ set -eu
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-feature_defined_in_config "HAVE_QUICKLOOK" || {
+test "${HAVE_QUICKLOOK-}" = 1 || {
     skip_all "quicklook loader is unavailable"
 }
 

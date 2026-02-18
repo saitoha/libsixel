@@ -10,7 +10,7 @@ set -eux
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
-ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
+test "${HAVE_IMG2SIXEL-}" = 1 || skip_all "img2sixel is disabled in this build"
 
 printf '1..1
 '

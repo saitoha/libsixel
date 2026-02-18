@@ -6,8 +6,11 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
-ensure_feature_available "HAVE_GDK_PIXBUF2" "" "gdk-pixbuf2 loader"
+test "${HAVE_IMG2SIXEL-}" = 1 || skip_all "img2sixel is disabled in this build"
+test "${HAVE_GDK_PIXBUF2-}" = 1 || {
+    printf "1..0 # SKIP gdk-pixbuf2 support is disabled in this build"
+    exit 0
+}
 
 echo "1..1"
 set -v

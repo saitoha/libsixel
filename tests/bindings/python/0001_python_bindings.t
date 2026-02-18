@@ -18,7 +18,6 @@ run_python="${SIXEL_TEST_PYTHON_VENV}/bin/python"
 libdir="${LIBSIXEL_LIBDIR:-${TOP_BUILDDIR}/src/.libs}"
 test -d "${libdir}" || libdir="${TOP_BUILDDIR}/src"
 
-case_id=1
 python_output=$(env \
     LIBSIXEL_LIBDIR="${libdir}" \
     LD_LIBRARY_PATH="${libdir}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
@@ -79,16 +78,16 @@ PY
 )
 python_status=$?
 printf '%s' "${python_output}" >&2
+
 test "${python_status}" -eq 0 && {
-    tap_pass ${case_id} "encodes image via wheel"
     tap_plan 1
+    pass 1 "encodes image via wheel"
     exit 0
 }
 
 marker=$(printf '%s' "${python_output}" | awk '/^SKIP_LIBSIXEL_LOAD:/{print; exit}')
-test -n "${marker}" &&     tap_skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}"
-
-tap_fail ${case_id} "python wheel round-trip failed"
+test -n "${marker}" && skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}"
 
 tap_plan 1
+fail 1 "python wheel round-trip failed"
 exit 0

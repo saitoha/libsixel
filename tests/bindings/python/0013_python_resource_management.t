@@ -18,7 +18,6 @@ run_python="${SIXEL_TEST_PYTHON_VENV}/bin/python"
 libdir="${LIBSIXEL_LIBDIR:-${TOP_BUILDDIR}/src/.libs}"
 test -d "${libdir}" || libdir="${TOP_BUILDDIR}/src"
 
-case_id=1
 source_image="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
 work_dir="${ARTIFACT_LOCAL_DIR}/work"
 
@@ -114,16 +113,16 @@ PY
 )
 python_status=$?
 printf '%s' "${python_output}" >&2
+
 test "${python_status}" -eq 0 && {
-    tap_pass ${case_id} "large image roundtrip via wheel frees resources"
     tap_plan 1
+    pass 1 "large image roundtrip via wheel frees resources"
     exit 0
 }
 
 marker=$(printf '%s' "${python_output}" | awk '/^SKIP_LIBSIXEL_LOAD:/{print; exit}')
-test -n "${marker}" && tap_skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}"
-
-tap_fail ${case_id} "resource test via wheel failed"
+test -n "${marker}" && skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}"
 
 tap_plan 1
+fail 1 "resource test via wheel failed"
 exit 0
