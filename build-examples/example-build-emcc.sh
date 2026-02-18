@@ -65,9 +65,7 @@ CC=emcc \
   --with-shebang-file="${SHEBANG_FILE}" \
   --disable-shared \
   --with-png \
-  --with-jpeg \
-  --with-webp \
-  --with-tiff
-make all
+  --with-jpeg
+make all V=1
 make check
 )

@@ -82,6 +82,20 @@ lsqa_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE) \
         $(THREAD_CFLAGS)
 lsqa_LDFLAGS = $(MAYBE_COVERAGE)
 lsqa_LDADD = $(top_builddir)/src/libsixel.la
+lsqa_LDADD += -lm \
+        $(LIBCURL_LIBS) \
+        $(WINHTTP_LIBS) \
+        $(LIBPNG_LIBS) \
+        $(LIBTIFF_LIBS) \
+        $(LIBJPEG_LIBS) \
+        $(LIBWEBP_LIBS) \
+        $(GDK_PIXBUF_LIBS) \
+        $(GD_LIBS) \
+        $(WIC_LIBS) \
+        $(COREGRAPHICS_LIBS) \
+        $(QUICKLOOK_LIBS) \
+        $(CLIPBOARD_LIBS) \
+        @THREAD_LIBS@
 endif
 
 if WITH_SHEBANG_FILE
