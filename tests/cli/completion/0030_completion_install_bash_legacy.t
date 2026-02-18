@@ -8,7 +8,7 @@ set -eux
 completion_home="${ARTIFACT_LOCAL_DIR}"
 legacy_path="${completion_home}/.bash_completion.d/img2sixel"
 
-ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
+test "${HAVE_IMG2SIXEL-}" = 1 || skip_all "img2sixel is disabled in this build"
 
 echo '1..1'
 set -v

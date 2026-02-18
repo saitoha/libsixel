@@ -5,7 +5,7 @@ set -eu
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-feature_defined_in_config "HAVE_JPEG" || {
+test "${HAVE_JPEG-}" = 1 || {
     skip_all "libjpeg loader is unavailable"
 }
 

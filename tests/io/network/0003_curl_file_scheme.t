@@ -5,11 +5,11 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-feature_defined_in_config "HAVE_LIBCURL" || {
+test "${HAVE_LIBCURL-}" = 1 || {
     skip_all "libcurl support is disabled in this build"
 }
 
-ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
+test "${HAVE_IMG2SIXEL-}" = 1 || skip_all "img2sixel is disabled in this build"
 
 echo "1..1"
 set -v

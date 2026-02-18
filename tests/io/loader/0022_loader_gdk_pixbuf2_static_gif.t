@@ -1,15 +1,15 @@
 #!/bin/sh
 # TAP test confirming --static forces single-frame GIF decode on gdk-pixbuf2.
 
-# Enable strict mode with verbose tracing for diagnostics.
 set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-case_id=1
-
-ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
-ensure_feature_available "HAVE_GDK_PIXBUF2" "" "gdk-pixbuf2 loader"
+test "${HAVE_IMG2SIXEL-}" = 1 || skip_all "img2sixel is disabled in this build"
+test "${HAVE_GDK_PIXBUF2-}" = 1 || {
+    printf "1..0 # SKIP gdk-pixbuf2 support is disabled in this build"
+    exit 0
+}
 
 echo "1..1"
 set -v
@@ -18,10 +18,9 @@ input_gif="${TOP_SRCDIR}/tests/data/inputs/small.gif"
 output_sixel="${ARTIFACT_LOCAL_DIR}/gdk_static_gif.sixel"
 
 run_img2sixel -L gdk-pixbuf2! -S "${input_gif}" >"${output_sixel}" || {
-    fail ${case_id} "gdk-pixbuf2 static GIF decode failed"
+    fail 1 "gdk-pixbuf2 static GIF decode failed"
     exit 0
 }
 
-pass ${case_id} "gdk-pixbuf2 static GIF decode succeeds"
-
+pass 1 "gdk-pixbuf2 static GIF decode succeeds"
 exit 0

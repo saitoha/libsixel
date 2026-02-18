@@ -5,7 +5,7 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-config_macro_defined HAVE_SIXEL2PNG || skip_all "sixel2png is disabled in this build"
+test "${HAVE_SIXEL2PNG-}" = 1 || skip_all "sixel2png is disabled in this build"
 
 echo "1..1"
 set -v

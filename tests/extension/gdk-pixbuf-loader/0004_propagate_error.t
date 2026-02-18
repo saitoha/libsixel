@@ -5,8 +5,10 @@ set -eu
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-ensure_feature_available "HAVE_GDK_PIXBUF2" "gdk_pixbuf_loader" \
-    "gdk-pixbuf loader"
+test "${HAVE_GDK_PIXBUF2-}" = 1 || {
+    printf "1..0 # SKIP gdk-pixbuf2 support is disabled in this build"
+    exit 0
+}
 
 echo "1..1"
 set -v

@@ -1,152 +1,6 @@
 #!/bin/sh
 # Common helpers for converter TAP tests executed with POSIX sh.
 
-# Detect converter enablement using build metadata rather than leftover
-# binaries. Stale executables from a previous configuration can linger
-# even when converters are disabled, so we rely on the current build
-# configuration files to decide whether each tool should be exercised.
-#
-# The source and build roots can differ between Autotools and Meson
-# (particularly during Meson dist checks), so prefer Meson-provided
-# locations when available to read the right config headers.
-
-if [ -z "${IMG2SIXEL_PATH:-}" ]; then
-    IMG2SIXEL_PATH="${TOP_BUILDDIR}/converters/img2sixel${SIXEL_BIN_EXT-}"
-fi
-
-if [ -z "${SIXEL2PNG_PATH:-}" ]; then
-    SIXEL2PNG_PATH="${TOP_BUILDDIR}/converters/sixel2png${SIXEL_BIN_EXT-}"
-fi
-
-if [ -z "${LSQA_PATH:-}" ]; then
-    LSQA_PATH="${TOP_BUILDDIR}/assessment/lsqa${SIXEL_BIN_EXT-}"
-fi
-
-if [ -z "${TEST_RUNNER_PATH:-}" ]; then
-    TEST_RUNNER_PATH="${TOP_BUILDDIR}/tests/test_runner${SIXEL_BIN_EXT-}"
-fi
-
-init_config_macro_cache() {
-    config_header="${TOP_BUILDDIR}/config.h"
-
-    if [ "${SIXEL_TEST_CONFIG_CACHE_READY:-0}" -eq 1 ]; then
-        return 0
-    fi
-
-    SIXEL_TEST_CONFIG_CACHE_READY=1
-    SIXEL_TEST_DEFINED_MACROS=""
-
-    if [ -f "${config_header}" ]; then
-        set -f
-        while IFS= read -r line; do
-            # shellcheck disable=SC2086
-            set -- ${line}
-            if [ "${1-}" = "#define" ] && [ "${3-}" = "1" ]; then
-                case "$2" in
-                HAVE_*)
-                    SIXEL_TEST_DEFINED_MACROS="${SIXEL_TEST_DEFINED_MACROS} $2"
-                    ;;
-                esac
-            fi
-        done < "${config_header}"
-        set +f
-    fi
-
-    SIXEL_TEST_DEFINED_MACROS=${SIXEL_TEST_DEFINED_MACROS# }
-    export SIXEL_TEST_CONFIG_CACHE_READY
-    export SIXEL_TEST_DEFINED_MACROS
-    return 0
-}
-
-config_macro_defined() {
-    macro_name=$1
-    macro_value=""
-
-    # Prefer environment-provided feature toggles to avoid file access when
-    # the test harness exports config.h-derived values. This keeps direct
-    # invocations working because the fallback reads config.h only once.
-    eval "macro_value=\${${macro_name}-}"
-    if [ -n "${macro_value}" ]; then
-        if [ "${macro_value}" -eq 1 ] 2>/dev/null; then
-            return 0
-        fi
-        return 1
-    fi
-
-    init_config_macro_cache
-
-    case " ${SIXEL_TEST_DEFINED_MACROS} " in
-    *" ${macro_name} "*)
-        return 0
-        ;;
-    esac
-
-    return 1
-}
-
-converter_macro_name() {
-    case $1 in
-    IMG2SIXEL)
-        printf 'HAVE_IMG2SIXEL'
-        ;;
-    SIXEL2PNG)
-        printf 'HAVE_SIXEL2PNG'
-        ;;
-    *)
-        printf 'HAVE_%s' "$1"
-        ;;
-    esac
-}
-
-converter_enabled() {
-    option_key=$1
-    macro_name=$(converter_macro_name "${option_key}")
-
-    if config_macro_defined "${macro_name}"; then
-        return 0
-    fi
-
-    return 1
-}
-
-# Inspect the cached config macros for a given feature. The cache is prepared
-# once at startup to reduce repeated file access.
-feature_defined_in_config() {
-    config_macro_defined "$1"
-}
-
-# Confirm converter availability using build metadata and skip gracefully
-# when the tool is disabled or missing. This keeps stale binaries from a
-# previous configuration from influencing the decision.
-ensure_converter_available() {
-    option_key=$1
-    description=$3
-
-    if ! converter_enabled "${option_key}"; then
-        skip_all "${description} is disabled in this build"
-    fi
-}
-
-# Confirm that an optional library feature is enabled for the build. The
-# autotools path checks the generated config.h macro, and the Meson path
-# relies on the corresponding build option. Tests depending on the feature
-# use this guard to avoid running under incompatible configurations.
-ensure_feature_available() {
-    macro_name=$1
-    meson_option=$2
-    description=$3
-
-    if feature_defined_in_config "${macro_name}"; then
-        return 0
-    fi
-
-    if [ -n "${meson_option}" ]; then
-        :
-    fi
-
-    skip_all "${description} is disabled in this build"
-}
-
 runtime_exec() {
     runtime_libdir="${TOP_BUILDDIR}/src/.libs"
     runtime_var="${RUNTIME_SHLIBPATH_VAR:-LD_LIBRARY_PATH}"
@@ -291,8 +145,6 @@ run_test_runner() {
     run_with_optional_env "${TEST_RUNNER_PATH}" "$@"
 }
 
-cache_runtime_environment
-
 # Shared TAP helpers for shell-based tests.
 #
 # This module standardizes TAP output to the following format:
@@ -311,14 +163,6 @@ tap_plan() {
     printf '1..%s\n' "$1"
 }
 
-tap_pass() {
-    printf 'ok %s - %s\n' "$1" "$2"
-}
-
-tap_fail() {
-    printf 'not ok %s - %s\n' "$1" "$2"
-}
-
 tap_skip_all() {
     printf '1..0 # SKIP %s\n' "$1"
     exit 0
@@ -329,7 +173,8 @@ tap_skip() {
 }
 
 skip_all() {
-    tap_skip_all "$1"
+    printf '1..0 # SKIP %s\n' "$1"
+    exit 0
 }
 
 pass() {

@@ -5,7 +5,7 @@ set -eu
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-feature_defined_in_config "HAVE_LIBPNG" || {
+test "${HAVE_LIBPNG-}" = 1 || {
     skip_all "libpng loader is unavailable"
 }
 

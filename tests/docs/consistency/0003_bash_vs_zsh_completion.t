@@ -10,7 +10,7 @@ zsh_sorted="${ARTIFACT_LOCAL_DIR}/options-zsh-sorted.txt"
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
+test "${HAVE_IMG2SIXEL-}" = 1 || skip_all "img2sixel is disabled in this build"
 
 command -v diff >/dev/null 2>&1 || skip_all "diff not available"
 

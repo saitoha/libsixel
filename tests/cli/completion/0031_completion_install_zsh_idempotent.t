@@ -12,7 +12,7 @@ rc_path="${completion_home}/.zshrc"
 fpath_count=0
 compinit_count=0
 
-ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
+test "${HAVE_IMG2SIXEL-}" = 1 || skip_all "img2sixel is disabled in this build"
 
 echo '1..1'
 set -v
