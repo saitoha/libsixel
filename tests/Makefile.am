@@ -277,8 +277,15 @@ check-TESTS: $(check_PROGRAMS)
 	eval "$$resolved_test_paths"; \
 	test_export_vars=`$(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
 	    tests "$(srcdir)/check-test-exports.list"`; \
-	export $$test_export_vars; \
-        export $$($(top_srcdir)/build-aux/resolve-config-h-exports.sh "$$config_header" exports); \
+	for test_export_var in $$test_export_vars; do \
+	    eval "export $$test_export_var"; \
+	done; \
+	config_exports=`$(top_srcdir)/build-aux/resolve-config-h-exports.sh "$$config_header" exports`; \
+	eval "$$config_exports"; \
+	for config_export in $$config_exports; do \
+	    config_export_name=$${config_export%%=*}; \
+	    export $$config_export_name; \
+	done; \
 	python_venv_exports=`$(SHELL) "$(top_srcdir)/build-aux/resolve-python-test-venv.sh" \
 	    "@ENABLE_PYTHON@" "$(PYTHON)" "$(abs_top_builddir)/python/dist" \
 	    "$(abs_top_builddir)/tests/.python-test-venv"`; \

@@ -8,7 +8,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 test "${HAVE_FREEDESKTOP_THUMBNAILING-}" = 1 || {
-    printf "gnome-thumbnailer loader is unavailable on this platform\n"
+    printf "1..0 # SKIP gnome-thumbnailer loader is unavailable on this platform\n"
     exit 0
 }
 
