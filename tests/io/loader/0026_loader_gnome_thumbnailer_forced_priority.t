@@ -3,16 +3,16 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
 test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build";
+    printf "1..0 # SKIP img2sixel is disabled in this build\n";
+    exit 0
+}
+test "${HAVE_FREEDESKTOP_THUMBNAILING-}" = 1 || {
+    printf "1..0 # SKIP gnome-thumbnailer loader is unavailable on this platform\n"
     exit 0
 }
 
-test "${HAVE_FREEDESKTOP_THUMBNAILING-}" = 1 || {
-    skip_all "gnome-thumbnailer loader is unavailable on this platform"
-}
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -24,30 +24,23 @@ template_root="${TOP_SRCDIR}/tests/data/inputs/thumbnailer"
 xdg_data_home="${template_root}/cases/0026"
 bin_dir="${template_root}/bin"
 
-set +e
-run_img2sixel \
-        --env "XDG_DATA_DIRS=${xdg_data_home}" \
-        --env "PATH=${bin_dir}:${PATH}" \
-        -L gnome-thumbnailer! "${input_png}" >"${output_sixel}" 2>"${error_log}"
-status=$?
-set -e
+run_img2sixel --env "XDG_DATA_DIRS=${xdg_data_home}" \
+              --env "PATH=${bin_dir}:${PATH}" \
+              -L gnome-thumbnailer! "${input_png}" >"${output_sixel}" 2>"${error_log}" || status=$?
 
-test "${status}" -eq 0 || grep "gnome-thumbnailer\|thumbnailer" \
+test "${status-0}" -eq 0 || grep "gnome-thumbnailer\|thumbnailer" \
         "${error_log}" >/dev/null 2>&1 || {
     fail 1 "forced gnome-thumbnailer loader path failed"
     exit 0
 }
-
-test "${status}" -eq 0 || {
+test "${status-0}" -eq 0 || {
     fail 1 "gnome-thumbnailer runtime should be available"
     exit 0
 }
-
 test -s "${output_sixel}" || {
     fail 1 "forced gnome-thumbnailer loader path failed"
     exit 0
 }
 
 pass 1 "forced gnome-thumbnailer loader path succeeds"
-
 exit 0

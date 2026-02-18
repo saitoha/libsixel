@@ -4,7 +4,8 @@
 set -eux
 
 test "${HAVE_COREGRAPHICS-}" = 1 || {
-    skip_all "coregraphics loader is unavailable"
+    printf "1..0 # SKIP coregraphics loader is unavailable"
+    exit 0
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"

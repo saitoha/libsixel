@@ -29,39 +29,6 @@ runtime_exec() {
     fi
 }
 
-# Probe Wine runtime once for the whole test run and cache the result in the
-# shared artifact root. WIC tests can then skip quickly via environment
-# variables instead of parsing runtime-specific diagnostics.
-cache_runtime_environment() {
-    runtime_env_cache_file="${ARTIFACT_ROOT}/runtime_env_cache.sh"
-    runtime_env_is_wine=0
-
-    test "${HAVE_WIC-0}" -eq 1 2>/dev/null || return 0
-
-    if [ -n "${RUNTIME_ENV_IS_WINE-}" ]; then
-        return 0
-    fi
-
-    if [ -f "${runtime_env_cache_file}" ]; then
-        # shellcheck disable=SC1090
-        . "${runtime_env_cache_file}"
-        export RUNTIME_ENV_IS_WINE
-        return 0
-    fi
-
-    if runtime_exec "${TEST_RUNNER_PATH}" --is-running-under-wine >/dev/null 2>&1; then
-        runtime_env_is_wine=1
-    fi
-
-    RUNTIME_ENV_IS_WINE=${runtime_env_is_wine}
-    export RUNTIME_ENV_IS_WINE
-
-    {
-        printf 'RUNTIME_ENV_IS_WINE=%s\n' "${RUNTIME_ENV_IS_WINE}"
-        printf 'export RUNTIME_ENV_IS_WINE\n'
-    } >"${runtime_env_cache_file}" 2>/dev/null || :
-}
-
 # Execute a helper command and optionally export extra environment values
 # for that specific invocation.
 #
@@ -158,24 +125,6 @@ run_test_runner() {
 # call site. When pass/fail are invoked with a single argument, the
 # helpers assume the case number is 1 and treat the argument as the
 # description to match historical single-case tests.
-
-tap_plan() {
-    printf '1..%s\n' "$1"
-}
-
-tap_skip_all() {
-    printf '1..0 # SKIP %s\n' "$1"
-    exit 0
-}
-
-tap_skip() {
-    printf 'ok %s # SKIP %s\n' "$1" "$2"
-}
-
-skip_all() {
-    printf '1..0 # SKIP %s\n' "$1"
-    exit 0
-}
 
 pass() {
     printf 'ok %s - %s\n' "$1" "$2"

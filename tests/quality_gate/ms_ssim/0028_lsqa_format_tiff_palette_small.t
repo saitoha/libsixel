@@ -8,21 +8,21 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build";
     exit 0
 }
+test "${HAVE_LIBTIFF-}" = 1 || {
+    printf "1..0 # SKIP libtiff support is disabled in this build"
+    exit 0
+}
 
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-test "${HAVE_LIBTIFF-}" = 1 ||
-    skip_all "libtiff support is disabled in this build"
-
-printf '1..1
-'
+printf '1..1\n'
 set -v
+
+lsqa_floor=0.98
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/snake_64-indexed.tiff"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.png"

@@ -115,17 +115,17 @@ python_status=$?
 printf '%s' "${python_output}" >&2
 
 test "${python_status}" -eq 0 && {
-    tap_plan 1
+    printf '1..1\n'
     pass 1 "large image roundtrip via wheel frees resources"
     exit 0
 }
 
 marker=$(printf '%s' "${python_output}" | awk '/^SKIP_LIBSIXEL_LOAD:/{print; exit}')
-test -n "${marker}" && skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}"&& skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}" {
+test -n "${marker}" && {
     printf "1..0 # SKIP libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}";
     exit 0
 }
 
-tap_plan 1
+printf '1..1\n'
 fail 1 "resource test via wheel failed"
 exit 0

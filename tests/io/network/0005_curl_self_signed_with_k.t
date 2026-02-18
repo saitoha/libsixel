@@ -3,16 +3,16 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
 test "${HAVE_LIBCURL-}" = 1 || test "${HAVE_WINHTTP-}" = 1 || {
-    skip_all "libcurl or WinHTTP support is disabled in this build"
+    printf "1..0 # SKIP libcurl or WinHTTP support is disabled in this build"
+    exit 0
 }
-
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build";
     exit 0
 }
+
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 server_port_base=4444
 max_port_attempts=5

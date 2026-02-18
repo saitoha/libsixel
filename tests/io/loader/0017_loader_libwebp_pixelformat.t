@@ -4,7 +4,8 @@
 set -eux
 
 test "${HAVE_WEBP-}" = 1 || {
-    skip_all "libwebp loader is unavailable"
+    printf "1..0 # SKIP libwebp loader is unavailable\n"
+    exit 0
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
