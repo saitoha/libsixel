@@ -3,8 +3,6 @@
 
 set -eux
 
-printf '1..1\n'
-
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'

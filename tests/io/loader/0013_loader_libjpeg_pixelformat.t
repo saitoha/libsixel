@@ -4,7 +4,8 @@
 set -eux
 
 test "${HAVE_JPEG-}" = 1 || {
-    skip_all "libjpeg loader is unavailable"
+    printf "1..0 # SKIP libjpeg loader is unavailable"
+    exit 0
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"

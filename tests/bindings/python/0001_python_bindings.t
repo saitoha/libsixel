@@ -80,7 +80,7 @@ python_status=$?
 printf '%s' "${python_output}" >&2
 
 test "${python_status}" -eq 0 && {
-    tap_plan 1
+    printf '1..1\n'
     pass 1 "encodes image via wheel"
     exit 0
 }
@@ -91,6 +91,6 @@ test -n "${marker}" && {
     exit 0
 }
 
-tap_plan 1
+printf '1..1\n'
 fail 1 "python wheel round-trip failed"
 exit 0

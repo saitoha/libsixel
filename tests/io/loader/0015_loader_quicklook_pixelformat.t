@@ -4,7 +4,8 @@
 set -eux
 
 test "${HAVE_QUICKLOOK-}" = 1 || {
-    skip_all "quicklook loader is unavailable"
+    printf "1..0 # SKIP quicklook loader is unavailable"
+    exit 0
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"

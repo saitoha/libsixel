@@ -3,16 +3,16 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
 test "${HAVE_LIBCURL-}" = 1 || {
-    skip_all "libcurl support is disabled in this build"
-}
-
-test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build";
+    printf "1..0 # SKIP libcurl support is disabled in this build\n"
     exit 0
 }
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build\n";
+    exit 0
+}
+
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v

@@ -4,10 +4,8 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
 test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build";
+    printf "1..0 # SKIP img2sixel is disabled in this build\n";
     exit 0
 }
 
@@ -15,8 +13,11 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 # intermittent failures specific to that platform.
 os_name=$(uname -s || echo "unknown")
 printf '%s' "${os_name}" | grep -qi 'mingw\|msys\|cygwin' && {
-    skip_all "temporarily disabled on Windows due to instability"
+    printf "1..0 # SKIP temporarily disabled on Windows due to instability"
+    exit 0
 }
+
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v

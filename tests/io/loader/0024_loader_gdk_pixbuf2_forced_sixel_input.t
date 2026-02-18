@@ -32,7 +32,7 @@ test "${status}" -eq 0 || grep "gdk\|pixbuf\|sixel\|loader" "${error_log}"      
 }
 
 test "${status}" -eq 0 || {
-    tap_skip 1 "runtime gdk-pixbuf2 SIXEL subtype is unavailable"
+    printf "ok 1 # SKIP runtime gdk-pixbuf2 SIXEL subtype is unavailable"
     exit 0
 }
 

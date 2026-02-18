@@ -4,7 +4,8 @@
 set -eux
 
 test "${HAVE_LIBPNG-}" = 1 || {
-    skip_all "libpng loader is unavailable"
+    printf "1..0 # SKIP libpng loader is unavailable"
+    exit 0
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"

@@ -74,17 +74,17 @@ PY
 python_status=$?
 printf '%s' "${python_output}" >&2
 test "${python_status}" -eq 0 && {
+    printf '1..1\n'
     pass 1 "invalid option value errors via wheel"
-    tap_plan 1
     exit 0
 }
 
 marker=$(printf '%s' "${python_output}" | awk '/^SKIP_LIBSIXEL_LOAD:/{print; exit}')
-test -n "${marker}" && skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}"&& skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}" {
+test -n "${marker}" && {
     printf "1..0 # SKIP libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}";
     exit 0
 }
 
+printf '1..1\n'
 fail 1 "invalid option value errors via wheel failed"
-tap_plan 1
 exit 0

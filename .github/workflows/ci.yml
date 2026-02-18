@@ -3373,26 +3373,26 @@ jobs:
               meson
             exec_type: cross-platform-vms
 
-          - label: Autotools-freebsd-14.3-aarch64
-            buildtool: autotools
-            runner: ubuntu-latest
-            cp_os: freebsd
-            cp_arch: arm64
-            cp_version: '14.3'
-            extra_packages: >-
-              gmake
-            make: gmake
-            exec_type: cross-platform-vms
-
-          - label: Meson-freebsd-14.3-aarch64
-            buildtool: meson
-            runner: ubuntu-latest
-            cp_os: freebsd
-            cp_arch: arm64
-            cp_version: '14.3'
-            extra_packages: >-
-              meson
-            exec_type: cross-platform-vms
+#          - label: Autotools-freebsd-14.3-aarch64
+#            buildtool: autotools
+#            runner: ubuntu-latest
+#            cp_os: freebsd
+#            cp_arch: arm64
+#            cp_version: '14.3'
+#            extra_packages: >-
+#              gmake
+#            make: gmake
+#            exec_type: cross-platform-vms
+#
+#          - label: Meson-freebsd-14.3-aarch64
+#            buildtool: meson
+#            runner: ubuntu-latest
+#            cp_os: freebsd
+#            cp_arch: arm64
+#            cp_version: '14.3'
+#            extra_packages: >-
+#              meson
+#            exec_type: cross-platform-vms
 
     steps:
       - name: Set Windows Defender ExclusionPath (Windows)

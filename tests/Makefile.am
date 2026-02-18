@@ -284,8 +284,8 @@ check-TESTS: $(check_PROGRAMS)
 	    "$(abs_top_builddir)/tests/.python-test-venv"`; \
 	eval "$$python_venv_exports"; \
 	export SIXEL_TEST_PYTHON_VENV; \
-	test -f tests/test_runner@EXEEXT@ $(SIXEL_RUNTIME) tests/test_runner@EXEEXT@ --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
-	test -f tests/test_runner $(SIXEL_RUNTIME) tests/test_runner --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
+	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner@EXEEXT@ --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
+	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
 	log_list=""; \
 	for i in $(TEST_LOGS); do \
 	    log_list="$$log_list $$i"; \
