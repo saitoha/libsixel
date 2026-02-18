@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify parse error when baseline value has trailing garbage characters.
 
-set -eu
+set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 

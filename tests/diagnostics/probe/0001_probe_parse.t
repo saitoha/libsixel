@@ -6,7 +6,10 @@ set -eux
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 binary="${TEST_RUNNER_PATH}"
-test -x "${binary}" || test -n "${SIXEL_RUNTIME-}" || skip_all "harness not built"
+test -x "${binary}" || test -n "${SIXEL_RUNTIME-}" || {
+    printf "1..0 # SKIP harness not built";
+    exit 0
+}
 
 probe_output=$(run_test_runner "probe/0001_probe_parse" 2>&1) || rc=$?
 printf '%s' "${probe_output}" >&2

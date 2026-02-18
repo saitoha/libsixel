@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify parse error when lsqa receives too many positional arguments.
 
-set -eu
+set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 

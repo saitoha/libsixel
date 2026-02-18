@@ -3,24 +3,29 @@
 # Reproduction command (ImageMagick):
 #   convert tests/data/inputs/snake_64.png -define icon:auto-resize=16,32,48,64 tests/data/inputs/formats/snake-ico-multisize.ico
 
-set -eu
+set -eux
+
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build";
+    exit 0
+}
+test "${HAVE_WIC-}" = 1 || {
+    printf "1..0 # SKIP wic loader is unavailable";
+    exit 0
+}
+test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && {
+    printf "1..0 # SKIP WIC is unavailable under wine";
+    exit 0
+}
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
-test "${HAVE_IMG2SIXEL-}" = 1 || skip_all "img2sixel is disabled in this build"
-test "${HAVE_WIC-}" = 1 || skip_all "wic loader is unavailable"
-
-image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-ico-multisize.ico"
-
-
-test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && skip_all "WIC is unavailable under wine"
-
-
-lsqa_floor=${LSQA_MS_SSIM_FLOOR_WIC_ICO_MULTISIZE:-0.96}
 
 printf '1..1\n'
 set -v
 
+lsqa_floor=0.96
+
+image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-ico-multisize.ico"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-32.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_ico_multisize.six"
 run_img2sixel -Lwic:ico_minsize=30! "${image_path}" >"${output_sixel}" || {

@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify parse error when -b is specified more than once.
 
-set -eu
+set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 

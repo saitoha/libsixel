@@ -1,13 +1,14 @@
 #!/bin/sh
 # TAP wrapper that dispatches to the unified C test runner.
 
-set -eu
-
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+set -eux
 
 test "${HAVE_WIC-}" = 1 || {
-    skip_all "wic loader is unavailable"
+    printf "1..0 # SKIP wic loader is unavailable"
+    exit 0
 }
+
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 set +e
 loader_output=$(run_test_runner "loader/0009_loader_wic_pixelformat" 2>&1)

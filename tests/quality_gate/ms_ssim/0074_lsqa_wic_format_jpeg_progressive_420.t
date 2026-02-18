@@ -3,25 +3,30 @@
 # Reproduction command (ImageMagick):
 #   convert tests/data/inputs/snake_64.png -sampling-factor 4:2:0 -interlace Plane tests/data/inputs/formats/snake-jpeg-progressive-420.jpg
 
-set -eu
+set -eux
+
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build";
+    exit 0
+}
+test "${HAVE_WIC-}" = 1 || {
+    printf "1..0 # SKIP wic loader is unavailable";
+    exit 0
+}
+test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && {
+    printf "1..0 # SKIP WIC is unavailable under wine";
+    exit 0
+}
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
-test "${HAVE_IMG2SIXEL-}" = 1 || skip_all "img2sixel is disabled in this build"
-test "${HAVE_WIC-}" = 1 || skip_all "wic loader is unavailable"
-
-image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-progressive-420.jpg"
-
-
-test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && skip_all "WIC is unavailable under wine"
-
-
-lsqa_floor=${LSQA_MS_SSIM_FLOOR_WIC_JPEG_PROGRESSIVE_420:-0.95}
 
 printf '1..1
 '
 set -v
 
+lsqa_floor=0.95
+
+image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-jpeg-progressive-420.jpg"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/wic_jpeg_progressive_420.six"
 run_img2sixel -Lwic! "${image_path}" >"${output_sixel}" || {
@@ -30,7 +35,6 @@ run_img2sixel -Lwic! "${image_path}" >"${output_sixel}" || {
 }
 
 lsqa_err=$(
-    set +xv
     run_lsqa -b "MS-SSIM:${lsqa_floor}" "${reference_path}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 

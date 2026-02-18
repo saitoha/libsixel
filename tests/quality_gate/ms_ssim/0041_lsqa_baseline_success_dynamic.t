@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify that a dynamic baseline below the measured MS-SSIM returns success.
 
-set -eu
+set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 

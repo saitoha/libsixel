@@ -2,7 +2,7 @@
 # Run the prebuilt filter unit test via the unified runner.
 # This wrapper emits TAP based on exit status.
 
-set -eu
+set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 

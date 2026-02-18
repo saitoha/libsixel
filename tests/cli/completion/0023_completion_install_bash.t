@@ -5,9 +5,15 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-command -v bash >/dev/null || skip_all "bash is not found"
+command -v bash >/dev/null || {
+    printf "1..0 # SKIP bash is not found";
+    exit 0
+}
 
-test "${HAVE_IMG2SIXEL-}" = 1 || skip_all "img2sixel is disabled in this build"
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build";
+    exit 0
+}
 
 completion_dir="${TOP_SRCDIR}/converters/shell-completion"
 

@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify parse error when -m specifies an unknown metric name.
 
-set -eu
+set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 

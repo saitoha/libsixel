@@ -1,7 +1,7 @@
 #!/bin/sh
 # TAP wrapper that dispatches to the unified C test runner.
 
-set -eu
+set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 

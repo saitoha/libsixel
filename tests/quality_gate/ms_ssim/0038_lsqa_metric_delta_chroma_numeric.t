@@ -1,7 +1,7 @@
 #!/bin/sh
 # Ensure DELTA_CHROMA emits a finite numeric value on stable fixtures.
 
-set -eu
+set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 

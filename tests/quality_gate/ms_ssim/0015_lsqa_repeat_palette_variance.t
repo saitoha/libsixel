@@ -1,12 +1,13 @@
 #!/bin/sh
 # Check palette PNG stability across repeated lsqa runs.
 
-set -eu
+set -eux
+
+printf '1..1\n'
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-printf '1..1
-'
+printf '1..1\n'
 set -v
 
 image1="${TOP_SRCDIR}/tests/data/inputs/snake_64.bmp"
