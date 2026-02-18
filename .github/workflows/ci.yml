@@ -2949,7 +2949,7 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
   solaris:
-    needs: [openbsd]
+#    needs: [openbsd]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
