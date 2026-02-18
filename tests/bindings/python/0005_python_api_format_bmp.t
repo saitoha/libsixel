@@ -57,7 +57,7 @@ PY
 python_status=$?
 printf '%s' "${python_output}" >&2
 test "${python_status}" -eq 0 && {
-    tap_plan 1
+    printf '1..1\n'
     pass 1 "encodes BMP via wheel (DCS/ST ok)"
     exit 0
 }
@@ -68,6 +68,6 @@ test -n "${marker}" && {
     exit 0
 }
 
-tap_plan 1
+printf '1..1\n'
 fail 1 "BMP encoding via wheel failed"
 exit 0

@@ -4,16 +4,17 @@
 set -eux
 
 test "${HAVE_FREEDESKTOP_THUMBNAILING-}" = 1 || {
-    skip_all "gnome-thumbnailer loader is unavailable on this platform"
+    printf "1..0 # SKIP gnome-thumbnailer loader is unavailable on this platform\n"
+    exit 0
 }
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-xdg_data_home="${TOP_SRCDIR}/tests/data/inputs/thumbnailer/cases/loader"
-bin_dir="${TOP_SRCDIR}/tests/data/inputs/thumbnailer/cases/loader/bin"
-
 echo "1..1"
 set -v
+
+xdg_data_home="${TOP_SRCDIR}/tests/data/inputs/thumbnailer/cases/loader"
+bin_dir="${TOP_SRCDIR}/tests/data/inputs/thumbnailer/cases/loader/bin"
 
 run_test_runner --env "XDG_DATA_DIRS=${xdg_data_home}" \
                 --env "PATH=${bin_dir}:${PATH}" \

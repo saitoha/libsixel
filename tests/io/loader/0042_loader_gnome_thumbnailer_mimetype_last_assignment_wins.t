@@ -3,16 +3,16 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build";
     exit 0
 }
-
 test "${HAVE_FREEDESKTOP_THUMBNAILING-}" = 1 || {
-    skip_all "gnome-thumbnailer loader is unavailable on this platform"
+    printf "1..0 # SKIP gnome-thumbnailer loader is unavailable on this platform"
+    exit 0
 }
+
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v

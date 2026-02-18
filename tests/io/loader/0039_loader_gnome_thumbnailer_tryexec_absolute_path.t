@@ -3,16 +3,16 @@
 
 set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build";
     exit 0
 }
-
 test "${HAVE_FREEDESKTOP_THUMBNAILING-}" = 1 || {
-    skip_all "gnome-thumbnailer loader is unavailable on this platform"
+    printf "1..0 # SKIP gnome-thumbnailer loader is unavailable on this platform"
+    exit 0
 }
+
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v
@@ -22,7 +22,9 @@ template_root="${TOP_SRCDIR}/tests/data/inputs/thumbnailer"
 xdg_data_home="${template_root}/cases/0039"
 bin_dir="${template_root}/bin"
 
-run_img2sixel --env "XDG_DATA_DIRS=${xdg_data_home}"               --env "PATH=${bin_dir}:${PATH}"               -L gnome-thumbnailer! "${input_png}" >/dev/null || {
+run_img2sixel --env "XDG_DATA_DIRS=${xdg_data_home}" \
+              --env "PATH=${bin_dir}:${PATH}" \
+              -L gnome-thumbnailer! "${input_png}" >/dev/null || {
     fail 1 "absolute TryExec path handling failed"
     exit 0
 }

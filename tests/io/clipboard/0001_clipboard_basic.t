@@ -15,7 +15,7 @@ test "${HAVE_SIXEL2PNG-}" = 1 || {
     exit 0
 }
 
-tap_plan 1
+printf '1..1\n'
 set -v
 
 sixel_src="${TOP_SRCDIR}/tests/data/inputs/snake_64.png"
@@ -28,17 +28,17 @@ run_img2sixel "${sixel_src}" >"${sixel_tmp}" || {
 }
 
 run_sixel2png -i "${sixel_tmp}" -o png:clipboard: || {
-    tap_skip 1 "clipboard backend unavailable"
+    printf "ok 1 # SKIP clipboard backend unavailable\n"
     exit 0
 }
 
 run_img2sixel clipboard: -o clipboard: || {
-    tap_skip 1 "clipboard backend unavailable"
+    printf "ok 1 # SKIP clipboard backend unavailable"
     exit 0
 }
 
 run_sixel2png -i clipboard: -o "${roundtrip_png}" || {
-    tap_skip 1 "clipboard backend unavailable"
+    printf "ok 1 # SKIP clipboard backend unavailable"
     exit 0
 }
 
