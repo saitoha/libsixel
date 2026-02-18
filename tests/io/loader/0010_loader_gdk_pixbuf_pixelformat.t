@@ -1,13 +1,14 @@
 #!/bin/sh
 # TAP wrapper that dispatches to the unified C test runner.
 
-set -eu
-
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
+set -eux
 
 test "${HAVE_GDK_PIXBUF2-}" = 1 || {
-    skip_all "gdk-pixbuf2 loader is unavailable"
+    printf "1..0 # SKIP gdk-pixbuf2 loader is unavailable"
+    exit 0
 }
+
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 echo "1..1"
 set -v

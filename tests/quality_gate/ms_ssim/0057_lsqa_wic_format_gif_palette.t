@@ -1,21 +1,26 @@
 #!/bin/sh
 # Verify WIC GIF palette decoding quality with an MS-SSIM baseline.
 
-set -eu
+set -eux
 
-. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
-
-test "${HAVE_IMG2SIXEL-}" = 1 || skip_all "img2sixel is disabled in this build"
-test "${HAVE_WIC-}" = 1 || skip_all "wic loader is unavailable"
-
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build";
+    exit 0
+}
+test "${HAVE_WIC-}" = 1 || {
+    printf "1..0 # SKIP wic loader is unavailable";
+    exit 0
+}
 test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && {
     skip_all "WIC is unavailable under wine"
 }
 
-lsqa_floor=${LSQA_MS_SSIM_FLOOR_WIC_GIF_PALETTE:-0.98}
+. "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 printf '1..1\n'
 set -v
+
+lsqa_floor=0.98
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/snake_64.gif"
 reference_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-64-reference-rgb.png"

@@ -8,7 +8,10 @@ set -eux
 completion_home="${ARTIFACT_LOCAL_DIR}"
 legacy_path="${completion_home}/.bash_completion.d/img2sixel"
 
-test "${HAVE_IMG2SIXEL-}" = 1 || skip_all "img2sixel is disabled in this build"
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build";
+    exit 0
+}
 
 echo '1..1'
 set -v

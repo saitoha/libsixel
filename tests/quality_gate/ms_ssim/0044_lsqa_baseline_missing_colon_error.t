@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify parse error for -b values without METRIC:VALUE format.
 
-set -eu
+set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 

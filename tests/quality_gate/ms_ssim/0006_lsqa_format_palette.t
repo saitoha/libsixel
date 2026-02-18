@@ -1,18 +1,19 @@
 #!/bin/sh
 # Verify palette PNG quality respects the lsqa baseline and relaxed floor.
 
-set -eu
+set -eux
+
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build";
+    exit 0
+}
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.99}
-
-test "${HAVE_IMG2SIXEL-}" = 1 || skip_all "img2sixel is disabled in this build"
-
-printf '1..1
-'
+printf '1..1\n'
 set -v
 
+lsqa_floor=0.99
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/palette.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/palette.six"
 run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}" || {
@@ -21,7 +22,6 @@ run_img2sixel -Lbuiltin! "${image_path}" >"${output_sixel}" || {
 }
 
 lsqa_err=$(
-    set +xv
     run_lsqa -b "MS-SSIM:${lsqa_floor}" "${image_path}" "${output_sixel}" 2>&1
 ) || lsqa_run_status=$?
 

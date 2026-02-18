@@ -53,7 +53,7 @@ test -n "${resolved_files}" || {
     exit 1
 }
 
-echo "Checking custom AGENTS.md test style rules"
+echo "Checking custom test style rules"
 failed=0
 
 check_pattern() {

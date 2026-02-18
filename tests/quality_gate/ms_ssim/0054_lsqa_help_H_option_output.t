@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify -H prints help text to stdout and exits successfully.
 
-set -eu
+set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 

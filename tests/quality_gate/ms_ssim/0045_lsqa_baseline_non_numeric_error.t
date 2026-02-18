@@ -1,7 +1,7 @@
 #!/bin/sh
 # Verify parse error for non-numeric -b baseline values.
 
-set -eu
+set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 

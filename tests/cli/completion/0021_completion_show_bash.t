@@ -8,7 +8,10 @@ output_file="${ARTIFACT_LOCAL_DIR}/completion.sh"
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-test "${HAVE_IMG2SIXEL-}" = 1 || skip_all "img2sixel is disabled in this build"
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build";
+    exit 0
+}
 
 
 

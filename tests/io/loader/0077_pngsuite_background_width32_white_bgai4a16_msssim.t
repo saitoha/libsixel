@@ -12,7 +12,10 @@ test "${HAVE_LIBPNG-}" = 1 || {
     printf "1..0 # SKIP libpng support is disabled in this build"
     exit 0
 }
-test "${HAVE_IMG2SIXEL-}" = 1 || skip_all "img2sixel is disabled in this build"
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build";
+    exit 0
+}
 
 echo "1..1"
 set -v

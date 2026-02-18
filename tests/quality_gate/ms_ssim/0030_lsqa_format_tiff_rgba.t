@@ -10,11 +10,17 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-test "${HAVE_IMG2SIXEL-}" = 1 || skip_all "img2sixel is disabled in this build"
+test "${HAVE_IMG2SIXEL-}" = 1 || {
+    printf "1..0 # SKIP img2sixel is disabled in this build";
+    exit 0
+}
 
 lsqa_floor=${LSQA_MS_SSIM_FLOOR:-0.98}
 
-test "${HAVE_LIBTIFF-}" = 1 || skip_all "libtiff support is disabled in this build"
+test "${HAVE_LIBTIFF-}" = 1 || {
+    printf "1..0 # SKIP libtiff support is disabled in this build";
+    exit 0
+}
 
 printf '1..1
 '
