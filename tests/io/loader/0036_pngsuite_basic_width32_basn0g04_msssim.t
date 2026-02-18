@@ -23,8 +23,8 @@ run_img2sixel -w32 -Llibpng! "${input_png}" >"${output_sixel}" || {
     exit 0
 }
 
-run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" "${expected_ppm}" - <"${output_sixel}" >&2 || {
-    fail 1 "basic_width32 basic/basn0g04.png"
+lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" "${expected_ppm}" "${output_sixel}" 2>&1) || {
+    fail 1 "$lsqa_msg"
     exit 0
 }
 
