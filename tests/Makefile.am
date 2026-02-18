@@ -221,7 +221,22 @@ test_runner_CPPFLAGS = $(TESTS_COMMON_CPPFLAGS_VAL) \
     -DSIXEL_ENABLE_GDK_PIXBUF_LOADER_TESTS
 test_runner_CFLAGS = $(TESTS_COMMON_CFLAGS_VAL)
 test_runner_LDFLAGS = $(TESTS_COMMON_LDFLAGS_VAL)
-test_runner_LDADD = $(TESTS_COMMON_LDADD_VAL) $(GDK_PIXBUF_LIBS) $(ABORTTRACE_LIBS)
+test_runner_LDADD = $(TESTS_COMMON_LDADD_VAL) \
+        $(LIBS) \
+        $(LIBCURL_LIBS) \
+        $(WINHTTP_LIBS) \
+        $(LIBPNG_LIBS) \
+        $(LIBTIFF_LIBS) \
+        $(LIBJPEG_LIBS) \
+        $(LIBWEBP_LIBS) \
+        $(GDK_PIXBUF_LIBS) \
+        $(GD_LIBS) \
+        $(WIC_LIBS) \
+        $(COREGRAPHICS_LIBS) \
+        $(QUICKLOOK_LIBS) \
+        $(CLIPBOARD_LIBS) \
+        $(ABORTTRACE_LIBS) \
+        @THREAD_LIBS@
 endif
 
 LOG_DRIVER = $(T_LOG_DRIVER)

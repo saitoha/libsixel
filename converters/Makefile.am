@@ -74,16 +74,7 @@ AMALGAMATION_TOOL_LIBS = -lm \
         $(CLIPBOARD_LIBS) \
         @THREAD_LIBS@
 
-CLEANFILES = *.gcno *.gcda *.gcov \
-  $(builddir)/tmp/*.png \
-  $(builddir)/tmp/*.sixel \
-  $(builddir)/tmp/*.txt \
-  $(builddir)/tmp/*.pipe \
-  $(builddir)/tmp/server.py \
-  $(builddir)/tmp/server.key \
-  $(builddir)/tmp/server.crt \
-  $(builddir)/tmp/testfile \
-  completion_embed.h
+CLEANFILES = *.gcno *.gcda *.gcov completion_embed.h
 
 # +--------------------------------------------------------------+
 # | Embedded completion header generation pipeline (ASCII view). |
@@ -133,6 +124,20 @@ img2sixel_CPPFLAGS = -DBUILD_IMG2SIXEL -DHAVE_COMPLETION_EMBED_H \
 img2sixel_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 img2sixel_LDFLAGS = $(MAYBE_COVERAGE)
 img2sixel_LDADD = $(top_builddir)/src/libsixel.la
+img2sixel_LDADD += \
+        $(LIBCURL_CFLAGS) \
+        $(WINHTTP_CFLAGS) \
+        $(LIBPNG_CFLAGS) \
+        $(LIBTIFF_CFLAGS) \
+        $(LIBJPEG_CFLAGS) \
+        $(LIBWEBP_CFLAGS) \
+        $(GDK_PIXBUF_CFLAGS) \
+        $(GD_CFLAGS) \
+        $(WIC_CFLAGS) \
+        $(COREGRAPHICS_CFLAGS) \
+        $(QUICKLOOK_CFLAGS) \
+        $(CLIPBOARD_CFLAGS) \
+        @THREAD_CFLAGS@
 if HAVE_ABORT_TRACE
 img2sixel_LDADD += $(ABORTTRACE_LIBS)
 endif
@@ -165,6 +170,20 @@ sixel2png_CPPFLAGS += -DBUILD_SIXEL2PNG -I$(top_builddir)/include/
 sixel2png_CFLAGS = $(CFLAGS) $(AM_CFLAGS) $(MAYBE_COVERAGE)
 sixel2png_LDFLAGS = $(MAYBE_COVERAGE)
 sixel2png_LDADD = $(top_builddir)/src/libsixel.la
+sixel2png_LDADD += \
+        $(LIBCURL_CFLAGS) \
+        $(WINHTTP_CFLAGS) \
+        $(LIBPNG_CFLAGS) \
+        $(LIBTIFF_CFLAGS) \
+        $(LIBJPEG_CFLAGS) \
+        $(LIBWEBP_CFLAGS) \
+        $(GDK_PIXBUF_CFLAGS) \
+        $(GD_CFLAGS) \
+        $(WIC_CFLAGS) \
+        $(COREGRAPHICS_CFLAGS) \
+        $(QUICKLOOK_CFLAGS) \
+        $(CLIPBOARD_CFLAGS) \
+        @THREAD_CFLAGS@
 if HAVE_ABORT_TRACE
 sixel2png_LDADD += $(ABORTTRACE_LIBS)
 endif
