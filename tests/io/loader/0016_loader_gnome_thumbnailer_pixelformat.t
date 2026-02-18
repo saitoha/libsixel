@@ -5,7 +5,7 @@ set -eu
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-feature_defined_in_config "HAVE_FREEDESKTOP_THUMBNAILING" || {
+test "${HAVE_FREEDESKTOP_THUMBNAILING-}" = 1 || {
     skip_all "gnome-thumbnailer loader is unavailable on this platform"
 }
 

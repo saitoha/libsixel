@@ -13,8 +13,8 @@ set -eu
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-ensure_converter_available "IMG2SIXEL" "${IMG2SIXEL_PATH}" "img2sixel"
-feature_defined_in_config "HAVE_WIC" || skip_all "wic loader is unavailable"
+test "${HAVE_IMG2SIXEL-}" = 1 || skip_all "img2sixel is disabled in this build"
+test "${HAVE_WIC-}" = 1 || skip_all "wic loader is unavailable"
 
 image_path="${TOP_SRCDIR}/tests/data/inputs/formats/snake-ico-pal8.ico"
 

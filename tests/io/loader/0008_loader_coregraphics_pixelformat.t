@@ -5,7 +5,7 @@ set -eu
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-feature_defined_in_config "HAVE_COREGRAPHICS" || {
+test "${HAVE_COREGRAPHICS-}" = 1 || {
     skip_all "coregraphics loader is unavailable"
 }
 

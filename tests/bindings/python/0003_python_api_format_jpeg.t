@@ -57,14 +57,14 @@ PY
 python_status=$?
 printf '%s' "${python_output}" >&2
 test "${python_status}" -eq 0 && {
-    tap_pass 1 "encodes JPEG via wheel (DCS/ST ok)"
+    pass 1 "encodes JPEG via wheel (DCS/ST ok)"
     tap_plan 1
     exit 0
 }
 
 marker=$(printf '%s' "${python_output}" | awk '/^SKIP_LIBSIXEL_LOAD:/{print; exit}')
-test -n "${marker}" && tap_skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}"
+test -n "${marker}" && skip_all "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}"
 
-tap_fail 1 "JPEG encoding via wheel failed"
+fail 1 "JPEG encoding via wheel failed"
 tap_plan 1
 exit 0

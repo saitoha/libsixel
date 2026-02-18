@@ -5,7 +5,7 @@ set -eu
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-feature_defined_in_config "HAVE_LIBWEBP" || {
+test "${HAVE_WEBP-}" = 1 || {
     skip_all "libwebp loader is unavailable"
 }
 

@@ -5,7 +5,7 @@ set -eu
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-feature_defined_in_config "HAVE_GD" || {
+test "${HAVE_GD-}" = 1 || {
     skip_all "GD loader is unavailable"
 }
 

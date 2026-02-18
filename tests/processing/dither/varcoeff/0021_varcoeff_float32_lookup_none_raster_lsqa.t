@@ -10,7 +10,7 @@ set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-config_macro_defined HAVE_IMG2SIXEL || skip_all "img2sixel is disabled in this build"
+test "${HAVE_IMG2SIXEL-}" = 1 || skip_all "img2sixel is disabled in this build"
 
 # Threshold rationale:
 # - lookup-policy=none forces the float32 full scan path that this case wants

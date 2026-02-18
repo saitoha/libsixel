@@ -5,7 +5,7 @@ set -eu
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
-feature_defined_in_config "HAVE_WIC" || {
+test "${HAVE_WIC-}" = 1 || {
     skip_all "wic loader is unavailable"
 }
 
