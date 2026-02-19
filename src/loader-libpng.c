@@ -545,6 +545,13 @@ typedef struct sixel_apng_frame_control {
     unsigned int blend_op;
 } sixel_apng_frame_control_t;
 
+typedef struct sixel_apng_canvas {
+    unsigned char *pixels;
+    unsigned char *backup;
+    int width;
+    int height;
+} sixel_apng_canvas_t;
+
 typedef struct sixel_apng_state {
     unsigned char const *ihdr;
     size_t ihdr_size;
@@ -765,6 +772,224 @@ parse_fctl(
 }
 
 static SIXELSTATUS
+decode_png_rgba(
+    unsigned char      /* out */ **result,
+    int                /* out */ *psx,
+    int                /* out */ *psy,
+    unsigned char      /* in */  *buffer,
+    size_t             /* in */  size,
+    sixel_allocator_t  /* in */  *allocator)
+{
+    SIXELSTATUS status;
+    sixel_chunk_t read_chunk;
+    png_structp png_ptr;
+    png_infop info_ptr;
+    png_uint_32 width;
+    png_uint_32 height;
+    png_uint_32 rowbytes;
+    png_byte color_type;
+    png_byte bitdepth;
+    unsigned char **rows;
+    int i;
+
+    status = SIXEL_FALSE;
+    png_ptr = NULL;
+    info_ptr = NULL;
+    rows = NULL;
+    *result = NULL;
+    *psx = 0;
+    *psy = 0;
+
+    png_ptr = png_create_read_struct(
+        PNG_LIBPNG_VER_STRING, NULL, &png_error_callback, NULL);
+    if (!png_ptr) {
+        status = SIXEL_PNG_ERROR;
+        goto end;
+    }
+
+#if HAVE_SETJMP
+    if (setjmp(png_jmpbuf(png_ptr)) != 0) {
+        status = SIXEL_PNG_ERROR;
+        goto end;
+    }
+#endif
+
+    info_ptr = png_create_info_struct(png_ptr);
+    if (!info_ptr) {
+        status = SIXEL_PNG_ERROR;
+        goto end;
+    }
+
+    read_chunk.buffer = buffer;
+    read_chunk.size = size;
+    png_set_read_fn(png_ptr, (png_voidp)&read_chunk, read_png);
+    png_read_info(png_ptr, info_ptr);
+
+    width = png_get_image_width(png_ptr, info_ptr);
+    height = png_get_image_height(png_ptr, info_ptr);
+    if (width > INT_MAX || height > INT_MAX) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+
+    color_type = png_get_color_type(png_ptr, info_ptr);
+    bitdepth = png_get_bit_depth(png_ptr, info_ptr);
+    if (bitdepth == 16) {
+        png_set_strip_16(png_ptr);
+    }
+    if (color_type == PNG_COLOR_TYPE_PALETTE) {
+        png_set_palette_to_rgb(png_ptr);
+    }
+    if (color_type == PNG_COLOR_TYPE_GRAY && bitdepth < 8) {
+#if HAVE_DECL_PNG_SET_EXPAND_GRAY_1_2_4_TO_8
+        png_set_expand_gray_1_2_4_to_8(png_ptr);
+#elif HAVE_DECL_PNG_SET_GRAY_1_2_4_TO_8
+        png_set_gray_1_2_4_to_8(png_ptr);
+#endif
+    }
+    if (png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
+        png_set_tRNS_to_alpha(png_ptr);
+    }
+    if (color_type == PNG_COLOR_TYPE_GRAY ||
+        color_type == PNG_COLOR_TYPE_GRAY_ALPHA) {
+        png_set_gray_to_rgb(png_ptr);
+    }
+    if ((color_type & PNG_COLOR_MASK_ALPHA) == 0 &&
+        !png_get_valid(png_ptr, info_ptr, PNG_INFO_tRNS)) {
+        png_set_add_alpha(png_ptr, 0xff, PNG_FILLER_AFTER);
+    }
+
+    png_read_update_info(png_ptr, info_ptr);
+    rowbytes = png_get_rowbytes(png_ptr, info_ptr);
+    if (rowbytes != width * 4) {
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    *result = (unsigned char *)sixel_allocator_malloc(
+        allocator,
+        (size_t)height * (size_t)rowbytes);
+    if (*result == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    rows = (unsigned char **)sixel_allocator_malloc(
+        allocator,
+        (size_t)height * sizeof(unsigned char *));
+    if (rows == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    for (i = 0; i < (int)height; ++i) {
+        rows[i] = *result + (size_t)i * rowbytes;
+    }
+    png_read_image(png_ptr, rows);
+
+    *psx = (int)width;
+    *psy = (int)height;
+    status = SIXEL_OK;
+
+end:
+    if (SIXEL_FAILED(status)) {
+        sixel_allocator_free(allocator, *result);
+        *result = NULL;
+    }
+    sixel_allocator_free(allocator, rows);
+    png_destroy_read_struct(&png_ptr, &info_ptr, (png_infopp)0);
+    return status;
+}
+
+static void
+apng_clear_rect(
+    sixel_apng_canvas_t const      *canvas,
+    sixel_apng_frame_control_t     *control)
+{
+    int x;
+    int y;
+    int px;
+    int py;
+    unsigned char *dst;
+
+    for (y = 0; y < (int)control->height; ++y) {
+        py = (int)control->y_offset + y;
+        if (py < 0 || py >= canvas->height) {
+            continue;
+        }
+        for (x = 0; x < (int)control->width; ++x) {
+            px = (int)control->x_offset + x;
+            if (px < 0 || px >= canvas->width) {
+                continue;
+            }
+            dst = canvas->pixels + ((py * canvas->width + px) * 4);
+            dst[0] = 0;
+            dst[1] = 0;
+            dst[2] = 0;
+            dst[3] = 0;
+        }
+    }
+}
+
+static void
+apng_blend_rect(
+    sixel_apng_canvas_t const      *canvas,
+    sixel_apng_frame_control_t     *control,
+    unsigned char const            *src)
+{
+    int x;
+    int y;
+    int px;
+    int py;
+    int idx;
+    unsigned int sa;
+    unsigned int da;
+    unsigned int oa;
+    unsigned char const *sp;
+    unsigned char *dp;
+
+    for (y = 0; y < (int)control->height; ++y) {
+        py = (int)control->y_offset + y;
+        if (py < 0 || py >= canvas->height) {
+            continue;
+        }
+        for (x = 0; x < (int)control->width; ++x) {
+            px = (int)control->x_offset + x;
+            if (px < 0 || px >= canvas->width) {
+                continue;
+            }
+            idx = y * (int)control->width + x;
+            sp = src + idx * 4;
+            dp = canvas->pixels + ((py * canvas->width + px) * 4);
+
+            if (control->blend_op == 0) {
+                dp[0] = sp[0];
+                dp[1] = sp[1];
+                dp[2] = sp[2];
+                dp[3] = sp[3];
+                continue;
+            }
+
+            sa = sp[3];
+            da = dp[3];
+            oa = sa + ((da * (255 - sa)) / 255);
+            if (oa == 0) {
+                dp[0] = 0;
+                dp[1] = 0;
+                dp[2] = 0;
+                dp[3] = 0;
+                continue;
+            }
+            dp[0] = (unsigned char)((sp[0] * sa + dp[0] * da * (255 - sa) / 255)
+                                    / oa);
+            dp[1] = (unsigned char)((sp[1] * sa + dp[1] * da * (255 - sa) / 255)
+                                    / oa);
+            dp[2] = (unsigned char)((sp[2] * sa + dp[2] * da * (255 - sa) / 255)
+                                    / oa);
+            dp[3] = (unsigned char)oa;
+        }
+    }
+}
+
+static SIXELSTATUS
 emit_apng_frame(
     sixel_apng_state_t const      *state,
     sixel_apng_frame_control_t    *control,
@@ -773,32 +998,30 @@ emit_apng_frame(
     unsigned char                 *bgcolor,
     int                            reqcolors,
     int                            fuse_palette,
+    sixel_apng_canvas_t           *canvas,
     sixel_load_image_function      fn_load,
-    void                          *context,
+    void                          *callback_context,
     sixel_allocator_t             *allocator)
 {
     SIXELSTATUS status;
     sixel_frame_t *frame;
-    unsigned char *pixels;
-    unsigned char *palette;
-    int ncolors;
-    int pixelformat;
     int width;
     int height;
-    int transparent;
     size_t png_size;
     unsigned char *png_data;
+    unsigned char *subframe;
+    unsigned char *emitted;
+    size_t canvas_bytes;
     unsigned char ihdr_copy[13];
 
     frame = NULL;
-    pixels = NULL;
-    palette = NULL;
-    ncolors = 0;
-    pixelformat = SIXEL_PIXELFORMAT_RGB888;
     width = 0;
     height = 0;
-    transparent = -1;
     png_data = NULL;
+    subframe = NULL;
+    emitted = NULL;
+    (void)reqcolors;
+    (void)fuse_palette;
 
     if (state->ihdr == NULL || state->ihdr_size != 13) {
         return SIXEL_BAD_INPUT;
@@ -837,50 +1060,67 @@ emit_apng_frame(
            "\xae\x42\x60\x82",
            12);
 
-    status = load_png(&pixels,
-                      png_data,
-                      png_size,
-                      &width,
-                      &height,
-                      &palette,
-                      &ncolors,
-                      fuse_palette ? reqcolors : 0,
-                      &pixelformat,
-                      bgcolor,
-                      &transparent,
-                      allocator);
+    status = decode_png_rgba(&subframe,
+                             &width,
+                             &height,
+                             png_data,
+                             png_size,
+                             allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
+
+    if (width != (int)control->width || height != (int)control->height) {
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    canvas_bytes = (size_t)canvas->width * (size_t)canvas->height * 4;
+    if (control->dispose_op == 2) {
+        memcpy(canvas->backup, canvas->pixels, canvas_bytes);
+    }
+    apng_blend_rect(canvas, control, subframe);
+
+    emitted = (unsigned char *)sixel_allocator_malloc(allocator, canvas_bytes);
+    if (emitted == NULL) {
+        status = SIXEL_BAD_ALLOCATION;
+        goto end;
+    }
+    memcpy(emitted, canvas->pixels, canvas_bytes);
 
     status = sixel_frame_new(&frame, allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
-    frame->width = width;
-    frame->height = height;
-    frame->palette = palette;
-    frame->ncolors = ncolors;
-    frame->pixelformat = pixelformat;
-    frame->transparent = transparent;
+    frame->width = canvas->width;
+    frame->height = canvas->height;
+    frame->palette = NULL;
+    frame->ncolors = 0;
+    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+    frame->transparent = (-1);
     sixel_frame_set_delay(frame, (int)control->delay_ms);
     sixel_frame_set_frame_no(frame, frame_no);
     sixel_frame_set_multiframe(frame, multiframe);
-    sixel_frame_set_pixels(frame, pixels);
-    palette = NULL;
-    pixels = NULL;
+    sixel_frame_set_pixels(frame, emitted);
+    emitted = NULL;
 
     status = sixel_frame_strip_alpha(frame, bgcolor);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
-    status = fn_load(frame, context);
+    status = fn_load(frame, callback_context);
+
+    if (control->dispose_op == 1) {
+        apng_clear_rect(canvas, control);
+    } else if (control->dispose_op == 2) {
+        memcpy(canvas->pixels, canvas->backup, canvas_bytes);
+    }
 
 end:
     sixel_allocator_free(allocator, png_data);
-    sixel_allocator_free(allocator, pixels);
-    sixel_allocator_free(allocator, palette);
+    sixel_allocator_free(allocator, subframe);
+    sixel_allocator_free(allocator, emitted);
     sixel_frame_unref(frame);
 
     return status;
@@ -907,6 +1147,8 @@ load_apng_frames(
     int frame_no;
     int num_frames;
     int num_plays;
+    sixel_apng_canvas_t canvas;
+    size_t canvas_bytes;
 
     status = SIXEL_FALSE;
     memset(&state, 0, sizeof(state));
@@ -918,6 +1160,8 @@ load_apng_frames(
     frame_no = 0;
     num_frames = 0;
     num_plays = 0;
+    memset(&canvas, 0, sizeof(canvas));
+    canvas_bytes = 0;
 
     while (remain >= 12) {
         png_uint_32 length;
@@ -935,6 +1179,25 @@ load_apng_frames(
             }
             state.ihdr = p + 8;
             state.ihdr_size = length;
+            canvas.width = (int)read_be32(p + 8);
+            canvas.height = (int)read_be32(p + 12);
+            if (canvas.width <= 0 || canvas.height <= 0) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            canvas_bytes = (size_t)canvas.width * (size_t)canvas.height * 4;
+            canvas.pixels = (unsigned char *)sixel_allocator_malloc(
+                pchunk->allocator,
+                canvas_bytes);
+            canvas.backup = (unsigned char *)sixel_allocator_malloc(
+                pchunk->allocator,
+                canvas_bytes);
+            if (canvas.pixels == NULL || canvas.backup == NULL) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+            memset(canvas.pixels, 0, canvas_bytes);
+            memset(canvas.backup, 0, canvas_bytes);
         } else if (memcmp(p + 4, "acTL", 4) == 0) {
             if (length != 8) {
                 status = SIXEL_BAD_INPUT;
@@ -952,6 +1215,7 @@ load_apng_frames(
                                          bgcolor,
                                          reqcolors,
                                          fuse_palette,
+                                         &canvas,
                                          fn_load,
                                          context,
                                          pchunk->allocator);
@@ -1035,6 +1299,7 @@ load_apng_frames(
                                  bgcolor,
                                  reqcolors,
                                  fuse_palette,
+                                 &canvas,
                                  fn_load,
                                  context,
                                  pchunk->allocator);
@@ -1051,6 +1316,8 @@ load_apng_frames(
     }
 
 end:
+    sixel_allocator_free(pchunk->allocator, canvas.pixels);
+    sixel_allocator_free(pchunk->allocator, canvas.backup);
     sixel_allocator_free(pchunk->allocator, state.shared_chunks);
     sixel_allocator_free(pchunk->allocator, (void *)state.chunk_base);
     return status;

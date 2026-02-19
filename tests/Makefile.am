@@ -51,10 +51,6 @@ AM_TESTS_ENVIRONMENT += SIXEL_SHLIBPATH_OVERRIDES_RUNPATH='@SIXEL_SHLIBPATH_OVER
        export SIXEL_SHLIBPATH_OVERRIDES_RUNPATH;
 AM_TESTS_ENVIRONMENT += SIXEL_TEST_PYTHON_VENV='$(SIXEL_TEST_PYTHON_VENV)'; \
        export SIXEL_TEST_PYTHON_VENV;
-AM_TESTS_ENVIRONMENT += SIXEL_TEST_ADDITIOANL_PATH='@SIXEL_TEST_ADDITIOANL_PATH@'; \
-       export SIXEL_TEST_ADDITIOANL_PATH;
-AM_TESTS_ENVIRONMENT += SIXEL_LOG_PATH='$(abs_top_builddir)/sixel-timeline.log'; \
-       export SIXEL_LOG_PATH;
 TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_builddir) -I$(top_builddir)/include \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \
@@ -349,6 +345,10 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/snake-jpeg-444.jpg \
     data/inputs/formats/snake-jpeg-progressive-420.jpg \
     data/inputs/formats/animated-lossless-2frame.webp \
+    data/inputs/formats/animated-8x8-frame1-reference.png \
+    data/inputs/formats/animated-lossless-8x8-2frame-min.webp \
+    data/inputs/formats/animated-lossless-8x8-2frame-loop2-min.webp \
+    data/inputs/formats/animated-lossy-8x8-2frame-min.webp \
     data/inputs/formats/snake-png-adam7-rgb.png \
     data/inputs/formats/snake-png-pal8.png \
     data/inputs/formats/snake-png-gray16.png \
