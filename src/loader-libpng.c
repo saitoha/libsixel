@@ -761,6 +761,10 @@ parse_fctl(
     control->dispose_op = data[24];
     control->blend_op = data[25];
 
+    if (control->dispose_op > 2 || control->blend_op > 1) {
+        return 0;
+    }
+
     if (delay_den == 0) {
         delay_den = 100;
     }
@@ -1157,6 +1161,7 @@ load_apng_frames(
     int num_plays;
     int loop_no;
     int stop_loop;
+    int saw_animation;
     sixel_apng_canvas_t canvas;
     size_t canvas_bytes;
 
@@ -1173,6 +1178,7 @@ load_apng_frames(
     num_plays = 0;
     loop_no = 0;
     stop_loop = 0;
+    saw_animation = 0;
     memset(&canvas, 0, sizeof(canvas));
     canvas_bytes = 0;
 
@@ -1216,33 +1222,42 @@ load_apng_frames(
             }
             state.ihdr = p + 8;
             state.ihdr_size = length;
-            canvas.width = (int)read_be32(p + 8);
-            canvas.height = (int)read_be32(p + 12);
+            if (canvas_bytes == 0) {
+                canvas.width = (int)read_be32(p + 8);
+                canvas.height = (int)read_be32(p + 12);
+            }
             if (canvas.width <= 0 || canvas.height <= 0) {
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
-            canvas_bytes = (size_t)canvas.width * (size_t)canvas.height * 4;
-            canvas.pixels = (unsigned char *)sixel_allocator_malloc(
-                pchunk->allocator,
-                canvas_bytes);
-            canvas.backup = (unsigned char *)sixel_allocator_malloc(
-                pchunk->allocator,
-                canvas_bytes);
-            if (canvas.pixels == NULL || canvas.backup == NULL) {
-                status = SIXEL_BAD_ALLOCATION;
-                goto end;
+            if (canvas_bytes == 0) {
+                canvas_bytes = (size_t)canvas.width * (size_t)canvas.height * 4;
+                canvas.pixels = (unsigned char *)sixel_allocator_malloc(
+                    pchunk->allocator,
+                    canvas_bytes);
+                canvas.backup = (unsigned char *)sixel_allocator_malloc(
+                    pchunk->allocator,
+                    canvas_bytes);
+                if (canvas.pixels == NULL || canvas.backup == NULL) {
+                    status = SIXEL_BAD_ALLOCATION;
+                    goto end;
+                }
+                memset(canvas.pixels, 0, canvas_bytes);
+                memset(canvas.backup, 0, canvas_bytes);
             }
-            memset(canvas.pixels, 0, canvas_bytes);
-            memset(canvas.backup, 0, canvas_bytes);
         } else if (memcmp(p + 4, "acTL", 4) == 0) {
             if (length != 8) {
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
             seen_actl = 1;
+            saw_animation = 1;
             num_frames = (int)read_be32(p + 8);
             num_plays = (int)read_be32(p + 12);
+            if (num_frames <= 0) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
         } else if (memcmp(p + 4, "fcTL", 4) == 0 && seen_actl) {
             if (has_frame && state.chunk_size > 0) {
                 status = emit_apng_frame(&state,
@@ -1275,6 +1290,14 @@ load_apng_frames(
                 state.chunk_size = 0;
             }
             if (!parse_fctl(p + 8, length, &control)) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            if (control.width == 0 || control.height == 0 ||
+                control.x_offset > (png_uint_32)canvas.width ||
+                control.y_offset > (png_uint_32)canvas.height ||
+                control.width > (png_uint_32)canvas.width - control.x_offset ||
+                control.height > (png_uint_32)canvas.height - control.y_offset) {
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
@@ -1362,6 +1385,10 @@ load_apng_frames(
         status = SIXEL_BAD_INPUT;
         goto end;
     }
+    if (num_frames > 0 && frames_in_loop != num_frames) {
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
 
     ++loop_no;
 
@@ -1389,6 +1416,9 @@ end:
     sixel_allocator_free(pchunk->allocator, canvas.backup);
     sixel_allocator_free(pchunk->allocator, state.shared_chunks);
     sixel_allocator_free(pchunk->allocator, (void *)state.chunk_base);
+    if (!saw_animation && status == SIXEL_FALSE) {
+        return SIXEL_FALSE;
+    }
     return status;
 }
 #ifdef HAVE_DIAGNOSTIC_CLOBBERED
@@ -1432,7 +1462,7 @@ load_with_libpng(
                               loop_control,
                               fn_load,
                               context);
-    if (status == SIXEL_OK) {
+    if (status == SIXEL_OK || status == SIXEL_INTERRUPTED) {
         goto end;
     }
 
