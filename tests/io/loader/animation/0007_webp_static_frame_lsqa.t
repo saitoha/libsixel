@@ -27,7 +27,7 @@ image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame
 image_ref="${TOP_SRCDIR}/tests/data/inputs/formats/animated-8x8-frame1-reference.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/webp_static_frame.six"
 
-run_img2sixel -Llibwebp -S "${image_webp}" -o "${output_sixel}" || {
+run_img2sixel -Llibwebp! -S "${image_webp}" -o "${output_sixel}" || {
     fail 1 "libwebp static frame conversion failed"
     exit 0
 }
