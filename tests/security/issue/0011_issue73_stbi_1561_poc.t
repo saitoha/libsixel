@@ -11,7 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-issue73="${TOP_SRCDIR}/tests/security/issue/data/libsixel-libsixel/73/stbi_1561_poc.bin"
+issue73="${TOP_SRCDIR}/tests/data/security/issue/data/libsixel-libsixel/73/stbi_1561_poc.bin"
 
 printf '1..1\n'
 set -v
