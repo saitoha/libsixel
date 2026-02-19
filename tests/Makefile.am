@@ -352,6 +352,10 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/apng_invalid_fctl_oob.png \
     data/inputs/formats/apng_invalid_num_frames_mismatch.png \
     data/inputs/formats/apng_invalid_num_frames_zero.png \
+    data/inputs/formats/apng_8x8_libpng_delay_den_zero.png \
+    data/inputs/formats/apng_8x8_libpng_dispose_previous.png \
+    data/inputs/formats/apng_invalid_libpng_fdat_without_fctl.png \
+    data/inputs/formats/apng_invalid_libpng_fctl_after_idat.png \
     data/inputs/formats/rgba.tiff \
     data/inputs/formats/snake-bmp2-pal8.bmp \
     data/inputs/formats/snake-bmp3-rgb.bmp \
