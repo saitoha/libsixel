@@ -2555,15 +2555,15 @@ check-TESTS: $(check_PROGRAMS)
 	set +e; \
 	set -xv; \
 	config_header="$(top_builddir)/config.h"; \
-	resolved_test_paths=`$(SHELL) "$(top_builddir)/build-aux/resolve-test-tool-paths.sh" \
-	    "$(abs_top_builddir)" "$(srcdir)/check-test-exports.list"` || { \
+	resolved_test_paths=`$(SHELL) -xv "$(top_builddir)/build-aux/resolve-test-tool-paths.sh" \
+	    "$(abs_top_builddir)" "$(srcdir)/check-test-exports.list" 2>$(top_builddir)/resolve-test-tool-paths.log` || { \
 	    echo "error: failed to resolve test tool paths" >&2; \
 	    exit 1; \
 	}; \
 	set -a; \
 	eval "$$resolved_test_paths"; \
-	for required_export in `$(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
-	    tests "$(srcdir)/check-test-exports.list"`; do \
+	for required_export in `$(SHELL) -xv "$(top_srcdir)/build-aux/read-check-test-list.sh" \
+	    tests "$(srcdir)/check-test-exports.list" 2>$(top_builddir)/read-check-test-list.log`; do \
 	    eval "required_value=\$${$$required_export-}"; \
 	    if test "x$$required_value" = x; then \
 	        echo "error: unresolved test export: $$required_export" >&2; \
@@ -2573,18 +2573,15 @@ check-TESTS: $(check_PROGRAMS)
 	config_exports=`$(top_srcdir)/build-aux/resolve-config-h-exports.sh "$$config_header" exports`; \
 	eval "$$config_exports"; \
 	set +a; \
-	python_venv_exports=`$(SHELL) "$(top_srcdir)/build-aux/resolve-python-test-venv.sh" \
+	python_venv_exports=`$(SHELL) -xv "$(top_srcdir)/build-aux/resolve-python-test-venv.sh" \
 	    "@ENABLE_PYTHON@" "$(PYTHON)" "$(abs_top_builddir)/python/dist" \
-	    "$(abs_top_builddir)/tests/.python-test-venv"`; \
+	    "$(abs_top_builddir)/tests/.python-test-venv" 2>$(top_builddir)/resolve-python-test-venv.log`; \
 	eval "$$python_venv_exports"; \
 	export SIXEL_TEST_PYTHON_VENV; \
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner@EXEEXT@ --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
-	log_list=""; \
-	for i in $(TEST_LOGS); do \
-	    log_list="$$log_list $$i"; \
-	done; \
-	log_list=`echo $$log_list`; \
+	set +xv; \
+	log_list=`echo $(TEST_LOGS)`; \
 	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) \
 	    TEST_LOGS="$$log_list" \
 	    SIXEL_TEST_PYTHON_VENV="$$SIXEL_TEST_PYTHON_VENV"; \

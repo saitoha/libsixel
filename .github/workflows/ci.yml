@@ -1133,13 +1133,108 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
 
-  core-autotools-msvc_abi:
+  core-autotools-msvc_abi-cygwin:
     needs: [core-autotools-msys2-variants]
     name: ${{ matrix.label }}
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
       max-parallel: 2
+      matrix:
+        include:
+          - label: Autotools-cygwin64-msvc
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+            extra_packages: >-
+              make
+            exec_type: cygwin
+
+          - label: Autotools-cygwin64-clangcl
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=clang-cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+            extra_packages: >-
+              make
+            exec_type: cygwin
+
+          - label: Autotools-cygwin64-clang_msvc_abi
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=clang
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+            extra_packages: >-
+              make
+            exec_type: cygwin
+
+    steps:
+      - name: Set Windows Defender ExclusionPath (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Add-MpPreference -ExclusionPath "C:\a"
+
+      - name: Disable Windows Search Indexer (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          Stop-Service WSearch
+
+      - name: Disable Spotlight (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          sudo mdutil -i off / || true
+          sudo mdutil -i off /System/Volumes/Data || true
+
+      - name: Configure git EOL
+        if: ${{ runner.os == 'Windows' }}
+        shell: bash
+        run: git config --global core.autocrlf false
+
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+
+      - name: Run CI steps
+        uses: ./.github/actions/ci-steps
+        with:
+          matrix_json: ${{ toJSON(matrix) }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+
+  core-autotools-msvc_abi-msys2:
+    needs: [core-autotools-msys2-variants]
+    name: ${{ matrix.label }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
       matrix:
         include:
           - label: Autotools-msys2-msys-vs_clangcl
@@ -1234,57 +1329,6 @@ jobs:
               libpng
               libjpeg-turbo
             exec_type: msys2
-
-          - label: Autotools-cygwin64-msvc
-            buildtool: autotools
-            runner: windows-latest
-            setup_prefix: >-
-              CC=cl
-              LD=link
-              AR="sh ar-lib lib"
-              ARFLAGS=cr
-              NM="dumpbin -symbols"
-              STRIP=:
-              RANLIB=:
-            setup_options: >-
-              --host=x86_64-pc-windows-msvc
-            extra_packages: >-
-              make
-            exec_type: cygwin
-
-          - label: Autotools-cygwin64-clangcl
-            buildtool: autotools
-            runner: windows-latest
-            setup_prefix: >-
-              CC=clang-cl
-              LD=link
-              AR="sh ar-lib lib"
-              ARFLAGS=cr
-              NM="dumpbin -symbols"
-              STRIP=:
-              RANLIB=:
-            setup_options: >-
-              --host=x86_64-pc-windows-msvc
-            extra_packages: >-
-              make
-            exec_type: cygwin
-
-          - label: Autotools-cygwin64-clang_msvc_abi
-            buildtool: autotools
-            runner: windows-latest
-            setup_prefix: >-
-              CC=clang
-              LD=link
-              AR="sh ar-lib lib"
-              ARFLAGS=cr
-              NM="dumpbin -symbols"
-              STRIP=:
-              RANLIB=:
-            setup_options: >-
-              --host=x86_64-pc-windows-msvc
-            extra_packages: >-
-              make
-            exec_type: cygwin
 
     steps:
       - name: Set Windows Defender ExclusionPath (Windows)
