@@ -45,6 +45,22 @@ case "$shlibpath_var" in
 esac
 AC_SUBST([SIXEL_LIBTOOL_PATH_SEPARATOR])
 
+# Optional runtime path prefix for test commands.
+#
+# This is primarily used by MSYS2+MSVC jobs that depend on external DLLs
+# provided by package managers (for example vcpkg). The value is prepended to
+# the runtime shared-library search variable by test helpers.
+AC_ARG_VAR([SIXEL_TEST_ADDITIOANL_PATH],
+           [additional runtime library search path for test execution])
+# Accept the correctly-spelled alias as an override while preserving backward
+# compatibility with existing CI jobs and templates that use the legacy name.
+AC_ARG_VAR([SIXEL_TEST_ADDITIONAL_PATH],
+           [alias of SIXEL_TEST_ADDITIOANL_PATH])
+AS_IF([test -n "$SIXEL_TEST_ADDITIONAL_PATH"], [
+  SIXEL_TEST_ADDITIOANL_PATH="$SIXEL_TEST_ADDITIONAL_PATH"
+])
+AC_SUBST([SIXEL_TEST_ADDITIOANL_PATH])
+
 AC_CONFIG_SRCDIR([src/fromsixel.c])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])

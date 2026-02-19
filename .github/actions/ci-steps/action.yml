@@ -301,16 +301,7 @@ runs:
         export PATH="$PWD/build-aux:$PWD/bin:$PATH"
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
-        # Emit .profraw explicitly in emscripten coverage jobs so
-        # llvm-profdata/llvm-cov can consume deterministic profile files.
-        if [[ "${{ fromJSON(inputs.matrix_json).label || '' }}" == *"emscripten-coverage"* ]]; then
-          LLVM_PROFILE_FILE="$PWD/coverage-%p-%m.profraw" \
-            ${{ fromJSON(inputs.matrix_json).make || 'make' }} \
-            ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
-        else
-          ${{ fromJSON(inputs.matrix_json).make || 'make' }} \
-            ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
-        fi
+        ${{ fromJSON(inputs.matrix_json).make || 'make' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
     - name: Build and test (Meson, bash)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'meson' && fromJSON(inputs.matrix_json).exec_type == 'bash' }}
@@ -343,10 +334,11 @@ runs:
           export PKG_CONFIG_PATH=
           CPPFLAGS="${CPPFLAGS:+$CPPFLAGS }-I$VCPKG_PREFIX/include"
           LDFLAGS="${LDFLAGS:+$LDFLAGS }-L$VCPKG_PREFIX/lib"
-          export CPPFLAGS LDFLAGS
+          SIXEL_TEST_ADDITIOANL_PATH="$VCPKG_PREFIX/bin"
+          export CPPFLAGS LDFLAGS SIXEL_TEST_ADDITIOANL_PATH
         fi
 
-        PKG_CONFIG="$PKG_CONFIG" PKG_CONFIG_LIBDIR="$PKG_CONFIG_LIBDIR" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CPPFLAGS="$CPPFLAGS" LDFLAGS="$LDFLAGS" ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+        PKG_CONFIG="$PKG_CONFIG" PKG_CONFIG_LIBDIR="$PKG_CONFIG_LIBDIR" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CPPFLAGS="$CPPFLAGS" LDFLAGS="$LDFLAGS" SIXEL_TEST_ADDITIOANL_PATH="$SIXEL_TEST_ADDITIOANL_PATH" ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
@@ -712,35 +704,6 @@ runs:
           echo "No gcovr or lcov found; skipping coverage capture"
         fi
 
-    - name: Capture coverage (Cygwin)
-      if: >-
-        ${{ always()
-            && contains(fromJSON(inputs.matrix_json).setup_options, '--enable-gcov')
-            && fromJSON(inputs.matrix_json).exec_type == 'cygwin' }}
-      shell: C:\cygwin\bin\bash.exe -o igncr {0}
-      run: |
-        set -exv
-        if [ -e coverage.info ]; then
-          echo "coverage.info already exists; skipping capture"
-          exit 0
-        fi
-        if command -v gcovr >/dev/null 2>&1; then
-          gcovr -r . --lcov -o coverage.info || true
-        elif command -v lcov >/dev/null 2>&1; then
-          lcov -c \
-            -d "${PWD}" \
-            --rc branch_coverage=1 \
-            -o coverage.info || true
-        else
-          echo "No gcovr or lcov found; skipping coverage capture"
-        fi
-        if [ -e coverage.info ]; then
-          sed "s#^SF:${PWD}/builddir/#SF:#; s#^SF:${PWD}/#SF:#; s#^SF:/#SF:#" \
-            coverage.info > coverage.info.tmp
-          mv coverage.info.tmp coverage.info
-          head -n40 coverage.info
-        fi
-
     - name: Fetch BSD artifacts from VM
       if: ${{ always() && fromJSON(inputs.matrix_json).exec_type == 'cross-platform-vms' }}
       shell: bash
@@ -778,32 +741,11 @@ runs:
         if-no-files-found: warn
         overwrite: true
 
-    - name: Validate coverage.info
-      id: coverage_info_check
-      if: ${{ hashFiles('coverage.info') != '' }}
-      shell: bash
-      run: |
-        if ! test -s coverage.info; then
-          echo "coverage.info is empty; skip Coveralls upload"
-          echo "upload_ready=false" >> "$GITHUB_OUTPUT"
-          exit 0
-        fi
-
-        if ! grep -q '^SF:' coverage.info; then
-          echo "coverage.info does not contain SF records; skip Coveralls upload"
-          echo "upload_ready=false" >> "$GITHUB_OUTPUT"
-          exit 0
-        fi
-
-        echo "upload_ready=true" >> "$GITHUB_OUTPUT"
-
     - name: Upload to Coveralls (per-flag, parallel)
       id: coveralls_upload
       continue-on-error: true
       uses: coverallsapp/github-action@v2
-      if: >-
-        ${{ hashFiles('coverage.info') != ''
-            && steps.coverage_info_check.outputs.upload_ready == 'true' }}
+      if: ${{ hashFiles('coverage.info') != '' }}
       with:
         github-token: ${{ inputs.github_token }}
         path-to-lcov: coverage.info
@@ -811,18 +753,12 @@ runs:
         parallel: true
 
     - name: Wait before Coveralls retry (per-flag)
-      if: >-
-        ${{ hashFiles('coverage.info') != ''
-            && steps.coverage_info_check.outputs.upload_ready == 'true'
-            && steps.coveralls_upload.outcome == 'failure' }}
+      if: ${{ hashFiles('coverage.info') != '' && steps.coveralls_upload.outcome == 'failure' }}
       shell: bash
       run: sleep 5
 
     - name: Upload to Coveralls (per-flag, retry)
-      if: >-
-        ${{ hashFiles('coverage.info') != ''
-            && steps.coverage_info_check.outputs.upload_ready == 'true'
-            && steps.coveralls_upload.outcome == 'failure' }}
+      if: ${{ hashFiles('coverage.info') != '' && steps.coveralls_upload.outcome == 'failure' }}
       continue-on-error: true
       uses: coverallsapp/github-action@v2
       with:
