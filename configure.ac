@@ -551,11 +551,10 @@ case "$CC" in
     using_cl=yes
     using_clangcl=yes
     for w in $CFLAGS; do
-        test "$w" = "-g" ] || new_CFLAGS="$new $w"
+        test "$w" = "-g" || new_CFLAGS="$new $w"
     done
     CFLAGS="$new_CFLAGS -O2"
     LDFLAGS="$LDFLAGS -DEBUG"
-    PKG_CONFIG=
     LD=link
     if test -z "${AR}"; then
         AR="${CONFIG_SHELL-$SHELL} $am_aux_dir/ar-lib lib"
@@ -570,11 +569,10 @@ case "$CC" in
     using_cl=yes
     using_clangcl=no
     for w in $CFLAGS; do
-        test "$w" = "-g" ] || new_CFLAGS="$new $w"
+        test "$w" = "-g" || new_CFLAGS="$new $w"
     done
     CFLAGS="$new_CFLAGS -O2"
     LDFLAGS="$LDFLAGS -DEBUG"
-    PKG_CONFIG=
     LD=link
     if test -z "${AR}"; then
         AR="${CONFIG_SHELL-$SHELL} $am_aux_dir/ar-lib lib"
@@ -2441,7 +2439,9 @@ AC_SUBST(GD_CFLAGS)
 AC_SUBST(GD_LIBS)
 
 if test x$with_libcurl != xno && test "x$using_cl" != "xyes"; then
-    if test x$build = x$host; then
+    dnl When building with MSVC from MSYS2, build/host differ even though
+    dnl feature checks still need to run against the active compiler setup.
+    if test x$build = x$host -o x$using_cl = xyes; then
         AC_MSG_NOTICE([checking for libcurl])
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
@@ -2640,7 +2640,9 @@ if test x$with_jpeg != xno; then
             AC_MSG_ERROR([-sUSE_LIBJPEG=1 is not supported by this emscripten])
         fi
     fi
-    if test x$build = x$host; then
+    dnl When building with MSVC from MSYS2, build/host differ even though
+    dnl feature checks still need to run against the active compiler setup.
+    if test x$build = x$host -o x$using_cl = xyes; then
         AC_MSG_NOTICE([checking for jpeg])
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS
@@ -2732,7 +2734,9 @@ if test x$with_png != xno; then
             AC_MSG_ERROR([-sUSE_LIBPNG=1 is not supported by this emscripten])
         fi
     fi
-    if test x$build = x$host; then
+    dnl When building with MSVC from MSYS2, build/host differ even though
+    dnl feature checks still need to run against the active compiler setup.
+    if test x$build = x$host -o x$using_cl = xyes; then
         AC_MSG_NOTICE([checking for png])
         CFLAGS_BACKUP=$CFLAGS
         LDFLAGS_BACKUP=$LDFLAGS

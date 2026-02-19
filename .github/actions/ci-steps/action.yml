@@ -327,8 +327,8 @@ runs:
           VCPKG_TRIPLET="${VCPKG_DEFAULT_TRIPLET:-x64-windows}"
           VCPKG_ROOT_UNIX="$(cygpath -u "$VCPKG_ROOT")"
           VCPKG_PREFIX="$VCPKG_ROOT_UNIX/installed/$VCPKG_TRIPLET"
-          PKG_CONFIG="$VCPKG_PREFIX/tools/pkgconf/pkgconf.exe"
-          test -x "$PKG_CONFIG" || PKG_CONFIG="$VCPKG_PREFIX/tools/pkgconf/pkgconf"
+          PKG_CONFIG="$VCPKG_PREFIX/tools/pkgconf/pkgconf"
+          test -x "$PKG_CONFIG" || PKG_CONFIG="$VCPKG_PREFIX/tools/pkgconf/pkgconf.exe"
           export PKG_CONFIG
           export PKG_CONFIG_LIBDIR="$VCPKG_PREFIX/lib/pkgconfig:$VCPKG_PREFIX/share/pkgconfig"
           export PKG_CONFIG_PATH=
@@ -337,7 +337,7 @@ runs:
           export CPPFLAGS LDFLAGS
         fi
 
-        ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
+        PKG_CONFIG="$PKG_CONFIG" PKG_CONFIG_LIBDIR="$PKG_CONFIG_LIBDIR" PKG_CONFIG_PATH="$PKG_CONFIG_PATH" CPPFLAGS="$CPPFLAGS" LDFLAGS="$LDFLAGS" ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
