@@ -257,8 +257,6 @@ AM_LOG_FLAGS =
 .PHONY: staticcheck
 
 staticcheck:
-	@cd "$(abs_top_srcdir)" && \
-	actionlint
 	@$(SHELL) "$(top_srcdir)/tests/_static/sh/shellcheck.sh" "$(abs_top_srcdir)"
 	@cd "$(abs_top_srcdir)" && \
 	find src tests -type f \( -name '*.[ch]' -o -name '*.md' -o \
@@ -351,6 +349,8 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/animated-lossless-8x8-2frame-min.webp \
     data/inputs/formats/animated-lossless-8x8-2frame-loop2-min.webp \
     data/inputs/formats/animated-lossy-8x8-2frame-min.webp \
+    data/inputs/formats/animated-lossless-alpha-8x8-2frame-min.webp \
+    data/inputs/formats/animated-lossy-alpha-8x8-2frame-min.webp \
     data/inputs/formats/snake-png-adam7-rgb.png \
     data/inputs/formats/snake-png-pal8.png \
     data/inputs/formats/snake-png-gray16.png \

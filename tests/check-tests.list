@@ -252,6 +252,8 @@ io/loader/animation/0008_webp_loop_disable.t
 io/loader/animation/0009_webp_loop_auto_finite.t
 io/loader/animation/0010_webp_ignore_delay.t
 io/loader/animation/0011_webp_use_macro.t
+io/loader/animation/0012_webp_lossless_alpha_animation_decode.t
+io/loader/animation/0013_webp_lossy_alpha_animation_decode.t
 io/network/0001_curl_invalid_file_url.t
 io/network/0002_curl_invalid_https_url.t
 io/network/0003_curl_file_scheme.t
