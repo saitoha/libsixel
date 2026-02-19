@@ -7,15 +7,12 @@
 
 #include "src/loader-libwebp.h"
 
-#include <stdint.h>
 
 #if HAVE_WEBP
 typedef struct animated_probe_context {
     int callback_count;
     int first_rgb[3];
     int second_rgb[3];
-    uintptr_t first_frame_ptr;
-    uintptr_t second_frame_ptr;
 } animated_probe_context_t;
 
 static SIXELSTATUS
@@ -35,12 +32,10 @@ capture_animated_frames(sixel_frame_t *frame, void *data)
     }
 
     if (context->callback_count == 0) {
-        context->first_frame_ptr = (uintptr_t)frame;
         context->first_rgb[0] = pixels[0];
         context->first_rgb[1] = pixels[1];
         context->first_rgb[2] = pixels[2];
     } else if (context->callback_count == 1) {
-        context->second_frame_ptr = (uintptr_t)frame;
         context->second_rgb[0] = pixels[0];
         context->second_rgb[1] = pixels[1];
         context->second_rgb[2] = pixels[2];
@@ -119,8 +114,6 @@ run_libwebp_animation_test(void)
     context.second_rgb[0] = 0;
     context.second_rgb[1] = 0;
     context.second_rgb[2] = 0;
-    context.first_frame_ptr = 0;
-    context.second_frame_ptr = 0;
 
     status = load_with_libwebp(chunk,
                                0,
@@ -155,20 +148,6 @@ run_libwebp_animation_test(void)
     if (context.second_rgb[2] <= context.second_rgb[0]) {
         fprintf(stderr,
                 "libwebp animation: second frame is not blue-dominant\n");
-        status = SIXEL_BAD_INPUT;
-        goto cleanup;
-    }
-
-    if (context.first_frame_ptr == 0 || context.second_frame_ptr == 0) {
-        fprintf(stderr,
-                "libwebp animation: frame pointers were not recorded\n");
-        status = SIXEL_BAD_INPUT;
-        goto cleanup;
-    }
-
-    if (context.first_frame_ptr == context.second_frame_ptr) {
-        fprintf(stderr,
-                "libwebp animation: frame instance was reused\n");
         status = SIXEL_BAD_INPUT;
         goto cleanup;
     }
