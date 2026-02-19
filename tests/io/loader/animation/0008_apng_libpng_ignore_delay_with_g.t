@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: APNG loop disable stops replay.
+# TAP test: APNG ignores frame delay with -g.
 
 set -eux
 
@@ -18,11 +18,11 @@ test "${HAVE_LIBPNG-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -ldisable "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png" -o/dev/null || {
-    fail 1 "APNG loop disable failed"
+run_img2sixel -Llibpng! -g "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png" -o/dev/null || {
+    fail 1 "APNG ignore-delay mode failed"
     exit 0
 }
 
-pass 1 "APNG loop disable succeeds"
+pass 1 "APNG ignore-delay mode succeeds"
 exit 0
 

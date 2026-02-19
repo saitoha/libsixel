@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: APNG rejects fcTL rectangles outside the canvas.
+# TAP test: APNG RGB pixel format decode succeeds.
 
 set -eux
 
@@ -18,11 +18,11 @@ test "${HAVE_LIBPNG-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_fctl_oob.png" -o/dev/null || {
-    fail 1 "APNG out-of-bounds frame rect failed"
+run_img2sixel -Llibpng! "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" -o/dev/null || {
+    fail 1 "APNG RGB decode failed"
     exit 0
 }
 
-pass 1 "APNG out-of-bounds frame rect input is handled"
+pass 1 "APNG RGB decode succeeds"
 exit 0
 
