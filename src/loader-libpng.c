@@ -562,6 +562,7 @@ typedef struct sixel_apng_state {
     unsigned char *chunk_base;
     size_t chunk_size;
     size_t chunk_capacity;
+    png_uint_32 expected_sequence;
 } sixel_apng_state_t;
 
 static png_uint_32
@@ -743,15 +744,17 @@ static int
 parse_fctl(
     unsigned char const         *data,
     png_uint_32                  length,
+    png_uint_32                 *sequence_no,
     sixel_apng_frame_control_t  *control)
 {
     png_uint_32 delay_num;
     png_uint_32 delay_den;
 
-    if (length != 26 || control == NULL) {
+    if (length != 26 || sequence_no == NULL || control == NULL) {
         return 0;
     }
 
+    *sequence_no = read_be32(data + 0);
     control->width = read_be32(data + 4);
     control->height = read_be32(data + 8);
     control->x_offset = read_be32(data + 12);
@@ -1162,8 +1165,12 @@ load_apng_frames(
     int loop_no;
     int stop_loop;
     int saw_animation;
+    int seen_fctl;
+    int seen_idat;
     sixel_apng_canvas_t canvas;
     size_t canvas_bytes;
+    png_uint_32 sequence_no;
+    png_uint_32 fd_sequence;
 
     status = SIXEL_FALSE;
     memset(&state, 0, sizeof(state));
@@ -1179,8 +1186,12 @@ load_apng_frames(
     loop_no = 0;
     stop_loop = 0;
     saw_animation = 0;
+    seen_fctl = 0;
+    seen_idat = 0;
     memset(&canvas, 0, sizeof(canvas));
     canvas_bytes = 0;
+    sequence_no = 0;
+    fd_sequence = 0;
 
     for (;;) {
         if (sixel_loader_callback_is_canceled(context)) {
@@ -1195,6 +1206,8 @@ load_apng_frames(
         seen_actl = 0;
         has_frame = 0;
         frames_in_loop = 0;
+        seen_fctl = 0;
+        seen_idat = 0;
 
         if (loop_no > 0 && canvas_bytes > 0) {
             memset(canvas.pixels, 0, canvas_bytes);
@@ -1254,6 +1267,7 @@ load_apng_frames(
             saw_animation = 1;
             num_frames = (int)read_be32(p + 8);
             num_plays = (int)read_be32(p + 12);
+            state.expected_sequence = 0;
             if (num_frames <= 0) {
                 status = SIXEL_BAD_INPUT;
                 goto end;
@@ -1289,10 +1303,15 @@ load_apng_frames(
                 }
                 state.chunk_size = 0;
             }
-            if (!parse_fctl(p + 8, length, &control)) {
+            if (!parse_fctl(p + 8, length, &sequence_no, &control)) {
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
+            if (sequence_no != state.expected_sequence) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            ++state.expected_sequence;
             if (control.width == 0 || control.height == 0 ||
                 control.x_offset > (png_uint_32)canvas.width ||
                 control.y_offset > (png_uint_32)canvas.height ||
@@ -1301,12 +1320,19 @@ load_apng_frames(
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
+            seen_fctl = 1;
             has_frame = 1;
         } else if (memcmp(p + 4, "fdAT", 4) == 0 && seen_actl) {
-            if (!has_frame || length < 4) {
+            if (!has_frame || !seen_fctl || length < 4) {
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
+            fd_sequence = read_be32(p + 8);
+            if (fd_sequence != state.expected_sequence) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            ++state.expected_sequence;
             if (!append_chunk(&state,
                               "IDAT",
                               p + 12,
@@ -1328,6 +1354,16 @@ load_apng_frames(
                 status = SIXEL_BAD_ALLOCATION;
                 goto end;
             }
+            if (seen_actl && !seen_fctl && !seen_idat) {
+                control.width = (png_uint_32)canvas.width;
+                control.height = (png_uint_32)canvas.height;
+                control.x_offset = 0;
+                control.y_offset = 0;
+                control.delay_cs = 0;
+                control.dispose_op = 0;
+                control.blend_op = 0;
+            }
+            seen_idat = 1;
             has_frame = 1;
         } else if (memcmp(p + 4, "IEND", 4) == 0) {
             break;
