@@ -169,6 +169,8 @@ load_with_libwebp(
     int previous_timestamp;
     size_t frame_bytes;
     int next_delay;
+    int frame_no;
+    int loop_count;
 
     status = SIXEL_FALSE;
     frame = NULL;
@@ -181,6 +183,8 @@ load_with_libwebp(
     previous_timestamp = 0;
     frame_bytes = 0;
     next_delay = 0;
+    frame_no = 0;
+    loop_count = 0;
 
     (void)fuse_palette;
     (void)reqcolors;
@@ -312,42 +316,47 @@ load_with_libwebp(
         goto end;
     }
 
-    status = sixel_frame_new(&frame, pchunk->allocator);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
-
     /*
      * Decode WebP animation as fully composited RGBA canvases.
      *
      *   outer loop : logical animation loop
      *   inner loop : frame traversal inside a single loop
+     *
+     * Create a fresh sixel_frame_t for each callback invocation. This keeps
+     * frame state isolated and avoids leaking in-place updates from one frame
+     * into the next frame.
      */
-    frame->width = (int)anim_info.canvas_width;
-    frame->height = (int)anim_info.canvas_height;
-    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
-    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
-    frame->multiframe = 1;
-    frame->loop_count = 0;
-
-    if (frame->width <= 0 || frame->height <= 0) {
+    if ((int)anim_info.canvas_width <= 0 ||
+        (int)anim_info.canvas_height <= 0) {
         sixel_helper_set_additional_message(
             "load_with_libwebp: invalid canvas dimensions.");
         status = SIXEL_BAD_INPUT;
         goto end;
     }
-    if ((size_t)frame->width > SIZE_MAX / 4 ||
-        (size_t)frame->height > SIZE_MAX / ((size_t)frame->width * 4)) {
+    frame_bytes = (size_t)anim_info.canvas_width *
+                  (size_t)anim_info.canvas_height;
+    if ((size_t)anim_info.canvas_width != 0 &&
+        frame_bytes / (size_t)anim_info.canvas_width !=
+        (size_t)anim_info.canvas_height) {
         status = SIXEL_BAD_INTEGER_OVERFLOW;
         goto end;
     }
-    frame_bytes = (size_t)frame->width * (size_t)frame->height * 4;
+    if (frame_bytes > SIZE_MAX / 4) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
+        goto end;
+    }
+    frame_bytes *= 4;
 
     for (;;) {
-        frame->frame_no = 0;
+        frame_no = 0;
         previous_timestamp = 0;
 
         while (WebPAnimDecoderHasMoreFrames(decoder)) {
+            status = sixel_frame_new(&frame, pchunk->allocator);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+
             if (!WebPAnimDecoderGetNext(decoder,
                                         &decoded_frame,
                                         &timestamp)) {
@@ -369,6 +378,15 @@ load_with_libwebp(
 
             memcpy(pixels, decoded_frame, frame_bytes);
             sixel_frame_set_pixels(frame, pixels);
+            pixels = NULL;
+
+            frame->width = (int)anim_info.canvas_width;
+            frame->height = (int)anim_info.canvas_height;
+            frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+            frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+            frame->multiframe = 1;
+            frame->loop_count = loop_count;
+            frame->frame_no = frame_no;
 
             next_delay = timestamp - previous_timestamp;
             if (next_delay < 0) {
@@ -382,29 +400,28 @@ load_with_libwebp(
             }
 
             status = fn_load(frame, context);
+            if (status == SIXEL_INTERRUPTED) {
+                goto end;
+            }
             if (SIXEL_FAILED(status)) {
                 goto end;
             }
 
-            pixels = sixel_frame_get_pixels(frame);
-            if (pixels != NULL) {
-                sixel_allocator_free(pchunk->allocator, pixels);
-                sixel_frame_set_pixels(frame, NULL);
-                pixels = NULL;
-            }
+            sixel_frame_unref(frame);
+            frame = NULL;
 
             previous_timestamp = timestamp;
-            frame->frame_no++;
+            frame_no++;
         }
 
-        frame->loop_count++;
+        loop_count++;
 
-        if (loop_control == SIXEL_LOOP_DISABLE || frame->frame_no == 1) {
+        if (loop_control == SIXEL_LOOP_DISABLE || frame_no == 1) {
             break;
         }
         if (loop_control == SIXEL_LOOP_AUTO &&
             anim_info.loop_count > 0 &&
-            (unsigned int)frame->loop_count >= anim_info.loop_count) {
+            (unsigned int)loop_count >= anim_info.loop_count) {
             break;
         }
 
