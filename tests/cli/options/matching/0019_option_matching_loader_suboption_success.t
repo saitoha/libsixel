@@ -6,11 +6,11 @@ set -euxv
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build";
+    printf "1..0 # SKIP img2sixel is disabled in this build\n";
     exit 0
 }
 test "${HAVE_WIC-}" = 1 || {
-    printf "1..0 # SKIP wic loader is unavailable";
+    printf "1..0 # SKIP wic loader is unavailable\n";
     exit 0
 }
 

@@ -6,12 +6,12 @@ set -eux
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
 
 test "${HAVE_SIXEL2PNG-}" = 1 || {
-    printf "1..0 # SKIP sixel2png is disabled in this build";
+    printf "1..0 # SKIP sixel2png is disabled in this build\n";
     exit 0
 }
 
 command -v cmp >/dev/null 2>&1 || {
-    printf "1..0 # SKIP cmp unavailable";
+    printf "1..0 # SKIP cmp unavailable\n";
     exit 0
 }
 

@@ -4,11 +4,11 @@
 set -eux
 
 test "${HAVE_WIC-}" = 1 || {
-    printf "1..0 # SKIP wic loader is unavailable"
+    printf "1..0 # SKIP wic loader is unavailable\n"
     exit 0
 }
 test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && {
-    printf "1..0 # SKIP WIC is unavailable under wine"
+    printf "1..0 # SKIP WIC is unavailable under wine\n"
     exit 0
 }
 

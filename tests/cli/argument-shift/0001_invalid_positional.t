@@ -13,7 +13,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 # intermittent failures specific to that platform.
 os_name=$(uname -s || echo "unknown")
 printf '%s' "${os_name}" | grep -qi 'mingw\|msys\|cygwin' && {
-    printf "1..0 # SKIP temporarily disabled on Windows due to instability"
+    printf "1..0 # SKIP temporarily disabled on Windows due to instability\n"
     exit 0
 }
 

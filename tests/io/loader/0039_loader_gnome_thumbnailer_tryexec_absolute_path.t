@@ -4,11 +4,11 @@
 set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build";
+    printf "1..0 # SKIP img2sixel is disabled in this build\n";
     exit 0
 }
 test "${HAVE_FREEDESKTOP_THUMBNAILING-}" = 1 || {
-    printf "1..0 # SKIP gnome-thumbnailer loader is unavailable on this platform"
+    printf "1..0 # SKIP gnome-thumbnailer loader is unavailable on this platform\n"
     exit 0
 }
 
