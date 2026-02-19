@@ -53,6 +53,8 @@ AM_TESTS_ENVIRONMENT += SIXEL_TEST_PYTHON_VENV='$(SIXEL_TEST_PYTHON_VENV)'; \
        export SIXEL_TEST_PYTHON_VENV;
 AM_TESTS_ENVIRONMENT += SIXEL_TEST_ADDITIOANL_PATH='@SIXEL_TEST_ADDITIOANL_PATH@'; \
        export SIXEL_TEST_ADDITIOANL_PATH;
+AM_TESTS_ENVIRONMENT += SIXEL_LOG_PATH='$(abs_top_builddir)/sixel-timeline.log'; \
+       export SIXEL_LOG_PATH;
 TESTS_COMMON_CPPFLAGS_VAL = $(AM_CPPFLAGS) \
        -I$(top_builddir) -I$(top_builddir)/include \
        -I$(top_srcdir)/include -I$(top_srcdir)/src \
