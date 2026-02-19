@@ -95,12 +95,15 @@ typedef SIXELSTATUS (*loader_entry_fn)(
     void *);
 
 static SIXEL_TEST_UNUSED int
-run_loader_case(char const *label,
-                char const *relative_path,
-                int expected_pixelformat,
-                int expected_width,
-                int expected_height,
-                loader_entry_fn loader)
+run_loader_case_with_options(char const *label,
+                             char const *relative_path,
+                             int expected_pixelformat,
+                             int expected_width,
+                             int expected_height,
+                             int fstatic,
+                             int fuse_palette,
+                             int reqcolors,
+                             loader_entry_fn loader)
 {
     SIXELSTATUS status;
     sixel_allocator_t *allocator;
@@ -177,9 +180,9 @@ run_loader_case(char const *label,
     context.height = 0;
 
     status = loader(chunk,
-                    1,
-                    0,
-                    256,
+                    fstatic,
+                    fuse_palette,
+                    reqcolors,
                     NULL,
                     SIXEL_LOOP_AUTO,
                     capture_frame,
@@ -239,6 +242,26 @@ cleanup:
 #endif
 
     return result;
+}
+
+
+static SIXEL_TEST_UNUSED int
+run_loader_case(char const *label,
+                char const *relative_path,
+                int expected_pixelformat,
+                int expected_width,
+                int expected_height,
+                loader_entry_fn loader)
+{
+    return run_loader_case_with_options(label,
+                                        relative_path,
+                                        expected_pixelformat,
+                                        expected_width,
+                                        expected_height,
+                                        1,
+                                        0,
+                                        256,
+                                        loader);
 }
 
 #endif /* PIXELFORMAT_TEST_COMMON_H */

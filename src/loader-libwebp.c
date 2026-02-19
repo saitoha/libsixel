@@ -139,6 +139,298 @@ load_webp(unsigned char **result,
     return status;
 }
 
+
+/*
+ * Parse a VP8L payload header and detect whether the color indexing
+ * transform is present.
+ */
+static int
+vp8l_payload_uses_color_indexing(unsigned char const *data, size_t size)
+{
+    unsigned int bitbuf;
+    int bits;
+    size_t pos;
+    unsigned int value;
+    int transform_type;
+
+    bitbuf = 0U;
+    bits = 0;
+    pos = 0U;
+    value = 0U;
+    transform_type = 0;
+
+    if (data == NULL || size < 5U) {
+        return 0;
+    }
+
+    if (size >= 13U &&
+        data[0] == 'V' &&
+        data[1] == 'P' &&
+        data[2] == '8' &&
+        data[3] == 'L') {
+        data += 8;
+        size -= 8U;
+    }
+
+    if (data[0] != 0x2fU) {
+        return 0;
+    }
+
+    pos = 5U;
+
+    for (;;) {
+        while (bits < 1) {
+            if (pos >= size) {
+                return 0;
+            }
+            bitbuf |= (unsigned int)data[pos] << bits;
+            bits += 8;
+            pos++;
+        }
+        value = bitbuf & 0x1U;
+        bitbuf >>= 1;
+        bits -= 1;
+        if (value == 0U) {
+            break;
+        }
+
+        while (bits < 2) {
+            if (pos >= size) {
+                return 0;
+            }
+            bitbuf |= (unsigned int)data[pos] << bits;
+            bits += 8;
+            pos++;
+        }
+        transform_type = (int)(bitbuf & 0x3U);
+        bitbuf >>= 2;
+        bits -= 2;
+
+        if (transform_type == 3) {
+            return 1;
+        }
+
+        if (transform_type == 0 || transform_type == 1) {
+            while (bits < 3) {
+                if (pos >= size) {
+                    return 0;
+                }
+                bitbuf |= (unsigned int)data[pos] << bits;
+                bits += 8;
+                pos++;
+            }
+            bitbuf >>= 3;
+            bits -= 3;
+        } else if (transform_type == 3) {
+            while (bits < 8) {
+                if (pos >= size) {
+                    return 0;
+                }
+                bitbuf |= (unsigned int)data[pos] << bits;
+                bits += 8;
+                pos++;
+            }
+            bitbuf >>= 8;
+            bits -= 8;
+        }
+    }
+
+    return 0;
+}
+
+
+/*
+ * Return 1 when every frame in the WebP stream uses VP8L color indexing.
+ *
+ * Palette promotion must only run for bitstreams that are explicitly indexed
+ * in the source format. RGB/RGBA sources must keep their original semantics.
+ */
+static int
+webp_input_is_indexed(sixel_chunk_t const *pchunk)
+{
+    WebPData data;
+    WebPDemuxer *demux;
+    WebPIterator iter;
+    int frame_count;
+    int frame_index;
+    int indexed;
+
+    data = (WebPData){ 0 };
+    demux = NULL;
+    iter = (WebPIterator){ 0 };
+    frame_count = 0;
+    frame_index = 0;
+    indexed = 0;
+
+    if (pchunk == NULL || pchunk->buffer == NULL || pchunk->size == 0U) {
+        return 0;
+    }
+
+    data.bytes = pchunk->buffer;
+    data.size = pchunk->size;
+
+    demux = WebPDemux(&data);
+    if (demux == NULL) {
+        return 0;
+    }
+
+    frame_count = (int)WebPDemuxGetI(demux, WEBP_FF_FRAME_COUNT);
+    if (frame_count <= 0) {
+        WebPDemuxDelete(demux);
+        return 0;
+    }
+
+    indexed = 1;
+    for (frame_index = 1; frame_index <= frame_count; ++frame_index) {
+        if (!WebPDemuxGetFrame(demux, frame_index, &iter)) {
+            indexed = 0;
+            break;
+        }
+
+        if (!vp8l_payload_uses_color_indexing(iter.fragment.bytes,
+                                              iter.fragment.size)) {
+            indexed = 0;
+            WebPDemuxReleaseIterator(&iter);
+            break;
+        }
+
+        WebPDemuxReleaseIterator(&iter);
+    }
+
+    WebPDemuxDelete(demux);
+
+    return indexed;
+}
+
+
+/*
+ * Try to convert an RGB frame into PAL8 when palette mode is requested.
+ *
+ * This helper performs an exact-color scan only. It does not approximate
+ * colors. If the frame contains more unique colors than the requested budget,
+ * the original RGB pixels are preserved.
+ */
+static SIXELSTATUS
+loader_try_promote_pal8(
+    sixel_frame_t  /* in/out */ *frame,
+    int            /* in */     reqcolors,
+    sixel_allocator_t /* in */  *allocator)
+{
+    SIXELSTATUS status;
+    unsigned char *src;
+    unsigned char *indices;
+    unsigned char *palette;
+    int pixel_total;
+    int maxcolors;
+    int i;
+    int j;
+    int index;
+    int ncolors;
+    int offset;
+    int found;
+    unsigned char r;
+    unsigned char g;
+    unsigned char b;
+
+    status = SIXEL_OK;
+    src = NULL;
+    indices = NULL;
+    palette = NULL;
+    pixel_total = 0;
+    maxcolors = 0;
+    i = 0;
+    j = 0;
+    index = 0;
+    ncolors = 0;
+    offset = 0;
+    found = 0;
+    r = 0;
+    g = 0;
+    b = 0;
+
+    if (frame == NULL || allocator == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+    if (frame->pixelformat != SIXEL_PIXELFORMAT_RGB888) {
+        return SIXEL_OK;
+    }
+    if (frame->width <= 0 || frame->height <= 0) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    pixel_total = frame->width * frame->height;
+    if (pixel_total / frame->width != frame->height) {
+        return SIXEL_BAD_INTEGER_OVERFLOW;
+    }
+
+    maxcolors = reqcolors;
+    if (maxcolors <= 0 || maxcolors > SIXEL_PALETTE_MAX) {
+        maxcolors = SIXEL_PALETTE_MAX;
+    }
+
+    src = frame->pixels.u8ptr;
+    if (src == NULL) {
+        return SIXEL_BAD_INPUT;
+    }
+
+    indices = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                      (size_t)pixel_total);
+    if (indices == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+    palette = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                      (size_t)maxcolors * 3U);
+    if (palette == NULL) {
+        sixel_allocator_free(allocator, indices);
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    for (i = 0; i < pixel_total; ++i) {
+        offset = i * 3;
+        r = src[offset + 0];
+        g = src[offset + 1];
+        b = src[offset + 2];
+        found = 0;
+        index = 0;
+
+        for (j = 0; j < ncolors; ++j) {
+            if (palette[j * 3 + 0] == r &&
+                palette[j * 3 + 1] == g &&
+                palette[j * 3 + 2] == b) {
+                found = 1;
+                index = j;
+                break;
+            }
+        }
+
+        if (!found) {
+            if (ncolors >= maxcolors) {
+                sixel_allocator_free(allocator, palette);
+                sixel_allocator_free(allocator, indices);
+                return SIXEL_OK;
+            }
+            index = ncolors;
+            palette[index * 3 + 0] = r;
+            palette[index * 3 + 1] = g;
+            palette[index * 3 + 2] = b;
+            ncolors++;
+        }
+
+        indices[i] = (unsigned char)index;
+    }
+
+    sixel_allocator_free(allocator, frame->pixels.u8ptr);
+    frame->pixels.u8ptr = NULL;
+
+    sixel_frame_set_pixels(frame, indices);
+    sixel_frame_set_palette(frame, palette);
+    frame->ncolors = ncolors;
+    frame->pixelformat = SIXEL_PIXELFORMAT_PAL8;
+    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+
+    return status;
+}
+
 /*
  * Dedicated libwebp loader wiring minimal pipeline.
  *
@@ -171,6 +463,7 @@ load_with_libwebp(
     int next_delay;
     int frame_no;
     int loop_count;
+    int allow_palette_promotion;
 
     status = SIXEL_FALSE;
     frame = NULL;
@@ -185,9 +478,11 @@ load_with_libwebp(
     next_delay = 0;
     frame_no = 0;
     loop_count = 0;
+    allow_palette_promotion = 0;
 
-    (void)fuse_palette;
-    (void)reqcolors;
+    if (fuse_palette) {
+        allow_palette_promotion = webp_input_is_indexed(pchunk);
+    }
 
     webp_data.bytes = pchunk->buffer;
     webp_data.size = pchunk->size;
@@ -239,6 +534,15 @@ load_with_libwebp(
         status = sixel_frame_strip_alpha(frame, bgcolor);
         if (SIXEL_FAILED(status)) {
             goto end;
+        }
+
+        if (allow_palette_promotion) {
+            status = loader_try_promote_pal8(frame,
+                                             reqcolors,
+                                             pchunk->allocator);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
         }
 
         status = fn_load(frame, context);
@@ -305,6 +609,15 @@ load_with_libwebp(
         status = sixel_frame_strip_alpha(frame, bgcolor);
         if (SIXEL_FAILED(status)) {
             goto end;
+        }
+
+        if (allow_palette_promotion) {
+            status = loader_try_promote_pal8(frame,
+                                             reqcolors,
+                                             pchunk->allocator);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
         }
 
         status = fn_load(frame, context);
@@ -397,6 +710,15 @@ load_with_libwebp(
             status = sixel_frame_strip_alpha(frame, bgcolor);
             if (SIXEL_FAILED(status)) {
                 goto end;
+            }
+
+            if (allow_palette_promotion) {
+                status = loader_try_promote_pal8(frame,
+                                                 reqcolors,
+                                                 pchunk->allocator);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
             }
 
             status = fn_load(frame, context);
