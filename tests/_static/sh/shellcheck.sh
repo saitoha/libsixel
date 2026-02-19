@@ -25,12 +25,19 @@ test -d "${repo_root}/tests" || {
     exit 2
 }
 
-echo "Running ShellCheck for tests/*.t"
+shellcheck_cmd=${SHELLCHECK_CMD:-shellcheck}
+if ! command -v "${shellcheck_cmd}" >/dev/null 2>&1; then
+    echo "skipped: shellcheck not found"
+    shellcheck_cmd=''
+fi
+
+test -n "${shellcheck_cmd}" && echo "Running ShellCheck for tests/*.t"
 ARTIFACT_LOCAL_DIR=${ARTIFACT_LOCAL_DIR:-"${repo_root}/tests/_artifacts"}
 TOP_SRCDIR=${TOP_SRCDIR:-"${repo_root}"}
 export ARTIFACT_LOCAL_DIR TOP_SRCDIR
+test -n "${shellcheck_cmd}" &&
 find "${repo_root}/tests" -type f -name '*.t' -exec \
-    shellcheck -x -P "${repo_root}" {} +
+    "${shellcheck_cmd}" -x -P "${repo_root}" {} +
 
 target_files=${TEST_FILES:-}
 test -n "${target_files}" || {

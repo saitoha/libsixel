@@ -3465,6 +3465,15 @@ AS_IF([test "x$BASH" = x -o "x$BASH" = xno], [
 ])
 AM_CONDITIONAL([HAVE_BASH], [test "x$BASH" != x -a "x$BASH" != xno])
 
+dnl Detect static analysis tools in configure phase so staticcheck can
+dnl provide consistent skip messages when tools are unavailable.
+AC_PATH_PROG([ACTIONLINT], [actionlint], [])
+AC_PATH_PROG([SHELLCHECK], [shellcheck], [])
+AC_PATH_PROG([CODESPELL], [codespell], [])
+AC_SUBST([ACTIONLINT])
+AC_SUBST([SHELLCHECK])
+AC_SUBST([CODESPELL])
+
 dnl Choose a fast POSIX shell for TAP tests and keep /bin/sh as fallback.
 AC_ARG_VAR([SIXEL_TEST_SHELL],
            [Shell path used to run TAP test scripts (default: detect dash, sh, then fallback /bin/sh)])

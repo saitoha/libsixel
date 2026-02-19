@@ -1,5 +1,8 @@
 sh = find_program('sh')
 cp_cmd = find_program('cp', required: true)
+actionlint_prog = find_program('actionlint', required: false)
+shellcheck_prog = find_program('shellcheck', required: false)
+codespell_prog = find_program('codespell', required: false)
 artifact_root = meson.current_build_dir() / '_artifacts'
 cross_compiling = 'no'
 if meson.is_cross_build()
@@ -256,13 +259,24 @@ run_target('staticcheck',
 set -e
 
 cd "$2"
-actionlint
+if test -n "$4"; then
+  "$4"
+else
+  echo "skipped: actionlint not found"
+fi
 
-"$1" "$2"
+SHELLCHECK_CMD="$3" "$1" "$2"
 
-cd "$2"
-find src tests -type f '(' -name '*.[ch]' -o -name '*.md' -o -name '*.1' -o -name '*.in' -o -name '*.am' -o -name '*.build' -o -name '*.t' -o -name 'LICENSE' -o -name '*.py' -o -name '*.rb' -o -name '*.thumbnailer' -o -name '*.sh' ')' -exec codespell {} +
+if test -n "$5"; then
+  cd "$2"
+  find src tests -type f '(' -name '*.[ch]' -o -name '*.md' -o -name '*.1' -o -name '*.in' -o -name '*.am' -o -name '*.build' -o -name '*.t' -o -name 'LICENSE' -o -name '*.py' -o -name '*.rb' -o -name '*.thumbnailer' -o -name '*.sh' ')' -exec "$5" {} +
+else
+  echo "skipped: codespell not found"
+fi
 ''',
             'sh',
             meson.current_source_dir() / '_static/sh/shellcheck.sh',
-            meson.project_source_root()])
+            meson.project_source_root(),
+            shellcheck_prog.found() ? shellcheck_prog.full_path() : '',
+            actionlint_prog.found() ? actionlint_prog.full_path() : '',
+            codespell_prog.found() ? codespell_prog.full_path() : ''])
