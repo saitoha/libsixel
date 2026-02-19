@@ -12,7 +12,7 @@ test "${HAVE_WIC-}" = 1 || {
     exit 0
 }
 test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && {
-    printf "1..0 # SKIP WIC is unavailable under wine"
+    printf "1..0 # SKIP WIC is unavailable under wine\n"
     exit 0
 }
 

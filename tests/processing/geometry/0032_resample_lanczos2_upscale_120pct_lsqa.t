@@ -20,7 +20,7 @@ reference_image="${data_root}/scaling/snake_64_lanczos2_120pct.png"
 output_sixel="${ARTIFACT_LOCAL_DIR}/lanczos2-upscale_120pct.six"
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build";
+    printf "1..0 # SKIP img2sixel is disabled in this build\n";
     exit 0
 }
 

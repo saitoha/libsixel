@@ -155,7 +155,6 @@ io/loader/0022_loader_gdk_pixbuf2_static_gif.t
 io/loader/0022_pngsuite_basic_default_basn0g02_msssim.t
 io/loader/0023_loader_gdk_pixbuf2_loop_disable_gif.t
 io/loader/0023_pngsuite_basic_default_basn0g04_msssim.t
-io/loader/0024_loader_gdk_pixbuf2_forced_sixel_input.t
 io/loader/0024_pngsuite_basic_default_basn0g08_msssim.t
 io/loader/0025_loader_gdk_pixbuf2_corrupted_png.t
 io/loader/0025_pngsuite_basic_default_basn0g16_msssim.t

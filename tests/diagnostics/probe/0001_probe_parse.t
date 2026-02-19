@@ -7,7 +7,7 @@ set -eux
 
 binary="${TEST_RUNNER_PATH}"
 test -x "${binary}" || test -n "${SIXEL_RUNTIME-}" || {
-    printf "1..0 # SKIP harness not built";
+    printf "1..0 # SKIP harness not built\n";
     exit 0
 }
 

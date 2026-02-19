@@ -4,11 +4,11 @@
 set -eux
 
 test "${HAVE_LIBCURL-}" = 1 || test "${HAVE_WINHTTP-}" = 1 || {
-    printf "1..0 # SKIP libcurl or WinHTTP support is disabled in this build"
+    printf "1..0 # SKIP libcurl or WinHTTP support is disabled in this build\n"
     exit 0
 }
 test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build";
+    printf "1..0 # SKIP img2sixel is disabled in this build\n";
     exit 0
 }
 

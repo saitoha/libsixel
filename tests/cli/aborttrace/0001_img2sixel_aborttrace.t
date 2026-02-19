@@ -4,7 +4,7 @@
 set -eux
 
 test "${SIXEL_TSAN_BUILD:-no}" = "yes" && {
-    printf "1..0 # SKIP TSan builds can suppress abort trace output";
+    printf "1..0 # SKIP TSan builds can suppress abort trace output\n";
     exit 0
 }
 

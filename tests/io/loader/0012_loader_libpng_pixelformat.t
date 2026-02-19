@@ -4,7 +4,7 @@
 set -eux
 
 test "${HAVE_LIBPNG-}" = 1 || {
-    printf "1..0 # SKIP libpng loader is unavailable"
+    printf "1..0 # SKIP libpng loader is unavailable\n"
     exit 0
 }
 

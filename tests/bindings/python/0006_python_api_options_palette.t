@@ -4,11 +4,11 @@
 set -eux
 
 test "${ENABLE_PYTHON:-0}" = "1" || {
-    printf "1..0 # SKIP python bindings are disabled in this build"
+    printf "1..0 # SKIP python bindings are disabled in this build\n"
     exit 0
 }
 test -n "${SIXEL_TEST_PYTHON_VENV:-}" || {
-    printf "1..0 # SKIP python wheel test environment is unavailable"
+    printf "1..0 # SKIP python wheel test environment is unavailable\n"
     exit 0
 }
 
@@ -89,7 +89,7 @@ test "${python_status}" -eq 0 && {
 
 marker=$(printf '%s' "${python_output}" | awk '/^SKIP_LIBSIXEL_LOAD:/{print; exit}')
 test -n "${marker}" && {
-    printf "1..0 # SKIP libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}";
+    printf "1..0 # SKIP libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}\n";
     exit 0
 }
 
