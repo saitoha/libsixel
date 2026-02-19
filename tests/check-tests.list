@@ -468,6 +468,10 @@ quality_gate/ms_ssim/0079_lsqa_wic_format_tiff_zip_rgb.t
 quality_gate/ms_ssim/0080_lsqa_wic_format_tiff_rle_rgb.t
 quality_gate/ms_ssim/0081_lsqa_wic_format_ico_multisize.t
 quality_gate/ms_ssim/0082_lsqa_wic_format_dds_dxt3.t
+quality_gate/ms_ssim/0083_lsqa_help_h_option_error.t
+quality_gate/ms_ssim/0084_lsqa_metric_long_option_equals.t
+quality_gate/ms_ssim/0085_lsqa_baseline_long_option_equals.t
+quality_gate/ms_ssim/0086_lsqa_reordered_option_after_positionals.t
 quant/mapfile/0001_mapfile_export_act.t
 quant/mapfile/0002_mapfile_export_pal_default.t
 quant/mapfile/0003_mapfile_export_pal_stdout.t
