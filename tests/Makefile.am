@@ -285,8 +285,7 @@ check-TESTS: $(check_PROGRAMS)
 	@$(am__rm_f) $(RECHECK_LOGS)
 	@$(am__rm_f) $(RECHECK_LOGS:.log=.trs)
 	@$(am__rm_f) $(TEST_SUITE_LOG)
-	set +e; \
-	set -xv; \
+	@set +e; \
 	config_header="$(top_builddir)/config.h"; \
 	resolved_test_paths=`$(SHELL) -xv "$(top_builddir)/build-aux/resolve-test-tool-paths.sh" \
 	    "$(abs_top_builddir)" "$(srcdir)/check-test-exports.list" 2>$(top_builddir)/resolve-test-tool-paths.log` || { \
@@ -313,7 +312,6 @@ check-TESTS: $(check_PROGRAMS)
 	export SIXEL_TEST_PYTHON_VENV; \
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner@EXEEXT@ --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
 	$(SIXEL_RUNTIME) $(top_builddir)/tests/test_runner --is-running-under-wine && export RUNTIME_ENV_IS_WINE=1; \
-	set +xv; \
 	log_list=`echo $(TEST_LOGS)`; \
 	$(MAKE) $(AM_MAKEFLAGS) $(TEST_SUITE_LOG) \
 	    TEST_LOGS="$$log_list" \

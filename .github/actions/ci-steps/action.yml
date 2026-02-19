@@ -543,7 +543,7 @@ runs:
         run: |
           ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
           ${{ fromJSON(inputs.matrix_json).make || 'gmake' }} V=1
-          ${{ fromJSON(inputs.matrix_json).make || 'gmake' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }} V=1
+          ${{ fromJSON(inputs.matrix_json).make || 'gmake' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
 
     - name: Configure, build, and test (Meson, Solaris)
       if: ${{ fromJSON(inputs.matrix_json).buildtool == 'meson' && fromJSON(inputs.matrix_json).exec_type == 'solaris-vm' }}
