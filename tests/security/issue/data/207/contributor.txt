@@ -1,1 +1,0 @@
-This poc(tests/security/issue/data/207/poc) is contributed from @optionGo.

@@ -1139,14 +1139,14 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/resolutions/tiny_square.png \
     data/corrupted/metadata_noise.jpg \
     data/corrupted/truncated.png \
-    security/issue/data/166/poc \
-    security/issue/data/167/poc \
-    security/issue/data/200/POC_img2sixel_heap_buffer_overflow \
-    security/issue/data/207/poc \
-    security/issue/data/libsixel-libsixel/51/stbi_1561_poc.bin \
-    security/issue/data/libsixel-libsixel/73/stbi_1561_poc.bin \
-    security/issue/data/131/2020-01-30-img2sixel.gif \
-    security/issue/data/136/poc \
+    data/security/issue/data/166/poc \
+    data/security/issue/data/167/poc \
+    data/security/issue/data/200/POC_img2sixel_heap_buffer_overflow \
+    data/security/issue/data/207/poc \
+    data/security/issue/data/libsixel-libsixel/51/stbi_1561_poc.bin \
+    data/security/issue/data/libsixel-libsixel/73/stbi_1561_poc.bin \
+    data/security/issue/data/131/2020-01-30-img2sixel.gif \
+    data/security/issue/data/136/poc \
     data/loader/pngsuite_expected/0021_pngsuite_basic_default_basn0g01_msssim.ppm \
     data/loader/pngsuite_expected/0022_pngsuite_basic_default_basn0g02_msssim.ppm \
     data/loader/pngsuite_expected/0023_pngsuite_basic_default_basn0g04_msssim.ppm \
@@ -1210,8 +1210,8 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/loader/pngsuite_expected/0081_pngsuite_background_width32_white_bggn4a16_msssim.ppm \
     data/loader/pngsuite_expected/0082_pngsuite_background_width32_white_bgwn6a08_msssim.ppm \
     data/loader/pngsuite_expected/0083_pngsuite_background_width32_white_bgyn6a16_msssim.ppm \
-    io/network/certs/server.crt \
-    io/network/certs/server.key
+    data/io/network/certs/server.crt \
+    data/io/network/certs/server.key
 
 
 # Avoid deleting the in-tree timeout wrapper when building in the source
