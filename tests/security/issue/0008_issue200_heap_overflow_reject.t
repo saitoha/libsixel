@@ -11,7 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 
-issue200="${TOP_SRCDIR}/tests/security/issue/data/200/POC_img2sixel_heap_buffer_overflow"
+issue200="${TOP_SRCDIR}/tests/data/security/issue/data/200/POC_img2sixel_heap_buffer_overflow"
 
 printf '1..1\n'
 set -v

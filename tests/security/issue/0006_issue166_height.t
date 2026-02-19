@@ -11,7 +11,7 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 }
 
 
-issue166="${TOP_SRCDIR}/tests/security/issue/data/166/poc"
+issue166="${TOP_SRCDIR}/tests/data/security/issue/data/166/poc"
 
 printf '1..1\n'
 set -v

@@ -2,8 +2,18 @@
 # TAP test: PNGSuite case for background/bggn4a16.png with direct LSQA comparison.
 
 # Reference image generation command:
-#   magick images/pngsuite/background/bggn4a16.png -background "green" -alpha remove -alpha off -depth 8 \
-#       -define ppm:format=plain PPM:tests/data/loader/pngsuite_expected/0065_pngsuite_background_default_bggn4a16_msssim.ppm
+#   convert images/pngsuite/background/bggn4a16.png \
+#       -background '#2e2e2e' -alpha remove -alpha off -depth 8 \
+#       -define ppm:format=plain \
+#       PPM:tests/data/loader/pngsuite_expected/0065_pngsuite_background_default_bggn4a16_msssim.ppm
+#
+# Why '#2e2e2e'?
+# - bggn4a16.png is a GA16 PNG that carries gAMA and bKGD chunks.
+# - libpng's default background composition path for this file does not match
+#   ImageMagick's simple "-background green" flattening from the previous test.
+# - '#2e2e2e' is an ImageMagick-side approximation of the libpng default blend,
+#   which keeps this test independent from img2sixel output while preserving a
+#   strict quality gate (MS-SSIM >= 0.98).
 set -eux
 
 . "${TOP_SRCDIR}/tests/_lib/sh/common.sh"
@@ -29,7 +39,7 @@ run_img2sixel -Llibpng! "${input_png}" >"${output_sixel}" || {
     exit 0
 }
 
-lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:0.84" "${expected_ppm}" "${output_sixel}" 2>&1) || {
+lsqa_msg=$(run_lsqa -m MS-SSIM -b "MS-SSIM:0.98" "${expected_ppm}" "${output_sixel}" 2>&1) || {
     fail 1 "$lsqa_msg"
     exit 0
 }

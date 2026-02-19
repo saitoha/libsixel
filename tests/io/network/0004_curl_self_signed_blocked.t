@@ -19,7 +19,6 @@ server_port_base=4443
 max_port_attempts=5
 # Use nearby ports so the HTTPS server can start when the default is busy.
 port_file="${ARTIFACT_LOCAL_DIR}/server.port"
-script_dir=$(CDPATH=; cd "${0%[/\\]*}"; pwd)
 
 echo "1..1"
 set -v
@@ -36,7 +35,7 @@ test -n "${PYTHON}" || {
     exit 0
 }
 
-cert_dir="${script_dir}/certs"
+cert_dir="${TOP_SRCDIR}/tests/data/io/network/certs"
 server_root="${TOP_SRCDIR}"
 
 cat >"${ARTIFACT_LOCAL_DIR}/server.py" <<PY
