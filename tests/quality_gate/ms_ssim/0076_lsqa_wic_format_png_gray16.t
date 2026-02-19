@@ -3,7 +3,7 @@
 # Reproduction command (ImageMagick):
 #   convert tests/data/inputs/snake_64.png -colorspace Gray -depth 16 tests/data/inputs/formats/snake-png-gray16.png
 
-set -eu
+set -eux
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
     printf "1..0 # SKIP img2sixel is disabled in this build\n";
