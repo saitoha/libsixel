@@ -162,6 +162,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0015_LOADER_QUICKLOOK_PIXELFORMAT \
     -DBUILD_TEST_0016_LOADER_GNOME_THUMBNAILER_PIXELFORMAT \
     -DBUILD_TEST_0017_LOADER_LIBWEBP_PIXELFORMAT \
+    -DBUILD_TEST_0018_LOADER_LIBWEBP_ANIMATION_FRAMES \
     -DBUILD_TEST_0029_CLI_TOKEN_IS_KNOWN_OPTION \
     -DBUILD_TEST_0030_CLI_OPTION_REQUIRES_ARGUMENT \
     -DBUILD_TEST_0031_CLI_GUARD_MISSING_ARGUMENT \
@@ -203,6 +204,7 @@ test_runner_SOURCES = test_runner.c \
     io/loader/0015_loader_quicklook_pixelformat.c \
     io/loader/0016_loader_gnome_thumbnailer_pixelformat.c \
     io/loader/0017_loader_libwebp_pixelformat.c \
+    io/loader/0018_loader_libwebp_animation_frames.c \
     io/loader/pixelformat_test_common.h \
     quant/palette/0001_kmeans_init.c \
     diagnostics/probe/0001_probe_parse.c \
@@ -355,6 +357,13 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/snake-ico-rgba.ico \
     data/inputs/formats/snake-jpeg-444.jpg \
     data/inputs/formats/snake-jpeg-progressive-420.jpg \
+    data/inputs/formats/animated-lossless-2frame.webp \
+    data/inputs/formats/animated-8x8-frame1-reference.png \
+    data/inputs/formats/animated-lossless-8x8-2frame-min.webp \
+    data/inputs/formats/animated-lossless-8x8-2frame-loop2-min.webp \
+    data/inputs/formats/animated-lossy-8x8-2frame-min.webp \
+    data/inputs/formats/animated-lossless-alpha-8x8-2frame-min.webp \
+    data/inputs/formats/animated-lossy-alpha-8x8-2frame-min.webp \
     data/inputs/formats/snake-png-adam7-rgb.png \
     data/inputs/formats/snake-png-pal8.png \
     data/inputs/formats/snake-png-gray16.png \
