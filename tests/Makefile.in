@@ -2553,11 +2553,23 @@ check-TESTS: $(check_PROGRAMS)
 	@$(am__rm_f) $(RECHECK_LOGS:.log=.trs)
 	@$(am__rm_f) $(TEST_SUITE_LOG)
 	set +e; \
+	set -xv; \
 	config_header="$(top_builddir)/config.h"; \
 	resolved_test_paths=`$(SHELL) "$(top_builddir)/build-aux/resolve-test-tool-paths.sh" \
-	    "$(abs_top_builddir)" "$(srcdir)/check-test-exports.list"`; \
+	    "$(abs_top_builddir)" "$(srcdir)/check-test-exports.list"` || { \
+	    echo "error: failed to resolve test tool paths" >&2; \
+	    exit 1; \
+	}; \
 	set -a; \
 	eval "$$resolved_test_paths"; \
+	for required_export in `$(SHELL) "$(top_srcdir)/build-aux/read-check-test-list.sh" \
+	    tests "$(srcdir)/check-test-exports.list"`; do \
+	    eval "required_value=\$${$$required_export-}"; \
+	    if test "x$$required_value" = x; then \
+	        echo "error: unresolved test export: $$required_export" >&2; \
+	        exit 1; \
+	    fi; \
+	done; \
 	config_exports=`$(top_srcdir)/build-aux/resolve-config-h-exports.sh "$$config_header" exports`; \
 	eval "$$config_exports"; \
 	set +a; \
