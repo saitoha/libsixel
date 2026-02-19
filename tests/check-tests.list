@@ -245,6 +245,13 @@ io/loader/animation/0001_disable_update_mode.t
 io/loader/animation/0002_static_frame_render.t
 io/loader/animation/0003_update_and_static_frame.t
 io/loader/animation/0004_split_sequence_atkinson.t
+io/loader/animation/0005_webp_lossless_animation_decode.t
+io/loader/animation/0006_webp_lossy_animation_decode.t
+io/loader/animation/0007_webp_static_frame_lsqa.t
+io/loader/animation/0008_webp_loop_disable.t
+io/loader/animation/0009_webp_loop_auto_finite.t
+io/loader/animation/0010_webp_ignore_delay.t
+io/loader/animation/0011_webp_use_macro.t
 io/network/0001_curl_invalid_file_url.t
 io/network/0002_curl_invalid_https_url.t
 io/network/0003_curl_file_scheme.t
