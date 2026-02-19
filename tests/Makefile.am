@@ -162,6 +162,7 @@ TEST_RUNNER_AMALGAMATION_DEFINES = \
     -DBUILD_TEST_0015_LOADER_QUICKLOOK_PIXELFORMAT \
     -DBUILD_TEST_0016_LOADER_GNOME_THUMBNAILER_PIXELFORMAT \
     -DBUILD_TEST_0017_LOADER_LIBWEBP_PIXELFORMAT \
+    -DBUILD_TEST_0018_LOADER_LIBWEBP_ANIMATION_FRAMES \
     -DBUILD_TEST_0029_CLI_TOKEN_IS_KNOWN_OPTION \
     -DBUILD_TEST_0030_CLI_OPTION_REQUIRES_ARGUMENT \
     -DBUILD_TEST_0031_CLI_GUARD_MISSING_ARGUMENT \
@@ -203,6 +204,7 @@ test_runner_SOURCES = test_runner.c \
     io/loader/0015_loader_quicklook_pixelformat.c \
     io/loader/0016_loader_gnome_thumbnailer_pixelformat.c \
     io/loader/0017_loader_libwebp_pixelformat.c \
+    io/loader/0018_loader_libwebp_animation_frames.c \
     io/loader/pixelformat_test_common.h \
     quant/palette/0001_kmeans_init.c \
     diagnostics/probe/0001_probe_parse.c \
