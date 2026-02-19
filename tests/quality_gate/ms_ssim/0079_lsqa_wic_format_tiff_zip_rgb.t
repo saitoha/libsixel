@@ -6,15 +6,15 @@
 set -eu
 
 test "${HAVE_IMG2SIXEL-}" = 1 || {
-    printf "1..0 # SKIP img2sixel is disabled in this build";
+    printf "1..0 # SKIP img2sixel is disabled in this build\n";
     exit 0
 }
 test "${HAVE_WIC-}" = 1 || {
-    printf "1..0 # SKIP wic loader is unavailable";
+    printf "1..0 # SKIP wic loader is unavailable\n";
     exit 0
 }
 test "${RUNTIME_ENV_IS_WINE-0}" -eq 1 && {
-    printf "1..0 # SKIP WIC is unavailable under wine";
+    printf "1..0 # SKIP WIC is unavailable under wine\n";
     exit 0
 }
 

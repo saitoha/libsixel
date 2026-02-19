@@ -4,7 +4,7 @@
 set -eux
 
 test "${HAVE_GDK_PIXBUF2-}" = 1 || {
-    printf "1..0 # SKIP gdk-pixbuf2 loader is unavailable"
+    printf "1..0 # SKIP gdk-pixbuf2 loader is unavailable\n"
     exit 0
 }
 

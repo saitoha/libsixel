@@ -4,7 +4,7 @@
 set -eux
 
 test "${HAVE_COREGRAPHICS-}" = 1 || {
-    printf "1..0 # SKIP coregraphics loader is unavailable"
+    printf "1..0 # SKIP coregraphics loader is unavailable\n"
     exit 0
 }
 

@@ -270,7 +270,7 @@ check-TESTS: $(check_PROGRAMS)
 	@$(am__rm_f) $(RECHECK_LOGS)
 	@$(am__rm_f) $(RECHECK_LOGS:.log=.trs)
 	@$(am__rm_f) $(TEST_SUITE_LOG)
-	@set +e; \
+	set +e; \
 	config_header="$(top_builddir)/config.h"; \
 	resolved_test_paths=`$(SHELL) "$(top_builddir)/build-aux/resolve-test-tool-paths.sh" \
 	    "$(abs_top_builddir)" "$(srcdir)/check-test-exports.list"`; \

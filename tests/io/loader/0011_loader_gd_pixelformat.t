@@ -4,7 +4,7 @@
 set -eux
 
 test "${HAVE_GD-}" = 1 || {
-    printf "1..0 # SKIP GD loader is unavailable"
+    printf "1..0 # SKIP GD loader is unavailable\n"
     exit 0
 }
 

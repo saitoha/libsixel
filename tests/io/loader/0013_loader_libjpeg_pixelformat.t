@@ -4,7 +4,7 @@
 set -eux
 
 test "${HAVE_JPEG-}" = 1 || {
-    printf "1..0 # SKIP libjpeg loader is unavailable"
+    printf "1..0 # SKIP libjpeg loader is unavailable\n"
     exit 0
 }
 
