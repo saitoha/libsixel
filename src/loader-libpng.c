@@ -769,6 +769,7 @@ emit_apng_frame(
     sixel_apng_state_t const      *state,
     sixel_apng_frame_control_t    *control,
     int                            frame_no,
+    int                            multiframe,
     unsigned char                 *bgcolor,
     int                            reqcolors,
     int                            fuse_palette,
@@ -864,6 +865,7 @@ emit_apng_frame(
     frame->transparent = transparent;
     sixel_frame_set_delay(frame, (int)control->delay_ms);
     sixel_frame_set_frame_no(frame, frame_no);
+    sixel_frame_set_multiframe(frame, multiframe);
     sixel_frame_set_pixels(frame, pixels);
     palette = NULL;
     pixels = NULL;
@@ -903,6 +905,7 @@ load_apng_frames(
     int seen_actl;
     int has_frame;
     int frame_no;
+    int num_frames;
     int num_plays;
 
     status = SIXEL_FALSE;
@@ -913,6 +916,7 @@ load_apng_frames(
     seen_actl = 0;
     has_frame = 0;
     frame_no = 0;
+    num_frames = 0;
     num_plays = 0;
 
     while (remain >= 12) {
@@ -937,12 +941,14 @@ load_apng_frames(
                 goto end;
             }
             seen_actl = 1;
+            num_frames = (int)read_be32(p + 8);
             num_plays = (int)read_be32(p + 12);
         } else if (memcmp(p + 4, "fcTL", 4) == 0 && seen_actl) {
             if (has_frame && state.chunk_size > 0) {
                 status = emit_apng_frame(&state,
                                          &control,
                                          frame_no,
+                                         num_frames > 1,
                                          bgcolor,
                                          reqcolors,
                                          fuse_palette,
@@ -1025,6 +1031,7 @@ load_apng_frames(
         status = emit_apng_frame(&state,
                                  &control,
                                  frame_no,
+                                 num_frames > 1,
                                  bgcolor,
                                  reqcolors,
                                  fuse_palette,
