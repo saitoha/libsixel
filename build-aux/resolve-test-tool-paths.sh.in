@@ -21,7 +21,8 @@ if [ ! -f "$key_list_file" ]; then
 fi
 
 quote_single() {
-    printf "%s" "$1" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/"
+    escaped=$(printf "%s" "$1" | sed "s/'/'\"'\"'/g")
+    printf "'%s'" "$escaped"
 }
 
 emit_assignment() {

@@ -133,7 +133,7 @@ VPATH = @srcdir@
 pkgconfigdir = @pkgconfigdir@
 pkgconfig_DATA = $(builddir)/libsixel.pc
 
-CLEANFILES = $(builddir)/package.json
+CLEANFILES = $(builddir)/package.json $(builddir)/*.log
 
 # Build a selected group of subdirectories in parallel after src has completed.
 #
