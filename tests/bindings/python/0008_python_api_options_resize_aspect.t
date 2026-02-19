@@ -110,7 +110,7 @@ test "${python_status}" -eq 0 && {
 
 marker=$(printf '%s' "${python_output}" | awk '/^SKIP_LIBSIXEL_LOAD:/{print; exit}')
 test -n "${marker}" && {
-    printf "1..0 # SKIP libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}\n";
+    printf "1..0 # SKIP %s\n" "libsixel failed to load: ${marker#SKIP_LIBSIXEL_LOAD:}";
     exit 0
 }
 
