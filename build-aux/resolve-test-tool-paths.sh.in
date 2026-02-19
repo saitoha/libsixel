@@ -20,9 +20,32 @@ if [ ! -f "$key_list_file" ]; then
     exit 1
 fi
 
+strip_single_quotes() {
+    input=$1
+    output=
+    while [ -n "$input" ]; do
+        char=${input%"${input#?}"}
+        input=${input#?}
+        if [ "$char" != "'" ]; then
+            output=$output$char
+        fi
+    done
+    printf '%s' "$output"
+}
+
 quote_single() {
-    escaped=$(printf "%s" "$1" | sed "s/'/'\"'\"'/g")
-    printf "'%s'" "$escaped"
+    input=$1
+    printf "'"
+    while [ -n "$input" ]; do
+        char=${input%"${input#?}"}
+        input=${input#?}
+        if [ "$char" = "'" ]; then
+            printf "'\\''"
+        else
+            printf '%s' "$char"
+        fi
+    done
+    printf "'"
 }
 
 emit_assignment() {
@@ -61,10 +84,19 @@ resolve_test_tool_path() {
     fi
 }
 
-shlibpath_overrides_runpath=$(
-    awk -F= '/^shlibpath_overrides_runpath=/{gsub(/\047/, "", $2); print $2; exit}' \
-        "$top_builddir/libtool" 2>/dev/null || true
-)
+shlibpath_overrides_runpath=
+if [ -f "$top_builddir/libtool" ]; then
+    while IFS= read -r libtool_line; do
+        case "$libtool_line" in
+            shlibpath_overrides_runpath=*)
+                shlibpath_overrides_runpath=${libtool_line#*=}
+                shlibpath_overrides_runpath=$(strip_single_quotes \
+                    "$shlibpath_overrides_runpath")
+                break
+                ;;
+        esac
+    done < "$top_builddir/libtool"
+fi
 
 prefer_wrapper=no
 if [ "$shlibpath_overrides_runpath" != "yes" ]; then
@@ -92,18 +124,31 @@ if [ ! -d "$LIBSIXEL_LIBDIR" ]; then
     LIBSIXEL_LIBDIR="$top_builddir/src"
 fi
 
-keys=$(awk '
-    /^[[:space:]]*($|#)/ { next }
-    {
-        gsub(/^[[:space:]]+/, "")
-        gsub(/[[:space:]]+$/, "")
-        if ($0 != "") {
-            print $0
-        }
-    }
-' "$key_list_file")
+while IFS= read -r key || [ -n "$key" ]; do
+    # Trim leading spaces and tabs.
+    while :; do
+        case "$key" in
+            ' '*) key=${key# } ;;
+            '	'*) key=${key#'	'} ;;
+            *) break ;;
+        esac
+    done
 
-for key in $keys; do
+    # Trim trailing spaces and tabs.
+    while :; do
+        case "$key" in
+            *' ') key=${key% } ;;
+            *'	') key=${key%'	'} ;;
+            *) break ;;
+        esac
+    done
+
+    case "$key" in
+        ''|'#'*)
+            continue
+            ;;
+    esac
+
     value=
     case "$key" in
         IMG2SIXEL_PATH) value=$IMG2SIXEL_PATH ;;
@@ -117,4 +162,4 @@ for key in $keys; do
             ;;
     esac
     emit_assignment "$key" "$value"
-done
+done < "$key_list_file"
