@@ -9243,6 +9243,7 @@ sixel_encoder_encode(
     size_t png_temp_capacity = 0u;
     char *png_tmpnam_result = NULL;
     int png_open_flags = 0;
+    int png_retry_flags = 0;
     sixel_clipboard_spec_t clipboard_spec;
     char clipboard_input_format[32];
     char *clipboard_input_path;
@@ -9369,9 +9370,26 @@ sixel_encoder_encode(
 #if defined(O_EXCL)
         png_open_flags |= O_EXCL;
 #endif
+        png_retry_flags = png_open_flags;
+#if defined(O_EXCL)
+        png_retry_flags &= ~O_EXCL;
+#endif
         encoder->outfd = sixel_compat_open(png_temp_path,
                                            png_open_flags,
                                            S_IRUSR | S_IWUSR);
+#if defined(O_EXCL)
+        if (encoder->outfd < 0
+                && (errno == EBADF || errno == EINVAL)) {
+            /*
+             * Some virtual filesystems used by Emscripten reject O_EXCL
+             * with EBADF/EINVAL even when the generated path is unique.
+             * Retry without O_EXCL to avoid flaky prefixed PNG output.
+             */
+            encoder->outfd = sixel_compat_open(png_temp_path,
+                                               png_retry_flags,
+                                               S_IRUSR | S_IWUSR);
+        }
+#endif
         if (encoder->outfd < 0) {
             sixel_helper_set_additional_message(
                 "sixel_encoder_encode: failed to create the PNG target file.");
