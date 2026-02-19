@@ -677,6 +677,7 @@ endif
 
 webp_opt = get_option('webp')
 webp_dep = disabler()
+webpdemux_dep = disabler()
 
 if not webp_opt.disabled()
   if host_system == 'emscripten'
@@ -692,11 +693,23 @@ if not webp_opt.disabled()
     endif
   else
     webp_dep = dependency('libwebp', required: false, method: 'pkg-config')
+    webpdemux_dep = dependency('libwebpdemux',
+                               required: false,
+                               method: 'pkg-config')
     if not webp_dep.found()
       webp_dep = cc.find_library('webp', required: webp_opt.enabled())
     endif
+    if not webpdemux_dep.found()
+      webpdemux_dep = cc.find_library('webpdemux',
+                                      required: webp_opt.enabled())
+    endif
+    if webp_dep.found() and webpdemux_dep.found()
+      webp_dep = declare_dependency(dependencies: [webp_dep, webpdemux_dep])
+    else
+      webp_dep = disabler()
+    endif
     if not webp_dep.found() and webp_opt.enabled()
-      error('webp=enabled requires libwebp')
+      error('webp=enabled requires libwebp and libwebpdemux')
     endif
   endif
 endif

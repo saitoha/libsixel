@@ -42,6 +42,7 @@
 # include <limits.h>
 #endif
 #include <webp/decode.h>
+#include <webp/demux.h>
 
 #include <sixel.h>
 
@@ -159,47 +160,263 @@ load_with_libwebp(
     SIXELSTATUS status;
     sixel_frame_t *frame;
     unsigned char *pixels;
+    WebPData webp_data;
+    WebPAnimDecoderOptions decoder_options;
+    WebPAnimDecoder *decoder;
+    WebPAnimInfo anim_info;
+    uint8_t *decoded_frame;
+    int timestamp;
+    int previous_timestamp;
+    size_t frame_bytes;
+    int next_delay;
 
     status = SIXEL_FALSE;
     frame = NULL;
     pixels = NULL;
+    webp_data = (WebPData){ 0 };
+    decoder = NULL;
+    anim_info = (WebPAnimInfo){ 0 };
+    decoded_frame = NULL;
+    timestamp = 0;
+    previous_timestamp = 0;
+    frame_bytes = 0;
+    next_delay = 0;
 
-    (void)fstatic;
     (void)fuse_palette;
     (void)reqcolors;
-    (void)loop_control;
+
+    webp_data.bytes = pchunk->buffer;
+    webp_data.size = pchunk->size;
+
+    if (!WebPAnimDecoderOptionsInit(&decoder_options)) {
+        sixel_helper_set_additional_message(
+            "load_with_libwebp: WebPAnimDecoderOptionsInit failed.");
+        status = SIXEL_WEBP_ERROR;
+        goto end;
+    }
+    decoder_options.color_mode = MODE_RGBA;
+    decoder = WebPAnimDecoderNew(&webp_data, &decoder_options);
+    if (decoder == NULL) {
+        sixel_helper_set_additional_message(
+            "load_with_libwebp: WebPAnimDecoderNew failed.");
+        status = SIXEL_WEBP_ERROR;
+        goto end;
+    }
+
+    if (!WebPAnimDecoderGetInfo(decoder, &anim_info)) {
+        sixel_helper_set_additional_message(
+            "load_with_libwebp: WebPAnimDecoderGetInfo failed.");
+        status = SIXEL_WEBP_ERROR;
+        goto end;
+    }
+
+    if (anim_info.frame_count <= 1) {
+        WebPAnimDecoderDelete(decoder);
+        decoder = NULL;
+
+        status = sixel_frame_new(&frame, pchunk->allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+
+        status = load_webp(&pixels,
+                           pchunk->buffer,
+                           pchunk->size,
+                           &frame->width,
+                           &frame->height,
+                           &frame->pixelformat,
+                           pchunk->allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+
+        sixel_frame_set_pixels(frame, pixels);
+
+        status = sixel_frame_strip_alpha(frame, bgcolor);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+
+        status = fn_load(frame, context);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+
+        status = SIXEL_OK;
+        goto end;
+    }
+
+    if (fstatic) {
+        status = sixel_frame_new(&frame, pchunk->allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+
+        if (!WebPAnimDecoderHasMoreFrames(decoder)) {
+            sixel_helper_set_additional_message(
+                "load_with_libwebp: no frames in animated WebP stream.");
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+        if (!WebPAnimDecoderGetNext(decoder, &decoded_frame, &timestamp)) {
+            sixel_helper_set_additional_message(
+                "load_with_libwebp: WebPAnimDecoderGetNext failed.");
+            status = SIXEL_WEBP_ERROR;
+            goto end;
+        }
+
+        frame->width = (int)anim_info.canvas_width;
+        frame->height = (int)anim_info.canvas_height;
+        frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+        frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+        frame->multiframe = 0;
+        frame->loop_count = 0;
+        frame->frame_no = 0;
+        frame->delay = timestamp / 10;
+
+        if (frame->width <= 0 || frame->height <= 0) {
+            sixel_helper_set_additional_message(
+                "load_with_libwebp: invalid canvas dimensions.");
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+        if ((size_t)frame->width > SIZE_MAX / 4 ||
+            (size_t)frame->height > SIZE_MAX / ((size_t)frame->width * 4)) {
+            status = SIXEL_BAD_INTEGER_OVERFLOW;
+            goto end;
+        }
+        frame_bytes = (size_t)frame->width * (size_t)frame->height * 4;
+
+        pixels = (unsigned char *)sixel_allocator_malloc(pchunk->allocator,
+                                                         frame_bytes);
+        if (pixels == NULL) {
+            sixel_helper_set_additional_message(
+                "load_with_libwebp: sixel_allocator_malloc() failed.");
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+        memcpy(pixels, decoded_frame, frame_bytes);
+        sixel_frame_set_pixels(frame, pixels);
+
+        status = sixel_frame_strip_alpha(frame, bgcolor);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+
+        status = fn_load(frame, context);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+
+        status = SIXEL_OK;
+        goto end;
+    }
 
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
         goto end;
     }
 
-    status = load_webp(&pixels,
-                       pchunk->buffer,
-                       pchunk->size,
-                       &frame->width,
-                       &frame->height,
-                       &frame->pixelformat,
-                       pchunk->allocator);
-    if (SIXEL_FAILED(status)) {
+    /*
+     * Decode WebP animation as fully composited RGBA canvases.
+     *
+     *   outer loop : logical animation loop
+     *   inner loop : frame traversal inside a single loop
+     */
+    frame->width = (int)anim_info.canvas_width;
+    frame->height = (int)anim_info.canvas_height;
+    frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
+    frame->colorspace = SIXEL_COLORSPACE_GAMMA;
+    frame->multiframe = 1;
+    frame->loop_count = 0;
+
+    if (frame->width <= 0 || frame->height <= 0) {
+        sixel_helper_set_additional_message(
+            "load_with_libwebp: invalid canvas dimensions.");
+        status = SIXEL_BAD_INPUT;
         goto end;
     }
-
-    sixel_frame_set_pixels(frame, pixels);
-
-    status = sixel_frame_strip_alpha(frame, bgcolor);
-    if (SIXEL_FAILED(status)) {
+    if ((size_t)frame->width > SIZE_MAX / 4 ||
+        (size_t)frame->height > SIZE_MAX / ((size_t)frame->width * 4)) {
+        status = SIXEL_BAD_INTEGER_OVERFLOW;
         goto end;
     }
+    frame_bytes = (size_t)frame->width * (size_t)frame->height * 4;
 
-    status = fn_load(frame, context);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    for (;;) {
+        frame->frame_no = 0;
+        previous_timestamp = 0;
+
+        while (WebPAnimDecoderHasMoreFrames(decoder)) {
+            if (!WebPAnimDecoderGetNext(decoder,
+                                        &decoded_frame,
+                                        &timestamp)) {
+                sixel_helper_set_additional_message(
+                    "load_with_libwebp: WebPAnimDecoderGetNext failed.");
+                status = SIXEL_WEBP_ERROR;
+                goto end;
+            }
+
+            pixels = (unsigned char *)sixel_allocator_malloc(
+                pchunk->allocator,
+                frame_bytes);
+            if (pixels == NULL) {
+                sixel_helper_set_additional_message(
+                    "load_with_libwebp: sixel_allocator_malloc() failed.");
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+
+            memcpy(pixels, decoded_frame, frame_bytes);
+            sixel_frame_set_pixels(frame, pixels);
+
+            next_delay = timestamp - previous_timestamp;
+            if (next_delay < 0) {
+                next_delay = 0;
+            }
+            frame->delay = next_delay / 10;
+
+            status = sixel_frame_strip_alpha(frame, bgcolor);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+
+            status = fn_load(frame, context);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+
+            pixels = sixel_frame_get_pixels(frame);
+            if (pixels != NULL) {
+                sixel_allocator_free(pchunk->allocator, pixels);
+                sixel_frame_set_pixels(frame, NULL);
+                pixels = NULL;
+            }
+
+            previous_timestamp = timestamp;
+            frame->frame_no++;
+        }
+
+        frame->loop_count++;
+
+        if (loop_control == SIXEL_LOOP_DISABLE || frame->frame_no == 1) {
+            break;
+        }
+        if (loop_control == SIXEL_LOOP_AUTO &&
+            anim_info.loop_count > 0 &&
+            (unsigned int)frame->loop_count >= anim_info.loop_count) {
+            break;
+        }
+
+        WebPAnimDecoderReset(decoder);
     }
 
     status = SIXEL_OK;
 
 end:
+    if (decoder != NULL) {
+        WebPAnimDecoderDelete(decoder);
+    }
     sixel_frame_unref(frame);
 
     return status;
