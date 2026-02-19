@@ -2953,34 +2953,39 @@ if test x$with_webp != xno; then
                 AC_MSG_ERROR(["${with_webp}" is not directory])
             fi
             ADDED_CFLAGS="-I${with_webp}/include"
-            ADDED_LIBS="-L${with_webp}/lib -lwebp"
+            ADDED_LIBS="-L${with_webp}/lib -lwebp -lwebpdemux"
         else
             if test x${prefix} != x -a x${prefix} != xNONE; then
                 ADDED_CFLAGS="-I${prefix}/include"
-                ADDED_LIBS="-L${prefix}/lib -lwebp"
+                ADDED_LIBS="-L${prefix}/lib -lwebp -lwebpdemux"
             else
                 ADDED_CFLAGS="-I/usr/local/include"
-                ADDED_LIBS="-L/usr/local/lib -lwebp"
+                ADDED_LIBS="-L/usr/local/lib -lwebp -lwebpdemux"
             fi
         fi
         CFLAGS="${CFLAGS} ${ADDED_CFLAGS}"
         LDFLAGS="${LDFLAGS} ${ADDED_LIBS}"
         AC_CHECK_HEADER([webp/decode.h],
-                        [AC_CHECK_LIB([webp],
-                                      [WebPGetInfo],
-                                      [have_webp=yes
-                                       LIBWEBP_CFLAGS=$ADDED_CFLAGS
-                                       LIBWEBP_LIBS=$ADDED_LIBS],
-                                      [have_webp=no])],
+                        [AC_CHECK_HEADER([webp/demux.h],
+                                         [AC_CHECK_LIB([webp],
+                                                       [WebPGetInfo],
+                                                       [AC_CHECK_LIB([webpdemux],
+                                                                     [WebPAnimDecoderGetInfo],
+                                                                     [have_webp=yes
+                                                                      LIBWEBP_CFLAGS=$ADDED_CFLAGS
+                                                                      LIBWEBP_LIBS=$ADDED_LIBS],
+                                                                     [have_webp=no])],
+                                                       [have_webp=no])],
+                                         [have_webp=no])],
                         [have_webp=no])
         CFLAGS=$CFLAGS_BACKUP
         LDFLAGS=$LDFLAGS_BACKUP
         if test x$have_webp != xyes -a ! -d "$with_webp"; then
             if test x${PKG_CONFIG} != x; then
                 PKG_CHECK_MODULES(LIBWEBP,
-                                  [libwebp],
+                                  [libwebp libwebpdemux],
                                   [have_webp=yes
-                                   LIBWEBP_PKG_NAME=libwebp],
+                                   LIBWEBP_PKG_NAME="libwebp libwebpdemux"],
                                   [have_webp=no])
             fi
         fi
@@ -2991,7 +2996,7 @@ if test x$with_webp != xno; then
         if test x$LIBWEBP_PKG_NAME != x; then
             REQUIRES_PRIVATE="$REQUIRES_PRIVATE $LIBWEBP_PKG_NAME"
         else
-            REQUIRES_PRIVATE="$REQUIRES_PRIVATE libwebp"
+            REQUIRES_PRIVATE="$REQUIRES_PRIVATE libwebp libwebpdemux"
         fi
         LIBS_PRIVATE="$LIBS_PRIVATE $LIBWEBP_LIBS"
         AC_MSG_NOTICE([libwebp cflags is ${LIBWEBP_CFLAGS}])
