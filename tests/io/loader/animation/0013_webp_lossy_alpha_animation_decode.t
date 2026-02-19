@@ -20,7 +20,7 @@ set -v
 
 image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossy-alpha-8x8-2frame-min.webp"
 
-run_img2sixel -Llibwebp -ldisable "${image_webp}" >/dev/null || {
+run_img2sixel -Llibwebp! -ldisable "${image_webp}" >/dev/null || {
     fail 1 "libwebp lossy alpha animation decode failed"
     exit 0
 }

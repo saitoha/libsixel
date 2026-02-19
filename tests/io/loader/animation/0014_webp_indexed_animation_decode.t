@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: libwebp -g ignores frame delay.
+# TAP test: libwebp forced loader decodes indexed animation input.
 
 set -eux
 
@@ -20,10 +20,10 @@ set -v
 
 image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp"
 
-run_img2sixel -Llibwebp! -ldisable -g "${image_webp}" >/dev/null || {
-    fail 1 "libwebp ignore-delay failed"
+run_img2sixel -Llibwebp! -ldisable "${image_webp}" >/dev/null || {
+    fail 1 "libwebp indexed animation decode failed"
     exit 0
 }
 
-pass 1 "libwebp ignore-delay succeeded"
+pass 1 "libwebp indexed animation decode succeeded"
 exit 0
