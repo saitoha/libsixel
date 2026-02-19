@@ -550,38 +550,68 @@ enum {
     SIXEL_LOADER_CHOICE_GNOME_THUMBNAILER
 };
 
-static sixel_option_choice_t const g_option_choices_loaders[] = {
+#if HAVE_WIC
+static sixel_suboption_key_t const g_subkeys_loader_wic[] = {
+    {
+        "ico_minsize",
+        NULL,
+        "SIXEL_WIC_ICO_MINSIZE",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    }
+};
+#endif
+
+static sixel_option_value_schema_t const g_schema_loader_values[] = {
 #if HAVE_LIBPNG
-    { "libpng", SIXEL_LOADER_CHOICE_LIBPNG },
+    { "libpng", SIXEL_LOADER_CHOICE_LIBPNG, NULL, 0u },
 #endif
 #if HAVE_JPEG
-    { "libjpeg", SIXEL_LOADER_CHOICE_LIBJPEG },
+    { "libjpeg", SIXEL_LOADER_CHOICE_LIBJPEG, NULL, 0u },
 #endif
 #if HAVE_WEBP
-    { "libwebp", SIXEL_LOADER_CHOICE_LIBWEBP },
+    { "libwebp", SIXEL_LOADER_CHOICE_LIBWEBP, NULL, 0u },
 #endif
 #if HAVE_LIBTIFF
-    { "libtiff", SIXEL_LOADER_CHOICE_LIBTIFF },
+    { "libtiff", SIXEL_LOADER_CHOICE_LIBTIFF, NULL, 0u },
 #endif
-    { "builtin", SIXEL_LOADER_CHOICE_BUILTIN },
+    { "builtin", SIXEL_LOADER_CHOICE_BUILTIN, NULL, 0u },
 #if HAVE_WIC
-    { "wic", SIXEL_LOADER_CHOICE_WIC },
+    {
+        "wic",
+        SIXEL_LOADER_CHOICE_WIC,
+        g_subkeys_loader_wic,
+        sizeof(g_subkeys_loader_wic) / sizeof(g_subkeys_loader_wic[0])
+    },
 #endif
 #if HAVE_COREGRAPHICS
-    { "coregraphics", SIXEL_LOADER_CHOICE_COREGRAPHICS },
+    { "coregraphics", SIXEL_LOADER_CHOICE_COREGRAPHICS, NULL, 0u },
 #endif
 #ifdef HAVE_GDK_PIXBUF2
-    { "gdk-pixbuf2", SIXEL_LOADER_CHOICE_GDK_PIXBUF2 },
+    { "gdk-pixbuf2", SIXEL_LOADER_CHOICE_GDK_PIXBUF2, NULL, 0u },
 #endif
 #if HAVE_GD
-    { "gd", SIXEL_LOADER_CHOICE_GD },
+    { "gd", SIXEL_LOADER_CHOICE_GD, NULL, 0u },
 #endif
 #if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
-    { "quicklook", SIXEL_LOADER_CHOICE_QUICKLOOK },
+    { "quicklook", SIXEL_LOADER_CHOICE_QUICKLOOK, NULL, 0u },
 #endif
 #if HAVE_FREEDESKTOP_THUMBNAILING
-    { "gnome-thumbnailer", SIXEL_LOADER_CHOICE_GNOME_THUMBNAILER },
+    {
+        "gnome-thumbnailer",
+        SIXEL_LOADER_CHOICE_GNOME_THUMBNAILER,
+        NULL,
+        0u
+    },
 #endif
+};
+
+static sixel_option_argument_schema_t const g_schema_loaders = {
+    SIXEL_OPTFLAG_LOADERS,
+    "--loaders",
+    g_schema_loader_values,
+    sizeof(g_schema_loader_values) / sizeof(g_schema_loader_values[0])
 };
 
 
@@ -603,24 +633,6 @@ arg_strdup(
     return p;
 }
 
-static char const *
-sixel_encoder_find_loader_choice_name(int match_value)
-{
-    size_t index;
-    size_t choice_count;
-
-    choice_count = sizeof(g_option_choices_loaders) /
-        sizeof(g_option_choices_loaders[0]);
-
-    for (index = 0u; index < choice_count; ++index) {
-        if (g_option_choices_loaders[index].value == match_value) {
-            return g_option_choices_loaders[index].name;
-        }
-    }
-
-    return NULL;
-}
-
 /*
  * Parse the loader order list:
  *
@@ -632,22 +644,6 @@ sixel_encoder_find_loader_choice_name(int match_value)
  *  3. Preserve loader suboptions while canonicalizing loader names.
  *  4. Emit the canonical loader order string for the loader registry.
  */
-static size_t
-sixel_loader_token_name_length(char const *token, size_t token_length)
-{
-    size_t index;
-
-    index = 0u;
-    while (index < token_length) {
-        if (token[index] == ':') {
-            break;
-        }
-        ++index;
-    }
-
-    return index;
-}
-
 static int
 sixel_loader_parse_positive_int(char const *text,
                                 size_t length,
@@ -685,48 +681,41 @@ sixel_loader_parse_positive_int(char const *text,
 }
 
 static SIXELSTATUS
-sixel_encoder_validate_loader_suboptions(char const *loader_name,
-                                         char const *token_start,
-                                         size_t token_length,
-                                         size_t name_length)
+sixel_encoder_validate_loader_suboptions(
+    sixel_option_argument_resolution_t const *resolution)
 {
-    char const *suffix;
-    size_t suffix_length;
-    size_t key_length;
+    size_t index;
+    sixel_suboption_assignment_t const *assignment;
     int parsed_value;
 
-    suffix = NULL;
-    suffix_length = 0u;
-    key_length = 0u;
+    index = 0u;
+    assignment = NULL;
     parsed_value = 0;
 
-    if (name_length >= token_length) {
-        return SIXEL_OK;
-    }
-
-    suffix = token_start + name_length;
-    suffix_length = token_length - name_length;
-    if (suffix[0] != ':') {
-        sixel_helper_set_additional_message(
-            "loader suboptions must follow ':'.");
+    if (resolution == NULL || resolution->base_def == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    if (strcmp(loader_name, "wic") != 0) {
+    if (strcmp(resolution->base_def->name, "wic") != 0 &&
+        resolution->assignment_count > 0u) {
         sixel_helper_set_additional_message(
             "specified loader does not support suboptions.");
         return SIXEL_BAD_ARGUMENT;
     }
 
-    key_length = strlen(":ico_minsize=");
-    if (suffix_length <= key_length ||
-        strncmp(suffix, ":ico_minsize=", key_length) != 0 ||
-        !sixel_loader_parse_positive_int(suffix + key_length,
-                                         suffix_length - key_length,
-                                         &parsed_value)) {
-        sixel_helper_set_additional_message(
-            "invalid wic suboption; expected :ico_minsize=SIZE.");
-        return SIXEL_BAD_ARGUMENT;
+    while (index < resolution->assignment_count) {
+        assignment = resolution->assignments + index;
+        if (strcmp(assignment->resolved_key_name, "ico_minsize") == 0) {
+            if (!sixel_loader_parse_positive_int(
+                    assignment->resolved_value_text,
+                    strlen(assignment->resolved_value_text),
+                    &parsed_value)) {
+                sixel_helper_set_additional_message(
+                    "invalid wic suboption; expected :ico_minsize=SIZE.");
+                return SIXEL_BAD_ARGUMENT;
+            }
+        }
+        ++index;
     }
 
     return SIXEL_OK;
@@ -744,20 +733,15 @@ sixel_encoder_parse_loader_order(
     char const *token_end;
     char const *order_end;
     size_t token_length;
-    size_t token_name_length;
-    size_t token_suffix_length;
     size_t output_length;
     size_t output_used;
     int fallback_disabled;
-    int match_value;
     int saw_token;
-    sixel_option_choice_result_t match_result;
+    char token_buffer[256];
     char match_detail[128];
-    char match_message[256];
-    char token_buffer[128];
-    char const *choice_name;
-    size_t choice_name_length;
-    size_t choice_count;
+    sixel_option_argument_resolution_t loader_resolution;
+    size_t assignment_index;
+    size_t text_length;
     char *output;
 
     status = SIXEL_OK;
@@ -766,21 +750,18 @@ sixel_encoder_parse_loader_order(
     token_end = NULL;
     order_end = NULL;
     token_length = 0u;
-    token_name_length = 0u;
-    token_suffix_length = 0u;
     output_length = 0u;
     output_used = 0u;
     fallback_disabled = 0;
-    match_value = 0;
     saw_token = 0;
-    match_result = SIXEL_OPTION_CHOICE_NONE;
-    match_detail[0] = '\0';
-    match_message[0] = '\0';
     token_buffer[0] = '\0';
-    choice_name = NULL;
-    choice_name_length = 0u;
-    choice_count = sizeof(g_option_choices_loaders) /
-        sizeof(g_option_choices_loaders[0]);
+    match_detail[0] = '\0';
+    loader_resolution.resolved_base_value = 0;
+    loader_resolution.base_def = NULL;
+    loader_resolution.assignments = NULL;
+    loader_resolution.assignment_count = 0u;
+    assignment_index = 0u;
+    text_length = 0u;
     output = NULL;
 
     if (order_out != NULL) {
@@ -833,54 +814,46 @@ sixel_encoder_parse_loader_order(
             }
             token_length = (size_t)(token_end - token_start);
             if (token_length > 0u) {
-                token_name_length = sixel_loader_token_name_length(
-                    token_start,
-                    token_length);
-                if (token_name_length == 0u ||
-                    token_name_length >= sizeof(token_buffer)) {
+                if (token_length >= sizeof(token_buffer)) {
                     sixel_helper_set_additional_message(
-                        "loader name is too long.");
-                    return SIXEL_BAD_ARGUMENT;
+                        "loader token is too long.");
+                    status = SIXEL_BAD_ARGUMENT;
+                    goto cleanup;
                 }
-                memcpy(token_buffer, token_start, token_name_length);
-                token_buffer[token_name_length] = '\0';
-                match_result = sixel_option_match_choice(
+                memcpy(token_buffer, token_start, token_length);
+                token_buffer[token_length] = '\0';
+                status = sixel_option_parse_argument_with_suboptions(
                     token_buffer,
-                    g_option_choices_loaders,
-                    choice_count,
-                    &match_value,
+                    &g_schema_loaders,
+                    &loader_resolution,
                     match_detail,
                     sizeof(match_detail));
-                if (match_result != SIXEL_OPTION_CHOICE_MATCH) {
-                    sixel_option_report_invalid_choice(
-                        "specified loader is not supported.",
-                        match_detail,
-                        match_message,
-                        sizeof(match_message));
-                    return SIXEL_BAD_ARGUMENT;
-                }
-                choice_name =
-                    sixel_encoder_find_loader_choice_name(match_value);
-                if (choice_name == NULL) {
-                    sixel_helper_set_additional_message(
-                        "loader choice resolution failed.");
-                    return SIXEL_BAD_ARGUMENT;
+                if (SIXEL_FAILED(status)) {
+                    goto cleanup;
                 }
                 status = sixel_encoder_validate_loader_suboptions(
-                    choice_name,
-                    token_start,
-                    token_length,
-                    token_name_length);
+                    &loader_resolution);
                 if (SIXEL_FAILED(status)) {
-                    return status;
+                    goto cleanup;
                 }
-                token_suffix_length = token_length - token_name_length;
-                choice_name_length = strlen(choice_name);
+
                 if (saw_token) {
                     output_length += 1u;
                 }
-                output_length += choice_name_length + token_suffix_length;
+                output_length += strlen(loader_resolution.base_def->name);
+                assignment_index = 0u;
+                while (assignment_index < loader_resolution.assignment_count) {
+                    output_length += 2u;
+                    output_length += strlen(
+                        loader_resolution.assignments
+                        [assignment_index].resolved_key_name);
+                    output_length += strlen(
+                        loader_resolution.assignments
+                        [assignment_index].resolved_value_text);
+                    ++assignment_index;
+                }
                 saw_token = 1;
+                sixel_option_free_argument_resolution(&loader_resolution);
             }
             token_start = cursor + 1;
         }
@@ -890,7 +863,8 @@ sixel_encoder_parse_loader_order(
     if (!saw_token) {
         sixel_helper_set_additional_message(
             "loaders option requires at least one loader name.");
-        return SIXEL_BAD_ARGUMENT;
+        status = SIXEL_BAD_ARGUMENT;
+        goto cleanup;
     }
 
     if (fallback_disabled) {
@@ -902,7 +876,8 @@ sixel_encoder_parse_loader_order(
         sixel_helper_set_additional_message(
             "sixel_encoder_parse_loader_order: "
             "sixel_allocator_malloc() failed.");
-        return SIXEL_BAD_ALLOCATION;
+        status = SIXEL_BAD_ALLOCATION;
+        goto cleanup;
     }
 
     cursor = value;
@@ -922,52 +897,52 @@ sixel_encoder_parse_loader_order(
             }
             token_length = (size_t)(token_end - token_start);
             if (token_length > 0u) {
-                token_name_length = sixel_loader_token_name_length(
-                    token_start,
-                    token_length);
-                memcpy(token_buffer, token_start, token_name_length);
-                token_buffer[token_name_length] = '\0';
-                match_result = sixel_option_match_choice(
+                memcpy(token_buffer, token_start, token_length);
+                token_buffer[token_length] = '\0';
+                status = sixel_option_parse_argument_with_suboptions(
                     token_buffer,
-                    g_option_choices_loaders,
-                    choice_count,
-                    &match_value,
+                    &g_schema_loaders,
+                    &loader_resolution,
                     match_detail,
                     sizeof(match_detail));
-                if (match_result != SIXEL_OPTION_CHOICE_MATCH) {
-                    sixel_option_report_invalid_choice(
-                        "specified loader is not supported.",
-                        match_detail,
-                        match_message,
-                        sizeof(match_message));
-                    status = SIXEL_BAD_ARGUMENT;
+                if (SIXEL_FAILED(status)) {
                     goto cleanup;
                 }
-                choice_name =
-                    sixel_encoder_find_loader_choice_name(match_value);
-                if (choice_name == NULL) {
-                    sixel_helper_set_additional_message(
-                        "loader choice resolution failed.");
-                    status = SIXEL_BAD_ARGUMENT;
-                    goto cleanup;
-                }
-                token_suffix_length = token_length - token_name_length;
                 if (saw_token) {
                     output[output_used] = ',';
                     ++output_used;
                 }
-                choice_name_length = strlen(choice_name);
+                text_length = strlen(loader_resolution.base_def->name);
                 memcpy(output + output_used,
-                       choice_name,
-                       choice_name_length);
-                output_used += choice_name_length;
-                if (token_suffix_length > 0u) {
+                       loader_resolution.base_def->name,
+                       text_length);
+                output_used += text_length;
+                assignment_index = 0u;
+                while (assignment_index < loader_resolution.assignment_count) {
+                    output[output_used] = ':';
+                    ++output_used;
+                    text_length = strlen(
+                        loader_resolution.assignments
+                        [assignment_index].resolved_key_name);
                     memcpy(output + output_used,
-                           token_start + token_name_length,
-                           token_suffix_length);
-                    output_used += token_suffix_length;
+                           loader_resolution.assignments
+                           [assignment_index].resolved_key_name,
+                           text_length);
+                    output_used += text_length;
+                    output[output_used] = '=';
+                    ++output_used;
+                    text_length = strlen(
+                        loader_resolution.assignments
+                        [assignment_index].resolved_value_text);
+                    memcpy(output + output_used,
+                           loader_resolution.assignments
+                           [assignment_index].resolved_value_text,
+                           text_length);
+                    output_used += text_length;
+                    ++assignment_index;
                 }
                 saw_token = 1;
+                sixel_option_free_argument_resolution(&loader_resolution);
             }
             token_start = cursor + 1;
         }
@@ -986,6 +961,7 @@ sixel_encoder_parse_loader_order(
     }
 
 cleanup:
+    sixel_option_free_argument_resolution(&loader_resolution);
     if (output != NULL) {
         sixel_allocator_free(allocator, output);
     }

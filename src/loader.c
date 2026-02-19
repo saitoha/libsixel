@@ -111,6 +111,7 @@
 #include "allocator.h"
 #include "encoder.h"
 #include "logger.h"
+#include "options.h"
 #include "sixel_atomic.h"
 
 /*
@@ -310,6 +311,65 @@ loader_token_matches(char const *token,
                      size_t token_length,
                      char const *name);
 
+#if HAVE_WIC
+static sixel_suboption_key_t const g_subkeys_loader_wic[] = {
+    {
+        "ico_minsize",
+        NULL,
+        "SIXEL_WIC_ICO_MINSIZE",
+        SIXEL_SUBOPTION_VALUE_FREE,
+        NULL,
+        0u
+    }
+};
+#endif
+
+static sixel_option_value_schema_t const g_schema_loader_values[] = {
+#if HAVE_LIBPNG
+    { "libpng", 0, NULL, 0u },
+#endif
+#if HAVE_JPEG
+    { "libjpeg", 0, NULL, 0u },
+#endif
+#if HAVE_WEBP
+    { "libwebp", 0, NULL, 0u },
+#endif
+#if HAVE_LIBTIFF
+    { "libtiff", 0, NULL, 0u },
+#endif
+    { "builtin", 0, NULL, 0u },
+#if HAVE_WIC
+    {
+        "wic",
+        0,
+        g_subkeys_loader_wic,
+        sizeof(g_subkeys_loader_wic) / sizeof(g_subkeys_loader_wic[0])
+    },
+#endif
+#if HAVE_COREGRAPHICS
+    { "coregraphics", 0, NULL, 0u },
+#endif
+#ifdef HAVE_GDK_PIXBUF2
+    { "gdk-pixbuf2", 0, NULL, 0u },
+#endif
+#if HAVE_GD
+    { "gd", 0, NULL, 0u },
+#endif
+#if HAVE_COREGRAPHICS && HAVE_QUICKLOOK
+    { "quicklook", 0, NULL, 0u },
+#endif
+#if HAVE_FREEDESKTOP_THUMBNAILING
+    { "gnome-thumbnailer", 0, NULL, 0u },
+#endif
+};
+
+static sixel_option_argument_schema_t const g_schema_loaders = {
+    SIXEL_OPTFLAG_LOADERS,
+    "--loaders",
+    g_schema_loader_values,
+    sizeof(g_schema_loader_values) / sizeof(g_schema_loader_values[0])
+};
+
 static size_t
 loader_token_name_length(char const *token, size_t token_length)
 {
@@ -360,60 +420,6 @@ loader_parse_positive_int(char const *text, size_t length, int *value_out)
 }
 
 static void
-loader_apply_wic_suboptions(char const *token,
-                            size_t token_length)
-{
-    size_t name_length;
-    size_t option_offset;
-    char const *option_text;
-    size_t option_length;
-    size_t key_length;
-    int parsed_value;
-
-    name_length = 0;
-    option_offset = 0;
-    option_text = NULL;
-    option_length = 0;
-    key_length = 0;
-    parsed_value = 0;
-
-    if (token == NULL || token_length == 0) {
-        return;
-    }
-
-    name_length = loader_token_name_length(token, token_length);
-    if (name_length == 0 || name_length >= token_length) {
-        return;
-    }
-    if (!loader_token_matches(token, name_length, "wic")) {
-        return;
-    }
-
-    option_offset = name_length + 1;
-    if (option_offset >= token_length) {
-        return;
-    }
-
-    option_text = token + option_offset;
-    option_length = token_length - option_offset;
-    key_length = strlen("ico_minsize=");
-    if (option_length <= key_length) {
-        return;
-    }
-    if (strncmp(option_text, "ico_minsize=", key_length) != 0) {
-        return;
-    }
-
-    if (!loader_parse_positive_int(option_text + key_length,
-                                   option_length - key_length,
-                                   &parsed_value)) {
-        return;
-    }
-
-    sixel_helper_set_wic_ico_minsize(parsed_value);
-}
-
-static void
 loader_apply_loader_suboptions(char const *order)
 {
     char const *cursor;
@@ -421,12 +427,25 @@ loader_apply_loader_suboptions(char const *order)
     char const *token_end;
     char const *order_end;
     size_t token_length;
+    char token_buffer[256];
+    char match_detail[128];
+    sixel_option_argument_resolution_t resolution;
+    size_t assignment_index;
+    int parsed_value;
 
     cursor = order;
     token_start = order;
     token_end = order;
     order_end = NULL;
     token_length = 0;
+    token_buffer[0] = '\0';
+    match_detail[0] = '\0';
+    resolution.resolved_base_value = 0;
+    resolution.base_def = NULL;
+    resolution.assignments = NULL;
+    resolution.assignment_count = 0u;
+    assignment_index = 0u;
+    parsed_value = 0;
 
     sixel_helper_set_wic_ico_minsize(0);
 
@@ -444,8 +463,8 @@ loader_apply_loader_suboptions(char const *order)
 
     token_start = order;
     cursor = order;
-    while (cursor < order_end) {
-        if (*cursor == ',') {
+    while (cursor <= order_end) {
+        if (cursor == order_end || *cursor == ',') {
             token_end = cursor;
             while (token_start < token_end &&
                    isspace((unsigned char)*token_start)) {
@@ -456,26 +475,38 @@ loader_apply_loader_suboptions(char const *order)
                 --token_end;
             }
             token_length = (size_t)(token_end - token_start);
-            if (token_length > 0) {
-                loader_apply_wic_suboptions(token_start, token_length);
+            if (token_length > 0 && token_length < sizeof(token_buffer)) {
+                memcpy(token_buffer, token_start, token_length);
+                token_buffer[token_length] = '\0';
+                if (SIXEL_SUCCEEDED(sixel_option_parse_argument_with_suboptions(
+                        token_buffer,
+                        &g_schema_loaders,
+                        &resolution,
+                        match_detail,
+                        sizeof(match_detail))) &&
+                    resolution.base_def != NULL &&
+                    strcmp(resolution.base_def->name, "wic") == 0) {
+                    assignment_index = 0u;
+                    while (assignment_index < resolution.assignment_count) {
+                        if (strcmp(resolution.assignments[assignment_index]
+                                   .resolved_key_name,
+                                   "ico_minsize") == 0 &&
+                            loader_parse_positive_int(
+                                resolution.assignments[assignment_index]
+                                .resolved_value_text,
+                                strlen(resolution.assignments[assignment_index]
+                                       .resolved_value_text),
+                                &parsed_value)) {
+                            sixel_helper_set_wic_ico_minsize(parsed_value);
+                        }
+                        ++assignment_index;
+                    }
+                }
+                sixel_option_free_argument_resolution(&resolution);
             }
             token_start = cursor + 1;
         }
         ++cursor;
-    }
-
-    token_end = order_end;
-    while (token_start < token_end &&
-           isspace((unsigned char)*token_start)) {
-        ++token_start;
-    }
-    while (token_end > token_start &&
-           isspace((unsigned char)token_end[-1])) {
-        --token_end;
-    }
-    token_length = (size_t)(token_end - token_start);
-    if (token_length > 0) {
-        loader_apply_wic_suboptions(token_start, token_length);
     }
 }
 

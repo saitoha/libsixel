@@ -49,6 +49,9 @@
 #if HAVE_LIMITS_H
 # include <limits.h>
 #endif
+#if HAVE_STDINT_H
+# include <stdint.h>
+#endif
 
 #include <png.h>
 
@@ -531,6 +534,520 @@ cleanup:
 
     return status;
 }
+
+typedef struct sixel_apng_frame_control {
+    png_uint_32 width;
+    png_uint_32 height;
+    png_uint_32 x_offset;
+    png_uint_32 y_offset;
+    unsigned int delay_ms;
+    unsigned int dispose_op;
+    unsigned int blend_op;
+} sixel_apng_frame_control_t;
+
+typedef struct sixel_apng_state {
+    unsigned char const *ihdr;
+    size_t ihdr_size;
+    unsigned char *shared_chunks;
+    size_t shared_chunks_size;
+    size_t shared_chunks_capacity;
+    unsigned char *chunk_base;
+    size_t chunk_size;
+    size_t chunk_capacity;
+} sixel_apng_state_t;
+
+static png_uint_32
+read_be32(unsigned char const *p)
+{
+    png_uint_32 value;
+
+    value = ((png_uint_32)p[0] << 24)
+          | ((png_uint_32)p[1] << 16)
+          | ((png_uint_32)p[2] << 8)
+          |  (png_uint_32)p[3];
+    return value;
+}
+
+static void
+write_be32(unsigned char *p, png_uint_32 value)
+{
+    p[0] = (unsigned char)(value >> 24);
+    p[1] = (unsigned char)(value >> 16);
+    p[2] = (unsigned char)(value >> 8);
+    p[3] = (unsigned char)value;
+}
+
+static png_uint_32
+crc32_update(unsigned char const *data, size_t length, png_uint_32 seed)
+{
+    png_uint_32 crc;
+    size_t i;
+    int bit;
+
+    crc = ~seed;
+    for (i = 0; i < length; ++i) {
+        crc ^= data[i];
+        for (bit = 0; bit < 8; ++bit) {
+            if ((crc & 1U) != 0U) {
+                crc = (crc >> 1) ^ 0xedb88320U;
+            } else {
+                crc >>= 1;
+            }
+        }
+    }
+    return ~crc;
+}
+
+static int
+ensure_shared_capacity(
+    sixel_apng_state_t       *state,
+    size_t                    append_size,
+    sixel_allocator_t        *allocator)
+{
+    unsigned char *next;
+    size_t needed;
+    size_t next_capacity;
+
+    if (append_size > SIZE_MAX - state->shared_chunks_size) {
+        return 0;
+    }
+    needed = state->shared_chunks_size + append_size;
+    if (needed <= state->shared_chunks_capacity) {
+        return 1;
+    }
+
+    next_capacity = state->shared_chunks_capacity;
+    if (next_capacity == 0) {
+        next_capacity = 1024;
+    }
+    while (next_capacity < needed) {
+        if (next_capacity > SIZE_MAX / 2) {
+            return 0;
+        }
+        next_capacity *= 2;
+    }
+    next = (unsigned char *)sixel_allocator_malloc(allocator, next_capacity);
+    if (next == NULL) {
+        return 0;
+    }
+    if (state->shared_chunks_size > 0 && state->shared_chunks != NULL) {
+        memcpy(next, state->shared_chunks, state->shared_chunks_size);
+    }
+    sixel_allocator_free(allocator, state->shared_chunks);
+    state->shared_chunks = next;
+    state->shared_chunks_capacity = next_capacity;
+    return 1;
+}
+
+static int
+append_shared_chunk(
+    sixel_apng_state_t       *state,
+    unsigned char const      *chunk,
+    size_t                    chunk_size,
+    sixel_allocator_t        *allocator)
+{
+    if (!ensure_shared_capacity(state, chunk_size, allocator)) {
+        return 0;
+    }
+    memcpy(state->shared_chunks + state->shared_chunks_size,
+           chunk,
+           chunk_size);
+    state->shared_chunks_size += chunk_size;
+    return 1;
+}
+
+static int
+ensure_chunk_capacity(
+    sixel_apng_state_t       *state,
+    size_t                    append_size,
+    sixel_allocator_t        *allocator)
+{
+    unsigned char *next;
+    size_t needed;
+    size_t next_capacity;
+
+    if (append_size > SIZE_MAX - state->chunk_size) {
+        return 0;
+    }
+    needed = state->chunk_size + append_size;
+    if (needed <= state->chunk_capacity) {
+        return 1;
+    }
+
+    next_capacity = state->chunk_capacity;
+    if (next_capacity == 0) {
+        next_capacity = 4096;
+    }
+    while (next_capacity < needed) {
+        if (next_capacity > SIZE_MAX / 2) {
+            return 0;
+        }
+        next_capacity *= 2;
+    }
+
+    next = (unsigned char *)sixel_allocator_malloc(allocator, next_capacity);
+    if (next == NULL) {
+        return 0;
+    }
+    if (state->chunk_size > 0 && state->chunk_base != NULL) {
+        memcpy(next, state->chunk_base, state->chunk_size);
+    }
+    sixel_allocator_free(allocator, (void *)state->chunk_base);
+    state->chunk_base = next;
+    state->chunk_capacity = next_capacity;
+    return 1;
+}
+
+static int
+append_chunk(
+    sixel_apng_state_t       *state,
+    char const               *type,
+    unsigned char const      *data,
+    png_uint_32               length,
+    sixel_allocator_t        *allocator)
+{
+    unsigned char *dst;
+    png_uint_32 crc;
+    size_t chunk_bytes;
+
+    chunk_bytes = (size_t)length + 12;
+    if (!ensure_chunk_capacity(state, chunk_bytes, allocator)) {
+        return 0;
+    }
+
+    dst = (unsigned char *)state->chunk_base + state->chunk_size;
+    write_be32(dst, length);
+    memcpy(dst + 4, type, 4);
+    if (length > 0 && data != NULL) {
+        memcpy(dst + 8, data, length);
+    }
+
+    crc = crc32_update((unsigned char const *)(dst + 4), 4, 0);
+    if (length > 0 && data != NULL) {
+        crc = crc32_update(data, length, crc);
+    }
+    write_be32(dst + 8 + length, (png_uint_32)crc);
+    state->chunk_size += chunk_bytes;
+    return 1;
+}
+
+static int
+parse_fctl(
+    unsigned char const         *data,
+    png_uint_32                  length,
+    sixel_apng_frame_control_t  *control)
+{
+    png_uint_32 delay_num;
+    png_uint_32 delay_den;
+
+    if (length != 26 || control == NULL) {
+        return 0;
+    }
+
+    control->width = read_be32(data + 4);
+    control->height = read_be32(data + 8);
+    control->x_offset = read_be32(data + 12);
+    control->y_offset = read_be32(data + 16);
+    delay_num = (png_uint_32)(((unsigned int)data[20] << 8) | data[21]);
+    delay_den = (png_uint_32)(((unsigned int)data[22] << 8) | data[23]);
+    control->dispose_op = data[24];
+    control->blend_op = data[25];
+
+    if (delay_den == 0) {
+        delay_den = 100;
+    }
+    control->delay_ms = (unsigned int)((delay_num * 1000U) / delay_den);
+    if (control->delay_ms == 0 && delay_num > 0) {
+        control->delay_ms = 1;
+    }
+
+    return 1;
+}
+
+static SIXELSTATUS
+emit_apng_frame(
+    sixel_apng_state_t const      *state,
+    sixel_apng_frame_control_t    *control,
+    int                            frame_no,
+    unsigned char                 *bgcolor,
+    int                            reqcolors,
+    int                            fuse_palette,
+    sixel_load_image_function      fn_load,
+    void                          *context,
+    sixel_allocator_t             *allocator)
+{
+    SIXELSTATUS status;
+    sixel_frame_t *frame;
+    unsigned char *pixels;
+    unsigned char *palette;
+    int ncolors;
+    int pixelformat;
+    int width;
+    int height;
+    int transparent;
+    size_t png_size;
+    unsigned char *png_data;
+    unsigned char ihdr_copy[13];
+
+    frame = NULL;
+    pixels = NULL;
+    palette = NULL;
+    ncolors = 0;
+    pixelformat = SIXEL_PIXELFORMAT_RGB888;
+    width = 0;
+    height = 0;
+    transparent = -1;
+    png_data = NULL;
+
+    if (state->ihdr == NULL || state->ihdr_size != 13) {
+        return SIXEL_BAD_INPUT;
+    }
+    if (state->chunk_size > SIZE_MAX - 8 - 25) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    png_size = 8 + 25 + state->shared_chunks_size + state->chunk_size + 12;
+    png_data = (unsigned char *)sixel_allocator_malloc(allocator, png_size);
+    if (png_data == NULL) {
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    memcpy(png_data, "\x89PNG\r\n\x1a\n", 8);
+    memcpy(ihdr_copy, state->ihdr, sizeof(ihdr_copy));
+    write_be32(ihdr_copy + 0, control->width);
+    write_be32(ihdr_copy + 4, control->height);
+
+    memcpy(png_data + 8, "\x00\x00\x00\x0dIHDR", 8);
+    memcpy(png_data + 16, ihdr_copy, sizeof(ihdr_copy));
+    write_be32(png_data + 29,
+               crc32_update((unsigned char const *)(png_data + 12), 17, 0));
+
+    if (state->shared_chunks_size > 0) {
+        memcpy(png_data + 33,
+               state->shared_chunks,
+               state->shared_chunks_size);
+    }
+    memcpy(png_data + 33 + state->shared_chunks_size,
+           state->chunk_base,
+           state->chunk_size);
+    memcpy(png_data + 33 + state->shared_chunks_size + state->chunk_size,
+           "\x00\x00\x00\x00"
+           "IEND"
+           "\xae\x42\x60\x82",
+           12);
+
+    status = load_png(&pixels,
+                      png_data,
+                      png_size,
+                      &width,
+                      &height,
+                      &palette,
+                      &ncolors,
+                      fuse_palette ? reqcolors : 0,
+                      &pixelformat,
+                      bgcolor,
+                      &transparent,
+                      allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = sixel_frame_new(&frame, allocator);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+    frame->width = width;
+    frame->height = height;
+    frame->palette = palette;
+    frame->ncolors = ncolors;
+    frame->pixelformat = pixelformat;
+    frame->transparent = transparent;
+    sixel_frame_set_delay(frame, (int)control->delay_ms);
+    sixel_frame_set_frame_no(frame, frame_no);
+    sixel_frame_set_pixels(frame, pixels);
+    palette = NULL;
+    pixels = NULL;
+
+    status = sixel_frame_strip_alpha(frame, bgcolor);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
+
+    status = fn_load(frame, context);
+
+end:
+    sixel_allocator_free(allocator, png_data);
+    sixel_allocator_free(allocator, pixels);
+    sixel_allocator_free(allocator, palette);
+    sixel_frame_unref(frame);
+
+    return status;
+}
+
+static SIXELSTATUS
+load_apng_frames(
+    sixel_chunk_t const       *pchunk,
+    int                        fstatic,
+    int                        fuse_palette,
+    int                        reqcolors,
+    unsigned char             *bgcolor,
+    int                        loop_control,
+    sixel_load_image_function  fn_load,
+    void                      *context)
+{
+    SIXELSTATUS status;
+    sixel_apng_state_t state;
+    sixel_apng_frame_control_t control;
+    unsigned char const *p;
+    size_t remain;
+    int seen_actl;
+    int has_frame;
+    int frame_no;
+    int num_plays;
+
+    status = SIXEL_FALSE;
+    memset(&state, 0, sizeof(state));
+    memset(&control, 0, sizeof(control));
+    p = pchunk->buffer + 8;
+    remain = pchunk->size - 8;
+    seen_actl = 0;
+    has_frame = 0;
+    frame_no = 0;
+    num_plays = 0;
+
+    while (remain >= 12) {
+        png_uint_32 length;
+
+        length = read_be32(p);
+        if ((size_t)length > remain - 12) {
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+
+        if (memcmp(p + 4, "IHDR", 4) == 0) {
+            if (length != 13) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            state.ihdr = p + 8;
+            state.ihdr_size = length;
+        } else if (memcmp(p + 4, "acTL", 4) == 0) {
+            if (length != 8) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            seen_actl = 1;
+            num_plays = (int)read_be32(p + 12);
+        } else if (memcmp(p + 4, "fcTL", 4) == 0 && seen_actl) {
+            if (has_frame && state.chunk_size > 0) {
+                status = emit_apng_frame(&state,
+                                         &control,
+                                         frame_no,
+                                         bgcolor,
+                                         reqcolors,
+                                         fuse_palette,
+                                         fn_load,
+                                         context,
+                                         pchunk->allocator);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+                ++frame_no;
+                if (fstatic) {
+                    status = SIXEL_OK;
+                    goto end;
+                }
+                if (loop_control == SIXEL_LOOP_DISABLE && frame_no > 0) {
+                    status = SIXEL_OK;
+                    goto end;
+                }
+                state.chunk_size = 0;
+            }
+            if (!parse_fctl(p + 8, length, &control)) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            has_frame = 1;
+        } else if (memcmp(p + 4, "fdAT", 4) == 0 && seen_actl) {
+            if (!has_frame || length < 4) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            if (!append_chunk(&state,
+                              "IDAT",
+                              p + 12,
+                              length - 4,
+                              pchunk->allocator)) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+        } else if (memcmp(p + 4, "IDAT", 4) == 0) {
+            if (seen_actl && !has_frame) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            if (!append_chunk(&state,
+                              "IDAT",
+                              p + 8,
+                              length,
+                              pchunk->allocator)) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+            has_frame = 1;
+        } else if (memcmp(p + 4, "IEND", 4) == 0) {
+            break;
+        } else if (memcmp(p + 4, "acTL", 4) != 0 &&
+                   memcmp(p + 4, "fcTL", 4) != 0 &&
+                   memcmp(p + 4, "fdAT", 4) != 0 &&
+                   memcmp(p + 4, "IHDR", 4) != 0 &&
+                   memcmp(p + 4, "IEND", 4) != 0 &&
+                   state.chunk_size == 0) {
+            if (!append_shared_chunk(&state,
+                                     p,
+                                     (size_t)length + 12,
+                                     pchunk->allocator)) {
+                status = SIXEL_BAD_ALLOCATION;
+                goto end;
+            }
+        }
+
+        p += (size_t)length + 12;
+        remain -= (size_t)length + 12;
+    }
+
+    if (!seen_actl || !has_frame) {
+        status = SIXEL_FALSE;
+        goto end;
+    }
+
+    if (state.chunk_size > 0) {
+        status = emit_apng_frame(&state,
+                                 &control,
+                                 frame_no,
+                                 bgcolor,
+                                 reqcolors,
+                                 fuse_palette,
+                                 fn_load,
+                                 context,
+                                 pchunk->allocator);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+        ++frame_no;
+    }
+
+    if (num_plays > 0 && loop_control == SIXEL_LOOP_AUTO && frame_no > 1) {
+        status = SIXEL_OK;
+    } else {
+        status = SIXEL_OK;
+    }
+
+end:
+    sixel_allocator_free(pchunk->allocator, state.shared_chunks);
+    sixel_allocator_free(pchunk->allocator, (void *)state.chunk_base);
+    return status;
+}
 #ifdef HAVE_DIAGNOSTIC_CLOBBERED
 # pragma GCC diagnostic pop
 #endif
@@ -563,6 +1080,18 @@ load_with_libpng(
 
     (void)fstatic;
     (void)loop_control;
+
+    status = load_apng_frames(pchunk,
+                              fstatic,
+                              fuse_palette,
+                              reqcolors,
+                              bgcolor,
+                              loop_control,
+                              fn_load,
+                              context);
+    if (status == SIXEL_OK) {
+        goto end;
+    }
 
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
