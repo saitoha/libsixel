@@ -380,11 +380,7 @@ gif_out_code(
         g->history[idx] = 1;
     }
     if (!(g->transparent >= 0 && suffix == g->transparent)) {
-        pixel_offset = idx * 3;
-        palette_offset = (size_t)suffix * 3;
-        g->out[pixel_offset + 0] = g->color_table[palette_offset + 2];
-        g->out[pixel_offset + 1] = g->color_table[palette_offset + 1];
-        g->out[pixel_offset + 2] = g->color_table[palette_offset + 0];
+        g->out[idx] = suffix;
     }
     if (g->cur_x >= g->actual_width) {
         g->actual_width = g->cur_x + 1;
