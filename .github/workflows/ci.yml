@@ -482,6 +482,25 @@ jobs:
               lcov
             exec_type: msys2
 
+          - label: Autotools-cygwin64-clangcl-msvc_abi-coverage
+            buildtool: autotools
+            runner: windows-latest
+            setup_prefix: >-
+              CC=clang-cl
+              LD=link
+              AR="sh ar-lib lib"
+              ARFLAGS=cr
+              NM="dumpbin -symbols"
+              STRIP=:
+              RANLIB=:
+            setup_options: >-
+              --host=x86_64-pc-windows-msvc
+              --enable-gcov
+            extra_packages: >-
+              make
+              lcov
+            exec_type: cygwin
+
     steps:
       - name: Set Windows Defender ExclusionPath (Windows)
         if: runner.os == 'Windows'
