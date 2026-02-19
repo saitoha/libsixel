@@ -9170,30 +9170,70 @@ clipboard_read_file(char const *path,
 
 
 static SIXELSTATUS
-write_png_from_sixel(char const *sixel_path, char const *output_path)
+write_png_from_sixel(char const *sixel_path,
+                     char const *output_path,
+                     sixel_encoder_t *encoder)
 {
     SIXELSTATUS status;
     sixel_decoder_t *decoder;
 
     status = SIXEL_FALSE;
     decoder = NULL;
+    sixel_encoder_log_stage(encoder,
+                            NULL,
+                            "main",
+                            "encoder",
+                            "png_decode_begin",
+                            "input=%s output=%s",
+                            sixel_path != NULL ? sixel_path : "(null)",
+                            output_path != NULL ? output_path : "(null)");
 
     status = sixel_decoder_new(&decoder, NULL);
     if (SIXEL_FAILED(status)) {
+        sixel_encoder_log_stage(encoder,
+                                NULL,
+                                "main",
+                                "encoder",
+                                "png_decode_new_failed",
+                                "status=%d",
+                                status);
         goto end;
     }
 
     status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_INPUT, sixel_path);
     if (SIXEL_FAILED(status)) {
+        sixel_encoder_log_stage(encoder,
+                                NULL,
+                                "main",
+                                "encoder",
+                                "png_decode_input_setopt_failed",
+                                "status=%d",
+                                status);
         goto end;
     }
 
     status = sixel_decoder_setopt(decoder, SIXEL_OPTFLAG_OUTPUT, output_path);
     if (SIXEL_FAILED(status)) {
+        sixel_encoder_log_stage(encoder,
+                                NULL,
+                                "main",
+                                "encoder",
+                                "png_decode_output_setopt_failed",
+                                "status=%d",
+                                status);
         goto end;
     }
 
     status = sixel_decoder_decode(decoder);
+    sixel_encoder_log_stage(encoder,
+                            NULL,
+                            "main",
+                            "encoder",
+                            SIXEL_FAILED(status)
+                                ? "png_decode_failed"
+                                : "png_decode_done",
+                            "status=%d",
+                            status);
 
 end:
     sixel_decoder_unref(decoder);
@@ -9249,6 +9289,13 @@ sixel_encoder_encode(
     if (encoder != NULL) {
         encoder->logger = &logger;
         encoder->parallel_job_id = -1;
+        sixel_encoder_log_stage(encoder,
+                                NULL,
+                                "main",
+                                "encoder",
+                                "encode_begin",
+                                "input=%s",
+                                filename != NULL ? filename : "(stdin)");
     }
 
     if (filename != NULL) {
@@ -9318,6 +9365,15 @@ sixel_encoder_encode(
     }
 
     if (encoder->output_is_png) {
+        sixel_encoder_log_stage(encoder,
+                                NULL,
+                                "main",
+                                "encoder",
+                                "png_temp_prepare_begin",
+                                "target=%s",
+                                encoder->png_output_path != NULL
+                                    ? encoder->png_output_path
+                                    : "(stdout)");
         png_temp_capacity = 0u;
         png_tmpnam_result = NULL;
         png_temp_path = create_temp_template(encoder->allocator,
@@ -9372,6 +9428,15 @@ sixel_encoder_encode(
             status = SIXEL_LIBC_ERROR;
             goto end;
         }
+        sixel_encoder_log_stage(encoder,
+                                NULL,
+                                "main",
+                                "encoder",
+                                "png_temp_prepare_done",
+                                "temp=%s",
+                                png_temp_path != NULL
+                                    ? png_temp_path
+                                    : "(null)");
     }
 
     if (encoder == NULL) {
@@ -9510,6 +9575,16 @@ reload:
                                     effective_filename,
                                     load_image_callback);
     if (status != SIXEL_OK) {
+        sixel_encoder_log_stage(encoder,
+                                NULL,
+                                "main",
+                                "encoder",
+                                "loader_failed",
+                                "status=%d source=%s",
+                                status,
+                                effective_filename != NULL
+                                    ? effective_filename
+                                    : "(null)");
         goto load_end;
     }
     encoder->last_input_bytes = sixel_loader_get_last_input_bytes(loader);
@@ -9540,6 +9615,13 @@ load_end:
 
     palette_status = sixel_encoder_emit_palette_output(encoder);
     if (SIXEL_FAILED(palette_status)) {
+        sixel_encoder_log_stage(encoder,
+                                NULL,
+                                "main",
+                                "encoder",
+                                "palette_emit_failed",
+                                "status=%d",
+                                palette_status);
         status = palette_status;
         goto end;
     }
@@ -9570,7 +9652,16 @@ load_end:
             status = SIXEL_RUNTIME_ERROR;
             goto end;
         }
-        status = write_png_from_sixel(png_temp_path, png_final_path);
+        status = write_png_from_sixel(png_temp_path, png_final_path, encoder);
+        sixel_encoder_log_stage(encoder,
+                                NULL,
+                                "main",
+                                "encoder",
+                                SIXEL_FAILED(status)
+                                    ? "png_emit_failed"
+                                    : "png_emit_done",
+                                "status=%d",
+                                status);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
@@ -9620,6 +9711,17 @@ load_end:
     /* the status may not be SIXEL_OK */
 
 end:
+    if (encoder != NULL) {
+        sixel_encoder_log_stage(encoder,
+                                NULL,
+                                "main",
+                                "encoder",
+                                SIXEL_FAILED(status)
+                                    ? "encode_failed"
+                                    : "encode_done",
+                                "status=%d",
+                                status);
+    }
     if (png_temp_path != NULL) {
         (void)sixel_compat_unlink(png_temp_path);
     }
