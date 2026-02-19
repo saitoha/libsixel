@@ -540,7 +540,7 @@ typedef struct sixel_apng_frame_control {
     png_uint_32 height;
     png_uint_32 x_offset;
     png_uint_32 y_offset;
-    unsigned int delay_ms;
+    unsigned int delay_cs;
     unsigned int dispose_op;
     unsigned int blend_op;
 } sixel_apng_frame_control_t;
@@ -763,9 +763,13 @@ parse_fctl(
     if (delay_den == 0) {
         delay_den = 100;
     }
-    control->delay_ms = (unsigned int)((delay_num * 1000U) / delay_den);
-    if (control->delay_ms == 0 && delay_num > 0) {
-        control->delay_ms = 1;
+    /*
+     * sixel_frame_set_delay() expects centiseconds like the GIF loader.
+     * APNG stores delay as delay_num / delay_den seconds.
+     */
+    control->delay_cs = (unsigned int)((delay_num * 100U) / delay_den);
+    if (control->delay_cs == 0 && delay_num > 0) {
+        control->delay_cs = 1;
     }
 
     return 1;
@@ -1098,7 +1102,7 @@ emit_apng_frame(
     frame->ncolors = 0;
     frame->pixelformat = SIXEL_PIXELFORMAT_RGBA8888;
     frame->transparent = (-1);
-    sixel_frame_set_delay(frame, (int)control->delay_ms);
+    sixel_frame_set_delay(frame, (int)control->delay_cs);
     sixel_frame_set_frame_no(frame, frame_no);
     sixel_frame_set_multiframe(frame, multiframe);
     sixel_frame_set_pixels(frame, emitted);
