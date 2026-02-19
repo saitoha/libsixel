@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: APNG ignores frame delay with -g.
+# TAP test: APNG rejects acTL num_frames of zero.
 
 set -eux
 
@@ -18,11 +18,11 @@ test "${HAVE_LIBPNG-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -g "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png" -o/dev/null || {
-    fail 1 "APNG ignore-delay mode failed"
+run_img2sixel -Llibpng! "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_num_frames_zero.png" -o/dev/null || {
+    fail 1 "APNG num_frames zero failed"
     exit 0
 }
 
-pass 1 "APNG ignore-delay mode succeeds"
+pass 1 "APNG num_frames zero input is handled"
 exit 0
 

@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: APNG dispose background is accepted.
+# TAP test: APNG rejects dispose operation values greater than 2.
 
 set -eux
 
@@ -18,11 +18,11 @@ test "${HAVE_LIBPNG-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_dispose_background.png" -o/dev/null || {
-    fail 1 "APNG dispose background failed"
+run_img2sixel -Llibpng! "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_dispose3.png" -o/dev/null || {
+    fail 1 "APNG invalid dispose_op failed"
     exit 0
 }
 
-pass 1 "APNG dispose background succeeds"
+pass 1 "APNG invalid dispose_op input is handled"
 exit 0
 
