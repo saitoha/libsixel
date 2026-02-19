@@ -1,5 +1,6 @@
 /*
- * Verify libwebp loader reports RGB output for WebP sources.
+ * Verify libwebp loader reports RGB output by default and PAL8 when
+ * palette mode is requested with a low-color WebP input.
  */
 
 #include "tests/io/loader/pixelformat_test_common.h"
@@ -10,12 +11,28 @@
 static int
 run_libwebp_loader_test(void)
 {
-    return run_loader_case("libwebp loader",
-                           WEBP_IMAGE_PATH,
-                           SIXEL_PIXELFORMAT_RGB888,
-                           64,
-                           64,
-                           load_with_libwebp);
+    int status;
+
+    status = run_loader_case("libwebp loader",
+                             WEBP_IMAGE_PATH,
+                             SIXEL_PIXELFORMAT_RGB888,
+                             64,
+                             64,
+                             load_with_libwebp);
+    if (status != 0) {
+        return status;
+    }
+
+    return run_loader_case_with_options(
+        "libwebp loader palette mode",
+        "/tests/data/inputs/formats/animated-lossless-8x8-2frame-min.webp",
+        SIXEL_PIXELFORMAT_PAL8,
+        8,
+        8,
+        1,
+        1,
+        256,
+        load_with_libwebp);
 }
 #endif
 
