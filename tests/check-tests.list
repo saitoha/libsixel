@@ -270,6 +270,10 @@ io/loader/animation/0016_apng_libpng_invalid_dispose_op.t
 io/loader/animation/0017_apng_libpng_invalid_blend_op.t
 io/loader/animation/0018_apng_libpng_rgb_format.t
 io/loader/animation/0019_apng_libpng_rgba_format.t
+io/loader/animation/0020_apng_libpng_delay_den_zero.t
+io/loader/animation/0021_apng_libpng_dispose_previous.t
+io/loader/animation/0022_apng_libpng_invalid_fdat_without_fctl.t
+io/loader/animation/0023_apng_libpng_invalid_fctl_after_idat.t
 io/network/0001_curl_invalid_file_url.t
 io/network/0002_curl_invalid_https_url.t
 io/network/0003_curl_file_scheme.t
