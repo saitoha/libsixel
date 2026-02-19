@@ -41,6 +41,8 @@
     "/tests/data/inputs/formats/grayscale.jpg"
 #define WEBP_IMAGE_PATH \
     "/tests/data/inputs/snake_64.webp"
+#define WEBP_ANIMATED_IMAGE_PATH \
+    "/tests/data/inputs/formats/animated-lossless-2frame.webp"
 
 typedef struct loader_probe_context {
     int callback_count;
