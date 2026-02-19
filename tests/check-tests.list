@@ -254,6 +254,7 @@ io/loader/animation/0010_webp_ignore_delay.t
 io/loader/animation/0011_webp_use_macro.t
 io/loader/animation/0012_webp_lossless_alpha_animation_decode.t
 io/loader/animation/0013_webp_lossy_alpha_animation_decode.t
+io/loader/animation/0014_webp_indexed_animation_decode.t
 io/loader/animation/0005_apng_libpng_static_option.t
 io/loader/animation/0006_apng_libpng_loop_disable.t
 io/loader/animation/0007_apng_libpng_loop_auto_finite.t

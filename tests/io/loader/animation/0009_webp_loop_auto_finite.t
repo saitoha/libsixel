@@ -20,7 +20,7 @@ set -v
 
 image_webp="${TOP_SRCDIR}/tests/data/inputs/formats/animated-lossless-8x8-2frame-loop2-min.webp"
 
-run_img2sixel -Llibwebp -lauto "${image_webp}" >/dev/null || {
+run_img2sixel -Llibwebp! -lauto "${image_webp}" >/dev/null || {
     fail 1 "libwebp loop auto failed"
     exit 0
 }
