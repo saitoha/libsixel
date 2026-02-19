@@ -149,6 +149,20 @@ typedef struct sixel_loader_callback_state {
     void *context;
 } sixel_loader_callback_state_t;
 
+int
+sixel_loader_callback_is_canceled(void *data)
+{
+    sixel_loader_callback_state_t *state;
+
+    state = (sixel_loader_callback_state_t *)data;
+    if (state == NULL || state->loader == NULL ||
+        state->loader->cancel_flag == NULL) {
+        return 0;
+    }
+
+    return *state->loader->cancel_flag != 0;
+}
+
 
 #if HAVE_POSIX_SPAWNP
 extern char **environ;
