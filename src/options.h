@@ -104,6 +104,17 @@ typedef struct sixel_option_argument_resolution {
     size_t assignment_count;
 } sixel_option_argument_resolution_t;
 
+typedef struct sixel_option_argument_list_item {
+    sixel_option_argument_resolution_t resolution;
+} sixel_option_argument_list_item_t;
+
+typedef struct sixel_option_argument_list_resolution {
+    char *canonical_argument;
+    int has_trailing_bang;
+    sixel_option_argument_list_item_t *items;
+    size_t item_count;
+} sixel_option_argument_list_resolution_t;
+
 /*
  * The filesystem validator accepts caller-defined flags controlling special
  * pseudo paths.  Remote URLs, clipboard pseudo paths, and standard input may
@@ -157,6 +168,18 @@ sixel_option_parse_argument_with_suboptions(
 void
 sixel_option_free_argument_resolution(
     sixel_option_argument_resolution_t *resolution);
+
+SIXELSTATUS
+sixel_option_parse_argument_list_with_suboptions(
+    char const *argument,
+    sixel_option_argument_schema_t const *schema,
+    sixel_option_argument_list_resolution_t *resolution,
+    char *diagnostic,
+    size_t diagnostic_size);
+
+void
+sixel_option_free_argument_list_resolution(
+    sixel_option_argument_list_resolution_t *resolution);
 
 #endif /* !defined(LIBSIXEL_OPTIONS_H) */
 

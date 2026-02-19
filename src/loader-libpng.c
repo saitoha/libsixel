@@ -998,6 +998,7 @@ emit_apng_frame(
     sixel_apng_state_t const      *state,
     sixel_apng_frame_control_t    *control,
     int                            frame_no,
+    int                            loop_no,
     int                            multiframe,
     unsigned char                 *bgcolor,
     int                            reqcolors,
@@ -1104,6 +1105,7 @@ emit_apng_frame(
     frame->transparent = (-1);
     sixel_frame_set_delay(frame, (int)control->delay_cs);
     sixel_frame_set_frame_no(frame, frame_no);
+    sixel_frame_set_loop_count(frame, loop_no);
     sixel_frame_set_multiframe(frame, multiframe);
     sixel_frame_set_pixels(frame, emitted);
     emitted = NULL;
@@ -1149,23 +1151,43 @@ load_apng_frames(
     int seen_actl;
     int has_frame;
     int frame_no;
+    int frames_in_loop;
     int num_frames;
     int num_plays;
+    int loop_no;
+    int stop_loop;
     sixel_apng_canvas_t canvas;
     size_t canvas_bytes;
 
     status = SIXEL_FALSE;
     memset(&state, 0, sizeof(state));
     memset(&control, 0, sizeof(control));
-    p = pchunk->buffer + 8;
-    remain = pchunk->size - 8;
+    p = NULL;
+    remain = 0;
     seen_actl = 0;
     has_frame = 0;
     frame_no = 0;
+    frames_in_loop = 0;
     num_frames = 0;
     num_plays = 0;
+    loop_no = 0;
+    stop_loop = 0;
     memset(&canvas, 0, sizeof(canvas));
     canvas_bytes = 0;
+
+    for (;;) {
+        memset(&state, 0, sizeof(state));
+        memset(&control, 0, sizeof(control));
+        p = pchunk->buffer + 8;
+        remain = pchunk->size - 8;
+        seen_actl = 0;
+        has_frame = 0;
+        frames_in_loop = 0;
+
+        if (loop_no > 0 && canvas_bytes > 0) {
+            memset(canvas.pixels, 0, canvas_bytes);
+            memset(canvas.backup, 0, canvas_bytes);
+        }
 
     while (remain >= 12) {
         png_uint_32 length;
@@ -1215,6 +1237,7 @@ load_apng_frames(
                 status = emit_apng_frame(&state,
                                          &control,
                                          frame_no,
+                                         loop_no,
                                          num_frames > 1,
                                          bgcolor,
                                          reqcolors,
@@ -1227,11 +1250,8 @@ load_apng_frames(
                     goto end;
                 }
                 ++frame_no;
+                ++frames_in_loop;
                 if (fstatic) {
-                    status = SIXEL_OK;
-                    goto end;
-                }
-                if (loop_control == SIXEL_LOOP_DISABLE && frame_no > 0) {
                     status = SIXEL_OK;
                     goto end;
                 }
@@ -1299,6 +1319,7 @@ load_apng_frames(
         status = emit_apng_frame(&state,
                                  &control,
                                  frame_no,
+                                 loop_no,
                                  num_frames > 1,
                                  bgcolor,
                                  reqcolors,
@@ -1311,12 +1332,33 @@ load_apng_frames(
             goto end;
         }
         ++frame_no;
+        ++frames_in_loop;
     }
 
-    if (num_plays > 0 && loop_control == SIXEL_LOOP_AUTO && frame_no > 1) {
+    if (frames_in_loop == 0) {
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    ++loop_no;
+
+    if (loop_control == SIXEL_LOOP_DISABLE || frames_in_loop == 1) {
+        stop_loop = 1;
+    } else if (loop_control == SIXEL_LOOP_AUTO) {
+        if (num_plays > 0 && loop_no >= num_plays) {
+            stop_loop = 1;
+        }
+    }
+
+    sixel_allocator_free(pchunk->allocator, state.shared_chunks);
+    sixel_allocator_free(pchunk->allocator, (void *)state.chunk_base);
+    state.shared_chunks = NULL;
+    state.chunk_base = NULL;
+
+    if (stop_loop) {
         status = SIXEL_OK;
-    } else {
-        status = SIXEL_OK;
+        goto end;
+    }
     }
 
 end:
