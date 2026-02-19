@@ -362,10 +362,18 @@ gif_out_code(
 
     idx = (size_t)g->cur_x + (size_t)g->cur_y * g->w;
     suffix = g->codes[code].suffix;
+    /*
+     * Track every decoded pixel position, even when the source index is the
+     * transparent index. GIF disposal methods 2/3 are defined on the whole
+     * image rectangle of the previous frame, not only on non-transparent
+     * writes. If we only mark opaque writes here, the next disposal step keeps
+     * stale pixels and visible noise appears in animated transparent GIFs.
+     */
+    if (g->history) {
+        g->history[idx] = 1;
+    }
     if (!(g->transparent >= 0 && suffix == g->transparent)) {
         g->out[idx] = suffix;
-        if (g->history)
-            g->history[idx] = 1;
     }
     if (g->cur_x >= g->actual_width) {
         g->actual_width = g->cur_x + 1;
