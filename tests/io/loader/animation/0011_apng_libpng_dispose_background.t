@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: APNG rejects decoded frame count mismatch.
+# TAP test: APNG dispose background is accepted.
 
 set -eux
 
@@ -18,11 +18,11 @@ test "${HAVE_LIBPNG-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_num_frames_mismatch.png" -o/dev/null || {
-    fail 1 "APNG num_frames mismatch failed"
+run_img2sixel -Llibpng! "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_dispose_background.png" -o/dev/null || {
+    fail 1 "APNG dispose background failed"
     exit 0
 }
 
-pass 1 "APNG num_frames mismatch input is handled"
+pass 1 "APNG dispose background succeeds"
 exit 0
 

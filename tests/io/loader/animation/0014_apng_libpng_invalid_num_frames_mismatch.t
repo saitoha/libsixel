@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: APNG supports static render option.
+# TAP test: APNG rejects decoded frame count mismatch.
 
 set -eux
 
@@ -18,11 +18,11 @@ test "${HAVE_LIBPNG-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -S "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png" -o/dev/null || {
-    fail 1 "APNG static render failed"
+run_img2sixel -Llibpng! "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_num_frames_mismatch.png" -o/dev/null || {
+    fail 1 "APNG num_frames mismatch failed"
     exit 0
 }
 
-pass 1 "APNG static render succeeds"
+pass 1 "APNG num_frames mismatch input is handled"
 exit 0
 

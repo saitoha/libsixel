@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: APNG RGB pixel format decode succeeds.
+# TAP test: APNG finite auto loop completes without hanging.
 
 set -eux
 
@@ -18,11 +18,11 @@ test "${HAVE_LIBPNG-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" -o/dev/null || {
-    fail 1 "APNG RGB decode failed"
+run_img2sixel -Llibpng! -lauto "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png" -o/dev/null || {
+    fail 1 "APNG finite auto loop failed"
     exit 0
 }
 
-pass 1 "APNG RGB decode succeeds"
+pass 1 "APNG finite auto loop completes"
 exit 0
 

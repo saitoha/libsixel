@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: APNG supports update mode with -u.
+# TAP test: APNG shared PLTE and tRNS chunks are accepted.
 
 set -eux
 
@@ -18,11 +18,11 @@ test "${HAVE_LIBPNG-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -u "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgba_loop2.png" -o/dev/null || {
-    fail 1 "APNG update mode failed"
+run_img2sixel -Llibpng! "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_indexed_loop2.png" -o/dev/null || {
+    fail 1 "APNG indexed shared chunk failed"
     exit 0
 }
 
-pass 1 "APNG update mode succeeds"
+pass 1 "APNG indexed shared chunk succeeds"
 exit 0
 
