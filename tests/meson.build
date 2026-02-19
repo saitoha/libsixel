@@ -255,6 +255,9 @@ run_target('staticcheck',
   command: [sh, '-c', '''
 set -e
 
+cd "$2"
+actionlint
+
 "$1" "$2"
 
 cd "$2"
