@@ -157,6 +157,7 @@ runs:
         }
         .\\vcpkg.exe install $packages --triplet x64-windows
         "VCPKG_ROOT=$vcpkgRoot" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        "VCPKG_DEFAULT_TRIPLET=x64-windows" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - name: Setup MSYS2 (Windows)
       if: ${{ fromJSON(inputs.matrix_json).msystem != '' }}
@@ -319,6 +320,23 @@ runs:
         set -exv
         MSVC_BIN_PATH="$(cygpath -u -p "$MSVC_PATH")"
         PATH="$PWD/build-aux:$PWD/bin:$PATH:$MSVC_BIN_PATH"
+
+        # Pin pkg-config to the vcpkg instance so MSYS2 .pc files cannot leak
+        # into MSVC jobs.
+        if test -n "${VCPKG_ROOT:-}" -a -n "${{ fromJSON(inputs.matrix_json).vcpkg_packages || '' }}"; then
+          VCPKG_TRIPLET="${VCPKG_DEFAULT_TRIPLET:-x64-windows}"
+          VCPKG_ROOT_UNIX="$(cygpath -u "$VCPKG_ROOT")"
+          VCPKG_PREFIX="$VCPKG_ROOT_UNIX/installed/$VCPKG_TRIPLET"
+          PKG_CONFIG="$VCPKG_PREFIX/tools/pkgconf/pkgconf.exe"
+          test -x "$PKG_CONFIG" || PKG_CONFIG="$VCPKG_PREFIX/tools/pkgconf/pkgconf"
+          export PKG_CONFIG
+          export PKG_CONFIG_LIBDIR="$VCPKG_PREFIX/lib/pkgconfig:$VCPKG_PREFIX/share/pkgconfig"
+          export PKG_CONFIG_PATH=
+          CPPFLAGS="${CPPFLAGS:+$CPPFLAGS }-I$VCPKG_PREFIX/include"
+          LDFLAGS="${LDFLAGS:+$LDFLAGS }-L$VCPKG_PREFIX/lib"
+          export CPPFLAGS LDFLAGS
+        fi
+
         ${{ fromJSON(inputs.matrix_json).setup_prefix || '' }} ${rel-.}/configure ${{ fromJSON(inputs.matrix_json).setup_options || '' }}
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} V=1
         ${{ fromJSON(inputs.matrix_json).make || 'make' }} ${{ fromJSON(inputs.matrix_json).check_target || 'check' }}
