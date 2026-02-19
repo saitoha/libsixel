@@ -61,6 +61,7 @@
 #include "chunk.h"
 #include "loader-common.h"
 #include "frame.h"
+#include "loader.h"
 #include "loader-libpng.h"
 #include "logger.h"
 
@@ -1176,6 +1177,11 @@ load_apng_frames(
     canvas_bytes = 0;
 
     for (;;) {
+        if (sixel_loader_callback_is_canceled(context)) {
+            status = SIXEL_INTERRUPTED;
+            goto end;
+        }
+
         memset(&state, 0, sizeof(state));
         memset(&control, 0, sizeof(control));
         p = pchunk->buffer + 8;
@@ -1190,6 +1196,11 @@ load_apng_frames(
         }
 
     while (remain >= 12) {
+        if (sixel_loader_callback_is_canceled(context)) {
+            status = SIXEL_INTERRUPTED;
+            goto end;
+        }
+
         png_uint_32 length;
 
         length = read_be32(p);
@@ -1249,6 +1260,12 @@ load_apng_frames(
                 if (SIXEL_FAILED(status)) {
                     goto end;
                 }
+
+                if (sixel_loader_callback_is_canceled(context)) {
+                    status = SIXEL_INTERRUPTED;
+                    goto end;
+                }
+
                 ++frame_no;
                 ++frames_in_loop;
                 if (fstatic) {
@@ -1331,6 +1348,12 @@ load_apng_frames(
         if (SIXEL_FAILED(status)) {
             goto end;
         }
+
+        if (sixel_loader_callback_is_canceled(context)) {
+            status = SIXEL_INTERRUPTED;
+            goto end;
+        }
+
         ++frame_no;
         ++frames_in_loop;
     }
