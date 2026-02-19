@@ -331,6 +331,18 @@ loader_try_promote_pal8(
     unsigned char r;
     unsigned char g;
     unsigned char b;
+    unsigned int key;
+    unsigned int mixed;
+    unsigned int step;
+    unsigned int slot;
+    unsigned int probe;
+    unsigned int table_size;
+    unsigned int table_mask;
+    unsigned int *keys;
+    unsigned char *values;
+    int lookup_index;
+
+#define PAL8_HASH_EMPTY_KEY 0xffffffffU
 
     status = SIXEL_OK;
     src = NULL;
@@ -347,6 +359,16 @@ loader_try_promote_pal8(
     r = 0;
     g = 0;
     b = 0;
+    key = 0U;
+    mixed = 0U;
+    step = 0U;
+    slot = 0U;
+    probe = 0U;
+    table_size = 0U;
+    table_mask = 0U;
+    keys = NULL;
+    values = NULL;
+    lookup_index = 0;
 
     if (frame == NULL || allocator == NULL) {
         return SIXEL_BAD_ARGUMENT;
@@ -385,26 +407,89 @@ loader_try_promote_pal8(
         return SIXEL_BAD_ALLOCATION;
     }
 
+    table_size = 2048U;
+    while (table_size < (unsigned int)maxcolors * 4U) {
+        table_size <<= 1U;
+    }
+    table_mask = table_size - 1U;
+
+    keys = (unsigned int *)sixel_allocator_malloc(allocator,
+                                                  sizeof(unsigned int) *
+                                                  table_size);
+    if (keys == NULL) {
+        sixel_allocator_free(allocator, palette);
+        sixel_allocator_free(allocator, indices);
+        return SIXEL_BAD_ALLOCATION;
+    }
+    values = (unsigned char *)sixel_allocator_malloc(allocator,
+                                                     table_size);
+    if (values == NULL) {
+        sixel_allocator_free(allocator, keys);
+        sixel_allocator_free(allocator, palette);
+        sixel_allocator_free(allocator, indices);
+        return SIXEL_BAD_ALLOCATION;
+    }
+
+    for (i = 0; i < (int)table_size; ++i) {
+        keys[i] = PAL8_HASH_EMPTY_KEY;
+        values[i] = 0U;
+    }
+
     for (i = 0; i < pixel_total; ++i) {
         offset = i * 3;
         r = src[offset + 0];
         g = src[offset + 1];
         b = src[offset + 2];
+        key = ((unsigned int)r << 16)
+            | ((unsigned int)g << 8)
+            | (unsigned int)b;
+        mixed = key;
+        mixed ^= mixed >> 13;
+        mixed *= 0x9e3779b1U;
+        mixed ^= mixed >> 16;
+        step = 0U;
         found = 0;
         index = 0;
 
-        for (j = 0; j < ncolors; ++j) {
-            if (palette[j * 3 + 0] == r &&
-                palette[j * 3 + 1] == g &&
-                palette[j * 3 + 2] == b) {
-                found = 1;
-                index = j;
+        for (;;) {
+            slot = (mixed + step) & table_mask;
+            probe = keys[slot];
+            if (probe == PAL8_HASH_EMPTY_KEY) {
                 break;
+            }
+            if (probe == key) {
+                lookup_index = (int)values[slot];
+                if (lookup_index < ncolors &&
+                    palette[lookup_index * 3 + 0] == r &&
+                    palette[lookup_index * 3 + 1] == g &&
+                    palette[lookup_index * 3 + 2] == b) {
+                    found = 1;
+                    index = lookup_index;
+                    break;
+                }
+            }
+            step++;
+            if (step > table_mask) {
+                break;
+            }
+        }
+
+        if (!found && step > table_mask) {
+            for (j = 0; j < ncolors; ++j) {
+                if (palette[j * 3 + 0] == r &&
+                    palette[j * 3 + 1] == g &&
+                    palette[j * 3 + 2] == b) {
+                    found = 1;
+                    index = j;
+                    break;
+                }
             }
         }
 
         if (!found) {
             if (ncolors >= maxcolors) {
+                sixel_allocator_free(allocator, values);
+                sixel_allocator_free(allocator, keys);
                 sixel_allocator_free(allocator, palette);
                 sixel_allocator_free(allocator, indices);
                 return SIXEL_OK;
@@ -414,10 +499,18 @@ loader_try_promote_pal8(
             palette[index * 3 + 1] = g;
             palette[index * 3 + 2] = b;
             ncolors++;
+
+            if (step <= table_mask) {
+                keys[slot] = key;
+                values[slot] = (unsigned char)index;
+            }
         }
 
         indices[i] = (unsigned char)index;
     }
+
+    sixel_allocator_free(allocator, values);
+    sixel_allocator_free(allocator, keys);
 
     sixel_allocator_free(allocator, frame->pixels.u8ptr);
     frame->pixels.u8ptr = NULL;
@@ -429,6 +522,8 @@ loader_try_promote_pal8(
     frame->colorspace = SIXEL_COLORSPACE_GAMMA;
 
     return status;
+
+#undef PAL8_HASH_EMPTY_KEY
 }
 
 /*
