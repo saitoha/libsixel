@@ -159,6 +159,8 @@ jobs:
           export PKG_CONFIG_LIBDIR=/usr/lib/i386-linux-gnu/pkgconfig
           export PKG_CONFIG_PATH=/usr/lib/i386-linux-gnu/pkgconfig
         fi
+        nproc="$(getconf _NPROCESSORS_ONLN)"
+        destdir="$(pwd)/libsixel"
         ./configure \
             --without-png \
             --without-jpeg \
@@ -167,10 +169,10 @@ jobs:
             --without-zshcompletiondir \
             --disable-python \
             --disable-dependency-tracking
-        make -j$(getconf _NPROCESSORS_ONLN)
+        make -j"${nproc}"
         make check
         mkdir -p libsixel
-        make install DESTDIR=$(pwd)/libsixel
+        make install DESTDIR="${destdir}"
         cp README.md LICENSE* libsixel/
         zip -r libsixel-${{ matrix.branch }}-${{ runner.os }}-${{ matrix.sys }}.zip libsixel
 
