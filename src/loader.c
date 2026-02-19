@@ -326,7 +326,7 @@ loader_token_matches(char const *token,
                      char const *name);
 
 #if HAVE_WIC
-static sixel_suboption_key_t const g_subkeys_loader_wic[] = {
+static sixel_suboption_key_t const g_subkeys_loader_wic_loader[] = {
     {
         "ico_minsize",
         NULL,
@@ -338,7 +338,7 @@ static sixel_suboption_key_t const g_subkeys_loader_wic[] = {
 };
 #endif
 
-static sixel_option_value_schema_t const g_schema_loader_values[] = {
+static sixel_option_value_schema_t const g_schema_loader_values_loader[] = {
 #if HAVE_LIBPNG
     { "libpng", 0, NULL, 0u },
 #endif
@@ -356,8 +356,9 @@ static sixel_option_value_schema_t const g_schema_loader_values[] = {
     {
         "wic",
         0,
-        g_subkeys_loader_wic,
-        sizeof(g_subkeys_loader_wic) / sizeof(g_subkeys_loader_wic[0])
+        g_subkeys_loader_wic_loader,
+        sizeof(g_subkeys_loader_wic_loader)
+            / sizeof(g_subkeys_loader_wic_loader[0])
     },
 #endif
 #if HAVE_COREGRAPHICS
@@ -377,11 +378,12 @@ static sixel_option_value_schema_t const g_schema_loader_values[] = {
 #endif
 };
 
-static sixel_option_argument_schema_t const g_schema_loaders = {
+static sixel_option_argument_schema_t const g_schema_loaders_loader = {
     SIXEL_OPTFLAG_LOADERS,
     "--loaders",
-    g_schema_loader_values,
-    sizeof(g_schema_loader_values) / sizeof(g_schema_loader_values[0])
+    g_schema_loader_values_loader,
+    sizeof(g_schema_loader_values_loader)
+        / sizeof(g_schema_loader_values_loader[0])
 };
 
 static size_t
@@ -494,7 +496,7 @@ loader_apply_loader_suboptions(char const *order)
                 token_buffer[token_length] = '\0';
                 if (SIXEL_SUCCEEDED(sixel_option_parse_argument_with_suboptions(
                         token_buffer,
-                        &g_schema_loaders,
+                        &g_schema_loaders_loader,
                         &resolution,
                         match_detail,
                         sizeof(match_detail))) &&
