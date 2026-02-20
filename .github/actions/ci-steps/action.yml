@@ -186,7 +186,7 @@ runs:
         check-hash: 'false'
         check-installer-sig: 'false'
         site: https://mirror.fcix.net/cygwin/
-        packages: ${{ fromJSON(inputs.matrix_json).extra_packages || 'make' }}
+        packages: ${{ format('{0}{1}', fromJSON(inputs.matrix_json).extra_packages || 'make', contains(fromJSON(inputs.matrix_json).label || '', '-coverage') && ' gcovr lcov' || '') }}
 
     - name: Wait before Cygwin mirror fallback
       if: >-
@@ -207,7 +207,7 @@ runs:
         check-hash: 'false'
         check-installer-sig: 'false'
         site: https://ftp.iij.ad.jp/pub/cygwin/
-        packages: ${{ fromJSON(inputs.matrix_json).extra_packages || 'make' }}
+        packages: ${{ format('{0}{1}', fromJSON(inputs.matrix_json).extra_packages || 'make', contains(fromJSON(inputs.matrix_json).label || '', '-coverage') && ' gcovr lcov' || '') }}
 
     - name: Wait before Cygwin mirror fallback #2
       if: >-
@@ -230,7 +230,7 @@ runs:
         check-hash: 'false'
         check-installer-sig: 'false'
         site: https://mirrors.kernel.org/sourceware/cygwin/
-        packages: ${{ fromJSON(inputs.matrix_json).extra_packages || 'make' }}
+        packages: ${{ format('{0}{1}', fromJSON(inputs.matrix_json).extra_packages || 'make', contains(fromJSON(inputs.matrix_json).label || '', '-coverage') && ' gcovr lcov' || '') }}
 
     - name: Validate Cygwin setup result
       if: >-
