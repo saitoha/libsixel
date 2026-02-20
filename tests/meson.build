@@ -138,6 +138,7 @@ test_runner_sources = [
   'io/loader/0016_loader_gnome_thumbnailer_pixelformat.c',
   'io/loader/0017_loader_libwebp_pixelformat.c',
   'io/loader/0018_loader_libwebp_animation_frames.c',
+  'io/loader/0019_loader_libwebp_palette_promotion_guard.c',
   'io/loader/pixelformat_test_common.h',
   'quant/palette/0001_kmeans_init.c',
   'diagnostics/probe/0001_probe_parse.c',
