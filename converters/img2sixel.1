@@ -838,6 +838,15 @@ names recognised by \fB-L\fP/\fB--loaders\fP, including prefix matches and
 the trailing "!" suffix. The environment setting is ignored when the
 command-line option is present.
 .TP 5
+.B SIXEL_LOADER_ANIMATION_START_FRAME_NO
+.br
+set the animation start frame index for supported animation loaders.
+0 or positive values select absolute indexes from the first frame.
+negative values count from the end; \-1 selects the last frame.
+out-of-range indexes fail with an error.
+the index is applied only on the first playback loop, and later loops
+decode from frame 0.
+.TP 5
 .B SIXEL_LODER_WIC_ICO_MINSIZE
 .br
 default minimum edge used by \fBwic:ico_minsize\fP when no suboption is
