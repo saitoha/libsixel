@@ -10,23 +10,19 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
     exit 0
 }
 
-
-issue207="${TOP_SRCDIR}/tests/data/security/issue/data/207/poc"
-
 printf '1..1\n'
 set -v
 
-set +e
-run_img2sixel -h 50% -r lanczos3 -w 300px "${issue207}"         >"${ARTIFACT_LOCAL_DIR}/issue207-resize.sixel"
-command_status=$?
-set -e
+issue207="${TOP_SRCDIR}/tests/data/security/issue/data/207/poc"
+
+run_img2sixel -Lbuiltin! -h 50% -r lanczos3 -w 300px "${issue207}" \
+    >"${ARTIFACT_LOCAL_DIR}/issue207-resize.sixel" || command_status=$?
 
 # Accept success or mapped error exits (1/2/3) without crashing.
-test "${command_status}" -le 3 || {
+test "${command_status-0}" -le 3 || {
     fail 1 "resize path failed"
     exit 0
 }
 
 pass 1 "resize path handled"
-
 exit 0
