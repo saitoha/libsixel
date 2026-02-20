@@ -18,11 +18,11 @@ test "${HAVE_LIBPNG-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -Llibpng! "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_blend2.png" -o/dev/null || {
-    fail 1 "APNG invalid blend_op failed"
+run_img2sixel -Llibpng! "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_blend2.png" -o/dev/null && {
+    fail 1 "APNG invalid blend_op unexpectedly succeeded"
     exit 0
 }
 
-pass 1 "APNG invalid blend_op input is handled"
+pass 1 "APNG invalid blend_op is rejected"
 exit 0
 
