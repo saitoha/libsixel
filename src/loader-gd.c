@@ -33,6 +33,8 @@
 #if HAVE_GD
 
 #include <stdio.h>
+#include <limits.h>
+#include <stdlib.h>
 
 #if HAVE_STRING_H
 # include <string.h>
@@ -44,8 +46,218 @@
 
 #include "chunk.h"
 #include "frame.h"
+#include "fromgif.h"
 #include "loader-common.h"
 #include "loader-gd.h"
+#include "compat_stub.h"
+
+static SIXELSTATUS
+gd_parse_animation_start_frame_no(int *start_frame_no)
+{
+    SIXELSTATUS status;
+    char const *env_value;
+    char *endptr;
+    long parsed;
+
+    status = SIXEL_OK;
+    env_value = NULL;
+    endptr = NULL;
+    parsed = 0;
+
+    *start_frame_no = INT_MIN;
+    env_value = sixel_compat_getenv("SIXEL_LOADER_ANIMATION_START_FRAME_NO");
+    if (env_value == NULL || env_value[0] == '\0') {
+        goto end;
+    }
+
+    parsed = strtol(env_value, &endptr, 10);
+    if (endptr == env_value || *endptr != '\0') {
+        sixel_helper_set_additional_message(
+            "SIXEL_LOADER_ANIMATION_START_FRAME_NO must be an integer.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (parsed < (long)INT_MIN || parsed > (long)INT_MAX) {
+        sixel_helper_set_additional_message(
+            "SIXEL_LOADER_ANIMATION_START_FRAME_NO is out of range.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    *start_frame_no = (int)parsed;
+
+end:
+    return status;
+}
+
+static SIXELSTATUS
+gd_resolve_animation_start_frame_no(int start_frame_no,
+                                    int frame_count,
+                                    int *resolved)
+{
+    SIXELSTATUS status;
+    int index;
+
+    status = SIXEL_OK;
+    index = 0;
+
+    if (frame_count <= 0) {
+        sixel_helper_set_additional_message(
+            "Animation frame count must be positive.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    if (start_frame_no >= 0) {
+        index = start_frame_no;
+    } else {
+        index = frame_count + start_frame_no;
+    }
+
+    if (index < 0 || index >= frame_count) {
+        sixel_helper_set_additional_message(
+            "SIXEL_LOADER_ANIMATION_START_FRAME_NO is outside"
+            " the animation frame range.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    *resolved = index;
+
+end:
+    return status;
+}
+
+static SIXELSTATUS
+gd_count_gif_frames(sixel_chunk_t const *pchunk, int *frame_count)
+{
+    SIXELSTATUS status;
+    unsigned char const *p;
+    unsigned char const *end;
+    size_t gct_size;
+    size_t lct_size;
+    unsigned char marker;
+    unsigned char packed;
+    unsigned char block_size;
+    int count;
+
+    status = SIXEL_OK;
+    p = NULL;
+    end = NULL;
+    gct_size = 0;
+    lct_size = 0;
+    marker = 0;
+    packed = 0;
+    block_size = 0;
+    count = 0;
+
+    if (pchunk->size < 13) {
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    p = pchunk->buffer;
+    end = pchunk->buffer + pchunk->size;
+    if (memcmp(p, "GIF", 3) != 0) {
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    packed = p[10];
+    p += 13;
+    if ((packed & 0x80) != 0) {
+        gct_size = (size_t)(2U << (packed & 0x07U)) * 3U;
+        if ((size_t)(end - p) < gct_size) {
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+        p += gct_size;
+    }
+
+    while (p < end) {
+        marker = *p++;
+        if (marker == 0x3b) {
+            break;
+        }
+
+        if (marker == 0x2c) {
+            if ((size_t)(end - p) < 9) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+
+            packed = p[8];
+            p += 9;
+            if ((packed & 0x80) != 0) {
+                lct_size = (size_t)(2U << (packed & 0x07U)) * 3U;
+                if ((size_t)(end - p) < lct_size) {
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
+                p += lct_size;
+            }
+
+            if (p >= end) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            ++p;
+
+            for (;;) {
+                if (p >= end) {
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
+                block_size = *p++;
+                if (block_size == 0) {
+                    break;
+                }
+                if ((size_t)(end - p) < block_size) {
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
+                p += block_size;
+            }
+            ++count;
+            continue;
+        }
+
+        if (marker != 0x21) {
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+        if (p >= end) {
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+        ++p;
+
+        for (;;) {
+            if (p >= end) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            block_size = *p++;
+            if (block_size == 0) {
+                break;
+            }
+            if ((size_t)(end - p) < block_size) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            p += block_size;
+        }
+    }
+
+    if (count <= 0) {
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    *frame_count = count;
+
+end:
+    return status;
+}
 
 SIXELSTATUS
 load_with_gd(
@@ -71,6 +283,9 @@ load_with_gd(
     int gif;
     int bmp;
     int tiff;
+    int start_frame_no;
+    int resolved_start_frame_no;
+    int frame_count;
     int *truecolor_row;
     unsigned char *palette_row;
 
@@ -86,9 +301,42 @@ load_with_gd(
     gif = gdSupportsFileType(".gif", 0);
     bmp = gdSupportsFileType(".bmp", 0);
     tiff = gdSupportsFileType(".tiff", 0);
+    start_frame_no = INT_MIN;
+    resolved_start_frame_no = INT_MIN;
+    frame_count = 0;
+
+    status = gd_parse_animation_start_frame_no(&start_frame_no);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
 
     if (gif && chunk_is_gif(pchunk)) {
-        im = gdImageCreateFromGifPtr((int)pchunk->size, pchunk->buffer);
+        if (start_frame_no != INT_MIN) {
+            status = gd_count_gif_frames(pchunk, &frame_count);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            status = gd_resolve_animation_start_frame_no(
+                start_frame_no,
+                frame_count,
+                &resolved_start_frame_no);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
+
+        status = load_gif(pchunk->buffer,
+                          (int)pchunk->size,
+                          bgcolor,
+                          reqcolors,
+                          fuse_palette,
+                          fstatic,
+                          loop_control,
+                          resolved_start_frame_no,
+                          (void *)fn_load,
+                          context,
+                          pchunk->allocator);
+        goto end;
     }
 
     if (im == NULL && chunk_is_png(pchunk)) {
