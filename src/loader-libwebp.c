@@ -246,6 +246,33 @@ vp8l_payload_uses_color_indexing(unsigned char const *data, size_t size)
  * in the source format. RGB/RGBA sources must keep their original semantics.
  */
 static int
+webp_stream_may_contain_vp8l(sixel_chunk_t const *pchunk)
+{
+    unsigned char const *bytes;
+    size_t i;
+
+    bytes = NULL;
+    i = 0U;
+
+    if (pchunk == NULL || pchunk->buffer == NULL || pchunk->size < 4U) {
+        return 0;
+    }
+
+    bytes = pchunk->buffer;
+    for (i = 0U; i + 3U < pchunk->size; ++i) {
+        if (bytes[i + 0U] == 'V' &&
+            bytes[i + 1U] == 'P' &&
+            bytes[i + 2U] == '8' &&
+            bytes[i + 3U] == 'L') {
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
+
+static int
 webp_input_is_indexed(sixel_chunk_t const *pchunk)
 {
     WebPData data;
@@ -263,6 +290,9 @@ webp_input_is_indexed(sixel_chunk_t const *pchunk)
     indexed = 0;
 
     if (pchunk == NULL || pchunk->buffer == NULL || pchunk->size == 0U) {
+        return 0;
+    }
+    if (!webp_stream_may_contain_vp8l(pchunk)) {
         return 0;
     }
 
