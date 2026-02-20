@@ -751,6 +751,8 @@ parse_fctl(
     png_uint_32 delay_den;
 
     if (length != 26 || sequence_no == NULL || control == NULL) {
+        sixel_helper_set_additional_message(
+            "APNG parse error: invalid fcTL chunk length");
         return 0;
     }
 
@@ -765,6 +767,8 @@ parse_fctl(
     control->blend_op = data[25];
 
     if (control->dispose_op > 2 || control->blend_op > 1) {
+        sixel_helper_set_additional_message(
+            "APNG parse error: invalid fcTL dispose/blend value");
         return 0;
     }
 
@@ -1224,12 +1228,16 @@ load_apng_frames(
 
         length = read_be32(p);
         if ((size_t)length > remain - 12) {
+            sixel_helper_set_additional_message(
+                "APNG parse error: chunk length exceeds input size");
             status = SIXEL_BAD_INPUT;
             goto end;
         }
 
         if (memcmp(p + 4, "IHDR", 4) == 0) {
             if (length != 13) {
+                sixel_helper_set_additional_message(
+                    "APNG parse error: invalid IHDR chunk length");
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
@@ -1240,6 +1248,8 @@ load_apng_frames(
                 canvas.height = (int)read_be32(p + 12);
             }
             if (canvas.width <= 0 || canvas.height <= 0) {
+                sixel_helper_set_additional_message(
+                    "APNG parse error: invalid canvas size");
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
@@ -1260,6 +1270,8 @@ load_apng_frames(
             }
         } else if (memcmp(p + 4, "acTL", 4) == 0) {
             if (length != 8) {
+                sixel_helper_set_additional_message(
+                    "APNG parse error: invalid acTL chunk length");
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
@@ -1269,6 +1281,8 @@ load_apng_frames(
             num_plays = (int)read_be32(p + 12);
             state.expected_sequence = 0;
             if (num_frames <= 0) {
+                sixel_helper_set_additional_message(
+                    "APNG parse error: acTL num_frames must be > 0");
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
@@ -1308,6 +1322,8 @@ load_apng_frames(
                 goto end;
             }
             if (sequence_no != state.expected_sequence) {
+                sixel_helper_set_additional_message(
+                    "APNG parse error: fcTL sequence number mismatch");
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
@@ -1316,7 +1332,10 @@ load_apng_frames(
                 control.x_offset > (png_uint_32)canvas.width ||
                 control.y_offset > (png_uint_32)canvas.height ||
                 control.width > (png_uint_32)canvas.width - control.x_offset ||
-                control.height > (png_uint_32)canvas.height - control.y_offset) {
+                control.height >
+                (png_uint_32)canvas.height - control.y_offset) {
+                sixel_helper_set_additional_message(
+                    "APNG parse error: fcTL rectangle is outside canvas");
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
@@ -1324,11 +1343,15 @@ load_apng_frames(
             has_frame = 1;
         } else if (memcmp(p + 4, "fdAT", 4) == 0 && seen_actl) {
             if (!has_frame || !seen_fctl || length < 4) {
+                sixel_helper_set_additional_message(
+                    "APNG parse error: fdAT encountered before valid fcTL");
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
             fd_sequence = read_be32(p + 8);
             if (fd_sequence != state.expected_sequence) {
+                sixel_helper_set_additional_message(
+                    "APNG parse error: fdAT sequence number mismatch");
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
@@ -1343,6 +1366,8 @@ load_apng_frames(
             }
         } else if (memcmp(p + 4, "IDAT", 4) == 0) {
             if (seen_actl && !has_frame && (seen_fctl || seen_idat)) {
+                sixel_helper_set_additional_message(
+                    "APNG parse error: unexpected IDAT ordering");
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
@@ -1418,10 +1443,14 @@ load_apng_frames(
     }
 
     if (frames_in_loop == 0) {
+        sixel_helper_set_additional_message(
+            "APNG parse error: no decodable frame in animation");
         status = SIXEL_BAD_INPUT;
         goto end;
     }
     if (num_frames > 0 && frames_in_loop != num_frames) {
+        sixel_helper_set_additional_message(
+            "APNG parse error: decoded frame count mismatch");
         status = SIXEL_BAD_INPUT;
         goto end;
     }

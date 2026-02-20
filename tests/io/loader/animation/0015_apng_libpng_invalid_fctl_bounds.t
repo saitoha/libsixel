@@ -18,11 +18,11 @@ test "${HAVE_LIBPNG-}" = 1 || {
 echo "1..1"
 set -v
 
-run_img2sixel -Llibpng! "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_fctl_oob.png" -o/dev/null || {
-    fail 1 "APNG out-of-bounds frame rect failed"
+run_img2sixel -Llibpng! "${TOP_SRCDIR}/tests/data/inputs/formats/apng_invalid_fctl_oob.png" -o/dev/null && {
+    fail 1 "APNG out-of-bounds frame rect unexpectedly succeeded"
     exit 0
 }
 
-pass 1 "APNG out-of-bounds frame rect input is handled"
+pass 1 "APNG out-of-bounds frame rect is rejected"
 exit 0
 
