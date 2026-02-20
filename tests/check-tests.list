@@ -147,6 +147,7 @@ io/loader/0015_loader_quicklook_pixelformat.t
 io/loader/0016_loader_gnome_thumbnailer_pixelformat.t
 io/loader/0017_loader_libwebp_pixelformat.t
 io/loader/0018_loader_libwebp_animation_frames.t
+io/loader/0019_loader_libwebp_palette_promotion_guard.t
 io/loader/0018_loader_builtin_psd.t
 io/loader/0019_loader_builtin_hdr.t
 io/loader/0020_loader_builtin_pic.t
