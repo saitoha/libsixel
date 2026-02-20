@@ -150,6 +150,10 @@ end:
     return status;
 }
 
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
 static SIXELSTATUS
 gdkpixbuf_count_animation_frames(GdkPixbufAnimation *animation,
                                  GTimeVal const *start_time,
@@ -171,10 +175,10 @@ gdkpixbuf_count_animation_frames(GdkPixbufAnimation *animation,
     count = 0;
     delay_ms = 0;
 
-#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
-# pragma GCC diagnostic push
-# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#endif
+    /*
+     * gdk-pixbuf animation iterator APIs still use GTimeVal.
+     * Keep deprecation suppression local to this function.
+     */
     it = gdk_pixbuf_animation_get_iter(animation, &time_val);
     if (it == NULL) {
         status = SIXEL_GDK_ERROR;
