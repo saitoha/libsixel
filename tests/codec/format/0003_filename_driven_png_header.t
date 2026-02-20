@@ -12,6 +12,9 @@ test "${HAVE_IMG2SIXEL-}" = 1 || {
 echo "1..1"
 set -v
 
+SIXEL_LOG_PATH="${TOP_BUILDDIR}/sixel-timeline-codec-format-0003.log"
+export SIXEL_LOG_PATH
+
 snake_jpg="${TOP_SRCDIR}/tests/data/inputs/snake_64.jpg"
 filename_png="${ARTIFACT_LOCAL_DIR}/snake-filename.png"
 
