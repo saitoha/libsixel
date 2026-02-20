@@ -114,6 +114,8 @@ list_help_vars() {
         build_root=$(CDPATH=; cd -- "$img2sixel_dir/.." && pwd)
     fi
     runtime_libdir="$build_root/src/.libs"
+    runtime_extra="$SIXEL_TEST_ADDITIOANL_PATH"
+    runtime_value=
     if [ -d "$runtime_libdir" ] &&
             [ "$shlibpath_overrides_runpath" = "yes" ]; then
         eval "runtime_current=\${${runtime_var}:-}"
@@ -122,6 +124,11 @@ list_help_vars() {
         else
             runtime_value="$runtime_libdir"
         fi
+    fi
+    if [ -d "$runtime_extra" ]; then
+        runtime_value="${runtime_extra}${runtime_sep}${runtime_value}"
+    fi
+    if [ -n "${runtime_value}" ]; then
         eval "${runtime_var}=\${runtime_value}"
         eval "export ${runtime_var}"
     fi
