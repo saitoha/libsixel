@@ -78,6 +78,37 @@
 #endif  /* !defined(O_BINARY) && !defined(_O_BINARY) */
 
 
+#if HAVE_LIBPNG && HAVE_SETJMP && HAVE_LONGJMP
+/*
+ * Capture libpng write errors so callers receive the library detail string
+ * instead of only the generic SIXEL_PNG_ERROR status.
+ */
+static void
+sixel_writer_png_error_callback(png_structp png_ptr,
+                                png_const_charp error_message)
+{
+    if (error_message != NULL) {
+        sixel_helper_set_additional_message(error_message);
+    }
+    longjmp(png_jmpbuf(png_ptr), 1);
+}
+
+
+/*
+ * Keep warnings visible in diagnostics without interrupting the write path.
+ */
+static void
+sixel_writer_png_warning_callback(png_structp png_ptr,
+                                  png_const_charp warning_message)
+{
+    (void)png_ptr;
+    if (warning_message != NULL) {
+        sixel_helper_set_additional_message(warning_message);
+    }
+}
+#endif  /* HAVE_LIBPNG && HAVE_SETJMP && HAVE_LONGJMP */
+
+
 #if !HAVE_LIBPNG
 unsigned char *
 stbi_write_png_to_mem(const unsigned char *pixels, int stride_bytes,
@@ -561,10 +592,17 @@ write_png_to_file(
                           "libpng_create_begin",
                           0);
     }
+#if HAVE_SETJMP && HAVE_LONGJMP
+    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING,
+                                      NULL,
+                                      &sixel_writer_png_error_callback,
+                                      &sixel_writer_png_warning_callback);
+#else
     png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING,
                                       NULL,
                                       NULL,
                                       NULL);
+#endif  /* HAVE_SETJMP && HAVE_LONGJMP */
     if (!png_ptr) {
         status = SIXEL_PNG_ERROR;
         if (logger_prepared) {
@@ -609,6 +647,15 @@ write_png_to_file(
 # if USE_SETJMP && HAVE_SETJMP
     if (setjmp(png_jmpbuf(png_ptr))) {
         status = SIXEL_PNG_ERROR;
+        if (logger_prepared) {
+            sixel_logger_logf(&logger,
+                              "io",
+                              "png",
+                              "libpng_error_callback",
+                              0,
+                              "status=%d",
+                              status);
+        }
         goto end;
     }
 # endif
