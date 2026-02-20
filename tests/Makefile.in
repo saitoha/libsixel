@@ -135,6 +135,7 @@ am__test_runner_SOURCES_DIST = test_runner.c \
 	io/loader/0016_loader_gnome_thumbnailer_pixelformat.c \
 	io/loader/0017_loader_libwebp_pixelformat.c \
 	io/loader/0018_loader_libwebp_animation_frames.c \
+	io/loader/0019_loader_libwebp_palette_promotion_guard.c \
 	io/loader/pixelformat_test_common.h \
 	quant/palette/0001_kmeans_init.c \
 	diagnostics/probe/0001_probe_parse.c \
@@ -175,6 +176,7 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @WANT_AMALGAMATED_TOOLS_FALSE@	io/loader/test_runner-0016_loader_gnome_thumbnailer_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	io/loader/test_runner-0017_loader_libwebp_pixelformat.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	io/loader/test_runner-0018_loader_libwebp_animation_frames.$(OBJEXT) \
+@WANT_AMALGAMATED_TOOLS_FALSE@	io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	quant/palette/test_runner-0001_kmeans_init.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	diagnostics/probe/test_runner-0001_probe_parse.$(OBJEXT) \
 @WANT_AMALGAMATED_TOOLS_FALSE@	extension/gdk-pixbuf-loader/test_runner-0001_gdk_pixbuf_loader.$(OBJEXT) \
@@ -281,6 +283,7 @@ am__depfiles_remade =  \
 	io/loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po \
 	io/loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po \
 	io/loader/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po \
+	io/loader/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po \
 	processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po \
 	processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po \
 	processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po \
@@ -971,6 +974,7 @@ TESTS_AMALGAMATION_LDFLAGS_COMMON = $(TESTS_COMMON_LDFLAGS_VAL)
 @WANT_AMALGAMATED_TOOLS_FALSE@    io/loader/0016_loader_gnome_thumbnailer_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    io/loader/0017_loader_libwebp_pixelformat.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    io/loader/0018_loader_libwebp_animation_frames.c \
+@WANT_AMALGAMATED_TOOLS_FALSE@    io/loader/0019_loader_libwebp_palette_promotion_guard.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    io/loader/pixelformat_test_common.h \
 @WANT_AMALGAMATED_TOOLS_FALSE@    quant/palette/0001_kmeans_init.c \
 @WANT_AMALGAMATED_TOOLS_FALSE@    diagnostics/probe/0001_probe_parse.c \
@@ -1379,6 +1383,8 @@ io/loader/test_runner-0017_loader_libwebp_pixelformat.$(OBJEXT):  \
 	io/loader/$(am__dirstamp) io/loader/$(DEPDIR)/$(am__dirstamp)
 io/loader/test_runner-0018_loader_libwebp_animation_frames.$(OBJEXT):  \
 	io/loader/$(am__dirstamp) io/loader/$(DEPDIR)/$(am__dirstamp)
+io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.$(OBJEXT):  \
+	io/loader/$(am__dirstamp) io/loader/$(DEPDIR)/$(am__dirstamp)
 quant/palette/$(am__dirstamp):
 	@$(MKDIR_P) quant/palette
 	@: >>quant/palette/$(am__dirstamp)
@@ -1503,6 +1509,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@io/loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@io/loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@io/loader/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@io/loader/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po@am__quote@ # am--include-marker
@@ -1908,6 +1915,20 @@ io/loader/test_runner-0018_loader_libwebp_animation_frames.obj: io/loader/0018_l
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0018_loader_libwebp_animation_frames.c' object='io/loader/test_runner-0018_loader_libwebp_animation_frames.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0018_loader_libwebp_animation_frames.obj `if test -f 'io/loader/0018_loader_libwebp_animation_frames.c'; then $(CYGPATH_W) 'io/loader/0018_loader_libwebp_animation_frames.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0018_loader_libwebp_animation_frames.c'; fi`
+
+io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.o: io/loader/0019_loader_libwebp_palette_promotion_guard.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.o -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Tpo -c -o io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.o `test -f 'io/loader/0019_loader_libwebp_palette_promotion_guard.c' || echo '$(srcdir)/'`io/loader/0019_loader_libwebp_palette_promotion_guard.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Tpo io/loader/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0019_loader_libwebp_palette_promotion_guard.c' object='io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.o `test -f 'io/loader/0019_loader_libwebp_palette_promotion_guard.c' || echo '$(srcdir)/'`io/loader/0019_loader_libwebp_palette_promotion_guard.c
+
+io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.obj: io/loader/0019_loader_libwebp_palette_promotion_guard.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.obj -MD -MP -MF io/loader/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Tpo -c -o io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.obj `if test -f 'io/loader/0019_loader_libwebp_palette_promotion_guard.c'; then $(CYGPATH_W) 'io/loader/0019_loader_libwebp_palette_promotion_guard.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0019_loader_libwebp_palette_promotion_guard.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) io/loader/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Tpo io/loader/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='io/loader/0019_loader_libwebp_palette_promotion_guard.c' object='io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -c -o io/loader/test_runner-0019_loader_libwebp_palette_promotion_guard.obj `if test -f 'io/loader/0019_loader_libwebp_palette_promotion_guard.c'; then $(CYGPATH_W) 'io/loader/0019_loader_libwebp_palette_promotion_guard.c'; else $(CYGPATH_W) '$(srcdir)/io/loader/0019_loader_libwebp_palette_promotion_guard.c'; fi`
 
 quant/palette/test_runner-0001_kmeans_init.o: quant/palette/0001_kmeans_init.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(test_runner_CPPFLAGS) $(CPPFLAGS) $(test_runner_CFLAGS) $(CFLAGS) -MT quant/palette/test_runner-0001_kmeans_init.o -MD -MP -MF quant/palette/$(DEPDIR)/test_runner-0001_kmeans_init.Tpo -c -o quant/palette/test_runner-0001_kmeans_init.o `test -f 'quant/palette/0001_kmeans_init.c' || echo '$(srcdir)/'`quant/palette/0001_kmeans_init.c
@@ -2451,6 +2472,7 @@ distclean: distclean-am
 	-rm -f io/loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po
 	-rm -f io/loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
 	-rm -f io/loader/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po
+	-rm -f io/loader/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po
@@ -2535,6 +2557,7 @@ maintainer-clean: maintainer-clean-am
 	-rm -f io/loader/$(DEPDIR)/test_runner-0016_loader_gnome_thumbnailer_pixelformat.Po
 	-rm -f io/loader/$(DEPDIR)/test_runner-0017_loader_libwebp_pixelformat.Po
 	-rm -f io/loader/$(DEPDIR)/test_runner-0018_loader_libwebp_animation_frames.Po
+	-rm -f io/loader/$(DEPDIR)/test_runner-0019_loader_libwebp_palette_promotion_guard.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0001_filter_clip.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0002_filter_sample.Po
 	-rm -f processing/filter/$(DEPDIR)/test_runner-0003_filter_resize.Po
