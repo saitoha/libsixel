@@ -49,6 +49,9 @@
 #if HAVE_LIMITS_H
 # include <limits.h>
 #endif
+#if HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
 #if HAVE_STDINT_H
 # include <stdint.h>
 #endif
@@ -59,6 +62,7 @@
 
 #include "allocator.h"
 #include "chunk.h"
+#include "compat_stub.h"
 #include "loader-common.h"
 #include "frame.h"
 #include "loader.h"
@@ -607,6 +611,83 @@ crc32_update(unsigned char const *data, size_t length, png_uint_32 seed)
     return ~crc;
 }
 
+static SIXELSTATUS
+libpng_parse_animation_start_frame_no(int *start_frame_no)
+{
+    SIXELSTATUS status;
+    char const *env_value;
+    char *endptr;
+    long parsed;
+
+    status = SIXEL_OK;
+    env_value = NULL;
+    endptr = NULL;
+    parsed = 0;
+
+    *start_frame_no = INT_MIN;
+    env_value = sixel_compat_getenv("SIXEL_LOADER_ANIMATION_START_FRAME_NO");
+    if (env_value == NULL || env_value[0] == '\0') {
+        goto end;
+    }
+
+    parsed = strtol(env_value, &endptr, 10);
+    if (endptr == env_value || *endptr != '\0') {
+        sixel_helper_set_additional_message(
+            "SIXEL_LOADER_ANIMATION_START_FRAME_NO must be an integer.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (parsed < (long)INT_MIN || parsed > (long)INT_MAX) {
+        sixel_helper_set_additional_message(
+            "SIXEL_LOADER_ANIMATION_START_FRAME_NO is out of range.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    *start_frame_no = (int)parsed;
+
+end:
+    return status;
+}
+
+static SIXELSTATUS
+libpng_resolve_animation_start_frame_no(int start_frame_no,
+                                        int frame_count,
+                                        int *resolved)
+{
+    SIXELSTATUS status;
+    int index;
+
+    status = SIXEL_OK;
+    index = 0;
+
+    if (frame_count <= 0) {
+        sixel_helper_set_additional_message(
+            "Animation frame count must be positive.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    if (start_frame_no >= 0) {
+        index = start_frame_no;
+    } else {
+        index = frame_count + start_frame_no;
+    }
+
+    if (index < 0 || index >= frame_count) {
+        sixel_helper_set_additional_message(
+            "SIXEL_LOADER_ANIMATION_START_FRAME_NO is outside"
+            " the animation frame range.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    *resolved = index;
+
+end:
+    return status;
+}
+
 static int
 ensure_shared_capacity(
     sixel_apng_state_t       *state,
@@ -1012,6 +1093,7 @@ emit_apng_frame(
     int                            frame_no,
     int                            loop_no,
     int                            multiframe,
+    int                            emit_callback,
     unsigned char                 *bgcolor,
     int                            reqcolors,
     int                            fuse_palette,
@@ -1098,6 +1180,11 @@ emit_apng_frame(
     }
     apng_blend_rect(canvas, control, subframe);
 
+    if (!emit_callback) {
+        status = SIXEL_OK;
+        goto dispose;
+    }
+
     emitted = (unsigned char *)sixel_allocator_malloc(allocator, canvas_bytes);
     if (emitted == NULL) {
         status = SIXEL_BAD_ALLOCATION;
@@ -1129,6 +1216,8 @@ emit_apng_frame(
 
     status = fn_load(frame, callback_context);
 
+dispose:
+
     if (control->dispose_op == 1) {
         apng_clear_rect(canvas, control);
     } else if (control->dispose_op == 2) {
@@ -1152,6 +1241,7 @@ load_apng_frames(
     int                        reqcolors,
     unsigned char             *bgcolor,
     int                        loop_control,
+    int                        start_frame_no,
     sixel_load_image_function  fn_load,
     void                      *context)
 {
@@ -1171,6 +1261,7 @@ load_apng_frames(
     int saw_animation;
     int seen_fctl;
     int seen_idat;
+    int emit_callback;
     sixel_apng_canvas_t canvas;
     size_t canvas_bytes;
     png_uint_32 sequence_no;
@@ -1192,6 +1283,7 @@ load_apng_frames(
     saw_animation = 0;
     seen_fctl = 0;
     seen_idat = 0;
+    emit_callback = 1;
     memset(&canvas, 0, sizeof(canvas));
     canvas_bytes = 0;
     sequence_no = 0;
@@ -1286,13 +1378,28 @@ load_apng_frames(
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
+            if (loop_no == 0 && start_frame_no != INT_MIN) {
+                status = libpng_resolve_animation_start_frame_no(
+                    start_frame_no,
+                    num_frames,
+                    &start_frame_no);
+                if (SIXEL_FAILED(status)) {
+                    goto end;
+                }
+            }
         } else if (memcmp(p + 4, "fcTL", 4) == 0 && seen_actl) {
             if (has_frame && state.chunk_size > 0) {
+                emit_callback = 1;
+                if (loop_no == 0 && start_frame_no != INT_MIN &&
+                    frames_in_loop < start_frame_no) {
+                    emit_callback = 0;
+                }
                 status = emit_apng_frame(&state,
                                          &control,
                                          frame_no,
                                          loop_no,
                                          num_frames > 1,
+                                         emit_callback,
                                          bgcolor,
                                          reqcolors,
                                          fuse_palette,
@@ -1311,7 +1418,7 @@ load_apng_frames(
 
                 ++frame_no;
                 ++frames_in_loop;
-                if (fstatic) {
+                if (fstatic && emit_callback) {
                     status = SIXEL_OK;
                     goto end;
                 }
@@ -1417,11 +1524,17 @@ load_apng_frames(
     }
 
     if (state.chunk_size > 0) {
+        emit_callback = 1;
+        if (loop_no == 0 && start_frame_no != INT_MIN &&
+            frames_in_loop < start_frame_no) {
+            emit_callback = 0;
+        }
         status = emit_apng_frame(&state,
                                  &control,
                                  frame_no,
                                  loop_no,
                                  num_frames > 1,
+                                 emit_callback,
                                  bgcolor,
                                  reqcolors,
                                  fuse_palette,
@@ -1440,6 +1553,10 @@ load_apng_frames(
 
         ++frame_no;
         ++frames_in_loop;
+        if (fstatic && emit_callback) {
+            status = SIXEL_OK;
+            goto end;
+        }
     }
 
     if (frames_in_loop == 0) {
@@ -1511,13 +1628,20 @@ load_with_libpng(
     SIXELSTATUS status;
     sixel_frame_t *frame;
     unsigned char *pixels;
+    int start_frame_no;
 
     status = SIXEL_FALSE;
     frame = NULL;
     pixels = NULL;
+    start_frame_no = INT_MIN;
 
     (void)fstatic;
     (void)loop_control;
+
+    status = libpng_parse_animation_start_frame_no(&start_frame_no);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
 
     status = load_apng_frames(pchunk,
                               fstatic,
@@ -1525,6 +1649,7 @@ load_with_libpng(
                               reqcolors,
                               bgcolor,
                               loop_control,
+                              start_frame_no,
                               fn_load,
                               context);
     /*
