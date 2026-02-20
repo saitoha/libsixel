@@ -286,6 +286,10 @@ io/loader/animation/0031_gdk_pixbuf2_start_frame_positive.t
 io/loader/animation/0032_gdk_pixbuf2_start_frame_negative.t
 io/loader/animation/0033_gdk_pixbuf2_start_frame_positive_oob.t
 io/loader/animation/0034_gdk_pixbuf2_start_frame_negative_oob.t
+io/loader/animation/0035_gd_start_frame_positive.t
+io/loader/animation/0036_gd_start_frame_negative.t
+io/loader/animation/0037_gd_start_frame_positive_oob.t
+io/loader/animation/0038_gd_start_frame_negative_oob.t
 io/network/0001_curl_invalid_file_url.t
 io/network/0002_curl_invalid_https_url.t
 io/network/0003_curl_file_scheme.t
