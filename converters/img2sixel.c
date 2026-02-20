@@ -862,6 +862,13 @@ static cli_env_help_t const g_env_help_table[] = {
         "separated names as -L. Ignored when -L/--loaders is provided."
     },
     {
+        "SIXEL_LOADER_ANIMATION_START_FRAME_NO",
+        "set the animation start frame index used by supported loaders.\n"
+        "0 or positive values are absolute indexes. Negative values count\n"
+        "from the end (-1 is the last frame). Out-of-range indexes fail.\n"
+        "Applied only on the first loop; later loops decode from frame 0."
+    },
+    {
         "SIXEL_LODER_WIC_ICO_MINSIZE",
         "default minimum edge size used by wic:ico_minsize when no\n"
         "suboption is provided. Accepts positive integers."

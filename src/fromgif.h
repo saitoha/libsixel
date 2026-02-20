@@ -41,6 +41,7 @@ load_gif(
     int                 /* in */ fuse_palette,
     int                 /* in */ fstatic,
     int                 /* in */ loop_control,
+    int                 /* in */ start_frame_no,
     void                /* in */ *fn_load,     /* callback */
     void                /* in */ *context,     /* private data for callback */
     sixel_allocator_t   /* in */ *allocator    /* allocator object */

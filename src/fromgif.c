@@ -743,6 +743,7 @@ load_gif(
     int                 /* in */ fuse_palette,
     int                 /* in */ fstatic,
     int                 /* in */ loop_control,
+    int                 /* in */ start_frame_no,
     void                /* in */ *fn_load,     /* callback */
     void                /* in */ *context,     /* private data for callback */
     sixel_allocator_t   /* in */ *allocator)   /* allocator object */
@@ -759,6 +760,7 @@ load_gif(
     unsigned char bg_r;
     unsigned char bg_g;
     unsigned char bg_b;
+    int emit_frame;
 
     frame = NULL;
     fnp.p = fn_load;
@@ -890,16 +892,28 @@ load_gif(
                 goto end;
             }
 
-            status = fnp.fn(frame, context);
-            sixel_frame_unref(frame);
-            frame = NULL;
-            if (status != SIXEL_OK) {
-                goto end;
+            emit_frame = 1;
+            /*
+             * Start-frame override applies only to the first decoded loop.
+             * Later loops always emit from frame 0 to preserve GIF looping.
+             */
+            if (start_frame_no >= 0 &&
+                sixel_frame_get_loop_no(frame) == 0 &&
+                sixel_frame_get_frame_no(frame) < start_frame_no) {
+                emit_frame = 0;
             }
 
-            if (fstatic) {
-                goto end;
+            if (emit_frame) {
+                status = fnp.fn(frame, context);
+                if (status != SIXEL_OK) {
+                    goto end;
+                }
+
+                if (fstatic) {
+                    goto end;
+                }
             }
+
             sixel_frame_increment_frame_no(frame);
         }
 

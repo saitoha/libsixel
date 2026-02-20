@@ -53,6 +53,7 @@
 
 #include "allocator.h"
 #include "chunk.h"
+#include "compat_stub.h"
 #include "frame.h"
 #include "fromgif.h"
 #include "frompnm.h"
@@ -420,6 +421,214 @@ typedef union _fn_pointer {
     void *                    p;
 } fn_pointer;
 
+static SIXELSTATUS
+sixel_builtin_parse_animation_start_frame_no(int *start_frame_no)
+{
+    SIXELSTATUS status;
+    char const *env_value;
+    char *endptr;
+    long parsed;
+
+    status = SIXEL_OK;
+    env_value = NULL;
+    endptr = NULL;
+    parsed = 0;
+
+    *start_frame_no = INT_MIN;
+    env_value = sixel_compat_getenv("SIXEL_LOADER_ANIMATION_START_FRAME_NO");
+    if (env_value == NULL || env_value[0] == '\0') {
+        goto end;
+    }
+
+    parsed = strtol(env_value, &endptr, 10);
+    if (endptr == env_value || *endptr != '\0') {
+        sixel_helper_set_additional_message(
+            "SIXEL_LOADER_ANIMATION_START_FRAME_NO must be an integer.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (parsed < (long)INT_MIN || parsed > (long)INT_MAX) {
+        sixel_helper_set_additional_message(
+            "SIXEL_LOADER_ANIMATION_START_FRAME_NO is out of range.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    *start_frame_no = (int)parsed;
+
+end:
+    return status;
+}
+
+static SIXELSTATUS
+sixel_builtin_resolve_animation_start_frame_no(int start_frame_no,
+                                               int frame_count,
+                                               int *resolved)
+{
+    SIXELSTATUS status;
+    int index;
+
+    status = SIXEL_OK;
+    index = 0;
+
+    if (frame_count <= 0) {
+        sixel_helper_set_additional_message(
+            "Animation frame count must be positive.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    if (start_frame_no >= 0) {
+        index = start_frame_no;
+    } else {
+        index = frame_count + start_frame_no;
+    }
+
+    if (index < 0 || index >= frame_count) {
+        sixel_helper_set_additional_message(
+            "SIXEL_LOADER_ANIMATION_START_FRAME_NO is outside"
+            " the animation frame range.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    *resolved = index;
+
+end:
+    return status;
+}
+
+static SIXELSTATUS
+sixel_builtin_count_gif_frames(sixel_chunk_t const *pchunk, int *frame_count)
+{
+    SIXELSTATUS status;
+    unsigned char const *p;
+    unsigned char const *end;
+    size_t gct_size;
+    size_t lct_size;
+    unsigned char marker;
+    unsigned char packed;
+    unsigned char block_size;
+    int count;
+
+    status = SIXEL_OK;
+    p = NULL;
+    end = NULL;
+    gct_size = 0;
+    lct_size = 0;
+    marker = 0;
+    packed = 0;
+    block_size = 0;
+    count = 0;
+
+    if (pchunk->size < 13) {
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    p = pchunk->buffer;
+    end = pchunk->buffer + pchunk->size;
+    if (memcmp(p, "GIF", 3) != 0) {
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    packed = p[10];
+    p += 13;
+    if ((packed & 0x80) != 0) {
+        gct_size = (size_t)(2U << (packed & 0x07U)) * 3U;
+        if ((size_t)(end - p) < gct_size) {
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+        p += gct_size;
+    }
+
+    while (p < end) {
+        marker = *p++;
+        if (marker == 0x3b) {
+            break;
+        }
+
+        if (marker == 0x2c) {
+            if ((size_t)(end - p) < 9) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+
+            packed = p[8];
+            p += 9;
+            if ((packed & 0x80) != 0) {
+                lct_size = (size_t)(2U << (packed & 0x07U)) * 3U;
+                if ((size_t)(end - p) < lct_size) {
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
+                p += lct_size;
+            }
+
+            if (p >= end) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            ++p;
+
+            for (;;) {
+                if (p >= end) {
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
+                block_size = *p++;
+                if (block_size == 0) {
+                    break;
+                }
+                if ((size_t)(end - p) < block_size) {
+                    status = SIXEL_BAD_INPUT;
+                    goto end;
+                }
+                p += block_size;
+            }
+            ++count;
+            continue;
+        }
+
+        if (marker != 0x21) {
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+        if (p >= end) {
+            status = SIXEL_BAD_INPUT;
+            goto end;
+        }
+        ++p;
+
+        for (;;) {
+            if (p >= end) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            block_size = *p++;
+            if (block_size == 0) {
+                break;
+            }
+            if ((size_t)(end - p) < block_size) {
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            p += block_size;
+        }
+    }
+
+    if (count <= 0) {
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    *frame_count = count;
+
+end:
+    return status;
+}
+
 /*
  * Builtin APNG pipeline (stb_image backend):
  *
@@ -778,6 +987,7 @@ sixel_builtin_apng_emit_frame(
     int frame_no,
     int loop_no,
     int multiframe,
+    int emit_callback,
     unsigned char *bgcolor,
     sixel_builtin_apng_canvas_t *canvas,
     sixel_load_image_function fn_load,
@@ -872,6 +1082,11 @@ sixel_builtin_apng_emit_frame(
     }
     sixel_builtin_apng_blend_rect(canvas, control, subframe);
 
+    if (!emit_callback) {
+        status = SIXEL_OK;
+        goto dispose;
+    }
+
     emitted = (unsigned char *)sixel_allocator_malloc(allocator, canvas_bytes);
     if (emitted == NULL) {
         status = SIXEL_BAD_ALLOCATION;
@@ -904,6 +1119,8 @@ sixel_builtin_apng_emit_frame(
 
     status = fn_load(frame, callback_context);
 
+dispose:
+
     if (control->dispose_op == 1) {
         sixel_builtin_apng_clear_rect(canvas, control);
     } else if (control->dispose_op == 2) {
@@ -924,6 +1141,7 @@ sixel_builtin_load_apng_frames(
     int fstatic,
     unsigned char *bgcolor,
     int loop_control,
+    int start_frame_no,
     sixel_load_image_function fn_load,
     void *context)
 {
@@ -943,6 +1161,7 @@ sixel_builtin_load_apng_frames(
     int loop_no;
     int frames_in_loop;
     int stop_loop;
+    int emit_callback;
     int seen_fctl;
     int seen_idat;
     uint32_t length;
@@ -967,6 +1186,7 @@ sixel_builtin_load_apng_frames(
     loop_no = 0;
     frames_in_loop = 0;
     stop_loop = 0;
+    emit_callback = 1;
     seen_fctl = 0;
     seen_idat = 0;
     length = 0;
@@ -1058,14 +1278,29 @@ sixel_builtin_load_apng_frames(
                     status = SIXEL_BAD_INPUT;
                     goto end;
                 }
+                if (loop_no == 0 && start_frame_no != INT_MIN) {
+                    status = sixel_builtin_resolve_animation_start_frame_no(
+                        start_frame_no,
+                        num_frames,
+                        &start_frame_no);
+                    if (SIXEL_FAILED(status)) {
+                        goto end;
+                    }
+                }
             } else if (memcmp(p + 4, "fcTL", 4) == 0 && seen_actl) {
                 if (has_frame && state.chunk_size > 0) {
+                    emit_callback = 1;
+                    if (loop_no == 0 && start_frame_no != INT_MIN &&
+                        frames_in_loop < start_frame_no) {
+                        emit_callback = 0;
+                    }
                     status = sixel_builtin_apng_emit_frame(
                         &state,
                         &control,
                         frame_no,
                         loop_no,
                         num_frames > 1,
+                        emit_callback,
                         bgcolor,
                         &canvas,
                         fn_load,
@@ -1076,7 +1311,7 @@ sixel_builtin_load_apng_frames(
                     }
                     ++frame_no;
                     ++frames_in_loop;
-                    if (fstatic) {
+                    if (fstatic && emit_callback) {
                         status = SIXEL_OK;
                         goto end;
                     }
@@ -1180,11 +1415,17 @@ sixel_builtin_load_apng_frames(
         }
 
         if (state.chunk_size > 0) {
+            emit_callback = 1;
+            if (loop_no == 0 && start_frame_no != INT_MIN &&
+                frames_in_loop < start_frame_no) {
+                emit_callback = 0;
+            }
             status = sixel_builtin_apng_emit_frame(&state,
                                                    &control,
                                                    frame_no,
                                                    loop_no,
                                                    num_frames > 1,
+                                                   emit_callback,
                                                    bgcolor,
                                                    &canvas,
                                                    fn_load,
@@ -1195,6 +1436,10 @@ sixel_builtin_load_apng_frames(
             }
             ++frame_no;
             ++frames_in_loop;
+            if (fstatic && emit_callback) {
+                status = SIXEL_OK;
+                goto end;
+            }
         }
 
         if (frames_in_loop == 0) {
@@ -1261,6 +1506,9 @@ load_with_builtin(
     stbi__result_info ri;
     char message[80];
     int nwrite;
+    int start_frame_no;
+    int resolved_start_frame_no;
+    int gif_frame_count;
 
     status = SIXEL_BAD_INPUT;
     pixels = NULL;
@@ -1273,6 +1521,14 @@ load_with_builtin(
     stb_context = (stbi__context){ 0 };
     ri = (stbi__result_info){ 0 };
     nwrite = 0;
+    start_frame_no = INT_MIN;
+    resolved_start_frame_no = -1;
+    gif_frame_count = 0;
+
+    status = sixel_builtin_parse_animation_start_frame_no(&start_frame_no);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
 
     if (pchunk == NULL) {
         status = SIXEL_BAD_ARGUMENT;
@@ -1330,6 +1586,19 @@ load_with_builtin(
             status = SIXEL_BAD_INTEGER_OVERFLOW;
             goto end;
         }
+        if (start_frame_no != INT_MIN) {
+            status = sixel_builtin_count_gif_frames(pchunk, &gif_frame_count);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            status = sixel_builtin_resolve_animation_start_frame_no(
+                start_frame_no,
+                gif_frame_count,
+                &resolved_start_frame_no);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
         status = load_gif(pchunk->buffer,
                           (int)pchunk->size,
                           bgcolor,
@@ -1337,6 +1606,7 @@ load_with_builtin(
                           fuse_palette,
                           fstatic,
                           loop_control,
+                          resolved_start_frame_no,
                           fnp.p,
                           context,
                           pchunk->allocator);
@@ -1364,6 +1634,7 @@ load_with_builtin(
                                                     fstatic,
                                                     bgcolor,
                                                     loop_control,
+                                                    start_frame_no,
                                                     fn_load,
                                                     context);
             if (status == SIXEL_OK || status == SIXEL_INTERRUPTED) {
