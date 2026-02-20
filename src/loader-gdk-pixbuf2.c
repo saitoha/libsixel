@@ -192,6 +192,58 @@ gdkpixbuf_animation_iter_advance_with_usec(
     return advanced;
 }
 
+static gboolean
+gdkpixbuf_animation_iter_on_loading_frame(
+    GdkPixbufAnimationIter *it)
+{
+    gboolean on_loading_frame;
+
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+    on_loading_frame =
+        gdk_pixbuf_animation_iter_on_currently_loading_frame(it);
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic pop
+#endif
+    return on_loading_frame;
+}
+
+static GdkPixbuf *
+gdkpixbuf_animation_iter_get_current_pixbuf(
+    GdkPixbufAnimationIter *it)
+{
+    GdkPixbuf *pixbuf;
+
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+    pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(it);
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic pop
+#endif
+    return pixbuf;
+}
+
+static int
+gdkpixbuf_animation_iter_get_current_delay(
+    GdkPixbufAnimationIter *it)
+{
+    int delay_ms;
+
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+    delay_ms = gdk_pixbuf_animation_iter_get_delay_time(it);
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic pop
+#endif
+    return delay_ms;
+}
+
 static SIXELSTATUS
 gdkpixbuf_count_animation_frames(GdkPixbufAnimation *animation,
                                  gint64 start_time_usec,
@@ -224,14 +276,14 @@ gdkpixbuf_count_animation_frames(GdkPixbufAnimation *animation,
      * Count frames with iterator stepping so start-frame indexes can be
      * validated and negative offsets can be resolved before decoding.
      */
-    while (!gdk_pixbuf_animation_iter_on_currently_loading_frame(it)) {
-        pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(it);
+    while (!gdkpixbuf_animation_iter_on_loading_frame(it)) {
+        pixbuf = gdkpixbuf_animation_iter_get_current_pixbuf(it);
         if (pixbuf == NULL) {
             finished = TRUE;
             break;
         }
         ++count;
-        delay_ms = gdk_pixbuf_animation_iter_get_delay_time(it);
+        delay_ms = gdkpixbuf_animation_iter_get_current_delay(it);
         if (delay_ms < 0) {
             delay_ms = 0;
         }
@@ -551,9 +603,9 @@ load_with_gdkpixbuf(
         for (;;) {
             /* handle one logical loop of the animation */
             finished = FALSE;
-            while (!gdk_pixbuf_animation_iter_on_currently_loading_frame(it)) {
+            while (!gdkpixbuf_animation_iter_on_loading_frame(it)) {
                 /* {{{ */
-                pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(it);
+                pixbuf = gdkpixbuf_animation_iter_get_current_pixbuf(it);
                 if (pixbuf == NULL) {
                     finished = TRUE;
                     break;
@@ -595,7 +647,7 @@ load_with_gdkpixbuf(
                                (size_t)(frame->width * depth));
                     }
                 }
-                delay_ms = gdk_pixbuf_animation_iter_get_delay_time(it);
+                delay_ms = gdkpixbuf_animation_iter_get_current_delay(it);
                 if (delay_ms < 0) {
                     delay_ms = 0;
                 }
@@ -760,9 +812,9 @@ load_with_gdkpixbuf(
         for (;;) {
             /* handle one logical loop of the animation */
             finished = FALSE;
-            while (!gdk_pixbuf_animation_iter_on_currently_loading_frame(it)) {
+            while (!gdkpixbuf_animation_iter_on_loading_frame(it)) {
                 /* {{{ */
-                pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(it);
+                pixbuf = gdkpixbuf_animation_iter_get_current_pixbuf(it);
                 if (pixbuf == NULL) {
                     finished = TRUE;
                     break;
@@ -804,7 +856,7 @@ load_with_gdkpixbuf(
                                (size_t)(frame->width * depth));
                     }
                 }
-                delay_ms = gdk_pixbuf_animation_iter_get_delay_time(it);
+                delay_ms = gdkpixbuf_animation_iter_get_current_delay(it);
                 if (delay_ms < 0) {
                     delay_ms = 0;
                 }
