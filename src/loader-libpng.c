@@ -1342,7 +1342,7 @@ load_apng_frames(
                 goto end;
             }
         } else if (memcmp(p + 4, "IDAT", 4) == 0) {
-            if (seen_actl && !has_frame) {
+            if (seen_actl && !has_frame && (seen_fctl || seen_idat)) {
                 status = SIXEL_BAD_INPUT;
                 goto end;
             }
@@ -1498,7 +1498,12 @@ load_with_libpng(
                               loop_control,
                               fn_load,
                               context);
-    if (status == SIXEL_OK || status == SIXEL_INTERRUPTED) {
+    /*
+     * Only fall back to single-frame PNG decoding when APNG chunks are
+     * absent. If APNG parsing started and returned an error, preserve the
+     * error instead of masking it with the non-APNG fallback path.
+     */
+    if (status != SIXEL_FALSE) {
         goto end;
     }
 
