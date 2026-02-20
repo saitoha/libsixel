@@ -39,6 +39,15 @@
 
 #include <stdio.h>
 
+#if HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
+#if HAVE_LIMITS_H
+# include <limits.h>
+#endif
+#if HAVE_ERRNO_H
+# include <errno.h>
+#endif
 #if HAVE_STRING_H
 # include <string.h>
 #endif
@@ -58,9 +67,163 @@
 #include <sixel.h>
 
 #include "allocator.h"
+#include "compat_stub.h"
 #include "frame.h"
 #include "loader-gdk-pixbuf2.h"
 #include "probe.h"
+
+static SIXELSTATUS
+gdkpixbuf_parse_animation_start_frame_no(int *start_frame_no)
+{
+    SIXELSTATUS status;
+    char const *env_value;
+    char *endptr;
+    long parsed;
+
+    status = SIXEL_OK;
+    env_value = NULL;
+    endptr = NULL;
+    parsed = 0;
+
+    *start_frame_no = INT_MIN;
+    env_value = sixel_compat_getenv("SIXEL_LOADER_ANIMATION_START_FRAME_NO");
+    if (env_value == NULL || env_value[0] == '\0') {
+        goto end;
+    }
+
+    errno = 0;
+    parsed = strtol(env_value, &endptr, 10);
+    if (errno != 0 || endptr == env_value || *endptr != '\0') {
+        sixel_helper_set_additional_message(
+            "SIXEL_LOADER_ANIMATION_START_FRAME_NO must be an integer.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (parsed < (long)INT_MIN || parsed > (long)INT_MAX) {
+        sixel_helper_set_additional_message(
+            "SIXEL_LOADER_ANIMATION_START_FRAME_NO is out of range.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    *start_frame_no = (int)parsed;
+
+end:
+    return status;
+}
+
+static SIXELSTATUS
+gdkpixbuf_resolve_animation_start_frame_no(int start_frame_no,
+                                           int frame_count,
+                                           int *resolved)
+{
+    SIXELSTATUS status;
+    int index;
+
+    status = SIXEL_OK;
+    index = 0;
+
+    if (frame_count <= 0) {
+        sixel_helper_set_additional_message(
+            "Animation frame count must be positive.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    if (start_frame_no >= 0) {
+        index = start_frame_no;
+    } else {
+        index = frame_count + start_frame_no;
+    }
+
+    if (index < 0 || index >= frame_count) {
+        sixel_helper_set_additional_message(
+            "SIXEL_LOADER_ANIMATION_START_FRAME_NO is outside"
+            " the animation frame range.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    *resolved = index;
+
+end:
+    return status;
+}
+
+static SIXELSTATUS
+gdkpixbuf_count_animation_frames(GdkPixbufAnimation *animation,
+                                 GTimeVal const *start_time,
+                                 int *frame_count)
+{
+    SIXELSTATUS status;
+    GdkPixbufAnimationIter *it;
+    GdkPixbuf *pixbuf;
+    GTimeVal time_val;
+    gboolean finished;
+    int count;
+    int delay_ms;
+
+    status = SIXEL_OK;
+    it = NULL;
+    pixbuf = NULL;
+    time_val = *start_time;
+    finished = FALSE;
+    count = 0;
+    delay_ms = 0;
+
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+#endif
+    it = gdk_pixbuf_animation_get_iter(animation, &time_val);
+    if (it == NULL) {
+        status = SIXEL_GDK_ERROR;
+        goto end;
+    }
+
+    /*
+     * gdk-pixbuf does not expose random frame seek for animations.
+     * Count frames with iterator stepping so start-frame indexes can be
+     * validated and negative offsets can be resolved before decoding.
+     */
+    while (!gdk_pixbuf_animation_iter_on_currently_loading_frame(it)) {
+        pixbuf = gdk_pixbuf_animation_iter_get_pixbuf(it);
+        if (pixbuf == NULL) {
+            finished = TRUE;
+            break;
+        }
+        ++count;
+        delay_ms = gdk_pixbuf_animation_iter_get_delay_time(it);
+        if (delay_ms < 0) {
+            delay_ms = 0;
+        }
+        g_time_val_add(&time_val, delay_ms * 1000);
+        if (!gdk_pixbuf_animation_iter_advance(it, &time_val)) {
+            finished = TRUE;
+        }
+        if (finished) {
+            break;
+        }
+    }
+#if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
+# pragma GCC diagnostic pop
+#endif
+
+    if (count <= 0) {
+        sixel_helper_set_additional_message(
+            "gdk-pixbuf animation does not contain decodable frames.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    *frame_count = count;
+
+end:
+    if (it != NULL) {
+        g_object_unref(it);
+    }
+    return status;
+}
 
 /*
  * Loader backed by gdk-pixbuf2. The entire animation is consumed via
@@ -107,12 +270,25 @@ load_with_gdkpixbuf(
     gboolean use_animation = FALSE;
     gboolean is_sixel = FALSE;
     SIXELSTATUS probe_status;
+    int start_frame_no;
+    int resolved_start_frame_no;
+    int animation_frame_count;
+    int emit_callback;
 
     (void) fuse_palette;
     (void) reqcolors;
     (void) bgcolor;
 
     loader_error = NULL;
+    start_frame_no = INT_MIN;
+    resolved_start_frame_no = INT_MIN;
+    animation_frame_count = 0;
+    emit_callback = 1;
+
+    status = gdkpixbuf_parse_animation_start_frame_no(&start_frame_no);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
 
     status = sixel_frame_new(&frame, pchunk->allocator);
     if (SIXEL_FAILED(status)) {
@@ -301,6 +477,22 @@ load_with_gdkpixbuf(
     } else {
         gboolean finished;
 
+        if (start_frame_no != INT_MIN) {
+            status = gdkpixbuf_count_animation_frames(animation,
+                                                      &start_time,
+                                                      &animation_frame_count);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            status = gdkpixbuf_resolve_animation_start_frame_no(
+                start_frame_no,
+                animation_frame_count,
+                &resolved_start_frame_no);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
+
         time_val = start_time;
         frame->frame_no = 0;
         frame->loop_count = 0;
@@ -382,9 +574,18 @@ load_with_gdkpixbuf(
                 if (!gdk_pixbuf_animation_iter_advance(it, &time_val)) {
                     finished = TRUE;
                 }
-                status = fn_load(frame, context);
-                if (status != SIXEL_OK) {
-                    goto end;
+
+                emit_callback = 1;
+                if (frame->loop_count == 0 &&
+                    resolved_start_frame_no != INT_MIN &&
+                    frame->frame_no < resolved_start_frame_no) {
+                    emit_callback = 0;
+                }
+                if (emit_callback) {
+                    status = fn_load(frame, context);
+                    if (status != SIXEL_OK) {
+                        goto end;
+                    }
                 }
                 /*
                  * Release the frame buffer only if it is still the one we
@@ -490,6 +691,22 @@ load_with_gdkpixbuf(
         gboolean finished;
 
         /* reset iterator to the beginning of the timeline */
+        if (start_frame_no != INT_MIN) {
+            status = gdkpixbuf_count_animation_frames(animation,
+                                                      &start_time,
+                                                      &animation_frame_count);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+            status = gdkpixbuf_resolve_animation_start_frame_no(
+                start_frame_no,
+                animation_frame_count,
+                &resolved_start_frame_no);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
+
         time_val = start_time;
         frame->frame_no = 0;
         frame->loop_count = 0;
@@ -566,9 +783,18 @@ load_with_gdkpixbuf(
                 if (!gdk_pixbuf_animation_iter_advance(it, &time_val)) {
                     finished = TRUE;
                 }
-                status = fn_load(frame, context);
-                if (status != SIXEL_OK) {
-                    goto end;
+
+                emit_callback = 1;
+                if (frame->loop_count == 0 &&
+                    resolved_start_frame_no != INT_MIN &&
+                    frame->frame_no < resolved_start_frame_no) {
+                    emit_callback = 0;
+                }
+                if (emit_callback) {
+                    status = fn_load(frame, context);
+                    if (status != SIXEL_OK) {
+                        goto end;
+                    }
                 }
                 /*
                  * Release the frame buffer only if it is still the one we
