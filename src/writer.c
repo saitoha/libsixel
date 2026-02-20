@@ -71,6 +71,7 @@
 
 #include <sixel.h>
 #include "stdio_stub.h"
+#include "logger.h"
 
 #if !defined(O_BINARY) && defined(_O_BINARY)
 # define O_BINARY _O_BINARY
@@ -284,6 +285,8 @@ write_png_to_file(
     unsigned char *src = NULL;
     unsigned char *dst = NULL;
     int bytes_per_pixel = 3;
+    sixel_logger_t logger;
+    int logger_prepared = 0;
 #if HAVE_LIBPNG
     int y = 0;
     png_structp png_ptr = NULL;
@@ -302,6 +305,22 @@ write_png_to_file(
     int write_len = 0;
     size_t payload_size = 0;
 #endif  /* HAVE_LIBPNG */
+
+    sixel_logger_init(&logger);
+    (void)sixel_logger_prepare_env(&logger);
+    logger_prepared = logger.active;
+    if (logger_prepared) {
+        sixel_logger_logf(&logger,
+                          "io",
+                          "png",
+                          "write_begin",
+                          0,
+                          "target=%s width=%d height=%d fmt=%d",
+                          filename != NULL ? filename : "(null)",
+                          width,
+                          height,
+                          pixelformat);
+    }
 
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
@@ -454,6 +473,15 @@ write_png_to_file(
         }
     }
 
+    if (logger_prepared) {
+        sixel_logger_logf(&logger,
+                          "io",
+                          "png",
+                          "file_open_begin",
+                          0,
+                          "target=%s",
+                          filename != NULL ? filename : "(null)");
+    }
     if (strcmp(filename, "-") == 0) {
 #if defined(O_BINARY)
         (void)sixel_compat_set_binary(STDOUT_FILENO);
@@ -463,9 +491,27 @@ write_png_to_file(
         output_fp = sixel_compat_fopen(filename, "wb");
         if (!output_fp) {
             status = (SIXEL_LIBC_ERROR | (errno & 0xff));
+            if (logger_prepared) {
+                sixel_logger_logf(&logger,
+                                  "io",
+                                  "png",
+                                  "file_open_failed",
+                                  0,
+                                  "status=%d",
+                                  status);
+            }
             sixel_helper_set_additional_message("fopen() failed.");
             goto end;
         }
+    }
+    if (logger_prepared) {
+        sixel_logger_logf(&logger,
+                          "io",
+                          "png",
+                          "file_open_done",
+                          0,
+                          "target=%s",
+                          filename != NULL ? filename : "(null)");
     }
 
     /*
@@ -508,18 +554,57 @@ write_png_to_file(
         }
     }
 
+    if (logger_prepared) {
+        sixel_logger_logf(&logger,
+                          "io",
+                          "png",
+                          "libpng_create_begin",
+                          0);
+    }
     png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING,
                                       NULL,
                                       NULL,
                                       NULL);
     if (!png_ptr) {
         status = SIXEL_PNG_ERROR;
+        if (logger_prepared) {
+            sixel_logger_logf(&logger,
+                              "io",
+                              "png",
+                              "libpng_create_failed",
+                              0,
+                              "status=%d",
+                              status);
+        }
         goto end;
+    }
+    if (logger_prepared) {
+        sixel_logger_logf(&logger,
+                          "io",
+                          "png",
+                          "libpng_create_done",
+                          0);
     }
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
         status = SIXEL_PNG_ERROR;
+        if (logger_prepared) {
+            sixel_logger_logf(&logger,
+                              "io",
+                              "png",
+                              "libpng_info_failed",
+                              0,
+                              "status=%d",
+                              status);
+        }
         goto end;
+    }
+    if (logger_prepared) {
+        sixel_logger_logf(&logger,
+                          "io",
+                          "png",
+                          "libpng_info_done",
+                          0);
     }
 # if USE_SETJMP && HAVE_SETJMP
     if (setjmp(png_jmpbuf(png_ptr))) {
@@ -570,9 +655,47 @@ write_png_to_file(
                      PNG_COMPRESSION_TYPE_BASE,
                      PNG_FILTER_TYPE_BASE);
     }
+    if (logger_prepared) {
+        sixel_logger_logf(&logger,
+                          "io",
+                          "png",
+                          "libpng_write_info_begin",
+                          0);
+    }
     png_write_info(png_ptr, info_ptr);
+    if (logger_prepared) {
+        sixel_logger_logf(&logger,
+                          "io",
+                          "png",
+                          "libpng_write_info_done",
+                          0);
+        sixel_logger_logf(&logger,
+                          "io",
+                          "png",
+                          "libpng_write_image_begin",
+                          0);
+    }
     png_write_image(png_ptr, rows);
+    if (logger_prepared) {
+        sixel_logger_logf(&logger,
+                          "io",
+                          "png",
+                          "libpng_write_image_done",
+                          0);
+        sixel_logger_logf(&logger,
+                          "io",
+                          "png",
+                          "libpng_write_end_begin",
+                          0);
+    }
     png_write_end(png_ptr, NULL);
+    if (logger_prepared) {
+        sixel_logger_logf(&logger,
+                          "io",
+                          "png",
+                          "libpng_write_end_done",
+                          0);
+    }
 #else
     if (uses_palette) {
         stride = width + 1;
@@ -696,7 +819,25 @@ write_png_to_file(
 
 end:
     if (output_fp && output_fp != stdout) {
+        if (logger_prepared) {
+            sixel_logger_logf(&logger,
+                              "io",
+                              "png",
+                              "file_close_begin",
+                              0,
+                              "target=%s",
+                              filename != NULL ? filename : "(null)");
+        }
         fclose(output_fp);
+        if (logger_prepared) {
+            sixel_logger_logf(&logger,
+                              "io",
+                              "png",
+                              "file_close_done",
+                              0,
+                              "target=%s",
+                              filename != NULL ? filename : "(null)");
+        }
     }
 #if HAVE_LIBPNG
     sixel_allocator_free(allocator, rows);
@@ -711,6 +852,18 @@ end:
     sixel_allocator_free(allocator, png_data);
 #endif  /* HAVE_LIBPNG */
     sixel_allocator_free(allocator, new_pixels);
+    if (logger_prepared) {
+        sixel_logger_logf(&logger,
+                          "io",
+                          "png",
+                          SIXEL_FAILED(status)
+                              ? "write_failed"
+                              : "write_done",
+                          0,
+                          "status=%d",
+                          status);
+    }
+    sixel_logger_close(&logger);
 
     return status;
 }
