@@ -505,7 +505,12 @@ load_with_gdkpixbuf(
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 # pragma GCC diagnostic pop
 #endif  /* HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS */
-    if (fstatic || !use_animation) {
+    /*
+     * Keep animated sources on the iterator path even for -S so the loader
+     * can honor SIXEL_LOADER_ANIMATION_START_FRAME_NO before selecting the
+     * single still frame to emit.
+     */
+    if (!use_animation) {
         pixbuf = gdk_pixbuf_loader_get_pixbuf(loader);
         if (pixbuf == NULL) {
             status = SIXEL_GDK_ERROR;
@@ -680,6 +685,9 @@ load_with_gdkpixbuf(
                     if (status != SIXEL_OK) {
                         goto end;
                     }
+                    if (fstatic) {
+                        finished = TRUE;
+                    }
                 }
                 /*
                  * Release the frame buffer only if it is still the one we
@@ -735,7 +743,12 @@ load_with_gdkpixbuf(
 #else
     use_animation = gdk_pixbuf_animation_is_static_image(animation) ? FALSE :
                     TRUE;
-    if (fstatic || !use_animation) {
+    /*
+     * Keep animated sources on the iterator path even for -S so the loader
+     * can honor SIXEL_LOADER_ANIMATION_START_FRAME_NO before selecting the
+     * single still frame to emit.
+     */
+    if (!use_animation) {
         pixbuf = gdk_pixbuf_animation_get_static_image(animation);
         if (pixbuf == NULL) {
             status = SIXEL_GDK_ERROR;
@@ -905,6 +918,9 @@ load_with_gdkpixbuf(
                     status = fn_load(frame, context);
                     if (status != SIXEL_OK) {
                         goto end;
+                    }
+                    if (fstatic) {
+                        finished = TRUE;
                     }
                 }
                 /*
