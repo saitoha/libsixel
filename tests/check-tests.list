@@ -294,6 +294,7 @@ io/loader/animation/0039_coregraphics_start_frame_positive.t
 io/loader/animation/0040_coregraphics_start_frame_negative.t
 io/loader/animation/0041_coregraphics_start_frame_positive_oob.t
 io/loader/animation/0042_coregraphics_start_frame_negative_oob.t
+io/loader/animation/0047_coregraphics_start_frame_positive_static.t
 io/loader/animation/0043_wic_start_frame_positive.t
 io/loader/animation/0044_wic_start_frame_negative.t
 io/loader/animation/0045_wic_start_frame_positive_oob.t
