@@ -51,6 +51,19 @@ typedef struct loader_probe_context {
     int height;
 } loader_probe_context_t;
 
+/*
+ * Loader backends expect `context` to follow loader callback state layout.
+ *
+ * tests/io/loader invokes backend entry points directly, so this test-local
+ * adapter mirrors the minimal state needed by cancellation checks while still
+ * forwarding the frame callback to loader_probe_context_t.
+ */
+typedef struct loader_probe_callback_state {
+    void *loader;
+    sixel_load_image_function fn;
+    void *context;
+} loader_probe_callback_state_t;
+
 #define GEOMETRY_ANY (-1)
 #define SIXEL_TEST_SKIP 77
 
@@ -66,6 +79,19 @@ capture_frame(sixel_frame_t *frame, void *data)
     context->height = sixel_frame_get_height(frame);
 
     return SIXEL_OK;
+}
+
+static SIXEL_TEST_UNUSED SIXELSTATUS
+capture_frame_trampoline(sixel_frame_t *frame, void *data)
+{
+    loader_probe_callback_state_t *state;
+
+    state = (loader_probe_callback_state_t *)data;
+    if (state == NULL || state->fn == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    return state->fn(frame, state->context);
 }
 
 static SIXEL_TEST_UNUSED int
@@ -117,6 +143,7 @@ run_loader_case_with_options(char const *label,
     char image_path[PATH_MAX];
     int cancel_flag;
     int result;
+    loader_probe_callback_state_t callback_state;
 
     status = SIXEL_FALSE;
     allocator = NULL;
@@ -178,6 +205,9 @@ run_loader_case_with_options(char const *label,
     context.pixelformat = 0;
     context.width = 0;
     context.height = 0;
+    callback_state.loader = NULL;
+    callback_state.fn = capture_frame;
+    callback_state.context = &context;
 
     status = loader(chunk,
                     fstatic,
@@ -185,8 +215,8 @@ run_loader_case_with_options(char const *label,
                     reqcolors,
                     NULL,
                     SIXEL_LOOP_AUTO,
-                    capture_frame,
-                    &context);
+                    capture_frame_trampoline,
+                    &callback_state);
     if (SIXEL_FAILED(status)) {
         fprintf(stderr,
                 "%s: loader reported failure (%d)\n",
