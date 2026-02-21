@@ -889,8 +889,16 @@ load_gif(
                 break;
             }
 
-            sixel_frame_set_width(frame, g.actual_width);
-            sixel_frame_set_height(frame, g.actual_height);
+            /*
+             * GIF image descriptors may encode only a dirty rectangle with
+             * non-zero offsets. The decoder composites each frame onto the
+             * full logical screen in g.out, so exported frame dimensions must
+             * remain the logical screen size. Using the descriptor bounds here
+             * would make the packed RGB buffer width/height inconsistent and
+             * produce corrupted output on partial-update frames.
+             */
+            sixel_frame_set_width(frame, g.w);
+            sixel_frame_set_height(frame, g.h);
             status = gif_init_frame(frame, &g, bgcolor, reqcolors, fuse_palette);
             if (status != SIXEL_OK) {
                 goto end;
