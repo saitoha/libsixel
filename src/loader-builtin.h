@@ -39,6 +39,8 @@ SIXELAPI SIXELSTATUS load_with_builtin(
     int                        reqcolors,
     unsigned char             *bgcolor,
     int                        loop_control,
+    int                        start_frame_no_set,
+    int                        start_frame_no,
     sixel_load_image_function  fn_load,
     void                      *context);
 

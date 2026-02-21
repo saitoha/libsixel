@@ -507,6 +507,16 @@ static cli_option_help_t const g_option_help_table[] = {
         "                             disable -> always disable loop\n"
     },
     {
+        'T',
+        "start_frame",
+        "-T FRAME_NO, --start_frame=FRAME_NO\n"
+        "                           set the animation start frame index\n"
+        "                           for supported loaders.\n"
+        "                           Positive values and zero select from\n"
+        "                           the beginning, negative values count\n"
+        "                           from the end (-1 is the last frame).\n"
+    },
+    {
         't',
         "palette-type",
         "-t PALETTETYPE, --palette-type=PALETTETYPE\n"
@@ -1058,7 +1068,7 @@ static char const g_img2sixel_optstring[] =
     "o:"
     "=:"
     ".:"
-    "L:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:~:kil:t:ugvSn:PE:U:B:C:D@:"
+    "L:786Rp:m:M:eb:Id:f:s:c:w:h:r:q:Q:F:~:kil:T:t:ugvSn:PE:U:B:C:D@:"
     "OVX:W:HY:y:";
 
 static int
@@ -1606,6 +1616,7 @@ main(int argc, char *argv[])
         {"insecure",              no_argument,        &long_opt, 'k'},
         {"invert",                no_argument,        &long_opt, 'i'},
         {"loop-control",          required_argument,  &long_opt, 'l'},
+        {"start_frame",          required_argument,  &long_opt, 'T'},
         {"use-macro",             no_argument,        &long_opt, 'u'},
         {"ignore-delay",          no_argument,        &long_opt, 'g'},
         {"verbose",               no_argument,        &long_opt, 'v'},

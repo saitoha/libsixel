@@ -41,6 +41,8 @@ load_with_libwebp(
     int                       /* in */     reqcolors,
     unsigned char             /* in */     *bgcolor,
     int                       /* in */     loop_control,
+    int                       /* in */     start_frame_no_set,
+    int                       /* in */     start_frame_no,
     sixel_load_image_function /* in */     fn_load,
     void                      /* in/out */ *context);
 

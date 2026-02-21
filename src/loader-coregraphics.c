@@ -138,6 +138,8 @@ load_with_coregraphics(
     int                       /* in */     reqcolors,
     unsigned char             /* in */     *bgcolor,
     int                       /* in */     loop_control,
+    int                       /* in */     start_frame_no_set,
+    int                       /* in */     start_frame_no_override,
     sixel_load_image_function /* in */     fn_load,
     void                      /* in/out */ *context)
 {
@@ -180,9 +182,13 @@ load_with_coregraphics(
     stop_loop = 0;
     frame_props = NULL;
 
-    status = coregraphics_parse_animation_start_frame_no(&start_frame_no);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    if (start_frame_no_set) {
+        start_frame_no = start_frame_no_override;
+    } else {
+        status = coregraphics_parse_animation_start_frame_no(&start_frame_no);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
 
     status = sixel_frame_new(&frame, pchunk->allocator);
