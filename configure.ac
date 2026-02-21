@@ -1324,6 +1324,43 @@ AC_ARG_ENABLE([ruby],
                               [Ruby interface (default: no)])],
               [],
               [enable_ruby=no])
+
+# Perl bindings option (reserved for compatibility checks in build scripts)
+AC_ARG_ENABLE([perl],
+              [AS_HELP_STRING([--enable-perl],
+                              [Perl interface (default: no)])],
+              [],
+              [enable_perl=no])
+
+# PHP bindings option (reserved for compatibility checks in build scripts)
+AC_ARG_ENABLE([php],
+              [AS_HELP_STRING([--enable-php],
+                              [PHP interface (default: no)])],
+              [],
+              [enable_php=no])
+
+AS_IF([test "x$enable_shared" = xno], [
+  # Shared-library based bindings cannot run on a static-only build.
+  # Normalize all binding toggles to "no" so recursive make does not try
+  # to invoke packaging steps that require libsixel shared objects.
+  AS_IF([test "x$enable_python" != xno], [
+    AC_MSG_WARN([disabling python bindings because --disable-shared was specified])
+    enable_python=no
+  ])
+  AS_IF([test "x$enable_ruby" != xno], [
+    AC_MSG_WARN([disabling ruby bindings because --disable-shared was specified])
+    enable_ruby=no
+  ])
+  AS_IF([test "x$enable_perl" != xno], [
+    AC_MSG_WARN([disabling perl bindings because --disable-shared was specified])
+    enable_perl=no
+  ])
+  AS_IF([test "x$enable_php" != xno], [
+    AC_MSG_WARN([disabling php bindings because --disable-shared was specified])
+    enable_php=no
+  ])
+])
+
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
                               [Use debug macro and specific CFLAGS])],

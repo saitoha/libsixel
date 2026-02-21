@@ -135,6 +135,9 @@ $ LIBSIXEL_LIBPATH=/path/to/libsixel.so \
 The runtime loader checks bundled files first, then falls back to system
 library names for backward compatibility.
 
+Note: binding packaging requires shared libsixel artifacts. Static-only builds
+(`--disable-shared` or `-Ddefault_library=static`) disable language bindings.
+
 ## Shared Library Loading
 
 The gem tries these names: `sixel`, `libsixel`, `sixel-1`, `libsixel-1`, `msys-sixel`, `cygsixel`, `libsixel.dylib`. If loading fails, set your runtime library path or install libsixel.
@@ -151,8 +154,8 @@ $ ruby -I ruby/lib -I ruby/test ruby/test/test_libsixel.rb
 
 With libsixel build systems:
 
-- Autotools: `make check`（`--enable-ruby` 有効時に Ruby テストも実行）
-- Meson: `meson test -C build`（`-D ruby=enabled` 有効時に Ruby テストも実行）
+- Autotools: `make check` (Ruby tests also run when `--enable-ruby` is enabled)
+- Meson: `meson test -C build` (Ruby tests also run when `-D ruby=enabled` is enabled)
 
 Tests that rely on the shared library are skipped automatically if it is not found. The version test always runs.
 

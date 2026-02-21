@@ -1542,8 +1542,13 @@ else
 endif
 
 py_opt = get_option('python')
+py_static_disabled = false
+if get_option('default_library') == 'static' and py_opt.enabled()
+  warning('Disabling python bindings because default_library=static.')
+  py_static_disabled = true
+endif
 py_mod = import('python')
-py_required = py_opt.enabled()
+py_required = py_opt.enabled() and not py_static_disabled
 py = py_mod.find_installation('python3', required: py_required)
 if py.found()
   have_python = true
@@ -1552,11 +1557,16 @@ else
   python_message = 'no'
 endif
 
-if py_opt.enabled() and not have_python
+if py_static_disabled
+  have_python = false
+  python_message = 'no (default_library=static)'
+endif
+
+if py_opt.enabled() and not py_static_disabled and not have_python
   error('Python support requires an interpreter')
 endif
 
-if py_opt.enabled()
+if py_opt.enabled() and not py_static_disabled
   # Keep the Python module check on the same interpreter that will
   # execute wheel_builder.py later to avoid interpreter drift.
   py_check = run_command(py, '-c', 'import build', check: false)
@@ -1571,7 +1581,12 @@ have_ruby = false
 # Generate Ruby version file (pure Ruby bindings)
 subdir('ruby/lib/libsixel')
 ruby_opt = get_option('ruby')
-if ruby_opt.enabled()
+ruby_static_disabled = false
+if get_option('default_library') == 'static' and ruby_opt.enabled()
+  warning('Disabling ruby bindings because default_library=static.')
+  ruby_static_disabled = true
+endif
+if ruby_opt.enabled() and not ruby_static_disabled
   ruby = find_program('ruby', required: ruby_opt.enabled())
   if ruby.found()
     have_ruby = true

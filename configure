@@ -1008,6 +1008,8 @@ enable_wiccodec
 enable_register_dll
 enable_python
 enable_ruby
+enable_perl
+enable_php
 enable_debug
 enable_gcov
 enable_tests
@@ -1757,6 +1759,8 @@ Optional Features:
                           admin rights required)
   --enable-python         Python wheel package (default: no)
   --enable-ruby           Ruby interface (default: no)
+  --enable-perl           Perl interface (default: no)
+  --enable-php            PHP interface (default: no)
   --enable-debug          Use debug macro and specific CFLAGS
   --enable-gcov           Use gcov
   --enable-tests          Build tests
@@ -18004,6 +18008,70 @@ then :
 else case e in #(
   e) enable_ruby=no ;;
 esac
+fi
+
+
+# Perl bindings option (reserved for compatibility checks in build scripts)
+# Check whether --enable-perl was given.
+if test ${enable_perl+y}
+then :
+  enableval=$enable_perl;
+else case e in #(
+  e) enable_perl=no ;;
+esac
+fi
+
+
+# PHP bindings option (reserved for compatibility checks in build scripts)
+# Check whether --enable-php was given.
+if test ${enable_php+y}
+then :
+  enableval=$enable_php;
+else case e in #(
+  e) enable_php=no ;;
+esac
+fi
+
+
+if test "x$enable_shared" = xno
+then :
+
+  # Shared-library based bindings cannot run on a static-only build.
+  # Normalize all binding toggles to "no" so recursive make does not try
+  # to invoke packaging steps that require libsixel shared objects.
+  if test "x$enable_python" != xno
+then :
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: disabling python bindings because --disable-shared was specified" >&5
+printf "%s\n" "$as_me: WARNING: disabling python bindings because --disable-shared was specified" >&2;}
+    enable_python=no
+
+fi
+  if test "x$enable_ruby" != xno
+then :
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: disabling ruby bindings because --disable-shared was specified" >&5
+printf "%s\n" "$as_me: WARNING: disabling ruby bindings because --disable-shared was specified" >&2;}
+    enable_ruby=no
+
+fi
+  if test "x$enable_perl" != xno
+then :
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: disabling perl bindings because --disable-shared was specified" >&5
+printf "%s\n" "$as_me: WARNING: disabling perl bindings because --disable-shared was specified" >&2;}
+    enable_perl=no
+
+fi
+  if test "x$enable_php" != xno
+then :
+
+    { printf "%s\n" "$as_me:${as_lineno-$LINENO}: WARNING: disabling php bindings because --disable-shared was specified" >&5
+printf "%s\n" "$as_me: WARNING: disabling php bindings because --disable-shared was specified" >&2;}
+    enable_php=no
+
+fi
+
 fi
 
 # Check whether --enable-debug was given.
