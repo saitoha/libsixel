@@ -26,7 +26,7 @@ run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=-1" \
     exit 0
 }
 
-run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=2" \
+run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=4" \
     -L wic! -ldisable \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/wic_start_positive_equivalent.six" || {
