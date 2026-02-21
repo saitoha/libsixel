@@ -177,6 +177,18 @@ runs:
         'C:\GitBash\bin'     | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
         'C:\GitBash\usr\bin' | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
 
+    - name: Resolve Cygwin package list
+      id: cygwin_packages
+      if: ${{ fromJSON(inputs.matrix_json).exec_type == 'cygwin' }}
+      shell: pwsh
+      run: |
+        $raw = "${{ fromJSON(inputs.matrix_json).extra_packages || 'make' }}"
+        $packages = $raw -split '[,\s]+' | Where-Object { $_ -ne '' }
+        if ($packages.Count -eq 0) {
+          $packages = @('make')
+        }
+        $csv = [string]::Join(',', $packages)
+        "packages=$csv" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
     - name: Setup Cygwin (primary mirror)
       id: cygwin_setup_primary
       if: ${{ fromJSON(inputs.matrix_json).exec_type == 'cygwin' }}
@@ -186,7 +198,7 @@ runs:
         check-hash: 'false'
         check-installer-sig: 'false'
         site: https://mirror.fcix.net/cygwin/
-        packages: ${{ format('{0}{1}', fromJSON(inputs.matrix_json).extra_packages || 'make', contains(fromJSON(inputs.matrix_json).label || '', '-coverage') && ' gcovr lcov' || '') }}
+        packages: ${{ steps.cygwin_packages.outputs.packages }}
 
     - name: Wait before Cygwin mirror fallback
       if: >-
@@ -207,7 +219,7 @@ runs:
         check-hash: 'false'
         check-installer-sig: 'false'
         site: https://ftp.iij.ad.jp/pub/cygwin/
-        packages: ${{ format('{0}{1}', fromJSON(inputs.matrix_json).extra_packages || 'make', contains(fromJSON(inputs.matrix_json).label || '', '-coverage') && ' gcovr lcov' || '') }}
+        packages: ${{ steps.cygwin_packages.outputs.packages }}
 
     - name: Wait before Cygwin mirror fallback #2
       if: >-
@@ -230,7 +242,7 @@ runs:
         check-hash: 'false'
         check-installer-sig: 'false'
         site: https://mirrors.kernel.org/sourceware/cygwin/
-        packages: ${{ format('{0}{1}', fromJSON(inputs.matrix_json).extra_packages || 'make', contains(fromJSON(inputs.matrix_json).label || '', '-coverage') && ' gcovr lcov' || '') }}
+        packages: ${{ steps.cygwin_packages.outputs.packages }}
 
     - name: Validate Cygwin setup result
       if: >-
