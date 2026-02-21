@@ -109,6 +109,128 @@ sixel_writer_png_warning_callback(png_structp png_ptr,
 #endif  /* HAVE_LIBPNG && HAVE_SETJMP && HAVE_LONGJMP */
 
 
+#if HAVE_LIBPNG
+/*
+ * Keep write callback state in a tiny context so timeline logs can identify
+ * how many chunks reached fwrite before libpng reports an error.
+ */
+typedef struct sixel_writer_png_io_context {
+    FILE *output_fp;
+    sixel_logger_t *logger;
+    int logger_prepared;
+    size_t write_calls;
+    size_t write_bytes;
+} sixel_writer_png_io_context_t;
+
+
+static void
+sixel_writer_png_write_callback(png_structp png_ptr,
+                                png_bytep data,
+                                png_size_t length)
+{
+    sixel_writer_png_io_context_t *ctx;
+    size_t written;
+
+    ctx = (sixel_writer_png_io_context_t *)png_get_io_ptr(png_ptr);
+    if (ctx == NULL || ctx->output_fp == NULL) {
+        png_error(png_ptr, "writer io context is unavailable");
+        return;
+    }
+
+    if (ctx->logger_prepared) {
+        sixel_logger_logf(ctx->logger,
+                          "io",
+                          "png",
+                          "libpng_stream_write_begin",
+                          0,
+                          "call=%lu bytes=%lu",
+                          (unsigned long)(ctx->write_calls + 1u),
+                          (unsigned long)length);
+    }
+
+    written = fwrite(data, 1, length, ctx->output_fp);
+    if (written != (size_t)length) {
+        if (ctx->logger_prepared) {
+            sixel_logger_logf(ctx->logger,
+                              "io",
+                              "png",
+                              "libpng_stream_write_failed",
+                              0,
+                              "call=%lu requested=%lu written=%lu errno=%d",
+                              (unsigned long)(ctx->write_calls + 1u),
+                              (unsigned long)length,
+                              (unsigned long)written,
+                              errno);
+        }
+        png_error(png_ptr, "fwrite() failed during PNG output");
+        return;
+    }
+
+    ctx->write_calls += 1u;
+    ctx->write_bytes += written;
+    if (ctx->logger_prepared) {
+        sixel_logger_logf(ctx->logger,
+                          "io",
+                          "png",
+                          "libpng_stream_write_done",
+                          0,
+                          "call=%lu total_bytes=%lu",
+                          (unsigned long)ctx->write_calls,
+                          (unsigned long)ctx->write_bytes);
+    }
+}
+
+
+static void
+sixel_writer_png_flush_callback(png_structp png_ptr)
+{
+    sixel_writer_png_io_context_t *ctx;
+
+    ctx = (sixel_writer_png_io_context_t *)png_get_io_ptr(png_ptr);
+    if (ctx == NULL || ctx->output_fp == NULL) {
+        png_error(png_ptr, "writer io context is unavailable on flush");
+        return;
+    }
+
+    if (ctx->logger_prepared) {
+        sixel_logger_logf(ctx->logger,
+                          "io",
+                          "png",
+                          "libpng_stream_flush_begin",
+                          0,
+                          "call=%lu bytes=%lu",
+                          (unsigned long)ctx->write_calls,
+                          (unsigned long)ctx->write_bytes);
+    }
+
+    if (fflush(ctx->output_fp) != 0) {
+        if (ctx->logger_prepared) {
+            sixel_logger_logf(ctx->logger,
+                              "io",
+                              "png",
+                              "libpng_stream_flush_failed",
+                              0,
+                              "errno=%d",
+                              errno);
+        }
+        png_error(png_ptr, "fflush() failed during PNG output");
+        return;
+    }
+
+    if (ctx->logger_prepared) {
+        sixel_logger_logf(ctx->logger,
+                          "io",
+                          "png",
+                          "libpng_stream_flush_done",
+                          0,
+                          "call=%lu bytes=%lu",
+                          (unsigned long)ctx->write_calls,
+                          (unsigned long)ctx->write_bytes);
+    }
+}
+#endif  /* HAVE_LIBPNG */
+
+
 #if !HAVE_LIBPNG
 unsigned char *
 stbi_write_png_to_mem(const unsigned char *pixels, int stride_bytes,
@@ -324,6 +446,7 @@ write_png_to_file(
     png_infop info_ptr = NULL;
     unsigned char **rows = NULL;
     png_color *png_palette = NULL;
+    sixel_writer_png_io_context_t png_io_ctx;
 #else
     unsigned char *filtered = NULL;
     unsigned char *compressed = NULL;
@@ -352,6 +475,13 @@ write_png_to_file(
                           height,
                           pixelformat);
     }
+#if HAVE_LIBPNG
+    png_io_ctx.output_fp = NULL;
+    png_io_ctx.logger = &logger;
+    png_io_ctx.logger_prepared = logger_prepared;
+    png_io_ctx.write_calls = 0u;
+    png_io_ctx.write_bytes = 0u;
+#endif  /* HAVE_LIBPNG */
 
     switch (pixelformat) {
     case SIXEL_PIXELFORMAT_PAL1:
@@ -659,7 +789,11 @@ write_png_to_file(
         goto end;
     }
 # endif
-    png_init_io(png_ptr, output_fp);
+    png_io_ctx.output_fp = output_fp;
+    png_set_write_fn(png_ptr,
+                     &png_io_ctx,
+                     &sixel_writer_png_write_callback,
+                     &sixel_writer_png_flush_callback);
     if (uses_palette) {
         png_set_IHDR(png_ptr,
                      info_ptr,
