@@ -30,7 +30,7 @@
 extern "C" {
 #endif
 
-SIXELAPI int
+SIXEL_INTERNAL_API int
 sixel_helper_scale_image_float32(
     float             /* out */ *dst,
     float const       /* in */  *src,

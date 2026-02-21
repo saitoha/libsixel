@@ -33,7 +33,7 @@
 extern "C" {
 #endif
 
-SIXELAPI SIXELSTATUS
+SIXEL_INTERNAL_API SIXELSTATUS
 load_with_libwebp(
     sixel_chunk_t const       /* in */     *pchunk,
     int                       /* in */     fstatic,
@@ -46,7 +46,7 @@ load_with_libwebp(
     sixel_load_image_function /* in */     fn_load,
     void                      /* in/out */ *context);
 
-SIXELAPI int
+SIXEL_INTERNAL_API int
 loader_can_try_libwebp(sixel_chunk_t const *chunk);
 
 #ifdef __cplusplus

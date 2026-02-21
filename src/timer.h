@@ -13,6 +13,6 @@
  * lightweight frontends can measure durations without pulling in the
  * full assessment stack.
  */
-SIXELAPI double sixel_timer_now(void);
+SIXEL_INTERNAL_API double sixel_timer_now(void);
 
 #endif
