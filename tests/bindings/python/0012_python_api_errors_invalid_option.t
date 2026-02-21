@@ -22,8 +22,9 @@ python_output=$(env \
     LIBSIXEL_LIBDIR="${libdir}" \
     LD_LIBRARY_PATH="${libdir}${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}" \
     DYLD_LIBRARY_PATH="${libdir}${DYLD_LIBRARY_PATH:+:${DYLD_LIBRARY_PATH}}" \
-    "${run_python}" - "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" "${ARTIFACT_LOCAL_DIR}/invalid_option" 2>&1 <<'PY'
+    "${run_python}" - "${TOP_SRCDIR}/tests/data/inputs/snake_64.png" "${ARTIFACT_LOCAL_DIR}/invalid_option" "${TOP_SRCDIR}/include/sixel.h.in" 2>&1 <<'PY'
 import pathlib
+import re
 import sys
 
 try:
@@ -32,6 +33,7 @@ try:
         SIXEL_OPTFLAG_INPUT,
         SIXEL_OPTFLAG_LOADERS,
         SIXEL_OPTFLAG_OUTPUT,
+        SIXEL_OPTFLAG_START_FRAME,
     )
     from libsixel_wheel.encoder import Encoder
 except OSError as exc:
@@ -40,13 +42,28 @@ except OSError as exc:
 
 source = pathlib.Path(sys.argv[1])
 workdir = pathlib.Path(sys.argv[2])
+header = pathlib.Path(sys.argv[3])
 workdir.mkdir(parents=True, exist_ok=True)
 target = workdir / "invalid-option.six"
+
+module = sys.modules["libsixel_wheel"]
+expected = set(
+    re.findall(
+        r"#define\s+(SIXEL_OPTFLAG_[A-Z0-9_]+)\s+\(",
+        header.read_text(encoding="utf-8"),
+    )
+)
+missing = sorted(name for name in expected if not hasattr(module, name))
+if missing:
+    raise SystemExit(
+        "missing wheel optflag constants: " + ", ".join(missing)
+    )
 
 message = ""
 try:
     encoder = Encoder()
     encoder.setopt(SIXEL_OPTFLAG_LOADERS, "builtin!")
+    encoder.setopt(SIXEL_OPTFLAG_START_FRAME, "0")
     encoder.setopt(SIXEL_OPTFLAG_COLORS, "-1")
     encoder.setopt(SIXEL_OPTFLAG_INPUT, str(source))
     encoder.setopt(SIXEL_OPTFLAG_OUTPUT, str(target))
