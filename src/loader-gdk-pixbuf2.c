@@ -370,6 +370,7 @@ load_with_gdkpixbuf(
     int resolved_start_frame_no;
     int animation_frame_count;
     int emit_callback;
+    int source_frame_no;
 
     (void) fuse_palette;
     (void) reqcolors;
@@ -380,6 +381,7 @@ load_with_gdkpixbuf(
     resolved_start_frame_no = INT_MIN;
     animation_frame_count = 0;
     emit_callback = 1;
+    source_frame_no = 0;
 
     status = gdkpixbuf_parse_animation_start_frame_no(&start_frame_no);
     if (SIXEL_FAILED(status)) {
@@ -571,6 +573,7 @@ load_with_gdkpixbuf(
 
         time_val = start_time;
         frame->frame_no = 0;
+        source_frame_no = 0;
         frame->loop_count = 0;
 
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
@@ -654,10 +657,25 @@ load_with_gdkpixbuf(
                 emit_callback = 1;
                 if (frame->loop_count == 0 &&
                     resolved_start_frame_no != INT_MIN &&
-                    frame->frame_no < resolved_start_frame_no) {
+                    source_frame_no < resolved_start_frame_no) {
                     emit_callback = 0;
                 }
                 if (emit_callback) {
+                    /*
+                     * frame_no is consumed by the encoder to determine
+                     * whether DECSC (first emitted frame) or DECRC
+                     * (subsequent frame) should be written in tty scroll.
+                     * Keep it as an emitted-frame index instead of the
+                     * original animation index so start-frame skipping does
+                     * not suppress DECSC on the first visible frame.
+                     */
+                    if (frame->loop_count == 0 &&
+                        resolved_start_frame_no != INT_MIN) {
+                        frame->frame_no = source_frame_no -
+                            resolved_start_frame_no;
+                    } else {
+                        frame->frame_no = source_frame_no;
+                    }
                     status = fn_load(frame, context);
                     if (status != SIXEL_OK) {
                         goto end;
@@ -673,7 +691,7 @@ load_with_gdkpixbuf(
                     sixel_allocator_free(pchunk->allocator, frame_pixels);
                     sixel_frame_set_pixels(frame, NULL);
                 }
-                frame->frame_no++;
+                source_frame_no++;
 
                 if (finished) {
                     break;
@@ -681,14 +699,14 @@ load_with_gdkpixbuf(
                 /* }}} */
             }
 
-            if (frame->frame_no == 0) {
+            if (source_frame_no == 0) {
                 break;
             }
 
             /* finished processing one full loop */
             ++frame->loop_count;
 
-            if (loop_control == SIXEL_LOOP_DISABLE || frame->frame_no == 1) {
+            if (loop_control == SIXEL_LOOP_DISABLE || source_frame_no == 1) {
                 break;
             }
             /*
@@ -708,6 +726,7 @@ load_with_gdkpixbuf(
             }
             /* next pass starts counting frames from zero again */
             frame->frame_no = 0;
+            source_frame_no = 0;
         }
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
 # pragma GCC diagnostic pop
@@ -785,6 +804,7 @@ load_with_gdkpixbuf(
 
         time_val = start_time;
         frame->frame_no = 0;
+        source_frame_no = 0;
         frame->loop_count = 0;
 
 #if HAVE_DIAGNOSTIC_DEPRECATED_DECLARATIONS
@@ -863,10 +883,25 @@ load_with_gdkpixbuf(
                 emit_callback = 1;
                 if (frame->loop_count == 0 &&
                     resolved_start_frame_no != INT_MIN &&
-                    frame->frame_no < resolved_start_frame_no) {
+                    source_frame_no < resolved_start_frame_no) {
                     emit_callback = 0;
                 }
                 if (emit_callback) {
+                    /*
+                     * frame_no is consumed by the encoder to determine
+                     * whether DECSC (first emitted frame) or DECRC
+                     * (subsequent frame) should be written in tty scroll.
+                     * Keep it as an emitted-frame index instead of the
+                     * original animation index so start-frame skipping does
+                     * not suppress DECSC on the first visible frame.
+                     */
+                    if (frame->loop_count == 0 &&
+                        resolved_start_frame_no != INT_MIN) {
+                        frame->frame_no = source_frame_no -
+                            resolved_start_frame_no;
+                    } else {
+                        frame->frame_no = source_frame_no;
+                    }
                     status = fn_load(frame, context);
                     if (status != SIXEL_OK) {
                         goto end;
@@ -882,7 +917,7 @@ load_with_gdkpixbuf(
                     sixel_allocator_free(pchunk->allocator, frame_pixels);
                     sixel_frame_set_pixels(frame, NULL);
                 }
-                frame->frame_no++;
+                source_frame_no++;
 
                 if (finished) {
                     break;
@@ -890,14 +925,14 @@ load_with_gdkpixbuf(
                 /* }}} */
             }
 
-            if (frame->frame_no == 0) {
+            if (source_frame_no == 0) {
                 break;
             }
 
             /* finished processing one full loop */
             ++frame->loop_count;
 
-            if (loop_control == SIXEL_LOOP_DISABLE || frame->frame_no == 1) {
+            if (loop_control == SIXEL_LOOP_DISABLE || source_frame_no == 1) {
                 break;
             }
             /*
@@ -920,6 +955,7 @@ load_with_gdkpixbuf(
             }
             /* next pass starts counting frames from zero again */
             frame->frame_no = 0;
+            source_frame_no = 0;
         }
     }
 #endif
