@@ -116,6 +116,11 @@ sixel_loader_component_legacy_setopt(sixel_loader_component_t *component,
 
     legacy = (sixel_loader_component_legacy_t *)component;
 
+    /*
+     * Common options are normalized by sixel_loader_setopt() before they are
+     * copied into each component instance.  This legacy bridge keeps setopt()
+     * lightweight and stores values without revalidating the same constraints.
+     */
     switch (option) {
     case SIXEL_LOADER_OPTION_REQUIRE_STATIC:
         flag = (int const *)value;
@@ -127,13 +132,7 @@ sixel_loader_component_legacy_setopt(sixel_loader_component_t *component,
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_REQCOLORS:
         flag = (int const *)value;
-        legacy->reqcolors = flag != NULL ? *flag : SIXEL_PALETTE_MAX;
-        if (legacy->reqcolors < 1) {
-            return SIXEL_BAD_ARGUMENT;
-        }
-        if (legacy->reqcolors > SIXEL_PALETTE_MAX) {
-            legacy->reqcolors = SIXEL_PALETTE_MAX;
-        }
+        legacy->reqcolors = flag != NULL ? *flag : legacy->reqcolors;
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_BGCOLOR:
         if (value == NULL) {
@@ -148,7 +147,7 @@ sixel_loader_component_legacy_setopt(sixel_loader_component_t *component,
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_LOOP_CONTROL:
         flag = (int const *)value;
-        legacy->loop_control = flag != NULL ? *flag : SIXEL_LOOP_AUTO;
+        legacy->loop_control = flag != NULL ? *flag : legacy->loop_control;
         return SIXEL_OK;
     case SIXEL_LOADER_OPTION_START_FRAME_NO:
         if (value == NULL) {
@@ -161,6 +160,10 @@ sixel_loader_component_legacy_setopt(sixel_loader_component_t *component,
         }
         return SIXEL_OK;
     default:
+        /*
+         * Accept unknown options so component-specific options can be routed
+         * through the same call path without coupling all implementations.
+         */
         return SIXEL_OK;
     }
 }

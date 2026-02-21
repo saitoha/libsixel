@@ -313,55 +313,73 @@ loader_apply_component_options(sixel_loader_component_t *component,
                                sixel_loader_t const *loader,
                                int reqcolors)
 {
+    typedef struct loader_component_option_entry {
+        int option;
+        char const *name;
+        void const *value;
+    } loader_component_option_entry_t;
+
+    loader_component_option_entry_t options[6];
+    char message[128];
+    size_t index;
     SIXELSTATUS status;
 
+    /*
+     * Distribute common execution parameters to every loader component.
+     *
+     * +---------------------------+-------------------------------+
+     * | option                    | value source                  |
+     * +---------------------------+-------------------------------+
+     * | REQUIRE_STATIC            | loader->fstatic               |
+     * | USE_PALETTE               | loader->fuse_palette          |
+     * | REQCOLORS                 | normalized reqcolors          |
+     * | BGCOLOR                   | loader->bgcolor or NULL       |
+     * | LOOP_CONTROL              | loader->loop_control          |
+     * | START_FRAME_NO            | loader->start_frame_no/NULL   |
+     * +---------------------------+-------------------------------+
+     */
+    options[0].option = SIXEL_LOADER_OPTION_REQUIRE_STATIC;
+    options[0].name = "require-static";
+    options[0].value = &loader->fstatic;
+    options[1].option = SIXEL_LOADER_OPTION_USE_PALETTE;
+    options[1].name = "use-palette";
+    options[1].value = &loader->fuse_palette;
+    options[2].option = SIXEL_LOADER_OPTION_REQCOLORS;
+    options[2].name = "reqcolors";
+    options[2].value = &reqcolors;
+    options[3].option = SIXEL_LOADER_OPTION_BGCOLOR;
+    options[3].name = "bgcolor";
+    options[3].value = loader->has_bgcolor ? loader->bgcolor : NULL;
+    options[4].option = SIXEL_LOADER_OPTION_LOOP_CONTROL;
+    options[4].name = "loop-control";
+    options[4].value = &loader->loop_control;
+    options[5].option = SIXEL_LOADER_OPTION_START_FRAME_NO;
+    options[5].name = "start-frame-no";
+    options[5].value = loader->has_start_frame_no
+        ? &loader->start_frame_no : NULL;
+
     status = SIXEL_OK;
+    message[0] = '\0';
+    index = 0;
     if (component == NULL || loader == NULL) {
         return SIXEL_BAD_ARGUMENT;
     }
 
-    status = sixel_loader_component_setopt(component,
-                                           SIXEL_LOADER_OPTION_REQUIRE_STATIC,
-                                           &loader->fstatic);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    status = sixel_loader_component_setopt(component,
-                                           SIXEL_LOADER_OPTION_USE_PALETTE,
-                                           &loader->fuse_palette);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    status = sixel_loader_component_setopt(component,
-                                           SIXEL_LOADER_OPTION_REQCOLORS,
-                                           &reqcolors);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    status = sixel_loader_component_setopt(component,
-                                           SIXEL_LOADER_OPTION_BGCOLOR,
-                                           loader->has_bgcolor ?
-                                               loader->bgcolor : NULL);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    status = sixel_loader_component_setopt(component,
-                                           SIXEL_LOADER_OPTION_LOOP_CONTROL,
-                                           &loader->loop_control);
-    if (SIXEL_FAILED(status)) {
-        return status;
-    }
-
-    status = sixel_loader_component_setopt(
-        component,
-        SIXEL_LOADER_OPTION_START_FRAME_NO,
-        loader->has_start_frame_no ? &loader->start_frame_no : NULL);
-    if (SIXEL_FAILED(status)) {
-        return status;
+    for (index = 0; index < sizeof(options) / sizeof(options[0]); ++index) {
+        status = sixel_loader_component_setopt(component,
+                                               options[index].option,
+                                               options[index].value);
+        if (SIXEL_FAILED(status)) {
+            (void)sixel_compat_snprintf(message,
+                                        sizeof(message),
+                                        "sixel_loader_load_file: "
+                                        "failed to apply loader option "
+                                        "'%s'.",
+                                        options[index].name);
+            sixel_helper_set_additional_message(
+                message);
+            return status;
+        }
     }
 
     return SIXEL_OK;
