@@ -14,6 +14,9 @@ Gem::Specification.new do |spec|
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
+  spec.files        += Dir.glob('lib/libsixel/_libs/*')
+  spec.files.uniq!
+  spec.platform      = ENV.fetch('LIBSIXEL_RUBY_GEM_PLATFORM', Gem::Platform::RUBY)
   spec.executables   = spec.files.grep(%r{^bin/}) { |f| File.basename(f) }
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]

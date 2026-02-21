@@ -118,6 +118,23 @@ raise Libsixel::API::Err.message(status) if Libsixel::API.failed?(status)
 output = Libsixel::API::Util.read_outptr(outpp)
 ```
 
+
+### Building a bundled platform gem
+
+To distribute Ruby bindings without requiring a system-installed libsixel,
+you can bundle the shared library into `lib/libsixel/_libs` at gem build
+time.
+
+```
+$ cd ruby
+$ LIBSIXEL_LIBPATH=/path/to/libsixel.so \
+  LIBSIXEL_RUBY_GEM_PLATFORM=x86_64-linux \
+  rake gem:build_bundled
+```
+
+The runtime loader checks bundled files first, then falls back to system
+library names for backward compatibility.
+
 ## Shared Library Loading
 
 The gem tries these names: `sixel`, `libsixel`, `sixel-1`, `libsixel-1`, `msys-sixel`, `cygsixel`, `libsixel.dylib`. If loading fails, set your runtime library path or install libsixel.
