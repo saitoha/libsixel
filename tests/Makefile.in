@@ -1027,7 +1027,11 @@ EXTRA_DIST = $(TESTS) $(HELPER_FILES) \
     data/inputs/formats/snake-32.png \
     data/inputs/formats/rgba.png \
     data/inputs/formats/apng_8x8_blend_over.png \
+    data/inputs/formats/apng_8x8_blend_over_libpng_start_frame1_reference.six \
+    data/inputs/formats/apng_8x8_blend_over_builtin_static_reference.six \
     data/inputs/formats/apng_8x8_dispose_background.png \
+    data/inputs/formats/apng_8x8_dispose_background_libpng_start_frame1_reference.six \
+    data/inputs/formats/apng_8x8_dispose_background_builtin_static_reference.six \
     data/inputs/formats/apng_8x8_indexed_loop2.png \
     data/inputs/formats/apng_8x8_rgb_loop2.png \
     data/inputs/formats/apng_8x8_rgba_loop2.png \
