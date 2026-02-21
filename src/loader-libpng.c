@@ -1253,6 +1253,7 @@ load_apng_frames(
     int seen_actl;
     int has_frame;
     int frame_no;
+    int source_frame_no;
     int frames_in_loop;
     int num_frames;
     int num_plays;
@@ -1275,6 +1276,7 @@ load_apng_frames(
     seen_actl = 0;
     has_frame = 0;
     frame_no = 0;
+    source_frame_no = 0;
     frames_in_loop = 0;
     num_frames = 0;
     num_plays = 0;
@@ -1529,6 +1531,17 @@ load_apng_frames(
             frames_in_loop < start_frame_no) {
             emit_callback = 0;
         }
+        if (loop_no == 0 && start_frame_no != INT_MIN) {
+            /*
+             * frame_no is used by the encoder/tty path to select DECSC
+             * for the first emitted frame and DECRC for subsequent frames.
+             * Keep frame_no aligned to emitted order when the first loop
+             * skips leading source frames.
+             */
+            frame_no = source_frame_no - start_frame_no;
+        } else {
+            frame_no = source_frame_no;
+        }
         status = emit_apng_frame(&state,
                                  &control,
                                  frame_no,
@@ -1551,7 +1564,7 @@ load_apng_frames(
             goto end;
         }
 
-        ++frame_no;
+        ++source_frame_no;
         ++frames_in_loop;
         if (fstatic && emit_callback) {
             status = SIXEL_OK;
