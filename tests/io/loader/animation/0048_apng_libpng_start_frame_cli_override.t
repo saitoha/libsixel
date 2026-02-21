@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: -T/--start_frame overrides loader start frame environment variable.
+# TAP test: -T/--start-frame overrides loader start frame environment variable.
 
 set -eux
 
