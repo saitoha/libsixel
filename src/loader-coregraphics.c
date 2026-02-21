@@ -221,10 +221,11 @@ load_with_coregraphics(
         }
     }
 
-    if (fstatic) {
-        frame_count = 1;
-        total_frames = 1;
-    }
+    /*
+     * Keep total_frames as the actual image frame count even in static mode.
+     * In static mode we still need to seek to resolved_start_frame_no first,
+     * then emit exactly one frame and return from inside the decode loop.
+     */
 
     props = CGImageSourceCopyProperties(source, NULL);
     if (props) {
@@ -239,7 +240,7 @@ load_with_coregraphics(
         }
     }
 
-    frame->multiframe = (frame_count > 1);
+    frame->multiframe = (!fstatic && frame_count > 1);
 
     for (;;) {
         frame_index = 0;
@@ -384,7 +385,7 @@ load_with_coregraphics(
             CGContextRelease(ctx);
             ctx = NULL;
 
-            frame->multiframe = (frame_count > 1);
+            frame->multiframe = (!fstatic && frame_count > 1);
             status = fn_load(frame, context);
             CGImageRelease(image);
             image = NULL;
