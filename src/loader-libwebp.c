@@ -41,6 +41,9 @@
 #if HAVE_LIMITS_H
 # include <limits.h>
 #endif
+#if HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
 #include <webp/decode.h>
 #include <webp/demux.h>
 
@@ -52,6 +55,7 @@
 #include "loader-common.h"
 #include "loader-libwebp.h"
 #include "logger.h"
+#include "compat_stub.h"
 
 /*
  * Decode a WebP buffer into an RGB(A) pixel buffer managed by libsixel.
@@ -341,6 +345,84 @@ webp_input_is_indexed(sixel_chunk_t const *pchunk)
  * the original RGB pixels are preserved.
  */
 static SIXELSTATUS
+webp_parse_animation_start_frame_no(int *start_frame_no)
+{
+    SIXELSTATUS status;
+    char const *env_value;
+    char *endptr;
+    long parsed;
+
+    status = SIXEL_OK;
+    env_value = NULL;
+    endptr = NULL;
+    parsed = 0;
+
+    *start_frame_no = INT_MIN;
+    env_value = sixel_compat_getenv("SIXEL_LOADER_ANIMATION_START_FRAME_NO");
+    if (env_value == NULL || env_value[0] == '\0') {
+        goto end;
+    }
+
+    parsed = strtol(env_value, &endptr, 10);
+    if (endptr == env_value || *endptr != '\0') {
+        sixel_helper_set_additional_message(
+            "SIXEL_LOADER_ANIMATION_START_FRAME_NO must be an integer.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+    if (parsed < (long)INT_MIN || parsed > (long)INT_MAX) {
+        sixel_helper_set_additional_message(
+            "SIXEL_LOADER_ANIMATION_START_FRAME_NO is out of range.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    *start_frame_no = (int)parsed;
+
+end:
+    return status;
+}
+
+static SIXELSTATUS
+webp_resolve_animation_start_frame_no(int start_frame_no,
+                                      int frame_count,
+                                      int *resolved)
+{
+    SIXELSTATUS status;
+    int index;
+
+    status = SIXEL_OK;
+    index = 0;
+
+    if (frame_count <= 0) {
+        sixel_helper_set_additional_message(
+            "Animation frame count must be positive.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    if (start_frame_no >= 0) {
+        index = start_frame_no;
+    } else {
+        index = frame_count + start_frame_no;
+    }
+
+    if (index < 0 || index >= frame_count) {
+        sixel_helper_set_additional_message(
+            "SIXEL_LOADER_ANIMATION_START_FRAME_NO is outside"
+            " the animation frame range.");
+        status = SIXEL_BAD_INPUT;
+        goto end;
+    }
+
+    *resolved = index;
+
+end:
+    return status;
+}
+
+
+static SIXELSTATUS
 loader_try_promote_pal8(
     sixel_frame_t  /* in/out */ *frame,
     int            /* in */     reqcolors,
@@ -589,6 +671,10 @@ load_with_libwebp(
     int frame_no;
     int loop_count;
     int allow_palette_promotion;
+    int start_frame_no;
+    int resolved_start_frame_no;
+    int decode_start_frame_no;
+    int emitted_frame_no;
 
     status = SIXEL_FALSE;
     frame = NULL;
@@ -604,6 +690,15 @@ load_with_libwebp(
     frame_no = 0;
     loop_count = 0;
     allow_palette_promotion = 0;
+    start_frame_no = INT_MIN;
+    resolved_start_frame_no = 0;
+    decode_start_frame_no = 0;
+    emitted_frame_no = 0;
+
+    status = webp_parse_animation_start_frame_no(&start_frame_no);
+    if (SIXEL_FAILED(status)) {
+        goto end;
+    }
 
     if (fuse_palette) {
         allow_palette_promotion = webp_input_is_indexed(pchunk);
@@ -635,6 +730,14 @@ load_with_libwebp(
     }
 
     if (anim_info.frame_count <= 1) {
+        if (start_frame_no != INT_MIN) {
+            status = webp_resolve_animation_start_frame_no(start_frame_no,
+                            anim_info.frame_count,
+                            &resolved_start_frame_no);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
         WebPAnimDecoderDelete(decoder);
         decoder = NULL;
 
@@ -680,22 +783,33 @@ load_with_libwebp(
     }
 
     if (fstatic) {
+        if (start_frame_no != INT_MIN) {
+            status = webp_resolve_animation_start_frame_no(start_frame_no,
+                            anim_info.frame_count,
+                            &resolved_start_frame_no);
+            if (SIXEL_FAILED(status)) {
+                goto end;
+            }
+        }
+
         status = sixel_frame_new(&frame, pchunk->allocator);
         if (SIXEL_FAILED(status)) {
             goto end;
         }
 
-        if (!WebPAnimDecoderHasMoreFrames(decoder)) {
-            sixel_helper_set_additional_message(
-                "load_with_libwebp: no frames in animated WebP stream.");
-            status = SIXEL_BAD_INPUT;
-            goto end;
-        }
-        if (!WebPAnimDecoderGetNext(decoder, &decoded_frame, &timestamp)) {
-            sixel_helper_set_additional_message(
-                "load_with_libwebp: WebPAnimDecoderGetNext failed.");
-            status = SIXEL_WEBP_ERROR;
-            goto end;
+        for (frame_no = 0; frame_no <= resolved_start_frame_no; frame_no++) {
+            if (!WebPAnimDecoderHasMoreFrames(decoder)) {
+                sixel_helper_set_additional_message(
+                    "load_with_libwebp: no frames in animated WebP stream.");
+                status = SIXEL_BAD_INPUT;
+                goto end;
+            }
+            if (!WebPAnimDecoderGetNext(decoder, &decoded_frame, &timestamp)) {
+                sixel_helper_set_additional_message(
+                    "load_with_libwebp: WebPAnimDecoderGetNext failed.");
+                status = SIXEL_WEBP_ERROR;
+                goto end;
+            }
         }
 
         frame->width = (int)anim_info.canvas_width;
@@ -704,7 +818,7 @@ load_with_libwebp(
         frame->colorspace = SIXEL_COLORSPACE_GAMMA;
         frame->multiframe = 0;
         frame->loop_count = 0;
-        frame->frame_no = 0;
+        frame->frame_no = resolved_start_frame_no;
         frame->delay = timestamp / 10;
 
         if (frame->width <= 0 || frame->height <= 0) {
@@ -785,22 +899,43 @@ load_with_libwebp(
     }
     frame_bytes *= 4;
 
+    if (start_frame_no != INT_MIN) {
+        status = webp_resolve_animation_start_frame_no(start_frame_no,
+                        anim_info.frame_count,
+                        &resolved_start_frame_no);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
+    }
+
     for (;;) {
+        decode_start_frame_no = 0;
+        if (loop_count == 0 && start_frame_no != INT_MIN) {
+            decode_start_frame_no = resolved_start_frame_no;
+        }
+
         frame_no = 0;
+        emitted_frame_no = 0;
         previous_timestamp = 0;
 
         while (WebPAnimDecoderHasMoreFrames(decoder)) {
-            status = sixel_frame_new(&frame, pchunk->allocator);
-            if (SIXEL_FAILED(status)) {
-                goto end;
-            }
-
             if (!WebPAnimDecoderGetNext(decoder,
                                         &decoded_frame,
                                         &timestamp)) {
                 sixel_helper_set_additional_message(
                     "load_with_libwebp: WebPAnimDecoderGetNext failed.");
                 status = SIXEL_WEBP_ERROR;
+                goto end;
+            }
+
+            if (frame_no < decode_start_frame_no) {
+                previous_timestamp = timestamp;
+                frame_no++;
+                continue;
+            }
+
+            status = sixel_frame_new(&frame, pchunk->allocator);
+            if (SIXEL_FAILED(status)) {
                 goto end;
             }
 
@@ -824,7 +959,7 @@ load_with_libwebp(
             frame->colorspace = SIXEL_COLORSPACE_GAMMA;
             frame->multiframe = 1;
             frame->loop_count = loop_count;
-            frame->frame_no = frame_no;
+            frame->frame_no = emitted_frame_no;
 
             next_delay = timestamp - previous_timestamp;
             if (next_delay < 0) {
@@ -858,12 +993,13 @@ load_with_libwebp(
             frame = NULL;
 
             previous_timestamp = timestamp;
+            emitted_frame_no++;
             frame_no++;
         }
 
         loop_count++;
 
-        if (loop_control == SIXEL_LOOP_DISABLE || frame_no == 1) {
+        if (loop_control == SIXEL_LOOP_DISABLE || emitted_frame_no == 1) {
             break;
         }
         if (loop_control == SIXEL_LOOP_AUTO &&
