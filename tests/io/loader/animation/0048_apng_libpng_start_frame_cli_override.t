@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: -T/--start-frame overrides loader start frame environment variable.
+# TAP test: -T overrides an earlier --start-frame option.
 
 set -eux
 
@@ -18,25 +18,25 @@ test "${HAVE_LIBPNG-}" = 1 || {
 echo "1..2"
 set -v
 
-run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=0" \
+run_img2sixel --start-frame=0 \
     -Llibpng! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
-    >"${ARTIFACT_LOCAL_DIR}/apng_start_env0.six" || {
-    fail 1 "APNG decode with environment start frame 0 failed"
+    >"${ARTIFACT_LOCAL_DIR}/apng_start_frame0.six" || {
+    fail 1 "APNG decode with --start-frame=0 failed"
     pass 2 "override comparison skipped because baseline decode failed"
     exit 0
 }
 
-run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=1" \
+run_img2sixel --start-frame=1 \
     -Llibpng! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
-    >"${ARTIFACT_LOCAL_DIR}/apng_start_env1.six" || {
-    fail 1 "APNG decode with environment start frame 1 failed"
-    pass 2 "override comparison skipped because env=1 decode failed"
+    >"${ARTIFACT_LOCAL_DIR}/apng_start_frame1.six" || {
+    fail 1 "APNG decode with --start-frame=1 failed"
+    pass 2 "override comparison skipped because frame=1 decode failed"
     exit 0
 }
 
-run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=0" \
+run_img2sixel --start-frame=0 \
     -T 1 -Llibpng! -S \
     "${TOP_SRCDIR}/tests/data/inputs/formats/apng_8x8_rgb_loop2.png" \
     >"${ARTIFACT_LOCAL_DIR}/apng_start_cli_override.six" || {
@@ -45,18 +45,18 @@ run_img2sixel --env "SIXEL_LOADER_ANIMATION_START_FRAME_NO=0" \
     exit 0
 }
 
-cmp -s "${ARTIFACT_LOCAL_DIR}/apng_start_env0.six" \
+cmp -s "${ARTIFACT_LOCAL_DIR}/apng_start_frame0.six" \
     "${ARTIFACT_LOCAL_DIR}/apng_start_cli_override.six" && {
-    fail 1 "-T did not override SIXEL_LOADER_ANIMATION_START_FRAME_NO"
+    fail 1 "-T did not override earlier --start-frame"
     pass 2 "match check skipped because override did not change output"
     exit 0
 }
 
-pass 1 "-T overrides environment start frame selection"
+pass 1 "-T overrides earlier --start-frame selection"
 
-cmp -s "${ARTIFACT_LOCAL_DIR}/apng_start_env1.six" \
+cmp -s "${ARTIFACT_LOCAL_DIR}/apng_start_frame1.six" \
     "${ARTIFACT_LOCAL_DIR}/apng_start_cli_override.six" || {
-    fail 2 "-T output does not match equivalent env start frame"
+    fail 2 "-T output does not match equivalent --start-frame"
     exit 0
 }
 
