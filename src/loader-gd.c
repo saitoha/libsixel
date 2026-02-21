@@ -274,6 +274,8 @@ load_with_gd(
     unsigned char             /* in */     *bgcolor,    /* background */
                                                  /* color */
     int                       /* in */     loop_control,
+    int                       /* in */     start_frame_no_set,
+    int                       /* in */     start_frame_no_override,
     sixel_load_image_function /* in */     fn_load,     /* callback */
     void                      /* in/out */ *context     /* private */
                                                  /* data for callback */
@@ -313,9 +315,13 @@ load_with_gd(
     frame_count = 0;
     fnp.fn = fn_load;
 
-    status = gd_parse_animation_start_frame_no(&start_frame_no);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    if (start_frame_no_set) {
+        start_frame_no = start_frame_no_override;
+    } else {
+        status = gd_parse_animation_start_frame_no(&start_frame_no);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
 
     if (gif && chunk_is_gif(pchunk)) {

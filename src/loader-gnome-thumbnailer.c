@@ -2576,6 +2576,8 @@ cleanup:
  *     reqcolors     - requested colour count.
  *     bgcolor       - background colour override.
  *     loop_control  - animation loop control flag.
+ *     start_frame_no_set - whether a start frame override is active.
+ *     start_frame_no - start frame override value when set.
  *     fn_load       - downstream decoder callback.
  *     context       - user context forwarded to fn_load.
  * Returns:
@@ -2589,6 +2591,8 @@ load_with_gnome_thumbnailer(
     int                       /* in */     reqcolors,
     unsigned char             /* in */     *bgcolor,
     int                       /* in */     loop_control,
+    int                       /* in */     start_frame_no_set,
+    int                       /* in */     start_frame_no,
     sixel_load_image_function /* in */     fn_load,
     void                      /* in/out */ *context)
 {
@@ -2613,6 +2617,9 @@ load_with_gnome_thumbnailer(
     char const *log_prefix;
     int fd;
     int written;
+
+    (void)start_frame_no_set;
+    (void)start_frame_no;
 
     loader_thumbnailer_initialize_size_hint();
 
@@ -2889,6 +2896,8 @@ load_with_gnome_thumbnailer(
                                reqcolors,
                                bgcolor,
                                loop_control,
+                               start_frame_no_set,
+                               start_frame_no,
                                fn_load,
                                context);
     if (SIXEL_FAILED(status)) {

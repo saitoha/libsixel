@@ -128,6 +128,8 @@ struct sixel_loader {
     int has_bgcolor;
     int loop_control;
     int finsecure;
+    int has_start_frame_no;
+    int start_frame_no;
     int const *cancel_flag;
     void *context;
     sixel_logger_t logger;
@@ -1237,6 +1239,8 @@ sixel_loader_new(
     loader->has_bgcolor = 0;
     loader->loop_control = SIXEL_LOOP_AUTO;
     loader->finsecure = 0;
+    loader->has_start_frame_no = 0;
+    loader->start_frame_no = INT_MIN;
     loader->cancel_flag = NULL;
     loader->context = NULL;
     /*
@@ -1371,6 +1375,17 @@ sixel_loader_setopt(
         loader->finsecure = flag != NULL ? *flag : 0;
         status = SIXEL_OK;
         break;
+    case SIXEL_LOADER_OPTION_START_FRAME_NO:
+        if (value == NULL) {
+            loader->has_start_frame_no = 0;
+            loader->start_frame_no = INT_MIN;
+        } else {
+            flag = (int const *)value;
+            loader->start_frame_no = *flag;
+            loader->has_start_frame_no = 1;
+        }
+        status = SIXEL_OK;
+        break;
     case SIXEL_LOADER_OPTION_CANCEL_FLAG:
         loader->cancel_flag = (int const *)value;
         status = SIXEL_OK;
@@ -1435,6 +1450,22 @@ sixel_loader_get_last_input_bytes(sixel_loader_t const *loader)
         return 0u;
     }
     return loader->last_input_bytes;
+}
+
+int
+sixel_loader_get_start_frame_no(sixel_loader_t const *loader,
+                                int *start_frame_no)
+{
+    if (start_frame_no != NULL) {
+        *start_frame_no = INT_MIN;
+    }
+    if (loader == NULL || start_frame_no == NULL ||
+        loader->has_start_frame_no == 0) {
+        return 0;
+    }
+
+    *start_frame_no = loader->start_frame_no;
+    return 1;
 }
 
 SIXELAPI SIXELSTATUS
@@ -1596,6 +1627,8 @@ sixel_loader_load_file(
                                            reqcolors,
                                            bgcolor,
                                            loader->loop_control,
+                                           loader->has_start_frame_no,
+                                           loader->start_frame_no,
                                            loader_callback_trampoline,
                                            &callback_state);
         loader_trace_result(plan[plan_index]->name, status);

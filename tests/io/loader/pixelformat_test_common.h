@@ -117,6 +117,8 @@ typedef SIXELSTATUS (*loader_entry_fn)(
     int,
     unsigned char *,
     int,
+    int,
+    int,
     sixel_load_image_function,
     void *);
 
@@ -215,6 +217,8 @@ run_loader_case_with_options(char const *label,
                     reqcolors,
                     NULL,
                     SIXEL_LOOP_AUTO,
+                    0,
+                    INT_MIN,
                     capture_frame_trampoline,
                     &callback_state);
     if (SIXEL_FAILED(status)) {

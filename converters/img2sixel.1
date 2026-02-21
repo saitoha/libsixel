@@ -420,6 +420,13 @@ force   -> always enable loop
 .br
 disable -> always disable loop
 .TP 5
+.B \-T \fIFRAME_NO\fP, \-\-start_frame=\fIFRAME_NO\fP
+set the animation start frame index for supported loaders.
+.br
+0 or positive values select absolute frame indices.
+.br
+negative values count from the end (-1 selects the last frame).
+.TP 5
 .B \-t \fIPALETTETYPE\fP, \-\-palette\-type=\fIPALETTETYPE\fP
 select palette color space type.
 .br

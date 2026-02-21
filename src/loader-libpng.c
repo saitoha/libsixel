@@ -1165,9 +1165,6 @@ emit_apng_frame(
                              png_data,
                              png_size,
                              allocator);
-    if (SIXEL_FAILED(status)) {
-        goto end;
-    }
 
     if (width != (int)control->width || height != (int)control->height) {
         status = SIXEL_BAD_INPUT;
@@ -1635,6 +1632,8 @@ load_with_libpng(
     int                       /* in */     reqcolors,
     unsigned char             /* in */     *bgcolor,
     int                       /* in */     loop_control,
+    int                       /* in */     start_frame_no_set,
+    int                       /* in */     start_frame_no_override,
     sixel_load_image_function /* in */     fn_load,
     void                      /* in/out */ *context)
 {
@@ -1651,11 +1650,14 @@ load_with_libpng(
     (void)fstatic;
     (void)loop_control;
 
-    status = libpng_parse_animation_start_frame_no(&start_frame_no);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    if (start_frame_no_set) {
+        start_frame_no = start_frame_no_override;
+    } else {
+        status = libpng_parse_animation_start_frame_no(&start_frame_no);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
-
     status = load_apng_frames(pchunk,
                               fstatic,
                               fuse_palette,

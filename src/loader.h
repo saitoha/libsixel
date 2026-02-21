@@ -46,6 +46,10 @@ sixel_loader_get_last_input_bytes(sixel_loader_t const *loader);
 int
 sixel_loader_callback_is_canceled(void *data);
 
+int
+sixel_loader_get_start_frame_no(sixel_loader_t const *loader,
+                                int *start_frame_no);
+
 
 #ifdef __cplusplus
 }

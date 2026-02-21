@@ -257,9 +257,13 @@ load_with_wic(
     PropVariantInit(&prop);
     PropVariantInit(&lp);
 
-    status = wic_parse_animation_start_frame_no(&start_frame_no);
-    if (SIXEL_FAILED(status)) {
-        goto end;
+    if (start_frame_no_set) {
+        start_frame_no = start_frame_no_override;
+    } else {
+        status = wic_parse_animation_start_frame_no(&start_frame_no);
+        if (SIXEL_FAILED(status)) {
+            goto end;
+        }
     }
 
     hr = CoInitializeEx(NULL,

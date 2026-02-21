@@ -477,6 +477,14 @@ typedef int SIXELSTATUS;
                                                     force   -> always enable loop
                                                     disable -> always disable loop
                                                 */
+#define SIXEL_OPTFLAG_START_FRAME       ('T')  /* -T FRAME_NO, --start_frame=FRAME_NO:
+                                                  set the first frame index used
+                                                  by animation loaders.
+                                                    non-negative values are
+                                                    absolute frame indices
+                                                    negative values count from
+                                                    the end of the loop
+                                                */
 #define SIXEL_OPTFLAG_PALETTE_TYPE      ('t')  /* -t PALETTETYPE, --palette-type=PALETTETYPE:
                                                   select palette color space type
                                                     auto -> choose palette type
@@ -1522,6 +1530,7 @@ typedef struct sixel_loader sixel_loader_t;
 #define SIXEL_LOADER_OPTION_LOADER_ORDER      (8)
 #define SIXEL_LOADER_OPTION_CONTEXT           (9)
 #define SIXEL_LOADER_OPTION_WIC_ICO_MINSIZE   (10)
+#define SIXEL_LOADER_OPTION_START_FRAME_NO    (11)
 
 /* create loader object */
 SIXELAPI SIXELSTATUS

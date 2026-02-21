@@ -5378,6 +5378,15 @@ palette_cleanup:
     }
 
     status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_START_FRAME_NO,
+                                 encoder->loader_start_frame_no_set
+                                     ? &encoder->loader_start_frame_no
+                                     : NULL);
+    if (SIXEL_FAILED(status)) {
+        goto end_loader;
+    }
+
+    status = sixel_loader_setopt(loader,
                                  SIXEL_LOADER_OPTION_CONTEXT,
                                  &callback_context);
     if (SIXEL_FAILED(status)) {
@@ -6690,6 +6699,8 @@ sixel_encoder_new(
     (*ppencoder)->mapfile               = NULL;
     (*ppencoder)->palette_output        = NULL;
     (*ppencoder)->loader_order          = NULL;
+    (*ppencoder)->loader_start_frame_no = INT_MIN;
+    (*ppencoder)->loader_start_frame_no_set = 0;
     (*ppencoder)->color_option          = SIXEL_COLOR_OPTION_DEFAULT;
     (*ppencoder)->builtin_palette       = 0;
     (*ppencoder)->method_for_diffuse    = SIXEL_DIFFUSE_AUTO;
@@ -8258,6 +8269,21 @@ sixel_encoder_setopt(
             goto end;
         }
         break;
+    case SIXEL_OPTFLAG_START_FRAME:  /* T */
+        errno = 0;
+        endptr = NULL;
+        parsed_value = strtol(value, &endptr, 10);
+        if (endptr == value || *endptr != '\0' || errno == ERANGE ||
+            parsed_value < (long)INT_MIN ||
+            parsed_value > (long)INT_MAX) {
+            sixel_helper_set_additional_message(
+                "cannot parse start_frame option.");
+            status = SIXEL_BAD_ARGUMENT;
+            goto end;
+        }
+        encoder->loader_start_frame_no = (int)parsed_value;
+        encoder->loader_start_frame_no_set = 1;
+        break;
     case SIXEL_OPTFLAG_PALETTE_TYPE:  /* t */
         match_result = sixel_option_match_choice(
             value,
@@ -9560,6 +9586,15 @@ reload:
     status = sixel_loader_setopt(loader,
                                  SIXEL_LOADER_OPTION_LOADER_ORDER,
                                  encoder->loader_order);
+    if (SIXEL_FAILED(status)) {
+        goto load_end;
+    }
+
+    status = sixel_loader_setopt(loader,
+                                 SIXEL_LOADER_OPTION_START_FRAME_NO,
+                                 encoder->loader_start_frame_no_set
+                                     ? &encoder->loader_start_frame_no
+                                     : NULL);
     if (SIXEL_FAILED(status)) {
         goto load_end;
     }

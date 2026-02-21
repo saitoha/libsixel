@@ -121,6 +121,8 @@ run_libwebp_animation_test(void)
                                256,
                                NULL,
                                SIXEL_LOOP_DISABLE,
+                               0,
+                               INT_MIN,
                                capture_animated_frames,
                                &context);
     if (SIXEL_FAILED(status)) {
@@ -158,6 +160,8 @@ run_libwebp_animation_test(void)
                                256,
                                NULL,
                                SIXEL_LOOP_DISABLE,
+                               0,
+                               INT_MIN,
                                interrupt_at_first_frame,
                                NULL);
     if (status != SIXEL_INTERRUPTED) {
