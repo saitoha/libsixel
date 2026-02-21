@@ -51,6 +51,12 @@
 #include "loader-gd.h"
 #include "compat_stub.h"
 
+
+typedef union sixel_loader_gd_fn_pointer {
+    sixel_load_image_function fn;
+    void *                    p;
+} sixel_loader_gd_fn_pointer_t;
+
 static SIXELSTATUS
 gd_parse_animation_start_frame_no(int *start_frame_no)
 {
@@ -288,6 +294,7 @@ load_with_gd(
     int frame_count;
     int *truecolor_row;
     unsigned char *palette_row;
+    sixel_loader_gd_fn_pointer_t fnp;
 
     (void) fstatic;
     (void) fuse_palette;
@@ -304,6 +311,7 @@ load_with_gd(
     start_frame_no = INT_MIN;
     resolved_start_frame_no = INT_MIN;
     frame_count = 0;
+    fnp.fn = fn_load;
 
     status = gd_parse_animation_start_frame_no(&start_frame_no);
     if (SIXEL_FAILED(status)) {
@@ -333,7 +341,7 @@ load_with_gd(
                           fstatic,
                           loop_control,
                           resolved_start_frame_no,
-                          (void *)fn_load,
+                          fnp.p,
                           context,
                           pchunk->allocator);
         goto end;
