@@ -4,9 +4,31 @@ rescue LoadError
   # Bundler is optional for running tests
 end
 require "rake/testtask"
+require "fileutils"
 
 Rake::TestTask.new(:test) do |t|
   t.libs << "test"
 end
 
 task :default => :test
+
+
+namespace :gem do
+  desc "Build a platform gem that bundles a libsixel shared library"
+  task :build_bundled do
+    libpath = ENV["LIBSIXEL_LIBPATH"]
+    abort "Set LIBSIXEL_LIBPATH=/path/to/libsixel.(so|dylib|dll)" if libpath.nil? || libpath.empty?
+
+    libs_dir = File.expand_path("lib/libsixel/_libs", __dir__)
+    FileUtils.mkdir_p(libs_dir)
+
+    copied_path = File.join(libs_dir, File.basename(libpath))
+    FileUtils.cp(libpath, copied_path)
+
+    begin
+      sh "gem build libsixel-ruby.gemspec"
+    ensure
+      FileUtils.rm_f(copied_path)
+    end
+  end
+end

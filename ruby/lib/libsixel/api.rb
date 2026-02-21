@@ -26,6 +26,27 @@ module Libsixel
   module API
     extend Fiddle::Importer
 
+    # Bundled library loading flow (used by platform gems):
+    #
+    #   +------------------------------+
+    #   | lib/libsixel/_libs contains? |
+    #   +------------------------------+
+    #              | yes
+    #              v
+    #   try exact file path with dlload
+    #              |
+    #              v
+    #         loaded? ------ no ------+
+    #            | yes                |
+    #            v                    |
+    #          done                   |
+    #                                 v
+    #                        fallback to system names
+    #
+    # This keeps backward compatibility: classic gems still work because the
+    # system probing path is preserved after bundled-path probing.
+    BUNDLED_LIB_DIR = File.expand_path('_libs', __dir__)
+
     # Search and load libsixel shared library
     LIB_CANDIDATES = [
       "sixel", "libsixel", "sixel-1", "libsixel-1", "msys-sixel", "cygsixel",
@@ -33,8 +54,13 @@ module Libsixel
       "libsixel.dylib"
     ]
 
+    bundled_candidates = []
+    if Dir.exist?(BUNDLED_LIB_DIR)
+      bundled_candidates = Dir.glob(File.join(BUNDLED_LIB_DIR, '*'))
+    end
+
     loaded = false
-    LIB_CANDIDATES.each do |name|
+    (bundled_candidates + LIB_CANDIDATES).each do |name|
       begin
         dlload name
         loaded = true
