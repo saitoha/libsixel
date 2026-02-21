@@ -104,6 +104,8 @@
 #include "loader-librsvg.h"
 #include "loader-quicklook.h"
 #include "loader-registry.h"
+#include "loader-component.h"
+#include "loader-component-legacy.h"
 #include "loader-wic.h"
 #include "compat_stub.h"
 #include "frame.h"
@@ -303,6 +305,66 @@ loader_callback_trampoline(sixel_frame_t *frame, void *data)
     }
 
     return status;
+}
+
+
+static SIXELSTATUS
+loader_apply_component_options(sixel_loader_component_t *component,
+                               sixel_loader_t const *loader,
+                               int reqcolors)
+{
+    SIXELSTATUS status;
+
+    status = SIXEL_OK;
+    if (component == NULL || loader == NULL) {
+        return SIXEL_BAD_ARGUMENT;
+    }
+
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_REQUIRE_STATIC,
+                                           &loader->fstatic);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_USE_PALETTE,
+                                           &loader->fuse_palette);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_REQCOLORS,
+                                           &reqcolors);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_BGCOLOR,
+                                           loader->has_bgcolor ?
+                                               loader->bgcolor : NULL);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    status = sixel_loader_component_setopt(component,
+                                           SIXEL_LOADER_OPTION_LOOP_CONTROL,
+                                           &loader->loop_control);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    status = sixel_loader_component_setopt(
+        component,
+        SIXEL_LOADER_OPTION_START_FRAME_NO,
+        loader->has_start_frame_no ? &loader->start_frame_no : NULL);
+    if (SIXEL_FAILED(status)) {
+        return status;
+    }
+
+    return SIXEL_OK;
 }
 
 static int
@@ -1481,7 +1543,7 @@ sixel_loader_load_file(
     size_t entry_count;
     size_t plan_length;
     size_t plan_index;
-    unsigned char *bgcolor;
+    sixel_loader_component_t *component;
     int reqcolors;
     char const *order_override;
     char const *env_order;
@@ -1493,7 +1555,7 @@ sixel_loader_load_file(
     entry_count = 0;
     plan_length = 0;
     plan_index = 0;
-    bgcolor = NULL;
+    component = NULL;
     reqcolors = 0;
     order_override = NULL;
     env_order = NULL;
@@ -1558,10 +1620,6 @@ sixel_loader_load_file(
         goto end;
     }
 
-    if (loader->has_bgcolor) {
-        bgcolor = loader->bgcolor;
-    }
-
     status = SIXEL_FALSE;
     order_override = loader->loader_order;
     /*
@@ -1620,18 +1678,28 @@ sixel_loader_load_file(
         } else {
             loader->log_loader_name[0] = '\0';
         }
-        loader_trace_try(plan[plan_index]->name);
-        status = plan[plan_index]->backend(pchunk,
-                                           loader->fstatic,
-                                           loader->fuse_palette,
-                                           reqcolors,
-                                           bgcolor,
-                                           loader->loop_control,
-                                           loader->has_start_frame_no,
-                                           loader->start_frame_no,
-                                           loader_callback_trampoline,
-                                           &callback_state);
-        loader_trace_result(plan[plan_index]->name, status);
+        component = sixel_loader_component_legacy_new(plan[plan_index],
+                                                   loader->allocator);
+        if (component == NULL) {
+            status = SIXEL_BAD_ALLOCATION;
+            goto end;
+        }
+
+        status = loader_apply_component_options(component, loader, reqcolors);
+        if (SIXEL_FAILED(status)) {
+            sixel_loader_component_unref(component);
+            component = NULL;
+            goto end;
+        }
+
+        loader_trace_try(sixel_loader_component_get_name(component));
+        status = sixel_loader_component_load(component,
+                                             pchunk,
+                                             loader_callback_trampoline,
+                                             &callback_state);
+        loader_trace_result(sixel_loader_component_get_name(component), status);
+        sixel_loader_component_unref(component);
+        component = NULL;
         if (SIXEL_SUCCEEDED(status)) {
             break;
         }
@@ -1679,6 +1747,10 @@ sixel_loader_load_file(
     }
 
 end:
+    if (component != NULL) {
+        sixel_loader_component_unref(component);
+        component = NULL;
+    }
     if (plan != NULL) {
         sixel_allocator_free(loader->allocator, plan);
         plan = NULL;

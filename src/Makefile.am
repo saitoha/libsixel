@@ -159,10 +159,14 @@ libsixel_la_SOURCES = \
                 $(srcdir)/loader-libwebp.c \
                 $(srcdir)/loader-builtin.c \
                 $(srcdir)/loader-common.c \
+                $(srcdir)/loader-component.c \
+                $(srcdir)/loader-component-legacy.c \
                 $(srcdir)/loader-registry.c \
                 $(srcdir)/loader.h \
                 $(srcdir)/loader-builtin.h \
                 $(srcdir)/loader-common.h \
+                $(srcdir)/loader-component.h \
+                $(srcdir)/loader-component-legacy.h \
                 $(srcdir)/loader-coregraphics.h \
                 $(srcdir)/loader-gd.h \
                 $(srcdir)/loader-gdk-pixbuf2.h \
