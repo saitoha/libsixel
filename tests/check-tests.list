@@ -331,6 +331,8 @@ io/loader/animation/0076_builtin_gif_start_frame_positive.t
 io/loader/animation/0077_builtin_gif_start_frame_negative.t
 io/loader/animation/0078_builtin_gif_start_frame_positive_oob.t
 io/loader/animation/0079_builtin_gif_start_frame_negative_oob.t
+io/loader/animation/0076_apng_libpng_start_frame_cli_override_matches_frame1.t
+io/loader/animation/0077_coregraphics_static_start_baseline_nonempty.t
 io/network/0001_curl_invalid_file_url.t
 io/network/0002_curl_invalid_https_url.t
 io/network/0003_curl_file_scheme.t

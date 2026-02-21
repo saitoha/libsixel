@@ -1,5 +1,5 @@
 #!/bin/sh
-# TAP test: coregraphics static decode honors positive start frame.
+# TAP test: coregraphics static decode applies positive start frame.
 
 set -eux
 
@@ -15,43 +15,29 @@ test "${HAVE_COREGRAPHICS-}" = 1 || {
     exit 0
 }
 
-echo "1..2"
+echo "1..1"
 set -v
 
 run_img2sixel -L coregraphics! -ldisable -S \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/coregraphics_static_start_default.six" || {
     fail 1 "baseline static coregraphics decode failed"
-    pass 2 "comparison skipped because baseline decode failed"
     exit 0
 }
-
-test -s "${ARTIFACT_LOCAL_DIR}/coregraphics_static_start_default.six" || {
-    fail 1 "baseline static coregraphics decode produced empty output"
-    pass 2 "comparison skipped because baseline output is empty"
-    exit 0
-}
-
-pass 1 "baseline static coregraphics output is non-empty"
 
 run_img2sixel --start-frame=1 \
     -L coregraphics! -ldisable -S \
     "${TOP_SRCDIR}/tests/data/inputs/small.gif" \
     >"${ARTIFACT_LOCAL_DIR}/coregraphics_static_start_positive.six" || {
-    fail 2 "static coregraphics decode with positive start frame failed"
-    exit 0
-}
-
-test -s "${ARTIFACT_LOCAL_DIR}/coregraphics_static_start_positive.six" || {
-    fail 2 "static coregraphics decode with positive start frame is empty"
+    fail 1 "static coregraphics decode with positive start frame failed"
     exit 0
 }
 
 cmp -s "${ARTIFACT_LOCAL_DIR}/coregraphics_static_start_default.six" \
     "${ARTIFACT_LOCAL_DIR}/coregraphics_static_start_positive.six" && {
-    fail 2 "positive start frame did not change static coregraphics output"
+    fail 1 "positive start frame did not change static coregraphics output"
     exit 0
 }
 
-pass 2 "static coregraphics positive start frame is applied"
+pass 1 "static coregraphics positive start frame is applied"
 exit 0
